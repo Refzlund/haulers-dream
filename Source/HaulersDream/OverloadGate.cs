@@ -33,6 +33,15 @@ namespace HaulersDream
         internal static int EffectiveLevel(HaulersDreamSettings s)
             => NoOverload(s) ? OverloadTuning.OffLevel : s.overloadLevel;
 
+        /// <summary>
+        /// <see cref="NoOverload"/> plus the per-pawn half of the bargain: the overload deal is
+        /// slowdown-FOR-capacity, and <see cref="StatPart_Overload"/> only ever slows player-faction
+        /// HUMANLIKES — so a pawn the StatPart never slows (a mech lifter) must not get the extra
+        /// capacity either, or it sweeps past its limit penalty-free (a balance regression vs vanilla).
+        /// </summary>
+        internal static bool NoOverloadFor(Pawn pawn, HaulersDreamSettings s)
+            => NoOverload(s) || !(pawn?.RaceProps?.Humanlike ?? false);
+
         internal static int CountToPickUp(Pawn pawn, Thing thing, HaulersDreamSettings s)
         {
             if (pawn == null || thing == null || s == null)
@@ -42,7 +51,7 @@ namespace HaulersDream
             float cur = MassUtility.GearAndInventoryMass(pawn);
             float unit = thing.GetStatValue(StatDefOf.Mass);
             int count = OverloadPolicy.UnitsToCarry(
-                EffectiveLevel(s), maxCap, baseCap, cur, unit,
+                NoOverloadFor(pawn, s) ? OverloadTuning.OffLevel : s.overloadLevel, maxCap, baseCap, cur, unit,
                 demandUnits: ActiveRunDemand, availableUnits: thing.stackCount);
             // Combat Extended adds a BULK dimension vanilla mass math can't see — defer to CE's own
             // canonical fit check (weight AND bulk). No-ops (int.MaxValue) without CE.

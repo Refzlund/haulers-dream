@@ -30,6 +30,16 @@ namespace HaulersDream
             if (settings == null)
                 return;
 
+            // A drafted pawn must never start (or queue) an unload — forced and automatic alike. Vanilla's
+            // Humanlike think tree places ThinkNode_QueuedJob BEFORE the wait-while-drafted branch and that
+            // node has NO draft gate (decompile-verified), so a queued unload WOULD be dequeued and executed
+            // while drafted: the pawn marches off to storage mid-raid instead of standing to orders. (The
+            // bulk-haul finish flush hits exactly this: drafting runs ClearQueuedJobs BEFORE EndCurrentJob,
+            // so our finish action would enqueue into the freshly emptied queue.) The gizmo is a no-op while
+            // drafted too; after undrafting, the idle backstop / interval / a fresh gizmo press recovers.
+            if (pawn.Drafted)
+                return;
+
             // A pawn mid bill-prep-gather is CARRYING INGREDIENTS TO A BENCH ON PURPOSE — an auto-unload queued now
             // would run before the bill re-scan (queued jobs precede work) and dump the whole gathered load back to
             // storage, wasting the entire sweep. Only the explicit gizmo (forced) may override.
@@ -45,8 +55,9 @@ namespace HaulersDream
 
             var carried = comp.GetHashSet();
             // A FORCED unload (the gizmo, an end-of-batch flush) is RECOVERY, not work — it must function even
-            // for a pawn that became scoop-ineligible (drafted with pauseWhileDrafted, hauling-incapable after a
-            // settings flip), or the recovery button is silently dead while tagged stock strands in inventory.
+            // for a pawn that became scoop-ineligible (hauling-incapable after a settings flip), or the recovery
+            // button is silently dead while tagged stock strands in inventory. (Drafted pawns never get here —
+            // the draft gate above wins; the gizmo shows a disabled reason for them.)
             bool eligible = pawn.Faction == Faction.OfPlayerSilentFail
                             && (forced || YieldRouter.IsEligible(pawn))
                             && pawn.inventory?.innerContainer != null;

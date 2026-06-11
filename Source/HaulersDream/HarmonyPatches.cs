@@ -159,13 +159,18 @@ namespace HaulersDream
             if (comp == null || comp.GetHashSet().Count == 0)
                 yield break;
 
-            yield return new Command_Action
+            var unload = new Command_Action
             {
                 defaultLabel = "HaulersDream.Gizmo.UnloadNow".Translate(),
                 defaultDesc = "HaulersDream.Gizmo.UnloadNowDesc".Translate(),
                 icon = ContentFinder<Texture2D>.Get("UI/Buttons/Drop", false) ?? BaseContent.BadTex,
                 action = () => PawnUnloadChecker.CheckIfShouldUnload(__instance, true)
             };
+            // The unload checker hard-gates drafted pawns (they must stand to orders, not march to
+            // storage) — show that as a disabled reason instead of a button that silently does nothing.
+            if (__instance.Drafted)
+                unload.Disable("HaulersDream.Gizmo.UnloadNowDrafted".Translate());
+            yield return unload;
         }
     }
 }

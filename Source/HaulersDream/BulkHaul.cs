@@ -98,6 +98,16 @@ namespace HaulersDream
         {
             if (pawn == null || primary == null)
                 return null;
+            // The memo is keyed on TicksGame, which FREEZES while paused — but forced probes (the float
+            // menu builds its options, and the click re-calls JobOnThing) run while paused. A cached null
+            // rejection ("no second order queued yet") taken early in a pause would then be served after
+            // the player queues the first order later in the SAME pause, turning the advertised "order a
+            // second haul nearby" flow into a single haul. So for forced probes while paused, bypass the
+            // memo entirely (neither read nor write) — every paused right-click re-plans fresh. Automatic
+            // probes don't run while paused (the work scan is tick-driven), so they keep the memo.
+            bool bypassMemo = forced && (Find.TickManager?.Paused ?? false);
+            if (bypassMemo)
+                return BuildBulkJob(pawn, primary, vanillaJob, forced);
             int tick = Find.TickManager?.TicksGame ?? -1;
             var cache = planCache ?? (planCache = new Dictionary<long, CachedPlan>());
             if (tick != cacheTick)
@@ -171,9 +181,11 @@ namespace HaulersDream
             // The worth-it mass ceiling (smart-overload break-even; 100% under strict/off; ∞ at "no slowdown").
             // Under Combat Extended the strict path always applies (OverloadGate.NoOverload) and CE's BULK
             // dimension is tracked alongside weight, so a plan never promises more than CE lets the pawn carry.
+            // Pawn-aware gate (NoOverloadFor): a non-humanlike hauler (mech lifter) the slowdown StatPart
+            // never touches gets the plain carry limit, not the slowdown-for-capacity overload ceiling.
             float maxCap = MassUtility.Capacity(pawn); // under CE this reads CE's CarryWeight (CE postfix)
             float baseCap = CarryMath.EffectiveCapacity(maxCap, s.carryLimitFraction);
-            float ceiling = BulkHaulPolicy.CeilingKg(s.overloadLevel, OverloadGate.NoOverload(s), baseCap);
+            float ceiling = BulkHaulPolicy.CeilingKg(s.overloadLevel, OverloadGate.NoOverloadFor(pawn, s), baseCap);
             float running = MassUtility.GearAndInventoryMass(pawn);
             float bulkRoom = CECompat.AvailableBulk(pawn); // +∞ without CE
 
@@ -197,6 +209,18 @@ namespace HaulersDream
             // already absent from the lister, but area-forbiddance is PER-PAWN, so IsForbidden is re-checked.
             var pool = BuildPool(pawn, primary, map, searchRadius * PoolRadiusHops);
 
+            // Storage-space budget per DEF (one space computation per def per plan, not per item): the per-item
+            // existence check below (needAccurateResult:false) would let N same-def stacks all count against the
+            // SAME one free cell, and the surplus gets floor-dropped near the pawn at unload — vanilla clamps
+            // job.count to the destination group's real space (HaulToCellStorageJob). The FIRST found
+            // destination's slot group serves as the def's whole budget — storage groups can differ per item
+            // position, so this is an approximation (conservative: leftovers stay at their origin for the next
+            // haul cycle, vanilla-like). The primary's def is seeded from the vanilla-chosen destination cell.
+            var spaceLeftByDef = new Dictionary<ThingDef, int>();
+            int primarySpace = StorageSpaceForDef(pawn, primary, storeCell, map);
+            if (primarySpace != int.MaxValue)
+                spaceLeftByDef[primary.def] = primarySpace - primaryTake;
+
             // Snowball: from the primary, repeatedly take the nearest eligible candidate within a hop radius of
             // the LAST taken item — so the chain naturally picks things up "on the way" rather than zig-zagging.
             var things = new List<Thing> { primary };
@@ -205,7 +229,7 @@ namespace HaulersDream
             var last = primary.Position;
             while (things.Count < MaxStacks && running < ceiling - 0.0001f)
             {
-                var next = TakeNearestEligible(pawn, pool, last, searchRadius, claimed, ceiling, running, bulkRoom, out int take);
+                var next = TakeNearestEligible(pawn, pool, last, searchRadius, claimed, ceiling, running, bulkRoom, spaceLeftByDef, out int take);
                 if (next == null)
                     break;
                 things.Add(next);
@@ -252,7 +276,8 @@ namespace HaulersDream
         // The nearest pool candidate within `radius` of `from` that passes the full eligibility + capacity
         // gates. Removes the chosen (and any permanently-ineligible) candidates from the pool as it scans.
         private static Thing TakeNearestEligible(Pawn pawn, List<Thing> pool, IntVec3 from, float radius,
-            HashSet<Thing> claimed, float ceiling, float runningMass, float bulkRoom, out int take)
+            HashSet<Thing> claimed, float ceiling, float runningMass, float bulkRoom,
+            Dictionary<ThingDef, int> spaceLeftByDef, out int take)
         {
             take = 0;
             float radiusSq = radius * radius;
@@ -294,11 +319,60 @@ namespace HaulersDream
                     continue;
                 var currentPriority = StoreUtility.CurrentStoragePriorityOf(t);
                 if (!StoreUtility.TryFindBestBetterStorageFor(t, pawn, pawn.Map, currentPriority, pawn.Faction,
-                        out _, out _, needAccurateResult: false))
+                        out IntVec3 destCell, out _, needAccurateResult: false))
                     continue;
+                // Per-def storage budget (see BuildBulkJob): the first stack of a def prices its destination
+                // group's real remaining space; planned stacks decrement it, and once it's exhausted further
+                // same-def candidates are rejected (they'd only be floor-dropped at unload).
+                if (!spaceLeftByDef.TryGetValue(t.def, out int spaceLeft))
+                {
+                    spaceLeft = StorageSpaceForDef(pawn, t, destCell, pawn.Map);
+                    spaceLeftByDef[t.def] = spaceLeft;
+                }
+                if (spaceLeft != int.MaxValue)
+                {
+                    fits = Math.Min(fits, spaceLeft);
+                    if (fits <= 0)
+                        continue; // this def's storage is fully subscribed — leave the stack at its origin
+                    spaceLeftByDef[t.def] = spaceLeft - fits;
+                }
                 take = fits;
                 return t;
             }
+        }
+
+        // Hard bound on the per-group cell scan when pricing storage space: groups are typically small, and a
+        // group larger than this holds more than any plan can take anyway — treat the cap as "enough".
+        private const int MaxSpaceScanCells = 200;
+
+        // The destination slot group's total remaining space for `thing`'s def, vanilla-style — the same
+        // IsGoodStoreCell + GetItemStackSpaceLeftFor loop HaulAIUtility.HaulToCellStorageJob clamps job.count
+        // with (decompile-verified). int.MaxValue = "no binding limit": a container destination (cell ==
+        // Invalid — its capacity is enroute-managed), no slot group at the cell, a scan that hit the cell cap,
+        // or already more space than a whole plan could fill (MaxStacks full stacks).
+        private static int StorageSpaceForDef(Pawn pawn, Thing thing, IntVec3 cell, Map map)
+        {
+            if (!cell.IsValid)
+                return int.MaxValue;
+            var slotGroup = map.haulDestinationManager.SlotGroupAt(cell);
+            if (slotGroup == null)
+                return int.MaxValue;
+            // Like vanilla: a storage GROUP (linked stockpiles/shelves) pools its members' cells.
+            ISlotGroup group = (ISlotGroup)slotGroup.StorageGroup ?? slotGroup;
+            var cells = group.CellsList;
+            if (cells == null || cells.Count > MaxSpaceScanCells)
+                return int.MaxValue;
+            int enough = MaxStacks * Math.Max(1, thing.def.stackLimit); // no plan can place more than this
+            int space = 0;
+            for (int i = 0; i < cells.Count; i++)
+            {
+                if (!StoreUtility.IsGoodStoreCell(cells[i], map, thing, pawn, pawn.Faction))
+                    continue;
+                space += cells[i].GetItemStackSpaceLeftFor(map, thing.def);
+                if (space >= enough)
+                    return int.MaxValue;
+            }
+            return space;
         }
 
         // "A second nearby item has been tasked": another haul order on this pawn (current or queued) whose

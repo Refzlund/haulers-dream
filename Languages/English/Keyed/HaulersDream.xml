@@ -99,6 +99,7 @@
 
   <HaulersDream.Gizmo.UnloadNow>Unload inventory</HaulersDream.Gizmo.UnloadNow>
   <HaulersDream.Gizmo.UnloadNowDesc>Make this pawn carry everything it has scooped to the nearest valid storage.</HaulersDream.Gizmo.UnloadNowDesc>
+  <HaulersDream.Gizmo.UnloadNowDrafted>Drafted: undraft this pawn to unload.</HaulersDream.Gizmo.UnloadNowDrafted>
 
   <!-- Plan prioritized route -->
   <HaulersDream.PlanRoute.Option>Plan prioritized {0}…</HaulersDream.PlanRoute.Option>
