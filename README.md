@@ -5,7 +5,7 @@ their tasks more efficiently: fewer round-trips, less walking back and forth, mo
 working. Also adds planning tools and small micro-management improvements that build on these
 changes.
 
-- **Steam Workshop:** https://steamcommunity.com/sharedfiles/filedetails/?id=3742230809
+- **Steam Workshop:** https://steamcommunity.com/sharedfiles/filedetails/?id=3742459652
 - **Requires:** [Harmony](https://github.com/pardeike/HarmonyRimWorld) (`brrainz.harmony`)
 - Safe to add to existing saves.
 - Compatible with Combat Extended and Adaptive Storage Framework. Replaces Pick-up and Haul,
@@ -50,7 +50,7 @@ Every feature has mod-settings toggles; see the Workshop page
 
 ## Installing
 
-- **Steam:** subscribe on the [Workshop page](https://steamcommunity.com/sharedfiles/filedetails/?id=3742230809).
+- **Steam:** subscribe on the [Workshop page](https://steamcommunity.com/sharedfiles/filedetails/?id=3742459652).
 - **Manual:** download `HaulersDream-vX.Y.Z.zip` from the
   [latest release](https://github.com/refzlund/haulers-dream/releases/latest) and extract it into
   your `RimWorld/Mods` folder.

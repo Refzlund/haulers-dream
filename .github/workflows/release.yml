@@ -89,7 +89,7 @@ jobs:
           username: ${{ secrets.STEAM_USERNAME }}
           configVdf: ${{ secrets.STEAM_CONFIG_VDF }}
           appId: 294100
-          publishedFileId: 3742230809
+          publishedFileId: 3742459652
           path: dist/HaulersDream
           changeNote: ${{ steps.notes.outputs.note }}
 

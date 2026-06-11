@@ -55,9 +55,9 @@ Releases are fully automated with [changesets](https://github.com/changesets/cha
    `About/About.xml` (`<modVersion>`), `Source/Directory.Build.props` (`<Version>`) and
    `CHANGELOG.md`.
 3. **Merging that PR is the release.** The workflow then:
-   - tags `vX.Y.Z` and creates a GitHub Release with the packaged zip attached, and
-   - builds and publishes the mod to the **Steam Workshop** (item `3742230809`) with the
-     changelog as the change note.
+   - builds and publishes the mod to the **Steam Workshop** (item `3742459652`) with the
+     changelog as the change note, and
+   - tags `vX.Y.Z` and creates a GitHub Release with the packaged zip attached.
 
 No manual steps. The maintainer only merges PRs.
 
