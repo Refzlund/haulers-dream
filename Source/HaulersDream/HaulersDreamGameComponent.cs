@@ -86,9 +86,19 @@ namespace HaulersDream
                     var p = pawns[i];
                     if (!IsIdle(p))
                         continue;
-                    YieldRouter.EnsureSelfPickupJob(p);
+                    // Unload check FIRST, then the self-pickup: both EnqueueFirst, so this order makes the
+                    // queue [SelfPickup, Unload] — the pawn scoops its pending drops and unloads everything
+                    // in ONE trip. (The reverse order ran the unload before the scoop, so freshly scooped
+                    // stock waited for the next idle cycle: a second trip.) Safe either way for the strict-
+                    // mode livelock: HasPendingRealWork excludes housekeeping jobs by defName, not by order.
                     if (s.markForUnload)
                         PawnUnloadChecker.CheckIfShouldUnload(p);
+                    // Same eligibility gate as scoop time (FindWorker uses IsCandidate): a pawn that turned
+                    // ineligible since its drops were recorded (drafted with pauseWhileDrafted, a settings
+                    // flip, a non-home map) must not walk off to scoop into an inventory the unload side
+                    // refuses to serve.
+                    if (YieldRouter.IsCandidate(p))
+                        YieldRouter.EnsureSelfPickupJob(p);
                 }
             }
         }
@@ -155,7 +165,18 @@ namespace HaulersDream
                 || tail != tr.lastCell || tailJob.def != JobDefOf.Mine)
             {
                 bool lastCellMined = !AnyVeinThingAt(pawn.Map, tr.veinDef, tr.lastCell);
-                bool nothingElseQueued = pawn.jobs?.jobQueue == null || pawn.jobs.jobQueue.Count == 0;
+                // "Nothing else queued" must ignore the mod's OWN housekeeping (the yield hook queues a
+                // self-pickup — and possibly an unload — at the exact moment the final cell is mined);
+                // only REAL queued work means the route was superseded. Same idiom as PawnUnloadChecker.
+                var queue = pawn.jobs?.jobQueue;
+                var queuedDefNames = new List<string>();
+                if (queue != null)
+                    foreach (var qj in queue)
+                        if (qj?.job?.def != null)
+                            queuedDefNames.Add(qj.job.def.defName);
+                bool nothingElseQueued = !UnloadPolicy.HasPendingRealWork(queuedDefNames,
+                    HaulersDreamDefOf.HaulersDream_SelfPickup.defName,
+                    HaulersDreamDefOf.HaulersDream_UnloadInventory.defName);
                 if (!lastCellMined || !nothingElseQueued)
                     return false; // genuinely superseded / diverted — leave the route alone
                 finalAttempt = true;

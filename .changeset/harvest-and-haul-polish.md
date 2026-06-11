@@ -1,0 +1,5 @@
+---
+"haulers-dream": patch
+---
+
+Harvest and haul polish, from two independent top-to-bottom review rounds of the feature: pawns now scoop their pending drops and unload in one trip for every unload trigger (previously sometimes two); the unload respects what a pawn is supposed to keep in its inventory (drug policy doses, inventory stock like a doctor's medicine, and packed food), ending a dump-and-refetch loop when a harvest merged into personal stock; arriving caravan pawns no longer stall when their whole load is spoken for by other workers; the fog-extension of planned mining routes no longer dies at the moment it should fire; leavings from an instantly-cancelled frame can't be credited to a bystander; pawns no longer walk to drops that were forbidden in the meantime or left on another map; the yield hook is now immune to other mods nesting item placements; and under Combat Extended, every stack-merge path now keeps CE's loadout tracker in sync, so custom-loadout pawns no longer drop part of their load mid-run.

@@ -28,14 +28,16 @@ namespace HaulersDream
     /// </summary>
     public static class YieldRouter
     {
-        [ThreadStatic] private static bool routing;        // re-entrancy guard
-        [ThreadStatic] private static Pawn dropPawn;       // producer awaiting the postfix (DropThenHaul)
+        [ThreadStatic] private static bool routing;        // re-entrancy guard (RouteIntoInventory's own inner placements)
 
         // ---- GenPlace path (plants / mining / deep drill / animals) -----------------------------
 
         /// <returns>true to let vanilla place the (remaining) thing; false to fully consume it.</returns>
+        /// <param name="dropPawn">The producer awaiting the postfix (DropThenHaul), carried per-invocation
+        /// via Harmony's <c>__state</c> — a static handoff would be cleared by a NESTED TryPlaceThing call
+        /// (e.g. a modded comp spawning a side product mid-placement), losing the outer scoop.</param>
         public static bool OnTryPlaceThing(Thing thing, IntVec3 center, Map map, ThingPlaceMode mode,
-            ref Thing lastResultingThing, ref bool result)
+            ref Thing lastResultingThing, ref bool result, out Pawn dropPawn)
         {
             dropPawn = null;
             if (map == null || thing == null || thing.Destroyed || thing.def == null)
@@ -74,11 +76,11 @@ namespace HaulersDream
             return true; // nothing taken, or partial: vanilla places the remainder
         }
 
-        /// <summary>Postfix side of the GenPlace hook: in DropThenHaul mode, record the dropped yield.</summary>
-        public static void OnTryPlaceThingPost(Thing lastResultingThing)
+        /// <summary>Postfix side of the GenPlace hook: in DropThenHaul mode, record the dropped yield.
+        /// <paramref name="dropPawn"/> is the prefix's out value, delivered through Harmony <c>__state</c>.</summary>
+        public static void OnTryPlaceThingPost(Thing lastResultingThing, Pawn dropPawn)
         {
             var pawn = dropPawn;
-            dropPawn = null;
             if (pawn == null || lastResultingThing == null || !lastResultingThing.Spawned || lastResultingThing.Destroyed)
                 return;
             // A yield that landed/merged INTO valid storage is already home — scooping it would pull stock back
@@ -130,7 +132,7 @@ namespace HaulersDream
         /// </summary>
         internal static void MaybeUnloadBecauseFull(Pawn pawn, HaulersDreamSettings s)
         {
-            if (s == null || s.strictCarryWeight || !s.markForUnload)
+            if (s == null || !Core.UnloadPolicy.FullTriggerAllowed(s.strictCarryWeight, s.markForUnload))
                 return;
             // forced: bypass the post-pickup grace period — being full IS the signal to unload.
             PawnUnloadChecker.CheckIfShouldUnload(pawn, forced: true);
@@ -248,10 +250,12 @@ namespace HaulersDream
                 if (allMoved || split.stackCount < before)
                 {
                     // Some/all units landed in inventory. Register one stack of this def so the unload
-                    // pass collects it (the unload driver relinks the real stacks by def).
+                    // pass collects it (the unload driver relinks the real stacks by def). Pass the moved
+                    // count so a merge into an already-tagged stack re-notifies CE's HoldTracker.
+                    int moved = allMoved ? before : before - split.stackCount;
                     Thing held = InventoryStackOfDef(owner, split.def) ?? (allMoved ? split : null);
                     if (held != null)
-                        comp.RegisterHauledItem(held);
+                        comp.RegisterHauledItem(held, moved);
                     comp.NotifyYieldPicked();
                     HDLog.Dbg($"{pawn} scooped x{before - split.stackCount} {split.def?.label} ({type}).");
                 }
@@ -285,6 +289,18 @@ namespace HaulersDream
             return null;
         }
 
+        /// <summary>Total units of <paramref name="def"/> across all of the owner's stacks.</summary>
+        internal static int InventoryCountOfDef(ThingOwner owner, ThingDef def)
+        {
+            if (owner == null || def == null)
+                return 0;
+            int total = 0;
+            for (int i = 0; i < owner.Count; i++)
+                if (owner[i]?.def == def)
+                    total += owner[i].stackCount;
+            return total;
+        }
+
         // ---- pawn inference ---------------------------------------------------------------------
 
         /// <summary>
@@ -295,10 +311,14 @@ namespace HaulersDream
         private static Pawn FindWorker(IntVec3 center, Map map, out HaulSourceType type)
         {
             type = default;
-            var cells = GenAdj.AdjacentCellsAndInside; // 9-cell 3x3 block
-            for (int i = 0; i < cells.Length; i++)
+            var cells = GenAdj.AdjacentCellsAndInside; // 9-cell 3x3 block; the (0,0,0) CENTER offset is LAST (index 8)
+            // The CENTER cell is checked FIRST (i == -1): the pawn STANDING on the drop cell is the
+            // truest producer, but vanilla's table orders the center offset last, which would credit an
+            // adjacent pawn whose job targets the center before the pawn standing on it. The loop bound
+            // then skips the table's trailing center entry (decompile-verified layout).
+            for (int i = -1; i < cells.Length - 1; i++)
             {
-                IntVec3 c = center + cells[i];
+                IntVec3 c = i < 0 ? center : center + cells[i];
                 if (!c.InBounds(map))
                     continue;
                 var things = map.thingGrid.ThingsListAtFast(c);
@@ -343,8 +363,12 @@ namespace HaulersDream
                     // side by side must not mis-credit each other's leavings to whoever scans first.
                     if (diedThing != null && p.CurJob?.targetA.Thing == diedThing)
                         return p;
-                    if (fallback == null)
-                        fallback = p; // first-found scan, kept for when no job-target match exists
+                    // The first-found fallback only applies when the caller has NO died thing (legacy
+                    // 3-arg overload). Vanilla always passes it, and a pawn-less instant deconstruct
+                    // (a cancelled frame, a zero-work building, god mode) must NOT credit a bystander
+                    // deconstructing something else — those leavings stay for normal hauling.
+                    if (diedThing == null && fallback == null)
+                        fallback = p;
                 }
             }
             return fallback;

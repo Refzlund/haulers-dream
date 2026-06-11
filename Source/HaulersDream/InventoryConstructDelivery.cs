@@ -126,7 +126,9 @@ namespace HaulersDream
             float unit = def.GetStatValueAbstract(StatDefOf.Mass);
             if (unit <= 0f)
                 return null;
-            int level = OverloadGate.EffectiveLevel(s); // strict / slider-Off / Combat Extended -> never overload
+            // Pawn-aware (NoOverloadFor): strict / slider-Off / CE — and a non-humanlike the slowdown
+            // StatPart never touches (a mech lifter) must not gather past its limit penalty-free.
+            int level = OverloadGate.NoOverloadFor(pawn, s) ? OverloadTuning.OffLevel : s.overloadLevel;
 
             int ceiling = ConstructDeliveryPlan.GatherCeiling(level, maxCap, baseCap, cur, unit, gatherNeed);
             if (!forced && ceiling <= handCap)

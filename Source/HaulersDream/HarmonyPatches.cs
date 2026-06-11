@@ -23,11 +23,14 @@ namespace HaulersDream
             typeof(Action<Thing, int>), typeof(Predicate<IntVec3>), typeof(Rot4?), typeof(int)
         });
 
-        static bool Prefix(Thing thing, IntVec3 center, Map map, ThingPlaceMode mode, ref Thing lastResultingThing, ref bool __result)
-            => YieldRouter.OnTryPlaceThing(thing, center, map, mode, ref lastResultingThing, ref __result);
+        // __state carries the producer from prefix to postfix PER INVOCATION (Harmony binds it by name
+        // across the pair) — structurally immune to nested TryPlaceThing calls, which would clear a
+        // static handoff (a modded comp spawning a side product mid-placement → missed scoop).
+        static bool Prefix(Thing thing, IntVec3 center, Map map, ThingPlaceMode mode, ref Thing lastResultingThing, ref bool __result, out Pawn __state)
+            => YieldRouter.OnTryPlaceThing(thing, center, map, mode, ref lastResultingThing, ref __result, out __state);
 
         // DropThenHaul mode: after vanilla places the yield, record it for the producer to scoop up.
-        static void Postfix(Thing lastResultingThing) => YieldRouter.OnTryPlaceThingPost(lastResultingThing);
+        static void Postfix(Thing lastResultingThing, Pawn __state) => YieldRouter.OnTryPlaceThingPost(lastResultingThing, __state);
     }
 
     /// <summary>
@@ -85,9 +88,29 @@ namespace HaulersDream
             if (__result == null || pawn == null)
                 return; // vanilla didn't want to unload -> nothing to substitute
             var comp = pawn.GetComp<CompHauledToInventory>();
-            if (comp == null || comp.GetHashSet().Count == 0)
+            var carried = comp?.GetHashSet();
+            if (carried == null || carried.Count == 0)
                 return; // no tracked items -> leave vanilla's unload as-is
             if (pawn.CurJobDef == HaulersDreamDefOf.HaulersDream_UnloadInventory)
+                return;
+            // Substitute only when our unload can actually PROGRESS right now: at least one tagged stack
+            // still in inventory and reservable by this pawn. Otherwise (e.g. other pawns hold
+            // reservations on every tagged stack) our job ends Incompletable instantly while vanilla's
+            // UnloadEverything flag stays set — the think tree re-issues it every few ticks forever, and
+            // vanilla's own unload (which always progresses by dropping near) never drains the flag.
+            var inner = pawn.inventory?.innerContainer;
+            if (inner == null)
+                return;
+            bool anyUnloadable = false;
+            foreach (var t in carried)
+            {
+                if (t != null && inner.Contains(t) && pawn.CanReserve(t))
+                {
+                    anyUnloadable = true;
+                    break;
+                }
+            }
+            if (!anyUnloadable)
                 return;
             var job = JobMaker.MakeJob(HaulersDreamDefOf.HaulersDream_UnloadInventory);
             if (job.TryMakePreToilReservations(pawn, false))
@@ -136,13 +159,18 @@ namespace HaulersDream
             if (comp == null || comp.GetHashSet().Count == 0)
                 yield break;
 
-            yield return new Command_Action
+            var unload = new Command_Action
             {
                 defaultLabel = "HaulersDream.Gizmo.UnloadNow".Translate(),
                 defaultDesc = "HaulersDream.Gizmo.UnloadNowDesc".Translate(),
                 icon = ContentFinder<Texture2D>.Get("UI/Buttons/Drop", false) ?? BaseContent.BadTex,
                 action = () => PawnUnloadChecker.CheckIfShouldUnload(__instance, true)
             };
+            // The unload checker hard-gates drafted pawns (they must stand to orders, not march to
+            // storage) — show that as a disabled reason instead of a button that silently does nothing.
+            if (__instance.Drafted)
+                unload.Disable("HaulersDream.Gizmo.UnloadNowDrafted".Translate());
+            yield return unload;
         }
     }
 }

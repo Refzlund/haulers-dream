@@ -51,11 +51,20 @@ namespace HaulersDream.Core
         }
 
         /// <summary>
+        /// Whether the hit-the-carry-ceiling trigger may fire a FORCED unload: never in strict mode (the
+        /// pawn keeps working and leaves the surplus on the ground for normal hauling), and never with
+        /// auto-unload off (the player manages unloading via the gizmo). Pure so the gate — the exact
+        /// family behind a past strict-mode livelock — is unit-pinned.
+        /// </summary>
+        public static bool FullTriggerAllowed(bool strictCarryWeight, bool markForUnload)
+            => !strictCarryWeight && markForUnload;
+
+        /// <summary>
         /// True if any queued job is the pawn's OWN real work — i.e. a queued job whose def is NOT one of
         /// the mod's housekeeping defs (self-pickup / unload). This is the "hasPendingWork" signal fed to
         /// <see cref="Decide"/>: an automatic unload must defer behind real work, but must NOT count the
-        /// mod's own just-queued self-pickup as work (the idle backstop enqueues a self-pickup before the
-        /// unload check, so counting it would skip the unload forever and strand goods in strict mode).
+        /// mod's own housekeeping jobs as work regardless of queueing order (a queued self-pickup next to
+        /// the unload check would otherwise skip the unload forever and strand goods in strict mode).
         /// Pure mirror of the game-layer queue scan so that contract is unit-pinned.
         /// </summary>
         public static bool HasPendingRealWork(IEnumerable<string> queuedJobDefNames, params string[] housekeepingDefNames)

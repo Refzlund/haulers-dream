@@ -46,7 +46,8 @@ namespace HaulersDream
             }
             catch (Exception e)
             {
-                Log.WarningOnce($"[Hauler's Dream] Bulk-haul conversion failed for {pawn} hauling {t}: {e}", 0x4B48);
+                // Key varies by exception TYPE so a second, different failure mode still gets one report.
+                Log.WarningOnce($"[Hauler's Dream] Bulk-haul conversion failed for {pawn} hauling {t}: {e}", 0x4B48 ^ (e.GetType().FullName?.GetHashCode() ?? 0));
                 // fail-open: the vanilla single haul stands
             }
         }
@@ -73,8 +74,20 @@ namespace HaulersDream
         // click — each probe would otherwise run the full pool + storage scan below and throw the result
         // away. One generation per tick: same (pawn, primary, forced) within a tick returns the cached plan
         // (null rejections included — those are the common case on a scan).
-        private static int cacheTick = -1;
-        private static readonly Dictionary<long, Job> planCache = new Dictionary<long, Job>();
+        // [ThreadStatic] per this assembly's convention for hook-reachable scratch state (see
+        // CompHauledToInventory.tmpScoopedDefs) — lazily initialized, since ThreadStatic field
+        // initializers only run on the static-ctor thread.
+        [ThreadStatic] private static int cacheTick;
+        [ThreadStatic] private static Dictionary<long, CachedPlan> planCache;
+
+        // The cached Job plus the loadID it carried at insert. JobMaker.ReturnToPool → Job.Clear() sets
+        // loadID = -1 and MakeJob assigns a fresh UniqueIDsManager id (decompile-verified), so a same-tick
+        // pool-recycled instance — even one reused for an identically-shaped job — can never validate.
+        private struct CachedPlan
+        {
+            public Job job;
+            public int loadID;
+        }
 
         /// <summary>
         /// Build the bulk pickup job for hauling <paramref name="primary"/>, or null when the sweep doesn't
@@ -85,27 +98,42 @@ namespace HaulersDream
         {
             if (pawn == null || primary == null)
                 return null;
+            // The memo is keyed on TicksGame, which FREEZES while paused — but forced probes (the float
+            // menu builds its options, and the click re-calls JobOnThing) run while paused. A cached null
+            // rejection ("no second order queued yet") taken early in a pause would then be served after
+            // the player queues the first order later in the SAME pause, turning the advertised "order a
+            // second haul nearby" flow into a single haul. So for forced probes while paused, bypass the
+            // memo entirely (neither read nor write) — every paused right-click re-plans fresh. Automatic
+            // probes don't run while paused (the work scan is tick-driven), so they keep the memo.
+            bool bypassMemo = forced && (Find.TickManager?.Paused ?? false);
+            if (bypassMemo)
+                return BuildBulkJob(pawn, primary, vanillaJob, forced);
             int tick = Find.TickManager?.TicksGame ?? -1;
+            var cache = planCache ?? (planCache = new Dictionary<long, CachedPlan>());
             if (tick != cacheTick)
             {
-                planCache.Clear();
+                cache.Clear();
                 cacheTick = tick;
             }
             long key = ((long)pawn.thingIDNumber << 32) | (uint)primary.thingIDNumber;
             if (forced)
                 key = ~key; // forced and automatic plans differ (the trigger) — separate cache lines
-            if (planCache.TryGetValue(key, out var cached))
+            if (cache.TryGetValue(key, out var cached))
             {
                 // The cache holds LIVE Job instances, and vanilla's JobMaker.ReturnToPool can recycle one
-                // same-tick: a pooled-but-unreused job has def == null; a recycled one carries a foreign
-                // def/target — both invalidate the entry (rebuild below). Cached nulls (negative results,
-                // the common case on a scan) stay served as-is.
-                if (cached == null || (cached.def == HaulersDreamDefOf.HaulersDream_BulkHaul && cached.targetA.Thing == primary))
-                    return cached;
-                planCache.Remove(key);
+                // same-tick: the stored loadID is the proof of identity (Clear() resets it to -1, MakeJob
+                // assigns a fresh one — a recycled instance can never match). The def/target check stays as
+                // belt-and-braces. Cached nulls (negative results, the common case on a scan) serve as-is.
+                if (cached.job == null)
+                    return null;
+                if (cached.job.loadID == cached.loadID
+                    && cached.job.def == HaulersDreamDefOf.HaulersDream_BulkHaul
+                    && cached.job.targetA.Thing == primary)
+                    return cached.job;
+                cache.Remove(key);
             }
             var plan = BuildBulkJob(pawn, primary, vanillaJob, forced);
-            planCache[key] = plan;
+            cache[key] = new CachedPlan { job = plan, loadID = plan?.loadID ?? -1 };
             return plan;
         }
 
@@ -114,7 +142,9 @@ namespace HaulersDream
         /// cross-session Job/Thing instances.</summary>
         internal static void ClearPlanCache()
         {
-            planCache.Clear();
+            // Clears the MAIN thread's instance (FinalizeInit runs there) — other threads' caches are
+            // per-tick self-clearing anyway, so a stale entry there dies on its next use.
+            planCache?.Clear();
             cacheTick = -1;
         }
 
@@ -151,9 +181,11 @@ namespace HaulersDream
             // The worth-it mass ceiling (smart-overload break-even; 100% under strict/off; ∞ at "no slowdown").
             // Under Combat Extended the strict path always applies (OverloadGate.NoOverload) and CE's BULK
             // dimension is tracked alongside weight, so a plan never promises more than CE lets the pawn carry.
+            // Pawn-aware gate (NoOverloadFor): a non-humanlike hauler (mech lifter) the slowdown StatPart
+            // never touches gets the plain carry limit, not the slowdown-for-capacity overload ceiling.
             float maxCap = MassUtility.Capacity(pawn); // under CE this reads CE's CarryWeight (CE postfix)
             float baseCap = CarryMath.EffectiveCapacity(maxCap, s.carryLimitFraction);
-            float ceiling = BulkHaulPolicy.CeilingKg(s.overloadLevel, OverloadGate.NoOverload(s), baseCap);
+            float ceiling = BulkHaulPolicy.CeilingKg(s.overloadLevel, OverloadGate.NoOverloadFor(pawn, s), baseCap);
             float running = MassUtility.GearAndInventoryMass(pawn);
             float bulkRoom = CECompat.AvailableBulk(pawn); // +∞ without CE
 
@@ -163,7 +195,9 @@ namespace HaulersDream
             int primaryTake = BulkHaulPolicy.CountWithinCeiling(ceiling, running, primaryUnit, primary.stackCount);
             primaryTake = Math.Min(primaryTake, CECompat.MaxFitCount(pawn, primary));
             float primaryBulk = CECompat.BulkPerUnit(primary);
-            if (primaryBulk > 0f)
+            // +∞ bulkRoom = unlimited (no CE, or CE's bulk read failed fail-open); the cast of ∞/x would
+            // be int.MinValue and silently kill every plan — skip the clamp instead.
+            if (primaryBulk > 0f && !float.IsPositiveInfinity(bulkRoom))
                 primaryTake = Math.Min(primaryTake, (int)Math.Floor(bulkRoom / primaryBulk));
             if (primaryTake <= 0)
                 return null;
@@ -175,6 +209,18 @@ namespace HaulersDream
             // already absent from the lister, but area-forbiddance is PER-PAWN, so IsForbidden is re-checked.
             var pool = BuildPool(pawn, primary, map, searchRadius * PoolRadiusHops);
 
+            // Storage-space budget per DEF (one space computation per def per plan, not per item): the per-item
+            // existence check below (needAccurateResult:false) would let N same-def stacks all count against the
+            // SAME one free cell, and the surplus gets floor-dropped near the pawn at unload — vanilla clamps
+            // job.count to the destination group's real space (HaulToCellStorageJob). The FIRST found
+            // destination's slot group serves as the def's whole budget — storage groups can differ per item
+            // position, so this is an approximation (conservative: leftovers stay at their origin for the next
+            // haul cycle, vanilla-like). The primary's def is seeded from the vanilla-chosen destination cell.
+            var spaceLeftByDef = new Dictionary<ThingDef, int>();
+            int primarySpace = StorageSpaceForDef(pawn, primary, storeCell, map);
+            if (primarySpace != int.MaxValue)
+                spaceLeftByDef[primary.def] = primarySpace - primaryTake;
+
             // Snowball: from the primary, repeatedly take the nearest eligible candidate within a hop radius of
             // the LAST taken item — so the chain naturally picks things up "on the way" rather than zig-zagging.
             var things = new List<Thing> { primary };
@@ -183,7 +229,7 @@ namespace HaulersDream
             var last = primary.Position;
             while (things.Count < MaxStacks && running < ceiling - 0.0001f)
             {
-                var next = TakeNearestEligible(pawn, pool, last, searchRadius, claimed, ceiling, running, bulkRoom, out int take);
+                var next = TakeNearestEligible(pawn, pool, last, searchRadius, claimed, ceiling, running, bulkRoom, spaceLeftByDef, out int take);
                 if (next == null)
                     break;
                 things.Add(next);
@@ -230,7 +276,8 @@ namespace HaulersDream
         // The nearest pool candidate within `radius` of `from` that passes the full eligibility + capacity
         // gates. Removes the chosen (and any permanently-ineligible) candidates from the pool as it scans.
         private static Thing TakeNearestEligible(Pawn pawn, List<Thing> pool, IntVec3 from, float radius,
-            HashSet<Thing> claimed, float ceiling, float runningMass, float bulkRoom, out int take)
+            HashSet<Thing> claimed, float ceiling, float runningMass, float bulkRoom,
+            Dictionary<ThingDef, int> spaceLeftByDef, out int take)
         {
             take = 0;
             float radiusSq = radius * radius;
@@ -257,22 +304,75 @@ namespace HaulersDream
                 // what has no better storage to go to (it would strand in inventory).
                 if (t.IsForbidden(pawn) || claimed.Contains(t))
                     continue;
-                if (!HaulAIUtility.PawnCanAutomaticallyHaulFast(pawn, t, forced: false))
-                    continue;
+                // Capacity math first — pure arithmetic, vs PawnCanAutomaticallyHaulFast's region-walk
+                // (CanReach): an over-heavy/over-bulky candidate never pays the pathfinding cost.
                 int fits = BulkHaulPolicy.CountWithinCeiling(ceiling, runningMass, t.GetStatValue(StatDefOf.Mass), t.stackCount);
                 fits = Math.Min(fits, CECompat.MaxFitCount(pawn, t)); // CE: weight AND bulk vs live inventory
                 float bulkPer = CECompat.BulkPerUnit(t);
-                if (bulkPer > 0f)
+                // +∞ bulkRoom (no CE, or CE's bulk read failed fail-open) means the clamp never binds —
+                // and (int)Math.Floor(∞/x) would be int.MinValue, killing every plan. Skip it outright.
+                if (bulkPer > 0f && !float.IsPositiveInfinity(bulkRoom))
                     fits = Math.Min(fits, (int)Math.Floor(bulkRoom / bulkPer)); // CE: planned-but-untaken bulk too
                 if (fits <= 0)
                     continue; // too heavy/bulky for the remaining room — a lighter neighbor may still fit
+                if (!HaulAIUtility.PawnCanAutomaticallyHaulFast(pawn, t, forced: false))
+                    continue;
                 var currentPriority = StoreUtility.CurrentStoragePriorityOf(t);
                 if (!StoreUtility.TryFindBestBetterStorageFor(t, pawn, pawn.Map, currentPriority, pawn.Faction,
-                        out _, out _, needAccurateResult: false))
+                        out IntVec3 destCell, out _, needAccurateResult: false))
                     continue;
+                // Per-def storage budget (see BuildBulkJob): the first stack of a def prices its destination
+                // group's real remaining space; planned stacks decrement it, and once it's exhausted further
+                // same-def candidates are rejected (they'd only be floor-dropped at unload).
+                if (!spaceLeftByDef.TryGetValue(t.def, out int spaceLeft))
+                {
+                    spaceLeft = StorageSpaceForDef(pawn, t, destCell, pawn.Map);
+                    spaceLeftByDef[t.def] = spaceLeft;
+                }
+                if (spaceLeft != int.MaxValue)
+                {
+                    fits = Math.Min(fits, spaceLeft);
+                    if (fits <= 0)
+                        continue; // this def's storage is fully subscribed — leave the stack at its origin
+                    spaceLeftByDef[t.def] = spaceLeft - fits;
+                }
                 take = fits;
                 return t;
             }
+        }
+
+        // Hard bound on the per-group cell scan when pricing storage space: groups are typically small, and a
+        // group larger than this holds more than any plan can take anyway — treat the cap as "enough".
+        private const int MaxSpaceScanCells = 200;
+
+        // The destination slot group's total remaining space for `thing`'s def, vanilla-style — the same
+        // IsGoodStoreCell + GetItemStackSpaceLeftFor loop HaulAIUtility.HaulToCellStorageJob clamps job.count
+        // with (decompile-verified). int.MaxValue = "no binding limit": a container destination (cell ==
+        // Invalid — its capacity is enroute-managed), no slot group at the cell, a scan that hit the cell cap,
+        // or already more space than a whole plan could fill (MaxStacks full stacks).
+        private static int StorageSpaceForDef(Pawn pawn, Thing thing, IntVec3 cell, Map map)
+        {
+            if (!cell.IsValid)
+                return int.MaxValue;
+            var slotGroup = map.haulDestinationManager.SlotGroupAt(cell);
+            if (slotGroup == null)
+                return int.MaxValue;
+            // Like vanilla: a storage GROUP (linked stockpiles/shelves) pools its members' cells.
+            ISlotGroup group = (ISlotGroup)slotGroup.StorageGroup ?? slotGroup;
+            var cells = group.CellsList;
+            if (cells == null || cells.Count > MaxSpaceScanCells)
+                return int.MaxValue;
+            int enough = MaxStacks * Math.Max(1, thing.def.stackLimit); // no plan can place more than this
+            int space = 0;
+            for (int i = 0; i < cells.Count; i++)
+            {
+                if (!StoreUtility.IsGoodStoreCell(cells[i], map, thing, pawn, pawn.Faction))
+                    continue;
+                space += cells[i].GetItemStackSpaceLeftFor(map, thing.def);
+                if (space >= enough)
+                    return int.MaxValue;
+            }
+            return space;
         }
 
         // "A second nearby item has been tasked": another haul order on this pawn (current or queued) whose

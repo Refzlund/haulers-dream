@@ -43,6 +43,10 @@ namespace HaulersDream
         private static MethodInfo canFitInInventory;   // instance: (Thing, out int, bool, bool) -> bool
         private static MethodInfo getAvailableBulk;    // instance: (bool) -> float
         private static MethodInfo notifyHoldTracker;   // static ext: (Pawn, Thing, int) -> void
+        private static MethodInfo getLoadout;          // static ext: (Pawn) -> Loadout
+        private static MethodInfo loadoutSlotsGetter;  // instance prop get: Loadout.Slots -> List<LoadoutSlot>
+        private static MethodInfo slotThingDefGetter;  // instance prop get: LoadoutSlot.thingDef -> ThingDef (null for generic slots)
+        private static MethodInfo slotCountGetter;     // instance prop get: LoadoutSlot.count -> int
         private static StatDef bulkStat;               // CE's per-item "Bulk" stat (data, no assembly ref needed)
 
         /// <summary>Whether Combat Extended is loaded (detected by its CompInventory type being resolvable —
@@ -73,6 +77,18 @@ namespace HaulersDream
                 if (holdTracker != null)
                     notifyHoldTracker = AccessTools.Method(holdTracker, "Notify_HoldTrackerItem",
                         new[] { typeof(Pawn), typeof(Thing), typeof(int) });
+                var utilityLoadouts = AccessTools.TypeByName("CombatExtended.Utility_Loadouts");
+                if (utilityLoadouts != null)
+                    getLoadout = AccessTools.Method(utilityLoadouts, "GetLoadout", new[] { typeof(Pawn) });
+                var loadoutType = AccessTools.TypeByName("CombatExtended.Loadout");
+                if (loadoutType != null)
+                    loadoutSlotsGetter = AccessTools.PropertyGetter(loadoutType, "Slots");
+                var slotType = AccessTools.TypeByName("CombatExtended.LoadoutSlot");
+                if (slotType != null)
+                {
+                    slotThingDefGetter = AccessTools.PropertyGetter(slotType, "thingDef");
+                    slotCountGetter = AccessTools.PropertyGetter(slotType, "count");
+                }
                 bulkStat = DefDatabase<StatDef>.GetNamedSilentFail("Bulk");
                 // The fit check is the load-bearing piece; without it we must not claim compatibility-managed
                 // loading (fail SAFE: report inactive, the mod then behaves as without CE — vanilla math).
@@ -194,6 +210,40 @@ namespace HaulersDream
             catch (Exception e)
             {
                 Log.WarningOnce("[Hauler's Dream] CE HoldTracker notify failed (CE may drop carried goods early): " + e, 0x484C44);
+            }
+        }
+
+        /// <summary>
+        /// How many units of <paramref name="def"/> the pawn's assigned CE loadout wants it to CARRY —
+        /// the pawn's own ammo/sidearm reserve. The unload pass must not ship it to storage: CE's
+        /// JobGiver_UpdateLoadout would just re-fetch it (one churn cycle per sweep, the pawn temporarily
+        /// disarmed of ammo in between). Conservative: EXACT def matches only — generic-def slots ("any
+        /// AP ammo") are ignored, so at worst CE re-fetches once; guessing a generic match could instead
+        /// hoard swept goods in inventory. 0 when CE is absent or anything fails (fail-open, like the
+        /// other bridge members — the mod then behaves as without CE).
+        /// </summary>
+        public static int LoadoutKeepCount(Pawn pawn, ThingDef def)
+        {
+            if (!IsActive || pawn == null || def == null
+                || getLoadout == null || loadoutSlotsGetter == null
+                || slotThingDefGetter == null || slotCountGetter == null)
+                return 0;
+            try
+            {
+                var loadout = getLoadout.Invoke(null, new object[] { pawn });
+                if (loadout == null)
+                    return 0;
+                int keep = 0;
+                if (loadoutSlotsGetter.Invoke(loadout, null) is System.Collections.IEnumerable slots)
+                    foreach (var slot in slots)
+                        if (slot != null && (slotThingDefGetter.Invoke(slot, null) as ThingDef) == def)
+                            keep += (int)slotCountGetter.Invoke(slot, null);
+                return keep;
+            }
+            catch (Exception e)
+            {
+                Log.WarningOnce("[Hauler's Dream] CE loadout read failed (not protecting loadout stock from unload): " + e, 0x4C4F44);
+                return 0;
             }
         }
     }

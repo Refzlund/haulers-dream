@@ -274,7 +274,9 @@ namespace HaulersDream
             float baseCap = CarryMath.EffectiveCapacity(maxCap, s.carryLimitFraction);
             float cur = MassUtility.GearAndInventoryMass(pawn);
             float unit = resourceDef.GetStatValueAbstract(StatDefOf.Mass);
-            int level = OverloadGate.EffectiveLevel(s); // strict / slider-Off / Combat Extended -> never overload
+            // Pawn-aware (NoOverloadFor): strict / slider-Off / CE — and a non-humanlike the slowdown
+            // StatPart never touches must not get penalty-free overload headroom.
+            int level = OverloadGate.NoOverloadFor(pawn, s) ? OverloadTuning.OffLevel : s.overloadLevel;
             return OverloadPolicy.UnitsToCarry(level, maxCap, baseCap, cur, unit,
                 demandUnits: int.MaxValue, availableUnits: int.MaxValue);
         }

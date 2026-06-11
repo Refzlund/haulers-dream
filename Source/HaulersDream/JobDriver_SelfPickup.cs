@@ -98,9 +98,10 @@ namespace HaulersDream
 
                     if (allMoved || split.stackCount < beforeMove)
                     {
+                        int moved = allMoved ? beforeMove : beforeMove - split.stackCount;
                         Thing held = YieldRouter.InventoryStackOfDef(owner, split.def) ?? (allMoved ? split : null);
                         if (held != null)
-                            comp?.RegisterHauledItem(held);
+                            comp?.RegisterHauledItem(held, moved);
                         comp?.NotifyYieldPicked();
                     }
 

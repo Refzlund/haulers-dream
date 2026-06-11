@@ -48,6 +48,10 @@ namespace HaulersDream
                 return false;
             if (pawn.Faction == null || !pawn.Faction.IsPlayer)
                 return false;
+            // The slowdown is a hauling-economics mechanic; drafted pawns stand to orders at full speed,
+            // vanilla-style (and with the draft gate on unloads they couldn't even shed the load until undrafted).
+            if (pawn.Drafted)
+                return false;
             float cap = MassUtility.Capacity(pawn);
             if (cap <= 0f)
                 return false;

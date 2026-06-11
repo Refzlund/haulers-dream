@@ -38,6 +38,7 @@ namespace HaulersDream
         private bool loadedAnything;
         private ThingDef loadDef;
         private int plannedTake;
+        private int invCountBeforeTake; // def-count snapshot just before vanilla's TakeToInventory add (transient, like plannedTake)
 
         private ThingOwner Inv => pawn.inventory?.GetDirectlyHeldThings();
 
@@ -131,6 +132,10 @@ namespace HaulersDream
                 if (s != null && OverloadGate.NoOverload(s))
                     need = Mathf.Min(need, OverloadGate.CountToPickUp(pawn, st, s));
                 plannedTake = Mathf.Min(need, st.stackCount);
+                // Snapshot the def's inventory count NOW — vanilla's toil invokes this getter in the same
+                // initAction immediately before its SplitOff+TryAdd, so (count after − this) in the tag
+                // toil is the exact number of units that landed in inventory.
+                invCountBeforeTake = YieldRouter.InventoryCountOfDef(Inv, st.def);
                 return plannedTake;
             });
 
@@ -146,7 +151,11 @@ namespace HaulersDream
                         var comp = pawn.GetComp<CompHauledToInventory>();
                         if (comp != null)
                         {
-                            comp.RegisterHauledItem(held);
+                            // Vanilla's TakeToInventory MERGES into existing stacks; pass the def-count delta
+                            // so a merge into an already-tagged stack re-notifies CE's HoldTracker with the
+                            // growth (the tag alone is a no-op for an already-tagged stack).
+                            int mergedDelta = YieldRouter.InventoryCountOfDef(Inv, loadDef) - invCountBeforeTake;
+                            comp.RegisterHauledItem(held, mergedDelta > 0 ? mergedDelta : 0);
                             comp.NotifyYieldPicked(); // grace period covers the sweep + the handoff to the craft
                         }
                         // AllowMix recipes (meal cooking) sort candidates by t.Position (not PositionHeld); an

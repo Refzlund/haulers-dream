@@ -504,9 +504,12 @@ namespace HaulersDream
             bool moved = owner.TryAddOrTransfer(product, canMergeWithExistingStacks: true);
             if (comp != null && (moved || product.stackCount < before))
             {
+                // Pass the moved count so a merge into an already-tagged stack re-notifies CE's
+                // HoldTracker with the growth (same idiom as YieldRouter.RouteIntoInventory).
+                int movedCount = moved ? before : before - product.stackCount;
                 Thing held = YieldRouter.InventoryStackOfDef(owner, product.def) ?? (moved ? product : null);
                 if (held != null)
-                    comp.RegisterHauledItem(held);
+                    comp.RegisterHauledItem(held, movedCount);
                 comp.NotifyYieldPicked();
             }
             if (!moved && product.stackCount > 0 && !product.Destroyed)
