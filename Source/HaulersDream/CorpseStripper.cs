@@ -64,30 +64,41 @@ namespace HaulersDream
     /// stripper's job queue — by the time it comes up (after the scoop and any unload trip), it catches
     /// anything the target put back on, and ends instantly doing nothing when the target stayed bare
     /// (its own toils fail on CanBeStrippedByColony).
+    ///
+    /// WHY a FINISH ACTION and not an appended toil: vanilla JobDriver_Strip registers a driver-global
+    /// FailOn(!CanBeStrippedByColony(TargetThingA)), and global fail conditions are evaluated BEFORE a
+    /// toil's initAction runs — after a successful strip the target is bare, so the condition fires
+    /// first and an appended toil could never run (worse, it would flip every strip job from Succeeded
+    /// to Incompletable, suppressing vanilla's "Stripped" completion tale). A finish action runs on job
+    /// end regardless of toil flow; gating on JobCondition.Succeeded keeps the re-strip to genuinely
+    /// completed strips. The postfix is deliberately EAGER (no yield): the finish action must register
+    /// when MakeNewToils is called, not lazily on first enumeration of the toils.
     /// </summary>
     [HarmonyPatch(typeof(JobDriver_Strip), "MakeNewToils")]
     public static class Patch_JobDriver_Strip_HaulAfter
     {
         static IEnumerable<Toil> Postfix(IEnumerable<Toil> toils, JobDriver_Strip __instance)
         {
-            foreach (var t in toils)
-                yield return t;
-            // This toil only runs when the strip job completed (a failed/interrupted job never reaches
-            // appended toils), so the re-strip is queued exactly once per successful strip.
-            var followUp = ToilMaker.MakeToil("HD_Strip_QueueReStrip");
-            followUp.initAction = delegate
+            try
             {
-                try
+                __instance.AddFinishAction(cond =>
                 {
-                    CorpseStripper.QueueReStripIfNeeded(followUp.actor, __instance.job?.targetA.Thing);
-                }
-                catch (Exception e)
-                {
-                    Log.WarningOnce("[Hauler's Dream] re-strip follow-up failed: " + e, 0x525354);
-                }
-            };
-            followUp.defaultCompleteMode = ToilCompleteMode.Instant;
-            yield return followUp;
+                    try
+                    {
+                        if (cond == JobCondition.Succeeded)
+                            CorpseStripper.QueueReStripIfNeeded(__instance.pawn, __instance.job?.targetA.Thing);
+                    }
+                    catch (Exception e)
+                    {
+                        Log.WarningOnce("[Hauler's Dream] re-strip follow-up failed: " + e, 0x525354);
+                    }
+                });
+            }
+            catch (Exception e)
+            {
+                Log.WarningOnce("[Hauler's Dream] re-strip follow-up failed: " + e, 0x525354);
+            }
+            return toils; // toils themselves are untouched — vanilla's strip runs exactly as shipped
         }
     }
 
@@ -125,6 +136,10 @@ namespace HaulersDream
             if (s == null || s.autoStripMode == AutoStripMode.Off)
                 return;
             if (hauler == null || corpse == null || !corpse.Spawned || hauler.Map == null || corpse.Map != hauler.Map)
+                return;
+            // On a map the mod is configured to leave alone, don't strip: the unload side honors the same
+            // setting, so the scooped loot would just strand in the hauler's inventory until it gets home.
+            if (corpse.Map != null && !s.enableOnNonHomeMaps && !corpse.Map.IsPlayerHome)
                 return;
             if (hauler.Faction != Faction.OfPlayerSilentFail)
                 return;
@@ -217,7 +232,9 @@ namespace HaulersDream
                     if (!inner.Destroyed && inner.apparel.IsLocked(ap))
                         continue;
                     bool tainted = ap.WornByCorpse && ap.def.apparel != null && ap.def.apparel.careIfWornByCorpse;
-                    var action = StripPolicy.ApparelAction(tainted, ap.def.smeltable,
+                    // Thing.Smeltable, not def.smeltable: the instance check also excludes relics and
+                    // non-smeltable stuff, matching what a smelter would actually accept.
+                    var action = StripPolicy.ApparelAction(tainted, ap.Smeltable,
                         s.taintedSmeltablePolicy, s.taintedNonSmeltablePolicy);
                     if (action == TaintedApparelPolicy.LeaveOnCorpse)
                         continue; // stays on the body, goes wherever the body goes
@@ -228,6 +245,13 @@ namespace HaulersDream
                     {
                         case TaintedApparelPolicy.Destroy:
                             // The mod's one deliberate destruction — explicit player opt-in, tainted only.
+                            // Never quest-tagged or relic pieces, though (a failed quest / an irreplaceable
+                            // relic is too steep a price for a policy default): treat those as Take.
+                            if (!droppedAp.questTags.NullOrEmpty() || droppedAp.IsRelic())
+                            {
+                                loot.Add(droppedAp);
+                                break;
+                            }
                             if (!droppedAp.Destroyed)
                                 droppedAp.Destroy(DestroyMode.Vanish);
                             break;

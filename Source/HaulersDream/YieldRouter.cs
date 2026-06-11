@@ -13,9 +13,11 @@ namespace HaulersDream
     ///  - <see cref="OnTryPlaceThing"/> from a GenPlace.TryPlaceThing prefix (plants, mining,
     ///    deep-drill, animals — all place via GenPlace; decompilation-verified). The responsible
     ///    pawn is inferred from who is working at/adjacent to the placement cell.
-    ///  - <see cref="OnDeconstructLeavings"/> from a GenLeaving.DoLeavingsFor postfix (deconstruct
-    ///    leavings spawn via GenSpawn). Only the leavings produced by THIS call are scooped
-    ///    (snapshot diff), never pre-existing ground items.
+    ///  - <see cref="OnDeconstructLeavings"/> from a GenLeaving.DoLeavingsFor postfix. Deconstruct
+    ///    leavings ALSO travel through the patched GenPlace overload (DoLeavingsFor places them via
+    ///    ThingOwner.TryDrop → GenDrop → GenPlace; only detritus uses GenSpawn), but the prefix never
+    ///    routes them because JobDriver_Deconstruct is deliberately absent from TryGetWorkType. Only
+    ///    the leavings produced by THIS call are scooped (snapshot diff), never pre-existing ground items.
     /// Work types that aren't tracked (surgery, bench work, fermenting, fishing, …) never match, so
     /// they're excluded automatically.
     ///
@@ -166,12 +168,18 @@ namespace HaulersDream
 
         /// <summary>Scoop only the leavings that appeared in <paramref name="area"/> (not in <paramref name="before"/>).</summary>
         public static void OnDeconstructLeavings(CellRect area, Map map, HashSet<Thing> before)
+            => OnDeconstructLeavings(area, map, before, null);
+
+        /// <summary>Scoop only the leavings that appeared in <paramref name="area"/> (not in <paramref name="before"/>).
+        /// <paramref name="diedThing"/> is DoLeavingsFor's subject — it pins the credit on the pawn whose
+        /// job actually targets it, instead of any adjacent deconstructor.</summary>
+        public static void OnDeconstructLeavings(CellRect area, Map map, HashSet<Thing> before, Thing diedThing)
         {
             var s = HaulersDreamMod.Settings;
             if (s == null || !s.haulDeconstruct || map == null)
                 return;
 
-            var pawn = FindDeconstructor(area, map);
+            var pawn = FindDeconstructor(area, map, diedThing);
             if (pawn == null)
                 return;
 
@@ -319,8 +327,9 @@ namespace HaulersDream
             return null;
         }
 
-        private static Pawn FindDeconstructor(CellRect area, Map map)
+        private static Pawn FindDeconstructor(CellRect area, Map map, Thing diedThing)
         {
+            Pawn fallback = null;
             foreach (var c in area.ExpandedBy(1).Cells)
             {
                 if (!c.InBounds(map))
@@ -328,15 +337,24 @@ namespace HaulersDream
                 var things = map.thingGrid.ThingsListAtFast(c);
                 for (int j = 0; j < things.Count; j++)
                 {
-                    if (things[j] is Pawn p && IsCandidate(p) && p.jobs?.curDriver is JobDriver_Deconstruct)
+                    if (!(things[j] is Pawn p) || !IsCandidate(p) || !(p.jobs?.curDriver is JobDriver_Deconstruct))
+                        continue;
+                    // PREFER the pawn whose job actually targets the died thing — two pawns deconstructing
+                    // side by side must not mis-credit each other's leavings to whoever scans first.
+                    if (diedThing != null && p.CurJob?.targetA.Thing == diedThing)
                         return p;
+                    if (fallback == null)
+                        fallback = p; // first-found scan, kept for when no job-target match exists
                 }
             }
-            return null;
+            return fallback;
         }
 
         private static bool TryGetWorkType(JobDriver driver, out HaulSourceType type)
         {
+            // GUARD: never add JobDriver_Deconstruct here — its leavings also flow through the patched
+            // GenPlace overload, so the prefix would consume them AND the DoLeavingsFor postfix would
+            // scoop them: every leaving double-processed.
             switch (driver)
             {
                 case JobDriver_PlantWork _: type = HaulSourceType.Harvest; return true;
@@ -358,7 +376,10 @@ namespace HaulersDream
                 return false;
             if (!IsEligible(p))
                 return false;
-            if (p.Map != null && !HaulersDreamMod.Settings.enableOnNonHomeMaps && !p.Map.IsPlayerHome)
+            var s = HaulersDreamMod.Settings;
+            if (s == null)
+                return false;
+            if (p.Map != null && !s.enableOnNonHomeMaps && !p.Map.IsPlayerHome)
                 return false;
             return p.GetComp<CompHauledToInventory>() != null;
         }
@@ -368,11 +389,16 @@ namespace HaulersDream
             if (p?.RaceProps == null)
                 return false;
             var s = HaulersDreamMod.Settings;
+            if (s == null)
+                return false;
             return EligibilityPolicy.IsEligible(
                 isMechanoid: p.RaceProps.IsMechanoid,
                 isHumanlike: p.RaceProps.Humanlike,
                 isDrafted: p.Drafted,
-                incapableOfHauling: p.WorkTagIsDisabled(WorkTags.Hauling),
+                // Type-level, not WorkTags.Hauling: "incapable of dumb labor" disables via
+                // ManualDumb/Commoner without setting the Hauling tag, and the type check also
+                // composes with the F23 all-pawns-can-haul override.
+                incapableOfHauling: p.WorkTypeIsDisabled(WorkTypeDefOf.Hauling),
                 allowMechanoids: s.allowMechanoids,
                 pauseWhileDrafted: s.pauseWhileDrafted,
                 allowIncapable: s.allowIncapable);

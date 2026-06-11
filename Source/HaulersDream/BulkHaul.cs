@@ -95,10 +95,27 @@ namespace HaulersDream
             if (forced)
                 key = ~key; // forced and automatic plans differ (the trigger) — separate cache lines
             if (planCache.TryGetValue(key, out var cached))
-                return cached;
+            {
+                // The cache holds LIVE Job instances, and vanilla's JobMaker.ReturnToPool can recycle one
+                // same-tick: a pooled-but-unreused job has def == null; a recycled one carries a foreign
+                // def/target — both invalidate the entry (rebuild below). Cached nulls (negative results,
+                // the common case on a scan) stay served as-is.
+                if (cached == null || (cached.def == HaulersDreamDefOf.HaulersDream_BulkHaul && cached.targetA.Thing == primary))
+                    return cached;
+                planCache.Remove(key);
+            }
             var plan = BuildBulkJob(pawn, primary, vanillaJob, forced);
             planCache[key] = plan;
             return plan;
+        }
+
+        /// <summary>Drop every cached plan and reset the tick stamp. Called on game load (FinalizeInit):
+        /// the statics survive a quickload, and an equal tick number would otherwise serve stale
+        /// cross-session Job/Thing instances.</summary>
+        internal static void ClearPlanCache()
+        {
+            planCache.Clear();
+            cacheTick = -1;
         }
 
         private static Job BuildBulkJob(Pawn pawn, Thing primary, Job vanillaJob, bool forced)
@@ -109,11 +126,26 @@ namespace HaulersDream
             var map = pawn?.Map;
             if (s == null || !s.bulkHaul || map == null || primary == null || !primary.Spawned)
                 return null;
+            // Same map gate as YieldRouter.IsCandidate: with the mod disabled on non-home maps a sweep must
+            // not fire there either — the driver's finish unload is forced:true and bypasses the checker's gate.
+            if (!s.enableOnNonHomeMaps && !map.IsPlayerHome)
+                return null;
             if (pawn.Faction != Faction.OfPlayerSilentFail || pawn.IsQuestLodger())
                 return null;
             if (pawn.RaceProps != null && pawn.RaceProps.IsMechanoid && !s.allowMechanoids)
                 return null;
             if (pawn.GetComp<CompHauledToInventory>() == null || pawn.inventory == null)
+                return null;
+
+            var storeCell = vanillaJob.targetB.Cell;
+            float searchRadius = Math.Max(MinSearchRadius,
+                (storeCell - primary.Position).LengthHorizontal * SearchRangeFraction);
+
+            // The finer-control trigger: a forced single order stays single under SecondTasked. (The queue
+            // scan only matters — and only runs — for forced orders; automatic hauls always sweep.) Checked
+            // BEFORE any mass/CE math so a rejected probe never forces a CE inventory recompute.
+            bool secondTasked = forced && SecondTaskedNearby(pawn, primary, searchRadius);
+            if (!BulkHaulPolicy.TriggerSatisfied(s.bulkHaulTrigger, forced, secondTasked))
                 return null;
 
             // The worth-it mass ceiling (smart-overload break-even; 100% under strict/off; ∞ at "no slowdown").
@@ -134,16 +166,6 @@ namespace HaulersDream
             if (primaryBulk > 0f)
                 primaryTake = Math.Min(primaryTake, (int)Math.Floor(bulkRoom / primaryBulk));
             if (primaryTake <= 0)
-                return null;
-
-            var storeCell = vanillaJob.targetB.Cell;
-            float searchRadius = Math.Max(MinSearchRadius,
-                (storeCell - primary.Position).LengthHorizontal * SearchRangeFraction);
-
-            // The finer-control trigger: a forced single order stays single under SecondTasked. (The queue
-            // scan only matters — and only runs — for forced orders; automatic hauls always sweep.)
-            bool secondTasked = forced && SecondTaskedNearby(pawn, primary, searchRadius);
-            if (!BulkHaulPolicy.TriggerSatisfied(s.bulkHaulTrigger, forced, secondTasked))
                 return null;
 
             running += primaryTake * primaryUnit;
@@ -180,7 +202,8 @@ namespace HaulersDream
             for (int i = 0; i < things.Count; i++)
                 job.targetQueueB.Add(things[i]);
             job.count = 1; // sentinel: Job.count defaults to -1, which reads as "broken" in several vanilla checks
-            HDLog.Dbg($"BulkHaul: {pawn} sweeping {things.Count} stacks (~{running:0.#}kg / ceiling {(float.IsPositiveInfinity(ceiling) ? -1 : ceiling):0.#}kg, forced={forced}).");
+            if (s.verboseLogging) // Dbg re-checks, but don't build the interpolated string on every silent success
+                HDLog.Dbg($"BulkHaul: {pawn} sweeping {things.Count} stacks (~{running:0.#}kg / ceiling {(float.IsPositiveInfinity(ceiling) ? -1 : ceiling):0.#}kg, forced={forced}).");
             return job;
         }
 
@@ -273,6 +296,11 @@ namespace HaulersDream
         private static bool IsNearbyHaulOrder(Job j, Thing primary, float radiusSq)
         {
             if (j == null)
+                return false;
+            // Only a player ORDER counts — the pawn's current AUTOMATIC haul must not satisfy "a second
+            // tasked order". Vanilla TryTakeOrderedJob sets playerForced=true BEFORE queueing
+            // (decompile-verified), so shift-queued orders still pass.
+            if (!j.playerForced)
                 return false;
             if (j.def != JobDefOf.HaulToCell && j.def != JobDefOf.HaulToContainer
                 && j.def != HaulersDreamDefOf.HaulersDream_BulkHaul)

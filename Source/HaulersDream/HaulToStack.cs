@@ -34,8 +34,12 @@ namespace HaulersDream
     /// <c>IsGoodStoreCell</c> (via CanReserveNew) hide that cell from every other hauler — the classic
     /// "ten haulers spread one item type across ten cells". For STORAGE hauls only (haulMode
     /// ToCellStorage; ritual/non-storage cell hauls keep vanilla reservations), the cell reservation is
-    /// skipped. Races resolve by vanilla's own machinery: the goto toil fails the job when the cell stops
-    /// being valid storage mid-walk, and PlaceHauledThingInCell's storage mode re-targets any remainder.
+    /// skipped. Races resolve by vanilla's own machinery, three ways: the goto toil fails the job while
+    /// the pawn is still walking to the item (nothing picked up yet); CarryHauledThingToCell's own fail
+    /// condition (ToCellStorage + cell no longer valid storage) ends the job Incompletable mid-carry,
+    /// where CleanupCurrentJob floor-drops the full carried stack at the pawn's feet — it gets re-hauled
+    /// (bounded churn, never loss); and PlaceHauledThingInCell's storage mode re-targets any remainder
+    /// on arrival.
     /// </summary>
     [HarmonyPatch(typeof(StoreUtility), nameof(StoreUtility.TryFindBestBetterStoreCellFor))]
     public static class Patch_TryFindBestBetterStoreCellFor_HaulToStack
@@ -89,9 +93,13 @@ namespace HaulersDream
     {
         // Per-tick memo: the work scan probes HasJobOnThing (= JobOnThing != null) per candidate, and each
         // probe runs the full vanilla storage search INCLUDING this refinement — same lesson as the
-        // bulk-haul planner. Key = (thing, vanilla's chosen cell); null/Invalid results cached too.
+        // bulk-haul planner. Key = (thing, CARRIER, vanilla's chosen cell); null/Invalid results cached
+        // too. The carrier is part of the key because IsGoodStoreCell validates per CARRIER (allowed
+        // area, its own reservations, reachability) — serving one pawn's cell to another hands out a job
+        // that fails synchronously and re-scans the same tick ("started 10 jobs in one tick").
         private static int cacheTick = -1;
-        private static readonly Dictionary<long, IntVec3> cellCache = new Dictionary<long, IntVec3>();
+        private static readonly Dictionary<(int thingId, int carrierId, int cellIdx), IntVec3> cellCache
+            = new Dictionary<(int thingId, int carrierId, int cellIdx), IntVec3>();
 
         /// <summary>The best same-room (or, outside, in-radius) cell holding a partial stack
         /// <paramref name="t"/> can merge into, or Invalid to keep vanilla's pick. PURE — no reservations,
@@ -104,9 +112,14 @@ namespace HaulersDream
                 cellCache.Clear();
                 cacheTick = tick;
             }
-            long key = ((long)t.thingIDNumber << 32) | (uint)map.cellIndices.CellToIndex(vanillaCell);
+            var key = (t.thingIDNumber, carrier.thingIDNumber, map.cellIndices.CellToIndex(vanillaCell));
             if (cellCache.TryGetValue(key, out var cached))
-                return cached;
+            {
+                // Belt and braces: even a same-carrier hit can go stale within the tick (an earlier job
+                // this tick reserved the thing or filled the cell) — re-validate before serving it.
+                if (!cached.IsValid || StoreUtility.IsGoodStoreCell(cached, map, t, carrier, faction))
+                    return cached;
+            }
             var result = FindStackCellUncached(t, carrier, map, faction, vanillaCell);
             cellCache[key] = result;
             return result;
@@ -132,29 +145,15 @@ namespace HaulersDream
             float bestDistSq = float.MaxValue;
             int scanned = 0;
 
-            // Equal-priority groups only: anything higher either rejected the thing or had no good cell
-            // (else vanilla would have chosen it), anything lower would silently DOWNGRADE the storage.
-            var groups = map.haulDestinationManager.AllGroupsListInPriorityOrder;
-            for (int g = 0; g < groups.Count; g++)
+            // One group's cells; returns false when the scan budget runs out (the caller stops scanning).
+            bool ScanGroup(SlotGroup group)
             {
-                var group = groups[g];
-                var priority = group.Settings.Priority;
-                if ((int)priority > (int)chosenPriority)
-                    continue;
-                if ((int)priority < (int)chosenPriority)
-                    break; // list is priority-sorted
-                if (group.parent is Thing parentThing && parentThing.Faction != faction)
-                    continue;
-                if (!group.parent.HaulDestinationEnabled || !group.Settings.AllowedToAccept(t))
-                    continue;
-
                 var cells = group.CellsList;
                 for (int i = 0; i < cells.Count; i++)
                 {
-                    if (++scanned > HaulToStackPolicy.MaxCellsScanned)
-                        return best; // huge storage: return whatever we have rather than stall the scan
                     var cell = cells[i];
-                    // Cheap scope filters first; the expensive validity check runs only on real candidates.
+                    // Cheap scope filters first — and FREE: out-of-scope cells never touch the budget, so
+                    // a big colony's irrelevant groups can't exhaust it before the relevant one is reached.
                     if (radiusScan)
                     {
                         if ((cell - vanillaCell).LengthHorizontalSquared > HaulToStackPolicy.OutsideScanRadiusSquared)
@@ -164,6 +163,8 @@ namespace HaulersDream
                     {
                         continue;
                     }
+                    if (++scanned > HaulToStackPolicy.MaxCellsScanned)
+                        return false; // huge storage: keep whatever we have rather than stall the scan
                     float distSq = (cell - origin).LengthHorizontalSquared;
                     if (best.IsValid && !HaulToStackPolicy.IsBetter(true, distSq, true, bestDistSq))
                         continue;
@@ -175,6 +176,35 @@ namespace HaulersDream
                         continue;
                     best = cell;
                     bestDistSq = distSq;
+                }
+                return true;
+            }
+
+            // The vanilla-chosen cell's OWN group first — the partial stack is most likely right there,
+            // so it gets the budget before any other group. (Vanilla just chose a cell in it, so
+            // enabled/accepts hold by construction; IsGoodStoreCell still gates every candidate.)
+            if (ScanGroup(chosenGroup))
+            {
+                // Then the remaining equal-priority groups: anything higher either rejected the thing or
+                // had no good cell (else vanilla would have chosen it), anything lower would silently
+                // DOWNGRADE the storage.
+                var groups = map.haulDestinationManager.AllGroupsListInPriorityOrder;
+                for (int g = 0; g < groups.Count; g++)
+                {
+                    var group = groups[g];
+                    if (group == chosenGroup)
+                        continue; // already scanned first
+                    var priority = group.Settings.Priority;
+                    if ((int)priority > (int)chosenPriority)
+                        continue;
+                    if ((int)priority < (int)chosenPriority)
+                        break; // list is priority-sorted
+                    if (group.parent is Thing parentThing && parentThing.Faction != faction)
+                        continue;
+                    if (!group.parent.HaulDestinationEnabled || !group.Settings.AllowedToAccept(t))
+                        continue;
+                    if (!ScanGroup(group))
+                        break;
                 }
             }
             return best;

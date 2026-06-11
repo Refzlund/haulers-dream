@@ -122,6 +122,12 @@ namespace HaulersDream
                 if (comp != null)
                     comp.lastInterceptedTick = Find.TickManager?.TicksGame ?? 0;
 
+                // The reservation on the hauler PAWN was only the single-claimant mutex — release it the
+                // moment the handoff is done (using the `carrier` ref captured before re-pointing), so a
+                // downed hauler can be rescued while we're still walking the delivery. ReservedBy guard:
+                // Release error-logs when no matching reservation exists.
+                if (pawn.Map.reservationManager.ReservedBy(carrier, pawn, job))
+                    pawn.Map.reservationManager.Release(carrier, pawn, job);
                 job.SetTarget(HaulerInd, moved); // we now carry `moved`; A is no longer the hauler
             };
             handoff.defaultCompleteMode = ToilCompleteMode.Instant;
@@ -131,6 +137,10 @@ namespace HaulersDream
             yield return (Needer is Blueprint || Needer is Frame)
                 ? Toils_Goto.GotoBuild(NeederInd)
                 : Toils_Goto.GotoThing(NeederInd, PathEndMode.Touch);
+            // A BLUEPRINT needer is not a container (only Frame has the resource ThingOwner) — convert
+            // blueprint→frame before the deposit, exactly like vanilla JobDriver_HaulToContainer's toil
+            // order (decompile-verified). Without it the deposit errors and transfers nothing.
+            yield return Toils_Construct.MakeSolidThingFromBlueprintIfNecessary(NeederInd, PrimaryNeederInd);
             yield return Toils_Haul.DepositHauledThingInContainer(NeederInd, PrimaryNeederInd);
         }
     }

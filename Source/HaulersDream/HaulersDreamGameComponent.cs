@@ -22,11 +22,23 @@ namespace HaulersDream
 
         public HaulersDreamGameComponent(Game game) { }
 
+        public override void FinalizeInit()
+        {
+            base.FinalizeInit();
+            // BulkHaul's per-tick plan cache is STATIC state, so it survives a quickload into the freshly
+            // loaded game — where its cached plans reference the previous game's (now-stale) things. Clear it
+            // whenever a game finishes initialising (new game and load alike).
+            BulkHaul.ClearPlanCache();
+        }
+
         /// <summary>Register (or replace, per pawn) a deferred-reveal tracker for a vein route that ran into fog.</summary>
         public void RegisterVeinTracker(VeinRevealTracker tracker)
         {
             if (tracker?.pawn == null)
                 return;
+            // Bind the tracker to the map the route was planned on (registration runs synchronously right
+            // after queueing, so the pawn is still there) — TryExtend drops it if the pawn changes maps.
+            tracker.mapId = tracker.pawn.Map?.uniqueID ?? -1;
             if (veinTrackers == null)
                 veinTrackers = new List<VeinRevealTracker>();
             veinTrackers.RemoveAll(t => t.pawn == tracker.pawn); // a new route supersedes the pawn's old one
@@ -99,6 +111,11 @@ namespace HaulersDream
 
         private void ProcessVeinTrackers()
         {
+            // Master-switch gate (the F25 idiom): with the route planner off, in-flight trackers must not keep
+            // designating/queueing newly revealed cells. The trackers are kept — re-enabling resumes them.
+            var s = HaulersDreamMod.Settings;
+            if (s == null || !s.planRoutes)
+                return;
             for (int i = veinTrackers.Count - 1; i >= 0; i--)
             {
                 bool keep;
@@ -115,6 +132,12 @@ namespace HaulersDream
         {
             var pawn = tr?.pawn;
             if (pawn == null || pawn.Dead || !pawn.Spawned || pawn.Map == null || tr.veinDef == null || tr.included == null)
+                return false;
+            // Map identity: the tracker's seed/lastCell/included are coordinates ON THE MAP the route was
+            // planned on. A pawn that has changed maps since (caravan, drop pod, …) must never re-flood the
+            // NEW map from them — the final-attempt branch below could otherwise designate + queue mining
+            // there. Drop the tracker (matching the self-drop idiom; -1 = a pre-fix save, also dropped).
+            if (pawn.Map.uniqueID != tr.mapId)
                 return false;
             if (tr.included.Count >= tr.cap)
                 return false; // route already at its chosen Amount — never grow past it

@@ -18,8 +18,10 @@ namespace HaulersDream
     /// (gear picked up, settings changed) can't over-load past the worth-it point.
     ///
     /// Stacks are added WITHOUT merging into existing inventory stacks: tagging a merged stack would also
-    /// flag the pawn's own pre-existing stock (a packed lunch of the same meal def) for unload. A separate
-    /// entry keeps the sweep's stock exactly distinguishable; the unload pass consolidates at placement.
+    /// flag the pawn's own pre-existing stock (a packed lunch of the same meal def) for unload. The separate
+    /// entry keeps the sweep's stock apart at pickup time — but the comp's def-level self-heal can still
+    /// re-tag same-def personal stacks later (known, accepted), so the separation is best-effort rather than
+    /// a guarantee; the unload pass consolidates at placement.
     /// </summary>
     public class JobDriver_BulkHaul : JobDriver
     {
@@ -112,6 +114,10 @@ namespace HaulersDream
                 var counts = job.countQueue;
                 int planned = counts != null && loadIndex < counts.Count ? counts[loadIndex] : 0;
                 if (t == null || !t.Spawned || planned <= 0) { loadIndex++; JumpToToil(loadDecide); return; }
+                // Forbiddance re-check at pickup time: the player may have forbidden the stack mid-walk
+                // (and the unload pass would later erase the forbid flag). Same exemption as loadDecide:
+                // the playerForced primary may be forbidden — that's what forcing means.
+                if (t.IsForbidden(pawn) && !(loadIndex == 0 && job.playerForced)) { loadIndex++; JumpToToil(loadDecide); return; }
 
                 // Re-clamp the planned count to the LIVE remaining room (mass may have shifted since planning).
                 int count = BulkHaulPolicy.CountWithinCeiling(CeilingKgLive(HaulersDreamMod.Settings),

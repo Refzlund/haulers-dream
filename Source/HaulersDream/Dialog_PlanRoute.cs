@@ -36,9 +36,9 @@ namespace HaulersDream
         private const int NoLimitStep = 500;    // max-travel slider top step; at/above this = "no limit"
         private const int RadiusMax = 30;
 
-        // Build tag shown in the dialog title + the diagnostic log, so a "still broken" report can be told apart
-        // from a stale DLL (mod C# only reloads at game startup — an un-restarted game runs the OLD assembly).
-        // Bump this whenever the route planner's behaviour changes.
+        // Build tag logged with the verbose-gated route diagnostic (see RefreshPlanIfNeeded's HDLog line), so a
+        // "still broken" report can be told apart from a stale DLL (mod C# only reloads at game startup — an
+        // un-restarted game runs the OLD assembly). Bump this whenever the route planner's behaviour changes.
         public const string BuildTag = "F12t";
 
         private RouteLegs cachedLegs;   // expensive (pathfound) part, recomputed only when the selection changes
@@ -55,6 +55,11 @@ namespace HaulersDream
         // (live Things can't be portably persisted), so not saved with the per-def prefs.
         private readonly List<Thing> picked = new List<Thing>();
         private bool pickingMode;        // the picker tool is armed: clicking a same-kind target on the map adds it
+        // Arm/re-arm the targeter ONLY when we asked for it (the picker button, or right after a consumed
+        // pick — for multi-pick). A targeter found stopped WITHOUT this request means the player cancelled
+        // (vanilla's Targeter consumes ESC/right-click itself), so picking must EXIT, not instantly re-arm —
+        // re-arming every frame locked the player in the picker until "Done picking".
+        private bool rearmRequested;
         private Vector2 pickedScroll;
         private const float PickedRowH = 26f;
 
@@ -143,12 +148,19 @@ namespace HaulersDream
         public override void DoWindowContents(Rect inRect)
         {
             const float btnH = 36f;
-            // Re-arm the pickers after each one-shot pick (RimWorld's Targeter fires its action once then stops),
-            // so the player can click several targets / rooms in a row without re-pressing the button.
+            // (Re-)arm the pickers only on request (button press / right after a consumed pick — RimWorld's
+            // Targeter fires its action once then stops, so multi-pick needs a re-arm). A stop WITHOUT a
+            // pending request is the player cancelling via ESC/right-click: exit picking cleanly.
             if (pickingMode && !Find.Targeter.IsTargeting)
-                BeginPicking();
+            {
+                if (rearmRequested) { rearmRequested = false; BeginPicking(); }
+                else pickingMode = false;
+            }
             if (pickingRoom && !Find.Targeter.IsTargeting)
-                BeginRoomPicking();
+            {
+                if (rearmRequested) { rearmRequested = false; BeginRoomPicking(); }
+                else pickingRoom = false;
+            }
             var body = new Rect(inRect.x, inRect.y, inRect.width, inRect.height - btnH - 8f);
 
             var l = new Listing_Standard();
@@ -390,13 +402,14 @@ namespace HaulersDream
                 if (pickingMode)
                     TogglePicking(); // one targeter — arming the room picker disarms the must-include picker
                 pickingRoom = true;
-                BeginRoomPicking();
+                rearmRequested = true; // armed by DoWindowContents' targeter check
             }
         }
 
         private void StopRoomPicking()
         {
             pickingRoom = false;
+            rearmRequested = false;
             if (Find.Targeter.IsTargeting)
                 Find.Targeter.StopTargeting();
         }
@@ -419,6 +432,10 @@ namespace HaulersDream
 
         private void OnRoomPicked(LocalTargetInfo target)
         {
+            // The Targeter fires once then stops; request a re-arm so DoWindowContents keeps the picker armed
+            // (multi-pick) — set on EVERY consumed pick, even a duplicate/invalid one (ESC/right-click never
+            // invokes this action, so a stop WITHOUT the request still reads as the player cancelling).
+            rearmRequested = true;
             var map = pawn?.Map;
             if (map == null || !target.Cell.IsValid || !target.Cell.InBounds(map))
                 return;
@@ -434,7 +451,6 @@ namespace HaulersDream
                     return;
             }
             roomAnchors.Add(target.Cell);
-            // The Targeter fires once then stops; DoWindowContents re-arms it while pickingRoom (multi-pick).
         }
 
         // Amount slider (Radius + Vein): 1 .. amountMax, then one more step = "All".
@@ -615,6 +631,7 @@ namespace HaulersDream
             if (pickingMode)
             {
                 pickingMode = false;
+                rearmRequested = false;
                 if (Find.Targeter.IsTargeting)
                     Find.Targeter.StopTargeting();
             }
@@ -623,7 +640,7 @@ namespace HaulersDream
                 if (pickingRoom)
                     StopRoomPicking(); // one targeter — arming the must-include picker disarms the room picker
                 pickingMode = true;
-                BeginPicking();
+                rearmRequested = true; // armed by DoWindowContents' targeter check
             }
         }
 
@@ -632,9 +649,13 @@ namespace HaulersDream
             var tp = new TargetingParameters
             {
                 canTargetPawns = false,
-                canTargetBuildings = true,  // mineables / blueprints (ThingCategory.Building)
+                canTargetBuildings = true,  // mineables (ThingCategory.Building)
                 canTargetPlants = true,     // harvest / cut plants
-                canTargetItems = false,
+                // canTargetItems is vanilla's CATCH-ALL category branch: blueprints (ThingCategory.Ethereal)
+                // and filth (ThingCategory.Filth) pass ONLY through it — without it the picker silently
+                // no-ops for construction and cleaning kinds. The validator below already constrains picks
+                // to same-kind route targets, so this cannot over-admit.
+                canTargetItems = true,
                 canTargetLocations = false,
                 mapObjectTargetsMustBeAutoAttackable = false, // mineables aren't "auto-attackable" — don't reject them
                 validator = ti => ti.Thing != null
@@ -653,7 +674,9 @@ namespace HaulersDream
             if (thing != null && !picked.Contains(thing)
                 && RouteSelection.IsValidRouteTarget(pawn, clicked, kind, thing))
                 picked.Add(thing);
-            // The Targeter fires once then stops; DoWindowContents re-arms it while pickingMode (multi-pick).
+            // The Targeter fires once then stops; request a re-arm so DoWindowContents keeps the picker
+            // armed for the next pick (multi-pick) — a stop WITHOUT this request is the player cancelling.
+            rearmRequested = true;
         }
 
         private void Execute(bool replace)

@@ -29,7 +29,8 @@ namespace HaulersDream.Core
 
         /// <param name="members">every cell that is part of the vein (the same-kind set).</param>
         /// <param name="seed">the clicked cell; must be in <paramref name="members"/> for a non-empty result.</param>
-        /// <param name="cap">max cells to return; &lt;= 0 means unbounded (the whole connected cluster).</param>
+        /// <param name="cap">max cells to return; 0 = none (empty result); negative = unbounded (the whole
+        /// connected cluster).</param>
         public static List<RouteCell> FloodOrder(HashSet<RouteCell> members, RouteCell seed, int cap)
         {
             var result = new List<RouteCell>();

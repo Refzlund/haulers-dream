@@ -13,6 +13,9 @@ namespace HaulersDream
     {
         public Pawn pawn;
         public ThingDef veinDef;
+        public int mapId = -1;               // Map.uniqueID the route was planned on — the seed/lastCell/included
+                                             // coordinates only mean anything THERE; a pawn that changed maps must
+                                             // never re-flood the new map from them (-1 = unknown, pre-fix save)
         public IntVec3 seed;                 // the clicked cell the vein floods out from
         public int cap;                      // max stops (the chosen Amount); never grow the route past this
         public IntVec3 lastCell;             // the route's current tail cell (must stay the pawn's last task)
@@ -22,6 +25,7 @@ namespace HaulersDream
         {
             Scribe_References.Look(ref pawn, "pawn");
             Scribe_Defs.Look(ref veinDef, "veinDef");
+            Scribe_Values.Look(ref mapId, "mapId", -1);
             Scribe_Values.Look(ref seed, "seed");
             Scribe_Values.Look(ref cap, "cap");
             Scribe_Values.Look(ref lastCell, "lastCell");

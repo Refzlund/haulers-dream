@@ -27,9 +27,10 @@ namespace HaulersDream.Tests
         [Test]
         public void StopsWithinBudget_IsMonotonicWhenExtendingLegs()
         {
-            // RoutePlanner feeds a prefix-stable (nearest-first) leg order, so extending the leg list with more
-            // (farther) stops must NEVER reduce how many fit a fixed budget. This is the pure property that
-            // keeps a planned route from shrinking when the player drags the "stops" slider up.
+            // StopsWithinBudget is a RETAINED UTILITY, not the live slider protection — RoutePlanner.Truncate
+            // trims with RouteBudget.LargestPrefixWithin over RouteBudget's non-decreasing insertion-cost
+            // array. This test pins the pure property the utility still promises: extending a prefix-stable
+            // leg list with more (farther) stops never reduces how many fit a fixed budget.
             var legs8 = new[] { 10f, 12f, 8f, 15f, 9f, 11f, 7f, 13f };
             var legs11 = new[] { 10f, 12f, 8f, 15f, 9f, 11f, 7f, 13f, 20f, 18f, 25f }; // identical prefix + 3 more
             for (float budget = 0f; budget <= 200f; budget += 1f)

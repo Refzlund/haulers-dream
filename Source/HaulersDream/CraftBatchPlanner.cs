@@ -27,6 +27,7 @@ namespace HaulersDream
         public int availabilityReps;  // floor by the scarcest ingredient's reachable stock
         public int massReps;          // floor by what fits in inventory on one pre-load (smart-overload aware)
         public int timeoutReps;       // floor by the wall-clock cap
+        public int billReps = int.MaxValue; // floor by the bill's own remaining repeat count (RepeatCount mode; MaxValue = no bill cap)
         public int resolvedReps;      // final = min of the above
 
         public float massPerRepKg;
@@ -43,6 +44,7 @@ namespace HaulersDream
             {
                 int r = resolvedReps;
                 if (r >= requestedReps) return CraftBatchLimit.None;
+                if (r == billReps) return CraftBatchLimit.BillRepeat;
                 if (r == availabilityReps) return CraftBatchLimit.Resources;
                 if (r == timeoutReps) return CraftBatchLimit.Timeout;
                 // Mass only caps the count in no-overload mode — strict carry weight, slider Off, or Combat
@@ -53,7 +55,7 @@ namespace HaulersDream
         }
     }
 
-    public enum CraftBatchLimit { None, Resources, Mass, Timeout }
+    public enum CraftBatchLimit { None, Resources, Mass, Timeout, BillRepeat }
 
     public static class CraftBatchPlanner
     {
@@ -102,7 +104,10 @@ namespace HaulersDream
             // (an unpatched modded race) would strand them there with no unload pass to reclaim them.
             if (pawn.GetComp<CompHauledToInventory>() == null)
                 return false;
-            try { return bill.PawnAllowedToStartAnew(pawn); }
+            // A suspended bill — or one whose repeat counter is spent / pause-on-satisfied is holding it
+            // (ShouldDoNow false) — is orderable for 0 reps: the job gates every rep on bill.ShouldDoNow(),
+            // so it would gather ingredients and craft nothing. Never offer it.
+            try { return !bill.suspended && bill.ShouldDoNow() && bill.PawnAllowedToStartAnew(pawn); }
             catch { return false; }
         }
 
@@ -139,6 +144,19 @@ namespace HaulersDream
                 plan.blockReason = "HaulersDream.PlanCraft.BlockUnsupported".Translate();
                 return plan;
             }
+
+            // The bill's own runtime state gates + caps the batch (vanilla defaults: repeatMode = RepeatCount,
+            // repeatCount = 1). The job's per-rep finish calls bill.Notify_IterationCompleted (which decrements
+            // repeatCount) and gates every rep on bill.ShouldDoNow() — so planning past the bill's remaining
+            // count would pre-load ingredients the job then refuses to craft (gather 10 reps' worth, craft 1,
+            // unload 9). A suspended or pause-satisfied (TargetCount) bill is orderable for 0 reps.
+            if (bill.suspended || !bill.ShouldDoNow())
+            {
+                plan.blockReason = "HaulersDream.PlanCraft.BlockBillNotActive".Translate();
+                return plan;
+            }
+            if (bill is Bill_Production bp && bp.repeatMode == BillRepeatModeDefOf.RepeatCount)
+                plan.billReps = bp.repeatCount;
 
             var recipe = bill.recipe;
             float massPerRep = 0f;
@@ -208,7 +226,9 @@ namespace HaulersDream
             float maxCap = MassUtility.Capacity(pawn);
             float baseCap = CarryMath.EffectiveCapacity(maxCap, settings?.carryLimitFraction ?? 1f);
             float curMass = MassUtility.GearAndInventoryMass(pawn);
-            int level = settings != null ? OverloadGate.EffectiveLevel(settings) : OverloadTuning.FairLevel;
+            // Null settings means Off everywhere else (OverloadGate.NoOverload(null) is true) — never fall
+            // back to Fair-level overloading here.
+            int level = settings != null ? OverloadGate.EffectiveLevel(settings) : OverloadTuning.OffLevel;
 
             plan.massReps = CraftBatchMath.RepsByMass(level, maxCap, baseCap, curMass, massPerRep, plan.requestedReps);
             // Combat Extended adds a BULK dimension the weight math can't see — without this clamp the dialog
@@ -233,19 +253,23 @@ namespace HaulersDream
             // well-stocked batch read "not enough resources".
             int massCap = (settings != null && OverloadGate.NoOverload(settings)) ? plan.massReps : int.MaxValue;
             plan.resolvedReps = CraftBatchMath.Resolve(plan.requestedReps, plan.availabilityReps, massCap, plan.timeoutReps);
+            if (plan.billReps < plan.resolvedReps)
+                plan.resolvedReps = plan.billReps; // never plan more reps than the bill itself will run
             plan.feasible = plan.resolvedReps >= 1;
             if (!plan.feasible && plan.blockReason == null)
                 plan.blockReason = "HaulersDream.PlanCraft.BlockNoReps".Translate();
             return plan;
         }
 
-        /// <summary>How many reps the scarcest ingredient alone allows (ignores mass/timeout) — for the slider's max.</summary>
+        /// <summary>How many reps the scarcest ingredient and the bill's own repeat count allow (ignores
+        /// mass/timeout) — for the slider's max.</summary>
         public static int MaxAvailableReps(Pawn pawn, Building_WorkTable bench, Bill bill)
         {
-            // A cheap pass: resolve with a huge requested count and no timeout, read availabilityReps.
+            // A cheap pass: resolve with a huge requested count and no timeout, read the resource + bill caps.
             var p = Resolve(pawn, bench, bill, 9999, 0);
-            if (p.availabilityReps == int.MaxValue) return 9999; // no ingredients limit (shouldn't happen — CanBatch requires ingredients)
-            return Mathf.Max(0, p.availabilityReps);
+            int cap = Mathf.Min(p.availabilityReps, p.billReps);
+            if (cap == int.MaxValue) return 9999; // no limit (shouldn't happen — CanBatch requires ingredients)
+            return Mathf.Max(0, cap);
         }
 
         /// <summary>Units of <paramref name="def"/> the batch can ACTUALLY consume: reachable, non-forbidden,

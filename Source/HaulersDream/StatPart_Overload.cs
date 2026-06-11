@@ -13,7 +13,9 @@ namespace HaulersDream
     ///
     /// Added to the vanilla MoveSpeed StatDef via Patches/MoveSpeed_Overload.xml. Only player-faction
     /// humanlikes carrying past 100% capacity are affected; at/under capacity it is a no-op (matching
-    /// vanilla), and it is inert when the slider is at "no slowdown" (0) or "off".
+    /// vanilla), and it is inert whenever the overload feature stands down — strict carry weight, the
+    /// slider at "no slowdown" (0) or "off", or Combat Extended active (the same matrix as
+    /// <see cref="OverloadGate.NoOverload"/>).
     /// </summary>
     public class StatPart_Overload : StatPart
     {
@@ -34,12 +36,12 @@ namespace HaulersDream
         {
             factor = 1f;
             var s = HaulersDreamMod.Settings;
-            if (s == null || s.overloadLevel <= 0 || OverloadTuning.IsOff(s.overloadLevel))
-                return false; // "no slowdown" or "off" -> no penalty
-            // Combat Extended's MoveSpeed StatWorker applies its OWN encumbrance penalty ON TOP of StatParts
-            // (it calls base.GetValueUnfinalized first — CE-source-verified), so this factor would stack with
-            // CE's and double-punish. Under CE the whole overload feature stands down (OverloadGate.NoOverload),
-            // and CE's encumbrance simulation is the single source of slowdown truth.
+            if (s == null || s.strictCarryWeight || s.overloadLevel <= 0 || OverloadTuning.IsOff(s.overloadLevel))
+                return false; // strict carry weight, "no slowdown" or "off" -> no penalty (mirrors OverloadGate.NoOverload)
+            // Combat Extended's StatWorker_MoveSpeed applies its OWN encumbrance penalty inside
+            // GetValueUnfinalized; vanilla then runs StatParts in StatWorker.FinalizeValue AFTER that — so this
+            // factor would stack with CE's and double-punish. Under CE the whole overload feature stands down
+            // (OverloadGate.NoOverload), and CE's encumbrance simulation is the single source of slowdown truth.
             if (CECompat.IsActive)
                 return false;
             if (!(req.Thing is Pawn pawn) || pawn.Dead || pawn.RaceProps == null || !pawn.RaceProps.Humanlike)

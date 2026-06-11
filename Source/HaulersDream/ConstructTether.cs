@@ -56,19 +56,32 @@ namespace HaulersDream
                 return false; // 0-progress delivery: stop the chain here (livelock guard)
 
             // Blueprints and frames have DIFFERENT deliver scanners — try whichever matches the site's stage.
-            foreach (var scanner in DeliverScanners())
+            // QueueNext only ever runs at the end of a HAUL+BUILD (tether) job, so the scanner re-entry must
+            // carry that intent: with RouteIntent left at None and the global orderedConstructTether OFF, the
+            // conversion would hand back the PLAIN deliver def — whose finish never calls QueueNext — and a
+            // haul+build route would lose its tether from the second material onward.
+            var priorIntent = InventoryConstructDelivery.RouteIntent;
+            try
             {
-                Job next;
-                try { next = scanner.HasJobOnThing(pawn, site, forced: true) ? scanner.JobOnThing(pawn, site, forced: true) : null; }
-                catch { next = null; }
-                if (next == null)
-                    continue;
-                next.playerForced = true;
-                if (next.TryMakePreToilReservations(pawn, false))
+                InventoryConstructDelivery.RouteIntent = ConstructRouteIntent.HaulBuild;
+                foreach (var scanner in DeliverScanners())
                 {
-                    pawn.jobs.jobQueue.EnqueueFirst(next, JobTag.Misc);
-                    return true;
+                    Job next;
+                    try { next = scanner.HasJobOnThing(pawn, site, forced: true) ? scanner.JobOnThing(pawn, site, forced: true) : null; }
+                    catch { next = null; }
+                    if (next == null)
+                        continue;
+                    next.playerForced = true;
+                    if (next.TryMakePreToilReservations(pawn, false))
+                    {
+                        pawn.jobs.jobQueue.EnqueueFirst(next, JobTag.Misc);
+                        return true;
+                    }
                 }
+            }
+            finally
+            {
+                InventoryConstructDelivery.RouteIntent = priorIntent;
             }
             return false;
         }

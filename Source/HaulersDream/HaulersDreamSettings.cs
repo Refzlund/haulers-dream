@@ -209,6 +209,9 @@ namespace HaulersDream
             Scribe_Values.Look(ref routeSelectionMethod, "routeSelectionMethod", RouteSelectionMethod.MostStopsPerTravel);
             Scribe_Values.Look(ref routeDistanceBasis, "routeDistanceBasis", RouteDistanceBasis.StraightLine);
             Scribe_Values.Look(ref routeOrderExactMax, "routeOrderExactMax", RouteOrderPolicy.ExactMax);
+            // A hand-edited config with k ≥ 22 would make the Held-Karp solver allocate gigabytes (2^k·k
+            // arrays) or overflow at k ≥ 31 — clamp on load (RouteOrderPolicy.Order re-clamps as the backstop).
+            routeOrderExactMax = Mathf.Clamp(routeOrderExactMax, 1, 16);
             Scribe_Values.Look(ref craftBatchTimeoutHours, "craftBatchTimeoutHours", 2f);
             Scribe_Collections.Look(ref routePrefsByDef, "routePrefsByDef", LookMode.Value, LookMode.Deep);
             if (Scribe.mode == LoadSaveMode.LoadingVars && routePrefsByDef == null)

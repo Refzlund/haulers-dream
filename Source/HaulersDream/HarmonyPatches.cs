@@ -31,11 +31,15 @@ namespace HaulersDream
     }
 
     /// <summary>
-    /// Yield hook #2: deconstruction leavings spawn via GenSpawn (not GenPlace). We snapshot the
-    /// items in the leavings rect before DoLeavingsFor runs and, afterwards, scoop only the items
-    /// that newly appeared (never pre-existing ground items) into the deconstructing pawn's
-    /// inventory. Positional (__N) injection so it's robust to param names; __state carries the
-    /// snapshot from prefix to postfix.
+    /// Yield hook #2: deconstruction leavings ALSO travel through the patched GenPlace overload
+    /// (DoLeavingsFor places them via ThingOwner.TryDrop → GenDrop → GenPlace; only detritus uses
+    /// GenSpawn) — but the GenPlace prefix never routes them, because JobDriver_Deconstruct is
+    /// deliberately absent from YieldRouter.TryGetWorkType (adding it there would double-process
+    /// every leaving: prefix consume + this postfix's scoop). So this postfix IS the deconstruct
+    /// path: we snapshot the items in the leavings rect before DoLeavingsFor runs and, afterwards,
+    /// scoop only the items that newly appeared (never pre-existing ground items) into the
+    /// deconstructing pawn's inventory. Positional (__N) injection so it's robust to param names;
+    /// __state carries the snapshot from prefix to postfix.
     /// </summary>
     [HarmonyPatch]
     public static class Patch_GenLeaving_DoLeavingsFor
@@ -53,10 +57,10 @@ namespace HaulersDream
                 __state = YieldRouter.SnapshotItems(__3, __1);
         }
 
-        static void Postfix(Map __1, DestroyMode __2, CellRect __3, HashSet<Thing> __state)
+        static void Postfix(Thing __0, Map __1, DestroyMode __2, CellRect __3, HashSet<Thing> __state)
         {
             if (__2 == DestroyMode.Deconstruct && __state != null)
-                YieldRouter.OnDeconstructLeavings(__3, __1, __state);
+                YieldRouter.OnDeconstructLeavings(__3, __1, __state, __0); // __0 = the deconstructed thing
         }
     }
 
