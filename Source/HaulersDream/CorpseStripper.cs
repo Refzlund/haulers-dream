@@ -48,7 +48,8 @@ namespace HaulersDream
             }
             catch (Exception e)
             {
-                Log.WarningOnce("[Hauler's Dream] Auto-strip on haul failed (corpse hauled unstripped): " + e, 0x535452);
+                Log.WarningOnce("[Hauler's Dream] Auto-strip on haul failed (corpse hauled unstripped): " + e,
+                    0x535452 ^ e.GetType().FullName.GetHashCode()); // key per exception type — a second failure mode still reports
             }
         }
     }
@@ -114,7 +115,10 @@ namespace HaulersDream
             // Living pawns only: a corpse can't re-dress, and the gear is already scooped/queued.
             if (!(target is Pawn victim) || victim.Dead || !victim.Spawned)
                 return;
-            if (stripper?.jobs == null || stripper.Map != victim.Map)
+            // Player pawns only — a mod-driven non-player pawn completing a Strip job shouldn't get
+            // follow-up work queued by us.
+            if (stripper?.jobs == null || stripper.Map != victim.Map
+                || stripper.Faction != Faction.OfPlayerSilentFail)
                 return;
             // Deliberately NOT pre-reserved: reserving the victim now would block wardens (feeding,
             // tending) until the re-strip comes up. Reservations are made when the job actually starts,
@@ -141,7 +145,9 @@ namespace HaulersDream
             // setting, so the scooped loot would just strand in the hauler's inventory until it gets home.
             if (corpse.Map != null && !s.enableOnNonHomeMaps && !corpse.Map.IsPlayerHome)
                 return;
-            if (hauler.Faction != Faction.OfPlayerSilentFail)
+            // Quest lodgers excluded like the bulk-haul sweep: their pockets leave with the quest,
+            // so scooped loot could walk off-map before the unload pass runs.
+            if (hauler.Faction != Faction.OfPlayerSilentFail || hauler.IsQuestLodger())
                 return;
             if (hauler.RaceProps == null
                 || (!hauler.RaceProps.Humanlike && !(hauler.RaceProps.IsMechanoid && s.allowMechanoids)))
@@ -186,7 +192,10 @@ namespace HaulersDream
             var inner = corpse.InnerPawn;
             var map = corpse.Map;
             var pos = corpse.PositionHeld;
-            var loot = new List<Thing>();
+            // Each entry remembers what the CORPSE contributed: the drop result can be a pre-existing
+            // ground stack the piece MERGED into (GenPlace rates merge-capable cells "Perfect"), and the
+            // scoop must never take more than the stripped piece — see ScoopLoot.
+            var loot = new List<ThingCount>();
             bool strippedAnything = false;
 
             // EQUIPMENT (weapons) — always loot. Per-piece TryDropEquipment, the same call Pawn.Strip makes.
@@ -195,27 +204,31 @@ namespace HaulersDream
                 var eqList = inner.equipment.AllEquipmentListForReading;
                 for (int i = eqList.Count - 1; i >= 0; i--)
                 {
-                    if (inner.equipment.TryDropEquipment(eqList[i], out var droppedEq, pos, forbid: false)
+                    var eq = eqList[i];
+                    int eqCount = eq.stackCount; // snapshot before the drop — the out param may be a merged stack
+                    if (inner.equipment.TryDropEquipment(eq, out var droppedEq, pos, forbid: false)
                         && droppedEq != null)
                     {
-                        loot.Add(droppedEq);
+                        // Min: a partial absorb returns the smaller remainder — the ctor would clamp
+                        // anyway, but with a per-drop Log.Warning (modded stackable equipment only).
+                        loot.Add(new ThingCount(droppedEq, Math.Min(eqCount, droppedEq.stackCount)));
                         strippedAnything = true;
                     }
                 }
             }
 
-            // INVENTORY (drugs, silver, pack-animal cargo) — always loot.
+            // INVENTORY (drugs, silver, pack-animal cargo) — always loot. The placedAction callback
+            // fires once per LANDING with the exact landed count: a stackable drop can split across
+            // several pre-existing ground stacks (GenPlace's partial-absorb cascade), and crediting the
+            // whole drop to the last landing would let the scoop over-take from that stack.
             var invOwner = inner.inventory?.innerContainer;
             if (invOwner != null)
             {
                 for (int i = invOwner.Count - 1; i >= 0; i--)
                 {
-                    if (invOwner.TryDrop(invOwner[i], pos, map, ThingPlaceMode.Near, out var droppedInv)
-                        && droppedInv != null)
-                    {
-                        loot.Add(droppedInv);
+                    if (invOwner.TryDrop(invOwner[i], pos, map, ThingPlaceMode.Near, out _,
+                            (placed, count) => loot.Add(new ThingCount(placed, count))))
                         strippedAnything = true;
-                    }
                 }
             }
 
@@ -238,9 +251,13 @@ namespace HaulersDream
                         s.taintedSmeltablePolicy, s.taintedNonSmeltablePolicy);
                     if (action == TaintedApparelPolicy.LeaveOnCorpse)
                         continue; // stays on the body, goes wherever the body goes
+                    int apCount = ap.stackCount; // 1 for vanilla apparel; snapshot anyway (modded stackables)
                     if (!inner.apparel.TryDrop(ap, out var droppedAp, pos, forbid: false) || droppedAp == null)
                         continue;
                     strippedAnything = true;
+                    // Min: a partial absorb returns the smaller remainder — the ctor would clamp anyway,
+                    // but with a per-drop Log.Warning (modded stackable apparel only; vanilla is 1).
+                    int apCredit = Math.Min(apCount, droppedAp.stackCount);
                     switch (action)
                     {
                         case TaintedApparelPolicy.Destroy:
@@ -249,17 +266,32 @@ namespace HaulersDream
                             // relic is too steep a price for a policy default): treat those as Take.
                             if (!droppedAp.questTags.NullOrEmpty() || droppedAp.IsRelic())
                             {
-                                loot.Add(droppedAp);
+                                loot.Add(new ThingCount(droppedAp, apCredit));
+                                break;
+                            }
+                            // A MERGED drop (only possible with modded stackable apparel) contains
+                            // pre-existing ground pieces — destroying it would exceed the opt-in's scope.
+                            // Vanilla apparel is stackLimit 1, so this guard never fires there.
+                            if (droppedAp != ap)
+                            {
+                                loot.Add(new ThingCount(droppedAp, apCredit));
                                 break;
                             }
                             if (!droppedAp.Destroyed)
                                 droppedAp.Destroy(DestroyMode.Vanish);
                             break;
                         case TaintedApparelPolicy.DropAndForbid:
+                            // Same merged-drop insurance as Destroy: forbidding a pre-existing ground
+                            // stack the piece merged into would forbid the player's own goods — Take.
+                            if (droppedAp != ap)
+                            {
+                                loot.Add(new ThingCount(droppedAp, apCredit));
+                                break;
+                            }
                             droppedAp.SetForbidden(true, warnOnFail: false);
                             break;
                         default:
-                            loot.Add(droppedAp);
+                            loot.Add(new ThingCount(droppedAp, apCredit));
                             break;
                     }
                 }
@@ -276,13 +308,13 @@ namespace HaulersDream
                 inner.Faction.Notify_MemberStripped(inner, Faction.OfPlayer);
 
             ScoopLoot(hauler, loot, s);
-            HDLog.Dbg($"{hauler} auto-stripped {corpse} on haul: {loot.Count} loot stacks.");
+            HDLog.Dbg($"{hauler} auto-stripped {corpse} on haul: {loot.Count} loot entries.");
         }
 
         // Load the stripped loot into the hauler's inventory (tagged — the unload pass, shared
         // inventories, and CE HoldTracker all pick it up from there). Whatever doesn't fit the
         // carry/CE limits simply stays on the ground as an ordinary haulable.
-        private static void ScoopLoot(Pawn hauler, List<Thing> loot, HaulersDreamSettings s)
+        private static void ScoopLoot(Pawn hauler, List<ThingCount> loot, HaulersDreamSettings s)
         {
             var inv = hauler.inventory?.GetDirectlyHeldThings();
             var comp = hauler.GetComp<CompHauledToInventory>();
@@ -290,10 +322,18 @@ namespace HaulersDream
                 return;
             for (int i = 0; i < loot.Count; i++)
             {
-                var t = loot[i];
+                var t = loot[i].Thing;
                 if (t == null || t.Destroyed || !t.Spawned)
                     continue;
+                // A drop that landed in (or merged into) valid storage is already home — scooping it
+                // would pull stored goods back out (the same guard the yield hook applies).
+                if (t.IsInValidStorage())
+                    continue;
                 int take = OverloadGate.CountToPickUp(hauler, t, s);
+                // Never more than the corpse contributed: the drop may have MERGED into a pre-existing
+                // ground stack (someone else's haul target, possibly reserved) — taking the whole merged
+                // stack would yank player property that was never on the body.
+                take = Math.Min(take, loot[i].Count);
                 if (take <= 0)
                     continue;
                 // SplitOff with count >= stackCount despawns the thing itself (full-stack pickup path).

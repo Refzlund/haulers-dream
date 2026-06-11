@@ -46,9 +46,9 @@
   <HaulersDream.Setting.TaintedSmeltable>Tainted apparel (smeltable): {0}</HaulersDream.Setting.TaintedSmeltable>
   <HaulersDream.Setting.TaintedNonSmeltable>Tainted apparel (non-smeltable): {0}</HaulersDream.Setting.TaintedNonSmeltable>
   <HaulersDream.Setting.TaintedTake>take it (sell, wear, or smelt)</HaulersDream.Setting.TaintedTake>
-  <HaulersDream.Setting.TaintedLeave>leave it on the corpse (it goes wherever the body goes)</HaulersDream.Setting.TaintedLeave>
+  <HaulersDream.Setting.TaintedLeave>leave it on the corpse (cremation burns it with the body; butchering drops it at the bench, as in vanilla)</HaulersDream.Setting.TaintedLeave>
   <HaulersDream.Setting.TaintedForbid>drop it and forbid it</HaulersDream.Setting.TaintedForbid>
-  <HaulersDream.Setting.TaintedDestroy>destroy it on the spot</HaulersDream.Setting.TaintedDestroy>
+  <HaulersDream.Setting.TaintedDestroy>destroy it on the spot (quest items and relics are taken instead, never destroyed)</HaulersDream.Setting.TaintedDestroy>
 
   <HaulersDream.Setting.Overload>Smart overload: {0}</HaulersDream.Setting.Overload>
   <HaulersDream.Setting.OverloadDesc>Pawns carry materials past 100% of their max weight to save trips, but move slower the more they overload — and only do it when fewer trips is genuinely worth the slowdown (including for queued build/craft work). Slide left for lighter slowdown + bigger loads, right for heavier slowdown + smaller loads.</HaulersDream.Setting.OverloadDesc>
