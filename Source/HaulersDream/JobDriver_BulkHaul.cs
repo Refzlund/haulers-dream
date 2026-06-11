@@ -61,8 +61,10 @@ namespace HaulersDream
             // flush it to storage now ("when done THEN unload"). With nothing loaded this is a cheap no-op.
             AddFinishAction(delegate
             {
+                // behindQueuedWork: a player order interrupting this job (TryTakeOrderedJob EnqueueFirst's
+                // the order, then ends us) must not be preempted by the flush — the unload queues BEHIND it.
                 if (loadedAnything)
-                    PawnUnloadChecker.CheckIfShouldUnload(pawn, forced: true);
+                    PawnUnloadChecker.CheckIfShouldUnload(pawn, forced: true, behindQueuedWork: true);
             });
 
             Toil end = Toils_General.Label();
@@ -75,6 +77,10 @@ namespace HaulersDream
                 float ceiling = CeilingKgLive(HaulersDreamMod.Settings);
                 bool roomLeft = float.IsPositiveInfinity(ceiling)
                                 || MassUtility.GearAndInventoryMass(pawn) < ceiling - 0.0001f;
+                // Under CE the live BULK room can fill before weight does — touring the remaining stacks
+                // to take 0 from each is pure walking; end the chain and flush what's loaded.
+                if (roomLeft && CECompat.IsActive && CECompat.AvailableBulk(pawn) <= 0f)
+                    roomLeft = false;
                 while (roomLeft && queue != null && loadIndex < queue.Count)
                 {
                     var t = queue[loadIndex].Thing;
@@ -86,6 +92,12 @@ namespace HaulersDream
                     bool valid = t != null && t.Spawned && forbiddenOk
                                  && !(t.ParentHolder is Pawn_InventoryTracker)
                                  && counts != null && loadIndex < counts.Count && counts[loadIndex] > 0
+                                 // A swept extra that reached its valid BEST storage between plan and pickup
+                                 // (another hauler stored it, or this pawn hand-delivered it as an earlier
+                                 // order) must not be pulled back OUT — skip it. Best (not just valid) storage
+                                 // so upgrade-sweeps from worse storage still work; the primary keeps vanilla's
+                                 // semantics (it's what the work scan / order assigned).
+                                 && (loadIndex == 0 || !t.IsInValidBestStorage())
                                  && (pawn.CanReserve(t) || pawn.Map.reservationManager.ReservedBy(t, pawn, job));
                     if (valid)
                         break;
@@ -118,6 +130,8 @@ namespace HaulersDream
                 // (and the unload pass would later erase the forbid flag). Same exemption as loadDecide:
                 // the playerForced primary may be forbidden — that's what forcing means.
                 if (t.IsForbidden(pawn) && !(loadIndex == 0 && job.playerForced)) { loadIndex++; JumpToToil(loadDecide); return; }
+                // Same re-check as loadDecide: a swept extra stored (best) mid-walk stays in storage.
+                if (loadIndex != 0 && t.IsInValidBestStorage()) { loadIndex++; JumpToToil(loadDecide); return; }
 
                 // Re-clamp the planned count to the LIVE remaining room (mass may have shifted since planning).
                 int count = BulkHaulPolicy.CountWithinCeiling(CeilingKgLive(HaulersDreamMod.Settings),

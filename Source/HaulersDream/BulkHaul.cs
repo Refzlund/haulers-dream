@@ -46,7 +46,8 @@ namespace HaulersDream
             }
             catch (Exception e)
             {
-                Log.WarningOnce($"[Hauler's Dream] Bulk-haul conversion failed for {pawn} hauling {t}: {e}", 0x4B48);
+                // Key varies by exception TYPE so a second, different failure mode still gets one report.
+                Log.WarningOnce($"[Hauler's Dream] Bulk-haul conversion failed for {pawn} hauling {t}: {e}", 0x4B48 ^ (e.GetType().FullName?.GetHashCode() ?? 0));
                 // fail-open: the vanilla single haul stands
             }
         }
@@ -73,8 +74,20 @@ namespace HaulersDream
         // click — each probe would otherwise run the full pool + storage scan below and throw the result
         // away. One generation per tick: same (pawn, primary, forced) within a tick returns the cached plan
         // (null rejections included — those are the common case on a scan).
-        private static int cacheTick = -1;
-        private static readonly Dictionary<long, Job> planCache = new Dictionary<long, Job>();
+        // [ThreadStatic] per this assembly's convention for hook-reachable scratch state (see
+        // CompHauledToInventory.tmpScoopedDefs) — lazily initialized, since ThreadStatic field
+        // initializers only run on the static-ctor thread.
+        [ThreadStatic] private static int cacheTick;
+        [ThreadStatic] private static Dictionary<long, CachedPlan> planCache;
+
+        // The cached Job plus the loadID it carried at insert. JobMaker.ReturnToPool → Job.Clear() sets
+        // loadID = -1 and MakeJob assigns a fresh UniqueIDsManager id (decompile-verified), so a same-tick
+        // pool-recycled instance — even one reused for an identically-shaped job — can never validate.
+        private struct CachedPlan
+        {
+            public Job job;
+            public int loadID;
+        }
 
         /// <summary>
         /// Build the bulk pickup job for hauling <paramref name="primary"/>, or null when the sweep doesn't
@@ -86,26 +99,31 @@ namespace HaulersDream
             if (pawn == null || primary == null)
                 return null;
             int tick = Find.TickManager?.TicksGame ?? -1;
+            var cache = planCache ?? (planCache = new Dictionary<long, CachedPlan>());
             if (tick != cacheTick)
             {
-                planCache.Clear();
+                cache.Clear();
                 cacheTick = tick;
             }
             long key = ((long)pawn.thingIDNumber << 32) | (uint)primary.thingIDNumber;
             if (forced)
                 key = ~key; // forced and automatic plans differ (the trigger) — separate cache lines
-            if (planCache.TryGetValue(key, out var cached))
+            if (cache.TryGetValue(key, out var cached))
             {
                 // The cache holds LIVE Job instances, and vanilla's JobMaker.ReturnToPool can recycle one
-                // same-tick: a pooled-but-unreused job has def == null; a recycled one carries a foreign
-                // def/target — both invalidate the entry (rebuild below). Cached nulls (negative results,
-                // the common case on a scan) stay served as-is.
-                if (cached == null || (cached.def == HaulersDreamDefOf.HaulersDream_BulkHaul && cached.targetA.Thing == primary))
-                    return cached;
-                planCache.Remove(key);
+                // same-tick: the stored loadID is the proof of identity (Clear() resets it to -1, MakeJob
+                // assigns a fresh one — a recycled instance can never match). The def/target check stays as
+                // belt-and-braces. Cached nulls (negative results, the common case on a scan) serve as-is.
+                if (cached.job == null)
+                    return null;
+                if (cached.job.loadID == cached.loadID
+                    && cached.job.def == HaulersDreamDefOf.HaulersDream_BulkHaul
+                    && cached.job.targetA.Thing == primary)
+                    return cached.job;
+                cache.Remove(key);
             }
             var plan = BuildBulkJob(pawn, primary, vanillaJob, forced);
-            planCache[key] = plan;
+            cache[key] = new CachedPlan { job = plan, loadID = plan?.loadID ?? -1 };
             return plan;
         }
 
@@ -114,7 +132,9 @@ namespace HaulersDream
         /// cross-session Job/Thing instances.</summary>
         internal static void ClearPlanCache()
         {
-            planCache.Clear();
+            // Clears the MAIN thread's instance (FinalizeInit runs there) — other threads' caches are
+            // per-tick self-clearing anyway, so a stale entry there dies on its next use.
+            planCache?.Clear();
             cacheTick = -1;
         }
 
@@ -163,7 +183,9 @@ namespace HaulersDream
             int primaryTake = BulkHaulPolicy.CountWithinCeiling(ceiling, running, primaryUnit, primary.stackCount);
             primaryTake = Math.Min(primaryTake, CECompat.MaxFitCount(pawn, primary));
             float primaryBulk = CECompat.BulkPerUnit(primary);
-            if (primaryBulk > 0f)
+            // +∞ bulkRoom = unlimited (no CE, or CE's bulk read failed fail-open); the cast of ∞/x would
+            // be int.MinValue and silently kill every plan — skip the clamp instead.
+            if (primaryBulk > 0f && !float.IsPositiveInfinity(bulkRoom))
                 primaryTake = Math.Min(primaryTake, (int)Math.Floor(bulkRoom / primaryBulk));
             if (primaryTake <= 0)
                 return null;
@@ -257,15 +279,19 @@ namespace HaulersDream
                 // what has no better storage to go to (it would strand in inventory).
                 if (t.IsForbidden(pawn) || claimed.Contains(t))
                     continue;
-                if (!HaulAIUtility.PawnCanAutomaticallyHaulFast(pawn, t, forced: false))
-                    continue;
+                // Capacity math first — pure arithmetic, vs PawnCanAutomaticallyHaulFast's region-walk
+                // (CanReach): an over-heavy/over-bulky candidate never pays the pathfinding cost.
                 int fits = BulkHaulPolicy.CountWithinCeiling(ceiling, runningMass, t.GetStatValue(StatDefOf.Mass), t.stackCount);
                 fits = Math.Min(fits, CECompat.MaxFitCount(pawn, t)); // CE: weight AND bulk vs live inventory
                 float bulkPer = CECompat.BulkPerUnit(t);
-                if (bulkPer > 0f)
+                // +∞ bulkRoom (no CE, or CE's bulk read failed fail-open) means the clamp never binds —
+                // and (int)Math.Floor(∞/x) would be int.MinValue, killing every plan. Skip it outright.
+                if (bulkPer > 0f && !float.IsPositiveInfinity(bulkRoom))
                     fits = Math.Min(fits, (int)Math.Floor(bulkRoom / bulkPer)); // CE: planned-but-untaken bulk too
                 if (fits <= 0)
                     continue; // too heavy/bulky for the remaining room — a lighter neighbor may still fit
+                if (!HaulAIUtility.PawnCanAutomaticallyHaulFast(pawn, t, forced: false))
+                    continue;
                 var currentPriority = StoreUtility.CurrentStoragePriorityOf(t);
                 if (!StoreUtility.TryFindBestBetterStorageFor(t, pawn, pawn.Map, currentPriority, pawn.Faction,
                         out _, out _, needAccurateResult: false))

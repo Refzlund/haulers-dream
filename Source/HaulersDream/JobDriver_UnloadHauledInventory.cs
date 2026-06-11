@@ -269,6 +269,8 @@ namespace HaulersDream
                 foreach (var entry in stockEntries.Values)
                     if (entry != null && entry.thingDef == def)
                         keep += entry.count;
+            // Under CE the pawn's assigned loadout (ammo/sidearm reserve) is personal stock too — keep it.
+            keep += CECompat.LoadoutKeepCount(pawn, def);
             return keep;
         }
     }

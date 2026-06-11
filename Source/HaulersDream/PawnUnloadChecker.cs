@@ -13,7 +13,12 @@ namespace HaulersDream
     /// </summary>
     public static class PawnUnloadChecker
     {
-        public static void CheckIfShouldUnload(Pawn pawn, bool forced = false)
+        /// <param name="behindQueuedWork">Queue the unload BEHIND any pending real work instead of in front
+        /// of it. The bulk-haul finish flush passes true: a player order that interrupted the sweep (vanilla
+        /// TryTakeOrderedJob EnqueueFirst's the order, then ends the job — our finish action runs after) must
+        /// be obeyed first; the load still flushes right after (forced stays true, so strict/grace/markForUnload
+        /// can't strand it).</param>
+        public static void CheckIfShouldUnload(Pawn pawn, bool forced = false, bool behindQueuedWork = false)
         {
             var comp = pawn?.GetComp<CompHauledToInventory>();
             if (comp == null)
@@ -78,13 +83,18 @@ namespace HaulersDream
                     var job = JobMaker.MakeJob(HaulersDreamDefOf.HaulersDream_UnloadInventory);
                     if (pawn.jobs != null && job.TryMakePreToilReservations(pawn, false))
                     {
-                        pawn.jobs.jobQueue.EnqueueFirst(job, JobTag.Misc);
+                        if (behindQueuedWork && hasPendingWork)
+                            pawn.jobs.jobQueue.EnqueueLast(job, JobTag.Misc);
+                        else
+                            pawn.jobs.jobQueue.EnqueueFirst(job, JobTag.Misc);
                         HDLog.Dbg($"{pawn} queued unload ({carried.Count} tracked, forced={forced}).");
                         // Both EnqueueFirst, so the queue reads [SelfPickup, Unload]: pending fresh drops are
                         // scooped BEFORE the unload runs — one trip regardless of which trigger queued the
                         // unload (the interval firing mid-long-job otherwise yields [Unload, SelfPickup]: a
                         // second trip). EnsureSelfPickupJob dedups, no-ops without pendings, and never calls
-                        // back into this checker.
+                        // back into this checker. On the behindQueuedWork path the scoop still lands ahead of
+                        // the queued work (acceptable: it's quick and at the pawn's feet) while the unload
+                        // trip waits at the back.
                         YieldRouter.EnsureSelfPickupJob(pawn);
                     }
                     return;
