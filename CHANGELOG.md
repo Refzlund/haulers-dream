@@ -1,5 +1,16 @@
 # haulers-dream
 
+## 1.0.1
+
+### Patch Changes
+
+- 9af4687: Pick up and haul fixes: forbidding an item mid-haul is now respected (and the unload no longer clears your forbid flag), the default "stay surgical unless a second haul is ordered" trigger no longer counts the pawn's own automatic hauling as an order, sweeps honor the non-home-maps setting, and a stale-plan edge case after quickloading is gone.
+- 9af4687: Fixed material deliveries to blueprints. Inventory deliveries for big builds and claim-from-hauler handoffs failed with red errors on the first delivery to any new blueprint (the geothermal-generator case): the load arrived but could not be deposited. Deliveries now convert the blueprint to a frame exactly like vanilla and deposit cleanly, including multi-trip loads.
+- 9af4687: Fixed a "started 10 jobs in one tick" error loop in Haul to stack when haulers with different allowed areas worked the same items: a stack-destination computed for one pawn could be handed to another pawn it was invalid for. Destinations are now computed per hauler, and large colonies with many same-priority stockpiles find partial stacks more reliably (the scan starts in the right storage group instead of burning its budget elsewhere).
+- 9af4687: Planned crafting now respects the bill's own settings. A fresh bill defaults to Do x1, so a planned batch of 10 gathered ingredients for all 10 but crafted only 1 and hauled the rest back. The planner now caps the batch by the bill's remaining repeat count (and tells you that's the limit), and suspended or paused bills can no longer be ordered.
+- 9af4687: Full-mod audit sweep, smaller fixes: carried medicine now respects the patient's medical-care restriction; turning a work override off now takes effect immediately instead of after a reload; cancelled deconstruct orders can no longer be revived by route planning; the route must-include picker can now select filth and blueprints, and Escape exits picking mode; vein-mining routes can't extend onto another map; ordered construction routes no longer re-gather materials they already delivered, and multi-material sites keep their build step; small ordered hauls to nearby clusters keep vanilla's efficient batching; the overload slowdown is consistent across strict mode, the slider and Combat Extended; haulers no longer grab stacks a worker has reserved from a carrier's inventory; plus a batch of text and tooltip corrections.
+- 9af4687: Strip fixes: the follow-up strip after stripping a living target now actually fires (it previously never ran due to a job-lifecycle quirk, which also suppressed the vanilla "stripped" tale on every strip - both restored). The tainted-apparel Destroy policy can no longer destroy quest items or relics (they are taken instead), smeltable classification now matches the smelter's real rules, and corpse stripping respects the non-home-maps setting.
+
 ## 1.0.0
 
 Initial release. Colonists use their inventories smartly when moving items, and carry out their tasks more efficiently: fewer round-trips, less walking back and forth, more time actually working.
