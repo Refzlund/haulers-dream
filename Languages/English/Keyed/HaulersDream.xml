@@ -75,7 +75,7 @@
   <HaulersDream.Setting.HaulDeconstruct>Deconstruction salvage</HaulersDream.Setting.HaulDeconstruct>
   <HaulersDream.Setting.HaulAnimals>Animals — milk &amp; shear</HaulersDream.Setting.HaulAnimals>
   <HaulersDream.Setting.HaulStrip>Stripping — removed gear</HaulersDream.Setting.HaulStrip>
-  <HaulersDream.Setting.HaulStripDesc>When a colonist strips a prisoner, a downed pawn, or a corpse (the Strip order), the removed weapons, gear and clothes are scooped into its inventory right after the strip, and hauled home in one trip. For a living target, a follow-up strip is queued at the end of the stripper's jobs in case the target dresses itself again from leftovers; it does nothing if the target stayed bare.</HaulersDream.Setting.HaulStripDesc>
+  <HaulersDream.Setting.HaulStripDesc>When a colonist strips a prisoner, a downed pawn, or a corpse (the Strip order), the removed weapons, gear and clothes are scooped into its inventory right after the strip, and hauled home in one trip. Tainted apparel from a corpse follows the tainted-apparel choices above ("leave it on the corpse" pieces stay on the ground, unscooped). For a living target, a follow-up strip is queued at the end of the stripper's jobs in case the target dresses itself again from leftovers; it does nothing if the target stayed bare.</HaulersDream.Setting.HaulStripDesc>
 
   <HaulersDream.Setting.WorkOverrideHeader>Work-incapability overrides (off = vanilla):</HaulersDream.Setting.WorkOverrideHeader>
   <HaulersDream.Setting.AllCanHaul>All pawns can haul</HaulersDream.Setting.AllCanHaul>

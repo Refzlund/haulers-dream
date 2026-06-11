@@ -64,7 +64,9 @@ namespace HaulersDream
     /// strip of a living pawn completes, a fresh vanilla Strip job is appended at the END of the
     /// stripper's job queue — by the time it comes up (after the scoop and any unload trip), it catches
     /// anything the target put back on, and ends instantly doing nothing when the target stayed bare
-    /// (its own toils fail on CanBeStrippedByColony).
+    /// (its own toils fail on CanBeStrippedByColony). BEST-EFFORT, not a guarantee: the queued job is
+    /// deliberately unreserved, so if the target is reserved when it dequeues (a warden feeding the
+    /// prisoner) it ends silently and is not retried — a fresh strip order recovers.
     ///
     /// WHY a FINISH ACTION and not an appended toil: vanilla JobDriver_Strip registers a driver-global
     /// FailOn(!CanBeStrippedByColony(TargetThingA)), and global fail conditions are evaluated BEFORE a
@@ -86,6 +88,14 @@ namespace HaulersDream
                 {
                     try
                     {
+                        // Tainted pieces this strip dropped follow the player's per-category policy,
+                        // like the auto-strip. Applied HERE (job end, any condition — drops recorded
+                        // before an interruption are already on the ground) and not in the GenPlace
+                        // hook: vanilla's TryDrop chain un-forbids its result AFTER placement, so a
+                        // forbid set inside the hook would be silently reverted. Corpse strips only —
+                        // see the method doc for why the target matters.
+                        CorpseStripper.ApplyTaintedPolicyToPending(__instance.pawn,
+                            corpseStrip: __instance.job?.targetA.Thing is Corpse);
                         if (cond == JobCondition.Succeeded)
                             CorpseStripper.QueueReStripIfNeeded(__instance.pawn, __instance.job?.targetA.Thing);
                     }
@@ -123,12 +133,68 @@ namespace HaulersDream
             // Deliberately NOT pre-reserved: reserving the victim now would block wardens (feeding,
             // tending) until the re-strip comes up. Reservations are made when the job actually starts,
             // like any normal queued job; if the target is bare or gone by then, it ends instantly.
+            // KNOWN BEST-EFFORT GAP: if someone else holds the victim's reservation at that moment, the
+            // queued job ends silently (fromQueue ends are quiet) and nothing retries — accepted, since
+            // any retry scheme needs persistent watcher state; a fresh strip order recovers.
             var queue = stripper.jobs.jobQueue;
-            if (queue != null)
-                for (int i = 0; i < queue.Count; i++)
-                    if (queue[i]?.job?.def == JobDefOf.Strip && queue[i].job.targetA.Thing == victim)
-                        return; // a re-strip on this target is already queued
-            stripper.jobs.jobQueue.EnqueueLast(JobMaker.MakeJob(JobDefOf.Strip, victim), JobTag.Misc);
+            if (queue == null)
+                return;
+            for (int i = 0; i < queue.Count; i++)
+                if (queue[i]?.job?.def == JobDefOf.Strip && queue[i].job.targetA.Thing == victim)
+                    return; // a re-strip on this target is already queued
+            queue.EnqueueLast(JobMaker.MakeJob(JobDefOf.Strip, victim), JobTag.Misc);
+        }
+
+        /// <summary>
+        /// Apply the tainted-apparel policies to the pieces a manual strip ORDER on a CORPSE just
+        /// dropped (recorded in the stripper's pending-scoop list by the yield hook). The auto-strip
+        /// applies the policies inline; the order path drops via vanilla Strip, so they run here — at
+        /// job end, after the drops have left vanilla's TryDrop chain and before the queued
+        /// self-pickup scoops. Gated to corpse targets because WornByCorpse is STICKY: a living
+        /// prisoner re-dressed from corpse leftovers wears "tainted" pieces, and applying Destroy or
+        /// LeaveOnCorpse to a LIVING target's strip would destroy gear outside the policies'
+        /// documented corpse scope (or churn with the re-strip net) — living strips scoop everything
+        /// as before. A mixed pending list (harvest yields and the like) is untouched by the apparel
+        /// filter. LeaveOnCorpse can't apply to a piece already off the body — it degrades to "don't
+        /// scoop" (an ordinary ground haulable).
+        /// </summary>
+        internal static void ApplyTaintedPolicyToPending(Pawn stripper, bool corpseStrip)
+        {
+            if (!corpseStrip)
+                return;
+            var s = HaulersDreamMod.Settings;
+            if (s == null || stripper == null)
+                return;
+            var pending = stripper.GetComp<CompHauledToInventory>()?.pendingSelfPickups;
+            if (pending == null || pending.Count == 0)
+                return;
+            for (int i = pending.Count - 1; i >= 0; i--)
+            {
+                if (!(pending[i] is Apparel ap) || ap.Destroyed || !ap.Spawned
+                    || !ap.WornByCorpse || ap.def.apparel == null || !ap.def.apparel.careIfWornByCorpse)
+                    continue;
+                var action = StripPolicy.ApparelAction(tainted: true, ap.Smeltable,
+                    s.taintedSmeltablePolicy, s.taintedNonSmeltablePolicy);
+                switch (action)
+                {
+                    case TaintedApparelPolicy.LeaveOnCorpse:
+                        pending.RemoveAt(i); // already off the body — just don't scoop it
+                        break;
+                    case TaintedApparelPolicy.DropAndForbid:
+                        ap.SetForbidden(true, warnOnFail: false);
+                        pending.RemoveAt(i);
+                        break;
+                    case TaintedApparelPolicy.Destroy:
+                        // Same guards as the auto-strip: never quest/relic; never a merged stack
+                        // (modded stackables — vanilla apparel is stackLimit 1). Guarded cases scoop
+                        // normally (Take).
+                        if (!ap.questTags.NullOrEmpty() || ap.IsRelic() || ap.stackCount != 1)
+                            break;
+                        pending.RemoveAt(i);
+                        ap.Destroy(DestroyMode.Vanish);
+                        break;
+                }
+            }
         }
 
         /// <summary>Strip <paramref name="corpse"/> if this pickup qualifies under the settings. Loot is
@@ -205,14 +271,17 @@ namespace HaulersDream
                 for (int i = eqList.Count - 1; i >= 0; i--)
                 {
                     var eq = eqList[i];
-                    int eqCount = eq.stackCount; // snapshot before the drop — the out param may be a merged stack
                     if (inner.equipment.TryDropEquipment(eq, out var droppedEq, pos, forbid: false)
                         && droppedEq != null)
                     {
-                        // Min: a partial absorb returns the smaller remainder — the ctor would clamp
-                        // anyway, but with a per-drop Log.Warning (modded stackable equipment only).
-                        loot.Add(new ThingCount(droppedEq, Math.Min(eqCount, droppedEq.stackCount)));
                         strippedAnything = true;
+                        // Scoop only when the drop result IS the piece (then its stackCount is exact —
+                        // a partially-absorbed remainder included). A MERGED result (modded stackable
+                        // equipment only; vanilla weapons are stackLimit 1) is a pre-existing ground
+                        // stack with no per-landing split available — crediting it could over-take
+                        // someone else's stack, so it stays grounded for the normal haul sweep.
+                        if (droppedEq == eq)
+                            loot.Add(new ThingCount(droppedEq, droppedEq.stackCount));
                     }
                 }
             }
@@ -251,13 +320,17 @@ namespace HaulersDream
                         s.taintedSmeltablePolicy, s.taintedNonSmeltablePolicy);
                     if (action == TaintedApparelPolicy.LeaveOnCorpse)
                         continue; // stays on the body, goes wherever the body goes
-                    int apCount = ap.stackCount; // 1 for vanilla apparel; snapshot anyway (modded stackables)
                     if (!inner.apparel.TryDrop(ap, out var droppedAp, pos, forbid: false) || droppedAp == null)
                         continue;
                     strippedAnything = true;
-                    // Min: a partial absorb returns the smaller remainder — the ctor would clamp anyway,
-                    // but with a per-drop Log.Warning (modded stackable apparel only; vanilla is 1).
-                    int apCredit = Math.Min(apCount, droppedAp.stackCount);
+                    // A MERGED drop result (modded stackable apparel only — vanilla apparel is
+                    // stackLimit 1) is a pre-existing ground stack containing the player's own pieces:
+                    // never scoop, destroy, or forbid it. The contribution stays grounded as an
+                    // ordinary haulable, and the tainted policy degrades to leave-on-ground.
+                    if (droppedAp != ap)
+                        continue;
+                    // Identity holds, so stackCount is the piece's own count — exact even for a
+                    // partially-absorbed remainder.
                     switch (action)
                     {
                         case TaintedApparelPolicy.Destroy:
@@ -266,32 +339,17 @@ namespace HaulersDream
                             // relic is too steep a price for a policy default): treat those as Take.
                             if (!droppedAp.questTags.NullOrEmpty() || droppedAp.IsRelic())
                             {
-                                loot.Add(new ThingCount(droppedAp, apCredit));
-                                break;
-                            }
-                            // A MERGED drop (only possible with modded stackable apparel) contains
-                            // pre-existing ground pieces — destroying it would exceed the opt-in's scope.
-                            // Vanilla apparel is stackLimit 1, so this guard never fires there.
-                            if (droppedAp != ap)
-                            {
-                                loot.Add(new ThingCount(droppedAp, apCredit));
+                                loot.Add(new ThingCount(droppedAp, droppedAp.stackCount));
                                 break;
                             }
                             if (!droppedAp.Destroyed)
                                 droppedAp.Destroy(DestroyMode.Vanish);
                             break;
                         case TaintedApparelPolicy.DropAndForbid:
-                            // Same merged-drop insurance as Destroy: forbidding a pre-existing ground
-                            // stack the piece merged into would forbid the player's own goods — Take.
-                            if (droppedAp != ap)
-                            {
-                                loot.Add(new ThingCount(droppedAp, apCredit));
-                                break;
-                            }
                             droppedAp.SetForbidden(true, warnOnFail: false);
                             break;
                         default:
-                            loot.Add(new ThingCount(droppedAp, apCredit));
+                            loot.Add(new ThingCount(droppedAp, droppedAp.stackCount));
                             break;
                     }
                 }
@@ -307,8 +365,16 @@ namespace HaulersDream
             if (inner.Faction != null)
                 inner.Faction.Notify_MemberStripped(inner, Faction.OfPlayer);
 
-            ScoopLoot(hauler, loot, s);
-            HDLog.Dbg($"{hauler} auto-stripped {corpse} on haul: {loot.Count} loot entries.");
+            // Scoop only into inventories the AUTOMATIC unload will serve: a pawn that fails
+            // YieldRouter.IsEligible (a hauling-incapable cook fetching a butcher-bill corpse, with
+            // allowIncapable off) would carry the tagged loot forever — every automatic unload trigger
+            // skips ineligible pawns, and the only recovery is the manual gizmo. The strip itself
+            // still happened: the gear stays on the ground as ordinary haulables for real haulers.
+            if (YieldRouter.IsEligible(hauler))
+            {
+                ScoopLoot(hauler, loot, s);
+                HDLog.Dbg($"{hauler} auto-stripped {corpse} on haul: {loot.Count} loot entries.");
+            }
         }
 
         // Load the stripped loot into the hauler's inventory (tagged — the unload pass, shared
