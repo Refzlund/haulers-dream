@@ -174,9 +174,9 @@
   <HaulersDream.PlanCraft.LimitResources>limited by available ingredients</HaulersDream.PlanCraft.LimitResources>
   <HaulersDream.PlanCraft.LimitMass>limited by how much the pawn can carry</HaulersDream.PlanCraft.LimitMass>
   <HaulersDream.PlanCraft.LimitTimeout>limited by the timeout</HaulersDream.PlanCraft.LimitTimeout>
-  <HaulersDream.PlanCraft.LimitBillRepeat>limited by the bill's remaining repeat count</HaulersDream.PlanCraft.LimitBillRepeat>
+  <HaulersDream.PlanCraft.LimitBillRepeat>limited by the bill's remaining count</HaulersDream.PlanCraft.LimitBillRepeat>
   <HaulersDream.PlanCraft.Ingredients>Brings: {0}</HaulersDream.PlanCraft.Ingredients>
-  <HaulersDream.PlanCraft.EstTime>Crafting time: ~{0}h (plus the fetch trip)</HaulersDream.PlanCraft.EstTime>
+  <HaulersDream.PlanCraft.EstTime>Crafting time: ~{0}h (plus the fetch trip; products are hauled to best storage afterwards)</HaulersDream.PlanCraft.EstTime>
   <HaulersDream.PlanCraft.Infeasible>Can't batch this: {0}</HaulersDream.PlanCraft.Infeasible>
   <HaulersDream.PlanCraft.Confirm>Prioritize</HaulersDream.PlanCraft.Confirm>
   <HaulersDream.PlanCraft.Cancel>Cancel</HaulersDream.PlanCraft.Cancel>

@@ -107,7 +107,19 @@ namespace HaulersDream
             // A suspended bill — or one whose repeat counter is spent / pause-on-satisfied is holding it
             // (ShouldDoNow false) — is orderable for 0 reps: the job gates every rep on bill.ShouldDoNow(),
             // so it would gather ingredients and craft nothing. Never offer it.
-            try { return !bill.suspended && bill.ShouldDoNow() && bill.PawnAllowedToStartAnew(pawn); }
+            try
+            {
+                return !bill.suspended && bill.ShouldDoNow() && bill.PawnAllowedToStartAnew(pawn)
+                       // Vanilla's WorkGiver_DoBill refuses these unconditionally (forced included):
+                       // the RECIPE's skillRequirements — PawnAllowedToStartAnew covers only the
+                       // player-set allowedSkillRange, so without this a Cooking-3 pawn could batch
+                       // fine meals vanilla forbids — and a recipe claimed by another work type's
+                       // giver (psychite tea is Cooking work at a drug lab) needs a pawn capable of
+                       // THAT work type.
+                       && bill.recipe.PawnSatisfiesSkillRequirements(pawn)
+                       && (bill.recipe.requiredGiverWorkType == null
+                           || !pawn.WorkTypeIsDisabled(bill.recipe.requiredGiverWorkType));
+            }
             catch { return false; }
         }
 
@@ -155,8 +167,23 @@ namespace HaulersDream
                 plan.blockReason = "HaulersDream.PlanCraft.BlockBillNotActive".Translate();
                 return plan;
             }
-            if (bill is Bill_Production bp && bp.repeatMode == BillRepeatModeDefOf.RepeatCount)
-                plan.billReps = bp.repeatCount;
+            if (bill is Bill_Production bp)
+            {
+                if (bp.repeatMode == BillRepeatModeDefOf.RepeatCount)
+                    plan.billReps = bp.repeatCount;
+                // Make-until-X: products banked in the crafter's INVENTORY are invisible to vanilla's
+                // CountProducts (it counts storage + hands, never pawn inventory), so the per-rep
+                // ShouldDoNow gate alone would run every planned rep straight past the target. Cap the
+                // plan by the remaining shortfall instead.
+                else if (bp.repeatMode == BillRepeatModeDefOf.TargetCount
+                         && !bill.recipe.products.NullOrEmpty() && bill.recipe.products[0].count > 0)
+                {
+                    int shortfall = bp.targetCount - bill.recipe.WorkerCounter.CountProducts(bp);
+                    plan.billReps = shortfall <= 0
+                        ? 0
+                        : Mathf.CeilToInt(shortfall / (float)bill.recipe.products[0].count);
+                }
+            }
 
             var recipe = bill.recipe;
             float massPerRep = 0f;
@@ -171,13 +198,17 @@ namespace HaulersDream
                 {
                     if (cand == null)
                         continue;
-                    // Respect the bill's player-set allowed-ingredient list, exactly like vanilla IsUsableIngredient.
-                    if (bill.ingredientFilter != null && !bill.ingredientFilter.Allows(cand))
+                    // Respect the bill's player-set allowed-ingredient list — but NOT for FIXED slots,
+                    // exactly like vanilla (WorkGiver_DoBill checks !IsFixedIngredient before the bill
+                    // filter): fixed slots bypass it, and implicit costList recipes (make medicine,
+                    // the whole drug lab) have an EMPTY bill filter by construction — applying it here
+                    // made every such bill read "no available ingredient" with full stockpiles.
+                    if (!ing.IsFixedIngredient && bill.ingredientFilter != null && !bill.ingredientFilter.Allows(cand))
                         continue;
                     int perRep = ing.CountRequiredOfFor(cand, recipe, bill);
                     if (perRep <= 0)
                         continue;
-                    int avail = AvailableUnits(pawn, cand);
+                    int avail = AvailableUnits(pawn, cand, bill, bench);
                     if (avail < perRep)
                         continue; // can't even make one rep from this def
                     int reps = avail / perRep;
@@ -213,7 +244,7 @@ namespace HaulersDream
                 {
                     key = availableByKey.Count;
                     keyByDef[def] = key;
-                    availableByKey.Add(AvailableUnits(pawn, def));
+                    availableByKey.Add(AvailableUnits(pawn, def, bill, bench));
                 }
                 defKeys.Add(key);
             }
@@ -272,15 +303,22 @@ namespace HaulersDream
             return Mathf.Max(0, cap);
         }
 
-        /// <summary>Units of <paramref name="def"/> the batch can ACTUALLY consume: reachable, non-forbidden,
-        /// reservable floor stacks (what the pre-load picks up) plus the worker's OWN carried stock (already at the
-        /// bench, used before fetching). Deliberately EXCLUDES other pawns' inventories — the pre-loader scans only
-        /// floor stacks, so counting colleagues' carried stock would over-promise reps the batch can't reach.</summary>
-        public static int AvailableUnits(Pawn pawn, ThingDef def)
+        /// <summary>Units of <paramref name="def"/> the batch can ACTUALLY consume: non-forbidden, reservable,
+        /// bill-usable floor stacks (thing-level filters — rot stage, hit points — and the bill's ingredient
+        /// search radius, exactly like vanilla's ingredient scan) plus the worker's OWN carried stock (already at
+        /// the bench, used before fetching). Reach is NOT pre-checked (a per-stack path test is too costly for a
+        /// live dialog preview; the loader checks it, and the batch degrades to fewer reps when something is
+        /// unreachable). Deliberately EXCLUDES other pawns' inventories — the pre-loader scans only floor stacks,
+        /// so counting colleagues' carried stock would over-promise reps the batch can't reach.</summary>
+        public static int AvailableUnits(Pawn pawn, ThingDef def, Bill bill, Building_WorkTable bench)
         {
             var map = pawn?.Map;
             if (map == null || def == null)
                 return 0;
+            // 999 = vanilla's "unlimited" sentinel; its square comfortably exceeds any map distance, so
+            // applying the bound unconditionally mirrors vanilla's validator exactly.
+            float radiusSq = bill != null ? bill.ingredientSearchRadius * bill.ingredientSearchRadius : float.MaxValue;
+            IntVec3 root = bench?.Position ?? pawn.Position;
             int total = 0;
             var things = map.listerThings.ThingsOfDef(def);
             for (int i = 0; i < things.Count; i++)
@@ -288,16 +326,24 @@ namespace HaulersDream
                 var t = things[i];
                 if (t == null || !t.Spawned || t.IsForbidden(pawn))
                     continue;
+                // Thing-level bill constraints (rot stage, hit-point range, the bill's own filter) — the
+                // def-level pass above can't see these; without this the plan would count rotten meat a
+                // cooking bill forbids.
+                if (bill != null && !InventoryShare.IsUsableForBill(t, bill))
+                    continue;
+                if ((t.Position - root).LengthHorizontalSquared >= radiusSq)
+                    continue;
                 if (!pawn.CanReserve(t))
                     continue;
                 total += t.stackCount;
             }
             // The worker's own inventory of this def is consumed directly at the bench (NeededUnits subtracts it,
             // so the loader fetches less) — count it so a pawn already holding ingredients isn't under-counted.
+            // Same thing-level vetting: personal stock the bill forbids must not inflate the preview.
             var inv = pawn.inventory?.innerContainer;
             if (inv != null)
                 for (int i = 0; i < inv.Count; i++)
-                    if (inv[i]?.def == def)
+                    if (inv[i]?.def == def && (bill == null || InventoryShare.IsUsableForBill(inv[i], bill)))
                         total += inv[i].stackCount;
             return total;
         }

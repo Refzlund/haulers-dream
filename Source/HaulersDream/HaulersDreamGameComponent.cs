@@ -27,8 +27,10 @@ namespace HaulersDream
             base.FinalizeInit();
             // BulkHaul's per-tick plan cache is STATIC state, so it survives a quickload into the freshly
             // loaded game — where its cached plans reference the previous game's (now-stale) things. Clear it
-            // whenever a game finishes initialising (new game and load alike).
+            // whenever a game finishes initialising (new game and load alike). Same hygiene for the batch
+            // handoff map (entries whose ordered job never started).
             BulkHaul.ClearPlanCache();
+            BatchCraftHandoff.Clear();
         }
 
         /// <summary>Register (or replace, per pawn) a deferred-reveal tracker for a vein route that ran into fog.</summary>
