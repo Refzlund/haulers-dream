@@ -19,6 +19,12 @@ namespace HaulersDream
             if (comp == null)
                 return;
 
+            // Unconditional, like every other call site in the mod — settings is dereferenced below
+            // (unloadGraceTicks) regardless of the branch that used to null-check it.
+            var settings = HaulersDreamMod.Settings;
+            if (settings == null)
+                return;
+
             // A pawn mid bill-prep-gather is CARRYING INGREDIENTS TO A BENCH ON PURPOSE — an auto-unload queued now
             // would run before the bill re-scan (queued jobs precede work) and dump the whole gathered load back to
             // storage, wasting the entire sweep. Only the explicit gizmo (forced) may override.
@@ -28,8 +34,7 @@ namespace HaulersDream
             // On a map the mod is configured to leave alone (enableOnNonHomeMaps off + a temporary/encounter
             // map), an automatic unload would just dump the tagged load at the pawn's feet — there's no storage
             // there. Keep carrying; the load unloads at home. The explicit gizmo still works.
-            var settings = HaulersDreamMod.Settings;
-            if (!forced && settings != null && !settings.enableOnNonHomeMaps
+            if (!forced && !settings.enableOnNonHomeMaps
                 && pawn.Map != null && !pawn.Map.IsPlayerHome)
                 return;
 
@@ -75,6 +80,12 @@ namespace HaulersDream
                     {
                         pawn.jobs.jobQueue.EnqueueFirst(job, JobTag.Misc);
                         HDLog.Dbg($"{pawn} queued unload ({carried.Count} tracked, forced={forced}).");
+                        // Both EnqueueFirst, so the queue reads [SelfPickup, Unload]: pending fresh drops are
+                        // scooped BEFORE the unload runs — one trip regardless of which trigger queued the
+                        // unload (the interval firing mid-long-job otherwise yields [Unload, SelfPickup]: a
+                        // second trip). EnsureSelfPickupJob dedups, no-ops without pendings, and never calls
+                        // back into this checker.
+                        YieldRouter.EnsureSelfPickupJob(pawn);
                     }
                     return;
 

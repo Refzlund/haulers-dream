@@ -400,8 +400,26 @@ namespace HaulersDream
             var jobs = pawn?.jobs;
             if (jobs == null)
                 return false;
+            // Skip the mod's OWN housekeeping jobs (self-pickup / unload) when picking the tail: the
+            // yield hook EnqueueFirst's them at the exact moment a route cell is mined, and reading one
+            // as "the final planned task" (its targetA isn't a route cell) would make the vein-reveal
+            // tracker drop the route exactly when it's about to pay off.
+            Job j = null;
             var q = jobs.jobQueue;
-            Job j = (q != null && q.Count > 0) ? q[q.Count - 1]?.job : jobs.curJob;
+            if (q != null)
+            {
+                for (int i = q.Count - 1; i >= 0; i--)
+                {
+                    var qj = q[i]?.job;
+                    if (qj == null || qj.def == HaulersDreamDefOf.HaulersDream_SelfPickup
+                        || qj.def == HaulersDreamDefOf.HaulersDream_UnloadInventory)
+                        continue;
+                    j = qj;
+                    break;
+                }
+            }
+            if (j == null)
+                j = jobs.curJob;
             if (j == null || !j.targetA.IsValid)
                 return false;
             cell = j.targetA.Cell;

@@ -28,14 +28,16 @@ namespace HaulersDream
     /// </summary>
     public static class YieldRouter
     {
-        [ThreadStatic] private static bool routing;        // re-entrancy guard
-        [ThreadStatic] private static Pawn dropPawn;       // producer awaiting the postfix (DropThenHaul)
+        [ThreadStatic] private static bool routing;        // re-entrancy guard (RouteIntoInventory's own inner placements)
 
         // ---- GenPlace path (plants / mining / deep drill / animals) -----------------------------
 
         /// <returns>true to let vanilla place the (remaining) thing; false to fully consume it.</returns>
+        /// <param name="dropPawn">The producer awaiting the postfix (DropThenHaul), carried per-invocation
+        /// via Harmony's <c>__state</c> — a static handoff would be cleared by a NESTED TryPlaceThing call
+        /// (e.g. a modded comp spawning a side product mid-placement), losing the outer scoop.</param>
         public static bool OnTryPlaceThing(Thing thing, IntVec3 center, Map map, ThingPlaceMode mode,
-            ref Thing lastResultingThing, ref bool result)
+            ref Thing lastResultingThing, ref bool result, out Pawn dropPawn)
         {
             dropPawn = null;
             if (map == null || thing == null || thing.Destroyed || thing.def == null)
@@ -74,11 +76,11 @@ namespace HaulersDream
             return true; // nothing taken, or partial: vanilla places the remainder
         }
 
-        /// <summary>Postfix side of the GenPlace hook: in DropThenHaul mode, record the dropped yield.</summary>
-        public static void OnTryPlaceThingPost(Thing lastResultingThing)
+        /// <summary>Postfix side of the GenPlace hook: in DropThenHaul mode, record the dropped yield.
+        /// <paramref name="dropPawn"/> is the prefix's out value, delivered through Harmony <c>__state</c>.</summary>
+        public static void OnTryPlaceThingPost(Thing lastResultingThing, Pawn dropPawn)
         {
             var pawn = dropPawn;
-            dropPawn = null;
             if (pawn == null || lastResultingThing == null || !lastResultingThing.Spawned || lastResultingThing.Destroyed)
                 return;
             // A yield that landed/merged INTO valid storage is already home — scooping it would pull stock back
@@ -287,6 +289,18 @@ namespace HaulersDream
             return null;
         }
 
+        /// <summary>Total units of <paramref name="def"/> across all of the owner's stacks.</summary>
+        internal static int InventoryCountOfDef(ThingOwner owner, ThingDef def)
+        {
+            if (owner == null || def == null)
+                return 0;
+            int total = 0;
+            for (int i = 0; i < owner.Count; i++)
+                if (owner[i]?.def == def)
+                    total += owner[i].stackCount;
+            return total;
+        }
+
         // ---- pawn inference ---------------------------------------------------------------------
 
         /// <summary>
@@ -297,10 +311,14 @@ namespace HaulersDream
         private static Pawn FindWorker(IntVec3 center, Map map, out HaulSourceType type)
         {
             type = default;
-            var cells = GenAdj.AdjacentCellsAndInside; // 9-cell 3x3 block
-            for (int i = 0; i < cells.Length; i++)
+            var cells = GenAdj.AdjacentCellsAndInside; // 9-cell 3x3 block; the (0,0,0) CENTER offset is LAST (index 8)
+            // The CENTER cell is checked FIRST (i == -1): the pawn STANDING on the drop cell is the
+            // truest producer, but vanilla's table orders the center offset last, which would credit an
+            // adjacent pawn whose job targets the center before the pawn standing on it. The loop bound
+            // then skips the table's trailing center entry (decompile-verified layout).
+            for (int i = -1; i < cells.Length - 1; i++)
             {
-                IntVec3 c = center + cells[i];
+                IntVec3 c = i < 0 ? center : center + cells[i];
                 if (!c.InBounds(map))
                     continue;
                 var things = map.thingGrid.ThingsListAtFast(c);
