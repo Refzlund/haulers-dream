@@ -1,0 +1,121 @@
+using HaulersDream.Core;
+using NUnit.Framework;
+
+namespace HaulersDream.Tests
+{
+    [TestFixture]
+    public class ConstructDeliveryPlanTests
+    {
+        // Reference: a colonist with 35 kg capacity carrying 5 kg of gear, delivering 0.5 kg/unit steel,
+        // full carry-limit fraction. Hands hold a 75-steel stack (MaxStackSpaceEver). These mirror the
+        // real geothermal-generator case (needs 340 steel).
+        const float Cap = 35f;
+        const float Base = 35f;
+        const float Gear = 5f;
+        const float Steel = 0.5f;
+        const int Hand = 75;
+
+        static int Plan(int level, int frameNeed, int handCap, int available,
+            float maxCap = Cap, float baseCap = Base, float cur = Gear, float unit = Steel)
+            => ConstructDeliveryPlan.PlanLoad(level, maxCap, baseCap, cur, unit, frameNeed, handCap, available);
+
+        [Test]
+        public void Geothermal_Fair_LoadsPastHandStack()
+        {
+            // Fair overload ceiling ≈ 1.966×35 = 68.8 kg → room 63.8 → 127 steel. Far more than a 75 hand-stack.
+            Assert.That(Plan(OverloadTuning.FairLevel, frameNeed: 340, handCap: Hand, available: 300), Is.EqualTo(127));
+        }
+
+        [Test]
+        public void SmallNeed_FallsBackToHands()
+        {
+            // One hand-trip (≤75) already satisfies the needer -> don't intervene.
+            Assert.That(Plan(OverloadTuning.FairLevel, frameNeed: 50, handCap: Hand, available: 300), Is.EqualTo(0));
+            Assert.That(Plan(OverloadTuning.FairLevel, frameNeed: 75, handCap: Hand, available: 300), Is.EqualTo(0));
+        }
+
+        [Test]
+        public void ScarceMaterial_FallsBackToHands()
+        {
+            // Only ~one hand-load of material exists nearby -> hands are already optimal.
+            Assert.That(Plan(OverloadTuning.FairLevel, frameNeed: 340, handCap: Hand, available: 75), Is.EqualTo(0));
+            Assert.That(Plan(OverloadTuning.FairLevel, frameNeed: 340, handCap: Hand, available: 50), Is.EqualTo(0));
+        }
+
+        [Test]
+        public void MaterialJustAboveHandStack_LoadsThatMuch()
+        {
+            // 80 available, need 340: load the 80 (one inventory trip beats two hand trips of 75 + 5).
+            Assert.That(Plan(OverloadTuning.FairLevel, frameNeed: 340, handCap: Hand, available: 80), Is.EqualTo(80));
+        }
+
+        [Test]
+        public void OverloadOff_StrongPawn_StillLoadsToCapacity()
+        {
+            // Overload disabled, but a 70 kg-capacity pawn fits 130 steel under 100% — beats a 75 hand-stack,
+            // with NO slowdown. Inventory delivery still wins.
+            Assert.That(Plan(OverloadTuning.OffLevel, frameNeed: 340, handCap: Hand, available: 300, maxCap: 70f, baseCap: 70f),
+                Is.EqualTo(130));
+        }
+
+        [Test]
+        public void OverloadOff_WeakPawn_FallsBackToHands()
+        {
+            // Overload off + a 35 kg pawn fits only 60 steel at 100% < a 75 hand-stack -> no benefit, use hands.
+            Assert.That(Plan(OverloadTuning.OffLevel, frameNeed: 340, handCap: Hand, available: 300), Is.EqualTo(0));
+        }
+
+        [Test]
+        public void AlreadyNearCeiling_FallsBackToHands()
+        {
+            // Pawn already at 68 kg (near the Fair ceiling) can add ~1 steel -> nowhere near beating hands.
+            Assert.That(Plan(OverloadTuning.FairLevel, frameNeed: 340, handCap: Hand, available: 300, cur: 68f), Is.EqualTo(0));
+        }
+
+        [Test]
+        public void HeavyMaterial_CeilingBelowHandStack_FallsBackToHands()
+        {
+            // 5 kg/unit material, hands hold 15: Fair ceiling is ~12 units (< 15) -> hands already optimal.
+            Assert.That(Plan(OverloadTuning.FairLevel, frameNeed: 200, handCap: 15, available: 200, unit: 5f), Is.EqualTo(0));
+        }
+
+        [Test]
+        public void DegenerateInputs_ReturnZero()
+        {
+            Assert.That(Plan(OverloadTuning.FairLevel, frameNeed: 340, handCap: 0, available: 300), Is.EqualTo(0));
+            Assert.That(Plan(OverloadTuning.FairLevel, frameNeed: 340, handCap: Hand, available: 300, unit: 0f), Is.EqualTo(0));
+            Assert.That(Plan(OverloadTuning.FairLevel, frameNeed: 340, handCap: Hand, available: 300, maxCap: 0f), Is.EqualTo(0));
+        }
+
+        [Test]
+        public void GatherCeiling_BoundsTheLoadByMassAndNeed()
+        {
+            // Fair: mass ceiling 127, but never gather beyond the needer's own need.
+            Assert.That(ConstructDeliveryPlan.GatherCeiling(OverloadTuning.FairLevel, Cap, Base, Gear, Steel, frameNeedUnits: 340),
+                Is.EqualTo(127));
+            Assert.That(ConstructDeliveryPlan.GatherCeiling(OverloadTuning.FairLevel, Cap, Base, Gear, Steel, frameNeedUnits: 90),
+                Is.EqualTo(90));
+        }
+
+        [Test]
+        public void GatherCeiling_OffWeakPawn_IsBelowHandStack()
+        {
+            // The game layer rejects inventory delivery when this ceiling ≤ hand cap; prove it's 60 (< 75) here.
+            Assert.That(ConstructDeliveryPlan.GatherCeiling(OverloadTuning.OffLevel, Cap, Base, Gear, Steel, frameNeedUnits: 340),
+                Is.EqualTo(60));
+        }
+
+        [Test]
+        public void PlanNeverExceedsNeedOrAvailability()
+        {
+            // Whatever the slider, the load is bounded by the needer's need and the material on hand.
+            for (int lv = 0; lv <= OverloadTuning.MaxLevel; lv++)
+            {
+                int load = Plan(lv, frameNeed: 120, handCap: Hand, available: 500);
+                Assert.That(load, Is.LessThanOrEqualTo(120), $"level {lv} exceeded need");
+                int load2 = Plan(lv, frameNeed: 500, handCap: Hand, available: 110);
+                Assert.That(load2, Is.LessThanOrEqualTo(110), $"level {lv} exceeded availability");
+            }
+        }
+    }
+}

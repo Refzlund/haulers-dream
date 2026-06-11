@@ -1,0 +1,292 @@
+using System;
+using System.Collections.Generic;
+using HarmonyLib;
+using HaulersDream.Core;
+using RimWorld;
+using Verse;
+using Verse.AI;
+
+namespace HaulersDream
+{
+    /// <summary>
+    /// AUTO STRIP ON HAUL — when a pawn picks up a corpse to haul it (to a stockpile, a grave, or as a
+    /// bill ingredient for cremation/butchering), it first strips the body and SCOOPS the loot into its
+    /// inventory, then carries the corpse in its hands. One trip moves the body AND brings the gear home —
+    /// the same shape as the harvest scoop, and the tagged loot flows through the existing unload pass,
+    /// shared inventories, and CE integration for free. No more manual strip orders after every battle.
+    ///
+    /// HOOK: a prefix on <see cref="Pawn_CarryTracker.TryStartCarry(Thing, int, bool)"/> — the single
+    /// choke point where a hauler physically takes the corpse into its hands (vanilla's StartCarryThing
+    /// toil calls it after the walk, so the pawn is standing at the body). One patch covers stockpile
+    /// hauls (HaulToCell), grave/casket interment (HaulToContainer) and corpse bills (DoBill) alike.
+    ///
+    /// Vanilla-faithful stripping, built from the decompiled originals (NOT ported from any mod):
+    /// per-piece drops via the same <c>TryDropEquipment</c>/<c>apparel.TryDrop</c>/<c>TryDrop</c> calls
+    /// <c>Pawn.Strip</c> makes, the Strip designation is cleared, <c>BodiesStripped</c> is recorded, and
+    /// the dead pawn's faction gets the same <c>Notify_MemberStripped</c> call a manual strip makes
+    /// (decompile-verified to no-op for the DEAD — corpse stripping carries no relations hit in vanilla;
+    /// the call is kept for exact behavioral parity should that ever change).
+    ///
+    /// Tainted apparel follows the player's per-category policy (see <see cref="TaintedApparelPolicy"/>);
+    /// LeaveOnCorpse pieces are simply not stripped, so they travel with the body (a cremated corpse takes
+    /// them along — clean disposal). The DESTROY policy is the one deliberate exception to this mod's
+    /// never-delete rule: an explicit opt-in, applied only to tainted apparel of the configured category.
+    ///
+    /// Loot that doesn't fit the carry/CE limits stays on the ground as ordinary haulables (the bulk-haul
+    /// sweep picks it up later) — nothing is ever lost by stripping.
+    /// </summary>
+    [HarmonyPatch(typeof(Pawn_CarryTracker), nameof(Pawn_CarryTracker.TryStartCarry),
+        typeof(Thing), typeof(int), typeof(bool))]
+    public static class Patch_TryStartCarry_AutoStrip
+    {
+        static void Prefix(Pawn_CarryTracker __instance, Thing item)
+        {
+            try
+            {
+                if (item is Corpse corpse)
+                    CorpseStripper.MaybeStripForHaul(__instance.pawn, corpse);
+            }
+            catch (Exception e)
+            {
+                Log.WarningOnce("[Hauler's Dream] Auto-strip on haul failed (corpse hauled unstripped): " + e, 0x535452);
+            }
+        }
+    }
+
+    /// <summary>
+    /// HAUL AFTER STRIPPING (living targets) — the strip ORDER side of the family. The removed gear is
+    /// already scooped into the stripper's inventory by the yield hook (JobDriver_Strip is a recognized
+    /// producer in <see cref="YieldRouter"/>: drops land at the target's cell, the self-pickup job is
+    /// queued at the FRONT, so the stripper sweeps the pile the moment the strip ends — fewer trips, the
+    /// tagged loot rides the normal unload pass). This patch adds the one thing the scoop can't: a
+    /// RE-STRIP safety net. A living target (a prisoner) re-equips clothing left lying nearby, so when a
+    /// strip of a living pawn completes, a fresh vanilla Strip job is appended at the END of the
+    /// stripper's job queue — by the time it comes up (after the scoop and any unload trip), it catches
+    /// anything the target put back on, and ends instantly doing nothing when the target stayed bare
+    /// (its own toils fail on CanBeStrippedByColony).
+    /// </summary>
+    [HarmonyPatch(typeof(JobDriver_Strip), "MakeNewToils")]
+    public static class Patch_JobDriver_Strip_HaulAfter
+    {
+        static IEnumerable<Toil> Postfix(IEnumerable<Toil> toils, JobDriver_Strip __instance)
+        {
+            foreach (var t in toils)
+                yield return t;
+            // This toil only runs when the strip job completed (a failed/interrupted job never reaches
+            // appended toils), so the re-strip is queued exactly once per successful strip.
+            var followUp = ToilMaker.MakeToil("HD_Strip_QueueReStrip");
+            followUp.initAction = delegate
+            {
+                try
+                {
+                    CorpseStripper.QueueReStripIfNeeded(followUp.actor, __instance.job?.targetA.Thing);
+                }
+                catch (Exception e)
+                {
+                    Log.WarningOnce("[Hauler's Dream] re-strip follow-up failed: " + e, 0x525354);
+                }
+            };
+            followUp.defaultCompleteMode = ToilCompleteMode.Instant;
+            yield return followUp;
+        }
+    }
+
+    public static class CorpseStripper
+    {
+        /// <summary>After stripping a LIVING pawn, append a vanilla Strip job at the end of the stripper's
+        /// queue so re-equipped clothing (a prisoner dressing from the leftovers) gets stripped again.</summary>
+        internal static void QueueReStripIfNeeded(Pawn stripper, Thing target)
+        {
+            var s = HaulersDreamMod.Settings;
+            if (s == null || !s.haulStrip)
+                return;
+            // Living pawns only: a corpse can't re-dress, and the gear is already scooped/queued.
+            if (!(target is Pawn victim) || victim.Dead || !victim.Spawned)
+                return;
+            if (stripper?.jobs == null || stripper.Map != victim.Map)
+                return;
+            // Deliberately NOT pre-reserved: reserving the victim now would block wardens (feeding,
+            // tending) until the re-strip comes up. Reservations are made when the job actually starts,
+            // like any normal queued job; if the target is bare or gone by then, it ends instantly.
+            var queue = stripper.jobs.jobQueue;
+            if (queue != null)
+                for (int i = 0; i < queue.Count; i++)
+                    if (queue[i]?.job?.def == JobDefOf.Strip && queue[i].job.targetA.Thing == victim)
+                        return; // a re-strip on this target is already queued
+            stripper.jobs.jobQueue.EnqueueLast(JobMaker.MakeJob(JobDefOf.Strip, victim), JobTag.Misc);
+        }
+
+        /// <summary>Strip <paramref name="corpse"/> if this pickup qualifies under the settings. Loot is
+        /// scooped into <paramref name="hauler"/>'s inventory (tagged) where it fits; the rest stays on
+        /// the ground as normal haulables. Safe to call speculatively — it gates itself.</summary>
+        internal static void MaybeStripForHaul(Pawn hauler, Corpse corpse)
+        {
+            var s = HaulersDreamMod.Settings;
+            if (s == null || s.autoStripMode == AutoStripMode.Off)
+                return;
+            if (hauler == null || corpse == null || !corpse.Spawned || hauler.Map == null || corpse.Map != hauler.Map)
+                return;
+            if (hauler.Faction != Faction.OfPlayerSilentFail)
+                return;
+            if (hauler.RaceProps == null
+                || (!hauler.RaceProps.Humanlike && !(hauler.RaceProps.IsMechanoid && s.allowMechanoids)))
+                return;
+            var job = hauler.CurJob;
+            if (job == null || !QualifyingHaul(job, s.autoStripMode))
+                return;
+            // Your own dead are not loot: player-faction corpses (colonists, colony animals) are left
+            // dressed unless the player opted in.
+            var inner = corpse.InnerPawn;
+            if (inner == null)
+                return;
+            if (!s.stripColonistCorpses && inner.Faction == Faction.OfPlayerSilentFail)
+                return;
+            // The same gate vanilla's strip job uses (strippable + actually has anything + kind allows it).
+            if (!StrippableUtility.CanBeStrippedByColony(corpse))
+                return;
+
+            StripAndScoop(hauler, corpse, s);
+        }
+
+        // Which hauls trigger a strip. AllHauls: any of the three corpse-moving jobs. DisposalOnly: only
+        // where the gear would otherwise be LOST — interment (a casket container) or a corpse bill
+        // (cremation/butchering); a plain stockpile haul leaves the body dressed.
+        private static bool QualifyingHaul(Job job, AutoStripMode mode)
+        {
+            if (job.def == JobDefOf.DoBill)
+                return true; // cremation / butchering fetch — qualifies under both modes
+            if (job.def == JobDefOf.HaulToContainer)
+            {
+                if (mode == AutoStripMode.AllHauls)
+                    return true;
+                return job.targetB.Thing is Building_Casket; // grave / sarcophagus interment
+            }
+            if (job.def == JobDefOf.HaulToCell)
+                return mode == AutoStripMode.AllHauls; // stockpile haul — only under "every haul"
+            return false; // caravan packing, transport pods, anything else: never strip
+        }
+
+        private static void StripAndScoop(Pawn hauler, Corpse corpse, HaulersDreamSettings s)
+        {
+            var inner = corpse.InnerPawn;
+            var map = corpse.Map;
+            var pos = corpse.PositionHeld;
+            var loot = new List<Thing>();
+            bool strippedAnything = false;
+
+            // EQUIPMENT (weapons) — always loot. Per-piece TryDropEquipment, the same call Pawn.Strip makes.
+            if (inner.equipment != null)
+            {
+                var eqList = inner.equipment.AllEquipmentListForReading;
+                for (int i = eqList.Count - 1; i >= 0; i--)
+                {
+                    if (inner.equipment.TryDropEquipment(eqList[i], out var droppedEq, pos, forbid: false)
+                        && droppedEq != null)
+                    {
+                        loot.Add(droppedEq);
+                        strippedAnything = true;
+                    }
+                }
+            }
+
+            // INVENTORY (drugs, silver, pack-animal cargo) — always loot.
+            var invOwner = inner.inventory?.innerContainer;
+            if (invOwner != null)
+            {
+                for (int i = invOwner.Count - 1; i >= 0; i--)
+                {
+                    if (invOwner.TryDrop(invOwner[i], pos, map, ThingPlaceMode.Near, out var droppedInv)
+                        && droppedInv != null)
+                    {
+                        loot.Add(droppedInv);
+                        strippedAnything = true;
+                    }
+                }
+            }
+
+            // APPAREL — untainted is loot; tainted follows the per-category policy. "Tainted" matches the
+            // game's own definition: worn by the corpse AND the apparel kind cares (careIfWornByCorpse).
+            if (inner.apparel != null)
+            {
+                var worn = inner.apparel.WornApparel;
+                for (int i = worn.Count - 1; i >= 0; i--)
+                {
+                    var ap = worn[i];
+                    // LOCKED apparel (bonded/biocoded/royal-locked) stays on the body, exactly like vanilla:
+                    // Pawn.Strip's DropAll only drops locked pieces when the inner pawn is Destroyed.
+                    if (!inner.Destroyed && inner.apparel.IsLocked(ap))
+                        continue;
+                    bool tainted = ap.WornByCorpse && ap.def.apparel != null && ap.def.apparel.careIfWornByCorpse;
+                    var action = StripPolicy.ApparelAction(tainted, ap.def.smeltable,
+                        s.taintedSmeltablePolicy, s.taintedNonSmeltablePolicy);
+                    if (action == TaintedApparelPolicy.LeaveOnCorpse)
+                        continue; // stays on the body, goes wherever the body goes
+                    if (!inner.apparel.TryDrop(ap, out var droppedAp, pos, forbid: false) || droppedAp == null)
+                        continue;
+                    strippedAnything = true;
+                    switch (action)
+                    {
+                        case TaintedApparelPolicy.Destroy:
+                            // The mod's one deliberate destruction — explicit player opt-in, tainted only.
+                            if (!droppedAp.Destroyed)
+                                droppedAp.Destroy(DestroyMode.Vanish);
+                            break;
+                        case TaintedApparelPolicy.DropAndForbid:
+                            droppedAp.SetForbidden(true, warnOnFail: false);
+                            break;
+                        default:
+                            loot.Add(droppedAp);
+                            break;
+                    }
+                }
+            }
+
+            if (!strippedAnything)
+                return;
+
+            // The vanilla strip consequences, faithfully: the pending Strip designation is now moot, the
+            // hauler logs a stripped body, and the dead pawn's faction reacts exactly as to a manual strip.
+            map.designationManager.DesignationOn(corpse, DesignationDefOf.Strip)?.Delete();
+            hauler.records?.Increment(RecordDefOf.BodiesStripped);
+            if (inner.Faction != null)
+                inner.Faction.Notify_MemberStripped(inner, Faction.OfPlayer);
+
+            ScoopLoot(hauler, loot, s);
+            HDLog.Dbg($"{hauler} auto-stripped {corpse} on haul: {loot.Count} loot stacks.");
+        }
+
+        // Load the stripped loot into the hauler's inventory (tagged — the unload pass, shared
+        // inventories, and CE HoldTracker all pick it up from there). Whatever doesn't fit the
+        // carry/CE limits simply stays on the ground as an ordinary haulable.
+        private static void ScoopLoot(Pawn hauler, List<Thing> loot, HaulersDreamSettings s)
+        {
+            var inv = hauler.inventory?.GetDirectlyHeldThings();
+            var comp = hauler.GetComp<CompHauledToInventory>();
+            if (inv == null || comp == null)
+                return;
+            for (int i = 0; i < loot.Count; i++)
+            {
+                var t = loot[i];
+                if (t == null || t.Destroyed || !t.Spawned)
+                    continue;
+                int take = OverloadGate.CountToPickUp(hauler, t, s);
+                if (take <= 0)
+                    continue;
+                // SplitOff with count >= stackCount despawns the thing itself (full-stack pickup path).
+                var split = t.SplitOff(Math.Min(take, t.stackCount));
+                if (inv.TryAdd(split, canMergeWithExistingStacks: false))
+                {
+                    comp.RegisterHauledItem(split);
+                    comp.NotifyYieldPicked();
+                    if (!split.Spawned)
+                        split.Position = hauler.Position;
+                }
+                else if (split != null && !split.Destroyed && !split.Spawned)
+                {
+                    // Add failed (effectively impossible) — put it back rather than ever losing it.
+                    GenPlace.TryPlaceThing(split, hauler.Position, hauler.Map, ThingPlaceMode.Near);
+                }
+            }
+        }
+    }
+}

@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<loadFolders>
+  <!-- Root holds shared content (Defs, Patches, Languages); 1.6 holds the version-specific
+       Assemblies. Last entry wins on path collisions. -->
+  <v1.6>
+    <li>/</li>
+    <li>1.6</li>
+  </v1.6>
+</loadFolders>

@@ -1,0 +1,25 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+    paths-ignore:
+      - '**/*.md'
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build-and-test:
+    # windows-latest so the net48 test host is available.
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      # Builds Core + game assembly against Krafs.Rimworld.Ref (no game install needed)
+      # and runs the headless unit tests.
+      - name: Build + test
+        run: dotnet test Source/HaulersDream.sln -c Release --nologo

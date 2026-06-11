@@ -1,0 +1,105 @@
+name: Release
+
+# Changesets-driven releases:
+#  - PRs add changeset files (bun changeset).
+#  - On push to main, changesets/action opens/updates a "chore: release" PR that bumps
+#    package.json, About.xml <modVersion>, Directory.Build.props <Version> and CHANGELOG.md.
+#  - Merging that PR lands on main with no pending changesets -> this workflow tags the
+#    version, creates a GitHub Release (with the packaged zip), and publishes the mod to
+#    the Steam Workshop. The developer only ever merges PRs.
+
+on:
+  push:
+    branches: [main]
+
+concurrency: release-${{ github.ref }}
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  release:
+    # Forks have no secrets and must not attempt to publish.
+    if: github.repository == 'refzlund/haulers-dream'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # full history so existing tags are visible
+
+      - uses: oven-sh/setup-bun@v2
+
+      - run: bun install --frozen-lockfile
+
+      - name: Create release PR or pass through
+        id: changesets
+        uses: changesets/action@v1
+        with:
+          version: bun run version
+          commit: 'chore: release'
+          title: 'chore: release'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      # No pending changesets means main holds a finished version. Publish it once:
+      # the tag check makes unrelated merges (docs, CI tweaks) a no-op.
+      - name: Check for unreleased version
+        id: ver
+        if: steps.changesets.outputs.hasChangesets == 'false'
+        run: |
+          VERSION=$(jq -r .version package.json)
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          if git rev-parse "v$VERSION" >/dev/null 2>&1; then
+            echo "new=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "new=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - uses: actions/setup-dotnet@v4
+        if: steps.ver.outputs.new == 'true'
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Build + package
+        if: steps.ver.outputs.new == 'true'
+        run: bun run package
+
+      - name: Release notes
+        id: notes
+        if: steps.ver.outputs.new == 'true'
+        run: |
+          bun scripts/changelog-latest.ts > release-notes.md
+          {
+            echo 'note<<CHANGENOTE_EOF'
+            cat release-notes.md
+            echo
+            echo "Full changelog: https://github.com/refzlund/haulers-dream/releases/tag/v${{ steps.ver.outputs.version }}"
+            echo 'CHANGENOTE_EOF'
+          } >> "$GITHUB_OUTPUT"
+
+      # Steam first, tag last: if the Workshop upload fails (e.g. missing secrets), no tag is
+      # created, so re-running the failed workflow retries the whole publish. A re-run after a
+      # successful Steam upload merely re-uploads identical content, which is harmless.
+      - name: Publish to Steam Workshop
+        if: steps.ver.outputs.new == 'true'
+        uses: m00nl1ght-dev/steam-workshop-deploy@v4
+        with:
+          username: ${{ secrets.STEAM_USERNAME }}
+          configVdf: ${{ secrets.STEAM_CONFIG_VDF }}
+          appId: 294100
+          publishedFileId: 3742230809
+          path: dist/HaulersDream
+          changeNote: ${{ steps.notes.outputs.note }}
+
+      - name: Tag + GitHub Release
+        if: steps.ver.outputs.new == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          git tag "v${{ steps.ver.outputs.version }}"
+          git push origin "v${{ steps.ver.outputs.version }}"
+          gh release create "v${{ steps.ver.outputs.version }}" \
+            --title "v${{ steps.ver.outputs.version }}" \
+            --notes-file release-notes.md \
+            "dist/HaulersDream-v${{ steps.ver.outputs.version }}.zip"

@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Patch>
+
+  <!-- Inject the inventory-tracking comp onto every pawn ThingDef (same approach as Pick Up And
+       Haul). Pawn defs without a <comps> node are simply skipped; those pawns won't scoop, which is
+       fine. -->
+  <Operation Class="PatchOperationAdd">
+    <xpath>Defs/ThingDef[thingClass="Pawn"]/comps</xpath>
+    <value>
+      <li><compClass>HaulersDream.CompHauledToInventory</compClass></li>
+    </value>
+  </Operation>
+
+</Patch>

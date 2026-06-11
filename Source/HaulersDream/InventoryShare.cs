@@ -1,0 +1,235 @@
+using System.Collections.Generic;
+using HaulersDream.Core;
+using RimWorld;
+using Verse;
+using Verse.AI;
+
+namespace HaulersDream
+{
+    /// <summary>
+    /// "Shared inventories": resources a colonist auto-scooped (tagged in CompHauledToInventory) are
+    /// available to other colonists for building/crafting. Only TAGGED items are shareable — never a
+    /// pawn's organic kit (drugs, food, weapons) — which makes the "actively-using opt-out" airtight.
+    /// Drafted/downed/mental carriers are excluded.
+    /// </summary>
+    public static class InventoryShare
+    {
+        /// <summary>A reachable carrier's tagged inventory stack of <paramref name="def"/>, closest first, or null.
+        /// The worker's OWN scooped stock is considered first (distance 0), so it's used before fetching from others.</summary>
+        public static Thing FindSharableStack(Map map, Pawn worker, ThingDef def)
+        {
+            if (map == null || worker == null || def == null)
+                return null;
+
+            Thing best = null;
+            int bestDist = int.MaxValue;
+            // The worker's own inventory first — it's already in hand at the site (distance 0).
+            ConsiderCarrierStack(worker, worker, def, ref best, ref bestDist);
+
+            var pawns = map.mapPawns.SpawnedPawnsInFaction(Faction.OfPlayer);
+            for (int i = 0; i < pawns.Count; i++)
+            {
+                var carrier = pawns[i];
+                if (IsEligibleCarrier(carrier, worker))
+                    ConsiderCarrierStack(carrier, worker, def, ref best, ref bestDist);
+            }
+            return best;
+        }
+
+        /// <summary>Rank <paramref name="carrier"/>'s tagged stacks of <paramref name="def"/> into best/bestDist.
+        /// The worker's own stock (self) bypasses the walk-to-carrier reach gate and ranks at distance 0.</summary>
+        private static void ConsiderCarrierStack(Pawn carrier, Pawn worker, ThingDef def, ref Thing best, ref int bestDist)
+        {
+            var comp = carrier.GetComp<CompHauledToInventory>();
+            var owner = carrier.inventory?.innerContainer;
+            if (comp == null || owner == null)
+                return;
+            bool isSelf = carrier == worker;
+            bool reachable = isSelf, reachChecked = isSelf;
+            foreach (var tagged in comp.GetHashSet())
+            {
+                if (tagged == null || tagged.def != def || !owner.Contains(tagged))
+                    continue;
+                bool canReserve = worker.CanReserve(tagged);
+                if (!isSelf && canReserve && !reachChecked)
+                {
+                    reachable = worker.CanReach(carrier, PathEndMode.Touch, Danger.Some);
+                    reachChecked = true;
+                }
+                if (!isSelf && reachChecked && !reachable)
+                    break; // remote carrier unreachable -> none of its stacks qualify
+                if (!SharePolicy.ShouldIncludeStack(isSelf, reachable, canReserve, isUsable: true, withinRadius: true))
+                    continue;
+                int d = isSelf ? 0 : IntVec3Utility.ManhattanDistanceFlat(worker.Position, carrier.Position);
+                if (d < bestDist)
+                {
+                    bestDist = d;
+                    best = tagged;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Append every reachable, reservable, tagged inventory stack that this <paramref name="bill"/> can use
+        /// (matching the recipe + bill filters, exactly like vanilla <c>IsUsableIngredient</c>) to
+        /// <paramref name="outList"/>, deduped. Used to make carried materials count as bill ingredients.
+        /// </summary>
+        public static void AddSharableStacksForBill(Pawn worker, Bill bill, List<Thing> outList)
+        {
+            var map = worker?.Map;
+            if (map == null || bill?.recipe == null || outList == null)
+                return;
+
+            // Respect the bill's player-set ingredient search radius exactly like vanilla
+            // WorkGiver_DoBill, which bounds floor candidates by
+            // (t.Position - billGiver.Position).LengthHorizontalSquared < radiusSq. 999f means
+            // "Unlimited" -> no bound, so the fast path leaves the common case unchanged.
+            float radius = bill.ingredientSearchRadius;
+            bool bounded = radius < 999f;
+            IntVec3 billGiverPos = IntVec3.Invalid;
+            if (bounded)
+            {
+                if (bill.billStack?.billGiver is Thing giver && giver.Spawned)
+                    billGiverPos = giver.Position;
+                else
+                    bounded = false; // can't locate the giver -> fall back to unbounded
+            }
+            float radiusSq = radius * radius;
+
+            // The worker is already AT the bench: its own scooped stock is the closest possible candidate
+            // (no fetch, no walk), so it bypasses the radius + reach gates that only bound fetching from others.
+            // This is the fix for "a cook holding raw food still reads 'missing ingredients'".
+            int beforeSelf = outList.Count;
+            AddCarrierStacks(worker, worker, bill, outList);
+            if (HaulersDreamMod.Settings != null && HaulersDreamMod.Settings.verboseLogging)
+            {
+                var wc = worker.GetComp<CompHauledToInventory>();
+                HDLog.Dbg($"DoBill ingredient-share for {worker} / {bill.recipe?.defName ?? "?"}: " +
+                          $"worker tagged={wc?.GetHashSet().Count ?? 0}, self-pass added {outList.Count - beforeSelf} stack(s).");
+            }
+
+            var pawns = map.mapPawns.SpawnedPawnsInFaction(Faction.OfPlayer);
+            for (int i = 0; i < pawns.Count; i++)
+            {
+                var carrier = pawns[i];
+                if (!IsEligibleCarrier(carrier, worker)) // excludes carrier == worker -> no double-add of self
+                    continue;
+                if (bounded && (carrier.Position - billGiverPos).LengthHorizontalSquared >= radiusSq)
+                    continue; // carrier is outside the bill's ingredient radius
+                AddCarrierStacks(carrier, worker, bill, outList);
+            }
+        }
+
+        /// <summary>Append <paramref name="carrier"/>'s tagged, bill-usable, reservable inventory stacks to
+        /// <paramref name="outList"/>. The worker's OWN stock (carrier == worker) skips the walk-to-carrier
+        /// reach gate (it's already in hand). Radius is enforced by the caller for non-self carriers.</summary>
+        private static void AddCarrierStacks(Pawn carrier, Pawn worker, Bill bill, List<Thing> outList)
+        {
+            var comp = carrier.GetComp<CompHauledToInventory>();
+            var owner = carrier.inventory?.innerContainer;
+            if (comp == null || owner == null)
+                return;
+            bool isSelf = carrier == worker;
+            bool reachable = isSelf, reachChecked = isSelf;
+            foreach (var tagged in comp.GetHashSet())
+            {
+                if (tagged == null || !owner.Contains(tagged) || !IsUsableForBill(tagged, bill))
+                    continue;
+                bool canReserve = worker.CanReserve(tagged); // a stack reserved for the carrier's own job -> opt-out
+                if (!isSelf && canReserve && !reachChecked)
+                {
+                    reachable = worker.CanReach(carrier, PathEndMode.Touch, Danger.Some);
+                    reachChecked = true;
+                }
+                if (!isSelf && reachChecked && !reachable)
+                    break;
+                if (SharePolicy.ShouldIncludeStack(isSelf, reachable, canReserve, isUsable: true, withinRadius: true)
+                    && !outList.Contains(tagged))
+                    outList.Add(tagged);
+            }
+        }
+
+        /// <summary>Mirror of vanilla <c>WorkGiver_DoBill.IsUsableIngredient</c>: allowed by the bill and by some recipe ingredient.</summary>
+        internal static bool IsUsableForBill(Thing t, Bill bill)
+        {
+            if (!bill.IsFixedOrAllowedIngredient(t))
+                return false;
+            var ings = bill.recipe.ingredients;
+            for (int i = 0; i < ings.Count; i++)
+                if (ings[i].filter.Allows(t))
+                    return true;
+            return false;
+        }
+
+        // Per-tick result cache for CountSharable: the construction work scan calls it once per missing-material
+        // blueprint per def — a colony-wide pawn × inventory walk each time. Within one tick the answer for a
+        // given (worker, def) cannot change, so cache it (cleared whenever the tick advances).
+        private static int countCacheTick = -1;
+        private static readonly Dictionary<long, int> countCache = new Dictionary<long, int>();
+
+        /// <summary>Total count of <paramref name="def"/> held (tagged) by the worker itself plus eligible
+        /// carriers — for the construction availability gate (so a builder's OWN scooped stock counts too).</summary>
+        public static int CountSharable(Map map, Pawn worker, ThingDef def)
+        {
+            if (map == null || def == null || worker == null)
+                return 0;
+
+            int tick = Find.TickManager?.TicksGame ?? -1;
+            if (tick != countCacheTick)
+            {
+                countCacheTick = tick;
+                countCache.Clear();
+            }
+            long key = ((long)worker.thingIDNumber << 32) | (uint)def.shortHash;
+            if (countCache.TryGetValue(key, out int cached))
+                return cached;
+
+            int total = CountTaggedOfDef(worker, def); // the worker's own scooped stock counts
+            var pawns = map.mapPawns.SpawnedPawnsInFaction(Faction.OfPlayer);
+            for (int i = 0; i < pawns.Count; i++)
+            {
+                var carrier = pawns[i];
+                if (IsEligibleCarrier(carrier, worker)) // excludes worker -> no double-count
+                    total += CountTaggedOfDef(carrier, def);
+            }
+            countCache[key] = total;
+            return total;
+        }
+
+        private static int CountTaggedOfDef(Pawn carrier, ThingDef def)
+        {
+            var comp = carrier?.GetComp<CompHauledToInventory>();
+            var owner = carrier?.inventory?.innerContainer;
+            if (comp == null || owner == null)
+                return 0;
+            int total = 0;
+            foreach (var tagged in comp.GetHashSet())
+                if (tagged != null && tagged.def == def && owner.Contains(tagged))
+                    total += tagged.stackCount;
+            return total;
+        }
+
+        private static bool IsEligibleCarrier(Pawn carrier, Pawn worker)
+        {
+            if (carrier == null || carrier == worker)
+                return false;
+            if (!carrier.Spawned || carrier.Dead || carrier.Downed)
+                return false;
+            if (carrier.Drafted) // drafted pawns never share
+                return false;
+            if (carrier.InMentalState)
+                return false;
+            // A pawn mid batch-craft is actively holding the ingredients it pre-loaded for its own recipe runs
+            // (deliberately untagged so they're not shared) — but the self-heal could re-tag them if it also carries
+            // scooped stock of the same def. Never let another pawn pull from a batch-crafter, so the batch can't be
+            // starved of its own pre-loaded ingredients mid-run.
+            if (carrier.CurJobDef == HaulersDreamDefOf.HaulersDream_BatchCraft
+                || carrier.CurJobDef == HaulersDreamDefOf.HaulersDream_InventoryDoBill
+                || carrier.CurJobDef == HaulersDreamDefOf.HaulersDream_BillPrepGather
+                || carrier.CurJobDef == HaulersDreamDefOf.HaulersDream_OverloadConstructDeliver
+                || carrier.CurJobDef == HaulersDreamDefOf.HaulersDream_ConstructDeliverBuild)
+                return false;
+            return true;
+        }
+    }
+}

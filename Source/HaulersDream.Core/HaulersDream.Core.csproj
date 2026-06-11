@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!--
+    Pure, game-independent logic (no RimWorld/Unity references). This is the only headless-
+    testable surface (see .docs/02). It still ships into the mod's Assemblies folder because the
+    game-coupled assembly references it.
+  -->
+  <PropertyGroup>
+    <AssemblyName>HaulersDream.Core</AssemblyName>
+    <RootNamespace>HaulersDream.Core</RootNamespace>
+    <OutputPath>..\..\1.6\Assemblies\</OutputPath>
+  </PropertyGroup>
+</Project>

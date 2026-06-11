@@ -1,0 +1,18 @@
+{
+  "name": "haulers-dream",
+  "version": "1.0.0",
+  "private": true,
+  "description": "RimWorld mod: colonists use their inventories smartly when moving items — fewer round-trips, less walking, more working.",
+  "repository": "github:refzlund/haulers-dream",
+  "scripts": {
+    "build": "bun scripts/build.ts",
+    "test": "bun scripts/test.ts",
+    "deploy": "bun scripts/deploy.ts",
+    "package": "bun scripts/package.ts",
+    "version": "changeset version && bun scripts/sync-version.ts",
+    "changeset": "changeset"
+  },
+  "devDependencies": {
+    "@changesets/cli": "^2.27.10"
+  }
+}

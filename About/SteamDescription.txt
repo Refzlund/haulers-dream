@@ -1,0 +1,82 @@
+Colonists use their inventories smartly when moving items, and carry out their tasks more efficiently: fewer round-trips, less walking back and forth, more time actually working.
+
+Also adds small micro-management improvements that build on these changes.
+
+[b]Note[/b]
+> compatible: Combat Extended, Adaptive Storage Framework
+> replaces mods: Pick-up and Haul, Harvest and Haul, Auto Strip on Haul, Haul After Stripping, Everyone Hauls, Haul to Stack
+
+[h2]Smart inventories[/h2]
+How pawns fill their pockets: work yields, hauls and loot ride in the inventory, so one trip does the work of many.
+
+[b]1. Harvest and haul[/b]
+A pawn that harvests plants, mines ore or deconstructs a building scoops the drops into its inventory as it works, then makes one storage trip at the end of the run. Realistic by default: the yield hits the floor first, then gets scooped. Each work type (plants, mining, deep drills, deconstruction, animals) has its own toggle.
+
+[b]2. Pick up and haul[/b]
+A pawn sent to haul one item picks up everything haulable around it (weapons, apparel, meals, chunks) and delivers the lot in one trip, planned the moment the haul starts. Two modes: every haul sweeps the area, or (default) hauls you order manually stay surgical unless you order a second one nearby.
+
+[b]3. Strip on haul[/b]
+A corpse haul strips the body first: the gear goes into the hauler's inventory, the body into its hands, and one trip moves both. No more strip orders after every battle. You choose which hauls strip, whether your own dead are left alone (they are, by default), and what happens to tainted apparel: take it, leave it on the body, forbid it, or destroy it (smeltable and non-smeltable configured separately). Stripping a living prisoner works the same way, with a follow-up strip queued in case the target dresses itself again.
+
+[b]4. Fewer round-trips[/b]
+A builder or cook gathers everything the job needs into its inventory in one sweep and walks to the bench or site once. A geothermal generator's 340 steel no longer takes five hand-carry trips.
+
+[b]5. Shared inventories[/b]
+A pawn carrying goods works like a walking stockpile: workers take what they need straight from the carrier, an idle carrier even walks out to meet them halfway, and everyone uses their own carried stock first (a cook can cook with the berries it just picked). Optional: builders may claim materials from a hauler mid-transit.
+
+[h2]Smarter hauling[/h2]
+What happens between picking things up and putting them away.
+
+[b]6. Haul to stack[/b]
+Haulers top up existing stacks instead of starting new ones, and several pawns can deliver to the same tile at once (destination tiles are no longer reserved). Which stockpile wins is still decided by priority and distance; within that room, stacking wins. Works on the ground, on shelves, and in modded storage units; outdoor stockpiles consolidate within a short radius.
+
+[b]7. Drop off in passing[/b]
+A pawn heading off on a long trip with a full backpack drops its load at a stockpile that's roughly on the way, instead of carrying it across the map and back.
+
+[b]8. Overloaded[/b]
+Pawns can carry more than their max carry weight, slowed down while encumbered, and only when it saves time over another round-trip. One slider runs from "no slowdown, carry freely" to "never overload"; a strict mode never goes past 100%. With Combat Extended loaded, CE's weight, bulk and encumbrance rules take over entirely.
+
+[h2]Planning tools[/h2]
+Better micro-management via planning: right-click → "Plan prioritized [task]…"
+
+[b]9. Planned crafting[/b]
+Example: you want 12 simple meals.
+X ― Tap "prioritize cooking" three times, and each run makes its own ingredient trips
+✓ ― One order via "Plan prioritized crafting…": the cook fetches all 120 raw food in one trip and cooks the dozen in one go
+
+The repeat count is capped by what's actually on the map, and the finished products ride back with everything else.
+
+[b]10. Route planning[/b]
+Right-click a work target and the pawn gets an efficient route over the whole patch, previewed live on the map with a time estimate. The selection modes fit the work: the nearest chain, the whole touching vein, a radius, whole rooms (cleaning), or a whole growing zone (harvesting).
+
+Example: you're short on food and want berries.
+X ― Mark the bushes, then shift-right-click every single bush in the "right" order yourself
+✓ ― "Plan prioritized harvesting…", choose how far the pawn may walk, and it finds the best route over the most bushes
+✓ ― [i]BONUS[/i]: "Smart routing" circles the trip back toward storage, so the last bush ends right next to your food stockpile
+
+Hand-pick must-visit targets, pin the start and end, pull in unmarked plants once they're grown enough. Every target type remembers your settings, and a mining route that runs into fog extends itself as new ore is revealed.
+
+[b]11. Smarter construction[/b]
+Ordering a construction is one job: the pawn hauls the materials (in its inventory, fewer trips) and builds right away. Plan a whole fence line as haul-only, stocking the sites so several pawns build in parallel, or as haul+build, site by site. A separate order, "Prioritize hauling materials to…", stocks a site before it's even buildable.
+
+[h2]Quality of life[/h2]
+
+[b]12. Capable of dumb labor[/b]
+The planners respect work incapability: a pawn that won't clean is never offered "Plan prioritized cleaning". And if "incapable of dumb labor" pawns annoy you, three optional overrides (off by default) make every pawn able to haul, clean, or cut plants, whatever their backstory, traits, genes or titles say. The game itself follows along: work tab, right-click prioritizing and automatic work.
+
+[h2]For the tech nerds[/h2]
+Route order is computed exactly with Held-Karp dynamic programming on small routes, and with nearest-neighbour plus 2-opt on larger ones. Veins are selected by flood fill, and a mining route that hits fog re-floods as new ore is revealed. The walk-distance budget is an orienteering problem, which is NP-hard, so it runs greedy cheapest-insertion: near-optimal in practice, and raising the budget only extends the route instead of reshuffling it.
+
+Overloading is break-even math: a pawn takes extra weight only while the slowdown costs less time than another round trip would.
+
+The expensive planners cache their results per game tick and all scans run on hard cell budgets, so the job scanner stays fast on big colonies. The decision math lives in a separate library with no game types in it, covered by 260+ unit tests.
+
+Storage mods work without special cases: every haul destination is validated through the game's own storage check, so anything that follows the game's storage rules just works. Combat Extended is detected at runtime over a reflection bridge with no hard dependency; when CE is present its weight and bulk rules take over, and if it changes or is absent the bridge falls back to vanilla behaviour.
+
+[hr][/hr]
+
+There are extensive config options to tune the feel and behaviour of this mod to your taste!
+
+I thank the authors of all mods mentioned above for the inspiration for this mod.
+
+Leave your suggestions to this mod in the comments!

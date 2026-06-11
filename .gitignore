@@ -1,0 +1,28 @@
+# Build output (release zips are attached to GitHub Releases; Steam gets the packaged copy)
+Source/**/bin/
+Source/**/obj/
+Source/**/*.user
+1.6/Assemblies/
+dist/
+TestResults/
+
+# Local environment (machine-specific paths and secrets — see .env.example)
+.env
+.env.*
+!.env.example
+
+# JS tooling
+node_modules/
+
+# AI / agent folders
+.claude/
+.cursor/
+.codex/
+.aider*
+
+# IDE / OS
+.vs/
+.idea/
+*.suo
+.DS_Store
+Thumbs.db

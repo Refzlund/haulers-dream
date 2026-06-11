@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Patch>
+
+  <!-- Add Hauler's Dream's overload move-speed penalty to the vanilla MoveSpeed stat. The StatPart
+       itself is inert unless the pawn is a player humanlike carrying past 100% capacity AND the
+       overload slider is between "no slowdown" and "off", so adding it is always safe. -->
+  <Operation Class="PatchOperationAdd">
+    <xpath>/Defs/StatDef[defName="MoveSpeed"]/parts</xpath>
+    <value>
+      <li Class="HaulersDream.StatPart_Overload" />
+    </value>
+  </Operation>
+
+</Patch>

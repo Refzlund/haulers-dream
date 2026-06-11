@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <!-- Pickup now happens at yield-production time via Harmony hooks (no WorkGiver). Only the
+       single unload pass is a job. -->
+  <JobDef>
+    <defName>HaulersDream_UnloadInventory</defName>
+    <driverClass>HaulersDream.JobDriver_UnloadHauledInventory</driverClass>
+    <reportString>unloading inventory.</reportString>
+    <casualInterruptible>false</casualInterruptible>
+    <suspendable>false</suspendable>
+  </JobDef>
+
+  <!-- DropThenHaul mode: the producer scoops up its own fresh ground drops. -->
+  <JobDef>
+    <defName>HaulersDream_SelfPickup</defName>
+    <driverClass>HaulersDream.JobDriver_SelfPickup</driverClass>
+    <reportString>gathering harvested goods.</reportString>
+    <casualInterruptible>false</casualInterruptible>
+    <suspendable>false</suspendable>
+  </JobDef>
+
+  <!-- Inventory-based construction delivery: load material into inventory, deliver in fewer trips.
+       NOTE: deliberately no <checkEncumbrance> — that would cap inventory loading at 100% capacity and
+       defeat smart overload (see JobDriver_OverloadConstructDeliver / Toils_Haul.TakeToInventory). -->
+  <JobDef>
+    <defName>HaulersDream_OverloadConstructDeliver</defName>
+    <driverClass>HaulersDream.JobDriver_OverloadConstructDeliver</driverClass>
+    <reportString>delivering materials.</reportString>
+  </JobDef>
+
+  <!-- Same driver as above, but this def also TETHERS the construction: when the delivery completes, the
+       driver queues the next step on the same site (another material type, or vanilla FinishFrame once
+       buildable) at the front of the queue — so an ordered "construct X" hauls AND builds as one task. -->
+  <JobDef>
+    <defName>HaulersDream_ConstructDeliverBuild</defName>
+    <driverClass>HaulersDream.JobDriver_OverloadConstructDeliver</driverClass>
+    <reportString>delivering materials to build.</reportString>
+  </JobDef>
+
+  <!-- Claim a stack from a colonist hand-hauling it to storage, then deliver it to a build. -->
+  <JobDef>
+    <defName>HaulersDream_ClaimFromHauler</defName>
+    <driverClass>HaulersDream.JobDriver_ClaimFromHauler</driverClass>
+    <reportString>claiming materials from a hauler.</reportString>
+  </JobDef>
+
+  <!-- Batch a workbench bill: pre-load all reps' ingredients into inventory in one trip, craft them at the
+       bench, collect products into inventory, then unload. NOTE: deliberately no <checkEncumbrance> — that
+       would cap inventory pre-loading at 100% capacity and defeat smart overload (see JobDriver_BatchCraft /
+       Toils_Haul.TakeToInventory). -->
+  <!-- suspendable false: a suspension (vomit, slave suppression) resumes via a FRESH driver whose handoff is
+       long consumed — it would silently shrink the rest of the batch to a 1-rep recovery. A clean end is better:
+       leftovers/products are tagged + the finish action flushes them to storage. -->
+  <JobDef>
+    <defName>HaulersDream_BatchCraft</defName>
+    <driverClass>HaulersDream.JobDriver_BatchCraft</driverClass>
+    <reportString>crafting a batch.</reportString>
+    <casualInterruptible>false</casualInterruptible>
+    <suspendable>false</suspendable>
+  </JobDef>
+
+  <!-- RETIRED (kept only so saves that contain this job mid-flight still load): the direct-craft conversion could
+       finish a recipe without consuming ingredients, because vanilla records placedThings only for JobDefOf.DoBill.
+       Superseded by HaulersDream_BillPrepGather below. Nothing creates this job any more. -->
+  <JobDef>
+    <defName>HaulersDream_InventoryDoBill</defName>
+    <driverClass>HaulersDream.JobDriver_InventoryDoBill</driverClass>
+    <reportString>crafting.</reportString>
+  </JobDef>
+
+  <!-- Gather a crafting bill's ingredient stacks into inventory in one (overweight) sweep, end at the bench, and
+       let vanilla's own DoBill craft from the carried stock. NOTE: no <checkEncumbrance> — that would cap loading
+       at 100% capacity and defeat the one-trip purpose (see JobDriver_BillPrepGather). -->
+  <!-- suspendable false: a suspend/resume restarts the sweep on a FRESH driver at loadIndex 0, re-taking full
+       bill counts on top of what's already in inventory (over-gather). A clean end recovers correctly instead:
+       loaded stacks are tagged, and the held-stock guard stops the next scan from re-gathering. -->
+  <JobDef>
+    <defName>HaulersDream_BillPrepGather</defName>
+    <driverClass>HaulersDream.JobDriver_BillPrepGather</driverClass>
+    <reportString>gathering crafting ingredients.</reportString>
+    <suspendable>false</suspendable>
+  </JobDef>
+
+  <!-- Bulk hauling (the native Pick-Up-And-Haul): walk the planned pickup chain loading every nearby haulable
+       into inventory, then force the single storage-aware unload pass — one trip for the whole sweep.
+       NOTE: deliberately no <checkEncumbrance> — that would cap loading at 100% capacity and defeat the
+       smart-overload worth-it ceiling (see BulkHaul / JobDriver_BulkHaul). -->
+  <!-- suspendable false: a suspend/resume restarts on a FRESH driver at loadIndex 0, re-taking planned counts
+       on top of what's already loaded (over-gather). A clean end recovers correctly instead: loaded stacks are
+       tagged and the finish action / idle backstop flushes them to storage. -->
+  <JobDef>
+    <defName>HaulersDream_BulkHaul</defName>
+    <driverClass>HaulersDream.JobDriver_BulkHaul</driverClass>
+    <reportString>hauling everything nearby.</reportString>
+    <suspendable>false</suspendable>
+  </JobDef>
+
+</Defs>

@@ -1,0 +1,56 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!--
+    The game-coupled mod assembly. Compiles against RimWorld via Krafs.Rimworld.Ref (reference
+    assemblies — no game install needed) and publicizes Assembly-CSharp for internal access.
+    Harmony is compile-only (ExcludeAssets=runtime) — the runtime 0Harmony.dll is provided by the
+    brrainz.harmony mod. Builds into the mod's 1.6/Assemblies folder.
+  -->
+  <PropertyGroup>
+    <AssemblyName>HaulersDream</AssemblyName>
+    <RootNamespace>HaulersDream</RootNamespace>
+    <OutputPath>..\..\1.6\Assemblies\</OutputPath>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Krafs.Rimworld.Ref" Version="$(RimWorldRefVersion)" />
+    <PackageReference Include="Lib.Harmony" Version="$(HarmonyVersion)" ExcludeAssets="runtime" />
+    <PackageReference Include="Krafs.Publicizer" Version="$(PublicizerVersion)">
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+    <Publicize Include="Assembly-CSharp" />
+    <ProjectReference Include="..\HaulersDream.Core\HaulersDream.Core.csproj" />
+  </ItemGroup>
+
+  <!--
+    Deploy the full mod (content + both DLLs) into the RimWorld Mods folder after every build, so
+    the game always runs the freshly-built version. Skipped automatically where RimWorld isn't
+    installed (e.g. CI) via the Exists() condition. Override the path with -p:RimWorldModsDir=...
+  -->
+  <PropertyGroup>
+    <!-- Resolution order: -p:RimWorldModsDir=… > RIMWORLD_MODS_DIR (.env via bun run deploy) > default Steam path. -->
+    <RimWorldModsDir Condition="'$(RimWorldModsDir)' == ''">$(RIMWORLD_MODS_DIR)</RimWorldModsDir>
+    <RimWorldModsDir Condition="'$(RimWorldModsDir)' == ''">C:\Steam\steamapps\common\RimWorld\Mods</RimWorldModsDir>
+    <HDModSrcDir>$(MSBuildProjectDirectory)\..\..</HDModSrcDir>
+    <HDDeployDir>$(RimWorldModsDir)\HaulersDream</HDDeployDir>
+  </PropertyGroup>
+
+  <Target Name="DeployToRimWorld" AfterTargets="Build" Condition="Exists('$(RimWorldModsDir)')">
+    <ItemGroup>
+      <_HDAbout Include="$(HDModSrcDir)\About\**\*.*" />
+      <_HDDefs Include="$(HDModSrcDir)\Defs\**\*.*" />
+      <_HDPatches Include="$(HDModSrcDir)\Patches\**\*.*" />
+      <_HDLang Include="$(HDModSrcDir)\Languages\**\*.*" />
+      <_HDAsm Include="$(HDModSrcDir)\1.6\Assemblies\*.dll" />
+      <_HDLoad Include="$(HDModSrcDir)\LoadFolders.xml" />
+    </ItemGroup>
+    <!-- Clean regenerated folders first so renamed/removed Defs or DLLs don't linger in the deploy. -->
+    <RemoveDir Directories="$(HDDeployDir)\Defs;$(HDDeployDir)\Patches;$(HDDeployDir)\Languages;$(HDDeployDir)\1.6" />
+    <Copy SourceFiles="@(_HDAbout)" DestinationFiles="@(_HDAbout->'$(HDDeployDir)\About\%(RecursiveDir)%(Filename)%(Extension)')" SkipUnchangedFiles="true" />
+    <Copy SourceFiles="@(_HDDefs)" DestinationFiles="@(_HDDefs->'$(HDDeployDir)\Defs\%(RecursiveDir)%(Filename)%(Extension)')" />
+    <Copy SourceFiles="@(_HDPatches)" DestinationFiles="@(_HDPatches->'$(HDDeployDir)\Patches\%(RecursiveDir)%(Filename)%(Extension)')" />
+    <Copy SourceFiles="@(_HDLang)" DestinationFiles="@(_HDLang->'$(HDDeployDir)\Languages\%(RecursiveDir)%(Filename)%(Extension)')" />
+    <Copy SourceFiles="@(_HDAsm)" DestinationFolder="$(HDDeployDir)\1.6\Assemblies" />
+    <Copy SourceFiles="@(_HDLoad)" DestinationFolder="$(HDDeployDir)" SkipUnchangedFiles="true" />
+    <Message Importance="high" Text="[Hauler's Dream] deployed to $(HDDeployDir)" />
+  </Target>
+</Project>
