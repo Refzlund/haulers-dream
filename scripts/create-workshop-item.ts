@@ -10,11 +10,13 @@ const description = (await Bun.file(resolve(repoRoot, 'About/SteamDescription.tx
 	.replace(/\\/g, '')
 
 const content = resolve(repoRoot, 'dist/HaulersDream').replaceAll('\\', '/')
+const preview = resolve(repoRoot, 'About/Preview.png').replaceAll('\\', '/')
 const vdf = `"workshopitem"
 {
 	"appid" "294100"
 	"publishedfileid" "0"
 	"contentfolder" "${content}"
+	"previewfile" "${preview}"
 	"visibility" "2"
 	"title" "Hauler's Dream"
 	"description" "${description}"

@@ -19,6 +19,13 @@ namespace HaulersDream
 
         public static void Set(Job job, CraftBatchPlan plan) => pending[job] = plan;
 
+        /// <summary>Drop all pending handoffs — called when a game finishes initialising: an entry whose
+        /// ordered job was wiped before starting (drafted same tick, queue cleared) would otherwise keep its
+        /// Job key alive in this static map across the session. Misattachment was already impossible (the
+        /// consume guard requires plan.bill == job.bill, and Job.Clear() nulls bill on pooling); this is
+        /// purely a memory-hygiene sweep.</summary>
+        public static void Clear() => pending.Clear();
+
         public static CraftBatchPlan Consume(Job job)
         {
             if (job != null && pending.TryGetValue(job, out var p))
@@ -263,23 +270,26 @@ namespace HaulersDream
                 var recipe = bill?.recipe;
                 if (recipe == null) { JumpToToil(doneToil); return; }
 
-                // 1. Pull exactly this rep's ingredients out of inventory. Aborts (and restores) if short, so we
-                //    never make products from incomplete ingredients.
-                if (!PullOneRep(out var ingredients))
-                {
-                    if (ingredients != null)
-                        RestoreToInventory(ingredients);
-                    JumpToToil(doneToil);
-                    return;
-                }
-
-                // Item-safety net: between the pull and the inventory placement the ingredients/products are
-                // standalone "limbo" Things — an unexpected throw (a modded recipe Worker, a comp) must not lose
-                // them. RestoreToInventory skips Destroyed things, so an unconditional restore returns exactly
-                // the un-consumed remainder even when the throw happened mid-ConsumeIngredient.
+                // Item-safety net: from the PULL through the inventory PLACEMENT the ingredients/products are
+                // standalone "limbo" Things — an unexpected throw ANYWHERE in that window (a modded corpse
+                // comp inside the pull's Strip(), a recipe Worker, a comp notify during placement) must not
+                // lose them, so the try spans the whole window. The pull writes into `ingredients` as it
+                // goes, making partial pulls visible to the catch; RestoreToInventory skips Destroyed things,
+                // so an unconditional restore returns exactly the un-consumed remainder even when the throw
+                // happened mid-ConsumeIngredient.
+                var ingredients = new List<Thing>();
                 List<Thing> products = null;
                 try
                 {
+                    // 1. Pull exactly this rep's ingredients out of inventory. Aborts (and restores) if short,
+                    //    so we never make products from incomplete ingredients.
+                    if (!PullOneRep(ingredients))
+                    {
+                        RestoreToInventory(ingredients);
+                        JumpToToil(doneToil);
+                        return;
+                    }
+
                     // 2. XP (the non-unfinished-thing branch of vanilla's finish).
                     if (recipe.workSkill != null && actor.skills != null)
                     {
@@ -299,32 +309,40 @@ namespace HaulersDream
                     for (int i = 0; i < ingredients.Count; i++)
                         recipe.Worker.ConsumeIngredient(ingredients[i], recipe, map);
 
-                    // 6. Bookkeeping notifies, identical to vanilla.
+                    // 6. Bookkeeping notifies, identical to vanilla — including the resource-count refresh
+                    //    vanilla's finish toil performs, so the per-rep ShouldDoNow gate reads fresh storage
+                    //    numbers (other pawns hauling products mid-batch).
                     bill.Notify_IterationCompleted(actor, ingredients);
                     RecordsUtility.Notify_BillDone(actor, products);
                     if (recipe.WorkAmountTotal((Thing)null) >= 10000f && products.Count > 0)
                         TaleRecorder.RecordTale(TaleDefOf.CompletedLongCraftingProject, actor, products[0].GetInnerIfMinified().def);
                     if (products.Count > 0)
                         Find.QuestManager.Notify_ThingsProduced(actor, products);
+                    // Same gate as vanilla's finish action: only TargetCount bills read these counts.
+                    if (bill is Bill_Production bpRefresh && bpRefresh.repeatMode == BillRepeatModeDefOf.TargetCount)
+                        map.resourceCounter.UpdateResourceCounts();
+
+                    // 7. Collect products into inventory (tagged for the unload pass); overflow drops at the bench.
+                    for (int i = 0; i < products.Count; i++)
+                        PlaceProductIntoInventory(products[i]);
+
+                    repsDone++;
+                    HDLog.Dbg($"{actor} batch-crafted rep {repsDone}/{repsTarget} of {recipe.defName} " +
+                              $"({products.Count} product stack(s) into inventory).");
                 }
                 catch (System.Exception e)
                 {
                     RestoreToInventory(ingredients); // skips Destroyed → returns exactly the un-consumed remainder
                     if (products != null)
                         for (int i = 0; i < products.Count; i++)
-                            PlaceProductIntoInventory(products[i]); // anything already made is banked, not lost
+                            // Bank only the not-yet-placed: a placed product has a holdingOwner, and an
+                            // overflow-dropped one is Spawned — re-adding either would double-place.
+                            if (products[i] != null && products[i].holdingOwner == null && !products[i].Spawned)
+                                PlaceProductIntoInventory(products[i]);
                     Log.Error($"[Hauler's Dream] batch-craft rep failed for {recipe.defName}: {e}");
                     JumpToToil(doneToil);
                     return;
                 }
-
-                // 7. Collect products into inventory (tagged for the unload pass); overflow drops at the bench.
-                for (int i = 0; i < products.Count; i++)
-                    PlaceProductIntoInventory(products[i]);
-
-                repsDone++;
-                HDLog.Dbg($"{actor} batch-crafted rep {repsDone}/{repsTarget} of {recipe.defName} " +
-                          $"({products.Count} product stack(s) into inventory).");
             };
             toil.defaultCompleteMode = ToilCompleteMode.Instant;
             return toil;
@@ -370,10 +388,16 @@ namespace HaulersDream
             return Mathf.Max(0, want - InventoryCountOfDef(def));
         }
 
-        /// <summary>Nearest reachable, non-forbidden, reservable floor stack of any plan def we still need more of.</summary>
+        /// <summary>Nearest reachable, non-forbidden, reservable, bill-usable floor stack of any plan def we
+        /// still need more of — thing-level bill constraints (rot stage, hit points, the bill's filter) and the
+        /// bill's ingredient search radius applied exactly like vanilla's ingredient scan, so the batch never
+        /// loads what the bill forbids.</summary>
         private Thing FindNeededStack()
         {
             var map = pawn.Map;
+            var bill = job.bill;
+            float radiusSq = bill != null ? bill.ingredientSearchRadius * bill.ingredientSearchRadius : float.MaxValue;
+            IntVec3 root = Bench?.Position ?? pawn.Position;
             Thing best = null;
             int bestDist = int.MaxValue;
             // Distinct plan defs that still need loading.
@@ -387,6 +411,10 @@ namespace HaulersDream
                 {
                     var t = things[i];
                     if (t == null || !t.Spawned || t.IsForbidden(pawn))
+                        continue;
+                    if (bill != null && !InventoryShare.IsUsableForBill(t, bill))
+                        continue;
+                    if ((t.Position - root).LengthHorizontalSquared >= radiusSq)
                         continue;
                     if (!pawn.CanReserve(t) || !pawn.CanReach(t, PathEndMode.ClosestTouch, Danger.Deadly))
                         continue;
@@ -412,7 +440,10 @@ namespace HaulersDream
             return total;
         }
 
-        /// <summary>True iff the inventory holds enough of every slot's def for one more repetition.</summary>
+        /// <summary>True iff the inventory holds enough of every slot's def for one more repetition.
+        /// Def-level only: bill-disallowed personal stock (rotten meat in a pocket) can overstate this by
+        /// one cycle — the pull then reads short and the batch ends cleanly, wasting at most one work
+        /// cycle at the very end rather than paying a thing-level scan per rep.</summary>
         private bool HasOneRepInInventory()
         {
             // Sum requirements per def (a def may appear in multiple slots).
@@ -429,15 +460,16 @@ namespace HaulersDream
             return ingredientDefs.Count > 0;
         }
 
-        /// <summary>Split one rep's worth of each slot's ingredient out of inventory into standalone Things.
-        /// Returns false (with whatever was pulled, for restoration) if any slot is short.</summary>
-        private bool PullOneRep(out List<Thing> ingredients)
+        /// <summary>Split one rep's worth of each slot's ingredient out of inventory into standalone Things,
+        /// appending each pull to the CALLER's list as it goes (so a mid-pull throw leaves the partial pull
+        /// visible for restoration). Returns false (with whatever was pulled) if any slot is short.</summary>
+        private bool PullOneRep(List<Thing> ingredients)
         {
-            ingredients = new List<Thing>();
             var owner = Inv;
             if (owner == null)
                 return false;
-            var recipe = job.bill?.recipe;
+            var bill = job.bill;
+            var recipe = bill?.recipe;
 
             // Pull per-slot so the ingredient list reflects each recipe slot (matches vanilla's per-placedThing list).
             for (int s = 0; s < ingredientDefs.Count; s++)
@@ -447,8 +479,13 @@ namespace HaulersDream
                 while (need > 0)
                 {
                     Thing src = null;
+                    // Thing-level bill vetting: the loader only fetches usable stacks, but PRE-EXISTING
+                    // personal stock of the same def (rotten meat in a pocket) must not be consumed either.
+                    // Only-disallowed-stacks-remain reads as short → the rep aborts and restores cleanly.
                     for (int i = 0; i < owner.Count; i++)
-                        if (owner[i]?.def == def) { src = owner[i]; break; }
+                        if (owner[i]?.def == def
+                            && (bill == null || InventoryShare.IsUsableForBill(owner[i], bill)))
+                        { src = owner[i]; break; }
                     if (src == null)
                         return false; // short → caller restores
                     // Faithful to vanilla CalculateIngredients: strip a clothed/equipped corpse BEFORE it's consumed,

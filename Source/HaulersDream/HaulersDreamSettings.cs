@@ -311,9 +311,12 @@ namespace HaulersDream
                     new FloatMenuOption(AutoStripModeLabel(AutoStripMode.Off), () => autoStripMode = AutoStripMode.Off),
                 }));
             if (autoStripMode != AutoStripMode.Off)
-            {
                 l.CheckboxLabeled("HaulersDream.Setting.StripColonists".Translate(), ref stripColonistCorpses,
                     "HaulersDream.Setting.StripColonistsDesc".Translate());
+            // The tainted policies also govern corpse strip ORDERS (the haulStrip scoop), so they stay
+            // visible while either consumer is on — hiding an active Destroy policy would be a trap.
+            if (autoStripMode != AutoStripMode.Off || haulStrip)
+            {
                 if (l.ButtonText("HaulersDream.Setting.TaintedSmeltable".Translate(TaintedPolicyLabel(taintedSmeltablePolicy))))
                     Find.WindowStack.Add(TaintedPolicyMenu(p => taintedSmeltablePolicy = p));
                 if (l.ButtonText("HaulersDream.Setting.TaintedNonSmeltable".Translate(TaintedPolicyLabel(taintedNonSmeltablePolicy))))
