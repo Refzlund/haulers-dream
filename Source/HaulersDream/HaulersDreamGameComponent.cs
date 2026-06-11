@@ -86,9 +86,14 @@ namespace HaulersDream
                     var p = pawns[i];
                     if (!IsIdle(p))
                         continue;
-                    YieldRouter.EnsureSelfPickupJob(p);
+                    // Unload check FIRST, then the self-pickup: both EnqueueFirst, so this order makes the
+                    // queue [SelfPickup, Unload] — the pawn scoops its pending drops and unloads everything
+                    // in ONE trip. (The reverse order ran the unload before the scoop, so freshly scooped
+                    // stock waited for the next idle cycle: a second trip.) Safe either way for the strict-
+                    // mode livelock: HasPendingRealWork excludes housekeeping jobs by defName, not by order.
                     if (s.markForUnload)
                         PawnUnloadChecker.CheckIfShouldUnload(p);
+                    YieldRouter.EnsureSelfPickupJob(p);
                 }
             }
         }

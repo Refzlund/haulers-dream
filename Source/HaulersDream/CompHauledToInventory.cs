@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using RimWorld;
 using Verse;
 
 namespace HaulersDream
@@ -65,26 +66,37 @@ namespace HaulersDream
             return takenToInventory;
         }
 
-        public void RegisterHauledItem(Thing thing)
+        public void RegisterHauledItem(Thing thing, int mergedCount = 0)
         {
-            // Only a NEW tag notifies (Add returns false for re-registers — the self-heal re-tags freely):
-            // under Combat Extended, register the held stack with CE's HoldTracker so its loadout enforcement
-            // doesn't dump the scooped/swept goods on the floor before the unload trip runs. CE's own cleanup
-            // prunes the record once the goods leave the inventory. No-op without CE.
-            if (takenToInventory.Add(thing) && thing != null)
+            // A NEW tag notifies CE's HoldTracker with the full stack, so loadout enforcement doesn't dump
+            // the scooped/swept goods on the floor before the unload trip runs. A RE-register of an
+            // already-tagged stack notifies only when a merge GREW it (mergedCount > 0) — CE's record
+            // otherwise still holds the originally-notified count and a custom-loadout pawn would drop the
+            // un-held growth mid-run. Over-counting is the safe direction (CE resets the record to
+            // live + count on re-notify). No-op without CE.
+            if (thing == null)
+                return;
+            if (takenToInventory.Add(thing))
                 CECompat.NotifyHeld(parent as Pawn, thing, thing.stackCount);
+            else if (mergedCount > 0)
+                CECompat.NotifyHeld(parent as Pawn, thing, mergedCount);
         }
 
         public void Deregister(Thing thing) => takenToInventory.Remove(thing);
 
-        /// <summary>The next still-valid pending drop this pawn can scoop, or null. Prunes invalid ones.</summary>
+        /// <summary>The next still-valid pending drop this pawn can scoop, or null. Prunes invalid ones:
+        /// despawned/destroyed, on another map (a pawn that changed maps must not walk foreign coords or
+        /// scoop across maps), or forbidden (the player forbade it, or vanilla forbade a yield it never
+        /// credited to a player pawn — e.g. a mineable finished off by an explosion).</summary>
         public Thing TakeNextValidPending()
         {
+            var pawn = parent as Pawn;
             while (pendingSelfPickups.Count > 0)
             {
                 var t = pendingSelfPickups[pendingSelfPickups.Count - 1];
                 pendingSelfPickups.RemoveAt(pendingSelfPickups.Count - 1);
-                if (t != null && t.Spawned && !t.Destroyed)
+                if (t != null && t.Spawned && !t.Destroyed
+                    && pawn != null && t.MapHeld == pawn.Map && !t.IsForbidden(pawn))
                     return t;
             }
             return null;

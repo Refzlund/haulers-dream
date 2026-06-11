@@ -49,6 +49,39 @@ namespace HaulersDream.Tests
         }
 
         [Test]
+        public void Forced_WhileAlreadyUnloading_StillSkips()
+        {
+            // Gizmo spam / repeated full-trigger hits must never double-queue the unload pass.
+            Assert.That(Decide(forced: true, alreadyUnloading: true), Is.EqualTo(UnloadDecision.Skip));
+        }
+
+        [Test]
+        public void TagsWithEmptyInventory_ClearsTracker()
+        {
+            // The worst desync: tags remain but the inventory is empty. Must prune (a stale tag would
+            // otherwise be unprunable forever — a permanent phantom "Unload now" gizmo), not skip.
+            Assert.That(Decide(carried: 3, inventory: 0), Is.EqualTo(UnloadDecision.ClearTracker));
+        }
+
+        [Test]
+        public void Forced_DoesNotBypassDriftPrune()
+        {
+            // Even a forced unload must self-heal a drifted tracker first, never queue against phantom tags.
+            Assert.That(Decide(forced: true, carried: 5, inventory: 2), Is.EqualTo(UnloadDecision.ClearTracker));
+        }
+
+        [Test]
+        public void FullTrigger_TruthTable()
+        {
+            // The hit-the-carry-ceiling trigger: forced unload only when NOT strict AND auto-unload is on.
+            // (Strict mode keeps working and leaves the surplus; markForUnload off means manual-only.)
+            Assert.That(UnloadPolicy.FullTriggerAllowed(strictCarryWeight: false, markForUnload: true), Is.True);
+            Assert.That(UnloadPolicy.FullTriggerAllowed(strictCarryWeight: true, markForUnload: true), Is.False);
+            Assert.That(UnloadPolicy.FullTriggerAllowed(strictCarryWeight: false, markForUnload: false), Is.False);
+            Assert.That(UnloadPolicy.FullTriggerAllowed(strictCarryWeight: true, markForUnload: false), Is.False);
+        }
+
+        [Test]
         public void WithinGrace_Skips()
         {
             Assert.That(Decide(ticksSinceYield: 30, grace: 60), Is.EqualTo(UnloadDecision.Skip));

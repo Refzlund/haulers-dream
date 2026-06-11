@@ -130,7 +130,7 @@ namespace HaulersDream
         /// </summary>
         internal static void MaybeUnloadBecauseFull(Pawn pawn, HaulersDreamSettings s)
         {
-            if (s == null || s.strictCarryWeight || !s.markForUnload)
+            if (s == null || !Core.UnloadPolicy.FullTriggerAllowed(s.strictCarryWeight, s.markForUnload))
                 return;
             // forced: bypass the post-pickup grace period — being full IS the signal to unload.
             PawnUnloadChecker.CheckIfShouldUnload(pawn, forced: true);
@@ -248,10 +248,12 @@ namespace HaulersDream
                 if (allMoved || split.stackCount < before)
                 {
                     // Some/all units landed in inventory. Register one stack of this def so the unload
-                    // pass collects it (the unload driver relinks the real stacks by def).
+                    // pass collects it (the unload driver relinks the real stacks by def). Pass the moved
+                    // count so a merge into an already-tagged stack re-notifies CE's HoldTracker.
+                    int moved = allMoved ? before : before - split.stackCount;
                     Thing held = InventoryStackOfDef(owner, split.def) ?? (allMoved ? split : null);
                     if (held != null)
-                        comp.RegisterHauledItem(held);
+                        comp.RegisterHauledItem(held, moved);
                     comp.NotifyYieldPicked();
                     HDLog.Dbg($"{pawn} scooped x{before - split.stackCount} {split.def?.label} ({type}).");
                 }
@@ -343,8 +345,12 @@ namespace HaulersDream
                     // side by side must not mis-credit each other's leavings to whoever scans first.
                     if (diedThing != null && p.CurJob?.targetA.Thing == diedThing)
                         return p;
-                    if (fallback == null)
-                        fallback = p; // first-found scan, kept for when no job-target match exists
+                    // The first-found fallback only applies when the caller has NO died thing (legacy
+                    // 3-arg overload). Vanilla always passes it, and a pawn-less instant deconstruct
+                    // (a cancelled frame, a zero-work building, god mode) must NOT credit a bystander
+                    // deconstructing something else — those leavings stay for normal hauling.
+                    if (diedThing == null && fallback == null)
+                        fallback = p;
                 }
             }
             return fallback;
