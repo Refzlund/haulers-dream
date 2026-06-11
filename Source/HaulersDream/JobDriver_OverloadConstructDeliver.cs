@@ -75,7 +75,11 @@ namespace HaulersDream
 
             // Reserve the floor resource stacks so two delivery pawns don't grab the same steel. The needer
             // is IHaulEnroute (no hard reservation) — we register enroute instead, exactly like vanilla.
-            if (job.targetA.HasThing && !pawn.Reserve(job.targetA, job, 1, -1, null, errorOnFailed))
+            // EXCEPTION: a later ROUTE stop's primary stack may be gone (destroyed by a merge in an earlier
+            // stop) while the pawn already CARRIES the gathered material — the load loop only needs the
+            // inventory, so an unreservable/destroyed targetA must not silently kill a stop it can serve.
+            if (job.targetA.HasThing && !pawn.Reserve(job.targetA, job, 1, -1, null, errorOnFailed)
+                && (resourceDef == null || InventoryCountOfDef() <= 0))
                 return false;
             pawn.ReserveAsManyAsPossible(job.GetTargetQueue(ResourceInd), job);
 
@@ -194,6 +198,12 @@ namespace HaulersDream
             yield return Toils_Haul.StartCarryThing(ResourceInd, putRemainderInQueue: false,
                 subtractNumTakenFromJobCount: false, failIfStackCountLessThanJobCount: false,
                 reserve: false, canTakeFromInventory: true);
+            // A BLUEPRINT needer is not a container (only Frame has the resource ThingOwner) — vanilla's
+            // deliver driver always converts blueprint→frame immediately before its deposit (decompile-
+            // verified JobDriver_HaulToContainer toil order). Without it the deposit errors and transfers
+            // nothing, and the next StartCarryThing throws with the hands already full. The toil re-points
+            // B/C at the created frame and self-ends the job when construction is blocked.
+            yield return Toils_Construct.MakeSolidThingFromBlueprintIfNecessary(NeederInd, PrimaryNeederInd);
             yield return Toils_Haul.DepositHauledThingInContainer(NeederInd, PrimaryNeederInd);
             yield return Toils_Jump.Jump(deliverDecide);
 

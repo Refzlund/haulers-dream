@@ -84,8 +84,10 @@
 
   <!-- Bulk hauling (the native Pick-Up-And-Haul): walk the planned pickup chain loading every nearby haulable
        into inventory, then force the single storage-aware unload pass — one trip for the whole sweep.
-       NOTE: deliberately no <checkEncumbrance> — that would cap loading at 100% capacity and defeat the
-       smart-overload worth-it ceiling (see BulkHaul / JobDriver_BulkHaul). -->
+       NOTE: checkEncumbrance is a field on the Job instance (not a JobDef tag) and is never set here; this
+       driver also loads via its own SplitOff+TryAdd rather than Toils_Haul.TakeToInventory (which is what
+       reads that flag), so the only loading cap is the smart-overload worth-it ceiling
+       (see BulkHaul / JobDriver_BulkHaul). -->
   <!-- suspendable false: a suspend/resume restarts on a FRESH driver at loadIndex 0, re-taking planned counts
        on top of what's already loaded (over-gather). A clean end recovers correctly instead: loaded stacks are
        tagged and the finish action / idle backstop flushes them to storage. -->

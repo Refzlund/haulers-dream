@@ -53,39 +53,42 @@ namespace HaulersDream
             // flag tells the deliver-job conversion whether stops should HAUL-ONLY (fill sites with materials)
             // or HAUL+BUILD (each stop's delivery tethers its own build before the next stop runs).
             var jobs = new List<RouteJob>(plan.stops.Count);
-            InventoryConstructDelivery.RouteIntent = alsoBuild ? ConstructRouteIntent.HaulBuild : ConstructRouteIntent.HaulOnly;
-            if (alsoBuild)
-            {
-                // Publish the route's TOTAL per-def demand so the first stop's gather sweeps material for the
-                // whole run (the gather ceiling still mass-bounds it; a too-heavy total just means a mid-route top-up).
-                var demand = new Dictionary<ThingDef, int>();
-                for (int i = 0; i < plan.stops.Count; i++)
-                {
-                    if (!(plan.stops[i] is IConstructible ic))
-                        continue;
-                    var costs = ic.TotalMaterialCost();
-                    if (costs == null)
-                        continue;
-                    for (int k = 0; k < costs.Count; k++)
-                    {
-                        var d = costs[k]?.thingDef;
-                        if (d == null)
-                            continue;
-                        int n = ic.ThingCountNeeded(d);
-                        if (n <= 0)
-                            continue;
-                        demand.TryGetValue(d, out int cur);
-                        demand[d] = cur + n;
-                    }
-                }
-                InventoryConstructDelivery.RouteDemandByDef = demand;
-            }
+            // The thread-static assignments live INSIDE the try: the demand aggregation below calls
+            // TotalMaterialCost on arbitrary modded IConstructibles (can throw), and a throw outside the
+            // try would leave RouteIntent stuck for the whole session.
             try
             {
+                InventoryConstructDelivery.RouteIntent = alsoBuild ? ConstructRouteIntent.HaulBuild : ConstructRouteIntent.HaulOnly;
+                if (alsoBuild)
+                {
+                    // Publish the route's TOTAL per-def demand so the first stop's gather sweeps material for the
+                    // whole run (the gather ceiling still mass-bounds it; a too-heavy total just means a mid-route top-up).
+                    var demand = new Dictionary<ThingDef, int>();
+                    for (int i = 0; i < plan.stops.Count; i++)
+                    {
+                        if (!(plan.stops[i] is IConstructible ic))
+                            continue;
+                        var costs = ic.TotalMaterialCost();
+                        if (costs == null)
+                            continue;
+                        for (int k = 0; k < costs.Count; k++)
+                        {
+                            var d = costs[k]?.thingDef;
+                            if (d == null)
+                                continue;
+                            int n = ic.ThingCountNeeded(d);
+                            if (n <= 0)
+                                continue;
+                            demand.TryGetValue(d, out int cur);
+                            demand[d] = cur + n;
+                        }
+                    }
+                    InventoryConstructDelivery.RouteDemandByDef = demand;
+                }
                 for (int i = 0; i < plan.stops.Count; i++)
                 {
                     var t = plan.stops[i];
-                    if (t == null || !t.Spawned)
+                    if (t == null || !t.Spawned || StopLostDesignation(pawn.Map, t, kind))
                         continue;
                     var job = BuildJobForStop(pawn, t, kind);
                     if (job != null)
@@ -113,7 +116,10 @@ namespace HaulersDream
                     remainingByDef.TryGetValue(def, out int sum);
                     sum += System.Math.Max(0, ic.ThingCountNeeded(def));
                     remainingByDef[def] = sum;
-                    if (rj.job.def == HaulersDreamDefOf.HaulersDream_ConstructDeliverBuild && rj.job.count < sum)
+                    // Assign unconditionally: TryBuild stamped the WHOLE route's demand into every stop's
+                    // count, so later stops must be LOWERED to their suffix sum or they re-gather material
+                    // the earlier stops already delivered.
+                    if (rj.job.def == HaulersDreamDefOf.HaulersDream_ConstructDeliverBuild)
                         rj.job.count = sum;
                 }
             }
@@ -361,7 +367,7 @@ namespace HaulersDream
             for (int i = 0; i < stops.Count; i++)
             {
                 var t = stops[i];
-                if (t == null || !t.Spawned)
+                if (t == null || !t.Spawned || StopLostDesignation(pawn.Map, t, kind))
                     continue;
                 Job job;
                 try { job = kind.scanner.JobOnThing(pawn, t, forced: true); }
@@ -406,10 +412,20 @@ namespace HaulersDream
         private static string RouteEstimateHours(RoutePlan plan)
             => Core.RouteEstimate.HoursFromTicks(plan.totalTicks).ToString("0.0");
 
+        // DesignatedOnly kinds (deconstruct/uninstall) work ONLY what is still marked: a designation the
+        // player cancelled while the dialog was open must not be resurrected by the route. The scanner's
+        // JobOnThing (WorkGiver_RemoveBuilding) is unconditional, so the stop must be skipped outright.
+        private static bool StopLostDesignation(Map map, Thing t, RouteWorkKind kind)
+            => kind.scope == RouteTargetScope.DesignatedOnly
+               && kind.designation != null
+               && map.designationManager.DesignationOn(t, kind.designation) == null;
+
         private static void EnsureDesignated(Map map, Thing t, RouteWorkKind kind)
         {
             if (kind.designation == null)
                 return;
+            if (kind.scope == RouteTargetScope.DesignatedOnly)
+                return; // deconstruct/uninstall never (re-)mark — the live designation IS the player's consent
             var dm = map.designationManager;
             if (kind.designation == DesignationDefOf.Mine || kind.designation == DesignationDefOf.MineVein)
             {

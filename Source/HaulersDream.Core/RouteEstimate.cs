@@ -17,8 +17,10 @@ namespace HaulersDream.Core
         /// The largest number of leading stops whose cumulative arrival-leg distance stays within
         /// <paramref name="maxDistance"/>. <paramref name="legDistances"/>[i] is the travel distance of the leg
         /// that arrives at stop i (index 0 = pawn → first stop, index 1 = first → second, …). A non-positive or
-        /// infinite budget means "no limit" (returns the full count). This is the ceiling that trims the chosen
-        /// amount when the targets can't all be gathered within the distance.
+        /// infinite budget means "no limit" (returns the full count).
+        /// RETAINED UTILITY — NOT on the live path: the route planner's max-travel trim is
+        /// <c>RouteBudget.LargestPrefixWithin</c> over RouteBudget's insertion-cost array (see
+        /// RoutePlanner.Truncate); this per-leg cumulative variant is kept as public API for compatibility.
         /// </summary>
         public static int StopsWithinBudget(IReadOnlyList<float> legDistances, float maxDistance)
         {

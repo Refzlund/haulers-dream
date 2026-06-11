@@ -157,6 +157,7 @@ namespace HaulersDream
                     case CraftBatchLimit.Resources: why = "HaulersDream.PlanCraft.LimitResources".Translate(); break;
                     case CraftBatchLimit.Mass: why = "HaulersDream.PlanCraft.LimitMass".Translate(); break;
                     case CraftBatchLimit.Timeout: why = "HaulersDream.PlanCraft.LimitTimeout".Translate(); break;
+                    case CraftBatchLimit.BillRepeat: why = "HaulersDream.PlanCraft.LimitBillRepeat".Translate(); break;
                     default: why = ""; break;
                 }
                 l.Label("HaulersDream.PlanCraft.ResolvedTrimmed".Translate(n, why));

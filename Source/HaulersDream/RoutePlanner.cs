@@ -24,11 +24,20 @@ namespace HaulersDream
 
     /// <summary>
     /// The expensive, selection-dependent part of planning, cached by the dialog so the max-travel slider can
-    /// re-truncate live without re-pathfinding. Holds the candidate stops in a STABLE gather order (nearest-
-    /// first, NO storage anchor) plus each leg's real path distance and walk time. The gather order is what
-    /// makes the max-travel budget monotonic: adding more (farther) stops appends them to the tail, so the
-    /// near stops that already fit keep fitting — unlike a storage-anchored order, which reshuffles and could
-    /// shrink the route when you add stops.
+    /// re-truncate live without re-pathfinding. Holds the candidate stops in the chosen gather order — greedy
+    /// cheapest-insertion by default (storage-anchored when smart), or nearest-to-the-clicked-anchor — plus
+    /// each leg's real path distance and walk time.
+    ///
+    /// MONOTONICITY of the max-travel trim (a larger budget / more stops never shrinks the kept set) does NOT
+    /// come from the gather order being append-only (it isn't — cheapest-insertion can reorder as stops are
+    /// added). It rests on two real mechanisms, both load-bearing:
+    /// (a) <see cref="prefixRouteCost"/> is non-decreasing BY CONSTRUCTION — RouteBudget clamps every per-stop
+    ///     insertion delta to ≥ 0 and finishes with a running max — so "largest prefix within budget" is a
+    ///     threshold on a non-decreasing sequence; and
+    /// (b) the dialog pairs a FINITE max-travel budget ONLY with Chained mode, whose candidate set is
+    ///     budget-independent; every other mode passes +infinity (Dialog_PlanRoute.MaxDistance), so the budget
+    ///     can never interact with a selection that reshuffles.
+    /// This invariant has regressed three times — keep both mechanisms true when touching the planner.
     /// </summary>
     public sealed class RouteLegs
     {
@@ -208,7 +217,8 @@ namespace HaulersDream
                 // the shortest open path from the pawn through the stops (take a side and sweep across, not bounce
                 // back and forth). With smart ON, storage is the fixed end → the shortest path that ENDS next to
                 // storage for a quick unload. Either way it reorders ONLY the kept set, never the budget decision
-                // above (the budget is the prefix-stable gather order), so monotonicity is unaffected.
+                // above (which was taken on the non-decreasing prefixRouteCost array, in gather order — see the
+                // RouteLegs doc for the two mechanisms the monotonicity actually rests on).
                 var routeStops = keptStops.Count > 1
                     ? OrderByEuclidean(legs.pawn.Position, keptStops, legs.storage, startNode, endNode, exactMax)
                     : keptStops;

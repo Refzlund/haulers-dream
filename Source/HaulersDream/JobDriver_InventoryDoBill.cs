@@ -14,6 +14,11 @@ namespace HaulersDream
     /// ONLY for JobDefOf.DoBill, so this custom-def craft could finish without consuming ingredients (duplication).
     /// Superseded by <see cref="JobDriver_BillPrepGather"/>, which gathers into inventory and lets vanilla craft.
     ///
+    /// The driver is now a HARD NO-OP: a resumed (or freshly started) job ends Incompletable on its first driver
+    /// tick — before any toil action runs, whatever toil index the save resumed at — via an unconditional global
+    /// end condition. The finish action still runs, so any ingredients the pre-retirement run had already loaded
+    /// are registered for the unload pass instead of being stranded in inventory.
+    ///
     /// (Original description) The "fewer trips" fix for AUTOMATIC crafting bills. Vanilla <see cref="JobDriver_DoBill"/> hand-carries
     /// ingredients ONE stack per round-trip (60 steel, 1 component, 30 cloth = three trips), because the hands hold
     /// one thing at a time. This driver instead PRE-LOADS every ingredient stack into the pawn's INVENTORY in one
@@ -50,6 +55,14 @@ namespace HaulersDream
 
         public override IEnumerable<Toil> MakeNewToils()
         {
+            // RETIRED hard no-op (see class doc): end the job on the very first driver tick. The global end
+            // condition is checked BEFORE any toil's init/tick action runs — both on a fresh start and on a
+            // save resumed at ANY toil index (SetupToils re-runs this method on load) — so no pre-load, no
+            // collection and no recipe work can ever execute again. The toil list below is kept intact so a
+            // mid-flight save's scribed curToilIndex stays valid, and the finish action still registers any
+            // already-loaded leftovers for the unload pass.
+            AddEndCondition(() => JobCondition.Incompletable);
+
             // --- vanilla JobDriver_DoBill setup (replicated faithfully) ---
             AddEndCondition(delegate
             {
@@ -77,10 +90,9 @@ namespace HaulersDream
             Toil start = ToilMaker.MakeToil("HD_InvBill_Start");
             start.initAction = delegate
             {
-                if (job.targetQueueB != null && job.targetQueueB.Count == 1
-                    && job.targetQueueB[0].Thing is UnfinishedThing { Destroyed: false } uft)
-                    uft.BoundBill = (Bill_ProductionWithUft)job.bill;
-                job.bill?.Notify_DoBillStarted(pawn);
+                // Belt-and-braces with the global end condition above (which fires first on every traced
+                // path): a retired job must never begin its work.
+                EndJobWith(JobCondition.Incompletable);
             };
             start.defaultCompleteMode = ToilCompleteMode.Instant;
             yield return start;
@@ -130,7 +142,8 @@ namespace HaulersDream
 
             // No <checkEncumbrance> on the JobDef, so TakeToInventory does not cap at 100%. By default the pawn
             // carries the bill's full needed amount for this stack OVERWEIGHT (accepting the speed debuff) so the
-            // ingredients arrive in one trip — only strict-carry-weight mode honours the smart-overload ceiling.
+            // ingredients arrive in one trip — only no-overload mode (strict carry weight, slider Off, or Combat
+            // Extended) honours the carry ceiling, exactly like the live siblings (JobDriver_BillPrepGather).
             yield return Toils_Haul.TakeToInventory(IngredientInd, () =>
             {
                 var st = job.GetTarget(IngredientInd).Thing;
@@ -138,7 +151,7 @@ namespace HaulersDream
                 int need = (job.countQueue != null && loadIndex < job.countQueue.Count) ? job.countQueue[loadIndex] : st.stackCount;
                 if (need <= 0) return 0;
                 var s = HaulersDreamMod.Settings;
-                if (s != null && s.strictCarryWeight)
+                if (s != null && OverloadGate.NoOverload(s))
                     need = Mathf.Min(need, OverloadGate.CountToPickUp(pawn, st, s));
                 return Mathf.Min(need, st.stackCount);
             });

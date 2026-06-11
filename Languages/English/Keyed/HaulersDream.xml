@@ -14,7 +14,7 @@
   <HaulersDream.Setting.BatchWorkDeliveries>Carry materials for many queued builds per trip</HaulersDream.Setting.BatchWorkDeliveries>
   <HaulersDream.Setting.BatchWorkDeliveriesDesc>When building lots of cheap things (e.g. a long fence), a pawn fills its hands with enough material for many queued builds and delivers to each in one trip, instead of shuttling a few at a time. Carried in hands, so there's no slowdown.</HaulersDream.Setting.BatchWorkDeliveriesDesc>
   <HaulersDream.Setting.InventoryConstructDeliver>Carry materials in inventory for big single builds</HaulersDream.Setting.InventoryConstructDeliver>
-  <HaulersDream.Setting.InventoryConstructDeliverDesc>When a single thing needs more than one hand-stack of one material (e.g. a geothermal generator's 340 steel), a pawn loads the material into its inventory — which is limited by weight, not stack size — and delivers it in far fewer trips, instead of shuttling ~75 at a time in its hands. Uses the smart-overload setting above for how much past 100%% it loads; with overload off it loads up to 100%% (no slowdown).</HaulersDream.Setting.InventoryConstructDeliverDesc>
+  <HaulersDream.Setting.InventoryConstructDeliverDesc>When a single thing needs more than one hand-stack of one material (e.g. a geothermal generator's 340 steel), a pawn loads the material into its inventory — which is limited by weight, not stack size — and delivers it in far fewer trips, instead of shuttling ~75 at a time in its hands. Uses the smart-overload setting above for how much past 100% it loads; with overload off it loads up to 100% (no slowdown).</HaulersDream.Setting.InventoryConstructDeliverDesc>
   <HaulersDream.Setting.ShareHandHauled>Claim materials from a colonist hauling them to storage (off by default)</HaulersDream.Setting.ShareHandHauled>
   <HaulersDream.Setting.ShareHandHauledDesc>When a builder needs a material and the only stock is in the hands of a colonist hauling it to a stockpile, the builder meets that colonist in transit and takes the stack, instead of waiting for it to reach storage and fetching it from there. Never touches a colonist delivering to a specific build, bill, or refuel job, and only when it actually saves a trip. (Construction only for now.)</HaulersDream.Setting.ShareHandHauledDesc>
 
@@ -173,6 +173,7 @@
   <HaulersDream.PlanCraft.LimitResources>limited by available ingredients</HaulersDream.PlanCraft.LimitResources>
   <HaulersDream.PlanCraft.LimitMass>limited by how much the pawn can carry</HaulersDream.PlanCraft.LimitMass>
   <HaulersDream.PlanCraft.LimitTimeout>limited by the timeout</HaulersDream.PlanCraft.LimitTimeout>
+  <HaulersDream.PlanCraft.LimitBillRepeat>limited by the bill's remaining repeat count</HaulersDream.PlanCraft.LimitBillRepeat>
   <HaulersDream.PlanCraft.Ingredients>Brings: {0}</HaulersDream.PlanCraft.Ingredients>
   <HaulersDream.PlanCraft.EstTime>Crafting time: ~{0}h (plus the fetch trip)</HaulersDream.PlanCraft.EstTime>
   <HaulersDream.PlanCraft.Infeasible>Can't batch this: {0}</HaulersDream.PlanCraft.Infeasible>
@@ -184,6 +185,7 @@
   <HaulersDream.PlanCraft.BlockUnsupported>this recipe can't be batched</HaulersDream.PlanCraft.BlockUnsupported>
   <HaulersDream.PlanCraft.BlockNoIngredient>no available ingredient for {0}</HaulersDream.PlanCraft.BlockNoIngredient>
   <HaulersDream.PlanCraft.BlockNoReps>not enough resources for even one run</HaulersDream.PlanCraft.BlockNoReps>
+  <HaulersDream.PlanCraft.BlockBillNotActive>the bill is suspended or already satisfied</HaulersDream.PlanCraft.BlockBillNotActive>
 
   <!-- Construction: haul-to-site order + route haul+build -->
   <HaulersDream.HaulToSite.Option>Prioritize hauling materials to {0}</HaulersDream.HaulToSite.Option>
@@ -197,7 +199,7 @@
 
   <!-- Settings: auto crafting-bill inventory delivery -->
   <HaulersDream.Setting.InventoryCraftDeliver>Carry crafting ingredients in inventory (fewer trips)</HaulersDream.Setting.InventoryCraftDeliver>
-  <HaulersDream.Setting.InventoryCraftDeliverDesc>When a pawn starts a crafting bill that needs ingredients from two or more separate stacks, it first gathers them ALL into its inventory in one sweep — overweight if needed, accepting the slowdown (unless strict carry weight is on) — walks to the bench once, and crafts from the carried stock. Works for every recipe, including ones that build an unfinished item first (apparel, weapons, sculptures). The crafting itself is 100%% vanilla, so nothing can be duplicated or lost. Requires "carried ingredients count for crafting" above.</HaulersDream.Setting.InventoryCraftDeliverDesc>
+  <HaulersDream.Setting.InventoryCraftDeliverDesc>When a pawn starts a crafting bill that needs ingredients from two or more separate stacks, it first gathers them ALL into its inventory in one sweep — overweight if needed, accepting the slowdown (unless strict carry weight is on) — walks to the bench once, and crafts from the carried stock. Works for every recipe, including ones that build an unfinished item first (apparel, weapons, sculptures). The crafting itself is 100% vanilla, so nothing can be duplicated or lost. Requires "carried ingredients count for crafting" above.</HaulersDream.Setting.InventoryCraftDeliverDesc>
 
   <!-- Bill prep-gather job -->
   <HaulersDream.PrepGather.Report>gathering crafting ingredients.</HaulersDream.PrepGather.Report>

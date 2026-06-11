@@ -81,10 +81,13 @@ namespace HaulersDream
 
                     if (!pawn.health.capacities.CapableOf(PawnCapacityDefOf.Manipulation) || !thing.def.EverStorable(false))
                     {
-                        // Untag the ORIGINAL tracked reference BEFORE TryDrop reassigns `thing` — the out param can
-                        // be a different object (merged into a ground stack), which would leave a stale tag behind.
-                        carried.Remove(thing);
-                        pawn.inventory.innerContainer.TryDrop(thing, ThingPlaceMode.Near, countToDrop, out thing);
+                        // Hold the ORIGINAL tracked reference (TryDrop reassigns `thing`; the out param can be a
+                        // different object, merged into a ground stack) and untag only when the drop actually
+                        // happened — a failed drop leaves the item in inventory, where a missing tag would
+                        // strand it untracked (gizmo hidden, never retried).
+                        var original = thing;
+                        if (pawn.inventory.innerContainer.TryDrop(thing, ThingPlaceMode.Near, countToDrop, out thing))
+                            carried.Remove(original);
                         EndJobWith(JobCondition.Succeeded);
                         return;
                     }
@@ -114,8 +117,10 @@ namespace HaulersDream
                     var next = FirstUnloadableThing(carried);
                     if (next.Count == 0)
                     {
-                        if (carried.Count == 0)
-                            EndJobWith(JobCondition.Succeeded);
+                        // No unloadable stack right now. If tagged stock remains it is reserved by
+                        // another pawn (a worker fetching from this inventory) — end instead of
+                        // spinning in place; the unload checker re-queues once the reservation clears.
+                        EndJobWith(carried.Count == 0 ? JobCondition.Succeeded : JobCondition.Incompletable);
                         return;
                     }
 
@@ -135,8 +140,10 @@ namespace HaulersDream
                                            || HaulersDreamMod.Settings == null || !HaulersDreamMod.Settings.haulToStack;
                         if (reserveDest && !pawn.Map.reservationManager.Reserve(pawn, job, job.targetB))
                         {
-                            carried.Remove(next.Thing); // untag BEFORE the drop — the dropped thing leaves inventory
-                            pawn.inventory.innerContainer.TryDrop(next.Thing, ThingPlaceMode.Near, next.Thing.stackCount, out _);
+                            // Untag only when the drop actually happened — a failed drop leaves the thing in
+                            // inventory, where a missing tag would strand it untracked (gizmo hidden, never retried).
+                            if (pawn.inventory.innerContainer.TryDrop(next.Thing, ThingPlaceMode.Near, next.Thing.stackCount, out _))
+                                carried.Remove(next.Thing);
                             EndJobWith(JobCondition.Incompletable);
                             return;
                         }
@@ -144,9 +151,10 @@ namespace HaulersDream
                     }
                     else
                     {
-                        // Nowhere better -> drop it here and call it done for this item.
-                        carried.Remove(next.Thing); // untag BEFORE the drop, or the stale tag is unprunable
-                        pawn.inventory.innerContainer.TryDrop(next.Thing, ThingPlaceMode.Near, next.Thing.stackCount, out _);
+                        // Nowhere better -> drop it here and call it done for this item. Untag only when the
+                        // drop actually happened; a failed drop keeps the tag with the item still in inventory.
+                        if (pawn.inventory.innerContainer.TryDrop(next.Thing, ThingPlaceMode.Near, next.Thing.stackCount, out _))
+                            carried.Remove(next.Thing);
                         EndJobWith(JobCondition.Succeeded);
                     }
                 }
@@ -171,6 +179,11 @@ namespace HaulersDream
                     }
                     continue;
                 }
+                // Another pawn may hold a reservation on this stack (a bill worker fetching ingredients
+                // out of this very inventory) — unloading it now would move its target out from under it.
+                // CanReserve is false exactly when someone else holds the reservation; skip those.
+                if (!pawn.CanReserve(thing))
+                    continue;
                 return new ThingCount(thing, thing.stackCount);
             }
             return default;

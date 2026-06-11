@@ -16,8 +16,10 @@ namespace HaulersDream
     ///
     /// We stash the worker pawn during <c>TryFindBestBillIngredients</c> (which has it) and read it in the
     /// chooser <c>TryFindBestBillIngredientsInSet</c> (which doesn't), appending eligible inventory stacks
-    /// once per search. The chooser sorts candidates by held-distance, so a closer carrier is preferred and
-    /// distant floor still wins when nearer — i.e. carried stock supplements, it doesn't override the floor.
+    /// once per search. NOTE the real semantics: vanilla's FIRST foundAllIngredientsAndChoose pass runs
+    /// BEFORE any region traversal, so when the injected carried stock alone satisfies the bill it wins
+    /// OUTRIGHT — nearby floor stock is never even considered. Floor stock participates only when the
+    /// carried stock is insufficient (the chooser then ranks the mixed set by held-distance).
     /// </summary>
     [HarmonyPatch(typeof(WorkGiver_DoBill), "TryFindBestBillIngredients")]
     public static class Patch_WorkGiver_DoBill_TryFindBestBillIngredients

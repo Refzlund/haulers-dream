@@ -149,10 +149,17 @@ namespace HaulersDream
             }
         }
 
-        /// <summary>Mirror of vanilla <c>WorkGiver_DoBill.IsUsableIngredient</c>: allowed by the bill and by some recipe ingredient.</summary>
+        /// <summary>Mirror of vanilla <c>WorkGiver_DoBill.IsUsableIngredient</c>: allowed by the bill and by some recipe
+        /// ingredient — PLUS the medical-care gate vanilla applies to every medicine candidate when the bill-giver is a
+        /// Pawn (its region scan excludes medicine for pawn bill-givers entirely and re-adds it via
+        /// AddEveryMedicineToRelevantThings, filtered by GetMedicalCareCategory; decompile-verified). Injected carried
+        /// stock must not bypass the patient's medical-care restriction.</summary>
         internal static bool IsUsableForBill(Thing t, Bill bill)
         {
             if (!bill.IsFixedOrAllowedIngredient(t))
+                return false;
+            if (t.def.IsMedicine && bill.billStack?.billGiver is Pawn patient
+                && !WorkGiver_DoBill.GetMedicalCareCategory(patient).AllowsMedicine(t.def))
                 return false;
             var ings = bill.recipe.ingredients;
             for (int i = 0; i < ings.Count; i++)

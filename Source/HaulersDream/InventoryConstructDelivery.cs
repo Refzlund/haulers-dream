@@ -42,7 +42,7 @@ namespace HaulersDream
             bool tether = forced && intent != ConstructRouteIntent.HaulOnly
                           && (intent == ConstructRouteIntent.HaulBuild
                               || HaulersDreamMod.Settings == null || HaulersDreamMod.Settings.orderedConstructTether);
-            var job = InventoryConstructDelivery.TryBuild(pawn, c, carried, forced, tether);
+            var job = InventoryConstructDelivery.TryBuild(pawn, c, carried, forced, tether, __result);
             if (job != null)
                 __result = job;
         }
@@ -68,7 +68,8 @@ namespace HaulersDream
         /// the route executor alongside <see cref="RouteIntent"/>.</summary>
         [System.ThreadStatic] internal static Dictionary<ThingDef, int> RouteDemandByDef;
 
-        internal static Job TryBuild(Pawn pawn, IConstructible c, Thing resource, bool forced, bool tetherBuild = false)
+        internal static Job TryBuild(Pawn pawn, IConstructible c, Thing resource, bool forced, bool tetherBuild = false,
+            Job vanillaJob = null)
         {
             var s = HaulersDreamMod.Settings;
             ThingDef def = resource?.def;
@@ -89,13 +90,25 @@ namespace HaulersDream
                 : enroute.GetSpaceRemainingWithEnroute(def, pawn);
             if (frameNeed <= 0)
                 return null;
-            // An ORDERED (forced) delivery always converts — even a small one-hand-trip load — because only our
-            // driver carries the tether/route hooks; the trip count is the same either way. Auto deliveries keep
-            // the "hands already optimal" fast path.
+            // An ORDERED (forced) delivery normally converts — even a small one-hand-trip load — because only
+            // our driver carries the tether/route hooks. NOT always trip-neutral though: see the cluster
+            // exception below. Auto deliveries keep the "hands already optimal" fast path.
             if (!forced && frameNeed <= handCap)
             {
                 HDLog.Dbg($"inv-deliver skip: need {frameNeed} <= handCap {handCap} for {def.label} → {needer.LabelShort} (one hand-trip suffices)");
                 return null; // a single hand-trip already satisfies it
+            }
+            // Plain right-click order (not a route stop) whose remaining need fits ONE hand-stack, where the
+            // vanilla job already batches nearby needers (targetQueueB = its 8-tile cluster — right-clicking
+            // one wall of a 15-wall line delivers the whole cluster): keep vanilla. Our single-needer
+            // conversion would deliver to one needer and discard the rest of the cluster, COSTING trips.
+            // Route stops (RouteIntent != None) still always convert — routes depend on per-stop jobs.
+            if (forced && RouteIntent == ConstructRouteIntent.None && frameNeed <= handCap
+                && vanillaJob != null && vanillaJob.targetQueueB != null && vanillaJob.targetQueueB.Count > 0)
+            {
+                HDLog.Dbg($"inv-deliver skip: forced one-hand order for {def.label} → {needer.LabelShort}, " +
+                          $"vanilla batches {vanillaJob.targetQueueB.Count} more needer(s) (keep vanilla cluster delivery)");
+                return null;
             }
 
             // A haul+build ROUTE gathers for the WHOLE route in this first sweep, not just this stop — the route

@@ -21,10 +21,14 @@ namespace HaulersDream.Core
         /// last node (storage) or -1 for no fixed end. Returns every index except start (and except end when
         /// end&gt;=0), in visiting order. <paramref name="exactMax"/> is the stop count at/under which the order is
         /// solved EXACTLY (Held-Karp, O(2^k·k²) — keep it modest); above it, a nearest-neighbour + 2-opt heuristic.
+        /// The 2-opt branch requires a SYMMETRIC cost matrix (a segment reversal is evaluated by its boundary
+        /// edges only, which is only valid when d[a,b] == d[b,a]).
         /// </summary>
         public static int[] Order(float[,] d, int start, int end, int exactMax = ExactMax)
         {
             if (exactMax < 1) exactMax = 1;
+            if (exactMax > 16) exactMax = 16; // Held-Karp allocates two 2^k·k arrays — 16 ≈ 8 MB worst case
+                                              // (the UI slider caps at 14; a bigger value is a hand-edited config)
             int n = d.GetLength(0);
             var stops = new List<int>();
             for (int i = 0; i < n; i++)

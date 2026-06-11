@@ -27,7 +27,9 @@ namespace HaulersDream
     /// pawn's assigned loadout doesn't cover (<c>GetExcessThing</c>; default-loadout pawns are exempt).
     /// Scooped/swept goods waiting for the unload trip would be dumped on the floor. <see cref="NotifyHeld"/>
     /// registers them with CE's HoldTracker (<c>Utility_HoldTracker.Notify_HoldTrackerItem</c>) so CE leaves
-    /// them alone; CE's own cleanup prunes the records once the goods leave the inventory.</item>
+    /// them alone. Caveat: CE's cleanup loop iterates <c>i &gt; 0</c> and never prunes its FIRST record, so the
+    /// first-scooped def's record can outlive the goods and its count inflate on re-notify (a CE quirk;
+    /// mod-side mitigation is a documented follow-up, not implemented here).</item>
     /// <item><b>Inventory cache</b>: CE postfixes ThingOwner's NotifyAdded/NotifyRemoved/Take, so this mod's
     /// SplitOff+TryAdd/TryAddOrTransfer flows keep CE's CompInventory cache in sync automatically.</item>
     /// </list>
@@ -115,7 +117,10 @@ namespace HaulersDream
             {
                 var args = new object[] { thing, 0, false, false };
                 canFitInInventory.Invoke(comp, args);
-                return (int)args[1];
+                int count = (int)args[1];
+                // CE computes the count from availableWeight/availableBulk, which go NEGATIVE for an
+                // already-over-capacity pawn — clamp so callers never see a negative pickup count.
+                return count < 0 ? 0 : count;
             }
             catch (Exception e)
             {

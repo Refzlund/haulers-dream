@@ -54,7 +54,7 @@ namespace HaulersDream
 
             // All the gating logic lives in the (unit-tested) pure policy.
             var decision = UnloadPolicy.Decide(eligible, carried.Count, inventoryCount, alreadyUnloading, forced,
-                hasPendingWork, ticksSinceYield, HaulersDreamMod.Settings.unloadGraceTicks);
+                hasPendingWork, ticksSinceYield, settings.unloadGraceTicks);
 
             switch (decision)
             {
