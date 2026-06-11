@@ -70,9 +70,10 @@ jobs:
         if: steps.ver.outputs.new == 'true'
         run: |
           bun scripts/changelog-latest.ts > release-notes.md
+          bun scripts/changelog-latest.ts --steam > steam-note.txt
           {
             echo 'note<<CHANGENOTE_EOF'
-            cat release-notes.md
+            cat steam-note.txt
             echo
             echo "Full changelog: https://github.com/refzlund/haulers-dream/releases/tag/v${{ steps.ver.outputs.version }}"
             echo 'CHANGENOTE_EOF'
