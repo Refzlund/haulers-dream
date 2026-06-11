@@ -1,5 +1,12 @@
 # haulers-dream
 
+## 1.0.3
+
+### Patch Changes
+
+- e6e547d: Planned crafting polish, from a top-to-bottom review of the feature by three independent reviewers: recipes with fixed ingredients (make medicine, the whole drug lab, mortar shells) are no longer wrongly reported as having no ingredients — they can now actually be batched; a pawn that doesn't meet a recipe's skill requirement can no longer batch it (a level-3 cook could previously batch fine meals the game forbids); batches now respect the bill's own rules the way vanilla does — the ingredient search radius, rot and hit-point filters (no more cooking rotten meat the bill disallows, and batch-butchering a dessicated corpse for nothing is gone), and "make until you have X" bills no longer overshoot their target; and the per-repetition safety net around crafting was widened so even a misbehaving third-party recipe can't lose ingredients or products mid-batch.
+- e6e547d: Strip on haul polish, from two independent top-to-bottom review rounds of the feature (six reviewers total). Round one: stripped loot that lands next to an existing pile of the same item no longer pulls that whole pile into the hauler's pocket — only what was actually on the body is scooped, and pieces that drop straight into valid storage stay where they landed; the destroy and drop-and-forbid tainted-apparel policies can never touch pre-existing ground stacks; quest lodgers no longer scoop strip loot (it could leave the map with them); follow-up strips are only queued for your own pawns; and two settings labels now tell the whole truth ("leave it on the corpse" notes that butchering drops it at the bench like vanilla, and "destroy it" notes that quest items and relics are always spared). Round two: a pawn that can't haul (a noble cook fetching a corpse for a butcher bill) no longer scoops loot it could never auto-unload — the body is still stripped, but the gear stays on the ground for real haulers, instead of weighing the cook down forever; manual Strip orders on corpses now honor the tainted-apparel choices just like automatic strips (and the tainted-apparel settings stay visible whenever either feature using them is on); and the strip-loot bookkeeping for modded stackable gear is now exact in every merge case.
+
 ## 1.0.2
 
 ### Patch Changes
