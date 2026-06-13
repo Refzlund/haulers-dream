@@ -5,7 +5,7 @@
 
   <HaulersDream.Setting.DropThenHaul>Drop on the floor, then pick up (realistic)</HaulersDream.Setting.DropThenHaul>
   <HaulersDream.Setting.DropThenHaulDesc>When ON, harvested/mined goods drop on the ground and the pawn scoops them into its inventory after the work run. When OFF, goods go straight into inventory (no ground touch).</HaulersDream.Setting.DropThenHaulDesc>
-  <HaulersDream.Setting.MarkForUnload>Automatically unload scooped goods (when full or at end of work run)</HaulersDream.Setting.MarkForUnload>
+  <HaulersDream.Setting.MarkForUnload>Automatically unload scooped goods (at end of work run, around meals and recreation, when overweight, and on the interval below). Off: pawns keep carrying until you press their "Unload inventory" button.</HaulersDream.Setting.MarkForUnload>
 
   <HaulersDream.Setting.ShareHeader>Share carried materials between colonists:</HaulersDream.Setting.ShareHeader>
   <HaulersDream.Setting.ShareForBuilding>Use carried materials for construction</HaulersDream.Setting.ShareForBuilding>
@@ -93,7 +93,7 @@
 
   <HaulersDream.Setting.UnloadGrace>Unload grace: wait {0} ticks after a pickup before unloading</HaulersDream.Setting.UnloadGrace>
   <HaulersDream.Setting.IntervalUnload>Interval unload: every {0} in-game hours</HaulersDream.Setting.IntervalUnload>
-  <HaulersDream.Setting.IntervalUnloadOff>Interval unload: off (only idle / full / manual)</HaulersDream.Setting.IntervalUnloadOff>
+  <HaulersDream.Setting.IntervalUnloadOff>Interval unload: off (only end of work run / meals and recreation / overweight / manual)</HaulersDream.Setting.IntervalUnloadOff>
 
   <HaulersDream.Setting.VerboseLogging>Verbose debug logging</HaulersDream.Setting.VerboseLogging>
 

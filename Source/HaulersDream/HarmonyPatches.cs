@@ -119,26 +119,42 @@ namespace HaulersDream
     }
 
     /// <summary>
-    /// F6 (pass-by unload): when the work think-tree is about to send a pawn that's carrying scooped goods
-    /// off on a real journey, and its storage is roughly on the way, divert it to unload first — rather
-    /// than hauling the load across the map and making a dedicated trip later. After unloading it re-picks
-    /// work normally (now empty, so it won't re-divert). See <see cref="OpportunisticUnload"/>.
+    /// F6 (pass-by unload) + the end-of-work-run trigger, both on the work node's own think result:
+    /// <list type="bullet">
+    /// <item>Work WAS found: if the pawn carries scooped goods and its storage is roughly on the way to
+    /// the new job, divert it to unload first — rather than hauling the load across the map and making a
+    /// dedicated trip later. After unloading it re-picks work normally (now empty, so it won't
+    /// re-divert). See <see cref="OpportunisticUnload.ShouldDivert"/>.</item>
+    /// <item>Work ran DRY: the run is over — unload NOW, before the priority sorter falls through to
+    /// recreation/wandering with a full backpack. This is the trigger the settings have always promised
+    /// ("at end of work run"); needs that outrank work in the sorter (urgent food, rest) still win, and
+    /// a pawn whose next determination picks joy directly is caught by the GameComponent backstop
+    /// instead. See <see cref="OpportunisticUnload.TryGetEndOfRunUnloadJob"/>.</item>
+    /// </list>
     /// </summary>
     [HarmonyPatch(typeof(JobGiver_Work), nameof(JobGiver_Work.TryIssueJobPackage))]
     public static class Patch_JobGiver_Work_OpportunisticUnload
     {
-        static void Postfix(ref ThinkResult __result, Pawn pawn)
+        static void Postfix(ref ThinkResult __result, Pawn pawn, JobGiver_Work __instance)
         {
-            if (!__result.IsValid || __result.Job == null)
-                return;
-            if (!OpportunisticUnload.ShouldDivert(pawn, __result.Job))
-                return;
-            var job = JobMaker.MakeJob(HaulersDreamDefOf.HaulersDream_UnloadInventory);
-            if (job.TryMakePreToilReservations(pawn, false))
+            if (__result.IsValid && __result.Job != null)
             {
-                OpportunisticUnload.NotifyDiverted(pawn);
-                __result = new ThinkResult(job, __result.SourceNode, __result.Tag, __result.FromQueue);
+                if (!OpportunisticUnload.ShouldDivert(pawn, __result.Job))
+                    return;
+                var job = JobMaker.MakeJob(HaulersDreamDefOf.HaulersDream_UnloadInventory);
+                if (job.TryMakePreToilReservations(pawn, false))
+                {
+                    OpportunisticUnload.NotifyDiverted(pawn);
+                    __result = new ThinkResult(job, __result.SourceNode, __result.Tag, __result.FromQueue);
+                }
+                return;
             }
+
+            // No work left for this pawn — end of its work run. (Fully gated inside, incl. a cooldown;
+            // returns null for pawns with nothing tracked, so the common idle case is two cheap checks.)
+            var unload = OpportunisticUnload.TryGetEndOfRunUnloadJob(pawn);
+            if (unload != null)
+                __result = new ThinkResult(unload, __instance, JobTag.UnloadingOwnInventory, false);
         }
     }
 

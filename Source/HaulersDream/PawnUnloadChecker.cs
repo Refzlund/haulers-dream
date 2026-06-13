@@ -73,49 +73,60 @@ namespace HaulersDream
             // goods in strict mode (where the full-trigger never fires to break it).
             bool hasPendingWork = HasPendingRealWork(pawn);
 
-            // All the gating logic lives in the (unit-tested) pure policy.
-            var decision = UnloadPolicy.Decide(eligible, carried.Count, inventoryCount, alreadyUnloading, forced,
-                hasPendingWork, ticksSinceYield, settings.unloadGraceTicks);
-
-            switch (decision)
+            // Up to two passes: a ClearTracker outcome PRUNES and then RE-DECIDES with the fresh counts
+            // instead of consuming the trigger occurrence. Without the second pass, a pawn whose tagged
+            // meal is momentarily in its HANDS (Toils_Ingest moves an inventory meal to the carry tracker
+            // while the tag persists) swallowed every trigger that landed during the meal — for a pawn
+            // whose inventory is all scooped goods, that silently forfeited entire interval boundaries.
+            // The loop always terminates: after the prune, carried ⊆ inventory, so the second Decide can
+            // never return ClearTracker again.
+            for (int pass = 0; pass < 2; pass++)
             {
-                case UnloadDecision.ClearTracker:
-                    // Targeted prune, NOT a whole-set Clear: during a craft the tagged ingredients legitimately
-                    // move inventory→hands→bench (inventoryCount dips below the tracked count), and wiping every
-                    // tag then would permanently strand the pawn's OTHER tagged stock in inventory. Removing only
-                    // entries no longer in the inventory keeps valid tags; destroyed ones self-prune in GetHashSet.
-                    HDLog.Dbg($"{pawn} tracker out of sync ({inventoryCount} < {carried.Count}); pruning stale tags.");
-                    var inv = pawn.inventory?.innerContainer;
-                    carried.RemoveWhere(t => t == null || t.Destroyed || inv == null || !inv.Contains(t));
-                    return;
+                // All the gating logic lives in the (unit-tested) pure policy.
+                var decision = UnloadPolicy.Decide(eligible, carried.Count, inventoryCount, alreadyUnloading, forced,
+                    hasPendingWork, ticksSinceYield, settings.unloadGraceTicks);
 
-                case UnloadDecision.Queue:
-                    // The unload driver sets its own A/B targets in its toils, so no initial target.
-                    var job = JobMaker.MakeJob(HaulersDreamDefOf.HaulersDream_UnloadInventory);
-                    if (pawn.jobs != null && job.TryMakePreToilReservations(pawn, false))
-                    {
-                        if (behindQueuedWork && hasPendingWork)
-                            pawn.jobs.jobQueue.EnqueueLast(job, JobTag.Misc);
-                        else
-                            pawn.jobs.jobQueue.EnqueueFirst(job, JobTag.Misc);
-                        HDLog.Dbg($"{pawn} queued unload ({carried.Count} tracked, forced={forced}).");
-                        // Both EnqueueFirst, so the queue reads [SelfPickup, Unload]: pending fresh drops are
-                        // scooped BEFORE the unload runs — one trip regardless of which trigger queued the
-                        // unload (the interval firing mid-long-job otherwise yields [Unload, SelfPickup]: a
-                        // second trip). EnsureSelfPickupJob dedups, no-ops without pendings, and never calls
-                        // back into this checker. On the behindQueuedWork path the scoop still lands ahead of
-                        // the queued work (acceptable: it's quick and at the pawn's feet) while the unload
-                        // trip waits at the back.
-                        YieldRouter.EnsureSelfPickupJob(pawn);
-                    }
-                    return;
+                switch (decision)
+                {
+                    case UnloadDecision.ClearTracker:
+                        // Targeted prune, NOT a whole-set Clear: during a craft the tagged ingredients legitimately
+                        // move inventory→hands→bench (inventoryCount dips below the tracked count), and wiping every
+                        // tag then would permanently strand the pawn's OTHER tagged stock in inventory. Removing only
+                        // entries no longer in the inventory keeps valid tags; destroyed ones self-prune in GetHashSet.
+                        HDLog.Dbg($"{pawn} tracker out of sync ({inventoryCount} < {carried.Count}); pruning stale tags.");
+                        var inv = pawn.inventory?.innerContainer;
+                        carried.RemoveWhere(t => t == null || t.Destroyed || inv == null || !inv.Contains(t));
+                        inventoryCount = pawn.inventory?.innerContainer?.Count ?? 0;
+                        continue;
 
-                default:
-                    return;
+                    case UnloadDecision.Queue:
+                        // The unload driver sets its own A/B targets in its toils, so no initial target.
+                        var job = JobMaker.MakeJob(HaulersDreamDefOf.HaulersDream_UnloadInventory);
+                        if (pawn.jobs != null && job.TryMakePreToilReservations(pawn, false))
+                        {
+                            if (behindQueuedWork && hasPendingWork)
+                                pawn.jobs.jobQueue.EnqueueLast(job, JobTag.Misc);
+                            else
+                                pawn.jobs.jobQueue.EnqueueFirst(job, JobTag.Misc);
+                            HDLog.Dbg($"{pawn} queued unload ({carried.Count} tracked, forced={forced}).");
+                            // Both EnqueueFirst, so the queue reads [SelfPickup, Unload]: pending fresh drops are
+                            // scooped BEFORE the unload runs — one trip regardless of which trigger queued the
+                            // unload (the interval firing mid-long-job otherwise yields [Unload, SelfPickup]: a
+                            // second trip). EnsureSelfPickupJob dedups, no-ops without pendings, and never calls
+                            // back into this checker. On the behindQueuedWork path the scoop still lands ahead of
+                            // the queued work (acceptable: it's quick and at the pawn's feet) while the unload
+                            // trip waits at the back.
+                            YieldRouter.EnsureSelfPickupJob(pawn);
+                        }
+                        return;
+
+                    default:
+                        return;
+                }
             }
         }
 
-        private static bool HasQueuedUnload(Pawn pawn)
+        internal static bool HasQueuedUnload(Pawn pawn)
         {
             var queue = pawn.jobs?.jobQueue;
             if (queue != null)

@@ -6,8 +6,9 @@ namespace HaulersDream.Tests
     [TestFixture]
     public class OpportunisticUnloadPolicyTests
     {
-        // Default load fraction comfortably above the minimum unless a test overrides it.
-        const float Load = 0.5f;
+        // Default load fraction comfortably above the minimum but below the HEAVY threshold (0.5),
+        // so these tests pin the strict light-load gates; heavy-load relaxation has its own tests.
+        const float Load = 0.3f;
 
         static bool Should(int toTarget, int toStorage, int storageToTarget, float load = Load)
             => OpportunisticUnloadPolicy.ShouldUnloadOnWay(toTarget, toStorage, storageToTarget, load);
@@ -65,6 +66,40 @@ namespace HaulersDream.Tests
         {
             // 40-tile trip: fractional bar = 0.25*40 = 10 = MinDetourTiles. Detour 10 -> allowed.
             Assert.That(Should(toTarget: 40, toStorage: 25, storageToTarget: 25), Is.True);
+        }
+
+        // --- heavy-load relaxation: at >= HeavyLoadFraction (0.5) the trip/detour bars loosen,
+        // so a pawn lugging half its capacity sheds the load far sooner. ---
+
+        [Test]
+        public void HeavyLoad_ShortLocalTrip_Diverts()
+        {
+            // Same geometry LocalWork_ShortTrip_DoesNotDivert pins as blocked for a light load:
+            // trip 10 >= HeavyMinTripTiles (8), detour 1 -> a heavy pawn takes the side trip.
+            Assert.That(Should(toTarget: 10, toStorage: 2, storageToTarget: 9, load: 0.5f), Is.True);
+        }
+
+        [Test]
+        public void HeavyLoad_AcceptsBiggerDetour()
+        {
+            // 40-tile trip, detour 16: light bar = max(10, 0.25*40) = 10 -> blocked;
+            // heavy bar = max(10, 0.5*40) = 20 -> allowed.
+            Assert.That(Should(toTarget: 40, toStorage: 28, storageToTarget: 28, load: 0.3f), Is.False);
+            Assert.That(Should(toTarget: 40, toStorage: 28, storageToTarget: 28, load: 0.5f), Is.True);
+        }
+
+        [Test]
+        public void HeavyLoad_TinyTrip_StillBlocked()
+        {
+            // Even fully overloaded, a hop below HeavyMinTripTiles (8) never diverts.
+            Assert.That(Should(toTarget: 6, toStorage: 1, storageToTarget: 6, load: 0.9f), Is.False);
+        }
+
+        [Test]
+        public void JustBelowHeavy_KeepsStrictGates()
+        {
+            // 0.49 load is still "light": the 16-tile minimum trip applies.
+            Assert.That(Should(toTarget: 12, toStorage: 6, storageToTarget: 6, load: 0.49f), Is.False);
         }
     }
 }

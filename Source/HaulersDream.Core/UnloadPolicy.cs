@@ -60,6 +60,35 @@ namespace HaulersDream.Core
             => !strictCarryWeight && markForUnload;
 
         /// <summary>
+        /// Whether the end-of-work-run trigger may issue an unload: the work scan just came up EMPTY for
+        /// a pawn carrying tracked goods, so before it drifts off to recreation/idle it makes the
+        /// consolidated unload trip. No grace gate on purpose — an empty work scan means the pickup
+        /// stream is over by definition, and the freshest scoop is exactly when the trip should start.
+        /// <paramref name="anyUnloadable"/> = at least one tracked stack is still in inventory and
+        /// reservable; without it the job would end Incompletable instantly and re-issue every think
+        /// cycle (the same loop guard the vanilla-unload substitution patch uses). The cooldown bounds
+        /// re-issue when an unload starts but fails mid-trip (storage destroyed, target stolen).
+        /// </summary>
+        public static bool EndOfRunUnloadAllowed(
+            bool markForUnload,
+            bool eligible,
+            bool drafted,
+            int trackedCount,
+            bool anyUnloadable,
+            bool alreadyUnloading,
+            int ticksSinceLastIssue,
+            int cooldownTicks)
+        {
+            if (!markForUnload || !eligible || drafted)
+                return false;
+            if (trackedCount <= 0 || !anyUnloadable || alreadyUnloading)
+                return false;
+            if (ticksSinceLastIssue < cooldownTicks)
+                return false;
+            return true;
+        }
+
+        /// <summary>
         /// True if any queued job is the pawn's OWN real work — i.e. a queued job whose def is NOT one of
         /// the mod's housekeeping defs (self-pickup / unload). This is the "hasPendingWork" signal fed to
         /// <see cref="Decide"/>: an automatic unload must defer behind real work, but must NOT count the

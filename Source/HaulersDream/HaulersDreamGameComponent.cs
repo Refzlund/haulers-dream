@@ -53,10 +53,11 @@ namespace HaulersDream
             if (veinTrackers != null && veinTrackers.Count > 0 && tick % VeinTickInterval == 0)
                 ProcessVeinTrackers();
 
-            // Idle backstop: when a colonist genuinely goes idle, (a) scoop any pending fresh drops it still
-            // owes itself (DropThenHaul) and (b) run the unload pass for tracked stock. This used to be a
-            // Harmony postfix on JobGiver_Idle.TryGiveJob — DEAD in 1.6, where ordinary colonists never execute
-            // that node (it lives only in gathering/ritual duty trees). Driven from here instead.
+            // Idle/checkpoint backstop: when a colonist is idle — or in a between-runs job like a meal or
+            // recreation — (a) scoop any pending fresh drops it still owes itself (DropThenHaul) and
+            // (b) run the unload pass for tracked stock. This used to be a Harmony postfix on
+            // JobGiver_Idle.TryGiveJob — DEAD in 1.6, where ordinary colonists never execute that node
+            // (it lives only in gathering/ritual duty trees). Driven from here instead.
             if (tick % IdleTickInterval == 0)
                 RunIdleBackstop();
 
@@ -86,7 +87,7 @@ namespace HaulersDream
                 for (int i = 0; i < pawns.Count; i++)
                 {
                     var p = pawns[i];
-                    if (!IsIdle(p))
+                    if (!IsUnloadCheckpoint(p))
                         continue;
                     // Unload check FIRST, then the self-pickup: both EnqueueFirst, so this order makes the
                     // queue [SelfPickup, Unload] — the pawn scoops its pending drops and unloads everything
@@ -105,10 +106,15 @@ namespace HaulersDream
             }
         }
 
-        // Genuinely idle: no queued work and either no job or a wander/wait filler. (A queued job means the
-        // pawn is between tasks of a real run — the backstop must not jump in; HasPendingRealWork in the
-        // checker also guards that, but skipping here avoids the scan entirely.)
-        private static bool IsIdle(Pawn p)
+        // A moment the backstop may act on: genuinely idle (no job, or a wander/wait filler), OR in a
+        // between-runs job — eating or recreation — that an unload can be queued BEHIND. The queued
+        // unload starts the instant the meal/joy job ends (queued jobs precede every think-tree scan),
+        // so a pawn that drifted to dinner or horseshoes with a full backpack puts its stuff away right
+        // after, instead of carrying it for the rest of the day; the current job itself is never
+        // interrupted. (A queued job means the pawn is between tasks of a real run — the backstop must
+        // not jump in; HasPendingRealWork in the checker also guards that, but skipping here avoids the
+        // scan entirely.)
+        private static bool IsUnloadCheckpoint(Pawn p)
         {
             if (p?.jobs == null || p.Drafted)
                 return false;
@@ -117,8 +123,13 @@ namespace HaulersDream
             if (p.CurJob == null)
                 return true;
             var def = p.CurJobDef;
-            return def == JobDefOf.Wait || def == JobDefOf.Wait_Wander
-                || def == JobDefOf.GotoWander || def == JobDefOf.Wait_MaintainPosture;
+            if (def == JobDefOf.Wait || def == JobDefOf.Wait_Wander
+                || def == JobDefOf.GotoWander || def == JobDefOf.Wait_MaintainPosture)
+                return true;
+            // Eating and joy jobs: between work runs by definition. Sleep is deliberately NOT included —
+            // a queued job fires before everything on wake (even urgent breakfast), and the morning work
+            // scan / end-of-run trigger covers it anyway.
+            return def == JobDefOf.Ingest || def.joyKind != null;
         }
 
         private void ProcessVeinTrackers()

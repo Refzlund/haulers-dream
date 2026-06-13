@@ -91,6 +91,68 @@ namespace HaulersDream
                 comp.lastOpportunisticUnloadTick = Find.TickManager?.TicksGame ?? 0;
         }
 
+        /// <summary>
+        /// End-of-work-run unload: the work scan found NOTHING for a pawn carrying scooped goods — the
+        /// run is over, so the pawn makes its consolidated unload trip NOW, before drifting off to
+        /// recreation/wandering with a full backpack. Returns the ready unload job (reservations made)
+        /// or null. Issued as the work node's own think result, which lands it exactly where vanilla
+        /// puts UnloadEverything trips: after work, before leisure — needs the priority sorter ranks
+        /// above work (urgent food, rest) still win. Gates are the pure
+        /// <see cref="Core.UnloadPolicy.EndOfRunUnloadAllowed"/>; shares the divert cooldown so a
+        /// failing trip can't re-issue in a tight loop.
+        /// </summary>
+        internal static Job TryGetEndOfRunUnloadJob(Pawn pawn)
+        {
+            var s = HaulersDreamMod.Settings;
+            if (s == null || pawn?.Map == null || pawn.jobs == null)
+                return null;
+            if (pawn.Faction != Faction.OfPlayerSilentFail)
+                return null;
+            // Same non-home-map stance as the automatic checker: don't dump the load at the pawn's
+            // feet on a storage-less encounter map; it unloads at home.
+            if (!s.enableOnNonHomeMaps && !pawn.Map.IsPlayerHome)
+                return null;
+            var comp = pawn.GetComp<CompHauledToInventory>();
+            if (comp == null)
+                return null;
+            var tracked = comp.GetHashSet();
+            if (tracked.Count == 0)
+                return null;
+
+            // At least one tracked stack must be in inventory and reservable, or the job ends
+            // Incompletable instantly and this would re-issue every think cycle (same guard as the
+            // vanilla-unload substitution patch).
+            var inner = pawn.inventory?.innerContainer;
+            if (inner == null)
+                return null;
+            bool anyUnloadable = false;
+            foreach (var t in tracked)
+            {
+                if (t != null && inner.Contains(t) && pawn.CanReserve(t))
+                {
+                    anyUnloadable = true;
+                    break;
+                }
+            }
+
+            bool alreadyUnloading = pawn.CurJobDef == HaulersDreamDefOf.HaulersDream_UnloadInventory
+                                    || PawnUnloadChecker.HasQueuedUnload(pawn);
+            int now = Find.TickManager?.TicksGame ?? 0;
+
+            if (!Core.UnloadPolicy.EndOfRunUnloadAllowed(
+                    s.markForUnload, YieldRouter.IsEligible(pawn), pawn.Drafted,
+                    tracked.Count, anyUnloadable, alreadyUnloading,
+                    now - comp.lastOpportunisticUnloadTick, DivertCooldownTicks))
+                return null;
+
+            var job = JobMaker.MakeJob(HaulersDreamDefOf.HaulersDream_UnloadInventory);
+            if (!job.TryMakePreToilReservations(pawn, false))
+                return null;
+            NotifyDiverted(pawn);
+            HDLog.Dbg($"{pawn} work ran dry with {tracked.Count} tracked stacks — unloading before leisure.");
+            return job;
+        }
+
         private static int CellDist(IntVec3 a, IntVec3 b)
             => Mathf.RoundToInt((a - b).LengthHorizontal);
     }

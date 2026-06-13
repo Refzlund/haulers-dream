@@ -235,5 +235,72 @@ namespace HaulersDream.Tests
             Assert.That(UnloadPolicy.HasPendingRealWork(new[] { (string)null, SelfPickup }, SelfPickup, Unload), Is.False);
             Assert.That(UnloadPolicy.HasPendingRealWork(new[] { (string)null, "Mine" }, SelfPickup, Unload), Is.True);
         }
+
+        // --- EndOfRunUnloadAllowed: the work scan came up dry for a loaded pawn -> unload before
+        // recreation/idle. Each gate is pinned individually off a passing baseline. ---
+
+        private static bool EndOfRun(
+            bool markForUnload = true, bool eligible = true, bool drafted = false,
+            int tracked = 3, bool anyUnloadable = true, bool alreadyUnloading = false,
+            int sinceIssue = 1000, int cooldown = 250)
+            => UnloadPolicy.EndOfRunUnloadAllowed(markForUnload, eligible, drafted,
+                tracked, anyUnloadable, alreadyUnloading, sinceIssue, cooldown);
+
+        [Test]
+        public void EndOfRun_LoadedPawnWorkDry_Allows()
+        {
+            Assert.That(EndOfRun(), Is.True);
+        }
+
+        [Test]
+        public void EndOfRun_AutoUnloadOff_Blocks()
+        {
+            // markForUnload off = gizmo-only unloading; the think-tree trigger must stay silent.
+            Assert.That(EndOfRun(markForUnload: false), Is.False);
+        }
+
+        [Test]
+        public void EndOfRun_IneligibleOrDrafted_Blocks()
+        {
+            Assert.That(EndOfRun(eligible: false), Is.False);
+            Assert.That(EndOfRun(drafted: true), Is.False);
+        }
+
+        [Test]
+        public void EndOfRun_NothingTracked_Blocks()
+        {
+            Assert.That(EndOfRun(tracked: 0), Is.False);
+        }
+
+        [Test]
+        public void EndOfRun_NothingUnloadable_Blocks()
+        {
+            // Every tracked stack out of inventory or reserved by another pawn: issuing would end
+            // Incompletable instantly and re-issue every think cycle.
+            Assert.That(EndOfRun(anyUnloadable: false), Is.False);
+        }
+
+        [Test]
+        public void EndOfRun_AlreadyUnloading_Blocks()
+        {
+            Assert.That(EndOfRun(alreadyUnloading: true), Is.False);
+        }
+
+        [Test]
+        public void EndOfRun_WithinCooldown_Blocks()
+        {
+            // A trip that failed mid-way must not re-issue in a tight loop.
+            Assert.That(EndOfRun(sinceIssue: 100, cooldown: 250), Is.False);
+            Assert.That(EndOfRun(sinceIssue: 250, cooldown: 250), Is.True);
+        }
+
+        [Test]
+        public void EndOfRun_NoGraceGate()
+        {
+            // Deliberate: an empty work scan means the pickup stream is over by definition — the
+            // trigger fires even right after the last scoop (there is no grace parameter at all).
+            // This pins the signature staying grace-free; a future grace would need its own pin.
+            Assert.That(EndOfRun(sinceIssue: 1000, cooldown: 0), Is.True);
+        }
     }
 }

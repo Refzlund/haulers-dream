@@ -14,7 +14,7 @@ namespace HaulersDream
         public PickupMode pickupMode = PickupMode.DropThenHaul;
 
         // --- unload defaults / sharing ---
-        public bool markForUnload = true;     // flag auto-picked items for unload (deferred to end of work run)
+        public bool markForUnload = true;     // automatic unloading (end of work run / checkpoints / full / interval); off = gizmo-only
         public bool shareForBuilding = true;  // carried materials count for construction
         public bool shareForCrafting = true;  // carried ingredients count for crafting bills
         // Auto crafting bills: gather all ingredient stacks into inventory in one (overweight) sweep, then let
@@ -114,7 +114,13 @@ namespace HaulersDream
 
         // --- unloading ---
         public int unloadGraceTicks = 60;       // don't unload within this many ticks of the last pickup
-        public float intervalUnloadHours = 6f;  // periodic unload; 0 = off
+        // Periodic unload backstop; 0 = off. 1h: with the primary triggers (end of work run, meal/joy
+        // checkpoints, over-encumbered, pass-by) this rarely fires — but when every one of them is
+        // swallowed (drafts clearing the queue, lord duties, modded jobs), an hour is the longest a
+        // pawn carries a load, not a quarter of a day. (Scribe omits a field that equals the default at
+        // save time, so an old save left on the previous 6h default has no stored value and loads as 1h;
+        // only a user who explicitly chose a non-default interval keeps their value.)
+        public float intervalUnloadHours = 1f;
         public bool enableOnNonHomeMaps = true;  // work on caravans / temporary maps too
 
         // --- misc ---
@@ -229,7 +235,7 @@ namespace HaulersDream
             Scribe_Values.Look(ref allPawnsCanClean, "allPawnsCanClean", false);
             Scribe_Values.Look(ref allPawnsCanCutPlants, "allPawnsCanCutPlants", false);
             Scribe_Values.Look(ref unloadGraceTicks, "unloadGraceTicks", 60);
-            Scribe_Values.Look(ref intervalUnloadHours, "intervalUnloadHours", 6f);
+            Scribe_Values.Look(ref intervalUnloadHours, "intervalUnloadHours", 1f);
             Scribe_Values.Look(ref enableOnNonHomeMaps, "enableOnNonHomeMaps", true);
             Scribe_Values.Look(ref hideGizmo, "hideGizmo", false);
             Scribe_Values.Look(ref verboseLogging, "verboseLogging", false);
@@ -244,7 +250,19 @@ namespace HaulersDream
         {
             var view = new Rect(0f, 0f, rect.width - 16f, settingsHeight);
             Widgets.BeginScrollView(rect, ref settingsScroll, view);
-            var l = new Listing_Standard();
+            var l = new Listing_Standard
+            {
+                // CRITICAL: without this the scroll view silently breaks. Listing_Standard.NewColumnIfNeeded
+                // wraps into a SECOND column the instant content exceeds listingRect.height (= settingsHeight)
+                // in any frame — which happens whenever the options grow past the last measured height
+                // (initial 1400 too small, or toggling bulk-haul / auto-strip adds rows). After a wrap,
+                // CurHeight (curY) reports only the short wrapped column, so settingsHeight collapses to the
+                // Mathf.Max floor (rect.height = the viewport). The view then equals the viewport, the
+                // scrollbar vanishes, and the wrapped columns run off-screen — and it re-wraps from the
+                // collapsed height every frame, so it never recovers. maxOneColumn forbids the wrap, so
+                // CurHeight is always the true single-column height and settingsHeight tracks it correctly.
+                maxOneColumn = true
+            };
             l.Begin(view);
 
             l.Label("HaulersDream.Setting.CarryLimit".Translate(carryLimitFraction.ToStringPercent()));
