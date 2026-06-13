@@ -48,13 +48,11 @@ namespace HaulersDream
                 return;
 
             // On a non-home / temporary map (a caravan / encounter site) there is no player storage to unload
-            // to, so the storage-unload pass is never appropriate there — loot stays in inventory (it rides home
-            // as caravan inventory) and pack-animal loading is handled separately (the over-encumbered
-            // auto-divert, the manual bulk-load order, or vanilla Reform Caravan). Suppressed regardless of the
-            // enableOnNonHomeMaps setting, which gates SCOOPING (BulkHaul / YieldRouter.IsEligible), not this.
-            // The "Unload now" gizmo on a non-home map routes to the pack-animal load instead (see HarmonyPatches).
-            if (pawn.Map != null && !pawn.Map.IsPlayerHome)
-                return;
+            // to, so the storage-unload pass is never appropriate there. We DON'T bail here, though: the same
+            // eligibility / grace / pending-work / surplus gating below decides WHEN to commit (so the caravan
+            // offload keeps the home accumulate-during-work timing — F38), and the Queue branch then offloads
+            // onto a PACK ANIMAL instead of storage (PackAnimalLoad.TryGetOpportunisticLoadJob). When no usable
+            // pack animal is reachable that returns null and the loot rides home in inventory (the F34 fallback).
 
             // A FORCED unload (the gizmo, an end-of-batch flush) is RECOVERY, not work — it must function even
             // for a pawn that became scoop-ineligible (hauling-incapable after a settings flip), or the recovery
@@ -128,6 +126,26 @@ namespace HaulersDream
                         continue;
 
                     case UnloadDecision.Queue:
+                        // Caravan / away map: no player storage — offload onto a pack animal instead. The Decide
+                        // gates above already applied the SAME eligibility / grace / pending-work / surplus
+                        // timing as the home storage path (so F38's accumulate-during-work holds);
+                        // TryGetOpportunisticLoadJob adds the caravan toggle + carrier gate and builds the
+                        // deposit-only load job (null -> no usable carrier, loot just rides home in inventory).
+                        if (pawn.Map != null && !pawn.Map.IsPlayerHome)
+                        {
+                            var loadJob = PackAnimalLoad.TryGetOpportunisticLoadJob(pawn);
+                            if (loadJob != null && pawn.jobs != null)
+                            {
+                                if (behindQueuedWork && hasPendingWork)
+                                    pawn.jobs.jobQueue.EnqueueLast(loadJob, JobTag.Misc);
+                                else
+                                    pawn.jobs.jobQueue.EnqueueFirst(loadJob, JobTag.Misc);
+                                HDLog.Dbg($"{pawn} queued caravan pack-animal load ({carried.Count} tracked).");
+                                // Same one-trip ordering as the storage path: scoop pending fresh drops first.
+                                YieldRouter.EnsureSelfPickupJob(pawn);
+                            }
+                            return;
+                        }
                         // The unload driver sets its own A/B targets in its toils, so no initial target.
                         var job = JobMaker.MakeJob(HaulersDreamDefOf.HaulersDream_UnloadInventory);
                         if (pawn.jobs != null && job.TryMakePreToilReservations(pawn, false))

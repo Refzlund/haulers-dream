@@ -173,11 +173,38 @@ namespace HaulersDream
                 return UnloadFault.None;
 
             // Deliberate, non-transient exemptions — the mod will genuinely not unload these, so they are not
-            // a fault at all: a drafted pawn, and a non-home/encounter map when the mod is set to leave it be.
+            // a fault at all: a drafted pawn first.
             if (p.Drafted)
                 return UnloadFault.None;
-            if (!s.enableOnNonHomeMaps && !p.Map.IsPlayerHome)
+
+            // Caravan / away map: there is no player storage here, so Condition A's storage-only destination
+            // probe would mis-report EVERY surplus stack as a "no destination" black hole. Decide the fault by
+            // PACK-ANIMAL availability instead. The opportunistic offload requires the auto-unload master
+            // (markForUnload) + the caravan toggle (autoDivertToPackAnimal) + the mod being active on non-home
+            // maps; with any of those off, the loot legitimately rides home in inventory (not a fault).
+            if (!p.Map.IsPlayerHome)
+            {
+                if (!s.enableOnNonHomeMaps || !s.markForUnload || !s.autoDivertToPackAnimal)
+                    return UnloadFault.None;
+                if (!PackAnimalLoad.HasDepositableSurplus(p))
+                    return UnloadFault.None;            // only personal keep-stock to carry -> nothing to offload
+                if (PackAnimalLoad.HasLoadJob(p))
+                    return UnloadFault.InFlight;          // a load trip is running/queued -> give it a chance
+                if (PackAnimalLoad.FindCarrier(p) == null)
+                    return UnloadFault.None;            // no usable pack animal reachable -> loot rides home (intended)
+                // A usable carrier exists and there's depositable surplus, but no load is happening. Only a
+                // GENUINE fault once a tagged stack has been stuck past the threshold (mirror Condition B's
+                // per-item clock) — otherwise it's just the normal accumulate window before the next offload
+                // trigger fires. There IS a destination (the animal), so this is the "Stuck" variant, never
+                // "NoStorage" (noStorage stays false).
+                if (comp != null)
+                    foreach (var t in comp.PeekHashSet())
+                        if (t != null && !t.Destroyed && inner.Contains(t)
+                            && InventorySurplus.SurplusOf(p, t) > 0
+                            && now - comp.FirstTaggedTick(t) > stuckTicks)
+                            return UnloadFault.Stranded;
                 return UnloadFault.None;
+            }
 
             // ---- the real fault (independent of any in-transit job) ----
             bool fault = false;

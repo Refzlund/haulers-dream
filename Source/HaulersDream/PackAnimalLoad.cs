@@ -81,6 +81,56 @@ namespace HaulersDream
                 QueueDepositOnly(pawn, carrier);
         }
 
+        /// <summary>
+        /// The OPPORTUNISTIC caravan offload — the pack-animal counterpart to the storage unload. Returns a
+        /// ready deposit-only HaulersDream_LoadPackAnimal job (reservations made, divert cooldown stamped) when
+        /// a non-home pawn should shed its scooped loot onto a usable pack animal NOW, or null. This is what the
+        /// automatic unload TRIGGERS (end-of-run, before-downtime, interval, idle backstop) call in place of the
+        /// storage unload they make at home: each caller decides the TIMING exactly as for the home path (settle
+        /// window / grace / downtime), so F38's accumulate-during-work is preserved by construction; this only
+        /// adds the destination-availability + standing gates. Distinct from <see cref="MaybeAutoDivert"/> (the
+        /// over-encumbered ceiling, no eligibility/grace) and <see cref="TryBuildBulkLoadJob"/> (the manual order,
+        /// no eligibility gate). Gated on the caravan toggle + the mod being active on non-home maps + eligibility
+        /// + not drafted + a usable carrier + depositable surplus + no existing load job + the divert cooldown.
+        /// markForUnload (the auto-unload master) is ALSO required — every current trigger already gates on it
+        /// (matching the home automatic unloads), and it is re-checked here too, defended in depth alongside the
+        /// other gates so a future caller can't bypass the master switch.
+        /// </summary>
+        internal static Job TryGetOpportunisticLoadJob(Pawn pawn)
+        {
+            var s = HaulersDreamMod.Settings;
+            if (s == null || pawn?.Map == null || pawn.jobs == null)
+                return null;
+            bool atHome = pawn.Map.IsPlayerHome;
+            bool drafted = pawn.Drafted;
+            bool eligible = pawn.Faction == Faction.OfPlayerSilentFail && YieldRouter.IsEligible(pawn);
+            bool alreadyLoading = HasLoadJob(pawn);
+            bool hasSurplus = !alreadyLoading && HasDepositableSurplus(pawn);
+            // Divert cooldown (shared with the storage opportunistic paths via lastOpportunisticUnloadTick): a
+            // recent offload — stamped on a successful build below — bars another for a short while, so a trip
+            // that starts but ends without clearing the load can't re-issue every tick. (A pawn with surplus but
+            // no usable carrier just re-checks each trigger, exactly as the over-encumbered MaybeAutoDivert does;
+            // UsablePackAnimalWithTheMostFreeSpace is cheap when there are no reachable animals.)
+            var comp = pawn.GetComp<CompHauledToInventory>();
+            int now = Find.TickManager?.TicksGame ?? 0;
+            bool cooled = comp != null && now - comp.lastOpportunisticUnloadTick >= OpportunisticUnload.DivertCooldownTicks;
+            // Cheap gates first; the carrier search pathfinds, so run it only once everything else passes
+            // (mirrors MaybeAutoDivert's cheapPass discipline — the interval / idle callers are hot).
+            if (!(s.markForUnload && s.autoDivertToPackAnimal && s.enableOnNonHomeMaps && !atHome && !drafted
+                  && eligible && hasSurplus && !alreadyLoading && cooled))
+                return null;
+            var carrier = FindCarrier(pawn);
+            if (!PackAnimalLoadPolicy.ShouldOffloadOpportunistically(s.autoDivertToPackAnimal, s.enableOnNonHomeMaps,
+                    atHome, carrier != null, hasSurplus, alreadyLoading, eligible, drafted))
+                return null;
+            var job = JobMaker.MakeJob(HaulersDreamDefOf.HaulersDream_LoadPackAnimal, carrier);
+            if (!job.TryMakePreToilReservations(pawn, false))
+                return null;
+            OpportunisticUnload.NotifyDiverted(pawn); // stamp the divert cooldown (shared with the storage paths)
+            HDLog.Dbg($"{pawn} offloading scooped loot onto {carrier} (opportunistic caravan unload).");
+            return job;
+        }
+
         /// <summary>The "Unload now" gizmo while on a non-home map: load the nearest pack animal now. Manual, so
         /// gated only on enableOnNonHomeMaps (not the auto-divert toggle). Messages when no carrier is around.</summary>
         internal static void GizmoLoadNearest(Pawn pawn)

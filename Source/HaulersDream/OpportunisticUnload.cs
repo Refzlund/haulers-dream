@@ -16,7 +16,9 @@ namespace HaulersDream
     internal static class OpportunisticUnload
     {
         // Short cooldown so a (rare) unload that doesn't clear the load can't cause a tight divert loop.
-        private const int DivertCooldownTicks = 250;
+        // Shared with the caravan pack-animal offload (PackAnimalLoad.TryGetOpportunisticLoadJob), which stamps
+        // the same lastOpportunisticUnloadTick via NotifyDiverted.
+        internal const int DivertCooldownTicks = 250;
 
         // "Put it away before relaxing": bypass the accumulate window so a pawn drops its load before downtime
         // (rest / recreation / eating) instead of carrying it to bed / the dinner table / the rec room (the
@@ -80,8 +82,6 @@ namespace HaulersDream
                 return null;
             if (pawn?.Map == null || pawn.jobs == null || pawn.Drafted || pawn.Downed || !pawn.Spawned)
                 return null;
-            if (!pawn.Map.IsPlayerHome) // no player storage on a caravan/encounter map; loot rides home
-                return null;
             if (pawn.Faction != Faction.OfPlayerSilentFail || !YieldRouter.IsEligible(pawn))
                 return null;
             // Don't yank a pawn out of a lord-driven activity (party / ritual / gathering — it carries a duty),
@@ -101,6 +101,13 @@ namespace HaulersDream
             // Adopt foreign surplus too (matches the other unload paths), then require something actually unloadable.
             if (s.unloadAllSurplus && !pawn.IsFormingCaravan())
                 PawnUnloadChecker.AdoptSurplusInventory(pawn, comp);
+            // Caravan / away map: no player storage — put the load onto a pack animal before resting/eating/
+            // relaxing at the campsite, the same way the home pawn puts it in storage. Same downtime trigger
+            // and per-activity toggle (markForUnload + the `enabled` gate above); the caravan toggle + carrier
+            // availability gate live inside TryGetOpportunisticLoadJob (which also makes its own reservations /
+            // NotifyDiverted). When no usable pack animal is reachable it returns null -> loot rides home.
+            if (!pawn.Map.IsPlayerHome)
+                return PackAnimalLoad.TryGetOpportunisticLoadJob(pawn);
             if (!PawnUnloadChecker.AnyUnloadable(pawn, comp.GetHashSet()))
                 return null;
             var job = JobMaker.MakeJob(HaulersDreamDefOf.HaulersDream_UnloadInventory);
@@ -243,10 +250,11 @@ namespace HaulersDream
                 return null;
             if (pawn.Faction != Faction.OfPlayerSilentFail)
                 return null;
-            // Non-home / temporary map: no player storage to unload to (a storage-unload would no-op or, pre-fix,
-            // drop at feet). Loot stays in inventory (rides home) and pack-animal loading is handled separately.
-            // Suppressed regardless of enableOnNonHomeMaps (which gates scooping, not this).
-            if (pawn.Map != null && !pawn.Map.IsPlayerHome)
+            // The auto-unload master switch (off = gizmo-only). Required for BOTH the home storage unload (the
+            // home path re-checks it via EndOfRunUnloadAllowed below) and the caravan pack-animal offload, so
+            // it gates the non-home fork too — matching the interval/idle path (gated on markForUnload upstream)
+            // and the before-downtime path. Hoisted here so the caravan fork below is governed by it.
+            if (!s.markForUnload)
                 return null;
             var comp = pawn.GetComp<CompHauledToInventory>();
             if (comp == null)
@@ -269,6 +277,14 @@ namespace HaulersDream
             int settle = IsEnteringDowntime(pawn, s) ? 0 : s.unloadGraceTicks;
             if (settle > 0 && (Find.TickManager?.TicksGame ?? 0) - comp.lastYieldTick < settle)
                 return null;
+
+            // Caravan / away map: no player storage — make the consolidated trip onto a pack animal instead of
+            // storage, on the SAME end-of-run timing the home pawn uses (the settle gate above is shared). The
+            // caravan toggle + eligibility + carrier + cooldown gates (and the reservations / NotifyDiverted)
+            // live inside TryGetOpportunisticLoadJob; it returns null (loot rides home) when no usable pack
+            // animal is reachable. The work node wraps any non-null job into its ThinkResult unchanged.
+            if (!pawn.Map.IsPlayerHome)
+                return PackAnimalLoad.TryGetOpportunisticLoadJob(pawn);
 
             // At least one tracked stack must be in inventory and reservable, or the job ends
             // Incompletable instantly and this would re-issue every think cycle (same guard as the

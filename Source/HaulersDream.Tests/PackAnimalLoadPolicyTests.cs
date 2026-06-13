@@ -58,6 +58,85 @@ namespace HaulersDream.Tests
             Assert.That(Divert(alreadyLoading: true), Is.False);
         }
 
+        // --- ShouldOffloadOpportunistically (the caravan analogue of the home automatic unload) ---
+
+        private static bool Offload(
+            bool autoDivertEnabled = true, bool modActiveOnNonHomeMaps = true, bool isPlayerHome = false,
+            bool hasCarrier = true, bool hasSurplus = true, bool alreadyLoading = false,
+            bool eligible = true, bool drafted = false)
+            => PackAnimalLoadPolicy.ShouldOffloadOpportunistically(autoDivertEnabled, modActiveOnNonHomeMaps,
+                isPlayerHome, hasCarrier, hasSurplus, alreadyLoading, eligible, drafted);
+
+        [Test]
+        public void Offload_EligibleCaravanPawnWithCarrierAndSurplus_Offloads()
+        {
+            Assert.That(Offload(), Is.True);
+        }
+
+        [Test]
+        public void Offload_FeatureOff_DoesNot()
+        {
+            // The re-scoped caravan toggle (autoDivertToPackAnimal) off -> no opportunistic caravan offload.
+            Assert.That(Offload(autoDivertEnabled: false), Is.False);
+        }
+
+        [Test]
+        public void Offload_ModInertOnNonHomeMaps_DoesNot()
+        {
+            Assert.That(Offload(modActiveOnNonHomeMaps: false), Is.False);
+        }
+
+        [Test]
+        public void Offload_AtHome_DoesNot()
+        {
+            // Home uses the storage unload, never this.
+            Assert.That(Offload(isPlayerHome: true), Is.False);
+        }
+
+        [Test]
+        public void Offload_NoCarrier_DoesNot()
+        {
+            // No usable pack animal -> loot rides home in inventory.
+            Assert.That(Offload(hasCarrier: false), Is.False);
+        }
+
+        [Test]
+        public void Offload_NoSurplus_DoesNot()
+        {
+            Assert.That(Offload(hasSurplus: false), Is.False);
+        }
+
+        [Test]
+        public void Offload_AlreadyLoading_DoesNot()
+        {
+            Assert.That(Offload(alreadyLoading: true), Is.False);
+        }
+
+        [Test]
+        public void Offload_Ineligible_DoesNot()
+        {
+            // The KEY difference from the manual / over-encumbered paths: an ineligible (hauling-incapable /
+            // disallowed-mech) pawn must NOT auto-offload, exactly as the home automatic unload gates on it.
+            Assert.That(Offload(eligible: false), Is.False);
+        }
+
+        [Test]
+        public void Offload_Drafted_DoesNot()
+        {
+            // Standing-order gate: never auto-walk a drafted pawn off to an animal mid-combat.
+            Assert.That(Offload(drafted: true), Is.False);
+        }
+
+        [Test]
+        public void Offload_IsStricterSupersetOfAutoDivert()
+        {
+            // For any pawn the over-encumbered ceiling would reject, the opportunistic gate also rejects
+            // (it adds eligible && !drafted, never removes a constraint). Spot-check the two added terms:
+            Assert.That(Divert(), Is.True);
+            Assert.That(Offload(eligible: false), Is.False); // auto-divert allows it; opportunistic does not
+            Assert.That(Offload(drafted: true), Is.False);
+        }
+
         // --- DepositCountWithinFreeSpace ---
 
         [Test]
