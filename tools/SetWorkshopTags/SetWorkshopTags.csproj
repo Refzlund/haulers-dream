@@ -1,0 +1,49 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- One-off maintenance tool: sets the Steam Workshop display tags ("Mod", "1.6") on the
+       published item via the Steamworks SetItemTags API. steamcmd's workshop_build_item silently
+       ignores the tags block (verified: commit "succeeds" but tags stay empty and time_updated
+       never changes), and RimWorld's CI publish action uses that same path — so tags can only be
+       set through the SDK. This reuses RimWorld's own bundled Steamworks.NET wrapper + native
+       steam_api64.dll so versions are guaranteed compatible. Run while the Steam client is logged
+       into the account that OWNS the item; no content is re-uploaded (tags-only update). -->
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net48</TargetFramework>
+    <LangVersion>latest</LangVersion>
+    <Nullable>disable</Nullable>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <AssemblyName>SetWorkshopTags</AssemblyName>
+    <!-- steam_api64.dll is 64-bit; the host process must be x64. -->
+    <PlatformTarget>x64</PlatformTarget>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+  </PropertyGroup>
+
+  <!-- net48 reference assemblies so `dotnet build` works without an installed targeting pack
+       (mirrors Source/Directory.Build.props; this tool lives outside Source/ so it doesn't inherit it). -->
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.3">
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="com.rlabrecque.steamworks.net">
+      <HintPath>C:\Steam\steamapps\common\RimWorld\RimWorldWin64_Data\Managed\com.rlabrecque.steamworks.net.dll</HintPath>
+      <Private>true</Private>
+    </Reference>
+  </ItemGroup>
+
+  <!-- Stage the native lib + appid file next to the exe so SteamAPI.Init can load them. -->
+  <ItemGroup>
+    <None Include="C:\Steam\steamapps\common\RimWorld\RimWorldWin64_Data\Plugins\x86_64\steam_api64.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <Link>steam_api64.dll</Link>
+    </None>
+    <None Include="steam_appid.txt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+</Project>
