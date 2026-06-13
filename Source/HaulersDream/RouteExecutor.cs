@@ -177,9 +177,8 @@ namespace HaulersDream
         {
             if (pawn?.Map == null || t == null || kind?.scanner == null)
                 return null;
-            Job job;
-            try { job = kind.scanner.JobOnThing(pawn, t, forced: true); }
-            catch { job = null; }
+            // No try/catch: the resolved scanner throwing is a real bug to surface (once per route action), not hide.
+            Job job = kind.scanner.JobOnThing(pawn, t, forced: true);
             if (job != null)
                 return job;
             if (kind.scanner is WorkGiver_ConstructDeliverResourcesToBlueprints)
@@ -193,10 +192,8 @@ namespace HaulersDream
                         && InventoryConstructDelivery.RouteIntent == ConstructRouteIntent.HaulBuild
                         && !pawn.WorkTypeIsDisabled(WorkTypeDefOf.Construction))
                     {
-                        bool can;
-                        try { can = GenConstruct.CanConstruct(f, pawn, checkSkills: true, forced: true); }
-                        catch { can = false; }
-                        if (can)
+                        // No try/catch: GenConstruct.CanConstruct is a vanilla call — a throw is a real bug to surface.
+                        if (GenConstruct.CanConstruct(f, pawn, checkSkills: true, forced: true))
                         {
                             var build = JobMaker.MakeJob(JobDefOf.FinishFrame, f);
                             build.playerForced = true;
@@ -207,8 +204,7 @@ namespace HaulersDream
                     {
                         if (s == kind.scanner)
                             continue; // already tried above
-                        try { job = s.JobOnThing(pawn, t, forced: true); }
-                        catch { job = null; }
+                        job = s.JobOnThing(pawn, t, forced: true);
                         if (job != null)
                             return job;
                     }
@@ -369,9 +365,8 @@ namespace HaulersDream
                 var t = stops[i];
                 if (t == null || !t.Spawned || StopLostDesignation(pawn.Map, t, kind))
                     continue;
-                Job job;
-                try { job = kind.scanner.JobOnThing(pawn, t, forced: true); }
-                catch { job = null; }
+                // No try/catch: the resolved scanner throwing is a real bug to surface, not silently skip.
+                Job job = kind.scanner.JobOnThing(pawn, t, forced: true);
                 if (job == null)
                     continue;
                 job.workGiverDef = kind.scanner.def;

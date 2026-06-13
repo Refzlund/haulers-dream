@@ -107,20 +107,17 @@ namespace HaulersDream
             // A suspended bill — or one whose repeat counter is spent / pause-on-satisfied is holding it
             // (ShouldDoNow false) — is orderable for 0 reps: the job gates every rep on bill.ShouldDoNow(),
             // so it would gather ingredients and craft nothing. Never offer it.
-            try
-            {
-                return !bill.suspended && bill.ShouldDoNow() && bill.PawnAllowedToStartAnew(pawn)
-                       // Vanilla's WorkGiver_DoBill refuses these unconditionally (forced included):
-                       // the RECIPE's skillRequirements — PawnAllowedToStartAnew covers only the
-                       // player-set allowedSkillRange, so without this a Cooking-3 pawn could batch
-                       // fine meals vanilla forbids — and a recipe claimed by another work type's
-                       // giver (psychite tea is Cooking work at a drug lab) needs a pawn capable of
-                       // THAT work type.
-                       && bill.recipe.PawnSatisfiesSkillRequirements(pawn)
-                       && (bill.recipe.requiredGiverWorkType == null
-                           || !pawn.WorkTypeIsDisabled(bill.recipe.requiredGiverWorkType));
-            }
-            catch { return false; }
+            // No try/catch: these are vanilla bill/recipe predicates — a throw is a real bug to surface, not hide.
+            return !bill.suspended && bill.ShouldDoNow() && bill.PawnAllowedToStartAnew(pawn)
+                   // Vanilla's WorkGiver_DoBill refuses these unconditionally (forced included):
+                   // the RECIPE's skillRequirements — PawnAllowedToStartAnew covers only the
+                   // player-set allowedSkillRange, so without this a Cooking-3 pawn could batch
+                   // fine meals vanilla forbids — and a recipe claimed by another work type's
+                   // giver (psychite tea is Cooking work at a drug lab) needs a pawn capable of
+                   // THAT work type.
+                   && bill.recipe.PawnSatisfiesSkillRequirements(pawn)
+                   && (bill.recipe.requiredGiverWorkType == null
+                       || !pawn.WorkTypeIsDisabled(bill.recipe.requiredGiverWorkType));
         }
 
         /// <summary>Does the bench have at least one bill this pawn can batch?</summary>

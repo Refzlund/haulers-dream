@@ -34,10 +34,8 @@ namespace HaulersDream
             {
                 if (pawn.WorkTypeIsDisabled(WorkTypeDefOf.Construction))
                     return false; // a haul-capable-only pawn delivered — building is someone else's job
-                bool canConstruct;
-                try { canConstruct = GenConstruct.CanConstruct(frame, pawn, checkSkills: true, forced: true); }
-                catch { canConstruct = false; }
-                if (!canConstruct)
+                // No try/catch: GenConstruct.CanConstruct is a vanilla call — a throw is a real bug to surface.
+                if (!GenConstruct.CanConstruct(frame, pawn, checkSkills: true, forced: true))
                     return false;
                 var build = JobMaker.MakeJob(JobDefOf.FinishFrame, frame);
                 build.playerForced = true;
@@ -66,9 +64,9 @@ namespace HaulersDream
                 InventoryConstructDelivery.RouteIntent = ConstructRouteIntent.HaulBuild;
                 foreach (var scanner in DeliverScanners())
                 {
-                    Job next;
-                    try { next = scanner.HasJobOnThing(pawn, site, forced: true) ? scanner.JobOnThing(pawn, site, forced: true) : null; }
-                    catch { next = null; }
+                    // No try/catch: the deliver scanner throwing is a real bug to surface (the outer finally still
+                    // restores RouteIntent on the way out); the "no job" case is the explicit ternary null below.
+                    Job next = scanner.HasJobOnThing(pawn, site, forced: true) ? scanner.JobOnThing(pawn, site, forced: true) : null;
                     if (next == null)
                         continue;
                     next.playerForced = true;

@@ -141,10 +141,9 @@ namespace HaulersDream
                 return;
             for (int i = veinTrackers.Count - 1; i >= 0; i--)
             {
-                bool keep;
-                try { keep = TryExtend(veinTrackers[i]); }
-                catch (System.Exception e) { HDLog.Dbg($"VeinRevealTracker failed: {e}"); keep = false; }
-                if (!keep)
+                // No try/catch: a vein-tracker failure is a real bug to surface as a red error, not a verbose-only
+                // debug line that swallows it and silently drops the tracker.
+                if (!TryExtend(veinTrackers[i]))
                     veinTrackers.RemoveAt(i);
             }
         }

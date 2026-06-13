@@ -86,7 +86,16 @@ namespace HaulersDream
                     if (scanner is WorkGiver_DoBill)
                         continue;
 
+                    // This loop probes ARBITRARY third-party WorkGivers (an open, mod-extensible contract), so
+                    // this is the one place a catch is justified — but it must NOT hide the fault. A throw here
+                    // is another mod's WorkGiver bug; surface it LOUDLY as a red error naming the culprit (never
+                    // a Warning/swallow), then skip only that giver so one broken mod can't abort the whole
+                    // route resolve (or break the vanilla right-click menu this provider feeds).
+                    // The gerund is also read from this same arbitrary scanner, so it lives INSIDE the boundary
+                    // too — otherwise a third-party scanner throwing from PostProcessedGerund would escape the
+                    // per-giver guard and abort the whole resolve.
                     Job job;
+                    string gerund;
                     try
                     {
                         if (ScannerSkips(pawn, scanner, clicked))
@@ -94,20 +103,23 @@ namespace HaulersDream
                         if (!scanner.HasJobOnThing(pawn, clicked, forced: true))
                             continue;
                         job = scanner.JobOnThing(pawn, clicked, forced: true);
+                        if (job == null)
+                            continue;
+                        gerund = scanner.PostProcessedGerund(job);
                     }
-                    catch
+                    catch (Exception e)
                     {
+                        Log.Error($"[Hauler's Dream] WorkGiver '{wgDef.defName}' threw while resolving a route "
+                                  + $"for {clicked} — skipping it (report to that mod's author): {e}");
                         continue;
                     }
-                    if (job == null)
-                        continue;
 
                     var designation = DetermineDesignation(pawn.Map, clicked);
                     return new RouteWorkKind
                     {
                         scanner = scanner,
                         designation = designation,
-                        gerund = SafeGerund(scanner, job),
+                        gerund = gerund,
                         yieldDef = ResolveYield(clicked),
                         scope = ScopeFor(scanner, designation),
                     };
@@ -137,19 +149,13 @@ namespace HaulersDream
             if (pawn.WorkTypeIsDisabled(wgDef.workType))
                 return null;
 
-            try
-            {
-                // ignoreOtherReservations: true mirrors the forced (player-prioritized) job path the route uses.
-                if (plant.IsBurning() ||
-                    !PlantUtility.PawnWillingToCutPlant_Job(plant, pawn) ||
-                    !pawn.CanReserve(plant, 1, -1, null, ignoreOtherReservations: true) ||
-                    !pawn.CanReach(plant, PathEndMode.Touch, Danger.Deadly))
-                    return null;
-            }
-            catch
-            {
+            // ignoreOtherReservations: true mirrors the forced (player-prioritized) job path the route uses.
+            // No try/catch: these are vanilla calls — a throw is a real bug to surface, not hide.
+            if (plant.IsBurning() ||
+                !PlantUtility.PawnWillingToCutPlant_Job(plant, pawn) ||
+                !pawn.CanReserve(plant, 1, -1, null, ignoreOtherReservations: true) ||
+                !pawn.CanReach(plant, PathEndMode.Touch, Danger.Deadly))
                 return null;
-            }
 
             return new RouteWorkKind
             {
@@ -215,15 +221,9 @@ namespace HaulersDream
             if (pawn.WorkTypeIsDisabled(WorkTypeDefOf.Construction))
                 return null;
 
-            try
-            {
-                if (!pawn.CanReach(clicked, PathEndMode.Touch, Danger.Deadly))
-                    return null;
-            }
-            catch
-            {
+            // No try/catch: pawn.CanReach is a vanilla call — a throw is a real bug to surface, not hide.
+            if (!pawn.CanReach(clicked, PathEndMode.Touch, Danger.Deadly))
                 return null;
-            }
 
             var wgDef = WorkGiverOfClass(typeof(WorkGiver_ConstructDeliverResourcesToBlueprints));
             if (wgDef == null || !(wgDef.Worker is WorkGiver_Scanner scanner))
@@ -340,10 +340,5 @@ namespace HaulersDream
             return null;
         }
 
-        private static string SafeGerund(WorkGiver_Scanner scanner, Job job)
-        {
-            try { return scanner.PostProcessedGerund(job); }
-            catch { return scanner.def?.gerund ?? scanner.def?.label ?? "work"; }
-        }
     }
 }

@@ -38,22 +38,16 @@ namespace HaulersDream
             // priorities, so a pawn keeps doing the now-forbidden work while the work tab draws the box locked
             // (vanilla only re-syncs disabled work types on save load). Notifying unconditionally on every
             // settings close is cheap (it just re-reads GetDisabledWorkTypes and zeroes disabled priorities).
-            try
+            // No try/catch: a re-sync failure is a real bug to surface as a red error, not a silent warning.
+            if (Current.Game != null)
             {
-                if (Current.Game != null)
+                var pawns = PawnsFinder.AllMapsCaravansAndTravellingTransporters_Alive;
+                for (int i = 0; i < pawns.Count; i++)
                 {
-                    var pawns = PawnsFinder.AllMapsCaravansAndTravellingTransporters_Alive;
-                    for (int i = 0; i < pawns.Count; i++)
-                    {
-                        var p = pawns[i];
-                        if (p?.Faction != null && p.Faction.IsPlayer)
-                            p.Notify_DisabledWorkTypesChanged();
-                    }
+                    var p = pawns[i];
+                    if (p?.Faction != null && p.Faction.IsPlayer)
+                        p.Notify_DisabledWorkTypesChanged();
                 }
-            }
-            catch (System.Exception e)
-            {
-                Log.Warning("[Hauler's Dream] Failed to re-sync pawn work priorities after settings change: " + e);
             }
         }
     }

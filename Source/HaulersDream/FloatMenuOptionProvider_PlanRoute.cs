@@ -41,9 +41,9 @@ namespace HaulersDream
                 if (thing == null)
                     continue;
 
-                RouteWorkKind kind;
-                try { kind = WorkKindResolver.Resolve(pawn, thing); }
-                catch { kind = null; }
+                // No try/catch: Resolve already handles a throwing third-party WorkGiver internally (logs a red
+                // error naming the culprit, then skips it), so a throw OUT of Resolve is our own bug to surface.
+                RouteWorkKind kind = WorkKindResolver.Resolve(pawn, thing);
                 if (kind == null)
                     continue;
 
@@ -63,9 +63,8 @@ namespace HaulersDream
                 if (HaulersDreamMod.Settings != null && HaulersDreamMod.Settings.verboseLogging
                     && kind.scanner is WorkGiver_ConstructDeliverResourcesToBlueprints)
                 {
-                    bool hadJob;
-                    try { hadJob = RouteExecutor.BuildJobForStop(pawn, anchor, kind) != null; }
-                    catch { hadJob = false; }
+                    // No try/catch: a throw here is a real bug to surface, not hide behind a verbose-only line.
+                    bool hadJob = RouteExecutor.BuildJobForStop(pawn, anchor, kind) != null;
                     HDLog.Dbg($"construct route offered for {anchor.LabelShort} (def {anchor.def?.defName}, " +
                               $"blueprint={anchor.def?.IsBlueprint}, frame={anchor.def?.IsFrame}, deliverableNow={hadJob}).");
                 }

@@ -332,6 +332,11 @@ namespace HaulersDream
                 }
                 catch (System.Exception e)
                 {
+                    // The ONLY justified catch in this file: this rep's ingredients/products are container-less
+                    // "limbo" Things during the window, so a bare throw would LEAK or DESTROY save-affecting items.
+                    // Restore the un-consumed ingredients and bank any not-yet-placed products back into inventory
+                    // for item-safety, THEN rethrow (wrapped with context) so the failure SURFACES as a red error —
+                    // never swallow it into a silent JumpToToil that hides the failed rep.
                     RestoreToInventory(ingredients); // skips Destroyed → returns exactly the un-consumed remainder
                     if (products != null)
                         for (int i = 0; i < products.Count; i++)
@@ -339,9 +344,8 @@ namespace HaulersDream
                             // overflow-dropped one is Spawned — re-adding either would double-place.
                             if (products[i] != null && products[i].holdingOwner == null && !products[i].Spawned)
                                 PlaceProductIntoInventory(products[i]);
-                    Log.Error($"[Hauler's Dream] batch-craft rep failed for {recipe.defName}: {e}");
-                    JumpToToil(doneToil);
-                    return;
+                    throw new System.Exception(
+                        $"[Hauler's Dream] batch-craft rep failed for {recipe.defName} (ingredients restored, products banked)", e);
                 }
             };
             toil.defaultCompleteMode = ToilCompleteMode.Instant;

@@ -65,43 +65,40 @@ namespace HaulersDream
         {
             initialized = true;
             active = false;
-            try
+            // No try/catch: CE-ABSENT is handled by the precondition below — AccessTools.TypeByName returns null
+            // (it does not throw) when CE isn't loaded, and every member resolve is null-guarded. So a throw in
+            // here would be a GENUINE reflection/contract fault worth surfacing as a red error, not the optional-
+            // dependency case the old catch was downgrading to a warning. Init runs ONCE (lazily on first
+            // IsActive), so there is no per-tick cost.
+            compInventoryType = AccessTools.TypeByName("CombatExtended.CompInventory");
+            if (compInventoryType == null)
+                return; // CE not loaded — the real precondition, no catch needed
+            canFitInInventory = AccessTools.Method(compInventoryType, "CanFitInInventory",
+                new[] { typeof(Thing), typeof(int).MakeByRefType(), typeof(bool), typeof(bool) });
+            getAvailableBulk = AccessTools.Method(compInventoryType, "GetAvailableBulk", new[] { typeof(bool) });
+            var holdTracker = AccessTools.TypeByName("CombatExtended.Utility_HoldTracker");
+            if (holdTracker != null)
+                notifyHoldTracker = AccessTools.Method(holdTracker, "Notify_HoldTrackerItem",
+                    new[] { typeof(Pawn), typeof(Thing), typeof(int) });
+            var utilityLoadouts = AccessTools.TypeByName("CombatExtended.Utility_Loadouts");
+            if (utilityLoadouts != null)
+                getLoadout = AccessTools.Method(utilityLoadouts, "GetLoadout", new[] { typeof(Pawn) });
+            var loadoutType = AccessTools.TypeByName("CombatExtended.Loadout");
+            if (loadoutType != null)
+                loadoutSlotsGetter = AccessTools.PropertyGetter(loadoutType, "Slots");
+            var slotType = AccessTools.TypeByName("CombatExtended.LoadoutSlot");
+            if (slotType != null)
             {
-                compInventoryType = AccessTools.TypeByName("CombatExtended.CompInventory");
-                if (compInventoryType == null)
-                    return; // CE not loaded
-                canFitInInventory = AccessTools.Method(compInventoryType, "CanFitInInventory",
-                    new[] { typeof(Thing), typeof(int).MakeByRefType(), typeof(bool), typeof(bool) });
-                getAvailableBulk = AccessTools.Method(compInventoryType, "GetAvailableBulk", new[] { typeof(bool) });
-                var holdTracker = AccessTools.TypeByName("CombatExtended.Utility_HoldTracker");
-                if (holdTracker != null)
-                    notifyHoldTracker = AccessTools.Method(holdTracker, "Notify_HoldTrackerItem",
-                        new[] { typeof(Pawn), typeof(Thing), typeof(int) });
-                var utilityLoadouts = AccessTools.TypeByName("CombatExtended.Utility_Loadouts");
-                if (utilityLoadouts != null)
-                    getLoadout = AccessTools.Method(utilityLoadouts, "GetLoadout", new[] { typeof(Pawn) });
-                var loadoutType = AccessTools.TypeByName("CombatExtended.Loadout");
-                if (loadoutType != null)
-                    loadoutSlotsGetter = AccessTools.PropertyGetter(loadoutType, "Slots");
-                var slotType = AccessTools.TypeByName("CombatExtended.LoadoutSlot");
-                if (slotType != null)
-                {
-                    slotThingDefGetter = AccessTools.PropertyGetter(slotType, "thingDef");
-                    slotCountGetter = AccessTools.PropertyGetter(slotType, "count");
-                }
-                bulkStat = DefDatabase<StatDef>.GetNamedSilentFail("Bulk");
-                // The fit check is the load-bearing piece; without it we must not claim compatibility-managed
-                // loading (fail SAFE: report inactive, the mod then behaves as without CE — vanilla math).
-                active = canFitInInventory != null;
-                if (active)
-                    Log.Message("[Hauler's Dream] Combat Extended detected — inventory loading defers to CE's "
-                                + "weight+bulk capacity, smart overload stands down, HoldTracker integration on.");
+                slotThingDefGetter = AccessTools.PropertyGetter(slotType, "thingDef");
+                slotCountGetter = AccessTools.PropertyGetter(slotType, "count");
             }
-            catch (Exception e)
-            {
-                Log.Warning("[Hauler's Dream] Combat Extended detection failed (running without CE integration): " + e);
-                active = false;
-            }
+            bulkStat = DefDatabase<StatDef>.GetNamedSilentFail("Bulk");
+            // The fit check is the load-bearing piece; without it we must not claim compatibility-managed
+            // loading (degrade SAFE — report inactive, the mod then behaves as without CE — vanilla math).
+            active = canFitInInventory != null;
+            if (active)
+                Log.Message("[Hauler's Dream] Combat Extended detected — inventory loading defers to CE's "
+                            + "weight+bulk capacity, smart overload stands down, HoldTracker integration on.");
         }
 
         private static ThingComp CompInventoryOf(Pawn pawn)
@@ -129,20 +126,15 @@ namespace HaulersDream
             var comp = CompInventoryOf(pawn);
             if (comp == null)
                 return int.MaxValue;
-            try
-            {
-                var args = new object[] { thing, 0, false, false };
-                canFitInInventory.Invoke(comp, args);
-                int count = (int)args[1];
-                // CE computes the count from availableWeight/availableBulk, which go NEGATIVE for an
-                // already-over-capacity pawn — clamp so callers never see a negative pickup count.
-                return count < 0 ? 0 : count;
-            }
-            catch (Exception e)
-            {
-                Log.WarningOnce("[Hauler's Dream] CE CanFitInInventory call failed; not clamping: " + e, 0x43464E);
-                return int.MaxValue;
-            }
+            // No try/catch: !IsActive, the resolved member, and comp == null are all checked above, so in here CE
+            // is present and CanFitInInventory resolved — a throw is a real CE-integration fault to surface, not
+            // silently fail-open to int.MaxValue (which would over-load the pawn past CE's bulk cap).
+            var args = new object[] { thing, 0, false, false };
+            canFitInInventory.Invoke(comp, args);
+            int count = (int)args[1];
+            // CE computes the count from availableWeight/availableBulk, which go NEGATIVE for an
+            // already-over-capacity pawn — clamp so callers never see a negative pickup count.
+            return count < 0 ? 0 : count;
         }
 
         /// <summary>The pawn's remaining CE bulk room. PositiveInfinity when CE is off / unavailable.</summary>
@@ -153,14 +145,9 @@ namespace HaulersDream
             var comp = CompInventoryOf(pawn);
             if (comp == null)
                 return float.PositiveInfinity;
-            try
-            {
-                return (float)getAvailableBulk.Invoke(comp, new object[] { true });
-            }
-            catch
-            {
-                return float.PositiveInfinity;
-            }
+            // No try/catch: CE present + getAvailableBulk resolved + comp != null (all checked above) — a throw
+            // is a real fault to surface, not silently fail-open and disable the bulk gate.
+            return (float)getAvailableBulk.Invoke(comp, new object[] { true });
         }
 
         /// <summary>CE bulk per unit of <paramref name="thing"/> (0 when CE is off — bulk then never binds).</summary>
@@ -168,14 +155,8 @@ namespace HaulersDream
         {
             if (!IsActive || thing == null || bulkStat == null)
                 return 0f;
-            try
-            {
-                return thing.GetStatValue(bulkStat);
-            }
-            catch
-            {
-                return 0f;
-            }
+            // No try/catch: GetStatValue is a vanilla call (bulkStat null-checked above) — surface a throw.
+            return thing.GetStatValue(bulkStat);
         }
 
         /// <summary>CE bulk per unit of <paramref name="def"/>, def-level (planning — no live Thing yet).</summary>
@@ -183,14 +164,8 @@ namespace HaulersDream
         {
             if (!IsActive || def == null || bulkStat == null)
                 return 0f;
-            try
-            {
-                return def.GetStatValueAbstract(bulkStat);
-            }
-            catch
-            {
-                return 0f;
-            }
+            // No try/catch: GetStatValueAbstract is a vanilla call (bulkStat null-checked above) — surface a throw.
+            return def.GetStatValueAbstract(bulkStat);
         }
 
         /// <summary>
@@ -203,14 +178,9 @@ namespace HaulersDream
         {
             if (!IsActive || notifyHoldTracker == null || pawn == null || item == null || count <= 0)
                 return;
-            try
-            {
-                notifyHoldTracker.Invoke(null, new object[] { pawn, item, count });
-            }
-            catch (Exception e)
-            {
-                Log.WarningOnce("[Hauler's Dream] CE HoldTracker notify failed (CE may drop carried goods early): " + e, 0x484C44);
-            }
+            // No try/catch: CE present + notifyHoldTracker resolved (checked above) — surface a real fault rather
+            // than silently let CE drop the carried goods on the floor.
+            notifyHoldTracker.Invoke(null, new object[] { pawn, item, count });
         }
 
         /// <summary>
@@ -228,23 +198,18 @@ namespace HaulersDream
                 || getLoadout == null || loadoutSlotsGetter == null
                 || slotThingDefGetter == null || slotCountGetter == null)
                 return 0;
-            try
-            {
-                var loadout = getLoadout.Invoke(null, new object[] { pawn });
-                if (loadout == null)
-                    return 0;
-                int keep = 0;
-                if (loadoutSlotsGetter.Invoke(loadout, null) is System.Collections.IEnumerable slots)
-                    foreach (var slot in slots)
-                        if (slot != null && (slotThingDefGetter.Invoke(slot, null) as ThingDef) == def)
-                            keep += (int)slotCountGetter.Invoke(slot, null);
-                return keep;
-            }
-            catch (Exception e)
-            {
-                Log.WarningOnce("[Hauler's Dream] CE loadout read failed (not protecting loadout stock from unload): " + e, 0x4C4F44);
+            // No try/catch: CE present + all loadout members resolved (checked above) — surface a real fault
+            // instead of silently shipping the pawn's loadout ammo/sidearms to storage. The loadout == null
+            // value-check below still degrades cleanly (a pawn with no assigned loadout keeps nothing extra).
+            var loadout = getLoadout.Invoke(null, new object[] { pawn });
+            if (loadout == null)
                 return 0;
-            }
+            int keep = 0;
+            if (loadoutSlotsGetter.Invoke(loadout, null) is System.Collections.IEnumerable slots)
+                foreach (var slot in slots)
+                    if (slot != null && (slotThingDefGetter.Invoke(slot, null) as ThingDef) == def)
+                        keep += (int)slotCountGetter.Invoke(slot, null);
+            return keep;
         }
     }
 }

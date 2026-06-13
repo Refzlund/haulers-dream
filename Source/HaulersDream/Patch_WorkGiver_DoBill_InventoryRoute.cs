@@ -93,8 +93,7 @@ namespace HaulersDream
                 return false;
             if (pawn.Drafted && (HaulersDreamMod.Settings?.pauseWhileDrafted ?? true))
                 return false;
-            try { return YieldRouter.IsEligible(pawn); }
-            catch { return false; }
+            return YieldRouter.IsEligible(pawn);
         }
 
         /// <summary>Does the pawn already carry tagged stock this bill could use? (The re-gather loop guard.)</summary>

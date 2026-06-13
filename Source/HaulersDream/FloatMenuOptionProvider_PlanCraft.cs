@@ -42,18 +42,14 @@ namespace HaulersDream
                 if (!seen.Add(bench) || !bench.Spawned || bench.Map != pawn.Map)
                     continue;
 
-                bool offer;
-                try
-                {
-                    // WorkOverride.CanDoBillsAt: a pawn incapable of the bench's bill work (a non-cooking
-                    // pawn at a stove) gets no crafting plan — the same capability vanilla requires; the
-                    // "all pawns can …" overrides flow through it automatically.
-                    offer = WorkOverride.CanDoBillsAt(pawn, bench)
-                            && bench.CurrentlyUsableForBills()
-                            && CraftBatchPlanner.AnyBatchableBillForPawn(pawn, bench)
-                            && pawn.CanReach(bench, PathEndMode.InteractionCell, Danger.Deadly);
-                }
-                catch { offer = false; }
+                // No try/catch: a throw here is a real bug to surface, not silently hide the option.
+                // WorkOverride.CanDoBillsAt: a pawn incapable of the bench's bill work (a non-cooking
+                // pawn at a stove) gets no crafting plan — the same capability vanilla requires; the
+                // "all pawns can …" overrides flow through it automatically.
+                bool offer = WorkOverride.CanDoBillsAt(pawn, bench)
+                             && bench.CurrentlyUsableForBills()
+                             && CraftBatchPlanner.AnyBatchableBillForPawn(pawn, bench)
+                             && pawn.CanReach(bench, PathEndMode.InteractionCell, Danger.Deadly);
                 if (!offer)
                     continue;
 

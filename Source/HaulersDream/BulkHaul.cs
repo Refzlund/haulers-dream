@@ -38,18 +38,11 @@ namespace HaulersDream
     {
         static void Postfix(ref Job __result, Pawn pawn, Thing t, bool forced)
         {
-            try
-            {
-                var bulk = BulkHaul.TryBuildBulkJob(pawn, t, __result, forced);
-                if (bulk != null)
-                    __result = bulk;
-            }
-            catch (Exception e)
-            {
-                // Key varies by exception TYPE so a second, different failure mode still gets one report.
-                Log.WarningOnce($"[Hauler's Dream] Bulk-haul conversion failed for {pawn} hauling {t}: {e}", 0x4B48 ^ (e.GetType().FullName?.GetHashCode() ?? 0));
-                // fail-open: the vanilla single haul stands
-            }
+            // No try/catch: a failure here is a real bug we want surfaced as a red error (Harmony lets the
+            // exception propagate to RimWorld's handler), not silently downgraded to a one-time warning.
+            var bulk = BulkHaul.TryBuildBulkJob(pawn, t, __result, forced);
+            if (bulk != null)
+                __result = bulk;
         }
     }
 

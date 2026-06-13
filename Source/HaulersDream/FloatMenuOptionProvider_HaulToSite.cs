@@ -42,22 +42,18 @@ namespace HaulersDream
                 if (site.Faction != pawn.Faction || site is Blueprint_Install)
                     continue;
 
-                bool offer;
-                try
-                {
-                    offer = InventoryConstructDelivery.AnyNeededMaterialAvailable(pawn, site)
-                            && pawn.CanReach(site, PathEndMode.Touch, Danger.Deadly);
-                }
-                catch { offer = false; }
+                // No try/catch: a throw here is a real bug to surface, not silently hide the option.
+                bool offer = InventoryConstructDelivery.AnyNeededMaterialAvailable(pawn, site)
+                             && pawn.CanReach(site, PathEndMode.Touch, Danger.Deadly);
                 if (!offer)
                     continue;
 
                 var siteLocal = site;
                 var option = new FloatMenuOption("HaulersDream.HaulToSite.Option".Translate(site.LabelShort), () =>
                 {
-                    Job job;
-                    try { job = InventoryConstructDelivery.TryBuildHaulOnlyOrder(pawn, siteLocal); }
-                    catch { job = null; }
+                    // No try/catch: a build-order failure is a real bug to surface, not mask as the benign
+                    // "couldn't start" toast; the genuine null path below still shows that friendly message.
+                    Job job = InventoryConstructDelivery.TryBuildHaulOnlyOrder(pawn, siteLocal);
                     if (job == null)
                     {
                         Messages.Message("HaulersDream.HaulToSite.CouldNotStart".Translate(), siteLocal,

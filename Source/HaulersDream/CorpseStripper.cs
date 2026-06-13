@@ -41,16 +41,10 @@ namespace HaulersDream
     {
         static void Prefix(Pawn_CarryTracker __instance, Thing item)
         {
-            try
-            {
-                if (item is Corpse corpse)
-                    CorpseStripper.MaybeStripForHaul(__instance.pawn, corpse);
-            }
-            catch (Exception e)
-            {
-                Log.WarningOnce("[Hauler's Dream] Auto-strip on haul failed (corpse hauled unstripped): " + e,
-                    0x535452 ^ e.GetType().FullName.GetHashCode()); // key per exception type — a second failure mode still reports
-            }
+            // No try/catch: an auto-strip failure is a real bug, surfaced as a red error (Harmony propagates
+            // it to RimWorld's handler) rather than silently downgraded to a one-time warning.
+            if (item is Corpse corpse)
+                CorpseStripper.MaybeStripForHaul(__instance.pawn, corpse);
         }
     }
 
@@ -82,33 +76,20 @@ namespace HaulersDream
     {
         static IEnumerable<Toil> Postfix(IEnumerable<Toil> toils, JobDriver_Strip __instance)
         {
-            try
+            // No try/catch: a follow-up failure is a real bug, surfaced as a red error rather than swallowed.
+            __instance.AddFinishAction(cond =>
             {
-                __instance.AddFinishAction(cond =>
-                {
-                    try
-                    {
-                        // Tainted pieces this strip dropped follow the player's per-category policy,
-                        // like the auto-strip. Applied HERE (job end, any condition — drops recorded
-                        // before an interruption are already on the ground) and not in the GenPlace
-                        // hook: vanilla's TryDrop chain un-forbids its result AFTER placement, so a
-                        // forbid set inside the hook would be silently reverted. Corpse strips only —
-                        // see the method doc for why the target matters.
-                        CorpseStripper.ApplyTaintedPolicyToPending(__instance.pawn,
-                            corpseStrip: __instance.job?.targetA.Thing is Corpse);
-                        if (cond == JobCondition.Succeeded)
-                            CorpseStripper.QueueReStripIfNeeded(__instance.pawn, __instance.job?.targetA.Thing);
-                    }
-                    catch (Exception e)
-                    {
-                        Log.WarningOnce("[Hauler's Dream] re-strip follow-up failed: " + e, 0x525354);
-                    }
-                });
-            }
-            catch (Exception e)
-            {
-                Log.WarningOnce("[Hauler's Dream] re-strip follow-up failed: " + e, 0x525354);
-            }
+                // Tainted pieces this strip dropped follow the player's per-category policy,
+                // like the auto-strip. Applied HERE (job end, any condition — drops recorded
+                // before an interruption are already on the ground) and not in the GenPlace
+                // hook: vanilla's TryDrop chain un-forbids its result AFTER placement, so a
+                // forbid set inside the hook would be silently reverted. Corpse strips only —
+                // see the method doc for why the target matters.
+                CorpseStripper.ApplyTaintedPolicyToPending(__instance.pawn,
+                    corpseStrip: __instance.job?.targetA.Thing is Corpse);
+                if (cond == JobCondition.Succeeded)
+                    CorpseStripper.QueueReStripIfNeeded(__instance.pawn, __instance.job?.targetA.Thing);
+            });
             return toils; // toils themselves are untouched — vanilla's strip runs exactly as shipped
         }
     }
