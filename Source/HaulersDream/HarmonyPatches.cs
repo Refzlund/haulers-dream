@@ -37,13 +37,14 @@ namespace HaulersDream
     /// <summary>
     /// Yield hook #2: deconstruction leavings ALSO travel through the patched GenPlace overload
     /// (DoLeavingsFor places them via ThingOwner.TryDrop → GenDrop → GenPlace; only detritus uses
-    /// GenSpawn) — but the GenPlace prefix never routes them, because JobDriver_Deconstruct is
+    /// GenSpawn) — but the GenPlace prefix never ROUTES them, because JobDriver_Deconstruct is
     /// deliberately absent from YieldRouter.TryGetWorkType (adding it there would double-process
-    /// every leaving: prefix consume + this postfix's scoop). So this postfix IS the deconstruct
-    /// path: we snapshot the items in the leavings rect before DoLeavingsFor runs and, afterwards,
-    /// scoop only the items that newly appeared (never pre-existing ground items) into the
-    /// deconstructing pawn's inventory. Positional (__N) injection so it's robust to param names;
-    /// __state carries the snapshot from prefix to postfix.
+    /// every leaving: prefix consume + the capture's scoop). So we CAPTURE instead: the prefix opens a
+    /// capture window crediting the deconstructing pawn, the GenPlace postfix records the exact item each
+    /// placement produces (wherever Near-placement put it, including a merge into a pre-existing stack),
+    /// and the postfix here scoops them once DoLeavingsFor finishes. This replaces the old "snapshot the
+    /// footprint rect and diff" path, which missed leavings that spilled outside the footprint or merged
+    /// into a pre-existing ground stack. Positional (__N) injection so it's robust to param names.
     /// </summary>
     [HarmonyPatch]
     public static class Patch_GenLeaving_DoLeavingsFor
@@ -53,18 +54,20 @@ namespace HaulersDream
             typeof(Thing), typeof(Map), typeof(DestroyMode), typeof(CellRect), typeof(Predicate<IntVec3>), typeof(List<Thing>)
         });
 
-        static void Prefix(Map __1, DestroyMode __2, CellRect __3, out HashSet<Thing> __state)
+        static void Prefix(Thing __0, Map __1, DestroyMode __2, CellRect __3)
         {
-            __state = null;
-            var s = HaulersDreamMod.Settings;
-            if (__2 == DestroyMode.Deconstruct && __1 != null && s != null && s.haulDeconstruct)
-                __state = YieldRouter.SnapshotItems(__3, __1);
+            if (__2 == DestroyMode.Deconstruct && __1 != null)
+                YieldRouter.BeginDeconstructCapture(__3, __1, __0); // __0 = the deconstructed thing (self-gated on settings)
         }
 
-        static void Postfix(Thing __0, Map __1, DestroyMode __2, CellRect __3, HashSet<Thing> __state)
+        // Finalizer (not Postfix) so the capture window is ALWAYS closed, even if DoLeavingsFor throws (e.g. a
+        // modded leaving's spawn fails) — otherwise the ThreadStatic capture state could leak into the next
+        // placement. We take no Exception parameter and return nothing, so any in-flight exception is preserved
+        // and still surfaces (the no-suppression rule: we clean up, we don't swallow).
+        static void Finalizer(DestroyMode __2)
         {
-            if (__2 == DestroyMode.Deconstruct && __state != null)
-                YieldRouter.OnDeconstructLeavings(__3, __1, __state, __0); // __0 = the deconstructed thing
+            if (__2 == DestroyMode.Deconstruct)
+                YieldRouter.EndDeconstructCapture();
         }
     }
 
@@ -140,7 +143,12 @@ namespace HaulersDream
         {
             if (__result.IsValid && __result.Job != null)
             {
-                if (!OpportunisticUnload.ShouldDivert(pawn, __result.Job))
+                // If the pawn just picked a NON-yield, NON-haul job, its accumulate run is over — divert it to
+                // shed its load at nearby storage first (relaxed run-end criteria). While it keeps picking
+                // yield work, runOver is false and the strict journey bar applies, so a continuing mining/
+                // deconstruct run is never interrupted (F38 preserved).
+                bool runOver = !OpportunisticUnload.IsYieldOrHaulJobDef(__result.Job.def);
+                if (!OpportunisticUnload.ShouldDivert(pawn, __result.Job, runOver))
                     return;
                 var job = JobMaker.MakeJob(HaulersDreamDefOf.HaulersDream_UnloadInventory);
                 if (job.TryMakePreToilReservations(pawn, false))

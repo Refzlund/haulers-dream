@@ -13,11 +13,14 @@ namespace HaulersDream
     ///  - <see cref="OnTryPlaceThing"/> from a GenPlace.TryPlaceThing prefix (plants, mining,
     ///    deep-drill, animals — all place via GenPlace; decompilation-verified). The responsible
     ///    pawn is inferred from who is working at/adjacent to the placement cell.
-    ///  - <see cref="OnDeconstructLeavings"/> from a GenLeaving.DoLeavingsFor postfix. Deconstruct
-    ///    leavings ALSO travel through the patched GenPlace overload (DoLeavingsFor places them via
-    ///    ThingOwner.TryDrop → GenDrop → GenPlace; only detritus uses GenSpawn), but the prefix never
-    ///    routes them because JobDriver_Deconstruct is deliberately absent from TryGetWorkType. Only
-    ///    the leavings produced by THIS call are scooped (snapshot diff), never pre-existing ground items.
+    ///  - the DECONSTRUCT capture (<see cref="BeginDeconstructCapture"/> / <see cref="EndDeconstructCapture"/>)
+    ///    driven by a GenLeaving.DoLeavingsFor prefix+postfix. Deconstruct leavings ALSO travel through the
+    ///    patched GenPlace overload (DoLeavingsFor places them via ThingOwner.TryDrop → GenDrop → GenPlace;
+    ///    only detritus uses GenSpawn), but the prefix never ROUTES them because JobDriver_Deconstruct is
+    ///    deliberately absent from TryGetWorkType. Instead, while DoLeavingsFor runs we CAPTURE the exact
+    ///    item each placement produced (the GenPlace postfix feeds <see cref="CaptureDeconstructLeaving"/>),
+    ///    so leavings are scooped wherever they land — even when Near-placement spills them outside the
+    ///    building footprint, or they merge into a pre-existing ground stack. Never pre-existing items.
     /// Work types that aren't tracked (surgery, bench work, fermenting, fishing, …) never match, so
     /// they're excluded automatically.
     ///
@@ -80,14 +83,23 @@ namespace HaulersDream
         /// <paramref name="dropPawn"/> is the prefix's out value, delivered through Harmony <c>__state</c>.</summary>
         public static void OnTryPlaceThingPost(Thing lastResultingThing, Pawn dropPawn)
         {
-            var pawn = dropPawn;
-            if (pawn == null || lastResultingThing == null || !lastResultingThing.Spawned || lastResultingThing.Destroyed)
+            // No producer from the prefix: this is a DECONSTRUCT leaving (FindWorker never matches a
+            // deconstructor — JobDriver_Deconstruct is absent from TryGetWorkType). Hand it to the active
+            // capture, which scoops all leavings once DoLeavingsFor completes. (When no capture is active,
+            // a producerless placement is just an ordinary drop we don't touch.)
+            if (dropPawn == null)
+            {
+                if (deconstructCapturePawn != null)
+                    CaptureDeconstructLeaving(lastResultingThing);
+                return;
+            }
+            if (lastResultingThing == null || !lastResultingThing.Spawned || lastResultingThing.Destroyed)
                 return;
             // A yield that landed/merged INTO valid storage is already home — scooping it would pull stock back
             // OUT of a stockpile only to re-unload it later (a churn loop). Leave stored goods stored.
             if (lastResultingThing.IsInValidStorage())
                 return;
-            RecordSelfPickup(pawn, lastResultingThing);
+            RecordSelfPickup(dropPawn, lastResultingThing);
         }
 
         /// <summary>Queue a fresh ground drop for the producer to scoop up (DropThenHaul mode).</summary>
@@ -244,60 +256,87 @@ namespace HaulersDream
             return false;
         }
 
-        // ---- Deconstruct path -------------------------------------------------------------------
+        // ---- Deconstruct path (leaving CAPTURE) -------------------------------------------------
+        //
+        // We credit a deconstruct's leavings by CAPTURING each item DoLeavingsFor actually places — wherever
+        // it lands — instead of snapshotting the building's footprint rect and diffing afterward. The old
+        // footprint diff missed leavings in two real, in-game-observed cases: vanilla places leavings with
+        // ThingPlaceMode.Near, which SPILLS them outside the (often 1-cell) footprint when it is blocked (a
+        // wall hemmed in by full storage), and a leaving that MERGES into a pre-existing ground stack reads
+        // as "already there" in the before-snapshot. The capture sees the exact placed/merged Thing via the
+        // same patched GenPlace overload DoLeavingsFor routes through, so both cases are handled.
 
-        /// <summary>Snapshot the items in <paramref name="area"/> before DoLeavingsFor runs.</summary>
-        public static HashSet<Thing> SnapshotItems(CellRect area, Map map)
+        // The deconstructor whose leavings are currently being placed + the exact stacks placed. Set for the
+        // duration of one Deconstruct DoLeavingsFor; the GenPlace postfix feeds each placement here and
+        // EndDeconstructCapture scoops them once placement finishes. [ThreadStatic] per this assembly's
+        // convention for hook-reachable scratch state (matches `routing`).
+        [ThreadStatic] private static Pawn deconstructCapturePawn;
+        [ThreadStatic] private static List<Thing> deconstructCapturedLeavings;
+
+        /// <summary>Begin crediting DoLeavingsFor's placements to the pawn deconstructing
+        /// <paramref name="diedThing"/> (resolved here, while that pawn is still on its deconstruct toil).
+        /// No-op when deconstruct hauling is off or no deconstructor is found (a mod/auto/explosion removal —
+        /// those leavings fall to normal hauling).</summary>
+        public static void BeginDeconstructCapture(CellRect area, Map map, Thing diedThing)
         {
-            var set = new HashSet<Thing>();
-            foreach (var c in area.Cells)
-            {
-                if (!c.InBounds(map))
-                    continue;
-                var things = map.thingGrid.ThingsListAtFast(c);
-                for (int i = 0; i < things.Count; i++)
-                    if (things[i].def?.category == ThingCategory.Item)
-                        set.Add(things[i]);
-            }
-            return set;
-        }
-
-        /// <summary>Scoop only the leavings that appeared in <paramref name="area"/> (not in <paramref name="before"/>).</summary>
-        public static void OnDeconstructLeavings(CellRect area, Map map, HashSet<Thing> before)
-            => OnDeconstructLeavings(area, map, before, null);
-
-        /// <summary>Scoop only the leavings that appeared in <paramref name="area"/> (not in <paramref name="before"/>).
-        /// <paramref name="diedThing"/> is DoLeavingsFor's subject — it pins the credit on the pawn whose
-        /// job actually targets it, instead of any adjacent deconstructor.</summary>
-        public static void OnDeconstructLeavings(CellRect area, Map map, HashSet<Thing> before, Thing diedThing)
-        {
+            deconstructCapturePawn = null;
+            deconstructCapturedLeavings = null;
             var s = HaulersDreamMod.Settings;
             if (s == null || !s.haulDeconstruct || map == null)
                 return;
-
             var pawn = FindDeconstructor(area, map, diedThing);
             if (pawn == null)
                 return;
+            deconstructCapturePawn = pawn;
+            deconstructCapturedLeavings = new List<Thing>();
+        }
 
-            foreach (var c in area.Cells)
+        /// <summary>The patched GenPlace postfix hands every item DoLeavingsFor places here while a capture is
+        /// active (those placements carry no producer of their own). Records the exact placed/merged stack
+        /// (deduped) to scoop once DoLeavingsFor finishes. (Edge: if Near-placement splits ONE leaving stack
+        /// across multiple cells — partial-absorb into a near-full stack, remainder placed elsewhere — only the
+        /// final resulting stack is captured; the partial-merge fragment stays loose-haulable and is picked up
+        /// by normal hauling. No units are lost, and this is strictly better than the old footprint diff.)</summary>
+        internal static void CaptureDeconstructLeaving(Thing placed)
+        {
+            var list = deconstructCapturedLeavings;
+            if (list == null || placed == null)
+                return;
+            if (!list.Contains(placed))
+                list.Add(placed);
+        }
+
+        /// <summary>Finish the capture: scoop every distinct leaving the deconstruct placed (wherever it
+        /// landed), skipping anything that landed in valid storage or is forbidden. DropThenHaul records a
+        /// self-pickup; DirectToInventory scoops inline — same as the producer's other yields.</summary>
+        public static void EndDeconstructCapture()
+        {
+            var pawn = deconstructCapturePawn;
+            var leavings = deconstructCapturedLeavings;
+            deconstructCapturePawn = null;
+            deconstructCapturedLeavings = null;
+            if (pawn == null || leavings == null || leavings.Count == 0)
+                return;
+            var s = HaulersDreamMod.Settings;
+            if (s == null)
+                return;
+            int scooped = 0;
+            for (int i = 0; i < leavings.Count; i++)
             {
-                if (!c.InBounds(map))
+                var t = leavings[i];
+                if (t == null || !t.Spawned || t.Destroyed || t.def == null || t.def.category != ThingCategory.Item)
                     continue;
-                var things = map.thingGrid.ThingsListAtFast(c);
-                for (int i = things.Count - 1; i >= 0; i--) // backward: RouteIntoInventory may remove the current item
-                {
-                    var t = things[i];
-                    if (t.def == null)
-                        continue;
-                    bool isItem = t.def.category == ThingCategory.Item;
-                    if (!InferencePolicy.ShouldScoopLeaving(isItem, before.Contains(t), isItem && t.IsForbidden(pawn), isItem && t.IsInValidStorage()))
-                        continue;
-                    if (s.pickupMode == PickupMode.DropThenHaul)
-                        RecordSelfPickup(pawn, t); // leavings are already on the ground -> scoop them up afterward
-                    else
-                        RouteIntoInventory(pawn, t, HaulSourceType.Deconstruct, out _, out _);
-                }
+                // Never pull stored stock back out (it merged into a stockpile); respect per-pawn forbiddance.
+                if (t.IsForbidden(pawn) || t.IsInValidStorage())
+                    continue;
+                if (s.pickupMode == PickupMode.DropThenHaul)
+                    RecordSelfPickup(pawn, t); // leavings are already on the ground -> scoop them up afterward
+                else
+                    RouteIntoInventory(pawn, t, HaulSourceType.Deconstruct, out _, out _);
+                scooped++;
             }
+            if (scooped > 0)
+                HDLog.Dbg($"{pawn} deconstruct: captured {scooped} leaving stack(s) for pickup.");
         }
 
         // ---- shared routing ---------------------------------------------------------------------

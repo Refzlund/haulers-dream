@@ -17,7 +17,34 @@ namespace HaulersDream
         // Short cooldown so a (rare) unload that doesn't clear the load can't cause a tight divert loop.
         private const int DivertCooldownTicks = 250;
 
-        internal static bool ShouldDivert(Pawn pawn, Job workJob)
+        /// <summary>
+        /// True when picking <paramref name="def"/> means the pawn is STILL in an active accumulate run, so it
+        /// must NOT be diverted to unload (F38): yield-producing work (mine / deconstruct / plant harvest+cut /
+        /// deep-drill / gather animal resources / strip), OR a storage-bound haul (which already delivers the
+        /// pack to storage — bulk-haul sweeps it along). Every OTHER work job means the yield run is OVER, and
+        /// the pawn should shed its load before the unrelated work. Classified by the job's driverClass so it
+        /// mirrors YieldRouter's producer set exactly and composes with modded jobs subclassing those drivers.
+        /// </summary>
+        internal static bool IsYieldOrHaulJobDef(JobDef def)
+        {
+            var dc = def?.driverClass;
+            if (dc == null)
+                return false;
+            return typeof(JobDriver_PlantWork).IsAssignableFrom(dc)
+                || typeof(JobDriver_Mine).IsAssignableFrom(dc)
+                || typeof(JobDriver_OperateDeepDrill).IsAssignableFrom(dc)
+                || typeof(JobDriver_GatherAnimalBodyResources).IsAssignableFrom(dc)
+                || typeof(JobDriver_Strip).IsAssignableFrom(dc)
+                || typeof(JobDriver_Deconstruct).IsAssignableFrom(dc)
+                || typeof(JobDriver_HaulToCell).IsAssignableFrom(dc)
+                || typeof(JobDriver_HaulToContainer).IsAssignableFrom(dc)
+                || typeof(JobDriver_BulkHaul).IsAssignableFrom(dc);
+        }
+
+        /// <param name="runOver">The pawn just picked a NON-yield, NON-haul job, so its accumulate run is over —
+        /// use the relaxed run-end criteria (drop a worthwhile load at nearby storage even on a short hop)
+        /// instead of the strict "real journey on the way" bar. Settle-window-independent by design.</param>
+        internal static bool ShouldDivert(Pawn pawn, Job workJob, bool runOver = false)
         {
             var s = HaulersDreamMod.Settings;
             if (s == null || !s.opportunisticUnload || !s.markForUnload)
@@ -31,6 +58,13 @@ namespace HaulersDream
             // craft with; dropping them at storage would waste the sweep. (Diverting BEFORE a fresh prep starts,
             // to shed an unrelated old load, stays allowed: that's workJob == the prep, not CurJobDef.)
             if (pawn.CurJobDef == HaulersDreamDefOf.HaulersDream_BillPrepGather)
+                return false;
+            // Never divert before one of HD's OWN jobs: bulk-haul / unload / pack-load already deliver the
+            // load to storage themselves, and the construct-delivery / bill-prep / batch-craft jobs USE the
+            // carried materials — unloading first would be a redundant trip or would rob the job of its
+            // ingredients (it would break inventory construct/bill delivery). Identified by the driver living
+            // in this assembly, so it covers every HD job without enumerating them.
+            if (workJob.def.driverClass != null && workJob.def.driverClass.Assembly == typeof(OpportunisticUnload).Assembly)
                 return false;
 
             var comp = pawn.GetComp<CompHauledToInventory>();
@@ -84,7 +118,11 @@ namespace HaulersDream
             int storageToTarget = CellDist(storageCell, target);
             float loadFraction = trackedMass / cap;
 
-            return OpportunisticUnloadPolicy.ShouldUnloadOnWay(pawnToTarget, pawnToStorage, storageToTarget, loadFraction);
+            // Run-end (switched to non-yield work): relaxed criteria — shed the load at nearby storage even on
+            // a short hop. Otherwise (continuing a yield run / a haul): the strict "real journey on the way" bar.
+            return runOver
+                ? OpportunisticUnloadPolicy.ShouldUnloadOnRunEnd(pawnToTarget, pawnToStorage, storageToTarget, loadFraction)
+                : OpportunisticUnloadPolicy.ShouldUnloadOnWay(pawnToTarget, pawnToStorage, storageToTarget, loadFraction);
         }
 
         internal static void NotifyDiverted(Pawn pawn)

@@ -58,5 +58,34 @@ namespace HaulersDream.Core
             int bar = Math.Max(minDetourTiles, (int)((heavy ? heavyMaxDetourFraction : maxDetourFraction) * pawnToTarget));
             return detour <= bar;
         }
+
+        /// <summary>Run-end detour-bar floor (tiles) — see <see cref="ShouldUnloadOnRunEnd"/>.</summary>
+        public const int RunEndMinDetourTiles = 20;
+
+        /// <summary>Run-end detour bar as a fraction of the trip length.</summary>
+        public const float RunEndMaxDetourFraction = 1.0f;
+
+        /// <summary>
+        /// Run-END variant of <see cref="ShouldUnloadOnWay"/>: the pawn has FINISHED its yield-producing run
+        /// and just picked an UNRELATED job, so the accumulate window is over and it should shed a worthwhile
+        /// load at storage even on a SHORT hop — there is deliberately NO minimum-trip floor here (a pawn
+        /// cleaning filth right next to storage should still drop its load). The only guard is that storage be
+        /// reasonably near the path, not a cross-map detour. This is the "switched to non-yield work near
+        /// storage" reconciler that lets a pawn stop carrying a deconstruct/mining load around while it does
+        /// other things. Pure.
+        /// </summary>
+        public static bool ShouldUnloadOnRunEnd(
+            int pawnToTarget, int pawnToStorage, int storageToTarget, float loadFraction,
+            float minLoadFraction = MinLoadFraction, int minDetourTiles = RunEndMinDetourTiles,
+            float maxDetourFraction = RunEndMaxDetourFraction)
+        {
+            if (loadFraction < minLoadFraction)
+                return false; // not worth a trip for a trivial load, even at run-end
+            int detour = pawnToStorage + storageToTarget - pawnToTarget;
+            if (detour < 0)
+                detour = 0;
+            int bar = Math.Max(minDetourTiles, (int)(maxDetourFraction * pawnToTarget));
+            return detour <= bar;
+        }
     }
 }
