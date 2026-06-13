@@ -112,6 +112,11 @@ namespace HaulersDream
                 return false;
             if (pawn?.Map == null || pawn.Map.IsPlayerHome || pawn.Drafted)
                 return false;
+            // Same pawn-type gate as scoop / bulk-haul / unload (YieldRouter.IsEligible): only humanlike
+            // colonists and allowed mechs bulk-redirect; anything else falls through to the vanilla one-stack
+            // GiveToPackAnimal. Keeps the load/unload sides symmetric for non-standard (robot/animal) pawns.
+            if (!YieldRouter.IsEligible(pawn))
+                return false;
             if (pawn.GetComp<CompHauledToInventory>() == null || pawn.inventory == null)
                 return false;
             var item = vanillaJob?.targetA.Thing;
@@ -200,6 +205,8 @@ namespace HaulersDream
                 return null;
             if (pawn.GetComp<CompHauledToInventory>() == null || pawn.inventory == null)
                 return null;
+            if (!YieldRouter.IsEligible(pawn))
+                return null; // pawn-type gate, symmetric with bulk-haul / scoop / unload (non-mech robots, animals)
 
             float ceiling = CeilingKg(pawn, s);
             float running = MassUtility.GearAndInventoryMass(pawn);

@@ -155,7 +155,19 @@ namespace HaulersDream
                 return null;
             if (pawn.Faction != Faction.OfPlayerSilentFail || pawn.IsQuestLodger())
                 return null;
-            if (pawn.RaceProps != null && pawn.RaceProps.IsMechanoid && !s.allowMechanoids)
+            // Pawn-type gate UNIFIED with the scoop + auto-unload sides (YieldRouter.IsEligible →
+            // EligibilityPolicy): only {humanlike colonists, allowed colony mechs} may sweep into inventory.
+            // This was previously only "IsMechanoid && !allowMechanoids", which let a NON-mechanoid pawn that
+            // is also non-humanlike (a modded robot/android worker race on the Pawn class with a <comps> node,
+            // or any future mod that grants animals colony hauling) get stacks swept into its inventory — while
+            // the auto-unload side (PawnUnloadChecker → YieldRouter.IsEligible) refuses to empty a non-humanlike
+            // non-mech pawn, stranding the load: a black hole. IsEligible still returns allowMechanoids for
+            // mechs, so the intended mech-lifter bulk haul is unchanged; it adds the humanlike/animal/robot
+            // distinction (and the drafted/incapable rules) so scoop, bulk-haul, and unload are provably
+            // symmetric — whatever bulk-haul loads, the unload side can service. (Vanilla animals never reach
+            // this postfix anyway — they have no workSettings and haul via JobGiver_Haul, not the work scan —
+            // so for them this is defense-in-depth; the live risk is a non-mech robot-worker race.)
+            if (!YieldRouter.IsEligible(pawn))
                 return null;
             if (pawn.GetComp<CompHauledToInventory>() == null || pawn.inventory == null)
                 return null;
