@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using HaulersDream.Core;
 using RimWorld;
+using RimWorld.Planet;
 using Verse;
 using Verse.AI;
 
@@ -46,14 +47,13 @@ namespace HaulersDream
             if (!forced && pawn.CurJobDef == HaulersDreamDefOf.HaulersDream_BillPrepGather)
                 return;
 
-            // On a map the mod is configured to leave alone (enableOnNonHomeMaps off + a temporary/encounter
-            // map), an automatic unload would just dump the tagged load at the pawn's feet — there's no storage
-            // there. Keep carrying; the load unloads at home. The explicit gizmo still works.
-            if (!forced && !settings.enableOnNonHomeMaps
-                && pawn.Map != null && !pawn.Map.IsPlayerHome)
-                return;
+            // On a non-home / temporary map (a caravan / encounter site) there is no player storage to unload
+            // to, so the storage-unload pass is never appropriate there. We DON'T bail here, though: the same
+            // eligibility / grace / pending-work / surplus gating below decides WHEN to commit (so the caravan
+            // offload keeps the home accumulate-during-work timing — F38), and the Queue branch then offloads
+            // onto a PACK ANIMAL instead of storage (PackAnimalLoad.TryGetOpportunisticLoadJob). When no usable
+            // pack animal is reachable that returns null and the loot rides home in inventory (the F34 fallback).
 
-            var carried = comp.GetHashSet();
             // A FORCED unload (the gizmo, an end-of-batch flush) is RECOVERY, not work — it must function even
             // for a pawn that became scoop-ineligible (hauling-incapable after a settings flip), or the recovery
             // button is silently dead while tagged stock strands in inventory. (Drafted pawns never get here —
@@ -61,6 +61,19 @@ namespace HaulersDream
             bool eligible = pawn.Faction == Faction.OfPlayerSilentFail
                             && (forced || YieldRouter.IsEligible(pawn))
                             && pawn.inventory?.innerContainer != null;
+
+            // "Unload all surplus": before reading the tracked set, ADOPT (tag) any inventory the pawn is
+            // carrying that HD never scooped but that is surplus above its keep-stock — so foreign trade / mod /
+            // manual stock unloads exactly like HD-scooped loot through the same tag-scoped pass below (and shows
+            // the gizmo, fires the alert if stuck, etc., with no other code changes). Gated to eligible (humanlike
+            // colonists / allowed mechs — the same predicate as scoop/unload) and NOT mid caravan-loading
+            // (IsFormingCaravan inventory is deliberate). Keep-stock (food / drugs / inventoryStock / CE loadout)
+            // has SurplusOf==0, so it is never adopted; once a stack is unloaded out of inventory the def's tag
+            // self-prunes in CompHauledToInventory.GetHashSet.
+            if (eligible && settings.unloadAllSurplus && !pawn.IsFormingCaravan())
+                AdoptSurplusInventory(pawn, comp);
+
+            var carried = comp.GetHashSet();
             int inventoryCount = pawn.inventory?.innerContainer?.Count ?? 0;
             bool alreadyUnloading = pawn.CurJobDef == HaulersDreamDefOf.HaulersDream_UnloadInventory
                                     || HasQueuedUnload(pawn);
@@ -73,49 +86,137 @@ namespace HaulersDream
             // goods in strict mode (where the full-trigger never fires to break it).
             bool hasPendingWork = HasPendingRealWork(pawn);
 
-            // All the gating logic lives in the (unit-tested) pure policy.
-            var decision = UnloadPolicy.Decide(eligible, carried.Count, inventoryCount, alreadyUnloading, forced,
-                hasPendingWork, ticksSinceYield, settings.unloadGraceTicks);
+            // Accumulate window, EXCEPT when the pawn is ALREADY in a downtime job it should unload before —
+            // rest / recreation / eating, per the toggles. Then drop the load now instead of holding it through
+            // the window (a pawn napping or eating shouldn't be sitting on a full pack). We use the STATE check
+            // (not the need-based "entering" one): this runs from the hourly interval for EVERY pawn, including
+            // one mid-mining-run that merely happens to be tired — that pawn is still working, so it must keep
+            // accumulating. A forced unload ignores grace anyway, so this only changes the automatic path.
+            int effectiveGrace = OpportunisticUnload.IsInDowntimeJob(pawn, settings)
+                ? 0 : settings.unloadGraceTicks;
 
-            switch (decision)
+            // Up to two passes: a ClearTracker outcome PRUNES and then RE-DECIDES with the fresh counts
+            // instead of consuming the trigger occurrence. Without the second pass, a pawn whose tagged
+            // meal is momentarily in its HANDS (Toils_Ingest moves an inventory meal to the carry tracker
+            // while the tag persists) swallowed every trigger that landed during the meal — for a pawn
+            // whose inventory is all scooped goods, that silently forfeited entire interval boundaries.
+            // The loop always terminates: after the prune, carried ⊆ inventory, so the second Decide can
+            // never return ClearTracker again.
+            for (int pass = 0; pass < 2; pass++)
             {
-                case UnloadDecision.ClearTracker:
-                    // Targeted prune, NOT a whole-set Clear: during a craft the tagged ingredients legitimately
-                    // move inventory→hands→bench (inventoryCount dips below the tracked count), and wiping every
-                    // tag then would permanently strand the pawn's OTHER tagged stock in inventory. Removing only
-                    // entries no longer in the inventory keeps valid tags; destroyed ones self-prune in GetHashSet.
-                    HDLog.Dbg($"{pawn} tracker out of sync ({inventoryCount} < {carried.Count}); pruning stale tags.");
-                    var inv = pawn.inventory?.innerContainer;
-                    carried.RemoveWhere(t => t == null || t.Destroyed || inv == null || !inv.Contains(t));
-                    return;
+                // Is there anything ABOVE keep-stock to actually unload? Recomputed each pass (a ClearTracker
+                // prune changes the set). Keeps an all-keep-stock pawn (whose surplus tags we deliberately
+                // retain) from re-queuing a no-op unload every cycle; a forced unload ignores this in Decide.
+                bool anyUnloadable = AnyUnloadable(pawn, carried);
+                // All the gating logic lives in the (unit-tested) pure policy.
+                var decision = UnloadPolicy.Decide(eligible, carried.Count, inventoryCount, alreadyUnloading, forced,
+                    hasPendingWork, ticksSinceYield, effectiveGrace, anyUnloadable);
 
-                case UnloadDecision.Queue:
-                    // The unload driver sets its own A/B targets in its toils, so no initial target.
-                    var job = JobMaker.MakeJob(HaulersDreamDefOf.HaulersDream_UnloadInventory);
-                    if (pawn.jobs != null && job.TryMakePreToilReservations(pawn, false))
-                    {
-                        if (behindQueuedWork && hasPendingWork)
-                            pawn.jobs.jobQueue.EnqueueLast(job, JobTag.Misc);
-                        else
-                            pawn.jobs.jobQueue.EnqueueFirst(job, JobTag.Misc);
-                        HDLog.Dbg($"{pawn} queued unload ({carried.Count} tracked, forced={forced}).");
-                        // Both EnqueueFirst, so the queue reads [SelfPickup, Unload]: pending fresh drops are
-                        // scooped BEFORE the unload runs — one trip regardless of which trigger queued the
-                        // unload (the interval firing mid-long-job otherwise yields [Unload, SelfPickup]: a
-                        // second trip). EnsureSelfPickupJob dedups, no-ops without pendings, and never calls
-                        // back into this checker. On the behindQueuedWork path the scoop still lands ahead of
-                        // the queued work (acceptable: it's quick and at the pawn's feet) while the unload
-                        // trip waits at the back.
-                        YieldRouter.EnsureSelfPickupJob(pawn);
-                    }
-                    return;
+                switch (decision)
+                {
+                    case UnloadDecision.ClearTracker:
+                        // Targeted prune, NOT a whole-set Clear: during a craft the tagged ingredients legitimately
+                        // move inventory→hands→bench (inventoryCount dips below the tracked count), and wiping every
+                        // tag then would permanently strand the pawn's OTHER tagged stock in inventory. Removing only
+                        // entries no longer in the inventory keeps valid tags; destroyed ones self-prune in GetHashSet.
+                        HDLog.Dbg($"{pawn} tracker out of sync ({inventoryCount} < {carried.Count}); pruning stale tags.");
+                        var inv = pawn.inventory?.innerContainer;
+                        carried.RemoveWhere(t => t == null || t.Destroyed || inv == null || !inv.Contains(t));
+                        inventoryCount = pawn.inventory?.innerContainer?.Count ?? 0;
+                        continue;
 
-                default:
-                    return;
+                    case UnloadDecision.Queue:
+                        // Caravan / away map: no player storage — offload onto a pack animal instead. The Decide
+                        // gates above already applied the SAME eligibility / grace / pending-work / surplus
+                        // timing as the home storage path (so F38's accumulate-during-work holds);
+                        // TryGetOpportunisticLoadJob adds the caravan toggle + carrier gate and builds the
+                        // deposit-only load job (null -> no usable carrier, loot just rides home in inventory).
+                        if (pawn.Map != null && !pawn.Map.IsPlayerHome)
+                        {
+                            var loadJob = PackAnimalLoad.TryGetOpportunisticLoadJob(pawn);
+                            if (loadJob != null && pawn.jobs != null)
+                            {
+                                if (behindQueuedWork && hasPendingWork)
+                                    pawn.jobs.jobQueue.EnqueueLast(loadJob, JobTag.Misc);
+                                else
+                                    pawn.jobs.jobQueue.EnqueueFirst(loadJob, JobTag.Misc);
+                                HDLog.Dbg($"{pawn} queued caravan pack-animal load ({carried.Count} tracked).");
+                                // Same one-trip ordering as the storage path: scoop pending fresh drops first.
+                                YieldRouter.EnsureSelfPickupJob(pawn);
+                            }
+                            return;
+                        }
+                        // The unload driver sets its own A/B targets in its toils, so no initial target.
+                        var job = JobMaker.MakeJob(HaulersDreamDefOf.HaulersDream_UnloadInventory);
+                        if (pawn.jobs != null && job.TryMakePreToilReservations(pawn, false))
+                        {
+                            if (behindQueuedWork && hasPendingWork)
+                                pawn.jobs.jobQueue.EnqueueLast(job, JobTag.Misc);
+                            else
+                                pawn.jobs.jobQueue.EnqueueFirst(job, JobTag.Misc);
+                            HDLog.Dbg($"{pawn} queued unload ({carried.Count} tracked, forced={forced}).");
+                            // Both EnqueueFirst, so the queue reads [SelfPickup, Unload]: pending fresh drops are
+                            // scooped BEFORE the unload runs — one trip regardless of which trigger queued the
+                            // unload (the interval firing mid-long-job otherwise yields [Unload, SelfPickup]: a
+                            // second trip). EnsureSelfPickupJob dedups, no-ops without pendings, and never calls
+                            // back into this checker. On the behindQueuedWork path the scoop still lands ahead of
+                            // the queued work (acceptable: it's quick and at the pawn's feet) while the unload
+                            // trip waits at the back.
+                            YieldRouter.EnsureSelfPickupJob(pawn);
+                        }
+                        return;
+
+                    default:
+                        return;
+                }
             }
         }
 
-        private static bool HasQueuedUnload(Pawn pawn)
+        /// <summary>
+        /// "Unload all surplus" (opt-in): tag every inventory stack with surplus above the pawn's keep-stock,
+        /// so stock HD never scooped (trade / mod / manual) is unloaded by the normal tag-scoped pass. Bounded
+        /// to surplus (keep-stock has SurplusOf==0 → never tagged), so it can't strip food / drugs / inventory-
+        /// stock / CE loadout. RegisterHauledItem is idempotent (a HashSet add) and notifies CE's HoldTracker so
+        /// a CE loadout doesn't floor-drop the adopted stock before the unload trip runs. Callers gate on
+        /// eligibility + !IsFormingCaravan.
+        /// </summary>
+        internal static void AdoptSurplusInventory(Pawn pawn, CompHauledToInventory comp)
+        {
+            var inner = pawn.inventory?.innerContainer;
+            if (inner == null || comp == null)
+                return;
+            int adopted = 0;
+            for (int i = 0; i < inner.Count; i++)
+            {
+                var t = inner[i];
+                if (t != null && !t.Destroyed && InventorySurplus.SurplusOf(pawn, t) > 0)
+                {
+                    int before = comp.PeekHashSet().Count;
+                    comp.RegisterHauledItem(t);
+                    if (comp.PeekHashSet().Count > before)
+                        adopted++;
+                }
+            }
+            if (adopted > 0)
+                HDLog.Dbg($"{pawn} adopted {adopted} surplus inventory stack(s) it did not scoop (unloadAllSurplus).");
+        }
+
+        /// <summary>True if at least one tracked stack still in the pawn's inventory has surplus above the
+        /// pawn's personal keep-stock — i.e. the unload pass would actually move something. Uses the SAME
+        /// surplus math as the unload driver and the cannot-unload alert (<see cref="InventorySurplus"/>), so
+        /// the three never disagree.</summary>
+        internal static bool AnyUnloadable(Pawn pawn, HashSet<Thing> carried)
+        {
+            var inner = pawn.inventory?.innerContainer;
+            if (inner == null || carried == null)
+                return false;
+            foreach (var t in carried)
+                if (t != null && inner.Contains(t) && InventorySurplus.SurplusOf(pawn, t) > 0)
+                    return true;
+            return false;
+        }
+
+        internal static bool HasQueuedUnload(Pawn pawn)
         {
             var queue = pawn.jobs?.jobQueue;
             if (queue != null)

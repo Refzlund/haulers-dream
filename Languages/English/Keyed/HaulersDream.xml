@@ -5,7 +5,15 @@
 
   <HaulersDream.Setting.DropThenHaul>Drop on the floor, then pick up (realistic)</HaulersDream.Setting.DropThenHaul>
   <HaulersDream.Setting.DropThenHaulDesc>When ON, harvested/mined goods drop on the ground and the pawn scoops them into its inventory after the work run. When OFF, goods go straight into inventory (no ground touch).</HaulersDream.Setting.DropThenHaulDesc>
-  <HaulersDream.Setting.MarkForUnload>Automatically unload scooped goods (when full or at end of work run)</HaulersDream.Setting.MarkForUnload>
+  <HaulersDream.Setting.MarkForUnload>Automatically unload scooped goods (at end of work run, around meals and recreation, when overweight, and on the interval below). Off: pawns keep carrying until you press their "Unload inventory" button.</HaulersDream.Setting.MarkForUnload>
+  <HaulersDream.Setting.UnloadAllSurplus>Also put away surplus inventory a pawn is carrying that Hauler's Dream did NOT pick up itself</HaulersDream.Setting.UnloadAllSurplus>
+  <HaulersDream.Setting.UnloadAllSurplusDesc>When on, a colonist at home also unloads any surplus items it's carrying for no reason (from trades, other mods, or manual moves) — not just goods Hauler's Dream scooped. "Surplus" excludes the pawn's kept food, drugs, inventory-stock, and Combat Extended loadout (the same items vanilla keeps); caravan-loading inventory is left alone. This is more thorough than vanilla's occasional auto-unload. Turn OFF if you use a mod that keeps items in a pawn's inventory through its own system (for example Smart Medicine's stock-up, or a sidearm mod) and don't want those put away.</HaulersDream.Setting.UnloadAllSurplusDesc>
+  <HaulersDream.Setting.UnloadBeforeSleep>Put load away before sleeping</HaulersDream.Setting.UnloadBeforeSleep>
+  <HaulersDream.Setting.UnloadBeforeSleepDesc>When a pawn finishes working and is tired (about to sleep), it makes its unload trip first, then goes to bed empty — instead of carrying its scooped load into bed. It still accumulates normally while it's actually working.</HaulersDream.Setting.UnloadBeforeSleepDesc>
+  <HaulersDream.Setting.UnloadBeforeLeisure>Put load away before recreation</HaulersDream.Setting.UnloadBeforeLeisure>
+  <HaulersDream.Setting.UnloadBeforeLeisureDesc>When a pawn stops working and heads to recreation (its Recreation schedule block, or any joy activity), it unloads first instead of carrying its load around while relaxing.</HaulersDream.Setting.UnloadBeforeLeisureDesc>
+  <HaulersDream.Setting.UnloadBeforeEating>Put load away before eating</HaulersDream.Setting.UnloadBeforeEating>
+  <HaulersDream.Setting.UnloadBeforeEatingDesc>When a pawn finishes working and is hungry (about to eat), it unloads first — so it doesn't carry the ore it just mined to the dinner table.</HaulersDream.Setting.UnloadBeforeEatingDesc>
 
   <HaulersDream.Setting.ShareHeader>Share carried materials between colonists:</HaulersDream.Setting.ShareHeader>
   <HaulersDream.Setting.ShareForBuilding>Use carried materials for construction</HaulersDream.Setting.ShareForBuilding>
@@ -24,6 +32,8 @@
   <HaulersDream.Setting.BulkHaulSecondDesc>Automatic hauling always sweeps the surroundings into inventory (one storage trip for many items). A haul YOU order on a pawn stays surgical — it hauls just that one thing — unless you've ordered a second haul nearby, in which case the pawn sweeps them together. The finer-control default.</HaulersDream.Setting.BulkHaulSecondDesc>
   <HaulersDream.Setting.BulkHaulAlways>Always sweep — every haul picks up everything around it</HaulersDream.Setting.BulkHaulAlways>
   <HaulersDream.Setting.BulkHaulAlwaysDesc>Every haul — automatic or ordered — loads the nearby haulables into the pawn's inventory too, making one storage trip for the lot. How much it carries respects the smart-overload slider below: only as much extra weight as is genuinely worth the slowdown versus making another round-trip.</HaulersDream.Setting.BulkHaulAlwaysDesc>
+  <HaulersDream.Setting.SweepNearbyWhileWorking>Tidy up while working — scoop nearby loose items too</HaulersDream.Setting.SweepNearbyWhileWorking>
+  <HaulersDream.Setting.SweepNearbyWhileWorkingDesc>While a pawn is deconstructing, mining, or harvesting and scooping its own yields, it also picks up other loose haulable items lying around the work spot into its inventory, so the whole area is cleared in the one consolidated trip instead of being left for separate hauls. Only items that need hauling and have somewhere to go are taken (never another hauler's target or stockpiled stock), and only up to the smart-overload ceiling.</HaulersDream.Setting.SweepNearbyWhileWorkingDesc>
 
   <HaulersDream.Setting.HaulToStack>Haul to stack (top up existing stacks, share destination tiles)</HaulersDream.Setting.HaulToStack>
   <HaulersDream.Setting.ConstructTether>Ordered constructions haul AND build as one task</HaulersDream.Setting.ConstructTether>
@@ -91,15 +101,24 @@
   <HaulersDream.Setting.EnableOnNonHomeMaps>Also work on caravan / non-home maps</HaulersDream.Setting.EnableOnNonHomeMaps>
   <HaulersDream.Setting.HideGizmo>Hide the per-pawn "Unload inventory" button</HaulersDream.Setting.HideGizmo>
 
-  <HaulersDream.Setting.UnloadGrace>Unload grace: wait {0} ticks after a pickup before unloading</HaulersDream.Setting.UnloadGrace>
+  <HaulersDream.Setting.UnloadGrace>Accumulate window: keep picking up for {0} ticks (~60/sec) after the last pickup before making the unload trip. Higher = pawns overload more and make fewer, bigger trips; they still unload immediately once full (the overload ceiling).</HaulersDream.Setting.UnloadGrace>
   <HaulersDream.Setting.IntervalUnload>Interval unload: every {0} in-game hours</HaulersDream.Setting.IntervalUnload>
-  <HaulersDream.Setting.IntervalUnloadOff>Interval unload: off (only idle / full / manual)</HaulersDream.Setting.IntervalUnloadOff>
+  <HaulersDream.Setting.IntervalUnloadOff>Interval unload: off (only end of work run / meals and recreation / overweight / manual)</HaulersDream.Setting.IntervalUnloadOff>
+
+  <HaulersDream.Setting.AlertCannotUnload>Warn (red alert) when a pawn can't unload its inventory</HaulersDream.Setting.AlertCannotUnload>
+  <HaulersDream.Setting.AlertCannotUnloadDesc>Shows a critical "Fire!"-style alert in the bottom-right when one or more pawns are carrying scooped items they cannot put away — either nothing on the map can store them (no stockpile / dumping zone / reachable cell), or they've been carrying items far too long without unloading (storage unreachable, or another mod keeps cancelling the haul/unload job). One alert covers all affected pawns; hover it to point arrows at them, click to cycle through them. This is your guarantee that inventories never silently become "black holes".</HaulersDream.Setting.AlertCannotUnloadDesc>
+  <HaulersDream.Setting.AlertStuckHours>...flag a pawn after it has carried un-unloaded items for {0} in-game hours</HaulersDream.Setting.AlertStuckHours>
 
   <HaulersDream.Setting.VerboseLogging>Verbose debug logging</HaulersDream.Setting.VerboseLogging>
 
   <HaulersDream.Gizmo.UnloadNow>Unload inventory</HaulersDream.Gizmo.UnloadNow>
   <HaulersDream.Gizmo.UnloadNowDesc>Make this pawn carry everything it has scooped to the nearest valid storage.</HaulersDream.Gizmo.UnloadNowDesc>
   <HaulersDream.Gizmo.UnloadNowDrafted>Drafted: undraft this pawn to unload.</HaulersDream.Gizmo.UnloadNowDrafted>
+
+  <!-- Black-hole safety-net alert -->
+  <HaulersDream.Alert.CannotUnload>Cannot unload inventory ({0})</HaulersDream.Alert.CannotUnload>
+  <HaulersDream.Alert.CannotUnloadDesc.NoStorage>These pawns are carrying scooped items with nowhere to put them — no stockpile or dumping zone on the map accepts them, and no reachable spot was found. Add a stockpile (a Dumping Stockpile accepts rock chunks and most refuse), or allow their item type on an existing one:\n\n{0}\n\nUntil then the items stay in their inventory. Click this alert to cycle to the pawns; hover to point them out.</HaulersDream.Alert.CannotUnloadDesc.NoStorage>
+  <HaulersDream.Alert.CannotUnloadDesc.Stuck>These pawns have been carrying scooped items for a long time without unloading them. Storage may be unreachable from where they are, or another mod may be repeatedly cancelling their hauling/unloading job:\n\n{0}\n\nCheck for a reachable, allowed stockpile, and for a mod interrupting their jobs. Click this alert to cycle to the pawns; hover to point them out.</HaulersDream.Alert.CannotUnloadDesc.Stuck>
 
   <!-- Plan prioritized route -->
   <HaulersDream.PlanRoute.Option>Plan prioritized {0}…</HaulersDream.PlanRoute.Option>
@@ -207,5 +226,17 @@
 
   <!-- Bulk haul job -->
   <HaulersDream.BulkHaul.Report>hauling everything nearby.</HaulersDream.BulkHaul.Report>
+
+  <!-- Load onto pack animal (caravan / away map): manual bulk order + auto-divert + gizmo -->
+  <HaulersDream.LoadPackAnimal.Report>loading items onto a pack animal.</HaulersDream.LoadPackAnimal.Report>
+  <HaulersDream.LoadPackAnimal.BulkOption>Load nearby items onto pack animal (bulk)</HaulersDream.LoadPackAnimal.BulkOption>
+  <HaulersDream.LoadPackAnimal.CouldNotStart>Nothing nearby to load onto a pack animal right now.</HaulersDream.LoadPackAnimal.CouldNotStart>
+  <HaulersDream.LoadPackAnimal.NoCarrier>No usable pack animal with free space nearby.</HaulersDream.LoadPackAnimal.NoCarrier>
+
+  <!-- Settings: pack-animal loading on caravans -->
+  <HaulersDream.Setting.LoadPackAnimalBulk>Bulk "load onto pack animal" order</HaulersDream.Setting.LoadPackAnimalBulk>
+  <HaulersDream.Setting.LoadPackAnimalBulkDesc>On a caravan/away map, adds a right-click "Load nearby items onto pack animal (bulk)" order: one colonist sweeps several nearby stacks into its inventory and loads them onto a pack animal in one trip, instead of carrying one stack at a time. Vanilla's single-item "Load onto pack animal" still works alongside it.</HaulersDream.Setting.LoadPackAnimalBulkDesc>
+  <HaulersDream.Setting.AutoDivertToPackAnimal>Offload onto pack animals (caravans)</HaulersDream.Setting.AutoDivertToPackAnimal>
+  <HaulersDream.Setting.AutoDivertToPackAnimalDesc>On a caravan/away map, pawns offload their scooped loot onto the nearest owned pack animal the same way they'd unload to a stockpile at home — when their work run ends, before they rest/eat/relax, on the periodic backstop, and immediately when over-encumbered (to stay mobile). With this off, loot just rides home in the pawns' own inventories (or use the manual bulk-load order / Reform Caravan). All of these also require automatic unloading to be on (and the over-encumbered offload is disabled in strict-carry-weight mode).</HaulersDream.Setting.AutoDivertToPackAnimalDesc>
 
 </LanguageData>

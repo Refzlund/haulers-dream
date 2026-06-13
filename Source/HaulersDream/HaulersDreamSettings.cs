@@ -14,7 +14,20 @@ namespace HaulersDream
         public PickupMode pickupMode = PickupMode.DropThenHaul;
 
         // --- unload defaults / sharing ---
-        public bool markForUnload = true;     // flag auto-picked items for unload (deferred to end of work run)
+        public bool markForUnload = true;     // automatic unloading (end of work run / checkpoints / full / interval); off = gizmo-only
+        // Also put away surplus a colonist is carrying that HD did NOT scoop (trade/mod/manual stock), not just
+        // HD-tagged loot. "Surplus" = above the pawn's keep-stock (food / drugs / inventoryStock / CE loadout), the
+        // exact set vanilla itself treats as unloadable; caravan-loading inventory (IsFormingCaravan) is left alone.
+        // More aggressive than vanilla's occasional auto-unload — turn OFF if a loadout/stock mod (e.g. Smart
+        // Medicine stock-up, a sidearm mod) keeps items in inventory WITHOUT registering them as keep-stock.
+        public bool unloadAllSurplus = true;
+        // "Put it away before relaxing": when a pawn finishes its work run and is about to rest, recreate, or
+        // eat, it makes its unload trip FIRST (bypassing the accumulate window), instead of carrying the load
+        // to bed / the dinner table / the rec room. Continuous/intermittent work still accumulates — these only
+        // fire once the pawn stops working and heads into the matching downtime. One toggle per activity.
+        public bool unloadBeforeSleep = true;
+        public bool unloadBeforeLeisure = true;
+        public bool unloadBeforeEating = true;
         public bool shareForBuilding = true;  // carried materials count for construction
         public bool shareForCrafting = true;  // carried ingredients count for crafting bills
         // Auto crafting bills: gather all ingredient stacks into inventory in one (overweight) sweep, then let
@@ -42,6 +55,16 @@ namespace HaulersDream
         // Always = every haul sweeps; SecondTasked (default) = automatic hauls always sweep, but a player-ORDERED
         // haul sweeps only when a second nearby haul has also been ordered — so ordering one haul stays surgical.
         public BulkHaulTrigger bulkHaulTrigger = BulkHaulTrigger.SecondTasked;
+
+        // While a pawn scoops its own WORK yields (deconstruct/mine/harvest), also sweep OTHER loose haulable
+        // items lying around the work spot into its inventory, so the area is cleared in the same consolidated
+        // trip instead of being left for separate hand-hauls. (Bulk hauling above does the same for dedicated
+        // HAUL jobs; this extends it to work jobs.)
+        public bool sweepNearbyWhileWorking = true;
+
+        // --- pack-animal loading on caravans / temporary maps ---
+        public bool loadPackAnimalBulk = true;       // the manual "Load nearby items onto pack animal (bulk)" order
+        public bool autoDivertToPackAnimal = true;   // an over-encumbered caravan pawn auto-loads the nearest pack animal
 
         // --- auto strip on haul (corpse hauls strip the body; loot rides in the hauler's inventory) ---
         public AutoStripMode autoStripMode = AutoStripMode.AllHauls;
@@ -113,9 +136,29 @@ namespace HaulersDream
         public bool haulStrip = true;   // gear removed by a strip order (pawn or corpse) gets scooped + hauled
 
         // --- unloading ---
-        public int unloadGraceTicks = 60;       // don't unload within this many ticks of the last pickup
-        public float intervalUnloadHours = 6f;  // periodic unload; 0 = off
+        // The "settle" window: how long after its LAST pickup a pawn keeps accumulating before an automatic
+        // unload trip. Default 2500 ticks (~1 in-game hour) so a pawn that is actively mining/deconstructing/
+        // harvesting keeps scooping into inventory across the whole work run (each scoop resets the clock) and
+        // only trips to storage once it's been done with that work for a while — or sooner if it fills up to
+        // the smart-overload ceiling. A small value (the old 60 = ~1s) made pawns unload after almost every
+        // item. Gates the idle backstop + interval (via UnloadPolicy.Decide) and the end-of-run trigger.
+        public int unloadGraceTicks = 2500;
+        // Periodic unload backstop; 0 = off. 1h: with the primary triggers (end of work run, meal/joy
+        // checkpoints, over-encumbered, pass-by) this rarely fires — but when every one of them is
+        // swallowed (drafts clearing the queue, lord duties, modded jobs), an hour is the longest a
+        // pawn carries a load, not a quarter of a day. (Scribe omits a field that equals the default at
+        // save time, so an old save left on the previous 6h default has no stored value and loads as 1h;
+        // only a user who explicitly chose a non-default interval keeps their value.)
+        public float intervalUnloadHours = 1f;
         public bool enableOnNonHomeMaps = true;  // work on caravans / temporary maps too
+
+        // --- black-hole safety net: a red (critical) alert when a pawn is carrying scooped haul items it
+        // cannot put away — nowhere on the map accepts them (no stockpile / dumping zone / reachable cell),
+        // or it has held tagged items far longer than any normal unload should take (storage unreachable,
+        // or another mod keeps cancelling the haul/unload job). One alert for all such pawns. ---
+        public bool alertCannotUnload = true;
+        public float alertStuckHours = 12f;       // condition B threshold: held tagged items this long (with a
+                                                  // destination that exists) before the alert flags the pawn
 
         // --- misc ---
         public bool hideGizmo = false;
@@ -182,6 +225,10 @@ namespace HaulersDream
             Scribe_Values.Look(ref carryLimitFraction, "carryLimitFraction", 1.0f);
             Scribe_Values.Look(ref pickupMode, "pickupMode", PickupMode.DropThenHaul);
             Scribe_Values.Look(ref markForUnload, "markForUnload", true);
+            Scribe_Values.Look(ref unloadBeforeSleep, "unloadBeforeSleep", true);
+            Scribe_Values.Look(ref unloadBeforeLeisure, "unloadBeforeLeisure", true);
+            Scribe_Values.Look(ref unloadBeforeEating, "unloadBeforeEating", true);
+            Scribe_Values.Look(ref unloadAllSurplus, "unloadAllSurplus", true);
             Scribe_Values.Look(ref shareForBuilding, "shareForBuilding", true);
             Scribe_Values.Look(ref shareForCrafting, "shareForCrafting", true);
             Scribe_Values.Look(ref inventoryCraftDeliver, "inventoryCraftDeliver", true);
@@ -191,6 +238,9 @@ namespace HaulersDream
             Scribe_Values.Look(ref shareHandHauledToStorage, "shareHandHauledToStorage", false);
             Scribe_Values.Look(ref bulkHaul, "bulkHaul", true);
             Scribe_Values.Look(ref bulkHaulTrigger, "bulkHaulTrigger", BulkHaulTrigger.SecondTasked);
+            Scribe_Values.Look(ref sweepNearbyWhileWorking, "sweepNearbyWhileWorking", true);
+            Scribe_Values.Look(ref loadPackAnimalBulk, "loadPackAnimalBulk", true);
+            Scribe_Values.Look(ref autoDivertToPackAnimal, "autoDivertToPackAnimal", true);
             Scribe_Values.Look(ref haulToStack, "haulToStack", true);
             Scribe_Values.Look(ref orderedConstructTether, "orderedConstructTether", true);
             Scribe_Values.Look(ref haulToSiteOption, "haulToSiteOption", true);
@@ -228,8 +278,10 @@ namespace HaulersDream
             Scribe_Values.Look(ref allPawnsCanHaul, "allPawnsCanHaul", false);
             Scribe_Values.Look(ref allPawnsCanClean, "allPawnsCanClean", false);
             Scribe_Values.Look(ref allPawnsCanCutPlants, "allPawnsCanCutPlants", false);
-            Scribe_Values.Look(ref unloadGraceTicks, "unloadGraceTicks", 60);
-            Scribe_Values.Look(ref intervalUnloadHours, "intervalUnloadHours", 6f);
+            Scribe_Values.Look(ref unloadGraceTicks, "unloadGraceTicks", 2500);
+            Scribe_Values.Look(ref intervalUnloadHours, "intervalUnloadHours", 1f);
+            Scribe_Values.Look(ref alertCannotUnload, "alertCannotUnload", true);
+            Scribe_Values.Look(ref alertStuckHours, "alertStuckHours", 12f);
             Scribe_Values.Look(ref enableOnNonHomeMaps, "enableOnNonHomeMaps", true);
             Scribe_Values.Look(ref hideGizmo, "hideGizmo", false);
             Scribe_Values.Look(ref verboseLogging, "verboseLogging", false);
@@ -244,7 +296,19 @@ namespace HaulersDream
         {
             var view = new Rect(0f, 0f, rect.width - 16f, settingsHeight);
             Widgets.BeginScrollView(rect, ref settingsScroll, view);
-            var l = new Listing_Standard();
+            var l = new Listing_Standard
+            {
+                // CRITICAL: without this the scroll view silently breaks. Listing_Standard.NewColumnIfNeeded
+                // wraps into a SECOND column the instant content exceeds listingRect.height (= settingsHeight)
+                // in any frame — which happens whenever the options grow past the last measured height
+                // (initial 1400 too small, or toggling bulk-haul / auto-strip adds rows). After a wrap,
+                // CurHeight (curY) reports only the short wrapped column, so settingsHeight collapses to the
+                // Mathf.Max floor (rect.height = the viewport). The view then equals the viewport, the
+                // scrollbar vanishes, and the wrapped columns run off-screen — and it re-wraps from the
+                // collapsed height every frame, so it never recovers. maxOneColumn forbids the wrap, so
+                // CurHeight is always the true single-column height and settingsHeight tracks it correctly.
+                maxOneColumn = true
+            };
             l.Begin(view);
 
             l.Label("HaulersDream.Setting.CarryLimit".Translate(carryLimitFraction.ToStringPercent()));
@@ -256,6 +320,18 @@ namespace HaulersDream
                 "HaulersDream.Setting.DropThenHaulDesc".Translate());
             pickupMode = dropThenHaul ? PickupMode.DropThenHaul : PickupMode.DirectToInventory;
             l.CheckboxLabeled("HaulersDream.Setting.MarkForUnload".Translate(), ref markForUnload);
+            l.CheckboxLabeled("HaulersDream.Setting.UnloadAllSurplus".Translate(), ref unloadAllSurplus,
+                "HaulersDream.Setting.UnloadAllSurplusDesc".Translate());
+            if (markForUnload)
+            {
+                // "Put it away before relaxing" — unload before each downtime activity (bypassing the accumulate window).
+                l.CheckboxLabeled("HaulersDream.Setting.UnloadBeforeSleep".Translate(), ref unloadBeforeSleep,
+                    "HaulersDream.Setting.UnloadBeforeSleepDesc".Translate());
+                l.CheckboxLabeled("HaulersDream.Setting.UnloadBeforeLeisure".Translate(), ref unloadBeforeLeisure,
+                    "HaulersDream.Setting.UnloadBeforeLeisureDesc".Translate());
+                l.CheckboxLabeled("HaulersDream.Setting.UnloadBeforeEating".Translate(), ref unloadBeforeEating,
+                    "HaulersDream.Setting.UnloadBeforeEatingDesc".Translate());
+            }
 
             l.GapLine();
             l.Label("HaulersDream.Setting.ShareHeader".Translate());
@@ -285,6 +361,14 @@ namespace HaulersDream
                         tooltip: "HaulersDream.Setting.BulkHaulAlwaysDesc".Translate()))
                     bulkHaulTrigger = BulkHaulTrigger.Always;
             }
+
+            l.CheckboxLabeled("HaulersDream.Setting.SweepNearbyWhileWorking".Translate(), ref sweepNearbyWhileWorking,
+                "HaulersDream.Setting.SweepNearbyWhileWorkingDesc".Translate());
+
+            l.CheckboxLabeled("HaulersDream.Setting.LoadPackAnimalBulk".Translate(), ref loadPackAnimalBulk,
+                "HaulersDream.Setting.LoadPackAnimalBulkDesc".Translate());
+            l.CheckboxLabeled("HaulersDream.Setting.AutoDivertToPackAnimal".Translate(), ref autoDivertToPackAnimal,
+                "HaulersDream.Setting.AutoDivertToPackAnimalDesc".Translate());
 
             l.CheckboxLabeled("HaulersDream.Setting.HaulToStack".Translate(), ref haulToStack,
                 "HaulersDream.Setting.HaulToStackDesc".Translate());
@@ -386,11 +470,20 @@ namespace HaulersDream
 
             l.GapLine();
             l.Label("HaulersDream.Setting.UnloadGrace".Translate(unloadGraceTicks));
-            unloadGraceTicks = Mathf.RoundToInt(l.Slider(unloadGraceTicks, 0f, 600f));
+            unloadGraceTicks = Mathf.RoundToInt(l.Slider(unloadGraceTicks, 0f, 7500f) / 50f) * 50;
             l.Label(intervalUnloadHours <= 0f
                 ? "HaulersDream.Setting.IntervalUnloadOff".Translate()
                 : "HaulersDream.Setting.IntervalUnload".Translate(intervalUnloadHours.ToString("0.#")));
             intervalUnloadHours = Mathf.Round(l.Slider(intervalUnloadHours, 0f, 24f) * 2f) / 2f;
+
+            l.GapLine();
+            l.CheckboxLabeled("HaulersDream.Setting.AlertCannotUnload".Translate(), ref alertCannotUnload,
+                "HaulersDream.Setting.AlertCannotUnloadDesc".Translate());
+            if (alertCannotUnload)
+            {
+                l.Label("HaulersDream.Setting.AlertStuckHours".Translate(alertStuckHours.ToString("0.#")));
+                alertStuckHours = Mathf.Round(l.Slider(alertStuckHours, 1f, 72f) * 2f) / 2f;
+            }
 
             l.GapLine();
             l.CheckboxLabeled("HaulersDream.Setting.VerboseLogging".Translate(), ref verboseLogging);

@@ -15,6 +15,7 @@ namespace HaulersDream
         public static JobDef HaulersDream_InventoryDoBill; // retired (dup risk); def kept for save-compat
         public static JobDef HaulersDream_BillPrepGather;
         public static JobDef HaulersDream_BulkHaul;
+        public static JobDef HaulersDream_LoadPackAnimal; // load scooped loot onto a pack animal (caravan/away map)
 
         static HaulersDreamDefOf() => DefOfHelper.EnsureInitializedInCtor(typeof(HaulersDreamDefOf));
     }

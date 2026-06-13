@@ -23,7 +23,8 @@ namespace HaulersDream.Core
             bool forced,
             bool hasPendingWork,
             int ticksSinceLastYield,
-            int graceTicks)
+            int graceTicks,
+            bool anyUnloadable = true)
         {
             if (!eligible || carriedCount <= 0)
                 return UnloadDecision.Skip;
@@ -36,6 +37,14 @@ namespace HaulersDream.Core
             if (inventoryCount < carriedCount)
                 return UnloadDecision.ClearTracker;
             if (inventoryCount <= 0)
+                return UnloadDecision.Skip;
+            // Nothing ABOVE keep-stock to unload right now: every tracked stack is the pawn's personal kit
+            // (drug-policy / inventoryStock / packable food / CE loadout). We keep those tags (so a later
+            // keep-drop resurfaces the surplus tracked, never stranded), but must NOT queue an automatic
+            // unload that would instantly end Incompletable and re-fire every cycle (churn + a misleading
+            // permanent "Unload now" gizmo). A FORCED unload still proceeds — the gizmo/recovery must work
+            // even when it will no-op. (Mirrors the EndOfRunUnloadAllowed anyUnloadable guard.)
+            if (!forced && !anyUnloadable)
                 return UnloadDecision.Skip;
             // An automatic (non-forced) unload must NEVER jump in front of queued/enroute work — the unload
             // job is EnqueueFirst'd, so without this it preempts a player's shift-prioritized harvest route
@@ -58,6 +67,35 @@ namespace HaulersDream.Core
         /// </summary>
         public static bool FullTriggerAllowed(bool strictCarryWeight, bool markForUnload)
             => !strictCarryWeight && markForUnload;
+
+        /// <summary>
+        /// Whether the end-of-work-run trigger may issue an unload: the work scan just came up EMPTY for
+        /// a pawn carrying tracked goods, so before it drifts off to recreation/idle it makes the
+        /// consolidated unload trip. No grace gate on purpose — an empty work scan means the pickup
+        /// stream is over by definition, and the freshest scoop is exactly when the trip should start.
+        /// <paramref name="anyUnloadable"/> = at least one tracked stack is still in inventory and
+        /// reservable; without it the job would end Incompletable instantly and re-issue every think
+        /// cycle (the same loop guard the vanilla-unload substitution patch uses). The cooldown bounds
+        /// re-issue when an unload starts but fails mid-trip (storage destroyed, target stolen).
+        /// </summary>
+        public static bool EndOfRunUnloadAllowed(
+            bool markForUnload,
+            bool eligible,
+            bool drafted,
+            int trackedCount,
+            bool anyUnloadable,
+            bool alreadyUnloading,
+            int ticksSinceLastIssue,
+            int cooldownTicks)
+        {
+            if (!markForUnload || !eligible || drafted)
+                return false;
+            if (trackedCount <= 0 || !anyUnloadable || alreadyUnloading)
+                return false;
+            if (ticksSinceLastIssue < cooldownTicks)
+                return false;
+            return true;
+        }
 
         /// <summary>
         /// True if any queued job is the pawn's OWN real work — i.e. a queued job whose def is NOT one of

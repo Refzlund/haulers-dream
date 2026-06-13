@@ -8,8 +8,9 @@ namespace HaulersDream.Tests
     {
         private static UnloadDecision Decide(
             bool eligible = true, int carried = 3, int inventory = 3, bool alreadyUnloading = false,
-            bool forced = false, bool hasPendingWork = false, int ticksSinceYield = 1000, int grace = 60)
-            => UnloadPolicy.Decide(eligible, carried, inventory, alreadyUnloading, forced, hasPendingWork, ticksSinceYield, grace);
+            bool forced = false, bool hasPendingWork = false, int ticksSinceYield = 1000, int grace = 60,
+            bool anyUnloadable = true)
+            => UnloadPolicy.Decide(eligible, carried, inventory, alreadyUnloading, forced, hasPendingWork, ticksSinceYield, grace, anyUnloadable);
 
         [Test]
         public void NormalLoadedPawn_Queues()
@@ -190,6 +191,41 @@ namespace HaulersDream.Tests
                 Is.EqualTo(UnloadDecision.Skip));
         }
 
+        // --- anyUnloadable gate: all-keep-stock tags are retained (so a later keep-drop resurfaces the
+        // surplus tracked) but must NOT churn a no-op automatic unload every cycle. Forced still proceeds. ---
+
+        [Test]
+        public void NothingUnloadable_NonForced_Skips()
+        {
+            // Tags present and in inventory, but every stack is personal keep-stock right now -> no surplus to
+            // move. An automatic unload would end Incompletable instantly and re-fire forever (churn + a
+            // misleading permanent "Unload now" gizmo).
+            Assert.That(Decide(anyUnloadable: false), Is.EqualTo(UnloadDecision.Skip));
+        }
+
+        [Test]
+        public void NothingUnloadable_Forced_Queues()
+        {
+            // The gizmo / recovery must work even when it will no-op — forced bypasses the surplus gate.
+            Assert.That(Decide(forced: true, anyUnloadable: false), Is.EqualTo(UnloadDecision.Queue));
+        }
+
+        [Test]
+        public void NothingUnloadable_StillClearsDrift()
+        {
+            // The surplus gate must not pre-empt the drift self-heal: a phantom-tag tracker still prunes
+            // (otherwise an all-keep-stock pawn whose tags also drifted keeps a permanent phantom gizmo).
+            Assert.That(Decide(anyUnloadable: false, carried: 5, inventory: 2), Is.EqualTo(UnloadDecision.ClearTracker));
+            Assert.That(Decide(anyUnloadable: false, carried: 3, inventory: 0), Is.EqualTo(UnloadDecision.ClearTracker));
+        }
+
+        [Test]
+        public void Unloadable_DefaultPath_Queues()
+        {
+            // The normal case: surplus above keep-stock exists -> queue as before (default arg keeps old behavior).
+            Assert.That(Decide(anyUnloadable: true), Is.EqualTo(UnloadDecision.Queue));
+        }
+
         // --- HasPendingRealWork: the mod's own housekeeping jobs must NOT count as pending work ---
 
         private const string SelfPickup = "HaulersDream_SelfPickup";
@@ -234,6 +270,73 @@ namespace HaulersDream.Tests
         {
             Assert.That(UnloadPolicy.HasPendingRealWork(new[] { (string)null, SelfPickup }, SelfPickup, Unload), Is.False);
             Assert.That(UnloadPolicy.HasPendingRealWork(new[] { (string)null, "Mine" }, SelfPickup, Unload), Is.True);
+        }
+
+        // --- EndOfRunUnloadAllowed: the work scan came up dry for a loaded pawn -> unload before
+        // recreation/idle. Each gate is pinned individually off a passing baseline. ---
+
+        private static bool EndOfRun(
+            bool markForUnload = true, bool eligible = true, bool drafted = false,
+            int tracked = 3, bool anyUnloadable = true, bool alreadyUnloading = false,
+            int sinceIssue = 1000, int cooldown = 250)
+            => UnloadPolicy.EndOfRunUnloadAllowed(markForUnload, eligible, drafted,
+                tracked, anyUnloadable, alreadyUnloading, sinceIssue, cooldown);
+
+        [Test]
+        public void EndOfRun_LoadedPawnWorkDry_Allows()
+        {
+            Assert.That(EndOfRun(), Is.True);
+        }
+
+        [Test]
+        public void EndOfRun_AutoUnloadOff_Blocks()
+        {
+            // markForUnload off = gizmo-only unloading; the think-tree trigger must stay silent.
+            Assert.That(EndOfRun(markForUnload: false), Is.False);
+        }
+
+        [Test]
+        public void EndOfRun_IneligibleOrDrafted_Blocks()
+        {
+            Assert.That(EndOfRun(eligible: false), Is.False);
+            Assert.That(EndOfRun(drafted: true), Is.False);
+        }
+
+        [Test]
+        public void EndOfRun_NothingTracked_Blocks()
+        {
+            Assert.That(EndOfRun(tracked: 0), Is.False);
+        }
+
+        [Test]
+        public void EndOfRun_NothingUnloadable_Blocks()
+        {
+            // Every tracked stack out of inventory or reserved by another pawn: issuing would end
+            // Incompletable instantly and re-issue every think cycle.
+            Assert.That(EndOfRun(anyUnloadable: false), Is.False);
+        }
+
+        [Test]
+        public void EndOfRun_AlreadyUnloading_Blocks()
+        {
+            Assert.That(EndOfRun(alreadyUnloading: true), Is.False);
+        }
+
+        [Test]
+        public void EndOfRun_WithinCooldown_Blocks()
+        {
+            // A trip that failed mid-way must not re-issue in a tight loop.
+            Assert.That(EndOfRun(sinceIssue: 100, cooldown: 250), Is.False);
+            Assert.That(EndOfRun(sinceIssue: 250, cooldown: 250), Is.True);
+        }
+
+        [Test]
+        public void EndOfRun_NoGraceGate()
+        {
+            // Deliberate: an empty work scan means the pickup stream is over by definition — the
+            // trigger fires even right after the last scoop (there is no grace parameter at all).
+            // This pins the signature staying grace-free; a future grace would need its own pin.
+            Assert.That(EndOfRun(sinceIssue: 1000, cooldown: 0), Is.True);
         }
     }
 }

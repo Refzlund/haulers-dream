@@ -38,18 +38,11 @@ namespace HaulersDream
     {
         static void Postfix(ref Job __result, Pawn pawn, Thing t, bool forced)
         {
-            try
-            {
-                var bulk = BulkHaul.TryBuildBulkJob(pawn, t, __result, forced);
-                if (bulk != null)
-                    __result = bulk;
-            }
-            catch (Exception e)
-            {
-                // Key varies by exception TYPE so a second, different failure mode still gets one report.
-                Log.WarningOnce($"[Hauler's Dream] Bulk-haul conversion failed for {pawn} hauling {t}: {e}", 0x4B48 ^ (e.GetType().FullName?.GetHashCode() ?? 0));
-                // fail-open: the vanilla single haul stands
-            }
+            // No try/catch: a failure here is a real bug we want surfaced as a red error (Harmony lets the
+            // exception propagate to RimWorld's handler), not silently downgraded to a one-time warning.
+            var bulk = BulkHaul.TryBuildBulkJob(pawn, t, __result, forced);
+            if (bulk != null)
+                __result = bulk;
         }
     }
 
@@ -162,7 +155,19 @@ namespace HaulersDream
                 return null;
             if (pawn.Faction != Faction.OfPlayerSilentFail || pawn.IsQuestLodger())
                 return null;
-            if (pawn.RaceProps != null && pawn.RaceProps.IsMechanoid && !s.allowMechanoids)
+            // Pawn-type gate UNIFIED with the scoop + auto-unload sides (YieldRouter.IsEligible →
+            // EligibilityPolicy): only {humanlike colonists, allowed colony mechs} may sweep into inventory.
+            // This was previously only "IsMechanoid && !allowMechanoids", which let a NON-mechanoid pawn that
+            // is also non-humanlike (a modded robot/android worker race on the Pawn class with a <comps> node,
+            // or any future mod that grants animals colony hauling) get stacks swept into its inventory — while
+            // the auto-unload side (PawnUnloadChecker → YieldRouter.IsEligible) refuses to empty a non-humanlike
+            // non-mech pawn, stranding the load: a black hole. IsEligible still returns allowMechanoids for
+            // mechs, so the intended mech-lifter bulk haul is unchanged; it adds the humanlike/animal/robot
+            // distinction (and the drafted/incapable rules) so scoop, bulk-haul, and unload are provably
+            // symmetric — whatever bulk-haul loads, the unload side can service. (Vanilla animals never reach
+            // this postfix anyway — they have no workSettings and haul via JobGiver_Haul, not the work scan —
+            // so for them this is defense-in-depth; the live risk is a non-mech robot-worker race.)
+            if (!YieldRouter.IsEligible(pawn))
                 return null;
             if (pawn.GetComp<CompHauledToInventory>() == null || pawn.inventory == null)
                 return null;
@@ -254,7 +259,8 @@ namespace HaulersDream
         }
 
         // Everything in the haul lister that could plausibly join this sweep, pre-filtered cheap.
-        private static List<Thing> BuildPool(Pawn pawn, Thing primary, Map map, float poolRadius)
+        // internal: reused by PackAnimalLoad's bulk pack-animal sweep (same pool, different destination).
+        internal static List<Thing> BuildPool(Pawn pawn, Thing primary, Map map, float poolRadius)
         {
             var pool = new List<Thing>();
             float radiusSq = poolRadius * poolRadius;

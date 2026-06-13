@@ -22,6 +22,16 @@ namespace HaulersDream.Core
         /// <summary>...plus this fraction of the trip length, so long hauls tolerate a bigger nudge.</summary>
         public const float MaxDetourFraction = 0.25f;
 
+        /// <summary>Carrying at least this fraction of capacity makes the load HEAVY: shedding it is now
+        /// worth more than the walking saved, so the trip/detour bars relax (below).</summary>
+        public const float HeavyLoadFraction = 0.5f;
+
+        /// <summary>Heavy load: even a short hop counts as a journey worth diverting from.</summary>
+        public const int HeavyMinTripTiles = 8;
+
+        /// <summary>Heavy load: accept a detour up to half the trip length.</summary>
+        public const float HeavyMaxDetourFraction = 0.5f;
+
         /// <param name="pawnToTarget">Straight-line tiles from the pawn to its next work target.</param>
         /// <param name="pawnToStorage">Straight-line tiles from the pawn to the storage.</param>
         /// <param name="storageToTarget">Straight-line tiles from the storage to the work target.</param>
@@ -29,14 +39,48 @@ namespace HaulersDream.Core
         public static bool ShouldUnloadOnWay(
             int pawnToTarget, int pawnToStorage, int storageToTarget, float loadFraction,
             int minTripTiles = MinTripTiles, float minLoadFraction = MinLoadFraction,
-            int minDetourTiles = MinDetourTiles, float maxDetourFraction = MaxDetourFraction)
+            int minDetourTiles = MinDetourTiles, float maxDetourFraction = MaxDetourFraction,
+            float heavyLoadFraction = HeavyLoadFraction, int heavyMinTripTiles = HeavyMinTripTiles,
+            float heavyMaxDetourFraction = HeavyMaxDetourFraction)
         {
             if (loadFraction < minLoadFraction)
                 return false;
-            if (pawnToTarget < minTripTiles)
+            // A pawn lugging half its capacity (or more) around pays a tax on everything it does —
+            // relax the journey/detour bars so it sheds the load far sooner.
+            bool heavy = loadFraction >= heavyLoadFraction;
+            if (pawnToTarget < (heavy ? heavyMinTripTiles : minTripTiles))
                 return false; // local work — not worth a detour
 
             // Extra distance walked by going pawn -> storage -> target instead of straight there.
+            int detour = pawnToStorage + storageToTarget - pawnToTarget;
+            if (detour < 0)
+                detour = 0;
+            int bar = Math.Max(minDetourTiles, (int)((heavy ? heavyMaxDetourFraction : maxDetourFraction) * pawnToTarget));
+            return detour <= bar;
+        }
+
+        /// <summary>Run-end detour-bar floor (tiles) — see <see cref="ShouldUnloadOnRunEnd"/>.</summary>
+        public const int RunEndMinDetourTiles = 20;
+
+        /// <summary>Run-end detour bar as a fraction of the trip length.</summary>
+        public const float RunEndMaxDetourFraction = 1.0f;
+
+        /// <summary>
+        /// Run-END variant of <see cref="ShouldUnloadOnWay"/>: the pawn has FINISHED its yield-producing run
+        /// and just picked an UNRELATED job, so the accumulate window is over and it should shed a worthwhile
+        /// load at storage even on a SHORT hop — there is deliberately NO minimum-trip floor here (a pawn
+        /// cleaning filth right next to storage should still drop its load). The only guard is that storage be
+        /// reasonably near the path, not a cross-map detour. This is the "switched to non-yield work near
+        /// storage" reconciler that lets a pawn stop carrying a deconstruct/mining load around while it does
+        /// other things. Pure.
+        /// </summary>
+        public static bool ShouldUnloadOnRunEnd(
+            int pawnToTarget, int pawnToStorage, int storageToTarget, float loadFraction,
+            float minLoadFraction = MinLoadFraction, int minDetourTiles = RunEndMinDetourTiles,
+            float maxDetourFraction = RunEndMaxDetourFraction)
+        {
+            if (loadFraction < minLoadFraction)
+                return false; // not worth a trip for a trivial load, even at run-end
             int detour = pawnToStorage + storageToTarget - pawnToTarget;
             if (detour < 0)
                 detour = 0;

@@ -47,27 +47,21 @@ namespace HaulersDream
         static void Postfix(Thing t, Pawn carrier, Map map, Faction faction, ref IntVec3 foundCell,
             bool needAccurateResult, bool __result)
         {
-            try
-            {
-                // needAccurateResult false = a planning/availability probe (this mod's own planners use it);
-                // refining a discarded result would be pure waste.
-                if (!__result || !needAccurateResult)
-                    return;
-                var s = HaulersDreamMod.Settings;
-                if (s == null || !s.haulToStack)
-                    return;
-                if (carrier == null || map == null || t == null || faction != Faction.OfPlayerSilentFail)
-                    return;
-                if (t.def.stackLimit <= 1)
-                    return; // unstackables have nothing to top up
-                var better = HaulToStack.FindStackCell(t, carrier, map, faction, foundCell);
-                if (better.IsValid)
-                    foundCell = better;
-            }
-            catch (Exception e)
-            {
-                Log.WarningOnce("[Hauler's Dream] Haul-to-stack refinement failed (vanilla cell kept): " + e, 0x485453);
-            }
+            // needAccurateResult false = a planning/availability probe (this mod's own planners use it);
+            // refining a discarded result would be pure waste.
+            if (!__result || !needAccurateResult)
+                return;
+            var s = HaulersDreamMod.Settings;
+            if (s == null || !s.haulToStack)
+                return;
+            if (carrier == null || map == null || t == null || faction != Faction.OfPlayerSilentFail)
+                return;
+            if (t.def.stackLimit <= 1)
+                return; // unstackables have nothing to top up
+            // No try/catch: a refinement failure is a real bug to surface as a red error, not a silent warning.
+            var better = HaulToStack.FindStackCell(t, carrier, map, faction, foundCell);
+            if (better.IsValid)
+                foundCell = better;
         }
     }
 

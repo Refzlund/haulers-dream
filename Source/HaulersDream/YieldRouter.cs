@@ -13,11 +13,14 @@ namespace HaulersDream
     ///  - <see cref="OnTryPlaceThing"/> from a GenPlace.TryPlaceThing prefix (plants, mining,
     ///    deep-drill, animals — all place via GenPlace; decompilation-verified). The responsible
     ///    pawn is inferred from who is working at/adjacent to the placement cell.
-    ///  - <see cref="OnDeconstructLeavings"/> from a GenLeaving.DoLeavingsFor postfix. Deconstruct
-    ///    leavings ALSO travel through the patched GenPlace overload (DoLeavingsFor places them via
-    ///    ThingOwner.TryDrop → GenDrop → GenPlace; only detritus uses GenSpawn), but the prefix never
-    ///    routes them because JobDriver_Deconstruct is deliberately absent from TryGetWorkType. Only
-    ///    the leavings produced by THIS call are scooped (snapshot diff), never pre-existing ground items.
+    ///  - the DECONSTRUCT capture (<see cref="BeginDeconstructCapture"/> / <see cref="EndDeconstructCapture"/>)
+    ///    driven by a GenLeaving.DoLeavingsFor prefix+postfix. Deconstruct leavings ALSO travel through the
+    ///    patched GenPlace overload (DoLeavingsFor places them via ThingOwner.TryDrop → GenDrop → GenPlace;
+    ///    only detritus uses GenSpawn), but the prefix never ROUTES them because JobDriver_Deconstruct is
+    ///    deliberately absent from TryGetWorkType. Instead, while DoLeavingsFor runs we CAPTURE the exact
+    ///    item each placement produced (the GenPlace postfix feeds <see cref="CaptureDeconstructLeaving"/>),
+    ///    so leavings are scooped wherever they land — even when Near-placement spills them outside the
+    ///    building footprint, or they merge into a pre-existing ground stack. Never pre-existing items.
     /// Work types that aren't tracked (surgery, bench work, fermenting, fishing, …) never match, so
     /// they're excluded automatically.
     ///
@@ -80,14 +83,23 @@ namespace HaulersDream
         /// <paramref name="dropPawn"/> is the prefix's out value, delivered through Harmony <c>__state</c>.</summary>
         public static void OnTryPlaceThingPost(Thing lastResultingThing, Pawn dropPawn)
         {
-            var pawn = dropPawn;
-            if (pawn == null || lastResultingThing == null || !lastResultingThing.Spawned || lastResultingThing.Destroyed)
+            // No producer from the prefix: this is a DECONSTRUCT leaving (FindWorker never matches a
+            // deconstructor — JobDriver_Deconstruct is absent from TryGetWorkType). Hand it to the active
+            // capture, which scoops all leavings once DoLeavingsFor completes. (When no capture is active,
+            // a producerless placement is just an ordinary drop we don't touch.)
+            if (dropPawn == null)
+            {
+                if (deconstructCapturePawn != null)
+                    CaptureDeconstructLeaving(lastResultingThing);
+                return;
+            }
+            if (lastResultingThing == null || !lastResultingThing.Spawned || lastResultingThing.Destroyed)
                 return;
             // A yield that landed/merged INTO valid storage is already home — scooping it would pull stock back
             // OUT of a stockpile only to re-unload it later (a churn loop). Leave stored goods stored.
             if (lastResultingThing.IsInValidStorage())
                 return;
-            RecordSelfPickup(pawn, lastResultingThing);
+            RecordSelfPickup(dropPawn, lastResultingThing);
         }
 
         /// <summary>Queue a fresh ground drop for the producer to scoop up (DropThenHaul mode).</summary>
@@ -98,6 +110,9 @@ namespace HaulersDream
                 return;
             if (!comp.pendingSelfPickups.Contains(thing))
                 comp.pendingSelfPickups.Add(thing);
+            // Clean the surrounding area in the same pass: also queue nearby loose haulables for self-pickup
+            // (cooldown-debounced, so this scans at most once per work spot — not once per dropped stack).
+            MaybeSweepNearbyIntoPending(pawn, thing.Position);
             EnsureSelfPickupJob(pawn, comp);
         }
 
@@ -125,6 +140,82 @@ namespace HaulersDream
             }
         }
 
+        // Opportunistic "clean the area while you work" sweep bounds. Local (a work spot's immediate
+        // surroundings), bounded per scan, and per-pawn cooldown-debounced so a fast work run doesn't
+        // re-scan the lister on every single yield drop.
+        private const float SweepRadius = 12f;          // "around the same place" — matches BulkHaul's search floor
+        private const int SweepMaxStacks = 24;          // matches BulkHaul.MaxStacks — beyond is next cycle's work
+        private const int SweepCooldownTicks = 250;     // ~4s: at most one scan per pawn per cooldown
+
+        /// <summary>
+        /// AREA CLEANUP: while a pawn is at a work spot scooping its OWN yields, also sweep OTHER loose
+        /// haulable items lying nearby INTO its inventory — recorded as pending self-pickups, so the same
+        /// self-pickup job grabs them and they ride out on the one consolidated unload trip. This makes
+        /// deconstructing / mining / harvesting clear the surrounding clutter in passing, instead of leaving
+        /// scattered stacks for separate hand-hauls. It is the bulk-haul sweep (which only fires on dedicated
+        /// HAUL jobs) extended to WORK jobs; the items are picked up into INVENTORY, never hand-carried.
+        ///
+        /// Eligibility mirrors the bulk-haul sweep exactly so it never steals another hauler's target or pulls
+        /// stock back out of storage: an item is swept only if it needs hauling (in the haul lister, not already
+        /// stored), is not forbidden to this pawn, is not already claimed by another pawn's job, this pawn can
+        /// legally haul it, there is room left under the overload ceiling, and it has a better storage to go to
+        /// (else it would only strand in the pack). Per-pawn cooldown so a busy work run scans at most once per
+        /// <see cref="SweepCooldownTicks"/>. No-op unless the pawn is scoop-eligible and the feature is enabled.
+        /// </summary>
+        internal static void MaybeSweepNearbyIntoPending(Pawn pawn, IntVec3 anchor)
+        {
+            var s = HaulersDreamMod.Settings;
+            if (s == null || !s.sweepNearbyWhileWorking)
+                return;
+            var map = pawn?.Map;
+            if (map == null || pawn.jobs == null || !anchor.IsValid || !IsEligible(pawn))
+                return;
+            var comp = pawn.GetComp<CompHauledToInventory>();
+            if (comp == null)
+                return;
+            int now = Find.TickManager?.TicksGame ?? 0;
+            if (now - comp.lastSweepTick < SweepCooldownTicks)
+                return;
+            // Claim the cooldown whether or not anything is found, so a clean work area isn't re-scanned on
+            // every drop. CountToPickUp below also naturally stops the sweep cold once the pawn is full.
+            comp.lastSweepTick = now;
+
+            var claimed = RouteSelection.ClaimedByOtherPawns(pawn);
+            float radiusSq = SweepRadius * SweepRadius;
+            int added = 0;
+            foreach (var t in map.listerHaulables.ThingsPotentiallyNeedingHauling())
+            {
+                if (added >= SweepMaxStacks)
+                    break; // beyond the per-scan cap is simply the next work cycle's cleanup
+                if (t == null || !t.Spawned || t.Map != map || t is Corpse)
+                    continue; // corpses keep their own vanilla hauling flow (they don't belong in pockets)
+                if (t.def == null || !t.def.EverHaulable)
+                    continue; // same gate as BulkHaul.BuildPool — sweep exactly what a dedicated bulk haul would
+                if ((t.Position - anchor).LengthHorizontalSquared > radiusSq)
+                    continue; // only the immediate work area
+                if (comp.pendingSelfPickups.Contains(t) || t.IsForbidden(pawn) || claimed.Contains(t) || t.IsInValidStorage())
+                    continue;
+                // Capacity first (pure arithmetic) — at/over the overload ceiling nothing more fits, so don't
+                // pay the reachability/storage cost. cur mass is read live and doesn't change as we record
+                // (we only queue pending), so this gates the whole sweep off once the pawn is full.
+                if (OverloadGate.CountToPickUp(pawn, t, s) <= 0)
+                    continue;
+                if (!HaulAIUtility.PawnCanAutomaticallyHaulFast(pawn, t, forced: false))
+                    continue; // unreachable / can't legally haul it
+                if (!StoreUtility.TryFindBestBetterStorageFor(t, pawn, map, StoreUtility.CurrentStoragePriorityOf(t),
+                        pawn.Faction, out _, out _, needAccurateResult: false))
+                    continue; // nowhere better to put it -> don't scoop it only to strand it in inventory
+                comp.pendingSelfPickups.Add(t);
+                added++;
+            }
+
+            if (added > 0)
+            {
+                HDLog.Dbg($"{pawn} area-sweep: queued {added} nearby loose stack(s) into self-pickup.");
+                EnsureSelfPickupJob(pawn, comp);
+            }
+        }
+
         /// <summary>
         /// The pawn just hit its carry limit while scooping. In the default mode it breaks off to run the
         /// consolidated unload pass now (so it doesn't keep working overweight forever); in strict mode it
@@ -134,9 +225,24 @@ namespace HaulersDream
         {
             if (s == null || !Core.UnloadPolicy.FullTriggerAllowed(s.strictCarryWeight, s.markForUnload))
                 return;
+            // On a non-home / temporary map there is no storage to unload to — divert the heavy load onto the
+            // nearest owned pack animal instead (auto-divert), so the pawn doesn't keep working over-encumbered.
+            if (pawn?.Map != null && !pawn.Map.IsPlayerHome)
+            {
+                PackAnimalLoad.MaybeAutoDivert(pawn, s);
+                return;
+            }
             // forced: bypass the post-pickup grace period — being full IS the signal to unload.
             PawnUnloadChecker.CheckIfShouldUnload(pawn, forced: true);
         }
+
+        // NOTE: the old "unload as soon as over 100% capacity" trigger (MaybeUnloadBecauseOverEncumbered)
+        // was REMOVED. It defeated the core overload design: the whole point is to keep scooping into
+        // inventory PAST 100% — up to the smart-overload ceiling (MaxOverloadRatio, ~2x at "Fair"), where
+        // carrying more stops paying off — and unload then (MaybeUnloadBecauseFull) or when the pawn is
+        // genuinely DONE (the settle period; see UnloadPolicy/TryGetEndOfRunUnloadJob). Unloading at 100%
+        // made pawns trip back and forth per item (mine one ore → carry → unload → repeat) instead of
+        // accumulating a big load and making one trip.
 
         private static bool HasSelfPickupJob(Pawn pawn)
         {
@@ -150,60 +256,87 @@ namespace HaulersDream
             return false;
         }
 
-        // ---- Deconstruct path -------------------------------------------------------------------
+        // ---- Deconstruct path (leaving CAPTURE) -------------------------------------------------
+        //
+        // We credit a deconstruct's leavings by CAPTURING each item DoLeavingsFor actually places — wherever
+        // it lands — instead of snapshotting the building's footprint rect and diffing afterward. The old
+        // footprint diff missed leavings in two real, in-game-observed cases: vanilla places leavings with
+        // ThingPlaceMode.Near, which SPILLS them outside the (often 1-cell) footprint when it is blocked (a
+        // wall hemmed in by full storage), and a leaving that MERGES into a pre-existing ground stack reads
+        // as "already there" in the before-snapshot. The capture sees the exact placed/merged Thing via the
+        // same patched GenPlace overload DoLeavingsFor routes through, so both cases are handled.
 
-        /// <summary>Snapshot the items in <paramref name="area"/> before DoLeavingsFor runs.</summary>
-        public static HashSet<Thing> SnapshotItems(CellRect area, Map map)
+        // The deconstructor whose leavings are currently being placed + the exact stacks placed. Set for the
+        // duration of one Deconstruct DoLeavingsFor; the GenPlace postfix feeds each placement here and
+        // EndDeconstructCapture scoops them once placement finishes. [ThreadStatic] per this assembly's
+        // convention for hook-reachable scratch state (matches `routing`).
+        [ThreadStatic] private static Pawn deconstructCapturePawn;
+        [ThreadStatic] private static List<Thing> deconstructCapturedLeavings;
+
+        /// <summary>Begin crediting DoLeavingsFor's placements to the pawn deconstructing
+        /// <paramref name="diedThing"/> (resolved here, while that pawn is still on its deconstruct toil).
+        /// No-op when deconstruct hauling is off or no deconstructor is found (a mod/auto/explosion removal —
+        /// those leavings fall to normal hauling).</summary>
+        public static void BeginDeconstructCapture(CellRect area, Map map, Thing diedThing)
         {
-            var set = new HashSet<Thing>();
-            foreach (var c in area.Cells)
-            {
-                if (!c.InBounds(map))
-                    continue;
-                var things = map.thingGrid.ThingsListAtFast(c);
-                for (int i = 0; i < things.Count; i++)
-                    if (things[i].def?.category == ThingCategory.Item)
-                        set.Add(things[i]);
-            }
-            return set;
-        }
-
-        /// <summary>Scoop only the leavings that appeared in <paramref name="area"/> (not in <paramref name="before"/>).</summary>
-        public static void OnDeconstructLeavings(CellRect area, Map map, HashSet<Thing> before)
-            => OnDeconstructLeavings(area, map, before, null);
-
-        /// <summary>Scoop only the leavings that appeared in <paramref name="area"/> (not in <paramref name="before"/>).
-        /// <paramref name="diedThing"/> is DoLeavingsFor's subject — it pins the credit on the pawn whose
-        /// job actually targets it, instead of any adjacent deconstructor.</summary>
-        public static void OnDeconstructLeavings(CellRect area, Map map, HashSet<Thing> before, Thing diedThing)
-        {
+            deconstructCapturePawn = null;
+            deconstructCapturedLeavings = null;
             var s = HaulersDreamMod.Settings;
             if (s == null || !s.haulDeconstruct || map == null)
                 return;
-
             var pawn = FindDeconstructor(area, map, diedThing);
             if (pawn == null)
                 return;
+            deconstructCapturePawn = pawn;
+            deconstructCapturedLeavings = new List<Thing>();
+        }
 
-            foreach (var c in area.Cells)
+        /// <summary>The patched GenPlace postfix hands every item DoLeavingsFor places here while a capture is
+        /// active (those placements carry no producer of their own). Records the exact placed/merged stack
+        /// (deduped) to scoop once DoLeavingsFor finishes. (Edge: if Near-placement splits ONE leaving stack
+        /// across multiple cells — partial-absorb into a near-full stack, remainder placed elsewhere — only the
+        /// final resulting stack is captured; the partial-merge fragment stays loose-haulable and is picked up
+        /// by normal hauling. No units are lost, and this is strictly better than the old footprint diff.)</summary>
+        internal static void CaptureDeconstructLeaving(Thing placed)
+        {
+            var list = deconstructCapturedLeavings;
+            if (list == null || placed == null)
+                return;
+            if (!list.Contains(placed))
+                list.Add(placed);
+        }
+
+        /// <summary>Finish the capture: scoop every distinct leaving the deconstruct placed (wherever it
+        /// landed), skipping anything that landed in valid storage or is forbidden. DropThenHaul records a
+        /// self-pickup; DirectToInventory scoops inline — same as the producer's other yields.</summary>
+        public static void EndDeconstructCapture()
+        {
+            var pawn = deconstructCapturePawn;
+            var leavings = deconstructCapturedLeavings;
+            deconstructCapturePawn = null;
+            deconstructCapturedLeavings = null;
+            if (pawn == null || leavings == null || leavings.Count == 0)
+                return;
+            var s = HaulersDreamMod.Settings;
+            if (s == null)
+                return;
+            int scooped = 0;
+            for (int i = 0; i < leavings.Count; i++)
             {
-                if (!c.InBounds(map))
+                var t = leavings[i];
+                if (t == null || !t.Spawned || t.Destroyed || t.def == null || t.def.category != ThingCategory.Item)
                     continue;
-                var things = map.thingGrid.ThingsListAtFast(c);
-                for (int i = things.Count - 1; i >= 0; i--) // backward: RouteIntoInventory may remove the current item
-                {
-                    var t = things[i];
-                    if (t.def == null)
-                        continue;
-                    bool isItem = t.def.category == ThingCategory.Item;
-                    if (!InferencePolicy.ShouldScoopLeaving(isItem, before.Contains(t), isItem && t.IsForbidden(pawn), isItem && t.IsInValidStorage()))
-                        continue;
-                    if (s.pickupMode == PickupMode.DropThenHaul)
-                        RecordSelfPickup(pawn, t); // leavings are already on the ground -> scoop them up afterward
-                    else
-                        RouteIntoInventory(pawn, t, HaulSourceType.Deconstruct, out _, out _);
-                }
+                // Never pull stored stock back out (it merged into a stockpile); respect per-pawn forbiddance.
+                if (t.IsForbidden(pawn) || t.IsInValidStorage())
+                    continue;
+                if (s.pickupMode == PickupMode.DropThenHaul)
+                    RecordSelfPickup(pawn, t); // leavings are already on the ground -> scoop them up afterward
+                else
+                    RouteIntoInventory(pawn, t, HaulSourceType.Deconstruct, out _, out _);
+                scooped++;
             }
+            if (scooped > 0)
+                HDLog.Dbg($"{pawn} deconstruct: captured {scooped} leaving stack(s) for pickup.");
         }
 
         // ---- shared routing ---------------------------------------------------------------------
@@ -258,6 +391,15 @@ namespace HaulersDream
                         comp.RegisterHauledItem(held, moved);
                     comp.NotifyYieldPicked();
                     HDLog.Dbg($"{pawn} scooped x{before - split.stackCount} {split.def?.label} ({type}).");
+                    // DirectToInventory: the yield went straight into the pack (no SelfPickup job from the drop),
+                    // so clean the surrounding area from here — queue nearby loose haulables for a self-pickup
+                    // sweep. Cooldown-debounced; safe under the `routing` guard (it places nothing, only records
+                    // pending + enqueues a job).
+                    MaybeSweepNearbyIntoPending(pawn, thing.Position);
+                    // Keep accumulating: do NOT unload merely for crossing 100% here. Scooping continues up
+                    // to the smart-overload ceiling (CountToPickUp returns 0 there → MaybeUnloadBecauseFull),
+                    // and otherwise the load is unloaded only when the pawn is done for a while (settle) or on
+                    // the interval / idle backstop. This is what makes mining/deconstruct one trip, not many.
                 }
 
                 if (allMoved)
