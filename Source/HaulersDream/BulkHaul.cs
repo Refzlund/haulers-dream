@@ -247,7 +247,8 @@ namespace HaulersDream
         }
 
         // Everything in the haul lister that could plausibly join this sweep, pre-filtered cheap.
-        private static List<Thing> BuildPool(Pawn pawn, Thing primary, Map map, float poolRadius)
+        // internal: reused by PackAnimalLoad's bulk pack-animal sweep (same pool, different destination).
+        internal static List<Thing> BuildPool(Pawn pawn, Thing primary, Map map, float poolRadius)
         {
             var pool = new List<Thing>();
             float radiusSq = poolRadius * poolRadius;

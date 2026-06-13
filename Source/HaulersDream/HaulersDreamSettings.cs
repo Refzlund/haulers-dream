@@ -43,6 +43,10 @@ namespace HaulersDream
         // haul sweeps only when a second nearby haul has also been ordered — so ordering one haul stays surgical.
         public BulkHaulTrigger bulkHaulTrigger = BulkHaulTrigger.SecondTasked;
 
+        // --- pack-animal loading on caravans / temporary maps ---
+        public bool loadPackAnimalBulk = true;       // the manual "Load nearby items onto pack animal (bulk)" order
+        public bool autoDivertToPackAnimal = true;   // an over-encumbered caravan pawn auto-loads the nearest pack animal
+
         // --- auto strip on haul (corpse hauls strip the body; loot rides in the hauler's inventory) ---
         public AutoStripMode autoStripMode = AutoStripMode.AllHauls;
         public bool stripColonistCorpses = false;              // your own dead are not loot (opt-in)
@@ -205,6 +209,8 @@ namespace HaulersDream
             Scribe_Values.Look(ref shareHandHauledToStorage, "shareHandHauledToStorage", false);
             Scribe_Values.Look(ref bulkHaul, "bulkHaul", true);
             Scribe_Values.Look(ref bulkHaulTrigger, "bulkHaulTrigger", BulkHaulTrigger.SecondTasked);
+            Scribe_Values.Look(ref loadPackAnimalBulk, "loadPackAnimalBulk", true);
+            Scribe_Values.Look(ref autoDivertToPackAnimal, "autoDivertToPackAnimal", true);
             Scribe_Values.Look(ref haulToStack, "haulToStack", true);
             Scribe_Values.Look(ref orderedConstructTether, "orderedConstructTether", true);
             Scribe_Values.Look(ref haulToSiteOption, "haulToSiteOption", true);
@@ -313,6 +319,11 @@ namespace HaulersDream
                         tooltip: "HaulersDream.Setting.BulkHaulAlwaysDesc".Translate()))
                     bulkHaulTrigger = BulkHaulTrigger.Always;
             }
+
+            l.CheckboxLabeled("HaulersDream.Setting.LoadPackAnimalBulk".Translate(), ref loadPackAnimalBulk,
+                "HaulersDream.Setting.LoadPackAnimalBulkDesc".Translate());
+            l.CheckboxLabeled("HaulersDream.Setting.AutoDivertToPackAnimal".Translate(), ref autoDivertToPackAnimal,
+                "HaulersDream.Setting.AutoDivertToPackAnimalDesc".Translate());
 
             l.CheckboxLabeled("HaulersDream.Setting.HaulToStack".Translate(), ref haulToStack,
                 "HaulersDream.Setting.HaulToStackDesc".Translate());

@@ -180,7 +180,15 @@ namespace HaulersDream
                 defaultLabel = "HaulersDream.Gizmo.UnloadNow".Translate(),
                 defaultDesc = "HaulersDream.Gizmo.UnloadNowDesc".Translate(),
                 icon = ContentFinder<Texture2D>.Get("UI/Buttons/Drop", false) ?? BaseContent.BadTex,
-                action = () => PawnUnloadChecker.CheckIfShouldUnload(__instance, true)
+                action = () =>
+                {
+                    // On a non-home / temporary map there is no storage — the gizmo loads the nearest pack animal
+                    // with the carried loot instead of the (no-op) storage unload.
+                    if (__instance.Map != null && !__instance.Map.IsPlayerHome)
+                        PackAnimalLoad.GizmoLoadNearest(__instance);
+                    else
+                        PawnUnloadChecker.CheckIfShouldUnload(__instance, true);
+                }
             };
             // The unload checker hard-gates drafted pawns (they must stand to orders, not march to
             // storage) — show that as a disabled reason instead of a button that silently does nothing.

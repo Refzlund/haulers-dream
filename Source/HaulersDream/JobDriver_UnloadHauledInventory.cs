@@ -166,6 +166,17 @@ namespace HaulersDream
                         }
                         countToDrop = next.Count;
                     }
+                    else if (pawn.Map != null && !pawn.Map.IsPlayerHome)
+                    {
+                        // Non-home / temporary map (caravan, bandit camp): there is no player storage here, and
+                        // dropping the tagged load on the ground abandons it when the caravan leaves. Keep it
+                        // tagged in inventory — it rides home automatically as caravan inventory, or is loaded
+                        // onto a pack animal (the over-encumbered auto-divert, the manual bulk-load order, or
+                        // vanilla Reform Caravan). End Succeeded so the checker stops re-queuing. (A REAL stockpile
+                        // on the map is still used by the TryFindBestBetterStorageFor branch above.)
+                        EndJobWith(JobCondition.Succeeded);
+                        return;
+                    }
                     else if (StoreUtility.TryFindStoreCellNearColonyDesperate(next.Thing, pawn, out var desperateCell))
                     {
                         // No stockpile (not even a dumping zone) accepts this def — rock chunks are excluded from

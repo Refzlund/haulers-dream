@@ -46,11 +46,13 @@ namespace HaulersDream
             if (!forced && pawn.CurJobDef == HaulersDreamDefOf.HaulersDream_BillPrepGather)
                 return;
 
-            // On a map the mod is configured to leave alone (enableOnNonHomeMaps off + a temporary/encounter
-            // map), an automatic unload would just dump the tagged load at the pawn's feet — there's no storage
-            // there. Keep carrying; the load unloads at home. The explicit gizmo still works.
-            if (!forced && !settings.enableOnNonHomeMaps
-                && pawn.Map != null && !pawn.Map.IsPlayerHome)
+            // On a non-home / temporary map (a caravan / encounter site) there is no player storage to unload
+            // to, so the storage-unload pass is never appropriate there — loot stays in inventory (it rides home
+            // as caravan inventory) and pack-animal loading is handled separately (the over-encumbered
+            // auto-divert, the manual bulk-load order, or vanilla Reform Caravan). Suppressed regardless of the
+            // enableOnNonHomeMaps setting, which gates SCOOPING (BulkHaul / YieldRouter.IsEligible), not this.
+            // The "Unload now" gizmo on a non-home map routes to the pack-animal load instead (see HarmonyPatches).
+            if (pawn.Map != null && !pawn.Map.IsPlayerHome)
                 return;
 
             var carried = comp.GetHashSet();

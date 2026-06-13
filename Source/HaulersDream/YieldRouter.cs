@@ -134,6 +134,13 @@ namespace HaulersDream
         {
             if (s == null || !Core.UnloadPolicy.FullTriggerAllowed(s.strictCarryWeight, s.markForUnload))
                 return;
+            // On a non-home / temporary map there is no storage to unload to — divert the heavy load onto the
+            // nearest owned pack animal instead (auto-divert), so the pawn doesn't keep working over-encumbered.
+            if (pawn?.Map != null && !pawn.Map.IsPlayerHome)
+            {
+                PackAnimalLoad.MaybeAutoDivert(pawn, s);
+                return;
+            }
             // forced: bypass the post-pickup grace period — being full IS the signal to unload.
             PawnUnloadChecker.CheckIfShouldUnload(pawn, forced: true);
         }

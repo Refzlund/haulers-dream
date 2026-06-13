@@ -98,4 +98,17 @@
     <suspendable>false</suspendable>
   </JobDef>
 
+  <!-- Load scooped/tagged inventory loot onto a pack animal — the away-map (caravan) counterpart to the
+       storage unload. Optional sweep of nearby ground stacks into inventory (the manual bulk order) then a
+       deposit pass transferring the tagged surplus into the carrier (see JobDriver_LoadPackAnimal). -->
+  <!-- suspendable false: a suspend/resume restarts the sweep on a FRESH driver at loadIndex 0 (over-gather), as
+       with the other sweep jobs. A clean end recovers correctly: swept stacks are tagged and undeposited loot
+       stays in inventory (it rides home as caravan inventory). -->
+  <JobDef>
+    <defName>HaulersDream_LoadPackAnimal</defName>
+    <driverClass>HaulersDream.JobDriver_LoadPackAnimal</driverClass>
+    <reportString>loading items onto a pack animal.</reportString>
+    <suspendable>false</suspendable>
+  </JobDef>
+
 </Defs>

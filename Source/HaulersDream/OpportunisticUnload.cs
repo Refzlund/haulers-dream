@@ -111,9 +111,10 @@ namespace HaulersDream
                 return null;
             if (pawn.Faction != Faction.OfPlayerSilentFail)
                 return null;
-            // Same non-home-map stance as the automatic checker: don't dump the load at the pawn's
-            // feet on a storage-less encounter map; it unloads at home.
-            if (!s.enableOnNonHomeMaps && !pawn.Map.IsPlayerHome)
+            // Non-home / temporary map: no player storage to unload to (a storage-unload would no-op or, pre-fix,
+            // drop at feet). Loot stays in inventory (rides home) and pack-animal loading is handled separately.
+            // Suppressed regardless of enableOnNonHomeMaps (which gates scooping, not this).
+            if (pawn.Map != null && !pawn.Map.IsPlayerHome)
                 return null;
             var comp = pawn.GetComp<CompHauledToInventory>();
             if (comp == null)

@@ -217,4 +217,16 @@
   <!-- Bulk haul job -->
   <HaulersDream.BulkHaul.Report>hauling everything nearby.</HaulersDream.BulkHaul.Report>
 
+  <!-- Load onto pack animal (caravan / away map): manual bulk order + auto-divert + gizmo -->
+  <HaulersDream.LoadPackAnimal.Report>loading items onto a pack animal.</HaulersDream.LoadPackAnimal.Report>
+  <HaulersDream.LoadPackAnimal.BulkOption>Load nearby items onto pack animal (bulk)</HaulersDream.LoadPackAnimal.BulkOption>
+  <HaulersDream.LoadPackAnimal.CouldNotStart>Nothing nearby to load onto a pack animal right now.</HaulersDream.LoadPackAnimal.CouldNotStart>
+  <HaulersDream.LoadPackAnimal.NoCarrier>No usable pack animal with free space nearby.</HaulersDream.LoadPackAnimal.NoCarrier>
+
+  <!-- Settings: pack-animal loading on caravans -->
+  <HaulersDream.Setting.LoadPackAnimalBulk>Bulk "load onto pack animal" order</HaulersDream.Setting.LoadPackAnimalBulk>
+  <HaulersDream.Setting.LoadPackAnimalBulkDesc>On a caravan/away map, adds a right-click "Load nearby items onto pack animal (bulk)" order: one colonist sweeps several nearby stacks into its inventory and loads them onto a pack animal in one trip, instead of carrying one stack at a time. Vanilla's single-item "Load onto pack animal" still works alongside it.</HaulersDream.Setting.LoadPackAnimalBulkDesc>
+  <HaulersDream.Setting.AutoDivertToPackAnimal>Auto-load pack animals when heavy (caravans)</HaulersDream.Setting.AutoDivertToPackAnimal>
+  <HaulersDream.Setting.AutoDivertToPackAnimalDesc>On a caravan/away map, when a pawn gets over-encumbered from scooping loot, it automatically walks to the nearest owned pack animal and offloads its carried loot — keeping pawns mobile. With this off, loot just rides home in the pawns' own inventories (or use the manual bulk-load order / Reform Caravan). Requires automatic unloading to be on.</HaulersDream.Setting.AutoDivertToPackAnimalDesc>
+
 </LanguageData>
