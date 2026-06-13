@@ -107,6 +107,70 @@ namespace HaulersDream.Tests
             Assert.That(BulkHaulPolicy.TriggerSatisfied(BulkHaulTrigger.SecondTasked, forced: false, secondNearbyTasked: true), Is.True);
         }
 
+        // ── DecideTakeover: the 2nd nearby haul order takes over with an immediate sweep ───────────────
+
+        private static BulkHaulPolicy.BulkTakeoverAction Takeover(
+            BulkHaulTrigger trigger = BulkHaulTrigger.SecondTasked, bool incomingIsBulk = true,
+            bool curIsLoadingBulk = false, bool curIsSoloHaulInSweep = false)
+            => BulkHaulPolicy.DecideTakeover(trigger, incomingIsBulk, curIsLoadingBulk, curIsSoloHaulInSweep);
+
+        [Test]
+        public void Takeover_SecondOrderWhileHaulingSoloFirst_TakesOver()
+        {
+            // The reported bug: pawn hauling the first item solo, a 2nd nearby haul ordered (already a bulk) →
+            // interrupt the solo haul and start the sweep NOW (the first item is part of the sweep).
+            Assert.That(Takeover(curIsSoloHaulInSweep: true), Is.EqualTo(BulkHaulPolicy.BulkTakeoverAction.TakeOverSoloHaul));
+        }
+
+        [Test]
+        public void Takeover_ThirdOrderWhileSweeping_AppendsToRunningBulk()
+        {
+            // Idempotence: a sweep is already running → the new item folds into it (one trip), no interrupt.
+            Assert.That(Takeover(curIsLoadingBulk: true), Is.EqualTo(BulkHaulPolicy.BulkTakeoverAction.AppendToActiveBulk));
+        }
+
+        [Test]
+        public void Takeover_AppendWinsWhenBothBulkRunningAndSoloPresent()
+        {
+            // A running sweep takes precedence over the solo-takeover branch (fold in, don't restart).
+            Assert.That(Takeover(curIsLoadingBulk: true, curIsSoloHaulInSweep: true),
+                Is.EqualTo(BulkHaulPolicy.BulkTakeoverAction.AppendToActiveBulk));
+        }
+
+        [Test]
+        public void Takeover_LoneOrder_PassesThrough()
+        {
+            // No running sweep and no solo first haul to fold in (e.g. the FIRST order, or an idle pawn) →
+            // vanilla handles it. (Under SecondTasked a lone first order isn't even a bulk, so it never gets here.)
+            Assert.That(Takeover(), Is.EqualTo(BulkHaulPolicy.BulkTakeoverAction.PassThrough));
+        }
+
+        [Test]
+        public void Takeover_UnrelatedCurrentJob_PassesThrough()
+        {
+            // The pawn's current job is not a sweep and not a first haul that's part of this sweep → don't
+            // interrupt it (curIsSoloHaulInSweep is false because the target isn't in the incoming sweep).
+            Assert.That(Takeover(curIsSoloHaulInSweep: false, curIsLoadingBulk: false),
+                Is.EqualTo(BulkHaulPolicy.BulkTakeoverAction.PassThrough));
+        }
+
+        [Test]
+        public void Takeover_AlwaysMode_NeverTakesOver()
+        {
+            // Under Always the first order is itself already a sweep, so there's never a solo haul to absorb;
+            // leave the existing per-order behavior untouched (pass through) regardless of the other flags.
+            Assert.That(Takeover(BulkHaulTrigger.Always, curIsSoloHaulInSweep: true), Is.EqualTo(BulkHaulPolicy.BulkTakeoverAction.PassThrough));
+            Assert.That(Takeover(BulkHaulTrigger.Always, curIsLoadingBulk: true), Is.EqualTo(BulkHaulPolicy.BulkTakeoverAction.PassThrough));
+        }
+
+        [Test]
+        public void Takeover_NonBulkIncoming_PassesThrough()
+        {
+            // A vanilla single haul (the surgical FIRST order, or an isolated item) is never intercepted.
+            Assert.That(Takeover(incomingIsBulk: false, curIsSoloHaulInSweep: true), Is.EqualTo(BulkHaulPolicy.BulkTakeoverAction.PassThrough));
+            Assert.That(Takeover(incomingIsBulk: false, curIsLoadingBulk: true), Is.EqualTo(BulkHaulPolicy.BulkTakeoverAction.PassThrough));
+        }
+
         // ── CountWithinCeiling ───────────────────────────────────────────────────────────────────────
 
         [Test]

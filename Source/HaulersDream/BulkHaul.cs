@@ -381,6 +381,111 @@ namespace HaulersDream
             return space;
         }
 
+        // ---- "second order takes over immediately" (the player ordered a 2nd nearby haul under SecondTasked) ----
+
+        /// <summary>
+        /// The player just ordered a haul, and under <see cref="BulkHaulTrigger.SecondTasked"/> the JobOnThing
+        /// postfix already turned it into a bulk sweep (because a nearby FIRST order existed — that's the only
+        /// way SecondTaskedNearby is true). This makes that sweep TAKE OVER IMMEDIATELY instead of waiting
+        /// behind the still-solo first haul: if a sweep is already running, the new item folds into it; if the
+        /// pawn is still hauling the surgical first item solo (and that item is part of this sweep), the solo
+        /// haul is interrupted and the sweep starts now (preserving any unrelated queued work). Returns true if
+        /// it handled the order (the caller skips vanilla); false to fall through to vanilla unchanged.
+        /// Mirrors the F35 pack-animal coalesce (<see cref="PackAnimalLoad.FindActiveLoadJob"/> /
+        /// <see cref="PackAnimalLoad.AppendToLoadJob"/>); the bulk driver re-reads targetQueueB each load cycle,
+        /// so an append is swept on the next pass (<see cref="JobDriver_BulkHaul.IsStillLoading"/>).
+        /// </summary>
+        internal static bool TryTakeoverSecondOrder(Pawn pawn, Job incoming, JobTag? tag, ref bool result)
+        {
+            var s = HaulersDreamMod.Settings;
+            if (s == null || !s.bulkHaul || pawn?.jobs == null || incoming == null)
+                return false;
+
+            var curJob = pawn.CurJob;
+            bool incomingIsBulk = incoming.def == HaulersDreamDefOf.HaulersDream_BulkHaul;
+            bool curIsLoadingBulk = curJob != null && curJob.def == HaulersDreamDefOf.HaulersDream_BulkHaul
+                && pawn.jobs.curDriver is JobDriver_BulkHaul bd && bd.IsStillLoading;
+            // The surgical first haul: the pawn's CURRENT job is a player-forced single HaulToCell whose target
+            // is still grounded (not yet in hands) AND is part of THIS bulk's planned sweep — so folding it in
+            // and starting now loses nothing. (If the target isn't in the sweep the current job is unrelated.)
+            Thing soloTarget = null;
+            if (!curIsLoadingBulk && curJob != null && curJob.def == JobDefOf.HaulToCell && curJob.playerForced)
+            {
+                var a = curJob.targetA.Thing;
+                if (a != null && a.Spawned && (pawn.carryTracker == null || pawn.carryTracker.CarriedThing != a)
+                    && BulkQueueContains(incoming, a))
+                    soloTarget = a;
+            }
+
+            switch (BulkHaulPolicy.DecideTakeover(s.bulkHaulTrigger, incomingIsBulk, curIsLoadingBulk, soloTarget != null))
+            {
+                case BulkHaulPolicy.BulkTakeoverAction.AppendToActiveBulk:
+                {
+                    // 3rd+ order: fold the newly-clicked item into the running sweep — one trip. The driver
+                    // re-reads targetQueueB next loadDecide cycle and walks to it; it reserves per-stack itself.
+                    var t = incoming.targetA.Thing;
+                    AppendToBulkJob(curJob, t, t?.stackCount ?? 0);
+                    result = true;
+                    return true;
+                }
+                case BulkHaulPolicy.BulkTakeoverAction.TakeOverSoloHaul:
+                {
+                    // Respect vanilla's interrupt gate: vanilla's TryTakeOrderedJob only interrupts the current
+                    // job when IsCurrentJobPlayerInterruptible() (for a player-forced HaulToCell this is false
+                    // only when the pawn is on fire). If it can't be interrupted now, don't force the takeover —
+                    // fall through so vanilla handles the order exactly as it would (queue it).
+                    if (!pawn.jobs.IsCurrentJobPlayerInterruptible())
+                        return false;
+                    // 2nd order: the surgical first haul's target is already a sweep member, so interrupt it and
+                    // start the bulk NOW. Replicates vanilla TryTakeOrderedJob's interrupt path (set
+                    // playerForced/playerInterruptedForced, cancel a busy stance, reserve, EnqueueFirst, end the
+                    // current job) — but WITHOUT ClearQueuedJobs, so any unrelated queued work the player set up
+                    // survives behind the sweep. (Vanilla sets playerForced in the body we're skipping.)
+                    incoming.playerForced = true;
+                    if (!incoming.TryMakePreToilReservations(pawn, false))
+                        return false; // couldn't reserve (target stolen since menu-build) -> let vanilla handle it
+                    curJob.playerInterruptedForced = true;
+                    pawn.stances?.CancelBusyStanceSoft();
+                    pawn.jobs.jobQueue.EnqueueFirst(incoming, tag ?? JobTag.Misc);
+                    pawn.jobs.curDriver.EndJobWith(JobCondition.InterruptForced); // ends the solo haul, starts the bulk
+                    HDLog.Dbg($"{pawn} second haul order — bulk sweep takes over now (was hauling {curJob.targetA.Thing}).");
+                    result = true;
+                    return true;
+                }
+                default:
+                    return false; // pass through to vanilla (lone order, unrelated current job, Always trigger, etc.)
+            }
+        }
+
+        /// <summary>Is <paramref name="thing"/> a member of this bulk job's planned pickup queue?</summary>
+        private static bool BulkQueueContains(Job job, Thing thing)
+        {
+            var q = job?.targetQueueB;
+            if (q == null || thing == null)
+                return false;
+            for (int i = 0; i < q.Count; i++)
+                if (q[i].Thing == thing)
+                    return true;
+            return false;
+        }
+
+        /// <summary>Append a stack to a (current or queued) bulk job's pickup queue — dedup, lazily init, count
+        /// clamped at pickup by the driver. Direct mirror of <see cref="PackAnimalLoad.AppendToLoadJob"/>.</summary>
+        internal static void AppendToBulkJob(Job job, Thing thing, int count)
+        {
+            if (job == null || thing == null)
+                return;
+            if (job.targetQueueB == null)
+                job.targetQueueB = new List<LocalTargetInfo>();
+            if (job.countQueue == null)
+                job.countQueue = new List<int>();
+            for (int i = 0; i < job.targetQueueB.Count; i++)
+                if (job.targetQueueB[i].Thing == thing)
+                    return; // already queued in this job
+            job.targetQueueB.Add(thing);
+            job.countQueue.Add(count > 0 ? count : thing.stackCount);
+        }
+
         // "A second nearby item has been tasked": another haul order on this pawn (current or queued) whose
         // target sits within the sweep radius of the primary — i.e. the player explicitly asked for more
         // than one haul around here, so the sweep is what they meant.

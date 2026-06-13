@@ -33,6 +33,12 @@ namespace HaulersDream
 
         private ThingOwner Inv => pawn.inventory?.GetDirectlyHeldThings();
 
+        /// <summary>Still walking the pickup chain (hasn't reached the storage flush), so a newly-ordered nearby
+        /// item appended to <see cref="Verse.AI.Job.targetQueueB"/> will still be swept by the loadDecide loop.
+        /// Once loadIndex passes the queue end the chain is done and an append would never be picked up — the
+        /// takeover then routes the new order elsewhere instead of silently dropping it.</summary>
+        internal bool IsStillLoading => job?.targetQueueB != null && loadIndex < job.targetQueueB.Count;
+
         public override void ExposeData()
         {
             base.ExposeData();
