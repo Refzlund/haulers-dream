@@ -123,7 +123,13 @@ namespace HaulersDream
         public bool haulStrip = true;   // gear removed by a strip order (pawn or corpse) gets scooped + hauled
 
         // --- unloading ---
-        public int unloadGraceTicks = 60;       // don't unload within this many ticks of the last pickup
+        // The "settle" window: how long after its LAST pickup a pawn keeps accumulating before an automatic
+        // unload trip. Default 2500 ticks (~1 in-game hour) so a pawn that is actively mining/deconstructing/
+        // harvesting keeps scooping into inventory across the whole work run (each scoop resets the clock) and
+        // only trips to storage once it's been done with that work for a while — or sooner if it fills up to
+        // the smart-overload ceiling. A small value (the old 60 = ~1s) made pawns unload after almost every
+        // item. Gates the idle backstop + interval (via UnloadPolicy.Decide) and the end-of-run trigger.
+        public int unloadGraceTicks = 2500;
         // Periodic unload backstop; 0 = off. 1h: with the primary triggers (end of work run, meal/joy
         // checkpoints, over-encumbered, pass-by) this rarely fires — but when every one of them is
         // swallowed (drafts clearing the queue, lord duties, modded jobs), an hour is the longest a
@@ -255,7 +261,7 @@ namespace HaulersDream
             Scribe_Values.Look(ref allPawnsCanHaul, "allPawnsCanHaul", false);
             Scribe_Values.Look(ref allPawnsCanClean, "allPawnsCanClean", false);
             Scribe_Values.Look(ref allPawnsCanCutPlants, "allPawnsCanCutPlants", false);
-            Scribe_Values.Look(ref unloadGraceTicks, "unloadGraceTicks", 60);
+            Scribe_Values.Look(ref unloadGraceTicks, "unloadGraceTicks", 2500);
             Scribe_Values.Look(ref intervalUnloadHours, "intervalUnloadHours", 1f);
             Scribe_Values.Look(ref alertCannotUnload, "alertCannotUnload", true);
             Scribe_Values.Look(ref alertStuckHours, "alertStuckHours", 12f);
@@ -434,7 +440,7 @@ namespace HaulersDream
 
             l.GapLine();
             l.Label("HaulersDream.Setting.UnloadGrace".Translate(unloadGraceTicks));
-            unloadGraceTicks = Mathf.RoundToInt(l.Slider(unloadGraceTicks, 0f, 600f));
+            unloadGraceTicks = Mathf.RoundToInt(l.Slider(unloadGraceTicks, 0f, 7500f) / 50f) * 50;
             l.Label(intervalUnloadHours <= 0f
                 ? "HaulersDream.Setting.IntervalUnloadOff".Translate()
                 : "HaulersDream.Setting.IntervalUnload".Translate(intervalUnloadHours.ToString("0.#")));

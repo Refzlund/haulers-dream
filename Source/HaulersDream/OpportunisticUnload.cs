@@ -123,6 +123,17 @@ namespace HaulersDream
             if (tracked.Count == 0)
                 return null;
 
+            // SETTLE gate: an empty work scan is NOT the end of the run by itself — in a busy colony work
+            // momentarily "runs dry" for a pawn between items (another pawn grabbed the next job, a 1-tick
+            // scan miss) constantly. Unloading then made a trip per item and defeated the overload-and-
+            // accumulate design. Only treat the run as OVER once the pawn has stopped picking things up for
+            // the settle period (unloadGraceTicks): while it's still actively scooping (lastYieldTick recent)
+            // it keeps accumulating toward the smart-overload ceiling; the at-ceiling trigger handles a full
+            // load immediately, and a genuinely-idle pawn is also caught by the interval / idle backstop.
+            int settle = s.unloadGraceTicks;
+            if (settle > 0 && (Find.TickManager?.TicksGame ?? 0) - comp.lastYieldTick < settle)
+                return null;
+
             // At least one tracked stack must be in inventory and reservable, or the job ends
             // Incompletable instantly and this would re-issue every think cycle (same guard as the
             // vanilla-unload substitution patch).

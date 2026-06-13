@@ -93,7 +93,7 @@
   <HaulersDream.Setting.EnableOnNonHomeMaps>Also work on caravan / non-home maps</HaulersDream.Setting.EnableOnNonHomeMaps>
   <HaulersDream.Setting.HideGizmo>Hide the per-pawn "Unload inventory" button</HaulersDream.Setting.HideGizmo>
 
-  <HaulersDream.Setting.UnloadGrace>Unload grace: wait {0} ticks after a pickup before unloading</HaulersDream.Setting.UnloadGrace>
+  <HaulersDream.Setting.UnloadGrace>Accumulate window: keep picking up for {0} ticks (~60/sec) after the last pickup before making the unload trip. Higher = pawns overload more and make fewer, bigger trips; they still unload immediately once full (the overload ceiling).</HaulersDream.Setting.UnloadGrace>
   <HaulersDream.Setting.IntervalUnload>Interval unload: every {0} in-game hours</HaulersDream.Setting.IntervalUnload>
   <HaulersDream.Setting.IntervalUnloadOff>Interval unload: off (only end of work run / meals and recreation / overweight / manual)</HaulersDream.Setting.IntervalUnloadOff>
 

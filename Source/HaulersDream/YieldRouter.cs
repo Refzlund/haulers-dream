@@ -145,28 +145,13 @@ namespace HaulersDream
             PawnUnloadChecker.CheckIfShouldUnload(pawn, forced: true);
         }
 
-        /// <summary>
-        /// A scoop just landed: if it pushed the pawn OVER-ENCUMBERED (above 100% carry capacity — the
-        /// point where vanilla starts slowing the pawn down), queue the unload trip now instead of
-        /// waiting for the smart-overload ceiling (~2x capacity). Smart overload deliberately lets a
-        /// pawn scoop past its capacity so yields aren't stranded on the ground — but carrying that
-        /// surplus around for hours taxes everything else the pawn does; better to finish the current
-        /// job and make the trip. Queued (never interrupts), forced (a route mid-run is worth pausing
-        /// when the pawn is this heavy). Same gate family as the full-trigger: never in strict mode
-        /// (strict can't exceed capacity) and never with auto-unload off.
-        ///
-        /// Design note: this deliberately trades away some of smart-overload's "fewer trips across a
-        /// multi-job run" benefit for heavy materials — the pawn still overloads WITHIN one job (the
-        /// unload is queued, so it runs at the job boundary), but it no longer carries the surplus across
-        /// many jobs to the ~2x ceiling. That's the point of the fix: a pawn shouldn't lug steel around
-        /// all day. Trip frequency stays bounded (one trip per capacity-worth of scooping), and the
-        /// queued-unload dedup (alreadyUnloading) means repeated over-cap scoops never stack up unloads.
-        /// </summary>
-        internal static void MaybeUnloadBecauseOverEncumbered(Pawn pawn, HaulersDreamSettings s)
-        {
-            if (pawn != null && MassUtility.IsOverEncumbered(pawn))
-                MaybeUnloadBecauseFull(pawn, s);
-        }
+        // NOTE: the old "unload as soon as over 100% capacity" trigger (MaybeUnloadBecauseOverEncumbered)
+        // was REMOVED. It defeated the core overload design: the whole point is to keep scooping into
+        // inventory PAST 100% — up to the smart-overload ceiling (MaxOverloadRatio, ~2x at "Fair"), where
+        // carrying more stops paying off — and unload then (MaybeUnloadBecauseFull) or when the pawn is
+        // genuinely DONE (the settle period; see UnloadPolicy/TryGetEndOfRunUnloadJob). Unloading at 100%
+        // made pawns trip back and forth per item (mine one ore → carry → unload → repeat) instead of
+        // accumulating a big load and making one trip.
 
         private static bool HasSelfPickupJob(Pawn pawn)
         {
@@ -288,10 +273,10 @@ namespace HaulersDream
                         comp.RegisterHauledItem(held, moved);
                     comp.NotifyYieldPicked();
                     HDLog.Dbg($"{pawn} scooped x{before - split.stackCount} {split.def?.label} ({type}).");
-                    // Direct mode lands yields mid-work-job: if this one tipped the pawn over capacity,
-                    // queue the unload now — it runs when the current job ends (alreadyUnloading dedups
-                    // the repeats while the pawn keeps scooping the rest of this job's yields).
-                    MaybeUnloadBecauseOverEncumbered(pawn, s);
+                    // Keep accumulating: do NOT unload merely for crossing 100% here. Scooping continues up
+                    // to the smart-overload ceiling (CountToPickUp returns 0 there → MaybeUnloadBecauseFull),
+                    // and otherwise the load is unloaded only when the pawn is done for a while (settle) or on
+                    // the interval / idle backstop. This is what makes mining/deconstruct one trip, not many.
                 }
 
                 if (allMoved)

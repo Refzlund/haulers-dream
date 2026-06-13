@@ -27,11 +27,11 @@ namespace HaulersDream
                     var next = comp?.TakeNextValidPending();
                     if (next == null)
                     {
-                        // Scoop run complete: if the load now exceeds the pawn's carry capacity (vanilla
-                        // slows it down from here), break off to unload right away instead of lugging the
-                        // surplus around until the smart-overload ceiling (~2x capacity) trips. The unload
-                        // is queued, so it starts the moment this job ends.
-                        YieldRouter.MaybeUnloadBecauseOverEncumbered(pawn, HaulersDreamMod.Settings);
+                        // Scoop run complete. KEEP the accumulated load — the pawn overloads up to the
+                        // smart-overload ceiling (where MaybeUnloadBecauseFull fires) and otherwise unloads
+                        // only when it's been done with this kind of work for a while (the settle period) or
+                        // on the interval / idle backstop. We deliberately do NOT unload just for being past
+                        // 100% here: overloading past capacity to make fewer trips is the whole point.
                         EndJobWith(JobCondition.Succeeded);
                         return;
                     }
