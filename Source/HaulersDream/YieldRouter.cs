@@ -98,6 +98,9 @@ namespace HaulersDream
                 return;
             if (!comp.pendingSelfPickups.Contains(thing))
                 comp.pendingSelfPickups.Add(thing);
+            // Clean the surrounding area in the same pass: also queue nearby loose haulables for self-pickup
+            // (cooldown-debounced, so this scans at most once per work spot — not once per dropped stack).
+            MaybeSweepNearbyIntoPending(pawn, thing.Position);
             EnsureSelfPickupJob(pawn, comp);
         }
 
@@ -122,6 +125,82 @@ namespace HaulersDream
             {
                 pawn.jobs.jobQueue.EnqueueFirst(job, JobTag.Misc);
                 HDLog.Dbg($"{pawn} queued self-pickup ({comp.pendingSelfPickups.Count} pending drops).");
+            }
+        }
+
+        // Opportunistic "clean the area while you work" sweep bounds. Local (a work spot's immediate
+        // surroundings), bounded per scan, and per-pawn cooldown-debounced so a fast work run doesn't
+        // re-scan the lister on every single yield drop.
+        private const float SweepRadius = 12f;          // "around the same place" — matches BulkHaul's search floor
+        private const int SweepMaxStacks = 24;          // matches BulkHaul.MaxStacks — beyond is next cycle's work
+        private const int SweepCooldownTicks = 250;     // ~4s: at most one scan per pawn per cooldown
+
+        /// <summary>
+        /// AREA CLEANUP: while a pawn is at a work spot scooping its OWN yields, also sweep OTHER loose
+        /// haulable items lying nearby INTO its inventory — recorded as pending self-pickups, so the same
+        /// self-pickup job grabs them and they ride out on the one consolidated unload trip. This makes
+        /// deconstructing / mining / harvesting clear the surrounding clutter in passing, instead of leaving
+        /// scattered stacks for separate hand-hauls. It is the bulk-haul sweep (which only fires on dedicated
+        /// HAUL jobs) extended to WORK jobs; the items are picked up into INVENTORY, never hand-carried.
+        ///
+        /// Eligibility mirrors the bulk-haul sweep exactly so it never steals another hauler's target or pulls
+        /// stock back out of storage: an item is swept only if it needs hauling (in the haul lister, not already
+        /// stored), is not forbidden to this pawn, is not already claimed by another pawn's job, this pawn can
+        /// legally haul it, there is room left under the overload ceiling, and it has a better storage to go to
+        /// (else it would only strand in the pack). Per-pawn cooldown so a busy work run scans at most once per
+        /// <see cref="SweepCooldownTicks"/>. No-op unless the pawn is scoop-eligible and the feature is enabled.
+        /// </summary>
+        internal static void MaybeSweepNearbyIntoPending(Pawn pawn, IntVec3 anchor)
+        {
+            var s = HaulersDreamMod.Settings;
+            if (s == null || !s.sweepNearbyWhileWorking)
+                return;
+            var map = pawn?.Map;
+            if (map == null || pawn.jobs == null || !anchor.IsValid || !IsEligible(pawn))
+                return;
+            var comp = pawn.GetComp<CompHauledToInventory>();
+            if (comp == null)
+                return;
+            int now = Find.TickManager?.TicksGame ?? 0;
+            if (now - comp.lastSweepTick < SweepCooldownTicks)
+                return;
+            // Claim the cooldown whether or not anything is found, so a clean work area isn't re-scanned on
+            // every drop. CountToPickUp below also naturally stops the sweep cold once the pawn is full.
+            comp.lastSweepTick = now;
+
+            var claimed = RouteSelection.ClaimedByOtherPawns(pawn);
+            float radiusSq = SweepRadius * SweepRadius;
+            int added = 0;
+            foreach (var t in map.listerHaulables.ThingsPotentiallyNeedingHauling())
+            {
+                if (added >= SweepMaxStacks)
+                    break; // beyond the per-scan cap is simply the next work cycle's cleanup
+                if (t == null || !t.Spawned || t.Map != map || t is Corpse)
+                    continue; // corpses keep their own vanilla hauling flow (they don't belong in pockets)
+                if (t.def == null || !t.def.EverHaulable)
+                    continue; // same gate as BulkHaul.BuildPool — sweep exactly what a dedicated bulk haul would
+                if ((t.Position - anchor).LengthHorizontalSquared > radiusSq)
+                    continue; // only the immediate work area
+                if (comp.pendingSelfPickups.Contains(t) || t.IsForbidden(pawn) || claimed.Contains(t) || t.IsInValidStorage())
+                    continue;
+                // Capacity first (pure arithmetic) — at/over the overload ceiling nothing more fits, so don't
+                // pay the reachability/storage cost. cur mass is read live and doesn't change as we record
+                // (we only queue pending), so this gates the whole sweep off once the pawn is full.
+                if (OverloadGate.CountToPickUp(pawn, t, s) <= 0)
+                    continue;
+                if (!HaulAIUtility.PawnCanAutomaticallyHaulFast(pawn, t, forced: false))
+                    continue; // unreachable / can't legally haul it
+                if (!StoreUtility.TryFindBestBetterStorageFor(t, pawn, map, StoreUtility.CurrentStoragePriorityOf(t),
+                        pawn.Faction, out _, out _, needAccurateResult: false))
+                    continue; // nowhere better to put it -> don't scoop it only to strand it in inventory
+                comp.pendingSelfPickups.Add(t);
+                added++;
+            }
+
+            if (added > 0)
+            {
+                HDLog.Dbg($"{pawn} area-sweep: queued {added} nearby loose stack(s) into self-pickup.");
+                EnsureSelfPickupJob(pawn, comp);
             }
         }
 
@@ -273,6 +352,11 @@ namespace HaulersDream
                         comp.RegisterHauledItem(held, moved);
                     comp.NotifyYieldPicked();
                     HDLog.Dbg($"{pawn} scooped x{before - split.stackCount} {split.def?.label} ({type}).");
+                    // DirectToInventory: the yield went straight into the pack (no SelfPickup job from the drop),
+                    // so clean the surrounding area from here — queue nearby loose haulables for a self-pickup
+                    // sweep. Cooldown-debounced; safe under the `routing` guard (it places nothing, only records
+                    // pending + enqueues a job).
+                    MaybeSweepNearbyIntoPending(pawn, thing.Position);
                     // Keep accumulating: do NOT unload merely for crossing 100% here. Scooping continues up
                     // to the smart-overload ceiling (CountToPickUp returns 0 there → MaybeUnloadBecauseFull),
                     // and otherwise the load is unloaded only when the pawn is done for a while (settle) or on

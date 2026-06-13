@@ -49,6 +49,12 @@ namespace HaulersDream
         // haul sweeps only when a second nearby haul has also been ordered — so ordering one haul stays surgical.
         public BulkHaulTrigger bulkHaulTrigger = BulkHaulTrigger.SecondTasked;
 
+        // While a pawn scoops its own WORK yields (deconstruct/mine/harvest), also sweep OTHER loose haulable
+        // items lying around the work spot into its inventory, so the area is cleared in the same consolidated
+        // trip instead of being left for separate hand-hauls. (Bulk hauling above does the same for dedicated
+        // HAUL jobs; this extends it to work jobs.)
+        public bool sweepNearbyWhileWorking = true;
+
         // --- pack-animal loading on caravans / temporary maps ---
         public bool loadPackAnimalBulk = true;       // the manual "Load nearby items onto pack animal (bulk)" order
         public bool autoDivertToPackAnimal = true;   // an over-encumbered caravan pawn auto-loads the nearest pack animal
@@ -222,6 +228,7 @@ namespace HaulersDream
             Scribe_Values.Look(ref shareHandHauledToStorage, "shareHandHauledToStorage", false);
             Scribe_Values.Look(ref bulkHaul, "bulkHaul", true);
             Scribe_Values.Look(ref bulkHaulTrigger, "bulkHaulTrigger", BulkHaulTrigger.SecondTasked);
+            Scribe_Values.Look(ref sweepNearbyWhileWorking, "sweepNearbyWhileWorking", true);
             Scribe_Values.Look(ref loadPackAnimalBulk, "loadPackAnimalBulk", true);
             Scribe_Values.Look(ref autoDivertToPackAnimal, "autoDivertToPackAnimal", true);
             Scribe_Values.Look(ref haulToStack, "haulToStack", true);
@@ -334,6 +341,9 @@ namespace HaulersDream
                         tooltip: "HaulersDream.Setting.BulkHaulAlwaysDesc".Translate()))
                     bulkHaulTrigger = BulkHaulTrigger.Always;
             }
+
+            l.CheckboxLabeled("HaulersDream.Setting.SweepNearbyWhileWorking".Translate(), ref sweepNearbyWhileWorking,
+                "HaulersDream.Setting.SweepNearbyWhileWorkingDesc".Translate());
 
             l.CheckboxLabeled("HaulersDream.Setting.LoadPackAnimalBulk".Translate(), ref loadPackAnimalBulk,
                 "HaulersDream.Setting.LoadPackAnimalBulkDesc".Translate());

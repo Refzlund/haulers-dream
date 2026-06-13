@@ -28,6 +28,11 @@ namespace HaulersDream
         /// take can't immediately re-intercept the same hauler. Transient (in-flight timing, not scribed).</summary>
         public int lastInterceptedTick = -99999;
 
+        /// <summary>Tick this pawn last ran the opportunistic "sweep nearby loose items into pending self-pickup"
+        /// area-cleanup scan — a per-pawn cooldown so a fast work run doesn't re-scan on every single yield drop.
+        /// Transient (in-flight timing, not scribed).</summary>
+        public int lastSweepTick = -99999;
+
         /// <summary>
         /// Fresh ground drops this pawn produced and should scoop up (DropThenHaul mode). Transient —
         /// not scribed: it's in-flight state rebuilt as drops happen, and persisting live Thing
