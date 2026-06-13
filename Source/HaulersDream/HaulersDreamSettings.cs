@@ -123,6 +123,14 @@ namespace HaulersDream
         public float intervalUnloadHours = 1f;
         public bool enableOnNonHomeMaps = true;  // work on caravans / temporary maps too
 
+        // --- black-hole safety net: a red (critical) alert when a pawn is carrying scooped haul items it
+        // cannot put away — nowhere on the map accepts them (no stockpile / dumping zone / reachable cell),
+        // or it has held tagged items far longer than any normal unload should take (storage unreachable,
+        // or another mod keeps cancelling the haul/unload job). One alert for all such pawns. ---
+        public bool alertCannotUnload = true;
+        public float alertStuckHours = 12f;       // condition B threshold: held tagged items this long (with a
+                                                  // destination that exists) before the alert flags the pawn
+
         // --- misc ---
         public bool hideGizmo = false;
         public bool verboseLogging = false;
@@ -236,6 +244,8 @@ namespace HaulersDream
             Scribe_Values.Look(ref allPawnsCanCutPlants, "allPawnsCanCutPlants", false);
             Scribe_Values.Look(ref unloadGraceTicks, "unloadGraceTicks", 60);
             Scribe_Values.Look(ref intervalUnloadHours, "intervalUnloadHours", 1f);
+            Scribe_Values.Look(ref alertCannotUnload, "alertCannotUnload", true);
+            Scribe_Values.Look(ref alertStuckHours, "alertStuckHours", 12f);
             Scribe_Values.Look(ref enableOnNonHomeMaps, "enableOnNonHomeMaps", true);
             Scribe_Values.Look(ref hideGizmo, "hideGizmo", false);
             Scribe_Values.Look(ref verboseLogging, "verboseLogging", false);
@@ -409,6 +419,15 @@ namespace HaulersDream
                 ? "HaulersDream.Setting.IntervalUnloadOff".Translate()
                 : "HaulersDream.Setting.IntervalUnload".Translate(intervalUnloadHours.ToString("0.#")));
             intervalUnloadHours = Mathf.Round(l.Slider(intervalUnloadHours, 0f, 24f) * 2f) / 2f;
+
+            l.GapLine();
+            l.CheckboxLabeled("HaulersDream.Setting.AlertCannotUnload".Translate(), ref alertCannotUnload,
+                "HaulersDream.Setting.AlertCannotUnloadDesc".Translate());
+            if (alertCannotUnload)
+            {
+                l.Label("HaulersDream.Setting.AlertStuckHours".Translate(alertStuckHours.ToString("0.#")));
+                alertStuckHours = Mathf.Round(l.Slider(alertStuckHours, 1f, 72f) * 2f) / 2f;
+            }
 
             l.GapLine();
             l.CheckboxLabeled("HaulersDream.Setting.VerboseLogging".Translate(), ref verboseLogging);

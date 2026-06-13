@@ -95,11 +95,20 @@
   <HaulersDream.Setting.IntervalUnload>Interval unload: every {0} in-game hours</HaulersDream.Setting.IntervalUnload>
   <HaulersDream.Setting.IntervalUnloadOff>Interval unload: off (only end of work run / meals and recreation / overweight / manual)</HaulersDream.Setting.IntervalUnloadOff>
 
+  <HaulersDream.Setting.AlertCannotUnload>Warn (red alert) when a pawn can't unload its inventory</HaulersDream.Setting.AlertCannotUnload>
+  <HaulersDream.Setting.AlertCannotUnloadDesc>Shows a critical "Fire!"-style alert in the bottom-right when one or more pawns are carrying scooped items they cannot put away — either nothing on the map can store them (no stockpile / dumping zone / reachable cell), or they've been carrying items far too long without unloading (storage unreachable, or another mod keeps cancelling the haul/unload job). One alert covers all affected pawns; hover it to point arrows at them, click to cycle through them. This is your guarantee that inventories never silently become "black holes".</HaulersDream.Setting.AlertCannotUnloadDesc>
+  <HaulersDream.Setting.AlertStuckHours>...flag a pawn after it has carried un-unloaded items for {0} in-game hours</HaulersDream.Setting.AlertStuckHours>
+
   <HaulersDream.Setting.VerboseLogging>Verbose debug logging</HaulersDream.Setting.VerboseLogging>
 
   <HaulersDream.Gizmo.UnloadNow>Unload inventory</HaulersDream.Gizmo.UnloadNow>
   <HaulersDream.Gizmo.UnloadNowDesc>Make this pawn carry everything it has scooped to the nearest valid storage.</HaulersDream.Gizmo.UnloadNowDesc>
   <HaulersDream.Gizmo.UnloadNowDrafted>Drafted: undraft this pawn to unload.</HaulersDream.Gizmo.UnloadNowDrafted>
+
+  <!-- Black-hole safety-net alert -->
+  <HaulersDream.Alert.CannotUnload>Cannot unload inventory ({0})</HaulersDream.Alert.CannotUnload>
+  <HaulersDream.Alert.CannotUnloadDesc.NoStorage>These pawns are carrying scooped items with nowhere to put them — no stockpile or dumping zone on the map accepts them, and no reachable spot was found. Add a stockpile (a Dumping Stockpile accepts rock chunks and most refuse), or allow their item type on an existing one:\n\n{0}\n\nUntil then the items stay in their inventory. Click this alert to cycle to the pawns; hover to point them out.</HaulersDream.Alert.CannotUnloadDesc.NoStorage>
+  <HaulersDream.Alert.CannotUnloadDesc.Stuck>These pawns have been carrying scooped items for a long time without unloading them. Storage may be unreachable from where they are, or another mod may be repeatedly cancelling their hauling/unloading job:\n\n{0}\n\nCheck for a reachable, allowed stockpile, and for a mod interrupting their jobs. Click this alert to cycle to the pawns; hover to point them out.</HaulersDream.Alert.CannotUnloadDesc.Stuck>
 
   <!-- Plan prioritized route -->
   <HaulersDream.PlanRoute.Option>Plan prioritized {0}…</HaulersDream.PlanRoute.Option>
