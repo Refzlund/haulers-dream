@@ -8,6 +8,12 @@
   <HaulersDream.Setting.MarkForUnload>Automatically unload scooped goods (at end of work run, around meals and recreation, when overweight, and on the interval below). Off: pawns keep carrying until you press their "Unload inventory" button.</HaulersDream.Setting.MarkForUnload>
   <HaulersDream.Setting.UnloadAllSurplus>Also put away surplus inventory a pawn is carrying that Hauler's Dream did NOT pick up itself</HaulersDream.Setting.UnloadAllSurplus>
   <HaulersDream.Setting.UnloadAllSurplusDesc>When on, a colonist at home also unloads any surplus items it's carrying for no reason (from trades, other mods, or manual moves) — not just goods Hauler's Dream scooped. "Surplus" excludes the pawn's kept food, drugs, inventory-stock, and Combat Extended loadout (the same items vanilla keeps); caravan-loading inventory is left alone. This is more thorough than vanilla's occasional auto-unload. Turn OFF if you use a mod that keeps items in a pawn's inventory through its own system (for example Smart Medicine's stock-up, or a sidearm mod) and don't want those put away.</HaulersDream.Setting.UnloadAllSurplusDesc>
+  <HaulersDream.Setting.UnloadBeforeSleep>Put load away before sleeping</HaulersDream.Setting.UnloadBeforeSleep>
+  <HaulersDream.Setting.UnloadBeforeSleepDesc>When a pawn finishes working and is tired (about to sleep), it makes its unload trip first, then goes to bed empty — instead of carrying its scooped load into bed. It still accumulates normally while it's actually working.</HaulersDream.Setting.UnloadBeforeSleepDesc>
+  <HaulersDream.Setting.UnloadBeforeLeisure>Put load away before recreation</HaulersDream.Setting.UnloadBeforeLeisure>
+  <HaulersDream.Setting.UnloadBeforeLeisureDesc>When a pawn stops working and heads to recreation (its Recreation schedule block, or any joy activity), it unloads first instead of carrying its load around while relaxing.</HaulersDream.Setting.UnloadBeforeLeisureDesc>
+  <HaulersDream.Setting.UnloadBeforeEating>Put load away before eating</HaulersDream.Setting.UnloadBeforeEating>
+  <HaulersDream.Setting.UnloadBeforeEatingDesc>When a pawn finishes working and is hungry (about to eat), it unloads first — so it doesn't carry the ore it just mined to the dinner table.</HaulersDream.Setting.UnloadBeforeEatingDesc>
 
   <HaulersDream.Setting.ShareHeader>Share carried materials between colonists:</HaulersDream.Setting.ShareHeader>
   <HaulersDream.Setting.ShareForBuilding>Use carried materials for construction</HaulersDream.Setting.ShareForBuilding>

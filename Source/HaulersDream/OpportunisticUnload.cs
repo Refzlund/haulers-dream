@@ -1,5 +1,6 @@
 using HaulersDream.Core;
 using RimWorld;
+using RimWorld.Planet;
 using UnityEngine;
 using Verse;
 using Verse.AI;
@@ -16,6 +17,99 @@ namespace HaulersDream
     {
         // Short cooldown so a (rare) unload that doesn't clear the load can't cause a tight divert loop.
         private const int DivertCooldownTicks = 250;
+
+        // "Put it away before relaxing": bypass the accumulate window so a pawn drops its load before downtime
+        // (rest / recreation / eating) instead of carrying it to bed / the dinner table / the rec room (the
+        // player's natural expectation). The window still applies while the pawn is working or idle between
+        // work, so a continuous/intermittent yield run still loads up — these only matter once the pawn stops
+        // working and heads into the matching downtime. There are two checks because the trigger context differs:
+
+        /// <summary>STATE check: the pawn is CURRENTLY in a downtime job (eating / sleeping / recreation) whose
+        /// toggle is on. Used by the interval / idle backstop, which may run while the pawn is still WORKING —
+        /// a merely tired-but-still-mining pawn must NOT count (it's working, not relaxing), so we look at the
+        /// actual current job, never the need level. Catches a pawn that fell asleep / sat down to eat with a
+        /// load before the end-of-run trigger could fire (it then unloads on wake / after the meal).</summary>
+        internal static bool IsInDowntimeJob(Pawn pawn, HaulersDreamSettings s)
+        {
+            if (pawn == null || s == null)
+                return false;
+            if (s.unloadBeforeEating && pawn.CurJobDef == JobDefOf.Ingest)
+                return true;
+            if (s.unloadBeforeSleep && pawn.jobs?.curDriver is JobDriver_LayDown)
+                return true;
+            if (s.unloadBeforeLeisure && pawn.CurJobDef?.joyKind != null)
+                return true;
+            return false;
+        }
+
+        /// <summary>ENTERING check: the pawn just ran out of WORK and its needs/schedule say it's about to rest /
+        /// recreate / eat (toggle on). Used ONLY by the end-of-run trigger, which fires while the pawn is between
+        /// jobs with no work available — so a low need genuinely means "about to relax," not "interrupt active
+        /// work." Also true if it has already entered a downtime job. This is what lets the pawn unload BEFORE it
+        /// lies down / sits at the table, rather than after.</summary>
+        internal static bool IsEnteringDowntime(Pawn pawn, HaulersDreamSettings s)
+        {
+            if (pawn == null || s == null)
+                return false;
+            var needs = pawn.needs;
+            if (s.unloadBeforeEating && needs?.food != null && needs.food.CurCategory >= HungerCategory.Hungry)
+                return true;
+            if (s.unloadBeforeSleep && needs?.rest != null && needs.rest.CurCategory >= RestCategory.Tired)
+                return true;
+            if (s.unloadBeforeLeisure && pawn.timetable != null && pawn.timetable.CurrentAssignment == TimeAssignmentDefOf.Joy)
+                return true;
+            return IsInDowntimeJob(pawn, s);
+        }
+
+        /// <summary>
+        /// Returns an unload job to run BEFORE the pawn enters a downtime activity, or null. This is what
+        /// actually delivers "put it away before relaxing": RimWorld's think tree evaluates the rest / food /
+        /// joy job-givers ABOVE work, so a tired/hungry pawn heads into downtime without the work node (and
+        /// thus the end-of-run trigger) ever being reached. The need-giver postfixes call this and swap their
+        /// rest/eat/joy job for the returned unload; once the pawn unloads (and is empty), the need-giver
+        /// re-fires next determination and the pawn rests/eats/relaxes normally. <paramref name="enabled"/> is
+        /// the per-activity toggle. Gated exactly like the other automatic unloads (eligible, home, awake, not
+        /// drafted/downed, something above keep-stock to unload, storage reservable) plus the divert cooldown,
+        /// so a failed or futile trip can't loop — and the caller applies a severity gate (a critically tired /
+        /// starving pawn skips the detour and sleeps/eats now).
+        /// </summary>
+        internal static Job TryGetPreDowntimeUnloadJob(Pawn pawn, bool enabled)
+        {
+            var s = HaulersDreamMod.Settings;
+            if (!enabled || s == null || !s.markForUnload)
+                return null;
+            if (pawn?.Map == null || pawn.jobs == null || pawn.Drafted || pawn.Downed || !pawn.Spawned)
+                return null;
+            if (!pawn.Map.IsPlayerHome) // no player storage on a caravan/encounter map; loot rides home
+                return null;
+            if (pawn.Faction != Faction.OfPlayerSilentFail || !YieldRouter.IsEligible(pawn))
+                return null;
+            // Don't yank a pawn out of a lord-driven activity (party / ritual / gathering — it carries a duty),
+            // out of a bed it's resting in (medical / already lying down — the GetJoyInBed path inherits this
+            // base TryGiveJob), or out of caravan formation on the home map. The interval / idle safety net
+            // still unloads such a pawn AFTER its current activity, without interrupting it.
+            if (pawn.InBed() || pawn.IsFormingCaravan() || pawn.mindState?.duty != null)
+                return null;
+            if (pawn.CurJobDef == HaulersDreamDefOf.HaulersDream_UnloadInventory || PawnUnloadChecker.HasQueuedUnload(pawn))
+                return null;
+            var comp = pawn.GetComp<CompHauledToInventory>();
+            if (comp == null)
+                return null;
+            int now = Find.TickManager?.TicksGame ?? 0;
+            if (now - comp.lastOpportunisticUnloadTick < DivertCooldownTicks)
+                return null; // a recent (possibly failed) divert — let the pawn rest/eat this time; retry after the cooldown
+            // Adopt foreign surplus too (matches the other unload paths), then require something actually unloadable.
+            if (s.unloadAllSurplus && !pawn.IsFormingCaravan())
+                PawnUnloadChecker.AdoptSurplusInventory(pawn, comp);
+            if (!PawnUnloadChecker.AnyUnloadable(pawn, comp.GetHashSet()))
+                return null;
+            var job = JobMaker.MakeJob(HaulersDreamDefOf.HaulersDream_UnloadInventory);
+            if (!job.TryMakePreToilReservations(pawn, false))
+                return null;
+            NotifyDiverted(pawn);
+            HDLog.Dbg($"{pawn} unloading before downtime ({comp.GetHashSet().Count} tracked).");
+            return job;
+        }
 
         /// <summary>
         /// True when picking <paramref name="def"/> means the pawn is STILL in an active accumulate run, so it
@@ -168,7 +262,11 @@ namespace HaulersDream
             // the settle period (unloadGraceTicks): while it's still actively scooping (lastYieldTick recent)
             // it keeps accumulating toward the smart-overload ceiling; the at-ceiling trigger handles a full
             // load immediately, and a genuinely-idle pawn is also caught by the interval / idle backstop.
-            int settle = s.unloadGraceTicks;
+            // EXCEPTION: when the pawn is about to REST / RECREATE / EAT (and that toggle is on), bypass the
+            // settle — it should put the load away before relaxing, not carry it to bed / the dinner table.
+            // (Safe to read needs here: the end-of-run trigger only fires when there is NO work for the pawn,
+            // so a low need means it's genuinely heading into downtime, not pausing active work.)
+            int settle = IsEnteringDowntime(pawn, s) ? 0 : s.unloadGraceTicks;
             if (settle > 0 && (Find.TickManager?.TicksGame ?? 0) - comp.lastYieldTick < settle)
                 return null;
 

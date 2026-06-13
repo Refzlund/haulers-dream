@@ -167,6 +167,55 @@ namespace HaulersDream
         }
     }
 
+    /// <summary>
+    /// "Put the load away before relaxing." RimWorld evaluates the rest / food / joy job-givers ABOVE work in
+    /// the think tree, so a tired/hungry pawn enters downtime before JobGiver_Work (and the end-of-run trigger)
+    /// is ever reached. These three postfixes swap the downtime job for an unload trip when the pawn is carrying
+    /// scooped goods and the matching toggle is on; once it unloads (and is empty) the need-giver re-fires next
+    /// determination and the pawn rests/eats/relaxes normally. A severity gate keeps a critically tired/starving
+    /// pawn from detouring — it sleeps/eats now (the load is then caught on wake by the interval safety net).
+    /// </summary>
+    [HarmonyPatch(typeof(JobGiver_GetRest), "TryGiveJob")]
+    public static class Patch_JobGiver_GetRest_UnloadFirst
+    {
+        static void Postfix(ref Job __result, Pawn pawn)
+        {
+            // Don't detour an EXHAUSTED pawn (about to collapse) — let it sleep now.
+            if (__result == null || pawn?.needs?.rest == null || pawn.needs.rest.CurCategory == RestCategory.Exhausted)
+                return;
+            var unload = OpportunisticUnload.TryGetPreDowntimeUnloadJob(pawn, HaulersDreamMod.Settings?.unloadBeforeSleep ?? false);
+            if (unload != null)
+                __result = unload;
+        }
+    }
+
+    [HarmonyPatch(typeof(JobGiver_GetFood), "TryGiveJob")]
+    public static class Patch_JobGiver_GetFood_UnloadFirst
+    {
+        static void Postfix(ref Job __result, Pawn pawn)
+        {
+            // Don't detour a STARVING pawn (taking damage) — let it eat now.
+            if (__result == null || pawn?.needs?.food == null || pawn.needs.food.CurCategory == HungerCategory.Starving)
+                return;
+            var unload = OpportunisticUnload.TryGetPreDowntimeUnloadJob(pawn, HaulersDreamMod.Settings?.unloadBeforeEating ?? false);
+            if (unload != null)
+                __result = unload;
+        }
+    }
+
+    [HarmonyPatch(typeof(JobGiver_GetJoy), "TryGiveJob")]
+    public static class Patch_JobGiver_GetJoy_UnloadFirst
+    {
+        static void Postfix(ref Job __result, Pawn pawn)
+        {
+            if (__result == null)
+                return;
+            var unload = OpportunisticUnload.TryGetPreDowntimeUnloadJob(pawn, HaulersDreamMod.Settings?.unloadBeforeLeisure ?? false);
+            if (unload != null)
+                __result = unload;
+        }
+    }
+
     /// <summary>The per-pawn "Unload inventory" gizmo.</summary>
     [HarmonyPatch(typeof(Pawn), nameof(Pawn.GetGizmos))]
     public static class Patch_Pawn_GetGizmos

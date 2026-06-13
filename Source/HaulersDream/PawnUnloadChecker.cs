@@ -88,6 +88,15 @@ namespace HaulersDream
             // goods in strict mode (where the full-trigger never fires to break it).
             bool hasPendingWork = HasPendingRealWork(pawn);
 
+            // Accumulate window, EXCEPT when the pawn is ALREADY in a downtime job it should unload before —
+            // rest / recreation / eating, per the toggles. Then drop the load now instead of holding it through
+            // the window (a pawn napping or eating shouldn't be sitting on a full pack). We use the STATE check
+            // (not the need-based "entering" one): this runs from the hourly interval for EVERY pawn, including
+            // one mid-mining-run that merely happens to be tired — that pawn is still working, so it must keep
+            // accumulating. A forced unload ignores grace anyway, so this only changes the automatic path.
+            int effectiveGrace = OpportunisticUnload.IsInDowntimeJob(pawn, settings)
+                ? 0 : settings.unloadGraceTicks;
+
             // Up to two passes: a ClearTracker outcome PRUNES and then RE-DECIDES with the fresh counts
             // instead of consuming the trigger occurrence. Without the second pass, a pawn whose tagged
             // meal is momentarily in its HANDS (Toils_Ingest moves an inventory meal to the carry tracker
@@ -103,7 +112,7 @@ namespace HaulersDream
                 bool anyUnloadable = AnyUnloadable(pawn, carried);
                 // All the gating logic lives in the (unit-tested) pure policy.
                 var decision = UnloadPolicy.Decide(eligible, carried.Count, inventoryCount, alreadyUnloading, forced,
-                    hasPendingWork, ticksSinceYield, settings.unloadGraceTicks, anyUnloadable);
+                    hasPendingWork, ticksSinceYield, effectiveGrace, anyUnloadable);
 
                 switch (decision)
                 {
@@ -153,7 +162,7 @@ namespace HaulersDream
         /// a CE loadout doesn't floor-drop the adopted stock before the unload trip runs. Callers gate on
         /// eligibility + !IsFormingCaravan.
         /// </summary>
-        private static void AdoptSurplusInventory(Pawn pawn, CompHauledToInventory comp)
+        internal static void AdoptSurplusInventory(Pawn pawn, CompHauledToInventory comp)
         {
             var inner = pawn.inventory?.innerContainer;
             if (inner == null || comp == null)
@@ -178,7 +187,7 @@ namespace HaulersDream
         /// pawn's personal keep-stock — i.e. the unload pass would actually move something. Uses the SAME
         /// surplus math as the unload driver and the cannot-unload alert (<see cref="InventorySurplus"/>), so
         /// the three never disagree.</summary>
-        private static bool AnyUnloadable(Pawn pawn, HashSet<Thing> carried)
+        internal static bool AnyUnloadable(Pawn pawn, HashSet<Thing> carried)
         {
             var inner = pawn.inventory?.innerContainer;
             if (inner == null || carried == null)

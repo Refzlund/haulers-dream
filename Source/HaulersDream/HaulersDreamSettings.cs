@@ -21,6 +21,13 @@ namespace HaulersDream
         // More aggressive than vanilla's occasional auto-unload — turn OFF if a loadout/stock mod (e.g. Smart
         // Medicine stock-up, a sidearm mod) keeps items in inventory WITHOUT registering them as keep-stock.
         public bool unloadAllSurplus = true;
+        // "Put it away before relaxing": when a pawn finishes its work run and is about to rest, recreate, or
+        // eat, it makes its unload trip FIRST (bypassing the accumulate window), instead of carrying the load
+        // to bed / the dinner table / the rec room. Continuous/intermittent work still accumulates — these only
+        // fire once the pawn stops working and heads into the matching downtime. One toggle per activity.
+        public bool unloadBeforeSleep = true;
+        public bool unloadBeforeLeisure = true;
+        public bool unloadBeforeEating = true;
         public bool shareForBuilding = true;  // carried materials count for construction
         public bool shareForCrafting = true;  // carried ingredients count for crafting bills
         // Auto crafting bills: gather all ingredient stacks into inventory in one (overweight) sweep, then let
@@ -218,6 +225,9 @@ namespace HaulersDream
             Scribe_Values.Look(ref carryLimitFraction, "carryLimitFraction", 1.0f);
             Scribe_Values.Look(ref pickupMode, "pickupMode", PickupMode.DropThenHaul);
             Scribe_Values.Look(ref markForUnload, "markForUnload", true);
+            Scribe_Values.Look(ref unloadBeforeSleep, "unloadBeforeSleep", true);
+            Scribe_Values.Look(ref unloadBeforeLeisure, "unloadBeforeLeisure", true);
+            Scribe_Values.Look(ref unloadBeforeEating, "unloadBeforeEating", true);
             Scribe_Values.Look(ref unloadAllSurplus, "unloadAllSurplus", true);
             Scribe_Values.Look(ref shareForBuilding, "shareForBuilding", true);
             Scribe_Values.Look(ref shareForCrafting, "shareForCrafting", true);
@@ -312,6 +322,16 @@ namespace HaulersDream
             l.CheckboxLabeled("HaulersDream.Setting.MarkForUnload".Translate(), ref markForUnload);
             l.CheckboxLabeled("HaulersDream.Setting.UnloadAllSurplus".Translate(), ref unloadAllSurplus,
                 "HaulersDream.Setting.UnloadAllSurplusDesc".Translate());
+            if (markForUnload)
+            {
+                // "Put it away before relaxing" — unload before each downtime activity (bypassing the accumulate window).
+                l.CheckboxLabeled("HaulersDream.Setting.UnloadBeforeSleep".Translate(), ref unloadBeforeSleep,
+                    "HaulersDream.Setting.UnloadBeforeSleepDesc".Translate());
+                l.CheckboxLabeled("HaulersDream.Setting.UnloadBeforeLeisure".Translate(), ref unloadBeforeLeisure,
+                    "HaulersDream.Setting.UnloadBeforeLeisureDesc".Translate());
+                l.CheckboxLabeled("HaulersDream.Setting.UnloadBeforeEating".Translate(), ref unloadBeforeEating,
+                    "HaulersDream.Setting.UnloadBeforeEatingDesc".Translate());
+            }
 
             l.GapLine();
             l.Label("HaulersDream.Setting.ShareHeader".Translate());
