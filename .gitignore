@@ -2,6 +2,8 @@
 Source/**/bin/
 Source/**/obj/
 Source/**/*.user
+tools/**/bin/
+tools/**/obj/
 1.6/Assemblies/
 dist/
 TestResults/
