@@ -8,8 +8,9 @@ namespace HaulersDream.Tests
     {
         private static UnloadDecision Decide(
             bool eligible = true, int carried = 3, int inventory = 3, bool alreadyUnloading = false,
-            bool forced = false, bool hasPendingWork = false, int ticksSinceYield = 1000, int grace = 60)
-            => UnloadPolicy.Decide(eligible, carried, inventory, alreadyUnloading, forced, hasPendingWork, ticksSinceYield, grace);
+            bool forced = false, bool hasPendingWork = false, int ticksSinceYield = 1000, int grace = 60,
+            bool anyUnloadable = true)
+            => UnloadPolicy.Decide(eligible, carried, inventory, alreadyUnloading, forced, hasPendingWork, ticksSinceYield, grace, anyUnloadable);
 
         [Test]
         public void NormalLoadedPawn_Queues()
@@ -188,6 +189,41 @@ namespace HaulersDream.Tests
             // The pending-work skip is independent of grace (fires even with grace disabled).
             Assert.That(Decide(hasPendingWork: true, ticksSinceYield: 0, grace: 0),
                 Is.EqualTo(UnloadDecision.Skip));
+        }
+
+        // --- anyUnloadable gate: all-keep-stock tags are retained (so a later keep-drop resurfaces the
+        // surplus tracked) but must NOT churn a no-op automatic unload every cycle. Forced still proceeds. ---
+
+        [Test]
+        public void NothingUnloadable_NonForced_Skips()
+        {
+            // Tags present and in inventory, but every stack is personal keep-stock right now -> no surplus to
+            // move. An automatic unload would end Incompletable instantly and re-fire forever (churn + a
+            // misleading permanent "Unload now" gizmo).
+            Assert.That(Decide(anyUnloadable: false), Is.EqualTo(UnloadDecision.Skip));
+        }
+
+        [Test]
+        public void NothingUnloadable_Forced_Queues()
+        {
+            // The gizmo / recovery must work even when it will no-op — forced bypasses the surplus gate.
+            Assert.That(Decide(forced: true, anyUnloadable: false), Is.EqualTo(UnloadDecision.Queue));
+        }
+
+        [Test]
+        public void NothingUnloadable_StillClearsDrift()
+        {
+            // The surplus gate must not pre-empt the drift self-heal: a phantom-tag tracker still prunes
+            // (otherwise an all-keep-stock pawn whose tags also drifted keeps a permanent phantom gizmo).
+            Assert.That(Decide(anyUnloadable: false, carried: 5, inventory: 2), Is.EqualTo(UnloadDecision.ClearTracker));
+            Assert.That(Decide(anyUnloadable: false, carried: 3, inventory: 0), Is.EqualTo(UnloadDecision.ClearTracker));
+        }
+
+        [Test]
+        public void Unloadable_DefaultPath_Queues()
+        {
+            // The normal case: surplus above keep-stock exists -> queue as before (default arg keeps old behavior).
+            Assert.That(Decide(anyUnloadable: true), Is.EqualTo(UnloadDecision.Queue));
         }
 
         // --- HasPendingRealWork: the mod's own housekeeping jobs must NOT count as pending work ---

@@ -82,9 +82,13 @@ namespace HaulersDream
             // never return ClearTracker again.
             for (int pass = 0; pass < 2; pass++)
             {
+                // Is there anything ABOVE keep-stock to actually unload? Recomputed each pass (a ClearTracker
+                // prune changes the set). Keeps an all-keep-stock pawn (whose surplus tags we deliberately
+                // retain) from re-queuing a no-op unload every cycle; a forced unload ignores this in Decide.
+                bool anyUnloadable = AnyUnloadable(pawn, carried);
                 // All the gating logic lives in the (unit-tested) pure policy.
                 var decision = UnloadPolicy.Decide(eligible, carried.Count, inventoryCount, alreadyUnloading, forced,
-                    hasPendingWork, ticksSinceYield, settings.unloadGraceTicks);
+                    hasPendingWork, ticksSinceYield, settings.unloadGraceTicks, anyUnloadable);
 
                 switch (decision)
                 {
@@ -124,6 +128,21 @@ namespace HaulersDream
                         return;
                 }
             }
+        }
+
+        /// <summary>True if at least one tracked stack still in the pawn's inventory has surplus above the
+        /// pawn's personal keep-stock — i.e. the unload pass would actually move something. Uses the SAME
+        /// surplus math as the unload driver and the cannot-unload alert (<see cref="InventorySurplus"/>), so
+        /// the three never disagree.</summary>
+        private static bool AnyUnloadable(Pawn pawn, HashSet<Thing> carried)
+        {
+            var inner = pawn.inventory?.innerContainer;
+            if (inner == null || carried == null)
+                return false;
+            foreach (var t in carried)
+                if (t != null && inner.Contains(t) && InventorySurplus.SurplusOf(pawn, t) > 0)
+                    return true;
+            return false;
         }
 
         internal static bool HasQueuedUnload(Pawn pawn)

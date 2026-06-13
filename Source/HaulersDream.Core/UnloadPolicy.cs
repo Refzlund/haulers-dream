@@ -23,7 +23,8 @@ namespace HaulersDream.Core
             bool forced,
             bool hasPendingWork,
             int ticksSinceLastYield,
-            int graceTicks)
+            int graceTicks,
+            bool anyUnloadable = true)
         {
             if (!eligible || carriedCount <= 0)
                 return UnloadDecision.Skip;
@@ -36,6 +37,14 @@ namespace HaulersDream.Core
             if (inventoryCount < carriedCount)
                 return UnloadDecision.ClearTracker;
             if (inventoryCount <= 0)
+                return UnloadDecision.Skip;
+            // Nothing ABOVE keep-stock to unload right now: every tracked stack is the pawn's personal kit
+            // (drug-policy / inventoryStock / packable food / CE loadout). We keep those tags (so a later
+            // keep-drop resurfaces the surplus tracked, never stranded), but must NOT queue an automatic
+            // unload that would instantly end Incompletable and re-fire every cycle (churn + a misleading
+            // permanent "Unload now" gizmo). A FORCED unload still proceeds — the gizmo/recovery must work
+            // even when it will no-op. (Mirrors the EndOfRunUnloadAllowed anyUnloadable guard.)
+            if (!forced && !anyUnloadable)
                 return UnloadDecision.Skip;
             // An automatic (non-forced) unload must NEVER jump in front of queued/enroute work — the unload
             // job is EnqueueFirst'd, so without this it preempts a player's shift-prioritized harvest route

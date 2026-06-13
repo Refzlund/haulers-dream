@@ -28,7 +28,24 @@ namespace HaulersDream
             var begin = Toils_General.Wait(3);
             yield return begin;
 
-            var carried = pawn.TryGetComp<CompHauledToInventory>()?.GetHashSet() ?? new HashSet<Thing>();
+            var comp = pawn.TryGetComp<CompHauledToInventory>();
+            var carried = comp?.GetHashSet() ?? new HashSet<Thing>();
+
+            // If this job is interrupted mid-trip — a draft, a mod cancelling it, or CommonSense's
+            // "put the carried thing back into inventory" transpiler — AFTER an item was pulled into the
+            // pawn's hands but BEFORE it was placed, re-tag the still-held item so the next unload reclaims
+            // it instead of orphaning it untracked (a silent black hole). On a normal success the item is
+            // placed in the world (not in hands/inventory), so it is not re-tagged.
+            AddFinishAction(condition =>
+            {
+                var held = job.GetTarget(TargetIndex.A).Thing;
+                if (comp == null || held == null || held.Destroyed)
+                    return;
+                if (pawn.carryTracker?.innerContainer?.Contains(held) == true
+                    || pawn.inventory?.innerContainer?.Contains(held) == true)
+                    comp.RegisterHauledItem(held);
+            });
+
             yield return FindTargetOrDrop(carried, begin);
             yield return PullItemFromInventory(carried, begin);
 
@@ -213,9 +230,16 @@ namespace HaulersDream
                     {
                         if (inner[i].def == def)
                         {
+                            // Re-tag the stack we relink to BEFORE deciding what to do with it: if we returned
+                            // a surplus stack but left it untagged, the keep-stock remainder after the unload
+                            // would lose tracking; and if it's entirely keep-stock right now, dropping the
+                            // def's last tag would strand a later-resurfacing surplus untagged (a silent black
+                            // hole). Adding to the live tag set (== comp.GetHashSet()) keeps it tracked either
+                            // way. (Bounded to this scooped def, so a foreign mod's stash is never claimed.)
+                            carried.Add(inner[i]);
                             int relinked = UnloadableCountOf(inner[i]);
                             if (relinked <= 0)
-                                break; // entirely keep-stock (see below) — leave it untagged where it is
+                                break; // entirely keep-stock for now — keep the tag, move on (see below)
                             return new ThingCount(inner[i], relinked);
                         }
                     }
@@ -228,80 +252,21 @@ namespace HaulersDream
                     continue;
                 int count = UnloadableCountOf(thing);
                 if (count <= 0)
-                {
-                    // Nothing above the pawn's keep count — the stack is personal stock, not surplus.
-                    // Untag it (dumping it would make vanilla's restock re-fetch it: an endless loop).
-                    carried.Remove(thing);
+                    // Nothing above the pawn's keep count right now — personal stock, not surplus. KEEP the
+                    // tag (we never dump keep-stock: UnloadableCountOf clamps the unload to the surplus, so
+                    // there's no restock-churn loop to guard against). If the keep later drops (food eaten,
+                    // drug-policy / inventoryStock / CE-loadout reduced), the resurfaced surplus is still
+                    // tracked and gets unloaded, instead of being stranded untagged — a silent black hole.
                     continue;
-                }
                 return new ThingCount(thing, count);
             }
             return default;
         }
 
-        /// <summary>
-        /// How many units of this stack are actually surplus. Vanilla's unload keeps the pawn's "items
-        /// to keep" (mirrors Pawn_InventoryTracker.FirstUnloadableThing: drug-policy takeToInventory +
-        /// inventoryStock entries); a harvested yield that MERGED into such a stock stack must only
-        /// unload the excess — dumping the whole stack makes JobGiver_TakeForInventoryStock re-fetch it
-        /// and loop forever. Clamped to (total inventory count of the def − keep), at most the stack.
-        /// </summary>
-        private int UnloadableCountOf(Thing thing)
-        {
-            int keep = KeepCountOf(pawn, thing.def) + FoodKeepCountOf(pawn, thing);
-            if (keep <= 0)
-                return thing.stackCount;
-            int surplus = YieldRouter.InventoryCountOfDef(pawn.inventory.innerContainer, thing.def) - keep;
-            return System.Math.Min(thing.stackCount, surplus);
-        }
-
-        /// <summary>
-        /// Vanilla parity, the THIRD tmpItemsToKeep source in Pawn_InventoryTracker.FirstUnloadableThing:
-        /// a colonist keeps packable food up to its food need's MaxLevel of nutrition (JobGiver_PackFood),
-        /// so the unload must not strip a packed lunch that a harvested yield merged into — vanilla would
-        /// just re-pack it (the same fetch-churn loop as the drug/stock sources, need-gated and rarer).
-        /// Mirrors vanilla's math: keep = stackCount − k, k = the fewest units whose removal brings the
-        /// pawn's total packable nutrition within MaxLevel; 0 when the whole stack is surplus.
-        /// </summary>
-        private static int FoodKeepCountOf(Pawn pawn, Thing thing)
-        {
-            if (!pawn.IsColonist || pawn.needs?.food == null)
-                return 0;
-            var def = thing.def;
-            if (!def.IsNutritionGivingIngestible || def.IsDrug
-                || !JobGiver_PackFood.IsGoodPackableFoodFor(thing, pawn, checkMass: false))
-                return 0;
-            float total = JobGiver_PackFood.GetInventoryPackableFoodNutrition(pawn);
-            float maxLevel = pawn.needs.food.MaxLevel;
-            float perUnit = thing.GetStatValue(StatDefOf.Nutrition);
-            if (perUnit <= 0f || total - perUnit * thing.stackCount > maxLevel)
-                return 0; // even without this entire stack the pawn is over its cap — all surplus
-            int k = 0;
-            while (total - perUnit * k > maxLevel)
-                k++;
-            return thing.stackCount - k;
-        }
-
-        /// <summary>Vanilla parity: the count of this def the pawn wants to KEEP in inventory — drug
-        /// policy entries with takeToInventory &gt; 0 plus inventoryStock stock entries (two of the three
-        /// tmpItemsToKeep sources in Pawn_InventoryTracker.FirstUnloadableThing; the third, packable
-        /// food, is per-stack nutrition math — see <see cref="FoodKeepCountOf"/>).</summary>
-        private static int KeepCountOf(Pawn pawn, ThingDef def)
-        {
-            int keep = 0;
-            var policy = pawn.drugs?.CurrentPolicy;
-            if (policy != null)
-                for (int i = 0; i < policy.Count; i++)
-                    if (policy[i].drug == def && policy[i].takeToInventory > 0)
-                        keep += policy[i].takeToInventory;
-            var stockEntries = pawn.inventoryStock?.stockEntries;
-            if (stockEntries != null)
-                foreach (var entry in stockEntries.Values)
-                    if (entry != null && entry.thingDef == def)
-                        keep += entry.count;
-            // Under CE the pawn's assigned loadout (ammo/sidearm reserve) is personal stock too — keep it.
-            keep += CECompat.LoadoutKeepCount(pawn, def);
-            return keep;
-        }
+        // The "surplus above the pawn's personal kit" math now lives in InventorySurplus, so the unload
+        // driver and the cannot-unload alert agree EXACTLY on what is surplus and what is keep-stock.
+        // (Vanilla parity: the three FirstUnloadableThing keep sources — drug policy, inventoryStock,
+        // packable food — plus the CE loadout. See InventorySurplus.)
+        private int UnloadableCountOf(Thing thing) => InventorySurplus.SurplusOf(pawn, thing);
     }
 }
