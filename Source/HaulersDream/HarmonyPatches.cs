@@ -197,4 +197,47 @@ namespace HaulersDream
             yield return unload;
         }
     }
+
+    /// <summary>
+    /// Coalesce vanilla "Load onto pack animal" orders into ONE trip. Each vanilla GiveToPackAnimal order is a
+    /// one-stack-in-hands job, so shift-clicking several = several trips. This redirects them into HD's
+    /// inventory-based <see cref="JobDriver_LoadPackAnimal"/>: the first becomes one HD load job, and each
+    /// subsequent order APPENDS its item to that job's sweep queue — so the pawn sweeps them all into inventory
+    /// and loads the animal in one trip (the job loops fill→deposit, so a large stack still fully loads). Only
+    /// on a caravan/away map with the feature on; off the away map (or with no carrier) vanilla is untouched.
+    /// TryTakeOrderedJob fires only on PLAYER ORDERS (not per tick), so the patch is cheap.
+    /// </summary>
+    [HarmonyPatch(typeof(Verse.AI.Pawn_JobTracker), nameof(Verse.AI.Pawn_JobTracker.TryTakeOrderedJob))]
+    public static class Patch_TryTakeOrderedJob_CoalescePackAnimalLoad
+    {
+        private static readonly AccessTools.FieldRef<Verse.AI.Pawn_JobTracker, Pawn> PawnOf =
+            AccessTools.FieldRefAccess<Verse.AI.Pawn_JobTracker, Pawn>("pawn");
+
+        static bool Prefix(Verse.AI.Pawn_JobTracker __instance, Verse.AI.Job job, JobTag? tag,
+            bool requestQueueing, ref bool __result)
+        {
+            if (job?.def != JobDefOf.GiveToPackAnimal)
+                return true; // not a pack-animal load order — run vanilla
+            var pawn = PawnOf(__instance);
+            if (!PackAnimalLoad.ShouldRedirectGiveToPackAnimal(pawn, job))
+                return true; // feature off / at home / no carrier -> vanilla single-stack load
+            var item = job.targetA.Thing;
+            int count = job.count > 0 ? job.count : item.stackCount;
+            var existing = PackAnimalLoad.FindActiveLoadJob(pawn);
+            if (existing != null)
+            {
+                // Coalesce into the in-progress / queued HD load job — one trip for all the loads.
+                PackAnimalLoad.AppendToLoadJob(existing, item, count);
+                __result = true;
+                return false;
+            }
+            var hd = PackAnimalLoad.BuildRedirectJob(pawn, job);
+            if (hd == null)
+                return true; // couldn't build (carrier vanished) -> let vanilla handle it
+            // Re-enter with the HD job (not a GiveToPackAnimal, so this prefix passes it through). The recursion
+            // preserves the player's queue-vs-now choice (TryTakeOrderedJob reads the same shift state).
+            __result = __instance.TryTakeOrderedJob(hd, tag, requestQueueing);
+            return false;
+        }
+    }
 }

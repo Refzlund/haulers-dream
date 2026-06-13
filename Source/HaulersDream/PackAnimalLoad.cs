@@ -100,6 +100,76 @@ namespace HaulersDream
             QueueDepositOnly(pawn, carrier);
         }
 
+        // ---- coalescing vanilla "Load onto pack animal" (GiveToPackAnimal) orders into ONE trip --------------
+
+        /// <summary>Should a vanilla GiveToPackAnimal order be REDIRECTED into HD's inventory-based load job, so
+        /// several shift-clicked "Load onto pack animal" orders coalesce into one trip (instead of one-stack-in-
+        /// hands per order)? Only on a caravan/away map, with the feature on, a comp, and a usable carrier.</summary>
+        internal static bool ShouldRedirectGiveToPackAnimal(Pawn pawn, Job vanillaJob)
+        {
+            var s = HaulersDreamMod.Settings;
+            if (s == null || !s.loadPackAnimalBulk || !s.enableOnNonHomeMaps)
+                return false;
+            if (pawn?.Map == null || pawn.Map.IsPlayerHome || pawn.Drafted)
+                return false;
+            if (pawn.GetComp<CompHauledToInventory>() == null || pawn.inventory == null)
+                return false;
+            var item = vanillaJob?.targetA.Thing;
+            if (item == null || !item.Spawned || item.def == null || item.def.category != ThingCategory.Item)
+                return false;
+            return FindCarrier(pawn) != null; // no carrier -> let vanilla handle it (it will find none and end)
+        }
+
+        /// <summary>The pawn's active (current or queued) HD load-pack-animal job, or null — the coalesce target
+        /// so successive "Load onto pack animal" orders join one trip rather than each becoming a separate job.</summary>
+        internal static Job FindActiveLoadJob(Pawn pawn)
+        {
+            if (pawn?.jobs == null)
+                return null;
+            if (pawn.CurJobDef == HaulersDreamDefOf.HaulersDream_LoadPackAnimal && pawn.CurJob != null)
+                return pawn.CurJob;
+            var queue = pawn.jobs.jobQueue;
+            if (queue != null)
+                foreach (var qj in queue)
+                    if (qj?.job?.def == HaulersDreamDefOf.HaulersDream_LoadPackAnimal)
+                        return qj.job;
+            return null;
+        }
+
+        /// <summary>Append a chosen item to an existing HD load job's sweep queue (coalescing). The running
+        /// job's fill loop re-reads the queue, so a freshly-appended item is swept in the same (or the next)
+        /// fill pass — one job, as few trips as carry capacity allows.</summary>
+        internal static void AppendToLoadJob(Job loadJob, Thing item, int count)
+        {
+            if (loadJob == null || item == null)
+                return;
+            if (loadJob.targetQueueB == null)
+                loadJob.targetQueueB = new List<LocalTargetInfo>();
+            if (loadJob.countQueue == null)
+                loadJob.countQueue = new List<int>();
+            for (int i = 0; i < loadJob.targetQueueB.Count; i++)
+                if (loadJob.targetQueueB[i].Thing == item)
+                    return; // already queued in this job
+            loadJob.targetQueueB.Add(item);
+            loadJob.countQueue.Add(count > 0 ? count : item.stackCount);
+        }
+
+        /// <summary>Build an HD load job that redirects a vanilla GiveToPackAnimal order: sweep the chosen item
+        /// into inventory, then deposit onto the carrier. Null if no carrier is available.</summary>
+        internal static Job BuildRedirectJob(Pawn pawn, Job vanillaJob)
+        {
+            var item = vanillaJob?.targetA.Thing;
+            var carrier = FindCarrier(pawn);
+            if (item == null || carrier == null)
+                return null;
+            int count = vanillaJob.count > 0 ? vanillaJob.count : item.stackCount;
+            var job = JobMaker.MakeJob(HaulersDreamDefOf.HaulersDream_LoadPackAnimal, carrier);
+            job.targetQueueB = new List<LocalTargetInfo> { item };
+            job.countQueue = new List<int> { count };
+            job.count = 1; // sentinel: a -1 Job.count reads as "broken" in some vanilla checks
+            return job;
+        }
+
         private static void QueueDepositOnly(Pawn pawn, Pawn carrier)
         {
             var job = JobMaker.MakeJob(HaulersDreamDefOf.HaulersDream_LoadPackAnimal, carrier);
