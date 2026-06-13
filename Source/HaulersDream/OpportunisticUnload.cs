@@ -55,25 +55,28 @@ namespace HaulersDream
             if (!target.IsValid)
                 return false;
 
-            // A representative scooped good -> the storage we'd unload it to, plus the total scooped mass.
+            // The total scooped mass, plus the storage we'd unload to. Pick a STORABLE tracked item as the
+            // storage-cell representative: keying off an arbitrary first item meant an un-storable one (e.g. a
+            // rock chunk, which no default stockpile accepts) suppressed the WHOLE pass-by divert even when the
+            // other carried goods could be dropped en route.
             float cap = MassUtility.Capacity(pawn);
             if (cap <= 0f)
                 return false;
-            Thing sample = null;
             float trackedMass = 0f;
+            IntVec3 storageCell = IntVec3.Invalid;
             foreach (var t in tracked)
             {
                 if (t == null || t.Destroyed)
                     continue;
-                if (sample == null)
-                    sample = t;
                 trackedMass += t.stackCount * t.GetStatValue(StatDefOf.Mass);
+                if (!storageCell.IsValid)
+                    StoreUtility.TryFindBestBetterStoreCellFor(t, pawn, pawn.Map,
+                        StoragePriority.Unstored, pawn.Faction, out storageCell, needAccurateResult: false);
             }
-            if (sample == null)
-                return false;
-
-            if (!StoreUtility.TryFindBestBetterStoreCellFor(sample, pawn, pawn.Map,
-                    StoragePriority.Unstored, pawn.Faction, out IntVec3 storageCell, needAccurateResult: false))
+            // Nothing storable to divert toward -> let the trip proceed un-diverted; the end-of-run and
+            // meal/recreation checkpoint triggers (both storage-independent) still make the unload trip,
+            // and the unload driver itself desperately-stores the un-storable items.
+            if (!storageCell.IsValid)
                 return false;
 
             int pawnToTarget = CellDist(pawn.Position, target);

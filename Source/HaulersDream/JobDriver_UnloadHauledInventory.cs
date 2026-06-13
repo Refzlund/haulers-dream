@@ -149,20 +149,50 @@ namespace HaulersDream
                         }
                         countToDrop = next.Count;
                     }
+                    else if (StoreUtility.TryFindStoreCellNearColonyDesperate(next.Thing, pawn, out var desperateCell))
+                    {
+                        // No stockpile (not even a dumping zone) accepts this def — rock chunks are excluded from
+                        // the default stockpile preset, and many modded materials/crops sit in a category no
+                        // stockpile allows. Vanilla's own unload (JobDriver_UnloadYourInventory) does NOT give up
+                        // here: it carries the item to a DESPERATE home-area cell (any reachable spot in / just
+                        // outside the colony). Mirror that, so the item is actually HAULED away instead of dumped
+                        // wherever the pawn happened to be standing (a workbench / dining room) — where the next
+                        // work run would just re-scoop it (mine -> carry -> drop-at-feet -> re-scoop, forever).
+                        job.SetTarget(TargetIndex.A, next.Thing);
+                        job.SetTarget(TargetIndex.B, desperateCell);
+                        // A desperate destination is always a plain cell (never a container). Match the storage
+                        // branch: don't reserve the cell when haul-to-stack is on (several pawns may stack onto it).
+                        bool reserveDest = HaulersDreamMod.Settings == null || !HaulersDreamMod.Settings.haulToStack;
+                        if (reserveDest && !pawn.Map.reservationManager.Reserve(pawn, job, job.targetB))
+                        {
+                            if (pawn.inventory.innerContainer.TryDrop(next.Thing, ThingPlaceMode.Near, next.Count, out _))
+                            {
+                                carried.Remove(next.Thing);
+                                pawn.jobs.curDriver.JumpToToil(begin);
+                                return;
+                            }
+                            EndJobWith(JobCondition.Incompletable);
+                            return;
+                        }
+                        countToDrop = next.Count;
+                        // fall through the toil chain: pull from inventory -> carry to the desperate cell -> place
+                    }
                     else
                     {
-                        // Nowhere better -> drop it here and loop straight to the NEXT tagged item: ending per
-                        // item made the drain cost one idle cycle (250 ticks) per no-storage def. Untag only
-                        // when the drop actually happened; a failed drop keeps the tag with the item still in
-                        // inventory, and ends the job so a stuck drop can't spin this loop forever (every
-                        // iteration otherwise removes one tag, so the loop terminates).
+                        // Truly nowhere reachable to store it -> drop at the pawn's feet and loop straight to the
+                        // NEXT tagged item (ending per item made the drain cost one idle cycle per no-storage def).
+                        // Untag only when the drop actually happened. If even the feet-drop fails (pawn boxed in /
+                        // saturated area), do NOT report Succeeded while keeping the tag — that strands the item
+                        // tagged in inventory and every retry re-fails on the same first-ordered item. End
+                        // Incompletable so the checker re-queues once the pawn has moved and space frees; the tag
+                        // stays (the item is still in inventory) so it's retried and the gizmo stays available.
                         if (pawn.inventory.innerContainer.TryDrop(next.Thing, ThingPlaceMode.Near, next.Count, out _))
                         {
                             carried.Remove(next.Thing);
                             pawn.jobs.curDriver.JumpToToil(begin);
                             return;
                         }
-                        EndJobWith(JobCondition.Succeeded);
+                        EndJobWith(JobCondition.Incompletable);
                     }
                 }
             };
