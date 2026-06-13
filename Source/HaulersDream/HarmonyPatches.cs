@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Reflection;
 using HarmonyLib;
 using RimWorld;
+using RimWorld.Planet;
 using UnityEngine;
 using Verse;
 using Verse.AI;
@@ -172,7 +173,16 @@ namespace HaulersDream
                 yield break;
 
             var comp = __instance.GetComp<CompHauledToInventory>();
-            if (comp == null || comp.GetHashSet().Count == 0)
+            if (comp == null)
+                yield break;
+            // Show the gizmo when HD has tagged stock OR (unloadAllSurplus) the pawn carries any foreign surplus
+            // it would adopt — so the button appears immediately, not only after the backstop's first adopt pass.
+            // HasAnySurplus is read-only (no tagging on the render path); clicking runs forced CheckIfShouldUnload,
+            // which does the adopting + unload. Caravan-loading inventory is intentional, so it's excluded.
+            bool hasTagged = comp.GetHashSet().Count > 0;
+            bool hasForeignSurplus = s.unloadAllSurplus && !__instance.IsFormingCaravan()
+                                     && InventorySurplus.HasAnySurplus(__instance);
+            if (!hasTagged && !hasForeignSurplus)
                 yield break;
 
             var unload = new Command_Action

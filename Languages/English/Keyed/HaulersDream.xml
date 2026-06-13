@@ -6,6 +6,8 @@
   <HaulersDream.Setting.DropThenHaul>Drop on the floor, then pick up (realistic)</HaulersDream.Setting.DropThenHaul>
   <HaulersDream.Setting.DropThenHaulDesc>When ON, harvested/mined goods drop on the ground and the pawn scoops them into its inventory after the work run. When OFF, goods go straight into inventory (no ground touch).</HaulersDream.Setting.DropThenHaulDesc>
   <HaulersDream.Setting.MarkForUnload>Automatically unload scooped goods (at end of work run, around meals and recreation, when overweight, and on the interval below). Off: pawns keep carrying until you press their "Unload inventory" button.</HaulersDream.Setting.MarkForUnload>
+  <HaulersDream.Setting.UnloadAllSurplus>Also put away surplus inventory a pawn is carrying that Hauler's Dream did NOT pick up itself</HaulersDream.Setting.UnloadAllSurplus>
+  <HaulersDream.Setting.UnloadAllSurplusDesc>When on, a colonist at home also unloads any surplus items it's carrying for no reason (from trades, other mods, or manual moves) — not just goods Hauler's Dream scooped. "Surplus" excludes the pawn's kept food, drugs, inventory-stock, and Combat Extended loadout (the same items vanilla keeps); caravan-loading inventory is left alone. This is more thorough than vanilla's occasional auto-unload. Turn OFF if you use a mod that keeps items in a pawn's inventory through its own system (for example Smart Medicine's stock-up, or a sidearm mod) and don't want those put away.</HaulersDream.Setting.UnloadAllSurplusDesc>
 
   <HaulersDream.Setting.ShareHeader>Share carried materials between colonists:</HaulersDream.Setting.ShareHeader>
   <HaulersDream.Setting.ShareForBuilding>Use carried materials for construction</HaulersDream.Setting.ShareForBuilding>

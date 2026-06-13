@@ -15,6 +15,12 @@ namespace HaulersDream
 
         // --- unload defaults / sharing ---
         public bool markForUnload = true;     // automatic unloading (end of work run / checkpoints / full / interval); off = gizmo-only
+        // Also put away surplus a colonist is carrying that HD did NOT scoop (trade/mod/manual stock), not just
+        // HD-tagged loot. "Surplus" = above the pawn's keep-stock (food / drugs / inventoryStock / CE loadout), the
+        // exact set vanilla itself treats as unloadable; caravan-loading inventory (IsFormingCaravan) is left alone.
+        // More aggressive than vanilla's occasional auto-unload — turn OFF if a loadout/stock mod (e.g. Smart
+        // Medicine stock-up, a sidearm mod) keeps items in inventory WITHOUT registering them as keep-stock.
+        public bool unloadAllSurplus = true;
         public bool shareForBuilding = true;  // carried materials count for construction
         public bool shareForCrafting = true;  // carried ingredients count for crafting bills
         // Auto crafting bills: gather all ingredient stacks into inventory in one (overweight) sweep, then let
@@ -200,6 +206,7 @@ namespace HaulersDream
             Scribe_Values.Look(ref carryLimitFraction, "carryLimitFraction", 1.0f);
             Scribe_Values.Look(ref pickupMode, "pickupMode", PickupMode.DropThenHaul);
             Scribe_Values.Look(ref markForUnload, "markForUnload", true);
+            Scribe_Values.Look(ref unloadAllSurplus, "unloadAllSurplus", true);
             Scribe_Values.Look(ref shareForBuilding, "shareForBuilding", true);
             Scribe_Values.Look(ref shareForCrafting, "shareForCrafting", true);
             Scribe_Values.Look(ref inventoryCraftDeliver, "inventoryCraftDeliver", true);
@@ -290,6 +297,8 @@ namespace HaulersDream
                 "HaulersDream.Setting.DropThenHaulDesc".Translate());
             pickupMode = dropThenHaul ? PickupMode.DropThenHaul : PickupMode.DirectToInventory;
             l.CheckboxLabeled("HaulersDream.Setting.MarkForUnload".Translate(), ref markForUnload);
+            l.CheckboxLabeled("HaulersDream.Setting.UnloadAllSurplus".Translate(), ref unloadAllSurplus,
+                "HaulersDream.Setting.UnloadAllSurplusDesc".Translate());
 
             l.GapLine();
             l.Label("HaulersDream.Setting.ShareHeader".Translate());

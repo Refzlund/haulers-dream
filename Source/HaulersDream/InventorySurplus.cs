@@ -27,6 +27,23 @@ namespace HaulersDream
             return System.Math.Min(thing.stackCount, surplus);
         }
 
+        /// <summary>True if the pawn holds ANY inventory stack with surplus above its keep-stock — i.e. the
+        /// "unload all surplus" option would have something to put away (tag-independent: counts foreign stock
+        /// HD never scooped). Read-only — safe on the render/gizmo path (no tagging, no Rand, no CE notify).</summary>
+        public static bool HasAnySurplus(Pawn pawn)
+        {
+            var inner = pawn?.inventory?.innerContainer;
+            if (inner == null)
+                return false;
+            for (int i = 0; i < inner.Count; i++)
+            {
+                var t = inner[i];
+                if (t != null && !t.Destroyed && SurplusOf(pawn, t) > 0)
+                    return true;
+            }
+            return false;
+        }
+
         /// <summary>Can the unload place this anywhere — a real stockpile/container, OR (failing that) a
         /// desperate home-area cell (exactly the two destinations JobDriver_UnloadHauledInventory tries)?
         /// Wrapped in Rand.PushState/PopState so it is safe to call from the per-frame alert/render path: both

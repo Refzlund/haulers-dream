@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using HaulersDream.Core;
 using RimWorld;
+using RimWorld.Planet;
 using Verse;
 using Verse.AI;
 
@@ -55,7 +56,6 @@ namespace HaulersDream
             if (pawn.Map != null && !pawn.Map.IsPlayerHome)
                 return;
 
-            var carried = comp.GetHashSet();
             // A FORCED unload (the gizmo, an end-of-batch flush) is RECOVERY, not work — it must function even
             // for a pawn that became scoop-ineligible (hauling-incapable after a settings flip), or the recovery
             // button is silently dead while tagged stock strands in inventory. (Drafted pawns never get here —
@@ -63,6 +63,19 @@ namespace HaulersDream
             bool eligible = pawn.Faction == Faction.OfPlayerSilentFail
                             && (forced || YieldRouter.IsEligible(pawn))
                             && pawn.inventory?.innerContainer != null;
+
+            // "Unload all surplus": before reading the tracked set, ADOPT (tag) any inventory the pawn is
+            // carrying that HD never scooped but that is surplus above its keep-stock — so foreign trade / mod /
+            // manual stock unloads exactly like HD-scooped loot through the same tag-scoped pass below (and shows
+            // the gizmo, fires the alert if stuck, etc., with no other code changes). Gated to eligible (humanlike
+            // colonists / allowed mechs — the same predicate as scoop/unload) and NOT mid caravan-loading
+            // (IsFormingCaravan inventory is deliberate). Keep-stock (food / drugs / inventoryStock / CE loadout)
+            // has SurplusOf==0, so it is never adopted; once a stack is unloaded out of inventory the def's tag
+            // self-prunes in CompHauledToInventory.GetHashSet.
+            if (eligible && settings.unloadAllSurplus && !pawn.IsFormingCaravan())
+                AdoptSurplusInventory(pawn, comp);
+
+            var carried = comp.GetHashSet();
             int inventoryCount = pawn.inventory?.innerContainer?.Count ?? 0;
             bool alreadyUnloading = pawn.CurJobDef == HaulersDreamDefOf.HaulersDream_UnloadInventory
                                     || HasQueuedUnload(pawn);
@@ -130,6 +143,35 @@ namespace HaulersDream
                         return;
                 }
             }
+        }
+
+        /// <summary>
+        /// "Unload all surplus" (opt-in): tag every inventory stack with surplus above the pawn's keep-stock,
+        /// so stock HD never scooped (trade / mod / manual) is unloaded by the normal tag-scoped pass. Bounded
+        /// to surplus (keep-stock has SurplusOf==0 → never tagged), so it can't strip food / drugs / inventory-
+        /// stock / CE loadout. RegisterHauledItem is idempotent (a HashSet add) and notifies CE's HoldTracker so
+        /// a CE loadout doesn't floor-drop the adopted stock before the unload trip runs. Callers gate on
+        /// eligibility + !IsFormingCaravan.
+        /// </summary>
+        private static void AdoptSurplusInventory(Pawn pawn, CompHauledToInventory comp)
+        {
+            var inner = pawn.inventory?.innerContainer;
+            if (inner == null || comp == null)
+                return;
+            int adopted = 0;
+            for (int i = 0; i < inner.Count; i++)
+            {
+                var t = inner[i];
+                if (t != null && !t.Destroyed && InventorySurplus.SurplusOf(pawn, t) > 0)
+                {
+                    int before = comp.PeekHashSet().Count;
+                    comp.RegisterHauledItem(t);
+                    if (comp.PeekHashSet().Count > before)
+                        adopted++;
+                }
+            }
+            if (adopted > 0)
+                HDLog.Dbg($"{pawn} adopted {adopted} surplus inventory stack(s) it did not scoop (unloadAllSurplus).");
         }
 
         /// <summary>True if at least one tracked stack still in the pawn's inventory has surplus above the

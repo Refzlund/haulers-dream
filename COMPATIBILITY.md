@@ -103,6 +103,18 @@ put away (see the in-game "Cannot unload inventory" alert).
   by decompiling the installed assemblies; LWM/RimFridge/Reel's hit the same `GetMaxItemsAllowedInCell`
   path — expected to compose, untested.)
 
+### Loadout / inventory-stock mods vs. the "unload all surplus" option
+The **"Also put away surplus inventory a pawn is carrying that HD did NOT pick up itself"** option (on by
+default) makes a colonist at home unload *any* surplus it carries, not just HD-scooped loot. "Surplus"
+respects every keep source vanilla itself respects — drug-policy `takeToInventory`, `inventoryStock`,
+packable food, and the **Combat Extended** loadout — so those are never put away. The risk is a mod that
+keeps items in a pawn's inventory through its **own** system rather than one of those:
+- **Smart Medicine** (stock-up) and **sidearm mods (e.g. Simple Sidearms)** stash items in inventory via
+  their own tracking. HD's surplus math can't see that intent, so with the option on it may haul those
+  stashed items to storage. If you use such a mod and want the stash kept, **turn the option off** in
+  HD's settings (the gizmo, the every-work-run/interval triggers, and the red alert still handle
+  genuinely-stuck HD-scooped loot when it's off). CE loadouts are safe — HD reads the CE loadout as keep-stock.
+
 ### Adds storable content — all standard categories (no black-hole risk)
 - **Melee Animation** — lassos (apparel, `ApparelUtility`) + a melee weapon. **Vanilla Expanded
   Framework** — a minified flower + a `VFEC_Shields` category parented under the default `Apparel`
