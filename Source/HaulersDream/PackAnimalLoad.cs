@@ -112,11 +112,11 @@ namespace HaulersDream
                 return false;
             if (pawn?.Map == null || pawn.Map.IsPlayerHome || pawn.Drafted)
                 return false;
-            // Same pawn-type gate as scoop / bulk-haul / unload (YieldRouter.IsEligible): only humanlike
-            // colonists and allowed mechs bulk-redirect; anything else falls through to the vanilla one-stack
-            // GiveToPackAnimal. Keeps the load/unload sides symmetric for non-standard (robot/animal) pawns.
-            if (!YieldRouter.IsEligible(pawn))
-                return false;
+            // NO IsEligible gate: this only COALESCES the player's own vanilla "Load onto pack animal" orders into
+            // one trip, and the swept loot goes onto the ANIMAL (never stranded in the pawn's inventory), so the
+            // automatic-hauling eligibility that gates bulk-haul does not apply. A specialist incapable of dumb-
+            // labor hauling — whose single-stack load order vanilla already accepts — should still get the
+            // coalesced trip rather than being silently dropped back to one-stack-in-hands.
             if (pawn.GetComp<CompHauledToInventory>() == null || pawn.inventory == null)
                 return false;
             var item = vanillaJob?.targetA.Thing;
@@ -205,8 +205,11 @@ namespace HaulersDream
                 return null;
             if (pawn.GetComp<CompHauledToInventory>() == null || pawn.inventory == null)
                 return null;
-            if (!YieldRouter.IsEligible(pawn))
-                return null; // pawn-type gate, symmetric with bulk-haul / scoop / unload (non-mech robots, animals)
+            // NO IsEligible gate here: this is a PLAYER ORDER (the float-menu provider is the gatekeeper), and the
+            // swept loot is deposited onto the ANIMAL — never stranded in the pawn's inventory — so the load/unload
+            // symmetry that gates the AUTOMATIC bulk-haul (BulkHaul.BuildBulkJob, which keeps its IsEligible gate)
+            // does not apply. A specialist incapable of dumb-labor hauling can still be ordered to load, matching
+            // vanilla "Load onto pack animal".
 
             float ceiling = CeilingKg(pawn, s);
             float running = MassUtility.GearAndInventoryMass(pawn);

@@ -36,8 +36,11 @@ namespace HaulersDream
                 yield break;
             if (pawn.GetComp<CompHauledToInventory>() == null)
                 yield break;
-            if (pawn.WorkTagIsDisabled(WorkTags.Hauling)
-                || !pawn.health.capacities.CapableOf(PawnCapacityDefOf.Manipulation))
+            // Like vanilla's "Load onto pack animal" (and UNLIKE automatic hauling), this is a PLAYER ORDER, so
+            // it must NOT require the Hauling work-tag: a specialist incapable of dumb-labor hauling (e.g. a
+            // doctor delivering materials to construction) can still be ordered to load a pack animal, exactly
+            // as vanilla allows. Only the physical capability to pick things up is required.
+            if (!pawn.health.capacities.CapableOf(PawnCapacityDefOf.Manipulation))
                 yield break;
             var carrier = GiveToPackAnimalUtility.UsablePackAnimalWithTheMostFreeSpace(pawn);
             if (carrier == null)
