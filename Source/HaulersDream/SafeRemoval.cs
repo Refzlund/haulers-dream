@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using HarmonyLib;
 using RimWorld;
 using Verse;
 using Verse.AI;
@@ -135,6 +136,117 @@ namespace HaulersDream
                 comp.Deregister(thing);
             }
             return any;
+        }
+
+        // ---------------------------------------------------------------------------------------------
+        // Automatic protection: rewrite HD jobs to a harmless placeholder in the WRITTEN SAVE ONLY, so a
+        // save is always safe to disable the mod from — without touching the live game. See the patch below.
+        // ---------------------------------------------------------------------------------------------
+
+        /// <summary>A vanilla JobDef that always resolves and whose cleanup is harmless. Saved HD jobs are
+        /// rewritten to this; on load they are cleanly ended by vanilla (curDriver is nulled, so
+        /// Pawn_JobTracker.ExposeData's PostLoadInit ends the job) instead of NRE-ing on a missing def.</summary>
+        private static JobDef PlaceholderDef => JobDefOf.Wait;
+
+        /// <summary>The pre-save job state stashed so the LIVE game is restored byte-for-byte after the save
+        /// bytes are written. The game is frozen on the main thread during serialization, so this swap/restore
+        /// window is never observed by a tick.</summary>
+        public sealed class SaveSwapState
+        {
+            public Pawn_JobTracker tracker;
+            public JobDriver stashedCurDriver;
+            public bool curDriverNulled;
+            public readonly List<Job> jobs = new List<Job>();
+            public readonly List<JobDef> defs = new List<JobDef>();
+        }
+
+        /// <summary>Just before this pawn's job tracker serializes (Saving mode), rewrite any HD job (current +
+        /// queued) to <see cref="PlaceholderDef"/> and null the current driver, so the WRITTEN bytes contain no
+        /// HD JobDef/JobDriver reference. Returns the stash to restore afterwards, or null if nothing changed
+        /// (the common case — most pawns are not in an HD job). The live job objects are mutated in place and
+        /// restored by <see cref="RestoreAfterSave"/> in the patch finalizer.</summary>
+        public static SaveSwapState NeutralizeForSave(Pawn_JobTracker tracker)
+        {
+            if (tracker == null)
+                return null;
+            SaveSwapState state = null;
+
+            var cur = tracker.curJob;
+            if (cur != null && IsHaulersDreamJob(cur.def))
+            {
+                state = new SaveSwapState { tracker = tracker };
+                state.jobs.Add(cur);
+                state.defs.Add(cur.def);
+                cur.def = PlaceholderDef;
+                // Null the driver so the saved job has curDriver==null && curJob!=null -> vanilla's PostLoadInit
+                // cleanly ENDS it (the placeholder def resolves, so no NRE), with or without HD present on load.
+                state.stashedCurDriver = tracker.curDriver;
+                state.curDriverNulled = true;
+                tracker.curDriver = null;
+            }
+
+            var queue = tracker.jobQueue;
+            if (queue != null)
+            {
+                foreach (var qj in queue)
+                {
+                    if (qj?.job != null && IsHaulersDreamJob(qj.job.def))
+                    {
+                        if (state == null)
+                            state = new SaveSwapState { tracker = tracker };
+                        state.jobs.Add(qj.job);
+                        state.defs.Add(qj.job.def);
+                        qj.job.def = PlaceholderDef;
+                    }
+                }
+            }
+
+            return state;
+        }
+
+        /// <summary>Restores the live job state stashed by <see cref="NeutralizeForSave"/>. Pure field
+        /// reassignment of held references — cannot fail — and runs in the patch FINALIZER so it happens even if
+        /// serialization throws (the live game is never left with a placeholder job).</summary>
+        public static void RestoreAfterSave(SaveSwapState state)
+        {
+            if (state == null)
+                return;
+            for (int i = 0; i < state.jobs.Count; i++)
+                state.jobs[i].def = state.defs[i];
+            if (state.curDriverNulled && state.tracker != null)
+                state.tracker.curDriver = state.stashedCurDriver;
+        }
+    }
+
+    /// <summary>
+    /// Makes every save automatically safe to disable Hauler's Dream from: during serialization only, an HD job
+    /// on a pawn is rewritten to a harmless vanilla placeholder (see <see cref="SafeRemoval.NeutralizeForSave"/>),
+    /// then the live job is restored in the finalizer — so colonists are never interrupted during play, but the
+    /// bytes on disk reference no HD JobDef. Without this, a pawn saved mid-HD-job leaves a null-def job when the
+    /// mod is removed, which bricks the save's load (see SafeRemoval's class doc). Gated on Scribe Saving mode and
+    /// the safeRemovalOnSave setting (default on; a kill-switch in case it ever conflicts with another save patch).
+    /// Safe because RimWorld serializes synchronously on the main thread (game frozen), so the swap/restore window
+    /// is never observed by a tick.
+    /// </summary>
+    [HarmonyPatch(typeof(Pawn_JobTracker), nameof(Pawn_JobTracker.ExposeData))]
+    public static class Patch_PawnJobTracker_ExposeData_RemovalSafety
+    {
+        private static void Prefix(Pawn_JobTracker __instance, ref SafeRemoval.SaveSwapState __state)
+        {
+            __state = null;
+            if (Scribe.mode != LoadSaveMode.Saving)
+                return;
+            var settings = HaulersDreamMod.Settings;
+            if (settings != null && !settings.safeRemovalOnSave)
+                return;
+            __state = SafeRemoval.NeutralizeForSave(__instance);
+        }
+
+        // Finalizer (not Postfix) so the live job is restored even if serialization throws; it returns void and
+        // takes no Exception param, so it never swallows an in-flight exception (no-suppression policy).
+        private static void Finalizer(SafeRemoval.SaveSwapState __state)
+        {
+            SafeRemoval.RestoreAfterSave(__state);
         }
     }
 }

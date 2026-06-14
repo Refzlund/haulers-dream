@@ -2,23 +2,25 @@
 "haulers-dream": minor
 ---
 
-**Add a "Prepare to safely remove this mod" action so disabling Hauler's Dream no longer risks breaking a save.**
+**Disabling Hauler's Dream from an existing save no longer risks breaking that save — automatically.**
 
-Removing any mod that adds custom jobs (Hauler's Dream, Pick Up And Haul, etc.) from an *active* save is an
-unsupported RimWorld operation: if a colonist is mid-task when you save, the job's now-missing definition can't
-load, and vanilla's own cleanup of that broken job can fail — leaving a pawn in a bad state that other UI mods
-(e.g. Color Coded Mood Bar) can choke on, blanking the in-game HUD. Once a mod is disabled none of its code runs,
-so it can only protect you *before* removal.
+Removing any mod that adds custom jobs from an *active* save is an unsupported RimWorld operation: if a
+colonist is mid-task when you save, the job's now-missing definition can't load, vanilla's own cleanup of that
+broken job can fail, and a pawn left in that state can make other UI mods (e.g. Color Coded Mood Bar) blank the
+in-game HUD. A disabled mod's code never runs, so it can only protect you *before* removal.
 
-Hauler's Dream now ships that protection:
+Hauler's Dream now does that protection **automatically, with no action required**:
 
-- **Mod Settings → "Prepare to safely remove this mod"** stops every in-progress and queued Hauler's Dream task
-  on all colonists/caravans and returns any items they had scooped into their packs to the ground. Click it,
-  save your game, then it's safe to disable the mod — the save will load cleanly with Hauler's Dream gone.
-- A matching **Dev Mode debug action** ("Hauler's Dream → Prepare for safe removal") does the same.
-- The mod description and settings now document the recommended removal procedure.
+- **Automatic on-save protection (default on):** whenever the game is saved, Hauler's Dream rewrites its own
+  in-progress jobs to a harmless placeholder *in the written save file only* — your colonists are never
+  interrupted during play. The result is that every save is always safe to disable the mod from. (When you load
+  such a save, RimWorld may log a harmless "cleaning up job state" notice for any colonist that was mid-task;
+  they simply re-pick their work.) There's a toggle to turn it off if it ever conflicts with another save mod.
+- **Manual one-shot button + Dev action** (*Mod Settings → "Prepare to safely remove this mod now"*): stops
+  in-progress Hauler's Dream tasks on the loaded game and returns scooped items to the ground. Mainly useful for
+  a save first made with an older version of the mod.
+- The mod description now states it's safe to remove from existing saves.
 
-This is intentionally a manual action (not run automatically on every save), so it never interrupts your
-colonists during normal play. It protects any save made after clicking it; a save already created with an
-in-progress Hauler's Dream job can be fixed by re-enabling the mod, loading, clicking the button, saving, then
-disabling.
+This is safe by construction: RimWorld serializes synchronously on the main thread (the game is frozen during a
+save), so the rewrite-then-restore happens entirely within the save and is never observed by the running game.
+It protects every save written by this version onward.

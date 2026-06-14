@@ -23,5 +23,5 @@
 
 Also adds small micro-management improvements that build on these changes.
 
-Requires Harmony. Safe to add to existing saves. To remove it from an existing save, first open Mod Settings and click "Prepare to safely remove this mod", then save your game and disable the mod.</description>
+Requires Harmony. Safe to add to existing saves, and safe to remove from them: while it is installed it automatically keeps your saves safe to disable it from, so you can turn it off later without breaking the save.</description>
 </ModMetaData>

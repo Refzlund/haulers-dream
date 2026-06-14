@@ -187,6 +187,11 @@ namespace HaulersDream
         public bool hideGizmo = false;
         public bool verboseLogging = false;
 
+        // Automatic save-disable protection: rewrite HD jobs to a harmless placeholder in the WRITTEN save only,
+        // so a save is always safe to disable the mod from (no effect on the live game). Default on; kill-switch
+        // in case it ever conflicts with another save-path mod. See SafeRemoval / Patch_PawnJobTracker_ExposeData.
+        public bool safeRemovalOnSave = true;
+
         public bool IsTypeEnabled(HaulSourceType type)
             => WorkTypePolicy.IsTypeEnabled(type, haulHarvest, haulMining, haulDeepDrill, haulDeconstruct, haulAnimals, haulStrip);
 
@@ -321,6 +326,7 @@ namespace HaulersDream
             Scribe_Values.Look(ref enableOnNonHomeMaps, "enableOnNonHomeMaps", true);
             Scribe_Values.Look(ref hideGizmo, "hideGizmo", false);
             Scribe_Values.Look(ref verboseLogging, "verboseLogging", false);
+            Scribe_Values.Look(ref safeRemovalOnSave, "safeRemovalOnSave", true);
         }
 
         /// <summary>The decoded per-item rules keyed by defName, including entries whose mod is currently absent
@@ -637,10 +643,12 @@ namespace HaulersDream
             l.GapLine();
             l.CheckboxLabeled("HaulersDream.Setting.VerboseLogging".Translate(), ref verboseLogging);
 
-            // Safe-removal affordance: clears all in-progress Hauler's Dream jobs from the loaded game so the
-            // player can disable the mod without a custom JobDef being left dangling in the save (which would
-            // brick that save's next load — see SafeRemoval). Shown last because it's a one-off maintenance action.
+            // Safe-removal: the automatic protection (rewrite HD jobs in the written save so disabling the mod
+            // never leaves a dangling JobDef that bricks the load) + a manual one-shot button. Shown last because
+            // it's maintenance, not gameplay. See SafeRemoval / Patch_PawnJobTracker_ExposeData_RemovalSafety.
             l.GapLine();
+            l.CheckboxLabeled("HaulersDream.Setting.SafeRemovalOnSave".Translate(), ref safeRemovalOnSave,
+                "HaulersDream.Setting.SafeRemovalOnSaveDesc".Translate());
             if (l.ButtonText("HaulersDream.Setting.PrepareRemoval".Translate()))
             {
                 if (Current.Game == null)
