@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using RimWorld;
 using Verse;
 using Verse.AI;
@@ -58,10 +59,20 @@ namespace HaulersDream
             // carry that intent: with RouteIntent left at None and the global orderedConstructTether OFF, the
             // conversion would hand back the PLAIN deliver def — whose finish never calls QueueNext — and a
             // haul+build route would lose its tether from the second material onward.
+            //
+            // It must ALSO carry the route's remaining whole-route demand: the route executor only published
+            // RouteDemandByDef for the FIRST material it gathered (synchronously, at route creation). Every
+            // OTHER material per stop (steel/components after the wood) is delivered through THIS tether — so
+            // without the demand here, each one gathered only a single frame's worth and the pawn topped off
+            // at the stockpile for steel after every wall. Publishing the remaining whole-route demand lets the
+            // first steel trip load the route's steel in one sweep; the driver's entry gate then delivers the
+            // intervening frames from the carried surplus. Restored in the finally (symmetric with RouteIntent).
             var priorIntent = InventoryConstructDelivery.RouteIntent;
+            var priorDemand = InventoryConstructDelivery.RouteDemandByDef;
             try
             {
                 InventoryConstructDelivery.RouteIntent = ConstructRouteIntent.HaulBuild;
+                InventoryConstructDelivery.RouteDemandByDef = RemainingRouteDemand(pawn, site);
                 foreach (var scanner in DeliverScanners())
                 {
                     // No try/catch: the deliver scanner throwing is a real bug to surface (the outer finally still
@@ -80,8 +91,58 @@ namespace HaulersDream
             finally
             {
                 InventoryConstructDelivery.RouteIntent = priorIntent;
+                InventoryConstructDelivery.RouteDemandByDef = priorDemand;
             }
             return false;
+        }
+
+        /// <summary>
+        /// The per-def material still needed by the constructible at <paramref name="site"/> PLUS every other
+        /// construction site this pawn has queued ahead (its remaining route stops). Lets a tethered delivery
+        /// of a SECOND material (steel after wood) gather the WHOLE route's steel in one sweep — the same way
+        /// the route executor batches the first material — so later steel deliveries come from the carried
+        /// surplus instead of a per-wall stockpile trip. Needers are deduped by identity (a frame can have
+        /// more than one queued material job); destroyed / despawned / non-constructible queued targets are
+        /// skipped. For a plain single-building tether (no queued route stops) this reduces to just the
+        /// building's own per-def need — a no-op vs the old single-frame gather.
+        /// </summary>
+        private static Dictionary<ThingDef, int> RemainingRouteDemand(Pawn pawn, Thing site)
+        {
+            var demand = new Dictionary<ThingDef, int>();
+            var seen = new HashSet<Thing>();
+            AccumulateDemand(site, demand, seen);
+            var queue = pawn.jobs?.jobQueue;
+            if (queue != null)
+                for (int i = 0; i < queue.Count; i++)
+                {
+                    var job = queue[i]?.job;
+                    if (job == null)
+                        continue;
+                    if (job.def == HaulersDreamDefOf.HaulersDream_ConstructDeliverBuild
+                        || job.def == HaulersDreamDefOf.HaulersDream_OverloadConstructDeliver)
+                        AccumulateDemand(job.targetB.Thing ?? job.targetC.Thing, demand, seen);
+                }
+            return demand;
+        }
+
+        private static void AccumulateDemand(Thing t, Dictionary<ThingDef, int> demand, HashSet<Thing> seen)
+        {
+            if (t == null || t.Destroyed || !t.Spawned || !(t is IConstructible ic) || !seen.Add(t))
+                return;
+            var costs = ic.TotalMaterialCost();
+            if (costs == null)
+                return;
+            for (int k = 0; k < costs.Count; k++)
+            {
+                var d = costs[k]?.thingDef;
+                if (d == null)
+                    continue;
+                int n = ic.ThingCountNeeded(d);
+                if (n <= 0)
+                    continue;
+                demand.TryGetValue(d, out int cur);
+                demand[d] = cur + n;
+            }
         }
 
         /// <summary>The blueprint or frame of <paramref name="faction"/> at <paramref name="cell"/> — the original

@@ -117,5 +117,73 @@ namespace HaulersDream.Tests
                 Assert.That(load2, Is.LessThanOrEqualTo(110), $"level {lv} exceeded availability");
             }
         }
+
+        // ---- ShouldLoadBeforeDeliver: the route "top off after every wall" fix ----
+        // The driver makes a stockpile LOAD trip only when carried stock can't cover the IMMEDIATE frame.
+
+        [Test]
+        public void ShouldLoad_EmptyInventory_NeedsToLoad()
+        {
+            // First stop (or after running dry): carries nothing, frame needs 5 -> must trip and load.
+            Assert.That(ConstructDeliveryPlan.ShouldLoadBeforeDeliver(inventoryUnits: 0, immediateNeedUnits: 5), Is.True);
+        }
+
+        [Test]
+        public void ShouldLoad_CarriesEnough_DeliversFromInventory()
+        {
+            // The fix: mid-route the pawn carries a big batch (63) and the frame needs 5 -> NO stockpile trip.
+            Assert.That(ConstructDeliveryPlan.ShouldLoadBeforeDeliver(inventoryUnits: 63, immediateNeedUnits: 5), Is.False);
+        }
+
+        [Test]
+        public void ShouldLoad_BoundaryExactlyEnough_DeliversFromInventory()
+        {
+            // Carries exactly the frame's need -> deliver from inventory, don't trip.
+            Assert.That(ConstructDeliveryPlan.ShouldLoadBeforeDeliver(inventoryUnits: 5, immediateNeedUnits: 5), Is.False);
+        }
+
+        [Test]
+        public void ShouldLoad_BoundaryOneShort_NeedsToLoad()
+        {
+            // One unit short of the frame's need -> trip (and the fill loop then refills to the ceiling).
+            Assert.That(ConstructDeliveryPlan.ShouldLoadBeforeDeliver(inventoryUnits: 4, immediateNeedUnits: 5), Is.True);
+        }
+
+        [Test]
+        public void ShouldLoad_NothingNeeded_DoesNotLoad()
+        {
+            // Frame already satisfied (enroute-covered) -> nothing to load even with an empty inventory.
+            Assert.That(ConstructDeliveryPlan.ShouldLoadBeforeDeliver(inventoryUnits: 0, immediateNeedUnits: 0), Is.False);
+            Assert.That(ConstructDeliveryPlan.ShouldLoadBeforeDeliver(inventoryUnits: 99, immediateNeedUnits: 0), Is.False);
+        }
+
+        [Test]
+        public void RouteCadence_OneTripPerCeiling_NotPerFrame()
+        {
+            // End-to-end contract: simulate a wall line where the WHOLE route demand far exceeds the carry
+            // ceiling, driving the trip decision with ShouldLoadBeforeDeliver and refilling to the ceiling
+            // on each trip. The fix's promise is "one stockpile trip per ceiling-worth," NOT one per wall.
+            const int walls = 30;       // 30 walls
+            const int perWall = 5;      // 5 wood each -> 150 total, far above the ceiling
+            const int ceiling = 68;     // ~Fair ceiling for a 35 kg colonist, 1 kg wood
+
+            int inventory = 0;
+            int trips = 0;
+            for (int wall = 0; wall < walls; wall++)
+            {
+                if (ConstructDeliveryPlan.ShouldLoadBeforeDeliver(inventory, perWall))
+                {
+                    trips++;
+                    inventory = ceiling; // the fill loop tops up to the ceiling when it does trip
+                }
+                inventory -= perWall;    // deliver this wall from the carried stock
+            }
+
+            // Old behaviour topped off on essentially every wall (~30 trips); the fix is ceil(total/ceiling).
+            int total = walls * perWall;
+            int expected = (total + ceiling - 1) / ceiling; // ceil(150/68) = 3
+            Assert.That(trips, Is.EqualTo(expected), "should reload once per ceiling-worth, not per wall");
+            Assert.That(trips, Is.LessThan(walls), "must be far fewer trips than walls");
+        }
     }
 }
