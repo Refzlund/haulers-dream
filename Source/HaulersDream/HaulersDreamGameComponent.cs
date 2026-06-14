@@ -239,6 +239,15 @@ namespace HaulersDream
             return false;
         }
 
+        /// <summary>True when this component holds nothing that needs to persist across a save/load — i.e. no
+        /// active vein-reveal trackers. The on-save removal-safety patch (see SafeRemoval) omits the component
+        /// from the WRITTEN save when this is true, so disabling Hauler's Dream loads with no "could not load
+        /// class HaulersDreamGameComponent" error; nothing is lost (a fresh component is re-created by RimWorld's
+        /// FillComponents on the next load while HD is present). When trackers ARE active (a fog mining route mid
+        /// extension), the component is kept so the trackers persist — the rare cost being one harmless load
+        /// warning if the mod is removed at that exact moment.</summary>
+        public bool HasNoSavedState => veinTrackers == null || veinTrackers.Count == 0;
+
         public override void ExposeData()
         {
             base.ExposeData();

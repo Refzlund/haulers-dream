@@ -216,6 +216,64 @@ namespace HaulersDream
             if (state.curDriverNulled && state.tracker != null)
                 state.tracker.curDriver = state.stashedCurDriver;
         }
+
+        // ---------------------------------------------------------------------------------------------
+        // Automatic protection, part 2: omit HD's own Game/Map components from the WRITTEN SAVE so removing
+        // the mod doesn't log "Could not find class HaulersDream..." / "Can't load abstract class" on load.
+        // RimWorld auto-recreates a missing GameComponent/MapComponent via Game.FillComponents/Map.FillComponents
+        // on the next load (verified against Assembly-CSharp), so the component is restored intact while HD is
+        // present; the live game keeps its component (re-inserted in the patch finalizer, below).
+        // ---------------------------------------------------------------------------------------------
+
+        /// <summary>The component temporarily pulled out of a (Game/Map) components list for serialization, plus
+        /// where it was, so the finalizer can re-insert it in place. Uses the non-generic IList view so one helper
+        /// serves both List&lt;GameComponent&gt; and List&lt;MapComponent&gt;.</summary>
+        public sealed class ComponentStripState
+        {
+            public System.Collections.IList list;
+            public object component;
+            public int index;
+        }
+
+        /// <summary>Remove <paramref name="component"/> from <paramref name="list"/> for the duration of the save,
+        /// remembering its index. Returns null (no-op) if it isn't present. Pure list mutation on the frozen main
+        /// thread — never observed by a tick.</summary>
+        public static ComponentStripState StripComponent(System.Collections.IList list, object component)
+        {
+            if (list == null || component == null)
+                return null;
+            int idx = list.IndexOf(component);
+            if (idx < 0)
+                return null;
+            list.RemoveAt(idx);
+            return new ComponentStripState { list = list, component = component, index = idx };
+        }
+
+        /// <summary>Restore the stripped component to its original index, leaving EXACTLY ONE instance of its type
+        /// in the list. Runs in the patch FINALIZER so the live list is restored even if serialization throws.
+        /// <para>
+        /// Why "leave exactly one" and not a simple re-insert: <c>Map.ExposeComponents</c> calls
+        /// <c>Map.FillComponents()</c> UNCONDITIONALLY at its tail (verified in Assembly-CSharp), so during the SAVE
+        /// — right after the list is serialized without our component — vanilla re-adds a FRESH instance of it to
+        /// the live list. A plain re-insert would then leave TWO (the fresh one + our original), and the next save
+        /// would only strip one, serializing the other back into the file (re-introducing the very "could not load
+        /// class" error this removes, with the count climbing per save). So: drop every instance of the type, then
+        /// re-insert ONLY the original (preserving its identity/transient state) at its index. (Game.FillComponents
+        /// is load-only, so the Game patch never sees the fresh re-add — but the dedup is correct there too.)
+        /// </para></summary>
+        public static void RestoreComponentDedup<T>(ComponentStripState state) where T : class
+        {
+            if (state?.list == null || state.component == null)
+                return;
+            var list = state.list;
+            for (int i = list.Count - 1; i >= 0; i--)
+                if (list[i] is T)
+                    list.RemoveAt(i);
+            int idx = state.index;
+            if (idx < 0 || idx > list.Count)
+                idx = list.Count;
+            list.Insert(idx, state.component);
+        }
     }
 
     /// <summary>
@@ -247,6 +305,71 @@ namespace HaulersDream
         private static void Finalizer(SafeRemoval.SaveSwapState __state)
         {
             SafeRemoval.RestoreAfterSave(__state);
+        }
+    }
+
+    /// <summary>
+    /// Omits <see cref="HaulersDreamGameComponent"/> from the WRITTEN save (only while it carries no persistent
+    /// state — see <see cref="HaulersDreamGameComponent.HasNoSavedState"/>), so disabling the mod no longer logs
+    /// "Could not find class HaulersDreamGameComponent" / "Can't load abstract class Verse.GameComponent" on load.
+    /// The live game keeps the component (re-inserted in the finalizer); RimWorld's Game.FillComponents re-creates
+    /// it on the next load while HD is present, so nothing is lost. Gated on Scribe Saving + safeRemovalOnSave.
+    /// Game.ExposeData is the save path only (it early-returns on LoadingVars), so the Saving guard is sufficient.
+    /// </summary>
+    [HarmonyPatch(typeof(Game), nameof(Game.ExposeData))]
+    public static class Patch_Game_ExposeData_RemovalSafety
+    {
+        private static void Prefix(Game __instance, ref SafeRemoval.ComponentStripState __state)
+        {
+            __state = null;
+            if (Scribe.mode != LoadSaveMode.Saving)
+                return;
+            var settings = HaulersDreamMod.Settings;
+            if (settings != null && !settings.safeRemovalOnSave)
+                return;
+            var comp = __instance.GetComponent<HaulersDreamGameComponent>();
+            // Keep it (don't strip) when it holds active vein-reveal trackers, so that state persists; the rare
+            // cost is one harmless load warning if the mod is removed mid fog-route. Empty is the common case.
+            if (comp == null || !comp.HasNoSavedState)
+                return;
+            __state = SafeRemoval.StripComponent(__instance.components, comp);
+        }
+
+        private static void Finalizer(SafeRemoval.ComponentStripState __state)
+        {
+            SafeRemoval.RestoreComponentDedup<HaulersDreamGameComponent>(__state);
+        }
+    }
+
+    /// <summary>
+    /// Omits <see cref="MapComponent_RoutePreview"/> (a purely transient route-preview overlay — it persists no
+    /// data) from each map's WRITTEN save, so disabling the mod no longer logs "Could not find class
+    /// HaulersDream.MapComponent_RoutePreview" / "Can't load abstract class Verse.MapComponent" on load. The live
+    /// map keeps it (re-inserted in the finalizer); Map.FillComponents re-creates it on load while HD is present.
+    /// Gated on Scribe Saving + safeRemovalOnSave. Map.ExposeData serializes components only in its Saving branch.
+    /// </summary>
+    [HarmonyPatch(typeof(Map), nameof(Map.ExposeData))]
+    public static class Patch_Map_ExposeData_RemovalSafety
+    {
+        private static void Prefix(Map __instance, ref SafeRemoval.ComponentStripState __state)
+        {
+            __state = null;
+            if (Scribe.mode != LoadSaveMode.Saving)
+                return;
+            var settings = HaulersDreamMod.Settings;
+            if (settings != null && !settings.safeRemovalOnSave)
+                return;
+            var comp = __instance.GetComponent<MapComponent_RoutePreview>();
+            if (comp == null)
+                return;
+            __state = SafeRemoval.StripComponent(__instance.components, comp);
+        }
+
+        // Dedup-restore: Map.FillComponents re-adds a fresh MapComponent_RoutePreview during the save itself, so a
+        // plain re-insert would duplicate it (see RestoreComponentDedup). Keep exactly the original.
+        private static void Finalizer(SafeRemoval.ComponentStripState __state)
+        {
+            SafeRemoval.RestoreComponentDedup<MapComponent_RoutePreview>(__state);
         }
     }
 }

@@ -643,20 +643,13 @@ namespace HaulersDream
             l.GapLine();
             l.CheckboxLabeled("HaulersDream.Setting.VerboseLogging".Translate(), ref verboseLogging);
 
-            // Safe-removal: the automatic protection (rewrite HD jobs in the written save so disabling the mod
-            // never leaves a dangling JobDef that bricks the load) + a manual one-shot button. Shown last because
-            // it's maintenance, not gameplay. See SafeRemoval / Patch_PawnJobTracker_ExposeData_RemovalSafety.
+            // Safe-removal: automatic protection only. Every written save rewrites HD jobs to a harmless vanilla
+            // placeholder and strips HD's own game/map components, so disabling the mod never leaves a dangling
+            // HD JobDef or component class that errors (or bricks) on the next load — no manual step required.
+            // Shown last because it's maintenance, not gameplay. See SafeRemoval / the ExposeData removal patches.
             l.GapLine();
             l.CheckboxLabeled("HaulersDream.Setting.SafeRemovalOnSave".Translate(), ref safeRemovalOnSave,
                 "HaulersDream.Setting.SafeRemovalOnSaveDesc".Translate());
-            if (l.ButtonText("HaulersDream.Setting.PrepareRemoval".Translate()))
-            {
-                if (Current.Game == null)
-                    Find.WindowStack.Add(new Dialog_MessageBox("HaulersDream.Setting.PrepareRemovalNoGame".Translate()));
-                else
-                    Find.WindowStack.Add(new Dialog_MessageBox(SafeRemoval.PrepareForSafeRemoval()));
-            }
-            l.Label("HaulersDream.Setting.PrepareRemovalDesc".Translate());
 
             settingsHeight = Mathf.Max(l.CurHeight + 12f, rect.height);
             l.End();
