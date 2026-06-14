@@ -548,7 +548,13 @@ namespace HaulersDream
                 // Pass the moved count so a merge into an already-tagged stack re-notifies CE's
                 // HoldTracker with the growth (same idiom as YieldRouter.RouteIntoInventory).
                 int movedCount = moved ? before : before - product.stackCount;
-                Thing held = YieldRouter.InventoryStackOfDef(owner, product.def) ?? (moved ? product : null);
+                // A non-stacking product (stackLimit 1 — a crafted weapon/apparel/art piece) carries per-instance
+                // quality/HP and never merges, so tag the exact crafted Thing, never a same-def InventoryStackOfDef
+                // pick (which could be the pawn's own equipped sidearm of that def). Stackables keep the by-def
+                // relink so a merge into an already-tagged stack still re-notifies CE's HoldTracker via movedCount.
+                Thing held = product.def.stackLimit == 1
+                    ? product
+                    : (YieldRouter.InventoryStackOfDef(owner, product.def) ?? (moved ? product : null));
                 if (held != null)
                     comp.RegisterHauledItem(held, movedCount);
                 comp.NotifyYieldPicked();

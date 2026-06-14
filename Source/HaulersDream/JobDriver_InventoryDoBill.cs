@@ -319,7 +319,12 @@ namespace HaulersDream
             bool moved = owner.TryAddOrTransfer(product, canMergeWithExistingStacks: true);
             if (comp != null && (moved || product.stackCount < before))
             {
-                Thing held = YieldRouter.InventoryStackOfDef(owner, product.def) ?? (moved ? product : null);
+                // A non-stacking product (stackLimit 1 — a crafted weapon/apparel/art piece) carries per-instance
+                // quality/HP and never merges, so tag the exact crafted Thing, never a same-def InventoryStackOfDef
+                // pick (which could be the pawn's own equipped sidearm of that def). Stackables keep the by-def relink.
+                Thing held = product.def.stackLimit == 1
+                    ? product
+                    : (YieldRouter.InventoryStackOfDef(owner, product.def) ?? (moved ? product : null));
                 if (held != null)
                     comp.RegisterHauledItem(held);
                 comp.NotifyYieldPicked();
