@@ -81,7 +81,33 @@ namespace HaulersDream
                 return cachedReport; // cheap path for repeated same-second calls (hover/click/redraw)
             lastComputeTick = now;
 
-            int stuckTicks = Mathf.Max(2500, Mathf.RoundToInt(s.alertStuckHours * 2500f)); // 2500 ticks/in-game hour
+            try
+            {
+                cachedReport = ComputeReport(s, now, StuckTicksFor(s));
+            }
+            catch (System.Exception e)
+            {
+                // This GetReport is reachable UNPROTECTED on the OnGUI render path — Alert.DrawInfoPane (on
+                // mouseover) and Alert.OnClick both call Recalculate()/GetReport(), and vanilla does NOT wrap
+                // the per-alert draw/mouseover/click loop in AlertsReadoutOnGUI. An uncaught throw here would
+                // abort the rest of the UIRootOnGUI frame BEFORE the window stack draws, blanking the whole HUD
+                // ("all UI invisible but still clickable"). Per the no-suppression rule this is the legitimate
+                // boundary exception: keep the error LOUD (logged, never swallowed) but return the last good
+                // report instead of taking the entire UI down. The 60-tick throttle above also rate-limits this.
+                Log.ErrorOnce("[Hauler's Dream] Alert_CannotUnloadInventory.GetReport threw; returning the cached "
+                    + "report to keep the HUD alive. This is a bug — please report this stack trace:\n" + e,
+                    0x4844A1E7);
+            }
+            return cachedReport;
+        }
+
+        private static int StuckTicksFor(HaulersDreamSettings s)
+            => Mathf.Max(2500, Mathf.RoundToInt(s.alertStuckHours * 2500f)); // 2500 ticks/in-game hour
+
+        // The actual scan, extracted so GetReport can guard it (see the try/catch above). Updates lastCulprits /
+        // anyNoStorage (read by GetLabel/GetExplanation) and returns the report.
+        private AlertReport ComputeReport(HaulersDreamSettings s, int now, int stuckTicks)
+        {
             var culprits = new List<Pawn>();
             bool noStore = false;
 
@@ -126,8 +152,7 @@ namespace HaulersDream
 
             lastCulprits = culprits;
             anyNoStorage = noStore;
-            cachedReport = culprits.Count > 0 ? AlertReport.CulpritsAre(culprits) : AlertReport.Inactive;
-            return cachedReport;
+            return culprits.Count > 0 ? AlertReport.CulpritsAre(culprits) : AlertReport.Inactive;
         }
 
         private void PruneDeadDebounceKeys()
