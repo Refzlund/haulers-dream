@@ -58,13 +58,5 @@ namespace HaulersDream
             else
                 Messages.Message("Hauler's Dream: select a single pawn.", MessageTypeDefOf.RejectInput, false);
         }
-
-        [DebugAction("Hauler's Dream", "Prepare for safe removal (clear HD jobs)", allowedGameStates = AllowedGameStates.PlayingOnMap)]
-        private static void PrepareForSafeRemoval()
-        {
-            string result = SafeRemoval.PrepareForSafeRemoval();
-            Log.Message("[Hauler's Dream] " + result);
-            Messages.Message(result, MessageTypeDefOf.NeutralEvent, false);
-        }
     }
 }

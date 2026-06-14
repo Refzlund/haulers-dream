@@ -254,11 +254,4 @@
   <HaulersDream.Setting.AutoDivertToPackAnimal>Offload onto pack animals (caravans)</HaulersDream.Setting.AutoDivertToPackAnimal>
   <HaulersDream.Setting.AutoDivertToPackAnimalDesc>On a caravan/away map, pawns offload their scooped loot onto the nearest owned pack animal the same way they'd unload to a stockpile at home — when their work run ends, before they rest/eat/relax, on the periodic backstop, and immediately when over-encumbered (to stay mobile). With this off, loot just rides home in the pawns' own inventories (or use the manual bulk-load order / Reform Caravan). All of these also require automatic unloading to be on (and the over-encumbered offload is disabled in strict-carry-weight mode).</HaulersDream.Setting.AutoDivertToPackAnimalDesc>
 
-  <!-- Settings: safe mod removal (automatic on-save protection + manual one-shot button) -->
-  <HaulersDream.Setting.SafeRemovalOnSave>Keep saves safe to disable from (recommended)</HaulersDream.Setting.SafeRemovalOnSave>
-  <HaulersDream.Setting.SafeRemovalOnSaveDesc>Automatically makes every save safe to disable Hauler's Dream from, with no effect on your colonists during play (it only changes what gets written to the save file, not the running game). When you later load such a save, RimWorld may log a harmless "cleaning up job state" notice for any colonist that was mid Hauler's Dream task — they simply re-pick their work. Leave this on unless it conflicts with another save-related mod.</HaulersDream.Setting.SafeRemovalOnSaveDesc>
-  <HaulersDream.Setting.PrepareRemoval>Prepare to safely remove this mod now</HaulersDream.Setting.PrepareRemoval>
-  <HaulersDream.Setting.PrepareRemovalDesc>Optional one-shot cleanup of the currently-loaded game (the automatic protection above already keeps your saves safe). Stops any in-progress Hauler's Dream tasks and returns scooped items to the ground; save afterwards. Mainly useful for a save first made with an older version of the mod.</HaulersDream.Setting.PrepareRemovalDesc>
-  <HaulersDream.Setting.PrepareRemovalNoGame>Load your save first, then click this — it cleans the currently-loaded game so you can safely disable Hauler's Dream afterwards. (Then save your game and disable the mod.)</HaulersDream.Setting.PrepareRemovalNoGame>
-
 </LanguageData>
