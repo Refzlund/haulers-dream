@@ -23,5 +23,5 @@
 
 Also adds small micro-management improvements that build on these changes.
 
-Requires Harmony. Safe to add to existing saves, and safe to remove from them: while it is installed it automatically keeps your saves safe to disable it from, so you can turn it off later without breaking the save.</description>
+Requires Harmony. Safe to add to existing saves.</description>
 </ModMetaData>
