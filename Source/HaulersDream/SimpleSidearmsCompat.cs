@@ -77,10 +77,12 @@ namespace HaulersDream
 
         /// <summary>
         /// True if this inventory weapon is the pawn's carried kit that the unload must NOT strip — a remembered
-        /// Simple Sidearms weapon (precise (def, stuff) match), or — if SS is present but its memory API can't be
-        /// resolved (a fork/version rename) — any non-HD-tagged colonist weapon (a safe, loop-free fallback).
-        /// EXCLUDES weapons HD itself swept off the ground (they are HD-tagged and must stay unloadable, or they
-        /// would become a silent black hole). Returns false when SS is absent (no weapon-keep rule then).
+        /// Simple Sidearms weapon (precise (def, stuff) match, via <see cref="IsRememberedSidearm"/>), or — if SS
+        /// is present but its memory API can't be resolved (a fork/version rename) — any non-HD-tagged colonist
+        /// weapon (a safe, loop-free fallback). A genuine remembered sidearm is kept EVEN IF HD has tagged it (the
+        /// tag is a def-overlap false positive); only a NON-remembered weapon HD swept off the ground is left
+        /// unloadable by the HD-tagged exclusion (else it would become a silent black hole). Returns false when SS
+        /// is absent (no weapon-keep rule then).
         /// </summary>
         public static bool IsKeptWeapon(Pawn pawn, Thing weapon)
         {
@@ -88,24 +90,21 @@ namespace HaulersDream
                 return false;
             if (!(weapon.def.IsRangedWeapon || weapon.def.IsMeleeWeapon))
                 return false;
-            // Never keep a weapon HD itself scooped/swept (it is HD-tagged) — it must remain unloadable, or HD
-            // would have put it in the pack and then refuse to take it out (a black hole). A genuine remembered
-            // sidearm is never HD-scooped, so this only un-keeps a loose weapon HD swept.
+            // A GENUINE remembered sidearm is ALWAYS kept — even if HD's def-overlap self-heal or its
+            // first-same-def-stack pick falsely TAGGED it. HD never scoops the specific equipped/remembered Thing
+            // off the ground, so an HD tag on a remembered sidearm is always a false positive; this must win over
+            // the HD-tagged exclusion below, or the pawn ships its own sidearm to storage and SS re-fetches it (the
+            // "occasionally stops what it's doing to unload its own sidearm" bug).
+            if (IsRememberedSidearm(pawn, weapon))
+                return true;
+            // Not a (precisely) remembered sidearm: a weapon HD itself scooped/swept off the ground (HD-tagged)
+            // must remain unloadable, or HD would have put it in the pack and then refuse to take it out (a black
+            // hole). A genuine remembered sidearm is never HD-scooped, so this only un-keeps a loose swept weapon.
             var hd = pawn.GetComp<CompHauledToInventory>();
             if (hd != null && hd.PeekHashSet().Contains(weapon))
                 return false;
             if (memoryApiOk)
-            {
-                var comp = MemoryOf(pawn);
-                // No try/catch: SS present + members resolved (checked above) — a throw is a real contract fault
-                // to surface, not silently fail-open. comp == null (pawn has no sidearm memory) degrades cleanly.
-                if (comp != null && rememberedField.GetValue(comp) is IEnumerable list)
-                    foreach (var pair in list)
-                        if ((pairThingField.GetValue(pair) as ThingDef) == weapon.def
-                            && (pairStuffField.GetValue(pair) as ThingDef) == weapon.Stuff)
-                            return true;
                 return false; // memory resolved, not a remembered sidearm -> HD may unload this loose weapon
-            }
             // SS present but its memory API didn't resolve (renamed in a fork/version). Conservatively keep any
             // non-HD-tagged colonist weapon so the unload<->refetch loop cannot occur; surface the mismatch once.
             if (!warned)
@@ -115,6 +114,33 @@ namespace HaulersDream
                             + "not resolve; keeping all carried weapons out of surplus unloading as a safe fallback.");
             }
             return true;
+        }
+
+        /// <summary>
+        /// True if this weapon is a GENUINE Simple Sidearms remembered sidearm — a precise (def, stuff) match
+        /// against the pawn's CompSidearmMemory.rememberedWeapons — IGNORING whether HD has tagged it. Used both
+        /// to let a genuine sidearm WIN over a false-positive HD tag (see <see cref="IsKeptWeapon"/>) and to stop
+        /// HD's def-keyed tagging from ever auto-tagging it (the <see cref="CompHauledToInventory"/> self-heal and
+        /// <see cref="YieldRouter.InventoryStackOfDef"/> first-same-def pick). Returns false when SS is absent, AND
+        /// when SS's memory API did not resolve (a fork/rename) — that conservative "keep all carried weapons"
+        /// fallback stays inside <see cref="IsKeptWeapon"/> so it never widens the tagging guards, which must only
+        /// ever skip a precisely-known sidearm (else a genuinely-swept loose weapon could become a black hole).
+        /// </summary>
+        public static bool IsRememberedSidearm(Pawn pawn, Thing weapon)
+        {
+            if (!IsActive || !memoryApiOk || pawn == null || weapon?.def == null)
+                return false;
+            if (!(weapon.def.IsRangedWeapon || weapon.def.IsMeleeWeapon))
+                return false;
+            var comp = MemoryOf(pawn);
+            // No try/catch: SS present + members resolved (checked above) — a throw is a real contract fault to
+            // surface, not silently fail-open. comp == null (pawn has no sidearm memory) degrades cleanly to false.
+            if (comp != null && rememberedField.GetValue(comp) is IEnumerable list)
+                foreach (var pair in list)
+                    if ((pairThingField.GetValue(pair) as ThingDef) == weapon.def
+                        && (pairStuffField.GetValue(pair) as ThingDef) == weapon.Stuff)
+                        return true;
+            return false;
         }
     }
 }
