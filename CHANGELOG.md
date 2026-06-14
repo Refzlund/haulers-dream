@@ -1,5 +1,104 @@
 # haulers-dream
 
+## 1.1.4
+
+### Patch Changes
+
+- 55e3cac: **Fix "plan construction" pawns topping off at the stockpile after every single wall.**
+
+  When you planned a construction route over a wall line, the pawn would pick up a big load of
+  material, build **one** wall, walk all the way back to the stockpile to top off, build **one
+  more** wall, and repeat — a pointless shuttle that defeated the whole point of carrying a batch.
+
+  Two underlying causes are fixed:
+
+  - The inventory-delivery driver decided whether to walk back to the stockpile by comparing what it
+    carried against the **whole route's** remaining demand. Since a single carry can never hold an
+    entire wall line, and the mass headroom reopened after each wall was filled, it tripped back to
+    the stockpile after **every** deposit. It now decides based on the **immediate** frame's need:
+    while the pawn still carries enough for the wall in front of it, it builds straight from
+    inventory and only returns to the stockpile when it genuinely runs low — roughly one trip per
+    carry-load instead of one per wall. When it does re-load, it still fills to its full smart-carry
+    ceiling, so the "few trips" benefit is preserved.
+
+  - For walls that need **more than one material** (e.g. wood **and** steel), only the first material
+    was gathered for the whole route; the others were re-fetched one wall at a time. The build tether
+    now carries the whole route's remaining demand for every material, so steel/components batch the
+    same way wood does.
+
+  Haul-only routes, the "haul materials to site" order, plain right-click "prioritize constructing",
+  and single large deliveries (e.g. a 340-steel generator) are unchanged. No save-compat impact.
+
+- 704fe59: **Fix a hauled weapon being kept (and never put away) when it matches a Simple Sidearms sidearm's type.**
+
+  The previous Simple Sidearms fix kept _any_ carried weapon whose type+material matched one of a colonist's
+  sidearms. So if a colonist with, say, a steel ikwa sidearm was told to "haul everything nearby" and that included
+  a loose steel ikwa, it kept _both_ — the unload job found nothing to do and flickered away, leaving the hauled
+  ikwa stuck in the colonist's pack.
+
+  Now Hauler's Dream keeps exactly as many of each weapon type+material as Simple Sidearms actually wants
+  (it tracks sidearms by count), and treats any extra copies as normal haulable loot:
+
+  - A loose steel ikwa hauled while carrying a steel ikwa sidearm → the sidearm is kept, the spare is put away.
+  - A loose _plasteel_ ikwa hauled while carrying a _steel_ ikwa sidearm → the steel one is kept, the plasteel
+    one is put away (it matches on material, not just type).
+  - The spare stays tracked, so it still gets put away later even if the colonist is interrupted or drafted
+    in the meantime.
+
+  It also now always puts away the **actual hauled (or freshly-crafted) weapon**, never the equipped one — even
+  when the equipped sidearm is higher quality. Previously the auto-pickup and inventory-crafting paths could tag
+  the colonist's own sidearm by weapon type, so a colonist carrying a 99%-quality steel ikwa that hauled a
+  3%-quality steel ikwa could end up storing the _good_ one and keeping the _bad_ one. Now it tracks and stores
+  the specific item it just picked up or made, so the equipped sidearm is always the one kept.
+
+  **Most importantly,** it fixes the case where the matching weapon is the colonist's **equipped main weapon**
+  (their primary), not a pack sidearm. Simple Sidearms records the equipped primary in its remembered-weapons
+  list, but that weapon lives in the _equipment slot_, not the pack — so Hauler's Dream was counting it toward
+  the keep total while never seeing it in the inventory count. The result: a hauled weapon matching your colonist's
+  equipped weapon computed surplus = `inventory(1) − remembered(1) = 0` and was **never unloaded** — it sat stuck
+  in the pack (or, on a "haul everything nearby", got scooped into the pack and never taken back out). Hauler's
+  Dream now subtracts the equipped primary from the keep total (mirroring Simple Sidearms' own unload logic), so a
+  hauled weapon matching your equipped weapon is correctly put away while the equipped weapon is untouched.
+
+  A diagnostic line (gated behind the mod's _verbose logging_ setting) now reports the surplus math for carried
+  weapons, to make any future Simple-Sidearms edge case easy to pin down from a log.
+
+  No change when Simple Sidearms isn't installed.
+
+- ef74084: **Fix colonists occasionally stopping work to unload their own Simple Sidearms sidearm.**
+
+  A remembered Simple Sidearms weapon could be hauled off to storage (and immediately re-fetched by Simple
+  Sidearms) when a colonist happened to be carrying loose weapons that shared a ThingDef with one of its sidearms.
+  Because weapons don't stack, Hauler's Dream's "same-def" inventory bookkeeping was mistaking the pawn's own
+  sidearm for hauled loot of the same type and marking it surplus.
+
+  Now a genuine remembered sidearm (matched precisely by weapon + material) is never treated as surplus: it is
+  protected both where Hauler's Dream tags carried items and in the keep check itself, so it always wins over a
+  mistaken tag. Loose weapons the colonist actually picked up off the ground are still put away normally, and
+  nothing changes when Simple Sidearms isn't installed.
+
+- 64b72e5: **Fix pawns freezing in the "unloading inventory" job over Yayo's Combat 3 ammo (and harden the unload against any item it can't move).**
+
+  A colonist returning from a caravan could get stuck standing in the "unloading inventory" state; manually
+  dropping their Yayo's Combat 3 ammunition fixed it. Cause: Hauler's Dream only recognised Combat Extended
+  ammo as "keep in inventory", so it treated YC3 ammo as surplus and kept trying to haul it off — fighting
+  YC3 (which re-stocks the pawn's ammo), and churning the unload job.
+
+  - **Yayo's Combat 3 ammo is now kept in inventory** (auto-detected, no setup, nothing changes if you don't
+    run YC3), the same way Combat Extended ammo already was. A pawn's own ammo is never hauled to storage; HD
+    only ever moves _loose_ ammo it scooped off the ground. If you actually want a pawn's ammo put away, the
+    per-item "always unload" rule in mod options still overrides this.
+
+  - **The unload job can no longer get stuck on a single item it can't move.** If something can't be taken out
+    of a pawn's inventory (another mod is holding it, or the pawn's hands are momentarily full), the pawn now
+    skips it and unloads the rest, instead of standing in place retrying the same item. The skipped item keeps
+    its place in the queue and is retried later — and still raises the "cannot unload" alert if it's genuinely
+    stuck — so nothing is silently abandoned. This also covers carried grenades (More Useful Grenade) and any
+    other mod that keeps combat consumables in a pawn's inventory.
+
+  If you have an existing save where ammo got dropped during this bug, it will be picked back up by YC3 as
+  normal.
+
 ## 1.1.3
 
 ### Patch Changes
