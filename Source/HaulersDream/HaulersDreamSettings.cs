@@ -16,11 +16,14 @@ namespace HaulersDream
         // --- unload defaults / sharing ---
         public bool markForUnload = true;     // automatic unloading (end of work run / checkpoints / full / interval); off = gizmo-only
         // Also put away surplus a colonist is carrying that HD did NOT scoop (trade/mod/manual stock), not just
-        // HD-tagged loot. "Surplus" = above the pawn's keep-stock (food / drugs / inventoryStock / CE loadout), the
-        // exact set vanilla itself treats as unloadable; caravan-loading inventory (IsFormingCaravan) is left alone.
-        // More aggressive than vanilla's occasional auto-unload — turn OFF if a loadout/stock mod (e.g. Smart
-        // Medicine stock-up, a sidearm mod) keeps items in inventory WITHOUT registering them as keep-stock.
-        public bool unloadAllSurplus = true;
+        // HD-tagged loot. "Surplus" = above the pawn's keep-stock (food / drugs / inventoryStock / CE loadout +
+        // vanilla addiction drugs + auto-detected Simple Sidearms / Smart Medicine / Dub's Bad Hygiene kept items),
+        // and only stacks that have a real storage destination; caravan-loading inventory (IsFormingCaravan) is
+        // left alone. DEFAULT OFF: out of the box HD only unloads what it scooped itself, so it never touches a
+        // colonist's sidearms / carried medicine / water / traded goods — robust against every keep-mod, present
+        // or future. Turn ON for the convenience of auto-hauling foreign surplus (e.g. traded jade) to storage;
+        // the keep-item detection above keeps that safe with the supported mods.
+        public bool unloadAllSurplus = false;
         // "Put it away before relaxing": when a pawn finishes its work run and is about to rest, recreate, or
         // eat, it makes its unload trip FIRST (bypassing the accumulate window), instead of carrying the load
         // to bed / the dinner table / the rec room. Continuous/intermittent work still accumulates — these only
@@ -235,7 +238,7 @@ namespace HaulersDream
             Scribe_Values.Look(ref unloadBeforeSleep, "unloadBeforeSleep", true);
             Scribe_Values.Look(ref unloadBeforeLeisure, "unloadBeforeLeisure", true);
             Scribe_Values.Look(ref unloadBeforeEating, "unloadBeforeEating", true);
-            Scribe_Values.Look(ref unloadAllSurplus, "unloadAllSurplus", true);
+            Scribe_Values.Look(ref unloadAllSurplus, "unloadAllSurplus", false);
             Scribe_Values.Look(ref shareForBuilding, "shareForBuilding", true);
             Scribe_Values.Look(ref shareForCrafting, "shareForCrafting", true);
             Scribe_Values.Look(ref inventoryCraftDeliver, "inventoryCraftDeliver", true);

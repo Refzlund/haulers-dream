@@ -189,7 +189,12 @@ namespace HaulersDream
             for (int i = 0; i < inner.Count; i++)
             {
                 var t = inner[i];
-                if (t != null && !t.Destroyed && InventorySurplus.SurplusOf(pawn, t) > 0)
+                // Only adopt surplus we can actually DELIVER. Adopting a stack with no storage destination would
+                // tag it and the unload pass would then relocate it to a desperate far/feet cell (the "drops it at
+                // a random spot" bug). Leave a no-destination stack UNTAGGED instead — it stays where it is, and
+                // Alert_CannotUnloadInventory (Condition A, tag-independent) still surfaces it as a real black hole.
+                if (t != null && !t.Destroyed && InventorySurplus.SurplusOf(pawn, t) > 0
+                    && InventorySurplus.HasUnloadDestination(pawn, t))
                 {
                     int before = comp.PeekHashSet().Count;
                     comp.RegisterHauledItem(t);

@@ -108,7 +108,11 @@ namespace HaulersDream
             var comp = pawn?.GetComp<CompHauledToInventory>();
             if (comp == null || pawn.jobs == null)
                 return;
-            if (!comp.pendingSelfPickups.Contains(thing))
+            // Only queue the dropped yield for pickup if it can actually be delivered. With no storage
+            // destination, leave it on the ground at the work spot (vanilla) rather than scooping it to a
+            // desperate far/feet drop at unload. The nearby sweep below still grabs OTHER loose items that DO
+            // have a destination, so a clean-up pass isn't lost just because this one yield has nowhere to go.
+            if (HasScoopDestination(pawn, thing) && !comp.pendingSelfPickups.Contains(thing))
                 comp.pendingSelfPickups.Add(thing);
             // Clean the surrounding area in the same pass: also queue nearby loose haulables for self-pickup
             // (cooldown-debounced, so this scans at most once per work spot — not once per dropped stack).
@@ -341,12 +345,32 @@ namespace HaulersDream
 
         // ---- shared routing ---------------------------------------------------------------------
 
+        /// <summary>
+        /// True if <paramref name="thing"/> has a real (better) storage destination this pawn could haul it to —
+        /// the same gate the nearby-sweep and bulk-haul pool use. Used so HD never scoops a yield it cannot
+        /// deliver: an undeliverable yield left on the ground stays where vanilla hauling / listerHaulables see it,
+        /// instead of riding the pack to a desperate far/feet drop at unload time (the "drops it at a random spot"
+        /// bug). needAccurateResult:false consumes no Rand and does no pathfinding — cheap on the hot scoop path.
+        /// </summary>
+        internal static bool HasScoopDestination(Pawn pawn, Thing thing)
+        {
+            var map = pawn?.Map;
+            if (map == null || thing?.def == null)
+                return false;
+            return StoreUtility.TryFindBestBetterStorageFor(thing, pawn, map,
+                StoreUtility.CurrentStoragePriorityOf(thing), pawn.Faction, out _, out _, needAccurateResult: false);
+        }
+
         private static bool RouteIntoInventory(Pawn pawn, Thing thing, HaulSourceType type, out Thing taken, out bool fullyConsumed)
         {
             taken = null;
             fullyConsumed = false;
             var comp = pawn.GetComp<CompHauledToInventory>();
             if (comp == null)
+                return false;
+            // Don't scoop a yield with nowhere to go — leave it on the ground at the work spot (vanilla behavior).
+            // Otherwise it would ride the pack to a desperate far/feet drop at unload (the random-drop bug).
+            if (!HasScoopDestination(pawn, thing))
                 return false;
 
             var s = HaulersDreamMod.Settings;

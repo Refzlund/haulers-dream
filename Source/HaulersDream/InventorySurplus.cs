@@ -20,6 +20,13 @@ namespace HaulersDream
         {
             if (pawn?.inventory?.innerContainer == null || thing?.def == null)
                 return 0;
+            // Items another system actively manages in inventory — Simple Sidearms carried weapons, Smart Medicine
+            // stock-up, Dub's Bad Hygiene carried water — or a vanilla addiction/chemical-dependency drug are the
+            // pawn's personal kit the unload must NEVER strip. Keep the WHOLE stack (surplus 0) so adoption never
+            // tags them (severing the unload<->refetch loop those mods otherwise drive) and the unload driver /
+            // alert never act on them. This is the single shared choke point for every consumer of SurplusOf.
+            if (IsManagedKeepItem(pawn, thing))
+                return 0;
             int keep = KeepCountOf(pawn, thing.def) + FoodKeepCountOf(pawn, thing);
             if (keep <= 0)
                 return thing.stackCount;
@@ -64,6 +71,53 @@ namespace HaulersDream
             {
                 Rand.PopState();
             }
+        }
+
+        /// <summary>
+        /// True if this inventory stack is personal kit another system (mod or vanilla) actively keeps in the
+        /// pawn's inventory, so the unload must leave the WHOLE stack alone. Each mod check is reflection-based
+        /// and fail-open (mod absent → false), so this compiles and runs with any subset of the mods installed.
+        ///
+        /// <list type="bullet">
+        /// <item>Vanilla addiction / chemical dependency: a drug the pawn is addicted to or chem-dependent on,
+        /// matching <c>JobGiver_DropUnusedInventory.ShouldKeepDrugInInventory</c> (the policy <c>takeToInventory</c>
+        /// and inventoryStock cases are already covered, count-wise, by <see cref="KeepCountOf"/>).</item>
+        /// <item>Simple Sidearms: a carried/remembered sidearm (<see cref="SimpleSidearmsCompat.IsKeptWeapon"/>).</item>
+        /// <item>Smart Medicine: a stocked-up medicine/drug (<see cref="SmartMedicineCompat.IsStockedUp"/>).</item>
+        /// <item>Dub's Bad Hygiene: carried water (<see cref="DbhCompat.IsKeptDrink"/>).</item>
+        /// </list>
+        /// </summary>
+        internal static bool IsManagedKeepItem(Pawn pawn, Thing thing)
+        {
+            var def = thing.def;
+            // A stack HD itself scooped/swept (HD-tagged) must ALWAYS stay unloadable — it must be able to leave
+            // the pack, or it becomes a silent black hole: HD put it there and would then refuse to take it out,
+            // and the cannot-unload alert (which also keys off SurplusOf) would skip it too. So the "keep the whole
+            // stack" branches below apply ONLY to a stack the pawn holds as its OWN kit, i.e. NOT one HD swept.
+            // The nearby-sweep (default on) can scoop loose medicine/water of a stocked def off the ground, so
+            // without this an HD-swept stack of a stocked-medicine / carried-water / addictive-drug def would be
+            // pinned in the pack forever. A genuine sidearm / stock-up / carried water / addiction stash is never
+            // HD-tagged, so it is still kept and the unload<->refetch loop stays severed.
+            bool hdSwept = pawn.GetComp<CompHauledToInventory>()?.PeekHashSet().Contains(thing) == true;
+            if (!hdSwept)
+            {
+                // Vanilla parity gap: FirstUnloadableThing (HD's count-keep model) does not consult the addiction /
+                // chemical-dependency case that JobGiver_DropUnusedInventory.ShouldKeepDrugInInventory does. Keep
+                // the whole stack for an addicted / chem-dependent pawn (flesh only; AddictionUtility is
+                // meaningless for mechs). NOT the policy/schedule cases — those are KeepCountOf's count-based job.
+                if (def.IsDrug && pawn.RaceProps != null && pawn.RaceProps.IsFlesh
+                    && (AddictionUtility.IsAddicted(pawn, thing) || AddictionUtility.HasChemicalDependency(pawn, thing)))
+                    return true;
+                if (SmartMedicineCompat.IsStockedUp(pawn, def))
+                    return true;
+                if (DbhCompat.IsKeptDrink(thing))
+                    return true;
+            }
+            // Simple Sidearms carried weapon — IsKeptWeapon applies the SAME HD-swept exclusion internally
+            // (SimpleSidearmsCompat.cs), so an HD-swept loose weapon stays unloadable.
+            if (SimpleSidearmsCompat.IsKeptWeapon(pawn, thing))
+                return true;
+            return false;
         }
 
         /// <summary>Vanilla parity: the count of this def the pawn wants to KEEP in inventory — drug policy
