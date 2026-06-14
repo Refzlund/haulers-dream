@@ -254,4 +254,9 @@
   <HaulersDream.Setting.AutoDivertToPackAnimal>Offload onto pack animals (caravans)</HaulersDream.Setting.AutoDivertToPackAnimal>
   <HaulersDream.Setting.AutoDivertToPackAnimalDesc>On a caravan/away map, pawns offload their scooped loot onto the nearest owned pack animal the same way they'd unload to a stockpile at home — when their work run ends, before they rest/eat/relax, on the periodic backstop, and immediately when over-encumbered (to stay mobile). With this off, loot just rides home in the pawns' own inventories (or use the manual bulk-load order / Reform Caravan). All of these also require automatic unloading to be on (and the over-encumbered offload is disabled in strict-carry-weight mode).</HaulersDream.Setting.AutoDivertToPackAnimalDesc>
 
+  <!-- Settings: prepare for safe mod removal -->
+  <HaulersDream.Setting.PrepareRemoval>Prepare to safely remove this mod</HaulersDream.Setting.PrepareRemoval>
+  <HaulersDream.Setting.PrepareRemovalDesc>Removing Hauler's Dream from an active save while a colonist is mid-task can corrupt that pawn's job and break the save's interface on the next load. Before you disable the mod: load your save, click this button (it stops any in-progress Hauler's Dream tasks and returns scooped items to the ground), then save your game. After that it is safe to disable the mod.</HaulersDream.Setting.PrepareRemovalDesc>
+  <HaulersDream.Setting.PrepareRemovalNoGame>Load your save first, then click this — it cleans the currently-loaded game so you can safely disable Hauler's Dream afterwards. (Then save your game and disable the mod.)</HaulersDream.Setting.PrepareRemovalNoGame>
+
 </LanguageData>

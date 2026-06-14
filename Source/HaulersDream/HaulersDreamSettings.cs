@@ -637,6 +637,19 @@ namespace HaulersDream
             l.GapLine();
             l.CheckboxLabeled("HaulersDream.Setting.VerboseLogging".Translate(), ref verboseLogging);
 
+            // Safe-removal affordance: clears all in-progress Hauler's Dream jobs from the loaded game so the
+            // player can disable the mod without a custom JobDef being left dangling in the save (which would
+            // brick that save's next load — see SafeRemoval). Shown last because it's a one-off maintenance action.
+            l.GapLine();
+            if (l.ButtonText("HaulersDream.Setting.PrepareRemoval".Translate()))
+            {
+                if (Current.Game == null)
+                    Find.WindowStack.Add(new Dialog_MessageBox("HaulersDream.Setting.PrepareRemovalNoGame".Translate()));
+                else
+                    Find.WindowStack.Add(new Dialog_MessageBox(SafeRemoval.PrepareForSafeRemoval()));
+            }
+            l.Label("HaulersDream.Setting.PrepareRemovalDesc".Translate());
+
             settingsHeight = Mathf.Max(l.CurHeight + 12f, rect.height);
             l.End();
             Widgets.EndScrollView();
