@@ -4,9 +4,17 @@
 
 **Make disabling Hauler's Dream fully clean — no leftover errors — and remove the manual "prepare for removal" button.**
 
-Hauler's Dream already rewrites any in-progress task in the written save so disabling the mod can't brick the
-load. But the save still referenced two of the mod's own components, so removing the mod logged harmless-but-ugly
-errors on the next load:
+Hauler's Dream already protected the written save so disabling the mod can't brick the load, but two rough edges
+remained on the next load after removal:
+
+**1. Colonists threw "invalid job state" errors and went temporarily jobless.** The save protection used to rewrite
+a colonist's in-progress task to a placeholder *Wait* and leave a dangling driver, which RimWorld treats as an
+invalid job and tries to recover from before the colonist is fully placed on the map — throwing a
+`NullReferenceException` and leaving the pawn jobless. The protection now simply *clears* the in-progress task
+(and lifts any queued Hauler's Dream tasks out of the save), which is the clean state — the colonist just picks a
+new job on its first tick. No errors, no jobless pawns.
+
+**2. The save still referenced the mod's own components**, so removing the mod logged harmless-but-ugly errors:
 
 ```
 Could not find class HaulersDream.HaulersDreamGameComponent ... Can't load abstract class Verse.GameComponent

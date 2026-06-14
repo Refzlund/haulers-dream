@@ -20,10 +20,11 @@ namespace HaulersDream
     /// its code runs, so HD can only prevent this WHILE STILL INSTALLED — by making sure no HD job is sitting
     /// in the save. That is what this action does.
     ///
-    /// Deliberately MANUAL (a settings button + a dev action), NOT auto-run on every save: force-ending an
-    /// in-progress batch-craft / bill-gather on each autosave would throw away that job's accumulated progress
-    /// and visibly interrupt pawns during normal play. The poison only matters when the player actually intends
-    /// to remove the mod, so the clear is tied to that explicit intent.
+    /// <see cref="PrepareForSafeRemoval"/> is the one-shot, force-everything cleanup (it actually ends jobs and
+    /// drops loot in the LIVE game). It is now exposed ONLY as a dev-mode action — the user-facing settings button
+    /// was removed — because the automatic on-save protection (<see cref="NeutralizeForSave"/> + the components
+    /// patches below) already makes every save removal-safe with no effect on play. Keep it for testing / manual
+    /// recovery of a save first made by an older version.
     /// </summary>
     public static class SafeRemoval
     {
@@ -139,32 +140,43 @@ namespace HaulersDream
         }
 
         // ---------------------------------------------------------------------------------------------
-        // Automatic protection: rewrite HD jobs to a harmless placeholder in the WRITTEN SAVE ONLY, so a
-        // save is always safe to disable the mod from — without touching the live game. See the patch below.
+        // Automatic protection: remove HD jobs (current cleared, queued extracted) from the WRITTEN SAVE ONLY,
+        // so a save is always safe to disable the mod from — without touching the live game. See the patch below.
         // ---------------------------------------------------------------------------------------------
 
-        /// <summary>A vanilla JobDef that always resolves and whose cleanup is harmless. Saved HD jobs are
-        /// rewritten to this; on load they are cleanly ended by vanilla (curDriver is nulled, so
-        /// Pawn_JobTracker.ExposeData's PostLoadInit ends the job) instead of NRE-ing on a missing def.</summary>
-        private static JobDef PlaceholderDef => JobDefOf.Wait;
-
         /// <summary>The pre-save job state stashed so the LIVE game is restored byte-for-byte after the save
-        /// bytes are written. The game is frozen on the main thread during serialization, so this swap/restore
+        /// bytes are written. The game is frozen on the main thread during serialization, so this clear/restore
         /// window is never observed by a tick.</summary>
         public sealed class SaveSwapState
         {
             public Pawn_JobTracker tracker;
+            public Job stashedCurJob;
             public JobDriver stashedCurDriver;
-            public bool curDriverNulled;
-            public readonly List<Job> jobs = new List<Job>();
-            public readonly List<JobDef> defs = new List<JobDef>();
+            public bool curJobCleared;
+            // Full pre-save queue order, captured when the queue held any HD job. The HD jobs are extracted from
+            // the written save and the whole queue is rebuilt in this exact order afterward, so the live queue is
+            // unchanged by the save while the written bytes reference no HD JobDef.
+            public List<QueuedJob> queueSnapshot;
         }
 
-        /// <summary>Just before this pawn's job tracker serializes (Saving mode), rewrite any HD job (current +
-        /// queued) to <see cref="PlaceholderDef"/> and null the current driver, so the WRITTEN bytes contain no
-        /// HD JobDef/JobDriver reference. Returns the stash to restore afterwards, or null if nothing changed
-        /// (the common case — most pawns are not in an HD job). The live job objects are mutated in place and
-        /// restored by <see cref="RestoreAfterSave"/> in the patch finalizer.</summary>
+        /// <summary>Just before this pawn's job tracker serializes (Saving mode), remove every HD job from the
+        /// WRITTEN bytes so disabling the mod leaves no unresolvable HD JobDef.
+        /// <para>
+        /// The CURRENT HD job is CLEARED entirely (curJob + curDriver nulled), NOT rewritten to a placeholder:
+        /// vanilla's PostLoadInit treats <c>curJob != null &amp;&amp; curDriver == null</c> as an INVALID job state
+        /// (<c>Pawn_JobTracker.ExposeData</c>) and calls <c>EndCurrentJob(JobCondition.Errored)</c>, which starts a
+        /// recovery job while the pawn isn't on a map yet during load — so <c>JobDriver_Wait</c>'s initAction NREs
+        /// on <c>base.Map</c> and the pawn is left jobless (the reported "Cleaning up invalid job state …
+        /// NullReferenceException" on load). A null curJob is the clean state: the pawn just picks a new job on its
+        /// first tick. (Verified in Assembly-CSharp 1.6.4850.)
+        /// </para><para>
+        /// QUEUED HD jobs are EXTRACTED from the queue for the save (the full queue is rebuilt verbatim after).
+        /// Vanilla would auto-drop a null-def queued job on load anyway (<c>JobQueue.ExposeData</c>), but extracting
+        /// avoids both its "Could not load reference to JobDef" warning AND the earlier placeholder-Wait approach,
+        /// which could FREEZE the pawn (a swapped <c>Wait</c> never completes).
+        /// </para>
+        /// Returns the stash to restore, or null if nothing changed (the common case — most pawns hold no HD job).
+        /// Restored by <see cref="RestoreAfterSave"/> in the patch finalizer.</summary>
         public static SaveSwapState NeutralizeForSave(Pawn_JobTracker tracker)
         {
             if (tracker == null)
@@ -175,46 +187,66 @@ namespace HaulersDream
             if (cur != null && IsHaulersDreamJob(cur.def))
             {
                 state = new SaveSwapState { tracker = tracker };
-                state.jobs.Add(cur);
-                state.defs.Add(cur.def);
-                cur.def = PlaceholderDef;
-                // Null the driver so the saved job has curDriver==null && curJob!=null -> vanilla's PostLoadInit
-                // cleanly ENDS it (the placeholder def resolves, so no NRE), with or without HD present on load.
+                state.stashedCurJob = cur;
                 state.stashedCurDriver = tracker.curDriver;
-                state.curDriverNulled = true;
+                state.curJobCleared = true;
+                tracker.curJob = null;
                 tracker.curDriver = null;
             }
 
             var queue = tracker.jobQueue;
-            if (queue != null)
+            if (queue != null && queue.Count > 0)
             {
+                bool anyHd = false;
+                var snapshot = new List<QueuedJob>();
                 foreach (var qj in queue)
                 {
+                    snapshot.Add(qj);
                     if (qj?.job != null && IsHaulersDreamJob(qj.job.def))
-                    {
-                        if (state == null)
-                            state = new SaveSwapState { tracker = tracker };
-                        state.jobs.Add(qj.job);
-                        state.defs.Add(qj.job.def);
-                        qj.job.def = PlaceholderDef;
-                    }
+                        anyHd = true;
+                }
+                if (anyHd)
+                {
+                    if (state == null)
+                        state = new SaveSwapState { tracker = tracker };
+                    state.queueSnapshot = snapshot;
+                    // Pull the HD jobs out of the LIVE queue so the serialized queue omits them. The full order is
+                    // rebuilt from the snapshot in RestoreAfterSave, so the live queue ends up unchanged.
+                    foreach (var qj in snapshot)
+                        if (qj?.job != null && IsHaulersDreamJob(qj.job.def))
+                            queue.Extract(qj.job);
                 }
             }
 
             return state;
         }
 
-        /// <summary>Restores the live job state stashed by <see cref="NeutralizeForSave"/>. Pure field
-        /// reassignment of held references — cannot fail — and runs in the patch FINALIZER so it happens even if
-        /// serialization throws (the live game is never left with a placeholder job).</summary>
+        /// <summary>Restores the live job state stashed by <see cref="NeutralizeForSave"/> — pure reassignment /
+        /// list rebuild of held references. Runs in the patch FINALIZER so it happens even if serialization throws
+        /// (the live game is never left missing its current job or its queued jobs).</summary>
         public static void RestoreAfterSave(SaveSwapState state)
         {
             if (state == null)
                 return;
-            for (int i = 0; i < state.jobs.Count; i++)
-                state.jobs[i].def = state.defs[i];
-            if (state.curDriverNulled && state.tracker != null)
+            if (state.curJobCleared && state.tracker != null)
+            {
+                state.tracker.curJob = state.stashedCurJob;
                 state.tracker.curDriver = state.stashedCurDriver;
+            }
+            if (state.queueSnapshot != null && state.tracker?.jobQueue != null)
+            {
+                var q = state.tracker.jobQueue;
+                // Empty the live remainder (the non-HD jobs left after the extract) and re-enqueue the full pre-save
+                // snapshot in its exact original order, so the queue is byte-identical to before the save.
+                while (q.Count > 0)
+                    q.Extract(q[0].job);
+                for (int i = 0; i < state.queueSnapshot.Count; i++)
+                {
+                    var qj = state.queueSnapshot[i];
+                    if (qj?.job != null)
+                        q.EnqueueLast(qj.job, qj.tag);
+                }
+            }
         }
 
         // ---------------------------------------------------------------------------------------------
@@ -277,14 +309,14 @@ namespace HaulersDream
     }
 
     /// <summary>
-    /// Makes every save automatically safe to disable Hauler's Dream from: during serialization only, an HD job
-    /// on a pawn is rewritten to a harmless vanilla placeholder (see <see cref="SafeRemoval.NeutralizeForSave"/>),
-    /// then the live job is restored in the finalizer — so colonists are never interrupted during play, but the
-    /// bytes on disk reference no HD JobDef. Without this, a pawn saved mid-HD-job leaves a null-def job when the
-    /// mod is removed, which bricks the save's load (see SafeRemoval's class doc). Gated on Scribe Saving mode and
-    /// the safeRemovalOnSave setting (default on; a kill-switch in case it ever conflicts with another save patch).
-    /// Safe because RimWorld serializes synchronously on the main thread (game frozen), so the swap/restore window
-    /// is never observed by a tick.
+    /// Makes every save automatically safe to disable Hauler's Dream from: during serialization only, any HD job on
+    /// a pawn is removed from the written bytes (current job CLEARED, queued HD jobs EXTRACTED — see
+    /// <see cref="SafeRemoval.NeutralizeForSave"/>), then the live job state is restored in the finalizer — so
+    /// colonists are never interrupted during play, but the bytes on disk reference no HD JobDef. Without this, a
+    /// pawn saved mid-HD-job leaves a null-def job when the mod is removed, which bricks the save's load (see
+    /// SafeRemoval's class doc). Gated on Scribe Saving mode and the safeRemovalOnSave setting (default on; a
+    /// kill-switch in case it ever conflicts with another save patch). Safe because RimWorld serializes
+    /// synchronously on the main thread (game frozen), so the clear/restore window is never observed by a tick.
     /// </summary>
     [HarmonyPatch(typeof(Pawn_JobTracker), nameof(Pawn_JobTracker.ExposeData))]
     public static class Patch_PawnJobTracker_ExposeData_RemovalSafety
