@@ -139,6 +139,8 @@ namespace HaulersDream
         /// <item>Simple Sidearms: a carried/remembered sidearm (<see cref="SimpleSidearmsCompat.IsKeptWeapon"/>).</item>
         /// <item>Smart Medicine: a stocked-up medicine/drug (<see cref="SmartMedicineCompat.IsStockedUp"/>).</item>
         /// <item>Dub's Bad Hygiene: carried water (<see cref="DbhCompat.IsKeptDrink"/>).</item>
+        /// <item>Combat Extended / Yayo's Combat 3: carried ammo the mod re-fetches
+        /// (<see cref="CECompat.IsCarriedAmmo"/> / <see cref="YayoCombatCompat.IsCarriedAmmo"/>).</item>
         /// </list>
         /// </summary>
         internal static bool IsManagedKeepItem(Pawn pawn, Thing thing, bool hdSwept)
@@ -167,6 +169,11 @@ namespace HaulersDream
                 // Combat Extended ammo: CE keeps a pawn's loadout ammo and re-fetches it if removed (the reported
                 // back-and-forth "drop ammo / pick it back up" loop). Defer ammo management entirely to CE.
                 if (CECompat.IsCarriedAmmo(thing))
+                    return true;
+                // Yayo's Combat 3 ammo: YC3 likewise keeps a pawn's ammo in inventory and re-fetches it; shipping
+                // it to storage fights YC3 and can stall the unload job on a caravan-return pawn (the reported
+                // freeze). Defer YC3 ammo management entirely to YC3, exactly like CE ammo above.
+                if (YayoCombatCompat.IsCarriedAmmo(thing))
                     return true;
             }
             // Simple Sidearms carried weapon — IsKeptWeapon applies the SAME HD-swept exclusion internally
