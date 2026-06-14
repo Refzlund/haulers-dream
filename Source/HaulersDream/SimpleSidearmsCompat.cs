@@ -180,5 +180,33 @@ namespace HaulersDream
                         count++;
             return count;
         }
+
+        /// <summary>
+        /// How many of this exact (def, stuff) Simple Sidearms wants the pawn to keep IN INVENTORY — i.e. its
+        /// remembered count (<see cref="RememberedCount"/>) MINUS the equipped primary if the primary is this pair.
+        /// <para>
+        /// SS records the equipped PRIMARY in rememberedWeapons (InformOfAddedPrimary → InformOfAddedSidearm), but
+        /// the primary physically lives in <c>equipment.Primary</c>, NOT <c>inventory.innerContainer</c>. So a raw
+        /// RememberedCount over-keeps by one when compared against an inventory-only have-count: a hauled duplicate
+        /// of the primary's (def,stuff) computes surplus = have(1) − keep(1) = 0 and is NEVER put away (the reported
+        /// "won't unload / re-stows into inventory" bug when the equipped weapon matches the hauled one). This
+        /// mirrors Simple Sidearms' OWN <c>Pawn_InventoryTracker.FirstUnloadableThing</c> postfix, which removes the
+        /// equipped primary's pair from the kept-sidearm set before counting inventory copies. Sidearms (which DO
+        /// live in innerContainer) are unaffected. Returns 0 when SS is absent / its memory API didn't resolve.
+        /// </para>
+        /// </summary>
+        public static int InventoryKeepCount(Pawn pawn, ThingDef def, ThingDef stuff)
+        {
+            int keep = RememberedCount(pawn, def, stuff);
+            if (keep <= 0)
+                return 0;
+            // The equipped primary satisfies one remembered entry of its pair from EQUIPMENT, so it must not pin an
+            // inventory copy. Subtract at most one (keep >= 1 here, so the result stays >= 0). Mirrors SS removing
+            // exactly the primary from its desiredSidearms before scanning inventory.
+            var primary = pawn?.equipment?.Primary;
+            if (primary != null && primary.def == def && primary.Stuff == stuff)
+                keep -= 1;
+            return keep;
+        }
     }
 }
