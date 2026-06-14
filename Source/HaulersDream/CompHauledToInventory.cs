@@ -89,7 +89,13 @@ namespace HaulersDream
                     var thing = owner[i];
                     // Re-tagged (merged/split) stacks also re-register with CE's HoldTracker — a merge can grow
                     // a stack past the originally-notified count, and CE drops the un-held excess otherwise.
-                    if (thing != null && defs.Contains(thing.def) && takenToInventory.Add(thing))
+                    // NEVER def-overlap-tag a genuine Simple Sidearms remembered sidearm: weapons don't stack, so a
+                    // sidearm of a scooped weapon's def is a separate Thing that would otherwise be tagged here and
+                    // then shipped to storage (SS re-fetches it — the "unloads its own sidearm" bug). The precise
+                    // (def,stuff) check only ever excludes a genuine sidearm; a loose swept weapon still tags.
+                    if (thing != null && defs.Contains(thing.def)
+                        && !SimpleSidearmsCompat.IsRememberedSidearm(parent as Pawn, thing)
+                        && takenToInventory.Add(thing))
                     {
                         StampTick(thing);
                         CECompat.NotifyHeld(parent as Pawn, thing, thing.stackCount);

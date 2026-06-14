@@ -410,7 +410,7 @@ namespace HaulersDream
                     // pass collects it (the unload driver relinks the real stacks by def). Pass the moved
                     // count so a merge into an already-tagged stack re-notifies CE's HoldTracker.
                     int moved = allMoved ? before : before - split.stackCount;
-                    Thing held = InventoryStackOfDef(owner, split.def) ?? (allMoved ? split : null);
+                    Thing held = InventoryStackOfDef(owner, split.def, pawn) ?? (allMoved ? split : null);
                     if (held != null)
                         comp.RegisterHauledItem(held, moved);
                     comp.NotifyYieldPicked();
@@ -445,14 +445,30 @@ namespace HaulersDream
             }
         }
 
-        internal static Thing InventoryStackOfDef(ThingOwner owner, ThingDef def)
+        internal static Thing InventoryStackOfDef(ThingOwner owner, ThingDef def, Pawn pawn = null)
         {
             if (owner == null || def == null)
                 return null;
+            // Prefer a same-def stack that is NOT a genuine Simple Sidearms remembered sidearm, so the scoop's
+            // unload-tag never lands on the pawn's own sidearm (weapons don't stack, so a sidearm of the scooped
+            // weapon's def is a separate same-def stack that could be returned here as "first of def"). A remembered
+            // sidearm is only returned as a last resort (all same-def stacks are sidearms — rare), so the caller
+            // still has a stack to register. pawn==null keeps the old behavior for non-scoop callers.
+            Thing fallback = null;
             for (int i = 0; i < owner.Count; i++)
-                if (owner[i]?.def == def)
-                    return owner[i];
-            return null;
+            {
+                var t = owner[i];
+                if (t?.def != def)
+                    continue;
+                if (pawn != null && SimpleSidearmsCompat.IsRememberedSidearm(pawn, t))
+                {
+                    if (fallback == null)
+                        fallback = t;
+                    continue;
+                }
+                return t;
+            }
+            return fallback;
         }
 
         /// <summary>Total units of <paramref name="def"/> across all of the owner's stacks.</summary>
