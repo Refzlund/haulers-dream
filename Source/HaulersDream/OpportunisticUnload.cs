@@ -308,6 +308,12 @@ namespace HaulersDream
                                     || PawnUnloadChecker.HasQueuedUnload(pawn);
             int now = Find.TickManager?.TicksGame ?? 0;
 
+            // Honor the anti-livelock backoff here too: this end-of-run path is ALWAYS automatic (never a forced
+            // gizmo), so a pawn whose last unload moved nothing (an un-pullable item) must not fire a no-op unload
+            // at every work-run boundary either. Cleared by progress / a fresh tag, same as the checker.
+            if (now < comp.unloadBackoffUntilTick)
+                return null;
+
             if (!Core.UnloadPolicy.EndOfRunUnloadAllowed(
                     s.markForUnload, YieldRouter.IsEligible(pawn), pawn.Drafted,
                     tracked.Count, anyUnloadable, alreadyUnloading,

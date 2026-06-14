@@ -22,6 +22,18 @@ namespace HaulersDream
         // save/load just means everything is retried next pass, which is correct).
         private readonly HashSet<Thing> skippedThisJob = new HashSet<Thing>();
 
+        // True once this job has actually moved a unit out of inventory (pulled into the carry tracker for a
+        // storage trip, or dropped). If a whole job ends having moved NOTHING but still had surplus it couldn't
+        // shift (every candidate skipped — see skippedThisJob), the finish action arms a per-pawn backoff on the
+        // comp so the AUTO checker doesn't re-queue the identical no-op unload every tick (which pinned the pawn in
+        // "Unloading inventory"). In-flight only.
+        private bool movedSomethingThisJob;
+
+        // How long the AUTO unload backs off after a zero-progress job (~one in-game hour). A forced gizmo press
+        // ignores it; a successful move or a freshly-tagged item clears it (CompHauledToInventory). Bounded retry,
+        // never a per-tick pin.
+        private const int UnloadBackoffTicks = 2500;
+
         public override void ExposeData()
         {
             base.ExposeData();
@@ -46,11 +58,25 @@ namespace HaulersDream
             AddFinishAction(condition =>
             {
                 var held = job.GetTarget(TargetIndex.A).Thing;
-                if (comp == null || held == null || held.Destroyed)
-                    return;
-                if (pawn.carryTracker?.innerContainer?.Contains(held) == true
-                    || pawn.inventory?.innerContainer?.Contains(held) == true)
+                if (comp != null && held != null && !held.Destroyed
+                    && (pawn.carryTracker?.innerContainer?.Contains(held) == true
+                        || pawn.inventory?.innerContainer?.Contains(held) == true))
                     comp.RegisterHauledItem(held);
+
+                // Anti-livelock backoff (stamped LAST so a re-tag above can't clear it): if this whole unload moved
+                // NOTHING yet still had surplus it couldn't shift (an un-pullable item — carry tracker blocked,
+                // another mod holding the stack, reserved by another pawn, etc.), arm a per-pawn cooldown so the
+                // AUTO checker (idle backstop / interval) doesn't re-queue the identical no-op job every tick — the
+                // reported "stood there saying Unloading inventory without moving". A forced gizmo press ignores it
+                // (PawnUnloadChecker); progress this job clears it; a freshly-tagged item clears it (a fresh arrival
+                // is worth a retry). Bounded hourly retry, never a per-tick pin.
+                if (comp != null)
+                {
+                    if (movedSomethingThisJob)
+                        comp.unloadBackoffUntilTick = -99999;
+                    else if (skippedThisJob.Count > 0 || carried.Count > 0)
+                        comp.unloadBackoffUntilTick = (Find.TickManager?.TicksGame ?? 0) + UnloadBackoffTicks;
+                }
             });
 
             yield return FindTargetOrDrop(carried, begin);
@@ -111,7 +137,10 @@ namespace HaulersDream
                         // strand it untracked (gizmo hidden, never retried).
                         var original = thing;
                         if (pawn.inventory.innerContainer.TryDrop(thing, ThingPlaceMode.Near, countToDrop, out thing))
+                        {
                             carried.Remove(original);
+                            movedSomethingThisJob = true;
+                        }
                         EndJobWith(JobCondition.Succeeded);
                         return;
                     }
@@ -135,6 +164,7 @@ namespace HaulersDream
                     job.SetTarget(TargetIndex.A, thing);
                     carried.Remove(thing);
                     thing.SetForbidden(false, false);
+                    movedSomethingThisJob = true; // pulled into the carry tracker for the storage trip = progress
                 }
             };
         }

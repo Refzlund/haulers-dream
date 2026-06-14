@@ -12,7 +12,17 @@ a colonist's in-progress task to a placeholder *Wait* and leave a dangling drive
 invalid job and tries to recover from before the colonist is fully placed on the map — throwing a
 `NullReferenceException` and leaving the pawn jobless. The protection now simply *clears* the in-progress task
 (and lifts any queued Hauler's Dream tasks out of the save), which is the clean state — the colonist just picks a
-new job on its first tick. No errors, no jobless pawns.
+new job on its first tick. No errors, no jobless pawns. **And for saves made by an older version** (which already
+baked in the bad job state), a load-time repair now catches and clears it, so those old saves load cleanly too.
+
+**1b. A colonist could get stuck forever showing "Unloading inventory" without moving.** If a tracked item read as
+surplus but couldn't actually be moved out of the pack (e.g. another mod was holding the stack, or a leftover
+carried item blocked the hands), the unload finished having moved nothing yet the colonist immediately re-queued
+the same hopeless unload — every tick, pinning it in place. Now, when an unload moves nothing, Hauler's Dream
+backs that colonist off the *automatic* unload for a while (it gets on with its real work and retries later), so a
+colonist can never be pinned by an un-movable item. A manual "unload now" press still always tries immediately,
+and any genuinely stuck item still raises the cannot-unload alert. The backoff clears the moment an unload makes
+progress or a fresh item is picked up.
 
 **2. The save still referenced the mod's own components**, so removing the mod logged harmless-but-ugly errors:
 

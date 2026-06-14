@@ -14,6 +14,15 @@ namespace HaulersDream
         private HashSet<Thing> takenToInventory = new HashSet<Thing>();
         public int lastYieldTick = -99999;
 
+        /// <summary>Tick before which the AUTOMATIC unload check must NOT re-queue an unload for this pawn — set by
+        /// the unload driver when a whole unload job moved NOTHING but still had surplus it couldn't shift (an
+        /// un-pullable item: carry tracker blocked, another mod holding the stack, reserved by another pawn, …).
+        /// Without it the checker re-queued the identical no-op job every tick and pinned the pawn in "Unloading
+        /// inventory". A FORCED unload (gizmo / flush) ignores it; a successful move or a freshly-tagged item clears
+        /// it. Scribed: the persistent across-job state the in-flight <c>skippedThisJob</c> set can't carry (so the
+        /// pin can't survive a save/load either). -99999 = no backoff.</summary>
+        public int unloadBackoffUntilTick = -99999;
+
         /// <summary>Tick each tagged stack was FIRST tagged, for per-item staleness in the cannot-unload alert
         /// (a busy hauler refreshing lastYieldTick must not mask one stranded stack). Transient: not scribed —
         /// on load, tags get a fresh clock via the GetHashSet backfill, so a loaded save won't false-alert and
@@ -156,6 +165,12 @@ namespace HaulersDream
             if (takenToInventory.Add(thing))
             {
                 StampTick(thing);
+                // A genuinely NEW arrival (scoop / sweep / adopt) means there's fresh work to put away, so any
+                // "last unload moved nothing" backoff is stale — let the next check retry immediately. (Only this
+                // explicit-register path clears it: the GetHashSet self-heal re-Adds the SAME stuck stack every
+                // tick and must NOT keep clearing the backoff, but it adds via takenToInventory.Add directly, not
+                // through here, so it already doesn't.)
+                unloadBackoffUntilTick = -99999;
                 CECompat.NotifyHeld(parent as Pawn, thing, thing.stackCount);
             }
             else if (mergedCount > 0)
@@ -198,6 +213,7 @@ namespace HaulersDream
             base.PostExposeData();
             Scribe_Collections.Look(ref takenToInventory, "haulersDreamTakenToInventory", LookMode.Reference);
             Scribe_Values.Look(ref lastYieldTick, "haulersDreamLastYieldTick", -99999);
+            Scribe_Values.Look(ref unloadBackoffUntilTick, "haulersDreamUnloadBackoffUntilTick", -99999);
             if (takenToInventory == null)
                 takenToInventory = new HashSet<Thing>();
         }

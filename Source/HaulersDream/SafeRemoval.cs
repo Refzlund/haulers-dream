@@ -324,6 +324,22 @@ namespace HaulersDream
         private static void Prefix(Pawn_JobTracker __instance, ref SafeRemoval.SaveSwapState __state)
         {
             __state = null;
+
+            // LOAD-time safety net (any save, any setting — a fallback for OLD saves): a curJob whose curDriver
+            // didn't load is exactly the state vanilla's own PostLoadInit treats as "invalid" — it logs "Cleaning
+            // up invalid job state" and calls EndCurrentJob(JobCondition.Errored), which starts a recovery job
+            // while the pawn isn't on a map yet, so JobDriver_Wait's initAction NREs on base.Map and the pawn is
+            // left jobless. A save written by an OLDER version of this mod (which rewrote the current HD job to a
+            // placeholder Wait and nulled curDriver) lands in exactly that state. CLEAR curJob FIRST (the clean
+            // "no current job" state) so vanilla's else-if is skipped — the pawn just picks a fresh job next tick.
+            // Runs BEFORE the patched method body, so this pre-empts vanilla's recovery. (Harmless for healthy
+            // pawns: a normally-loaded pawn has curJob==null or curDriver!=null, so this never fires for them.)
+            if (Scribe.mode == LoadSaveMode.PostLoadInit && __instance.curJob != null && __instance.curDriver == null)
+            {
+                __instance.curJob = null;
+                return;
+            }
+
             if (Scribe.mode != LoadSaveMode.Saving)
                 return;
             var settings = HaulersDreamMod.Settings;

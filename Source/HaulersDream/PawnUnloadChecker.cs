@@ -89,6 +89,16 @@ namespace HaulersDream
             // goods in strict mode (where the full-trigger never fires to break it).
             bool hasPendingWork = HasPendingRealWork(pawn);
 
+            // Anti-livelock backoff: a previous unload that moved NOTHING (an un-pullable item — carry tracker
+            // blocked, another mod holding the stack, reserved by another pawn, …) stamped a cooldown on the comp
+            // (see JobDriver_UnloadHauledInventory's finish action). While it's active the AUTOMATIC path must NOT
+            // re-queue — that re-queued the identical no-op unload every tick and pinned the pawn in "Unloading
+            // inventory" (incl. right after loading a save that captured the pin). A FORCED unload (the gizmo, an
+            // end-of-batch flush — all forced:true callers) ALWAYS bypasses it (recovery must work). Progress or a
+            // freshly-tagged item clears it. We feed anyUnloadable=false below so the unit-tested UnloadPolicy.Decide
+            // takes its existing `!forced && !anyUnloadable -> Skip` path; no change to the pure policy.
+            bool backedOff = !forced && (Find.TickManager?.TicksGame ?? 0) < comp.unloadBackoffUntilTick;
+
             // Accumulate window, EXCEPT when the pawn is ALREADY in a downtime job it should unload before —
             // rest / recreation / eating, per the toggles. Then drop the load now instead of holding it through
             // the window (a pawn napping or eating shouldn't be sitting on a full pack). We use the STATE check
@@ -110,7 +120,7 @@ namespace HaulersDream
                 // Is there anything ABOVE keep-stock to actually unload? Recomputed each pass (a ClearTracker
                 // prune changes the set). Keeps an all-keep-stock pawn (whose surplus tags we deliberately
                 // retain) from re-queuing a no-op unload every cycle; a forced unload ignores this in Decide.
-                bool anyUnloadable = AnyUnloadable(pawn, carried);
+                bool anyUnloadable = !backedOff && AnyUnloadable(pawn, carried);
                 // All the gating logic lives in the (unit-tested) pure policy.
                 var decision = UnloadPolicy.Decide(eligible, carried.Count, inventoryCount, alreadyUnloading, forced,
                     hasPendingWork, ticksSinceYield, effectiveGrace, anyUnloadable);
