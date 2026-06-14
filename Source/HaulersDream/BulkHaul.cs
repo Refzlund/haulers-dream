@@ -263,19 +263,45 @@ namespace HaulersDream
             // Without this, the carried first order can never be re-detected as a "second item" and the takeover
             // never fires — the exact reported bug 1. (The on-ground race already worked because A was still in
             // the pool.) For an Always-trigger or automatic haul secondTasked is false, so this never widens those.
-            if (things.Count < 2 && !secondTasked)
+            if (things.Count < 2)
             {
-                // Normally a lone primary hauls best in hands (vanilla). EXCEPTION (bug 2): if the stack is too
-                // big for one armful AND storage can take more than one hand-trip would deliver, route it through
-                // inventory so the WHOLE stack moves in one trip instead of leaving part behind. deliverable is
-                // clamped to the destination group's real space (StorageSpaceForDef) so we never strand the rest.
                 int deliverable = primarySpace == int.MaxValue ? primaryTake : Math.Min(primaryTake, primarySpace);
-                bool wantOversized = forceSweep || s.haulOversizedInInventory;
-                if (!(wantOversized && BulkHaulPolicy.OversizedStackWorthInventory(primary.stackCount, handCap, deliverable)))
-                    return null;
-                counts[0] = Math.Min(counts[0], deliverable);
-                if (counts[0] <= 0)
-                    return null;
+                if (secondTasked)
+                {
+                    // bug 1: a nearby FIRST player order exists but may already be CARRIED in this pawn's hands,
+                    // which despawns it and removes it from the lister, so the ground sweep found only the primary.
+                    // Keep the single-item bulk as the vehicle the takeover folds that carried stack into
+                    // (TryTakeoverSecondOrder → TakeOverSoloHaul). count stays primaryTake (the takeover, not
+                    // storage space, governs what rides along). For Always/automatic hauls secondTasked is false.
+                }
+                else if (forceSweep)
+                {
+                    // The explicit "Haul everything nearby" button MUST always yield a bulk job — never degrade to
+                    // a vanilla single hand-haul. The reported bug: shift-clicking the button a second time found
+                    // the neighbors already swept/reserved by the first sweep, so the ground pool was empty
+                    // (things.Count == 1); the old `forceSweep || haulOversizedInInventory` gate then still required
+                    // the lone clicked stack to be OVERSIZED, so a normal stack fell through to `return null` and
+                    // the caller hauled it solo as "haul Nx steel". Build the single-item bulk regardless of size so
+                    // the order stays "haul everything nearby" (and the takeover prefix can fold it into a running
+                    // sweep). Clamp to real storage space so a lone oversized clicked stack never plans more than the
+                    // destination can take (no stranding); return null only when there is genuinely no room at all
+                    // (the caller then falls back to a plain forced haul).
+                    counts[0] = Math.Min(counts[0], deliverable);
+                    if (counts[0] <= 0)
+                        return null;
+                }
+                else
+                {
+                    // Normally a lone primary hauls best in hands (vanilla). EXCEPTION (bug 2): if the stack is too
+                    // big for one armful AND storage can take more than one hand-trip would deliver, route it through
+                    // inventory so the WHOLE stack moves in one trip instead of leaving part behind. deliverable is
+                    // clamped to the destination group's real space (StorageSpaceForDef) so we never strand the rest.
+                    if (!(s.haulOversizedInInventory && BulkHaulPolicy.OversizedStackWorthInventory(primary.stackCount, handCap, deliverable)))
+                        return null;
+                    counts[0] = Math.Min(counts[0], deliverable);
+                    if (counts[0] <= 0)
+                        return null;
+                }
             }
 
             var job = JobMaker.MakeJob(HaulersDreamDefOf.HaulersDream_BulkHaul, primary);

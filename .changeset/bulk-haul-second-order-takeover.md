@@ -19,7 +19,9 @@
 
 - **New "Haul everything nearby" right-click option.** For a hauling-capable colonist, right-clicking a
   haulable now offers "Haul everything nearby" alongside the vanilla "Prioritize hauling" — a one-click bulk
-  sweep, so you don't have to prioritize two hauls just to trigger it.
+  sweep, so you don't have to prioritize two hauls just to trigger it. It always starts a bulk sweep, including
+  when shift-clicked to queue it (previously a shift-clicked / repeated click whose neighbors were already being
+  swept could degrade into a plain single haul).
 
 Two new mod options (both on by default, under bulk hauling): the "Haul everything nearby" right-click option,
 and routing oversized single stacks through the inventory.
