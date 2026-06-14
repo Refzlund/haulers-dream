@@ -18,4 +18,10 @@ Now Hauler's Dream keeps exactly as many of each weapon type+material as Simple 
 - The spare stays tracked, so it still gets put away later even if the colonist is interrupted or drafted
   in the meantime.
 
+It also now always puts away the **actual hauled (or freshly-crafted) weapon**, never the equipped one — even
+when the equipped sidearm is higher quality. Previously the auto-pickup and inventory-crafting paths could tag
+the colonist's own sidearm by weapon type, so a colonist carrying a 99%-quality steel ikwa that hauled a
+3%-quality steel ikwa could end up storing the *good* one and keeping the *bad* one. Now it tracks and stores
+the specific item it just picked up or made, so the equipped sidearm is always the one kept.
+
 No change when Simple Sidearms isn't installed.

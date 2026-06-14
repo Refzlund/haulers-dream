@@ -410,7 +410,16 @@ namespace HaulersDream
                     // pass collects it (the unload driver relinks the real stacks by def). Pass the moved
                     // count so a merge into an already-tagged stack re-notifies CE's HoldTracker.
                     int moved = allMoved ? before : before - split.stackCount;
-                    Thing held = InventoryStackOfDef(owner, split.def, pawn) ?? (allMoved ? split : null);
+                    // Tag the SPECIFIC scooped Thing for any non-stacking item (stackLimit 1 — every weapon and
+                    // every quality/HP-bearing item). Those never merge, so `split` is always the exact loot we just
+                    // picked up, NOT a same-def sidearm InventoryStackOfDef might otherwise return (which would ship
+                    // the pawn's own 99%-quality sidearm to storage and keep a hauled 3% one). Stackable items
+                    // (stackLimit > 1) are fungible and carry no per-instance quality, so keep the by-def relink
+                    // unchanged — it tags the grown stack and re-notifies CE's HoldTracker of the merged delta via
+                    // `moved` (which a tag on a folded-in residue would otherwise drop).
+                    Thing held = split.def.stackLimit == 1
+                        ? split
+                        : (InventoryStackOfDef(owner, split.def, pawn) ?? (allMoved ? split : null));
                     if (held != null)
                         comp.RegisterHauledItem(held, moved);
                     comp.NotifyYieldPicked();
