@@ -12,10 +12,14 @@
   you don't run those mods) and left in the pawn's inventory. Vanilla addiction/chemical-dependency drugs are
   kept too, matching vanilla.
 
-- **New "Items to never unload…" picker (mod options).** A stockpile-style categorized list where you can mark
-  any items Hauler's Dream should always leave in a pawn's inventory (e.g. ammo or weapons your pawns carry) —
-  on top of the auto-detected mod items above. It's fully fallback-safe: choices for items from a mod you later
-  remove won't break your save, and they're restored automatically if you reinstall the mod.
+- **New "Individual Item Unload Settings" picker (mod options).** A stockpile-style categorized, foldable,
+  searchable list where you set how Hauler's Dream treats specific items in a pawn's inventory — per item, choose
+  **Never unload** (keep the whole stack), **Keep at most N** (carry up to N and unload the rest), or **Always
+  unload** (put it away even if another mod would otherwise keep it). A rule overrides the auto-detected mod
+  keeps above for that item. It's fully fallback-safe: choices for items from a mod you later remove won't break
+  your save, and they're restored automatically if you reinstall the mod. (Built on the vanilla item tree
+  directly, so it also no longer throws errors when opened from the main-menu mod options — the old picker used
+  an in-game-only UI that spammed the log when no save was loaded.)
 
 - **Pawns no longer carry un-storable items to a random spot.** If a harvested/mined/deconstructed yield (or
   any swept item) has nowhere it can be stored, the pawn now leaves it on the ground where it was produced,

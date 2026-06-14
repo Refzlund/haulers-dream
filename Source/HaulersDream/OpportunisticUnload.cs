@@ -99,8 +99,10 @@ namespace HaulersDream
             if (now - comp.lastOpportunisticUnloadTick < DivertCooldownTicks)
                 return null; // a recent (possibly failed) divert — let the pawn rest/eat this time; retry after the cooldown
             // Adopt foreign surplus too (matches the other unload paths), then require something actually unloadable.
-            if (s.unloadAllSurplus && !pawn.IsFormingCaravan())
-                PawnUnloadChecker.AdoptSurplusInventory(pawn, comp);
+            // Global toggle adopts all surplus; otherwise only defs with an explicit surplus-producing per-item rule.
+            bool adoptAll = s.unloadAllSurplus;
+            if (!pawn.IsFormingCaravan() && (adoptAll || s.HasAnySurplusProducingRule))
+                PawnUnloadChecker.AdoptSurplusInventory(pawn, comp, adoptAll);
             // Caravan / away map: no player storage — put the load onto a pack animal before resting/eating/
             // relaxing at the campsite, the same way the home pawn puts it in storage. Same downtime trigger
             // and per-activity toggle (markForUnload + the `enabled` gate above); the caravan toggle + carrier

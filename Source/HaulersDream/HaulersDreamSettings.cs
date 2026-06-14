@@ -24,14 +24,18 @@ namespace HaulersDream
         // or future. Turn ON for the convenience of auto-hauling foreign surplus (e.g. traded jade) to storage;
         // the keep-item detection above keeps that safe with the supported mods.
         public bool unloadAllSurplus = false;
-        // Player-configured "never unload these items" list (mod options → "Items to never unload…", a stockpile-
-        // style categorized picker). HD treats a matched def as the pawn's personal kit: it is never unloaded out
-        // of inventory (an HD-swept loose stack of the def is still unloadable, so it can't become a black hole).
-        // Stored as defName STRINGS, NOT ThingDef refs: a modded item's entry survives the mod being removed (it
-        // simply never matches a live item) and is restored automatically if the mod returns — and it can never
-        // break save loading. The categorized UI builds a transient ThingFilter from this list (see Dialog_KeepFilter).
-        public List<string> keepDefNames = new List<string>();
-        [System.NonSerialized] private HashSet<string> keepSet; // lazy O(1) lookup cache; invalidated on edit/load
+        // Per-item unload rules (mod options → "Individual Item Unload Settings", a stockpile-style categorized
+        // picker). Each entry sets how HD treats one item def in a pawn's inventory: keep the whole stack (never
+        // unload), keep at most N units (unload the excess), or always unload it — overriding HD's auto-detected
+        // keep-mods and the global "unload surplus" toggle for that def. Stored as defName-keyed STRINGS encoded
+        // "defName|modeInt|amount", NOT ThingDef refs: a modded item's rule survives the mod being removed (it
+        // simply never matches a live item), is restored automatically if the mod returns, and can never break
+        // save loading. The picker (Dialog_ItemUnloadSettings) edits a defName->rule dictionary built from this.
+        public List<string> itemUnloadRules = new List<string>();
+        [System.NonSerialized] private Dictionary<string, ItemUnloadRule> ruleMap; // lazy O(1) decode cache
+        // Legacy (pre-1.1.x) "never unload" list — read once on load and migrated into itemUnloadRules as KeepAll
+        // rules, then never written again. Kept only so older configs upgrade losslessly.
+        [System.NonSerialized] private List<string> keepDefNames;
 
         // "Put it away before relaxing": when a pawn finishes its work run and is about to rest, recreate, or
         // eat, it makes its unload trip FIRST (bypassing the accumulate window), instead of carrying the load
@@ -248,12 +252,16 @@ namespace HaulersDream
             Scribe_Values.Look(ref unloadBeforeLeisure, "unloadBeforeLeisure", true);
             Scribe_Values.Look(ref unloadBeforeEating, "unloadBeforeEating", true);
             Scribe_Values.Look(ref unloadAllSurplus, "unloadAllSurplus", false);
-            Scribe_Collections.Look(ref keepDefNames, "keepDefNames", LookMode.Value);
+            Scribe_Collections.Look(ref itemUnloadRules, "itemUnloadRules", LookMode.Value);
             if (Scribe.mode == LoadSaveMode.LoadingVars)
             {
-                if (keepDefNames == null)
-                    keepDefNames = new List<string>();
-                keepSet = null; // rebuild the lookup cache from the freshly-loaded list on next query
+                if (itemUnloadRules == null)
+                    itemUnloadRules = new List<string>();
+                // Read the legacy "never unload" list ONLY on load (never written again) and fold it in as KeepAll.
+                keepDefNames = null;
+                Scribe_Collections.Look(ref keepDefNames, "keepDefNames", LookMode.Value);
+                MigrateLegacyKeepDefNames();
+                ruleMap = null; // rebuild the decode cache from the freshly-loaded list on next query
             }
             Scribe_Values.Look(ref shareForBuilding, "shareForBuilding", true);
             Scribe_Values.Look(ref shareForCrafting, "shareForCrafting", true);
@@ -315,24 +323,106 @@ namespace HaulersDream
             Scribe_Values.Look(ref verboseLogging, "verboseLogging", false);
         }
 
-        /// <summary>True if the player marked this def as "never unload" (the keep-filter). Fallback-safe: an
-        /// entry whose mod is absent simply never matches a live item, and re-matches if the mod returns. O(1)
-        /// via a lazily-built cache (the list only changes through the mod-options picker).</summary>
-        public bool IsKeptDef(ThingDef def)
+        /// <summary>The decoded per-item rules keyed by defName, including entries whose mod is currently absent
+        /// (kept verbatim so they restore when the mod returns). Lazily rebuilt from <see cref="itemUnloadRules"/>.</summary>
+        private Dictionary<string, ItemUnloadRule> RuleMap
         {
-            if (def == null || keepDefNames == null || keepDefNames.Count == 0)
-                return false;
-            if (keepSet == null)
-                keepSet = new HashSet<string>(keepDefNames);
-            return keepSet.Contains(def.defName);
+            get
+            {
+                if (ruleMap == null)
+                {
+                    ruleMap = new Dictionary<string, ItemUnloadRule>();
+                    if (itemUnloadRules != null)
+                        foreach (var entry in itemUnloadRules)
+                            if (TryDecodeRule(entry, out var name, out var rule))
+                                ruleMap[name] = rule;
+                }
+                return ruleMap;
+            }
         }
 
-        /// <summary>Replace the keep-filter contents (called by the picker dialog on close). The caller is
-        /// responsible for preserving entries whose mod is currently absent.</summary>
-        public void SetKeepDefNames(System.Collections.Generic.IEnumerable<string> names)
+        /// <summary>The player's explicit per-item rule for this def, if any. O(1). Fallback-safe: a rule whose
+        /// mod is absent simply never matches a live item.</summary>
+        public bool TryGetItemRule(ThingDef def, out ItemUnloadRule rule)
         {
-            keepDefNames = names == null ? new List<string>() : new List<string>(names);
-            keepSet = null; // invalidate the lookup cache
+            rule = default;
+            return def != null && RuleMap.TryGetValue(def.defName, out rule);
+        }
+
+        /// <summary>How many per-item rules are set (for the settings button label).</summary>
+        public int ItemRuleCount => RuleMap.Count;
+
+        /// <summary>True if this def has an explicit rule that can CREATE unload surplus (keep-at-most or
+        /// always-unload). Such a rule is a deliberate per-item opt-in, so HD adopts/unloads that def's untagged
+        /// stock independently of the global "unload all surplus" toggle. (KeepAll/Default never produce surplus.)</summary>
+        public bool RuleProducesSurplus(ThingDef def)
+            => def != null && RuleMap.TryGetValue(def.defName, out var r) && r.mode != ItemUnloadMode.KeepAll;
+
+        /// <summary>True if ANY per-item rule can create unload surplus (keep-at-most / always-unload) — the cheap
+        /// gate for "run the surplus-adoption pass even with the global toggle off".</summary>
+        public bool HasAnySurplusProducingRule
+        {
+            get
+            {
+                foreach (var kv in RuleMap)
+                    if (kv.Value.mode != ItemUnloadMode.KeepAll)
+                        return true;
+                return false;
+            }
+        }
+
+        /// <summary>A mutable copy of all rules (live and absent-mod alike) for the picker dialog to edit.</summary>
+        public Dictionary<string, ItemUnloadRule> GetItemRulesCopy()
+            => new Dictionary<string, ItemUnloadRule>(RuleMap);
+
+        /// <summary>Replace all per-item rules (called by the picker dialog on close). The dialog preserves
+        /// entries whose mod is currently absent, so re-encoding the whole map stays fallback-safe.</summary>
+        public void SetItemRules(Dictionary<string, ItemUnloadRule> map)
+        {
+            itemUnloadRules = new List<string>();
+            if (map != null)
+                foreach (var kv in map)
+                    itemUnloadRules.Add(EncodeRule(kv.Key, kv.Value));
+            ruleMap = null; // invalidate the decode cache
+        }
+
+        // --- fallback-safe string codec: "defName|modeInt|amount" ----------------------------------------------
+        private static string EncodeRule(string defName, ItemUnloadRule rule)
+            => defName + "|" + ((int)rule.mode).ToString() + "|" + rule.amount.ToString();
+
+        private static bool TryDecodeRule(string entry, out string defName, out ItemUnloadRule rule)
+        {
+            defName = null;
+            rule = default;
+            if (string.IsNullOrEmpty(entry))
+                return false;
+            var parts = entry.Split('|');
+            if (parts.Length < 1 || string.IsNullOrEmpty(parts[0]))
+                return false;
+            defName = parts[0];
+            int modeInt = 0, amount = 0;
+            if (parts.Length >= 2)
+                int.TryParse(parts[1], out modeInt);   // bad/legacy data -> 0 = KeepAll (safe default)
+            if (parts.Length >= 3)
+                int.TryParse(parts[2], out amount);
+            rule = new ItemUnloadRule((ItemUnloadMode)Mathf.Clamp(modeInt, 0, 2), Mathf.Max(0, amount));
+            return true;
+        }
+
+        // Fold a legacy pre-1.1.x "never unload" defName list into itemUnloadRules as KeepAll rules (only entries
+        // not already present), then drop it so it is never written again.
+        private void MigrateLegacyKeepDefNames()
+        {
+            if (keepDefNames == null || keepDefNames.Count == 0)
+                return;
+            var have = new HashSet<string>();
+            foreach (var entry in itemUnloadRules)
+                if (TryDecodeRule(entry, out var n, out _))
+                    have.Add(n);
+            foreach (var name in keepDefNames)
+                if (!string.IsNullOrEmpty(name) && have.Add(name))
+                    itemUnloadRules.Add(EncodeRule(name, new ItemUnloadRule(ItemUnloadMode.KeepAll)));
+            keepDefNames = null;
         }
 
         // The settings list long ago outgrew Dialog_ModSettings' fixed height — without a scroll view the
@@ -370,12 +460,13 @@ namespace HaulersDream
             l.CheckboxLabeled("HaulersDream.Setting.MarkForUnload".Translate(), ref markForUnload);
             l.CheckboxLabeled("HaulersDream.Setting.UnloadAllSurplus".Translate(), ref unloadAllSurplus,
                 "HaulersDream.Setting.UnloadAllSurplusDesc".Translate());
-            // Stockpile-style picker for items HD must never unload out of a pawn's inventory (ammo, sidearms, …).
-            string keepBtn = keepDefNames != null && keepDefNames.Count > 0
-                ? "HaulersDream.Setting.KeepFilterButtonN".Translate(keepDefNames.Count)
-                : "HaulersDream.Setting.KeepFilterButton".Translate();
-            if (l.ButtonText(keepBtn))
-                Find.WindowStack.Add(new Dialog_KeepFilter(this));
+            // Stockpile-style per-item picker: keep all / keep at most N / always unload, per item def.
+            int ruleCount = ItemRuleCount;
+            string itemBtn = ruleCount > 0
+                ? "HaulersDream.Setting.ItemUnloadButtonN".Translate(ruleCount)
+                : "HaulersDream.Setting.ItemUnloadButton".Translate();
+            if (l.ButtonText(itemBtn))
+                Find.WindowStack.Add(new Dialog_ItemUnloadSettings(this));
             if (markForUnload)
             {
                 // "Put it away before relaxing" — unload before each downtime activity (bypassing the accumulate window).

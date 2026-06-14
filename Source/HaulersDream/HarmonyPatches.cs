@@ -232,13 +232,16 @@ namespace HaulersDream
             var comp = __instance.GetComp<CompHauledToInventory>();
             if (comp == null)
                 yield break;
-            // Show the gizmo when HD has tagged stock OR (unloadAllSurplus) the pawn carries any foreign surplus
-            // it would adopt — so the button appears immediately, not only after the backstop's first adopt pass.
-            // HasAnySurplus is read-only (no tagging on the render path); clicking runs forced CheckIfShouldUnload,
-            // which does the adopting + unload. Caravan-loading inventory is intentional, so it's excluded.
+            // Show the gizmo when HD has tagged stock OR the pawn carries foreign surplus a forced unload would
+            // actually adopt. With the global "unload all surplus" toggle on that's ANY surplus; with it off it's
+            // only stock whose def has an explicit surplus-producing rule (keep-at-most / always-unload) — matching
+            // exactly what AdoptSurplusInventory tags in each case, so the button is never shown as a no-op. Both
+            // checks are read-only (no tagging on the render path); clicking runs forced CheckIfShouldUnload, which
+            // does the adopting + unload. Caravan-loading inventory is intentional, so it's excluded.
             bool hasTagged = comp.GetHashSet().Count > 0;
-            bool hasForeignSurplus = s.unloadAllSurplus && !__instance.IsFormingCaravan()
-                                     && InventorySurplus.HasAnySurplus(__instance);
+            bool hasForeignSurplus = !__instance.IsFormingCaravan() && (s.unloadAllSurplus
+                ? InventorySurplus.HasAnySurplus(__instance)
+                : (s.HasAnySurplusProducingRule && InventorySurplus.HasAnyRuledSurplus(__instance)));
             if (!hasTagged && !hasForeignSurplus)
                 yield break;
 
