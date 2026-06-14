@@ -129,6 +129,24 @@ namespace HaulersDream
                 ? Toils_Goto.GotoBuild(NeederInd)
                 : Toils_Goto.GotoThing(NeederInd, PathEndMode.Touch);
 
+            // One-time ENTRY gate (runs once, before the fill loop): if the pawn already carries enough of
+            // this material for the IMMEDIATE needer, skip the stockpile trip entirely and deliver from
+            // inventory. In a haul+build route the pawn keeps a big batch from an earlier stop; without this
+            // it walked back to the stockpile after every wall (its load target is the WHOLE route's demand,
+            // which a single carry can never reach, and the mass headroom reopened on each deposit). Only the
+            // ENTRY decision uses the immediate need; once it DOES enter, loadDecide's loop still fills toward
+            // the whole-route ceiling, so a genuine re-load is a full batch (once per ceiling-worth), not a
+            // per-frame top-off. The loop jumps back to loadDecide (not here), so this fires exactly once.
+            Toil loadEntry = ToilMaker.MakeToil("HD_LoadEntry");
+            loadEntry.initAction = () =>
+            {
+                if (resourceDef == null) { JumpToToil(deliverGoto); return; }
+                if (!ConstructDeliveryPlan.ShouldLoadBeforeDeliver(InventoryCountOfDef(), SpaceInNeeder()))
+                    JumpToToil(deliverGoto); // already carry enough for this frame (or it needs nothing) -> deliver
+            };
+            loadEntry.defaultCompleteMode = ToilCompleteMode.Instant;
+            yield return loadEntry;
+
             Toil loadDecide = ToilMaker.MakeToil("HD_LoadDecide");
             loadDecide.initAction = () =>
             {

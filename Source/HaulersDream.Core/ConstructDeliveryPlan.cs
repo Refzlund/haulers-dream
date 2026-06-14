@@ -54,6 +54,25 @@ namespace HaulersDream.Core
         }
 
         /// <summary>
+        /// Whether the inventory-construction driver should make a stockpile LOAD trip before delivering to
+        /// the IMMEDIATE needer: only when the carried stock of this material can't already cover what this
+        /// one frame still needs.
+        ///
+        /// This is the fix for the "tops off at the stockpile after every wall" route bug. A haul+build route
+        /// stamps the WHOLE remaining route's demand into each stop's load target, so the driver's fill loop
+        /// kept walking back to the stockpile after every single deposit (carried stock was always below the
+        /// whole-route demand, and the mass headroom reopened each time a frame was filled). Gating the TRIP
+        /// decision on the immediate frame's need instead means the pawn delivers from its carried surplus
+        /// across the intervening frames and only re-loads when it genuinely runs short — once per
+        /// ceiling-worth of material, not once per frame. (When it does trip, the fill loop still loads toward
+        /// the whole-route ceiling, so the "few trips" benefit is preserved.)
+        /// </summary>
+        /// <param name="inventoryUnits">Units of the material the pawn already carries.</param>
+        /// <param name="immediateNeedUnits">Units this one frame still needs (space remaining, enroute-aware).</param>
+        public static bool ShouldLoadBeforeDeliver(int inventoryUnits, int immediateNeedUnits)
+            => immediateNeedUnits > 0 && inventoryUnits < immediateNeedUnits;
+
+        /// <summary>
         /// The mass-and-demand-capped ceiling for how many units the pawn could usefully load for this
         /// needer, ignoring how much is currently on the floor — used to bound the nearby-resource gather
         /// before the real <see cref="PlanLoad"/> (which takes the gathered availability into account).
