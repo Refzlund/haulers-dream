@@ -171,6 +171,40 @@ namespace HaulersDream.Tests
             Assert.That(Takeover(incomingIsBulk: false, curIsLoadingBulk: true), Is.EqualTo(BulkHaulPolicy.BulkTakeoverAction.PassThrough));
         }
 
+        // ── OversizedStackWorthInventory: bug 2 (a single stack too big for one armful goes via inventory) ──
+
+        [Test]
+        public void Oversized_UsersCase_StackExceedsCarryCapWithAmpleStorage_Converts()
+        {
+            // 75 steel, carry cap 72, shelf has room for the lot (deliverable 75) → carry it in inventory.
+            Assert.That(BulkHaulPolicy.OversizedStackWorthInventory(stackCount: 75, handCap: 72, deliverable: 75), Is.True);
+        }
+
+        [Test]
+        public void Oversized_FitsInOneArmful_DoesNotConvert()
+        {
+            // Stack fits in hands (40 <= 72) → keep the vanilla single hand-haul.
+            Assert.That(BulkHaulPolicy.OversizedStackWorthInventory(stackCount: 40, handCap: 72, deliverable: 40), Is.False);
+            Assert.That(BulkHaulPolicy.OversizedStackWorthInventory(stackCount: 72, handCap: 72, deliverable: 72), Is.False);
+        }
+
+        [Test]
+        public void Oversized_StorageStarved_DoesNotConvert_NoStranding()
+        {
+            // Oversized (75 > 72) but storage can only take 72 — inventory delivers no more than hands, so DON'T
+            // convert (and the caller would never carry the un-storable remainder).
+            Assert.That(BulkHaulPolicy.OversizedStackWorthInventory(stackCount: 75, handCap: 72, deliverable: 72), Is.False);
+            Assert.That(BulkHaulPolicy.OversizedStackWorthInventory(stackCount: 75, handCap: 72, deliverable: 50), Is.False);
+        }
+
+        [Test]
+        public void Oversized_StoragePartlyBeyondHands_Converts()
+        {
+            // Oversized AND storage takes a bit more than one armful (73 > 72) → convert; the caller clamps the
+            // carried count to deliverable so the 2 that can't be stored never ride along.
+            Assert.That(BulkHaulPolicy.OversizedStackWorthInventory(stackCount: 75, handCap: 72, deliverable: 73), Is.True);
+        }
+
         // ── CountWithinCeiling ───────────────────────────────────────────────────────────────────────
 
         [Test]

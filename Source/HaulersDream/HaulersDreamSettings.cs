@@ -55,6 +55,13 @@ namespace HaulersDream
         // Always = every haul sweeps; SecondTasked (default) = automatic hauls always sweep, but a player-ORDERED
         // haul sweeps only when a second nearby haul has also been ordered — so ordering one haul stays surgical.
         public BulkHaulTrigger bulkHaulTrigger = BulkHaulTrigger.SecondTasked;
+        // The "Haul everything nearby" right-click order: start a bulk sweep directly (no need to prioritize two
+        // hauls). Additive to vanilla "Prioritize hauling".
+        public bool haulNearbyOption = true;
+        // When a single stack is too big to carry in one armful (e.g. 75 steel but the pawn can hold 72), take it
+        // in the INVENTORY and deliver the whole stack in one trip, instead of hand-carrying a partial load and
+        // leaving the rest behind. Applies to ordered and automatic single-stack hauls alike.
+        public bool haulOversizedInInventory = true;
 
         // While a pawn scoops its own WORK yields (deconstruct/mine/harvest), also sweep OTHER loose haulable
         // items lying around the work spot into its inventory, so the area is cleared in the same consolidated
@@ -238,6 +245,8 @@ namespace HaulersDream
             Scribe_Values.Look(ref shareHandHauledToStorage, "shareHandHauledToStorage", false);
             Scribe_Values.Look(ref bulkHaul, "bulkHaul", true);
             Scribe_Values.Look(ref bulkHaulTrigger, "bulkHaulTrigger", BulkHaulTrigger.SecondTasked);
+            Scribe_Values.Look(ref haulNearbyOption, "haulNearbyOption", true);
+            Scribe_Values.Look(ref haulOversizedInInventory, "haulOversizedInInventory", true);
             Scribe_Values.Look(ref sweepNearbyWhileWorking, "sweepNearbyWhileWorking", true);
             Scribe_Values.Look(ref loadPackAnimalBulk, "loadPackAnimalBulk", true);
             Scribe_Values.Look(ref autoDivertToPackAnimal, "autoDivertToPackAnimal", true);
@@ -360,6 +369,10 @@ namespace HaulersDream
                         bulkHaulTrigger == BulkHaulTrigger.Always,
                         tooltip: "HaulersDream.Setting.BulkHaulAlwaysDesc".Translate()))
                     bulkHaulTrigger = BulkHaulTrigger.Always;
+                l.CheckboxLabeled("HaulersDream.Setting.HaulNearbyOption".Translate(), ref haulNearbyOption,
+                    "HaulersDream.Setting.HaulNearbyOptionDesc".Translate());
+                l.CheckboxLabeled("HaulersDream.Setting.HaulOversized".Translate(), ref haulOversizedInInventory,
+                    "HaulersDream.Setting.HaulOversizedDesc".Translate());
             }
 
             l.CheckboxLabeled("HaulersDream.Setting.SweepNearbyWhileWorking".Translate(), ref sweepNearbyWhileWorking,

@@ -92,6 +92,17 @@ namespace HaulersDream.Core
         }
 
         /// <summary>
+        /// Is a single hauled stack worth routing through INVENTORY instead of carrying it in hands? Yes only
+        /// when it's too big to carry in one armful (<paramref name="stackCount"/> &gt; <paramref name="handCap"/>,
+        /// the pawn's per-stack carry cap) AND the reachable storage can accept MORE than one hand-trip would
+        /// deliver (<paramref name="deliverable"/> &gt; handCap). Otherwise hands are at least as good and we keep
+        /// the vanilla single haul — and the caller never carries more than <paramref name="deliverable"/>, so
+        /// nothing strands. Pure so the boundary is unit-pinned.
+        /// </summary>
+        public static bool OversizedStackWorthInventory(int stackCount, int handCap, int deliverable)
+            => stackCount > handCap && deliverable > handCap;
+
+        /// <summary>
         /// How many units of a candidate stack to take, given the running load: fits under the ceiling,
         /// never more than the stack holds. Massless items are taken in full.
         /// </summary>

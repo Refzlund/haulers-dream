@@ -32,6 +32,10 @@
   <HaulersDream.Setting.BulkHaulSecondDesc>Automatic hauling always sweeps the surroundings into inventory (one storage trip for many items). A haul YOU order on a pawn stays surgical — it hauls just that one thing — unless you've ordered a second haul nearby, in which case the pawn sweeps them together. The finer-control default.</HaulersDream.Setting.BulkHaulSecondDesc>
   <HaulersDream.Setting.BulkHaulAlways>Always sweep — every haul picks up everything around it</HaulersDream.Setting.BulkHaulAlways>
   <HaulersDream.Setting.BulkHaulAlwaysDesc>Every haul — automatic or ordered — loads the nearby haulables into the pawn's inventory too, making one storage trip for the lot. How much it carries respects the smart-overload slider below: only as much extra weight as is genuinely worth the slowdown versus making another round-trip.</HaulersDream.Setting.BulkHaulAlwaysDesc>
+  <HaulersDream.Setting.HaulNearbyOption>Add a "Haul everything nearby" right-click order</HaulersDream.Setting.HaulNearbyOption>
+  <HaulersDream.Setting.HaulNearbyOptionDesc>Adds a "Haul everything nearby" option to the right-click menu on a haulable item (for pawns that can haul), which starts a bulk sweep immediately — so you don't have to prioritize two hauls to trigger bulk hauling. Vanilla's "Prioritize hauling" still appears alongside it for a single-item haul.</HaulersDream.Setting.HaulNearbyOptionDesc>
+  <HaulersDream.Setting.HaulOversized>Carry oversized stacks in the inventory</HaulersDream.Setting.HaulOversized>
+  <HaulersDream.Setting.HaulOversizedDesc>When a single stack is too big to carry in one armful (for example a 75-stack of steel when the pawn can only hold 72), the pawn takes it in its inventory and delivers the whole stack in one trip — instead of hand-carrying a partial load and leaving the rest behind. Applies to both ordered and automatic hauls; only carries as much as storage can actually accept, so nothing is left stranded.</HaulersDream.Setting.HaulOversizedDesc>
   <HaulersDream.Setting.SweepNearbyWhileWorking>Tidy up while working — scoop nearby loose items too</HaulersDream.Setting.SweepNearbyWhileWorking>
   <HaulersDream.Setting.SweepNearbyWhileWorkingDesc>While a pawn is deconstructing, mining, or harvesting and scooping its own yields, it also picks up other loose haulable items lying around the work spot into its inventory, so the whole area is cleared in the one consolidated trip instead of being left for separate hauls. Only items that need hauling and have somewhere to go are taken (never another hauler's target or stockpiled stock), and only up to the smart-overload ceiling.</HaulersDream.Setting.SweepNearbyWhileWorkingDesc>
 
@@ -210,6 +214,8 @@
   <!-- Construction: haul-to-site order + route haul+build -->
   <HaulersDream.HaulToSite.Option>Prioritize hauling materials to {0}</HaulersDream.HaulToSite.Option>
   <HaulersDream.HaulToSite.CouldNotStart>No reachable materials to haul right now.</HaulersDream.HaulToSite.CouldNotStart>
+  <HaulersDream.HaulNearby.Option>Haul everything nearby</HaulersDream.HaulNearby.Option>
+  <HaulersDream.HaulNearby.CouldNotStart>Nothing to haul nearby right now.</HaulersDream.HaulNearby.CouldNotStart>
   <HaulersDream.PlanRoute.AlsoBuild>Also build (haul + construct each stop)</HaulersDream.PlanRoute.AlsoBuild>
   <HaulersDream.PlanRoute.AlsoBuildDesc>With this on, the pawn delivers materials to a site and BUILDS it before moving to the next — gathering the whole route's materials up front and keeping them in inventory. With it off, the pawn only fills the sites with materials (others can build). Either way the sites stay open to other pawns, so several can supply the same run in parallel; whoever arrives second simply keeps its surplus for the next stop or unloads it at the end.</HaulersDream.PlanRoute.AlsoBuildDesc>
 

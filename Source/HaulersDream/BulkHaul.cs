@@ -141,7 +141,7 @@ namespace HaulersDream
             cacheTick = -1;
         }
 
-        private static Job BuildBulkJob(Pawn pawn, Thing primary, Job vanillaJob, bool forced)
+        private static Job BuildBulkJob(Pawn pawn, Thing primary, Job vanillaJob, bool forced, bool forceSweep = false)
         {
             if (vanillaJob == null || vanillaJob.def != JobDefOf.HaulToCell)
                 return null; // container destinations (graves, pods) keep their dedicated vanilla flow
@@ -172,6 +172,14 @@ namespace HaulersDream
             if (pawn.GetComp<CompHauledToInventory>() == null || pawn.inventory == null)
                 return null;
 
+            // BUG 2: how many of this def the pawn can carry in ONE armful (vanilla per-stack carry cap =
+            // min(stackLimit, CarryingCapacity / VolumePerUnit) — the exact clamp Toils_Haul.StartCarryThing and
+            // HaulAIUtility.HaulToCellStorageJob apply). A stack bigger than this would otherwise be hand-hauled
+            // PARTIALLY (e.g. 72 of a 75 steel stack), leaving the remainder for another trip; routing it through
+            // mass-limited inventory delivers the whole stack in one trip (decided below once storage is known).
+            int handCap = pawn.carryTracker?.MaxStackSpaceEver(primary.def) ?? primary.def.stackLimit;
+            bool partialHandHaul = primary.stackCount > handCap;
+
             var storeCell = vanillaJob.targetB.Cell;
             float searchRadius = Math.Max(MinSearchRadius,
                 (storeCell - primary.Position).LengthHorizontal * SearchRangeFraction);
@@ -179,8 +187,12 @@ namespace HaulersDream
             // The finer-control trigger: a forced single order stays single under SecondTasked. (The queue
             // scan only matters — and only runs — for forced orders; automatic hauls always sweep.) Checked
             // BEFORE any mass/CE math so a rejected probe never forces a CE inventory recompute.
+            // Carve-outs: forceSweep (the explicit "Haul everything nearby" button) always sweeps; and a forced
+            // order of an OVERSIZED stack rides inventory (bug 2) even with no second order tasked.
             bool secondTasked = forced && SecondTaskedNearby(pawn, primary, searchRadius);
-            if (!BulkHaulPolicy.TriggerSatisfied(s.bulkHaulTrigger, forced, secondTasked))
+            if (!forceSweep
+                && !(forced && partialHandHaul && s.haulOversizedInInventory)
+                && !BulkHaulPolicy.TriggerSatisfied(s.bulkHaulTrigger, forced, secondTasked))
                 return null;
 
             // The worth-it mass ceiling (smart-overload break-even; 100% under strict/off; ∞ at "no slowdown").
@@ -244,8 +256,27 @@ namespace HaulersDream
                 last = next.Position;
             }
 
-            if (things.Count < 2)
-                return null; // nothing else around — a single stack hauls best in hands (vanilla)
+            // A nearby FIRST player order exists (secondTasked) — but it may already be CARRIED in this pawn's
+            // hands, which despawns it and removes it from the lister, so the ground sweep found only the primary
+            // (things.Count == 1). Build the single-item bulk anyway: it is the vehicle the takeover folds that
+            // first stack into (TryTakeoverSecondOrder → TakeOverSoloHaul drops the carried stack and appends it).
+            // Without this, the carried first order can never be re-detected as a "second item" and the takeover
+            // never fires — the exact reported bug 1. (The on-ground race already worked because A was still in
+            // the pool.) For an Always-trigger or automatic haul secondTasked is false, so this never widens those.
+            if (things.Count < 2 && !secondTasked)
+            {
+                // Normally a lone primary hauls best in hands (vanilla). EXCEPTION (bug 2): if the stack is too
+                // big for one armful AND storage can take more than one hand-trip would deliver, route it through
+                // inventory so the WHOLE stack moves in one trip instead of leaving part behind. deliverable is
+                // clamped to the destination group's real space (StorageSpaceForDef) so we never strand the rest.
+                int deliverable = primarySpace == int.MaxValue ? primaryTake : Math.Min(primaryTake, primarySpace);
+                bool wantOversized = forceSweep || s.haulOversizedInInventory;
+                if (!(wantOversized && BulkHaulPolicy.OversizedStackWorthInventory(primary.stackCount, handCap, deliverable)))
+                    return null;
+                counts[0] = Math.Min(counts[0], deliverable);
+                if (counts[0] <= 0)
+                    return null;
+            }
 
             var job = JobMaker.MakeJob(HaulersDreamDefOf.HaulersDream_BulkHaul, primary);
             job.targetQueueB = new List<LocalTargetInfo>(things.Count);
@@ -256,6 +287,23 @@ namespace HaulersDream
             if (s.verboseLogging) // Dbg re-checks, but don't build the interpolated string on every silent success
                 HDLog.Dbg($"BulkHaul: {pawn} sweeping {things.Count} stacks (~{running:0.#}kg / ceiling {(float.IsPositiveInfinity(ceiling) ? -1 : ceiling):0.#}kg, forced={forced}).");
             return job;
+        }
+
+        /// <summary>
+        /// The explicit "Haul everything nearby" order (see <see cref="FloatMenuOptionProvider_HaulNearby"/>):
+        /// build a bulk sweep from the clicked item with the SecondTasked trigger pre-satisfied, so it always
+        /// sweeps regardless of the setting / second-order requirement. Returns null when there's no storage,
+        /// a container destination, or nothing worth sweeping (the caller then falls back to a plain forced
+        /// haul). Bypasses the per-tick plan cache (calls the builder directly) — same as it's not a work-scan probe.
+        /// </summary>
+        internal static Job BuildBulkJobForced(Pawn pawn, Thing clicked)
+        {
+            if (pawn == null || clicked == null)
+                return null;
+            var vanilla = HaulAIUtility.HaulToStorageJob(pawn, clicked, forced: true);
+            if (vanilla == null || vanilla.def != JobDefOf.HaulToCell)
+                return null; // no storage / container destination -> caller falls back to the vanilla haul
+            return BuildBulkJob(pawn, clicked, vanilla, forced: true, forceSweep: true);
         }
 
         // Everything in the haul lister that could plausibly join this sweep, pre-filtered cheap.
@@ -405,16 +453,24 @@ namespace HaulersDream
             bool incomingIsBulk = incoming.def == HaulersDreamDefOf.HaulersDream_BulkHaul;
             bool curIsLoadingBulk = curJob != null && curJob.def == HaulersDreamDefOf.HaulersDream_BulkHaul
                 && pawn.jobs.curDriver is JobDriver_BulkHaul bd && bd.IsStillLoading;
-            // The surgical first haul: the pawn's CURRENT job is a player-forced single HaulToCell whose target
-            // is still grounded (not yet in hands) AND is part of THIS bulk's planned sweep — so folding it in
-            // and starting now loses nothing. (If the target isn't in the sweep the current job is unrelated.)
+            // The surgical first haul to fold in: the pawn's CURRENT job is a player-forced single HaulToCell.
+            // Resolve its target whether it's still on the ground (en route) OR already in hands. CRUCIAL (the
+            // real bug-1 cause): once the first stack is picked up, vanilla sets curJob.targetA to the carried
+            // thing and DESPAWNS the ground stack, so it is gone from the haulables lister and can NEVER be in
+            // the 2nd order's sweep queue — so we must NOT require queue membership; we fold it in explicitly
+            // (below). We only sanity-check that it's in the same neighborhood as this sweep (the bulk exists
+            // because SecondTaskedNearby found a player-forced order within the sweep radius a few ticks ago).
             Thing soloTarget = null;
             if (!curIsLoadingBulk && curJob != null && curJob.def == JobDefOf.HaulToCell && curJob.playerForced)
             {
-                var a = curJob.targetA.Thing;
-                if (a != null && a.Spawned && (pawn.carryTracker == null || pawn.carryTracker.CarriedThing != a)
-                    && BulkQueueContains(incoming, a))
-                    soloTarget = a;
+                var a = pawn.carryTracker?.CarriedThing ?? curJob.targetA.Thing;
+                var primary = incoming.targetA.Thing;
+                if (a != null && primary != null && pawn.Map != null)
+                {
+                    float r = TakeoverNearbyRadius(pawn, primary);
+                    if ((a.PositionHeld - primary.PositionHeld).LengthHorizontalSquared <= r * r)
+                        soloTarget = a;
+                }
             }
 
             switch (BulkHaulPolicy.DecideTakeover(s.bulkHaulTrigger, incomingIsBulk, curIsLoadingBulk, soloTarget != null))
@@ -444,11 +500,23 @@ namespace HaulersDream
                     incoming.playerForced = true;
                     if (!incoming.TryMakePreToilReservations(pawn, false))
                         return false; // couldn't reserve (target stolen since menu-build) -> let vanilla handle it
+                    // Fold the in-progress first item INTO the sweep so it rides along in one trip (the bug-1
+                    // fix — it is otherwise absent from the sweep queue once carried). On the ground: append it
+                    // directly. In hands: drop it near the pawn (capturing the resulting/merged stack) so the
+                    // bulk re-collects it into inventory — CleanupCurrentJob would drop it anyway, we just capture
+                    // the reference to queue it. Done AFTER the reservation succeeds so a failed reserve never
+                    // half-mutates (leaves the solo haul untouched).
+                    if (soloTarget != null && soloTarget.Spawned)
+                        AppendToBulkJob(incoming, soloTarget, soloTarget.stackCount);
+                    else if (pawn.carryTracker?.CarriedThing != null
+                             && pawn.carryTracker.TryDropCarriedThing(pawn.Position, ThingPlaceMode.Near, out Thing dropped)
+                             && dropped != null)
+                        AppendToBulkJob(incoming, dropped, dropped.stackCount);
                     curJob.playerInterruptedForced = true;
                     pawn.stances?.CancelBusyStanceSoft();
                     pawn.jobs.jobQueue.EnqueueFirst(incoming, tag ?? JobTag.Misc);
                     pawn.jobs.curDriver.EndJobWith(JobCondition.InterruptForced); // ends the solo haul, starts the bulk
-                    HDLog.Dbg($"{pawn} second haul order — bulk sweep takes over now (was hauling {curJob.targetA.Thing}).");
+                    HDLog.Dbg($"{pawn} second haul order — bulk sweep takes over now (folding in the first haul).");
                     result = true;
                     return true;
                 }
@@ -457,16 +525,18 @@ namespace HaulersDream
             }
         }
 
-        /// <summary>Is <paramref name="thing"/> a member of this bulk job's planned pickup queue?</summary>
-        private static bool BulkQueueContains(Job job, Thing thing)
+        /// <summary>The radius within which the in-progress first haul counts as "in this sweep's neighborhood"
+        /// (so the takeover folds it in). The bulk job keeps no destination cell — its TargetB is the driver's
+        /// scratch slot — so recompute the sweep radius from the primary's storage exactly as BuildBulkJob does,
+        /// then widen to the pool radius so a pawn that has already carried the first item part-way toward
+        /// storage still qualifies. (The bulk only EXISTS because SecondTaskedNearby(primary) found a player-
+        /// forced order within this radius moments ago, so a related first haul is within it by construction.)</summary>
+        private static float TakeoverNearbyRadius(Pawn pawn, Thing primary)
         {
-            var q = job?.targetQueueB;
-            if (q == null || thing == null)
-                return false;
-            for (int i = 0; i < q.Count; i++)
-                if (q[i].Thing == thing)
-                    return true;
-            return false;
+            StoreUtility.TryFindBestBetterStoreCellFor(primary, pawn, pawn.Map,
+                StoreUtility.CurrentStoragePriorityOf(primary), pawn.Faction, out IntVec3 storeCell, needAccurateResult: false);
+            float dist = storeCell.IsValid ? (storeCell - primary.Position).LengthHorizontal : MinSearchRadius;
+            return Math.Max(MinSearchRadius, dist * SearchRangeFraction) * PoolRadiusHops;
         }
 
         /// <summary>Append a stack to a (current or queued) bulk job's pickup queue — dedup, lazily init, count
@@ -494,17 +564,17 @@ namespace HaulersDream
             if (pawn.jobs == null)
                 return false;
             float radiusSq = radius * radius;
-            if (IsNearbyHaulOrder(pawn.CurJob, primary, radiusSq))
+            if (IsNearbyHaulOrder(pawn, pawn.CurJob, primary, radiusSq))
                 return true;
             var q = pawn.jobs.jobQueue;
             if (q != null)
                 for (int i = 0; i < q.Count; i++)
-                    if (IsNearbyHaulOrder(q[i]?.job, primary, radiusSq))
+                    if (IsNearbyHaulOrder(pawn, q[i]?.job, primary, radiusSq))
                         return true;
             return false;
         }
 
-        private static bool IsNearbyHaulOrder(Job j, Thing primary, float radiusSq)
+        private static bool IsNearbyHaulOrder(Pawn pawn, Job j, Thing primary, float radiusSq)
         {
             if (j == null)
                 return false;
@@ -517,8 +587,18 @@ namespace HaulersDream
                 && j.def != HaulersDreamDefOf.HaulersDream_BulkHaul)
                 return false;
             var target = j.targetA.Thing;
-            return target != null && target != primary && target.Spawned
-                   && (target.Position - primary.Position).LengthHorizontalSquared <= radiusSq;
+            if (target == null || target == primary)
+                return false;
+            // Carried-aware: once the pawn has already picked the first stack fully INTO HANDS,
+            // Toils_Haul.StartCarryThing retargets the job's targetA to carryTracker.CarriedThing, which is
+            // despawned (Thing.SplitOff with count>=stackCount despawns the ground stack — decompile-verified).
+            // The OLD `target.Spawned` gate therefore made the carried first order invisible, so the 2nd nearby
+            // order never became a bulk job and the takeover never fired (the exact reported bug). Treat the
+            // carried first stack as located at the pawn's cell (Thing.PositionHeld returns the holder's root
+            // cell for a carried thing — decompile-verified) and keep the spawned path for grounded/queued orders.
+            if (!target.Spawned && target != pawn.carryTracker?.CarriedThing)
+                return false;
+            return (target.PositionHeld - primary.PositionHeld).LengthHorizontalSquared <= radiusSq;
         }
     }
 }
