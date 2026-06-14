@@ -483,6 +483,23 @@ namespace HaulersDream
             return total;
         }
 
+        /// <summary>Total units of (def, stuff) across all of the owner's stacks. Stuff is compared with == so a
+        /// null (stuffless, e.g. most ranged weapons) stuff matches a null remembered stuff — mirroring how
+        /// <see cref="SimpleSidearmsCompat.RememberedCount"/> compares. Used for the count-aware sidearm keep.</summary>
+        internal static int InventoryCountOfPair(ThingOwner owner, ThingDef def, ThingDef stuff)
+        {
+            if (owner == null || def == null)
+                return 0;
+            int total = 0;
+            for (int i = 0; i < owner.Count; i++)
+            {
+                var t = owner[i];
+                if (t?.def == def && t.Stuff == stuff)
+                    total += t.stackCount;
+            }
+            return total;
+        }
+
         // ---- pawn inference ---------------------------------------------------------------------
 
         /// <summary>

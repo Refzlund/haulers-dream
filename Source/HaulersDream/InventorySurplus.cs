@@ -52,10 +52,29 @@ namespace HaulersDream
                         return over <= 0 ? 0 : System.Math.Min(thing.stackCount, over);
                 }
             }
+            else if (SimpleSidearmsCompat.IsActive
+                     && (def.IsRangedWeapon || def.IsMeleeWeapon)
+                     && SimpleSidearmsCompat.MemoryApiOk)
+            {
+                // Simple Sidearms: keep exactly as many of this (def, stuff) as the pawn remembers wanting
+                // (primary + sidearms) and treat every EXTRA copy as surplus — so a HAULED duplicate weapon (same
+                // def+stuff as a kept sidearm) is unloaded while the wanted sidearm itself is kept. Per-(def,stuff),
+                // not per-def, so a steel-ikwa sidearm + a hauled plasteel ikwa keeps the steel and unloads the
+                // plasteel. Weapons are stackLimit 1, so each Thing is 0 or 1 of the count. The equipped PRIMARY
+                // lives in equipment (not innerContainer), so it's never counted as a have nor unloaded — only its
+                // remembered entry raises the keep, which conservatively pins one inventory copy of its pair.
+                // (memoryApiOk==false is handled by the IsManagedKeepItem fallback below, not here, so we never
+                // compute have - 0 and strip a pawn's whole weapon kit.)
+                int pairKeep = SimpleSidearmsCompat.RememberedCount(pawn, def, thing.Stuff);
+                int pairHave = YieldRouter.InventoryCountOfPair(pawn.inventory.innerContainer, def, thing.Stuff);
+                int over = pairHave - pairKeep;
+                return over <= 0 ? 0 : System.Math.Min(thing.stackCount, over);
+            }
             else if (IsManagedKeepItem(pawn, thing, hdSwept))
             {
                 // No explicit rule: auto-detected personal kit another system manages (Simple Sidearms carried
-                // weapons, Smart Medicine stock-up, Dub's Bad Hygiene water, Combat Extended ammo, or a vanilla
+                // weapons via the count-aware branch above when its API resolved — else the keep-all fallback here;
+                // Smart Medicine stock-up, Dub's Bad Hygiene water, Combat Extended ammo, or a vanilla
                 // addiction/chemical-dependency drug). Keep the WHOLE stack so adoption never tags them (severing
                 // the unload<->refetch loop those mods drive) and the unload driver / alert never act on them.
                 return 0;
@@ -176,9 +195,11 @@ namespace HaulersDream
                 if (YayoCombatCompat.IsCarriedAmmo(thing))
                     return true;
             }
-            // Simple Sidearms carried weapon — IsKeptWeapon applies the SAME HD-swept exclusion internally
-            // (SimpleSidearmsCompat.cs), so an HD-swept loose weapon stays unloadable.
-            if (SimpleSidearmsCompat.IsKeptWeapon(pawn, thing))
+            // Simple Sidearms carried weapon: when the precise rememberedWeapons API resolved, SurplusOf handles
+            // weapons via its count-aware (def,stuff) branch BEFORE reaching here, so this governs ONLY the
+            // fallback (API unresolved, a fork/rename) — keep all non-HD-tagged colonist weapons. IsKeptWeapon
+            // applies the same HD-swept exclusion internally, so a genuinely-swept loose weapon stays unloadable.
+            if (!SimpleSidearmsCompat.MemoryApiOk && SimpleSidearmsCompat.IsKeptWeapon(pawn, thing))
                 return true;
             return false;
         }

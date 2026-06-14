@@ -42,6 +42,19 @@ namespace HaulersDream
             }
         }
 
+        /// <summary>True when SS is present AND its rememberedWeapons (def,stuff) query resolved — i.e. the
+        /// count-aware keep (<see cref="RememberedCount"/>) is usable. False => callers fall back to the keep-all
+        /// <see cref="IsKeptWeapon"/> path instead of treating an unknown count as 0 (which would unload kit).</summary>
+        public static bool MemoryApiOk
+        {
+            get
+            {
+                if (!initialized)
+                    Init();
+                return memoryApiOk;
+            }
+        }
+
         private static void Init()
         {
             initialized = true;
@@ -141,6 +154,31 @@ namespace HaulersDream
                         && (pairStuffField.GetValue(pair) as ThingDef) == weapon.Stuff)
                         return true;
             return false;
+        }
+
+        /// <summary>
+        /// The number of Simple Sidearms remembered-weapon entries matching this exact (def, stuff) — i.e. how
+        /// many of that pair the pawn wants to keep as its kit. SS adds one rememberedWeapons entry per equipped
+        /// primary/sidearm (duplicates allowed), so the matching count IS the keep-target. Returns 0 when SS is
+        /// absent, when its memory API didn't resolve (<see cref="MemoryApiOk"/> false — callers must then fall
+        /// back to keep-all, NOT keep-0), when the pawn has no sidearm memory, or for a non-weapon. A HAULED loose
+        /// weapon is never routed through SS's InformOfAddedSidearm, so it never inflates this count — the excess
+        /// over it is genuinely surplus the unload should put away.
+        /// </summary>
+        public static int RememberedCount(Pawn pawn, ThingDef def, ThingDef stuff)
+        {
+            if (!IsActive || !memoryApiOk || pawn == null || def == null)
+                return 0;
+            if (!(def.IsRangedWeapon || def.IsMeleeWeapon))
+                return 0;
+            var comp = MemoryOf(pawn);
+            int count = 0;
+            if (comp != null && rememberedField.GetValue(comp) is IEnumerable list)
+                foreach (var pair in list)
+                    if ((pairThingField.GetValue(pair) as ThingDef) == def
+                        && (pairStuffField.GetValue(pair) as ThingDef) == stuff)
+                        count++;
+            return count;
         }
     }
 }
