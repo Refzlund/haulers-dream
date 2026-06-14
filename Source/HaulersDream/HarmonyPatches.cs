@@ -97,18 +97,21 @@ namespace HaulersDream
                 return; // no tracked items -> leave vanilla's unload as-is
             if (pawn.CurJobDef == HaulersDreamDefOf.HaulersDream_UnloadInventory)
                 return;
-            // Substitute only when our unload can actually PROGRESS right now: at least one tagged stack
-            // still in inventory and reservable by this pawn. Otherwise (e.g. other pawns hold
-            // reservations on every tagged stack) our job ends Incompletable instantly while vanilla's
-            // UnloadEverything flag stays set — the think tree re-issues it every few ticks forever, and
-            // vanilla's own unload (which always progresses by dropping near) never drains the flag.
+            // Substitute only when our unload can actually PROGRESS right now: at least one tagged stack that is
+            // still in inventory, reservable by this pawn, AND genuinely SURPLUS (above the pawn's keep-stock).
+            // Otherwise (every tagged stack reserved by another pawn, OR all tagged stock is now keep-stock — e.g.
+            // carried ammo a compat mod keeps, which has SurplusOf 0) our job would end with nothing to do while
+            // vanilla's UnloadEverything flag stays set — the think tree re-issues it every few ticks forever, and
+            // vanilla's own unload (which always progresses by dropping near) never drains the flag. The SurplusOf
+            // check matches PawnUnloadChecker.AnyUnloadable and the driver's own FirstUnloadableThing selection,
+            // so the three agree on "is there anything to unload."
             var inner = pawn.inventory?.innerContainer;
             if (inner == null)
                 return;
             bool anyUnloadable = false;
             foreach (var t in carried)
             {
-                if (t != null && inner.Contains(t) && pawn.CanReserve(t))
+                if (t != null && inner.Contains(t) && pawn.CanReserve(t) && InventorySurplus.SurplusOf(pawn, t) > 0)
                 {
                     anyUnloadable = true;
                     break;

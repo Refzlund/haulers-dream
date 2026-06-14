@@ -15,6 +15,13 @@ namespace HaulersDream
     {
         private int countToDrop = -1;
 
+        // Items this job tried to pull but couldn't move (0 transfer — the one-stack carry tracker is blocked by a
+        // non-mergeable passenger, or another mod is holding the stack, e.g. a combat mod that re-grabs its ammo).
+        // Skipped for the rest of THIS job so one un-transferable item can't churn/freeze the unload; the tag is
+        // retained, so they're retried on the next trigger. In-flight only — not scribed (an empty set after a
+        // save/load just means everything is retried next pass, which is correct).
+        private readonly HashSet<Thing> skippedThisJob = new HashSet<Thing>();
+
         public override void ExposeData()
         {
             base.ExposeData();
@@ -109,12 +116,19 @@ namespace HaulersDream
                         return;
                     }
 
+                    var toPull = thing;
                     pawn.inventory.innerContainer.TryTransferToContainer(thing, pawn.carryTracker.innerContainer, countToDrop, out thing);
                     if (thing == null)
                     {
-                        // Nothing moved (e.g. the carry tracker still holds a remainder from a partial container
-                        // deposit) — end cleanly rather than NRE; the tag stays, so the item is retried next pass.
-                        EndJobWith(JobCondition.Incompletable);
+                        // Nothing moved — the one-stack carry tracker is blocked by a non-mergeable passenger, or
+                        // another mod is holding this stack (a combat mod re-grabbing its ammo, etc.). Do NOT
+                        // end+requeue on the SAME first-ordered item forever: that churn freezes the pawn in the
+                        // "unloading inventory" job (the reported caravan-return stall). Mark it skipped for THIS
+                        // job and loop to the next tracked item; the tag stays, so it's retried on the next unload
+                        // trigger (and the cannot-unload alert still surfaces it if it stays genuinely stuck).
+                        if (toPull != null)
+                            skippedThisJob.Add(toPull);
+                        pawn.jobs.curDriver.JumpToToil(wait);
                         return;
                     }
                     job.count = countToDrop;
@@ -134,10 +148,15 @@ namespace HaulersDream
                     var next = FirstUnloadableThing(carried);
                     if (next.Count == 0)
                     {
-                        // No unloadable stack right now. If tagged stock remains it is reserved by
-                        // another pawn (a worker fetching from this inventory) — end instead of
-                        // spinning in place; the unload checker re-queues once the reservation clears.
-                        EndJobWith(carried.Count == 0 ? JobCondition.Succeeded : JobCondition.Incompletable);
+                        // No unloadable stack right now. End Succeeded when nothing remains, OR when the only
+                        // remainder is items we stepped over this job (un-transferable due to external
+                        // interference, e.g. a combat mod holding its ammo) — ending Incompletable there would
+                        // instantly re-queue and re-churn the same blocked item. A NON-skipped remainder is
+                        // reserved by another pawn (a worker fetching from this inventory): end Incompletable so a
+                        // freed reservation re-queues promptly. The tag is kept either way, so a genuinely stuck
+                        // item is retried on the next trigger and still surfaces in the cannot-unload alert.
+                        EndJobWith(carried.Count == 0 || skippedThisJob.Count > 0
+                            ? JobCondition.Succeeded : JobCondition.Incompletable);
                         return;
                     }
 
@@ -232,6 +251,11 @@ namespace HaulersDream
 
             foreach (var thing in carried.OrderBy(t => t.def.FirstThingCategory?.index).ThenBy(t => t.def.defName))
             {
+                // Already tried and couldn't transfer this stack this job (see PullItemFromInventory's 0-transfer
+                // branch) — step over it so a single un-transferable item can't pin the unload. Bounds the work:
+                // each item is attempted at most once per job; skipped items keep their tag and retry next trigger.
+                if (skippedThisJob.Contains(thing))
+                    continue;
                 if (!inner.Contains(thing))
                 {
                     // A partially-picked-up stack merged in inventory gets a new ThingID; relink to it.
