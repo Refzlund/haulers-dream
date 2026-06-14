@@ -62,16 +62,19 @@ namespace HaulersDream
                             && (forced || YieldRouter.IsEligible(pawn))
                             && pawn.inventory?.innerContainer != null;
 
-            // "Unload all surplus": before reading the tracked set, ADOPT (tag) any inventory the pawn is
-            // carrying that HD never scooped but that is surplus above its keep-stock — so foreign trade / mod /
-            // manual stock unloads exactly like HD-scooped loot through the same tag-scoped pass below (and shows
-            // the gizmo, fires the alert if stuck, etc., with no other code changes). Gated to eligible (humanlike
+            // Before reading the tracked set, ADOPT (tag) any inventory the pawn is carrying that HD never scooped
+            // but that is surplus above its keep-stock — so foreign trade / mod / manual stock unloads exactly like
+            // HD-scooped loot through the same tag-scoped pass below (and shows the gizmo, fires the alert if stuck,
+            // etc., with no other code changes). Two ways in: the global "unload all surplus" toggle (adopts every
+            // surplus stack), or — even with that off — a def carrying an explicit per-item rule that produces
+            // surplus (keep-at-most / always-unload), a deliberate surgical opt-in. Gated to eligible (humanlike
             // colonists / allowed mechs — the same predicate as scoop/unload) and NOT mid caravan-loading
             // (IsFormingCaravan inventory is deliberate). Keep-stock (food / drugs / inventoryStock / CE loadout)
             // has SurplusOf==0, so it is never adopted; once a stack is unloaded out of inventory the def's tag
             // self-prunes in CompHauledToInventory.GetHashSet.
-            if (eligible && settings.unloadAllSurplus && !pawn.IsFormingCaravan())
-                AdoptSurplusInventory(pawn, comp);
+            bool adoptAll = settings.unloadAllSurplus;
+            if (eligible && !pawn.IsFormingCaravan() && (adoptAll || settings.HasAnySurplusProducingRule))
+                AdoptSurplusInventory(pawn, comp, adoptAll);
 
             var carried = comp.GetHashSet();
             int inventoryCount = pawn.inventory?.innerContainer?.Count ?? 0;
@@ -173,23 +176,36 @@ namespace HaulersDream
         }
 
         /// <summary>
-        /// "Unload all surplus" (opt-in): tag every inventory stack with surplus above the pawn's keep-stock,
-        /// so stock HD never scooped (trade / mod / manual) is unloaded by the normal tag-scoped pass. Bounded
-        /// to surplus (keep-stock has SurplusOf==0 → never tagged), so it can't strip food / drugs / inventory-
-        /// stock / CE loadout. RegisterHauledItem is idempotent (a HashSet add) and notifies CE's HoldTracker so
-        /// a CE loadout doesn't floor-drop the adopted stock before the unload trip runs. Callers gate on
-        /// eligibility + !IsFormingCaravan.
+        /// Surplus adoption: tag inventory stacks with surplus above the pawn's keep-stock, so stock HD never
+        /// scooped (trade / mod / manual) is unloaded by the normal tag-scoped pass. <paramref name="adoptAll"/>
+        /// (the global "unload all surplus" toggle) adopts EVERY surplus stack; otherwise only defs with an
+        /// explicit surplus-producing per-item rule (keep-at-most / always-unload) are adopted — a deliberate
+        /// surgical opt-in that works with the global toggle off. Bounded to surplus (keep-stock has
+        /// SurplusOf==0 → never tagged), so it can't strip food / drugs / inventoryStock / CE loadout.
+        /// RegisterHauledItem is idempotent (a HashSet add) and notifies CE's HoldTracker so a CE loadout doesn't
+        /// floor-drop the adopted stock before the unload trip runs. Callers gate on eligibility + !IsFormingCaravan.
         /// </summary>
-        internal static void AdoptSurplusInventory(Pawn pawn, CompHauledToInventory comp)
+        internal static void AdoptSurplusInventory(Pawn pawn, CompHauledToInventory comp, bool adoptAll)
         {
             var inner = pawn.inventory?.innerContainer;
             if (inner == null || comp == null)
                 return;
+            var settings = HaulersDreamMod.Settings;
             int adopted = 0;
             for (int i = 0; i < inner.Count; i++)
             {
                 var t = inner[i];
-                if (t != null && !t.Destroyed && InventorySurplus.SurplusOf(pawn, t) > 0)
+                if (t == null || t.Destroyed)
+                    continue;
+                // With the global toggle off, adopt ONLY defs the player explicitly set to keep-at-most / always-
+                // unload (RuleProducesSurplus). KeepAll/Default defs are left to the normal (tagged-only) path.
+                if (!adoptAll && (settings == null || !settings.RuleProducesSurplus(t.def)))
+                    continue;
+                // Only adopt surplus we can actually DELIVER. Adopting a stack with no storage destination would
+                // tag it and the unload pass would then relocate it to a desperate far/feet cell (the "drops it at
+                // a random spot" bug). Leave a no-destination stack UNTAGGED instead — it stays where it is, and
+                // Alert_CannotUnloadInventory (Condition A, tag-independent) still surfaces it as a real black hole.
+                if (InventorySurplus.SurplusOf(pawn, t) > 0 && InventorySurplus.HasUnloadDestination(pawn, t))
                 {
                     int before = comp.PeekHashSet().Count;
                     comp.RegisterHauledItem(t);
@@ -198,7 +214,7 @@ namespace HaulersDream
                 }
             }
             if (adopted > 0)
-                HDLog.Dbg($"{pawn} adopted {adopted} surplus inventory stack(s) it did not scoop (unloadAllSurplus).");
+                HDLog.Dbg($"{pawn} adopted {adopted} surplus inventory stack(s) it did not scoop (adoptAll={adoptAll}).");
         }
 
         /// <summary>True if at least one tracked stack still in the pawn's inventory has surplus above the

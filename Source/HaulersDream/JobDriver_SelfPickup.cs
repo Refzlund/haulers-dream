@@ -66,6 +66,8 @@ namespace HaulersDream
                         return; // stolen / gone -> just loop to the next pending drop
                     if (thing.IsInValidStorage())
                         return; // another hauler already stored it -> done; never pull stock back OUT of a stockpile
+                    if (!YieldRouter.HasScoopDestination(pawn, thing))
+                        return; // destination vanished since we queued it -> leave on the ground, don't scoop-then-random-drop
 
                     var s = HaulersDreamMod.Settings;
                     int count = OverloadGate.CountToPickUp(pawn, thing, s);

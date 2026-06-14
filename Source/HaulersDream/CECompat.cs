@@ -48,6 +48,7 @@ namespace HaulersDream
         private static MethodInfo slotThingDefGetter;  // instance prop get: LoadoutSlot.thingDef -> ThingDef (null for generic slots)
         private static MethodInfo slotCountGetter;     // instance prop get: LoadoutSlot.count -> int
         private static StatDef bulkStat;               // CE's per-item "Bulk" stat (data, no assembly ref needed)
+        private static Type ammoDefType;               // CombatExtended.AmmoDef (a ThingDef subclass)
 
         /// <summary>Whether Combat Extended is loaded (detected by its CompInventory type being resolvable —
         /// the assembly only loads when the mod is active). Cached after the first call.</summary>
@@ -73,6 +74,9 @@ namespace HaulersDream
             compInventoryType = AccessTools.TypeByName("CombatExtended.CompInventory");
             if (compInventoryType == null)
                 return; // CE not loaded — the real precondition, no catch needed
+            // Ammo detection is independent of the inventory-fit feature below (it gates the keep, not loading),
+            // so resolve it here while we know CE is present — even if CanFitInInventory later fails to resolve.
+            ammoDefType = AccessTools.TypeByName("CombatExtended.AmmoDef");
             canFitInInventory = AccessTools.Method(compInventoryType, "CanFitInInventory",
                 new[] { typeof(Thing), typeof(int).MakeByRefType(), typeof(bool), typeof(bool) });
             getAvailableBulk = AccessTools.Method(compInventoryType, "GetAvailableBulk", new[] { typeof(bool) });
@@ -148,6 +152,23 @@ namespace HaulersDream
             // No try/catch: CE present + getAvailableBulk resolved + comp != null (all checked above) — a throw
             // is a real fault to surface, not silently fail-open and disable the bulk gate.
             return (float)getAvailableBulk.Invoke(comp, new object[] { true });
+        }
+
+        /// <summary>
+        /// True if this item is Combat Extended ammo (its def is a CombatExtended.AmmoDef). CE keeps a pawn's
+        /// loadout ammo in inventory and re-fetches anything taken out, so HD's surplus unload must leave carried
+        /// ammo alone or pawns walk back and forth dropping/re-grabbing bullets (the reported loop). Keeps ALL
+        /// carried ammo (CE's own loadout system manages the right amount and drops genuine excess); HD-swept
+        /// loose ammo is still unloadable because the caller excludes HD-tagged stacks. Independent of the
+        /// inventory-fit feature, so it works even if that part of the bridge fails to resolve.
+        /// </summary>
+        public static bool IsCarriedAmmo(Thing thing)
+        {
+            if (thing?.def == null)
+                return false;
+            if (!initialized)
+                Init();
+            return ammoDefType != null && ammoDefType.IsInstanceOfType(thing.def);
         }
 
         /// <summary>CE bulk per unit of <paramref name="thing"/> (0 when CE is off — bulk then never binds).</summary>
