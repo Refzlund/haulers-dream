@@ -307,4 +307,37 @@ namespace HaulersDream
             return false;
         }
     }
+
+    /// <summary>
+    /// "Second haul order takes over immediately." Under BulkHaulTrigger.SecondTasked, ordering a SINGLE haul
+    /// stays surgical, but ordering a SECOND nearby haul means "clean up this area" — the bulk sweep should
+    /// start NOW, not after the pawn finishes hauling the first item solo and comes back. By the time the
+    /// second order reaches the job tracker it is ALREADY a HaulersDream_BulkHaul (the JobOnThing postfix
+    /// converted it because a nearby first order existed), so this prefix only needs to fold it into a running
+    /// sweep, or interrupt the still-solo first haul and start the (first-item-inclusive) sweep immediately.
+    /// All policy lives in <see cref="BulkHaul.TryTakeoverSecondOrder"/>. Sibling to the F35 pack-animal
+    /// coalescer above — both early-return on a non-matching job def, so they never collide. Fires only on
+    /// player orders (TryTakeOrderedJob), not per tick.
+    /// </summary>
+    [HarmonyPatch(typeof(Verse.AI.Pawn_JobTracker), nameof(Verse.AI.Pawn_JobTracker.TryTakeOrderedJob))]
+    public static class Patch_TryTakeOrderedJob_BulkHaulTakeover
+    {
+        private static readonly AccessTools.FieldRef<Verse.AI.Pawn_JobTracker, Pawn> PawnOf =
+            AccessTools.FieldRefAccess<Verse.AI.Pawn_JobTracker, Pawn>("pawn");
+
+        // Deliberately ignores requestQueueing (shift): the user wants the sweep to take over IMMEDIATELY even
+        // when the second order was shift-queued — the first item is absorbed into the one-trip sweep, and
+        // unrelated queued work is preserved (TryTakeoverSecondOrder does not ClearQueuedJobs).
+        static bool Prefix(Verse.AI.Pawn_JobTracker __instance, Verse.AI.Job job, JobTag? tag, ref bool __result)
+        {
+            // Only a player-ordered bulk haul can take over; vanilla single hauls (the FIRST, surgical order),
+            // pack-animal loads, and every other job run vanilla unchanged.
+            if (job == null || job.def != HaulersDreamDefOf.HaulersDream_BulkHaul)
+                return true;
+            var pawn = PawnOf(__instance);
+            if (pawn == null)
+                return true;
+            return !BulkHaul.TryTakeoverSecondOrder(pawn, job, tag, ref __result);
+        }
+    }
 }
