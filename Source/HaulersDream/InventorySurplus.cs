@@ -101,6 +101,13 @@ namespace HaulersDream
             bool hdSwept = pawn.GetComp<CompHauledToInventory>()?.PeekHashSet().Contains(thing) == true;
             if (!hdSwept)
             {
+                // Player-configured "never unload these" list (mod options → Dialog_KeepFilter). Matched by
+                // defName so it is fallback-safe: a missing-mod def simply never matches, and re-matches if the
+                // mod returns. Excluded for HD-swept stacks (above) so a swept loose stack of a kept def can't
+                // become a black hole.
+                var settings = HaulersDreamMod.Settings;
+                if (settings != null && settings.IsKeptDef(def))
+                    return true;
                 // Vanilla parity gap: FirstUnloadableThing (HD's count-keep model) does not consult the addiction /
                 // chemical-dependency case that JobGiver_DropUnusedInventory.ShouldKeepDrugInInventory does. Keep
                 // the whole stack for an addicted / chem-dependent pawn (flesh only; AddictionUtility is
@@ -111,6 +118,10 @@ namespace HaulersDream
                 if (SmartMedicineCompat.IsStockedUp(pawn, def))
                     return true;
                 if (DbhCompat.IsKeptDrink(thing))
+                    return true;
+                // Combat Extended ammo: CE keeps a pawn's loadout ammo and re-fetches it if removed (the reported
+                // back-and-forth "drop ammo / pick it back up" loop). Defer ammo management entirely to CE.
+                if (CECompat.IsCarriedAmmo(thing))
                     return true;
             }
             // Simple Sidearms carried weapon — IsKeptWeapon applies the SAME HD-swept exclusion internally

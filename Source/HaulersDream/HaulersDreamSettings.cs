@@ -24,6 +24,15 @@ namespace HaulersDream
         // or future. Turn ON for the convenience of auto-hauling foreign surplus (e.g. traded jade) to storage;
         // the keep-item detection above keeps that safe with the supported mods.
         public bool unloadAllSurplus = false;
+        // Player-configured "never unload these items" list (mod options → "Items to never unload…", a stockpile-
+        // style categorized picker). HD treats a matched def as the pawn's personal kit: it is never unloaded out
+        // of inventory (an HD-swept loose stack of the def is still unloadable, so it can't become a black hole).
+        // Stored as defName STRINGS, NOT ThingDef refs: a modded item's entry survives the mod being removed (it
+        // simply never matches a live item) and is restored automatically if the mod returns — and it can never
+        // break save loading. The categorized UI builds a transient ThingFilter from this list (see Dialog_KeepFilter).
+        public List<string> keepDefNames = new List<string>();
+        [System.NonSerialized] private HashSet<string> keepSet; // lazy O(1) lookup cache; invalidated on edit/load
+
         // "Put it away before relaxing": when a pawn finishes its work run and is about to rest, recreate, or
         // eat, it makes its unload trip FIRST (bypassing the accumulate window), instead of carrying the load
         // to bed / the dinner table / the rec room. Continuous/intermittent work still accumulates — these only
@@ -239,6 +248,13 @@ namespace HaulersDream
             Scribe_Values.Look(ref unloadBeforeLeisure, "unloadBeforeLeisure", true);
             Scribe_Values.Look(ref unloadBeforeEating, "unloadBeforeEating", true);
             Scribe_Values.Look(ref unloadAllSurplus, "unloadAllSurplus", false);
+            Scribe_Collections.Look(ref keepDefNames, "keepDefNames", LookMode.Value);
+            if (Scribe.mode == LoadSaveMode.LoadingVars)
+            {
+                if (keepDefNames == null)
+                    keepDefNames = new List<string>();
+                keepSet = null; // rebuild the lookup cache from the freshly-loaded list on next query
+            }
             Scribe_Values.Look(ref shareForBuilding, "shareForBuilding", true);
             Scribe_Values.Look(ref shareForCrafting, "shareForCrafting", true);
             Scribe_Values.Look(ref inventoryCraftDeliver, "inventoryCraftDeliver", true);
@@ -299,6 +315,26 @@ namespace HaulersDream
             Scribe_Values.Look(ref verboseLogging, "verboseLogging", false);
         }
 
+        /// <summary>True if the player marked this def as "never unload" (the keep-filter). Fallback-safe: an
+        /// entry whose mod is absent simply never matches a live item, and re-matches if the mod returns. O(1)
+        /// via a lazily-built cache (the list only changes through the mod-options picker).</summary>
+        public bool IsKeptDef(ThingDef def)
+        {
+            if (def == null || keepDefNames == null || keepDefNames.Count == 0)
+                return false;
+            if (keepSet == null)
+                keepSet = new HashSet<string>(keepDefNames);
+            return keepSet.Contains(def.defName);
+        }
+
+        /// <summary>Replace the keep-filter contents (called by the picker dialog on close). The caller is
+        /// responsible for preserving entries whose mod is currently absent.</summary>
+        public void SetKeepDefNames(System.Collections.Generic.IEnumerable<string> names)
+        {
+            keepDefNames = names == null ? new List<string>() : new List<string>(names);
+            keepSet = null; // invalidate the lookup cache
+        }
+
         // The settings list long ago outgrew Dialog_ModSettings' fixed height — without a scroll view the
         // bottom half of the options is invisible and uneditable.
         private static Vector2 settingsScroll;
@@ -334,6 +370,12 @@ namespace HaulersDream
             l.CheckboxLabeled("HaulersDream.Setting.MarkForUnload".Translate(), ref markForUnload);
             l.CheckboxLabeled("HaulersDream.Setting.UnloadAllSurplus".Translate(), ref unloadAllSurplus,
                 "HaulersDream.Setting.UnloadAllSurplusDesc".Translate());
+            // Stockpile-style picker for items HD must never unload out of a pawn's inventory (ammo, sidearms, …).
+            string keepBtn = keepDefNames != null && keepDefNames.Count > 0
+                ? "HaulersDream.Setting.KeepFilterButtonN".Translate(keepDefNames.Count)
+                : "HaulersDream.Setting.KeepFilterButton".Translate();
+            if (l.ButtonText(keepBtn))
+                Find.WindowStack.Add(new Dialog_KeepFilter(this));
             if (markForUnload)
             {
                 // "Put it away before relaxing" — unload before each downtime activity (bypassing the accumulate window).
