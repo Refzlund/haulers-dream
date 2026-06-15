@@ -187,6 +187,19 @@ namespace HaulersDream
         // off to unload when full — keep working and leave the surplus for normal hauling.
         public bool strictCarryWeight = false;
 
+        // Keep working when full (opt-in, DEFAULT OFF so existing saves/behaviour are byte-identical until
+        // opted in): when a pawn doing WORK (mining/harvesting/deconstructing) reaches its carry ceiling, it
+        // does NOT break off to unload — it keeps working and overflow yields drop on the ground for normal
+        // hauling. It only sheds the load before a LONG relocation: when its next work target is farther than
+        // the dropoff (a weighted rule — see KeepWorkingPolicy). Downtime/idle/interval/end-of-run unloads
+        // are UNCHANGED, and dedicated haul/load jobs still deliver when full. Distinct from strictCarryWeight,
+        // which also caps at 100% capacity (this keeps the overload-and-accumulate ceiling intact).
+        public bool keepWorkingWhenFull = false;
+        // Hysteresis margin (tiles) for the keep-working unload-before-next-relocation rule: the next work
+        // target must be farther than the dropoff by at least this many tiles before the full pawn detours to
+        // unload. Avoids dithering when the two distances are nearly equal.
+        public int keepWorkingMarginCells = 5;
+
         // Pass-by unload: when heading off on a long trip with a load and storage is on the way, drop it off.
         public bool opportunisticUnload = true;
 
@@ -395,6 +408,8 @@ namespace HaulersDream
             Scribe_Values.Look(ref cookSpoilingFirst, "cookSpoilingFirst", true);
             Scribe_Values.Look(ref overloadLevel, "overloadLevel", OverloadTuning.FairLevel);
             Scribe_Values.Look(ref strictCarryWeight, "strictCarryWeight", false);
+            Scribe_Values.Look(ref keepWorkingWhenFull, "keepWorkingWhenFull", false);
+            Scribe_Values.Look(ref keepWorkingMarginCells, "keepWorkingMarginCells", 5);
             Scribe_Values.Look(ref opportunisticUnload, "opportunisticUnload", true);
             Scribe_Values.Look(ref routeAllowHarvest, "routeAllowHarvest", true);
             Scribe_Values.Look(ref routeGrowthThreshold, "routeGrowthThreshold", 80);
@@ -741,6 +756,17 @@ namespace HaulersDream
             l.Label("HaulersDream.Setting.OverloadDesc".Translate());
             l.CheckboxLabeled("HaulersDream.Setting.StrictCarryWeight".Translate(), ref strictCarryWeight,
                 "HaulersDream.Setting.StrictCarryWeightDesc".Translate());
+            // Keep working when full (opt-in, default OFF). Distinct from strict carry weight: this keeps the
+            // overload-and-accumulate ceiling but stops a full pawn breaking off to unload — it works on and
+            // only sheds the load before a long relocation. The margin slider is the hysteresis for that rule.
+            l.CheckboxLabeled("HaulersDream.Setting.KeepWorkingWhenFull".Translate(), ref keepWorkingWhenFull,
+                "HaulersDream.Setting.KeepWorkingWhenFullDesc".Translate());
+            if (keepWorkingWhenFull)
+            {
+                l.Label("HaulersDream.Setting.KeepWorkingMargin".Translate(keepWorkingMarginCells),
+                    tooltip: "HaulersDream.Setting.KeepWorkingMarginDesc".Translate());
+                keepWorkingMarginCells = Mathf.RoundToInt(l.Slider(keepWorkingMarginCells, 0f, 30f));
+            }
             l.CheckboxLabeled("HaulersDream.Setting.OpportunisticUnload".Translate(), ref opportunisticUnload,
                 "HaulersDream.Setting.OpportunisticUnloadDesc".Translate());
 

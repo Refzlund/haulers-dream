@@ -265,11 +265,22 @@ namespace HaulersDream
                 return;
             // On a non-home / temporary map there is no storage to unload to — divert the heavy load onto the
             // nearest owned pack animal instead (auto-divert), so the pawn doesn't keep working over-encumbered.
+            // (keepWorkingWhenFull does NOT apply here: on a temp map there is no storage to "unload before the
+            // next relocation" to — the only place the load can go is the carrier, exactly as today.)
             if (pawn?.Map != null && !pawn.Map.IsPlayerHome)
             {
                 PackAnimalLoad.MaybeAutoDivert(pawn, s);
                 return;
             }
+            // KEEP WORKING WHEN FULL (opt-in, default OFF): on the home map, DON'T break off the work run to go
+            // dump when full. The pawn keeps working (CountToPickUp already returns 0 at the ceiling, so the
+            // scooping stops on its own) and overflow yields stay on the ground for normal hauling. The
+            // weighted "unload before a long relocation" decision is made at the between-jobs hook instead
+            // (OpportunisticUnload, the work-found path, via KeepWorkingPolicy). End-of-run / downtime /
+            // interval / idle unloads are unaffected. With the toggle OFF this whole branch is skipped and the
+            // forced unload below fires exactly as before — byte-identical.
+            if (s.keepWorkingWhenFull)
+                return;
             // forced: bypass the post-pickup grace period — being full IS the signal to unload.
             PawnUnloadChecker.CheckIfShouldUnload(pawn, forced: true);
         }

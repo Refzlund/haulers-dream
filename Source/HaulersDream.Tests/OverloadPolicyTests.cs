@@ -36,16 +36,16 @@ namespace HaulersDream.Tests
         }
 
         [Test]
-        public void Fair_OverloadsToAboutDoubleCapacity()
+        public void Fair_OverloadsToTheBreakEvenCeiling()
         {
-            // ratio ≈ 1.966 → mass cap ≈ 68.8 kg → room 63.8 → 63 units of 1 kg.
-            Assert.That(Carry(5, demand: 200, available: 200), Is.EqualTo(63));
+            // Fair break-even ratio ≈ 2.75 → mass cap ≈ 96.25 kg → room 91.25 → 91 units of 1 kg.
+            Assert.That(Carry(5, demand: 200, available: 200), Is.EqualTo(91));
         }
 
         [Test]
         public void Fair_CappedByDemand()
         {
-            // Only 45 units are actually wanted (this job + future plans) → carry 45, not the 63 it could.
+            // Only 45 units are actually wanted (this job + future plans) → carry 45, not the 91 it could.
             Assert.That(Carry(5, demand: 45, available: 200), Is.EqualTo(45));
         }
 
@@ -82,9 +82,9 @@ namespace HaulersDream.Tests
         [Test]
         public void AlreadyOverloaded_NoRoom_ReturnsBaseline()
         {
-            // Pawn already at 70 kg (2× capacity) — past the Fair overload ceiling → take none extra
-            // beyond the (zero) baseline room. baseUnits here is 0 (already over the carry limit).
-            Assert.That(Carry(5, demand: 200, available: 200, current: 70f), Is.EqualTo(0));
+            // Pawn already at 100 kg — past the Fair overload ceiling (~96.25 kg = 2.75 × 35) → take none
+            // extra beyond the (zero) baseline room. baseUnits here is 0 (already over the carry limit).
+            Assert.That(Carry(5, demand: 200, available: 200, current: 100f), Is.EqualTo(0));
         }
 
         [Test]
@@ -104,20 +104,20 @@ namespace HaulersDream.Tests
         public void LowerCarryLimitFraction_ScalesTheOverloadCeilingToo()
         {
             // Carry limit set to 50% (baseCap 17.5): the overload ceiling scales off the CONFIGURED base cap
-            // (~1.966 × 17.5 ≈ 34.4 kg; room from 5 kg current ≈ 29.4 → 29 units), NOT the true capacity — a
+            // (~2.75 × 17.5 ≈ 48.1 kg; room from 5 kg current ≈ 43.1 → 43 units), NOT the true capacity — a
             // player-reduced carry limit must not be silently nullified by the overload feature.
             // (Supersedes the old "...StillOverloadsFromTrueCapacity" spec, which encoded exactly that bug.)
             int units = Carry(5, demand: 200, available: 200, baseCap: 17.5f);
-            Assert.That(units, Is.EqualTo(29));
-            // At the default fraction (base == max) the ceiling is unchanged from the old behaviour.
-            Assert.That(Carry(5, demand: 200, available: 200), Is.EqualTo(63));
+            Assert.That(units, Is.EqualTo(43));
+            // At the default fraction (base == max) the ceiling matches the headline Fair break-even.
+            Assert.That(Carry(5, demand: 200, available: 200), Is.EqualTo(91));
         }
 
         [Test]
         public void HeavyUnits_FewerUnitsButSameMassCeiling()
         {
-            // 10 kg/unit: mass cap ≈ 68.8, room from 5 kg = 63.8 → floor(63.8/10) = 6 units.
-            Assert.That(Carry(5, demand: 200, available: 200, unit: 10f), Is.EqualTo(6));
+            // 10 kg/unit: mass cap ≈ 96.25, room from 5 kg = 91.25 → floor(91.25/10) = 9 units.
+            Assert.That(Carry(5, demand: 200, available: 200, unit: 10f), Is.EqualTo(9));
         }
 
         [Test]

@@ -160,7 +160,15 @@ namespace HaulersDream
                 // yield work, runOver is false and the strict journey bar applies, so a continuing mining/
                 // deconstruct run is never interrupted (F38 preserved).
                 bool runOver = !OpportunisticUnload.IsYieldOrHaulJobDef(__result.Job.def);
-                if (!OpportunisticUnload.ShouldDivert(pawn, __result.Job, runOver))
+                // KEEP WORKING WHEN FULL (opt-in, default OFF): a full pawn whose full-trigger was suppressed
+                // (YieldRouter.MaybeUnloadBecauseFull) sheds its load here ONLY before a long relocation — when
+                // its next work target is farther than the dropoff and it's actually overloaded (the weighted
+                // KeepWorkingPolicy). This is an ADDITIONAL reason to divert, independent of opportunisticUnload;
+                // with the toggle OFF ShouldUnloadBeforeRelocation returns false, so the gate is exactly
+                // ShouldDivert as before (byte-identical). Continuing-yield-work (runOver false) still keeps
+                // accumulating unless this relocation rule fires.
+                if (!OpportunisticUnload.ShouldDivert(pawn, __result.Job, runOver)
+                    && !OpportunisticUnload.ShouldUnloadBeforeRelocation(pawn, __result.Job))
                     return;
                 var job = JobMaker.MakeJob(HaulersDreamDefOf.HaulersDream_UnloadInventory);
                 if (job.TryMakePreToilReservations(pawn, false))
