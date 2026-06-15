@@ -84,6 +84,11 @@
   <HaulersDream.Setting.TaintedForbid>drop it and forbid it</HaulersDream.Setting.TaintedForbid>
   <HaulersDream.Setting.TaintedDestroy>destroy it on the spot (quest items and relics are taken instead, never destroyed)</HaulersDream.Setting.TaintedDestroy>
 
+  <HaulersDream.Setting.HaulTamedSlaughter>Haul slaughtered carcasses to storage</HaulersDream.Setting.HaulTamedSlaughter>
+  <HaulersDream.Setting.HaulTamedSlaughterDesc>When a colonist finishes slaughtering a colony animal, the fresh carcass is hauled straight to storage (a freezer or corpse stockpile) so it doesn't rot where it fell — only if a reachable storage spot accepts it, otherwise it's left exactly as vanilla. (Vanilla never hauls a slaughtered animal itself; this closes that gap.)</HaulersDream.Setting.HaulTamedSlaughterDesc>
+  <HaulersDream.Setting.HaulWildKills>Haul hunted carcasses to storage</HaulersDream.Setting.HaulWildKills>
+  <HaulersDream.Setting.HaulWildKillsDesc>When a hunt is interrupted right after the kill — the hunter is pulled away by a need, a draft, a mental break, or the hunt times out — the hunter promptly hauls the fresh carcass to storage on its way out, instead of leaving it for the slow general haul queue. On a clean hunt the hunter already carries its kill home (vanilla), so this stays out of the way — no double-hauling. Only hauls if a reachable storage spot accepts the body; otherwise the carcass is left exactly as vanilla (it's never forbidden, so normal corpse hauling still collects it once a freezer or corpse stockpile that accepts it exists).</HaulersDream.Setting.HaulWildKillsDesc>
+
   <HaulersDream.Setting.Overload>Smart overload: {0}</HaulersDream.Setting.Overload>
   <HaulersDream.Setting.OverloadDesc>Pawns carry materials past 100% of their max weight to save trips, but move slower the more they overload — and only do it when fewer trips is genuinely worth the slowdown (including for queued build/craft work). Slide left for lighter slowdown + bigger loads, right for heavier slowdown + smaller loads.</HaulersDream.Setting.OverloadDesc>
   <HaulersDream.Overload.Free>No slowdown — carry freely</HaulersDream.Overload.Free>

@@ -98,6 +98,10 @@ namespace HaulersDream
         public TaintedApparelPolicy taintedSmeltablePolicy = TaintedApparelPolicy.Take;
         public TaintedApparelPolicy taintedNonSmeltablePolicy = TaintedApparelPolicy.Take;
 
+        // --- haul after slaughter (a finished kill hauls the fresh carcass to storage so it doesn't rot) ---
+        public bool haulWildKills = true;       // hunted (wild) carcasses — appends a haul on the hunter ONLY when the hunt was interrupted after the kill (JobDriver_Hunt finish action, non-Succeeded); a clean hunt self-hauls (vanilla), so HD stays out — no double-haul
+        public bool haulTamedSlaughter = true;  // slaughtered (tamed) carcasses — appends a haul on the slaughterer (slaughter doesn't self-haul)
+
         // --- smart overload (carry past 100% capacity to save trips) ---
         // 0 = no slowdown (carry freely) ... FairLevel = balanced ... OffLevel = never overload.
         public int overloadLevel = OverloadTuning.FairLevel;
@@ -291,6 +295,8 @@ namespace HaulersDream
             Scribe_Values.Look(ref stripColonistCorpses, "stripColonistCorpses", false);
             Scribe_Values.Look(ref taintedSmeltablePolicy, "taintedSmeltablePolicy", TaintedApparelPolicy.Take);
             Scribe_Values.Look(ref taintedNonSmeltablePolicy, "taintedNonSmeltablePolicy", TaintedApparelPolicy.Take);
+            Scribe_Values.Look(ref haulWildKills, "haulWildKills", true);
+            Scribe_Values.Look(ref haulTamedSlaughter, "haulTamedSlaughter", true);
             Scribe_Values.Look(ref overloadLevel, "overloadLevel", OverloadTuning.FairLevel);
             Scribe_Values.Look(ref strictCarryWeight, "strictCarryWeight", false);
             Scribe_Values.Look(ref opportunisticUnload, "opportunisticUnload", true);
@@ -564,6 +570,13 @@ namespace HaulersDream
                 if (l.ButtonText("HaulersDream.Setting.TaintedNonSmeltable".Translate(TaintedPolicyLabel(taintedNonSmeltablePolicy))))
                     Find.WindowStack.Add(TaintedPolicyMenu(p => taintedNonSmeltablePolicy = p));
             }
+
+            // Haul after slaughter — independent of the auto-strip mode (a fresh KILL hauls the carcass to
+            // storage so it doesn't rot in place). Two independent toggles, both default ON.
+            l.CheckboxLabeled("HaulersDream.Setting.HaulTamedSlaughter".Translate(), ref haulTamedSlaughter,
+                "HaulersDream.Setting.HaulTamedSlaughterDesc".Translate());
+            l.CheckboxLabeled("HaulersDream.Setting.HaulWildKills".Translate(), ref haulWildKills,
+                "HaulersDream.Setting.HaulWildKillsDesc".Translate());
 
             l.GapLine();
             l.Label("HaulersDream.Setting.Overload".Translate(OverloadLevelLabel(overloadLevel)));
