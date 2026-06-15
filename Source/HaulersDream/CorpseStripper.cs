@@ -196,6 +196,14 @@ namespace HaulersDream
             // so scooped loot could walk off-map before the unload pass runs.
             if (hauler.Faction != Faction.OfPlayerSilentFail || hauler.IsQuestLodger())
                 return;
+            // Per-pawn auto-haul opt-out: a pawn with "Auto-haul yields" OFF must not auto-strip + pocket loot —
+            // that is auto-hauling, exactly what the toggle is supposed to stop (the toggle's own contract). Only
+            // the auto-pocket-loot path is gated here; an explicit player Strip designation/order is untouched (it
+            // runs through JobDriver_Strip, not this on-haul hook), and the same toggled-off pawn still empties
+            // what it already carries (the unload paths never read this flag). Mirrors YieldRouter.IsCandidate.
+            var comp = hauler.GetComp<CompHauledToInventory>();
+            if (comp == null || !comp.autoHaulYields)
+                return;
             if (hauler.RaceProps == null
                 || (!hauler.RaceProps.Humanlike && !(hauler.RaceProps.IsMechanoid && s.allowMechanoids)))
                 return;

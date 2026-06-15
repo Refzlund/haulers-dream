@@ -619,6 +619,41 @@ namespace HaulersDream
             return comp != null && comp.autoHaulYields;
         }
 
+        /// <summary>
+        /// Drafted-agnostic RACE eligibility: humanlike, OR mechanoid when allowMechanoids, OR animal
+        /// (non-humanlike non-mech) when allowAnimals — WITHOUT the drafted/incapable gating. This is the
+        /// visibility test for the standing per-pawn auto-haul toggle (a drafted pawn must still be able to
+        /// SET the preference, so the toggle can't vanish under the pauseWhileDrafted gate that
+        /// <see cref="IsEligible"/> applies). It is strictly broader than IsEligible, so it never SHOWS the
+        /// toggle on a pawn that could never scoop: the runtime scoop gates still call IsEligible and honor
+        /// pauseWhileDrafted/allowIncapable, so showing the toggle while drafted never makes a drafted pawn
+        /// actually scoop. Reuses the SAME Core policy as IsEligible with isDrafted/incapableOfHauling pinned
+        /// false, so the two stay in lockstep on the race rules (only the race branches can pass).
+        /// </summary>
+        public static bool IsRaceEligible(Pawn p)
+        {
+            if (p?.RaceProps == null)
+                return false;
+            var s = HaulersDreamMod.Settings;
+            if (s == null)
+                return false;
+            bool raceEligible = EligibilityPolicy.IsEligible(
+                isMechanoid: p.RaceProps.IsMechanoid,
+                isHumanlike: p.RaceProps.Humanlike,
+                isDrafted: false,            // standing preference — not gated on the pawn's current drafted state
+                incapableOfHauling: false,   // capability is a runtime scoop gate (IsEligible), not a visibility gate
+                allowMechanoids: s.allowMechanoids,
+                pauseWhileDrafted: s.pauseWhileDrafted,
+                allowIncapable: s.allowIncapable,
+                allowAnimals: s.allowAnimals);
+            // #4 dead-gizmo fix (lockstep with IsEligible): an animal that can never use the Haul
+            // feature (a cat) must not SHOW the auto-haul toggle either — CanScoopAsAnimal narrows only
+            // the animal branch (humanlikes/mechs untouched), so with allowAnimals OFF the animal branch
+            // is already false and this is byte-identical. Keeps the toggle visible exactly on the set of
+            // animals the runtime scoop gate (IsEligible) will accept.
+            return raceEligible && CanScoopAsAnimal(p);
+        }
+
         public static bool IsEligible(Pawn p)
         {
             if (p?.RaceProps == null)
@@ -626,7 +661,7 @@ namespace HaulersDream
             var s = HaulersDreamMod.Settings;
             if (s == null)
                 return false;
-            return EligibilityPolicy.IsEligible(
+            bool eligible = EligibilityPolicy.IsEligible(
                 isMechanoid: p.RaceProps.IsMechanoid,
                 isHumanlike: p.RaceProps.Humanlike,
                 isDrafted: p.Drafted,
@@ -642,6 +677,51 @@ namespace HaulersDream
                 // byte-identical to before (animals fall through EligibilityPolicy's animal branch to
                 // false exactly as the absent-arg default did).
                 allowAnimals: s.allowAnimals);
+            // #4 dead-gizmo fix: even with allowAnimals ON, only an animal that can ACTUALLY use the
+            // vanilla Haul behavior may scoop — a cat (not Haul-trainable) would otherwise get the
+            // gizmo and scoop-eligibility while the toggle does nothing (colony animals haul via
+            // JobGiver_Haul, gated on the Haul trainable being completed). CanScoopAsAnimal narrows
+            // ONLY the animal branch; humanlikes/mechs are returned untouched, so allowAnimals=false
+            // (animal branch already false) stays byte-identical — the gate short-circuits below.
+            return eligible && CanScoopAsAnimal(p);
+        }
+
+        // The Haul trainable (defName "Haul") — not exposed on vanilla's TrainableDefOf, so looked up
+        // by name (matching the codebase's GetNamedSilentFail convention, e.g. CECompat's "Bulk").
+        // Cached after first resolve; null only on a game with the def stripped, handled fail-open below.
+        private static TrainableDef haulTrainable;
+        private static bool haulTrainableResolved;
+
+        private static TrainableDef HaulTrainable()
+        {
+            if (!haulTrainableResolved)
+            {
+                haulTrainable = DefDatabase<TrainableDef>.GetNamedSilentFail("Haul");
+                haulTrainableResolved = true;
+            }
+            return haulTrainable;
+        }
+
+        /// <summary>
+        /// #4: gate the animal branch on actual Haul-feature capability. Returns true for every
+        /// non-animal (humanlike / mechanoid) so it never changes their eligibility. For an animal it
+        /// is true only when the pawn can really haul via the vanilla Haul trainable — i.e. the Haul
+        /// row is assignable for this race (CanAssignToTrain: a cat fails "not smart enough", a husky/
+        /// bear passes regardless of training progress) OR the animal has already learned Haul. This
+        /// keeps a non-Haul-trainable animal (cat) from showing the auto-haul toggle / scooping where
+        /// it would do nothing, while a Haul-trained husky/bear still qualifies. Fail-open if the
+        /// training tracker or the Haul def is missing (so a modded edge never silently hides it).
+        /// </summary>
+        private static bool CanScoopAsAnimal(Pawn p)
+        {
+            // Only animals are narrowed; humanlikes and mechanoids are unaffected.
+            if (p.RaceProps.IsMechanoid || p.RaceProps.Humanlike)
+                return true;
+            var training = p.training;
+            var haul = HaulTrainable();
+            if (training == null || haul == null)
+                return true; // can't evaluate capability -> don't hide it (fail-open)
+            return training.CanAssignToTrain(haul).Accepted || training.HasLearned(haul);
         }
     }
 }

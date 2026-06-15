@@ -68,23 +68,30 @@ namespace HaulersDream
                     continue;
 
                 var clickedLocal = clicked;
+                var pawnLocal = pawn;
                 var option = new FloatMenuOption("HaulersDream.PickUp.Option".Translate(clicked.LabelCap), () =>
                 {
                     // No try/catch: a failure to build the order is a real bug to surface, not mask as the benign
-                    // toast; the genuine null path below still shows the friendly message. BuildPickUpJob returns
-                    // null only when nothing of the stack fits in inventory under the ceiling, or there is no
-                    // storage — fall back to a plain forced haul (hand-carry, which has no mass limit) so the
-                    // clicked stack is still hauled rather than the order doing nothing.
-                    Job job = BulkHaul.BuildPickUpJob(pawn, clickedLocal)
-                              ?? HaulAIUtility.HaulToStorageJob(pawn, clickedLocal, forced: true);
+                    // toast. BuildPickUpJob now picks the clicked stack into inventory REGARDLESS of any storage
+                    // destination (PUAH parity — the tagged load is serviced by the unload pass later, and the
+                    // cannot-unload alert backstops a no-destination load), limited only by what the pawn can carry.
+                    // So it returns null ONLY when the pawn's inventory is already at/over its carry ceiling and not
+                    // one more unit of this stack fits. In that single case fall back to a plain forced hand-haul
+                    // (no mass limit) so a too-laden pawn still relocates the stack if storage exists; only when
+                    // even that has no destination is the order genuinely impossible.
+                    Job job = BulkHaul.BuildPickUpJob(pawnLocal, clickedLocal)
+                              ?? HaulAIUtility.HaulToStorageJob(pawnLocal, clickedLocal, forced: true);
                     if (job == null)
                     {
-                        Messages.Message("HaulersDream.HaulNearby.CouldNotStart".Translate(), clickedLocal,
-                            MessageTypeDefOf.RejectInput, historical: false);
+                        // Pickup-appropriate message (NOT the sweep's "Nothing to haul nearby right now."): the
+                        // clicked stack IS haulable and present — the pawn just can't carry more into inventory
+                        // (over its carry ceiling) and there's nowhere to hand-haul it to either.
+                        Messages.Message("HaulersDream.PickUp.CouldNotStart".Translate(pawnLocal.LabelShort, clickedLocal.LabelCap),
+                            clickedLocal, MessageTypeDefOf.RejectInput, historical: false);
                         return;
                     }
                     job.playerForced = true;
-                    pawn.jobs.TryTakeOrderedJob(job, JobTag.Misc);
+                    pawnLocal.jobs.TryTakeOrderedJob(job, JobTag.Misc);
                 })
                 {
                     iconThing = clicked,

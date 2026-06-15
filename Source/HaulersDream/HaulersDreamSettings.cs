@@ -595,7 +595,8 @@ namespace HaulersDream
             if (buildFromInventory)
                 l.CheckboxLabeled("HaulersDream.Setting.BuildFromInventoryPartial".Translate(), ref buildFromInventoryPartial,
                     "HaulersDream.Setting.BuildFromInventoryPartialDesc".Translate());
-            l.CheckboxLabeled("HaulersDream.Setting.ShareForCrafting".Translate(), ref shareForCrafting);
+            l.CheckboxLabeled("HaulersDream.Setting.ShareForCrafting".Translate(), ref shareForCrafting,
+                "HaulersDream.Setting.ShareForCraftingDesc".Translate());
             l.CheckboxLabeled("HaulersDream.Setting.InventoryCraftDeliver".Translate(), ref inventoryCraftDeliver,
                 "HaulersDream.Setting.InventoryCraftDeliverDesc".Translate());
             l.CheckboxLabeled("HaulersDream.Setting.ShareMeetInMiddle".Translate(), ref shareMeetInMiddle);

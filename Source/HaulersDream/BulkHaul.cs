@@ -116,10 +116,12 @@ namespace HaulersDream
             // CHEAP FRONT GATE (microstutter fix): the work scan calls JobOnThing for every haulable candidate
             // it considers, and on a cache miss the build below runs the full pool enumeration + ClaimedByOtherPawns
             // (scans every colony pawn's job queue) + storage scans — far too expensive to run per candidate when
-            // the answer is almost always "no sweep". HasPotentialBulkWork is a bounded, allocation-free reject:
-            // feature on + comp present + eligible + at least one OTHER haulable within the sweep pool radius.
-            // Mirrors TransportLoad.HasPotentialBulkWork. When it rejects, the vanilla job stands and no heavy
-            // scan runs. It's a SUPERSET of the build's AUTOMATIC accept set: a plan with NO nearby sweepable is
+            // the answer is almost always "no sweep". HasPotentialBulkWork is a cheap reject: feature on + comp
+            // present + eligible + at least one OTHER haulable within the sweep pool radius. It early-returns on
+            // the first nearby haulable (so it's near-instant on a dense field) and is allocation-free (it iterates
+            // the lister's HashSet via the struct enumerator and builds no list); worst case is O(haulables) when
+            // nothing is near. Mirrors TransportLoad.HasPotentialBulkWork. When it rejects, the vanilla job stands
+            // and no heavy scan runs. It's a SUPERSET of the build's AUTOMATIC accept set: a plan with NO nearby sweepable is
             // produced only by forceSweep / secondTasked (forced-only, and forced probes skip this gate) or the
             // oversized-primary-in-inventory carve-out (which HasPotentialBulkWork itself lets through), so it
             // never suppresses a plan the automatic build would have made. Skipped for forced probes: the float
@@ -183,12 +185,13 @@ namespace HaulersDream
         }
 
         /// <summary>
-        /// Bounded, allocation-free "is a bulk sweep even possible here?" reject for the AUTOMATIC work-scan
-        /// path — run BEFORE the expensive pool/claimed/storage scans so a candidate that can't sweep costs
-        /// only this. Mirrors <see cref="TransportLoad.HasPotentialBulkWork"/>: feature on, the comp present,
-        /// the pawn auto-eligible, a HaulToCell destination (containers keep vanilla flow), on an allowed map,
-        /// and at least one OTHER haulable within the same pool radius the build would use. Returns on the FIRST
-        /// nearby hit — no list built. A SUPERSET of the build's AUTOMATIC-path accept set: the build yields a
+        /// Cheap "is a bulk sweep even possible here?" reject for the AUTOMATIC work-scan path — run BEFORE the
+        /// expensive pool/claimed/storage scans so a candidate that can't sweep costs only this. Mirrors
+        /// <see cref="TransportLoad.HasPotentialBulkWork"/>: feature on, the comp present, the pawn auto-eligible,
+        /// a HaulToCell destination (containers keep vanilla flow), on an allowed map, and at least one OTHER
+        /// haulable within the same pool radius the build would use. Returns on the FIRST nearby hit (so it's
+        /// near-instant on a dense field) and builds no list — it scans the lister's HashSet via the struct
+        /// enumerator, so it's allocation-free; worst case is O(haulables) when nothing is near. A SUPERSET of the build's AUTOMATIC-path accept set: the build yields a
         /// plan with NO nearby sweepable only via forceSweep / secondTasked (both forced-only, and forced probes
         /// skip this gate entirely) or the oversized-primary-in-inventory carve-out (handled below), so this
         /// never rejects a plan the automatic build would have produced.
@@ -234,7 +237,10 @@ namespace HaulersDream
             // scan. Matches BuildPool's cheap pre-filter (spawned item, same map, not the primary, not a corpse,
             // EverHaulable, within pool radius). The deeper eligibility (forbidden / claimed / capacity / storage)
             // is the build's job; here we only need to know the heavy scan is worth running at all.
-            foreach (var t in map.listerHaulables.ThingsPotentiallyNeedingHauling())
+            // Cast to the concrete HashSet<Thing> the lister returns (its ThingsPotentiallyNeedingHauling
+            // return type is the ICollection<Thing> interface, decompile-verified) so the foreach binds the
+            // struct enumerator and boxes nothing on this hot per-candidate gate.
+            foreach (var t in (HashSet<Thing>)map.listerHaulables.ThingsPotentiallyNeedingHauling())
             {
                 if (t == null || t == primary || !t.Spawned || t.Map != map || t is Corpse)
                     continue;
@@ -450,12 +456,20 @@ namespace HaulersDream
         /// unload pass — instead of a raw untagged TakeInventory (which would be a black hole under the default
         /// unloadAllSurplus=false). Distinct from <see cref="BuildBulkJobForced"/>: NO nearby sweep, just the one
         /// clicked stack. PURE planning — no reservations/mutation (the menu builds options speculatively) — exactly
-        /// like the other forced builders; the driver re-clamps the count to live mass/storage at pickup. The whole
-        /// clicked stack is requested into inventory (mass-limited, not stack-limited); the count is clamped up front
-        /// to the destination group's real space (so the surplus stays at its origin for the next haul, never
-        /// stranded) and to the worth-it mass ceiling for this pawn (so a too-heavy stack never plans more than the
-        /// pawn can carry). Returns null when nothing of the clicked stack fits in inventory under the ceiling (the
-        /// caller then falls back to a plain forced haul), or when there is no storage / a container destination.
+        /// like the other forced builders; the driver re-clamps the count to live mass/CE room at pickup.
+        ///
+        /// PUAH-parity (THE fix): the clicked stack is picked into inventory REGARDLESS of whether there is a better
+        /// storage destination right now — steel already in its best stockpile, or no accepting stockpile at all. The
+        /// whole stack is requested into inventory, MASS/CE-limited ONLY, NOT stack- and NOT storage-limited. The
+        /// tagged stock then just sits in inventory until the player makes somewhere to put it; the storage-aware
+        /// unload pass services it then (it re-finds storage and clamps placement to the destination's real space at
+        /// unload time, so a partial-fit never over-loads a near-full stockpile — the surplus rides back in inventory
+        /// rather than stranding), and <see cref="Alert_CannotUnloadInventory"/> Condition A surfaces a genuinely
+        /// no-destination load as a red alert — never a silent black hole. (The previous behavior REQUIRED a storage
+        /// destination and clamped the pickup to its remaining space, so a click on a stack with no better storage
+        /// no-op'd with a misleading "nothing to haul nearby" toast — the bug this fixes.) Returns null only when not
+        /// one more unit fits in inventory under the carry ceiling (the caller then falls back to a plain forced
+        /// hand-haul, which has no mass limit, and only if THAT has no destination is the order truly impossible).
         /// </summary>
         internal static Job BuildPickUpJob(Pawn pawn, Thing clicked)
         {
@@ -473,19 +487,13 @@ namespace HaulersDream
             if (pawn.GetComp<CompHauledToInventory>() == null || pawn.inventory == null)
                 return null;
 
-            // Resolve the real storage destination (the same vanilla bar the provider/order uses); a container
-            // destination keeps its dedicated vanilla flow, and no storage means there is nowhere to unload to.
-            var vanilla = HaulAIUtility.HaulToStorageJob(pawn, clicked, forced: true);
-            if (vanilla == null || vanilla.def != JobDefOf.HaulToCell)
-                return null;
-
-            // Clamp the requested count to the destination group's real remaining space so the surplus never
-            // strands in inventory with nowhere to go (mirrors BuildBulkJob's primary clamp). int.MaxValue =
-            // "no binding limit" (container/large group) -> take the whole stack.
-            int space = StorageSpaceForDef(pawn, clicked, vanilla.targetB.Cell, map);
-            int deliverable = space == int.MaxValue ? clicked.stackCount : Math.Min(clicked.stackCount, space);
-            if (deliverable <= 0)
-                return null;
+            // NO storage requirement (the whole point of this fix): PUAH picks the clicked stack into inventory
+            // whether or not it has somewhere better to go right now — steel already in its best stockpile, or no
+            // accepting stockpile at all. The tagged load is serviced by the storage-aware unload pass later (which
+            // re-finds and re-clamps to real storage at unload time), and Alert_CannotUnloadInventory (Condition A)
+            // surfaces a genuinely no-destination load as a red alert — never a silent black hole. So the pickup is
+            // limited ONLY by what the pawn can carry (mass + CE), NOT by stack limit and NOT by storage space. The
+            // whole clicked stack is requested; the unload pass clamps placement to the destination's real space.
 
             // Clamp to the worth-it mass ceiling for this pawn (per-pawn base cap × the overload break-even ratio),
             // exactly as BuildBulkJob prices the primary, so a single oversized/heavy stack never plans more than the
@@ -494,7 +502,7 @@ namespace HaulersDream
             float baseCap = CarryMath.EffectiveCapacity(maxCap, s.carryLimitFraction);
             float ceiling = BulkHaulPolicy.CeilingKg(s.overloadLevel, OverloadGate.NoOverloadFor(pawn, s), baseCap);
             float running = MassUtility.GearAndInventoryMass(pawn);
-            int take = BulkHaulPolicy.CountWithinCeiling(ceiling, running, clicked.GetStatValue(StatDefOf.Mass), deliverable);
+            int take = BulkHaulPolicy.CountWithinCeiling(ceiling, running, clicked.GetStatValue(StatDefOf.Mass), clicked.stackCount);
             take = Math.Min(take, CECompat.MaxFitCount(pawn, clicked));
             float bulkPer = CECompat.BulkPerUnit(clicked);
             float bulkRoom = CECompat.AvailableBulk(pawn); // +∞ without CE
