@@ -65,6 +65,9 @@ namespace HaulersDream
         // --- planners (the right-click "Plan prioritized …" tools) ---
         public bool planRoutes = true;   // route planner (harvest/mine/clean/deconstruct/construction routes)
         public bool planCrafting = true; // station crafting planner (batch a bill N times in one go)
+        // Batch-Y bill mode: when ON, a newly-created batchable bill starts in batch mode at defaultBatchSize.
+        public bool batchByDefault = false; // OFF by default so existing players see no change until they opt in
+        public int defaultBatchSize = 10;   // initial per-batch quantity for a freshly-batched bill
 
         // --- bulk hauling (the native Pick-Up-And-Haul: a haul trip sweeps everything around into inventory) ---
         public bool bulkHaul = true;
@@ -282,6 +285,8 @@ namespace HaulersDream
             Scribe_Values.Look(ref haulToSiteOption, "haulToSiteOption", true);
             Scribe_Values.Look(ref planRoutes, "planRoutes", true);
             Scribe_Values.Look(ref planCrafting, "planCrafting", true);
+            Scribe_Values.Look(ref batchByDefault, "batchByDefault", false);
+            Scribe_Values.Look(ref defaultBatchSize, "defaultBatchSize", 10);
             Scribe_Values.Look(ref autoStripMode, "autoStripMode", AutoStripMode.AllHauls);
             Scribe_Values.Look(ref stripColonistCorpses, "stripColonistCorpses", false);
             Scribe_Values.Look(ref taintedSmeltablePolicy, "taintedSmeltablePolicy", TaintedApparelPolicy.Take);
@@ -533,6 +538,10 @@ namespace HaulersDream
                 "HaulersDream.Setting.PlanRoutesDesc".Translate());
             l.CheckboxLabeled("HaulersDream.Setting.PlanCrafting".Translate(), ref planCrafting,
                 "HaulersDream.Setting.PlanCraftingDesc".Translate());
+            l.CheckboxLabeled("HaulersDream.Setting.BatchByDefault".Translate(), ref batchByDefault,
+                "HaulersDream.Setting.BatchByDefaultDesc".Translate());
+            l.Label("HaulersDream.Setting.DefaultBatchSize".Translate(defaultBatchSize));
+            defaultBatchSize = Mathf.RoundToInt(l.Slider(defaultBatchSize, 1f, 200f));
 
             l.GapLine();
             l.Label("HaulersDream.Setting.AutoStripHeader".Translate());

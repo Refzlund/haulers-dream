@@ -66,6 +66,11 @@ namespace HaulersDream
         private int repsDone;
         private int deadlineTick;   // absolute TicksGame after which no NEW rep starts; 0 = no timeout
         private bool planResolved;
+        // Transient (NOT scribed): true only while the pawn is at the bench in the craft loop, so the rot-freeze
+        // patch (Patch_CompRottable_BatchFreeze) spoils carried ingredients normally during the gather/walk
+        // phases and freezes them only while actually working. Re-established on the next craftCheck after a
+        // load; it never needs to persist.
+        public bool ActivelyCrafting;
 
         private Building_WorkTable Bench => job.GetTarget(BenchInd).Thing as Building_WorkTable;
         private ThingOwner Inv => pawn.inventory?.GetDirectlyHeldThings();
@@ -164,6 +169,7 @@ namespace HaulersDream
         {
             AddFinishAction(delegate
             {
+                ActivelyCrafting = false; // left the bench / job ended — carried ingredients spoil normally again
                 RegisterLeftoversForUnload();
                 // "When done, THEN unload": queue the unload pass now, FORCED — both because the just-finished
                 // batch puts the pawn inside the pickup grace window (a non-forced check would skip), and because
@@ -186,6 +192,17 @@ namespace HaulersDream
             // ---- PHASE 1: pre-load every rep's ingredients into inventory ----
 
             Toil gotoBench = Toils_Goto.GotoThing(BenchInd, PathEndMode.InteractionCell);
+            // Honest count: once gathering is done (we've arrived at the bench), cap the batch to what the loaded
+            // ingredients ACTUALLY support, so the "(n/X)" report shows how many CAN be made. The plan's
+            // availability estimate counts reservable in-radius stock but does NOT path-check it, so it can
+            // over-promise reps the gather then couldn't reach; this reflects the real load. Runs once (gotoBench
+            // is entered once, after Phase 1) and only ever LOWERS the target — a fully-stocked batch is unchanged.
+            gotoBench.AddFinishAction(() =>
+            {
+                int loadable = MaxRepsLoadable();
+                if (loadable < repsTarget)
+                    repsTarget = loadable;
+            });
 
             Toil loadDecide = ToilMaker.MakeToil("HD_BatchLoadDecide");
             loadDecide.initAction = () =>
@@ -235,6 +252,7 @@ namespace HaulersDream
             Toil craftCheck = ToilMaker.MakeToil("HD_BatchCraftCheck");
             craftCheck.initAction = () =>
             {
+                ActivelyCrafting = true; // at the bench now → freeze carried ingredients' rot until the job ends
                 if (repsDone >= repsTarget) { JumpToToil(done); return; }
                 if (PastDeadline()) { JumpToToil(done); return; }
                 if (job.bill == null || job.bill.suspended || !job.bill.ShouldDoNow()) { JumpToToil(done); return; }
@@ -356,6 +374,12 @@ namespace HaulersDream
 
         private bool PastDeadline() => deadlineTick > 0 && Find.TickManager.TicksGame >= deadlineTick;
 
+        /// <summary>Should this carried thing's rot be frozen right now? True only while actively crafting at the
+        /// bench AND the thing is one of this batch's ingredient defs — so the rot-freeze patch leaves the pawn's
+        /// unrelated personal stock (and the gather/travel phases) rotting normally. Read by
+        /// <see cref="Patch_CompRottable_BatchFreeze"/>.</summary>
+        public bool ShouldFreezeRot(Thing t) => ActivelyCrafting && t != null && ingredientDefs.Contains(t.def);
+
         /// <summary>
         /// How many units to pull from <paramref name="stack"/> on this trip. The player explicitly batched N reps
         /// and wants the FEWEST trips, so by default the pawn carries the WHOLE still-needed amount — overweight,
@@ -462,6 +486,30 @@ namespace HaulersDream
                     return false;
             }
             return ingredientDefs.Count > 0;
+        }
+
+        /// <summary>How many FULL reps the pawn's current inventory supports — the honest achievable count after
+        /// the gather phase. The plan's availability estimate counts reservable in-radius stock but does NOT
+        /// path-check reachability, so it can over-promise; this reflects what was really loaded. Def-level
+        /// (matches <see cref="HasOneRepInInventory"/>): a non-bill-usable personal stack of an ingredient def can
+        /// overstate it by one rep, which the per-rep <see cref="PullOneRep"/> then catches. 0 = nothing loadable.</summary>
+        private int MaxRepsLoadable()
+        {
+            int max = int.MaxValue;
+            for (int i = 0; i < ingredientDefs.Count; i++)
+            {
+                var def = ingredientDefs[i];
+                int perRepForDef = 0;
+                for (int j = 0; j < ingredientDefs.Count; j++)
+                    if (ingredientDefs[j] == def)
+                        perRepForDef += perRepCounts[j];
+                if (perRepForDef <= 0)
+                    continue;
+                int can = InventoryCountOfDef(def) / perRepForDef;
+                if (can < max)
+                    max = can;
+            }
+            return max == int.MaxValue ? 0 : max;
         }
 
         /// <summary>Split one rep's worth of each slot's ingredient out of inventory into standalone Things,
