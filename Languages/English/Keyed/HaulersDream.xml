@@ -80,11 +80,12 @@
   <HaulersDream.Batch.SizeDesc>The colonist gathers ingredients for the whole batch in one trip, makes them all at the bench (ingredients don't spoil while working), then hauls everything to storage. Capped by available materials and the bill's own count.</HaulersDream.Batch.SizeDesc>
   <HaulersDream.Setting.HaulToStackDesc>Haulers prefer adding to an existing partial stack over starting a new one — within the storage room the game already chose (which stockpile wins is still decided by priority and distance). Works on the ground, on shelves, and in modded storage units. Outdoor storage scans nearby stockpiles within a short radius instead. Destination tiles are also no longer reserved, so several haulers can deliver to the same tile at once instead of spreading one item type across ten cells.</HaulersDream.Setting.HaulToStackDesc>
 
-  <HaulersDream.Setting.AutoStripHeader>Auto strip on haul — corpse hauls strip the body, loot rides in the hauler's inventory:</HaulersDream.Setting.AutoStripHeader>
-  <HaulersDream.Setting.AutoStripMode>Strip corpses: {0}</HaulersDream.Setting.AutoStripMode>
+  <HaulersDream.Setting.AutoStripHeader>Auto-strip a corpse WHILE hauling it — when a colonist hauls a corpse, it strips the body on the way and the loot rides in the hauler's inventory (no separate strip job, no second trip):</HaulersDream.Setting.AutoStripHeader>
+  <HaulersDream.Setting.AutoStripMode>Auto-strip while hauling: {0}</HaulersDream.Setting.AutoStripMode>
   <HaulersDream.Setting.AutoStripAll>on every corpse haul (stockpile, grave, cremation, butchering)</HaulersDream.Setting.AutoStripAll>
   <HaulersDream.Setting.AutoStripDisposal>on disposal hauls only (grave, sarcophagus, cremation, butchering — not plain stockpile hauls)</HaulersDream.Setting.AutoStripDisposal>
-  <HaulersDream.Setting.AutoStripOff>never (vanilla behaviour)</HaulersDream.Setting.AutoStripOff>
+  <HaulersDream.Setting.AutoStripOff>never — don't strip while hauling (vanilla behaviour)</HaulersDream.Setting.AutoStripOff>
+  <HaulersDream.Setting.AutoStripCrossRef>"Never" only turns off this strip-while-hauling shortcut. It does NOT stop hauling stripped gear: a Strip order you place by hand still runs normally, and its dropped weapons and clothes are still scooped up and hauled home — controlled by the separate "Stripping — removed gear" work toggle (under "Scoop yields from these kinds of work" further below).</HaulersDream.Setting.AutoStripCrossRef>
   <HaulersDream.Setting.StripColonists>Also strip player-faction corpses</HaulersDream.Setting.StripColonists>
   <HaulersDream.Setting.StripColonistsDesc>With this off (default), your own dead — colonists and colony animals — keep their gear and their dignity; only strangers and enemies are looted.</HaulersDream.Setting.StripColonistsDesc>
   <HaulersDream.Setting.TaintedSmeltable>Tainted apparel (smeltable): {0}</HaulersDream.Setting.TaintedSmeltable>
@@ -128,8 +129,9 @@
   <HaulersDream.Setting.HaulDeepDrill>Deep drills</HaulersDream.Setting.HaulDeepDrill>
   <HaulersDream.Setting.HaulDeconstruct>Deconstruction salvage</HaulersDream.Setting.HaulDeconstruct>
   <HaulersDream.Setting.HaulAnimals>Animals — milk &amp; shear</HaulersDream.Setting.HaulAnimals>
-  <HaulersDream.Setting.HaulStrip>Stripping — removed gear</HaulersDream.Setting.HaulStrip>
-  <HaulersDream.Setting.HaulStripDesc>When a colonist strips a prisoner, a downed pawn, or a corpse (the Strip order), the removed weapons, gear and clothes are scooped into its inventory right after the strip, and hauled home in one trip. Tainted apparel from a corpse follows the tainted-apparel choices above ("leave it on the corpse" pieces stay on the ground, unscooped). For a living target, a follow-up strip is queued at the end of the stripper's jobs in case the target dresses itself again from leftovers; it does nothing if the target stayed bare.</HaulersDream.Setting.HaulStripDesc>
+  <HaulersDream.Setting.HaulStrip>Stripping — removed gear (haul gear from a Strip order)</HaulersDream.Setting.HaulStrip>
+  <HaulersDream.Setting.HaulStripDesc>When a colonist strips a prisoner, a downed pawn, or a corpse (a Strip order YOU place, by hand), the removed weapons, gear and clothes are scooped into its inventory right after the strip, and hauled home in one trip. This is the toggle that governs hauling stripped gear — it is independent of "Auto-strip while hauling" higher up: that one only strips a corpse while it is BEING hauled (loot to inventory); THIS one hauls the gear a manual Strip order drops on the ground. So you can set auto-strip-while-hauling to "never" and still have manually-ordered strips scoop and haul their gear, as long as this is on. Tainted apparel from a corpse follows the tainted-apparel choices in the auto-strip section ("leave it on the corpse" pieces stay on the ground, unscooped). For a living target, a follow-up strip is queued at the end of the stripper's jobs in case the target dresses itself again from leftovers; it does nothing if the target stayed bare.</HaulersDream.Setting.HaulStripDesc>
+  <HaulersDream.Setting.HaulStripCrossRef>Independent of "Auto-strip while hauling" near the top: that strips a corpse as it is hauled (loot to inventory); this hauls the gear a manual Strip order drops.</HaulersDream.Setting.HaulStripCrossRef>
 
   <HaulersDream.Setting.WorkOverrideHeader>Work-incapability overrides (off = vanilla):</HaulersDream.Setting.WorkOverrideHeader>
   <HaulersDream.Setting.AllCanHaul>All pawns can haul</HaulersDream.Setting.AllCanHaul>

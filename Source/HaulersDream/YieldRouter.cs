@@ -566,7 +566,12 @@ namespace HaulersDream
                 var things = map.thingGrid.ThingsListAtFast(c);
                 for (int j = 0; j < things.Count; j++)
                 {
-                    if (!(things[j] is Pawn p) || !IsCandidate(p) || !TryGetWorkType(p.jobs?.curDriver, out var t))
+                    // Resolve the work type BEFORE the candidate gate: an explicit player Strip order
+                    // (the only source that overrides the per-pawn opt-out — OptOutOverridePolicy) must
+                    // be recognized so IsCandidate bypasses a toggled-off pawn's "Auto-haul yields" flag.
+                    // TryGetWorkType only reads the live driver (no side effects), so this reorder is free.
+                    if (!(things[j] is Pawn p) || !TryGetWorkType(p.jobs?.curDriver, out var t)
+                        || !IsCandidate(p, overrideOptOut: OptOutOverridePolicy.ExplicitOrderOverridesOptOut(t)))
                         continue;
 
                     // ONLY the true producer is routed — the pawn standing on the cell
@@ -636,7 +641,13 @@ namespace HaulersDream
         }
 
         /// <summary>Player-owned, eligible race, on an allowed map, with the tracking comp.</summary>
-        public static bool IsCandidate(Pawn p)
+        /// <param name="overrideOptOut">When true, the per-pawn "Auto-haul yields" opt-out is BYPASSED
+        /// (the comp must still exist, and every other gate — faction, race eligibility, map — still
+        /// applies). Set only for an EXPLICIT player order whose yield should be scooped regardless of the
+        /// standing toggle: an explicit Strip order (a <c>JobDriver_Strip</c>, which is always
+        /// player-ordered — see <see cref="Core.OptOutOverridePolicy"/>). Autonomous yields leave it
+        /// false so the toggle governs them.</param>
+        public static bool IsCandidate(Pawn p, bool overrideOptOut = false)
         {
             if (p == null || p.Faction != Faction.OfPlayerSilentFail)
                 return false;
@@ -648,9 +659,13 @@ namespace HaulersDream
             if (p.Map != null && !s.enableOnNonHomeMaps && !p.Map.IsPlayerHome)
                 return false;
             var comp = p.GetComp<CompHauledToInventory>();
-            // Per-pawn opt-out: a pawn toggled OFF never scoops/sweeps/self-picks. Unload paths don't read
-            // this flag, so a toggled-off pawn still empties what it already carries.
-            return comp != null && comp.autoHaulYields;
+            if (comp == null)
+                return false;
+            // Per-pawn opt-out: a pawn toggled OFF never scoops/sweeps/self-picks AUTONOMOUS yields. An
+            // explicit player order (overrideOptOut) bypasses the toggle — the player asked for it by hand,
+            // so the dropped gear is still scooped+hauled. Unload paths don't read this flag either way, so
+            // a toggled-off pawn always empties what it carries.
+            return overrideOptOut || comp.autoHaulYields;
         }
 
         /// <summary>

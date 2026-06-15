@@ -60,6 +60,26 @@ namespace HaulersDream.Core
         public static int Min(int a, int b) => a < b ? a : b;
 
         /// <summary>
+        /// Units to carry into the hands THIS pass when setting a recipe slot's ingredients down on the bench, given
+        /// how many of that slot still need placing (<paramref name="slotRemaining"/>), how much is already in the
+        /// hands (<paramref name="alreadyCarried"/>, same def), and the carry-tracker's free stack space for that def
+        /// (<paramref name="availableStackSpace"/>). A single slot can need more than one handful (its per-rep count
+        /// can exceed the carry/stack ceiling), so the slot is placed across multiple passes; each pass tops the hands
+        /// up to <c>min(slotRemaining, alreadyCarried + availableStackSpace)</c> and the caller places it, repeating
+        /// until the slot is exhausted. Never negative; 0 means "nothing to add this pass" (hands already hold the
+        /// whole slot, or there is no free stack space). Pure: no Verse types, so it is unit-testable headlessly.
+        /// </summary>
+        public static int CarryPassTarget(int slotRemaining, int alreadyCarried, int availableStackSpace)
+        {
+            if (slotRemaining <= 0)
+                return 0;
+            if (alreadyCarried < 0) alreadyCarried = 0;
+            if (availableStackSpace < 0) availableStackSpace = 0;
+            int target = Min(slotRemaining, alreadyCarried + availableStackSpace);
+            return target < 0 ? 0 : target;
+        }
+
+        /// <summary>
         /// Reps the SCARCEST ingredient allows, correctly handling a def that sources MORE THAN ONE recipe slot:
         /// demand for the same def must be SUMMED across slots before dividing into the shared stock pool (two slots
         /// each needing 10 steel = 20/rep against one steel pool, not 10/rep twice). <paramref name="defKeys"/>[i]

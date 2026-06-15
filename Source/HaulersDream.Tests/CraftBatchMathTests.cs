@@ -114,6 +114,62 @@ namespace HaulersDream.Tests
         }
 
         [Test]
+        public void CarryPassTarget_FitsWholeSlotInOnePass()
+        {
+            // Slot needs 10 of a def, hands empty, plenty of stack space (75) → carry the whole 10 this pass.
+            Assert.That(CraftBatchMath.CarryPassTarget(slotRemaining: 10, alreadyCarried: 0, availableStackSpace: 75),
+                Is.EqualTo(10));
+        }
+
+        [Test]
+        public void CarryPassTarget_SlotExceedsCeiling_FillsToCeilingAcrossPasses()
+        {
+            // Slot needs 100 but only 75 fits → first pass carries 75; after placing those 75, the slot has 25 left,
+            // hands empty again, space 75 → second pass carries the remaining 25. The passes sum to the slot count.
+            int pass1 = CraftBatchMath.CarryPassTarget(slotRemaining: 100, alreadyCarried: 0, availableStackSpace: 75);
+            Assert.That(pass1, Is.EqualTo(75));
+            int pass2 = CraftBatchMath.CarryPassTarget(slotRemaining: 100 - pass1, alreadyCarried: 0, availableStackSpace: 75);
+            Assert.That(pass2, Is.EqualTo(25));
+            Assert.That(pass1 + pass2, Is.EqualTo(100)); // never over- or under-carries the slot
+        }
+
+        [Test]
+        public void CarryPassTarget_TopsUpPartiallyCarriedHands()
+        {
+            // Hands already hold 6 of the def, slot needs 10, space for 30 more → target 10 (top up by 4).
+            Assert.That(CraftBatchMath.CarryPassTarget(slotRemaining: 10, alreadyCarried: 6, availableStackSpace: 30),
+                Is.EqualTo(10));
+            // Hands already hold the whole slot → nothing to add (but target equals what's held, so remaining is 0).
+            Assert.That(CraftBatchMath.CarryPassTarget(slotRemaining: 10, alreadyCarried: 10, availableStackSpace: 30),
+                Is.EqualTo(10));
+        }
+
+        [Test]
+        public void CarryPassTarget_NoSpace_CannotCarryMoreThanAlreadyHeld()
+        {
+            // No free stack space and empty hands → 0 (the slot can't progress this pass; caller will not loop).
+            Assert.That(CraftBatchMath.CarryPassTarget(slotRemaining: 10, alreadyCarried: 0, availableStackSpace: 0),
+                Is.EqualTo(0));
+        }
+
+        [Test]
+        public void CarryPassTarget_NothingRemaining_IsZero()
+        {
+            Assert.That(CraftBatchMath.CarryPassTarget(slotRemaining: 0, alreadyCarried: 0, availableStackSpace: 75),
+                Is.EqualTo(0));
+            Assert.That(CraftBatchMath.CarryPassTarget(slotRemaining: -5, alreadyCarried: 0, availableStackSpace: 75),
+                Is.EqualTo(0));
+        }
+
+        [Test]
+        public void CarryPassTarget_NegativeInputs_ClampToZero()
+        {
+            // Defensive: negative already/space are treated as 0, never producing a negative target.
+            Assert.That(CraftBatchMath.CarryPassTarget(slotRemaining: 10, alreadyCarried: -3, availableStackSpace: -7),
+                Is.EqualTo(0));
+        }
+
+        [Test]
         public void Resolve_TheUserScenario_CookFourSimpleMeals_TimesThree()
         {
             // "Cook simple meal" needs 10 raw food/rep. Player wants 12 reps (4 meals × 3 batches = 120 raw food).

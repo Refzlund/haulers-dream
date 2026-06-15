@@ -707,6 +707,10 @@ namespace HaulersDream
             if (autoStripMode != AutoStripMode.Off)
                 l.CheckboxLabeled("HaulersDream.Setting.StripColonists".Translate(), ref stripColonistCorpses,
                     "HaulersDream.Setting.StripColonistsDesc".Translate());
+            // Cross-reference: clarify that "never" only disables strip-WHILE-hauling, not the separate
+            // manual-strip gear haul (haulStrip, in the work-types section below). Shown always — it explains
+            // the "never" option, which is only meaningful when the mode is Off. NO gating-logic change.
+            l.Label("HaulersDream.Setting.AutoStripCrossRef".Translate());
             // The tainted policies also govern corpse strip ORDERS (the haulStrip scoop), so they stay
             // visible while either consumer is on — hiding an active Destroy policy would be a trap.
             if (autoStripMode != AutoStripMode.Off || haulStrip)
@@ -775,6 +779,8 @@ namespace HaulersDream
             l.CheckboxLabeled("HaulersDream.Setting.HaulAnimals".Translate(), ref haulAnimals);
             l.CheckboxLabeled("HaulersDream.Setting.HaulStrip".Translate(), ref haulStrip,
                 "HaulersDream.Setting.HaulStripDesc".Translate());
+            // Cross-reference back to "Auto-strip while hauling" — independent control, not coupled. NO gating change.
+            l.Label("HaulersDream.Setting.HaulStripCrossRef".Translate());
 
             l.GapLine();
             l.Label("HaulersDream.Setting.WorkOverrideHeader".Translate());
