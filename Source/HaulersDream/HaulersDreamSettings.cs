@@ -45,6 +45,22 @@ namespace HaulersDream
         public bool unloadBeforeLeisure = true;
         public bool unloadBeforeEating = true;
         public bool shareForBuilding = true;  // carried materials count for construction
+        // Build From Inventory: source construction material from ORGANIC inventory a pawn/animal is already
+        // carrying (own → other colonists' → pack animals' / caravan cargo), not just HD-tagged scooped stock —
+        // so steel carried in a caravan builds a sandbag/wall on a raid without first dropping it off a pack
+        // animal. Extends the construction availability gate + the inventory-fetch to consider pre-existing
+        // organic inventory; delivery uses the clean inventory→site HaulToContainer driver (no drop-at-feet).
+        // Distinct from shareForBuilding (HD-tagged scooped stock only); when ON, the organic count REPLACES the
+        // tagged count in the availability gate (organic is a superset) so no physical stack is counted twice.
+        // DEFAULT ON: it only ADDS a source and (partial off) never starts an under-resourced frame, so it
+        // delivers the headline use-case out of the box without changing vanilla's all-or-nothing build rule.
+        public bool buildFromInventory = true;
+        // Partial build from inventory: relax vanilla's "all materials must be present" gate — start/advance a
+        // frame from whatever inventory stock exists even if it's less than the frame's full need (the rest is
+        // delivered as more becomes available). Changes vanilla's all-or-nothing semantics (a vanilla-semantics
+        // change, like unloadAllSurplus / shareHandHauledToStorage / batchByDefault), so OFF by default. Requires
+        // buildFromInventory.
+        public bool buildFromInventoryPartial = false;
         public bool shareForCrafting = true;  // carried ingredients count for crafting bills
         // Auto crafting bills: gather all ingredient stacks into inventory in one (overweight) sweep, then let
         // VANILLA's own DoBill craft from the carried stock (via the crafting-share relay). The earlier direct-craft
@@ -287,6 +303,8 @@ namespace HaulersDream
                 ruleMap = null; // rebuild the decode cache from the freshly-loaded list on next query
             }
             Scribe_Values.Look(ref shareForBuilding, "shareForBuilding", true);
+            Scribe_Values.Look(ref buildFromInventory, "buildFromInventory", true);
+            Scribe_Values.Look(ref buildFromInventoryPartial, "buildFromInventoryPartial", false);
             Scribe_Values.Look(ref shareForCrafting, "shareForCrafting", true);
             Scribe_Values.Look(ref inventoryCraftDeliver, "inventoryCraftDeliver", true);
             Scribe_Values.Look(ref shareMeetInMiddle, "shareMeetInMiddle", true);
@@ -511,6 +529,11 @@ namespace HaulersDream
             l.GapLine();
             l.Label("HaulersDream.Setting.ShareHeader".Translate());
             l.CheckboxLabeled("HaulersDream.Setting.ShareForBuilding".Translate(), ref shareForBuilding);
+            l.CheckboxLabeled("HaulersDream.Setting.BuildFromInventory".Translate(), ref buildFromInventory,
+                "HaulersDream.Setting.BuildFromInventoryDesc".Translate());
+            if (buildFromInventory)
+                l.CheckboxLabeled("HaulersDream.Setting.BuildFromInventoryPartial".Translate(), ref buildFromInventoryPartial,
+                    "HaulersDream.Setting.BuildFromInventoryPartialDesc".Translate());
             l.CheckboxLabeled("HaulersDream.Setting.ShareForCrafting".Translate(), ref shareForCrafting);
             l.CheckboxLabeled("HaulersDream.Setting.InventoryCraftDeliver".Translate(), ref inventoryCraftDeliver,
                 "HaulersDream.Setting.InventoryCraftDeliverDesc".Translate());
