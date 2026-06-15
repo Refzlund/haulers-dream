@@ -116,6 +116,15 @@ namespace HaulersDream
         public bool loadPackAnimalBulk = true;       // the manual "Load nearby items onto pack animal (bulk)" order
         public bool autoDivertToPackAnimal = true;   // an over-encumbered caravan pawn auto-loads the nearest pack animal
 
+        // --- transporter / shuttle BULK LOADING (replaces vanilla's one-stack-per-walk transporter loading: claim a
+        // slice of the group manifest, sweep nearby stacks into inventory, walk once, deposit them all). The ledger
+        // splits a manifest across multiple haulers without double-haul; anti-conflict patches stop premature
+        // board/launch + the false "loading stalled" alert + shuttle autoload churn while claims are live.
+        public bool enableBulkLoadTransporters = true;
+        // How often (ticks) the running load job re-validates that its carried stock is still wanted by the group
+        // (mid-trip redirect within the group). 10..240; lower = more responsive redirect, higher = cheaper.
+        public int bulkLoadAiUpdateFrequency = 60;
+
         // --- pack-animal BULK UNLOAD (the inverse of loading: empty a flagged carrier into the hauler's backpack
         // in ONE visit, then HD's normal unload ships it to storage). Replaces vanilla's one-stack-per-walk unload.
         public bool enableBulkUnloadCarriers = true; // route WorkGiver_UnloadCarriers through the bulk-unload job
@@ -332,6 +341,8 @@ namespace HaulersDream
             Scribe_Values.Look(ref sweepNearbyWhileWorking, "sweepNearbyWhileWorking", true);
             Scribe_Values.Look(ref loadPackAnimalBulk, "loadPackAnimalBulk", true);
             Scribe_Values.Look(ref autoDivertToPackAnimal, "autoDivertToPackAnimal", true);
+            Scribe_Values.Look(ref enableBulkLoadTransporters, "enableBulkLoadTransporters", true);
+            Scribe_Values.Look(ref bulkLoadAiUpdateFrequency, "bulkLoadAiUpdateFrequency", 60);
             Scribe_Values.Look(ref enableBulkUnloadCarriers, "enableBulkUnloadCarriers", true);
             Scribe_Values.Look(ref minFreeSpaceToUnloadCarrierPct, "minFreeSpaceToUnloadCarrierPct", 0.5f);
             Scribe_Values.Look(ref reserveCarrierOnUnload, "reserveCarrierOnUnload", false);
@@ -601,6 +612,14 @@ namespace HaulersDream
                     "HaulersDream.Setting.ReserveCarrierOnUnloadDesc".Translate());
                 l.Label("HaulersDream.Setting.VisualUnloadDelay".Translate(visualUnloadDelay));
                 visualUnloadDelay = Mathf.RoundToInt(l.Slider(visualUnloadDelay, 0f, 30f));
+            }
+
+            l.CheckboxLabeled("HaulersDream.Setting.EnableBulkLoadTransporters".Translate(), ref enableBulkLoadTransporters,
+                "HaulersDream.Setting.EnableBulkLoadTransportersDesc".Translate());
+            if (enableBulkLoadTransporters)
+            {
+                l.Label("HaulersDream.Setting.BulkLoadAiUpdateFrequency".Translate(bulkLoadAiUpdateFrequency));
+                bulkLoadAiUpdateFrequency = Mathf.RoundToInt(l.Slider(bulkLoadAiUpdateFrequency, 10f, 240f) / 10f) * 10;
             }
 
             l.CheckboxLabeled("HaulersDream.Setting.HaulToStack".Translate(), ref haulToStack,

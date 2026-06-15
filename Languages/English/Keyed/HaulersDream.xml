@@ -294,4 +294,14 @@
   <HaulersDream.Setting.ReserveCarrierOnUnloadDesc>Claim the pack animal exclusively for the duration of the unload. Off (default) lets roping, caravan formation, or a second hauler interrupt it — the unload yields cleanly when another pawn claims the animal.</HaulersDream.Setting.ReserveCarrierOnUnloadDesc>
   <HaulersDream.Setting.VisualUnloadDelay>Per-stack unload delay: {0} ticks</HaulersDream.Setting.VisualUnloadDelay>
 
+  <!-- Transporter / shuttle BULK LOADING -->
+  <HaulersDream.LoadTransporter.Report>bulk-loading a transporter.</HaulersDream.LoadTransporter.Report>
+  <HaulersDream.LoadTransporter.Option>Prioritize bulk loading {0}</HaulersDream.LoadTransporter.Option>
+  <HaulersDream.LoadTransporter.CouldNotStart>Nothing nearby to bulk-load into that transporter right now.</HaulersDream.LoadTransporter.CouldNotStart>
+
+  <!-- Settings: transporter / shuttle bulk loading -->
+  <HaulersDream.Setting.EnableBulkLoadTransporters>Bulk-load transporters and shuttles in one trip</HaulersDream.Setting.EnableBulkLoadTransporters>
+  <HaulersDream.Setting.EnableBulkLoadTransportersDesc>When a transport pod or shuttle is set to load, a hauler claims a slice of its manifest, sweeps several nearby stacks into its inventory, walks to the transporter ONCE, and deposits them all — instead of vanilla's one-stack-in-hands per walk. Several haulers split a large manifest with no double-hauling, and the pod won't board or launch until the claimed cargo is in. With this off, vanilla's single-stack transporter loading is used unchanged.</HaulersDream.Setting.EnableBulkLoadTransportersDesc>
+  <HaulersDream.Setting.BulkLoadAiUpdateFrequency>Load re-check interval: {0} ticks</HaulersDream.Setting.BulkLoadAiUpdateFrequency>
+
 </LanguageData>

@@ -3,6 +3,7 @@ using HaulersDream.Core;
 using RimWorld;
 using UnityEngine;
 using Verse;
+using Verse.AI;
 
 namespace HaulersDream
 {
@@ -29,6 +30,14 @@ namespace HaulersDream
         // via a plain Scribe_Collections — no core-serialization Harmony patching.
         private Dictionary<string, int> batchBills = new Dictionary<string, int>();
         public const int BatchSizeMax = 1000;
+
+        // --- transport/portal bulk-load concurrency CLAIM-LEDGER ---
+        // Keyed by the task's save-unique load id (CompTransporter.groupID / MapPortal.thingIDNumber are monotonic
+        // and never reused within a game, so a single FLAT map across all maps is collision-free — each entry
+        // carries its own Map, so map removal is a one-pass drop). Scribed WITH THE GAME (live claims survive a
+        // save/load round-trip; the entry's own ExposeData recomputes totalClaimed from the surviving pawnClaims).
+        // Self-prunes inert entries (needed AND claimed both empty), same tolerance as batchBills.
+        private Dictionary<int, LoadLedgerEntry> loadTasks = new Dictionary<int, LoadLedgerEntry>();
 
         /// <summary>The component for the running game (null at the main menu / before a game loads).</summary>
         public static HaulersDreamGameComponent Instance => Current.Game?.GetComponent<HaulersDreamGameComponent>();
@@ -59,6 +68,147 @@ namespace HaulersDream
                 batchBills[k] = Mathf.Clamp(size, 1, BatchSizeMax);
             else
                 batchBills.Remove(k);
+        }
+
+        // ============ transport/portal bulk-load CLAIM-LEDGER API (thin adapters over Core.LoadLedger) ============
+
+        /// <summary>Register a task (idempotent) and refresh its <c>totalNeeded</c> from the live manifest. Called
+        /// by the planner before computing the claimable slice, so a manifest change between trips is reflected.</summary>
+        public LoadLedgerEntry LoadRegisterOrUpdate(IManagedLoadable loadable)
+        {
+            if (loadable == null)
+                return null;
+            int id = loadable.GetUniqueLoadID();
+            if (!loadTasks.TryGetValue(id, out var entry) || entry == null)
+            {
+                entry = new LoadLedgerEntry(loadable.GetMap());
+                loadTasks[id] = entry;
+            }
+            if (entry.map == null)
+                entry.map = loadable.GetMap();
+            // Rebuild totalNeeded from the manifest (def -> Σ CountToTransfer across same-def entries).
+            var needed = new Dictionary<ThingDef, int>();
+            var transferables = loadable.GetTransferables();
+            if (transferables != null)
+                for (int i = 0; i < transferables.Count; i++)
+                {
+                    var tr = transferables[i];
+                    if (tr == null || !tr.HasAnyThing || tr.CountToTransfer <= 0)
+                        continue;
+                    var def = tr.ThingDef;
+                    if (def == null)
+                        continue;
+                    needed[def] = (needed.TryGetValue(def, out int cur) ? cur : 0) + tr.CountToTransfer;
+                }
+            entry.SetNeeded(needed);
+            return entry;
+        }
+
+        /// <summary>The per-def map this pawn may newly claim on the task (needed − others' claims; the asker's own
+        /// claim excluded so a re-plan is stable). Empty if the task is unknown.</summary>
+        public Dictionary<ThingDef, int> LoadAvailableToClaim(IManagedLoadable loadable, Pawn pawn)
+        {
+            if (loadable == null)
+                return new Dictionary<ThingDef, int>();
+            return loadTasks.TryGetValue(loadable.GetUniqueLoadID(), out var entry) && entry != null
+                ? entry.AvailableToClaim(pawn)
+                : new Dictionary<ThingDef, int>();
+        }
+
+        /// <summary>True if the pawn can newly claim anything on the task right now.</summary>
+        public bool LoadHasWork(IManagedLoadable loadable, Pawn pawn)
+        {
+            if (loadable == null)
+                return false;
+            return loadTasks.TryGetValue(loadable.GetUniqueLoadID(), out var entry) && entry != null
+                   && entry.HasWork(pawn);
+        }
+
+        /// <summary>Record a pawn's claim from a running bulk-load job's sweep queue (def → Σ countQueue over
+        /// targetQueueB stacks of that def). Called from the driver's <c>Notify_Starting</c> so a built-but-never-
+        /// started menu probe never claims. Registers the task if needed.</summary>
+        public void LoadClaim(Pawn pawn, Job job, IManagedLoadable loadable)
+        {
+            if (pawn == null || job == null || loadable == null)
+                return;
+            var entry = LoadRegisterOrUpdate(loadable);
+            if (entry == null)
+                return;
+            var plan = new Dictionary<ThingDef, int>();
+            var queue = job.targetQueueB;
+            var counts = job.countQueue;
+            if (queue != null && counts != null)
+                for (int i = 0; i < queue.Count && i < counts.Count; i++)
+                {
+                    var thing = queue[i].Thing;
+                    if (thing?.def == null || counts[i] <= 0)
+                        continue;
+                    plan[thing.def] = (plan.TryGetValue(thing.def, out int cur) ? cur : 0) + counts[i];
+                }
+            entry.ApplyClaim(pawn, plan);
+        }
+
+        /// <summary>Settle a deposit (the Thing survives in the container — transporters): shrinks needed/claimed/the
+        /// pawn's claim by the moved count.</summary>
+        public void LoadNotifyDeposited(Pawn pawn, IManagedLoadable loadable, Thing moved)
+        {
+            if (pawn == null || loadable == null || moved?.def == null)
+                return;
+            LoadNotifyDeposited(pawn, loadable, moved.def, moved.stackCount);
+        }
+
+        /// <summary>Settle a deposit thing-lessly (the Thing was consumed/teleported — portals): the (def, count) MUST
+        /// be captured BEFORE the transfer by the caller.</summary>
+        public void LoadNotifyDeposited(Pawn pawn, IManagedLoadable loadable, ThingDef def, int count)
+        {
+            if (pawn == null || loadable == null || def == null || count <= 0)
+                return;
+            if (loadTasks.TryGetValue(loadable.GetUniqueLoadID(), out var entry) && entry != null)
+                entry.Settle(pawn, def, count);
+        }
+
+        /// <summary>Return every claim this pawn holds across ALL tasks to the pool (idempotent / null-safe). Called
+        /// on every interrupt path (job-end / despawn / map-removal). Does NOT touch needed.</summary>
+        public void LoadReleaseClaimsForPawn(Pawn pawn)
+        {
+            if (pawn == null || loadTasks.Count == 0)
+                return;
+            foreach (var entry in loadTasks.Values)
+                entry?.Release(pawn);
+        }
+
+        /// <summary>True if any pawn still holds a live claim on the task (gates premature board/launch + autoload).</summary>
+        public bool LoadAnyClaimsInProgress(int taskId)
+            => loadTasks.TryGetValue(taskId, out var entry) && entry != null && entry.AnyClaimed();
+
+        /// <summary>Drop every ledger entry tied to a removed map (clears its Pawn/Map refs, so an orphaned entry
+        /// can't keep <c>AnyClaimsInProgress</c> true and block boarding forever).</summary>
+        public void Notify_LoadMapRemoved(Map map)
+        {
+            if (map == null || loadTasks.Count == 0)
+                return;
+            List<int> drop = null;
+            foreach (var kv in loadTasks)
+                if (kv.Value == null || kv.Value.map == map)
+                    (drop ?? (drop = new List<int>())).Add(kv.Key);
+            if (drop != null)
+                for (int i = 0; i < drop.Count; i++)
+                    loadTasks.Remove(drop[i]);
+        }
+
+        // Self-prune fully-inert entries (no needed AND no claimed) — called from the same periodic tick the
+        // veins/idle use. Keeps the map small without active per-tick scanning of live tasks.
+        private void PruneInertLoadTasks()
+        {
+            if (loadTasks.Count == 0)
+                return;
+            List<int> drop = null;
+            foreach (var kv in loadTasks)
+                if (kv.Value == null || kv.Value.IsInert)
+                    (drop ?? (drop = new List<int>())).Add(kv.Key);
+            if (drop != null)
+                for (int i = 0; i < drop.Count; i++)
+                    loadTasks.Remove(drop[i]);
         }
 
         public HaulersDreamGameComponent(Game game) { }
@@ -100,7 +250,10 @@ namespace HaulersDream
             // JobGiver_Idle.TryGiveJob — DEAD in 1.6, where ordinary colonists never execute that node
             // (it lives only in gathering/ritual duty trees). Driven from here instead.
             if (tick % IdleTickInterval == 0)
+            {
                 RunIdleBackstop();
+                PruneInertLoadTasks(); // drop fully-settled/released bulk-load ledger entries (cheap when empty)
+            }
 
             var s = HaulersDreamMod.Settings;
             if (s == null || !s.markForUnload
@@ -289,6 +442,11 @@ namespace HaulersDream
             Scribe_Collections.Look(ref batchBills, "haulersDreamBatchBills", LookMode.Value, LookMode.Value);
             if (Scribe.mode == LoadSaveMode.LoadingVars && batchBills == null)
                 batchBills = new Dictionary<string, int>();
+            // The bulk-load claim-ledger: keyed by int task id, values are Deep-scribed LoadLedgerEntry (each
+            // recomputes totalClaimed from its surviving pawnClaims in PostLoadInit — the quota-leak fix).
+            Scribe_Collections.Look(ref loadTasks, "haulersDreamLoadTasks", LookMode.Value, LookMode.Deep);
+            if (Scribe.mode == LoadSaveMode.LoadingVars && loadTasks == null)
+                loadTasks = new Dictionary<int, LoadLedgerEntry>();
         }
     }
 }

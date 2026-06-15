@@ -128,4 +128,20 @@
     <suspendable>false</suspendable>
   </JobDef>
 
+  <!-- Bulk-load a transporter/shuttle group: claim a slice of the group manifest, sweep nearby ground stacks of
+       the claimed defs into inventory (tagged), walk to the transporter ONCE, and deposit every needed stack via
+       innerContainer.TryTransferToContainer (the precise SubtractFromToLoadList intercept settles the manifest).
+       See JobDriver_LoadTransportersInBulk. -->
+  <!-- DELIBERATELY no <checkEncumbrance>: the sweep loads past 100% via the smart-overload ceiling (like the other
+       no-encumbrance HD load jobs). suspendable false: a clean end recovers correctly — swept stacks are tagged and
+       the finish action re-tags survivors + releases the claim; casualInterruptible false so a passing distraction
+       can't strand a half-loaded courier (the claim is released + carried items ride the normal unload on any end). -->
+  <JobDef>
+    <defName>HaulersDream_LoadTransportersInBulk</defName>
+    <driverClass>HaulersDream.JobDriver_LoadTransportersInBulk</driverClass>
+    <reportString>bulk-loading a transporter.</reportString>
+    <casualInterruptible>false</casualInterruptible>
+    <suspendable>false</suspendable>
+  </JobDef>
+
 </Defs>
