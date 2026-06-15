@@ -56,15 +56,21 @@ namespace HaulersDream
         public static bool HasPotentialBulkWorkPortal(Pawn pawn, IManagedLoadable loadable)
             => HasPotentialBulkWork(pawn, loadable, HaulersDreamMod.Settings?.enableBulkLoadPortal ?? false);
 
-        /// <summary>The feature flag for a loadable: portals gate on <c>enableBulkLoadPortal</c>, everything else
-        /// (transporters/shuttles) on <c>enableBulkLoadTransporters</c>. (<see cref="IManagedLoadable.HandlesAbstractDemands"/>
-        /// is true only for the thing-less portal target.)</summary>
+        /// <summary>The feature flag for a loadable — the explicit 3-way on <see cref="IManagedLoadable.Kind"/>
+        /// (addendum SF2): transporters/shuttles gate on <c>enableBulkLoadTransporters</c>, portals on
+        /// <c>enableBulkLoadPortal</c>, and vehicles on the master <c>enableVehicleFramework</c> AND the sub
+        /// <c>enableBulkLoadVehicles</c>.</summary>
         private static bool FeatureEnabled(IManagedLoadable loadable)
         {
             var s = HaulersDreamMod.Settings;
-            if (s == null)
+            if (s == null || loadable == null)
                 return false;
-            return (loadable != null && loadable.HandlesAbstractDemands) ? s.enableBulkLoadPortal : s.enableBulkLoadTransporters;
+            switch (loadable.Kind)
+            {
+                case LoadableKind.Portal: return s.enableBulkLoadPortal;
+                case LoadableKind.Vehicle: return s.enableVehicleFramework && s.enableBulkLoadVehicles;
+                default: return s.enableBulkLoadTransporters;
+            }
         }
 
         /// <summary>
@@ -77,10 +83,20 @@ namespace HaulersDream
         /// </summary>
         public static Job TryGiveBulkJob(Pawn pawn, IManagedLoadable loadable, bool playerOrder = false)
         {
-            var jobDef = (loadable != null && loadable.HandlesAbstractDemands)
-                ? HaulersDreamDefOf.HaulersDream_LoadPortalInBulk
-                : HaulersDreamDefOf.HaulersDream_LoadTransportersInBulk;
-            return TryGiveBulkJob(pawn, loadable, jobDef, FeatureEnabled(loadable), playerOrder);
+            return TryGiveBulkJob(pawn, loadable, JobDefFor(loadable), FeatureEnabled(loadable), playerOrder);
+        }
+
+        /// <summary>The bulk-load JobDef for a loadable — the explicit 3-way on <see cref="IManagedLoadable.Kind"/>
+        /// (addendum SF2): transporter, portal, or vehicle.</summary>
+        private static JobDef JobDefFor(IManagedLoadable loadable)
+        {
+            if (loadable != null)
+                switch (loadable.Kind)
+                {
+                    case LoadableKind.Portal: return HaulersDreamDefOf.HaulersDream_LoadPortalInBulk;
+                    case LoadableKind.Vehicle: return HaulersDreamDefOf.HaulersDream_LoadVehicleInBulk;
+                }
+            return HaulersDreamDefOf.HaulersDream_LoadTransportersInBulk;
         }
 
         private static Job TryGiveBulkJob(Pawn pawn, IManagedLoadable loadable, JobDef jobDef, bool featureEnabled, bool playerOrder)

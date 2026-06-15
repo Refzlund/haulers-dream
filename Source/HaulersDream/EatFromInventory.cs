@@ -95,6 +95,11 @@ namespace HaulersDream
                 // HD eligibility (excludes self/unspawned/dead/downed/drafted/mental/mid-HD-batch).
                 if (!InventoryShare.IsEligibleCarrier(holder, getter))
                     continue;
+                // [MOW] Skip a holder riding INSIDE a vehicle (seat/cargo) — its inventory is unreachable, so pathing
+                // to it is wasted. Eating from a PARKED vehicle's cargo stays ON (a parked vehicle is not InVehicle).
+                // Gated on InVehicle ONLY (a safety fix, not a feature): InVehicle returns false when VF is absent.
+                if (VehicleFrameworkCompat.InVehicle(holder))
+                    continue;
                 // Don't steal the food a parent is mid-feeding to an infant.
                 if (holder.jobs?.curDriver is JobDriver_FeedBaby)
                     continue;

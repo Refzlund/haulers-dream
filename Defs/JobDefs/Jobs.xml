@@ -162,4 +162,23 @@
     <suspendable>false</suspendable>
   </JobDef>
 
+  <!-- Bulk-load a Vehicle Framework vehicle (ground OR aerial — same cargoToLoad manifest + inventory container):
+       claim a slice of the vehicle's cargoToLoad manifest, sweep nearby ground stacks of the claimed defs into
+       inventory (tagged), walk to the vehicle ONCE, and deposit every needed stack via VF's VehiclePawn.AddOrTransfer
+       (reflection-only through VehicleFrameworkCompat — which fires CargoAdded AND decrements cargoToLoad by the
+       clamped count, so there is NO SubtractFromToLoadList intercept). Single-target (no group). VF is a SOFT dep, so
+       this JobDef is harmless when VF is absent (nothing ever creates the job — VehicleLoadTarget.TryCreate returns
+       null and the feature is master/sub-toggle gated). See JobDriver_LoadVehicleInBulk. -->
+  <!-- DELIBERATELY no <checkEncumbrance>: the sweep loads past 100% via the smart-overload ceiling (like the other
+       no-encumbrance HD load jobs). suspendable false: a clean end recovers correctly — swept stacks are tagged and
+       the finish action re-tags survivors + releases the VRM/ledger claim; casualInterruptible false so a passing
+       distraction can't strand a half-loaded courier (the claim is released + carried items ride the normal unload). -->
+  <JobDef>
+    <defName>HaulersDream_LoadVehicleInBulk</defName>
+    <driverClass>HaulersDream.JobDriver_LoadVehicleInBulk</driverClass>
+    <reportString>bulk-loading a vehicle.</reportString>
+    <casualInterruptible>false</casualInterruptible>
+    <suspendable>false</suspendable>
+  </JobDef>
+
 </Defs>

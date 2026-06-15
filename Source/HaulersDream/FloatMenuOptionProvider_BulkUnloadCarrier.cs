@@ -42,6 +42,10 @@ namespace HaulersDream
             {
                 if (!(things[i] is Pawn carrier))
                     continue;
+                // [UC2] A VF VehiclePawn carries cargo HD must never bulk-unload — leave it to VF's own unload UI.
+                // Gated on IsVehicle ONLY (a safety fix, not a feature): IsVehicle returns false when VF is absent.
+                if (VehicleFrameworkCompat.IsVehicle(carrier))
+                    continue;
                 // Only a pack animal (or any inventory-bearing animal) the player can unload — not a mech gestator
                 // (CompMechCarrier stays vanilla) and not a colonist.
                 if (carrier == pawn || carrier.inventory?.innerContainer == null

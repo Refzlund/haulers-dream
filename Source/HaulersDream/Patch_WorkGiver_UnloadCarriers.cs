@@ -66,6 +66,10 @@ namespace HaulersDream
                 return false;
             if (carrier.GetComp<CompMechCarrier>() != null)
                 return false;
+            // [UC1] defense-in-depth: never let HD's bulk unload claim a VF VehiclePawn (its cargo is VF's to manage).
+            // Gated on IsVehicle ONLY (a safety fix, not a feature): IsVehicle returns false when VF is absent.
+            if (VehicleFrameworkCompat.IsVehicle(carrier))
+                return false;
             return true;
         }
 

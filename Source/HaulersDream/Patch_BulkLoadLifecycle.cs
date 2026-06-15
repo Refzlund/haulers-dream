@@ -18,13 +18,14 @@ namespace HaulersDream
     [HarmonyPatch(typeof(Pawn_JobTracker), nameof(Pawn_JobTracker.EndCurrentJob))]
     public static class Patch_Pawn_JobTracker_EndCurrentJob_ReleaseClaim
     {
-        // Apply when EITHER bulk-load sub-feature is on (the per-job-def check inside selects which job to release).
+        // Apply when ANY bulk-load sub-feature is on (the per-job-def check inside selects which job to release).
         static bool Prepare()
         {
             var s = HaulersDreamMod.Settings;
             if (s == null)
                 return true;
-            return s.enableBulkLoadTransporters || s.enableBulkLoadPortal;
+            return s.enableBulkLoadTransporters || s.enableBulkLoadPortal
+                || (s.enableVehicleFramework && s.enableBulkLoadVehicles);
         }
 
         private static readonly AccessTools.FieldRef<Pawn_JobTracker, Pawn> PawnOf =
@@ -38,7 +39,8 @@ namespace HaulersDream
                 return;
             var def = __instance.curJob.def;
             if (def != HaulersDreamDefOf.HaulersDream_LoadTransportersInBulk
-                && def != HaulersDreamDefOf.HaulersDream_LoadPortalInBulk)
+                && def != HaulersDreamDefOf.HaulersDream_LoadPortalInBulk
+                && def != HaulersDreamDefOf.HaulersDream_LoadVehicleInBulk)
                 return;
             HaulersDreamGameComponent.Instance?.LoadReleaseClaimsForPawn(pawn);
         }
@@ -47,13 +49,14 @@ namespace HaulersDream
     [HarmonyPatch(typeof(Pawn), nameof(Pawn.DeSpawn))]
     public static class Patch_Pawn_DeSpawn_ReleaseClaim
     {
-        // Apply when EITHER bulk-load sub-feature is on (a despawning courier returns its claims regardless).
+        // Apply when ANY bulk-load sub-feature is on (a despawning courier returns its claims regardless).
         static bool Prepare()
         {
             var s = HaulersDreamMod.Settings;
             if (s == null)
                 return true;
-            return s.enableBulkLoadTransporters || s.enableBulkLoadPortal;
+            return s.enableBulkLoadTransporters || s.enableBulkLoadPortal
+                || (s.enableVehicleFramework && s.enableBulkLoadVehicles);
         }
 
         static void Prefix(Pawn __instance)

@@ -166,5 +166,7 @@ namespace HaulersDream
         public bool HasMassCap => true;
 
         public bool HandlesAbstractDemands => false;
+
+        public LoadableKind Kind => LoadableKind.Transporter;
     }
 }

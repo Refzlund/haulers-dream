@@ -98,5 +98,7 @@ namespace HaulersDream
         public bool HasMassCap => false;
 
         public bool HandlesAbstractDemands => true;
+
+        public LoadableKind Kind => LoadableKind.Portal;
     }
 }

@@ -313,4 +313,15 @@
   <HaulersDream.Setting.EnableBulkLoadPortal>Bulk-load map portals in one trip</HaulersDream.Setting.EnableBulkLoadPortal>
   <HaulersDream.Setting.EnableBulkLoadPortalDesc>When a map portal (pit gate, cave or vault exit, "enter map" portal) is set to load, a hauler claims a slice of its manifest, sweeps several nearby stacks into its inventory, walks to the portal ONCE, and deposits them all — instead of vanilla's one-stack-in-hands per walk. The deposited items teleport to the other map. Several haulers split a large manifest with no double-hauling. With this off, vanilla's single-stack portal loading is used unchanged.</HaulersDream.Setting.EnableBulkLoadPortalDesc>
 
+  <!-- Vehicle Framework BULK LOADING (ground & aerial vehicles) -->
+  <HaulersDream.LoadVehicle.Report>bulk-loading a vehicle.</HaulersDream.LoadVehicle.Report>
+  <HaulersDream.LoadVehicle.Option>Prioritize bulk loading {0}</HaulersDream.LoadVehicle.Option>
+  <HaulersDream.LoadVehicle.CouldNotStart>Nothing nearby to bulk-load into that vehicle right now.</HaulersDream.LoadVehicle.CouldNotStart>
+
+  <!-- Settings: Vehicle Framework compat (master + bulk-load sub-toggle) -->
+  <HaulersDream.Setting.EnableVehicleFramework>Vehicle Framework integration</HaulersDream.Setting.EnableVehicleFramework>
+  <HaulersDream.Setting.EnableVehicleFrameworkDesc>Master switch for Hauler's Dream's NEW Vehicle Framework features: bulk-loading a vehicle's cargo in one trip (below), and loading items onto a vehicle (instead of a pack animal) the event-correct way so the vehicle's load manifest stays in sync. Turning this OFF disables only those new features — it does NOT switch off the safety fixes that stop Hauler's Dream's bulk-unload from interfering with a vehicle's own cargo UI, and it does NOT turn off eating-from or building-from a parked vehicle's cargo (those follow the "Meals on wheels" and "Build from inventory" toggles above). With Vehicle Framework not installed, this has no effect at all. On by default.</HaulersDream.Setting.EnableVehicleFrameworkDesc>
+  <HaulersDream.Setting.EnableBulkLoadVehicles>Bulk-load vehicles in one trip</HaulersDream.Setting.EnableBulkLoadVehicles>
+  <HaulersDream.Setting.EnableBulkLoadVehiclesDesc>When a vehicle (ground or aerial) is set to load cargo, a hauler claims a slice of its manifest, sweeps several nearby stacks into its inventory, walks to the vehicle ONCE, and deposits them all — instead of Vehicle Framework's one-stack-in-hands per walk. Several haulers split a large manifest with no double-hauling, respecting the vehicle's cargo capacity. With this off, Vehicle Framework's single-stack loading is used unchanged. Requires "Vehicle Framework integration" above.</HaulersDream.Setting.EnableBulkLoadVehiclesDesc>
+
 </LanguageData>

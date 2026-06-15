@@ -54,6 +54,12 @@ namespace HaulersDream
         {
             if (!InventoryShare.IsEligibleCarrier(carrier, worker))
                 return false;
+            // [ORG] Skip a holder riding INSIDE a vehicle (seat/cargo) — its inventory is unreachable, so pathing to
+            // it is wasted (mirrors EatFromInventory's MOW guard). Sourcing from a PARKED vehicle's cargo stays ON (a
+            // parked vehicle is not InVehicle). Both organic loops (CountOrganic + FindOrganicStack) gate through this
+            // helper. Gated on InVehicle ONLY (a safety fix, not a feature): InVehicle returns false when VF is absent.
+            if (VehicleFrameworkCompat.InVehicle(carrier))
+                return false;
             if (carrier.IsFormingCaravan())
                 return false; // never disturb cargo earmarked for a departing caravan
             if (carrier.Position.IsForbidden(worker))

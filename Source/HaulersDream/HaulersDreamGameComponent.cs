@@ -41,8 +41,23 @@ namespace HaulersDream
         // pawnClaims). Self-prunes inert entries (needed AND claimed both empty), same tolerance as batchBills.
         private Dictionary<int, LoadLedgerEntry> loadTasks = new Dictionary<int, LoadLedgerEntry>();
 
+        // --- Vehicle Framework bulk-load CLAIM-LEDGER (a SEPARATE dict, addendum SF1) ---
+        // Keyed by the vehicle's RAW thingIDNumber (≥0). A SECOND dictionary (not the flat loadTasks above) so a
+        // vehicle's thingIDNumber can NEVER collide with a transporter groupID or a portal -(id+1) key — they live
+        // in different maps, so the routing is zero-arithmetic and provably disjoint. Same self-pruning, same
+        // map-removal drop, same additive ExposeData scribing as loadTasks. A Vehicle-kind IManagedLoadable is
+        // routed here by BucketFor; everything else stays in loadTasks.
+        private Dictionary<int, LoadLedgerEntry> loadVehicleTasks = new Dictionary<int, LoadLedgerEntry>();
+
         /// <summary>The component for the running game (null at the main menu / before a game loads).</summary>
         public static HaulersDreamGameComponent Instance => Current.Game?.GetComponent<HaulersDreamGameComponent>();
+
+        /// <summary>Pick the ledger bucket for a loadable: a Vehicle-kind target keys the separate
+        /// <see cref="loadVehicleTasks"/> dict (raw thingIDNumber, disjoint from transporter/portal keys because it
+        /// is a DIFFERENT dictionary); transporters and portals share the flat <see cref="loadTasks"/> dict (their
+        /// keys are already namespaced disjoint there). The SINGLE selector every ledger method routes through.</summary>
+        private Dictionary<int, LoadLedgerEntry> BucketFor(IManagedLoadable l)
+            => l != null && l.Kind == LoadableKind.Vehicle ? loadVehicleTasks : loadTasks;
 
         private static string BatchKey(Bill bill) => bill?.recipe == null ? null : bill.GetUniqueLoadID();
 
@@ -80,11 +95,12 @@ namespace HaulersDream
         {
             if (loadable == null)
                 return null;
+            var bucket = BucketFor(loadable);
             int id = loadable.GetUniqueLoadID();
-            if (!loadTasks.TryGetValue(id, out var entry) || entry == null)
+            if (!bucket.TryGetValue(id, out var entry) || entry == null)
             {
                 entry = new LoadLedgerEntry(loadable.GetMap());
-                loadTasks[id] = entry;
+                bucket[id] = entry;
             }
             if (entry.map == null)
                 entry.map = loadable.GetMap();
@@ -112,7 +128,7 @@ namespace HaulersDream
         {
             if (loadable == null)
                 return new Dictionary<ThingDef, int>();
-            return loadTasks.TryGetValue(loadable.GetUniqueLoadID(), out var entry) && entry != null
+            return BucketFor(loadable).TryGetValue(loadable.GetUniqueLoadID(), out var entry) && entry != null
                 ? entry.AvailableToClaim(pawn)
                 : new Dictionary<ThingDef, int>();
         }
@@ -122,7 +138,7 @@ namespace HaulersDream
         {
             if (loadable == null)
                 return false;
-            return loadTasks.TryGetValue(loadable.GetUniqueLoadID(), out var entry) && entry != null
+            return BucketFor(loadable).TryGetValue(loadable.GetUniqueLoadID(), out var entry) && entry != null
                    && entry.HasWork(pawn);
         }
 
@@ -165,7 +181,7 @@ namespace HaulersDream
         {
             if (pawn == null || loadable == null || def == null || count <= 0)
                 return;
-            if (loadTasks.TryGetValue(loadable.GetUniqueLoadID(), out var entry) && entry != null)
+            if (BucketFor(loadable).TryGetValue(loadable.GetUniqueLoadID(), out var entry) && entry != null)
                 entry.Settle(pawn, def, count);
         }
 
@@ -173,13 +189,20 @@ namespace HaulersDream
         /// on every interrupt path (job-end / despawn / map-removal). Does NOT touch needed.</summary>
         public void LoadReleaseClaimsForPawn(Pawn pawn)
         {
-            if (pawn == null || loadTasks.Count == 0)
+            if (pawn == null)
                 return;
-            foreach (var entry in loadTasks.Values)
-                entry?.Release(pawn);
+            // BOTH dicts — a pawn's claim can be on a transporter/portal (loadTasks) or a vehicle (loadVehicleTasks).
+            if (loadTasks.Count > 0)
+                foreach (var entry in loadTasks.Values)
+                    entry?.Release(pawn);
+            if (loadVehicleTasks.Count > 0)
+                foreach (var entry in loadVehicleTasks.Values)
+                    entry?.Release(pawn);
         }
 
-        /// <summary>True if any pawn still holds a live claim on the task (gates premature board/launch + autoload).</summary>
+        /// <summary>True if any pawn still holds a live claim on a TRANSPORTER/PORTAL task (gates premature
+        /// board/launch + autoload). Keyed by the transporter <c>groupID</c> / portal <c>-(id+1)</c> key in
+        /// <see cref="loadTasks"/>.</summary>
         public bool LoadAnyClaimsInProgress(int taskId)
             => loadTasks.TryGetValue(taskId, out var entry) && entry != null && entry.AnyClaimed();
 
@@ -187,30 +210,34 @@ namespace HaulersDream
         /// can't keep <c>AnyClaimsInProgress</c> true and block boarding forever).</summary>
         public void Notify_LoadMapRemoved(Map map)
         {
-            if (map == null || loadTasks.Count == 0)
+            if (map == null)
                 return;
-            List<int> drop = null;
-            foreach (var kv in loadTasks)
-                if (kv.Value == null || kv.Value.map == map)
-                    (drop ?? (drop = new List<int>())).Add(kv.Key);
-            if (drop != null)
-                for (int i = 0; i < drop.Count; i++)
-                    loadTasks.Remove(drop[i]);
+            // BOTH dicts — a removed map's tasks may be transporters/portals (loadTasks) or vehicles (loadVehicleTasks).
+            DropFromBucket(loadTasks, kv => kv.Value == null || kv.Value.map == map);
+            DropFromBucket(loadVehicleTasks, kv => kv.Value == null || kv.Value.map == map);
         }
 
         // Self-prune fully-inert entries (no needed AND no claimed) — called from the same periodic tick the
-        // veins/idle use. Keeps the map small without active per-tick scanning of live tasks.
+        // veins/idle use. Keeps both maps small without active per-tick scanning of live tasks.
         private void PruneInertLoadTasks()
         {
-            if (loadTasks.Count == 0)
+            DropFromBucket(loadTasks, kv => kv.Value == null || kv.Value.IsInert);
+            DropFromBucket(loadVehicleTasks, kv => kv.Value == null || kv.Value.IsInert);
+        }
+
+        // Remove every entry of a ledger bucket matching the predicate (two-pass so the dict isn't mutated mid-enum).
+        private static void DropFromBucket(Dictionary<int, LoadLedgerEntry> bucket,
+            System.Func<KeyValuePair<int, LoadLedgerEntry>, bool> drop)
+        {
+            if (bucket == null || bucket.Count == 0)
                 return;
-            List<int> drop = null;
-            foreach (var kv in loadTasks)
-                if (kv.Value == null || kv.Value.IsInert)
-                    (drop ?? (drop = new List<int>())).Add(kv.Key);
-            if (drop != null)
-                for (int i = 0; i < drop.Count; i++)
-                    loadTasks.Remove(drop[i]);
+            List<int> toDrop = null;
+            foreach (var kv in bucket)
+                if (drop(kv))
+                    (toDrop ?? (toDrop = new List<int>())).Add(kv.Key);
+            if (toDrop != null)
+                for (int i = 0; i < toDrop.Count; i++)
+                    bucket.Remove(toDrop[i]);
         }
 
         public HaulersDreamGameComponent(Game game) { }
@@ -449,6 +476,11 @@ namespace HaulersDream
             Scribe_Collections.Look(ref loadTasks, "haulersDreamLoadTasks", LookMode.Value, LookMode.Deep);
             if (Scribe.mode == LoadSaveMode.LoadingVars && loadTasks == null)
                 loadTasks = new Dictionary<int, LoadLedgerEntry>();
+            // The VEHICLE bulk-load claim-ledger (additive — absent in pre-VF-compat saves, so null-init to empty
+            // on load; same Deep-scribed LoadLedgerEntry recompute-on-load as loadTasks). Keyed by raw thingIDNumber.
+            Scribe_Collections.Look(ref loadVehicleTasks, "haulersDreamLoadVehicleTasks", LookMode.Value, LookMode.Deep);
+            if (Scribe.mode == LoadSaveMode.LoadingVars && loadVehicleTasks == null)
+                loadVehicleTasks = new Dictionary<int, LoadLedgerEntry>();
         }
     }
 }

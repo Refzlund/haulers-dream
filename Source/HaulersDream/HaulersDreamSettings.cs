@@ -131,6 +131,18 @@ namespace HaulersDream
         // transporter toggle so the two vanilla single-item paths can be replaced (or left) separately.
         public bool enableBulkLoadPortal = true;
 
+        // --- Vehicle Framework (VF) compat. enableVehicleFramework is the MASTER: it gates only the NEW opt-in VF
+        // features (the bulk-load-into-vehicle WorkGiver/float-menu/driver and the pack-animal event-correct deposit
+        // redirect). It does NOT gate the safety/correctness guards (the [UC1]/[UC2] vehicle-skip and the MOW/ORG
+        // embarked-holder skip) — those fix a PRE-EXISTING HD↔VF misfire and are gated on VehicleFrameworkCompat
+        // .IsActive ONLY, so a feature toggle can never switch the bug back on. Eat-from / build-from a parked
+        // vehicle's cargo stays governed by the existing mealsOnWheels / buildFromInventory toggles (no new gate),
+        // and the master does NOT turn those off (turning the master off must never make HD break). With VF absent
+        // both fields are inert (every VF consumer also gates on IsActive). enableBulkLoadVehicles is the SUB-toggle
+        // for the active bulk-load feature; it requires the master.
+        public bool enableVehicleFramework = true;
+        public bool enableBulkLoadVehicles = true;
+
         // --- pack-animal BULK UNLOAD (the inverse of loading: empty a flagged carrier into the hauler's backpack
         // in ONE visit, then HD's normal unload ships it to storage). Replaces vanilla's one-stack-per-walk unload.
         public bool enableBulkUnloadCarriers = true; // route WorkGiver_UnloadCarriers through the bulk-unload job
@@ -350,6 +362,8 @@ namespace HaulersDream
             Scribe_Values.Look(ref enableBulkLoadTransporters, "enableBulkLoadTransporters", true);
             Scribe_Values.Look(ref bulkLoadAiUpdateFrequency, "bulkLoadAiUpdateFrequency", 60);
             Scribe_Values.Look(ref enableBulkLoadPortal, "enableBulkLoadPortal", true);
+            Scribe_Values.Look(ref enableVehicleFramework, "enableVehicleFramework", true);
+            Scribe_Values.Look(ref enableBulkLoadVehicles, "enableBulkLoadVehicles", true);
             Scribe_Values.Look(ref enableBulkUnloadCarriers, "enableBulkUnloadCarriers", true);
             Scribe_Values.Look(ref minFreeSpaceToUnloadCarrierPct, "minFreeSpaceToUnloadCarrierPct", 0.5f);
             Scribe_Values.Look(ref reserveCarrierOnUnload, "reserveCarrierOnUnload", false);
@@ -631,6 +645,18 @@ namespace HaulersDream
 
             l.CheckboxLabeled("HaulersDream.Setting.EnableBulkLoadPortal".Translate(), ref enableBulkLoadPortal,
                 "HaulersDream.Setting.EnableBulkLoadPortalDesc".Translate());
+
+            // Vehicle Framework compat — only shown when VF is loaded (the rows are pure noise otherwise; every VF
+            // consumer also gates on VehicleFrameworkCompat.IsActive, so a hidden row never changes behaviour). The
+            // master's tooltip explains the §1 toggle semantics: the safety guards are NOT gated on it.
+            if (VehicleFrameworkCompat.IsActive)
+            {
+                l.CheckboxLabeled("HaulersDream.Setting.EnableVehicleFramework".Translate(), ref enableVehicleFramework,
+                    "HaulersDream.Setting.EnableVehicleFrameworkDesc".Translate());
+                if (enableVehicleFramework)
+                    l.CheckboxLabeled("HaulersDream.Setting.EnableBulkLoadVehicles".Translate(), ref enableBulkLoadVehicles,
+                        "HaulersDream.Setting.EnableBulkLoadVehiclesDesc".Translate());
+            }
 
             l.CheckboxLabeled("HaulersDream.Setting.HaulToStack".Translate(), ref haulToStack,
                 "HaulersDream.Setting.HaulToStackDesc".Translate());
