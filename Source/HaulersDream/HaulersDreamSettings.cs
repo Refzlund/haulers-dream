@@ -54,6 +54,14 @@ namespace HaulersDream
         public bool batchWorkDeliveries = true; // carry materials for many queued builds per trip (in hands; no slowdown)
         public bool inventoryConstructDeliver = true; // carry material for a big single needer in inventory (fewer trips)
         public bool shareHandHauledToStorage = false; // let a worker claim a stack a colonist is hand-hauling TO STORAGE (opt-in)
+        // Meals On Wheels: a hungry FREE COLONIST with no food found by vanilla eats acceptable food
+        // another player-faction pawn (or pack animal) is carrying, instead of trekking to a distant
+        // stockpile — fewer trips. Only when vanilla's own food search came up empty (never overrides a
+        // good map/own-inventory/pack-animal meal). Stricter than the reference mod: drafted/downed/mental
+        // HOLDERS are skipped, a baby's food being hand-fed is left alone, the STACK is reserved (not just
+        // the holder) so two eaters can't race one meal, and rot-priority prefers a carried meal about to
+        // spoil. Acceptability (food policy / ideology / teetotaler) is delegated to vanilla.
+        public bool mealsOnWheels = true;
 
         // --- haul to stack (prefer topping up existing stacks; destination cells unreserved) ---
         public bool haulToStack = true;
@@ -285,6 +293,7 @@ namespace HaulersDream
             Scribe_Values.Look(ref batchWorkDeliveries, "batchWorkDeliveries", true);
             Scribe_Values.Look(ref inventoryConstructDeliver, "inventoryConstructDeliver", true);
             Scribe_Values.Look(ref shareHandHauledToStorage, "shareHandHauledToStorage", false);
+            Scribe_Values.Look(ref mealsOnWheels, "mealsOnWheels", true);
             Scribe_Values.Look(ref bulkHaul, "bulkHaul", true);
             Scribe_Values.Look(ref bulkHaulTrigger, "bulkHaulTrigger", BulkHaulTrigger.SecondTasked);
             Scribe_Values.Look(ref haulNearbyOption, "haulNearbyOption", true);
@@ -512,6 +521,8 @@ namespace HaulersDream
                 "HaulersDream.Setting.InventoryConstructDeliverDesc".Translate());
             l.CheckboxLabeled("HaulersDream.Setting.ShareHandHauled".Translate(), ref shareHandHauledToStorage,
                 "HaulersDream.Setting.ShareHandHauledDesc".Translate());
+            l.CheckboxLabeled("HaulersDream.Setting.MealsOnWheels".Translate(), ref mealsOnWheels,
+                "HaulersDream.Setting.MealsOnWheelsDesc".Translate());
 
             l.GapLine();
             l.CheckboxLabeled("HaulersDream.Setting.BulkHaul".Translate(), ref bulkHaul,

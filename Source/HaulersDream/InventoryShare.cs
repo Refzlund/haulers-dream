@@ -216,7 +216,11 @@ namespace HaulersDream
             return total;
         }
 
-        private static bool IsEligibleCarrier(Pawn carrier, Pawn worker)
+        /// <summary>A carrier whose inventory another colonist may draw from: excludes self, unspawned,
+        /// dead, downed, drafted, mental, and mid-HD-batch holders. Shared with the Meals On Wheels food
+        /// postfix (<see cref="Patch_TryFindBestFoodSourceFor"/>), which layers food-specific guards
+        /// (baby-feed, forbidden, allowed-area, reach, stack reservation) on top.</summary>
+        internal static bool IsEligibleCarrier(Pawn carrier, Pawn worker)
         {
             if (carrier == null || carrier == worker)
                 return false;
