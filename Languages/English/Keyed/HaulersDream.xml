@@ -304,4 +304,13 @@
   <HaulersDream.Setting.EnableBulkLoadTransportersDesc>When a transport pod or shuttle is set to load, a hauler claims a slice of its manifest, sweeps several nearby stacks into its inventory, walks to the transporter ONCE, and deposits them all — instead of vanilla's one-stack-in-hands per walk. Several haulers split a large manifest with no double-hauling, and the pod won't board or launch until the claimed cargo is in. With this off, vanilla's single-stack transporter loading is used unchanged.</HaulersDream.Setting.EnableBulkLoadTransportersDesc>
   <HaulersDream.Setting.BulkLoadAiUpdateFrequency>Load re-check interval: {0} ticks</HaulersDream.Setting.BulkLoadAiUpdateFrequency>
 
+  <!-- Map-portal BULK LOADING (pit gates, cave / vault exits, "enter map" portals) -->
+  <HaulersDream.LoadPortal.Report>bulk-loading a portal.</HaulersDream.LoadPortal.Report>
+  <HaulersDream.LoadPortal.Option>Prioritize bulk loading {0}</HaulersDream.LoadPortal.Option>
+  <HaulersDream.LoadPortal.CouldNotStart>Nothing nearby to bulk-load into that portal right now.</HaulersDream.LoadPortal.CouldNotStart>
+
+  <!-- Settings: map-portal bulk loading -->
+  <HaulersDream.Setting.EnableBulkLoadPortal>Bulk-load map portals in one trip</HaulersDream.Setting.EnableBulkLoadPortal>
+  <HaulersDream.Setting.EnableBulkLoadPortalDesc>When a map portal (pit gate, cave or vault exit, "enter map" portal) is set to load, a hauler claims a slice of its manifest, sweeps several nearby stacks into its inventory, walks to the portal ONCE, and deposits them all — instead of vanilla's one-stack-in-hands per walk. The deposited items teleport to the other map. Several haulers split a large manifest with no double-hauling. With this off, vanilla's single-stack portal loading is used unchanged.</HaulersDream.Setting.EnableBulkLoadPortalDesc>
+
 </LanguageData>

@@ -24,12 +24,17 @@ namespace HaulersDream
         private const int MaxStacks = 24;
         private const float PoolRadiusHops = 4f;
 
-        /// <summary>Is there bulk-load work for this pawn on the loadable? Feature on, not drafted, eligible (auto
-        /// path), the comp present, and the ledger says the pawn can claim something.</summary>
+        /// <summary>Is there bulk-load work for this pawn on the TRANSPORTER loadable? Feature on, not drafted,
+        /// eligible (auto path), the comp present, and the ledger says the pawn can claim something.</summary>
         public static bool HasPotentialBulkWork(Pawn pawn, IManagedLoadable loadable)
+            => HasPotentialBulkWork(pawn, loadable, FeatureEnabled(loadable));
+
+        /// <summary>The shared "potential bulk work" gate, with the feature flag resolved by the caller (so the portal
+        /// path can gate on <c>enableBulkLoadPortal</c> while the transporter path gates on
+        /// <c>enableBulkLoadTransporters</c>). Everything else is identical.</summary>
+        private static bool HasPotentialBulkWork(Pawn pawn, IManagedLoadable loadable, bool featureEnabled)
         {
-            var s = HaulersDreamMod.Settings;
-            if (s == null || !s.enableBulkLoadTransporters || loadable == null)
+            if (!featureEnabled || loadable == null)
                 return false;
             if (pawn?.Map == null || pawn.Drafted)
                 return false;
@@ -46,6 +51,22 @@ namespace HaulersDream
             return ledger.LoadHasWork(loadable, pawn);
         }
 
+        /// <summary>Is there bulk-load work for this pawn on the PORTAL loadable? Same gate as the transporter path,
+        /// only the feature flag differs (<c>enableBulkLoadPortal</c>).</summary>
+        public static bool HasPotentialBulkWorkPortal(Pawn pawn, IManagedLoadable loadable)
+            => HasPotentialBulkWork(pawn, loadable, HaulersDreamMod.Settings?.enableBulkLoadPortal ?? false);
+
+        /// <summary>The feature flag for a loadable: portals gate on <c>enableBulkLoadPortal</c>, everything else
+        /// (transporters/shuttles) on <c>enableBulkLoadTransporters</c>. (<see cref="IManagedLoadable.HandlesAbstractDemands"/>
+        /// is true only for the thing-less portal target.)</summary>
+        private static bool FeatureEnabled(IManagedLoadable loadable)
+        {
+            var s = HaulersDreamMod.Settings;
+            if (s == null)
+                return false;
+            return (loadable != null && loadable.HandlesAbstractDemands) ? s.enableBulkLoadPortal : s.enableBulkLoadTransporters;
+        }
+
         /// <summary>
         /// Build the bulk-load job: (1) refresh the task's <c>totalNeeded</c> + read the pawn's claimable per-def
         /// map; (2) run the sweep to pick nearest source stacks of those defs into a (targetQueueB, countQueue)
@@ -56,9 +77,17 @@ namespace HaulersDream
         /// </summary>
         public static Job TryGiveBulkJob(Pawn pawn, IManagedLoadable loadable, bool playerOrder = false)
         {
+            var jobDef = (loadable != null && loadable.HandlesAbstractDemands)
+                ? HaulersDreamDefOf.HaulersDream_LoadPortalInBulk
+                : HaulersDreamDefOf.HaulersDream_LoadTransportersInBulk;
+            return TryGiveBulkJob(pawn, loadable, jobDef, FeatureEnabled(loadable), playerOrder);
+        }
+
+        private static Job TryGiveBulkJob(Pawn pawn, IManagedLoadable loadable, JobDef jobDef, bool featureEnabled, bool playerOrder)
+        {
             var s = HaulersDreamMod.Settings;
             var map = pawn?.Map;
-            if (s == null || !s.enableBulkLoadTransporters || map == null || loadable == null)
+            if (s == null || !featureEnabled || map == null || loadable == null)
                 return null;
             if (pawn.GetComp<CompHauledToInventory>() == null || pawn.inventory == null)
                 return null;
@@ -117,7 +146,7 @@ namespace HaulersDream
             if (things.Count == 0)
                 return null; // nothing reachable to sweep of the claimable defs
 
-            var job = JobMaker.MakeJob(HaulersDreamDefOf.HaulersDream_LoadTransportersInBulk, loadable.GetParentThing());
+            var job = JobMaker.MakeJob(jobDef, loadable.GetParentThing());
             job.targetQueueB = new List<LocalTargetInfo>(things.Count);
             for (int i = 0; i < things.Count; i++)
                 job.targetQueueB.Add(things[i]);

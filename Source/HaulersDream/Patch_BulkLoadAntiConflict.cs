@@ -67,6 +67,67 @@ namespace HaulersDream
         }
     }
 
+    /// <summary>
+    /// Anti-conflict patch (portal): suppress the false "can't load more into portal" notice while HD haulers are
+    /// mid-trip. Vanilla's <c>MapPortal.AnyPawnCanLoadAnythingNow</c> only knows about <c>HaulToPortal</c>/
+    /// <c>EnterPortal</c> jobs + the boarding duty — it does NOT recognize HD's bulk-load driver, so without this it
+    /// returns false while an HD courier is sweeping/walking, and the portal fires <c>MessageCantLoadMoreIntoPortal</c>
+    /// every ~60 ticks. The prefix returns true when a spawned pawn is running <c>HaulersDream_LoadPortalInBulk</c>
+    /// targeting this portal, OR a claim is still live on the ledger for this portal.
+    /// </summary>
+    [HarmonyPatch(typeof(MapPortal), "get_AnyPawnCanLoadAnythingNow")]
+    public static class Patch_MapPortal_AnyPawnCanLoadAnythingNow
+    {
+        static bool Prepare() => HaulersDreamMod.Settings?.enableBulkLoadPortal ?? true;
+
+        static bool Prefix(MapPortal __instance, ref bool __result)
+        {
+            if (BulkLoadAntiConflict.AnyHdLoaderForPortal(__instance)
+                || (HaulersDreamGameComponent.Instance?.LoadAnyClaimsInProgress(MapPortalBulkTarget.LedgerKey(__instance)) ?? false))
+            {
+                __result = true;
+                return false; // suppress the false stall
+            }
+            return true; // no HD activity -> vanilla decides
+        }
+    }
+
+    /// <summary>
+    /// Anti-conflict patch (portal): don't let a pawn ENTER the portal while HD hauling is in flight for it —
+    /// premature entry can leave the manifest unloaded. A prefix on <c>JobGiver_EnterPortal.TryGiveJob</c> returns
+    /// null (no enter job) while there is potential bulk work or a live claim — but ONLY under the portal-boarding
+    /// lord (<c>DutyDefOf.LoadAndEnterPortal</c> with the portal as the duty focus), never for a drafted MANUAL enter.
+    /// </summary>
+    [HarmonyPatch(typeof(JobGiver_EnterPortal), "TryGiveJob")]
+    public static class Patch_JobGiver_EnterPortal_BoardGate
+    {
+        static bool Prepare() => HaulersDreamMod.Settings?.enableBulkLoadPortal ?? true;
+
+        static bool Prefix(Pawn pawn, ref Job __result)
+        {
+            var duty = pawn?.mindState?.duty;
+            if (duty == null || duty.def != DutyDefOf.LoadAndEnterPortal)
+                return true; // not the loading lord (drafted manual enter, etc.) -> vanilla
+            var portal = duty.focus.Thing as MapPortal;
+            if (portal == null)
+                return true;
+            var ledger = HaulersDreamGameComponent.Instance;
+            if (ledger != null && ledger.LoadAnyClaimsInProgress(MapPortalBulkTarget.LedgerKey(portal)))
+            {
+                __result = null; // hauling still in flight -> don't enter yet
+                return false;
+            }
+            // Also gate on a spawned pawn still running the HD portal-load driver for this portal (the claim may
+            // settle a tick before the deposit completes; the active driver is the authoritative "still loading").
+            if (BulkLoadAntiConflict.AnyHdLoaderForPortal(portal))
+            {
+                __result = null;
+                return false;
+            }
+            return true;
+        }
+    }
+
     /// <summary>Shared helpers for the anti-conflict patches.</summary>
     internal static class BulkLoadAntiConflict
     {
@@ -90,6 +151,23 @@ namespace HaulersDream
                     continue;
                 var comp = p.CurJob.GetTarget(TargetIndex.A).Thing?.TryGetComp<CompTransporter>();
                 if (comp != null && comp.groupID == groupID)
+                    return true;
+            }
+            return false;
+        }
+
+        /// <summary>True if a spawned pawn on this portal's map runs HD's bulk-portal-load driver targeting it.</summary>
+        internal static bool AnyHdLoaderForPortal(MapPortal portal)
+        {
+            if (portal?.Map?.mapPawns == null)
+                return false;
+            var spawned = portal.Map.mapPawns.AllPawnsSpawned;
+            for (int i = 0; i < spawned.Count; i++)
+            {
+                var p = spawned[i];
+                if (p?.CurJob == null || p.CurJobDef != HaulersDreamDefOf.HaulersDream_LoadPortalInBulk)
+                    continue;
+                if (p.CurJob.GetTarget(TargetIndex.A).Thing == portal)
                     return true;
             }
             return false;

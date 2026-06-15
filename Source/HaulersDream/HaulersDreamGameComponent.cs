@@ -32,11 +32,13 @@ namespace HaulersDream
         public const int BatchSizeMax = 1000;
 
         // --- transport/portal bulk-load concurrency CLAIM-LEDGER ---
-        // Keyed by the task's save-unique load id (CompTransporter.groupID / MapPortal.thingIDNumber are monotonic
-        // and never reused within a game, so a single FLAT map across all maps is collision-free — each entry
-        // carries its own Map, so map removal is a one-pass drop). Scribed WITH THE GAME (live claims survive a
-        // save/load round-trip; the entry's own ExposeData recomputes totalClaimed from the surviving pawnClaims).
-        // Self-prunes inert entries (needed AND claimed both empty), same tolerance as batchBills.
+        // Keyed by the task's save-unique load id: transporters by CompTransporter.groupID (≥0), portals by
+        // MapPortalBulkTarget.LedgerKey = -(MapPortal.thingIDNumber + 1) (strictly <0). groupID and thingIDNumber
+        // come from two INDEPENDENT UniqueIDsManager counters (both ≥0) so a RAW thingIDNumber could collide with a
+        // transporter groupID — the negative-namespacing in LedgerKey keeps the two id spaces disjoint in this single
+        // FLAT map. Each entry carries its own Map, so map removal is a one-pass drop. Scribed WITH THE GAME (live
+        // claims survive a save/load round-trip; the entry's own ExposeData recomputes totalClaimed from the surviving
+        // pawnClaims). Self-prunes inert entries (needed AND claimed both empty), same tolerance as batchBills.
         private Dictionary<int, LoadLedgerEntry> loadTasks = new Dictionary<int, LoadLedgerEntry>();
 
         /// <summary>The component for the running game (null at the main menu / before a game loads).</summary>

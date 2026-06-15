@@ -69,4 +69,56 @@ namespace HaulersDream
             return false; // skip the fuzzy original
         }
     }
+
+    /// <summary>
+    /// The portal counterpart of the manifest-decrement precision fix. <c>MapPortal.SubtractFromToLoadList(Thing,
+    /// int)</c> is the 2-arg variant (no message bool — a portal has no shuttle/transporters finished-message split,
+    /// and vanilla's own "MessageCantLoadMoreIntoPortal" is a per-tick stall notice, NOT a finished message, so the
+    /// HD intercept fires NONE). When HD deposits into a portal's <c>PortalContainerProxy</c>, the proxy's
+    /// <c>TryAdd</c> auto-fires <c>MapPortal.Notify_ThingAdded → SubtractFromToLoadList(t, t.stackCount)</c>. Gated on
+    /// the per-thread <see cref="Global.IsExecutingManagedPortalUnload"/> flag (set only inside HD's portal deposit
+    /// toil) so vanilla single-item portal loads and OTHER mods keep vanilla's fuzzy accounting, this prefix replaces
+    /// the decrement with a precise instance-aware match written via the PUBLIC <c>Transferable.ForceTo</c>.
+    ///
+    /// Gated by feature flag at <see cref="Prepare"/> (fail-open: feature off → not applied → vanilla unchanged).
+    /// </summary>
+    [HarmonyPatch(typeof(MapPortal), nameof(MapPortal.SubtractFromToLoadList))]
+    public static class Patch_MapPortal_SubtractFromToLoadList
+    {
+        static bool Prepare() => HaulersDreamMod.Settings?.enableBulkLoadPortal ?? true;
+
+        // No try/catch: a fault inside HD's own precise decrement is a real bug to surface (Harmony propagates),
+        // not a silently-downgraded warning. The flag-gate makes this inert for every non-HD caller.
+        static bool Prefix(MapPortal __instance, Thing t, int count, ref int __result)
+        {
+            if (!Global.IsExecutingManagedPortalUnload)
+                return true; // not HD's deposit -> run vanilla's fuzzy original unchanged
+
+            var leftToLoad = __instance.leftToLoad;
+            if (leftToLoad == null) { __result = 0; return false; }
+
+            // Precise, instance-aware match for THIS deposit (def + the count being deposited).
+            var best = Global.FindBestMatchFor(t?.def, count, leftToLoad);
+            if (best == null) { __result = 0; return false; }
+
+            int before = best.CountToTransfer;
+            if (before <= 0) { __result = 0; return false; }
+            int moved = count < before ? count : before; // never subtract more than this entry holds
+            int after = before - moved;
+
+            // PUBLIC ForceTo (sets CountToTransfer AND keeps EditBuffer consistent). Reflection fallback only if a
+            // fork Transferable lacks the public method (RW 1.6 has it).
+            if (!Global.ForceTo(best, after))
+                Global.ForceToViaReflection(best, after);
+            // Faithful to vanilla MapPortal.SubtractFromToLoadList: drop the deposited Thing instance from the entry's
+            // candidate-things list (a no-op when the HD-deposited split was never a manifest candidate, but keeps the
+            // manifest entry's things list free of stale refs exactly as vanilla does).
+            best.things?.Remove(t);
+            if (best.CountToTransfer <= 0)
+                leftToLoad.Remove(best);
+
+            __result = moved;
+            return false; // skip the fuzzy original
+        }
+    }
 }

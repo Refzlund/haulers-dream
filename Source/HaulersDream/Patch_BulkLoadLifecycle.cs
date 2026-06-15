@@ -18,7 +18,14 @@ namespace HaulersDream
     [HarmonyPatch(typeof(Pawn_JobTracker), nameof(Pawn_JobTracker.EndCurrentJob))]
     public static class Patch_Pawn_JobTracker_EndCurrentJob_ReleaseClaim
     {
-        static bool Prepare() => HaulersDreamMod.Settings?.enableBulkLoadTransporters ?? true;
+        // Apply when EITHER bulk-load sub-feature is on (the per-job-def check inside selects which job to release).
+        static bool Prepare()
+        {
+            var s = HaulersDreamMod.Settings;
+            if (s == null)
+                return true;
+            return s.enableBulkLoadTransporters || s.enableBulkLoadPortal;
+        }
 
         private static readonly AccessTools.FieldRef<Pawn_JobTracker, Pawn> PawnOf =
             AccessTools.FieldRefAccess<Pawn_JobTracker, Pawn>("pawn");
@@ -29,7 +36,9 @@ namespace HaulersDream
             var pawn = PawnOf(__instance);
             if (pawn == null || __instance.curJob == null)
                 return;
-            if (__instance.curJob.def != HaulersDreamDefOf.HaulersDream_LoadTransportersInBulk)
+            var def = __instance.curJob.def;
+            if (def != HaulersDreamDefOf.HaulersDream_LoadTransportersInBulk
+                && def != HaulersDreamDefOf.HaulersDream_LoadPortalInBulk)
                 return;
             HaulersDreamGameComponent.Instance?.LoadReleaseClaimsForPawn(pawn);
         }
@@ -38,7 +47,14 @@ namespace HaulersDream
     [HarmonyPatch(typeof(Pawn), nameof(Pawn.DeSpawn))]
     public static class Patch_Pawn_DeSpawn_ReleaseClaim
     {
-        static bool Prepare() => HaulersDreamMod.Settings?.enableBulkLoadTransporters ?? true;
+        // Apply when EITHER bulk-load sub-feature is on (a despawning courier returns its claims regardless).
+        static bool Prepare()
+        {
+            var s = HaulersDreamMod.Settings;
+            if (s == null)
+                return true;
+            return s.enableBulkLoadTransporters || s.enableBulkLoadPortal;
+        }
 
         static void Prefix(Pawn __instance)
             => HaulersDreamGameComponent.Instance?.LoadReleaseClaimsForPawn(__instance);

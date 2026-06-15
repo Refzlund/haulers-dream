@@ -144,4 +144,22 @@
     <suspendable>false</suspendable>
   </JobDef>
 
+  <!-- Bulk-load a map portal (pit gate / cave or vault exit / "enter map" portal): claim a slice of the portal's
+       leftToLoad manifest, sweep nearby ground stacks of the claimed defs into inventory (tagged), walk to the
+       portal ONCE, and deposit every needed stack via innerContainer.TryTransferToContainer through the portal's
+       PortalContainerProxy — which TELEPORTS/consumes the deposited Thing to the other map. The thing-less ledger
+       settle captures (def, count) BEFORE the transfer; the precise MapPortal.SubtractFromToLoadList intercept
+       settles the manifest. See JobDriver_LoadPortalInBulk. -->
+  <!-- DELIBERATELY no <checkEncumbrance>: the sweep loads past 100% via the smart-overload ceiling (like the other
+       no-encumbrance HD load jobs). suspendable false: a clean end recovers correctly — swept stacks are tagged and
+       the finish action re-tags survivors + releases the claim; casualInterruptible false so a passing distraction
+       can't strand a half-loaded courier (the claim is released + carried items ride the normal unload on any end). -->
+  <JobDef>
+    <defName>HaulersDream_LoadPortalInBulk</defName>
+    <driverClass>HaulersDream.JobDriver_LoadPortalInBulk</driverClass>
+    <reportString>bulk-loading a portal.</reportString>
+    <casualInterruptible>false</casualInterruptible>
+    <suspendable>false</suspendable>
+  </JobDef>
+
 </Defs>

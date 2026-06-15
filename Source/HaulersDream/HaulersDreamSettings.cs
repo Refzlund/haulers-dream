@@ -125,6 +125,12 @@ namespace HaulersDream
         // (mid-trip redirect within the group). 10..240; lower = more responsive redirect, higher = cheaper.
         public int bulkLoadAiUpdateFrequency = 60;
 
+        // --- map-portal BULK LOADING (pit gates, cave / vault exits, "enter map" portals). Same claim-ledger + sweep
+        // + deposit path as transporters, but the deposit teleports/consumes the Thing to the other map (the portal's
+        // PortalContainerProxy), so there is NO group mass cap and the ledger settle is thing-less. Independent of the
+        // transporter toggle so the two vanilla single-item paths can be replaced (or left) separately.
+        public bool enableBulkLoadPortal = true;
+
         // --- pack-animal BULK UNLOAD (the inverse of loading: empty a flagged carrier into the hauler's backpack
         // in ONE visit, then HD's normal unload ships it to storage). Replaces vanilla's one-stack-per-walk unload.
         public bool enableBulkUnloadCarriers = true; // route WorkGiver_UnloadCarriers through the bulk-unload job
@@ -343,6 +349,7 @@ namespace HaulersDream
             Scribe_Values.Look(ref autoDivertToPackAnimal, "autoDivertToPackAnimal", true);
             Scribe_Values.Look(ref enableBulkLoadTransporters, "enableBulkLoadTransporters", true);
             Scribe_Values.Look(ref bulkLoadAiUpdateFrequency, "bulkLoadAiUpdateFrequency", 60);
+            Scribe_Values.Look(ref enableBulkLoadPortal, "enableBulkLoadPortal", true);
             Scribe_Values.Look(ref enableBulkUnloadCarriers, "enableBulkUnloadCarriers", true);
             Scribe_Values.Look(ref minFreeSpaceToUnloadCarrierPct, "minFreeSpaceToUnloadCarrierPct", 0.5f);
             Scribe_Values.Look(ref reserveCarrierOnUnload, "reserveCarrierOnUnload", false);
@@ -621,6 +628,9 @@ namespace HaulersDream
                 l.Label("HaulersDream.Setting.BulkLoadAiUpdateFrequency".Translate(bulkLoadAiUpdateFrequency));
                 bulkLoadAiUpdateFrequency = Mathf.RoundToInt(l.Slider(bulkLoadAiUpdateFrequency, 10f, 240f) / 10f) * 10;
             }
+
+            l.CheckboxLabeled("HaulersDream.Setting.EnableBulkLoadPortal".Translate(), ref enableBulkLoadPortal,
+                "HaulersDream.Setting.EnableBulkLoadPortalDesc".Translate());
 
             l.CheckboxLabeled("HaulersDream.Setting.HaulToStack".Translate(), ref haulToStack,
                 "HaulersDream.Setting.HaulToStackDesc".Translate());
