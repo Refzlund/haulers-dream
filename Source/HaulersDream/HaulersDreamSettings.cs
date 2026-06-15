@@ -102,6 +102,14 @@ namespace HaulersDream
         public bool haulWildKills = true;       // hunted (wild) carcasses — appends a haul on the hunter ONLY when the hunt was interrupted after the kill (JobDriver_Hunt finish action, non-Succeeded); a clean hunt self-hauls (vanilla), so HD stays out — no double-haul
         public bool haulTamedSlaughter = true;  // slaughtered (tamed) carcasses — appends a haul on the slaughterer (slaughter doesn't self-haul)
 
+        // --- spoiling-first ingredient selection (prefer the most-perishable already-valid candidate, to
+        // reduce overall spoilage). Two independent toggles, both default ON. They only REORDER preference
+        // among already-valid candidates — never change recipe satisfaction, the bill's ingredientSearchRadius
+        // / filters, or non-rottable crafts (steel/cloth/etc. are byte-identical). Among rottable+Fresh
+        // candidates the one closest to spoiling (lowest CompRottable.TicksUntilRotAtCurrentTemp) is preferred. ---
+        public bool butcherSpoilingFirst = true; // corpses chosen for a butcher bill: most-spoiled first
+        public bool cookSpoilingFirst = true;    // rottable non-corpse food chosen for a cook bill: most-spoiled first
+
         // --- smart overload (carry past 100% capacity to save trips) ---
         // 0 = no slowdown (carry freely) ... FairLevel = balanced ... OffLevel = never overload.
         public int overloadLevel = OverloadTuning.FairLevel;
@@ -297,6 +305,8 @@ namespace HaulersDream
             Scribe_Values.Look(ref taintedNonSmeltablePolicy, "taintedNonSmeltablePolicy", TaintedApparelPolicy.Take);
             Scribe_Values.Look(ref haulWildKills, "haulWildKills", true);
             Scribe_Values.Look(ref haulTamedSlaughter, "haulTamedSlaughter", true);
+            Scribe_Values.Look(ref butcherSpoilingFirst, "butcherSpoilingFirst", true);
+            Scribe_Values.Look(ref cookSpoilingFirst, "cookSpoilingFirst", true);
             Scribe_Values.Look(ref overloadLevel, "overloadLevel", OverloadTuning.FairLevel);
             Scribe_Values.Look(ref strictCarryWeight, "strictCarryWeight", false);
             Scribe_Values.Look(ref opportunisticUnload, "opportunisticUnload", true);
@@ -577,6 +587,13 @@ namespace HaulersDream
                 "HaulersDream.Setting.HaulTamedSlaughterDesc".Translate());
             l.CheckboxLabeled("HaulersDream.Setting.HaulWildKills".Translate(), ref haulWildKills,
                 "HaulersDream.Setting.HaulWildKillsDesc".Translate());
+
+            // Spoiling-first ingredient selection — prefer the most-perishable already-valid candidate when a
+            // colonist picks ingredients for a bill (butcher = corpse; cook = rottable food). Two toggles, both ON.
+            l.CheckboxLabeled("HaulersDream.Setting.ButcherSpoilingFirst".Translate(), ref butcherSpoilingFirst,
+                "HaulersDream.Setting.ButcherSpoilingFirstDesc".Translate());
+            l.CheckboxLabeled("HaulersDream.Setting.CookSpoilingFirst".Translate(), ref cookSpoilingFirst,
+                "HaulersDream.Setting.CookSpoilingFirstDesc".Translate());
 
             l.GapLine();
             l.Label("HaulersDream.Setting.Overload".Translate(OverloadLevelLabel(overloadLevel)));

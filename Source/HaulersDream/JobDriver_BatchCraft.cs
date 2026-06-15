@@ -426,6 +426,11 @@ namespace HaulersDream
             var bill = job.bill;
             float radiusSq = bill != null ? bill.ingredientSearchRadius * bill.ingredientSearchRadius : float.MaxValue;
             IntVec3 root = Bench?.Position ?? pawn.Position;
+            // Spoiling-first preference among the already-valid candidates, gated on the two toggles. With
+            // both off, cmpOn is false and the pick reduces to the exact original nearest-to-pawn behaviour
+            // (non-food batch bills byte-identical). The spoiling RANK is the new primary key; distance stays
+            // the secondary key (the comparator's index-equivalent tiebreak).
+            bool cmpOn = SpoilingFirst.AnyToggleOn(HaulersDreamMod.Settings);
             Thing best = null;
             int bestDist = int.MaxValue;
             // Distinct plan defs that still need loading.
@@ -447,7 +452,9 @@ namespace HaulersDream
                     if (!pawn.CanReserve(t) || !pawn.CanReach(t, PathEndMode.ClosestTouch, Danger.Deadly))
                         continue;
                     int dist = (t.Position - pawn.Position).LengthHorizontalSquared;
-                    if (dist < bestDist)
+                    if (best == null
+                        || (cmpOn ? SpoilingFirst.BetterThan(t, dist, best, bestDist, HaulersDreamMod.Settings)
+                                  : dist < bestDist))
                     {
                         bestDist = dist;
                         best = t;
