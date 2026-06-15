@@ -47,6 +47,14 @@ namespace HaulersDream
             if (!forced && pawn.CurJobDef == HaulersDreamDefOf.HaulersDream_BillPrepGather)
                 return;
 
+            // Belt-and-suspenders (CS-agnostic): while the pawn's CURRENT or a QUEUED job is a vanilla DoBill that
+            // can consume the tagged stock the pawn is carrying, don't auto-unload that stock to storage — doing so
+            // would recreate the floor stacks and (with a DoBill-rewriting mod like Common Sense) re-trigger the
+            // gather->bench->unload loop. The recipe is about to consume it from inventory in place. The gizmo
+            // (forced) still dumps everything.
+            if (!forced && HoldsStockForActiveDoBill(pawn, comp))
+                return;
+
             // On a non-home / temporary map (a caravan / encounter site) there is no player storage to unload
             // to, so the storage-unload pass is never appropriate there. We DON'T bail here, though: the same
             // eligibility / grace / pending-work / surplus gating below decides WHEN to commit (so the caravan
@@ -239,6 +247,38 @@ namespace HaulersDream
                 foreach (var qj in queue)
                     if (qj?.job?.def == HaulersDreamDefOf.HaulersDream_UnloadInventory)
                         return true;
+            return false;
+        }
+
+        /// <summary>True if the pawn's current OR any queued job is a vanilla DoBill whose bill can consume a
+        /// tagged stack the pawn still carries (InventoryShare.IsUsableForBill). The recipe will consume that
+        /// stock from inventory in place, so the automatic unload must not ship it to storage first.</summary>
+        private static bool HoldsStockForActiveDoBill(Pawn pawn, CompHauledToInventory comp)
+        {
+            var inv = pawn?.inventory?.innerContainer;
+            if (inv == null || comp == null)
+                return false;
+            if (MatchesActiveDoBill(pawn.CurJob, comp, inv))
+                return true;
+            var queue = pawn.jobs?.jobQueue;
+            if (queue != null)
+                foreach (var qj in queue)
+                    if (MatchesActiveDoBill(qj?.job, comp, inv))
+                        return true;
+            return false;
+        }
+
+        /// <summary>True iff <paramref name="job"/> is a vanilla DoBill whose bill matches a tagged stack still
+        /// in the pawn's inventory. Read-only (PeekHashSet — no GetHashSet self-heal/CE-notify on a decision
+        /// path); the inv.Contains guard excludes anything no longer held. HD's own gather drivers aren't
+        /// JobDefOf.DoBill, so they're naturally excluded.</summary>
+        private static bool MatchesActiveDoBill(Job job, CompHauledToInventory comp, ThingOwner<Thing> inv)
+        {
+            if (job == null || job.def != JobDefOf.DoBill || job.bill?.recipe == null)
+                return false;
+            foreach (var tagged in comp.PeekHashSet())
+                if (tagged != null && inv.Contains(tagged) && InventoryShare.IsUsableForBill(tagged, job.bill))
+                    return true;
             return false;
         }
 

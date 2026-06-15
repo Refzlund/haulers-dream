@@ -22,6 +22,9 @@ namespace HaulersDream
         [HarmonyPriority(Priority.First)]
         static void Postfix(ref Job __result, Pawn pawn, Thing thing, bool forced)
         {
+            // Cede to Common Sense when it owns the DoBill driver — don't batch-convert into a re-haul loop.
+            if (CommonSenseCompat.OwnsDoBillFlow)
+                return;
             var job = __result;
             if (job == null || job.def != JobDefOf.DoBill || job.bill?.recipe == null)
                 return;

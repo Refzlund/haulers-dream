@@ -29,6 +29,10 @@ namespace HaulersDream
     {
         static void Postfix(ref Job __result, Pawn pawn, Thing thing, bool forced)
         {
+            // Common Sense owns the vanilla DoBill driver (its MakeNewToils Prefix re-deposits ingredients to the
+            // bench floor) — cede the gather flow to it so HD doesn't double-gather and create a re-haul loop.
+            if (CommonSenseCompat.OwnsDoBillFlow)
+                return;
             var s = HaulersDreamMod.Settings;
             // markForUnload is required too: the relay's "leftovers are never stranded" safety story depends on
             // the unload backstop reclaiming tagged stock if the craft never happens.
