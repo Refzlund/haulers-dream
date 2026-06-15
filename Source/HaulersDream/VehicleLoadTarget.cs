@@ -81,6 +81,20 @@ namespace HaulersDream
             return result;
         }
 
+        public bool AnythingToLoad()
+        {
+            // Allocation-free emptiness pre-gate: short-circuit on the first positive entry in the cargoToLoad
+            // manifest (read reflection-only as a non-generic IList; TransferableOneWay is a reference type so the
+            // indexer does not box). No List<TransferableOneWay> materialised, unlike GetTransferables.
+            var ltl = VehicleFrameworkCompat.CargoToLoad(vehicle);
+            if (ltl == null)
+                return false;
+            for (int i = 0; i < ltl.Count; i++)
+                if (ltl[i] is TransferableOneWay tr && tr.HasAnyThing && tr.CountToTransfer > 0)
+                    return true;
+            return false;
+        }
+
         public ThingOwner GetInnerContainerFor(Thing depositTarget)
         {
             // The vehicle's cargo hold IS the inherited Pawn inventory container (VehiclePawn : Pawn, no override) —

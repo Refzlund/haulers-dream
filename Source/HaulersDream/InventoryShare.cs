@@ -21,6 +21,12 @@ namespace HaulersDream
             if (map == null || worker == null || def == null)
                 return null;
 
+            // Short-circuit: no tagged stock of this def held by the worker or any eligible carrier (per-tick
+            // cached) -> the find cannot succeed, so skip the colony walk + per-carrier reach/reserve checks.
+            // CountSharable applies the same self + IsEligibleCarrier eligibility, so a 0 here is a true negative.
+            if (CountSharable(map, worker, def) <= 0)
+                return null;
+
             Thing best = null;
             int bestDist = int.MaxValue;
             // The worker's own inventory first — it's already in hand at the site (distance 0).

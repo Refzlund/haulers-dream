@@ -30,6 +30,13 @@ namespace HaulersDream
         private const int MaxDepositLoops = 64; // backstop: bounds the re-find-carrier cycle (all animals full)
         private const int MaxPasses = 64;       // backstop: bounds the fill->deposit->refill loop
 
+        // Reused snapshot of the tagged set for the deposit loop, replacing a fresh List<Thing>(comp.GetHashSet())
+        // per deposit cycle. The snapshot is required (GetHashSet self-heals and the loop calls Deregister, mutating
+        // the underlying set mid-iterate); reusing one [ThreadStatic] buffer makes the steady per-deposit alloc 0.
+        // Cleared at use, never trusted empty. SAFETY: consumed within one deposit initAction (sequential on the main
+        // thread, no re-entrant tagged-snapshot) before the next reuse.
+        [System.ThreadStatic] private static List<Thing> scratchTagged;
+
         private ThingOwner Inv => pawn.inventory?.GetDirectlyHeldThings();
         private Pawn Carrier => job.GetTarget(CarrierInd).Thing as Pawn;
 
@@ -178,8 +185,11 @@ namespace HaulersDream
 
                 var carrierInv = carrier.inventory.innerContainer;
                 bool movedAny = false;
-                // Snapshot the tagged set (GetHashSet self-heals/mutates) before transferring out of it.
-                var tagged = new List<Thing>(comp.GetHashSet());
+                // Snapshot the tagged set (GetHashSet self-heals/mutates) before transferring out of it. Reused
+                // [ThreadStatic] scratch — Cleared at use, never trusted empty.
+                var tagged = scratchTagged ?? (scratchTagged = new List<Thing>());
+                tagged.Clear();
+                tagged.AddRange(comp.GetHashSet());
                 for (int i = 0; i < tagged.Count; i++)
                 {
                     var thing = tagged[i];

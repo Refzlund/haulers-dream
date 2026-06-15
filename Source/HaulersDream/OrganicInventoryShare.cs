@@ -143,6 +143,12 @@ namespace HaulersDream
             if (s == null)
                 return null;
 
+            // Short-circuit: no organic stock of this def anywhere eligible (per-tick cached) -> the find cannot
+            // succeed, so skip the colony walk + per-holder reach/reserve checks. CountOrganic applies the exact
+            // same eligibility (own + OtherPawnSourcesAllowedHere-gated carriers), so a 0 here is a true negative.
+            if (CountOrganic(map, worker, def) <= 0)
+                return null;
+
             Thing best = null;
             BuildMaterialSource bestSource = BuildMaterialSource.PackAnimal;
             int bestDist = int.MaxValue;

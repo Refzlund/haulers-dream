@@ -62,6 +62,32 @@ namespace HaulersDream
         public void SetNeeded(Dictionary<ThingDef, int> needed)
             => totalNeeded = needed ?? new Dictionary<ThingDef, int>();
 
+        /// <summary>Refresh <c>totalNeeded</c> by COPYING from a (possibly shared/scratch) source dictionary into the
+        /// entry's OWN dict — never aliasing the source. Lets the GameComponent rebuild the manifest into a reused
+        /// <c>[ThreadStatic]</c> scratch buffer and commit it here without allocating a fresh dict per refresh and
+        /// without the entry ever holding a reference to the shared scratch (HD-LOADSCAN; the Risk: SetNeeded must
+        /// own its dict). Clears the existing dict and repopulates it in place.</summary>
+        public void SetNeededFrom(Dictionary<ThingDef, int> source)
+        {
+            if (totalNeeded == null)
+                totalNeeded = new Dictionary<ThingDef, int>();
+            else
+                totalNeeded.Clear();
+            if (source != null)
+                foreach (var kv in source)
+                    totalNeeded[kv.Key] = kv.Value;
+        }
+
+        /// <summary>Empty <c>totalNeeded</c> in place (no allocation) — the manifest came up empty, so there is
+        /// nothing left to load. Keeps the entry's owned dict object (a future refresh repopulates it).</summary>
+        public void ClearNeeded()
+        {
+            if (totalNeeded == null)
+                totalNeeded = new Dictionary<ThingDef, int>();
+            else
+                totalNeeded.Clear();
+        }
+
         public void ExposeData()
         {
             Scribe_References.Look(ref map, "map");

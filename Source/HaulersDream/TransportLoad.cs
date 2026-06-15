@@ -24,6 +24,13 @@ namespace HaulersDream
         private const int MaxStacks = 24;
         private const float PoolRadiusHops = 4f;
 
+        // Reused snowball working sets, copied into the FRESH job-owned targetQueueB/countQueue at the end (the Job
+        // pool owns + scribes those). [ThreadStatic] + lazy-init per the repo's hook-reachable scratch convention;
+        // Cleared at the point of use, never trusted empty. SAFETY: a single TryGiveBulkJob runs to completion (no
+        // nested re-entry into this builder) before the next reuse, so sharing on one thread is sound.
+        [System.ThreadStatic] private static List<Thing> scratchThings;
+        [System.ThreadStatic] private static List<int> scratchCounts;
+
         /// <summary>Is there bulk-load work for this pawn on the TRANSPORTER loadable? Feature on, not drafted,
         /// eligible (auto path), the comp present, and the ledger says the pawn can claim something.</summary>
         public static bool HasPotentialBulkWork(Pawn pawn, IManagedLoadable loadable)
@@ -118,10 +125,12 @@ namespace HaulersDream
             if (claimable.Count == 0)
                 return null;
 
-            // The per-def ledger-available budget (decremented as the sweep commits stacks) and the manifest-
-            // remaining budget (same source, but tracked separately so DeliverableUnits sees both).
-            var ledgerLeft = new Dictionary<ThingDef, int>(claimable);
-            var manifestLeft = new Dictionary<ThingDef, int>(claimable); // claimable ≤ manifest, so this is a safe upper bound per def
+            // The per-def remaining budget the sweep decrements as it commits stacks. Previously TWO dictionaries
+            // (ledgerLeft + manifestLeft) were cloned from the SAME `claimable` and decremented IDENTICALLY by the
+            // same per-stack take, so they were always equal — DeliverableUnits saw manifestRem == ledgerAvail every
+            // call. Collapsed to ONE dict passed as both args (HD-JOBLIST): one fewer Dictionary clone per probe,
+            // behavior-identical (claimable ≤ the live manifest, so it's the binding per-def cap either way).
+            var claimLeft = new Dictionary<ThingDef, int>(claimable);
 
             // Carry ceiling (smart overload) + the trip-mass budget (pawn free space AND group headroom).
             float maxCap = MassUtility.Capacity(pawn);
@@ -138,13 +147,16 @@ namespace HaulersDream
             var pool = BulkHaul.BuildPool(pawn, loadable.GetParentThing(), map, MinSearchRadius * PoolRadiusHops);
             var claimedByOthers = RouteSelection.ClaimedByOtherPawns(pawn);
 
-            var things = new List<Thing>();
-            var counts = new List<int>();
+            // Reused working sets (Cleared at use), copied into the fresh job-owned queues below.
+            var things = scratchThings ?? (scratchThings = new List<Thing>());
+            var counts = scratchCounts ?? (scratchCounts = new List<int>());
+            things.Clear();
+            counts.Clear();
             var from = loadable.GetParentThing()?.Position ?? pawn.Position;
 
             while (things.Count < MaxStacks && running < ceiling - 0.0001f && massLeft > 0.0001f)
             {
-                var next = NearestEligible(pawn, pool, from, claimedByOthers, ledgerLeft, manifestLeft,
+                var next = NearestEligible(pawn, pool, from, claimedByOthers, claimLeft,
                     ceiling, running, bulkRoom, massLeft, out int take);
                 if (next == null)
                     break;
@@ -154,8 +166,7 @@ namespace HaulersDream
                 running += take * unit;
                 bulkRoom -= take * CECompat.BulkPerUnit(next);
                 massLeft -= take * unit;
-                ledgerLeft[next.def] = Math.Max(0, (ledgerLeft.TryGetValue(next.def, out int l) ? l : 0) - take);
-                manifestLeft[next.def] = Math.Max(0, (manifestLeft.TryGetValue(next.def, out int m) ? m : 0) - take);
+                claimLeft[next.def] = Math.Max(0, (claimLeft.TryGetValue(next.def, out int l) ? l : 0) - take);
                 from = next.Position;
             }
 
@@ -176,7 +187,7 @@ namespace HaulersDream
         // Nearest pool candidate of a CLAIMABLE def within reach, clamped per-stack via DeliverableUnits under the
         // trip-mass budget. Removes chosen/rejected candidates from the pool as it scans (like BulkHaul).
         private static Thing NearestEligible(Pawn pawn, List<Thing> pool, IntVec3 from, HashSet<Thing> claimedByOthers,
-            Dictionary<ThingDef, int> ledgerLeft, Dictionary<ThingDef, int> manifestLeft,
+            Dictionary<ThingDef, int> claimLeft,
             float ceiling, float running, float bulkRoom, float massLeft, out int take)
         {
             take = 0;
@@ -187,7 +198,7 @@ namespace HaulersDream
                 for (int i = 0; i < pool.Count; i++)
                 {
                     var t = pool[i];
-                    if (t?.def == null || !ledgerLeft.TryGetValue(t.def, out int la) || la <= 0)
+                    if (t?.def == null || !claimLeft.TryGetValue(t.def, out int la) || la <= 0)
                         continue; // not a claimable def, or its claim budget is spent
                     float d = (t.Position - from).LengthHorizontalSquared;
                     if (d < bestDistSq) { bestDistSq = d; bestIdx = i; }
@@ -210,10 +221,11 @@ namespace HaulersDream
                 // Trip-mass budget (destination + pawn mass headroom for THIS stack).
                 int massAffordable = TransportLoadPlan.UnitsWithinMassBudget(massLeft, unit, chosen.stackCount);
 
-                int ledgerAvail = ledgerLeft.TryGetValue(chosen.def, out int l) ? l : 0;
-                int manifestRem = manifestLeft.TryGetValue(chosen.def, out int m) ? m : 0;
+                // ledgerLeft and manifestLeft were always equal (one source, identical decrements) — now one dict, so
+                // DeliverableUnits's manifestRem and ledgerAvail args take the same value, exactly as before.
+                int claimAvail = claimLeft.TryGetValue(chosen.def, out int l) ? l : 0;
                 int deliverable = TransportLoadPlan.DeliverableUnits(
-                    chosen.stackCount, manifestRem, ledgerAvail, Math.Min(carryAffordable, massAffordable));
+                    chosen.stackCount, claimAvail, claimAvail, Math.Min(carryAffordable, massAffordable));
                 if (deliverable <= 0)
                     continue; // too heavy / no claim budget left — a lighter/other-def neighbor may still fit
                 if (!HaulAIUtility.PawnCanAutomaticallyHaulFast(pawn, chosen, forced: false))

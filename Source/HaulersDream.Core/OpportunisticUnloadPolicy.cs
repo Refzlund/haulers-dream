@@ -59,6 +59,39 @@ namespace HaulersDream.Core
             return detour <= bar;
         }
 
+        /// <summary>
+        /// CHEAP pre-gate run BEFORE the expensive Verse-side work (the per-stack mass walk + the
+        /// <c>TryFindBestBetterStoreCellFor</c> spatial storage search): only those numbers that are free to
+        /// read short-circuit a divert that the full <see cref="ShouldUnloadOnWay"/> / <see cref="ShouldUnloadOnRunEnd"/>
+        /// math would reject anyway, so the storage search is deferred until a divert is actually plausible.
+        /// Pure; mirrors the necessary conditions the full decision already enforces, so it can only short-circuit
+        /// (never admit) a divert the full math would reject:
+        /// <list type="bullet">
+        /// <item><paramref name="capPositive"/> — a pawn with no carry capacity (<c>cap &lt;= 0</c>) can carry nothing,
+        /// so its load fraction is meaningless; the full path bails on <c>cap &lt;= 0f</c>.</item>
+        /// <item><paramref name="trackedCount"/> &gt; 0 — nothing tracked means nothing to divert (the full path
+        /// bails on an empty tracked set).</item>
+        /// <item><paramref name="cooldownElapsed"/> — a recent (possibly failed) divert is still cooling down; the
+        /// full path bails when the cooldown has not elapsed.</item>
+        /// <item><paramref name="loadFraction"/> &ge; <see cref="MinLoadFraction"/> — both
+        /// <see cref="ShouldUnloadOnWay"/> and <see cref="ShouldUnloadOnRunEnd"/> reject a load below the minimum
+        /// fraction outright, so a sub-threshold load can never produce a divert regardless of the geometry.</item>
+        /// </list>
+        /// Returns true only when a divert remains POSSIBLE and the storage search is therefore worth running.
+        /// </summary>
+        public static bool ShouldAttemptDivert(
+            float loadFraction, bool cooldownElapsed, int trackedCount, bool capPositive,
+            float minLoadFraction = MinLoadFraction)
+        {
+            if (!capPositive)
+                return false;
+            if (trackedCount <= 0)
+                return false;
+            if (!cooldownElapsed)
+                return false;
+            return loadFraction >= minLoadFraction;
+        }
+
         /// <summary>Run-end detour-bar floor (tiles) — see <see cref="ShouldUnloadOnRunEnd"/>.</summary>
         public const int RunEndMinDetourTiles = 20;
 

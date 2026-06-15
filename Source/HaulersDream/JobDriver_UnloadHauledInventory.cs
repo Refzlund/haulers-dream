@@ -1,5 +1,5 @@
 using System.Collections.Generic;
-using System.Linq;
+using HaulersDream.Core;
 using RimWorld;
 using Verse;
 using Verse.AI;
@@ -21,6 +21,15 @@ namespace HaulersDream
         // retained, so they're retried on the next trigger. In-flight only — not scribed (an empty set after a
         // save/load just means everything is retried next pass, which is correct).
         private readonly HashSet<Thing> skippedThisJob = new HashSet<Thing>();
+
+        // Reused scratch for FirstUnloadableThing's ordered scan: a snapshot of the carried set that the min-scan
+        // pulls smallest-first from (swap-removing as it goes), replacing the per-call LINQ OrderBy().ThenBy()
+        // (an OrderedEnumerable + sort keys + 2 closures) re-run once per item unloaded. [ThreadStatic] + lazy-init
+        // matches the repo's hook-reachable scratch convention; Cleared at the point of use, never trusted empty.
+        // SAFETY: FirstUnloadableThing runs to completion (no re-entrant call) before the next reuse, so sharing it
+        // across calls on one thread is sound. Snapshotting first also preserves the LINQ's semantics of iterating a
+        // FIXED order even though the loop body mutates `carried` (relink add/remove) mid-scan.
+        [System.ThreadStatic] private static List<Thing> scratchOrdered;
 
         public override void ExposeData()
         {
@@ -249,8 +258,48 @@ namespace HaulersDream
         {
             var inner = pawn.inventory.innerContainer;
 
-            foreach (var thing in carried.OrderBy(t => t.def.FirstThingCategory?.index).ThenBy(t => t.def.defName))
+            // Snapshot the carried set into reused scratch, then pull elements smallest-first in
+            // (FirstThingCategory.index asc, null last, then ordinal defName) order — the allocation-free equivalent
+            // of the old `carried.OrderBy(catIndex).ThenBy(defName)` (HD-ORDERBY). The snapshot is required because the
+            // filter body below mutates `carried` (the relink Remove/Add) mid-scan; LINQ's OrderBy buffered its own
+            // snapshot, so iteration order was fixed regardless of those mutations — this preserves that exactly. The
+            // sort key parity (incl. the stable first-seen tiebreak among equal keys) is pinned by the Core oracle test.
+            var ordered = scratchOrdered ?? (scratchOrdered = new List<Thing>());
+            ordered.Clear();
+            foreach (var t in carried)
+                ordered.Add(t);
+
+            int remaining = ordered.Count;
+            while (remaining > 0)
             {
+                // Min-scan for the next-smallest in sort order (matching SelectFirstByCategoryThenDef). Consumed
+                // slots are nulled (NOT swap-removed) so the surviving entries keep their ORIGINAL enumeration
+                // index — the tie among equal (catIndex, defName) keys then resolves to the lowest original index,
+                // exactly reproducing the STABLE LINQ OrderBy().ThenBy()'s first-seen-among-equals order even when
+                // two carried stacks share a def (so which physical stack is returned is identical to the old code).
+                int bestIdx = -1;
+                Thing best = null;
+                int bestCat = 0;
+                string bestDef = null;
+                for (int i = 0; i < ordered.Count; i++)
+                {
+                    var cand = ordered[i];
+                    if (cand == null)
+                        continue; // already consumed this call
+                    int cat = cand.def.FirstThingCategory?.index ?? SelectFirstByCategoryThenDef.NoCategory;
+                    if (best == null
+                        || SelectFirstByCategoryThenDef.LessThan(cat, cand.def.defName, bestCat, bestDef))
+                    {
+                        bestIdx = i;
+                        best = cand;
+                        bestCat = cat;
+                        bestDef = cand.def.defName;
+                    }
+                }
+                var thing = best;
+                ordered[bestIdx] = null; // consume (keeps every survivor's original index for the stable tiebreak)
+                remaining--;
+
                 // Already tried and couldn't transfer this stack this job (see PullItemFromInventory's 0-transfer
                 // branch) — step over it so a single un-transferable item can't pin the unload. Bounds the work:
                 // each item is attempted at most once per job; skipped items keep their tag and retry next trigger.

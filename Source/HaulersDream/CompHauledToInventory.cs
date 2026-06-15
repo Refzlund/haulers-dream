@@ -14,6 +14,15 @@ namespace HaulersDream
         private HashSet<Thing> takenToInventory = new HashSet<Thing>();
         public int lastYieldTick = -99999;
 
+        /// <summary>Tick the <see cref="GetHashSet"/> self-heal last ran. The heal (an <c>owner.Count</c> inventory
+        /// walk + Simple Sidearms reflection + CE re-notify + tag-age sync) is idempotent WITHIN one tick — the
+        /// inventory can't change mid-tick from the read-only share/probe callers that drive it — so once healed
+        /// this tick, repeat calls short-circuit straight to <c>return takenToInventory</c>. Any path that MUTATES
+        /// the set (scoop registration / deregister) resets this to force the next call to re-heal, so a same-tick
+        /// scoop is always observed (the scoop path itself calls <see cref="RegisterHauledItem"/> which invalidates,
+        /// then the next GetHashSet re-heals — correctness is preserved). Transient (in-flight timing, not scribed).</summary>
+        [System.NonSerialized] private int lastHealTick = -1;
+
         /// <summary>Per-pawn opt-out for the auto-haul-into-inventory feature, surfaced as a Command_Toggle
         /// gizmo. Default ON (so old saves and untouched pawns keep scooping); scribed with a true default so
         /// a pre-feature save loads ON. Gates only the SCOOP/sweep/self-pickup intake paths — a pawn toggled
@@ -57,6 +66,15 @@ namespace HaulersDream
 
         public HashSet<Thing> GetHashSet()
         {
+            // HD-GETHASHSET: already self-healed this tick (and no mutation since — a scoop/deregister resets the
+            // stamp) -> skip the whole heal (owner.Count walk + SS reflection + CE re-notify + tag-age sync) and
+            // hand back the live set. The read-only share/probe callers (bill ingredient search, load deposit
+            // probes, GetRest/GetFood/GetJoy postfixes) hit this many times per scan; the inventory can't change
+            // mid-tick from them, so the second-and-later calls are pure waste without this gate.
+            int now = Find.TickManager?.TicksGame ?? -1;
+            if (now != -1 && lastHealTick == now)
+                return takenToInventory;
+
             // Capture the defs of tags about to be pruned because their Thing was DESTROYED — typically a
             // MERGE (a stack absorbed into another same-def stack; the absorbed Thing is Destroy()ed). Thing.def
             // survives Destroy(), so we read it here and feed these defs into the self-heal below, so the
@@ -128,6 +146,11 @@ namespace HaulersDream
             foreach (var t in takenToInventory)
                 if (!taggedTick.ContainsKey(t))
                     StampTick(t);
+            // Stamp the heal so the rest of this tick's read-only share/probe calls short-circuit (above).
+            // Only when the tick clock is available (-1 = no TickManager, e.g. a unit-test/edit-mode call) so a
+            // tickless call never poisons the stamp into matching a future "now == -1".
+            if (now != -1)
+                lastHealTick = now;
             return takenToInventory;
         }
 
@@ -159,6 +182,10 @@ namespace HaulersDream
             // live + count on re-notify). No-op without CE.
             if (thing == null)
                 return;
+            // A new tag (or any registration) mutates the tracked set, so force the next GetHashSet to re-heal:
+            // a same-tick scoop must be reflected in the share/probe view even though it was already healed
+            // earlier this tick (HD-GETHASHSET). Cheap (an int write) vs the missed-scoop correctness it protects.
+            lastHealTick = -1;
             if (takenToInventory.Add(thing))
             {
                 StampTick(thing);
@@ -173,7 +200,13 @@ namespace HaulersDream
         /// May contain destroyed or out-of-inventory tags; callers guard each entry.</summary>
         public HashSet<Thing> PeekHashSet() => takenToInventory;
 
-        public void Deregister(Thing thing) => takenToInventory.Remove(thing);
+        public void Deregister(Thing thing)
+        {
+            // Mutates the tracked set -> force a re-heal next GetHashSet (HD-GETHASHSET), so a same-tick share/
+            // probe view doesn't keep handing out a just-removed tag from the short-circuited cache.
+            lastHealTick = -1;
+            takenToInventory.Remove(thing);
+        }
 
         /// <summary>The next still-valid pending drop this pawn can scoop, or null. Prunes invalid ones:
         /// despawned/destroyed, on another map (a pawn that changed maps must not walk foreign coords or

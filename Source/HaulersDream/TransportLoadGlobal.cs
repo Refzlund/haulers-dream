@@ -32,6 +32,13 @@ namespace HaulersDream
         private static FieldInfo countToTransferField; // TransferableOneWay.countToTransfer (private int)
         private static FieldInfo editBufferField;       // Transferable.editBuffer (private string), if present
 
+        // Reused scratch for FindBestMatchFor's candidate gather, replacing a fresh List<Candidate> per deposited
+        // stack (this runs inside the per-deposit SubtractFromToLoadList intercept). [ThreadStatic] + lazy-init per
+        // the repo's hook-reachable scratch convention; Cleared at use, never trusted empty. SAFETY: the list is
+        // filled then handed to the pure ChooseBestMatchIndex within one call (no re-entrant FindBestMatchFor) before
+        // the next reuse.
+        [System.ThreadStatic] private static List<TransferableMatchPolicy.Candidate> scratchCandidates;
+
         private static void EnsureReflection()
         {
             if (reflectionInit)
@@ -82,7 +89,8 @@ namespace HaulersDream
         {
             if (def == null || leftToLoad == null || leftToLoad.Count == 0)
                 return null;
-            var candidates = new List<TransferableMatchPolicy.Candidate>();
+            var candidates = scratchCandidates ?? (scratchCandidates = new List<TransferableMatchPolicy.Candidate>());
+            candidates.Clear();
             for (int i = 0; i < leftToLoad.Count; i++)
             {
                 var tr = leftToLoad[i];

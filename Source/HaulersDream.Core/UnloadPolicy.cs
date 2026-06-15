@@ -122,5 +122,23 @@ namespace HaulersDream.Core
             }
             return false;
         }
+
+        /// <summary>
+        /// True if a queued job identity is the pawn's OWN real work — i.e. it is NOT either of the two
+        /// housekeeping job identities. Compared by reference equality (<typeparamref name="T"/> = a Verse
+        /// <c>JobDef</c> at runtime, a stub in tests), so the runtime can iterate <c>pawn.jobs.jobQueue</c> via
+        /// its indexer and call this per queued job WITHOUT materialising a <c>List&lt;string&gt;</c> of defNames
+        /// (the allocation HD-UNLWORK removes). A null job identity is treated as housekeeping (= "not real
+        /// work", matching the string overload's <c>name == null -&gt; continue</c>): a queued job with no def is
+        /// never the pawn's pending work.
+        /// </summary>
+        public static bool IsPendingRealWork<T>(T queuedJobDef, T housekeeping1, T housekeeping2)
+            where T : class
+        {
+            if (queuedJobDef == null)
+                return false;
+            return !ReferenceEquals(queuedJobDef, housekeeping1)
+                && !ReferenceEquals(queuedJobDef, housekeeping2);
+        }
     }
 }

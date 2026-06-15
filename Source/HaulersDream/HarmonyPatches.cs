@@ -144,6 +144,15 @@ namespace HaulersDream
     {
         static void Postfix(ref ThinkResult __result, Pawn pawn, JobGiver_Work __instance)
         {
+            // Cheap empty-pack pre-gate (HD-OPPUNLOAD): the common case is a pawn carrying nothing scooped, and
+            // BOTH branches below bail when the tracked set is empty (ShouldDivert and TryGetEndOfRunUnloadJob each
+            // return early on Count == 0). Short-circuit that here using the read-only PeekHashSet (no self-heal /
+            // reflection / state mutation on this hot scan path) BEFORE computing runOver / IsYieldOrHaulJobDef or
+            // entering the gated paths. A pawn without the comp likewise can never divert/unload.
+            var comp = pawn?.GetComp<CompHauledToInventory>();
+            if (comp == null || comp.PeekHashSet().Count == 0)
+                return;
+
             if (__result.IsValid && __result.Job != null)
             {
                 // If the pawn just picked a NON-yield, NON-haul job, its accumulate run is over — divert it to

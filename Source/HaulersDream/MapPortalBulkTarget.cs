@@ -81,6 +81,22 @@ namespace HaulersDream
             return result;
         }
 
+        public bool AnythingToLoad()
+        {
+            // Allocation-free emptiness pre-gate: short-circuit on the first positive entry in the portal's single
+            // leftToLoad list (no List<TransferableOneWay> materialised, unlike GetTransferables).
+            var ltl = portal.leftToLoad;
+            if (ltl == null)
+                return false;
+            for (int i = 0; i < ltl.Count; i++)
+            {
+                var tr = ltl[i];
+                if (tr != null && tr.HasAnyThing && tr.CountToTransfer > 0)
+                    return true;
+            }
+            return false;
+        }
+
         public ThingOwner GetInnerContainerFor(Thing depositTarget)
         {
             // The portal's PortalContainerProxy: a ThingOwner whose TryAdd teleports the deposited Thing to the

@@ -17,6 +17,12 @@ namespace HaulersDream
     /// </summary>
     public static class TransportLoadTargetRedirect
     {
+        // Reused scratch for the carried-surplus-defs gather, replacing a fresh HashSet<ThingDef> per revalidate.
+        // [ThreadStatic] + lazy-init per the repo's hook-reachable scratch convention; Cleared at use, never trusted
+        // empty. SAFETY: filled once in ValidateAndRedirectCurrentTarget then only READ (MemberNeedsAny) within that
+        // one rate-limited deposit-toil call (no re-entrant gather) before the next reuse.
+        [System.ThreadStatic] private static HashSet<ThingDef> scratchCarriedDefs;
+
         /// <summary>
         /// Re-validate + (if needed) redirect the current deposit target within the group. Rate-limited to the
         /// driver's revalidate interval. Returns true if a redirect was applied. Carried live pawns (downed
@@ -57,7 +63,8 @@ namespace HaulersDream
 
         private static HashSet<ThingDef> CarriedSurplusDefs(Pawn pawn)
         {
-            var defs = new HashSet<ThingDef>();
+            var defs = scratchCarriedDefs ?? (scratchCarriedDefs = new HashSet<ThingDef>());
+            defs.Clear();
             var comp = pawn.GetComp<CompHauledToInventory>();
             var inner = pawn.inventory?.innerContainer;
             if (comp == null || inner == null)

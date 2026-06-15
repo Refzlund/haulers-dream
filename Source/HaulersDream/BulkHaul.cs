@@ -83,6 +83,14 @@ namespace HaulersDream
         [ThreadStatic] private static List<Thing> scratchPool;
         [ThreadStatic] private static Dictionary<ThingDef, int> scratchSpaceLeftByDef;
 
+        // The snowball working sets (things/counts) — reused per BuildBulkJob call instead of a fresh List per
+        // probe. The job-OWNED targetQueueB/countQueue are still allocated fresh below (the Job pool owns + scribes
+        // them); these two are only the transient build scratch, copied INTO the job lists at the end. Cleared at the
+        // point of use, never trusted empty. SAFETY: a single BuildBulkJob runs to completion (no nested JobOnThing
+        // probe) before the next reuse, so sharing on one thread is sound — same contract as scratchPool above.
+        [ThreadStatic] private static List<Thing> scratchThings;
+        [ThreadStatic] private static List<int> scratchCounts;
+
         // The cached Job plus the loadID it carried at insert. JobMaker.ReturnToPool → Job.Clear() sets
         // loadID = -1 and MakeJob assigns a fresh UniqueIDsManager id (decompile-verified), so a same-tick
         // pool-recycled instance — even one reused for an identically-shaped job — can never validate.
@@ -181,6 +189,8 @@ namespace HaulersDream
             // at the next build before being read, so this is hygiene, not correctness).
             scratchPool?.Clear();
             scratchSpaceLeftByDef?.Clear();
+            scratchThings?.Clear();
+            scratchCounts?.Clear();
             RouteSelection.ClearClaimedCache(); // drop the per-(pawn,tick) claimed-set's cross-session Thing refs
         }
 
@@ -357,8 +367,14 @@ namespace HaulersDream
 
             // Snowball: from the primary, repeatedly take the nearest eligible candidate within a hop radius of
             // the LAST taken item — so the chain naturally picks things up "on the way" rather than zig-zagging.
-            var things = new List<Thing> { primary };
-            var counts = new List<int> { primaryTake };
+            // Reused per-thread working sets (Cleared + seeded with the primary), copied into the fresh job-owned
+            // queues at the end — never handed out themselves.
+            var things = scratchThings ?? (scratchThings = new List<Thing>());
+            var counts = scratchCounts ?? (scratchCounts = new List<int>());
+            things.Clear();
+            counts.Clear();
+            things.Add(primary);
+            counts.Add(primaryTake);
             var claimed = RouteSelection.ClaimedByOtherPawns(pawn);
             var last = primary.Position;
             while (things.Count < MaxStacks && running < ceiling - 0.0001f)

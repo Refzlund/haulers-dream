@@ -51,6 +51,14 @@ namespace HaulersDream
         private const int MaxDepositLoops = 64;
         private const int MaxPasses = 64;
 
+        // Reused snapshot of the tagged set for the deposit loop + salvage finish action, replacing a fresh
+        // List<Thing>(GetHashSet()) per deposit cycle / end. The snapshot is required (GetHashSet self-heals and the
+        // loop calls Deregister, mutating the underlying set mid-iterate); reusing one [ThreadStatic] buffer makes the
+        // steady per-deposit alloc 0. Cleared at use, never trusted empty. SAFETY: each consumer runs to completion in
+        // one toil initAction / finish action (sequential on the main thread, no re-entrant tagged-snapshot) before
+        // the next reuse.
+        [System.ThreadStatic] private static List<Thing> scratchTagged;
+
         // Resolved on start (Notify_Starting). In-flight only — re-resolved from the live vehicle on load.
         [System.NonSerialized] private VehicleLoadTarget adapter;
         // Set true on a chaining/cleanup end so the finish action RETAINS the claim (no thrash). Currently always
@@ -230,7 +238,9 @@ namespace HaulersDream
                 { JumpToToil(loopCheck); return; }
 
                 bool movedAny = false;
-                var tagged = new List<Thing>(hcomp.GetHashSet());
+                var tagged = scratchTagged ?? (scratchTagged = new List<Thing>());
+                tagged.Clear();
+                tagged.AddRange(hcomp.GetHashSet());
                 for (int i = 0; i < tagged.Count; i++)
                 {
                     var thing = tagged[i];
@@ -329,7 +339,9 @@ namespace HaulersDream
                 var inner = pawn.inventory?.innerContainer;
                 if (hcomp != null && inner != null)
                 {
-                    var snapshot = new List<Thing>(hcomp.GetHashSet());
+                    var snapshot = scratchTagged ?? (scratchTagged = new List<Thing>());
+                    snapshot.Clear();
+                    snapshot.AddRange(hcomp.GetHashSet());
                     for (int i = 0; i < snapshot.Count; i++)
                     {
                         var t = snapshot[i];

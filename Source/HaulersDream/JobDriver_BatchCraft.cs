@@ -433,11 +433,20 @@ namespace HaulersDream
             bool cmpOn = SpoilingFirst.AnyToggleOn(HaulersDreamMod.Settings);
             Thing best = null;
             int bestDist = int.MaxValue;
-            // Distinct plan defs that still need loading.
+            // Distinct plan defs that still need loading. A def may appear in MULTIPLE slots (ingredientDefs has
+            // one entry per slot); NeededUnits(def) and the candidate scan are identical for every occurrence (and
+            // the scan only replaces `best` on a STRICT improvement, so a re-scan of the same def's stacks can never
+            // change the result), so process each def ONCE — skip an occurrence whose def already appeared earlier
+            // (HD-INVCOUNT: drops the redundant per-duplicate-def NeededUnits→InventoryCountOfDef inventory walk).
             for (int d = 0; d < ingredientDefs.Count; d++)
             {
                 var def = ingredientDefs[d];
-                if (def == null || NeededUnits(def) <= 0)
+                if (def == null)
+                    continue;
+                bool seenEarlier = false;
+                for (int e = 0; e < d; e++)
+                    if (ingredientDefs[e] == def) { seenEarlier = true; break; }
+                if (seenEarlier || NeededUnits(def) <= 0)
                     continue;
                 var things = map.listerThings.ThingsOfDef(def);
                 for (int i = 0; i < things.Count; i++)

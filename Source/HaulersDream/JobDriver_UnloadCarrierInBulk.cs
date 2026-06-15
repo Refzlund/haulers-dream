@@ -36,6 +36,13 @@ namespace HaulersDream
         // already in the carry tracker is picked up by the next unload trigger / vanilla haul anyway).
         [System.NonSerialized] private Thing handTail;
 
+        // Reused per-pull scratch for the carrier-stack view fed to the pure planner, replacing a fresh
+        // List<CarrierStack> per select cycle (each select toil re-snapshots the carrier's inventory). [ThreadStatic]
+        // + lazy-init matches the repo's hook-reachable scratch convention; Cleared at the point of use, never trusted
+        // empty. SAFETY: the select initAction builds + consumes this within one JumpToToil cycle (sequential within
+        // a tick, no re-entrant job re-enters this scratch) before the next reuse.
+        [System.ThreadStatic] private static List<BulkUnloadCarrierPolicy.CarrierStack> scratchStacks;
+
         private Pawn Carrier => job.GetTarget(CarrierInd).Thing as Pawn;
 
         private static HaulersDreamSettings Settings => HaulersDreamMod.Settings;
@@ -97,7 +104,8 @@ namespace HaulersDream
                 // Build the pure planner's view of the carrier's stacks (index, per-unit mass, count), then ask
                 // for the next pull. Free carry mass is the hauler's live headroom (negative when overloaded -> 0
                 // backpack room -> the ladder routes to hands).
-                var stacks = new List<BulkUnloadCarrierPolicy.CarrierStack>(carrierInner.Count);
+                var stacks = scratchStacks ?? (scratchStacks = new List<BulkUnloadCarrierPolicy.CarrierStack>());
+                stacks.Clear();
                 for (int i = 0; i < carrierInner.Count; i++)
                 {
                     var t = carrierInner[i];

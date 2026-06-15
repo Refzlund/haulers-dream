@@ -91,6 +91,12 @@ namespace HaulersDream
 
         /// <summary>Register a task (idempotent) and refresh its <c>totalNeeded</c> from the live manifest. Called
         /// by the planner before computing the claimable slice, so a manifest change between trips is reflected.</summary>
+        // HD-LOADSCAN: a reused per-thread scratch dict for the manifest rebuild on the per-pawn-scan PROBE path.
+        // It is COPIED into the entry's own dict via SetNeededFrom (never aliased — the entry must own its dict),
+        // so the refresh allocates nothing after first use. [ThreadStatic] to match the assembly's hook-reachable
+        // scratch convention (the work-scan that drives this can run off a [ThreadStatic] worker).
+        [System.ThreadStatic] private static Dictionary<ThingDef, int> tmpNeeded;
+
         public LoadLedgerEntry LoadRegisterOrUpdate(IManagedLoadable loadable)
         {
             if (loadable == null)
@@ -104,8 +110,21 @@ namespace HaulersDream
             }
             if (entry.map == null)
                 entry.map = loadable.GetMap();
-            // Rebuild totalNeeded from the manifest (def -> Σ CountToTransfer across same-def entries).
-            var needed = new Dictionary<ThingDef, int>();
+
+            // Cheap allocation-free emptiness pre-gate: nothing left on the manifest -> empty totalNeeded in place
+            // (so HasWork reads false) and bail BEFORE materialising GetTransferables' List + a needed dict. This is
+            // the common per-pawn-scan case once a load finishes / before one is queued.
+            if (!loadable.AnythingToLoad())
+            {
+                entry.ClearNeeded();
+                return entry;
+            }
+
+            // Rebuild totalNeeded from the manifest (def -> Σ CountToTransfer across same-def entries) into a reused
+            // [ThreadStatic] scratch dict, then COPY it into the entry's own dict (SetNeededFrom — never alias the
+            // scratch, which SetNeeded would; the entry must own its dict). No fresh dict allocated per refresh.
+            var needed = tmpNeeded ?? (tmpNeeded = new Dictionary<ThingDef, int>());
+            needed.Clear();
             var transferables = loadable.GetTransferables();
             if (transferables != null)
                 for (int i = 0; i < transferables.Count; i++)
@@ -118,7 +137,8 @@ namespace HaulersDream
                         continue;
                     needed[def] = (needed.TryGetValue(def, out int cur) ? cur : 0) + tr.CountToTransfer;
                 }
-            entry.SetNeeded(needed);
+            entry.SetNeededFrom(needed);
+            needed.Clear();
             return entry;
         }
 
@@ -257,6 +277,8 @@ namespace HaulersDream
             PawnMassCache.Clear();
             // Same hygiene for the per-(pawn,tick) inspect-pane surplus-boolean memo (HD-GIZMO).
             SurplusCache.Clear();
+            // Same hygiene for the per-(pawn,tick) opportunistic-unload tracked-mass memo (HD-OPPUNLOAD).
+            TrackedMassCache.Clear();
         }
 
         /// <summary>Register (or replace, per pawn) a deferred-reveal tracker for a vein route that ran into fog.</summary>
@@ -410,14 +432,20 @@ namespace HaulersDream
                 // self-pickup — and possibly an unload — at the exact moment the final cell is mined);
                 // only REAL queued work means the route was superseded. Same idiom as PawnUnloadChecker.
                 var queue = pawn.jobs?.jobQueue;
-                var queuedDefNames = new List<string>();
+                // Allocation-free queue scan (indexed for — the JobQueue enumerator boxes; the indexer does not)
+                // + a reference compare against the two housekeeping defs. No List<string>/params allocation.
+                bool nothingElseQueued = true;
                 if (queue != null)
-                    foreach (var qj in queue)
-                        if (qj?.job?.def != null)
-                            queuedDefNames.Add(qj.job.def.defName);
-                bool nothingElseQueued = !UnloadPolicy.HasPendingRealWork(queuedDefNames,
-                    HaulersDreamDefOf.HaulersDream_SelfPickup.defName,
-                    HaulersDreamDefOf.HaulersDream_UnloadInventory.defName);
+                {
+                    var selfPickup = HaulersDreamDefOf.HaulersDream_SelfPickup;
+                    var unload = HaulersDreamDefOf.HaulersDream_UnloadInventory;
+                    for (int i = 0; i < queue.Count; i++)
+                        if (UnloadPolicy.IsPendingRealWork(queue[i]?.job?.def, selfPickup, unload))
+                        {
+                            nothingElseQueued = false;
+                            break;
+                        }
+                }
                 if (!lastCellMined || !nothingElseQueued)
                     return false; // genuinely superseded / diverted — leave the route alone
                 finalAttempt = true;

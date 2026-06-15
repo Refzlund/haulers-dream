@@ -79,6 +79,25 @@ namespace HaulersDream
             return result;
         }
 
+        public bool AnythingToLoad()
+        {
+            // Allocation-free emptiness pre-gate: short-circuit on the first positive entry across the group's
+            // leftToLoad lists (no List<TransferableOneWay> materialised, unlike GetTransferables).
+            for (int i = 0; i < group.Count; i++)
+            {
+                var ltl = group[i]?.leftToLoad;
+                if (ltl == null)
+                    continue;
+                for (int j = 0; j < ltl.Count; j++)
+                {
+                    var tr = ltl[j];
+                    if (tr != null && tr.HasAnyThing && tr.CountToTransfer > 0)
+                        return true;
+                }
+            }
+            return false;
+        }
+
         public ThingOwner GetInnerContainerFor(Thing depositTarget)
         {
             // Fast-path the primary when it still wants this def; else scan the group for a member whose manifest

@@ -292,13 +292,15 @@ namespace HaulersDream
             var queue = pawn.jobs?.jobQueue;
             if (queue == null)
                 return false;
-            var defNames = new List<string>();
-            foreach (var qj in queue)
-                if (qj?.job?.def != null)
-                    defNames.Add(qj.job.def.defName);
-            return UnloadPolicy.HasPendingRealWork(defNames,
-                HaulersDreamDefOf.HaulersDream_SelfPickup.defName,
-                HaulersDreamDefOf.HaulersDream_UnloadInventory.defName);
+            // Allocation-free: indexed walk over the JobQueue (its enumerator boxes; the indexer does not) +
+            // a reference compare of each queued JobDef against the two housekeeping defs. No List<string> and
+            // no params string[] are materialised — the per-tick allocation HD-UNLWORK removes.
+            var selfPickup = HaulersDreamDefOf.HaulersDream_SelfPickup;
+            var unload = HaulersDreamDefOf.HaulersDream_UnloadInventory;
+            for (int i = 0; i < queue.Count; i++)
+                if (UnloadPolicy.IsPendingRealWork(queue[i]?.job?.def, selfPickup, unload))
+                    return true;
+            return false;
         }
     }
 }

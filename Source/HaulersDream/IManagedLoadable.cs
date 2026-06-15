@@ -55,6 +55,13 @@ namespace HaulersDream
         /// copied OUT of any shared buffer so the caller may hold it across toils.</summary>
         List<TransferableOneWay> GetTransferables();
 
+        /// <summary>True if the manifest still has at least one entry with <c>CountToTransfer &gt; 0</c> — a cheap,
+        /// ALLOCATION-FREE pre-gate (scans <c>leftToLoad</c>/<c>cargoToLoad</c> in place, short-circuiting on the first
+        /// positive entry) so the per-pawn-scan probe can bail BEFORE <see cref="GetTransferables"/> materialises a
+        /// <c>List&lt;TransferableOneWay&gt;</c> and the ledger builds its <c>needed</c> dict (HD-LOADSCAN). Equivalent
+        /// to <c>GetTransferables().Count &gt; 0</c> but with no allocation.</summary>
+        bool AnythingToLoad();
+
         /// <summary>The inner container to deposit <paramref name="depositTarget"/> into — the matching group member's
         /// <c>innerContainer</c> (the primary fast-path, else a group scan), or null if none can hold it.</summary>
         ThingOwner GetInnerContainerFor(Thing depositTarget);

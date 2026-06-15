@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using HaulersDream.Core;
 using RimWorld;
 using UnityEngine;
@@ -49,11 +50,30 @@ namespace HaulersDream
             return carried;
         }
 
-        /// <summary>Total units of <paramref name="def"/> being hand-hauled to storage on this map — for the availability gate.</summary>
+        // Per-tick result cache for CountStorageBoundCarried: the construct-deliver availability scan calls it once
+        // per missing-material def per builder — a colony-wide pawn walk each time. Within one tick the answer for
+        // a given (worker, def) cannot change, so cache it (cleared whenever the tick advances). Mirrors
+        // InventoryShare.CountSharable / OrganicInventoryShare.CountOrganic's countCache pattern exactly.
+        private static int countCacheTick = -1;
+        private static readonly Dictionary<long, int> countCache = new Dictionary<long, int>();
+
+        /// <summary>Total units of <paramref name="def"/> being hand-hauled to storage on this map — for the
+        /// availability gate. Per-tick cached (a (worker, def) answer is invariant within a tick).</summary>
         internal static int CountStorageBoundCarried(Map map, Pawn worker, ThingDef def)
         {
             if (map == null || worker == null || def == null)
                 return 0;
+
+            int tick = Find.TickManager?.TicksGame ?? -1;
+            if (tick != countCacheTick)
+            {
+                countCacheTick = tick;
+                countCache.Clear();
+            }
+            long key = ((long)worker.thingIDNumber << 32) | (uint)def.shortHash;
+            if (countCache.TryGetValue(key, out int cached))
+                return cached;
+
             int total = 0;
             var pawns = map.mapPawns.SpawnedPawnsInFaction(Faction.OfPlayer);
             for (int i = 0; i < pawns.Count; i++)
@@ -62,6 +82,7 @@ namespace HaulersDream
                 if (carried != null && carried.def == def)
                     total += carried.stackCount;
             }
+            countCache[key] = total;
             return total;
         }
 
@@ -83,6 +104,11 @@ namespace HaulersDream
             var wcomp = worker.GetComp<CompHauledToInventory>();
             if (wcomp != null && now - wcomp.lastInterceptedTick < CooldownTicks)
                 return null; // worker just intercepted -> let it finish before chasing another hauler
+
+            // Short-circuit: if nobody is hand-hauling this def to storage right now (per-tick cached count == 0),
+            // the find cannot succeed — skip the colony walk + per-carrier reach/reserve/intercept checks entirely.
+            if (CountStorageBoundCarried(map, worker, def) <= 0)
+                return null;
 
             var pawns = map.mapPawns.SpawnedPawnsInFaction(Faction.OfPlayer);
             Thing best = null;
