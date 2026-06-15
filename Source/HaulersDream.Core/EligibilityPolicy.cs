@@ -14,12 +14,16 @@ namespace HaulersDream.Core
             bool incapableOfHauling,
             bool allowMechanoids,
             bool pauseWhileDrafted,
-            bool allowIncapable)
+            bool allowIncapable,
+            bool allowAnimals = false)
         {
             if (isMechanoid)
                 return allowMechanoids; // mechs ignore drafted/incapable gating
             if (!isHumanlike)
-                return false;           // animals etc. never scoop
+                // Non-humanlike, non-mech (animals etc.): eligible only when explicitly opted in.
+                // Like mechs, animals gate purely on their allow-toggle and ignore the
+                // drafted/incapable-of-hauling gating, which is meaningful only for colonists.
+                return allowAnimals;
             if (pauseWhileDrafted && isDrafted)
                 return false;
             if (!allowIncapable && incapableOfHauling)

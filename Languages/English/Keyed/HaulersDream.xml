@@ -2,6 +2,7 @@
 <LanguageData>
 
   <HaulersDream.Setting.CarryLimit>Carry limit: {0} of each pawn's max carrying capacity</HaulersDream.Setting.CarryLimit>
+  <HaulersDream.Setting.CarryLimitDesc>The cap is a fraction of the pawn's max carrying capacity — the mass it can carry across its apparel, equipment, and inventory (the same capacity used for caravans and pack loading). Items carried in the hands during a haul (the active hand-haul stack) are NOT counted against this limit; only what is stowed in apparel/equipment/inventory is. Smart overload below can still let a pawn go past 100% of this cap to save trips.</HaulersDream.Setting.CarryLimitDesc>
 
   <HaulersDream.Setting.DropThenHaul>Drop on the floor, then pick up (realistic)</HaulersDream.Setting.DropThenHaul>
   <HaulersDream.Setting.DropThenHaulDesc>When ON, harvested/mined goods drop on the ground and the pawn scoops them into its inventory after the work run. When OFF, goods go straight into inventory (no ground touch).</HaulersDream.Setting.DropThenHaulDesc>
@@ -49,6 +50,8 @@
   <HaulersDream.Setting.BulkHaulAlwaysDesc>Every haul — automatic or ordered — loads the nearby haulables into the pawn's inventory too, making one storage trip for the lot. How much it carries respects the smart-overload slider below: only as much extra weight as is genuinely worth the slowdown versus making another round-trip.</HaulersDream.Setting.BulkHaulAlwaysDesc>
   <HaulersDream.Setting.HaulNearbyOption>Add a "Haul everything nearby" right-click order</HaulersDream.Setting.HaulNearbyOption>
   <HaulersDream.Setting.HaulNearbyOptionDesc>Adds a "Haul everything nearby" option to the right-click menu on a haulable item (for pawns that can haul), which starts a bulk sweep immediately — so you don't have to prioritize two hauls to trigger bulk hauling. Vanilla's "Prioritize hauling" still appears alongside it for a single-item haul.</HaulersDream.Setting.HaulNearbyOptionDesc>
+  <HaulersDream.Setting.ManualPickup>Add a "Pick up X" right-click order</HaulersDream.Setting.ManualPickup>
+  <HaulersDream.Setting.ManualPickupDesc>Adds a "Pick up X" option to the right-click menu on a haulable ground item. The pawn picks the clicked stack straight into its inventory as a tracked Hauler's Dream haul, which is then put away by the normal unloading — so it's never lost even if automatic unloading is off. Additive to vanilla's right-click haul options.</HaulersDream.Setting.ManualPickupDesc>
   <HaulersDream.Setting.HaulOversized>Carry oversized stacks in the inventory</HaulersDream.Setting.HaulOversized>
   <HaulersDream.Setting.HaulOversizedDesc>When a single stack is too big to carry in one armful (for example a 75-stack of steel when the pawn can only hold 72), the pawn takes it in its inventory and delivers the whole stack in one trip — instead of hand-carrying a partial load and leaving the rest behind. Applies to both ordered and automatic hauls; only carries as much as storage can actually accept, so nothing is left stranded.</HaulersDream.Setting.HaulOversizedDesc>
   <HaulersDream.Setting.SweepNearbyWhileWorking>Tidy up while working — scoop nearby loose items too</HaulersDream.Setting.SweepNearbyWhileWorking>
@@ -137,6 +140,9 @@
 
   <HaulersDream.Setting.PauseWhileDrafted>Pause while drafted</HaulersDream.Setting.PauseWhileDrafted>
   <HaulersDream.Setting.AllowMechanoids>Allow mechanoids to scoop and haul</HaulersDream.Setting.AllowMechanoids>
+  <HaulersDream.AllowMechanoidsDesc>Governs whether your work mechanoids use Hauler's Dream's scooping and bulk hauling (carrying yields and loot in their inventory), just like colonists. This is separate from vanilla mechanoid behaviour: vanilla construction/delivery mechs (e.g. a Constructoid bringing materials to a build site) are not affected by this toggle and keep working either way. When ON, a player work-mech can also carry past 100% capacity under the smart-overload setting and is slowed by it the same way a colonist is.</HaulersDream.AllowMechanoidsDesc>
+  <HaulersDream.AllowAnimals>Allow colony animals to scoop and haul</HaulersDream.AllowAnimals>
+  <HaulersDream.AllowAnimalsDesc>Off by default. When ON, your colony's hauling animals pick nearby loot into their inventory and run Hauler's Dream's bulk haul, the same way colonists do, instead of carrying one stack at a time. Only applies to your own colony animals — wild and enemy animals are never affected.</HaulersDream.AllowAnimalsDesc>
   <HaulersDream.Setting.AllowIncapable>Allow pawns incapable of hauling to scoop their own yields</HaulersDream.Setting.AllowIncapable>
   <HaulersDream.Setting.EnableOnNonHomeMaps>Also work on caravan / non-home maps</HaulersDream.Setting.EnableOnNonHomeMaps>
   <HaulersDream.Setting.HideGizmo>Hide the per-pawn "Unload inventory" button</HaulersDream.Setting.HideGizmo>
@@ -154,6 +160,8 @@
   <HaulersDream.Gizmo.UnloadNow>Unload inventory</HaulersDream.Gizmo.UnloadNow>
   <HaulersDream.Gizmo.UnloadNowDesc>Make this pawn carry everything it has scooped to the nearest valid storage.</HaulersDream.Gizmo.UnloadNowDesc>
   <HaulersDream.Gizmo.UnloadNowDrafted>Drafted: undraft this pawn to unload.</HaulersDream.Gizmo.UnloadNowDrafted>
+  <HaulersDream.Gizmo.AutoHaul>Auto-haul yields</HaulersDream.Gizmo.AutoHaul>
+  <HaulersDream.Gizmo.AutoHaulDesc>When on, this pawn automatically scoops its own work yields and sweeps nearby loot into its inventory as it works. Turn it off to stop this pawn from auto-hauling — it will still put away anything it is already carrying.</HaulersDream.Gizmo.AutoHaulDesc>
 
   <!-- Black-hole safety-net alert -->
   <HaulersDream.Alert.CannotUnload>Cannot unload inventory ({0})</HaulersDream.Alert.CannotUnload>
@@ -252,6 +260,7 @@
   <HaulersDream.HaulToSite.CouldNotStart>No reachable materials to haul right now.</HaulersDream.HaulToSite.CouldNotStart>
   <HaulersDream.HaulNearby.Option>Haul everything nearby</HaulersDream.HaulNearby.Option>
   <HaulersDream.HaulNearby.CouldNotStart>Nothing to haul nearby right now.</HaulersDream.HaulNearby.CouldNotStart>
+  <HaulersDream.PickUp.Option>Pick up {0}</HaulersDream.PickUp.Option>
   <HaulersDream.PlanRoute.AlsoBuild>Also build (haul + construct each stop)</HaulersDream.PlanRoute.AlsoBuild>
   <HaulersDream.PlanRoute.AlsoBuildDesc>With this on, the pawn delivers materials to a site and BUILDS it before moving to the next — gathering the whole route's materials up front and keeping them in inventory. With it off, the pawn only fills the sites with materials (others can build). Either way the sites stay open to other pawns, so several can supply the same run in parallel; whoever arrives second simply keeps its surplus for the next stop or unloads it at the end.</HaulersDream.PlanRoute.AlsoBuildDesc>
 

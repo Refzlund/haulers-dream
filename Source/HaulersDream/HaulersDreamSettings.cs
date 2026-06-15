@@ -101,6 +101,11 @@ namespace HaulersDream
         // The "Haul everything nearby" right-click order: start a bulk sweep directly (no need to prioritize two
         // hauls). Additive to vanilla "Prioritize hauling".
         public bool haulNearbyOption = true;
+        // The "Pick up X" float-menu order on a haulable ground item (PUAH parity): a pawn with the comp picks
+        // the clicked stack straight into its inventory as a TAGGED, forced HD bulk haul (serviced by the normal
+        // unload), instead of vanilla's hand-haul-to-storage. Default ON for discoverability; tagged so it is
+        // never a "black hole" even with auto-unload off. Additive to vanilla's right-click haul options.
+        public bool manualPickupOption = true;
         // When a single stack is too big to carry in one armful (e.g. 75 steel but the pawn can hold 72), take it
         // in the INVENTORY and deliver the whole stack in one trip, instead of hand-carrying a partial load and
         // leaving the rest behind. Applies to ordered and automatic single-stack hauls alike.
@@ -227,6 +232,10 @@ namespace HaulersDream
         // --- who ---
         public bool pauseWhileDrafted = true;
         public bool allowMechanoids = true;
+        // Let colony hauling animals (not wild/enemy) scoop nearby loot into their inventory and run HD's
+        // bulk-haul, the same way colonists do. Opt-in (default OFF) so the out-of-the-box scope stays
+        // colonists + mechs; the eligibility branch + the animal think-tree haul redirect are gated on this.
+        public bool allowAnimals = false;
         public bool allowIncapable = false;   // let pawns incapable of hauling still scoop their own yields
 
         // --- per-work-type toggles ---
@@ -355,6 +364,7 @@ namespace HaulersDream
             Scribe_Values.Look(ref bulkHaul, "bulkHaul", true);
             Scribe_Values.Look(ref bulkHaulTrigger, "bulkHaulTrigger", BulkHaulTrigger.SecondTasked);
             Scribe_Values.Look(ref haulNearbyOption, "haulNearbyOption", true);
+            Scribe_Values.Look(ref manualPickupOption, "manualPickupOption", true);
             Scribe_Values.Look(ref haulOversizedInInventory, "haulOversizedInInventory", true);
             Scribe_Values.Look(ref sweepNearbyWhileWorking, "sweepNearbyWhileWorking", true);
             Scribe_Values.Look(ref loadPackAnimalBulk, "loadPackAnimalBulk", true);
@@ -401,6 +411,7 @@ namespace HaulersDream
                 routePrefsByDef = new Dictionary<string, RouteDialogPrefs>();
             Scribe_Values.Look(ref pauseWhileDrafted, "pauseWhileDrafted", true);
             Scribe_Values.Look(ref allowMechanoids, "allowMechanoids", true);
+            Scribe_Values.Look(ref allowAnimals, "allowAnimals", false);
             Scribe_Values.Look(ref allowIncapable, "allowIncapable", false);
             Scribe_Values.Look(ref haulHarvest, "haulHarvest", true);
             Scribe_Values.Look(ref haulMining, "haulMining", true);
@@ -546,7 +557,8 @@ namespace HaulersDream
             };
             l.Begin(view);
 
-            l.Label("HaulersDream.Setting.CarryLimit".Translate(carryLimitFraction.ToStringPercent()));
+            l.Label("HaulersDream.Setting.CarryLimit".Translate(carryLimitFraction.ToStringPercent()),
+                tooltip: "HaulersDream.Setting.CarryLimitDesc".Translate());
             carryLimitFraction = l.Slider(carryLimitFraction, CarryMath.MinFraction, CarryMath.MaxFraction);
 
             l.GapLine();
@@ -614,6 +626,11 @@ namespace HaulersDream
                 l.CheckboxLabeled("HaulersDream.Setting.HaulOversized".Translate(), ref haulOversizedInInventory,
                     "HaulersDream.Setting.HaulOversizedDesc".Translate());
             }
+
+            // The "Pick up X" right-click order is independent of the bulk-haul sweep (its provider gates only on
+            // manualPickupOption), so it lives OUTSIDE the bulkHaul block — reachable even with bulk-haul turned off.
+            l.CheckboxLabeled("HaulersDream.Setting.ManualPickup".Translate(), ref manualPickupOption,
+                "HaulersDream.Setting.ManualPickupDesc".Translate());
 
             l.CheckboxLabeled("HaulersDream.Setting.SweepNearbyWhileWorking".Translate(), ref sweepNearbyWhileWorking,
                 "HaulersDream.Setting.SweepNearbyWhileWorkingDesc".Translate());
@@ -769,7 +786,10 @@ namespace HaulersDream
 
             l.GapLine();
             l.CheckboxLabeled("HaulersDream.Setting.PauseWhileDrafted".Translate(), ref pauseWhileDrafted);
-            l.CheckboxLabeled("HaulersDream.Setting.AllowMechanoids".Translate(), ref allowMechanoids);
+            l.CheckboxLabeled("HaulersDream.Setting.AllowMechanoids".Translate(), ref allowMechanoids,
+                "HaulersDream.AllowMechanoidsDesc".Translate());
+            l.CheckboxLabeled("HaulersDream.AllowAnimals".Translate(), ref allowAnimals,
+                "HaulersDream.AllowAnimalsDesc".Translate());
             l.CheckboxLabeled("HaulersDream.Setting.AllowIncapable".Translate(), ref allowIncapable);
             l.CheckboxLabeled("HaulersDream.Setting.EnableOnNonHomeMaps".Translate(), ref enableOnNonHomeMaps);
             l.CheckboxLabeled("HaulersDream.Setting.HideGizmo".Translate(), ref hideGizmo);

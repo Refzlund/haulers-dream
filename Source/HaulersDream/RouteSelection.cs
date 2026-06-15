@@ -240,16 +240,47 @@ namespace HaulersDream
             }
         }
 
+        // Per-(pawn, tick) memo for ClaimedByOtherPawns. The bulk-haul snowball, the work-spot nearby-sweep, the
+        // transporter sweep, and the route picker all build this same set, and on a busy tick several of them run
+        // for the SAME pawn — each scan walks every colony pawn's whole job queue, so recomputing per call was
+        // pure waste. One entry per thread (matches BulkHaul.planCache); a different pawn or a new tick recomputes.
+        [System.ThreadStatic] private static Pawn claimedCachePawn;
+        [System.ThreadStatic] private static int claimedCacheTick;
+        [System.ThreadStatic] private static HashSet<Thing> claimedCacheSet;
+
+        /// <summary>Drop the main thread's per-(pawn,tick) memo on game load (sibling of BulkHaul.ClearPlanCache),
+        /// so it never retains a dead session's Thing references. Correctness is already guaranteed by the
+        /// pawn-identity check (a deserialized pawn is a fresh instance that can't match a stale entry); this is
+        /// hygiene only — release the references promptly.</summary>
+        internal static void ClearClaimedCache()
+        {
+            claimedCachePawn = null;
+            claimedCacheSet = null;
+            claimedCacheTick = -1;
+        }
+
         // Things that are the target of another colony pawn's current or queued job — i.e. already an "order" for
         // someone else, which a new route must not include. We scan job targets (targetA/B/C plus the targetQueues
         // that a multi-target vanilla job uses) rather than the designation manager, because a designation is global
         // (any pawn may take it) while a job target is a specific pawn's commitment. Our own routes queue one job
         // per stop, so every stop another pawn's route claimed is a queued target here.
+        //
+        // NO CALLER MUTATES the returned set (every use is Contains/Count — verified across BulkHaul, YieldRouter,
+        // TransportLoad, and the route picker), so a same-tick re-request safely shares one instance. The memo is
+        // keyed on TicksGame, which FREEZES while paused; the route picker runs per-frame WHILE PAUSED and the
+        // player can queue an order mid-pause (changing a job queue with no tick advance), so paused requests
+        // bypass the cache and recompute fresh — exactly the BulkHaul plan-cache paused-bypass rationale.
         internal static HashSet<Thing> ClaimedByOtherPawns(Pawn pawn)
         {
-            var set = new HashSet<Thing>();
             if (pawn?.Map == null || pawn.Faction == null)
-                return set;
+                return new HashSet<Thing>();
+
+            bool paused = Find.TickManager?.Paused ?? false;
+            int tick = Find.TickManager?.TicksGame ?? -1;
+            if (!paused && claimedCacheSet != null && claimedCachePawn == pawn && claimedCacheTick == tick)
+                return claimedCacheSet;
+
+            var set = new HashSet<Thing>();
             var pawns = pawn.Map.mapPawns.SpawnedPawnsInFaction(pawn.Faction);
             for (int i = 0; i < pawns.Count; i++)
             {
@@ -265,6 +296,13 @@ namespace HaulersDream
                 if (q != null)
                     for (int k = 0; k < q.Count; k++)
                         CollectJobTargets(set, q[k]?.job);
+            }
+
+            if (!paused)
+            {
+                claimedCachePawn = pawn;
+                claimedCacheTick = tick;
+                claimedCacheSet = set;
             }
             return set;
         }

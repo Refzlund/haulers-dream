@@ -175,8 +175,8 @@ namespace HaulersDream
             if (map == null || pawn.jobs == null || !anchor.IsValid || !IsEligible(pawn))
                 return;
             var comp = pawn.GetComp<CompHauledToInventory>();
-            if (comp == null)
-                return;
+            if (comp == null || !comp.autoHaulYields)
+                return; // per-pawn opt-out: a toggled-off pawn never sweeps loose items into inventory
             int now = Find.TickManager?.TicksGame ?? 0;
             if (now - comp.lastSweepTick < SweepCooldownTicks)
                 return;
@@ -613,7 +613,10 @@ namespace HaulersDream
                 return false;
             if (p.Map != null && !s.enableOnNonHomeMaps && !p.Map.IsPlayerHome)
                 return false;
-            return p.GetComp<CompHauledToInventory>() != null;
+            var comp = p.GetComp<CompHauledToInventory>();
+            // Per-pawn opt-out: a pawn toggled OFF never scoops/sweeps/self-picks. Unload paths don't read
+            // this flag, so a toggled-off pawn still empties what it already carries.
+            return comp != null && comp.autoHaulYields;
         }
 
         public static bool IsEligible(Pawn p)
@@ -633,7 +636,12 @@ namespace HaulersDream
                 incapableOfHauling: p.WorkTypeIsDisabled(WorkTypeDefOf.Hauling),
                 allowMechanoids: s.allowMechanoids,
                 pauseWhileDrafted: s.pauseWhileDrafted,
-                allowIncapable: s.allowIncapable);
+                allowIncapable: s.allowIncapable,
+                // #4 (opt-in, default OFF): a non-mech non-humanlike (colony animal) is eligible only
+                // when allowAnimals is on — so with it off this whole arg is false and eligibility is
+                // byte-identical to before (animals fall through EligibilityPolicy's animal branch to
+                // false exactly as the absent-arg default did).
+                allowAnimals: s.allowAnimals);
         }
     }
 }

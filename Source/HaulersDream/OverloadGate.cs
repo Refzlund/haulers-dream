@@ -35,12 +35,21 @@ namespace HaulersDream
 
         /// <summary>
         /// <see cref="NoOverload"/> plus the per-pawn half of the bargain: the overload deal is
-        /// slowdown-FOR-capacity, and <see cref="StatPart_Overload"/> only ever slows player-faction
-        /// HUMANLIKES — so a pawn the StatPart never slows (a mech lifter) must not get the extra
-        /// capacity either, or it sweeps past its limit penalty-free (a balance regression vs vanilla).
+        /// slowdown-FOR-capacity, and <see cref="StatPart_Overload"/> slows player-faction HUMANLIKES AND
+        /// player-faction MECHANOIDS — so both may load past their carry limit (and pay the matching
+        /// slowdown). Only a non-mech non-humanlike (e.g. an animal hauler) stands down here: the StatPart
+        /// never slows it, so it must not get the extra capacity penalty-free (a balance regression). The two
+        /// halves stay in lockstep — the SAME race classes that overload here are the ones the StatPart slows.
         /// </summary>
         internal static bool NoOverloadFor(Pawn pawn, HaulersDreamSettings s)
-            => NoOverload(s) || !(pawn?.RaceProps?.Humanlike ?? false);
+        {
+            if (NoOverload(s))
+                return true;
+            var race = pawn?.RaceProps;
+            if (race == null)
+                return true;
+            return !race.Humanlike && !race.IsMechanoid;
+        }
 
         internal static int CountToPickUp(Pawn pawn, Thing thing, HaulersDreamSettings s)
         {

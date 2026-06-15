@@ -292,8 +292,9 @@ namespace HaulersDream
             float baseCap = CarryMath.EffectiveCapacity(maxCap, s.carryLimitFraction);
             float cur = MassUtility.GearAndInventoryMass(pawn);
             float unit = resourceDef.GetStatValueAbstract(StatDefOf.Mass);
-            // Pawn-aware (NoOverloadFor): strict / slider-Off / CE — and a non-humanlike the slowdown
-            // StatPart never touches must not get penalty-free overload headroom.
+            // Pawn-aware (NoOverloadFor): strict / slider-Off / CE — and an ANIMAL (non-mech non-humanlike,
+            // never slowed by StatPart) must not get penalty-free overload headroom. Player mechs DO overload
+            // here and are slowed for it, like colonists.
             int level = OverloadGate.NoOverloadFor(pawn, s) ? OverloadTuning.OffLevel : s.overloadLevel;
             return OverloadPolicy.UnitsToCarry(level, maxCap, baseCap, cur, unit,
                 demandUnits: int.MaxValue, availableUnits: int.MaxValue);

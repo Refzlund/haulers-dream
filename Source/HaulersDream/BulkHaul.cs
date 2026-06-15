@@ -73,6 +73,16 @@ namespace HaulersDream
         [ThreadStatic] private static int cacheTick;
         [ThreadStatic] private static Dictionary<long, CachedPlan> planCache;
 
+        // Reused per-call scratch so the (frequent) cache-miss build allocates nothing for its working sets —
+        // the work scan calls BuildBulkJob for EVERY distinct candidate it probes in a tick (each a cache miss),
+        // and a fresh List/Dictionary per call was pure GC pressure on the hot scan path. [ThreadStatic] +
+        // lazy-init matches the planCache convention (a threading-mod work scan gets its own buffers).
+        // SAFETY: a single BuildBulkJob call runs to completion (no re-entrancy — it makes no nested JobOnThing
+        // probe) before the next reuse, so sharing these across calls on one thread is sound. Each is Cleared at
+        // the point of use, never trusted to be empty from a prior call.
+        [ThreadStatic] private static List<Thing> scratchPool;
+        [ThreadStatic] private static Dictionary<ThingDef, int> scratchSpaceLeftByDef;
+
         // The cached Job plus the loadID it carried at insert. JobMaker.ReturnToPool → Job.Clear() sets
         // loadID = -1 and MakeJob assigns a fresh UniqueIDsManager id (decompile-verified), so a same-tick
         // pool-recycled instance — even one reused for an identically-shaped job — can never validate.
@@ -90,6 +100,32 @@ namespace HaulersDream
         internal static Job TryBuildBulkJob(Pawn pawn, Thing primary, Job vanillaJob, bool forced)
         {
             if (pawn == null || primary == null)
+                return null;
+            // Per-pawn "Auto-haul yields" opt-out (the #1 gizmo): on the AUTOMATIC path (the haul work-scan
+            // postfix and the animal hook, both forced:false) a pawn toggled OFF must NOT have its ordinary
+            // hauls transformed into nearby-loot inventory sweeps — same gate IsCandidate applies to the
+            // scoop/self-pickup paths, and what the gizmo tooltip promises. FORCED player orders ("Haul
+            // everything nearby", "Pick up X") use separate entry points (BuildBulkJobForced/BuildPickUpJob)
+            // and intentionally override the standing toggle.
+            if (!forced)
+            {
+                var optOut = pawn.GetComp<CompHauledToInventory>();
+                if (optOut != null && !optOut.autoHaulYields)
+                    return null;
+            }
+            // CHEAP FRONT GATE (microstutter fix): the work scan calls JobOnThing for every haulable candidate
+            // it considers, and on a cache miss the build below runs the full pool enumeration + ClaimedByOtherPawns
+            // (scans every colony pawn's job queue) + storage scans — far too expensive to run per candidate when
+            // the answer is almost always "no sweep". HasPotentialBulkWork is a bounded, allocation-free reject:
+            // feature on + comp present + eligible + at least one OTHER haulable within the sweep pool radius.
+            // Mirrors TransportLoad.HasPotentialBulkWork. When it rejects, the vanilla job stands and no heavy
+            // scan runs. It's a SUPERSET of the build's AUTOMATIC accept set: a plan with NO nearby sweepable is
+            // produced only by forceSweep / secondTasked (forced-only, and forced probes skip this gate) or the
+            // oversized-primary-in-inventory carve-out (which HasPotentialBulkWork itself lets through), so it
+            // never suppresses a plan the automatic build would have made. Skipped for forced probes: the float
+            // menu / player orders aren't the hot scan path, and a forced single-stack order can legitimately
+            // build with nothing else nearby (oversized-in-inventory, secondTasked takeover).
+            if (!forced && !HasPotentialBulkWork(pawn, primary, vanillaJob))
                 return null;
             // The memo is keyed on TicksGame, which FREEZES while paused — but forced probes (the float
             // menu builds its options, and the click re-calls JobOnThing) run while paused. A cached null
@@ -139,6 +175,75 @@ namespace HaulersDream
             // per-tick self-clearing anyway, so a stale entry there dies on its next use.
             planCache?.Clear();
             cacheTick = -1;
+            // Drop any cross-session Thing references the scratch buffers still hold (they're Cleared again
+            // at the next build before being read, so this is hygiene, not correctness).
+            scratchPool?.Clear();
+            scratchSpaceLeftByDef?.Clear();
+            RouteSelection.ClearClaimedCache(); // drop the per-(pawn,tick) claimed-set's cross-session Thing refs
+        }
+
+        /// <summary>
+        /// Bounded, allocation-free "is a bulk sweep even possible here?" reject for the AUTOMATIC work-scan
+        /// path — run BEFORE the expensive pool/claimed/storage scans so a candidate that can't sweep costs
+        /// only this. Mirrors <see cref="TransportLoad.HasPotentialBulkWork"/>: feature on, the comp present,
+        /// the pawn auto-eligible, a HaulToCell destination (containers keep vanilla flow), on an allowed map,
+        /// and at least one OTHER haulable within the same pool radius the build would use. Returns on the FIRST
+        /// nearby hit — no list built. A SUPERSET of the build's AUTOMATIC-path accept set: the build yields a
+        /// plan with NO nearby sweepable only via forceSweep / secondTasked (both forced-only, and forced probes
+        /// skip this gate entirely) or the oversized-primary-in-inventory carve-out (handled below), so this
+        /// never rejects a plan the automatic build would have produced.
+        /// </summary>
+        private static bool HasPotentialBulkWork(Pawn pawn, Thing primary, Job vanillaJob)
+        {
+            if (vanillaJob == null || vanillaJob.def != JobDefOf.HaulToCell)
+                return false; // container destinations (graves, pods) keep their dedicated vanilla flow
+            var s = HaulersDreamMod.Settings;
+            var map = pawn?.Map;
+            if (s == null || !s.bulkHaul || map == null || primary == null || !primary.Spawned)
+                return false;
+            if (!s.enableOnNonHomeMaps && !map.IsPlayerHome)
+                return false;
+            if (pawn.Faction != Faction.OfPlayerSilentFail || pawn.IsQuestLodger())
+                return false;
+            // Pawn-type gate, identical to BuildBulkJob (kept symmetric with scoop + unload via IsEligible).
+            if (!YieldRouter.IsEligible(pawn))
+                return false;
+            if (pawn.GetComp<CompHauledToInventory>() == null || pawn.inventory == null)
+                return false;
+
+            // CARVE-OUT (bug 2): a single OVERSIZED stack (bigger than one armful) routes through inventory even
+            // with nothing else nearby, so the whole stack moves in one trip. This applies on the AUTOMATIC path
+            // too (not gated on forced), so the gate must let it through and defer to the build (which prices the
+            // destination's real space via OversizedStackWorthInventory). Cheap: MaxStackSpaceEver is arithmetic.
+            if (s.haulOversizedInInventory)
+            {
+                int handCap = pawn.carryTracker?.MaxStackSpaceEver(primary.def) ?? primary.def.stackLimit;
+                if (primary.stackCount > handCap)
+                    return true;
+            }
+
+            // The SAME pool radius the build derives, so this gate can never be narrower than the real sweep:
+            // searchRadius = max(floor, store-distance × fraction); pool = searchRadius × hops. The store cell
+            // is already resolved on the vanilla job (targetB) — no extra storage lookup here.
+            var storeCell = vanillaJob.targetB.Cell;
+            float searchRadius = Math.Max(MinSearchRadius,
+                (storeCell - primary.Position).LengthHorizontal * SearchRangeFraction);
+            float poolRadiusSq = (searchRadius * PoolRadiusHops) * (searchRadius * PoolRadiusHops);
+
+            // First nearby OTHER haulable wins — bounded by an early return, no pool list, no per-item storage
+            // scan. Matches BuildPool's cheap pre-filter (spawned item, same map, not the primary, not a corpse,
+            // EverHaulable, within pool radius). The deeper eligibility (forbidden / claimed / capacity / storage)
+            // is the build's job; here we only need to know the heavy scan is worth running at all.
+            foreach (var t in map.listerHaulables.ThingsPotentiallyNeedingHauling())
+            {
+                if (t == null || t == primary || !t.Spawned || t.Map != map || t is Corpse)
+                    continue;
+                if (t.def == null || !t.def.EverHaulable)
+                    continue;
+                if ((t.Position - primary.Position).LengthHorizontalSquared <= poolRadiusSq)
+                    return true;
+            }
+            return false;
         }
 
         private static Job BuildBulkJob(Pawn pawn, Thing primary, Job vanillaJob, bool forced, bool forceSweep = false)
@@ -198,8 +303,9 @@ namespace HaulersDream
             // The worth-it mass ceiling (smart-overload break-even; 100% under strict/off; ∞ at "no slowdown").
             // Under Combat Extended the strict path always applies (OverloadGate.NoOverload) and CE's BULK
             // dimension is tracked alongside weight, so a plan never promises more than CE lets the pawn carry.
-            // Pawn-aware gate (NoOverloadFor): a non-humanlike hauler (mech lifter) the slowdown StatPart
-            // never touches gets the plain carry limit, not the slowdown-for-capacity overload ceiling.
+            // Pawn-aware gate (NoOverloadFor): only an ANIMAL (non-mech non-humanlike) stands down to the
+            // plain carry limit; player humanlikes AND mechs overload to the break-even ceiling and are
+            // slowed for it by StatPart_Overload (decision model and slowdown stay in lockstep).
             float maxCap = MassUtility.Capacity(pawn); // under CE this reads CE's CarryWeight (CE postfix)
             float baseCap = CarryMath.EffectiveCapacity(maxCap, s.carryLimitFraction);
             float ceiling = BulkHaulPolicy.CeilingKg(s.overloadLevel, OverloadGate.NoOverloadFor(pawn, s), baseCap);
@@ -224,7 +330,10 @@ namespace HaulersDream
 
             // Candidate pool: everything the haul system wants hauled, near the primary. Forbidden things are
             // already absent from the lister, but area-forbiddance is PER-PAWN, so IsForbidden is re-checked.
-            var pool = BuildPool(pawn, primary, map, searchRadius * PoolRadiusHops);
+            // Reuse the per-thread scratch list (filled fresh below) — the work scan builds this for every
+            // distinct candidate it probes in a tick, so a fresh allocation per call was the hot-path GC cost.
+            var pool = scratchPool ?? (scratchPool = new List<Thing>());
+            BuildPoolInto(pool, pawn, primary, map, searchRadius * PoolRadiusHops);
 
             // Storage-space budget per DEF (one space computation per def per plan, not per item): the per-item
             // existence check below (needAccurateResult:false) would let N same-def stacks all count against the
@@ -233,7 +342,9 @@ namespace HaulersDream
             // destination's slot group serves as the def's whole budget — storage groups can differ per item
             // position, so this is an approximation (conservative: leftovers stay at their origin for the next
             // haul cycle, vanilla-like). The primary's def is seeded from the vanilla-chosen destination cell.
-            var spaceLeftByDef = new Dictionary<ThingDef, int>();
+            // Reused per-thread scratch, Cleared here (never trusted to be empty from a prior call).
+            var spaceLeftByDef = scratchSpaceLeftByDef ?? (scratchSpaceLeftByDef = new Dictionary<ThingDef, int>());
+            spaceLeftByDef.Clear();
             int primarySpace = StorageSpaceForDef(pawn, primary, storeCell, map);
             if (primarySpace != int.MaxValue)
                 spaceLeftByDef[primary.def] = primarySpace - primaryTake;
@@ -332,11 +443,95 @@ namespace HaulersDream
             return BuildBulkJob(pawn, clicked, vanilla, forced: true, forceSweep: true);
         }
 
+        /// <summary>
+        /// The explicit "Pick up X" order (see <see cref="FloatMenuOptionProvider_PickUpIntoInventory"/>): build a
+        /// SINGLE-stack <see cref="JobDriver_BulkHaul"/> job that loads ONLY the clicked stack into the pawn's
+        /// inventory — tagged on <see cref="CompHauledToInventory"/> and serviced by the normal storage-aware
+        /// unload pass — instead of a raw untagged TakeInventory (which would be a black hole under the default
+        /// unloadAllSurplus=false). Distinct from <see cref="BuildBulkJobForced"/>: NO nearby sweep, just the one
+        /// clicked stack. PURE planning — no reservations/mutation (the menu builds options speculatively) — exactly
+        /// like the other forced builders; the driver re-clamps the count to live mass/storage at pickup. The whole
+        /// clicked stack is requested into inventory (mass-limited, not stack-limited); the count is clamped up front
+        /// to the destination group's real space (so the surplus stays at its origin for the next haul, never
+        /// stranded) and to the worth-it mass ceiling for this pawn (so a too-heavy stack never plans more than the
+        /// pawn can carry). Returns null when nothing of the clicked stack fits in inventory under the ceiling (the
+        /// caller then falls back to a plain forced haul), or when there is no storage / a container destination.
+        /// </summary>
+        internal static Job BuildPickUpJob(Pawn pawn, Thing clicked)
+        {
+            if (pawn == null || clicked == null || !clicked.Spawned)
+                return null;
+            var s = HaulersDreamMod.Settings;
+            var map = pawn.Map;
+            if (s == null || map == null)
+                return null;
+            // Same map gate as the sweep builder: with the mod inert on non-home maps the driver's forced finish
+            // unload would have no storage to flush to there (the provider already gates on this, but keep the
+            // builder self-consistent in case it's reached another way).
+            if (!s.enableOnNonHomeMaps && !map.IsPlayerHome)
+                return null;
+            if (pawn.GetComp<CompHauledToInventory>() == null || pawn.inventory == null)
+                return null;
+
+            // Resolve the real storage destination (the same vanilla bar the provider/order uses); a container
+            // destination keeps its dedicated vanilla flow, and no storage means there is nowhere to unload to.
+            var vanilla = HaulAIUtility.HaulToStorageJob(pawn, clicked, forced: true);
+            if (vanilla == null || vanilla.def != JobDefOf.HaulToCell)
+                return null;
+
+            // Clamp the requested count to the destination group's real remaining space so the surplus never
+            // strands in inventory with nowhere to go (mirrors BuildBulkJob's primary clamp). int.MaxValue =
+            // "no binding limit" (container/large group) -> take the whole stack.
+            int space = StorageSpaceForDef(pawn, clicked, vanilla.targetB.Cell, map);
+            int deliverable = space == int.MaxValue ? clicked.stackCount : Math.Min(clicked.stackCount, space);
+            if (deliverable <= 0)
+                return null;
+
+            // Clamp to the worth-it mass ceiling for this pawn (per-pawn base cap × the overload break-even ratio),
+            // exactly as BuildBulkJob prices the primary, so a single oversized/heavy stack never plans more than the
+            // pawn can actually carry into inventory. Under CE also clamp to CE's live weight+bulk fit.
+            float maxCap = MassUtility.Capacity(pawn);
+            float baseCap = CarryMath.EffectiveCapacity(maxCap, s.carryLimitFraction);
+            float ceiling = BulkHaulPolicy.CeilingKg(s.overloadLevel, OverloadGate.NoOverloadFor(pawn, s), baseCap);
+            float running = MassUtility.GearAndInventoryMass(pawn);
+            int take = BulkHaulPolicy.CountWithinCeiling(ceiling, running, clicked.GetStatValue(StatDefOf.Mass), deliverable);
+            take = Math.Min(take, CECompat.MaxFitCount(pawn, clicked));
+            float bulkPer = CECompat.BulkPerUnit(clicked);
+            float bulkRoom = CECompat.AvailableBulk(pawn); // +∞ without CE
+            // +∞ bulkRoom = unlimited (no CE / fail-open); (int)Math.Floor(∞/x) would be int.MinValue and kill the
+            // plan — skip the clamp instead. Mirrors BuildBulkJob's primary bulk clamp exactly.
+            if (bulkPer > 0f && !float.IsPositiveInfinity(bulkRoom))
+                take = Math.Min(take, (int)Math.Floor(bulkRoom / bulkPer));
+            if (take <= 0)
+                return null; // nothing fits in inventory under the ceiling -> caller hand-hauls it
+
+            // A single-stack bulk job: the clicked stack is the primary (index 0), so the driver treats it with
+            // vanilla semantics (it's what the order assigned — never skipped for being in valid storage, and a
+            // forbidden primary is still taken because forcing means it). One entry in the pickup queue; count = 1
+            // is the Job.count sentinel the bulk driver/vanilla checks expect (the real per-stack counts live in
+            // countQueue). Built by the same JobMaker path as BuildBulkJob so the driver re-reads it identically.
+            var job = JobMaker.MakeJob(HaulersDreamDefOf.HaulersDream_BulkHaul, clicked);
+            job.targetQueueB = new List<LocalTargetInfo> { clicked };
+            job.countQueue = new List<int> { take };
+            job.count = 1;
+            return job;
+        }
+
         // Everything in the haul lister that could plausibly join this sweep, pre-filtered cheap.
-        // internal: reused by PackAnimalLoad's bulk pack-animal sweep (same pool, different destination).
+        // internal: reused by PackAnimalLoad's bulk pack-animal sweep + TransportLoad (same pool, different
+        // destination) — those callers OWN the returned list, so this allocates a fresh one for them.
         internal static List<Thing> BuildPool(Pawn pawn, Thing primary, Map map, float poolRadius)
         {
             var pool = new List<Thing>();
+            BuildPoolInto(pool, pawn, primary, map, poolRadius);
+            return pool;
+        }
+
+        // Fill (Clearing first) the provided buffer with the candidate pool — lets the hot bulk-haul path reuse
+        // a per-thread scratch list instead of allocating one per JobOnThing probe. Same filter as BuildPool.
+        private static void BuildPoolInto(List<Thing> pool, Pawn pawn, Thing primary, Map map, float poolRadius)
+        {
+            pool.Clear();
             float radiusSq = poolRadius * poolRadius;
             foreach (var t in map.listerHaulables.ThingsPotentiallyNeedingHauling())
             {
@@ -350,7 +545,6 @@ namespace HaulersDream
                     continue;
                 pool.Add(t);
             }
-            return pool;
         }
 
         // The nearest pool candidate within `radius` of `from` that passes the full eligibility + capacity

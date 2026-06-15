@@ -44,9 +44,14 @@ namespace HaulersDream
             // (OverloadGate.NoOverload), and CE's encumbrance simulation is the single source of slowdown truth.
             if (CECompat.IsActive)
                 return false;
-            if (!(req.Thing is Pawn pawn) || pawn.Dead || pawn.RaceProps == null || !pawn.RaceProps.Humanlike)
+            if (!(req.Thing is Pawn pawn) || pawn.Dead || pawn.RaceProps == null)
                 return false;
             if (pawn.Faction == null || !pawn.Faction.IsPlayer)
+                return false;
+            // Slow player-faction HUMANLIKES and player-faction MECHANOIDS (the same race classes
+            // OverloadGate.NoOverloadFor lets overload — the two stay in lockstep so the capacity a pawn
+            // gains is exactly what it pays for in speed). Animals / non-player pawns are never slowed.
+            if (!(pawn.RaceProps.Humanlike || pawn.RaceProps.IsMechanoid))
                 return false;
             // The slowdown is a hauling-economics mechanic; drafted pawns stand to orders at full speed,
             // vanilla-style (and with the draft gate on unloads they couldn't even shed the load until undrafted).

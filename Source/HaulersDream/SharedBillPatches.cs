@@ -59,9 +59,13 @@ namespace HaulersDream
             var s = HaulersDreamMod.Settings;
 
             // (1) Existing carried-stock injection — UNCHANGED, runs first so injected inventory stacks
-            //     participate in the spoiling reorder below.
+            //     participate in the spoiling reorder below. P2 (craft-loop gap): cede to Common Sense
+            //     exactly like the BatchRoute/InventoryRoute conversions — when CS owns the DoBill flow it
+            //     re-deposits HD's in-inventory ingredients onto the bench floor, so injecting carried stock
+            //     back into CS's chooser reopens the gather->bench->unload loop. !OwnsDoBillFlow closes it.
             if (!Patch_WorkGiver_DoBill_TryFindBestBillIngredients.AddedThisSearch
-                && s != null && s.shareForCrafting && availableThings != null)
+                && s != null && s.shareForCrafting && availableThings != null
+                && !CommonSenseCompat.OwnsDoBillFlow)
             {
                 var worker = Patch_WorkGiver_DoBill_TryFindBestBillIngredients.CurrentWorker;
                 if (worker != null && bill?.recipe != null)

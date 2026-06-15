@@ -14,6 +14,12 @@ namespace HaulersDream
         private HashSet<Thing> takenToInventory = new HashSet<Thing>();
         public int lastYieldTick = -99999;
 
+        /// <summary>Per-pawn opt-out for the auto-haul-into-inventory feature, surfaced as a Command_Toggle
+        /// gizmo. Default ON (so old saves and untouched pawns keep scooping); scribed with a true default so
+        /// a pre-feature save loads ON. Gates only the SCOOP/sweep/self-pickup intake paths — a pawn toggled
+        /// OFF still empties what it already carries (the unload paths never read this).</summary>
+        public bool autoHaulYields = true;
+
         /// <summary>Tick each tagged stack was FIRST tagged, for per-item staleness in the cannot-unload alert
         /// (a busy hauler refreshing lastYieldTick must not mask one stranded stack). Transient: not scribed —
         /// on load, tags get a fresh clock via the GetHashSet backfill, so a loaded save won't false-alert and
@@ -198,6 +204,7 @@ namespace HaulersDream
             base.PostExposeData();
             Scribe_Collections.Look(ref takenToInventory, "haulersDreamTakenToInventory", LookMode.Reference);
             Scribe_Values.Look(ref lastYieldTick, "haulersDreamLastYieldTick", -99999);
+            Scribe_Values.Look(ref autoHaulYields, "haulersDreamAutoHaulYields", true);
             if (takenToInventory == null)
                 takenToInventory = new HashSet<Thing>();
         }

@@ -229,12 +229,35 @@ namespace HaulersDream
                 yield return gizmo;
 
             var s = HaulersDreamMod.Settings;
-            if (s == null || s.hideGizmo || __instance.Faction != Faction.OfPlayerSilentFail)
+            if (s == null || __instance.Faction != Faction.OfPlayerSilentFail)
                 yield break;
 
             var comp = __instance.GetComp<CompHauledToInventory>();
             if (comp == null)
                 yield break;
+
+            // Per-pawn auto-haul opt-out. A FUNCTIONAL standing control (not a one-shot action), so — unlike the
+            // "Unload inventory" button below — it is NOT governed by s.hideGizmo (whose label describes only the
+            // Unload button); a player who hid that button must still be able to toggle a pawn's auto-hauling.
+            // Shown for any scoop-eligible player pawn (the same eligibility that decides whether this pawn would
+            // ever scoop), independent of whether it currently carries anything. Command_Toggle aggregates across a
+            // multi-select automatically (matching isActive merges the buttons; toggleAction fires per pawn).
+            if (YieldRouter.IsEligible(__instance))
+            {
+                yield return new Command_Toggle
+                {
+                    defaultLabel = "HaulersDream.Gizmo.AutoHaul".Translate(),
+                    defaultDesc = "HaulersDream.Gizmo.AutoHaulDesc".Translate(),
+                    icon = ContentFinder<Texture2D>.Get("UI/Buttons/Drop", false) ?? BaseContent.BadTex,
+                    isActive = () => comp.autoHaulYields,
+                    toggleAction = () => comp.autoHaulYields = !comp.autoHaulYields
+                };
+            }
+
+            // The "Unload inventory" button below is a one-shot convenience — hideGizmo may hide it.
+            if (s.hideGizmo)
+                yield break;
+
             // Show the gizmo when HD has tagged stock OR the pawn carries foreign surplus a forced unload would
             // actually adopt. With the global "unload all surplus" toggle on that's ANY surplus; with it off it's
             // only stock whose def has an explicit surplus-producing rule (keep-at-most / always-unload) — matching
@@ -268,6 +291,52 @@ namespace HaulersDream
             if (__instance.Drafted)
                 unload.Disable("HaulersDream.Gizmo.UnloadNowDrafted".Translate());
             yield return unload;
+        }
+    }
+
+    /// <summary>
+    /// #4 ANIMAL HAULERS (opt-in, default OFF): give trained colony hauling animals the same bulk-into-inventory
+    /// sweep colonists/mechs already get. Animals never reach HD's <see cref="WorkGiver_HaulGeneral"/> postfix —
+    /// they have no workSettings and haul through the THINK TREE, where the Animal think tree's
+    /// <c>ThinkNode_ConditionalTrainableCompleted(Haul)</c> subtree runs <see cref="JobGiver_Haul"/>, whose
+    /// <c>TryGiveJob</c> finds the nearest haulable and returns <c>HaulAIUtility.HaulToStorageJob(pawn, thing,
+    /// forced:false)</c> — a single-stack <see cref="JobDefOf.HaulToCell"/> job (decompile-verified RW1.6). This
+    /// postfix upgrades that single-item haul into HD's bulk-to-inventory job via the SAME planner the work scan
+    /// uses (<see cref="BulkHaul.TryBuildBulkJob"/>), so the swept stacks are tagged on the animal's
+    /// <see cref="CompHauledToInventory"/> (every <c>thingClass="Pawn"</c> def with a comps node gets the comp —
+    /// animals included) and serviced by the normal unload pass — keeping scoop/bulk/unload symmetric.
+    ///
+    /// CONSERVATIVE SCOPE: restricted to non-humanlike non-mechanoid pawns (animals) — humanlikes/mechs already
+    /// get the bulk sweep on the work-scan path and we must not alter their behavior here. The deeper gates live
+    /// in <see cref="BulkHaul.TryBuildBulkJob"/>: it requires <c>Faction.OfPlayer</c> (so wild/enemy/insect
+    /// animals — never player faction — are rejected), <see cref="YieldRouter.IsEligible"/> (which returns
+    /// <c>allowAnimals</c> for an animal, so with the setting OFF this is false and the whole path is a no-op →
+    /// byte-identical to today), the tracking comp, and the bulkHaul/map gates. No try/catch: a failure is a real
+    /// bug to surface, exactly like <see cref="Patch_WorkGiver_HaulGeneral_BulkHaul"/>.
+    /// </summary>
+    [HarmonyPatch(typeof(JobGiver_Haul), "TryGiveJob")]
+    public static class Patch_JobGiver_Haul_AnimalBulk
+    {
+        static void Postfix(ref Job __result, Pawn pawn)
+        {
+            // Cheap, allocation-free pre-gates before the planner runs: feature on, an animal, with a haul job
+            // to upgrade. allowAnimals defaults OFF — when off this returns immediately and behavior is unchanged.
+            var s = HaulersDreamMod.Settings;
+            if (s == null || !s.allowAnimals || !s.bulkHaul || __result == null || pawn?.RaceProps == null)
+                return;
+            // ANIMALS only here (the think-tree path). Humanlikes/mechs that also run JobGiver_Haul in other
+            // subtrees keep their unchanged result — their bulk sweep comes from the work-scan postfix.
+            if (pawn.RaceProps.Humanlike || pawn.RaceProps.IsMechanoid)
+                return;
+            // The primary is the thing the produced haul targets (StartCarryThing retargets later, but at
+            // JobGiver_Haul time targetA is still the grounded stack). TryBuildBulkJob requires a HaulToCell
+            // vanilla job (container destinations keep their flow) — it rejects anything else internally.
+            var primary = __result.targetA.Thing;
+            if (primary == null)
+                return;
+            var bulk = BulkHaul.TryBuildBulkJob(pawn, primary, __result, forced: false);
+            if (bulk != null)
+                __result = bulk;
         }
     }
 

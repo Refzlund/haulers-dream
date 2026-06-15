@@ -126,8 +126,9 @@ namespace HaulersDream
             float unit = def.GetStatValueAbstract(StatDefOf.Mass);
             if (unit <= 0f)
                 return null;
-            // Pawn-aware (NoOverloadFor): strict / slider-Off / CE — and a non-humanlike the slowdown
-            // StatPart never touches (a mech lifter) must not gather past its limit penalty-free.
+            // Pawn-aware (NoOverloadFor): strict / slider-Off / CE — and an ANIMAL (non-mech non-humanlike,
+            // never slowed by StatPart) must not gather past its plain limit penalty-free. Player mechs DO
+            // overload here and are slowed for it, like colonists.
             int level = OverloadGate.NoOverloadFor(pawn, s) ? OverloadTuning.OffLevel : s.overloadLevel;
 
             int ceiling = ConstructDeliveryPlan.GatherCeiling(level, maxCap, baseCap, cur, unit, gatherNeed);
