@@ -57,6 +57,17 @@
   <HaulersDream.Setting.PlanRoutesDesc>The right-click planning tool for harvesting, mining, cleaning, deconstruction and construction routes. Off = the menu option is hidden everywhere.</HaulersDream.Setting.PlanRoutesDesc>
   <HaulersDream.Setting.PlanCrafting>Enable the crafting planner ("Plan prioritized crafting…")</HaulersDream.Setting.PlanCrafting>
   <HaulersDream.Setting.PlanCraftingDesc>The right-click planning tool on workbenches that batches a bill several times with one ingredient trip. Off = the menu option is hidden.</HaulersDream.Setting.PlanCraftingDesc>
+  <HaulersDream.Setting.BatchByDefault>Batch new bills by default</HaulersDream.Setting.BatchByDefault>
+  <HaulersDream.Setting.BatchByDefaultDesc>Crafting and cooking bills you ADD from now on start in "batch" mode: the colonist fetches a whole batch of ingredients in one trip, makes them all at the bench (food won't spoil while they work), then hauls everything to storage. Only affects newly-added bills — existing bills keep their current setting.</HaulersDream.Setting.BatchByDefaultDesc>
+  <HaulersDream.Setting.DefaultBatchSize>Default batch size: {0}</HaulersDream.Setting.DefaultBatchSize>
+
+  <!-- Batch-Y bill mode (the repeat-mode dropdown entries, the size popup, and the bill-row marker) -->
+  <HaulersDream.Batch.MenuPrefix>Batch</HaulersDream.Batch.MenuPrefix>
+  <HaulersDream.Batch.SetSize>Batch size: {0}…</HaulersDream.Batch.SetSize>
+  <HaulersDream.Batch.RowMarker>×{0} </HaulersDream.Batch.RowMarker>
+  <HaulersDream.Batch.SizeDialogTitle>Batch size — {0}</HaulersDream.Batch.SizeDialogTitle>
+  <HaulersDream.Batch.SizeLabel>Make up to {0} per batch</HaulersDream.Batch.SizeLabel>
+  <HaulersDream.Batch.SizeDesc>The colonist gathers ingredients for the whole batch in one trip, makes them all at the bench (ingredients don't spoil while working), then hauls everything to storage. Capped by available materials and the bill's own count.</HaulersDream.Batch.SizeDesc>
   <HaulersDream.Setting.HaulToStackDesc>Haulers prefer adding to an existing partial stack over starting a new one — within the storage room the game already chose (which stockpile wins is still decided by priority and distance). Works on the ground, on shelves, and in modded storage units. Outdoor storage scans nearby stockpiles within a short radius instead. Destination tiles are also no longer reserved, so several haulers can deliver to the same tile at once instead of spreading one item type across ten cells.</HaulersDream.Setting.HaulToStackDesc>
 
   <HaulersDream.Setting.AutoStripHeader>Auto strip on haul — corpse hauls strip the body, loot rides in the hauler's inventory:</HaulersDream.Setting.AutoStripHeader>
