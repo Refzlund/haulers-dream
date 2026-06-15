@@ -111,4 +111,21 @@
     <suspendable>false</suspendable>
   </JobDef>
 
+  <!-- Pack-animal BULK UNLOAD — the inverse of the load above. Walk to a flagged carrier ONCE and pull many
+       stacks out of it into the hauler's backpack (tagged -> normal storage unload), with the last/overflow
+       stack going to the hands (UNtagged -> hauled directly to storage). See JobDriver_UnloadCarrierInBulk. -->
+  <!-- suspendable false (like the other HD sweep jobs): a clean end recovers correctly — backpack stock is
+       tagged and the finalize flushes it, and the hand-tail is already a queued HaulToStorage job. -->
+  <!-- DELIBERATELY no <checkEncumbrance>: the fallback one-to-hands path may exceed 100% capacity, which that
+       tag would forbid (mirrors the other no-encumbrance HD jobs). casualInterruptible false so a passing
+       distraction can't drop a half-emptied carrier; the non-exclusive reserve still lets roping / caravan
+       formation pre-empt via the driver's other-claimant FailOn. -->
+  <JobDef>
+    <defName>HaulersDream_UnloadCarrierInBulk</defName>
+    <driverClass>HaulersDream.JobDriver_UnloadCarrierInBulk</driverClass>
+    <reportString>unloading a pack animal.</reportString>
+    <casualInterruptible>false</casualInterruptible>
+    <suspendable>false</suspendable>
+  </JobDef>
+
 </Defs>

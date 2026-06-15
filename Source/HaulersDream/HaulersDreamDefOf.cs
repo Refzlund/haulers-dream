@@ -16,6 +16,7 @@ namespace HaulersDream
         public static JobDef HaulersDream_BillPrepGather;
         public static JobDef HaulersDream_BulkHaul;
         public static JobDef HaulersDream_LoadPackAnimal; // load scooped loot onto a pack animal (caravan/away map)
+        public static JobDef HaulersDream_UnloadCarrierInBulk; // bulk-empty a flagged pack animal into the hauler's backpack
 
         static HaulersDreamDefOf() => DefOfHelper.EnsureInitializedInCtor(typeof(HaulersDreamDefOf));
     }

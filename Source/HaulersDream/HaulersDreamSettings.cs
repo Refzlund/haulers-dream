@@ -116,6 +116,19 @@ namespace HaulersDream
         public bool loadPackAnimalBulk = true;       // the manual "Load nearby items onto pack animal (bulk)" order
         public bool autoDivertToPackAnimal = true;   // an over-encumbered caravan pawn auto-loads the nearest pack animal
 
+        // --- pack-animal BULK UNLOAD (the inverse of loading: empty a flagged carrier into the hauler's backpack
+        // in ONE visit, then HD's normal unload ships it to storage). Replaces vanilla's one-stack-per-walk unload.
+        public bool enableBulkUnloadCarriers = true; // route WorkGiver_UnloadCarriers through the bulk-unload job
+        // The hauler must have at least this fraction of its carry capacity free to START a bulk unload (else the
+        // backpack overflows to hands immediately and the visit barely helps). 0.5 = at most 50% encumbered.
+        public float minFreeSpaceToUnloadCarrierPct = 0.5f;
+        // Reserve the carrier exclusively while unloading. OFF (default) = non-exclusive, so roping / caravan
+        // formation / a second hauler can still interrupt (the driver's other-claimant check yields cleanly).
+        public bool reserveCarrierOnUnload = false;
+        // Per-stack visual pause (ticks) so the bulk unload reads as a deliberate action, like vanilla's per-stack
+        // unload cadence. 0 = instant. (Reused name for a future shared load+unload delay.)
+        public int visualUnloadDelay = 15;
+
         // --- auto strip on haul (corpse hauls strip the body; loot rides in the hauler's inventory) ---
         public AutoStripMode autoStripMode = AutoStripMode.AllHauls;
         public bool stripColonistCorpses = false;              // your own dead are not loot (opt-in)
@@ -319,6 +332,10 @@ namespace HaulersDream
             Scribe_Values.Look(ref sweepNearbyWhileWorking, "sweepNearbyWhileWorking", true);
             Scribe_Values.Look(ref loadPackAnimalBulk, "loadPackAnimalBulk", true);
             Scribe_Values.Look(ref autoDivertToPackAnimal, "autoDivertToPackAnimal", true);
+            Scribe_Values.Look(ref enableBulkUnloadCarriers, "enableBulkUnloadCarriers", true);
+            Scribe_Values.Look(ref minFreeSpaceToUnloadCarrierPct, "minFreeSpaceToUnloadCarrierPct", 0.5f);
+            Scribe_Values.Look(ref reserveCarrierOnUnload, "reserveCarrierOnUnload", false);
+            Scribe_Values.Look(ref visualUnloadDelay, "visualUnloadDelay", 15);
             Scribe_Values.Look(ref haulToStack, "haulToStack", true);
             Scribe_Values.Look(ref orderedConstructTether, "orderedConstructTether", true);
             Scribe_Values.Look(ref haulToSiteOption, "haulToSiteOption", true);
@@ -573,6 +590,18 @@ namespace HaulersDream
                 "HaulersDream.Setting.LoadPackAnimalBulkDesc".Translate());
             l.CheckboxLabeled("HaulersDream.Setting.AutoDivertToPackAnimal".Translate(), ref autoDivertToPackAnimal,
                 "HaulersDream.Setting.AutoDivertToPackAnimalDesc".Translate());
+
+            l.CheckboxLabeled("HaulersDream.Setting.EnableBulkUnloadCarriers".Translate(), ref enableBulkUnloadCarriers,
+                "HaulersDream.Setting.EnableBulkUnloadCarriersDesc".Translate());
+            if (enableBulkUnloadCarriers)
+            {
+                l.Label("HaulersDream.Setting.MinFreeSpaceToUnloadCarrier".Translate(minFreeSpaceToUnloadCarrierPct.ToStringPercent()));
+                minFreeSpaceToUnloadCarrierPct = Mathf.Round(l.Slider(minFreeSpaceToUnloadCarrierPct, 0.1f, 0.9f) * 20f) / 20f;
+                l.CheckboxLabeled("HaulersDream.Setting.ReserveCarrierOnUnload".Translate(), ref reserveCarrierOnUnload,
+                    "HaulersDream.Setting.ReserveCarrierOnUnloadDesc".Translate());
+                l.Label("HaulersDream.Setting.VisualUnloadDelay".Translate(visualUnloadDelay));
+                visualUnloadDelay = Mathf.RoundToInt(l.Slider(visualUnloadDelay, 0f, 30f));
+            }
 
             l.CheckboxLabeled("HaulersDream.Setting.HaulToStack".Translate(), ref haulToStack,
                 "HaulersDream.Setting.HaulToStackDesc".Translate());

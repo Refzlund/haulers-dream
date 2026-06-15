@@ -275,10 +275,23 @@
   <HaulersDream.LoadPackAnimal.CouldNotStart>Nothing nearby to load onto a pack animal right now.</HaulersDream.LoadPackAnimal.CouldNotStart>
   <HaulersDream.LoadPackAnimal.NoCarrier>No usable pack animal with free space nearby.</HaulersDream.LoadPackAnimal.NoCarrier>
 
+  <!-- Pack-animal BULK UNLOAD (the inverse of loading): empty a flagged carrier into the hauler's backpack -->
+  <HaulersDream.UnloadCarrier.Report>unloading {0}.</HaulersDream.UnloadCarrier.Report>
+  <HaulersDream.UnloadCarrier.Option>Prioritize bulk unloading {0}</HaulersDream.UnloadCarrier.Option>
+  <HaulersDream.UnloadCarrier.CouldNotStart>Could not start bulk unloading that pack animal right now.</HaulersDream.UnloadCarrier.CouldNotStart>
+
   <!-- Settings: pack-animal loading on caravans -->
   <HaulersDream.Setting.LoadPackAnimalBulk>Bulk "load onto pack animal" order</HaulersDream.Setting.LoadPackAnimalBulk>
   <HaulersDream.Setting.LoadPackAnimalBulkDesc>On a caravan/away map, adds a right-click "Load nearby items onto pack animal (bulk)" order: one colonist sweeps several nearby stacks into its inventory and loads them onto a pack animal in one trip, instead of carrying one stack at a time. Vanilla's single-item "Load onto pack animal" still works alongside it.</HaulersDream.Setting.LoadPackAnimalBulkDesc>
   <HaulersDream.Setting.AutoDivertToPackAnimal>Offload onto pack animals (caravans)</HaulersDream.Setting.AutoDivertToPackAnimal>
   <HaulersDream.Setting.AutoDivertToPackAnimalDesc>On a caravan/away map, pawns offload their scooped loot onto the nearest owned pack animal the same way they'd unload to a stockpile at home — when their work run ends, before they rest/eat/relax, on the periodic backstop, and immediately when over-encumbered (to stay mobile). With this off, loot just rides home in the pawns' own inventories (or use the manual bulk-load order / Reform Caravan). All of these also require automatic unloading to be on (and the over-encumbered offload is disabled in strict-carry-weight mode).</HaulersDream.Setting.AutoDivertToPackAnimalDesc>
+
+  <!-- Settings: pack-animal bulk unload -->
+  <HaulersDream.Setting.EnableBulkUnloadCarriers>Bulk unload pack animals in one visit</HaulersDream.Setting.EnableBulkUnloadCarriers>
+  <HaulersDream.Setting.EnableBulkUnloadCarriersDesc>When a pack animal is set to "unload", a hauler walks to it ONCE and pulls many stacks out of it into its own backpack (then hauls them to storage as usual), instead of vanilla's one-stack-per-walk. The last/overflow stack goes in the hauler's hands and is hauled directly. With this off, vanilla's single-stack unloading is used unchanged.</HaulersDream.Setting.EnableBulkUnloadCarriersDesc>
+  <HaulersDream.Setting.MinFreeSpaceToUnloadCarrier>Minimum free backpack space to start: {0}</HaulersDream.Setting.MinFreeSpaceToUnloadCarrier>
+  <HaulersDream.Setting.ReserveCarrierOnUnload>Reserve the pack animal while unloading</HaulersDream.Setting.ReserveCarrierOnUnload>
+  <HaulersDream.Setting.ReserveCarrierOnUnloadDesc>Claim the pack animal exclusively for the duration of the unload. Off (default) lets roping, caravan formation, or a second hauler interrupt it — the unload yields cleanly when another pawn claims the animal.</HaulersDream.Setting.ReserveCarrierOnUnloadDesc>
+  <HaulersDream.Setting.VisualUnloadDelay>Per-stack unload delay: {0} ticks</HaulersDream.Setting.VisualUnloadDelay>
 
 </LanguageData>
