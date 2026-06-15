@@ -251,6 +251,12 @@ namespace HaulersDream
             // handoff map (entries whose ordered job never started).
             BulkHaul.ClearPlanCache();
             BatchCraftHandoff.Clear();
+            // The per-(pawn,tick) mass memo is likewise static and survives a quickload — drop it so an equal
+            // tick number can't serve a previous session's pawn-id mass (decision-neutral hygiene; the memo is
+            // per-tick self-clearing anyway, this just avoids a one-tick cross-session read after load).
+            PawnMassCache.Clear();
+            // Same hygiene for the per-(pawn,tick) inspect-pane surplus-boolean memo (HD-GIZMO).
+            SurplusCache.Clear();
         }
 
         /// <summary>Register (or replace, per pawn) a deferred-reveal tracker for a vein route that ran into fog.</summary>

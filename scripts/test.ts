@@ -3,4 +3,5 @@ import { $ } from 'bun'
 import { findDotnet, repoRoot } from './lib'
 
 const dotnet = await findDotnet()
-await $`${dotnet} test Source/HaulersDream.sln -c Release --nologo`.cwd(repoRoot)
+const extra = process.argv.slice(2) // forward e.g. --filter TestCategory=Perf (used by test:perf)
+await $`${dotnet} test Source/HaulersDream.sln -c Release --nologo ${extra}`.cwd(repoRoot)

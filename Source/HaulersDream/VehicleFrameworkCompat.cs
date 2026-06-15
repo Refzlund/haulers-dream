@@ -38,6 +38,7 @@ namespace HaulersDream
         private static Type vehiclePawnType;                 // Vehicles.VehiclePawn : Pawn  (the presence probe)
         private static Type vehicleDefType;                  // Vehicles.VehicleDef : ThingDef
         private static MethodInfo inVehicleThing;            // static ext Vehicles.Ext_Vehicles.InVehicle(Thing) -> bool
+        private static Func<Thing, bool> inVehicleDelegate;  // open delegate bound to inVehicleThing (no Invoke / no object[] per call)
         private static MethodInfo addOrTransfer;             // instance VehiclePawn.AddOrTransfer(Thing,int) -> int
         private static FieldInfo cargoToLoadField;           // instance VehiclePawn.cargoToLoad : List<TransferableOneWay>
         private static MethodInfo getStatValue;              // instance VehiclePawn.GetStatValue(VehicleStatDef) -> float
@@ -80,7 +81,25 @@ namespace HaulersDream
             // overload at :1006 is annotated "// TODO 1.7 - Remove"). A static extension method on Verse.Thing.
             var extVehiclesType = AccessTools.TypeByName("Vehicles.Ext_Vehicles");
             if (extVehiclesType != null)
+            {
                 inVehicleThing = AccessTools.Method(extVehiclesType, "InVehicle", new[] { typeof(Thing) });
+                // Bind an open delegate so the per-holder InVehicle check (called per holder in the colony-wide
+                // EatFromInventory / OrganicInventoryShare loops) costs no `new object[1]` + boxed-bool Invoke per
+                // call. The signature matches exactly — a static `(Thing) -> bool` with no by-ref args binds cleanly
+                // to Func<Thing, bool>. Fail-safe: if CreateDelegate throws (a VF fork with an odd signature), the
+                // delegate stays null and InVehicle falls back to the reflective Invoke path (behaviour-identical).
+                if (inVehicleThing != null)
+                {
+                    try
+                    {
+                        inVehicleDelegate = (Func<Thing, bool>)Delegate.CreateDelegate(typeof(Func<Thing, bool>), inVehicleThing);
+                    }
+                    catch (Exception)
+                    {
+                        inVehicleDelegate = null; // fall back to Invoke in InVehicle (no behaviour change)
+                    }
+                }
+            }
 
             // AddOrTransfer(Thing,int) -> int (the event-correct deposit; does its OWN cargoToLoad decrement).
             addOrTransfer = AccessTools.Method(vehiclePawnType, "AddOrTransfer", new[] { typeof(Thing), typeof(int) });
@@ -153,6 +172,11 @@ namespace HaulersDream
         {
             if (!IsActive || t == null || inVehicleThing == null)
                 return false;
+            // Fast path: the open delegate bound in Init (no per-call object[] / boxing, no MethodInfo.Invoke).
+            var del = inVehicleDelegate;
+            if (del != null)
+                return del(t);
+            // Fallback (delegate creation failed at Init — a VF fork with an odd signature): the reflective path.
             // No try/catch: IsActive + the bound member + t != null are checked — a throw here is a real
             // VF-integration fault to surface, not a silent fail-open (which would only cost a wasted pathing guard).
             return (bool)inVehicleThing.Invoke(null, new object[] { t });

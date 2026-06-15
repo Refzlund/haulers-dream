@@ -223,6 +223,12 @@ namespace HaulersDream
     [HarmonyPatch(typeof(Pawn), nameof(Pawn.GetGizmos))]
     public static class Patch_Pawn_GetGizmos
     {
+        // The "Drop" gizmo icon, resolved ONCE — both the auto-haul toggle and the unload button use it, and a
+        // ContentFinder lookup per selected pawn per frame is pure waste (the texture is immutable). Lazy via a
+        // static field initializer (ContentFinder is safe at static-init time post content-load; this patch class
+        // is only touched while gizmos render, long after textures load). Mirror the same BadTex fallback.
+        private static readonly Texture2D DropIcon = ContentFinder<Texture2D>.Get("UI/Buttons/Drop", false) ?? BaseContent.BadTex;
+
         static IEnumerable<Gizmo> Postfix(IEnumerable<Gizmo> __result, Pawn __instance)
         {
             foreach (var gizmo in __result)
@@ -254,7 +260,7 @@ namespace HaulersDream
                 {
                     defaultLabel = "HaulersDream.Gizmo.AutoHaul".Translate(),
                     defaultDesc = "HaulersDream.Gizmo.AutoHaulDesc".Translate(),
-                    icon = ContentFinder<Texture2D>.Get("UI/Buttons/Drop", false) ?? BaseContent.BadTex,
+                    icon = DropIcon,
                     isActive = () => comp.autoHaulYields,
                     toggleAction = () => comp.autoHaulYields = !comp.autoHaulYields
                 };
@@ -270,10 +276,13 @@ namespace HaulersDream
             // exactly what AdoptSurplusInventory tags in each case, so the button is never shown as a no-op. Both
             // checks are read-only (no tagging on the render path); clicking runs forced CheckIfShouldUnload, which
             // does the adopting + unload. Caravan-loading inventory is intentional, so it's excluded.
-            bool hasTagged = comp.GetHashSet().Count > 0;
+            // Read-only on the render path: PeekHashSet (no self-heal / no reflection / no Rand / no CE notify),
+            // and the surplus booleans go through the per-(pawn,tick) SurplusCache so the full inventory scan runs
+            // at most once per tick instead of every frame this pawn is selected.
+            bool hasTagged = comp.PeekHashSet().Count > 0;
             bool hasForeignSurplus = !__instance.IsFormingCaravan() && (s.unloadAllSurplus
-                ? InventorySurplus.HasAnySurplus(__instance)
-                : (s.HasAnySurplusProducingRule && InventorySurplus.HasAnyRuledSurplus(__instance)));
+                ? SurplusCache.HasAnySurplus(__instance)
+                : (s.HasAnySurplusProducingRule && SurplusCache.HasAnyRuledSurplus(__instance)));
             if (!hasTagged && !hasForeignSurplus)
                 yield break;
 
@@ -281,7 +290,7 @@ namespace HaulersDream
             {
                 defaultLabel = "HaulersDream.Gizmo.UnloadNow".Translate(),
                 defaultDesc = "HaulersDream.Gizmo.UnloadNowDesc".Translate(),
-                icon = ContentFinder<Texture2D>.Get("UI/Buttons/Drop", false) ?? BaseContent.BadTex,
+                icon = DropIcon,
                 action = () =>
                 {
                     // On a non-home / temporary map there is no storage — the gizmo loads the nearest pack animal

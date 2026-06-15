@@ -77,16 +77,62 @@ namespace HaulersDream
             }
 
             // Cook-food bill: precompute classification per Thing (never inside the Sort delegate).
-            var cands = new Cand[things.Count];
-            for (int i = 0; i < things.Count; i++)
+            // Reuse a [ThreadStatic] scratch Cand[] across calls (the sort runs single-threaded inside
+            // one JobOnThing scan; cands is fully consumed before any reentrant scan can start).
+            int n = things.Count;
+            var cands = RentCands(n);
+            bool anyEligible = false;
+            for (int i = 0; i < n; i++)
+            {
                 cands[i] = Classify(things[i], i, s);
+                if (SpoilingFirstSelection.IsEligible(cands[i].kind)) anyEligible = true;
+            }
+            // No candidate is rottable ⇒ spoiling never breaks a tie ⇒ the comparator degrades to the
+            // exact vanilla (value asc, distance asc) order. Skip the 3-array index-sort path and use
+            // the cheap vanilla SortBy directly (mirrors ReorderInPlace's !anyEligible early-out).
+            if (!anyEligible)
+            {
+                things.SortBy(valueKey, distKey);
+                return;
+            }
 
             // Sort an index permutation so the per-Thing classification + vanilla keys are read once
             // per element, then materialise the Things in the new order. The comparator is a total
             // order: spoilRank (eligible-first, ascending ticks), then value asc, then distance asc.
-            var order = new int[things.Count];
-            for (int i = 0; i < order.Length; i++) order[i] = i;
-            Array.Sort(order, (x, y) =>
+            // Hoisted into a struct IComparer<int> holding the inputs in fields — no capturing closure
+            // and no per-call delegate allocation.
+            var order = RentOrder(n);
+            for (int i = 0; i < n; i++) order[i] = i;
+            Array.Sort(order, 0, n, new AllowMixComparer(cands, things, valueKey, distKey));
+            var sorted = RentSorted(n);
+            for (int i = 0; i < n; i++) sorted[i] = things[order[i]];
+            for (int i = 0; i < n; i++) things[i] = sorted[i];
+            // Release the Thing references the scratch buffer holds (cands/order hold only value types
+            // / ints; only the Thing[] scratch needs clearing to avoid pinning a dead candidate).
+            Array.Clear(sorted, 0, n);
+        }
+
+        /// <summary>Allocation-free index comparator for the AllowMix cook path: spoilRank
+        /// (eligible-first, ascending ticks) → vanilla value asc → vanilla distance asc → original
+        /// index (a total order, required by Array.Sort). Holds the per-call inputs in fields so the
+        /// sort allocates no closure or delegate.</summary>
+        private struct AllowMixComparer : IComparer<int>
+        {
+            private readonly Cand[] cands;
+            private readonly List<Thing> things;
+            private readonly Func<Thing, float> valueKey;
+            private readonly Func<Thing, int> distKey;
+
+            public AllowMixComparer(Cand[] cands, List<Thing> things,
+                Func<Thing, float> valueKey, Func<Thing, int> distKey)
+            {
+                this.cands = cands;
+                this.things = things;
+                this.valueKey = valueKey;
+                this.distKey = distKey;
+            }
+
+            public int Compare(int x, int y)
             {
                 int c = SpoilingFirstSelection.CompareSpoilRank(
                     cands[x].kind, cands[x].ticks, cands[y].kind, cands[y].ticks);
@@ -96,10 +142,36 @@ namespace HaulersDream
                 c = distKey(things[x]).CompareTo(distKey(things[y]));
                 if (c != 0) return c;
                 return x.CompareTo(y);   // final stable tiebreak — total order for Array.Sort
-            });
-            var sorted = new Thing[things.Count];
-            for (int i = 0; i < order.Length; i++) sorted[i] = things[order[i]];
-            for (int i = 0; i < sorted.Length; i++) things[i] = sorted[i];
+            }
+        }
+
+        // [ThreadStatic] scratch buffers reused across reorder calls. Each sort runs single-threaded
+        // within one JobOnThing scan and fully consumes the buffers before returning, so a per-thread
+        // pool is safe (matches the repo's planCache / scratchPool per-thread idioms). Buffers grow as
+        // needed and are sized >= the request; only the [0,n) prefix is ever used.
+        [System.ThreadStatic] private static Cand[] scratchCands;
+        [System.ThreadStatic] private static int[] scratchOrder;
+        [System.ThreadStatic] private static Thing[] scratchSorted;
+
+        private static Cand[] RentCands(int n)
+        {
+            if (scratchCands == null || scratchCands.Length < n)
+                scratchCands = new Cand[n];
+            return scratchCands;
+        }
+
+        private static int[] RentOrder(int n)
+        {
+            if (scratchOrder == null || scratchOrder.Length < n)
+                scratchOrder = new int[n];
+            return scratchOrder;
+        }
+
+        private static Thing[] RentSorted(int n)
+        {
+            if (scratchSorted == null || scratchSorted.Length < n)
+                scratchSorted = new Thing[n];
+            return scratchSorted;
         }
 
         /// <summary>Stable in-place reorder of the vanilla chooser's candidate list (NoMix only).

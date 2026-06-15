@@ -22,14 +22,18 @@ namespace HaulersDream
         [HarmonyPriority(Priority.First)]
         static void Postfix(ref Job __result, Pawn pawn, Thing thing, bool forced)
         {
-            // Cede to Common Sense when it owns the DoBill driver — don't batch-convert into a re-haul loop.
-            if (CommonSenseCompat.OwnsDoBillFlow)
-                return;
+            // Cheap gates FIRST (ref/type checks) so the per-pawn-scan reflection in OwnsDoBillFlow runs only on a
+            // real convertible DoBill-at-a-workbench job. Reordering ahead of the cede check is behaviour-identical:
+            // each gate below would short-circuit the postfix anyway, so OwnsDoBillFlow's value is moot when it bails.
             var job = __result;
             if (job == null || job.def != JobDefOf.DoBill || job.bill?.recipe == null)
                 return;
             if (!(job.targetA.Thing is Building_WorkTable bench))
                 return; // workbenches only — never a Pawn bill giver (surgery) or other special giver
+            // Cede to Common Sense when it owns the DoBill driver — don't batch-convert into a re-haul loop.
+            // (Moved below the cheap gates above: the reflective toggle read now happens only on a convertible job.)
+            if (CommonSenseCompat.OwnsDoBillFlow)
+                return;
             var bill = job.bill;
 
             var comp = HaulersDreamGameComponent.Instance;

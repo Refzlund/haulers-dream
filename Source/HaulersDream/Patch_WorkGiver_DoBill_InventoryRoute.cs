@@ -29,10 +29,10 @@ namespace HaulersDream
     {
         static void Postfix(ref Job __result, Pawn pawn, Thing thing, bool forced)
         {
-            // Common Sense owns the vanilla DoBill driver (its MakeNewToils Prefix re-deposits ingredients to the
-            // bench floor) — cede the gather flow to it so HD doesn't double-gather and create a re-haul loop.
-            if (CommonSenseCompat.OwnsDoBillFlow)
-                return;
+            // Cheap gates FIRST so the per-pawn-scan reflection in CommonSenseCompat.OwnsDoBillFlow only runs when
+            // the feature is actually engaged (a real convertible DoBill job + the feature on). These checks are
+            // pure field reads / a ref compare and would short-circuit the postfix anyway, so reordering them ahead
+            // of the cede check is behaviour-identical — when any of them bails, OwnsDoBillFlow's value is moot.
             var s = HaulersDreamMod.Settings;
             // markForUnload is required too: the relay's "leftovers are never stranded" safety story depends on
             // the unload backstop reclaiming tagged stock if the craft never happens.
@@ -43,6 +43,11 @@ namespace HaulersDream
                 return;
             if (forced || job.playerForced)
                 return; // a player-ordered craft must start crafting, not detour through a gather job
+            // Common Sense owns the vanilla DoBill driver (its MakeNewToils Prefix re-deposits ingredients to the
+            // bench floor) — cede the gather flow to it so HD doesn't double-gather and create a re-haul loop.
+            // (Moved below the cheap gates above: the reflective toggle read now happens only on a convertible job.)
+            if (CommonSenseCompat.OwnsDoBillFlow)
+                return;
             // Workbenches only — never a Pawn bill giver (surgery) or other special giver.
             if (!(job.targetA.Thing is Building_WorkTable))
                 return;

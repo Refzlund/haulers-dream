@@ -57,10 +57,15 @@ namespace HaulersDream
             // vanilla-style (and with the draft gate on unloads they couldn't even shed the load until undrafted).
             if (pawn.Drafted)
                 return false;
-            float cap = MassUtility.Capacity(pawn);
+            // PERF (HD-MASS): the vanilla MoveSpeed StatDef is UNCACHED, so this runs once per CELL a moving
+            // pawn enters. Read the two mass numbers through the per-(pawn,tick) memo so the per-cell re-walk
+            // collapses to one apparel+equipment+inventory walk per tick, shared with the same-tick capacity
+            // gates. Pure read (decompile-verified) — no decision changes, only recomputation is avoided.
+            var mass = PawnMassCache.MassInfo(pawn);
+            float cap = mass.Capacity;
             if (cap <= 0f)
                 return false;
-            float ratio = MassUtility.GearAndInventoryMass(pawn) / cap;
+            float ratio = mass.CurrentMass / cap;
             if (ratio <= 1f)
                 return false; // at/under capacity -> no penalty (vanilla behaviour)
             factor = OverloadTuning.SpeedFactor(s.overloadLevel, ratio);

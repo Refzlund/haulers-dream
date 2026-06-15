@@ -541,7 +541,29 @@ namespace HaulersDream
         {
             pool.Clear();
             float radiusSq = poolRadius * poolRadius;
-            foreach (var t in map.listerHaulables.ThingsPotentiallyNeedingHauling())
+            // Cast to the concrete HashSet<Thing> backing the lister (ThingsPotentiallyNeedingHauling's return type is
+            // the ICollection<Thing> interface; the field is a HashSet<Thing>, decompile-verified) so the foreach binds
+            // the struct enumerator and boxes nothing on this per-pawn-scan pool build. `as` + null fallback to the
+            // interface foreach future-proofs against a backing-type change (then degrades to the boxed enumerator).
+            var haulables = map.listerHaulables.ThingsPotentiallyNeedingHauling();
+            var haulableSet = haulables as HashSet<Thing>;
+            if (haulableSet != null)
+            {
+                foreach (var t in haulableSet)
+                {
+                    if (t == null || t == primary || !t.Spawned || t.Map != map)
+                        continue;
+                    if (t is Corpse)
+                        continue; // corpse hauling keeps its own vanilla flow (and corpses don't belong in pockets)
+                    if (!t.def.EverHaulable)
+                        continue;
+                    if ((t.Position - primary.Position).LengthHorizontalSquared > radiusSq)
+                        continue;
+                    pool.Add(t);
+                }
+                return;
+            }
+            foreach (var t in haulables)
             {
                 if (t == null || t == primary || !t.Spawned || t.Map != map)
                     continue;

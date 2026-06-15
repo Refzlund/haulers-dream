@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using HaulersDream.Core;
 using RimWorld;
 using Verse;
@@ -17,12 +18,26 @@ namespace HaulersDream
     {
         /// <summary>Units of this stack that are genuinely surplus (above the pawn's keep for the def). 0 = all
         /// personal kit. Mirrors the old JobDriver_UnloadHauledInventory.UnloadableCountOf.</summary>
-        public static int SurplusOf(Pawn pawn, Thing thing)
+        public static int SurplusOf(Pawn pawn, Thing thing) => SurplusOf(pawn, thing, null, null);
+
+        /// <summary>
+        /// Hoisted form of <see cref="SurplusOf(Pawn,Thing)"/> for a caller that scans every stack of one pawn in a
+        /// loop (the "has any surplus" gizmo/alert pass): pass the pawn's <see cref="CompHauledToInventory"/> ONCE
+        /// (instead of a per-stack <c>GetComp</c>) and a per-def inventory-count scratch dict ONCE (instead of the
+        /// per-stack full-inventory <see cref="YieldRouter.InventoryCountOfDef"/> walk that made the pass O(n²)).
+        /// Pass <paramref name="comp"/> = null to look the comp up here, and <paramref name="invCountByDef"/> = null
+        /// to fall back to the per-call inventory walk — so the public 2-arg overload is behaviour-identical.
+        /// </summary>
+        internal static int SurplusOf(Pawn pawn, Thing thing, CompHauledToInventory comp, Dictionary<ThingDef, int> invCountByDef)
         {
             if (pawn?.inventory?.innerContainer == null || thing?.def == null)
                 return 0;
             var def = thing.def;
-            bool hdSwept = pawn.GetComp<CompHauledToInventory>()?.PeekHashSet().Contains(thing) == true;
+            // comp may be passed in (hoisted) or looked up; either way PeekHashSet is read-only (no self-heal) so
+            // this stays safe on the render/alert path.
+            if (comp == null)
+                comp = pawn.GetComp<CompHauledToInventory>();
+            bool hdSwept = comp?.PeekHashSet().Contains(thing) == true;
 
             // An explicit per-item rule (mod options -> Individual Item Unload Settings) OVERRIDES both HD's
             // auto-detected keep-mods and the global keep-stock for that def. Keyed by defName, so it is
@@ -47,7 +62,7 @@ namespace HaulersDream
                         // Carry at most N units of the def across the whole inventory; unload the excess. Applies
                         // even to swept stacks — it only ever pins up to N units, so it is bounded (no black hole).
                         int keepN = rule.amount < 0 ? 0 : rule.amount;
-                        int haveN = YieldRouter.InventoryCountOfDef(pawn.inventory.innerContainer, def);
+                        int haveN = InventoryCountOfDef(pawn, def, invCountByDef);
                         int over = haveN - keepN;
                         return over <= 0 ? 0 : System.Math.Min(thing.stackCount, over);
                 }
@@ -95,22 +110,43 @@ namespace HaulersDream
             int keep = KeepCountOf(pawn, def) + FoodKeepCountOf(pawn, thing);
             if (keep <= 0)
                 return thing.stackCount;
-            int surplus = YieldRouter.InventoryCountOfDef(pawn.inventory.innerContainer, def) - keep;
+            int surplus = InventoryCountOfDef(pawn, def, invCountByDef) - keep;
             return System.Math.Min(thing.stackCount, surplus);
         }
 
+        /// <summary>Total units of <paramref name="def"/> in the pawn's inventory — served from the hoisted
+        /// per-def scratch dict when present (one pass, shared across every stack of the same def in a
+        /// "has any surplus" scan), else the per-call full-inventory walk. Behaviour-identical either way.</summary>
+        private static int InventoryCountOfDef(Pawn pawn, ThingDef def, Dictionary<ThingDef, int> invCountByDef)
+        {
+            if (invCountByDef != null)
+                return invCountByDef.TryGetValue(def, out int c) ? c : 0;
+            return YieldRouter.InventoryCountOfDef(pawn.inventory.innerContainer, def);
+        }
+
+        // Reused scratch for the per-def inventory-count precompute in the HasAny* scans, so the (per-frame, via
+        // the cache) pass allocates nothing. [ThreadStatic] to match this assembly's hook-reachable scratch
+        // convention (CompHauledToInventory's tmpScoopedDefs, PawnMassCache's per-thread memo).
+        [System.ThreadStatic] private static Dictionary<ThingDef, int> tmpInvCountByDef;
+
         /// <summary>True if the pawn holds ANY inventory stack with surplus above its keep-stock — i.e. the
         /// "unload all surplus" option would have something to put away (tag-independent: counts foreign stock
-        /// HD never scooped). Read-only — safe on the render/gizmo path (no tagging, no Rand, no CE notify).</summary>
+        /// HD never scooped). Read-only — safe on the render/gizmo path (no tagging, no Rand, no CE notify).
+        ///
+        /// Hoists the <see cref="CompHauledToInventory"/> lookup and the per-def inventory counts OUT of the
+        /// per-stack <see cref="SurplusOf(Pawn,Thing)"/> so the pass is O(n) instead of O(n²) (the inner
+        /// <c>SurplusOf</c> otherwise re-walked the whole inventory to count each def, once per stack).</summary>
         public static bool HasAnySurplus(Pawn pawn)
         {
             var inner = pawn?.inventory?.innerContainer;
             if (inner == null)
                 return false;
+            var comp = pawn.GetComp<CompHauledToInventory>();
+            var counts = BuildInvCountByDef(inner);
             for (int i = 0; i < inner.Count; i++)
             {
                 var t = inner[i];
-                if (t != null && !t.Destroyed && SurplusOf(pawn, t) > 0)
+                if (t != null && !t.Destroyed && SurplusOf(pawn, t, comp, counts) > 0)
                     return true;
             }
             return false;
@@ -120,20 +156,41 @@ namespace HaulersDream
         /// (keep-at-most / always-unload) AND is actually over that rule's keep — i.e. the stock a forced unload
         /// would adopt + move when the global "unload all surplus" toggle is OFF. Mirrors the toggle-off branch of
         /// <see cref="PawnUnloadChecker.AdoptSurplusInventory"/> so the gizmo's visibility matches what the button
-        /// does. Read-only (no tagging) — safe on the render/gizmo path.</summary>
+        /// does. Read-only (no tagging) — safe on the render/gizmo path. Hoists comp + per-def counts like
+        /// <see cref="HasAnySurplus"/> (O(n), not O(n²)).</summary>
         public static bool HasAnyRuledSurplus(Pawn pawn)
         {
             var inner = pawn?.inventory?.innerContainer;
             var settings = HaulersDreamMod.Settings;
             if (inner == null || settings == null)
                 return false;
+            var comp = pawn.GetComp<CompHauledToInventory>();
+            var counts = BuildInvCountByDef(inner);
             for (int i = 0; i < inner.Count; i++)
             {
                 var t = inner[i];
-                if (t != null && !t.Destroyed && settings.RuleProducesSurplus(t.def) && SurplusOf(pawn, t) > 0)
+                if (t != null && !t.Destroyed && settings.RuleProducesSurplus(t.def) && SurplusOf(pawn, t, comp, counts) > 0)
                     return true;
             }
             return false;
+        }
+
+        /// <summary>Fill (and return) the reused <see cref="tmpInvCountByDef"/> scratch with total units per def
+        /// across the owner's stacks — one O(n) pass, so the surplus scan can answer "how many of this def?" with
+        /// a dict lookup instead of re-walking the inventory per stack.</summary>
+        private static Dictionary<ThingDef, int> BuildInvCountByDef(ThingOwner inner)
+        {
+            var counts = tmpInvCountByDef ?? (tmpInvCountByDef = new Dictionary<ThingDef, int>());
+            counts.Clear();
+            for (int i = 0; i < inner.Count; i++)
+            {
+                var t = inner[i];
+                if (t?.def == null)
+                    continue;
+                counts.TryGetValue(t.def, out int c);
+                counts[t.def] = c + t.stackCount;
+            }
+            return counts;
         }
 
         /// <summary>Can the unload place this anywhere — a real stockpile/container, OR (failing that) a
@@ -256,12 +313,10 @@ namespace HaulersDream
             float total = JobGiver_PackFood.GetInventoryPackableFoodNutrition(pawn);
             float maxLevel = pawn.needs.food.MaxLevel;
             float perUnit = thing.GetStatValue(StatDefOf.Nutrition);
-            if (perUnit <= 0f || total - perUnit * thing.stackCount > maxLevel)
-                return 0; // even without this entire stack the pawn is over its cap — all surplus
-            int k = 0;
-            while (total - perUnit * k > maxLevel)
-                k++;
-            return thing.stackCount - k;
+            // Closed-form of the old k-loop (see FoodKeepMath.KeepCount), O(1) instead of O(stackCount): the
+            // two early-outs (perUnit <= 0; over cap even without the whole stack) and the ceil(over/perUnit)
+            // keep-count are all folded in, behaviour-identical for every input.
+            return FoodKeepMath.KeepCount(total, maxLevel, perUnit, thing.stackCount);
         }
     }
 }

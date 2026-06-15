@@ -223,17 +223,60 @@ namespace HaulersDream.Core
             return result;
         }
 
-        /// <summary>True if the asker can newly claim anything (<see cref="AvailableToClaim"/> has a positive entry).</summary>
+        /// <summary>
+        /// True if the asker can newly claim anything — the exact same predicate as
+        /// <c>AvailableToClaim(...).Values.Any(v &gt; 0)</c>, but <b>ALLOCATION-FREE</b>: it short-circuits on the
+        /// first positive def instead of materialising (and immediately discarding) the result dictionary.
+        ///
+        /// This is the per-pawn-scan hot path (every idle hauler's haul scan reaches it via
+        /// <c>LoadLedgerEntry.HasWork → HaulersDreamGameComponent.LoadHasWork → TransportLoad.HasPotentialBulkWork</c>),
+        /// so it must not build the throwaway dict <see cref="AvailableToClaim"/> returns. The arithmetic is identical
+        /// to <see cref="AvailableToClaim"/> (per def: <c>avail = needed − (totalClaimed − askerOwn)</c>, the asker's
+        /// own claim excluded so a re-plan is stable); the only difference is it returns on the first <c>avail &gt; 0</c>.
+        /// <see cref="AvailableToClaim"/> stays the source of truth for the actual claim path.
+        /// </summary>
         public static bool HasWork(
             IReadOnlyDictionary<TDef, int> totalNeeded,
             IReadOnlyDictionary<TDef, int> totalClaimed,
             IReadOnlyDictionary<TPawn, Dictionary<TDef, int>> pawnClaims,
             TPawn asker)
         {
-            foreach (var kv in AvailableToClaim(totalNeeded, totalClaimed, pawnClaims, asker))
-                if (kv.Value > 0)
+            if (totalNeeded == null)
+                return false;
+            Dictionary<TDef, int> askerOwn = null;
+            pawnClaims?.TryGetValue(asker, out askerOwn);
+
+            // Fast path: when totalNeeded is the concrete Dictionary the runtime always passes (LoadLedgerEntry
+            // holds Dictionary<ThingDef,int>), iterate it via its STRUCT enumerator. Iterating through the
+            // IReadOnlyDictionary interface instead boxes the enumerator (~56 B/call) — exactly the per-pawn-scan
+            // allocation HD-LEDGER removes — so we must not foreach the interface on the hot path.
+            if (totalNeeded is Dictionary<TDef, int> neededDict)
+            {
+                foreach (var kv in neededDict)
+                    if (HasLeftover(kv.Key, kv.Value, totalClaimed, askerOwn))
+                        return true;
+                return false;
+            }
+
+            // Fallback (a non-Dictionary IReadOnlyDictionary, e.g. a test double): correctness over allocation.
+            foreach (var kv in totalNeeded)
+                if (HasLeftover(kv.Key, kv.Value, totalClaimed, askerOwn))
                     return true;
             return false;
+        }
+
+        // Per-def leftover test, identical arithmetic to AvailableToClaim: avail = needed − (totalClaimed − askerOwn).
+        private static bool HasLeftover(
+            TDef def, int needed,
+            IReadOnlyDictionary<TDef, int> totalClaimed,
+            Dictionary<TDef, int> askerOwn)
+        {
+            int claimedByOthers = 0;
+            if (totalClaimed != null && totalClaimed.TryGetValue(def, out int tc))
+                claimedByOthers = tc;
+            if (askerOwn != null && askerOwn.TryGetValue(def, out int own))
+                claimedByOthers -= own; // exclude the asker's own claim → stable re-plan (matches AvailableToClaim)
+            return needed - claimedByOthers > 0;
         }
 
         /// <summary>True if ANY claim is live (some pawn still has units reserved on this task).</summary>

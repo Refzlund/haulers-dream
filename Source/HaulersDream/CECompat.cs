@@ -105,18 +105,51 @@ namespace HaulersDream
                             + "weight+bulk capacity, smart overload stands down, HoldTracker integration on.");
         }
 
+        // Single-slot per-pawn CompInventory memo (the sweep callers — BulkHaul.BuildPoolInto, TransportLoad,
+        // PackAnimalLoad, the OverloadGate gate — probe MaxFitCount per candidate for the SAME pawn, so caching
+        // the last-resolved (pawn -> comp) pair collapses the per-candidate AllComps walk to one walk per pawn).
+        // [ThreadStatic] per this assembly's hook-reachable-scratch convention (see PawnMassCache / BulkHaul):
+        // a work-scan call on a worker thread gets its own slot, so a threading mod can't race it. Keyed by the
+        // pawn reference (not thingIDNumber): a pawn's comp set is fixed for its lifetime, and on a different pawn
+        // the reference miss re-walks — no staleness risk (a pawn never swaps its CompInventory at runtime).
+        [ThreadStatic] private static Pawn lastCompPawn;
+        [ThreadStatic] private static ThingComp lastCompInventory;
+
         private static ThingComp CompInventoryOf(Pawn pawn)
         {
             if (pawn == null || compInventoryType == null)
                 return null;
+            // Fast path: same pawn as the previous candidate in this sweep — reuse the resolved comp.
+            if (ReferenceEquals(pawn, lastCompPawn))
+                return lastCompInventory;
             var comps = pawn.AllComps;
             if (comps == null)
                 return null;
+            ThingComp found = null;
             for (int i = 0; i < comps.Count; i++)
                 if (compInventoryType.IsInstanceOfType(comps[i]))
-                    return comps[i];
-            return null;
+                {
+                    found = comps[i];
+                    break;
+                }
+            lastCompPawn = pawn;
+            lastCompInventory = found;
+            return found;
         }
+
+        // Reused scratch for the CanFitInInventory marshalling so the per-candidate fit check allocates no
+        // object[] per call (it's called per candidate in BulkHaul / TransportLoad / PackAnimalLoad / OverloadGate
+        // sweeps). [ThreadStatic] + lazy-init matches the assembly's hook-reachable-scratch idiom (a worker-thread
+        // work scan gets its own buffer). The two constant bool args (args[2]/args[3], both false) are boxed ONCE
+        // at first use; only args[0] (thing) and args[1] (the out-count) are refilled per call. CRITICAL: args[1]
+        // is the `out int count` slot CanFitInInventory writes (decompile-verified: CE assigns
+        // `count = Mathf.FloorToInt(...)` on EVERY path, so the prior boxed int is fully overwritten) — we still
+        // RESET it to a fresh boxed 0 before each Invoke to never hand CE a stale box and to keep the contract
+        // byte-identical to the old `new object[]{thing,0,false,false}`. A single Invoke runs to completion before
+        // the next reuse on one thread, so no re-entrancy aliasing.
+        [ThreadStatic] private static object[] fitArgs;
+        // Box `false` once (the two constant CanFitInInventory bool args) — shared across threads (immutable box).
+        private static readonly object BoxedFalse = false;
 
         /// <summary>
         /// How many units of <paramref name="thing"/> CE allows this pawn to load right now (weight AND bulk,
@@ -133,7 +166,17 @@ namespace HaulersDream
             // No try/catch: !IsActive, the resolved member, and comp == null are all checked above, so in here CE
             // is present and CanFitInInventory resolved — a throw is a real CE-integration fault to surface, not
             // silently fail-open to int.MaxValue (which would over-load the pawn past CE's bulk cap).
-            var args = new object[] { thing, 0, false, false };
+            var args = fitArgs;
+            if (args == null)
+            {
+                // First use on this thread: allocate once and box the two constant bool args once (they never
+                // change — always false). Only args[0] (thing) and args[1] (the out-count) are refilled per call.
+                args = fitArgs = new object[4];
+                args[2] = BoxedFalse;   // bool ignoreEquipment (constant)
+                args[3] = BoxedFalse;   // bool useApparelCalculations (constant)
+            }
+            args[0] = thing;   // Thing thing
+            args[1] = 0;       // out int count — RESET the out-param slot to a fresh boxed 0 before each Invoke
             canFitInInventory.Invoke(comp, args);
             int count = (int)args[1];
             // CE computes the count from availableWeight/availableBulk, which go NEGATIVE for an

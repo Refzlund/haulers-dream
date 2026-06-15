@@ -51,6 +51,14 @@ namespace HaulersDream
             return !race.Humanlike && !race.IsMechanoid;
         }
 
+        /// <summary>
+        /// Pickup count for <paramref name="thing"/>, reading the pawn's capacity and current mass LIVE. This is
+        /// the path for callers that MUTATE the pawn's inventory and re-read within the same tick (e.g. the
+        /// corpse-strip scoop loop): each call must see the up-to-date mass, so it must NOT go through the
+        /// per-(pawn,tick) memo. Non-mutating callers that sweep a fixed pawn (mass invariant across the loop)
+        /// should hoist the capacity/current-mass ONCE — via <see cref="PawnMassCache"/> — and call the
+        /// primitive <see cref="CountToPickUp(Pawn,Thing,HaulersDreamSettings,float,float,float)"/> overload.
+        /// </summary>
         internal static int CountToPickUp(Pawn pawn, Thing thing, HaulersDreamSettings s)
         {
             if (pawn == null || thing == null || s == null)
@@ -58,6 +66,27 @@ namespace HaulersDream
             float maxCap = MassUtility.Capacity(pawn); // under CE this reads CE's CarryWeight (CE postfix)
             float baseCap = CarryMath.EffectiveCapacity(maxCap, s.carryLimitFraction);
             float cur = MassUtility.GearAndInventoryMass(pawn);
+            return CountToPickUp(pawn, thing, s, maxCap, baseCap, cur);
+        }
+
+        /// <summary>
+        /// Pickup count for <paramref name="thing"/> given the pawn's capacity/current-mass already in hand —
+        /// the loop-invariant ("hoisted") form. A queue-only sweep over many candidate things (the mass doesn't
+        /// change because nothing is actually taken into inventory) computes <paramref name="maxCap"/> /
+        /// <paramref name="baseCap"/> / <paramref name="cur"/> ONCE (ideally via <see cref="PawnMassCache"/>, so
+        /// it shares the same-tick MoveSpeed read) and passes them here per candidate, paying only the
+        /// per-thing unit-mass read + the pure <see cref="OverloadPolicy.UnitsToCarry"/> arithmetic instead of a
+        /// full apparel+equipment+inventory mass walk per candidate. Behaviour is identical to the live 3-arg
+        /// form when fed the live numbers — only the redundant per-candidate mass recompute is removed.
+        /// </summary>
+        /// <param name="maxCap">The pawn's true max carry capacity (<c>MassUtility.Capacity</c>; CE's CarryWeight under CE).</param>
+        /// <param name="baseCap">The configured carry-limit mass (<see cref="CarryMath.EffectiveCapacity"/> of <paramref name="maxCap"/>).</param>
+        /// <param name="cur">The pawn's current gear+inventory mass (<c>MassUtility.GearAndInventoryMass</c>).</param>
+        internal static int CountToPickUp(Pawn pawn, Thing thing, HaulersDreamSettings s,
+            float maxCap, float baseCap, float cur)
+        {
+            if (pawn == null || thing == null || s == null)
+                return 0;
             float unit = thing.GetStatValue(StatDefOf.Mass);
             int count = OverloadPolicy.UnitsToCarry(
                 NoOverloadFor(pawn, s) ? OverloadTuning.OffLevel : s.overloadLevel, maxCap, baseCap, cur, unit,

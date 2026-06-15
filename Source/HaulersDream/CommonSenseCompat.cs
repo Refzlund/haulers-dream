@@ -25,6 +25,17 @@ namespace HaulersDream
         private static FieldInfo advCleaningField;  // CommonSense.Settings.adv_cleaning  (static bool)
         private static FieldInfo advHaulAllField;    // CommonSense.Settings.adv_haul_all_ings (static bool)
 
+        // Per-tick memo of the computed OwnsDoBillFlow result. The CS toggle bools only change on the settings
+        // window closing (a between-ticks UI event), so the two reflective FieldInfo.GetValue(null) reads + the
+        // two `is bool` box-tests are loop-invariant within a tick. OwnsDoBillFlow is the FIRST statement of BOTH
+        // DoBill postfixes (per-pawn-scan even when HD features are off), so caching the result per tick removes
+        // 2 reflective reads + 2 boxes from every crafter/cook ingredient probe. A 1-tick lag on a settings flip
+        // is invisible (the toggle changes between ticks anyway). [ThreadStatic] per the assembly's
+        // hook-reachable-scratch convention (a worker-thread work scan gets its own slot).
+        [System.ThreadStatic] private static int ownsCacheTick;
+        [System.ThreadStatic] private static bool ownsCacheValue;
+        [System.ThreadStatic] private static bool ownsCacheValid;
+
         /// <summary>Whether Common Sense is loaded (its Settings type resolves). Cached.</summary>
         public static bool IsActive
         {
@@ -48,11 +59,22 @@ namespace HaulersDream
                 if (!initialized)
                     Init();
                 if (!active)
-                    return false;
+                    return false; // CS absent: fail-open, no reflection (the cheapest path — never touches the memo)
+                // Per-tick memo: the CS toggles are runtime-mutable only on settings-window close, so within one
+                // tick the two reflective reads are invariant. Recompute once per tick, reuse across every DoBill
+                // probe that tick. (Find.TickManager is non-null on every work-scan path; -1 fallback keeps a
+                // null-TickManager edge — e.g. a menu-time probe — correct by forcing a recompute.)
+                int tick = Find.TickManager?.TicksGame ?? -1;
+                if (ownsCacheValid && ownsCacheTick == tick)
+                    return ownsCacheValue;
                 bool readable = advCleaningField != null && advHaulAllField != null;
                 bool ac = readable && advCleaningField.GetValue(null) is bool a && a;
                 bool ah = readable && advHaulAllField.GetValue(null) is bool h && h;
-                return CommonSenseCedePolicy.ShouldCedeDoBillFlow(active, readable, ac, ah);
+                bool owns = CommonSenseCedePolicy.ShouldCedeDoBillFlow(active, readable, ac, ah);
+                ownsCacheTick = tick;
+                ownsCacheValue = owns;
+                ownsCacheValid = true;
+                return owns;
             }
         }
 

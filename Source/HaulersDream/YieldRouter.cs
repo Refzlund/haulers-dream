@@ -187,30 +187,64 @@ namespace HaulersDream
             var claimed = RouteSelection.ClaimedByOtherPawns(pawn);
             float radiusSq = SweepRadius * SweepRadius;
             int added = 0;
-            foreach (var t in map.listerHaulables.ThingsPotentiallyNeedingHauling())
+
+            // HOIST (HD-MASS): the pawn's capacity and current mass are INVARIANT across this whole sweep — it
+            // only QUEUES pending pickups (comp.pendingSelfPickups.Add), it never adds to the pawn's inventory,
+            // so the gear+inventory mass that gates "is the pawn full?" doesn't move between candidates. Read it
+            // ONCE here (through the per-(pawn,tick) memo, so it's the SAME read the per-cell MoveSpeed StatPart
+            // uses this tick) instead of re-walking apparel+equipment+inventory per candidate inside the gate.
+            // Only the per-thing unit mass varies, which the primitive CountToPickUp overload reads per candidate.
+            var mass = PawnMassCache.MassInfo(pawn);
+            float sweepMaxCap = mass.Capacity;
+            float sweepBaseCap = CarryMath.EffectiveCapacity(sweepMaxCap, s.carryLimitFraction);
+            float sweepCur = mass.CurrentMass;
+
+            // One candidate's full filter+queue step; returns true to keep sweeping, false to stop (cap reached).
+            bool TryQueue(Thing t)
             {
                 if (added >= SweepMaxStacks)
-                    break; // beyond the per-scan cap is simply the next work cycle's cleanup
+                    return false; // beyond the per-scan cap is simply the next work cycle's cleanup
                 if (t == null || !t.Spawned || t.Map != map || t is Corpse)
-                    continue; // corpses keep their own vanilla hauling flow (they don't belong in pockets)
+                    return true; // corpses keep their own vanilla hauling flow (they don't belong in pockets)
                 if (t.def == null || !t.def.EverHaulable)
-                    continue; // same gate as BulkHaul.BuildPool — sweep exactly what a dedicated bulk haul would
+                    return true; // same gate as BulkHaul.BuildPool — sweep exactly what a dedicated bulk haul would
                 if ((t.Position - anchor).LengthHorizontalSquared > radiusSq)
-                    continue; // only the immediate work area
+                    return true; // only the immediate work area
                 if (comp.pendingSelfPickups.Contains(t) || t.IsForbidden(pawn) || claimed.Contains(t) || t.IsInValidStorage())
-                    continue;
+                    return true;
                 // Capacity first (pure arithmetic) — at/over the overload ceiling nothing more fits, so don't
-                // pay the reachability/storage cost. cur mass is read live and doesn't change as we record
-                // (we only queue pending), so this gates the whole sweep off once the pawn is full.
-                if (OverloadGate.CountToPickUp(pawn, t, s) <= 0)
-                    continue;
+                // pay the reachability/storage cost. cur mass doesn't change as we record (we only queue
+                // pending), so the hoisted (sweepMaxCap/sweepBaseCap/sweepCur) read above gates the whole sweep
+                // off once the pawn is full — identical decision to the live read, without re-walking mass.
+                if (OverloadGate.CountToPickUp(pawn, t, s, sweepMaxCap, sweepBaseCap, sweepCur) <= 0)
+                    return true;
                 if (!HaulAIUtility.PawnCanAutomaticallyHaulFast(pawn, t, forced: false))
-                    continue; // unreachable / can't legally haul it
+                    return true; // unreachable / can't legally haul it
                 if (!StoreUtility.TryFindBestBetterStorageFor(t, pawn, map, StoreUtility.CurrentStoragePriorityOf(t),
                         pawn.Faction, out _, out _, needAccurateResult: false))
-                    continue; // nowhere better to put it -> don't scoop it only to strand it in inventory
+                    return true; // nowhere better to put it -> don't scoop it only to strand it in inventory
                 comp.pendingSelfPickups.Add(t);
                 added++;
+                return true;
+            }
+
+            // Cast to the concrete HashSet<Thing> backing the lister (ThingsPotentiallyNeedingHauling returns the
+            // ICollection<Thing> interface; the field is a HashSet<Thing>, decompile-verified) so the foreach binds
+            // the struct enumerator and boxes nothing on this per-item-place sweep. `as` + null fallback to the
+            // interface foreach future-proofs against a backing-type change (then degrades to the boxed enumerator).
+            var haulables = map.listerHaulables.ThingsPotentiallyNeedingHauling();
+            var haulableSet = haulables as HashSet<Thing>;
+            if (haulableSet != null)
+            {
+                foreach (var t in haulableSet)
+                    if (!TryQueue(t))
+                        break;
+            }
+            else
+            {
+                foreach (var t in haulables)
+                    if (!TryQueue(t))
+                        break;
             }
 
             if (added > 0)

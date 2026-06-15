@@ -248,6 +248,11 @@ namespace HaulersDream
         [System.ThreadStatic] private static int claimedCacheTick;
         [System.ThreadStatic] private static HashSet<Thing> claimedCacheSet;
 
+        // Shared read-only empty result for the null-guard early return. NO CALLER MUTATES the handed-out
+        // set (every use is Contains/Count — verified across BulkHaul, YieldRouter, TransportLoad, and the
+        // route picker), so one shared instance is safe and avoids a per-scan throwaway allocation.
+        private static readonly HashSet<Thing> EmptyClaimSet = new HashSet<Thing>();
+
         /// <summary>Drop the main thread's per-(pawn,tick) memo on game load (sibling of BulkHaul.ClearPlanCache),
         /// so it never retains a dead session's Thing references. Correctness is already guaranteed by the
         /// pawn-identity check (a deserialized pawn is a fresh instance that can't match a stale entry); this is
@@ -273,7 +278,7 @@ namespace HaulersDream
         internal static HashSet<Thing> ClaimedByOtherPawns(Pawn pawn)
         {
             if (pawn?.Map == null || pawn.Faction == null)
-                return new HashSet<Thing>();
+                return EmptyClaimSet;
 
             bool paused = Find.TickManager?.Paused ?? false;
             int tick = Find.TickManager?.TicksGame ?? -1;
@@ -609,13 +614,27 @@ namespace HaulersDream
         // the order deterministic — List.Sort is unstable — so the budget's gather-order prefix stays stable.)
         private static void SortByDistanceTo(List<Thing> things, IntVec3 anchor)
         {
-            things.Sort((a, b) =>
+            // Struct IComparer holding the anchor in a field — no capturing closure / delegate alloc per
+            // sort (the picker paths run this per-frame while a route dialog is open).
+            things.Sort(new ByDistanceToComparer(anchor));
+        }
+
+        /// <summary>Allocation-free distance comparator: ranks two Things by squared distance to the
+        /// anchor, then by thingIDNumber, via the pure <see cref="RouteOrdering.CompareMarkedFirst"/>
+        /// with both "marked" flags false (so it degrades to distance-then-id). Holds the anchor in a
+        /// field, so a sort allocates no closure.</summary>
+        private struct ByDistanceToComparer : IComparer<Thing>
+        {
+            private readonly IntVec3 anchor;
+            public ByDistanceToComparer(IntVec3 anchor) { this.anchor = anchor; }
+
+            public int Compare(Thing a, Thing b)
             {
                 long ad = (a.Position - anchor).LengthHorizontalSquared;
                 long bd = (b.Position - anchor).LengthHorizontalSquared;
                 // marked flags both false → CompareMarkedFirst sorts by squared distance, then by id.
                 return RouteOrdering.CompareMarkedFirst(false, ad, a.thingIDNumber, false, bd, b.thingIDNumber);
-            });
+            }
         }
 
         private static void EnsureAnchorFirst(List<Thing> things, Thing anchor)
