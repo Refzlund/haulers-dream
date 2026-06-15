@@ -95,9 +95,12 @@ namespace HaulersDream
         /// <summary>The hunt path's finish-action body: an interrupted-after-kill hunt left the carcass behind
         /// for the slow generic haul scan, so append a PROMPT haul-to-storage job onto the HUNTER's queue. Only
         /// called on a NON-clean hunt finish (a clean hunt self-hauls — see the patch), so this never competes
-        /// with vanilla's own corpse haul. Resolves the prey's corpse from the hunt job's target (per
-        /// <c>JobDriver_Hunt</c>: after the kill, <c>TargetIndex.A</c> re-points to the Corpse, and the public
-        /// <c>Victim</c> property reads the corpse's inner pawn) and routes it through the shared
+        /// with vanilla's own corpse haul. Resolves the prey's corpse from the hunt job's <c>TargetIndex.A</c>
+        /// (decompile-verified <c>JobDriver_Hunt</c>: A is the live prey Pawn for almost the whole job and is
+        /// re-pointed to the Corpse via <c>job.SetTarget(A, corpse)</c> ONLY inside <c>StartCollectCorpseToil</c>'s
+        /// clean-finish/storage-found branch — the very path that ends <c>Succeeded</c> and self-hauls. On the
+        /// NON-<c>Succeeded</c> finishes this method handles, A is therefore still the prey <c>Pawn</c>, and
+        /// <see cref="ResolveCorpse"/> reads that Pawn's <c>.Corpse</c>) and routes it through the shared
         /// <see cref="TryAppendHaul"/> body — which gates on the wild toggle, animal-only scope, player faction
         /// / non-lodger, non-home-map policy, hauling eligibility, forbidden state, and storage existence (null
         /// job = no reachable storage ⇒ leave the carcass exactly as vanilla). If the prey is still alive /
@@ -108,9 +111,12 @@ namespace HaulersDream
             if (driver == null)
                 return;
             var hunter = driver.pawn;
-            // Resolve the prey corpse from the hunt job's TargetIndex.A. After the kill the hunt job re-points
-            // A to the Corpse; before the kill (the hunt was interrupted while the prey is still alive/downed)
-            // A is the live Pawn, whose .Corpse is null ⇒ ResolveCorpse returns null ⇒ TryAppendHaul no-ops.
+            // Resolve the prey corpse from the hunt job's TargetIndex.A. Decompile-verified: JobDriver_Hunt only
+            // re-points A to the Corpse (job.SetTarget(A, corpse)) inside StartCollectCorpseToil's clean-finish
+            // branch — which ends Succeeded and is the path we deliberately skip. On the NON-Succeeded finishes we
+            // handle here, A is STILL the prey Pawn: if it died (kill landed, then interrupted) ResolveCorpse reads
+            // its .Corpse; if it's still alive/downed (interrupted before the kill) .Corpse is null ⇒ ResolveCorpse
+            // returns null ⇒ TryAppendHaul no-ops. (A direct Corpse in A is handled too, defensively.)
             var targetA = driver.job?.targetA.Thing;
             TryAppendHaul(hunter, targetA, HaulKillSource.Hunt);
         }
@@ -132,9 +138,11 @@ namespace HaulersDream
             // only haulTamedSlaughter. Checked first so a disabled kind costs nothing.
             if (!HaulAfterKillPolicy.ShouldHaul(kind, s.haulWildKills, s.haulTamedSlaughter))
                 return false;
-            // victimThing is the hunt/slaughter job's targetA: a live victim Pawn (slaughter, or an interrupted
-            // hunt where the prey isn't dead yet) or the prey's Corpse (a hunt re-pointed to the body after the
-            // kill). Resolve a corpse from it — a live, corpse-less victim ⇒ null ⇒ leave as vanilla.
+            // victimThing is the hunt/slaughter job's targetA. On the paths that reach here it is the victim
+            // Pawn (slaughter; or a hunt interrupted NON-Succeeded, where JobDriver_Hunt has NOT re-pointed A to
+            // the Corpse — that SetTarget happens only in the clean-finish branch this code skips). ResolveCorpse
+            // reads the dead Pawn's .Corpse, returning null for a still-live/downed victim ⇒ leave as vanilla. The
+            // direct-Corpse case is also accepted defensively (e.g. a future caller passing a body directly).
             var corpse = ResolveCorpse(victimThing);
             if (corpse == null || !corpse.Spawned || corpse.Map == null)
                 return false;
@@ -183,8 +191,9 @@ namespace HaulersDream
             return true;
         }
 
-        /// <summary>A Corpse passed directly (a hunt re-pointed to the body after the kill), or the live
-        /// victim Pawn's Corpse (slaughter, or a still-pending hunt corpse). A live, corpse-less victim ⇒ null.</summary>
+        /// <summary>A Corpse passed directly (defensive — e.g. a clean-finish hunt where A was re-pointed to the
+        /// body, or a future direct-Corpse caller), or the live victim Pawn's <c>.Corpse</c> (slaughter, or an
+        /// interrupted hunt whose prey has since died). A still-live, corpse-less victim ⇒ null.</summary>
         private static Corpse ResolveCorpse(Thing victimThing)
         {
             switch (victimThing)

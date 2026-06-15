@@ -6,14 +6,17 @@ namespace HaulersDream
 {
     /// <summary>
     /// The MANDATORY precision fix for the manifest decrement. When HD deposits a multi-stack load, the ThingOwner
-    /// add auto-fires <c>CompTransporter.SubtractFromToLoadList</c> — but vanilla's <c>TransferableMatchingDesperate</c>
-    /// is FUZZY and miscounts which manifest entry to subtract (and by how much) across same-def entries. This prefix
-    /// — gated on the per-thread <see cref="Global.IsExecutingManagedUnload"/> flag (set only inside HD's deposit
-    /// toil), so vanilla single-item loads and OTHER mods' loads keep vanilla accounting — replaces the decrement
-    /// with a precise instance-aware match (<see cref="Global.FindBestMatchFor"/>, ranked by the pure
-    /// <c>TransferableMatchPolicy</c>) written via the PUBLIC <c>Transferable.ForceTo</c> (no reflection — it keeps
-    /// <c>EditBuffer</c> consistent), re-fires the correct finished message (shuttle vs transporters), and returns
-    /// the exact count.
+    /// add auto-fires <c>CompTransporter.SubtractFromToLoadList</c>. Vanilla picks the entry to subtract via
+    /// <c>TransferableMatchingDesperate</c> (a 3-tier identity→TransferAsOne→def-only matcher) and decrements
+    /// <c>min(count, remaining)</c>; what makes it imprecise for HD is that vanilla also re-fires the finished message
+    /// and HD needs the moved count clamped to the matched entry. This prefix — gated on the per-thread
+    /// <see cref="Global.IsExecutingManagedUnload"/> flag (set only inside HD's deposit toil), so vanilla single-item
+    /// loads and OTHER mods' loads keep vanilla accounting — reproduces vanilla's decrement EXACTLY: it selects the
+    /// SAME entry via <see cref="Global.FindBestMatchFor"/> (which delegates straight to
+    /// <c>TransferableUtility.TransferableMatchingDesperate</c>, the identical call the deposit CLAMP makes, so clamp
+    /// and decrement can never disagree), writes the result via the PUBLIC <c>Transferable.ForceTo</c> (keeps
+    /// <c>EditBuffer</c> consistent), re-fires the correct finished message (shuttle vs transporters), and returns the
+    /// exact count.
     ///
     /// Gated by feature flag at <see cref="Prepare"/> (fail-open: with the feature off the patch isn't even applied,
     /// so vanilla is byte-for-byte unchanged).
@@ -23,8 +26,14 @@ namespace HaulersDream
     {
         static bool Prepare() => HaulersDreamMod.Settings?.enableBulkLoadTransporters ?? true;
 
-        // No try/catch: a fault inside HD's own precise decrement is a real bug to surface (Harmony propagates),
-        // not a silently-downgraded warning. The flag-gate makes this inert for every non-HD caller.
+        // No try/catch in HD: a fault inside HD's own precise decrement is a real bug to surface, not a
+        // silently-downgraded warning. NOTE (BL-03): on the transporter path the throw does NOT propagate to the
+        // deposit toil — vanilla CompTransporter.Notify_ThingAdded (the caller of SubtractFromToLoadList) WRAPS it in
+        // try/catch that swallows + Debug.LogError("Exception in Notify_ThingAdded: ..."), so a fault here is LOGGED
+        // and that single decrement is SKIPPED (the manifest entry stays un-subtracted), not rethrown. The driver's
+        // try/finally still resets IsExecutingManagedUnload regardless, so the flag is never stuck. (The portal path
+        // genuinely propagates — MapPortal.Notify_ThingAdded has no try/catch.) The flag-gate makes this inert for
+        // every non-HD caller either way.
         static bool Prefix(CompTransporter __instance, Thing t, int count, bool sendMessageOnFinished, ref int __result)
         {
             if (!Global.IsExecutingManagedUnload)
@@ -33,8 +42,10 @@ namespace HaulersDream
             var leftToLoad = __instance.leftToLoad;
             if (leftToLoad == null) { __result = 0; return false; }
 
-            // Precise, instance-aware match for THIS deposit (def + the count being deposited).
-            var best = Global.FindBestMatchFor(t?.def, count, leftToLoad);
+            // Precise, instance-aware match for THIS deposit (def + stuff + quality via TransferAsOne, then the count
+            // being deposited) — mirrors vanilla TransferableMatchingDesperate's Tier-2 match so a mixed-stuff/quality
+            // manifest decrements the entry that actually matches the deposited stack.
+            var best = Global.FindBestMatchFor(t, count, leftToLoad);
             if (best == null) { __result = 0; return false; }
 
             int before = best.CountToTransfer;
@@ -87,8 +98,11 @@ namespace HaulersDream
     {
         static bool Prepare() => HaulersDreamMod.Settings?.enableBulkLoadPortal ?? true;
 
-        // No try/catch: a fault inside HD's own precise decrement is a real bug to surface (Harmony propagates),
-        // not a silently-downgraded warning. The flag-gate makes this inert for every non-HD caller.
+        // No try/catch: a fault inside HD's own precise decrement is a real bug to surface. UNLIKE the transporter
+        // path (BL-03), this one genuinely propagates — vanilla MapPortal.Notify_ThingAdded calls
+        // SubtractFromToLoadList WITHOUT a try/catch, so a throw here unwinds to the deposit toil. The driver's
+        // try/finally still resets IsExecutingManagedPortalUnload on the way out, so the flag is never stuck. The
+        // flag-gate makes this inert for every non-HD caller.
         static bool Prefix(MapPortal __instance, Thing t, int count, ref int __result)
         {
             if (!Global.IsExecutingManagedPortalUnload)
@@ -97,8 +111,10 @@ namespace HaulersDream
             var leftToLoad = __instance.leftToLoad;
             if (leftToLoad == null) { __result = 0; return false; }
 
-            // Precise, instance-aware match for THIS deposit (def + the count being deposited).
-            var best = Global.FindBestMatchFor(t?.def, count, leftToLoad);
+            // Precise, instance-aware match for THIS deposit (def + stuff + quality via TransferAsOne, then the count
+            // being deposited) — mirrors vanilla TransferableMatchingDesperate's Tier-2 match so a mixed-stuff/quality
+            // manifest decrements the entry that actually matches the deposited stack.
+            var best = Global.FindBestMatchFor(t, count, leftToLoad);
             if (best == null) { __result = 0; return false; }
 
             int before = best.CountToTransfer;

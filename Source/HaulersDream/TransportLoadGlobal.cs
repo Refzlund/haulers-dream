@@ -1,7 +1,6 @@
 using System.Collections.Generic;
 using System.Reflection;
 using HarmonyLib;
-using HaulersDream.Core;
 using RimWorld;
 using Verse;
 
@@ -10,10 +9,10 @@ namespace HaulersDream
     /// <summary>
     /// Shared cross-cutting state for the transport bulk-load path: the per-thread "HD is depositing" flags that
     /// gate the manifest-decrement intercept (so vanilla single-item loads and OTHER mods' loads keep vanilla
-    /// accounting), the precise best-match finder feeding <see cref="TransferableMatchPolicy"/>, and the
-    /// null-checked reflection fallback for writing a fork-<c>Transferable</c> that lacks the public
-    /// <c>ForceTo</c> (RW 1.6's <c>Transferable.ForceTo(int)</c> IS public — the reflection path is a safety net
-    /// only, never the primary write).
+    /// accounting), the precise best-match finder that mirrors vanilla's entry selection, and the null-checked
+    /// reflection fallback for writing a fork-<c>Transferable</c> that lacks the public <c>ForceTo</c> (RW 1.6's
+    /// <c>Transferable.ForceTo(int)</c> IS public — the reflection path is a safety net only, never the primary
+    /// write).
     /// </summary>
     public static class Global
     {
@@ -31,13 +30,6 @@ namespace HaulersDream
         private static bool reflectionInit;
         private static FieldInfo countToTransferField; // TransferableOneWay.countToTransfer (private int)
         private static FieldInfo editBufferField;       // Transferable.editBuffer (private string), if present
-
-        // Reused scratch for FindBestMatchFor's candidate gather, replacing a fresh List<Candidate> per deposited
-        // stack (this runs inside the per-deposit SubtractFromToLoadList intercept). [ThreadStatic] + lazy-init per
-        // the repo's hook-reachable scratch convention; Cleared at use, never trusted empty. SAFETY: the list is
-        // filled then handed to the pure ChooseBestMatchIndex within one call (no re-entrant FindBestMatchFor) before
-        // the next reuse.
-        [System.ThreadStatic] private static List<TransferableMatchPolicy.Candidate> scratchCandidates;
 
         private static void EnsureReflection()
         {
@@ -76,30 +68,40 @@ namespace HaulersDream
         }
 
         /// <summary>
-        /// The best <c>leftToLoad</c> entry to decrement for a deposit of <paramref name="depositedCount"/> units of
-        /// <paramref name="deposited"/>'s def — Verse-side wrapper over <see cref="TransferableMatchPolicy"/>. Filters
-        /// the manifest to same-def entries with a positive remaining, ranks them (exact → largest-absorbing →
-        /// smallest-partial), and returns the chosen entry (or null when nothing matches).
+        /// The <c>leftToLoad</c> entry vanilla would decrement for a deposit of the WHOLE <paramref name="deposited"/>
+        /// stack. Pure delegation to <see cref="TransferableUtility.TransferableMatchingDesperate"/> — see the
+        /// <see cref="FindBestMatchFor(Thing, int, List{TransferableOneWay})"/> overload for why.
         /// </summary>
         public static TransferableOneWay FindBestMatchFor(Thing deposited, List<TransferableOneWay> leftToLoad)
-            => FindBestMatchFor(deposited?.def, depositedCount: deposited?.stackCount ?? 0, leftToLoad);
+            => FindBestMatchFor(deposited, depositedCount: deposited?.stackCount ?? 0, leftToLoad);
 
-        /// <summary>Thing-less overload (the portal/precise path captures def+count before the transfer).</summary>
-        public static TransferableOneWay FindBestMatchFor(ThingDef def, int depositedCount, List<TransferableOneWay> leftToLoad)
+        /// <summary>
+        /// The <c>leftToLoad</c> entry to decrement for a deposit of <paramref name="depositedCount"/> units of
+        /// <paramref name="deposited"/> — selected by the EXACT same matcher vanilla's
+        /// <c>CompTransporter.SubtractFromToLoadList</c> / <c>MapPortal.SubtractFromToLoadList</c> use,
+        /// <see cref="TransferableUtility.TransferableMatchingDesperate"/> in <c>PodsOrCaravanPacking</c> mode (the
+        /// 3-tier ladder: identity → <c>TransferAsOne</c> variant → def-only fallback). Mirroring vanilla here is what
+        /// keeps the decrement in lock-step with the deposit CLAMP (<c>PortalRemainingFor</c> /
+        /// <c>MemberRemainingFor</c>), which call the SAME 3-tier matcher: an off-quality fungible deposit HD's
+        /// def-keyed scoop side delivered (e.g. a masterwork longsword against a by-count "normal longsword" entry)
+        /// matches the def entry via Tier-3 in BOTH the clamp and here, so the entry is actually decremented (no
+        /// stranded-positive desync) — exactly as vanilla would accept it. A mixed-stuff/quality manifest still
+        /// decrements the RIGHT entry: Tier-2 distinguishes a variant the manifest holds explicitly (e.g. deposit
+        /// normal vs. a separate good-armor entry) from the others before Tier-3 is ever consulted.
+        ///
+        /// <paramref name="depositedCount"/> is accepted for signature symmetry with the caller (which clamps the move
+        /// to the matched entry's remaining); it is intentionally NOT used to choose AMONG entries — vanilla's matcher
+        /// returns a single entry per deposited variant (the load dialog groups every <c>TransferAsOne</c> instance
+        /// into ONE entry via <c>TransferableMatching</c>, and each <c>SubtractFromToLoadList</c> runs against a single
+        /// member's <c>leftToLoad</c>), so there is no multi-candidate count-ranking to do, and re-introducing one
+        /// would diverge from vanilla.
+        /// </summary>
+        public static TransferableOneWay FindBestMatchFor(Thing deposited, int depositedCount, List<TransferableOneWay> leftToLoad)
         {
-            if (def == null || leftToLoad == null || leftToLoad.Count == 0)
+            if (deposited?.def == null || leftToLoad == null || leftToLoad.Count == 0)
                 return null;
-            var candidates = scratchCandidates ?? (scratchCandidates = new List<TransferableMatchPolicy.Candidate>());
-            candidates.Clear();
-            for (int i = 0; i < leftToLoad.Count; i++)
-            {
-                var tr = leftToLoad[i];
-                if (tr == null || !tr.HasAnyThing || tr.ThingDef != def || tr.CountToTransfer <= 0)
-                    continue;
-                candidates.Add(new TransferableMatchPolicy.Candidate(i, tr.CountToTransfer));
-            }
-            int idx = TransferableMatchPolicy.ChooseBestMatchIndex(candidates, depositedCount);
-            return idx >= 0 && idx < leftToLoad.Count ? leftToLoad[idx] : null;
+            // EXACT vanilla entry selection — the same call SubtractFromToLoadList and the deposit clamp make.
+            return TransferableUtility.TransferableMatchingDesperate(deposited, leftToLoad, TransferAsOneMode.PodsOrCaravanPacking);
         }
     }
 }

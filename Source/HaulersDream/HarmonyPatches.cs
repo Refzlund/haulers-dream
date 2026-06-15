@@ -379,6 +379,17 @@ namespace HaulersDream
         private static readonly AccessTools.FieldRef<Verse.AI.Pawn_JobTracker, Pawn> PawnOf =
             AccessTools.FieldRefAccess<Verse.AI.Pawn_JobTracker, Pawn>("pawn");
 
+        // ORDER CONTRACT (paired with Patch_TryTakeOrderedJob_BulkHaulTakeover, also a prefix on this method):
+        // both prefixes can short-circuit vanilla (return false), so their relative order must be PINNED rather
+        // than left to Harmony's unspecified same-priority/same-assembly ordering. This one runs FIRST
+        // (Priority.High vs the takeover's Priority.Normal). It is safe TODAY because the two early-return on
+        // DISJOINT job defs (GiveToPackAnimal here vs HaulersDream_BulkHaul in the takeover), so neither can see
+        // the other's job and they never actually contend; the explicit priority simply makes that guarantee
+        // declarative and stable against a future overlap or a third-party patch expecting a fixed order. The
+        // recursive re-entry below (TryTakeOrderedJob with the freshly-built HD load job, NOT a GiveToPackAnimal)
+        // re-runs the whole prefix chain — this prefix passes the HD job through, and the takeover prefix only
+        // acts on HaulersDream_BulkHaul, so the re-entry can never loop or be hijacked by the sibling.
+        [HarmonyPriority(Priority.High)]
         static bool Prefix(Verse.AI.Pawn_JobTracker __instance, Verse.AI.Job job, JobTag? tag,
             bool requestQueueing, ref bool __result)
         {
@@ -424,9 +435,14 @@ namespace HaulersDream
         private static readonly AccessTools.FieldRef<Verse.AI.Pawn_JobTracker, Pawn> PawnOf =
             AccessTools.FieldRefAccess<Verse.AI.Pawn_JobTracker, Pawn>("pawn");
 
+        // ORDER CONTRACT (paired with Patch_TryTakeOrderedJob_CoalescePackAnimalLoad, also a prefix on this
+        // method): this one runs SECOND (Priority.Normal vs the coalescer's Priority.High). Safe because the two
+        // gate on DISJOINT job defs (HaulersDream_BulkHaul here vs GiveToPackAnimal there), so they never contend
+        // — the explicit priority just pins the ordering declaratively. See the coalescer for the full rationale.
         // Deliberately ignores requestQueueing (shift): the user wants the sweep to take over IMMEDIATELY even
         // when the second order was shift-queued — the first item is absorbed into the one-trip sweep, and
         // unrelated queued work is preserved (TryTakeoverSecondOrder does not ClearQueuedJobs).
+        [HarmonyPriority(Priority.Normal)]
         static bool Prefix(Verse.AI.Pawn_JobTracker __instance, Verse.AI.Job job, JobTag? tag, ref bool __result)
         {
             // Only a player-ordered bulk haul can take over; vanilla single hauls (the FIRST, surgical order),

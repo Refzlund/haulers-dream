@@ -279,6 +279,15 @@ namespace HaulersDream
             SurplusCache.Clear();
             // Same hygiene for the per-(pawn,tick) opportunistic-unload tracked-mass memo (HD-OPPUNLOAD).
             TrackedMassCache.Clear();
+            // Same hygiene for the per-(worker,def,tick) availability-count memos (tagged / organic / carried)
+            // and the per-(thing,carrier,cell,tick) haul-to-stack cell memo. These are [ThreadStatic]/static and
+            // survive a quickload, and their keys use thingIDNumber (collidable across saves). Each clear touches
+            // only the main (FinalizeInit) thread's slot — the `tick != -1` populate guard in each is the actual
+            // cross-session safeguard; this keeps them consistent with the list above.
+            InventoryShare.Clear();
+            OrganicInventoryShare.Clear();
+            CarriedHaulShare.Clear();
+            HaulToStack.Clear();
         }
 
         /// <summary>Register (or replace, per pawn) a deferred-reveal tracker for a vein route that ran into fog.</summary>

@@ -131,23 +131,44 @@ namespace HaulersDream
             return null;
         }
 
-        /// <summary>How many units of <paramref name="def"/> a SINGLE member still wants (Σ CountToTransfer over that
-        /// member's <c>leftToLoad</c> entries for the def). The deposit MUST clamp to this — depositing more than one
-        /// transporter wants into its container under-counts the manifest (its auto-fired SubtractFromToLoadList
-        /// only subtracts what that member's entry held).</summary>
-        public static int MemberRemainingFor(CompTransporter member, ThingDef def)
+        /// <summary>The group member whose <c>leftToLoad</c> has an entry vanilla's
+        /// <see cref="TransferableUtility.TransferableMatchingDesperate"/> (in <c>PodsOrCaravanPacking</c> mode) would
+        /// decrement for <paramref name="item"/> — the SAME 3-tier ladder (identity → <c>TransferAsOne</c> variant →
+        /// def-only fallback) the auto-fired <c>SubtractFromToLoadList</c> uses — or null when none does. Using the
+        /// vanilla matcher (not a strict Tier-2 <c>TransferAsOne</c>) keeps routing in lock-step with the deposit clamp
+        /// (<see cref="MemberRemainingFor"/>, also 3-tier) and the decrement intercept: an off-quality fungible item
+        /// HD's def-keyed scoop delivered routes to (and decrements) the def entry via Tier-3 exactly as vanilla would,
+        /// instead of being refused. A mixed-variant manifest still routes to the pod that explicitly holds THIS
+        /// variant first (Tier-2 precedes Tier-3 inside the matcher). The clamp is computed against the SAME match, so
+        /// they line up exactly.</summary>
+        public CompTransporter ActiveMemberFor(Thing item)
+        {
+            if (item?.def == null)
+                return null;
+            if (WantsThing(primary, item))
+                return primary;
+            for (int i = 0; i < group.Count; i++)
+                if (group[i] != null && group[i] != primary && WantsThing(group[i], item))
+                    return group[i];
+            return null;
+        }
+
+        /// <summary>How many units MATCHING <paramref name="item"/>'s exact transferable identity (def + stuff +
+        /// quality, via the SAME vanilla matcher the auto-fired <c>SubtractFromToLoadList</c> uses to find the entry it
+        /// decrements — <see cref="TransferableUtility.TransferableMatchingDesperate"/> in
+        /// <c>PodsOrCaravanPacking</c> mode) a SINGLE member still wants. The deposit MUST clamp to this — depositing
+        /// more than the matching entry holds would over-load that pod AND, with the precise intercept, decrement only
+        /// what that one entry held (so the rest of the deposit silently goes un-accounted). Mirrors the vehicle path's
+        /// <c>VehicleFrameworkCompat.RemainingDemandForThing</c> so transporter/portal/vehicle clamp identically.
+        /// Returns 0 when there is no matching entry (another pawn filled this exact variant).</summary>
+        public static int MemberRemainingFor(CompTransporter member, Thing item)
         {
             var ltl = member?.leftToLoad;
-            if (ltl == null || def == null)
+            if (ltl == null || item?.def == null)
                 return 0;
-            int sum = 0;
-            for (int i = 0; i < ltl.Count; i++)
-            {
-                var tr = ltl[i];
-                if (tr != null && tr.ThingDef == def && tr.CountToTransfer > 0)
-                    sum += tr.CountToTransfer;
-            }
-            return sum;
+            var match = TransferableUtility.TransferableMatchingDesperate(item, ltl, TransferAsOneMode.PodsOrCaravanPacking);
+            int remaining = match?.CountToTransfer ?? 0;
+            return remaining > 0 ? remaining : 0;
         }
 
         private static bool WantsDef(CompTransporter t, ThingDef def)
@@ -162,6 +183,22 @@ namespace HaulersDream
                     return true;
             }
             return false;
+        }
+
+        /// <summary>True if <paramref name="t"/>'s <c>leftToLoad</c> has the positive-remaining entry vanilla's
+        /// <see cref="TransferableUtility.TransferableMatchingDesperate"/> (in <c>PodsOrCaravanPacking</c> mode) would
+        /// decrement for <paramref name="item"/> — the SAME 3-tier ladder (identity → <c>TransferAsOne</c> variant →
+        /// def-only fallback) <c>SubtractFromToLoadList</c> uses. The def-only Tier-3 fallback is what lets an
+        /// off-quality fungible item route to the def entry exactly as vanilla accepts it (the strict-Tier-2
+        /// counterpart of <see cref="WantsDef"/> would wrongly refuse it). Mirrors <see cref="MemberRemainingFor"/>'s
+        /// matcher so the gate and the clamp agree.</summary>
+        private static bool WantsThing(CompTransporter t, Thing item)
+        {
+            var ltl = t?.leftToLoad;
+            if (ltl == null || item == null)
+                return false;
+            var match = TransferableUtility.TransferableMatchingDesperate(item, ltl, TransferAsOneMode.PodsOrCaravanPacking);
+            return match != null && match.CountToTransfer > 0;
         }
 
         public float GetMassCapacity()

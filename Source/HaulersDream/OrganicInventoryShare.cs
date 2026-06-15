@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using HaulersDream.Core;
 using RimWorld;
@@ -71,8 +72,14 @@ namespace HaulersDream
         // missing-material blueprint per def — a colony-wide pawn × inventory walk each time. Within one tick
         // the answer for a given (worker, def) cannot change, so cache it (cleared whenever the tick advances).
         // Mirrors InventoryShare.CountSharable's countCache pattern (and vanilla ItemAvailability's per-tick cache).
-        private static int countCacheTick = -1;
-        private static readonly Dictionary<long, int> countCache = new Dictionary<long, int>();
+        //
+        // [ThreadStatic] per the assembly's hook-reachable-scratch convention (PawnMassCache/CommonSenseCompat/
+        // InventorySurplus): CountOrganic is reachable from the construction work-giver scan postfixes, so an
+        // off-thread work scan (a threaded-scan mod) gets its own per-tick slot instead of racing a torn read +
+        // Clear() + insert on a shared Dictionary. A [ThreadStatic] field can't have an initializer (the
+        // initializer would only run on the static-ctor thread), so the dict is null-coalesced at the read site.
+        [ThreadStatic] private static int countCacheTick;
+        [ThreadStatic] private static Dictionary<long, int> countCache;
 
         /// <summary>Total ORGANIC units of <paramref name="def"/> held by the worker itself plus eligible
         /// carriers (other colonists, and — when allowed — pack animals) — for the construction availability
@@ -87,13 +94,22 @@ namespace HaulersDream
                 return 0;
 
             int tick = Find.TickManager?.TicksGame ?? -1;
-            if (tick != countCacheTick)
+            // Lazy per-thread dict init (a [ThreadStatic] field can't carry an initializer). The very first
+            // access on each thread also reaches here, so a fresh empty cache is built before any read/write.
+            var cache = countCache ?? (countCache = new Dictionary<long, int>());
+            // tick == -1 means TickManager is briefly null (across a load). Don't trust or populate the memo
+            // then: a cross-session quickload can land on the same tick number with colliding thingIDNumber
+            // keys, so an unguarded -1 populate could serve a previous session's count. Guard the stamp update
+            // on `tick != -1` (mirrors CompHauledToInventory.lastHealTick) — when tick is -1 we always recompute
+            // live and never cache. This is the load-bearing cross-session fix (the FinalizeInit clear only
+            // touches the main thread's slot, so the guard is what closes the worker-thread + null-tick window).
+            if (tick != -1 && tick != countCacheTick)
             {
                 countCacheTick = tick;
-                countCache.Clear();
+                cache.Clear();
             }
             long key = ((long)worker.thingIDNumber << 32) | (uint)def.shortHash;
-            if (countCache.TryGetValue(key, out int cached))
+            if (tick != -1 && cache.TryGetValue(key, out int cached))
                 return cached;
 
             int total = CountOrganicOfDef(worker, def); // the worker's own organic stock always counts (any map)
@@ -110,8 +126,20 @@ namespace HaulersDream
                     total += CountOrganicOfDef(carrier, def);
                 }
             }
-            countCache[key] = total;
+            if (tick != -1)
+                cache[key] = total; // only memoize a real tick (see the -1 guard above)
             return total;
+        }
+
+        /// <summary>Drop the main thread's per-tick organic-count memo and reset the tick stamp — called on game
+        /// load (FinalizeInit) so an equal tick number across a quickload cannot serve a stale cross-session
+        /// entry. Mirrors <see cref="PawnMassCache.Clear"/>: clears only the FinalizeInit (main) thread's slot;
+        /// other threads' [ThreadStatic] slots are per-tick self-clearing, and the `tick != -1` populate guard in
+        /// <see cref="CountOrganic"/> is the actual cross-session safeguard. Consistency with the existing list.</summary>
+        internal static void Clear()
+        {
+            countCacheTick = 0;
+            countCache?.Clear();
         }
 
         /// <summary>Sum every organic stack of <paramref name="def"/> in <paramref name="carrier"/>'s inventory.</summary>

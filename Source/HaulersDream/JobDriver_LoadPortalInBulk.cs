@@ -242,10 +242,10 @@ namespace HaulersDream
                     // depositing more than the manifest needs would over-load the other map / under-count nothing,
                     // but the SubtractFromToLoadList intercept only decrements what the entry held, so leftover
                     // surplus stays tagged for HD's normal unload).
-                    int portalRemaining = PortalRemainingFor(portal, thing.def);
+                    int portalRemaining = PortalRemainingFor(portal, thing);
                     int count = System.Math.Min(surplus, portalRemaining);
                     if (count <= 0)
-                        continue; // portal no longer needs this def (filled by another pawn) — leave it tagged
+                        continue; // portal no longer needs this exact variant (filled by another pawn) — leave it tagged
 
                     // THING-LESS settle — capture (def, count) BEFORE the transfer and measure the moved amount from
                     // the SOURCE side. The proxy's TryAdd teleports the split Thing to the other map via
@@ -323,21 +323,21 @@ namespace HaulersDream
             });
         }
 
-        /// <summary>Total units of <paramref name="def"/> the portal's manifest still wants (Σ CountToTransfer across
-        /// its <c>leftToLoad</c> entries for that def).</summary>
-        private static int PortalRemainingFor(MapPortal portal, ThingDef def)
+        /// <summary>Units MATCHING <paramref name="item"/>'s exact transferable identity (def + stuff + quality, via
+        /// the SAME vanilla matcher the auto-fired <c>MapPortal.SubtractFromToLoadList</c> uses to find the entry it
+        /// decrements — <see cref="TransferableUtility.TransferableMatchingDesperate"/> in <c>PodsOrCaravanPacking</c>
+        /// mode) the portal's manifest still wants. The deposit MUST clamp to this — the precise intercept only
+        /// decrements what the matched entry held, so depositing more than that entry holds would over-supply the other
+        /// map AND leave the excess un-accounted. Mirrors the vehicle/transporter clamp. Returns 0 when no entry
+        /// matches the deposited variant.</summary>
+        private static int PortalRemainingFor(MapPortal portal, Thing item)
         {
             var ltl = portal?.leftToLoad;
-            if (ltl == null || def == null)
+            if (ltl == null || item?.def == null)
                 return 0;
-            int sum = 0;
-            for (int i = 0; i < ltl.Count; i++)
-            {
-                var tr = ltl[i];
-                if (tr != null && tr.ThingDef == def && tr.CountToTransfer > 0)
-                    sum += tr.CountToTransfer;
-            }
-            return sum;
+            var match = TransferableUtility.TransferableMatchingDesperate(item, ltl, TransferAsOneMode.PodsOrCaravanPacking);
+            int remaining = match?.CountToTransfer ?? 0;
+            return remaining > 0 ? remaining : 0;
         }
 
         /// <summary>True if the pawn holds any tagged surplus stack of a def the portal still wants.</summary>
@@ -354,7 +354,7 @@ namespace HaulersDream
                     continue;
                 if (InventorySurplus.SurplusOf(pawn, t) <= 0)
                     continue;
-                if (PortalRemainingFor(portal, t.def) > 0)
+                if (PortalRemainingFor(portal, t) > 0)
                     return true;
             }
             return false;

@@ -235,10 +235,10 @@ namespace HaulersDream
                     // service the next member's share on the following pass. The MANIFEST is authoritative — NOT the
                     // group mass cap (vanilla lets a pod load past mass capacity, shown red; the trip-mass budget was
                     // already applied during the sweep).
-                    var member = adp.ActiveMemberFor(thing.def);
+                    var member = adp.ActiveMemberFor(thing);
                     if (member == null)
-                        continue; // no member still wants this def (another pawn filled it) — leave it tagged
-                    int memberRemaining = LoadTransportersAdapter.MemberRemainingFor(member, thing.def);
+                        continue; // no member still wants this exact variant (another pawn filled it) — leave it tagged
+                    int memberRemaining = LoadTransportersAdapter.MemberRemainingFor(member, thing);
                     int count = System.Math.Min(surplus, memberRemaining);
                     if (count <= 0)
                         continue;
@@ -307,24 +307,28 @@ namespace HaulersDream
             });
         }
 
-        /// <summary>Total units of <paramref name="def"/> the group's manifest still wants (Σ CountToTransfer across
-        /// every member's <c>leftToLoad</c> for that def).</summary>
-        private static int GroupRemainingFor(LoadTransportersAdapter adp, ThingDef def)
+        /// <summary>Units the group's manifest still wants for <paramref name="item"/> — summed across members using,
+        /// PER MEMBER, the entry vanilla's <see cref="TransferableUtility.TransferableMatchingDesperate"/> (in
+        /// <c>PodsOrCaravanPacking</c> mode) would decrement (the SAME 3-tier ladder — identity → <c>TransferAsOne</c>
+        /// variant → def-only fallback — that <c>SubtractFromToLoadList</c> and the per-member deposit clamp
+        /// <see cref="LoadTransportersAdapter.MemberRemainingFor"/> use). Summing per member (not over the flattened
+        /// transferable list) matches how the deposit actually drains the group: each member's own
+        /// <c>SubtractFromToLoadList</c> resolves ONE entry against ITS OWN <c>leftToLoad</c>, so an off-quality
+        /// fungible item credits each member's def entry via Tier-3 exactly as the deposit will. This keeps the deposit
+        /// pre-gate (walk-to-transporter decision) in lock-step with the deposit path — a strict-Tier-2 pre-gate would
+        /// wrongly skip the trip for a fungible variant the deposit would still load.</summary>
+        private static int GroupRemainingFor(LoadTransportersAdapter adp, Thing item)
         {
-            if (adp == null || def == null)
+            if (adp == null || item?.def == null)
                 return 0;
             int sum = 0;
-            var transferables = adp.GetTransferables();
-            for (int i = 0; i < transferables.Count; i++)
-            {
-                var tr = transferables[i];
-                if (tr != null && tr.ThingDef == def && tr.CountToTransfer > 0)
-                    sum += tr.CountToTransfer;
-            }
+            var group = adp.Group;
+            for (int i = 0; i < group.Count; i++)
+                sum += LoadTransportersAdapter.MemberRemainingFor(group[i], item);
             return sum;
         }
 
-        /// <summary>True if the pawn holds any tagged surplus stack of a def the group still wants.</summary>
+        /// <summary>True if the pawn holds any tagged surplus stack of a variant the group still wants.</summary>
         private bool HasDepositableForGroup()
         {
             var hcomp = pawn.GetComp<CompHauledToInventory>();
@@ -338,7 +342,7 @@ namespace HaulersDream
                     continue;
                 if (InventorySurplus.SurplusOf(pawn, t) <= 0)
                     continue;
-                if (GroupRemainingFor(adp, t.def) > 0)
+                if (GroupRemainingFor(adp, t) > 0)
                     return true;
             }
             return false;

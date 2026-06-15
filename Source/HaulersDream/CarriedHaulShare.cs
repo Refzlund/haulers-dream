@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using HaulersDream.Core;
 using RimWorld;
@@ -54,8 +55,14 @@ namespace HaulersDream
         // per missing-material def per builder — a colony-wide pawn walk each time. Within one tick the answer for
         // a given (worker, def) cannot change, so cache it (cleared whenever the tick advances). Mirrors
         // InventoryShare.CountSharable / OrganicInventoryShare.CountOrganic's countCache pattern exactly.
-        private static int countCacheTick = -1;
-        private static readonly Dictionary<long, int> countCache = new Dictionary<long, int>();
+        //
+        // [ThreadStatic] per the assembly's hook-reachable-scratch convention (PawnMassCache/CommonSenseCompat/
+        // InventorySurplus): this count is reachable from the construct-deliver work-giver scan postfixes, so an
+        // off-thread work scan gets its own per-tick slot instead of racing a torn read + Clear() + insert on a
+        // shared Dictionary. A [ThreadStatic] field can't have an initializer, so the dict is null-coalesced at
+        // the read site.
+        [ThreadStatic] private static int countCacheTick;
+        [ThreadStatic] private static Dictionary<long, int> countCache;
 
         /// <summary>Total units of <paramref name="def"/> being hand-hauled to storage on this map — for the
         /// availability gate. Per-tick cached (a (worker, def) answer is invariant within a tick).</summary>
@@ -65,13 +72,19 @@ namespace HaulersDream
                 return 0;
 
             int tick = Find.TickManager?.TicksGame ?? -1;
-            if (tick != countCacheTick)
+            // Lazy per-thread dict init (a [ThreadStatic] field can't carry an initializer).
+            var cache = countCache ?? (countCache = new Dictionary<long, int>());
+            // tick == -1 (TickManager briefly null across a load): don't trust or populate the memo — a
+            // cross-session quickload can land on the same tick number with colliding thingIDNumber keys.
+            // Guard the stamp update on `tick != -1` (mirrors CompHauledToInventory.lastHealTick); when -1 we
+            // recompute live and never cache. This is the load-bearing cross-session fix.
+            if (tick != -1 && tick != countCacheTick)
             {
                 countCacheTick = tick;
-                countCache.Clear();
+                cache.Clear();
             }
             long key = ((long)worker.thingIDNumber << 32) | (uint)def.shortHash;
-            if (countCache.TryGetValue(key, out int cached))
+            if (tick != -1 && cache.TryGetValue(key, out int cached))
                 return cached;
 
             int total = 0;
@@ -82,8 +95,19 @@ namespace HaulersDream
                 if (carried != null && carried.def == def)
                     total += carried.stackCount;
             }
-            countCache[key] = total;
+            if (tick != -1)
+                cache[key] = total; // only memoize a real tick (see the -1 guard above)
             return total;
+        }
+
+        /// <summary>Drop the main thread's per-tick storage-bound-carried count memo and reset the tick stamp —
+        /// called on game load (FinalizeInit) so an equal tick number across a quickload cannot serve a stale
+        /// cross-session entry. Mirrors <see cref="PawnMassCache.Clear"/> (main-thread slot only; the `tick != -1`
+        /// populate guard above is the actual cross-session safeguard).</summary>
+        internal static void Clear()
+        {
+            countCacheTick = 0;
+            countCache?.Clear();
         }
 
         /// <summary>
