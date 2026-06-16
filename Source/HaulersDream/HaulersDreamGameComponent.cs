@@ -511,30 +511,54 @@ namespace HaulersDream
             if (!drop)
                 return;
 
-            // Drop ONLY the tagged items (a snapshot copy — TryDrop -> Deregister mutates the tracked set).
-            // Abort on the FIRST failed drop and leave the rest for the next cycle (matches BLFT). Deregister
-            // the tag only when the drop actually happened, so a failed drop keeps the item tracked/retried.
-            tmpSoftlockDrop.Clear();
+            // The policy decision above is the gate; perform the drop via the shared loop, reusing this driver's
+            // per-tick scratch list so the hot path stays allocation-free.
+            DropTrackedSnapshot(pawn, comp, owner, tmpSoftlockDrop);
+        }
+
+        /// <summary>
+        /// Drop a pawn's HD-tagged cargo at its feet: snapshot the tracked set (TryDrop -> Deregister mutates it),
+        /// drop each item still in inventory with <see cref="ThingPlaceMode.Near"/>, Deregister only on a
+        /// successful drop, and abort on the FIRST failure (saturated / boxed-in area) leaving the rest tracked
+        /// for a later retry. No try/catch — a genuine drop fault must surface as a red error. UNCONDITIONAL: the
+        /// CALLER owns the decision (SoftlockDropPolicy for the periodic driver; the about-to-charge condition for
+        /// the mech-shed hook). Single implementation, so the two callers can never drift.
+        /// </summary>
+        private static void DropTrackedSnapshot(Pawn pawn, CompHauledToInventory comp, ThingOwner<Thing> owner, List<Thing> scratch)
+        {
+            scratch.Clear();
             foreach (var t in comp.PeekHashSet())
-                tmpSoftlockDrop.Add(t);
-            for (int i = 0; i < tmpSoftlockDrop.Count; i++)
+                scratch.Add(t);
+            for (int i = 0; i < scratch.Count; i++)
             {
-                var item = tmpSoftlockDrop[i];
+                var item = scratch[i];
                 if (item == null || item.Destroyed || !owner.Contains(item))
                     continue;
-                // TryDrop reassigns the out param to the (possibly merged) ground stack; hold the ORIGINAL
-                // tracked reference to deregister. No try/catch: a genuine drop fault must surface as a red
-                // error, not be swallowed.
+                // TryDrop reassigns the out param to the (possibly merged) ground stack; hold the ORIGINAL tracked
+                // reference to deregister.
                 if (owner.TryDrop(item, pawn.Position, pawn.Map, ThingPlaceMode.Near, out Thing _))
-                {
                     comp.Deregister(item);
-                }
                 else
-                {
                     break; // saturated area / boxed in — retry on the next cycle
-                }
             }
-            tmpSoftlockDrop.Clear();
+            scratch.Clear();
+        }
+
+        /// <summary>
+        /// Drop ALL of a pawn's HD-tagged cargo at its feet, UNCONDITIONALLY (the caller owns the decision). Used
+        /// by the mech-shed-before-charge hook (<see cref="Patch_MechShedCargoBeforeCharge"/>) as its fallback
+        /// when there is no reachable storage to deliver to. Allocates a one-off snapshot list (a rare,
+        /// non-per-tick path), unlike the periodic softlock driver which reuses its scratch.
+        /// </summary>
+        internal static void DropTaggedCargo(Pawn pawn)
+        {
+            if (pawn?.Map == null)
+                return;
+            var comp = pawn.TryGetComp<CompHauledToInventory>();
+            var owner = pawn.inventory?.innerContainer;
+            if (comp == null || owner == null)
+                return;
+            DropTrackedSnapshot(pawn, comp, owner, new List<Thing>(comp.PeekHashSet().Count));
         }
 
         private void ProcessVeinTrackers()
