@@ -329,6 +329,13 @@ namespace HaulersDream
             // via VF's VerifyAndValidateClaimants even if it somehow no-ops.
             AddFinishAction(delegate (JobCondition condition)
             {
+                // B4 continuous loading (opt-in, default OFF): on a player-forced SUCCESS, chain to the nearest OTHER
+                // vehicle that still has cargo to load (dedup excludes THIS vehicle). Byte-inert when the setting is off
+                // (ShouldChain short-circuits) and a no-op if VF is absent. The chained job targets a different ledger
+                // key (a different vehicle thingIDNumber) and re-acquires its own VRM claim in Notify_Starting, so we
+                // still RELEASE this vehicle's claims below (retainClaimOnEnd stays false — retaining would leak them).
+                if (ContinuousLoad.ShouldChain(condition, job))
+                    ContinuousLoad.TryChainFrom(pawn, EnsureAdapter());
                 if (!retainClaimOnEnd)
                 {
                     HaulersDreamGameComponent.Instance?.LoadReleaseClaimsForPawn(pawn);

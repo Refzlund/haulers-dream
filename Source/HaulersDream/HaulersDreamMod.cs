@@ -52,12 +52,13 @@ namespace HaulersDream
         }
     }
 
-    /// <summary>Verbose logging gated behind the mod setting (see .docs/02 on diagnostics).</summary>
+    /// <summary>Verbose logging gated behind the mod setting AND Dev Mode (parity with BLFT — debug spam never
+    /// reaches a normal player even if the (now Dev-only) toggle was left on in an old config). See .docs/02.</summary>
     public static class HDLog
     {
         public static void Dbg(string message)
         {
-            if (HaulersDreamMod.Settings != null && HaulersDreamMod.Settings.verboseLogging)
+            if (Prefs.DevMode && HaulersDreamMod.Settings != null && HaulersDreamMod.Settings.verboseLogging)
                 Log.Message("[Hauler's Dream] " + message);
         }
     }

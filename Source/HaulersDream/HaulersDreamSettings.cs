@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using HaulersDream.Core;
+using RimWorld;
 using UnityEngine;
 using Verse;
 
@@ -156,6 +157,30 @@ namespace HaulersDream
         // for the active bulk-load feature; it requires the master.
         public bool enableVehicleFramework = true;
         public bool enableBulkLoadVehicles = true;
+
+        // ===== Bulk Load For Transporters parity (added 2026-06) =====
+        // A1: clean up HD bulk-load/haul jobs at SAVE time so a save written mid-load survives uninstalling HD
+        // (no dead custom-JobDriver refs left in the save). Safe-uninstall data integrity; ON. It mutates job
+        // state at save time, so it is behind a toggle, but the safe default is ON.
+        public bool cleanupOnSave = true;
+        // A2: drop HD-tagged items from a pawn that can no longer haul (hauling disabled, or a mech charging /
+        // dormant / self-shutting-down) so swept cargo is never trapped forever. Anti-softlock recovery; ON.
+        public bool enableSoftlockDrop = true;
+        // B1: a pawn already carrying needed cargo diverts to deposit it into the nearest needy transporter /
+        // portal / vehicle, instead of starting a fresh pickup. Behavior-changing autonomous trigger; OFF.
+        public bool enableOpportunisticLoad = false;
+        public int loadOpportunityScanRadius = 30;
+        // B4: one right-click "load until complete" chains a (drafted) courier through every nearby transporter
+        // group that still has loading work. Behavior-changing manual convenience; OFF.
+        public bool enableContinuousLoading = false;
+        // B3: order bulk-load pickup stops by real pathfinding (re-rank the top-N straight-line candidates)
+        // instead of straight-line distance. Behavior-changing perf tradeoff on a hot scan path; OFF.
+        public bool loadHybridPathing = false;
+        public int loadPathfindingCandidates = 8;
+        // C2: auto-open the Contents tab when a single transporter is selected (and the Gear tab for a carrier).
+        // A UI override that changes the player's currently-open tab on selection; OFF.
+        public bool autoOpenTransporterContents = false;
+        public bool autoOpenCarrierGear = false;
 
         // --- pack-animal BULK UNLOAD (the inverse of loading: empty a flagged carrier into the hauler's backpack
         // in ONE visit, then HD's normal unload ships it to storage). Replaces vanilla's one-stack-per-walk unload.
@@ -461,6 +486,15 @@ namespace HaulersDream
             Scribe_Values.Look(ref enableVehicleFramework, "enableVehicleFramework", true);
             Scribe_Values.Look(ref enableBulkLoadVehicles, "enableBulkLoadVehicles", true);
             Scribe_Values.Look(ref enableBulkUnloadCarriers, "enableBulkUnloadCarriers", true);
+            Scribe_Values.Look(ref cleanupOnSave, "cleanupOnSave", true);
+            Scribe_Values.Look(ref enableSoftlockDrop, "enableSoftlockDrop", true);
+            Scribe_Values.Look(ref enableOpportunisticLoad, "enableOpportunisticLoad", false);
+            Scribe_Values.Look(ref loadOpportunityScanRadius, "loadOpportunityScanRadius", 30);
+            Scribe_Values.Look(ref enableContinuousLoading, "enableContinuousLoading", false);
+            Scribe_Values.Look(ref loadHybridPathing, "loadHybridPathing", false);
+            Scribe_Values.Look(ref loadPathfindingCandidates, "loadPathfindingCandidates", 8);
+            Scribe_Values.Look(ref autoOpenTransporterContents, "autoOpenTransporterContents", false);
+            Scribe_Values.Look(ref autoOpenCarrierGear, "autoOpenCarrierGear", false);
             Scribe_Values.Look(ref minFreeSpaceToUnloadCarrierPct, "minFreeSpaceToUnloadCarrierPct", 0.5f);
             Scribe_Values.Look(ref reserveCarrierOnUnload, "reserveCarrierOnUnload", false);
             Scribe_Values.Look(ref visualUnloadDelay, "visualUnloadDelay", 15);
@@ -533,6 +567,123 @@ namespace HaulersDream
             Scribe_Values.Look(ref enableOnNonHomeMaps, "enableOnNonHomeMaps", true);
             Scribe_Values.Look(ref hideGizmo, "hideGizmo", false);
             Scribe_Values.Look(ref verboseLogging, "verboseLogging", false);
+        }
+
+        /// <summary>Reset EVERY persisted setting to its declared default (the same values the field initializers
+        /// and ExposeData defaults use). Called from the "Reset to defaults" button after a confirmation dialog.
+        /// Kept exhaustive: each Scribe_Values/Scribe_Collections/Scribe_Deep field above has a matching line here,
+        /// so a reset never silently leaves a field stale. Transient/derived/cache fields (drawDetourLines,
+        /// ruleMap, keepDefNames) are NOT serialized and intentionally excluded.</summary>
+        public void ResetToDefaults()
+        {
+            masterEnabled = true;
+            carryLimitFraction = 1.0f;
+            pickupMode = PickupMode.DropThenHaul;
+            markForUnload = true;
+            unloadBeforeSleep = true;
+            unloadBeforeLeisure = true;
+            unloadBeforeEating = true;
+            unloadAllSurplus = false;
+            itemUnloadRules = new List<string>();
+            ruleMap = null; // invalidate the decode cache so the cleared rule list takes effect immediately
+            shareForBuilding = true;
+            buildFromInventory = true;
+            buildFromInventoryPartial = false;
+            shareForCrafting = true;
+            inventoryCraftDeliver = true;
+            shareMeetInMiddle = true;
+            batchWorkDeliveries = true;
+            inventoryConstructDeliver = true;
+            shareHandHauledToStorage = false;
+            mealsOnWheels = true;
+            bulkHaul = true;
+            bulkHaulTrigger = BulkHaulTrigger.SecondTasked;
+            haulNearbyOption = true;
+            manualPickupOption = true;
+            haulOversizedInInventory = true;
+            sweepNearbyWhileWorking = true;
+            loadPackAnimalBulk = true;
+            autoDivertToPackAnimal = true;
+            enableBulkLoadTransporters = true;
+            bulkLoadAiUpdateFrequency = 60;
+            enableBulkLoadPortal = true;
+            enableVehicleFramework = true;
+            enableBulkLoadVehicles = true;
+            enableBulkUnloadCarriers = true;
+            cleanupOnSave = true;
+            enableSoftlockDrop = true;
+            enableOpportunisticLoad = false;
+            loadOpportunityScanRadius = 30;
+            enableContinuousLoading = false;
+            loadHybridPathing = false;
+            loadPathfindingCandidates = 8;
+            autoOpenTransporterContents = false;
+            autoOpenCarrierGear = false;
+            minFreeSpaceToUnloadCarrierPct = 0.5f;
+            reserveCarrierOnUnload = false;
+            visualUnloadDelay = 15;
+            haulToStack = true;
+            orderedConstructTether = true;
+            haulToSiteOption = true;
+            planRoutes = true;
+            planCrafting = true;
+            batchByDefault = false;
+            defaultBatchSize = 10;
+            autoStripMode = AutoStripMode.AllHauls;
+            stripColonistCorpses = false;
+            taintedSmeltablePolicy = TaintedApparelPolicy.Take;
+            taintedNonSmeltablePolicy = TaintedApparelPolicy.Take;
+            haulWildKills = true;
+            haulTamedSlaughter = true;
+            butcherSpoilingFirst = true;
+            cookSpoilingFirst = true;
+            overloadLevel = OverloadTuning.FairLevel;
+            strictCarryWeight = false;
+            keepWorkingWhenFull = false;
+            keepWorkingMarginCells = 5;
+            opportunisticUnload = true;
+            skipHaulWhileBleeding = true;
+            bleedThresholdPerDay = 0.001f;
+            closestDestinationUnloadOrder = true;
+            enRoutePickup = false;
+            enRoutePathChecker = EnRoutePathChecker.Vanilla;
+            storageRouting = false;
+            routeSupplies = true;
+            routeIngredients = true;
+            routeToEqualPriority = true;
+            routeToStockpiles = true;
+            storageFiltersEnabled = false;
+            storageFilterUseDefaults = true;
+            storageFilterDenyLwmForOpportunistic = true;
+            storageBuildingFilter = new StorageBuildingFilter();
+            routeAllowHarvest = true;
+            routeGrowthThreshold = 80;
+            routeMaxAmount = 50;
+            routeSelectionMethod = RouteSelectionMethod.MostStopsPerTravel;
+            routeDistanceBasis = RouteDistanceBasis.StraightLine;
+            routeOrderExactMax = RouteOrderPolicy.ExactMax;
+            craftBatchTimeoutHours = 2f;
+            routePrefsByDef = new Dictionary<string, RouteDialogPrefs>();
+            pauseWhileDrafted = true;
+            allowMechanoids = true;
+            allowAnimals = false;
+            allowIncapable = false;
+            haulHarvest = true;
+            haulMining = true;
+            haulDeepDrill = true;
+            haulDeconstruct = true;
+            haulAnimals = true;
+            haulStrip = true;
+            allPawnsCanHaul = false;
+            allPawnsCanClean = false;
+            allPawnsCanCutPlants = false;
+            unloadGraceTicks = 2500;
+            intervalUnloadHours = 1f;
+            alertCannotUnload = true;
+            alertStuckHours = 12f;
+            enableOnNonHomeMaps = true;
+            hideGizmo = false;
+            verboseLogging = false;
         }
 
         /// <summary>The decoded per-item rules keyed by defName, including entries whose mod is currently absent
@@ -661,6 +812,16 @@ namespace HaulersDream
 
         public void DoWindowContents(Rect rect)
         {
+            // --- "Reset to defaults" button in the top-right of the free 32px header strip (above the tab row).
+            // The tabs are drawn ABOVE tabRect's top edge (rect.y + 32) on the LEFT, so a right-aligned button here
+            // never overlaps them. Confirmed before resetting so a stray click can't wipe the player's config. ---
+            float btnW = 160f, btnH = 28f;
+            var resetRect = new Rect(rect.xMax - btnW, rect.y + 2f, btnW, btnH);
+            if (Widgets.ButtonText(resetRect, "HaulersDream.Setting.ResetToDefaults".Translate()))
+                Find.WindowStack.Add(Dialog_MessageBox.CreateConfirmation(
+                    "HaulersDream.Setting.ResetToDefaultsConfirm".Translate(),
+                    ResetToDefaults, destructive: true));
+
             // --- tab row (vanilla DrawMenuSection + TabRecord row, like WYU). The row sits 32px down from the
             // top of rect; the tab body fills the rest. TabDrawer draws the tabs ABOVE tabRect's top edge. ---
             var tabRect = new Rect(rect.x, rect.y + 32f, rect.width, rect.height - 32f);
@@ -890,6 +1051,33 @@ namespace HaulersDream
                     l.CheckboxLabeled("HaulersDream.Setting.EnableBulkLoadVehicles".Translate(), ref enableBulkLoadVehicles,
                         "HaulersDream.Setting.EnableBulkLoadVehiclesDesc".Translate());
             }
+
+            // --- Bulk Load For Transporters parity ---
+            l.GapLine();
+            l.CheckboxLabeled("HaulersDream.Setting.CleanupOnSave".Translate(), ref cleanupOnSave,
+                "HaulersDream.Setting.CleanupOnSaveDesc".Translate());
+            l.CheckboxLabeled("HaulersDream.Setting.SoftlockDrop".Translate(), ref enableSoftlockDrop,
+                "HaulersDream.Setting.SoftlockDropDesc".Translate());
+            l.CheckboxLabeled("HaulersDream.Setting.OpportunisticLoad".Translate(), ref enableOpportunisticLoad,
+                "HaulersDream.Setting.OpportunisticLoadDesc".Translate());
+            if (enableOpportunisticLoad)
+            {
+                l.Label("HaulersDream.Setting.LoadOpportunityRadius".Translate(loadOpportunityScanRadius));
+                loadOpportunityScanRadius = Mathf.RoundToInt(l.Slider(loadOpportunityScanRadius, 5f, 100f));
+            }
+            l.CheckboxLabeled("HaulersDream.Setting.ContinuousLoading".Translate(), ref enableContinuousLoading,
+                "HaulersDream.Setting.ContinuousLoadingDesc".Translate());
+            l.CheckboxLabeled("HaulersDream.Setting.LoadHybridPathing".Translate(), ref loadHybridPathing,
+                "HaulersDream.Setting.LoadHybridPathingDesc".Translate());
+            if (loadHybridPathing)
+            {
+                l.Label("HaulersDream.Setting.LoadPathfindingCandidates".Translate(loadPathfindingCandidates));
+                loadPathfindingCandidates = Mathf.RoundToInt(l.Slider(loadPathfindingCandidates, 2f, 24f));
+            }
+            l.CheckboxLabeled("HaulersDream.Setting.AutoOpenTransporterContents".Translate(), ref autoOpenTransporterContents,
+                "HaulersDream.Setting.AutoOpenTransporterContentsDesc".Translate());
+            l.CheckboxLabeled("HaulersDream.Setting.AutoOpenCarrierGear".Translate(), ref autoOpenCarrierGear,
+                "HaulersDream.Setting.AutoOpenCarrierGearDesc".Translate());
         }
 
         // ===== Hauling Sources & Who =====
@@ -1085,12 +1273,18 @@ namespace HaulersDream
                 alertStuckHours = Mathf.Round(l.Slider(alertStuckHours, 1f, 72f) * 2f) / 2f;
             }
 
-            l.GapLine();
-            l.CheckboxLabeled("HaulersDream.Setting.VerboseLogging".Translate(), ref verboseLogging);
-            // Dev-only detour overlay — NEW, shown only in Dev Mode (a transient diagnostic, not serialized).
+            // Verbose logging + dev-only detour overlay — both shown only in Dev Mode (parity with BLFT, which
+            // gates its debug logging on Dev Mode). The verboseLogging field STAYS scribed (a dev's choice
+            // persists), but the control is hidden — and HDLog.Dbg also requires Prefs.DevMode — so a normal
+            // player never sees the toggle or any debug spam.
             if (Prefs.DevMode)
+            {
+                l.GapLine();
+                l.CheckboxLabeled("HaulersDream.Setting.VerboseLogging".Translate(), ref verboseLogging);
+                // Dev-only detour overlay — a transient diagnostic, not serialized.
                 l.CheckboxLabeled("HaulersDream.Setting.DrawDetourLines".Translate(), ref drawDetourLines,
                     "HaulersDream.Setting.DrawDetourLinesDesc".Translate());
+            }
         }
     }
 }

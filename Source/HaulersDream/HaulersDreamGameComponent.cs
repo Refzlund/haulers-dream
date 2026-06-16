@@ -22,6 +22,19 @@ namespace HaulersDream
         private const int VeinTickInterval = 60;   // re-scan tracked veins ~once a second
         private const int IdleTickInterval = 250;  // idle-backstop scan ~4x per in-game minute
 
+        // --- A2 anti-softlock auto-drop ---
+        // On a LONG interval (~30s, mirroring BLFT's hardcoded 1800-tick cadence) refill a queue with every
+        // player pawn across all maps, then process ONE pawn per tick (time-sliced so a big colony never
+        // spikes). A pawn holding HD-tagged cargo that can no longer haul (work disabled / priority 0 / a mech
+        // that's charging-dormant-or-shut-down) would otherwise strand that cargo forever — drop only its
+        // tagged items so other haulers reclaim them. Transient (in-flight scan state, not scribed): on load
+        // the queue starts empty and refills on the next interval tick.
+        private const int SoftlockCheckInterval = 1800;
+        private readonly Queue<Pawn> softlockQueue = new Queue<Pawn>();
+        // Reused scratch list so the tagged-item snapshot allocates nothing after first use (the drop must
+        // iterate a COPY — TryDrop mutates the tracked set via Deregister).
+        private readonly List<Thing> tmpSoftlockDrop = new List<Thing>();
+
         // --- per-bill BATCH config (the Batch-Y bill mode) ---
         // Key = bill.GetUniqueLoadID() (stable across save/load; bill loadIDs are monotonic and never reused
         // within a game, so a stale entry left by a deleted bill is INERT — it can never mis-apply to a future
@@ -288,6 +301,8 @@ namespace HaulersDream
             OrganicInventoryShare.Clear();
             CarriedHaulShare.Clear();
             HaulToStack.Clear();
+            // Same hygiene for the per-(pawn,group,tick) load-path availability boolean memo (B2 / HD-LOADWORK).
+            TransportLoad.ClearLoadWorkCache();
         }
 
         /// <summary>Register (or replace, per pawn) a deferred-reveal tracker for a vein route that ran into fog.</summary>
@@ -320,6 +335,11 @@ namespace HaulersDream
                 RunIdleBackstop();
                 PruneInertLoadTasks(); // drop fully-settled/released bulk-load ledger entries (cheap when empty)
             }
+
+            // A2 anti-softlock auto-drop: refill the queue every SoftlockCheckInterval ticks, then service one
+            // pawn per tick. Gated on the setting (byte-inert when off — the queue is also drained so it never
+            // holds stale refs while disabled). Mirrors BLFT's SoftlockCleaner cadence + time-slicing.
+            RunSoftlockDropDriver(tick);
 
             var s = HaulersDreamMod.Settings;
             if (s == null || !s.markForUnload
@@ -390,6 +410,131 @@ namespace HaulersDream
             // a queued job fires before everything on wake (even urgent breakfast), and the morning work
             // scan / end-of-run trigger covers it anyway.
             return def == JobDefOf.Ingest || def.joyKind != null;
+        }
+
+        // The HD job defs whose pawn-running state must SUPPRESS a softlock drop: while a pawn is actively
+        // running an HD load / unload / cleanup / craft-gather job, that job owns the tagged cargo and will
+        // resolve it — never yank items out from under a live job. Shares the SINGLE canonical custom-driver set
+        // with the pre-save cleanup (HdJobDefSets.CustomDriverJobDefs / plan A1) so the two can never drift: a
+        // narrower set here previously let the softlock driver force-drop a Hauling-priority-0 crafter's tagged
+        // ingredients mid-BatchCraft / BillPrepGather (those jobs tag cargo but were missing from this list).
+        private static JobDef[] HdJobDefs => HdJobDefSets.CustomDriverJobDefs;
+
+        private static bool IsRunningHdJob(Pawn pawn)
+        {
+            var def = pawn.CurJobDef;
+            if (def == null)
+                return false;
+            var defs = HdJobDefs;
+            for (int i = 0; i < defs.Length; i++)
+                if (defs[i] == def)
+                    return true;
+            return false;
+        }
+
+        // Classify a pawn's mech state for SoftlockDropPolicy. None for a non-mech or an awake-and-capable mech;
+        // a stuck state (charging / self-shutdown / dormant) otherwise. Mirrors BLFT's mech softlock check.
+        private static MechState MechStateOf(Pawn pawn)
+        {
+            if (!pawn.RaceProps.IsMechanoid)
+                return MechState.None;
+            var def = pawn.CurJobDef;
+            if (def == JobDefOf.SelfShutdown || pawn.IsSelfShutdown())
+                return MechState.SelfShutdown;
+            if (def == JobDefOf.MechCharge)
+                return MechState.Charging;
+            if (pawn.GetComp<CompCanBeDormant>()?.Awake == false)
+                return MechState.Dormant;
+            return MechState.None;
+        }
+
+        // The A2 driver: refill the queue every SoftlockCheckInterval ticks, then process one pawn per tick.
+        private void RunSoftlockDropDriver(int tick)
+        {
+            if (HaulersDreamMod.Settings?.enableSoftlockDrop != true)
+            {
+                if (softlockQueue.Count > 0)
+                    softlockQueue.Clear(); // off -> hold no stale refs
+                return;
+            }
+
+            if (tick % SoftlockCheckInterval == 0)
+            {
+                softlockQueue.Clear();
+                var maps = Find.Maps;
+                for (int m = 0; m < maps.Count; m++)
+                {
+                    var pawns = maps[m].mapPawns.SpawnedPawnsInFaction(Faction.OfPlayer);
+                    for (int i = 0; i < pawns.Count; i++)
+                        softlockQueue.Enqueue(pawns[i]);
+                }
+            }
+
+            if (softlockQueue.Count > 0)
+                TryDropSoftlockedCargo(softlockQueue.Dequeue());
+        }
+
+        // Detect + drop a single pawn's stranded HD-tagged cargo. Decision lives in the pure
+        // SoftlockDropPolicy; this maps the live Verse state and performs the drop.
+        private void TryDropSoftlockedCargo(Pawn pawn)
+        {
+            // The pawn may have despawned / died / drafted between enqueue and now (the queue is built up to
+            // SoftlockCheckInterval ticks ago). A drafted pawn is under direct control — don't strip its cargo.
+            if (pawn == null || pawn.Dead || !pawn.Spawned || pawn.Drafted || pawn.Map == null)
+                return;
+
+            var comp = pawn.TryGetComp<CompHauledToInventory>();
+            if (comp == null)
+                return;
+
+            // Read-only peek for the decision (the UI/scan-path-safe view); the live count after pruning gives
+            // the policy its taggedCount. PeekHashSet may hold destroyed/out-of-inventory tags — count only the
+            // ones still really in this pawn's inventory so an empty-but-stale tracker doesn't trigger a no-op
+            // "drop" loop.
+            var owner = pawn.inventory?.innerContainer;
+            if (owner == null)
+                return;
+            int liveTagged = 0;
+            foreach (var t in comp.PeekHashSet())
+                if (t != null && !t.Destroyed && t.stackCount > 0 && owner.Contains(t))
+                    liveTagged++;
+
+            bool drop = SoftlockDropPolicy.ShouldDrop(
+                haulingDisabled: pawn.WorkTagIsDisabled(WorkTags.Hauling),
+                haulingPriorityZero: pawn.workSettings != null
+                    && pawn.workSettings.EverWork
+                    && pawn.workSettings.GetPriority(WorkTypeDefOf.Hauling) == 0,
+                isMech: pawn.RaceProps.IsMechanoid,
+                mechState: MechStateOf(pawn),
+                taggedCount: liveTagged,
+                runningHdJob: IsRunningHdJob(pawn));
+            if (!drop)
+                return;
+
+            // Drop ONLY the tagged items (a snapshot copy — TryDrop -> Deregister mutates the tracked set).
+            // Abort on the FIRST failed drop and leave the rest for the next cycle (matches BLFT). Deregister
+            // the tag only when the drop actually happened, so a failed drop keeps the item tracked/retried.
+            tmpSoftlockDrop.Clear();
+            foreach (var t in comp.PeekHashSet())
+                tmpSoftlockDrop.Add(t);
+            for (int i = 0; i < tmpSoftlockDrop.Count; i++)
+            {
+                var item = tmpSoftlockDrop[i];
+                if (item == null || item.Destroyed || !owner.Contains(item))
+                    continue;
+                // TryDrop reassigns the out param to the (possibly merged) ground stack; hold the ORIGINAL
+                // tracked reference to deregister. No try/catch: a genuine drop fault must surface as a red
+                // error, not be swallowed.
+                if (owner.TryDrop(item, pawn.Position, pawn.Map, ThingPlaceMode.Near, out Thing _))
+                {
+                    comp.Deregister(item);
+                }
+                else
+                {
+                    break; // saturated area / boxed in — retry on the next cycle
+                }
+            }
+            tmpSoftlockDrop.Clear();
         }
 
         private void ProcessVeinTrackers()

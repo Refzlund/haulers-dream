@@ -287,6 +287,13 @@ namespace HaulersDream
             // Release the claim + salvage any still-carried task items on every non-Success end (idempotent).
             AddFinishAction(delegate (JobCondition condition)
             {
+                // B4 continuous loading (opt-in, default OFF): on a player-forced SUCCESS, chain to the nearest OTHER
+                // transporter group that still has work (dedup excludes THIS group). Byte-inert when the setting is off
+                // (ShouldChain short-circuits). The chained job targets a different ledger key, so we still RELEASE this
+                // group's claims below (retainClaimOnEnd stays false — retaining would leak the finished group's claim);
+                // the chained job re-claims its own group in its Notify_Starting next tick.
+                if (ContinuousLoad.ShouldChain(condition, job))
+                    ContinuousLoad.TryChainFrom(pawn, EnsureAdapter());
                 if (!retainClaimOnEnd)
                     HaulersDreamGameComponent.Instance?.LoadReleaseClaimsForPawn(pawn);
                 // Re-tag survivors (idempotent self-heal) so any swept-but-undeposited stacks ride HD's normal unload.
