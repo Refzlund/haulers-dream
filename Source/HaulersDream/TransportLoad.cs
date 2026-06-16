@@ -52,6 +52,12 @@ namespace HaulersDream
         [System.ThreadStatic] private static int workCacheTick;
         [System.ThreadStatic] private static Dictionary<long, bool> workCache;
 
+        // Self-register the per-session load-work memo clear with the game-load hygiene sweep (see CacheRegistry), so
+        // it can never be forgotten. The static ctor runs once, the first time any member is touched (the only way
+        // the memo can hold cross-session data); ClearLoadWorkCache resets the FinalizeInit (main) thread's slot —
+        // the `tick != -1` populate guard is the actual cross-session safeguard.
+        static TransportLoad() => CacheRegistry.Register(ClearLoadWorkCache);
+
         /// <summary>Drop the per-frame load-work memo and reset its tick stamp. The FinalizeInit hygiene sibling of
         /// <see cref="BulkHaul.ClearPlanCache"/>: the [ThreadStatic] memo is static state that survives a quickload,
         /// so an equal TicksGame across a load could otherwise serve a previous session's (pawn-id, groupId) boolean.

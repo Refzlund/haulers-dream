@@ -248,6 +248,14 @@ namespace HaulersDream
         [System.ThreadStatic] private static int claimedCacheTick;
         [System.ThreadStatic] private static HashSet<Thing> claimedCacheSet;
 
+        // Self-register the per-(pawn,tick) claimed-by-others memo clear with the game-load hygiene sweep (see
+        // CacheRegistry), so it is cleared DIRECTLY on load — previously it was only cleared transitively (via
+        // BulkHaul.ClearPlanCache calling it), a fragile coupling. The static ctor runs once, the first time any
+        // RouteSelection member is touched (the only way the memo can hold cross-session data); ClearClaimedCache
+        // resets the FinalizeInit (main) thread's slot, and the pawn-identity check is the actual correctness
+        // safeguard (a deserialized pawn is a fresh instance that can't match a stale entry).
+        static RouteSelection() => CacheRegistry.Register(ClearClaimedCache);
+
         // Shared read-only empty result for the null-guard early return. NO CALLER MUTATES the handed-out
         // set (every use is Contains/Count — verified across BulkHaul, YieldRouter, TransportLoad, and the
         // route picker), so one shared instance is safe and avoids a per-scan throwaway allocation.

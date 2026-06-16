@@ -35,6 +35,12 @@ namespace HaulersDream
     {
         [ThreadStatic] private static TickKeyedMemo<float> memo;
 
+        // Self-register the per-session memo clear with the game-load hygiene sweep (see CacheRegistry), so it can
+        // never be forgotten. The static ctor runs once, the first time any member is touched (the only way the memo
+        // can hold cross-session data); Clear resets the FinalizeInit (main) thread's slot — other threads' memos
+        // are per-tick self-clearing.
+        static TrackedMassCache() => CacheRegistry.Register(Clear);
+
         /// <summary>
         /// The total tracked (scooped) mass for <paramref name="pawn"/> this tick — computed once from the live
         /// tracked set and reused for every subsequent same-tick read of the same pawn on this thread. Pass the

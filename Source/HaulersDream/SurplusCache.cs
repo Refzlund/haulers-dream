@@ -31,6 +31,11 @@ namespace HaulersDream
         [ThreadStatic] private static TickKeyedMemo<bool> anyMemo;
         [ThreadStatic] private static TickKeyedMemo<bool> ruledMemo;
 
+        // Self-register the per-session memo clear with the game-load hygiene sweep (see CacheRegistry), so it can
+        // never be forgotten. The static ctor runs once on first use; Clear resets the FinalizeInit (main) thread's
+        // slots (the gizmo path is main-thread), the same slot the registry runs on.
+        static SurplusCache() => CacheRegistry.Register(Clear);
+
         /// <summary>Memoized <see cref="InventorySurplus.HasAnySurplus"/> for this tick (computed once, reused
         /// across same-tick frames). Null pawn -> false.</summary>
         internal static bool HasAnySurplus(Pawn pawn)

@@ -95,6 +95,12 @@ namespace HaulersDream
         private static readonly Dictionary<(int thingId, int carrierId, int cellIdx), IntVec3> cellCache
             = new Dictionary<(int thingId, int carrierId, int cellIdx), IntVec3>();
 
+        // Self-register the per-session cell-memo clear with the game-load hygiene sweep (see CacheRegistry), so it
+        // can never be forgotten. The static ctor runs once, the first time any member is touched (the only way the
+        // memo can hold cross-session data); the `tick != -1` populate guard in FindStackCell is the actual
+        // cross-session safeguard.
+        static HaulToStack() => CacheRegistry.Register(Clear);
+
         /// <summary>Drop the per-tick stack-cell memo and reset the tick stamp — called on game load
         /// (FinalizeInit) so an equal tick number across a quickload cannot serve a stale cross-session entry
         /// (the (thingId, carrierId, cellIdx) key collides across saves). Mirrors

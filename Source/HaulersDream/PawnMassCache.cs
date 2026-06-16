@@ -42,6 +42,12 @@ namespace HaulersDream
         // memo (lazy-inits its dictionary on first use), so no ThreadStatic field initializer is needed.
         [ThreadStatic] private static TickKeyedMemo<PawnMass> memo;
 
+        // Self-register the per-session memo clear with the game-load hygiene sweep (see CacheRegistry), so it can
+        // never be forgotten. The static ctor runs once, the first time any member of this cache is touched (which
+        // is also the only way the memo can hold cross-session data); Clear resets the FinalizeInit (main) thread's
+        // slot, the same slot the registry runs on — other threads' memos are per-tick self-clearing.
+        static PawnMassCache() => CacheRegistry.Register(Clear);
+
         /// <summary>
         /// The memoized <c>(Capacity, GearAndInventoryMass)</c> for <paramref name="pawn"/> this tick — computed
         /// once and reused for every subsequent same-tick read of the same pawn on this thread. Null pawn returns

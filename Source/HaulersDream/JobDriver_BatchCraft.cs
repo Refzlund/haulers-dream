@@ -17,6 +17,11 @@ namespace HaulersDream
     {
         private static readonly Dictionary<Job, CraftBatchPlan> pending = new Dictionary<Job, CraftBatchPlan>();
 
+        // Self-register the per-session handoff-map clear with the game-load hygiene sweep (see CacheRegistry), so
+        // it can never be forgotten. The static ctor runs once on first use — the only way an entry can outlive the
+        // session — so a never-used handoff is never registered (and is empty anyway).
+        static BatchCraftHandoff() => CacheRegistry.Register(Clear);
+
         public static void Set(Job job, CraftBatchPlan plan) => pending[job] = plan;
 
         /// <summary>Drop all pending handoffs — called when a game finishes initialising: an entry whose

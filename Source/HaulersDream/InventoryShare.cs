@@ -187,6 +187,12 @@ namespace HaulersDream
         [ThreadStatic] private static int countCacheTick;
         [ThreadStatic] private static Dictionary<long, int> countCache;
 
+        // Self-register the per-session count-memo clear with the game-load hygiene sweep (see CacheRegistry), so it
+        // can never be forgotten. The static ctor runs once, the first time any member is touched (the only way the
+        // memo can hold cross-session data); Clear resets the FinalizeInit (main) thread's slot — the `tick != -1`
+        // populate guard in CountSharable is the actual cross-session safeguard.
+        static InventoryShare() => CacheRegistry.Register(Clear);
+
         /// <summary>Total count of <paramref name="def"/> held (tagged) by the worker itself plus eligible
         /// carriers — for the construction availability gate (so a builder's OWN scooped stock counts too).</summary>
         public static int CountSharable(Map map, Pawn worker, ThingDef def)

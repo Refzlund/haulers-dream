@@ -81,6 +81,12 @@ namespace HaulersDream
         [ThreadStatic] private static int countCacheTick;
         [ThreadStatic] private static Dictionary<long, int> countCache;
 
+        // Self-register the per-session count-memo clear with the game-load hygiene sweep (see CacheRegistry), so it
+        // can never be forgotten. The static ctor runs once, the first time any member is touched (the only way the
+        // memo can hold cross-session data); Clear resets the FinalizeInit (main) thread's slot — the `tick != -1`
+        // populate guard in CountOrganic is the actual cross-session safeguard.
+        static OrganicInventoryShare() => CacheRegistry.Register(Clear);
+
         /// <summary>Total ORGANIC units of <paramref name="def"/> held by the worker itself plus eligible
         /// carriers (other colonists, and — when allowed — pack animals) — for the construction availability
         /// gate, so a job is OFFERED when material lives only in inventory. Counts the whole innerContainer of

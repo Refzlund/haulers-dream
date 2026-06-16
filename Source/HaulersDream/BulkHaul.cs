@@ -100,6 +100,11 @@ namespace HaulersDream
             public int loadID;
         }
 
+        // Self-register the per-session plan-cache clear so the game-load hygiene sweep can never forget it (see
+        // CacheRegistry). The static ctor runs once, the first time any BulkHaul member is touched — which is also
+        // the only way the cache can hold cross-session data — so a never-used cache is simply never registered.
+        static BulkHaul() => CacheRegistry.Register(ClearPlanCache);
+
         /// <summary>
         /// Build the bulk pickup job for hauling <paramref name="primary"/>, or null when the sweep doesn't
         /// apply (vanilla job stands). PURE planning — no reservations, no designations, no world mutation —
@@ -209,7 +214,9 @@ namespace HaulersDream
             scratchSpaceLeftByDef?.Clear();
             scratchThings?.Clear();
             scratchCounts?.Clear();
-            RouteSelection.ClearClaimedCache(); // drop the per-(pawn,tick) claimed-set's cross-session Thing refs
+            // RouteSelection's per-(pawn,tick) claimed-set memo is now cleared DIRECTLY by the game-load hygiene
+            // sweep (it self-registers its ClearClaimedCache with CacheRegistry), so the former transitive call
+            // from here is gone — the registry is the single source of truth and the two caches are decoupled.
         }
 
         /// <summary>

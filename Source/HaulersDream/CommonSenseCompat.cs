@@ -36,6 +36,24 @@ namespace HaulersDream
         [System.ThreadStatic] private static bool ownsCacheValue;
         [System.ThreadStatic] private static bool ownsCacheValid;
 
+        // Self-register the per-tick owns-flow memo clear with the game-load hygiene sweep (see CacheRegistry). This
+        // closes a gap: the memo was previously NEVER cleared on load, so a cross-session quickload landing on the
+        // same TicksGame could briefly serve the previous game's owns-flow value on the main thread until the tick
+        // advanced. The static ctor runs once on first use (the only way the memo can hold cross-session data);
+        // ClearOwnsCache resets the FinalizeInit (main) thread's slot — other threads' memos are per-tick
+        // self-clearing, and a -1 tick forces a recompute regardless.
+        static CommonSenseCompat() => CacheRegistry.Register(ClearOwnsCache);
+
+        /// <summary>Drop the main thread's per-tick owns-flow memo so an equal TicksGame across a quickload cannot
+        /// serve a previous session's value. Hygiene only — the next read recomputes from the live CS toggle fields
+        /// (cheap reflection); the values are loop-invariant within a tick. Mirrors <see cref="PawnMassCache.Clear"/>.</summary>
+        private static void ClearOwnsCache()
+        {
+            ownsCacheValid = false;
+            ownsCacheTick = -1;
+            ownsCacheValue = false;
+        }
+
         /// <summary>Whether Common Sense is loaded (its Settings type resolves). Cached.</summary>
         public static bool IsActive
         {

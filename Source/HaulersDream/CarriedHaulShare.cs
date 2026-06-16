@@ -66,6 +66,12 @@ namespace HaulersDream
         [ThreadStatic] private static int countCacheTick;
         [ThreadStatic] private static Dictionary<long, int> countCache;
 
+        // Self-register the per-session count-memo clear with the game-load hygiene sweep (see CacheRegistry), so it
+        // can never be forgotten. The static ctor runs once, the first time any member is touched (the only way the
+        // memo can hold cross-session data); Clear resets the FinalizeInit (main) thread's slot — the `tick != -1`
+        // populate guard in CountStorageBoundCarried is the actual cross-session safeguard.
+        static CarriedHaulShare() => CacheRegistry.Register(Clear);
+
         /// <summary>Total units of <paramref name="def"/> being hand-hauled to storage on this map — for the
         /// availability gate. Per-tick cached (a (worker, def) answer is invariant within a tick).</summary>
         internal static int CountStorageBoundCarried(Map map, Pawn worker, ThingDef def)

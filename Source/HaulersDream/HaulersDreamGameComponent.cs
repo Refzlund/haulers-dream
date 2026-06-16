@@ -278,31 +278,17 @@ namespace HaulersDream
         public override void FinalizeInit()
         {
             base.FinalizeInit();
-            // BulkHaul's per-tick plan cache is STATIC state, so it survives a quickload into the freshly
-            // loaded game — where its cached plans reference the previous game's (now-stale) things. Clear it
-            // whenever a game finishes initialising (new game and load alike). Same hygiene for the batch
-            // handoff map (entries whose ordered job never started).
-            BulkHaul.ClearPlanCache();
-            BatchCraftHandoff.Clear();
-            // The per-(pawn,tick) mass memo is likewise static and survives a quickload — drop it so an equal
-            // tick number can't serve a previous session's pawn-id mass (decision-neutral hygiene; the memo is
-            // per-tick self-clearing anyway, this just avoids a one-tick cross-session read after load).
-            PawnMassCache.Clear();
-            // Same hygiene for the per-(pawn,tick) inspect-pane surplus-boolean memo (HD-GIZMO).
-            SurplusCache.Clear();
-            // Same hygiene for the per-(pawn,tick) opportunistic-unload tracked-mass memo (HD-OPPUNLOAD).
-            TrackedMassCache.Clear();
-            // Same hygiene for the per-(worker,def,tick) availability-count memos (tagged / organic / carried)
-            // and the per-(thing,carrier,cell,tick) haul-to-stack cell memo. These are [ThreadStatic]/static and
-            // survive a quickload, and their keys use thingIDNumber (collidable across saves). Each clear touches
-            // only the main (FinalizeInit) thread's slot — the `tick != -1` populate guard in each is the actual
-            // cross-session safeguard; this keeps them consistent with the list above.
-            InventoryShare.Clear();
-            OrganicInventoryShare.Clear();
-            CarriedHaulShare.Clear();
-            HaulToStack.Clear();
-            // Same hygiene for the per-(pawn,group,tick) load-path availability boolean memo (B2 / HD-LOADWORK).
-            TransportLoad.ClearLoadWorkCache();
+            // CROSS-SESSION CACHE HYGIENE. Every per-session static cache (the bulk-haul plan memo, the per-tick
+            // mass / surplus / tracked-mass memos, the per-(worker,def,tick) availability counts, the haul-to-stack
+            // cell memo, the load-work memo, the route-picker claimed-by-others memo, the Common Sense owns-flow
+            // memo, the batch-craft handoff map, ...) is STATIC state that survives a quickload into the freshly
+            // loaded game — where its keys (thingIDNumber / TicksGame) can collide with the previous session's.
+            // Each such cache REGISTERS its own idempotent Clear() with CacheRegistry from a static constructor, so
+            // this single call clears every one of them and a newly-added cache can't be forgotten here (the former
+            // hand-maintained list of X.Clear() calls silently rotted whenever a cache was added without a matching
+            // line). This is hygiene only — each cache's own `tick != -1` / tick-stamp populate guard is the actual
+            // cross-session safeguard; ClearAll just drops the stale references promptly on the load (main) thread.
+            CacheRegistry.ClearAll();
         }
 
         /// <summary>Register (or replace, per pawn) a deferred-reveal tracker for a vein route that ran into fog.</summary>
