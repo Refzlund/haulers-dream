@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+using System.Collections;
 using HaulersDream.Core;
 using RimWorld;
 using Verse;
@@ -36,41 +36,18 @@ namespace HaulersDream
     /// mid-load ends the job → the finish action releases the VRM claim + ledger claim + re-tags swept survivors.
     ///
     /// Concurrency: the CLAIM (ledger + belt-and-suspenders VF <c>VehicleReservationManager</c>) is recorded in
-    /// <see cref="Notify_Starting"/> (so a built-but-never-started probe never claims); on every non-Success end the
-    /// claim is RELEASED and the carried task item is SALVAGED back into inventory (re-tagged, rides HD's normal
-    /// unload) — never dropped on a temp map, never stuck.
+    /// <see cref="JobDriver_LoadInBulkBase.Notify_Starting"/> (so a built-but-never-started probe never claims); on
+    /// every non-Success end the claim is RELEASED and the carried task item is SALVAGED back into inventory (re-tagged,
+    /// rides HD's normal unload) — never dropped on a temp map, never stuck. The shared scaffold lives in
+    /// <see cref="JobDriver_LoadInBulkBase"/>; this subclass supplies the VF deposit core + the VRM claim/release.
     /// </summary>
-    public class JobDriver_LoadVehicleInBulk : JobDriver
+    public class JobDriver_LoadVehicleInBulk : JobDriver_LoadInBulkBase
     {
         private const TargetIndex VehicleInd = TargetIndex.A; // the vehicle (deposit dest)
-        private const TargetIndex StackInd = TargetIndex.B;   // scratch: the ground stack being swept
 
-        private int loadIndex;
-        private int depositLoops;
-        private int passes;
-        private const int MaxDepositLoops = 64;
-        private const int MaxPasses = 64;
-
-        // Reused snapshot of the tagged set for the deposit loop + salvage finish action, replacing a fresh
-        // List<Thing>(GetHashSet()) per deposit cycle / end. The snapshot is required (GetHashSet self-heals and the
-        // loop calls Deregister, mutating the underlying set mid-iterate); reusing one [ThreadStatic] buffer makes the
-        // steady per-deposit alloc 0. Cleared at use, never trusted empty. SAFETY: each consumer runs to completion in
-        // one toil initAction / finish action (sequential on the main thread, no re-entrant tagged-snapshot) before
-        // the next reuse.
-        [System.ThreadStatic] private static List<Thing> scratchTagged;
-
-        // Resolved on start (Notify_Starting). In-flight only — re-resolved from the live vehicle on load.
-        [System.NonSerialized] private VehicleLoadTarget adapter;
-        // Set true on a chaining/cleanup end so the finish action RETAINS the claim (no thrash). Currently always
-        // false (no chaining), but kept as the documented retain hook for a future smooth-chain.
-#pragma warning disable CS0649
-        [System.NonSerialized] private bool retainClaimOnEnd;
-#pragma warning restore CS0649
-
-        private ThingOwner Inv => pawn.inventory?.GetDirectlyHeldThings();
         private Thing Vehicle => job.GetTarget(VehicleInd).Thing;
 
-        private static HaulersDreamSettings Settings => HaulersDreamMod.Settings;
+        protected override string ToilPrefix => "HD_Lvib";
 
         public override void ExposeData()
         {
@@ -82,282 +59,91 @@ namespace HaulersDream
 
         public override string GetReport() => "HaulersDream.LoadVehicle.Report".Translate();
 
-        public override void Notify_Starting()
+        protected override IManagedLoadable BuildLoadable()
         {
-            base.Notify_Starting();
             var vehicle = Vehicle;
-            adapter = vehicle != null ? VehicleLoadTarget.TryCreate(vehicle) : null;
-            if (adapter != null)
+            return vehicle != null ? VehicleLoadTarget.TryCreate(vehicle) : null;
+        }
+
+        protected override void OnExtraClaim()
+        {
+            // Belt-and-suspenders VF claim. The WorkGiver JobOnThing redirect is the authoritative stand-down
+            // (it replaces VF's single-stack job with this bulk job for every HD-eligible scanning pawn); this VRM
+            // claim only covers the fail-open / non-HD-eligible case. Fail-open in the shim.
+            VehicleFrameworkCompat.ReserveVehicle(Vehicle, pawn, job);
+        }
+
+        protected override void OnReleaseExtraClaims()
+        {
+            VehicleFrameworkCompat.ReleaseVehicleClaims(pawn);
+        }
+
+        protected override bool FindTargetStillValid()
+        {
+            var vehicle = Vehicle;
+            return vehicle != null && vehicle.Spawned;
+        }
+
+        protected override void DepositOne(Thing thing, ThingOwner inner, CompHauledToInventory hcomp, IManagedLoadable adp, ref bool movedAny)
+        {
+            var vehicle = Vehicle;
+            // MF1 clamp: the SINGLE matching transferable's remaining demand (NOT a def-sum) — exactly what
+            // VehiclePawn.AddOrTransfer decrements. Over-clamping to a def-sum would drive a matching
+            // cargoToLoad entry negative→removed and over-load the def.
+            int remaining = VehicleFrameworkCompat.RemainingDemandForThing(vehicle, thing);
+            int count = VehicleLoadPlanPolicy.DepositUnits(InventorySurplus.SurplusOf(pawn, thing), remaining);
+            if (count <= 0)
+                return; // vehicle no longer wants this def (filled by another pawn) — leave it tagged
+
+            // Split the exact count off the inventory; AddOrTransfer moves the SPLIT (an event-correct deposit
+            // that fires CargoAdded + decrements cargoToLoad by the passed count). Capture (def, count) BEFORE
+            // the transfer — the split may merge/destroy inside the vehicle, so reading the moved count off it
+            // after is unsafe; the thing-less LoadNotifyDeposited overload uses the captured pair. (ThingOwner.
+            // Take returns the SAME Thing when count==stackCount, or a fresh SplitOff otherwise.)
+            var split = inner.Take(thing, count);
+            if (split == null)
+                return;
+            var depDef = split.def;
+
+            int moved;
+            // The IsExecutingManagedUnload flag is toggled around the transfer for OTHER-patch hygiene only —
+            // there is no SubtractFromToLoadList intercept on the vehicle path (AddOrTransfer IS the precise
+            // decrement), so this is not load-bearing. try/finally resets it even on throw; the throw RETHROWS.
+            Global.IsExecutingManagedUnload = true;
+            try
             {
-                HaulersDreamGameComponent.Instance?.LoadClaim(pawn, job, adapter);
-                // Belt-and-suspenders VF claim. The WorkGiver JobOnThing redirect is the authoritative stand-down
-                // (it replaces VF's single-stack job with this bulk job for every HD-eligible scanning pawn); this VRM
-                // claim only covers the fail-open / non-HD-eligible case. Fail-open in the shim.
-                VehicleFrameworkCompat.ReserveVehicle(vehicle, pawn, job);
+                moved = VehicleFrameworkCompat.AddOrTransfer(vehicle, split, count);
             }
-        }
-
-        private VehicleLoadTarget EnsureAdapter()
-        {
-            if (adapter != null)
-                return adapter;
-            var vehicle = Vehicle;
-            adapter = vehicle != null ? VehicleLoadTarget.TryCreate(vehicle) : null;
-            return adapter;
-        }
-
-        public override bool TryMakePreToilReservations(bool errorOnFailed)
-        {
-            // Bulk-haul reservation shape: queue[0] strict, the rest best-effort. NEVER reserve the vehicle
-            // (re-found each deposit; the VRM claim covers it). A deposit-only job (empty queue) reserves nothing.
-            var queue = job.GetTargetQueue(StackInd);
-            if (queue == null || queue.Count == 0)
-                return true;
-            if (!pawn.Reserve(queue[0], job, 1, -1, null, errorOnFailed))
-                return false;
-            pawn.ReserveAsManyAsPossible(queue, job);
-            return true;
-        }
-
-        public override IEnumerable<Toil> MakeNewToils()
-        {
-            // A despawn / aerial-launch mid-load ends the job → the salvage finish action re-tags the carried stock so
-            // it rides the normal unload (never dropped on a temp map). At natural completion the loopCheck toil ends
-            // the job Succeeded within the same tick (global fail conditions are evaluated once at the top of
-            // DriverTick, BEFORE the instant deposit→loopCheck chain drains the manifest), so this does not pre-empt a
-            // clean finish.
-            this.FailOnDespawnedOrNull(VehicleInd);
-
-            Toil fillStart = Toils_General.Label();
-            Toil depositStart = Toils_General.Label();
-            Toil loopCheck = ToilMaker.MakeToil("HD_Lvib_LoopCheck");
-
-            // ============ FILL: sweep queued ground stacks into tagged inventory, up to the carry ceiling ============
-            yield return fillStart;
-
-            Toil sweepDecide = ToilMaker.MakeToil("HD_Lvib_SweepDecide");
-            sweepDecide.initAction = delegate
+            finally
             {
-                var queue = job.targetQueueB;
-                var counts = job.countQueue;
-                if (queue == null || queue.Count == 0 || loadIndex >= queue.Count) { JumpToToil(depositStart); return; }
-                float ceiling = PackAnimalLoad.CeilingKg(pawn, Settings);
-                bool roomLeft = float.IsPositiveInfinity(ceiling)
-                                || MassUtility.GearAndInventoryMass(pawn) < ceiling - 0.0001f;
-                if (roomLeft && CECompat.IsActive && CECompat.AvailableBulk(pawn) <= 0f)
-                    roomLeft = false;
-                if (!roomLeft) { JumpToToil(depositStart); return; }
-                while (loadIndex < queue.Count)
-                {
-                    var t = queue[loadIndex].Thing;
-                    bool valid = t != null && t.Spawned && !t.IsForbidden(pawn)
-                                 && !(t.ParentHolder is Pawn_InventoryTracker)
-                                 && counts != null && loadIndex < counts.Count && counts[loadIndex] > 0;
-                    if (valid && !pawn.Map.reservationManager.ReservedBy(t, pawn, job)
-                        && (!pawn.CanReserve(t) || !pawn.Reserve(t, job, errorOnFailed: false)))
-                        valid = false;
-                    if (valid) break;
-                    loadIndex++;
-                }
-                if (loadIndex >= queue.Count) { JumpToToil(depositStart); return; }
-                job.SetTarget(StackInd, queue[loadIndex].Thing);
-            };
-            sweepDecide.defaultCompleteMode = ToilCompleteMode.Instant;
-            yield return sweepDecide;
+                Global.IsExecutingManagedUnload = false;
+            }
 
-            Toil sweepGoto = ToilMaker.MakeToil("HD_Lvib_SweepGoto");
-            sweepGoto.initAction = delegate
+            if (moved > 0)
             {
-                var t = job.GetTarget(StackInd).Thing;
-                if (t == null || !t.Spawned) { loadIndex++; JumpToToil(sweepDecide); return; }
-                pawn.pather.StartPath(t, PathEndMode.ClosestTouch);
-            };
-            sweepGoto.defaultCompleteMode = ToilCompleteMode.PatherArrival;
-            yield return sweepGoto;
-
-            Toil sweepTake = ToilMaker.MakeToil("HD_Lvib_SweepTake");
-            sweepTake.initAction = delegate
+                movedAny = true;
+                // Thing-less settle with the captured (def, moved) — the split may be gone inside the vehicle.
+                HaulersDreamGameComponent.Instance?.LoadNotifyDeposited(pawn, adp, depDef, moved);
+            }
+            // Put any un-MOVED remainder of the SPLIT back into the inventory (merging with the source stack)
+            // and re-tag it so it rides HD's normal unload — never dropped. On a clean full move VF owns/
+            // destroys the split (ParentHolder != null / Destroyed), so this is a no-op. The moved<=0/-1
+            // sentinel path (VF absent mid-trip / member unbound / nothing accepted) lands here too.
+            if (!split.Destroyed && !split.Spawned && split.ParentHolder == null)
             {
-                var t = job.GetTarget(StackInd).Thing;
-                var counts = job.countQueue;
-                int planned = counts != null && loadIndex < counts.Count ? counts[loadIndex] : 0;
-                if (t == null || !t.Spawned || planned <= 0 || t.IsForbidden(pawn)) { loadIndex++; JumpToToil(sweepDecide); return; }
-                int count = BulkHaulPolicy.CountWithinCeiling(PackAnimalLoad.CeilingKg(pawn, Settings),
-                    MassUtility.GearAndInventoryMass(pawn), t.GetStatValue(StatDefOf.Mass),
-                    System.Math.Min(planned, t.stackCount));
-                count = System.Math.Min(count, CECompat.MaxFitCount(pawn, t));
-                if (count <= 0) { JumpToToil(depositStart); return; }
-                int groundBefore = t.stackCount;
-                var split = t.SplitOff(count);
-                var inv = Inv;
-                if (inv != null && inv.TryAdd(split, canMergeWithExistingStacks: false))
-                {
-                    var comp = pawn.GetComp<CompHauledToInventory>();
-                    if (comp != null) { comp.RegisterHauledItem(split); comp.NotifyYieldPicked(); }
-                    if (!split.Spawned) split.Position = pawn.Position;
-                    if (counts != null && loadIndex < counts.Count) counts[loadIndex] = planned - count;
-                    bool itemDone = counts == null || loadIndex >= counts.Count || counts[loadIndex] <= 0 || count >= groundBefore;
-                    if (itemDone) loadIndex++;
-                }
-                else if (split != null && !split.Destroyed && !split.Spawned)
-                {
+                if (inner.TryAdd(split, canMergeWithExistingStacks: true))
+                    hcomp.RegisterHauledItem(split);
+                else
                     GenPlace.TryPlaceThing(split, pawn.Position, pawn.Map, ThingPlaceMode.Near);
-                    loadIndex++;
-                }
-                JumpToToil(sweepDecide);
-            };
-            sweepTake.defaultCompleteMode = ToilCompleteMode.Instant;
-            yield return sweepTake;
-
-            // ============ DEPOSIT: walk to the vehicle ONCE, then transfer every needed tagged stack ============
-            yield return depositStart;
-
-            Toil findVehicle = ToilMaker.MakeToil("HD_Lvib_FindVehicle");
-            findVehicle.initAction = delegate
-            {
-                if (++depositLoops > MaxDepositLoops) { JumpToToil(loopCheck); return; }
-                var vehicle = Vehicle;
-                if (vehicle == null || !vehicle.Spawned) { JumpToToil(loopCheck); return; }
-                if (!HasDepositableForVehicle()) { JumpToToil(loopCheck); return; }
-            };
-            findVehicle.defaultCompleteMode = ToilCompleteMode.Instant;
-            yield return findVehicle;
-
-            Toil gotoVehicle = Toils_Goto.GotoThing(VehicleInd, PathEndMode.Touch);
-            gotoVehicle.FailOnDespawnedOrNull(VehicleInd);
-            yield return gotoVehicle;
-
-            Toil deposit = ToilMaker.MakeToil("HD_Lvib_Deposit");
-            deposit.initAction = delegate
-            {
-                var vehicle = Vehicle;
-                var inner = pawn.inventory?.innerContainer;
-                var hcomp = pawn.GetComp<CompHauledToInventory>();
-                var adp = EnsureAdapter();
-                if (vehicle == null || !vehicle.Spawned || inner == null || hcomp == null || adp == null)
-                { JumpToToil(loopCheck); return; }
-
-                bool movedAny = false;
-                var tagged = scratchTagged ?? (scratchTagged = new List<Thing>());
-                tagged.Clear();
-                tagged.AddRange(hcomp.GetHashSet());
-                for (int i = 0; i < tagged.Count; i++)
-                {
-                    var thing = tagged[i];
-                    if (thing == null || thing.Destroyed || !inner.Contains(thing))
-                        continue;
-                    if (!pawn.CanReserve(thing))
-                        continue;
-                    int surplus = InventorySurplus.SurplusOf(pawn, thing);
-                    if (surplus <= 0)
-                        continue; // personal kit stays with the pawn
-                    // MF1 clamp: the SINGLE matching transferable's remaining demand (NOT a def-sum) — exactly what
-                    // VehiclePawn.AddOrTransfer decrements. Over-clamping to a def-sum would drive a matching
-                    // cargoToLoad entry negative→removed and over-load the def.
-                    int remaining = VehicleFrameworkCompat.RemainingDemandForThing(vehicle, thing);
-                    int count = VehicleLoadPlanPolicy.DepositUnits(surplus, remaining);
-                    if (count <= 0)
-                        continue; // vehicle no longer wants this def (filled by another pawn) — leave it tagged
-
-                    // Split the exact count off the inventory; AddOrTransfer moves the SPLIT (an event-correct deposit
-                    // that fires CargoAdded + decrements cargoToLoad by the passed count). Capture (def, count) BEFORE
-                    // the transfer — the split may merge/destroy inside the vehicle, so reading the moved count off it
-                    // after is unsafe; the thing-less LoadNotifyDeposited overload uses the captured pair. (ThingOwner.
-                    // Take returns the SAME Thing when count==stackCount, or a fresh SplitOff otherwise.)
-                    var split = inner.Take(thing, count);
-                    if (split == null)
-                        continue;
-                    var depDef = split.def;
-
-                    int moved;
-                    // The IsExecutingManagedUnload flag is toggled around the transfer for OTHER-patch hygiene only —
-                    // there is no SubtractFromToLoadList intercept on the vehicle path (AddOrTransfer IS the precise
-                    // decrement), so this is not load-bearing. try/finally resets it even on throw; the throw RETHROWS.
-                    Global.IsExecutingManagedUnload = true;
-                    try
-                    {
-                        moved = VehicleFrameworkCompat.AddOrTransfer(vehicle, split, count);
-                    }
-                    finally
-                    {
-                        Global.IsExecutingManagedUnload = false;
-                    }
-
-                    if (moved > 0)
-                    {
-                        movedAny = true;
-                        // Thing-less settle with the captured (def, moved) — the split may be gone inside the vehicle.
-                        HaulersDreamGameComponent.Instance?.LoadNotifyDeposited(pawn, adp, depDef, moved);
-                    }
-                    // Put any un-MOVED remainder of the SPLIT back into the inventory (merging with the source stack)
-                    // and re-tag it so it rides HD's normal unload — never dropped. On a clean full move VF owns/
-                    // destroys the split (ParentHolder != null / Destroyed), so this is a no-op. The moved<=0/-1
-                    // sentinel path (VF absent mid-trip / member unbound / nothing accepted) lands here too.
-                    if (!split.Destroyed && !split.Spawned && split.ParentHolder == null)
-                    {
-                        if (inner.TryAdd(split, canMergeWithExistingStacks: true))
-                            hcomp.RegisterHauledItem(split);
-                        else
-                            GenPlace.TryPlaceThing(split, pawn.Position, pawn.Map, ThingPlaceMode.Near);
-                    }
-                    // Drop the now-stale tag only when NEITHER the original stack NOR the split remains in the
-                    // inventory (the original was fully consumed by the Take and the split was fully deposited);
-                    // a remainder merged back leaves it tagged. Mirrors JobDriver_LoadPackAnimal's deposit dereg.
-                    if (!inner.Contains(thing) && !inner.Contains(split))
-                        hcomp.Deregister(thing);
-                }
-                if (!movedAny) { JumpToToil(loopCheck); return; }
-                JumpToToil(findVehicle); // more to deposit or fall to loopCheck (drained)
-            };
-            deposit.defaultCompleteMode = ToilCompleteMode.Instant;
-            yield return deposit;
-
-            // ============ LOOP: deposit freed inventory room; refill if queued stacks remain ============
-            loopCheck.initAction = delegate
-            {
-                if (++passes > MaxPasses) { EndJobWith(JobCondition.Incompletable); return; }
-                depositLoops = 0;
-                var queue = job.targetQueueB;
-                if (queue != null && loadIndex < queue.Count) { JumpToToil(fillStart); return; }
-                EndJobWith(JobCondition.Succeeded);
-            };
-            loopCheck.defaultCompleteMode = ToilCompleteMode.Instant;
-            yield return loopCheck;
-
-            // Release the claim (ledger + VF VRM) + salvage any still-carried task items on every non-Success end
-            // (idempotent). A finish-action fault is a real bug to surface (no swallow); the VRM release self-heals
-            // via VF's VerifyAndValidateClaimants even if it somehow no-ops.
-            AddFinishAction(delegate (JobCondition condition)
-            {
-                // B4 continuous loading (opt-in, default OFF): on a player-forced SUCCESS, chain to the nearest OTHER
-                // vehicle that still has cargo to load (dedup excludes THIS vehicle). Byte-inert when the setting is off
-                // (ShouldChain short-circuits) and a no-op if VF is absent. The chained job targets a different ledger
-                // key (a different vehicle thingIDNumber) and re-acquires its own VRM claim in Notify_Starting, so we
-                // still RELEASE this vehicle's claims below (retainClaimOnEnd stays false — retaining would leak them).
-                if (ContinuousLoad.ShouldChain(condition, job))
-                    ContinuousLoad.TryChainFrom(pawn, EnsureAdapter());
-                if (!retainClaimOnEnd)
-                {
-                    HaulersDreamGameComponent.Instance?.LoadReleaseClaimsForPawn(pawn);
-                    VehicleFrameworkCompat.ReleaseVehicleClaims(pawn);
-                }
-                // Re-tag survivors (idempotent self-heal) so any swept-but-undeposited stacks ride HD's normal unload.
-                var hcomp = pawn.GetComp<CompHauledToInventory>();
-                var inner = pawn.inventory?.innerContainer;
-                if (hcomp != null && inner != null)
-                {
-                    var snapshot = scratchTagged ?? (scratchTagged = new List<Thing>());
-                    snapshot.Clear();
-                    snapshot.AddRange(hcomp.GetHashSet());
-                    for (int i = 0; i < snapshot.Count; i++)
-                    {
-                        var t = snapshot[i];
-                        if (t != null && !t.Destroyed && inner.Contains(t))
-                            hcomp.RegisterHauledItem(t);
-                    }
-                }
-            });
+            }
+            // Drop the now-stale tag only when NEITHER the original stack NOR the split remains in the
+            // inventory (the original was fully consumed by the Take and the split was fully deposited);
+            // a remainder merged back leaves it tagged. Mirrors JobDriver_LoadPackAnimal's deposit dereg.
+            if (!inner.Contains(thing) && !inner.Contains(split))
+                hcomp.Deregister(thing);
         }
+
+        protected override bool HasDepositable() => HasDepositableForVehicle();
 
         /// <summary>Units of <paramref name="def"/> the vehicle's manifest still wants — the Σ CountToTransfer across
         /// its <c>cargoToLoad</c> entries for that def (a quick "anything left for this def?" probe; the actual deposit
