@@ -576,7 +576,7 @@ namespace HaulersDream
             // there. Drop the tracker (matching the self-drop idiom; -1 = a pre-fix save, also dropped).
             if (pawn.Map.uniqueID != tr.mapId)
                 return false;
-            if (tr.included.Count >= tr.cap)
+            if (VeinExtendPolicy.AtCap(tr.included.Count, tr.cap))
                 return false; // route already at its chosen Amount — never grow past it
 
             // Only extend while the route's last task is STILL the pawn's last task — if the player has queued
@@ -588,9 +588,12 @@ namespace HaulersDream
             // tail cell was MINED (not superseded) and the pawn has nothing else queued, make one last extend
             // attempt instead of dropping the tracker at the moment it was about to pay off.
             bool finalAttempt = false;
-            if (!RouteExecutor.TryGetQueueTailCell(pawn, out IntVec3 tail, out Verse.AI.Job tailJob)
-                || tail != tr.lastCell || tailJob.def != JobDefOf.Mine)
+            bool tailStillMatchesRoute = RouteExecutor.TryGetQueueTailCell(pawn, out IntVec3 tail, out Verse.AI.Job tailJob)
+                                         && tail == tr.lastCell && tailJob.def == JobDefOf.Mine;
+            if (!tailStillMatchesRoute)
             {
+                // Only compute the expensive Verse queries when the tail no longer matches (preserve the
+                // short-circuit — a normal extend never pays for these).
                 bool lastCellMined = !AnyVeinThingAt(pawn.Map, tr.veinDef, tr.lastCell);
                 // "Nothing else queued" must ignore the mod's OWN housekeeping (the yield hook queues a
                 // self-pickup — and possibly an unload — at the exact moment the final cell is mined);
@@ -610,9 +613,10 @@ namespace HaulersDream
                             break;
                         }
                 }
-                if (!lastCellMined || !nothingElseQueued)
+                var outcome = VeinExtendPolicy.DecideSupersession(false, lastCellMined, nothingElseQueued);
+                if (outcome == ExtendOutcome.Drop)
                     return false; // genuinely superseded / diverted — leave the route alone
-                finalAttempt = true;
+                finalAttempt = outcome == ExtendOutcome.FinalAttempt;
             }
 
             var kind = WorkKindResolver.MiningKind(tr.veinDef);
@@ -628,12 +632,12 @@ namespace HaulersDream
                 var t = visible[i];
                 if (t == null || tr.included.Contains(t.Position))
                     continue;
-                if (tr.included.Count + newStops.Count >= tr.cap)
+                if (!VeinExtendPolicy.CanAddStop(tr.included.Count, newStops.Count, tr.cap))
                     break;
                 newStops.Add(t);
             }
             if (newStops.Count == 0)
-                return !finalAttempt && stillFog; // a fruitless FINAL attempt drops the tracker (no route jobs remain to mine more)
+                return VeinExtendPolicy.KeepAfterNoNewStops(finalAttempt, stillFog); // a fruitless FINAL attempt drops the tracker (no route jobs remain to mine more)
 
             // Continue the route from the current tail: order the new cells nearest-first from there.
             newStops.Sort((a, b) =>
