@@ -175,9 +175,27 @@ namespace HaulersDream
     [HarmonyPatch(typeof(WorkGiver_ConstructDeliverResources), "FindAvailableNearbyResources")]
     public static class Patch_FindAvailableNearbyResources
     {
-        private static readonly AccessTools.FieldRef<List<Thing>> ResourcesAvailable =
-            AccessTools.StaticFieldRefAccess<List<Thing>>(
-                AccessTools.Field(typeof(WorkGiver_ConstructDeliverResources), "resourcesAvailable"));
+        // LAZY + null-safe: building the FieldRef in a STATIC INITIALIZER would throw a TypeInitializationException
+        // (uncatchable by the runtime null-guard below) the moment this type is touched if a future RimWorld build
+        // renamed/removed the private static `resourcesAvailable` field. Resolve it on first use instead, cache the
+        // result (incl. the "not found" outcome), and degrade to vanilla with one warning rather than crash.
+        private static bool _refResolved;
+        private static AccessTools.FieldRef<List<Thing>> _resourcesAvailable;
+
+        private static AccessTools.FieldRef<List<Thing>> ResourcesAvailableRef()
+        {
+            if (!_refResolved)
+            {
+                _refResolved = true;
+                var fi = AccessTools.Field(typeof(WorkGiver_ConstructDeliverResources), "resourcesAvailable");
+                if (fi != null)
+                    _resourcesAvailable = AccessTools.StaticFieldRefAccess<List<Thing>>(fi);
+                else
+                    HDLog.Warn("WorkGiver_ConstructDeliverResources.resourcesAvailable not found on this RimWorld "
+                        + "build; partial build-from-inventory delivery degrades to vanilla.");
+            }
+            return _resourcesAvailable;
+        }
 
         static bool Prefix(Thing firstFoundResource, ref int resTotalAvailable)
         {
@@ -188,7 +206,10 @@ namespace HaulersDream
                 return true; // a floor stack -> vanilla's cluster aggregation is correct
 
             // Non-spawned (inventory) resource: deliver just this one stack's worth, skip the cluster scan.
-            var list = ResourcesAvailable();
+            var resRef = ResourcesAvailableRef();
+            if (resRef == null)
+                return true; // field missing on this build -> fail safe to vanilla rather than crash
+            var list = resRef();
             if (list == null)
                 return true; // field reflection failed -> fail safe to vanilla rather than crash
             list.Clear();

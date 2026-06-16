@@ -1,3 +1,4 @@
+using System;
 using System.Reflection;
 using HarmonyLib;
 using RimWorld;
@@ -22,8 +23,71 @@ namespace HaulersDream
             Settings = GetSettings<HaulersDreamSettings>();
 
             var harmony = new Harmony(HarmonyId);
-            harmony.PatchAll(Assembly.GetExecutingAssembly());
+            ApplyPatchesResilient(harmony, Assembly.GetExecutingAssembly());
             Log.Message("[Hauler's Dream] initialised — carry limit defaults to each pawn's max carrying capacity.");
+        }
+
+        /// <summary>
+        /// Like <c>harmony.PatchAll(assembly)</c>, but applies each annotated patch class in its OWN try/catch so a
+        /// single unresolvable target — e.g. a private vanilla method renamed in a future RimWorld point-release —
+        /// degrades that ONE feature with a logged warning instead of throwing inside <c>PatchAll</c> and taking
+        /// down ALL of the mod's patches (the catastrophic-failure mode: one rename = total mod death in a large
+        /// load order). <c>[HarmonyPriority]</c> still governs per-target injection order, so behavior is unchanged
+        /// when every target resolves.
+        ///
+        /// We ONLY process types that are genuine patch containers — i.e. carry a DIRECT (non-inherited) Harmony
+        /// attribute on the class or on a method. Harmony's own <c>PatchAll</c> calls <c>CreateClassProcessor(t).Patch()</c>
+        /// on EVERY type and relies on a null container-attribute set to skip non-patches; but its attribute lookup
+        /// uses <c>GetCustomAttributes(inherit: true)</c>, which mis-classifies this mod's OWN <c>JobDriver</c>
+        /// subclasses (they inherit attributes through the vanilla <c>JobDriver</c> chain) and makes Harmony try to
+        /// patch <c>JobDriver.Cleanup</c> for each — exactly the spurious failures the inherit:false filter below
+        /// excludes. The filter captures every real HD patch (all use a direct class- or method-level attribute).
+        /// </summary>
+        private static void ApplyPatchesResilient(Harmony harmony, Assembly assembly)
+        {
+            int applied = 0, failed = 0;
+            // GetTypesFromAssembly tolerates a ReflectionTypeLoadException (returns the loadable types).
+            foreach (var type in AccessTools.GetTypesFromAssembly(assembly))
+            {
+                if (!IsHarmonyPatchContainer(type))
+                    continue; // the mod's own JobDrivers/Comps/etc. — not patches
+                try
+                {
+                    harmony.CreateClassProcessor(type).Patch();
+                    applied++;
+                }
+                catch (System.Exception e)
+                {
+                    failed++;
+                    HDLog.Err($"patch class '{type.Name}' could not be applied on this RimWorld build "
+                        + "(a hooked vanilla target is likely missing or renamed) — that feature is disabled; the "
+                        + $"rest of the mod continues. {e.GetType().Name}: {e.Message}");
+                }
+            }
+            if (failed > 0)
+                HDLog.Warn($"{applied} patch class(es) applied, {failed} skipped due to missing targets (see errors above).");
+        }
+
+        // A genuine patch container has a DIRECT (inherit:false) Harmony attribute on the class, or a method carrying
+        // a Harmony injection/patch attribute. Deliberately inherit:false so the mod's own JobDriver subclasses
+        // (which inherit attributes via the vanilla JobDriver chain) are NOT treated as patches.
+        private static bool IsHarmonyPatchContainer(Type type)
+        {
+            if (type.GetCustomAttributes(typeof(HarmonyPatch), inherit: false).Length > 0)
+                return true;
+            const BindingFlags all = BindingFlags.Public | BindingFlags.NonPublic
+                | BindingFlags.Static | BindingFlags.Instance | BindingFlags.DeclaredOnly;
+            foreach (var m in type.GetMethods(all))
+            {
+                if (m.GetCustomAttributes(typeof(HarmonyPatch), inherit: false).Length > 0
+                    || m.GetCustomAttributes(typeof(HarmonyPrefix), inherit: false).Length > 0
+                    || m.GetCustomAttributes(typeof(HarmonyPostfix), inherit: false).Length > 0
+                    || m.GetCustomAttributes(typeof(HarmonyTranspiler), inherit: false).Length > 0
+                    || m.GetCustomAttributes(typeof(HarmonyFinalizer), inherit: false).Length > 0
+                    || m.GetCustomAttributes(typeof(HarmonyReversePatch), inherit: false).Length > 0)
+                    return true;
+            }
+            return false;
         }
 
         public override void DoSettingsWindowContents(Rect inRect) => Settings.DoWindowContents(inRect);
