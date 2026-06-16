@@ -79,6 +79,13 @@ namespace HaulersDream
         public bool shareMeetInMiddle = true; // an idle carrier walks toward the fetcher
         public bool batchWorkDeliveries = true; // carry materials for many queued builds per trip (in hands; no slowdown)
         public bool inventoryConstructDeliver = true; // carry material for a big single needer in inventory (fewer trips)
+        // Multi-site construction delivery (extends inventoryConstructDeliver to the nearby CLUSTER): when vanilla
+        // batches several same-material build sites within 8 tiles, the AUTOMATIC and shift-click deliver paths
+        // load the whole cluster's combined demand into inventory in ONE trip and deliver to each site, instead of
+        // serving one site per trip (today only the route planner gathers for multiple sites at once). Respects the
+        // "finish the current site first" rule (it only raises the load ceiling + iterates needers; it never changes
+        // WHEN the pawn decides to load). Requires inventoryConstructDeliver. Default ON.
+        public bool multiSiteConstructDeliver = true;
         public bool shareHandHauledToStorage = false; // let a worker claim a stack a colonist is hand-hauling TO STORAGE (opt-in)
         // Meals On Wheels: a hungry FREE COLONIST with no food found by vanilla eats acceptable food
         // another player-faction pawn (or pack animal) is carrying, instead of trekking to a distant
@@ -426,6 +433,7 @@ namespace HaulersDream
             Scribe_Values.Look(ref shareMeetInMiddle, "shareMeetInMiddle", true);
             Scribe_Values.Look(ref batchWorkDeliveries, "batchWorkDeliveries", true);
             Scribe_Values.Look(ref inventoryConstructDeliver, "inventoryConstructDeliver", true);
+            Scribe_Values.Look(ref multiSiteConstructDeliver, "multiSiteConstructDeliver", true);
             Scribe_Values.Look(ref shareHandHauledToStorage, "shareHandHauledToStorage", false);
             Scribe_Values.Look(ref mealsOnWheels, "mealsOnWheels", true);
             Scribe_Values.Look(ref bulkHaul, "bulkHaul", true);
@@ -551,6 +559,7 @@ namespace HaulersDream
             shareMeetInMiddle = true;
             batchWorkDeliveries = true;
             inventoryConstructDeliver = true;
+            multiSiteConstructDeliver = true;
             shareHandHauledToStorage = false;
             mealsOnWheels = true;
             bulkHaul = true;

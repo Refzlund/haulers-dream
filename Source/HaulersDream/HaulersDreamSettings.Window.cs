@@ -234,6 +234,9 @@ namespace HaulersDream
                 "HaulersDream.Setting.BatchWorkDeliveriesDesc".Translate());
             l.CheckboxLabeled("HaulersDream.Setting.InventoryConstructDeliver".Translate(), ref inventoryConstructDeliver,
                 "HaulersDream.Setting.InventoryConstructDeliverDesc".Translate());
+            if (inventoryConstructDeliver)
+                l.CheckboxLabeled("HaulersDream.Setting.MultiSiteConstructDeliver".Translate(), ref multiSiteConstructDeliver,
+                    "HaulersDream.Setting.MultiSiteConstructDeliverDesc".Translate());
             l.CheckboxLabeled("HaulersDream.Setting.ShareHandHauled".Translate(), ref shareHandHauledToStorage,
                 "HaulersDream.Setting.ShareHandHauledDesc".Translate());
             l.CheckboxLabeled("HaulersDream.Setting.MealsOnWheels".Translate(), ref mealsOnWheels,

@@ -118,6 +118,38 @@ namespace HaulersDream.Tests
             }
         }
 
+        // ---- MultiSiteWorthIt: the gate for converting a vanilla same-material CLUSTER into one inventory trip ----
+
+        [Test]
+        public void MultiSite_TwoNeedersUnderHandCap_NotWorthIt()
+        {
+            // Two sites but the whole cluster fits in one armful -> vanilla's hand-batch already does it in one trip.
+            Assert.That(ConstructDeliveryPlan.MultiSiteWorthIt(clusterNeederCount: 2, clusterNeedUnits: 60, handStackCap: Hand), Is.False);
+            Assert.That(ConstructDeliveryPlan.MultiSiteWorthIt(clusterNeederCount: 2, clusterNeedUnits: 75, handStackCap: Hand), Is.False);
+        }
+
+        [Test]
+        public void MultiSite_TwoNeedersOverHandCap_WorthIt()
+        {
+            // Two sites whose combined demand exceeds one hand-load -> inventory beats shuttling armfuls.
+            Assert.That(ConstructDeliveryPlan.MultiSiteWorthIt(clusterNeederCount: 2, clusterNeedUnits: 76, handStackCap: Hand), Is.True);
+            Assert.That(ConstructDeliveryPlan.MultiSiteWorthIt(clusterNeederCount: 5, clusterNeedUnits: 300, handStackCap: Hand), Is.True);
+        }
+
+        [Test]
+        public void MultiSite_OneNeederOverHandCap_NotWorthIt()
+        {
+            // A single big needer is the EXISTING single-site inventory path, not the multi-site branch.
+            Assert.That(ConstructDeliveryPlan.MultiSiteWorthIt(clusterNeederCount: 1, clusterNeedUnits: 340, handStackCap: Hand), Is.False);
+        }
+
+        [Test]
+        public void MultiSite_HandCapZero_NotWorthIt()
+        {
+            // Degenerate hand capacity -> never convert.
+            Assert.That(ConstructDeliveryPlan.MultiSiteWorthIt(clusterNeederCount: 3, clusterNeedUnits: 300, handStackCap: 0), Is.False);
+        }
+
         // ---- ShouldLoadBeforeDeliver: the route "top off after every wall" fix ----
         // The driver makes a stockpile LOAD trip only when carried stock can't cover the IMMEDIATE frame.
 
