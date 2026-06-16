@@ -23,6 +23,11 @@ namespace HaulersDream
     ///   closer to where it'll be used").</item>
     /// </list></para>
     /// </summary>
+    // [StaticConstructorOnStartup]: this type holds static Material fields. RimWorld warns about any type with a
+    // static Material/Texture field that lacks this attribute (a structural check — it fires even though the
+    // materials here are created lazily on the main thread during the overlay draw). The attribute satisfies that
+    // check; the fields stay null until the lazy properties first build them (only when the dev overlay is shown).
+    [StaticConstructorOnStartup]
     public class DetourOverlay : MapComponent
     {
         public DetourOverlay(Map map) : base(map) { }
