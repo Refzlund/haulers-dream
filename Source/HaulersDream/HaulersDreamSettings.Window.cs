@@ -311,6 +311,9 @@ namespace HaulersDream
             l.CheckboxLabeled("HaulersDream.Setting.EnableBulkLoadPortal".Translate(), ref enableBulkLoadPortal,
                 "HaulersDream.Setting.EnableBulkLoadPortalDesc".Translate());
 
+            l.CheckboxLabeled("HaulersDream.Setting.EnableBulkRefuel".Translate(), ref enableBulkRefuel,
+                "HaulersDream.Setting.EnableBulkRefuelDesc".Translate());
+
             // Vehicle Framework compat — only shown when VF is loaded (the rows are pure noise otherwise; every VF
             // consumer also gates on VehicleFrameworkCompat.IsActive, so a hidden row never changes behaviour). The
             // master's tooltip explains the §1 toggle semantics: the safety guards are NOT gated on it.

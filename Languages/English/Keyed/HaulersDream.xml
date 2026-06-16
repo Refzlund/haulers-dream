@@ -364,6 +364,15 @@
   <HaulersDream.Setting.EnableBulkLoadVehicles>Bulk-load vehicles in one trip</HaulersDream.Setting.EnableBulkLoadVehicles>
   <HaulersDream.Setting.EnableBulkLoadVehiclesDesc>When a vehicle (ground or aerial) is set to load cargo, a hauler claims a slice of its manifest, sweeps several nearby stacks into its inventory, walks to the vehicle ONCE, and deposits them all — instead of Vehicle Framework's one-stack-in-hands per walk. Several haulers split a large manifest with no double-hauling, respecting the vehicle's cargo capacity. With this off, Vehicle Framework's single-stack loading is used unchanged. Requires "Vehicle Framework integration" above.</HaulersDream.Setting.EnableBulkLoadVehiclesDesc>
 
+  <!-- BULK REFUEL (a shuttle's chemfuel, a deep drill, a generator — any refuelable) -->
+  <HaulersDream.BulkRefuel.Report>bulk-refuelling.</HaulersDream.BulkRefuel.Report>
+  <HaulersDream.BulkRefuel.Option>Prioritize bulk refuelling {0}</HaulersDream.BulkRefuel.Option>
+  <HaulersDream.BulkRefuel.CouldNotStart>Nothing nearby to bulk-refuel that with right now.</HaulersDream.BulkRefuel.CouldNotStart>
+
+  <!-- Settings: bulk refuel -->
+  <HaulersDream.Setting.EnableBulkRefuel>Bulk-refuel in one trip</HaulersDream.Setting.EnableBulkRefuel>
+  <HaulersDream.Setting.EnableBulkRefuelDesc>When something needs fuel (a shuttle's chemfuel, a deep drill, a generator — anything refuelable), a hauler sweeps enough nearby fuel into its inventory, walks to it ONCE, and fills it in a single trip — instead of vanilla's one-stack-in-hands per walk. Only kicks in when more than one fuel stack (more than one vanilla trip) is needed; a single-stack refuel is left to vanilla. Right-click a refuelable for "Prioritize bulk refuelling", or let it run as ordinary refuelling work. With this off, vanilla's single-stack refuelling is used unchanged. On by default.</HaulersDream.Setting.EnableBulkRefuelDesc>
+
   <!-- While You're Up parity: C1 safety / unload ordering -->
   <HaulersDream.Setting.SkipHaulWhileBleeding>Don't start hauling while badly bleeding</HaulersDream.Setting.SkipHaulWhileBleeding>
   <HaulersDream.Setting.SkipHaulWhileBleedingDesc>When a pawn is bleeding (above a tiny threshold), it won't START a new scoop or bulk-haul sweep — it should get treated, not detour to tidy up. This only blocks STARTING a haul: a pawn already carrying scooped goods still unloads them normally, so nothing is ever stranded. On by default.</HaulersDream.Setting.SkipHaulWhileBleedingDesc>

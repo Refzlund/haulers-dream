@@ -181,4 +181,23 @@
     <suspendable>false</suspendable>
   </JobDef>
 
+  <!-- Bulk-refuel a CompRefuelable (a shuttle's chemfuel, a deep drill, a generator, …): sweep enough nearby fuel
+       stacks into inventory (tagged), walk to the refuelable ONCE, and deposit them all via vanilla
+       CompRefuelable.Refuel — instead of vanilla's one-stack-in-hands per walk. Standalone (no claim-ledger): a
+       refuelable has no shared manifest, and vanilla Refuel just consumes up to the deficit. See JobDriver_BulkRefuel. -->
+  <!-- DELIBERATELY no <checkEncumbrance>: the sweep loads only what the refuel deficit needs, but like the other HD
+       load jobs it stows via its own SplitOff+TryAdd (not Toils_Haul.TakeToInventory, which reads that flag).
+       suspendable false: a suspend/resume would restart the sweep on a FRESH driver at loadIndex 0, re-taking the
+       queued fuel on top of what's already carried (over-gather). A clean end recovers correctly instead — swept fuel
+       is tagged and the finish action re-tags survivors so leftover rides the normal unload. casualInterruptible
+       false so a passing distraction can't strand a half-swept courier (the carried fuel rides the normal unload on
+       any end). -->
+  <JobDef>
+    <defName>HaulersDream_BulkRefuel</defName>
+    <driverClass>HaulersDream.JobDriver_BulkRefuel</driverClass>
+    <reportString>bulk-refuelling.</reportString>
+    <casualInterruptible>false</casualInterruptible>
+    <suspendable>false</suspendable>
+  </JobDef>
+
 </Defs>

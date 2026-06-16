@@ -158,6 +158,13 @@ namespace HaulersDream
         public bool enableVehicleFramework = true;
         public bool enableBulkLoadVehicles = true;
 
+        // --- bulk REFUEL (replaces vanilla's one-stack-per-walk refuel of a CompRefuelable — a shuttle's chemfuel, a
+        // deep drill, a generator, …): a hauler sweeps enough nearby fuel into inventory, walks to the refuelable
+        // ONCE, and fills it in one trip. No shared manifest/ledger (vanilla CompRefuelable.Refuel just consumes up to
+        // the deficit), so it's a standalone path; only fires when 2+ stacks/trips are needed (a single-stack refuel
+        // is already one trip in vanilla). Atomic refuelables are left to vanilla RefuelAtomic.
+        public bool enableBulkRefuel = true;
+
         // ===== Bulk Load For Transporters parity (added 2026-06) =====
         // A1: clean up HD bulk-load/haul jobs at SAVE time so a save written mid-load survives uninstalling HD
         // (no dead custom-JobDriver refs left in the save). Safe-uninstall data integrity; ON. It mutates job
@@ -434,6 +441,7 @@ namespace HaulersDream
             Scribe_Values.Look(ref enableBulkLoadPortal, "enableBulkLoadPortal", true);
             Scribe_Values.Look(ref enableVehicleFramework, "enableVehicleFramework", true);
             Scribe_Values.Look(ref enableBulkLoadVehicles, "enableBulkLoadVehicles", true);
+            Scribe_Values.Look(ref enableBulkRefuel, "enableBulkRefuel", true);
             Scribe_Values.Look(ref enableBulkUnloadCarriers, "enableBulkUnloadCarriers", true);
             Scribe_Values.Look(ref cleanupOnSave, "cleanupOnSave", true);
             Scribe_Values.Look(ref enableSoftlockDrop, "enableSoftlockDrop", true);
@@ -558,6 +566,7 @@ namespace HaulersDream
             enableBulkLoadPortal = true;
             enableVehicleFramework = true;
             enableBulkLoadVehicles = true;
+            enableBulkRefuel = true;
             enableBulkUnloadCarriers = true;
             cleanupOnSave = true;
             enableSoftlockDrop = true;
