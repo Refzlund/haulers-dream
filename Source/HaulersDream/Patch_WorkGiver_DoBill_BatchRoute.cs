@@ -28,8 +28,12 @@ namespace HaulersDream
             var job = __result;
             if (job == null || job.def != JobDefOf.DoBill || job.bill?.recipe == null)
                 return;
-            if (!(job.targetA.Thing is Building_WorkTable bench))
-                return; // workbenches only — never a Pawn bill giver (surgery) or other special giver
+            // Workbenches only — never a Pawn bill giver (surgery) / other special giver, and never an autonomous
+            // worktable (mech gestator family): the building processes its own recipe and ingredients must be
+            // DEPOSITED into its container, so a pawn-driven batch-craft that gathers into inventory is invalid there.
+            if (!BillRouteGate.MayRouteToInventory(job.targetA.Thing))
+                return;
+            var bench = (Building_WorkTable)job.targetA.Thing;
             // Cede to Common Sense when it owns the DoBill driver — don't batch-convert into a re-haul loop.
             // (Moved below the cheap gates above: the reflective toggle read now happens only on a convertible job.)
             if (CommonSenseCompat.OwnsDoBillFlow)

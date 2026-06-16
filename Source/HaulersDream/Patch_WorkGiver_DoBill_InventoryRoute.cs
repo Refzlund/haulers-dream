@@ -48,8 +48,10 @@ namespace HaulersDream
             // (Moved below the cheap gates above: the reflective toggle read now happens only on a convertible job.)
             if (CommonSenseCompat.OwnsDoBillFlow)
                 return;
-            // Workbenches only — never a Pawn bill giver (surgery) or other special giver.
-            if (!(job.targetA.Thing is Building_WorkTable))
+            // Workbenches only — never a Pawn bill giver (surgery) / other special giver, and never an autonomous
+            // worktable (mech gestator family): those DEPOSIT ingredients into the building's own container from the
+            // carry tracker, which HD's load-into-inventory relay can't satisfy. See BillRouteGate.
+            if (!BillRouteGate.MayRouteToInventory(job.targetA.Thing))
                 return;
             if (BillPrepTracker.ShouldSkip(pawn))
                 return; // last sweep loaded nothing — let vanilla run multi-trip rather than ping-pong
