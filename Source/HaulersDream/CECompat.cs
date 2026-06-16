@@ -103,6 +103,12 @@ namespace HaulersDream
             if (active)
                 Log.Message("[Hauler's Dream] Combat Extended detected — inventory loading defers to CE's "
                             + "weight+bulk capacity, smart overload stands down, HoldTracker integration on.");
+            else
+                // CE is present (CompInventory resolved) but its load-bearing weight+bulk fit check did not bind
+                // (a CE fork/version renamed the method) — degrade SAFE (report inactive => HD uses vanilla mass
+                // math), but surface the drift once so it isn't a silent capability loss.
+                HDLog.Warn("Combat Extended present but CompInventory.CanFitInInventory(Thing, out int, bool, bool) "
+                           + "did not resolve; CE weight+bulk-aware loading is OFF (falling back to vanilla mass math).");
         }
 
         // Single-slot per-pawn CompInventory memo (the sweep callers — BulkHaul.BuildPoolInto, TransportLoad,

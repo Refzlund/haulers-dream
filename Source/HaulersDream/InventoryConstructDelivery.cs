@@ -15,7 +15,15 @@ namespace HaulersDream
     /// trips. Only fires when the carry math says inventory beats hands; otherwise the vanilla hand-carry
     /// — including the F5 needer batching — runs unchanged. See <see cref="InventoryConstructDelivery"/>.
     /// </summary>
+    // ORDERING CONTRACT (see the full chain in SharedInventoryPatches.cs): ICD runs AFTER F3b (High=600) and BEFORE
+    // both Batch (Low=200) and Routing (Last). ICD converts a vanilla floor HaulToContainer to its inventory-overload
+    // job; Batch and Routing both bail on a non-HaulToContainer __result, so they must observe ICD's FINAL
+    // converted/declined result. Pinned Normal (400) explicitly — it is numerically the default, but pinning makes the
+    // "ICD before Batch" precedence DECLARED rather than coincidental (both previously sat at the default 400, so their
+    // relative order was undefined). ICD is order-independent w.r.t. F3b: their action domains are disjoint (F3b builds
+    // an inventory-fetch job ICD ignores via the Pawn_InventoryTracker guard; ICD only converts a SPAWNED floor stack).
     [HarmonyPatch(typeof(WorkGiver_ConstructDeliverResources), "ResourceDeliverJobFor")]
+    [HarmonyPriority(Priority.Normal)] // run after F3b's floor-empty fetch, before Batch/Routing observe the result
     public static class Patch_ResourceDeliverJobFor_Inventory
     {
         static void Postfix(ref Job __result, Pawn pawn, IConstructible c, bool forced)

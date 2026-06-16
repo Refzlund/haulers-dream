@@ -109,7 +109,7 @@ namespace HaulersDream
                     }
                     catch (Exception e)
                     {
-                        Log.Error($"[Hauler's Dream] WorkGiver '{wgDef.defName}' threw while resolving a route "
+                        HDLog.Err($"WorkGiver '{wgDef.defName}' threw while resolving a route "
                                   + $"for {clicked} — skipping it (report to that mod's author): {e}");
                         continue;
                     }

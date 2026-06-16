@@ -62,7 +62,13 @@ namespace HaulersDream
     /// partial delivery when only a partial stack exists, so the partial-build setting needs no extra
     /// delivery code here — the frame simply advances with whatever the single stack provides.
     /// </summary>
+    // ORDERING CONTRACT (declarative precedence for the five ResourceDeliverJobFor postfixes; Harmony runs
+    // HIGHER priority numbers EARLIER): F3b(High=600) → ICD(Normal=400) → {HandHaul, Batch}(Low=200) → Routing(Last).
+    // F3b is pinned High so the floor-empty inventory-FETCH is decided before HandHaul (its doc-stated "floor and
+    // F3b first" last-resort) and before ICD/Batch read __result. (Previously coincidental: F3b sat at the default
+    // 400 > HandHaul's 200; pinning makes the contract robust to future re-pinning of the others.)
     [HarmonyPatch(typeof(WorkGiver_ConstructDeliverResources), "ResourceDeliverJobFor")]
+    [HarmonyPriority(Priority.High)] // run FIRST: floor-empty inventory-fetch decided before HandHaul/ICD/Batch
     public static class Patch_ResourceDeliverJobFor
     {
         static void Postfix(ref Job __result, Pawn pawn, IConstructible c, bool forced)
@@ -199,7 +205,14 @@ namespace HaulersDream
     /// delivery is expanded (not our inventory-fetch job above, and not minified-building installs); the
     /// vanilla driver already delivers a hand-load to many needers. See <see cref="ConstructionBatch"/>.
     /// </summary>
+    // ORDERING CONTRACT: must run AFTER ICD (Normal=400). ICD CONVERTS a vanilla floor HaulToContainer into its
+    // own inventory-overload def; Batch bails on a non-HaulToContainer __result, so it must see ICD's FINAL result —
+    // it expands the needer batch only on a plain vanilla hand-carry ICD DECLINED to convert. If Batch ran before
+    // ICD, it would expand a queue ICD then discards (wasted) and could flip ICD's own "vanilla batches N needers →
+    // keep vanilla cluster" guard (which reads vanillaJob.targetQueueB). Pinned Low (200) < ICD's 400. The Low tie
+    // with HandHaul is behavior-neutral: HandHaul acts only when __result==null, Batch only on a floor job.
     [HarmonyPatch(typeof(WorkGiver_ConstructDeliverResources), "ResourceDeliverJobFor")]
+    [HarmonyPriority(Priority.Low)] // run AFTER ICD's conversion so Batch only expands deliveries ICD left as plain vanilla
     public static class Patch_ResourceDeliverJobFor_Batch
     {
         static void Postfix(ref Job __result, Pawn pawn, IConstructible c, bool forced)

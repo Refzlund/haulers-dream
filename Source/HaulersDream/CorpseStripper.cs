@@ -207,8 +207,14 @@ namespace HaulersDream
             var comp = hauler.GetComp<CompHauledToInventory>();
             if (comp == null || !comp.autoHaulYields)
                 return;
-            if (hauler.RaceProps == null
-                || (!hauler.RaceProps.Humanlike && !(hauler.RaceProps.IsMechanoid && s.allowMechanoids)))
+            // RACE gate: delegate to the canonical predicate instead of a hand-rolled copy (which had already
+            // drifted — it omitted the animal-allowance branch). IsRaceEligible is the documented superset that
+            // honors humanlike / mechanoid (allowMechanoids) / animal (allowAnimals), is the SAME Core
+            // EligibilityPolicy the runtime scoop gate uses, and null-guards RaceProps itself (returns false on a
+            // null-RaceProps pawn), so no extra null check is needed here. INTENDED behavior change: when
+            // allowAnimals is ON, a Haul-trained colony animal now auto-strips on a qualifying corpse haul, matching
+            // every other YieldRouter intake path.
+            if (!YieldRouter.IsRaceEligible(hauler))
                 return;
             var job = hauler.CurJob;
             if (job == null || !QualifyingHaul(job, s.autoStripMode))

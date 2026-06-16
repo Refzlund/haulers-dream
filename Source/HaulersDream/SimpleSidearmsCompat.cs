@@ -123,8 +123,8 @@ namespace HaulersDream
             if (!warned)
             {
                 warned = true;
-                Log.Warning("[Hauler's Dream] Simple Sidearms present but CompSidearmMemory.rememberedWeapons did "
-                            + "not resolve; keeping all carried weapons out of surplus unloading as a safe fallback.");
+                HDLog.Warn("Simple Sidearms present but CompSidearmMemory.rememberedWeapons did "
+                           + "not resolve; keeping all carried weapons out of surplus unloading as a safe fallback.");
             }
             return true;
         }

@@ -125,7 +125,7 @@ namespace HaulersDream
         {
             if (SortBy3 == null || SortAllowMix == null || GetSettings == null)
             {
-                Log.Error("[Hauler's Dream] cook spoiling-first transpiler: could not resolve target/replacement "
+                HDLog.Err("cook spoiling-first transpiler: could not resolve target/replacement "
                           + "methods; leaving TryFindBestBillIngredientsInSet_AllowMix unpatched (vanilla order).");
                 foreach (var ci in instructions) yield return ci;
                 yield break;
@@ -158,7 +158,7 @@ namespace HaulersDream
             }
 
             if (!patched)
-                Log.Error("[Hauler's Dream] cook spoiling-first transpiler: SortBy call not found in "
+                HDLog.Err("cook spoiling-first transpiler: SortBy call not found in "
                           + "TryFindBestBillIngredientsInSet_AllowMix; cook spoiling-first is inactive "
                           + "(vanilla order). RimWorld may have changed the method.");
         }

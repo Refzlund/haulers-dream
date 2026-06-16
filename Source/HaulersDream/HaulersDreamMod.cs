@@ -61,5 +61,22 @@ namespace HaulersDream
             if (Prefs.DevMode && HaulersDreamMod.Settings != null && HaulersDreamMod.Settings.verboseLogging)
                 Log.Message("[Hauler's Dream] " + message);
         }
+
+        /// <summary>An ALWAYS-emitted warning (not Dev/verbose-gated) carrying the standard prefix — for genuine
+        /// degrade-but-keep-going conditions (e.g. an optional mod is present but a load-bearing reflected member
+        /// did not bind, so a feature is silently disabled). No dedup: each call logs (callers self-gate with a
+        /// `warned` latch where one-shot is wanted).</summary>
+        public static void Warn(string message)
+        {
+            Log.Warning("[Hauler's Dream] " + message);
+        }
+
+        /// <summary>An ALWAYS-emitted error (not Dev/verbose-gated) carrying the standard prefix — for fail-loud
+        /// faults (a transpiler IL match broke, a foreign WorkGiver threw). No dedup: callers that need
+        /// once-per-key dedup must keep <c>Log.ErrorOnce</c> instead.</summary>
+        public static void Err(string message)
+        {
+            Log.Error("[Hauler's Dream] " + message);
+        }
     }
 }

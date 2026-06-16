@@ -91,6 +91,16 @@ namespace HaulersDream
             bool readable = advCleaningField != null && advHaulAllField != null;
             Log.Message("[Hauler's Dream] Common Sense detected — HD cedes the DoBill ingredient-gather flow to it"
                         + (readable ? "." : " (toggle fields unresolved — treating CS as owning the flow as a safe fallback)."));
+            if (!readable)
+                // CS is present (Settings resolved) but its toggle fields did not bind (a CS fork/version renamed
+                // them) — HD fail-CLOSED here (always cedes the DoBill flow to CS, so the gather->bench->unload
+                // loop can't reopen), but surface the drift: HD's own ingredient-gather conversions stay OFF
+                // whenever CS is installed, even if the player has CS's adv_cleaning/adv_haul_all_ings turned off.
+                HDLog.Warn("Common Sense present but Settings.adv_cleaning"
+                           + (advCleaningField == null ? " (UNRESOLVED)" : "")
+                           + " / adv_haul_all_ings" + (advHaulAllField == null ? " (UNRESOLVED)" : "")
+                           + " did not resolve; HD ceding the DoBill ingredient-gather flow to CS unconditionally "
+                           + "(its own gather conversions stay off while CS is installed).");
         }
     }
 }

@@ -146,6 +146,16 @@ namespace HaulersDream
             if (active)
                 Log.Message("[Hauler's Dream] Vehicle Framework detected — bulk-load-into-vehicle + event-correct "
                             + "pack-animal deposit on, eat-from / build-from a parked vehicle's cargo enabled.");
+            else
+                // VF is present (VehiclePawn resolved) but one or more load-bearing deposit/capacity/manifest
+                // members did not bind (a VF version/API drift) — degrade SAFE (report inactive => HD behaves as
+                // without VF), but name which member(s) are missing so the lost integration isn't silent.
+                HDLog.Warn("Vehicle Framework present but a load-bearing member did not resolve "
+                           + "(VehiclePawn.AddOrTransfer(Thing,int)=" + (addOrTransfer != null)
+                           + ", VehiclePawn.GetStatValue(VehicleStatDef)=" + (getStatValue != null)
+                           + ", VehicleStatDefOf.CargoCapacity=" + (cargoCapacityStatDef != null)
+                           + ", VehiclePawn.cargoToLoad=" + (cargoToLoadField != null)
+                           + "); vehicle bulk-load / cargo integration is OFF (HD behaves as without VF).");
         }
 
         /// <summary>True if <paramref name="t"/> is a VF <c>VehiclePawn</c> (subclass-safe). False when VF absent.</summary>
