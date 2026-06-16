@@ -688,6 +688,29 @@ namespace HaulersDream
         // with (decompile-verified). int.MaxValue = "no binding limit": a container destination (cell ==
         // Invalid — its capacity is enroute-managed), no slot group at the cell, a scan that hit the cell cap,
         // or already more space than a whole plan could fill (MaxStacks full stacks).
+        //
+        // STORAGE-MOD COMPATIBILITY BY CONSTRUCTION (no references, no reflection — verified against the
+        // LWM Deep Storage / KanbanStockpile / SatisfiedStorage / Adaptive Storage Framework sources):
+        //  * ACCEPTANCE is honored exactly: the IsGoodStoreCell gate runs NoStorageBlockersIn, which every one
+        //    of those mods patches (ASF transpiles it; LWM prefixes it; Kanban postfixes it for ssl/srt;
+        //    SatisfiedStorage replaces it with its refill-hysteresis gate). So a cell those mods call "full"
+        //    is skipped here — we never sweep toward storage they reject.
+        //  * RAW PER-CELL CAPACITY is honored exactly: GetItemStackSpaceLeftFor reads Building.MaxItemsInCell ->
+        //    GridsUtility.GetMaxItemsAllowedInCell, the single seam vanilla maxItemsInCell, LWM's
+        //    CompDeepStorage.MaxNumberStacks (prefix) and ASF's per-cell limit (transpile) all funnel through.
+        //  * The only residual is a NUMERIC over-estimate for mods whose count cap lives OFF this seam:
+        //    Kanban's `mss` (max similar stacks) + `srt` partials sit only on the per-THING HaulToStorageJob
+        //    count clamp; SatisfiedStorage's fill-line has no count clamp at all; LWM mass-limited shelves are
+        //    mass-blind here. This is a SAFE UPPER BOUND, never an under-estimate, and it self-corrects with no
+        //    strand: the deposit re-gate (JobDriver_UnloadHauledInventory.FindTargetOrDrop re-runs the same
+        //    mod-aware TryFindBestBetterStorageFor per carried stack; PlaceHauledThingInCell re-targets any
+        //    remainder) deposits what each mod-capped cell actually accepts and re-routes / floor-drops the rest
+        //    for normal hauling — bounded one-cycle churn, never a black hole. So NO per-mod compat patch is
+        //    needed for any of them.
+        //  * DO NOT "tighten" this by clamping with HaulAIUtility.HaulToCellStorageJob/HaulToStorageJob.count:
+        //    that count is PER-THING (clamped to one stack's stackCount), so Math.Min-ing it in would cap the
+        //    whole bulk sweep to a single armful and cripple bulk hauling — the over-estimate above is the
+        //    correct, deliberate design (the deposit re-gate is the authority).
         private static int StorageSpaceForDef(Pawn pawn, Thing thing, IntVec3 cell, Map map)
         {
             if (!cell.IsValid)
