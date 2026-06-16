@@ -409,15 +409,17 @@ namespace HaulersDream
         /// self-pickup — so en-route must not stack another pickup on top of an in-flight sweep (G2 self-guard).</summary>
         private static bool AlreadyHaulingIntoInventory(Pawn pawn)
         {
+            // Membership = HdJobDefSets.NoRecursionHaulJobs (the two pure inventory-INTAKE drivers), the single
+            // source of truth so a newly-added intake driver is recognized here without re-listing it inline.
             var jd = pawn.CurJobDef;
-            if (jd == HaulersDreamDefOf.HaulersDream_BulkHaul || jd == HaulersDreamDefOf.HaulersDream_SelfPickup)
+            if (jd != null && HdJobDefSets.NoRecursionHaulJobs.Contains(jd))
                 return true;
             var q = pawn.jobs?.jobQueue;
             if (q != null)
                 for (int k = 0; k < q.Count; k++)
                 {
                     var d = q[k]?.job?.def;
-                    if (d == HaulersDreamDefOf.HaulersDream_BulkHaul || d == HaulersDreamDefOf.HaulersDream_SelfPickup)
+                    if (d != null && HdJobDefSets.NoRecursionHaulJobs.Contains(d))
                         return true;
                 }
             return false;

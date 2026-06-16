@@ -232,7 +232,7 @@ namespace HaulersDream
             var map = pawn?.Map;
             if (s == null || !s.bulkHaul || map == null || primary == null || !primary.Spawned)
                 return false;
-            if (!s.enableOnNonHomeMaps && !map.IsPlayerHome)
+            if (!MapGate.HdActiveOnMap(map))
                 return false;
             if (pawn.Faction != Faction.OfPlayerSilentFail || pawn.IsQuestLodger())
                 return false;
@@ -290,7 +290,7 @@ namespace HaulersDream
                 return null;
             // Same map gate as YieldRouter.IsCandidate: with the mod disabled on non-home maps a sweep must
             // not fire there either — the driver's finish unload is forced:true and bypasses the checker's gate.
-            if (!s.enableOnNonHomeMaps && !map.IsPlayerHome)
+            if (!MapGate.HdActiveOnMap(map))
                 return null;
             if (pawn.Faction != Faction.OfPlayerSilentFail || pawn.IsQuestLodger())
                 return null;
@@ -516,7 +516,7 @@ namespace HaulersDream
             // Same map gate as the sweep builder: with the mod inert on non-home maps the driver's forced finish
             // unload would have no storage to flush to there (the provider already gates on this, but keep the
             // builder self-consistent in case it's reached another way).
-            if (!s.enableOnNonHomeMaps && !map.IsPlayerHome)
+            if (!MapGate.HdActiveOnMap(map))
                 return null;
             if (pawn.GetComp<CompHauledToInventory>() == null || pawn.inventory == null)
                 return null;

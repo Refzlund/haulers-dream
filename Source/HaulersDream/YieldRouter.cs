@@ -706,7 +706,7 @@ namespace HaulersDream
             var s = HaulersDreamMod.Settings;
             if (s == null)
                 return false;
-            if (p.Map != null && !s.enableOnNonHomeMaps && !p.Map.IsPlayerHome)
+            if (!MapGate.HdActiveOnMap(p.Map))
                 return false;
             var comp = p.GetComp<CompHauledToInventory>();
             if (comp == null)

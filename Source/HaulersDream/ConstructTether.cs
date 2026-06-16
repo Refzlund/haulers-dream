@@ -118,8 +118,7 @@ namespace HaulersDream
                     var job = queue[i]?.job;
                     if (job == null)
                         continue;
-                    if (job.def == HaulersDreamDefOf.HaulersDream_ConstructDeliverBuild
-                        || job.def == HaulersDreamDefOf.HaulersDream_OverloadConstructDeliver)
+                    if (job.def != null && HdJobDefSets.ConstructDeliverJobs.Contains(job.def))
                         AccumulateDemand(job.targetB.Thing ?? job.targetC.Thing, demand, seen);
                 }
             return demand;

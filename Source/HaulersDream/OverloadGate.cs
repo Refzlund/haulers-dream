@@ -34,21 +34,28 @@ namespace HaulersDream
             => NoOverload(s) ? OverloadTuning.OffLevel : s.overloadLevel;
 
         /// <summary>
-        /// <see cref="NoOverload"/> plus the per-pawn half of the bargain: the overload deal is
-        /// slowdown-FOR-capacity, and <see cref="StatPart_Overload"/> slows player-faction HUMANLIKES AND
-        /// player-faction MECHANOIDS — so both may load past their carry limit (and pay the matching
-        /// slowdown). Only a non-mech non-humanlike (e.g. an animal hauler) stands down here: the StatPart
-        /// never slows it, so it must not get the extra capacity penalty-free (a balance regression). The two
-        /// halves stay in lockstep — the SAME race classes that overload here are the ones the StatPart slows.
+        /// The per-pawn half of the bargain: the overload deal is slowdown-FOR-capacity, so the pawns that
+        /// may load past their carry limit must be exactly the pawns the <see cref="StatPart_Overload"/> can
+        /// slow. Both this gate and the StatPart derive the shared strict/CE/level/race off-matrix from the
+        /// SINGLE pure predicate <see cref="OverloadPolicy.ParticipatesInOverload"/>, so they can never
+        /// silently diverge on those conditions (a future edit that breaks the lockstep fails the matrix
+        /// test in OverloadPolicyTests).
+        ///
+        /// This gate is deliberately faction- and draft-AGNOSTIC (an overloaded pawn keeps the capacity it
+        /// already loaded even once drafted); the StatPart layers the player-faction/undrafted asymmetry on
+        /// top via <see cref="OverloadPolicy.AppliesSpeedPenalty"/>. Maps the live Verse pawn → the pure
+        /// inputs; returns true (stand down to the plain carry limit) whenever the feature is not active for
+        /// this pawn — including null settings or a pawn with no race.
         /// </summary>
         internal static bool NoOverloadFor(Pawn pawn, HaulersDreamSettings s)
         {
-            if (NoOverload(s))
+            if (s == null)
                 return true;
             var race = pawn?.RaceProps;
             if (race == null)
                 return true;
-            return !race.Humanlike && !race.IsMechanoid;
+            return !OverloadPolicy.ParticipatesInOverload(
+                s.strictCarryWeight, s.overloadLevel, CECompat.IsActive, race.Humanlike, race.IsMechanoid);
         }
 
         /// <summary>

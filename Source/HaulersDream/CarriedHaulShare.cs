@@ -32,8 +32,10 @@ namespace HaulersDream
         /// </summary>
         internal static Thing StorageBoundCarried(Pawn carrier, Pawn worker)
         {
-            if (carrier == null || carrier == worker || !carrier.Spawned || carrier.Dead
-                || carrier.Downed || carrier.Drafted || carrier.InMentalState)
+            // Liveness core (self/spawned/dead/downed/drafted/mental) — shared with InventoryShare's carrier
+            // gate so the two can never drift; the carry-tracker / haul-job guards below are CarriedHaulShare-
+            // specific and stay here.
+            if (!InventoryShare.IsLiveShareCarrier(carrier, worker))
                 return null;
             var carried = carrier.carryTracker?.CarriedThing;
             if (carried == null || carried.def == null || !carried.def.EverHaulable)

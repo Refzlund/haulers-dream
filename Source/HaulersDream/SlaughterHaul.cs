@@ -158,7 +158,7 @@ namespace HaulersDream
             if (killer.Faction != Faction.OfPlayerSilentFail || killer.IsQuestLodger())
                 return false;
             // On a map the mod is configured to leave alone, don't haul.
-            if (!s.enableOnNonHomeMaps && !corpse.Map.IsPlayerHome)
+            if (!MapGate.HdActiveOnMap(corpse.Map))
                 return false;
             // Race + DRAFTED (via pauseWhileDrafted) + incapable-of-hauling + mechanoid allowance — drafted /
             // incapable pawns never auto-act.

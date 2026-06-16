@@ -190,7 +190,7 @@ namespace HaulersDream
                 return;
             // On a map the mod is configured to leave alone, don't strip: the unload side honors the same
             // setting, so the scooped loot would just strand in the hauler's inventory until it gets home.
-            if (corpse.Map != null && !s.enableOnNonHomeMaps && !corpse.Map.IsPlayerHome)
+            if (!MapGate.HdActiveOnMap(corpse.Map))
                 return;
             // Quest lodgers excluded like the bulk-haul sweep: their pockets leave with the quest,
             // so scooped loot could walk off-map before the unload pass runs.

@@ -246,11 +246,15 @@ namespace HaulersDream
             return total;
         }
 
-        /// <summary>A carrier whose inventory another colonist may draw from: excludes self, unspawned,
-        /// dead, downed, drafted, mental, and mid-HD-batch holders. Shared with the Meals On Wheels food
-        /// postfix (<see cref="Patch_TryFindBestFoodSourceFor"/>), which layers food-specific guards
-        /// (baby-feed, forbidden, allowed-area, reach, stack reservation) on top.</summary>
-        internal static bool IsEligibleCarrier(Pawn carrier, Pawn worker)
+        /// <summary>
+        /// The pure CARRIER-LIVENESS sub-check shared by every "may colonist X draw from carrier Y" gate:
+        /// the carrier is a distinct, spawned, alive, capable pawn — not self, unspawned, dead, downed,
+        /// drafted, or in a mental state. This is the common core of <see cref="IsEligibleCarrier"/> (which
+        /// layers the HD-preloaded-stock job-def guard on top) and <see cref="CarriedHaulShare"/>'s
+        /// carried-stack check (which layers carry-tracker / haul-job guards on top); both call this so the
+        /// liveness clauses can never drift between them. Returns FALSE (not a live carrier) on null.
+        /// </summary>
+        internal static bool IsLiveShareCarrier(Pawn carrier, Pawn worker)
         {
             if (carrier == null || carrier == worker)
                 return false;
@@ -260,15 +264,26 @@ namespace HaulersDream
                 return false;
             if (carrier.InMentalState)
                 return false;
+            return true;
+        }
+
+        /// <summary>A carrier whose inventory another colonist may draw from: excludes self, unspawned,
+        /// dead, downed, drafted, mental, and mid-HD-batch holders. Shared with the Meals On Wheels food
+        /// postfix (<see cref="Patch_TryFindBestFoodSourceFor"/>), which layers food-specific guards
+        /// (baby-feed, forbidden, allowed-area, reach, stack reservation) on top.</summary>
+        internal static bool IsEligibleCarrier(Pawn carrier, Pawn worker)
+        {
+            // Liveness core (self/spawned/dead/downed/drafted/mental) — shared with CarriedHaulShare so the
+            // two can never drift; this gate then adds the HD-preloaded-stock job-def guard below.
+            if (!IsLiveShareCarrier(carrier, worker))
+                return false;
             // A pawn mid batch-craft is actively holding the ingredients it pre-loaded for its own recipe runs
             // (deliberately untagged so they're not shared) — but the self-heal could re-tag them if it also carries
-            // scooped stock of the same def. Never let another pawn pull from a batch-crafter, so the batch can't be
-            // starved of its own pre-loaded ingredients mid-run.
-            if (carrier.CurJobDef == HaulersDreamDefOf.HaulersDream_BatchCraft
-                || carrier.CurJobDef == HaulersDreamDefOf.HaulersDream_InventoryDoBill
-                || carrier.CurJobDef == HaulersDreamDefOf.HaulersDream_BillPrepGather
-                || carrier.CurJobDef == HaulersDreamDefOf.HaulersDream_OverloadConstructDeliver
-                || carrier.CurJobDef == HaulersDreamDefOf.HaulersDream_ConstructDeliverBuild)
+            // scooped stock of the same def. Never let another pawn pull from such a holder, so its run can't be
+            // starved of its own pre-loaded ingredients mid-execution. (Membership: HdJobDefSets — the single
+            // source of truth, so a newly-added preloaded-stock driver is covered everywhere it must be.)
+            var cjd = carrier.CurJobDef;
+            if (cjd != null && HdJobDefSets.HoldsUnshareablePreloadedStock.Contains(cjd))
                 return false;
             return true;
         }

@@ -40,7 +40,7 @@ namespace HaulersDream
                 yield break; // this right-click order disabled in mod options
             // Match BuildPickUpJob's non-home gate: with the mod inert on non-home maps the picked stock would have
             // no storage to unload to there, so don't offer it (it would strand in inventory).
-            if (!s.enableOnNonHomeMaps && !pawn.Map.IsPlayerHome)
+            if (!MapGate.HdActiveOnMap(pawn.Map))
                 yield break;
             if (pawn.GetComp<CompHauledToInventory>() == null || pawn.inventory == null)
                 yield break; // the pickup loads into inventory, tracked via the comp

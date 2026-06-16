@@ -256,9 +256,9 @@ namespace HaulersDream
             for (int i = 0; i < q.Count; i++)
             {
                 var def = q[i]?.job?.def;
-                if (def == HaulersDreamDefOf.HaulersDream_OverloadConstructDeliver
-                    || def == HaulersDreamDefOf.HaulersDream_ConstructDeliverBuild
-                    || def == JobDefOf.FinishFrame)
+                // HD's construct-deliver pair (HdJobDefSets — the single source of truth) OR vanilla's
+                // FinishFrame (a vanilla def, not part of the HD pair, so it stays ORed here).
+                if (def != null && (HdJobDefSets.ConstructDeliverJobs.Contains(def) || def == JobDefOf.FinishFrame))
                     return true;
             }
             return false;
