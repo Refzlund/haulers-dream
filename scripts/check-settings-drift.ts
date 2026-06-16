@@ -17,6 +17,9 @@ import { resolve } from 'node:path'
 import { repoRoot } from './lib'
 
 const SETTINGS_PATH = resolve(repoRoot, 'Source/HaulersDream/HaulersDreamSettings.cs')
+// The settings GUI was split into a `partial class` file; the soft "referenced in UI" check must
+// scan it too (the DrawXxxTab / DoWindowContents bodies live here now, not in the main file).
+const SETTINGS_WINDOW_PATH = resolve(repoRoot, 'Source/HaulersDream/HaulersDreamSettings.Window.cs')
 
 // Scribe families that handle collections / deep objects (reset to a fresh instance, not a
 // string-compared scalar default). A serialized field surfacing through one of these is a
@@ -154,8 +157,10 @@ async function main() {
 	// Normalize CRLF -> LF so `$`-anchored line regexes (the trailing-comment branch in particular)
 	// aren't defeated by a lingering \r at end of line on Windows checkouts.
 	const src = (await Bun.file(SETTINGS_PATH).text()).replace(/\r\n/g, '\n')
+	// The GUI lives in the `partial class` window file; concatenate it for the UI-reference scan below.
+	const winSrc = (await Bun.file(SETTINGS_WINDOW_PATH).text()).replace(/\r\n/g, '\n')
 
-	const classBody = sliceRegion(src, /public class HaulersDreamSettings\s*:\s*ModSettings/)
+	const classBody = sliceRegion(src, /public (?:partial )?class HaulersDreamSettings\s*:\s*ModSettings/)
 	const exposeBody = sliceRegion(src, /public override void ExposeData\(\)/)
 	const resetBody = sliceRegion(src, /public void ResetToDefaults\(\)/)
 
@@ -171,13 +176,14 @@ async function main() {
 	}
 
 	// UI region: concatenate every DrawXxxTab + DoWindowContents body for the soft "referenced in UI" check.
+	// These bodies live in the partial GUI file (HaulersDreamSettings.Window.cs), so scan winSrc.
 	const uiBodies = ['public void DoWindowContents(Rect rect)']
 		.concat(
-			[...src.matchAll(/private void (Draw\w+Tab)\(Listing_Standard l\)/g)].map((m) => m[0])
+			[...winSrc.matchAll(/private void (Draw\w+Tab)\(Listing_Standard l\)/g)].map((m) => m[0])
 		)
 		.map((header) => {
 			try {
-				return sliceRegion(src, new RegExp(header.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')))
+				return sliceRegion(winSrc, new RegExp(header.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')))
 			} catch {
 				return ''
 			}
