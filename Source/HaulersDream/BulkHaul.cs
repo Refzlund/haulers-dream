@@ -117,8 +117,26 @@ namespace HaulersDream
             // and intentionally override the standing toggle.
             if (!forced)
             {
+                // C5 master gate (G1 INTAKE-only): with the master switch off, HD stops UPGRADING ordinary
+                // automatic hauls into nearby-loot bulk sweeps — the vanilla single haul __result still stands
+                // (the postfix leaves it untouched on null). This rejects only the autonomous bulk UPGRADE; it
+                // is NOT an unload path (the bulk driver's finish-unload only runs once a sweep has loaded), so a
+                // pawn already carrying a swept load is unaffected. FORCED player orders ("Haul everything
+                // nearby", "Pick up X") use BuildBulkJobForced/BuildPickUpJob, which never reach this branch.
+                // Cheapest possible early-out, before the comp/bleed reads.
+                if (!MasterEnable.Active)
+                    return null;
                 var optOut = pawn.GetComp<CompHauledToInventory>();
                 if (optOut != null && !optOut.autoHaulYields)
+                    return null;
+                // C1 bleeding gate (While-You're-Up parity, default ON; G1 INTAKE-only): on the AUTOMATIC path
+                // a badly bleeding pawn must NOT have its ordinary haul transformed into a nearby-loot sweep —
+                // it should get treated, not load up. FORCED player orders ("Haul everything nearby", "Pick up
+                // X") use BuildBulkJobForced/BuildPickUpJob, which never reach this branch, so an explicit order
+                // still sweeps when bleeding (the player asked for it). This rejects only the bulk UPGRADE; the
+                // vanilla single haul __result still stands (the postfix leaves it untouched on null), so a
+                // bleeding pawn isn't blocked from hauling outright — and no unload path is affected.
+                if (!YieldRouter.FitToStartHaul(pawn))
                     return null;
             }
             // CHEAP FRONT GATE (microstutter fix): the work scan calls JobOnThing for every haulable candidate
@@ -677,6 +695,18 @@ namespace HaulersDream
             var slotGroup = map.haulDestinationManager.SlotGroupAt(cell);
             if (slotGroup == null)
                 return int.MaxValue;
+            // This method prices storage via SlotGroupAt + IsGoodStoreCell (NOT TryFindBestBetter*), so the
+            // storage-filter funnel postfix can never reach it — apply the building filter HERE (plan G4:
+            // BulkHaul.StorageSpaceForDef filtered internally). Both guards short-circuit before any new work,
+            // so when the feature master is off (StorageBuildingFilter.Enabled == false) OR the current context
+            // is the allow-all sentinel (Unload), NO filter call is made and the scan is byte-identical to today.
+            bool filterActive = StorageBuildingFilter.Enabled
+                && StorageBuildingFilter.CurrentContext != StorageFilterContext.Unload;
+            var filter = filterActive ? HaulersDreamMod.Settings?.storageBuildingFilter : null;
+            // If the destination group's building is denied in this context, it offers no usable space at all —
+            // report zero so the candidate def is rejected (the same outcome as a fully-subscribed destination).
+            if (filter != null && !filter.IsGroupAllowed(slotGroup))
+                return 0;
             // Like vanilla: a storage GROUP (linked stockpiles/shelves) pools its members' cells.
             ISlotGroup group = (ISlotGroup)slotGroup.StorageGroup ?? slotGroup;
             var cells = group.CellsList;
@@ -687,6 +717,11 @@ namespace HaulersDream
             for (int i = 0; i < cells.Count; i++)
             {
                 if (!StoreUtility.IsGoodStoreCell(cells[i], map, thing, pawn, pawn.Faction))
+                    continue;
+                // A linked StorageGroup can pool cells from MULTIPLE buildings, so a denied building's cells
+                // must be dropped individually even when the originating group was allowed. Only runs when the
+                // filter is active (filterActive ⇒ non-Unload context + feature on); off-path is byte-identical.
+                if (filter != null && !filter.IsCellAllowed(cells[i], map))
                     continue;
                 space += cells[i].GetItemStackSpaceLeftFor(map, thing.def);
                 if (space >= enough)

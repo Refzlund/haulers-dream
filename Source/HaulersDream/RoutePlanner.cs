@@ -374,8 +374,17 @@ namespace HaulersDream
             Thing rep = ThingMaker.MakeThing(def);
             if (rep == null)
                 return null;
-            bool found = StoreUtility.TryFindBestBetterStoreCellFor(
-                rep, pawn, pawn.Map, StoragePriority.Unstored, pawn.Faction, out IntVec3 cell, needAccurateResult: false);
+            // The route planner is an EXPLICIT PLAYER tool (the player asked "where would this yield go?"), so it
+            // must not be silently narrowed by the storage building filter — push Unload (allow-all) so a
+            // player-planned route is never filtered (plan G4 — RoutePlanner:377 declares an explicit context;
+            // Unload keeps the player's own query honest regardless of any inherited context on the stack).
+            bool found;
+            IntVec3 cell;
+            using (StorageBuildingFilter.PushContext(StorageFilterContext.Unload))
+            {
+                found = StoreUtility.TryFindBestBetterStoreCellFor(
+                    rep, pawn, pawn.Map, StoragePriority.Unstored, pawn.Faction, out cell, needAccurateResult: false);
+            }
             return found ? cell : (IntVec3?)null;
         }
     }

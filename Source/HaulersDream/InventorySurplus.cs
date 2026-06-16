@@ -205,9 +205,18 @@ namespace HaulersDream
             Rand.PushState();
             try
             {
-                return StoreUtility.TryFindBestBetterStorageFor(thing, pawn, pawn.Map, StoragePriority.Unstored,
-                           pawn.Faction, out _, out _)
-                       || StoreUtility.TryFindStoreCellNearColonyDesperate(thing, pawn, out _);
+                // "Does this carried item have anywhere to be stored?" must be answered ALLOW-ALL, even if an
+                // en-route/before-carry path (which pushes Opportunistic/BeforeCarry) is on the call stack:
+                // this is the UNLOAD destination probe (plan G4 — InventorySurplus.HasUnloadDestination ⇒ Unload).
+                // If the building filter narrowed this query, it could wrongly report "no destination" and the
+                // pawn would think it cannot unload (a black hole) — so push Unload to neutralize any inherited
+                // context for the duration of the storage search.
+                using (StorageBuildingFilter.PushContext(StorageFilterContext.Unload))
+                {
+                    return StoreUtility.TryFindBestBetterStorageFor(thing, pawn, pawn.Map, StoragePriority.Unstored,
+                               pawn.Faction, out _, out _)
+                           || StoreUtility.TryFindStoreCellNearColonyDesperate(thing, pawn, out _);
+                }
             }
             finally
             {

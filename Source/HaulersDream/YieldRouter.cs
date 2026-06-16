@@ -116,8 +116,16 @@ namespace HaulersDream
                 comp.pendingSelfPickups.Add(thing);
             // Clean the surrounding area in the same pass: also queue nearby loose haulables for self-pickup
             // (cooldown-debounced, so this scans at most once per work spot — not once per dropped stack).
+            // (Self-gates bleeding internally — see MaybeSweepNearbyIntoPending.)
             MaybeSweepNearbyIntoPending(pawn, thing.Position);
-            EnsureSelfPickupJob(pawn, comp);
+            // C5 master gate + C1 bleeding gate (G1 INTAKE-only): don't START a self-pickup job when the master
+            // switch is off, or for a badly bleeding pawn (it should get treated first). The drop is still
+            // RECORDED above (pendingSelfPickups), so once master is back on / the pawn stops bleeding the idle
+            // backstop / next drop re-queues it; nothing is lost, nothing unloads. The unload-path callers of
+            // EnsureSelfPickupJob (PawnUnloadChecker) intentionally stay UNGATED, so a carrying pawn always
+            // empties its pockets — the gate lives at this intake call site, not in the shared method.
+            if (MasterEnable.Active && FitToStartHaul(pawn))
+                EnsureSelfPickupJob(pawn, comp);
         }
 
         /// <summary>
@@ -173,6 +181,16 @@ namespace HaulersDream
                 return;
             var map = pawn?.Map;
             if (map == null || pawn.jobs == null || !anchor.IsValid || !IsEligible(pawn))
+                return;
+            // C5 master gate (G1 INTAKE-only): the master switch off ⇒ no new autonomous area-cleanup sweep is
+            // STARTED. This is the sweep ENTRY only (it queues pending pickups; it never unloads), so a pawn that
+            // already carries swept items still empties its pockets. Cheapest early-out, before the bleed read.
+            if (!MasterEnable.Active)
+                return;
+            // C1 bleeding gate (G1 INTAKE-only): the area-cleanup sweep is autonomous intake — a badly bleeding
+            // pawn doesn't start sweeping nearby loose items into inventory (it should get treated). This is the
+            // sweep ENTRY only; nothing it gates ever unloads, so a carrying pawn still empties its pockets.
+            if (!FitToStartHaul(pawn))
                 return;
             var comp = pawn.GetComp<CompHauledToInventory>();
             if (comp == null || !comp.autoHaulYields)
@@ -389,6 +407,27 @@ namespace HaulersDream
         }
 
         // ---- shared routing ---------------------------------------------------------------------
+
+        /// <summary>
+        /// C1 (While-You're-Up parity, default ON): is this pawn fit to START a new scoop/sweep/bulk-haul right
+        /// now? A pawn bleeding badly should get treated, not detour into hauling. Reads the live bleed rate
+        /// (<c>BleedRateTotal</c> — a per-day rate that already returns 0 for dead / can't-bleed pawns) and
+        /// defers the decision to the pure <see cref="Core.FitToHaulPolicy"/> (strict &gt; threshold; exactly
+        /// at the threshold is still fit — WYU parity). When the gate is off, byte-identical (always fit).
+        ///
+        /// INTAKE-ONLY (conflict guard G1): call this ONLY at explicit scoop/sweep INTAKE entry points, NEVER
+        /// on any unload/adopt/alert/recovery path — a pawn already carrying scooped goods must always be able
+        /// to empty its pockets, or the load becomes a permanent "black hole". Null health (a modded edge)
+        /// reads as not-bleeding -> fit (fail-open), matching the rest of the scoop gates.
+        /// </summary>
+        internal static bool FitToStartHaul(Pawn pawn)
+        {
+            var s = HaulersDreamMod.Settings;
+            if (s == null || !s.skipHaulWhileBleeding)
+                return true; // gate off -> always fit (byte-identical to the no-gate path)
+            float bleedRate = pawn?.health?.hediffSet?.BleedRateTotal ?? 0f;
+            return Core.FitToHaulPolicy.FitToStartHaul(s.skipHaulWhileBleeding, bleedRate, s.bleedThresholdPerDay);
+        }
 
         /// <summary>
         /// True if <paramref name="thing"/> has a real (better) storage destination this pawn could haul it to —
@@ -671,6 +710,21 @@ namespace HaulersDream
                 return false;
             var comp = p.GetComp<CompHauledToInventory>();
             if (comp == null)
+                return false;
+            // C5 master gate (G1 INTAKE-only): when the master switch is off, HD stops INITIATING autonomous
+            // scoops at this inference point. Like the bleeding/opt-out gates it sits on the AUTONOMOUS branch
+            // only — an explicit player order (overrideOptOut, e.g. a Strip) bypasses it so the Strip path keeps
+            // scooping the gear the player asked it to remove. IsCandidate is the scoop-INTAKE inference for
+            // FindWorker/FindDeconstructor and is NEVER on an unload path, so a pawn that scooped before the
+            // switch was flipped still empties what it carries. Checked first as the cheapest early-out.
+            if (!overrideOptOut && !MasterEnable.Active)
+                return false;
+            // C1 bleeding gate (G1 INTAKE-only): on the AUTONOMOUS path, a badly bleeding pawn doesn't start
+            // a new scoop — it should get treated. An explicit player order (overrideOptOut, e.g. a Strip)
+            // bypasses the gate, exactly as it bypasses the opt-out: the player asked for it by hand. This
+            // sits on IsCandidate (the scoop-INTAKE inference for FindWorker/FindDeconstructor), never on any
+            // unload path, so a bleeding pawn still empties what it already carries.
+            if (!overrideOptOut && !FitToStartHaul(p))
                 return false;
             // Per-pawn opt-out: a pawn toggled OFF never scoops/sweeps/self-picks AUTONOMOUS yields. An
             // explicit player order (overrideOptOut) bypasses the toggle — the player asked for it by hand,
