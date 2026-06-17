@@ -1,5 +1,5 @@
 using System.Collections.Generic;
-using System.Linq;
+using HaulersDream.Core;
 using RimWorld;
 using Verse;
 using Verse.AI;
@@ -21,6 +21,30 @@ namespace HaulersDream
         // retained, so they're retried on the next trigger. In-flight only — not scribed (an empty set after a
         // save/load just means everything is retried next pass, which is correct).
         private readonly HashSet<Thing> skippedThisJob = new HashSet<Thing>();
+
+        // Reused scratch for FirstUnloadableThing's ordered scan: a snapshot of the carried set that the min-scan
+        // pulls smallest-first from (swap-removing as it goes), replacing the per-call LINQ OrderBy().ThenBy()
+        // (an OrderedEnumerable + sort keys + 2 closures) re-run once per item unloaded. [ThreadStatic] + lazy-init
+        // matches the repo's hook-reachable scratch convention; Cleared at the point of use, never trusted empty.
+        // SAFETY: FirstUnloadableThing runs to completion (no re-entrant call) before the next reuse, so sharing it
+        // across calls on one thread is sound. Snapshotting first also preserves the LINQ's semantics of iterating a
+        // FIXED order even though the loop body mutates `carried` (relink add/remove) mid-scan.
+        [System.ThreadStatic] private static List<Thing> scratchOrdered;
+
+        // Per-trip destination cache for closest-destination-first ordering (C1b). Maps a carried def to its
+        // resolved best storage CELL this trip, so FirstUnloadableThing can rank candidates by pawn->destination
+        // distance WITHOUT re-running the (expensive) TryFindBestBetterStorageFor probe per candidate per pick.
+        // The cell — not the distance — is cached, so distance is recomputed from the pawn's CURRENT position each
+        // scan (the pawn moves between picks) for free. IntVec3.Invalid means "resolved, but no destination" (sorts
+        // last via UnloadDestinationOrder.NoDestination); a missing key means "not yet resolved this trip".
+        // In-flight only (not scribed) and per-instance (this driver runs to completion before the cache matters
+        // again). INVALIDATION: the just-delivered def's entry is dropped after each delivery (its remaining count /
+        // best cell may change once a stack lands), so the next pick re-resolves it; every other def stays cached.
+        private readonly Dictionary<ThingDef, IntVec3> destCellByDef = new Dictionary<ThingDef, IntVec3>();
+
+        // The def delivered on the previous pick — its cache entry is invalidated at the top of the next
+        // FindTargetOrDrop (i.e. after the place toil looped back to `begin`). -1/null = nothing delivered yet.
+        private ThingDef lastDeliveredDef;
 
         public override void ExposeData()
         {
@@ -145,6 +169,15 @@ namespace HaulersDream
             {
                 initAction = () =>
                 {
+                    // Invalidate the previously-delivered def's cached destination cell (its remaining count /
+                    // best store cell may have changed now that a stack landed); every other def stays cached for
+                    // the rest of the trip. No-op when closest-dest ordering is off (the cache is never populated).
+                    if (lastDeliveredDef != null)
+                    {
+                        destCellByDef.Remove(lastDeliveredDef);
+                        lastDeliveredDef = null;
+                    }
+
                     var next = FirstUnloadableThing(carried);
                     if (next.Count == 0)
                     {
@@ -184,6 +217,7 @@ namespace HaulersDream
                             return;
                         }
                         countToDrop = next.Count;
+                        lastDeliveredDef = next.Thing.def; // invalidate this def's dest cache after the place loops back
                     }
                     else if (pawn.Map != null && !pawn.Map.IsPlayerHome)
                     {
@@ -222,6 +256,7 @@ namespace HaulersDream
                             return;
                         }
                         countToDrop = next.Count;
+                        lastDeliveredDef = next.Thing.def; // invalidate this def's dest cache after the place loops back
                         // fall through the toil chain: pull from inventory -> carry to the desperate cell -> place
                     }
                     else
@@ -249,8 +284,69 @@ namespace HaulersDream
         {
             var inner = pawn.inventory.innerContainer;
 
-            foreach (var thing in carried.OrderBy(t => t.def.FirstThingCategory?.index).ThenBy(t => t.def.defName))
+            // Snapshot the carried set into reused scratch, then pull elements smallest-first in
+            // (FirstThingCategory.index asc, null last, then ordinal defName) order — the allocation-free equivalent
+            // of the old `carried.OrderBy(catIndex).ThenBy(defName)` (HD-ORDERBY). The snapshot is required because the
+            // filter body below mutates `carried` (the relink Remove/Add) mid-scan; LINQ's OrderBy buffered its own
+            // snapshot, so iteration order was fixed regardless of those mutations — this preserves that exactly. The
+            // sort key parity (incl. the stable first-seen tiebreak among equal keys) is pinned by the Core oracle test.
+            var ordered = scratchOrdered ?? (scratchOrdered = new List<Thing>());
+            ordered.Clear();
+            foreach (var t in carried)
+                ordered.Add(t);
+
+            // Closest-destination-first (C1b, WYU "efficient unloading" parity): when ON, the running-best
+            // comparison ranks candidates by pawn->resolved-storage-cell distance FIRST (so the pawn empties the
+            // nearest destination group before moving on), tiebreaking by the same category->defName order. When OFF
+            // this flag is never read and the scan is byte-identical to the original category->defName min-scan.
+            bool closestDest = HaulersDreamMod.Settings != null && HaulersDreamMod.Settings.closestDestinationUnloadOrder;
+
+            int remaining = ordered.Count;
+            while (remaining > 0)
             {
+                // Min-scan for the next-smallest in sort order (matching SelectFirstByCategoryThenDef, plus the
+                // optional closest-destination distance term above). Consumed slots are nulled (NOT swap-removed) so
+                // the surviving entries keep their ORIGINAL enumeration index — the tie among equal keys then
+                // resolves to the lowest original index, exactly reproducing the STABLE LINQ OrderBy().ThenBy()'s
+                // first-seen-among-equals order even when two carried stacks share a def (so which physical stack is
+                // returned is identical to the old code; closest-dest only re-ranks ACROSS distances, ties unchanged).
+                int bestIdx = -1;
+                Thing best = null;
+                int bestCat = 0;
+                string bestDef = null;
+                int bestDist = UnloadDestinationOrder.NoDestination;
+                for (int i = 0; i < ordered.Count; i++)
+                {
+                    var cand = ordered[i];
+                    if (cand == null)
+                        continue; // already consumed this call
+                    int cat = cand.def.FirstThingCategory?.index ?? SelectFirstByCategoryThenDef.NoCategory;
+                    bool better;
+                    int dist = UnloadDestinationOrder.NoDestination;
+                    if (closestDest)
+                    {
+                        dist = ResolvedDestinationDistanceSq(cand);
+                        better = best == null
+                                 || UnloadDestinationOrder.Less(dist, cat, cand.def.defName, bestDist, bestCat, bestDef);
+                    }
+                    else
+                    {
+                        better = best == null
+                                 || SelectFirstByCategoryThenDef.LessThan(cat, cand.def.defName, bestCat, bestDef);
+                    }
+                    if (better)
+                    {
+                        bestIdx = i;
+                        best = cand;
+                        bestCat = cat;
+                        bestDef = cand.def.defName;
+                        bestDist = dist;
+                    }
+                }
+                var thing = best;
+                ordered[bestIdx] = null; // consume (keeps every survivor's original index for the stable tiebreak)
+                remaining--;
+
                 // Already tried and couldn't transfer this stack this job (see PullItemFromInventory's 0-transfer
                 // branch) — step over it so a single un-transferable item can't pin the unload. Bounds the work:
                 // each item is attempted at most once per job; skipped items keep their tag and retry next trigger.
@@ -303,5 +399,38 @@ namespace HaulersDream
         // (Vanilla parity: the three FirstUnloadableThing keep sources — drug policy, inventoryStock,
         // packable food — plus the CE loadout. See InventorySurplus.)
         private int UnloadableCountOf(Thing thing) => InventorySurplus.SurplusOf(pawn, thing);
+
+        // Pawn->best-storage-cell squared distance for the closest-destination-first ordering (C1b), or
+        // UnloadDestinationOrder.NoDestination when no storage resolves (that candidate then sorts LAST and the
+        // category->defName tiebreak applies, so an unreachable-destination stack never blocks the nearer ones).
+        //
+        // The resolved CELL is cached per def for the trip (destCellByDef) and the just-delivered def's entry is
+        // invalidated after each delivery — so TryFindBestBetterStorageFor (the SAME probe the driver uses at the
+        // delivery commit, StoragePriority.Unstored) runs at most once per def per trip rather than once per
+        // candidate per pick. Distance is recomputed from the pawn's CURRENT position each scan (cheap; the pawn
+        // moves between picks), reflecting the live distance without re-resolving. Container destinations report
+        // their position (cell == Invalid -> use the destination Thing's cell), matching the storage branch.
+        private int ResolvedDestinationDistanceSq(Thing cand)
+        {
+            var def = cand.def;
+            if (!destCellByDef.TryGetValue(def, out var storeCell))
+            {
+                if (StoreUtility.TryFindBestBetterStorageFor(cand, pawn, pawn.Map, StoragePriority.Unstored,
+                        pawn.Faction, out var cell, out var destination))
+                    // A container returns cell == Invalid + a destination Thing; rank by the container's cell.
+                    storeCell = cell != IntVec3.Invalid ? cell
+                              : (destination as Thing)?.Position ?? IntVec3.Invalid;
+                else
+                    storeCell = IntVec3.Invalid; // resolved this trip, but nowhere better to store -> sorts last
+                destCellByDef[def] = storeCell;
+            }
+
+            if (storeCell == IntVec3.Invalid)
+                return UnloadDestinationOrder.NoDestination;
+            int distSq = (storeCell - pawn.Position).LengthHorizontalSquared;
+            // Guard the sentinel: a pathologically far cell could collide with the NoDestination sentinel and read
+            // as "no destination". Clamp below it so a real (if distant) destination always outranks a missing one.
+            return distSq < UnloadDestinationOrder.NoDestination ? distSq : UnloadDestinationOrder.NoDestination - 1;
+        }
     }
 }

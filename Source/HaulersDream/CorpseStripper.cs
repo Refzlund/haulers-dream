@@ -190,14 +190,31 @@ namespace HaulersDream
                 return;
             // On a map the mod is configured to leave alone, don't strip: the unload side honors the same
             // setting, so the scooped loot would just strand in the hauler's inventory until it gets home.
-            if (corpse.Map != null && !s.enableOnNonHomeMaps && !corpse.Map.IsPlayerHome)
+            if (!MapGate.HdActiveOnMap(corpse.Map))
                 return;
             // Quest lodgers excluded like the bulk-haul sweep: their pockets leave with the quest,
             // so scooped loot could walk off-map before the unload pass runs.
             if (hauler.Faction != Faction.OfPlayerSilentFail || hauler.IsQuestLodger())
                 return;
-            if (hauler.RaceProps == null
-                || (!hauler.RaceProps.Humanlike && !(hauler.RaceProps.IsMechanoid && s.allowMechanoids)))
+            // Per-pawn auto-haul opt-out: a pawn with "Auto-haul yields" OFF must not auto-strip + pocket loot —
+            // that is AUTONOMOUS auto-hauling (a corpse hauled to a stockpile/grave/bill stripped along the way),
+            // exactly what the toggle is supposed to stop (the toggle's own contract). Only this autonomous
+            // on-haul strip is gated here; an EXPLICIT player Strip order runs through JobDriver_Strip, whose
+            // dropped gear is scooped by YieldRouter — and that path now OVERRIDES the toggle (see
+            // OptOutOverridePolicy), so a toggled-off pawn still scoops+hauls gear for an order it was given by
+            // hand. The same toggled-off pawn also still empties what it already carries (the unload paths never
+            // read this flag). Mirrors YieldRouter.IsCandidate's opt-out gate (without the explicit-order override).
+            var comp = hauler.GetComp<CompHauledToInventory>();
+            if (comp == null || !comp.autoHaulYields)
+                return;
+            // RACE gate: delegate to the canonical predicate instead of a hand-rolled copy (which had already
+            // drifted — it omitted the animal-allowance branch). IsRaceEligible is the documented superset that
+            // honors humanlike / mechanoid (allowMechanoids) / animal (allowAnimals), is the SAME Core
+            // EligibilityPolicy the runtime scoop gate uses, and null-guards RaceProps itself (returns false on a
+            // null-RaceProps pawn), so no extra null check is needed here. INTENDED behavior change: when
+            // allowAnimals is ON, a Haul-trained colony animal now auto-strips on a qualifying corpse haul, matching
+            // every other YieldRouter intake path.
+            if (!YieldRouter.IsRaceEligible(hauler))
                 return;
             var job = hauler.CurJob;
             if (job == null || !QualifyingHaul(job, s.autoStripMode))

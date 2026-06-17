@@ -133,6 +133,44 @@ namespace HaulersDream
         }
 
         /// <summary>
+        /// The bill's product count as vanilla's <c>CountProducts</c> sees it (world + storage + in-hands) PLUS the
+        /// HD-banked in-flight products of the counted def that colonists carry in INVENTORY toward the unload pass —
+        /// which vanilla's CountProducts cannot see. HD's batch driver banks products in inventory, so without this a
+        /// "Do until you have X" bill never observes the target until the products reach storage and pawns overproduce
+        /// (across the whole colony, not just the crafting pawn). Single-counted-product (TargetCount) recipes only;
+        /// for others it returns vanilla's count unchanged.
+        /// </summary>
+        public static int EffectiveProductCount(Bill_Production bp)
+        {
+            // CountProducts requires a live map; all callers pass a spawned-bench bill, but guard defensively.
+            var map = bp?.Map;
+            var counter = bp?.recipe?.WorkerCounter;
+            if (map == null || counter == null)
+                return 0;
+            int n = counter.CountProducts(bp);
+            if (bp.recipe.products == null || bp.recipe.products.Count != 1)
+                return n;
+            var def = bp.recipe.products[0].thingDef;
+            if (def == null)
+                return n;
+            foreach (var p in map.mapPawns.SpawnedPawnsInFaction(Faction.OfPlayer))
+            {
+                var tagged = p.GetComp<CompHauledToInventory>()?.PeekHashSet();
+                if (tagged == null)
+                    continue;
+                // Count only items genuinely held in a pawn's INVENTORY — not in the hands (vanilla already counts
+                // those via GetCarriedCount) — AND only those that pass the bill's own per-thing validity (def +
+                // quality / HP / allowed-stuff / taint filters, via vanilla's CountValidThing), so a quality/HP/
+                // stuff-restricted "do until X" bill counts only the VALID in-flight products, exactly like vanilla.
+                foreach (var t in tagged)
+                    if (t != null && !t.Destroyed && t.ParentHolder is Pawn_InventoryTracker
+                        && counter.CountValidThing(t, bp, def))
+                        n += t.stackCount;
+            }
+            return n;
+        }
+
+        /// <summary>
         /// Resolve the full plan for <paramref name="requestedReps"/> repetitions with a <paramref name="timeoutTicks"/>
         /// wall-clock cap (0 = none). Never throws; on any problem returns a plan with <see cref="CraftBatchPlan.feasible"/>
         /// false and a <see cref="CraftBatchPlan.blockReason"/>.
@@ -169,13 +207,14 @@ namespace HaulersDream
                 if (bp.repeatMode == BillRepeatModeDefOf.RepeatCount)
                     plan.billReps = bp.repeatCount;
                 // Make-until-X: products banked in the crafter's INVENTORY are invisible to vanilla's
-                // CountProducts (it counts storage + hands, never pawn inventory), so the per-rep
-                // ShouldDoNow gate alone would run every planned rep straight past the target. Cap the
-                // plan by the remaining shortfall instead.
+                // CountProducts (it counts storage + hands, never pawn inventory), so cap the plan by the
+                // remaining shortfall against the EFFECTIVE count — vanilla's count PLUS the HD-banked
+                // in-flight products across the colony — so repeated batches don't re-plan a stale full
+                // shortfall and overshoot the target. The per-rep gate enforces the same effective target.
                 else if (bp.repeatMode == BillRepeatModeDefOf.TargetCount
                          && !bill.recipe.products.NullOrEmpty() && bill.recipe.products[0].count > 0)
                 {
-                    int shortfall = bp.targetCount - bill.recipe.WorkerCounter.CountProducts(bp);
+                    int shortfall = bp.targetCount - EffectiveProductCount(bp);
                     plan.billReps = shortfall <= 0
                         ? 0
                         : Mathf.CeilToInt(shortfall / (float)bill.recipe.products[0].count);

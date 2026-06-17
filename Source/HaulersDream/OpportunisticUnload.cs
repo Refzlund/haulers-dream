@@ -130,9 +130,27 @@ namespace HaulersDream
         /// </summary>
         internal static bool IsYieldOrHaulJobDef(JobDef def)
         {
-            var dc = def?.driverClass;
-            if (dc == null)
+            if (def == null || def.driverClass == null)
                 return false;
+            // A JobDef's driverClass is immutable once defs are loaded, and the 9 IsAssignableFrom walks below are
+            // pure type-hierarchy checks — so the (def -> bool) answer is fixed for the whole session. Memoize it
+            // in a static dictionary so this per-pawn-scan call (every work-found scan) becomes one dictionary
+            // lookup instead of 9 reflection walks. Keyed on the JobDef (cheap reference key); the set of defs is
+            // small and bounded, so the cache never grows unbounded.
+            if (yieldOrHaulCache.TryGetValue(def, out var cached))
+                return cached;
+            bool result = ComputeIsYieldOrHaulJobDef(def.driverClass);
+            yieldOrHaulCache[def] = result;
+            return result;
+        }
+
+        // Per-JobDef memo of IsYieldOrHaulJobDef (driverClass assignability is immutable per def -> safe forever).
+        // Main-thread only (the work-scan postfix runs on the main think loop); a plain Dictionary is correct.
+        private static readonly System.Collections.Generic.Dictionary<JobDef, bool> yieldOrHaulCache =
+            new System.Collections.Generic.Dictionary<JobDef, bool>();
+
+        private static bool ComputeIsYieldOrHaulJobDef(System.Type dc)
+        {
             return typeof(JobDriver_PlantWork).IsAssignableFrom(dc)
                 || typeof(JobDriver_Mine).IsAssignableFrom(dc)
                 || typeof(JobDriver_OperateDeepDrill).IsAssignableFrom(dc)
@@ -192,23 +210,40 @@ namespace HaulersDream
             if (!target.IsValid)
                 return false;
 
-            // The total scooped mass, plus the storage we'd unload to. Pick a STORABLE tracked item as the
-            // storage-cell representative: keying off an arbitrary first item meant an un-storable one (e.g. a
-            // rock chunk, which no default stockpile accepts) suppressed the WHOLE pass-by divert even when the
-            // other carried goods could be dropped en route.
+            // The total scooped mass. Read it from the per-(pawn,tick) memo (TrackedMassCache) so repeated
+            // same-tick scans (the work-found divert check + the end-of-run path on the same pawn) share one
+            // GetStatValue(Mass) walk over the tracked set instead of re-walking per scan.
             float cap = MassUtility.Capacity(pawn);
             if (cap <= 0f)
                 return false;
-            float trackedMass = 0f;
+            float trackedMass = TrackedMassCache.TrackedMass(pawn, comp);
+            float loadFraction = trackedMass / cap;
+
+            // CHEAP pre-gate BEFORE the expensive storage search: if the load fraction (or capacity / tracked
+            // count / cooldown — already enforced above, re-asserted here for completeness) can't possibly clear
+            // the full ShouldUnloadOnWay/OnRunEnd bar, skip TryFindBestBetterStoreCellFor entirely. This only
+            // short-circuits a divert the full math would reject anyway (both full paths bail below
+            // MinLoadFraction), so behavior is identical — the storage search just no longer runs for the common
+            // "carrying too little to bother" case.
+            if (!OpportunisticUnloadPolicy.ShouldAttemptDivert(
+                    loadFraction, now - comp.lastOpportunisticUnloadTick >= DivertCooldownTicks,
+                    tracked.Count, cap > 0f))
+                return false;
+
+            // The storage we'd unload to. Pick a STORABLE tracked item as the storage-cell representative: keying
+            // off an arbitrary first item meant an un-storable one (e.g. a rock chunk, which no default stockpile
+            // accepts) suppressed the WHOLE pass-by divert even when the other carried goods could be dropped en
+            // route. Deferred until after the load-fraction pre-gate above (the spatial search is the costliest
+            // step here).
             IntVec3 storageCell = IntVec3.Invalid;
             foreach (var t in tracked)
             {
                 if (t == null || t.Destroyed)
                     continue;
-                trackedMass += t.stackCount * t.GetStatValue(StatDefOf.Mass);
-                if (!storageCell.IsValid)
-                    StoreUtility.TryFindBestBetterStoreCellFor(t, pawn, pawn.Map,
-                        StoragePriority.Unstored, pawn.Faction, out storageCell, needAccurateResult: false);
+                StoreUtility.TryFindBestBetterStoreCellFor(t, pawn, pawn.Map,
+                    StoragePriority.Unstored, pawn.Faction, out storageCell, needAccurateResult: false);
+                if (storageCell.IsValid)
+                    break;
             }
             // Nothing storable to divert toward -> let the trip proceed un-diverted; the end-of-run and
             // meal/recreation checkpoint triggers (both storage-independent) still make the unload trip,
@@ -219,13 +254,97 @@ namespace HaulersDream
             int pawnToTarget = CellDist(pawn.Position, target);
             int pawnToStorage = CellDist(pawn.Position, storageCell);
             int storageToTarget = CellDist(storageCell, target);
-            float loadFraction = trackedMass / cap;
 
             // Run-end (switched to non-yield work): relaxed criteria — shed the load at nearby storage even on
             // a short hop. Otherwise (continuing a yield run / a haul): the strict "real journey on the way" bar.
             return runOver
                 ? OpportunisticUnloadPolicy.ShouldUnloadOnRunEnd(pawnToTarget, pawnToStorage, storageToTarget, loadFraction)
                 : OpportunisticUnloadPolicy.ShouldUnloadOnWay(pawnToTarget, pawnToStorage, storageToTarget, loadFraction);
+        }
+
+        /// <summary>
+        /// KEEP WORKING WHEN FULL (opt-in, default OFF) — the weighted "unload before a long relocation" rule.
+        /// A full pawn that kept working (its full-trigger was suppressed in
+        /// <see cref="YieldRouter.MaybeUnloadBecauseFull"/>) sheds its load at storage BEFORE walking to its
+        /// next work target only when that pays off: carrying the load onward costs <c>distToNextWork·drag</c>
+        /// while detouring to storage costs <c>distToStorage·drag</c> and then travels empty — so unload first
+        /// when the next task is farther than the dropoff (the pure <see cref="KeepWorkingPolicy"/>). It only
+        /// applies while the pawn is actually OVERLOADED (paying the drag); an at/under-capacity pawn keeps its
+        /// load and works. Independent of <c>opportunisticUnload</c> (that's a separate, on-the-way feature) but
+        /// shares the same safety gates (auto-unload master, drafted/forced, the divert cooldown, an HD-job skip,
+        /// and storage existence). Returns false when the toggle is OFF, so the work-found path is unchanged.
+        /// </summary>
+        internal static bool ShouldUnloadBeforeRelocation(Pawn pawn, Job workJob)
+        {
+            var s = HaulersDreamMod.Settings;
+            if (s == null || !s.keepWorkingWhenFull || !s.markForUnload)
+                return false;
+            if (pawn?.Map == null || !pawn.Map.IsPlayerHome || workJob?.def == null)
+                return false;
+            // Never defer a player-prioritized job, and never divert while drafted.
+            if (pawn.Drafted || workJob.playerForced)
+                return false;
+            if (workJob.def == HaulersDreamDefOf.HaulersDream_UnloadInventory
+                || pawn.CurJobDef == HaulersDreamDefOf.HaulersDream_UnloadInventory
+                || pawn.CurJobDef == HaulersDreamDefOf.HaulersDream_BillPrepGather)
+                return false;
+            // Never divert before one of HD's OWN jobs (bulk-haul / unload / pack-load / construct-delivery /
+            // bill-prep): they deliver or USE the carried load themselves. Identified by the driver assembly,
+            // exactly like ShouldDivert.
+            if (workJob.def.driverClass != null && workJob.def.driverClass.Assembly == typeof(OpportunisticUnload).Assembly)
+                return false;
+
+            var comp = pawn.GetComp<CompHauledToInventory>();
+            if (comp == null || comp.PeekHashSet().Count == 0)
+                return false;
+            int now = Find.TickManager?.TicksGame ?? 0;
+            if (now - comp.lastOpportunisticUnloadTick < DivertCooldownTicks)
+                return false; // a recent (possibly failed) divert — don't loop
+
+            // Is the pawn actually overloaded right now (paying the move-speed drag)? Mirror StatPart_Overload's
+            // signal: encumbrance ratio > 1 -> the overload speed factor is < 1. The rule only pays off then.
+            // Stands down (speedFactor 1 -> rule returns false) whenever overload is off/strict/CE, since
+            // OverloadGate.NoOverloadFor pins the effective level to Off and SpeedFactor(Off, ...) == 1.
+            var mass = PawnMassCache.MassInfo(pawn);
+            float cap = mass.Capacity;
+            if (cap <= 0f)
+                return false;
+            float ratio = mass.CurrentMass / cap;
+            int level = OverloadGate.NoOverloadFor(pawn, s) ? Core.OverloadTuning.OffLevel : s.overloadLevel;
+            float speedFactor = Core.OverloadTuning.SpeedFactor(level, ratio);
+            if (speedFactor >= 1f)
+                return false; // at/under capacity (or overload disabled) -> carrying is free -> keep working
+
+            // Where the pawn is heading. Most work jobs set targetA; grow-zone harvests use targetQueueA.
+            IntVec3 target = workJob.targetA.Cell;
+            if (!target.IsValid)
+            {
+                var queue = workJob.targetQueueA;
+                if (queue != null && queue.Count > 0)
+                    target = queue[0].Cell;
+            }
+            if (!target.IsValid)
+                return false;
+
+            // The storage we'd unload to — the nearest accepting cell for any STORABLE tracked stack (same
+            // representative-pick as ShouldDivert: an un-storable rock chunk must not suppress the whole rule).
+            IntVec3 storageCell = IntVec3.Invalid;
+            foreach (var t in comp.PeekHashSet())
+            {
+                if (t == null || t.Destroyed)
+                    continue;
+                StoreUtility.TryFindBestBetterStoreCellFor(t, pawn, pawn.Map,
+                    StoragePriority.Unstored, pawn.Faction, out storageCell, needAccurateResult: false);
+                if (storageCell.IsValid)
+                    break;
+            }
+            if (!storageCell.IsValid)
+                return false; // nowhere to unload toward -> just keep working; later triggers still unload
+
+            int distToNextWork = CellDist(pawn.Position, target);
+            int distToStorage = CellDist(pawn.Position, storageCell);
+            return KeepWorkingPolicy.ShouldUnloadBeforeNext(
+                speedFactor, distToNextWork, distToStorage, s.keepWorkingMarginCells);
         }
 
         internal static void NotifyDiverted(Pawn pawn)

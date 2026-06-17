@@ -116,8 +116,16 @@ namespace HaulersDream
                 comp.pendingSelfPickups.Add(thing);
             // Clean the surrounding area in the same pass: also queue nearby loose haulables for self-pickup
             // (cooldown-debounced, so this scans at most once per work spot — not once per dropped stack).
+            // (Self-gates bleeding internally — see MaybeSweepNearbyIntoPending.)
             MaybeSweepNearbyIntoPending(pawn, thing.Position);
-            EnsureSelfPickupJob(pawn, comp);
+            // C5 master gate + C1 bleeding gate (G1 INTAKE-only): don't START a self-pickup job when the master
+            // switch is off, or for a badly bleeding pawn (it should get treated first). The drop is still
+            // RECORDED above (pendingSelfPickups), so once master is back on / the pawn stops bleeding the idle
+            // backstop / next drop re-queues it; nothing is lost, nothing unloads. The unload-path callers of
+            // EnsureSelfPickupJob (PawnUnloadChecker) intentionally stay UNGATED, so a carrying pawn always
+            // empties its pockets — the gate lives at this intake call site, not in the shared method.
+            if (MasterEnable.Active && FitToStartHaul(pawn))
+                EnsureSelfPickupJob(pawn, comp);
         }
 
         /// <summary>
@@ -174,9 +182,19 @@ namespace HaulersDream
             var map = pawn?.Map;
             if (map == null || pawn.jobs == null || !anchor.IsValid || !IsEligible(pawn))
                 return;
-            var comp = pawn.GetComp<CompHauledToInventory>();
-            if (comp == null)
+            // C5 master gate (G1 INTAKE-only): the master switch off ⇒ no new autonomous area-cleanup sweep is
+            // STARTED. This is the sweep ENTRY only (it queues pending pickups; it never unloads), so a pawn that
+            // already carries swept items still empties its pockets. Cheapest early-out, before the bleed read.
+            if (!MasterEnable.Active)
                 return;
+            // C1 bleeding gate (G1 INTAKE-only): the area-cleanup sweep is autonomous intake — a badly bleeding
+            // pawn doesn't start sweeping nearby loose items into inventory (it should get treated). This is the
+            // sweep ENTRY only; nothing it gates ever unloads, so a carrying pawn still empties its pockets.
+            if (!FitToStartHaul(pawn))
+                return;
+            var comp = pawn.GetComp<CompHauledToInventory>();
+            if (comp == null || !comp.autoHaulYields)
+                return; // per-pawn opt-out: a toggled-off pawn never sweeps loose items into inventory
             int now = Find.TickManager?.TicksGame ?? 0;
             if (now - comp.lastSweepTick < SweepCooldownTicks)
                 return;
@@ -187,30 +205,64 @@ namespace HaulersDream
             var claimed = RouteSelection.ClaimedByOtherPawns(pawn);
             float radiusSq = SweepRadius * SweepRadius;
             int added = 0;
-            foreach (var t in map.listerHaulables.ThingsPotentiallyNeedingHauling())
+
+            // HOIST (HD-MASS): the pawn's capacity and current mass are INVARIANT across this whole sweep — it
+            // only QUEUES pending pickups (comp.pendingSelfPickups.Add), it never adds to the pawn's inventory,
+            // so the gear+inventory mass that gates "is the pawn full?" doesn't move between candidates. Read it
+            // ONCE here (through the per-(pawn,tick) memo, so it's the SAME read the per-cell MoveSpeed StatPart
+            // uses this tick) instead of re-walking apparel+equipment+inventory per candidate inside the gate.
+            // Only the per-thing unit mass varies, which the primitive CountToPickUp overload reads per candidate.
+            var mass = PawnMassCache.MassInfo(pawn);
+            float sweepMaxCap = mass.Capacity;
+            float sweepBaseCap = CarryMath.EffectiveCapacity(sweepMaxCap, s.carryLimitFraction);
+            float sweepCur = mass.CurrentMass;
+
+            // One candidate's full filter+queue step; returns true to keep sweeping, false to stop (cap reached).
+            bool TryQueue(Thing t)
             {
                 if (added >= SweepMaxStacks)
-                    break; // beyond the per-scan cap is simply the next work cycle's cleanup
+                    return false; // beyond the per-scan cap is simply the next work cycle's cleanup
                 if (t == null || !t.Spawned || t.Map != map || t is Corpse)
-                    continue; // corpses keep their own vanilla hauling flow (they don't belong in pockets)
+                    return true; // corpses keep their own vanilla hauling flow (they don't belong in pockets)
                 if (t.def == null || !t.def.EverHaulable)
-                    continue; // same gate as BulkHaul.BuildPool — sweep exactly what a dedicated bulk haul would
+                    return true; // same gate as BulkHaul.BuildPool — sweep exactly what a dedicated bulk haul would
                 if ((t.Position - anchor).LengthHorizontalSquared > radiusSq)
-                    continue; // only the immediate work area
+                    return true; // only the immediate work area
                 if (comp.pendingSelfPickups.Contains(t) || t.IsForbidden(pawn) || claimed.Contains(t) || t.IsInValidStorage())
-                    continue;
+                    return true;
                 // Capacity first (pure arithmetic) — at/over the overload ceiling nothing more fits, so don't
-                // pay the reachability/storage cost. cur mass is read live and doesn't change as we record
-                // (we only queue pending), so this gates the whole sweep off once the pawn is full.
-                if (OverloadGate.CountToPickUp(pawn, t, s) <= 0)
-                    continue;
+                // pay the reachability/storage cost. cur mass doesn't change as we record (we only queue
+                // pending), so the hoisted (sweepMaxCap/sweepBaseCap/sweepCur) read above gates the whole sweep
+                // off once the pawn is full — identical decision to the live read, without re-walking mass.
+                if (OverloadGate.CountToPickUp(pawn, t, s, sweepMaxCap, sweepBaseCap, sweepCur) <= 0)
+                    return true;
                 if (!HaulAIUtility.PawnCanAutomaticallyHaulFast(pawn, t, forced: false))
-                    continue; // unreachable / can't legally haul it
+                    return true; // unreachable / can't legally haul it
                 if (!StoreUtility.TryFindBestBetterStorageFor(t, pawn, map, StoreUtility.CurrentStoragePriorityOf(t),
                         pawn.Faction, out _, out _, needAccurateResult: false))
-                    continue; // nowhere better to put it -> don't scoop it only to strand it in inventory
+                    return true; // nowhere better to put it -> don't scoop it only to strand it in inventory
                 comp.pendingSelfPickups.Add(t);
                 added++;
+                return true;
+            }
+
+            // Cast to the concrete HashSet<Thing> backing the lister (ThingsPotentiallyNeedingHauling returns the
+            // ICollection<Thing> interface; the field is a HashSet<Thing>, decompile-verified) so the foreach binds
+            // the struct enumerator and boxes nothing on this per-item-place sweep. `as` + null fallback to the
+            // interface foreach future-proofs against a backing-type change (then degrades to the boxed enumerator).
+            var haulables = map.listerHaulables.ThingsPotentiallyNeedingHauling();
+            var haulableSet = haulables as HashSet<Thing>;
+            if (haulableSet != null)
+            {
+                foreach (var t in haulableSet)
+                    if (!TryQueue(t))
+                        break;
+            }
+            else
+            {
+                foreach (var t in haulables)
+                    if (!TryQueue(t))
+                        break;
             }
 
             if (added > 0)
@@ -231,11 +283,22 @@ namespace HaulersDream
                 return;
             // On a non-home / temporary map there is no storage to unload to — divert the heavy load onto the
             // nearest owned pack animal instead (auto-divert), so the pawn doesn't keep working over-encumbered.
+            // (keepWorkingWhenFull does NOT apply here: on a temp map there is no storage to "unload before the
+            // next relocation" to — the only place the load can go is the carrier, exactly as today.)
             if (pawn?.Map != null && !pawn.Map.IsPlayerHome)
             {
                 PackAnimalLoad.MaybeAutoDivert(pawn, s);
                 return;
             }
+            // KEEP WORKING WHEN FULL (opt-in, default OFF): on the home map, DON'T break off the work run to go
+            // dump when full. The pawn keeps working (CountToPickUp already returns 0 at the ceiling, so the
+            // scooping stops on its own) and overflow yields stay on the ground for normal hauling. The
+            // weighted "unload before a long relocation" decision is made at the between-jobs hook instead
+            // (OpportunisticUnload, the work-found path, via KeepWorkingPolicy). End-of-run / downtime /
+            // interval / idle unloads are unaffected. With the toggle OFF this whole branch is skipped and the
+            // forced unload below fires exactly as before — byte-identical.
+            if (s.keepWorkingWhenFull)
+                return;
             // forced: bypass the post-pickup grace period — being full IS the signal to unload.
             PawnUnloadChecker.CheckIfShouldUnload(pawn, forced: true);
         }
@@ -344,6 +407,27 @@ namespace HaulersDream
         }
 
         // ---- shared routing ---------------------------------------------------------------------
+
+        /// <summary>
+        /// C1 (While-You're-Up parity, default ON): is this pawn fit to START a new scoop/sweep/bulk-haul right
+        /// now? A pawn bleeding badly should get treated, not detour into hauling. Reads the live bleed rate
+        /// (<c>BleedRateTotal</c> — a per-day rate that already returns 0 for dead / can't-bleed pawns) and
+        /// defers the decision to the pure <see cref="Core.FitToHaulPolicy"/> (strict &gt; threshold; exactly
+        /// at the threshold is still fit — WYU parity). When the gate is off, byte-identical (always fit).
+        ///
+        /// INTAKE-ONLY (conflict guard G1): call this ONLY at explicit scoop/sweep INTAKE entry points, NEVER
+        /// on any unload/adopt/alert/recovery path — a pawn already carrying scooped goods must always be able
+        /// to empty its pockets, or the load becomes a permanent "black hole". Null health (a modded edge)
+        /// reads as not-bleeding -> fit (fail-open), matching the rest of the scoop gates.
+        /// </summary>
+        internal static bool FitToStartHaul(Pawn pawn)
+        {
+            var s = HaulersDreamMod.Settings;
+            if (s == null || !s.skipHaulWhileBleeding)
+                return true; // gate off -> always fit (byte-identical to the no-gate path)
+            float bleedRate = pawn?.health?.hediffSet?.BleedRateTotal ?? 0f;
+            return Core.FitToHaulPolicy.FitToStartHaul(s.skipHaulWhileBleeding, bleedRate, s.bleedThresholdPerDay);
+        }
 
         /// <summary>
         /// True if <paramref name="thing"/> has a real (better) storage destination this pawn could haul it to —
@@ -532,7 +616,12 @@ namespace HaulersDream
                 var things = map.thingGrid.ThingsListAtFast(c);
                 for (int j = 0; j < things.Count; j++)
                 {
-                    if (!(things[j] is Pawn p) || !IsCandidate(p) || !TryGetWorkType(p.jobs?.curDriver, out var t))
+                    // Resolve the work type BEFORE the candidate gate: an explicit player Strip order
+                    // (the only source that overrides the per-pawn opt-out — OptOutOverridePolicy) must
+                    // be recognized so IsCandidate bypasses a toggled-off pawn's "Auto-haul yields" flag.
+                    // TryGetWorkType only reads the live driver (no side effects), so this reorder is free.
+                    if (!(things[j] is Pawn p) || !TryGetWorkType(p.jobs?.curDriver, out var t)
+                        || !IsCandidate(p, overrideOptOut: OptOutOverridePolicy.ExplicitOrderOverridesOptOut(t)))
                         continue;
 
                     // ONLY the true producer is routed — the pawn standing on the cell
@@ -602,7 +691,13 @@ namespace HaulersDream
         }
 
         /// <summary>Player-owned, eligible race, on an allowed map, with the tracking comp.</summary>
-        public static bool IsCandidate(Pawn p)
+        /// <param name="overrideOptOut">When true, the per-pawn "Auto-haul yields" opt-out is BYPASSED
+        /// (the comp must still exist, and every other gate — faction, race eligibility, map — still
+        /// applies). Set only for an EXPLICIT player order whose yield should be scooped regardless of the
+        /// standing toggle: an explicit Strip order (a <c>JobDriver_Strip</c>, which is always
+        /// player-ordered — see <see cref="Core.OptOutOverridePolicy"/>). Autonomous yields leave it
+        /// false so the toggle governs them.</param>
+        public static bool IsCandidate(Pawn p, bool overrideOptOut = false)
         {
             if (p == null || p.Faction != Faction.OfPlayerSilentFail)
                 return false;
@@ -611,9 +706,66 @@ namespace HaulersDream
             var s = HaulersDreamMod.Settings;
             if (s == null)
                 return false;
-            if (p.Map != null && !s.enableOnNonHomeMaps && !p.Map.IsPlayerHome)
+            if (!MapGate.HdActiveOnMap(p.Map))
                 return false;
-            return p.GetComp<CompHauledToInventory>() != null;
+            var comp = p.GetComp<CompHauledToInventory>();
+            if (comp == null)
+                return false;
+            // C5 master gate (G1 INTAKE-only): when the master switch is off, HD stops INITIATING autonomous
+            // scoops at this inference point. Like the bleeding/opt-out gates it sits on the AUTONOMOUS branch
+            // only — an explicit player order (overrideOptOut, e.g. a Strip) bypasses it so the Strip path keeps
+            // scooping the gear the player asked it to remove. IsCandidate is the scoop-INTAKE inference for
+            // FindWorker/FindDeconstructor and is NEVER on an unload path, so a pawn that scooped before the
+            // switch was flipped still empties what it carries. Checked first as the cheapest early-out.
+            if (!overrideOptOut && !MasterEnable.Active)
+                return false;
+            // C1 bleeding gate (G1 INTAKE-only): on the AUTONOMOUS path, a badly bleeding pawn doesn't start
+            // a new scoop — it should get treated. An explicit player order (overrideOptOut, e.g. a Strip)
+            // bypasses the gate, exactly as it bypasses the opt-out: the player asked for it by hand. This
+            // sits on IsCandidate (the scoop-INTAKE inference for FindWorker/FindDeconstructor), never on any
+            // unload path, so a bleeding pawn still empties what it already carries.
+            if (!overrideOptOut && !FitToStartHaul(p))
+                return false;
+            // Per-pawn opt-out: a pawn toggled OFF never scoops/sweeps/self-picks AUTONOMOUS yields. An
+            // explicit player order (overrideOptOut) bypasses the toggle — the player asked for it by hand,
+            // so the dropped gear is still scooped+hauled. Unload paths don't read this flag either way, so
+            // a toggled-off pawn always empties what it carries.
+            return overrideOptOut || comp.autoHaulYields;
+        }
+
+        /// <summary>
+        /// Drafted-agnostic RACE eligibility: humanlike, OR mechanoid when allowMechanoids, OR animal
+        /// (non-humanlike non-mech) when allowAnimals — WITHOUT the drafted/incapable gating. This is the
+        /// visibility test for the standing per-pawn auto-haul toggle (a drafted pawn must still be able to
+        /// SET the preference, so the toggle can't vanish under the pauseWhileDrafted gate that
+        /// <see cref="IsEligible"/> applies). It is strictly broader than IsEligible, so it never SHOWS the
+        /// toggle on a pawn that could never scoop: the runtime scoop gates still call IsEligible and honor
+        /// pauseWhileDrafted/allowIncapable, so showing the toggle while drafted never makes a drafted pawn
+        /// actually scoop. Reuses the SAME Core policy as IsEligible with isDrafted/incapableOfHauling pinned
+        /// false, so the two stay in lockstep on the race rules (only the race branches can pass).
+        /// </summary>
+        public static bool IsRaceEligible(Pawn p)
+        {
+            if (p?.RaceProps == null)
+                return false;
+            var s = HaulersDreamMod.Settings;
+            if (s == null)
+                return false;
+            bool raceEligible = EligibilityPolicy.IsEligible(
+                isMechanoid: p.RaceProps.IsMechanoid,
+                isHumanlike: p.RaceProps.Humanlike,
+                isDrafted: false,            // standing preference — not gated on the pawn's current drafted state
+                incapableOfHauling: false,   // capability is a runtime scoop gate (IsEligible), not a visibility gate
+                allowMechanoids: s.allowMechanoids,
+                pauseWhileDrafted: s.pauseWhileDrafted,
+                allowIncapable: s.allowIncapable,
+                allowAnimals: s.allowAnimals);
+            // #4 dead-gizmo fix (lockstep with IsEligible): an animal that can never use the Haul
+            // feature (a cat) must not SHOW the auto-haul toggle either — CanScoopAsAnimal narrows only
+            // the animal branch (humanlikes/mechs untouched), so with allowAnimals OFF the animal branch
+            // is already false and this is byte-identical. Keeps the toggle visible exactly on the set of
+            // animals the runtime scoop gate (IsEligible) will accept.
+            return raceEligible && CanScoopAsAnimal(p);
         }
 
         public static bool IsEligible(Pawn p)
@@ -623,7 +775,7 @@ namespace HaulersDream
             var s = HaulersDreamMod.Settings;
             if (s == null)
                 return false;
-            return EligibilityPolicy.IsEligible(
+            bool eligible = EligibilityPolicy.IsEligible(
                 isMechanoid: p.RaceProps.IsMechanoid,
                 isHumanlike: p.RaceProps.Humanlike,
                 isDrafted: p.Drafted,
@@ -633,7 +785,57 @@ namespace HaulersDream
                 incapableOfHauling: p.WorkTypeIsDisabled(WorkTypeDefOf.Hauling),
                 allowMechanoids: s.allowMechanoids,
                 pauseWhileDrafted: s.pauseWhileDrafted,
-                allowIncapable: s.allowIncapable);
+                allowIncapable: s.allowIncapable,
+                // #4 (opt-in, default OFF): a non-mech non-humanlike (colony animal) is eligible only
+                // when allowAnimals is on — so with it off this whole arg is false and eligibility is
+                // byte-identical to before (animals fall through EligibilityPolicy's animal branch to
+                // false exactly as the absent-arg default did).
+                allowAnimals: s.allowAnimals);
+            // #4 dead-gizmo fix: even with allowAnimals ON, only an animal that can ACTUALLY use the
+            // vanilla Haul behavior may scoop — a cat (not Haul-trainable) would otherwise get the
+            // gizmo and scoop-eligibility while the toggle does nothing (colony animals haul via
+            // JobGiver_Haul, gated on the Haul trainable being completed). CanScoopAsAnimal narrows
+            // ONLY the animal branch; humanlikes/mechs are returned untouched, so allowAnimals=false
+            // (animal branch already false) stays byte-identical — the gate short-circuits below.
+            return eligible && CanScoopAsAnimal(p);
+        }
+
+        // The Haul trainable (defName "Haul") — not exposed on vanilla's TrainableDefOf, so looked up
+        // by name (matching the codebase's GetNamedSilentFail convention, e.g. CECompat's "Bulk").
+        // Cached after first resolve; null only on a game with the def stripped, handled fail-open below.
+        private static TrainableDef haulTrainable;
+        private static bool haulTrainableResolved;
+
+        private static TrainableDef HaulTrainable()
+        {
+            if (!haulTrainableResolved)
+            {
+                haulTrainable = DefDatabase<TrainableDef>.GetNamedSilentFail("Haul");
+                haulTrainableResolved = true;
+            }
+            return haulTrainable;
+        }
+
+        /// <summary>
+        /// #4: gate the animal branch on actual Haul-feature capability. Returns true for every
+        /// non-animal (humanlike / mechanoid) so it never changes their eligibility. For an animal it
+        /// is true only when the pawn can really haul via the vanilla Haul trainable — i.e. the Haul
+        /// row is assignable for this race (CanAssignToTrain: a cat fails "not smart enough", a husky/
+        /// bear passes regardless of training progress) OR the animal has already learned Haul. This
+        /// keeps a non-Haul-trainable animal (cat) from showing the auto-haul toggle / scooping where
+        /// it would do nothing, while a Haul-trained husky/bear still qualifies. Fail-open if the
+        /// training tracker or the Haul def is missing (so a modded edge never silently hides it).
+        /// </summary>
+        private static bool CanScoopAsAnimal(Pawn p)
+        {
+            // Only animals are narrowed; humanlikes and mechanoids are unaffected.
+            if (p.RaceProps.IsMechanoid || p.RaceProps.Humanlike)
+                return true;
+            var training = p.training;
+            var haul = HaulTrainable();
+            if (training == null || haul == null)
+                return true; // can't evaluate capability -> don't hide it (fail-open)
+            return training.CanAssignToTrain(haul).Accepted || training.HasLearned(haul);
         }
     }
 }

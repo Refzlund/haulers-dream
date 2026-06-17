@@ -17,11 +17,15 @@ namespace HaulersDream
     /// never fail the whole job), and the live mass ceiling is re-applied at pickup time so a mid-job change
     /// (gear picked up, settings changed) can't over-load past the worth-it point.
     ///
-    /// Stacks are added WITHOUT merging into existing inventory stacks: tagging a merged stack would also
-    /// flag the pawn's own pre-existing stock (a packed lunch of the same meal def) for unload. The separate
-    /// entry keeps the sweep's stock apart at pickup time — but the comp's def-level self-heal can still
-    /// re-tag same-def personal stacks later (known, accepted), so the separation is best-effort rather than
-    /// a guarantee; the unload pass consolidates at placement.
+    /// Stacks are added WITHOUT merging into the pawn's PRE-EXISTING (personal/untagged) stock: tagging a
+    /// merged stack would also flag the pawn's own stock (a packed lunch of the same meal def) for unload.
+    /// But swept stacks DO consolidate WITH EACH OTHER (and with already-HD-tagged same-def stock) — see
+    /// <see cref="DepositSwept"/>: a fresh split is first absorbed into the already-tagged same-def stacks
+    /// (merging stays strictly inside the hauled set), and only the remainder becomes a new separate tagged
+    /// stack. So a sweep of N same-def stacks ends as ONE inventory stack per def (bounded by the stack limit)
+    /// instead of N loose entries — fewer tags, a smaller unload, no churn — while the tag-isolation invariant
+    /// (never touch personal stock) is preserved exactly. (The comp's def-level self-heal may still re-tag a
+    /// same-def personal stack later — known, accepted; the unload's surplus math keeps personal kept-stock.)
     /// </summary>
     public class JobDriver_BulkHaul : JobDriver
     {
@@ -162,27 +166,8 @@ namespace HaulersDream
                 // SplitOff with count >= stackCount despawns the thing itself (the full-stack pickup path);
                 // a partial split returns a fresh unspawned thing. Either way TryAdd takes the plain-add path.
                 var split = t.SplitOff(count);
-                var inv = Inv;
-                if (inv != null && inv.TryAdd(split, canMergeWithExistingStacks: false))
-                {
-                    var comp = pawn.GetComp<CompHauledToInventory>();
-                    if (comp != null)
-                    {
-                        comp.RegisterHauledItem(split);
-                        comp.NotifyYieldPicked();
-                    }
-                    // Unspawned splits carry a default (0,0,0) position; the shared-inventory chooser ranks
-                    // carried stock by position, so stamp the pawn's cell (a plain field write when unspawned).
-                    if (!split.Spawned)
-                        split.Position = pawn.Position;
+                if (DepositSwept(split))
                     loadedAnything = true;
-                }
-                else if (split != null && !split.Destroyed && !split.Spawned)
-                {
-                    // Add failed (shouldn't happen — pawn inventories are effectively unbounded): put it back
-                    // on the ground rather than ever letting an item vanish.
-                    GenPlace.TryPlaceThing(split, pawn.Position, pawn.Map, ThingPlaceMode.Near);
-                }
                 loadIndex++;
                 JumpToToil(loadDecide);
             };
@@ -192,9 +177,98 @@ namespace HaulersDream
             yield return end;
         }
 
+        /// <summary>
+        /// Put a freshly-split swept stack into inventory, CONSOLIDATING it with the sweep's already-tagged
+        /// same-def stock (#2B) while NEVER merging into the pawn's pre-existing personal/untagged stock.
+        ///
+        /// Tag isolation by construction: candidate absorbers are taken ONLY from the comp's tracked set
+        /// (<see cref="CompHauledToInventory.PeekHashSet"/> — the HD-tagged stacks), so a same-def packed lunch
+        /// the pawn already carried (which is never in that set unless the def-level self-heal claimed it) is
+        /// untouched. We first pour <paramref name="split"/> into those tagged absorbers (respecting the stack
+        /// limit, so an absorber never overflows), then add any remainder as a NEW separate tagged stack with
+        /// <c>canMergeWithExistingStacks:false</c> — the exact isolation the old unconditional false-add gave,
+        /// now only for the part that didn't fold into the hauled set. Net result: one inventory stack per def
+        /// for the whole sweep (bounded by the stack limit), with personal stock provably never merged into.
+        ///
+        /// CE: a merge that GREW a tagged absorber re-notifies CE's HoldTracker of the moved delta (so loadout
+        /// enforcement won't dump the growth); a brand-new tagged stack notifies the full count via RegisterHauledItem.
+        /// </summary>
+        /// <returns>true if any units landed in inventory (the caller marks the job as having loaded something).</returns>
+        private bool DepositSwept(Thing split)
+        {
+            if (split == null || split.Destroyed || split.stackCount <= 0)
+                return false;
+            var inv = Inv;
+            if (inv == null)
+            {
+                // No inventory owner (shouldn't happen) — never let the split vanish; put it back on the ground.
+                if (!split.Spawned)
+                    GenPlace.TryPlaceThing(split, pawn.Position, pawn.Map, ThingPlaceMode.Near);
+                return false;
+            }
+            var comp = pawn.GetComp<CompHauledToInventory>();
+            bool loaded = false;
+
+            // 1) Consolidate into the sweep's already-tagged same-def stock — merging stays strictly inside the
+            //    hauled set. Iterate the tracked tags (PeekHashSet has no side effects, but may list stale/foreign
+            //    entries, so guard each: live, in THIS inventory, same def, stackable with the split, has room).
+            //    Direct iteration is allocation-free and safe: TryAbsorbStack only ever Destroys the SPLIT (the
+            //    source, which is NOT in the set), absorbers only GROW, and RegisterHauledItem on an already-tagged
+            //    absorber is a no-op on the set (Add returns false → CE-notify only) — so the set never mutates
+            //    during the loop. (The for-loop guard re-checks split each pass, so a fully-folded split exits.)
+            if (comp != null)
+            {
+                foreach (var target in comp.PeekHashSet())
+                {
+                    if (split.Destroyed || split.stackCount <= 0)
+                        break; // fully folded into the hauled set
+                    if (target == null || target == split || target.Destroyed || target.def != split.def)
+                        continue;
+                    if (!inv.Contains(target) || target.stackCount >= target.def.stackLimit || !target.CanStackWith(split))
+                        continue;
+                    int before = split.stackCount;
+                    target.TryAbsorbStack(split, respectStackLimit: true); // moves up to the absorber's room
+                    int moved = before - split.stackCount;
+                    if (moved > 0)
+                    {
+                        // Re-notify CE of the growth on the absorber (already tagged; RegisterHauledItem with a
+                        // positive mergedCount notifies only the delta — Add is a no-op so the set is unchanged).
+                        // The pickup clock is refreshed once below.
+                        comp.RegisterHauledItem(target, moved);
+                        loaded = true;
+                    }
+                }
+            }
+
+            // 2) Anything left becomes a NEW separate tagged stack — the exact isolation the old false-add gave.
+            if (!split.Destroyed && split.stackCount > 0)
+            {
+                if (inv.TryAdd(split, canMergeWithExistingStacks: false))
+                {
+                    comp?.RegisterHauledItem(split);
+                    // Unspawned splits carry a default (0,0,0) position; the shared-inventory chooser ranks
+                    // carried stock by position, so stamp the pawn's cell (a plain field write when unspawned).
+                    if (!split.Spawned)
+                        split.Position = pawn.Position;
+                    loaded = true;
+                }
+                else if (!split.Destroyed && !split.Spawned)
+                {
+                    // Add failed (shouldn't happen — pawn inventories are effectively unbounded): put it back
+                    // on the ground rather than ever letting an item vanish.
+                    GenPlace.TryPlaceThing(split, pawn.Position, pawn.Map, ThingPlaceMode.Near);
+                }
+            }
+
+            if (loaded)
+                comp?.NotifyYieldPicked();
+            return loaded;
+        }
+
         // The live worth-it mass ceiling for THIS pawn (per-pawn base cap × the overload break-even ratio).
-        // Pawn-aware gate (NoOverloadFor): a non-humanlike hauler the slowdown StatPart never touches gets
-        // the plain carry limit, never the slowdown-for-capacity overload ceiling.
+        // Pawn-aware gate (NoOverloadFor): only an ANIMAL (non-mech non-humanlike) stands down to the plain
+        // carry limit; player humanlikes AND mechs overload to the break-even ceiling and are slowed by
+        // StatPart_Overload for it.
         private float CeilingKgLive(HaulersDreamSettings s)
         {
             // Null settings fails STRICT like every other null-settings fallback in the mod

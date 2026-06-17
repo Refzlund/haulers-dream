@@ -15,7 +15,15 @@ namespace HaulersDream
     /// trips. Only fires when the carry math says inventory beats hands; otherwise the vanilla hand-carry
     /// — including the F5 needer batching — runs unchanged. See <see cref="InventoryConstructDelivery"/>.
     /// </summary>
+    // ORDERING CONTRACT (see the full chain in SharedInventoryPatches.cs): ICD runs AFTER F3b (High=600) and BEFORE
+    // both Batch (Low=200) and Routing (Last). ICD converts a vanilla floor HaulToContainer to its inventory-overload
+    // job; Batch and Routing both bail on a non-HaulToContainer __result, so they must observe ICD's FINAL
+    // converted/declined result. Pinned Normal (400) explicitly — it is numerically the default, but pinning makes the
+    // "ICD before Batch" precedence DECLARED rather than coincidental (both previously sat at the default 400, so their
+    // relative order was undefined). ICD is order-independent w.r.t. F3b: their action domains are disjoint (F3b builds
+    // an inventory-fetch job ICD ignores via the Pawn_InventoryTracker guard; ICD only converts a SPAWNED floor stack).
     [HarmonyPatch(typeof(WorkGiver_ConstructDeliverResources), "ResourceDeliverJobFor")]
+    [HarmonyPriority(Priority.Normal)] // run after F3b's floor-empty fetch, before Batch/Routing observe the result
     public static class Patch_ResourceDeliverJobFor_Inventory
     {
         static void Postfix(ref Job __result, Pawn pawn, IConstructible c, bool forced)
@@ -81,7 +89,8 @@ namespace HaulersDream
             int handCap = pawn.carryTracker.MaxStackSpaceEver(def);
             if (handCap <= 0)
             {
-                HDLog.Dbg($"inv-deliver skip: handCap<=0 for {def.label} ({pawn})");
+                if (s.verboseLogging)
+                    HDLog.Dbg($"inv-deliver skip: handCap<=0 for {def.label} ({pawn})");
                 return null;
             }
 
@@ -90,12 +99,40 @@ namespace HaulersDream
                 : enroute.GetSpaceRemainingWithEnroute(def, pawn);
             if (frameNeed <= 0)
                 return null;
+
+            // MULTI-SITE cluster (non-route only): vanilla already assembled the nearby same-material cluster
+            // into targetB + targetQueueB. If the WHOLE cluster wants more than one hand-load across 2+ sites,
+            // load the combined demand into inventory in ONE trip and deliver to every site (the driver iterates
+            // the needer queue). Route stops gather for the whole route via RouteDemandByDef below — they never
+            // take this branch (RouteIntent != None). Falls through to the single-needer logic when it doesn't fit.
+            var clusterNeeders = (List<Thing>)null;
+            int clusterNeed = 0;
+            bool multiSite = false;
+            if (s.multiSiteConstructDeliver && RouteIntent == ConstructRouteIntent.None
+                && vanillaJob != null && vanillaJob.targetQueueB != null && vanillaJob.targetQueueB.Count > 0)
+            {
+                clusterNeeders = new List<Thing>();
+                AddClusterNeeder(needer, def, pawn, forced, clusterNeeders, ref clusterNeed); // primary (= targetC, the clicked/scanned site)
+                // Vanilla's targetB is the cluster member NEAREST THE RESOURCE — a DISTINCT needer from c
+                // (FindNearbyNeeders excludes c, then targetB = the nearest of those). Include it or it's
+                // silently dropped every trip. AddClusterNeeder dedups, so this is a no-op when targetB == c.
+                AddClusterNeeder(vanillaJob.targetB.Thing, def, pawn, forced, clusterNeeders, ref clusterNeed);
+                for (int i = 0; i < vanillaJob.targetQueueB.Count; i++)
+                    AddClusterNeeder(vanillaJob.targetQueueB[i].Thing, def, pawn, forced, clusterNeeders, ref clusterNeed);
+                // Worth-it: 2+ distinct sites still needing material AND combined demand beats one hand-load.
+                multiSite = ConstructDeliveryPlan.MultiSiteWorthIt(clusterNeeders.Count, clusterNeed, handCap);
+                if (!multiSite)
+                    clusterNeeders = null; // not taking the branch — discard so the job stays single-needer
+            }
+
             // An ORDERED (forced) delivery normally converts — even a small one-hand-trip load — because only
             // our driver carries the tether/route hooks. NOT always trip-neutral though: see the cluster
-            // exception below. Auto deliveries keep the "hands already optimal" fast path.
-            if (!forced && frameNeed <= handCap)
+            // exception below. Auto deliveries keep the "hands already optimal" fast path. The multi-site branch
+            // (worth-it gate already requires clusterNeed > handCap across 2+ sites) is never a "one hand-trip".
+            if (!multiSite && !forced && frameNeed <= handCap)
             {
-                HDLog.Dbg($"inv-deliver skip: need {frameNeed} <= handCap {handCap} for {def.label} → {needer.LabelShort} (one hand-trip suffices)");
+                if (s.verboseLogging)
+                    HDLog.Dbg($"inv-deliver skip: need {frameNeed} <= handCap {handCap} for {def.label} → {needer.LabelShort} (one hand-trip suffices)");
                 return null; // a single hand-trip already satisfies it
             }
             // Plain right-click order (not a route stop) whose remaining need fits ONE hand-stack, where the
@@ -103,17 +140,20 @@ namespace HaulersDream
             // one wall of a 15-wall line delivers the whole cluster): keep vanilla. Our single-needer
             // conversion would deliver to one needer and discard the rest of the cluster, COSTING trips.
             // Route stops (RouteIntent != None) still always convert — routes depend on per-stop jobs.
-            if (forced && RouteIntent == ConstructRouteIntent.None && frameNeed <= handCap
+            // A multi-site conversion carries the whole cluster, so it does NOT discard it -> doesn't skip.
+            if (!multiSite && forced && RouteIntent == ConstructRouteIntent.None && frameNeed <= handCap
                 && vanillaJob != null && vanillaJob.targetQueueB != null && vanillaJob.targetQueueB.Count > 0)
             {
-                HDLog.Dbg($"inv-deliver skip: forced one-hand order for {def.label} → {needer.LabelShort}, " +
-                          $"vanilla batches {vanillaJob.targetQueueB.Count} more needer(s) (keep vanilla cluster delivery)");
+                if (s.verboseLogging)
+                    HDLog.Dbg($"inv-deliver skip: forced one-hand order for {def.label} → {needer.LabelShort}, " +
+                              $"vanilla batches {vanillaJob.targetQueueB.Count} more needer(s) (keep vanilla cluster delivery)");
                 return null;
             }
 
             // A haul+build ROUTE gathers for the WHOLE route in this first sweep, not just this stop — the route
-            // executor publishes the per-def total; later stops then deliver from the kept inventory.
-            int gatherNeed = frameNeed;
+            // executor publishes the per-def total; later stops then deliver from the kept inventory. A MULTI-SITE
+            // cluster gathers for the whole cluster's combined demand the same way (the driver delivers to each).
+            int gatherNeed = multiSite ? clusterNeed : frameNeed;
             if (RouteIntent == ConstructRouteIntent.HaulBuild && RouteDemandByDef != null
                 && RouteDemandByDef.TryGetValue(def, out int routeNeed) && routeNeed > gatherNeed)
                 gatherNeed = routeNeed;
@@ -126,14 +166,16 @@ namespace HaulersDream
             float unit = def.GetStatValueAbstract(StatDefOf.Mass);
             if (unit <= 0f)
                 return null;
-            // Pawn-aware (NoOverloadFor): strict / slider-Off / CE — and a non-humanlike the slowdown
-            // StatPart never touches (a mech lifter) must not gather past its limit penalty-free.
+            // Pawn-aware (NoOverloadFor): strict / slider-Off / CE — and an ANIMAL (non-mech non-humanlike,
+            // never slowed by StatPart) must not gather past its plain limit penalty-free. Player mechs DO
+            // overload here and are slowed for it, like colonists.
             int level = OverloadGate.NoOverloadFor(pawn, s) ? OverloadTuning.OffLevel : s.overloadLevel;
 
             int ceiling = ConstructDeliveryPlan.GatherCeiling(level, maxCap, baseCap, cur, unit, gatherNeed);
             if (!forced && ceiling <= handCap)
             {
-                HDLog.Dbg($"inv-deliver skip: ceiling {ceiling} <= handCap {handCap} for {def.label} (cur mass {cur:0.0}/{baseCap:0.0}kg, unit {unit:0.###})");
+                if (s.verboseLogging)
+                    HDLog.Dbg($"inv-deliver skip: ceiling {ceiling} <= handCap {handCap} for {def.label} (cur mass {cur:0.0}/{baseCap:0.0}kg, unit {unit:0.###})");
                 return null; // can't carry more than one hand-load right now -> hands are already optimal
             }
             if (forced && ceiling < 1)
@@ -146,13 +188,16 @@ namespace HaulersDream
 
             // An ordered delivery loads whatever is actually available toward the full need (the driver's take
             // toil still applies the smart-overload ceiling per pickup); the auto path keeps the planned math.
+            // For a multi-site cluster the demand is the whole cluster's combined need, not one frame's.
+            int loadDemand = multiSite ? clusterNeed : frameNeed;
             int targetLoad = forced
                 ? UnityEngine.Mathf.Min(gatherNeed, available)
-                : ConstructDeliveryPlan.PlanLoad(level, maxCap, baseCap, cur, unit, frameNeed, handCap, available);
+                : ConstructDeliveryPlan.PlanLoad(level, maxCap, baseCap, cur, unit, loadDemand, handCap, available);
             if (targetLoad <= 0)
             {
-                HDLog.Dbg($"inv-deliver skip: targetLoad 0 for {def.label} → {needer.LabelShort} " +
-                          $"(available {available} in {stacks.Count} stacks near stockpile, need {frameNeed}, handCap {handCap}, ceiling {ceiling})");
+                if (s.verboseLogging)
+                    HDLog.Dbg($"inv-deliver skip: targetLoad 0 for {def.label} → {needer.LabelShort} " +
+                              $"(available {available} in {stacks.Count} stacks near stockpile, need {frameNeed}, handCap {handCap}, ceiling {ceiling})");
                 return null;
             }
 
@@ -173,11 +218,26 @@ namespace HaulersDream
                 job.targetQueueA.Add(stacks[i]);
             job.targetB = needer;
             job.targetC = needer;
+            // MULTI-SITE: the OTHER cluster needers (everything except the primary, in vanilla's nearest-first
+            // order) ride in targetQueueB; the driver delivers to the primary, then walks each in turn. Single-
+            // needer jobs leave targetQueueB null (unchanged). targetQueueA is the resource stacks, a separate
+            // queue (TargetIndex.A), so there is no collision with the needer queue (TargetIndex.B). Filtered by
+            // identity vs the primary rather than index, so it is correct even if the primary weren't [0].
+            if (multiSite && clusterNeeders != null && clusterNeeders.Count > 1)
+            {
+                job.targetQueueB = new List<LocalTargetInfo>();
+                for (int i = 0; i < clusterNeeders.Count; i++)
+                    if (clusterNeeders[i] != needer)
+                        job.targetQueueB.Add(clusterNeeders[i]);
+            }
             job.count = targetLoad;
             job.haulMode = HaulMode.ToContainer;
 
-            HDLog.Dbg($"{pawn} inventory-delivers {targetLoad}x {def.label} to {needer.LabelShort} " +
-                      $"(need {frameNeed}, hand cap {handCap}, {stacks.Count} stacks).");
+            HDLog.Dbg(multiSite
+                ? $"{pawn} inventory-delivers {targetLoad}x {def.label} to a {clusterNeeders.Count}-site cluster " +
+                  $"(primary {needer.LabelShort}, cluster need {clusterNeed}, hand cap {handCap}, {stacks.Count} stacks)."
+                : $"{pawn} inventory-delivers {targetLoad}x {def.label} to {needer.LabelShort} " +
+                  $"(need {frameNeed}, hand cap {handCap}, {stacks.Count} stacks).");
             return job;
         }
 
@@ -265,6 +325,27 @@ namespace HaulersDream
                 }
             }
             return null;
+        }
+
+        /// <summary>
+        /// Add <paramref name="cand"/> to the cluster if it is a live constructible still needing <paramref name="def"/>,
+        /// not already in the list. Accumulates its enroute-aware remaining need into <paramref name="clusterNeed"/>.
+        /// Mirrors the single-needer frameNeed math (forced -> raw need, auto -> space-remaining-with-enroute) so the
+        /// cluster's combined demand is computed the same way per site.
+        /// </summary>
+        private static void AddClusterNeeder(Thing cand, ThingDef def, Pawn pawn, bool forced,
+            List<Thing> outNeeders, ref int clusterNeed)
+        {
+            if (cand == null || cand.Destroyed || !cand.Spawned || !(cand is IConstructible ic)
+                || outNeeders.Contains(cand))
+                return;
+            int need = (forced || !(cand is IHaulEnroute ie))
+                ? ic.ThingCountNeeded(def)
+                : ie.GetSpaceRemainingWithEnroute(def, pawn);
+            if (need <= 0)
+                return;
+            outNeeders.Add(cand);
+            clusterNeed += need;
         }
 
         /// <summary>Drop trailing stacks once the kept stacks already cover <paramref name="target"/> units.</summary>

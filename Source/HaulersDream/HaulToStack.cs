@@ -95,19 +95,42 @@ namespace HaulersDream
         private static readonly Dictionary<(int thingId, int carrierId, int cellIdx), IntVec3> cellCache
             = new Dictionary<(int thingId, int carrierId, int cellIdx), IntVec3>();
 
+        // Self-register the per-session cell-memo clear with the game-load hygiene sweep (see CacheRegistry), so it
+        // can never be forgotten. The static ctor runs once, the first time any member is touched (the only way the
+        // memo can hold cross-session data); the `tick != -1` populate guard in FindStackCell is the actual
+        // cross-session safeguard.
+        static HaulToStack() => CacheRegistry.Register(Clear);
+
+        /// <summary>Drop the per-tick stack-cell memo and reset the tick stamp — called on game load
+        /// (FinalizeInit) so an equal tick number across a quickload cannot serve a stale cross-session entry
+        /// (the (thingId, carrierId, cellIdx) key collides across saves). Mirrors
+        /// <see cref="BulkHaul.ClearPlanCache"/>; the `tick != -1` populate guard in <see cref="FindStackCell"/>
+        /// is the cross-session safeguard, this is consistency with the existing FinalizeInit list.</summary>
+        internal static void Clear()
+        {
+            cacheTick = -1;
+            cellCache.Clear();
+        }
+
         /// <summary>The best same-room (or, outside, in-radius) cell holding a partial stack
         /// <paramref name="t"/> can merge into, or Invalid to keep vanilla's pick. PURE — no reservations,
         /// no world mutation (the storage search runs speculatively during work scans and menu builds).</summary>
         internal static IntVec3 FindStackCell(Thing t, Pawn carrier, Map map, Faction faction, IntVec3 vanillaCell)
         {
             int tick = Find.TickManager?.TicksGame ?? -1;
-            if (tick != cacheTick)
+            // tick == -1 (TickManager briefly null across a load): don't trust or populate the memo — a
+            // cross-session quickload can land on the same tick number, and the (thingId, carrierId, cellIdx)
+            // key collides across saves. Guard the stamp update on `tick != -1` (mirrors
+            // CompHauledToInventory.lastHealTick); when -1 we recompute live and never cache. (The cached-hit
+            // path is already re-validated by IsGoodStoreCell below, but the tick guard closes the populate side
+            // and is consistent with the count caches.)
+            if (tick != -1 && tick != cacheTick)
             {
                 cellCache.Clear();
                 cacheTick = tick;
             }
             var key = (t.thingIDNumber, carrier.thingIDNumber, map.cellIndices.CellToIndex(vanillaCell));
-            if (cellCache.TryGetValue(key, out var cached))
+            if (tick != -1 && cellCache.TryGetValue(key, out var cached))
             {
                 // Belt and braces: even a same-carrier hit can go stale within the tick (an earlier job
                 // this tick reserved the thing or filled the cell) — re-validate before serving it.
@@ -115,7 +138,8 @@ namespace HaulersDream
                     return cached;
             }
             var result = FindStackCellUncached(t, carrier, map, faction, vanillaCell);
-            cellCache[key] = result;
+            if (tick != -1)
+                cellCache[key] = result; // only memoize a real tick (see the -1 guard above)
             return result;
         }
 

@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using HaulersDream.Core;
 using RimWorld;
 using Verse;
 
@@ -13,6 +14,21 @@ namespace HaulersDream
     {
         private HashSet<Thing> takenToInventory = new HashSet<Thing>();
         public int lastYieldTick = -99999;
+
+        /// <summary>Tick the <see cref="GetHashSet"/> self-heal last ran. The heal (an <c>owner.Count</c> inventory
+        /// walk + Simple Sidearms reflection + CE re-notify + tag-age sync) is idempotent WITHIN one tick — the
+        /// inventory can't change mid-tick from the read-only share/probe callers that drive it — so once healed
+        /// this tick, repeat calls short-circuit straight to <c>return takenToInventory</c>. Any path that MUTATES
+        /// the set (scoop registration / deregister) resets this to force the next call to re-heal, so a same-tick
+        /// scoop is always observed (the scoop path itself calls <see cref="RegisterHauledItem"/> which invalidates,
+        /// then the next GetHashSet re-heals — correctness is preserved). Transient (in-flight timing, not scribed).</summary>
+        [System.NonSerialized] private int lastHealTick = -1;
+
+        /// <summary>Per-pawn opt-out for the auto-haul-into-inventory feature, surfaced as a Command_Toggle
+        /// gizmo. Default ON (so old saves and untouched pawns keep scooping); scribed with a true default so
+        /// a pre-feature save loads ON. Gates only the SCOOP/sweep/self-pickup intake paths — a pawn toggled
+        /// OFF still empties what it already carries (the unload paths never read this).</summary>
+        public bool autoHaulYields = true;
 
         /// <summary>Tick each tagged stack was FIRST tagged, for per-item staleness in the cannot-unload alert
         /// (a busy hauler refreshing lastYieldTick must not mask one stranded stack). Transient: not scribed —
@@ -48,12 +64,27 @@ namespace HaulersDream
         [System.ThreadStatic] private static List<Thing> tmpStaleTicks;
         // Scratch for defs whose last tag was destroyed by a merge this pass (carried into the self-heal).
         [System.ThreadStatic] private static HashSet<ThingDef> tmpCarryOverDefs;
+        // Scratch for the Core TagHealPolicy hand-off (all reused per-thread, cleared at each use): the scooped
+        // def union, the flat per-stack view fed to the policy, and the indices it selects to (re)tag.
+        [System.ThreadStatic] private static HashSet<object> tmpScoopedUnion;
+        [System.ThreadStatic] private static List<TagHealPolicy.Stack> tmpStacks;
+        [System.ThreadStatic] private static List<int> tmpTagIndices;
 
         public HashSet<Thing> GetHashSet()
         {
+            // HD-GETHASHSET: already self-healed this tick (and no mutation since — a scoop/deregister resets the
+            // stamp) -> skip the whole heal (owner.Count walk + SS reflection + CE re-notify + tag-age sync) and
+            // hand back the live set. The read-only share/probe callers (bill ingredient search, load deposit
+            // probes, GetRest/GetFood/GetJoy postfixes) hit this many times per scan; the inventory can't change
+            // mid-tick from them, so the second-and-later calls are pure waste without this gate. (ShouldReheal:
+            // re-heal unless lastHealTick == now; a tickless now == -1 always re-heals — see TagHealPolicy.)
+            int now = Find.TickManager?.TicksGame ?? -1;
+            if (!TagHealPolicy.ShouldReheal(lastHealTick, now))
+                return takenToInventory;
+
             // Capture the defs of tags about to be pruned because their Thing was DESTROYED — typically a
             // MERGE (a stack absorbed into another same-def stack; the absorbed Thing is Destroy()ed). Thing.def
-            // survives Destroy(), so we read it here and feed these defs into the self-heal below, so the
+            // survives Destroy(), so we read it here and feed these "carry-over" defs into the heal below, so the
             // same-def stack that ABSORBED the destroyed tag is re-tagged. Without this, a merge that kills a
             // def's LAST tag (e.g. CommonSense's interrupt "put carried thing back in inventory" merging into
             // an untagged same-def stack) would strand that stack's surplus untagged — invisible to the unload
@@ -67,41 +98,54 @@ namespace HaulersDream
 
             takenToInventory.RemoveWhere(x => x == null || x.Destroyed);
 
-            // Self-heal: a single scoop can land across MULTIPLE inventory stacks (a yield exceeding the
-            // stack limit, e.g. >75 berries, or not merging into the first stack), but the registration only
-            // ever tags one of them; stacks also merge/split over time. Treat EVERY current inventory stack
-            // whose def we've already scooped (or whose last tag was just merged away) as surplus — otherwise
-            // the untagged stacks are invisible to both sharing and the unload pass (stranded in inventory
-            // forever). Bounded to already-scooped defs, so a pawn's non-scooped kit is never claimed. (A rare
-            // def overlap — e.g. a pawn that harvested healroot AND carries personal herbal medicine — would
-            // tag both; harmless: the surplus is merely unloaded to storage, where it stays usable.)
+            // Self-heal (the DECISION lives in the pure, unit-tested Core TagHealPolicy): a single scoop can land
+            // across MULTIPLE inventory stacks (a yield exceeding the stack limit, e.g. >75 berries, or not
+            // merging into the first stack) but the registration tags only one; stacks also merge/split over
+            // time. Treat every current inventory stack whose def we've already scooped — or whose last tag a
+            // merge just destroyed (carryOver) — as surplus and (re)tag it. Bounded to scooped defs (a pawn's
+            // non-scooped kit is never claimed) and never a genuine Simple Sidearms remembered sidearm (it would
+            // be re-fetched — the "unloads its own sidearm" bug). A rare def overlap (harvested healroot +
+            // personal herbal medicine) tags both; harmless: the surplus is merely unloaded to storage.
             var owner = (parent as Pawn)?.inventory?.innerContainer;
             if (owner != null && (takenToInventory.Count > 0 || carryOver.Count > 0))
             {
-                var defs = tmpScoopedDefs ?? (tmpScoopedDefs = new HashSet<ThingDef>());
-                defs.Clear();
+                var pawn = parent as Pawn;
+                var liveDefs = tmpScoopedDefs ?? (tmpScoopedDefs = new HashSet<ThingDef>());
+                liveDefs.Clear();
                 foreach (var t in takenToInventory)
-                    defs.Add(t.def);
-                foreach (var d in carryOver) // re-seed defs whose last tag a merge just destroyed
-                    defs.Add(d);
+                    liveDefs.Add(t.def);
+                var union = tmpScoopedUnion ?? (tmpScoopedUnion = new HashSet<object>());
+                TagHealPolicy.BuildScoopedUnion(liveDefs, carryOver, union); // union = live-tag defs ∪ carry-over defs
+
+                // Flatten the inventory into the policy's per-stack view. IsRememberedSidearm (a Simple Sidearms
+                // reflection walk) is resolved LAZILY — only for a union-member, not-already-tagged stack (the
+                // only stacks the exclusion can affect) — preserving the original's reflection short-circuit
+                // (and IsRememberedSidearm itself short-circuits cheaply on any non-weapon stack regardless).
+                var stacks = tmpStacks ?? (tmpStacks = new List<TagHealPolicy.Stack>());
+                stacks.Clear();
                 for (int i = 0; i < owner.Count; i++)
                 {
                     var thing = owner[i];
-                    // Re-tagged (merged/split) stacks also re-register with CE's HoldTracker — a merge can grow
-                    // a stack past the originally-notified count, and CE drops the un-held excess otherwise.
-                    // NEVER def-overlap-tag a genuine Simple Sidearms remembered sidearm: weapons don't stack, so a
-                    // sidearm of a scooped weapon's def is a separate Thing that would otherwise be tagged here and
-                    // then shipped to storage (SS re-fetches it — the "unloads its own sidearm" bug). The precise
-                    // (def,stuff) check only ever excludes a genuine sidearm; a loose swept weapon still tags.
-                    if (thing != null && defs.Contains(thing.def)
-                        && !SimpleSidearmsCompat.IsRememberedSidearm(parent as Pawn, thing)
-                        && takenToInventory.Add(thing))
+                    var def = thing?.def;
+                    bool alreadyTagged = thing != null && takenToInventory.Contains(thing);
+                    bool candidate = def != null && !alreadyTagged && union.Contains(def);
+                    bool sidearm = candidate && SimpleSidearmsCompat.IsRememberedSidearm(pawn, thing);
+                    stacks.Add(new TagHealPolicy.Stack(def, alreadyTagged, sidearm));
+                }
+
+                var toTag = tmpTagIndices ?? (tmpTagIndices = new List<int>());
+                TagHealPolicy.SelectStacksToTag(union, stacks, toTag);
+                for (int i = 0; i < toTag.Count; i++)
+                {
+                    var thing = owner[toTag[i]];
+                    // Re-tagged (merged/split) stacks also re-register with CE's HoldTracker — a merge can grow a
+                    // stack past the originally-notified count, and CE drops the un-held excess otherwise.
+                    if (takenToInventory.Add(thing))
                     {
                         StampTick(thing);
-                        CECompat.NotifyHeld(parent as Pawn, thing, thing.stackCount);
+                        CECompat.NotifyHeld(pawn, thing, thing.stackCount);
                     }
                 }
-                defs.Clear();
             }
             carryOver.Clear();
             // Keep the per-item tag-age map in sync with the live set: drop ages for tags that left, and
@@ -122,6 +166,11 @@ namespace HaulersDream
             foreach (var t in takenToInventory)
                 if (!taggedTick.ContainsKey(t))
                     StampTick(t);
+            // Stamp the heal so the rest of this tick's read-only share/probe calls short-circuit (above).
+            // Only when the tick clock is available (-1 = no TickManager, e.g. a unit-test/edit-mode call) so a
+            // tickless call never poisons the stamp into matching a future "now == -1".
+            if (now != -1)
+                lastHealTick = now;
             return takenToInventory;
         }
 
@@ -153,6 +202,10 @@ namespace HaulersDream
             // live + count on re-notify). No-op without CE.
             if (thing == null)
                 return;
+            // A new tag (or any registration) mutates the tracked set, so force the next GetHashSet to re-heal:
+            // a same-tick scoop must be reflected in the share/probe view even though it was already healed
+            // earlier this tick (HD-GETHASHSET). Cheap (an int write) vs the missed-scoop correctness it protects.
+            lastHealTick = -1;
             if (takenToInventory.Add(thing))
             {
                 StampTick(thing);
@@ -167,7 +220,13 @@ namespace HaulersDream
         /// May contain destroyed or out-of-inventory tags; callers guard each entry.</summary>
         public HashSet<Thing> PeekHashSet() => takenToInventory;
 
-        public void Deregister(Thing thing) => takenToInventory.Remove(thing);
+        public void Deregister(Thing thing)
+        {
+            // Mutates the tracked set -> force a re-heal next GetHashSet (HD-GETHASHSET), so a same-tick share/
+            // probe view doesn't keep handing out a just-removed tag from the short-circuited cache.
+            lastHealTick = -1;
+            takenToInventory.Remove(thing);
+        }
 
         /// <summary>The next still-valid pending drop this pawn can scoop, or null. Prunes invalid ones:
         /// despawned/destroyed, on another map (a pawn that changed maps must not walk foreign coords or
@@ -198,6 +257,7 @@ namespace HaulersDream
             base.PostExposeData();
             Scribe_Collections.Look(ref takenToInventory, "haulersDreamTakenToInventory", LookMode.Reference);
             Scribe_Values.Look(ref lastYieldTick, "haulersDreamLastYieldTick", -99999);
+            Scribe_Values.Look(ref autoHaulYields, "haulersDreamAutoHaulYields", true);
             if (takenToInventory == null)
                 takenToInventory = new HashSet<Thing>();
         }

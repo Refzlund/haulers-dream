@@ -73,6 +73,20 @@ namespace HaulersDream.Core
             => immediateNeedUnits > 0 && inventoryUnits < immediateNeedUnits;
 
         /// <summary>
+        /// Whether to convert a vanilla SAME-MATERIAL construction CLUSTER (the primary needer plus the
+        /// ≤8-tile needers vanilla batched into targetQueueB) into ONE inventory trip that loads the
+        /// cluster's combined demand and delivers to every site. Only worthwhile when the cluster has at
+        /// least two distinct sites still needing material AND the combined demand exceeds a single hand-
+        /// load — a one-site cluster, or a cluster that fits in one armful, is left to the existing single-
+        /// needer / vanilla hand-batch logic.
+        /// </summary>
+        /// <param name="clusterNeederCount">Distinct cluster sites still needing this material (need &gt; 0).</param>
+        /// <param name="clusterNeedUnits">Combined units the whole cluster still needs (enroute-aware sum).</param>
+        /// <param name="handStackCap">Units that fit in the hands in one carry (<c>MaxStackSpaceEver</c>).</param>
+        public static bool MultiSiteWorthIt(int clusterNeederCount, int clusterNeedUnits, int handStackCap)
+            => clusterNeederCount >= 2 && handStackCap > 0 && clusterNeedUnits > handStackCap;
+
+        /// <summary>
         /// The mass-and-demand-capped ceiling for how many units the pawn could usefully load for this
         /// needer, ignoring how much is currently on the floor — used to bound the nearby-resource gather
         /// before the real <see cref="PlanLoad"/> (which takes the gathered availability into account).

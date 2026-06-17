@@ -17,6 +17,11 @@ namespace HaulersDream
     {
         private static readonly Dictionary<Job, CraftBatchPlan> pending = new Dictionary<Job, CraftBatchPlan>();
 
+        // Self-register the per-session handoff-map clear with the game-load hygiene sweep (see CacheRegistry), so
+        // it can never be forgotten. The static ctor runs once on first use — the only way an entry can outlive the
+        // session — so a never-used handoff is never registered (and is empty anyway).
+        static BatchCraftHandoff() => CacheRegistry.Register(Clear);
+
         public static void Set(Job job, CraftBatchPlan plan) => pending[job] = plan;
 
         /// <summary>Drop all pending handoffs — called when a game finishes initialising: an entry whose
@@ -39,25 +44,42 @@ namespace HaulersDream
 
     /// <summary>
     /// Crafts a chosen workbench bill a fixed number of times in ONE job, pre-loading every repetition's
-    /// ingredients into the pawn's inventory up front (so it makes far fewer fetch trips), then performing the
-    /// recipe work repeatedly at the bench, collecting each repetition's products into its inventory, and finally
-    /// letting the normal unload pass carry the lot to storage. Subclasses <see cref="JobDriver_DoBill"/> purely so
-    /// it can reuse the real <c>Toils_Recipe.DoRecipeWork()</c> work toil (which hard-casts the driver to
-    /// JobDriver_DoBill) for full fidelity — effects, sound, progress bar, work-speed stats — but it overrides the
-    /// whole toil list and replaces vanilla's job-ending "store one product" finish with a loop that stores into
-    /// inventory and continues.
+    /// ingredients into the pawn's inventory up front (so it makes far fewer FETCH trips), then — for EACH rep —
+    /// carrying that rep's ingredient(s) out of the pocket into the hands and SETTING THEM DOWN on the bench's
+    /// ingredient place-cell (visibly, exactly like vanilla single-rep crafting) before doing the recipe work,
+    /// collecting each repetition's products into its inventory, and finally letting the normal unload pass carry
+    /// the lot to storage. Subclasses <see cref="JobDriver_DoBill"/> purely so it can reuse the real
+    /// <c>Toils_Recipe.DoRecipeWork()</c> work toil (which hard-casts the driver to JobDriver_DoBill) for full
+    /// fidelity — effects, sound, progress bar, work-speed stats — but it overrides the whole toil list and replaces
+    /// vanilla's job-ending "store one product" finish with a loop that stores into inventory and continues.
+    ///
+    /// Why carry+place (R1 fix): vanilla <c>JobDriver_DoBill</c> ALWAYS takes even an inventory-sourced ingredient
+    /// into the hands, walks it to the bench, and PLACES it on the ingredient cell (recording <c>job.placedThings</c>)
+    /// before the recipe consumes from placedThings. An earlier version of this driver split each rep straight out of
+    /// the pocket and consumed it — so the corpse/chunk was never set down on the butcher spot/table. Phase 3 now
+    /// restores that visible place step per rep and consumes from <c>job.placedThings</c>, reusing vanilla's own
+    /// placement bookkeeping (<c>HaulAIUtility.UpdateJobWithPlacedThings</c>) and consume logic
+    /// (<c>Toils_Recipe.CalculateIngredients</c>). NOTE: vanilla's <c>PlaceHauledThingInCell</c> records placedThings
+    /// ONLY for <c>JobDefOf.DoBill</c>, and this is the custom <c>HaulersDream_BatchCraft</c> def — exactly the trap
+    /// the retired <see cref="JobDriver_InventoryDoBill"/> documented — so this driver records each placement itself.
     ///
     /// Faithfulness: the per-rep finish replicates <c>Toils_Recipe.FinishRecipeAndStartStoringProduct</c> exactly
     /// for the non-unfinished-thing path — XP, <c>GenRecipe.MakeRecipeProducts</c> (the public product maker),
     /// dominant-ingredient selection, <c>ConsumeIngredient</c>, bill iteration notify, records/quest notify — then
     /// places products into inventory instead of hauling them. Items are never duplicated (products are made only
-    /// after the rep's ingredients are pulled, and a short pull aborts the rep without producing) and never lost
-    /// (un-consumed ingredients and made products are registered for the unload pass on any job end).
+    /// AFTER the rep's ingredients are placed on the bench and consumed from placedThings, and a short carry aborts
+    /// the rep without producing) and never lost (placed-but-unconsumed ingredients sit Spawned on the bench floor
+    /// for normal hauling, and pre-loaded leftovers + made products are registered for the unload pass on any job
+    /// end). The corpse <c>autoStripCorpses</c> strip happens at consume time on the PLACED corpse (gear drops at the
+    /// bench, never destroyed), exactly as vanilla's <c>CalculateIngredients</c> does.
     /// </summary>
     public class JobDriver_BatchCraft : JobDriver_DoBill
     {
         private const TargetIndex BenchInd = TargetIndex.A;       // the workbench (== JobDriver_DoBill BillGiverInd)
         private const TargetIndex LoadStackInd = TargetIndex.B;   // transient: the floor stack being pre-loaded
+                                                                  // (== JobDriver_DoBill IngredientInd; cleared
+                                                                  // before DoRecipeWork so it sees no UnfinishedThing)
+        private const TargetIndex PlaceCellInd = TargetIndex.C;   // transient: vanilla's ingredient place-cell
 
         // Resolved plan (scribed so the job survives a save mid-batch).
         private List<ThingDef> ingredientDefs = new List<ThingDef>();
@@ -66,6 +88,15 @@ namespace HaulersDream
         private int repsDone;
         private int deadlineTick;   // absolute TicksGame after which no NEW rep starts; 0 = no timeout
         private bool planResolved;
+        // Cursor over the recipe slots while carrying+placing THIS rep's ingredients onto the bench cell (Phase 3).
+        // Scribed so a save taken mid-place resumes the carry/place loop at the same slot instead of double-placing
+        // or skipping one. Reset to 0 at the start of each rep.
+        private int placeSlotCursor;
+        // Units of the CURRENT slot (placeSlotCursor) still to carry+place this rep. A single slot can need more
+        // than one handful (its per-rep count can exceed the pawn's carry/stack ceiling), so we carry+place the slot
+        // in multiple passes until this reaches 0, then advance the cursor. -1 = "not yet initialised for this slot"
+        // (the decision toil seeds it from perRepCounts when it first reaches a slot). Scribed for save mid-place.
+        private int placeSlotRemaining = -1;
         // Transient (NOT scribed): true only while the pawn is at the bench in the craft loop, so the rot-freeze
         // patch (Patch_CompRottable_BatchFreeze) spoils carried ingredients normally during the gather/walk
         // phases and freezes them only while actually working. Re-established on the next craftCheck after a
@@ -85,6 +116,8 @@ namespace HaulersDream
             Scribe_Values.Look(ref repsDone, "hdBatchRepsDone", 0);
             Scribe_Values.Look(ref deadlineTick, "hdBatchDeadline", 0);
             Scribe_Values.Look(ref planResolved, "hdBatchPlanResolved", false);
+            Scribe_Values.Look(ref placeSlotCursor, "hdBatchPlaceSlotCursor", 0);
+            Scribe_Values.Look(ref placeSlotRemaining, "hdBatchPlaceSlotRemaining", -1);
             if (ingredientDefs == null) ingredientDefs = new List<ThingDef>();
             if (perRepCounts == null) perRepCounts = new List<int>();
         }
@@ -243,7 +276,17 @@ namespace HaulersDream
 
             yield return gotoBench;
 
-            // ---- PHASE 3: craft repeatedly, collecting products into inventory ----
+            // ---- PHASE 3: per rep, CARRY+PLACE this rep's ingredients on the bench cell (mirroring vanilla
+            //      DoBill's CollectIngredientsToils), do the recipe work, then consume the PLACED things and
+            //      collect products into inventory ----
+            //
+            // Why carry+place at all (R1 fix): vanilla JobDriver_DoBill ALWAYS takes even an inventory-sourced
+            // ingredient into the hands, walks it to the bench InteractionCell, and SETS IT DOWN on the ingredient
+            // place-cell (recording job.placedThings) before the recipe consumes from placedThings. The old batch
+            // driver skipped that entirely — it split each rep straight out of the pocket and consumed it, so the
+            // corpse/chunk was never visibly set down on the butcher spot/table. This phase restores the visible
+            // place step per rep, faithfully reusing vanilla's own placement bookkeeping (UpdateJobWithPlacedThings)
+            // and consume path (CalculateIngredients reads job.placedThings) so item-safety is identical to vanilla.
 
             Toil done = ToilMaker.MakeToil("HD_BatchDone");
             done.initAction = () => { };
@@ -255,15 +298,116 @@ namespace HaulersDream
                 ActivelyCrafting = true; // at the bench now → freeze carried ingredients' rot until the job ends
                 if (repsDone >= repsTarget) { JumpToToil(done); return; }
                 if (PastDeadline()) { JumpToToil(done); return; }
-                if (job.bill == null || job.bill.suspended || !job.bill.ShouldDoNow()) { JumpToToil(done); return; }
+                if (job.bill == null || job.bill.suspended) { JumpToToil(done); return; }
+                // "Do until you have X": the products this batch already banked sit in the pawn's INVENTORY, which
+                // vanilla's CountProducts can't see — so a plain ShouldDoNow() reads a stale count and the batch
+                // runs every planned rep past the target and never pauses. Gate TargetCount bills on the EFFECTIVE
+                // count (world + in-flight banked) instead; vanilla pauses the bill once they're delivered. Other
+                // repeat modes (RepeatCount decrements its own field; Forever) count correctly → use vanilla's gate.
+                if (job.bill is Bill_Production bpTc && bpTc.repeatMode == BillRepeatModeDefOf.TargetCount
+                    && bpTc.recipe.WorkerCounter.CanCountProducts(bpTc))
+                {
+                    if (!BatchPausePolicy.MayCraftMore(CraftBatchPlanner.EffectiveProductCount(bpTc), bpTc.targetCount, bpTc.paused))
+                    { JumpToToil(done); return; }
+                }
+                else if (!job.bill.ShouldDoNow()) { JumpToToil(done); return; }
                 if (!HasOneRepInInventory()) { JumpToToil(done); return; }
-                // Clear B so the reused DoRecipeWork sees no UnfinishedThing and uses GetWorkAmount(null).
+                // Start this rep's carry+place loop at slot 0 (uninitialised remaining) with empty placedThings.
+                placeSlotCursor = 0;
+                placeSlotRemaining = -1;
+                job.placedThings = null;
                 job.SetTarget(LoadStackInd, null);
+                job.SetTarget(PlaceCellInd, null);
             };
             craftCheck.defaultCompleteMode = ToilCompleteMode.Instant;
             yield return craftCheck;
 
+            // --- carry+place sub-loop: one slot per pass, until every slot of this rep is on the bench cell ---
+
+            // placeDecide: pick this rep's NEXT not-yet-placed slot, pull its per-rep amount out of inventory into
+            // the hands (carry tracker), and target the place cell. When all slots are placed, fall through to the
+            // recipe work. A short pull (inventory ran out — bill-disallowed personal stock, or another job took it)
+            // aborts the rep cleanly: any already-placed ingredients of this rep stay Spawned on the bench floor
+            // (reservable/haulable — picked up by normal hauling) so nothing is consumed-without-product and nothing
+            // is lost, then the batch ends.
+            Toil placeDecide = ToilMaker.MakeToil("HD_BatchPlaceDecide");
+            Toil doRecipe = ToilMaker.MakeToil("HD_BatchDoRecipeMarker");
+            doRecipe.initAction = () =>
+            {
+                // Clear B (LoadStackInd) so the reused DoRecipeWork sees no UnfinishedThing on TargetIndex.B and
+                // uses GetWorkAmount(null) — this batch never runs the unfinished-thing path. The ingredients are
+                // on the bench cell + recorded in job.placedThings, which the finish consumes.
+                job.SetTarget(LoadStackInd, null);
+            };
+            doRecipe.defaultCompleteMode = ToilCompleteMode.Instant;
+            placeDecide.initAction = () =>
+            {
+                // Advance the cursor past any finished/zero-count slots, seeding the remaining-to-place for the slot
+                // we land on. placeSlotRemaining == -1 means "this slot not yet seeded"; a slot with 0 remaining is
+                // done → advance and re-seed the next.
+                while (placeSlotCursor < ingredientDefs.Count)
+                {
+                    if (placeSlotRemaining < 0)
+                        placeSlotRemaining = perRepCounts[placeSlotCursor]; // seed from the per-rep count
+                    if (placeSlotRemaining > 0)
+                        break;          // this slot still has units to carry+place
+                    placeSlotCursor++;  // slot complete (0 or non-positive) → move on
+                    placeSlotRemaining = -1;
+                }
+                if (placeSlotCursor >= ingredientDefs.Count)
+                {
+                    // Every slot of this rep is on the bench cell → go craft.
+                    JumpToToil(doRecipe);
+                    return;
+                }
+                var def = ingredientDefs[placeSlotCursor];
+                // Carry as much of this slot's REMAINING units as fits in the hands this pass (a slot can exceed the
+                // carry/stack ceiling, so it may take several carry+place passes). Mirrors vanilla
+                // StartCarryThing(canTakeFromInventory:true): SplitOff the inventory stack(s) into the carry tracker.
+                int got = StartCarryRepSlot(def, placeSlotRemaining);
+                if (got <= 0)
+                {
+                    // Inventory ran short for this slot (bill-disallowed personal stock, or another job took it):
+                    // this rep can't be completed. Abort it without producing — dropping any partial hands and
+                    // leaving the already-placed ingredients as Spawned bench-floor stock — and end the batch.
+                    AbortRepCarryPlace();
+                    JumpToToil(done);
+                    return;
+                }
+            };
+            placeDecide.defaultCompleteMode = ToilCompleteMode.Instant;
+            yield return placeDecide;
+
+            // placeGoto: walk to the bench interaction cell (the pawn is normally already here, so this is a no-op
+            // step in the common case, but it keeps the animation correct after a save/interruption that moved it).
+            yield return Toils_Goto.GotoThing(BenchInd, PathEndMode.InteractionCell)
+                .FailOnDespawnedNullOrForbidden(BenchInd);
+
+            // setPlaceCell: choose the ingredient place-cell exactly like vanilla SetTargetToIngredientPlaceCell.
+            yield return Toils_JobTransforms.SetTargetToIngredientPlaceCell(BenchInd, LoadStackInd, PlaceCellInd);
+
+            // placeOnCell: set the carried ingredient down on the bench cell AND record it in job.placedThings
+            // (via the public, NON-def-gated HaulAIUtility.UpdateJobWithPlacedThings) so vanilla's own consume path
+            // (CalculateIngredients, replicated in FinishOneRepIntoInventory) reads it. A bare vanilla
+            // PlaceHauledThingInCell would NOT record placedThings here — it only does so for JobDefOf.DoBill, and
+            // this is the custom HaulersDream_BatchCraft def (the exact trap the retired JobDriver_InventoryDoBill
+            // documented), so we record it ourselves.
+            yield return PlaceRepSlotOnCell();
+
+            // Next slot of this rep.
+            yield return Toils_Jump.Jump(placeDecide);
+
+            // --- all of this rep's ingredients are now physically on the bench cell ---
+            yield return doRecipe;
+
+            // FailOnDespawnedNullOrForbiddenPlacedThings (vanilla DoBill passes the bill-giver index, TargetIndex.A)
+            // guards the long DoRecipeWork window: if ANY of this rep's placed ingredients is despawned/null/forbidden
+            // or no longer on the pawn's map mid-work — i.e. another pawn (or a script) hauled/grabbed it despite the
+            // reservation, or it was destroyed — the rep FAILS CLEANLY before FinishOneRepIntoInventory can consume a
+            // stale husk from job.placedThings. The placedThings are Spawned on the bench floor (no container), so the
+            // condition's container lookup at BenchInd is irrelevant here; the Spawned check is what carries it.
             yield return Toils_Recipe.DoRecipeWork()
+                .FailOnDespawnedNullOrForbiddenPlacedThings(BenchInd)
                 .FailOnDespawnedNullOrForbidden(BenchInd)
                 .FailOnCannotTouch(BenchInd, PathEndMode.InteractionCell);
 
@@ -286,24 +430,29 @@ namespace HaulersDream
                 var map = actor.Map;
                 var bill = job.bill;
                 var recipe = bill?.recipe;
-                if (recipe == null) { JumpToToil(doneToil); return; }
+                if (recipe == null) { job.placedThings = null; JumpToToil(doneToil); return; }
 
-                // Item-safety net: from the PULL through the inventory PLACEMENT the ingredients/products are
-                // standalone "limbo" Things — an unexpected throw ANYWHERE in that window (a modded corpse
-                // comp inside the pull's Strip(), a recipe Worker, a comp notify during placement) must not
-                // lose them, so the try spans the whole window. The pull writes into `ingredients` as it
-                // goes, making partial pulls visible to the catch; RestoreToInventory skips Destroyed things,
-                // so an unconditional restore returns exactly the un-consumed remainder even when the throw
-                // happened mid-ConsumeIngredient.
-                var ingredients = new List<Thing>();
+                // Item-safety net: the ingredients are now PLACED on the bench cell (Spawned, in job.placedThings),
+                // and the made products are standalone "limbo" Things until banked into inventory — an unexpected
+                // throw ANYWHERE in this window (a modded corpse comp inside the placed-thing Strip(), a recipe
+                // Worker, a comp notify during product placement) must not lose them, so the try spans the whole
+                // window. CalculateIngredientsFromPlacedThings consumes job.placedThings (matching vanilla's
+                // CalculateIngredients exactly: it SplitOffs the placed stacks, strips clothed corpses, and clears
+                // placedThings); a throw before consume leaves the placed ingredients ON THE BENCH FLOOR (Spawned,
+                // reservable/haulable — never lost), and a throw mid/after consume + product make banks the
+                // not-yet-placed products. Either way nothing vanishes and nothing is duplicated.
+                List<Thing> ingredients = null;
                 List<Thing> products = null;
                 try
                 {
-                    // 1. Pull exactly this rep's ingredients out of inventory. Aborts (and restores) if short,
-                    //    so we never make products from incomplete ingredients.
-                    if (!PullOneRep(ingredients))
+                    // 1. Consume from job.placedThings — vanilla's exact CalculateIngredients flow (non-UFT path):
+                    //    SplitOff the placed stacks into standalone ingredient Things, strip a clothed/equipped
+                    //    placed corpse (so its gear drops AT THE BENCH, not destroyed with the corpse), and null
+                    //    placedThings. If nothing was placed (shouldn't happen — the carry+place loop ran first),
+                    //    abort the rep WITHOUT producing rather than make products from no ingredients.
+                    ingredients = CalculateIngredientsFromPlacedThings(recipe);
+                    if (ingredients.Count == 0)
                     {
-                        RestoreToInventory(ingredients);
                         JumpToToil(doneToil);
                         return;
                     }
@@ -350,12 +499,12 @@ namespace HaulersDream
                 }
                 catch (System.Exception e)
                 {
-                    // The ONLY justified catch in this file: this rep's ingredients/products are container-less
-                    // "limbo" Things during the window, so a bare throw would LEAK or DESTROY save-affecting items.
-                    // Restore the un-consumed ingredients and bank any not-yet-placed products back into inventory
-                    // for item-safety, THEN rethrow (wrapped with context) so the failure SURFACES as a red error —
-                    // never swallow it into a silent JumpToToil that hides the failed rep.
-                    RestoreToInventory(ingredients); // skips Destroyed → returns exactly the un-consumed remainder
+                    // The ONLY justified catch in this file: this rep's ingredients/products are bench-floor or
+                    // container-less "limbo" Things during the window, so a bare throw would LEAK or DESTROY
+                    // save-affecting items. The placed ingredients (if the throw came before consume) are already
+                    // Spawned on the bench floor (reservable/haulable — safe). Bank any not-yet-placed products
+                    // back into inventory, THEN rethrow (wrapped with context) so the failure SURFACES as a red
+                    // error — never swallow it into a silent JumpToToil that hides the failed rep.
                     if (products != null)
                         for (int i = 0; i < products.Count; i++)
                             // Bank only the not-yet-placed: a placed product has a holdingOwner, and an
@@ -363,11 +512,43 @@ namespace HaulersDream
                             if (products[i] != null && products[i].holdingOwner == null && !products[i].Spawned)
                                 PlaceProductIntoInventory(products[i]);
                     throw new System.Exception(
-                        $"[Hauler's Dream] batch-craft rep failed for {recipe.defName} (ingredients restored, products banked)", e);
+                        $"[Hauler's Dream] batch-craft rep failed for {recipe.defName} (placed ingredients on bench floor, products banked)", e);
                 }
             };
             toil.defaultCompleteMode = ToilCompleteMode.Instant;
             return toil;
+        }
+
+        /// <summary>Consume this rep's placed ingredients from <c>job.placedThings</c> into standalone Things,
+        /// replicating vanilla <c>Toils_Recipe.CalculateIngredients</c> EXACTLY for the non-unfinished-thing path:
+        /// SplitOff each placed stack (the whole stack when the placed count covers it), de-duplicate, strip a
+        /// clothed/equipped placed corpse (so its gear drops AT THE BENCH instead of being destroyed with the
+        /// corpse), and null out <c>placedThings</c>. SplitOff removes the consumed units from the bench cell.</summary>
+        private List<Thing> CalculateIngredientsFromPlacedThings(RecipeDef recipe)
+        {
+            var list = new List<Thing>();
+            var placed = job.placedThings;
+            if (placed != null)
+            {
+                for (int i = 0; i < placed.Count; i++)
+                {
+                    var pt = placed[i];
+                    if (pt?.thing == null || pt.Count <= 0)
+                        continue;
+                    Thing thing = (pt.Count >= pt.thing.stackCount) ? pt.thing : pt.thing.SplitOff(pt.Count);
+                    pt.Count = 0;
+                    if (list.Contains(thing)) // vanilla guards against the same Thing being recorded twice
+                        continue;
+                    list.Add(thing);
+                    // Faithful to vanilla CalculateIngredients: strip a clothed/equipped corpse BEFORE it's consumed
+                    // so its apparel/equipment/inventory drops to the floor (at the bench cell — the corpse is
+                    // Spawned there) instead of being destroyed with the corpse.
+                    if (recipe != null && recipe.autoStripCorpses && thing is IStrippable strippable && strippable.AnythingToStrip())
+                        strippable.Strip();
+                }
+            }
+            job.placedThings = null;
+            return list;
         }
 
         // ---- helpers ----
@@ -426,13 +607,27 @@ namespace HaulersDream
             var bill = job.bill;
             float radiusSq = bill != null ? bill.ingredientSearchRadius * bill.ingredientSearchRadius : float.MaxValue;
             IntVec3 root = Bench?.Position ?? pawn.Position;
+            // Spoiling-first preference among the already-valid candidates, gated on the two toggles. With
+            // both off, cmpOn is false and the pick reduces to the exact original nearest-to-pawn behaviour
+            // (non-food batch bills byte-identical). The spoiling RANK is the new primary key; distance stays
+            // the secondary key (the comparator's index-equivalent tiebreak).
+            bool cmpOn = SpoilingFirst.AnyToggleOn(HaulersDreamMod.Settings);
             Thing best = null;
             int bestDist = int.MaxValue;
-            // Distinct plan defs that still need loading.
+            // Distinct plan defs that still need loading. A def may appear in MULTIPLE slots (ingredientDefs has
+            // one entry per slot); NeededUnits(def) and the candidate scan are identical for every occurrence (and
+            // the scan only replaces `best` on a STRICT improvement, so a re-scan of the same def's stacks can never
+            // change the result), so process each def ONCE — skip an occurrence whose def already appeared earlier
+            // (HD-INVCOUNT: drops the redundant per-duplicate-def NeededUnits→InventoryCountOfDef inventory walk).
             for (int d = 0; d < ingredientDefs.Count; d++)
             {
                 var def = ingredientDefs[d];
-                if (def == null || NeededUnits(def) <= 0)
+                if (def == null)
+                    continue;
+                bool seenEarlier = false;
+                for (int e = 0; e < d; e++)
+                    if (ingredientDefs[e] == def) { seenEarlier = true; break; }
+                if (seenEarlier || NeededUnits(def) <= 0)
                     continue;
                 var things = map.listerThings.ThingsOfDef(def);
                 for (int i = 0; i < things.Count; i++)
@@ -447,7 +642,9 @@ namespace HaulersDream
                     if (!pawn.CanReserve(t) || !pawn.CanReach(t, PathEndMode.ClosestTouch, Danger.Deadly))
                         continue;
                     int dist = (t.Position - pawn.Position).LengthHorizontalSquared;
-                    if (dist < bestDist)
+                    if (best == null
+                        || (cmpOn ? SpoilingFirst.BetterThan(t, dist, best, bestDist, HaulersDreamMod.Settings)
+                                  : dist < bestDist))
                     {
                         bestDist = dist;
                         best = t;
@@ -492,7 +689,8 @@ namespace HaulersDream
         /// the gather phase. The plan's availability estimate counts reservable in-radius stock but does NOT
         /// path-check reachability, so it can over-promise; this reflects what was really loaded. Def-level
         /// (matches <see cref="HasOneRepInInventory"/>): a non-bill-usable personal stack of an ingredient def can
-        /// overstate it by one rep, which the per-rep <see cref="PullOneRep"/> then catches. 0 = nothing loadable.</summary>
+        /// overstate it by one rep, which the per-rep <see cref="StartCarryRepSlot"/> carry then catches (a short
+        /// carry aborts the rep). 0 = nothing loadable.</summary>
         private int MaxRepsLoadable()
         {
             int max = int.MaxValue;
@@ -512,69 +710,171 @@ namespace HaulersDream
             return max == int.MaxValue ? 0 : max;
         }
 
-        /// <summary>Split one rep's worth of each slot's ingredient out of inventory into standalone Things,
-        /// appending each pull to the CALLER's list as it goes (so a mid-pull throw leaves the partial pull
-        /// visible for restoration). Returns false (with whatever was pulled) if any slot is short.</summary>
-        private bool PullOneRep(List<Thing> ingredients)
+        /// <summary>Pull up to <paramref name="maxToCarry"/> units of <paramref name="def"/> out of inventory into the
+        /// pawn's HANDS (carry tracker), mirroring vanilla's <c>StartCarryThing(canTakeFromInventory:true)</c>, capped
+        /// by the carry/stack ceiling, and point target B at the carried Thing so the subsequent place toils set it
+        /// down on the bench cell. Tops up across same-def usable pocket stacks until the hands hold the requested
+        /// amount, the carry ceiling is hit, or inventory runs dry. Returns the number of units now in the hands for
+        /// THIS pass (0 = nothing usable left in inventory → the caller aborts the rep). A non-zero result short of
+        /// <paramref name="maxToCarry"/> means the carry ceiling capped it — the slot is finished across multiple
+        /// carry+place passes. Does NOT strip a corpse here — vanilla strips the PLACED thing at consume time
+        /// (<see cref="CalculateIngredientsFromPlacedThings"/>), so the gear drops at the bench, not at the pull.</summary>
+        private int StartCarryRepSlot(ThingDef def, int maxToCarry)
         {
             var owner = Inv;
-            if (owner == null)
-                return false;
+            if (owner == null || def == null || maxToCarry <= 0)
+                return 0;
             var bill = job.bill;
-            var recipe = bill?.recipe;
-
-            // Pull per-slot so the ingredient list reflects each recipe slot (matches vanilla's per-placedThing list).
-            for (int s = 0; s < ingredientDefs.Count; s++)
+            int already = pawn.carryTracker?.CarriedThing != null && pawn.carryTracker.CarriedThing.def == def
+                ? pawn.carryTracker.CarriedThing.stackCount
+                : 0;
+            // Clamp this pass's carry target to what the hands can hold (pure helper, unit-tested in Core): top up to
+            // min(maxToCarry, already + freeStackSpace). A slot exceeding the ceiling finishes over multiple passes.
+            int want = CraftBatchMath.CarryPassTarget(maxToCarry, already, pawn.carryTracker?.AvailableStackSpace(def) ?? 0);
+            int remaining = want - already;
+            // Top up the carried stack across same-def usable inventory stacks until `want` is reached or dry.
+            while (remaining > 0)
             {
-                var def = ingredientDefs[s];
-                int need = perRepCounts[s];
-                while (need > 0)
+                Thing src = null;
+                // Thing-level bill vetting: the gather phase only fetches usable stacks, but PRE-EXISTING personal
+                // stock of the same def (rotten meat in a pocket) must not be consumed either — only-disallowed
+                // stacks remaining reads as nothing-usable → the rep aborts cleanly.
+                for (int i = 0; i < owner.Count; i++)
                 {
-                    Thing src = null;
-                    // Thing-level bill vetting: the loader only fetches usable stacks, but PRE-EXISTING
-                    // personal stock of the same def (rotten meat in a pocket) must not be consumed either.
-                    // Only-disallowed-stacks-remain reads as short → the rep aborts and restores cleanly.
-                    for (int i = 0; i < owner.Count; i++)
-                        if (owner[i]?.def == def
-                            && (bill == null || InventoryShare.IsUsableForBill(owner[i], bill)))
-                        { src = owner[i]; break; }
-                    if (src == null)
-                        return false; // short → caller restores
-                    // Faithful to vanilla CalculateIngredients: strip a clothed/equipped corpse BEFORE it's consumed,
-                    // so its apparel/equipment/inventory drops to the floor (at the pawn's feet — the corpse is still
-                    // held here) instead of being destroyed with the corpse. Without this, batch-butchering a geared
-                    // corpse silently destroys all its gear (save-affecting item loss).
-                    if (recipe != null && recipe.autoStripCorpses && src is IStrippable strippable && strippable.AnythingToStrip())
-                        strippable.Strip();
-                    int take = Mathf.Min(need, src.stackCount);
-                    Thing split = src.SplitOff(take); // removes/decrements from the inventory owner
-                    if (split == null)
-                        return false;
-                    if (Comp != null) Comp.Deregister(src); // src may now be empty/destroyed; the registered set self-heals anyway
-                    ingredients.Add(split);
-                    need -= split.stackCount;
+                    var t = owner[i];
+                    if (t?.def == def && (bill == null || InventoryShare.IsUsableForBill(t, bill)))
+                    { src = t; break; }
                 }
+                if (src == null)
+                    break; // inventory dry for this def → carry what we already have (0 aborts the rep upstream)
+                int take = Mathf.Min(remaining, src.stackCount);
+                // Drive the pull through the carry tracker so the carried Thing is the standalone in-hands stack
+                // (SplitOff + innerContainer.TryAdd, identical to StartCarryThing's inventory pull). reserve:false —
+                // the bench cell is reserved instead, and a carried thing needs no spawned-target reservation.
+                int got = pawn.carryTracker.TryStartCarry(src, take, reserve: false);
+                if (got <= 0)
+                    break;
+                if (Comp != null) Comp.Deregister(src); // src may now be empty/destroyed; the tag set self-heals anyway
+                remaining -= got;
             }
-            return true;
+            // Point B at the carried Thing so SetTargetToIngredientPlaceCell / PlaceHauledThingInCell operate on it,
+            // and set the job count so any vanilla place bookkeeping sees the right amount.
+            var hands = pawn.carryTracker?.CarriedThing;
+            if (hands == null)
+                return 0;
+            job.SetTarget(LoadStackInd, hands);
+            job.count = hands.stackCount;
+            return hands.stackCount;
         }
 
-        /// <summary>Put a list of pulled ingredient Things back into inventory (used when a rep aborts).</summary>
-        private void RestoreToInventory(List<Thing> things)
+        /// <summary>Set the carried ingredient DOWN on the bench's ingredient place-cell (target C), and record the
+        /// dropped stack in <c>job.placedThings</c> via the public, NON-def-gated
+        /// <c>HaulAIUtility.UpdateJobWithPlacedThings</c> — so vanilla's consume path
+        /// (<see cref="CalculateIngredientsFromPlacedThings"/>) reads it. A plain vanilla
+        /// <c>Toils_Haul.PlaceHauledThingInCell</c> would NOT record placedThings for this custom JobDef (it gates
+        /// the bookkeeping on <c>JobDefOf.DoBill</c>), so we drop + record explicitly here.</summary>
+        private Toil PlaceRepSlotOnCell()
         {
-            var owner = Inv;
-            if (owner == null || things == null)
-                return;
-            for (int i = 0; i < things.Count; i++)
+            Toil toil = ToilMaker.MakeToil("HD_BatchPlaceOnCell");
+            toil.initAction = () =>
             {
-                var t = things[i];
-                if (t == null || t.Destroyed)
-                    continue;
-                if (!owner.TryAddOrTransfer(t, canMergeWithExistingStacks: true) && !t.Destroyed && t.holdingOwner == null)
+                var carried = pawn.carryTracker?.CarriedThing;
+                if (carried == null)
                 {
-                    // Couldn't re-add (shouldn't happen — it just came from here): drop near the pawn so it's never lost.
-                    GenPlace.TryPlaceThing(t, pawn.Position, pawn.Map, ThingPlaceMode.Near);
+                    // Nothing in hands (shouldn't happen — StartCarryRepSlot ran first). Skip this slot.
+                    placeSlotRemaining = 0;
+                    job.SetTarget(LoadStackInd, null);
+                    job.SetTarget(PlaceCellInd, null);
+                    return;
                 }
-            }
+                int carriedCount = carried.stackCount;
+                IntVec3 cell = job.GetTarget(PlaceCellInd).Cell;
+                if (!cell.IsValid)
+                    cell = Bench?.InteractionCell ?? pawn.Position;
+                int placedCount = 0;
+                // The placedAction callback records EXACTLY what landed (Thing + count) into job.placedThings via
+                // vanilla's own helper (appends/increments a ThingCountClass keyed by the placed Thing) — the precise
+                // bookkeeping vanilla PlaceHauledThingInCell performs for DoBill, replicated here because the custom
+                // HaulersDream_BatchCraft def is not in PlaceHauledThingInCell's def whitelist. Using the callback
+                // (rather than the out-Thing) faithfully credits partial/merged placements stack-by-stack.
+                void Record(Thing th, int added)
+                {
+                    placedCount += added;
+                    HaulAIUtility.UpdateJobWithPlacedThings(job, th, added);
+                    // RESERVE the placed stack via the physical-interaction reservation manager — EXACTLY what
+                    // vanilla JobDriver_DoBill.CollectIngredientsToils does immediately after PlaceHauledThingInCell
+                    // (it reserves job.GetTarget(ingredientInd) = the placed thing). This blocks every other pawn's
+                    // CanReserve on it (ReservationManager.CanReserve early-returns false when
+                    // physicalInteractionReservationManager.IsReserved(target) && !IsReservedBy(claimant)), so another
+                    // colonist's WorkGiver_Haul / WorkGiver_DoBill can no longer grab the placed ingredient during the
+                    // many-tick DoRecipeWork window — closing the theft→duplication hole. The reservation is keyed by
+                    // (pawn, job, thing) and released automatically on job cleanup via
+                    // Pawn.ClearReservationsForJob → physicalInteractionReservationManager.ReleaseClaimedBy(pawn, job),
+                    // so it never leaks into the next bill. (Reserve is idempotent: IsReservedBy short-circuits a repeat,
+                    // so re-recording a merged stack across passes is safe.)
+                    if (th != null)
+                        pawn.Map?.physicalInteractionReservationManager.Reserve(pawn, job, th);
+                }
+                // Drop the carried stack onto the bench cell.
+                if (!pawn.carryTracker.TryDropCarriedThing(cell, ThingPlaceMode.Direct, out _, Record)
+                    && carried.holdingOwner == null && !carried.Spawned && !carried.Destroyed)
+                {
+                    // Direct drop failed (cell blocked): fall back to a near-bench drop so the ingredient is never
+                    // stranded in hands, and still record it so the rep consumes it rather than leaking it.
+                    GenPlace.TryPlaceThing(carried, cell, pawn.Map, ThingPlaceMode.Near, out _, Record);
+                }
+                // R3 residue robustness: a place can leave UN-SEATABLE residue in the hands (e.g. the bench cell
+                // already held a near-full stack that absorbed only part of the carry, and ThingPlaceMode.Near found
+                // no adjacent room either). If we credited+advanced the cursor with a different-def stack still in the
+                // hands, the NEXT slot's StartCarryRepSlot (a DIFFERENT def) would target that stale wrong-def residue
+                // (it can't merge into a mismatched carried thing) and place the WRONG def for that slot, corrupting
+                // job.placedThings. So whenever the carry tracker still holds something after this place, drop it
+                // safely near the bench (mirroring AbortRepCarryPlace) so the hands are empty before we advance — the
+                // dropped residue is Spawned/reservable/haulable (never lost) and rides the normal unload like any
+                // other leftover. The placed portion stays recorded+reserved; only the unplaceable remainder is shed.
+                var leftover = pawn.carryTracker?.CarriedThing;
+                if (leftover != null)
+                    pawn.carryTracker.TryDropCarriedThing(pawn.Position, ThingPlaceMode.Near, out _);
+                // Account for what actually went down this pass. Decrement the slot's remaining by the placed amount;
+                // when it hits 0 the slot is fully on the bench → advance the cursor (re-seed next slot). If a drop
+                // somehow placed nothing (carried thing still in hand), fall back to the carried count so we never
+                // loop forever on the same slot — but record nothing extra (placedThings already reflects reality).
+                // With the residue shed above, advancing the cursor can never carry a stale wrong-def stack forward.
+                int credit = placedCount > 0 ? placedCount : carriedCount;
+                placeSlotRemaining -= credit;
+                if (placeSlotRemaining <= 0)
+                {
+                    placeSlotCursor++;
+                    placeSlotRemaining = -1; // re-seed the next slot in placeDecide
+                }
+                job.SetTarget(LoadStackInd, null);
+                job.SetTarget(PlaceCellInd, null);
+            };
+            toil.defaultCompleteMode = ToilCompleteMode.Instant;
+            return toil;
+        }
+
+        /// <summary>Abort the current rep's carry+place because a slot ran short: drop anything still in the pawn's
+        /// hands and convert this rep's already-placed ingredients back into reservable/haulable floor stacks for the
+        /// unload pass (they are already Spawned on the bench cell — just clear the placedThings record so the next
+        /// rep/finish doesn't consume them). Nothing is destroyed or duplicated — the leftover ingredients ride the
+        /// normal unload, exactly like a timed-out batch's pre-loaded leftovers.</summary>
+        private void AbortRepCarryPlace()
+        {
+            // Drop whatever is in hands near the bench (never leave a carried thing stranded on job end).
+            var carried = pawn.carryTracker?.CarriedThing;
+            if (carried != null)
+                pawn.carryTracker.TryDropCarriedThing(pawn.Position, ThingPlaceMode.Near, out _);
+            // The already-placed ingredients of this aborted rep are Spawned on the bench floor; they are NOT
+            // consumed (no products were made), so just forget the placedThings record — RegisterLeftoversForUnload
+            // (run in the finish action) re-tags any of our plan-def stock still in inventory, and the spawned
+            // bench-floor stacks are picked up by normal hauling. Clearing placedThings prevents the finish/next rep
+            // from consuming ingredients that produced nothing.
+            job.placedThings = null;
+            placeSlotCursor = 0;
+            placeSlotRemaining = -1;
+            job.SetTarget(LoadStackInd, null);
+            job.SetTarget(PlaceCellInd, null);
         }
 
         /// <summary>Place a freshly-made product into inventory (tagged for unload); overflow drops at the bench.</summary>

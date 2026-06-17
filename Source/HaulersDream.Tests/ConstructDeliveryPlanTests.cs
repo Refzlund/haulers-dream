@@ -22,8 +22,8 @@ namespace HaulersDream.Tests
         [Test]
         public void Geothermal_Fair_LoadsPastHandStack()
         {
-            // Fair overload ceiling ≈ 1.966×35 = 68.8 kg → room 63.8 → 127 steel. Far more than a 75 hand-stack.
-            Assert.That(Plan(OverloadTuning.FairLevel, frameNeed: 340, handCap: Hand, available: 300), Is.EqualTo(127));
+            // Fair overload ceiling ≈ 2.75×35 = 96.25 kg → room 91.25 → 182 steel. Far more than a 75 hand-stack.
+            Assert.That(Plan(OverloadTuning.FairLevel, frameNeed: 340, handCap: Hand, available: 300), Is.EqualTo(182));
         }
 
         [Test]
@@ -68,15 +68,15 @@ namespace HaulersDream.Tests
         [Test]
         public void AlreadyNearCeiling_FallsBackToHands()
         {
-            // Pawn already at 68 kg (near the Fair ceiling) can add ~1 steel -> nowhere near beating hands.
-            Assert.That(Plan(OverloadTuning.FairLevel, frameNeed: 340, handCap: Hand, available: 300, cur: 68f), Is.EqualTo(0));
+            // Pawn already at 95 kg (near the Fair ~96.25 kg ceiling) can add ~2 steel -> nowhere near beating hands.
+            Assert.That(Plan(OverloadTuning.FairLevel, frameNeed: 340, handCap: Hand, available: 300, cur: 95f), Is.EqualTo(0));
         }
 
         [Test]
         public void HeavyMaterial_CeilingBelowHandStack_FallsBackToHands()
         {
-            // 5 kg/unit material, hands hold 15: Fair ceiling is ~12 units (< 15) -> hands already optimal.
-            Assert.That(Plan(OverloadTuning.FairLevel, frameNeed: 200, handCap: 15, available: 200, unit: 5f), Is.EqualTo(0));
+            // 8 kg/unit material, hands hold 15: Fair ceiling is ~11 units (< 15) -> hands already optimal.
+            Assert.That(Plan(OverloadTuning.FairLevel, frameNeed: 200, handCap: 15, available: 200, unit: 8f), Is.EqualTo(0));
         }
 
         [Test]
@@ -90,9 +90,9 @@ namespace HaulersDream.Tests
         [Test]
         public void GatherCeiling_BoundsTheLoadByMassAndNeed()
         {
-            // Fair: mass ceiling 127, but never gather beyond the needer's own need.
+            // Fair: mass ceiling 182, but never gather beyond the needer's own need.
             Assert.That(ConstructDeliveryPlan.GatherCeiling(OverloadTuning.FairLevel, Cap, Base, Gear, Steel, frameNeedUnits: 340),
-                Is.EqualTo(127));
+                Is.EqualTo(182));
             Assert.That(ConstructDeliveryPlan.GatherCeiling(OverloadTuning.FairLevel, Cap, Base, Gear, Steel, frameNeedUnits: 90),
                 Is.EqualTo(90));
         }
@@ -116,6 +116,38 @@ namespace HaulersDream.Tests
                 int load2 = Plan(lv, frameNeed: 500, handCap: Hand, available: 110);
                 Assert.That(load2, Is.LessThanOrEqualTo(110), $"level {lv} exceeded availability");
             }
+        }
+
+        // ---- MultiSiteWorthIt: the gate for converting a vanilla same-material CLUSTER into one inventory trip ----
+
+        [Test]
+        public void MultiSite_TwoNeedersUnderHandCap_NotWorthIt()
+        {
+            // Two sites but the whole cluster fits in one armful -> vanilla's hand-batch already does it in one trip.
+            Assert.That(ConstructDeliveryPlan.MultiSiteWorthIt(clusterNeederCount: 2, clusterNeedUnits: 60, handStackCap: Hand), Is.False);
+            Assert.That(ConstructDeliveryPlan.MultiSiteWorthIt(clusterNeederCount: 2, clusterNeedUnits: 75, handStackCap: Hand), Is.False);
+        }
+
+        [Test]
+        public void MultiSite_TwoNeedersOverHandCap_WorthIt()
+        {
+            // Two sites whose combined demand exceeds one hand-load -> inventory beats shuttling armfuls.
+            Assert.That(ConstructDeliveryPlan.MultiSiteWorthIt(clusterNeederCount: 2, clusterNeedUnits: 76, handStackCap: Hand), Is.True);
+            Assert.That(ConstructDeliveryPlan.MultiSiteWorthIt(clusterNeederCount: 5, clusterNeedUnits: 300, handStackCap: Hand), Is.True);
+        }
+
+        [Test]
+        public void MultiSite_OneNeederOverHandCap_NotWorthIt()
+        {
+            // A single big needer is the EXISTING single-site inventory path, not the multi-site branch.
+            Assert.That(ConstructDeliveryPlan.MultiSiteWorthIt(clusterNeederCount: 1, clusterNeedUnits: 340, handStackCap: Hand), Is.False);
+        }
+
+        [Test]
+        public void MultiSite_HandCapZero_NotWorthIt()
+        {
+            // Degenerate hand capacity -> never convert.
+            Assert.That(ConstructDeliveryPlan.MultiSiteWorthIt(clusterNeederCount: 3, clusterNeedUnits: 300, handStackCap: 0), Is.False);
         }
 
         // ---- ShouldLoadBeforeDeliver: the route "top off after every wall" fix ----
@@ -165,7 +197,7 @@ namespace HaulersDream.Tests
             // on each trip. The fix's promise is "one stockpile trip per ceiling-worth," NOT one per wall.
             const int walls = 30;       // 30 walls
             const int perWall = 5;      // 5 wood each -> 150 total, far above the ceiling
-            const int ceiling = 68;     // ~Fair ceiling for a 35 kg colonist, 1 kg wood
+            const int ceiling = 91;     // ~Fair ceiling for a 35 kg colonist, 1 kg wood (2.75×35 − ~5 gear)
 
             int inventory = 0;
             int trips = 0;
@@ -181,7 +213,7 @@ namespace HaulersDream.Tests
 
             // Old behaviour topped off on essentially every wall (~30 trips); the fix is ceil(total/ceiling).
             int total = walls * perWall;
-            int expected = (total + ceiling - 1) / ceiling; // ceil(150/68) = 3
+            int expected = (total + ceiling - 1) / ceiling; // ceil(150/91) = 2
             Assert.That(trips, Is.EqualTo(expected), "should reload once per ceiling-worth, not per wall");
             Assert.That(trips, Is.LessThan(walls), "must be far fewer trips than walls");
         }

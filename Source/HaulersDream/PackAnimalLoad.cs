@@ -49,9 +49,12 @@ namespace HaulersDream
             if (pawn.CurJobDef == HaulersDreamDefOf.HaulersDream_LoadPackAnimal)
                 return true;
             var queue = pawn.jobs.jobQueue;
+            // Indexed walk: Verse.AI.JobQueue.GetEnumerator() returns the boxed IEnumerator<QueuedJob> (the
+            // List<T>.Enumerator struct boxed to the interface, ~40 B/call); the indexer returns QueuedJob directly
+            // with no allocation (HD-JOBQUEUE-BOX). The indexer is already used on jobQueue elsewhere (ConstructTether).
             if (queue != null)
-                foreach (var qj in queue)
-                    if (qj?.job?.def == HaulersDreamDefOf.HaulersDream_LoadPackAnimal)
+                for (int i = 0; i < queue.Count; i++)
+                    if (queue[i]?.job?.def == HaulersDreamDefOf.HaulersDream_LoadPackAnimal)
                         return true;
             return false;
         }
@@ -184,10 +187,11 @@ namespace HaulersDream
             if (pawn.CurJobDef == HaulersDreamDefOf.HaulersDream_LoadPackAnimal && pawn.CurJob != null)
                 return pawn.CurJob;
             var queue = pawn.jobs.jobQueue;
+            // Indexed walk (HD-JOBQUEUE-BOX): the JobQueue enumerator boxes; the indexer (used here) does not.
             if (queue != null)
-                foreach (var qj in queue)
-                    if (qj?.job?.def == HaulersDreamDefOf.HaulersDream_LoadPackAnimal)
-                        return qj.job;
+                for (int i = 0; i < queue.Count; i++)
+                    if (queue[i]?.job?.def == HaulersDreamDefOf.HaulersDream_LoadPackAnimal)
+                        return queue[i].job;
             return null;
         }
 

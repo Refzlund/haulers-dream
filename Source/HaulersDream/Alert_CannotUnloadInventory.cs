@@ -280,13 +280,7 @@ namespace HaulersDream
             // keeps the debounce clock running, so a fault that persists across the in-transit window (the
             // autocast-keeps-cancelling case) still flags.
             var jd = p.CurJobDef;
-            if (jd == HaulersDreamDefOf.HaulersDream_UnloadInventory
-                || jd == HaulersDreamDefOf.HaulersDream_BillPrepGather
-                || jd == HaulersDreamDefOf.HaulersDream_BatchCraft
-                || jd == HaulersDreamDefOf.HaulersDream_OverloadConstructDeliver
-                || jd == HaulersDreamDefOf.HaulersDream_ConstructDeliverBuild
-                || jd == HaulersDreamDefOf.HaulersDream_BulkHaul
-                || jd == HaulersDreamDefOf.HaulersDream_SelfPickup
+            if ((jd != null && HdJobDefSets.InTransitLoadJobs.Contains(jd))
                 || PawnUnloadChecker.HasQueuedUnload(p))
                 return UnloadFault.InFlight;
 

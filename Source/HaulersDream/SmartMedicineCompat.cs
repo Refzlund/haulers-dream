@@ -47,8 +47,8 @@ namespace HaulersDream
             if (active)
                 Log.Message("[Hauler's Dream] Smart Medicine detected — stocked-up medicine is excluded from surplus unloading.");
             else
-                Log.Warning("[Hauler's Dream] Smart Medicine present but StockUpUtility.StockingUpOn(Pawn, ThingDef) "
-                            + "did not resolve; stocked medicine is NOT specially protected (turn off 'unload foreign surplus' if it loops).");
+                HDLog.Warn("Smart Medicine present but StockUpUtility.StockingUpOn(Pawn, ThingDef) "
+                           + "did not resolve; stocked medicine is NOT specially protected (turn off 'unload foreign surplus' if it loops).");
         }
 
         /// <summary>True if the pawn is configured to stock up on this def (so the whole carried stack is kept).</summary>

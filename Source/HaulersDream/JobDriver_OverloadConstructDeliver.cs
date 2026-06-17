@@ -91,6 +91,24 @@ namespace HaulersDream
                 if (want > 0)
                     pawn.Map.enrouteManager.AddEnroute(enroute, pawn, resourceDef, want);
             }
+            // MULTI-SITE: also register enroute for every OTHER cluster needer in the queue, each clamped to its
+            // OWN space-remaining-with-enroute, so other pawns see the whole cluster as claimed (not just the
+            // primary). Single-needer jobs have an empty/null queue, so this is a no-op for them.
+            if (resourceDef != null && pawn.Map != null)
+            {
+                var neederQ = job.GetTargetQueue(NeederInd);
+                if (neederQ != null)
+                    for (int i = 0; i < neederQ.Count; i++)
+                    {
+                        var n = neederQ[i].Thing;
+                        if (n is IHaulEnroute qe && !n.DestroyedOrNull())
+                        {
+                            int qwant = qe.GetSpaceRemainingWithEnroute(resourceDef, pawn);
+                            if (qwant > 0)
+                                pawn.Map.enrouteManager.AddEnroute(qe, pawn, resourceDef, qwant);
+                        }
+                    }
+            }
             return true;
         }
 
@@ -107,6 +125,15 @@ namespace HaulersDream
             {
                 if (Needer is IHaulEnroute he)
                     pawn.Map?.enrouteManager?.ReleaseFor(he, pawn);
+                // MULTI-SITE: release OUR enroute on every remaining cluster needer too, so a cluster aborted
+                // mid-way (failed, interrupted, or finished early) frees all its claims — never strands them.
+                // ReleaseFor is per-(needer,pawn), so this never touches another pawn's claims. Single-needer
+                // jobs have an empty/null queue, so this is a no-op for them.
+                var neederQ = job.GetTargetQueue(NeederInd);
+                if (neederQ != null)
+                    for (int i = 0; i < neederQ.Count; i++)
+                        if (neederQ[i].Thing is IHaulEnroute qe)
+                            pawn.Map?.enrouteManager?.ReleaseFor(qe, pawn);
                 // The HAUL+BUILD variant tethers the next step on this site — another material type's
                 // delivery, or vanilla's FinishFrame once buildable — EnqueueFirst'd, so an ordered
                 // construction is one continuous task (and in a route, the build runs BEFORE the next stop).
@@ -116,12 +143,17 @@ namespace HaulersDream
                 RegisterLeftoverForUnload();
             });
 
+            // Fail the whole job only when the CURRENT needer is unusable AND no other cluster needer remains
+            // to try. For a single-needer job the queue is always empty, so this reduces EXACTLY to the original
+            // "fail if the needer is null/destroyed/despawned/forbidden". For a multi-site cluster a dead or
+            // forbidden current needer is recovered by nextNeeder (it pops the queue), so the job must NOT abort
+            // while a deliverable needer is still queued — only when the whole cluster is gone.
             this.FailOn(() =>
             {
                 var n = Needer;
-                return n == null || n.Destroyed || !n.Spawned;
+                bool currentBad = n == null || n.Destroyed || !n.Spawned || n.IsForbidden(pawn);
+                return currentBad && !HasMoreQueuedNeeders();
             });
-            this.FailOnForbidden(NeederInd);
 
             // ---- PHASE 1: LOAD floor resource into inventory up to the smart ceiling / needer need ----
 
@@ -187,24 +219,37 @@ namespace HaulersDream
 
             yield return Toils_Jump.Jump(loadDecide);
 
-            // ---- PHASE 2: walk to the needer once, then deposit from inventory in hand-sized chunks ----
+            // ---- PHASE 2: walk to the needer, deposit from inventory in hand-sized chunks; then (multi-site)
+            // walk to the NEXT cluster needer in targetQueueB and repeat, until the inventory or the queue runs
+            // out. A single-needer job has an empty queue, so nextNeeder always jumps to done — Phase 2 is then
+            // byte-identical to the original "deliver to one needer" flow. ----
 
-            yield return deliverGoto;
+            yield return deliverGoto; // walks to the primary needer, then falls into deliverDecide
 
             Toil done = ToilMaker.MakeToil("HD_Done");
             done.initAction = () => { };
             done.defaultCompleteMode = ToilCompleteMode.Instant;
 
+            // Forward-declared so deliverDecide / nextNeeder can jump to them; defined after the deposit loop.
+            // deliverGotoNext mirrors deliverGoto: every cluster needer is a Blueprint/Frame constructible (a
+            // same-material vanilla construct-delivery cluster), so GotoBuild — which reads NeederInd live, the
+            // current target B set by nextNeeder — is the right pathing. (Toils_Goto.GotoBuild already sets its
+            // own initAction + PatherArrival complete-mode.)
+            Toil nextNeeder = ToilMaker.MakeToil("HD_NextNeeder");
+            Toil deliverGotoNext = Toils_Goto.GotoBuild(NeederInd);
+
             Toil deliverDecide = ToilMaker.MakeToil("HD_DeliverDecide");
             deliverDecide.initAction = () =>
             {
                 var n = Needer;
-                if (resourceDef == null || n == null || n.Destroyed) { JumpToToil(done); return; }
-                int space = SpaceInNeeder();
+                // A dead/null current needer: try the NEXT cluster needer, don't abort the whole cluster.
+                if (resourceDef == null || n == null || n.Destroyed) { JumpToToil(nextNeeder); return; }
                 Thing inv = InventoryStackOfDef();
-                if (space <= 0 || inv == null) { JumpToToil(done); return; }
+                if (inv == null) { JumpToToil(done); return; }   // nothing left to deliver anywhere
+                int space = SpaceInNeeder();
+                if (space <= 0) { JumpToToil(nextNeeder); return; } // this needer full -> next cluster needer
                 int chunk = Mathf.Min(Mathf.Min(space, inv.stackCount), pawn.carryTracker.MaxStackSpaceEver(resourceDef));
-                if (chunk <= 0) { JumpToToil(done); return; }
+                if (chunk <= 0) { JumpToToil(nextNeeder); return; }
                 madeProgress = true; // a deposit chunk is about to move — this job genuinely advanced the site
                 job.count = chunk;
                 job.SetTarget(ResourceInd, inv);
@@ -225,10 +270,70 @@ namespace HaulersDream
             yield return Toils_Haul.DepositHauledThingInContainer(NeederInd, PrimaryNeederInd);
             yield return Toils_Jump.Jump(deliverDecide);
 
+            // ---- MULTI-SITE: advance to the next cluster needer in targetQueueB ----
+            // Release OUR enroute on the just-finished current needer, then pop the queue until a live, reachable,
+            // still-needing needer is found; re-point B/C at it and walk there. Queue exhausted (or no material
+            // left) -> done. For a single-needer job the queue is empty, so this jumps straight to done.
+            nextNeeder.initAction = () =>
+            {
+                if (Needer is IHaulEnroute he)
+                    pawn.Map?.enrouteManager?.ReleaseFor(he, pawn);
+                if (InventoryStackOfDef() == null) { JumpToToil(done); return; } // nothing left to deliver
+                var queue = job.GetTargetQueue(NeederInd);
+                while (queue != null && queue.Count > 0)
+                {
+                    Thing cand = queue[0].Thing;
+                    queue.RemoveAt(0);
+                    bool usable = cand != null && !cand.Destroyed && cand.Spawned && cand is IConstructible
+                        && !cand.IsForbidden(pawn) && pawn.CanReach(cand, PathEndMode.Touch, Danger.Deadly);
+                    int candSpace = usable
+                        ? ((cand is IHaulEnroute ce) ? ce.GetSpaceRemainingWithEnroute(resourceDef, pawn)
+                                                     : ((IConstructible)cand).ThingCountNeeded(resourceDef))
+                        : 0;
+                    if (!usable || candSpace <= 0)
+                    {
+                        // We registered enroute for this needer in TryMakePreToilReservations; since we're
+                        // dropping it (gone/forbidden/unreachable/now-full), release OUR claim so another pawn
+                        // can serve it. ReleaseFor is per-(needer,pawn) + idempotent (no-op if not claimed).
+                        if (cand is IHaulEnroute skipE)
+                            pawn.Map?.enrouteManager?.ReleaseFor(skipE, pawn);
+                        continue;
+                    }
+                    job.SetTarget(NeederInd, cand);
+                    job.SetTarget(PrimaryNeederInd, cand);
+                    JumpToToil(deliverGotoNext);
+                    return;
+                }
+                JumpToToil(done); // queue exhausted
+            };
+            nextNeeder.defaultCompleteMode = ToilCompleteMode.Instant;
+            yield return nextNeeder;
+
+            // Walk to the freshly-selected next needer (NeederInd, set by nextNeeder), then re-enter the deposit loop.
+            yield return deliverGotoNext;
+            yield return Toils_Jump.Jump(deliverDecide);
+
             yield return done; // finish action releases enroute + registers any leftover for unload
         }
 
         // ---- helpers ----
+
+        /// <summary>Any remaining cluster needer in the queue worth advancing to (a live, non-forbidden
+        /// constructible)? Cheap gate for the job-level FailOn — the rigorous reachability/space check runs in
+        /// nextNeeder when it actually pops one. Empty/null queue (single-needer jobs) -> false.</summary>
+        private bool HasMoreQueuedNeeders()
+        {
+            var queue = job.GetTargetQueue(NeederInd);
+            if (queue == null)
+                return false;
+            for (int i = 0; i < queue.Count; i++)
+            {
+                var n = queue[i].Thing;
+                if (n != null && !n.Destroyed && n.Spawned && n is IConstructible && !n.IsForbidden(pawn))
+                    return true;
+            }
+            return false;
+        }
 
         private int SpaceInNeeder()
         {
@@ -256,9 +361,9 @@ namespace HaulersDream
             for (int i = 0; i < q.Count; i++)
             {
                 var def = q[i]?.job?.def;
-                if (def == HaulersDreamDefOf.HaulersDream_OverloadConstructDeliver
-                    || def == HaulersDreamDefOf.HaulersDream_ConstructDeliverBuild
-                    || def == JobDefOf.FinishFrame)
+                // HD's construct-deliver pair (HdJobDefSets — the single source of truth) OR vanilla's
+                // FinishFrame (a vanilla def, not part of the HD pair, so it stays ORed here).
+                if (def != null && (HdJobDefSets.ConstructDeliverJobs.Contains(def) || def == JobDefOf.FinishFrame))
                     return true;
             }
             return false;
@@ -292,8 +397,9 @@ namespace HaulersDream
             float baseCap = CarryMath.EffectiveCapacity(maxCap, s.carryLimitFraction);
             float cur = MassUtility.GearAndInventoryMass(pawn);
             float unit = resourceDef.GetStatValueAbstract(StatDefOf.Mass);
-            // Pawn-aware (NoOverloadFor): strict / slider-Off / CE — and a non-humanlike the slowdown
-            // StatPart never touches must not get penalty-free overload headroom.
+            // Pawn-aware (NoOverloadFor): strict / slider-Off / CE — and an ANIMAL (non-mech non-humanlike,
+            // never slowed by StatPart) must not get penalty-free overload headroom. Player mechs DO overload
+            // here and are slowed for it, like colonists.
             int level = OverloadGate.NoOverloadFor(pawn, s) ? OverloadTuning.OffLevel : s.overloadLevel;
             return OverloadPolicy.UnitsToCarry(level, maxCap, baseCap, cur, unit,
                 demandUnits: int.MaxValue, availableUnits: int.MaxValue);

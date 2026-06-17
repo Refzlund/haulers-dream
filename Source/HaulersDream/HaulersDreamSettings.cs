@@ -1,12 +1,22 @@
 using System.Collections.Generic;
 using HaulersDream.Core;
+using RimWorld;
 using UnityEngine;
 using Verse;
 
 namespace HaulersDream
 {
-    public class HaulersDreamSettings : ModSettings
+    public partial class HaulersDreamSettings : ModSettings
     {
+        // --- master enable (no restart): one switch to disable ALL of Hauler's Dream. Default ON. When OFF, HD
+        // stops INITIATING new behavior (scoops / sweeps / bulk-haul / work-overrides) at the scoop entry points,
+        // but a pawn already carrying scooped goods STILL unloads (never a black hole) and the Unload gizmo stays
+        // available. Read live via MasterEnable.Active so it takes effect without a restart. ---
+        public bool masterEnabled = true;
+        // Dev-only: draw colored detour lines for en-route pickup / storage routing. DevMode only, NOT serialized,
+        // reset to off on load (a transient diagnostic, never persisted).
+        [System.NonSerialized] public bool drawDetourLines = false;
+
         // --- carry limit (the headline change: default = full max carrying capacity) ---
         public float carryLimitFraction = 1.0f;
 
@@ -45,6 +55,22 @@ namespace HaulersDream
         public bool unloadBeforeLeisure = true;
         public bool unloadBeforeEating = true;
         public bool shareForBuilding = true;  // carried materials count for construction
+        // Build From Inventory: source construction material from ORGANIC inventory a pawn/animal is already
+        // carrying (own → other colonists' → pack animals' / caravan cargo), not just HD-tagged scooped stock —
+        // so steel carried in a caravan builds a sandbag/wall on a raid without first dropping it off a pack
+        // animal. Extends the construction availability gate + the inventory-fetch to consider pre-existing
+        // organic inventory; delivery uses the clean inventory→site HaulToContainer driver (no drop-at-feet).
+        // Distinct from shareForBuilding (HD-tagged scooped stock only); when ON, the organic count REPLACES the
+        // tagged count in the availability gate (organic is a superset) so no physical stack is counted twice.
+        // DEFAULT ON: it only ADDS a source and (partial off) never starts an under-resourced frame, so it
+        // delivers the headline use-case out of the box without changing vanilla's all-or-nothing build rule.
+        public bool buildFromInventory = true;
+        // Partial build from inventory: relax vanilla's "all materials must be present" gate — start/advance a
+        // frame from whatever inventory stock exists even if it's less than the frame's full need (the rest is
+        // delivered as more becomes available). Changes vanilla's all-or-nothing semantics (a vanilla-semantics
+        // change, like unloadAllSurplus / shareHandHauledToStorage / batchByDefault), so OFF by default. Requires
+        // buildFromInventory.
+        public bool buildFromInventoryPartial = false;
         public bool shareForCrafting = true;  // carried ingredients count for crafting bills
         // Auto crafting bills: gather all ingredient stacks into inventory in one (overweight) sweep, then let
         // VANILLA's own DoBill craft from the carried stock (via the crafting-share relay). The earlier direct-craft
@@ -53,7 +79,22 @@ namespace HaulersDream
         public bool shareMeetInMiddle = true; // an idle carrier walks toward the fetcher
         public bool batchWorkDeliveries = true; // carry materials for many queued builds per trip (in hands; no slowdown)
         public bool inventoryConstructDeliver = true; // carry material for a big single needer in inventory (fewer trips)
+        // Multi-site construction delivery (extends inventoryConstructDeliver to the nearby CLUSTER): when vanilla
+        // batches several same-material build sites within 8 tiles, the AUTOMATIC and shift-click deliver paths
+        // load the whole cluster's combined demand into inventory in ONE trip and deliver to each site, instead of
+        // serving one site per trip (today only the route planner gathers for multiple sites at once). Respects the
+        // "finish the current site first" rule (it only raises the load ceiling + iterates needers; it never changes
+        // WHEN the pawn decides to load). Requires inventoryConstructDeliver. Default ON.
+        public bool multiSiteConstructDeliver = true;
         public bool shareHandHauledToStorage = false; // let a worker claim a stack a colonist is hand-hauling TO STORAGE (opt-in)
+        // Meals On Wheels: a hungry FREE COLONIST with no food found by vanilla eats acceptable food
+        // another player-faction pawn (or pack animal) is carrying, instead of trekking to a distant
+        // stockpile — fewer trips. Only when vanilla's own food search came up empty (never overrides a
+        // good map/own-inventory/pack-animal meal). Stricter than the reference mod: drafted/downed/mental
+        // HOLDERS are skipped, a baby's food being hand-fed is left alone, the STACK is reserved (not just
+        // the holder) so two eaters can't race one meal, and rot-priority prefers a carried meal about to
+        // spoil. Acceptability (food policy / ideology / teetotaler) is delegated to vanilla.
+        public bool mealsOnWheels = true;
 
         // --- haul to stack (prefer topping up existing stacks; destination cells unreserved) ---
         public bool haulToStack = true;
@@ -77,6 +118,11 @@ namespace HaulersDream
         // The "Haul everything nearby" right-click order: start a bulk sweep directly (no need to prioritize two
         // hauls). Additive to vanilla "Prioritize hauling".
         public bool haulNearbyOption = true;
+        // The "Pick up X" float-menu order on a haulable ground item (PUAH parity): a pawn with the comp picks
+        // the clicked stack straight into its inventory as a TAGGED, forced HD bulk haul (serviced by the normal
+        // unload), instead of vanilla's hand-haul-to-storage. Default ON for discoverability; tagged so it is
+        // never a "black hole" even with auto-unload off. Additive to vanilla's right-click haul options.
+        public bool manualPickupOption = true;
         // When a single stack is too big to carry in one armful (e.g. 75 steel but the pawn can hold 72), take it
         // in the INVENTORY and deliver the whole stack in one trip, instead of hand-carrying a partial load and
         // leaving the rest behind. Applies to ordered and automatic single-stack hauls alike.
@@ -92,11 +138,94 @@ namespace HaulersDream
         public bool loadPackAnimalBulk = true;       // the manual "Load nearby items onto pack animal (bulk)" order
         public bool autoDivertToPackAnimal = true;   // an over-encumbered caravan pawn auto-loads the nearest pack animal
 
+        // --- transporter / shuttle BULK LOADING (replaces vanilla's one-stack-per-walk transporter loading: claim a
+        // slice of the group manifest, sweep nearby stacks into inventory, walk once, deposit them all). The ledger
+        // splits a manifest across multiple haulers without double-haul; anti-conflict patches stop premature
+        // board/launch + the false "loading stalled" alert + shuttle autoload churn while claims are live.
+        public bool enableBulkLoadTransporters = true;
+        // How often (ticks) the running load job re-validates that its carried stock is still wanted by the group
+        // (mid-trip redirect within the group). 10..240; lower = more responsive redirect, higher = cheaper.
+        public int bulkLoadAiUpdateFrequency = 60;
+
+        // --- map-portal BULK LOADING (pit gates, cave / vault exits, "enter map" portals). Same claim-ledger + sweep
+        // + deposit path as transporters, but the deposit teleports/consumes the Thing to the other map (the portal's
+        // PortalContainerProxy), so there is NO group mass cap and the ledger settle is thing-less. Independent of the
+        // transporter toggle so the two vanilla single-item paths can be replaced (or left) separately.
+        public bool enableBulkLoadPortal = true;
+
+        // --- Vehicle Framework (VF) compat. enableVehicleFramework is the MASTER: it gates only the NEW opt-in VF
+        // features (the bulk-load-into-vehicle WorkGiver/float-menu/driver and the pack-animal event-correct deposit
+        // redirect). It does NOT gate the safety/correctness guards (the [UC1]/[UC2] vehicle-skip and the MOW/ORG
+        // embarked-holder skip) — those fix a PRE-EXISTING HD↔VF misfire and are gated on VehicleFrameworkCompat
+        // .IsActive ONLY, so a feature toggle can never switch the bug back on. Eat-from / build-from a parked
+        // vehicle's cargo stays governed by the existing mealsOnWheels / buildFromInventory toggles (no new gate),
+        // and the master does NOT turn those off (turning the master off must never make HD break). With VF absent
+        // both fields are inert (every VF consumer also gates on IsActive). enableBulkLoadVehicles is the SUB-toggle
+        // for the active bulk-load feature; it requires the master.
+        public bool enableVehicleFramework = true;
+        public bool enableBulkLoadVehicles = true;
+
+        // --- bulk REFUEL (replaces vanilla's one-stack-per-walk refuel of a CompRefuelable — a shuttle's chemfuel, a
+        // deep drill, a generator, …): a hauler sweeps enough nearby fuel into inventory, walks to the refuelable
+        // ONCE, and fills it in one trip. No shared manifest/ledger (vanilla CompRefuelable.Refuel just consumes up to
+        // the deficit), so it's a standalone path; only fires when 2+ stacks/trips are needed (a single-stack refuel
+        // is already one trip in vanilla). Atomic refuelables are left to vanilla RefuelAtomic.
+        public bool enableBulkRefuel = true;
+
+        // ===== Bulk Load For Transporters parity (added 2026-06) =====
+        // A1: clean up HD bulk-load/haul jobs at SAVE time so a save written mid-load survives uninstalling HD
+        // (no dead custom-JobDriver refs left in the save). Safe-uninstall data integrity; ON. It mutates job
+        // state at save time, so it is behind a toggle, but the safe default is ON.
+        public bool cleanupOnSave = true;
+        // A2: drop HD-tagged items from a pawn that can no longer haul (hauling disabled, or a mech charging /
+        // dormant / self-shutting-down) so swept cargo is never trapped forever. Anti-softlock recovery; ON.
+        public bool enableSoftlockDrop = true;
+        // B1: a pawn already carrying needed cargo diverts to deposit it into the nearest needy transporter /
+        // portal / vehicle, instead of starting a fresh pickup. Behavior-changing autonomous trigger; OFF.
+        public bool enableOpportunisticLoad = false;
+        public int loadOpportunityScanRadius = 30;
+        // B4: one right-click "load until complete" chains a (drafted) courier through every nearby transporter
+        // group that still has loading work. Behavior-changing manual convenience; OFF.
+        public bool enableContinuousLoading = false;
+        // B3: order bulk-load pickup stops by real pathfinding (re-rank the top-N straight-line candidates)
+        // instead of straight-line distance. Behavior-changing perf tradeoff on a hot scan path; OFF.
+        public bool loadHybridPathing = false;
+        public int loadPathfindingCandidates = 8;
+        // C2: auto-open the Contents tab when a single transporter is selected (and the Gear tab for a carrier).
+        // A UI override that changes the player's currently-open tab on selection; OFF.
+        public bool autoOpenTransporterContents = false;
+        public bool autoOpenCarrierGear = false;
+
+        // --- pack-animal BULK UNLOAD (the inverse of loading: empty a flagged carrier into the hauler's backpack
+        // in ONE visit, then HD's normal unload ships it to storage). Replaces vanilla's one-stack-per-walk unload.
+        public bool enableBulkUnloadCarriers = true; // route WorkGiver_UnloadCarriers through the bulk-unload job
+        // The hauler must have at least this fraction of its carry capacity free to START a bulk unload (else the
+        // backpack overflows to hands immediately and the visit barely helps). 0.5 = at most 50% encumbered.
+        public float minFreeSpaceToUnloadCarrierPct = 0.5f;
+        // Reserve the carrier exclusively while unloading. OFF (default) = non-exclusive, so roping / caravan
+        // formation / a second hauler can still interrupt (the driver's other-claimant check yields cleanly).
+        public bool reserveCarrierOnUnload = false;
+        // Per-stack visual pause (ticks) so the bulk unload reads as a deliberate action, like vanilla's per-stack
+        // unload cadence. 0 = instant. (Reused name for a future shared load+unload delay.)
+        public int visualUnloadDelay = 15;
+
         // --- auto strip on haul (corpse hauls strip the body; loot rides in the hauler's inventory) ---
         public AutoStripMode autoStripMode = AutoStripMode.AllHauls;
         public bool stripColonistCorpses = false;              // your own dead are not loot (opt-in)
         public TaintedApparelPolicy taintedSmeltablePolicy = TaintedApparelPolicy.Take;
         public TaintedApparelPolicy taintedNonSmeltablePolicy = TaintedApparelPolicy.Take;
+
+        // --- haul after slaughter (a finished kill hauls the fresh carcass to storage so it doesn't rot) ---
+        public bool haulWildKills = true;       // hunted (wild) carcasses — appends a haul on the hunter ONLY when the hunt was interrupted after the kill (JobDriver_Hunt finish action, non-Succeeded); a clean hunt self-hauls (vanilla), so HD stays out — no double-haul
+        public bool haulTamedSlaughter = true;  // slaughtered (tamed) carcasses — appends a haul on the slaughterer (slaughter doesn't self-haul)
+
+        // --- spoiling-first ingredient selection (prefer the most-perishable already-valid candidate, to
+        // reduce overall spoilage). Two independent toggles, both default ON. They only REORDER preference
+        // among already-valid candidates — never change recipe satisfaction, the bill's ingredientSearchRadius
+        // / filters, or non-rottable crafts (steel/cloth/etc. are byte-identical). Among rottable+Fresh
+        // candidates the one closest to spoiling (lowest CompRottable.TicksUntilRotAtCurrentTemp) is preferred. ---
+        public bool butcherSpoilingFirst = true; // corpses chosen for a butcher bill: most-spoiled first
+        public bool cookSpoilingFirst = true;    // rottable non-corpse food chosen for a cook bill: most-spoiled first
 
         // --- smart overload (carry past 100% capacity to save trips) ---
         // 0 = no slowdown (carry freely) ... FairLevel = balanced ... OffLevel = never overload.
@@ -106,8 +235,74 @@ namespace HaulersDream
         // off to unload when full — keep working and leave the surplus for normal hauling.
         public bool strictCarryWeight = false;
 
+        // Keep working when full (opt-in, DEFAULT OFF so existing saves/behaviour are byte-identical until
+        // opted in): when a pawn doing WORK (mining/harvesting/deconstructing) reaches its carry ceiling, it
+        // does NOT break off to unload — it keeps working and overflow yields drop on the ground for normal
+        // hauling. It only sheds the load before a LONG relocation: when its next work target is farther than
+        // the dropoff (a weighted rule — see KeepWorkingPolicy). Downtime/idle/interval/end-of-run unloads
+        // are UNCHANGED, and dedicated haul/load jobs still deliver when full. Distinct from strictCarryWeight,
+        // which also caps at 100% capacity (this keeps the overload-and-accumulate ceiling intact).
+        public bool keepWorkingWhenFull = false;
+        // Hysteresis margin (tiles) for the keep-working unload-before-next-relocation rule: the next work
+        // target must be farther than the dropoff by at least this many tiles before the full pawn detours to
+        // unload. Avoids dithering when the two distances are nearly equal.
+        public int keepWorkingMarginCells = 5;
+
         // Pass-by unload: when heading off on a long trip with a load and storage is on the way, drop it off.
         public bool opportunisticUnload = true;
+
+        // ===== While You're Up parity (C1 — safety / strictly-better, default ON) =====
+        // Don't START a new haul/scoop while a pawn is bleeding badly (it shouldn't detour into a sweep while
+        // hemorrhaging). Gates INTAKE ONLY, at the explicit scoop entry points — a pawn already carrying a load
+        // still unloads normally (never a "black hole"). OFF = vanilla HD (no health gate).
+        public bool skipHaulWhileBleeding = true;
+        // BleedRateTotal strictly above this (per-day rate) => unfit to start a haul. WYU parity = 0.001.
+        public float bleedThresholdPerDay = 0.001f;
+        // Order the consolidated unload visit by NEAREST destination first (empty one storage group fully before
+        // walking to the next), instead of the category->defName order. Strictly-better; ON. OFF = existing order.
+        public bool closestDestinationUnloadOrder = true;
+
+        // ===== While You're Up parity (C2 — en-route pickup, default OFF) =====
+        // The signature WYU mechanic: when a pawn is about to start a job, and a loose haulable lies roughly
+        // ALONG the way, grab it into inventory first (as a tagged HD bulk-haul pickup, serviced by the normal
+        // unload) so the stray item rides to storage on a trip the pawn was making anyway. A behavior-CHANGING
+        // feature, so OFF by default (the postfix's first line returns when off — byte-inert on existing saves).
+        public bool enRoutePickup = true;
+        // How strictly the "is the store roughly on the path?" check is confirmed after the cheap straight-line
+        // ratio cascade. Vanilla = cheap bounded region-count flood (fastest, least accurate); Default / Pathfinding
+        // = accurate A* path costs (Default ends the scan on a range failure, Pathfinding keeps scanning). DEFAULT
+        // Vanilla here (the perf-conscious choice — the A* modes are opt-in), unlike WYU's own Default default.
+        public EnRoutePathChecker enRoutePathChecker = EnRoutePathChecker.Vanilla;
+
+        // ===== While You're Up parity (C3 — consumer-aware storage routing, default OFF) =====
+        // "Haul before carry": before a pawn carries a resource to a build site / crafting bill, relocate the
+        // largest nearby stack of that material to storage CLOSER to the consuming job (so future fetches are
+        // short), and grab same-/equal-priority extras. A behavior-CHANGING feature, so the MASTER is OFF by
+        // default (StorageRouting's first line returns when off — byte-inert on existing saves). The 4 sub-toggles
+        // default ON but are inert while the master is OFF.
+        public bool storageRouting = true;              // MASTER (default ON)
+        public bool routeSupplies = true;               // relocate construction supplies closer to the build site
+        public bool routeIngredients = true;            // relocate bill ingredients closer to the bench
+        public bool routeToEqualPriority = true;        // allow relocating into an EQUAL-priority store (not just higher)
+        public bool routeToStockpiles = true;           // plain stockpile zones are eligible relocation targets
+
+        // ===== While You're Up parity (C4 — storage building permit/deny filter, default OFF) =====
+        // The SHARED filter (plan G4/G7): one object, one Scribe_Deep field, one dialog — read by en-route
+        // (C2), before-carry routing (C3), and the permit/deny dialog (C4). MASTER toggle, default OFF, so the
+        // whole feature is byte-inert on existing saves until opted in (StorageBuildingFilter.Enabled gates
+        // every query to allow-all when off, and W3's funnel postfix early-returns before any work).
+        public bool storageFiltersEnabled = true;
+        // When ON, the curated per-context default permit/deny sets apply (WYU "auto-manage"): opportunistic
+        // = allow-all minus the slow set; before-carry = deny-all except a curated container allow-list.
+        // When OFF, only the player's explicit overrides decide and everything else is allowed.
+        public bool storageFilterUseDefaults = true;
+        // Deny the "slow" storage set (LWM's Deep Storage) for opportunistic / before-carry hauls — a storing
+        // DELAY there makes a stop not actually opportune. NEVER denies it for an unload (a carrying pawn must
+        // always be able to put its load down). Inert under the OFF master.
+        public bool storageFilterDenyLwmForOpportunistic = true;
+        // The player's explicit per-building / per-mod overrides (deny beats allow beats the curated default).
+        // The ONE serialized filter object — never add a second. null on an old save -> new (allow-all).
+        public StorageBuildingFilter storageBuildingFilter = new StorageBuildingFilter();
 
         // --- plan-route dialog ---
         public int routeMaxAmount = 50;             // top of the "Amount" slider (before the "All" step); mod-wide
@@ -151,6 +346,10 @@ namespace HaulersDream
         // --- who ---
         public bool pauseWhileDrafted = true;
         public bool allowMechanoids = true;
+        // Let colony hauling animals (not wild/enemy) scoop nearby loot into their inventory and run HD's
+        // bulk-haul, the same way colonists do. Opt-in (default OFF) so the out-of-the-box scope stays
+        // colonists + mechs; the eligibility branch + the animal think-tree haul redirect are gated on this.
+        public bool allowAnimals = false;
         public bool allowIncapable = false;   // let pawns incapable of hauling still scoop their own yields
 
         // --- per-work-type toggles ---
@@ -190,51 +389,22 @@ namespace HaulersDream
         public bool hideGizmo = false;
         public bool verboseLogging = false;
 
+        // --- settings profiles (named presets) ---
+        // Default = the built-in defaults (immutable; selecting it acts as "reset"). A named profile stores a full
+        // snapshot of every setting; the selector shows "Custom (unsaved)" when the live values differ from the
+        // active baseline. Profiles are USER DATA — ResetToDefaults never deletes them, so they're [ProfileMeta]
+        // (excluded from the field==Scribe==Reset drift triple). See SettingsProfiles.cs for the logic.
+        [ProfileMeta] public List<SettingsProfile> savedProfiles = new List<SettingsProfile>();
+        [ProfileMeta] public string activeProfileName = "";
+        // Recursion guard: a profile snapshot is itself a HaulersDreamSettings; while (de)serializing it the nested
+        // savedProfiles/activeProfileName section is skipped (a snapshot has no profiles of its own).
+        public static bool SerializingSnapshot;
+        [System.NonSerialized] private HaulersDreamSettings defaultsSnapshotCache;
+
         public bool IsTypeEnabled(HaulSourceType type)
             => WorkTypePolicy.IsTypeEnabled(type, haulHarvest, haulMining, haulDeepDrill, haulDeconstruct, haulAnimals, haulStrip);
 
         public float EffectiveCapacity(float maxCapacityKg) => CarryMath.EffectiveCapacity(maxCapacityKg, carryLimitFraction);
-
-        private static string OverloadLevelLabel(int lv)
-        {
-            lv = OverloadTuning.ClampLevel(lv);
-            if (lv == 0) return "HaulersDream.Overload.Free".Translate();
-            if (lv >= OverloadTuning.OffLevel) return "HaulersDream.Overload.Off".Translate();
-            if (lv == OverloadTuning.FairLevel) return "HaulersDream.Overload.Fair".Translate();
-            return lv < OverloadTuning.FairLevel
-                ? "HaulersDream.Overload.Eager".Translate(lv)
-                : "HaulersDream.Overload.Cautious".Translate(lv);
-        }
-
-        private static string AutoStripModeLabel(AutoStripMode m)
-        {
-            switch (m)
-            {
-                case AutoStripMode.AllHauls: return "HaulersDream.Setting.AutoStripAll".Translate();
-                case AutoStripMode.DisposalOnly: return "HaulersDream.Setting.AutoStripDisposal".Translate();
-                default: return "HaulersDream.Setting.AutoStripOff".Translate();
-            }
-        }
-
-        private static string TaintedPolicyLabel(TaintedApparelPolicy p)
-        {
-            switch (p)
-            {
-                case TaintedApparelPolicy.LeaveOnCorpse: return "HaulersDream.Setting.TaintedLeave".Translate();
-                case TaintedApparelPolicy.DropAndForbid: return "HaulersDream.Setting.TaintedForbid".Translate();
-                case TaintedApparelPolicy.Destroy: return "HaulersDream.Setting.TaintedDestroy".Translate();
-                default: return "HaulersDream.Setting.TaintedTake".Translate();
-            }
-        }
-
-        private static FloatMenu TaintedPolicyMenu(System.Action<TaintedApparelPolicy> set)
-            => new FloatMenu(new List<FloatMenuOption>
-            {
-                new FloatMenuOption(TaintedPolicyLabel(TaintedApparelPolicy.Take), () => set(TaintedApparelPolicy.Take)),
-                new FloatMenuOption(TaintedPolicyLabel(TaintedApparelPolicy.LeaveOnCorpse), () => set(TaintedApparelPolicy.LeaveOnCorpse)),
-                new FloatMenuOption(TaintedPolicyLabel(TaintedApparelPolicy.DropAndForbid), () => set(TaintedApparelPolicy.DropAndForbid)),
-                new FloatMenuOption(TaintedPolicyLabel(TaintedApparelPolicy.Destroy), () => set(TaintedApparelPolicy.Destroy)),
-            });
 
         // Shared labels for the route-calc choices (used by both the settings window and the route dialog).
         public static string SelectionMethodLabel(RouteSelectionMethod m)
@@ -248,6 +418,7 @@ namespace HaulersDream
         public override void ExposeData()
         {
             base.ExposeData();
+            Scribe_Values.Look(ref masterEnabled, "masterEnabled", true);
             Scribe_Values.Look(ref carryLimitFraction, "carryLimitFraction", 1.0f);
             Scribe_Values.Look(ref pickupMode, "pickupMode", PickupMode.DropThenHaul);
             Scribe_Values.Look(ref markForUnload, "markForUnload", true);
@@ -267,19 +438,43 @@ namespace HaulersDream
                 ruleMap = null; // rebuild the decode cache from the freshly-loaded list on next query
             }
             Scribe_Values.Look(ref shareForBuilding, "shareForBuilding", true);
+            Scribe_Values.Look(ref buildFromInventory, "buildFromInventory", true);
+            Scribe_Values.Look(ref buildFromInventoryPartial, "buildFromInventoryPartial", false);
             Scribe_Values.Look(ref shareForCrafting, "shareForCrafting", true);
             Scribe_Values.Look(ref inventoryCraftDeliver, "inventoryCraftDeliver", true);
             Scribe_Values.Look(ref shareMeetInMiddle, "shareMeetInMiddle", true);
             Scribe_Values.Look(ref batchWorkDeliveries, "batchWorkDeliveries", true);
             Scribe_Values.Look(ref inventoryConstructDeliver, "inventoryConstructDeliver", true);
+            Scribe_Values.Look(ref multiSiteConstructDeliver, "multiSiteConstructDeliver", true);
             Scribe_Values.Look(ref shareHandHauledToStorage, "shareHandHauledToStorage", false);
+            Scribe_Values.Look(ref mealsOnWheels, "mealsOnWheels", true);
             Scribe_Values.Look(ref bulkHaul, "bulkHaul", true);
             Scribe_Values.Look(ref bulkHaulTrigger, "bulkHaulTrigger", BulkHaulTrigger.SecondTasked);
             Scribe_Values.Look(ref haulNearbyOption, "haulNearbyOption", true);
+            Scribe_Values.Look(ref manualPickupOption, "manualPickupOption", true);
             Scribe_Values.Look(ref haulOversizedInInventory, "haulOversizedInInventory", true);
             Scribe_Values.Look(ref sweepNearbyWhileWorking, "sweepNearbyWhileWorking", true);
             Scribe_Values.Look(ref loadPackAnimalBulk, "loadPackAnimalBulk", true);
             Scribe_Values.Look(ref autoDivertToPackAnimal, "autoDivertToPackAnimal", true);
+            Scribe_Values.Look(ref enableBulkLoadTransporters, "enableBulkLoadTransporters", true);
+            Scribe_Values.Look(ref bulkLoadAiUpdateFrequency, "bulkLoadAiUpdateFrequency", 60);
+            Scribe_Values.Look(ref enableBulkLoadPortal, "enableBulkLoadPortal", true);
+            Scribe_Values.Look(ref enableVehicleFramework, "enableVehicleFramework", true);
+            Scribe_Values.Look(ref enableBulkLoadVehicles, "enableBulkLoadVehicles", true);
+            Scribe_Values.Look(ref enableBulkRefuel, "enableBulkRefuel", true);
+            Scribe_Values.Look(ref enableBulkUnloadCarriers, "enableBulkUnloadCarriers", true);
+            Scribe_Values.Look(ref cleanupOnSave, "cleanupOnSave", true);
+            Scribe_Values.Look(ref enableSoftlockDrop, "enableSoftlockDrop", true);
+            Scribe_Values.Look(ref enableOpportunisticLoad, "enableOpportunisticLoad", false);
+            Scribe_Values.Look(ref loadOpportunityScanRadius, "loadOpportunityScanRadius", 30);
+            Scribe_Values.Look(ref enableContinuousLoading, "enableContinuousLoading", false);
+            Scribe_Values.Look(ref loadHybridPathing, "loadHybridPathing", false);
+            Scribe_Values.Look(ref loadPathfindingCandidates, "loadPathfindingCandidates", 8);
+            Scribe_Values.Look(ref autoOpenTransporterContents, "autoOpenTransporterContents", false);
+            Scribe_Values.Look(ref autoOpenCarrierGear, "autoOpenCarrierGear", false);
+            Scribe_Values.Look(ref minFreeSpaceToUnloadCarrierPct, "minFreeSpaceToUnloadCarrierPct", 0.5f);
+            Scribe_Values.Look(ref reserveCarrierOnUnload, "reserveCarrierOnUnload", false);
+            Scribe_Values.Look(ref visualUnloadDelay, "visualUnloadDelay", 15);
             Scribe_Values.Look(ref haulToStack, "haulToStack", true);
             Scribe_Values.Look(ref orderedConstructTether, "orderedConstructTether", true);
             Scribe_Values.Look(ref haulToSiteOption, "haulToSiteOption", true);
@@ -291,9 +486,31 @@ namespace HaulersDream
             Scribe_Values.Look(ref stripColonistCorpses, "stripColonistCorpses", false);
             Scribe_Values.Look(ref taintedSmeltablePolicy, "taintedSmeltablePolicy", TaintedApparelPolicy.Take);
             Scribe_Values.Look(ref taintedNonSmeltablePolicy, "taintedNonSmeltablePolicy", TaintedApparelPolicy.Take);
+            Scribe_Values.Look(ref haulWildKills, "haulWildKills", true);
+            Scribe_Values.Look(ref haulTamedSlaughter, "haulTamedSlaughter", true);
+            Scribe_Values.Look(ref butcherSpoilingFirst, "butcherSpoilingFirst", true);
+            Scribe_Values.Look(ref cookSpoilingFirst, "cookSpoilingFirst", true);
             Scribe_Values.Look(ref overloadLevel, "overloadLevel", OverloadTuning.FairLevel);
             Scribe_Values.Look(ref strictCarryWeight, "strictCarryWeight", false);
+            Scribe_Values.Look(ref keepWorkingWhenFull, "keepWorkingWhenFull", false);
+            Scribe_Values.Look(ref keepWorkingMarginCells, "keepWorkingMarginCells", 5);
             Scribe_Values.Look(ref opportunisticUnload, "opportunisticUnload", true);
+            Scribe_Values.Look(ref skipHaulWhileBleeding, "skipHaulWhileBleeding", true);
+            Scribe_Values.Look(ref bleedThresholdPerDay, "bleedThresholdPerDay", 0.001f);
+            Scribe_Values.Look(ref closestDestinationUnloadOrder, "closestDestinationUnloadOrder", true);
+            Scribe_Values.Look(ref enRoutePickup, "enRoutePickup", true);
+            Scribe_Values.Look(ref enRoutePathChecker, "enRoutePathChecker", EnRoutePathChecker.Vanilla);
+            Scribe_Values.Look(ref storageRouting, "storageRouting", true);
+            Scribe_Values.Look(ref routeSupplies, "routeSupplies", true);
+            Scribe_Values.Look(ref routeIngredients, "routeIngredients", true);
+            Scribe_Values.Look(ref routeToEqualPriority, "routeToEqualPriority", true);
+            Scribe_Values.Look(ref routeToStockpiles, "routeToStockpiles", true);
+            Scribe_Values.Look(ref storageFiltersEnabled, "storageFiltersEnabled", true);
+            Scribe_Values.Look(ref storageFilterUseDefaults, "storageFilterUseDefaults", true);
+            Scribe_Values.Look(ref storageFilterDenyLwmForOpportunistic, "storageFilterDenyLwmForOpportunistic", true);
+            Scribe_Deep.Look(ref storageBuildingFilter, "storageBuildingFilter");
+            if (Scribe.mode == LoadSaveMode.LoadingVars && storageBuildingFilter == null)
+                storageBuildingFilter = new StorageBuildingFilter(); // old saves lack the node -> allow-all
             Scribe_Values.Look(ref routeAllowHarvest, "routeAllowHarvest", true);
             Scribe_Values.Look(ref routeGrowthThreshold, "routeGrowthThreshold", 80);
             Scribe_Values.Look(ref routeMaxAmount, "routeMaxAmount", 50);
@@ -309,6 +526,7 @@ namespace HaulersDream
                 routePrefsByDef = new Dictionary<string, RouteDialogPrefs>();
             Scribe_Values.Look(ref pauseWhileDrafted, "pauseWhileDrafted", true);
             Scribe_Values.Look(ref allowMechanoids, "allowMechanoids", true);
+            Scribe_Values.Look(ref allowAnimals, "allowAnimals", false);
             Scribe_Values.Look(ref allowIncapable, "allowIncapable", false);
             Scribe_Values.Look(ref haulHarvest, "haulHarvest", true);
             Scribe_Values.Look(ref haulMining, "haulMining", true);
@@ -326,6 +544,138 @@ namespace HaulersDream
             Scribe_Values.Look(ref enableOnNonHomeMaps, "enableOnNonHomeMaps", true);
             Scribe_Values.Look(ref hideGizmo, "hideGizmo", false);
             Scribe_Values.Look(ref verboseLogging, "verboseLogging", false);
+
+            // Profile list + active name. Skipped while serializing a profile's own snapshot (the recursion guard),
+            // since a snapshot is itself a HaulersDreamSettings and must not carry a nested profile list.
+            if (!SerializingSnapshot)
+            {
+                Scribe_Collections.Look(ref savedProfiles, "savedProfiles", LookMode.Deep);
+                Scribe_Values.Look(ref activeProfileName, "activeProfileName", "");
+                if (Scribe.mode == LoadSaveMode.LoadingVars)
+                {
+                    if (savedProfiles == null) savedProfiles = new List<SettingsProfile>();
+                    if (activeProfileName == null) activeProfileName = "";
+                }
+            }
+        }
+
+        /// <summary>Reset EVERY persisted setting to its declared default (the same values the field initializers
+        /// and ExposeData defaults use). Called from the "Reset to defaults" button after a confirmation dialog.
+        /// Kept exhaustive: each Scribe_Values/Scribe_Collections/Scribe_Deep field above has a matching line here,
+        /// so a reset never silently leaves a field stale. Transient/derived/cache fields (drawDetourLines,
+        /// ruleMap, keepDefNames) are NOT serialized and intentionally excluded.</summary>
+        public void ResetToDefaults()
+        {
+            masterEnabled = true;
+            carryLimitFraction = 1.0f;
+            pickupMode = PickupMode.DropThenHaul;
+            markForUnload = true;
+            unloadBeforeSleep = true;
+            unloadBeforeLeisure = true;
+            unloadBeforeEating = true;
+            unloadAllSurplus = false;
+            itemUnloadRules = new List<string>();
+            ruleMap = null; // invalidate the decode cache so the cleared rule list takes effect immediately
+            shareForBuilding = true;
+            buildFromInventory = true;
+            buildFromInventoryPartial = false;
+            shareForCrafting = true;
+            inventoryCraftDeliver = true;
+            shareMeetInMiddle = true;
+            batchWorkDeliveries = true;
+            inventoryConstructDeliver = true;
+            multiSiteConstructDeliver = true;
+            shareHandHauledToStorage = false;
+            mealsOnWheels = true;
+            bulkHaul = true;
+            bulkHaulTrigger = BulkHaulTrigger.SecondTasked;
+            haulNearbyOption = true;
+            manualPickupOption = true;
+            haulOversizedInInventory = true;
+            sweepNearbyWhileWorking = true;
+            loadPackAnimalBulk = true;
+            autoDivertToPackAnimal = true;
+            enableBulkLoadTransporters = true;
+            bulkLoadAiUpdateFrequency = 60;
+            enableBulkLoadPortal = true;
+            enableVehicleFramework = true;
+            enableBulkLoadVehicles = true;
+            enableBulkRefuel = true;
+            enableBulkUnloadCarriers = true;
+            cleanupOnSave = true;
+            enableSoftlockDrop = true;
+            enableOpportunisticLoad = false;
+            loadOpportunityScanRadius = 30;
+            enableContinuousLoading = false;
+            loadHybridPathing = false;
+            loadPathfindingCandidates = 8;
+            autoOpenTransporterContents = false;
+            autoOpenCarrierGear = false;
+            minFreeSpaceToUnloadCarrierPct = 0.5f;
+            reserveCarrierOnUnload = false;
+            visualUnloadDelay = 15;
+            haulToStack = true;
+            orderedConstructTether = true;
+            haulToSiteOption = true;
+            planRoutes = true;
+            planCrafting = true;
+            batchByDefault = false;
+            defaultBatchSize = 10;
+            autoStripMode = AutoStripMode.AllHauls;
+            stripColonistCorpses = false;
+            taintedSmeltablePolicy = TaintedApparelPolicy.Take;
+            taintedNonSmeltablePolicy = TaintedApparelPolicy.Take;
+            haulWildKills = true;
+            haulTamedSlaughter = true;
+            butcherSpoilingFirst = true;
+            cookSpoilingFirst = true;
+            overloadLevel = OverloadTuning.FairLevel;
+            strictCarryWeight = false;
+            keepWorkingWhenFull = false;
+            keepWorkingMarginCells = 5;
+            opportunisticUnload = true;
+            skipHaulWhileBleeding = true;
+            bleedThresholdPerDay = 0.001f;
+            closestDestinationUnloadOrder = true;
+            enRoutePickup = true;
+            enRoutePathChecker = EnRoutePathChecker.Vanilla;
+            storageRouting = true;
+            routeSupplies = true;
+            routeIngredients = true;
+            routeToEqualPriority = true;
+            routeToStockpiles = true;
+            storageFiltersEnabled = true;
+            storageFilterUseDefaults = true;
+            storageFilterDenyLwmForOpportunistic = true;
+            storageBuildingFilter = new StorageBuildingFilter();
+            routeAllowHarvest = true;
+            routeGrowthThreshold = 80;
+            routeMaxAmount = 50;
+            routeSelectionMethod = RouteSelectionMethod.MostStopsPerTravel;
+            routeDistanceBasis = RouteDistanceBasis.StraightLine;
+            routeOrderExactMax = RouteOrderPolicy.ExactMax;
+            craftBatchTimeoutHours = 2f;
+            routePrefsByDef = new Dictionary<string, RouteDialogPrefs>();
+            pauseWhileDrafted = true;
+            allowMechanoids = true;
+            allowAnimals = false;
+            allowIncapable = false;
+            haulHarvest = true;
+            haulMining = true;
+            haulDeepDrill = true;
+            haulDeconstruct = true;
+            haulAnimals = true;
+            haulStrip = true;
+            allPawnsCanHaul = false;
+            allPawnsCanClean = false;
+            allPawnsCanCutPlants = false;
+            unloadGraceTicks = 2500;
+            intervalUnloadHours = 1f;
+            alertCannotUnload = true;
+            alertStuckHours = 12f;
+            enableOnNonHomeMaps = true;
+            hideGizmo = false;
+            verboseLogging = false;
         }
 
         /// <summary>The decoded per-item rules keyed by defName, including entries whose mod is currently absent
@@ -430,225 +780,5 @@ namespace HaulersDream
             keepDefNames = null;
         }
 
-        // The settings list long ago outgrew Dialog_ModSettings' fixed height — without a scroll view the
-        // bottom half of the options is invisible and uneditable.
-        private static Vector2 settingsScroll;
-        private static float settingsHeight = 1400f;
-
-        public void DoWindowContents(Rect rect)
-        {
-            var view = new Rect(0f, 0f, rect.width - 16f, settingsHeight);
-            Widgets.BeginScrollView(rect, ref settingsScroll, view);
-            var l = new Listing_Standard
-            {
-                // CRITICAL: without this the scroll view silently breaks. Listing_Standard.NewColumnIfNeeded
-                // wraps into a SECOND column the instant content exceeds listingRect.height (= settingsHeight)
-                // in any frame — which happens whenever the options grow past the last measured height
-                // (initial 1400 too small, or toggling bulk-haul / auto-strip adds rows). After a wrap,
-                // CurHeight (curY) reports only the short wrapped column, so settingsHeight collapses to the
-                // Mathf.Max floor (rect.height = the viewport). The view then equals the viewport, the
-                // scrollbar vanishes, and the wrapped columns run off-screen — and it re-wraps from the
-                // collapsed height every frame, so it never recovers. maxOneColumn forbids the wrap, so
-                // CurHeight is always the true single-column height and settingsHeight tracks it correctly.
-                maxOneColumn = true
-            };
-            l.Begin(view);
-
-            l.Label("HaulersDream.Setting.CarryLimit".Translate(carryLimitFraction.ToStringPercent()));
-            carryLimitFraction = l.Slider(carryLimitFraction, CarryMath.MinFraction, CarryMath.MaxFraction);
-
-            l.GapLine();
-            bool dropThenHaul = pickupMode == PickupMode.DropThenHaul;
-            l.CheckboxLabeled("HaulersDream.Setting.DropThenHaul".Translate(), ref dropThenHaul,
-                "HaulersDream.Setting.DropThenHaulDesc".Translate());
-            pickupMode = dropThenHaul ? PickupMode.DropThenHaul : PickupMode.DirectToInventory;
-            l.CheckboxLabeled("HaulersDream.Setting.MarkForUnload".Translate(), ref markForUnload);
-            l.CheckboxLabeled("HaulersDream.Setting.UnloadAllSurplus".Translate(), ref unloadAllSurplus,
-                "HaulersDream.Setting.UnloadAllSurplusDesc".Translate());
-            // Stockpile-style per-item picker: keep all / keep at most N / always unload, per item def.
-            int ruleCount = ItemRuleCount;
-            string itemBtn = ruleCount > 0
-                ? "HaulersDream.Setting.ItemUnloadButtonN".Translate(ruleCount)
-                : "HaulersDream.Setting.ItemUnloadButton".Translate();
-            if (l.ButtonText(itemBtn))
-                Find.WindowStack.Add(new Dialog_ItemUnloadSettings(this));
-            if (markForUnload)
-            {
-                // "Put it away before relaxing" — unload before each downtime activity (bypassing the accumulate window).
-                l.CheckboxLabeled("HaulersDream.Setting.UnloadBeforeSleep".Translate(), ref unloadBeforeSleep,
-                    "HaulersDream.Setting.UnloadBeforeSleepDesc".Translate());
-                l.CheckboxLabeled("HaulersDream.Setting.UnloadBeforeLeisure".Translate(), ref unloadBeforeLeisure,
-                    "HaulersDream.Setting.UnloadBeforeLeisureDesc".Translate());
-                l.CheckboxLabeled("HaulersDream.Setting.UnloadBeforeEating".Translate(), ref unloadBeforeEating,
-                    "HaulersDream.Setting.UnloadBeforeEatingDesc".Translate());
-            }
-
-            l.GapLine();
-            l.Label("HaulersDream.Setting.ShareHeader".Translate());
-            l.CheckboxLabeled("HaulersDream.Setting.ShareForBuilding".Translate(), ref shareForBuilding);
-            l.CheckboxLabeled("HaulersDream.Setting.ShareForCrafting".Translate(), ref shareForCrafting);
-            l.CheckboxLabeled("HaulersDream.Setting.InventoryCraftDeliver".Translate(), ref inventoryCraftDeliver,
-                "HaulersDream.Setting.InventoryCraftDeliverDesc".Translate());
-            l.CheckboxLabeled("HaulersDream.Setting.ShareMeetInMiddle".Translate(), ref shareMeetInMiddle);
-            l.CheckboxLabeled("HaulersDream.Setting.BatchWorkDeliveries".Translate(), ref batchWorkDeliveries,
-                "HaulersDream.Setting.BatchWorkDeliveriesDesc".Translate());
-            l.CheckboxLabeled("HaulersDream.Setting.InventoryConstructDeliver".Translate(), ref inventoryConstructDeliver,
-                "HaulersDream.Setting.InventoryConstructDeliverDesc".Translate());
-            l.CheckboxLabeled("HaulersDream.Setting.ShareHandHauled".Translate(), ref shareHandHauledToStorage,
-                "HaulersDream.Setting.ShareHandHauledDesc".Translate());
-
-            l.GapLine();
-            l.CheckboxLabeled("HaulersDream.Setting.BulkHaul".Translate(), ref bulkHaul,
-                "HaulersDream.Setting.BulkHaulDesc".Translate());
-            if (bulkHaul)
-            {
-                if (l.RadioButton("HaulersDream.Setting.BulkHaulSecond".Translate(),
-                        bulkHaulTrigger == BulkHaulTrigger.SecondTasked,
-                        tooltip: "HaulersDream.Setting.BulkHaulSecondDesc".Translate()))
-                    bulkHaulTrigger = BulkHaulTrigger.SecondTasked;
-                if (l.RadioButton("HaulersDream.Setting.BulkHaulAlways".Translate(),
-                        bulkHaulTrigger == BulkHaulTrigger.Always,
-                        tooltip: "HaulersDream.Setting.BulkHaulAlwaysDesc".Translate()))
-                    bulkHaulTrigger = BulkHaulTrigger.Always;
-                l.CheckboxLabeled("HaulersDream.Setting.HaulNearbyOption".Translate(), ref haulNearbyOption,
-                    "HaulersDream.Setting.HaulNearbyOptionDesc".Translate());
-                l.CheckboxLabeled("HaulersDream.Setting.HaulOversized".Translate(), ref haulOversizedInInventory,
-                    "HaulersDream.Setting.HaulOversizedDesc".Translate());
-            }
-
-            l.CheckboxLabeled("HaulersDream.Setting.SweepNearbyWhileWorking".Translate(), ref sweepNearbyWhileWorking,
-                "HaulersDream.Setting.SweepNearbyWhileWorkingDesc".Translate());
-
-            l.CheckboxLabeled("HaulersDream.Setting.LoadPackAnimalBulk".Translate(), ref loadPackAnimalBulk,
-                "HaulersDream.Setting.LoadPackAnimalBulkDesc".Translate());
-            l.CheckboxLabeled("HaulersDream.Setting.AutoDivertToPackAnimal".Translate(), ref autoDivertToPackAnimal,
-                "HaulersDream.Setting.AutoDivertToPackAnimalDesc".Translate());
-
-            l.CheckboxLabeled("HaulersDream.Setting.HaulToStack".Translate(), ref haulToStack,
-                "HaulersDream.Setting.HaulToStackDesc".Translate());
-
-            l.Gap(6f);
-            l.CheckboxLabeled("HaulersDream.Setting.ConstructTether".Translate(), ref orderedConstructTether,
-                "HaulersDream.Setting.ConstructTetherDesc".Translate());
-            l.CheckboxLabeled("HaulersDream.Setting.HaulToSiteOption".Translate(), ref haulToSiteOption,
-                "HaulersDream.Setting.HaulToSiteOptionDesc".Translate());
-
-            l.Gap(6f);
-            l.CheckboxLabeled("HaulersDream.Setting.PlanRoutes".Translate(), ref planRoutes,
-                "HaulersDream.Setting.PlanRoutesDesc".Translate());
-            l.CheckboxLabeled("HaulersDream.Setting.PlanCrafting".Translate(), ref planCrafting,
-                "HaulersDream.Setting.PlanCraftingDesc".Translate());
-            l.CheckboxLabeled("HaulersDream.Setting.BatchByDefault".Translate(), ref batchByDefault,
-                "HaulersDream.Setting.BatchByDefaultDesc".Translate());
-            l.Label("HaulersDream.Setting.DefaultBatchSize".Translate(defaultBatchSize));
-            defaultBatchSize = Mathf.RoundToInt(l.Slider(defaultBatchSize, 1f, 200f));
-
-            l.GapLine();
-            l.Label("HaulersDream.Setting.AutoStripHeader".Translate());
-            if (l.ButtonText("HaulersDream.Setting.AutoStripMode".Translate(AutoStripModeLabel(autoStripMode))))
-                Find.WindowStack.Add(new FloatMenu(new List<FloatMenuOption>
-                {
-                    new FloatMenuOption(AutoStripModeLabel(AutoStripMode.AllHauls), () => autoStripMode = AutoStripMode.AllHauls),
-                    new FloatMenuOption(AutoStripModeLabel(AutoStripMode.DisposalOnly), () => autoStripMode = AutoStripMode.DisposalOnly),
-                    new FloatMenuOption(AutoStripModeLabel(AutoStripMode.Off), () => autoStripMode = AutoStripMode.Off),
-                }));
-            if (autoStripMode != AutoStripMode.Off)
-                l.CheckboxLabeled("HaulersDream.Setting.StripColonists".Translate(), ref stripColonistCorpses,
-                    "HaulersDream.Setting.StripColonistsDesc".Translate());
-            // The tainted policies also govern corpse strip ORDERS (the haulStrip scoop), so they stay
-            // visible while either consumer is on — hiding an active Destroy policy would be a trap.
-            if (autoStripMode != AutoStripMode.Off || haulStrip)
-            {
-                if (l.ButtonText("HaulersDream.Setting.TaintedSmeltable".Translate(TaintedPolicyLabel(taintedSmeltablePolicy))))
-                    Find.WindowStack.Add(TaintedPolicyMenu(p => taintedSmeltablePolicy = p));
-                if (l.ButtonText("HaulersDream.Setting.TaintedNonSmeltable".Translate(TaintedPolicyLabel(taintedNonSmeltablePolicy))))
-                    Find.WindowStack.Add(TaintedPolicyMenu(p => taintedNonSmeltablePolicy = p));
-            }
-
-            l.GapLine();
-            l.Label("HaulersDream.Setting.Overload".Translate(OverloadLevelLabel(overloadLevel)));
-            overloadLevel = Mathf.RoundToInt(l.Slider(overloadLevel, 0f, OverloadTuning.MaxLevel));
-            l.Label("HaulersDream.Setting.OverloadDesc".Translate());
-            l.CheckboxLabeled("HaulersDream.Setting.StrictCarryWeight".Translate(), ref strictCarryWeight,
-                "HaulersDream.Setting.StrictCarryWeightDesc".Translate());
-            l.CheckboxLabeled("HaulersDream.Setting.OpportunisticUnload".Translate(), ref opportunisticUnload,
-                "HaulersDream.Setting.OpportunisticUnloadDesc".Translate());
-
-            l.GapLine();
-            l.Label("HaulersDream.Setting.RouteMaxAmount".Translate(routeMaxAmount));
-            routeMaxAmount = Mathf.RoundToInt(l.Slider(routeMaxAmount, 5f, RouteSelection.HardCap));
-
-            // Route calculation (global defaults; each are also overridable per target type in the route dialog).
-            l.Label("HaulersDream.Setting.RouteCalcHeader".Translate());
-            if (l.ButtonText("HaulersDream.Setting.RouteSelection".Translate(SelectionMethodLabel(routeSelectionMethod))))
-                Find.WindowStack.Add(new FloatMenu(new List<FloatMenuOption>
-                {
-                    new FloatMenuOption(SelectionMethodLabel(RouteSelectionMethod.MostStopsPerTravel), () => routeSelectionMethod = RouteSelectionMethod.MostStopsPerTravel),
-                    new FloatMenuOption(SelectionMethodLabel(RouteSelectionMethod.NearestToTarget), () => routeSelectionMethod = RouteSelectionMethod.NearestToTarget),
-                }));
-            if (l.ButtonText("HaulersDream.Setting.RouteDistance".Translate(DistanceBasisLabel(routeDistanceBasis))))
-                Find.WindowStack.Add(new FloatMenu(new List<FloatMenuOption>
-                {
-                    new FloatMenuOption(DistanceBasisLabel(RouteDistanceBasis.StraightLine), () => routeDistanceBasis = RouteDistanceBasis.StraightLine),
-                    new FloatMenuOption(DistanceBasisLabel(RouteDistanceBasis.WalkingPath), () => routeDistanceBasis = RouteDistanceBasis.WalkingPath),
-                }));
-            l.Label("HaulersDream.Setting.RouteOrderEffort".Translate(routeOrderExactMax));
-            routeOrderExactMax = Mathf.RoundToInt(l.Slider(routeOrderExactMax, 8f, 14f));
-
-            l.Label(craftBatchTimeoutHours <= 0f
-                ? "HaulersDream.Setting.CraftBatchTimeoutOff".Translate()
-                : "HaulersDream.Setting.CraftBatchTimeout".Translate(craftBatchTimeoutHours.ToString("0.#")));
-            craftBatchTimeoutHours = Mathf.Round(l.Slider(craftBatchTimeoutHours, 0f, 8f) * 2f) / 2f;
-
-            l.GapLine();
-            l.Label("HaulersDream.Setting.WorkTypesHeader".Translate());
-            l.CheckboxLabeled("HaulersDream.Setting.HaulHarvest".Translate(), ref haulHarvest);
-            l.CheckboxLabeled("HaulersDream.Setting.HaulMining".Translate(), ref haulMining);
-            l.CheckboxLabeled("HaulersDream.Setting.HaulDeepDrill".Translate(), ref haulDeepDrill);
-            l.CheckboxLabeled("HaulersDream.Setting.HaulDeconstruct".Translate(), ref haulDeconstruct);
-            l.CheckboxLabeled("HaulersDream.Setting.HaulAnimals".Translate(), ref haulAnimals);
-            l.CheckboxLabeled("HaulersDream.Setting.HaulStrip".Translate(), ref haulStrip,
-                "HaulersDream.Setting.HaulStripDesc".Translate());
-
-            l.GapLine();
-            l.Label("HaulersDream.Setting.WorkOverrideHeader".Translate());
-            l.CheckboxLabeled("HaulersDream.Setting.AllCanHaul".Translate(), ref allPawnsCanHaul,
-                "HaulersDream.Setting.AllCanHaulDesc".Translate());
-            l.CheckboxLabeled("HaulersDream.Setting.AllCanClean".Translate(), ref allPawnsCanClean,
-                "HaulersDream.Setting.AllCanCleanDesc".Translate());
-            l.CheckboxLabeled("HaulersDream.Setting.AllCanCutPlants".Translate(), ref allPawnsCanCutPlants,
-                "HaulersDream.Setting.AllCanCutPlantsDesc".Translate());
-
-            l.GapLine();
-            l.CheckboxLabeled("HaulersDream.Setting.PauseWhileDrafted".Translate(), ref pauseWhileDrafted);
-            l.CheckboxLabeled("HaulersDream.Setting.AllowMechanoids".Translate(), ref allowMechanoids);
-            l.CheckboxLabeled("HaulersDream.Setting.AllowIncapable".Translate(), ref allowIncapable);
-            l.CheckboxLabeled("HaulersDream.Setting.EnableOnNonHomeMaps".Translate(), ref enableOnNonHomeMaps);
-            l.CheckboxLabeled("HaulersDream.Setting.HideGizmo".Translate(), ref hideGizmo);
-
-            l.GapLine();
-            l.Label("HaulersDream.Setting.UnloadGrace".Translate(unloadGraceTicks));
-            unloadGraceTicks = Mathf.RoundToInt(l.Slider(unloadGraceTicks, 0f, 7500f) / 50f) * 50;
-            l.Label(intervalUnloadHours <= 0f
-                ? "HaulersDream.Setting.IntervalUnloadOff".Translate()
-                : "HaulersDream.Setting.IntervalUnload".Translate(intervalUnloadHours.ToString("0.#")));
-            intervalUnloadHours = Mathf.Round(l.Slider(intervalUnloadHours, 0f, 24f) * 2f) / 2f;
-
-            l.GapLine();
-            l.CheckboxLabeled("HaulersDream.Setting.AlertCannotUnload".Translate(), ref alertCannotUnload,
-                "HaulersDream.Setting.AlertCannotUnloadDesc".Translate());
-            if (alertCannotUnload)
-            {
-                l.Label("HaulersDream.Setting.AlertStuckHours".Translate(alertStuckHours.ToString("0.#")));
-                alertStuckHours = Mathf.Round(l.Slider(alertStuckHours, 1f, 72f) * 2f) / 2f;
-            }
-
-            l.GapLine();
-            l.CheckboxLabeled("HaulersDream.Setting.VerboseLogging".Translate(), ref verboseLogging);
-
-            settingsHeight = Mathf.Max(l.CurHeight + 12f, rect.height);
-            l.End();
-            Widgets.EndScrollView();
-        }
     }
 }

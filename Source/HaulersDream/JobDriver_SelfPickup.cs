@@ -74,11 +74,13 @@ namespace HaulersDream
                     if (count <= 0)
                     {
                         // Full. Re-queue this drop for the producer ONLY when an automatic unload can actually
-                        // free space (default mode breaks off to unload now). In strict mode / with auto-unload
-                        // off, NOTHING can fire to make room — re-adding would walk the pawn back to take zero,
-                        // forever. Abandon the drop to normal hauling instead (it's spawned and unforbidden).
+                        // free space (default mode breaks off to unload now). In strict mode, with auto-unload
+                        // off, OR with keep-working-when-full ON, NOTHING fires to make room DURING the run —
+                        // re-adding would walk the pawn back to take zero, forever. Abandon the drop to normal
+                        // hauling instead (it's spawned and unforbidden); keep-working-when-full deliberately
+                        // leaves the overflow on the ground for normal hauling.
                         if (comp != null && thing != null && s != null && s.markForUnload && !s.strictCarryWeight
-                            && !comp.pendingSelfPickups.Contains(thing))
+                            && !s.keepWorkingWhenFull && !comp.pendingSelfPickups.Contains(thing))
                             comp.pendingSelfPickups.Add(thing);
                         YieldRouter.MaybeUnloadBecauseFull(pawn, s);
                         EndJobWith(JobCondition.Succeeded);

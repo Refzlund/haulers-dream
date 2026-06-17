@@ -144,6 +144,15 @@ namespace HaulersDream
     {
         static void Postfix(ref ThinkResult __result, Pawn pawn, JobGiver_Work __instance)
         {
+            // Cheap empty-pack pre-gate (HD-OPPUNLOAD): the common case is a pawn carrying nothing scooped, and
+            // BOTH branches below bail when the tracked set is empty (ShouldDivert and TryGetEndOfRunUnloadJob each
+            // return early on Count == 0). Short-circuit that here using the read-only PeekHashSet (no self-heal /
+            // reflection / state mutation on this hot scan path) BEFORE computing runOver / IsYieldOrHaulJobDef or
+            // entering the gated paths. A pawn without the comp likewise can never divert/unload.
+            var comp = pawn?.GetComp<CompHauledToInventory>();
+            if (comp == null || comp.PeekHashSet().Count == 0)
+                return;
+
             if (__result.IsValid && __result.Job != null)
             {
                 // If the pawn just picked a NON-yield, NON-haul job, its accumulate run is over — divert it to
@@ -151,7 +160,15 @@ namespace HaulersDream
                 // yield work, runOver is false and the strict journey bar applies, so a continuing mining/
                 // deconstruct run is never interrupted (F38 preserved).
                 bool runOver = !OpportunisticUnload.IsYieldOrHaulJobDef(__result.Job.def);
-                if (!OpportunisticUnload.ShouldDivert(pawn, __result.Job, runOver))
+                // KEEP WORKING WHEN FULL (opt-in, default OFF): a full pawn whose full-trigger was suppressed
+                // (YieldRouter.MaybeUnloadBecauseFull) sheds its load here ONLY before a long relocation — when
+                // its next work target is farther than the dropoff and it's actually overloaded (the weighted
+                // KeepWorkingPolicy). This is an ADDITIONAL reason to divert, independent of opportunisticUnload;
+                // with the toggle OFF ShouldUnloadBeforeRelocation returns false, so the gate is exactly
+                // ShouldDivert as before (byte-identical). Continuing-yield-work (runOver false) still keeps
+                // accumulating unless this relocation rule fires.
+                if (!OpportunisticUnload.ShouldDivert(pawn, __result.Job, runOver)
+                    && !OpportunisticUnload.ShouldUnloadBeforeRelocation(pawn, __result.Job))
                     return;
                 var job = JobMaker.MakeJob(HaulersDreamDefOf.HaulersDream_UnloadInventory);
                 if (job.TryMakePreToilReservations(pawn, false))
@@ -223,28 +240,66 @@ namespace HaulersDream
     [HarmonyPatch(typeof(Pawn), nameof(Pawn.GetGizmos))]
     public static class Patch_Pawn_GetGizmos
     {
+        // The "Drop" gizmo icon, resolved ONCE — both the auto-haul toggle and the unload button use it, and a
+        // ContentFinder lookup per selected pawn per frame is pure waste (the texture is immutable). Lazy via a
+        // static field initializer (ContentFinder is safe at static-init time post content-load; this patch class
+        // is only touched while gizmos render, long after textures load). Mirror the same BadTex fallback.
+        private static readonly Texture2D DropIcon = ContentFinder<Texture2D>.Get("UI/Buttons/Drop", false) ?? BaseContent.BadTex;
+
         static IEnumerable<Gizmo> Postfix(IEnumerable<Gizmo> __result, Pawn __instance)
         {
             foreach (var gizmo in __result)
                 yield return gizmo;
 
             var s = HaulersDreamMod.Settings;
-            if (s == null || s.hideGizmo || __instance.Faction != Faction.OfPlayerSilentFail)
+            if (s == null || __instance.Faction != Faction.OfPlayerSilentFail)
                 yield break;
 
             var comp = __instance.GetComp<CompHauledToInventory>();
             if (comp == null)
                 yield break;
+
+            // Per-pawn auto-haul opt-out. A FUNCTIONAL standing control (not a one-shot action), so — unlike the
+            // "Unload inventory" button below — it is NOT governed by s.hideGizmo (whose label describes only the
+            // Unload button); a player who hid that button must still be able to toggle a pawn's auto-hauling.
+            // Shown for any scoop-capable RACE (humanlike, or mechanoid when allowMechanoids, or animal when
+            // allowAnimals), independent of whether it currently carries anything. Deliberately uses the lighter
+            // RACE test (YieldRouter.IsRaceEligible) instead of the full YieldRouter.IsEligible: IsEligible folds in
+            // the pauseWhileDrafted gate, so a DRAFTED pawn (pauseWhileDrafted defaults true) would fail it and the
+            // standing toggle would silently VANISH while drafted — with no way to set the preference. This toggle
+            // only RECORDS the player's standing choice; the runtime scoop gates (IsCandidate/IsEligible) still
+            // honor pauseWhileDrafted, so showing the toggle while drafted never makes a drafted pawn actually
+            // scoop. Command_Toggle aggregates across a multi-select automatically (matching isActive merges the
+            // buttons; toggleAction fires per pawn).
+            if (YieldRouter.IsRaceEligible(__instance))
+            {
+                yield return new Command_Toggle
+                {
+                    defaultLabel = "HaulersDream.Gizmo.AutoHaul".Translate(),
+                    defaultDesc = "HaulersDream.Gizmo.AutoHaulDesc".Translate(),
+                    icon = DropIcon,
+                    isActive = () => comp.autoHaulYields,
+                    toggleAction = () => comp.autoHaulYields = !comp.autoHaulYields
+                };
+            }
+
+            // The "Unload inventory" button below is a one-shot convenience — hideGizmo may hide it.
+            if (s.hideGizmo)
+                yield break;
+
             // Show the gizmo when HD has tagged stock OR the pawn carries foreign surplus a forced unload would
             // actually adopt. With the global "unload all surplus" toggle on that's ANY surplus; with it off it's
             // only stock whose def has an explicit surplus-producing rule (keep-at-most / always-unload) — matching
             // exactly what AdoptSurplusInventory tags in each case, so the button is never shown as a no-op. Both
             // checks are read-only (no tagging on the render path); clicking runs forced CheckIfShouldUnload, which
             // does the adopting + unload. Caravan-loading inventory is intentional, so it's excluded.
-            bool hasTagged = comp.GetHashSet().Count > 0;
+            // Read-only on the render path: PeekHashSet (no self-heal / no reflection / no Rand / no CE notify),
+            // and the surplus booleans go through the per-(pawn,tick) SurplusCache so the full inventory scan runs
+            // at most once per tick instead of every frame this pawn is selected.
+            bool hasTagged = comp.PeekHashSet().Count > 0;
             bool hasForeignSurplus = !__instance.IsFormingCaravan() && (s.unloadAllSurplus
-                ? InventorySurplus.HasAnySurplus(__instance)
-                : (s.HasAnySurplusProducingRule && InventorySurplus.HasAnyRuledSurplus(__instance)));
+                ? SurplusCache.HasAnySurplus(__instance)
+                : (s.HasAnySurplusProducingRule && SurplusCache.HasAnyRuledSurplus(__instance)));
             if (!hasTagged && !hasForeignSurplus)
                 yield break;
 
@@ -252,7 +307,7 @@ namespace HaulersDream
             {
                 defaultLabel = "HaulersDream.Gizmo.UnloadNow".Translate(),
                 defaultDesc = "HaulersDream.Gizmo.UnloadNowDesc".Translate(),
-                icon = ContentFinder<Texture2D>.Get("UI/Buttons/Drop", false) ?? BaseContent.BadTex,
+                icon = DropIcon,
                 action = () =>
                 {
                     // On a non-home / temporary map there is no storage — the gizmo loads the nearest pack animal
@@ -272,6 +327,52 @@ namespace HaulersDream
     }
 
     /// <summary>
+    /// #4 ANIMAL HAULERS (opt-in, default OFF): give trained colony hauling animals the same bulk-into-inventory
+    /// sweep colonists/mechs already get. Animals never reach HD's <see cref="WorkGiver_HaulGeneral"/> postfix —
+    /// they have no workSettings and haul through the THINK TREE, where the Animal think tree's
+    /// <c>ThinkNode_ConditionalTrainableCompleted(Haul)</c> subtree runs <see cref="JobGiver_Haul"/>, whose
+    /// <c>TryGiveJob</c> finds the nearest haulable and returns <c>HaulAIUtility.HaulToStorageJob(pawn, thing,
+    /// forced:false)</c> — a single-stack <see cref="JobDefOf.HaulToCell"/> job (decompile-verified RW1.6). This
+    /// postfix upgrades that single-item haul into HD's bulk-to-inventory job via the SAME planner the work scan
+    /// uses (<see cref="BulkHaul.TryBuildBulkJob"/>), so the swept stacks are tagged on the animal's
+    /// <see cref="CompHauledToInventory"/> (every <c>thingClass="Pawn"</c> def with a comps node gets the comp —
+    /// animals included) and serviced by the normal unload pass — keeping scoop/bulk/unload symmetric.
+    ///
+    /// CONSERVATIVE SCOPE: restricted to non-humanlike non-mechanoid pawns (animals) — humanlikes/mechs already
+    /// get the bulk sweep on the work-scan path and we must not alter their behavior here. The deeper gates live
+    /// in <see cref="BulkHaul.TryBuildBulkJob"/>: it requires <c>Faction.OfPlayer</c> (so wild/enemy/insect
+    /// animals — never player faction — are rejected), <see cref="YieldRouter.IsEligible"/> (which returns
+    /// <c>allowAnimals</c> for an animal, so with the setting OFF this is false and the whole path is a no-op →
+    /// byte-identical to today), the tracking comp, and the bulkHaul/map gates. No try/catch: a failure is a real
+    /// bug to surface, exactly like <see cref="Patch_WorkGiver_HaulGeneral_BulkHaul"/>.
+    /// </summary>
+    [HarmonyPatch(typeof(JobGiver_Haul), "TryGiveJob")]
+    public static class Patch_JobGiver_Haul_AnimalBulk
+    {
+        static void Postfix(ref Job __result, Pawn pawn)
+        {
+            // Cheap, allocation-free pre-gates before the planner runs: feature on, an animal, with a haul job
+            // to upgrade. allowAnimals defaults OFF — when off this returns immediately and behavior is unchanged.
+            var s = HaulersDreamMod.Settings;
+            if (s == null || !s.allowAnimals || !s.bulkHaul || __result == null || pawn?.RaceProps == null)
+                return;
+            // ANIMALS only here (the think-tree path). Humanlikes/mechs that also run JobGiver_Haul in other
+            // subtrees keep their unchanged result — their bulk sweep comes from the work-scan postfix.
+            if (pawn.RaceProps.Humanlike || pawn.RaceProps.IsMechanoid)
+                return;
+            // The primary is the thing the produced haul targets (StartCarryThing retargets later, but at
+            // JobGiver_Haul time targetA is still the grounded stack). TryBuildBulkJob requires a HaulToCell
+            // vanilla job (container destinations keep their flow) — it rejects anything else internally.
+            var primary = __result.targetA.Thing;
+            if (primary == null)
+                return;
+            var bulk = BulkHaul.TryBuildBulkJob(pawn, primary, __result, forced: false);
+            if (bulk != null)
+                __result = bulk;
+        }
+    }
+
+    /// <summary>
     /// Coalesce vanilla "Load onto pack animal" orders into ONE trip. Each vanilla GiveToPackAnimal order is a
     /// one-stack-in-hands job, so shift-clicking several = several trips. This redirects them into HD's
     /// inventory-based <see cref="JobDriver_LoadPackAnimal"/>: the first becomes one HD load job, and each
@@ -286,6 +387,17 @@ namespace HaulersDream
         private static readonly AccessTools.FieldRef<Verse.AI.Pawn_JobTracker, Pawn> PawnOf =
             AccessTools.FieldRefAccess<Verse.AI.Pawn_JobTracker, Pawn>("pawn");
 
+        // ORDER CONTRACT (paired with Patch_TryTakeOrderedJob_BulkHaulTakeover, also a prefix on this method):
+        // both prefixes can short-circuit vanilla (return false), so their relative order must be PINNED rather
+        // than left to Harmony's unspecified same-priority/same-assembly ordering. This one runs FIRST
+        // (Priority.High vs the takeover's Priority.Normal). It is safe TODAY because the two early-return on
+        // DISJOINT job defs (GiveToPackAnimal here vs HaulersDream_BulkHaul in the takeover), so neither can see
+        // the other's job and they never actually contend; the explicit priority simply makes that guarantee
+        // declarative and stable against a future overlap or a third-party patch expecting a fixed order. The
+        // recursive re-entry below (TryTakeOrderedJob with the freshly-built HD load job, NOT a GiveToPackAnimal)
+        // re-runs the whole prefix chain — this prefix passes the HD job through, and the takeover prefix only
+        // acts on HaulersDream_BulkHaul, so the re-entry can never loop or be hijacked by the sibling.
+        [HarmonyPriority(Priority.High)]
         static bool Prefix(Verse.AI.Pawn_JobTracker __instance, Verse.AI.Job job, JobTag? tag,
             bool requestQueueing, ref bool __result)
         {
@@ -331,9 +443,14 @@ namespace HaulersDream
         private static readonly AccessTools.FieldRef<Verse.AI.Pawn_JobTracker, Pawn> PawnOf =
             AccessTools.FieldRefAccess<Verse.AI.Pawn_JobTracker, Pawn>("pawn");
 
+        // ORDER CONTRACT (paired with Patch_TryTakeOrderedJob_CoalescePackAnimalLoad, also a prefix on this
+        // method): this one runs SECOND (Priority.Normal vs the coalescer's Priority.High). Safe because the two
+        // gate on DISJOINT job defs (HaulersDream_BulkHaul here vs GiveToPackAnimal there), so they never contend
+        // — the explicit priority just pins the ordering declaratively. See the coalescer for the full rationale.
         // Deliberately ignores requestQueueing (shift): the user wants the sweep to take over IMMEDIATELY even
         // when the second order was shift-queued — the first item is absorbed into the one-trip sweep, and
         // unrelated queued work is preserved (TryTakeoverSecondOrder does not ClearQueuedJobs).
+        [HarmonyPriority(Priority.Normal)]
         static bool Prefix(Verse.AI.Pawn_JobTracker __instance, Verse.AI.Job job, JobTag? tag, ref bool __result)
         {
             // Only a player-ordered bulk haul can take over; vanilla single hauls (the FIRST, surgical order),

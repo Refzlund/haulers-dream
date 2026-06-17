@@ -1,17 +1,32 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LanguageData>
 
+  <!-- Settings window tabs -->
+  <HaulersDream.Tab.General>General</HaulersDream.Tab.General>
+  <HaulersDream.Tab.Sharing>Sharing &amp; Delivery</HaulersDream.Tab.Sharing>
+  <HaulersDream.Tab.Bulk>Bulk &amp; Carriers</HaulersDream.Tab.Bulk>
+  <HaulersDream.Tab.Routing>En-route &amp; Routing</HaulersDream.Tab.Routing>
+  <HaulersDream.Tab.Sources>Sources &amp; Who</HaulersDream.Tab.Sources>
+  <HaulersDream.Tab.Planners>Planners &amp; Advanced</HaulersDream.Tab.Planners>
+
+  <!-- Master enable + dev detour overlay -->
+  <HaulersDream.Setting.MasterEnabled>Enable Hauler's Dream</HaulersDream.Setting.MasterEnabled>
+  <HaulersDream.Setting.MasterEnabledDesc>The master switch. When OFF, Hauler's Dream stops STARTING its automatic hauling behaviors — scooping work yields, sweeping nearby loot, bulk hauling, en-route pickup, and storage routing — which is handy for troubleshooting whether the mod is involved in something, without a restart. A pawn that already scooped goods still unloads them normally (nothing is ever stranded), and the per-pawn "Unload inventory" button stays available. (The work-incapability overrides and the right-click order menus have their own toggles and aren't affected by this switch.) On by default.</HaulersDream.Setting.MasterEnabledDesc>
+  <HaulersDream.Setting.DrawDetourLines>Draw debug detour lines (dev)</HaulersDream.Setting.DrawDetourLines>
+  <HaulersDream.Setting.DrawDetourLinesDesc>Dev-only diagnostic: draws coloured lines for en-route pickup and storage-routing detours so you can see why a pawn diverted. Not saved — it resets to off each time the game starts.</HaulersDream.Setting.DrawDetourLinesDesc>
+
   <HaulersDream.Setting.CarryLimit>Carry limit: {0} of each pawn's max carrying capacity</HaulersDream.Setting.CarryLimit>
+  <HaulersDream.Setting.CarryLimitDesc>The cap is a fraction of the pawn's max carrying capacity — the mass it can carry across its apparel, equipment, and inventory (the same capacity used for caravans and pack loading). Items carried in the hands during a haul (the active hand-haul stack) are NOT counted against this limit; only what is stowed in apparel/equipment/inventory is. Smart overload below can still let a pawn go past 100% of this cap to save trips.</HaulersDream.Setting.CarryLimitDesc>
 
   <HaulersDream.Setting.DropThenHaul>Drop on the floor, then pick up (realistic)</HaulersDream.Setting.DropThenHaul>
   <HaulersDream.Setting.DropThenHaulDesc>When ON, harvested/mined goods drop on the ground and the pawn scoops them into its inventory after the work run. When OFF, goods go straight into inventory (no ground touch).</HaulersDream.Setting.DropThenHaulDesc>
   <HaulersDream.Setting.MarkForUnload>Automatically unload scooped goods (at end of work run, around meals and recreation, when overweight, and on the interval below). Off: pawns keep carrying until you press their "Unload inventory" button.</HaulersDream.Setting.MarkForUnload>
   <HaulersDream.Setting.UnloadAllSurplus>Also put away surplus inventory a pawn is carrying that Hauler's Dream did NOT pick up itself (off by default)</HaulersDream.Setting.UnloadAllSurplus>
-  <HaulersDream.Setting.UnloadAllSurplusDesc>Off by default: Hauler's Dream only unloads goods it scooped itself, so it never touches a colonist's sidearms, carried medicine or water, or traded goods. Turn this ON for the convenience of also putting away surplus a pawn is carrying for no reason (from trades, other mods, or manual moves). "Surplus" excludes the pawn's kept food, drugs, inventory-stock and Combat Extended loadout (incl. ammo), vanilla addiction/dependency drugs, items that Simple Sidearms, Smart Medicine, or Dub's Bad Hygiene keep in inventory (all auto-detected), and anything you keep in Individual Item Unload Settings below — and only stacks that have somewhere to be stored; caravan-loading inventory is left alone.</HaulersDream.Setting.UnloadAllSurplusDesc>
+  <HaulersDream.Setting.UnloadAllSurplusDesc>Off by default: Hauler's Dream only unloads goods it scooped itself, so it never touches a colonist's sidearms, carried medicine or water, or traded goods. Turn this ON for the convenience of also putting away surplus a pawn is carrying for no reason (from trades, other mods, or manual moves). "Surplus" excludes the pawn's kept food, drugs, inventory-stock and any weapon-loadout items (incl. ammo), vanilla addiction/dependency drugs, items that sidearm, medicine or hygiene mods keep in inventory (all auto-detected), and anything you keep in Individual Item Unload Settings below — and only stacks that have somewhere to be stored; caravan-loading inventory is left alone.</HaulersDream.Setting.UnloadAllSurplusDesc>
   <HaulersDream.Setting.ItemUnloadButton>Individual Item Unload Settings…</HaulersDream.Setting.ItemUnloadButton>
   <HaulersDream.Setting.ItemUnloadButtonN>Individual Item Unload Settings ({0})…</HaulersDream.Setting.ItemUnloadButtonN>
   <HaulersDream.ItemUnload.Title>Individual Item Unload Settings</HaulersDream.ItemUnload.Title>
-  <HaulersDream.ItemUnload.Desc>Set how Hauler's Dream treats specific items in a pawn's inventory. For each item choose: Never unload (keep the whole stack), Keep at most N (carry up to N and unload the rest), or Always unload (put it away even if another mod would otherwise keep it). Items with no rule use the normal behaviour. A rule here overrides the automatic keep-detection for Combat Extended, Simple Sidearms, Smart Medicine, Dub's Bad Hygiene and addiction. Choices for items from mods you've removed are remembered and restored if you reinstall the mod, and never affect save loading. (Tip: Combat Extended's ammo amount is best set in its loadout — CE re-fetches ammo up to that amount.)</HaulersDream.ItemUnload.Desc>
+  <HaulersDream.ItemUnload.Desc>Set how Hauler's Dream treats specific items in a pawn's inventory. For each item choose: Never unload (keep the whole stack), Keep at most N (carry up to N and unload the rest), or Always unload (put it away even if another mod would otherwise keep it). Items with no rule use the normal behaviour. A rule here overrides the automatic keep-detection for weapon-loadout, sidearm, medicine, hygiene and addiction items. Choices for items from mods you've removed are remembered and restored if you reinstall the mod, and never affect save loading. (Tip: if you use a loadout/ammo mod, set ammo amounts in its loadout — it re-fetches ammo up to that amount.)</HaulersDream.ItemUnload.Desc>
   <HaulersDream.ItemUnload.ClearAll>Clear all</HaulersDream.ItemUnload.ClearAll>
   <HaulersDream.ItemUnload.ModeDefault>Default</HaulersDream.ItemUnload.ModeDefault>
   <HaulersDream.ItemUnload.ModeKeepAll>Never unload</HaulersDream.ItemUnload.ModeKeepAll>
@@ -26,14 +41,23 @@
 
   <HaulersDream.Setting.ShareHeader>Share carried materials between colonists:</HaulersDream.Setting.ShareHeader>
   <HaulersDream.Setting.ShareForBuilding>Use carried materials for construction</HaulersDream.Setting.ShareForBuilding>
+  <HaulersDream.Setting.BuildFromInventory>Build from inventory (use already-carried materials)</HaulersDream.Setting.BuildFromInventory>
+  <HaulersDream.Setting.BuildFromInventoryDesc>A constructing pawn can source build materials from inventory a pawn or animal is already carrying — its own, then other colonists', then pack animals' / caravan cargo — not just loose stacks on the ground. So if you take steel in a caravan and order a sandbag or wall on a raid or away map, it builds from the carried steel without you first dropping it off a pack animal. Delivered straight from inventory to the site (no dropping it at the carrier's feet first). This is separate from "use carried materials for construction" above, which only counts materials this mod scooped itself. Never sources from a drafted, downed, or berserk carrier, nor from cargo earmarked for a forming caravan; reserves the stack so two builders don't race it. On by default.</HaulersDream.Setting.BuildFromInventoryDesc>
+  <HaulersDream.Setting.BuildFromInventoryPartial>Allow partial builds from inventory</HaulersDream.Setting.BuildFromInventoryPartial>
+  <HaulersDream.Setting.BuildFromInventoryPartialDesc>Normally a build won't start unless enough material for the whole thing is available. With this on, a frame is started and advanced using whatever inventory material exists even if it's less than the full amount needed — the rest is delivered as more becomes available. Changes the base-game all-or-nothing rule, so it's off by default. Requires "build from inventory".</HaulersDream.Setting.BuildFromInventoryPartialDesc>
   <HaulersDream.Setting.ShareForCrafting>Use carried materials for crafting bills</HaulersDream.Setting.ShareForCrafting>
+  <HaulersDream.Setting.ShareForCraftingDesc>A crafting pawn can source bill ingredients from inventory a pawn is already carrying, not just loose stacks on the ground. If another mod is managing crafting-ingredient hauling, Hauler's Dream automatically stands down and lets it gather them — so any craft-loop self-resolves with no action needed from you.</HaulersDream.Setting.ShareForCraftingDesc>
   <HaulersDream.Setting.ShareMeetInMiddle>An idle carrier walks toward the worker to hand over goods</HaulersDream.Setting.ShareMeetInMiddle>
   <HaulersDream.Setting.BatchWorkDeliveries>Carry materials for many queued builds per trip</HaulersDream.Setting.BatchWorkDeliveries>
   <HaulersDream.Setting.BatchWorkDeliveriesDesc>When building lots of cheap things (e.g. a long fence), a pawn fills its hands with enough material for many queued builds and delivers to each in one trip, instead of shuttling a few at a time. Carried in hands, so there's no slowdown.</HaulersDream.Setting.BatchWorkDeliveriesDesc>
   <HaulersDream.Setting.InventoryConstructDeliver>Carry materials in inventory for big single builds</HaulersDream.Setting.InventoryConstructDeliver>
   <HaulersDream.Setting.InventoryConstructDeliverDesc>When a single thing needs more than one hand-stack of one material (e.g. a geothermal generator's 340 steel), a pawn loads the material into its inventory — which is limited by weight, not stack size — and delivers it in far fewer trips, instead of shuttling ~75 at a time in its hands. Uses the smart-overload setting above for how much past 100% it loads; with overload off it loads up to 100% (no slowdown).</HaulersDream.Setting.InventoryConstructDeliverDesc>
+  <HaulersDream.Setting.MultiSiteConstructDeliver>Load several nearby sites' materials in one trip</HaulersDream.Setting.MultiSiteConstructDeliver>
+  <HaulersDream.Setting.MultiSiteConstructDeliverDesc>When automatic or shift-clicked construction delivers to a cluster of nearby build sites needing the same material, a pawn loads the whole cluster's combined demand into its inventory in one trip and delivers to each site, instead of serving one site per trip (previously only the route planner did this). The pawn still finishes the site it's already working before loading. Requires "Carry materials in inventory for big single builds" above.</HaulersDream.Setting.MultiSiteConstructDeliverDesc>
   <HaulersDream.Setting.ShareHandHauled>Claim materials from a colonist hauling them to storage (off by default)</HaulersDream.Setting.ShareHandHauled>
   <HaulersDream.Setting.ShareHandHauledDesc>When a builder needs a material and the only stock is in the hands of a colonist hauling it to a stockpile, the builder meets that colonist in transit and takes the stack, instead of waiting for it to reach storage and fetching it from there. Never touches a colonist delivering to a specific build, bill, or refuel job, and only when it actually saves a trip. (Construction only for now.)</HaulersDream.Setting.ShareHandHauledDesc>
+  <HaulersDream.Setting.MealsOnWheels>Eat food carried by other colonists when none is found</HaulersDream.Setting.MealsOnWheels>
+  <HaulersDream.Setting.MealsOnWheelsDesc>When a hungry colonist can't find any food on the map or in their own (or a pack animal's) pack, they walk to another colonist or pack animal carrying acceptable food and eat from their inventory — reducing trips and rescuing carried meals before they spoil — instead of going hungry or trekking to a far stockpile. Only kicks in when the normal food search finds nothing, so it never overrides a closer meal. Respects the eater's food policy, ideology, and teetotaler status; never takes food a parent is feeding a baby; never takes from a drafted, downed, or berserk carrier; reserves the meal so two colonists don't race it; and prefers food closest to spoiling. On by default.</HaulersDream.Setting.MealsOnWheelsDesc>
 
   <HaulersDream.Setting.BulkHaul>Bulk hauling — a haul trip picks up everything around it</HaulersDream.Setting.BulkHaul>
   <HaulersDream.Setting.BulkHaulDesc>A pawn sent to haul one item plans pickups of everything haulable around it into its inventory, delivering the lot in one storage trip. Off = vanilla one-item-per-trip hauling.</HaulersDream.Setting.BulkHaulDesc>
@@ -43,6 +67,8 @@
   <HaulersDream.Setting.BulkHaulAlwaysDesc>Every haul — automatic or ordered — loads the nearby haulables into the pawn's inventory too, making one storage trip for the lot. How much it carries respects the smart-overload slider below: only as much extra weight as is genuinely worth the slowdown versus making another round-trip.</HaulersDream.Setting.BulkHaulAlwaysDesc>
   <HaulersDream.Setting.HaulNearbyOption>Add a "Haul everything nearby" right-click order</HaulersDream.Setting.HaulNearbyOption>
   <HaulersDream.Setting.HaulNearbyOptionDesc>Adds a "Haul everything nearby" option to the right-click menu on a haulable item (for pawns that can haul), which starts a bulk sweep immediately — so you don't have to prioritize two hauls to trigger bulk hauling. Vanilla's "Prioritize hauling" still appears alongside it for a single-item haul.</HaulersDream.Setting.HaulNearbyOptionDesc>
+  <HaulersDream.Setting.ManualPickup>Add a "Pick up X" right-click order</HaulersDream.Setting.ManualPickup>
+  <HaulersDream.Setting.ManualPickupDesc>Adds a "Pick up X" option to the right-click menu on a haulable ground item. The pawn picks the clicked stack straight into its inventory as a tracked Hauler's Dream haul, which is then put away by the normal unloading — so it's never lost even if automatic unloading is off. Additive to vanilla's right-click haul options.</HaulersDream.Setting.ManualPickupDesc>
   <HaulersDream.Setting.HaulOversized>Carry oversized stacks in the inventory</HaulersDream.Setting.HaulOversized>
   <HaulersDream.Setting.HaulOversizedDesc>When a single stack is too big to carry in one armful (for example a 75-stack of steel when the pawn can only hold 72), the pawn takes it in its inventory and delivers the whole stack in one trip — instead of hand-carrying a partial load and leaving the rest behind. Applies to both ordered and automatic hauls; only carries as much as storage can actually accept, so nothing is left stranded.</HaulersDream.Setting.HaulOversizedDesc>
   <HaulersDream.Setting.SweepNearbyWhileWorking>Tidy up while working — scoop nearby loose items too</HaulersDream.Setting.SweepNearbyWhileWorking>
@@ -70,11 +96,12 @@
   <HaulersDream.Batch.SizeDesc>The colonist gathers ingredients for the whole batch in one trip, makes them all at the bench (ingredients don't spoil while working), then hauls everything to storage. Capped by available materials and the bill's own count.</HaulersDream.Batch.SizeDesc>
   <HaulersDream.Setting.HaulToStackDesc>Haulers prefer adding to an existing partial stack over starting a new one — within the storage room the game already chose (which stockpile wins is still decided by priority and distance). Works on the ground, on shelves, and in modded storage units. Outdoor storage scans nearby stockpiles within a short radius instead. Destination tiles are also no longer reserved, so several haulers can deliver to the same tile at once instead of spreading one item type across ten cells.</HaulersDream.Setting.HaulToStackDesc>
 
-  <HaulersDream.Setting.AutoStripHeader>Auto strip on haul — corpse hauls strip the body, loot rides in the hauler's inventory:</HaulersDream.Setting.AutoStripHeader>
-  <HaulersDream.Setting.AutoStripMode>Strip corpses: {0}</HaulersDream.Setting.AutoStripMode>
+  <HaulersDream.Setting.AutoStripHeader>Auto-strip a corpse WHILE hauling it — when a colonist hauls a corpse, it strips the body on the way and the loot rides in the hauler's inventory (no separate strip job, no second trip):</HaulersDream.Setting.AutoStripHeader>
+  <HaulersDream.Setting.AutoStripMode>Auto-strip while hauling: {0}</HaulersDream.Setting.AutoStripMode>
   <HaulersDream.Setting.AutoStripAll>on every corpse haul (stockpile, grave, cremation, butchering)</HaulersDream.Setting.AutoStripAll>
   <HaulersDream.Setting.AutoStripDisposal>on disposal hauls only (grave, sarcophagus, cremation, butchering — not plain stockpile hauls)</HaulersDream.Setting.AutoStripDisposal>
-  <HaulersDream.Setting.AutoStripOff>never (vanilla behaviour)</HaulersDream.Setting.AutoStripOff>
+  <HaulersDream.Setting.AutoStripOff>never — don't strip while hauling (vanilla behaviour)</HaulersDream.Setting.AutoStripOff>
+  <HaulersDream.Setting.AutoStripCrossRef>"Never" only turns off this strip-while-hauling shortcut. It does NOT stop hauling stripped gear: a Strip order you place by hand still runs normally, and its dropped weapons and clothes are still scooped up and hauled home — controlled by the separate "Stripping — removed gear" work toggle (under "Scoop yields from these kinds of work" further below).</HaulersDream.Setting.AutoStripCrossRef>
   <HaulersDream.Setting.StripColonists>Also strip player-faction corpses</HaulersDream.Setting.StripColonists>
   <HaulersDream.Setting.StripColonistsDesc>With this off (default), your own dead — colonists and colony animals — keep their gear and their dignity; only strangers and enemies are looted.</HaulersDream.Setting.StripColonistsDesc>
   <HaulersDream.Setting.TaintedSmeltable>Tainted apparel (smeltable): {0}</HaulersDream.Setting.TaintedSmeltable>
@@ -83,6 +110,16 @@
   <HaulersDream.Setting.TaintedLeave>leave it on the corpse (cremation burns it with the body; butchering drops it at the bench, as in vanilla)</HaulersDream.Setting.TaintedLeave>
   <HaulersDream.Setting.TaintedForbid>drop it and forbid it</HaulersDream.Setting.TaintedForbid>
   <HaulersDream.Setting.TaintedDestroy>destroy it on the spot (quest items and relics are taken instead, never destroyed)</HaulersDream.Setting.TaintedDestroy>
+
+  <HaulersDream.Setting.HaulTamedSlaughter>Haul slaughtered carcasses to storage</HaulersDream.Setting.HaulTamedSlaughter>
+  <HaulersDream.Setting.HaulTamedSlaughterDesc>When a colonist finishes slaughtering a colony animal, the fresh carcass is hauled straight to storage (a freezer or corpse stockpile) so it doesn't rot where it fell — only if a reachable storage spot accepts it, otherwise it's left exactly as vanilla. (Vanilla never hauls a slaughtered animal itself; this closes that gap.)</HaulersDream.Setting.HaulTamedSlaughterDesc>
+  <HaulersDream.Setting.HaulWildKills>Haul hunted carcasses to storage</HaulersDream.Setting.HaulWildKills>
+  <HaulersDream.Setting.HaulWildKillsDesc>When a hunt is interrupted right after the kill — the hunter is pulled away by a need, a draft, a mental break, or the hunt times out — the hunter promptly hauls the fresh carcass to storage on its way out, instead of leaving it for the slow general haul queue. On a clean hunt the hunter already carries its kill home (vanilla), so this stays out of the way — no double-hauling. Only hauls if a reachable storage spot accepts the body; otherwise the carcass is left exactly as vanilla (it's never forbidden, so normal corpse hauling still collects it once a freezer or corpse stockpile that accepts it exists).</HaulersDream.Setting.HaulWildKillsDesc>
+
+  <HaulersDream.Setting.ButcherSpoilingFirst>Butcher the most-spoiled corpse first</HaulersDream.Setting.ButcherSpoilingFirst>
+  <HaulersDream.Setting.ButcherSpoilingFirstDesc>When a colonist picks a corpse for a butcher bill, they choose the body closest to rotting (among the corpses the bill already allows, within its ingredient search radius) instead of just the nearest — so meat is recovered before it spoils. Only reorders which already-valid corpse is used; never changes the recipe, the search radius, or which corpses the bill accepts. Frozen corpses are left for last (they aren't spoiling). Applies to both ordinary butcher bills and Hauler's Dream batches. On by default.</HaulersDream.Setting.ButcherSpoilingFirstDesc>
+  <HaulersDream.Setting.CookSpoilingFirst>Cook with the most-spoiled food first</HaulersDream.Setting.CookSpoilingFirst>
+  <HaulersDream.Setting.CookSpoilingFirstDesc>When a colonist picks perishable ingredients for a cooking bill (meat, vegetables, and other rottable food — not corpses), they choose the stack closest to rotting (among the ingredients the bill already allows, within its ingredient search radius) instead of just the nearest — so food is eaten before it spoils. Only reorders which already-valid ingredient is used; never changes the recipe, the search radius, or non-perishable crafts (steel, cloth, etc. are untouched). Frozen food is left for last. Applies to both ordinary cooking bills and Hauler's Dream batches. On by default.</HaulersDream.Setting.CookSpoilingFirstDesc>
 
   <HaulersDream.Setting.Overload>Smart overload: {0}</HaulersDream.Setting.Overload>
   <HaulersDream.Setting.OverloadDesc>Pawns carry materials past 100% of their max weight to save trips, but move slower the more they overload — and only do it when fewer trips is genuinely worth the slowdown (including for queued build/craft work). Slide left for lighter slowdown + bigger loads, right for heavier slowdown + smaller loads.</HaulersDream.Setting.OverloadDesc>
@@ -93,6 +130,10 @@
   <HaulersDream.Overload.Cautious>Cautious ({0})</HaulersDream.Overload.Cautious>
   <HaulersDream.Setting.StrictCarryWeight>Strict carry weight (don't overload)</HaulersDream.Setting.StrictCarryWeight>
   <HaulersDream.Setting.StrictCarryWeightDesc>When ON, pawns never carry past 100% of their max weight and never break off work to unload while full — they keep harvesting and leave the surplus on the ground for normal hauling (picked up on the way past). When OFF (default), pawns overload per the slider above and head off to unload once full.</HaulersDream.Setting.StrictCarryWeightDesc>
+  <HaulersDream.Setting.KeepWorkingWhenFull>Keep working when full (don't break off to unload)</HaulersDream.Setting.KeepWorkingWhenFull>
+  <HaulersDream.Setting.KeepWorkingWhenFullDesc>Off by default. When ON, a pawn that fills up while mining, harvesting, or deconstructing does NOT interrupt its work to go unload — it keeps working, and any yields that no longer fit are left on the ground for normal hauling. It still unloads at the end of a work run, around meals/sleep/recreation, on the interval, and (unlike strict carry weight) it still overloads past 100% up to the smart-overload ceiling. It only sheds the load mid-run when that pays off — right before walking to a FAR next work target (when storage is closer than the next task, by the margin below). Dedicated haul/load jobs still deliver their load when full. Independent of strict carry weight: this keeps the overload-and-accumulate behaviour, it just stops the "full → go dump now" interruption.</HaulersDream.Setting.KeepWorkingWhenFullDesc>
+  <HaulersDream.Setting.KeepWorkingMargin>Unload before a relocation only if it's at least this much farther: {0} tiles</HaulersDream.Setting.KeepWorkingMargin>
+  <HaulersDream.Setting.KeepWorkingMarginDesc>Hysteresis for the "keep working when full" rule: a full, overloaded pawn detours to unload before its next work target only when that target is farther than the storage dropoff by at least this many tiles. Higher = the pawn keeps carrying its load over a wider band of roughly-equal distances (fewer detours); 0 = it unloads first whenever the next target is even slightly farther than storage.</HaulersDream.Setting.KeepWorkingMarginDesc>
   <HaulersDream.Setting.RouteMaxAmount>Plan route — top of the "Amount" slider: {0} stops</HaulersDream.Setting.RouteMaxAmount>
   <HaulersDream.Setting.RouteCalcHeader>Route calculation (defaults — override per target type in the route dialog)</HaulersDream.Setting.RouteCalcHeader>
   <HaulersDream.Setting.RouteSelection>Selection method: {0}</HaulersDream.Setting.RouteSelection>
@@ -108,8 +149,9 @@
   <HaulersDream.Setting.HaulDeepDrill>Deep drills</HaulersDream.Setting.HaulDeepDrill>
   <HaulersDream.Setting.HaulDeconstruct>Deconstruction salvage</HaulersDream.Setting.HaulDeconstruct>
   <HaulersDream.Setting.HaulAnimals>Animals — milk &amp; shear</HaulersDream.Setting.HaulAnimals>
-  <HaulersDream.Setting.HaulStrip>Stripping — removed gear</HaulersDream.Setting.HaulStrip>
-  <HaulersDream.Setting.HaulStripDesc>When a colonist strips a prisoner, a downed pawn, or a corpse (the Strip order), the removed weapons, gear and clothes are scooped into its inventory right after the strip, and hauled home in one trip. Tainted apparel from a corpse follows the tainted-apparel choices above ("leave it on the corpse" pieces stay on the ground, unscooped). For a living target, a follow-up strip is queued at the end of the stripper's jobs in case the target dresses itself again from leftovers; it does nothing if the target stayed bare.</HaulersDream.Setting.HaulStripDesc>
+  <HaulersDream.Setting.HaulStrip>Stripping — removed gear (haul gear from a Strip order)</HaulersDream.Setting.HaulStrip>
+  <HaulersDream.Setting.HaulStripDesc>When a colonist strips a prisoner, a downed pawn, or a corpse (a Strip order YOU place, by hand), the removed weapons, gear and clothes are scooped into its inventory right after the strip, and hauled home in one trip. This is the toggle that governs hauling stripped gear — it is independent of "Auto-strip while hauling" higher up: that one only strips a corpse while it is BEING hauled (loot to inventory); THIS one hauls the gear a manual Strip order drops on the ground. So you can set auto-strip-while-hauling to "never" and still have manually-ordered strips scoop and haul their gear, as long as this is on. Tainted apparel from a corpse follows the tainted-apparel choices in the auto-strip section ("leave it on the corpse" pieces stay on the ground, unscooped). For a living target, a follow-up strip is queued at the end of the stripper's jobs in case the target dresses itself again from leftovers; it does nothing if the target stayed bare.</HaulersDream.Setting.HaulStripDesc>
+  <HaulersDream.Setting.HaulStripCrossRef>Independent of "Auto-strip while hauling" near the top: that strips a corpse as it is hauled (loot to inventory); this hauls the gear a manual Strip order drops.</HaulersDream.Setting.HaulStripCrossRef>
 
   <HaulersDream.Setting.WorkOverrideHeader>Work-incapability overrides (off = vanilla):</HaulersDream.Setting.WorkOverrideHeader>
   <HaulersDream.Setting.AllCanHaul>All pawns can haul</HaulersDream.Setting.AllCanHaul>
@@ -121,6 +163,9 @@
 
   <HaulersDream.Setting.PauseWhileDrafted>Pause while drafted</HaulersDream.Setting.PauseWhileDrafted>
   <HaulersDream.Setting.AllowMechanoids>Allow mechanoids to scoop and haul</HaulersDream.Setting.AllowMechanoids>
+  <HaulersDream.AllowMechanoidsDesc>Governs whether your work mechanoids use Hauler's Dream's scooping and bulk hauling — carrying yields and loot in their inventory just like colonists. This covers scooping the goods a mech produces from its own work: harvested/cut plants, mined ore and chunks, and deconstruction salvage (the materials freed when a mech tears a structure down). This does NOT change vanilla mechanoid jobs themselves: a work mech still mines, harvests and deconstructs on its own — the toggle only decides whether it ALSO scoops the results into its inventory for a consolidated haul. How a mech DELIVERS materials to a build site is a separate matter, governed by the "Carry materials in inventory for big single builds" setting above (which applies to any builder, mech or colonist); this toggle does not by itself change build delivery. When ON, a player work-mech can also carry past 100% capacity under the smart-overload setting and is slowed by it the same way a colonist is.</HaulersDream.AllowMechanoidsDesc>
+  <HaulersDream.AllowAnimals>Allow colony animals to scoop and haul</HaulersDream.AllowAnimals>
+  <HaulersDream.AllowAnimalsDesc>Off by default. When ON, colony animals that are trained in Haul carry several stacks at once — picking nearby loot into their inventory and running Hauler's Dream's bulk haul instead of one stack per trip. This only reaches animals that CAN be Haul-trained: ones with Advanced trainability and a large enough body (huskies, labradors, elephants, bears, thrumbos, etc.). Animals that can't be Haul-trained — a housekeeper cat and the like — never run the hauling job in the first place (true regardless of this setting), so they're unaffected by this toggle. Only your own colony animals are touched; wild and enemy animals are never affected.</HaulersDream.AllowAnimalsDesc>
   <HaulersDream.Setting.AllowIncapable>Allow pawns incapable of hauling to scoop their own yields</HaulersDream.Setting.AllowIncapable>
   <HaulersDream.Setting.EnableOnNonHomeMaps>Also work on caravan / non-home maps</HaulersDream.Setting.EnableOnNonHomeMaps>
   <HaulersDream.Setting.HideGizmo>Hide the per-pawn "Unload inventory" button</HaulersDream.Setting.HideGizmo>
@@ -138,6 +183,8 @@
   <HaulersDream.Gizmo.UnloadNow>Unload inventory</HaulersDream.Gizmo.UnloadNow>
   <HaulersDream.Gizmo.UnloadNowDesc>Make this pawn carry everything it has scooped to the nearest valid storage.</HaulersDream.Gizmo.UnloadNowDesc>
   <HaulersDream.Gizmo.UnloadNowDrafted>Drafted: undraft this pawn to unload.</HaulersDream.Gizmo.UnloadNowDrafted>
+  <HaulersDream.Gizmo.AutoHaul>Auto-haul yields</HaulersDream.Gizmo.AutoHaul>
+  <HaulersDream.Gizmo.AutoHaulDesc>When on, this pawn automatically scoops its own work yields and sweeps nearby loot into its inventory as it works. Turn it off to stop this pawn from auto-hauling — it will still put away anything it is already carrying.</HaulersDream.Gizmo.AutoHaulDesc>
 
   <!-- Black-hole safety-net alert -->
   <HaulersDream.Alert.CannotUnload>Cannot unload inventory ({0})</HaulersDream.Alert.CannotUnload>
@@ -236,6 +283,8 @@
   <HaulersDream.HaulToSite.CouldNotStart>No reachable materials to haul right now.</HaulersDream.HaulToSite.CouldNotStart>
   <HaulersDream.HaulNearby.Option>Haul everything nearby</HaulersDream.HaulNearby.Option>
   <HaulersDream.HaulNearby.CouldNotStart>Nothing to haul nearby right now.</HaulersDream.HaulNearby.CouldNotStart>
+  <HaulersDream.PickUp.Option>Pick up {0}</HaulersDream.PickUp.Option>
+  <HaulersDream.PickUp.CouldNotStart>{0} can't pick up {1} — already carrying as much as they can, and there's nowhere to haul it.</HaulersDream.PickUp.CouldNotStart>
   <HaulersDream.PlanRoute.AlsoBuild>Also build (haul + construct each stop)</HaulersDream.PlanRoute.AlsoBuild>
   <HaulersDream.PlanRoute.AlsoBuildDesc>With this on, the pawn delivers materials to a site and BUILDS it before moving to the next — gathering the whole route's materials up front and keeping them in inventory. With it off, the pawn only fills the sites with materials (others can build). Either way the sites stay open to other pawns, so several can supply the same run in parallel; whoever arrives second simply keeps its surplus for the next stop or unloads it at the end.</HaulersDream.PlanRoute.AlsoBuildDesc>
 
@@ -245,7 +294,7 @@
 
   <!-- Settings: auto crafting-bill inventory delivery -->
   <HaulersDream.Setting.InventoryCraftDeliver>Carry crafting ingredients in inventory (fewer trips)</HaulersDream.Setting.InventoryCraftDeliver>
-  <HaulersDream.Setting.InventoryCraftDeliverDesc>When a pawn starts a crafting bill that needs ingredients from two or more separate stacks, it first gathers them ALL into its inventory in one sweep — overweight if needed, accepting the slowdown (unless strict carry weight is on) — walks to the bench once, and crafts from the carried stock. Works for every recipe, including ones that build an unfinished item first (apparel, weapons, sculptures). The crafting itself is 100% vanilla, so nothing can be duplicated or lost. Requires "carried ingredients count for crafting" above.</HaulersDream.Setting.InventoryCraftDeliverDesc>
+  <HaulersDream.Setting.InventoryCraftDeliverDesc>When a pawn starts a crafting bill that needs ingredients from two or more separate stacks, it first gathers them ALL into its inventory in one sweep — overweight if needed, accepting the slowdown (unless strict carry weight is on) — walks to the bench once, and crafts from the carried stock. Works for every recipe, including ones that build an unfinished item first (apparel, weapons, sculptures). The crafting itself is 100% vanilla, so nothing can be duplicated or lost. If another mod is managing crafting-ingredient hauling, Hauler's Dream automatically stands down (it gathers them instead), so any craft-loop self-resolves on its own. Requires "carried ingredients count for crafting" above.</HaulersDream.Setting.InventoryCraftDeliverDesc>
 
   <!-- Bill prep-gather job -->
   <HaulersDream.PrepGather.Report>gathering crafting ingredients.</HaulersDream.PrepGather.Report>
@@ -253,16 +302,382 @@
   <!-- Bulk haul job -->
   <HaulersDream.BulkHaul.Report>hauling everything nearby.</HaulersDream.BulkHaul.Report>
 
+  <!-- Inspector job-report rewrite (routing intent — While You're Up parity). {ORIGINAL} = the trimmed vanilla
+       report, {DESTINATION} = the job/consumer the haul is bound for. -->
+  <HaulersDream.JobReport.EnRoute.Load>{ORIGINAL} (on the way to {DESTINATION})</HaulersDream.JobReport.EnRoute.Load>
+  <HaulersDream.JobReport.EnRoute.Unload>{ORIGINAL} (on the way to {DESTINATION})</HaulersDream.JobReport.EnRoute.Unload>
+  <HaulersDream.JobReport.CloserTo.Load>{ORIGINAL} (closer to {DESTINATION})</HaulersDream.JobReport.CloserTo.Load>
+  <HaulersDream.JobReport.CloserTo.Unload>{ORIGINAL} (closer to {DESTINATION})</HaulersDream.JobReport.CloserTo.Unload>
+  <HaulersDream.JobReport.Efficient.Load>Efficiently hauling {ORIGINAL}</HaulersDream.JobReport.Efficient.Load>
+  <HaulersDream.JobReport.Efficient.Unload>Efficiently hauling {ORIGINAL}</HaulersDream.JobReport.Efficient.Unload>
+
   <!-- Load onto pack animal (caravan / away map): manual bulk order + auto-divert + gizmo -->
   <HaulersDream.LoadPackAnimal.Report>loading items onto a pack animal.</HaulersDream.LoadPackAnimal.Report>
   <HaulersDream.LoadPackAnimal.BulkOption>Load nearby items onto pack animal (bulk)</HaulersDream.LoadPackAnimal.BulkOption>
   <HaulersDream.LoadPackAnimal.CouldNotStart>Nothing nearby to load onto a pack animal right now.</HaulersDream.LoadPackAnimal.CouldNotStart>
   <HaulersDream.LoadPackAnimal.NoCarrier>No usable pack animal with free space nearby.</HaulersDream.LoadPackAnimal.NoCarrier>
 
+  <!-- Pack-animal BULK UNLOAD (the inverse of loading): empty a flagged carrier into the hauler's backpack -->
+  <HaulersDream.UnloadCarrier.Report>unloading {0}.</HaulersDream.UnloadCarrier.Report>
+  <HaulersDream.UnloadCarrier.Option>Prioritize bulk unloading {0}</HaulersDream.UnloadCarrier.Option>
+  <HaulersDream.UnloadCarrier.CouldNotStart>Could not start bulk unloading that pack animal right now.</HaulersDream.UnloadCarrier.CouldNotStart>
+
   <!-- Settings: pack-animal loading on caravans -->
   <HaulersDream.Setting.LoadPackAnimalBulk>Bulk "load onto pack animal" order</HaulersDream.Setting.LoadPackAnimalBulk>
   <HaulersDream.Setting.LoadPackAnimalBulkDesc>On a caravan/away map, adds a right-click "Load nearby items onto pack animal (bulk)" order: one colonist sweeps several nearby stacks into its inventory and loads them onto a pack animal in one trip, instead of carrying one stack at a time. Vanilla's single-item "Load onto pack animal" still works alongside it.</HaulersDream.Setting.LoadPackAnimalBulkDesc>
   <HaulersDream.Setting.AutoDivertToPackAnimal>Offload onto pack animals (caravans)</HaulersDream.Setting.AutoDivertToPackAnimal>
   <HaulersDream.Setting.AutoDivertToPackAnimalDesc>On a caravan/away map, pawns offload their scooped loot onto the nearest owned pack animal the same way they'd unload to a stockpile at home — when their work run ends, before they rest/eat/relax, on the periodic backstop, and immediately when over-encumbered (to stay mobile). With this off, loot just rides home in the pawns' own inventories (or use the manual bulk-load order / Reform Caravan). All of these also require automatic unloading to be on (and the over-encumbered offload is disabled in strict-carry-weight mode).</HaulersDream.Setting.AutoDivertToPackAnimalDesc>
+
+  <!-- Settings: pack-animal bulk unload -->
+  <HaulersDream.Setting.EnableBulkUnloadCarriers>Bulk unload pack animals in one visit</HaulersDream.Setting.EnableBulkUnloadCarriers>
+  <HaulersDream.Setting.EnableBulkUnloadCarriersDesc>When a pack animal is set to "unload", a hauler walks to it ONCE and pulls many stacks out of it into its own backpack (then hauls them to storage as usual), instead of vanilla's one-stack-per-walk. The last/overflow stack goes in the hauler's hands and is hauled directly. With this off, vanilla's single-stack unloading is used unchanged.</HaulersDream.Setting.EnableBulkUnloadCarriersDesc>
+  <HaulersDream.Setting.MinFreeSpaceToUnloadCarrier>Minimum free backpack space to start: {0}</HaulersDream.Setting.MinFreeSpaceToUnloadCarrier>
+  <HaulersDream.Setting.ReserveCarrierOnUnload>Reserve the pack animal while unloading</HaulersDream.Setting.ReserveCarrierOnUnload>
+  <HaulersDream.Setting.ReserveCarrierOnUnloadDesc>Claim the pack animal exclusively for the duration of the unload. Off (default) lets roping, caravan formation, or a second hauler interrupt it — the unload yields cleanly when another pawn claims the animal.</HaulersDream.Setting.ReserveCarrierOnUnloadDesc>
+  <HaulersDream.Setting.VisualUnloadDelay>Per-stack unload delay: {0} ticks</HaulersDream.Setting.VisualUnloadDelay>
+
+  <!-- Transporter / shuttle BULK LOADING -->
+  <HaulersDream.LoadTransporter.Report>bulk-loading a transporter.</HaulersDream.LoadTransporter.Report>
+  <HaulersDream.LoadTransporter.Option>Prioritize bulk loading {0}</HaulersDream.LoadTransporter.Option>
+  <HaulersDream.LoadTransporter.CouldNotStart>Nothing nearby to bulk-load into that transporter right now.</HaulersDream.LoadTransporter.CouldNotStart>
+
+  <!-- Settings: transporter / shuttle bulk loading -->
+  <HaulersDream.Setting.EnableBulkLoadTransporters>Bulk-load transporters and shuttles in one trip</HaulersDream.Setting.EnableBulkLoadTransporters>
+  <HaulersDream.Setting.EnableBulkLoadTransportersDesc>When a transport pod or shuttle is set to load, a hauler claims a slice of its manifest, sweeps several nearby stacks into its inventory, walks to the transporter ONCE, and deposits them all — instead of vanilla's one-stack-in-hands per walk. Several haulers split a large manifest with no double-hauling, and the pod won't board or launch until the claimed cargo is in. With this off, vanilla's single-stack transporter loading is used unchanged.</HaulersDream.Setting.EnableBulkLoadTransportersDesc>
+  <HaulersDream.Setting.BulkLoadAiUpdateFrequency>Load re-check interval: {0} ticks</HaulersDream.Setting.BulkLoadAiUpdateFrequency>
+
+  <!-- Map-portal BULK LOADING (pit gates, cave / vault exits, "enter map" portals) -->
+  <HaulersDream.LoadPortal.Report>bulk-loading a portal.</HaulersDream.LoadPortal.Report>
+  <HaulersDream.LoadPortal.Option>Prioritize bulk loading {0}</HaulersDream.LoadPortal.Option>
+  <HaulersDream.LoadPortal.CouldNotStart>Nothing nearby to bulk-load into that portal right now.</HaulersDream.LoadPortal.CouldNotStart>
+
+  <!-- Settings: map-portal bulk loading -->
+  <HaulersDream.Setting.EnableBulkLoadPortal>Bulk-load map portals in one trip</HaulersDream.Setting.EnableBulkLoadPortal>
+  <HaulersDream.Setting.EnableBulkLoadPortalDesc>When a map portal (pit gate, cave or vault exit, "enter map" portal) is set to load, a hauler claims a slice of its manifest, sweeps several nearby stacks into its inventory, walks to the portal ONCE, and deposits them all — instead of vanilla's one-stack-in-hands per walk. The deposited items teleport to the other map. Several haulers split a large manifest with no double-hauling. With this off, vanilla's single-stack portal loading is used unchanged.</HaulersDream.Setting.EnableBulkLoadPortalDesc>
+
+  <!-- Vehicle Framework BULK LOADING (ground & aerial vehicles) -->
+  <HaulersDream.LoadVehicle.Report>bulk-loading a vehicle.</HaulersDream.LoadVehicle.Report>
+  <HaulersDream.LoadVehicle.Option>Prioritize bulk loading {0}</HaulersDream.LoadVehicle.Option>
+  <HaulersDream.LoadVehicle.CouldNotStart>Nothing nearby to bulk-load into that vehicle right now.</HaulersDream.LoadVehicle.CouldNotStart>
+
+  <!-- Settings: Vehicle Framework compat (master + bulk-load sub-toggle) -->
+  <HaulersDream.Setting.EnableVehicleFramework>Vehicle integration</HaulersDream.Setting.EnableVehicleFramework>
+  <HaulersDream.Setting.EnableVehicleFrameworkDesc>Master switch for Hauler's Dream's vehicle features: bulk-loading a vehicle's cargo in one trip (below), and loading items onto a vehicle (instead of a pack animal) the event-correct way so the vehicle's load manifest stays in sync. Turning this OFF disables only those features — it does NOT switch off the safety fixes that stop Hauler's Dream's bulk-unload from interfering with a vehicle's own cargo UI, and it does NOT turn off eating-from or building-from a parked vehicle's cargo (those follow the "Meals on wheels" and "Build from inventory" toggles above). With no vehicles mod installed, this has no effect at all. On by default.</HaulersDream.Setting.EnableVehicleFrameworkDesc>
+  <HaulersDream.Setting.EnableBulkLoadVehicles>Bulk-load vehicles in one trip</HaulersDream.Setting.EnableBulkLoadVehicles>
+  <HaulersDream.Setting.EnableBulkLoadVehiclesDesc>When a vehicle (ground or aerial) is set to load cargo, a hauler claims a slice of its manifest, sweeps several nearby stacks into its inventory, walks to the vehicle ONCE, and deposits them all — instead of the usual one-stack-in-hands per walk. Several haulers split a large manifest with no double-hauling, respecting the vehicle's cargo capacity. With this off, the vehicle's single-stack loading is used unchanged. Requires "Vehicle integration" above.</HaulersDream.Setting.EnableBulkLoadVehiclesDesc>
+
+  <!-- BULK REFUEL (a shuttle's chemfuel, a deep drill, a generator — any refuelable) -->
+  <HaulersDream.BulkRefuel.Report>bulk-refuelling.</HaulersDream.BulkRefuel.Report>
+  <HaulersDream.BulkRefuel.Option>Prioritize bulk refuelling {0}</HaulersDream.BulkRefuel.Option>
+  <HaulersDream.BulkRefuel.CouldNotStart>Nothing nearby to bulk-refuel that with right now.</HaulersDream.BulkRefuel.CouldNotStart>
+
+  <!-- Settings: bulk refuel -->
+  <HaulersDream.Setting.EnableBulkRefuel>Bulk-refuel in one trip</HaulersDream.Setting.EnableBulkRefuel>
+  <HaulersDream.Setting.EnableBulkRefuelDesc>When something needs fuel (a shuttle's chemfuel, a deep drill, a generator — anything refuelable), a hauler sweeps enough nearby fuel into its inventory, walks to it ONCE, and fills it in a single trip — instead of vanilla's one-stack-in-hands per walk. Only kicks in when more than one fuel stack (more than one vanilla trip) is needed; a single-stack refuel is left to vanilla. Right-click a refuelable for "Prioritize bulk refuelling", or let it run as ordinary refuelling work. With this off, vanilla's single-stack refuelling is used unchanged. On by default.</HaulersDream.Setting.EnableBulkRefuelDesc>
+
+  <!-- While You're Up parity: C1 safety / unload ordering -->
+  <HaulersDream.Setting.SkipHaulWhileBleeding>Don't start hauling while badly bleeding</HaulersDream.Setting.SkipHaulWhileBleeding>
+  <HaulersDream.Setting.SkipHaulWhileBleedingDesc>When a pawn is bleeding (above a tiny threshold), it won't START a new scoop or bulk-haul sweep — it should get treated, not detour to tidy up. This only blocks STARTING a haul: a pawn already carrying scooped goods still unloads them normally, so nothing is ever stranded. On by default.</HaulersDream.Setting.SkipHaulWhileBleedingDesc>
+  <HaulersDream.Setting.ClosestDestUnloadOrder>Unload nearest destination first</HaulersDream.Setting.ClosestDestUnloadOrder>
+  <HaulersDream.Setting.ClosestDestUnloadOrderDesc>When a pawn makes its unload trip carrying several different items, it visits the nearest storage destination first and empties everything bound there before moving to the next — less zig-zagging across the base. Off uses the previous (by item category) order. On by default.</HaulersDream.Setting.ClosestDestUnloadOrderDesc>
+
+  <HaulersDream.Setting.EnRoutePickup>Grab loose items that are on the way to a job</HaulersDream.Setting.EnRoutePickup>
+  <HaulersDream.Setting.EnRoutePickupDesc>When a pawn is about to set off on a job and a loose haulable lies roughly along the way, it grabs it into its inventory first — so the stray item rides to storage on a trip the pawn was making anyway, with no extra round-trip. The item is picked up as a tracked Hauler's Dream haul and put away by the normal unloading, so it's never lost even if automatic unloading is off. Only fires when the resulting trip stays close to the direct route, never overrides the vanilla opportunistic haul, respects each pawn's "Auto-haul yields" toggle, and stands down when the pawn would instead drop its load off. On by default; it changes how pawns move, so toggling it takes effect the next time a pawn picks a job.</HaulersDream.Setting.EnRoutePickupDesc>
+  <HaulersDream.Setting.EnRoutePathChecker>On-the-way check: {0}</HaulersDream.Setting.EnRoutePathChecker>
+  <HaulersDream.Setting.EnRoutePathCheckerDesc>How carefully a candidate item is confirmed to be "on the way" after the cheap distance test. Cheap (the default) only counts map regions, so it's fast but the detour distance can vary. Pathfind (early stop) and Pathfind (thorough) walk the real path for accuracy — "early stop" gives up scanning once a candidate falls outside range (faster), "thorough" checks every remaining candidate (slowest, finds a haul if one exists, e.g. in a winding mountain base). If a pathfinding-accuracy mod is installed, the two pathfinding modes inherit its accuracy automatically.</HaulersDream.Setting.EnRoutePathCheckerDesc>
+  <HaulersDream.Setting.EnRoutePathVanilla>Cheap (region count)</HaulersDream.Setting.EnRoutePathVanilla>
+  <HaulersDream.Setting.EnRoutePathDefault>Pathfind (early stop)</HaulersDream.Setting.EnRoutePathDefault>
+  <HaulersDream.Setting.EnRoutePathPathfinding>Pathfind (thorough)</HaulersDream.Setting.EnRoutePathPathfinding>
+
+  <!-- While You're Up parity: C3 consumer-aware storage routing (master OFF by default) -->
+  <HaulersDream.Setting.StorageRouting>Move supplies closer before carrying them to a job</HaulersDream.Setting.StorageRouting>
+  <HaulersDream.Setting.StorageRoutingDesc>The "haul before carry" feature. Before a pawn carries a resource to a construction site or crafting bench, it first relocates the largest nearby stack of that material to storage CLOSER to where it will be used — so this and every later fetch is a shorter trip. It only fires when the closer storage is genuinely nearer the job than the stack's current spot, never relocates a stack another pawn is already hauling, and respects each pawn's "Auto-haul yields" toggle. The relocation is a normal haul, so the material is never lost. On by default; it changes how pawns move, so toggling it takes effect the next time a pawn picks up such a job.</HaulersDream.Setting.StorageRoutingDesc>
+  <HaulersDream.Setting.RouteSupplies>Relocate construction supplies closer to the build site</HaulersDream.Setting.RouteSupplies>
+  <HaulersDream.Setting.RouteSuppliesDesc>Apply before-carry relocation to construction material deliveries. (No effect while "carry construction material in inventory" is on — that feature already cuts the trips its own way.)</HaulersDream.Setting.RouteSuppliesDesc>
+  <HaulersDream.Setting.RouteIngredients>Relocate crafting ingredients closer to the bench</HaulersDream.Setting.RouteIngredients>
+  <HaulersDream.Setting.RouteIngredientsDesc>Apply before-carry relocation to crafting bill ingredients. (No effect while "gather bill ingredients in one sweep" is on — that feature already cuts the trips its own way.)</HaulersDream.Setting.RouteIngredientsDesc>
+  <HaulersDream.Setting.RouteToEqualPriority>Allow relocating into equal-priority storage</HaulersDream.Setting.RouteToEqualPriority>
+  <HaulersDream.Setting.RouteToEqualPriorityDesc>Also relocate a stack into storage of the SAME priority when it's closer to the job (not just into higher-priority storage). On by default — turning it off restricts relocation to strictly higher-priority destinations.</HaulersDream.Setting.RouteToEqualPriorityDesc>
+  <HaulersDream.Setting.RouteToStockpiles>Allow relocating into plain stockpile zones</HaulersDream.Setting.RouteToStockpiles>
+  <HaulersDream.Setting.RouteToStockpilesDesc>Let plain stockpile zones (not just storage buildings like shelves) be relocation destinations. On by default — turning it off relocates only into storage buildings.</HaulersDream.Setting.RouteToStockpilesDesc>
+
+  <!-- While You're Up parity: C4 storage building permit/deny filter (master OFF by default) -->
+  <HaulersDream.Setting.StorageFilters>Filter which storage buildings hauling may use</HaulersDream.Setting.StorageFilters>
+  <HaulersDream.Setting.StorageFiltersDesc>When on, you can restrict which storage BUILDINGS (shelves and modded storage units — never plain stockpile zones) haulers are allowed to use for opportunistic and routing hauls, per building or per mod. A pawn already carrying a load can ALWAYS still unload, so nothing is ever stranded. On by default, using the curated defaults below — set your own rules per building or per mod.</HaulersDream.Setting.StorageFiltersDesc>
+  <HaulersDream.Setting.StorageFilterUseDefaults>Use curated default rules</HaulersDream.Setting.StorageFilterUseDefaults>
+  <HaulersDream.Setting.StorageFilterUseDefaultsDesc>Apply sensible per-situation defaults: opportunistic scoops may use any storage (except the slow set below); a haul detoured to better storage before carrying only targets known container mods. Your explicit per-building / per-mod choices always override these. Off = only your explicit choices restrict anything.</HaulersDream.Setting.StorageFilterUseDefaultsDesc>
+  <HaulersDream.Setting.StorageFilterDenyLwm>Skip slow storage for opportunistic hauls</HaulersDream.Setting.StorageFilterDenyLwm>
+  <HaulersDream.Setting.StorageFilterDenyLwmDesc>Some dense/deep storage has a deposit delay, so stopping there mid-trip isn't really "on the way". When on, opportunistic and before-carry hauls avoid such storage (a deliberate unload trip can still use it — your load is never stranded).</HaulersDream.Setting.StorageFilterDenyLwmDesc>
+  <HaulersDream.Setting.StorageFilterButton>Edit storage building rules…</HaulersDream.Setting.StorageFilterButton>
+
+  <!-- Storage building permit/deny dialog -->
+  <HaulersDream.StorageFilter.Title>Storage building rules</HaulersDream.StorageFilter.Title>
+  <HaulersDream.StorageFilter.Desc>Set whether haulers may use each storage building, per building or per mod. Allow forces it on, Deny forces it off, and Default lets the curated rules decide. A per-building choice overrides its mod's choice; an explicit Deny overrides an Allow. Plain stockpile zones are always allowed.</HaulersDream.StorageFilter.Desc>
+  <HaulersDream.StorageFilter.ResetAll>Reset to defaults</HaulersDream.StorageFilter.ResetAll>
+  <HaulersDream.StorageFilter.StateDefault>Default</HaulersDream.StorageFilter.StateDefault>
+  <HaulersDream.StorageFilter.StateAllow>Allow</HaulersDream.StorageFilter.StateAllow>
+  <HaulersDream.StorageFilter.StateDeny>Deny</HaulersDream.StorageFilter.StateDeny>
+
+  <!-- Bulk Load For Transporters parity -->
+  <HaulersDream.Setting.CleanupOnSave>Clean up bulk-load jobs when saving</HaulersDream.Setting.CleanupOnSave>
+  <HaulersDream.Setting.CleanupOnSaveDesc>When the game saves while a pawn is mid bulk-load, Hauler's Dream tucks that pawn back to idle for the save so the save file doesn't reference Hauler's Dream's own job types — which means you can uninstall the mod later without the save erroring. The pawn keeps any swept goods and unloads them normally afterwards. On by default; turn off if you never plan to remove the mod.</HaulersDream.Setting.CleanupOnSaveDesc>
+  <HaulersDream.Setting.SoftlockDrop>Free trapped cargo from stuck pawns</HaulersDream.Setting.SoftlockDrop>
+  <HaulersDream.Setting.SoftlockDropDesc>If a pawn can no longer haul while carrying goods Hauler's Dream picked up — its Hauling work got disabled, or a mechanoid is dormant / self-shut-down — the carried goods are dropped nearby for normal hauling, instead of being trapped in that pawn forever. A mechanoid about to CHARGE first delivers its carried goods to storage (or drops them nearby if there's nowhere to put them), so they don't spoil or take up carrying space while it sits on the charger. Only touches Hauler's Dream's own picked-up items. On by default (a safety net).</HaulersDream.Setting.SoftlockDropDesc>
+  <HaulersDream.Setting.OpportunisticLoad>Deposit carried cargo into transports on the way</HaulersDream.Setting.OpportunisticLoad>
+  <HaulersDream.Setting.OpportunisticLoadDesc>A pawn already carrying items that a nearby transport pod, shuttle, map portal or vehicle is waiting for will divert to drop them off, instead of starting a brand-new pickup run. Fewer wasted walks. Off by default (it changes which task a pawn picks up next).</HaulersDream.Setting.OpportunisticLoadDesc>
+  <HaulersDream.Setting.LoadOpportunityRadius>Deposit-on-the-way search radius: {0} tiles</HaulersDream.Setting.LoadOpportunityRadius>
+  <HaulersDream.Setting.ContinuousLoading>"Load until complete" right-click order</HaulersDream.Setting.ContinuousLoading>
+  <HaulersDream.Setting.ContinuousLoadingDesc>Adds a right-click order that sends one courier (even drafted) through every nearby transport group that still needs loading, chaining the jobs until they're all full — handy for loading a big caravan in one command. Off by default (opt-in convenience).</HaulersDream.Setting.ContinuousLoadingDesc>
+  <!-- Continuous-loading float-menu order (B4) -->
+  <HaulersDream.ContinuousLoad.Option>Load until complete (continuous) — {0}</HaulersDream.ContinuousLoad.Option>
+  <HaulersDream.ContinuousLoad.CouldNotStart>Nothing nearby to bulk-load into that right now.</HaulersDream.ContinuousLoad.CouldNotStart>
+  <HaulersDream.Setting.LoadHybridPathing>Order bulk-load stops by real pathfinding</HaulersDream.Setting.LoadHybridPathing>
+  <HaulersDream.Setting.LoadHybridPathingDesc>When sweeping several stacks toward a transport, pick the walking order using real pathfinding for the closest few candidates instead of straight-line distance — slightly better routes on cluttered maps, at some extra pathfinding cost. Off by default; the straight-line order already produces correct, few-trip loads.</HaulersDream.Setting.LoadHybridPathingDesc>
+  <HaulersDream.Setting.LoadPathfindingCandidates>Pathfinding candidates per stop: {0}</HaulersDream.Setting.LoadPathfindingCandidates>
+  <HaulersDream.Setting.AutoOpenTransporterContents>Auto-open Contents tab for selected transporters</HaulersDream.Setting.AutoOpenTransporterContents>
+  <HaulersDream.Setting.AutoOpenTransporterContentsDesc>When you select a single transport pod or shuttle, automatically open its Contents tab so you can see what it's loading. Off by default (it changes which tab is open when you click things).</HaulersDream.Setting.AutoOpenTransporterContentsDesc>
+  <HaulersDream.Setting.AutoOpenCarrierGear>Auto-open Gear tab for selected carriers</HaulersDream.Setting.AutoOpenCarrierGear>
+  <HaulersDream.Setting.AutoOpenCarrierGearDesc>When you select a pack animal or other carrier, automatically open its Gear tab to see what it's carrying. Off by default.</HaulersDream.Setting.AutoOpenCarrierGearDesc>
+
+  <!-- Reset-to-defaults button (C4) -->
+  <HaulersDream.Setting.ResetToDefaults>Reset to defaults</HaulersDream.Setting.ResetToDefaults>
+  <HaulersDream.Setting.ResetToDefaultsConfirm>Reset all Hauler's Dream settings to their defaults? Your per-item unload rules, route preferences and storage filter will also be cleared. This cannot be undone.</HaulersDream.Setting.ResetToDefaultsConfirm>
+
+  <!-- ===================== Settings window overhaul (3-pane: nav · options · info) ===================== -->
+
+  <!-- Category names + info-panel overview text -->
+  <HaulersDream.Cat.Features>Features</HaulersDream.Cat.Features>
+  <HaulersDream.Cat.Features.Help>Turn whole feature families on or off. Hauler's Dream does the job of many separate mods — switch off any you'd rather not use. Detailed options for each family live on the other pages.</HaulersDream.Cat.Features.Help>
+  <HaulersDream.Cat.Features.Intro>Each card below enables or disables a whole feature family. Fine-tuning for each lives on its own page in the list to the left.</HaulersDream.Cat.Features.Intro>
+  <HaulersDream.Cat.Hauling>Hauling</HaulersDream.Cat.Hauling>
+  <HaulersDream.Cat.Hauling.Help>How colonists pick things up: the carry limit, smart overload, bulk sweeping a whole area in one trip, and tidying loose items while they work.</HaulersDream.Cat.Hauling.Help>
+  <HaulersDream.Cat.Unloading>Unloading</HaulersDream.Cat.Unloading>
+  <HaulersDream.Cat.Unloading.Help>When and how carried goods get put away: automatic unload trips, unloading before downtime, surplus handling, drop-off ordering, and per-item rules.</HaulersDream.Cat.Unloading.Help>
+  <HaulersDream.Cat.BuildCraft>Build &amp; Craft</HaulersDream.Cat.BuildCraft>
+  <HaulersDream.Cat.BuildCraft.Help>Sourcing materials from inventory for construction and crafting bills, plus food delivery between pawns and spoilage-first ingredient choice.</HaulersDream.Cat.BuildCraft.Help>
+  <HaulersDream.Cat.BulkLoading>Bulk loading</HaulersDream.Cat.BulkLoading>
+  <HaulersDream.Cat.BulkLoading.Help>One-trip loading and unloading of pack animals, transport pods, shuttles, map portals, refuelables and vehicles.</HaulersDream.Cat.BulkLoading.Help>
+  <HaulersDream.Cat.Routing>Routing &amp; storage</HaulersDream.Cat.Routing>
+  <HaulersDream.Cat.Routing.Help>Grabbing items that are roughly on the way, relocating supplies closer to where they're used, and filtering which storage hauling may use.</HaulersDream.Cat.Routing.Help>
+  <HaulersDream.Cat.Yields>Work &amp; yields</HaulersDream.Cat.Yields>
+  <HaulersDream.Cat.Yields.Help>Which work yields get scooped, hauling carcasses to storage after a kill, and stripping gear from corpses while hauling.</HaulersDream.Cat.Yields.Help>
+  <HaulersDream.Cat.Who>Who works</HaulersDream.Cat.Who>
+  <HaulersDream.Cat.Who.Help>Which pawns Hauler's Dream applies to — mechs, animals, the drafted, off-map colonists — plus overrides that let any pawn haul, clean or cut plants.</HaulersDream.Cat.Who.Help>
+  <HaulersDream.Cat.Planners>Planners</HaulersDream.Cat.Planners>
+  <HaulersDream.Cat.Planners.Help>The right-click route planner and the station crafting planner, and their defaults.</HaulersDream.Cat.Planners.Help>
+  <HaulersDream.Cat.Advanced>Advanced</HaulersDream.Cat.Advanced>
+  <HaulersDream.Cat.Advanced.Help>Unload timing, the stuck-cargo safety alert, save cleanup, and developer diagnostics.</HaulersDream.Cat.Advanced.Help>
+  <HaulersDream.Advanced.DevHint>Developer diagnostics appear here when Developer mode is enabled.</HaulersDream.Advanced.DevHint>
+
+  <!-- Feature hub: group subheaders -->
+  <HaulersDream.FeatGroup.Core>Core</HaulersDream.FeatGroup.Core>
+  <HaulersDream.FeatGroup.Loading>Loading &amp; carriers</HaulersDream.FeatGroup.Loading>
+  <HaulersDream.FeatGroup.BuildCraft>Building &amp; crafting</HaulersDream.FeatGroup.BuildCraft>
+  <HaulersDream.FeatGroup.Planning>Planning tools</HaulersDream.FeatGroup.Planning>
+  <HaulersDream.FeatGroup.Wyu>Opportunistic hauling</HaulersDream.FeatGroup.Wyu>
+
+  <!-- Feature cards (name + short blurb; hover shows the full description) -->
+  <HaulersDream.Feat.Master.Name>Enable Hauler's Dream</HaulersDream.Feat.Master.Name>
+  <HaulersDream.Feat.Master.Blurb>Master switch for all automatic behavior</HaulersDream.Feat.Master.Blurb>
+  <HaulersDream.Feat.AutoUnload.Name>Automatic unloading</HaulersDream.Feat.AutoUnload.Name>
+  <HaulersDream.Feat.AutoUnload.Blurb>Pawns make their own unload trips. Off = unload only via the per-pawn button.</HaulersDream.Feat.AutoUnload.Blurb>
+  <HaulersDream.Feat.BulkHaul.Name>Bulk hauling</HaulersDream.Feat.BulkHaul.Name>
+  <HaulersDream.Feat.BulkHaul.Blurb>Sweep many nearby items into inventory in one trip</HaulersDream.Feat.BulkHaul.Blurb>
+  <HaulersDream.Feat.Sweep.Name>Tidy up while working</HaulersDream.Feat.Sweep.Name>
+  <HaulersDream.Feat.Sweep.Blurb>Also grab loose items near the work spot</HaulersDream.Feat.Sweep.Blurb>
+  <HaulersDream.Feat.UnloadCarriers.Name>Bulk-unload pack animals</HaulersDream.Feat.UnloadCarriers.Name>
+  <HaulersDream.Feat.UnloadCarriers.Blurb>Empty a carrier into a backpack in one visit</HaulersDream.Feat.UnloadCarriers.Blurb>
+  <HaulersDream.Feat.LoadTransporters.Name>Load transporters &amp; shuttles</HaulersDream.Feat.LoadTransporters.Name>
+  <HaulersDream.Feat.LoadTransporters.Blurb>Fill pods and shuttles in one trip</HaulersDream.Feat.LoadTransporters.Blurb>
+  <HaulersDream.Feat.LoadPortal.Name>Load map portals</HaulersDream.Feat.LoadPortal.Name>
+  <HaulersDream.Feat.LoadPortal.Blurb>Bulk-load pit gates and cave exits</HaulersDream.Feat.LoadPortal.Blurb>
+  <HaulersDream.Feat.Refuel.Name>Bulk refuel</HaulersDream.Feat.Refuel.Name>
+  <HaulersDream.Feat.Refuel.Blurb>Top up a refuelable in one trip</HaulersDream.Feat.Refuel.Blurb>
+  <HaulersDream.Feat.Vehicles.Name>Vehicle cargo</HaulersDream.Feat.Vehicles.Name>
+  <HaulersDream.Feat.Vehicles.Blurb>Bulk-load vehicle cargo (needs a vehicles mod)</HaulersDream.Feat.Vehicles.Blurb>
+  <HaulersDream.Feat.BuildFromInv.Name>Build from inventory</HaulersDream.Feat.BuildFromInv.Name>
+  <HaulersDream.Feat.BuildFromInv.Blurb>Build using carried and caravan materials</HaulersDream.Feat.BuildFromInv.Blurb>
+  <HaulersDream.Feat.CraftFromInv.Name>Craft from carried materials</HaulersDream.Feat.CraftFromInv.Name>
+  <HaulersDream.Feat.CraftFromInv.Blurb>Bills can use ingredients pawns are already carrying</HaulersDream.Feat.CraftFromInv.Blurb>
+  <HaulersDream.Feat.ConstructDeliver.Name>Carry materials for big builds</HaulersDream.Feat.ConstructDeliver.Name>
+  <HaulersDream.Feat.ConstructDeliver.Blurb>Fewer trips to large or clustered build jobs</HaulersDream.Feat.ConstructDeliver.Blurb>
+  <HaulersDream.Feat.Meals.Name>Meals on Wheels</HaulersDream.Feat.Meals.Name>
+  <HaulersDream.Feat.Meals.Blurb>A hungry pawn eats food another pawn is carrying</HaulersDream.Feat.Meals.Blurb>
+  <HaulersDream.Feat.PlanRoutes.Name>Route planner</HaulersDream.Feat.PlanRoutes.Name>
+  <HaulersDream.Feat.PlanRoutes.Blurb>Right-click tool to plan a hauling/work route</HaulersDream.Feat.PlanRoutes.Blurb>
+  <HaulersDream.Feat.PlanCrafting.Name>Crafting planner</HaulersDream.Feat.PlanCrafting.Name>
+  <HaulersDream.Feat.PlanCrafting.Blurb>Batch a workbench bill many times in one go</HaulersDream.Feat.PlanCrafting.Blurb>
+  <HaulersDream.Feat.EnRoute.Name>En-route pickup</HaulersDream.Feat.EnRoute.Name>
+  <HaulersDream.Feat.EnRoute.Blurb>Grab loose items lying along the way to a job</HaulersDream.Feat.EnRoute.Blurb>
+  <HaulersDream.Feat.StorageRouting.Name>Consumer-aware routing</HaulersDream.Feat.StorageRouting.Name>
+  <HaulersDream.Feat.StorageRouting.Blurb>Move supplies to storage closer to where they're used</HaulersDream.Feat.StorageRouting.Blurb>
+  <HaulersDream.Feat.StorageFilters.Name>Storage filters</HaulersDream.Feat.StorageFilters.Name>
+  <HaulersDream.Feat.StorageFilters.Blurb>Restrict which storage buildings hauling may use</HaulersDream.Feat.StorageFilters.Blurb>
+
+  <!-- In-page section headers -->
+  <HaulersDream.Head.BulkHaul>Bulk hauling</HaulersDream.Head.BulkHaul>
+  <HaulersDream.Head.WhileWorking>While working</HaulersDream.Head.WhileWorking>
+  <HaulersDream.Head.Construction>Construction</HaulersDream.Head.Construction>
+  <HaulersDream.Head.Crafting>Crafting</HaulersDream.Head.Crafting>
+  <HaulersDream.Head.Food>Food</HaulersDream.Head.Food>
+  <HaulersDream.Head.PackAnimals>Pack animals</HaulersDream.Head.PackAnimals>
+  <HaulersDream.Head.Transporters>Transporters, portals &amp; refuel</HaulersDream.Head.Transporters>
+  <HaulersDream.Head.Vehicles>Vehicles</HaulersDream.Head.Vehicles>
+  <HaulersDream.Head.AdvancedLoading>Advanced loading</HaulersDream.Head.AdvancedLoading>
+  <HaulersDream.Head.StorageRouting>Consumer-aware storage routing</HaulersDream.Head.StorageRouting>
+  <HaulersDream.Head.StorageFilters>Storage building filters</HaulersDream.Head.StorageFilters>
+  <HaulersDream.Head.AfterKill>After a kill</HaulersDream.Head.AfterKill>
+  <HaulersDream.Head.Stripping>Stripping</HaulersDream.Head.Stripping>
+  <HaulersDream.Head.Batches>Crafting batches</HaulersDream.Head.Batches>
+  <HaulersDream.Head.RoutePlanning>Route planning</HaulersDream.Head.RoutePlanning>
+  <HaulersDream.Head.UnloadTiming>Unload timing</HaulersDream.Head.UnloadTiming>
+  <HaulersDream.Head.SafetyNet>Safety net</HaulersDream.Head.SafetyNet>
+  <HaulersDream.Head.Developer>Developer</HaulersDream.Head.Developer>
+
+  <!-- Settings profiles (named presets) -->
+  <HaulersDream.Profile.Default>Default (profile, built-in)</HaulersDream.Profile.Default>
+  <HaulersDream.Profile.Custom>Custom (unsaved)</HaulersDream.Profile.Custom>
+  <HaulersDream.Profile.Named>{0} (profile)</HaulersDream.Profile.Named>
+  <HaulersDream.Profile.NamedDirty>{0} (profile, unsaved changes)</HaulersDream.Profile.NamedDirty>
+  <HaulersDream.Profile.SaveChanges>Save changes to "{0}"</HaulersDream.Profile.SaveChanges>
+  <HaulersDream.Profile.CreateNew>Create new profile…</HaulersDream.Profile.CreateNew>
+  <HaulersDream.Profile.SaveAsNew>Save as new profile…</HaulersDream.Profile.SaveAsNew>
+  <HaulersDream.Profile.Delete>Delete profile "{0}"</HaulersDream.Profile.Delete>
+  <HaulersDream.Profile.DeleteConfirm>Delete the profile "{0}"? Your current settings stay as they are.</HaulersDream.Profile.DeleteConfirm>
+  <HaulersDream.Profile.NameDialogTitle>Profile name:</HaulersDream.Profile.NameDialogTitle>
+  <HaulersDream.Profile.SelectorTip>Settings profiles. Pick a saved profile, reset to the built-in Default, or save your current settings as a new profile. "Custom (unsaved)" means you've changed settings that aren't saved to any profile yet.</HaulersDream.Profile.SelectorTip>
+  <HaulersDream.Profile.Copy>Copy profile…</HaulersDream.Profile.Copy>
+  <HaulersDream.Profile.Paste>Paste profile…</HaulersDream.Profile.Paste>
+  <HaulersDream.Profile.CopyTitle>Copy profile</HaulersDream.Profile.CopyTitle>
+  <HaulersDream.Profile.CopyInfo>Share this code with another player. It contains the mod version and only the settings you've changed from this version's defaults, so it stays short.</HaulersDream.Profile.CopyInfo>
+  <HaulersDream.Profile.CopyToClipboard>Copy to clipboard</HaulersDream.Profile.CopyToClipboard>
+  <HaulersDream.Profile.CopiedMsg>Profile code copied to clipboard.</HaulersDream.Profile.CopiedMsg>
+  <HaulersDream.Profile.PasteTitle>Paste profile</HaulersDream.Profile.PasteTitle>
+  <HaulersDream.Profile.PasteTokenLabel>Profile code:</HaulersDream.Profile.PasteTokenLabel>
+  <HaulersDream.Profile.PasteFromClipboard>Paste from clipboard</HaulersDream.Profile.PasteFromClipboard>
+  <HaulersDream.Profile.PasteInvalid>That doesn't look like a valid Hauler's Dream profile code.</HaulersDream.Profile.PasteInvalid>
+  <HaulersDream.Profile.PasteCreate>Create profile</HaulersDream.Profile.PasteCreate>
+
+  <!-- Units + common -->
+  <HaulersDream.Common.Off>Off</HaulersDream.Common.Off>
+  <HaulersDream.Common.On>On</HaulersDream.Common.On>
+  <HaulersDream.Unit.Tiles>{0} tiles</HaulersDream.Unit.Tiles>
+  <HaulersDream.Unit.Ticks>{0} ticks</HaulersDream.Unit.Ticks>
+  <HaulersDream.Unit.Hours>{0} h</HaulersDream.Unit.Hours>
+
+  <!-- Clean slider/segment labels + new help text -->
+  <HaulersDream.Setting.CarryLimit.Lab>Carry limit</HaulersDream.Setting.CarryLimit.Lab>
+  <HaulersDream.Setting.Overload.Lab>Smart overload</HaulersDream.Setting.Overload.Lab>
+  <HaulersDream.Setting.PickupMode.Lab>Pick-up handling</HaulersDream.Setting.PickupMode.Lab>
+  <HaulersDream.Setting.PickupMode.Help>How a pawn takes an item it is about to haul into its load.</HaulersDream.Setting.PickupMode.Help>
+  <HaulersDream.Setting.PickupMode.Drop>Drop, then haul</HaulersDream.Setting.PickupMode.Drop>
+  <HaulersDream.Setting.PickupMode.DropDesc>Realistic: the item is briefly dropped on the floor, then scooped — so another hauler can still grab it mid-step.</HaulersDream.Setting.PickupMode.DropDesc>
+  <HaulersDream.Setting.PickupMode.Direct>Into inventory</HaulersDream.Setting.PickupMode.Direct>
+  <HaulersDream.Setting.PickupMode.DirectDesc>The item goes straight into the pawn's inventory with no floor step.</HaulersDream.Setting.PickupMode.DirectDesc>
+  <HaulersDream.Setting.BulkHaulTrigger.Lab>Bulk-haul trigger</HaulersDream.Setting.BulkHaulTrigger.Lab>
+  <HaulersDream.Setting.KeepWorkingMargin.Lab>Unload before a longer relocation</HaulersDream.Setting.KeepWorkingMargin.Lab>
+  <HaulersDream.Setting.MinFreeSpaceToUnloadCarrier.Lab>Minimum free backpack space to start</HaulersDream.Setting.MinFreeSpaceToUnloadCarrier.Lab>
+  <HaulersDream.Setting.MinFreeSpaceToUnloadCarrier.Help>A hauler needs at least this much of its carry capacity free before it starts emptying a pack animal, so its own backpack doesn't immediately overflow.</HaulersDream.Setting.MinFreeSpaceToUnloadCarrier.Help>
+  <HaulersDream.Setting.VisualUnloadDelay.Lab>Per-stack unload delay</HaulersDream.Setting.VisualUnloadDelay.Lab>
+  <HaulersDream.Setting.VisualUnloadDelay.Help>A small cosmetic pause between each stack during a bulk unload, so it reads as a deliberate action. 0 = instant.</HaulersDream.Setting.VisualUnloadDelay.Help>
+  <HaulersDream.Setting.BulkLoadAiUpdateFrequency.Lab>Load re-check interval</HaulersDream.Setting.BulkLoadAiUpdateFrequency.Lab>
+  <HaulersDream.Setting.BulkLoadAiUpdateFrequency.Help>How often a running bulk-load job re-checks that its carried cargo is still wanted by the group. Lower = more responsive re-routing, higher = cheaper.</HaulersDream.Setting.BulkLoadAiUpdateFrequency.Help>
+  <HaulersDream.Setting.LoadOpportunityRadius.Lab>Deposit-on-the-way search radius</HaulersDream.Setting.LoadOpportunityRadius.Lab>
+  <HaulersDream.Setting.LoadOpportunityRadius.Help>How far a carrying pawn looks for a needy transporter to deposit cargo into while passing by.</HaulersDream.Setting.LoadOpportunityRadius.Help>
+  <HaulersDream.Setting.LoadPathfindingCandidates.Lab>Pathfinding candidates per stop</HaulersDream.Setting.LoadPathfindingCandidates.Lab>
+  <HaulersDream.Setting.LoadPathfindingCandidates.Help>How many of the nearest pickup stops are re-ranked by real pathfinding instead of straight-line distance. Higher = more accurate ordering, more CPU.</HaulersDream.Setting.LoadPathfindingCandidates.Help>
+  <HaulersDream.Setting.DefaultBatchSize.Lab>Default batch size</HaulersDream.Setting.DefaultBatchSize.Lab>
+  <HaulersDream.Setting.DefaultBatchSize.Help>The starting quantity for a newly batched bill.</HaulersDream.Setting.DefaultBatchSize.Help>
+  <HaulersDream.Setting.RouteMaxAmount.Lab>Route 'Amount' slider maximum</HaulersDream.Setting.RouteMaxAmount.Lab>
+  <HaulersDream.Setting.RouteMaxAmount.Help>The top of the Amount slider in the route planner (before the 'All' step).</HaulersDream.Setting.RouteMaxAmount.Help>
+  <HaulersDream.Setting.RouteOrderEffort.Lab>Solve visiting order exactly up to</HaulersDream.Setting.RouteOrderEffort.Lab>
+  <HaulersDream.Setting.RouteOrderEffort.Help>Routes with at most this many stops get an exact optimal visiting order; larger routes use a fast approximation. Higher solves more exactly but costs more CPU.</HaulersDream.Setting.RouteOrderEffort.Help>
+  <HaulersDream.Setting.CraftBatchTimeout.Lab>Default crafting-batch timeout</HaulersDream.Setting.CraftBatchTimeout.Lab>
+  <HaulersDream.Setting.CraftBatchTimeout.Help>Wall-clock cap for a crafting batch before it ends on its own. 0 = no limit. Overridable per batch.</HaulersDream.Setting.CraftBatchTimeout.Help>
+  <HaulersDream.Setting.UnloadGrace.Lab>Accumulate window</HaulersDream.Setting.UnloadGrace.Lab>
+  <HaulersDream.Setting.UnloadGrace.Help>How long after its last pickup a pawn keeps accumulating before making an automatic unload trip. Higher = a working pawn keeps scooping across the whole job; it still unloads sooner once it fills up.</HaulersDream.Setting.UnloadGrace.Help>
+  <HaulersDream.Setting.IntervalUnload.Lab>Interval unload backstop</HaulersDream.Setting.IntervalUnload.Lab>
+  <HaulersDream.Setting.IntervalUnload.Help>A periodic forced unload, in case every other unload trigger is swallowed (drafts, lord duties, modded jobs). 0 = off.</HaulersDream.Setting.IntervalUnload.Help>
+  <HaulersDream.Setting.AlertStuckHours.Lab>Flag a stuck pawn after</HaulersDream.Setting.AlertStuckHours.Lab>
+  <HaulersDream.Setting.AlertStuckHours.Help>How long a pawn may hold haul cargo it cannot put away (with a destination that exists) before the alert flags it.</HaulersDream.Setting.AlertStuckHours.Help>
+  <HaulersDream.Setting.EnRoutePathChecker.Lab>On-the-way check</HaulersDream.Setting.EnRoutePathChecker.Lab>
+  <HaulersDream.Setting.AutoStripMode.Lab>Auto-strip while hauling</HaulersDream.Setting.AutoStripMode.Lab>
+  <HaulersDream.Setting.AutoStrip.Help>When hauling a corpse, strip its gear first and carry the loot along. 'Disposal only' strips only corpses headed to a dumping zone. 'Off' leaves corpses dressed (manual Strip orders still scoop their gear).</HaulersDream.Setting.AutoStrip.Help>
+  <HaulersDream.Setting.TaintedSmeltable.Lab>Tainted apparel — smeltable</HaulersDream.Setting.TaintedSmeltable.Lab>
+  <HaulersDream.Setting.TaintedNonSmeltable.Lab>Tainted apparel — non-smeltable</HaulersDream.Setting.TaintedNonSmeltable.Lab>
+  <HaulersDream.Setting.Tainted.Help>What to do with tainted (worn-by-the-dead) apparel removed during a strip: take it, leave it on the corpse, drop and forbid it, or destroy it.</HaulersDream.Setting.Tainted.Help>
+  <HaulersDream.Setting.RouteSelection.Lab>Route selection</HaulersDream.Setting.RouteSelection.Lab>
+  <HaulersDream.Setting.RouteSelection.Help>How the planner chooses which targets to include in a route.</HaulersDream.Setting.RouteSelection.Help>
+  <HaulersDream.Setting.RouteDistance.Lab>Distance basis</HaulersDream.Setting.RouteDistance.Lab>
+  <HaulersDream.Setting.RouteDistance.Help>How the planner measures distance between stops.</HaulersDream.Setting.RouteDistance.Help>
+
+  <!-- Help text for controls that previously relied on a tooltip-less label -->
+  <HaulersDream.Setting.ShareForBuilding.Help>Materials a pawn already scooped into its inventory count toward nearby construction, so it can build without a separate fetch trip.</HaulersDream.Setting.ShareForBuilding.Help>
+  <HaulersDream.Setting.ShareMeetInMiddle.Help>When a build or bill will pull a material from a carrier's inventory, an idle carrier walks toward the worker so they meet sooner.</HaulersDream.Setting.ShareMeetInMiddle.Help>
+  <HaulersDream.Setting.ItemUnload.Help>Set rules for individual items: keep the whole stack, keep at most a set amount, or always unload it — overriding the surplus setting for that item.</HaulersDream.Setting.ItemUnload.Help>
+  <HaulersDream.Setting.HideGizmo.Help>Hide the per-pawn 'Unload inventory' button that appears when a colonist is carrying scooped goods.</HaulersDream.Setting.HideGizmo.Help>
+  <HaulersDream.Setting.StorageFilterButton.Help>Edit per-building and per-mod allow/deny rules for which storage hauling may use.</HaulersDream.Setting.StorageFilterButton.Help>
+  <HaulersDream.Setting.PauseWhileDrafted.Help>While a pawn is drafted, Hauler's Dream stops starting new scoops and sweeps for it.</HaulersDream.Setting.PauseWhileDrafted.Help>
+  <HaulersDream.Setting.AllowIncapable.Help>Let a pawn who is incapable of Hauling still scoop the yields from its own work (mining, harvesting, …).</HaulersDream.Setting.AllowIncapable.Help>
+  <HaulersDream.Setting.EnableOnNonHomeMaps.Help>Run Hauler's Dream on caravan and other non-home maps too, not just your home colony.</HaulersDream.Setting.EnableOnNonHomeMaps.Help>
+  <HaulersDream.Setting.VerboseLogging.Help>Extra developer logging. Only available — and only logs — in Developer mode.</HaulersDream.Setting.VerboseLogging.Help>
+
+  <!-- Short segment-button labels (the full description shows in the info panel on hover) -->
+  <HaulersDream.Setting.BulkHaulSecond.S>On 2nd order</HaulersDream.Setting.BulkHaulSecond.S>
+  <HaulersDream.Setting.BulkHaulAlways.S>Always</HaulersDream.Setting.BulkHaulAlways.S>
+  <HaulersDream.Setting.EnRoutePathVanilla.S>Cheap</HaulersDream.Setting.EnRoutePathVanilla.S>
+  <HaulersDream.Setting.EnRoutePathDefault.S>Accurate</HaulersDream.Setting.EnRoutePathDefault.S>
+  <HaulersDream.Setting.EnRoutePathPathfinding.S>Thorough</HaulersDream.Setting.EnRoutePathPathfinding.S>
+  <HaulersDream.Setting.AutoStripAll.S>All hauls</HaulersDream.Setting.AutoStripAll.S>
+  <HaulersDream.Setting.AutoStripDisposal.S>Disposal only</HaulersDream.Setting.AutoStripDisposal.S>
+  <HaulersDream.Setting.AutoStripOff.S>Off</HaulersDream.Setting.AutoStripOff.S>
+  <HaulersDream.Setting.TaintedTake.S>Take</HaulersDream.Setting.TaintedTake.S>
+  <HaulersDream.Setting.TaintedLeave.S>Leave</HaulersDream.Setting.TaintedLeave.S>
+  <HaulersDream.Setting.TaintedForbid.S>Drop &amp; forbid</HaulersDream.Setting.TaintedForbid.S>
+  <HaulersDream.Setting.TaintedDestroy.S>Destroy</HaulersDream.Setting.TaintedDestroy.S>
+  <HaulersDream.PlanRoute.SelMostStops.S>Most stops</HaulersDream.PlanRoute.SelMostStops.S>
+  <HaulersDream.PlanRoute.SelNearest.S>Nearest</HaulersDream.PlanRoute.SelNearest.S>
+  <HaulersDream.PlanRoute.DistStraight.S>Straight line</HaulersDream.PlanRoute.DistStraight.S>
+  <HaulersDream.PlanRoute.DistWalking.S>Walking path</HaulersDream.PlanRoute.DistWalking.S>
+
+  <!-- Per-option help for the enum segments that didn't already have a full description -->
+  <HaulersDream.Setting.EnRoutePathVanilla.H>Fast bounded region-count flood — the cheapest check, least accurate.</HaulersDream.Setting.EnRoutePathVanilla.H>
+  <HaulersDream.Setting.EnRoutePathDefault.H>Real A* path cost; stops scanning on a range failure. More accurate, more CPU.</HaulersDream.Setting.EnRoutePathDefault.H>
+  <HaulersDream.Setting.EnRoutePathPathfinding.H>Real A* path cost; keeps scanning for the best match. Most accurate, most CPU.</HaulersDream.Setting.EnRoutePathPathfinding.H>
+  <HaulersDream.PlanRoute.SelMostStops.H>Prefer targets that pack the most stops into one travel distance.</HaulersDream.PlanRoute.SelMostStops.H>
+  <HaulersDream.PlanRoute.SelNearest.H>Prefer the targets nearest to the one you clicked.</HaulersDream.PlanRoute.SelNearest.H>
+  <HaulersDream.PlanRoute.DistStraight.H>Measure distance as a straight line — fast.</HaulersDream.PlanRoute.DistStraight.H>
+  <HaulersDream.PlanRoute.DistWalking.H>Measure distance along the real walking path — slower, more accurate.</HaulersDream.PlanRoute.DistWalking.H>
+
+  <!-- Help for the work-yield toggles (previously had no description) -->
+  <HaulersDream.Setting.HaulHarvest.Help>Scoop harvested crops and cut-plant yields into inventory as the pawn works.</HaulersDream.Setting.HaulHarvest.Help>
+  <HaulersDream.Setting.HaulMining.Help>Scoop mined ore and rock chunks into inventory as the pawn mines.</HaulersDream.Setting.HaulMining.Help>
+  <HaulersDream.Setting.HaulDeepDrill.Help>Scoop deep-drill output into inventory as it is produced.</HaulersDream.Setting.HaulDeepDrill.Help>
+  <HaulersDream.Setting.HaulDeconstruct.Help>Scoop the salvage from deconstructed buildings into inventory.</HaulersDream.Setting.HaulDeconstruct.Help>
+  <HaulersDream.Setting.HaulAnimals.Help>Scoop milk, wool and other products gathered from animals into inventory.</HaulersDream.Setting.HaulAnimals.Help>
+
+  <!-- Per-page top descriptors -->
+  <HaulersDream.Cat.Hauling.Intro>How colonists pick things up — how much they carry, when they overload, and what they sweep up.</HaulersDream.Cat.Hauling.Intro>
+  <HaulersDream.Cat.Unloading.Intro>When and how colonists put their carried goods away.</HaulersDream.Cat.Unloading.Intro>
+  <HaulersDream.Cat.BuildCraft.Intro>Sourcing build and crafting materials from inventory, food delivery, and ingredient choice.</HaulersDream.Cat.BuildCraft.Intro>
+  <HaulersDream.Cat.BulkLoading.Intro>One-trip loading and unloading of carriers, transports, portals, refuelables and vehicles.</HaulersDream.Cat.BulkLoading.Intro>
+  <HaulersDream.Cat.Routing.Intro>Grab items on the way, relocate supplies closer to where they're used, and filter storage.</HaulersDream.Cat.Routing.Intro>
+  <HaulersDream.Cat.Yields.Intro>Which work yields get scooped, hauling carcasses after a kill, and stripping gear.</HaulersDream.Cat.Yields.Intro>
+  <HaulersDream.Cat.Who.Intro>Which pawns Hauler's Dream applies to, and overrides that let any pawn do certain work.</HaulersDream.Cat.Who.Intro>
+  <HaulersDream.Cat.Planners.Intro>The right-click route and crafting planners, and their defaults.</HaulersDream.Cat.Planners.Intro>
+  <HaulersDream.Cat.Advanced.Intro>Unload timing, the stuck-cargo safety alert, save cleanup, and developer tools.</HaulersDream.Cat.Advanced.Intro>
+
+  <!-- Section headings added so every option lives under one -->
+  <HaulersDream.Head.CarryWeight>Carry weight</HaulersDream.Head.CarryWeight>
+  <HaulersDream.Head.Pickup>Pick-up</HaulersDream.Head.Pickup>
+  <HaulersDream.Head.AutoUnloadTrips>Automatic unload trips</HaulersDream.Head.AutoUnloadTrips>
+  <HaulersDream.Head.DropOff>Drop-off behaviour</HaulersDream.Head.DropOff>
+  <HaulersDream.Head.ItemRulesDisplay>Per-item rules &amp; display</HaulersDream.Head.ItemRulesDisplay>
+  <HaulersDream.Head.EnRoute>En-route pickup</HaulersDream.Head.EnRoute>
+  <HaulersDream.Head.WhoCanHaul>Who can scoop &amp; haul</HaulersDream.Head.WhoCanHaul>
+  <HaulersDream.Head.PlanningTools>Planning tools</HaulersDream.Head.PlanningTools>
+
+  <!-- Smart-overload graph marker -->
+  <HaulersDream.Setting.Overload.Ceiling>ceiling</HaulersDream.Setting.Overload.Ceiling>
 
 </LanguageData>

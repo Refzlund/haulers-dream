@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using HaulersDream.Core;
 using RimWorld;
@@ -19,6 +20,12 @@ namespace HaulersDream
         public static Thing FindSharableStack(Map map, Pawn worker, ThingDef def)
         {
             if (map == null || worker == null || def == null)
+                return null;
+
+            // Short-circuit: no tagged stock of this def held by the worker or any eligible carrier (per-tick
+            // cached) -> the find cannot succeed, so skip the colony walk + per-carrier reach/reserve checks.
+            // CountSharable applies the same self + IsEligibleCarrier eligibility, so a 0 here is a true negative.
+            if (CountSharable(map, worker, def) <= 0)
                 return null;
 
             Thing best = null;
@@ -171,8 +178,20 @@ namespace HaulersDream
         // Per-tick result cache for CountSharable: the construction work scan calls it once per missing-material
         // blueprint per def — a colony-wide pawn × inventory walk each time. Within one tick the answer for a
         // given (worker, def) cannot change, so cache it (cleared whenever the tick advances).
-        private static int countCacheTick = -1;
-        private static readonly Dictionary<long, int> countCache = new Dictionary<long, int>();
+        //
+        // [ThreadStatic] per the assembly's hook-reachable-scratch convention (PawnMassCache/CommonSenseCompat/
+        // InventorySurplus): CountSharable is reachable from the construction work-giver scan postfixes, so an
+        // off-thread work scan gets its own per-tick slot instead of racing a torn read + Clear() + insert on a
+        // shared Dictionary. A [ThreadStatic] field can't have an initializer, so the dict is null-coalesced at
+        // the read site.
+        [ThreadStatic] private static int countCacheTick;
+        [ThreadStatic] private static Dictionary<long, int> countCache;
+
+        // Self-register the per-session count-memo clear with the game-load hygiene sweep (see CacheRegistry), so it
+        // can never be forgotten. The static ctor runs once, the first time any member is touched (the only way the
+        // memo can hold cross-session data); Clear resets the FinalizeInit (main) thread's slot — the `tick != -1`
+        // populate guard in CountSharable is the actual cross-session safeguard.
+        static InventoryShare() => CacheRegistry.Register(Clear);
 
         /// <summary>Total count of <paramref name="def"/> held (tagged) by the worker itself plus eligible
         /// carriers — for the construction availability gate (so a builder's OWN scooped stock counts too).</summary>
@@ -182,13 +201,19 @@ namespace HaulersDream
                 return 0;
 
             int tick = Find.TickManager?.TicksGame ?? -1;
-            if (tick != countCacheTick)
+            // Lazy per-thread dict init (a [ThreadStatic] field can't carry an initializer).
+            var cache = countCache ?? (countCache = new Dictionary<long, int>());
+            // tick == -1 (TickManager briefly null across a load): don't trust or populate the memo — a
+            // cross-session quickload can land on the same tick number with colliding thingIDNumber keys.
+            // Guard the stamp update on `tick != -1` (mirrors CompHauledToInventory.lastHealTick); when -1 we
+            // recompute live and never cache. This is the load-bearing cross-session fix.
+            if (tick != -1 && tick != countCacheTick)
             {
                 countCacheTick = tick;
-                countCache.Clear();
+                cache.Clear();
             }
             long key = ((long)worker.thingIDNumber << 32) | (uint)def.shortHash;
-            if (countCache.TryGetValue(key, out int cached))
+            if (tick != -1 && cache.TryGetValue(key, out int cached))
                 return cached;
 
             int total = CountTaggedOfDef(worker, def); // the worker's own scooped stock counts
@@ -199,8 +224,19 @@ namespace HaulersDream
                 if (IsEligibleCarrier(carrier, worker)) // excludes worker -> no double-count
                     total += CountTaggedOfDef(carrier, def);
             }
-            countCache[key] = total;
+            if (tick != -1)
+                cache[key] = total; // only memoize a real tick (see the -1 guard above)
             return total;
+        }
+
+        /// <summary>Drop the main thread's per-tick sharable-count memo and reset the tick stamp — called on game
+        /// load (FinalizeInit) so an equal tick number across a quickload cannot serve a stale cross-session
+        /// entry. Mirrors <see cref="PawnMassCache.Clear"/> (main-thread slot only; the `tick != -1` populate
+        /// guard above is the actual cross-session safeguard).</summary>
+        internal static void Clear()
+        {
+            countCacheTick = 0;
+            countCache?.Clear();
         }
 
         private static int CountTaggedOfDef(Pawn carrier, ThingDef def)
@@ -216,7 +252,15 @@ namespace HaulersDream
             return total;
         }
 
-        private static bool IsEligibleCarrier(Pawn carrier, Pawn worker)
+        /// <summary>
+        /// The pure CARRIER-LIVENESS sub-check shared by every "may colonist X draw from carrier Y" gate:
+        /// the carrier is a distinct, spawned, alive, capable pawn — not self, unspawned, dead, downed,
+        /// drafted, or in a mental state. This is the common core of <see cref="IsEligibleCarrier"/> (which
+        /// layers the HD-preloaded-stock job-def guard on top) and <see cref="CarriedHaulShare"/>'s
+        /// carried-stack check (which layers carry-tracker / haul-job guards on top); both call this so the
+        /// liveness clauses can never drift between them. Returns FALSE (not a live carrier) on null.
+        /// </summary>
+        internal static bool IsLiveShareCarrier(Pawn carrier, Pawn worker)
         {
             if (carrier == null || carrier == worker)
                 return false;
@@ -226,15 +270,26 @@ namespace HaulersDream
                 return false;
             if (carrier.InMentalState)
                 return false;
+            return true;
+        }
+
+        /// <summary>A carrier whose inventory another colonist may draw from: excludes self, unspawned,
+        /// dead, downed, drafted, mental, and mid-HD-batch holders. Shared with the Meals On Wheels food
+        /// postfix (<see cref="Patch_TryFindBestFoodSourceFor"/>), which layers food-specific guards
+        /// (baby-feed, forbidden, allowed-area, reach, stack reservation) on top.</summary>
+        internal static bool IsEligibleCarrier(Pawn carrier, Pawn worker)
+        {
+            // Liveness core (self/spawned/dead/downed/drafted/mental) — shared with CarriedHaulShare so the
+            // two can never drift; this gate then adds the HD-preloaded-stock job-def guard below.
+            if (!IsLiveShareCarrier(carrier, worker))
+                return false;
             // A pawn mid batch-craft is actively holding the ingredients it pre-loaded for its own recipe runs
             // (deliberately untagged so they're not shared) — but the self-heal could re-tag them if it also carries
-            // scooped stock of the same def. Never let another pawn pull from a batch-crafter, so the batch can't be
-            // starved of its own pre-loaded ingredients mid-run.
-            if (carrier.CurJobDef == HaulersDreamDefOf.HaulersDream_BatchCraft
-                || carrier.CurJobDef == HaulersDreamDefOf.HaulersDream_InventoryDoBill
-                || carrier.CurJobDef == HaulersDreamDefOf.HaulersDream_BillPrepGather
-                || carrier.CurJobDef == HaulersDreamDefOf.HaulersDream_OverloadConstructDeliver
-                || carrier.CurJobDef == HaulersDreamDefOf.HaulersDream_ConstructDeliverBuild)
+            // scooped stock of the same def. Never let another pawn pull from such a holder, so its run can't be
+            // starved of its own pre-loaded ingredients mid-execution. (Membership: HdJobDefSets — the single
+            // source of truth, so a newly-added preloaded-stock driver is covered everywhere it must be.)
+            var cjd = carrier.CurJobDef;
+            if (cjd != null && HdJobDefSets.HoldsUnshareablePreloadedStock.Contains(cjd))
                 return false;
             return true;
         }

@@ -30,6 +30,13 @@ namespace HaulersDream
         private const int MaxDepositLoops = 64; // backstop: bounds the re-find-carrier cycle (all animals full)
         private const int MaxPasses = 64;       // backstop: bounds the fill->deposit->refill loop
 
+        // Reused snapshot of the tagged set for the deposit loop, replacing a fresh List<Thing>(comp.GetHashSet())
+        // per deposit cycle. The snapshot is required (GetHashSet self-heals and the loop calls Deregister, mutating
+        // the underlying set mid-iterate); reusing one [ThreadStatic] buffer makes the steady per-deposit alloc 0.
+        // Cleared at use, never trusted empty. SAFETY: consumed within one deposit initAction (sequential on the main
+        // thread, no re-entrant tagged-snapshot) before the next reuse.
+        [System.ThreadStatic] private static List<Thing> scratchTagged;
+
         private ThingOwner Inv => pawn.inventory?.GetDirectlyHeldThings();
         private Pawn Carrier => job.GetTarget(CarrierInd).Thing as Pawn;
 
@@ -178,8 +185,11 @@ namespace HaulersDream
 
                 var carrierInv = carrier.inventory.innerContainer;
                 bool movedAny = false;
-                // Snapshot the tagged set (GetHashSet self-heals/mutates) before transferring out of it.
-                var tagged = new List<Thing>(comp.GetHashSet());
+                // Snapshot the tagged set (GetHashSet self-heals/mutates) before transferring out of it. Reused
+                // [ThreadStatic] scratch — Cleared at use, never trusted empty.
+                var tagged = scratchTagged ?? (scratchTagged = new List<Thing>());
+                tagged.Clear();
+                tagged.AddRange(comp.GetHashSet());
                 for (int i = 0; i < tagged.Count; i++)
                 {
                     var thing = tagged[i];
@@ -197,7 +207,37 @@ namespace HaulersDream
                         MassUtility.FreeSpace(carrier), thing.GetStatValue(StatDefOf.Mass), surplus);
                     if (count <= 0)
                         continue; // this stack won't fit the room left — a lighter one still might
-                    int moved = inner.TryTransferToContainer(thing, carrierInv, count, out Thing _);
+                    // [SF4] If the carrier is a VF VehiclePawn, deposit through VF's event-correct AddOrTransfer (fires
+                    // CargoAdded + decrements the matching cargoToLoad manifest entry) instead of a raw container move.
+                    // Feature gate: master enableVehicleFramework (when OFF the raw deposit below still works via VF's
+                    // Pawn polymorphism — only the manifest stays cosmetically stale). NOTE (SF4): count here is
+                    // mass/free-space-clamped, NOT demand-clamped, so AddOrTransfer may drive a matching cargoToLoad
+                    // entry negative→removed — the INTENDED auto-pack behavior (distinct from MF1's over-load).
+                    int moved;
+                    if (HaulersDreamMod.Settings != null && HaulersDreamMod.Settings.enableVehicleFramework
+                        && VehicleFrameworkCompat.IsVehicle(carrier))
+                    {
+                        var split = inner.Take(thing, count);
+                        moved = VehicleFrameworkCompat.AddOrTransfer(carrier, split, count);
+                        if (moved <= 0)
+                        {
+                            // VF absent/unbound (-1) or AddOrTransfer moved nothing: `split` is already DETACHED from
+                            // `inner`, so deposit it STRAIGHT into the carrier (raw) — do NOT put it back and re-read a
+                            // handle. A put-back with merge can destroy the handle (when count==stackCount, Take returns
+                            // split===thing, which then merges into a same-def stack and is Destroyed), leaving the raw
+                            // transfer to operate on a dead Thing. If the carrier rejects it (in practice never — vehicle
+                            // cargo is uncapped), return it to the hauler, else drop it nearby so an item never vanishes.
+                            int want = split.stackCount;
+                            if (carrierInv.TryAdd(split, canMergeWithExistingStacks: true))
+                                moved = want;
+                            else if (!inner.TryAdd(split, canMergeWithExistingStacks: true))
+                                GenPlace.TryPlaceThing(split, pawn.Position, pawn.Map, ThingPlaceMode.Near);
+                        }
+                    }
+                    else
+                    {
+                        moved = inner.TryTransferToContainer(thing, carrierInv, count, out Thing _);
+                    }
                     if (moved > 0)
                     {
                         movedAny = true;

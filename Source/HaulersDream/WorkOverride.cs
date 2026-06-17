@@ -32,6 +32,13 @@ namespace HaulersDream
     {
         static void Postfix(Pawn __instance, ref WorkTags __result)
         {
+            // NOTE (QA): the work-incapability overrides are deliberately NOT gated on MasterEnable. They are a
+            // distinct CAPABILITY feature with their own toggles (allPawnsCanHaul/Clean/CutPlants), and the
+            // master switch only suppresses HD's automatic INTAKE (scoop/sweep/bulk/en-route/routing). Master-
+            // gating these here was found to create a black hole: a pawn made Hauling-capable via allPawnsCanHaul
+            // that has already scooped tagged goods would, on master-OFF, flip Hauling-disabled → IsEligible
+            // false → its auto-unload blocked (goods stranded until the gizmo). Leaving the override un-gated
+            // keeps that pawn able to unload; new intake is still master-suppressed at the scoop entry points.
             var s = HaulersDreamMod.Settings;
             if (s == null || __result == WorkTags.None)
                 return;
@@ -52,6 +59,9 @@ namespace HaulersDream
     {
         static void Postfix(Pawn __instance, ref List<WorkTypeDef> __result)
         {
+            // NOTE (QA): NOT master-gated, by the same reasoning as the CombinedDisabledWorkTags override above —
+            // master-gating the capability override can strand goods a pawn scooped while it was active (its
+            // IsEligible would flip false on master-OFF). The master switch suppresses automatic INTAKE only.
             var s = HaulersDreamMod.Settings;
             if (s == null || __result == null || __result.Count == 0)
                 return;

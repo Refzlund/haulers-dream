@@ -1,4 +1,5 @@
 using HarmonyLib;
+using HaulersDream.Core;
 using RimWorld;
 using Verse;
 using Verse.AI;
@@ -22,11 +23,22 @@ namespace HaulersDream
         [HarmonyPriority(Priority.First)]
         static void Postfix(ref Job __result, Pawn pawn, Thing thing, bool forced)
         {
+            // Cheap gates FIRST (ref/type checks) so the per-pawn-scan reflection in OwnsDoBillFlow runs only on a
+            // real convertible DoBill-at-a-workbench job. Reordering ahead of the cede check is behaviour-identical:
+            // each gate below would short-circuit the postfix anyway, so OwnsDoBillFlow's value is moot when it bails.
             var job = __result;
             if (job == null || job.def != JobDefOf.DoBill || job.bill?.recipe == null)
                 return;
-            if (!(job.targetA.Thing is Building_WorkTable bench))
-                return; // workbenches only — never a Pawn bill giver (surgery) or other special giver
+            // Workbenches only — never a Pawn bill giver (surgery) / other special giver, and never an autonomous
+            // worktable (mech gestator family): the building processes its own recipe and ingredients must be
+            // DEPOSITED into its container, so a pawn-driven batch-craft that gathers into inventory is invalid there.
+            if (!BillRouteGate.MayRouteToInventory(job.targetA.Thing))
+                return;
+            var bench = (Building_WorkTable)job.targetA.Thing;
+            // Cede to Common Sense when it owns the DoBill driver — don't batch-convert into a re-haul loop.
+            // (Moved below the cheap gates above: the reflective toggle read now happens only on a convertible job.)
+            if (CommonSenseCompat.OwnsDoBillFlow)
+                return;
             var bill = job.bill;
 
             var comp = HaulersDreamGameComponent.Instance;
@@ -36,6 +48,19 @@ namespace HaulersDream
             // tracking-comp requirement — the batch tags products/leftovers for the unload pass.
             if (!CraftBatchPlanner.CanPawnBatch(pawn, bill))
                 return;
+            // "Do until you have X" overshoot guard (whole-colony): products this or other pawns already banked in
+            // INVENTORY are invisible to vanilla's CountProducts, so vanilla keeps offering the bill (world count <
+            // target) even when enough are made and in transit to storage. Count the in-flight banked products toward
+            // the target; if it's satisfied, don't start another batch — cancel the job so no pawn over-produces.
+            // Vanilla pauses the bill itself once those products reach storage (then it stops offering it entirely).
+            if (bill is Bill_Production bpTarget
+                && bpTarget.repeatMode == BillRepeatModeDefOf.TargetCount
+                && !bpTarget.recipe.products.NullOrEmpty()
+                && !BatchPausePolicy.MayCraftMore(CraftBatchPlanner.EffectiveProductCount(bpTarget), bpTarget.targetCount, bpTarget.paused))
+            {
+                __result = null;
+                return;
+            }
             // Re-batch guard: if the pawn already holds tagged stock tied to this bill (a just-finished batch's
             // leftovers or products pending unload, or a "Batch forever" cycle's residue), don't stack a new batch
             // on top — let vanilla run / let the unload happen first. Critically this also prevents a TargetCount

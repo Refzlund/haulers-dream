@@ -1,7 +1,5 @@
-using System.Collections.Generic;
 using HaulersDream.Core;
 using RimWorld;
-using UnityEngine;
 using Verse;
 
 namespace HaulersDream
@@ -15,77 +13,29 @@ namespace HaulersDream
     /// as the pawn mines (only while the route's tail is still the pawn's last task).</item>
     /// </list>
     /// </summary>
-    public class HaulersDreamGameComponent : GameComponent
+    public partial class HaulersDreamGameComponent : GameComponent
     {
-        private List<VeinRevealTracker> veinTrackers = new List<VeinRevealTracker>();
-        private const int VeinTickInterval = 60;   // re-scan tracked veins ~once a second
         private const int IdleTickInterval = 250;  // idle-backstop scan ~4x per in-game minute
-
-        // --- per-bill BATCH config (the Batch-Y bill mode) ---
-        // Key = bill.GetUniqueLoadID() (stable across save/load; bill loadIDs are monotonic and never reused
-        // within a game, so a stale entry left by a deleted bill is INERT — it can never mis-apply to a future
-        // bill — which is why no active pruning is needed). Presence in the map = batching ON; value = batch
-        // size (>= 1). Scribed WITH THE GAME (bills are game-scoped, not global like the def-keyed settings),
-        // via a plain Scribe_Collections — no core-serialization Harmony patching.
-        private Dictionary<string, int> batchBills = new Dictionary<string, int>();
-        public const int BatchSizeMax = 1000;
 
         /// <summary>The component for the running game (null at the main menu / before a game loads).</summary>
         public static HaulersDreamGameComponent Instance => Current.Game?.GetComponent<HaulersDreamGameComponent>();
-
-        private static string BatchKey(Bill bill) => bill?.recipe == null ? null : bill.GetUniqueLoadID();
-
-        /// <summary>Is this bill set to batch?</summary>
-        public bool IsBatchBill(Bill bill)
-        {
-            var k = BatchKey(bill);
-            return k != null && batchBills.ContainsKey(k);
-        }
-
-        /// <summary>The bill's batch size, or 0 if it isn't batching.</summary>
-        public int BatchSizeOf(Bill bill)
-        {
-            var k = BatchKey(bill);
-            return (k != null && batchBills.TryGetValue(k, out int n)) ? n : 0;
-        }
-
-        /// <summary>Turn batching on (size clamped to [1, BatchSizeMax]) or off for a bill.</summary>
-        public void SetBatch(Bill bill, bool on, int size)
-        {
-            var k = BatchKey(bill);
-            if (k == null)
-                return;
-            if (on)
-                batchBills[k] = Mathf.Clamp(size, 1, BatchSizeMax);
-            else
-                batchBills.Remove(k);
-        }
 
         public HaulersDreamGameComponent(Game game) { }
 
         public override void FinalizeInit()
         {
             base.FinalizeInit();
-            // BulkHaul's per-tick plan cache is STATIC state, so it survives a quickload into the freshly
-            // loaded game — where its cached plans reference the previous game's (now-stale) things. Clear it
-            // whenever a game finishes initialising (new game and load alike). Same hygiene for the batch
-            // handoff map (entries whose ordered job never started).
-            BulkHaul.ClearPlanCache();
-            BatchCraftHandoff.Clear();
-        }
-
-        /// <summary>Register (or replace, per pawn) a deferred-reveal tracker for a vein route that ran into fog.</summary>
-        public void RegisterVeinTracker(VeinRevealTracker tracker)
-        {
-            if (tracker?.pawn == null)
-                return;
-            // Bind the tracker to the map the route was planned on (registration runs synchronously right
-            // after queueing, so the pawn is still there) — TryExtend drops it if the pawn changes maps.
-            tracker.mapId = tracker.pawn.Map?.uniqueID ?? -1;
-            if (veinTrackers == null)
-                veinTrackers = new List<VeinRevealTracker>();
-            veinTrackers.RemoveAll(t => t.pawn == tracker.pawn); // a new route supersedes the pawn's old one
-            veinTrackers.Add(tracker);
+            // CROSS-SESSION CACHE HYGIENE. Every per-session static cache (the bulk-haul plan memo, the per-tick
+            // mass / surplus / tracked-mass memos, the per-(worker,def,tick) availability counts, the haul-to-stack
+            // cell memo, the load-work memo, the route-picker claimed-by-others memo, the Common Sense owns-flow
+            // memo, the batch-craft handoff map, ...) is STATIC state that survives a quickload into the freshly
+            // loaded game — where its keys (thingIDNumber / TicksGame) can collide with the previous session's.
+            // Each such cache REGISTERS its own idempotent Clear() with CacheRegistry from a static constructor, so
+            // this single call clears every one of them and a newly-added cache can't be forgotten here (the former
+            // hand-maintained list of X.Clear() calls silently rotted whenever a cache was added without a matching
+            // line). This is hygiene only — each cache's own `tick != -1` / tick-stamp populate guard is the actual
+            // cross-session safeguard; ClearAll just drops the stale references promptly on the load (main) thread.
+            CacheRegistry.ClearAll();
         }
 
         public override void GameComponentTick()
@@ -100,7 +50,15 @@ namespace HaulersDream
             // JobGiver_Idle.TryGiveJob — DEAD in 1.6, where ordinary colonists never execute that node
             // (it lives only in gathering/ritual duty trees). Driven from here instead.
             if (tick % IdleTickInterval == 0)
+            {
                 RunIdleBackstop();
+                PruneInertLoadTasks(); // drop fully-settled/released bulk-load ledger entries (cheap when empty)
+            }
+
+            // A2 anti-softlock auto-drop: refill the queue every SoftlockCheckInterval ticks, then service one
+            // pawn per tick. Gated on the setting (byte-inert when off — the queue is also drained so it never
+            // holds stale refs while disabled). Mirrors BLFT's SoftlockCleaner cadence + time-slicing.
+            RunSoftlockDropDriver(tick);
 
             var s = HaulersDreamMod.Settings;
             if (s == null || !s.markForUnload
@@ -173,109 +131,22 @@ namespace HaulersDream
             return def == JobDefOf.Ingest || def.joyKind != null;
         }
 
-        private void ProcessVeinTrackers()
+        // The HD job defs whose pawn-running state must SUPPRESS a softlock drop: while a pawn is actively
+        // running an HD load / unload / cleanup / craft-gather job, that job owns the tagged cargo and will
+        // resolve it — never yank items out from under a live job. Shares the SINGLE canonical custom-driver set
+        // with the pre-save cleanup (HdJobDefSets.CustomDriverJobDefs / plan A1) so the two can never drift: a
+        // narrower set here previously let the softlock driver force-drop a Hauling-priority-0 crafter's tagged
+        // ingredients mid-BatchCraft / BillPrepGather (those jobs tag cargo but were missing from this list).
+        private static JobDef[] HdJobDefs => HdJobDefSets.CustomDriverJobDefs;
+
+        private static bool IsRunningHdJob(Pawn pawn)
         {
-            // Master-switch gate (the F25 idiom): with the route planner off, in-flight trackers must not keep
-            // designating/queueing newly revealed cells. The trackers are kept — re-enabling resumes them.
-            var s = HaulersDreamMod.Settings;
-            if (s == null || !s.planRoutes)
-                return;
-            for (int i = veinTrackers.Count - 1; i >= 0; i--)
-            {
-                // No try/catch: a vein-tracker failure is a real bug to surface as a red error, not a verbose-only
-                // debug line that swallows it and silently drops the tracker.
-                if (!TryExtend(veinTrackers[i]))
-                    veinTrackers.RemoveAt(i);
-            }
-        }
-
-        // Extend one vein route as fog clears. Returns false to DROP the tracker (pawn gone, route superseded,
-        // cap reached, or the vein is fully revealed with nothing left hidden).
-        private bool TryExtend(VeinRevealTracker tr)
-        {
-            var pawn = tr?.pawn;
-            if (pawn == null || pawn.Dead || !pawn.Spawned || pawn.Map == null || tr.veinDef == null || tr.included == null)
+            var def = pawn.CurJobDef;
+            if (def == null)
                 return false;
-            // Map identity: the tracker's seed/lastCell/included are coordinates ON THE MAP the route was
-            // planned on. A pawn that has changed maps since (caravan, drop pod, …) must never re-flood the
-            // NEW map from them — the final-attempt branch below could otherwise designate + queue mining
-            // there. Drop the tracker (matching the self-drop idiom; -1 = a pre-fix save, also dropped).
-            if (pawn.Map.uniqueID != tr.mapId)
-                return false;
-            if (tr.included.Count >= tr.cap)
-                return false; // route already at its chosen Amount — never grow past it
-
-            // Only extend while the route's last task is STILL the pawn's last task — if the player has queued
-            // other work after it (so the tail moved), leave the route alone, exactly as requested. The tail must
-            // be the SAME cell AND a Mine job: once the final cell is mined its ore drops there, and a later haul
-            // of that ore would coincidentally match the cell — the def check rejects that false positive.
-            // EXCEPTION (the flagship 1-2-visible-cell stub): when the FINAL queued stop IS the fog-boundary cell,
-            // the reveal happens at the exact moment the route completes — the tail check fails right then. If the
-            // tail cell was MINED (not superseded) and the pawn has nothing else queued, make one last extend
-            // attempt instead of dropping the tracker at the moment it was about to pay off.
-            bool finalAttempt = false;
-            if (!RouteExecutor.TryGetQueueTailCell(pawn, out IntVec3 tail, out Verse.AI.Job tailJob)
-                || tail != tr.lastCell || tailJob.def != JobDefOf.Mine)
-            {
-                bool lastCellMined = !AnyVeinThingAt(pawn.Map, tr.veinDef, tr.lastCell);
-                // "Nothing else queued" must ignore the mod's OWN housekeeping (the yield hook queues a
-                // self-pickup — and possibly an unload — at the exact moment the final cell is mined);
-                // only REAL queued work means the route was superseded. Same idiom as PawnUnloadChecker.
-                var queue = pawn.jobs?.jobQueue;
-                var queuedDefNames = new List<string>();
-                if (queue != null)
-                    foreach (var qj in queue)
-                        if (qj?.job?.def != null)
-                            queuedDefNames.Add(qj.job.def.defName);
-                bool nothingElseQueued = !UnloadPolicy.HasPendingRealWork(queuedDefNames,
-                    HaulersDreamDefOf.HaulersDream_SelfPickup.defName,
-                    HaulersDreamDefOf.HaulersDream_UnloadInventory.defName);
-                if (!lastCellMined || !nothingElseQueued)
-                    return false; // genuinely superseded / diverted — leave the route alone
-                finalAttempt = true;
-            }
-
-            var kind = WorkKindResolver.MiningKind(tr.veinDef);
-            if (kind?.scanner == null)
-                return false;
-
-            // Re-flood the now-visible vein from the seed, with the route's own (mined) footprint as virtual
-            // connectors; new stops are visible cells we haven't queued yet.
-            var visible = RouteSelection.ReFloodVisibleVein(pawn.Map, pawn, tr.veinDef, tr.seed, tr.cap, tr.included, out bool stillFog);
-            var newStops = new List<Thing>();
-            for (int i = 0; i < visible.Count; i++)
-            {
-                var t = visible[i];
-                if (t == null || tr.included.Contains(t.Position))
-                    continue;
-                if (tr.included.Count + newStops.Count >= tr.cap)
-                    break;
-                newStops.Add(t);
-            }
-            if (newStops.Count == 0)
-                return !finalAttempt && stillFog; // a fruitless FINAL attempt drops the tracker (no route jobs remain to mine more)
-
-            // Continue the route from the current tail: order the new cells nearest-first from there.
-            newStops.Sort((a, b) =>
-                (a.Position - tr.lastCell).LengthHorizontalSquared.CompareTo((b.Position - tr.lastCell).LengthHorizontalSquared));
-
-            int appended = RouteExecutor.AppendStops(pawn, kind, newStops, out IntVec3 newLast);
-            // Mark every revealed cell as covered (all were designated; any that didn't queue fall to normal mining).
-            for (int i = 0; i < newStops.Count; i++)
-                tr.included.Add(newStops[i].Position);
-            if (appended > 0)
-                tr.lastCell = newLast;
-            return true;
-        }
-
-        /// <summary>Is a spawned thing of the vein's def still at <paramref name="cell"/>? (False = it was mined.)</summary>
-        private static bool AnyVeinThingAt(Map map, ThingDef def, IntVec3 cell)
-        {
-            if (map == null || def == null || !cell.InBounds(map))
-                return false;
-            var things = map.thingGrid.ThingsListAtFast(cell);
-            for (int i = 0; i < things.Count; i++)
-                if (things[i]?.def == def && things[i].Spawned)
+            var defs = HdJobDefs;
+            for (int i = 0; i < defs.Length; i++)
+                if (defs[i] == def)
                     return true;
             return false;
         }
@@ -283,12 +154,11 @@ namespace HaulersDream
         public override void ExposeData()
         {
             base.ExposeData();
-            Scribe_Collections.Look(ref veinTrackers, "haulersDreamVeinTrackers", LookMode.Deep);
-            if (Scribe.mode == LoadSaveMode.LoadingVars && veinTrackers == null)
-                veinTrackers = new List<VeinRevealTracker>();
-            Scribe_Collections.Look(ref batchBills, "haulersDreamBatchBills", LookMode.Value, LookMode.Value);
-            if (Scribe.mode == LoadSaveMode.LoadingVars && batchBills == null)
-                batchBills = new Dictionary<string, int>();
+            // Subsystem scribe blocks, in the ORIGINAL order so the save format is byte-identical:
+            // veinTrackers -> batchBills -> loadTasks -> loadVehicleTasks.
+            ExposeVein();
+            ExposeBatchBills();
+            ExposeLedger();
         }
     }
 }

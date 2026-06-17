@@ -36,26 +36,38 @@ namespace HaulersDream
         {
             factor = 1f;
             var s = HaulersDreamMod.Settings;
-            if (s == null || s.strictCarryWeight || s.overloadLevel <= 0 || OverloadTuning.IsOff(s.overloadLevel))
-                return false; // strict carry weight, "no slowdown" or "off" -> no penalty (mirrors OverloadGate.NoOverload)
-            // Combat Extended's StatWorker_MoveSpeed applies its OWN encumbrance penalty inside
-            // GetValueUnfinalized; vanilla then runs StatParts in StatWorker.FinalizeValue AFTER that — so this
-            // factor would stack with CE's and double-punish. Under CE the whole overload feature stands down
-            // (OverloadGate.NoOverload), and CE's encumbrance simulation is the single source of slowdown truth.
-            if (CECompat.IsActive)
+            if (s == null)
                 return false;
-            if (!(req.Thing is Pawn pawn) || pawn.Dead || pawn.RaceProps == null || !pawn.RaceProps.Humanlike)
+            // "No slowdown" (level 0) -> no penalty. Redundant with the SpeedFactor(0,..)==1 result below
+            // but a cheap fast-path that also skips the per-tick mass-cache read. (Level 0 still PARTICIPATES
+            // in overload per the shared predicate — that is the consistent "free capacity, no slowdown" deal.)
+            if (s.overloadLevel <= 0)
                 return false;
-            if (pawn.Faction == null || !pawn.Faction.IsPlayer)
+            if (!(req.Thing is Pawn pawn) || pawn.Dead || pawn.RaceProps == null)
                 return false;
-            // The slowdown is a hauling-economics mechanic; drafted pawns stand to orders at full speed,
-            // vanilla-style (and with the draft gate on unloads they couldn't even shed the load until undrafted).
-            if (pawn.Drafted)
+            // The strict/CE/level/race off-matrix AND the player-faction + undrafted asymmetry come from the
+            // SINGLE pure predicate OverloadPolicy.AppliesSpeedPenalty — the SAME shared off-matrix
+            // OverloadGate.NoOverloadFor derives the who-MAY-overload set from. This is what keeps the two in
+            // lockstep (the capacity granted == the speed paid); the matrix test in OverloadPolicyTests fails
+            // the build if a future edit breaks it. Drafted pawns stand to orders at full speed (vanilla-style,
+            // and they couldn't shed the load until undrafted anyway); animals / non-player pawns are never
+            // slowed. Under Combat Extended the whole feature stands down (CE's StatWorker_MoveSpeed already
+            // applies its own encumbrance penalty inside GetValueUnfinalized, which vanilla runs StatParts
+            // AFTER — so this factor would otherwise double-punish; CE is the single slowdown truth there).
+            if (!OverloadPolicy.AppliesSpeedPenalty(
+                    s.strictCarryWeight, s.overloadLevel, CECompat.IsActive,
+                    pawn.RaceProps.Humanlike, pawn.RaceProps.IsMechanoid,
+                    pawn.Faction != null && pawn.Faction.IsPlayer, pawn.Drafted))
                 return false;
-            float cap = MassUtility.Capacity(pawn);
+            // PERF (HD-MASS): the vanilla MoveSpeed StatDef is UNCACHED, so this runs once per CELL a moving
+            // pawn enters. Read the two mass numbers through the per-(pawn,tick) memo so the per-cell re-walk
+            // collapses to one apparel+equipment+inventory walk per tick, shared with the same-tick capacity
+            // gates. Pure read (decompile-verified) — no decision changes, only recomputation is avoided.
+            var mass = PawnMassCache.MassInfo(pawn);
+            float cap = mass.Capacity;
             if (cap <= 0f)
                 return false;
-            float ratio = MassUtility.GearAndInventoryMass(pawn) / cap;
+            float ratio = mass.CurrentMass / cap;
             if (ratio <= 1f)
                 return false; // at/under capacity -> no penalty (vanilla behaviour)
             factor = OverloadTuning.SpeedFactor(s.overloadLevel, ratio);

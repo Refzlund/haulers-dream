@@ -32,7 +32,7 @@ namespace HaulersDream
                 yield break; // bulk hauling off, or this button disabled in mod options
             // Match BuildBulkJob's non-home gate: with the mod inert on non-home maps the sweep would have no
             // storage to unload to there, so don't offer it.
-            if (!s.enableOnNonHomeMaps && !pawn.Map.IsPlayerHome)
+            if (!MapGate.HdActiveOnMap(pawn.Map))
                 yield break;
             if (pawn.GetComp<CompHauledToInventory>() == null)
                 yield break; // the sweep loads into inventory, tracked via the comp

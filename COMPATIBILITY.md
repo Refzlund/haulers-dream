@@ -46,9 +46,17 @@ put away (see the in-game "Cannot unload inventory" alert).
 - **Allow Tool** (`unlimitedhugs.allowtool`) and **Keyz' Allow Utilities** (`keyz182.allowtoolutils`)
   — both implement "Haul Urgently" as `WorkGiver_HaulUrgently : WorkGiver_Scanner` whose
   `JobOnThingDelegate` defaults to `HaulAIUtility.HaulToStorageJob`. That is a plain single-stack
-  vanilla haul which **never** routes through `WorkGiver_HaulGeneral.JobOnThing` — the only method
-  HD's bulk-haul postfix patches. So **HD never sweeps an urgent-haul job**; they coexist. (Verified
-  by decompiling the installed Allow Tool 1.6 and by cloning the Keyz source, v1.3.0.) Shift +
+  vanilla haul which **never** routes through `WorkGiver_HaulGeneral.JobOnThing` — the method HD's
+  ordinary bulk-haul postfix patches — so historically an urgent haul moved one stack per trip.
+- **HD now sweeps urgent hauls too** (`Patch_HaulUrgently_BulkHaul`): a soft-dependency postfix
+  resolves both `KeyzAllowUtilities.WorkGiver_HaulUrgently` and `AllowTool.WorkGiver_HaulUrgently`
+  by name (no compile-time ref; `Prepare()` skips the patch entirely when neither mod is loaded) and
+  runs the SAME `BulkHaul.TryBuildBulkJob` conversion HD uses for vanilla hauls — so an urgent haul
+  now picks up the nearby cluster and makes one storage trip. It inherits all of HD's bulk-haul
+  gating (the `bulkHaul` setting, eligibility, map gate, carry ceiling, trigger): with bulk-haul off
+  it stays vanilla single-stack, exactly as before. Container/genebank urgent jobs (not `HaulToCell`)
+  are declined and keep their vanilla flow. (Verified by decompiling Allow Tool 1.6 + cloning the Keyz
+  source; both confirmed to share the identical `WorkGiver_HaulUrgently` shape.) Shift +
   "Haul Urgently" can still cancel an in-progress HD job via `CheckForJobOverride`; HD re-issues
   (self-recovering). Three nuances:
   - **PUAH co-install caveat (the historical "acting funny"):** both mods carry a compat handler that
