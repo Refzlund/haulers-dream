@@ -1,0 +1,280 @@
+using System;
+using RimWorld;
+using UnityEngine;
+using Verse;
+using Verse.Sound;
+
+namespace HaulersDream
+{
+    /// <summary>
+    /// Immediate-mode vertical layout cursor for the settings content column. Replaces Listing_Standard so
+    /// every widget can compute its own dynamic height (wrapped labels, two-line sliders, cards) and the
+    /// total content height is the TRUE single-column height — which is what drives the scroll viewRect.
+    /// (The old window derived the scroll height from a lagged, hard-coded cache + Listing column-wrap, which
+    /// under-sized the viewport on the tall tabs and clipped the bottom rows — the reported "bugged panel".)
+    /// </summary>
+    public sealed class SettingsCtx
+    {
+        public readonly float Width;
+        public float CurY;
+
+        public SettingsCtx(float width)
+        {
+            Width = width;
+            CurY = 0f;
+        }
+
+        public Rect Row(float h, float indent = 0f)
+        {
+            var r = new Rect(indent, CurY, Width - indent, h);
+            CurY += h;
+            return r;
+        }
+
+        public void Gap(float h = 8f) => CurY += h;
+    }
+
+    /// <summary>
+    /// Reusable widget helpers for the 3-pane settings window (icon nav · options · info panel). Every helper
+    /// shares one shape: it lays out a row via <see cref="SettingsCtx"/>, registers hover help into the right
+    /// panel (<see cref="HoverTitle"/>/<see cref="HoverBody"/>), supports a greyed <c>enabled=false</c> state
+    /// (sub-options under an off master stay visible but inert — which also keeps the page height stable), and
+    /// an <c>indent</c> with an accent rail for nested options. All save/restore global IMGUI state.
+    /// </summary>
+    public static class HDSettingsUI
+    {
+        // Right-panel help, populated by hover each frame and read by the window when it draws the info column.
+        public static string HoverTitle;
+        public static string HoverBody;
+
+        public static void ResetHover()
+        {
+            HoverTitle = null;
+            HoverBody = null;
+        }
+
+        public static void SetHelp(string title, string body)
+        {
+            HoverTitle = title;
+            HoverBody = body;
+        }
+
+        // Faint hover wash + register the control's help into the right panel.
+        private static void Hover(Rect r, string title, string body)
+        {
+            if (!Mouse.IsOver(r)) return;
+            Widgets.DrawBoxSolid(r, new Color(1f, 1f, 1f, 0.04f));
+            if (title != null || body != null)
+                SetHelp(title, body);
+        }
+
+        private static void DrawIndentRail(Rect r, float indent)
+        {
+            if (indent <= 0f) return;
+            Widgets.DrawBoxSolid(new Rect(indent - 10f, r.y + 4f, 3f, Mathf.Max(4f, r.height - 8f)),
+                new Color(0.45f, 0.6f, 0.7f, 0.5f));
+        }
+
+        // ---- section header bar ----
+        public static void Header(SettingsCtx c, string label)
+        {
+            c.Gap(8f);
+            var r = c.Row(26f);
+            Widgets.DrawBoxSolid(r, new Color(1f, 1f, 1f, 0.09f));
+            var f = Text.Font;
+            var col = GUI.color;
+            Text.Font = GameFont.Small;
+            GUI.color = new Color(0.86f, 0.88f, 0.95f);
+            var tr = r;
+            tr.xMin += 8f;
+            Widgets.Label(tr, label);
+            GUI.color = col;
+            Text.Font = f;
+            c.Gap(4f);
+        }
+
+        // ---- thin divider ----
+        public static void GapLine(SettingsCtx c)
+        {
+            c.Gap(6f);
+            var r = c.Row(1f);
+            var col = GUI.color;
+            GUI.color = new Color(1f, 1f, 1f, 0.12f);
+            Widgets.DrawLineHorizontal(r.x, r.y, r.width);
+            GUI.color = col;
+            c.Gap(6f);
+        }
+
+        // ---- descriptive paragraph / note ----
+        public static void Note(SettingsCtx c, string text, float indent = 0f)
+        {
+            var f = Text.Font;
+            Text.Font = GameFont.Tiny;
+            float h = Mathf.Max(18f, Text.CalcHeight(text, c.Width - indent));
+            var r = c.Row(h, indent);
+            var col = GUI.color;
+            GUI.color = new Color(0.72f, 0.72f, 0.76f);
+            Widgets.Label(r, text);
+            GUI.color = col;
+            Text.Font = f;
+        }
+
+        // ---- checkbox row (returns the new value; never changes when disabled) ----
+        public static bool Checkbox(SettingsCtx c, string label, bool value, string help = null,
+            bool enabled = true, float indent = 0f)
+        {
+            var f = Text.Font;
+            Text.Font = GameFont.Small;
+            float h = Mathf.Max(26f, Text.CalcHeight(label, c.Width - indent - 28f));
+            var r = c.Row(h, indent);
+            DrawIndentRail(r, indent);
+            Hover(r, label, help);
+            bool newVal = value;
+            Widgets.CheckboxLabeled(r, label, ref newVal, disabled: !enabled);
+            Text.Font = f;
+            return enabled ? newVal : value;
+        }
+
+        // ---- slider row: label + right-aligned readout, slider below (returns the new value) ----
+        public static float Slider(SettingsCtx c, string label, float value, float min, float max,
+            string readout, string help = null, bool enabled = true, float indent = 0f)
+        {
+            var f = Text.Font;
+            Text.Font = GameFont.Small;
+            var top = c.Row(24f, indent);
+            DrawIndentRail(top, indent);
+            Hover(top, label, help);
+            var col = GUI.color;
+            if (!enabled) GUI.color = new Color(col.r, col.g, col.b, 0.5f);
+
+            var labelRect = top;
+            labelRect.width -= 74f;
+            Widgets.Label(labelRect, label);
+
+            var anchor = Text.Anchor;
+            Text.Anchor = TextAnchor.MiddleRight;
+            var valRect = new Rect(top.xMax - 70f, top.y, 70f, top.height);
+            GUI.color = enabled ? new Color(0.8f, 0.85f, 0.95f) : new Color(0.8f, 0.85f, 0.95f, 0.5f);
+            Widgets.Label(valRect, readout);
+            Text.Anchor = anchor;
+            GUI.color = col;
+
+            var sr = c.Row(26f, indent);
+            bool oldEnabled = GUI.enabled;
+            GUI.enabled = enabled;
+            float nv = Widgets.HorizontalSlider(sr, value, min, max, middleAlignment: true);
+            GUI.enabled = oldEnabled;
+            Text.Font = f;
+            return enabled ? nv : value;
+        }
+
+        // ---- inline segmented selector (all options visible; returns the chosen index) ----
+        public static int Segmented(SettingsCtx c, string label, int selected, string[] options,
+            string[] optionHelp = null, string help = null, bool enabled = true, float indent = 0f)
+        {
+            var f = Text.Font;
+            Text.Font = GameFont.Small;
+            var top = c.Row(24f, indent);
+            DrawIndentRail(top, indent);
+            Hover(top, label, help);
+            var col = GUI.color;
+            if (!enabled) GUI.color = new Color(col.r, col.g, col.b, 0.5f);
+            Widgets.Label(top, label);
+            GUI.color = col;
+
+            var br = c.Row(30f, indent);
+            int n = Mathf.Max(1, options.Length);
+            const float segGap = 4f;
+            float bw = (br.width - segGap * (n - 1)) / n;
+            int chosen = selected;
+
+            var anchor = Text.Anchor;
+            var ww = Text.WordWrap;
+            Text.Anchor = TextAnchor.MiddleCenter;
+            Text.WordWrap = true;
+            Text.Font = GameFont.Tiny;
+            for (int i = 0; i < n; i++)
+            {
+                var seg = new Rect(br.x + i * (bw + segGap), br.y, bw, br.height);
+                bool sel = i == selected;
+                Widgets.DrawBoxSolid(seg, sel
+                    ? new Color(0.28f, 0.45f, 0.55f, enabled ? 0.7f : 0.35f)
+                    : new Color(1f, 1f, 1f, enabled ? 0.06f : 0.03f));
+                var bcol = GUI.color;
+                GUI.color = new Color(1f, 1f, 1f, sel ? 0.45f : 0.18f);
+                Widgets.DrawBox(seg);
+                GUI.color = enabled ? Color.white : new Color(1f, 1f, 1f, 0.5f);
+                Widgets.Label(seg, options[i]);
+                GUI.color = bcol;
+                if (optionHelp != null && i < optionHelp.Length)
+                    Hover(seg, options[i], optionHelp[i]);
+                if (enabled && Widgets.ButtonInvisible(seg))
+                    chosen = i;
+            }
+            Text.Anchor = anchor;
+            Text.WordWrap = ww;
+            Text.Font = f;
+            return enabled ? chosen : selected;
+        }
+
+        // ---- a left-aligned button that opens a dialog ----
+        public static void Button(SettingsCtx c, string label, Action onClick, string help = null,
+            bool enabled = true, float indent = 0f)
+        {
+            var r = c.Row(32f, indent);
+            DrawIndentRail(r, indent);
+            Hover(r, label, help);
+            var br = new Rect(r.x, r.y + 1f, Mathf.Min(340f, r.width), 28f);
+            if (Widgets.ButtonText(br, label, active: enabled) && enabled)
+                onClick();
+        }
+
+        // ---- a feature "card": icon + name + blurb + a toggle; the whole card is clickable ----
+        public static bool FeatureCard(SettingsCtx c, Texture2D icon, string name, string blurb, bool value,
+            string help = null, bool enabled = true)
+        {
+            const float h = 54f;
+            var r = c.Row(h);
+            c.Gap(4f);
+            // No persistent background/outline (clean look) — just a clear highlight on hover for interactivity.
+            Widgets.DrawHighlightIfMouseover(r);
+            if (Mouse.IsOver(r))
+                SetHelp(name, help ?? blurb);
+
+            const float pad = 10f;
+            var iconBox = new Rect(r.x + pad, r.y + (h - 30f) / 2f, 30f, 30f);
+            if (icon != null)
+            {
+                var col = GUI.color;
+                GUI.color = (enabled && value) ? Color.white : new Color(1f, 1f, 1f, 0.55f);
+                GUI.DrawTexture(iconBox, icon, ScaleMode.ScaleToFit);
+                GUI.color = col;
+            }
+
+            const float tgl = 24f;
+            var tr = new Rect(r.xMax - pad - tgl, r.y + (h - tgl) / 2f, tgl, tgl);
+            Widgets.CheckboxDraw(tr.x, tr.y, value, disabled: !enabled, tgl);
+
+            float textX = iconBox.xMax + pad;
+            float textW = tr.x - textX - 8f;
+            var f = Text.Font;
+            var col2 = GUI.color;
+            Text.Font = GameFont.Small;
+            GUI.color = enabled ? Color.white : new Color(1f, 1f, 1f, 0.55f);
+            Widgets.Label(new Rect(textX, r.y + 7f, textW, 22f), name);
+            Text.Font = GameFont.Tiny;
+            GUI.color = new Color(0.74f, 0.74f, 0.78f, enabled ? 1f : 0.6f);
+            Widgets.Label(new Rect(textX, r.y + 28f, textW, 20f), blurb);
+            GUI.color = col2;
+            Text.Font = f;
+
+            bool newVal = value;
+            if (enabled && Widgets.ButtonInvisible(r))
+            {
+                newVal = !value;
+                SoundDefOf.Checkbox_TurnedOn.PlayOneShotOnCamera();
+            }
+            return newVal;
+        }
+    }
+}

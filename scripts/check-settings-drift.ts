@@ -175,20 +175,10 @@ async function main() {
 		else scribeByName.set(e.name, e)
 	}
 
-	// UI region: concatenate every DrawXxxTab + DoWindowContents body for the soft "referenced in UI" check.
-	// These bodies live in the partial GUI file (HaulersDreamSettings.Window.cs), so scan winSrc.
-	const uiBodies = ['public void DoWindowContents(Rect rect)']
-		.concat(
-			[...winSrc.matchAll(/private void (Draw\w+Tab)\(Listing_Standard l\)/g)].map((m) => m[0])
-		)
-		.map((header) => {
-			try {
-				return sliceRegion(winSrc, new RegExp(header.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')))
-			} catch {
-				return ''
-			}
-		})
-		.join('\n')
+	// UI region for the soft "referenced in UI" check. The settings GUI is the whole partial window file
+	// (HaulersDreamSettings.Window.cs) — a 3-pane window with per-category Draw* methods — so scan all of
+	// it rather than slicing specific method bodies (which would break whenever the UI is restructured).
+	const uiBodies = winSrc
 
 	const errors: string[] = []
 	const warnings: string[] = []

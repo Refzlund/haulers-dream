@@ -40,15 +40,17 @@
       <_HDDefs Include="$(HDModSrcDir)\Defs\**\*.*" />
       <_HDPatches Include="$(HDModSrcDir)\Patches\**\*.*" />
       <_HDLang Include="$(HDModSrcDir)\Languages\**\*.*" />
+      <_HDTextures Include="$(HDModSrcDir)\Textures\**\*.*" />
       <_HDAsm Include="$(HDModSrcDir)\1.6\Assemblies\*.dll" />
       <_HDLoad Include="$(HDModSrcDir)\LoadFolders.xml" />
     </ItemGroup>
-    <!-- Clean regenerated folders first so renamed/removed Defs or DLLs don't linger in the deploy. -->
-    <RemoveDir Directories="$(HDDeployDir)\Defs;$(HDDeployDir)\Patches;$(HDDeployDir)\Languages;$(HDDeployDir)\1.6" />
+    <!-- Clean regenerated folders first so renamed/removed Defs, textures or DLLs don't linger in the deploy. -->
+    <RemoveDir Directories="$(HDDeployDir)\Defs;$(HDDeployDir)\Patches;$(HDDeployDir)\Languages;$(HDDeployDir)\Textures;$(HDDeployDir)\1.6" />
     <Copy SourceFiles="@(_HDAbout)" DestinationFiles="@(_HDAbout->'$(HDDeployDir)\About\%(RecursiveDir)%(Filename)%(Extension)')" SkipUnchangedFiles="true" />
     <Copy SourceFiles="@(_HDDefs)" DestinationFiles="@(_HDDefs->'$(HDDeployDir)\Defs\%(RecursiveDir)%(Filename)%(Extension)')" />
     <Copy SourceFiles="@(_HDPatches)" DestinationFiles="@(_HDPatches->'$(HDDeployDir)\Patches\%(RecursiveDir)%(Filename)%(Extension)')" />
     <Copy SourceFiles="@(_HDLang)" DestinationFiles="@(_HDLang->'$(HDDeployDir)\Languages\%(RecursiveDir)%(Filename)%(Extension)')" />
+    <Copy SourceFiles="@(_HDTextures)" DestinationFiles="@(_HDTextures->'$(HDDeployDir)\Textures\%(RecursiveDir)%(Filename)%(Extension)')" />
     <Copy SourceFiles="@(_HDAsm)" DestinationFolder="$(HDDeployDir)\1.6\Assemblies" />
     <Copy SourceFiles="@(_HDLoad)" DestinationFolder="$(HDDeployDir)" SkipUnchangedFiles="true" />
     <Message Importance="high" Text="[Hauler's Dream] deployed to $(HDDeployDir)" />
