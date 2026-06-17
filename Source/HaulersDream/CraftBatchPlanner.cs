@@ -133,35 +133,52 @@ namespace HaulersDream
         }
 
         /// <summary>
-        /// The bill's product count as vanilla's <c>CountProducts</c> sees it (world + storage + in-hands) PLUS the
-        /// HD-banked in-flight products of the counted def that colonists carry in INVENTORY toward the unload pass —
-        /// which vanilla's CountProducts cannot see. HD's batch driver banks products in inventory, so without this a
-        /// "Do until you have X" bill never observes the target until the products reach storage and pawns overproduce
-        /// (across the whole colony, not just the crafting pawn). Single-counted-product (TargetCount) recipes only;
-        /// for others it returns vanilla's count unchanged.
+        /// The bill's product count as vanilla's <c>CountProducts</c> sees it — which, via
+        /// <see cref="Patch_CountProducts_BankedInventory"/>, now ALSO includes the HD-banked in-flight products of
+        /// the counted def that colonists carry in INVENTORY toward the unload pass (vanilla's CountProducts can't
+        /// see those on its own). HD's scoop + batch driver bank products in inventory, so without that a
+        /// "Do until you have X" bill never observes the target until the products reach storage and pawns
+        /// overproduce (across the whole colony). Single-counted-product (TargetCount) recipes only; for others it is
+        /// vanilla's count unchanged. NOTE: the banked products are added INSIDE CountProducts now, so this must NOT
+        /// add them again here (that would double-count).
         /// </summary>
         public static int EffectiveProductCount(Bill_Production bp)
         {
             // CountProducts requires a live map; all callers pass a spawned-bench bill, but guard defensively.
+            var counter = bp?.recipe?.WorkerCounter;
+            if (bp?.Map == null || counter == null)
+                return 0;
+            return counter.CountProducts(bp);
+        }
+
+        /// <summary>
+        /// HD-banked in-flight products of <paramref name="bp"/>'s single product def: items genuinely held in a
+        /// player pawn's INVENTORY (NOT the hands — vanilla's <c>GetCarriedCount</c> already counts those) that pass
+        /// the bill's own per-thing validity (def + quality / HP / allowed-stuff / taint, via vanilla's
+        /// <c>CountValidThing</c>). HD's scoop + batch driver bank freshly-made products in inventory, which vanilla's
+        /// <c>CountProducts</c> never counts (it sees world/storage/hands only, unless <c>includeEquipped</c>). The
+        /// CountProducts postfix (<see cref="Patch_CountProducts_BankedInventory"/>) adds this so vanilla's OWN
+        /// <c>ShouldDoNow</c> / unpause-at hysteresis observes the true colony count and a "Do until you have X" bill
+        /// actually pauses. Single-counted-product recipes only (<c>CanCountProducts</c>); 0 otherwise.
+        /// </summary>
+        public static int BankedInFlightProductCount(Bill_Production bp)
+        {
             var map = bp?.Map;
             var counter = bp?.recipe?.WorkerCounter;
-            if (map == null || counter == null)
+            if (map == null || counter == null || !counter.CanCountProducts(bp))
                 return 0;
-            int n = counter.CountProducts(bp);
-            if (bp.recipe.products == null || bp.recipe.products.Count != 1)
-                return n;
             var def = bp.recipe.products[0].thingDef;
             if (def == null)
-                return n;
+                return 0;
+            int n = 0;
             foreach (var p in map.mapPawns.SpawnedPawnsInFaction(Faction.OfPlayer))
             {
                 var tagged = p.GetComp<CompHauledToInventory>()?.PeekHashSet();
                 if (tagged == null)
                     continue;
-                // Count only items genuinely held in a pawn's INVENTORY — not in the hands (vanilla already counts
-                // those via GetCarriedCount) — AND only those that pass the bill's own per-thing validity (def +
-                // quality / HP / allowed-stuff / taint filters, via vanilla's CountValidThing), so a quality/HP/
-                // stuff-restricted "do until X" bill counts only the VALID in-flight products, exactly like vanilla.
+                // INVENTORY only (ParentHolder is Pawn_InventoryTracker) — never the hands (GetCarriedCount handles
+                // those) — and only products passing the bill's validity, so a quality/HP/stuff-restricted "do until
+                // X" bill counts only the VALID in-flight products, exactly like vanilla counts the stored ones.
                 foreach (var t in tagged)
                     if (t != null && !t.Destroyed && t.ParentHolder is Pawn_InventoryTracker
                         && counter.CountValidThing(t, bp, def))
