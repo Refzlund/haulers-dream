@@ -298,7 +298,19 @@ namespace HaulersDream
                 ActivelyCrafting = true; // at the bench now → freeze carried ingredients' rot until the job ends
                 if (repsDone >= repsTarget) { JumpToToil(done); return; }
                 if (PastDeadline()) { JumpToToil(done); return; }
-                if (job.bill == null || job.bill.suspended || !job.bill.ShouldDoNow()) { JumpToToil(done); return; }
+                if (job.bill == null || job.bill.suspended) { JumpToToil(done); return; }
+                // "Do until you have X": the products this batch already banked sit in the pawn's INVENTORY, which
+                // vanilla's CountProducts can't see — so a plain ShouldDoNow() reads a stale count and the batch
+                // runs every planned rep past the target and never pauses. Gate TargetCount bills on the EFFECTIVE
+                // count (world + in-flight banked) instead; vanilla pauses the bill once they're delivered. Other
+                // repeat modes (RepeatCount decrements its own field; Forever) count correctly → use vanilla's gate.
+                if (job.bill is Bill_Production bpTc && bpTc.repeatMode == BillRepeatModeDefOf.TargetCount
+                    && bpTc.recipe.WorkerCounter.CanCountProducts(bpTc))
+                {
+                    if (!BatchPausePolicy.MayCraftMore(CraftBatchPlanner.EffectiveProductCount(bpTc), bpTc.targetCount, bpTc.paused))
+                    { JumpToToil(done); return; }
+                }
+                else if (!job.bill.ShouldDoNow()) { JumpToToil(done); return; }
                 if (!HasOneRepInInventory()) { JumpToToil(done); return; }
                 // Start this rep's carry+place loop at slot 0 (uninitialised remaining) with empty placedThings.
                 placeSlotCursor = 0;

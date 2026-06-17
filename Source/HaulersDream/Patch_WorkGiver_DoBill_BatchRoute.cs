@@ -1,4 +1,5 @@
 using HarmonyLib;
+using HaulersDream.Core;
 using RimWorld;
 using Verse;
 using Verse.AI;
@@ -47,6 +48,19 @@ namespace HaulersDream
             // tracking-comp requirement — the batch tags products/leftovers for the unload pass.
             if (!CraftBatchPlanner.CanPawnBatch(pawn, bill))
                 return;
+            // "Do until you have X" overshoot guard (whole-colony): products this or other pawns already banked in
+            // INVENTORY are invisible to vanilla's CountProducts, so vanilla keeps offering the bill (world count <
+            // target) even when enough are made and in transit to storage. Count the in-flight banked products toward
+            // the target; if it's satisfied, don't start another batch — cancel the job so no pawn over-produces.
+            // Vanilla pauses the bill itself once those products reach storage (then it stops offering it entirely).
+            if (bill is Bill_Production bpTarget
+                && bpTarget.repeatMode == BillRepeatModeDefOf.TargetCount
+                && !bpTarget.recipe.products.NullOrEmpty()
+                && !BatchPausePolicy.MayCraftMore(CraftBatchPlanner.EffectiveProductCount(bpTarget), bpTarget.targetCount, bpTarget.paused))
+            {
+                __result = null;
+                return;
+            }
             // Re-batch guard: if the pawn already holds tagged stock tied to this bill (a just-finished batch's
             // leftovers or products pending unload, or a "Batch forever" cycle's residue), don't stack a new batch
             // on top — let vanilla run / let the unload happen first. Critically this also prevents a TargetCount
