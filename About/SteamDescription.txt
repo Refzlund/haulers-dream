@@ -1,135 +1,31 @@
-Colonists use their inventories smartly when moving items, and carry out their tasks more efficiently: fewer round-trips, less walking back and forth, more time actually working.
+Colonists use their inventories smartly when moving items, so they finish tasks with fewer round-trips and less walking back and forth — more time actually working. Plus planning tools and quality-of-life touches that build on it.
 
-Also adds small micro-management improvements that build on these changes.
+[b]Compatible with[/b] Combat Extended, Vehicle Framework, Adaptive Storage Framework, LWM's Deep Storage, Common Sense, Allow Tool / Keyz' Allow Utilities ("Haul Urgently"), Simple Sidearms, Perfect Pathfinding, Autocast, While You Are Nearby — amongst other mods.
+[b]Replaces[/b] Pick Up And Haul, Harvest and Haul, Auto Strip on Haul, Haul After Stripping, Everyone Hauls, Allow Dumb Labor, Haul to Stack, Bulk Load For Transport, While You're Up, Meals on Wheels, Haul After Slaughter.
 
-[b]Note[/b]
-> compatible: Combat Extended, Vehicle Framework, Adaptive Storage Framework, LWM's Deep Storage, Haul Urgently, Common Sense, Allow Tool, Autocast, Simple Side Arms, Perfect Pathfinding, While You Are Nearby ― amongst other mods
-> replaces mods: Pick-up and Haul, Harvest and Haul, Auto Strip on Haul, Haul After Stripping, Everyone Hauls, Haul to Stack, Bulk Load For Transport, While You're Up
+Everything is optional — extensive in-game settings with per-option help, plus savable and shareable profiles. Safe to add to existing saves.
 
 [h2]Smart inventories[/h2]
-How pawns fill their pockets: work yields, hauls and loot ride in the inventory, so one trip does the work of many.
-
-[b]1. Harvest and haul[/b]
-A pawn that harvests plants, mines ore or deconstructs a building scoops the drops into its inventory as it works, then makes one storage trip at the end of the run. Realistic by default: the yield hits the floor first, then gets scooped. Each work type (plants, mining, deep drills, deconstruction, animals) has its own toggle.
-
-[b]2. Pick up and haul[/b]
-A pawn sent to haul one item picks up everything haulable around it (weapons, apparel, meals, chunks) and delivers the lot in one trip, planned the moment the haul starts. Two modes: every haul sweeps the area, or (default) hauls you order manually stay surgical unless you order a second one nearby.
-
-[b]3. Strip on haul[/b]
-A corpse haul strips the body first: the gear goes into the hauler's inventory, the body into its hands, and one trip moves both. No more strip orders after every battle. You choose which hauls strip, whether your own dead are left alone (they are, by default), and what happens to tainted apparel: take it, leave it on the body, forbid it, or destroy it (smeltable and non-smeltable configured separately). Stripping a living prisoner works the same way, with a follow-up strip queued in case the target dresses itself again.
-
-[b]4. Fewer round-trips[/b]
-A builder or cook gathers everything the job needs into its inventory in one sweep and walks to the bench or site once. A geothermal generator's 340 steel no longer takes five hand-carry trips.
-
-[b]5. Shared inventories[/b]
-A pawn carrying goods works like a walking stockpile: workers take what they need straight from the carrier, an idle carrier even walks out to meet them halfway, and everyone uses their own carried stock first (a cook can cook with the berries it just picked). Optional: builders may claim materials from a hauler mid-transit.
-
-[b]6. Build from inventory[/b]
-A constructing pawn sources build materials from carried stock — its own inventory, other colonists', and pack animals' / caravan cargo — not just loose stacks on the ground. Order a wall or sandbag on a raid and it builds straight from caravan-carried steel, no manual drop-off. Floor stacks are still preferred; an opt-in partial-build lets a frame progress on whatever a single carried stack provides.
-
-[b]7. Meals on wheels[/b]
-When there's no food on the map a hungry colonist can reach, it eats acceptable food carried in another colonist's (or a pack animal's) inventory instead of trekking to a far stockpile or going hungry. Vanilla map/own/pack-animal food is always preferred first; drafted, downed and berserk carriers are left alone, a parent's in-progress baby feeding is never interrupted, and a carried meal about to spoil is grabbed first.
-
-[b]8. Spoiling-first ingredients[/b]
-When a colonist picks ingredients for a bill, it reaches for the rottable ingredient closest to spoiling, cutting overall waste. Independent Butcher (most-spoiled corpse first) and Cook (meals, pemmican and kibble use the most-perishable food first) toggles. Recipe satisfaction, the search radius, multi-slot meals and non-perishable crafts (steel, cloth, chemfuel, leather) are unaffected; frozen food is left for last.
-
-[b]9. Haul after slaughter[/b]
-A fresh carcass is hauled straight to a freezer or corpse stockpile so it doesn't rot where it fell. Two toggles: slaughtered (tamed) carcasses, which vanilla never hauls itself, and hunted (wild) carcasses, where the hunter grabs its kill if a hunt was interrupted right after the killing blow (a clean hunt already self-hauls, so this never double-hauls). Only when a reachable store accepts the body; otherwise left exactly as vanilla.
+Work yields, hauls and loot ride in the inventory, so one trip does the work of many. Features covering harvest-hauling (mining, deep drills, deconstruction, plants, animals), bulk pick-up of everything haulable nearby, strip-on-haul with a configurable tainted-apparel policy, gather-everything-in-one-sweep for builders and cooks, shared inventories (a carrying pawn is a walking stockpile workers draw from), building and crafting from carried and caravan stock, meals-on-wheels, spoiling-first ingredient selection, and hauling fresh carcasses after a kill.
 
 [h2]Smarter hauling[/h2]
-What happens between picking things up and putting them away.
-
-[b]10. Haul to stack[/b]
-Haulers top up existing stacks instead of starting new ones, and several pawns can deliver to the same tile at once (destination tiles are no longer reserved). Which stockpile wins is still decided by priority and distance; within that room, stacking wins. Works on the ground, on shelves, and in modded storage units; outdoor stockpiles consolidate within a short radius.
-
-[b]11. Drop off in passing[/b]
-A pawn heading off on a long trip with a full backpack drops its load at a stockpile that's roughly on the way, instead of carrying it across the map and back.
-
-[b]12. Nearest destination first[/b]
-On an unload trip carrying several different items, a pawn empties the nearest storage destination fully before walking to the next, instead of going in item-category order — less zig-zagging across the base. Items with nowhere to go are never stranded; they're just visited last.
-
-[b]13. Grab it on the way[/b]
-Opt-in (off by default): when a pawn sets off on any job and a loose haulable lies roughly along the path, it scoops the item into its inventory first, so the stray rides to storage on a trip the pawn was making anyway — zero extra round-trips. The detour is tightly bounded by a trip-ratio check with a Vanilla/Default/Pathfinding accuracy knob, and respects the per-pawn auto-haul toggle, the carry ceiling and the bleeding gate.
-
-[b]14. Move supplies closer to the work[/b]
-Opt-in (off by default): before a pawn carries a resource to a build site or bill, it can relocate the largest nearby stack of that material to storage closer to the consuming job, so future fetches are short — plus optional equal-priority relocation. Carefully guarded so it never double-acts with the build-from-inventory, batch-craft or bulk systems. An optional per-mod storage-building filter lets you choose which storage the on-the-way behaviors may use (with curated defaults and LWM Deep Storage awareness); it never blocks a pawn from putting its load away.
+What happens between picking things up and putting them away. Features covering topping up existing stacks (several pawns can fill one tile at once), dropping a full load at storage that's on the way, emptying the nearest destination first to cut zig-zagging, grabbing loose items that lie along the path of a job you're already doing, and relocating supplies to storage closer to where they're used — with an optional per-mod storage-building filter.
 
 [h2]Bulk loading[/h2]
-Anything with a manifest — pods, shuttles, portals, pack animals, fuel — filled in one trip instead of one stack per walk. Several haulers split a single manifest without double-hauling (a per-save claim-ledger keeps the count exact), and interrupting one returns its share to the pile.
-
-[b]15. Transport pods & shuttles[/b]
-Sweep many stacks into inventory and load them in a single trip. The manifest decrements exactly, the "loading stalled" alert no longer false-fires, and a shuttle won't board or launch while hauling is still in flight. Right-click "Prioritize bulk loading", or let it run as ordinary hauling.
-
-[b]16. Map portals — in and out[/b]
-The same engine extended to pit gates, cave/vault exits and "enter map" portals; the manifest reaches exactly empty even though each deposited stack teleports away. Because a pit gate and the undercave's cave-exit are both portals, this loads loot down through a gate [i]and[/i] hauls it back up out of one.
-
-[b]17. Pack animals[/b]
-Vanilla pulls one stack to a hauler's hands per trip; here a hauler pulls many stacks into its backpack in a single visit and ships them to storage, so emptying a loaded caravan animal is one walk instead of dozens. Combat Extended weight/bulk aware; the carrier stays interruptible for roping and caravan-forming. Right-click "Prioritize bulk unloading".
-
-[b]18. Refuel[/b]
-Top up a refuelable — a shuttle's chemfuel, deep drills, generators — in one trip instead of vanilla's one fuel stack carried in hands per walk. It only kicks in when more than one trip's worth of fuel is needed (a single-stack refuel is left to vanilla, which already does it in one go), and reuses vanilla's own fuel finder so it picks exactly the stacks vanilla would. Any fuel swept over what's needed is put away by the normal unload. Right-click "Prioritize bulk refuelling".
-
-[b]19. Vehicle cargo[/b]
-With Vehicle Framework installed (optional, inert when absent): a vehicle's designated cargo loads the same way — many stacks in one trip, idle haulers splitting one manifest — autonomously the moment you set the cargo, aerial vehicles included. Colonists also eat from and build from a parked vehicle's cargo.
+Anything with a manifest — transport pods, shuttles, map portals (loaded down [i]and[/i] hauled back up), pack animals, refuelables, and Vehicle Framework cargo — filled in one trip instead of one stack per walk. Several haulers split a single manifest without double-hauling (an exact per-save claim-ledger keeps the count right), and interrupting one returns its share to the pile.
 
 [h2]Carrying capacity[/h2]
-
-[b]20. Overloaded[/b]
-Pawns can carry more than their max carry weight, slowed only when it saves time over another round-trip. The slowdown follows a gentle curve instead of a straight line — a light overload is nearly free, ramping up only as the load gets heavy. At the default ("Fair") a colonist fills to ~275% of capacity before it stops paying off and is still moving at ~65% speed there. One slider runs from 'no slowdown, carry freely' to 'never overload'; a strict mode never goes past 100%. With Combat Extended loaded, CE's weight, bulk and encumbrance rules take over entirely.
-
-[b]21. Keep working when full[/b]
-Optional (off by default): a pawn doing a job that scoops yields (mining, harvesting, …) keeps working when its inventory fills up instead of breaking off to unload — the overflow is left on the ground for haulers. It only makes an unload trip when it's about to travel farther than its nearest dropoff (so it regains speed before a long haul) or at downtime. Lets a miner keep mining while dedicated haulers move the output.
+Pawns carry past 100% only when the slowdown beats another round-trip, on a gentle curve — at the default a colonist fills to ~275% of capacity (still moving at ~65% speed) before it stops paying off. One slider runs from "carry freely" to "never overload", and Combat Extended's weight/bulk rules take over when it's loaded. Plus an optional "keep working when full" so a miner keeps mining and leaves the overflow for haulers.
 
 [h2]Planning tools[/h2]
-Better micro-management via planning: right-click → 'Plan prioritized [task]…'
-
-[b]22. Planned (and batched) crafting[/b]
-Example: you want 12 simple meals.
-X ― Tap 'prioritize cooking' three times, and each run makes its own ingredient trips
-✓ ― One order via 'Plan prioritized crafting…': the cook fetches all 120 raw food in one trip and cooks the dozen in one go
-
-The repeat count is capped by what's actually on the map, and the finished products ride back with everything else. Prefer it automatic? Set a bill to one of the new [b]Batch[/b] repeat-modes (Batch: do X times / until / forever) and every work session does the same by itself — one ingredient trip, the whole batch, hauled back together. Because each item finishes individually, an interruption only ever loses the single in-progress one, and carried raw food is frozen for the duration so a big cooking batch won't rot mid-session.
-
-[b]23. Route planning[/b]
-Right-click a work target and the pawn gets an efficient route over the whole patch, previewed live on the map with a time estimate. The selection modes fit the work: the nearest chain, the whole touching vein, a radius, whole rooms (cleaning), or a whole growing zone (harvesting).
-
-Example: you're short on food and want berries.
-X ― Mark the bushes, then shift-right-click every single bush in the 'right' order yourself
-✓ ― 'Plan prioritized harvesting…', choose how far the pawn may walk, and it finds the best route over the most bushes
-✓ ― [i]BONUS[/i]: 'Smart routing' circles the trip back toward storage, so the last bush ends right next to your food stockpile
-
-Hand-pick must-visit targets, pin the start and end, pull in unmarked plants once they're grown enough. Every target type remembers your settings, and a mining route that runs into fog extends itself as new ore is revealed.
-
-[b]24. Smarter construction[/b]
-Ordering a construction is one job: the pawn hauls the materials (in its inventory, fewer trips) and builds right away. Plan a whole fence line as haul-only, stocking the sites so several pawns build in parallel, or as haul+build, site by site. A separate order, 'Prioritize hauling materials to…', stocks a site before it's even buildable.
+Right-click → "Plan prioritized [task]…". Features covering batched crafting (one ingredient trip for a whole batch — by order, or automatic "Batch" bill modes), travel-optimal route planning over a whole patch, vein, room or growing zone with a live map preview and storage-aware "smart routing", and one-job construction that hauls the materials and builds — plan a whole fence line so several pawns build in parallel, or pre-stock a site before it's buildable.
 
 [h2]Quality of life[/h2]
-
-[b]25. Per-pawn controls[/b]
-Every eligible colonist and work-mech has an "Auto-haul yields" gizmo to turn its automatic scooping and bulk-haul sweeping on or off individually — so you can leave a skilled miner or grower working and let dedicated haulers move the output, without touching the global settings. Forced orders still work regardless. Plus a right-click "Pick up X" to send a pawn to grab that stack (and fit more) into inventory in one tracked trip, and an optional toggle for Haul-trained colony animals to carry multiple stacks like colonists (default off).
-
-[b]26. High-capacity haulers[/b]
-Work-mechanoids are no longer capped at exactly 100% — they use the same smart-overload as colonists (and are slowed for it by the same slider), so a high-capacity hauler like a Tunneller fills a worthwhile load before its trip instead of leaving on a single stack. And a mech carrying picked-up goods delivers them to storage (or drops them nearby if there's nowhere to put them) before it sits on a charger, so the goods don't spoil or take up its capacity.
-
-[b]27. Don't haul while bleeding[/b]
-On by default: a pawn bleeding above a small threshold won't [i]start[/i] a new scoop or sweep — it should get treated, not detour to tidy up. A pawn already carrying scooped goods still unloads them normally, and explicit Strip orders you give still scoop their gear.
-
-[b]28. Capable of dumb labor[/b]
-The planners respect work incapability: a pawn that won't clean is never offered 'Plan prioritized cleaning'. And if 'incapable of dumb labor' pawns annoy you, three optional overrides (off by default) make every pawn able to haul, clean, or cut plants, whatever their backstory, traits, genes or titles say. The game itself follows along: work tab, right-click prioritizing and automatic work.
-
-[b]29. Master switch & tabbed settings[/b]
-One master toggle (on, no restart) stops Hauler's Dream starting its automatic hauling behaviors — handy for troubleshooting — without stranding carried goods or hiding the "Unload inventory" button. The (now sizable) settings are organized into tabs, each with its own scroll, and a pawn diverting to grab something en route shows "… (on the way to …)" in its job text. There are extensive config options to tune the feel and behaviour of this mod to your taste.
-
-[h2]A note of courtesy[/h2]
-
-This mod is largely implemented by Fable 5 and Opus 4.8, with few interventions from a human developer (me). This is an important distinction to many users. All code is being human reviewed by me ― all available on the Github repository and every update is pushed through a Pull Request. This mod covers A LOT of features with the goal to intertwine them into a unified system with optimized algorithms to improve colonist efficiency. Compatability works through cloning mods, and actively investigating other mods architecture, to incorporate compatability layers into Hauler's Dream.
-
-For reference; a mod at this scale would take many months if not years of manual labour otherwise. The accelerated development is due to the ability to do so. The whole thing is held together by a large headless test suite and a repo-wide performance pass (the per-tick logic is allocation-tested), so all those features stay light and don't stutter even in big, heavily-modded colonies.
+Features covering per-pawn "auto-haul yields" toggles (leave a skilled miner working while haulers move the output), a right-click "Pick up X", optional multi-stack hauling for Haul-trained animals, high-capacity work-mech haulers that overload sensibly and unload before sitting on a charger, a "don't haul while bleeding" guard, and optional dumb-labor overrides (any pawn can haul, clean or cut plants regardless of incapability). It's all backed by categorized settings with per-control help, a live overload graph, and a master switch — plus settings profiles you can save and share as a copy/paste code.
 
 [hr][/hr]
 
-[url=https://github.com/Refzlund/haulers-dream] github.com/Refzlund/haulers-dream [/url]
+Development accelerated via Opus 4.8 and Fable 5. Read more [url=https://github.com/Refzlund/haulers-dream/blob/main/About/Disclaimer.md]here[/url].
+Full feature list, compatibility notes etc. can be seen on [url=https://github.com/Refzlund/haulers-dream]Github[/url].
 
-I thank the authors of all mods mentioned above for the inspiration for this mod.
-
-Leave your suggestions to this mod in the comments!
+Thanks to the authors of every mod mentioned above for the inspiration. Leave your suggestions in the comments!

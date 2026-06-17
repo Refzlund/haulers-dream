@@ -19,3 +19,11 @@ const drift = Bun.spawn(['bun', resolve(import.meta.dir, 'check-settings-drift.t
 	cwd: repoRoot,
 })
 if ((await drift.exited) !== 0) throw new Error('Settings-drift check failed (see output above).')
+
+// Guard the Steam Workshop description against Steam's 8000-character truncation limit.
+const steamDesc = Bun.spawn(['bun', resolve(import.meta.dir, 'check-steam-description.ts')], {
+	stdout: 'inherit',
+	stderr: 'inherit',
+	cwd: repoRoot,
+})
+if ((await steamDesc.exited) !== 0) throw new Error('Steam-description length check failed (see output above).')
