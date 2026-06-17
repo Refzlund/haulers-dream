@@ -87,11 +87,13 @@ namespace HaulersDream
                 if (t != null && !t.Destroyed && t.stackCount > 0 && owner.Contains(t))
                     liveTagged++;
 
+            // NOTE: a Hauling work PRIORITY of 0 is intentionally NOT treated as "stranded" — a pawn the player
+            // set to never haul (a dedicated grower/crafter) still scoops its yields and still unloads them via
+            // HD's own end-of-run / interval / idle / before-downtime paths (which don't use the vanilla Hauling
+            // work giver). Dropping its cargo here caused the "pawn drops scooped items while it keeps working"
+            // bug. Only genuine incapability (WorkTagIsDisabled) or a stuck mech actually strands cargo.
             bool drop = SoftlockDropPolicy.ShouldDrop(
                 haulingDisabled: pawn.WorkTagIsDisabled(WorkTags.Hauling),
-                haulingPriorityZero: pawn.workSettings != null
-                    && pawn.workSettings.EverWork
-                    && pawn.workSettings.GetPriority(WorkTypeDefOf.Hauling) == 0,
                 isMech: pawn.RaceProps.IsMechanoid,
                 mechState: MechStateOf(pawn),
                 taggedCount: liveTagged,

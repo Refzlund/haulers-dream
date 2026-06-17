@@ -39,21 +39,26 @@ namespace HaulersDream.Core
         /// <item><paramref name="runningHdJob"/> → <c>false</c> (the pawn is actively running an HD load /
         /// unload / cleanup job; it will resolve the cargo itself — never yank items out from under a live
         /// job, even if the pawn is otherwise "incapable").</item>
-        /// <item>incapable of hauling (any of: <paramref name="haulingDisabled"/>,
-        /// <paramref name="haulingPriorityZero"/>, or a mech in a stuck <paramref name="mechState"/>) →
-        /// <c>true</c>.</item>
+        /// <item>incapable of hauling (<paramref name="haulingDisabled"/>, or a mech in a stuck
+        /// <paramref name="mechState"/>) → <c>true</c>.</item>
         /// <item>otherwise → <c>false</c> (a capable hauler — it will unload normally).</item>
         /// </list>
+        ///
+        /// NOTE: a Hauling work-type PRIORITY of 0 is deliberately NOT a drop trigger. HD's scoop eligibility and
+        /// its own unload jobs key on <c>WorkTypeIsDisabled</c> (true incapability), not on the vanilla Hauling
+        /// work PRIORITY — so a pawn the player set to "never haul" (priority 0, e.g. a dedicated grower or
+        /// crafter) still scoops its work-yields AND still delivers them via HD's end-of-run / interval / idle /
+        /// before-downtime unloads. Its cargo is therefore NOT stranded, and force-dropping it produced the
+        /// reported bug: such a pawn would scoop yields while working and then drop them on the ground as it
+        /// carried on with its task (e.g. sowing). Only genuine incapability (or a stuck mech) strands cargo.
         /// </summary>
         /// <param name="haulingDisabled">The Hauling work tag is disabled (incapable type / forced off).</param>
-        /// <param name="haulingPriorityZero">Hauling work type priority is 0 (player set it to never).</param>
         /// <param name="isMech">The pawn is a mechanoid (only then is <paramref name="mechState"/> consulted).</param>
         /// <param name="mechState">The mech's stuck-state classification (ignored when <paramref name="isMech"/> is false).</param>
         /// <param name="taggedCount">How many HD-tagged stacks the pawn currently holds.</param>
         /// <param name="runningHdJob">The pawn's current job is an HD load / unload / cleanup job.</param>
         public static bool ShouldDrop(
             bool haulingDisabled,
-            bool haulingPriorityZero,
             bool isMech,
             MechState mechState,
             int taggedCount,
@@ -66,24 +71,22 @@ namespace HaulersDream.Core
             if (runningHdJob)
                 return false;
             // Incapable of ever hauling → the cargo is stranded; drop it for others to reclaim.
-            return IsHaulIncapable(haulingDisabled, haulingPriorityZero, isMech, mechState);
+            return IsHaulIncapable(haulingDisabled, isMech, mechState);
         }
 
         /// <summary>
-        /// True if the pawn can no longer take a hauling job: the Hauling work tag is disabled, its Hauling
-        /// priority is 0, or it is a mech in a stuck state (<see cref="MechState.None"/> for a non-mech or an
-        /// awake-and-capable mech is NOT incapable). Split out so the "incapable" classification is unit-pinned
+        /// True if the pawn can no longer take a hauling job AND cannot deliver via HD's own unload: the Hauling
+        /// work tag is disabled, or it is a mech in a stuck state (<see cref="MechState.None"/> for a non-mech or
+        /// an awake-and-capable mech is NOT incapable). A mere Hauling-priority of 0 is NOT incapability — see the
+        /// note on <see cref="ShouldDrop"/>. Split out so the "incapable" classification is unit-pinned
         /// independently of the tagged-count / running-job guards.
         /// </summary>
         public static bool IsHaulIncapable(
             bool haulingDisabled,
-            bool haulingPriorityZero,
             bool isMech,
             MechState mechState)
         {
             if (haulingDisabled)
-                return true;
-            if (haulingPriorityZero)
                 return true;
             if (isMech && mechState != MechState.None)
                 return true;
