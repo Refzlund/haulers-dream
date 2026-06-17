@@ -267,7 +267,7 @@ namespace HaulersDream
         // ALONG the way, grab it into inventory first (as a tagged HD bulk-haul pickup, serviced by the normal
         // unload) so the stray item rides to storage on a trip the pawn was making anyway. A behavior-CHANGING
         // feature, so OFF by default (the postfix's first line returns when off — byte-inert on existing saves).
-        public bool enRoutePickup = false;
+        public bool enRoutePickup = true;
         // How strictly the "is the store roughly on the path?" check is confirmed after the cheap straight-line
         // ratio cascade. Vanilla = cheap bounded region-count flood (fastest, least accurate); Default / Pathfinding
         // = accurate A* path costs (Default ends the scan on a range failure, Pathfinding keeps scanning). DEFAULT
@@ -280,7 +280,7 @@ namespace HaulersDream
         // short), and grab same-/equal-priority extras. A behavior-CHANGING feature, so the MASTER is OFF by
         // default (StorageRouting's first line returns when off — byte-inert on existing saves). The 4 sub-toggles
         // default ON but are inert while the master is OFF.
-        public bool storageRouting = false;             // MASTER (default OFF)
+        public bool storageRouting = true;              // MASTER (default ON)
         public bool routeSupplies = true;               // relocate construction supplies closer to the build site
         public bool routeIngredients = true;            // relocate bill ingredients closer to the bench
         public bool routeToEqualPriority = true;        // allow relocating into an EQUAL-priority store (not just higher)
@@ -291,7 +291,7 @@ namespace HaulersDream
         // (C2), before-carry routing (C3), and the permit/deny dialog (C4). MASTER toggle, default OFF, so the
         // whole feature is byte-inert on existing saves until opted in (StorageBuildingFilter.Enabled gates
         // every query to allow-all when off, and W3's funnel postfix early-returns before any work).
-        public bool storageFiltersEnabled = false;
+        public bool storageFiltersEnabled = true;
         // When ON, the curated per-context default permit/deny sets apply (WYU "auto-manage"): opportunistic
         // = allow-all minus the slow set; before-carry = deny-all except a curated container allow-list.
         // When OFF, only the player's explicit overrides decide and everything else is allowed.
@@ -388,6 +388,18 @@ namespace HaulersDream
         // --- misc ---
         public bool hideGizmo = false;
         public bool verboseLogging = false;
+
+        // --- settings profiles (named presets) ---
+        // Default = the built-in defaults (immutable; selecting it acts as "reset"). A named profile stores a full
+        // snapshot of every setting; the selector shows "Custom (unsaved)" when the live values differ from the
+        // active baseline. Profiles are USER DATA — ResetToDefaults never deletes them, so they're [ProfileMeta]
+        // (excluded from the field==Scribe==Reset drift triple). See SettingsProfiles.cs for the logic.
+        [ProfileMeta] public List<SettingsProfile> savedProfiles = new List<SettingsProfile>();
+        [ProfileMeta] public string activeProfileName = "";
+        // Recursion guard: a profile snapshot is itself a HaulersDreamSettings; while (de)serializing it the nested
+        // savedProfiles/activeProfileName section is skipped (a snapshot has no profiles of its own).
+        public static bool SerializingSnapshot;
+        [System.NonSerialized] private HaulersDreamSettings defaultsSnapshotCache;
 
         public bool IsTypeEnabled(HaulSourceType type)
             => WorkTypePolicy.IsTypeEnabled(type, haulHarvest, haulMining, haulDeepDrill, haulDeconstruct, haulAnimals, haulStrip);
@@ -486,14 +498,14 @@ namespace HaulersDream
             Scribe_Values.Look(ref skipHaulWhileBleeding, "skipHaulWhileBleeding", true);
             Scribe_Values.Look(ref bleedThresholdPerDay, "bleedThresholdPerDay", 0.001f);
             Scribe_Values.Look(ref closestDestinationUnloadOrder, "closestDestinationUnloadOrder", true);
-            Scribe_Values.Look(ref enRoutePickup, "enRoutePickup", false);
+            Scribe_Values.Look(ref enRoutePickup, "enRoutePickup", true);
             Scribe_Values.Look(ref enRoutePathChecker, "enRoutePathChecker", EnRoutePathChecker.Vanilla);
-            Scribe_Values.Look(ref storageRouting, "storageRouting", false);
+            Scribe_Values.Look(ref storageRouting, "storageRouting", true);
             Scribe_Values.Look(ref routeSupplies, "routeSupplies", true);
             Scribe_Values.Look(ref routeIngredients, "routeIngredients", true);
             Scribe_Values.Look(ref routeToEqualPriority, "routeToEqualPriority", true);
             Scribe_Values.Look(ref routeToStockpiles, "routeToStockpiles", true);
-            Scribe_Values.Look(ref storageFiltersEnabled, "storageFiltersEnabled", false);
+            Scribe_Values.Look(ref storageFiltersEnabled, "storageFiltersEnabled", true);
             Scribe_Values.Look(ref storageFilterUseDefaults, "storageFilterUseDefaults", true);
             Scribe_Values.Look(ref storageFilterDenyLwmForOpportunistic, "storageFilterDenyLwmForOpportunistic", true);
             Scribe_Deep.Look(ref storageBuildingFilter, "storageBuildingFilter");
@@ -532,6 +544,19 @@ namespace HaulersDream
             Scribe_Values.Look(ref enableOnNonHomeMaps, "enableOnNonHomeMaps", true);
             Scribe_Values.Look(ref hideGizmo, "hideGizmo", false);
             Scribe_Values.Look(ref verboseLogging, "verboseLogging", false);
+
+            // Profile list + active name. Skipped while serializing a profile's own snapshot (the recursion guard),
+            // since a snapshot is itself a HaulersDreamSettings and must not carry a nested profile list.
+            if (!SerializingSnapshot)
+            {
+                Scribe_Collections.Look(ref savedProfiles, "savedProfiles", LookMode.Deep);
+                Scribe_Values.Look(ref activeProfileName, "activeProfileName", "");
+                if (Scribe.mode == LoadSaveMode.LoadingVars)
+                {
+                    if (savedProfiles == null) savedProfiles = new List<SettingsProfile>();
+                    if (activeProfileName == null) activeProfileName = "";
+                }
+            }
         }
 
         /// <summary>Reset EVERY persisted setting to its declared default (the same values the field initializers
@@ -612,14 +637,14 @@ namespace HaulersDream
             skipHaulWhileBleeding = true;
             bleedThresholdPerDay = 0.001f;
             closestDestinationUnloadOrder = true;
-            enRoutePickup = false;
+            enRoutePickup = true;
             enRoutePathChecker = EnRoutePathChecker.Vanilla;
-            storageRouting = false;
+            storageRouting = true;
             routeSupplies = true;
             routeIngredients = true;
             routeToEqualPriority = true;
             routeToStockpiles = true;
-            storageFiltersEnabled = false;
+            storageFiltersEnabled = true;
             storageFilterUseDefaults = true;
             storageFilterDenyLwmForOpportunistic = true;
             storageBuildingFilter = new StorageBuildingFilter();

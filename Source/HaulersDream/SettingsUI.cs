@@ -46,11 +46,23 @@ namespace HaulersDream
         // Right-panel help, populated by hover each frame and read by the window when it draws the info column.
         public static string HoverTitle;
         public static string HoverBody;
+        // A short coloured "current value" line for the hovered control (e.g. On/Off, the chosen option, a %).
+        public static string HoverStatus;
+        public static Color HoverStatusColor;
+        // Optional extra drawer for the info panel (e.g. a graph), set by a control on hover, drawn by DrawHelp.
+        public static Action<Rect> HoverExtra;
+
+        // Status colours: enabled = green, disabled = muted red, a value/choice = soft blue.
+        public static readonly Color OnColor = new Color(0.5f, 0.82f, 0.5f);
+        public static readonly Color OffColor = new Color(0.82f, 0.55f, 0.55f);
+        public static readonly Color ValueColor = new Color(0.62f, 0.78f, 0.95f);
 
         public static void ResetHover()
         {
             HoverTitle = null;
             HoverBody = null;
+            HoverStatus = null;
+            HoverExtra = null;
         }
 
         public static void SetHelp(string title, string body)
@@ -58,6 +70,21 @@ namespace HaulersDream
             HoverTitle = title;
             HoverBody = body;
         }
+
+        public static void SetStatus(string status, Color color)
+        {
+            HoverStatus = status;
+            HoverStatusColor = color;
+        }
+
+        // The localized On/Off status string + colour for a boolean control.
+        private static void BoolStatus(bool value) =>
+            SetStatus((value ? "HaulersDream.Common.On" : "HaulersDream.Common.Off").Translate(),
+                value ? OnColor : OffColor);
+
+        // Vertical gap inserted after each interactive option row so options don't clamp together. (Feature
+        // cards on the hub manage their own spacing and don't use these helpers.)
+        private const float RowGap = 6f;
 
         // Faint hover wash + register the control's help into the right panel.
         private static void Hover(Rect r, string title, string body)
@@ -78,19 +105,22 @@ namespace HaulersDream
         // ---- section header bar ----
         public static void Header(SettingsCtx c, string label)
         {
-            c.Gap(8f);
+            c.Gap(32f); // generous separation between sections
             var r = c.Row(26f);
             Widgets.DrawBoxSolid(r, new Color(1f, 1f, 1f, 0.09f));
             var f = Text.Font;
             var col = GUI.color;
+            var anchor = Text.Anchor;
             Text.Font = GameFont.Small;
+            Text.Anchor = TextAnchor.MiddleLeft; // vertically centre the label within the boxed header
             GUI.color = new Color(0.86f, 0.88f, 0.95f);
             var tr = r;
             tr.xMin += 8f;
             Widgets.Label(tr, label);
             GUI.color = col;
+            Text.Anchor = anchor;
             Text.Font = f;
-            c.Gap(4f);
+            c.Gap(12f); // padding between the heading bar and its first option
         }
 
         // ---- thin divider ----
@@ -131,13 +161,16 @@ namespace HaulersDream
             Hover(r, label, help);
             bool newVal = value;
             Widgets.CheckboxLabeled(r, label, ref newVal, disabled: !enabled);
+            if (Mouse.IsOver(r)) BoolStatus(enabled ? newVal : value);
             Text.Font = f;
+            c.Gap(RowGap);
             return enabled ? newVal : value;
         }
 
         // ---- slider row: label + right-aligned readout, slider below (returns the new value) ----
+        // `graph` (optional): an extra info-panel drawer registered while this control is hovered (e.g. a curve).
         public static float Slider(SettingsCtx c, string label, float value, float min, float max,
-            string readout, string help = null, bool enabled = true, float indent = 0f)
+            string readout, string help = null, bool enabled = true, float indent = 0f, Action<Rect> graph = null)
         {
             var f = Text.Font;
             Text.Font = GameFont.Small;
@@ -147,16 +180,24 @@ namespace HaulersDream
             var col = GUI.color;
             if (!enabled) GUI.color = new Color(col.r, col.g, col.b, 0.5f);
 
+            // Readout sits on the right of the row. Keep it a SINGLE line and size its box to the actual text
+            // (capped so the label keeps room) so long value labels like "Fair (balanced)" / "No slowdown —
+            // carry freely" never wrap into the 24px row and clip. The label takes the remaining width.
+            var anchor = Text.Anchor;
+            var ww = Text.WordWrap;
+            Text.WordWrap = false;
+            float readoutW = Mathf.Min(Text.CalcSize(readout).x + 4f, top.width - 70f);
+
             var labelRect = top;
-            labelRect.width -= 74f;
+            labelRect.width = Mathf.Max(40f, top.width - readoutW - 8f);
             Widgets.Label(labelRect, label);
 
-            var anchor = Text.Anchor;
             Text.Anchor = TextAnchor.MiddleRight;
-            var valRect = new Rect(top.xMax - 70f, top.y, 70f, top.height);
+            var valRect = new Rect(top.xMax - readoutW, top.y, readoutW, top.height);
             GUI.color = enabled ? new Color(0.8f, 0.85f, 0.95f) : new Color(0.8f, 0.85f, 0.95f, 0.5f);
             Widgets.Label(valRect, readout);
             Text.Anchor = anchor;
+            Text.WordWrap = ww;
             GUI.color = col;
 
             var sr = c.Row(26f, indent);
@@ -164,7 +205,13 @@ namespace HaulersDream
             GUI.enabled = enabled;
             float nv = Widgets.HorizontalSlider(sr, value, min, max, middleAlignment: true);
             GUI.enabled = oldEnabled;
+            if (Mouse.IsOver(top) || Mouse.IsOver(sr))
+            {
+                SetStatus(readout, ValueColor);
+                if (graph != null) HoverExtra = graph;
+            }
             Text.Font = f;
+            c.Gap(RowGap);
             return enabled ? nv : value;
         }
 
@@ -211,9 +258,13 @@ namespace HaulersDream
                 if (enabled && Widgets.ButtonInvisible(seg))
                     chosen = i;
             }
+            int effSel = enabled ? chosen : selected;
+            if (Mouse.IsOver(top) || Mouse.IsOver(br))
+                SetStatus(options[Mathf.Clamp(effSel, 0, options.Length - 1)], ValueColor);
             Text.Anchor = anchor;
             Text.WordWrap = ww;
             Text.Font = f;
+            c.Gap(RowGap);
             return enabled ? chosen : selected;
         }
 
@@ -227,6 +278,7 @@ namespace HaulersDream
             var br = new Rect(r.x, r.y + 1f, Mathf.Min(340f, r.width), 28f);
             if (Widgets.ButtonText(br, label, active: enabled) && enabled)
                 onClick();
+            c.Gap(RowGap);
         }
 
         // ---- a feature "card": icon + name + blurb + a toggle; the whole card is clickable ----
@@ -239,10 +291,14 @@ namespace HaulersDream
             // No persistent background/outline (clean look) — just a clear highlight on hover for interactivity.
             Widgets.DrawHighlightIfMouseover(r);
             if (Mouse.IsOver(r))
+            {
                 SetHelp(name, help ?? blurb);
+                BoolStatus(value);
+            }
 
             const float pad = 10f;
-            var iconBox = new Rect(r.x + pad, r.y + (h - 30f) / 2f, 30f, 30f);
+            const float iconSize = 24f;
+            var iconBox = new Rect(r.x + pad, r.y + (h - iconSize) / 2f, iconSize, iconSize);
             if (icon != null)
             {
                 var col = GUI.color;

@@ -81,25 +81,81 @@ namespace HaulersDream
             return tex;
         }
 
+        // The settings-header logo (HAULER'S DREAM + character), drawn in place of the vanilla mod-name text.
+        private static Texture2D headerTexCache;
+        private static bool headerTexResolved;
+        private static Texture2D HeaderTex
+        {
+            get
+            {
+                if (!headerTexResolved)
+                {
+                    headerTexCache = ContentFinder<Texture2D>.Get("HaulersDream/Settings/Header", reportFailure: false);
+                    headerTexResolved = true;
+                }
+                return headerTexCache;
+            }
+        }
+
         public void DoWindowContents(Rect rect)
         {
             HDSettingsUI.ResetHover();
-            // The window is large; let the player drag it (Camera+ does the same).
-            if (Find.WindowStack?.currentlyDrawnWindow != null)
-                Find.WindowStack.currentlyDrawnWindow.draggable = true;
+            // Take over the window chrome: the vanilla Dialog_ModSettings sets a corner X (no padding) + a redundant
+            // bottom "Close" button. We suppress both (settings still save on PreClose however the window closes) and
+            // draw our own padded X. doCloseButton is read AFTER this method (effective now); doCloseX is read before
+            // (effective next frame — a one-frame flash at most). Also keep the large window draggable.
+            var win = Find.WindowStack?.currentlyDrawnWindow;
+            if (win != null)
+            {
+                win.draggable = true;
+                win.doCloseButton = false;
+                win.doCloseX = false;
+            }
 
-            // --- top action bar: right-aligned "Reset to defaults" (confirmed) ---
-            const float topH = 34f;
-            var topRect = new Rect(rect.x, rect.y, rect.width, topH);
-            float btnW = 160f;
-            var resetRect = new Rect(topRect.xMax - btnW, topRect.y + 3f, btnW, 28f);
-            if (Widgets.ButtonText(resetRect, "HaulersDream.Setting.ResetToDefaults".Translate()))
-                Find.WindowStack.Add(Dialog_MessageBox.CreateConfirmation(
-                    "HaulersDream.Setting.ResetToDefaultsConfirm".Translate(),
-                    ResetToDefaults, destructive: true));
+            // Window content origin is (0,0): the vanilla mod-name label was drawn there and we were handed a rect
+            // starting at y=40. OVERDRAW that strip with the logo + profile selector, and reclaim the bottom band the
+            // (now-removed) close button occupied.
+            float fullW = rect.width;
+            const float bandH = 60f;
+            var band = new Rect(0f, 0f, fullW, bandH);
+            Widgets.DrawBoxSolid(band, Widgets.WindowBGFillColor); // hide the vanilla "Hauler's Dream" text label
 
-            // --- body split into three responsive columns ---
-            var body = new Rect(rect.x, rect.y + topH + 6f, rect.width, rect.height - topH - 6f);
+            var tex = HeaderTex;
+            float logoH = 48f;
+            float logoW = tex != null ? logoH * (tex.width / (float)tex.height) : 280f;
+            var logoRect = new Rect(2f, (bandH - logoH) / 2f, logoW, logoH);
+            if (tex != null)
+            {
+                GUI.DrawTexture(logoRect, tex, ScaleMode.ScaleToFit);
+            }
+            else
+            {
+                var pf = Text.Font;
+                Text.Font = GameFont.Medium;
+                Widgets.Label(new Rect(4f, 8f, 360f, 40f), "Hauler's Dream");
+                Text.Font = pf;
+            }
+
+            // Custom padded close X (top-right). CloseButtonFor draws an 18px X at (rect.xMax-22, rect.y+4).
+            if (Widgets.CloseButtonFor(new Rect(0f, 6f, fullW - 6f, 40f)))
+                win?.Close();
+
+            // Profile selector — to the right of the logo, clear of the X.
+            float profX = logoRect.xMax + 16f;
+            float profRight = fullW - 40f;
+            float profW = Mathf.Min(300f, profRight - profX);
+            if (profW >= 120f)
+            {
+                var profRect = new Rect(profX, (bandH - 30f) / 2f, profW, 30f);
+                if (Widgets.ButtonText(profRect, CurrentProfileLabel))
+                    OpenProfileMenu();
+                TooltipHandler.TipRegion(profRect, "HaulersDream.Profile.SelectorTip".Translate());
+            }
+
+            // --- body: three responsive columns; reclaim the removed close-button strip at the bottom ---
+            float bodyTop = bandH + 6f;
+            float bodyBottom = rect.yMax + 32f; // the close button sat below rect.yMax; reclaim that space
+            var body = new Rect(0f, bodyTop, fullW, bodyBottom - bodyTop);
             const float gap = 12f;
             float navW = Mathf.Clamp(body.width * 0.20f, 150f, 192f);
             float helpW = Mathf.Clamp(body.width * 0.26f, 200f, 290f);
@@ -110,6 +166,49 @@ namespace HaulersDream
             DrawNav(navRect);
             DrawContent(contentRect);
             DrawHelp(helpRect);
+        }
+
+        // The profile dropdown: apply a saved profile, reset to the built-in Default, save changes to the active
+        // profile, save the current state as a new profile, or delete the active one.
+        private void OpenProfileMenu()
+        {
+            var opts = new List<FloatMenuOption>();
+            if (savedProfiles != null)
+            {
+                foreach (var profile in savedProfiles)
+                {
+                    var p = profile; // capture for the closure
+                    string mark = activeProfileName == p.name ? "  ✓" : "";
+                    opts.Add(new FloatMenuOption(p.name + mark, () => ApplyProfile(p)));
+                }
+            }
+            // The built-in Default = reset to defaults (this profile can never be modified).
+            opts.Add(new FloatMenuOption("HaulersDream.Profile.Default".Translate(), ApplyDefaultProfile));
+
+            var active = ActiveProfile;
+            if (active != null && IsDirty)
+                opts.Add(new FloatMenuOption("HaulersDream.Profile.SaveChanges".Translate(active.name), SaveActiveProfile));
+
+            // "Create new profile…" from Default/Custom; "Save as new profile…" once on a named profile.
+            opts.Add(new FloatMenuOption(
+                (active == null ? "HaulersDream.Profile.CreateNew" : "HaulersDream.Profile.SaveAsNew").Translate(),
+                () => Find.WindowStack.Add(new Dialog_NameProfile(name => SaveAsNewProfile(name)))));
+
+            // Copy the current settings as a portable string; paste one to create a profile.
+            opts.Add(new FloatMenuOption("HaulersDream.Profile.Copy".Translate(),
+                () => Find.WindowStack.Add(new Dialog_CopyProfile(ExportProfileToString(this, activeProfileName ?? "")))));
+            opts.Add(new FloatMenuOption("HaulersDream.Profile.Paste".Translate(),
+                () => Find.WindowStack.Add(new Dialog_PasteProfile(this))));
+
+            if (active != null)
+            {
+                var ap = active;
+                opts.Add(new FloatMenuOption("HaulersDream.Profile.Delete".Translate(ap.name),
+                    () => Find.WindowStack.Add(Dialog_MessageBox.CreateConfirmation(
+                        "HaulersDream.Profile.DeleteConfirm".Translate(ap.name), () => DeleteProfile(ap), destructive: true))));
+            }
+
+            Find.WindowStack.Add(new FloatMenu(opts));
         }
 
         private void DrawNav(Rect rect)
@@ -128,7 +227,8 @@ namespace HaulersDream
                 else if (Mouse.IsOver(row)) Widgets.DrawBoxSolid(row, new Color(1f, 1f, 1f, 0.06f));
 
                 var icon = IconFor(cd);
-                var iconBox = new Rect(row.x + 7f, row.y + (rowH - 26f) / 2f, 26f, 26f);
+                const float navIconSize = 22f;
+                var iconBox = new Rect(row.x + 9f, row.y + (rowH - navIconSize) / 2f, navIconSize, navIconSize);
                 if (icon != null)
                 {
                     var col = GUI.color;
@@ -161,9 +261,13 @@ namespace HaulersDream
         private void DrawContent(Rect rect)
         {
             int idx = (int)currentCat;
-            var view = new Rect(0f, 0f, rect.width - 16f, Mathf.Max(catHeight[idx], rect.height));
+            // Reserve the scrollbar width, then lay out content a gutter short of it (same 12px gutter as between
+            // the nav and the content) so rows/headers never touch the scrollbar.
+            const float scrollbarW = 16f;
+            const float rightGutter = 12f;
+            var view = new Rect(0f, 0f, rect.width - scrollbarW, Mathf.Max(catHeight[idx], rect.height));
             Widgets.BeginScrollView(rect, ref contentScroll, view);
-            var c = new SettingsCtx(view.width);
+            var c = new SettingsCtx(view.width - rightGutter);
             c.Gap(2f);
             switch (currentCat)
             {
@@ -184,33 +288,132 @@ namespace HaulersDream
 
         private void DrawHelp(Rect rect)
         {
-            // No panel background/outline (clean look) — just the contextual title + description text.
+            // No panel background/outline (clean look). Title, a coloured status line, an optional graph, and the
+            // description are ALL drawn inside ONE scroll view, so nothing can clip regardless of text length.
             var inner = rect.ContractedBy(12f);
             string title = HDSettingsUI.HoverTitle ?? cats[(int)currentCat].nameKey.Translate();
             string bodyText = HDSettingsUI.HoverBody ?? cats[(int)currentCat].helpKey.Translate();
+            string status = HDSettingsUI.HoverStatus;
+            var graph = HDSettingsUI.HoverExtra;
 
             var f = Text.Font;
             var col = GUI.color;
-            float y = inner.y;
+            float w = inner.width - 16f; // reserve the scrollbar
+
+            const float graphHeight = 132f;
+            Text.Font = GameFont.Small;
+            float titleH = Text.CalcHeight(title, w);
+            Text.Font = GameFont.Tiny;
+            float statusH = status.NullOrEmpty() ? 0f : Text.CalcHeight(status, w);
+            Text.Font = GameFont.Small;
+            float bodyH = bodyText.NullOrEmpty() ? 0f : Text.CalcHeight(bodyText, w);
+            float graphH = graph != null ? graphHeight : 0f;
+
+            float total = titleH
+                + (statusH > 0f ? statusH + 2f : 0f)
+                + 8f
+                + (graphH > 0f ? graphH + 10f : 0f)
+                + bodyH;
+            var view = new Rect(0f, 0f, w, Mathf.Max(total, inner.height));
+            Widgets.BeginScrollView(inner, ref helpScroll, view);
+            float y = 0f;
 
             Text.Font = GameFont.Small;
             GUI.color = new Color(0.95f, 0.86f, 0.62f); // soft accent for the title
-            float th = Text.CalcHeight(title, inner.width);
-            Widgets.Label(new Rect(inner.x, y, inner.width, th), title);
-            y += th + 8f;
+            Widgets.Label(new Rect(0f, y, w, titleH), title);
+            y += titleH;
             GUI.color = col;
 
-            // The body (a setting's full description) can be a long paragraph — scroll it so it never clips.
-            if (!bodyText.NullOrEmpty())
+            if (statusH > 0f)
             {
-                var bodyArea = new Rect(inner.x, y, inner.width, inner.yMax - y);
-                float bw = inner.width - 16f;
-                float bh = Text.CalcHeight(bodyText, bw);
-                var bview = new Rect(0f, 0f, bw, Mathf.Max(bh, bodyArea.height));
-                Widgets.BeginScrollView(bodyArea, ref helpScroll, bview);
-                Widgets.Label(new Rect(0f, 0f, bw, bh), bodyText);
-                Widgets.EndScrollView();
+                y += 2f;
+                Text.Font = GameFont.Tiny;
+                GUI.color = HDSettingsUI.HoverStatusColor;
+                Widgets.Label(new Rect(0f, y, w, statusH), status);
+                y += statusH;
+                GUI.color = col;
             }
+            y += 8f;
+
+            if (graphH > 0f)
+            {
+                graph(new Rect(0f, y, w, graphHeight));
+                y += graphHeight + 10f;
+            }
+
+            if (bodyH > 0f)
+            {
+                Text.Font = GameFont.Small;
+                Widgets.Label(new Rect(0f, y, w, bodyH), bodyText);
+            }
+
+            Widgets.EndScrollView();
+            GUI.color = col;
+            Text.Font = f;
+        }
+
+        // A small line graph of move-speed multiplier (y) vs carry weight (x, % of max capacity) for the current
+        // smart-overload level — the EXACT curve OverloadTuning.SpeedFactor computes — with the carry ceiling and
+        // the speed floor marked. Drawn in the info panel while the Smart-overload slider is hovered.
+        private static void DrawOverloadGraph(Rect rect, int level)
+        {
+            Widgets.DrawBoxSolid(rect, new Color(1f, 1f, 1f, 0.05f));
+            var f = Text.Font;
+            var anchor = Text.Anchor;
+            var col = GUI.color;
+            Text.Font = GameFont.Tiny;
+
+            const float xMin = 1.0f, xMax = 3.0f; // 100%..300% of capacity
+            const float leftAxis = 36f, bottomAxis = 15f, pad = 6f;
+            var plot = new Rect(rect.x + leftAxis, rect.y + pad, rect.width - leftAxis - pad,
+                rect.height - bottomAxis - pad);
+
+            // grid: 100%-speed line (top), the speed floor, and the y axis
+            GUI.color = new Color(1f, 1f, 1f, 0.12f);
+            Widgets.DrawLineHorizontal(plot.x, plot.y, plot.width);
+            float floorY = plot.yMax - OverloadTuning.SpeedFloor * plot.height;
+            Widgets.DrawLineHorizontal(plot.x, floorY, plot.width);
+            Widgets.DrawLineVertical(plot.x, plot.y, plot.height);
+
+            // y labels (speed) + x labels (carry %)
+            GUI.color = new Color(0.72f, 0.72f, 0.76f);
+            Text.Anchor = TextAnchor.MiddleRight;
+            Widgets.Label(new Rect(rect.x, plot.y - 6f, leftAxis - 4f, 14f), "100%");
+            Widgets.Label(new Rect(rect.x, floorY - 7f, leftAxis - 4f, 14f), OverloadTuning.SpeedFloor.ToStringPercent());
+            Text.Anchor = TextAnchor.UpperCenter;
+            for (int pct = 100; pct <= 300; pct += 100)
+            {
+                float gx = plot.x + (pct / 100f - xMin) / (xMax - xMin) * plot.width;
+                Widgets.Label(new Rect(gx - 20f, plot.yMax + 1f, 40f, 14f), pct + "%");
+            }
+
+            // the curve (move speed vs carry ratio)
+            const int N = 48;
+            var prev = Vector2.zero;
+            var curveCol = new Color(0.55f, 0.8f, 1f);
+            for (int i = 0; i <= N; i++)
+            {
+                float r = xMin + (xMax - xMin) * i / N;
+                float s = OverloadTuning.SpeedFactor(level, r);
+                var p = new Vector2(plot.x + (r - xMin) / (xMax - xMin) * plot.width, plot.yMax - s * plot.height);
+                if (i > 0) Widgets.DrawLine(prev, p, curveCol, 2f);
+                prev = p;
+            }
+
+            // carry ceiling marker — where overloading stops paying off (the smart load target)
+            float ceiling = OverloadTuning.MaxOverloadRatio(level);
+            if (!float.IsInfinity(ceiling) && ceiling > xMin && ceiling <= xMax)
+            {
+                float cx = plot.x + (ceiling - xMin) / (xMax - xMin) * plot.width;
+                GUI.color = new Color(0.95f, 0.86f, 0.62f);
+                Widgets.DrawLineVertical(cx, plot.y, plot.height);
+                Text.Anchor = TextAnchor.UpperLeft;
+                Widgets.Label(new Rect(Mathf.Min(cx + 3f, plot.xMax - 56f), plot.y, 60f, 14f),
+                    "HaulersDream.Setting.Overload.Ceiling".Translate());
+            }
+
+            GUI.color = col;
+            Text.Anchor = anchor;
             Text.Font = f;
         }
 
@@ -267,23 +470,26 @@ namespace HaulersDream
         // ===================== HAULING =====================
         private void DrawHaulingCat(SettingsCtx c)
         {
+            HDSettingsUI.Note(c, "HaulersDream.Cat.Hauling.Intro".Translate());
+
+            HDSettingsUI.Header(c, "HaulersDream.Head.CarryWeight".Translate());
             carryLimitFraction = HDSettingsUI.Slider(c, "HaulersDream.Setting.CarryLimit.Lab".Translate(),
                 carryLimitFraction, CarryMath.MinFraction, CarryMath.MaxFraction,
                 carryLimitFraction.ToStringPercent(), "HaulersDream.Setting.CarryLimitDesc".Translate());
-
             overloadLevel = Mathf.RoundToInt(HDSettingsUI.Slider(c, "HaulersDream.Setting.Overload.Lab".Translate(),
                 overloadLevel, 0f, OverloadTuning.MaxLevel, OverloadLevelLabel(overloadLevel),
-                "HaulersDream.Setting.OverloadDesc".Translate(), enabled: !strictCarryWeight));
+                "HaulersDream.Setting.OverloadDesc".Translate(), enabled: !strictCarryWeight,
+                graph: r => DrawOverloadGraph(r, overloadLevel)));
             strictCarryWeight = HDSettingsUI.Checkbox(c, "HaulersDream.Setting.StrictCarryWeight".Translate(),
                 strictCarryWeight, "HaulersDream.Setting.StrictCarryWeightDesc".Translate());
 
+            HDSettingsUI.Header(c, "HaulersDream.Head.Pickup".Translate());
             int pm = HDSettingsUI.Segmented(c, "HaulersDream.Setting.PickupMode.Lab".Translate(),
                 pickupMode == PickupMode.DropThenHaul ? 0 : 1,
                 new[] { "HaulersDream.Setting.PickupMode.Drop".Translate().ToString(), "HaulersDream.Setting.PickupMode.Direct".Translate().ToString() },
                 new[] { "HaulersDream.Setting.PickupMode.DropDesc".Translate().ToString(), "HaulersDream.Setting.PickupMode.DirectDesc".Translate().ToString() },
                 "HaulersDream.Setting.PickupMode.Help".Translate());
             pickupMode = pm == 0 ? PickupMode.DropThenHaul : PickupMode.DirectToInventory;
-
             skipHaulWhileBleeding = HDSettingsUI.Checkbox(c, "HaulersDream.Setting.SkipHaulWhileBleeding".Translate(),
                 skipHaulWhileBleeding, "HaulersDream.Setting.SkipHaulWhileBleedingDesc".Translate());
 
@@ -319,6 +525,9 @@ namespace HaulersDream
         // ===================== UNLOADING =====================
         private void DrawUnloadingCat(SettingsCtx c)
         {
+            HDSettingsUI.Note(c, "HaulersDream.Cat.Unloading.Intro".Translate());
+
+            HDSettingsUI.Header(c, "HaulersDream.Head.AutoUnloadTrips".Translate());
             markForUnload = HDSettingsUI.Checkbox(c, "HaulersDream.Setting.MarkForUnload".Translate(),
                 markForUnload, "HaulersDream.Feat.AutoUnload.Blurb".Translate());
             unloadBeforeSleep = HDSettingsUI.Checkbox(c, "HaulersDream.Setting.UnloadBeforeSleep".Translate(),
@@ -328,7 +537,7 @@ namespace HaulersDream
             unloadBeforeEating = HDSettingsUI.Checkbox(c, "HaulersDream.Setting.UnloadBeforeEating".Translate(),
                 unloadBeforeEating, "HaulersDream.Setting.UnloadBeforeEatingDesc".Translate(), enabled: markForUnload, indent: 24f);
 
-            HDSettingsUI.GapLine(c);
+            HDSettingsUI.Header(c, "HaulersDream.Head.DropOff".Translate());
             opportunisticUnload = HDSettingsUI.Checkbox(c, "HaulersDream.Setting.OpportunisticUnload".Translate(),
                 opportunisticUnload, "HaulersDream.Setting.OpportunisticUnloadDesc".Translate());
             closestDestinationUnloadOrder = HDSettingsUI.Checkbox(c, "HaulersDream.Setting.ClosestDestUnloadOrder".Translate(),
@@ -336,14 +545,13 @@ namespace HaulersDream
             unloadAllSurplus = HDSettingsUI.Checkbox(c, "HaulersDream.Setting.UnloadAllSurplus".Translate(),
                 unloadAllSurplus, "HaulersDream.Setting.UnloadAllSurplusDesc".Translate());
 
+            HDSettingsUI.Header(c, "HaulersDream.Head.ItemRulesDisplay".Translate());
             int ruleCount = ItemRuleCount;
             string itemBtn = ruleCount > 0
                 ? "HaulersDream.Setting.ItemUnloadButtonN".Translate(ruleCount)
                 : "HaulersDream.Setting.ItemUnloadButton".Translate();
             HDSettingsUI.Button(c, itemBtn, () => Find.WindowStack.Add(new Dialog_ItemUnloadSettings(this)),
                 "HaulersDream.Setting.ItemUnload.Help".Translate());
-
-            HDSettingsUI.GapLine(c);
             hideGizmo = HDSettingsUI.Checkbox(c, "HaulersDream.Setting.HideGizmo".Translate(),
                 hideGizmo, "HaulersDream.Setting.HideGizmo.Help".Translate());
         }
@@ -351,6 +559,7 @@ namespace HaulersDream
         // ===================== BUILD & CRAFT =====================
         private void DrawBuildCraftCat(SettingsCtx c)
         {
+            HDSettingsUI.Note(c, "HaulersDream.Cat.BuildCraft.Intro".Translate());
             HDSettingsUI.Header(c, "HaulersDream.Head.Construction".Translate());
             shareForBuilding = HDSettingsUI.Checkbox(c, "HaulersDream.Setting.ShareForBuilding".Translate(),
                 shareForBuilding, "HaulersDream.Setting.ShareForBuilding.Help".Translate());
@@ -391,6 +600,7 @@ namespace HaulersDream
         // ===================== BULK LOADING =====================
         private void DrawBulkLoadingCat(SettingsCtx c)
         {
+            HDSettingsUI.Note(c, "HaulersDream.Cat.BulkLoading.Intro".Translate());
             HDSettingsUI.Header(c, "HaulersDream.Head.PackAnimals".Translate());
             enableBulkUnloadCarriers = HDSettingsUI.Checkbox(c, "HaulersDream.Setting.EnableBulkUnloadCarriers".Translate(),
                 enableBulkUnloadCarriers, "HaulersDream.Setting.EnableBulkUnloadCarriersDesc".Translate());
@@ -449,6 +659,8 @@ namespace HaulersDream
         // ===================== ROUTING & STORAGE =====================
         private void DrawRoutingCat(SettingsCtx c)
         {
+            HDSettingsUI.Note(c, "HaulersDream.Cat.Routing.Intro".Translate());
+            HDSettingsUI.Header(c, "HaulersDream.Head.EnRoute".Translate());
             enRoutePickup = HDSettingsUI.Checkbox(c, "HaulersDream.Setting.EnRoutePickup".Translate(),
                 enRoutePickup, "HaulersDream.Setting.EnRoutePickupDesc".Translate());
             int chk = HDSettingsUI.Segmented(c, "HaulersDream.Setting.EnRoutePathChecker.Lab".Translate(),
@@ -485,6 +697,7 @@ namespace HaulersDream
         // ===================== WORK & YIELDS =====================
         private void DrawYieldsCat(SettingsCtx c)
         {
+            HDSettingsUI.Note(c, "HaulersDream.Cat.Yields.Intro".Translate());
             HDSettingsUI.Header(c, "HaulersDream.Setting.WorkTypesHeader".Translate());
             haulHarvest = HDSettingsUI.Checkbox(c, "HaulersDream.Setting.HaulHarvest".Translate(), haulHarvest,
                 "HaulersDream.Setting.HaulHarvest.Help".Translate());
@@ -548,6 +761,8 @@ namespace HaulersDream
         // ===================== WHO WORKS =====================
         private void DrawWhoCat(SettingsCtx c)
         {
+            HDSettingsUI.Note(c, "HaulersDream.Cat.Who.Intro".Translate());
+            HDSettingsUI.Header(c, "HaulersDream.Head.WhoCanHaul".Translate());
             pauseWhileDrafted = HDSettingsUI.Checkbox(c, "HaulersDream.Setting.PauseWhileDrafted".Translate(),
                 pauseWhileDrafted, "HaulersDream.Setting.PauseWhileDrafted.Help".Translate());
             allowMechanoids = HDSettingsUI.Checkbox(c, "HaulersDream.Setting.AllowMechanoids".Translate(),
@@ -571,6 +786,8 @@ namespace HaulersDream
         // ===================== PLANNERS =====================
         private void DrawPlannersCat(SettingsCtx c)
         {
+            HDSettingsUI.Note(c, "HaulersDream.Cat.Planners.Intro".Translate());
+            HDSettingsUI.Header(c, "HaulersDream.Head.PlanningTools".Translate());
             planRoutes = HDSettingsUI.Checkbox(c, "HaulersDream.Setting.PlanRoutes".Translate(),
                 planRoutes, "HaulersDream.Setting.PlanRoutesDesc".Translate());
             planCrafting = HDSettingsUI.Checkbox(c, "HaulersDream.Setting.PlanCrafting".Translate(),
@@ -610,6 +827,7 @@ namespace HaulersDream
         // ===================== ADVANCED =====================
         private void DrawAdvancedCat(SettingsCtx c)
         {
+            HDSettingsUI.Note(c, "HaulersDream.Cat.Advanced.Intro".Translate());
             HDSettingsUI.Header(c, "HaulersDream.Head.UnloadTiming".Translate());
             unloadGraceTicks = Mathf.RoundToInt(HDSettingsUI.Slider(c, "HaulersDream.Setting.UnloadGrace.Lab".Translate(),
                 unloadGraceTicks, 0f, 7500f, Ticks(unloadGraceTicks),
