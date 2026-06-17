@@ -1,5 +1,13 @@
 # haulers-dream
 
+## 1.3.1
+
+### Patch Changes
+
+- bcf00d4: Fixed "Do until you have X" bills ignoring **Pause when satisfied** and **Unpause at** — pawns kept crafting until the target was full and the bill never paused. Hauler's Dream banks freshly-made products in a pawn's inventory (to deliver a whole batch in one trip), but the vanilla product count that drives the pause/target/unpause decision only counts items in storage and in the hands, never in inventory. So the banked products were invisible, the bill never saw its target met, the paused state never latched, and pawns overproduced. The product count now includes the in-flight banked products colony-wide, so the bill's own pause-when-satisfied and unpause-at hysteresis work exactly as they do for ordinary one-at-a-time crafting.
+- 7e46eed: Fixed pawns hand-carrying construction material to a single site while ignoring identical nearby sites they could have served from the same inventory load — e.g. right-clicking to build a wall delivered one armful to one wall and skipped six others within reach. Hauler's Dream's multi-site construction delivery relied on vanilla's nearby-needer batch, but vanilla caps that batch at one hand-load of demand (and an 8-tile radius), so it could never load the inventory for more sites than a single armful already covered. Hauler's Dream now discovers the nearby same-material construction cluster itself — scanning blueprints and frames around the site, nearest-first, up to one overloaded trip's worth — and loads the combined material in one go, then delivers to each site. This applies to both right-clicked (prioritized) and automatic construction; planned routes already loaded for the whole route and are unchanged.
+- 750499b: Fixed pawns dropping scooped work-yields on the ground while they keep working — e.g. a grower scoops a harvest, then drops it on the field as it carries on sowing. The anti-stranding auto-drop was treating a Hauling work-type priority of 0 as "can never haul, so this cargo is stranded." But a pawn the player set to never haul (a dedicated grower or crafter) still scoops its yields and still delivers them through Hauler's Dream's own unload trips, which don't use the vanilla hauling job — so its cargo was never actually stranded. A Hauling priority of 0 no longer triggers the drop; only a pawn that is genuinely incapable of hauling, or a stuck mechanoid, does.
+
 ## 1.3.0
 
 ### Minor Changes
