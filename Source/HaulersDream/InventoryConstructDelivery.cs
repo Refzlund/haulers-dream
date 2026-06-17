@@ -100,25 +100,56 @@ namespace HaulersDream
             if (frameNeed <= 0)
                 return null;
 
-            // MULTI-SITE cluster (non-route only): vanilla already assembled the nearby same-material cluster
-            // into targetB + targetQueueB. If the WHOLE cluster wants more than one hand-load across 2+ sites,
-            // load the combined demand into inventory in ONE trip and deliver to every site (the driver iterates
-            // the needer queue). Route stops gather for the whole route via RouteDemandByDef below — they never
-            // take this branch (RouteIntent != None). Falls through to the single-needer logic when it doesn't fit.
+            // Mass / overload capacity. Computed up-front (not just before the gather) because the multi-site
+            // cluster scan below bounds itself to ONE overloaded trip's worth of demand — there is no point
+            // queuing nearby sites a single trip can't serve. Reads go through the per-(pawn,tick) memo: this is a
+            // read-only job-giver decision (not a mutate-then-reread loop), so even a small auto delivery that
+            // bails below doesn't pay a fresh GearAndInventoryMass apparel+inventory walk.
+            var mass = PawnMassCache.MassInfo(pawn);
+            float maxCap = mass.Capacity;
+            if (maxCap <= 0f)
+                return null;
+            float baseCap = CarryMath.EffectiveCapacity(maxCap, s.carryLimitFraction);
+            float cur = mass.CurrentMass;
+            float unit = def.GetStatValueAbstract(StatDefOf.Mass);
+            if (unit <= 0f)
+                return null;
+            // Pawn-aware (NoOverloadFor): strict / slider-Off / CE — and an ANIMAL (non-mech non-humanlike,
+            // never slowed by StatPart) must not gather past its plain limit penalty-free. Player mechs DO
+            // overload here and are slowed for it, like colonists.
+            int level = OverloadGate.NoOverloadFor(pawn, s) ? OverloadTuning.OffLevel : s.overloadLevel;
+            // The most units of def this pawn could carry in ONE overloaded trip (mass-limited, demand-unbounded).
+            int maxLoadUnits = ConstructDeliveryPlan.GatherCeiling(level, maxCap, baseCap, cur, unit, int.MaxValue);
+
+            // MULTI-SITE cluster (non-route only): deliver one inventory load to MANY nearby same-material sites.
+            // CRITICAL: vanilla's FindNearbyNeeders caps its batch (targetB + targetQueueB) at ONE hand-load of
+            // demand — it breaks once neededTotal >= resTotalAvailable, itself capped at MaxStackSpaceEver(def) —
+            // so a pawn relying on vanilla's cluster could never load inventory for more sites than a single
+            // armful already covers. THAT is the "missed 6 nearby walls" bug. So HD discovers the cluster ITSELF:
+            // seed with vanilla's batch (when present), then scan same-material constructibles near the primary,
+            // nearest-first, up to one overloaded trip's worth. The driver iterates the needer queue and delivers
+            // to each. Route stops gather for the whole route via RouteDemandByDef below and never take this
+            // branch (RouteIntent != None). Falls through to the single-needer logic when no real cluster exists.
             var clusterNeeders = (List<Thing>)null;
             int clusterNeed = 0;
             bool multiSite = false;
-            if (s.multiSiteConstructDeliver && RouteIntent == ConstructRouteIntent.None
-                && vanillaJob != null && vanillaJob.targetQueueB != null && vanillaJob.targetQueueB.Count > 0)
+            if (s.multiSiteConstructDeliver && RouteIntent == ConstructRouteIntent.None && maxLoadUnits > handCap)
             {
                 clusterNeeders = new List<Thing>();
                 AddClusterNeeder(needer, def, pawn, forced, clusterNeeders, ref clusterNeed); // primary (= targetC, the clicked/scanned site)
-                // Vanilla's targetB is the cluster member NEAREST THE RESOURCE — a DISTINCT needer from c
-                // (FindNearbyNeeders excludes c, then targetB = the nearest of those). Include it or it's
-                // silently dropped every trip. AddClusterNeeder dedups, so this is a no-op when targetB == c.
-                AddClusterNeeder(vanillaJob.targetB.Thing, def, pawn, forced, clusterNeeders, ref clusterNeed);
-                for (int i = 0; i < vanillaJob.targetQueueB.Count; i++)
-                    AddClusterNeeder(vanillaJob.targetQueueB[i].Thing, def, pawn, forced, clusterNeeders, ref clusterNeed);
+                // Seed with vanilla's already-found nearby cluster (known-valid). Vanilla's targetB is the member
+                // NEAREST THE RESOURCE — a DISTINCT needer from c — and targetQueueB the rest of its 8-tile batch.
+                // AddClusterNeeder dedups, so these are no-ops when they coincide with c or each other.
+                if (vanillaJob != null)
+                {
+                    AddClusterNeeder(vanillaJob.targetB.Thing, def, pawn, forced, clusterNeeders, ref clusterNeed);
+                    if (vanillaJob.targetQueueB != null)
+                        for (int i = 0; i < vanillaJob.targetQueueB.Count; i++)
+                            AddClusterNeeder(vanillaJob.targetQueueB[i].Thing, def, pawn, forced, clusterNeeders, ref clusterNeed);
+                }
+                // HD's own discovery (the actual fix): same-material sites near the primary that vanilla's
+                // one-armful batch left out, nearest-first, until the combined demand fills one trip.
+                ScanNearbyNeeders(pawn, needer, def, forced, maxLoadUnits, clusterNeeders, ref clusterNeed);
                 // Worth-it: 2+ distinct sites still needing material AND combined demand beats one hand-load.
                 multiSite = ConstructDeliveryPlan.MultiSiteWorthIt(clusterNeeders.Count, clusterNeed, handCap);
                 if (!multiSite)
@@ -157,19 +188,6 @@ namespace HaulersDream
             if (RouteIntent == ConstructRouteIntent.HaulBuild && RouteDemandByDef != null
                 && RouteDemandByDef.TryGetValue(def, out int routeNeed) && routeNeed > gatherNeed)
                 gatherNeed = routeNeed;
-
-            float maxCap = MassUtility.Capacity(pawn);
-            if (maxCap <= 0f)
-                return null;
-            float baseCap = CarryMath.EffectiveCapacity(maxCap, s.carryLimitFraction);
-            float cur = MassUtility.GearAndInventoryMass(pawn);
-            float unit = def.GetStatValueAbstract(StatDefOf.Mass);
-            if (unit <= 0f)
-                return null;
-            // Pawn-aware (NoOverloadFor): strict / slider-Off / CE — and an ANIMAL (non-mech non-humanlike,
-            // never slowed by StatPart) must not gather past its plain limit penalty-free. Player mechs DO
-            // overload here and are slowed for it, like colonists.
-            int level = OverloadGate.NoOverloadFor(pawn, s) ? OverloadTuning.OffLevel : s.overloadLevel;
 
             int ceiling = ConstructDeliveryPlan.GatherCeiling(level, maxCap, baseCap, cur, unit, gatherNeed);
             if (!forced && ceiling <= handCap)
@@ -346,6 +364,72 @@ namespace HaulersDream
                 return;
             outNeeders.Add(cand);
             clusterNeed += need;
+        }
+
+        /// <summary>Radius (cells) around the primary site within which HD looks for additional same-material
+        /// construction sites to batch into one inventory load. Generous (vanilla batches only an 8-tile radius),
+        /// but the real bound is one overloaded trip's worth of demand, applied nearest-first.</summary>
+        private const float ClusterScanRadius = 24f;
+
+        /// <summary>
+        /// HD-owned nearby-needer discovery for multi-site delivery. Vanilla's FindNearbyNeeders caps its batch at
+        /// ONE hand-load of demand, so the pawn could otherwise never load inventory for more sites than a single
+        /// armful covers. Here we scan same-material constructibles ourselves — blueprints + frames within
+        /// <see cref="ClusterScanRadius"/> of <paramref name="primary"/>, NEAREST-FIRST — accumulating each site's
+        /// remaining need into <paramref name="clusterNeed"/> until it reaches <paramref name="maxLoadUnits"/> (one
+        /// overloaded trip's worth; the driver re-serves any overflow on its next job). The (more expensive)
+        /// constructability check is applied lazily in nearest-first order, so a big build only pays it for the
+        /// closest sites until the load fills.
+        /// </summary>
+        private static void ScanNearbyNeeders(Pawn pawn, Thing primary, ThingDef def, bool forced, int maxLoadUnits,
+            List<Thing> outNeeders, ref int clusterNeed)
+        {
+            if (clusterNeed >= maxLoadUnits)
+                return;
+            var map = pawn.Map;
+            var anchor = primary.Position;
+            float radiusSq = ClusterScanRadius * ClusterScanRadius;
+            var scan = new List<Thing>();
+            CollectConstructibles(map, ThingRequestGroup.Blueprint, def, pawn, anchor, radiusSq, outNeeders, scan);
+            CollectConstructibles(map, ThingRequestGroup.BuildingFrame, def, pawn, anchor, radiusSq, outNeeders, scan);
+            // Nearest-first so the closest sites are queued before the load ceiling is reached.
+            scan.Sort((a, b) =>
+                (a.Position - anchor).LengthHorizontalSquared.CompareTo((b.Position - anchor).LengthHorizontalSquared));
+            for (int i = 0; i < scan.Count && clusterNeed < maxLoadUnits; i++)
+            {
+                var t = scan[i];
+                // Mirror vanilla IsNewValidNearbyNeeder: deliverable/constructible by this pawn (skills unchecked;
+                // forced:false — these are opportunistic extras, not the explicitly clicked target).
+                if (!GenConstruct.CanConstruct(t, pawn, checkSkills: false, forced: false, JobDefOf.HaulToContainer))
+                    continue;
+                AddClusterNeeder(t, def, pawn, forced, outNeeders, ref clusterNeed);
+            }
+        }
+
+        /// <summary>
+        /// Append spawned constructibles of <paramref name="group"/> that still need <paramref name="def"/>, lie
+        /// within <paramref name="radiusSq"/> of <paramref name="anchor"/>, aren't already queued, and pass the
+        /// cheap nearby-needer validity (player faction, not forbidden, not a Blueprint_Install). The expensive
+        /// <c>GenConstruct.CanConstruct</c> + need/dedup are finalized by the caller after the nearest-first sort.
+        /// </summary>
+        private static void CollectConstructibles(Map map, ThingRequestGroup group, ThingDef def, Pawn pawn,
+            IntVec3 anchor, float radiusSq, List<Thing> alreadyQueued, List<Thing> outScan)
+        {
+            var things = map.listerThings.ThingsInGroup(group);
+            for (int i = 0; i < things.Count; i++)
+            {
+                var t = things[i];
+                if (t == null || !t.Spawned || t is Blueprint_Install || !(t is IConstructible ic))
+                    continue;
+                if ((t.Position - anchor).LengthHorizontalSquared > radiusSq)
+                    continue;
+                if (t.Faction != pawn.Faction || t.IsForbidden(pawn))
+                    continue;
+                if (ic.ThingCountNeeded(def) <= 0)
+                    continue;
+                if (!alreadyQueued.Contains(t))
+                    outScan.Add(t);
+            }
         }
 
         /// <summary>Drop trailing stacks once the kept stacks already cover <paramref name="target"/> units.</summary>
