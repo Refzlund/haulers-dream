@@ -212,6 +212,18 @@ namespace HaulersDream
             float massLeft = tripMass; // shrinks as stacks are committed (destination + pawn mass headroom)
 
             var pool = BulkHaul.BuildPool(pawn, loadable.GetParentThing(), map, MinSearchRadius * PoolRadiusHops);
+            // STORAGE COMPATIBILITY (Storage Network, shelves, deep storage, plain stockpiles): BuildPool draws ONLY
+            // from the loose-haulables lister (things NOT in valid storage), so when the manifest goods live in a
+            // storage building the sweep finds nothing and the pawn falls back to vanilla's one-stack-per-trip
+            // loading ("takes 1 pack instead of everything they need"). Add the spawned, in-storage stacks of the
+            // CLAIMABLE manifest defs so HD bulk-loads them too — exactly the defs vanilla's loader would pull from
+            // storage anyway. Everything downstream stays bounded: the per-stack DeliverableUnits / claim-ledger
+            // clamps and the existing per-candidate gate (reachable / reservable / not-forbidden, via TryQualify)
+            // still apply, and the deposit goes INTO the transporter, so this can only let the pawn load manifest
+            // items it is already allowed to load — never more, never stranded. Items a storage holds OFF-MAP (not
+            // Spawned) are skipped (the driver picks up via SplitOff, which needs a spawned stack), so for any
+            // storage type HD can't physically pull from, this is a safe no-op rather than a broken pickup.
+            AddStoredClaimables(pool, claimable, map);
             var claimedByOthers = RouteSelection.ClaimedByOtherPawns(pawn);
 
             // Reused working sets (Cleared at use), copied into the fresh job-owned queues below.
@@ -249,6 +261,39 @@ namespace HaulersDream
             if (s.verboseLogging)
                 HDLog.Dbg($"TransportLoad: {pawn} sweeping {things.Count} stacks for group {loadable.GetUniqueLoadID()} (~{running:0.#}kg).");
             return job;
+        }
+
+        /// <summary>
+        /// Append the spawned, on-map stacks of the CLAIMABLE manifest defs that <see cref="BulkHaul.BuildPool"/>
+        /// omits because they sit in valid storage (a stockpile, shelf, deep-storage cell, or a storage-mod building
+        /// such as Storage Network). Dedups against the loose pool already built. PURE — no reservations; the
+        /// eligibility + per-stack clamp run later in <see cref="NearestEligible"/>/<see cref="TryQualify"/>, exactly
+        /// as for the loose candidates. Only adds Spawned, on-map things (the driver picks up via <c>SplitOff</c>,
+        /// which needs a spawned stack); items a storage holds off-map are correctly skipped (safe no-op).
+        /// </summary>
+        private static void AddStoredClaimables(List<Thing> pool, Dictionary<ThingDef, int> claimable, Map map)
+        {
+            if (pool == null || claimable == null || map == null)
+                return;
+            // Dedup against the loose pool in one pass (the loose pool of a claimable def overlaps ThingsOfDef).
+            var seen = new HashSet<Thing>(pool);
+            foreach (var kv in claimable)
+            {
+                var def = kv.Key;
+                if (def == null || kv.Value <= 0)
+                    continue;
+                var things = map.listerThings.ThingsOfDef(def);
+                for (int i = 0; i < things.Count; i++)
+                {
+                    var t = things[i];
+                    if (t == null || !t.Spawned || t.Map != map)
+                        continue;
+                    if (t.ParentHolder is Pawn_InventoryTracker)
+                        continue; // a pawn's carried inventory is not a load source on this sweep
+                    if (seen.Add(t))
+                        pool.Add(t);
+                }
+            }
         }
 
         // Nearest pool candidate of a CLAIMABLE def within reach, clamped per-stack via DeliverableUnits under the
