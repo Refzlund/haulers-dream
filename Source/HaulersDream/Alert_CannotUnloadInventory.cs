@@ -206,8 +206,8 @@ namespace HaulersDream
             // mis-report EVERY surplus stack as a "no destination" black hole. Decide the fault by PACK-ANIMAL
             // availability instead. The opportunistic offload requires the auto-unload master (markForUnload) +
             // the caravan toggle (autoDivertToPackAnimal) + the mod being active on non-home maps; with any of
-            // those off, the loot legitimately rides home in inventory (not a fault). A non-home POCKET map WITH
-            // player storage (an RV interior) is NOT this case — it unloads to its shelves like home, so it falls
+            // those off, the loot legitimately rides home in inventory (not a fault). Any non-home map WITH player
+            // storage (a VF RV interior) is NOT this case — it unloads to its shelves like home, so it falls
             // through to Condition A's storage probe (ShouldUnloadToStorage). While the RV's shelves have room the
             // probe finds them and raises no fault; only when they are genuinely FULL does the alert surface "stuck
             // load" — which is truthful (the driver is benignly holding the load because there's nowhere to put it).

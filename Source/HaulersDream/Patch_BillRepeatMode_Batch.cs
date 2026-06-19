@@ -102,9 +102,11 @@ namespace HaulersDream
         static void Postfix(Bill_Production __instance, ref string __result)
         {
             var comp = HaulersDreamGameComponent.Instance;
-            // Gate on CanBatch too: a bill flagged in an older save whose recipe is no longer batchable (e.g. a meal
-            // — mixing recipes are now excluded) still carries the flag but routes as vanilla, so don't show a
-            // misleading "×N" marker the batch driver will never honour.
+            // Gate on CanBatch too: a bill flagged in a save whose recipe is NOT batchable (smelting / take-entire-
+            // stacks / unfinished-thing / a non-Bill_Production) still carries the flag but routes as vanilla, so
+            // don't show a misleading "×N" marker the batch driver will never honour. NOTE: mixing recipes (cooked
+            // meals, kibble, pemmican, chemfuel, beer) ARE batchable now via the mix-aware per-rep value-fill path,
+            // so CanBatch returns true for them and the marker correctly shows.
             if (comp != null && comp.IsBatchBill(__instance) && CraftBatchPlanner.CanBatch(__instance))
                 __result = "HaulersDream.Batch.RowMarker".Translate(comp.BatchSizeOf(__instance)) + __result;
         }

@@ -104,10 +104,15 @@ namespace HaulersDream
                 return null;
 
             // Vanilla's own "find enough reservable fuel near the target" — same reachability / reservability /
-            // fogged / filter checks vanilla uses, so the picked set matches. Returns null/empty if not enough fuel
-            // is reachable+reservable.
+            // fogged / filter checks vanilla uses, so the picked set matches. The IntRange is min=1, max=deficit:
+            // min=1 mirrors vanilla's single-stack tolerance (the finder returns its chosen list once the accumulated
+            // quantity reaches the min), so we accept a PARTIAL sweep whenever ANY reachable+reservable fuel exists —
+            // a deficit==min==max would instead demand the WHOLE remaining deficit be reachable in one pass, which a
+            // high-capacity refuelable (e.g. a large bulk-fed pot) rarely satisfies, returning null and dead-ending the
+            // bulk job. max=deficit still caps accumulation at the deficit; a partial sweep deposits what it carries and
+            // a later trip tops up the rest (the driver re-tags leftovers for the normal unload, so no over-pick).
             var fuels = RefuelWorkGiverUtility.FindEnoughReservableThings(
-                pawn, refuelable.Position, new IntRange(deficit, deficit), t => filter.Allows(t));
+                pawn, refuelable.Position, new IntRange(1, deficit), t => filter.Allows(t));
 
             // WORTH-IT: vanilla already handles a single-stack refuel in one trip, so HD only adds value when 2+
             // stacks (2+ vanilla walks) are needed. Null / 0 / 1 stack -> leave vanilla's path.

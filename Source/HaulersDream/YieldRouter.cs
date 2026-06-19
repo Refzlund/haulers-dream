@@ -4,6 +4,7 @@ using HaulersDream.Core;
 using RimWorld;
 using Verse;
 using Verse.AI;
+using Verse.AI.Group;
 
 namespace HaulersDream
 {
@@ -293,8 +294,8 @@ namespace HaulersDream
             // On a non-home / temporary map with no player storage there is nowhere to unload — divert the heavy
             // load onto the nearest owned pack animal instead (auto-divert), so the pawn doesn't keep working
             // over-encumbered. (keepWorkingWhenFull does NOT apply here: on a temp map there is no storage to
-            // "unload before the next relocation" to — the only place the load can go is the carrier.) A non-home
-            // POCKET map WITH player storage (an RV interior) instead falls through to the forced storage unload
+            // "unload before the next relocation" to — the only place the load can go is the carrier.) Any non-home
+            // map WITH player storage (a VF RV interior) instead falls through to the forced storage unload
             // below, exactly like home — ShouldUnloadToStorage gates that.
             if (pawn?.Map != null && !MapGate.ShouldUnloadToStorage(pawn.Map))
             {
@@ -795,6 +796,20 @@ namespace HaulersDream
                 return false;
             var s = HaulersDreamMod.Settings;
             if (s == null)
+                return false;
+            // #4 Lord-activity stand-down: a pawn under a Lord is in a DIRECTED group activity — a ritual/ceremony
+            // (the gatherer carries bioferrite / other offerings into its inventory ON PURPOSE, and a psychic-
+            // ritual offering toil reads pawn.inventory directly), caravan forming, a party / marriage / gathering,
+            // a hunt or defend assignment, a quest lord, etc. HD must never autonomously scoop INTO, ADOPT, or
+            // EMPTY such a pawn's inventory — doing so steals the ritual offering (the bug report) or disassembles
+            // a forming caravan's hand-loaded cargo. GetLord()!=null SUBSUMES IsFormingCaravan (verified:
+            // IsFormingCaravan == GetLord() + a LordJob_FormAndSendCaravan), so this one gate covers every Lord-
+            // directed activity — vanilla, DLC (Ideology rituals, Anomaly psychic rituals), and modded — without
+            // enumerating LordJob types. This is the AUTONOMOUS eligibility gate; explicit PLAYER orders are
+            // unaffected, because every forced path bypasses IsEligible (PawnUnloadChecker's forced unload short-
+            // circuits with `forced ||`; BulkRefuel / TransportLoad pass playerOrder; a forced HaulNearby degrades
+            // to a plain vanilla haul). Once the Lord ends (GetLord()==null) HD resumes normally next interval.
+            if (p.GetLord() != null)
                 return false;
             bool eligible = EligibilityPolicy.IsEligible(
                 isMechanoid: p.RaceProps.IsMechanoid,

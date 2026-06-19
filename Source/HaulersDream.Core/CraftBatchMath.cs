@@ -123,5 +123,91 @@ namespace HaulersDream.Core
             int r = Min(Min(requested, byAvailability), Min(byMass, byTimeout));
             return r < 0 ? 0 : r;
         }
+
+        // ---- MIXING-recipe math (allowMixingIngredients == true: meals, kibble, pemmican, chemfuel, beer) ----
+        //
+        // A mixing recipe fills ONE ingredient slot from MULTIPLE candidate defs by VALUE (nutrition for food,
+        // "value-per-unit" generally), greedily, PER REP from CURRENT stock — vanilla's
+        // WorkGiver_DoBill.TryFindBestBillIngredientsInSet_AllowMix walks the value-sorted candidates and, for each,
+        // takes Min(CeilToInt(remainingValue / valuePerUnit), stackCount) until the slot's GetBaseCount value target
+        // is met. The NoMix batch plan freezes one def per slot for all reps; a MIXING slot cannot be frozen because
+        // each rep draws a fresh mix from whatever stock remains. So the batch driver RECOMPUTES the mix per rep via
+        // MixFill (below) and the planner sizes the batch by VALUE via MixAvailableReps. Both are pure / Verse-free;
+        // the RimWorld layer reads each candidate def's value-per-unit + available unit count and feeds them in.
+
+        /// <summary>
+        /// Greedily fill a single mixing ingredient slot to <paramref name="target"/> total VALUE from the supplied
+        /// candidate defs, mirroring vanilla's AllowMix per-slot fill EXACTLY: walk the candidates IN THE GIVEN ORDER
+        /// (the caller pre-sorts them — value-per-unit ascending like vanilla, or spoiling-first), and for each take
+        /// <c>Min(availableUnits, Ceil(remaining / valuePerUnit))</c> units, decrementing the remaining value by the
+        /// units taken × their value-per-unit, stopping once the target is met. A candidate with value-per-unit
+        /// &lt;= 0 or zero available units contributes nothing (skipped). Pure — no Verse types, unit-testable.
+        ///
+        /// The <c>- EPS</c> inside the ceiling guards float noise: an EXACT multiple (target 1.0, value-per-unit 0.5)
+        /// yields exactly 2 units, never an over-rounded 3. EPS == 1e-4 matches vanilla's <c>0.0001f</c> threshold.
+        ///
+        /// NOTE (per-def, not per-stack): vanilla rounds the ceiling PER THING (stack), so a def split across several
+        /// floor stacks can round up once per stack; this aggregates a def's units into ONE candidate bucket and
+        /// rounds once per def. That is the intended shape for the batch driver — it consumes per def, so a single
+        /// ceil per def is the faithful (and slightly tighter) equivalent. The result <see cref="MixFill.filled"/>
+        /// flag lets the caller refuse a rep it cannot complete (vanilla's "missingIngredients" / return-false case).
+        /// </summary>
+        public static MixFill MixFillSlot(double target,
+            System.Collections.Generic.IReadOnlyList<double> valuePerUnit,
+            System.Collections.Generic.IReadOnlyList<int> availableUnits)
+        {
+            int n = valuePerUnit?.Count ?? 0;
+            var counts = new int[n];
+            const double EPS = 1e-4;
+            double remaining = target;
+            // A non-positive value target is trivially satisfied (take nothing) — matches vanilla's `num2 <= 0.0001f`
+            // short-circuit before the first candidate.
+            if (target <= EPS)
+                return new MixFill { counts = counts, filled = true, remaining = 0.0 };
+            for (int i = 0; i < n; i++)
+            {
+                if (remaining <= EPS)
+                    break;
+                double vpu = valuePerUnit[i];
+                if (vpu <= 0.0)
+                    continue; // a valueless candidate can never reduce the remaining value → skip (avoids /0)
+                int avail = (availableUnits != null && i < availableUnits.Count) ? availableUnits[i] : 0;
+                if (avail <= 0)
+                    continue;
+                // Take just enough to cover the remaining value (Ceil), but never more than is available. The `- EPS`
+                // keeps an exact multiple from rounding up an extra unit (Ceil(1.0/0.5 - eps) == 2, not 3).
+                int take = Min(avail, (int)System.Math.Ceiling((remaining / vpu) - EPS));
+                if (take < 0)
+                    take = 0;
+                counts[i] = take;
+                remaining -= take * vpu;
+            }
+            return new MixFill { counts = counts, filled = remaining <= EPS, remaining = remaining };
+        }
+
+        /// <summary>Alias type name kept short for call sites: the result of <see cref="MixFillSlot"/>.</summary>
+        public struct MixFill
+        {
+            public int[] counts;
+            public bool filled;
+            public double remaining;
+        }
+
+        /// <summary>
+        /// Reps a single mixing ingredient slot supports by VALUE: <c>floor(totalAvailableValue / perRepValue)</c>
+        /// (the slot consumes <paramref name="perRepValue"/> total value per rep, drawn from a shared pool of
+        /// <paramref name="totalAvailableValue"/> across all its candidate defs). A slot needing no value
+        /// (<paramref name="perRepValue"/> &lt;= 0) imposes no limit (<c>int.MaxValue</c>); the batch is bounded by
+        /// the SCARCEST slot. Floored at 0.
+        /// </summary>
+        public static int MixAvailableReps(double perRepValue, double totalAvailableValue)
+        {
+            if (perRepValue <= 0.0)
+                return int.MaxValue;
+            if (totalAvailableValue <= 0.0)
+                return 0;
+            int r = (int)System.Math.Floor(totalAvailableValue / perRepValue);
+            return r < 0 ? 0 : r;
+        }
     }
 }

@@ -107,8 +107,8 @@ namespace HaulersDream
             // relaxing at the campsite, the same way the home pawn puts it in storage. Same downtime trigger
             // and per-activity toggle (markForUnload + the `enabled` gate above); the caravan toggle + carrier
             // availability gate live inside TryGetOpportunisticLoadJob (which also makes its own reservations /
-            // NotifyDiverted). When no usable pack animal is reachable it returns null -> loot rides home. A
-            // non-home POCKET map WITH player storage (an RV interior) falls through to the storage-unload job
+            // NotifyDiverted). When no usable pack animal is reachable it returns null -> loot rides home. Any
+            // non-home map WITH player storage (a VF RV interior) falls through to the storage-unload job
             // below instead (ShouldUnloadToStorage true), so the pawn sheds into its shelves before downtime.
             if (!MapGate.ShouldUnloadToStorage(pawn.Map))
                 return PackAnimalLoad.TryGetOpportunisticLoadJob(pawn);
@@ -405,8 +405,8 @@ namespace HaulersDream
             // storage, on the SAME end-of-run timing the home pawn uses (the settle gate above is shared). The
             // caravan toggle + eligibility + carrier + cooldown gates (and the reservations / NotifyDiverted)
             // live inside TryGetOpportunisticLoadJob; it returns null (loot rides home) when no usable pack
-            // animal is reachable. The work node wraps any non-null job into its ThinkResult unchanged. A non-home
-            // POCKET map WITH player storage (an RV interior) falls through to the storage-unload job below
+            // animal is reachable. The work node wraps any non-null job into its ThinkResult unchanged. Any non-home
+            // map WITH player storage (a VF RV interior) falls through to the storage-unload job below
             // (ShouldUnloadToStorage true), delivering the end-of-run load into its shelves.
             if (!MapGate.ShouldUnloadToStorage(pawn.Map))
                 return PackAnimalLoad.TryGetOpportunisticLoadJob(pawn);

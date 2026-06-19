@@ -181,5 +181,144 @@ namespace HaulersDream.Tests
             int byTimeout = CraftBatchMath.RepsByTimeout(ticksPerRep: 1300, timeoutTicks: 5000);    // 3
             Assert.That(CraftBatchMath.Resolve(12, byAvail, byMass, byTimeout), Is.EqualTo(3));      // timeout is the binding cap
         }
+
+        // ---- Mixing-recipe math (allowMixingIngredients: cooked meals, kibble, pemmican, chemfuel, beer) ----
+
+        /// <summary>An INDEPENDENT, different-looking reimplementation of the greedy per-slot value-fill — used to
+        /// oracle-check <see cref="CraftBatchMath.MixFillSlot"/>. Walks the candidates in order, takes the integer
+        /// number of units needed to cover the remaining value (rounding UP, but never an exact-multiple extra),
+        /// clamped to availability, and stops once the value target is (numerically) met. Returns the counts and
+        /// reports <paramref name="filled"/> via an out-param (no value tuples — matches the codebase's style).</summary>
+        private static int[] MixFillOracle(double target, double[] vpu, int[] avail, out bool filled)
+        {
+            const double eps = 1e-4;
+            int n = vpu.Length;
+            var counts = new int[n];
+            double rem = target;
+            if (target > eps)
+            {
+                for (int i = 0; i < n; i++)
+                {
+                    if (rem <= eps) break;
+                    if (vpu[i] <= 0.0 || avail[i] <= 0) continue;
+                    // How many whole units cover the remaining value? rem/vpu, rounded up — but if rem is (within eps)
+                    // an exact multiple of vpu, take exactly that many, not one more. Computed with a different shape
+                    // than the production code (an explicit floor + fractional-remainder test) so a shared bug is unlikely.
+                    double exact = rem / vpu[i];
+                    int floor = (int)System.Math.Floor(exact + eps);     // exact multiple → the multiple itself
+                    int need = (exact - floor > eps) ? floor + 1 : floor; // any real shortfall → one more unit
+                    if (need < 0) need = 0;
+                    int take = System.Math.Min(avail[i], need);
+                    counts[i] = take;
+                    rem -= take * vpu[i];
+                }
+            }
+            filled = rem <= eps;
+            return counts;
+        }
+
+        [Test]
+        public void MixFillSlot_MatchesIndependentOracle_OverManyRandomCases()
+        {
+            // Fixed-seed System.Random (NOT Verse.Rand — Core is Verse-free + deterministic) so the case set is
+            // reproducible. Vary candidate count, value target, value-per-unit (incl. a zero), and availability
+            // (incl. zero + genuine shortage), and assert MixFillSlot agrees with the oracle on counts AND filled.
+            var rng = new System.Random(12345);
+            for (int iter = 0; iter < 5000; iter++)
+            {
+                int n = 1 + rng.Next(5); // 1..5 candidates
+                var vpu = new double[n];
+                var avail = new int[n];
+                for (int i = 0; i < n; i++)
+                {
+                    // ~1 in 6 candidates is valueless (0 vpu) → must be skipped; others get a coarse fractional vpu.
+                    vpu[i] = (rng.Next(6) == 0) ? 0.0 : System.Math.Round(0.05 + rng.NextDouble() * 1.45, 2);
+                    // ~1 in 5 candidates has zero stock; others 0..20 units.
+                    avail[i] = (rng.Next(5) == 0) ? 0 : rng.Next(21);
+                }
+                double target = System.Math.Round(rng.NextDouble() * 6.0, 2); // 0..6 value (incl. 0 sometimes)
+
+                var got = CraftBatchMath.MixFillSlot(target, vpu, avail);
+                var oracleCounts = MixFillOracle(target, vpu, avail, out bool oracleFilled);
+
+                Assert.That(got.filled, Is.EqualTo(oracleFilled),
+                    $"filled mismatch @iter {iter}: target={target}, vpu=[{string.Join(",", vpu)}], avail=[{string.Join(",", avail)}]");
+                Assert.That(got.counts, Is.EqualTo(oracleCounts),
+                    $"counts mismatch @iter {iter}: target={target}, vpu=[{string.Join(",", vpu)}], avail=[{string.Join(",", avail)}]");
+            }
+        }
+
+        [Test]
+        public void MixFillSlot_SingleDef_ExactMultiple_NoOverRound()
+        {
+            // target 1.0 value, 0.5 value/unit, 10 available → EXACTLY 2 units (1.0 value), not 3 (the `- EPS` guard).
+            var r = CraftBatchMath.MixFillSlot(1.0, new[] { 0.5 }, new[] { 10 });
+            Assert.That(r.counts, Is.EqualTo(new[] { 2 }));
+            Assert.That(r.filled, Is.True);
+        }
+
+        [Test]
+        public void MixFillSlot_SingleDef_CeilRounding()
+        {
+            // target 0.6, 0.5 value/unit → ceil(1.2) = 2 units (1.0 value ≥ 0.6) → filled.
+            var r = CraftBatchMath.MixFillSlot(0.6, new[] { 0.5 }, new[] { 10 });
+            Assert.That(r.counts, Is.EqualTo(new[] { 2 }));
+            Assert.That(r.filled, Is.True);
+        }
+
+        [Test]
+        public void MixFillSlot_MultiDef_SpansCandidatesInOrder()
+        {
+            // target 1.0; candidate0 (0.5/unit, only 1 avail) covers 0.5 → remaining 0.5; candidate1 (0.4/unit, plenty)
+            // needs ceil(0.5/0.4) = ceil(1.25) = 2 units (0.8 value) → filled. counts = [1, 2].
+            var r = CraftBatchMath.MixFillSlot(1.0, new[] { 0.5, 0.4 }, new[] { 1, 10 });
+            Assert.That(r.counts, Is.EqualTo(new[] { 1, 2 }));
+            Assert.That(r.filled, Is.True);
+        }
+
+        [Test]
+        public void MixFillSlot_Infeasible_NotEnoughStock()
+        {
+            // target 5.0 value but only 4 units of a 0.5/unit def = 2.0 value available → can't fill. counts take all 4,
+            // filled is false (remaining 3.0 > EPS) so the caller refuses this rep.
+            var r = CraftBatchMath.MixFillSlot(5.0, new[] { 0.5 }, new[] { 4 });
+            Assert.That(r.counts, Is.EqualTo(new[] { 4 }));
+            Assert.That(r.filled, Is.False);
+            Assert.That(r.remaining, Is.EqualTo(3.0).Within(1e-6));
+        }
+
+        [Test]
+        public void MixFillSlot_ZeroValueCandidate_IsSkipped()
+        {
+            // candidate0 is valueless (0 vpu) → skipped entirely; candidate1 (0.5/unit) fills the target.
+            var r = CraftBatchMath.MixFillSlot(1.0, new[] { 0.0, 0.5 }, new[] { 99, 10 });
+            Assert.That(r.counts, Is.EqualTo(new[] { 0, 2 }));
+            Assert.That(r.filled, Is.True);
+        }
+
+        [Test]
+        public void MixFillSlot_ZeroTarget_TakesNothing()
+        {
+            // A non-positive value target is satisfied by taking nothing (matches vanilla's pre-loop short-circuit).
+            var r = CraftBatchMath.MixFillSlot(0.0, new[] { 0.5, 0.4 }, new[] { 10, 10 });
+            Assert.That(r.counts, Is.EqualTo(new[] { 0, 0 }));
+            Assert.That(r.filled, Is.True);
+        }
+
+        [Test]
+        public void MixAvailableReps_FloorsByValue()
+        {
+            Assert.That(CraftBatchMath.MixAvailableReps(perRepValue: 0.9, totalAvailableValue: 5.0), Is.EqualTo(5)); // 5×0.9=4.5 ≤ 5
+            Assert.That(CraftBatchMath.MixAvailableReps(0.9, 0.8), Is.EqualTo(0));   // not even one rep's value
+            Assert.That(CraftBatchMath.MixAvailableReps(2.0, 10.0), Is.EqualTo(5));  // exact
+        }
+
+        [Test]
+        public void MixAvailableReps_NoValueNeed_IsUnbounded_AndNegativesFloor()
+        {
+            Assert.That(CraftBatchMath.MixAvailableReps(perRepValue: 0.0, totalAvailableValue: 5.0), Is.EqualTo(int.MaxValue));
+            Assert.That(CraftBatchMath.MixAvailableReps(-1.0, 5.0), Is.EqualTo(int.MaxValue));
+            Assert.That(CraftBatchMath.MixAvailableReps(0.5, 0.0), Is.EqualTo(0));
+        }
     }
 }

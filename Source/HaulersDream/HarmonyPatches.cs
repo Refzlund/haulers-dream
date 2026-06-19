@@ -341,8 +341,8 @@ namespace HaulersDream
                 action = () =>
                 {
                     // On a non-home / temporary map with no player storage the gizmo loads the nearest pack animal
-                    // with the carried loot instead of the (no-op) storage unload. A non-home POCKET map WITH
-                    // player storage (an RV interior) uses the storage unload like home (ShouldUnloadToStorage),
+                    // with the carried loot instead of the (no-op) storage unload. Any non-home map WITH player
+                    // storage (a VF RV interior) uses the storage unload like home (ShouldUnloadToStorage),
                     // so the manual button delivers into its shelves instead of hunting a non-existent carrier.
                     if (__instance.Map != null && !MapGate.ShouldUnloadToStorage(__instance.Map))
                         PackAnimalLoad.GizmoLoadNearest(__instance);

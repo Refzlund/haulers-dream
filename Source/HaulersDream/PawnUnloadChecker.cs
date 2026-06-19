@@ -4,6 +4,7 @@ using RimWorld;
 using RimWorld.Planet;
 using Verse;
 using Verse.AI;
+using Verse.AI.Group;
 
 namespace HaulersDream
 {
@@ -39,6 +40,18 @@ namespace HaulersDream
             // so our finish action would enqueue into the freshly emptied queue.) The gizmo is a no-op while
             // drafted too; after undrafting, the idle backstop / interval / a fresh gizmo press recovers.
             if (pawn.Drafted)
+                return;
+
+            // #4 Lord-activity stand-down (AUTOMATIC only): a pawn under a Lord is in a directed group activity —
+            // a ritual (its offering, e.g. bioferrite for an Anomaly psychic ritual, sits in inventory ON PURPOSE
+            // and a gather toil reads pawn.inventory directly), caravan forming, a party / marriage / gathering, a
+            // quest lord. An automatic unload queued now would ship that purposeful inventory off to storage before
+            // the activity consumes it (the reported "pawns empty their inventory before the ritual → ritual fails"
+            // bug). YieldRouter.IsEligible also returns false for a Lord pawn (so the `eligible` gate below stands
+            // the autonomous adopt+unload down independently), but this explicit early-out makes the intent
+            // unmissable and also suppresses an autonomous unload of ALREADY-TAGGED loot mid-activity. A FORCED
+            // unload (the "unload now" gizmo, the bulk-haul finish flush) is a deliberate override and still runs.
+            if (!forced && InLordActivity(pawn))
                 return;
 
             // A pawn mid bill-prep-gather is CARRYING INGREDIENTS TO A BENCH ON PURPOSE — an auto-unload queued now
@@ -142,7 +155,7 @@ namespace HaulersDream
                         // timing as the home storage path (so F38's accumulate-during-work holds);
                         // TryGetOpportunisticLoadJob adds the caravan toggle + carrier gate and builds the
                         // deposit-only load job (null -> no usable carrier, loot just rides home in inventory).
-                        // A non-home POCKET map WITH player storage (a Vehicle Framework RV interior) is the
+                        // Any non-home map WITH player storage (a Vehicle Framework RV interior) is the
                         // exception: ShouldUnloadToStorage is true there, so it falls through to the storage-unload
                         // driver below — which delivers to the RV's shelves (and keeps the load tagged in inventory,
                         // never looping, if they are full). Without this an RV pawn forked here, found no reachable
@@ -188,6 +201,14 @@ namespace HaulersDream
             }
         }
 
+        /// <summary>True if the pawn is currently under a Lord — i.e. engaged in a DIRECTED group activity (a
+        /// ritual/ceremony, caravan forming, a party/gathering/marriage, a quest lord). <c>GetLord()!=null</c>
+        /// subsumes <see cref="CaravanFormingUtility.IsFormingCaravan"/> (which is itself a GetLord + LordJob check),
+        /// so it is the single robust signal that HD's autonomous inventory manipulation must stand down — the
+        /// pawn's inventory is purposeful (an offering, hand-loaded cargo) and must not be scooped/adopted/emptied.
+        /// Vanilla + DLC + modded Lord activities are all covered without enumerating LordJob types.</summary>
+        internal static bool InLordActivity(Pawn p) => p?.GetLord() != null;
+
         /// <summary>
         /// Surplus adoption: tag inventory stacks with surplus above the pawn's keep-stock, so stock HD never
         /// scooped (trade / mod / manual) is unloaded by the normal tag-scoped pass. <paramref name="adoptAll"/>
@@ -202,6 +223,14 @@ namespace HaulersDream
         {
             var inner = pawn.inventory?.innerContainer;
             if (inner == null || comp == null)
+                return;
+            // #4 Lord-activity stand-down (REQUIRED here even though the autonomous caller is already gated): the
+            // FORCED unload path reaches AdoptSurplusInventory with eligible==true (forced) and only !IsFormingCaravan
+            // — so a ritual pawn (a Lord, but NOT forming a caravan) would have its untagged offering ADOPTED (tagged)
+            // and then shipped off. Guarding here makes adoption never touch ANY Lord-directed pawn's purposeful
+            // inventory, regardless of caller or forced flag. (GetLord()!=null subsumes the existing IsFormingCaravan
+            // gate at the call site.)
+            if (pawn.GetLord() != null)
                 return;
             var settings = HaulersDreamMod.Settings;
             int adopted = 0;

@@ -41,19 +41,22 @@ namespace HaulersDream
         /// <summary>
         /// True if a carrying pawn on <paramref name="map"/> should unload to MAP STORAGE (HD's storage-unload
         /// driver) rather than onto a pack animal. The old code treated every map as a strict binary —
-        /// <c>IsPlayerHome</c> (storage) vs <c>!IsPlayerHome</c> (pack-animal safeguard) — but a Vehicle Framework
-        /// RV interior is the unhandled THIRD kind: a PERSISTENT pocket sub-map that is <c>!IsPlayerHome</c> yet
-        /// full of player shelves/zones. Routing such a pawn straight to the pack-animal path dead-ended (no
-        /// carrier reachable inside the RV → nothing unloaded → it kept scooping and looping). So:
+        /// <c>IsPlayerHome</c> (storage) vs <c>!IsPlayerHome</c> (pack-animal safeguard); a first fix narrowed the
+        /// non-home storage case to <c>IsPocketMap &amp;&amp; HasPlayerStorage</c> to catch a Vehicle Framework RV
+        /// interior — but that was WRONG: a VF RV interior is NOT a pocket map (<see cref="Map.IsPocketMap"/> is a
+        /// hard <c>info.isPocketMap</c> flag VF never sets), so the <c>IsPocketMap</c> conjunction excluded the
+        /// exact case it was meant to fix and the pick-up/drop loop persisted. The real discriminator is simply
+        /// "does this map have PLAYER storage?", not "is it a pocket map". So:
         /// <list type="bullet">
         /// <item>player-home map → always true (unchanged);</item>
-        /// <item>non-home POCKET map WITH player storage (an RV interior) → true — the FIX: deliver to its shelves;</item>
-        /// <item>everything else (transient caravan/raid camp, a storage-less hostile pocketmap like an undercave)
-        ///       → false — the loot still goes onto a pack animal / rides home in inventory, exactly as before.</item>
+        /// <item>any OTHER map WITH player storage (a VF RV interior, a settled-in away camp the player gave
+        ///       shelves/zones) → true — deliver to that storage (the FIX);</item>
+        /// <item>a storage-less map (a transient caravan/raid camp, a hostile pocketmap like an undercave) → false
+        ///       — the loot still goes onto a pack animal / rides home in inventory, exactly as before.</item>
         /// </list>
         /// The per-item "does THIS stack fit / where" decision stays the unload driver's
         /// <c>TryFindBestBetterStorageFor</c>; this only decides which ROUTE the autonomous triggers take. When a
-        /// storage-having pocketmap is momentarily full the driver keeps the load tagged in inventory (no drop, no
+        /// storage-having map is momentarily full the driver keeps the load tagged in inventory (no drop, no
         /// loop), so the cheap "any storage at all" test below is sufficient — it need not prove free space.
         /// </summary>
         public static bool ShouldUnloadToStorage(Map map)
@@ -62,7 +65,11 @@ namespace HaulersDream
                 return false;
             if (map.IsPlayerHome)
                 return true;
-            return map.IsPocketMap && HasPlayerStorage(map);
+            // Player storage present (anywhere, not just a pocket map) -> deliver there; otherwise the loot rides a
+            // pack animal / stays in inventory. A VF RV interior is NOT a pocket map, so the old IsPocketMap gate
+            // excluded it and the pawn looped pick-up -> drop with no reachable carrier; keying purely on storage
+            // presence fixes that while leaving genuine storage-less caravan/raid maps on the pack-animal path.
+            return HasPlayerStorage(map);
         }
 
         /// <summary>True if <paramref name="map"/> has at least one PLAYER storage destination — a stockpile/storage

@@ -23,6 +23,11 @@ namespace HaulersDream
         public readonly List<ThingDef> ingredientDefs = new List<ThingDef>(); // chosen source def, one per recipe slot
         public readonly List<int> perRepCounts = new List<int>();             // units of that def consumed per rep
 
+        // True for an allowMixingIngredients recipe (cooked meals etc.): the plan does NOT freeze a per-slot def list
+        // (ingredientDefs/perRepCounts stay EMPTY) — the batch driver recomputes each rep's mix from current stock by
+        // value (CraftBatchMath.MixFillSlot). The batch is sized by VALUE in ResolveMixing, not by the scarcest def.
+        public bool mixingRecipe;
+
         public int requestedReps;     // the player's slider value
         public int availabilityReps;  // floor by the scarcest ingredient's reachable stock
         public int massReps;          // floor by what fits in inventory on one pre-load (smart-overload aware)
@@ -78,20 +83,14 @@ namespace HaulersDream
             // special products by it — our fixed per-rep count model would under-consume and under-produce. Exclude.
             if (r.ignoreIngredientCountTakeEntireStacks)
                 return false;
-            // MIXING recipes (every vanilla cooked meal sets allowMixingIngredients=true) fill ONE ingredient slot
-            // from MULTIPLE defs at craft time, choosing each rep's mix from whatever stock is closest / most
-            // valuable. Our batch plan is the opposite shape — it freezes ONE def per slot for ALL reps (see the
-            // Resolve slot loop and JobDriver_BatchCraft's one-def-per-slot carry/place). A batched mixing recipe
-            // would therefore (a) use only a single def ("never mixes", starving one ingredient while another
-            // spoils), and (b) when no single def alone covers a rep, find the slot infeasible and refuse — dumping
-            // any pre-loaded stock back ("takes 5 + 5, refuses, puts them back"). Neither is safely reconcilable
-            // with a fixed per-rep plan, so mixing recipes are excluded from batching entirely: they fall through
-            // to HD's NORMAL DoBill path (Patch_WorkGiver_DoBill_InventoryRoute + BillPrepGather), which gathers
-            // the ingredients in one trip AND mixes correctly via vanilla's runtime AllowMix fill (plus HD's
-            // cook-spoiling-first transpiler in SharedBillPatches). Meals thus cook correctly with mixing; they
-            // simply don't gain the extra "craft N reps without re-walking" batching, which is incompatible by design.
-            if (r.allowMixingIngredients)
-                return false;
+            // MIXING recipes (every vanilla cooked meal sets allowMixingIngredients=true — plus kibble, pemmican,
+            // chemfuel, beer) fill ONE ingredient slot from MULTIPLE defs at craft time, choosing each rep's mix
+            // from whatever stock remains, by VALUE (nutrition). These ARE batched now via a MIX-AWARE path: the
+            // planner sizes the batch by total available VALUE (CraftBatchMath.MixAvailableReps) instead of freezing
+            // one def per slot, and JobDriver_BatchCraft RECOMPUTES each rep's per-def mix from current inventory at
+            // the start of the rep (CraftBatchMath.MixFillSlot, mirroring vanilla's AllowMix fill) before the
+            // existing carry/place/consume loop runs unchanged. So a batched stew no longer "never mixes" or refuses
+            // a rep no single def covers — it greedily value-fills like vanilla does, just N reps from one pre-load.
             return !r.products.NullOrEmpty() || !r.specialProducts.NullOrEmpty();
         }
 
@@ -166,10 +165,11 @@ namespace HaulersDream
         }
 
         /// <summary>
-        /// HD-banked in-flight products of <paramref name="bp"/>'s single product def: items genuinely held in a
-        /// player pawn's INVENTORY (NOT the hands — vanilla's <c>GetCarriedCount</c> already counts those) that pass
-        /// the bill's own per-thing validity (def + quality / HP / allowed-stuff / taint, via vanilla's
-        /// <c>CountValidThing</c>). HD's scoop + batch driver bank freshly-made products in inventory, which vanilla's
+        /// HD-banked in-flight products of <paramref name="bp"/>'s single product def: the SURPLUS units (above the
+        /// carrier's keep-stock — i.e. genuinely in-flight toward storage, not kept) held in a player pawn's INVENTORY
+        /// (NOT the hands — vanilla's <c>GetCarriedCount</c> already counts those) that pass the bill's own per-thing
+        /// validity (def + quality / HP / allowed-stuff / taint, via vanilla's <c>CountValidThing</c>). HD's scoop +
+        /// batch driver bank freshly-made products in inventory, which vanilla's
         /// <c>CountProducts</c> never counts (it sees world/storage/hands only, unless <c>includeEquipped</c>). The
         /// CountProducts postfix (<see cref="Patch_CountProducts_BankedInventory"/>) adds this so vanilla's OWN
         /// <c>ShouldDoNow</c> / unpause-at hysteresis observes the true colony count and a "Do until you have X" bill
@@ -194,9 +194,23 @@ namespace HaulersDream
                 // those) — and only products passing the bill's validity, so a quality/HP/stuff-restricted "do until
                 // X" bill counts only the VALID in-flight products, exactly like vanilla counts the stored ones.
                 foreach (var t in tagged)
-                    if (t != null && !t.Destroyed && t.ParentHolder is Pawn_InventoryTracker
-                        && counter.CountValidThing(t, bp, def))
-                        n += t.stackCount;
+                {
+                    if (t == null || t.Destroyed || !(t.ParentHolder is Pawn_InventoryTracker)
+                        || !counter.CountValidThing(t, bp, def))
+                        continue;
+                    // #2 over-suppression fix: count only the units genuinely IN-FLIGHT toward storage — the SURPLUS
+                    // above this pawn's keep-stock (InventorySurplus.SurplusOf). A product a pawn KEEPS (food/drugs/
+                    // loadout: SurplusOf==0) never reaches storage, so counting it would PERMANENTLY inflate a "Do
+                    // until you have X" bill's CountProducts (vanilla counts storage + hands, never kept inventory) —
+                    // the count stays >= target, ShouldDoNow is false forever, and the bill is never offered to ANY
+                    // pawn (the reported "batch does nothing / defaults to vanilla" on TargetCount bills). Counting the
+                    // surplus AMOUNT (not the whole stack) also matches vanilla's intent — only what will actually land
+                    // in storage is counted — and self-heals: once the surplus unloads it's counted in storage instead
+                    // (no double-count across the transition), and a fully-kept stack contributes 0 (inert).
+                    int surplus = InventorySurplus.SurplusOf(p, t);
+                    if (surplus > 0)
+                        n += surplus;
+                }
             }
             return n;
         }
@@ -253,6 +267,14 @@ namespace HaulersDream
             }
 
             var recipe = bill.recipe;
+
+            // MIXING recipes (cooked meals etc.) take a separate value-based path: the batch can draw each rep's mix
+            // from MULTIPLE defs, so there is no single "scarcest def" — the batch is sized by total available VALUE
+            // per slot and the driver recomputes the per-def mix per rep. ResolveMixing applies the same mass/timeout/
+            // bill caps via FinalizeCaps. (The non-mixing slot loop below freezes one def per slot and is unchanged.)
+            if (recipe.allowMixingIngredients)
+                return ResolveMixing(plan, pawn, bench, bill, recipe);
+
             float massPerRep = 0f;
 
             for (int s = 0; s < recipe.ingredients.Count; s++)
@@ -317,6 +339,32 @@ namespace HaulersDream
             }
 
             plan.availabilityReps = CraftBatchMath.ScarcestDefReps(defKeys, plan.perRepCounts, availableByKey);
+
+            // Combat Extended adds a BULK dimension the weight math can't see — without this clamp the dialog
+            // would promise reps the (bulk-clamped) gather can't pre-load in one trip. Weight stays the floor.
+            // Compute the per-rep bulk from the frozen per-slot defs (no-op cost without CE: the per-def sum is
+            // only used inside the CE branch of FinalizeCaps).
+            float bulkPerRep = 0f;
+            if (CECompat.IsActive)
+                for (int i = 0; i < plan.ingredientDefs.Count; i++)
+                    bulkPerRep += plan.perRepCounts[i] * CECompat.BulkPerUnitAbstract(plan.ingredientDefs[i]);
+
+            FinalizeCaps(plan, pawn, bench, recipe, massPerRep, bulkPerRep);
+            return plan;
+        }
+
+        /// <summary>
+        /// Apply the mass / timeout / bill caps shared by the NON-mixing and MIXING resolve paths, given the already-
+        /// computed <paramref name="massPerRep"/> (kg of one rep's ingredients) and <paramref name="bulkPerRep"/> (CE
+        /// bulk of one rep, 0 when CE is inactive or for the mixing path which skips the CE-bulk clamp). The caller has
+        /// already set <see cref="CraftBatchPlan.availabilityReps"/> (scarcest-def for NoMix, scarcest-slot-by-value
+        /// for mixing). This is verbatim the former inline tail of <see cref="Resolve"/> with the per-def bulk loop
+        /// hoisted to the caller — so the NON-mixing path is byte-identical, and the mixing path reuses the exact same
+        /// RepsByMass / RepsByTimeout / Resolve calls.
+        /// </summary>
+        private static void FinalizeCaps(CraftBatchPlan plan, Pawn pawn, Building_WorkTable bench, RecipeDef recipe,
+            float massPerRep, float bulkPerRep)
+        {
             plan.massPerRepKg = massPerRep;
             plan.ticksPerRep = EstimateTicksPerRep(pawn, bench, recipe);
 
@@ -329,19 +377,12 @@ namespace HaulersDream
             int level = settings != null ? OverloadGate.EffectiveLevel(settings) : OverloadTuning.OffLevel;
 
             plan.massReps = CraftBatchMath.RepsByMass(level, maxCap, baseCap, curMass, massPerRep, plan.requestedReps);
-            // Combat Extended adds a BULK dimension the weight math can't see — without this clamp the dialog
-            // would promise reps the (bulk-clamped) gather can't pre-load in one trip. Weight stays the floor.
-            if (CECompat.IsActive)
+            // CE bulk clamp (weight stays the floor). bulkPerRep is 0 when CE is inactive or for the mixing path.
+            if (CECompat.IsActive && bulkPerRep > 0f)
             {
-                float bulkPerRep = 0f;
-                for (int i = 0; i < plan.ingredientDefs.Count; i++)
-                    bulkPerRep += plan.perRepCounts[i] * CECompat.BulkPerUnitAbstract(plan.ingredientDefs[i]);
-                if (bulkPerRep > 0f)
-                {
-                    int bulkReps = (int)System.Math.Floor(CECompat.AvailableBulk(pawn) / bulkPerRep);
-                    if (bulkReps < plan.massReps)
-                        plan.massReps = bulkReps < 0 ? 0 : bulkReps;
-                }
+                int bulkReps = (int)System.Math.Floor(CECompat.AvailableBulk(pawn) / bulkPerRep);
+                if (bulkReps < plan.massReps)
+                    plan.massReps = bulkReps < 0 ? 0 : bulkReps;
             }
             plan.timeoutReps = CraftBatchMath.RepsByTimeout(plan.ticksPerRep, plan.timeoutTicks);
             // Mass does NOT cap the rep COUNT unless the player chose strict carry weight. Otherwise the pawn
@@ -356,6 +397,79 @@ namespace HaulersDream
             plan.feasible = plan.resolvedReps >= 1;
             if (!plan.feasible && plan.blockReason == null)
                 plan.blockReason = "HaulersDream.PlanCraft.BlockNoReps".Translate();
+        }
+
+        /// <summary>
+        /// Resolve a MIXING recipe's batch (allowMixingIngredients: cooked meals, kibble, pemmican, chemfuel, beer).
+        /// Unlike the NoMix path, the plan does NOT freeze one def per slot — <see cref="CraftBatchPlan.ingredientDefs"/>
+        /// / <see cref="CraftBatchPlan.perRepCounts"/> stay EMPTY and the driver recomputes each rep's per-def mix from
+        /// current stock via <see cref="CraftBatchMath.MixFillSlot"/>. Here we only SIZE the batch: per ingredient slot,
+        /// sum the available VALUE across every bill-usable candidate def (units × value-per-unit, mirroring vanilla's
+        /// <c>IngredientValueGetter.ValuePerUnitOf</c>) and divide by the slot's per-rep value target
+        /// (<c>GetBaseCount</c>) via <see cref="CraftBatchMath.MixAvailableReps"/>; the batch is bounded by the
+        /// SCARCEST slot. The same mass/timeout/bill caps are applied via <see cref="FinalizeCaps"/> (the CE-bulk clamp
+        /// is skipped for the mixing path — the per-def mix isn't known until craft time — so weight is the only
+        /// carry cap, exactly as for a heavy NoMix ingredient).
+        /// </summary>
+        private static CraftBatchPlan ResolveMixing(CraftBatchPlan plan, Pawn pawn, Building_WorkTable bench, Bill bill, RecipeDef recipe)
+        {
+            plan.mixingRecipe = true; // leaves ingredientDefs/perRepCounts EMPTY — the driver fills them per rep
+
+            int availabilityReps = int.MaxValue; // min over slots; int.MaxValue = no constraint (no positive-value slot)
+            float massPerRep = 0f;
+            var valueGetter = recipe.IngredientValueGetter;
+
+            for (int s = 0; s < recipe.ingredients.Count; s++)
+            {
+                var ing = recipe.ingredients[s];
+                // The slot's per-rep VALUE target (nutrition for food; count for a count-based value getter). Vanilla's
+                // AllowMix fills exactly this much value per slot per craft (its `num2 = ingredientCount.GetBaseCount()`).
+                double perRepValue = ing.GetBaseCount();
+
+                double totalSlotValue = 0.0;     // Σ over candidate defs of availableUnits × value-per-unit
+                float bestMassPerValue = 0f;      // max over candidate defs of (mass / value-per-unit) — conservative
+                foreach (var cand in ing.filter.AllowedThingDefs)
+                {
+                    if (cand == null)
+                        continue;
+                    // Same bill-filter rule as the NoMix loop + vanilla's AllowMix inner test: fixed slots bypass the
+                    // player's allowed-ingredient list; implicit-costList recipes have an empty bill filter by design.
+                    if (!ing.IsFixedIngredient && bill.ingredientFilter != null && !bill.ingredientFilter.Allows(cand))
+                        continue;
+                    float vpu = valueGetter.ValuePerUnitOf(cand);
+                    if (vpu <= 0f)
+                        continue; // a valueless def can never satisfy the slot (and would /0 below)
+                    int avail = AvailableUnits(pawn, cand, bill, bench);
+                    if (avail <= 0)
+                        continue;
+                    totalSlotValue += avail * (double)vpu;
+                    // Mass estimate: one rep needs perRepValue worth of value from SOME mix of these defs; the heaviest
+                    // way to supply a unit of value is the def with the largest mass-per-value, so use that as a safe
+                    // OVER-estimate (an over-estimate only ever lowers the mass cap, which is safe — never promises a
+                    // batch the pawn can't carry). vpu > 0 here, so the divide is guarded.
+                    float massPerValue = cand.GetStatValueAbstract(StatDefOf.Mass) / vpu;
+                    if (massPerValue > bestMassPerValue)
+                        bestMassPerValue = massPerValue;
+                }
+
+                int slotReps = CraftBatchMath.MixAvailableReps(perRepValue, totalSlotValue);
+                if (slotReps <= 0)
+                {
+                    // No bill-usable def has enough VALUE to make even one rep of this slot → infeasible, exactly like
+                    // the NoMix "no available ingredient" case (same translation key + the slot's filter summary).
+                    plan.blockReason = "HaulersDream.PlanCraft.BlockNoIngredient".Translate(ing.filter.Summary);
+                    return plan;
+                }
+                if (slotReps < availabilityReps)
+                    availabilityReps = slotReps;
+                if (perRepValue > 0.0)
+                    massPerRep += (float)(perRepValue) * bestMassPerValue;
+            }
+
+            plan.availabilityReps = availabilityReps;
+            // Mixing skips the CE-bulk clamp (bulkPerRep 0): the per-def mix isn't known until craft time, so weight is
+            // the only carry cap here (consistent with how a heavy NoMix ingredient is handled — overload, don't block).
+            FinalizeCaps(plan, pawn, bench, recipe, massPerRep, bulkPerRep: 0f);
             return plan;
         }
 
