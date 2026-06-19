@@ -288,6 +288,13 @@ namespace HaulersDream
                     var t = things[i];
                     if (t == null || !t.Spawned || t.Map != map)
                         continue;
+                    // Mirror BulkHaul.BuildPoolInto's loose-pool filters so this stored supplement stays consistent
+                    // with the pool it extends: corpse hauling keeps its own vanilla carry-in-hands flow (corpses
+                    // don't belong in pockets), and non-haulable defs are never swept. A transporter/portal manifest
+                    // CAN list a corpse, so without this a stored (or loose) manifest corpse would be scooped into
+                    // inventory and deposited, instead of vanilla carrying it in hands.
+                    if (t is Corpse || !t.def.EverHaulable)
+                        continue;
                     if (t.ParentHolder is Pawn_InventoryTracker)
                         continue; // a pawn's carried inventory is not a load source on this sweep
                     if (seen.Add(t))

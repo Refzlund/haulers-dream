@@ -76,8 +76,18 @@ namespace HaulersDream
             var job = __instance.job;
             if (job == null || job.haulMode != HaulMode.ToCellStorage)
                 return true; // non-storage cell hauls keep their reservation semantics
-            // Storage haul: reserve only the THING being hauled. The destination cell stays unreserved so
-            // other haulers can pick (and stack onto) the same cell.
+            // Unstackables (corpses, minified buildings, weapons — stackLimit 1) can NEVER stack onto a shared
+            // cell, so leaving the destination cell unreserved gains them nothing — but it removes vanilla's
+            // CanReserveNew(B) throttle. With B unreserved, the work scan keeps re-selecting the SAME cell every
+            // tick when a second hauler contends that 1-capacity cell, re-issuing the identical HaulToCell until
+            // "started 10 jobs in one tick" fires (the reported corpse HaulToCell loop). Mirror the cell-refine
+            // postfix's own stackLimit<=1 guard (Patch_TryFindBestBetterStoreCellFor_HaulToStack) and keep
+            // vanilla's cell reservation for them — byte-identical for stackables (the only things stacking helps).
+            var hauled = job.GetTarget(TargetIndex.A).Thing;
+            if (hauled?.def == null || hauled.def.stackLimit <= 1)
+                return true; // vanilla reserves both cell + thing
+            // Storage haul of a STACKABLE: reserve only the THING being hauled. The destination cell stays
+            // unreserved so other haulers can pick (and stack onto) the same cell.
             __result = __instance.pawn.Reserve(job.GetTarget(TargetIndex.A), job, 1, -1, null, errorOnFailed);
             return false;
         }
