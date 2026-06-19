@@ -137,12 +137,17 @@ namespace HaulersDream
                         continue;
 
                     case UnloadDecision.Queue:
-                        // Caravan / away map: no player storage — offload onto a pack animal instead. The Decide
+                        // Caravan / away map with NO player storage — offload onto a pack animal instead. The Decide
                         // gates above already applied the SAME eligibility / grace / pending-work / surplus
                         // timing as the home storage path (so F38's accumulate-during-work holds);
                         // TryGetOpportunisticLoadJob adds the caravan toggle + carrier gate and builds the
                         // deposit-only load job (null -> no usable carrier, loot just rides home in inventory).
-                        if (pawn.Map != null && !pawn.Map.IsPlayerHome)
+                        // A non-home POCKET map WITH player storage (a Vehicle Framework RV interior) is the
+                        // exception: ShouldUnloadToStorage is true there, so it falls through to the storage-unload
+                        // driver below — which delivers to the RV's shelves (and keeps the load tagged in inventory,
+                        // never looping, if they are full). Without this an RV pawn forked here, found no reachable
+                        // carrier, and looped picking up / dropping forever.
+                        if (pawn.Map != null && !MapGate.ShouldUnloadToStorage(pawn.Map))
                         {
                             var loadJob = PackAnimalLoad.TryGetOpportunisticLoadJob(pawn);
                             if (loadJob != null && pawn.jobs != null)

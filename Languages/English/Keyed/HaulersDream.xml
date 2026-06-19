@@ -149,6 +149,7 @@
   <HaulersDream.Setting.HaulDeepDrill>Deep drills</HaulersDream.Setting.HaulDeepDrill>
   <HaulersDream.Setting.HaulDeconstruct>Deconstruction salvage</HaulersDream.Setting.HaulDeconstruct>
   <HaulersDream.Setting.HaulAnimals>Animals — milk &amp; shear</HaulersDream.Setting.HaulAnimals>
+  <HaulersDream.Setting.HaulUninstall>Uninstalling — minified buildings (caravan/away maps)</HaulersDream.Setting.HaulUninstall>
   <HaulersDream.Setting.HaulStrip>Stripping — removed gear (haul gear from a Strip order)</HaulersDream.Setting.HaulStrip>
   <HaulersDream.Setting.HaulStripDesc>When a colonist strips a prisoner, a downed pawn, or a corpse (a Strip order YOU place, by hand), the removed weapons, gear and clothes are scooped into its inventory right after the strip, and hauled home in one trip. This is the toggle that governs hauling stripped gear — it is independent of "Auto-strip while hauling" higher up: that one only strips a corpse while it is BEING hauled (loot to inventory); THIS one hauls the gear a manual Strip order drops on the ground. So you can set auto-strip-while-hauling to "never" and still have manually-ordered strips scoop and haul their gear, as long as this is on. Tainted apparel from a corpse follows the tainted-apparel choices in the auto-strip section ("leave it on the corpse" pieces stay on the ground, unscooped). For a living target, a follow-up strip is queued at the end of the stripper's jobs in case the target dresses itself again from leftovers; it does nothing if the target stayed bare.</HaulersDream.Setting.HaulStripDesc>
   <HaulersDream.Setting.HaulStripCrossRef>Independent of "Auto-strip while hauling" near the top: that strips a corpse as it is hauled (loot to inventory); this hauls the gear a manual Strip order drops.</HaulersDream.Setting.HaulStripCrossRef>
@@ -655,6 +656,7 @@
   <HaulersDream.Setting.HaulDeepDrill.Help>Scoop deep-drill output into inventory as it is produced.</HaulersDream.Setting.HaulDeepDrill.Help>
   <HaulersDream.Setting.HaulDeconstruct.Help>Scoop the salvage from deconstructed buildings into inventory.</HaulersDream.Setting.HaulDeconstruct.Help>
   <HaulersDream.Setting.HaulAnimals.Help>Scoop milk, wool and other products gathered from animals into inventory.</HaulersDream.Setting.HaulAnimals.Help>
+  <HaulersDream.Setting.HaulUninstall.Help>On a caravan or other away map (never your home colony), scoop a building you uninstall — now a minified item — straight into the worker's inventory, so several uninstalled structures are carried to the pack animals in ONE trip instead of one back-and-forth walk per item. Only fires where the item can actually be delivered (a stockpile/zone or a pack animal). On your home map this does nothing: there, an uninstalled building is left on the ground for normal hauling or re-installation.</HaulersDream.Setting.HaulUninstall.Help>
 
   <!-- Per-page top descriptors -->
   <HaulersDream.Cat.Hauling.Intro>How colonists pick things up — how much they carry, when they overload, and what they sweep up.</HaulersDream.Cat.Hauling.Intro>

@@ -56,6 +56,15 @@ namespace HaulersDream
             if (pawn == null || !s.IsTypeEnabled(type))
                 return true;
 
+            // UNINSTALL is scoped to NON-HOME maps only. On the home colony an uninstalled building belongs on the
+            // ground for normal hauling to a stockpile or for re-installation (an Install blueprint hauler grabs it
+            // there); pocketing it into a colonist would surprise the player and could strand a building meant to be
+            // reinstalled. The caravan/away-map case — where the minified structures must batch onto pack animals —
+            // is exactly the non-home maps this admits. (RecordSelfPickup / RouteIntoInventory still require a real
+            // delivery destination via HasScoopDestination, so a bare camp with nowhere to put it leaves it grounded.)
+            if (type == HaulSourceType.Uninstall && map.IsPlayerHome)
+                return true;
+
             // Strip drops ALWAYS take the drop-then-scoop path, regardless of pickup mode: unlike the
             // other producers (which place freshly-created things), strip drops come out of ThingOwner
             // containers via the GenDrop chain, whose callers run bookkeeping on the placed result —
@@ -281,11 +290,13 @@ namespace HaulersDream
         {
             if (s == null || !Core.UnloadPolicy.FullTriggerAllowed(s.strictCarryWeight, s.markForUnload))
                 return;
-            // On a non-home / temporary map there is no storage to unload to — divert the heavy load onto the
-            // nearest owned pack animal instead (auto-divert), so the pawn doesn't keep working over-encumbered.
-            // (keepWorkingWhenFull does NOT apply here: on a temp map there is no storage to "unload before the
-            // next relocation" to — the only place the load can go is the carrier, exactly as today.)
-            if (pawn?.Map != null && !pawn.Map.IsPlayerHome)
+            // On a non-home / temporary map with no player storage there is nowhere to unload — divert the heavy
+            // load onto the nearest owned pack animal instead (auto-divert), so the pawn doesn't keep working
+            // over-encumbered. (keepWorkingWhenFull does NOT apply here: on a temp map there is no storage to
+            // "unload before the next relocation" to — the only place the load can go is the carrier.) A non-home
+            // POCKET map WITH player storage (an RV interior) instead falls through to the forced storage unload
+            // below, exactly like home — ShouldUnloadToStorage gates that.
+            if (pawn?.Map != null && !MapGate.ShouldUnloadToStorage(pawn.Map))
             {
                 PackAnimalLoad.MaybeAutoDivert(pawn, s);
                 return;
@@ -686,6 +697,16 @@ namespace HaulersDream
                 // position (which is the stripper's job target cell, so the true-producer check matches)
                 // and the stripper scoops the pile right after the strip completes.
                 case JobDriver_Strip _: type = HaulSourceType.Strip; return true;
+                // An uninstall order minifies the building and drops it via GenPlace.TryPlaceThing(Near) at the
+                // building's cell (the worker's job-target cell, so the true-producer check matches) — scooping it
+                // lets several uninstalled structures batch onto the pack animals in ONE caravan-load trip instead
+                // of one back-and-forth per item. SPECIFIC to JobDriver_Uninstall, NOT the base
+                // JobDriver_RemoveBuilding: its sibling JobDriver_Deconstruct also derives from RemoveBuilding, and
+                // matching the base would re-capture deconstruct leavings here (double-processing them — exactly
+                // what the guard above forbids). This case can never match a JobDriver_Deconstruct instance.
+                // OnTryPlaceThing additionally gates this type to NON-HOME maps (a home-map uninstall is left for
+                // normal hauling / re-installation), and the scoop only fires where the item is deliverable.
+                case JobDriver_Uninstall _: type = HaulSourceType.Uninstall; return true;
                 default: type = default; return false;
             }
         }

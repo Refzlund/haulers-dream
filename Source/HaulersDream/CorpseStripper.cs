@@ -41,11 +41,18 @@ namespace HaulersDream
     {
         static void Prefix(Pawn_CarryTracker __instance, Thing item)
         {
-            // No try/catch: an auto-strip failure is a real bug, surfaced as a red error (Harmony propagates
-            // it to RimWorld's handler) rather than silently downgraded to a one-time warning.
+            // An auto-strip failure is a real bug: it must stay a visible red error, never a silent downgrade. The
+            // Finalizer below preserves that (logs with HD + the hauler, then RETHROWS — see HDGuard). This matters
+            // most for MODDED corpses, whose unusual equipment/apparel can throw inside MaybeStripForHaul and
+            // would otherwise abort the triggering haul job with an anonymous stack (fix/mix #3b, verified H3).
             if (item is Corpse corpse)
                 CorpseStripper.MaybeStripForHaul(__instance.pawn, corpse);
         }
+
+        // Seam guard: log + rethrow so an auto-strip throw names the hauler instead of an opaque TryStartCarry stack.
+        static System.Exception Finalizer(System.Exception __exception, Pawn_CarryTracker __instance)
+            => HDGuard.SeamThrew(__exception, "Pawn_CarryTracker.TryStartCarry (HD auto-strip-on-haul)", __instance?.pawn,
+                "the haul that triggered the auto-strip failed.");
     }
 
     /// <summary>

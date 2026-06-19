@@ -181,6 +181,70 @@ namespace HaulersDream
             DropFromBucket(loadVehicleTasks, kv => kv.Value == null || kv.Value.map == map);
         }
 
+        /// <summary>
+        /// fix/mix RECOVERY — release PHANTOM load-claims left in a save written by the old pre-save cleanup. That
+        /// cleanup Wait-swapped a pawn's in-flight load job DURING <c>ScribeSaver.InitSaving</c>, which could mutate
+        /// this ledger mid-serialization and persist a claim for a pawn that no longer runs the job. A phantom claim
+        /// counts against <c>AvailableToClaim</c> forever, so the load/bulk planners read "already fully claimed" and
+        /// stop offering work — the reported colony-wide hauling/cleanup stall (recovered before only by reloading
+        /// WITHOUT HD and re-saving). The root cause is now fixed in <see cref="Patch_ScribeSaver_InitSaving"/> (no
+        /// more save-time job swap); this SELF-HEALS saves written before that fix.
+        ///
+        /// Run once at load (<see cref="FinalizeInit"/>, after pawn jobs are restored). For every spawned PLAYER
+        /// pawn that is NOT currently running an HD job, release its load-claims: such a pawn cannot legitimately
+        /// hold one. A pawn whose HD load job genuinely RESUMED has <see cref="IsRunningHdJob"/> true, so its real
+        /// in-flight claim is preserved (the resumed driver relies on the scribed claim surviving). Idempotent and a
+        /// no-op on a clean / new game (empty buckets short-circuit). NOT gated on a setting: an orphaned claim must
+        /// be cleared regardless of toggles, or the stall persists.
+        /// </summary>
+        internal void ValidateLoadLedgerAfterLoad()
+        {
+            if ((loadTasks == null || loadTasks.Count == 0)
+                && (loadVehicleTasks == null || loadVehicleTasks.Count == 0))
+                return; // clean / new game — nothing to validate
+
+            int repaired = 0;
+            var maps = Find.Maps;
+            for (int m = 0; m < maps.Count; m++)
+            {
+                var pawns = maps[m]?.mapPawns?.AllPawnsSpawned;
+                if (pawns == null)
+                    continue;
+                for (int i = 0; i < pawns.Count; i++)
+                {
+                    var p = pawns[i];
+                    // A resumed HD job (load or otherwise) is allowed to keep its claim; only a pawn doing NOTHING
+                    // HD-related can hold a phantom one. (A pawn mid-non-load HD job that holds a stale claim self-
+                    // heals when that job ends → LoadReleaseClaimsForPawn — so skipping it here is the safe side.)
+                    if (p == null || IsRunningHdJob(p) || !LoadPawnHoldsAnyClaim(p))
+                        continue;
+                    LoadReleaseClaimsForPawn(p);
+                    repaired++;
+                }
+            }
+            if (repaired > 0)
+                HDLog.Warn($"Released {repaired} orphaned bulk-load claim(s) on load — pawns that held a claim but "
+                           + "are no longer running their load job (a save written by an older version). If hauling "
+                           + "or cleanup had stalled colony-wide, it should now resume.");
+        }
+
+        /// <summary>True if <paramref name="p"/> holds a live claim on ANY bulk-load task (either bucket). Reads the
+        /// public <c>pawnClaims</c> map directly; used only by the once-at-load <see cref="ValidateLoadLedgerAfterLoad"/>.</summary>
+        private bool LoadPawnHoldsAnyClaim(Pawn p)
+        {
+            if (p == null)
+                return false;
+            if (loadTasks.Count > 0)
+                foreach (var e in loadTasks.Values)
+                    if (e?.pawnClaims != null && e.pawnClaims.ContainsKey(p))
+                        return true;
+            if (loadVehicleTasks.Count > 0)
+                foreach (var e in loadVehicleTasks.Values)
+                    if (e?.pawnClaims != null && e.pawnClaims.ContainsKey(p))
+                        return true;
+            return false;
+        }
+
         // Self-prune fully-inert entries (no needed AND no claimed) — called from the same periodic tick the
         // veins/idle use. Keeps both maps small without active per-tick scanning of live tasks.
         private void PruneInertLoadTasks()

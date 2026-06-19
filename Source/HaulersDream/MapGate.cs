@@ -1,3 +1,4 @@
+using RimWorld;
 using Verse;
 
 namespace HaulersDream
@@ -35,6 +36,56 @@ namespace HaulersDream
             if (s == null)
                 return true; // settings not loaded yet -> the stand-down can't fire without enableOnNonHomeMaps
             return s.enableOnNonHomeMaps || map.IsPlayerHome;
+        }
+
+        /// <summary>
+        /// True if a carrying pawn on <paramref name="map"/> should unload to MAP STORAGE (HD's storage-unload
+        /// driver) rather than onto a pack animal. The old code treated every map as a strict binary —
+        /// <c>IsPlayerHome</c> (storage) vs <c>!IsPlayerHome</c> (pack-animal safeguard) — but a Vehicle Framework
+        /// RV interior is the unhandled THIRD kind: a PERSISTENT pocket sub-map that is <c>!IsPlayerHome</c> yet
+        /// full of player shelves/zones. Routing such a pawn straight to the pack-animal path dead-ended (no
+        /// carrier reachable inside the RV → nothing unloaded → it kept scooping and looping). So:
+        /// <list type="bullet">
+        /// <item>player-home map → always true (unchanged);</item>
+        /// <item>non-home POCKET map WITH player storage (an RV interior) → true — the FIX: deliver to its shelves;</item>
+        /// <item>everything else (transient caravan/raid camp, a storage-less hostile pocketmap like an undercave)
+        ///       → false — the loot still goes onto a pack animal / rides home in inventory, exactly as before.</item>
+        /// </list>
+        /// The per-item "does THIS stack fit / where" decision stays the unload driver's
+        /// <c>TryFindBestBetterStorageFor</c>; this only decides which ROUTE the autonomous triggers take. When a
+        /// storage-having pocketmap is momentarily full the driver keeps the load tagged in inventory (no drop, no
+        /// loop), so the cheap "any storage at all" test below is sufficient — it need not prove free space.
+        /// </summary>
+        public static bool ShouldUnloadToStorage(Map map)
+        {
+            if (map == null)
+                return false;
+            if (map.IsPlayerHome)
+                return true;
+            return map.IsPocketMap && HasPlayerStorage(map);
+        }
+
+        /// <summary>True if <paramref name="map"/> has at least one PLAYER storage destination — a stockpile/storage
+        /// zone (player-made by definition) or a player-faction storage building (a shelf). Deliberately ignores a
+        /// hostile pocketmap's own enemy shelves so loot is never routed into an enemy base's storage. Cheap:
+        /// returns on the first qualifying slot group.</summary>
+        public static bool HasPlayerStorage(Map map)
+        {
+            var mgr = map?.haulDestinationManager;
+            var groups = mgr?.AllGroupsListForReading;
+            if (groups == null)
+                return false;
+            for (int i = 0; i < groups.Count; i++)
+            {
+                var parent = groups[i]?.parent;
+                if (parent == null)
+                    continue;
+                if (parent is Zone)
+                    return true; // a stockpile/storage zone is player-owned by construction
+                if (parent is Thing th && th.Faction == Faction.OfPlayer)
+                    return true; // a player-faction storage building (shelf)
+            }
+            return false;
         }
     }
 }

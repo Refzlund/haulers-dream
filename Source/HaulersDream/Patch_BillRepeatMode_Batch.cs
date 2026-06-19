@@ -102,7 +102,10 @@ namespace HaulersDream
         static void Postfix(Bill_Production __instance, ref string __result)
         {
             var comp = HaulersDreamGameComponent.Instance;
-            if (comp != null && comp.IsBatchBill(__instance))
+            // Gate on CanBatch too: a bill flagged in an older save whose recipe is no longer batchable (e.g. a meal
+            // — mixing recipes are now excluded) still carries the flag but routes as vanilla, so don't show a
+            // misleading "×N" marker the batch driver will never honour.
+            if (comp != null && comp.IsBatchBill(__instance) && CraftBatchPlanner.CanBatch(__instance))
                 __result = "HaulersDream.Batch.RowMarker".Translate(comp.BatchSizeOf(__instance)) + __result;
         }
     }

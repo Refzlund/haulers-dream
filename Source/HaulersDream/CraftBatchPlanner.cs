@@ -78,6 +78,20 @@ namespace HaulersDream
             // special products by it — our fixed per-rep count model would under-consume and under-produce. Exclude.
             if (r.ignoreIngredientCountTakeEntireStacks)
                 return false;
+            // MIXING recipes (every vanilla cooked meal sets allowMixingIngredients=true) fill ONE ingredient slot
+            // from MULTIPLE defs at craft time, choosing each rep's mix from whatever stock is closest / most
+            // valuable. Our batch plan is the opposite shape — it freezes ONE def per slot for ALL reps (see the
+            // Resolve slot loop and JobDriver_BatchCraft's one-def-per-slot carry/place). A batched mixing recipe
+            // would therefore (a) use only a single def ("never mixes", starving one ingredient while another
+            // spoils), and (b) when no single def alone covers a rep, find the slot infeasible and refuse — dumping
+            // any pre-loaded stock back ("takes 5 + 5, refuses, puts them back"). Neither is safely reconcilable
+            // with a fixed per-rep plan, so mixing recipes are excluded from batching entirely: they fall through
+            // to HD's NORMAL DoBill path (Patch_WorkGiver_DoBill_InventoryRoute + BillPrepGather), which gathers
+            // the ingredients in one trip AND mixes correctly via vanilla's runtime AllowMix fill (plus HD's
+            // cook-spoiling-first transpiler in SharedBillPatches). Meals thus cook correctly with mixing; they
+            // simply don't gain the extra "craft N reps without re-walking" batching, which is incompatible by design.
+            if (r.allowMixingIngredients)
+                return false;
             return !r.products.NullOrEmpty() || !r.specialProducts.NullOrEmpty();
         }
 
