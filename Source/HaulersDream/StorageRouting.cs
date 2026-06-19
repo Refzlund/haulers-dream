@@ -202,6 +202,8 @@ namespace HaulersDream
                     continue;
                 if (!HaulAIUtility.PawnCanAutomaticallyHaulFast(pawn, t, forced: false))
                     continue;
+                if (!ExtraSweepReach.Allows(pawn, t))
+                    continue; // bonus extra: cap reach at Some (no vacuum/fire relocation pickups)
                 best = t;
                 bestCount = t.stackCount;
             }

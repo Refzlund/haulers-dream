@@ -670,6 +670,11 @@ namespace HaulersDream
                     continue; // too heavy/bulky for the remaining room — a lighter neighbor may still fit
                 if (!HaulAIUtility.PawnCanAutomaticallyHaulFast(pawn, t, forced: false))
                     continue;
+                // Bonus extra: never path a vacuum-/fire-concerned pawn through a Deadly region for a swept
+                // candidate (PawnCanAutomaticallyHaulFast reaches at NormalMaxDanger, which is Deadly while the
+                // plan is built under a forced job / open float menu — that exemption is for the clicked primary).
+                if (!ExtraSweepReach.Allows(pawn, t))
+                    continue;
                 var currentPriority = StoreUtility.CurrentStoragePriorityOf(t);
                 if (!StoreUtility.TryFindBestBetterStorageFor(t, pawn, pawn.Map, currentPriority, pawn.Faction,
                         out IntVec3 destCell, out _, needAccurateResult: false))

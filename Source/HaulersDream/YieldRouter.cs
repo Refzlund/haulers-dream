@@ -248,6 +248,11 @@ namespace HaulersDream
                     return true;
                 if (!HaulAIUtility.PawnCanAutomaticallyHaulFast(pawn, t, forced: false))
                     return true; // unreachable / can't legally haul it
+                // Bonus extra: while the host work job is player-prioritized (playerForced → NormalMaxDanger
+                // == Deadly), the gate above stops rejecting Deadly regions — so cap reach at Some here, or a
+                // suit-less pawn cleaning nearby while working would sweep scrap out of vacuum (the SOS2 case).
+                if (!ExtraSweepReach.Allows(pawn, t))
+                    return true;
                 if (!StoreUtility.TryFindBestBetterStorageFor(t, pawn, map, StoreUtility.CurrentStoragePriorityOf(t),
                         pawn.Faction, out _, out _, needAccurateResult: false))
                     return true; // nowhere better to put it -> don't scoop it only to strand it in inventory

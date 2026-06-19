@@ -288,6 +288,8 @@ namespace HaulersDream
                 return CandidateOutcome.HardFail;
             if (!HaulAIUtility.PawnCanAutomaticallyHaulFast(pawn, thing, forced: false))
                 return CandidateOutcome.HardFail;
+            if (!ExtraSweepReach.Allows(pawn, thing))
+                return CandidateOutcome.HardFail; // detour extra: cap reach at Some (no vacuum/fire detours)
 
             // STORE SEARCH — the cell CLOSEST to the thing↔job midway, ranked by MidwayDistanceSquared
             // (WYU StoreUtility.cs:246-266). Cached per scan (the pawn doesn't move within one scan, so a given

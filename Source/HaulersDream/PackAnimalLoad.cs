@@ -317,6 +317,8 @@ namespace HaulersDream
                 return;
             if (!HaulAIUtility.PawnCanAutomaticallyHaulFast(pawn, t, forced: false))
                 return;
+            if (!ExtraSweepReach.Allows(pawn, t))
+                return; // bonus extra: don't sweep a suit-less pawn into vacuum/fire to load an animal
             int take = BulkHaulPolicy.CountWithinCeiling(ceiling, running, t.GetStatValue(StatDefOf.Mass), t.stackCount);
             take = Math.Min(take, CECompat.MaxFitCount(pawn, t));
             float bulkPer = CECompat.BulkPerUnit(t);
@@ -359,6 +361,8 @@ namespace HaulersDream
                     continue;
                 if (!HaulAIUtility.PawnCanAutomaticallyHaulFast(pawn, t, forced: false))
                     continue;
+                if (!ExtraSweepReach.Allows(pawn, t))
+                    continue; // bonus extra: cap reach at Some (no vacuum/fire detours for an animal load)
                 take = fits;
                 return t;
             }

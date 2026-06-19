@@ -757,8 +757,8 @@ namespace HaulersDream
                         continue;
                     if ((t.Position - root).LengthHorizontalSquared >= radiusSq)
                         continue;
-                    if (!pawn.CanReserve(t) || !pawn.CanReach(t, PathEndMode.ClosestTouch, Danger.Deadly))
-                        continue;
+                    if (!pawn.CanReserve(t) || !pawn.CanReach(t, PathEndMode.ClosestTouch, ExtraSweepReach.Ceiling(pawn)))
+                        continue; // bonus ingredient: cap reach at Some (don't fetch crafting stock from vacuum/fire)
                     int dist = (t.Position - pawn.Position).LengthHorizontalSquared;
                     if (best == null
                         || (cmpOn ? SpoilingFirst.BetterThan(t, dist, best, bestDist, HaulersDreamMod.Settings)

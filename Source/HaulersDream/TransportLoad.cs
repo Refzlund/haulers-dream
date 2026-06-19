@@ -430,6 +430,8 @@ namespace HaulersDream
                 return 0; // too heavy / no claim budget left — a lighter/other-def neighbor may still fit
             if (!HaulAIUtility.PawnCanAutomaticallyHaulFast(pawn, chosen, forced: false))
                 return 0;
+            if (!ExtraSweepReach.Allows(pawn, chosen))
+                return 0; // bonus extra: cap reach at Some (don't load transport cargo out of vacuum/fire)
             return deliverable;
         }
 
