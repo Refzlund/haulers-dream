@@ -174,6 +174,21 @@ deposit into one via the pack-animal path. (The one Harmony patch that hooks VF'
 guards on the actual instance type, because VF's generic work-giver base shares JIT-compiled code across
 sibling work-givers — without that guard a refuel/upgrade job would be hijacked into a cargo load.)
 
+### Refuelable buildings — generators, drills, reactors (any mod, e.g. Advanced Power Plus)
+HD's one-trip **bulk refuel** (a hauler sweeps several fuel stacks into its inventory and fills a
+`CompRefuelable` in a single walk, instead of one stack per trip) works with refuelable buildings from any
+mod, including large **impassable** ones. **Advanced Power Plus** (`yamabuki.sd.advpowergen`) is the
+representative case: its uranium generators — the 6×6 advanced nuclear generator and the stirling
+radioisotope generators — are ordinary `CompRefuelable` buildings on impassable footprints. HD now anchors
+its fuel search at the hauler's own (always-passable) cell — the same cell vanilla's own refueling uses —
+so it never trips on an impassable footprint and bulk-refuels these generators correctly. (Earlier HD
+anchored the search at the building's own cell, which on an impassable footprint has no passable region and
+made RimWorld's fuel finder throw, freezing colonists in a job-search loop and breaking the building's
+right-click menu — issue #34; fixed, and the fix covers *any* impassable refuelable, not just APP's.)
+Everything else APP adds is independent of HD with no shared patch surface — its buildings, its custom
+solar-output comp (`sd_adv_powergen_CompAdvPowerPlantSolar`, render/output only), and its watermill
+water-overlap cache postfixes. Build materials and uranium fuel haul exactly like vanilla.
+
 ### Adds storable content — all standard categories (no black-hole risk)
 - **Melee Animation** — lassos (apparel, `ApparelUtility`) + a melee weapon. **Vanilla Expanded
   Framework** — a minified flower + a `VFEC_Shields` category parented under the default `Apparel`

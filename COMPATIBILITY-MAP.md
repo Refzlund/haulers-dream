@@ -13,6 +13,7 @@ Developer reference. A per-feature compatibility risk map for the mods Hauler's 
 - **pathfinding** — Perfect Pathfinding (PP; real assembly/namespace "PerfectPathing", Mod class PerfectPathing.Mod, About name "Perfect Pathfinding (1.5 Update)", packageId jp.perfectpathing.updated) is a tiny mod: a [S…
 - **vehicles** — HD's VF compat surface is reflection-only (8 AccessTools.TypeByName sites; no `using Vehicles`, no hard refs, no Vehicles.* type in any signature) and degrade-SAFE (VehicleFrameworkCompat.IsActive is …
 - **abilities** — Better Autocasting for VPE (investigated separately; see its section below).
+- **advanced_power_plus** — A pure content mod (power buildings + 3 research projects); its only HD contact point is the refuelable path, and that single bug (an NRE refueling its IMPASSABLE generators) is closed generally by HD's `pawn.Position` fuel-search anchor. Everything else is `NONE`.
 
 ---
 
@@ -693,6 +694,58 @@ No HD change needed — and the interruption-safety **generalizes** to any mod t
 
 ---
 
+## Family: `advanced_power_plus`
+
+Advanced Power Plus (APP; packageId `Meltup.AdvancedPowerPlus`, workshop 2032409628, GitHub Meltup/Advanced-Power-Plus) is a **pure content mod**: it adds power-generation buildings and three research projects. Its *entire* C# surface is three files (`Sources/MyClass.cs`, `Sources/Patch.cs`, `Sources/PatchCompPowerPlantWater.cs`): a render/power-only `CompPowerPlantSolar` subclass, and two postfixes on vanilla `CompPowerPlantWater.RebuildCache`/`ForceOthersToRebuildCache` that flag the advanced watermill's double-water-use cache — **no work, hauling, job, or WorkGiver code anywhere**. Its three fueled generators (`ASRG` 2×2, `large_ASRG` 4×4, `advanced_nuclear_generator` 6×6) use *vanilla* `CompProperties_Refuelable` (uranium) with **no custom compClass and no custom WorkGiver**, so they flow through vanilla `WorkGiver_Refuel`/`CompRefuelable` exactly. The ONLY HD↔APP contact point is therefore the refuelable path, and its single real bug — an NRE refueling APP's *impassable* generators — is already closed by HD's `BulkRefuel.TryGiveBulkRefuelJob` search-anchor fix (`pawn.Position`, not `refuelable.Position`), a **general** fix covering any impassable refuelable. Everything else is `NONE`: APP's solar comp and watermill cache postfixes touch only rendering/power/water-cache, on methods HD never patches or calls (HD has zero `CompPowerPlant`/power/`listerBuildings` code, grep-confirmed).
+
+### Feature risk map
+
+- `LOW` (fixed) **Fueled generators — vanilla CompRefuelable on IMPASSABLE buildings (ASRG 2×2, large_ASRG 4×4, advanced_nuclear_generator 6×6; all `<passability>Impassable</passability>`, uranium fuelFilter, non-atomic)**
+  - Mechanism: each fueled generator (`1.6/Defs/ThingDefs/RTG_Buildings.xml`: ASRG :17, large_ASRG :108, advanced_nuclear_generator :276 — all `Impassable`, `<size>` 2×2/4×4/6×6) carries a stock `CompProperties_Refuelable` with `compClass` unset (= vanilla `CompRefuelable`) and a Uranium-only `fuelFilter`, refuelled by vanilla `WorkGiver_Refuel` (non-atomic; `atomicFueling` not set).
+  - HD overlap: `BulkRefuel.TryGiveBulkRefuelJob` (`BulkRefuel.cs`) + the autonomous `Patch_WorkGiver_Refuel_Redirect` prefix on `WorkGiver_Refuel.JobOnThing` + the player `FloatMenuOptionProvider_BulkRefuel`. HD reuses vanilla `RefuelWorkGiverUtility.FindEnoughReservableThings` to pick the fuel sweep set.
+  - Fix (general / no-op — already shipped): `FindEnoughReservableThings` (decompiled `RimWorld/RefuelWorkGiverUtility.cs:92-98`) does `region = rootCell.GetRegion(pawn.Map)` then immediately `rootCell.GetThingList(region.Map)` **with no null check** — an impassable `rootCell` returns a null `region` → NRE. APP's generators occupy impassable footprints, so `refuelable.Position` has no passable region (issue #34, the 6×6 nuclear reactor; large_ASRG and ASRG are equally impassable and were hit by the same bug on the autonomous path). HD now anchors the sweep at `pawn.Position` (`BulkRefuel.cs`, always passable, plus a defensive null-region decline) — the SAME reason vanilla never NREs (see "general-pattern recommendations"). Covers **any** impassable refuelable, not just APP's. No APP-specific code.
+- `NONE` **Autonomous bulk-refuel redirect probing APP generators (work-scan / route-resolve)**
+  - Mechanism: HD's `Patch_WorkGiver_Refuel_Redirect` is a prefix on the EXACT base `WorkGiver_Refuel.JobOnThing` (subclass-guarded `__instance.GetType() == typeof(WorkGiver_Refuel)`), fail-open. APP uses the unmodified base WorkGiver, so the redirect fires on its generators; it routes to `TryGiveBulkRefuelJob` (now `pawn.Position`-anchored, NRE-safe). `WorkKindResolver.Resolve` also probes every `directOrderable` `WorkGiver_Scanner` (and `WorkGiverDef.directOrderable` defaults `true`), so `WorkGiver_Refuel` IS probed via `HasJobOnThing`/`JobOnThing(forced:true)`.
+  - HD overlap: route-plan resolve + autonomous refuel both invoke `WorkGiver_Refuel.JobOnThing` on APP buildings.
+  - Fix (general / no-op): None. The route-resolve probe is wrapped in a per-giver try/catch that surfaces (never swallows) and skips one bad giver; and the underlying call is now NRE-safe anyway. For the non-atomic APP refuelable, vanilla `WorkGiver_Refuel.JobOnThing → RefuelJob → FindBestFuel(pawn.Position)` (decompiled) **does NOT call** the NRE-prone `FindEnoughReservableThings` at all, so even the bare vanilla probe is safe on APP's impassable buildings. A route is also nonsensical for a refuelable (no harvest/mine/deconstruct designation), so the resolver returns null for it — harmless.
+- `NONE` **Advanced solar generator — custom `sd_adv_powergen_CompAdvPowerPlantSolar` (CompPowerPlantSolar subclass)**
+  - Mechanism: `Sources/MyClass.cs` overrides only `DesiredPowerOutput` (sky-glow × roofed-fraction) and `PostDraw` (a fillable power bar). `PassThroughOnly`, not refuelable, no fuel. Pure rendering + power-output math.
+  - HD overlap: none — HD has no `CompPowerPlant`/power code (grep: zero hits for `PowerPlant|CompPower|skyManager|roofGrid` in HD source).
+  - Fix (general / no-op): No overlap. Power output and a draw bar are invisible to every HD subsystem.
+- `NONE` **Advanced watermill — two `CompPowerPlantWater` postfixes (double-water-use cache)**
+  - Mechanism: `Sources/PatchCompPowerPlantWater.cs` postfixes `CompPowerPlantWater.RebuildCache` (also flags `___waterDoubleUsed` when an *advanced* watermill's `WaterUseRect` overlaps) and `ForceOthersToRebuildCache` (dirties advanced watermills' caches). The watermill is Impassable, `CompPowerPlantWater`, **no fuel**.
+  - HD overlap: none — HD never patches or calls `CompPowerPlantWater`, `RebuildCache`, `WaterUseCells/Rect`, or `listerBuildings.AllBuildingsColonistOfDef` (grep-confirmed).
+  - Fix (general / no-op): No overlap. Water-cache bookkeeping on a non-refuelable building is orthogonal to all HD features.
+- `NONE` **Non-fueled generators — advanced wind (`PassThroughOnly`), advanced geothermal (Impassable, on geyser)**
+  - Mechanism: `1.6/Defs/ThingDefs/SD_Buildings.xml` (wind, `CompPowerPlantWind`) and `RTG_Buildings.xml` (geothermal :186, `CompPowerPlantSteam`). No `CompRefuelable`, no fuel.
+  - HD overlap: none (no fuel → no refuel path; HD has no power code).
+  - Fix (general / no-op): No overlap.
+- `NONE` **Hauling APP build materials (Steel/Plasteel/Components/Gold/WoodLog) and uranium fuel — vanilla items**
+  - Mechanism: APP buildings cost standard vanilla materials; the fuel is vanilla `Uranium`. All are ordinary haulables.
+  - HD overlap: HD's bulk-haul / scoop / construct-delivery treat them like any vanilla stack.
+  - Fix (general / no-op): No issue — APP adds no new ThingDef for materials or fuel, so HD's existing storage/haul handling applies unchanged. (The only fuel-delivery nuance is the impassable-refuelable NRE above, already fixed.)
+
+### Prior bugs learned from (their bug-fix history)
+
+- **None found.** APP's GitHub commit history (Meltup/Advanced-Power-Plus) and `About/About.xml` show only content/version work: "Updates for Rimworld 1.5 and 1.6", a `basePowerConsumption` tweak, and upload maintenance — **zero** commits mentioning refuel/fuel/hauling/WorkGiver/jobs/region/NullReference/crash. There is no `Changelog`/`News` file in `About/`. The relevant bug is HD-side (the impassable-refuelable NRE, HD issue #34), not an APP bug — APP just happens to ship the most prominent impassable refuelable (the 6×6 nuclear reactor), which is what surfaced it.
+
+### Top risks
+
+- **(Resolved) Impassable-refuelable NRE on APP's generators.** Before the fix, HD's `BulkRefuel` fed `refuelable.Position` to `FindEnoughReservableThings`, NRE-ing on every impassable refuelable (all 3 APP fueled generators qualify). Now anchored at `pawn.Position`; bounded and closed. No residual.
+- No other live risk. APP contributes no work/hauling/job logic, so there is nothing else for HD's patch surface to collide with.
+
+### General-pattern recommendations
+
+- **ANCHOR REGION SWEEPS AT A PASSABLE CELL (the shipped fix, and it is general):** vanilla `FindEnoughReservableThings` (`RefuelWorkGiverUtility.cs:94-98`) derefs `rootCell.GetRegion(map).Map` with no null guard. Vanilla itself only ever passes this function `refuelable.Position` on the ATOMIC path (`FindAllFuel`) — and shipped atomic content sits on passable footprints — while the NON-atomic path uses `FindBestFuel(pawn.Position)` which never calls it. HD reuses the *atomic* finder for its bulk sweep over *non-atomic* refuelables, so it must (and now does) anchor at `pawn.Position`, which is always passable. This makes HD safe for **any** impassable refuelable from **any** mod (deep drills, large reactors, modded turrets on impassable bases), not just APP — no per-mod patch.
+- **CONTENT-ONLY MODS NEED NO HD CODE:** a mod whose entire C# is render/power/cache postfixes on methods HD neither patches nor calls (here `CompPowerPlantSolar.DesiredPowerOutput`/`PostDraw`, `CompPowerPlantWater.RebuildCache`/`ForceOthersToRebuildCache`) has zero compat surface. The audit reduces to: does it add a `CompRefuelable` on an impassable footprint? If yes, the passable-anchor pattern already covers it; if no, `NONE` across the board.
+- **EXACT-TYPE-GUARD + FAIL-OPEN on the refuel redirect** already prevents hijacking modded/turret refuel WorkGivers; APP uses the unmodified base, so it benefits from the bulk redirect with no special handling.
+
+### Verdict
+
+APP is the simplest possible case for HD: a content mod with no work/hauling/job code. The only interaction is the refuelable path, and its sole bug (NRE on impassable refuelables — HD #34, exemplified by APP's 6×6 nuclear reactor) is already closed by HD's `pawn.Position` search-anchor in `BulkRefuel`, a general fix covering every impassable refuelable. All 3 fueled generators are impassable (verified in `RTG_Buildings.xml`) and were subject to the same bug on the autonomous redirect path; the fix covers all three identically. APP's custom solar comp and watermill cache postfixes are `NONE` — orthogonal to every HD subsystem (HD has no power code, grep-confirmed). **No APP-specific patch is needed, now or anticipated.**
+
+---
+
 ## Synthesized compatibility plan
 
 ### General patterns
@@ -755,11 +808,13 @@ No HD change needed — and the interruption-safety **generalizes** to any mod t
 - Foreign-unload def-guard — HD only replaces vanilla `UnloadInventory`, never another mod's custom unload (Common Sense, Bulk Load For Transporters).
 - `HarmonyPriority(Priority.Last)` on HD's two `JobGiver_Work.TryIssueJobPackage` postfixes — deterministic vs job-substituting mods (While You Are Nearby).
 - Vehicle cargo off-limits — HD won't source builds/meals from a parked vehicle's cargo; with VF support off, HD ignores vehicles entirely (selection + in-flight re-resolution).
+- Bulk-refuel passable search anchor — `BulkRefuel` now anchors its fuel sweep at `pawn.Position` (not the refuelable's impassable cell), fixing the NRE on impassable refuelables (issue #34, Advanced Power Plus's generators) and reviving bulk-refuel for every impassable refuelable; generalizes to any mod's deep drill / generator / reactor.
+- `[StaticConstructorOnStartup]` on the three HD types holding static `Texture2D`/`Material` fields (`Patch_Pawn_GetGizmos`, `HaulersDreamSettings`, `MapComponent_RoutePreview`) — clears the startup debug-log warnings; textures still load lazily on the main thread (no behavior change).
 - (Earlier on this branch: Everybody Gets One repeat-mode bridge; Storage Network opt-in bulk-load.)
 
 **Deferred (with rationale):**
 - Route drug-keep through `JobGiver_DropUnusedInventory.ShouldKeepDrugInInventory` — verifier refuted necessity; redundant with the Item Policy fix; would over-keep count-scheduled drugs (regression).
 - Compose-instead-of-replace the bill repeat-mode menu — zero functional impact today (EGO already works via its bridge) + a feasibility risk; pure tech-debt cleanup.
 
-**Verified no action needed:** storage frameworks (ASF / LWM / Storage Network — validate-through-vanilla + deposit re-gate); Vehicle Framework core guards (the generic-base `IsInstanceOfType` patch guard, reflection clamps); Haul Urgently (Allow Tool / Keyz); Common Sense do-bill cede; the Simple Sidearms / Combat Extended / Smart Medicine / DBH / Yayo keeper shims; Perfect Pathfinding (inert on 1.6 — HD only consumes `FindPathNow`); Better Autocasting (disjoint surface + interruption-safe).
+**Verified no action needed:** storage frameworks (ASF / LWM / Storage Network — validate-through-vanilla + deposit re-gate); Vehicle Framework core guards (the generic-base `IsInstanceOfType` patch guard, reflection clamps); Haul Urgently (Allow Tool / Keyz); Common Sense do-bill cede; the Simple Sidearms / Combat Extended / Smart Medicine / DBH / Yayo keeper shims; Perfect Pathfinding (inert on 1.6 — HD only consumes `FindPathNow`); Better Autocasting (disjoint surface + interruption-safe); Advanced Power Plus (pure content mod — its solar comp + watermill cache postfixes have zero HD overlap; its only contact point, refueling its impassable generators, is closed by the bulk-refuel passable-anchor fix above).
 
