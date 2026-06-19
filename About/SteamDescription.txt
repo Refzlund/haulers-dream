@@ -1,27 +1,73 @@
 Colonists use their inventories smartly when moving items, so they finish tasks with fewer round-trips and less walking back and forth — more time actually working. Plus planning tools and quality-of-life touches that build on it.
 
-[b]Compatible with[/b] Combat Extended, Vehicle Framework, Adaptive Storage Framework, LWM's Deep Storage, Common Sense, Allow Tool / Keyz' Allow Utilities ("Haul Urgently"), Simple Sidearms, Perfect Pathfinding, Autocast, While You Are Nearby — amongst other mods.
-[b]Replaces[/b] Pick Up And Haul, Harvest and Haul, Auto Strip on Haul, Haul After Stripping, Everyone Hauls, Allow Dumb Labor, Haul to Stack, Bulk Load For Transport, While You're Up, Meals on Wheels, Haul After Slaughter.
 
-Everything is optional — extensive in-game settings with per-option help, plus savable and shareable profiles. Safe to add to existing saves.
+[hr][/hr]
+
+[b]Compatible with[/b]
+[i]Combat Extended, Vehicle Framework, Adaptive Storage Framework, LWM's Deep Storage, Storage Network, Common Sense, Cook Carefully, Allow Tool / Keyz' Allow Utilities ("Haul Urgently"), Simple Sidearms, Item Policy, Smart Medicine, Everybody Gets One, Perfect Pathfinding, Better Autocasting for VPE, While You Are Nearby[/i] — amongst other mods
+
+[b]Replaces[/b]
+[i]Pick Up And Haul, Harvest and Haul, Auto Strip on Haul, Haul After Stripping, Everyone Hauls, Allow Dumb Labor, Haul to Stack, Bulk Load For Transport, While You're Up, Meals on Wheels, Haul After Slaughter[/i]
+
+
+[hr][/hr]
 
 [h2]Smart inventories[/h2]
-Work yields, hauls and loot ride in the inventory, so one trip does the work of many. Features covering harvest-hauling (mining, deep drills, deconstruction, plants, animals), bulk pick-up of everything haulable nearby, strip-on-haul with a configurable tainted-apparel policy, gather-everything-in-one-sweep for builders and cooks, shared inventories (a carrying pawn is a walking stockpile workers draw from), building and crafting from carried and caravan stock, meals-on-wheels, spoiling-first ingredient selection, and hauling fresh carcasses after a kill.
+Inventories carry resources, loot etc., and efficiently unloads the contents.
+This results in fewer trips to do work and hauling items.
+[list]
+[*] Harvested items goes into inventory without interrupting dedicated miners/farmers etc.
+[*] Pick up in bulk instead of one at a time
+[*] Strip corpses when hauling (configurable policies)
+[*] Gather resources into inventory when constructing, cooking etc.
+[*] Shared inventories — others draw from a carrier like a walking stockpile
+[/list]
 
 [h2]Smarter hauling[/h2]
-What happens between picking things up and putting them away. Features covering topping up existing stacks (several pawns can fill one tile at once), dropping a full load at storage that's on the way, emptying the nearest destination first to cut zig-zagging, grabbing loose items that lie along the path of a job you're already doing, and relocating supplies to storage closer to where they're used — with an optional per-mod storage-building filter.
+What happens between picking things up and putting them away.
+[list]
+[*] Top up existing stacks, and let several pawns fill the same tile at once
+[*] Drop a full load at storage that's already on the way
+[*] Grab loose items lying along a job you're already doing
+[*] Relocate supplies to storage closer to where they're used
+[/list]
 
 [h2]Bulk loading[/h2]
-Anything with a manifest — transport pods, shuttles, map portals (loaded down [i]and[/i] hauled back up), pack animals, refuelables, and Vehicle Framework cargo — filled in one trip instead of one stack per walk. Several haulers split a single manifest without double-hauling (an exact per-save claim-ledger keeps the count right), and interrupting one returns its share to the pile.
+Anything with a manifest, loaded in bulk instead of one stack per walk.
+[list]
+[*] Transport pods and shuttles
+[*] Map portals — loaded down [i]and[/i] hauled back up
+[*] Pack animals, refuelables, and Vehicle Framework cargo
+[*] Several haulers split one manifest without double-hauling
+[/list]
 
 [h2]Carrying capacity[/h2]
-Pawns carry past 100% only when the slowdown beats another round-trip, on a gentle curve — at the default a colonist fills to ~275% of capacity (still moving at ~65% speed) before it stops paying off. One slider runs from "carry freely" to "never overload", and Combat Extended's weight/bulk rules take over when it's loaded. Plus an optional "keep working when full" so a miner keeps mining and leaves the overflow for haulers.
+Pawns overload past 100% only when the slowdown beats another round-trip.
+[list]
+[*] A gentle curve — the heavier the load, the slower the pawn
+[*] One slider from "carry freely" to "never overload"
+[*] Combat Extended's weight & bulk rules take over when it's installed
+[/list]
 
 [h2]Planning tools[/h2]
-Right-click → "Plan prioritized [task]…". Features covering batched crafting (one ingredient trip for a whole batch — by order, or automatic "Batch" bill modes), travel-optimal route planning over a whole patch, vein, room or growing zone with a live map preview and storage-aware "smart routing", and one-job construction that hauls the materials and builds — plan a whole fence line so several pawns build in parallel, or pre-stock a site before it's buildable.
+Right-click → "Plan prioritized [task]…" to set up a whole job at once.
+[list]
+[*] Batched crafting — gather a whole batch's ingredients, then craft it all
+[*] Travel-optimal routes over a patch, vein, room or growing zone, with a live preview
+[*] Smart routing ends the run right next to your storage
+[*] One-job construction — haul the materials and build, in a single order
+[*] Pre-stock a build site, or plan a fence line for several builders at once
+[/list]
 
 [h2]Quality of life[/h2]
-Features covering per-pawn "auto-haul yields" toggles (leave a skilled miner working while haulers move the output), a right-click "Pick up X", optional multi-stack hauling for Haul-trained animals, high-capacity work-mech haulers that overload sensibly and unload before sitting on a charger, a "don't haul while bleeding" guard, and optional dumb-labor overrides (any pawn can haul, clean or cut plants regardless of incapability). It's all backed by categorized settings with per-control help, a live overload graph, and a master switch — plus settings profiles you can save and share as a copy/paste code.
+[list]
+[*] Per-pawn control — leave a skilled miner mining while others clear the output
+[*] Optional dumb-labor overrides — any pawn can haul, clean or cut plants
+[*] Extensive in-game settings with per-option help, plus savable, shareable profiles
+[/list]
+
+[b]…and that's just the highlights — more than 25 improvements, each with their own toggles.[/b]
+
 
 [hr][/hr]
 
