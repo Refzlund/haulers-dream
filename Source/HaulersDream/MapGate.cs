@@ -1,3 +1,4 @@
+using RimWorld;
 using Verse;
 
 namespace HaulersDream
@@ -35,6 +36,63 @@ namespace HaulersDream
             if (s == null)
                 return true; // settings not loaded yet -> the stand-down can't fire without enableOnNonHomeMaps
             return s.enableOnNonHomeMaps || map.IsPlayerHome;
+        }
+
+        /// <summary>
+        /// True if a carrying pawn on <paramref name="map"/> should unload to MAP STORAGE (HD's storage-unload
+        /// driver) rather than onto a pack animal. The old code treated every map as a strict binary —
+        /// <c>IsPlayerHome</c> (storage) vs <c>!IsPlayerHome</c> (pack-animal safeguard); a first fix narrowed the
+        /// non-home storage case to <c>IsPocketMap &amp;&amp; HasPlayerStorage</c> to catch a Vehicle Framework RV
+        /// interior — but that was WRONG: a VF RV interior is NOT a pocket map (<see cref="Map.IsPocketMap"/> is a
+        /// hard <c>info.isPocketMap</c> flag VF never sets), so the <c>IsPocketMap</c> conjunction excluded the
+        /// exact case it was meant to fix and the pick-up/drop loop persisted. The real discriminator is simply
+        /// "does this map have PLAYER storage?", not "is it a pocket map". So:
+        /// <list type="bullet">
+        /// <item>player-home map → always true (unchanged);</item>
+        /// <item>any OTHER map WITH player storage (a VF RV interior, a settled-in away camp the player gave
+        ///       shelves/zones) → true — deliver to that storage (the FIX);</item>
+        /// <item>a storage-less map (a transient caravan/raid camp, a hostile pocketmap like an undercave) → false
+        ///       — the loot still goes onto a pack animal / rides home in inventory, exactly as before.</item>
+        /// </list>
+        /// The per-item "does THIS stack fit / where" decision stays the unload driver's
+        /// <c>TryFindBestBetterStorageFor</c>; this only decides which ROUTE the autonomous triggers take. When a
+        /// storage-having map is momentarily full the driver keeps the load tagged in inventory (no drop, no
+        /// loop), so the cheap "any storage at all" test below is sufficient — it need not prove free space.
+        /// </summary>
+        public static bool ShouldUnloadToStorage(Map map)
+        {
+            if (map == null)
+                return false;
+            if (map.IsPlayerHome)
+                return true;
+            // Player storage present (anywhere, not just a pocket map) -> deliver there; otherwise the loot rides a
+            // pack animal / stays in inventory. A VF RV interior is NOT a pocket map, so the old IsPocketMap gate
+            // excluded it and the pawn looped pick-up -> drop with no reachable carrier; keying purely on storage
+            // presence fixes that while leaving genuine storage-less caravan/raid maps on the pack-animal path.
+            return HasPlayerStorage(map);
+        }
+
+        /// <summary>True if <paramref name="map"/> has at least one PLAYER storage destination — a stockpile/storage
+        /// zone (player-made by definition) or a player-faction storage building (a shelf). Deliberately ignores a
+        /// hostile pocketmap's own enemy shelves so loot is never routed into an enemy base's storage. Cheap:
+        /// returns on the first qualifying slot group.</summary>
+        public static bool HasPlayerStorage(Map map)
+        {
+            var mgr = map?.haulDestinationManager;
+            var groups = mgr?.AllGroupsListForReading;
+            if (groups == null)
+                return false;
+            for (int i = 0; i < groups.Count; i++)
+            {
+                var parent = groups[i]?.parent;
+                if (parent == null)
+                    continue;
+                if (parent is Zone)
+                    return true; // a stockpile/storage zone is player-owned by construction
+                if (parent is Thing th && th.Faction == Faction.OfPlayer)
+                    return true; // a player-faction storage building (shelf)
+            }
+            return false;
         }
     }
 }

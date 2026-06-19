@@ -100,6 +100,13 @@ namespace HaulersDream
 
         private static bool IsEligibleCrafter(Pawn pawn)
         {
+            // #4: HD's gather-into-inventory relay is a colonist scoop feature — exclude MECH workers
+            // unconditionally (not only via allowMechanoids), matching the ingredient-share injection. Keeping the
+            // whole share-for-crafting feature consistently mech-excluded means HD can never half-engage a mech's
+            // bill (gather a batch into inventory the next scan won't source from) and never feed a mech DoBill
+            // that dead-ends into the "10 jobs in one tick" loop. See BillRouteGate.WorkerMayShareCraft.
+            if (!BillRouteGate.WorkerMayShareCraft(pawn))
+                return false;
             if (pawn == null || pawn.GetComp<CompHauledToInventory>() == null)
                 return false;
             if (pawn.Drafted && (HaulersDreamMod.Settings?.pauseWhileDrafted ?? true))

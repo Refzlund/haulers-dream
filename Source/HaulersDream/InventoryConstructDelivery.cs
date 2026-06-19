@@ -142,10 +142,19 @@ namespace HaulersDream
                 // AddClusterNeeder dedups, so these are no-ops when they coincide with c or each other.
                 if (vanillaJob != null)
                 {
-                    AddClusterNeeder(vanillaJob.targetB.Thing, def, pawn, forced, clusterNeeders, ref clusterNeed);
+                    // Vanilla seeds these from its 8-tile batch found at NormalMaxDanger (= Deadly under a forced
+                    // order / open menu), so a vacuum-side member could ride in and then be walked to at the
+                    // driver's Danger.Deadly re-check. Cap them at Some like our own discovered extras — only the
+                    // clicked PRIMARY (added above) keeps the forced Deadly reach.
+                    if (ExtraSweepReach.Allows(pawn, vanillaJob.targetB.Thing, PathEndMode.Touch))
+                        AddClusterNeeder(vanillaJob.targetB.Thing, def, pawn, forced, clusterNeeders, ref clusterNeed);
                     if (vanillaJob.targetQueueB != null)
                         for (int i = 0; i < vanillaJob.targetQueueB.Count; i++)
-                            AddClusterNeeder(vanillaJob.targetQueueB[i].Thing, def, pawn, forced, clusterNeeders, ref clusterNeed);
+                        {
+                            var seed = vanillaJob.targetQueueB[i].Thing;
+                            if (ExtraSweepReach.Allows(pawn, seed, PathEndMode.Touch))
+                                AddClusterNeeder(seed, def, pawn, forced, clusterNeeders, ref clusterNeed);
+                        }
                 }
                 // HD's own discovery (the actual fix): same-material sites near the primary that vanilla's
                 // one-armful batch left out, nearest-first, until the combined demand fills one trip.
@@ -286,6 +295,8 @@ namespace HaulersDream
                 var t = candidates[i];
                 if (!HaulAIUtility.PawnCanAutomaticallyHaulFast(pawn, t, false) || !pawn.CanReserve(t))
                     continue;
+                if (!ExtraSweepReach.Allows(pawn, t))
+                    continue; // bonus extra: cap reach at Some (no vacuum/fire material pickups)
                 outStacks.Add(t);
                 got += t.stackCount;
             }
@@ -333,6 +344,8 @@ namespace HaulersDream
                         continue;
                     if (!HaulAIUtility.PawnCanAutomaticallyHaulFast(pawn, t, false))
                         continue;
+                    if (!ExtraSweepReach.Allows(pawn, t))
+                        continue; // material source: cap reach at Some (don't fetch build stock from vacuum/fire)
                     int d = (t.Position - pawn.Position).LengthHorizontalSquared;
                     if (d < bestDist) { bestDist = d; best = t; }
                 }
@@ -401,6 +414,10 @@ namespace HaulersDream
                 // Mirror vanilla IsNewValidNearbyNeeder: deliverable/constructible by this pawn (skills unchecked;
                 // forced:false — these are opportunistic extras, not the explicitly clicked target).
                 if (!GenConstruct.CanConstruct(t, pawn, checkSkills: false, forced: false, JobDefOf.HaulToContainer))
+                    continue;
+                // forced:false still reaches at NormalMaxDanger, which is Deadly under a forced/menu host — so
+                // cap these opportunistic extra needers at Some (no gathering vacuum/fire sites into the cluster).
+                if (!ExtraSweepReach.Allows(pawn, t, PathEndMode.Touch))
                     continue;
                 AddClusterNeeder(t, def, pawn, forced, outNeeders, ref clusterNeed);
             }

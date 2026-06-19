@@ -73,7 +73,7 @@ namespace HaulersDream
                 pairStuffField = AccessTools.Field(pairType, "stuff");
             }
             memoryApiOk = rememberedField != null && pairThingField != null && pairStuffField != null;
-            Log.Message("[Hauler's Dream] Simple Sidearms detected — carried sidearms are excluded from surplus "
+            HDLog.Msg("Simple Sidearms detected — carried sidearms are excluded from surplus "
                         + "unloading" + (memoryApiOk ? "." : " (memory API unresolved — keeping all carried weapons as a safe fallback)."));
         }
 

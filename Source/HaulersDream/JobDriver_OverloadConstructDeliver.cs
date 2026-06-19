@@ -280,10 +280,14 @@ namespace HaulersDream
                     pawn.Map?.enrouteManager?.ReleaseFor(he, pawn);
                 if (InventoryStackOfDef() == null) { JumpToToil(done); return; } // nothing left to deliver
                 var queue = job.GetTargetQueue(NeederInd);
-                while (queue != null && queue.Count > 0)
+                if (queue == null) { JumpToToil(done); return; }
+
+                // PASS 1 — drop every NON-usable queued needer (gone / forbidden / unreachable / now-full),
+                // releasing OUR enroute claim on each (registered in TryMakePreToilReservations) so another pawn
+                // can serve it. ReleaseFor is per-(needer,pawn) + idempotent. Backward so RemoveAt is index-safe.
+                for (int i = queue.Count - 1; i >= 0; i--)
                 {
-                    Thing cand = queue[0].Thing;
-                    queue.RemoveAt(0);
+                    Thing cand = queue[i].Thing;
                     bool usable = cand != null && !cand.Destroyed && cand.Spawned && cand is IConstructible
                         && !cand.IsForbidden(pawn) && pawn.CanReach(cand, PathEndMode.Touch, Danger.Deadly);
                     int candSpace = usable
@@ -292,19 +296,34 @@ namespace HaulersDream
                         : 0;
                     if (!usable || candSpace <= 0)
                     {
-                        // We registered enroute for this needer in TryMakePreToilReservations; since we're
-                        // dropping it (gone/forbidden/unreachable/now-full), release OUR claim so another pawn
-                        // can serve it. ReleaseFor is per-(needer,pawn) + idempotent (no-op if not claimed).
                         if (cand is IHaulEnroute skipE)
                             pawn.Map?.enrouteManager?.ReleaseFor(skipE, pawn);
-                        continue;
+                        queue.RemoveAt(i);
                     }
-                    job.SetTarget(NeederInd, cand);
-                    job.SetTarget(PrimaryNeederInd, cand);
-                    JumpToToil(deliverGotoNext);
-                    return;
                 }
-                JumpToToil(done); // queue exhausted
+                if (queue.Count == 0) { JumpToToil(done); return; } // no usable needer remains
+
+                // PASS 2 — deliver to the NEAREST surviving needer to the pawn's CURRENT cell (re-anchored each
+                // hop), NOT strict FIFO. The queue arrives ordered by distance from a FIXED anchor (the primary
+                // site, the stockpile-nearest vanilla members, then HD's primary-anchored scan), so FIFO made the
+                // builder zig-zag across a wall/fence line — long back-and-forth trips. Nearest-from-here is a
+                // greedy nearest-neighbour route that keeps every leg short. The min-distance pick (lowest-index
+                // tiebreak) is the Core-tested ConstructionBatchMath.NextNearestIndex.
+                var xs = new List<int>(queue.Count);
+                var zs = new List<int>(queue.Count);
+                for (int i = 0; i < queue.Count; i++)
+                {
+                    var p = queue[i].Thing.Position;
+                    xs.Add(p.x);
+                    zs.Add(p.z);
+                }
+                int pick = ConstructionBatchMath.NextNearestIndex(xs, zs, pawn.Position.x, pawn.Position.z);
+                if (pick < 0) { JumpToToil(done); return; } // unreachable in practice (queue is non-empty)
+                Thing chosen = queue[pick].Thing;
+                queue.RemoveAt(pick); // remove only the chosen needer; the rest stay queued for later hops
+                job.SetTarget(NeederInd, chosen);
+                job.SetTarget(PrimaryNeederInd, chosen);
+                JumpToToil(deliverGotoNext);
             };
             nextNeeder.defaultCompleteMode = ToilCompleteMode.Instant;
             yield return nextNeeder;

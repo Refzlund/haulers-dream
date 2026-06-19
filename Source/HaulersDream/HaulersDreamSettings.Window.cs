@@ -709,6 +709,8 @@ namespace HaulersDream
                 "HaulersDream.Setting.HaulDeconstruct.Help".Translate());
             haulAnimals = HDSettingsUI.Checkbox(c, "HaulersDream.Setting.HaulAnimals".Translate(), haulAnimals,
                 "HaulersDream.Setting.HaulAnimals.Help".Translate());
+            haulUninstall = HDSettingsUI.Checkbox(c, "HaulersDream.Setting.HaulUninstall".Translate(), haulUninstall,
+                "HaulersDream.Setting.HaulUninstall.Help".Translate());
 
             HDSettingsUI.Header(c, "HaulersDream.Head.AfterKill".Translate());
             haulTamedSlaughter = HDSettingsUI.Checkbox(c, "HaulersDream.Setting.HaulTamedSlaughter".Translate(),

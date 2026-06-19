@@ -104,5 +104,64 @@ namespace HaulersDream.Tests
                 Assert.That(nt, Is.LessThanOrEqualTo(needers));
             }
         }
+
+        // ---- NextNearestIndex (multi-site construction-delivery hop ordering) ----
+
+        [Test]
+        public void NextNearest_PicksClosestBySquaredDistance()
+        {
+            // Candidates at (10,0),(2,2),(0,5); pawn at origin → (2,2) is nearest (dist² = 8).
+            var xs = new List<int> { 10, 2, 0 };
+            var zs = new List<int> { 0, 2, 5 };
+            Assert.That(ConstructionBatchMath.NextNearestIndex(xs, zs, 0, 0), Is.EqualTo(1));
+        }
+
+        [Test]
+        public void NextNearest_TieBreaksToLowestIndex()
+        {
+            // (3,0) and (0,3) are equidistant from origin (dist² = 9) → return the lower index.
+            var xs = new List<int> { 3, 0 };
+            var zs = new List<int> { 0, 3 };
+            Assert.That(ConstructionBatchMath.NextNearestIndex(xs, zs, 0, 0), Is.EqualTo(0));
+        }
+
+        [Test]
+        public void NextNearest_EmptyOrNull_ReturnsMinusOne()
+        {
+            Assert.That(ConstructionBatchMath.NextNearestIndex(new List<int>(), new List<int>(), 5, 5), Is.EqualTo(-1));
+            Assert.That(ConstructionBatchMath.NextNearestIndex(null, null, 5, 5), Is.EqualTo(-1));
+            // Mixed null (one list present, the other null) must not throw — yields no candidate.
+            Assert.That(ConstructionBatchMath.NextNearestIndex(new List<int> { 1 }, null, 0, 0), Is.EqualTo(-1));
+            Assert.That(ConstructionBatchMath.NextNearestIndex(null, new List<int> { 1 }, 0, 0), Is.EqualTo(-1));
+        }
+
+        [Test]
+        public void NextNearest_GreedyRoute_BeatsFixedAnchorFifo_ZigZag()
+        {
+            // The reported bug, in miniature: a fence line z=0, x=0..10. The primary (already delivered) sits in
+            // the MIDDLE at x=5; the remaining sites arrive sorted by distance from that fixed anchor — the
+            // concentric "alternating sides" order the user saw: 4,6,3,7,2,8,1,9,0,10.
+            var qx = new List<int> { 4, 6, 3, 7, 2, 8, 1, 9, 0, 10 };
+
+            // FIFO (the old behaviour): walk them in queue order from the pawn's start at x=5.
+            double fifo = 0; int prev = 5;
+            foreach (var x in qx) { fifo += System.Math.Abs(x - prev); prev = x; }
+
+            // Greedy nearest-neighbour (the fix): each hop pick the nearest remaining to where the pawn stands.
+            var rx = new List<int>(qx);
+            var rz = Enumerable.Repeat(0, rx.Count).ToList();
+            double greedy = 0; int cur = 5;
+            while (rx.Count > 0)
+            {
+                int pick = ConstructionBatchMath.NextNearestIndex(rx, rz, cur, 0);
+                greedy += System.Math.Abs(rx[pick] - cur);
+                cur = rx[pick];
+                rx.RemoveAt(pick); rz.RemoveAt(pick);
+            }
+
+            Assert.That(fifo, Is.EqualTo(55));     // 1+2+3+…+10 — every hop crosses the line
+            Assert.That(greedy, Is.EqualTo(15));   // sweep left to 0, one jump to 6, sweep right to 10
+            Assert.That(greedy, Is.LessThan(fifo)); // the point of the fix
+        }
     }
 }

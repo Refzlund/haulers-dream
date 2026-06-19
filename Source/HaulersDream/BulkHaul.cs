@@ -38,12 +38,20 @@ namespace HaulersDream
     {
         static void Postfix(ref Job __result, Pawn pawn, Thing t, bool forced)
         {
-            // No try/catch: a failure here is a real bug we want surfaced as a red error (Harmony lets the
-            // exception propagate to RimWorld's handler), not silently downgraded to a one-time warning.
+            // A failure here is a real bug: it must stay a visible red error, never a silent downgrade. The
+            // Finalizer below does exactly that (logs with HD + pawn context, then RETHROWS — see HDGuard), so the
+            // fault still propagates to RimWorld's handler but is now attributable instead of an anonymous stack.
             var bulk = BulkHaul.TryBuildBulkJob(pawn, t, __result, forced);
             if (bulk != null)
                 __result = bulk;
         }
+
+        // Seam guard (fix/mix): WorkGiver_HaulGeneral.JobOnThing is the funnel for BOTH the automatic haul scan and
+        // forced "Prioritize hauling". A throw here would break this pawn's hauling job entirely with no
+        // HD-attributable trace — log it (with the pawn), then rethrow so it still surfaces.
+        static System.Exception Finalizer(System.Exception __exception, Pawn pawn)
+            => HDGuard.SeamThrew(__exception, "WorkGiver_HaulGeneral.JobOnThing (HD bulk-haul)", pawn,
+                "this pawn's hauling job could not be built this scan.");
     }
 
     public static class BulkHaul
@@ -661,6 +669,11 @@ namespace HaulersDream
                 if (fits <= 0)
                     continue; // too heavy/bulky for the remaining room — a lighter neighbor may still fit
                 if (!HaulAIUtility.PawnCanAutomaticallyHaulFast(pawn, t, forced: false))
+                    continue;
+                // Bonus extra: never path a vacuum-/fire-concerned pawn through a Deadly region for a swept
+                // candidate (PawnCanAutomaticallyHaulFast reaches at NormalMaxDanger, which is Deadly while the
+                // plan is built under a forced job / open float menu — that exemption is for the clicked primary).
+                if (!ExtraSweepReach.Allows(pawn, t))
                     continue;
                 var currentPriority = StoreUtility.CurrentStoragePriorityOf(t);
                 if (!StoreUtility.TryFindBestBetterStorageFor(t, pawn, pawn.Map, currentPriority, pawn.Faction,

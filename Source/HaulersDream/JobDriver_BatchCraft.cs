@@ -107,6 +107,98 @@ namespace HaulersDream
         private ThingOwner Inv => pawn.inventory?.GetDirectlyHeldThings();
         private CompHauledToInventory Comp => pawn.GetComp<CompHauledToInventory>();
 
+        /// <summary>True for an allowMixingIngredients recipe (every vanilla cooked meal, plus kibble/pemmican/
+        /// chemfuel/beer): the rep's ingredients are NOT a frozen per-slot def list but a value-fill chosen from
+        /// current stock per rep (<see cref="BuildMixForRep"/>). Every (def,count)-assuming helper branches on this;
+        /// the non-mixing branch is the unchanged original code.</summary>
+        private bool MixingRecipe => job.bill?.recipe?.allowMixingIngredients == true;
+
+        // ---- MIXING-recipe slot model (cached; derived from job.bill.recipe, so no scribe field is needed — the
+        //      recipe is always available at runtime, and ingredientDefs/perRepCounts already scribe the CURRENT
+        //      rep's mix for a save taken mid-place) ----
+        //
+        // One MixSlot per recipe ingredient slot: the slot's per-rep VALUE target (GetBaseCount) and the bill-usable
+        // candidate defs assigned to it. A def is assigned to its FIRST matching slot (mixDefToSlot) so its value /
+        // inventory units are counted toward exactly one slot. ASSUMPTION: vanilla mixing recipes have DISJOINT slot
+        // filters (cooking = a single "meals" slot; kibble/pemmican = two disjoint slots — e.g. plant + meat), so
+        // first-match assignment is exact; a (non-vanilla) overlapping-filter recipe would attribute a shared def to
+        // only its first slot, which is a safe, conservative value accounting (never double-counts a unit).
+        private sealed class MixSlot
+        {
+            public int slotIndex;
+            public double perRepValue;          // GetBaseCount() — total value this slot consumes per rep
+            public readonly List<ThingDef> defs = new List<ThingDef>(); // bill-usable candidate defs assigned here
+        }
+        private List<MixSlot> mixSlotsCache;
+        private Dictionary<ThingDef, int> mixDefToSlotCache; // def -> its assigned MixSlot index (first match)
+        private Bill mixModelBuiltFor;                        // invalidate the cache if job.bill ever changes
+
+        /// <summary>Build (or return the cached) per-slot mix model for the current bill's mixing recipe: each recipe
+        /// ingredient slot's per-rep value target + the bill-usable candidate defs assigned to it (first-match), and
+        /// the def→slot map used for value accounting. Mirrors the planner's candidate filter exactly (skip null;
+        /// fixed slots bypass the bill filter; else require bill.ingredientFilter.Allows). Returns an empty model when
+        /// not a mixing recipe / no bill.</summary>
+        private List<MixSlot> MixSlots()
+        {
+            var bill = job.bill;
+            var recipe = bill?.recipe;
+            if (recipe == null || !recipe.allowMixingIngredients)
+                return mixSlotsCache ?? (mixSlotsCache = new List<MixSlot>());
+            if (mixSlotsCache != null && mixModelBuiltFor == bill)
+                return mixSlotsCache;
+
+            var slots = new List<MixSlot>();
+            var defToSlot = new Dictionary<ThingDef, int>();
+            var ings = recipe.ingredients;
+            for (int s = 0; s < ings.Count; s++)
+            {
+                var ing = ings[s];
+                var slot = new MixSlot { slotIndex = s, perRepValue = ing.GetBaseCount() };
+                foreach (var cand in ing.filter.AllowedThingDefs)
+                {
+                    if (cand == null)
+                        continue;
+                    // Same rule as CraftBatchPlanner's candidate filter + vanilla AllowMix: fixed slots bypass the
+                    // bill's player-set allowed-ingredient list; otherwise require it (implicit-costList recipes have
+                    // an empty bill filter, handled by the null check).
+                    if (!ing.IsFixedIngredient && bill.ingredientFilter != null && !bill.ingredientFilter.Allows(cand))
+                        continue;
+                    // Assign each def to its FIRST matching slot only (disjoint-filter assumption above).
+                    if (defToSlot.ContainsKey(cand))
+                        continue;
+                    defToSlot[cand] = s;
+                    slot.defs.Add(cand);
+                }
+                slots.Add(slot);
+            }
+            mixSlotsCache = slots;
+            mixDefToSlotCache = defToSlot;
+            mixDefUnionCache = null; // invalidate the derived union so it rebuilds for this (possibly new) bill
+            mixModelBuiltFor = bill;
+            return mixSlotsCache;
+        }
+
+        /// <summary>The value-per-unit of <paramref name="def"/> for the current mixing recipe (nutrition for food;
+        /// 1 for a count-based value getter), mirroring vanilla's <c>IngredientValueGetter.ValuePerUnitOf</c>.</summary>
+        private float ValuePerUnit(ThingDef def)
+        {
+            var recipe = job.bill?.recipe;
+            if (recipe == null || def == null)
+                return 0f;
+            return recipe.IngredientValueGetter.ValuePerUnitOf(def);
+        }
+
+        /// <summary>True iff <paramref name="def"/> is a candidate ingredient for SOME mix slot of the current recipe
+        /// (used for leftover-unload + rot-freeze, which must cover the FULL mix-allowed-def set, not just the current
+        /// rep's chosen mix). Builds the model on first use.</summary>
+        private bool IsMixDef(ThingDef def)
+        {
+            if (def == null)
+                return false;
+            MixSlots(); // ensure mixDefToSlotCache is populated for the current bill
+            return mixDefToSlotCache != null && mixDefToSlotCache.ContainsKey(def);
+        }
+
         public override void ExposeData()
         {
             base.ExposeData();
@@ -240,7 +332,11 @@ namespace HaulersDream
             Toil loadDecide = ToilMaker.MakeToil("HD_BatchLoadDecide");
             loadDecide.initAction = () =>
             {
-                if (repsTarget <= 0 || ingredientDefs.Count == 0) { JumpToToil(gotoBench); return; }
+                // "Nothing to plan?" — NON-mixing: the frozen per-slot def list is empty (no plan). MIXING: the plan
+                // freezes NO defs (ingredientDefs is empty until each rep's BuildMixForRep), so the emptiness signal is
+                // instead "the recipe has no mix slots" — checking ingredientDefs here would wrongly skip ALL pre-load.
+                bool nothingToPlan = MixingRecipe ? (MixSlots().Count == 0) : (ingredientDefs.Count == 0);
+                if (repsTarget <= 0 || nothingToPlan) { JumpToToil(gotoBench); return; }
                 if (PastDeadline()) { JumpToToil(gotoBench); return; }
                 Thing next = FindNeededStack();
                 if (next == null) { JumpToToil(gotoBench); return; } // everything that's reachable is loaded
@@ -311,7 +407,16 @@ namespace HaulersDream
                     { JumpToToil(done); return; }
                 }
                 else if (!job.bill.ShouldDoNow()) { JumpToToil(done); return; }
-                if (!HasOneRepInInventory()) { JumpToToil(done); return; }
+                // Decide THIS rep's per-slot ingredient list. For a MIXING recipe, recompute the mix from CURRENT
+                // inventory by value (greedy value-fill, mirroring vanilla AllowMix) and write it into ingredientDefs/
+                // perRepCounts — the carry/place/consume loop below then runs UNCHANGED on that per-def list. If the
+                // mix can't be filled from what's on hand, end the batch cleanly. For a NON-mixing recipe the frozen
+                // per-slot plan is used and we just check one rep is loaded (the original behaviour, byte-identical).
+                if (MixingRecipe)
+                {
+                    if (!BuildMixForRep()) { JumpToToil(done); return; }
+                }
+                else if (!HasOneRepInInventory()) { JumpToToil(done); return; }
                 // Start this rep's carry+place loop at slot 0 (uninitialised remaining) with empty placedThings.
                 placeSlotCursor = 0;
                 placeSlotRemaining = -1;
@@ -512,7 +617,7 @@ namespace HaulersDream
                             if (products[i] != null && products[i].holdingOwner == null && !products[i].Spawned)
                                 PlaceProductIntoInventory(products[i]);
                     throw new System.Exception(
-                        $"[Hauler's Dream] batch-craft rep failed for {recipe.defName} (placed ingredients on bench floor, products banked)", e);
+                        $"{HDLog.Tag}batch-craft rep failed for {recipe.defName} (placed ingredients on bench floor, products banked)", e);
                 }
             };
             toil.defaultCompleteMode = ToilCompleteMode.Instant;
@@ -558,8 +663,11 @@ namespace HaulersDream
         /// <summary>Should this carried thing's rot be frozen right now? True only while actively crafting at the
         /// bench AND the thing is one of this batch's ingredient defs — so the rot-freeze patch leaves the pawn's
         /// unrelated personal stock (and the gather/travel phases) rotting normally. Read by
-        /// <see cref="Patch_CompRottable_BatchFreeze"/>.</summary>
-        public bool ShouldFreezeRot(Thing t) => ActivelyCrafting && t != null && ingredientDefs.Contains(t.def);
+        /// <see cref="Patch_CompRottable_BatchFreeze"/>. For a MIXING recipe the current rep's chosen mix
+        /// (ingredientDefs) is only a SUBSET of the carried mix stock, so freeze any def that belongs to the recipe's
+        /// mix-allowed set (IsMixDef) — otherwise pre-loaded stock not in this rep's pick would rot while crafting.</summary>
+        public bool ShouldFreezeRot(Thing t)
+            => ActivelyCrafting && t != null && (MixingRecipe ? IsMixDef(t.def) : ingredientDefs.Contains(t.def));
 
         /// <summary>
         /// How many units to pull from <paramref name="stack"/> on this trip. The player explicitly batched N reps
@@ -570,7 +678,10 @@ namespace HaulersDream
         private int BatchGatherCount(Thing stack)
         {
             if (stack == null || !stack.Spawned) return 0;
-            int need = NeededUnits(stack.def);
+            // Units still needed of this def. NON-mixing: the def's per-rep×reps demand minus inventory (NeededUnits).
+            // MIXING: the def's SLOT still needs `SlotValueNeeded` value, which this def supplies at vpu per unit, so
+            // need = CeilToInt(slotValueNeeded / vpu) — enough units of THIS def to cover the slot's remaining value.
+            int need = MixingRecipe ? MixNeededUnits(stack.def) : NeededUnits(stack.def);
             if (need <= 0) return 0;
             var s = HaulersDreamMod.Settings;
             // Honour the ceiling under strict carry weight AND with the overload slider at "Off" ("never
@@ -600,7 +711,9 @@ namespace HaulersDream
         /// <summary>Nearest reachable, non-forbidden, reservable, bill-usable floor stack of any plan def we
         /// still need more of — thing-level bill constraints (rot stage, hit points, the bill's filter) and the
         /// bill's ingredient search radius applied exactly like vanilla's ingredient scan, so the batch never
-        /// loads what the bill forbids.</summary>
+        /// loads what the bill forbids. For a MIXING recipe the def set is the FULL union of mix-slot candidate
+        /// defs and "needed" means the def's SLOT still needs value (MixNeededUnits > 0); for a NON-mixing recipe
+        /// it is the frozen per-slot plan defs (the original, byte-identical behaviour).</summary>
         private Thing FindNeededStack()
         {
             var map = pawn.Map;
@@ -614,20 +727,25 @@ namespace HaulersDream
             bool cmpOn = SpoilingFirst.AnyToggleOn(HaulersDreamMod.Settings);
             Thing best = null;
             int bestDist = int.MaxValue;
-            // Distinct plan defs that still need loading. A def may appear in MULTIPLE slots (ingredientDefs has
-            // one entry per slot); NeededUnits(def) and the candidate scan are identical for every occurrence (and
-            // the scan only replaces `best` on a STRICT improvement, so a re-scan of the same def's stacks can never
-            // change the result), so process each def ONCE — skip an occurrence whose def already appeared earlier
-            // (HD-INVCOUNT: drops the redundant per-duplicate-def NeededUnits→InventoryCountOfDef inventory walk).
-            for (int d = 0; d < ingredientDefs.Count; d++)
+            // The candidate def list: NON-mixing = the frozen per-slot plan defs; MIXING = the union of every mix
+            // slot's candidate defs. Either way we de-duplicate and process each def ONCE (NeededUnits/MixNeededUnits
+            // and the per-stack scan are identical for every occurrence, and the scan only replaces `best` on a STRICT
+            // improvement, so a re-scan of the same def can never change the result — HD-INVCOUNT).
+            var defList = MixingRecipe ? MixDefUnion() : ingredientDefs;
+            for (int d = 0; d < defList.Count; d++)
             {
-                var def = ingredientDefs[d];
+                var def = defList[d];
                 if (def == null)
                     continue;
                 bool seenEarlier = false;
                 for (int e = 0; e < d; e++)
-                    if (ingredientDefs[e] == def) { seenEarlier = true; break; }
-                if (seenEarlier || NeededUnits(def) <= 0)
+                    if (defList[e] == def) { seenEarlier = true; break; }
+                if (seenEarlier)
+                    continue;
+                // Still need more of this def? NON-mixing: per-rep×reps demand minus inventory. MIXING: the def's
+                // SLOT still needs value (MixNeededUnits is CeilToInt(slotValueNeeded / vpu), 0 when the slot is full).
+                int stillNeeded = MixingRecipe ? MixNeededUnits(def) : NeededUnits(def);
+                if (stillNeeded <= 0)
                     continue;
                 var things = map.listerThings.ThingsOfDef(def);
                 for (int i = 0; i < things.Count; i++)
@@ -639,8 +757,8 @@ namespace HaulersDream
                         continue;
                     if ((t.Position - root).LengthHorizontalSquared >= radiusSq)
                         continue;
-                    if (!pawn.CanReserve(t) || !pawn.CanReach(t, PathEndMode.ClosestTouch, Danger.Deadly))
-                        continue;
+                    if (!pawn.CanReserve(t) || !pawn.CanReach(t, PathEndMode.ClosestTouch, ExtraSweepReach.Ceiling(pawn)))
+                        continue; // bonus ingredient: cap reach at Some (don't fetch crafting stock from vacuum/fire)
                     int dist = (t.Position - pawn.Position).LengthHorizontalSquared;
                     if (best == null
                         || (cmpOn ? SpoilingFirst.BetterThan(t, dist, best, bestDist, HaulersDreamMod.Settings)
@@ -668,9 +786,24 @@ namespace HaulersDream
         /// <summary>True iff the inventory holds enough of every slot's def for one more repetition.
         /// Def-level only: bill-disallowed personal stock (rotten meat in a pocket) can overstate this by
         /// one cycle — the pull then reads short and the batch ends cleanly, wasting at most one work
-        /// cycle at the very end rather than paying a thing-level scan per rep.</summary>
+        /// cycle at the very end rather than paying a thing-level scan per rep. For a MIXING recipe "enough"
+        /// is VALUE-based: every slot's in-inventory value must reach its per-rep value target (the craftCheck
+        /// branches to BuildMixForRep instead of calling this, but other callers may reach it).</summary>
         private bool HasOneRepInInventory()
         {
+            if (MixingRecipe)
+            {
+                var slots = MixSlots();
+                if (slots.Count == 0)
+                    return false;
+                for (int s = 0; s < slots.Count; s++)
+                {
+                    double per = slots[s].perRepValue;
+                    if (per > 0.0 && CurrentInventorySlotValue(slots[s]) + 1e-4 < per)
+                        return false;
+                }
+                return true;
+            }
             // Sum requirements per def (a def may appear in multiple slots).
             for (int i = 0; i < ingredientDefs.Count; i++)
             {
@@ -693,6 +826,23 @@ namespace HaulersDream
         /// carry aborts the rep). 0 = nothing loadable.</summary>
         private int MaxRepsLoadable()
         {
+            if (MixingRecipe)
+            {
+                // VALUE-based: per slot, floor(currentInventorySlotValue / perRepValue); the batch is bounded by the
+                // scarcest slot. A slot with no value need (perRepValue <= 0) imposes no limit.
+                var slots = MixSlots();
+                int maxMix = int.MaxValue;
+                for (int s = 0; s < slots.Count; s++)
+                {
+                    double per = slots[s].perRepValue;
+                    if (per <= 0.0)
+                        continue;
+                    int can = (int)System.Math.Floor((CurrentInventorySlotValue(slots[s]) + 1e-4) / per);
+                    if (can < maxMix)
+                        maxMix = can;
+                }
+                return maxMix == int.MaxValue ? 0 : (maxMix < 0 ? 0 : maxMix);
+            }
             int max = int.MaxValue;
             for (int i = 0; i < ingredientDefs.Count; i++)
             {
@@ -709,6 +859,225 @@ namespace HaulersDream
             }
             return max == int.MaxValue ? 0 : max;
         }
+
+        // ========================= MIXING-recipe helpers (used only when MixingRecipe) =========================
+
+        private List<ThingDef> mixDefUnionCache;
+
+        /// <summary>The de-duplicated union of every mix slot's candidate defs (the full set of defs this batch may
+        /// pre-load / carry / freeze). Cached; rebuilt whenever the slot model is rebuilt.</summary>
+        private List<ThingDef> MixDefUnion()
+        {
+            var slots = MixSlots();
+            if (mixDefUnionCache != null && mixModelBuiltFor == job.bill)
+                return mixDefUnionCache;
+            var union = new List<ThingDef>();
+            var seen = new HashSet<ThingDef>();
+            for (int s = 0; s < slots.Count; s++)
+            {
+                var defs = slots[s].defs;
+                for (int i = 0; i < defs.Count; i++)
+                    if (seen.Add(defs[i]))
+                        union.Add(defs[i]);
+            }
+            mixDefUnionCache = union;
+            return mixDefUnionCache;
+        }
+
+        /// <summary>Total bill-usable inventory VALUE currently held toward <paramref name="slot"/> — Σ over inventory
+        /// stacks ASSIGNED to this slot (def→first-matching-slot, so a def is never double-counted across slots) of
+        /// stackCount × value-per-unit(def). Bill-vetted (InventoryShare.IsUsableForBill) so disallowed personal stock
+        /// of a mix def doesn't inflate the estimate — this matches what BuildMixForRep can actually fill (slightly
+        /// stricter than the NoMix path's def-level count, deliberately, to avoid under-gathering a mix slot).</summary>
+        private double CurrentInventorySlotValue(MixSlot slot)
+        {
+            var owner = Inv;
+            if (owner == null || slot == null)
+                return 0.0;
+            MixSlots(); // ensure mixDefToSlotCache populated
+            var bill = job.bill;
+            double total = 0.0;
+            for (int i = 0; i < owner.Count; i++)
+            {
+                var t = owner[i];
+                if (t?.def == null)
+                    continue;
+                if (mixDefToSlotCache == null || !mixDefToSlotCache.TryGetValue(t.def, out int sidx) || sidx != slot.slotIndex)
+                    continue;
+                if (bill != null && !InventoryShare.IsUsableForBill(t, bill))
+                    continue;
+                float vpu = ValuePerUnit(t.def);
+                if (vpu <= 0f)
+                    continue;
+                total += t.stackCount * (double)vpu;
+            }
+            return total;
+        }
+
+        /// <summary>The VALUE still to load into THIS slot for the whole batch = perRepValue × repsTarget −
+        /// currentInventorySlotValue (floored at 0).</summary>
+        private double SlotValueNeeded(MixSlot slot)
+        {
+            if (slot == null || slot.perRepValue <= 0.0)
+                return 0.0;
+            double want = slot.perRepValue * repsTarget;
+            double have = CurrentInventorySlotValue(slot);
+            double need = want - have;
+            return need > 0.0 ? need : 0.0;
+        }
+
+        /// <summary>Units of <paramref name="def"/> still to load for the batch (MIXING): enough of THIS def to cover
+        /// its slot's remaining VALUE need — CeilToInt(slotValueNeeded / value-per-unit(def)). 0 when the def is not a
+        /// mix def, its value-per-unit is 0, or its slot is already fully loaded.</summary>
+        private int MixNeededUnits(ThingDef def)
+        {
+            if (def == null)
+                return 0;
+            MixSlots();
+            if (mixDefToSlotCache == null || !mixDefToSlotCache.TryGetValue(def, out int sidx))
+                return 0;
+            var slots = MixSlots();
+            if (sidx < 0 || sidx >= slots.Count)
+                return 0;
+            float vpu = ValuePerUnit(def);
+            if (vpu <= 0f)
+                return 0;
+            double need = SlotValueNeeded(slots[sidx]);
+            if (need <= 0.0)
+                return 0;
+            int units = Mathf.CeilToInt((float)(need / vpu));
+            return units < 0 ? 0 : units;
+        }
+
+        /// <summary>
+        /// Recompute THIS rep's per-def mix from the pawn's CURRENT inventory and write it into
+        /// <see cref="ingredientDefs"/> / <see cref="perRepCounts"/> (cleared first), mirroring vanilla's AllowMix
+        /// value-fill: for each recipe slot, value-fill its per-rep value target greedily from the bill-usable mix
+        /// stock in inventory, taking units of each candidate def in turn. Candidate ORDER = spoiling-first (most-
+        /// perishable carried stock used first) when a spoiling toggle is on, else cheapest-value-first (vanilla's
+        /// value-ascending order — use up the less valuable food first). Returns FALSE iff some slot cannot be filled
+        /// from what's on hand (the rep is impossible → the caller ends the batch cleanly); otherwise TRUE with at
+        /// least one (def,count) entry. READ-ONLY w.r.t. the world — it only inspects inventory and writes the plan
+        /// lists; the existing carry/place loop performs the actual consumption.
+        /// </summary>
+        private bool BuildMixForRep()
+        {
+            ingredientDefs.Clear();
+            perRepCounts.Clear();
+            var owner = Inv;
+            var bill = job.bill;
+            if (owner == null || bill == null)
+                return false;
+            var slots = MixSlots();
+            if (slots.Count == 0)
+                return false;
+
+            bool spoilingOn = SpoilingFirst.AnyToggleOn(HaulersDreamMod.Settings);
+
+            for (int s = 0; s < slots.Count; s++)
+            {
+                var slot = slots[s];
+                double perRepValue = slot.perRepValue;
+                if (perRepValue <= 0.0)
+                    continue; // this slot needs no value (e.g. a 0-count fixed ingredient) → nothing to place
+
+                // Gather this slot's candidate defs that are PRESENT (bill-usable) in inventory, with their summed
+                // usable inventory count, value-per-unit, and a representative most-spoiled stack (for ordering).
+                var cands = new List<MixCand>();
+                var slotDefs = slot.defs;
+                for (int di = 0; di < slotDefs.Count; di++)
+                {
+                    var def = slotDefs[di];
+                    if (def == null)
+                        continue;
+                    float vpu = ValuePerUnit(def);
+                    if (vpu <= 0f)
+                        continue;
+                    int count = 0;
+                    Thing rep = null; // most-spoiled bill-usable stack of this def (for spoiling-first ordering)
+                    for (int i = 0; i < owner.Count; i++)
+                    {
+                        var t = owner[i];
+                        if (t?.def != def)
+                            continue;
+                        if (!InventoryShare.IsUsableForBill(t, bill))
+                            continue;
+                        count += t.stackCount;
+                        if (rep == null || MoreSpoiled(t, rep))
+                            rep = t;
+                    }
+                    if (count <= 0)
+                        continue;
+                    cands.Add(new MixCand { def = def, vpu = vpu, count = count, rep = rep });
+                }
+
+                if (cands.Count == 0)
+                    return false; // no usable stock for this slot in inventory → can't make this rep
+
+                // Order the candidates. Spoiling-first (most-perishable carried stock first) when enabled, then by
+                // value ascending (the vanilla AllowMix key — cheaper food first); else purely value ascending. The
+                // spoiling comparison reuses SpoilingFirst.BetterThan (honours the cook/butcher toggle distinction
+                // and the Fresh/Active gating) on the representative stacks, with no distance tiebreak (dist 0,0).
+                cands.Sort((a, b) =>
+                {
+                    if (spoilingOn && a.rep != null && b.rep != null)
+                    {
+                        // BetterThan(x, _, y, _) is "x should rank before y". Translate to a sign for List.Sort.
+                        if (SpoilingFirst.BetterThan(a.rep, 0, b.rep, 0, HaulersDreamMod.Settings)) return -1;
+                        if (SpoilingFirst.BetterThan(b.rep, 0, a.rep, 0, HaulersDreamMod.Settings)) return 1;
+                    }
+                    int c = a.vpu.CompareTo(b.vpu); // value ascending (vanilla AllowMix order)
+                    if (c != 0) return c;
+                    return a.def.shortHash.CompareTo(b.def.shortHash); // stable, deterministic final tiebreak
+                });
+
+                // Greedy value-fill via the pure Core math (mirrors vanilla's per-slot AllowMix fill exactly).
+                var vpuList = new double[cands.Count];
+                var availList = new int[cands.Count];
+                for (int i = 0; i < cands.Count; i++) { vpuList[i] = cands[i].vpu; availList[i] = cands[i].count; }
+                var fill = CraftBatchMath.MixFillSlot(perRepValue, vpuList, availList);
+                if (!fill.filled)
+                    return false; // not enough usable value on hand to complete this slot → end the batch cleanly
+                for (int i = 0; i < cands.Count; i++)
+                {
+                    if (fill.counts[i] <= 0)
+                        continue;
+                    ingredientDefs.Add(cands[i].def);
+                    perRepCounts.Add(fill.counts[i]);
+                }
+            }
+
+            // A rep must place SOMETHING (an all-zero-value recipe is excluded upstream — CanBatch requires products,
+            // and a meal always has a positive nutrition target). If nothing was assigned, treat the rep as impossible.
+            return ingredientDefs.Count > 0;
+        }
+
+        /// <summary>True iff carried stack <paramref name="a"/> is more spoiled than <paramref name="b"/> (sooner to
+        /// rot). Used only to pick a representative stack per def for spoiling-first ordering; a missing/inactive
+        /// CompRottable sorts as "never rots" (least spoiled).</summary>
+        private static bool MoreSpoiled(Thing a, Thing b)
+        {
+            int ta = RotTicks(a), tb = RotTicks(b);
+            return ta < tb;
+        }
+
+        private static int RotTicks(Thing t)
+        {
+            var rot = t?.TryGetComp<CompRottable>();
+            return (rot != null && rot.Active) ? rot.TicksUntilRotAtCurrentTemp : int.MaxValue;
+        }
+
+        /// <summary>One mix-slot candidate def present in inventory: its value-per-unit, summed bill-usable inventory
+        /// count, and a representative most-spoiled stack (for spoiling-first ordering).</summary>
+        private struct MixCand
+        {
+            public ThingDef def;
+            public float vpu;
+            public int count;
+            public Thing rep;
+        }
+
+        // =======================================================================================================
 
         /// <summary>Pull up to <paramref name="maxToCarry"/> units of <paramref name="def"/> out of inventory into the
         /// pawn's HANDS (carry tracker), mirroring vanilla's <c>StartCarryThing(canTakeFromInventory:true)</c>, capped
@@ -921,6 +1290,19 @@ namespace HaulersDream
             if (comp == null || owner == null)
                 return;
             var planDefs = new HashSet<ThingDef>(ingredientDefs);
+            // For a MIXING recipe, ingredientDefs holds only the CURRENT rep's chosen mix — pre-loaded stock of defs
+            // NOT used in the final rep would otherwise be missed. Tag the FULL mix-allowed-def set so every leftover
+            // mix ingredient still in inventory rides the unload pass.
+            if (MixingRecipe)
+            {
+                var slots = MixSlots();
+                for (int sx = 0; sx < slots.Count; sx++)
+                {
+                    var defs = slots[sx].defs;
+                    for (int di = 0; di < defs.Count; di++)
+                        planDefs.Add(defs[di]);
+                }
+            }
             var productDefs = new HashSet<ThingDef>();
             var products = job.bill?.recipe?.products;
             if (products != null)

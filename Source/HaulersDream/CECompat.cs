@@ -101,7 +101,7 @@ namespace HaulersDream
             // loading (degrade SAFE — report inactive, the mod then behaves as without CE — vanilla math).
             active = canFitInInventory != null;
             if (active)
-                Log.Message("[Hauler's Dream] Combat Extended detected — inventory loading defers to CE's "
+                HDLog.Msg("Combat Extended detected — inventory loading defers to CE's "
                             + "weight+bulk capacity, smart overload stands down, HoldTracker integration on.");
             else
                 // CE is present (CompInventory resolved) but its load-bearing weight+bulk fit check did not bind

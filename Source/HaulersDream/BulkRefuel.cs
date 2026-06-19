@@ -103,11 +103,29 @@ namespace HaulersDream
             if (filter == null)
                 return null;
 
+            // Vanilla FindEnoughReservableThings dereferences rootCell.GetRegion(map).Map and feeds the region to
+            // RegionTraverser with NO null guard (decompiled). A refuelable's OWN cell is commonly impassable — a
+            // deep drill, a generator, a mod's bulk-fed pot — so rootCell.GetRegion(Set_Passable) is null and the
+            // helper NREs. Vanilla never hits this for non-atomic refuelables (its work-scan refuel uses
+            // FindBestFuel(pawn.Position, always passable); only the ATOMIC path passes refuelable.Position, and
+            // shipped atomic content sits on passable footprints). HD is the first to feed refuelable.Position into
+            // the finder for a NON-atomic refuelable, so guard it: mirror vanilla's own GetRegion(Set_Passable)
+            // test and decline cleanly when the cell has no passable region. This is a precondition guard, not a
+            // try/catch — it returns null exactly when vanilla would NRE, deferring to vanilla's working
+            // single-stack FindBestFuel(pawn.Position) path; any OTHER fault still throws and surfaces.
+            if (!refuelable.Position.InBounds(pawn.Map) || refuelable.Position.GetRegion(pawn.Map) == null)
+                return null;
+
             // Vanilla's own "find enough reservable fuel near the target" — same reachability / reservability /
-            // fogged / filter checks vanilla uses, so the picked set matches. Returns null/empty if not enough fuel
-            // is reachable+reservable.
+            // fogged / filter checks vanilla uses, so the picked set matches. The IntRange is min=1, max=deficit:
+            // min=1 mirrors vanilla's single-stack tolerance (the finder returns its chosen list once the accumulated
+            // quantity reaches the min), so we accept a PARTIAL sweep whenever ANY reachable+reservable fuel exists —
+            // a deficit==min==max would instead demand the WHOLE remaining deficit be reachable in one pass, which a
+            // high-capacity refuelable (e.g. a large bulk-fed pot) rarely satisfies, returning null and dead-ending the
+            // bulk job. max=deficit still caps accumulation at the deficit; a partial sweep deposits what it carries and
+            // a later trip tops up the rest (the driver re-tags leftovers for the normal unload, so no over-pick).
             var fuels = RefuelWorkGiverUtility.FindEnoughReservableThings(
-                pawn, refuelable.Position, new IntRange(deficit, deficit), t => filter.Allows(t));
+                pawn, refuelable.Position, new IntRange(1, deficit), t => filter.Allows(t));
 
             // WORTH-IT: vanilla already handles a single-stack refuel in one trip, so HD only adds value when 2+
             // stacks (2+ vanilla walks) are needed. Null / 0 / 1 stack -> leave vanilla's path.

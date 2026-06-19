@@ -8,6 +8,7 @@ namespace HaulersDream.Core
         DeepDrill,   // deep drill portions (JobDriver_OperateDeepDrill)
         Deconstruct, // building deconstruction leavings (JobDriver_Deconstruct)
         Animal,      // milk / shear / wool (JobDriver_GatherAnimalBodyResources)
-        Strip        // gear removed by a strip order on a pawn or corpse (JobDriver_Strip)
+        Strip,       // gear removed by a strip order on a pawn or corpse (JobDriver_Strip)
+        Uninstall    // the minified building dropped by an uninstall order (JobDriver_Uninstall)
     }
 }

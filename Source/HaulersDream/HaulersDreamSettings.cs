@@ -359,6 +359,7 @@ namespace HaulersDream
         public bool haulDeconstruct = true;
         public bool haulAnimals = true;
         public bool haulStrip = true;   // gear removed by a strip order (pawn or corpse) gets scooped + hauled
+        public bool haulUninstall = true;   // the minified building from an uninstall order — scooped (non-home maps only, see YieldRouter) so it batches onto pack animals in one caravan-load trip
 
         // --- unloading ---
         // The "settle" window: how long after its LAST pickup a pawn keeps accumulating before an automatic
@@ -402,7 +403,7 @@ namespace HaulersDream
         [System.NonSerialized] private HaulersDreamSettings defaultsSnapshotCache;
 
         public bool IsTypeEnabled(HaulSourceType type)
-            => WorkTypePolicy.IsTypeEnabled(type, haulHarvest, haulMining, haulDeepDrill, haulDeconstruct, haulAnimals, haulStrip);
+            => WorkTypePolicy.IsTypeEnabled(type, haulHarvest, haulMining, haulDeepDrill, haulDeconstruct, haulAnimals, haulStrip, haulUninstall);
 
         public float EffectiveCapacity(float maxCapacityKg) => CarryMath.EffectiveCapacity(maxCapacityKg, carryLimitFraction);
 
@@ -534,6 +535,7 @@ namespace HaulersDream
             Scribe_Values.Look(ref haulDeconstruct, "haulDeconstruct", true);
             Scribe_Values.Look(ref haulAnimals, "haulAnimals", true);
             Scribe_Values.Look(ref haulStrip, "haulStrip", true);
+            Scribe_Values.Look(ref haulUninstall, "haulUninstall", true);
             Scribe_Values.Look(ref allPawnsCanHaul, "allPawnsCanHaul", false);
             Scribe_Values.Look(ref allPawnsCanClean, "allPawnsCanClean", false);
             Scribe_Values.Look(ref allPawnsCanCutPlants, "allPawnsCanCutPlants", false);
@@ -666,6 +668,7 @@ namespace HaulersDream
             haulDeconstruct = true;
             haulAnimals = true;
             haulStrip = true;
+            haulUninstall = true;
             allPawnsCanHaul = false;
             allPawnsCanClean = false;
             allPawnsCanCutPlants = false;

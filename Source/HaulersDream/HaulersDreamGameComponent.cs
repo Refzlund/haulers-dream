@@ -36,6 +36,11 @@ namespace HaulersDream
             // line). This is hygiene only — each cache's own `tick != -1` / tick-stamp populate guard is the actual
             // cross-session safeguard; ClearAll just drops the stale references promptly on the load (main) thread.
             CacheRegistry.ClearAll();
+
+            // fix/mix recovery: drop phantom bulk-load claims an older version's save-time job swap could have left
+            // in the scribed ledger (those made the load/bulk planners read "fully claimed" and stalled hauling
+            // colony-wide). No-op on a new game / clean ledger; self-heals an affected save on first load.
+            ValidateLoadLedgerAfterLoad();
         }
 
         public override void GameComponentTick()

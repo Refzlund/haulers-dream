@@ -67,7 +67,7 @@ namespace HaulersDream
                 active = true;
             }
             if (active)
-                Log.Message("[Hauler's Dream] Perfect Pathfinding detected — en-route accurate path checks "
+                HDLog.Msg("Perfect Pathfinding detected — en-route accurate path checks "
                             + "inherit its accuracy automatically (same vanilla pathfinder entry point).");
         }
     }

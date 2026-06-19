@@ -68,7 +68,13 @@ namespace HaulersDream
                 && !CommonSenseCompat.OwnsDoBillFlow)
             {
                 var worker = Patch_WorkGiver_DoBill_TryFindBestBillIngredients.CurrentWorker;
-                if (worker != null && bill?.recipe != null)
+                // #4: never inject shared inventory candidates into a MECHANOID worker's bill search. A colony
+                // mech ignores forbidden / allowed-area (CaresAboutForbidden is false) and is work-range-bounded,
+                // so an injected candidate (possibly in another pawn's inventory, possibly across the map) can make
+                // vanilla return a DoBill the mech can't complete and re-issues every tick — the reported "started
+                // 10 jobs in one tick" stonecutter loop. Share-for-crafting is a colonist scoop feature; gating it
+                // here matches the conversion paths, which already exclude mechs. (BillRouteGate, single source.)
+                if (BillRouteGate.WorkerMayShareCraft(worker) && bill?.recipe != null)
                 {
                     InventoryShare.AddSharableStacksForBill(worker, bill, availableThings);
                     Patch_WorkGiver_DoBill_TryFindBestBillIngredients.AddedThisSearch = true;
@@ -176,6 +182,11 @@ namespace HaulersDream
         {
             var s = HaulersDreamMod.Settings;
             if (s == null || !s.shareForCrafting || !s.shareMeetInMiddle || pawn == null)
+                return;
+            // #4: the meet-in-the-middle carrier nudge is part of HD's share-for-crafting — exclude mech workers
+            // for the same reason the injection does (mechs don't draw ingredients from inventory the colonist
+            // way). Once the injection skips mechs this is already inert for them, so this is belt-and-suspenders.
+            if (!BillRouteGate.WorkerMayShareCraft(pawn))
                 return;
             if (__result == null || __result.def != JobDefOf.DoBill || __result.targetQueueB == null)
                 return;

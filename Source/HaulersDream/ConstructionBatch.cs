@@ -113,9 +113,12 @@ namespace HaulersDream
             for (int i = 0; i < candidates.Count && got < spaceWanted; i++)
             {
                 var t = candidates[i];
-                // CanConstruct already enforces reachability (CanReach Touch, NormalMaxDanger unforced /
-                // Deadly forced) for jobForReservation != null — so no extra CanReach is needed here.
+                // CanConstruct enforces reachability, but at NormalMaxDanger — which is Deadly on a forced build
+                // / open float menu. These are BONUS cluster needers, so additionally cap their reach at Some
+                // (ExtraSweepReach): a forced build must not drag a suit-less pawn into vacuum/fire to top up extras.
                 if (!GenConstruct.CanConstruct(t, pawn, checkSkills: false, forced: forced, JobDefOf.HaulToContainer))
+                    continue;
+                if (!ExtraSweepReach.Allows(pawn, t, PathEndMode.Touch))
                     continue;
                 int space = forced
                     ? ((IConstructible)t).ThingCountNeeded(def)
@@ -150,6 +153,8 @@ namespace HaulersDream
                 var t = candidates[i];
                 if (!HaulAIUtility.PawnCanAutomaticallyHaulFast(pawn, t, false) || !pawn.CanReserve(t))
                     continue;
+                if (!ExtraSweepReach.Allows(pawn, t))
+                    continue; // bonus extra: cap reach at Some (no vacuum/fire material pickups)
                 outResources.Add(t);
                 outCounts.Add(t.stackCount);
                 got += t.stackCount;

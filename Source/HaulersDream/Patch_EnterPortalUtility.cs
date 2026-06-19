@@ -29,10 +29,19 @@ namespace HaulersDream
             var adapter = MapPortalBulkTarget.TryCreate(portal);
             if (adapter == null)
                 return true; // can't adapt -> vanilla
+            // Cheap pre-reject first; then BUILD the job — the count-based HasPotentialBulkWorkPortal can say "yes" while
+            // the SWEEP finds nothing buildable (remaining manifest is pawns/corpses, all candidates forbidden / out of
+            // radius / mass-full / claimed-by-others). Vanilla's JobGiver TRUSTS HasJob and calls JobOn; if we claimed
+            // work here but JobOn returned null, vanilla's JobOnPortal would issue a haul with no valid target that ends
+            // the same tick and re-fires forever (the "10 jobs in one tick" loop). So TryGiveBulkJob — the SAME
+            // authoritative build the JobOn prefix runs — is the source of truth here too.
             if (!TransportLoad.HasPotentialBulkWorkPortal(pawn, adapter))
                 return true; // HD has no work (not eligible / nothing claimable) -> let vanilla try
+            var job = TransportLoad.TryGiveBulkJob(pawn, adapter); // side-effect-free (claim happens later in the driver) -> safe to build speculatively
+            if (job == null)
+                return true; // nothing HD can actually build -> let vanilla decide (its HasJob self-checks FindThingToLoad), no asymmetric loop
             __result = true;
-            return false;
+            return false; // HD will build the same job in the JobOn prefix
         }
     }
 

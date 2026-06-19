@@ -4,6 +4,7 @@ using HaulersDream.Core;
 using RimWorld;
 using Verse;
 using Verse.AI;
+using Verse.AI.Group;
 
 namespace HaulersDream
 {
@@ -54,6 +55,15 @@ namespace HaulersDream
 
             var pawn = FindWorker(center, map, out var type);
             if (pawn == null || !s.IsTypeEnabled(type))
+                return true;
+
+            // UNINSTALL is scoped to NON-HOME maps only. On the home colony an uninstalled building belongs on the
+            // ground for normal hauling to a stockpile or for re-installation (an Install blueprint hauler grabs it
+            // there); pocketing it into a colonist would surprise the player and could strand a building meant to be
+            // reinstalled. The caravan/away-map case — where the minified structures must batch onto pack animals —
+            // is exactly the non-home maps this admits. (RecordSelfPickup / RouteIntoInventory still require a real
+            // delivery destination via HasScoopDestination, so a bare camp with nowhere to put it leaves it grounded.)
+            if (type == HaulSourceType.Uninstall && map.IsPlayerHome)
                 return true;
 
             // Strip drops ALWAYS take the drop-then-scoop path, regardless of pickup mode: unlike the
@@ -238,6 +248,11 @@ namespace HaulersDream
                     return true;
                 if (!HaulAIUtility.PawnCanAutomaticallyHaulFast(pawn, t, forced: false))
                     return true; // unreachable / can't legally haul it
+                // Bonus extra: while the host work job is player-prioritized (playerForced → NormalMaxDanger
+                // == Deadly), the gate above stops rejecting Deadly regions — so cap reach at Some here, or a
+                // suit-less pawn cleaning nearby while working would sweep scrap out of vacuum (the SOS2 case).
+                if (!ExtraSweepReach.Allows(pawn, t))
+                    return true;
                 if (!StoreUtility.TryFindBestBetterStorageFor(t, pawn, map, StoreUtility.CurrentStoragePriorityOf(t),
                         pawn.Faction, out _, out _, needAccurateResult: false))
                     return true; // nowhere better to put it -> don't scoop it only to strand it in inventory
@@ -281,11 +296,13 @@ namespace HaulersDream
         {
             if (s == null || !Core.UnloadPolicy.FullTriggerAllowed(s.strictCarryWeight, s.markForUnload))
                 return;
-            // On a non-home / temporary map there is no storage to unload to — divert the heavy load onto the
-            // nearest owned pack animal instead (auto-divert), so the pawn doesn't keep working over-encumbered.
-            // (keepWorkingWhenFull does NOT apply here: on a temp map there is no storage to "unload before the
-            // next relocation" to — the only place the load can go is the carrier, exactly as today.)
-            if (pawn?.Map != null && !pawn.Map.IsPlayerHome)
+            // On a non-home / temporary map with no player storage there is nowhere to unload — divert the heavy
+            // load onto the nearest owned pack animal instead (auto-divert), so the pawn doesn't keep working
+            // over-encumbered. (keepWorkingWhenFull does NOT apply here: on a temp map there is no storage to
+            // "unload before the next relocation" to — the only place the load can go is the carrier.) Any non-home
+            // map WITH player storage (a VF RV interior) instead falls through to the forced storage unload
+            // below, exactly like home — ShouldUnloadToStorage gates that.
+            if (pawn?.Map != null && !MapGate.ShouldUnloadToStorage(pawn.Map))
             {
                 PackAnimalLoad.MaybeAutoDivert(pawn, s);
                 return;
@@ -686,6 +703,16 @@ namespace HaulersDream
                 // position (which is the stripper's job target cell, so the true-producer check matches)
                 // and the stripper scoops the pile right after the strip completes.
                 case JobDriver_Strip _: type = HaulSourceType.Strip; return true;
+                // An uninstall order minifies the building and drops it via GenPlace.TryPlaceThing(Near) at the
+                // building's cell (the worker's job-target cell, so the true-producer check matches) — scooping it
+                // lets several uninstalled structures batch onto the pack animals in ONE caravan-load trip instead
+                // of one back-and-forth per item. SPECIFIC to JobDriver_Uninstall, NOT the base
+                // JobDriver_RemoveBuilding: its sibling JobDriver_Deconstruct also derives from RemoveBuilding, and
+                // matching the base would re-capture deconstruct leavings here (double-processing them — exactly
+                // what the guard above forbids). This case can never match a JobDriver_Deconstruct instance.
+                // OnTryPlaceThing additionally gates this type to NON-HOME maps (a home-map uninstall is left for
+                // normal hauling / re-installation), and the scoop only fires where the item is deliverable.
+                case JobDriver_Uninstall _: type = HaulSourceType.Uninstall; return true;
                 default: type = default; return false;
             }
         }
@@ -774,6 +801,20 @@ namespace HaulersDream
                 return false;
             var s = HaulersDreamMod.Settings;
             if (s == null)
+                return false;
+            // #4 Lord-activity stand-down: a pawn under a Lord is in a DIRECTED group activity — a ritual/ceremony
+            // (the gatherer carries bioferrite / other offerings into its inventory ON PURPOSE, and a psychic-
+            // ritual offering toil reads pawn.inventory directly), caravan forming, a party / marriage / gathering,
+            // a hunt or defend assignment, a quest lord, etc. HD must never autonomously scoop INTO, ADOPT, or
+            // EMPTY such a pawn's inventory — doing so steals the ritual offering (the bug report) or disassembles
+            // a forming caravan's hand-loaded cargo. GetLord()!=null SUBSUMES IsFormingCaravan (verified:
+            // IsFormingCaravan == GetLord() + a LordJob_FormAndSendCaravan), so this one gate covers every Lord-
+            // directed activity — vanilla, DLC (Ideology rituals, Anomaly psychic rituals), and modded — without
+            // enumerating LordJob types. This is the AUTONOMOUS eligibility gate; explicit PLAYER orders are
+            // unaffected, because every forced path bypasses IsEligible (PawnUnloadChecker's forced unload short-
+            // circuits with `forced ||`; BulkRefuel / TransportLoad pass playerOrder; a forced HaulNearby degrades
+            // to a plain vanilla haul). Once the Lord ends (GetLord()==null) HD resumes normally next interval.
+            if (p.GetLord() != null)
                 return false;
             bool eligible = EligibilityPolicy.IsEligible(
                 isMechanoid: p.RaceProps.IsMechanoid,

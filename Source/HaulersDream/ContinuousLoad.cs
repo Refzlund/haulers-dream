@@ -201,7 +201,9 @@ namespace HaulersDream
                 return false;
             if (!adapter.AnythingToLoad())
                 return false;
-            return pawn.CanReach(anchor, PathEndMode.Touch, Danger.Deadly) && pawn.CanReserve(anchor);
+            // Chain extra (the NEXT load structure, not the clicked one): cap reach at Some so a suit-less pawn
+            // won't continue-load into a vacuum-/fire-stranded transporter/portal/vehicle.
+            return pawn.CanReach(anchor, PathEndMode.Touch, ExtraSweepReach.Ceiling(pawn)) && pawn.CanReserve(anchor);
         }
     }
 }

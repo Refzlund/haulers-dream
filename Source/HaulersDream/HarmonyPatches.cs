@@ -123,6 +123,11 @@ namespace HaulersDream
             if (job.TryMakePreToilReservations(pawn, false))
                 __result = job;
         }
+
+        // Seam guard (fix/mix): a throw here would break this pawn's vanilla unload selection. Log + rethrow.
+        static Exception Finalizer(Exception __exception, Pawn pawn)
+            => HDGuard.SeamThrew(__exception, "JobGiver_UnloadYourInventory.TryGiveJob (HD unload substitution)", pawn,
+                "this pawn's inventory-unload selection failed this scan.");
     }
 
     /// <summary>
@@ -185,6 +190,16 @@ namespace HaulersDream
             if (unload != null)
                 __result = new ThinkResult(unload, __instance, JobTag.UnloadingOwnInventory, false);
         }
+
+        // HARDENING (fix/mix): TryIssueJobPackage is the UNIVERSAL work-selection seam — every dumb-labor job
+        // (haul, clean filth, clear pollution, corpse haul) flows through it. Vanilla has no try/catch here, and
+        // this method carries TWO HD postfixes (this one + Patch_OpportunisticLoadDeposit). A single Finalizer on
+        // the method wraps BOTH (Harmony finalizers wrap the whole patched method, so this catches a throw from
+        // Patch_OpportunisticLoadDeposit's postfix too — its stack trace identifies which one). See HDGuard:
+        // logs once with HD + pawn context, then RETHROWS so the fault still surfaces as a red error.
+        static Exception Finalizer(Exception __exception, Pawn pawn)
+            => HDGuard.SeamThrew(__exception, "JobGiver_Work.TryIssueJobPackage (HD opportunistic unload/load)", pawn,
+                "that pawn's entire work selection failed this scan (hauling/cleaning/etc. will stall).");
     }
 
     /// <summary>
@@ -207,6 +222,11 @@ namespace HaulersDream
             if (unload != null)
                 __result = unload;
         }
+
+        // Seam guard (fix/mix): a throw here would break this pawn's REST job selection (it could fail to sleep).
+        static Exception Finalizer(Exception __exception, Pawn pawn)
+            => HDGuard.SeamThrew(__exception, "JobGiver_GetRest.TryGiveJob (HD unload-before-sleep)", pawn,
+                "this pawn's rest-job selection failed this scan.");
     }
 
     [HarmonyPatch(typeof(JobGiver_GetFood), "TryGiveJob")]
@@ -221,6 +241,11 @@ namespace HaulersDream
             if (unload != null)
                 __result = unload;
         }
+
+        // Seam guard (fix/mix): a throw here would break this pawn's FOOD job selection (it could fail to eat).
+        static Exception Finalizer(Exception __exception, Pawn pawn)
+            => HDGuard.SeamThrew(__exception, "JobGiver_GetFood.TryGiveJob (HD unload-before-eating)", pawn,
+                "this pawn's food-job selection failed this scan.");
     }
 
     [HarmonyPatch(typeof(JobGiver_GetJoy), "TryGiveJob")]
@@ -234,6 +259,11 @@ namespace HaulersDream
             if (unload != null)
                 __result = unload;
         }
+
+        // Seam guard (fix/mix): a throw here would break this pawn's JOY/recreation job selection.
+        static Exception Finalizer(Exception __exception, Pawn pawn)
+            => HDGuard.SeamThrew(__exception, "JobGiver_GetJoy.TryGiveJob (HD unload-before-leisure)", pawn,
+                "this pawn's joy-job selection failed this scan.");
     }
 
     /// <summary>The per-pawn "Unload inventory" gizmo.</summary>
@@ -310,9 +340,11 @@ namespace HaulersDream
                 icon = DropIcon,
                 action = () =>
                 {
-                    // On a non-home / temporary map there is no storage — the gizmo loads the nearest pack animal
-                    // with the carried loot instead of the (no-op) storage unload.
-                    if (__instance.Map != null && !__instance.Map.IsPlayerHome)
+                    // On a non-home / temporary map with no player storage the gizmo loads the nearest pack animal
+                    // with the carried loot instead of the (no-op) storage unload. Any non-home map WITH player
+                    // storage (a VF RV interior) uses the storage unload like home (ShouldUnloadToStorage),
+                    // so the manual button delivers into its shelves instead of hunting a non-existent carrier.
+                    if (__instance.Map != null && !MapGate.ShouldUnloadToStorage(__instance.Map))
                         PackAnimalLoad.GizmoLoadNearest(__instance);
                     else
                         PawnUnloadChecker.CheckIfShouldUnload(__instance, true);
@@ -370,6 +402,11 @@ namespace HaulersDream
             if (bulk != null)
                 __result = bulk;
         }
+
+        // Seam guard (fix/mix): a throw here would break a HAULING ANIMAL's think-tree job selection. Log + rethrow.
+        static Exception Finalizer(Exception __exception, Pawn pawn)
+            => HDGuard.SeamThrew(__exception, "JobGiver_Haul.TryGiveJob (HD animal bulk-haul)", pawn,
+                "this animal's haul-job selection failed this scan.");
     }
 
     /// <summary>

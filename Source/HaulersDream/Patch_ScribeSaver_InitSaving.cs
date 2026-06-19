@@ -10,11 +10,12 @@ namespace HaulersDream
     /// A1 — Pre-save job cleanup (safe uninstall). BLFT-parity (faithful source:
     /// <c>SafeUnloadManager.CleanupBeforeSaving</c> + <c>ScribeSaver_InitSaving_Patch</c>).
     ///
-    /// A save written while a pawn is mid-bulk-load otherwise embeds live references to HD's custom
-    /// <c>JobDriver</c>s. If HD is then uninstalled, those driver types vanish and the save can't deserialize the
-    /// dangling jobs. This PREFIX on <c>ScribeSaver.InitSaving</c> (which runs immediately before the game writes
-    /// any save document) swaps every HD-driver job for vanilla <c>Wait</c> and strips queued HD jobs, so the
-    /// written save contains no HD-driver references.
+    /// A save written while a pawn has QUEUED HD jobs otherwise embeds references to HD's custom <c>JobDriver</c>s
+    /// that dangle if HD is later uninstalled. This PREFIX on <c>ScribeSaver.InitSaving</c> (which runs immediately
+    /// before the game writes any save document) strips QUEUED HD jobs so the written save carries no dangling
+    /// queued HD-driver references. (It deliberately leaves the CURRENT job alone — see the torn-snapshot note
+    /// below — so a save taken mid-bulk-load still embeds that one running HD job; that deserializes fine while HD
+    /// is installed and is released on the job's next normal end.)
     ///
     /// Safety guards (mirror SafeUnloadManager):
     ///   • Abort off the MAIN THREAD — <c>InitSaving</c> can be reached from RimWorld's background autosave thread,
@@ -24,22 +25,28 @@ namespace HaulersDream
     ///   • Abort if <see cref="HaulersDreamMod.Settings"/> is null (mod not fully initialized) or the
     ///     <c>cleanupOnSave</c> toggle is off → byte-inert.
     ///
-    /// How the swap is safe + idempotent with the existing claim ledger:
-    ///   • Swapping the current job is done via <c>TryTakeOrderedJob(Wait)</c>, exactly as BLFT. Internally that
-    ///     ends the outgoing job with <c>JobCondition.InterruptForced</c> (verified in the decompiled 1.6
-    ///     <c>Pawn_JobTracker.TryTakeOrderedJob</c>: <c>curDriver.EndJobWith(JobCondition.InterruptForced)</c>),
-    ///     which routes through <c>EndCurrentJob</c>. So HD's existing defense-in-depth release
-    ///     (<see cref="Patch_Pawn_JobTracker_EndCurrentJob_ReleaseClaim"/>) fires for the bulk-LOAD defs and returns
-    ///     the pawn's <c>Core.LoadLedger</c> claims — no quota leak. <c>LoadLedger.Release</c> clamps ≥0 and drops
-    ///     the pawn, so this is idempotent: if the job's own finish action already released, the re-release is a
-    ///     no-op.
+    /// Why we strip QUEUED HD jobs but DO NOT interrupt the CURRENT one (fix/mix — corrects a torn-snapshot bug):
     ///   • Queued HD jobs are removed via <c>JobQueue.RemoveAll(pawn, predicate)</c>, which calls
     ///     <c>QueuedJob.Cleanup</c> per removed job (releases its pre-toil reservations) — the proper queue-removal
-    ///     path, not a raw list edit.
-    ///   • Swept/tagged stock stays in the pawn's inventory (tagged via <see cref="CompHauledToInventory"/>); we do
-    ///     NOT clear the pawn's tags, only the job. After the swap the pawn is idle holding tagged cargo, which
-    ///     rides HD's normal storage-unload exactly as it would after any interrupted load — never dropped on a
-    ///     temp map, never stuck.
+    ///     path, not a raw list edit. A queued job has run NO toils, so removing it has no side effects beyond
+    ///     releasing those reservations: safe to do at save time.
+    ///   • We NO LONGER swap the CURRENT job via <c>TryTakeOrderedJob(Wait)</c>. That call ended the running job
+    ///     with <c>JobCondition.InterruptForced</c> → <c>EndCurrentJob</c>, which fires the bulk-load drivers'
+    ///     finish actions AND HD's claim-release (<c>Core.LoadLedger</c> mutations) — RIGHT IN THE MIDDLE of
+    ///     <c>ScribeSaver.InitSaving</c>, i.e. while the save document is being written. Those releases mutate the
+    ///     very ledger object <see cref="HaulersDreamGameComponent.ExposeData"/> serializes, producing a TORN
+    ///     SNAPSHOT: on reload the persisted ledger holds phantom claims for a job that was Wait-swapped away, and
+    ///     those phantom claims make the bulk-haul / load planners believe quota is already taken — so colony-wide
+    ///     hauling, corpse/loot pickup and pollution cleanup quietly stop. (That matched the reported recovery:
+    ///     loading WITHOUT HD discards every HD-scribed node, and a re-save writes a clean slate.)
+    ///   • Dropping the interruption is SAFE for the uninstall case it was meant to guard: a save written while a
+    ///     pawn is mid-HD-job embeds that HD-driver reference, which deserializes fine WHILE HD is installed; only a
+    ///     SUBSEQUENT uninstall could dangle it, and the in-flight job's own <c>EndCurrentJob</c>/<c>DeSpawn</c>
+    ///     lifecycle hooks release its claims on the next normal end either way. We accept that narrow uninstall-
+    ///     mid-bulk-load edge (the player can let pawns idle before uninstalling) rather than corrupt EVERY save
+    ///     taken while any pawn happens to be mid-load.
+    ///   • Swept/tagged stock stays in the pawn's inventory (tagged via <see cref="CompHauledToInventory"/>) and
+    ///     rides HD's normal storage-unload, exactly as before.
     /// </summary>
     [HarmonyPatch(typeof(ScribeSaver), nameof(ScribeSaver.InitSaving))]
     public static class Patch_ScribeSaver_InitSaving
@@ -90,24 +97,15 @@ namespace HaulersDream
             if (pawn == null || pawn.Destroyed || pawn.jobs == null)
                 return;
 
-            // 1) Strip QUEUED HD jobs (RemoveAll runs QueuedJob.Cleanup → releases their reservations). This is the
-            //    load-bearing path for a pawn whose CURRENT job is NOT an HD job (we leave that job running, so the
-            //    step-2 swap below never fires and never touches the queue) — it still loses any HD jobs queued
-            //    behind it.
+            // Strip QUEUED HD jobs only (RemoveAll runs QueuedJob.Cleanup → releases their pre-toil reservations).
+            // A queued job has run no toils, so this is a pure, side-effect-free queue edit — safe at save time.
+            // We deliberately do NOT touch the CURRENT job: interrupting it here ran HD's finish actions + ledger
+            // releases mid-serialization and tore the saved ledger snapshot (see the class doc). The running HD job
+            // is left intact; it serializes fine while HD is installed and releases its own claims on its next
+            // normal end.
             var queue = pawn.jobs.jobQueue;
             if (queue != null && queue.Count > 0)
                 queue.RemoveAll(pawn, job => job != null && job.def != null && strip.Contains(job.def));
-
-            // 2) Swap the CURRENT job if it's an HD driver. TryTakeOrderedJob ends the outgoing job with
-            //    InterruptForced (→ EndCurrentJob → HD's claim release fires for the bulk-load defs); the pawn is
-            //    left idle on Wait. Tagged inventory cargo is untouched and rides the normal unload.
-            //    NOTE: TryTakeOrderedJob internally ClearQueuedJobs() — so when the current job IS an HD job the
-            //    ENTIRE remaining queue (incl. any non-HD player-queued orders behind it) is cleared, not just the
-            //    HD entries. Acceptable for a save-time uninstall-safety net (no corruption; the pawn re-derives
-            //    work from its think tree on load) and faithful to BLFT, but worth stating honestly.
-            var cur = pawn.CurJob;
-            if (cur != null && cur.def != null && strip.Contains(cur.def))
-                pawn.jobs.TryTakeOrderedJob(JobMaker.MakeJob(JobDefOf.Wait, 2), JobTag.Misc);
         }
     }
 }

@@ -62,6 +62,13 @@ namespace HaulersDream
                     continue;
                 if (clicked is Corpse || VehicleFrameworkCompat.IsVehicle(clicked))
                     continue;
+                // Already in its best storage: "pick up into inventory" could only end in the pawn re-storing it
+                // (the mandatory unload finish-action re-stores any HD-swept stack), a no-op round-trip the user sees
+                // as "won't pick it up." Mirrors the bulk driver's loadIndex!=0 in-storage skip and SelfPickup's
+                // IsInValidStorage skip. Use IsInValidBestStorage (not IsInValidStorage) so an item in a WORSE
+                // stockpile can still be picked up / upgraded.
+                if (clicked.IsInValidBestStorage())
+                    continue;
                 // The same bar vanilla "Prioritize hauling" uses (EverHaulable / fogged / forbidden+allowed-area /
                 // reservable / reachable). forced:true mirrors a player order.
                 if (!HaulAIUtility.PawnCanAutomaticallyHaul(pawn, clicked, forced: true))

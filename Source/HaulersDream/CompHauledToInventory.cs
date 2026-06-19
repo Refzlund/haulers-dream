@@ -239,8 +239,13 @@ namespace HaulersDream
             {
                 var t = pendingSelfPickups[pendingSelfPickups.Count - 1];
                 pendingSelfPickups.RemoveAt(pendingSelfPickups.Count - 1);
+                // The self-pickup queue is persisted, so an entry can be stale (queued before the danger cap, or
+                // now only reachable across vacuum/fire). Cap reach at Some here too: a popped-but-unreachable
+                // entry is discarded (left for normal hauling), never walked to — so the producer never sends a
+                // suit-less pawn into space to scoop its own drop. Self-heals existing saves.
                 if (t != null && t.Spawned && !t.Destroyed
-                    && pawn != null && t.MapHeld == pawn.Map && !t.IsForbidden(pawn))
+                    && pawn != null && t.MapHeld == pawn.Map && !t.IsForbidden(pawn)
+                    && ExtraSweepReach.Allows(pawn, t))
                     return t;
             }
             return null;

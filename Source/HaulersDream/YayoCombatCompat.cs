@@ -29,7 +29,7 @@ namespace HaulersDream
             // GetNamedSilentFail returns null when YC3 isn't loaded — the real precondition, no try/catch needed.
             ammoCategory = DefDatabase<ThingCategoryDef>.GetNamedSilentFail("yy_ammo_category");
             if (ammoCategory != null)
-                Log.Message("[Hauler's Dream] Yayo's Combat 3 detected — carried ammo excluded from surplus unloading.");
+                HDLog.Msg("Yayo's Combat 3 detected — carried ammo excluded from surplus unloading.");
         }
 
         /// <summary>

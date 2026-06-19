@@ -144,7 +144,7 @@ namespace HaulersDream
                      && cargoCapacityStatDef != null
                      && cargoToLoadField != null;
             if (active)
-                Log.Message("[Hauler's Dream] Vehicle Framework detected — bulk-load-into-vehicle + event-correct "
+                HDLog.Msg("Vehicle Framework detected — bulk-load-into-vehicle + event-correct "
                             + "pack-animal deposit on, eat-from / build-from a parked vehicle's cargo enabled.");
             else
                 // VF is present (VehiclePawn resolved) but one or more load-bearing deposit/capacity/manifest
@@ -288,8 +288,15 @@ namespace HaulersDream
                 return (bool)reserveVehicleGeneric.Invoke(vrm,
                     new object[] { vehicle, pawn, job, (LocalTargetInfo)vehicle });
             }
-            catch (Exception)
+            catch (Exception e)
             {
+                // Make the one permitted swallow VISIBLE (consistent with the universal exception tagging): log
+                // once so a developer sees HD caught it, then keep the fail-open — the WorkGiver-suppress prefix
+                // above is the authoritative stand-down, so treating the claim as held is safe. WarnOnce (not Err):
+                // it is recoverable, and once-per-session avoids spamming if the reflection target has drifted.
+                HDLog.WarnOnce("VehicleFramework VRM.ReserveVehicle reflection threw; falling back to the "
+                    + "authoritative WorkGiver-suppress stand-down (claim treated as held). Report if vehicle "
+                    + "loading misbehaves:\n" + e, 0x48445256);
                 return true;
             }
         }

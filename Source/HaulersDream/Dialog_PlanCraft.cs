@@ -167,16 +167,25 @@ namespace HaulersDream
                 l.Label("HaulersDream.PlanCraft.Resolved".Translate(n));
             }
 
-            // Ingredients carried up front.
-            var sb = new System.Text.StringBuilder();
-            for (int i = 0; i < cachedPlan.ingredientDefs.Count; i++)
+            // Ingredients carried up front. A MIXING recipe (cooked meals etc.) has no frozen per-slot def list —
+            // ingredientDefs/perRepCounts are empty because the driver picks each rep's mix from current stock — so
+            // show a generic "brings a mix" note instead of a per-def breakdown (which would be blank/misleading).
+            if (cachedPlan.mixingRecipe)
             {
-                if (i > 0) sb.Append(", ");
-                sb.Append((cachedPlan.perRepCounts[i] * n).ToString());
-                sb.Append("× ");
-                sb.Append(cachedPlan.ingredientDefs[i].label);
+                l.Label("HaulersDream.PlanCraft.IngredientsMixed".Translate());
             }
-            l.Label("HaulersDream.PlanCraft.Ingredients".Translate(sb.ToString()));
+            else
+            {
+                var sb = new System.Text.StringBuilder();
+                for (int i = 0; i < cachedPlan.ingredientDefs.Count; i++)
+                {
+                    if (i > 0) sb.Append(", ");
+                    sb.Append((cachedPlan.perRepCounts[i] * n).ToString());
+                    sb.Append("× ");
+                    sb.Append(cachedPlan.ingredientDefs[i].label);
+                }
+                l.Label("HaulersDream.PlanCraft.Ingredients".Translate(sb.ToString()));
+            }
 
             // Time estimate (work only; excludes the fetch trip).
             float hours = (cachedPlan.ticksPerRep * (float)n) / TicksPerHour;
