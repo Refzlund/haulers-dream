@@ -46,6 +46,12 @@ namespace HaulersDream
                 comp?.SetBatch(bill, false, 0);
             }));
 
+            // --- COMPAT: re-add any OTHER mod's custom repeat modes that we just skipped by replacing this menu.
+            // Everybody Gets One adds its "one per person" / "X per person" / "with surplus" modes via a transpiler
+            // on this very method; our full-replace prefix would hide them entirely. Invoke EGO's own inserter so
+            // its modes reappear with EGO's exact labels + guards. No-op when EGO isn't installed. ---
+            EverybodyGetsOneCompat.TryInsertModes(opts, bill);
+
             // --- the three batch variants (only when this recipe can actually be batched) ---
             if (comp != null && CraftBatchPlanner.CanBatch(bill))
             {
@@ -102,11 +108,12 @@ namespace HaulersDream
         static void Postfix(Bill_Production __instance, ref string __result)
         {
             var comp = HaulersDreamGameComponent.Instance;
-            // Gate on CanBatch too: a bill flagged in a save whose recipe is NOT batchable (smelting / take-entire-
-            // stacks / unfinished-thing / a non-Bill_Production) still carries the flag but routes as vanilla, so
-            // don't show a misleading "×N" marker the batch driver will never honour. NOTE: mixing recipes (cooked
-            // meals, kibble, pemmican, chemfuel, beer) ARE batchable now via the mix-aware per-rep value-fill path,
-            // so CanBatch returns true for them and the marker correctly shows.
+            // Gate the marker on CanBatch too: a bill that still carries the batch FLAG but is NOT actually batched
+            // must not show a misleading "×N". Two ways that happens: (a) a save whose recipe is NOT batchable
+            // (smelting / take-entire-stacks / unfinished-thing / a non-Bill_Production) keeps the flag but routes as
+            // vanilla; (b) its repeat mode is now a non-vanilla one HD won't batch (e.g. an Everybody Gets One mode —
+            // see CraftBatchPlanner.CanBatch). NOTE: mixing recipes (cooked meals, kibble, pemmican, chemfuel, beer)
+            // ARE batchable via the mix-aware per-rep value-fill path, so CanBatch returns true and the marker shows.
             if (comp != null && comp.IsBatchBill(__instance) && CraftBatchPlanner.CanBatch(__instance))
                 __result = "HaulersDream.Batch.RowMarker".Translate(comp.BatchSizeOf(__instance)) + __result;
         }
