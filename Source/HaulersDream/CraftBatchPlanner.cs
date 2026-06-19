@@ -74,6 +74,14 @@ namespace HaulersDream
             // one would make products via the wrong path (or none). Plain production bills only.
             if (bill == null || bill.GetType() != typeof(Bill_Production) || bill.recipe == null)
                 return false;
+            // HD's batch layers a flag on top of the THREE vanilla repeat modes (its counting/planning models
+            // their semantics). A modded repeat mode — e.g. Everybody Gets One's "one per person", whose target
+            // scales with the live colonist count — must NOT be batched: HD doesn't model that dynamic target, so
+            // it would mis-size / overshoot the batch. Such bills run their own (mod-provided) flow unbatched.
+            var mode = ((Bill_Production)bill).repeatMode;
+            if (mode != BillRepeatModeDefOf.RepeatCount && mode != BillRepeatModeDefOf.TargetCount
+                && mode != BillRepeatModeDefOf.Forever)
+                return false;
             var r = bill.recipe;
             if (r.UsesUnfinishedThing)
                 return false;

@@ -12,6 +12,11 @@ namespace HaulersDream
     /// each stop in order (so it tracks the pawn as it moves and lines up with the white overlay after the
     /// player confirms). Auto-instantiated for every map (no def/registration needed).
     /// </summary>
+    // [StaticConstructorOnStartup]: this type holds a static Material field (purpleLineMat). RimWorld warns about any
+    // type with a static Material/Texture2D field that lacks this attribute — a structural check that fires even
+    // though the material is built lazily on the main thread during the route-preview draw. The attribute satisfies
+    // the check; purpleLineMat stays null until the lazy property first builds it (only while a route plan is open).
+    [StaticConstructorOnStartup]
     public class MapComponent_RoutePreview : MapComponent
     {
         private Pawn pawn;

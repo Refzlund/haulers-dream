@@ -91,6 +91,14 @@ namespace HaulersDream
         {
             if (__result == null || pawn == null)
                 return; // vanilla didn't want to unload -> nothing to substitute
+            // Compat guard: only substitute for VANILLA's own unload. If another mod injected a custom unload job at
+            // this think-node, leave it untouched — we must not clobber a foreign unload flow. The real case here is
+            // Common Sense, which PREFIXES JobGiver_UnloadYourInventory.TryGiveJob to return its own UnloadMarkedItems
+            // job (def != UnloadInventory). (Combat Extended only transpiles this node's CONDITION, so vanilla still
+            // returns UnloadInventory and HD still correctly substitutes for a CE-influenced vanilla unload. Pick Up
+            // And Haul does NOT reach this node — it enqueues its unload on the job queue — so it isn't a concern here.)
+            if (__result.def != JobDefOf.UnloadInventory)
+                return;
             var comp = pawn.GetComp<CompHauledToInventory>();
             var carried = comp?.GetHashSet();
             if (carried == null || carried.Count == 0)
@@ -147,6 +155,10 @@ namespace HaulersDream
     [HarmonyPatch(typeof(JobGiver_Work), nameof(JobGiver_Work.TryIssueJobPackage))]
     public static class Patch_JobGiver_Work_OpportunisticUnload
     {
+        // Run LAST among postfixes on TryIssueJobPackage so HD reacts to the FINAL chosen job — after a
+        // job-substituting mod (e.g. "While You Are Nearby", which postfixes this same method to swap in a nearby
+        // equivalent job) has had its say. Otherwise HD might divert off a job that mod is about to replace.
+        [HarmonyPriority(Priority.Last)]
         static void Postfix(ref ThinkResult __result, Pawn pawn, JobGiver_Work __instance)
         {
             // Cheap empty-pack pre-gate (HD-OPPUNLOAD): the common case is a pawn carrying nothing scooped, and
@@ -160,6 +172,24 @@ namespace HaulersDream
 
             if (__result.IsValid && __result.Job != null)
             {
+                // Compat guard: only DIVERT (replace __result with our unload) off a job we may safely clobber —
+                // i.e. NEVER replace a FOREIGN custom unload job that the vanilla work scan legitimately returned.
+                // The reachable case is a mod that routes its carrier/inventory unload through a real WorkGiver:
+                // BulkLoadForTransporters prefixes vanilla WorkGiver_UnloadCarriers.JobOnThing to return its own
+                // JobDriver_UnloadPackAnimalInBulk, which flows through JobGiver_Work to this __result — diverting it
+                // to HD's inventory-unload would clobber that carrier-unload mid-flight. (Common Sense and Pick Up And
+                // Haul do NOT reach THIS seam — CS prefixes the JobGiver_UnloadYourInventory node guarded above; PUAH
+                // uses the job queue — so this guard specifically covers WorkGiver-routed foreign unloads.) Permitted
+                // to replace: a null/invalid result (handled by the end-of-run branch below) or vanilla's own
+                // UnloadInventory; left untouched: any unload-style job whose driver lives OUTSIDE HD's assembly,
+                // detected mod-agnostically by the foreign driver type name ("*Unload*").
+                // DO NOT "simplify" this to a literal null/UnloadInventory check: HD's work-divert REPLACES normal
+                // work jobs (mining/hauling) by design, so such a check would disable the F6 work-divert feature.
+                var divertDef = __result.Job.def;
+                if (divertDef != JobDefOf.UnloadInventory && divertDef?.driverClass != null
+                    && divertDef.driverClass.Assembly != typeof(Patch_JobGiver_Work_OpportunisticUnload).Assembly
+                    && divertDef.driverClass.Name.IndexOf("Unload", StringComparison.Ordinal) >= 0)
+                    return;
                 // If the pawn just picked a NON-yield, NON-haul job, its accumulate run is over — divert it to
                 // shed its load at nearby storage first (relaxed run-end criteria). While it keeps picking
                 // yield work, runOver is false and the strict journey bar applies, so a continuing mining/
@@ -268,12 +298,16 @@ namespace HaulersDream
 
     /// <summary>The per-pawn "Unload inventory" gizmo.</summary>
     [HarmonyPatch(typeof(Pawn), nameof(Pawn.GetGizmos))]
+    // [StaticConstructorOnStartup]: this type EAGERLY loads the DropIcon texture in its static initializer.
+    // RimWorld warns about any type with a static Texture2D/Material field that lacks this attribute, and the
+    // attribute also guarantees the type initializer runs during the startup asset phase on the MAIN thread (where
+    // ContentFinder is safe) rather than whenever the type first happens to be touched.
+    [StaticConstructorOnStartup]
     public static class Patch_Pawn_GetGizmos
     {
         // The "Drop" gizmo icon, resolved ONCE — both the auto-haul toggle and the unload button use it, and a
-        // ContentFinder lookup per selected pawn per frame is pure waste (the texture is immutable). Lazy via a
-        // static field initializer (ContentFinder is safe at static-init time post content-load; this patch class
-        // is only touched while gizmos render, long after textures load). Mirror the same BadTex fallback.
+        // ContentFinder lookup per selected pawn per frame is pure waste (the texture is immutable). Mirror the
+        // same BadTex fallback.
         private static readonly Texture2D DropIcon = ContentFinder<Texture2D>.Get("UI/Buttons/Drop", false) ?? BaseContent.BadTex;
 
         static IEnumerable<Gizmo> Postfix(IEnumerable<Gizmo> __result, Pawn __instance)

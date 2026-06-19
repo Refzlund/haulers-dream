@@ -1,0 +1,5 @@
+---
+"haulers-dream": minor
+---
+
+Added experimental, opt-in bulk-loading from the Storage Network mod's servers. Storage Network keeps stored items virtually (despawned inside its servers), so they were invisible to the bulk-load sweep — a transporter, pod, portal or vehicle whose manifest lived in the network loaded one stack per trip instead of everything at once. With the new "Bulk-load from Storage Network (experimental)" setting enabled (off by default; the option only appears when Storage Network is installed), Hauler's Dream now adds the network's stored stacks to the load plan, pulled through a usable and reachable terminal, and lets Storage Network materialise them on demand so the whole load is gathered in one trip. The amount is still bound to the manifest, the pawn's carry capacity and the claim ledger, and any stack the network can't hand over is simply left for the normal one-stack loading — nothing is over-pulled or stranded. It is opt-in because it relies on Storage Network's own on-demand behaviour.

@@ -30,6 +30,10 @@ namespace HaulersDream
         // nested re-entry into this builder) before the next reuse, so sharing on one thread is sound.
         [System.ThreadStatic] private static List<Thing> scratchThings;
         [System.ThreadStatic] private static List<int> scratchCounts;
+        // Storage Network opt-in path only: a snapshot of the claimable defs taken before committing (claimLeft is
+        // decremented as stacks commit, so it can't be iterated live). [ThreadStatic] + lazy-init like the scratch
+        // above; Cleared at use, never trusted empty. Untouched unless the SN bulk-load opt-in is on AND SN is active.
+        [System.ThreadStatic] private static List<ThingDef> scratchNetworkDefs;
 
         // B2 — per-frame "is there bulk-load work?" memo for the AUTOMATIC work-scan path. The transporter/portal/
         // vehicle work-scan calls HasPotentialBulkWork for EVERY pawn × EVERY group per scan, and each call would
@@ -212,17 +216,18 @@ namespace HaulersDream
             float massLeft = tripMass; // shrinks as stacks are committed (destination + pawn mass headroom)
 
             var pool = BulkHaul.BuildPool(pawn, loadable.GetParentThing(), map, MinSearchRadius * PoolRadiusHops);
-            // STORAGE COMPATIBILITY (Storage Network, shelves, deep storage, plain stockpiles): BuildPool draws ONLY
-            // from the loose-haulables lister (things NOT in valid storage), so when the manifest goods live in a
-            // storage building the sweep finds nothing and the pawn falls back to vanilla's one-stack-per-trip
-            // loading ("takes 1 pack instead of everything they need"). Add the spawned, in-storage stacks of the
-            // CLAIMABLE manifest defs so HD bulk-loads them too — exactly the defs vanilla's loader would pull from
-            // storage anyway. Everything downstream stays bounded: the per-stack DeliverableUnits / claim-ledger
-            // clamps and the existing per-candidate gate (reachable / reservable / not-forbidden, via TryQualify)
-            // still apply, and the deposit goes INTO the transporter, so this can only let the pawn load manifest
-            // items it is already allowed to load — never more, never stranded. Items a storage holds OFF-MAP (not
-            // Spawned) are skipped (the driver picks up via SplitOff, which needs a spawned stack), so for any
-            // storage type HD can't physically pull from, this is a safe no-op rather than a broken pickup.
+            // SPAWNED-STORAGE COMPATIBILITY (shelves, deep storage, plain stockpiles — any storage that keeps its
+            // contents as spawned on-map stacks): BuildPool draws ONLY from the loose-haulables lister (things NOT in
+            // valid storage), so when the manifest goods sit in storage the sweep finds nothing and the pawn falls
+            // back to vanilla's one-stack-per-trip loading ("takes 1 pack instead of everything they need"). Add the
+            // spawned, in-storage stacks of the CLAIMABLE manifest defs so HD bulk-loads them too — exactly the defs
+            // vanilla's loader would pull from storage anyway. Everything downstream stays bounded: the per-stack
+            // DeliverableUnits / claim-ledger clamps and the existing per-candidate gate (reachable / reservable /
+            // not-forbidden, via TryQualify) still apply, and the deposit goes INTO the transporter, so this can only
+            // let the pawn load manifest items it is already allowed to load — never more, never stranded.
+            // NOTE: SPAWNED-only. A VIRTUAL / digital storage like Storage Network keeps its items DESPAWNED inside
+            // server ThingOwners (absent from ThingsOfDef), so they are NOT picked up here — the opt-in
+            // AppendNetworkClaimables / StorageNetworkCompat path below handles the network case separately.
             AddStoredClaimables(pool, claimable, map);
             var claimedByOthers = RouteSelection.ClaimedByOtherPawns(pawn);
 
@@ -248,6 +253,16 @@ namespace HaulersDream
                 claimLeft[next.def] = Math.Max(0, (claimLeft.TryGetValue(next.def, out int l) ? l : 0) - take);
                 from = next.Position;
             }
+
+            // Storage Network (virtual servers): its items live DESPAWNED in the network, invisible to BuildPool +
+            // AddStoredClaimables (both spawned-only). When the experimental opt-in is on AND SN is installed,
+            // supplement the plan with the network's despawned stacks of the still-claimable defs — staged in
+            // targetQueueB and materialised at a usable terminal by SN's OWN StartJob auto-spawn when the job runs.
+            // Bounded by the SAME claim/carry/mass/bulk budget as the sweep above; a stack SN can't materialise is
+            // skipped by the driver's sweep toil (it requires Spawned), so this can never strand cargo or over-pull.
+            if (s.enableStorageNetworkBulkLoad && StorageNetworkCompat.IsActive)
+                AppendNetworkClaimables(pawn, map, claimLeft, claimedByOthers, things, counts,
+                    ref running, ceiling, ref bulkRoom, ref massLeft);
 
             if (things.Count == 0)
                 return null; // nothing reachable to sweep of the claimable defs
@@ -301,6 +316,91 @@ namespace HaulersDream
                         pool.Add(t);
                 }
             }
+        }
+
+        /// <summary>
+        /// EXPERIMENTAL Storage Network supplement (opt-in; only reached when the setting is on AND SN is active).
+        /// Adds the network's DESPAWNED stacks of the still-claimable manifest defs to the plan (things/counts),
+        /// bounded by the SAME claim / carry-ceiling / trip-mass / CE-bulk budget as the loose+spawned sweep above.
+        /// They are staged into job.targetQueueB and materialised at a usable terminal by Storage Network's OWN
+        /// <c>Pawn_JobTracker.StartJob</c> auto-spawn when the job runs; HD's sweep toil skips any queue entry that
+        /// fails to materialise (it requires Spawned), so this can never strand cargo or over-pull. PURE planning —
+        /// no reservations and no spawning here (the materialisation is SN's, at job start, not during this probe).
+        /// </summary>
+        private static void AppendNetworkClaimables(Pawn pawn, Map map, Dictionary<ThingDef, int> claimLeft,
+            HashSet<Thing> claimedByOthers, List<Thing> things, List<int> counts,
+            ref float running, float ceiling, ref float bulkRoom, ref float massLeft)
+        {
+            var terminals = StorageNetworkCompat.UsableTerminals(pawn, map);
+            if (terminals.Count == 0)
+                return; // no reachable/usable terminal — the network is inaccessible to this pawn right now
+
+            // Snapshot the claimable defs that still have budget: we decrement claimLeft as we commit, so we can't
+            // iterate it live. Dedup network stacks against the already-planned set AND across terminals that share a
+            // network (each terminal returns the whole network's stacks).
+            var defs = scratchNetworkDefs ?? (scratchNetworkDefs = new List<ThingDef>());
+            defs.Clear();
+            foreach (var kv in claimLeft)
+                if (kv.Key != null && kv.Value > 0)
+                    defs.Add(kv.Key);
+            if (defs.Count == 0)
+                return;
+            var seen = new HashSet<Thing>(things);
+
+            for (int di = 0; di < defs.Count; di++)
+            {
+                if (things.Count >= MaxStacks || running >= ceiling - 0.0001f || massLeft <= 0.0001f)
+                    break;
+                var def = defs[di];
+                for (int ti = 0; ti < terminals.Count; ti++)
+                {
+                    if (things.Count >= MaxStacks || running >= ceiling - 0.0001f || massLeft <= 0.0001f)
+                        break;
+                    var stacks = StorageNetworkCompat.NetworkStacksOfDef(terminals[ti], def);
+                    for (int si = 0; si < stacks.Count; si++)
+                    {
+                        int claimAvail = claimLeft.TryGetValue(def, out int la) ? la : 0;
+                        if (claimAvail <= 0)
+                            break; // this def's claim budget is spent
+                        if (things.Count >= MaxStacks || running >= ceiling - 0.0001f || massLeft <= 0.0001f)
+                            break;
+                        var t = stacks[si];
+                        if (t == null || t.def != def || t.Destroyed || !seen.Add(t))
+                            continue; // wrong def / gone / already planned (or seen via another terminal on this network)
+                        if (claimedByOthers.Contains(t))
+                            continue; // another pawn already has this exact network stack queued
+                        int take = ClampNetworkTake(pawn, t, claimAvail, ceiling, running, bulkRoom, massLeft);
+                        if (take <= 0)
+                            continue; // too heavy/bulky for the remaining budget — a lighter neighbour may still fit
+                        things.Add(t);
+                        counts.Add(take);
+                        float unit = t.GetStatValue(StatDefOf.Mass);
+                        running += take * unit;
+                        bulkRoom -= take * CECompat.BulkPerUnit(t);
+                        massLeft -= take * unit;
+                        claimLeft[def] = Math.Max(0, claimAvail - take);
+                    }
+                }
+            }
+        }
+
+        // The per-stack deliverable clamp for a Storage Network candidate — the SAME budget math as TryQualify
+        // (DeliverableUnits over the claim budget, the carry-ceiling CountWithinCeiling, the CE bulk cap, and the
+        // trip-mass UnitsWithinMassBudget), MINUS the spawned-thing gates (IsForbidden / PawnCanAutomaticallyHaulFast
+        // / ExtraSweepReach) — those don't apply to a despawned network stack, whose reach/usability is gated once at
+        // the TERMINAL in StorageNetworkCompat.UsableTerminals.
+        private static int ClampNetworkTake(Pawn pawn, Thing chosen, int claimAvail,
+            float ceiling, float running, float bulkRoom, float massLeft)
+        {
+            float unit = chosen.GetStatValue(StatDefOf.Mass);
+            int carryAffordable = BulkHaulPolicy.CountWithinCeiling(ceiling, running, unit, chosen.stackCount);
+            carryAffordable = Math.Min(carryAffordable, CECompat.MaxFitCount(pawn, chosen));
+            float bulkPer = CECompat.BulkPerUnit(chosen);
+            if (bulkPer > 0f && !float.IsPositiveInfinity(bulkRoom))
+                carryAffordable = Math.Min(carryAffordable, (int)Math.Floor(bulkRoom / bulkPer));
+            int massAffordable = TransportLoadPlan.UnitsWithinMassBudget(massLeft, unit, chosen.stackCount);
+            return TransportLoadPlan.DeliverableUnits(chosen.stackCount, claimAvail, claimAvail,
+                Math.Min(carryAffordable, massAffordable));
         }
 
         // Nearest pool candidate of a CLAIMABLE def within reach, clamped per-stack via DeliverableUnits under the

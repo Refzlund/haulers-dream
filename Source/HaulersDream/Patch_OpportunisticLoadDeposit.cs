@@ -45,6 +45,10 @@ namespace HaulersDream
     [HarmonyPatch(typeof(JobGiver_Work), nameof(JobGiver_Work.TryIssueJobPackage))]
     public static class Patch_OpportunisticLoadDeposit
     {
+        // Run LAST among postfixes on TryIssueJobPackage so HD reacts to the FINAL chosen job — after a
+        // job-substituting mod (e.g. "While You Are Nearby", which postfixes this same method to swap in a nearby
+        // equivalent job) has had its say. Otherwise HD might divert off a job that mod is about to replace.
+        [HarmonyPriority(Priority.Last)]
         static void Postfix(ref ThinkResult __result, Pawn pawn)
         {
             var s = HaulersDreamMod.Settings;

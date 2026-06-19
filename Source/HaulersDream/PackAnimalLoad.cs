@@ -22,9 +22,22 @@ namespace HaulersDream
     public static class PackAnimalLoad
     {
         /// <summary>The reachable owned pack animal with the most free space, or null. (Vanilla helper — honours
-        /// forming-caravan vs free-roaming rules and skips UnloadEverything animals.)</summary>
+        /// forming-caravan vs free-roaming rules and skips UnloadEverything animals.)
+        /// VF globally patches <c>UsablePackAnimalWithTheMostFreeSpace</c> to return a VehiclePawn whenever any player
+        /// vehicle is spawned, so when HD's VF support is OFF (<c>enableVehicleFramework == false</c>) discard a
+        /// vehicle candidate here — disabling VF support must mean HD never deposits into a vehicle's uncapped cargo
+        /// via the pack-animal path. When the master toggle is ON, behaviour is unchanged (a vehicle stays a valid
+        /// carrier). Gated on IsVehicle (false when VF absent), so this is inert without VF.</summary>
         internal static Pawn FindCarrier(Pawn pawn)
-            => pawn?.Map == null ? null : GiveToPackAnimalUtility.UsablePackAnimalWithTheMostFreeSpace(pawn);
+        {
+            if (pawn?.Map == null)
+                return null;
+            var carrier = GiveToPackAnimalUtility.UsablePackAnimalWithTheMostFreeSpace(pawn);
+            if (carrier != null && HaulersDreamMod.Settings?.enableVehicleFramework == false
+                && VehicleFrameworkCompat.IsVehicle(carrier))
+                return null; // VF support off -> a vehicle is not a usable carrier on the pack-animal path
+            return carrier;
+        }
 
         /// <summary>True if the pawn holds any HD-tagged stack with surplus above its personal kit — i.e. loot to
         /// offload onto an animal. Keep-stock (food / drugs / CE loadout) travels WITH the pawn, never onto the

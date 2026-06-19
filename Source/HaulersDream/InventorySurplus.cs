@@ -301,6 +301,8 @@ namespace HaulersDream
                         keep += entry.count;
             // Under CE the pawn's assigned loadout (ammo/sidearm reserve) is personal stock too — keep it.
             keep += CECompat.LoadoutKeepCount(pawn, def);
+            // Item Policy's per-pawn inventory-stock count: keep it too, or HD's unload fights its re-fetch loop.
+            keep += ItemPolicyCompat.KeepCount(pawn, def);
             return keep;
         }
 

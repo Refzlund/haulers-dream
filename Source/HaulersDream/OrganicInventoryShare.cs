@@ -55,10 +55,16 @@ namespace HaulersDream
         {
             if (!InventoryShare.IsEligibleCarrier(carrier, worker))
                 return false;
+            // [ORG] A VF vehicle is OFF-LIMITS as a build-material source: its cargo hold is a player-curated loadout
+            // VF manages, so sourcing OUT of it (e.g. construction pulling the player's loaded steel back out) would
+            // undo the loadout. Skip the vehicle itself — both organic loops (CountOrganic + FindOrganicStack) gate
+            // through this helper. Gated on IsVehicle ONLY (a safety fix, not a feature): IsVehicle returns false when
+            // VF is absent. (Distinct from the InVehicle skip below, which excludes a holder RIDING inside a vehicle.)
+            if (VehicleFrameworkCompat.IsVehicle(carrier))
+                return false;
             // [ORG] Skip a holder riding INSIDE a vehicle (seat/cargo) — its inventory is unreachable, so pathing to
-            // it is wasted (mirrors EatFromInventory's MOW guard). Sourcing from a PARKED vehicle's cargo stays ON (a
-            // parked vehicle is not InVehicle). Both organic loops (CountOrganic + FindOrganicStack) gate through this
-            // helper. Gated on InVehicle ONLY (a safety fix, not a feature): InVehicle returns false when VF is absent.
+            // it is wasted (mirrors EatFromInventory's MOW guard). Gated on InVehicle ONLY (a safety fix, not a
+            // feature): InVehicle returns false when VF is absent.
             if (VehicleFrameworkCompat.InVehicle(carrier))
                 return false;
             if (carrier.IsFormingCaravan())

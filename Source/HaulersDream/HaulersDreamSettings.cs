@@ -6,6 +6,13 @@ using Verse;
 
 namespace HaulersDream
 {
+    // [StaticConstructorOnStartup]: this type holds static Texture2D fields (the settings header + per-category
+    // icon caches, in the .Window.cs partial). RimWorld warns about any type with a static Texture2D/Material field
+    // that lacks this attribute — a structural check that fires even though those textures are loaded lazily on the
+    // main thread during the settings window draw. The attribute satisfies the check (its other static initializers
+    // are plain data — translation KEYS, sizes, empty caches — so running the type initializer at startup is inert);
+    // the texture fields stay null until the lazy properties first build them when the window opens.
+    [StaticConstructorOnStartup]
     public partial class HaulersDreamSettings : ModSettings
     {
         // --- master enable (no restart): one switch to disable ALL of Hauler's Dream. Default ON. When OFF, HD
@@ -164,6 +171,14 @@ namespace HaulersDream
         // for the active bulk-load feature; it requires the master.
         public bool enableVehicleFramework = true;
         public bool enableBulkLoadVehicles = true;
+
+        // --- Storage Network (BlackMouse) compat — EXPERIMENTAL, default OFF. SN is a virtual/digital storage whose
+        // items are DESPAWNED inside its server/terminal buildings, so HD's normal bulk-load sweep (loose + spawned
+        // storage) can't see them and a network-stored manifest degrades to vanilla one-stack loading. When this is
+        // on AND SN is installed, HD adds the network's stacks to the bulk-load plan and lets SN's own on-demand
+        // auto-spawn materialise them at a terminal. Inert when off or when SN is absent (StorageNetworkCompat
+        // .IsActive). Opt-in because it depends on an alpha, closed-source mod's auto-spawn behaviour.
+        public bool enableStorageNetworkBulkLoad = false;
 
         // --- bulk REFUEL (replaces vanilla's one-stack-per-walk refuel of a CompRefuelable — a shuttle's chemfuel, a
         // deep drill, a generator, …): a hauler sweeps enough nearby fuel into inventory, walks to the refuelable
@@ -462,6 +477,7 @@ namespace HaulersDream
             Scribe_Values.Look(ref enableBulkLoadPortal, "enableBulkLoadPortal", true);
             Scribe_Values.Look(ref enableVehicleFramework, "enableVehicleFramework", true);
             Scribe_Values.Look(ref enableBulkLoadVehicles, "enableBulkLoadVehicles", true);
+            Scribe_Values.Look(ref enableStorageNetworkBulkLoad, "enableStorageNetworkBulkLoad", false);
             Scribe_Values.Look(ref enableBulkRefuel, "enableBulkRefuel", true);
             Scribe_Values.Look(ref enableBulkUnloadCarriers, "enableBulkUnloadCarriers", true);
             Scribe_Values.Look(ref cleanupOnSave, "cleanupOnSave", true);
@@ -602,6 +618,7 @@ namespace HaulersDream
             enableBulkLoadPortal = true;
             enableVehicleFramework = true;
             enableBulkLoadVehicles = true;
+            enableStorageNetworkBulkLoad = false;
             enableBulkRefuel = true;
             enableBulkUnloadCarriers = true;
             cleanupOnSave = true;

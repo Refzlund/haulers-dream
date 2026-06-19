@@ -135,15 +135,15 @@ namespace HaulersDream
             c.Gap(6f);
         }
 
-        // ---- descriptive paragraph / note ----
-        public static void Note(SettingsCtx c, string text, float indent = 0f)
+        // ---- descriptive paragraph / note ---- (`color`, when set, overrides the default muted grey — e.g. a warning hue)
+        public static void Note(SettingsCtx c, string text, float indent = 0f, Color? color = null)
         {
             var f = Text.Font;
             Text.Font = GameFont.Tiny;
             float h = Mathf.Max(18f, Text.CalcHeight(text, c.Width - indent));
             var r = c.Row(h, indent);
             var col = GUI.color;
-            GUI.color = new Color(0.72f, 0.72f, 0.76f);
+            GUI.color = color ?? new Color(0.72f, 0.72f, 0.76f);
             Widgets.Label(r, text);
             GUI.color = col;
             Text.Font = f;
