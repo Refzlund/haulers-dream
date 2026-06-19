@@ -494,8 +494,6 @@ namespace HaulersDream
             HDSettingsUI.Note(c, "HaulersDream.Migration.Step2".Translate());
             HDSettingsUI.Note(c, "HaulersDream.Migration.Step3".Translate());
             HDSettingsUI.Note(c, "HaulersDream.Migration.Step4".Translate());
-            c.Gap(8f);
-            HDSettingsUI.Note(c, "HaulersDream.Migration.Outro".Translate());
         }
 
         // ===================== FEATURES (master on/off hub) =====================
