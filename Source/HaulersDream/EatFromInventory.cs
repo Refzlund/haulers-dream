@@ -95,9 +95,16 @@ namespace HaulersDream
                 // HD eligibility (excludes self/unspawned/dead/downed/drafted/mental/mid-HD-batch).
                 if (!InventoryShare.IsEligibleCarrier(holder, getter))
                     continue;
+                // [MOW] A VF vehicle is OFF-LIMITS as a food source: its cargo hold is a player-curated loadout VF
+                // manages (e.g. road-trip rations), so meals-on-wheels must not eat OUT of it and undo the loadout.
+                // Skip the vehicle itself. Gated on IsVehicle ONLY (a safety fix, not a feature): IsVehicle returns
+                // false when VF is absent. (Distinct from the InVehicle skip below, which excludes a holder RIDING
+                // inside a vehicle.)
+                if (VehicleFrameworkCompat.IsVehicle(holder))
+                    continue;
                 // [MOW] Skip a holder riding INSIDE a vehicle (seat/cargo) — its inventory is unreachable, so pathing
-                // to it is wasted. Eating from a PARKED vehicle's cargo stays ON (a parked vehicle is not InVehicle).
-                // Gated on InVehicle ONLY (a safety fix, not a feature): InVehicle returns false when VF is absent.
+                // to it is wasted. Gated on InVehicle ONLY (a safety fix, not a feature): InVehicle returns false when
+                // VF is absent.
                 if (VehicleFrameworkCompat.InVehicle(holder))
                     continue;
                 // Don't steal the food a parent is mid-feeding to an infant.

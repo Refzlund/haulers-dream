@@ -78,10 +78,29 @@ put away (see the in-game "Cannot unload inventory" alert).
 - **Automatic Stump Chopping** (`arylice.rimworld.automaticstumpchopping`) — prepends a
   `CutPlant(stump)` job per felled tree; a big forest harvest can briefly front-load a cutter's queue,
   but it only prepends (never clears), so HD's queued unload/route work resumes.
-- **Better Autocasting for VPE** — **not installed** in this load order. If added: an autocaster that
-  interrupts the current job is survivable (HD re-issues). If it uses a *job-def exception list*, add
-  `HaulersDream_UnloadInventory` (and optionally `HaulersDream_BillPrepGather` / `HaulersDream_BatchCraft`)
-  to the **excepted** jobs so a deliberate in-hand/inventory load isn't dropped mid-trip.
+- **Better Autocasting for VPE** (`dev.tobot.vpe.betterautocast`) — auto-casts psycasts on an interval and
+  can force-interrupt the current job to cast. It patches `CompAbilities.CompTick` / ability getters — a
+  surface HD does **not** touch (zero patch overlap, verified by cloning). An interrupt mid-HD-haul is safe
+  *by construction*: HD's carried loot lives in **tagged inventory** (not the carry tracker, so VEF's
+  `keepCarryingThing` cannot drop it), and HD's finish actions re-queue the unload + release claims on the
+  forced-end path — the haul simply pauses for the cast, then completes. If you dislike that pause, add HD's
+  job defs (`HaulersDream_BulkHaul`, `HaulersDream_UnloadInventory`, optionally `HaulersDream_BillPrepGather`
+  / `HaulersDream_BatchCraft`) to Better Autocast's in-game **Blocked Jobs** list. (This safety generalizes:
+  any mod that force-ends a pawn's job is handled the same way.)
+
+### Job-selection & pathfinding mods — composes
+- **Perfect Pathfinding** (`jp.perfectpathing.updated`) — forces the accurate A* heuristic for genuinely
+  optimal paths. HD only *consumes* `map.pathFinder.FindPathNow` (for its hybrid pickup ranking + en-route
+  path checks), so it inherits PP's accuracy automatically — HD reads, never re-implements, pathfinding.
+  Inert on a no-PP order (HD's path calls are then plain vanilla). No conflict.
+- **While You Are Nearby** (`PureMJ.MjRimMods.WhileYouAreNearby`) — postfixes
+  `JobGiver_Work.TryIssueJobPackage` to swap the chosen job for a nearer-equivalent one. HD's two postfixes
+  on that same method now run **last** (`HarmonyPriority(Priority.Last)`), so HD reacts to the *final* job
+  While You Are Nearby picked instead of racing it.
+- **While You're Up / Jobs of Opportunity** (`CodeOptimist.JobsOfOpportunity`) — opportunistic
+  haul-on-the-way; it transpiles `Pawn_JobTracker.TryOpportunisticJob`, a **different** seam from HD's
+  work-scan postfix, so the two don't collide. (HD *replaces* this mod's role — running both is redundant,
+  not harmful.)
 
 ### Overlap by design — composes
 - **Smarter Deconstruction & Mining** (`mlie.smarterdeconstructionandmining`) — postfixes
@@ -103,13 +122,26 @@ put away (see the in-game "Cannot unload inventory" alert).
   Storage Type Categories** — compose **by construction**. HD validates a destination only through the
   vanilla `StoreUtility.IsGoodStoreCell` (→ `NoStorageBlockersIn`) and `GetItemStackSpaceLeftFor` (→
   `GetMaxItemsAllowedInCell`) — the exact two methods ASF transpiles to enforce its per-cell capacity
-  and accept filters. So ASF's capacity rules apply *inside* HD's calls automatically, HD never
-  over-fills a deep-storage cell, and ASF storage always resolves as a **cell** (HD takes the correct
-  unload branch). ASF patches none of `JobDriver_HaulToCell` / `ReservationManager` / `HaulAIUtility` /
-  the `TryFind*Storage*` finders, so HD's no-cell-reservation prefix has nothing to collide with. Neat
-  Storage ships **no assembly** (pure ASF buildings), so it's covered transitively. (ASF + Neat verified
-  by decompiling the installed assemblies; LWM/RimFridge/Reel's hit the same `GetMaxItemsAllowedInCell`
-  path — expected to compose, untested.)
+  and accept filters. So ASF's capacity rules apply *inside* HD's calls automatically, and ASF storage
+  always resolves as a **cell** (HD takes the correct unload branch). HD never *count*-overfills a
+  deep-storage cell. The one nuance is an LWM **mass-limited** DSU: HD's pre-estimate counts slots
+  (mass-blind, because LWM's per-cell mass cap isn't exposed on the standalone `GetItemStackSpaceLeftFor`
+  HD prices with), so it can transiently over-estimate by up to one carried stack — but the deposit re-gate
+  (`IsGoodStoreCell` re-runs LWM's mass check on placement and floor-drops/re-routes the remainder) bounds
+  this to one-cycle re-haul churn; HD never actually overfills or loses items. ASF patches none of
+  `JobDriver_HaulToCell` / `ReservationManager` / `HaulAIUtility` / the `TryFind*Storage*` finders, so HD's
+  no-cell-reservation prefix has nothing to collide with. Neat Storage ships **no assembly** (pure ASF
+  buildings), so it's covered transitively. (ASF + Neat + LWM verified by decompiling/cloning the
+  assemblies; the multi-pawn no-reserve race onto one LWM/ASF multi-stack cell is also bounded by the same
+  deposit re-gate — extra trips at worst, never loss.)
+- **Storage Network** (`BlackMouse.StorageNetwork`) — a *virtual* (Applied-Energistics-style) storage: its
+  items live **despawned** inside server/terminal buildings, so they're invisible to HD's spawned-item
+  sweep and HD falls back to vanilla one-stack loading by default. An **opt-in** setting ("Bulk-load from
+  Storage Network", default off, shown only when SN is installed) lets HD bulk-load a transporter / portal /
+  vehicle straight from the network: it adds the network's stored stacks to the load plan through a usable,
+  reachable terminal and lets Storage Network materialize them on demand. Read-only during planning; bounded
+  by the same claim / carry / mass budget; a stack SN can't hand over is skipped (never stranded); fully
+  inert when off or SN absent.
 
 ### Loadout / inventory-stock mods vs. the "unload all surplus" option
 The **"Also put away surplus inventory a pawn is carrying that HD did NOT pick up itself"** option (on by
@@ -122,6 +154,25 @@ keeps items in a pawn's inventory through its **own** system rather than one of 
   stashed items to storage. If you use such a mod and want the stash kept, **turn the option off** in
   HD's settings (the gizmo, the every-work-run/interval triggers, and the red alert still handle
   genuinely-stuck HD-scooped loot when it's off). CE loadouts are safe — HD reads the CE loadout as keep-stock.
+- **Item Policy** (`RunningBugs.ItemPolicy`) — **auto-respected, no setting change needed.** It keeps a
+  per-pawn "N of these defs in inventory" stock (re-fetched by its own `JobGiver_TakeItemForInventoryStock`).
+  HD reads that per-pawn keep count (a reflection-only `ItemPolicyCompat` feeding HD's **count-aware** keep),
+  so it keeps the policy amount and unloads only the genuine surplus — no fight with Item Policy's re-fetch,
+  even with the "unload all surplus" option on. (The shim deliberately checks Item Policy's policy dictionary
+  for the pawn *before* querying, so it never triggers Item Policy's create-on-read side effect. Inert
+  without Item Policy.) This is the general pattern HD aims for: honor any per-pawn "keep N of def" intent
+  through the count-aware keep rather than a per-mod special case.
+
+### Vehicle Framework (`SmashPhil.VehicleFramework`) — composes; a vehicle is a foreign carrier HD respects
+HD can bulk-load a vehicle's cargo in one trip (its own VF-aware load path) and otherwise treats a
+`VehiclePawn` as a non-pawn carrier, not a colonist. All VF interop is **reflection-only** (inert without
+VF), and HD's per-pawn logic that must skip vehicles does so via a single subclass-safe `IsVehicle` check.
+A vehicle's cargo hold is the **player's** to manage, so HD never raids it: it does not source build
+materials (build-from-inventory) or meals (meals-on-wheels) out of a parked, loaded vehicle, and never
+bulk-unloads a vehicle. With HD's VF support toggle **off**, HD ignores vehicles entirely — it won't even
+deposit into one via the pack-animal path. (The one Harmony patch that hooks VF's pack-vehicle work-giver
+guards on the actual instance type, because VF's generic work-giver base shares JIT-compiled code across
+sibling work-givers — without that guard a refuel/upgrade job would be hijacked into a cargo load.)
 
 ### Adds storable content — all standard categories (no black-hole risk)
 - **Melee Animation** — lassos (apparel, `ApparelUtility`) + a melee weapon. **Vanilla Expanded

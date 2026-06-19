@@ -162,7 +162,10 @@ namespace HaulersDream
                 if (++depositLoops > MaxDepositLoops) { EndJobWith(JobCondition.Incompletable); return; }       // cycle backstop
                 // Always target the animal with the MOST free space: if it can't fit the smallest remaining
                 // stack, no animal can, and the deposit toil ends the job (the rest stays tagged and rides home).
-                var carrier = GiveToPackAnimalUtility.UsablePackAnimalWithTheMostFreeSpace(pawn);
+                // Route through PackAnimalLoad.FindCarrier (not the raw util) so the in-flight re-resolution honors
+                // the same VF-support-OFF vehicle skip as job selection — otherwise a master-OFF deposit loop could
+                // re-target a VF vehicle here and raw-transfer into its uncapped cargo.
+                var carrier = PackAnimalLoad.FindCarrier(pawn);
                 if (carrier == null || MassUtility.FreeSpace(carrier) <= 0f) { EndJobWith(JobCondition.Succeeded); return; }
                 job.SetTarget(CarrierInd, carrier);
             };
