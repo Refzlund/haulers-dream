@@ -298,12 +298,16 @@ namespace HaulersDream
 
     /// <summary>The per-pawn "Unload inventory" gizmo.</summary>
     [HarmonyPatch(typeof(Pawn), nameof(Pawn.GetGizmos))]
+    // [StaticConstructorOnStartup]: this type EAGERLY loads the DropIcon texture in its static initializer.
+    // RimWorld warns about any type with a static Texture2D/Material field that lacks this attribute, and the
+    // attribute also guarantees the type initializer runs during the startup asset phase on the MAIN thread (where
+    // ContentFinder is safe) rather than whenever the type first happens to be touched.
+    [StaticConstructorOnStartup]
     public static class Patch_Pawn_GetGizmos
     {
         // The "Drop" gizmo icon, resolved ONCE — both the auto-haul toggle and the unload button use it, and a
-        // ContentFinder lookup per selected pawn per frame is pure waste (the texture is immutable). Lazy via a
-        // static field initializer (ContentFinder is safe at static-init time post content-load; this patch class
-        // is only touched while gizmos render, long after textures load). Mirror the same BadTex fallback.
+        // ContentFinder lookup per selected pawn per frame is pure waste (the texture is immutable). Mirror the
+        // same BadTex fallback.
         private static readonly Texture2D DropIcon = ContentFinder<Texture2D>.Get("UI/Buttons/Drop", false) ?? BaseContent.BadTex;
 
         static IEnumerable<Gizmo> Postfix(IEnumerable<Gizmo> __result, Pawn __instance)

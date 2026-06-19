@@ -6,6 +6,13 @@ using Verse;
 
 namespace HaulersDream
 {
+    // [StaticConstructorOnStartup]: this type holds static Texture2D fields (the settings header + per-category
+    // icon caches, in the .Window.cs partial). RimWorld warns about any type with a static Texture2D/Material field
+    // that lacks this attribute — a structural check that fires even though those textures are loaded lazily on the
+    // main thread during the settings window draw. The attribute satisfies the check (its other static initializers
+    // are plain data — translation KEYS, sizes, empty caches — so running the type initializer at startup is inert);
+    // the texture fields stay null until the lazy properties first build them when the window opens.
+    [StaticConstructorOnStartup]
     public partial class HaulersDreamSettings : ModSettings
     {
         // --- master enable (no restart): one switch to disable ALL of Hauler's Dream. Default ON. When OFF, HD
