@@ -1,6 +1,7 @@
 using HarmonyLib;
 using RimWorld;
 using Verse;
+using Verse.AI;
 
 namespace HaulersDream
 {
@@ -60,6 +61,13 @@ namespace HaulersDream
 
             if (s.enableBulkLoadTransporters && workGiver.giverClass == typeof(WorkGiver_LoadTransporters))
             {
+                // Under the boarding lord (LoadAndEnterTransporters) HD's OWN bulk-load provider declines to offer
+                // its option (FloatMenuOptionProvider_BulkLoadTransporter, "let vanilla's gather-and-board run"), so
+                // suppressing vanilla's option here too would leave the player with NO way to hand-load a pawn that
+                // is mid-caravan-boarding ("even forcing doesn't work"). Mirror the provider's duty gate so the two
+                // stay symmetric: keep vanilla's option whenever HD's provider would decline.
+                if (pawn.mindState?.duty?.def == DutyDefOf.LoadAndEnterTransporters)
+                    return true;
                 // Only suppress when HD can actually give a bulk-load job for this pawn + transporter group. An
                 // all-pawn/corpse manifest (or one with nothing item-like left to claim) yields no HD job → leave the
                 // vanilla carry option so the player can still load by hand.
@@ -73,6 +81,10 @@ namespace HaulersDream
             }
             if (s.enableBulkLoadPortal && workGiver.giverClass == typeof(WorkGiver_HaulToPortal))
             {
+                // Symmetric to the transporter branch: HD's portal provider declines under the portal-boarding lord
+                // (LoadAndEnterPortal), so keep vanilla's option there rather than hide it with no replacement.
+                if (pawn.mindState?.duty?.def == DutyDefOf.LoadAndEnterPortal)
+                    return true;
                 var adapter = MapPortalBulkTarget.TryCreate(clicked as MapPortal);
                 if (adapter != null && TransportLoad.TryGiveBulkJob(pawn, adapter, playerOrder: true) != null)
                 {
