@@ -39,7 +39,7 @@ namespace HaulersDream
             waterExtType = AccessTools.TypeByName("DubsBadHygiene.WaterExt");
             active = waterExtType != null;
             if (active)
-                Log.Message("[Hauler's Dream] Dub's Bad Hygiene detected — carried water is excluded from surplus unloading.");
+                HDLog.Msg("Dub's Bad Hygiene detected — carried water is excluded from surplus unloading.");
         }
 
         /// <summary>True if this item is a DBH-managed carried drink (has the WaterExt mod extension).</summary>

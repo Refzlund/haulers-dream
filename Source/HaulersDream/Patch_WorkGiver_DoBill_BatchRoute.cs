@@ -35,6 +35,11 @@ namespace HaulersDream
             if (!BillRouteGate.MayRouteToInventory(job.targetA.Thing))
                 return;
             var bench = (Building_WorkTable)job.targetA.Thing;
+            // #4: never batch-convert a MECH worker's bill — HD's gather-into-inventory batch is a colonist scoop
+            // feature, and a mech (ignores forbidden, work-range-bounded) can dead-end an HD inventory-gather into
+            // the "10 jobs in one tick" loop. Matches the injection + InventoryRoute gates (single source of truth).
+            if (!BillRouteGate.WorkerMayShareCraft(pawn))
+                return;
             // Cede to Common Sense when it owns the DoBill driver — don't batch-convert into a re-haul loop.
             // (Moved below the cheap gates above: the reflective toggle read now happens only on a convertible job.)
             if (CommonSenseCompat.OwnsDoBillFlow)

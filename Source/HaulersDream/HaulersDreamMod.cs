@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Reflection;
 using HarmonyLib;
 using RimWorld;
@@ -24,7 +25,7 @@ namespace HaulersDream
 
             var harmony = new Harmony(HarmonyId);
             ApplyPatchesResilient(harmony, Assembly.GetExecutingAssembly());
-            Log.Message("[Hauler's Dream] initialised — carry limit defaults to each pawn's max carrying capacity.");
+            HDLog.Msg("initialised — carry limit defaults to each pawn's max carrying capacity.");
         }
 
         /// <summary>
@@ -66,6 +67,80 @@ namespace HaulersDream
             }
             if (failed > 0)
                 HDLog.Warn($"{applied} patch class(es) applied, {failed} skipped due to missing targets (see errors above).");
+
+            AttachUniversalExceptionTagger(harmony);
+        }
+
+        // The universal tagger (Issue #3): the SINGLE mechanism that fulfils "tell the user/developer an exception
+        // passed through Hauler's Dream's code, but never swallow it." Reused as one cached HarmonyMethod.
+        private static readonly HarmonyMethod UniversalTagger =
+            new HarmonyMethod(AccessTools.Method(typeof(HDLog), nameof(HDLog.UniversalExceptionFinalizer)))
+            {
+                // Run LAST among finalizers so any finalizer that legitimately TRANSFORMS the exception (HD's own
+                // HDGuard.SeamThrew, or a foreign finalizer) has already run before we observe + tag whatever
+                // actually escapes.
+                priority = Priority.Last,
+            };
+
+        /// <summary>
+        /// Once every HD patch is applied, attach a tagging FINALIZER to each method HD patched, so any exception
+        /// that escapes the original (or another patch on it) is LOGGED with the <see cref="HDLog.Tag"/> breadcrumb
+        /// AND re-thrown unchanged. A Harmony finalizer that returns its <c>__exception</c> re-throws it (returning
+        /// null would SWALLOW it — which this never does), so the game still surfaces the error exactly as before;
+        /// HD only ADDS a breadcrumb identifying that its code was in the call stack. This is the project-wide
+        /// answer to "let errors pass through, but tag them," applied automatically to every seam HD hooks rather
+        /// than relying on a hand-written finalizer per patch.
+        ///
+        /// Methods that ALREADY carry an HD finalizer which OBSERVES the exception (an <see cref="HDGuard"/>
+        /// log-and-rethrow seam — it takes <c>__exception</c> / returns <see cref="Exception"/>) are skipped to
+        /// avoid a double log. The project's VOID cleanup finalizers (which reset thread-statics and neither read
+        /// nor return the exception) are NOT skipped, so those seams still get tagged.
+        /// </summary>
+        private static void AttachUniversalExceptionTagger(Harmony harmony)
+        {
+            // Materialise first: harmony.Patch(...) below mutates the patch registry, so we must not iterate a live
+            // view of it.
+            var methods = new List<MethodBase>(harmony.GetPatchedMethods());
+            int tagged = 0;
+            foreach (var method in methods)
+            {
+                if (method == null)
+                    continue;
+                var info = Harmony.GetPatchInfo(method);
+                if (info?.Finalizers != null && AlreadyHasHandlingFinalizer(info.Finalizers))
+                    continue; // an HDGuard.SeamThrew finalizer already tags + rethrows here — don't double-log
+                try
+                {
+                    harmony.Patch(method, finalizer: UniversalTagger);
+                    tagged++;
+                }
+                catch (Exception e)
+                {
+                    // Never fatal: a method we can't attach the tagger to simply won't carry the breadcrumb.
+                    HDLog.Warn($"could not attach the exception tagger to {method.DeclaringType?.FullName}.{method.Name} "
+                        + $"— exceptions through it won't carry the Hauler's Dream breadcrumb. {e.GetType().Name}: {e.Message}");
+                }
+            }
+            HDLog.Dbg($"exception tagger attached to {tagged} of {methods.Count} patched method(s).");
+        }
+
+        /// <summary>True if any of <paramref name="finalizers"/> is an HD-owned finalizer that OBSERVES the
+        /// exception (takes a <c>__exception</c> parameter or returns an <see cref="Exception"/>) — i.e. already
+        /// tags + rethrows. A void HD cleanup finalizer (no <c>__exception</c> param, void return) returns FALSE
+        /// here, so its method still receives the universal tagger.</summary>
+        private static bool AlreadyHasHandlingFinalizer(IEnumerable<Patch> finalizers)
+        {
+            foreach (var p in finalizers)
+            {
+                if (p?.owner != HarmonyId || p.PatchMethod == null)
+                    continue;
+                if (p.PatchMethod.ReturnType == typeof(Exception))
+                    return true;
+                foreach (var pi in p.PatchMethod.GetParameters())
+                    if (pi.Name == "__exception" || pi.ParameterType == typeof(Exception))
+                        return true;
+            }
+            return false;
         }
 
         // A genuine patch container has a DIRECT (inherit:false) Harmony attribute on the class, or a method carrying
@@ -116,31 +191,88 @@ namespace HaulersDream
         }
     }
 
-    /// <summary>Verbose logging gated behind the mod setting AND Dev Mode (parity with BLFT — debug spam never
-    /// reaches a normal player even if the (now Dev-only) toggle was left on in an old config). See .docs/02.</summary>
+    /// <summary>
+    /// The SINGLE SOURCE OF TRUTH for everything Hauler's Dream writes to the log (Issue #3). Every message,
+    /// warning, and error the mod emits flows through here and carries <see cref="Tag"/>, so the player/developer
+    /// can always see at a glance that a line came from (or passed through) this mod — and the tag itself can be
+    /// changed in exactly ONE place. Nothing here ever SWALLOWS an exception: the tagging machinery only ADDS a
+    /// breadcrumb and re-throws (see <see cref="UniversalExceptionFinalizer"/>).
+    ///
+    /// Verbose <see cref="Dbg"/> is additionally gated behind the mod setting AND Dev Mode (parity with BLFT —
+    /// debug spam never reaches a normal player even if the (now Dev-only) toggle was left on in an old config).
+    /// See .docs/02. The other channels are ALWAYS-emitted.
+    /// </summary>
     public static class HDLog
     {
+        /// <summary>The one place the log prefix is defined. Change it here and every HD log line updates.</summary>
+        public const string Tag = "[Hauler's Dream] ";
+
+        /// <summary>Verbose debug line — Dev Mode + the verbose-logging setting only.</summary>
         public static void Dbg(string message)
         {
             if (Prefs.DevMode && HaulersDreamMod.Settings != null && HaulersDreamMod.Settings.verboseLogging)
-                Log.Message("[Hauler's Dream] " + message);
+                Log.Message(Tag + message);
         }
 
-        /// <summary>An ALWAYS-emitted warning (not Dev/verbose-gated) carrying the standard prefix — for genuine
+        /// <summary>An ALWAYS-emitted plain message carrying the tag — mod init, optional-mod-detected notices, etc.</summary>
+        public static void Msg(string message)
+        {
+            Log.Message(Tag + message);
+        }
+
+        /// <summary>An ALWAYS-emitted warning (not Dev/verbose-gated) carrying the tag — for genuine
         /// degrade-but-keep-going conditions (e.g. an optional mod is present but a load-bearing reflected member
         /// did not bind, so a feature is silently disabled). No dedup: each call logs (callers self-gate with a
         /// `warned` latch where one-shot is wanted).</summary>
         public static void Warn(string message)
         {
-            Log.Warning("[Hauler's Dream] " + message);
+            Log.Warning(Tag + message);
         }
 
-        /// <summary>An ALWAYS-emitted error (not Dev/verbose-gated) carrying the standard prefix — for fail-loud
-        /// faults (a transpiler IL match broke, a foreign WorkGiver threw). No dedup: callers that need
-        /// once-per-key dedup must keep <c>Log.ErrorOnce</c> instead.</summary>
+        /// <summary>A tag-carrying warning logged at most ONCE per <paramref name="key"/>. Mirrors <c>Log.WarningOnce</c>.</summary>
+        public static void WarnOnce(string message, int key)
+        {
+            Log.WarningOnce(Tag + message, key);
+        }
+
+        /// <summary>An ALWAYS-emitted error (not Dev/verbose-gated) carrying the tag — for fail-loud
+        /// faults (a transpiler IL match broke, a foreign WorkGiver threw). No dedup.</summary>
         public static void Err(string message)
         {
-            Log.Error("[Hauler's Dream] " + message);
+            Log.Error(Tag + message);
+        }
+
+        /// <summary>A tag-carrying error logged at most ONCE per <paramref name="key"/> — for a fault that recurs
+        /// every tick/scan and must not flood the log. Mirrors <c>Log.ErrorOnce</c>.</summary>
+        public static void ErrOnce(string message, int key)
+        {
+            Log.ErrorOnce(Tag + message, key);
+        }
+
+        /// <summary>
+        /// The universal exception breadcrumb (Issue #3) attached to EVERY method Hauler's Dream patches (see
+        /// <see cref="HaulersDreamMod.AttachUniversalExceptionTagger"/>). It runs as a Harmony FINALIZER, so it
+        /// observes any exception thrown by the original method or by any patch on it. It logs a tagged,
+        /// once-per-method breadcrumb and then RE-THROWS the exception unchanged by returning it — returning null
+        /// would swallow it, which we never do. The wording is deliberately HONEST: HD's code being in the stack
+        /// does not mean HD caused the fault (the original method or another mod's patch may have), so we never
+        /// claim blame — we only make HD's involvement visible.
+        /// </summary>
+        public static Exception UniversalExceptionFinalizer(Exception __exception, MethodBase __originalMethod)
+        {
+            if (__exception != null)
+            {
+                string where = __originalMethod != null
+                    ? (__originalMethod.DeclaringType?.FullName + "." + __originalMethod.Name)
+                    : "a patched method";
+                ErrOnce(
+                    $"an exception passed through {where} — a method Hauler's Dream patches. Hauler's Dream is in "
+                    + "the call stack but did not necessarily cause this (the original method or another mod's "
+                    + "patch may have). Re-throwing it unchanged so the game still reports it below — "
+                    + $"[{__exception.GetType().Name}: {__exception.Message}]",
+                    __originalMethod != null ? __originalMethod.GetHashCode() : where.GetHashCode());
+            }
+            return __exception; // NEVER null — that would swallow the exception. Returning it re-throws it.
         }
     }
 }

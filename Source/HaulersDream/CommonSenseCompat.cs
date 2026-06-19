@@ -107,7 +107,7 @@ namespace HaulersDream
             advCleaningField = AccessTools.Field(settingsType, "adv_cleaning");
             advHaulAllField = AccessTools.Field(settingsType, "adv_haul_all_ings");
             bool readable = advCleaningField != null && advHaulAllField != null;
-            Log.Message("[Hauler's Dream] Common Sense detected — HD cedes the DoBill ingredient-gather flow to it"
+            HDLog.Msg("Common Sense detected — HD cedes the DoBill ingredient-gather flow to it"
                         + (readable ? "." : " (toggle fields unresolved — treating CS as owning the flow as a safe fallback)."));
             if (!readable)
                 // CS is present (Settings resolved) but its toggle fields did not bind (a CS fork/version renamed

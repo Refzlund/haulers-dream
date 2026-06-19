@@ -103,6 +103,19 @@ namespace HaulersDream
             if (filter == null)
                 return null;
 
+            // Vanilla FindEnoughReservableThings dereferences rootCell.GetRegion(map).Map and feeds the region to
+            // RegionTraverser with NO null guard (decompiled). A refuelable's OWN cell is commonly impassable — a
+            // deep drill, a generator, a mod's bulk-fed pot — so rootCell.GetRegion(Set_Passable) is null and the
+            // helper NREs. Vanilla never hits this for non-atomic refuelables (its work-scan refuel uses
+            // FindBestFuel(pawn.Position, always passable); only the ATOMIC path passes refuelable.Position, and
+            // shipped atomic content sits on passable footprints). HD is the first to feed refuelable.Position into
+            // the finder for a NON-atomic refuelable, so guard it: mirror vanilla's own GetRegion(Set_Passable)
+            // test and decline cleanly when the cell has no passable region. This is a precondition guard, not a
+            // try/catch — it returns null exactly when vanilla would NRE, deferring to vanilla's working
+            // single-stack FindBestFuel(pawn.Position) path; any OTHER fault still throws and surfaces.
+            if (!refuelable.Position.InBounds(pawn.Map) || refuelable.Position.GetRegion(pawn.Map) == null)
+                return null;
+
             // Vanilla's own "find enough reservable fuel near the target" — same reachability / reservability /
             // fogged / filter checks vanilla uses, so the picked set matches. The IntRange is min=1, max=deficit:
             // min=1 mirrors vanilla's single-stack tolerance (the finder returns its chosen list once the accumulated

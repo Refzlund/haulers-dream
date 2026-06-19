@@ -1,0 +1,5 @@
+---
+"haulers-dream": patch
+---
+
+fix: Hauler's Dream no longer injects its "share carried ingredients for crafting" candidates into a **mechanoid's** crafting bill, nor reroutes a mech's ingredient gather through inventory. A colony mech ignores forbidden / allowed-area when sourcing ingredients and is bounded by its work range, so an injected or rerouted candidate could feed a vanilla `DoBill` the mech can't complete — a contributor to the *"started 10 jobs in one tick"* crafting loop (e.g. a Fabricor at a stonecutter's table). Share-for-crafting is a colonist scoop feature, and the ingredient injection was previously the only such path that ran for mechs **regardless of the "allow mechanoids" setting** — inconsistent with the gather conversions, which already respected it. All of HD's share-for-crafting machinery is now consistently mech-excluded (single source of truth). Colonist crafting is byte-identical. Note: the underlying loop is primarily vanilla mech behaviour; this removes Hauler's Dream as any possible contributor.

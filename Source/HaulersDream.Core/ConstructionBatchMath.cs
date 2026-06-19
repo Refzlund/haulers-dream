@@ -71,5 +71,37 @@ namespace HaulersDream.Core
                 resourceTake = 0;
             }
         }
+
+        /// <summary>
+        /// Index of the candidate cell NEAREST <paramref name="currentX"/>/<paramref name="currentZ"/> by squared
+        /// horizontal distance, with ties resolved to the LOWEST index (the earliest-queued, for a stable,
+        /// deterministic pick). Returns -1 for an empty / null candidate set.
+        ///
+        /// Used by the multi-site construction-delivery driver to deliver to the closest still-needing site FROM
+        /// WHERE THE PAWN IS STANDING on each hop — a greedy nearest-neighbour route — instead of strict FIFO over
+        /// a queue ordered by distance from a single fixed anchor. The fixed-anchor order made a builder zig-zag
+        /// across a wall/fence line (closest-to-anchor, then the sites concentrically AROUND the filled ones,
+        /// alternating sides), turning a short walk into long back-and-forth trips; re-anchoring on the pawn each
+        /// hop keeps every leg short. <paramref name="xs"/> and <paramref name="zs"/> are parallel (same length).
+        /// </summary>
+        public static int NextNearestIndex(IReadOnlyList<int> xs, IReadOnlyList<int> zs, int currentX, int currentZ)
+        {
+            // Both lists are required and parallel (same length); a null in either yields no candidate.
+            int count = (xs == null || zs == null) ? 0 : xs.Count;
+            int best = -1;
+            long bestDistSq = long.MaxValue;
+            for (int i = 0; i < count; i++)
+            {
+                long dx = xs[i] - currentX;
+                long dz = zs[i] - currentZ;
+                long distSq = dx * dx + dz * dz;
+                if (distSq < bestDistSq) // strict < keeps the lowest index on a tie
+                {
+                    bestDistSq = distSq;
+                    best = i;
+                }
+            }
+            return best;
+        }
     }
 }

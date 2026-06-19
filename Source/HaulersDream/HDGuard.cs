@@ -28,7 +28,7 @@ namespace HaulersDream
         public static Exception SeamThrew(Exception ex, string seam, Pawn pawn, string consequence)
         {
             if (ex != null)
-                Log.ErrorOnce("[Hauler's Dream] An exception surfaced at " + seam + " (a method HD patches) "
+                HDLog.ErrOnce("An exception surfaced at " + seam + " (a method HD patches) "
                     + "while selecting for " + (pawn?.LabelShort ?? "a pawn") + " — " + consequence
                     + " The stack trace below shows the actual source (HD, vanilla, or another mod on the same "
                     + "method); if it implicates HaulersDream, please report it.\n" + ex,

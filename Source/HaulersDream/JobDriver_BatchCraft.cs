@@ -617,7 +617,7 @@ namespace HaulersDream
                             if (products[i] != null && products[i].holdingOwner == null && !products[i].Spawned)
                                 PlaceProductIntoInventory(products[i]);
                     throw new System.Exception(
-                        $"[Hauler's Dream] batch-craft rep failed for {recipe.defName} (placed ingredients on bench floor, products banked)", e);
+                        $"{HDLog.Tag}batch-craft rep failed for {recipe.defName} (placed ingredients on bench floor, products banked)", e);
                 }
             };
             toil.defaultCompleteMode = ToilCompleteMode.Instant;

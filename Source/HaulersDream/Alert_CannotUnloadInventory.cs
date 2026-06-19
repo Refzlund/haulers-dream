@@ -94,7 +94,7 @@ namespace HaulersDream
                 // ("all UI invisible but still clickable"). Per the no-suppression rule this is the legitimate
                 // boundary exception: keep the error LOUD (logged, never swallowed) but return the last good
                 // report instead of taking the entire UI down. The 60-tick throttle above also rate-limits this.
-                Log.ErrorOnce("[Hauler's Dream] Alert_CannotUnloadInventory.GetReport threw; returning the cached "
+                HDLog.ErrOnce("Alert_CannotUnloadInventory.GetReport threw; returning the cached "
                     + "report to keep the HUD alive. This is a bug — please report this stack trace:\n" + e,
                     0x4844A1E7);
             }

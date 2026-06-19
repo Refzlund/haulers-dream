@@ -45,7 +45,7 @@ namespace HaulersDream
             stockingUpOn = AccessTools.Method(utility, "StockingUpOn", new[] { typeof(Pawn), typeof(ThingDef) });
             active = stockingUpOn != null;
             if (active)
-                Log.Message("[Hauler's Dream] Smart Medicine detected — stocked-up medicine is excluded from surplus unloading.");
+                HDLog.Msg("Smart Medicine detected — stocked-up medicine is excluded from surplus unloading.");
             else
                 HDLog.Warn("Smart Medicine present but StockUpUtility.StockingUpOn(Pawn, ThingDef) "
                            + "did not resolve; stocked medicine is NOT specially protected (turn off 'unload foreign surplus' if it loops).");

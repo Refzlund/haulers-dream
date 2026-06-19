@@ -35,7 +35,7 @@ namespace HaulersDream
             var inv = pawn.inventory?.innerContainer;
 
             var sb = new StringBuilder();
-            sb.AppendLine($"[Hauler's Dream] {DiagVersion} {pawn}: max={max:0.#}kg current={cur:0.#}kg limit={cap:0.#}kg " +
+            sb.AppendLine($"{HDLog.Tag}{DiagVersion} {pawn}: max={max:0.#}kg current={cur:0.#}kg limit={cap:0.#}kg " +
                           $"encumbrance={CarryMath.EncumbranceFraction(cur, max):P0} eligible={YieldRouter.IsEligible(pawn)}");
             sb.AppendLine($"  settings: shareForCrafting={s.shareForCrafting} shareForBuilding={s.shareForBuilding} " +
                           $"pickupMode={s.pickupMode} drafted={pawn.Drafted}");
@@ -81,7 +81,7 @@ namespace HaulersDream
             var colonists = map?.mapPawns?.FreeColonistsSpawned;
             if (colonists == null || colonists.Count == 0)
             {
-                Log.Message("[Hauler's Dream] ledger round-trip: SKIPPED — no free colonists on the current map to key the synthetic ledger.");
+                HDLog.Msg("ledger round-trip: SKIPPED — no free colonists on the current map to key the synthetic ledger.");
                 return;
             }
 
@@ -101,7 +101,7 @@ namespace HaulersDream
             });
 
             var sb = new StringBuilder();
-            sb.AppendLine($"[Hauler's Dream] {DiagVersion} ledger save/load round-trip:");
+            sb.AppendLine($"{HDLog.Tag}{DiagVersion} ledger save/load round-trip:");
             bool ok = true;
 
             // 1) Two pawns claim overlapping defs; a third claims a disjoint def.

@@ -144,7 +144,7 @@ namespace HaulersDream
                      && cargoCapacityStatDef != null
                      && cargoToLoadField != null;
             if (active)
-                Log.Message("[Hauler's Dream] Vehicle Framework detected — bulk-load-into-vehicle + event-correct "
+                HDLog.Msg("Vehicle Framework detected — bulk-load-into-vehicle + event-correct "
                             + "pack-animal deposit on, eat-from / build-from a parked vehicle's cargo enabled.");
             else
                 // VF is present (VehiclePawn resolved) but one or more load-bearing deposit/capacity/manifest
