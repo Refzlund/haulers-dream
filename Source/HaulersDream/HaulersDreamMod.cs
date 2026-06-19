@@ -14,6 +14,7 @@ namespace HaulersDream
     public class HaulersDreamMod : Mod
     {
         public const string HarmonyId = "giwaffed.HaulersDream";
+        public const string PackageId = "giwaffed.HaulersDream"; // matches About.xml <packageId>; used to skip self in mod scans
 
         public static HaulersDreamMod Instance { get; private set; }
         public static HaulersDreamSettings Settings { get; private set; }

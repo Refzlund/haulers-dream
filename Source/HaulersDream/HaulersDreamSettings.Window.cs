@@ -36,6 +36,7 @@ namespace HaulersDream
             Who,          // pawn eligibility + work-incapability overrides
             Planners,     // route + crafting planner tuning
             Advanced,     // unload timing, safety net, dev tools
+            Migration,    // (conditional, pinned to the BOTTOM) clean-transition guide — only when a replaced mod is active
         }
 
         private struct CatDef
@@ -60,7 +61,14 @@ namespace HaulersDream
             new CatDef(SettingsCat.Who,         "Who",         "HaulersDream.Cat.Who",         "HaulersDream.Cat.Who.Help"),
             new CatDef(SettingsCat.Planners,    "Planners",    "HaulersDream.Cat.Planners",    "HaulersDream.Cat.Planners.Help"),
             new CatDef(SettingsCat.Advanced,    "Advanced",    "HaulersDream.Cat.Advanced",    "HaulersDream.Cat.Advanced.Help"),
+            // Conditional + bottom-pinned: DrawNav hides this row unless ModReplacements.AnyActive and draws it at the
+            // BOTTOM of the nav column (warning-amber). Kept last so the int index of every other category is unchanged.
+            new CatDef(SettingsCat.Migration,   "Migration",   "HaulersDream.Cat.Migration",   "HaulersDream.Cat.Migration.Help"),
         };
+
+        // Warning-amber for the conditional Migration row + its content header: reads as a caution while fitting
+        // RimWorld's warm UI palette. Used for both the nav icon and label (the "you still have a replaced mod" tab).
+        private static readonly Color MigrationWarn = new Color(0.95f, 0.79f, 0.28f);
 
         private static SettingsCat currentCat = SettingsCat.Features;
         private static Vector2 contentScroll;
@@ -68,7 +76,7 @@ namespace HaulersDream
         // Per-category measured content height (seeded large so the first view of a page never under-sizes the
         // scroll viewport; replaced by the true measured height after the first draw and then stable).
         private static readonly float[] catHeight =
-            { 1700f, 1700f, 1700f, 1700f, 1700f, 1700f, 1700f, 1700f, 1700f, 1700f };
+            { 1700f, 1700f, 1700f, 1700f, 1700f, 1700f, 1700f, 1700f, 1700f, 1700f, 1700f };
         private static readonly Dictionary<SettingsCat, Texture2D> iconCache = new Dictionary<SettingsCat, Texture2D>();
 
         private static Texture2D IconFor(CatDef cd)
@@ -221,45 +229,70 @@ namespace HaulersDream
             var anchor = Text.Anchor;
             foreach (var cd in cats)
             {
-                var row = new Rect(inner.x, y, inner.width, rowH);
-                bool selected = currentCat == cd.cat;
-                if (selected) Widgets.DrawBoxSolid(row, new Color(1f, 1f, 1f, 0.13f));
-                else if (Mouse.IsOver(row)) Widgets.DrawBoxSolid(row, new Color(1f, 1f, 1f, 0.06f));
-
-                var icon = IconFor(cd);
-                const float navIconSize = 22f;
-                var iconBox = new Rect(row.x + 9f, row.y + (rowH - navIconSize) / 2f, navIconSize, navIconSize);
-                if (icon != null)
-                {
-                    var col = GUI.color;
-                    GUI.color = selected ? Color.white : new Color(1f, 1f, 1f, 0.75f);
-                    GUI.DrawTexture(iconBox, icon, ScaleMode.ScaleToFit);
-                    GUI.color = col;
-                }
-
-                var labelRect = new Rect(iconBox.xMax + 8f, row.y, row.xMax - iconBox.xMax - 12f, rowH);
-                Text.Font = GameFont.Small;
-                Text.Anchor = TextAnchor.MiddleLeft;
-                var lcol = GUI.color;
-                if (selected) GUI.color = new Color(0.92f, 0.94f, 1f);
-                Widgets.Label(labelRect, cd.nameKey.Translate());
-                GUI.color = lcol;
-
-                if (Mouse.IsOver(row))
-                    HDSettingsUI.SetHelp(cd.nameKey.Translate(), cd.helpKey.Translate());
-                if (Widgets.ButtonInvisible(row))
-                {
-                    currentCat = cd.cat;
-                    contentScroll = Vector2.zero;
-                }
+                // The Migration row is conditional + bottom-pinned — drawn separately below, not inline.
+                if (cd.cat == SettingsCat.Migration)
+                    continue;
+                DrawNavRow(new Rect(inner.x, y, inner.width, rowH), cd, rowH, tint: null);
                 y += rowH + 2f;
+            }
+            // Conditional warning row pinned to the BOTTOM of the nav column ("justify-between"), shown only while the
+            // user still has a mod HD replaces active. Mathf.Max keeps it from overlapping the list on a short window.
+            if (ModReplacements.AnyActive)
+            {
+                var mig = cats[(int)SettingsCat.Migration];
+                float bottomY = Mathf.Max(y, inner.yMax - rowH);
+                DrawNavRow(new Rect(inner.x, bottomY, inner.width, rowH), mig, rowH, tint: MigrationWarn);
             }
             Text.Font = f;
             Text.Anchor = anchor;
         }
 
+        // One nav row (highlight + icon + label + click). `tint`, when set, colours BOTH the icon and the label in a
+        // warning hue whether or not the row is selected (the Migration row); when null the row uses the normal
+        // white/dimmed styling.
+        private void DrawNavRow(Rect row, CatDef cd, float rowH, Color? tint)
+        {
+            bool selected = currentCat == cd.cat;
+            if (selected) Widgets.DrawBoxSolid(row, new Color(1f, 1f, 1f, 0.13f));
+            else if (Mouse.IsOver(row)) Widgets.DrawBoxSolid(row, new Color(1f, 1f, 1f, 0.06f));
+
+            var icon = IconFor(cd);
+            const float navIconSize = 22f;
+            var iconBox = new Rect(row.x + 9f, row.y + (rowH - navIconSize) / 2f, navIconSize, navIconSize);
+            if (icon != null)
+            {
+                var col = GUI.color;
+                GUI.color = tint ?? (selected ? Color.white : new Color(1f, 1f, 1f, 0.75f));
+                GUI.DrawTexture(iconBox, icon, ScaleMode.ScaleToFit);
+                GUI.color = col;
+            }
+
+            var labelRect = new Rect(iconBox.xMax + 8f, row.y, row.xMax - iconBox.xMax - 12f, rowH);
+            Text.Font = GameFont.Small;
+            Text.Anchor = TextAnchor.MiddleLeft;
+            var lcol = GUI.color;
+            if (tint.HasValue)
+                GUI.color = selected ? tint.Value : new Color(tint.Value.r, tint.Value.g, tint.Value.b, 0.8f);
+            else if (selected)
+                GUI.color = new Color(0.92f, 0.94f, 1f);
+            Widgets.Label(labelRect, cd.nameKey.Translate());
+            GUI.color = lcol;
+
+            if (Mouse.IsOver(row))
+                HDSettingsUI.SetHelp(cd.nameKey.Translate(), cd.helpKey.Translate());
+            if (Widgets.ButtonInvisible(row))
+            {
+                currentCat = cd.cat;
+                contentScroll = Vector2.zero;
+            }
+        }
+
         private void DrawContent(Rect rect)
         {
+            // The Migration tab is conditional; if it's somehow the current tab while no replaced mod is active
+            // (its nav row is hidden then), fall back to Features so nothing draws an empty page.
+            if (currentCat == SettingsCat.Migration && !ModReplacements.AnyActive)
+                currentCat = SettingsCat.Features;
             int idx = (int)currentCat;
             // Reserve the scrollbar width, then lay out content a gutter short of it (same 12px gutter as between
             // the nav and the content) so rows/headers never touch the scrollbar.
@@ -281,6 +314,7 @@ namespace HaulersDream
                 case SettingsCat.Who: DrawWhoCat(c); break;
                 case SettingsCat.Planners: DrawPlannersCat(c); break;
                 case SettingsCat.Advanced: DrawAdvancedCat(c); break;
+                case SettingsCat.Migration: DrawMigrationCat(c); break;
             }
             catHeight[idx] = c.CurY + 8f;
             Widgets.EndScrollView();
@@ -422,6 +456,47 @@ namespace HaulersDream
         private static string Ticks(int n) => "HaulersDream.Unit.Ticks".Translate(n);
         private static string Hours(float h) => "HaulersDream.Unit.Hours".Translate(h.ToString("0.#"));
         private static string OffLabel => "HaulersDream.Common.Off".Translate();
+
+        // ===================== MIGRATION (conditional clean-transition guide) =====================
+        // Reachable only when ModReplacements.AnyActive (the nav row is hidden + DrawContent redirects otherwise), so
+        // ActiveNames is non-empty here. Lists the replaced mods the user still has active, offers a one-click
+        // disable-and-restart, and gives the safe manual order to remove them — a switcher running a replaced mod
+        // alongside HD is the usual "pickup looks broken after switching" cause (they fight over the same hauling
+        // jobs; see COMPATIBILITY.md).
+        private void DrawMigrationCat(SettingsCtx c)
+        {
+            var names = ModReplacements.ActiveNames;
+
+            HDSettingsUI.Header(c, "HaulersDream.Migration.DetectedHead".Translate());
+            HDSettingsUI.Note(c, "HaulersDream.Migration.Intro".Translate(), color: MigrationWarn);
+            c.Gap(4f);
+            for (int i = 0; i < names.Count; i++)
+                HDSettingsUI.Note(c, "•  " + names[i], indent: 12f, color: MigrationWarn);
+            c.Gap(6f);
+
+            // One-click: disable every detected replaced mod and restart (the only way a mod-list change takes
+            // effect — exactly what the vanilla Mods menu does). Confirmed first, with a clear save/draft warning,
+            // because it restarts RimWorld immediately.
+            HDSettingsUI.Button(c, "HaulersDream.Migration.DisableButton".Translate(),
+                () =>
+                {
+                    string list = names.ToCommaList(useAnd: true);
+                    Find.WindowStack.Add(Dialog_MessageBox.CreateConfirmation(
+                        "HaulersDream.Migration.DisableConfirm".Translate(list),
+                        ModReplacements.DisableAllAndRestart,
+                        destructive: true,
+                        "HaulersDream.Migration.DisableTitle".Translate()));
+                },
+                help: "HaulersDream.Migration.DisableButton.Help".Translate());
+
+            HDSettingsUI.Header(c, "HaulersDream.Migration.StepsHead".Translate());
+            HDSettingsUI.Note(c, "HaulersDream.Migration.Step1".Translate());
+            HDSettingsUI.Note(c, "HaulersDream.Migration.Step2".Translate());
+            HDSettingsUI.Note(c, "HaulersDream.Migration.Step3".Translate());
+            HDSettingsUI.Note(c, "HaulersDream.Migration.Step4".Translate());
+            c.Gap(8f);
+            HDSettingsUI.Note(c, "HaulersDream.Migration.Outro".Translate());
+        }
 
         // ===================== FEATURES (master on/off hub) =====================
         private void DrawFeaturesCat(SettingsCtx c)

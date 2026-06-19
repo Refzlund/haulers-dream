@@ -471,6 +471,20 @@
   <HaulersDream.Cat.Planners.Help>The right-click route planner and the station crafting planner, and their defaults.</HaulersDream.Cat.Planners.Help>
   <HaulersDream.Cat.Advanced>Advanced</HaulersDream.Cat.Advanced>
   <HaulersDream.Cat.Advanced.Help>Unload timing, the stuck-cargo safety alert, save cleanup, and developer diagnostics.</HaulersDream.Cat.Advanced.Help>
+  <HaulersDream.Cat.Migration>Migration</HaulersDream.Cat.Migration>
+  <HaulersDream.Cat.Migration.Help>Shown because you still have one or more mods that Hauler's Dream replaces active (including translated or "Continued" versions). Running them at the same time as Hauler's Dream makes them fight over the same hauling jobs — which can look like pickup is broken. Follow the steps to remove them cleanly.</HaulersDream.Cat.Migration.Help>
+  <HaulersDream.Migration.DetectedHead>Replaced mods still active</HaulersDream.Migration.DetectedHead>
+  <HaulersDream.Migration.Intro>Hauler's Dream is a single replacement for the mods below, which you still have enabled. Running them alongside Hauler's Dream makes them compete for the same hauling jobs, so pickup can look broken or flaky. Remove them with the clean steps below.</HaulersDream.Migration.Intro>
+  <HaulersDream.Migration.DisableButton>Disable them for me</HaulersDream.Migration.DisableButton>
+  <HaulersDream.Migration.DisableButton.Help>Disables every replaced mod listed above and restarts RimWorld. A mod-list change only takes effect after a restart, so this is the same thing the Mods menu does. Save your game (and ideally draft your colonists — see the steps) before using this.</HaulersDream.Migration.DisableButton.Help>
+  <HaulersDream.Migration.DisableTitle>Disable replaced mods?</HaulersDream.Migration.DisableTitle>
+  <HaulersDream.Migration.DisableConfirm>This will disable {0} and RESTART RimWorld right away.\n\nMake sure you have SAVED your game first — and ideally drafted your colonists (see the steps on this tab) so nothing breaks when the old mods are removed mid-task.\n\nRestart now?</HaulersDream.Migration.DisableConfirm>
+  <HaulersDream.Migration.StepsHead>For a clean transition</HaulersDream.Migration.StepsHead>
+  <HaulersDream.Migration.Step1>1.  Open your save and DRAFT all of your colonists, then save the game. Drafting cancels their current jobs, which avoids bugs the other mods can throw when they are removed mid-task.</HaulersDream.Migration.Step1>
+  <HaulersDream.Migration.Step2>2.  Disable all of the mods listed above — use the "Disable them for me" button, or quit to the main menu and turn them off in the Mods menu yourself.</HaulersDream.Migration.Step2>
+  <HaulersDream.Migration.Step3>3.  After the game restarts, load your save again, then save it once more — the removed mods are now fully out of the picture.</HaulersDream.Migration.Step3>
+  <HaulersDream.Migration.Step4>4.  Make sure Hauler's Dream is enabled, undraft your colonists, and carry on.</HaulersDream.Migration.Step4>
+  <HaulersDream.Migration.Outro>This tab only appears while a replaced mod is active — it disappears on its own once they are all removed. Until then the two will conflict, so a clean switch is recommended.</HaulersDream.Migration.Outro>
   <HaulersDream.Advanced.DevHint>Developer diagnostics appear here when Developer mode is enabled.</HaulersDream.Advanced.DevHint>
 
   <!-- Feature hub: group subheaders -->

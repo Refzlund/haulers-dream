@@ -1,7 +1,8 @@
 Settings-window category icons are from Lucide (https://lucide.dev), used under the ISC license.
 
 Icons used (recoloured white, rasterized to PNG): sliders-horizontal, package,
-inbox, hammer, boxes, route, pickaxe, users, clipboard-list, settings-2.
+inbox, hammer, boxes, route, pickaxe, users, clipboard-list, settings-2,
+triangle-alert (the conditional "Migration" tab).
 
 ----------------------------------------------------------------------
 ISC License
