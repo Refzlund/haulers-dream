@@ -440,6 +440,8 @@
   <HaulersDream.Setting.AutoOpenTransporterContentsDesc>When you select a single transport pod or shuttle, automatically open its Contents tab so you can see what it's loading. Off by default (it changes which tab is open when you click things).</HaulersDream.Setting.AutoOpenTransporterContentsDesc>
   <HaulersDream.Setting.AutoOpenCarrierGear>Auto-open Gear tab for selected carriers</HaulersDream.Setting.AutoOpenCarrierGear>
   <HaulersDream.Setting.AutoOpenCarrierGearDesc>When you select a pack animal or other carrier, automatically open its Gear tab to see what it's carrying. Off by default.</HaulersDream.Setting.AutoOpenCarrierGearDesc>
+  <HaulersDream.Setting.EnableStorageNetworkBulkLoad>Bulk-load from Storage Network (experimental)</HaulersDream.Setting.EnableStorageNetworkBulkLoad>
+  <HaulersDream.Setting.EnableStorageNetworkBulkLoadDesc>When the Storage Network mod is installed, let bulk-load sweep the items stored in its network servers so a transporter, pod, portal or vehicle is filled in one trip instead of one stack at a time. The items are pulled through a usable, reachable terminal and materialised by Storage Network on demand. Off by default: this is experimental and depends on Storage Network's behaviour. Without it, network items still load the normal (one-stack-per-trip) way.</HaulersDream.Setting.EnableStorageNetworkBulkLoadDesc>
 
   <!-- Reset-to-defaults button (C4) -->
   <HaulersDream.Setting.ResetToDefaults>Reset to defaults</HaulersDream.Setting.ResetToDefaults>
