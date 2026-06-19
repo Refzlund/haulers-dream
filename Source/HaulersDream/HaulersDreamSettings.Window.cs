@@ -654,6 +654,10 @@ namespace HaulersDream
                 autoOpenTransporterContents, "HaulersDream.Setting.AutoOpenTransporterContentsDesc".Translate());
             autoOpenCarrierGear = HDSettingsUI.Checkbox(c, "HaulersDream.Setting.AutoOpenCarrierGear".Translate(),
                 autoOpenCarrierGear, "HaulersDream.Setting.AutoOpenCarrierGearDesc".Translate());
+            // Storage Network bulk-load (experimental, default off) — only shown when Storage Network is installed.
+            if (StorageNetworkCompat.IsActive)
+                enableStorageNetworkBulkLoad = HDSettingsUI.Checkbox(c, "HaulersDream.Setting.EnableStorageNetworkBulkLoad".Translate(),
+                    enableStorageNetworkBulkLoad, "HaulersDream.Setting.EnableStorageNetworkBulkLoadDesc".Translate());
         }
 
         // ===================== ROUTING & STORAGE =====================
