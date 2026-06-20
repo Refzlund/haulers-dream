@@ -4,7 +4,7 @@ Colonists use their inventories smartly when moving items, so they finish tasks 
 [hr][/hr]
 
 [b]Compatible with[/b]
-[i]Combat Extended, Vehicle Framework, Adaptive Storage Framework, LWM's Deep Storage, Storage Network, Common Sense, Cook Carefully, Allow Tool / Keyz' Allow Utilities ("Haul Urgently"), Simple Sidearms, Item Policy, Smart Medicine, Everybody Gets One, Perfect Pathfinding, Better Autocasting for VPE, While You Are Nearby[/i] — amongst other mods
+[i]Multiplayer, Combat Extended, Vehicle Framework, Adaptive Storage Framework, LWM's Deep Storage, Storage Network, Common Sense, Cook Carefully, Allow Tool / Keyz' Allow Utilities ("Haul Urgently"), Simple Sidearms, Item Policy, Smart Medicine, Everybody Gets One, Perfect Pathfinding, Better Autocasting for VPE, While You Are Nearby[/i] — amongst other mods
 
 [b]Replaces[/b]
 [i]Pick Up And Haul, Harvest and Haul, Auto Strip on Haul, Haul After Stripping, Everyone Hauls, Allow Dumb Labor, Haul to Stack, Bulk Load For Transport, While You're Up, Meals on Wheels, Haul After Slaughter[/i]
@@ -45,7 +45,7 @@ Anything with a manifest, loaded in bulk instead of one stack per walk.
 Pawns overload past 100% only when the slowdown beats another round-trip.
 [list]
 [*] A gentle curve — the heavier the load, the slower the pawn
-[*] One slider from "carry freely" to "never overload"
+[*] One slider from "carry freely" to "never overload*
 [*] Combat Extended's weight & bulk rules take over when it's installed
 [/list]
 
