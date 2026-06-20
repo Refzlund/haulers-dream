@@ -68,7 +68,7 @@ namespace HaulersDream
                 return cached;
 
             // The two pure reads — the ONLY place this assembly walks mass for the memoized callers.
-            var fresh = new PawnMass(MassUtility.Capacity(pawn), MassUtility.GearAndInventoryMass(pawn));
+            var fresh = new PawnMass(CarryCapacity.Of(pawn), MassUtility.GearAndInventoryMass(pawn));
             memo.Store(tick, key, fresh);
             return fresh;
         }

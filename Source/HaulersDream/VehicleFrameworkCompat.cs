@@ -42,7 +42,8 @@ namespace HaulersDream
         private static MethodInfo addOrTransfer;             // instance VehiclePawn.AddOrTransfer(Thing,int) -> int
         private static FieldInfo cargoToLoadField;           // instance VehiclePawn.cargoToLoad : List<TransferableOneWay>
         private static MethodInfo getStatValue;              // instance VehiclePawn.GetStatValue(VehicleStatDef) -> float
-        private static object cargoCapacityStatDef;          // Vehicles.VehicleStatDefOf.CargoCapacity (a VehicleStatDef)
+        private static FieldInfo cargoCapacityField;         // Vehicles.VehicleStatDefOf.CargoCapacity FieldInfo (bound at Init — needs only the loaded assembly)
+        private static object cargoCapacityStatDef;          // its VALUE (a VehicleStatDef) — resolved LAZILY at first use, AFTER DefOf init (see CargoCapacity)
 
         private static Type vrmType;                         // Vehicles.VehicleReservationManager : MapComponent
         private static MethodInfo reserveVehicleGeneric;     // VRM.Reserve<LocalTargetInfo,VehicleTargetReservation>(VehiclePawn,Pawn,Job,LocalTargetInfo) -> bool
@@ -116,9 +117,16 @@ namespace HaulersDream
             {
                 getStatValue = AccessTools.Method(vehiclePawnType, "GetStatValue", new[] { vehicleStatDefType });
                 var statDefOf = AccessTools.TypeByName("Vehicles.VehicleStatDefOf");
-                var cargoCapField = statDefOf != null ? AccessTools.Field(statDefOf, "CargoCapacity") : null;
-                if (cargoCapField != null)
-                    cargoCapacityStatDef = cargoCapField.GetValue(null);
+                // Bind the FieldInfo ONLY — do NOT read its value here. Init runs lazily on the FIRST IsActive
+                // probe, which fires from Patch_WorkGiver_PackVehicle_Redirect.Prepare() during harmony.PatchAll()
+                // in the HaulersDreamMod ctor — i.e. BEFORE DefOfHelper.RebindAllDefOfs populates
+                // Vehicles.VehicleStatDefOf.CargoCapacity. Reading the static field now returns null, logs
+                // RimWorld's "Tried to use an uninitialized DefOf of type VehicleStatDefOf" warning, AND latches
+                // active=false for the whole session — silently disabling VF cargo integration for every VF user
+                // (and making Prepare() return false so the autonomous bulk-load redirect never even installs).
+                // FieldInfo/MethodInfo/Type binding needs only the loaded assembly (not DefOf init), so detection
+                // stays timing-independent; the DefOf VALUE is resolved lazily in CargoCapacity() during gameplay.
+                cargoCapacityField = statDefOf != null ? AccessTools.Field(statDefOf, "CargoCapacity") : null;
             }
 
             // VehicleReservationManager (VF's OWN MapComponent — NOT Map.reservationManager). Belt-and-suspenders
@@ -139,9 +147,12 @@ namespace HaulersDream
             // Degrade SAFE: only claim active when EVERY load-bearing member bound. The VRM claim is optional
             // (belt-and-suspenders) so it does NOT gate IsActive — but the deposit, the capacity, and the manifest
             // ARE load-bearing for the bulk-load feature, so a drift in any of them reports inactive.
+            // Gate on the CargoCapacity FieldInfo being BOUND, not on its value — the value is read lazily later
+            // (after DefOf init). All four members bind from the loaded Vehicles assembly at PatchAll time, so
+            // IsActive is correct from the very first probe and the autonomous redirect installs as intended.
             active = addOrTransfer != null
                      && getStatValue != null
-                     && cargoCapacityStatDef != null
+                     && cargoCapacityField != null
                      && cargoToLoadField != null;
             if (active)
                 HDLog.Msg("Vehicle Framework detected — bulk-load-into-vehicle + event-correct "
@@ -153,7 +164,7 @@ namespace HaulersDream
                 HDLog.Warn("Vehicle Framework present but a load-bearing member did not resolve "
                            + "(VehiclePawn.AddOrTransfer(Thing,int)=" + (addOrTransfer != null)
                            + ", VehiclePawn.GetStatValue(VehicleStatDef)=" + (getStatValue != null)
-                           + ", VehicleStatDefOf.CargoCapacity=" + (cargoCapacityStatDef != null)
+                           + ", VehicleStatDefOf.CargoCapacity=" + (cargoCapacityField != null)
                            + ", VehiclePawn.cargoToLoad=" + (cargoToLoadField != null)
                            + "); vehicle bulk-load / cargo integration is OFF (HD behaves as without VF).");
         }
@@ -253,8 +264,19 @@ namespace HaulersDream
         /// trip-mass budget take no group headroom — the sweep falls back to the pawn's own free space only).</summary>
         public static float CargoCapacity(Thing vehicle)
         {
-            if (!IsActive || getStatValue == null || cargoCapacityStatDef == null || vehicle == null)
+            if (!IsActive || getStatValue == null || vehicle == null)
                 return 0f;
+            // Lazy-resolve the CargoCapacity VehicleStatDef VALUE on first use. Init (PatchAll / mod-construction
+            // time) binds only the FieldInfo, because the DefOf static field is not populated until
+            // DefOfHelper.RebindAllDefOfs runs AFTER mod ctors. This method only runs during gameplay (the
+            // load-into-vehicle sweep, eat/build-from-cargo) — long after DefOf init — so the value resolves here.
+            // Re-attempted while still null (idempotent: always the same singleton DefOf), cached once bound. A
+            // reference assignment is atomic, so a concurrent work-scan read is safe (worst case: resolved twice
+            // to the identical value).
+            if (cargoCapacityStatDef == null)
+                cargoCapacityStatDef = cargoCapacityField?.GetValue(null);
+            if (cargoCapacityStatDef == null)
+                return 0f; // DefOf still unresolved (not expected post-load) -> no capacity budget (pawn free space only)
             // No try/catch: a bound GetStatValue on a present vehicle with a resolved VehicleStatDef — surface a throw.
             return (float)getStatValue.Invoke(vehicle, new[] { cargoCapacityStatDef });
         }

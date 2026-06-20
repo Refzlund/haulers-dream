@@ -70,7 +70,7 @@ namespace HaulersDream
         {
             if (pawn == null || thing == null || s == null)
                 return 0;
-            float maxCap = MassUtility.Capacity(pawn); // under CE this reads CE's CarryWeight (CE postfix)
+            float maxCap = CarryCapacity.Of(pawn); // MassUtility.Capacity ×HD mech mult; under CE reads CE's CarryWeight
             float baseCap = CarryMath.EffectiveCapacity(maxCap, s.carryLimitFraction);
             float cur = MassUtility.GearAndInventoryMass(pawn);
             return CountToPickUp(pawn, thing, s, maxCap, baseCap, cur);

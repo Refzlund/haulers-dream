@@ -361,6 +361,12 @@ namespace HaulersDream
         // --- who ---
         public bool pauseWhileDrafted = true;
         public bool allowMechanoids = true;
+        // Multiplier on a player MECHANOID's carrying capacity for HD's hauling, so a modded high-capacity lifter
+        // mech hauls proportionally more per trip. 1.0 = the mech's true carrying capacity, unchanged (default —
+        // byte-identical). Applied to the SINGLE capacity value both the overload ceiling and the move-speed
+        // slowdown read (via CarryCapacity / PawnMassCache), so the "carry more / move slower" bargain stays in
+        // lockstep. Inert under Combat Extended (CE owns the encumbrance model). Only affects player work mechs.
+        public float mechHaulMultiplier = 1.0f;
         // Let colony hauling animals (not wild/enemy) scoop nearby loot into their inventory and run HD's
         // bulk-haul, the same way colonists do. Opt-in (default OFF) so the out-of-the-box scope stays
         // colonists + mechs; the eligibility branch + the animal think-tree haul redirect are gated on this.
@@ -403,6 +409,11 @@ namespace HaulersDream
 
         // --- misc ---
         public bool hideGizmo = false;
+        // Show the per-pawn "Auto-haul yields" toggle gizmo on each eligible pawn. Default OFF (the toggle is
+        // HIDDEN) — out of the box pawns auto-haul and the selection bar stays uncluttered. Turn this ON to expose
+        // the per-pawn toggle so you can stop individual pawns from auto-hauling (their CompHauledToInventory
+        // .autoHaulYields preference still applies whether or not the gizmo is shown).
+        public bool showAutoHaulGizmo = false;
         public bool verboseLogging = false;
 
         // --- settings profiles (named presets) ---
@@ -543,6 +554,7 @@ namespace HaulersDream
                 routePrefsByDef = new Dictionary<string, RouteDialogPrefs>();
             Scribe_Values.Look(ref pauseWhileDrafted, "pauseWhileDrafted", true);
             Scribe_Values.Look(ref allowMechanoids, "allowMechanoids", true);
+            Scribe_Values.Look(ref mechHaulMultiplier, "mechHaulMultiplier", 1.0f);
             Scribe_Values.Look(ref allowAnimals, "allowAnimals", false);
             Scribe_Values.Look(ref allowIncapable, "allowIncapable", false);
             Scribe_Values.Look(ref haulHarvest, "haulHarvest", true);
@@ -561,6 +573,7 @@ namespace HaulersDream
             Scribe_Values.Look(ref alertStuckHours, "alertStuckHours", 12f);
             Scribe_Values.Look(ref enableOnNonHomeMaps, "enableOnNonHomeMaps", true);
             Scribe_Values.Look(ref hideGizmo, "hideGizmo", false);
+            Scribe_Values.Look(ref showAutoHaulGizmo, "showAutoHaulGizmo", false);
             Scribe_Values.Look(ref verboseLogging, "verboseLogging", false);
 
             // Profile list + active name. Skipped while serializing a profile's own snapshot (the recursion guard),
@@ -677,6 +690,7 @@ namespace HaulersDream
             routePrefsByDef = new Dictionary<string, RouteDialogPrefs>();
             pauseWhileDrafted = true;
             allowMechanoids = true;
+            mechHaulMultiplier = 1.0f;
             allowAnimals = false;
             allowIncapable = false;
             haulHarvest = true;
@@ -695,6 +709,7 @@ namespace HaulersDream
             alertStuckHours = 12f;
             enableOnNonHomeMaps = true;
             hideGizmo = false;
+            showAutoHaulGizmo = false;
             verboseLogging = false;
         }
 

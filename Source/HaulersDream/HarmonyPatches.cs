@@ -323,9 +323,11 @@ namespace HaulersDream
             if (comp == null)
                 yield break;
 
-            // Per-pawn auto-haul opt-out. A FUNCTIONAL standing control (not a one-shot action), so — unlike the
-            // "Unload inventory" button below — it is NOT governed by s.hideGizmo (whose label describes only the
-            // Unload button); a player who hid that button must still be able to toggle a pawn's auto-hauling.
+            // Per-pawn auto-haul opt-out. A FUNCTIONAL standing control (not a one-shot action), so it has its OWN
+            // visibility setting (showAutoHaulGizmo, default OFF) rather than riding s.hideGizmo (whose label
+            // describes only the Unload button). Hidden by default keeps the selection bar uncluttered — pawns
+            // still auto-haul (their CompHauledToInventory.autoHaulYields preference is honored whether or not the
+            // gizmo is shown); turn the setting on to expose the per-pawn toggle.
             // Shown for any scoop-capable RACE (humanlike, or mechanoid when allowMechanoids, or animal when
             // allowAnimals), independent of whether it currently carries anything. Deliberately uses the lighter
             // RACE test (YieldRouter.IsRaceEligible) instead of the full YieldRouter.IsEligible: IsEligible folds in
@@ -335,7 +337,7 @@ namespace HaulersDream
             // honor pauseWhileDrafted, so showing the toggle while drafted never makes a drafted pawn actually
             // scoop. Command_Toggle aggregates across a multi-select automatically (matching isActive merges the
             // buttons; toggleAction fires per pawn).
-            if (YieldRouter.IsRaceEligible(__instance))
+            if (s.showAutoHaulGizmo && YieldRouter.IsRaceEligible(__instance))
             {
                 yield return new Command_Toggle
                 {

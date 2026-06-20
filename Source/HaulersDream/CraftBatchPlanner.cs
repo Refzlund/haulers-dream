@@ -388,7 +388,7 @@ namespace HaulersDream
             plan.ticksPerRep = EstimateTicksPerRep(pawn, bench, recipe);
 
             var settings = HaulersDreamMod.Settings;
-            float maxCap = MassUtility.Capacity(pawn);
+            float maxCap = CarryCapacity.Of(pawn);
             float baseCap = CarryMath.EffectiveCapacity(maxCap, settings?.carryLimitFraction ?? 1f);
             float curMass = MassUtility.GearAndInventoryMass(pawn);
             // Null settings means Off everywhere else (OverloadGate.NoOverload(null) is true) — never fall

@@ -204,7 +204,7 @@ namespace HaulersDream
             var claimLeft = new Dictionary<ThingDef, int>(claimable);
 
             // Carry ceiling (smart overload) + the trip-mass budget (pawn free space AND group headroom).
-            float maxCap = MassUtility.Capacity(pawn);
+            float maxCap = CarryCapacity.Of(pawn);
             float baseCap = CarryMath.EffectiveCapacity(maxCap, s.carryLimitFraction);
             float ceiling = BulkHaulPolicy.CeilingKg(s.overloadLevel, OverloadGate.NoOverloadFor(pawn, s), baseCap);
             float running = MassUtility.GearAndInventoryMass(pawn);

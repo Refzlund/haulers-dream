@@ -412,7 +412,7 @@ namespace HaulersDream
             // the load loop would walk every queued stack taking 0 (the take getter is bulk-clamped) for nothing.
             if (CECompat.IsActive && CECompat.AvailableBulk(pawn) <= 0f)
                 return 0;
-            float maxCap = MassUtility.Capacity(pawn);
+            float maxCap = CarryCapacity.Of(pawn);
             float baseCap = CarryMath.EffectiveCapacity(maxCap, s.carryLimitFraction);
             float cur = MassUtility.GearAndInventoryMass(pawn);
             float unit = resourceDef.GetStatValueAbstract(StatDefOf.Mass);

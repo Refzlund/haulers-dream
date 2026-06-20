@@ -388,7 +388,7 @@ namespace HaulersDream
         // The live worth-it carry ceiling for this pawn (the same smart-overload math as BulkHaul / JobDriver_BulkHaul).
         internal static float CeilingKg(Pawn pawn, HaulersDreamSettings s)
         {
-            float baseCap = CarryMath.EffectiveCapacity(MassUtility.Capacity(pawn),
+            float baseCap = CarryMath.EffectiveCapacity(CarryCapacity.Of(pawn),
                 s?.carryLimitFraction ?? CarryMath.MaxFraction);
             return BulkHaulPolicy.CeilingKg(s?.overloadLevel ?? 0, OverloadGate.NoOverloadFor(pawn, s), baseCap);
         }

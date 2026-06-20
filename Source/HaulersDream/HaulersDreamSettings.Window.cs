@@ -646,6 +646,8 @@ namespace HaulersDream
                 "HaulersDream.Setting.ItemUnload.Help".Translate());
             hideGizmo = HDSettingsUI.Checkbox(c, "HaulersDream.Setting.HideGizmo".Translate(),
                 hideGizmo, "HaulersDream.Setting.HideGizmo.Help".Translate());
+            showAutoHaulGizmo = HDSettingsUI.Checkbox(c, "HaulersDream.Setting.ShowAutoHaulGizmo".Translate(),
+                showAutoHaulGizmo, "HaulersDream.Setting.ShowAutoHaulGizmo.Help".Translate());
         }
 
         // ===================== BUILD & CRAFT =====================
@@ -865,6 +867,12 @@ namespace HaulersDream
                 pauseWhileDrafted, "HaulersDream.Setting.PauseWhileDrafted.Help".Translate());
             allowMechanoids = HDSettingsUI.Checkbox(c, "HaulersDream.Setting.AllowMechanoids".Translate(),
                 allowMechanoids, "HaulersDream.AllowMechanoidsDesc".Translate());
+            // Snap to 0.1 steps so the "×N.N" readout equals the value actually applied (a raw slider float like
+            // 1.03 would show "×1.0" yet still scale capacity, and would skip the ==1f no-op fast-path) and exact
+            // ×1.0 stays reachable by dragging to the minimum.
+            mechHaulMultiplier = Mathf.Round(HDSettingsUI.Slider(c, "HaulersDream.Setting.MechHaulMultiplier.Lab".Translate(),
+                mechHaulMultiplier, 1.0f, 5.0f, "×" + mechHaulMultiplier.ToString("0.0"),
+                "HaulersDream.Setting.MechHaulMultiplierDesc".Translate(), enabled: allowMechanoids, indent: 24f) * 10f) / 10f;
             allowAnimals = HDSettingsUI.Checkbox(c, "HaulersDream.AllowAnimals".Translate(),
                 allowAnimals, "HaulersDream.AllowAnimalsDesc".Translate());
             allowIncapable = HDSettingsUI.Checkbox(c, "HaulersDream.Setting.AllowIncapable".Translate(),
