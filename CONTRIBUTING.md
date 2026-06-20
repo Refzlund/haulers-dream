@@ -74,21 +74,24 @@ The folder **must** use RimWorld's English PascalCase language name or the game 
 
 | Language | Folder | Language | Folder |
 |---|---|---|---|
-| English (source) | `English` | Russian | `Russian` |
-| Chinese (Simplified) | `ChineseSimplified` | Japanese | `Japanese` |
-| Danish | `Danish` | Thai | `Thai` |
-| German | `German` | Dutch | `Dutch` |
-| French | `French` | Polish | `Polish` |
+| English (source) | `English` | Korean | `Korean` |
+| Chinese (Simplified) | `ChineseSimplified` | Polish | `Polish` |
+| Danish | `Danish` | Portuguese (Brazil) | `PortugueseBrazilian` |
+| Dutch | `Dutch` | Russian | `Russian` |
+| French | `French` | Spanish | `Spanish` |
+| German | `German` | Thai | `Thai` |
+| Italian | `Italian` | Ukrainian | `Ukrainian` |
+| Japanese | `Japanese` | | |
 
-Any other RimWorld language uses the same convention (`ChineseTraditional`, `Korean`, `SpanishLatin`,
-`PortugueseBrazilian`, `Ukrainian`, `Italian`, …). Mind the variant splits — `Spanish` vs
-`SpanishLatin`, `Portuguese` vs `PortugueseBrazilian`. The canonical list is the folder names under
+Any other RimWorld language uses the same convention (`ChineseTraditional`, `SpanishLatin`,
+`Portuguese`, `Czech`, `Hungarian`, …). Mind the variant splits — `Spanish` vs `SpanishLatin`,
+`Portuguese` vs `PortugueseBrazilian` (this mod ships `Spanish` and `PortugueseBrazilian`). The canonical list is the folder names under
 `Data/Core/Languages/` in your RimWorld install (and the official
 [Ludeon language repos](https://github.com/orgs/Ludeon/repositories)).
 
 ### Add a new language
 
-1. Copy the whole `Languages/English/` folder to `Languages/<YourLanguage>/` (e.g. `Languages/Italian/`).
+1. Copy the whole `Languages/English/` folder to `Languages/<YourLanguage>/` (e.g. `Languages/ChineseTraditional/`).
 2. Translate **only the text between the tags** — keep the structure, file names and paths identical.
 3. Open a PR (see the rules below). No build is needed for a translation-only change.
 

@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LanguageData>
+
+<HaulersDream_UnloadInventory.reportString>descarregando o inventário.</HaulersDream_UnloadInventory.reportString>
+<HaulersDream_SelfPickup.reportString>recolhendo bens colhidos.</HaulersDream_SelfPickup.reportString>
+<HaulersDream_OverloadConstructDeliver.reportString>entregando materiais.</HaulersDream_OverloadConstructDeliver.reportString>
+<HaulersDream_ConstructDeliverBuild.reportString>entregando materiais para construir.</HaulersDream_ConstructDeliverBuild.reportString>
+<HaulersDream_ClaimFromHauler.reportString>pegando materiais de um transportador.</HaulersDream_ClaimFromHauler.reportString>
+<HaulersDream_BatchCraft.reportString>fabricando um lote.</HaulersDream_BatchCraft.reportString>
+<HaulersDream_InventoryDoBill.reportString>fabricando.</HaulersDream_InventoryDoBill.reportString>
+<HaulersDream_BillPrepGather.reportString>reunindo ingredientes de fabricação.</HaulersDream_BillPrepGather.reportString>
+<HaulersDream_BulkHaul.reportString>transportando tudo por perto.</HaulersDream_BulkHaul.reportString>
+<HaulersDream_LoadPackAnimal.reportString>carregando itens em um animal de carga.</HaulersDream_LoadPackAnimal.reportString>
+<HaulersDream_UnloadCarrierInBulk.reportString>descarregando um animal de carga.</HaulersDream_UnloadCarrierInBulk.reportString>
+<HaulersDream_LoadTransportersInBulk.reportString>carregando um transportador em massa.</HaulersDream_LoadTransportersInBulk.reportString>
+<HaulersDream_LoadPortalInBulk.reportString>carregando um portal em massa.</HaulersDream_LoadPortalInBulk.reportString>
+<HaulersDream_LoadVehicleInBulk.reportString>carregando um veículo em massa.</HaulersDream_LoadVehicleInBulk.reportString>
+<HaulersDream_BulkRefuel.reportString>reabastecendo em massa.</HaulersDream_BulkRefuel.reportString>
+</LanguageData>

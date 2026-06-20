@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LanguageData>
+
+<HaulersDream_UnloadInventory.reportString>소지품을 내려놓는 중.</HaulersDream_UnloadInventory.reportString>
+<HaulersDream_SelfPickup.reportString>수확한 물건을 모으는 중.</HaulersDream_SelfPickup.reportString>
+<HaulersDream_OverloadConstructDeliver.reportString>자재를 전달하는 중.</HaulersDream_OverloadConstructDeliver.reportString>
+<HaulersDream_ConstructDeliverBuild.reportString>건설할 자재를 전달하는 중.</HaulersDream_ConstructDeliverBuild.reportString>
+<HaulersDream_ClaimFromHauler.reportString>운반자에게서 자재를 가져오는 중.</HaulersDream_ClaimFromHauler.reportString>
+<HaulersDream_BatchCraft.reportString>일괄 제작 중.</HaulersDream_BatchCraft.reportString>
+<HaulersDream_InventoryDoBill.reportString>제작 중.</HaulersDream_InventoryDoBill.reportString>
+<HaulersDream_BillPrepGather.reportString>제작 재료를 모으는 중.</HaulersDream_BillPrepGather.reportString>
+<HaulersDream_BulkHaul.reportString>주변 전부를 운반하는 중.</HaulersDream_BulkHaul.reportString>
+<HaulersDream_LoadPackAnimal.reportString>짐 운반 동물에 물건을 싣는 중.</HaulersDream_LoadPackAnimal.reportString>
+<HaulersDream_UnloadCarrierInBulk.reportString>짐 운반 동물에서 내리는 중.</HaulersDream_UnloadCarrierInBulk.reportString>
+<HaulersDream_LoadTransportersInBulk.reportString>수송 포드를 대량으로 싣는 중.</HaulersDream_LoadTransportersInBulk.reportString>
+<HaulersDream_LoadPortalInBulk.reportString>차원문을 대량으로 싣는 중.</HaulersDream_LoadPortalInBulk.reportString>
+<HaulersDream_LoadVehicleInBulk.reportString>차량을 대량으로 싣는 중.</HaulersDream_LoadVehicleInBulk.reportString>
+<HaulersDream_BulkRefuel.reportString>대량으로 연료 보급 중.</HaulersDream_BulkRefuel.reportString>
+</LanguageData>

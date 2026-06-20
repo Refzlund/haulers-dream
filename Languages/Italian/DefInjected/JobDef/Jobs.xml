@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LanguageData>
+
+<HaulersDream_UnloadInventory.reportString>svuota l'inventario.</HaulersDream_UnloadInventory.reportString>
+<HaulersDream_SelfPickup.reportString>raccoglie i prodotti del raccolto.</HaulersDream_SelfPickup.reportString>
+<HaulersDream_OverloadConstructDeliver.reportString>consegna i materiali.</HaulersDream_OverloadConstructDeliver.reportString>
+<HaulersDream_ConstructDeliverBuild.reportString>consegna i materiali per costruire.</HaulersDream_ConstructDeliverBuild.reportString>
+<HaulersDream_ClaimFromHauler.reportString>preleva i materiali da un trasportatore.</HaulersDream_ClaimFromHauler.reportString>
+<HaulersDream_BatchCraft.reportString>produce un lotto.</HaulersDream_BatchCraft.reportString>
+<HaulersDream_InventoryDoBill.reportString>produce.</HaulersDream_InventoryDoBill.reportString>
+<HaulersDream_BillPrepGather.reportString>raccoglie gli ingredienti per la produzione.</HaulersDream_BillPrepGather.reportString>
+<HaulersDream_BulkHaul.reportString>trasporta tutto ciò che è nelle vicinanze.</HaulersDream_BulkHaul.reportString>
+<HaulersDream_LoadPackAnimal.reportString>carica oggetti su un animale da soma.</HaulersDream_LoadPackAnimal.reportString>
+<HaulersDream_UnloadCarrierInBulk.reportString>scarica un animale da soma.</HaulersDream_UnloadCarrierInBulk.reportString>
+<HaulersDream_LoadTransportersInBulk.reportString>carica in blocco un trasportatore.</HaulersDream_LoadTransportersInBulk.reportString>
+<HaulersDream_LoadPortalInBulk.reportString>carica in blocco un portale.</HaulersDream_LoadPortalInBulk.reportString>
+<HaulersDream_LoadVehicleInBulk.reportString>carica in blocco un veicolo.</HaulersDream_LoadVehicleInBulk.reportString>
+<HaulersDream_BulkRefuel.reportString>rifornisce in blocco.</HaulersDream_BulkRefuel.reportString>
+</LanguageData>
