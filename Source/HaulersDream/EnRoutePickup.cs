@@ -173,6 +173,11 @@ namespace HaulersDream
                 haulables.AddRange(listed);
             if (haulables.Count == 0)
                 return null;
+            // MP determinism: the scan returns the FIRST candidate that wins in the current range band, so its
+            // outcome depends on iteration order — and the source is a HashSet whose order can differ per client.
+            // Sort by thingIDNumber (a stable total order, synced via UniqueIDsManager) so every client scans the
+            // candidates in the same order and picks the same en-route stack.
+            haulables.Sort((a, b) => a.thingIDNumber.CompareTo(b.thingIDNumber));
 
             var storeCellCache = scratchStoreCellCache ?? (scratchStoreCellCache = new Dictionary<Thing, IntVec3>());
             storeCellCache.Clear();

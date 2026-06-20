@@ -3,6 +3,7 @@
 
 <HaulersDream.SettingsCategory>Hauler's Dream</HaulersDream.SettingsCategory>
 <HaulersDream.SettingsHeaderFallback>Hauler's Dream</HaulersDream.SettingsHeaderFallback>
+<HaulersDream.Settings.MultiplayerLocked>Під час мережевої гри налаштуваннями Hauler's Dream керує хост. Вони синхронізуються, коли ви приєднуєтеся — прийміть запит «Apply configs» мода Multiplayer, щоб відповідати хосту. Вийдіть із мережевої гри, щоб змінити їх.</HaulersDream.Settings.MultiplayerLocked>
 <HaulersDream.Tab.General>Загальне</HaulersDream.Tab.General>
 <HaulersDream.Tab.Sharing>Спільне використання та доставка</HaulersDream.Tab.Sharing>
 <HaulersDream.Tab.Bulk>Масове перенесення та носії</HaulersDream.Tab.Bulk>

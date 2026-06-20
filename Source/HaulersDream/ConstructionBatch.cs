@@ -163,6 +163,10 @@ namespace HaulersDream
 
         private static void SortByDistance(List<Thing> things, IntVec3 from)
             => things.Sort((a, b) =>
-                (a.Position - from).LengthHorizontalSquared.CompareTo((b.Position - from).LengthHorizontalSquared));
+            {
+                // MP determinism: total-order tiebreak so ties don't depend on input order across clients.
+                int c = (a.Position - from).LengthHorizontalSquared.CompareTo((b.Position - from).LengthHorizontalSquared);
+                return c != 0 ? c : a.thingIDNumber.CompareTo(b.thingIDNumber);
+            });
     }
 }

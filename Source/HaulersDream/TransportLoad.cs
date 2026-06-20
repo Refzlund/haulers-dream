@@ -435,7 +435,11 @@ namespace HaulersDream
                     if (t?.def == null || !claimLeft.TryGetValue(t.def, out int la) || la <= 0)
                         continue; // not a claimable def, or its claim budget is spent
                     float d = (t.Position - from).LengthHorizontalSquared;
-                    if (d < bestDistSq) { bestDistSq = d; bestIdx = i; }
+                    // MP determinism: break distance ties by thingIDNumber so all clients pick the same stack
+                    // (HashSet iteration order can differ per client).
+                    if (d < bestDistSq
+                        || (d == bestDistSq && bestIdx >= 0 && t.thingIDNumber < pool[bestIdx].thingIDNumber))
+                    { bestDistSq = d; bestIdx = i; }
                 }
                 if (bestIdx < 0)
                     return null;
@@ -491,7 +495,11 @@ namespace HaulersDream
                     if (t?.def == null || !claimLeft.TryGetValue(t.def, out int la) || la <= 0)
                         continue; // not a claimable def, or its claim budget is spent
                     float d = (t.Position - from).LengthHorizontalSquared;
-                    if (d < bestDistSq) { bestDistSq = d; bestIdx = i; }
+                    // MP determinism: break distance ties by thingIDNumber so all clients pick the same stack
+                    // (HashSet iteration order can differ per client).
+                    if (d < bestDistSq
+                        || (d == bestDistSq && bestIdx >= 0 && t.thingIDNumber < pool[bestIdx].thingIDNumber))
+                    { bestDistSq = d; bestIdx = i; }
                 }
                 if (bestIdx < 0)
                     break; // no more claimable-def candidates straight-line
@@ -529,7 +537,11 @@ namespace HaulersDream
                 if (cost < 0f) // unreachable (no path) — rank it behind any reachable candidate by straight-line.
                     cost = float.MaxValue - (t.Position - from).LengthHorizontalSquared; // (a genuine 0-cost path —
                     // pawn standing on the pickup — is reachable and now correctly ranks BEST, not last.)
-                if (cost < bestCost) { bestCost = cost; bestCand = i; }
+                // MP determinism: break path-cost ties by thingIDNumber so all clients pick the same stack
+                // (HashSet iteration order can differ per client).
+                if (cost < bestCost
+                    || (cost == bestCost && t.thingIDNumber < cands[bestCand].thingIDNumber))
+                { bestCost = cost; bestCand = i; }
             }
 
             var winner = cands[bestCand];

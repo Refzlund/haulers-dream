@@ -3,6 +3,7 @@
 
 <HaulersDream.SettingsCategory>Hauler's Dream</HaulersDream.SettingsCategory>
 <HaulersDream.SettingsHeaderFallback>Hauler's Dream</HaulersDream.SettingsHeaderFallback>
+<HaulersDream.Settings.MultiplayerLocked>在多人游戏期间，Hauler's Dream的设置由主机控制。你加入时它们会被同步——接受Multiplayer的“应用配置”（Apply configs）提示以与主机保持一致。退出多人游戏方可更改这些设置。</HaulersDream.Settings.MultiplayerLocked>
 <HaulersDream.Tab.General>常规</HaulersDream.Tab.General>
 <HaulersDream.Tab.Sharing>共享与运送</HaulersDream.Tab.Sharing>
 <HaulersDream.Tab.Bulk>批量与运载者</HaulersDream.Tab.Bulk>

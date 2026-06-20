@@ -14,6 +14,12 @@
   <ItemGroup>
     <PackageReference Include="Krafs.Rimworld.Ref" Version="$(RimWorldRefVersion)" />
     <PackageReference Include="Lib.Harmony" Version="$(HarmonyVersion)" ExcludeAssets="runtime" />
+    <!--
+      RimWorld Multiplayer API — COMPILE-ONLY (ExcludeAssets=runtime), so the 0MultiplayerAPI.dll is never
+      shipped or deployed (the active Multiplayer mod provides it at runtime; a non-MP game never loads it).
+      All Multiplayer.API usage is JIT-isolated behind MultiplayerCompat.Active — see MultiplayerCompat.cs.
+    -->
+    <PackageReference Include="RimWorld.MultiplayerAPI" Version="0.6.0" ExcludeAssets="runtime" />
     <PackageReference Include="Krafs.Publicizer" Version="$(PublicizerVersion)">
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>

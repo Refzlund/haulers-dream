@@ -210,9 +210,12 @@ namespace HaulersDream
 
         private void Confirm()
         {
-            // Re-resolve against CURRENT stock: the cached plan can be stale if ingredients were consumed or hauled
-            // while the dialog sat open (the cache key is bill|reps|timeout, not live stock), which would otherwise
-            // over-order reps and show a misleading "Started N×". Forcing a fresh plan keeps the order honest.
+            // Re-resolve against CURRENT stock for the dialog's OWN feasibility gate: the cached plan can be stale if
+            // ingredients were consumed or hauled while the dialog sat open (the cache key is bill|reps|timeout, not
+            // live stock), which would otherwise dispatch a doomed order and show a misleading "Started N×". Forcing a
+            // fresh plan keeps the order honest. This is a LOCAL preview only — the authoritative plan that the job
+            // actually uses is re-resolved INSIDE the synced command (StartBatchCraftSynced) so every Multiplayer
+            // client computes an identical plan; we never ship the un-serializable CraftBatchPlan over the wire.
             planSig = null;
             RefreshPlan();
             if (cachedPlan == null || !cachedPlan.feasible || selected == null)
@@ -223,42 +226,22 @@ namespace HaulersDream
                 return;
             }
 
-            // Persist the chosen timeout as the new default for next time.
+            // Persist the chosen timeout as the new default for next time. This is a LOCAL settings write (per-client
+            // preference), not synced world state, so it stays here outside the synced command.
             if (HaulersDreamMod.Settings != null)
             {
                 HaulersDreamMod.Settings.craftBatchTimeoutHours = timeoutHours;
                 HaulersDreamMod.Settings.Write();
             }
 
-            // Re-confirming while a batch on this same bill is already running: vanilla's JobIsSameAs check would
-            // silently swallow the new order (and leak the handoff). End the running batch first — its leftovers
-            // are tagged + flushed by its finish action — so the new order genuinely takes over with fresh params.
-            if (pawn.CurJobDef == HaulersDreamDefOf.HaulersDream_BatchCraft && pawn.CurJob?.bill == selected)
-                pawn.jobs.EndCurrentJob(JobCondition.InterruptForced, startNewJob: false);
-
-            var jobDef = HaulersDreamDefOf.HaulersDream_BatchCraft;
-            var job = JobMaker.MakeJob(jobDef, bench);
-            job.count = 1; // sentinel: Job.count defaults to -1 and vanilla TakeToInventory's ErrorCheckForCarry
-                           // red-errors on count <= 0 (the driver's amounts come from its own getter)
-            job.bill = selected;
-            job.playerForced = true;
-            BatchCraftHandoff.Set(job, cachedPlan);
-
-            bool ok = pawn.jobs.TryTakeOrderedJob(job, JobTag.Misc);
-            if (ok)
-            {
-                Messages.Message("HaulersDream.PlanCraft.Started".Translate(cachedPlan.resolvedReps,
-                    selected.recipe.ProducedThingDef?.label ?? selected.LabelCap),
-                    pawn, MessageTypeDefOf.TaskCompletion, historical: false);
-                HDLog.Dbg($"[{BuildTag}] {pawn} batch crafting {cachedPlan.resolvedReps}× {selected.recipe.defName} " +
-                          $"(timeout {timeoutHours}h, mass/rep {cachedPlan.massPerRepKg:0.0}kg).");
-                Close();
-            }
-            else
-            {
-                BatchCraftHandoff.Consume(job); // clear the orphaned handoff
-                Messages.Message("HaulersDream.PlanCraft.CouldNotStart".Translate(), pawn, MessageTypeDefOf.RejectInput, historical: false);
-            }
+            // Hand the order to the SYNCED entry point: in Multiplayer it runs as a command on every client (so the
+            // plan re-resolve, the end-running-batch, the BatchCraftHandoff.Set, and the TryTakeOrderedJob all execute
+            // identically everywhere — fixing the static-handoff desync); in single-player it runs directly, unchanged.
+            // The synced method owns the player-facing "Started"/"CouldNotStart" toasts (gated to the issuing client),
+            // so we don't toast here. Pass the timeout in TICKS (the planner/job unit), matching RefreshPlan's own
+            // conversion above.
+            JobDriver_BatchCraft.StartBatchCraftSynced(pawn, bench, selected, reps, Mathf.RoundToInt(timeoutHours * TicksPerHour));
+            Close();
         }
     }
 }

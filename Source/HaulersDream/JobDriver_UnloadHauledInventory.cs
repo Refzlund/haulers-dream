@@ -294,6 +294,11 @@ namespace HaulersDream
             ordered.Clear();
             foreach (var t in carried)
                 ordered.Add(t);
+            // MP determinism: process tagged stacks in thingIDNumber order so a capacity-bound loop deposits/drops the same subset on every client.
+            // The min-scan below resolves a (category, defName[, dest distance]) tie to the lowest ORIGINAL enumeration
+            // index; ordering the snapshot here (rather than touching the Core comparator, which is oracle-tested) makes
+            // that first-seen tiebreak land on the lowest thingIDNumber identically across clients.
+            ordered.Sort((a, b) => a.thingIDNumber.CompareTo(b.thingIDNumber));
 
             // Closest-destination-first (C1b, WYU "efficient unloading" parity): when ON, the running-best
             // comparison ranks candidates by pawn->resolved-storage-cell distance FIRST (so the pawn empties the

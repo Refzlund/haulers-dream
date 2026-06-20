@@ -3,6 +3,7 @@
 
 <HaulersDream.SettingsCategory>Hauler's Dream</HaulersDream.SettingsCategory>
 <HaulersDream.SettingsHeaderFallback>Hauler's Dream</HaulersDream.SettingsHeaderFallback>
+<HaulersDream.Settings.MultiplayerLocked>ระหว่างเล่นแบบหลายผู้เล่น การตั้งค่าของ Hauler's Dream จะถูกควบคุมโดยโฮสต์ ค่าจะถูกซิงค์เมื่อคุณเข้าร่วม — ยอมรับข้อความแจ้ง "Apply configs" ของ Multiplayer เพื่อให้ตรงกับโฮสต์ ออกจากเกมหลายผู้เล่นเพื่อเปลี่ยนแปลงค่าเหล่านี้</HaulersDream.Settings.MultiplayerLocked>
 <HaulersDream.Tab.General>ทั่วไป</HaulersDream.Tab.General>
 <HaulersDream.Tab.Sharing>การแบ่งปันและการส่งของ</HaulersDream.Tab.Sharing>
 <HaulersDream.Tab.Bulk>การรวมและตัวขนส่ง</HaulersDream.Tab.Bulk>

@@ -14,6 +14,50 @@ namespace HaulersDream
     /// </summary>
     public static class RouteExecutor
     {
+        /// <summary>
+        /// Multiplayer entry point for the Plan-Route dialog's Append/Replace buttons. <see cref="Execute"/> performs
+        /// world/save mutations the MP auto-sync does NOT cover — <c>DesignationManager.AddDesignation</c>,
+        /// <c>jobQueue.EnqueueLast</c> / <c>ClearQueuedJobs</c> / <c>EndCurrentJob</c>, the lead
+        /// <c>TryTakeOrderedJobPrioritizedWork</c>, and the scribed <c>RegisterVeinTracker</c> write — so the dialog
+        /// must NOT call <see cref="Execute"/> directly (that runs only on the clicking client → desync). Instead the
+        /// button calls THIS, which the <c>[SyncMethod]</c> attribute turns into a COMMAND replayed identically on
+        /// every client; the designation/job-queue/tracker writes then all run inside synced execution everywhere.
+        ///
+        /// <para>Args are MP-serializable only (the wire form must be unambiguous): a <see cref="Pawn"/>, a
+        /// <see cref="Thing"/>, primitives/enums, and <c>List&lt;Thing&gt;</c>/<c>List&lt;IntVec3&gt;</c>. The live
+        /// <see cref="RouteWorkKind"/> (which holds a WorkGiver_Scanner) can't cross the wire, so it travels as its
+        /// stable <see cref="WorkKindResolver.WorkKindId"/> (the scanner's WorkGiverDef.defName) and is re-derived per
+        /// client via <see cref="WorkKindResolver.ResolveById"/>. The cached preview <see cref="RoutePlan"/> is NOT
+        /// shipped either (not serializable, and shipping a single client's plan would defeat lockstep); we pass
+        /// <c>precomputed: null</c> so every client RECOMPUTES the plan deterministically from the same synced state
+        /// (<see cref="RoutePlanner"/> reads only synced inputs — verified deterministic). When MP is absent the
+        /// attribute is inert and this just runs <see cref="Execute"/> directly, so single-player is unchanged.</para>
+        ///
+        /// <para>The method BODY references NO Multiplayer.API type — only the fully-qualified attribute does — so a
+        /// non-MP game never resolves the unshipped API assembly (see <see cref="MultiplayerCompat"/>).</para>
+        /// </summary>
+        [Multiplayer.API.SyncMethod]
+        public static void ExecuteRouteSynced(Pawn pawn, Thing clicked, string workGiverDefName, RouteMode mode,
+            int amount, int radius, float maxDistance, bool smart, bool allowHarvest, int growthThreshold, bool replace,
+            List<Thing> mustInclude, HaulersDream.Core.RouteSelectionMethod selectionMethod,
+            HaulersDream.Core.RouteDistanceBasis distanceBasis, int exactMax, Thing startNode, Thing endNode,
+            bool alsoBuild, List<IntVec3> roomAnchors)
+        {
+            // Re-derive the live work kind from its portable id on THIS client (deterministic — same synced state →
+            // same scanner). A null means the thing is no longer routable / the id didn't reproduce (the world
+            // diverged between plan and execute): no-op rather than queue a mismatched route. Execute's own
+            // null-guards would also catch this, but bailing here keeps the intent explicit.
+            var kind = WorkKindResolver.ResolveById(pawn, clicked, workGiverDefName);
+            if (kind == null)
+                return;
+            // precomputed: null → recompute the plan on every client (recompute-on-all-clients is the correct MP
+            // model; the dialog's cached plan isn't serializable and is one client's view anyway).
+            Execute(pawn, clicked, kind, mode, amount, radius, maxDistance, smart, allowHarvest, growthThreshold,
+                replace, precomputed: null, mustInclude: mustInclude, selectionMethod: selectionMethod,
+                distanceBasis: distanceBasis, exactMax: exactMax, startNode: startNode, endNode: endNode,
+                alsoBuild: alsoBuild, roomAnchors: roomAnchors);
+        }
+
         public static void Execute(Pawn pawn, Thing clicked, RouteWorkKind kind, RouteMode mode, int amount, int radius,
             float maxDistance, bool smart, bool allowHarvest, int growthThreshold, bool replace, RoutePlan precomputed = null,
             IReadOnlyList<Thing> mustInclude = null,
@@ -35,7 +79,10 @@ namespace HaulersDream
                     mustInclude, selectionMethod, distanceBasis, exactMax, startNode, endNode, roomAnchors);
             if (plan.stops.Count == 0)
             {
-                Messages.Message("HaulersDream.PlanRoute.NoTargets".Translate(), pawn, MessageTypeDefOf.RejectInput, historical: false);
+                // Player-facing toast: only on the issuing client (in MP this command replays on every client, but
+                // the feedback should appear once, for whoever clicked — see MultiplayerCompat.ShouldShowLocalFeedback).
+                if (MultiplayerCompat.ShouldShowLocalFeedback)
+                    Messages.Message("HaulersDream.PlanRoute.NoTargets".Translate(), pawn, MessageTypeDefOf.RejectInput, historical: false);
                 return;
             }
 
@@ -128,10 +175,14 @@ namespace HaulersDream
                 // A construction route whose blueprints have no reachable materials yet queues nothing right now —
                 // but the blueprints persist and build under normal Construction priority as materials arrive, so
                 // don't report an outright failure (which would contradict the route preview the player just saw).
-                if (kind.scanner is WorkGiver_ConstructDeliverResourcesToBlueprints)
-                    Messages.Message("HaulersDream.PlanRoute.WaitingForMaterials".Translate(), pawn, MessageTypeDefOf.CautionInput, historical: false);
-                else
-                    Messages.Message("HaulersDream.PlanRoute.NoTargets".Translate(), pawn, MessageTypeDefOf.RejectInput, historical: false);
+                // Toast on the issuing client only (MP); the early return is unconditional so all clients agree.
+                if (MultiplayerCompat.ShouldShowLocalFeedback)
+                {
+                    if (kind.scanner is WorkGiver_ConstructDeliverResourcesToBlueprints)
+                        Messages.Message("HaulersDream.PlanRoute.WaitingForMaterials".Translate(), pawn, MessageTypeDefOf.CautionInput, historical: false);
+                    else
+                        Messages.Message("HaulersDream.PlanRoute.NoTargets".Translate(), pawn, MessageTypeDefOf.RejectInput, historical: false);
+                }
                 return;
             }
 
@@ -147,16 +198,23 @@ namespace HaulersDream
             if (queued > 0 && mode == RouteMode.Vein && plan.fogCaution && kind.designation == DesignationDefOf.Mine)
                 RegisterVeinTracker(pawn, clicked, amount, plan);
 
-            if (queued == 0)
-                Messages.Message("HaulersDream.PlanRoute.NoTargets".Translate(), pawn, MessageTypeDefOf.RejectInput, historical: false);
-            else if (plan.cappedByDistance)
-                Messages.Message("HaulersDream.PlanRoute.DistanceLimited".Translate(queued), pawn, MessageTypeDefOf.CautionInput, historical: false);
-            else if (plan.cappedByAmount)
-                Messages.Message("HaulersDream.PlanRoute.Capped".Translate(queued), pawn, MessageTypeDefOf.CautionInput, historical: false);
-            else if (queued < selected)
-                Messages.Message("HaulersDream.PlanRoute.Partial".Translate(queued, selected - queued), pawn, MessageTypeDefOf.CautionInput, historical: false);
-            else
-                Messages.Message("HaulersDream.PlanRoute.Planned".Translate(queued), pawn, MessageTypeDefOf.SilentInput, historical: false);
+            // Outcome toast — player-facing feedback, so only on the issuing client (in MP the command replays on
+            // every client; the actual world writes above already ran on all of them, but the toast is shown once
+            // for whoever clicked). The queueing/designation/tracker writes above are NOT gated — they must run on
+            // every client to stay in lockstep.
+            if (MultiplayerCompat.ShouldShowLocalFeedback)
+            {
+                if (queued == 0)
+                    Messages.Message("HaulersDream.PlanRoute.NoTargets".Translate(), pawn, MessageTypeDefOf.RejectInput, historical: false);
+                else if (plan.cappedByDistance)
+                    Messages.Message("HaulersDream.PlanRoute.DistanceLimited".Translate(queued), pawn, MessageTypeDefOf.CautionInput, historical: false);
+                else if (plan.cappedByAmount)
+                    Messages.Message("HaulersDream.PlanRoute.Capped".Translate(queued), pawn, MessageTypeDefOf.CautionInput, historical: false);
+                else if (queued < selected)
+                    Messages.Message("HaulersDream.PlanRoute.Partial".Translate(queued, selected - queued), pawn, MessageTypeDefOf.CautionInput, historical: false);
+                else
+                    Messages.Message("HaulersDream.PlanRoute.Planned".Translate(queued), pawn, MessageTypeDefOf.SilentInput, historical: false);
+            }
         }
 
         private sealed class RouteJob

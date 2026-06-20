@@ -119,7 +119,11 @@ namespace HaulersDream
 
             // Continue the route from the current tail: order the new cells nearest-first from there.
             newStops.Sort((a, b) =>
-                (a.Position - tr.lastCell).LengthHorizontalSquared.CompareTo((b.Position - tr.lastCell).LengthHorizontalSquared));
+            {
+                // MP determinism: total-order tiebreak so ties don't depend on input order across clients.
+                int c = (a.Position - tr.lastCell).LengthHorizontalSquared.CompareTo((b.Position - tr.lastCell).LengthHorizontalSquared);
+                return c != 0 ? c : a.thingIDNumber.CompareTo(b.thingIDNumber);
+            });
 
             int appended = RouteExecutor.AppendStops(pawn, kind, newStops, out IntVec3 newLast);
             // Mark every revealed cell as covered (all were designated; any that didn't queue fall to normal mining).

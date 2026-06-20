@@ -35,6 +35,11 @@ namespace HaulersDream
         private int loadIndex;
         private bool loadedAnything;
 
+        // MP determinism: reused snapshot of the tagged set for the step-1 fold in DepositSwept, so absorbers are
+        // visited in a client-stable thingIDNumber order. [ThreadStatic] + lazy-init matches this assembly's
+        // hook-reachable scratch convention; cleared at use, never trusted empty / never aliased into job state.
+        [System.ThreadStatic] private static List<Thing> foldScratch;
+
         private ThingOwner Inv => pawn.inventory?.GetDirectlyHeldThings();
 
         /// <summary>Still walking the pickup chain (hasn't reached the storage flush), so a newly-ordered nearby
@@ -216,13 +221,29 @@ namespace HaulersDream
             //    source, which is NOT in the set), absorbers only GROW, and RegisterHauledItem on an already-tagged
             //    absorber is a no-op on the set (Add returns false → CE-notify only) — so the set never mutates
             //    during the loop. (The for-loop guard re-checks split each pass, so a fully-folded split exits.)
+            //    MP determinism: this folds `split` into the pawn's OWN same-def tagged stacks. The per-def TOTAL is
+            //    order-independent, BUT TryAbsorbStack fills greedily to the stack limit, so WHICH tagged stack holds
+            //    the partial remainder depends on iteration order — and PeekHashSet's order can differ per client
+            //    (e.g. a mid-game joiner's set was rebuilt in a different order). A later capacity/manifest-bound
+            //    deposit reads InventorySurplus.SurplusOf PER STACK, so a divergent per-stack distribution could
+            //    diverge an intermediate deposit. So snapshot + sort by thingIDNumber and fold in that stable order
+            //    (matching the sibling deposit/sweep sites). TryAbsorbStack only Destroys the SPLIT (the source, not
+            //    in the snapshot) and absorbers only grow, so iterating the snapshot is safe.
             if (comp != null)
             {
-                foreach (var target in comp.PeekHashSet())
+                var fold = foldScratch ?? (foldScratch = new List<Thing>());
+                fold.Clear();
+                // PeekHashSet (no self-heal) may hold null tags; skip nulls so the sort comparator never NPEs.
+                foreach (var t in comp.PeekHashSet())
+                    if (t != null)
+                        fold.Add(t);
+                fold.Sort((a, b) => a.thingIDNumber.CompareTo(b.thingIDNumber));
+                for (int fi = 0; fi < fold.Count; fi++)
                 {
+                    var target = fold[fi];
                     if (split.Destroyed || split.stackCount <= 0)
                         break; // fully folded into the hauled set
-                    if (target == null || target == split || target.Destroyed || target.def != split.def)
+                    if (target == split || target.Destroyed || target.def != split.def)
                         continue;
                     if (!inv.Contains(target) || target.stackCount >= target.def.stackLimit || !target.CanStackWith(split))
                         continue;
@@ -238,6 +259,7 @@ namespace HaulersDream
                         loaded = true;
                     }
                 }
+                fold.Clear();
             }
 
             // 2) Anything left becomes a NEW separate tagged stack — the exact isolation the old false-add gave.

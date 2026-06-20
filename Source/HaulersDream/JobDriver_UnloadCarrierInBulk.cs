@@ -73,6 +73,19 @@ namespace HaulersDream
             return pawn.Reserve(Carrier, job, 1, -1, null, errorOnFailed);
         }
 
+        public override void Notify_Starting()
+        {
+            base.Notify_Starting();
+            // Flag the carrier for unloading (vanilla's unload gate keys off this). MP: this is a write to a SCRIBED
+            // field (synced world state), so it lives HERE — in Notify_Starting, which StartJob calls once on the real
+            // running driver in-tick — rather than in the float-menu callback. The ordered-job command is the only
+            // thing MP syncs for the click; everything in the started job (including this flag write) then runs
+            // deterministically in-tick on every client. Pure relocation: no MP API needed, single-player unchanged.
+            var carrier = Carrier;
+            if (carrier?.inventory != null)
+                carrier.inventory.UnloadEverything = true;
+        }
+
         public override IEnumerable<Toil> MakeNewToils()
         {
             this.FailOnDespawnedOrNull(CarrierInd);

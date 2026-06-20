@@ -3,6 +3,7 @@
 
 <HaulersDream.SettingsCategory>Hauler's Dream</HaulersDream.SettingsCategory>
 <HaulersDream.SettingsHeaderFallback>Hauler's Dream</HaulersDream.SettingsHeaderFallback>
+<HaulersDream.Settings.MultiplayerLocked>Podczas sesji wieloosobowej ustawieniami Hauler's Dream steruje host. Są synchronizowane, gdy dołączasz — zaakceptuj monit „Apply configs” moda Multiplayer, aby dopasować się do hosta. Wyjdź z gry wieloosobowej, aby je zmienić.</HaulersDream.Settings.MultiplayerLocked>
 <HaulersDream.Tab.General>Ogólne</HaulersDream.Tab.General>
 <HaulersDream.Tab.Sharing>Współdzielenie i dostawa</HaulersDream.Tab.Sharing>
 <HaulersDream.Tab.Bulk>Masowo i nosiciele</HaulersDream.Tab.Bulk>

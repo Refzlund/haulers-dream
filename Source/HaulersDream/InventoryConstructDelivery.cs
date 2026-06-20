@@ -287,7 +287,11 @@ namespace HaulersDream
                 candidates.Add(t);
             }
             candidates.Sort((a, b) =>
-                (a.Position - anchor).LengthHorizontalSquared.CompareTo((b.Position - anchor).LengthHorizontalSquared));
+            {
+                // MP determinism: total-order tiebreak so ties don't depend on input order across clients.
+                int c = (a.Position - anchor).LengthHorizontalSquared.CompareTo((b.Position - anchor).LengthHorizontalSquared);
+                return c != 0 ? c : a.thingIDNumber.CompareTo(b.thingIDNumber);
+            });
 
             int got = 0;
             for (int i = 0; i < candidates.Count && got < unitCap; i++)
@@ -347,7 +351,9 @@ namespace HaulersDream
                     if (!ExtraSweepReach.Allows(pawn, t))
                         continue; // material source: cap reach at Some (don't fetch build stock from vacuum/fire)
                     int d = (t.Position - pawn.Position).LengthHorizontalSquared;
-                    if (d < bestDist) { bestDist = d; best = t; }
+                    // MP determinism: total-order tiebreak so ties don't depend on input order across clients.
+                    if (d < bestDist || (d == bestDist && best != null && t.thingIDNumber < best.thingIDNumber))
+                    { bestDist = d; best = t; }
                 }
                 if (best != null)
                 {
@@ -407,7 +413,11 @@ namespace HaulersDream
             CollectConstructibles(map, ThingRequestGroup.BuildingFrame, def, pawn, anchor, radiusSq, outNeeders, scan);
             // Nearest-first so the closest sites are queued before the load ceiling is reached.
             scan.Sort((a, b) =>
-                (a.Position - anchor).LengthHorizontalSquared.CompareTo((b.Position - anchor).LengthHorizontalSquared));
+            {
+                // MP determinism: total-order tiebreak so ties don't depend on input order across clients.
+                int c = (a.Position - anchor).LengthHorizontalSquared.CompareTo((b.Position - anchor).LengthHorizontalSquared);
+                return c != 0 ? c : a.thingIDNumber.CompareTo(b.thingIDNumber);
+            });
             for (int i = 0; i < scan.Count && clusterNeed < maxLoadUnits; i++)
             {
                 var t = scan[i];

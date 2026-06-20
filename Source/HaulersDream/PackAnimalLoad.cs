@@ -357,7 +357,11 @@ namespace HaulersDream
                 for (int i = 0; i < pool.Count; i++)
                 {
                     float d = (pool[i].Position - from).LengthHorizontalSquared;
-                    if (d <= radiusSq && d < bestDistSq) { bestDistSq = d; bestIdx = i; }
+                    // MP determinism: break distance ties by thingIDNumber so all clients pick the same stack
+                    // (HashSet iteration order can differ per client).
+                    if (d <= radiusSq && (d < bestDistSq
+                        || (d == bestDistSq && bestIdx >= 0 && pool[i].thingIDNumber < pool[bestIdx].thingIDNumber)))
+                    { bestDistSq = d; bestIdx = i; }
                 }
                 if (bestIdx < 0)
                     return null;

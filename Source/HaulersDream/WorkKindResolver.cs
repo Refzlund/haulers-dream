@@ -133,6 +133,43 @@ namespace HaulersDream
             return TryResolveUnmarkedHarvest(pawn, clicked);
         }
 
+        // ── Stable id ↔ RouteWorkKind (for Multiplayer command replay) ───────────────────────────────────────
+        // The route-execute command must cross the MP wire, but RouteWorkKind holds a live WorkGiver_Scanner (not
+        // serializable). The portable stand-in is the resolved scanner's WorkGiverDef.defName: a def name is a
+        // stable, identical token on every client (defs load in the same order from the same content), and the
+        // scanner — plus the designation/scope/gerund/yield the kind also carries — is fully RE-DERIVABLE from the
+        // pawn + clicked thing via Resolve(), whose every input (work priorities, designations, reachability) is
+        // synced game state. So we ship just the defName and reconstruct the whole kind per client. This mirrors
+        // MiningKind(ThingDef), which already reconstructs the mining kind from a def alone for the (un-serializable)
+        // vein tracker — same "rebuild the live kind from a portable key" pattern.
+
+        /// <summary>
+        /// A portable, MP-serializable id for a resolved <see cref="RouteWorkKind"/> — the scanner's
+        /// <see cref="WorkGiverDef.defName"/>. Identical on every client (defs are content, loaded in the same
+        /// order), and round-trips through <see cref="ResolveById"/>. Returns null for a null/incomplete kind.
+        /// </summary>
+        public static string WorkKindId(RouteWorkKind kind) => kind?.scanner?.def?.defName;
+
+        /// <summary>
+        /// Reconstructs the full <see cref="RouteWorkKind"/> for a previously-resolved work-giver id against the
+        /// clicked thing's CURRENT state — the MP-replay counterpart of <see cref="WorkKindId"/>. We re-run the
+        /// normal <see cref="Resolve"/> (so the designation/scope/gerund/yield are derived by the exact same logic,
+        /// not a duplicated copy) and confirm it produced the SAME scanner the issuing client sent. The id check is
+        /// a determinism guard: every client re-resolving the same synced state yields the same scanner, so a
+        /// mismatch means the world diverged between plan and execute (e.g. the designation was cancelled), in which
+        /// case we return null and the executor no-ops rather than queue a different route than was planned. Returns
+        /// null when the id is empty or the thing is no longer routable.
+        /// </summary>
+        public static RouteWorkKind ResolveById(Pawn pawn, Thing clicked, string workGiverDefName)
+        {
+            if (string.IsNullOrEmpty(workGiverDefName))
+                return null;
+            var kind = Resolve(pawn, clicked);
+            // Re-resolve must reproduce the same scanner the planning client used; otherwise the world changed
+            // under the command and we must not silently queue a different kind of route.
+            return WorkKindId(kind) == workGiverDefName ? kind : null;
+        }
+
         // A plant that is harvestable RIGHT NOW but carries no HarvestPlant/CutPlant designation. Mirrors the gates
         // WorkGiver_PlantsCut.JobOnThing will apply once we designate it, so the menu option only appears when the
         // pawn could actually do it.

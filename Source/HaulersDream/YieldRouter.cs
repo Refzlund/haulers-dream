@@ -34,6 +34,12 @@ namespace HaulersDream
     {
         [ThreadStatic] private static bool routing;        // re-entrancy guard (RouteIntoInventory's own inner placements)
 
+        // Reused snapshot buffer for the area-cleanup sweep (MaybeSweepNearbyIntoPending): the in-radius haulables
+        // are copied here and sorted (distSq, thingIDNumber) so the SweepMaxStacks-capped subset is the SAME across
+        // MP clients (the lister's HashSet order can differ per client). [ThreadStatic] + lazy-init matches this
+        // assembly's hook-reachable scratch convention; Cleared at the point of use, never trusted empty.
+        [ThreadStatic] private static List<Thing> sweepScratch;
+
         // ---- GenPlace path (plants / mining / deep drill / animals) -----------------------------
 
         /// <returns>true to let vanilla place the (remaining) thing; false to fully consume it.</returns>
@@ -228,6 +234,8 @@ namespace HaulersDream
             float sweepCur = mass.CurrentMass;
 
             // One candidate's full filter+queue step; returns true to keep sweeping, false to stop (cap reached).
+            // Called over a DETERMINISTICALLY ORDERED snapshot (see below), so WHICH stacks the SweepMaxStacks cap
+            // admits is identical across MP clients.
             bool TryQueue(Thing t)
             {
                 if (added >= SweepMaxStacks)
@@ -261,6 +269,15 @@ namespace HaulersDream
                 return true;
             }
 
+            // MP determinism: the SweepMaxStacks cap means WHICH stacks get queued depends on the order candidates
+            // are visited — and the lister is a HashSet whose iteration order can differ per client. Snapshot the
+            // in-radius haulables into a reused scratch list and sort by (distSq, thingIDNumber) BEFORE the capped
+            // TryQueue loop, so every client queues the SAME nearest subset. The expensive per-candidate work
+            // (reach/storage) then runs in a stable order. The radius pre-filter keeps the snapshot + sort bounded
+            // to the work area (the same radiusSq gate TryQueue re-applies). [ThreadStatic] + lazy-init matches this
+            // assembly's hook-reachable scratch convention; Cleared at use, never trusted empty.
+            var sweepBuf = sweepScratch ?? (sweepScratch = new List<Thing>());
+            sweepBuf.Clear();
             // Cast to the concrete HashSet<Thing> backing the lister (ThingsPotentiallyNeedingHauling returns the
             // ICollection<Thing> interface; the field is a HashSet<Thing>, decompile-verified) so the foreach binds
             // the struct enumerator and boxes nothing on this per-item-place sweep. `as` + null fallback to the
@@ -270,15 +287,26 @@ namespace HaulersDream
             if (haulableSet != null)
             {
                 foreach (var t in haulableSet)
-                    if (!TryQueue(t))
-                        break;
+                    if (t != null && (t.Position - anchor).LengthHorizontalSquared <= radiusSq)
+                        sweepBuf.Add(t);
             }
             else
             {
                 foreach (var t in haulables)
-                    if (!TryQueue(t))
-                        break;
+                    if (t != null && (t.Position - anchor).LengthHorizontalSquared <= radiusSq)
+                        sweepBuf.Add(t);
             }
+            sweepBuf.Sort((a, b) =>
+            {
+                int da = (a.Position - anchor).LengthHorizontalSquared;
+                int db = (b.Position - anchor).LengthHorizontalSquared;
+                int c = da.CompareTo(db);
+                return c != 0 ? c : a.thingIDNumber.CompareTo(b.thingIDNumber);
+            });
+            for (int i = 0; i < sweepBuf.Count; i++)
+                if (!TryQueue(sweepBuf[i]))
+                    break;
+            sweepBuf.Clear();
 
             if (added > 0)
             {

@@ -3,6 +3,7 @@
 
 <HaulersDream.SettingsCategory>Hauler's Dream</HaulersDream.SettingsCategory>
 <HaulersDream.SettingsHeaderFallback>Hauler's Dream</HaulersDream.SettingsHeaderFallback>
+<HaulersDream.Settings.MultiplayerLocked>マルチプレイ中、Hauler's Dreamの設定はホストによって管理されます。参加すると設定は同期されます——ホストに合わせるには、Multiplayerの「Apply configs（設定を適用）」のプロンプトを承認してください。設定を変更するにはマルチプレイのゲームから退出してください。</HaulersDream.Settings.MultiplayerLocked>
 <HaulersDream.Tab.General>全般</HaulersDream.Tab.General>
 <HaulersDream.Tab.Sharing>共有 &amp; 配達</HaulersDream.Tab.Sharing>
 <HaulersDream.Tab.Bulk>一括 &amp; 運搬者</HaulersDream.Tab.Bulk>
