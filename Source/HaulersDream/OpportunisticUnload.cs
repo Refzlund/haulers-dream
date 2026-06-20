@@ -224,7 +224,7 @@ namespace HaulersDream
             // The total scooped mass. Read it from the per-(pawn,tick) memo (TrackedMassCache) so repeated
             // same-tick scans (the work-found divert check + the end-of-run path on the same pawn) share one
             // GetStatValue(Mass) walk over the tracked set instead of re-walking per scan.
-            float cap = MassUtility.Capacity(pawn);
+            float cap = CarryCapacity.Of(pawn);
             if (cap <= 0f)
                 return false;
             float trackedMass = TrackedMassCache.TrackedMass(pawn, comp);

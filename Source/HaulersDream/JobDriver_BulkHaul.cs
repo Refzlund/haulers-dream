@@ -297,8 +297,8 @@ namespace HaulersDream
             // (OverloadGate.NoOverload(null) == true): the ceiling is the plain base capacity, never
             // infinite. Unreachable in practice — the plan is only ever built with live settings.
             if (s == null)
-                return CarryMath.EffectiveCapacity(MassUtility.Capacity(pawn), CarryMath.MaxFraction);
-            float baseCap = CarryMath.EffectiveCapacity(MassUtility.Capacity(pawn), s.carryLimitFraction);
+                return CarryMath.EffectiveCapacity(CarryCapacity.Of(pawn), CarryMath.MaxFraction);
+            float baseCap = CarryMath.EffectiveCapacity(CarryCapacity.Of(pawn), s.carryLimitFraction);
             return BulkHaulPolicy.CeilingKg(s.overloadLevel, OverloadGate.NoOverloadFor(pawn, s), baseCap);
         }
     }

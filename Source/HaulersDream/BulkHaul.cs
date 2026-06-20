@@ -355,7 +355,7 @@ namespace HaulersDream
             // Pawn-aware gate (NoOverloadFor): only an ANIMAL (non-mech non-humanlike) stands down to the
             // plain carry limit; player humanlikes AND mechs overload to the break-even ceiling and are
             // slowed for it by StatPart_Overload (decision model and slowdown stay in lockstep).
-            float maxCap = MassUtility.Capacity(pawn); // under CE this reads CE's CarryWeight (CE postfix)
+            float maxCap = CarryCapacity.Of(pawn); // MassUtility.Capacity ×HD mech mult; under CE reads CE's CarryWeight
             float baseCap = CarryMath.EffectiveCapacity(maxCap, s.carryLimitFraction);
             float ceiling = BulkHaulPolicy.CeilingKg(s.overloadLevel, OverloadGate.NoOverloadFor(pawn, s), baseCap);
             float running = MassUtility.GearAndInventoryMass(pawn);
@@ -547,7 +547,7 @@ namespace HaulersDream
             // Clamp to the worth-it mass ceiling for this pawn (per-pawn base cap × the overload break-even ratio),
             // exactly as BuildBulkJob prices the primary, so a single oversized/heavy stack never plans more than the
             // pawn can actually carry into inventory. Under CE also clamp to CE's live weight+bulk fit.
-            float maxCap = MassUtility.Capacity(pawn);
+            float maxCap = CarryCapacity.Of(pawn);
             float baseCap = CarryMath.EffectiveCapacity(maxCap, s.carryLimitFraction);
             float ceiling = BulkHaulPolicy.CeilingKg(s.overloadLevel, OverloadGate.NoOverloadFor(pawn, s), baseCap);
             float running = MassUtility.GearAndInventoryMass(pawn);
