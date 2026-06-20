@@ -343,7 +343,13 @@ namespace HaulersDream
                     defaultDesc = "HaulersDream.Gizmo.AutoHaulDesc".Translate(),
                     icon = DropIcon,
                     isActive = () => comp.autoHaulYields,
-                    toggleAction = () => comp.autoHaulYields = !comp.autoHaulYields
+                    // MP: autoHaulYields is a SCRIBED bool (synced world state). A raw click-time flip
+                    // (comp.autoHaulYields = !comp.autoHaulYields) only mutates the clicking client and desyncs in
+                    // multiplayer. Route the write through the [SyncMethod] shim so it runs once, as a command, on
+                    // every client. isActive still reads the local value (rendering only). We read the current value
+                    // here and pass the DESIRED value, so the command is idempotent regardless of arrival order
+                    // (vs. passing "toggle", which would double-flip if two clicks raced). Runs inline in SP.
+                    toggleAction = () => MultiplayerCompat.SetAutoHaulYields(__instance, !comp.autoHaulYields)
                 };
             }
 
@@ -374,14 +380,13 @@ namespace HaulersDream
                 icon = DropIcon,
                 action = () =>
                 {
-                    // On a non-home / temporary map with no player storage the gizmo loads the nearest pack animal
-                    // with the carried loot instead of the (no-op) storage unload. Any non-home map WITH player
-                    // storage (a VF RV interior) uses the storage unload like home (ShouldUnloadToStorage),
-                    // so the manual button delivers into its shelves instead of hunting a non-existent carrier.
-                    if (__instance.Map != null && !MapGate.ShouldUnloadToStorage(__instance.Map))
-                        PackAnimalLoad.GizmoLoadNearest(__instance);
-                    else
-                        PawnUnloadChecker.CheckIfShouldUnload(__instance, true);
+                    // MP: the MapGate branch below (GizmoLoadNearest enqueues jobs via jobQueue.EnqueueFirst;
+                    // CheckIfShouldUnload adopts surplus into the SCRIBED hauled-item set) mutates synced world state
+                    // and is NOT covered by vanilla's TryTakeOrderedJob auto-sync. Route the whole action through the
+                    // [SyncMethod] shim so it runs once, as a command, on every client. UnloadInventoryNow contains
+                    // the IDENTICAL home/temp-map branch (GizmoLoadNearest vs CheckIfShouldUnload, ShouldUnloadToStorage
+                    // gate), so single-player behaviour is unchanged (it runs inline when MP is absent).
+                    MultiplayerCompat.UnloadInventoryNow(__instance);
                 }
             };
             // The unload checker hard-gates drafted pawns (they must stand to orders, not march to

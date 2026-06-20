@@ -214,6 +214,8 @@ namespace HaulersDream
                 var tagged = scratchTagged ?? (scratchTagged = new List<Thing>());
                 tagged.Clear();
                 tagged.AddRange(hcomp.GetHashSet());
+                // MP determinism: process tagged stacks in thingIDNumber order so a capacity-bound loop deposits/drops the same subset on every client.
+                tagged.Sort((a, b) => a.thingIDNumber.CompareTo(b.thingIDNumber));
                 for (int i = 0; i < tagged.Count; i++)
                 {
                     var thing = tagged[i];

@@ -148,6 +148,25 @@ namespace HaulersDream
             if (Widgets.CloseButtonFor(new Rect(0f, 6f, fullW - 6f, 40f)))
                 win?.Close();
 
+            // Mid-game multiplayer guard: in an ACTIVE MP session HD's settings are host-authoritative (shipped to
+            // clients at join), so a player editing them mid-session would silently desync only THIS client. Draw an
+            // explanatory message and skip ALL editable controls (profile selector + the three option columns) — fully
+            // removing the desync vector. The window still closes via the X above. MultiplayerCompat.InMultiplayerGame
+            // short-circuits on Active, so reading it here touches no Multiplayer.API type when MP is absent (and is
+            // always false in single-player). See MultiplayerCompat / the mod description.
+            if (MultiplayerCompat.InMultiplayerGame)
+            {
+                var lockRect = new Rect(40f, bandH + 40f, fullW - 80f, rect.height - bandH - 80f);
+                var pf2 = Text.Font;
+                var pa2 = Text.Anchor;
+                Text.Font = GameFont.Medium;
+                Text.Anchor = TextAnchor.MiddleCenter;
+                Widgets.Label(lockRect, "HaulersDream.Settings.MultiplayerLocked".Translate());
+                Text.Anchor = pa2;
+                Text.Font = pf2;
+                return;
+            }
+
             // Profile selector — to the right of the logo, clear of the X.
             float profX = logoRect.xMax + 16f;
             float profRight = fullW - 40f;

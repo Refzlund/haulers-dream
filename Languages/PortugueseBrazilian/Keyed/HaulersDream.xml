@@ -3,6 +3,7 @@
 
 <HaulersDream.SettingsCategory>Hauler's Dream</HaulersDream.SettingsCategory>
 <HaulersDream.SettingsHeaderFallback>Hauler's Dream</HaulersDream.SettingsHeaderFallback>
+<HaulersDream.Settings.MultiplayerLocked>Durante uma sessão multijogador, as configurações do Hauler's Dream são controladas pelo anfitrião. Elas são sincronizadas quando você entra — aceite o aviso "Apply configs" do Multiplayer para ficar igual ao anfitrião. Saia do jogo multijogador para alterá-las.</HaulersDream.Settings.MultiplayerLocked>
 <HaulersDream.Tab.General>Geral</HaulersDream.Tab.General>
 <HaulersDream.Tab.Sharing>Compartilhamento e entrega</HaulersDream.Tab.Sharing>
 <HaulersDream.Tab.Bulk>Em massa e transportes</HaulersDream.Tab.Bulk>

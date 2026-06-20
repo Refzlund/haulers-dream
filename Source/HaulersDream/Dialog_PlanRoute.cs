@@ -681,13 +681,23 @@ namespace HaulersDream
 
         private void Execute(bool replace)
         {
-            // The plan is kept current by RefreshPlanIfNeeded each frame; ensure it exists before queueing.
+            // The plan is kept current by RefreshPlanIfNeeded each frame; ensure it exists before queueing. (The
+            // preview/planning above stays local to this client — only the COMMIT below is synced.)
             if (cachedPlan == null)
                 RefreshPlanIfNeeded();
-            RouteExecutor.Execute(pawn, clicked, kind, mode, EffectiveAmount(), radius, MaxDistance(), smart,
-                allowHarvest, growthThreshold, replace, cachedPlan, picked, selectionMethod, distanceBasis,
-                HaulersDreamMod.Settings?.routeOrderExactMax ?? RouteOrderPolicy.ExactMax, startNode, endNode,
-                IsConstruction && alsoBuild, roomAnchors);
+
+            // Route the COMMIT through the synced entry point, NOT RouteExecutor.Execute directly: Execute mutates
+            // synced world/save state (designations, the pawn's job queue, the scribed vein tracker) that RimWorld
+            // Multiplayer does not auto-sync, so calling it here would apply only on the clicking client → desync.
+            // ExecuteRouteSynced is a [SyncMethod] (a command replayed identically on every client; inert in single-
+            // player). It takes only MP-serializable args, so the un-serializable RouteWorkKind travels as its stable
+            // id (re-resolved per client) and the cached preview RoutePlan is NOT shipped — every client recomputes
+            // the plan deterministically (precomputed: null). picked/roomAnchors are already concrete List<> (the
+            // wire-serializable form); pass them directly.
+            RouteExecutor.ExecuteRouteSynced(pawn, clicked, WorkKindResolver.WorkKindId(kind), mode, EffectiveAmount(),
+                radius, MaxDistance(), smart, allowHarvest, growthThreshold, replace, picked, selectionMethod,
+                distanceBasis, HaulersDreamMod.Settings?.routeOrderExactMax ?? RouteOrderPolicy.ExactMax,
+                startNode, endNode, IsConstruction && alsoBuild, roomAnchors);
         }
 
         // Construction routes offer two behaviours: HAUL-ONLY (fill the sites with materials — others can build)

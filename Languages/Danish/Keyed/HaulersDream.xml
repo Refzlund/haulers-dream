@@ -3,6 +3,7 @@
 
 <HaulersDream.SettingsCategory>Hauler's Dream</HaulersDream.SettingsCategory>
 <HaulersDream.SettingsHeaderFallback>Hauler's Dream</HaulersDream.SettingsHeaderFallback>
+<HaulersDream.Settings.MultiplayerLocked>Hauler's Dream-indstillinger styres af værten under en multiplayer-session. De synkroniseres, når du tilslutter dig — accepter Multiplayers "Apply configs"-prompt for at matche værten. Forlad multiplayer-spillet for at ændre dem.</HaulersDream.Settings.MultiplayerLocked>
 <HaulersDream.Tab.General>Generelt</HaulersDream.Tab.General>
 <HaulersDream.Tab.Sharing>Deling og levering</HaulersDream.Tab.Sharing>
 <HaulersDream.Tab.Bulk>Massetransport og bærere</HaulersDream.Tab.Bulk>

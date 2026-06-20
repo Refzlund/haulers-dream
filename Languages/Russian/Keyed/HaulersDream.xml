@@ -3,6 +3,7 @@
 
 <HaulersDream.SettingsCategory>Hauler's Dream</HaulersDream.SettingsCategory>
 <HaulersDream.SettingsHeaderFallback>Hauler's Dream</HaulersDream.SettingsHeaderFallback>
+<HaulersDream.Settings.MultiplayerLocked>Во время сетевой игры настройками Hauler's Dream управляет хост. Они синхронизируются при подключении — примите запрос «Apply configs» мода Multiplayer, чтобы привести их в соответствие с хостом. Чтобы изменить их, выйдите из сетевой игры.</HaulersDream.Settings.MultiplayerLocked>
 <HaulersDream.Tab.General>Общее</HaulersDream.Tab.General>
 <HaulersDream.Tab.Sharing>Обмен и доставка</HaulersDream.Tab.Sharing>
 <HaulersDream.Tab.Bulk>Массовая переноска и носители</HaulersDream.Tab.Bulk>

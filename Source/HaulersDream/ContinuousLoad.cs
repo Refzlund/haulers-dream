@@ -87,7 +87,13 @@ namespace HaulersDream
             var seenKeys = new HashSet<int>();
             CollectCandidates(pawn, map, kind, origin, radiusSq, finishedKey, seenKeys, candidates);
             // Nearest-first: the courier should hop to the closest remaining target.
-            candidates.Sort((a, b) => a.distSq.CompareTo(b.distSq));
+            candidates.Sort((a, b) =>
+            {
+                // MP determinism: total-order tiebreak so ties don't depend on input order across clients.
+                // GetUniqueLoadID() is an int here (transporter groupID / portal thingIDNumber / vehicle id).
+                int c = a.distSq.CompareTo(b.distSq);
+                return c != 0 ? c : a.adp.GetUniqueLoadID().CompareTo(b.adp.GetUniqueLoadID());
+            });
 
             for (int i = 0; i < candidates.Count; i++)
             {

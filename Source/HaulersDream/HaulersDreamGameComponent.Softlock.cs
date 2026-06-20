@@ -117,8 +117,13 @@ namespace HaulersDream
         private static void DropTrackedSnapshot(Pawn pawn, CompHauledToInventory comp, ThingOwner<Thing> owner, List<Thing> scratch)
         {
             scratch.Clear();
+            // PeekHashSet (no self-heal) may hold null/destroyed tags; skip nulls here so the sort comparator
+            // below never dereferences a null (the drop loop still re-checks Destroyed/Contains per item).
             foreach (var t in comp.PeekHashSet())
-                scratch.Add(t);
+                if (t != null)
+                    scratch.Add(t);
+            // MP determinism: process tagged stacks in thingIDNumber order so a capacity-bound loop deposits/drops the same subset on every client.
+            scratch.Sort((a, b) => a.thingIDNumber.CompareTo(b.thingIDNumber));
             for (int i = 0; i < scratch.Count; i++)
             {
                 var item = scratch[i];

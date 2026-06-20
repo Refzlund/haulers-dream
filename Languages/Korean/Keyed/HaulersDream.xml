@@ -3,6 +3,7 @@
 
 <HaulersDream.SettingsCategory>Hauler's Dream</HaulersDream.SettingsCategory>
 <HaulersDream.SettingsHeaderFallback>Hauler's Dream</HaulersDream.SettingsHeaderFallback>
+<HaulersDream.Settings.MultiplayerLocked>멀티플레이 세션 중에는 Hauler's Dream 설정을 호스트가 제어합니다. 접속하면 설정이 동기화됩니다 — 호스트와 일치시키려면 Multiplayer의 "Apply configs(설정 적용)" 안내를 수락하세요. 설정을 변경하려면 멀티플레이 게임에서 나가세요.</HaulersDream.Settings.MultiplayerLocked>
 <HaulersDream.Tab.General>일반</HaulersDream.Tab.General>
 <HaulersDream.Tab.Sharing>공유 및 전달</HaulersDream.Tab.Sharing>
 <HaulersDream.Tab.Bulk>대량 운반 및 운반체</HaulersDream.Tab.Bulk>

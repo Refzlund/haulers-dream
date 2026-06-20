@@ -309,8 +309,19 @@ namespace HaulersDream
                     if (avail < perRep)
                         continue; // can't even make one rep from this def
                     int reps = avail / perRep;
-                    // Prefer the def that supports the most reps; tie-break on most absolute stock.
-                    if (reps > bestReps || (reps == bestReps && avail > bestAvail))
+                    // Prefer the def that supports the most reps; tie-break on most absolute stock, then on a STABLE
+                    // def key. The final shortHash tiebreak is load-bearing for Multiplayer DETERMINISM: AllowedThingDefs
+                    // is backed by a HashSet<ThingDef> (verified against decompiled Verse.ThingFilter) whose iteration
+                    // order is identity-hash dependent and can differ per client — so without a total order, two defs
+                    // tying on (reps, avail) (two woods/leathers/meats with identical reachable stock and per-rep count)
+                    // would let first-in-HashSet-order win and pick a DIFFERENT source def on different clients, which
+                    // re-introduces the very desync this synced path fixes (different ingredient consumed → divergent
+                    // world state). shortHash is a content-derived, cross-process-stable key (same idiom as
+                    // BuildMixForRep's tiebreak), so the chosen def is identical everywhere. Pre-MP this only makes an
+                    // arbitrary tie deterministic — single-player behaviour is unchanged for any non-tied case.
+                    if (reps > bestReps
+                        || (reps == bestReps && avail > bestAvail)
+                        || (reps == bestReps && avail == bestAvail && bestDef != null && cand.shortHash < bestDef.shortHash))
                     {
                         bestReps = reps; bestDef = cand; bestAvail = avail; bestPerRep = perRep;
                     }

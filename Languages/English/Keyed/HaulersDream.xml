@@ -6,6 +6,10 @@
   <HaulersDream.SettingsCategory>Hauler's Dream</HaulersDream.SettingsCategory>
   <HaulersDream.SettingsHeaderFallback>Hauler's Dream</HaulersDream.SettingsHeaderFallback>
 
+  <!-- Shown in place of the editable settings while an active multiplayer session is in progress: HD's settings are
+       host-authoritative (synced to clients at join), so they can't be edited mid-session without desyncing. -->
+  <HaulersDream.Settings.MultiplayerLocked>Hauler's Dream settings are controlled by the host during a multiplayer session. They're synced when you join — accept Multiplayer's "Apply configs" prompt to match the host. Leave the multiplayer game to change them.</HaulersDream.Settings.MultiplayerLocked>
+
   <!-- Settings window tabs -->
   <HaulersDream.Tab.General>General</HaulersDream.Tab.General>
   <HaulersDream.Tab.Sharing>Sharing &amp; Delivery</HaulersDream.Tab.Sharing>

@@ -64,9 +64,11 @@ namespace HaulersDream
                 var option = new FloatMenuOption(
                     "HaulersDream.UnloadCarrier.Option".Translate(carrier.LabelShort), () =>
                     {
-                        // Flag the carrier for unloading (vanilla's gate keys off this), then order the bulk job.
-                        if (carrierLocal.inventory != null)
-                            carrierLocal.inventory.UnloadEverything = true;
+                        // MP: only the pure MakeJob + TryTakeOrderedJob runs here — that ordered-job path IS
+                        // auto-synced by MP, so it replays on every client. The carrier's UnloadEverything flag (a
+                        // SCRIBED field, synced world state) is NOT set here: a click-time write would only mutate the
+                        // clicking client and desync. It is instead set in JobDriver_UnloadCarrierInBulk.Notify_Starting
+                        // — in-tick code that runs deterministically on every client when the synced job starts.
                         var job = JobMaker.MakeJob(HaulersDreamDefOf.HaulersDream_UnloadCarrierInBulk, carrierLocal);
                         job.playerForced = true;
                         if (!pawn.jobs.TryTakeOrderedJob(job, JobTag.Misc))

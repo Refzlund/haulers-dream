@@ -68,7 +68,10 @@ namespace HaulersDream
                 if (!SharePolicy.ShouldIncludeStack(isSelf, reachable, canReserve, isUsable: true, withinRadius: true))
                     continue;
                 int d = isSelf ? 0 : IntVec3Utility.ManhattanDistanceFlat(worker.Position, carrier.Position);
-                if (d < bestDist)
+                // MP determinism: process tagged stacks in thingIDNumber order so a capacity-bound loop deposits/drops the same subset on every client.
+                // (Here: on a distance tie — always so within the self-branch, where every stack is distance 0 — pick the
+                // lower thingIDNumber so all clients choose the SAME physical stack as the job ingredient target.)
+                if (d < bestDist || (d == bestDist && best != null && tagged.thingIDNumber < best.thingIDNumber))
                 {
                     bestDist = d;
                     best = tagged;

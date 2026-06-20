@@ -14,6 +14,9 @@ namespace HaulersDream
     {
         private readonly Bill bill;
         private int size;
+        // The value the dialog opened with (== the value committed last time). Used in PreClose to detect whether
+        // the player actually changed anything, so a no-op open/close issues no write at all.
+        private readonly int initialSize;
 
         public override Vector2 InitialSize => new Vector2(420f, 210f);
 
@@ -21,6 +24,7 @@ namespace HaulersDream
         {
             this.bill = bill;
             size = Mathf.Max(1, HaulersDreamGameComponent.Instance?.BatchSizeOf(bill) ?? 10);
+            initialSize = size;
             forcePause = true;
             doCloseX = true;
             closeOnClickedOutside = true;
@@ -49,9 +53,22 @@ namespace HaulersDream
 
             l.End();
 
-            // Apply live, so closing via the X or click-outside keeps the value (no OK button needed). The bill is
-            // already batching (this dialog is only reachable from a batching bill's dropdown), so on=true is safe.
-            HaulersDreamGameComponent.Instance?.SetBatch(bill, true, size);
+            // No write here. The slider only edits the LOCAL `size`; the synced write happens ONCE in PreClose.
+            // MP: SetBatch writes the SCRIBED batchBills dict (synced world state). Writing it every frame here would
+            // both spam commands and desync in multiplayer (DoWindowContents runs at frame rate, untimed across
+            // clients). Committing once on close gives exactly one synced write per edit session.
+        }
+
+        // Commit the chosen size once, on close (X / click-outside — there is no OK button, matching the live-edit
+        // UX the player expects: the value is kept on close). Routed through the [SyncMethod] shim so the single
+        // write replays on every client in MP; runs inline in single-player. Skip entirely when nothing changed so a
+        // no-op open/close issues no command. on=true is safe: this dialog is only reachable from a batching bill's
+        // dropdown.
+        public override void PreClose()
+        {
+            base.PreClose();
+            if (size != initialSize)
+                MultiplayerCompat.SetBillBatch(bill, true, size);
         }
     }
 }

@@ -290,6 +290,83 @@ namespace HaulersDream
             }
         }
 
+        /// <summary>
+        /// Order a batch-craft job — the SYNCED entry point invoked by <see cref="Dialog_PlanCraft"/> on confirm.
+        ///
+        /// <para>Multiplayer correctness: this runs as a COMMAND replayed on EVERY client (the mod's
+        /// <see cref="MultiplayerCompat"/> shim auto-registers every <c>[SyncMethod]</c> via <c>MP.RegisterAll</c>),
+        /// so the <see cref="CraftBatchPlan"/> is RE-RESOLVED here from MP-serializable primitives — NOT shipped. The
+        /// old path computed the plan only on the ordering client and stashed it in the static
+        /// <see cref="BatchCraftHandoff"/> map, which does NOT travel over the wire: other clients then found no
+        /// handoff and degraded to a 1-rep <see cref="RecoverPlanFromBill"/>, crafting 1 rep while the issuer crafted
+        /// N → a hard desync (different resource consumption + job duration). Because this method runs on every
+        /// client, <see cref="BatchCraftHandoff.Set"/> populates the map on every client, so each one's
+        /// <see cref="ResolvePlanFromHandoff"/> consumes a matching plan and the 1-rep fallback never fires for a
+        /// properly-ordered batch. Determinism of the re-resolved plan is guaranteed because every client sees
+        /// identical world state at the synced tick and <see cref="CraftBatchPlanner.Resolve"/> is fully
+        /// deterministic (no <c>Rand</c>/time/unordered-collection selection — its one HashSet-order tiebreak now
+        /// resolves via <c>shortHash</c>). The nested <see cref="Pawn_JobTracker.TryTakeOrderedJob"/> runs DIRECTLY
+        /// (no re-sync) since we are already executing inside the synced command.</para>
+        ///
+        /// <para>Args are all MP-serializable (Pawn, Building_WorkTable, Bill, int) — never the un-serializable
+        /// <see cref="CraftBatchPlan"/>. In a non-MP game this is a plain static method called directly, so
+        /// single-player behaviour is unchanged. The method BODY references NO <c>Multiplayer.API</c> type (only the
+        /// fully-qualified attribute), so it stays vanilla-safe per the soft-dep isolation rules.</para>
+        /// </summary>
+        [Multiplayer.API.SyncMethod]
+        public static void StartBatchCraftSynced(Pawn pawn, Building_WorkTable bench, Bill bill, int requestedReps, int timeoutTicks)
+        {
+            if (pawn?.jobs == null || bench == null || bill == null)
+                return;
+
+            // Re-resolve against the (identical-on-every-client) current stock. The dialog already previewed a plan
+            // locally for its UI, but we deliberately re-resolve here so the AUTHORITATIVE plan is computed inside the
+            // synced command on every client — and so a feasibility race between preview and commit is caught the same
+            // way everywhere.
+            var plan = CraftBatchPlanner.Resolve(pawn, bench, bill, requestedReps, timeoutTicks);
+            if (plan == null || !plan.feasible)
+            {
+                // Stock changed out from under a still-feasible-looking preview (a rare last-frame race). Toast only on
+                // the issuing client so a synced no-op doesn't notify every player.
+                if (MultiplayerCompat.ShouldShowLocalFeedback)
+                    Messages.Message("HaulersDream.PlanCraft.CouldNotStart".Translate(), pawn, MessageTypeDefOf.RejectInput, historical: false);
+                return;
+            }
+
+            // Re-confirming while a batch on this same bill is already running: vanilla's JobIsSameAs check would
+            // silently swallow the new order (and leak the handoff). End the running batch first — its leftovers are
+            // tagged + flushed by its finish action — so the new order genuinely takes over with fresh params. (Runs
+            // identically on every client because each client's pawn is on the same job at this tick.)
+            if (pawn.CurJobDef == HaulersDreamDefOf.HaulersDream_BatchCraft && pawn.CurJob?.bill == bill)
+                pawn.jobs.EndCurrentJob(JobCondition.InterruptForced, startNewJob: false);
+
+            var job = JobMaker.MakeJob(HaulersDreamDefOf.HaulersDream_BatchCraft, bench);
+            job.count = 1; // sentinel: Job.count defaults to -1 and vanilla TakeToInventory's ErrorCheckForCarry
+                           // red-errors on count <= 0 (the driver's amounts come from its own getter)
+            job.bill = bill;
+            job.playerForced = true;
+            // Set the handoff on EVERY client (this method runs everywhere) so each driver's ResolvePlanFromHandoff
+            // consumes a matching plan → no 1-rep RecoverPlanFromBill fallback → no desync.
+            BatchCraftHandoff.Set(job, plan);
+
+            bool ok = pawn.jobs.TryTakeOrderedJob(job, JobTag.Misc);
+            if (ok)
+            {
+                if (MultiplayerCompat.ShouldShowLocalFeedback)
+                    Messages.Message("HaulersDream.PlanCraft.Started".Translate(plan.resolvedReps,
+                        bill.recipe.ProducedThingDef?.label ?? bill.LabelCap),
+                        pawn, MessageTypeDefOf.TaskCompletion, historical: false);
+                HDLog.Dbg($"[{Dialog_PlanCraft.BuildTag}] {pawn} batch crafting {plan.resolvedReps}× {bill.recipe.defName} " +
+                          $"(timeout {timeoutTicks} ticks, mass/rep {plan.massPerRepKg:0.0}kg).");
+            }
+            else
+            {
+                BatchCraftHandoff.Consume(job); // clear the orphaned handoff
+                if (MultiplayerCompat.ShouldShowLocalFeedback)
+                    Messages.Message("HaulersDream.PlanCraft.CouldNotStart".Translate(), pawn, MessageTypeDefOf.RejectInput, historical: false);
+            }
+        }
+
         public override IEnumerable<Toil> MakeNewToils()
         {
             AddFinishAction(delegate

@@ -25,10 +25,14 @@ namespace HaulersDream
             var opts = new List<FloatMenuOption>();
 
             // --- the three vanilla modes (faithful copies of MakeConfigFloatMenu; picking one turns batch OFF) ---
+            // MP: SetBatch writes the SCRIBED batchBills dict. These delegates fire from an interactive float-menu
+            // pick, so the write must go through the [SyncMethod] shim to replay on every client (runs inline in SP).
+            // bill.repeatMode is vanilla's own field and is already synced by RimWorld's bill-config UI, so only the
+            // HD batch write needs routing.
             opts.Add(new FloatMenuOption(BillRepeatModeDefOf.RepeatCount.LabelCap, delegate
             {
                 bill.repeatMode = BillRepeatModeDefOf.RepeatCount;
-                comp?.SetBatch(bill, false, 0);
+                MultiplayerCompat.SetBillBatch(bill, false, 0);
             }));
             opts.Add(new FloatMenuOption(BillRepeatModeDefOf.TargetCount.LabelCap, delegate
             {
@@ -37,13 +41,13 @@ namespace HaulersDream
                 else
                 {
                     bill.repeatMode = BillRepeatModeDefOf.TargetCount;
-                    comp?.SetBatch(bill, false, 0);
+                    MultiplayerCompat.SetBillBatch(bill, false, 0);
                 }
             }));
             opts.Add(new FloatMenuOption(BillRepeatModeDefOf.Forever.LabelCap, delegate
             {
                 bill.repeatMode = BillRepeatModeDefOf.Forever;
-                comp?.SetBatch(bill, false, 0);
+                MultiplayerCompat.SetBillBatch(bill, false, 0);
             }));
 
             // --- COMPAT: re-add any OTHER mod's custom repeat modes that we just skipped by replacing this menu.
@@ -91,12 +95,16 @@ namespace HaulersDream
         }
 
         // Turn batching on, keeping any size the bill already had; a fresh batch starts at the settings default.
+        // Called ONLY from the three interactive "Batch: …" float-menu delegates above, so this is a UI write:
+        // MP-route it through the [SyncMethod] shim (writes the SCRIBED batchBills dict on every client; inline in
+        // SP). The size is resolved locally first (read of the current value, fall back to the settings default), so
+        // the synced command carries an absolute size and is idempotent across clients.
         private static void EnableBatch(HaulersDreamGameComponent comp, Bill_Production bill)
         {
             int size = comp.BatchSizeOf(bill);
             if (size < 1)
                 size = Mathf.Max(1, HaulersDreamMod.Settings?.defaultBatchSize ?? 10);
-            comp.SetBatch(bill, true, size);
+            MultiplayerCompat.SetBillBatch(bill, true, size);
         }
     }
 
@@ -157,6 +165,13 @@ namespace HaulersDream
     {
         static void Postfix(Bill bill)
         {
+            // MP: these two SetBatch writes deliberately stay on the DIRECT (non-synced) path — do NOT route them
+            // through MultiplayerCompat.SetBillBatch. This postfix fires from BillStack.AddBill, which runs either in
+            // an already-synced bill-creation/paste command or from in-tick code (debug actions, other mods) — either
+            // way it executes on EVERY client, deterministically, against a bill constructed identically on each (same
+            // loadID). The write is therefore already replayed everywhere; calling our own [SyncMethod] here would be
+            // an illegal NESTED sync command (MP disallows issuing a sync method while executing one) and would
+            // double-apply. (AddBill is not called during save load, so loaded bills are untouched — see Clone above.)
             var comp = HaulersDreamGameComponent.Instance;
             if (comp == null)
                 return;

@@ -20,6 +20,15 @@ namespace HaulersDream
         // the same lastOpportunisticUnloadTick via NotifyDiverted.
         internal const int DivertCooldownTicks = 250;
 
+        // Reused snapshot of the tracked set for the storage-cell representative pick in ShouldDivert /
+        // ShouldUnloadBeforeRelocation: the loop walks it in thingIDNumber order and breaks on the first storable
+        // stack, so the chosen representative cell is identical across MP clients (a raw HashSet enumeration could
+        // pick a different first-storable per client → a divergent should-unload boolean → a divergent job).
+        // [ThreadStatic] + lazy-init matches the repo's hook-reachable-scratch convention; both consumers run on the
+        // main think loop, Clear at use, never trusted empty, and each fully iterates the snapshot before returning
+        // (no re-entrant snapshot), so sharing one buffer across the two is sound.
+        [System.ThreadStatic] private static System.Collections.Generic.List<Thing> scratchRep;
+
         // "Put it away before relaxing": bypass the accumulate window so a pawn drops its load before downtime
         // (rest / recreation / eating) instead of carrying it to bed / the dinner table / the rec room (the
         // player's natural expectation). The window still applies while the pawn is working or idle between
@@ -238,8 +247,16 @@ namespace HaulersDream
             // route. Deferred until after the load-fraction pre-gate above (the spatial search is the costliest
             // step here).
             IntVec3 storageCell = IntVec3.Invalid;
-            foreach (var t in tracked)
+            // MP determinism: process tagged stacks in thingIDNumber order so a capacity-bound loop deposits/drops the same subset on every client.
+            // (Here: pick the storage-cell representative deterministically — break on the first storable stack in ID
+            // order so every client resolves the SAME storageCell and the same should-unload decision.)
+            var rep = scratchRep ?? (scratchRep = new System.Collections.Generic.List<Thing>());
+            rep.Clear();
+            rep.AddRange(tracked);
+            rep.Sort((a, b) => a.thingIDNumber.CompareTo(b.thingIDNumber));
+            for (int ri = 0; ri < rep.Count; ri++)
             {
+                var t = rep[ri];
                 if (t == null || t.Destroyed)
                     continue;
                 StoreUtility.TryFindBestBetterStoreCellFor(t, pawn, pawn.Map,
@@ -331,8 +348,20 @@ namespace HaulersDream
             // The storage we'd unload to — the nearest accepting cell for any STORABLE tracked stack (same
             // representative-pick as ShouldDivert: an un-storable rock chunk must not suppress the whole rule).
             IntVec3 storageCell = IntVec3.Invalid;
+            // MP determinism: process tagged stacks in thingIDNumber order so a capacity-bound loop deposits/drops the same subset on every client.
+            // (Here: pick the storage-cell representative deterministically — break on the first storable stack in ID
+            // order so every client resolves the SAME storageCell and the same should-unload decision.)
+            var rep = scratchRep ?? (scratchRep = new System.Collections.Generic.List<Thing>());
+            rep.Clear();
+            // PeekHashSet (no self-heal) may hold null tags; skip nulls so the sort comparator never NPEs
+            // (the loop still re-checks Destroyed per item).
             foreach (var t in comp.PeekHashSet())
+                if (t != null)
+                    rep.Add(t);
+            rep.Sort((a, b) => a.thingIDNumber.CompareTo(b.thingIDNumber));
+            for (int ri = 0; ri < rep.Count; ri++)
             {
+                var t = rep[ri];
                 if (t == null || t.Destroyed)
                     continue;
                 StoreUtility.TryFindBestBetterStoreCellFor(t, pawn, pawn.Map,
