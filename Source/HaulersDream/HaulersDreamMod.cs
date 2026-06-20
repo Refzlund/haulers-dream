@@ -168,7 +168,7 @@ namespace HaulersDream
 
         public override void DoSettingsWindowContents(Rect inRect) => Settings.DoWindowContents(inRect);
 
-        public override string SettingsCategory() => "Hauler's Dream";
+        public override string SettingsCategory() => "HaulersDream.SettingsCategory".Translate();
 
         public override void WriteSettings()
         {

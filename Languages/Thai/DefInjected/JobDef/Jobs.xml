@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LanguageData>
+
+<HaulersDream_UnloadInventory.reportString>กำลังขนของออกจากกระเป๋า</HaulersDream_UnloadInventory.reportString>
+<HaulersDream_SelfPickup.reportString>กำลังเก็บผลผลิตที่เก็บเกี่ยวได้</HaulersDream_SelfPickup.reportString>
+<HaulersDream_OverloadConstructDeliver.reportString>กำลังส่งวัสดุ</HaulersDream_OverloadConstructDeliver.reportString>
+<HaulersDream_ConstructDeliverBuild.reportString>กำลังส่งวัสดุไปก่อสร้าง</HaulersDream_ConstructDeliverBuild.reportString>
+<HaulersDream_ClaimFromHauler.reportString>กำลังรับวัสดุจากผู้ขนของ</HaulersDream_ClaimFromHauler.reportString>
+<HaulersDream_BatchCraft.reportString>กำลังผลิตเป็นชุด</HaulersDream_BatchCraft.reportString>
+<HaulersDream_InventoryDoBill.reportString>กำลังผลิต</HaulersDream_InventoryDoBill.reportString>
+<HaulersDream_BillPrepGather.reportString>กำลังรวบรวมวัตถุดิบสำหรับการผลิต</HaulersDream_BillPrepGather.reportString>
+<HaulersDream_BulkHaul.reportString>กำลังขนของทุกอย่างที่อยู่ใกล้ๆ</HaulersDream_BulkHaul.reportString>
+<HaulersDream_LoadPackAnimal.reportString>กำลังบรรทุกของขึ้นสัตว์บรรทุก</HaulersDream_LoadPackAnimal.reportString>
+<HaulersDream_UnloadCarrierInBulk.reportString>กำลังขนของลงจากสัตว์บรรทุก</HaulersDream_UnloadCarrierInBulk.reportString>
+<HaulersDream_LoadTransportersInBulk.reportString>กำลังบรรทุกของขึ้นพ็อดขนส่งแบบรวมรอบ</HaulersDream_LoadTransportersInBulk.reportString>
+<HaulersDream_LoadPortalInBulk.reportString>กำลังบรรทุกของเข้าประตูมิติแบบรวมรอบ</HaulersDream_LoadPortalInBulk.reportString>
+<HaulersDream_LoadVehicleInBulk.reportString>กำลังบรรทุกของขึ้นยานพาหนะแบบรวมรอบ</HaulersDream_LoadVehicleInBulk.reportString>
+<HaulersDream_BulkRefuel.reportString>กำลังเติมเชื้อเพลิงแบบรวมรอบ</HaulersDream_BulkRefuel.reportString>
+</LanguageData>

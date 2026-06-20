@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LanguageData>
+
+<HaulersDream_UnloadInventory.reportString>rozładowywanie ekwipunku.</HaulersDream_UnloadInventory.reportString>
+<HaulersDream_SelfPickup.reportString>zbieranie zebranych plonów.</HaulersDream_SelfPickup.reportString>
+<HaulersDream_OverloadConstructDeliver.reportString>dostarczanie materiałów.</HaulersDream_OverloadConstructDeliver.reportString>
+<HaulersDream_ConstructDeliverBuild.reportString>dostarczanie materiałów do budowy.</HaulersDream_ConstructDeliverBuild.reportString>
+<HaulersDream_ClaimFromHauler.reportString>przejmowanie materiałów od tragarza.</HaulersDream_ClaimFromHauler.reportString>
+<HaulersDream_BatchCraft.reportString>wytwarzanie partii.</HaulersDream_BatchCraft.reportString>
+<HaulersDream_InventoryDoBill.reportString>wytwarzanie.</HaulersDream_InventoryDoBill.reportString>
+<HaulersDream_BillPrepGather.reportString>zbieranie składników do wytwarzania.</HaulersDream_BillPrepGather.reportString>
+<HaulersDream_BulkHaul.reportString>znoszenie wszystkiego w pobliżu.</HaulersDream_BulkHaul.reportString>
+<HaulersDream_LoadPackAnimal.reportString>ładowanie przedmiotów na zwierzę juczne.</HaulersDream_LoadPackAnimal.reportString>
+<HaulersDream_UnloadCarrierInBulk.reportString>rozładowywanie zwierzęcia jucznego.</HaulersDream_UnloadCarrierInBulk.reportString>
+<HaulersDream_LoadTransportersInBulk.reportString>masowe ładowanie transportera.</HaulersDream_LoadTransportersInBulk.reportString>
+<HaulersDream_LoadPortalInBulk.reportString>masowe ładowanie portalu.</HaulersDream_LoadPortalInBulk.reportString>
+<HaulersDream_LoadVehicleInBulk.reportString>masowe ładowanie pojazdu.</HaulersDream_LoadVehicleInBulk.reportString>
+<HaulersDream_BulkRefuel.reportString>masowe tankowanie.</HaulersDream_BulkRefuel.reportString>
+</LanguageData>

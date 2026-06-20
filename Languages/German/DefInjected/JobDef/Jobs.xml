@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LanguageData>
+
+<HaulersDream_UnloadInventory.reportString>entlädt Inventar.</HaulersDream_UnloadInventory.reportString>
+<HaulersDream_SelfPickup.reportString>sammelt geerntete Güter auf.</HaulersDream_SelfPickup.reportString>
+<HaulersDream_OverloadConstructDeliver.reportString>liefert Materialien.</HaulersDream_OverloadConstructDeliver.reportString>
+<HaulersDream_ConstructDeliverBuild.reportString>liefert Materialien zum Bauen.</HaulersDream_ConstructDeliverBuild.reportString>
+<HaulersDream_ClaimFromHauler.reportString>holt Materialien von einem Träger.</HaulersDream_ClaimFromHauler.reportString>
+<HaulersDream_BatchCraft.reportString>fertigt einen Stapel.</HaulersDream_BatchCraft.reportString>
+<HaulersDream_InventoryDoBill.reportString>fertigt an.</HaulersDream_InventoryDoBill.reportString>
+<HaulersDream_BillPrepGather.reportString>sammelt Herstellungszutaten.</HaulersDream_BillPrepGather.reportString>
+<HaulersDream_BulkHaul.reportString>transportiert alles in der Nähe.</HaulersDream_BulkHaul.reportString>
+<HaulersDream_LoadPackAnimal.reportString>lädt Gegenstände auf ein Lasttier.</HaulersDream_LoadPackAnimal.reportString>
+<HaulersDream_UnloadCarrierInBulk.reportString>entlädt ein Lasttier.</HaulersDream_UnloadCarrierInBulk.reportString>
+<HaulersDream_LoadTransportersInBulk.reportString>belädt einen Transporter im Stapel.</HaulersDream_LoadTransportersInBulk.reportString>
+<HaulersDream_LoadPortalInBulk.reportString>belädt ein Portal im Stapel.</HaulersDream_LoadPortalInBulk.reportString>
+<HaulersDream_LoadVehicleInBulk.reportString>belädt ein Fahrzeug im Stapel.</HaulersDream_LoadVehicleInBulk.reportString>
+<HaulersDream_BulkRefuel.reportString>betankt im Stapel.</HaulersDream_BulkRefuel.reportString>
+</LanguageData>

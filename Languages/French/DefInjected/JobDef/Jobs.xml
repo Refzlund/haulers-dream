@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LanguageData>
+
+<HaulersDream_UnloadInventory.reportString>déchargement de l'inventaire.</HaulersDream_UnloadInventory.reportString>
+<HaulersDream_SelfPickup.reportString>ramassage des produits récoltés.</HaulersDream_SelfPickup.reportString>
+<HaulersDream_OverloadConstructDeliver.reportString>livraison de matériaux.</HaulersDream_OverloadConstructDeliver.reportString>
+<HaulersDream_ConstructDeliverBuild.reportString>livraison de matériaux pour construire.</HaulersDream_ConstructDeliverBuild.reportString>
+<HaulersDream_ClaimFromHauler.reportString>récupération de matériaux auprès d'un transporteur.</HaulersDream_ClaimFromHauler.reportString>
+<HaulersDream_BatchCraft.reportString>fabrication d'un lot.</HaulersDream_BatchCraft.reportString>
+<HaulersDream_InventoryDoBill.reportString>fabrication.</HaulersDream_InventoryDoBill.reportString>
+<HaulersDream_BillPrepGather.reportString>rassemblement des ingrédients de fabrication.</HaulersDream_BillPrepGather.reportString>
+<HaulersDream_BulkHaul.reportString>transport de tout ce qui se trouve à proximité.</HaulersDream_BulkHaul.reportString>
+<HaulersDream_LoadPackAnimal.reportString>chargement d'objets sur un animal de bât.</HaulersDream_LoadPackAnimal.reportString>
+<HaulersDream_UnloadCarrierInBulk.reportString>déchargement d'un animal de bât.</HaulersDream_UnloadCarrierInBulk.reportString>
+<HaulersDream_LoadTransportersInBulk.reportString>chargement groupé d'un module de transport.</HaulersDream_LoadTransportersInBulk.reportString>
+<HaulersDream_LoadPortalInBulk.reportString>chargement groupé d'un portail.</HaulersDream_LoadPortalInBulk.reportString>
+<HaulersDream_LoadVehicleInBulk.reportString>chargement groupé d'un véhicule.</HaulersDream_LoadVehicleInBulk.reportString>
+<HaulersDream_BulkRefuel.reportString>ravitaillement groupé.</HaulersDream_BulkRefuel.reportString>
+</LanguageData>

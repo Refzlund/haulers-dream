@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LanguageData>
+
+<HaulersDream_UnloadInventory.reportString>aflæsser inventar.</HaulersDream_UnloadInventory.reportString>
+<HaulersDream_SelfPickup.reportString>samler høstede varer.</HaulersDream_SelfPickup.reportString>
+<HaulersDream_OverloadConstructDeliver.reportString>leverer materialer.</HaulersDream_OverloadConstructDeliver.reportString>
+<HaulersDream_ConstructDeliverBuild.reportString>leverer materialer til byg.</HaulersDream_ConstructDeliverBuild.reportString>
+<HaulersDream_ClaimFromHauler.reportString>gør krav på materialer fra en transportør.</HaulersDream_ClaimFromHauler.reportString>
+<HaulersDream_BatchCraft.reportString>fremstiller et hold.</HaulersDream_BatchCraft.reportString>
+<HaulersDream_InventoryDoBill.reportString>fremstiller.</HaulersDream_InventoryDoBill.reportString>
+<HaulersDream_BillPrepGather.reportString>samler fremstillingsingredienser.</HaulersDream_BillPrepGather.reportString>
+<HaulersDream_BulkHaul.reportString>transporterer alt i nærheden.</HaulersDream_BulkHaul.reportString>
+<HaulersDream_LoadPackAnimal.reportString>læsser varer på et pakdyr.</HaulersDream_LoadPackAnimal.reportString>
+<HaulersDream_UnloadCarrierInBulk.reportString>aflæsser et pakdyr.</HaulersDream_UnloadCarrierInBulk.reportString>
+<HaulersDream_LoadTransportersInBulk.reportString>masselæsser en transporter.</HaulersDream_LoadTransportersInBulk.reportString>
+<HaulersDream_LoadPortalInBulk.reportString>masselæsser en portal.</HaulersDream_LoadPortalInBulk.reportString>
+<HaulersDream_LoadVehicleInBulk.reportString>masselæsser et køretøj.</HaulersDream_LoadVehicleInBulk.reportString>
+<HaulersDream_BulkRefuel.reportString>masse-optanker.</HaulersDream_BulkRefuel.reportString>
+</LanguageData>
