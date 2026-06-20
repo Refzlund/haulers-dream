@@ -71,6 +71,29 @@ Right-click → "Plan prioritized [task]…" to set up a whole job at once.
 
 [hr][/hr]
 
+[b]Languages[/b]
+[list]
+[*] 🇬🇧 English
+[*] 🇨🇳 简体中文 (Chinese Simplified)
+[*] 🇩🇰 Dansk (Danish)
+[*] 🇩🇪 Deutsch (German)
+[*] 🇪🇸 Español (Spanish)
+[*] 🇫🇷 Français (French)
+[*] 🇮🇹 Italiano (Italian)
+[*] 🇳🇱 Nederlands (Dutch)
+[*] 🇵🇱 Polski (Polish)
+[*] 🇧🇷 Português brasileiro (Portuguese-Brazilian)
+[*] 🇷🇺 Русский (Russian)
+[*] 🇺🇦 Українська (Ukrainian)
+[*] 🇰🇷 한국어 (Korean)
+[*] 🇯🇵 日本語 (Japanese)
+[*] 🇹🇭 ไทย (Thai)
+[/list]
+[i]Spot a typo or awkward wording in your language? These are a first-pass translation, so fixes (and whole new languages) are genuinely welcome. [url=https://github.com/Refzlund/haulers-dream/blob/main/CONTRIBUTING.md]Here's how to open a quick PR[/url].[/i]
+
+
+[hr][/hr]
+
 Development accelerated via Opus 4.8 and Fable 5. Read more [url=https://github.com/Refzlund/haulers-dream/blob/main/About/Disclaimer.md]here[/url].
 Full feature list, compatibility notes etc. can be seen on [url=https://github.com/Refzlund/haulers-dream]Github[/url].
 

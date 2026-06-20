@@ -1,0 +1,596 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LanguageData>
+
+<HaulersDream.SettingsCategory>Hauler's Dream</HaulersDream.SettingsCategory>
+<HaulersDream.SettingsHeaderFallback>Hauler's Dream</HaulersDream.SettingsHeaderFallback>
+<HaulersDream.Tab.General>Algemeen</HaulersDream.Tab.General>
+<HaulersDream.Tab.Sharing>Delen en bezorgen</HaulersDream.Tab.Sharing>
+<HaulersDream.Tab.Bulk>Bulk en dragers</HaulersDream.Tab.Bulk>
+<HaulersDream.Tab.Routing>Onderweg en routing</HaulersDream.Tab.Routing>
+<HaulersDream.Tab.Sources>Bronnen en wie</HaulersDream.Tab.Sources>
+<HaulersDream.Tab.Planners>Planners en geavanceerd</HaulersDream.Tab.Planners>
+<HaulersDream.Setting.MasterEnabled>Hauler's Dream inschakelen</HaulersDream.Setting.MasterEnabled>
+<HaulersDream.Setting.MasterEnabledDesc>De hoofdschakelaar. Wanneer UIT stopt Hauler's Dream met het STARTEN van zijn automatische sjouwgedrag — werkopbrengsten oppakken, nabije buit opvegen, bulksjouwen, onderweg oppakken en opslagrouting — wat handig is om uit te zoeken of de mod ergens bij betrokken is, zonder een herstart. Een figuur die al goederen heeft opgepakt, lost die nog steeds gewoon uit (er blijft nooit iets achter), en de "Inventaris uitladen"-knop per figuur blijft beschikbaar. (De overrides voor werkonbekwaamheid en de rechtsklikordermenu's hebben hun eigen schakelaars en worden hierdoor niet beïnvloed.) Standaard aan.</HaulersDream.Setting.MasterEnabledDesc>
+<HaulersDream.Setting.DrawDetourLines>Debug-omweglijnen tekenen (dev)</HaulersDream.Setting.DrawDetourLines>
+<HaulersDream.Setting.DrawDetourLinesDesc>Alleen voor ontwikkelaars: tekent gekleurde lijnen voor onderweg-oppakken en opslagrouting-omwegen, zodat je kunt zien waarom een figuur is afgeweken. Niet opgeslagen — het wordt elke keer dat het spel start teruggezet op uit.</HaulersDream.Setting.DrawDetourLinesDesc>
+<HaulersDream.Setting.CarryLimit>Draaglimiet: {0} van de maximale draagcapaciteit van elke figuur</HaulersDream.Setting.CarryLimit>
+<HaulersDream.Setting.CarryLimitDesc>De limiet is een fractie van de maximale draagcapaciteit van de figuur — de massa die het kan dragen over zijn kleding, uitrusting en inventaris (dezelfde capaciteit die voor karavanen en het laden van lastdieren wordt gebruikt). Spullen die tijdens een sjouwtrip in de handen worden gedragen (de actieve handsjouwstapel) tellen NIET mee voor deze limiet; alleen wat in kleding/uitrusting/inventaris is opgeborgen telt. Slim overladen hieronder kan een figuur nog steeds voorbij 100% van deze limiet laten gaan om trips te besparen.</HaulersDream.Setting.CarryLimitDesc>
+<HaulersDream.Setting.DropThenHaul>Op de grond laten vallen en dan oppakken (realistisch)</HaulersDream.Setting.DropThenHaul>
+<HaulersDream.Setting.DropThenHaulDesc>Wanneer AAN vallen geoogste/gedolven goederen op de grond en schept de figuur ze na de werkronde in zijn inventaris. Wanneer UIT gaan goederen direct in de inventaris (geen contact met de grond).</HaulersDream.Setting.DropThenHaulDesc>
+<HaulersDream.Setting.MarkForUnload>Opgepakte goederen automatisch uitladen (aan het eind van de werkronde, rond maaltijden en recreatie, bij overgewicht, en op het onderstaande interval). Uit: figuren blijven dragen totdat je op hun "Inventaris uitladen"-knop drukt.</HaulersDream.Setting.MarkForUnload>
+<HaulersDream.Setting.UnloadAllSurplus>Ook overtollige inventaris opbergen die een figuur draagt en die Hauler's Dream NIET zelf heeft opgepakt (standaard uit)</HaulersDream.Setting.UnloadAllSurplus>
+<HaulersDream.Setting.UnloadAllSurplusDesc>Standaard uit: Hauler's Dream lost alleen goederen uit die het zelf heeft opgepakt, dus het raakt nooit de zijwapens, gedragen geneesmiddelen of water, of verhandelde goederen van een kolonist aan. Zet dit AAN voor het gemak om ook overschot op te bergen dat een figuur zonder reden draagt (uit handel, andere mods, of handmatige verplaatsingen). "Overschot" sluit het bewaarde voedsel, drugs, inventarisvoorraad en alle wapenuitrustingsspullen (incl. munitie) van de figuur uit, vanilla verslavings-/afhankelijkheidsdrugs, spullen die zijwapen-, geneesmiddel- of hygiënemods in de inventaris houden (allemaal automatisch gedetecteerd), en alles wat je bewaart in de Individuele Item-uitlaadinstellingen hieronder — en alleen stapels die ergens kunnen worden opgeslagen; karavaanlaadinventaris wordt met rust gelaten.</HaulersDream.Setting.UnloadAllSurplusDesc>
+<HaulersDream.Setting.ItemUnloadButton>Individuele Item-uitlaadinstellingen…</HaulersDream.Setting.ItemUnloadButton>
+<HaulersDream.Setting.ItemUnloadButtonN>Individuele Item-uitlaadinstellingen ({0})…</HaulersDream.Setting.ItemUnloadButtonN>
+<HaulersDream.ItemUnload.Title>Individuele Item-uitlaadinstellingen</HaulersDream.ItemUnload.Title>
+<HaulersDream.ItemUnload.Desc>Stel in hoe Hauler's Dream specifieke spullen in de inventaris van een figuur behandelt. Kies voor elk item: Nooit uitladen (de hele stapel behouden), Hoogstens N behouden (tot N dragen en de rest uitladen), of Altijd uitladen (opbergen ook al zou een andere mod het anders behouden). Spullen zonder regel volgen het normale gedrag. Een regel hier overschrijft de automatische bewaardetectie voor wapenuitrustings-, zijwapen-, geneesmiddel-, hygiëne- en verslavingsspullen. Keuzes voor spullen uit mods die je hebt verwijderd worden onthouden en hersteld als je de mod opnieuw installeert, en beïnvloeden nooit het laden van een opgeslagen spel. (Tip: als je een uitrustings-/munitiemod gebruikt, stel munitiehoeveelheden in de uitrusting daarvan in — die haalt munitie tot dat aantal opnieuw aan.)</HaulersDream.ItemUnload.Desc>
+<HaulersDream.ItemUnload.ClearAll>Alles wissen</HaulersDream.ItemUnload.ClearAll>
+<HaulersDream.ItemUnload.ModeDefault>Standaard</HaulersDream.ItemUnload.ModeDefault>
+<HaulersDream.ItemUnload.ModeKeepAll>Nooit uitladen</HaulersDream.ItemUnload.ModeKeepAll>
+<HaulersDream.ItemUnload.ModeKeepAtMost>Hoogstens behouden</HaulersDream.ItemUnload.ModeKeepAtMost>
+<HaulersDream.ItemUnload.ModeUnloadAlways>Altijd uitladen</HaulersDream.ItemUnload.ModeUnloadAlways>
+<HaulersDream.Setting.UnloadBeforeSleep>Lading opbergen voor het slapen</HaulersDream.Setting.UnloadBeforeSleep>
+<HaulersDream.Setting.UnloadBeforeSleepDesc>Wanneer een figuur klaar is met werken en moe is (op het punt te gaan slapen), maakt het eerst zijn uitlaadtrip en gaat dan leeg naar bed — in plaats van zijn opgepakte lading mee naar bed te dragen. Het blijft tijdens het werken zelf nog steeds normaal verzamelen.</HaulersDream.Setting.UnloadBeforeSleepDesc>
+<HaulersDream.Setting.UnloadBeforeLeisure>Lading opbergen voor recreatie</HaulersDream.Setting.UnloadBeforeLeisure>
+<HaulersDream.Setting.UnloadBeforeLeisureDesc>Wanneer een figuur stopt met werken en naar recreatie gaat (zijn recreatieblok in het schema, of een vrijetijdsactiviteit), lost het eerst uit in plaats van zijn lading mee te dragen tijdens het ontspannen.</HaulersDream.Setting.UnloadBeforeLeisureDesc>
+<HaulersDream.Setting.UnloadBeforeEating>Lading opbergen voor het eten</HaulersDream.Setting.UnloadBeforeEating>
+<HaulersDream.Setting.UnloadBeforeEatingDesc>Wanneer een figuur klaar is met werken en honger heeft (op het punt te gaan eten), lost het eerst uit — zodat het het zojuist gedolven erts niet naar de eettafel draagt.</HaulersDream.Setting.UnloadBeforeEatingDesc>
+<HaulersDream.Setting.ShareHeader>Gedragen materialen delen tussen kolonisten:</HaulersDream.Setting.ShareHeader>
+<HaulersDream.Setting.ShareForBuilding>Gedragen materialen gebruiken voor constructie</HaulersDream.Setting.ShareForBuilding>
+<HaulersDream.Setting.BuildFromInventory>Bouwen uit inventaris (reeds gedragen materialen gebruiken)</HaulersDream.Setting.BuildFromInventory>
+<HaulersDream.Setting.BuildFromInventoryDesc>Een bouwende figuur kan bouwmaterialen halen uit inventaris die een figuur of dier al draagt — eerst zijn eigen, dan die van andere kolonisten, dan van lastdieren / karavaanvracht — niet alleen losse stapels op de grond. Dus als je staal meeneemt in een karavaan en een zandzak of muur bestelt tijdens een overval of op een verre kaart, bouwt het uit het gedragen staal zonder dat je het eerst van een lastdier hoeft af te laden. Rechtstreeks vanuit de inventaris naar de locatie bezorgd (zonder het eerst aan de voeten van de drager te laten vallen). Dit staat los van "gedragen materialen gebruiken voor constructie" hierboven, dat alleen materialen meetelt die deze mod zelf heeft opgepakt. Haalt nooit uit een opgeroepen, neergeslagen of razende drager, noch uit vracht die voor een vormende karavaan is bestemd; reserveert de stapel zodat twee bouwers er niet om wedijveren. Standaard aan.</HaulersDream.Setting.BuildFromInventoryDesc>
+<HaulersDream.Setting.BuildFromInventoryPartial>Gedeeltelijke bouw uit inventaris toestaan</HaulersDream.Setting.BuildFromInventoryPartial>
+<HaulersDream.Setting.BuildFromInventoryPartialDesc>Normaal start een bouw pas als er genoeg materiaal voor het geheel beschikbaar is. Met dit aan wordt een frame gestart en gevorderd met welk inventarismateriaal er ook is, zelfs als het minder is dan de volledig benodigde hoeveelheid — de rest wordt bezorgd zodra er meer beschikbaar komt. Wijzigt de alles-of-niets-regel van het basisspel, dus het staat standaard uit. Vereist "bouwen uit inventaris".</HaulersDream.Setting.BuildFromInventoryPartialDesc>
+<HaulersDream.Setting.ShareForCrafting>Gedragen materialen gebruiken voor vervaardigingstaken</HaulersDream.Setting.ShareForCrafting>
+<HaulersDream.Setting.ShareForCraftingDesc>Een vervaardigende figuur kan taakingrediënten halen uit inventaris die een figuur al draagt, niet alleen losse stapels op de grond. Als een andere mod het sjouwen van vervaardigingsingrediënten beheert, treedt Hauler's Dream automatisch terug en laat die mod ze verzamelen — zodat elke vervaardigingslus zichzelf oplost zonder dat jij iets hoeft te doen.</HaulersDream.Setting.ShareForCraftingDesc>
+<HaulersDream.Setting.ShareMeetInMiddle>Een vrije drager loopt naar de werker om goederen over te dragen</HaulersDream.Setting.ShareMeetInMiddle>
+<HaulersDream.Setting.BatchWorkDeliveries>Materialen voor meerdere gewachtrijde bouwwerken per trip dragen</HaulersDream.Setting.BatchWorkDeliveries>
+<HaulersDream.Setting.BatchWorkDeliveriesDesc>Bij het bouwen van veel goedkope dingen (bijv. een lang hek) vult een figuur zijn handen met genoeg materiaal voor meerdere gewachtrijde bouwwerken en bezorgt aan elk in één trip, in plaats van er telkens een paar tegelijk heen te pendelen. In de handen gedragen, dus er is geen vertraging.</HaulersDream.Setting.BatchWorkDeliveriesDesc>
+<HaulersDream.Setting.InventoryConstructDeliver>Materialen in de inventaris dragen voor grote enkele bouwwerken</HaulersDream.Setting.InventoryConstructDeliver>
+<HaulersDream.Setting.InventoryConstructDeliverDesc>Wanneer één enkel ding meer dan één handstapel van één materiaal nodig heeft (bijv. de 340 staal van een geothermische generator), laadt een figuur het materiaal in zijn inventaris — die wordt beperkt door gewicht, niet door stapelgrootte — en bezorgt het in veel minder trips, in plaats van er ~75 tegelijk in zijn handen heen te pendelen. Gebruikt de slim-overladen-instelling hierboven voor hoeveel het voorbij 100% laadt; met overladen uit laadt het tot 100% (geen vertraging).</HaulersDream.Setting.InventoryConstructDeliverDesc>
+<HaulersDream.Setting.MultiSiteConstructDeliver>Materialen voor meerdere nabije locaties in één trip laden</HaulersDream.Setting.MultiSiteConstructDeliver>
+<HaulersDream.Setting.MultiSiteConstructDeliverDesc>Wanneer automatische of shift-geklikte constructie bezorgt aan een cluster van nabije bouwlocaties die hetzelfde materiaal nodig hebben, laadt een figuur de gecombineerde vraag van het hele cluster in één trip in zijn inventaris en bezorgt aan elke locatie, in plaats van één locatie per trip te bedienen (voorheen deed alleen de routeplanner dit). De figuur maakt eerst de locatie af waaraan het al werkt voordat het laadt. Vereist "Materialen in de inventaris dragen voor grote enkele bouwwerken" hierboven.</HaulersDream.Setting.MultiSiteConstructDeliverDesc>
+<HaulersDream.Setting.ShareHandHauled>Materialen opeisen van een kolonist die ze naar opslag sjouwt (standaard uit)</HaulersDream.Setting.ShareHandHauled>
+<HaulersDream.Setting.ShareHandHauledDesc>Wanneer een bouwer een materiaal nodig heeft en de enige voorraad in de handen is van een kolonist die het naar een voorraad sjouwt, treft de bouwer die kolonist onderweg en neemt de stapel over, in plaats van te wachten tot het de opslag bereikt en het daar op te halen. Raakt nooit een kolonist aan die bezorgt voor een specifieke bouw-, taak- of bijtanktaak, en alleen wanneer het daadwerkelijk een trip bespaart. (Voorlopig alleen constructie.)</HaulersDream.Setting.ShareHandHauledDesc>
+<HaulersDream.Setting.MealsOnWheels>Eten dat door andere kolonisten wordt gedragen opeten wanneer er geen is gevonden</HaulersDream.Setting.MealsOnWheels>
+<HaulersDream.Setting.MealsOnWheelsDesc>Wanneer een hongerige kolonist geen eten op de kaart of in zijn eigen pak (of dat van een lastdier) kan vinden, loopt het naar een andere kolonist of een lastdier dat acceptabel eten draagt en eet uit hun inventaris — wat trips bespaart en gedragen maaltijden redt voordat ze bederven — in plaats van honger te lijden of naar een verre voorraad te trekken. Treedt alleen in werking wanneer de normale voedselzoektocht niets vindt, dus het overschrijdt nooit een dichterbij gelegen maaltijd. Respecteert het voedselbeleid, de ideologie en de geheelonthouderstatus van de eter; neemt nooit eten dat een ouder aan een baby voert; neemt nooit van een opgeroepen, neergeslagen of razende drager; reserveert de maaltijd zodat twee kolonisten er niet om wedijveren; en geeft voorrang aan eten dat het dichtst bij bederf is. Standaard aan.</HaulersDream.Setting.MealsOnWheelsDesc>
+<HaulersDream.Setting.BulkHaul>Bulksjouwen — een sjouwtrip pakt alles eromheen op</HaulersDream.Setting.BulkHaul>
+<HaulersDream.Setting.BulkHaulDesc>Een figuur dat wordt gestuurd om één item te sjouwen, plant het oppakken van alles wat sjouwbaar is eromheen in zijn inventaris en bezorgt de hele partij in één opslagtrip. Uit = vanilla-sjouwen van één item per trip.</HaulersDream.Setting.BulkHaulDesc>
+<HaulersDream.Setting.BulkHaulSecond>Bevolen sjouwtrips vegen alleen op wanneer er ook een tweede nabije sjouwtrip is bevolen</HaulersDream.Setting.BulkHaulSecond>
+<HaulersDream.Setting.BulkHaulSecondDesc>Automatisch sjouwen veegt altijd de omgeving in de inventaris (één opslagtrip voor veel spullen). Een sjouwtrip die JIJ bij een figuur bestelt blijft chirurgisch — het sjouwt alleen dat ene ding — tenzij je een tweede sjouwtrip in de buurt hebt besteld, in welk geval de figuur ze samen opveegt. De standaard met fijnere controle.</HaulersDream.Setting.BulkHaulSecondDesc>
+<HaulersDream.Setting.BulkHaulAlways>Altijd opvegen — elke sjouwtrip pakt alles eromheen op</HaulersDream.Setting.BulkHaulAlways>
+<HaulersDream.Setting.BulkHaulAlwaysDesc>Elke sjouwtrip — automatisch of bevolen — laadt ook de nabije sjouwbare spullen in de inventaris van de figuur, wat één opslagtrip voor de partij maakt. Hoeveel het draagt, respecteert de slim-overladen-schuif hieronder: alleen zoveel extra gewicht als de vertraging werkelijk waard is ten opzichte van het maken van nog een retourtrip.</HaulersDream.Setting.BulkHaulAlwaysDesc>
+<HaulersDream.Setting.HaulNearbyOption>Een rechtsklikorder "Sjouw alles in de buurt" toevoegen</HaulersDream.Setting.HaulNearbyOption>
+<HaulersDream.Setting.HaulNearbyOptionDesc>Voegt een optie "Sjouw alles in de buurt" toe aan het rechtsklikmenu op een sjouwbaar item (voor figuren die kunnen sjouwen), die onmiddellijk een bulkveging start — zodat je niet twee sjouwtrips hoeft te prioriteren om bulksjouwen te activeren. Vanilla's "Sjouwen prioriteren" verschijnt er nog steeds naast voor een sjouwtrip van één item.</HaulersDream.Setting.HaulNearbyOptionDesc>
+<HaulersDream.Setting.ManualPickup>Een rechtsklikorder "X oppakken" toevoegen</HaulersDream.Setting.ManualPickup>
+<HaulersDream.Setting.ManualPickupDesc>Voegt een optie "X oppakken" toe aan het rechtsklikmenu op een sjouwbaar item op de grond. De figuur pakt de aangeklikte stapel rechtstreeks in zijn inventaris als een gevolgde Hauler's Dream-sjouwtrip, die vervolgens door het normale uitladen wordt opgeborgen — zodat het nooit verloren gaat, zelfs niet als automatisch uitladen uit staat. Aanvullend op vanilla's rechtsklik-sjouwopties.</HaulersDream.Setting.ManualPickupDesc>
+<HaulersDream.Setting.HaulOversized>Te grote stapels in de inventaris dragen</HaulersDream.Setting.HaulOversized>
+<HaulersDream.Setting.HaulOversizedDesc>Wanneer één enkele stapel te groot is om in één armvol te dragen (bijvoorbeeld een stapel van 75 staal terwijl de figuur er maar 72 kan vasthouden), neemt de figuur het in zijn inventaris en bezorgt de hele stapel in één trip — in plaats van een gedeeltelijke lading met de hand te dragen en de rest achter te laten. Geldt voor zowel bevolen als automatische sjouwtrips; draagt alleen zoveel als de opslag daadwerkelijk kan accepteren, zodat er niets achterblijft.</HaulersDream.Setting.HaulOversizedDesc>
+<HaulersDream.Setting.SweepNearbyWhileWorking>Opruimen tijdens het werken — schep ook nabije losse spullen op</HaulersDream.Setting.SweepNearbyWhileWorking>
+<HaulersDream.Setting.SweepNearbyWhileWorkingDesc>Terwijl een figuur sloopt, delft of oogst en zijn eigen opbrengsten opschept, pakt het ook andere losse sjouwbare spullen op die rond de werkplek liggen in zijn inventaris, zodat het hele gebied in die ene gebundelde trip wordt opgeruimd in plaats van te worden achtergelaten voor aparte sjouwtrips. Alleen spullen die gesjouwd moeten worden en ergens heen kunnen worden meegenomen (nooit het doel van een andere sjouwer of opgeslagen voorraad), en alleen tot aan het slim-overladen-plafond.</HaulersDream.Setting.SweepNearbyWhileWorkingDesc>
+<HaulersDream.Setting.HaulToStack>Naar stapel sjouwen (bestaande stapels aanvullen, bestemmingstegels delen)</HaulersDream.Setting.HaulToStack>
+<HaulersDream.Setting.ConstructTether>Bevolen constructies sjouwen ÉN bouwen als één taak</HaulersDream.Setting.ConstructTether>
+<HaulersDream.Setting.ConstructTetherDesc>Wanneer je rechtsklikt en een constructie prioriteert, sjouwt de figuur de materialen en bouwt het onmiddellijk, als één doorlopende taak. Uit = de order bezorgt alleen materialen (vanilla-achtig); bouwen gebeurt via normaal werk. Routes die met "Ook bouwen" zijn gepland behouden hoe dan ook hun eigen gedrag.</HaulersDream.Setting.ConstructTetherDesc>
+<HaulersDream.Setting.HaulToSiteOption>Toon de order "Sjouwen van materialen prioriteren naar…"</HaulersDream.Setting.HaulToSiteOption>
+<HaulersDream.Setting.HaulToSiteOptionDesc>De rechtsklikorder die een bouwlocatie van materialen voorziet, beschikbaar zelfs voordat de locatie kan worden gebouwd. Uit = de optie is verborgen.</HaulersDream.Setting.HaulToSiteOptionDesc>
+<HaulersDream.Setting.PlanRoutes>De routeplanner inschakelen ("Plan geprioriteerd(e) [taak]…")</HaulersDream.Setting.PlanRoutes>
+<HaulersDream.Setting.PlanRoutesDesc>Het rechtsklik-planhulpmiddel voor oogst-, delf-, schoonmaak-, sloop- en constructieroutes. Uit = de menu-optie is overal verborgen.</HaulersDream.Setting.PlanRoutesDesc>
+<HaulersDream.Setting.PlanCrafting>De vervaardigingsplanner inschakelen ("Plan geprioriteerde vervaardiging…")</HaulersDream.Setting.PlanCrafting>
+<HaulersDream.Setting.PlanCraftingDesc>Het rechtsklik-planhulpmiddel op werkbanken dat een taak meerdere keren batcht met één ingrediëntentrip. Uit = de menu-optie is verborgen.</HaulersDream.Setting.PlanCraftingDesc>
+<HaulersDream.Setting.BatchByDefault>Nieuwe taken standaard batchen</HaulersDream.Setting.BatchByDefault>
+<HaulersDream.Setting.BatchByDefaultDesc>Vervaardigings- en kooktaken die je vanaf nu TOEVOEGT starten in "batch"-modus: de kolonist haalt een hele batch ingrediënten in één trip, maakt ze allemaal aan de bank (eten bederft niet terwijl ze werken), en sjouwt vervolgens alles naar de opslag. Beïnvloedt alleen nieuw toegevoegde taken — bestaande taken behouden hun huidige instelling.</HaulersDream.Setting.BatchByDefaultDesc>
+<HaulersDream.Setting.DefaultBatchSize>Standaard batchgrootte: {0}</HaulersDream.Setting.DefaultBatchSize>
+<HaulersDream.Batch.MenuPrefix>Batch</HaulersDream.Batch.MenuPrefix>
+<HaulersDream.Batch.SetSize>Batchgrootte: {0}…</HaulersDream.Batch.SetSize>
+<HaulersDream.Batch.RowMarker>×{0} </HaulersDream.Batch.RowMarker>
+<HaulersDream.Batch.SizeDialogTitle>Batchgrootte — {0}</HaulersDream.Batch.SizeDialogTitle>
+<HaulersDream.Batch.SizeLabel>Maak tot {0} per batch</HaulersDream.Batch.SizeLabel>
+<HaulersDream.Batch.SizeDesc>De kolonist verzamelt ingrediënten voor de hele batch in één trip, maakt ze allemaal aan de bank (ingrediënten bederven niet tijdens het werken), en sjouwt vervolgens alles naar de opslag. Begrensd door beschikbare materialen en de eigen telling van de taak.</HaulersDream.Batch.SizeDesc>
+<HaulersDream.Setting.HaulToStackDesc>Sjouwers verkiezen toevoegen aan een bestaande gedeeltelijke stapel boven het beginnen van een nieuwe — binnen de opslagruimte die het spel al heeft gekozen (welke voorraad wint, wordt nog steeds bepaald door prioriteit en afstand). Werkt op de grond, op rekken en in gemodde opslageenheden. Buitenopslag scant in plaats daarvan nabije voorraden binnen een korte straal. Bestemmingstegels worden ook niet langer gereserveerd, zodat meerdere sjouwers tegelijk aan dezelfde tegel kunnen bezorgen in plaats van één itemtype over tien cellen te verspreiden.</HaulersDream.Setting.HaulToStackDesc>
+<HaulersDream.Setting.AutoStripHeader>Een lijk automatisch uitkleden TIJDENS het sjouwen — wanneer een kolonist een lijk sjouwt, kleedt het het lichaam onderweg uit en rijdt de buit mee in de inventaris van de sjouwer (geen aparte uitkleedtaak, geen tweede trip):</HaulersDream.Setting.AutoStripHeader>
+<HaulersDream.Setting.AutoStripMode>Automatisch uitkleden tijdens het sjouwen: {0}</HaulersDream.Setting.AutoStripMode>
+<HaulersDream.Setting.AutoStripAll>bij elke lijksjouwtrip (voorraad, graf, crematie, slachten)</HaulersDream.Setting.AutoStripAll>
+<HaulersDream.Setting.AutoStripDisposal>alleen bij afvoersjouwtrips (graf, sarcofaag, crematie, slachten — niet bij gewone voorraadsjouwtrips)</HaulersDream.Setting.AutoStripDisposal>
+<HaulersDream.Setting.AutoStripOff>nooit — niet uitkleden tijdens het sjouwen (vanilla-gedrag)</HaulersDream.Setting.AutoStripOff>
+<HaulersDream.Setting.AutoStripCrossRef>"Nooit" schakelt alleen deze uitkleed-tijdens-het-sjouwen-snelkoppeling uit. Het stopt NIET het sjouwen van uitgeklede uitrusting: een uitkleedorder die je met de hand plaatst loopt nog steeds normaal, en de gevallen wapens en kleding worden nog steeds opgeschept en naar huis gesjouwd — beheerd door de aparte werkschakelaar "Uitkleden — verwijderde uitrusting" (onder "Opbrengsten oppakken uit deze soorten werk" verderop hieronder).</HaulersDream.Setting.AutoStripCrossRef>
+<HaulersDream.Setting.StripColonists>Ook lijken van de spelersfactie uitkleden</HaulersDream.Setting.StripColonists>
+<HaulersDream.Setting.StripColonistsDesc>Met dit uit (standaard) behouden je eigen doden — kolonisten en koloniedieren — hun uitrusting en hun waardigheid; alleen vreemden en vijanden worden geplunderd.</HaulersDream.Setting.StripColonistsDesc>
+<HaulersDream.Setting.TaintedSmeltable>Besmette kleding (smeltbaar): {0}</HaulersDream.Setting.TaintedSmeltable>
+<HaulersDream.Setting.TaintedNonSmeltable>Besmette kleding (niet-smeltbaar): {0}</HaulersDream.Setting.TaintedNonSmeltable>
+<HaulersDream.Setting.TaintedTake>neem het mee (verkopen, dragen of smelten)</HaulersDream.Setting.TaintedTake>
+<HaulersDream.Setting.TaintedLeave>laat het op het lijk (crematie verbrandt het met het lichaam; slachten laat het bij de bank vallen, zoals in vanilla)</HaulersDream.Setting.TaintedLeave>
+<HaulersDream.Setting.TaintedForbid>laat het vallen en verbied het</HaulersDream.Setting.TaintedForbid>
+<HaulersDream.Setting.TaintedDestroy>vernietig het ter plekke (questspullen en relikwieën worden in plaats daarvan meegenomen, nooit vernietigd)</HaulersDream.Setting.TaintedDestroy>
+<HaulersDream.Setting.HaulTamedSlaughter>Geslachte karkassen naar opslag sjouwen</HaulersDream.Setting.HaulTamedSlaughter>
+<HaulersDream.Setting.HaulTamedSlaughterDesc>Wanneer een kolonist klaar is met het slachten van een koloniedier, wordt het verse karkas rechtstreeks naar opslag gesjouwd (een vriezer of lijkenvoorraad) zodat het niet rot waar het viel — alleen als een bereikbare opslagplek het accepteert, anders blijft het precies zoals in vanilla. (Vanilla sjouwt nooit zelf een geslacht dier; dit dicht dat gat.)</HaulersDream.Setting.HaulTamedSlaughterDesc>
+<HaulersDream.Setting.HaulWildKills>Gejaagde karkassen naar opslag sjouwen</HaulersDream.Setting.HaulWildKills>
+<HaulersDream.Setting.HaulWildKillsDesc>Wanneer een jacht direct na de dodelijke treffer wordt onderbroken — de jager wordt weggetrokken door een behoefte, een oproep, een geestelijke inzinking, of de jacht loopt af — sjouwt de jager het verse karkas direct naar opslag op weg naar buiten, in plaats van het achter te laten voor de trage algemene sjouwwachtrij. Bij een schone jacht draagt de jager zijn prooi al naar huis (vanilla), dus dit blijft uit de weg — geen dubbel sjouwen. Sjouwt alleen als een bereikbare opslagplek het lichaam accepteert; anders wordt het karkas precies zoals in vanilla achtergelaten (het wordt nooit verboden, dus normaal lijksjouwen haalt het alsnog op zodra er een vriezer of lijkenvoorraad bestaat die het accepteert).</HaulersDream.Setting.HaulWildKillsDesc>
+<HaulersDream.Setting.ButcherSpoilingFirst>Het meest bedorven lijk eerst slachten</HaulersDream.Setting.ButcherSpoilingFirst>
+<HaulersDream.Setting.ButcherSpoilingFirstDesc>Wanneer een kolonist een lijk kiest voor een slachttaak, kiest het het lichaam dat het dichtst bij rotting is (onder de lijken die de taak al toestaat, binnen zijn ingrediëntenzoekstraal) in plaats van gewoon het dichtstbijzijnde — zodat vlees wordt teruggewonnen voordat het bederft. Herordent alleen welk reeds geldig lijk wordt gebruikt; wijzigt nooit het recept, de zoekstraal, of welke lijken de taak accepteert. Bevroren lijken worden voor het laatst bewaard (die bederven niet). Geldt voor zowel gewone slachttaken als Hauler's Dream-batches. Standaard aan.</HaulersDream.Setting.ButcherSpoilingFirstDesc>
+<HaulersDream.Setting.CookSpoilingFirst>Eerst koken met het meest bedorven eten</HaulersDream.Setting.CookSpoilingFirst>
+<HaulersDream.Setting.CookSpoilingFirstDesc>Wanneer een kolonist bederfelijke ingrediënten kiest voor een kooktaak (vlees, groenten en ander rotbaar eten — geen lijken), kiest het de stapel die het dichtst bij rotting is (onder de ingrediënten die de taak al toestaat, binnen zijn ingrediëntenzoekstraal) in plaats van gewoon het dichtstbijzijnde — zodat eten wordt opgegeten voordat het bederft. Herordent alleen welk reeds geldig ingrediënt wordt gebruikt; wijzigt nooit het recept, de zoekstraal, of niet-bederfelijke vervaardigingen (staal, stof, enz. blijven onaangeroerd). Bevroren eten wordt voor het laatst bewaard. Geldt voor zowel gewone kooktaken als Hauler's Dream-batches. Standaard aan.</HaulersDream.Setting.CookSpoilingFirstDesc>
+<HaulersDream.Setting.Overload>Slim overladen: {0}</HaulersDream.Setting.Overload>
+<HaulersDream.Setting.OverloadDesc>Figuren dragen materialen voorbij 100% van hun maximale gewicht om trips te besparen, maar bewegen langzamer naarmate ze meer overladen — en doen het alleen wanneer minder trips de vertraging echt waard zijn (ook voor gewachtrijd bouw-/vervaardigingswerk). Schuif naar links voor lichtere vertraging + grotere ladingen, naar rechts voor zwaardere vertraging + kleinere ladingen.</HaulersDream.Setting.OverloadDesc>
+<HaulersDream.Overload.Free>Geen vertraging — vrij dragen</HaulersDream.Overload.Free>
+<HaulersDream.Overload.Fair>Redelijk (in balans)</HaulersDream.Overload.Fair>
+<HaulersDream.Overload.Off>Uit — nooit overladen</HaulersDream.Overload.Off>
+<HaulersDream.Overload.Eager>Gretig om te overladen ({0})</HaulersDream.Overload.Eager>
+<HaulersDream.Overload.Cautious>Voorzichtig ({0})</HaulersDream.Overload.Cautious>
+<HaulersDream.Setting.StrictCarryWeight>Strikt draaggewicht (niet overladen)</HaulersDream.Setting.StrictCarryWeight>
+<HaulersDream.Setting.StrictCarryWeightDesc>Wanneer AAN dragen figuren nooit voorbij 100% van hun maximale gewicht en onderbreken het werk nooit om uit te laden wanneer ze vol zitten — ze blijven oogsten en laten het overschot op de grond voor normaal sjouwen (onderweg langs opgepakt). Wanneer UIT (standaard) overladen figuren volgens de schuif hierboven en gaan ze uitladen zodra ze vol zitten.</HaulersDream.Setting.StrictCarryWeightDesc>
+<HaulersDream.Setting.KeepWorkingWhenFull>Doorwerken wanneer vol (niet onderbreken om uit te laden)</HaulersDream.Setting.KeepWorkingWhenFull>
+<HaulersDream.Setting.KeepWorkingWhenFullDesc>Standaard uit. Wanneer AAN onderbreekt een figuur die vol raakt tijdens het delven, oogsten of slopen zijn werk NIET om te gaan uitladen — het blijft werken, en alle opbrengsten die niet meer passen worden op de grond achtergelaten voor normaal sjouwen. Het lost nog steeds uit aan het eind van een werkronde, rond maaltijden/slaap/recreatie, op het interval, en (anders dan strikt draaggewicht) overlaadt het nog steeds voorbij 100% tot aan het slim-overladen-plafond. Het lost de lading alleen midden in de ronde af wanneer dat zich loont — vlak voordat het naar een VER volgend werkdoel loopt (wanneer de opslag dichterbij is dan de volgende taak, met de onderstaande marge). Toegewijde sjouw-/laadtaken bezorgen hun lading nog steeds wanneer vol. Onafhankelijk van strikt draaggewicht: dit behoudt het overladen-en-verzamelen-gedrag, het stopt alleen de onderbreking "vol → ga nu storten".</HaulersDream.Setting.KeepWorkingWhenFullDesc>
+<HaulersDream.Setting.KeepWorkingMargin>Uitladen voor een verplaatsing alleen als het minstens zoveel verder is: {0} tegels</HaulersDream.Setting.KeepWorkingMargin>
+<HaulersDream.Setting.KeepWorkingMarginDesc>Hysterese voor de regel "doorwerken wanneer vol": een volle, overladen figuur maakt een omweg om uit te laden voor zijn volgende werkdoel alleen wanneer dat doel verder weg is dan het opslag-afleverpunt met minstens zoveel tegels. Hoger = de figuur blijft zijn lading dragen over een bredere band van ongeveer gelijke afstanden (minder omwegen); 0 = het lost eerst uit telkens wanneer het volgende doel ook maar iets verder weg is dan de opslag.</HaulersDream.Setting.KeepWorkingMarginDesc>
+<HaulersDream.Setting.RouteMaxAmount>Plan route — top van de "Aantal"-schuif: {0} stops</HaulersDream.Setting.RouteMaxAmount>
+<HaulersDream.Setting.RouteCalcHeader>Routeberekening (standaarden — overschrijf per doeltype in het routevenster)</HaulersDream.Setting.RouteCalcHeader>
+<HaulersDream.Setting.RouteSelection>Selectiemethode: {0}</HaulersDream.Setting.RouteSelection>
+<HaulersDream.Setting.RouteDistance>Afstandsbasis: {0}</HaulersDream.Setting.RouteDistance>
+<HaulersDream.Setting.RouteOrderEffort>Bezoekvolgorde exact oplossen tot: {0} stops</HaulersDream.Setting.RouteOrderEffort>
+<HaulersDream.Setting.OpportunisticUnload>Afleveren onderweg langs de opslag</HaulersDream.Setting.OpportunisticUnload>
+<HaulersDream.Setting.OpportunisticUnloadDesc>Wanneer een figuur dat opgepakte goederen draagt op een lange trip voor zijn volgende taak vertrekt en een voorraad ruwweg op de weg ligt, lost het de lading af terwijl het passeert, in plaats van het over de kaart te dragen en later een aparte trip te maken.</HaulersDream.Setting.OpportunisticUnloadDesc>
+<HaulersDream.Stat.Overload>Hauler's Dream — overladen</HaulersDream.Stat.Overload>
+<HaulersDream.Setting.WorkTypesHeader>Opbrengsten oppakken uit deze soorten werk:</HaulersDream.Setting.WorkTypesHeader>
+<HaulersDream.Setting.HaulHarvest>Planten — oogsten en knippen</HaulersDream.Setting.HaulHarvest>
+<HaulersDream.Setting.HaulMining>Delven — erts en brokken</HaulersDream.Setting.HaulMining>
+<HaulersDream.Setting.HaulDeepDrill>Diepboren</HaulersDream.Setting.HaulDeepDrill>
+<HaulersDream.Setting.HaulDeconstruct>Sloopopbrengst</HaulersDream.Setting.HaulDeconstruct>
+<HaulersDream.Setting.HaulAnimals>Dieren — melken en scheren</HaulersDream.Setting.HaulAnimals>
+<HaulersDream.Setting.HaulUninstall>Verwijderen — geminificeerde gebouwen (karavaan-/verre kaarten)</HaulersDream.Setting.HaulUninstall>
+<HaulersDream.Setting.HaulStrip>Uitkleden — verwijderde uitrusting (sjouw uitrusting van een uitkleedorder)</HaulersDream.Setting.HaulStrip>
+<HaulersDream.Setting.HaulStripDesc>Wanneer een kolonist een gevangene, een neergeslagen figuur of een lijk uitkleedt (een uitkleedorder die JIJ met de hand plaatst), worden de verwijderde wapens, uitrusting en kleding direct na het uitkleden in zijn inventaris geschept en in één trip naar huis gesjouwd. Dit is de schakelaar die het sjouwen van uitgeklede uitrusting beheert — het staat los van "Automatisch uitkleden tijdens het sjouwen" hierboven: die kleedt een lijk alleen uit terwijl het WORDT gesjouwd (buit naar inventaris); DEZE sjouwt de uitrusting die een handmatige uitkleedorder op de grond laat vallen. Dus je kunt automatisch-uitkleden-tijdens-het-sjouwen op "nooit" zetten en toch handmatig bevolen uitkleedacties hun uitrusting laten oppakken en sjouwen, zolang dit aan staat. Besmette kleding van een lijk volgt de besmette-kledingkeuzes in de automatisch-uitkleden-sectie ("laat het op het lijk"-stukken blijven op de grond, niet opgeschept). Voor een levend doel wordt een vervolg-uitkleedactie aan het eind van de taken van de uitkleder gewachtrijd voor het geval het doel zichzelf weer aankleedt uit restanten; het doet niets als het doel naakt bleef.</HaulersDream.Setting.HaulStripDesc>
+<HaulersDream.Setting.HaulStripCrossRef>Onafhankelijk van "Automatisch uitkleden tijdens het sjouwen" bovenaan: dat kleedt een lijk uit terwijl het wordt gesjouwd (buit naar inventaris); dit sjouwt de uitrusting die een handmatige uitkleedorder laat vallen.</HaulersDream.Setting.HaulStripCrossRef>
+<HaulersDream.Setting.WorkOverrideHeader>Overrides voor werkonbekwaamheid (uit = vanilla):</HaulersDream.Setting.WorkOverrideHeader>
+<HaulersDream.Setting.AllCanHaul>Alle figuren kunnen sjouwen</HaulersDream.Setting.AllCanHaul>
+<HaulersDream.Setting.AllCanHaulDesc>Geen achtergrondverhaal, eigenschap, gen, koninklijke titel, ideologierol, gezondheidstoestand of questbeperking kan een figuur onbekwaam maken om te sjouwen. Geldt voor het werktabblad, rechtsklikprioriteren, automatisch werk en de planners van deze mod. (Wijs een werkprioriteit toe na het inschakelen — nieuw bekwame figuren starten zonder toewijzing, zoals elk ander werk.)</HaulersDream.Setting.AllCanHaulDesc>
+<HaulersDream.Setting.AllCanClean>Alle figuren kunnen schoonmaken</HaulersDream.Setting.AllCanClean>
+<HaulersDream.Setting.AllCanCleanDesc>Geen onbekwaamheid kan een figuur ongeschikt maken om schoon te maken. Geldt voor het werktabblad, rechtsklikprioriteren, automatisch werk en de planners van deze mod (waaronder "Plan geprioriteerd schoonmaken"). (Wijs een werkprioriteit toe na het inschakelen — nieuw bekwame figuren starten zonder toewijzing.)</HaulersDream.Setting.AllCanCleanDesc>
+<HaulersDream.Setting.AllCanCutPlants>Alle figuren kunnen planten knippen</HaulersDream.Setting.AllCanCutPlants>
+<HaulersDream.Setting.AllCanCutPlantsDesc>Geen onbekwaamheid kan een figuur ongeschikt maken om planten te knippen. Alleen het werk Planten knippen wordt ingeschakeld — zaaien (Telen) blijft beheerd door de werkelijke bekwaamheden van de figuur.</HaulersDream.Setting.AllCanCutPlantsDesc>
+<HaulersDream.Setting.PauseWhileDrafted>Pauzeren tijdens oproep</HaulersDream.Setting.PauseWhileDrafted>
+<HaulersDream.Setting.AllowMechanoids>Mechanoïden toestaan om op te pakken en te sjouwen</HaulersDream.Setting.AllowMechanoids>
+<HaulersDream.AllowMechanoidsDesc>Bepaalt of je werkmechanoïden het oppakken en bulksjouwen van Hauler's Dream gebruiken — opbrengsten en buit net als kolonisten in hun inventaris dragen. Dit dekt het oppakken van de goederen die een mech uit zijn eigen werk produceert: geoogste/geknipte planten, gedolven erts en brokken, en sloopopbrengst (de materialen die vrijkomen wanneer een mech een structuur afbreekt). Dit wijzigt NIET de vanilla mechanoïdetaken zelf: een werkmech delft, oogst en sloopt nog steeds op eigen houtje — de schakelaar bepaalt alleen of het ÓÓK de resultaten in zijn inventaris schept voor een gebundelde sjouwtrip. Hoe een mech materialen AFLEVERT bij een bouwlocatie is een aparte kwestie, beheerd door de instelling "Materialen in de inventaris dragen voor grote enkele bouwwerken" hierboven (die geldt voor elke bouwer, mech of kolonist); deze schakelaar wijzigt de bouwlevering op zichzelf niet. Wanneer AAN kan een werkmech van de speler ook voorbij 100% capaciteit dragen onder de slim-overladen-instelling en wordt het er op dezelfde manier door vertraagd als een kolonist.</HaulersDream.AllowMechanoidsDesc>
+<HaulersDream.AllowAnimals>Koloniedieren toestaan om op te pakken en te sjouwen</HaulersDream.AllowAnimals>
+<HaulersDream.AllowAnimalsDesc>Standaard uit. Wanneer AAN dragen koloniedieren die getraind zijn in Sjouwen meerdere stapels tegelijk — nabije buit in hun inventaris pakken en het bulksjouwen van Hauler's Dream uitvoeren in plaats van één stapel per trip. Dit bereikt alleen dieren die Sjouw-getraind KUNNEN worden: dieren met Geavanceerde trainbaarheid en een groot genoeg lichaam (husky's, labradors, olifanten, beren, thrumbo's, enz.). Dieren die niet Sjouw-getraind kunnen worden — een huishoudkat en dergelijke — voeren de sjouwtaak sowieso nooit uit (waar ongeacht deze instelling), dus ze worden niet beïnvloed door deze schakelaar. Alleen je eigen koloniedieren worden aangeraakt; wilde en vijandelijke dieren worden nooit beïnvloed.</HaulersDream.AllowAnimalsDesc>
+<HaulersDream.Setting.AllowIncapable>Figuren die onbekwaam zijn om te sjouwen toestaan hun eigen opbrengsten op te pakken</HaulersDream.Setting.AllowIncapable>
+<HaulersDream.Setting.EnableOnNonHomeMaps>Ook werken op karavaan- / niet-thuiskaarten</HaulersDream.Setting.EnableOnNonHomeMaps>
+<HaulersDream.Setting.HideGizmo>De "Inventaris uitladen"-knop per figuur verbergen</HaulersDream.Setting.HideGizmo>
+<HaulersDream.Setting.UnloadGrace>Verzamelvenster: blijf {0} ticks (~60/sec) na het laatste oppakken nog oppakken voordat de uitlaadtrip wordt gemaakt. Hoger = figuren overladen meer en maken minder, grotere trips; ze lossen nog steeds onmiddellijk uit zodra ze vol zitten (het overladen-plafond).</HaulersDream.Setting.UnloadGrace>
+<HaulersDream.Setting.IntervalUnload>Intervaluitlading: elke {0} spelin-uren</HaulersDream.Setting.IntervalUnload>
+<HaulersDream.Setting.IntervalUnloadOff>Intervaluitlading: uit (alleen eind van werkronde / maaltijden en recreatie / overgewicht / handmatig)</HaulersDream.Setting.IntervalUnloadOff>
+<HaulersDream.Setting.AlertCannotUnload>Waarschuwen (rood alarm) wanneer een figuur zijn inventaris niet kan uitladen</HaulersDream.Setting.AlertCannotUnload>
+<HaulersDream.Setting.AlertCannotUnloadDesc>Toont een kritiek "Brand!"-achtig alarm rechtsonder wanneer een of meer figuren opgepakte spullen dragen die ze niet kunnen opbergen — ofwel kan niets op de kaart ze opslaan (geen voorraad / stortzone / bereikbare cel), of ze dragen spullen al veel te lang zonder uit te laden (opslag onbereikbaar, of een andere mod blijft de sjouw-/uitlaadtaak annuleren). Eén alarm dekt alle getroffen figuren; beweeg eroverheen om pijlen naar ze te richten, klik om ze te doorlopen. Dit is je garantie dat inventarissen nooit stilletjes "zwarte gaten" worden.</HaulersDream.Setting.AlertCannotUnloadDesc>
+<HaulersDream.Setting.AlertStuckHours>...markeer een figuur nadat het niet-uitgeladen spullen heeft gedragen gedurende {0} spelin-uren</HaulersDream.Setting.AlertStuckHours>
+<HaulersDream.Setting.VerboseLogging>Uitgebreide debug-logging</HaulersDream.Setting.VerboseLogging>
+<HaulersDream.Gizmo.UnloadNow>Inventaris uitladen</HaulersDream.Gizmo.UnloadNow>
+<HaulersDream.Gizmo.UnloadNowDesc>Laat deze figuur alles wat het heeft opgepakt naar de dichtstbijzijnde geldige opslag dragen.</HaulersDream.Gizmo.UnloadNowDesc>
+<HaulersDream.Gizmo.UnloadNowDrafted>Opgeroepen: hef de oproep van deze figuur op om uit te laden.</HaulersDream.Gizmo.UnloadNowDrafted>
+<HaulersDream.Gizmo.AutoHaul>Opbrengsten automatisch sjouwen</HaulersDream.Gizmo.AutoHaul>
+<HaulersDream.Gizmo.AutoHaulDesc>Wanneer aan schept deze figuur automatisch zijn eigen werkopbrengsten op en veegt nabije buit in zijn inventaris terwijl het werkt. Zet het uit om te voorkomen dat deze figuur automatisch sjouwt — het bergt nog steeds alles op wat het al draagt.</HaulersDream.Gizmo.AutoHaulDesc>
+<HaulersDream.Alert.CannotUnload>Kan inventaris niet uitladen ({0})</HaulersDream.Alert.CannotUnload>
+<HaulersDream.Alert.CannotUnloadDesc.NoStorage>Deze figuren dragen opgepakte spullen die ze nergens kwijt kunnen — geen voorraad of stortzone op de kaart accepteert ze, en er is geen bereikbare plek gevonden. Voeg een voorraad toe (een Stortvoorraad accepteert rotsbrokken en het meeste afval), of sta hun itemtype toe op een bestaande:\n\n{0}\n\nTot dan blijven de spullen in hun inventaris. Klik op dit alarm om de figuren te doorlopen; beweeg eroverheen om ze aan te wijzen.</HaulersDream.Alert.CannotUnloadDesc.NoStorage>
+<HaulersDream.Alert.CannotUnloadDesc.Stuck>Deze figuren dragen al lange tijd opgepakte spullen zonder ze uit te laden. Opslag is mogelijk onbereikbaar vanaf waar ze zijn, of een andere mod annuleert mogelijk herhaaldelijk hun sjouw-/uitlaadtaak:\n\n{0}\n\nControleer op een bereikbare, toegestane voorraad, en op een mod die hun taken onderbreekt. Klik op dit alarm om de figuren te doorlopen; beweeg eroverheen om ze aan te wijzen.</HaulersDream.Alert.CannotUnloadDesc.Stuck>
+<HaulersDream.PlanRoute.Option>Plan geprioriteerd(e) {0}…</HaulersDream.PlanRoute.Option>
+<HaulersDream.PlanRoute.ConstructGerund>bouwen</HaulersDream.PlanRoute.ConstructGerund>
+<HaulersDream.PlanRoute.MiningGerundFallback>delven</HaulersDream.PlanRoute.MiningGerundFallback>
+<HaulersDream.PlanRoute.Title>Plan route: {0}</HaulersDream.PlanRoute.Title>
+<HaulersDream.PlanRoute.ModeChained>Geketend — de dichtstbijzijnde paar</HaulersDream.PlanRoute.ModeChained>
+<HaulersDream.PlanRoute.ModeChainedDesc>Route het gekozen aantal dichtstbijzijnde doelen van dezelfde soort, beginnend bij degene die je hebt aangeklikt.</HaulersDream.PlanRoute.ModeChainedDesc>
+<HaulersDream.PlanRoute.ModeVein>Aanrakend — de hele ader</HaulersDream.PlanRoute.ModeVein>
+<HaulersDream.PlanRoute.ModeVeinDesc>Route het aaneengesloten cluster van aanrakende doelen van dezelfde soort (een ertsader, een plek met planten) naar buiten vanaf degene die je hebt aangeklikt, tot aan de gekozen hoeveelheid.</HaulersDream.PlanRoute.ModeVeinDesc>
+<HaulersDream.PlanRoute.ModeRadius>Binnen straal</HaulersDream.PlanRoute.ModeRadius>
+<HaulersDream.PlanRoute.ModeRadiusDesc>Route elk doel van dezelfde soort binnen de gekozen straal van degene die je hebt aangeklikt.</HaulersDream.PlanRoute.ModeRadiusDesc>
+<HaulersDream.PlanRoute.ModeRooms>Binnen kamer(s)</HaulersDream.PlanRoute.ModeRooms>
+<HaulersDream.PlanRoute.ModeRoomsDesc>Route elk doel van dezelfde soort binnen de gekozen kamers. De kamer die het doel bevat dat je hebt aangeklikt is altijd inbegrepen; kies hieronder meer kamers. Let op: de open buitenlucht telt als één groot gebied, begrensd door de Aantal-limiet.</HaulersDream.PlanRoute.ModeRoomsDesc>
+<HaulersDream.PlanRoute.ModeZone>Hele teeltzone</HaulersDream.PlanRoute.ModeZone>
+<HaulersDream.PlanRoute.ModeZoneDesc>Route elk doel van dezelfde soort binnen de teeltzone waarin de aangeklikte plant staat — bewerk het hele veld met één klik. Voor oogsten gelden de rijpheidsgrens en groeidrempel nog steeds.</HaulersDream.PlanRoute.ModeZoneDesc>
+<HaulersDream.PlanRoute.PickRooms>Kies kamers…</HaulersDream.PlanRoute.PickRooms>
+<HaulersDream.PlanRoute.PickRoomsStop>Klaar met kiezen (klik in een kamer om die toe te voegen)</HaulersDream.PlanRoute.PickRoomsStop>
+<HaulersDream.PlanRoute.RoomsHeader>Kamers: {0}</HaulersDream.PlanRoute.RoomsHeader>
+<HaulersDream.PlanRoute.RoomGone>(kamer bestaat niet meer)</HaulersDream.PlanRoute.RoomGone>
+<HaulersDream.PlanRoute.RadiusLabel>Straal: {0} cellen</HaulersDream.PlanRoute.RadiusLabel>
+<HaulersDream.PlanRoute.Amount>Aantal: {0}</HaulersDream.PlanRoute.Amount>
+<HaulersDream.PlanRoute.VeinAll>Alles</HaulersDream.PlanRoute.VeinAll>
+<HaulersDream.PlanRoute.MaxTravel>Max. reisafstand: {0}</HaulersDream.PlanRoute.MaxTravel>
+<HaulersDream.PlanRoute.MaxTravelNoLimit>geen limiet</HaulersDream.PlanRoute.MaxTravelNoLimit>
+<HaulersDream.PlanRoute.Smart>Slimme routing (terug naar de opslag lussen)</HaulersDream.PlanRoute.Smart>
+<HaulersDream.PlanRoute.SmartDesc>Orden de stops zodat de hele trip — het verzamelen van de doelen en het terugkeren naar de voorraad waar de goederen thuishoren — zo kort mogelijk is, en eindig de route naast die opslag. Met dit uit worden de stops geordend voor het kortste verzamelpad alleen.</HaulersDream.PlanRoute.SmartDesc>
+<HaulersDream.PlanRoute.AllowHarvest>Oogsten van ongemarkeerde planten toestaan</HaulersDream.PlanRoute.AllowHarvest>
+<HaulersDream.PlanRoute.AllowHarvestDesc>Trek ook nabije planten van dezelfde soort in de route, zelfs als je ze nog niet voor oogst hebt gemarkeerd — zolang ze minstens de onderstaande groeidrempel hebben. Laat je een hele rijp-genoege plek met één klik oogsten. Met dit uit dekt de route alleen planten die al voor oogst zijn gemarkeerd.</HaulersDream.PlanRoute.AllowHarvestDesc>
+<HaulersDream.PlanRoute.GrowthThreshold>Groeidrempel: {0}%</HaulersDream.PlanRoute.GrowthThreshold>
+<HaulersDream.PlanRoute.PickStart>Kies verplicht-inbegrepen doelen…</HaulersDream.PlanRoute.PickStart>
+<HaulersDream.PlanRoute.PickStop>Klaar met kiezen (klik op de kaart om toe te voegen)</HaulersDream.PlanRoute.PickStop>
+<HaulersDream.PlanRoute.PickHeader>Moet bevatten: {0}</HaulersDream.PlanRoute.PickHeader>
+<HaulersDream.PlanRoute.PickRoleHint>Markeer een doel als S (start) of E (eind) om vast te zetten waar de route begint of eindigt — anders wordt elk geplaatst waar het het kortst is.</HaulersDream.PlanRoute.PickRoleHint>
+<HaulersDream.PlanRoute.PickStartBtn>S</HaulersDream.PlanRoute.PickStartBtn>
+<HaulersDream.PlanRoute.PickEndBtn>E</HaulersDream.PlanRoute.PickEndBtn>
+<HaulersDream.PlanRoute.PickStartBadge>(start)</HaulersDream.PlanRoute.PickStartBadge>
+<HaulersDream.PlanRoute.PickEndBadge>(eind)</HaulersDream.PlanRoute.PickEndBadge>
+<HaulersDream.PlanRoute.PickStartTip>Maak dit de START van de route — de eerste stop die de figuur bezoekt. Klik nogmaals om te wissen.</HaulersDream.PlanRoute.PickStartTip>
+<HaulersDream.PlanRoute.PickEndTip>Maak dit het EIND van de route — de laatste stop, vlak voor het teruggaan naar de opslag. Klik nogmaals om te wissen.</HaulersDream.PlanRoute.PickEndTip>
+<HaulersDream.PlanRoute.Selection>Selectie: {0}</HaulersDream.PlanRoute.Selection>
+<HaulersDream.PlanRoute.DistanceBasis>Afstand: {0}</HaulersDream.PlanRoute.DistanceBasis>
+<HaulersDream.PlanRoute.SelMostStops>Meeste stops per reisafstand</HaulersDream.PlanRoute.SelMostStops>
+<HaulersDream.PlanRoute.SelNearest>Dichtst bij het aangeklikte doel</HaulersDream.PlanRoute.SelNearest>
+<HaulersDream.PlanRoute.DistStraight>Rechte lijn</HaulersDream.PlanRoute.DistStraight>
+<HaulersDream.PlanRoute.DistWalking>Echt looppad</HaulersDream.PlanRoute.DistWalking>
+<HaulersDream.PlanRoute.FogCaution>Let op: niet alle aderspullen zijn mogelijk zichtbaar. Naarmate je delft en meer blootlegt, breidt de route uit om ze ook te dekken.</HaulersDream.PlanRoute.FogCaution>
+<HaulersDream.PlanRoute.Estimate>Geschatte tijd: ~{0} uur ({1} stops, ~{2} cellen verzamelen)</HaulersDream.PlanRoute.Estimate>
+<HaulersDream.PlanRoute.Cells>{0} cellen</HaulersDream.PlanRoute.Cells>
+<HaulersDream.PlanRoute.EstimateLimited>— ingekort tot de reislimiet</HaulersDream.PlanRoute.EstimateLimited>
+<HaulersDream.PlanRoute.EstimateUnreachable>— sommige doelen kunnen niet worden bereikt</HaulersDream.PlanRoute.EstimateUnreachable>
+<HaulersDream.PlanRoute.EstimateNone>Geen bereikbare stops voor deze route.</HaulersDream.PlanRoute.EstimateNone>
+<HaulersDream.PlanRoute.Append>Toevoegen</HaulersDream.PlanRoute.Append>
+<HaulersDream.PlanRoute.Replace>Vervangen</HaulersDream.PlanRoute.Replace>
+<HaulersDream.PlanRoute.Cancel>Annuleren</HaulersDream.PlanRoute.Cancel>
+<HaulersDream.PlanRoute.NoTargets>Geen nabije doelen om te routen.</HaulersDream.PlanRoute.NoTargets>
+<HaulersDream.PlanRoute.WaitingForMaterials>Route ingesteld — blauwdrukken worden gebouwd zodra materialen beschikbaar komen.</HaulersDream.PlanRoute.WaitingForMaterials>
+<HaulersDream.PlanRoute.NoMaterials>(materialen niet beschikbaar)</HaulersDream.PlanRoute.NoMaterials>
+<HaulersDream.PlanRoute.Planned>Een route van {0} stops gepland.</HaulersDream.PlanRoute.Planned>
+<HaulersDream.PlanRoute.Capped>Een route van {0} stops gepland (begrensd om het efficiënt te houden).</HaulersDream.PlanRoute.Capped>
+<HaulersDream.PlanRoute.DistanceLimited>Een route van {0} stops gepland (ingekort tot de reislimiet).</HaulersDream.PlanRoute.DistanceLimited>
+<HaulersDream.PlanRoute.Partial>Een route van {0} stops gepland ({1} in de buurt konden niet worden bereikt).</HaulersDream.PlanRoute.Partial>
+<HaulersDream.PlanCraft.Option>Plan geprioriteerde vervaardiging…</HaulersDream.PlanCraft.Option>
+<HaulersDream.PlanCraft.Title>Plan vervaardiging: {0}</HaulersDream.PlanCraft.Title>
+<HaulersDream.PlanCraft.NoBills>Geen batchbare taken hier. Voeg een productietaak toe (koken, drugs, eenvoudige onderdelen — geen taken die een onafgewerkt item nodig hebben) om een batch te plannen.</HaulersDream.PlanCraft.NoBills>
+<HaulersDream.PlanCraft.Repeat>Herhalen: {0} keer</HaulersDream.PlanCraft.Repeat>
+<HaulersDream.PlanCraft.Timeout>Time-out: {0}u</HaulersDream.PlanCraft.Timeout>
+<HaulersDream.PlanCraft.TimeoutOff>Time-out: geen</HaulersDream.PlanCraft.TimeoutOff>
+<HaulersDream.PlanCraft.Resolved>Zal {0}× in één keer vervaardigen.</HaulersDream.PlanCraft.Resolved>
+<HaulersDream.PlanCraft.ResolvedTrimmed>Zal {0}× in één keer vervaardigen — {1}.</HaulersDream.PlanCraft.ResolvedTrimmed>
+<HaulersDream.PlanCraft.LimitResources>beperkt door beschikbare ingrediënten</HaulersDream.PlanCraft.LimitResources>
+<HaulersDream.PlanCraft.LimitMass>beperkt door hoeveel de figuur kan dragen</HaulersDream.PlanCraft.LimitMass>
+<HaulersDream.PlanCraft.LimitTimeout>beperkt door de time-out</HaulersDream.PlanCraft.LimitTimeout>
+<HaulersDream.PlanCraft.LimitBillRepeat>beperkt door de resterende telling van de taak</HaulersDream.PlanCraft.LimitBillRepeat>
+<HaulersDream.PlanCraft.Ingredients>Brengt: {0}</HaulersDream.PlanCraft.Ingredients>
+<HaulersDream.PlanCraft.IngredientsMixed>Brengt een mix van ingrediënten (per vervaardiging gekozen, meest bederfelijke eerst indien ingeschakeld).</HaulersDream.PlanCraft.IngredientsMixed>
+<HaulersDream.PlanCraft.EstTime>Vervaardigingstijd: ~{0}u (plus de haaltrip; producten worden daarna naar de beste opslag gesjouwd)</HaulersDream.PlanCraft.EstTime>
+<HaulersDream.PlanCraft.Infeasible>Kan dit niet batchen: {0}</HaulersDream.PlanCraft.Infeasible>
+<HaulersDream.PlanCraft.Confirm>Prioriteren</HaulersDream.PlanCraft.Confirm>
+<HaulersDream.PlanCraft.Cancel>Annuleren</HaulersDream.PlanCraft.Cancel>
+<HaulersDream.PlanCraft.Started>Batch vervaardigen {0}× {1}.</HaulersDream.PlanCraft.Started>
+<HaulersDream.PlanCraft.CouldNotStart>Kon de batch niet starten (de bank is mogelijk in gebruik).</HaulersDream.PlanCraft.CouldNotStart>
+<HaulersDream.PlanCraft.JobReport>{0} vervaardigen (batch {1}/{2}).</HaulersDream.PlanCraft.JobReport>
+<HaulersDream.PlanCraft.BlockUnsupported>dit recept kan niet worden gebatcht</HaulersDream.PlanCraft.BlockUnsupported>
+<HaulersDream.PlanCraft.BlockNoIngredient>geen beschikbaar ingrediënt voor {0}</HaulersDream.PlanCraft.BlockNoIngredient>
+<HaulersDream.PlanCraft.BlockNoReps>niet genoeg grondstoffen voor zelfs één ronde</HaulersDream.PlanCraft.BlockNoReps>
+<HaulersDream.PlanCraft.BlockBillNotActive>de taak is opgeschort of al voldaan</HaulersDream.PlanCraft.BlockBillNotActive>
+<HaulersDream.HaulToSite.Option>Sjouwen van materialen naar {0} prioriteren</HaulersDream.HaulToSite.Option>
+<HaulersDream.HaulToSite.CouldNotStart>Geen bereikbare materialen om nu te sjouwen.</HaulersDream.HaulToSite.CouldNotStart>
+<HaulersDream.HaulNearby.Option>Sjouw alles in de buurt</HaulersDream.HaulNearby.Option>
+<HaulersDream.HaulNearby.CouldNotStart>Op dit moment niets in de buurt om te sjouwen.</HaulersDream.HaulNearby.CouldNotStart>
+<HaulersDream.PickUp.Option>{0} oppakken</HaulersDream.PickUp.Option>
+<HaulersDream.PickUp.CouldNotStart>{0} kan {1} niet oppakken — draagt al zoveel als het kan, en er is nergens om het naartoe te sjouwen.</HaulersDream.PickUp.CouldNotStart>
+<HaulersDream.PlanRoute.AlsoBuild>Ook bouwen (sjouwen + bouwen bij elke stop)</HaulersDream.PlanRoute.AlsoBuild>
+<HaulersDream.PlanRoute.AlsoBuildDesc>Met dit aan bezorgt de figuur materialen bij een locatie en BOUWT die voordat het naar de volgende gaat — door de materialen van de hele route vooraf te verzamelen en in de inventaris te houden. Met het uit vult de figuur de locaties alleen met materialen (anderen kunnen bouwen). Hoe dan ook blijven de locaties open voor andere figuren, zodat er meerdere parallel aan dezelfde ronde kunnen leveren; wie als tweede aankomt, houdt simpelweg zijn overschot voor de volgende stop of lost het aan het eind uit.</HaulersDream.PlanRoute.AlsoBuildDesc>
+<HaulersDream.Setting.CraftBatchTimeout>Standaard vervaardigingsbatch-time-out: {0}u</HaulersDream.Setting.CraftBatchTimeout>
+<HaulersDream.Setting.CraftBatchTimeoutOff>Standaard vervaardigingsbatch-time-out: geen</HaulersDream.Setting.CraftBatchTimeoutOff>
+<HaulersDream.Setting.InventoryCraftDeliver>Vervaardigingsingrediënten in inventaris dragen (minder trips)</HaulersDream.Setting.InventoryCraftDeliver>
+<HaulersDream.Setting.InventoryCraftDeliverDesc>Wanneer een figuur een vervaardigingstaak start die ingrediënten uit twee of meer aparte stapels nodig heeft, verzamelt het ze eerst ALLEMAAL in één veging in zijn inventaris — overladen indien nodig, de vertraging accepterend (tenzij strikt draaggewicht aan staat) — loopt één keer naar de bank, en vervaardigt uit de gedragen voorraad. Werkt voor elk recept, ook recepten die eerst een onafgewerkt item bouwen (kleding, wapens, sculpturen). Het vervaardigen zelf is 100% vanilla, dus niets kan worden gedupliceerd of verloren gaan. Als een andere mod het sjouwen van vervaardigingsingrediënten beheert, treedt Hauler's Dream automatisch terug (het verzamelt ze in plaats daarvan), zodat elke vervaardigingslus zichzelf oplost. Vereist "gedragen ingrediënten tellen mee voor vervaardiging" hierboven.</HaulersDream.Setting.InventoryCraftDeliverDesc>
+<HaulersDream.PrepGather.Report>vervaardigingsingrediënten verzamelen.</HaulersDream.PrepGather.Report>
+<HaulersDream.BulkHaul.Report>alles in de buurt sjouwen.</HaulersDream.BulkHaul.Report>
+<HaulersDream.JobReport.DefaultDestination>opslag</HaulersDream.JobReport.DefaultDestination>
+<HaulersDream.JobReport.EnRoute.Load>{ORIGINAL} (onderweg naar {DESTINATION})</HaulersDream.JobReport.EnRoute.Load>
+<HaulersDream.JobReport.EnRoute.Unload>{ORIGINAL} (onderweg naar {DESTINATION})</HaulersDream.JobReport.EnRoute.Unload>
+<HaulersDream.JobReport.CloserTo.Load>{ORIGINAL} (dichter bij {DESTINATION})</HaulersDream.JobReport.CloserTo.Load>
+<HaulersDream.JobReport.CloserTo.Unload>{ORIGINAL} (dichter bij {DESTINATION})</HaulersDream.JobReport.CloserTo.Unload>
+<HaulersDream.JobReport.Efficient.Load>Efficiënt {ORIGINAL} sjouwen</HaulersDream.JobReport.Efficient.Load>
+<HaulersDream.JobReport.Efficient.Unload>Efficiënt {ORIGINAL} sjouwen</HaulersDream.JobReport.Efficient.Unload>
+<HaulersDream.LoadPackAnimal.Report>spullen op een lastdier laden.</HaulersDream.LoadPackAnimal.Report>
+<HaulersDream.LoadPackAnimal.BulkOption>Nabije spullen op lastdier laden (bulk)</HaulersDream.LoadPackAnimal.BulkOption>
+<HaulersDream.LoadPackAnimal.CouldNotStart>Op dit moment niets in de buurt om op een lastdier te laden.</HaulersDream.LoadPackAnimal.CouldNotStart>
+<HaulersDream.LoadPackAnimal.NoCarrier>Geen bruikbaar lastdier met vrije ruimte in de buurt.</HaulersDream.LoadPackAnimal.NoCarrier>
+<HaulersDream.UnloadCarrier.Report>{0} uitladen.</HaulersDream.UnloadCarrier.Report>
+<HaulersDream.UnloadCarrier.Option>Bulksgewijs uitladen van {0} prioriteren</HaulersDream.UnloadCarrier.Option>
+<HaulersDream.UnloadCarrier.CouldNotStart>Kon dat lastdier op dit moment niet bulksgewijs uitladen.</HaulersDream.UnloadCarrier.CouldNotStart>
+<HaulersDream.Setting.LoadPackAnimalBulk>Bulkorder "op lastdier laden"</HaulersDream.Setting.LoadPackAnimalBulk>
+<HaulersDream.Setting.LoadPackAnimalBulkDesc>Op een karavaan-/verre kaart voegt het een rechtsklikorder "Nabije spullen op lastdier laden (bulk)" toe: één kolonist veegt meerdere nabije stapels in zijn inventaris en laadt ze in één trip op een lastdier, in plaats van één stapel tegelijk te dragen. Vanilla's enkel-item "Op lastdier laden" werkt er nog steeds naast.</HaulersDream.Setting.LoadPackAnimalBulkDesc>
+<HaulersDream.Setting.AutoDivertToPackAnimal>Overladen op lastdieren (karavanen)</HaulersDream.Setting.AutoDivertToPackAnimal>
+<HaulersDream.Setting.AutoDivertToPackAnimalDesc>Op een karavaan-/verre kaart laden figuren hun opgepakte buit over op het dichtstbijzijnde eigen lastdier op dezelfde manier waarop ze thuis zouden uitladen naar een voorraad — wanneer hun werkronde eindigt, voordat ze rusten/eten/ontspannen, op het periodieke vangnet, en onmiddellijk wanneer overbelast (om mobiel te blijven). Met dit uit rijdt de buit gewoon mee naar huis in de eigen inventarissen van de figuren (of gebruik de handmatige bulklaadorder / Karavaan hervormen). Dit alles vereist ook dat automatisch uitladen aan staat (en het overbelast-overladen is uitgeschakeld in de strikt-draaggewicht-modus).</HaulersDream.Setting.AutoDivertToPackAnimalDesc>
+<HaulersDream.Setting.EnableBulkUnloadCarriers>Lastdieren in één bezoek bulksgewijs uitladen</HaulersDream.Setting.EnableBulkUnloadCarriers>
+<HaulersDream.Setting.EnableBulkUnloadCarriersDesc>Wanneer een lastdier op "uitladen" is gezet, loopt een sjouwer er ÉÉN keer naartoe en trekt veel stapels eruit in zijn eigen rugzak (en sjouwt ze daarna zoals gebruikelijk naar de opslag), in plaats van vanilla's één-stapel-per-loop. De laatste/overloopstapel gaat in de handen van de sjouwer en wordt rechtstreeks gesjouwd. Met dit uit wordt vanilla's enkel-stapel uitladen ongewijzigd gebruikt.</HaulersDream.Setting.EnableBulkUnloadCarriersDesc>
+<HaulersDream.Setting.MinFreeSpaceToUnloadCarrier>Minimale vrije rugzakruimte om te starten: {0}</HaulersDream.Setting.MinFreeSpaceToUnloadCarrier>
+<HaulersDream.Setting.ReserveCarrierOnUnload>Het lastdier reserveren tijdens het uitladen</HaulersDream.Setting.ReserveCarrierOnUnload>
+<HaulersDream.Setting.ReserveCarrierOnUnloadDesc>Eis het lastdier exclusief op voor de duur van het uitladen. Uit (standaard) laat het touwen, karavaanvorming of een tweede sjouwer het onderbreken — het uitladen treedt netjes terug wanneer een andere figuur het dier opeist.</HaulersDream.Setting.ReserveCarrierOnUnloadDesc>
+<HaulersDream.Setting.VisualUnloadDelay>Uitlaadvertraging per stapel: {0} ticks</HaulersDream.Setting.VisualUnloadDelay>
+<HaulersDream.LoadTransporter.Report>een transporter bulksgewijs laden.</HaulersDream.LoadTransporter.Report>
+<HaulersDream.LoadTransporter.Option>Bulksgewijs laden van {0} prioriteren</HaulersDream.LoadTransporter.Option>
+<HaulersDream.LoadTransporter.CouldNotStart>Op dit moment niets in de buurt om bulksgewijs in die transporter te laden.</HaulersDream.LoadTransporter.CouldNotStart>
+<HaulersDream.Setting.EnableBulkLoadTransporters>Transporters en shuttles in één trip bulksgewijs laden</HaulersDream.Setting.EnableBulkLoadTransporters>
+<HaulersDream.Setting.EnableBulkLoadTransportersDesc>Wanneer een transportpod of shuttle op laden is gezet, eist een sjouwer een deel van zijn manifest op, veegt meerdere nabije stapels in zijn inventaris, loopt ÉÉN keer naar de transporter, en deponeert ze allemaal — in plaats van vanilla's één-stapel-in-de-handen per loop. Meerdere sjouwers splitsen een groot manifest zonder dubbel sjouwen, en de pod gaat pas aan boord of lanceert pas wanneer de opgeëiste vracht binnen is. Met dit uit wordt vanilla's enkel-stapel transporterladen ongewijzigd gebruikt.</HaulersDream.Setting.EnableBulkLoadTransportersDesc>
+<HaulersDream.Setting.BulkLoadAiUpdateFrequency>Interval voor laadhercontrole: {0} ticks</HaulersDream.Setting.BulkLoadAiUpdateFrequency>
+<HaulersDream.LoadPortal.Report>een portaal bulksgewijs laden.</HaulersDream.LoadPortal.Report>
+<HaulersDream.LoadPortal.Option>Bulksgewijs laden van {0} prioriteren</HaulersDream.LoadPortal.Option>
+<HaulersDream.LoadPortal.CouldNotStart>Op dit moment niets in de buurt om bulksgewijs in dat portaal te laden.</HaulersDream.LoadPortal.CouldNotStart>
+<HaulersDream.Setting.EnableBulkLoadPortal>Kaartportalen in één trip bulksgewijs laden</HaulersDream.Setting.EnableBulkLoadPortal>
+<HaulersDream.Setting.EnableBulkLoadPortalDesc>Wanneer een kaartportaal (putpoort, grot- of kluisuitgang, "betreed kaart"-portaal) op laden is gezet, eist een sjouwer een deel van zijn manifest op, veegt meerdere nabije stapels in zijn inventaris, loopt ÉÉN keer naar het portaal, en deponeert ze allemaal — in plaats van vanilla's één-stapel-in-de-handen per loop. De gedeponeerde spullen teleporteren naar de andere kaart. Meerdere sjouwers splitsen een groot manifest zonder dubbel sjouwen. Met dit uit wordt vanilla's enkel-stapel portaalladen ongewijzigd gebruikt.</HaulersDream.Setting.EnableBulkLoadPortalDesc>
+<HaulersDream.LoadVehicle.Report>een voertuig bulksgewijs laden.</HaulersDream.LoadVehicle.Report>
+<HaulersDream.LoadVehicle.Option>Bulksgewijs laden van {0} prioriteren</HaulersDream.LoadVehicle.Option>
+<HaulersDream.LoadVehicle.CouldNotStart>Op dit moment niets in de buurt om bulksgewijs in dat voertuig te laden.</HaulersDream.LoadVehicle.CouldNotStart>
+<HaulersDream.Setting.EnableVehicleFramework>Voertuigintegratie</HaulersDream.Setting.EnableVehicleFramework>
+<HaulersDream.Setting.EnableVehicleFrameworkDesc>Hoofdschakelaar voor de voertuigfuncties van Hauler's Dream: de vracht van een voertuig in één trip bulksgewijs laden (hieronder), en spullen op een voertuig laden (in plaats van een lastdier) op de event-correcte manier zodat het laadmanifest van het voertuig synchroon blijft. Dit UIT zetten schakelt alleen die functies uit — het schakelt NIET de veiligheidsfixes uit die voorkomen dat het bulkuitladen van Hauler's Dream de eigen vracht-UI van een voertuig verstoort, en het schakelt NIET het eten-uit of bouwen-uit de vracht van een geparkeerd voertuig uit (die volgen de schakelaars "Meals on wheels" en "Bouwen uit inventaris" hierboven). Zonder een geïnstalleerde voertuigenmod heeft dit helemaal geen effect. Standaard aan.</HaulersDream.Setting.EnableVehicleFrameworkDesc>
+<HaulersDream.Setting.EnableBulkLoadVehicles>Voertuigen in één trip bulksgewijs laden</HaulersDream.Setting.EnableBulkLoadVehicles>
+<HaulersDream.Setting.EnableBulkLoadVehiclesDesc>Wanneer een voertuig (grond of lucht) op het laden van vracht is gezet, eist een sjouwer een deel van zijn manifest op, veegt meerdere nabije stapels in zijn inventaris, loopt ÉÉN keer naar het voertuig, en deponeert ze allemaal — in plaats van de gebruikelijke één-stapel-in-de-handen per loop. Meerdere sjouwers splitsen een groot manifest zonder dubbel sjouwen, met respect voor de vrachtcapaciteit van het voertuig. Met dit uit wordt het enkel-stapel laden van het voertuig ongewijzigd gebruikt. Vereist "Voertuigintegratie" hierboven.</HaulersDream.Setting.EnableBulkLoadVehiclesDesc>
+<HaulersDream.BulkRefuel.Report>bulksgewijs bijtanken.</HaulersDream.BulkRefuel.Report>
+<HaulersDream.BulkRefuel.Option>Bulksgewijs bijtanken van {0} prioriteren</HaulersDream.BulkRefuel.Option>
+<HaulersDream.BulkRefuel.CouldNotStart>Op dit moment niets in de buurt om dat mee bulksgewijs bij te tanken.</HaulersDream.BulkRefuel.CouldNotStart>
+<HaulersDream.Setting.EnableBulkRefuel>In één trip bulksgewijs bijtanken</HaulersDream.Setting.EnableBulkRefuel>
+<HaulersDream.Setting.EnableBulkRefuelDesc>Wanneer iets brandstof nodig heeft (de chemfuel van een shuttle, een diepboor, een generator — alles wat bij te tanken is), veegt een sjouwer genoeg nabije brandstof in zijn inventaris, loopt er ÉÉN keer naartoe, en vult het in één trip — in plaats van vanilla's één-stapel-in-de-handen per loop. Treedt alleen in werking wanneer meer dan één brandstofstapel (meer dan één vanilla-trip) nodig is; een enkel-stapel bijtanking wordt aan vanilla overgelaten. Rechtsklik op iets bijtankbaars voor "Bulksgewijs bijtanken prioriteren", of laat het als gewoon bijtankwerk lopen. Met dit uit wordt vanilla's enkel-stapel bijtanken ongewijzigd gebruikt. Standaard aan.</HaulersDream.Setting.EnableBulkRefuelDesc>
+<HaulersDream.Setting.SkipHaulWhileBleeding>Niet beginnen met sjouwen tijdens hevig bloeden</HaulersDream.Setting.SkipHaulWhileBleeding>
+<HaulersDream.Setting.SkipHaulWhileBleedingDesc>Wanneer een figuur bloedt (boven een kleine drempel), zal het geen nieuwe oppak- of bulksjouwveging STARTEN — het moet worden behandeld, niet een omweg maken om op te ruimen. Dit blokkeert alleen het STARTEN van een sjouwtrip: een figuur dat al opgepakte goederen draagt, lost die nog steeds gewoon uit, dus er blijft nooit iets achter. Standaard aan.</HaulersDream.Setting.SkipHaulWhileBleedingDesc>
+<HaulersDream.Setting.ClosestDestUnloadOrder>Eerst de dichtstbijzijnde bestemming uitladen</HaulersDream.Setting.ClosestDestUnloadOrder>
+<HaulersDream.Setting.ClosestDestUnloadOrderDesc>Wanneer een figuur zijn uitlaadtrip maakt terwijl het meerdere verschillende spullen draagt, bezoekt het eerst de dichtstbijzijnde opslagbestemming en leegt alles dat daarheen bestemd is voordat het naar de volgende gaat — minder zigzaggen over de basis. Uit gebruikt de vorige (per itemcategorie) volgorde. Standaard aan.</HaulersDream.Setting.ClosestDestUnloadOrderDesc>
+<HaulersDream.Setting.EnRoutePickup>Losse spullen oppakken die op de weg naar een taak liggen</HaulersDream.Setting.EnRoutePickup>
+<HaulersDream.Setting.EnRoutePickupDesc>Wanneer een figuur op het punt staat aan een taak te beginnen en een los sjouwbaar item ruwweg langs de weg ligt, pakt het het eerst in zijn inventaris — zodat het verdwaalde item meerijdt naar de opslag op een trip die de figuur toch al maakte, zonder extra retourtrip. Het item wordt opgepakt als een gevolgde Hauler's Dream-sjouwtrip en opgeborgen door het normale uitladen, zodat het nooit verloren gaat, zelfs niet als automatisch uitladen uit staat. Treedt alleen in werking wanneer de resulterende trip dicht bij de directe route blijft, overschrijft nooit het vanilla-opportunistisch sjouwen, respecteert de "Opbrengsten automatisch sjouwen"-schakelaar van elke figuur, en treedt terug wanneer de figuur in plaats daarvan zijn lading zou aflossen. Standaard aan; het wijzigt hoe figuren bewegen, dus het omschakelen wordt van kracht de volgende keer dat een figuur een taak kiest.</HaulersDream.Setting.EnRoutePickupDesc>
+<HaulersDream.Setting.EnRoutePathChecker>Onderweg-controle: {0}</HaulersDream.Setting.EnRoutePathChecker>
+<HaulersDream.Setting.EnRoutePathCheckerDesc>Hoe zorgvuldig een kandidaat-item wordt bevestigd als "onderweg" na de goedkope afstandstest. Goedkoop (de standaard) telt alleen kaartregio's, dus het is snel maar de omwegafstand kan variëren. Padzoeken (vroeg stoppen) en Padzoeken (grondig) lopen het echte pad voor nauwkeurigheid — "vroeg stoppen" geeft het scannen op zodra een kandidaat buiten bereik valt (sneller), "grondig" controleert elke resterende kandidaat (langzaamst, vindt een sjouwtrip als die bestaat, bijv. in een kronkelige bergbasis). Als een padzoeknauwkeurigheidsmod is geïnstalleerd, erven de twee padzoekmodi automatisch zijn nauwkeurigheid.</HaulersDream.Setting.EnRoutePathCheckerDesc>
+<HaulersDream.Setting.EnRoutePathVanilla>Goedkoop (regiotelling)</HaulersDream.Setting.EnRoutePathVanilla>
+<HaulersDream.Setting.EnRoutePathDefault>Padzoeken (vroeg stoppen)</HaulersDream.Setting.EnRoutePathDefault>
+<HaulersDream.Setting.EnRoutePathPathfinding>Padzoeken (grondig)</HaulersDream.Setting.EnRoutePathPathfinding>
+<HaulersDream.Setting.StorageRouting>Voorraden dichterbij verplaatsen voordat ze naar een taak worden gedragen</HaulersDream.Setting.StorageRouting>
+<HaulersDream.Setting.StorageRoutingDesc>De functie "sjouwen voor dragen". Voordat een figuur een grondstof naar een bouwlocatie of vervaardigingsbank draagt, verplaatst het eerst de grootste nabije stapel van dat materiaal naar opslag DICHTER bij waar het zal worden gebruikt — zodat deze en elke latere haalactie een kortere trip is. Het treedt alleen in werking wanneer de dichtere opslag werkelijk dichter bij de taak ligt dan de huidige plek van de stapel, verplaatst nooit een stapel die een andere figuur al sjouwt, en respecteert de "Opbrengsten automatisch sjouwen"-schakelaar van elke figuur. De verplaatsing is een normale sjouwtrip, dus het materiaal gaat nooit verloren. Standaard aan; het wijzigt hoe figuren bewegen, dus het omschakelen wordt van kracht de volgende keer dat een figuur zo'n taak oppakt.</HaulersDream.Setting.StorageRoutingDesc>
+<HaulersDream.Setting.RouteSupplies>Constructievoorraden dichter bij de bouwlocatie verplaatsen</HaulersDream.Setting.RouteSupplies>
+<HaulersDream.Setting.RouteSuppliesDesc>Pas verplaatsing-voor-dragen toe op constructiemateriaalleveringen. (Geen effect terwijl "constructiemateriaal in inventaris dragen" aan staat — die functie snijdt de trips al op zijn eigen manier weg.)</HaulersDream.Setting.RouteSuppliesDesc>
+<HaulersDream.Setting.RouteIngredients>Vervaardigingsingrediënten dichter bij de bank verplaatsen</HaulersDream.Setting.RouteIngredients>
+<HaulersDream.Setting.RouteIngredientsDesc>Pas verplaatsing-voor-dragen toe op vervaardigingstaakingrediënten. (Geen effect terwijl "taakingrediënten in één veging verzamelen" aan staat — die functie snijdt de trips al op zijn eigen manier weg.)</HaulersDream.Setting.RouteIngredientsDesc>
+<HaulersDream.Setting.RouteToEqualPriority>Verplaatsen naar opslag van gelijke prioriteit toestaan</HaulersDream.Setting.RouteToEqualPriority>
+<HaulersDream.Setting.RouteToEqualPriorityDesc>Verplaats een stapel ook naar opslag van DEZELFDE prioriteit wanneer het dichter bij de taak is (niet alleen naar opslag van hogere prioriteit). Standaard aan — het uitzetten beperkt verplaatsing tot strikt hoger geprioriteerde bestemmingen.</HaulersDream.Setting.RouteToEqualPriorityDesc>
+<HaulersDream.Setting.RouteToStockpiles>Verplaatsen naar gewone voorraadzones toestaan</HaulersDream.Setting.RouteToStockpiles>
+<HaulersDream.Setting.RouteToStockpilesDesc>Laat gewone voorraadzones (niet alleen opslaggebouwen zoals rekken) verplaatsingsbestemmingen zijn. Standaard aan — het uitzetten verplaatst alleen naar opslaggebouwen.</HaulersDream.Setting.RouteToStockpilesDesc>
+<HaulersDream.Setting.StorageFilters>Filteren welke opslaggebouwen het sjouwen mag gebruiken</HaulersDream.Setting.StorageFilters>
+<HaulersDream.Setting.StorageFiltersDesc>Wanneer aan kun je beperken welke opslagGEBOUWEN (rekken en gemodde opslageenheden — nooit gewone voorraadzones) sjouwers mogen gebruiken voor opportunistische en routingsjouwtrips, per gebouw of per mod. Een figuur dat al een lading draagt kan ALTIJD nog uitladen, dus er blijft nooit iets achter. Standaard aan, met de samengestelde standaarden hieronder — stel je eigen regels in per gebouw of per mod.</HaulersDream.Setting.StorageFiltersDesc>
+<HaulersDream.Setting.StorageFilterUseDefaults>Samengestelde standaardregels gebruiken</HaulersDream.Setting.StorageFilterUseDefaults>
+<HaulersDream.Setting.StorageFilterUseDefaultsDesc>Pas zinnige standaarden per situatie toe: opportunistische oppakacties mogen elke opslag gebruiken (behalve de trage set hieronder); een sjouwtrip die voor het dragen naar betere opslag wordt omgeleid, richt zich alleen op bekende containermods. Je expliciete keuzes per gebouw / per mod overschrijven deze altijd. Uit = alleen je expliciete keuzes beperken iets.</HaulersDream.Setting.StorageFilterUseDefaultsDesc>
+<HaulersDream.Setting.StorageFilterDenyLwm>Trage opslag overslaan voor opportunistische sjouwtrips</HaulersDream.Setting.StorageFilterDenyLwm>
+<HaulersDream.Setting.StorageFilterDenyLwmDesc>Sommige dichte/diepe opslag heeft een deponeervertraging, dus daar midden in de trip stoppen is niet echt "onderweg". Wanneer aan vermijden opportunistische en voor-dragen-sjouwtrips zulke opslag (een doelbewuste uitlaadtrip kan die nog steeds gebruiken — je lading blijft nooit achter).</HaulersDream.Setting.StorageFilterDenyLwmDesc>
+<HaulersDream.Setting.StorageFilterButton>Opslaggebouwregels bewerken…</HaulersDream.Setting.StorageFilterButton>
+<HaulersDream.StorageFilter.Title>Opslaggebouwregels</HaulersDream.StorageFilter.Title>
+<HaulersDream.StorageFilter.Desc>Stel in of sjouwers elk opslaggebouw mogen gebruiken, per gebouw of per mod. Toestaan dwingt het aan, Weigeren dwingt het uit, en Standaard laat de samengestelde regels beslissen. Een keuze per gebouw overschrijft de keuze van zijn mod; een expliciet Weigeren overschrijft een Toestaan. Gewone voorraadzones zijn altijd toegestaan.</HaulersDream.StorageFilter.Desc>
+<HaulersDream.StorageFilter.ResetAll>Terugzetten naar standaarden</HaulersDream.StorageFilter.ResetAll>
+<HaulersDream.StorageFilter.StateDefault>Standaard</HaulersDream.StorageFilter.StateDefault>
+<HaulersDream.StorageFilter.StateAllow>Toestaan</HaulersDream.StorageFilter.StateAllow>
+<HaulersDream.StorageFilter.StateDeny>Weigeren</HaulersDream.StorageFilter.StateDeny>
+<HaulersDream.Setting.CleanupOnSave>Bulklaadtaken opruimen bij opslaan</HaulersDream.Setting.CleanupOnSave>
+<HaulersDream.Setting.CleanupOnSaveDesc>Wanneer het spel opslaat terwijl een figuur midden in een bulklading zit, stopt Hauler's Dream die figuur voor de opslag terug naar inactief zodat het opgeslagen bestand niet naar de eigen taaktypes van Hauler's Dream verwijst — wat betekent dat je de mod later kunt verwijderen zonder dat het opgeslagen spel fouten geeft. De figuur houdt eventuele opgeveegde goederen en lost ze daarna gewoon uit. Standaard aan; zet uit als je nooit van plan bent de mod te verwijderen.</HaulersDream.Setting.CleanupOnSaveDesc>
+<HaulersDream.Setting.SoftlockDrop>Vastzittende vracht vrijmaken van vastgelopen figuren</HaulersDream.Setting.SoftlockDrop>
+<HaulersDream.Setting.SoftlockDropDesc>Als een figuur niet langer kan sjouwen terwijl het goederen draagt die Hauler's Dream heeft opgepakt — zijn Sjouwwerk is uitgeschakeld, of een mechanoïde is slapend / zelf-uitgeschakeld — worden de gedragen goederen in de buurt gedropt voor normaal sjouwen, in plaats van voor altijd in die figuur vast te zitten. Een mechanoïde die op het punt staat te OPLADEN bezorgt eerst zijn gedragen goederen aan opslag (of dropt ze in de buurt als er nergens is om ze neer te zetten), zodat ze niet bederven of draagruimte innemen terwijl het op de oplader zit. Raakt alleen de eigen opgepakte spullen van Hauler's Dream aan. Standaard aan (een vangnet).</HaulersDream.Setting.SoftlockDropDesc>
+<HaulersDream.Setting.OpportunisticLoad>Gedragen vracht onderweg in transporten deponeren</HaulersDream.Setting.OpportunisticLoad>
+<HaulersDream.Setting.OpportunisticLoadDesc>Een figuur dat al spullen draagt waar een nabije transportpod, shuttle, kaartportaal of voertuig op wacht, zal een omweg maken om ze af te leveren, in plaats van een gloednieuwe oppakronde te starten. Minder verspilde loopjes. Standaard uit (het wijzigt welke taak een figuur als volgende oppakt).</HaulersDream.Setting.OpportunisticLoadDesc>
+<HaulersDream.Setting.LoadOpportunityRadius>Deponeren-onderweg zoekstraal: {0} tegels</HaulersDream.Setting.LoadOpportunityRadius>
+<HaulersDream.Setting.ContinuousLoading>Rechtsklikorder "Laden tot voltooid"</HaulersDream.Setting.ContinuousLoading>
+<HaulersDream.Setting.ContinuousLoadingDesc>Voegt een rechtsklikorder toe die één koerier (zelfs opgeroepen) door elke nabije transportgroep stuurt die nog laden nodig heeft, en ketent de taken tot ze allemaal vol zijn — handig voor het laden van een grote karavaan met één commando. Standaard uit (opt-in gemak).</HaulersDream.Setting.ContinuousLoadingDesc>
+<HaulersDream.ContinuousLoad.Option>Laden tot voltooid (continu) — {0}</HaulersDream.ContinuousLoad.Option>
+<HaulersDream.ContinuousLoad.CouldNotStart>Op dit moment niets in de buurt om daar bulksgewijs in te laden.</HaulersDream.ContinuousLoad.CouldNotStart>
+<HaulersDream.Setting.LoadHybridPathing>Bulklaadstops ordenen op echt padzoeken</HaulersDream.Setting.LoadHybridPathing>
+<HaulersDream.Setting.LoadHybridPathingDesc>Bij het opvegen van meerdere stapels richting een transport, kies de loopvolgorde met echt padzoeken voor de dichtstbijzijnde paar kandidaten in plaats van afstand in rechte lijn — iets betere routes op rommelige kaarten, tegen wat extra padzoekkosten. Standaard uit; de rechte-lijn-volgorde levert al correcte ladingen met weinig trips.</HaulersDream.Setting.LoadHybridPathingDesc>
+<HaulersDream.Setting.LoadPathfindingCandidates>Padzoekkandidaten per stop: {0}</HaulersDream.Setting.LoadPathfindingCandidates>
+<HaulersDream.Setting.AutoOpenTransporterContents>Tabblad Inhoud automatisch openen voor geselecteerde transporters</HaulersDream.Setting.AutoOpenTransporterContents>
+<HaulersDream.Setting.AutoOpenTransporterContentsDesc>Wanneer je één transportpod of shuttle selecteert, open automatisch zijn tabblad Inhoud zodat je kunt zien wat het laadt. Standaard uit (het wijzigt welk tabblad open is wanneer je op dingen klikt).</HaulersDream.Setting.AutoOpenTransporterContentsDesc>
+<HaulersDream.Setting.AutoOpenCarrierGear>Tabblad Uitrusting automatisch openen voor geselecteerde dragers</HaulersDream.Setting.AutoOpenCarrierGear>
+<HaulersDream.Setting.AutoOpenCarrierGearDesc>Wanneer je een lastdier of andere drager selecteert, open automatisch zijn tabblad Uitrusting om te zien wat het draagt. Standaard uit.</HaulersDream.Setting.AutoOpenCarrierGearDesc>
+<HaulersDream.Setting.EnableStorageNetworkBulkLoad>Bulksgewijs laden vanuit Storage Network (experimenteel)</HaulersDream.Setting.EnableStorageNetworkBulkLoad>
+<HaulersDream.Setting.EnableStorageNetworkBulkLoadDesc>Wanneer de mod Storage Network is geïnstalleerd, laat bulkladen de spullen opvegen die in zijn netwerkservers zijn opgeslagen, zodat een transporter, pod, portaal of voertuig in één trip wordt gevuld in plaats van één stapel tegelijk. De spullen worden door een bruikbare, bereikbare terminal getrokken en op aanvraag door Storage Network gematerialiseerd. Standaard uit: dit is experimenteel en hangt af van het gedrag van Storage Network. Zonder dit laden netwerkspullen nog steeds op de normale (één-stapel-per-trip) manier.</HaulersDream.Setting.EnableStorageNetworkBulkLoadDesc>
+<HaulersDream.Setting.ResetToDefaults>Terugzetten naar standaarden</HaulersDream.Setting.ResetToDefaults>
+<HaulersDream.Setting.ResetToDefaultsConfirm>Alle Hauler's Dream-instellingen terugzetten naar hun standaarden? Je uitlaadregels per item, routevoorkeuren en opslagfilter worden ook gewist. Dit kan niet ongedaan worden gemaakt.</HaulersDream.Setting.ResetToDefaultsConfirm>
+<HaulersDream.Cat.Features>Functies</HaulersDream.Cat.Features>
+<HaulersDream.Cat.Features.Help>Schakel hele functiefamilies aan of uit. Hauler's Dream doet het werk van vele aparte mods — schakel uit wat je liever niet gebruikt. Gedetailleerde opties voor elke familie staan op de andere pagina's.</HaulersDream.Cat.Features.Help>
+<HaulersDream.Cat.Features.Intro>Elke kaart hieronder schakelt een hele functiefamilie in of uit. Het fijnafstellen voor elk staat op zijn eigen pagina in de lijst links.</HaulersDream.Cat.Features.Intro>
+<HaulersDream.Cat.Hauling>Sjouwen</HaulersDream.Cat.Hauling>
+<HaulersDream.Cat.Hauling.Help>Hoe kolonisten dingen oppakken: de draaglimiet, slim overladen, een heel gebied in één trip bulksgewijs opvegen, en losse spullen opruimen terwijl ze werken.</HaulersDream.Cat.Hauling.Help>
+<HaulersDream.Cat.Unloading>Uitladen</HaulersDream.Cat.Unloading>
+<HaulersDream.Cat.Unloading.Help>Wanneer en hoe gedragen goederen worden opgeborgen: automatische uitlaadtrips, uitladen voor rusttijd, omgaan met overschot, ordening van afleveren, en regels per item.</HaulersDream.Cat.Unloading.Help>
+<HaulersDream.Cat.BuildCraft>Bouwen en vervaardigen</HaulersDream.Cat.BuildCraft>
+<HaulersDream.Cat.BuildCraft.Help>Materialen uit inventaris halen voor constructie en vervaardigingstaken, plus voedselbezorging tussen figuren en bederf-eerst-ingrediëntkeuze.</HaulersDream.Cat.BuildCraft.Help>
+<HaulersDream.Cat.BulkLoading>Bulkladen</HaulersDream.Cat.BulkLoading>
+<HaulersDream.Cat.BulkLoading.Help>Laden en uitladen in één trip van lastdieren, transportpods, shuttles, kaartportalen, bijtankbare objecten en voertuigen.</HaulersDream.Cat.BulkLoading.Help>
+<HaulersDream.Cat.Routing>Routing en opslag</HaulersDream.Cat.Routing>
+<HaulersDream.Cat.Routing.Help>Spullen oppakken die ruwweg onderweg liggen, voorraden dichter verplaatsen naar waar ze worden gebruikt, en filteren welke opslag het sjouwen mag gebruiken.</HaulersDream.Cat.Routing.Help>
+<HaulersDream.Cat.Yields>Werk en opbrengsten</HaulersDream.Cat.Yields>
+<HaulersDream.Cat.Yields.Help>Welke werkopbrengsten worden opgepakt, karkassen naar opslag sjouwen na een dodelijke treffer, en uitrusting van lijken uitkleden tijdens het sjouwen.</HaulersDream.Cat.Yields.Help>
+<HaulersDream.Cat.Who>Wie werkt</HaulersDream.Cat.Who>
+<HaulersDream.Cat.Who.Help>Op welke figuren Hauler's Dream van toepassing is — mechs, dieren, de opgeroepenen, off-map kolonisten — plus overrides die elke figuur laten sjouwen, schoonmaken of planten knippen.</HaulersDream.Cat.Who.Help>
+<HaulersDream.Cat.Planners>Planners</HaulersDream.Cat.Planners>
+<HaulersDream.Cat.Planners.Help>De rechtsklik-routeplanner en de stations-vervaardigingsplanner, en hun standaarden.</HaulersDream.Cat.Planners.Help>
+<HaulersDream.Cat.Advanced>Geavanceerd</HaulersDream.Cat.Advanced>
+<HaulersDream.Cat.Advanced.Help>Uitlaadtiming, het vastgelopen-vracht-veiligheidsalarm, opruimen bij opslaan, en ontwikkelaarsdiagnostiek.</HaulersDream.Cat.Advanced.Help>
+<HaulersDream.Cat.Migration>Migratie</HaulersDream.Cat.Migration>
+<HaulersDream.Cat.Migration.Help>Getoond omdat je nog een of meer mods actief hebt die Hauler's Dream vervangt (waaronder vertaalde of "Continued"-versies). Ze tegelijk met Hauler's Dream draaien laat ze vechten om dezelfde sjouwtaken — wat eruit kan zien alsof oppakken kapot is. Volg de stappen om ze netjes te verwijderen.</HaulersDream.Cat.Migration.Help>
+<HaulersDream.Migration.DetectedHead>Vervangen mods nog actief</HaulersDream.Migration.DetectedHead>
+<HaulersDream.Migration.Intro>Hauler's Dream is een enkele vervanging voor de onderstaande mods, die je nog steeds ingeschakeld hebt. Ze naast Hauler's Dream draaien laat ze concurreren om dezelfde sjouwtaken, dus oppakken kan kapot of grillig lijken. Verwijder ze met de schone stappen hieronder.</HaulersDream.Migration.Intro>
+<HaulersDream.Migration.DisableButton>Schakel ze voor mij uit</HaulersDream.Migration.DisableButton>
+<HaulersDream.Migration.DisableButton.Help>Schakelt elke hierboven vermelde vervangen mod uit en herstart RimWorld. Een wijziging in de modlijst wordt pas van kracht na een herstart, dus dit is hetzelfde als wat het Mods-menu doet. Sla je spel op (en stel idealiter je kolonisten op — zie de stappen) voordat je dit gebruikt.</HaulersDream.Migration.DisableButton.Help>
+<HaulersDream.Migration.DisableTitle>Vervangen mods uitschakelen?</HaulersDream.Migration.DisableTitle>
+<HaulersDream.Migration.DisableConfirm>Dit schakelt {0} uit en HERSTART RimWorld meteen.\n\nZorg dat je je spel eerst hebt OPGESLAGEN — en idealiter je kolonisten hebt opgesteld (zie de stappen op dit tabblad) zodat er niets kapotgaat wanneer de oude mods midden in een taak worden verwijderd.\n\nNu herstarten?</HaulersDream.Migration.DisableConfirm>
+<HaulersDream.Migration.StepsHead>Voor een schone overgang</HaulersDream.Migration.StepsHead>
+<HaulersDream.Migration.Step1>1.  Open je opgeslagen spel en STEL al je kolonisten OP, sla dan het spel op. Het opstellen annuleert hun huidige taken, wat bugs vermijdt die de andere mods kunnen veroorzaken wanneer ze midden in een taak worden verwijderd.</HaulersDream.Migration.Step1>
+<HaulersDream.Migration.Step2>2.  Schakel alle hierboven vermelde mods uit — gebruik de knop "Schakel ze voor mij uit", of sluit af naar het hoofdmenu en zet ze zelf uit in het Mods-menu.</HaulersDream.Migration.Step2>
+<HaulersDream.Migration.Step3>3.  Nadat het spel herstart is, laad je opgeslagen spel opnieuw, en sla het dan nog een keer op — de verwijderde mods zijn nu volledig uit beeld.</HaulersDream.Migration.Step3>
+<HaulersDream.Migration.Step4>4.  Zorg dat Hauler's Dream is ingeschakeld, hef de oproep van je kolonisten op, en ga verder.</HaulersDream.Migration.Step4>
+<HaulersDream.Advanced.DevHint>Ontwikkelaarsdiagnostiek verschijnt hier wanneer de Ontwikkelaarsmodus is ingeschakeld.</HaulersDream.Advanced.DevHint>
+<HaulersDream.FeatGroup.Core>Kern</HaulersDream.FeatGroup.Core>
+<HaulersDream.FeatGroup.Loading>Laden en dragers</HaulersDream.FeatGroup.Loading>
+<HaulersDream.FeatGroup.BuildCraft>Bouwen en vervaardigen</HaulersDream.FeatGroup.BuildCraft>
+<HaulersDream.FeatGroup.Planning>Planhulpmiddelen</HaulersDream.FeatGroup.Planning>
+<HaulersDream.FeatGroup.Wyu>Opportunistisch sjouwen</HaulersDream.FeatGroup.Wyu>
+<HaulersDream.Feat.Master.Name>Hauler's Dream inschakelen</HaulersDream.Feat.Master.Name>
+<HaulersDream.Feat.Master.Blurb>Hoofdschakelaar voor alle automatische gedrag</HaulersDream.Feat.Master.Blurb>
+<HaulersDream.Feat.AutoUnload.Name>Automatisch uitladen</HaulersDream.Feat.AutoUnload.Name>
+<HaulersDream.Feat.AutoUnload.Blurb>Figuren maken hun eigen uitlaadtrips. Uit = alleen uitladen via de knop per figuur.</HaulersDream.Feat.AutoUnload.Blurb>
+<HaulersDream.Feat.BulkHaul.Name>Bulksjouwen</HaulersDream.Feat.BulkHaul.Name>
+<HaulersDream.Feat.BulkHaul.Blurb>Veeg veel nabije spullen in één trip in de inventaris</HaulersDream.Feat.BulkHaul.Blurb>
+<HaulersDream.Feat.Sweep.Name>Opruimen tijdens het werken</HaulersDream.Feat.Sweep.Name>
+<HaulersDream.Feat.Sweep.Blurb>Pak ook losse spullen bij de werkplek op</HaulersDream.Feat.Sweep.Blurb>
+<HaulersDream.Feat.UnloadCarriers.Name>Lastdieren bulksgewijs uitladen</HaulersDream.Feat.UnloadCarriers.Name>
+<HaulersDream.Feat.UnloadCarriers.Blurb>Leeg een drager in één bezoek in een rugzak</HaulersDream.Feat.UnloadCarriers.Blurb>
+<HaulersDream.Feat.LoadTransporters.Name>Transporters en shuttles laden</HaulersDream.Feat.LoadTransporters.Name>
+<HaulersDream.Feat.LoadTransporters.Blurb>Vul pods en shuttles in één trip</HaulersDream.Feat.LoadTransporters.Blurb>
+<HaulersDream.Feat.LoadPortal.Name>Kaartportalen laden</HaulersDream.Feat.LoadPortal.Name>
+<HaulersDream.Feat.LoadPortal.Blurb>Putpoorten en grotuitgangen bulksgewijs laden</HaulersDream.Feat.LoadPortal.Blurb>
+<HaulersDream.Feat.Refuel.Name>Bulksgewijs bijtanken</HaulersDream.Feat.Refuel.Name>
+<HaulersDream.Feat.Refuel.Blurb>Vul een bijtankbaar object in één trip aan</HaulersDream.Feat.Refuel.Blurb>
+<HaulersDream.Feat.Vehicles.Name>Voertuigvracht</HaulersDream.Feat.Vehicles.Name>
+<HaulersDream.Feat.Vehicles.Blurb>Voertuigvracht bulksgewijs laden (vereist een voertuigenmod)</HaulersDream.Feat.Vehicles.Blurb>
+<HaulersDream.Feat.BuildFromInv.Name>Bouwen uit inventaris</HaulersDream.Feat.BuildFromInv.Name>
+<HaulersDream.Feat.BuildFromInv.Blurb>Bouwen met gedragen en karavaanmaterialen</HaulersDream.Feat.BuildFromInv.Blurb>
+<HaulersDream.Feat.CraftFromInv.Name>Vervaardigen uit gedragen materialen</HaulersDream.Feat.CraftFromInv.Name>
+<HaulersDream.Feat.CraftFromInv.Blurb>Taken kunnen ingrediënten gebruiken die figuren al dragen</HaulersDream.Feat.CraftFromInv.Blurb>
+<HaulersDream.Feat.ConstructDeliver.Name>Materialen dragen voor grote bouwwerken</HaulersDream.Feat.ConstructDeliver.Name>
+<HaulersDream.Feat.ConstructDeliver.Blurb>Minder trips naar grote of geclusterde bouwtaken</HaulersDream.Feat.ConstructDeliver.Blurb>
+<HaulersDream.Feat.Meals.Name>Meals on Wheels</HaulersDream.Feat.Meals.Name>
+<HaulersDream.Feat.Meals.Blurb>Een hongerige figuur eet eten dat een andere figuur draagt</HaulersDream.Feat.Meals.Blurb>
+<HaulersDream.Feat.PlanRoutes.Name>Routeplanner</HaulersDream.Feat.PlanRoutes.Name>
+<HaulersDream.Feat.PlanRoutes.Blurb>Rechtsklikhulpmiddel om een sjouw-/werkroute te plannen</HaulersDream.Feat.PlanRoutes.Blurb>
+<HaulersDream.Feat.PlanCrafting.Name>Vervaardigingsplanner</HaulersDream.Feat.PlanCrafting.Name>
+<HaulersDream.Feat.PlanCrafting.Blurb>Batch een werkbanktaak vele malen in één keer</HaulersDream.Feat.PlanCrafting.Blurb>
+<HaulersDream.Feat.EnRoute.Name>Onderweg oppakken</HaulersDream.Feat.EnRoute.Name>
+<HaulersDream.Feat.EnRoute.Blurb>Pak losse spullen op die langs de weg naar een taak liggen</HaulersDream.Feat.EnRoute.Blurb>
+<HaulersDream.Feat.StorageRouting.Name>Verbruiker-bewuste routing</HaulersDream.Feat.StorageRouting.Name>
+<HaulersDream.Feat.StorageRouting.Blurb>Verplaats voorraden naar opslag dichter bij waar ze worden gebruikt</HaulersDream.Feat.StorageRouting.Blurb>
+<HaulersDream.Feat.StorageFilters.Name>Opslagfilters</HaulersDream.Feat.StorageFilters.Name>
+<HaulersDream.Feat.StorageFilters.Blurb>Beperk welke opslaggebouwen het sjouwen mag gebruiken</HaulersDream.Feat.StorageFilters.Blurb>
+<HaulersDream.Head.BulkHaul>Bulksjouwen</HaulersDream.Head.BulkHaul>
+<HaulersDream.Head.WhileWorking>Tijdens het werken</HaulersDream.Head.WhileWorking>
+<HaulersDream.Head.Construction>Constructie</HaulersDream.Head.Construction>
+<HaulersDream.Head.Crafting>Vervaardigen</HaulersDream.Head.Crafting>
+<HaulersDream.Head.Food>Eten</HaulersDream.Head.Food>
+<HaulersDream.Head.PackAnimals>Lastdieren</HaulersDream.Head.PackAnimals>
+<HaulersDream.Head.Transporters>Transporters, portalen en bijtanken</HaulersDream.Head.Transporters>
+<HaulersDream.Head.Vehicles>Voertuigen</HaulersDream.Head.Vehicles>
+<HaulersDream.Head.AdvancedLoading>Geavanceerd laden</HaulersDream.Head.AdvancedLoading>
+<HaulersDream.Head.StorageRouting>Verbruiker-bewuste opslagrouting</HaulersDream.Head.StorageRouting>
+<HaulersDream.Head.StorageFilters>Opslaggebouwfilters</HaulersDream.Head.StorageFilters>
+<HaulersDream.Head.AfterKill>Na een dodelijke treffer</HaulersDream.Head.AfterKill>
+<HaulersDream.Head.Stripping>Uitkleden</HaulersDream.Head.Stripping>
+<HaulersDream.Head.Batches>Vervaardigingsbatches</HaulersDream.Head.Batches>
+<HaulersDream.Head.RoutePlanning>Routeplanning</HaulersDream.Head.RoutePlanning>
+<HaulersDream.Head.UnloadTiming>Uitlaadtiming</HaulersDream.Head.UnloadTiming>
+<HaulersDream.Head.SafetyNet>Vangnet</HaulersDream.Head.SafetyNet>
+<HaulersDream.Head.Developer>Ontwikkelaar</HaulersDream.Head.Developer>
+<HaulersDream.Profile.Default>Standaard (profiel, ingebouwd)</HaulersDream.Profile.Default>
+<HaulersDream.Profile.Custom>Aangepast (niet-opgeslagen)</HaulersDream.Profile.Custom>
+<HaulersDream.Profile.Named>{0} (profiel)</HaulersDream.Profile.Named>
+<HaulersDream.Profile.NamedDirty>{0} (profiel, niet-opgeslagen wijzigingen)</HaulersDream.Profile.NamedDirty>
+<HaulersDream.Profile.SaveChanges>Wijzigingen opslaan in "{0}"</HaulersDream.Profile.SaveChanges>
+<HaulersDream.Profile.CreateNew>Nieuw profiel maken…</HaulersDream.Profile.CreateNew>
+<HaulersDream.Profile.SaveAsNew>Opslaan als nieuw profiel…</HaulersDream.Profile.SaveAsNew>
+<HaulersDream.Profile.Delete>Profiel "{0}" verwijderen</HaulersDream.Profile.Delete>
+<HaulersDream.Profile.DeleteConfirm>Het profiel "{0}" verwijderen? Je huidige instellingen blijven zoals ze zijn.</HaulersDream.Profile.DeleteConfirm>
+<HaulersDream.Profile.NameDialogTitle>Profielnaam:</HaulersDream.Profile.NameDialogTitle>
+<HaulersDream.Profile.SelectorTip>Instellingenprofielen. Kies een opgeslagen profiel, zet terug naar de ingebouwde Standaard, of sla je huidige instellingen op als een nieuw profiel. "Aangepast (niet-opgeslagen)" betekent dat je instellingen hebt gewijzigd die nog niet in een profiel zijn opgeslagen.</HaulersDream.Profile.SelectorTip>
+<HaulersDream.Profile.Copy>Profiel kopiëren…</HaulersDream.Profile.Copy>
+<HaulersDream.Profile.Paste>Profiel plakken…</HaulersDream.Profile.Paste>
+<HaulersDream.Profile.CopyTitle>Profiel kopiëren</HaulersDream.Profile.CopyTitle>
+<HaulersDream.Profile.CopyInfo>Deel deze code met een andere speler. Het bevat de modversie en alleen de instellingen die je hebt gewijzigd ten opzichte van de standaarden van deze versie, zodat het kort blijft.</HaulersDream.Profile.CopyInfo>
+<HaulersDream.Profile.CopyToClipboard>Kopiëren naar klembord</HaulersDream.Profile.CopyToClipboard>
+<HaulersDream.Profile.CopiedMsg>Profielcode gekopieerd naar klembord.</HaulersDream.Profile.CopiedMsg>
+<HaulersDream.Profile.PasteTitle>Profiel plakken</HaulersDream.Profile.PasteTitle>
+<HaulersDream.Profile.PasteTokenLabel>Profielcode:</HaulersDream.Profile.PasteTokenLabel>
+<HaulersDream.Profile.PasteFromClipboard>Plakken vanaf klembord</HaulersDream.Profile.PasteFromClipboard>
+<HaulersDream.Profile.PasteInvalid>Dat ziet er niet uit als een geldige Hauler's Dream-profielcode.</HaulersDream.Profile.PasteInvalid>
+<HaulersDream.Profile.PasteCreate>Profiel maken</HaulersDream.Profile.PasteCreate>
+<HaulersDream.Common.Off>Uit</HaulersDream.Common.Off>
+<HaulersDream.Common.On>Aan</HaulersDream.Common.On>
+<HaulersDream.Unit.Tiles>{0} tegels</HaulersDream.Unit.Tiles>
+<HaulersDream.Unit.Ticks>{0} ticks</HaulersDream.Unit.Ticks>
+<HaulersDream.Unit.Hours>{0} u</HaulersDream.Unit.Hours>
+<HaulersDream.Setting.CarryLimit.Lab>Draaglimiet</HaulersDream.Setting.CarryLimit.Lab>
+<HaulersDream.Setting.Overload.Lab>Slim overladen</HaulersDream.Setting.Overload.Lab>
+<HaulersDream.Setting.PickupMode.Lab>Oppakafhandeling</HaulersDream.Setting.PickupMode.Lab>
+<HaulersDream.Setting.PickupMode.Help>Hoe een figuur een item dat het op het punt staat te sjouwen in zijn lading neemt.</HaulersDream.Setting.PickupMode.Help>
+<HaulersDream.Setting.PickupMode.Drop>Laten vallen, dan sjouwen</HaulersDream.Setting.PickupMode.Drop>
+<HaulersDream.Setting.PickupMode.DropDesc>Realistisch: het item wordt kort op de grond gelaten en dan opgeschept — zodat een andere sjouwer het tussentijds nog kan pakken.</HaulersDream.Setting.PickupMode.DropDesc>
+<HaulersDream.Setting.PickupMode.Direct>In inventaris</HaulersDream.Setting.PickupMode.Direct>
+<HaulersDream.Setting.PickupMode.DirectDesc>Het item gaat rechtstreeks in de inventaris van de figuur zonder grondstap.</HaulersDream.Setting.PickupMode.DirectDesc>
+<HaulersDream.Setting.BulkHaulTrigger.Lab>Bulksjouw-trigger</HaulersDream.Setting.BulkHaulTrigger.Lab>
+<HaulersDream.Setting.KeepWorkingMargin.Lab>Uitladen voor een langere verplaatsing</HaulersDream.Setting.KeepWorkingMargin.Lab>
+<HaulersDream.Setting.MinFreeSpaceToUnloadCarrier.Lab>Minimale vrije rugzakruimte om te starten</HaulersDream.Setting.MinFreeSpaceToUnloadCarrier.Lab>
+<HaulersDream.Setting.MinFreeSpaceToUnloadCarrier.Help>Een sjouwer heeft minstens zoveel van zijn draagcapaciteit vrij nodig voordat het begint een lastdier te legen, zodat zijn eigen rugzak niet meteen overloopt.</HaulersDream.Setting.MinFreeSpaceToUnloadCarrier.Help>
+<HaulersDream.Setting.VisualUnloadDelay.Lab>Uitlaadvertraging per stapel</HaulersDream.Setting.VisualUnloadDelay.Lab>
+<HaulersDream.Setting.VisualUnloadDelay.Help>Een kleine cosmetische pauze tussen elke stapel tijdens een bulkuitlading, zodat het overkomt als een doelbewuste actie. 0 = onmiddellijk.</HaulersDream.Setting.VisualUnloadDelay.Help>
+<HaulersDream.Setting.BulkLoadAiUpdateFrequency.Lab>Interval voor laadhercontrole</HaulersDream.Setting.BulkLoadAiUpdateFrequency.Lab>
+<HaulersDream.Setting.BulkLoadAiUpdateFrequency.Help>Hoe vaak een lopende bulklaadtaak opnieuw controleert of zijn gedragen vracht nog door de groep gewenst is. Lager = responsievere herrouting, hoger = goedkoper.</HaulersDream.Setting.BulkLoadAiUpdateFrequency.Help>
+<HaulersDream.Setting.LoadOpportunityRadius.Lab>Deponeren-onderweg zoekstraal</HaulersDream.Setting.LoadOpportunityRadius.Lab>
+<HaulersDream.Setting.LoadOpportunityRadius.Help>Hoe ver een dragende figuur zoekt naar een behoeftige transporter om vracht in te deponeren terwijl het passeert.</HaulersDream.Setting.LoadOpportunityRadius.Help>
+<HaulersDream.Setting.LoadPathfindingCandidates.Lab>Padzoekkandidaten per stop</HaulersDream.Setting.LoadPathfindingCandidates.Lab>
+<HaulersDream.Setting.LoadPathfindingCandidates.Help>Hoeveel van de dichtstbijzijnde oppakstops opnieuw worden gerangschikt op echt padzoeken in plaats van afstand in rechte lijn. Hoger = nauwkeurigere ordening, meer CPU.</HaulersDream.Setting.LoadPathfindingCandidates.Help>
+<HaulersDream.Setting.DefaultBatchSize.Lab>Standaard batchgrootte</HaulersDream.Setting.DefaultBatchSize.Lab>
+<HaulersDream.Setting.DefaultBatchSize.Help>De startende hoeveelheid voor een nieuw gebatchte taak.</HaulersDream.Setting.DefaultBatchSize.Help>
+<HaulersDream.Setting.RouteMaxAmount.Lab>Maximum van de route-'Aantal'-schuif</HaulersDream.Setting.RouteMaxAmount.Lab>
+<HaulersDream.Setting.RouteMaxAmount.Help>De top van de Aantal-schuif in de routeplanner (voor de 'Alles'-stap).</HaulersDream.Setting.RouteMaxAmount.Help>
+<HaulersDream.Setting.RouteOrderEffort.Lab>Bezoekvolgorde exact oplossen tot</HaulersDream.Setting.RouteOrderEffort.Lab>
+<HaulersDream.Setting.RouteOrderEffort.Help>Routes met hoogstens zoveel stops krijgen een exacte optimale bezoekvolgorde; grotere routes gebruiken een snelle benadering. Hoger lost exacter op maar kost meer CPU.</HaulersDream.Setting.RouteOrderEffort.Help>
+<HaulersDream.Setting.CraftBatchTimeout.Lab>Standaard vervaardigingsbatch-time-out</HaulersDream.Setting.CraftBatchTimeout.Lab>
+<HaulersDream.Setting.CraftBatchTimeout.Help>Wandkloklimiet voor een vervaardigingsbatch voordat het uit zichzelf eindigt. 0 = geen limiet. Overschrijfbaar per batch.</HaulersDream.Setting.CraftBatchTimeout.Help>
+<HaulersDream.Setting.UnloadGrace.Lab>Verzamelvenster</HaulersDream.Setting.UnloadGrace.Lab>
+<HaulersDream.Setting.UnloadGrace.Help>Hoe lang na zijn laatste oppakactie een figuur blijft verzamelen voordat het een automatische uitlaadtrip maakt. Hoger = een werkende figuur blijft de hele taak door oppakken; het lost nog steeds eerder uit zodra het vol raakt.</HaulersDream.Setting.UnloadGrace.Help>
+<HaulersDream.Setting.IntervalUnload.Lab>Intervaluitlading-vangnet</HaulersDream.Setting.IntervalUnload.Lab>
+<HaulersDream.Setting.IntervalUnload.Help>Een periodieke geforceerde uitlading, voor het geval elke andere uitlaadtrigger wordt opgeslokt (oproepen, lordtaken, gemodde taken). 0 = uit.</HaulersDream.Setting.IntervalUnload.Help>
+<HaulersDream.Setting.AlertStuckHours.Lab>Markeer een vastgelopen figuur na</HaulersDream.Setting.AlertStuckHours.Lab>
+<HaulersDream.Setting.AlertStuckHours.Help>Hoe lang een figuur sjouwvracht mag vasthouden die het niet kan opbergen (met een bestemming die bestaat) voordat het alarm het markeert.</HaulersDream.Setting.AlertStuckHours.Help>
+<HaulersDream.Setting.EnRoutePathChecker.Lab>Onderweg-controle</HaulersDream.Setting.EnRoutePathChecker.Lab>
+<HaulersDream.Setting.AutoStripMode.Lab>Automatisch uitkleden tijdens het sjouwen</HaulersDream.Setting.AutoStripMode.Lab>
+<HaulersDream.Setting.AutoStrip.Help>Bij het sjouwen van een lijk, kleed eerst zijn uitrusting uit en draag de buit mee. 'Alleen afvoer' kleedt alleen lijken uit die naar een stortzone gaan. 'Uit' laat lijken aangekleed (handmatige uitkleedorders pakken hun uitrusting nog steeds op).</HaulersDream.Setting.AutoStrip.Help>
+<HaulersDream.Setting.TaintedSmeltable.Lab>Besmette kleding — smeltbaar</HaulersDream.Setting.TaintedSmeltable.Lab>
+<HaulersDream.Setting.TaintedNonSmeltable.Lab>Besmette kleding — niet-smeltbaar</HaulersDream.Setting.TaintedNonSmeltable.Lab>
+<HaulersDream.Setting.Tainted.Help>Wat te doen met besmette (door-de-doden-gedragen) kleding die tijdens een uitkleedactie wordt verwijderd: neem het mee, laat het op het lijk, laat het vallen en verbied het, of vernietig het.</HaulersDream.Setting.Tainted.Help>
+<HaulersDream.Setting.RouteSelection.Lab>Routeselectie</HaulersDream.Setting.RouteSelection.Lab>
+<HaulersDream.Setting.RouteSelection.Help>Hoe de planner kiest welke doelen in een route worden opgenomen.</HaulersDream.Setting.RouteSelection.Help>
+<HaulersDream.Setting.RouteDistance.Lab>Afstandsbasis</HaulersDream.Setting.RouteDistance.Lab>
+<HaulersDream.Setting.RouteDistance.Help>Hoe de planner de afstand tussen stops meet.</HaulersDream.Setting.RouteDistance.Help>
+<HaulersDream.Setting.ShareForBuilding.Help>Materialen die een figuur al in zijn inventaris heeft geschept tellen mee voor nabije constructie, zodat het kan bouwen zonder aparte haaltrip.</HaulersDream.Setting.ShareForBuilding.Help>
+<HaulersDream.Setting.ShareMeetInMiddle.Help>Wanneer een bouw of taak een materiaal uit de inventaris van een drager zal trekken, loopt een vrije drager naar de werker zodat ze elkaar eerder treffen.</HaulersDream.Setting.ShareMeetInMiddle.Help>
+<HaulersDream.Setting.ItemUnload.Help>Stel regels in voor individuele spullen: behoud de hele stapel, behoud hoogstens een ingestelde hoeveelheid, of laad het altijd uit — wat de overschotinstelling voor dat item overschrijft.</HaulersDream.Setting.ItemUnload.Help>
+<HaulersDream.Setting.HideGizmo.Help>Verberg de 'Inventaris uitladen'-knop per figuur die verschijnt wanneer een kolonist opgepakte goederen draagt.</HaulersDream.Setting.HideGizmo.Help>
+<HaulersDream.Setting.StorageFilterButton.Help>Bewerk toestaan/weigeren-regels per gebouw en per mod voor welke opslag het sjouwen mag gebruiken.</HaulersDream.Setting.StorageFilterButton.Help>
+<HaulersDream.Setting.PauseWhileDrafted.Help>Terwijl een figuur is opgeroepen, stopt Hauler's Dream met het starten van nieuwe oppakacties en vegingen ervoor.</HaulersDream.Setting.PauseWhileDrafted.Help>
+<HaulersDream.Setting.AllowIncapable.Help>Laat een figuur dat onbekwaam is om te Sjouwen toch de opbrengsten uit zijn eigen werk oppakken (delven, oogsten, …).</HaulersDream.Setting.AllowIncapable.Help>
+<HaulersDream.Setting.EnableOnNonHomeMaps.Help>Draai Hauler's Dream ook op karavaan- en andere niet-thuiskaarten, niet alleen je thuiskolonie.</HaulersDream.Setting.EnableOnNonHomeMaps.Help>
+<HaulersDream.Setting.VerboseLogging.Help>Extra ontwikkelaarslogging. Alleen beschikbaar — en logt alleen — in Ontwikkelaarsmodus.</HaulersDream.Setting.VerboseLogging.Help>
+<HaulersDream.Setting.BulkHaulSecond.S>Bij 2e order</HaulersDream.Setting.BulkHaulSecond.S>
+<HaulersDream.Setting.BulkHaulAlways.S>Altijd</HaulersDream.Setting.BulkHaulAlways.S>
+<HaulersDream.Setting.EnRoutePathVanilla.S>Goedkoop</HaulersDream.Setting.EnRoutePathVanilla.S>
+<HaulersDream.Setting.EnRoutePathDefault.S>Nauwkeurig</HaulersDream.Setting.EnRoutePathDefault.S>
+<HaulersDream.Setting.EnRoutePathPathfinding.S>Grondig</HaulersDream.Setting.EnRoutePathPathfinding.S>
+<HaulersDream.Setting.AutoStripAll.S>Alle sjouwtrips</HaulersDream.Setting.AutoStripAll.S>
+<HaulersDream.Setting.AutoStripDisposal.S>Alleen afvoer</HaulersDream.Setting.AutoStripDisposal.S>
+<HaulersDream.Setting.AutoStripOff.S>Uit</HaulersDream.Setting.AutoStripOff.S>
+<HaulersDream.Setting.TaintedTake.S>Meenemen</HaulersDream.Setting.TaintedTake.S>
+<HaulersDream.Setting.TaintedLeave.S>Laten</HaulersDream.Setting.TaintedLeave.S>
+<HaulersDream.Setting.TaintedForbid.S>Laten vallen en verbieden</HaulersDream.Setting.TaintedForbid.S>
+<HaulersDream.Setting.TaintedDestroy.S>Vernietigen</HaulersDream.Setting.TaintedDestroy.S>
+<HaulersDream.PlanRoute.SelMostStops.S>Meeste stops</HaulersDream.PlanRoute.SelMostStops.S>
+<HaulersDream.PlanRoute.SelNearest.S>Dichtstbijzijnde</HaulersDream.PlanRoute.SelNearest.S>
+<HaulersDream.PlanRoute.DistStraight.S>Rechte lijn</HaulersDream.PlanRoute.DistStraight.S>
+<HaulersDream.PlanRoute.DistWalking.S>Looppad</HaulersDream.PlanRoute.DistWalking.S>
+<HaulersDream.Setting.EnRoutePathVanilla.H>Snelle begrensde regiotelling-flood — de goedkoopste controle, minst nauwkeurig.</HaulersDream.Setting.EnRoutePathVanilla.H>
+<HaulersDream.Setting.EnRoutePathDefault.H>Echte A*-padkost; stopt met scannen bij een bereikfout. Nauwkeuriger, meer CPU.</HaulersDream.Setting.EnRoutePathDefault.H>
+<HaulersDream.Setting.EnRoutePathPathfinding.H>Echte A*-padkost; blijft scannen naar de beste match. Meest nauwkeurig, meeste CPU.</HaulersDream.Setting.EnRoutePathPathfinding.H>
+<HaulersDream.PlanRoute.SelMostStops.H>Verkies doelen die de meeste stops in één reisafstand pakken.</HaulersDream.PlanRoute.SelMostStops.H>
+<HaulersDream.PlanRoute.SelNearest.H>Verkies de doelen die het dichtst bij degene liggen die je hebt aangeklikt.</HaulersDream.PlanRoute.SelNearest.H>
+<HaulersDream.PlanRoute.DistStraight.H>Meet afstand als een rechte lijn — snel.</HaulersDream.PlanRoute.DistStraight.H>
+<HaulersDream.PlanRoute.DistWalking.H>Meet afstand langs het echte looppad — langzamer, nauwkeuriger.</HaulersDream.PlanRoute.DistWalking.H>
+<HaulersDream.Setting.HaulHarvest.Help>Schep geoogste gewassen en geknipte plantopbrengsten in de inventaris terwijl de figuur werkt.</HaulersDream.Setting.HaulHarvest.Help>
+<HaulersDream.Setting.HaulMining.Help>Schep gedolven erts en rotsbrokken in de inventaris terwijl de figuur delft.</HaulersDream.Setting.HaulMining.Help>
+<HaulersDream.Setting.HaulDeepDrill.Help>Schep diepboor-output in de inventaris zodra het wordt geproduceerd.</HaulersDream.Setting.HaulDeepDrill.Help>
+<HaulersDream.Setting.HaulDeconstruct.Help>Schep de opbrengst van gesloopte gebouwen in de inventaris.</HaulersDream.Setting.HaulDeconstruct.Help>
+<HaulersDream.Setting.HaulAnimals.Help>Schep melk, wol en andere producten die van dieren worden verzameld in de inventaris.</HaulersDream.Setting.HaulAnimals.Help>
+<HaulersDream.Setting.HaulUninstall.Help>Op een karavaan of andere verre kaart (nooit je thuiskolonie), schep een gebouw dat je verwijdert — nu een geminificeerd item — rechtstreeks in de inventaris van de werker, zodat meerdere verwijderde structuren in ÉÉN trip naar de lastdieren worden gedragen in plaats van één heen-en-weerloop per item. Treedt alleen in werking waar het item daadwerkelijk kan worden afgeleverd (een voorraad/zone of een lastdier). Op je thuiskaart doet dit niets: daar wordt een verwijderd gebouw op de grond gelaten voor normaal sjouwen of herinstallatie.</HaulersDream.Setting.HaulUninstall.Help>
+<HaulersDream.Cat.Hauling.Intro>Hoe kolonisten dingen oppakken — hoeveel ze dragen, wanneer ze overladen, en wat ze opvegen.</HaulersDream.Cat.Hauling.Intro>
+<HaulersDream.Cat.Unloading.Intro>Wanneer en hoe kolonisten hun gedragen goederen opbergen.</HaulersDream.Cat.Unloading.Intro>
+<HaulersDream.Cat.BuildCraft.Intro>Bouw- en vervaardigingsmaterialen uit inventaris halen, voedselbezorging, en ingrediëntkeuze.</HaulersDream.Cat.BuildCraft.Intro>
+<HaulersDream.Cat.BulkLoading.Intro>Laden en uitladen in één trip van dragers, transporten, portalen, bijtankbare objecten en voertuigen.</HaulersDream.Cat.BulkLoading.Intro>
+<HaulersDream.Cat.Routing.Intro>Pak spullen onderweg op, verplaats voorraden dichter bij waar ze worden gebruikt, en filter opslag.</HaulersDream.Cat.Routing.Intro>
+<HaulersDream.Cat.Yields.Intro>Welke werkopbrengsten worden opgepakt, karkassen sjouwen na een dodelijke treffer, en uitrusting uitkleden.</HaulersDream.Cat.Yields.Intro>
+<HaulersDream.Cat.Who.Intro>Op welke figuren Hauler's Dream van toepassing is, en overrides die elke figuur bepaald werk laten doen.</HaulersDream.Cat.Who.Intro>
+<HaulersDream.Cat.Planners.Intro>De rechtsklik-route- en vervaardigingsplanners, en hun standaarden.</HaulersDream.Cat.Planners.Intro>
+<HaulersDream.Cat.Advanced.Intro>Uitlaadtiming, het vastgelopen-vracht-veiligheidsalarm, opruimen bij opslaan, en ontwikkelaarshulpmiddelen.</HaulersDream.Cat.Advanced.Intro>
+<HaulersDream.Head.CarryWeight>Draaggewicht</HaulersDream.Head.CarryWeight>
+<HaulersDream.Head.Pickup>Oppakken</HaulersDream.Head.Pickup>
+<HaulersDream.Head.AutoUnloadTrips>Automatische uitlaadtrips</HaulersDream.Head.AutoUnloadTrips>
+<HaulersDream.Head.DropOff>Aflevergedrag</HaulersDream.Head.DropOff>
+<HaulersDream.Head.ItemRulesDisplay>Regels per item en weergave</HaulersDream.Head.ItemRulesDisplay>
+<HaulersDream.Head.EnRoute>Onderweg oppakken</HaulersDream.Head.EnRoute>
+<HaulersDream.Head.WhoCanHaul>Wie kan oppakken en sjouwen</HaulersDream.Head.WhoCanHaul>
+<HaulersDream.Head.PlanningTools>Planhulpmiddelen</HaulersDream.Head.PlanningTools>
+<HaulersDream.Setting.Overload.Ceiling>plafond</HaulersDream.Setting.Overload.Ceiling>
+</LanguageData>

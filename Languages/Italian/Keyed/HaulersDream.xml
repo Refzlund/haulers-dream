@@ -1,0 +1,596 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LanguageData>
+
+<HaulersDream.SettingsCategory>Hauler's Dream</HaulersDream.SettingsCategory>
+<HaulersDream.SettingsHeaderFallback>Hauler's Dream</HaulersDream.SettingsHeaderFallback>
+<HaulersDream.Tab.General>Generale</HaulersDream.Tab.General>
+<HaulersDream.Tab.Sharing>Condivisione e consegna</HaulersDream.Tab.Sharing>
+<HaulersDream.Tab.Bulk>Carichi in blocco e portatori</HaulersDream.Tab.Bulk>
+<HaulersDream.Tab.Routing>In transito e percorsi</HaulersDream.Tab.Routing>
+<HaulersDream.Tab.Sources>Fonti e chi lavora</HaulersDream.Tab.Sources>
+<HaulersDream.Tab.Planners>Pianificatori e avanzate</HaulersDream.Tab.Planners>
+<HaulersDream.Setting.MasterEnabled>Attiva Hauler's Dream</HaulersDream.Setting.MasterEnabled>
+<HaulersDream.Setting.MasterEnabledDesc>L'interruttore principale. Quando è DISATTIVATO, Hauler's Dream smette di AVVIARE i suoi comportamenti automatici di trasporto — raccogliere i prodotti del lavoro, ripulire il bottino nelle vicinanze, il trasporto in blocco, la raccolta in transito e l'instradamento verso il deposito — il che è utile per capire se la mod è coinvolta in qualcosa, senza dover riavviare. Una pedina che ha già raccolto della merce continua a scaricarla normalmente (nulla resta mai abbandonato), e il pulsante "Svuota inventario" per ogni pedina resta disponibile. (Le sostituzioni dell'incapacità al lavoro e i menù degli ordini col tasto destro hanno i propri interruttori e non sono influenzati da questo.) Attivo per impostazione predefinita.</HaulersDream.Setting.MasterEnabledDesc>
+<HaulersDream.Setting.DrawDetourLines>Disegna le linee di deviazione di debug (sviluppo)</HaulersDream.Setting.DrawDetourLines>
+<HaulersDream.Setting.DrawDetourLinesDesc>Diagnostica solo per sviluppatori: disegna linee colorate per le raccolte in transito e le deviazioni di instradamento verso il deposito, così puoi vedere perché una pedina ha deviato. Non viene salvato — si reimposta su disattivato a ogni avvio del gioco.</HaulersDream.Setting.DrawDetourLinesDesc>
+<HaulersDream.Setting.CarryLimit>Limite di trasporto: {0} della capacità massima di carico di ogni pedina</HaulersDream.Setting.CarryLimit>
+<HaulersDream.Setting.CarryLimitDesc>Il limite è una frazione della capacità massima di carico della pedina — la massa che può trasportare tra vestiario, equipaggiamento e inventario (la stessa capacità usata per le carovane e il caricamento delle some). Gli oggetti trasportati in mano durante un trasporto (la pila attiva trasportata in mano) NON vengono conteggiati in questo limite; conta solo ciò che è riposto in vestiario/equipaggiamento/inventario. Il sovraccarico intelligente qui sotto può comunque permettere a una pedina di superare il 100% di questo limite per risparmiare viaggi.</HaulersDream.Setting.CarryLimitDesc>
+<HaulersDream.Setting.DropThenHaul>Lascia a terra, poi raccogli (realistico)</HaulersDream.Setting.DropThenHaul>
+<HaulersDream.Setting.DropThenHaulDesc>Quando è ATTIVO, la merce raccolta/estratta cade a terra e la pedina la raccoglie nell'inventario dopo il turno di lavoro. Quando è DISATTIVATO, la merce va direttamente nell'inventario (senza passare per terra).</HaulersDream.Setting.DropThenHaulDesc>
+<HaulersDream.Setting.MarkForUnload>Scarica automaticamente la merce raccolta (a fine turno di lavoro, attorno ai pasti e allo svago, in caso di sovrappeso e all'intervallo qui sotto). Disattivato: le pedine continuano a trasportare finché non premi il loro pulsante "Svuota inventario".</HaulersDream.Setting.MarkForUnload>
+<HaulersDream.Setting.UnloadAllSurplus>Riponi anche l'inventario in eccesso che una pedina sta trasportando ma che Hauler's Dream NON ha raccolto da sé (disattivato per impostazione predefinita)</HaulersDream.Setting.UnloadAllSurplus>
+<HaulersDream.Setting.UnloadAllSurplusDesc>Disattivato per impostazione predefinita: Hauler's Dream scarica solo la merce che ha raccolto da sé, così non tocca mai le armi secondarie di un colono, le medicine o l'acqua che porta con sé, né le merci commerciate. Attivalo per comodità, così riponi anche l'eccesso che una pedina trasporta senza motivo (da scambi, altre mod o spostamenti manuali). L'"eccesso" esclude il cibo, le droghe, le scorte d'inventario tenute dalla pedina e gli oggetti di qualsiasi assetto d'armamento (incluse le munizioni), le droghe vanilla per dipendenza/assuefazione, gli oggetti che le mod di armi secondarie, medicine o igiene tengono nell'inventario (tutti rilevati automaticamente) e tutto ciò che imposti nelle Impostazioni di scarico per singolo oggetto qui sotto — e include solo le pile che hanno un posto dove essere depositate; l'inventario in caricamento per una carovana viene lasciato in pace.</HaulersDream.Setting.UnloadAllSurplusDesc>
+<HaulersDream.Setting.ItemUnloadButton>Impostazioni di scarico per singolo oggetto…</HaulersDream.Setting.ItemUnloadButton>
+<HaulersDream.Setting.ItemUnloadButtonN>Impostazioni di scarico per singolo oggetto ({0})…</HaulersDream.Setting.ItemUnloadButtonN>
+<HaulersDream.ItemUnload.Title>Impostazioni di scarico per singolo oggetto</HaulersDream.ItemUnload.Title>
+<HaulersDream.ItemUnload.Desc>Imposta come Hauler's Dream tratta oggetti specifici nell'inventario di una pedina. Per ogni oggetto scegli: Non scaricare mai (tieni l'intera pila), Tieni al massimo N (porta fino a N e scarica il resto), o Scarica sempre (riponilo anche se un'altra mod lo terrebbe altrimenti). Gli oggetti senza una regola seguono il comportamento normale. Una regola qui ha la precedenza sul rilevamento automatico per gli oggetti di assetto d'armamento, arma secondaria, medicina, igiene e dipendenza. Le scelte per oggetti di mod che hai rimosso vengono ricordate e ripristinate se reinstalli la mod, e non influiscono mai sul caricamento dei salvataggi. (Consiglio: se usi una mod di assetto/munizioni, imposta le quantità di munizioni nel suo assetto — recupera di nuovo le munizioni fino a quella quantità.)</HaulersDream.ItemUnload.Desc>
+<HaulersDream.ItemUnload.ClearAll>Cancella tutto</HaulersDream.ItemUnload.ClearAll>
+<HaulersDream.ItemUnload.ModeDefault>Predefinito</HaulersDream.ItemUnload.ModeDefault>
+<HaulersDream.ItemUnload.ModeKeepAll>Non scaricare mai</HaulersDream.ItemUnload.ModeKeepAll>
+<HaulersDream.ItemUnload.ModeKeepAtMost>Tieni al massimo</HaulersDream.ItemUnload.ModeKeepAtMost>
+<HaulersDream.ItemUnload.ModeUnloadAlways>Scarica sempre</HaulersDream.ItemUnload.ModeUnloadAlways>
+<HaulersDream.Setting.UnloadBeforeSleep>Riponi il carico prima di dormire</HaulersDream.Setting.UnloadBeforeSleep>
+<HaulersDream.Setting.UnloadBeforeSleepDesc>Quando una pedina finisce di lavorare ed è stanca (sta per dormire), fa prima il suo viaggio di scarico, poi va a letto a mani vuote — invece di portarsi a letto il carico raccolto. Continua comunque ad accumulare normalmente mentre sta effettivamente lavorando.</HaulersDream.Setting.UnloadBeforeSleepDesc>
+<HaulersDream.Setting.UnloadBeforeLeisure>Riponi il carico prima dello svago</HaulersDream.Setting.UnloadBeforeLeisure>
+<HaulersDream.Setting.UnloadBeforeLeisureDesc>Quando una pedina smette di lavorare e si dirige verso lo svago (il blocco Svago della sua tabella oraria, o una qualsiasi attività ricreativa), scarica prima invece di portarsi in giro il carico mentre si rilassa.</HaulersDream.Setting.UnloadBeforeLeisureDesc>
+<HaulersDream.Setting.UnloadBeforeEating>Riponi il carico prima di mangiare</HaulersDream.Setting.UnloadBeforeEating>
+<HaulersDream.Setting.UnloadBeforeEatingDesc>Quando una pedina finisce di lavorare ed è affamata (sta per mangiare), scarica prima — così non porta il minerale appena estratto al tavolo da pranzo.</HaulersDream.Setting.UnloadBeforeEatingDesc>
+<HaulersDream.Setting.ShareHeader>Condividi i materiali trasportati tra i coloni:</HaulersDream.Setting.ShareHeader>
+<HaulersDream.Setting.ShareForBuilding>Usa i materiali trasportati per la costruzione</HaulersDream.Setting.ShareForBuilding>
+<HaulersDream.Setting.BuildFromInventory>Costruisci dall'inventario (usa i materiali già trasportati)</HaulersDream.Setting.BuildFromInventory>
+<HaulersDream.Setting.BuildFromInventoryDesc>Una pedina che costruisce può attingere ai materiali da costruzione dall'inventario che una pedina o un animale sta già trasportando — il proprio, poi quello degli altri coloni, poi quello degli animali da soma / il carico della carovana — non solo dalle pile sparse a terra. Così se porti dell'acciaio in una carovana e ordini un sacco di sabbia o un muro durante un'incursione o su una mappa lontana, la costruzione usa l'acciaio trasportato senza che tu debba prima scaricarlo da un animale da soma. Consegnato direttamente dall'inventario al cantiere (senza prima lasciarlo ai piedi del portatore). Questo è distinto da "usa i materiali trasportati per la costruzione" qui sopra, che conta solo i materiali raccolti da questa mod. Non attinge mai da un portatore arruolato, a terra o in preda alla furia, né dal carico riservato a una carovana in formazione; riserva la pila così due costruttori non se la contendono. Attivo per impostazione predefinita.</HaulersDream.Setting.BuildFromInventoryDesc>
+<HaulersDream.Setting.BuildFromInventoryPartial>Permetti costruzioni parziali dall'inventario</HaulersDream.Setting.BuildFromInventoryPartial>
+<HaulersDream.Setting.BuildFromInventoryPartialDesc>Normalmente una costruzione non inizia se non è disponibile materiale a sufficienza per l'intera opera. Con questo attivo, un telaio viene avviato e portato avanti usando qualunque materiale presente nell'inventario, anche se è meno della quantità totale necessaria — il resto viene consegnato man mano che diventa disponibile. Cambia la regola del tutto-o-niente del gioco base, perciò è disattivato per impostazione predefinita. Richiede "costruisci dall'inventario".</HaulersDream.Setting.BuildFromInventoryPartialDesc>
+<HaulersDream.Setting.ShareForCrafting>Usa i materiali trasportati per gli ordini di lavoro di produzione</HaulersDream.Setting.ShareForCrafting>
+<HaulersDream.Setting.ShareForCraftingDesc>Una pedina che produce può attingere agli ingredienti dell'ordine di lavoro dall'inventario che una pedina sta già trasportando, non solo dalle pile sparse a terra. Se un'altra mod gestisce il trasporto degli ingredienti di produzione, Hauler's Dream si fa automaticamente da parte e la lascia raccoglierli — così ogni ciclo di produzione si risolve da sé senza che tu debba fare nulla.</HaulersDream.Setting.ShareForCraftingDesc>
+<HaulersDream.Setting.ShareMeetInMiddle>Un portatore inattivo cammina verso il lavoratore per consegnargli la merce</HaulersDream.Setting.ShareMeetInMiddle>
+<HaulersDream.Setting.BatchWorkDeliveries>Porta i materiali per molte costruzioni in coda in un solo viaggio</HaulersDream.Setting.BatchWorkDeliveries>
+<HaulersDream.Setting.BatchWorkDeliveriesDesc>Quando si costruiscono molte cose poco costose (per esempio un lungo recinto), una pedina si riempie le mani con materiale a sufficienza per molte costruzioni in coda e lo consegna a ciascuna in un solo viaggio, invece di fare la spola con poco alla volta. Trasportato in mano, quindi non c'è rallentamento.</HaulersDream.Setting.BatchWorkDeliveriesDesc>
+<HaulersDream.Setting.InventoryConstructDeliver>Porta i materiali nell'inventario per le grandi costruzioni singole</HaulersDream.Setting.InventoryConstructDeliver>
+<HaulersDream.Setting.InventoryConstructDeliverDesc>Quando una singola opera richiede più di una bracciata di un materiale (per esempio i 340 di acciaio di un generatore geotermico), una pedina carica il materiale nell'inventario — che è limitato dal peso, non dalla dimensione della pila — e lo consegna in molti meno viaggi, invece di fare la spola con circa 75 alla volta in mano. Usa l'impostazione di sovraccarico intelligente qui sopra per quanto va oltre il 100%; con il sovraccarico disattivato carica fino al 100% (nessun rallentamento).</HaulersDream.Setting.InventoryConstructDeliverDesc>
+<HaulersDream.Setting.MultiSiteConstructDeliver>Carica in un solo viaggio i materiali di più cantieri vicini</HaulersDream.Setting.MultiSiteConstructDeliver>
+<HaulersDream.Setting.MultiSiteConstructDeliverDesc>Quando la costruzione automatica o ordinata con shift+clic consegna a un gruppo di cantieri vicini che hanno bisogno dello stesso materiale, una pedina carica nell'inventario il fabbisogno complessivo dell'intero gruppo in un solo viaggio e lo consegna a ciascun cantiere, invece di servire un cantiere per viaggio (prima lo faceva solo il pianificatore di percorsi). La pedina finisce comunque il cantiere su cui sta già lavorando prima di caricare. Richiede "Porta i materiali nell'inventario per le grandi costruzioni singole" qui sopra.</HaulersDream.Setting.MultiSiteConstructDeliverDesc>
+<HaulersDream.Setting.ShareHandHauled>Reclama i materiali da un colono che li sta trasportando al deposito (disattivato per impostazione predefinita)</HaulersDream.Setting.ShareHandHauled>
+<HaulersDream.Setting.ShareHandHauledDesc>Quando un costruttore ha bisogno di un materiale e l'unica scorta è nelle mani di un colono che la sta trasportando a una zona di stoccaggio, il costruttore incontra quel colono durante il tragitto e prende la pila, invece di aspettare che arrivi al deposito e andarla a prendere lì. Non tocca mai un colono che sta consegnando a una specifica costruzione, ordine di lavoro o rifornimento, e solo quando fa effettivamente risparmiare un viaggio. (Per ora solo per la costruzione.)</HaulersDream.Setting.ShareHandHauledDesc>
+<HaulersDream.Setting.MealsOnWheels>Mangia il cibo trasportato da altri coloni quando non se ne trova</HaulersDream.Setting.MealsOnWheels>
+<HaulersDream.Setting.MealsOnWheelsDesc>Quando un colono affamato non trova cibo sulla mappa né nel proprio carico (o in quello di un animale da soma), cammina verso un altro colono o animale da soma che porta cibo accettabile e mangia dal suo inventario — riducendo i viaggi e salvando i pasti trasportati prima che si guastino — invece di restare affamato o intraprendere un lungo tragitto verso un deposito lontano. Si attiva solo quando la normale ricerca di cibo non trova nulla, così non ha mai la precedenza su un pasto più vicino. Rispetta la politica alimentare, l'ideologia e lo stato di astemio di chi mangia; non prende mai il cibo che un genitore sta dando a un neonato; non prende mai da un portatore arruolato, a terra o in preda alla furia; riserva il pasto così due coloni non se lo contendono; e preferisce il cibo più vicino al deperimento. Attivo per impostazione predefinita.</HaulersDream.Setting.MealsOnWheelsDesc>
+<HaulersDream.Setting.BulkHaul>Trasporto in blocco — un viaggio di trasporto raccoglie tutto ciò che ha intorno</HaulersDream.Setting.BulkHaul>
+<HaulersDream.Setting.BulkHaulDesc>Una pedina mandata a trasportare un oggetto pianifica la raccolta nell'inventario di tutto ciò che è trasportabile attorno a esso, consegnando il tutto in un solo viaggio al deposito. Disattivato = trasporto vanilla di un oggetto per viaggio.</HaulersDream.Setting.BulkHaulDesc>
+<HaulersDream.Setting.BulkHaulSecond>I trasporti ordinati raccolgono in massa solo quando viene ordinato un secondo trasporto nelle vicinanze</HaulersDream.Setting.BulkHaulSecond>
+<HaulersDream.Setting.BulkHaulSecondDesc>Il trasporto automatico raccoglie sempre i dintorni nell'inventario (un solo viaggio al deposito per molti oggetti). Un trasporto che ordini TU su una pedina resta mirato — trasporta solo quella cosa — a meno che tu non abbia ordinato un secondo trasporto nelle vicinanze, nel qual caso la pedina li raccoglie insieme. L'impostazione predefinita, con più controllo.</HaulersDream.Setting.BulkHaulSecondDesc>
+<HaulersDream.Setting.BulkHaulAlways>Raccogli sempre in massa — ogni trasporto raccoglie tutto ciò che ha intorno</HaulersDream.Setting.BulkHaulAlways>
+<HaulersDream.Setting.BulkHaulAlwaysDesc>Ogni trasporto — automatico o ordinato — carica anche i trasportabili vicini nell'inventario della pedina, facendo un solo viaggio al deposito per il tutto. Quanto trasporta rispetta il cursore del sovraccarico intelligente qui sotto: solo quel tanto di peso extra che vale davvero il rallentamento rispetto a fare un altro viaggio andata e ritorno.</HaulersDream.Setting.BulkHaulAlwaysDesc>
+<HaulersDream.Setting.HaulNearbyOption>Aggiungi un ordine "Trasporta tutto nelle vicinanze" col tasto destro</HaulersDream.Setting.HaulNearbyOption>
+<HaulersDream.Setting.HaulNearbyOptionDesc>Aggiunge un'opzione "Trasporta tutto nelle vicinanze" al menù del tasto destro su un oggetto trasportabile (per le pedine che possono trasportare), che avvia subito una raccolta in massa — così non devi prioritizzare due trasporti per innescare il trasporto in blocco. La "Prioritizza trasporto" vanilla compare comunque accanto a essa per un trasporto di un singolo oggetto.</HaulersDream.Setting.HaulNearbyOptionDesc>
+<HaulersDream.Setting.ManualPickup>Aggiungi un ordine "Raccogli X" col tasto destro</HaulersDream.Setting.ManualPickup>
+<HaulersDream.Setting.ManualPickupDesc>Aggiunge un'opzione "Raccogli X" al menù del tasto destro su un oggetto trasportabile a terra. La pedina raccoglie la pila cliccata direttamente nell'inventario come un trasporto tracciato da Hauler's Dream, che viene poi riposto dallo scarico normale — così non va mai perso anche se lo scarico automatico è disattivato. Si aggiunge alle opzioni di trasporto del tasto destro vanilla.</HaulersDream.Setting.ManualPickupDesc>
+<HaulersDream.Setting.HaulOversized>Trasporta nell'inventario le pile sovradimensionate</HaulersDream.Setting.HaulOversized>
+<HaulersDream.Setting.HaulOversizedDesc>Quando una singola pila è troppo grande da trasportare in una sola bracciata (per esempio una pila di 75 di acciaio quando la pedina può tenerne solo 72), la pedina la prende nell'inventario e consegna l'intera pila in un solo viaggio — invece di portare a mano un carico parziale e lasciare indietro il resto. Si applica sia ai trasporti ordinati sia a quelli automatici; trasporta solo quanto il deposito può effettivamente accettare, così nulla resta abbandonato.</HaulersDream.Setting.HaulOversizedDesc>
+<HaulersDream.Setting.SweepNearbyWhileWorking>Riordina mentre lavori — raccogli anche gli oggetti sparsi nelle vicinanze</HaulersDream.Setting.SweepNearbyWhileWorking>
+<HaulersDream.Setting.SweepNearbyWhileWorkingDesc>Mentre una pedina demolisce, scava o raccoglie e raccoglie i propri prodotti, raccoglie nell'inventario anche altri oggetti trasportabili sparsi attorno al posto di lavoro, così l'intera area viene ripulita nell'unico viaggio consolidato invece di essere lasciata a trasporti separati. Vengono presi solo gli oggetti che hanno bisogno di essere trasportati e che hanno una destinazione (mai l'obiettivo di un altro trasportatore o la scorta già stoccata), e solo fino al tetto del sovraccarico intelligente.</HaulersDream.Setting.SweepNearbyWhileWorkingDesc>
+<HaulersDream.Setting.HaulToStack>Trasporta verso le pile (completa le pile esistenti, condividi le celle di destinazione)</HaulersDream.Setting.HaulToStack>
+<HaulersDream.Setting.ConstructTether>Le costruzioni ordinate trasportano E costruiscono come un solo compito</HaulersDream.Setting.ConstructTether>
+<HaulersDream.Setting.ConstructTetherDesc>Quando clicchi col tasto destro e prioritizzi una costruzione, la pedina trasporta i materiali e costruisce subito, come un unico lavoro continuo. Disattivato = l'ordine consegna solo i materiali (come vanilla); la costruzione avviene tramite il lavoro normale. I percorsi pianificati con "Costruisci anche" mantengono comunque il proprio comportamento in entrambi i casi.</HaulersDream.Setting.ConstructTetherDesc>
+<HaulersDream.Setting.HaulToSiteOption>Mostra l'ordine "Prioritizza il trasporto di materiali a…"</HaulersDream.Setting.HaulToSiteOption>
+<HaulersDream.Setting.HaulToSiteOptionDesc>L'ordine col tasto destro che rifornisce di materiali un cantiere, disponibile anche prima che il cantiere possa essere costruito. Disattivato = l'opzione è nascosta.</HaulersDream.Setting.HaulToSiteOptionDesc>
+<HaulersDream.Setting.PlanRoutes>Attiva il pianificatore di percorsi ("Pianifica [compito] prioritizzato…")</HaulersDream.Setting.PlanRoutes>
+<HaulersDream.Setting.PlanRoutesDesc>Lo strumento di pianificazione col tasto destro per i percorsi di raccolta, estrazione, pulizia, demolizione e costruzione. Disattivato = l'opzione del menù è nascosta ovunque.</HaulersDream.Setting.PlanRoutesDesc>
+<HaulersDream.Setting.PlanCrafting>Attiva il pianificatore di produzione ("Pianifica produzione prioritizzata…")</HaulersDream.Setting.PlanCrafting>
+<HaulersDream.Setting.PlanCraftingDesc>Lo strumento di pianificazione col tasto destro sui banchi da lavoro che esegue un ordine di lavoro più volte con un solo viaggio per gli ingredienti. Disattivato = l'opzione del menù è nascosta.</HaulersDream.Setting.PlanCraftingDesc>
+<HaulersDream.Setting.BatchByDefault>Raggruppa in lotti i nuovi ordini di lavoro per impostazione predefinita</HaulersDream.Setting.BatchByDefault>
+<HaulersDream.Setting.BatchByDefaultDesc>Gli ordini di lavoro di produzione e cucina che AGGIUNGI d'ora in poi partono in modalità "lotto": il colono recupera un intero lotto di ingredienti in un solo viaggio, li produce tutti al banco (il cibo non si guasta mentre lavora), poi trasporta tutto al deposito. Riguarda solo gli ordini di lavoro appena aggiunti — quelli esistenti mantengono l'impostazione attuale.</HaulersDream.Setting.BatchByDefaultDesc>
+<HaulersDream.Setting.DefaultBatchSize>Dimensione lotto predefinita: {0}</HaulersDream.Setting.DefaultBatchSize>
+<HaulersDream.Batch.MenuPrefix>Lotto</HaulersDream.Batch.MenuPrefix>
+<HaulersDream.Batch.SetSize>Dimensione lotto: {0}…</HaulersDream.Batch.SetSize>
+<HaulersDream.Batch.RowMarker>×{0} </HaulersDream.Batch.RowMarker>
+<HaulersDream.Batch.SizeDialogTitle>Dimensione lotto — {0}</HaulersDream.Batch.SizeDialogTitle>
+<HaulersDream.Batch.SizeLabel>Produci fino a {0} per lotto</HaulersDream.Batch.SizeLabel>
+<HaulersDream.Batch.SizeDesc>Il colono raccoglie gli ingredienti per l'intero lotto in un solo viaggio, li produce tutti al banco (gli ingredienti non si guastano mentre lavora), poi trasporta tutto al deposito. Limitato dai materiali disponibili e dal conteggio dell'ordine di lavoro stesso.</HaulersDream.Batch.SizeDesc>
+<HaulersDream.Setting.HaulToStackDesc>I trasportatori preferiscono aggiungere a una pila parziale esistente piuttosto che iniziarne una nuova — all'interno del locale di deposito che il gioco ha già scelto (quale zona di stoccaggio vince è comunque deciso da priorità e distanza). Funziona a terra, sugli scaffali e nelle unità di deposito moddate. Il deposito all'aperto scansiona invece le zone di stoccaggio vicine entro un breve raggio. Le celle di destinazione inoltre non vengono più riservate, così diversi trasportatori possono consegnare alla stessa cella contemporaneamente invece di spargere un tipo di oggetto su dieci celle.</HaulersDream.Setting.HaulToStackDesc>
+<HaulersDream.Setting.AutoStripHeader>Spoglia automaticamente un cadavere MENTRE lo trasporti — quando un colono trasporta un cadavere, lo spoglia lungo il tragitto e il bottino viaggia nell'inventario del trasportatore (nessun lavoro di spoglio separato, nessun secondo viaggio):</HaulersDream.Setting.AutoStripHeader>
+<HaulersDream.Setting.AutoStripMode>Spoglia automaticamente durante il trasporto: {0}</HaulersDream.Setting.AutoStripMode>
+<HaulersDream.Setting.AutoStripAll>a ogni trasporto di cadavere (zona di stoccaggio, tomba, cremazione, macellazione)</HaulersDream.Setting.AutoStripAll>
+<HaulersDream.Setting.AutoStripDisposal>solo nei trasporti di smaltimento (tomba, sarcofago, cremazione, macellazione — non i semplici trasporti verso una zona di stoccaggio)</HaulersDream.Setting.AutoStripDisposal>
+<HaulersDream.Setting.AutoStripOff>mai — non spogliare durante il trasporto (comportamento vanilla)</HaulersDream.Setting.AutoStripOff>
+<HaulersDream.Setting.AutoStripCrossRef>"Mai" disattiva solo questa scorciatoia di spoglio-durante-il-trasporto. NON impedisce di trasportare l'equipaggiamento spogliato: un ordine di Spoglia che dai a mano viene comunque eseguito normalmente, e le armi e i vestiti lasciati cadere vengono comunque raccolti e trasportati a casa — controllato dall'interruttore di lavoro separato "Spoglio — equipaggiamento rimosso" (sotto "Raccogli i prodotti da questi tipi di lavoro" più in basso).</HaulersDream.Setting.AutoStripCrossRef>
+<HaulersDream.Setting.StripColonists>Spoglia anche i cadaveri della fazione del giocatore</HaulersDream.Setting.StripColonists>
+<HaulersDream.Setting.StripColonistsDesc>Con questo disattivato (predefinito), i tuoi morti — coloni e animali della colonia — mantengono il loro equipaggiamento e la loro dignità; vengono saccheggiati solo estranei e nemici.</HaulersDream.Setting.StripColonistsDesc>
+<HaulersDream.Setting.TaintedSmeltable>Vestiario contaminato (fondibile): {0}</HaulersDream.Setting.TaintedSmeltable>
+<HaulersDream.Setting.TaintedNonSmeltable>Vestiario contaminato (non fondibile): {0}</HaulersDream.Setting.TaintedNonSmeltable>
+<HaulersDream.Setting.TaintedTake>prendilo (vendi, indossa o fondi)</HaulersDream.Setting.TaintedTake>
+<HaulersDream.Setting.TaintedLeave>lascialo sul cadavere (la cremazione lo brucia col corpo; la macellazione lo lascia cadere al banco, come in vanilla)</HaulersDream.Setting.TaintedLeave>
+<HaulersDream.Setting.TaintedForbid>lascialo cadere e vietalo</HaulersDream.Setting.TaintedForbid>
+<HaulersDream.Setting.TaintedDestroy>distruggilo sul posto (gli oggetti delle missioni e le reliquie vengono invece presi, mai distrutti)</HaulersDream.Setting.TaintedDestroy>
+<HaulersDream.Setting.HaulTamedSlaughter>Trasporta al deposito le carcasse macellate</HaulersDream.Setting.HaulTamedSlaughter>
+<HaulersDream.Setting.HaulTamedSlaughterDesc>Quando un colono finisce di macellare un animale della colonia, la carcassa fresca viene trasportata subito al deposito (un congelatore o una zona di stoccaggio per cadaveri) così non marcisce dove è caduta — solo se uno spazio di deposito raggiungibile la accetta, altrimenti viene lasciata esattamente come in vanilla. (Vanilla non trasporta mai da sé un animale macellato; questo colma quella lacuna.)</HaulersDream.Setting.HaulTamedSlaughterDesc>
+<HaulersDream.Setting.HaulWildKills>Trasporta al deposito le carcasse cacciate</HaulersDream.Setting.HaulWildKills>
+<HaulersDream.Setting.HaulWildKillsDesc>Quando una caccia viene interrotta subito dopo l'uccisione — il cacciatore viene distolto da un bisogno, un arruolamento, un crollo mentale, o la caccia scade — il cacciatore trasporta prontamente la carcassa fresca al deposito mentre se ne va, invece di lasciarla alla lenta coda di trasporto generale. In una caccia pulita il cacciatore porta già a casa la preda (vanilla), perciò questo resta fuori dai piedi — niente doppio trasporto. Trasporta solo se uno spazio di deposito raggiungibile accetta il corpo; altrimenti la carcassa viene lasciata esattamente come in vanilla (non viene mai vietata, così il normale trasporto di cadaveri la raccoglie comunque una volta che esiste un congelatore o una zona di stoccaggio per cadaveri che la accetta).</HaulersDream.Setting.HaulWildKillsDesc>
+<HaulersDream.Setting.ButcherSpoilingFirst>Macella per primo il cadavere più deperito</HaulersDream.Setting.ButcherSpoilingFirst>
+<HaulersDream.Setting.ButcherSpoilingFirstDesc>Quando un colono sceglie un cadavere per un ordine di lavoro di macellazione, sceglie il corpo più vicino al marciume (tra i cadaveri che l'ordine di lavoro già consente, entro il suo raggio di ricerca degli ingredienti) invece del semplice più vicino — così la carne viene recuperata prima che si guasti. Riordina solo quale cadavere già valido viene usato; non cambia mai la ricetta, il raggio di ricerca, né quali cadaveri l'ordine di lavoro accetta. I cadaveri congelati vengono lasciati per ultimi (non si stanno guastando). Si applica sia agli ordini di lavoro di macellazione ordinari sia ai lotti di Hauler's Dream. Attivo per impostazione predefinita.</HaulersDream.Setting.ButcherSpoilingFirstDesc>
+<HaulersDream.Setting.CookSpoilingFirst>Cucina prima con il cibo più deperito</HaulersDream.Setting.CookSpoilingFirst>
+<HaulersDream.Setting.CookSpoilingFirstDesc>Quando un colono sceglie ingredienti deperibili per un ordine di lavoro di cucina (carne, verdure e altro cibo putrescibile — non i cadaveri), sceglie la pila più vicina al marciume (tra gli ingredienti che l'ordine di lavoro già consente, entro il suo raggio di ricerca degli ingredienti) invece del semplice più vicino — così il cibo viene mangiato prima che si guasti. Riordina solo quale ingrediente già valido viene usato; non cambia mai la ricetta, il raggio di ricerca, né le produzioni non deperibili (acciaio, stoffa, ecc. non vengono toccati). Il cibo congelato viene lasciato per ultimo. Si applica sia agli ordini di lavoro di cucina ordinari sia ai lotti di Hauler's Dream. Attivo per impostazione predefinita.</HaulersDream.Setting.CookSpoilingFirstDesc>
+<HaulersDream.Setting.Overload>Sovraccarico intelligente: {0}</HaulersDream.Setting.Overload>
+<HaulersDream.Setting.OverloadDesc>Le pedine trasportano materiali oltre il 100% del loro peso massimo per risparmiare viaggi, ma si muovono più lentamente quanto più si sovraccaricano — e lo fanno solo quando meno viaggi valgono davvero il rallentamento (anche per i lavori di costruzione/produzione in coda). Sposta a sinistra per un rallentamento minore + carichi più grandi, a destra per un rallentamento maggiore + carichi più piccoli.</HaulersDream.Setting.OverloadDesc>
+<HaulersDream.Overload.Free>Nessun rallentamento — trasporta liberamente</HaulersDream.Overload.Free>
+<HaulersDream.Overload.Fair>Equo (bilanciato)</HaulersDream.Overload.Fair>
+<HaulersDream.Overload.Off>Disattivato — non sovraccaricare mai</HaulersDream.Overload.Off>
+<HaulersDream.Overload.Eager>Incline al sovraccarico ({0})</HaulersDream.Overload.Eager>
+<HaulersDream.Overload.Cautious>Cauto ({0})</HaulersDream.Overload.Cautious>
+<HaulersDream.Setting.StrictCarryWeight>Peso di trasporto rigido (non sovraccaricare)</HaulersDream.Setting.StrictCarryWeight>
+<HaulersDream.Setting.StrictCarryWeightDesc>Quando è ATTIVO, le pedine non trasportano mai oltre il 100% del loro peso massimo e non interrompono mai il lavoro per scaricare quando sono piene — continuano a raccogliere e lasciano l'eccesso a terra per il trasporto normale (raccolto al passaggio). Quando è DISATTIVATO (predefinito), le pedine si sovraccaricano secondo il cursore qui sopra e vanno a scaricare una volta piene.</HaulersDream.Setting.StrictCarryWeightDesc>
+<HaulersDream.Setting.KeepWorkingWhenFull>Continua a lavorare quando sei pieno (non interrompere per scaricare)</HaulersDream.Setting.KeepWorkingWhenFull>
+<HaulersDream.Setting.KeepWorkingWhenFullDesc>Disattivato per impostazione predefinita. Quando è ATTIVO, una pedina che si riempie mentre scava, raccoglie o demolisce NON interrompe il lavoro per andare a scaricare — continua a lavorare, e i prodotti che non entrano più vengono lasciati a terra per il trasporto normale. Scarica comunque a fine turno di lavoro, attorno a pasti/sonno/svago, all'intervallo, e (a differenza del peso di trasporto rigido) si sovraccarica comunque oltre il 100% fino al tetto del sovraccarico intelligente. Scarica il carico a metà turno solo quando conviene — appena prima di camminare verso un prossimo obiettivo di lavoro LONTANO (quando il deposito è più vicino del prossimo compito, del margine qui sotto). I lavori dedicati di trasporto/caricamento consegnano comunque il loro carico quando sono pieni. Indipendente dal peso di trasporto rigido: mantiene il comportamento di sovraccarico-e-accumulo, smette solo l'interruzione "pieno → vai a scaricare ora".</HaulersDream.Setting.KeepWorkingWhenFullDesc>
+<HaulersDream.Setting.KeepWorkingMargin>Scarica prima di uno spostamento solo se è più lontano di almeno: {0} celle</HaulersDream.Setting.KeepWorkingMargin>
+<HaulersDream.Setting.KeepWorkingMarginDesc>Isteresi per la regola "continua a lavorare quando sei pieno": una pedina piena e sovraccarica devia per scaricare prima del suo prossimo obiettivo di lavoro solo quando quell'obiettivo è più lontano del punto di scarico al deposito di almeno questo numero di celle. Più alto = la pedina continua a trasportare il carico su una fascia più ampia di distanze pressoché uguali (meno deviazioni); 0 = scarica per prima cosa ogni volta che il prossimo obiettivo è anche solo leggermente più lontano del deposito.</HaulersDream.Setting.KeepWorkingMarginDesc>
+<HaulersDream.Setting.RouteMaxAmount>Pianifica percorso — massimo del cursore "Quantità": {0} fermate</HaulersDream.Setting.RouteMaxAmount>
+<HaulersDream.Setting.RouteCalcHeader>Calcolo del percorso (predefiniti — modificabili per tipo di obiettivo nella finestra del percorso)</HaulersDream.Setting.RouteCalcHeader>
+<HaulersDream.Setting.RouteSelection>Metodo di selezione: {0}</HaulersDream.Setting.RouteSelection>
+<HaulersDream.Setting.RouteDistance>Criterio di distanza: {0}</HaulersDream.Setting.RouteDistance>
+<HaulersDream.Setting.RouteOrderEffort>Risolvi l'ordine di visita in modo esatto fino a: {0} fermate</HaulersDream.Setting.RouteOrderEffort>
+<HaulersDream.Setting.OpportunisticUnload>Scarica al passaggio davanti al deposito</HaulersDream.Setting.OpportunisticUnload>
+<HaulersDream.Setting.OpportunisticUnloadDesc>Quando una pedina che trasporta merce raccolta parte per un lungo viaggio verso il prossimo lavoro e una zona di stoccaggio è grossomodo sul tragitto, scarica il carico al passaggio, invece di portarselo attraverso la mappa e fare un viaggio separato più tardi.</HaulersDream.Setting.OpportunisticUnloadDesc>
+<HaulersDream.Stat.Overload>Hauler's Dream — sovraccarico</HaulersDream.Stat.Overload>
+<HaulersDream.Setting.WorkTypesHeader>Raccogli i prodotti da questi tipi di lavoro:</HaulersDream.Setting.WorkTypesHeader>
+<HaulersDream.Setting.HaulHarvest>Piante — raccolta e taglio</HaulersDream.Setting.HaulHarvest>
+<HaulersDream.Setting.HaulMining>Estrazione — minerali e blocchi</HaulersDream.Setting.HaulMining>
+<HaulersDream.Setting.HaulDeepDrill>Trivelle profonde</HaulersDream.Setting.HaulDeepDrill>
+<HaulersDream.Setting.HaulDeconstruct>Recuperi da demolizione</HaulersDream.Setting.HaulDeconstruct>
+<HaulersDream.Setting.HaulAnimals>Animali — mungitura e tosatura</HaulersDream.Setting.HaulAnimals>
+<HaulersDream.Setting.HaulUninstall>Disinstallazione — edifici miniaturizzati (mappe carovana/lontane)</HaulersDream.Setting.HaulUninstall>
+<HaulersDream.Setting.HaulStrip>Spoglio — equipaggiamento rimosso (trasporta l'equipaggiamento da un ordine di Spoglia)</HaulersDream.Setting.HaulStrip>
+<HaulersDream.Setting.HaulStripDesc>Quando un colono spoglia un prigioniero, una pedina a terra o un cadavere (un ordine di Spoglia che dai TU, a mano), le armi, l'equipaggiamento e i vestiti rimossi vengono raccolti nel suo inventario subito dopo lo spoglio, e trasportati a casa in un solo viaggio. Questo è l'interruttore che governa il trasporto dell'equipaggiamento spogliato — è indipendente da "Spoglia automaticamente durante il trasporto" più in alto: quello spoglia un cadavere solo mentre lo si STA trasportando (bottino nell'inventario); QUESTO trasporta l'equipaggiamento che un ordine di Spoglia manuale lascia cadere a terra. Così puoi impostare lo spoglio-automatico-durante-il-trasporto su "mai" e avere comunque che gli spogli ordinati manualmente raccolgano e trasportino il loro equipaggiamento, purché questo sia attivo. Il vestiario contaminato da un cadavere segue le scelte sul vestiario contaminato nella sezione dello spoglio automatico (i pezzi "lascialo sul cadavere" restano a terra, non raccolti). Per un bersaglio vivo, uno spoglio successivo viene messo in coda alla fine dei lavori dello spogliatore, nel caso il bersaglio si rivesta da sé con gli avanzi; non fa nulla se il bersaglio è rimasto nudo.</HaulersDream.Setting.HaulStripDesc>
+<HaulersDream.Setting.HaulStripCrossRef>Indipendente da "Spoglia automaticamente durante il trasporto" vicino all'inizio: quello spoglia un cadavere mentre viene trasportato (bottino nell'inventario); questo trasporta l'equipaggiamento che un ordine di Spoglia manuale lascia cadere.</HaulersDream.Setting.HaulStripCrossRef>
+<HaulersDream.Setting.WorkOverrideHeader>Sostituzioni dell'incapacità al lavoro (disattivato = vanilla):</HaulersDream.Setting.WorkOverrideHeader>
+<HaulersDream.Setting.AllCanHaul>Tutte le pedine possono trasportare</HaulersDream.Setting.AllCanHaul>
+<HaulersDream.Setting.AllCanHaulDesc>Nessun retroscena, tratto, gene, titolo reale, ruolo ideologico, condizione di salute o restrizione di missione può rendere una pedina incapace di trasportare. Si applica alla scheda dei lavori, alla prioritizzazione col tasto destro, al lavoro automatico e ai pianificatori di questa mod. (Assegna una priorità di lavoro dopo l'attivazione — le pedine appena rese capaci partono senza assegnazione, come ogni altro lavoro.)</HaulersDream.Setting.AllCanHaulDesc>
+<HaulersDream.Setting.AllCanClean>Tutte le pedine possono pulire</HaulersDream.Setting.AllCanClean>
+<HaulersDream.Setting.AllCanCleanDesc>Nessuna incapacità può rendere una pedina incapace di pulire. Si applica alla scheda dei lavori, alla prioritizzazione col tasto destro, al lavoro automatico e ai pianificatori di questa mod (inclusa "Pianifica pulizia prioritizzata"). (Assegna una priorità di lavoro dopo l'attivazione — le pedine appena rese capaci partono senza assegnazione.)</HaulersDream.Setting.AllCanCleanDesc>
+<HaulersDream.Setting.AllCanCutPlants>Tutte le pedine possono tagliare le piante</HaulersDream.Setting.AllCanCutPlants>
+<HaulersDream.Setting.AllCanCutPlantsDesc>Nessuna incapacità può rendere una pedina incapace di tagliare le piante. Viene attivato solo il lavoro Taglia piante — la semina (Coltivazione) resta governata dalle reali capacità della pedina.</HaulersDream.Setting.AllCanCutPlantsDesc>
+<HaulersDream.Setting.PauseWhileDrafted>Sospendi quando arruolata</HaulersDream.Setting.PauseWhileDrafted>
+<HaulersDream.Setting.AllowMechanoids>Permetti ai meccanoidi di raccogliere e trasportare</HaulersDream.Setting.AllowMechanoids>
+<HaulersDream.AllowMechanoidsDesc>Determina se i tuoi meccanoidi da lavoro usano la raccolta e il trasporto in blocco di Hauler's Dream — portando prodotti e bottino nel loro inventario proprio come i coloni. Questo copre la raccolta della merce che un meccanoide produce dal proprio lavoro: piante raccolte/tagliate, minerali e blocchi estratti, e recuperi da demolizione (i materiali liberati quando un meccanoide abbatte una struttura). Questo NON cambia i lavori vanilla dei meccanoidi stessi: un meccanoide da lavoro continua a scavare, raccogliere e demolire per conto suo — l'interruttore decide solo se ANCHE raccoglie i risultati nel suo inventario per un trasporto consolidato. Come un meccanoide CONSEGNA i materiali a un cantiere è una questione separata, governata dall'impostazione "Porta i materiali nell'inventario per le grandi costruzioni singole" qui sopra (che si applica a qualsiasi costruttore, meccanoide o colono); questo interruttore non cambia di per sé la consegna dei materiali. Quando è ATTIVO, un meccanoide da lavoro del giocatore può anche trasportare oltre il 100% della capacità secondo l'impostazione del sovraccarico intelligente ed esserne rallentato allo stesso modo di un colono.</HaulersDream.AllowMechanoidsDesc>
+<HaulersDream.AllowAnimals>Permetti agli animali della colonia di raccogliere e trasportare</HaulersDream.AllowAnimals>
+<HaulersDream.AllowAnimalsDesc>Disattivato per impostazione predefinita. Quando è ATTIVO, gli animali della colonia addestrati al Trasporto portano diverse pile alla volta — raccogliendo il bottino vicino nel loro inventario ed eseguendo il trasporto in blocco di Hauler's Dream invece di una pila per viaggio. Questo riguarda solo gli animali che POSSONO essere addestrati al Trasporto: quelli con addestrabilità Avanzata e un corpo abbastanza grande (husky, labrador, elefanti, orsi, thrumbo, ecc.). Gli animali che non possono essere addestrati al Trasporto — un gatto di casa e simili — non eseguono comunque il lavoro di trasporto in primo luogo (vero a prescindere da questa impostazione), perciò non sono influenzati da questo interruttore. Vengono toccati solo i tuoi animali della colonia; gli animali selvatici e nemici non vengono mai influenzati.</HaulersDream.AllowAnimalsDesc>
+<HaulersDream.Setting.AllowIncapable>Permetti alle pedine incapaci di trasportare di raccogliere i propri prodotti</HaulersDream.Setting.AllowIncapable>
+<HaulersDream.Setting.EnableOnNonHomeMaps>Funziona anche sulle mappe carovana / non domestiche</HaulersDream.Setting.EnableOnNonHomeMaps>
+<HaulersDream.Setting.HideGizmo>Nascondi il pulsante "Svuota inventario" per ogni pedina</HaulersDream.Setting.HideGizmo>
+<HaulersDream.Setting.UnloadGrace>Finestra di accumulo: continua a raccogliere per {0} tick (~60/sec) dopo l'ultima raccolta prima di fare il viaggio di scarico. Più alto = le pedine si sovraccaricano di più e fanno meno viaggi ma più grandi; scaricano comunque subito una volta piene (il tetto del sovraccarico).</HaulersDream.Setting.UnloadGrace>
+<HaulersDream.Setting.IntervalUnload>Scarico a intervalli: ogni {0} ore di gioco</HaulersDream.Setting.IntervalUnload>
+<HaulersDream.Setting.IntervalUnloadOff>Scarico a intervalli: disattivato (solo fine turno di lavoro / pasti e svago / sovrappeso / manuale)</HaulersDream.Setting.IntervalUnloadOff>
+<HaulersDream.Setting.AlertCannotUnload>Avvisa (allarme rosso) quando una pedina non riesce a scaricare il suo inventario</HaulersDream.Setting.AlertCannotUnload>
+<HaulersDream.Setting.AlertCannotUnloadDesc>Mostra un allarme critico in stile "Incendio!" in basso a destra quando una o più pedine portano oggetti raccolti che non riescono a riporre — o nulla sulla mappa può depositarli (nessuna zona di stoccaggio / zona di scarico / cella raggiungibile), oppure li trasportano da troppo tempo senza scaricare (deposito irraggiungibile, o un'altra mod continua ad annullare il lavoro di trasporto/scarico). Un solo allarme copre tutte le pedine interessate; passaci sopra il cursore per puntare le frecce verso di esse, cliccalo per scorrerle. Questa è la tua garanzia che gli inventari non diventino mai silenziosamente dei "buchi neri".</HaulersDream.Setting.AlertCannotUnloadDesc>
+<HaulersDream.Setting.AlertStuckHours>...segnala una pedina dopo che ha portato oggetti non scaricati per {0} ore di gioco</HaulersDream.Setting.AlertStuckHours>
+<HaulersDream.Setting.VerboseLogging>Registrazione di debug dettagliata</HaulersDream.Setting.VerboseLogging>
+<HaulersDream.Gizmo.UnloadNow>Svuota inventario</HaulersDream.Gizmo.UnloadNow>
+<HaulersDream.Gizmo.UnloadNowDesc>Fai portare a questa pedina tutto ciò che ha raccolto al deposito valido più vicino.</HaulersDream.Gizmo.UnloadNowDesc>
+<HaulersDream.Gizmo.UnloadNowDrafted>Arruolata: revoca l'arruolamento di questa pedina per scaricare.</HaulersDream.Gizmo.UnloadNowDrafted>
+<HaulersDream.Gizmo.AutoHaul>Raccogli automaticamente i prodotti</HaulersDream.Gizmo.AutoHaul>
+<HaulersDream.Gizmo.AutoHaulDesc>Quando è attivo, questa pedina raccoglie automaticamente i prodotti del proprio lavoro e raccoglie il bottino vicino nel suo inventario mentre lavora. Disattivalo per impedire a questa pedina di raccogliere automaticamente — riporrà comunque tutto ciò che sta già trasportando.</HaulersDream.Gizmo.AutoHaulDesc>
+<HaulersDream.Alert.CannotUnload>Impossibile svuotare l'inventario ({0})</HaulersDream.Alert.CannotUnload>
+<HaulersDream.Alert.CannotUnloadDesc.NoStorage>Queste pedine portano oggetti raccolti senza un posto dove metterli — nessuna zona di stoccaggio o zona di scarico sulla mappa li accetta, e non è stato trovato alcuno spazio raggiungibile. Aggiungi una zona di stoccaggio (una zona di scarico accetta blocchi di roccia e la maggior parte dei rifiuti), o consenti il loro tipo di oggetto su una esistente:\n\n{0}\n\nFino ad allora gli oggetti restano nel loro inventario. Clicca questo allarme per scorrere le pedine; passaci sopra il cursore per individuarle.</HaulersDream.Alert.CannotUnloadDesc.NoStorage>
+<HaulersDream.Alert.CannotUnloadDesc.Stuck>Queste pedine portano oggetti raccolti da molto tempo senza scaricarli. Il deposito potrebbe essere irraggiungibile da dove si trovano, oppure un'altra mod potrebbe annullare ripetutamente il loro lavoro di trasporto/scarico:\n\n{0}\n\nControlla che ci sia una zona di stoccaggio raggiungibile e consentita, e che non ci sia una mod che interrompe i loro lavori. Clicca questo allarme per scorrere le pedine; passaci sopra il cursore per individuarle.</HaulersDream.Alert.CannotUnloadDesc.Stuck>
+<HaulersDream.PlanRoute.Option>Pianifica {0} prioritizzato…</HaulersDream.PlanRoute.Option>
+<HaulersDream.PlanRoute.ConstructGerund>costruzione</HaulersDream.PlanRoute.ConstructGerund>
+<HaulersDream.PlanRoute.MiningGerundFallback>estrazione</HaulersDream.PlanRoute.MiningGerundFallback>
+<HaulersDream.PlanRoute.Title>Pianifica percorso: {0}</HaulersDream.PlanRoute.Title>
+<HaulersDream.PlanRoute.ModeChained>Concatenato — i più vicini</HaulersDream.PlanRoute.ModeChained>
+<HaulersDream.PlanRoute.ModeChainedDesc>Traccia il numero scelto di obiettivi dello stesso tipo più vicini, partendo da quello che hai cliccato.</HaulersDream.PlanRoute.ModeChainedDesc>
+<HaulersDream.PlanRoute.ModeVein>A contatto — l'intera vena</HaulersDream.PlanRoute.ModeVein>
+<HaulersDream.PlanRoute.ModeVeinDesc>Traccia il gruppo contiguo di obiettivi dello stesso tipo a contatto (una vena di minerale, una macchia di piante) espandendosi da quello che hai cliccato, fino alla quantità scelta.</HaulersDream.PlanRoute.ModeVeinDesc>
+<HaulersDream.PlanRoute.ModeRadius>Nel raggio</HaulersDream.PlanRoute.ModeRadius>
+<HaulersDream.PlanRoute.ModeRadiusDesc>Traccia ogni obiettivo dello stesso tipo entro il raggio scelto da quello che hai cliccato.</HaulersDream.PlanRoute.ModeRadiusDesc>
+<HaulersDream.PlanRoute.ModeRooms>All'interno di stanza/e</HaulersDream.PlanRoute.ModeRooms>
+<HaulersDream.PlanRoute.ModeRoomsDesc>Traccia ogni obiettivo dello stesso tipo all'interno delle stanze scelte. La stanza che contiene l'obiettivo che hai cliccato è sempre inclusa; scegli altre stanze qui sotto. Nota: l'aperto all'esterno conta come un'unica grande area, delimitata dal limite della Quantità.</HaulersDream.PlanRoute.ModeRoomsDesc>
+<HaulersDream.PlanRoute.ModeZone>Intera zona di coltivazione</HaulersDream.PlanRoute.ModeZone>
+<HaulersDream.PlanRoute.ModeZoneDesc>Traccia ogni obiettivo dello stesso tipo all'interno della zona di coltivazione in cui si trova la pianta cliccata — lavora l'intero campo da un solo clic. Per la raccolta, valgono comunque il limite di maturazione e la soglia di crescita.</HaulersDream.PlanRoute.ModeZoneDesc>
+<HaulersDream.PlanRoute.PickRooms>Scegli le stanze…</HaulersDream.PlanRoute.PickRooms>
+<HaulersDream.PlanRoute.PickRoomsStop>Selezione completata (clicca dentro una stanza per aggiungerla)</HaulersDream.PlanRoute.PickRoomsStop>
+<HaulersDream.PlanRoute.RoomsHeader>Stanze: {0}</HaulersDream.PlanRoute.RoomsHeader>
+<HaulersDream.PlanRoute.RoomGone>(la stanza non esiste più)</HaulersDream.PlanRoute.RoomGone>
+<HaulersDream.PlanRoute.RadiusLabel>Raggio: {0} celle</HaulersDream.PlanRoute.RadiusLabel>
+<HaulersDream.PlanRoute.Amount>Quantità: {0}</HaulersDream.PlanRoute.Amount>
+<HaulersDream.PlanRoute.VeinAll>Tutto</HaulersDream.PlanRoute.VeinAll>
+<HaulersDream.PlanRoute.MaxTravel>Tragitto massimo: {0}</HaulersDream.PlanRoute.MaxTravel>
+<HaulersDream.PlanRoute.MaxTravelNoLimit>nessun limite</HaulersDream.PlanRoute.MaxTravelNoLimit>
+<HaulersDream.PlanRoute.Smart>Instradamento intelligente (torna verso il deposito)</HaulersDream.PlanRoute.Smart>
+<HaulersDream.PlanRoute.SmartDesc>Ordina le fermate così che l'intero viaggio — raccogliere gli obiettivi e tornare alla zona di stoccaggio a cui la merce appartiene — sia il più corto possibile, terminando il percorso accanto a quel deposito. Con questo disattivato, le fermate sono ordinate solo per il percorso di raccolta più corto.</HaulersDream.PlanRoute.SmartDesc>
+<HaulersDream.PlanRoute.AllowHarvest>Permetti la raccolta di piante non contrassegnate</HaulersDream.PlanRoute.AllowHarvest>
+<HaulersDream.PlanRoute.AllowHarvestDesc>Includi nel percorso anche le piante vicine dello stesso tipo anche se non le hai ancora contrassegnate per la raccolta — purché siano almeno alla soglia di crescita qui sotto. Ti permette di raccogliere un'intera macchia abbastanza matura da un solo clic. Con questo disattivato, il percorso copre solo le piante già contrassegnate per la raccolta.</HaulersDream.PlanRoute.AllowHarvestDesc>
+<HaulersDream.PlanRoute.GrowthThreshold>Soglia di crescita: {0}%</HaulersDream.PlanRoute.GrowthThreshold>
+<HaulersDream.PlanRoute.PickStart>Scegli gli obiettivi da includere obbligatoriamente…</HaulersDream.PlanRoute.PickStart>
+<HaulersDream.PlanRoute.PickStop>Selezione completata (clicca la mappa per aggiungere)</HaulersDream.PlanRoute.PickStop>
+<HaulersDream.PlanRoute.PickHeader>Da includere obbligatoriamente: {0}</HaulersDream.PlanRoute.PickHeader>
+<HaulersDream.PlanRoute.PickRoleHint>Contrassegna un obiettivo con I (inizio) o F (fine) per fissare dove il percorso comincia o finisce — altrimenti ciascuno viene collocato dove risulta più breve.</HaulersDream.PlanRoute.PickRoleHint>
+<HaulersDream.PlanRoute.PickStartBtn>I</HaulersDream.PlanRoute.PickStartBtn>
+<HaulersDream.PlanRoute.PickEndBtn>F</HaulersDream.PlanRoute.PickEndBtn>
+<HaulersDream.PlanRoute.PickStartBadge>(inizio)</HaulersDream.PlanRoute.PickStartBadge>
+<HaulersDream.PlanRoute.PickEndBadge>(fine)</HaulersDream.PlanRoute.PickEndBadge>
+<HaulersDream.PlanRoute.PickStartTip>Rendi questo l'INIZIO del percorso — la prima fermata che la pedina visita. Clicca di nuovo per annullare.</HaulersDream.PlanRoute.PickStartTip>
+<HaulersDream.PlanRoute.PickEndTip>Rendi questo la FINE del percorso — l'ultima fermata, appena prima di tornare al deposito. Clicca di nuovo per annullare.</HaulersDream.PlanRoute.PickEndTip>
+<HaulersDream.PlanRoute.Selection>Selezione: {0}</HaulersDream.PlanRoute.Selection>
+<HaulersDream.PlanRoute.DistanceBasis>Distanza: {0}</HaulersDream.PlanRoute.DistanceBasis>
+<HaulersDream.PlanRoute.SelMostStops>Più fermate per tragitto</HaulersDream.PlanRoute.SelMostStops>
+<HaulersDream.PlanRoute.SelNearest>Più vicino all'obiettivo cliccato</HaulersDream.PlanRoute.SelNearest>
+<HaulersDream.PlanRoute.DistStraight>Linea retta</HaulersDream.PlanRoute.DistStraight>
+<HaulersDream.PlanRoute.DistWalking>Percorso a piedi reale</HaulersDream.PlanRoute.DistWalking>
+<HaulersDream.PlanRoute.FogCaution>Attenzione: non tutti gli elementi della vena potrebbero essere visibili. Man mano che scavi e ne scopri di più, il percorso si estende per coprirli.</HaulersDream.PlanRoute.FogCaution>
+<HaulersDream.PlanRoute.Estimate>Tempo stimato: ~{0} ore ({1} fermate, ~{2} celle di raccolta)</HaulersDream.PlanRoute.Estimate>
+<HaulersDream.PlanRoute.Cells>{0} celle</HaulersDream.PlanRoute.Cells>
+<HaulersDream.PlanRoute.EstimateLimited>— ridotto al limite di tragitto</HaulersDream.PlanRoute.EstimateLimited>
+<HaulersDream.PlanRoute.EstimateUnreachable>— alcuni obiettivi non possono essere raggiunti</HaulersDream.PlanRoute.EstimateUnreachable>
+<HaulersDream.PlanRoute.EstimateNone>Nessuna fermata raggiungibile per questo percorso.</HaulersDream.PlanRoute.EstimateNone>
+<HaulersDream.PlanRoute.Append>Aggiungi</HaulersDream.PlanRoute.Append>
+<HaulersDream.PlanRoute.Replace>Sostituisci</HaulersDream.PlanRoute.Replace>
+<HaulersDream.PlanRoute.Cancel>Annulla</HaulersDream.PlanRoute.Cancel>
+<HaulersDream.PlanRoute.NoTargets>Nessun obiettivo vicino da tracciare.</HaulersDream.PlanRoute.NoTargets>
+<HaulersDream.PlanRoute.WaitingForMaterials>Percorso impostato — i progetti verranno costruiti quando i materiali saranno disponibili.</HaulersDream.PlanRoute.WaitingForMaterials>
+<HaulersDream.PlanRoute.NoMaterials>(materiali non disponibili)</HaulersDream.PlanRoute.NoMaterials>
+<HaulersDream.PlanRoute.Planned>Pianificato un percorso di {0} fermate.</HaulersDream.PlanRoute.Planned>
+<HaulersDream.PlanRoute.Capped>Pianificato un percorso di {0} fermate (limitato per mantenerlo efficiente).</HaulersDream.PlanRoute.Capped>
+<HaulersDream.PlanRoute.DistanceLimited>Pianificato un percorso di {0} fermate (ridotto al limite di tragitto).</HaulersDream.PlanRoute.DistanceLimited>
+<HaulersDream.PlanRoute.Partial>Pianificato un percorso di {0} fermate ({1} nelle vicinanze non hanno potuto essere raggiunte).</HaulersDream.PlanRoute.Partial>
+<HaulersDream.PlanCraft.Option>Pianifica produzione prioritizzata…</HaulersDream.PlanCraft.Option>
+<HaulersDream.PlanCraft.Title>Pianifica produzione: {0}</HaulersDream.PlanCraft.Title>
+<HaulersDream.PlanCraft.NoBills>Nessun ordine di lavoro raggruppabile in lotti qui. Aggiungi un ordine di lavoro di produzione (cucina, droghe, parti semplici — non ordini che richiedono un oggetto incompiuto) per pianificare un lotto.</HaulersDream.PlanCraft.NoBills>
+<HaulersDream.PlanCraft.Repeat>Ripeti: {0} volte</HaulersDream.PlanCraft.Repeat>
+<HaulersDream.PlanCraft.Timeout>Scadenza: {0}h</HaulersDream.PlanCraft.Timeout>
+<HaulersDream.PlanCraft.TimeoutOff>Scadenza: nessuna</HaulersDream.PlanCraft.TimeoutOff>
+<HaulersDream.PlanCraft.Resolved>Produrrà {0}× in una sola volta.</HaulersDream.PlanCraft.Resolved>
+<HaulersDream.PlanCraft.ResolvedTrimmed>Produrrà {0}× in una sola volta — {1}.</HaulersDream.PlanCraft.ResolvedTrimmed>
+<HaulersDream.PlanCraft.LimitResources>limitato dagli ingredienti disponibili</HaulersDream.PlanCraft.LimitResources>
+<HaulersDream.PlanCraft.LimitMass>limitato da quanto la pedina può trasportare</HaulersDream.PlanCraft.LimitMass>
+<HaulersDream.PlanCraft.LimitTimeout>limitato dalla scadenza</HaulersDream.PlanCraft.LimitTimeout>
+<HaulersDream.PlanCraft.LimitBillRepeat>limitato dal conteggio rimanente dell'ordine di lavoro</HaulersDream.PlanCraft.LimitBillRepeat>
+<HaulersDream.PlanCraft.Ingredients>Porta: {0}</HaulersDream.PlanCraft.Ingredients>
+<HaulersDream.PlanCraft.IngredientsMixed>Porta un misto di ingredienti (scelti per ogni produzione, prima i più deperibili quando attivo).</HaulersDream.PlanCraft.IngredientsMixed>
+<HaulersDream.PlanCraft.EstTime>Tempo di produzione: ~{0}h (più il viaggio di recupero; i prodotti vengono poi trasportati al miglior deposito)</HaulersDream.PlanCraft.EstTime>
+<HaulersDream.PlanCraft.Infeasible>Impossibile raggruppare in lotti: {0}</HaulersDream.PlanCraft.Infeasible>
+<HaulersDream.PlanCraft.Confirm>Prioritizza</HaulersDream.PlanCraft.Confirm>
+<HaulersDream.PlanCraft.Cancel>Annulla</HaulersDream.PlanCraft.Cancel>
+<HaulersDream.PlanCraft.Started>Produzione in lotto {0}× {1}.</HaulersDream.PlanCraft.Started>
+<HaulersDream.PlanCraft.CouldNotStart>Impossibile avviare il lotto (il banco potrebbe essere in uso).</HaulersDream.PlanCraft.CouldNotStart>
+<HaulersDream.PlanCraft.JobReport>produce {0} (lotto {1}/{2}).</HaulersDream.PlanCraft.JobReport>
+<HaulersDream.PlanCraft.BlockUnsupported>questa ricetta non può essere raggruppata in lotti</HaulersDream.PlanCraft.BlockUnsupported>
+<HaulersDream.PlanCraft.BlockNoIngredient>nessun ingrediente disponibile per {0}</HaulersDream.PlanCraft.BlockNoIngredient>
+<HaulersDream.PlanCraft.BlockNoReps>risorse insufficienti anche per una sola esecuzione</HaulersDream.PlanCraft.BlockNoReps>
+<HaulersDream.PlanCraft.BlockBillNotActive>l'ordine di lavoro è sospeso o già soddisfatto</HaulersDream.PlanCraft.BlockBillNotActive>
+<HaulersDream.HaulToSite.Option>Prioritizza il trasporto di materiali a {0}</HaulersDream.HaulToSite.Option>
+<HaulersDream.HaulToSite.CouldNotStart>Nessun materiale raggiungibile da trasportare ora.</HaulersDream.HaulToSite.CouldNotStart>
+<HaulersDream.HaulNearby.Option>Trasporta tutto nelle vicinanze</HaulersDream.HaulNearby.Option>
+<HaulersDream.HaulNearby.CouldNotStart>Niente da trasportare nelle vicinanze al momento.</HaulersDream.HaulNearby.CouldNotStart>
+<HaulersDream.PickUp.Option>Raccogli {0}</HaulersDream.PickUp.Option>
+<HaulersDream.PickUp.CouldNotStart>{0} non può raccogliere {1} — sta già trasportando quanto può, e non c'è dove trasportarlo.</HaulersDream.PickUp.CouldNotStart>
+<HaulersDream.PlanRoute.AlsoBuild>Costruisci anche (trasporta + costruisci ogni fermata)</HaulersDream.PlanRoute.AlsoBuild>
+<HaulersDream.PlanRoute.AlsoBuildDesc>Con questo attivo, la pedina consegna i materiali a un cantiere e lo COSTRUISCE prima di passare al successivo — raccogliendo in anticipo i materiali dell'intero percorso e tenendoli nell'inventario. Con questo disattivato, la pedina si limita a rifornire i cantieri di materiali (altri possono costruire). In entrambi i casi i cantieri restano aperti ad altre pedine, così diverse possono rifornire lo stesso giro in parallelo; chi arriva secondo si tiene semplicemente l'eccesso per la fermata successiva o lo scarica alla fine.</HaulersDream.PlanRoute.AlsoBuildDesc>
+<HaulersDream.Setting.CraftBatchTimeout>Scadenza predefinita del lotto di produzione: {0}h</HaulersDream.Setting.CraftBatchTimeout>
+<HaulersDream.Setting.CraftBatchTimeoutOff>Scadenza predefinita del lotto di produzione: nessuna</HaulersDream.Setting.CraftBatchTimeoutOff>
+<HaulersDream.Setting.InventoryCraftDeliver>Porta gli ingredienti di produzione nell'inventario (meno viaggi)</HaulersDream.Setting.InventoryCraftDeliver>
+<HaulersDream.Setting.InventoryCraftDeliverDesc>Quando una pedina inizia un ordine di lavoro di produzione che richiede ingredienti da due o più pile separate, prima li raccoglie TUTTI nel suo inventario in un'unica raccolta — in sovrappeso se necessario, accettando il rallentamento (a meno che il peso di trasporto rigido non sia attivo) — cammina al banco una sola volta, e produce dalla scorta trasportata. Funziona per ogni ricetta, incluse quelle che costruiscono prima un oggetto incompiuto (vestiario, armi, sculture). La produzione in sé è 100% vanilla, quindi nulla può essere duplicato o perso. Se un'altra mod gestisce il trasporto degli ingredienti di produzione, Hauler's Dream si fa automaticamente da parte (li raccoglie al suo posto), così ogni ciclo di produzione si risolve da sé. Richiede "gli ingredienti trasportati contano per la produzione" qui sopra.</HaulersDream.Setting.InventoryCraftDeliverDesc>
+<HaulersDream.PrepGather.Report>raccoglie gli ingredienti per la produzione.</HaulersDream.PrepGather.Report>
+<HaulersDream.BulkHaul.Report>trasporta tutto ciò che è nelle vicinanze.</HaulersDream.BulkHaul.Report>
+<HaulersDream.JobReport.DefaultDestination>deposito</HaulersDream.JobReport.DefaultDestination>
+<HaulersDream.JobReport.EnRoute.Load>{ORIGINAL} (lungo il tragitto verso {DESTINATION})</HaulersDream.JobReport.EnRoute.Load>
+<HaulersDream.JobReport.EnRoute.Unload>{ORIGINAL} (lungo il tragitto verso {DESTINATION})</HaulersDream.JobReport.EnRoute.Unload>
+<HaulersDream.JobReport.CloserTo.Load>{ORIGINAL} (più vicino a {DESTINATION})</HaulersDream.JobReport.CloserTo.Load>
+<HaulersDream.JobReport.CloserTo.Unload>{ORIGINAL} (più vicino a {DESTINATION})</HaulersDream.JobReport.CloserTo.Unload>
+<HaulersDream.JobReport.Efficient.Load>Trasporta in modo efficiente {ORIGINAL}</HaulersDream.JobReport.Efficient.Load>
+<HaulersDream.JobReport.Efficient.Unload>Trasporta in modo efficiente {ORIGINAL}</HaulersDream.JobReport.Efficient.Unload>
+<HaulersDream.LoadPackAnimal.Report>carica oggetti su un animale da soma.</HaulersDream.LoadPackAnimal.Report>
+<HaulersDream.LoadPackAnimal.BulkOption>Carica oggetti vicini su un animale da soma (in blocco)</HaulersDream.LoadPackAnimal.BulkOption>
+<HaulersDream.LoadPackAnimal.CouldNotStart>Niente nelle vicinanze da caricare su un animale da soma al momento.</HaulersDream.LoadPackAnimal.CouldNotStart>
+<HaulersDream.LoadPackAnimal.NoCarrier>Nessun animale da soma utilizzabile con spazio libero nelle vicinanze.</HaulersDream.LoadPackAnimal.NoCarrier>
+<HaulersDream.UnloadCarrier.Report>scarica {0}.</HaulersDream.UnloadCarrier.Report>
+<HaulersDream.UnloadCarrier.Option>Prioritizza lo scarico in blocco di {0}</HaulersDream.UnloadCarrier.Option>
+<HaulersDream.UnloadCarrier.CouldNotStart>Impossibile avviare lo scarico in blocco di quell'animale da soma al momento.</HaulersDream.UnloadCarrier.CouldNotStart>
+<HaulersDream.Setting.LoadPackAnimalBulk>Ordine "carica su animale da soma" in blocco</HaulersDream.Setting.LoadPackAnimalBulk>
+<HaulersDream.Setting.LoadPackAnimalBulkDesc>Su una mappa carovana/lontana, aggiunge un ordine col tasto destro "Carica oggetti vicini su un animale da soma (in blocco)": un colono raccoglie diverse pile vicine nel suo inventario e le carica su un animale da soma in un solo viaggio, invece di portare una pila alla volta. Il "Carica su animale da soma" per singolo oggetto vanilla continua a funzionare accanto a esso.</HaulersDream.Setting.LoadPackAnimalBulkDesc>
+<HaulersDream.Setting.AutoDivertToPackAnimal>Scarica sugli animali da soma (carovane)</HaulersDream.Setting.AutoDivertToPackAnimal>
+<HaulersDream.Setting.AutoDivertToPackAnimalDesc>Su una mappa carovana/lontana, le pedine scaricano il bottino raccolto sull'animale da soma di proprietà più vicino, nello stesso modo in cui scaricherebbero in una zona di stoccaggio a casa — quando il loro turno di lavoro finisce, prima di riposare/mangiare/rilassarsi, sulla rete di sicurezza periodica, e subito quando sono sovraccariche (per restare mobili). Con questo disattivato, il bottino viaggia semplicemente verso casa nell'inventario delle pedine stesse (oppure usa l'ordine manuale di caricamento in blocco / Riforma carovana). Tutto questo richiede comunque che lo scarico automatico sia attivo (e lo scarico per sovraccarico è disabilitato in modalità peso-di-trasporto-rigido).</HaulersDream.Setting.AutoDivertToPackAnimalDesc>
+<HaulersDream.Setting.EnableBulkUnloadCarriers>Scarica gli animali da soma in blocco in una sola visita</HaulersDream.Setting.EnableBulkUnloadCarriers>
+<HaulersDream.Setting.EnableBulkUnloadCarriersDesc>Quando un animale da soma è impostato su "scarica", un trasportatore ci cammina UNA volta ed estrae molte pile da esso nel proprio zaino (poi le trasporta al deposito come al solito), invece dell'una-pila-per-camminata vanilla. L'ultima pila/eccedenza va nelle mani del trasportatore e viene trasportata direttamente. Con questo disattivato, viene usato lo scarico a pila singola vanilla, invariato.</HaulersDream.Setting.EnableBulkUnloadCarriersDesc>
+<HaulersDream.Setting.MinFreeSpaceToUnloadCarrier>Spazio libero minimo nello zaino per iniziare: {0}</HaulersDream.Setting.MinFreeSpaceToUnloadCarrier>
+<HaulersDream.Setting.ReserveCarrierOnUnload>Riserva l'animale da soma durante lo scarico</HaulersDream.Setting.ReserveCarrierOnUnload>
+<HaulersDream.Setting.ReserveCarrierOnUnloadDesc>Reclama l'animale da soma in modo esclusivo per la durata dello scarico. Disattivato (predefinito) consente a una corda, alla formazione di una carovana, o a un secondo trasportatore di interromperlo — lo scarico termina in modo pulito quando un'altra pedina reclama l'animale.</HaulersDream.Setting.ReserveCarrierOnUnloadDesc>
+<HaulersDream.Setting.VisualUnloadDelay>Ritardo di scarico per pila: {0} tick</HaulersDream.Setting.VisualUnloadDelay>
+<HaulersDream.LoadTransporter.Report>carica in blocco un trasportatore.</HaulersDream.LoadTransporter.Report>
+<HaulersDream.LoadTransporter.Option>Prioritizza il caricamento in blocco di {0}</HaulersDream.LoadTransporter.Option>
+<HaulersDream.LoadTransporter.CouldNotStart>Niente nelle vicinanze da caricare in blocco in quel trasportatore al momento.</HaulersDream.LoadTransporter.CouldNotStart>
+<HaulersDream.Setting.EnableBulkLoadTransporters>Carica trasportatori e navette in blocco in un solo viaggio</HaulersDream.Setting.EnableBulkLoadTransporters>
+<HaulersDream.Setting.EnableBulkLoadTransportersDesc>Quando una capsula di trasporto o una navetta è impostata per caricare, un trasportatore reclama una porzione del suo manifesto, raccoglie diverse pile vicine nel suo inventario, cammina al trasportatore UNA volta, e le deposita tutte — invece dell'una-pila-in-mano-per-camminata vanilla. Diversi trasportatori si dividono un grande manifesto senza doppio trasporto, e la capsula non si imbarcherà né partirà finché il carico reclamato non è dentro. Con questo disattivato, viene usato il caricamento del trasportatore a pila singola vanilla, invariato.</HaulersDream.Setting.EnableBulkLoadTransportersDesc>
+<HaulersDream.Setting.BulkLoadAiUpdateFrequency>Intervallo di ricontrollo del carico: {0} tick</HaulersDream.Setting.BulkLoadAiUpdateFrequency>
+<HaulersDream.LoadPortal.Report>carica in blocco un portale.</HaulersDream.LoadPortal.Report>
+<HaulersDream.LoadPortal.Option>Prioritizza il caricamento in blocco di {0}</HaulersDream.LoadPortal.Option>
+<HaulersDream.LoadPortal.CouldNotStart>Niente nelle vicinanze da caricare in blocco in quel portale al momento.</HaulersDream.LoadPortal.CouldNotStart>
+<HaulersDream.Setting.EnableBulkLoadPortal>Carica i portali della mappa in blocco in un solo viaggio</HaulersDream.Setting.EnableBulkLoadPortal>
+<HaulersDream.Setting.EnableBulkLoadPortalDesc>Quando un portale della mappa (cancello dell'abisso, uscita di una grotta o di una cripta, portale "entra nella mappa") è impostato per caricare, un trasportatore reclama una porzione del suo manifesto, raccoglie diverse pile vicine nel suo inventario, cammina al portale UNA volta, e le deposita tutte — invece dell'una-pila-in-mano-per-camminata vanilla. Gli oggetti depositati si teletrasportano nell'altra mappa. Diversi trasportatori si dividono un grande manifesto senza doppio trasporto. Con questo disattivato, viene usato il caricamento del portale a pila singola vanilla, invariato.</HaulersDream.Setting.EnableBulkLoadPortalDesc>
+<HaulersDream.LoadVehicle.Report>carica in blocco un veicolo.</HaulersDream.LoadVehicle.Report>
+<HaulersDream.LoadVehicle.Option>Prioritizza il caricamento in blocco di {0}</HaulersDream.LoadVehicle.Option>
+<HaulersDream.LoadVehicle.CouldNotStart>Niente nelle vicinanze da caricare in blocco in quel veicolo al momento.</HaulersDream.LoadVehicle.CouldNotStart>
+<HaulersDream.Setting.EnableVehicleFramework>Integrazione veicoli</HaulersDream.Setting.EnableVehicleFramework>
+<HaulersDream.Setting.EnableVehicleFrameworkDesc>Interruttore principale per le funzionalità veicoli di Hauler's Dream: il caricamento in blocco del carico di un veicolo in un solo viaggio (sotto), e il caricamento di oggetti su un veicolo (invece che su un animale da soma) nel modo corretto rispetto agli eventi, così il manifesto di carico del veicolo resta sincronizzato. DISATTIVARE questo disabilita solo quelle funzionalità — NON disattiva le correzioni di sicurezza che impediscono allo scarico in blocco di Hauler's Dream di interferire con l'interfaccia di carico del veicolo, e NON disattiva il mangiare-da o costruire-da il carico di un veicolo parcheggiato (quelli seguono gli interruttori "Pasti su ruote" e "Costruisci dall'inventario" qui sopra). Senza una mod di veicoli installata, questo non ha alcun effetto. Attivo per impostazione predefinita.</HaulersDream.Setting.EnableVehicleFrameworkDesc>
+<HaulersDream.Setting.EnableBulkLoadVehicles>Carica i veicoli in blocco in un solo viaggio</HaulersDream.Setting.EnableBulkLoadVehicles>
+<HaulersDream.Setting.EnableBulkLoadVehiclesDesc>Quando un veicolo (terrestre o aereo) è impostato per caricare carico, un trasportatore reclama una porzione del suo manifesto, raccoglie diverse pile vicine nel suo inventario, cammina al veicolo UNA volta, e le deposita tutte — invece della solita una-pila-in-mano-per-camminata. Diversi trasportatori si dividono un grande manifesto senza doppio trasporto, rispettando la capacità di carico del veicolo. Con questo disattivato, viene usato il caricamento del veicolo a pila singola, invariato. Richiede "Integrazione veicoli" qui sopra.</HaulersDream.Setting.EnableBulkLoadVehiclesDesc>
+<HaulersDream.BulkRefuel.Report>rifornisce in blocco.</HaulersDream.BulkRefuel.Report>
+<HaulersDream.BulkRefuel.Option>Prioritizza il rifornimento in blocco di {0}</HaulersDream.BulkRefuel.Option>
+<HaulersDream.BulkRefuel.CouldNotStart>Niente nelle vicinanze con cui rifornire in blocco quello al momento.</HaulersDream.BulkRefuel.CouldNotStart>
+<HaulersDream.Setting.EnableBulkRefuel>Rifornisci in blocco in un solo viaggio</HaulersDream.Setting.EnableBulkRefuel>
+<HaulersDream.Setting.EnableBulkRefuelDesc>Quando qualcosa ha bisogno di carburante (il chemifuel di una navetta, una trivella profonda, un generatore — qualsiasi cosa rifornibile), un trasportatore raccoglie carburante a sufficienza nelle vicinanze nel suo inventario, ci cammina UNA volta, e lo riempie in un solo viaggio — invece dell'una-pila-in-mano-per-camminata vanilla. Si attiva solo quando serve più di una pila di carburante (più di un viaggio vanilla); un rifornimento a pila singola è lasciato a vanilla. Clicca col tasto destro su qualcosa di rifornibile per "Prioritizza il rifornimento in blocco", o lascialo funzionare come ordinario lavoro di rifornimento. Con questo disattivato, viene usato il rifornimento a pila singola vanilla, invariato. Attivo per impostazione predefinita.</HaulersDream.Setting.EnableBulkRefuelDesc>
+<HaulersDream.Setting.SkipHaulWhileBleeding>Non iniziare a trasportare mentre si sanguina gravemente</HaulersDream.Setting.SkipHaulWhileBleeding>
+<HaulersDream.Setting.SkipHaulWhileBleedingDesc>Quando una pedina sta sanguinando (oltre una soglia minima), non INIZIERÀ una nuova raccolta o un trasporto in blocco — dovrebbe farsi curare, non deviare per riordinare. Questo blocca solo l'INIZIO di un trasporto: una pedina che sta già trasportando merce raccolta la scarica comunque normalmente, così nulla resta mai abbandonato. Attivo per impostazione predefinita.</HaulersDream.Setting.SkipHaulWhileBleedingDesc>
+<HaulersDream.Setting.ClosestDestUnloadOrder>Scarica prima nella destinazione più vicina</HaulersDream.Setting.ClosestDestUnloadOrder>
+<HaulersDream.Setting.ClosestDestUnloadOrderDesc>Quando una pedina fa il suo viaggio di scarico portando diversi oggetti differenti, visita prima la destinazione di deposito più vicina e svuota tutto ciò che è diretto lì prima di passare alla successiva — meno zigzag attraverso la base. Disattivato usa l'ordine precedente (per categoria di oggetto). Attivo per impostazione predefinita.</HaulersDream.Setting.ClosestDestUnloadOrderDesc>
+<HaulersDream.Setting.EnRoutePickup>Raccogli oggetti sparsi che sono sul tragitto verso un lavoro</HaulersDream.Setting.EnRoutePickup>
+<HaulersDream.Setting.EnRoutePickupDesc>Quando una pedina sta per partire per un lavoro e un trasportabile sparso giace grossomodo lungo il tragitto, lo raccoglie prima nel suo inventario — così l'oggetto vagante viaggia al deposito su un viaggio che la pedina stava già facendo comunque, senza un andata-e-ritorno extra. L'oggetto viene raccolto come un trasporto tracciato da Hauler's Dream e riposto dallo scarico normale, così non va mai perso anche se lo scarico automatico è disattivato. Si attiva solo quando il viaggio risultante resta vicino al percorso diretto, non ha mai la precedenza sul trasporto opportunistico vanilla, rispetta l'interruttore "Raccogli automaticamente i prodotti" di ogni pedina, e si fa da parte quando la pedina scaricherebbe invece il suo carico. Attivo per impostazione predefinita; cambia il modo in cui le pedine si muovono, quindi attivarlo/disattivarlo ha effetto la prossima volta che una pedina sceglie un lavoro.</HaulersDream.Setting.EnRoutePickupDesc>
+<HaulersDream.Setting.EnRoutePathChecker>Controllo "sul tragitto": {0}</HaulersDream.Setting.EnRoutePathChecker>
+<HaulersDream.Setting.EnRoutePathCheckerDesc>Con quanta cura un oggetto candidato viene confermato come "sul tragitto" dopo il rapido test di distanza. Economico (il predefinito) conta solo le regioni della mappa, quindi è veloce ma la distanza della deviazione può variare. Ricerca percorso (stop anticipato) e Ricerca percorso (approfondita) percorrono il percorso reale per maggiore precisione — "stop anticipato" smette di scansionare appena un candidato esce dalla portata (più veloce), "approfondita" controlla ogni candidato rimanente (più lenta, trova un trasporto se ne esiste uno, per esempio in una tortuosa base di montagna). Se è installata una mod che migliora la precisione della ricerca percorso, le due modalità di ricerca percorso ne ereditano automaticamente la precisione.</HaulersDream.Setting.EnRoutePathCheckerDesc>
+<HaulersDream.Setting.EnRoutePathVanilla>Economico (conteggio regioni)</HaulersDream.Setting.EnRoutePathVanilla>
+<HaulersDream.Setting.EnRoutePathDefault>Ricerca percorso (stop anticipato)</HaulersDream.Setting.EnRoutePathDefault>
+<HaulersDream.Setting.EnRoutePathPathfinding>Ricerca percorso (approfondita)</HaulersDream.Setting.EnRoutePathPathfinding>
+<HaulersDream.Setting.StorageRouting>Avvicina le forniture prima di portarle a un lavoro</HaulersDream.Setting.StorageRouting>
+<HaulersDream.Setting.StorageRoutingDesc>La funzionalità "trasporta prima di portare". Prima che una pedina porti una risorsa a un cantiere o a un banco di produzione, sposta prima la pila più grande di quel materiale nelle vicinanze in un deposito PIÙ VICINO a dove verrà usata — così questo e ogni recupero successivo è un viaggio più corto. Si attiva solo quando il deposito più vicino è davvero più prossimo al lavoro rispetto alla posizione attuale della pila, non sposta mai una pila che un'altra pedina sta già trasportando, e rispetta l'interruttore "Raccogli automaticamente i prodotti" di ogni pedina. Lo spostamento è un trasporto normale, così il materiale non va mai perso. Attivo per impostazione predefinita; cambia il modo in cui le pedine si muovono, quindi attivarlo/disattivarlo ha effetto la prossima volta che una pedina prende un lavoro del genere.</HaulersDream.Setting.StorageRoutingDesc>
+<HaulersDream.Setting.RouteSupplies>Avvicina le forniture da costruzione al cantiere</HaulersDream.Setting.RouteSupplies>
+<HaulersDream.Setting.RouteSuppliesDesc>Applica lo spostamento prima-del-trasporto alle consegne di materiale da costruzione. (Nessun effetto mentre "porta il materiale da costruzione nell'inventario" è attivo — quella funzionalità riduce già i viaggi a modo suo.)</HaulersDream.Setting.RouteSuppliesDesc>
+<HaulersDream.Setting.RouteIngredients>Avvicina gli ingredienti di produzione al banco</HaulersDream.Setting.RouteIngredients>
+<HaulersDream.Setting.RouteIngredientsDesc>Applica lo spostamento prima-del-trasporto agli ingredienti degli ordini di lavoro di produzione. (Nessun effetto mentre "raccogli gli ingredienti dell'ordine di lavoro in un'unica raccolta" è attivo — quella funzionalità riduce già i viaggi a modo suo.)</HaulersDream.Setting.RouteIngredientsDesc>
+<HaulersDream.Setting.RouteToEqualPriority>Permetti lo spostamento in deposito di pari priorità</HaulersDream.Setting.RouteToEqualPriority>
+<HaulersDream.Setting.RouteToEqualPriorityDesc>Sposta una pila anche in un deposito della STESSA priorità quando è più vicino al lavoro (non solo in un deposito di priorità superiore). Attivo per impostazione predefinita — disattivarlo limita lo spostamento alle sole destinazioni di priorità strettamente superiore.</HaulersDream.Setting.RouteToEqualPriorityDesc>
+<HaulersDream.Setting.RouteToStockpiles>Permetti lo spostamento in semplici zone di stoccaggio</HaulersDream.Setting.RouteToStockpiles>
+<HaulersDream.Setting.RouteToStockpilesDesc>Consenti alle semplici zone di stoccaggio (non solo agli edifici di deposito come gli scaffali) di essere destinazioni di spostamento. Attivo per impostazione predefinita — disattivarlo sposta solo negli edifici di deposito.</HaulersDream.Setting.RouteToStockpilesDesc>
+<HaulersDream.Setting.StorageFilters>Filtra quali edifici di deposito il trasporto può usare</HaulersDream.Setting.StorageFilters>
+<HaulersDream.Setting.StorageFiltersDesc>Quando è attivo, puoi limitare quali EDIFICI di deposito (scaffali e unità di deposito moddate — mai le semplici zone di stoccaggio) i trasportatori possono usare per i trasporti opportunistici e di instradamento, per edificio o per mod. Una pedina che sta già trasportando un carico può SEMPRE comunque scaricare, così nulla resta mai abbandonato. Attivo per impostazione predefinita, usando i valori predefiniti curati qui sotto — imposta le tue regole per edificio o per mod.</HaulersDream.Setting.StorageFiltersDesc>
+<HaulersDream.Setting.StorageFilterUseDefaults>Usa le regole predefinite curate</HaulersDream.Setting.StorageFilterUseDefaults>
+<HaulersDream.Setting.StorageFilterUseDefaultsDesc>Applica valori predefiniti sensati per ogni situazione: le raccolte opportunistiche possono usare qualsiasi deposito (tranne il gruppo lento qui sotto); un trasporto deviato verso un deposito migliore prima di portare punta solo alle mod di contenitori conosciute. Le tue scelte esplicite per edificio / per mod hanno sempre la precedenza su queste. Disattivato = solo le tue scelte esplicite limitano qualcosa.</HaulersDream.Setting.StorageFilterUseDefaultsDesc>
+<HaulersDream.Setting.StorageFilterDenyLwm>Salta il deposito lento per i trasporti opportunistici</HaulersDream.Setting.StorageFilterDenyLwm>
+<HaulersDream.Setting.StorageFilterDenyLwmDesc>Alcuni depositi densi/profondi hanno un ritardo di deposito, perciò fermarcisi a metà viaggio non è davvero "sul tragitto". Quando è attivo, i trasporti opportunistici e prima-del-trasporto evitano tale deposito (un viaggio di scarico deliberato può comunque usarlo — il tuo carico non resta mai abbandonato).</HaulersDream.Setting.StorageFilterDenyLwmDesc>
+<HaulersDream.Setting.StorageFilterButton>Modifica le regole degli edifici di deposito…</HaulersDream.Setting.StorageFilterButton>
+<HaulersDream.StorageFilter.Title>Regole degli edifici di deposito</HaulersDream.StorageFilter.Title>
+<HaulersDream.StorageFilter.Desc>Imposta se i trasportatori possono usare ciascun edificio di deposito, per edificio o per mod. Consenti lo forza su attivo, Nega lo forza su disattivato, e Predefinito lascia decidere alle regole curate. Una scelta per edificio ha la precedenza sulla scelta della sua mod; un Nega esplicito ha la precedenza su un Consenti. Le semplici zone di stoccaggio sono sempre consentite.</HaulersDream.StorageFilter.Desc>
+<HaulersDream.StorageFilter.ResetAll>Ripristina i valori predefiniti</HaulersDream.StorageFilter.ResetAll>
+<HaulersDream.StorageFilter.StateDefault>Predefinito</HaulersDream.StorageFilter.StateDefault>
+<HaulersDream.StorageFilter.StateAllow>Consenti</HaulersDream.StorageFilter.StateAllow>
+<HaulersDream.StorageFilter.StateDeny>Nega</HaulersDream.StorageFilter.StateDeny>
+<HaulersDream.Setting.CleanupOnSave>Ripulisci i lavori di caricamento in blocco al salvataggio</HaulersDream.Setting.CleanupOnSave>
+<HaulersDream.Setting.CleanupOnSaveDesc>Quando il gioco salva mentre una pedina è a metà di un caricamento in blocco, Hauler's Dream rimette quella pedina a riposo per il salvataggio, così il file di salvataggio non fa riferimento ai tipi di lavoro propri di Hauler's Dream — il che significa che puoi disinstallare la mod in seguito senza che il salvataggio dia errore. La pedina mantiene la merce raccolta e la scarica normalmente dopo. Attivo per impostazione predefinita; disattivalo se non hai mai intenzione di rimuovere la mod.</HaulersDream.Setting.CleanupOnSaveDesc>
+<HaulersDream.Setting.SoftlockDrop>Libera il carico intrappolato dalle pedine bloccate</HaulersDream.Setting.SoftlockDrop>
+<HaulersDream.Setting.SoftlockDropDesc>Se una pedina non riesce più a trasportare mentre porta merce raccolta da Hauler's Dream — il suo lavoro di Trasporto è stato disabilitato, o un meccanoide è dormiente / autospento — la merce trasportata viene lasciata cadere nelle vicinanze per il trasporto normale, invece di restare intrappolata in quella pedina per sempre. Un meccanoide che sta per CARICARSI consegna prima la merce trasportata al deposito (o la lascia cadere nelle vicinanze se non c'è dove metterla), così non si guasta né occupa spazio di trasporto mentre sta sul caricatore. Tocca solo gli oggetti raccolti da Hauler's Dream. Attivo per impostazione predefinita (una rete di sicurezza).</HaulersDream.Setting.SoftlockDropDesc>
+<HaulersDream.Setting.OpportunisticLoad>Deposita il carico trasportato nei trasporti lungo il tragitto</HaulersDream.Setting.OpportunisticLoad>
+<HaulersDream.Setting.OpportunisticLoadDesc>Una pedina che sta già trasportando oggetti attesi da una capsula di trasporto, una navetta, un portale della mappa o un veicolo nelle vicinanze devierà per scaricarli, invece di iniziare un nuovo giro di raccolta da zero. Meno camminate sprecate. Disattivato per impostazione predefinita (cambia quale compito una pedina prende dopo).</HaulersDream.Setting.OpportunisticLoadDesc>
+<HaulersDream.Setting.LoadOpportunityRadius>Raggio di ricerca per il deposito-lungo-il-tragitto: {0} celle</HaulersDream.Setting.LoadOpportunityRadius>
+<HaulersDream.Setting.ContinuousLoading>Ordine "Carica fino al completamento" col tasto destro</HaulersDream.Setting.ContinuousLoading>
+<HaulersDream.Setting.ContinuousLoadingDesc>Aggiunge un ordine col tasto destro che manda un corriere (anche arruolato) attraverso ogni gruppo di trasporto vicino che ha ancora bisogno di essere caricato, concatenando i lavori finché non sono tutti pieni — comodo per caricare una grande carovana con un solo comando. Disattivato per impostazione predefinita (comodità facoltativa).</HaulersDream.Setting.ContinuousLoadingDesc>
+<HaulersDream.ContinuousLoad.Option>Carica fino al completamento (continuo) — {0}</HaulersDream.ContinuousLoad.Option>
+<HaulersDream.ContinuousLoad.CouldNotStart>Niente nelle vicinanze da caricare in blocco in quello al momento.</HaulersDream.ContinuousLoad.CouldNotStart>
+<HaulersDream.Setting.LoadHybridPathing>Ordina le fermate di caricamento in blocco con la ricerca percorso reale</HaulersDream.Setting.LoadHybridPathing>
+<HaulersDream.Setting.LoadHybridPathingDesc>Quando raccogli diverse pile verso un trasporto, scegli l'ordine di camminata usando la ricerca percorso reale per i pochi candidati più vicini invece della distanza in linea retta — percorsi leggermente migliori su mappe ingombre, con un po' di costo extra di ricerca percorso. Disattivato per impostazione predefinita; l'ordine in linea retta produce già caricamenti corretti, in pochi viaggi.</HaulersDream.Setting.LoadHybridPathingDesc>
+<HaulersDream.Setting.LoadPathfindingCandidates>Candidati di ricerca percorso per fermata: {0}</HaulersDream.Setting.LoadPathfindingCandidates>
+<HaulersDream.Setting.AutoOpenTransporterContents>Apri automaticamente la scheda Contenuti per i trasportatori selezionati</HaulersDream.Setting.AutoOpenTransporterContents>
+<HaulersDream.Setting.AutoOpenTransporterContentsDesc>Quando selezioni una singola capsula di trasporto o navetta, apri automaticamente la sua scheda Contenuti così puoi vedere cosa sta caricando. Disattivato per impostazione predefinita (cambia quale scheda è aperta quando clicchi le cose).</HaulersDream.Setting.AutoOpenTransporterContentsDesc>
+<HaulersDream.Setting.AutoOpenCarrierGear>Apri automaticamente la scheda Equipaggiamento per i portatori selezionati</HaulersDream.Setting.AutoOpenCarrierGear>
+<HaulersDream.Setting.AutoOpenCarrierGearDesc>Quando selezioni un animale da soma o un altro portatore, apri automaticamente la sua scheda Equipaggiamento per vedere cosa sta trasportando. Disattivato per impostazione predefinita.</HaulersDream.Setting.AutoOpenCarrierGearDesc>
+<HaulersDream.Setting.EnableStorageNetworkBulkLoad>Carica in blocco dalla Rete di deposito (sperimentale)</HaulersDream.Setting.EnableStorageNetworkBulkLoad>
+<HaulersDream.Setting.EnableStorageNetworkBulkLoadDesc>Quando la mod Storage Network è installata, consenti al caricamento in blocco di raccogliere gli oggetti depositati nei server della sua rete così un trasportatore, una capsula, un portale o un veicolo viene riempito in un solo viaggio invece di una pila alla volta. Gli oggetti vengono prelevati attraverso un terminale utilizzabile e raggiungibile e materializzati da Storage Network su richiesta. Disattivato per impostazione predefinita: è sperimentale e dipende dal comportamento di Storage Network. Senza di esso, gli oggetti in rete si caricano comunque nel modo normale (una pila per viaggio).</HaulersDream.Setting.EnableStorageNetworkBulkLoadDesc>
+<HaulersDream.Setting.ResetToDefaults>Ripristina i valori predefiniti</HaulersDream.Setting.ResetToDefaults>
+<HaulersDream.Setting.ResetToDefaultsConfirm>Ripristinare tutte le impostazioni di Hauler's Dream ai loro valori predefiniti? Verranno cancellate anche le tue regole di scarico per singolo oggetto, le preferenze di percorso e il filtro di deposito. Questa azione non può essere annullata.</HaulersDream.Setting.ResetToDefaultsConfirm>
+<HaulersDream.Cat.Features>Funzionalità</HaulersDream.Cat.Features>
+<HaulersDream.Cat.Features.Help>Attiva o disattiva intere famiglie di funzionalità. Hauler's Dream fa il lavoro di molte mod separate — disattiva quelle che preferiresti non usare. Le opzioni dettagliate di ciascuna famiglia si trovano nelle altre pagine.</HaulersDream.Cat.Features.Help>
+<HaulersDream.Cat.Features.Intro>Ogni scheda qui sotto attiva o disattiva un'intera famiglia di funzionalità. La regolazione fine di ciascuna si trova nella sua pagina nell'elenco a sinistra.</HaulersDream.Cat.Features.Intro>
+<HaulersDream.Cat.Hauling>Trasporto</HaulersDream.Cat.Hauling>
+<HaulersDream.Cat.Hauling.Help>Come i coloni raccolgono le cose: il limite di trasporto, il sovraccarico intelligente, la raccolta in blocco di un'intera area in un solo viaggio, e il riordino degli oggetti sparsi mentre lavorano.</HaulersDream.Cat.Hauling.Help>
+<HaulersDream.Cat.Unloading>Scarico</HaulersDream.Cat.Unloading>
+<HaulersDream.Cat.Unloading.Help>Quando e come la merce trasportata viene riposta: viaggi di scarico automatici, scarico prima dei momenti di riposo, gestione dell'eccesso, ordine di scarico, e regole per singolo oggetto.</HaulersDream.Cat.Unloading.Help>
+<HaulersDream.Cat.BuildCraft>Costruzione e produzione</HaulersDream.Cat.BuildCraft>
+<HaulersDream.Cat.BuildCraft.Help>Attingere materiali dall'inventario per la costruzione e per gli ordini di lavoro di produzione, più la consegna di cibo tra pedine e la scelta degli ingredienti più deperibili per primi.</HaulersDream.Cat.BuildCraft.Help>
+<HaulersDream.Cat.BulkLoading>Caricamento in blocco</HaulersDream.Cat.BulkLoading>
+<HaulersDream.Cat.BulkLoading.Help>Caricamento e scarico in un solo viaggio di animali da soma, capsule di trasporto, navette, portali della mappa, oggetti rifornibili e veicoli.</HaulersDream.Cat.BulkLoading.Help>
+<HaulersDream.Cat.Routing>Percorsi e deposito</HaulersDream.Cat.Routing>
+<HaulersDream.Cat.Routing.Help>Raccogliere oggetti che sono grossomodo sul tragitto, avvicinare le forniture a dove vengono usate, e filtrare quale deposito il trasporto può usare.</HaulersDream.Cat.Routing.Help>
+<HaulersDream.Cat.Yields>Lavoro e prodotti</HaulersDream.Cat.Yields>
+<HaulersDream.Cat.Yields.Help>Quali prodotti del lavoro vengono raccolti, trasportare le carcasse al deposito dopo un'uccisione, e spogliare l'equipaggiamento dai cadaveri durante il trasporto.</HaulersDream.Cat.Yields.Help>
+<HaulersDream.Cat.Who>Chi lavora</HaulersDream.Cat.Who>
+<HaulersDream.Cat.Who.Help>A quali pedine si applica Hauler's Dream — meccanoidi, animali, gli arruolati, i coloni fuori mappa — più le sostituzioni che permettono a qualsiasi pedina di trasportare, pulire o tagliare le piante.</HaulersDream.Cat.Who.Help>
+<HaulersDream.Cat.Planners>Pianificatori</HaulersDream.Cat.Planners>
+<HaulersDream.Cat.Planners.Help>Il pianificatore di percorsi col tasto destro e il pianificatore di produzione alle stazioni, e i loro valori predefiniti.</HaulersDream.Cat.Planners.Help>
+<HaulersDream.Cat.Advanced>Avanzate</HaulersDream.Cat.Advanced>
+<HaulersDream.Cat.Advanced.Help>Tempistica di scarico, l'allarme di sicurezza per il carico bloccato, la pulizia al salvataggio, e la diagnostica per sviluppatori.</HaulersDream.Cat.Advanced.Help>
+<HaulersDream.Cat.Migration>Migrazione</HaulersDream.Cat.Migration>
+<HaulersDream.Cat.Migration.Help>Mostrata perché hai ancora attive una o più mod che Hauler's Dream sostituisce (incluse versioni tradotte o "Continued"). Eseguirle contemporaneamente a Hauler's Dream le fa litigare per gli stessi lavori di trasporto — il che può sembrare che la raccolta sia rotta. Segui i passi per rimuoverle in modo pulito.</HaulersDream.Cat.Migration.Help>
+<HaulersDream.Migration.DetectedHead>Mod sostituite ancora attive</HaulersDream.Migration.DetectedHead>
+<HaulersDream.Migration.Intro>Hauler's Dream è un'unica sostituzione per le mod qui sotto, che hai ancora abilitate. Eseguirle insieme a Hauler's Dream le fa competere per gli stessi lavori di trasporto, perciò la raccolta può sembrare rotta o instabile. Rimuovile con i passi puliti qui sotto.</HaulersDream.Migration.Intro>
+<HaulersDream.Migration.DisableButton>Disabilitale per me</HaulersDream.Migration.DisableButton>
+<HaulersDream.Migration.DisableButton.Help>Disabilita ogni mod sostituita elencata qui sopra e riavvia RimWorld. Una modifica all'elenco delle mod ha effetto solo dopo un riavvio, quindi è la stessa cosa che fa il menù Mod. Salva la partita (e idealmente arruola i tuoi coloni — vedi i passi) prima di usarlo.</HaulersDream.Migration.DisableButton.Help>
+<HaulersDream.Migration.DisableTitle>Disabilitare le mod sostituite?</HaulersDream.Migration.DisableTitle>
+<HaulersDream.Migration.DisableConfirm>Questo disabiliterà {0} e RIAVVIERÀ RimWorld immediatamente.\n\nAssicurati di aver prima SALVATO la partita — e idealmente di aver arruolato i tuoi coloni (vedi i passi in questa scheda) così non si rompe nulla quando le vecchie mod vengono rimosse a metà compito.\n\nRiavviare ora?</HaulersDream.Migration.DisableConfirm>
+<HaulersDream.Migration.StepsHead>Per una transizione pulita</HaulersDream.Migration.StepsHead>
+<HaulersDream.Migration.Step1>1.  Apri il tuo salvataggio e ARRUOLA tutti i tuoi coloni, poi salva la partita. L'arruolamento annulla i loro lavori attuali, il che evita i bug che le altre mod possono generare quando vengono rimosse a metà compito.</HaulersDream.Migration.Step1>
+<HaulersDream.Migration.Step2>2.  Disabilita tutte le mod elencate qui sopra — usa il pulsante "Disabilitale per me", o esci al menù principale e disattivale tu stesso nel menù Mod.</HaulersDream.Migration.Step2>
+<HaulersDream.Migration.Step3>3.  Dopo il riavvio del gioco, ricarica il tuo salvataggio, poi salvalo ancora una volta — le mod rimosse sono ora completamente fuori dai giochi.</HaulersDream.Migration.Step3>
+<HaulersDream.Migration.Step4>4.  Assicurati che Hauler's Dream sia abilitato, revoca l'arruolamento dei tuoi coloni, e prosegui.</HaulersDream.Migration.Step4>
+<HaulersDream.Advanced.DevHint>La diagnostica per sviluppatori appare qui quando la modalità Sviluppatore è abilitata.</HaulersDream.Advanced.DevHint>
+<HaulersDream.FeatGroup.Core>Nucleo</HaulersDream.FeatGroup.Core>
+<HaulersDream.FeatGroup.Loading>Caricamento e portatori</HaulersDream.FeatGroup.Loading>
+<HaulersDream.FeatGroup.BuildCraft>Costruzione e produzione</HaulersDream.FeatGroup.BuildCraft>
+<HaulersDream.FeatGroup.Planning>Strumenti di pianificazione</HaulersDream.FeatGroup.Planning>
+<HaulersDream.FeatGroup.Wyu>Trasporto opportunistico</HaulersDream.FeatGroup.Wyu>
+<HaulersDream.Feat.Master.Name>Attiva Hauler's Dream</HaulersDream.Feat.Master.Name>
+<HaulersDream.Feat.Master.Blurb>Interruttore principale per tutto il comportamento automatico</HaulersDream.Feat.Master.Blurb>
+<HaulersDream.Feat.AutoUnload.Name>Scarico automatico</HaulersDream.Feat.AutoUnload.Name>
+<HaulersDream.Feat.AutoUnload.Blurb>Le pedine fanno da sé i loro viaggi di scarico. Disattivato = scarico solo tramite il pulsante per ogni pedina.</HaulersDream.Feat.AutoUnload.Blurb>
+<HaulersDream.Feat.BulkHaul.Name>Trasporto in blocco</HaulersDream.Feat.BulkHaul.Name>
+<HaulersDream.Feat.BulkHaul.Blurb>Raccogli molti oggetti vicini nell'inventario in un solo viaggio</HaulersDream.Feat.BulkHaul.Blurb>
+<HaulersDream.Feat.Sweep.Name>Riordina mentre lavori</HaulersDream.Feat.Sweep.Name>
+<HaulersDream.Feat.Sweep.Blurb>Raccogli anche gli oggetti sparsi vicino al posto di lavoro</HaulersDream.Feat.Sweep.Blurb>
+<HaulersDream.Feat.UnloadCarriers.Name>Scarico in blocco degli animali da soma</HaulersDream.Feat.UnloadCarriers.Name>
+<HaulersDream.Feat.UnloadCarriers.Blurb>Svuota un portatore in uno zaino in una sola visita</HaulersDream.Feat.UnloadCarriers.Blurb>
+<HaulersDream.Feat.LoadTransporters.Name>Carica trasportatori e navette</HaulersDream.Feat.LoadTransporters.Name>
+<HaulersDream.Feat.LoadTransporters.Blurb>Riempi capsule e navette in un solo viaggio</HaulersDream.Feat.LoadTransporters.Blurb>
+<HaulersDream.Feat.LoadPortal.Name>Carica i portali della mappa</HaulersDream.Feat.LoadPortal.Name>
+<HaulersDream.Feat.LoadPortal.Blurb>Carica in blocco cancelli dell'abisso e uscite di grotte</HaulersDream.Feat.LoadPortal.Blurb>
+<HaulersDream.Feat.Refuel.Name>Rifornimento in blocco</HaulersDream.Feat.Refuel.Name>
+<HaulersDream.Feat.Refuel.Blurb>Rifornisci qualcosa di rifornibile in un solo viaggio</HaulersDream.Feat.Refuel.Blurb>
+<HaulersDream.Feat.Vehicles.Name>Carico dei veicoli</HaulersDream.Feat.Vehicles.Name>
+<HaulersDream.Feat.Vehicles.Blurb>Carica in blocco il carico dei veicoli (serve una mod di veicoli)</HaulersDream.Feat.Vehicles.Blurb>
+<HaulersDream.Feat.BuildFromInv.Name>Costruisci dall'inventario</HaulersDream.Feat.BuildFromInv.Name>
+<HaulersDream.Feat.BuildFromInv.Blurb>Costruisci usando materiali trasportati e della carovana</HaulersDream.Feat.BuildFromInv.Blurb>
+<HaulersDream.Feat.CraftFromInv.Name>Produci dai materiali trasportati</HaulersDream.Feat.CraftFromInv.Name>
+<HaulersDream.Feat.CraftFromInv.Blurb>Gli ordini di lavoro possono usare ingredienti che le pedine stanno già trasportando</HaulersDream.Feat.CraftFromInv.Blurb>
+<HaulersDream.Feat.ConstructDeliver.Name>Porta i materiali per le grandi costruzioni</HaulersDream.Feat.ConstructDeliver.Name>
+<HaulersDream.Feat.ConstructDeliver.Blurb>Meno viaggi per i lavori di costruzione grandi o raggruppati</HaulersDream.Feat.ConstructDeliver.Blurb>
+<HaulersDream.Feat.Meals.Name>Pasti su ruote</HaulersDream.Feat.Meals.Name>
+<HaulersDream.Feat.Meals.Blurb>Una pedina affamata mangia il cibo che un'altra pedina sta trasportando</HaulersDream.Feat.Meals.Blurb>
+<HaulersDream.Feat.PlanRoutes.Name>Pianificatore di percorsi</HaulersDream.Feat.PlanRoutes.Name>
+<HaulersDream.Feat.PlanRoutes.Blurb>Strumento col tasto destro per pianificare un percorso di trasporto/lavoro</HaulersDream.Feat.PlanRoutes.Blurb>
+<HaulersDream.Feat.PlanCrafting.Name>Pianificatore di produzione</HaulersDream.Feat.PlanCrafting.Name>
+<HaulersDream.Feat.PlanCrafting.Blurb>Esegui in lotto un ordine di lavoro di un banco molte volte in una sola volta</HaulersDream.Feat.PlanCrafting.Blurb>
+<HaulersDream.Feat.EnRoute.Name>Raccolta in transito</HaulersDream.Feat.EnRoute.Name>
+<HaulersDream.Feat.EnRoute.Blurb>Raccogli gli oggetti sparsi che giacciono lungo il tragitto verso un lavoro</HaulersDream.Feat.EnRoute.Blurb>
+<HaulersDream.Feat.StorageRouting.Name>Instradamento consapevole del consumatore</HaulersDream.Feat.StorageRouting.Name>
+<HaulersDream.Feat.StorageRouting.Blurb>Sposta le forniture in un deposito più vicino a dove vengono usate</HaulersDream.Feat.StorageRouting.Blurb>
+<HaulersDream.Feat.StorageFilters.Name>Filtri di deposito</HaulersDream.Feat.StorageFilters.Name>
+<HaulersDream.Feat.StorageFilters.Blurb>Limita quali edifici di deposito il trasporto può usare</HaulersDream.Feat.StorageFilters.Blurb>
+<HaulersDream.Head.BulkHaul>Trasporto in blocco</HaulersDream.Head.BulkHaul>
+<HaulersDream.Head.WhileWorking>Mentre si lavora</HaulersDream.Head.WhileWorking>
+<HaulersDream.Head.Construction>Costruzione</HaulersDream.Head.Construction>
+<HaulersDream.Head.Crafting>Produzione</HaulersDream.Head.Crafting>
+<HaulersDream.Head.Food>Cibo</HaulersDream.Head.Food>
+<HaulersDream.Head.PackAnimals>Animali da soma</HaulersDream.Head.PackAnimals>
+<HaulersDream.Head.Transporters>Trasportatori, portali e rifornimento</HaulersDream.Head.Transporters>
+<HaulersDream.Head.Vehicles>Veicoli</HaulersDream.Head.Vehicles>
+<HaulersDream.Head.AdvancedLoading>Caricamento avanzato</HaulersDream.Head.AdvancedLoading>
+<HaulersDream.Head.StorageRouting>Instradamento del deposito consapevole del consumatore</HaulersDream.Head.StorageRouting>
+<HaulersDream.Head.StorageFilters>Filtri degli edifici di deposito</HaulersDream.Head.StorageFilters>
+<HaulersDream.Head.AfterKill>Dopo un'uccisione</HaulersDream.Head.AfterKill>
+<HaulersDream.Head.Stripping>Spoglio</HaulersDream.Head.Stripping>
+<HaulersDream.Head.Batches>Lotti di produzione</HaulersDream.Head.Batches>
+<HaulersDream.Head.RoutePlanning>Pianificazione dei percorsi</HaulersDream.Head.RoutePlanning>
+<HaulersDream.Head.UnloadTiming>Tempistica di scarico</HaulersDream.Head.UnloadTiming>
+<HaulersDream.Head.SafetyNet>Rete di sicurezza</HaulersDream.Head.SafetyNet>
+<HaulersDream.Head.Developer>Sviluppatore</HaulersDream.Head.Developer>
+<HaulersDream.Profile.Default>Predefinito (profilo, integrato)</HaulersDream.Profile.Default>
+<HaulersDream.Profile.Custom>Personalizzato (non salvato)</HaulersDream.Profile.Custom>
+<HaulersDream.Profile.Named>{0} (profilo)</HaulersDream.Profile.Named>
+<HaulersDream.Profile.NamedDirty>{0} (profilo, modifiche non salvate)</HaulersDream.Profile.NamedDirty>
+<HaulersDream.Profile.SaveChanges>Salva le modifiche su "{0}"</HaulersDream.Profile.SaveChanges>
+<HaulersDream.Profile.CreateNew>Crea nuovo profilo…</HaulersDream.Profile.CreateNew>
+<HaulersDream.Profile.SaveAsNew>Salva come nuovo profilo…</HaulersDream.Profile.SaveAsNew>
+<HaulersDream.Profile.Delete>Elimina il profilo "{0}"</HaulersDream.Profile.Delete>
+<HaulersDream.Profile.DeleteConfirm>Eliminare il profilo "{0}"? Le tue impostazioni attuali restano come sono.</HaulersDream.Profile.DeleteConfirm>
+<HaulersDream.Profile.NameDialogTitle>Nome del profilo:</HaulersDream.Profile.NameDialogTitle>
+<HaulersDream.Profile.SelectorTip>Profili di impostazioni. Scegli un profilo salvato, ripristina al Predefinito integrato, o salva le tue impostazioni attuali come nuovo profilo. "Personalizzato (non salvato)" significa che hai cambiato impostazioni che non sono ancora salvate in alcun profilo.</HaulersDream.Profile.SelectorTip>
+<HaulersDream.Profile.Copy>Copia profilo…</HaulersDream.Profile.Copy>
+<HaulersDream.Profile.Paste>Incolla profilo…</HaulersDream.Profile.Paste>
+<HaulersDream.Profile.CopyTitle>Copia profilo</HaulersDream.Profile.CopyTitle>
+<HaulersDream.Profile.CopyInfo>Condividi questo codice con un altro giocatore. Contiene la versione della mod e solo le impostazioni che hai cambiato rispetto ai valori predefiniti di questa versione, così resta breve.</HaulersDream.Profile.CopyInfo>
+<HaulersDream.Profile.CopyToClipboard>Copia negli appunti</HaulersDream.Profile.CopyToClipboard>
+<HaulersDream.Profile.CopiedMsg>Codice del profilo copiato negli appunti.</HaulersDream.Profile.CopiedMsg>
+<HaulersDream.Profile.PasteTitle>Incolla profilo</HaulersDream.Profile.PasteTitle>
+<HaulersDream.Profile.PasteTokenLabel>Codice del profilo:</HaulersDream.Profile.PasteTokenLabel>
+<HaulersDream.Profile.PasteFromClipboard>Incolla dagli appunti</HaulersDream.Profile.PasteFromClipboard>
+<HaulersDream.Profile.PasteInvalid>Questo non sembra un codice di profilo di Hauler's Dream valido.</HaulersDream.Profile.PasteInvalid>
+<HaulersDream.Profile.PasteCreate>Crea profilo</HaulersDream.Profile.PasteCreate>
+<HaulersDream.Common.Off>Disattivato</HaulersDream.Common.Off>
+<HaulersDream.Common.On>Attivo</HaulersDream.Common.On>
+<HaulersDream.Unit.Tiles>{0} celle</HaulersDream.Unit.Tiles>
+<HaulersDream.Unit.Ticks>{0} tick</HaulersDream.Unit.Ticks>
+<HaulersDream.Unit.Hours>{0} h</HaulersDream.Unit.Hours>
+<HaulersDream.Setting.CarryLimit.Lab>Limite di trasporto</HaulersDream.Setting.CarryLimit.Lab>
+<HaulersDream.Setting.Overload.Lab>Sovraccarico intelligente</HaulersDream.Setting.Overload.Lab>
+<HaulersDream.Setting.PickupMode.Lab>Gestione della raccolta</HaulersDream.Setting.PickupMode.Lab>
+<HaulersDream.Setting.PickupMode.Help>Come una pedina prende nel suo carico un oggetto che sta per trasportare.</HaulersDream.Setting.PickupMode.Help>
+<HaulersDream.Setting.PickupMode.Drop>Lascia a terra, poi trasporta</HaulersDream.Setting.PickupMode.Drop>
+<HaulersDream.Setting.PickupMode.DropDesc>Realistico: l'oggetto viene lasciato cadere brevemente a terra, poi raccolto — così un altro trasportatore può comunque prenderlo a metà passo.</HaulersDream.Setting.PickupMode.DropDesc>
+<HaulersDream.Setting.PickupMode.Direct>Nell'inventario</HaulersDream.Setting.PickupMode.Direct>
+<HaulersDream.Setting.PickupMode.DirectDesc>L'oggetto va direttamente nell'inventario della pedina senza passare per terra.</HaulersDream.Setting.PickupMode.DirectDesc>
+<HaulersDream.Setting.BulkHaulTrigger.Lab>Innesco del trasporto in blocco</HaulersDream.Setting.BulkHaulTrigger.Lab>
+<HaulersDream.Setting.KeepWorkingMargin.Lab>Scarica prima di uno spostamento più lungo</HaulersDream.Setting.KeepWorkingMargin.Lab>
+<HaulersDream.Setting.MinFreeSpaceToUnloadCarrier.Lab>Spazio libero minimo nello zaino per iniziare</HaulersDream.Setting.MinFreeSpaceToUnloadCarrier.Lab>
+<HaulersDream.Setting.MinFreeSpaceToUnloadCarrier.Help>Un trasportatore ha bisogno di almeno questa frazione della sua capacità di carico libera prima di iniziare a svuotare un animale da soma, così il suo zaino non trabocca subito.</HaulersDream.Setting.MinFreeSpaceToUnloadCarrier.Help>
+<HaulersDream.Setting.VisualUnloadDelay.Lab>Ritardo di scarico per pila</HaulersDream.Setting.VisualUnloadDelay.Lab>
+<HaulersDream.Setting.VisualUnloadDelay.Help>Una piccola pausa estetica tra ogni pila durante uno scarico in blocco, così appare come un'azione deliberata. 0 = istantaneo.</HaulersDream.Setting.VisualUnloadDelay.Help>
+<HaulersDream.Setting.BulkLoadAiUpdateFrequency.Lab>Intervallo di ricontrollo del carico</HaulersDream.Setting.BulkLoadAiUpdateFrequency.Lab>
+<HaulersDream.Setting.BulkLoadAiUpdateFrequency.Help>Con quale frequenza un lavoro di caricamento in blocco in corso ricontrolla che il carico trasportato sia ancora richiesto dal gruppo. Più basso = re-instradamento più reattivo, più alto = meno costoso.</HaulersDream.Setting.BulkLoadAiUpdateFrequency.Help>
+<HaulersDream.Setting.LoadOpportunityRadius.Lab>Raggio di ricerca per il deposito-lungo-il-tragitto</HaulersDream.Setting.LoadOpportunityRadius.Lab>
+<HaulersDream.Setting.LoadOpportunityRadius.Help>Quanto lontano una pedina che trasporta cerca un trasportatore bisognoso in cui depositare il carico mentre passa.</HaulersDream.Setting.LoadOpportunityRadius.Help>
+<HaulersDream.Setting.LoadPathfindingCandidates.Lab>Candidati di ricerca percorso per fermata</HaulersDream.Setting.LoadPathfindingCandidates.Lab>
+<HaulersDream.Setting.LoadPathfindingCandidates.Help>Quante delle fermate di raccolta più vicine vengono riordinate dalla ricerca percorso reale invece che dalla distanza in linea retta. Più alto = ordinamento più accurato, più CPU.</HaulersDream.Setting.LoadPathfindingCandidates.Help>
+<HaulersDream.Setting.DefaultBatchSize.Lab>Dimensione lotto predefinita</HaulersDream.Setting.DefaultBatchSize.Lab>
+<HaulersDream.Setting.DefaultBatchSize.Help>La quantità iniziale per un ordine di lavoro appena raggruppato in lotto.</HaulersDream.Setting.DefaultBatchSize.Help>
+<HaulersDream.Setting.RouteMaxAmount.Lab>Massimo del cursore "Quantità" del percorso</HaulersDream.Setting.RouteMaxAmount.Lab>
+<HaulersDream.Setting.RouteMaxAmount.Help>Il massimo del cursore Quantità nel pianificatore di percorsi (prima del passo "Tutto").</HaulersDream.Setting.RouteMaxAmount.Help>
+<HaulersDream.Setting.RouteOrderEffort.Lab>Risolvi l'ordine di visita in modo esatto fino a</HaulersDream.Setting.RouteOrderEffort.Lab>
+<HaulersDream.Setting.RouteOrderEffort.Help>I percorsi con al massimo questo numero di fermate ottengono un ordine di visita ottimale esatto; i percorsi più grandi usano un'approssimazione veloce. Più alto risolve in modo più esatto ma costa più CPU.</HaulersDream.Setting.RouteOrderEffort.Help>
+<HaulersDream.Setting.CraftBatchTimeout.Lab>Scadenza predefinita del lotto di produzione</HaulersDream.Setting.CraftBatchTimeout.Lab>
+<HaulersDream.Setting.CraftBatchTimeout.Help>Limite di tempo reale per un lotto di produzione prima che termini da solo. 0 = nessun limite. Modificabile per ogni lotto.</HaulersDream.Setting.CraftBatchTimeout.Help>
+<HaulersDream.Setting.UnloadGrace.Lab>Finestra di accumulo</HaulersDream.Setting.UnloadGrace.Lab>
+<HaulersDream.Setting.UnloadGrace.Help>Quanto a lungo dopo la sua ultima raccolta una pedina continua ad accumulare prima di fare un viaggio di scarico automatico. Più alto = una pedina al lavoro continua a raccogliere per tutto il lavoro; scarica comunque prima una volta che si riempie.</HaulersDream.Setting.UnloadGrace.Help>
+<HaulersDream.Setting.IntervalUnload.Lab>Rete di sicurezza dello scarico a intervalli</HaulersDream.Setting.IntervalUnload.Lab>
+<HaulersDream.Setting.IntervalUnload.Help>Uno scarico forzato periodico, nel caso ogni altro innesco di scarico venga inghiottito (arruolamenti, doveri di lord, lavori moddati). 0 = disattivato.</HaulersDream.Setting.IntervalUnload.Help>
+<HaulersDream.Setting.AlertStuckHours.Lab>Segnala una pedina bloccata dopo</HaulersDream.Setting.AlertStuckHours.Lab>
+<HaulersDream.Setting.AlertStuckHours.Help>Quanto a lungo una pedina può tenere carico da trasportare che non riesce a riporre (con una destinazione che esiste) prima che l'allarme la segnali.</HaulersDream.Setting.AlertStuckHours.Help>
+<HaulersDream.Setting.EnRoutePathChecker.Lab>Controllo "sul tragitto"</HaulersDream.Setting.EnRoutePathChecker.Lab>
+<HaulersDream.Setting.AutoStripMode.Lab>Spoglia automaticamente durante il trasporto</HaulersDream.Setting.AutoStripMode.Lab>
+<HaulersDream.Setting.AutoStrip.Help>Quando trasporti un cadavere, spoglia prima il suo equipaggiamento e porta il bottino insieme. "Solo smaltimento" spoglia solo i cadaveri diretti a una zona di scarico. "Disattivato" lascia i cadaveri vestiti (gli ordini di Spoglia manuali raccolgono comunque il loro equipaggiamento).</HaulersDream.Setting.AutoStrip.Help>
+<HaulersDream.Setting.TaintedSmeltable.Lab>Vestiario contaminato — fondibile</HaulersDream.Setting.TaintedSmeltable.Lab>
+<HaulersDream.Setting.TaintedNonSmeltable.Lab>Vestiario contaminato — non fondibile</HaulersDream.Setting.TaintedNonSmeltable.Lab>
+<HaulersDream.Setting.Tainted.Help>Cosa fare con il vestiario contaminato (indossato dai morti) rimosso durante uno spoglio: prenderlo, lasciarlo sul cadavere, lasciarlo cadere e vietarlo, o distruggerlo.</HaulersDream.Setting.Tainted.Help>
+<HaulersDream.Setting.RouteSelection.Lab>Selezione del percorso</HaulersDream.Setting.RouteSelection.Lab>
+<HaulersDream.Setting.RouteSelection.Help>Come il pianificatore sceglie quali obiettivi includere in un percorso.</HaulersDream.Setting.RouteSelection.Help>
+<HaulersDream.Setting.RouteDistance.Lab>Criterio di distanza</HaulersDream.Setting.RouteDistance.Lab>
+<HaulersDream.Setting.RouteDistance.Help>Come il pianificatore misura la distanza tra le fermate.</HaulersDream.Setting.RouteDistance.Help>
+<HaulersDream.Setting.ShareForBuilding.Help>I materiali che una pedina ha già raccolto nel suo inventario contano per la costruzione vicina, così può costruire senza un viaggio di recupero separato.</HaulersDream.Setting.ShareForBuilding.Help>
+<HaulersDream.Setting.ShareMeetInMiddle.Help>Quando una costruzione o un ordine di lavoro attingerà un materiale dall'inventario di un portatore, un portatore inattivo cammina verso il lavoratore così si incontrano prima.</HaulersDream.Setting.ShareMeetInMiddle.Help>
+<HaulersDream.Setting.ItemUnload.Help>Imposta regole per i singoli oggetti: tieni l'intera pila, tieni al massimo una quantità stabilita, o scaricalo sempre — sovrascrivendo l'impostazione dell'eccesso per quell'oggetto.</HaulersDream.Setting.ItemUnload.Help>
+<HaulersDream.Setting.HideGizmo.Help>Nascondi il pulsante "Svuota inventario" per ogni pedina che appare quando un colono sta trasportando merce raccolta.</HaulersDream.Setting.HideGizmo.Help>
+<HaulersDream.Setting.StorageFilterButton.Help>Modifica le regole di consenti/nega per edificio e per mod su quale deposito il trasporto può usare.</HaulersDream.Setting.StorageFilterButton.Help>
+<HaulersDream.Setting.PauseWhileDrafted.Help>Mentre una pedina è arruolata, Hauler's Dream smette di avviare nuove raccolte e raccolte in massa per essa.</HaulersDream.Setting.PauseWhileDrafted.Help>
+<HaulersDream.Setting.AllowIncapable.Help>Consenti a una pedina incapace di Trasporto di raccogliere comunque i prodotti del proprio lavoro (estrazione, raccolta, …).</HaulersDream.Setting.AllowIncapable.Help>
+<HaulersDream.Setting.EnableOnNonHomeMaps.Help>Esegui Hauler's Dream anche sulle mappe carovana e altre mappe non domestiche, non solo nella tua colonia domestica.</HaulersDream.Setting.EnableOnNonHomeMaps.Help>
+<HaulersDream.Setting.VerboseLogging.Help>Registrazione extra per sviluppatori. Disponibile — e registra — solo in modalità Sviluppatore.</HaulersDream.Setting.VerboseLogging.Help>
+<HaulersDream.Setting.BulkHaulSecond.S>Al 2° ordine</HaulersDream.Setting.BulkHaulSecond.S>
+<HaulersDream.Setting.BulkHaulAlways.S>Sempre</HaulersDream.Setting.BulkHaulAlways.S>
+<HaulersDream.Setting.EnRoutePathVanilla.S>Economico</HaulersDream.Setting.EnRoutePathVanilla.S>
+<HaulersDream.Setting.EnRoutePathDefault.S>Accurato</HaulersDream.Setting.EnRoutePathDefault.S>
+<HaulersDream.Setting.EnRoutePathPathfinding.S>Approfondito</HaulersDream.Setting.EnRoutePathPathfinding.S>
+<HaulersDream.Setting.AutoStripAll.S>Tutti i trasporti</HaulersDream.Setting.AutoStripAll.S>
+<HaulersDream.Setting.AutoStripDisposal.S>Solo smaltimento</HaulersDream.Setting.AutoStripDisposal.S>
+<HaulersDream.Setting.AutoStripOff.S>Disattivato</HaulersDream.Setting.AutoStripOff.S>
+<HaulersDream.Setting.TaintedTake.S>Prendi</HaulersDream.Setting.TaintedTake.S>
+<HaulersDream.Setting.TaintedLeave.S>Lascia</HaulersDream.Setting.TaintedLeave.S>
+<HaulersDream.Setting.TaintedForbid.S>Lascia e vieta</HaulersDream.Setting.TaintedForbid.S>
+<HaulersDream.Setting.TaintedDestroy.S>Distruggi</HaulersDream.Setting.TaintedDestroy.S>
+<HaulersDream.PlanRoute.SelMostStops.S>Più fermate</HaulersDream.PlanRoute.SelMostStops.S>
+<HaulersDream.PlanRoute.SelNearest.S>Più vicino</HaulersDream.PlanRoute.SelNearest.S>
+<HaulersDream.PlanRoute.DistStraight.S>Linea retta</HaulersDream.PlanRoute.DistStraight.S>
+<HaulersDream.PlanRoute.DistWalking.S>Percorso a piedi</HaulersDream.PlanRoute.DistWalking.S>
+<HaulersDream.Setting.EnRoutePathVanilla.H>Flood veloce e limitato per conteggio regioni — il controllo più economico, il meno accurato.</HaulersDream.Setting.EnRoutePathVanilla.H>
+<HaulersDream.Setting.EnRoutePathDefault.H>Costo di percorso A* reale; smette di scansionare quando supera la portata. Più accurato, più CPU.</HaulersDream.Setting.EnRoutePathDefault.H>
+<HaulersDream.Setting.EnRoutePathPathfinding.H>Costo di percorso A* reale; continua a scansionare per la migliore corrispondenza. Il più accurato, la più CPU.</HaulersDream.Setting.EnRoutePathPathfinding.H>
+<HaulersDream.PlanRoute.SelMostStops.H>Preferisci gli obiettivi che concentrano il maggior numero di fermate in una distanza di tragitto.</HaulersDream.PlanRoute.SelMostStops.H>
+<HaulersDream.PlanRoute.SelNearest.H>Preferisci gli obiettivi più vicini a quello che hai cliccato.</HaulersDream.PlanRoute.SelNearest.H>
+<HaulersDream.PlanRoute.DistStraight.H>Misura la distanza come una linea retta — veloce.</HaulersDream.PlanRoute.DistStraight.H>
+<HaulersDream.PlanRoute.DistWalking.H>Misura la distanza lungo il percorso a piedi reale — più lento, più accurato.</HaulersDream.PlanRoute.DistWalking.H>
+<HaulersDream.Setting.HaulHarvest.Help>Raccogli i raccolti e i prodotti del taglio delle piante nell'inventario mentre la pedina lavora.</HaulersDream.Setting.HaulHarvest.Help>
+<HaulersDream.Setting.HaulMining.Help>Raccogli i minerali estratti e i blocchi di roccia nell'inventario mentre la pedina scava.</HaulersDream.Setting.HaulMining.Help>
+<HaulersDream.Setting.HaulDeepDrill.Help>Raccogli l'output della trivella profonda nell'inventario man mano che viene prodotto.</HaulersDream.Setting.HaulDeepDrill.Help>
+<HaulersDream.Setting.HaulDeconstruct.Help>Raccogli i recuperi dagli edifici demoliti nell'inventario.</HaulersDream.Setting.HaulDeconstruct.Help>
+<HaulersDream.Setting.HaulAnimals.Help>Raccogli latte, lana e altri prodotti ottenuti dagli animali nell'inventario.</HaulersDream.Setting.HaulAnimals.Help>
+<HaulersDream.Setting.HaulUninstall.Help>Su una mappa carovana o altra mappa lontana (mai la tua colonia domestica), raccogli un edificio che disinstalli — ora un oggetto miniaturizzato — direttamente nell'inventario del lavoratore, così diverse strutture disinstallate vengono portate agli animali da soma in UN solo viaggio invece di una camminata avanti-e-indietro per oggetto. Si attiva solo dove l'oggetto può effettivamente essere consegnato (una zona di stoccaggio/zona o un animale da soma). Sulla tua mappa domestica questo non fa nulla: lì, un edificio disinstallato viene lasciato a terra per il trasporto normale o la reinstallazione.</HaulersDream.Setting.HaulUninstall.Help>
+<HaulersDream.Cat.Hauling.Intro>Come i coloni raccolgono le cose — quanto trasportano, quando si sovraccaricano, e cosa raccolgono.</HaulersDream.Cat.Hauling.Intro>
+<HaulersDream.Cat.Unloading.Intro>Quando e come i coloni ripongono la merce trasportata.</HaulersDream.Cat.Unloading.Intro>
+<HaulersDream.Cat.BuildCraft.Intro>Attingere materiali da costruzione e di produzione dall'inventario, consegna di cibo, e scelta degli ingredienti.</HaulersDream.Cat.BuildCraft.Intro>
+<HaulersDream.Cat.BulkLoading.Intro>Caricamento e scarico in un solo viaggio di portatori, trasporti, portali, oggetti rifornibili e veicoli.</HaulersDream.Cat.BulkLoading.Intro>
+<HaulersDream.Cat.Routing.Intro>Raccogli oggetti lungo il tragitto, avvicina le forniture a dove vengono usate, e filtra il deposito.</HaulersDream.Cat.Routing.Intro>
+<HaulersDream.Cat.Yields.Intro>Quali prodotti del lavoro vengono raccolti, trasportare le carcasse dopo un'uccisione, e spogliare l'equipaggiamento.</HaulersDream.Cat.Yields.Intro>
+<HaulersDream.Cat.Who.Intro>A quali pedine si applica Hauler's Dream, e le sostituzioni che permettono a qualsiasi pedina di fare certi lavori.</HaulersDream.Cat.Who.Intro>
+<HaulersDream.Cat.Planners.Intro>I pianificatori di percorsi e di produzione col tasto destro, e i loro valori predefiniti.</HaulersDream.Cat.Planners.Intro>
+<HaulersDream.Cat.Advanced.Intro>Tempistica di scarico, l'allarme di sicurezza per il carico bloccato, la pulizia al salvataggio, e gli strumenti per sviluppatori.</HaulersDream.Cat.Advanced.Intro>
+<HaulersDream.Head.CarryWeight>Peso di trasporto</HaulersDream.Head.CarryWeight>
+<HaulersDream.Head.Pickup>Raccolta</HaulersDream.Head.Pickup>
+<HaulersDream.Head.AutoUnloadTrips>Viaggi di scarico automatici</HaulersDream.Head.AutoUnloadTrips>
+<HaulersDream.Head.DropOff>Comportamento di scarico</HaulersDream.Head.DropOff>
+<HaulersDream.Head.ItemRulesDisplay>Regole per singolo oggetto e visualizzazione</HaulersDream.Head.ItemRulesDisplay>
+<HaulersDream.Head.EnRoute>Raccolta in transito</HaulersDream.Head.EnRoute>
+<HaulersDream.Head.WhoCanHaul>Chi può raccogliere e trasportare</HaulersDream.Head.WhoCanHaul>
+<HaulersDream.Head.PlanningTools>Strumenti di pianificazione</HaulersDream.Head.PlanningTools>
+<HaulersDream.Setting.Overload.Ceiling>tetto</HaulersDream.Setting.Overload.Ceiling>
+</LanguageData>

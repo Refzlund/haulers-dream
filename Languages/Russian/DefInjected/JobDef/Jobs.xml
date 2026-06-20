@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LanguageData>
+
+<HaulersDream_UnloadInventory.reportString>разгружает инвентарь.</HaulersDream_UnloadInventory.reportString>
+<HaulersDream_SelfPickup.reportString>собирает добытое.</HaulersDream_SelfPickup.reportString>
+<HaulersDream_OverloadConstructDeliver.reportString>доставляет материалы.</HaulersDream_OverloadConstructDeliver.reportString>
+<HaulersDream_ConstructDeliverBuild.reportString>доставляет материалы для строительства.</HaulersDream_ConstructDeliverBuild.reportString>
+<HaulersDream_ClaimFromHauler.reportString>забирает материалы у переносчика.</HaulersDream_ClaimFromHauler.reportString>
+<HaulersDream_BatchCraft.reportString>изготавливает партию.</HaulersDream_BatchCraft.reportString>
+<HaulersDream_InventoryDoBill.reportString>изготавливает.</HaulersDream_InventoryDoBill.reportString>
+<HaulersDream_BillPrepGather.reportString>собирает ингредиенты для изготовления.</HaulersDream_BillPrepGather.reportString>
+<HaulersDream_BulkHaul.reportString>переносит всё поблизости.</HaulersDream_BulkHaul.reportString>
+<HaulersDream_LoadPackAnimal.reportString>грузит вещи на вьючное животное.</HaulersDream_LoadPackAnimal.reportString>
+<HaulersDream_UnloadCarrierInBulk.reportString>разгружает вьючное животное.</HaulersDream_UnloadCarrierInBulk.reportString>
+<HaulersDream_LoadTransportersInBulk.reportString>массово загружает транспорт.</HaulersDream_LoadTransportersInBulk.reportString>
+<HaulersDream_LoadPortalInBulk.reportString>массово загружает портал.</HaulersDream_LoadPortalInBulk.reportString>
+<HaulersDream_LoadVehicleInBulk.reportString>массово загружает транспортное средство.</HaulersDream_LoadVehicleInBulk.reportString>
+<HaulersDream_BulkRefuel.reportString>массово заправляет.</HaulersDream_BulkRefuel.reportString>
+</LanguageData>

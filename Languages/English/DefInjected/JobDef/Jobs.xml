@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LanguageData>
+
+  <!-- JobDef report strings (the "doing X" text shown under a selected pawn). The English source is also the
+       def value in Defs/JobDefs/Jobs.xml; this file is the canonical translation template — copy it to
+       Languages/<Language>/DefInjected/JobDef/Jobs.xml and translate the values. -->
+
+  <HaulersDream_UnloadInventory.reportString>unloading inventory.</HaulersDream_UnloadInventory.reportString>
+  <HaulersDream_SelfPickup.reportString>gathering harvested goods.</HaulersDream_SelfPickup.reportString>
+  <HaulersDream_OverloadConstructDeliver.reportString>delivering materials.</HaulersDream_OverloadConstructDeliver.reportString>
+  <HaulersDream_ConstructDeliverBuild.reportString>delivering materials to build.</HaulersDream_ConstructDeliverBuild.reportString>
+  <HaulersDream_ClaimFromHauler.reportString>claiming materials from a hauler.</HaulersDream_ClaimFromHauler.reportString>
+  <HaulersDream_BatchCraft.reportString>crafting a batch.</HaulersDream_BatchCraft.reportString>
+  <HaulersDream_InventoryDoBill.reportString>crafting.</HaulersDream_InventoryDoBill.reportString>
+  <HaulersDream_BillPrepGather.reportString>gathering crafting ingredients.</HaulersDream_BillPrepGather.reportString>
+  <HaulersDream_BulkHaul.reportString>hauling everything nearby.</HaulersDream_BulkHaul.reportString>
+  <HaulersDream_LoadPackAnimal.reportString>loading items onto a pack animal.</HaulersDream_LoadPackAnimal.reportString>
+  <HaulersDream_UnloadCarrierInBulk.reportString>unloading a pack animal.</HaulersDream_UnloadCarrierInBulk.reportString>
+  <HaulersDream_LoadTransportersInBulk.reportString>bulk-loading a transporter.</HaulersDream_LoadTransportersInBulk.reportString>
+  <HaulersDream_LoadPortalInBulk.reportString>bulk-loading a portal.</HaulersDream_LoadPortalInBulk.reportString>
+  <HaulersDream_LoadVehicleInBulk.reportString>bulk-loading a vehicle.</HaulersDream_LoadVehicleInBulk.reportString>
+  <HaulersDream_BulkRefuel.reportString>bulk-refuelling.</HaulersDream_BulkRefuel.reportString>
+
+</LanguageData>

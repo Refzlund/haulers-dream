@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LanguageData>
+
+<HaulersDream_UnloadInventory.reportString>所持品を降ろしている。</HaulersDream_UnloadInventory.reportString>
+<HaulersDream_SelfPickup.reportString>収穫物を集めている。</HaulersDream_SelfPickup.reportString>
+<HaulersDream_OverloadConstructDeliver.reportString>資材を届けている。</HaulersDream_OverloadConstructDeliver.reportString>
+<HaulersDream_ConstructDeliverBuild.reportString>建築用の資材を届けている。</HaulersDream_ConstructDeliverBuild.reportString>
+<HaulersDream_ClaimFromHauler.reportString>運搬役から資材を受け取っている。</HaulersDream_ClaimFromHauler.reportString>
+<HaulersDream_BatchCraft.reportString>バッチ製作をしている。</HaulersDream_BatchCraft.reportString>
+<HaulersDream_InventoryDoBill.reportString>製作している。</HaulersDream_InventoryDoBill.reportString>
+<HaulersDream_BillPrepGather.reportString>製作の材料を集めている。</HaulersDream_BillPrepGather.reportString>
+<HaulersDream_BulkHaul.reportString>近くのものをすべて運搬している。</HaulersDream_BulkHaul.reportString>
+<HaulersDream_LoadPackAnimal.reportString>荷物運搬動物に積み込んでいる。</HaulersDream_LoadPackAnimal.reportString>
+<HaulersDream_UnloadCarrierInBulk.reportString>荷物運搬動物から降ろしている。</HaulersDream_UnloadCarrierInBulk.reportString>
+<HaulersDream_LoadTransportersInBulk.reportString>輸送ポッドに一括積み込みしている。</HaulersDream_LoadTransportersInBulk.reportString>
+<HaulersDream_LoadPortalInBulk.reportString>ポータルに一括積み込みしている。</HaulersDream_LoadPortalInBulk.reportString>
+<HaulersDream_LoadVehicleInBulk.reportString>車両に一括積み込みしている。</HaulersDream_LoadVehicleInBulk.reportString>
+<HaulersDream_BulkRefuel.reportString>一括で燃料補給している。</HaulersDream_BulkRefuel.reportString>
+</LanguageData>

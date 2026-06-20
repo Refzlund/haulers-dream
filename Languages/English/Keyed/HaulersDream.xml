@@ -1,6 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LanguageData>
 
+  <!-- Mod identity. These are the mod's brand name; most languages keep it verbatim (a proper noun),
+       but it is keyed so a translator may transliterate it if that reads better in their language. -->
+  <HaulersDream.SettingsCategory>Hauler's Dream</HaulersDream.SettingsCategory>
+  <HaulersDream.SettingsHeaderFallback>Hauler's Dream</HaulersDream.SettingsHeaderFallback>
+
   <!-- Settings window tabs -->
   <HaulersDream.Tab.General>General</HaulersDream.Tab.General>
   <HaulersDream.Tab.Sharing>Sharing &amp; Delivery</HaulersDream.Tab.Sharing>
@@ -195,6 +200,7 @@
   <!-- Plan prioritized route -->
   <HaulersDream.PlanRoute.Option>Plan prioritized {0}…</HaulersDream.PlanRoute.Option>
   <HaulersDream.PlanRoute.ConstructGerund>constructing</HaulersDream.PlanRoute.ConstructGerund>
+  <HaulersDream.PlanRoute.MiningGerundFallback>mining</HaulersDream.PlanRoute.MiningGerundFallback>
   <HaulersDream.PlanRoute.Title>Plan route: {0}</HaulersDream.PlanRoute.Title>
   <HaulersDream.PlanRoute.ModeChained>Chained — the nearest few</HaulersDream.PlanRoute.ModeChained>
   <HaulersDream.PlanRoute.ModeChainedDesc>Route the chosen number of nearest same-kind targets, starting from the one you clicked.</HaulersDream.PlanRoute.ModeChainedDesc>
@@ -306,6 +312,7 @@
 
   <!-- Inspector job-report rewrite (routing intent — While You're Up parity). {ORIGINAL} = the trimmed vanilla
        report, {DESTINATION} = the job/consumer the haul is bound for. -->
+  <HaulersDream.JobReport.DefaultDestination>storage</HaulersDream.JobReport.DefaultDestination>
   <HaulersDream.JobReport.EnRoute.Load>{ORIGINAL} (on the way to {DESTINATION})</HaulersDream.JobReport.EnRoute.Load>
   <HaulersDream.JobReport.EnRoute.Unload>{ORIGINAL} (on the way to {DESTINATION})</HaulersDream.JobReport.EnRoute.Unload>
   <HaulersDream.JobReport.CloserTo.Load>{ORIGINAL} (closer to {DESTINATION})</HaulersDream.JobReport.CloserTo.Load>

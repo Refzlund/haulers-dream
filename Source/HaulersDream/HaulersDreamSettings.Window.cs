@@ -140,7 +140,7 @@ namespace HaulersDream
             {
                 var pf = Text.Font;
                 Text.Font = GameFont.Medium;
-                Widgets.Label(new Rect(4f, 8f, 360f, 40f), "Hauler's Dream");
+                Widgets.Label(new Rect(4f, 8f, 360f, 40f), "HaulersDream.SettingsHeaderFallback".Translate());
                 Text.Font = pf;
             }
 

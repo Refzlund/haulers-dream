@@ -27,3 +27,12 @@ const steamDesc = Bun.spawn(['bun', resolve(import.meta.dir, 'check-steam-descri
 	cwd: repoRoot,
 })
 if ((await steamDesc.exited) !== 0) throw new Error('Steam-description length check failed (see output above).')
+
+// Guard translation parity: every non-English Languages/ folder must define the same key set + the
+// same {placeholders} as English. Fails the build on missing/extra keys or dropped placeholders.
+const translations = Bun.spawn(['bun', resolve(import.meta.dir, 'check-translations.ts')], {
+	stdout: 'inherit',
+	stderr: 'inherit',
+	cwd: repoRoot,
+})
+if ((await translations.exited) !== 0) throw new Error('Translation parity check failed (see output above).')

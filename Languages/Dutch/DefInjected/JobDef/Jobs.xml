@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LanguageData>
+
+<HaulersDream_UnloadInventory.reportString>inventaris uitladen.</HaulersDream_UnloadInventory.reportString>
+<HaulersDream_SelfPickup.reportString>geoogste goederen verzamelen.</HaulersDream_SelfPickup.reportString>
+<HaulersDream_OverloadConstructDeliver.reportString>materialen bezorgen.</HaulersDream_OverloadConstructDeliver.reportString>
+<HaulersDream_ConstructDeliverBuild.reportString>materialen bezorgen om te bouwen.</HaulersDream_ConstructDeliverBuild.reportString>
+<HaulersDream_ClaimFromHauler.reportString>materialen opeisen van een sjouwer.</HaulersDream_ClaimFromHauler.reportString>
+<HaulersDream_BatchCraft.reportString>een batch vervaardigen.</HaulersDream_BatchCraft.reportString>
+<HaulersDream_InventoryDoBill.reportString>vervaardigen.</HaulersDream_InventoryDoBill.reportString>
+<HaulersDream_BillPrepGather.reportString>ingrediënten voor vervaardiging verzamelen.</HaulersDream_BillPrepGather.reportString>
+<HaulersDream_BulkHaul.reportString>alles in de buurt sjouwen.</HaulersDream_BulkHaul.reportString>
+<HaulersDream_LoadPackAnimal.reportString>spullen op een lastdier laden.</HaulersDream_LoadPackAnimal.reportString>
+<HaulersDream_UnloadCarrierInBulk.reportString>een lastdier uitladen.</HaulersDream_UnloadCarrierInBulk.reportString>
+<HaulersDream_LoadTransportersInBulk.reportString>een transporter bulksgewijs laden.</HaulersDream_LoadTransportersInBulk.reportString>
+<HaulersDream_LoadPortalInBulk.reportString>een portaal bulksgewijs laden.</HaulersDream_LoadPortalInBulk.reportString>
+<HaulersDream_LoadVehicleInBulk.reportString>een voertuig bulksgewijs laden.</HaulersDream_LoadVehicleInBulk.reportString>
+<HaulersDream_BulkRefuel.reportString>bulksgewijs bijtanken.</HaulersDream_BulkRefuel.reportString>
+</LanguageData>

@@ -1,0 +1,596 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LanguageData>
+
+<HaulersDream.SettingsCategory>Hauler's Dream</HaulersDream.SettingsCategory>
+<HaulersDream.SettingsHeaderFallback>Hauler's Dream</HaulersDream.SettingsHeaderFallback>
+<HaulersDream.Tab.General>Ogólne</HaulersDream.Tab.General>
+<HaulersDream.Tab.Sharing>Współdzielenie i dostawa</HaulersDream.Tab.Sharing>
+<HaulersDream.Tab.Bulk>Masowo i nosiciele</HaulersDream.Tab.Bulk>
+<HaulersDream.Tab.Routing>W drodze i trasowanie</HaulersDream.Tab.Routing>
+<HaulersDream.Tab.Sources>Źródła i kto</HaulersDream.Tab.Sources>
+<HaulersDream.Tab.Planners>Plannery i zaawansowane</HaulersDream.Tab.Planners>
+<HaulersDream.Setting.MasterEnabled>Włącz Hauler's Dream</HaulersDream.Setting.MasterEnabled>
+<HaulersDream.Setting.MasterEnabledDesc>Główny przełącznik. Gdy WYŁĄCZONY, Hauler's Dream przestaje URUCHAMIAĆ swoje automatyczne zachowania związane ze znoszeniem — zbieranie plonów z pracy, sprzątanie pobliskiego łupu, masowe znoszenie, podbieranie po drodze i trasowanie do magazynu — co przydaje się przy sprawdzaniu, czy mod jest zamieszany w jakiś problem, bez restartu. Pionek, który już nazbierał towary, wciąż rozładowuje je normalnie (nic nigdy nie utknie), a przycisk „Rozładuj ekwipunek” dla każdego pionka pozostaje dostępny. (Nadpisania niezdolności do pracy oraz menu rozkazów z prawego przycisku mają własne przełączniki i nie są zależne od tego przełącznika). Domyślnie włączone.</HaulersDream.Setting.MasterEnabledDesc>
+<HaulersDream.Setting.DrawDetourLines>Rysuj linie objazdów do debugowania (dev)</HaulersDream.Setting.DrawDetourLines>
+<HaulersDream.Setting.DrawDetourLinesDesc>Diagnostyka tylko dla deweloperów: rysuje kolorowe linie dla podbierania po drodze i objazdów trasowania do magazynu, abyś widział, dlaczego pionek zboczył. Niezapisywane — resetuje się do wyłączonego przy każdym uruchomieniu gry.</HaulersDream.Setting.DrawDetourLinesDesc>
+<HaulersDream.Setting.CarryLimit>Limit noszenia: {0} maksymalnego udźwigu każdego pionka</HaulersDream.Setting.CarryLimit>
+<HaulersDream.Setting.CarryLimitDesc>Limit to ułamek maksymalnego udźwigu pionka — masy, jaką może nieść w odzieży, ekwipunku i bagażu (ten sam udźwig, którego używają karawany i ładowanie jucznych). Przedmioty niesione w rękach podczas znoszenia (aktywny stos noszony w rękach) NIE są wliczane do tego limitu; liczy się tylko to, co schowane w odzieży/ekwipunku/bagażu. Inteligentne przeciążenie poniżej może wciąż pozwolić pionkowi przekroczyć 100% tego limitu, aby zaoszczędzić wypraw.</HaulersDream.Setting.CarryLimitDesc>
+<HaulersDream.Setting.DropThenHaul>Upuść na podłogę, potem podnieś (realistycznie)</HaulersDream.Setting.DropThenHaul>
+<HaulersDream.Setting.DropThenHaulDesc>Gdy WŁĄCZONE, zebrane/wydobyte towary upadają na ziemię, a pionek zgarnia je do bagażu po zakończeniu pracy. Gdy WYŁĄCZONE, towary trafiają prosto do bagażu (bez kontaktu z ziemią).</HaulersDream.Setting.DropThenHaulDesc>
+<HaulersDream.Setting.MarkForUnload>Automatycznie rozładowuj nazbierane towary (na końcu pracy, wokół posiłków i wypoczynku, gdy przeciążony oraz w interwale poniżej). Wyłączone: pionki noszą dalej, dopóki nie naciśniesz ich przycisku „Rozładuj ekwipunek”.</HaulersDream.Setting.MarkForUnload>
+<HaulersDream.Setting.UnloadAllSurplus>Odkładaj również nadwyżkę bagażu, którą pionek niesie, a której Hauler's Dream sam NIE podniósł (domyślnie wyłączone)</HaulersDream.Setting.UnloadAllSurplus>
+<HaulersDream.Setting.UnloadAllSurplusDesc>Domyślnie wyłączone: Hauler's Dream rozładowuje tylko towary, które sam nazbierał, więc nigdy nie rusza broni dodatkowej kolonisty, niesionych leków czy wody ani towarów z handlu. Włącz to, aby dla wygody odkładać również nadwyżkę, którą pionek niesie bez powodu (z handlu, innych modów lub ręcznych przeniesień). „Nadwyżka” wyłącza zachowane przez pionka jedzenie, narkotyki, zapas ekwipunku oraz przedmioty z wyposażenia bojowego (w tym amunicję), narkotyki uzależniające/zależnościowe z podstawki, przedmioty, które mody do broni dodatkowej, leków lub higieny trzymają w bagażu (wszystko wykrywane automatycznie), a także wszystko, co zachowasz w Ustawieniach rozładunku poszczególnych przedmiotów poniżej — i tylko stosy, które mają gdzie być składowane; bagaż ładowany do karawany pozostaje nietknięty.</HaulersDream.Setting.UnloadAllSurplusDesc>
+<HaulersDream.Setting.ItemUnloadButton>Ustawienia rozładunku poszczególnych przedmiotów…</HaulersDream.Setting.ItemUnloadButton>
+<HaulersDream.Setting.ItemUnloadButtonN>Ustawienia rozładunku poszczególnych przedmiotów ({0})…</HaulersDream.Setting.ItemUnloadButtonN>
+<HaulersDream.ItemUnload.Title>Ustawienia rozładunku poszczególnych przedmiotów</HaulersDream.ItemUnload.Title>
+<HaulersDream.ItemUnload.Desc>Określ, jak Hauler's Dream traktuje konkretne przedmioty w bagażu pionka. Dla każdego przedmiotu wybierz: Nigdy nie rozładowuj (zachowaj cały stos), Zachowaj najwyżej N (noś do N, resztę rozładuj) lub Zawsze rozładowuj (odkładaj, nawet jeśli inny mod normalnie by go zachował). Przedmioty bez reguły używają normalnego zachowania. Reguła tutaj nadpisuje automatyczne wykrywanie zachowania dla przedmiotów z wyposażenia bojowego, broni dodatkowej, leków, higieny i uzależnień. Wybory dla przedmiotów z modów, które usunąłeś, są zapamiętywane i przywracane po ponownej instalacji moda, i nigdy nie wpływają na wczytywanie zapisu. (Wskazówka: jeśli używasz moda do wyposażenia/amunicji, ustaw ilości amunicji w jego wyposażeniu — sam dobiera amunicję do tej ilości).</HaulersDream.ItemUnload.Desc>
+<HaulersDream.ItemUnload.ClearAll>Wyczyść wszystko</HaulersDream.ItemUnload.ClearAll>
+<HaulersDream.ItemUnload.ModeDefault>Domyślnie</HaulersDream.ItemUnload.ModeDefault>
+<HaulersDream.ItemUnload.ModeKeepAll>Nigdy nie rozładowuj</HaulersDream.ItemUnload.ModeKeepAll>
+<HaulersDream.ItemUnload.ModeKeepAtMost>Zachowaj najwyżej</HaulersDream.ItemUnload.ModeKeepAtMost>
+<HaulersDream.ItemUnload.ModeUnloadAlways>Zawsze rozładowuj</HaulersDream.ItemUnload.ModeUnloadAlways>
+<HaulersDream.Setting.UnloadBeforeSleep>Odłóż ładunek przed snem</HaulersDream.Setting.UnloadBeforeSleep>
+<HaulersDream.Setting.UnloadBeforeSleepDesc>Gdy pionek kończy pracę i jest zmęczony (zaraz pójdzie spać), najpierw odbywa wyprawę rozładunkową, a potem kładzie się do łóżka pusty — zamiast zanosić nazbierany ładunek do łóżka. Wciąż normalnie gromadzi, dopóki faktycznie pracuje.</HaulersDream.Setting.UnloadBeforeSleepDesc>
+<HaulersDream.Setting.UnloadBeforeLeisure>Odłóż ładunek przed wypoczynkiem</HaulersDream.Setting.UnloadBeforeLeisure>
+<HaulersDream.Setting.UnloadBeforeLeisureDesc>Gdy pionek przerywa pracę i kieruje się na wypoczynek (jego blok wypoczynku w harmonogramie lub dowolna czynność rozrywkowa), najpierw się rozładowuje, zamiast nosić ładunek podczas odpoczynku.</HaulersDream.Setting.UnloadBeforeLeisureDesc>
+<HaulersDream.Setting.UnloadBeforeEating>Odłóż ładunek przed jedzeniem</HaulersDream.Setting.UnloadBeforeEating>
+<HaulersDream.Setting.UnloadBeforeEatingDesc>Gdy pionek kończy pracę i jest głodny (zaraz zje), najpierw się rozładowuje — żeby nie zanosił właśnie wydobytej rudy do stołu jadalnego.</HaulersDream.Setting.UnloadBeforeEatingDesc>
+<HaulersDream.Setting.ShareHeader>Współdziel niesione materiały między kolonistami:</HaulersDream.Setting.ShareHeader>
+<HaulersDream.Setting.ShareForBuilding>Używaj niesionych materiałów do budowy</HaulersDream.Setting.ShareForBuilding>
+<HaulersDream.Setting.BuildFromInventory>Buduj z bagażu (używaj już niesionych materiałów)</HaulersDream.Setting.BuildFromInventory>
+<HaulersDream.Setting.BuildFromInventoryDesc>Budujący pionek może pozyskiwać materiały budowlane z bagażu, który pionek lub zwierzę już niesie — z własnego, potem innych kolonistów, a potem zwierząt jucznych / ładunku karawany — nie tylko z luźnych stosów na ziemi. Więc jeśli weźmiesz stal w karawanie i każesz postawić worek z piaskiem lub ścianę na rajdzie czy mapie wyjazdowej, budowa odbędzie się z niesionej stali bez wcześniejszego zdejmowania jej ze zwierzęcia jucznego. Dostarczane prosto z bagażu na miejsce (bez upuszczania pod nogi nosiciela). Jest to odrębne od „używaj niesionych materiałów do budowy” powyżej, które liczy tylko materiały nazbierane przez sam ten mod. Nigdy nie pozyskuje od wcielonego, powalonego ani szalejącego nosiciela ani z ładunku przeznaczonego dla formującej się karawany; rezerwuje stos, by dwóch budowniczych się o niego nie ścigało. Domyślnie włączone.</HaulersDream.Setting.BuildFromInventoryDesc>
+<HaulersDream.Setting.BuildFromInventoryPartial>Zezwól na częściowe budowy z bagażu</HaulersDream.Setting.BuildFromInventoryPartial>
+<HaulersDream.Setting.BuildFromInventoryPartialDesc>Normalnie budowa nie ruszy, dopóki nie będzie dostępne dość materiału na całość. Z tym włączonym szkielet jest rozpoczynany i posuwany przy użyciu materiału z bagażu, jaki istnieje, nawet jeśli jest go mniej niż potrzebna pełna ilość — reszta jest dostarczana, gdy stanie się dostępna. Zmienia zasadę „wszystko albo nic” z podstawki, więc domyślnie wyłączone. Wymaga „buduj z bagażu”.</HaulersDream.Setting.BuildFromInventoryPartialDesc>
+<HaulersDream.Setting.ShareForCrafting>Używaj niesionych materiałów do zleceń wytwarzania</HaulersDream.Setting.ShareForCrafting>
+<HaulersDream.Setting.ShareForCraftingDesc>Wytwarzający pionek może pozyskiwać składniki zlecenia z bagażu, który pionek już niesie, nie tylko z luźnych stosów na ziemi. Jeśli inny mod zarządza znoszeniem składników do wytwarzania, Hauler's Dream automatycznie się wycofuje i pozwala mu je zgromadzić — więc każda pętla wytwarzania sama się rozwiązuje bez żadnego działania z twojej strony.</HaulersDream.Setting.ShareForCraftingDesc>
+<HaulersDream.Setting.ShareMeetInMiddle>Bezczynny nosiciel idzie do pracownika, by przekazać towary</HaulersDream.Setting.ShareMeetInMiddle>
+<HaulersDream.Setting.BatchWorkDeliveries>Noś materiały na wiele zakolejkowanych budów na wyprawę</HaulersDream.Setting.BatchWorkDeliveries>
+<HaulersDream.Setting.BatchWorkDeliveriesDesc>Przy budowaniu wielu tanich rzeczy (np. długiego płotu) pionek napełnia ręce materiałem wystarczającym na wiele zakolejkowanych budów i dostarcza go do każdej w jednej wyprawie, zamiast dowozić po kilka naraz. Niesione w rękach, więc nie ma spowolnienia.</HaulersDream.Setting.BatchWorkDeliveriesDesc>
+<HaulersDream.Setting.InventoryConstructDeliver>Noś materiały w bagażu na duże pojedyncze budowy</HaulersDream.Setting.InventoryConstructDeliver>
+<HaulersDream.Setting.InventoryConstructDeliverDesc>Gdy pojedyncza rzecz wymaga więcej niż jednego naręcza jednego materiału (np. 340 stali na generator geotermalny), pionek ładuje materiał do swojego bagażu — który ograniczony jest masą, a nie rozmiarem stosu — i dostarcza go w znacznie mniejszej liczbie wypraw, zamiast dowozić po ~75 w rękach. Używa ustawienia inteligentnego przeciążenia powyżej, by określić, ile ponad 100% ładuje; przy wyłączonym przeciążeniu ładuje do 100% (bez spowolnienia).</HaulersDream.Setting.InventoryConstructDeliverDesc>
+<HaulersDream.Setting.MultiSiteConstructDeliver>Załaduj materiały na kilka pobliskich miejsc w jednej wyprawie</HaulersDream.Setting.MultiSiteConstructDeliver>
+<HaulersDream.Setting.MultiSiteConstructDeliverDesc>Gdy automatyczna budowa lub budowa z shift-klikiem dostarcza do skupiska pobliskich miejsc budowy potrzebujących tego samego materiału, pionek ładuje łączne zapotrzebowanie całego skupiska do swojego bagażu w jednej wyprawie i dostarcza do każdego miejsca, zamiast obsługiwać jedno miejsce na wyprawę (wcześniej robił to tylko planner tras). Pionek wciąż kończy miejsce, nad którym już pracuje, przed ładowaniem. Wymaga „Noś materiały w bagażu na duże pojedyncze budowy” powyżej.</HaulersDream.Setting.MultiSiteConstructDeliverDesc>
+<HaulersDream.Setting.ShareHandHauled>Przejmuj materiały od kolonisty znoszącego je do magazynu (domyślnie wyłączone)</HaulersDream.Setting.ShareHandHauled>
+<HaulersDream.Setting.ShareHandHauledDesc>Gdy budowniczy potrzebuje materiału, a jedyny zapas jest w rękach kolonisty znoszącego go do składowiska, budowniczy spotyka tego kolonistę w drodze i bierze stos, zamiast czekać, aż dotrze on do magazynu, i pobierać go stamtąd. Nigdy nie rusza kolonisty dostarczającego do konkretnej budowy, zlecenia czy zadania tankowania i tylko wtedy, gdy faktycznie oszczędza to wyprawę. (Na razie tylko budowa).</HaulersDream.Setting.ShareHandHauledDesc>
+<HaulersDream.Setting.MealsOnWheels>Jedz jedzenie niesione przez innych kolonistów, gdy żadne nie zostanie znalezione</HaulersDream.Setting.MealsOnWheels>
+<HaulersDream.Setting.MealsOnWheelsDesc>Gdy głodny kolonista nie może znaleźć jedzenia na mapie ani we własnym (lub zwierzęcia jucznego) bagażu, idzie do innego kolonisty lub zwierzęcia jucznego niosącego akceptowalne jedzenie i je z jego bagażu — ograniczając wyprawy i ratując niesione posiłki przed zepsuciem — zamiast głodować lub maszerować do dalekiego składowiska. Uruchamia się tylko, gdy normalne poszukiwanie jedzenia nic nie znajdzie, więc nigdy nie nadpisuje bliższego posiłku. Respektuje politykę żywieniową jedzącego, ideologię i status abstynenta; nigdy nie bierze jedzenia, którym rodzic karmi niemowlę; nigdy nie bierze od wcielonego, powalonego ani szalejącego nosiciela; rezerwuje posiłek, by dwóch kolonistów się o niego nie ścigało; i woli jedzenie najbliższe zepsuciu. Domyślnie włączone.</HaulersDream.Setting.MealsOnWheelsDesc>
+<HaulersDream.Setting.BulkHaul>Masowe znoszenie — wyprawa po znoszenie zabiera wszystko wokół siebie</HaulersDream.Setting.BulkHaul>
+<HaulersDream.Setting.BulkHaulDesc>Pionek wysłany, by znieść jeden przedmiot, planuje podbieranie wszystkiego, co znoszalne wokół niego, do swojego bagażu, dostarczając całość w jednej wyprawie do magazynu. Wyłączone = znoszenie jak w podstawce, jeden przedmiot na wyprawę.</HaulersDream.Setting.BulkHaulDesc>
+<HaulersDream.Setting.BulkHaulSecond>Zlecone znoszenie zgarnia wszystko tylko wtedy, gdy zlecono też drugie pobliskie znoszenie</HaulersDream.Setting.BulkHaulSecond>
+<HaulersDream.Setting.BulkHaulSecondDesc>Automatyczne znoszenie zawsze zgarnia okolicę do bagażu (jedna wyprawa do magazynu na wiele przedmiotów). Znoszenie, które TY zlecasz pionkowi, pozostaje chirurgiczne — znosi tylko tę jedną rzecz — chyba że zleciłeś drugie znoszenie w pobliżu, w którym to przypadku pionek zgarnia je razem. Domyślne ustawienie dla większej kontroli.</HaulersDream.Setting.BulkHaulSecondDesc>
+<HaulersDream.Setting.BulkHaulAlways>Zawsze zgarniaj — każde znoszenie zabiera wszystko wokół siebie</HaulersDream.Setting.BulkHaulAlways>
+<HaulersDream.Setting.BulkHaulAlwaysDesc>Każde znoszenie — automatyczne czy zlecone — ładuje pobliskie znoszalne przedmioty również do bagażu pionka, robiąc jedną wyprawę do magazynu na całość. Ile niesie, respektuje suwak inteligentnego przeciążenia poniżej: tylko tyle dodatkowej masy, ile naprawdę warte jest spowolnienia w porównaniu z kolejną wyprawą w obie strony.</HaulersDream.Setting.BulkHaulAlwaysDesc>
+<HaulersDream.Setting.HaulNearbyOption>Dodaj rozkaz z prawego przycisku „Znieś wszystko w pobliżu”</HaulersDream.Setting.HaulNearbyOption>
+<HaulersDream.Setting.HaulNearbyOptionDesc>Dodaje opcję „Znieś wszystko w pobliżu” do menu z prawego przycisku na znoszalnym przedmiocie (dla pionków, które mogą znosić), która natychmiast rozpoczyna masowe zgarnianie — więc nie musisz priorytetyzować dwóch znoszeń, by wyzwolić masowe znoszenie. „Priorytetyzuj znoszenie” z podstawki wciąż pojawia się obok dla znoszenia pojedynczego przedmiotu.</HaulersDream.Setting.HaulNearbyOptionDesc>
+<HaulersDream.Setting.ManualPickup>Dodaj rozkaz z prawego przycisku „Podnieś X”</HaulersDream.Setting.ManualPickup>
+<HaulersDream.Setting.ManualPickupDesc>Dodaje opcję „Podnieś X” do menu z prawego przycisku na znoszalnym przedmiocie na ziemi. Pionek bierze kliknięty stos prosto do swojego bagażu jako śledzone znoszenie Hauler's Dream, które następnie jest odkładane przez normalne rozładowywanie — więc nigdy nie ginie, nawet jeśli automatyczne rozładowywanie jest wyłączone. Dodatkowe do opcji znoszenia z prawego przycisku z podstawki.</HaulersDream.Setting.ManualPickupDesc>
+<HaulersDream.Setting.HaulOversized>Noś ponadwymiarowe stosy w bagażu</HaulersDream.Setting.HaulOversized>
+<HaulersDream.Setting.HaulOversizedDesc>Gdy pojedynczy stos jest zbyt duży, by unieść go w jednym naręczu (na przykład stos 75 stali, gdy pionek może utrzymać tylko 72), pionek bierze go do bagażu i dostarcza cały stos w jednej wyprawie — zamiast nieść w rękach częściowy ładunek i zostawiać resztę. Dotyczy zarówno zleconych, jak i automatycznych znoszeń; niesie tylko tyle, ile magazyn faktycznie może przyjąć, więc nic nie utknie.</HaulersDream.Setting.HaulOversizedDesc>
+<HaulersDream.Setting.SweepNearbyWhileWorking>Sprzątaj podczas pracy — zgarniaj też pobliskie luźne przedmioty</HaulersDream.Setting.SweepNearbyWhileWorking>
+<HaulersDream.Setting.SweepNearbyWhileWorkingDesc>Gdy pionek rozbiera, wydobywa lub zbiera i zgarnia własne plony, podnosi też inne luźne znoszalne przedmioty leżące wokół miejsca pracy do swojego bagażu, aby cały obszar był uprzątnięty w jednej skonsolidowanej wyprawie, zamiast zostawiać go na osobne znoszenia. Brane są tylko przedmioty, które wymagają znoszenia i mają gdzie trafić (nigdy cel innego tragarza ani zapas ze składowiska), i tylko do pułapu inteligentnego przeciążenia.</HaulersDream.Setting.SweepNearbyWhileWorkingDesc>
+<HaulersDream.Setting.HaulToStack>Znoś do stosu (uzupełniaj istniejące stosy, dziel kafelki docelowe)</HaulersDream.Setting.HaulToStack>
+<HaulersDream.Setting.ConstructTether>Zlecone budowy znoszą I budują jako jedno zadanie</HaulersDream.Setting.ConstructTether>
+<HaulersDream.Setting.ConstructTetherDesc>Gdy klikniesz prawym przyciskiem i spriorytetyzujesz budowę, pionek znosi materiały i buduje natychmiast, jako jedno ciągłe zadanie. Wyłączone = rozkaz tylko dostarcza materiały (jak w podstawce); budowa odbywa się przez normalną pracę. Trasy zaplanowane z „Buduj również” zachowują swoje własne zachowanie tak czy inaczej.</HaulersDream.Setting.ConstructTetherDesc>
+<HaulersDream.Setting.HaulToSiteOption>Pokaż rozkaz „Priorytetyzuj znoszenie materiałów do…”</HaulersDream.Setting.HaulToSiteOption>
+<HaulersDream.Setting.HaulToSiteOptionDesc>Rozkaz z prawego przycisku, który zaopatruje miejsce budowy w materiały, dostępny nawet zanim miejsce można zbudować. Wyłączone = opcja jest ukryta.</HaulersDream.Setting.HaulToSiteOptionDesc>
+<HaulersDream.Setting.PlanRoutes>Włącz planner tras („Zaplanuj spriorytetyzowane [zadanie]…”)</HaulersDream.Setting.PlanRoutes>
+<HaulersDream.Setting.PlanRoutesDesc>Narzędzie planowania z prawego przycisku dla tras zbierania, wydobycia, sprzątania, rozbiórki i budowy. Wyłączone = opcja menu jest wszędzie ukryta.</HaulersDream.Setting.PlanRoutesDesc>
+<HaulersDream.Setting.PlanCrafting>Włącz planner wytwarzania („Zaplanuj spriorytetyzowane wytwarzanie…”)</HaulersDream.Setting.PlanCrafting>
+<HaulersDream.Setting.PlanCraftingDesc>Narzędzie planowania z prawego przycisku na stołach roboczych, które wsadowo wykonuje zlecenie kilka razy w jednej wyprawie po składniki. Wyłączone = opcja menu jest ukryta.</HaulersDream.Setting.PlanCraftingDesc>
+<HaulersDream.Setting.BatchByDefault>Domyślnie grupuj nowe zlecenia w partie</HaulersDream.Setting.BatchByDefault>
+<HaulersDream.Setting.BatchByDefaultDesc>Zlecenia wytwarzania i gotowania, które DODASZ od teraz, zaczynają w trybie „partia”: kolonista przynosi całą partię składników w jednej wyprawie, robi je wszystkie przy stole (jedzenie nie psuje się podczas pracy), a potem znosi wszystko do magazynu. Dotyczy tylko nowo dodanych zleceń — istniejące zlecenia zachowują swoje obecne ustawienie.</HaulersDream.Setting.BatchByDefaultDesc>
+<HaulersDream.Setting.DefaultBatchSize>Domyślny rozmiar partii: {0}</HaulersDream.Setting.DefaultBatchSize>
+<HaulersDream.Batch.MenuPrefix>Partia</HaulersDream.Batch.MenuPrefix>
+<HaulersDream.Batch.SetSize>Rozmiar partii: {0}…</HaulersDream.Batch.SetSize>
+<HaulersDream.Batch.RowMarker>×{0} </HaulersDream.Batch.RowMarker>
+<HaulersDream.Batch.SizeDialogTitle>Rozmiar partii — {0}</HaulersDream.Batch.SizeDialogTitle>
+<HaulersDream.Batch.SizeLabel>Wykonaj do {0} na partię</HaulersDream.Batch.SizeLabel>
+<HaulersDream.Batch.SizeDesc>Kolonista zbiera składniki na całą partię w jednej wyprawie, robi je wszystkie przy stole (składniki nie psują się podczas pracy), a potem znosi wszystko do magazynu. Ograniczone dostępnymi materiałami i własnym licznikiem zlecenia.</HaulersDream.Batch.SizeDesc>
+<HaulersDream.Setting.HaulToStackDesc>Tragarze wolą dodawać do istniejącego częściowego stosu niż zaczynać nowy — w obrębie pomieszczenia magazynowego, które gra już wybrała (który skład wygrywa, wciąż decyduje priorytet i odległość). Działa na ziemi, na półkach i w modowanych jednostkach składowania. Składowanie na zewnątrz zamiast tego skanuje pobliskie składowiska w krótkim promieniu. Kafelki docelowe nie są już rezerwowane, więc kilku tragarzy może dostarczać na ten sam kafelek naraz, zamiast rozkładać jeden typ przedmiotu na dziesięć komórek.</HaulersDream.Setting.HaulToStackDesc>
+<HaulersDream.Setting.AutoStripHeader>Automatycznie obdzieraj zwłoki PODCZAS ich znoszenia — gdy kolonista znosi zwłoki, obdziera ciało po drodze, a łup jedzie w bagażu tragarza (bez osobnego zadania obdzierania, bez drugiej wyprawy):</HaulersDream.Setting.AutoStripHeader>
+<HaulersDream.Setting.AutoStripMode>Automatyczne obdzieranie podczas znoszenia: {0}</HaulersDream.Setting.AutoStripMode>
+<HaulersDream.Setting.AutoStripAll>przy każdym znoszeniu zwłok (składowisko, grób, kremacja, oprawianie)</HaulersDream.Setting.AutoStripAll>
+<HaulersDream.Setting.AutoStripDisposal>tylko przy znoszeniu do utylizacji (grób, sarkofag, kremacja, oprawianie — nie zwykłe znoszenie do składowiska)</HaulersDream.Setting.AutoStripDisposal>
+<HaulersDream.Setting.AutoStripOff>nigdy — nie obdzieraj podczas znoszenia (zachowanie jak w podstawce)</HaulersDream.Setting.AutoStripOff>
+<HaulersDream.Setting.AutoStripCrossRef>„Nigdy” wyłącza tylko ten skrót obdzierania-podczas-znoszenia. NIE wyłącza znoszenia obdartego sprzętu: rozkaz Obdrzyj, który złożysz ręcznie, wciąż działa normalnie, a upuszczone z niego bronie i ubrania wciąż są zgarniane i znoszone do domu — kontrolowane przez osobny przełącznik pracy „Obdzieranie — zdjęty sprzęt” (pod „Zgarniaj plony z tych rodzajów pracy” dalej poniżej).</HaulersDream.Setting.AutoStripCrossRef>
+<HaulersDream.Setting.StripColonists>Obdzieraj również zwłoki z frakcji gracza</HaulersDream.Setting.StripColonists>
+<HaulersDream.Setting.StripColonistsDesc>Z tym wyłączonym (domyślnie) twoi własni zmarli — koloniści i zwierzęta kolonii — zachowują swój sprzęt i godność; obdzierani są tylko obcy i wrogowie.</HaulersDream.Setting.StripColonistsDesc>
+<HaulersDream.Setting.TaintedSmeltable>Skażona odzież (przetapialna): {0}</HaulersDream.Setting.TaintedSmeltable>
+<HaulersDream.Setting.TaintedNonSmeltable>Skażona odzież (nieprzetapialna): {0}</HaulersDream.Setting.TaintedNonSmeltable>
+<HaulersDream.Setting.TaintedTake>weź ją (sprzedaj, noś lub przetop)</HaulersDream.Setting.TaintedTake>
+<HaulersDream.Setting.TaintedLeave>zostaw ją na zwłokach (kremacja spala ją z ciałem; oprawianie upuszcza ją przy stole, jak w podstawce)</HaulersDream.Setting.TaintedLeave>
+<HaulersDream.Setting.TaintedForbid>upuść ją i zakaż jej</HaulersDream.Setting.TaintedForbid>
+<HaulersDream.Setting.TaintedDestroy>zniszcz ją na miejscu (przedmioty zadaniowe i relikwie są zamiast tego brane, nigdy niszczone)</HaulersDream.Setting.TaintedDestroy>
+<HaulersDream.Setting.HaulTamedSlaughter>Znoś ubite tusze do magazynu</HaulersDream.Setting.HaulTamedSlaughter>
+<HaulersDream.Setting.HaulTamedSlaughterDesc>Gdy kolonista kończy ubój zwierzęcia kolonii, świeża tusza jest znoszona prosto do magazynu (zamrażarki lub składowiska na zwłoki), aby nie gniła tam, gdzie padła — tylko jeśli osiągalne miejsce składowania ją przyjmuje, w przeciwnym razie zostaje dokładnie jak w podstawce. (Podstawka nigdy sama nie znosi ubitego zwierzęcia; to wypełnia tę lukę).</HaulersDream.Setting.HaulTamedSlaughterDesc>
+<HaulersDream.Setting.HaulWildKills>Znoś upolowane tusze do magazynu</HaulersDream.Setting.HaulWildKills>
+<HaulersDream.Setting.HaulWildKillsDesc>Gdy polowanie zostaje przerwane zaraz po zabiciu — myśliwego odciąga potrzeba, wcielenie, załamanie psychiczne lub polowanie wygasa — myśliwy niezwłocznie znosi świeżą tuszę do magazynu po drodze, zamiast zostawiać ją wolnej, ogólnej kolejce znoszenia. Przy czystym polowaniu myśliwy już niesie swoją zdobycz do domu (podstawka), więc to się nie wtrąca — bez podwójnego znoszenia. Znosi tylko, jeśli osiągalne miejsce składowania przyjmuje ciało; w przeciwnym razie tusza zostaje dokładnie jak w podstawce (nigdy nie jest zakazana, więc normalne znoszenie zwłok wciąż ją zbierze, gdy istnieje zamrażarka lub składowisko na zwłoki, które ją przyjmuje).</HaulersDream.Setting.HaulWildKillsDesc>
+<HaulersDream.Setting.ButcherSpoilingFirst>Oprawiaj najpierw najbardziej zepsute zwłoki</HaulersDream.Setting.ButcherSpoilingFirst>
+<HaulersDream.Setting.ButcherSpoilingFirstDesc>Gdy kolonista wybiera zwłoki do zlecenia oprawiania, wybiera ciało najbliższe gniciu (spośród zwłok, które zlecenie już dopuszcza, w obrębie jego promienia poszukiwania składników), a nie po prostu najbliższe — żeby mięso odzyskano przed zepsuciem. Zmienia tylko kolejność, które już prawidłowe zwłoki są użyte; nigdy nie zmienia receptury, promienia poszukiwania ani tego, które zwłoki zlecenie przyjmuje. Zamrożone zwłoki są zostawiane na koniec (nie psują się). Dotyczy zarówno zwykłych zleceń oprawiania, jak i partii Hauler's Dream. Domyślnie włączone.</HaulersDream.Setting.ButcherSpoilingFirstDesc>
+<HaulersDream.Setting.CookSpoilingFirst>Gotuj najpierw z najbardziej zepsutego jedzenia</HaulersDream.Setting.CookSpoilingFirst>
+<HaulersDream.Setting.CookSpoilingFirstDesc>Gdy kolonista wybiera psujące się składniki do zlecenia gotowania (mięso, warzywa i inne gnijące jedzenie — nie zwłoki), wybiera stos najbliższy gniciu (spośród składników, które zlecenie już dopuszcza, w obrębie jego promienia poszukiwania składników), a nie po prostu najbliższy — żeby jedzenie zjedzono przed zepsuciem. Zmienia tylko kolejność, który już prawidłowy składnik jest użyty; nigdy nie zmienia receptury, promienia poszukiwania ani niepsujących się wyrobów (stal, tkanina itp. pozostają nietknięte). Zamrożone jedzenie jest zostawiane na koniec. Dotyczy zarówno zwykłych zleceń gotowania, jak i partii Hauler's Dream. Domyślnie włączone.</HaulersDream.Setting.CookSpoilingFirstDesc>
+<HaulersDream.Setting.Overload>Inteligentne przeciążenie: {0}</HaulersDream.Setting.Overload>
+<HaulersDream.Setting.OverloadDesc>Pionki noszą materiały ponad 100% swojej maksymalnej masy, by zaoszczędzić wypraw, ale poruszają się wolniej, im bardziej się przeciążają — i robią to tylko wtedy, gdy mniej wypraw jest naprawdę warte spowolnienia (również dla zakolejkowanej pracy budowy/wytwarzania). Przesuń w lewo dla lżejszego spowolnienia + większych ładunków, w prawo dla cięższego spowolnienia + mniejszych ładunków.</HaulersDream.Setting.OverloadDesc>
+<HaulersDream.Overload.Free>Bez spowolnienia — noś dowolnie</HaulersDream.Overload.Free>
+<HaulersDream.Overload.Fair>Umiarkowane (zrównoważone)</HaulersDream.Overload.Fair>
+<HaulersDream.Overload.Off>Wyłączone — nigdy nie przeciążaj</HaulersDream.Overload.Off>
+<HaulersDream.Overload.Eager>Chętne do przeciążania ({0})</HaulersDream.Overload.Eager>
+<HaulersDream.Overload.Cautious>Ostrożne ({0})</HaulersDream.Overload.Cautious>
+<HaulersDream.Setting.StrictCarryWeight>Ścisły udźwig (nie przeciążaj)</HaulersDream.Setting.StrictCarryWeight>
+<HaulersDream.Setting.StrictCarryWeightDesc>Gdy WŁĄCZONE, pionki nigdy nie niosą ponad 100% swojej maksymalnej masy i nigdy nie przerywają pracy, by się rozładować, gdy są pełne — zbierają dalej i zostawiają nadwyżkę na ziemi do normalnego znoszenia (podnoszoną przy przejściu obok). Gdy WYŁĄCZONE (domyślnie), pionki przeciążają się według suwaka powyżej i ruszają się rozładować, gdy są pełne.</HaulersDream.Setting.StrictCarryWeightDesc>
+<HaulersDream.Setting.KeepWorkingWhenFull>Pracuj dalej, gdy pełny (nie przerywaj, by się rozładować)</HaulersDream.Setting.KeepWorkingWhenFull>
+<HaulersDream.Setting.KeepWorkingWhenFullDesc>Domyślnie wyłączone. Gdy WŁĄCZONE, pionek, który napełnia się podczas wydobycia, zbierania lub rozbiórki, NIE przerywa swojej pracy, by iść się rozładować — pracuje dalej, a wszelkie plony, które już się nie mieszczą, są zostawiane na ziemi do normalnego znoszenia. Wciąż rozładowuje się na końcu pracy, wokół posiłków/snu/wypoczynku, w interwale oraz (w przeciwieństwie do ścisłego udźwigu) wciąż przeciąża się ponad 100% aż do pułapu inteligentnego przeciążenia. Zrzuca ładunek w trakcie pracy tylko wtedy, gdy się to opłaca — tuż przed pójściem do DALEKIEGO następnego celu pracy (gdy magazyn jest bliżej niż następne zadanie, o margines poniżej). Dedykowane zadania znoszenia/ładowania wciąż dostarczają swój ładunek, gdy są pełne. Niezależne od ścisłego udźwigu: zachowuje zachowanie przeciążania-i-gromadzenia, jedynie zatrzymuje przerwanie typu „pełny → idź teraz zrzucić”.</HaulersDream.Setting.KeepWorkingWhenFullDesc>
+<HaulersDream.Setting.KeepWorkingMargin>Rozładuj przed przemieszczeniem tylko, jeśli jest co najmniej o tyle dalej: {0} kafelków</HaulersDream.Setting.KeepWorkingMargin>
+<HaulersDream.Setting.KeepWorkingMarginDesc>Histereza dla zasady „pracuj dalej, gdy pełny”: pełny, przeciążony pionek zbacza, by się rozładować przed następnym celem pracy, tylko gdy ten cel jest dalej niż punkt zrzutu w magazynie o co najmniej tyle kafelków. Wyżej = pionek niesie swój ładunek w szerszym paśmie mniej więcej równych odległości (mniej objazdów); 0 = rozładowuje się najpierw, ilekroć następny cel jest choćby trochę dalej niż magazyn.</HaulersDream.Setting.KeepWorkingMarginDesc>
+<HaulersDream.Setting.RouteMaxAmount>Zaplanuj trasę — szczyt suwaka „Ilość”: {0} przystanków</HaulersDream.Setting.RouteMaxAmount>
+<HaulersDream.Setting.RouteCalcHeader>Obliczanie trasy (domyślne — nadpisz dla każdego typu celu w oknie trasy)</HaulersDream.Setting.RouteCalcHeader>
+<HaulersDream.Setting.RouteSelection>Metoda wyboru: {0}</HaulersDream.Setting.RouteSelection>
+<HaulersDream.Setting.RouteDistance>Podstawa odległości: {0}</HaulersDream.Setting.RouteDistance>
+<HaulersDream.Setting.RouteOrderEffort>Rozwiązuj kolejność odwiedzania dokładnie do: {0} przystanków</HaulersDream.Setting.RouteOrderEffort>
+<HaulersDream.Setting.OpportunisticUnload>Zrzucaj po drodze obok magazynu</HaulersDream.Setting.OpportunisticUnload>
+<HaulersDream.Setting.OpportunisticUnloadDesc>Gdy pionek niosący nazbierane towary rusza w długą podróż po swoje następne zadanie, a składowisko jest mniej więcej po drodze, zrzuca ładunek, gdy przechodzi obok, zamiast nieść go przez całą mapę i robić później osobną wyprawę.</HaulersDream.Setting.OpportunisticUnloadDesc>
+<HaulersDream.Stat.Overload>Hauler's Dream — przeciążony</HaulersDream.Stat.Overload>
+<HaulersDream.Setting.WorkTypesHeader>Zgarniaj plony z tych rodzajów pracy:</HaulersDream.Setting.WorkTypesHeader>
+<HaulersDream.Setting.HaulHarvest>Rośliny — zbiór i ścinanie</HaulersDream.Setting.HaulHarvest>
+<HaulersDream.Setting.HaulMining>Wydobycie — ruda i bryły</HaulersDream.Setting.HaulMining>
+<HaulersDream.Setting.HaulDeepDrill>Głębokie świdry</HaulersDream.Setting.HaulDeepDrill>
+<HaulersDream.Setting.HaulDeconstruct>Złom z rozbiórki</HaulersDream.Setting.HaulDeconstruct>
+<HaulersDream.Setting.HaulAnimals>Zwierzęta — mleko i strzyżenie</HaulersDream.Setting.HaulAnimals>
+<HaulersDream.Setting.HaulUninstall>Demontaż — zminiaturyzowane budynki (mapy karawany/wyjazdowe)</HaulersDream.Setting.HaulUninstall>
+<HaulersDream.Setting.HaulStrip>Obdzieranie — zdjęty sprzęt (znoś sprzęt z rozkazu Obdrzyj)</HaulersDream.Setting.HaulStrip>
+<HaulersDream.Setting.HaulStripDesc>Gdy kolonista obdziera więźnia, powalonego pionka lub zwłoki (rozkaz Obdrzyj, który składasz ręcznie), zdjęte bronie, sprzęt i ubrania są zgarniane do jego bagażu zaraz po obdzieraniu i znoszone do domu w jednej wyprawie. To jest przełącznik rządzący znoszeniem obdartego sprzętu — jest niezależny od „Automatyczne obdzieranie podczas znoszenia” wyżej: tamto obdziera zwłoki tylko podczas ich ZNOSZENIA (łup do bagażu); TO znosi sprzęt, który ręczny rozkaz Obdrzyj upuszcza na ziemię. Więc możesz ustawić automatyczne obdzieranie-podczas-znoszenia na „nigdy”, a ręcznie zlecone obdzieranie wciąż będzie zgarniać i znosić swój sprzęt, dopóki to jest włączone. Skażona odzież ze zwłok kieruje się wyborami dla skażonej odzieży z sekcji automatycznego obdzierania (elementy „zostaw je na zwłokach” pozostają na ziemi, niezgarnięte). Dla żywego celu kolejne obdzieranie jest kolejkowane na końcu zadań obdzierającego, na wypadek gdyby cel ponownie się ubrał z resztek; nie robi nic, jeśli cel pozostał nagi.</HaulersDream.Setting.HaulStripDesc>
+<HaulersDream.Setting.HaulStripCrossRef>Niezależne od „Automatyczne obdzieranie podczas znoszenia” bliżej góry: tamto obdziera zwłoki podczas ich znoszenia (łup do bagażu); to znosi sprzęt, który upuszcza ręczny rozkaz Obdrzyj.</HaulersDream.Setting.HaulStripCrossRef>
+<HaulersDream.Setting.WorkOverrideHeader>Nadpisania niezdolności do pracy (wyłączone = jak w podstawce):</HaulersDream.Setting.WorkOverrideHeader>
+<HaulersDream.Setting.AllCanHaul>Wszystkie pionki mogą znosić</HaulersDream.Setting.AllCanHaul>
+<HaulersDream.Setting.AllCanHaulDesc>Żadna historia postaci, cecha, gen, tytuł królewski, rola ideologii, stan zdrowia ani ograniczenie zadaniowe nie mogą uczynić pionka niezdolnym do znoszenia. Dotyczy karty pracy, priorytetyzowania z prawego przycisku, automatycznej pracy oraz plannerów tego moda. (Przypisz priorytet pracy po włączeniu — nowo zdolne pionki zaczynają bez przypisania, jak każda inna praca).</HaulersDream.Setting.AllCanHaulDesc>
+<HaulersDream.Setting.AllCanClean>Wszystkie pionki mogą sprzątać</HaulersDream.Setting.AllCanClean>
+<HaulersDream.Setting.AllCanCleanDesc>Żadna niezdolność nie może uczynić pionka niezdolnym do sprzątania. Dotyczy karty pracy, priorytetyzowania z prawego przycisku, automatycznej pracy oraz plannerów tego moda (w tym „Zaplanuj spriorytetyzowane sprzątanie”). (Przypisz priorytet pracy po włączeniu — nowo zdolne pionki zaczynają bez przypisania).</HaulersDream.Setting.AllCanCleanDesc>
+<HaulersDream.Setting.AllCanCutPlants>Wszystkie pionki mogą ścinać rośliny</HaulersDream.Setting.AllCanCutPlants>
+<HaulersDream.Setting.AllCanCutPlantsDesc>Żadna niezdolność nie może uczynić pionka niezdolnym do ścinania roślin. Włączona jest tylko praca Ścinanie roślin — siew (Uprawa) pozostaje rządzony rzeczywistymi zdolnościami pionka.</HaulersDream.Setting.AllCanCutPlantsDesc>
+<HaulersDream.Setting.PauseWhileDrafted>Wstrzymaj, gdy wcielony</HaulersDream.Setting.PauseWhileDrafted>
+<HaulersDream.Setting.AllowMechanoids>Pozwól mechanoidom zgarniać i znosić</HaulersDream.Setting.AllowMechanoids>
+<HaulersDream.AllowMechanoidsDesc>Rządzi tym, czy twoje robocze mechanoidy używają zgarniania i masowego znoszenia Hauler's Dream — niosąc plony i łup w swoim bagażu tak jak koloniści. Obejmuje to zgarnianie towarów, które mech wytwarza z własnej pracy: zebranych/ściętych roślin, wydobytej rudy i brył oraz złomu z rozbiórki (materiały uwolnione, gdy mech rozbiera konstrukcję). NIE zmienia to samych zadań mechanoidów z podstawki: roboczy mech wciąż sam wydobywa, zbiera i rozbiera — przełącznik decyduje tylko, czy DODATKOWO zgarnia wyniki do swojego bagażu na skonsolidowane znoszenie. To, jak mech DOSTARCZA materiały na miejsce budowy, to osobna sprawa, rządzona ustawieniem „Noś materiały w bagażu na duże pojedyncze budowy” powyżej (które dotyczy każdego budowniczego, mecha czy kolonisty); ten przełącznik sam w sobie nie zmienia dostarczania do budowy. Gdy WŁĄCZONE, roboczy mech gracza może również nosić ponad 100% udźwigu według ustawienia inteligentnego przeciążenia i jest przez nie spowalniany tak samo jak kolonista.</HaulersDream.AllowMechanoidsDesc>
+<HaulersDream.AllowAnimals>Pozwól zwierzętom kolonii zgarniać i znosić</HaulersDream.AllowAnimals>
+<HaulersDream.AllowAnimalsDesc>Domyślnie wyłączone. Gdy WŁĄCZONE, zwierzęta kolonii wyszkolone w Znoszeniu niosą kilka stosów naraz — podbierając pobliski łup do swojego bagażu i wykonując masowe znoszenie Hauler's Dream zamiast jednego stosu na wyprawę. Dotyczy to tylko zwierząt, które MOGĄ być szkolone w Znoszeniu: tych z Zaawansowaną szkolnością i wystarczająco dużym ciałem (husky, labradory, słonie, niedźwiedzie, thrumbo itd.). Zwierzęta, których nie da się wyszkolić w Znoszeniu — kot pokojowy i tym podobne — i tak nigdy nie wykonują zadania znoszenia (niezależnie od tego ustawienia), więc ten przełącznik ich nie dotyczy. Ruszane są tylko twoje własne zwierzęta kolonii; dzikie i wrogie zwierzęta nigdy nie są dotknięte.</HaulersDream.AllowAnimalsDesc>
+<HaulersDream.Setting.AllowIncapable>Pozwól pionkom niezdolnym do znoszenia zgarniać własne plony</HaulersDream.Setting.AllowIncapable>
+<HaulersDream.Setting.EnableOnNonHomeMaps>Działaj też na mapach karawany / nie-domowych</HaulersDream.Setting.EnableOnNonHomeMaps>
+<HaulersDream.Setting.HideGizmo>Ukryj przycisk „Rozładuj ekwipunek” dla każdego pionka</HaulersDream.Setting.HideGizmo>
+<HaulersDream.Setting.UnloadGrace>Okno gromadzenia: podbieraj dalej przez {0} tyknięć (~60/s) po ostatnim podniesieniu, zanim odbędzie się wyprawa rozładunkowa. Wyżej = pionki przeciążają się bardziej i robią mniej, większych wypraw; wciąż rozładowują się natychmiast, gdy są pełne (pułap przeciążenia).</HaulersDream.Setting.UnloadGrace>
+<HaulersDream.Setting.IntervalUnload>Rozładunek interwałowy: co {0} godzin w grze</HaulersDream.Setting.IntervalUnload>
+<HaulersDream.Setting.IntervalUnloadOff>Rozładunek interwałowy: wyłączony (tylko koniec pracy / posiłki i wypoczynek / przeciążenie / ręcznie)</HaulersDream.Setting.IntervalUnloadOff>
+<HaulersDream.Setting.AlertCannotUnload>Ostrzegaj (czerwony alarm), gdy pionek nie może rozładować swojego ekwipunku</HaulersDream.Setting.AlertCannotUnload>
+<HaulersDream.Setting.AlertCannotUnloadDesc>Pokazuje krytyczny alarm w stylu „Pożar!” w prawym dolnym rogu, gdy jeden lub więcej pionków niesie nazbierane przedmioty, których nie może odłożyć — albo nic na mapie nie może ich składować (brak składowiska / strefy zrzutu / osiągalnej komórki), albo niosą przedmioty stanowczo zbyt długo bez rozładunku (magazyn nieosiągalny lub inny mod ciągle anuluje zadanie znoszenia/rozładunku). Jeden alarm obejmuje wszystkie dotknięte pionki; najedź na niego, by wskazać je strzałkami, kliknij, by je przewijać. To twoja gwarancja, że ekwipunki nigdy po cichu nie staną się „czarnymi dziurami”.</HaulersDream.Setting.AlertCannotUnloadDesc>
+<HaulersDream.Setting.AlertStuckHours>...oznacz pionka po tym, jak nosił nierozładowane przedmioty przez {0} godzin w grze</HaulersDream.Setting.AlertStuckHours>
+<HaulersDream.Setting.VerboseLogging>Szczegółowe logowanie debugowania</HaulersDream.Setting.VerboseLogging>
+<HaulersDream.Gizmo.UnloadNow>Rozładuj ekwipunek</HaulersDream.Gizmo.UnloadNow>
+<HaulersDream.Gizmo.UnloadNowDesc>Każ temu pionkowi zanieść wszystko, co nazbierał, do najbliższego prawidłowego magazynu.</HaulersDream.Gizmo.UnloadNowDesc>
+<HaulersDream.Gizmo.UnloadNowDrafted>Wcielony: usuń wcielenie tego pionka, by się rozładował.</HaulersDream.Gizmo.UnloadNowDrafted>
+<HaulersDream.Gizmo.AutoHaul>Automatycznie znoś plony</HaulersDream.Gizmo.AutoHaul>
+<HaulersDream.Gizmo.AutoHaulDesc>Gdy włączone, ten pionek automatycznie zgarnia własne plony z pracy i zmiata pobliski łup do swojego bagażu podczas pracy. Wyłącz, by powstrzymać tego pionka od automatycznego znoszenia — wciąż odłoży wszystko, co już niesie.</HaulersDream.Gizmo.AutoHaulDesc>
+<HaulersDream.Alert.CannotUnload>Nie można rozładować ekwipunku ({0})</HaulersDream.Alert.CannotUnload>
+<HaulersDream.Alert.CannotUnloadDesc.NoStorage>Te pionki niosą nazbierane przedmioty, dla których nie ma gdzie ich odłożyć — żadne składowisko ani strefa zrzutu na mapie ich nie przyjmuje i nie znaleziono osiągalnego miejsca. Dodaj składowisko (Składowisko zrzutu przyjmuje bryły skalne i większość odpadów) lub dopuść ich typ przedmiotu na istniejącym:\n\n{0}\n\nDo tego czasu przedmioty pozostają w ich ekwipunku. Kliknij ten alarm, by przewijać pionki; najedź, by je wskazać.</HaulersDream.Alert.CannotUnloadDesc.NoStorage>
+<HaulersDream.Alert.CannotUnloadDesc.Stuck>Te pionki noszą nazbierane przedmioty od dawna bez ich rozładunku. Magazyn może być nieosiągalny z miejsca, gdzie są, lub inny mod może wielokrotnie anulować ich zadanie znoszenia/rozładunku:\n\n{0}\n\nSprawdź, czy istnieje osiągalne, dopuszczone składowisko, i czy jakiś mod nie przerywa ich zadań. Kliknij ten alarm, by przewijać pionki; najedź, by je wskazać.</HaulersDream.Alert.CannotUnloadDesc.Stuck>
+<HaulersDream.PlanRoute.Option>Zaplanuj spriorytetyzowane {0}…</HaulersDream.PlanRoute.Option>
+<HaulersDream.PlanRoute.ConstructGerund>budowanie</HaulersDream.PlanRoute.ConstructGerund>
+<HaulersDream.PlanRoute.MiningGerundFallback>wydobycie</HaulersDream.PlanRoute.MiningGerundFallback>
+<HaulersDream.PlanRoute.Title>Zaplanuj trasę: {0}</HaulersDream.PlanRoute.Title>
+<HaulersDream.PlanRoute.ModeChained>Połączone — kilka najbliższych</HaulersDream.PlanRoute.ModeChained>
+<HaulersDream.PlanRoute.ModeChainedDesc>Wytycz wybraną liczbę najbliższych celów tego samego rodzaju, zaczynając od tego, który kliknąłeś.</HaulersDream.PlanRoute.ModeChainedDesc>
+<HaulersDream.PlanRoute.ModeVein>Stykające się — cała żyła</HaulersDream.PlanRoute.ModeVein>
+<HaulersDream.PlanRoute.ModeVeinDesc>Wytycz spójne skupisko stykających się celów tego samego rodzaju (żyłę rudy, łatę roślin) na zewnątrz od tego, który kliknąłeś, do wybranej ilości.</HaulersDream.PlanRoute.ModeVeinDesc>
+<HaulersDream.PlanRoute.ModeRadius>W promieniu</HaulersDream.PlanRoute.ModeRadius>
+<HaulersDream.PlanRoute.ModeRadiusDesc>Wytycz każdy cel tego samego rodzaju w wybranym promieniu od tego, który kliknąłeś.</HaulersDream.PlanRoute.ModeRadiusDesc>
+<HaulersDream.PlanRoute.ModeRooms>Wewnątrz pomieszczeń</HaulersDream.PlanRoute.ModeRooms>
+<HaulersDream.PlanRoute.ModeRoomsDesc>Wytycz każdy cel tego samego rodzaju wewnątrz wybranych pomieszczeń. Pomieszczenie zawierające cel, który kliknąłeś, jest zawsze włączone; wybierz więcej pomieszczeń poniżej. Uwaga: otwarta przestrzeń na zewnątrz liczy się jako jeden duży obszar, ograniczony limitem Ilości.</HaulersDream.PlanRoute.ModeRoomsDesc>
+<HaulersDream.PlanRoute.ModeZone>Cała strefa uprawy</HaulersDream.PlanRoute.ModeZone>
+<HaulersDream.PlanRoute.ModeZoneDesc>Wytycz każdy cel tego samego rodzaju wewnątrz strefy uprawy, w której stoi kliknięta roślina — obrób całe pole z jednego kliknięcia. Przy zbieraniu wciąż obowiązuje bramka dojrzałości i próg wzrostu.</HaulersDream.PlanRoute.ModeZoneDesc>
+<HaulersDream.PlanRoute.PickRooms>Wybierz pomieszczenia…</HaulersDream.PlanRoute.PickRooms>
+<HaulersDream.PlanRoute.PickRoomsStop>Zakończ wybieranie (kliknij wewnątrz pomieszczenia, by je dodać)</HaulersDream.PlanRoute.PickRoomsStop>
+<HaulersDream.PlanRoute.RoomsHeader>Pomieszczenia: {0}</HaulersDream.PlanRoute.RoomsHeader>
+<HaulersDream.PlanRoute.RoomGone>(pomieszczenie już nie istnieje)</HaulersDream.PlanRoute.RoomGone>
+<HaulersDream.PlanRoute.RadiusLabel>Promień: {0} komórek</HaulersDream.PlanRoute.RadiusLabel>
+<HaulersDream.PlanRoute.Amount>Ilość: {0}</HaulersDream.PlanRoute.Amount>
+<HaulersDream.PlanRoute.VeinAll>Wszystko</HaulersDream.PlanRoute.VeinAll>
+<HaulersDream.PlanRoute.MaxTravel>Maks. podróż: {0}</HaulersDream.PlanRoute.MaxTravel>
+<HaulersDream.PlanRoute.MaxTravelNoLimit>bez limitu</HaulersDream.PlanRoute.MaxTravelNoLimit>
+<HaulersDream.PlanRoute.Smart>Inteligentne trasowanie (zatocz koło z powrotem do magazynu)</HaulersDream.PlanRoute.Smart>
+<HaulersDream.PlanRoute.SmartDesc>Uporządkuj przystanki tak, by cała wyprawa — zebranie celów i powrót do składowiska, do którego należą towary — była jak najkrótsza, kończąc trasę obok tego magazynu. Z tym wyłączonym przystanki są porządkowane wyłącznie pod kątem najkrótszej ścieżki zbierania.</HaulersDream.PlanRoute.SmartDesc>
+<HaulersDream.PlanRoute.AllowHarvest>Zezwól na zbiór nieoznaczonych roślin</HaulersDream.PlanRoute.AllowHarvest>
+<HaulersDream.PlanRoute.AllowHarvestDesc>Wciągaj na trasę również pobliskie rośliny tego samego rodzaju, nawet jeśli jeszcze nie oznaczyłeś ich do zbioru — pod warunkiem że są co najmniej na progu wzrostu poniżej. Pozwala zebrać całą wystarczająco dojrzałą łatę z jednego kliknięcia. Z tym wyłączonym trasa obejmuje tylko rośliny już oznaczone do zbioru.</HaulersDream.PlanRoute.AllowHarvestDesc>
+<HaulersDream.PlanRoute.GrowthThreshold>Próg wzrostu: {0}%</HaulersDream.PlanRoute.GrowthThreshold>
+<HaulersDream.PlanRoute.PickStart>Wybierz cele do obowiązkowego włączenia…</HaulersDream.PlanRoute.PickStart>
+<HaulersDream.PlanRoute.PickStop>Zakończ wybieranie (kliknij mapę, by dodać)</HaulersDream.PlanRoute.PickStop>
+<HaulersDream.PlanRoute.PickHeader>Musi zawierać: {0}</HaulersDream.PlanRoute.PickHeader>
+<HaulersDream.PlanRoute.PickRoleHint>Oznacz cel S (start) lub E (koniec), by przypiąć, gdzie trasa się zaczyna lub kończy — w przeciwnym razie każdy jest umieszczany tam, gdzie najkrócej.</HaulersDream.PlanRoute.PickRoleHint>
+<HaulersDream.PlanRoute.PickStartBtn>S</HaulersDream.PlanRoute.PickStartBtn>
+<HaulersDream.PlanRoute.PickEndBtn>E</HaulersDream.PlanRoute.PickEndBtn>
+<HaulersDream.PlanRoute.PickStartBadge>(start)</HaulersDream.PlanRoute.PickStartBadge>
+<HaulersDream.PlanRoute.PickEndBadge>(koniec)</HaulersDream.PlanRoute.PickEndBadge>
+<HaulersDream.PlanRoute.PickStartTip>Ustaw to jako START trasy — pierwszy przystanek, który pionek odwiedza. Kliknij ponownie, by wyczyścić.</HaulersDream.PlanRoute.PickStartTip>
+<HaulersDream.PlanRoute.PickEndTip>Ustaw to jako KONIEC trasy — ostatni przystanek, tuż przed powrotem do magazynu. Kliknij ponownie, by wyczyścić.</HaulersDream.PlanRoute.PickEndTip>
+<HaulersDream.PlanRoute.Selection>Wybór: {0}</HaulersDream.PlanRoute.Selection>
+<HaulersDream.PlanRoute.DistanceBasis>Odległość: {0}</HaulersDream.PlanRoute.DistanceBasis>
+<HaulersDream.PlanRoute.SelMostStops>Najwięcej przystanków na podróż</HaulersDream.PlanRoute.SelMostStops>
+<HaulersDream.PlanRoute.SelNearest>Najbliżej klikniętego celu</HaulersDream.PlanRoute.SelNearest>
+<HaulersDream.PlanRoute.DistStraight>W linii prostej</HaulersDream.PlanRoute.DistStraight>
+<HaulersDream.PlanRoute.DistWalking>Rzeczywista ścieżka marszu</HaulersDream.PlanRoute.DistWalking>
+<HaulersDream.PlanRoute.FogCaution>Uwaga: nie wszystkie przedmioty żyły mogą być widoczne. W miarę jak wydobywasz i odkrywasz więcej, trasa rozszerza się, by je objąć.</HaulersDream.PlanRoute.FogCaution>
+<HaulersDream.PlanRoute.Estimate>Szacowany czas: ~{0} godzin ({1} przystanków, ~{2} komórek zbierania)</HaulersDream.PlanRoute.Estimate>
+<HaulersDream.PlanRoute.Cells>{0} komórek</HaulersDream.PlanRoute.Cells>
+<HaulersDream.PlanRoute.EstimateLimited>— przycięto do limitu podróży</HaulersDream.PlanRoute.EstimateLimited>
+<HaulersDream.PlanRoute.EstimateUnreachable>— niektóre cele nie mogą być osiągnięte</HaulersDream.PlanRoute.EstimateUnreachable>
+<HaulersDream.PlanRoute.EstimateNone>Brak osiągalnych przystanków dla tej trasy.</HaulersDream.PlanRoute.EstimateNone>
+<HaulersDream.PlanRoute.Append>Dołącz</HaulersDream.PlanRoute.Append>
+<HaulersDream.PlanRoute.Replace>Zastąp</HaulersDream.PlanRoute.Replace>
+<HaulersDream.PlanRoute.Cancel>Anuluj</HaulersDream.PlanRoute.Cancel>
+<HaulersDream.PlanRoute.NoTargets>Brak pobliskich celów do wytyczenia.</HaulersDream.PlanRoute.NoTargets>
+<HaulersDream.PlanRoute.WaitingForMaterials>Trasa ustawiona — plany zostaną zbudowane, gdy materiały staną się dostępne.</HaulersDream.PlanRoute.WaitingForMaterials>
+<HaulersDream.PlanRoute.NoMaterials>(materiały niedostępne)</HaulersDream.PlanRoute.NoMaterials>
+<HaulersDream.PlanRoute.Planned>Zaplanowano trasę {0} przystanków.</HaulersDream.PlanRoute.Planned>
+<HaulersDream.PlanRoute.Capped>Zaplanowano trasę {0} przystanków (ograniczono, by była wydajna).</HaulersDream.PlanRoute.Capped>
+<HaulersDream.PlanRoute.DistanceLimited>Zaplanowano trasę {0} przystanków (przycięto do limitu podróży).</HaulersDream.PlanRoute.DistanceLimited>
+<HaulersDream.PlanRoute.Partial>Zaplanowano trasę {0} przystanków ({1} w pobliżu nie mogło zostać osiągniętych).</HaulersDream.PlanRoute.Partial>
+<HaulersDream.PlanCraft.Option>Zaplanuj spriorytetyzowane wytwarzanie…</HaulersDream.PlanCraft.Option>
+<HaulersDream.PlanCraft.Title>Zaplanuj wytwarzanie: {0}</HaulersDream.PlanCraft.Title>
+<HaulersDream.PlanCraft.NoBills>Brak tu zleceń nadających się do partii. Dodaj zlecenie produkcji (gotowanie, narkotyki, proste części — nie zlecenia wymagające niedokończonego przedmiotu), by zaplanować partię.</HaulersDream.PlanCraft.NoBills>
+<HaulersDream.PlanCraft.Repeat>Powtórz: {0} razy</HaulersDream.PlanCraft.Repeat>
+<HaulersDream.PlanCraft.Timeout>Limit czasu: {0}h</HaulersDream.PlanCraft.Timeout>
+<HaulersDream.PlanCraft.TimeoutOff>Limit czasu: brak</HaulersDream.PlanCraft.TimeoutOff>
+<HaulersDream.PlanCraft.Resolved>Wykona {0}× za jednym razem.</HaulersDream.PlanCraft.Resolved>
+<HaulersDream.PlanCraft.ResolvedTrimmed>Wykona {0}× za jednym razem — {1}.</HaulersDream.PlanCraft.ResolvedTrimmed>
+<HaulersDream.PlanCraft.LimitResources>ograniczone dostępnymi składnikami</HaulersDream.PlanCraft.LimitResources>
+<HaulersDream.PlanCraft.LimitMass>ograniczone tym, ile pionek może unieść</HaulersDream.PlanCraft.LimitMass>
+<HaulersDream.PlanCraft.LimitTimeout>ograniczone limitem czasu</HaulersDream.PlanCraft.LimitTimeout>
+<HaulersDream.PlanCraft.LimitBillRepeat>ograniczone pozostałym licznikiem zlecenia</HaulersDream.PlanCraft.LimitBillRepeat>
+<HaulersDream.PlanCraft.Ingredients>Przynosi: {0}</HaulersDream.PlanCraft.Ingredients>
+<HaulersDream.PlanCraft.IngredientsMixed>Przynosi mieszankę składników (wybieraną przy każdym wyrobie, najpierw najbardziej psujące się, gdy włączone).</HaulersDream.PlanCraft.IngredientsMixed>
+<HaulersDream.PlanCraft.EstTime>Czas wytwarzania: ~{0}h (plus wyprawa po składniki; produkty są potem znoszone do najlepszego magazynu)</HaulersDream.PlanCraft.EstTime>
+<HaulersDream.PlanCraft.Infeasible>Nie można tego zgrupować w partię: {0}</HaulersDream.PlanCraft.Infeasible>
+<HaulersDream.PlanCraft.Confirm>Priorytetyzuj</HaulersDream.PlanCraft.Confirm>
+<HaulersDream.PlanCraft.Cancel>Anuluj</HaulersDream.PlanCraft.Cancel>
+<HaulersDream.PlanCraft.Started>Wsadowe wytwarzanie {0}× {1}.</HaulersDream.PlanCraft.Started>
+<HaulersDream.PlanCraft.CouldNotStart>Nie udało się rozpocząć partii (stół może być w użyciu).</HaulersDream.PlanCraft.CouldNotStart>
+<HaulersDream.PlanCraft.JobReport>wytwarzanie {0} (partia {1}/{2}).</HaulersDream.PlanCraft.JobReport>
+<HaulersDream.PlanCraft.BlockUnsupported>tej receptury nie da się zgrupować w partię</HaulersDream.PlanCraft.BlockUnsupported>
+<HaulersDream.PlanCraft.BlockNoIngredient>brak dostępnego składnika dla {0}</HaulersDream.PlanCraft.BlockNoIngredient>
+<HaulersDream.PlanCraft.BlockNoReps>za mało zasobów nawet na jeden przebieg</HaulersDream.PlanCraft.BlockNoReps>
+<HaulersDream.PlanCraft.BlockBillNotActive>zlecenie jest zawieszone lub już spełnione</HaulersDream.PlanCraft.BlockBillNotActive>
+<HaulersDream.HaulToSite.Option>Priorytetyzuj znoszenie materiałów do {0}</HaulersDream.HaulToSite.Option>
+<HaulersDream.HaulToSite.CouldNotStart>Brak osiągalnych materiałów do zniesienia w tej chwili.</HaulersDream.HaulToSite.CouldNotStart>
+<HaulersDream.HaulNearby.Option>Znieś wszystko w pobliżu</HaulersDream.HaulNearby.Option>
+<HaulersDream.HaulNearby.CouldNotStart>Nic do zniesienia w pobliżu w tej chwili.</HaulersDream.HaulNearby.CouldNotStart>
+<HaulersDream.PickUp.Option>Podnieś {0}</HaulersDream.PickUp.Option>
+<HaulersDream.PickUp.CouldNotStart>{0} nie może podnieść {1} — niesie już tyle, ile może, a nie ma gdzie tego znieść.</HaulersDream.PickUp.CouldNotStart>
+<HaulersDream.PlanRoute.AlsoBuild>Buduj również (znoś + buduj każdy przystanek)</HaulersDream.PlanRoute.AlsoBuild>
+<HaulersDream.PlanRoute.AlsoBuildDesc>Z tym włączonym pionek dostarcza materiały na miejsce i BUDUJE je, zanim przejdzie do następnego — zbierając materiały całej trasy z góry i trzymając je w bagażu. Z tym wyłączonym pionek tylko zaopatruje miejsca w materiały (inni mogą budować). Tak czy inaczej miejsca pozostają otwarte dla innych pionków, więc kilku może równolegle zaopatrywać ten sam przebieg; kto przybędzie drugi, po prostu zachowuje swoją nadwyżkę na następny przystanek lub rozładowuje ją na końcu.</HaulersDream.PlanRoute.AlsoBuildDesc>
+<HaulersDream.Setting.CraftBatchTimeout>Domyślny limit czasu partii wytwarzania: {0}h</HaulersDream.Setting.CraftBatchTimeout>
+<HaulersDream.Setting.CraftBatchTimeoutOff>Domyślny limit czasu partii wytwarzania: brak</HaulersDream.Setting.CraftBatchTimeoutOff>
+<HaulersDream.Setting.InventoryCraftDeliver>Noś składniki do wytwarzania w bagażu (mniej wypraw)</HaulersDream.Setting.InventoryCraftDeliver>
+<HaulersDream.Setting.InventoryCraftDeliverDesc>Gdy pionek rozpoczyna zlecenie wytwarzania, które wymaga składników z dwóch lub więcej osobnych stosów, najpierw zbiera je WSZYSTKIE do swojego bagażu w jednym zgarnięciu — przeciążając się w razie potrzeby, godząc się na spowolnienie (chyba że włączony jest ścisły udźwig) — idzie do stołu raz i wytwarza z niesionego zapasu. Działa dla każdej receptury, również tych, które najpierw budują niedokończony przedmiot (odzież, bronie, rzeźby). Samo wytwarzanie jest w 100% jak w podstawce, więc nic nie może zostać zduplikowane ani utracone. Jeśli inny mod zarządza znoszeniem składników do wytwarzania, Hauler's Dream automatycznie się wycofuje (zamiast tego je zbiera), więc każda pętla wytwarzania sama się rozwiązuje. Wymaga „niesione składniki liczą się do wytwarzania” powyżej.</HaulersDream.Setting.InventoryCraftDeliverDesc>
+<HaulersDream.PrepGather.Report>zbieranie składników do wytwarzania.</HaulersDream.PrepGather.Report>
+<HaulersDream.BulkHaul.Report>znoszenie wszystkiego w pobliżu.</HaulersDream.BulkHaul.Report>
+<HaulersDream.JobReport.DefaultDestination>magazyn</HaulersDream.JobReport.DefaultDestination>
+<HaulersDream.JobReport.EnRoute.Load>{ORIGINAL} (po drodze do {DESTINATION})</HaulersDream.JobReport.EnRoute.Load>
+<HaulersDream.JobReport.EnRoute.Unload>{ORIGINAL} (po drodze do {DESTINATION})</HaulersDream.JobReport.EnRoute.Unload>
+<HaulersDream.JobReport.CloserTo.Load>{ORIGINAL} (bliżej do {DESTINATION})</HaulersDream.JobReport.CloserTo.Load>
+<HaulersDream.JobReport.CloserTo.Unload>{ORIGINAL} (bliżej do {DESTINATION})</HaulersDream.JobReport.CloserTo.Unload>
+<HaulersDream.JobReport.Efficient.Load>Wydajne znoszenie {ORIGINAL}</HaulersDream.JobReport.Efficient.Load>
+<HaulersDream.JobReport.Efficient.Unload>Wydajne znoszenie {ORIGINAL}</HaulersDream.JobReport.Efficient.Unload>
+<HaulersDream.LoadPackAnimal.Report>ładowanie przedmiotów na zwierzę juczne.</HaulersDream.LoadPackAnimal.Report>
+<HaulersDream.LoadPackAnimal.BulkOption>Załaduj pobliskie przedmioty na zwierzę juczne (masowo)</HaulersDream.LoadPackAnimal.BulkOption>
+<HaulersDream.LoadPackAnimal.CouldNotStart>Nic w pobliżu do załadowania na zwierzę juczne w tej chwili.</HaulersDream.LoadPackAnimal.CouldNotStart>
+<HaulersDream.LoadPackAnimal.NoCarrier>Brak użytecznego zwierzęcia jucznego z wolnym miejscem w pobliżu.</HaulersDream.LoadPackAnimal.NoCarrier>
+<HaulersDream.UnloadCarrier.Report>rozładowywanie {0}.</HaulersDream.UnloadCarrier.Report>
+<HaulersDream.UnloadCarrier.Option>Priorytetyzuj masowe rozładowywanie {0}</HaulersDream.UnloadCarrier.Option>
+<HaulersDream.UnloadCarrier.CouldNotStart>Nie udało się rozpocząć masowego rozładowywania tego zwierzęcia jucznego w tej chwili.</HaulersDream.UnloadCarrier.CouldNotStart>
+<HaulersDream.Setting.LoadPackAnimalBulk>Masowy rozkaz „załaduj na zwierzę juczne”</HaulersDream.Setting.LoadPackAnimalBulk>
+<HaulersDream.Setting.LoadPackAnimalBulkDesc>Na mapie karawany/wyjazdowej dodaje rozkaz z prawego przycisku „Załaduj pobliskie przedmioty na zwierzę juczne (masowo)”: jeden kolonista zgarnia kilka pobliskich stosów do swojego bagażu i ładuje je na zwierzę juczne w jednej wyprawie, zamiast nosić po jednym stosie naraz. „Załaduj na zwierzę juczne” na pojedynczy przedmiot z podstawki wciąż działa obok tego.</HaulersDream.Setting.LoadPackAnimalBulkDesc>
+<HaulersDream.Setting.AutoDivertToPackAnimal>Przeładowuj na zwierzęta juczne (karawany)</HaulersDream.Setting.AutoDivertToPackAnimal>
+<HaulersDream.Setting.AutoDivertToPackAnimalDesc>Na mapie karawany/wyjazdowej pionki przeładowują swój nazbierany łup na najbliższe własne zwierzę juczne tak samo, jak rozładowywałyby się do składowiska w domu — gdy ich praca się kończy, zanim odpoczną/zjedzą/odpoczną, na okresowym zabezpieczeniu i natychmiast, gdy są przeciążone (by zachować mobilność). Z tym wyłączonym łup po prostu jedzie do domu we własnych bagażach pionków (lub użyj ręcznego rozkazu masowego ładowania / Przeformuj karawanę). Wszystkie te wymagają też włączonego automatycznego rozładowywania (a przeładunek przy przeciążeniu jest wyłączony w trybie ścisłego udźwigu).</HaulersDream.Setting.AutoDivertToPackAnimalDesc>
+<HaulersDream.Setting.EnableBulkUnloadCarriers>Masowo rozładowuj zwierzęta juczne w jednej wizycie</HaulersDream.Setting.EnableBulkUnloadCarriers>
+<HaulersDream.Setting.EnableBulkUnloadCarriersDesc>Gdy zwierzę juczne jest ustawione na „rozładuj”, tragarz podchodzi do niego RAZ i wyciąga z niego wiele stosów do własnego plecaka (a potem znosi je do magazynu jak zwykle), zamiast rozładowywać jeden stos na podejście jak w podstawce. Ostatni/nadmiarowy stos trafia do rąk tragarza i jest znoszony bezpośrednio. Z tym wyłączonym używane jest rozładowywanie pojedynczego stosu z podstawki bez zmian.</HaulersDream.Setting.EnableBulkUnloadCarriersDesc>
+<HaulersDream.Setting.MinFreeSpaceToUnloadCarrier>Minimalne wolne miejsce w plecaku, by zacząć: {0}</HaulersDream.Setting.MinFreeSpaceToUnloadCarrier>
+<HaulersDream.Setting.ReserveCarrierOnUnload>Rezerwuj zwierzę juczne podczas rozładunku</HaulersDream.Setting.ReserveCarrierOnUnload>
+<HaulersDream.Setting.ReserveCarrierOnUnloadDesc>Zajmij zwierzę juczne na wyłączność na czas rozładunku. Wyłączone (domyślnie) pozwala, by przywiązywanie, formowanie karawany lub drugi tragarz je przerwał — rozładunek ustępuje czysto, gdy inny pionek zajmuje zwierzę.</HaulersDream.Setting.ReserveCarrierOnUnloadDesc>
+<HaulersDream.Setting.VisualUnloadDelay>Opóźnienie rozładunku na stos: {0} tyknięć</HaulersDream.Setting.VisualUnloadDelay>
+<HaulersDream.LoadTransporter.Report>masowe ładowanie transportera.</HaulersDream.LoadTransporter.Report>
+<HaulersDream.LoadTransporter.Option>Priorytetyzuj masowe ładowanie {0}</HaulersDream.LoadTransporter.Option>
+<HaulersDream.LoadTransporter.CouldNotStart>Nic w pobliżu do masowego załadowania do tego transportera w tej chwili.</HaulersDream.LoadTransporter.CouldNotStart>
+<HaulersDream.Setting.EnableBulkLoadTransporters>Masowo ładuj transportery i promy w jednej wyprawie</HaulersDream.Setting.EnableBulkLoadTransporters>
+<HaulersDream.Setting.EnableBulkLoadTransportersDesc>Gdy kapsuła transportowa lub prom są ustawione na ładowanie, tragarz zajmuje wycinek ich manifestu, zgarnia kilka pobliskich stosów do swojego bagażu, podchodzi do transportera RAZ i deponuje je wszystkie — zamiast nosić jeden stos w rękach na podejście jak w podstawce. Kilku tragarzy dzieli duży manifest bez podwójnego znoszenia, a kapsuła nie wejdzie na pokład ani nie wystartuje, dopóki zajęty ładunek nie będzie w środku. Z tym wyłączonym używane jest ładowanie transportera pojedynczym stosem z podstawki bez zmian.</HaulersDream.Setting.EnableBulkLoadTransportersDesc>
+<HaulersDream.Setting.BulkLoadAiUpdateFrequency>Interwał ponownego sprawdzania ładowania: {0} tyknięć</HaulersDream.Setting.BulkLoadAiUpdateFrequency>
+<HaulersDream.LoadPortal.Report>masowe ładowanie portalu.</HaulersDream.LoadPortal.Report>
+<HaulersDream.LoadPortal.Option>Priorytetyzuj masowe ładowanie {0}</HaulersDream.LoadPortal.Option>
+<HaulersDream.LoadPortal.CouldNotStart>Nic w pobliżu do masowego załadowania do tego portalu w tej chwili.</HaulersDream.LoadPortal.CouldNotStart>
+<HaulersDream.Setting.EnableBulkLoadPortal>Masowo ładuj portale mapy w jednej wyprawie</HaulersDream.Setting.EnableBulkLoadPortal>
+<HaulersDream.Setting.EnableBulkLoadPortalDesc>Gdy portal mapy (brama otchłani, wyjście z jaskini lub krypty, portal „wejdź na mapę”) jest ustawiony na ładowanie, tragarz zajmuje wycinek jego manifestu, zgarnia kilka pobliskich stosów do swojego bagażu, podchodzi do portalu RAZ i deponuje je wszystkie — zamiast nosić jeden stos w rękach na podejście jak w podstawce. Zdeponowane przedmioty teleportują się na drugą mapę. Kilku tragarzy dzieli duży manifest bez podwójnego znoszenia. Z tym wyłączonym używane jest ładowanie portalu pojedynczym stosem z podstawki bez zmian.</HaulersDream.Setting.EnableBulkLoadPortalDesc>
+<HaulersDream.LoadVehicle.Report>masowe ładowanie pojazdu.</HaulersDream.LoadVehicle.Report>
+<HaulersDream.LoadVehicle.Option>Priorytetyzuj masowe ładowanie {0}</HaulersDream.LoadVehicle.Option>
+<HaulersDream.LoadVehicle.CouldNotStart>Nic w pobliżu do masowego załadowania do tego pojazdu w tej chwili.</HaulersDream.LoadVehicle.CouldNotStart>
+<HaulersDream.Setting.EnableVehicleFramework>Integracja z pojazdami</HaulersDream.Setting.EnableVehicleFramework>
+<HaulersDream.Setting.EnableVehicleFrameworkDesc>Główny przełącznik funkcji pojazdowych Hauler's Dream: masowe ładowanie ładunku pojazdu w jednej wyprawie (poniżej) oraz ładowanie przedmiotów na pojazd (zamiast na zwierzę juczne) w sposób poprawny zdarzeniowo, tak by manifest ładunku pojazdu pozostawał zsynchronizowany. Wyłączenie tego wyłącza tylko te funkcje — NIE wyłącza poprawek bezpieczeństwa, które powstrzymują masowy rozładunek Hauler's Dream od mieszania się w interfejs ładunku samego pojazdu, i NIE wyłącza jedzenia z ani budowania z ładunku zaparkowanego pojazdu (te kierują się przełącznikami „Posiłki na kółkach” i „Buduj z bagażu” powyżej). Bez zainstalowanego moda do pojazdów nie ma to żadnego efektu. Domyślnie włączone.</HaulersDream.Setting.EnableVehicleFrameworkDesc>
+<HaulersDream.Setting.EnableBulkLoadVehicles>Masowo ładuj pojazdy w jednej wyprawie</HaulersDream.Setting.EnableBulkLoadVehicles>
+<HaulersDream.Setting.EnableBulkLoadVehiclesDesc>Gdy pojazd (naziemny lub powietrzny) jest ustawiony na ładowanie ładunku, tragarz zajmuje wycinek jego manifestu, zgarnia kilka pobliskich stosów do swojego bagażu, podchodzi do pojazdu RAZ i deponuje je wszystkie — zamiast zwykłego jednego stosu w rękach na podejście. Kilku tragarzy dzieli duży manifest bez podwójnego znoszenia, respektując pojemność ładunkową pojazdu. Z tym wyłączonym używane jest ładowanie pojazdu pojedynczym stosem bez zmian. Wymaga „Integracja z pojazdami” powyżej.</HaulersDream.Setting.EnableBulkLoadVehiclesDesc>
+<HaulersDream.BulkRefuel.Report>masowe tankowanie.</HaulersDream.BulkRefuel.Report>
+<HaulersDream.BulkRefuel.Option>Priorytetyzuj masowe tankowanie {0}</HaulersDream.BulkRefuel.Option>
+<HaulersDream.BulkRefuel.CouldNotStart>Nic w pobliżu, czym można by to masowo zatankować w tej chwili.</HaulersDream.BulkRefuel.CouldNotStart>
+<HaulersDream.Setting.EnableBulkRefuel>Masowo tankuj w jednej wyprawie</HaulersDream.Setting.EnableBulkRefuel>
+<HaulersDream.Setting.EnableBulkRefuelDesc>Gdy coś potrzebuje paliwa (chemiczne paliwo promu, głęboki świder, generator — cokolwiek do zatankowania), tragarz zgarnia dość pobliskiego paliwa do swojego bagażu, podchodzi do tego RAZ i napełnia w jednej wyprawie — zamiast jednego stosu w rękach na podejście jak w podstawce. Uruchamia się tylko, gdy potrzeba więcej niż jednego stosu paliwa (więcej niż jednej wyprawy z podstawki); tankowanie pojedynczym stosem jest zostawiane podstawce. Kliknij prawym przyciskiem coś do zatankowania, by „Priorytetyzuj masowe tankowanie”, lub pozwól, by działało jako zwykła praca tankowania. Z tym wyłączonym używane jest tankowanie pojedynczym stosem z podstawki bez zmian. Domyślnie włączone.</HaulersDream.Setting.EnableBulkRefuelDesc>
+<HaulersDream.Setting.SkipHaulWhileBleeding>Nie zaczynaj znoszenia, gdy mocno krwawisz</HaulersDream.Setting.SkipHaulWhileBleeding>
+<HaulersDream.Setting.SkipHaulWhileBleedingDesc>Gdy pionek krwawi (powyżej drobnego progu), nie ZACZNIE nowego zgarniania ani masowego znoszenia — powinien zostać opatrzony, a nie zbaczać, by posprzątać. Blokuje to tylko ZACZYNANIE znoszenia: pionek już niosący nazbierane towary wciąż rozładowuje je normalnie, więc nic nigdy nie utknie. Domyślnie włączone.</HaulersDream.Setting.SkipHaulWhileBleedingDesc>
+<HaulersDream.Setting.ClosestDestUnloadOrder>Rozładuj najpierw najbliższy cel</HaulersDream.Setting.ClosestDestUnloadOrder>
+<HaulersDream.Setting.ClosestDestUnloadOrderDesc>Gdy pionek odbywa swoją wyprawę rozładunkową niosąc kilka różnych przedmiotów, odwiedza najpierw najbliższy cel składowania i opróżnia wszystko, co tam zmierza, zanim przejdzie do następnego — mniej zygzakowania po bazie. Wyłączone używa poprzedniej kolejności (według kategorii przedmiotu). Domyślnie włączone.</HaulersDream.Setting.ClosestDestUnloadOrderDesc>
+<HaulersDream.Setting.EnRoutePickup>Chwytaj luźne przedmioty, które są po drodze do zadania</HaulersDream.Setting.EnRoutePickup>
+<HaulersDream.Setting.EnRoutePickupDesc>Gdy pionek ma ruszyć po zadanie, a luźny znoszalny przedmiot leży mniej więcej po drodze, najpierw chwyta go do swojego bagażu — żeby zabłąkany przedmiot pojechał do magazynu na wyprawie, którą pionek i tak robił, bez dodatkowej wyprawy w obie strony. Przedmiot jest podnoszony jako śledzone znoszenie Hauler's Dream i odkładany przez normalne rozładowywanie, więc nigdy nie ginie, nawet jeśli automatyczne rozładowywanie jest wyłączone. Uruchamia się tylko, gdy wynikająca wyprawa pozostaje blisko bezpośredniej trasy, nigdy nie nadpisuje oportunistycznego znoszenia z podstawki, respektuje przełącznik „Automatycznie znoś plony” każdego pionka i wycofuje się, gdy pionek zamiast tego zrzuciłby swój ładunek. Domyślnie włączone; zmienia to, jak pionki się poruszają, więc przełączenie odnosi skutek przy następnym wyborze zadania przez pionka.</HaulersDream.Setting.EnRoutePickupDesc>
+<HaulersDream.Setting.EnRoutePathChecker>Sprawdzanie „po drodze”: {0}</HaulersDream.Setting.EnRoutePathChecker>
+<HaulersDream.Setting.EnRoutePathCheckerDesc>Jak starannie potwierdza się, że kandydujący przedmiot jest „po drodze”, po tanim teście odległości. Tanie (domyślne) liczy tylko regiony mapy, więc jest szybkie, ale dystans objazdu może się wahać. Wyznaczanie ścieżki (wczesne zatrzymanie) i Wyznaczanie ścieżki (dokładne) przechodzą rzeczywistą ścieżkę dla dokładności — „wczesne zatrzymanie” rezygnuje ze skanowania, gdy kandydat wypadnie poza zasięg (szybsze), „dokładne” sprawdza każdego pozostałego kandydata (najwolniejsze, znajduje znoszenie, jeśli takie istnieje, np. w krętej górskiej bazie). Jeśli zainstalowany jest mod do dokładności wyznaczania ścieżki, oba tryby wyznaczania ścieżki automatycznie dziedziczą jego dokładność.</HaulersDream.Setting.EnRoutePathCheckerDesc>
+<HaulersDream.Setting.EnRoutePathVanilla>Tanie (liczenie regionów)</HaulersDream.Setting.EnRoutePathVanilla>
+<HaulersDream.Setting.EnRoutePathDefault>Wyznaczanie ścieżki (wczesne zatrzymanie)</HaulersDream.Setting.EnRoutePathDefault>
+<HaulersDream.Setting.EnRoutePathPathfinding>Wyznaczanie ścieżki (dokładne)</HaulersDream.Setting.EnRoutePathPathfinding>
+<HaulersDream.Setting.StorageRouting>Przemieść zaopatrzenie bliżej, zanim zaniesiesz je do zadania</HaulersDream.Setting.StorageRouting>
+<HaulersDream.Setting.StorageRoutingDesc>Funkcja „znieś przed zaniesieniem”. Zanim pionek zaniesie zasób na miejsce budowy lub do stołu wytwarzania, najpierw przemieszcza największy pobliski stos tego materiału do magazynu BLIŻEJ miejsca, gdzie będzie użyty — żeby ta i każda późniejsza wyprawa po niego była krótsza. Uruchamia się tylko, gdy bliższy magazyn jest naprawdę bliżej zadania niż obecne miejsce stosu, nigdy nie przemieszcza stosu, który inny pionek już znosi, i respektuje przełącznik „Automatycznie znoś plony” każdego pionka. Przemieszczenie to normalne znoszenie, więc materiał nigdy nie ginie. Domyślnie włączone; zmienia to, jak pionki się poruszają, więc przełączenie odnosi skutek przy następnym podjęciu takiego zadania przez pionka.</HaulersDream.Setting.StorageRoutingDesc>
+<HaulersDream.Setting.RouteSupplies>Przemieść zaopatrzenie budowlane bliżej miejsca budowy</HaulersDream.Setting.RouteSupplies>
+<HaulersDream.Setting.RouteSuppliesDesc>Zastosuj przemieszczanie przed zaniesieniem do dostaw materiałów budowlanych. (Brak efektu, gdy włączone jest „noś materiał budowlany w bagażu” — ta funkcja już tnie wyprawy na swój sposób).</HaulersDream.Setting.RouteSuppliesDesc>
+<HaulersDream.Setting.RouteIngredients>Przemieść składniki do wytwarzania bliżej stołu</HaulersDream.Setting.RouteIngredients>
+<HaulersDream.Setting.RouteIngredientsDesc>Zastosuj przemieszczanie przed zaniesieniem do składników zlecenia wytwarzania. (Brak efektu, gdy włączone jest „zbieraj składniki zlecenia w jednym zgarnięciu” — ta funkcja już tnie wyprawy na swój sposób).</HaulersDream.Setting.RouteIngredientsDesc>
+<HaulersDream.Setting.RouteToEqualPriority>Zezwól na przemieszczanie do magazynu o równym priorytecie</HaulersDream.Setting.RouteToEqualPriority>
+<HaulersDream.Setting.RouteToEqualPriorityDesc>Przemieszczaj stos również do magazynu o TYM SAMYM priorytecie, gdy jest bliżej zadania (nie tylko do magazynu o wyższym priorytecie). Domyślnie włączone — wyłączenie tego ogranicza przemieszczanie do celów o ściśle wyższym priorytecie.</HaulersDream.Setting.RouteToEqualPriorityDesc>
+<HaulersDream.Setting.RouteToStockpiles>Zezwól na przemieszczanie do zwykłych stref składowania</HaulersDream.Setting.RouteToStockpiles>
+<HaulersDream.Setting.RouteToStockpilesDesc>Pozwól, by zwykłe strefy składowania (nie tylko budynki magazynowe jak półki) były celami przemieszczenia. Domyślnie włączone — wyłączenie tego przemieszcza tylko do budynków magazynowych.</HaulersDream.Setting.RouteToStockpilesDesc>
+<HaulersDream.Setting.StorageFilters>Filtruj, których budynków magazynowych może używać znoszenie</HaulersDream.Setting.StorageFilters>
+<HaulersDream.Setting.StorageFiltersDesc>Gdy włączone, możesz ograniczyć, których BUDYNKÓW magazynowych (półek i modowanych jednostek składowania — nigdy zwykłych stref składowania) tragarzom wolno używać do oportunistycznych i trasujących znoszeń, na budynek lub na mod. Pionek już niosący ładunek ZAWSZE może go rozładować, więc nic nigdy nie utknie. Domyślnie włączone, z użyciem dobranych domyślnych ustawień poniżej — ustaw własne reguły na budynek lub na mod.</HaulersDream.Setting.StorageFiltersDesc>
+<HaulersDream.Setting.StorageFilterUseDefaults>Użyj dobranych domyślnych reguł</HaulersDream.Setting.StorageFilterUseDefaults>
+<HaulersDream.Setting.StorageFilterUseDefaultsDesc>Zastosuj sensowne domyślne ustawienia na sytuację: oportunistyczne zgarnięcia mogą używać dowolnego magazynu (poza wolnym zestawem poniżej); znoszenie zboczone do lepszego magazynu przed zaniesieniem celuje tylko w znane mody z kontenerami. Twoje wyraźne wybory na budynek / na mod zawsze je nadpisują. Wyłączone = tylko twoje wyraźne wybory cokolwiek ograniczają.</HaulersDream.Setting.StorageFilterUseDefaultsDesc>
+<HaulersDream.Setting.StorageFilterDenyLwm>Pomijaj wolny magazyn przy oportunistycznych znoszeniach</HaulersDream.Setting.StorageFilterDenyLwm>
+<HaulersDream.Setting.StorageFilterDenyLwmDesc>Niektóre gęste/głębokie magazyny mają opóźnienie deponowania, więc zatrzymanie się tam w trakcie wyprawy nie jest naprawdę „po drodze”. Gdy włączone, oportunistyczne i przed-zaniesieniem znoszenia unikają takiego magazynu (celowa wyprawa rozładunkowa wciąż może go użyć — twój ładunek nigdy nie utknie).</HaulersDream.Setting.StorageFilterDenyLwmDesc>
+<HaulersDream.Setting.StorageFilterButton>Edytuj reguły budynków magazynowych…</HaulersDream.Setting.StorageFilterButton>
+<HaulersDream.StorageFilter.Title>Reguły budynków magazynowych</HaulersDream.StorageFilter.Title>
+<HaulersDream.StorageFilter.Desc>Ustaw, czy tragarze mogą używać każdego budynku magazynowego, na budynek lub na mod. Zezwól wymusza włączenie, Odmów wymusza wyłączenie, a Domyślnie pozwala dobranym regułom zdecydować. Wybór na budynek nadpisuje wybór jego moda; wyraźne Odmów nadpisuje Zezwól. Zwykłe strefy składowania są zawsze dozwolone.</HaulersDream.StorageFilter.Desc>
+<HaulersDream.StorageFilter.ResetAll>Przywróć domyślne</HaulersDream.StorageFilter.ResetAll>
+<HaulersDream.StorageFilter.StateDefault>Domyślnie</HaulersDream.StorageFilter.StateDefault>
+<HaulersDream.StorageFilter.StateAllow>Zezwól</HaulersDream.StorageFilter.StateAllow>
+<HaulersDream.StorageFilter.StateDeny>Odmów</HaulersDream.StorageFilter.StateDeny>
+<HaulersDream.Setting.CleanupOnSave>Sprzątaj zadania masowego ładowania przy zapisie</HaulersDream.Setting.CleanupOnSave>
+<HaulersDream.Setting.CleanupOnSaveDesc>Gdy gra zapisuje się w trakcie masowego ładowania przez pionka, Hauler's Dream odkłada tego pionka z powrotem do bezczynności na czas zapisu, aby plik zapisu nie odwoływał się do własnych typów zadań Hauler's Dream — co oznacza, że możesz później odinstalować mod bez błędów zapisu. Pionek zachowuje wszelkie zgarnięte towary i rozładowuje je potem normalnie. Domyślnie włączone; wyłącz, jeśli nigdy nie planujesz usuwać moda.</HaulersDream.Setting.CleanupOnSaveDesc>
+<HaulersDream.Setting.SoftlockDrop>Uwolnij uwięziony ładunek z utkniętych pionków</HaulersDream.Setting.SoftlockDrop>
+<HaulersDream.Setting.SoftlockDropDesc>Jeśli pionek nie może już znosić, niosąc towary podniesione przez Hauler's Dream — jego praca Znoszenie została wyłączona lub mechanoid jest uśpiony / sam się wyłączył — niesione towary są upuszczane w pobliżu do normalnego znoszenia, zamiast być uwięzione w tym pionku na zawsze. Mechanoid, który ma się ŁADOWAĆ, najpierw dostarcza swoje niesione towary do magazynu (lub upuszcza je w pobliżu, jeśli nie ma gdzie ich odłożyć), żeby się nie psuły ani nie zajmowały miejsca, gdy siedzi na ładowarce. Rusza tylko własne podniesione przedmioty Hauler's Dream. Domyślnie włączone (siatka bezpieczeństwa).</HaulersDream.Setting.SoftlockDropDesc>
+<HaulersDream.Setting.OpportunisticLoad>Deponuj niesiony ładunek do transportów po drodze</HaulersDream.Setting.OpportunisticLoad>
+<HaulersDream.Setting.OpportunisticLoadDesc>Pionek już niosący przedmioty, na które czeka pobliska kapsuła transportowa, prom, portal mapy lub pojazd, zboczy, by je zrzucić, zamiast zaczynać zupełnie nowy przebieg po odbiór. Mniej zmarnowanych podejść. Domyślnie wyłączone (zmienia, które zadanie pionek podejmuje następne).</HaulersDream.Setting.OpportunisticLoadDesc>
+<HaulersDream.Setting.LoadOpportunityRadius>Promień poszukiwania zrzutu po drodze: {0} kafelków</HaulersDream.Setting.LoadOpportunityRadius>
+<HaulersDream.Setting.ContinuousLoading>Rozkaz z prawego przycisku „Ładuj do skutku”</HaulersDream.Setting.ContinuousLoading>
+<HaulersDream.Setting.ContinuousLoadingDesc>Dodaje rozkaz z prawego przycisku, który posyła jednego kuriera (nawet wcielonego) przez każdą pobliską grupę transportową, która wciąż wymaga ładowania, łącząc zadania, aż wszystkie będą pełne — przydatne do załadowania dużej karawany jednym poleceniem. Domyślnie wyłączone (opcjonalna wygoda).</HaulersDream.Setting.ContinuousLoadingDesc>
+<HaulersDream.ContinuousLoad.Option>Ładuj do skutku (ciągle) — {0}</HaulersDream.ContinuousLoad.Option>
+<HaulersDream.ContinuousLoad.CouldNotStart>Nic w pobliżu do masowego załadowania do tego w tej chwili.</HaulersDream.ContinuousLoad.CouldNotStart>
+<HaulersDream.Setting.LoadHybridPathing>Porządkuj przystanki masowego ładowania według rzeczywistego wyznaczania ścieżki</HaulersDream.Setting.LoadHybridPathing>
+<HaulersDream.Setting.LoadHybridPathingDesc>Przy zgarnianiu kilku stosów ku transportowi wybieraj kolejność marszu, używając rzeczywistego wyznaczania ścieżki dla kilku najbliższych kandydatów zamiast odległości w linii prostej — nieco lepsze trasy na zagraconych mapach, kosztem dodatkowego wyznaczania ścieżki. Domyślnie wyłączone; kolejność w linii prostej już daje poprawne, krótkie ładowania.</HaulersDream.Setting.LoadHybridPathingDesc>
+<HaulersDream.Setting.LoadPathfindingCandidates>Kandydaci wyznaczania ścieżki na przystanek: {0}</HaulersDream.Setting.LoadPathfindingCandidates>
+<HaulersDream.Setting.AutoOpenTransporterContents>Automatycznie otwieraj kartę Zawartość dla wybranych transporterów</HaulersDream.Setting.AutoOpenTransporterContents>
+<HaulersDream.Setting.AutoOpenTransporterContentsDesc>Gdy wybierzesz pojedynczą kapsułę transportową lub prom, automatycznie otwieraj jego kartę Zawartość, abyś widział, co ładuje. Domyślnie wyłączone (zmienia, która karta jest otwarta, gdy klikasz rzeczy).</HaulersDream.Setting.AutoOpenTransporterContentsDesc>
+<HaulersDream.Setting.AutoOpenCarrierGear>Automatycznie otwieraj kartę Sprzęt dla wybranych nosicieli</HaulersDream.Setting.AutoOpenCarrierGear>
+<HaulersDream.Setting.AutoOpenCarrierGearDesc>Gdy wybierzesz zwierzę juczne lub innego nosiciela, automatycznie otwieraj jego kartę Sprzęt, by zobaczyć, co niesie. Domyślnie wyłączone.</HaulersDream.Setting.AutoOpenCarrierGearDesc>
+<HaulersDream.Setting.EnableStorageNetworkBulkLoad>Masowo ładuj z Sieci składowania (eksperymentalne)</HaulersDream.Setting.EnableStorageNetworkBulkLoad>
+<HaulersDream.Setting.EnableStorageNetworkBulkLoadDesc>Gdy zainstalowany jest mod Sieć składowania, pozwól, by masowe ładowanie zgarniało przedmioty przechowywane w jego serwerach sieci, tak by transporter, kapsuła, portal lub pojazd był napełniony w jednej wyprawie zamiast jednego stosu naraz. Przedmioty są pobierane przez użyteczny, osiągalny terminal i materializowane przez Sieć składowania na żądanie. Domyślnie wyłączone: to eksperymentalne i zależy od zachowania Sieci składowania. Bez tego przedmioty sieciowe wciąż ładują się w normalny sposób (jeden stos na wyprawę).</HaulersDream.Setting.EnableStorageNetworkBulkLoadDesc>
+<HaulersDream.Setting.ResetToDefaults>Przywróć domyślne</HaulersDream.Setting.ResetToDefaults>
+<HaulersDream.Setting.ResetToDefaultsConfirm>Przywrócić wszystkie ustawienia Hauler's Dream do domyślnych? Twoje reguły rozładunku poszczególnych przedmiotów, preferencje tras i filtr magazynów również zostaną wyczyszczone. Tego nie można cofnąć.</HaulersDream.Setting.ResetToDefaultsConfirm>
+<HaulersDream.Cat.Features>Funkcje</HaulersDream.Cat.Features>
+<HaulersDream.Cat.Features.Help>Włączaj lub wyłączaj całe rodziny funkcji. Hauler's Dream wykonuje pracę wielu osobnych modów — wyłącz dowolne, których wolisz nie używać. Szczegółowe opcje każdej rodziny znajdują się na innych stronach.</HaulersDream.Cat.Features.Help>
+<HaulersDream.Cat.Features.Intro>Każda karta poniżej włącza lub wyłącza całą rodzinę funkcji. Dostrajanie każdej z nich znajduje się na jej własnej stronie na liście po lewej.</HaulersDream.Cat.Features.Intro>
+<HaulersDream.Cat.Hauling>Znoszenie</HaulersDream.Cat.Hauling>
+<HaulersDream.Cat.Hauling.Help>Jak koloniści podnoszą rzeczy: limit noszenia, inteligentne przeciążenie, masowe zgarnianie całego obszaru w jednej wyprawie i sprzątanie luźnych przedmiotów podczas pracy.</HaulersDream.Cat.Hauling.Help>
+<HaulersDream.Cat.Unloading>Rozładowywanie</HaulersDream.Cat.Unloading>
+<HaulersDream.Cat.Unloading.Help>Kiedy i jak niesione towary są odkładane: automatyczne wyprawy rozładunkowe, rozładowywanie przed czasem wolnym, obsługa nadwyżki, kolejność zrzutów i reguły poszczególnych przedmiotów.</HaulersDream.Cat.Unloading.Help>
+<HaulersDream.Cat.BuildCraft>Budowa i wytwarzanie</HaulersDream.Cat.BuildCraft>
+<HaulersDream.Cat.BuildCraft.Help>Pozyskiwanie materiałów z bagażu do budowy i zleceń wytwarzania, a także dostarczanie jedzenia między pionkami i wybór składników najpierw najbardziej psujących się.</HaulersDream.Cat.BuildCraft.Help>
+<HaulersDream.Cat.BulkLoading>Masowe ładowanie</HaulersDream.Cat.BulkLoading>
+<HaulersDream.Cat.BulkLoading.Help>Ładowanie i rozładowywanie w jednej wyprawie zwierząt jucznych, kapsuł transportowych, promów, portali mapy, rzeczy do tankowania i pojazdów.</HaulersDream.Cat.BulkLoading.Help>
+<HaulersDream.Cat.Routing>Trasowanie i magazyn</HaulersDream.Cat.Routing>
+<HaulersDream.Cat.Routing.Help>Chwytanie przedmiotów, które są mniej więcej po drodze, przemieszczanie zaopatrzenia bliżej miejsca użycia i filtrowanie, którego magazynu może używać znoszenie.</HaulersDream.Cat.Routing.Help>
+<HaulersDream.Cat.Yields>Praca i plony</HaulersDream.Cat.Yields>
+<HaulersDream.Cat.Yields.Help>Które plony z pracy są zgarniane, znoszenie tusz do magazynu po zabiciu i obdzieranie sprzętu ze zwłok podczas znoszenia.</HaulersDream.Cat.Yields.Help>
+<HaulersDream.Cat.Who>Kto pracuje</HaulersDream.Cat.Who>
+<HaulersDream.Cat.Who.Help>Których pionków dotyczy Hauler's Dream — mechów, zwierząt, wcielonych, kolonistów poza mapą — a także nadpisania pozwalające każdemu pionkowi znosić, sprzątać lub ścinać rośliny.</HaulersDream.Cat.Who.Help>
+<HaulersDream.Cat.Planners>Plannery</HaulersDream.Cat.Planners>
+<HaulersDream.Cat.Planners.Help>Planner tras z prawego przycisku i planner wytwarzania przy stacji oraz ich ustawienia domyślne.</HaulersDream.Cat.Planners.Help>
+<HaulersDream.Cat.Advanced>Zaawansowane</HaulersDream.Cat.Advanced>
+<HaulersDream.Cat.Advanced.Help>Czas rozładunku, alarm bezpieczeństwa o utkniętym ładunku, sprzątanie przy zapisie i diagnostyka deweloperska.</HaulersDream.Cat.Advanced.Help>
+<HaulersDream.Cat.Migration>Migracja</HaulersDream.Cat.Migration>
+<HaulersDream.Cat.Migration.Help>Pokazane, ponieważ wciąż masz aktywny jeden lub więcej modów, które Hauler's Dream zastępuje (w tym wersje przetłumaczone lub „Continued”). Uruchamianie ich jednocześnie z Hauler's Dream sprawia, że walczą o te same zadania znoszenia — co może wyglądać, jakby podbieranie było zepsute. Wykonaj kroki, by je czysto usunąć.</HaulersDream.Cat.Migration.Help>
+<HaulersDream.Migration.DetectedHead>Zastąpione mody wciąż aktywne</HaulersDream.Migration.DetectedHead>
+<HaulersDream.Migration.Intro>Hauler's Dream jest pojedynczym zastępnikiem dla modów poniżej, które wciąż masz włączone. Uruchamianie ich obok Hauler's Dream sprawia, że konkurują o te same zadania znoszenia, więc podbieranie może wyglądać na zepsute lub niestabilne. Usuń je czystymi krokami poniżej.</HaulersDream.Migration.Intro>
+<HaulersDream.Migration.DisableButton>Wyłącz je za mnie</HaulersDream.Migration.DisableButton>
+<HaulersDream.Migration.DisableButton.Help>Wyłącza każdy zastąpiony mod wymieniony powyżej i restartuje RimWorld. Zmiana listy modów odnosi skutek dopiero po restarcie, więc to to samo, co robi menu Mody. Zapisz grę (i najlepiej wciel kolonistów — zobacz kroki) przed użyciem tego.</HaulersDream.Migration.DisableButton.Help>
+<HaulersDream.Migration.DisableTitle>Wyłączyć zastąpione mody?</HaulersDream.Migration.DisableTitle>
+<HaulersDream.Migration.DisableConfirm>To wyłączy {0} i ZRESTARTUJE RimWorld od razu.\n\nUpewnij się, że najpierw ZAPISAŁEŚ grę — i najlepiej wcieliłeś kolonistów (zobacz kroki na tej karcie), żeby nic się nie zepsuło, gdy stare mody zostaną usunięte w trakcie zadania.\n\nZrestartować teraz?</HaulersDream.Migration.DisableConfirm>
+<HaulersDream.Migration.StepsHead>Dla czystego przejścia</HaulersDream.Migration.StepsHead>
+<HaulersDream.Migration.Step1>1.  Otwórz swój zapis i WCIEL wszystkich kolonistów, a potem zapisz grę. Wcielenie anuluje ich obecne zadania, co pozwala uniknąć błędów, jakie inne mody mogą rzucić, gdy zostaną usunięte w trakcie zadania.</HaulersDream.Migration.Step1>
+<HaulersDream.Migration.Step2>2.  Wyłącz wszystkie mody wymienione powyżej — użyj przycisku „Wyłącz je za mnie” lub wyjdź do menu głównego i wyłącz je sam w menu Mody.</HaulersDream.Migration.Step2>
+<HaulersDream.Migration.Step3>3.  Po restarcie gry wczytaj swój zapis ponownie, a potem zapisz go jeszcze raz — usunięte mody są teraz całkowicie poza grą.</HaulersDream.Migration.Step3>
+<HaulersDream.Migration.Step4>4.  Upewnij się, że Hauler's Dream jest włączony, usuń wcielenie kolonistów i graj dalej.</HaulersDream.Migration.Step4>
+<HaulersDream.Advanced.DevHint>Diagnostyka deweloperska pojawia się tutaj, gdy włączony jest tryb dewelopera.</HaulersDream.Advanced.DevHint>
+<HaulersDream.FeatGroup.Core>Rdzeń</HaulersDream.FeatGroup.Core>
+<HaulersDream.FeatGroup.Loading>Ładowanie i nosiciele</HaulersDream.FeatGroup.Loading>
+<HaulersDream.FeatGroup.BuildCraft>Budowa i wytwarzanie</HaulersDream.FeatGroup.BuildCraft>
+<HaulersDream.FeatGroup.Planning>Narzędzia planowania</HaulersDream.FeatGroup.Planning>
+<HaulersDream.FeatGroup.Wyu>Oportunistyczne znoszenie</HaulersDream.FeatGroup.Wyu>
+<HaulersDream.Feat.Master.Name>Włącz Hauler's Dream</HaulersDream.Feat.Master.Name>
+<HaulersDream.Feat.Master.Blurb>Główny przełącznik wszystkich automatycznych zachowań</HaulersDream.Feat.Master.Blurb>
+<HaulersDream.Feat.AutoUnload.Name>Automatyczne rozładowywanie</HaulersDream.Feat.AutoUnload.Name>
+<HaulersDream.Feat.AutoUnload.Blurb>Pionki same odbywają wyprawy rozładunkowe. Wyłączone = rozładunek tylko przez przycisk każdego pionka.</HaulersDream.Feat.AutoUnload.Blurb>
+<HaulersDream.Feat.BulkHaul.Name>Masowe znoszenie</HaulersDream.Feat.BulkHaul.Name>
+<HaulersDream.Feat.BulkHaul.Blurb>Zgarniaj wiele pobliskich przedmiotów do bagażu w jednej wyprawie</HaulersDream.Feat.BulkHaul.Blurb>
+<HaulersDream.Feat.Sweep.Name>Sprzątaj podczas pracy</HaulersDream.Feat.Sweep.Name>
+<HaulersDream.Feat.Sweep.Blurb>Chwytaj też luźne przedmioty przy miejscu pracy</HaulersDream.Feat.Sweep.Blurb>
+<HaulersDream.Feat.UnloadCarriers.Name>Masowo rozładowuj zwierzęta juczne</HaulersDream.Feat.UnloadCarriers.Name>
+<HaulersDream.Feat.UnloadCarriers.Blurb>Opróżnij nosiciela do plecaka w jednej wizycie</HaulersDream.Feat.UnloadCarriers.Blurb>
+<HaulersDream.Feat.LoadTransporters.Name>Ładuj transportery i promy</HaulersDream.Feat.LoadTransporters.Name>
+<HaulersDream.Feat.LoadTransporters.Blurb>Napełnij kapsuły i promy w jednej wyprawie</HaulersDream.Feat.LoadTransporters.Blurb>
+<HaulersDream.Feat.LoadPortal.Name>Ładuj portale mapy</HaulersDream.Feat.LoadPortal.Name>
+<HaulersDream.Feat.LoadPortal.Blurb>Masowo ładuj bramy otchłani i wyjścia z jaskiń</HaulersDream.Feat.LoadPortal.Blurb>
+<HaulersDream.Feat.Refuel.Name>Masowe tankowanie</HaulersDream.Feat.Refuel.Name>
+<HaulersDream.Feat.Refuel.Blurb>Dopełnij coś do zatankowania w jednej wyprawie</HaulersDream.Feat.Refuel.Blurb>
+<HaulersDream.Feat.Vehicles.Name>Ładunek pojazdów</HaulersDream.Feat.Vehicles.Name>
+<HaulersDream.Feat.Vehicles.Blurb>Masowo ładuj ładunek pojazdu (wymaga moda do pojazdów)</HaulersDream.Feat.Vehicles.Blurb>
+<HaulersDream.Feat.BuildFromInv.Name>Buduj z bagażu</HaulersDream.Feat.BuildFromInv.Name>
+<HaulersDream.Feat.BuildFromInv.Blurb>Buduj z niesionych i karawanowych materiałów</HaulersDream.Feat.BuildFromInv.Blurb>
+<HaulersDream.Feat.CraftFromInv.Name>Wytwarzaj z niesionych materiałów</HaulersDream.Feat.CraftFromInv.Name>
+<HaulersDream.Feat.CraftFromInv.Blurb>Zlecenia mogą używać składników, które pionki już niosą</HaulersDream.Feat.CraftFromInv.Blurb>
+<HaulersDream.Feat.ConstructDeliver.Name>Noś materiały na duże budowy</HaulersDream.Feat.ConstructDeliver.Name>
+<HaulersDream.Feat.ConstructDeliver.Blurb>Mniej wypraw do dużych lub skupionych zadań budowy</HaulersDream.Feat.ConstructDeliver.Blurb>
+<HaulersDream.Feat.Meals.Name>Posiłki na kółkach</HaulersDream.Feat.Meals.Name>
+<HaulersDream.Feat.Meals.Blurb>Głodny pionek je jedzenie, które niesie inny pionek</HaulersDream.Feat.Meals.Blurb>
+<HaulersDream.Feat.PlanRoutes.Name>Planner tras</HaulersDream.Feat.PlanRoutes.Name>
+<HaulersDream.Feat.PlanRoutes.Blurb>Narzędzie z prawego przycisku do planowania trasy znoszenia/pracy</HaulersDream.Feat.PlanRoutes.Blurb>
+<HaulersDream.Feat.PlanCrafting.Name>Planner wytwarzania</HaulersDream.Feat.PlanCrafting.Name>
+<HaulersDream.Feat.PlanCrafting.Blurb>Wykonaj zlecenie stołu roboczego wiele razy za jednym razem</HaulersDream.Feat.PlanCrafting.Blurb>
+<HaulersDream.Feat.EnRoute.Name>Podbieranie po drodze</HaulersDream.Feat.EnRoute.Name>
+<HaulersDream.Feat.EnRoute.Blurb>Chwytaj luźne przedmioty leżące po drodze do zadania</HaulersDream.Feat.EnRoute.Blurb>
+<HaulersDream.Feat.StorageRouting.Name>Trasowanie świadome odbiorcy</HaulersDream.Feat.StorageRouting.Name>
+<HaulersDream.Feat.StorageRouting.Blurb>Przemieść zaopatrzenie do magazynu bliżej miejsca użycia</HaulersDream.Feat.StorageRouting.Blurb>
+<HaulersDream.Feat.StorageFilters.Name>Filtry magazynów</HaulersDream.Feat.StorageFilters.Name>
+<HaulersDream.Feat.StorageFilters.Blurb>Ogranicz, których budynków magazynowych może używać znoszenie</HaulersDream.Feat.StorageFilters.Blurb>
+<HaulersDream.Head.BulkHaul>Masowe znoszenie</HaulersDream.Head.BulkHaul>
+<HaulersDream.Head.WhileWorking>Podczas pracy</HaulersDream.Head.WhileWorking>
+<HaulersDream.Head.Construction>Budowa</HaulersDream.Head.Construction>
+<HaulersDream.Head.Crafting>Wytwarzanie</HaulersDream.Head.Crafting>
+<HaulersDream.Head.Food>Jedzenie</HaulersDream.Head.Food>
+<HaulersDream.Head.PackAnimals>Zwierzęta juczne</HaulersDream.Head.PackAnimals>
+<HaulersDream.Head.Transporters>Transportery, portale i tankowanie</HaulersDream.Head.Transporters>
+<HaulersDream.Head.Vehicles>Pojazdy</HaulersDream.Head.Vehicles>
+<HaulersDream.Head.AdvancedLoading>Zaawansowane ładowanie</HaulersDream.Head.AdvancedLoading>
+<HaulersDream.Head.StorageRouting>Trasowanie magazynu świadome odbiorcy</HaulersDream.Head.StorageRouting>
+<HaulersDream.Head.StorageFilters>Filtry budynków magazynowych</HaulersDream.Head.StorageFilters>
+<HaulersDream.Head.AfterKill>Po zabiciu</HaulersDream.Head.AfterKill>
+<HaulersDream.Head.Stripping>Obdzieranie</HaulersDream.Head.Stripping>
+<HaulersDream.Head.Batches>Partie wytwarzania</HaulersDream.Head.Batches>
+<HaulersDream.Head.RoutePlanning>Planowanie tras</HaulersDream.Head.RoutePlanning>
+<HaulersDream.Head.UnloadTiming>Czas rozładunku</HaulersDream.Head.UnloadTiming>
+<HaulersDream.Head.SafetyNet>Siatka bezpieczeństwa</HaulersDream.Head.SafetyNet>
+<HaulersDream.Head.Developer>Deweloper</HaulersDream.Head.Developer>
+<HaulersDream.Profile.Default>Domyślny (profil, wbudowany)</HaulersDream.Profile.Default>
+<HaulersDream.Profile.Custom>Własny (niezapisany)</HaulersDream.Profile.Custom>
+<HaulersDream.Profile.Named>{0} (profil)</HaulersDream.Profile.Named>
+<HaulersDream.Profile.NamedDirty>{0} (profil, niezapisane zmiany)</HaulersDream.Profile.NamedDirty>
+<HaulersDream.Profile.SaveChanges>Zapisz zmiany w „{0}”</HaulersDream.Profile.SaveChanges>
+<HaulersDream.Profile.CreateNew>Utwórz nowy profil…</HaulersDream.Profile.CreateNew>
+<HaulersDream.Profile.SaveAsNew>Zapisz jako nowy profil…</HaulersDream.Profile.SaveAsNew>
+<HaulersDream.Profile.Delete>Usuń profil „{0}”</HaulersDream.Profile.Delete>
+<HaulersDream.Profile.DeleteConfirm>Usunąć profil „{0}”? Twoje obecne ustawienia pozostają bez zmian.</HaulersDream.Profile.DeleteConfirm>
+<HaulersDream.Profile.NameDialogTitle>Nazwa profilu:</HaulersDream.Profile.NameDialogTitle>
+<HaulersDream.Profile.SelectorTip>Profile ustawień. Wybierz zapisany profil, przywróć wbudowany Domyślny lub zapisz swoje obecne ustawienia jako nowy profil. „Własny (niezapisany)” oznacza, że zmieniłeś ustawienia, które nie są jeszcze zapisane w żadnym profilu.</HaulersDream.Profile.SelectorTip>
+<HaulersDream.Profile.Copy>Kopiuj profil…</HaulersDream.Profile.Copy>
+<HaulersDream.Profile.Paste>Wklej profil…</HaulersDream.Profile.Paste>
+<HaulersDream.Profile.CopyTitle>Kopiuj profil</HaulersDream.Profile.CopyTitle>
+<HaulersDream.Profile.CopyInfo>Udostępnij ten kod innemu graczowi. Zawiera wersję moda i tylko te ustawienia, które zmieniłeś względem domyślnych tej wersji, więc pozostaje krótki.</HaulersDream.Profile.CopyInfo>
+<HaulersDream.Profile.CopyToClipboard>Kopiuj do schowka</HaulersDream.Profile.CopyToClipboard>
+<HaulersDream.Profile.CopiedMsg>Kod profilu skopiowany do schowka.</HaulersDream.Profile.CopiedMsg>
+<HaulersDream.Profile.PasteTitle>Wklej profil</HaulersDream.Profile.PasteTitle>
+<HaulersDream.Profile.PasteTokenLabel>Kod profilu:</HaulersDream.Profile.PasteTokenLabel>
+<HaulersDream.Profile.PasteFromClipboard>Wklej ze schowka</HaulersDream.Profile.PasteFromClipboard>
+<HaulersDream.Profile.PasteInvalid>To nie wygląda na prawidłowy kod profilu Hauler's Dream.</HaulersDream.Profile.PasteInvalid>
+<HaulersDream.Profile.PasteCreate>Utwórz profil</HaulersDream.Profile.PasteCreate>
+<HaulersDream.Common.Off>Wyłączone</HaulersDream.Common.Off>
+<HaulersDream.Common.On>Włączone</HaulersDream.Common.On>
+<HaulersDream.Unit.Tiles>{0} kafelków</HaulersDream.Unit.Tiles>
+<HaulersDream.Unit.Ticks>{0} tyknięć</HaulersDream.Unit.Ticks>
+<HaulersDream.Unit.Hours>{0} h</HaulersDream.Unit.Hours>
+<HaulersDream.Setting.CarryLimit.Lab>Limit noszenia</HaulersDream.Setting.CarryLimit.Lab>
+<HaulersDream.Setting.Overload.Lab>Inteligentne przeciążenie</HaulersDream.Setting.Overload.Lab>
+<HaulersDream.Setting.PickupMode.Lab>Obsługa podnoszenia</HaulersDream.Setting.PickupMode.Lab>
+<HaulersDream.Setting.PickupMode.Help>Jak pionek bierze do swojego ładunku przedmiot, który ma znieść.</HaulersDream.Setting.PickupMode.Help>
+<HaulersDream.Setting.PickupMode.Drop>Upuść, potem znieś</HaulersDream.Setting.PickupMode.Drop>
+<HaulersDream.Setting.PickupMode.DropDesc>Realistycznie: przedmiot jest na chwilę upuszczany na podłogę, a potem zgarniany — więc inny tragarz wciąż może go chwycić w trakcie.</HaulersDream.Setting.PickupMode.DropDesc>
+<HaulersDream.Setting.PickupMode.Direct>Do bagażu</HaulersDream.Setting.PickupMode.Direct>
+<HaulersDream.Setting.PickupMode.DirectDesc>Przedmiot trafia prosto do bagażu pionka bez kroku na podłodze.</HaulersDream.Setting.PickupMode.DirectDesc>
+<HaulersDream.Setting.BulkHaulTrigger.Lab>Wyzwalacz masowego znoszenia</HaulersDream.Setting.BulkHaulTrigger.Lab>
+<HaulersDream.Setting.KeepWorkingMargin.Lab>Rozładuj przed dłuższym przemieszczeniem</HaulersDream.Setting.KeepWorkingMargin.Lab>
+<HaulersDream.Setting.MinFreeSpaceToUnloadCarrier.Lab>Minimalne wolne miejsce w plecaku, by zacząć</HaulersDream.Setting.MinFreeSpaceToUnloadCarrier.Lab>
+<HaulersDream.Setting.MinFreeSpaceToUnloadCarrier.Help>Tragarz potrzebuje co najmniej tyle wolnego udźwigu, zanim zacznie opróżniać zwierzę juczne, aby jego własny plecak nie przepełnił się natychmiast.</HaulersDream.Setting.MinFreeSpaceToUnloadCarrier.Help>
+<HaulersDream.Setting.VisualUnloadDelay.Lab>Opóźnienie rozładunku na stos</HaulersDream.Setting.VisualUnloadDelay.Lab>
+<HaulersDream.Setting.VisualUnloadDelay.Help>Mała kosmetyczna pauza między każdym stosem podczas masowego rozładunku, aby czytało się to jako celowe działanie. 0 = natychmiast.</HaulersDream.Setting.VisualUnloadDelay.Help>
+<HaulersDream.Setting.BulkLoadAiUpdateFrequency.Lab>Interwał ponownego sprawdzania ładowania</HaulersDream.Setting.BulkLoadAiUpdateFrequency.Lab>
+<HaulersDream.Setting.BulkLoadAiUpdateFrequency.Help>Jak często działające zadanie masowego ładowania sprawdza ponownie, że jego niesiony ładunek jest wciąż potrzebny grupie. Niżej = bardziej responsywne ponowne trasowanie, wyżej = taniej.</HaulersDream.Setting.BulkLoadAiUpdateFrequency.Help>
+<HaulersDream.Setting.LoadOpportunityRadius.Lab>Promień poszukiwania zrzutu po drodze</HaulersDream.Setting.LoadOpportunityRadius.Lab>
+<HaulersDream.Setting.LoadOpportunityRadius.Help>Jak daleko niosący pionek szuka potrzebującego transportera, by zdeponować ładunek, gdy przechodzi obok.</HaulersDream.Setting.LoadOpportunityRadius.Help>
+<HaulersDream.Setting.LoadPathfindingCandidates.Lab>Kandydaci wyznaczania ścieżki na przystanek</HaulersDream.Setting.LoadPathfindingCandidates.Lab>
+<HaulersDream.Setting.LoadPathfindingCandidates.Help>Ilu z najbliższych przystanków odbioru jest ponownie szeregowanych według rzeczywistego wyznaczania ścieżki zamiast odległości w linii prostej. Wyżej = dokładniejsza kolejność, więcej procesora.</HaulersDream.Setting.LoadPathfindingCandidates.Help>
+<HaulersDream.Setting.DefaultBatchSize.Lab>Domyślny rozmiar partii</HaulersDream.Setting.DefaultBatchSize.Lab>
+<HaulersDream.Setting.DefaultBatchSize.Help>Początkowa ilość dla nowo zgrupowanego w partię zlecenia.</HaulersDream.Setting.DefaultBatchSize.Help>
+<HaulersDream.Setting.RouteMaxAmount.Lab>Maksimum suwaka „Ilość” trasy</HaulersDream.Setting.RouteMaxAmount.Lab>
+<HaulersDream.Setting.RouteMaxAmount.Help>Szczyt suwaka Ilość w plannerze tras (przed krokiem „Wszystko”).</HaulersDream.Setting.RouteMaxAmount.Help>
+<HaulersDream.Setting.RouteOrderEffort.Lab>Rozwiązuj kolejność odwiedzania dokładnie do</HaulersDream.Setting.RouteOrderEffort.Lab>
+<HaulersDream.Setting.RouteOrderEffort.Help>Trasy z najwyżej tyloma przystankami dostają dokładnie optymalną kolejność odwiedzania; większe trasy używają szybkiego przybliżenia. Wyżej rozwiązuje dokładniej, ale kosztuje więcej procesora.</HaulersDream.Setting.RouteOrderEffort.Help>
+<HaulersDream.Setting.CraftBatchTimeout.Lab>Domyślny limit czasu partii wytwarzania</HaulersDream.Setting.CraftBatchTimeout.Lab>
+<HaulersDream.Setting.CraftBatchTimeout.Help>Ograniczenie czasu rzeczywistego dla partii wytwarzania, zanim zakończy się sama. 0 = bez limitu. Nadpisywalne dla każdej partii.</HaulersDream.Setting.CraftBatchTimeout.Help>
+<HaulersDream.Setting.UnloadGrace.Lab>Okno gromadzenia</HaulersDream.Setting.UnloadGrace.Lab>
+<HaulersDream.Setting.UnloadGrace.Help>Jak długo po ostatnim podniesieniu pionek gromadzi dalej, zanim odbędzie automatyczną wyprawę rozładunkową. Wyżej = pracujący pionek zgarnia przez całe zadanie; wciąż rozładowuje się wcześniej, gdy się napełni.</HaulersDream.Setting.UnloadGrace.Help>
+<HaulersDream.Setting.IntervalUnload.Lab>Zabezpieczenie rozładunku interwałowego</HaulersDream.Setting.IntervalUnload.Lab>
+<HaulersDream.Setting.IntervalUnload.Help>Okresowy wymuszony rozładunek, na wypadek gdyby każdy inny wyzwalacz rozładunku był połknięty (wcielenia, obowiązki dowódcze, modowane zadania). 0 = wyłączone.</HaulersDream.Setting.IntervalUnload.Help>
+<HaulersDream.Setting.AlertStuckHours.Lab>Oznacz utkniętego pionka po</HaulersDream.Setting.AlertStuckHours.Lab>
+<HaulersDream.Setting.AlertStuckHours.Help>Jak długo pionek może trzymać niesiony ładunek, którego nie może odłożyć (mając istniejący cel), zanim alarm go oznaczy.</HaulersDream.Setting.AlertStuckHours.Help>
+<HaulersDream.Setting.EnRoutePathChecker.Lab>Sprawdzanie „po drodze”</HaulersDream.Setting.EnRoutePathChecker.Lab>
+<HaulersDream.Setting.AutoStripMode.Lab>Automatyczne obdzieranie podczas znoszenia</HaulersDream.Setting.AutoStripMode.Lab>
+<HaulersDream.Setting.AutoStrip.Help>Przy znoszeniu zwłok najpierw obdzieraj ich sprzęt i nieś łup ze sobą. „Tylko utylizacja” obdziera tylko zwłoki zmierzające do strefy zrzutu. „Wyłączone” zostawia zwłoki ubrane (ręczne rozkazy Obdrzyj wciąż zgarniają ich sprzęt).</HaulersDream.Setting.AutoStrip.Help>
+<HaulersDream.Setting.TaintedSmeltable.Lab>Skażona odzież — przetapialna</HaulersDream.Setting.TaintedSmeltable.Lab>
+<HaulersDream.Setting.TaintedNonSmeltable.Lab>Skażona odzież — nieprzetapialna</HaulersDream.Setting.TaintedNonSmeltable.Lab>
+<HaulersDream.Setting.Tainted.Help>Co zrobić ze skażoną (noszoną przez zmarłych) odzieżą zdjętą podczas obdzierania: weź ją, zostaw ją na zwłokach, upuść i zakaż jej lub zniszcz ją.</HaulersDream.Setting.Tainted.Help>
+<HaulersDream.Setting.RouteSelection.Lab>Wybór trasy</HaulersDream.Setting.RouteSelection.Lab>
+<HaulersDream.Setting.RouteSelection.Help>Jak planner wybiera, które cele włączyć do trasy.</HaulersDream.Setting.RouteSelection.Help>
+<HaulersDream.Setting.RouteDistance.Lab>Podstawa odległości</HaulersDream.Setting.RouteDistance.Lab>
+<HaulersDream.Setting.RouteDistance.Help>Jak planner mierzy odległość między przystankami.</HaulersDream.Setting.RouteDistance.Help>
+<HaulersDream.Setting.ShareForBuilding.Help>Materiały, które pionek już zgarnął do swojego bagażu, liczą się do pobliskiej budowy, więc może budować bez osobnej wyprawy po nie.</HaulersDream.Setting.ShareForBuilding.Help>
+<HaulersDream.Setting.ShareMeetInMiddle.Help>Gdy budowa lub zlecenie pobierze materiał z bagażu nosiciela, bezczynny nosiciel idzie ku pracownikowi, by spotkali się szybciej.</HaulersDream.Setting.ShareMeetInMiddle.Help>
+<HaulersDream.Setting.ItemUnload.Help>Ustaw reguły dla poszczególnych przedmiotów: zachowaj cały stos, zachowaj najwyżej ustaloną ilość lub zawsze go rozładowuj — nadpisując ustawienie nadwyżki dla tego przedmiotu.</HaulersDream.Setting.ItemUnload.Help>
+<HaulersDream.Setting.HideGizmo.Help>Ukryj przycisk „Rozładuj ekwipunek” dla każdego pionka, który pojawia się, gdy kolonista niesie nazbierane towary.</HaulersDream.Setting.HideGizmo.Help>
+<HaulersDream.Setting.StorageFilterButton.Help>Edytuj reguły zezwól/odmów na budynek i na mod dla tego, którego magazynu może używać znoszenie.</HaulersDream.Setting.StorageFilterButton.Help>
+<HaulersDream.Setting.PauseWhileDrafted.Help>Gdy pionek jest wcielony, Hauler's Dream przestaje zaczynać dla niego nowe zgarnięcia i zmiatania.</HaulersDream.Setting.PauseWhileDrafted.Help>
+<HaulersDream.Setting.AllowIncapable.Help>Pozwól pionkowi niezdolnemu do Znoszenia mimo to zgarniać plony z własnej pracy (wydobycie, zbieranie, …).</HaulersDream.Setting.AllowIncapable.Help>
+<HaulersDream.Setting.EnableOnNonHomeMaps.Help>Uruchamiaj Hauler's Dream również na mapach karawany i innych nie-domowych, nie tylko w twojej domowej kolonii.</HaulersDream.Setting.EnableOnNonHomeMaps.Help>
+<HaulersDream.Setting.VerboseLogging.Help>Dodatkowe logowanie deweloperskie. Dostępne — i loguje — tylko w trybie dewelopera.</HaulersDream.Setting.VerboseLogging.Help>
+<HaulersDream.Setting.BulkHaulSecond.S>Przy 2. rozkazie</HaulersDream.Setting.BulkHaulSecond.S>
+<HaulersDream.Setting.BulkHaulAlways.S>Zawsze</HaulersDream.Setting.BulkHaulAlways.S>
+<HaulersDream.Setting.EnRoutePathVanilla.S>Tanie</HaulersDream.Setting.EnRoutePathVanilla.S>
+<HaulersDream.Setting.EnRoutePathDefault.S>Dokładne</HaulersDream.Setting.EnRoutePathDefault.S>
+<HaulersDream.Setting.EnRoutePathPathfinding.S>Wnikliwe</HaulersDream.Setting.EnRoutePathPathfinding.S>
+<HaulersDream.Setting.AutoStripAll.S>Wszystkie znoszenia</HaulersDream.Setting.AutoStripAll.S>
+<HaulersDream.Setting.AutoStripDisposal.S>Tylko utylizacja</HaulersDream.Setting.AutoStripDisposal.S>
+<HaulersDream.Setting.AutoStripOff.S>Wyłączone</HaulersDream.Setting.AutoStripOff.S>
+<HaulersDream.Setting.TaintedTake.S>Weź</HaulersDream.Setting.TaintedTake.S>
+<HaulersDream.Setting.TaintedLeave.S>Zostaw</HaulersDream.Setting.TaintedLeave.S>
+<HaulersDream.Setting.TaintedForbid.S>Upuść i zakaż</HaulersDream.Setting.TaintedForbid.S>
+<HaulersDream.Setting.TaintedDestroy.S>Zniszcz</HaulersDream.Setting.TaintedDestroy.S>
+<HaulersDream.PlanRoute.SelMostStops.S>Najwięcej przystanków</HaulersDream.PlanRoute.SelMostStops.S>
+<HaulersDream.PlanRoute.SelNearest.S>Najbliższy</HaulersDream.PlanRoute.SelNearest.S>
+<HaulersDream.PlanRoute.DistStraight.S>Linia prosta</HaulersDream.PlanRoute.DistStraight.S>
+<HaulersDream.PlanRoute.DistWalking.S>Ścieżka marszu</HaulersDream.PlanRoute.DistWalking.S>
+<HaulersDream.Setting.EnRoutePathVanilla.H>Szybki ograniczony zalew liczący regiony — najtańsze sprawdzenie, najmniej dokładne.</HaulersDream.Setting.EnRoutePathVanilla.H>
+<HaulersDream.Setting.EnRoutePathDefault.H>Rzeczywisty koszt ścieżki A*; przerywa skanowanie przy niepowodzeniu zasięgu. Dokładniejsze, więcej procesora.</HaulersDream.Setting.EnRoutePathDefault.H>
+<HaulersDream.Setting.EnRoutePathPathfinding.H>Rzeczywisty koszt ścieżki A*; skanuje dalej w poszukiwaniu najlepszego dopasowania. Najdokładniejsze, najwięcej procesora.</HaulersDream.Setting.EnRoutePathPathfinding.H>
+<HaulersDream.PlanRoute.SelMostStops.H>Preferuj cele, które upychają najwięcej przystanków w jednej odległości podróży.</HaulersDream.PlanRoute.SelMostStops.H>
+<HaulersDream.PlanRoute.SelNearest.H>Preferuj cele najbliższe temu, który kliknąłeś.</HaulersDream.PlanRoute.SelNearest.H>
+<HaulersDream.PlanRoute.DistStraight.H>Mierz odległość jako linię prostą — szybko.</HaulersDream.PlanRoute.DistStraight.H>
+<HaulersDream.PlanRoute.DistWalking.H>Mierz odległość wzdłuż rzeczywistej ścieżki marszu — wolniej, dokładniej.</HaulersDream.PlanRoute.DistWalking.H>
+<HaulersDream.Setting.HaulHarvest.Help>Zgarniaj zebrane plony i ścięte rośliny do bagażu, gdy pionek pracuje.</HaulersDream.Setting.HaulHarvest.Help>
+<HaulersDream.Setting.HaulMining.Help>Zgarniaj wydobytą rudę i bryły skalne do bagażu, gdy pionek wydobywa.</HaulersDream.Setting.HaulMining.Help>
+<HaulersDream.Setting.HaulDeepDrill.Help>Zgarniaj wyjście głębokiego świdra do bagażu, gdy jest wytwarzane.</HaulersDream.Setting.HaulDeepDrill.Help>
+<HaulersDream.Setting.HaulDeconstruct.Help>Zgarniaj złom z rozebranych budynków do bagażu.</HaulersDream.Setting.HaulDeconstruct.Help>
+<HaulersDream.Setting.HaulAnimals.Help>Zgarniaj mleko, wełnę i inne produkty zebrane od zwierząt do bagażu.</HaulersDream.Setting.HaulAnimals.Help>
+<HaulersDream.Setting.HaulUninstall.Help>Na mapie karawany lub innej wyjazdowej (nigdy w twojej domowej kolonii) zgarniaj budynek, który demontujesz — teraz zminiaturyzowany przedmiot — prosto do bagażu pracownika, tak by kilka zdemontowanych konstrukcji było niesionych do zwierząt jucznych w JEDNEJ wyprawie zamiast jednego spaceru tam i z powrotem na przedmiot. Uruchamia się tylko tam, gdzie przedmiot faktycznie można dostarczyć (składowisko/strefa lub zwierzę juczne). Na twojej domowej mapie nie robi nic: tam zdemontowany budynek jest zostawiany na ziemi do normalnego znoszenia lub ponownej instalacji.</HaulersDream.Setting.HaulUninstall.Help>
+<HaulersDream.Cat.Hauling.Intro>Jak koloniści podnoszą rzeczy — ile niosą, kiedy się przeciążają i co zmiatają.</HaulersDream.Cat.Hauling.Intro>
+<HaulersDream.Cat.Unloading.Intro>Kiedy i jak koloniści odkładają swoje niesione towary.</HaulersDream.Cat.Unloading.Intro>
+<HaulersDream.Cat.BuildCraft.Intro>Pozyskiwanie materiałów budowlanych i do wytwarzania z bagażu, dostarczanie jedzenia i wybór składników.</HaulersDream.Cat.BuildCraft.Intro>
+<HaulersDream.Cat.BulkLoading.Intro>Ładowanie i rozładowywanie w jednej wyprawie nosicieli, transportów, portali, rzeczy do tankowania i pojazdów.</HaulersDream.Cat.BulkLoading.Intro>
+<HaulersDream.Cat.Routing.Intro>Chwytaj przedmioty po drodze, przemieszczaj zaopatrzenie bliżej miejsca użycia i filtruj magazyn.</HaulersDream.Cat.Routing.Intro>
+<HaulersDream.Cat.Yields.Intro>Które plony z pracy są zgarniane, znoszenie tusz po zabiciu i obdzieranie sprzętu.</HaulersDream.Cat.Yields.Intro>
+<HaulersDream.Cat.Who.Intro>Których pionków dotyczy Hauler's Dream oraz nadpisania pozwalające każdemu pionkowi wykonywać pewne prace.</HaulersDream.Cat.Who.Intro>
+<HaulersDream.Cat.Planners.Intro>Plannery tras i wytwarzania z prawego przycisku oraz ich ustawienia domyślne.</HaulersDream.Cat.Planners.Intro>
+<HaulersDream.Cat.Advanced.Intro>Czas rozładunku, alarm bezpieczeństwa o utkniętym ładunku, sprzątanie przy zapisie i narzędzia deweloperskie.</HaulersDream.Cat.Advanced.Intro>
+<HaulersDream.Head.CarryWeight>Udźwig</HaulersDream.Head.CarryWeight>
+<HaulersDream.Head.Pickup>Podnoszenie</HaulersDream.Head.Pickup>
+<HaulersDream.Head.AutoUnloadTrips>Automatyczne wyprawy rozładunkowe</HaulersDream.Head.AutoUnloadTrips>
+<HaulersDream.Head.DropOff>Zachowanie zrzutu</HaulersDream.Head.DropOff>
+<HaulersDream.Head.ItemRulesDisplay>Reguły poszczególnych przedmiotów i wyświetlanie</HaulersDream.Head.ItemRulesDisplay>
+<HaulersDream.Head.EnRoute>Podbieranie po drodze</HaulersDream.Head.EnRoute>
+<HaulersDream.Head.WhoCanHaul>Kto może zgarniać i znosić</HaulersDream.Head.WhoCanHaul>
+<HaulersDream.Head.PlanningTools>Narzędzia planowania</HaulersDream.Head.PlanningTools>
+<HaulersDream.Setting.Overload.Ceiling>pułap</HaulersDream.Setting.Overload.Ceiling>
+</LanguageData>

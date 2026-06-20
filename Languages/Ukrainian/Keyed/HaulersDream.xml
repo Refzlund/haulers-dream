@@ -1,0 +1,596 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LanguageData>
+
+<HaulersDream.SettingsCategory>Hauler's Dream</HaulersDream.SettingsCategory>
+<HaulersDream.SettingsHeaderFallback>Hauler's Dream</HaulersDream.SettingsHeaderFallback>
+<HaulersDream.Tab.General>Загальне</HaulersDream.Tab.General>
+<HaulersDream.Tab.Sharing>Спільне використання та доставка</HaulersDream.Tab.Sharing>
+<HaulersDream.Tab.Bulk>Масове перенесення та носії</HaulersDream.Tab.Bulk>
+<HaulersDream.Tab.Routing>По дорозі та маршрутизація</HaulersDream.Tab.Routing>
+<HaulersDream.Tab.Sources>Джерела та хто</HaulersDream.Tab.Sources>
+<HaulersDream.Tab.Planners>Планувальники та додатково</HaulersDream.Tab.Planners>
+<HaulersDream.Setting.MasterEnabled>Увімкнути Hauler's Dream</HaulersDream.Setting.MasterEnabled>
+<HaulersDream.Setting.MasterEnabledDesc>Головний перемикач. Коли ВИМКНЕНО, Hauler's Dream припиняє ЗАПУСКАТИ свою автоматичну поведінку перенесення — збирання продуктів роботи, підмітання сміття поблизу, масове перенесення, підбирання по дорозі та маршрутизацію до складу — що зручно для з'ясування, чи причетний мод до чогось, без перезапуску. Пішак, який уже зібрав речі, все одно розвантажить їх як зазвичай (ніщо ніколи не залишається покинутим), а кнопка «Розвантажити інвентар» для кожного пішака залишається доступною. (Перевизначення нездатності до роботи та меню наказів за правим кліком мають власні перемикачі й не залежать від цього вимикача.) Увімкнено за замовчуванням.</HaulersDream.Setting.MasterEnabledDesc>
+<HaulersDream.Setting.DrawDetourLines>Малювати лінії обхідних шляхів для налагодження (dev)</HaulersDream.Setting.DrawDetourLines>
+<HaulersDream.Setting.DrawDetourLinesDesc>Діагностика лише для розробників: малює кольорові лінії для підбирання по дорозі та обхідних шляхів маршрутизації до складу, щоб ви бачили, чому пішак відхилився. Не зберігається — скидається у вимкнено щоразу при запуску гри.</HaulersDream.Setting.DrawDetourLinesDesc>
+<HaulersDream.Setting.CarryLimit>Ліміт перенесення: {0} від максимальної вантажопідйомності кожного пішака</HaulersDream.Setting.CarryLimit>
+<HaulersDream.Setting.CarryLimitDesc>Обмеження — це частка максимальної вантажопідйомності пішака — маси, яку він може нести у своєму одязі, спорядженні та інвентарі (та сама вантажопідйомність, що використовується для караванів і навантаження в'ючних тварин). Речі, які несуться в руках під час перенесення (активна стопка в руках), НЕ враховуються в цьому ліміті; рахується лише те, що складено в одязі/спорядженні/інвентарі. Розумне перевантаження нижче все одно може дозволити пішакові перевищити 100% цього обмеження, щоб заощадити ходки.</HaulersDream.Setting.CarryLimitDesc>
+<HaulersDream.Setting.DropThenHaul>Кинути на підлогу, потім підібрати (реалістично)</HaulersDream.Setting.DropThenHaul>
+<HaulersDream.Setting.DropThenHaulDesc>Коли УВІМКНЕНО, зібрані/видобуті речі падають на землю, і пішак збирає їх у свій інвентар після робочої ходки. Коли ВИМКНЕНО, речі потрапляють просто в інвентар (без торкання землі).</HaulersDream.Setting.DropThenHaulDesc>
+<HaulersDream.Setting.MarkForUnload>Автоматично розвантажувати зібрані речі (наприкінці робочої ходки, перед прийомами їжі та відпочинком, при перевантаженні та за інтервалом нижче). Вимкнено: пішаки продовжують нести, доки ви не натиснете їхню кнопку «Розвантажити інвентар».</HaulersDream.Setting.MarkForUnload>
+<HaulersDream.Setting.UnloadAllSurplus>Також відкладати надлишок інвентарю, який пішак несе, але який Hauler's Dream НЕ підбирав сам (за замовчуванням вимкнено)</HaulersDream.Setting.UnloadAllSurplus>
+<HaulersDream.Setting.UnloadAllSurplusDesc>За замовчуванням вимкнено: Hauler's Dream розвантажує лише речі, які зібрав сам, тож ніколи не торкається запасної зброї колоніста, перенесених ліків чи води або наторгованих товарів. Увімкніть це для зручності, щоб також відкладати надлишок, який пішак несе без причини (від торгівлі, інших модів або ручних переміщень). «Надлишок» виключає збережену пішаком їжу, наркотики, інвентарний запас і будь-які речі бойового спорядження (зокрема боєприпаси), ванільні наркотики залежності, речі, які моди запасної зброї, ліків чи гігієни тримають в інвентарі (усі визначаються автоматично), і все, що ви зберігаєте в «Налаштуваннях розвантаження окремих речей» нижче — і лише стопки, які є куди покласти; інвентар для завантаження каравану залишається недоторканим.</HaulersDream.Setting.UnloadAllSurplusDesc>
+<HaulersDream.Setting.ItemUnloadButton>Налаштування розвантаження окремих речей…</HaulersDream.Setting.ItemUnloadButton>
+<HaulersDream.Setting.ItemUnloadButtonN>Налаштування розвантаження окремих речей ({0})…</HaulersDream.Setting.ItemUnloadButtonN>
+<HaulersDream.ItemUnload.Title>Налаштування розвантаження окремих речей</HaulersDream.ItemUnload.Title>
+<HaulersDream.ItemUnload.Desc>Налаштуйте, як Hauler's Dream поводиться з певними речами в інвентарі пішака. Для кожної речі оберіть: Ніколи не розвантажувати (тримати всю стопку), Тримати щонайбільше N (нести до N і розвантажувати решту) або Завжди розвантажувати (відкладати, навіть якщо інший мод інакше залишив би її). Речі без правила використовують звичайну поведінку. Правило тут перевизначає автоматичне визначення збереження для речей бойового спорядження, запасної зброї, ліків, гігієни та залежності. Вибори для речей з модів, які ви видалили, запам'ятовуються й відновлюються, якщо ви перевстановите мод, і ніколи не впливають на завантаження збереження. (Порада: якщо ви використовуєте мод спорядження/боєприпасів, задайте кількість боєприпасів у його спорядженні — він знову поповнює боєприпаси до цієї кількості.)</HaulersDream.ItemUnload.Desc>
+<HaulersDream.ItemUnload.ClearAll>Очистити все</HaulersDream.ItemUnload.ClearAll>
+<HaulersDream.ItemUnload.ModeDefault>За замовчуванням</HaulersDream.ItemUnload.ModeDefault>
+<HaulersDream.ItemUnload.ModeKeepAll>Ніколи не розвантажувати</HaulersDream.ItemUnload.ModeKeepAll>
+<HaulersDream.ItemUnload.ModeKeepAtMost>Тримати щонайбільше</HaulersDream.ItemUnload.ModeKeepAtMost>
+<HaulersDream.ItemUnload.ModeUnloadAlways>Завжди розвантажувати</HaulersDream.ItemUnload.ModeUnloadAlways>
+<HaulersDream.Setting.UnloadBeforeSleep>Відкладати вантаж перед сном</HaulersDream.Setting.UnloadBeforeSleep>
+<HaulersDream.Setting.UnloadBeforeSleepDesc>Коли пішак закінчує роботу і втомлений (от-от засне), він спершу робить ходку для розвантаження, а потім лягає спати порожнім — замість того, щоб нести свій зібраний вантаж у ліжко. Він усе одно накопичує речі як зазвичай, поки фактично працює.</HaulersDream.Setting.UnloadBeforeSleepDesc>
+<HaulersDream.Setting.UnloadBeforeLeisure>Відкладати вантаж перед відпочинком</HaulersDream.Setting.UnloadBeforeLeisure>
+<HaulersDream.Setting.UnloadBeforeLeisureDesc>Коли пішак припиняє роботу й вирушає на відпочинок (його блок «Відпочинок» у розкладі або будь-яка розважальна діяльність), він спершу розвантажується замість того, щоб тягати свій вантаж із собою під час відпочинку.</HaulersDream.Setting.UnloadBeforeLeisureDesc>
+<HaulersDream.Setting.UnloadBeforeEating>Відкладати вантаж перед прийомом їжі</HaulersDream.Setting.UnloadBeforeEating>
+<HaulersDream.Setting.UnloadBeforeEatingDesc>Коли пішак закінчує роботу і голодний (от-от поїсть), він спершу розвантажується — щоб не тягнути щойно видобуту руду до обіднього столу.</HaulersDream.Setting.UnloadBeforeEatingDesc>
+<HaulersDream.Setting.ShareHeader>Ділитися перенесеними матеріалами між колоністами:</HaulersDream.Setting.ShareHeader>
+<HaulersDream.Setting.ShareForBuilding>Використовувати перенесені матеріали для будівництва</HaulersDream.Setting.ShareForBuilding>
+<HaulersDream.Setting.BuildFromInventory>Будувати з інвентарю (використовувати вже перенесені матеріали)</HaulersDream.Setting.BuildFromInventory>
+<HaulersDream.Setting.BuildFromInventoryDesc>Пішак-будівельник може брати будівельні матеріали з інвентарю, який пішак чи тварина вже несе — спершу свого, потім інших колоністів, потім в'ючних тварин / вантажу каравану — а не лише з розкиданих стопок на землі. Тож якщо ви берете сталь у караван і наказуєте звести мішок з піском чи стіну в рейді або на віддаленій карті, будівництво йде з перенесеної сталі без того, щоб ви спершу скидали її з в'ючної тварини. Доставляється просто з інвентарю на майданчик (без попереднього скидання до ніг носія). Це окреме від «використовувати перенесені матеріали для будівництва» вище, яке враховує лише матеріали, які цей мод зібрав сам. Ніколи не бере у мобілізованого, знесиленого чи розлюченого носія, ані з вантажу, призначеного для формування каравану; резервує стопку, щоб двоє будівельників не змагалися за неї. Увімкнено за замовчуванням.</HaulersDream.Setting.BuildFromInventoryDesc>
+<HaulersDream.Setting.BuildFromInventoryPartial>Дозволити часткове будівництво з інвентарю</HaulersDream.Setting.BuildFromInventoryPartial>
+<HaulersDream.Setting.BuildFromInventoryPartialDesc>Зазвичай будівництво не починається, доки не доступно достатньо матеріалу для всього об'єкта. З увімкненим цим, каркас починається й просувається з використанням наявного інвентарного матеріалу, навіть якщо його менше, ніж потрібна повна кількість — решта доставляється в міру надходження. Змінює правило «все або нічого» базової гри, тож за замовчуванням вимкнено. Потребує «будувати з інвентарю».</HaulersDream.Setting.BuildFromInventoryPartialDesc>
+<HaulersDream.Setting.ShareForCrafting>Використовувати перенесені матеріали для завдань виготовлення</HaulersDream.Setting.ShareForCrafting>
+<HaulersDream.Setting.ShareForCraftingDesc>Пішак-ремісник може брати інгредієнти завдання з інвентарю, який пішак уже несе, а не лише з розкиданих стопок на землі. Якщо інший мод керує перенесенням інгредієнтів для виготовлення, Hauler's Dream автоматично відступає й дозволяє йому їх зібрати — тож будь-який цикл виготовлення вирішується сам, без жодних дій з вашого боку.</HaulersDream.Setting.ShareForCraftingDesc>
+<HaulersDream.Setting.ShareMeetInMiddle>Бездіяльний носій іде назустріч робітнику, щоб передати речі</HaulersDream.Setting.ShareMeetInMiddle>
+<HaulersDream.Setting.BatchWorkDeliveries>Нести матеріали для багатьох черг будівництва за одну ходку</HaulersDream.Setting.BatchWorkDeliveries>
+<HaulersDream.Setting.BatchWorkDeliveriesDesc>Коли будується багато дешевих об'єктів (наприклад, довгий паркан), пішак наповнює руки достатньою кількістю матеріалу для багатьох черг будівництва й доставляє до кожного за одну ходку, замість того щоб возити по кілька за раз. Несеться в руках, тож сповільнення немає.</HaulersDream.Setting.BatchWorkDeliveriesDesc>
+<HaulersDream.Setting.InventoryConstructDeliver>Нести матеріали в інвентарі для великих одиночних будівництв</HaulersDream.Setting.InventoryConstructDeliver>
+<HaulersDream.Setting.InventoryConstructDeliverDesc>Коли один об'єкт потребує більше, ніж одну стопку в руках одного матеріалу (наприклад, 340 сталі для геотермального генератора), пішак завантажує матеріал у свій інвентар — який обмежений вагою, а не розміром стопки — і доставляє його за значно меншу кількість ходок, замість того щоб возити ~75 за раз у руках. Використовує налаштування розумного перевантаження вище для того, наскільки понад 100% він завантажує; з вимкненим перевантаженням він завантажує до 100% (без сповільнення).</HaulersDream.Setting.InventoryConstructDeliverDesc>
+<HaulersDream.Setting.MultiSiteConstructDeliver>Завантажувати матеріали кількох сусідніх майданчиків за одну ходку</HaulersDream.Setting.MultiSiteConstructDeliver>
+<HaulersDream.Setting.MultiSiteConstructDeliverDesc>Коли автоматичне будівництво або будівництво за shift-кліком доставляє до скупчення сусідніх майданчиків, що потребують однакового матеріалу, пішак завантажує сумарну потребу всього скупчення у свій інвентар за одну ходку й доставляє до кожного майданчика, замість того щоб обслуговувати один майданчик за ходку (раніше це робив лише планувальник маршрутів). Пішак спершу завершує майданчик, над яким уже працює, перш ніж завантажувати. Потребує «нести матеріали в інвентарі для великих одиночних будівництв» вище.</HaulersDream.Setting.MultiSiteConstructDeliverDesc>
+<HaulersDream.Setting.ShareHandHauled>Забирати матеріали у колоніста, що несе їх до складу (за замовчуванням вимкнено)</HaulersDream.Setting.ShareHandHauled>
+<HaulersDream.Setting.ShareHandHauledDesc>Коли будівельнику потрібен матеріал, а єдиний запас — у руках колоніста, що несе його до складу, будівельник зустрічає того колоніста дорогою й забирає стопку, замість того щоб чекати, доки вона дістанеться складу, і брати її звідти. Ніколи не торкається колоніста, що доставляє до конкретного будівництва, завдання чи роботи із заправлення, і лише коли це справді заощаджує ходку. (Поки що лише для будівництва.)</HaulersDream.Setting.ShareHandHauledDesc>
+<HaulersDream.Setting.MealsOnWheels>Їсти їжу, яку несуть інші колоністи, коли своєї не знайдено</HaulersDream.Setting.MealsOnWheels>
+<HaulersDream.Setting.MealsOnWheelsDesc>Коли голодний колоніст не може знайти їжі на карті чи у власному (або в'ючної тварини) рюкзаку, він іде до іншого колоніста чи в'ючної тварини, що несе прийнятну їжу, і їсть з їхнього інвентарю — зменшуючи кількість ходок і рятуючи перенесені страви до того, як вони зіпсуються — замість того щоб голодувати чи плентатися до далекого складу. Спрацьовує лише коли звичайний пошук їжі нічого не знаходить, тож ніколи не перекриває ближчу страву. Поважає харчову політику їдока, ідеологію та статус тверезника; ніколи не бере їжу, якою батько годує немовля; ніколи не бере у мобілізованого, знесиленого чи розлюченого носія; резервує страву, щоб двоє колоністів не змагалися за неї; і надає перевагу їжі, найближчій до псування. Увімкнено за замовчуванням.</HaulersDream.Setting.MealsOnWheelsDesc>
+<HaulersDream.Setting.BulkHaul>Масове перенесення — ходка для перенесення підбирає все навколо</HaulersDream.Setting.BulkHaul>
+<HaulersDream.Setting.BulkHaulDesc>Пішак, відправлений перенести одну річ, планує підбирання всього, що можна перенести навколо, у свій інвентар, доставляючи все за одну ходку до складу. Вимкнено = ванільне перенесення однієї речі за ходку.</HaulersDream.Setting.BulkHaulDesc>
+<HaulersDream.Setting.BulkHaulSecond>Накази на перенесення підмітають лише коли поблизу наказано й друге перенесення</HaulersDream.Setting.BulkHaulSecond>
+<HaulersDream.Setting.BulkHaulSecondDesc>Автоматичне перенесення завжди підмітає околиці в інвентар (одна ходка до складу для багатьох речей). Перенесення, яке ВИ наказуєте пішакові, лишається точковим — він переносить лише ту одну річ — якщо ви не наказали друге перенесення поблизу, у такому разі пішак підмітає їх разом. Стандартне для точнішого контролю.</HaulersDream.Setting.BulkHaulSecondDesc>
+<HaulersDream.Setting.BulkHaulAlways>Завжди підмітати — кожне перенесення підбирає все навколо</HaulersDream.Setting.BulkHaulAlways>
+<HaulersDream.Setting.BulkHaulAlwaysDesc>Кожне перенесення — автоматичне чи за наказом — також завантажує речі для перенесення поблизу в інвентар пішака, роблячи одну ходку до складу для всього. Скільки він несе, поважає повзунок розумного перевантаження нижче: лише стільки додаткової ваги, скільки справді варте сповільнення порівняно з ще однією ходкою туди-назад.</HaulersDream.Setting.BulkHaulAlwaysDesc>
+<HaulersDream.Setting.HaulNearbyOption>Додати наказ «Перенести все поблизу» за правим кліком</HaulersDream.Setting.HaulNearbyOption>
+<HaulersDream.Setting.HaulNearbyOptionDesc>Додає опцію «Перенести все поблизу» до меню за правим кліком на речі, яку можна перенести (для пішаків, що можуть переносити), що негайно запускає масове підмітання — тож вам не доведеться пріоритезувати два перенесення, щоб запустити масове перенесення. Ванільне «Пріоритезувати перенесення» все одно з'являється поруч для перенесення однієї речі.</HaulersDream.Setting.HaulNearbyOptionDesc>
+<HaulersDream.Setting.ManualPickup>Додати наказ «Підібрати X» за правим кліком</HaulersDream.Setting.ManualPickup>
+<HaulersDream.Setting.ManualPickupDesc>Додає опцію «Підібрати X» до меню за правим кліком на наземній речі, яку можна перенести. Пішак підбирає кліковану стопку просто у свій інвентар як відстежуване перенесення Hauler's Dream, яке потім відкладається звичайним розвантаженням — тож воно ніколи не втрачається, навіть якщо автоматичне розвантаження вимкнено. Доповнює ванільні опції перенесення за правим кліком.</HaulersDream.Setting.ManualPickupDesc>
+<HaulersDream.Setting.HaulOversized>Нести завеликі стопки в інвентарі</HaulersDream.Setting.HaulOversized>
+<HaulersDream.Setting.HaulOversizedDesc>Коли окрема стопка завелика, щоб нести її в одній оберемці (наприклад, стопка з 75 сталі, коли пішак може втримати лише 72), пішак бере її у свій інвентар і доставляє всю стопку за одну ходку — замість того щоб нести в руках частину й залишати решту. Застосовується і до наказаних, і до автоматичних перенесень; несе лише стільки, скільки склад справді може прийняти, тож ніщо не залишається покинутим.</HaulersDream.Setting.HaulOversizedDesc>
+<HaulersDream.Setting.SweepNearbyWhileWorking>Прибирати під час роботи — збирати також розкидані речі поблизу</HaulersDream.Setting.SweepNearbyWhileWorking>
+<HaulersDream.Setting.SweepNearbyWhileWorkingDesc>Поки пішак розбирає, видобуває чи збирає урожай і збирає власні продукти, він також підбирає інші розкидані речі для перенесення, що лежать навколо робочого місця, у свій інвентар, тож уся ділянка очищується за одну об'єднану ходку замість того, щоб лишатися для окремих перенесень. Беруться лише речі, які потребують перенесення і яким є куди подітися (ніколи ціль іншого вантажника чи складований запас), і лише до стелі розумного перевантаження.</HaulersDream.Setting.SweepNearbyWhileWorkingDesc>
+<HaulersDream.Setting.HaulToStack>Переносити до стопки (поповнювати наявні стопки, ділити цільові клітини)</HaulersDream.Setting.HaulToStack>
+<HaulersDream.Setting.ConstructTether>Наказані будівництва переносять І будують як одне завдання</HaulersDream.Setting.ConstructTether>
+<HaulersDream.Setting.ConstructTetherDesc>Коли ви клікаєте правою кнопкою та пріоритезуєте будівництво, пішак переносить матеріали й одразу будує, як одну безперервну роботу. Вимкнено = наказ лише доставляє матеріали (як у ваніль); будівництво відбувається через звичайну роботу. Маршрути, сплановані з «Також будувати», в будь-якому разі зберігають власну поведінку.</HaulersDream.Setting.ConstructTetherDesc>
+<HaulersDream.Setting.HaulToSiteOption>Показувати наказ «Пріоритезувати перенесення матеріалів до…»</HaulersDream.Setting.HaulToSiteOption>
+<HaulersDream.Setting.HaulToSiteOptionDesc>Наказ за правим кліком, що поповнює будівельний майданчик матеріалами, доступний навіть до того, як майданчик можна звести. Вимкнено = опція прихована.</HaulersDream.Setting.HaulToSiteOptionDesc>
+<HaulersDream.Setting.PlanRoutes>Увімкнути планувальник маршрутів («Спланувати пріоритетне [завдання]…»)</HaulersDream.Setting.PlanRoutes>
+<HaulersDream.Setting.PlanRoutesDesc>Інструмент планування за правим кліком для маршрутів збору врожаю, видобутку, прибирання, розбирання та будівництва. Вимкнено = опція меню прихована всюди.</HaulersDream.Setting.PlanRoutesDesc>
+<HaulersDream.Setting.PlanCrafting>Увімкнути планувальник виготовлення («Спланувати пріоритетне виготовлення…»)</HaulersDream.Setting.PlanCrafting>
+<HaulersDream.Setting.PlanCraftingDesc>Інструмент планування за правим кліком на верстатах, що групує завдання кілька разів за одну ходку по інгредієнти. Вимкнено = опція меню прихована.</HaulersDream.Setting.PlanCraftingDesc>
+<HaulersDream.Setting.BatchByDefault>Групувати нові завдання за замовчуванням</HaulersDream.Setting.BatchByDefault>
+<HaulersDream.Setting.BatchByDefaultDesc>Завдання виготовлення та готування, які ви ДОДАЄТЕ відтепер, починаються в режимі «партія»: колоніст приносить цілу партію інгредієнтів за одну ходку, виготовляє їх усі за верстатом (їжа не псується, поки він працює), потім переносить усе до складу. Впливає лише на щойно додані завдання — наявні завдання зберігають свою поточну настройку.</HaulersDream.Setting.BatchByDefaultDesc>
+<HaulersDream.Setting.DefaultBatchSize>Розмір партії за замовчуванням: {0}</HaulersDream.Setting.DefaultBatchSize>
+<HaulersDream.Batch.MenuPrefix>Партія</HaulersDream.Batch.MenuPrefix>
+<HaulersDream.Batch.SetSize>Розмір партії: {0}…</HaulersDream.Batch.SetSize>
+<HaulersDream.Batch.RowMarker>×{0} </HaulersDream.Batch.RowMarker>
+<HaulersDream.Batch.SizeDialogTitle>Розмір партії — {0}</HaulersDream.Batch.SizeDialogTitle>
+<HaulersDream.Batch.SizeLabel>Виготовити до {0} за партію</HaulersDream.Batch.SizeLabel>
+<HaulersDream.Batch.SizeDesc>Колоніст збирає інгредієнти для всієї партії за одну ходку, виготовляє їх усі за верстатом (інгредієнти не псуються під час роботи), потім переносить усе до складу. Обмежено наявними матеріалами та власною кількістю завдання.</HaulersDream.Batch.SizeDesc>
+<HaulersDream.Setting.HaulToStackDesc>Вантажники надають перевагу додаванню до наявної неповної стопки замість того, щоб починати нову — у межах складського приміщення, яке гра вже обрала (який склад перемагає, все одно вирішується пріоритетом і відстанню). Працює на землі, на полицях і в модових складських блоках. Для зовнішнього зберігання натомість скануються сусідні склади в межах невеликого радіуса. Цільові клітини також більше не резервуються, тож кілька вантажників можуть доставляти на ту саму клітину одночасно замість того, щоб розкидати один тип речей по десятьох клітинах.</HaulersDream.Setting.HaulToStackDesc>
+<HaulersDream.Setting.AutoStripHeader>Автоматично роздягати труп ПІД ЧАС його перенесення — коли колоніст переносить труп, він роздягає тіло дорогою, і здобич їде в інвентарі вантажника (без окремої роботи з роздягання, без другої ходки):</HaulersDream.Setting.AutoStripHeader>
+<HaulersDream.Setting.AutoStripMode>Автороздягання під час перенесення: {0}</HaulersDream.Setting.AutoStripMode>
+<HaulersDream.Setting.AutoStripAll>при кожному перенесенні трупа (склад, могила, кремація, оброблення)</HaulersDream.Setting.AutoStripAll>
+<HaulersDream.Setting.AutoStripDisposal>лише при перенесеннях для утилізації (могила, саркофаг, кремація, оброблення — не при простих перенесеннях до складу)</HaulersDream.Setting.AutoStripDisposal>
+<HaulersDream.Setting.AutoStripOff>ніколи — не роздягати під час перенесення (ванільна поведінка)</HaulersDream.Setting.AutoStripOff>
+<HaulersDream.Setting.AutoStripCrossRef>«Ніколи» лише вимикає це скорочення роздягання-під-час-перенесення. Воно НЕ припиняє перенесення знятого спорядження: наказ Роздягнути, який ви ставите вручну, все одно виконується як зазвичай, а скинута ним зброя й одяг все одно збираються й переносяться додому — це керується окремим робочим перемикачем «Роздягання — зняте спорядження» (під «Збирати продукти з цих видів робіт» далі нижче).</HaulersDream.Setting.AutoStripCrossRef>
+<HaulersDream.Setting.StripColonists>Також роздягати трупи фракції гравця</HaulersDream.Setting.StripColonists>
+<HaulersDream.Setting.StripColonistsDesc>З вимкненим цим (за замовчуванням) ваші власні загиблі — колоністи та колонійні тварини — зберігають своє спорядження й гідність; обшукуються лише чужинці та вороги.</HaulersDream.Setting.StripColonistsDesc>
+<HaulersDream.Setting.TaintedSmeltable>Зіпсований одяг (плавиться): {0}</HaulersDream.Setting.TaintedSmeltable>
+<HaulersDream.Setting.TaintedNonSmeltable>Зіпсований одяг (не плавиться): {0}</HaulersDream.Setting.TaintedNonSmeltable>
+<HaulersDream.Setting.TaintedTake>взяти його (продати, носити чи переплавити)</HaulersDream.Setting.TaintedTake>
+<HaulersDream.Setting.TaintedLeave>залишити на трупі (кремація спалює його разом із тілом; оброблення скидає його біля верстата, як у ваніль)</HaulersDream.Setting.TaintedLeave>
+<HaulersDream.Setting.TaintedForbid>кинути його й заборонити</HaulersDream.Setting.TaintedForbid>
+<HaulersDream.Setting.TaintedDestroy>знищити його на місці (квестові речі та реліквії натомість беруться, ніколи не знищуються)</HaulersDream.Setting.TaintedDestroy>
+<HaulersDream.Setting.HaulTamedSlaughter>Переносити забиті туші до складу</HaulersDream.Setting.HaulTamedSlaughter>
+<HaulersDream.Setting.HaulTamedSlaughterDesc>Коли колоніст закінчує забій колонійної тварини, свіжа туша переноситься просто до складу (морозильника чи складу трупів), щоб вона не гнила там, де впала — лише якщо досяжне місце зберігання приймає її, інакше вона лишається точно як у ваніль. (Ваніль ніколи не переносить забиту тварину сама; це закриває цю прогалину.)</HaulersDream.Setting.HaulTamedSlaughterDesc>
+<HaulersDream.Setting.HaulWildKills>Переносити впольовані туші до складу</HaulersDream.Setting.HaulWildKills>
+<HaulersDream.Setting.HaulWildKillsDesc>Коли полювання перерване одразу після вбивства — мисливця відтягнула потреба, мобілізація, психічний зрив, або полювання вийшло за час — мисливець оперативно переносить свіжу тушу до складу на виході, замість того щоб залишати її повільній загальній черзі перенесення. При чистому полюванні мисливець уже несе здобич додому (ваніль), тож це лишається осторонь — без подвійного перенесення. Переносить лише якщо досяжне місце зберігання приймає тіло; інакше туша лишається точно як у ваніль (вона ніколи не забороняється, тож звичайне перенесення трупів все одно забере її, щойно з'явиться морозильник чи склад трупів, що її приймає).</HaulersDream.Setting.HaulWildKillsDesc>
+<HaulersDream.Setting.ButcherSpoilingFirst>Обробляти спершу найзіпсованіший труп</HaulersDream.Setting.ButcherSpoilingFirst>
+<HaulersDream.Setting.ButcherSpoilingFirstDesc>Коли колоніст обирає труп для завдання з оброблення, він обирає тіло, найближче до гниття (серед трупів, які завдання вже дозволяє, у межах його радіуса пошуку інгредієнтів) замість просто найближчого — щоб м'ясо було врятоване до того, як зіпсується. Лише змінює порядок того, який уже придатний труп використовується; ніколи не змінює рецепт, радіус пошуку чи те, які трупи завдання приймає. Заморожені трупи лишаються наостанок (вони не псуються). Застосовується і до звичайних завдань з оброблення, і до партій Hauler's Dream. Увімкнено за замовчуванням.</HaulersDream.Setting.ButcherSpoilingFirstDesc>
+<HaulersDream.Setting.CookSpoilingFirst>Готувати спершу з найзіпсованішої їжі</HaulersDream.Setting.CookSpoilingFirst>
+<HaulersDream.Setting.CookSpoilingFirstDesc>Коли колоніст обирає швидкопсувні інгредієнти для завдання з готування (м'ясо, овочі та іншу їжу, що псується — не трупи), він обирає стопку, найближчу до гниття (серед інгредієнтів, які завдання вже дозволяє, у межах його радіуса пошуку інгредієнтів) замість просто найближчої — щоб їжа була з'їдена до того, як зіпсується. Лише змінює порядок того, який уже придатний інгредієнт використовується; ніколи не змінює рецепт, радіус пошуку чи нешвидкопсувні вироби (сталь, тканина тощо не торкаються). Заморожена їжа лишається наостанок. Застосовується і до звичайних завдань з готування, і до партій Hauler's Dream. Увімкнено за замовчуванням.</HaulersDream.Setting.CookSpoilingFirstDesc>
+<HaulersDream.Setting.Overload>Розумне перевантаження: {0}</HaulersDream.Setting.Overload>
+<HaulersDream.Setting.OverloadDesc>Пішаки несуть матеріали понад 100% своєї максимальної ваги, щоб заощадити ходки, але рухаються повільніше, чим більше перевантажуються — і роблять це лише коли менша кількість ходок справді варта сповільнення (зокрема для черг будівельних/ремісничих робіт). Посуньте ліворуч для легшого сповільнення + більших вантажів, праворуч для важчого сповільнення + менших вантажів.</HaulersDream.Setting.OverloadDesc>
+<HaulersDream.Overload.Free>Без сповільнення — нести вільно</HaulersDream.Overload.Free>
+<HaulersDream.Overload.Fair>Помірно (збалансовано)</HaulersDream.Overload.Fair>
+<HaulersDream.Overload.Off>Вимкнено — ніколи не перевантажувати</HaulersDream.Overload.Off>
+<HaulersDream.Overload.Eager>Охоче перевантажувати ({0})</HaulersDream.Overload.Eager>
+<HaulersDream.Overload.Cautious>Обережно ({0})</HaulersDream.Overload.Cautious>
+<HaulersDream.Setting.StrictCarryWeight>Сувора вантажна вага (не перевантажувати)</HaulersDream.Setting.StrictCarryWeight>
+<HaulersDream.Setting.StrictCarryWeightDesc>Коли УВІМКНЕНО, пішаки ніколи не несуть понад 100% своєї максимальної ваги й ніколи не переривають роботу, щоб розвантажитися, коли повні — вони продовжують збирати урожай і лишають надлишок на землі для звичайного перенесення (підбирається дорогою повз). Коли ВИМКНЕНО (за замовчуванням), пішаки перевантажуються за повзунком вище й вирушають розвантажуватися, щойно наповняться.</HaulersDream.Setting.StrictCarryWeightDesc>
+<HaulersDream.Setting.KeepWorkingWhenFull>Продовжувати роботу, коли повний (не відриватися на розвантаження)</HaulersDream.Setting.KeepWorkingWhenFull>
+<HaulersDream.Setting.KeepWorkingWhenFullDesc>За замовчуванням вимкнено. Коли УВІМКНЕНО, пішак, який наповнюється під час видобутку, збору врожаю чи розбирання, НЕ перериває роботу, щоб піти розвантажитися — він продовжує працювати, а будь-які продукти, що вже не вміщаються, лишаються на землі для звичайного перенесення. Він усе одно розвантажується наприкінці робочої ходки, перед прийомами їжі/сном/відпочинком, за інтервалом, і (на відміну від суворої вантажної ваги) усе одно перевантажується понад 100% до стелі розумного перевантаження. Він скидає вантаж посеред ходки, лише коли це окупається — просто перед тим, як піти до ДАЛЕКОЇ наступної робочої цілі (коли склад ближчий за наступне завдання, на величину нижче). Спеціальні роботи з перенесення/завантаження все одно доставляють свій вантаж, коли повні. Незалежне від суворої вантажної ваги: це зберігає поведінку перевантаження-і-накопичення, лише припиняє переривання «повний → іти скинути зараз».</HaulersDream.Setting.KeepWorkingWhenFullDesc>
+<HaulersDream.Setting.KeepWorkingMargin>Розвантажуватися перед переходом, лише якщо він принаймні настільки далі: {0} клітин</HaulersDream.Setting.KeepWorkingMargin>
+<HaulersDream.Setting.KeepWorkingMarginDesc>Гістерезис для правила «продовжувати роботу, коли повний»: повний, перевантажений пішак відхиляється на розвантаження перед своєю наступною робочою ціллю, лише коли ця ціль далі за пункт скидання на складі принаймні на стільки клітин. Більше = пішак продовжує нести свій вантаж у ширшому діапазоні приблизно рівних відстаней (менше відхилень); 0 = він спершу розвантажується щоразу, коли наступна ціль навіть трохи далі за склад.</HaulersDream.Setting.KeepWorkingMarginDesc>
+<HaulersDream.Setting.RouteMaxAmount>Спланувати маршрут — верх повзунка «Кількість»: {0} зупинок</HaulersDream.Setting.RouteMaxAmount>
+<HaulersDream.Setting.RouteCalcHeader>Розрахунок маршруту (за замовчуванням — перевизначте для кожного типу цілі в діалозі маршруту)</HaulersDream.Setting.RouteCalcHeader>
+<HaulersDream.Setting.RouteSelection>Метод вибору: {0}</HaulersDream.Setting.RouteSelection>
+<HaulersDream.Setting.RouteDistance>Основа відстані: {0}</HaulersDream.Setting.RouteDistance>
+<HaulersDream.Setting.RouteOrderEffort>Точно розв'язувати порядок відвідування до: {0} зупинок</HaulersDream.Setting.RouteOrderEffort>
+<HaulersDream.Setting.OpportunisticUnload>Скидати дорогою повз склад</HaulersDream.Setting.OpportunisticUnload>
+<HaulersDream.Setting.OpportunisticUnloadDesc>Коли пішак, що несе зібрані речі, вирушає в довгу ходку до наступної роботи, а склад приблизно на шляху, він скидає вантаж, проходячи повз, замість того щоб нести його через усю карту й робити окрему ходку пізніше.</HaulersDream.Setting.OpportunisticUnloadDesc>
+<HaulersDream.Stat.Overload>Hauler's Dream — перевантажений</HaulersDream.Stat.Overload>
+<HaulersDream.Setting.WorkTypesHeader>Збирати продукти з цих видів робіт:</HaulersDream.Setting.WorkTypesHeader>
+<HaulersDream.Setting.HaulHarvest>Рослини — збір урожаю та зрізання</HaulersDream.Setting.HaulHarvest>
+<HaulersDream.Setting.HaulMining>Видобуток — руда та брили</HaulersDream.Setting.HaulMining>
+<HaulersDream.Setting.HaulDeepDrill>Глибинні бури</HaulersDream.Setting.HaulDeepDrill>
+<HaulersDream.Setting.HaulDeconstruct>Залишки розбирання</HaulersDream.Setting.HaulDeconstruct>
+<HaulersDream.Setting.HaulAnimals>Тварини — доїння та стрижка</HaulersDream.Setting.HaulAnimals>
+<HaulersDream.Setting.HaulUninstall>Демонтаж — мініатюризовані будівлі (каравани/віддалені карти)</HaulersDream.Setting.HaulUninstall>
+<HaulersDream.Setting.HaulStrip>Роздягання — зняте спорядження (переносити спорядження від наказу Роздягнути)</HaulersDream.Setting.HaulStrip>
+<HaulersDream.Setting.HaulStripDesc>Коли колоніст роздягає в'язня, знесиленого пішака чи труп (наказ Роздягнути, який ВИ ставите вручну), зняті зброя, спорядження й одяг збираються в його інвентар одразу після роздягання й переносяться додому за одну ходку. Це перемикач, що керує перенесенням знятого спорядження — він незалежний від «Автороздягання під час перенесення» вище: те лише роздягає труп, поки його ПЕРЕНОСЯТЬ (здобич в інвентар); ЦЕ переносить спорядження, яке ручний наказ Роздягнути скидає на землю. Тож ви можете задати автороздяганню-під-час-перенесення значення «ніколи» й усе одно мати, щоб накази роздягнути, віддані вручну, збирали й переносили їхнє спорядження, доки це увімкнено. Зіпсований одяг із трупа дотримується виборів зіпсованого одягу в розділі автороздягання (частини «залишити на трупі» лишаються на землі, незібрані). Для живої цілі додаткове роздягання ставиться в чергу наприкінці робіт того, хто роздягає, на випадок якщо ціль знову одягнеться із залишків; воно нічого не робить, якщо ціль лишилася голою.</HaulersDream.Setting.HaulStripDesc>
+<HaulersDream.Setting.HaulStripCrossRef>Незалежне від «Автороздягання під час перенесення» вгорі: те роздягає труп під час його перенесення (здобич в інвентар); це переносить спорядження, яке скидає ручний наказ Роздягнути.</HaulersDream.Setting.HaulStripCrossRef>
+<HaulersDream.Setting.WorkOverrideHeader>Перевизначення нездатності до роботи (вимкнено = ваніль):</HaulersDream.Setting.WorkOverrideHeader>
+<HaulersDream.Setting.AllCanHaul>Усі пішаки можуть переносити</HaulersDream.Setting.AllCanHaul>
+<HaulersDream.Setting.AllCanHaulDesc>Жодна передісторія, риса, ген, королівський титул, ідеологічна роль, стан здоров'я чи квестове обмеження не можуть зробити пішака нездатним переносити. Застосовується до вкладки роботи, пріоритезації за правим кліком, автоматичної роботи та планувальників цього мода. (Призначте пріоритет роботи після ввімкнення — щойно здатні пішаки починають непризначеними, як і будь-яка інша робота.)</HaulersDream.Setting.AllCanHaulDesc>
+<HaulersDream.Setting.AllCanClean>Усі пішаки можуть прибирати</HaulersDream.Setting.AllCanClean>
+<HaulersDream.Setting.AllCanCleanDesc>Жодна нездатність не може зробити пішака неспроможним прибирати. Застосовується до вкладки роботи, пріоритезації за правим кліком, автоматичної роботи та планувальників цього мода (зокрема «Спланувати пріоритетне прибирання»). (Призначте пріоритет роботи після ввімкнення — щойно здатні пішаки починають непризначеними.)</HaulersDream.Setting.AllCanCleanDesc>
+<HaulersDream.Setting.AllCanCutPlants>Усі пішаки можуть зрізати рослини</HaulersDream.Setting.AllCanCutPlants>
+<HaulersDream.Setting.AllCanCutPlantsDesc>Жодна нездатність не може зробити пішака неспроможним зрізати рослини. Вмикається лише робота Зрізання рослин — сівба (Вирощування) лишається керованою справжніми здібностями пішака.</HaulersDream.Setting.AllCanCutPlantsDesc>
+<HaulersDream.Setting.PauseWhileDrafted>Призупинити під час мобілізації</HaulersDream.Setting.PauseWhileDrafted>
+<HaulersDream.Setting.AllowMechanoids>Дозволити механоїдам збирати й переносити</HaulersDream.Setting.AllowMechanoids>
+<HaulersDream.AllowMechanoidsDesc>Керує тим, чи використовують ваші робочі механоїди збирання й масове перенесення Hauler's Dream — несучи продукти й здобич у своєму інвентарі так само, як колоністи. Це охоплює збирання речей, які мех виробляє у своїй роботі: зібраний/зрізаний урожай, видобуту руду й брили та залишки розбирання (матеріали, звільнені, коли мех зносить структуру). Це НЕ змінює самі ванільні роботи механоїдів: робочий мех усе одно видобуває, збирає й розбирає сам — перемикач лише вирішує, чи ЗБИРАТИМЕ він також результати у свій інвентар для об'єднаного перенесення. Те, як мех ДОСТАВЛЯЄ матеріали на будівельний майданчик, — окреме питання, кероване налаштуванням «Нести матеріали в інвентарі для великих одиночних будівництв» вище (яке застосовується до будь-якого будівельника, меха чи колоніста); цей перемикач сам по собі не змінює доставку для будівництва. Коли УВІМКНЕНО, робочий мех гравця також може нести понад 100% вантажопідйомності за налаштуванням розумного перевантаження й сповільнюється ним так само, як колоніст.</HaulersDream.AllowMechanoidsDesc>
+<HaulersDream.AllowAnimals>Дозволити колонійним тваринам збирати й переносити</HaulersDream.AllowAnimals>
+<HaulersDream.AllowAnimalsDesc>За замовчуванням вимкнено. Коли УВІМКНЕНО, колонійні тварини, навчені Перенесенню, несуть кілька стопок за раз — підбираючи сміття поблизу у свій інвентар і виконуючи масове перенесення Hauler's Dream замість однієї стопки за ходку. Це сягає лише тварин, яких МОЖНА навчити Перенесенню: з просунутою здатністю до навчання та достатньо великим тілом (хаскі, лабрадори, слони, ведмеді, трумбо тощо). Тварини, яких не можна навчити Перенесенню — кіт-домогосподар і подібні — узагалі ніколи не виконують роботу з перенесення (це правда незалежно від цього налаштування), тож на них цей перемикач не впливає. Торкаються лише ваших власних колонійних тварин; дикі та ворожі тварини ніколи не зачіпаються.</HaulersDream.AllowAnimalsDesc>
+<HaulersDream.Setting.AllowIncapable>Дозволити пішакам, нездатним переносити, збирати власні продукти</HaulersDream.Setting.AllowIncapable>
+<HaulersDream.Setting.EnableOnNonHomeMaps>Також працювати на караванних / нерідних картах</HaulersDream.Setting.EnableOnNonHomeMaps>
+<HaulersDream.Setting.HideGizmo>Сховати кнопку «Розвантажити інвентар» для кожного пішака</HaulersDream.Setting.HideGizmo>
+<HaulersDream.Setting.UnloadGrace>Вікно накопичення: продовжувати підбирати ще {0} тіків (~60/сек) після останнього підбирання, перш ніж робити ходку для розвантаження. Більше = пішаки перевантажуються більше й роблять менше, але більших ходок; вони все одно розвантажуються негайно, щойно повні (стеля перевантаження).</HaulersDream.Setting.UnloadGrace>
+<HaulersDream.Setting.IntervalUnload>Розвантаження за інтервалом: кожні {0} ігрових годин</HaulersDream.Setting.IntervalUnload>
+<HaulersDream.Setting.IntervalUnloadOff>Розвантаження за інтервалом: вимкнено (лише кінець робочої ходки / прийоми їжі та відпочинок / перевантаження / вручну)</HaulersDream.Setting.IntervalUnloadOff>
+<HaulersDream.Setting.AlertCannotUnload>Попереджати (червоним сповіщенням), коли пішак не може розвантажити свій інвентар</HaulersDream.Setting.AlertCannotUnload>
+<HaulersDream.Setting.AlertCannotUnloadDesc>Показує критичне сповіщення у стилі «Пожежа!» у правому нижньому куті, коли один або кілька пішаків несуть зібрані речі, які вони не можуть відкласти — або ніщо на карті не може зберегти їх (немає складу / зони скидання / досяжної клітини), або вони несуть речі надто довго без розвантаження (склад недосяжний, або інший мод постійно скасовує роботу з перенесення/розвантаження). Одне сповіщення охоплює всіх уражених пішаків; наведіть на нього, щоб спрямувати на них стрілки, клікніть, щоб гортати їх. Це ваша гарантія, що інвентарі ніколи мовчки не стають «чорними дірами».</HaulersDream.Setting.AlertCannotUnloadDesc>
+<HaulersDream.Setting.AlertStuckHours>...позначати пішака після того, як він несе нерозвантажені речі {0} ігрових годин</HaulersDream.Setting.AlertStuckHours>
+<HaulersDream.Setting.VerboseLogging>Докладне ведення журналу для налагодження</HaulersDream.Setting.VerboseLogging>
+<HaulersDream.Gizmo.UnloadNow>Розвантажити інвентар</HaulersDream.Gizmo.UnloadNow>
+<HaulersDream.Gizmo.UnloadNowDesc>Змусити цього пішака перенести все, що він зібрав, до найближчого придатного складу.</HaulersDream.Gizmo.UnloadNowDesc>
+<HaulersDream.Gizmo.UnloadNowDrafted>Мобілізований: демобілізуйте цього пішака, щоб розвантажити.</HaulersDream.Gizmo.UnloadNowDrafted>
+<HaulersDream.Gizmo.AutoHaul>Автозбирання продуктів</HaulersDream.Gizmo.AutoHaul>
+<HaulersDream.Gizmo.AutoHaulDesc>Коли увімкнено, цей пішак автоматично збирає власні продукти роботи й підмітає сміття поблизу у свій інвентар під час роботи. Вимкніть, щоб припинити автозбирання цим пішаком — він усе одно відкладе все, що вже несе.</HaulersDream.Gizmo.AutoHaulDesc>
+<HaulersDream.Alert.CannotUnload>Не вдається розвантажити інвентар ({0})</HaulersDream.Alert.CannotUnload>
+<HaulersDream.Alert.CannotUnloadDesc.NoStorage>Ці пішаки несуть зібрані речі, які нема куди подіти — жоден склад чи зона скидання на карті не приймає їх, і не знайдено досяжного місця. Додайте склад (Склад для скидання приймає кам'яні брили й більшість сміття) або дозвольте їхній тип речей на наявному:\n\n{0}\n\nДоти речі лишаються в їхньому інвентарі. Клікніть це сповіщення, щоб гортати пішаків; наведіть, щоб вказати на них.</HaulersDream.Alert.CannotUnloadDesc.NoStorage>
+<HaulersDream.Alert.CannotUnloadDesc.Stuck>Ці пішаки несуть зібрані речі вже довго, не розвантажуючи їх. Склад може бути недосяжним звідти, де вони є, або інший мод може раз за разом скасовувати їхню роботу з перенесення/розвантаження:\n\n{0}\n\nПеревірте, чи є досяжний, дозволений склад, і чи немає мода, що перериває їхні роботи. Клікніть це сповіщення, щоб гортати пішаків; наведіть, щоб вказати на них.</HaulersDream.Alert.CannotUnloadDesc.Stuck>
+<HaulersDream.PlanRoute.Option>Спланувати пріоритетне {0}…</HaulersDream.PlanRoute.Option>
+<HaulersDream.PlanRoute.ConstructGerund>будівництво</HaulersDream.PlanRoute.ConstructGerund>
+<HaulersDream.PlanRoute.MiningGerundFallback>видобуток</HaulersDream.PlanRoute.MiningGerundFallback>
+<HaulersDream.PlanRoute.Title>Спланувати маршрут: {0}</HaulersDream.PlanRoute.Title>
+<HaulersDream.PlanRoute.ModeChained>Ланцюгом — кілька найближчих</HaulersDream.PlanRoute.ModeChained>
+<HaulersDream.PlanRoute.ModeChainedDesc>Прокласти маршрут через обрану кількість найближчих цілей того ж виду, починаючи від тієї, на яку ви клікнули.</HaulersDream.PlanRoute.ModeChainedDesc>
+<HaulersDream.PlanRoute.ModeVein>Дотичні — уся жила</HaulersDream.PlanRoute.ModeVein>
+<HaulersDream.PlanRoute.ModeVeinDesc>Прокласти маршрут через суцільне скупчення дотичних цілей того ж виду (рудна жила, грядка рослин) назовні від тієї, на яку ви клікнули, до обраної кількості.</HaulersDream.PlanRoute.ModeVeinDesc>
+<HaulersDream.PlanRoute.ModeRadius>У радіусі</HaulersDream.PlanRoute.ModeRadius>
+<HaulersDream.PlanRoute.ModeRadiusDesc>Прокласти маршрут через кожну ціль того ж виду в межах обраного радіуса від тієї, на яку ви клікнули.</HaulersDream.PlanRoute.ModeRadiusDesc>
+<HaulersDream.PlanRoute.ModeRooms>Усередині кімнат(и)</HaulersDream.PlanRoute.ModeRooms>
+<HaulersDream.PlanRoute.ModeRoomsDesc>Прокласти маршрут через кожну ціль того ж виду всередині обраних кімнат. Кімната, що містить ціль, на яку ви клікнули, завжди включена; оберіть більше кімнат нижче. Зауважте: відкритий простір надворі рахується як одна велика ділянка, обмежена лімітом Кількості.</HaulersDream.PlanRoute.ModeRoomsDesc>
+<HaulersDream.PlanRoute.ModeZone>Уся зона вирощування</HaulersDream.PlanRoute.ModeZone>
+<HaulersDream.PlanRoute.ModeZoneDesc>Прокласти маршрут через кожну ціль того ж виду всередині зони вирощування, у якій стоїть клікнута рослина — обробити все поле з одного кліку. Для збору врожаю все одно застосовуються поріг стиглості та поріг росту.</HaulersDream.PlanRoute.ModeZoneDesc>
+<HaulersDream.PlanRoute.PickRooms>Обрати кімнати…</HaulersDream.PlanRoute.PickRooms>
+<HaulersDream.PlanRoute.PickRoomsStop>Готово (клікніть усередині кімнати, щоб додати її)</HaulersDream.PlanRoute.PickRoomsStop>
+<HaulersDream.PlanRoute.RoomsHeader>Кімнати: {0}</HaulersDream.PlanRoute.RoomsHeader>
+<HaulersDream.PlanRoute.RoomGone>(кімнати більше не існує)</HaulersDream.PlanRoute.RoomGone>
+<HaulersDream.PlanRoute.RadiusLabel>Радіус: {0} клітин</HaulersDream.PlanRoute.RadiusLabel>
+<HaulersDream.PlanRoute.Amount>Кількість: {0}</HaulersDream.PlanRoute.Amount>
+<HaulersDream.PlanRoute.VeinAll>Усі</HaulersDream.PlanRoute.VeinAll>
+<HaulersDream.PlanRoute.MaxTravel>Макс. шлях: {0}</HaulersDream.PlanRoute.MaxTravel>
+<HaulersDream.PlanRoute.MaxTravelNoLimit>без обмеження</HaulersDream.PlanRoute.MaxTravelNoLimit>
+<HaulersDream.PlanRoute.Smart>Розумна маршрутизація (повертатися до складу)</HaulersDream.PlanRoute.Smart>
+<HaulersDream.PlanRoute.SmartDesc>Упорядкувати зупинки так, щоб уся ходка — збір цілей і повернення до складу, якому належать речі — була якомога коротшою, завершуючи маршрут поряд із тим складом. З вимкненим цим зупинки впорядковуються лише за найкоротшим шляхом збору.</HaulersDream.PlanRoute.SmartDesc>
+<HaulersDream.PlanRoute.AllowHarvest>Дозволити збирати непозначені рослини</HaulersDream.PlanRoute.AllowHarvest>
+<HaulersDream.PlanRoute.AllowHarvestDesc>Також втягувати рослини того ж виду поблизу в маршрут, навіть якщо ви ще не позначили їх для збору — доки вони досягли принаймні порога росту нижче. Дозволяє зібрати цілу достатньо стиглу грядку з одного кліку. З вимкненим цим маршрут охоплює лише рослини, уже позначені для збору.</HaulersDream.PlanRoute.AllowHarvestDesc>
+<HaulersDream.PlanRoute.GrowthThreshold>Поріг росту: {0}%</HaulersDream.PlanRoute.GrowthThreshold>
+<HaulersDream.PlanRoute.PickStart>Обрати обов'язкові цілі…</HaulersDream.PlanRoute.PickStart>
+<HaulersDream.PlanRoute.PickStop>Готово (клікніть карту, щоб додати)</HaulersDream.PlanRoute.PickStop>
+<HaulersDream.PlanRoute.PickHeader>Обов'язково включити: {0}</HaulersDream.PlanRoute.PickHeader>
+<HaulersDream.PlanRoute.PickRoleHint>Позначте ціль як П (початок) чи К (кінець), щоб закріпити, де маршрут починається або закінчується — інакше кожна розміщується там, де найкоротше.</HaulersDream.PlanRoute.PickRoleHint>
+<HaulersDream.PlanRoute.PickStartBtn>П</HaulersDream.PlanRoute.PickStartBtn>
+<HaulersDream.PlanRoute.PickEndBtn>К</HaulersDream.PlanRoute.PickEndBtn>
+<HaulersDream.PlanRoute.PickStartBadge>(початок)</HaulersDream.PlanRoute.PickStartBadge>
+<HaulersDream.PlanRoute.PickEndBadge>(кінець)</HaulersDream.PlanRoute.PickEndBadge>
+<HaulersDream.PlanRoute.PickStartTip>Зробити це ПОЧАТКОМ маршруту — першою зупинкою, яку відвідує пішак. Клікніть ще раз, щоб скинути.</HaulersDream.PlanRoute.PickStartTip>
+<HaulersDream.PlanRoute.PickEndTip>Зробити це КІНЦЕМ маршруту — останньою зупинкою, просто перед поверненням до складу. Клікніть ще раз, щоб скинути.</HaulersDream.PlanRoute.PickEndTip>
+<HaulersDream.PlanRoute.Selection>Вибір: {0}</HaulersDream.PlanRoute.Selection>
+<HaulersDream.PlanRoute.DistanceBasis>Відстань: {0}</HaulersDream.PlanRoute.DistanceBasis>
+<HaulersDream.PlanRoute.SelMostStops>Найбільше зупинок на шлях</HaulersDream.PlanRoute.SelMostStops>
+<HaulersDream.PlanRoute.SelNearest>Найближчі до клікнутої цілі</HaulersDream.PlanRoute.SelNearest>
+<HaulersDream.PlanRoute.DistStraight>По прямій</HaulersDream.PlanRoute.DistStraight>
+<HaulersDream.PlanRoute.DistWalking>Реальний пішохідний шлях</HaulersDream.PlanRoute.DistWalking>
+<HaulersDream.PlanRoute.FogCaution>Обережно: можливо, не всі речі жили видимі. У міру того, як ви видобуваєте й відкриваєте більше, маршрут розширюється, щоб охопити і їх.</HaulersDream.PlanRoute.FogCaution>
+<HaulersDream.PlanRoute.Estimate>Орієнтовний час: ~{0} годин ({1} зупинок, ~{2} клітин збору)</HaulersDream.PlanRoute.Estimate>
+<HaulersDream.PlanRoute.Cells>{0} клітин</HaulersDream.PlanRoute.Cells>
+<HaulersDream.PlanRoute.EstimateLimited>— обрізано до ліміту шляху</HaulersDream.PlanRoute.EstimateLimited>
+<HaulersDream.PlanRoute.EstimateUnreachable>— деякі цілі недосяжні</HaulersDream.PlanRoute.EstimateUnreachable>
+<HaulersDream.PlanRoute.EstimateNone>Немає досяжних зупинок для цього маршруту.</HaulersDream.PlanRoute.EstimateNone>
+<HaulersDream.PlanRoute.Append>Додати</HaulersDream.PlanRoute.Append>
+<HaulersDream.PlanRoute.Replace>Замінити</HaulersDream.PlanRoute.Replace>
+<HaulersDream.PlanRoute.Cancel>Скасувати</HaulersDream.PlanRoute.Cancel>
+<HaulersDream.PlanRoute.NoTargets>Немає цілей поблизу для маршруту.</HaulersDream.PlanRoute.NoTargets>
+<HaulersDream.PlanRoute.WaitingForMaterials>Маршрут задано — креслення будуть зведені, коли стануть доступні матеріали.</HaulersDream.PlanRoute.WaitingForMaterials>
+<HaulersDream.PlanRoute.NoMaterials>(матеріали недоступні)</HaulersDream.PlanRoute.NoMaterials>
+<HaulersDream.PlanRoute.Planned>Сплановано маршрут із {0} зупинок.</HaulersDream.PlanRoute.Planned>
+<HaulersDream.PlanRoute.Capped>Сплановано маршрут із {0} зупинок (обмежено для ефективності).</HaulersDream.PlanRoute.Capped>
+<HaulersDream.PlanRoute.DistanceLimited>Сплановано маршрут із {0} зупинок (обрізано до ліміту шляху).</HaulersDream.PlanRoute.DistanceLimited>
+<HaulersDream.PlanRoute.Partial>Сплановано маршрут із {0} зупинок ({1} поблизу не вдалося досягти).</HaulersDream.PlanRoute.Partial>
+<HaulersDream.PlanCraft.Option>Спланувати пріоритетне виготовлення…</HaulersDream.PlanCraft.Option>
+<HaulersDream.PlanCraft.Title>Спланувати виготовлення: {0}</HaulersDream.PlanCraft.Title>
+<HaulersDream.PlanCraft.NoBills>Немає завдань, які можна згрупувати. Додайте виробниче завдання (готування, наркотики, прості деталі — не завдання, що потребують незавершеної речі), щоб спланувати партію.</HaulersDream.PlanCraft.NoBills>
+<HaulersDream.PlanCraft.Repeat>Повторити: {0} разів</HaulersDream.PlanCraft.Repeat>
+<HaulersDream.PlanCraft.Timeout>Час очікування: {0} год</HaulersDream.PlanCraft.Timeout>
+<HaulersDream.PlanCraft.TimeoutOff>Час очікування: немає</HaulersDream.PlanCraft.TimeoutOff>
+<HaulersDream.PlanCraft.Resolved>Виготовить {0}× за один раз.</HaulersDream.PlanCraft.Resolved>
+<HaulersDream.PlanCraft.ResolvedTrimmed>Виготовить {0}× за один раз — {1}.</HaulersDream.PlanCraft.ResolvedTrimmed>
+<HaulersDream.PlanCraft.LimitResources>обмежено наявними інгредієнтами</HaulersDream.PlanCraft.LimitResources>
+<HaulersDream.PlanCraft.LimitMass>обмежено тим, скільки пішак може нести</HaulersDream.PlanCraft.LimitMass>
+<HaulersDream.PlanCraft.LimitTimeout>обмежено часом очікування</HaulersDream.PlanCraft.LimitTimeout>
+<HaulersDream.PlanCraft.LimitBillRepeat>обмежено залишковою кількістю завдання</HaulersDream.PlanCraft.LimitBillRepeat>
+<HaulersDream.PlanCraft.Ingredients>Приносить: {0}</HaulersDream.PlanCraft.Ingredients>
+<HaulersDream.PlanCraft.IngredientsMixed>Приносить суміш інгредієнтів (обираних на кожне виготовлення, найшвидшепсувні першими, коли ввімкнено).</HaulersDream.PlanCraft.IngredientsMixed>
+<HaulersDream.PlanCraft.EstTime>Час виготовлення: ~{0} год (плюс ходка по інгредієнти; продукти переносяться до найкращого складу після цього)</HaulersDream.PlanCraft.EstTime>
+<HaulersDream.PlanCraft.Infeasible>Не можна згрупувати це в партію: {0}</HaulersDream.PlanCraft.Infeasible>
+<HaulersDream.PlanCraft.Confirm>Пріоритезувати</HaulersDream.PlanCraft.Confirm>
+<HaulersDream.PlanCraft.Cancel>Скасувати</HaulersDream.PlanCraft.Cancel>
+<HaulersDream.PlanCraft.Started>Виготовлення партії {0}× {1}.</HaulersDream.PlanCraft.Started>
+<HaulersDream.PlanCraft.CouldNotStart>Не вдалося розпочати партію (верстат може бути зайнятий).</HaulersDream.PlanCraft.CouldNotStart>
+<HaulersDream.PlanCraft.JobReport>виготовляє {0} (партія {1}/{2}).</HaulersDream.PlanCraft.JobReport>
+<HaulersDream.PlanCraft.BlockUnsupported>цей рецепт не можна згрупувати в партію</HaulersDream.PlanCraft.BlockUnsupported>
+<HaulersDream.PlanCraft.BlockNoIngredient>немає доступного інгредієнта для {0}</HaulersDream.PlanCraft.BlockNoIngredient>
+<HaulersDream.PlanCraft.BlockNoReps>недостатньо ресурсів навіть на один прохід</HaulersDream.PlanCraft.BlockNoReps>
+<HaulersDream.PlanCraft.BlockBillNotActive>завдання призупинено або вже виконано</HaulersDream.PlanCraft.BlockBillNotActive>
+<HaulersDream.HaulToSite.Option>Пріоритезувати перенесення матеріалів до {0}</HaulersDream.HaulToSite.Option>
+<HaulersDream.HaulToSite.CouldNotStart>Зараз немає досяжних матеріалів для перенесення.</HaulersDream.HaulToSite.CouldNotStart>
+<HaulersDream.HaulNearby.Option>Перенести все поблизу</HaulersDream.HaulNearby.Option>
+<HaulersDream.HaulNearby.CouldNotStart>Зараз нема чого переносити поблизу.</HaulersDream.HaulNearby.CouldNotStart>
+<HaulersDream.PickUp.Option>Підібрати {0}</HaulersDream.PickUp.Option>
+<HaulersDream.PickUp.CouldNotStart>{0} не може підібрати {1} — уже несе стільки, скільки може, і це нема куди перенести.</HaulersDream.PickUp.CouldNotStart>
+<HaulersDream.PlanRoute.AlsoBuild>Також будувати (переносити + зводити кожну зупинку)</HaulersDream.PlanRoute.AlsoBuild>
+<HaulersDream.PlanRoute.AlsoBuildDesc>З увімкненим цим пішак доставляє матеріали на майданчик і ЗВОДИТЬ його перед переходом до наступного — збираючи матеріали для всього маршруту наперед і тримаючи їх в інвентарі. З вимкненим цим пішак лише наповнює майданчики матеріалами (інші можуть будувати). У будь-якому разі майданчики лишаються відкритими для інших пішаків, тож кілька можуть постачати ту саму ходку паралельно; той, хто прибуде другим, просто зберігає свій надлишок для наступної зупинки або розвантажує його наприкінці.</HaulersDream.PlanRoute.AlsoBuildDesc>
+<HaulersDream.Setting.CraftBatchTimeout>Час очікування партії виготовлення за замовчуванням: {0} год</HaulersDream.Setting.CraftBatchTimeout>
+<HaulersDream.Setting.CraftBatchTimeoutOff>Час очікування партії виготовлення за замовчуванням: немає</HaulersDream.Setting.CraftBatchTimeoutOff>
+<HaulersDream.Setting.InventoryCraftDeliver>Нести інгредієнти для виготовлення в інвентарі (менше ходок)</HaulersDream.Setting.InventoryCraftDeliver>
+<HaulersDream.Setting.InventoryCraftDeliverDesc>Коли пішак починає завдання з виготовлення, що потребує інгредієнтів із двох або більше окремих стопок, він спершу збирає їх УСІ у свій інвентар за одне підмітання — перевантажуючись за потреби, приймаючи сповільнення (якщо не ввімкнено сувору вантажну вагу) — іде до верстата один раз і виготовляє з перенесеного запасу. Працює для кожного рецепта, зокрема тих, що спершу будують незавершену річ (одяг, зброя, скульптури). Саме виготовлення на 100% ванільне, тож ніщо не може бути продубльоване чи втрачене. Якщо інший мод керує перенесенням інгредієнтів для виготовлення, Hauler's Dream автоматично відступає (натомість збирає їх), тож будь-який цикл виготовлення вирішується сам. Потребує «перенесені інгредієнти враховуються для виготовлення» вище.</HaulersDream.Setting.InventoryCraftDeliverDesc>
+<HaulersDream.PrepGather.Report>збирає інгредієнти для виготовлення.</HaulersDream.PrepGather.Report>
+<HaulersDream.BulkHaul.Report>переносить усе, що поруч.</HaulersDream.BulkHaul.Report>
+<HaulersDream.JobReport.DefaultDestination>склад</HaulersDream.JobReport.DefaultDestination>
+<HaulersDream.JobReport.EnRoute.Load>{ORIGINAL} (дорогою до {DESTINATION})</HaulersDream.JobReport.EnRoute.Load>
+<HaulersDream.JobReport.EnRoute.Unload>{ORIGINAL} (дорогою до {DESTINATION})</HaulersDream.JobReport.EnRoute.Unload>
+<HaulersDream.JobReport.CloserTo.Load>{ORIGINAL} (ближче до {DESTINATION})</HaulersDream.JobReport.CloserTo.Load>
+<HaulersDream.JobReport.CloserTo.Unload>{ORIGINAL} (ближче до {DESTINATION})</HaulersDream.JobReport.CloserTo.Unload>
+<HaulersDream.JobReport.Efficient.Load>Ефективно переносить {ORIGINAL}</HaulersDream.JobReport.Efficient.Load>
+<HaulersDream.JobReport.Efficient.Unload>Ефективно переносить {ORIGINAL}</HaulersDream.JobReport.Efficient.Unload>
+<HaulersDream.LoadPackAnimal.Report>навантажує речі на в'ючну тварину.</HaulersDream.LoadPackAnimal.Report>
+<HaulersDream.LoadPackAnimal.BulkOption>Навантажити речі поблизу на в'ючну тварину (масово)</HaulersDream.LoadPackAnimal.BulkOption>
+<HaulersDream.LoadPackAnimal.CouldNotStart>Зараз поблизу немає чого навантажити на в'ючну тварину.</HaulersDream.LoadPackAnimal.CouldNotStart>
+<HaulersDream.LoadPackAnimal.NoCarrier>Поблизу немає придатної в'ючної тварини з вільним місцем.</HaulersDream.LoadPackAnimal.NoCarrier>
+<HaulersDream.UnloadCarrier.Report>розвантажує {0}.</HaulersDream.UnloadCarrier.Report>
+<HaulersDream.UnloadCarrier.Option>Пріоритезувати масове розвантаження {0}</HaulersDream.UnloadCarrier.Option>
+<HaulersDream.UnloadCarrier.CouldNotStart>Зараз не вдалося розпочати масове розвантаження тієї в'ючної тварини.</HaulersDream.UnloadCarrier.CouldNotStart>
+<HaulersDream.Setting.LoadPackAnimalBulk>Масовий наказ «навантажити на в'ючну тварину»</HaulersDream.Setting.LoadPackAnimalBulk>
+<HaulersDream.Setting.LoadPackAnimalBulkDesc>На караванній/віддаленій карті додає наказ за правим кліком «Навантажити речі поблизу на в'ючну тварину (масово)»: один колоніст підмітає кілька сусідніх стопок у свій інвентар і навантажує їх на в'ючну тварину за одну ходку, замість того щоб нести по одній стопці за раз. Ванільне «Навантажити на в'ючну тварину» для однієї речі все одно працює поруч.</HaulersDream.Setting.LoadPackAnimalBulkDesc>
+<HaulersDream.Setting.AutoDivertToPackAnimal>Перевантажувати на в'ючних тварин (каравани)</HaulersDream.Setting.AutoDivertToPackAnimal>
+<HaulersDream.Setting.AutoDivertToPackAnimalDesc>На караванній/віддаленій карті пішаки перевантажують свою зібрану здобич на найближчу власну в'ючну тварину так само, як розвантажували б на склад удома — коли їхня робоча ходка завершується, перед тим як відпочивати/їсти/розважатися, на періодичному резерві та негайно при перевантаженні (щоб лишатися рухливими). З вимкненим цим здобич просто їде додому у власних інвентарях пішаків (або використовуйте ручний наказ масового навантаження / Переформувати караван). Усе це також потребує ввімкненого автоматичного розвантаження (а перевантаження-при-перевантаженні вимкнено в режимі суворої вантажної ваги).</HaulersDream.Setting.AutoDivertToPackAnimalDesc>
+<HaulersDream.Setting.EnableBulkUnloadCarriers>Масово розвантажувати в'ючних тварин за один візит</HaulersDream.Setting.EnableBulkUnloadCarriers>
+<HaulersDream.Setting.EnableBulkUnloadCarriersDesc>Коли в'ючну тварину задано на «розвантажити», вантажник підходить до неї ОДИН раз і витягує з неї багато стопок у власний рюкзак (потім переносить їх до складу як зазвичай), замість ванільного однієї-стопки-за-прохід. Остання/надлишкова стопка йде в руки вантажника й переноситься прямо. З вимкненим цим використовується ванільне розвантаження по одній стопці без змін.</HaulersDream.Setting.EnableBulkUnloadCarriersDesc>
+<HaulersDream.Setting.MinFreeSpaceToUnloadCarrier>Мінімальне вільне місце в рюкзаку для старту: {0}</HaulersDream.Setting.MinFreeSpaceToUnloadCarrier>
+<HaulersDream.Setting.ReserveCarrierOnUnload>Резервувати в'ючну тварину під час розвантаження</HaulersDream.Setting.ReserveCarrierOnUnload>
+<HaulersDream.Setting.ReserveCarrierOnUnloadDesc>Закріпити в'ючну тварину виключно на час розвантаження. Вимкнено (за замовчуванням) дозволяє прив'язуванню, формуванню каравану чи другому вантажникові перервати його — розвантаження чисто поступається, коли інший пішак закріплює тварину.</HaulersDream.Setting.ReserveCarrierOnUnloadDesc>
+<HaulersDream.Setting.VisualUnloadDelay>Затримка розвантаження на стопку: {0} тіків</HaulersDream.Setting.VisualUnloadDelay>
+<HaulersDream.LoadTransporter.Report>масово завантажує транспорт.</HaulersDream.LoadTransporter.Report>
+<HaulersDream.LoadTransporter.Option>Пріоритезувати масове завантаження {0}</HaulersDream.LoadTransporter.Option>
+<HaulersDream.LoadTransporter.CouldNotStart>Зараз поблизу немає чого масово завантажити в той транспорт.</HaulersDream.LoadTransporter.CouldNotStart>
+<HaulersDream.Setting.EnableBulkLoadTransporters>Масово завантажувати транспорт і шатли за одну ходку</HaulersDream.Setting.EnableBulkLoadTransporters>
+<HaulersDream.Setting.EnableBulkLoadTransportersDesc>Коли транспортну капсулу чи шатл задано на завантаження, вантажник закріплює частину його маніфесту, підмітає кілька сусідніх стопок у свій інвентар, підходить до транспорту ОДИН раз і складає їх усі — замість ванільного однієї-стопки-в-руках за прохід. Кілька вантажників ділять великий маніфест без подвійного перенесення, а капсула не сяде й не запуститься, доки закріплений вантаж не всередині. З вимкненим цим використовується ванільне завантаження транспорту по одній стопці без змін.</HaulersDream.Setting.EnableBulkLoadTransportersDesc>
+<HaulersDream.Setting.BulkLoadAiUpdateFrequency>Інтервал переперевірки завантаження: {0} тіків</HaulersDream.Setting.BulkLoadAiUpdateFrequency>
+<HaulersDream.LoadPortal.Report>масово завантажує портал.</HaulersDream.LoadPortal.Report>
+<HaulersDream.LoadPortal.Option>Пріоритезувати масове завантаження {0}</HaulersDream.LoadPortal.Option>
+<HaulersDream.LoadPortal.CouldNotStart>Зараз поблизу немає чого масово завантажити в той портал.</HaulersDream.LoadPortal.CouldNotStart>
+<HaulersDream.Setting.EnableBulkLoadPortal>Масово завантажувати портали карти за одну ходку</HaulersDream.Setting.EnableBulkLoadPortal>
+<HaulersDream.Setting.EnableBulkLoadPortalDesc>Коли портал карти (провалля, вихід із печери чи сховища, портал «увійти на карту») задано на завантаження, вантажник закріплює частину його маніфесту, підмітає кілька сусідніх стопок у свій інвентар, підходить до порталу ОДИН раз і складає їх усі — замість ванільного однієї-стопки-в-руках за прохід. Складені речі телепортуються на іншу карту. Кілька вантажників ділять великий маніфест без подвійного перенесення. З вимкненим цим використовується ванільне завантаження порталу по одній стопці без змін.</HaulersDream.Setting.EnableBulkLoadPortalDesc>
+<HaulersDream.LoadVehicle.Report>масово завантажує транспортний засіб.</HaulersDream.LoadVehicle.Report>
+<HaulersDream.LoadVehicle.Option>Пріоритезувати масове завантаження {0}</HaulersDream.LoadVehicle.Option>
+<HaulersDream.LoadVehicle.CouldNotStart>Зараз поблизу немає чого масово завантажити в той транспортний засіб.</HaulersDream.LoadVehicle.CouldNotStart>
+<HaulersDream.Setting.EnableVehicleFramework>Інтеграція з транспортними засобами</HaulersDream.Setting.EnableVehicleFramework>
+<HaulersDream.Setting.EnableVehicleFrameworkDesc>Головний перемикач функцій транспортних засобів Hauler's Dream: масове завантаження вантажу транспортного засобу за одну ходку (нижче) та навантаження речей на транспортний засіб (замість в'ючної тварини) подієво-коректним способом, щоб маніфест завантаження транспортного засобу лишався синхронним. Вимкнення цього вимикає лише ці функції — воно НЕ вимикає виправлення безпеки, що не дають масовому розвантаженню Hauler's Dream втручатися у власний інтерфейс вантажу транспортного засобу, і НЕ вимикає їжу-з чи будівництво-з вантажу припаркованого транспортного засобу (вони дотримуються перемикачів «Їжа на колесах» та «Будувати з інвентарю» вище). Без установленого мода транспортних засобів це не має жодного ефекту. Увімкнено за замовчуванням.</HaulersDream.Setting.EnableVehicleFrameworkDesc>
+<HaulersDream.Setting.EnableBulkLoadVehicles>Масово завантажувати транспортні засоби за одну ходку</HaulersDream.Setting.EnableBulkLoadVehicles>
+<HaulersDream.Setting.EnableBulkLoadVehiclesDesc>Коли транспортний засіб (наземний чи повітряний) задано на завантаження вантажу, вантажник закріплює частину його маніфесту, підмітає кілька сусідніх стопок у свій інвентар, підходить до транспортного засобу ОДИН раз і складає їх усі — замість звичного однієї-стопки-в-руках за прохід. Кілька вантажників ділять великий маніфест без подвійного перенесення, поважаючи вантажопідйомність транспортного засобу. З вимкненим цим використовується завантаження транспортного засобу по одній стопці без змін. Потребує «Інтеграцію з транспортними засобами» вище.</HaulersDream.Setting.EnableBulkLoadVehiclesDesc>
+<HaulersDream.BulkRefuel.Report>масово заправляє.</HaulersDream.BulkRefuel.Report>
+<HaulersDream.BulkRefuel.Option>Пріоритезувати масове заправлення {0}</HaulersDream.BulkRefuel.Option>
+<HaulersDream.BulkRefuel.CouldNotStart>Зараз поблизу немає чим масово заправити це.</HaulersDream.BulkRefuel.CouldNotStart>
+<HaulersDream.Setting.EnableBulkRefuel>Масово заправляти за одну ходку</HaulersDream.Setting.EnableBulkRefuel>
+<HaulersDream.Setting.EnableBulkRefuelDesc>Коли щось потребує палива (хімпаливо шатла, глибинний бур, генератор — будь-що, що заправляється), вантажник підмітає достатньо палива поблизу у свій інвентар, підходить до нього ОДИН раз і наповнює за одну ходку — замість ванільного однієї-стопки-в-руках за прохід. Спрацьовує лише коли потрібно більше однієї стопки палива (більше однієї ванільної ходки); заправлення однією стопкою лишається ваніль. Клікніть правою кнопкою на заправлюваному для «Пріоритезувати масове заправлення», або дозвольте цьому виконуватися як звичайна робота із заправлення. З вимкненим цим використовується ванільне заправлення по одній стопці без змін. Увімкнено за замовчуванням.</HaulersDream.Setting.EnableBulkRefuelDesc>
+<HaulersDream.Setting.SkipHaulWhileBleeding>Не починати перенесення при сильній кровотечі</HaulersDream.Setting.SkipHaulWhileBleeding>
+<HaulersDream.Setting.SkipHaulWhileBleedingDesc>Коли пішак кровоточить (вище крихітного порога), він не ПОЧИНАТИМЕ нове збирання чи масове підмітання — його слід лікувати, а не відволікати на прибирання. Це лише блокує ПОЧАТОК перенесення: пішак, що вже несе зібрані речі, все одно розвантажує їх як зазвичай, тож ніщо ніколи не залишається покинутим. Увімкнено за замовчуванням.</HaulersDream.Setting.SkipHaulWhileBleedingDesc>
+<HaulersDream.Setting.ClosestDestUnloadOrder>Спершу розвантажувати найближчий пункт призначення</HaulersDream.Setting.ClosestDestUnloadOrder>
+<HaulersDream.Setting.ClosestDestUnloadOrderDesc>Коли пішак робить ходку для розвантаження, несучи кілька різних речей, він спершу відвідує найближчий складський пункт призначення й випорожнює все, що туди призначено, перш ніж переходити до наступного — менше петляння по базі. Вимкнено використовує попередній порядок (за категорією речей). Увімкнено за замовчуванням.</HaulersDream.Setting.ClosestDestUnloadOrderDesc>
+<HaulersDream.Setting.EnRoutePickup>Хапати розкидані речі, що по дорозі до роботи</HaulersDream.Setting.EnRoutePickup>
+<HaulersDream.Setting.EnRoutePickupDesc>Коли пішак от-от вирушить на роботу, а розкидана річ, яку можна перенести, лежить приблизно по дорозі, він спершу хапає її у свій інвентар — тож заблукала річ їде до складу під час ходки, яку пішак робив би так чи інакше, без зайвої ходки туди-назад. Річ підбирається як відстежуване перенесення Hauler's Dream й відкладається звичайним розвантаженням, тож вона ніколи не втрачається, навіть якщо автоматичне розвантаження вимкнено. Спрацьовує лише коли підсумкова ходка лишається близькою до прямого маршруту, ніколи не перекриває ванільне опортуністичне перенесення, поважає перемикач «Автозбирання продуктів» кожного пішака й відступає, коли пішак натомість скидав би свій вантаж. Увімкнено за замовчуванням; воно змінює, як пішаки рухаються, тож перемикання набуває чинності наступного разу, коли пішак обирає роботу.</HaulersDream.Setting.EnRoutePickupDesc>
+<HaulersDream.Setting.EnRoutePathChecker>Перевірка «по дорозі»: {0}</HaulersDream.Setting.EnRoutePathChecker>
+<HaulersDream.Setting.EnRoutePathCheckerDesc>Наскільки ретельно кандидат-річ підтверджується як «по дорозі» після дешевого тесту на відстань. Дешева (за замовчуванням) лише рахує регіони карти, тож вона швидка, але відстань відхилення може коливатися. Пошук шляху (рання зупинка) та Пошук шляху (ретельний) проходять реальний шлях для точності — «рання зупинка» припиняє сканування, щойно кандидат випадає за межі діапазону (швидше), «ретельний» перевіряє кожного решту кандидата (найповільніше, знаходить перенесення, якщо воно існує, наприклад у звивистій гірській базі). Якщо встановлено мод точності пошуку шляху, два режими пошуку шляху автоматично успадковують його точність.</HaulersDream.Setting.EnRoutePathCheckerDesc>
+<HaulersDream.Setting.EnRoutePathVanilla>Дешева (підрахунок регіонів)</HaulersDream.Setting.EnRoutePathVanilla>
+<HaulersDream.Setting.EnRoutePathDefault>Пошук шляху (рання зупинка)</HaulersDream.Setting.EnRoutePathDefault>
+<HaulersDream.Setting.EnRoutePathPathfinding>Пошук шляху (ретельний)</HaulersDream.Setting.EnRoutePathPathfinding>
+<HaulersDream.Setting.StorageRouting>Переміщувати припаси ближче, перш ніж нести їх до роботи</HaulersDream.Setting.StorageRouting>
+<HaulersDream.Setting.StorageRoutingDesc>Функція «перенести перед тим, як нести». Перш ніж пішак понесе ресурс на будівельний майданчик чи до ремісничого верстата, він спершу переміщує найбільшу сусідню стопку того матеріалу до складу БЛИЖЧЕ до місця використання — тож ця й кожна пізніша ходка буде коротшою. Спрацьовує лише коли ближчий склад справді ближчий до роботи, ніж поточне місце стопки, ніколи не переміщує стопку, яку інший пішак уже переносить, і поважає перемикач «Автозбирання продуктів» кожного пішака. Переміщення — це звичайне перенесення, тож матеріал ніколи не втрачається. Увімкнено за замовчуванням; воно змінює, як пішаки рухаються, тож перемикання набуває чинності наступного разу, коли пішак береться за таку роботу.</HaulersDream.Setting.StorageRoutingDesc>
+<HaulersDream.Setting.RouteSupplies>Переміщувати будівельні припаси ближче до майданчика</HaulersDream.Setting.RouteSupplies>
+<HaulersDream.Setting.RouteSuppliesDesc>Застосувати переміщення-перед-носінням до доставок будівельних матеріалів. (Не діє, поки ввімкнено «нести будівельний матеріал в інвентарі» — ця функція вже скорочує ходки власним способом.)</HaulersDream.Setting.RouteSuppliesDesc>
+<HaulersDream.Setting.RouteIngredients>Переміщувати інгредієнти для виготовлення ближче до верстата</HaulersDream.Setting.RouteIngredients>
+<HaulersDream.Setting.RouteIngredientsDesc>Застосувати переміщення-перед-носінням до інгредієнтів завдань виготовлення. (Не діє, поки ввімкнено «зібрати інгредієнти завдання за одне підмітання» — ця функція вже скорочує ходки власним способом.)</HaulersDream.Setting.RouteIngredientsDesc>
+<HaulersDream.Setting.RouteToEqualPriority>Дозволити переміщення у склад рівного пріоритету</HaulersDream.Setting.RouteToEqualPriority>
+<HaulersDream.Setting.RouteToEqualPriorityDesc>Також переміщувати стопку у склад ТОГО Ж пріоритету, коли він ближчий до роботи (не лише у склад вищого пріоритету). Увімкнено за замовчуванням — вимкнення цього обмежує переміщення лише до пунктів призначення строго вищого пріоритету.</HaulersDream.Setting.RouteToEqualPriorityDesc>
+<HaulersDream.Setting.RouteToStockpiles>Дозволити переміщення у звичайні зони складів</HaulersDream.Setting.RouteToStockpiles>
+<HaulersDream.Setting.RouteToStockpilesDesc>Дозволити звичайним зонам складів (не лише складським будівлям на кшталт полиць) бути пунктами переміщення. Увімкнено за замовчуванням — вимкнення цього переміщує лише у складські будівлі.</HaulersDream.Setting.RouteToStockpilesDesc>
+<HaulersDream.Setting.StorageFilters>Фільтрувати, які складські будівлі може використовувати перенесення</HaulersDream.Setting.StorageFilters>
+<HaulersDream.Setting.StorageFiltersDesc>Коли ввімкнено, ви можете обмежити, які складські БУДІВЛІ (полиці та модові складські блоки — ніколи звичайні зони складів) вантажникам дозволено використовувати для опортуністичних і маршрутизаційних перенесень, для кожної будівлі чи кожного мода. Пішак, що вже несе вантаж, ЗАВЖДИ може розвантажитися, тож ніщо ніколи не залишається покинутим. Увімкнено за замовчуванням, з кураторськими стандартами нижче — задайте власні правила для кожної будівлі чи кожного мода.</HaulersDream.Setting.StorageFiltersDesc>
+<HaulersDream.Setting.StorageFilterUseDefaults>Використовувати кураторські стандартні правила</HaulersDream.Setting.StorageFilterUseDefaults>
+<HaulersDream.Setting.StorageFilterUseDefaultsDesc>Застосувати розумні стандарти для кожної ситуації: опортуністичні збирання можуть використовувати будь-який склад (крім повільного набору нижче); перенесення, відхилене до кращого складу перед носінням, цілиться лише на відомі моди контейнерів. Ваші явні вибори для кожної будівлі / кожного мода завжди перевизначають їх. Вимкнено = лише ваші явні вибори щось обмежують.</HaulersDream.Setting.StorageFilterUseDefaultsDesc>
+<HaulersDream.Setting.StorageFilterDenyLwm>Пропускати повільний склад для опортуністичних перенесень</HaulersDream.Setting.StorageFilterDenyLwm>
+<HaulersDream.Setting.StorageFilterDenyLwmDesc>Деякі щільні/глибокі склади мають затримку складання, тож зупинка там посеред ходки не зовсім «по дорозі». Коли ввімкнено, опортуністичні перенесення та перенесення-перед-носінням уникають такого складу (навмисна ходка для розвантаження все одно може використати його — ваш вантаж ніколи не залишається покинутим).</HaulersDream.Setting.StorageFilterDenyLwmDesc>
+<HaulersDream.Setting.StorageFilterButton>Редагувати правила складських будівель…</HaulersDream.Setting.StorageFilterButton>
+<HaulersDream.StorageFilter.Title>Правила складських будівель</HaulersDream.StorageFilter.Title>
+<HaulersDream.StorageFilter.Desc>Задайте, чи можуть вантажники використовувати кожну складську будівлю, для кожної будівлі чи кожного мода. Дозволити вмикає її, Заборонити вимикає її, а За замовчуванням дозволяє кураторським правилам вирішувати. Вибір для будівлі перевизначає вибір її мода; явне Заборонити перевизначає Дозволити. Звичайні зони складів завжди дозволені.</HaulersDream.StorageFilter.Desc>
+<HaulersDream.StorageFilter.ResetAll>Скинути до стандартів</HaulersDream.StorageFilter.ResetAll>
+<HaulersDream.StorageFilter.StateDefault>За замовчуванням</HaulersDream.StorageFilter.StateDefault>
+<HaulersDream.StorageFilter.StateAllow>Дозволити</HaulersDream.StorageFilter.StateAllow>
+<HaulersDream.StorageFilter.StateDeny>Заборонити</HaulersDream.StorageFilter.StateDeny>
+<HaulersDream.Setting.CleanupOnSave>Прибирати роботи масового завантаження при збереженні</HaulersDream.Setting.CleanupOnSave>
+<HaulersDream.Setting.CleanupOnSaveDesc>Коли гра зберігається, поки пішак посеред масового завантаження, Hauler's Dream повертає того пішака до бездіяльності для збереження, щоб файл збереження не посилався на власні типи робіт Hauler's Dream — а отже ви зможете видалити мод пізніше без помилки у збереженні. Пішак зберігає будь-які підмітені речі й розвантажує їх як зазвичай після цього. Увімкнено за замовчуванням; вимкніть, якщо ви ніколи не плануєте видаляти мод.</HaulersDream.Setting.CleanupOnSaveDesc>
+<HaulersDream.Setting.SoftlockDrop>Звільняти застряглий вантаж від застряглих пішаків</HaulersDream.Setting.SoftlockDrop>
+<HaulersDream.Setting.SoftlockDropDesc>Якщо пішак більше не може переносити, несучи речі, які підібрав Hauler's Dream — його роботу Перенесення вимкнено, або механоїд бездіяльний / самовимкнений — перенесені речі скидаються поблизу для звичайного перенесення, замість того щоб бути назавжди застряглими в тому пішакові. Механоїд, що от-от піде на ЗАРЯДКУ, спершу доставляє свої перенесені речі до складу (або скидає їх поблизу, якщо їх нема куди подіти), щоб вони не псувалися й не займали місце для перенесення, поки він сидить на зарядці. Торкається лише власних підібраних речей Hauler's Dream. Увімкнено за замовчуванням (запобіжна сітка).</HaulersDream.Setting.SoftlockDropDesc>
+<HaulersDream.Setting.OpportunisticLoad>Складати перенесений вантаж у транспорт дорогою</HaulersDream.Setting.OpportunisticLoad>
+<HaulersDream.Setting.OpportunisticLoadDesc>Пішак, що вже несе речі, на які чекає сусідня транспортна капсула, шатл, портал карти чи транспортний засіб, відхилиться, щоб скинути їх, замість того щоб починати геть нову ходку по них. Менше марних походів. За замовчуванням вимкнено (воно змінює, яке завдання пішак бере наступним).</HaulersDream.Setting.OpportunisticLoadDesc>
+<HaulersDream.Setting.LoadOpportunityRadius>Радіус пошуку для складання-дорогою: {0} клітин</HaulersDream.Setting.LoadOpportunityRadius>
+<HaulersDream.Setting.ContinuousLoading>Наказ «Завантажувати до завершення» за правим кліком</HaulersDream.Setting.ContinuousLoading>
+<HaulersDream.Setting.ContinuousLoadingDesc>Додає наказ за правим кліком, що відправляє одного кур'єра (навіть мобілізованого) через кожну сусідню транспортну групу, що ще потребує завантаження, зчіплюючи роботи, доки всі вони не будуть повні — зручно для завантаження великого каравану однією командою. За замовчуванням вимкнено (зручність за бажанням).</HaulersDream.Setting.ContinuousLoadingDesc>
+<HaulersDream.ContinuousLoad.Option>Завантажувати до завершення (безперервно) — {0}</HaulersDream.ContinuousLoad.Option>
+<HaulersDream.ContinuousLoad.CouldNotStart>Зараз поблизу немає чого масово завантажити в це.</HaulersDream.ContinuousLoad.CouldNotStart>
+<HaulersDream.Setting.LoadHybridPathing>Упорядковувати зупинки масового завантаження реальним пошуком шляху</HaulersDream.Setting.LoadHybridPathing>
+<HaulersDream.Setting.LoadHybridPathingDesc>Коли підмітається кілька стопок до транспорту, обирати порядок ходьби реальним пошуком шляху для кількох найближчих кандидатів замість відстані по прямій — трохи кращі маршрути на захаращених картах, ціною деякого додаткового пошуку шляху. За замовчуванням вимкнено; порядок по прямій уже дає коректні завантаження з невеликою кількістю ходок.</HaulersDream.Setting.LoadHybridPathingDesc>
+<HaulersDream.Setting.LoadPathfindingCandidates>Кандидатів пошуку шляху на зупинку: {0}</HaulersDream.Setting.LoadPathfindingCandidates>
+<HaulersDream.Setting.AutoOpenTransporterContents>Автовідкривати вкладку Вміст для обраних транспортів</HaulersDream.Setting.AutoOpenTransporterContents>
+<HaulersDream.Setting.AutoOpenTransporterContentsDesc>Коли ви обираєте одну транспортну капсулу чи шатл, автоматично відкривати її вкладку Вміст, щоб ви бачили, що вона завантажує. За замовчуванням вимкнено (воно змінює, яка вкладка відкрита, коли ви клікаєте об'єкти).</HaulersDream.Setting.AutoOpenTransporterContentsDesc>
+<HaulersDream.Setting.AutoOpenCarrierGear>Автовідкривати вкладку Спорядження для обраних носіїв</HaulersDream.Setting.AutoOpenCarrierGear>
+<HaulersDream.Setting.AutoOpenCarrierGearDesc>Коли ви обираєте в'ючну тварину чи іншого носія, автоматично відкривати його вкладку Спорядження, щоб бачити, що він несе. За замовчуванням вимкнено.</HaulersDream.Setting.AutoOpenCarrierGearDesc>
+<HaulersDream.Setting.EnableStorageNetworkBulkLoad>Масово завантажувати зі Storage Network (експериментально)</HaulersDream.Setting.EnableStorageNetworkBulkLoad>
+<HaulersDream.Setting.EnableStorageNetworkBulkLoadDesc>Коли встановлено мод Storage Network, дозволити масовому завантаженню підмітати речі, що зберігаються в його мережевих серверах, щоб транспорт, капсула, портал чи транспортний засіб були наповнені за одну ходку замість однієї стопки за раз. Речі витягуються через придатний, досяжний термінал і матеріалізуються Storage Network на вимогу. За замовчуванням вимкнено: це експериментально й залежить від поведінки Storage Network. Без цього мережеві речі все одно завантажуються звичайним способом (одна стопка за ходку).</HaulersDream.Setting.EnableStorageNetworkBulkLoadDesc>
+<HaulersDream.Setting.ResetToDefaults>Скинути до стандартів</HaulersDream.Setting.ResetToDefaults>
+<HaulersDream.Setting.ResetToDefaultsConfirm>Скинути всі налаштування Hauler's Dream до стандартних? Ваші правила розвантаження окремих речей, налаштування маршрутів і фільтр складів також будуть очищені. Це не можна скасувати.</HaulersDream.Setting.ResetToDefaultsConfirm>
+<HaulersDream.Cat.Features>Функції</HaulersDream.Cat.Features>
+<HaulersDream.Cat.Features.Help>Вмикайте чи вимикайте цілі сімейства функцій. Hauler's Dream виконує роботу багатьох окремих модів — вимкніть будь-які, якими ви воліли б не користуватися. Детальні опції для кожного сімейства живуть на інших сторінках.</HaulersDream.Cat.Features.Help>
+<HaulersDream.Cat.Features.Intro>Кожна картка нижче вмикає чи вимикає ціле сімейство функцій. Тонке налаштування кожного живе на власній сторінці у списку ліворуч.</HaulersDream.Cat.Features.Intro>
+<HaulersDream.Cat.Hauling>Перенесення</HaulersDream.Cat.Hauling>
+<HaulersDream.Cat.Hauling.Help>Як колоністи підбирають речі: ліміт перенесення, розумне перевантаження, масове підмітання всієї ділянки за одну ходку та прибирання розкиданих речей під час роботи.</HaulersDream.Cat.Hauling.Help>
+<HaulersDream.Cat.Unloading>Розвантаження</HaulersDream.Cat.Unloading>
+<HaulersDream.Cat.Unloading.Help>Коли і як перенесені речі відкладаються: автоматичні ходки розвантаження, розвантаження перед перервами, поводження з надлишком, порядок скидання та правила для окремих речей.</HaulersDream.Cat.Unloading.Help>
+<HaulersDream.Cat.BuildCraft>Будівництво та виготовлення</HaulersDream.Cat.BuildCraft>
+<HaulersDream.Cat.BuildCraft.Help>Брання матеріалів з інвентарю для будівництва та завдань виготовлення, плюс доставка їжі між пішаками та вибір інгредієнтів за псуванням.</HaulersDream.Cat.BuildCraft.Help>
+<HaulersDream.Cat.BulkLoading>Масове завантаження</HaulersDream.Cat.BulkLoading>
+<HaulersDream.Cat.BulkLoading.Help>Завантаження й розвантаження в'ючних тварин, транспортних капсул, шатлів, порталів карти, заправлюваних і транспортних засобів за одну ходку.</HaulersDream.Cat.BulkLoading.Help>
+<HaulersDream.Cat.Routing>Маршрутизація та склади</HaulersDream.Cat.Routing>
+<HaulersDream.Cat.Routing.Help>Хапання речей, що приблизно по дорозі, переміщення припасів ближче до місця використання та фільтрування, які склади може використовувати перенесення.</HaulersDream.Cat.Routing.Help>
+<HaulersDream.Cat.Yields>Робота та продукти</HaulersDream.Cat.Yields>
+<HaulersDream.Cat.Yields.Help>Які продукти роботи збираються, перенесення туш до складу після вбивства та зняття спорядження з трупів під час перенесення.</HaulersDream.Cat.Yields.Help>
+<HaulersDream.Cat.Who>Хто працює</HaulersDream.Cat.Who>
+<HaulersDream.Cat.Who.Help>До яких пішаків застосовується Hauler's Dream — мехи, тварини, мобілізовані, колоністи поза картою — плюс перевизначення, що дозволяють будь-якому пішакові переносити, прибирати чи зрізати рослини.</HaulersDream.Cat.Who.Help>
+<HaulersDream.Cat.Planners>Планувальники</HaulersDream.Cat.Planners>
+<HaulersDream.Cat.Planners.Help>Планувальник маршрутів за правим кліком і станційний планувальник виготовлення, та їхні стандарти.</HaulersDream.Cat.Planners.Help>
+<HaulersDream.Cat.Advanced>Додатково</HaulersDream.Cat.Advanced>
+<HaulersDream.Cat.Advanced.Help>Час розвантаження, запобіжне сповіщення про застряглий вантаж, прибирання при збереженні та діагностика для розробників.</HaulersDream.Cat.Advanced.Help>
+<HaulersDream.Cat.Migration>Перехід</HaulersDream.Cat.Migration>
+<HaulersDream.Cat.Migration.Help>Показано, бо у вас усе ще активний один чи більше модів, які Hauler's Dream замінює (зокрема перекладені чи «Continued» версії). Запуск їх одночасно з Hauler's Dream змушує їх битися за ті самі роботи з перенесення — що може виглядати як зламане підбирання. Виконайте кроки, щоб видалити їх чисто.</HaulersDream.Cat.Migration.Help>
+<HaulersDream.Migration.DetectedHead>Замінені моди досі активні</HaulersDream.Migration.DetectedHead>
+<HaulersDream.Migration.Intro>Hauler's Dream — це єдина заміна модів нижче, які у вас усе ще ввімкнені. Запуск їх поряд із Hauler's Dream змушує їх змагатися за ті самі роботи з перенесення, тож підбирання може виглядати зламаним чи нестабільним. Видаліть їх чистими кроками нижче.</HaulersDream.Migration.Intro>
+<HaulersDream.Migration.DisableButton>Вимкнути їх за мене</HaulersDream.Migration.DisableButton>
+<HaulersDream.Migration.DisableButton.Help>Вимикає кожен замінений мод, наведений вище, і перезапускає RimWorld. Зміна списку модів набуває чинності лише після перезапуску, тож це те саме, що робить меню Моди. Збережіть гру (й ідеально мобілізуйте своїх колоністів — див. кроки) перед використанням.</HaulersDream.Migration.DisableButton.Help>
+<HaulersDream.Migration.DisableTitle>Вимкнути замінені моди?</HaulersDream.Migration.DisableTitle>
+<HaulersDream.Migration.DisableConfirm>Це вимкне {0} й ПЕРЕЗАПУСТИТЬ RimWorld просто зараз.\n\nПереконайтеся, що ви СПЕРШУ ЗБЕРЕГЛИ гру — й ідеально мобілізували своїх колоністів (див. кроки на цій вкладці), щоб нічого не зламалося, коли старі моди видаляються посеред завдання.\n\nПерезапустити зараз?</HaulersDream.Migration.DisableConfirm>
+<HaulersDream.Migration.StepsHead>Для чистого переходу</HaulersDream.Migration.StepsHead>
+<HaulersDream.Migration.Step1>1.  Відкрийте збереження й МОБІЛІЗУЙТЕ всіх своїх колоністів, потім збережіть гру. Мобілізація скасовує їхні поточні роботи, що уникає багів, які інші моди можуть викинути, коли їх видаляють посеред завдання.</HaulersDream.Migration.Step1>
+<HaulersDream.Migration.Step2>2.  Вимкніть усі моди, наведені вище — використайте кнопку «Вимкнути їх за мене», або вийдіть у головне меню й вимкніть їх у меню Моди самі.</HaulersDream.Migration.Step2>
+<HaulersDream.Migration.Step3>3.  Після перезапуску гри завантажте збереження знову, потім збережіть його ще раз — видалені моди тепер повністю поза грою.</HaulersDream.Migration.Step3>
+<HaulersDream.Migration.Step4>4.  Переконайтеся, що Hauler's Dream увімкнено, демобілізуйте своїх колоністів і продовжуйте.</HaulersDream.Migration.Step4>
+<HaulersDream.Advanced.DevHint>Діагностика для розробників з'являється тут, коли ввімкнено режим розробника.</HaulersDream.Advanced.DevHint>
+<HaulersDream.FeatGroup.Core>Основне</HaulersDream.FeatGroup.Core>
+<HaulersDream.FeatGroup.Loading>Завантаження та носії</HaulersDream.FeatGroup.Loading>
+<HaulersDream.FeatGroup.BuildCraft>Будівництво та виготовлення</HaulersDream.FeatGroup.BuildCraft>
+<HaulersDream.FeatGroup.Planning>Інструменти планування</HaulersDream.FeatGroup.Planning>
+<HaulersDream.FeatGroup.Wyu>Опортуністичне перенесення</HaulersDream.FeatGroup.Wyu>
+<HaulersDream.Feat.Master.Name>Увімкнути Hauler's Dream</HaulersDream.Feat.Master.Name>
+<HaulersDream.Feat.Master.Blurb>Головний перемикач для всієї автоматичної поведінки</HaulersDream.Feat.Master.Blurb>
+<HaulersDream.Feat.AutoUnload.Name>Автоматичне розвантаження</HaulersDream.Feat.AutoUnload.Name>
+<HaulersDream.Feat.AutoUnload.Blurb>Пішаки роблять власні ходки розвантаження. Вимкнено = розвантаження лише через кнопку для кожного пішака.</HaulersDream.Feat.AutoUnload.Blurb>
+<HaulersDream.Feat.BulkHaul.Name>Масове перенесення</HaulersDream.Feat.BulkHaul.Name>
+<HaulersDream.Feat.BulkHaul.Blurb>Підмітати багато речей поблизу в інвентар за одну ходку</HaulersDream.Feat.BulkHaul.Blurb>
+<HaulersDream.Feat.Sweep.Name>Прибирати під час роботи</HaulersDream.Feat.Sweep.Name>
+<HaulersDream.Feat.Sweep.Blurb>Також хапати розкидані речі біля робочого місця</HaulersDream.Feat.Sweep.Blurb>
+<HaulersDream.Feat.UnloadCarriers.Name>Масово розвантажувати в'ючних тварин</HaulersDream.Feat.UnloadCarriers.Name>
+<HaulersDream.Feat.UnloadCarriers.Blurb>Випорожнити носія в рюкзак за один візит</HaulersDream.Feat.UnloadCarriers.Blurb>
+<HaulersDream.Feat.LoadTransporters.Name>Завантажувати транспорт і шатли</HaulersDream.Feat.LoadTransporters.Name>
+<HaulersDream.Feat.LoadTransporters.Blurb>Наповнювати капсули й шатли за одну ходку</HaulersDream.Feat.LoadTransporters.Blurb>
+<HaulersDream.Feat.LoadPortal.Name>Завантажувати портали карти</HaulersDream.Feat.LoadPortal.Name>
+<HaulersDream.Feat.LoadPortal.Blurb>Масово завантажувати провалля та виходи з печер</HaulersDream.Feat.LoadPortal.Blurb>
+<HaulersDream.Feat.Refuel.Name>Масове заправлення</HaulersDream.Feat.Refuel.Name>
+<HaulersDream.Feat.Refuel.Blurb>Поповнити заправлюване за одну ходку</HaulersDream.Feat.Refuel.Blurb>
+<HaulersDream.Feat.Vehicles.Name>Вантаж транспортних засобів</HaulersDream.Feat.Vehicles.Name>
+<HaulersDream.Feat.Vehicles.Blurb>Масово завантажувати вантаж транспортного засобу (потребує мод транспортних засобів)</HaulersDream.Feat.Vehicles.Blurb>
+<HaulersDream.Feat.BuildFromInv.Name>Будувати з інвентарю</HaulersDream.Feat.BuildFromInv.Name>
+<HaulersDream.Feat.BuildFromInv.Blurb>Будувати з перенесених і караванних матеріалів</HaulersDream.Feat.BuildFromInv.Blurb>
+<HaulersDream.Feat.CraftFromInv.Name>Виготовляти з перенесених матеріалів</HaulersDream.Feat.CraftFromInv.Name>
+<HaulersDream.Feat.CraftFromInv.Blurb>Завдання можуть використовувати інгредієнти, які пішаки вже несуть</HaulersDream.Feat.CraftFromInv.Blurb>
+<HaulersDream.Feat.ConstructDeliver.Name>Нести матеріали для великих будівництв</HaulersDream.Feat.ConstructDeliver.Name>
+<HaulersDream.Feat.ConstructDeliver.Blurb>Менше ходок до великих чи скупчених будівництв</HaulersDream.Feat.ConstructDeliver.Blurb>
+<HaulersDream.Feat.Meals.Name>Їжа на колесах</HaulersDream.Feat.Meals.Name>
+<HaulersDream.Feat.Meals.Blurb>Голодний пішак їсть їжу, яку несе інший пішак</HaulersDream.Feat.Meals.Blurb>
+<HaulersDream.Feat.PlanRoutes.Name>Планувальник маршрутів</HaulersDream.Feat.PlanRoutes.Name>
+<HaulersDream.Feat.PlanRoutes.Blurb>Інструмент за правим кліком для планування маршруту перенесення/роботи</HaulersDream.Feat.PlanRoutes.Blurb>
+<HaulersDream.Feat.PlanCrafting.Name>Планувальник виготовлення</HaulersDream.Feat.PlanCrafting.Name>
+<HaulersDream.Feat.PlanCrafting.Blurb>Згрупувати завдання верстата багато разів за один раз</HaulersDream.Feat.PlanCrafting.Blurb>
+<HaulersDream.Feat.EnRoute.Name>Підбирання по дорозі</HaulersDream.Feat.EnRoute.Name>
+<HaulersDream.Feat.EnRoute.Blurb>Хапати розкидані речі, що лежать по дорозі до роботи</HaulersDream.Feat.EnRoute.Blurb>
+<HaulersDream.Feat.StorageRouting.Name>Маршрутизація з урахуванням споживача</HaulersDream.Feat.StorageRouting.Name>
+<HaulersDream.Feat.StorageRouting.Blurb>Переміщувати припаси до складу ближче до місця використання</HaulersDream.Feat.StorageRouting.Blurb>
+<HaulersDream.Feat.StorageFilters.Name>Фільтри складів</HaulersDream.Feat.StorageFilters.Name>
+<HaulersDream.Feat.StorageFilters.Blurb>Обмежувати, які складські будівлі може використовувати перенесення</HaulersDream.Feat.StorageFilters.Blurb>
+<HaulersDream.Head.BulkHaul>Масове перенесення</HaulersDream.Head.BulkHaul>
+<HaulersDream.Head.WhileWorking>Під час роботи</HaulersDream.Head.WhileWorking>
+<HaulersDream.Head.Construction>Будівництво</HaulersDream.Head.Construction>
+<HaulersDream.Head.Crafting>Виготовлення</HaulersDream.Head.Crafting>
+<HaulersDream.Head.Food>Їжа</HaulersDream.Head.Food>
+<HaulersDream.Head.PackAnimals>В'ючні тварини</HaulersDream.Head.PackAnimals>
+<HaulersDream.Head.Transporters>Транспорт, портали та заправлення</HaulersDream.Head.Transporters>
+<HaulersDream.Head.Vehicles>Транспортні засоби</HaulersDream.Head.Vehicles>
+<HaulersDream.Head.AdvancedLoading>Розширене завантаження</HaulersDream.Head.AdvancedLoading>
+<HaulersDream.Head.StorageRouting>Маршрутизація складів з урахуванням споживача</HaulersDream.Head.StorageRouting>
+<HaulersDream.Head.StorageFilters>Фільтри складських будівель</HaulersDream.Head.StorageFilters>
+<HaulersDream.Head.AfterKill>Після вбивства</HaulersDream.Head.AfterKill>
+<HaulersDream.Head.Stripping>Роздягання</HaulersDream.Head.Stripping>
+<HaulersDream.Head.Batches>Партії виготовлення</HaulersDream.Head.Batches>
+<HaulersDream.Head.RoutePlanning>Планування маршруту</HaulersDream.Head.RoutePlanning>
+<HaulersDream.Head.UnloadTiming>Час розвантаження</HaulersDream.Head.UnloadTiming>
+<HaulersDream.Head.SafetyNet>Запобіжна сітка</HaulersDream.Head.SafetyNet>
+<HaulersDream.Head.Developer>Розробник</HaulersDream.Head.Developer>
+<HaulersDream.Profile.Default>За замовчуванням (профіль, вбудований)</HaulersDream.Profile.Default>
+<HaulersDream.Profile.Custom>Власний (незбережений)</HaulersDream.Profile.Custom>
+<HaulersDream.Profile.Named>{0} (профіль)</HaulersDream.Profile.Named>
+<HaulersDream.Profile.NamedDirty>{0} (профіль, незбережені зміни)</HaulersDream.Profile.NamedDirty>
+<HaulersDream.Profile.SaveChanges>Зберегти зміни до «{0}»</HaulersDream.Profile.SaveChanges>
+<HaulersDream.Profile.CreateNew>Створити новий профіль…</HaulersDream.Profile.CreateNew>
+<HaulersDream.Profile.SaveAsNew>Зберегти як новий профіль…</HaulersDream.Profile.SaveAsNew>
+<HaulersDream.Profile.Delete>Видалити профіль «{0}»</HaulersDream.Profile.Delete>
+<HaulersDream.Profile.DeleteConfirm>Видалити профіль «{0}»? Ваші поточні налаштування лишаться такими, як є.</HaulersDream.Profile.DeleteConfirm>
+<HaulersDream.Profile.NameDialogTitle>Назва профілю:</HaulersDream.Profile.NameDialogTitle>
+<HaulersDream.Profile.SelectorTip>Профілі налаштувань. Оберіть збережений профіль, скиньте до вбудованого За замовчуванням або збережіть свої поточні налаштування як новий профіль. «Власний (незбережений)» означає, що ви змінили налаштування, які ще не збережені в жодному профілі.</HaulersDream.Profile.SelectorTip>
+<HaulersDream.Profile.Copy>Копіювати профіль…</HaulersDream.Profile.Copy>
+<HaulersDream.Profile.Paste>Вставити профіль…</HaulersDream.Profile.Paste>
+<HaulersDream.Profile.CopyTitle>Копіювати профіль</HaulersDream.Profile.CopyTitle>
+<HaulersDream.Profile.CopyInfo>Поділіться цим кодом з іншим гравцем. Він містить версію мода й лише ті налаштування, які ви змінили відносно стандартів цієї версії, тож він лишається коротким.</HaulersDream.Profile.CopyInfo>
+<HaulersDream.Profile.CopyToClipboard>Копіювати в буфер обміну</HaulersDream.Profile.CopyToClipboard>
+<HaulersDream.Profile.CopiedMsg>Код профілю скопійовано в буфер обміну.</HaulersDream.Profile.CopiedMsg>
+<HaulersDream.Profile.PasteTitle>Вставити профіль</HaulersDream.Profile.PasteTitle>
+<HaulersDream.Profile.PasteTokenLabel>Код профілю:</HaulersDream.Profile.PasteTokenLabel>
+<HaulersDream.Profile.PasteFromClipboard>Вставити з буфера обміну</HaulersDream.Profile.PasteFromClipboard>
+<HaulersDream.Profile.PasteInvalid>Це не схоже на дійсний код профілю Hauler's Dream.</HaulersDream.Profile.PasteInvalid>
+<HaulersDream.Profile.PasteCreate>Створити профіль</HaulersDream.Profile.PasteCreate>
+<HaulersDream.Common.Off>Вимкнено</HaulersDream.Common.Off>
+<HaulersDream.Common.On>Увімкнено</HaulersDream.Common.On>
+<HaulersDream.Unit.Tiles>{0} клітин</HaulersDream.Unit.Tiles>
+<HaulersDream.Unit.Ticks>{0} тіків</HaulersDream.Unit.Ticks>
+<HaulersDream.Unit.Hours>{0} год</HaulersDream.Unit.Hours>
+<HaulersDream.Setting.CarryLimit.Lab>Ліміт перенесення</HaulersDream.Setting.CarryLimit.Lab>
+<HaulersDream.Setting.Overload.Lab>Розумне перевантаження</HaulersDream.Setting.Overload.Lab>
+<HaulersDream.Setting.PickupMode.Lab>Поводження з підбиранням</HaulersDream.Setting.PickupMode.Lab>
+<HaulersDream.Setting.PickupMode.Help>Як пішак бере річ, яку він от-от перенесе, у свій вантаж.</HaulersDream.Setting.PickupMode.Help>
+<HaulersDream.Setting.PickupMode.Drop>Кинути, потім перенести</HaulersDream.Setting.PickupMode.Drop>
+<HaulersDream.Setting.PickupMode.DropDesc>Реалістично: річ ненадовго кидається на підлогу, потім збирається — тож інший вантажник усе ще може схопити її посеред кроку.</HaulersDream.Setting.PickupMode.DropDesc>
+<HaulersDream.Setting.PickupMode.Direct>В інвентар</HaulersDream.Setting.PickupMode.Direct>
+<HaulersDream.Setting.PickupMode.DirectDesc>Річ потрапляє просто в інвентар пішака без кроку через підлогу.</HaulersDream.Setting.PickupMode.DirectDesc>
+<HaulersDream.Setting.BulkHaulTrigger.Lab>Тригер масового перенесення</HaulersDream.Setting.BulkHaulTrigger.Lab>
+<HaulersDream.Setting.KeepWorkingMargin.Lab>Розвантажуватися перед довшим переходом</HaulersDream.Setting.KeepWorkingMargin.Lab>
+<HaulersDream.Setting.MinFreeSpaceToUnloadCarrier.Lab>Мінімальне вільне місце в рюкзаку для старту</HaulersDream.Setting.MinFreeSpaceToUnloadCarrier.Lab>
+<HaulersDream.Setting.MinFreeSpaceToUnloadCarrier.Help>Вантажникові потрібно принаймні стільки вільної вантажопідйомності, перш ніж він почне випорожнювати в'ючну тварину, щоб його власний рюкзак не переповнився одразу.</HaulersDream.Setting.MinFreeSpaceToUnloadCarrier.Help>
+<HaulersDream.Setting.VisualUnloadDelay.Lab>Затримка розвантаження на стопку</HaulersDream.Setting.VisualUnloadDelay.Lab>
+<HaulersDream.Setting.VisualUnloadDelay.Help>Невелика косметична пауза між кожною стопкою під час масового розвантаження, щоб воно читалося як навмисна дія. 0 = миттєво.</HaulersDream.Setting.VisualUnloadDelay.Help>
+<HaulersDream.Setting.BulkLoadAiUpdateFrequency.Lab>Інтервал переперевірки завантаження</HaulersDream.Setting.BulkLoadAiUpdateFrequency.Lab>
+<HaulersDream.Setting.BulkLoadAiUpdateFrequency.Help>Як часто запущена робота масового завантаження переперевіряє, що її перенесений вантаж усе ще потрібен групі. Менше = чутливіша перемаршрутизація, більше = дешевше.</HaulersDream.Setting.BulkLoadAiUpdateFrequency.Help>
+<HaulersDream.Setting.LoadOpportunityRadius.Lab>Радіус пошуку для складання-дорогою</HaulersDream.Setting.LoadOpportunityRadius.Lab>
+<HaulersDream.Setting.LoadOpportunityRadius.Help>Наскільки далеко пішак, що несе вантаж, шукає потребливий транспорт, щоб скласти в нього вантаж, проходячи повз.</HaulersDream.Setting.LoadOpportunityRadius.Help>
+<HaulersDream.Setting.LoadPathfindingCandidates.Lab>Кандидатів пошуку шляху на зупинку</HaulersDream.Setting.LoadPathfindingCandidates.Lab>
+<HaulersDream.Setting.LoadPathfindingCandidates.Help>Скільки найближчих зупинок підбирання переранжовуються реальним пошуком шляху замість відстані по прямій. Більше = точніше впорядкування, більше CPU.</HaulersDream.Setting.LoadPathfindingCandidates.Help>
+<HaulersDream.Setting.DefaultBatchSize.Lab>Розмір партії за замовчуванням</HaulersDream.Setting.DefaultBatchSize.Lab>
+<HaulersDream.Setting.DefaultBatchSize.Help>Початкова кількість для щойно згрупованого завдання.</HaulersDream.Setting.DefaultBatchSize.Help>
+<HaulersDream.Setting.RouteMaxAmount.Lab>Максимум повзунка «Кількість» маршруту</HaulersDream.Setting.RouteMaxAmount.Lab>
+<HaulersDream.Setting.RouteMaxAmount.Help>Верх повзунка Кількість у планувальнику маршрутів (перед кроком «Усі»).</HaulersDream.Setting.RouteMaxAmount.Help>
+<HaulersDream.Setting.RouteOrderEffort.Lab>Точно розв'язувати порядок відвідування до</HaulersDream.Setting.RouteOrderEffort.Lab>
+<HaulersDream.Setting.RouteOrderEffort.Help>Маршрути з щонайбільше такою кількістю зупинок отримують точний оптимальний порядок відвідування; більші маршрути використовують швидке наближення. Більше розв'язує точніше, але коштує більше CPU.</HaulersDream.Setting.RouteOrderEffort.Help>
+<HaulersDream.Setting.CraftBatchTimeout.Lab>Час очікування партії виготовлення за замовчуванням</HaulersDream.Setting.CraftBatchTimeout.Lab>
+<HaulersDream.Setting.CraftBatchTimeout.Help>Обмеження за реальним часом для партії виготовлення, перш ніж вона завершиться сама. 0 = без обмеження. Перевизначається для кожної партії.</HaulersDream.Setting.CraftBatchTimeout.Help>
+<HaulersDream.Setting.UnloadGrace.Lab>Вікно накопичення</HaulersDream.Setting.UnloadGrace.Lab>
+<HaulersDream.Setting.UnloadGrace.Help>Як довго після свого останнього підбирання пішак продовжує накопичувати, перш ніж зробити автоматичну ходку для розвантаження. Більше = робочий пішак продовжує збирати протягом усієї роботи; він усе одно розвантажується раніше, щойно наповниться.</HaulersDream.Setting.UnloadGrace.Help>
+<HaulersDream.Setting.IntervalUnload.Lab>Резерв розвантаження за інтервалом</HaulersDream.Setting.IntervalUnload.Lab>
+<HaulersDream.Setting.IntervalUnload.Help>Періодичне примусове розвантаження, на випадок якщо кожен інший тригер розвантаження проковтнуто (мобілізації, обов'язки лорда, модові роботи). 0 = вимкнено.</HaulersDream.Setting.IntervalUnload.Help>
+<HaulersDream.Setting.AlertStuckHours.Lab>Позначати застряглого пішака після</HaulersDream.Setting.AlertStuckHours.Lab>
+<HaulersDream.Setting.AlertStuckHours.Help>Як довго пішак може тримати вантаж для перенесення, який не може відкласти (з пунктом призначення, що існує), перш ніж сповіщення позначить його.</HaulersDream.Setting.AlertStuckHours.Help>
+<HaulersDream.Setting.EnRoutePathChecker.Lab>Перевірка «по дорозі»</HaulersDream.Setting.EnRoutePathChecker.Lab>
+<HaulersDream.Setting.AutoStripMode.Lab>Автороздягання під час перенесення</HaulersDream.Setting.AutoStripMode.Lab>
+<HaulersDream.Setting.AutoStrip.Help>Під час перенесення трупа спершу зняти його спорядження й нести здобич із собою. «Лише утилізація» роздягає лише трупи, що прямують до зони скидання. «Вимкнено» лишає трупи одягненими (ручні накази Роздягнути все одно збирають їхнє спорядження).</HaulersDream.Setting.AutoStrip.Help>
+<HaulersDream.Setting.TaintedSmeltable.Lab>Зіпсований одяг — плавиться</HaulersDream.Setting.TaintedSmeltable.Lab>
+<HaulersDream.Setting.TaintedNonSmeltable.Lab>Зіпсований одяг — не плавиться</HaulersDream.Setting.TaintedNonSmeltable.Lab>
+<HaulersDream.Setting.Tainted.Help>Що робити зі зіпсованим (носеним мертвими) одягом, знятим під час роздягання: взяти його, залишити на трупі, кинути й заборонити його або знищити його.</HaulersDream.Setting.Tainted.Help>
+<HaulersDream.Setting.RouteSelection.Lab>Вибір маршруту</HaulersDream.Setting.RouteSelection.Lab>
+<HaulersDream.Setting.RouteSelection.Help>Як планувальник обирає, які цілі включити в маршрут.</HaulersDream.Setting.RouteSelection.Help>
+<HaulersDream.Setting.RouteDistance.Lab>Основа відстані</HaulersDream.Setting.RouteDistance.Lab>
+<HaulersDream.Setting.RouteDistance.Help>Як планувальник вимірює відстань між зупинками.</HaulersDream.Setting.RouteDistance.Help>
+<HaulersDream.Setting.ShareForBuilding.Help>Матеріали, які пішак уже зібрав у свій інвентар, враховуються для будівництва поблизу, тож він може будувати без окремої ходки по них.</HaulersDream.Setting.ShareForBuilding.Help>
+<HaulersDream.Setting.ShareMeetInMiddle.Help>Коли будівництво чи завдання витягне матеріал з інвентарю носія, бездіяльний носій іде назустріч робітнику, щоб вони зустрілися раніше.</HaulersDream.Setting.ShareMeetInMiddle.Help>
+<HaulersDream.Setting.ItemUnload.Help>Задайте правила для окремих речей: тримати всю стопку, тримати щонайбільше задану кількість або завжди розвантажувати її — перевизначаючи налаштування надлишку для тієї речі.</HaulersDream.Setting.ItemUnload.Help>
+<HaulersDream.Setting.HideGizmo.Help>Сховати кнопку «Розвантажити інвентар» для кожного пішака, що з'являється, коли колоніст несе зібрані речі.</HaulersDream.Setting.HideGizmo.Help>
+<HaulersDream.Setting.StorageFilterButton.Help>Редагувати правила дозволу/заборони для кожної будівлі та кожного мода щодо того, які склади може використовувати перенесення.</HaulersDream.Setting.StorageFilterButton.Help>
+<HaulersDream.Setting.PauseWhileDrafted.Help>Поки пішак мобілізований, Hauler's Dream припиняє починати для нього нові збирання й підмітання.</HaulersDream.Setting.PauseWhileDrafted.Help>
+<HaulersDream.Setting.AllowIncapable.Help>Дозволити пішакові, який нездатний до Перенесення, усе ж збирати продукти власної роботи (видобуток, збір урожаю, …).</HaulersDream.Setting.AllowIncapable.Help>
+<HaulersDream.Setting.EnableOnNonHomeMaps.Help>Запускати Hauler's Dream і на караванних та інших нерідних картах теж, не лише у вашій рідній колонії.</HaulersDream.Setting.EnableOnNonHomeMaps.Help>
+<HaulersDream.Setting.VerboseLogging.Help>Додаткове ведення журналу для розробників. Доступне — і веде журнал — лише в режимі розробника.</HaulersDream.Setting.VerboseLogging.Help>
+<HaulersDream.Setting.BulkHaulSecond.S>За 2-м наказом</HaulersDream.Setting.BulkHaulSecond.S>
+<HaulersDream.Setting.BulkHaulAlways.S>Завжди</HaulersDream.Setting.BulkHaulAlways.S>
+<HaulersDream.Setting.EnRoutePathVanilla.S>Дешева</HaulersDream.Setting.EnRoutePathVanilla.S>
+<HaulersDream.Setting.EnRoutePathDefault.S>Точна</HaulersDream.Setting.EnRoutePathDefault.S>
+<HaulersDream.Setting.EnRoutePathPathfinding.S>Ретельна</HaulersDream.Setting.EnRoutePathPathfinding.S>
+<HaulersDream.Setting.AutoStripAll.S>Усі перенесення</HaulersDream.Setting.AutoStripAll.S>
+<HaulersDream.Setting.AutoStripDisposal.S>Лише утилізація</HaulersDream.Setting.AutoStripDisposal.S>
+<HaulersDream.Setting.AutoStripOff.S>Вимкнено</HaulersDream.Setting.AutoStripOff.S>
+<HaulersDream.Setting.TaintedTake.S>Взяти</HaulersDream.Setting.TaintedTake.S>
+<HaulersDream.Setting.TaintedLeave.S>Залишити</HaulersDream.Setting.TaintedLeave.S>
+<HaulersDream.Setting.TaintedForbid.S>Кинути й заборонити</HaulersDream.Setting.TaintedForbid.S>
+<HaulersDream.Setting.TaintedDestroy.S>Знищити</HaulersDream.Setting.TaintedDestroy.S>
+<HaulersDream.PlanRoute.SelMostStops.S>Найбільше зупинок</HaulersDream.PlanRoute.SelMostStops.S>
+<HaulersDream.PlanRoute.SelNearest.S>Найближчі</HaulersDream.PlanRoute.SelNearest.S>
+<HaulersDream.PlanRoute.DistStraight.S>По прямій</HaulersDream.PlanRoute.DistStraight.S>
+<HaulersDream.PlanRoute.DistWalking.S>Пішохідний шлях</HaulersDream.PlanRoute.DistWalking.S>
+<HaulersDream.Setting.EnRoutePathVanilla.H>Швидке обмежене заповнення підрахунком регіонів — найдешевша перевірка, найменш точна.</HaulersDream.Setting.EnRoutePathVanilla.H>
+<HaulersDream.Setting.EnRoutePathDefault.H>Реальна вартість шляху A*; припиняє сканування при невдачі діапазону. Точніше, більше CPU.</HaulersDream.Setting.EnRoutePathDefault.H>
+<HaulersDream.Setting.EnRoutePathPathfinding.H>Реальна вартість шляху A*; продовжує сканувати в пошуках найкращого збігу. Найточніше, найбільше CPU.</HaulersDream.Setting.EnRoutePathPathfinding.H>
+<HaulersDream.PlanRoute.SelMostStops.H>Надавати перевагу цілям, що вкладають найбільше зупинок в одну відстань шляху.</HaulersDream.PlanRoute.SelMostStops.H>
+<HaulersDream.PlanRoute.SelNearest.H>Надавати перевагу цілям, найближчим до тієї, на яку ви клікнули.</HaulersDream.PlanRoute.SelNearest.H>
+<HaulersDream.PlanRoute.DistStraight.H>Вимірювати відстань по прямій — швидко.</HaulersDream.PlanRoute.DistStraight.H>
+<HaulersDream.PlanRoute.DistWalking.H>Вимірювати відстань уздовж реального пішохідного шляху — повільніше, точніше.</HaulersDream.PlanRoute.DistWalking.H>
+<HaulersDream.Setting.HaulHarvest.Help>Збирати зібраний урожай і продукти зрізання рослин у інвентар, поки пішак працює.</HaulersDream.Setting.HaulHarvest.Help>
+<HaulersDream.Setting.HaulMining.Help>Збирати видобуту руду й кам'яні брили в інвентар, поки пішак видобуває.</HaulersDream.Setting.HaulMining.Help>
+<HaulersDream.Setting.HaulDeepDrill.Help>Збирати вихід глибинного бура в інвентар у міру його виробництва.</HaulersDream.Setting.HaulDeepDrill.Help>
+<HaulersDream.Setting.HaulDeconstruct.Help>Збирати залишки з розібраних будівель у інвентар.</HaulersDream.Setting.HaulDeconstruct.Help>
+<HaulersDream.Setting.HaulAnimals.Help>Збирати молоко, вовну та інші продукти, зібрані з тварин, у інвентар.</HaulersDream.Setting.HaulAnimals.Help>
+<HaulersDream.Setting.HaulUninstall.Help>На караванній чи іншій віддаленій карті (ніколи у вашій рідній колонії) збирати будівлю, яку ви демонтуєте — тепер мініатюризовану річ — просто в інвентар робітника, тож кілька демонтованих структур переносяться до в'ючних тварин за ОДНУ ходку замість одного походу туди-назад на річ. Спрацьовує лише там, де річ справді можна доставити (склад/зона чи в'ючна тварина). На вашій рідній карті це нічого не робить: там демонтована будівля лишається на землі для звичайного перенесення чи перевстановлення.</HaulersDream.Setting.HaulUninstall.Help>
+<HaulersDream.Cat.Hauling.Intro>Як колоністи підбирають речі — скільки вони несуть, коли перевантажуються та що підмітають.</HaulersDream.Cat.Hauling.Intro>
+<HaulersDream.Cat.Unloading.Intro>Коли і як колоністи відкладають свої перенесені речі.</HaulersDream.Cat.Unloading.Intro>
+<HaulersDream.Cat.BuildCraft.Intro>Брання будівельних і ремісничих матеріалів з інвентарю, доставка їжі та вибір інгредієнтів.</HaulersDream.Cat.BuildCraft.Intro>
+<HaulersDream.Cat.BulkLoading.Intro>Завантаження й розвантаження носіїв, транспорту, порталів, заправлюваних і транспортних засобів за одну ходку.</HaulersDream.Cat.BulkLoading.Intro>
+<HaulersDream.Cat.Routing.Intro>Хапати речі по дорозі, переміщувати припаси ближче до місця використання та фільтрувати склади.</HaulersDream.Cat.Routing.Intro>
+<HaulersDream.Cat.Yields.Intro>Які продукти роботи збираються, перенесення туш після вбивства та зняття спорядження.</HaulersDream.Cat.Yields.Intro>
+<HaulersDream.Cat.Who.Intro>До яких пішаків застосовується Hauler's Dream та перевизначення, що дозволяють будь-якому пішакові виконувати певну роботу.</HaulersDream.Cat.Who.Intro>
+<HaulersDream.Cat.Planners.Intro>Планувальники маршрутів і виготовлення за правим кліком та їхні стандарти.</HaulersDream.Cat.Planners.Intro>
+<HaulersDream.Cat.Advanced.Intro>Час розвантаження, запобіжне сповіщення про застряглий вантаж, прибирання при збереженні та інструменти для розробників.</HaulersDream.Cat.Advanced.Intro>
+<HaulersDream.Head.CarryWeight>Вантажна вага</HaulersDream.Head.CarryWeight>
+<HaulersDream.Head.Pickup>Підбирання</HaulersDream.Head.Pickup>
+<HaulersDream.Head.AutoUnloadTrips>Автоматичні ходки розвантаження</HaulersDream.Head.AutoUnloadTrips>
+<HaulersDream.Head.DropOff>Поведінка скидання</HaulersDream.Head.DropOff>
+<HaulersDream.Head.ItemRulesDisplay>Правила для окремих речей та відображення</HaulersDream.Head.ItemRulesDisplay>
+<HaulersDream.Head.EnRoute>Підбирання по дорозі</HaulersDream.Head.EnRoute>
+<HaulersDream.Head.WhoCanHaul>Хто може збирати й переносити</HaulersDream.Head.WhoCanHaul>
+<HaulersDream.Head.PlanningTools>Інструменти планування</HaulersDream.Head.PlanningTools>
+<HaulersDream.Setting.Overload.Ceiling>стеля</HaulersDream.Setting.Overload.Ceiling>
+</LanguageData>

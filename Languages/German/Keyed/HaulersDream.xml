@@ -1,0 +1,596 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LanguageData>
+
+<HaulersDream.SettingsCategory>Hauler's Dream</HaulersDream.SettingsCategory>
+<HaulersDream.SettingsHeaderFallback>Hauler's Dream</HaulersDream.SettingsHeaderFallback>
+<HaulersDream.Tab.General>Allgemein</HaulersDream.Tab.General>
+<HaulersDream.Tab.Sharing>Teilen &amp; Lieferung</HaulersDream.Tab.Sharing>
+<HaulersDream.Tab.Bulk>Stapel &amp; Träger</HaulersDream.Tab.Bulk>
+<HaulersDream.Tab.Routing>Unterwegs &amp; Routing</HaulersDream.Tab.Routing>
+<HaulersDream.Tab.Sources>Quellen &amp; Wer</HaulersDream.Tab.Sources>
+<HaulersDream.Tab.Planners>Planer &amp; Erweitert</HaulersDream.Tab.Planners>
+<HaulersDream.Setting.MasterEnabled>Hauler's Dream aktivieren</HaulersDream.Setting.MasterEnabled>
+<HaulersDream.Setting.MasterEnabledDesc>Der Hauptschalter. Wenn AUS, hört Hauler's Dream auf, sein automatisches Transportverhalten zu STARTEN — Arbeitserträge aufsammeln, Beute in der Nähe aufkehren, Stapel-Transport, Aufnahme unterwegs und Lager-Routing — was praktisch ist, um ohne Neustart zu prüfen, ob der Mod an etwas beteiligt ist. Eine Spielfigur, die bereits Güter aufgesammelt hat, entlädt sie weiterhin normal (es bleibt nie etwas liegen), und die Schaltfläche „Inventar entladen“ pro Spielfigur bleibt verfügbar. (Die Übersteuerungen der Arbeitsunfähigkeit und die Rechtsklick-Auftragsmenüs haben ihre eigenen Schalter und sind von diesem Schalter unberührt.) Standardmäßig aktiviert.</HaulersDream.Setting.MasterEnabledDesc>
+<HaulersDream.Setting.DrawDetourLines>Debug-Umweglinien zeichnen (Entwickler)</HaulersDream.Setting.DrawDetourLines>
+<HaulersDream.Setting.DrawDetourLinesDesc>Nur-Entwickler-Diagnostik: zeichnet farbige Linien für die Aufnahme unterwegs und für Lager-Routing-Umwege, sodass du sehen kannst, warum eine Spielfigur abgewichen ist. Wird nicht gespeichert — es wird bei jedem Spielstart auf aus zurückgesetzt.</HaulersDream.Setting.DrawDetourLinesDesc>
+<HaulersDream.Setting.CarryLimit>Traglimit: {0} der maximalen Tragkapazität jeder Spielfigur</HaulersDream.Setting.CarryLimit>
+<HaulersDream.Setting.CarryLimitDesc>Die Obergrenze ist ein Bruchteil der maximalen Tragkapazität der Spielfigur — die Masse, die sie über ihre Kleidung, Ausrüstung und ihr Inventar hinweg tragen kann (dieselbe Kapazität, die für Karawanen und das Beladen von Lasttieren verwendet wird). Gegenstände, die während eines Transports in den Händen getragen werden (der aktive Hand-Transport-Stapel), zählen NICHT gegen dieses Limit; nur das, was in Kleidung/Ausrüstung/Inventar verstaut ist. Das clevere Überladen unten kann eine Spielfigur dennoch über 100 % dieser Obergrenze hinausgehen lassen, um Fahrten zu sparen.</HaulersDream.Setting.CarryLimitDesc>
+<HaulersDream.Setting.DropThenHaul>Auf den Boden fallen lassen, dann aufnehmen (realistisch)</HaulersDream.Setting.DropThenHaul>
+<HaulersDream.Setting.DropThenHaulDesc>Wenn AN, fallen geerntete/abgebaute Güter auf den Boden, und die Spielfigur sammelt sie nach dem Arbeitsdurchlauf in ihr Inventar. Wenn AUS, gehen die Güter direkt ins Inventar (keine Bodenberührung).</HaulersDream.Setting.DropThenHaulDesc>
+<HaulersDream.Setting.MarkForUnload>Aufgesammelte Güter automatisch entladen (am Ende des Arbeitsdurchlaufs, rund um Mahlzeiten und Erholung, bei Übergewicht und im Intervall unten). Aus: Spielfiguren tragen weiter, bis du ihre Schaltfläche „Inventar entladen“ drückst.</HaulersDream.Setting.MarkForUnload>
+<HaulersDream.Setting.UnloadAllSurplus>Auch überschüssiges Inventar wegräumen, das eine Spielfigur trägt und das Hauler's Dream NICHT selbst aufgenommen hat (standardmäßig aus)</HaulersDream.Setting.UnloadAllSurplus>
+<HaulersDream.Setting.UnloadAllSurplusDesc>Standardmäßig aus: Hauler's Dream entlädt nur Güter, die es selbst aufgesammelt hat, sodass es nie die Seitenwaffen eines Kolonisten, getragene Medizin oder Wasser oder gehandelte Güter berührt. Schalte dies AN, um zur Bequemlichkeit auch Überschuss wegzuräumen, den eine Spielfigur grundlos trägt (aus Handel, anderen Mods oder manuellen Verschiebungen). „Überschuss“ schließt die behaltene Nahrung, Drogen, den Inventar-Bestand der Spielfigur und alle Gegenstände einer Waffen-Laderegel (inkl. Munition) aus, ebenso Sucht-/Abhängigkeitsdrogen des Grundspiels, Gegenstände, die Seitenwaffen-, Medizin- oder Hygiene-Mods im Inventar behalten (alle automatisch erkannt), und alles, was du unten in den Entlade-Einstellungen für einzelne Gegenstände behältst — und nur Stapel, die irgendwo gelagert werden können; das Inventar für die Karawanenbeladung wird in Ruhe gelassen.</HaulersDream.Setting.UnloadAllSurplusDesc>
+<HaulersDream.Setting.ItemUnloadButton>Entlade-Einstellungen für einzelne Gegenstände…</HaulersDream.Setting.ItemUnloadButton>
+<HaulersDream.Setting.ItemUnloadButtonN>Entlade-Einstellungen für einzelne Gegenstände ({0})…</HaulersDream.Setting.ItemUnloadButtonN>
+<HaulersDream.ItemUnload.Title>Entlade-Einstellungen für einzelne Gegenstände</HaulersDream.ItemUnload.Title>
+<HaulersDream.ItemUnload.Desc>Lege fest, wie Hauler's Dream bestimmte Gegenstände im Inventar einer Spielfigur behandelt. Wähle für jeden Gegenstand: Nie entladen (den ganzen Stapel behalten), Höchstens N behalten (bis zu N tragen und den Rest entladen) oder Immer entladen (wegräumen, selbst wenn ein anderer Mod ihn sonst behalten würde). Gegenstände ohne Regel verwenden das normale Verhalten. Eine Regel hier überschreibt die automatische Behalte-Erkennung für Gegenstände von Waffen-Laderegeln, Seitenwaffen, Medizin, Hygiene und Sucht. Entscheidungen für Gegenstände aus Mods, die du entfernt hast, werden gemerkt und wiederhergestellt, wenn du den Mod neu installierst, und beeinflussen nie das Laden des Spielstands. (Tipp: Wenn du einen Laderegel-/Munitions-Mod verwendest, lege die Munitionsmengen in dessen Laderegel fest — er holt Munition bis zu dieser Menge erneut nach.)</HaulersDream.ItemUnload.Desc>
+<HaulersDream.ItemUnload.ClearAll>Alle löschen</HaulersDream.ItemUnload.ClearAll>
+<HaulersDream.ItemUnload.ModeDefault>Standard</HaulersDream.ItemUnload.ModeDefault>
+<HaulersDream.ItemUnload.ModeKeepAll>Nie entladen</HaulersDream.ItemUnload.ModeKeepAll>
+<HaulersDream.ItemUnload.ModeKeepAtMost>Höchstens behalten</HaulersDream.ItemUnload.ModeKeepAtMost>
+<HaulersDream.ItemUnload.ModeUnloadAlways>Immer entladen</HaulersDream.ItemUnload.ModeUnloadAlways>
+<HaulersDream.Setting.UnloadBeforeSleep>Ladung vor dem Schlafen wegräumen</HaulersDream.Setting.UnloadBeforeSleep>
+<HaulersDream.Setting.UnloadBeforeSleepDesc>Wenn eine Spielfigur die Arbeit beendet und müde ist (kurz vorm Schlafen), macht sie zuerst ihre Entladefahrt und geht dann leer ins Bett — anstatt ihre aufgesammelte Ladung mit ins Bett zu tragen. Sie sammelt weiterhin normal an, solange sie tatsächlich arbeitet.</HaulersDream.Setting.UnloadBeforeSleepDesc>
+<HaulersDream.Setting.UnloadBeforeLeisure>Ladung vor der Erholung wegräumen</HaulersDream.Setting.UnloadBeforeLeisure>
+<HaulersDream.Setting.UnloadBeforeLeisureDesc>Wenn eine Spielfigur die Arbeit beendet und zur Erholung geht (ihr Erholungs-Zeitplanblock oder eine beliebige Freizeitaktivität), entlädt sie zuerst, anstatt ihre Ladung beim Entspannen herumzutragen.</HaulersDream.Setting.UnloadBeforeLeisureDesc>
+<HaulersDream.Setting.UnloadBeforeEating>Ladung vor dem Essen wegräumen</HaulersDream.Setting.UnloadBeforeEating>
+<HaulersDream.Setting.UnloadBeforeEatingDesc>Wenn eine Spielfigur die Arbeit beendet und hungrig ist (kurz vorm Essen), entlädt sie zuerst — damit sie das gerade abgebaute Erz nicht zum Esstisch trägt.</HaulersDream.Setting.UnloadBeforeEatingDesc>
+<HaulersDream.Setting.ShareHeader>Getragene Materialien zwischen Kolonisten teilen:</HaulersDream.Setting.ShareHeader>
+<HaulersDream.Setting.ShareForBuilding>Getragene Materialien für den Bau verwenden</HaulersDream.Setting.ShareForBuilding>
+<HaulersDream.Setting.BuildFromInventory>Aus Inventar bauen (bereits getragene Materialien verwenden)</HaulersDream.Setting.BuildFromInventory>
+<HaulersDream.Setting.BuildFromInventoryDesc>Eine bauende Spielfigur kann Baumaterialien aus dem Inventar beziehen, das eine Spielfigur oder ein Tier bereits trägt — ihr eigenes, dann das anderer Kolonisten, dann das von Lasttieren / der Karawanenfracht — nicht nur lose Stapel auf dem Boden. Wenn du also Stahl in einer Karawane mitnimmst und einen Sandsack oder eine Wand bei einem Überfall oder auf einer Auswärtskarte in Auftrag gibst, baut sie aus dem getragenen Stahl, ohne dass du ihn zuerst von einem Lasttier abladen musst. Direkt aus dem Inventar zur Baustelle geliefert (ohne ihn zuerst dem Träger vor die Füße zu legen). Dies ist getrennt von „Getragene Materialien für den Bau verwenden“ oben, das nur Materialien zählt, die dieser Mod selbst aufgesammelt hat. Bezieht nie von einem Träger, der im Wehrdienst, bewusstlos oder im Berserkermodus ist, noch aus Fracht, die für eine sich bildende Karawane vorgesehen ist; reserviert den Stapel, damit nicht zwei Bauarbeiter darum wetteifern. Standardmäßig aktiviert.</HaulersDream.Setting.BuildFromInventoryDesc>
+<HaulersDream.Setting.BuildFromInventoryPartial>Teilbauten aus dem Inventar erlauben</HaulersDream.Setting.BuildFromInventoryPartial>
+<HaulersDream.Setting.BuildFromInventoryPartialDesc>Normalerweise beginnt ein Bau nicht, sofern nicht genug Material für das Ganze verfügbar ist. Wenn dies aktiviert ist, wird ein Gerüst mit dem vorhandenen Inventarmaterial begonnen und vorangetrieben, selbst wenn es weniger ist als die volle benötigte Menge — der Rest wird geliefert, sobald mehr verfügbar wird. Ändert die Alles-oder-nichts-Regel des Grundspiels, daher ist es standardmäßig aus. Erfordert „Aus Inventar bauen“.</HaulersDream.Setting.BuildFromInventoryPartialDesc>
+<HaulersDream.Setting.ShareForCrafting>Getragene Materialien für Herstellungsaufträge verwenden</HaulersDream.Setting.ShareForCrafting>
+<HaulersDream.Setting.ShareForCraftingDesc>Eine herstellende Spielfigur kann Auftragszutaten aus dem Inventar beziehen, das eine Spielfigur bereits trägt, nicht nur lose Stapel auf dem Boden. Wenn ein anderer Mod den Transport von Herstellungszutaten verwaltet, hält sich Hauler's Dream automatisch zurück und lässt ihn sie sammeln — sodass sich jede Herstellungsschleife von selbst auflöst, ganz ohne Zutun von dir.</HaulersDream.Setting.ShareForCraftingDesc>
+<HaulersDream.Setting.ShareMeetInMiddle>Ein untätiger Träger geht auf den Arbeiter zu, um Güter zu übergeben</HaulersDream.Setting.ShareMeetInMiddle>
+<HaulersDream.Setting.BatchWorkDeliveries>Materialien für viele eingereihte Bauten pro Fahrt tragen</HaulersDream.Setting.BatchWorkDeliveries>
+<HaulersDream.Setting.BatchWorkDeliveriesDesc>Wenn viele günstige Dinge gebaut werden (z. B. ein langer Zaun), füllt eine Spielfigur ihre Hände mit genug Material für viele eingereihte Bauten und liefert in einer Fahrt an jeden, anstatt jeweils ein paar hin- und herzubringen. In den Händen getragen, sodass es keine Verlangsamung gibt.</HaulersDream.Setting.BatchWorkDeliveriesDesc>
+<HaulersDream.Setting.InventoryConstructDeliver>Materialien im Inventar für große Einzelbauten tragen</HaulersDream.Setting.InventoryConstructDeliver>
+<HaulersDream.Setting.InventoryConstructDeliverDesc>Wenn ein einzelnes Ding mehr als einen Hand-Stapel eines Materials braucht (z. B. die 340 Stahl eines Geothermalgenerators), lädt eine Spielfigur das Material in ihr Inventar — das durch Gewicht begrenzt ist, nicht durch Stapelgröße — und liefert es in weit weniger Fahrten, anstatt ~75 auf einmal in den Händen hin- und herzubringen. Verwendet die Einstellung Cleveres Überladen oben dafür, wie viel über 100 % sie lädt; mit ausgeschaltetem Überladen lädt sie bis zu 100 % (keine Verlangsamung).</HaulersDream.Setting.InventoryConstructDeliverDesc>
+<HaulersDream.Setting.MultiSiteConstructDeliver>Materialien mehrerer naher Baustellen in einer Fahrt laden</HaulersDream.Setting.MultiSiteConstructDeliver>
+<HaulersDream.Setting.MultiSiteConstructDeliverDesc>Wenn ein automatischer oder per Umschalt-Klick erteilter Bau an eine Gruppe naher Baustellen liefert, die dasselbe Material brauchen, lädt eine Spielfigur den gesamten kombinierten Bedarf des Bündels in einer Fahrt in ihr Inventar und liefert an jede Baustelle, anstatt eine Baustelle pro Fahrt zu bedienen (zuvor tat dies nur der Routenplaner). Die Spielfigur beendet erst die Baustelle, an der sie bereits arbeitet, bevor sie lädt. Erfordert „Materialien im Inventar für große Einzelbauten tragen“ oben.</HaulersDream.Setting.MultiSiteConstructDeliverDesc>
+<HaulersDream.Setting.ShareHandHauled>Materialien von einem Kolonisten beanspruchen, der sie zum Lager transportiert (standardmäßig aus)</HaulersDream.Setting.ShareHandHauled>
+<HaulersDream.Setting.ShareHandHauledDesc>Wenn ein Bauarbeiter ein Material braucht und der einzige Bestand in den Händen eines Kolonisten ist, der es zu einem Vorrat transportiert, trifft der Bauarbeiter diesen Kolonisten unterwegs und nimmt den Stapel, anstatt zu warten, bis er das Lager erreicht, und ihn dann von dort zu holen. Berührt nie einen Kolonisten, der an einen bestimmten Bau, Auftrag oder Betankungsauftrag liefert, und nur, wenn es tatsächlich eine Fahrt spart. (Vorerst nur Bau.)</HaulersDream.Setting.ShareHandHauledDesc>
+<HaulersDream.Setting.MealsOnWheels>Von anderen Kolonisten getragene Nahrung essen, wenn keine gefunden wird</HaulersDream.Setting.MealsOnWheels>
+<HaulersDream.Setting.MealsOnWheelsDesc>Wenn ein hungriger Kolonist keine Nahrung auf der Karte oder im eigenen (oder dem eines Lasttiers) Rucksack findet, geht er zu einem anderen Kolonisten oder Lasttier, das akzeptable Nahrung trägt, und isst aus dessen Inventar — was Fahrten reduziert und getragene Mahlzeiten rettet, bevor sie verderben — anstatt hungrig zu bleiben oder zu einem fernen Vorrat zu wandern. Greift nur, wenn die normale Nahrungssuche nichts findet, sodass es nie eine nähere Mahlzeit übersteuert. Respektiert die Nahrungspolitik, Ideologie und den Abstinenzler-Status des Essers; nimmt nie Nahrung, die ein Elternteil einem Baby füttert; nimmt nie von einem Träger, der im Wehrdienst, bewusstlos oder im Berserkermodus ist; reserviert die Mahlzeit, damit nicht zwei Kolonisten darum wetteifern; und bevorzugt Nahrung, die dem Verderben am nächsten ist. Standardmäßig aktiviert.</HaulersDream.Setting.MealsOnWheelsDesc>
+<HaulersDream.Setting.BulkHaul>Stapel-Transport — eine Transportfahrt nimmt alles um sich herum auf</HaulersDream.Setting.BulkHaul>
+<HaulersDream.Setting.BulkHaulDesc>Eine Spielfigur, die geschickt wird, um einen Gegenstand zu transportieren, plant, alles Transportierbare um sich herum in ihr Inventar aufzunehmen und liefert das Ganze in einer Lagerfahrt ab. Aus = Transport wie im Grundspiel, ein Gegenstand pro Fahrt.</HaulersDream.Setting.BulkHaulDesc>
+<HaulersDream.Setting.BulkHaulSecond>Erteilte Transporte kehren nur auf, wenn ein zweiter Transport in der Nähe ebenfalls erteilt ist</HaulersDream.Setting.BulkHaulSecond>
+<HaulersDream.Setting.BulkHaulSecondDesc>Der automatische Transport kehrt immer die Umgebung ins Inventar auf (eine Lagerfahrt für viele Gegenstände). Ein Transport, den DU bei einer Spielfigur erteilst, bleibt chirurgisch — sie transportiert nur dieses eine Ding — es sei denn, du hast einen zweiten Transport in der Nähe erteilt; in dem Fall kehrt die Spielfigur sie zusammen auf. Der Standard mit feinerer Kontrolle.</HaulersDream.Setting.BulkHaulSecondDesc>
+<HaulersDream.Setting.BulkHaulAlways>Immer aufkehren — jeder Transport nimmt alles um sich herum auf</HaulersDream.Setting.BulkHaulAlways>
+<HaulersDream.Setting.BulkHaulAlwaysDesc>Jeder Transport — automatisch oder erteilt — lädt auch die Transportierbaren in der Nähe in das Inventar der Spielfigur und macht eine Lagerfahrt für das Ganze. Wie viel sie trägt, respektiert den Regler Cleveres Überladen unten: nur so viel zusätzliches Gewicht, wie die Verlangsamung gegenüber einer weiteren Hin-und-Rück-Fahrt wirklich wert ist.</HaulersDream.Setting.BulkHaulAlwaysDesc>
+<HaulersDream.Setting.HaulNearbyOption>Einen Rechtsklick-Auftrag „Alles in der Nähe transportieren“ hinzufügen</HaulersDream.Setting.HaulNearbyOption>
+<HaulersDream.Setting.HaulNearbyOptionDesc>Fügt dem Rechtsklick-Menü bei einem transportierbaren Gegenstand (für Spielfiguren, die transportieren können) eine Option „Alles in der Nähe transportieren“ hinzu, die sofort ein Stapel-Aufkehren startet — sodass du nicht zwei Transporte priorisieren musst, um den Stapel-Transport auszulösen. Das „Transportieren priorisieren“ des Grundspiels erscheint weiterhin daneben für einen Einzelgegenstand-Transport.</HaulersDream.Setting.HaulNearbyOptionDesc>
+<HaulersDream.Setting.ManualPickup>Einen Rechtsklick-Auftrag „X aufnehmen“ hinzufügen</HaulersDream.Setting.ManualPickup>
+<HaulersDream.Setting.ManualPickupDesc>Fügt dem Rechtsklick-Menü bei einem transportierbaren Bodengegenstand eine Option „X aufnehmen“ hinzu. Die Spielfigur nimmt den angeklickten Stapel direkt in ihr Inventar als nachverfolgten Hauler's-Dream-Transport, der dann durch das normale Entladen weggeräumt wird — sodass er nie verloren geht, selbst wenn das automatische Entladen aus ist. Ergänzend zu den Rechtsklick-Transportoptionen des Grundspiels.</HaulersDream.Setting.ManualPickupDesc>
+<HaulersDream.Setting.HaulOversized>Übergroße Stapel im Inventar tragen</HaulersDream.Setting.HaulOversized>
+<HaulersDream.Setting.HaulOversizedDesc>Wenn ein einzelner Stapel zu groß ist, um in einer Armladung getragen zu werden (zum Beispiel ein 75er-Stapel Stahl, wenn die Spielfigur nur 72 halten kann), nimmt die Spielfigur ihn in ihr Inventar und liefert den ganzen Stapel in einer Fahrt — anstatt eine Teilladung in der Hand zu tragen und den Rest liegenzulassen. Gilt sowohl für erteilte als auch für automatische Transporte; trägt nur so viel, wie das Lager tatsächlich annehmen kann, sodass nichts liegenbleibt.</HaulersDream.Setting.HaulOversizedDesc>
+<HaulersDream.Setting.SweepNearbyWhileWorking>Beim Arbeiten aufräumen — auch lose Gegenstände in der Nähe aufsammeln</HaulersDream.Setting.SweepNearbyWhileWorking>
+<HaulersDream.Setting.SweepNearbyWhileWorkingDesc>Während eine Spielfigur abreißt, abbaut oder erntet und ihre eigenen Erträge aufsammelt, nimmt sie auch andere lose transportierbare Gegenstände, die um den Arbeitsplatz herumliegen, in ihr Inventar, sodass der ganze Bereich in der einen gebündelten Fahrt geräumt wird, statt für separate Transporte liegenzubleiben. Nur Gegenstände, die transportiert werden müssen und irgendwohin können, werden genommen (nie das Ziel eines anderen Trägers oder gelagerter Bestand), und nur bis zur Obergrenze des cleveren Überladens.</HaulersDream.Setting.SweepNearbyWhileWorkingDesc>
+<HaulersDream.Setting.HaulToStack>Auf Stapel transportieren (bestehende Stapel auffüllen, Zielfelder teilen)</HaulersDream.Setting.HaulToStack>
+<HaulersDream.Setting.ConstructTether>Erteilte Bauten transportieren UND bauen als eine Aufgabe</HaulersDream.Setting.ConstructTether>
+<HaulersDream.Setting.ConstructTetherDesc>Wenn du einen Bau per Rechtsklick priorisierst, transportiert die Spielfigur die Materialien und baut sofort, als ein durchgehender Auftrag. Aus = der Auftrag liefert nur Materialien (wie im Grundspiel); das Bauen geschieht über die normale Arbeit. Mit „Auch bauen“ geplante Routen behalten so oder so ihr eigenes Verhalten.</HaulersDream.Setting.ConstructTetherDesc>
+<HaulersDream.Setting.HaulToSiteOption>Den Auftrag „Transport von Materialien priorisieren zu…“ anzeigen</HaulersDream.Setting.HaulToSiteOption>
+<HaulersDream.Setting.HaulToSiteOptionDesc>Der Rechtsklick-Auftrag, der eine Baustelle mit Materialien bestückt, verfügbar schon bevor die Baustelle gebaut werden kann. Aus = die Option ist verborgen.</HaulersDream.Setting.HaulToSiteOptionDesc>
+<HaulersDream.Setting.PlanRoutes>Den Routenplaner aktivieren („Priorisierte [Aufgabe] planen…“)</HaulersDream.Setting.PlanRoutes>
+<HaulersDream.Setting.PlanRoutesDesc>Das Rechtsklick-Planungswerkzeug für Ernte-, Bergbau-, Reinigungs-, Abriss- und Bauwerksrouten. Aus = die Menüoption ist überall verborgen.</HaulersDream.Setting.PlanRoutesDesc>
+<HaulersDream.Setting.PlanCrafting>Den Herstellungsplaner aktivieren („Priorisierte Herstellung planen…“)</HaulersDream.Setting.PlanCrafting>
+<HaulersDream.Setting.PlanCraftingDesc>Das Rechtsklick-Planungswerkzeug an Werkbänken, das einen Auftrag mehrmals mit einer Zutatenfahrt stapelt. Aus = die Menüoption ist verborgen.</HaulersDream.Setting.PlanCraftingDesc>
+<HaulersDream.Setting.BatchByDefault>Neue Aufträge standardmäßig stapeln</HaulersDream.Setting.BatchByDefault>
+<HaulersDream.Setting.BatchByDefaultDesc>Herstellungs- und Kochaufträge, die du ab jetzt HINZUFÜGST, beginnen im „Stapel“-Modus: Der Kolonist holt einen ganzen Stapel Zutaten in einer Fahrt, stellt sie alle an der Werkbank her (Nahrung verdirbt nicht, während er arbeitet) und transportiert dann alles zum Lager. Betrifft nur neu hinzugefügte Aufträge — bestehende Aufträge behalten ihre aktuelle Einstellung.</HaulersDream.Setting.BatchByDefaultDesc>
+<HaulersDream.Setting.DefaultBatchSize>Standard-Stapelgröße: {0}</HaulersDream.Setting.DefaultBatchSize>
+<HaulersDream.Batch.MenuPrefix>Stapel</HaulersDream.Batch.MenuPrefix>
+<HaulersDream.Batch.SetSize>Stapelgröße: {0}…</HaulersDream.Batch.SetSize>
+<HaulersDream.Batch.RowMarker>×{0} </HaulersDream.Batch.RowMarker>
+<HaulersDream.Batch.SizeDialogTitle>Stapelgröße — {0}</HaulersDream.Batch.SizeDialogTitle>
+<HaulersDream.Batch.SizeLabel>Bis zu {0} pro Stapel herstellen</HaulersDream.Batch.SizeLabel>
+<HaulersDream.Batch.SizeDesc>Der Kolonist sammelt die Zutaten für den ganzen Stapel in einer Fahrt, stellt sie alle an der Werkbank her (Zutaten verderben nicht, während er arbeitet) und transportiert dann alles zum Lager. Begrenzt durch verfügbare Materialien und die eigene Anzahl des Auftrags.</HaulersDream.Batch.SizeDesc>
+<HaulersDream.Setting.HaulToStackDesc>Träger ziehen es vor, einen bestehenden Teilstapel aufzufüllen, statt einen neuen zu beginnen — innerhalb des Lagerraums, den das Spiel bereits gewählt hat (welcher Vorrat gewinnt, wird weiterhin durch Priorität und Distanz entschieden). Funktioniert auf dem Boden, auf Regalen und in Lagereinheiten aus Mods. Außenlager scannt stattdessen nahe Vorräte innerhalb eines kurzen Radius. Zielfelder werden außerdem nicht mehr reserviert, sodass mehrere Träger gleichzeitig an dasselbe Feld liefern können, statt einen Gegenstandstyp über zehn Zellen zu verteilen.</HaulersDream.Setting.HaulToStackDesc>
+<HaulersDream.Setting.AutoStripHeader>Eine Leiche automatisch ausziehen, WÄHREND sie transportiert wird — wenn ein Kolonist eine Leiche transportiert, zieht er den Körper unterwegs aus, und die Beute reitet im Inventar des Trägers (kein separater Ausziehen-Auftrag, keine zweite Fahrt):</HaulersDream.Setting.AutoStripHeader>
+<HaulersDream.Setting.AutoStripMode>Automatisch ausziehen während des Transports: {0}</HaulersDream.Setting.AutoStripMode>
+<HaulersDream.Setting.AutoStripAll>bei jedem Leichentransport (Vorrat, Grab, Einäscherung, Schlachten)</HaulersDream.Setting.AutoStripAll>
+<HaulersDream.Setting.AutoStripDisposal>nur bei Entsorgungstransporten (Grab, Sarkophag, Einäscherung, Schlachten — nicht bei einfachen Vorratstransporten)</HaulersDream.Setting.AutoStripDisposal>
+<HaulersDream.Setting.AutoStripOff>nie — nicht während des Transports ausziehen (Verhalten wie im Grundspiel)</HaulersDream.Setting.AutoStripOff>
+<HaulersDream.Setting.AutoStripCrossRef>„Nie“ schaltet nur diese Abkürzung Ausziehen-während-des-Transports ab. Es stoppt NICHT das Transportieren ausgezogener Ausrüstung: Ein Ausziehen-Auftrag, den du von Hand erteilst, läuft weiterhin normal, und seine fallen gelassenen Waffen und Kleidung werden weiterhin aufgesammelt und nach Hause transportiert — gesteuert durch den separaten Arbeitsschalter „Ausziehen — entfernte Ausrüstung“ (unter „Erträge aus diesen Arbeitsarten aufsammeln“ weiter unten).</HaulersDream.Setting.AutoStripCrossRef>
+<HaulersDream.Setting.StripColonists>Auch Leichen der Spielerfraktion ausziehen</HaulersDream.Setting.StripColonists>
+<HaulersDream.Setting.StripColonistsDesc>Wenn dies aus ist (Standard), behalten deine eigenen Toten — Kolonisten und Kolonietiere — ihre Ausrüstung und ihre Würde; nur Fremde und Feinde werden geplündert.</HaulersDream.Setting.StripColonistsDesc>
+<HaulersDream.Setting.TaintedSmeltable>Kontaminierte Kleidung (einschmelzbar): {0}</HaulersDream.Setting.TaintedSmeltable>
+<HaulersDream.Setting.TaintedNonSmeltable>Kontaminierte Kleidung (nicht einschmelzbar): {0}</HaulersDream.Setting.TaintedNonSmeltable>
+<HaulersDream.Setting.TaintedTake>nehmen (verkaufen, tragen oder einschmelzen)</HaulersDream.Setting.TaintedTake>
+<HaulersDream.Setting.TaintedLeave>auf der Leiche lassen (Einäscherung verbrennt sie mit dem Körper; Schlachten lässt sie an der Werkbank fallen, wie im Grundspiel)</HaulersDream.Setting.TaintedLeave>
+<HaulersDream.Setting.TaintedForbid>fallen lassen und verbieten</HaulersDream.Setting.TaintedForbid>
+<HaulersDream.Setting.TaintedDestroy>auf der Stelle zerstören (Questgegenstände und Relikte werden stattdessen genommen, nie zerstört)</HaulersDream.Setting.TaintedDestroy>
+<HaulersDream.Setting.HaulTamedSlaughter>Geschlachtete Kadaver zum Lager transportieren</HaulersDream.Setting.HaulTamedSlaughter>
+<HaulersDream.Setting.HaulTamedSlaughterDesc>Wenn ein Kolonist das Schlachten eines Kolonietiers beendet, wird der frische Kadaver direkt zum Lager transportiert (eine Kühltruhe oder ein Leichen-Vorrat), sodass er nicht dort verrottet, wo er gefallen ist — nur wenn ein erreichbarer Lagerplatz ihn annimmt, sonst wird er genau wie im Grundspiel liegengelassen. (Das Grundspiel transportiert ein geschlachtetes Tier nie von selbst; dies schließt diese Lücke.)</HaulersDream.Setting.HaulTamedSlaughterDesc>
+<HaulersDream.Setting.HaulWildKills>Gejagte Kadaver zum Lager transportieren</HaulersDream.Setting.HaulWildKills>
+<HaulersDream.Setting.HaulWildKillsDesc>Wenn eine Jagd direkt nach der Tötung unterbrochen wird — der Jäger wird durch ein Bedürfnis, einen Wehrdienst, einen Nervenzusammenbruch weggezogen, oder die Jagd läuft ab — transportiert der Jäger den frischen Kadaver umgehend auf seinem Weg hinaus zum Lager, anstatt ihn der langsamen allgemeinen Transport-Warteschlange zu überlassen. Bei einer sauberen Jagd trägt der Jäger seine Beute ohnehin schon nach Hause (Grundspiel), also hält sich dies hier zurück — kein Doppeltransport. Transportiert nur, wenn ein erreichbarer Lagerplatz den Körper annimmt; sonst wird der Kadaver genau wie im Grundspiel liegengelassen (er wird nie verboten, sodass der normale Leichentransport ihn weiterhin einsammelt, sobald eine Kühltruhe oder ein Leichen-Vorrat existiert, der ihn annimmt).</HaulersDream.Setting.HaulWildKillsDesc>
+<HaulersDream.Setting.ButcherSpoilingFirst>Die am stärksten verderbende Leiche zuerst schlachten</HaulersDream.Setting.ButcherSpoilingFirst>
+<HaulersDream.Setting.ButcherSpoilingFirstDesc>Wenn ein Kolonist eine Leiche für einen Schlacht-Auftrag wählt, wählt er den Körper, der dem Verrotten am nächsten ist (unter den Leichen, die der Auftrag bereits zulässt, innerhalb seines Zutaten-Suchradius) statt einfach den nächstgelegenen — sodass Fleisch geborgen wird, bevor es verdirbt. Ordnet nur neu, welche bereits gültige Leiche verwendet wird; ändert nie das Rezept, den Suchradius oder welche Leichen der Auftrag annimmt. Gefrorene Leichen werden zuletzt gelassen (sie verderben nicht). Gilt sowohl für gewöhnliche Schlacht-Aufträge als auch für Hauler's-Dream-Stapel. Standardmäßig aktiviert.</HaulersDream.Setting.ButcherSpoilingFirstDesc>
+<HaulersDream.Setting.CookSpoilingFirst>Mit der am stärksten verderbenden Nahrung zuerst kochen</HaulersDream.Setting.CookSpoilingFirst>
+<HaulersDream.Setting.CookSpoilingFirstDesc>Wenn ein Kolonist verderbliche Zutaten für einen Koch-Auftrag wählt (Fleisch, Gemüse und andere verrottbare Nahrung — keine Leichen), wählt er den Stapel, der dem Verrotten am nächsten ist (unter den Zutaten, die der Auftrag bereits zulässt, innerhalb seines Zutaten-Suchradius) statt einfach den nächstgelegenen — sodass Nahrung gegessen wird, bevor sie verdirbt. Ordnet nur neu, welche bereits gültige Zutat verwendet wird; ändert nie das Rezept, den Suchradius oder nicht verderbliche Herstellungen (Stahl, Stoff usw. bleiben unberührt). Gefrorene Nahrung wird zuletzt gelassen. Gilt sowohl für gewöhnliche Koch-Aufträge als auch für Hauler's-Dream-Stapel. Standardmäßig aktiviert.</HaulersDream.Setting.CookSpoilingFirstDesc>
+<HaulersDream.Setting.Overload>Cleveres Überladen: {0}</HaulersDream.Setting.Overload>
+<HaulersDream.Setting.OverloadDesc>Spielfiguren tragen Materialien über 100 % ihres Maximalgewichts, um Fahrten zu sparen, bewegen sich aber langsamer, je mehr sie überladen — und tun es nur, wenn weniger Fahrten die Verlangsamung wirklich wert sind (auch für eingereihte Bau-/Herstellungsarbeit). Schiebe nach links für geringere Verlangsamung + größere Ladungen, nach rechts für stärkere Verlangsamung + kleinere Ladungen.</HaulersDream.Setting.OverloadDesc>
+<HaulersDream.Overload.Free>Keine Verlangsamung — frei tragen</HaulersDream.Overload.Free>
+<HaulersDream.Overload.Fair>Fair (ausgewogen)</HaulersDream.Overload.Fair>
+<HaulersDream.Overload.Off>Aus — nie überladen</HaulersDream.Overload.Off>
+<HaulersDream.Overload.Eager>Eifrig beim Überladen ({0})</HaulersDream.Overload.Eager>
+<HaulersDream.Overload.Cautious>Vorsichtig ({0})</HaulersDream.Overload.Cautious>
+<HaulersDream.Setting.StrictCarryWeight>Striktes Traggewicht (nicht überladen)</HaulersDream.Setting.StrictCarryWeight>
+<HaulersDream.Setting.StrictCarryWeightDesc>Wenn AN, tragen Spielfiguren nie über 100 % ihres Maximalgewichts und unterbrechen nie die Arbeit, um bei Vollsein zu entladen — sie ernten weiter und lassen den Überschuss für den normalen Transport auf dem Boden (im Vorbeigehen aufgesammelt). Wenn AUS (Standard), überladen Spielfiguren gemäß dem Regler oben und machen sich, sobald voll, zum Entladen auf.</HaulersDream.Setting.StrictCarryWeightDesc>
+<HaulersDream.Setting.KeepWorkingWhenFull>Beim Vollsein weiterarbeiten (nicht zum Entladen abbrechen)</HaulersDream.Setting.KeepWorkingWhenFull>
+<HaulersDream.Setting.KeepWorkingWhenFullDesc>Standardmäßig aus. Wenn AN, unterbricht eine Spielfigur, die sich beim Abbauen, Ernten oder Abreißen füllt, ihre Arbeit NICHT, um zu entladen — sie arbeitet weiter, und alle Erträge, die nicht mehr passen, werden für den normalen Transport auf dem Boden gelassen. Sie entlädt weiterhin am Ende eines Arbeitsdurchlaufs, rund um Mahlzeiten/Schlaf/Erholung, im Intervall und (anders als beim strikten Traggewicht) überlädt sie weiterhin über 100 % bis zur Obergrenze des cleveren Überladens. Sie wirft die Ladung mitten im Durchlauf nur ab, wenn sich das lohnt — kurz bevor sie zu einem FERNEN nächsten Arbeitsziel geht (wenn das Lager näher ist als die nächste Aufgabe, um den Abstand unten). Spezielle Transport-/Lade-Aufträge liefern ihre Ladung weiterhin, wenn voll. Unabhängig vom strikten Traggewicht: Dies behält das Überladen-und-Ansammeln-Verhalten, es stoppt nur die Unterbrechung „voll → jetzt abladen gehen“.</HaulersDream.Setting.KeepWorkingWhenFullDesc>
+<HaulersDream.Setting.KeepWorkingMargin>Vor einer Verlagerung nur entladen, wenn sie um mindestens so viel weiter ist: {0} Felder</HaulersDream.Setting.KeepWorkingMargin>
+<HaulersDream.Setting.KeepWorkingMarginDesc>Hysterese für die Regel „beim Vollsein weiterarbeiten“: Eine volle, überladene Spielfigur weicht zum Entladen ab, bevor sie zu ihrem nächsten Arbeitsziel geht, nur dann, wenn dieses Ziel um mindestens so viele Felder weiter weg ist als die Lager-Ablieferstelle. Höher = die Spielfigur trägt ihre Ladung über ein breiteres Band ungefähr gleicher Distanzen weiter (weniger Umwege); 0 = sie entlädt zuerst, sobald das nächste Ziel auch nur etwas weiter weg ist als das Lager.</HaulersDream.Setting.KeepWorkingMarginDesc>
+<HaulersDream.Setting.RouteMaxAmount>Route planen — oberes Ende des „Menge“-Reglers: {0} Halte</HaulersDream.Setting.RouteMaxAmount>
+<HaulersDream.Setting.RouteCalcHeader>Routenberechnung (Standardwerte — pro Zieltyp im Routendialog überschreibbar)</HaulersDream.Setting.RouteCalcHeader>
+<HaulersDream.Setting.RouteSelection>Auswahlmethode: {0}</HaulersDream.Setting.RouteSelection>
+<HaulersDream.Setting.RouteDistance>Distanzgrundlage: {0}</HaulersDream.Setting.RouteDistance>
+<HaulersDream.Setting.RouteOrderEffort>Besuchsreihenfolge exakt lösen bis zu: {0} Halte</HaulersDream.Setting.RouteOrderEffort>
+<HaulersDream.Setting.OpportunisticUnload>Im Vorbeigehen am Lager abliefern</HaulersDream.Setting.OpportunisticUnload>
+<HaulersDream.Setting.OpportunisticUnloadDesc>Wenn eine Spielfigur, die aufgesammelte Güter trägt, zu ihrer nächsten Arbeit auf eine lange Fahrt aufbricht und ein Vorrat ungefähr auf dem Weg liegt, lädt sie die Ladung im Vorbeigehen ab, anstatt sie quer über die Karte zu tragen und später eine separate Fahrt zu machen.</HaulersDream.Setting.OpportunisticUnloadDesc>
+<HaulersDream.Stat.Overload>Hauler's Dream — überladen</HaulersDream.Stat.Overload>
+<HaulersDream.Setting.WorkTypesHeader>Erträge aus diesen Arbeitsarten aufsammeln:</HaulersDream.Setting.WorkTypesHeader>
+<HaulersDream.Setting.HaulHarvest>Pflanzen — ernten &amp; schneiden</HaulersDream.Setting.HaulHarvest>
+<HaulersDream.Setting.HaulMining>Bergbau — Erz &amp; Brocken</HaulersDream.Setting.HaulMining>
+<HaulersDream.Setting.HaulDeepDrill>Tiefenbohrer</HaulersDream.Setting.HaulDeepDrill>
+<HaulersDream.Setting.HaulDeconstruct>Abriss-Bergungsgut</HaulersDream.Setting.HaulDeconstruct>
+<HaulersDream.Setting.HaulAnimals>Tiere — melken &amp; scheren</HaulersDream.Setting.HaulAnimals>
+<HaulersDream.Setting.HaulUninstall>Abbauen — verkleinerte Gebäude (Karawanen-/Auswärtskarten)</HaulersDream.Setting.HaulUninstall>
+<HaulersDream.Setting.HaulStrip>Ausziehen — entfernte Ausrüstung (Ausrüstung aus einem Ausziehen-Auftrag transportieren)</HaulersDream.Setting.HaulStrip>
+<HaulersDream.Setting.HaulStripDesc>Wenn ein Kolonist einen Gefangenen, eine bewusstlose Spielfigur oder eine Leiche auszieht (ein Ausziehen-Auftrag, den DU von Hand erteilst), werden die entfernten Waffen, Ausrüstung und Kleidung gleich nach dem Ausziehen in sein Inventar gesammelt und in einer Fahrt nach Hause transportiert. Dies ist der Schalter, der den Transport ausgezogener Ausrüstung steuert — er ist unabhängig von „Automatisch ausziehen während des Transports“ weiter oben: Jener zieht eine Leiche nur aus, während sie GERADE transportiert wird (Beute ins Inventar); DIESER transportiert die Ausrüstung, die ein manueller Ausziehen-Auftrag auf den Boden fallen lässt. Du kannst also „automatisch ausziehen während des Transports“ auf „nie“ stellen und dennoch manuell erteilte Ausziehen-Aufträge ihre Ausrüstung aufsammeln und transportieren lassen, solange dies aktiviert ist. Kontaminierte Kleidung von einer Leiche folgt den Entscheidungen für kontaminierte Kleidung im Abschnitt „Automatisch ausziehen“ („auf der Leiche lassen“-Teile bleiben auf dem Boden, unaufgesammelt). Bei einem lebenden Ziel wird am Ende der Aufträge des Ausziehenden ein Folge-Ausziehen eingereiht, falls sich das Ziel aus Resten erneut anzieht; es tut nichts, wenn das Ziel nackt geblieben ist.</HaulersDream.Setting.HaulStripDesc>
+<HaulersDream.Setting.HaulStripCrossRef>Unabhängig von „Automatisch ausziehen während des Transports“ ganz oben: Jenes zieht eine Leiche aus, während sie transportiert wird (Beute ins Inventar); dieses transportiert die Ausrüstung, die ein manueller Ausziehen-Auftrag fallen lässt.</HaulersDream.Setting.HaulStripCrossRef>
+<HaulersDream.Setting.WorkOverrideHeader>Übersteuerungen der Arbeitsunfähigkeit (aus = Grundspiel):</HaulersDream.Setting.WorkOverrideHeader>
+<HaulersDream.Setting.AllCanHaul>Alle Spielfiguren können transportieren</HaulersDream.Setting.AllCanHaul>
+<HaulersDream.Setting.AllCanHaulDesc>Keine Hintergrundgeschichte, Eigenschaft, kein Gen, kein Adelstitel, keine Ideologie-Rolle, kein Gesundheitszustand und keine Quest-Beschränkung kann eine Spielfigur unfähig zum Transportieren machen. Gilt für den Arbeitsreiter, das Priorisieren per Rechtsklick, die automatische Arbeit und die Planer dieses Mods. (Weise nach dem Aktivieren eine Arbeitspriorität zu — neu befähigte Spielfiguren beginnen ohne Zuweisung, wie jede andere Arbeit.)</HaulersDream.Setting.AllCanHaulDesc>
+<HaulersDream.Setting.AllCanClean>Alle Spielfiguren können putzen</HaulersDream.Setting.AllCanClean>
+<HaulersDream.Setting.AllCanCleanDesc>Keine Unfähigkeit kann eine Spielfigur außerstande setzen zu putzen. Gilt für den Arbeitsreiter, das Priorisieren per Rechtsklick, die automatische Arbeit und die Planer dieses Mods (einschließlich „Priorisiertes Putzen planen“). (Weise nach dem Aktivieren eine Arbeitspriorität zu — neu befähigte Spielfiguren beginnen ohne Zuweisung.)</HaulersDream.Setting.AllCanCleanDesc>
+<HaulersDream.Setting.AllCanCutPlants>Alle Spielfiguren können Pflanzen schneiden</HaulersDream.Setting.AllCanCutPlants>
+<HaulersDream.Setting.AllCanCutPlantsDesc>Keine Unfähigkeit kann eine Spielfigur außerstande setzen, Pflanzen zu schneiden. Nur die Arbeit Pflanzen schneiden wird aktiviert — das Säen (Anbau) bleibt von den echten Fähigkeiten der Spielfigur bestimmt.</HaulersDream.Setting.AllCanCutPlantsDesc>
+<HaulersDream.Setting.PauseWhileDrafted>Pausieren im Wehrdienst</HaulersDream.Setting.PauseWhileDrafted>
+<HaulersDream.Setting.AllowMechanoids>Mechanoiden dürfen aufsammeln und transportieren</HaulersDream.Setting.AllowMechanoids>
+<HaulersDream.AllowMechanoidsDesc>Bestimmt, ob deine Arbeits-Mechanoiden das Aufsammeln und den Stapel-Transport von Hauler's Dream nutzen — sie tragen Erträge und Beute in ihrem Inventar, genau wie Kolonisten. Das umfasst das Aufsammeln der Güter, die ein Mech bei seiner eigenen Arbeit produziert: geerntete/geschnittene Pflanzen, abgebautes Erz und Brocken sowie Abriss-Bergungsgut (die Materialien, die frei werden, wenn ein Mech eine Struktur abreißt). Dies ändert NICHT die Mechanoiden-Aufträge des Grundspiels selbst: Ein Arbeits-Mech baut, erntet und reißt weiterhin von selbst ab — der Schalter entscheidet nur, ob er die Ergebnisse AUCH in sein Inventar sammelt, für einen gebündelten Transport. Wie ein Mech Materialien zu einer Baustelle LIEFERT, ist eine separate Angelegenheit, geregelt durch die Einstellung „Materialien im Inventar für große Einzelbauten tragen“ oben (die für jeden Bauarbeiter gilt, Mech oder Kolonist); dieser Schalter ändert für sich genommen nicht die Bau-Lieferung. Wenn aktiviert, kann ein Arbeits-Mech des Spielers unter der Einstellung Cleveres Überladen ebenfalls über 100 % Kapazität tragen und wird dadurch genauso verlangsamt wie ein Kolonist.</HaulersDream.AllowMechanoidsDesc>
+<HaulersDream.AllowAnimals>Koloniietiere dürfen aufsammeln und transportieren</HaulersDream.AllowAnimals>
+<HaulersDream.AllowAnimalsDesc>Standardmäßig deaktiviert. Wenn aktiviert, tragen Kolonietiere, die im Transportieren ausgebildet sind, mehrere Stapel auf einmal — sie nehmen Beute aus der Nähe in ihr Inventar und führen den Stapel-Transport von Hauler's Dream aus statt eines Stapels pro Fahrt. Dies erreicht nur Tiere, die im Transportieren ausgebildet werden KÖNNEN: solche mit fortgeschrittener Trainierbarkeit und einem ausreichend großen Körper (Huskys, Labradore, Elefanten, Bären, Thrumbos usw.). Tiere, die nicht im Transportieren ausgebildet werden können — eine Hauskatze und dergleichen — führen den Transportauftrag von vornherein nie aus (unabhängig von dieser Einstellung), sie sind also von diesem Schalter unberührt. Nur deine eigenen Kolonietiere sind betroffen; wilde und feindliche Tiere sind nie betroffen.</HaulersDream.AllowAnimalsDesc>
+<HaulersDream.Setting.AllowIncapable>Zum Transportieren unfähigen Spielfiguren erlauben, ihre eigenen Erträge aufzusammeln</HaulersDream.Setting.AllowIncapable>
+<HaulersDream.Setting.EnableOnNonHomeMaps>Auch auf Karawanen-/Nicht-Heimatkarten arbeiten</HaulersDream.Setting.EnableOnNonHomeMaps>
+<HaulersDream.Setting.HideGizmo>Die Schaltfläche „Inventar entladen“ pro Spielfigur verbergen</HaulersDream.Setting.HideGizmo>
+<HaulersDream.Setting.UnloadGrace>Sammelfenster: nach der letzten Aufnahme noch {0} Ticks (~60/Sek.) weiter aufnehmen, bevor die Entladefahrt gemacht wird. Höher = Spielfiguren überladen mehr und machen weniger, größere Fahrten; sie entladen dennoch sofort, sobald sie voll sind (die Überlade-Obergrenze).</HaulersDream.Setting.UnloadGrace>
+<HaulersDream.Setting.IntervalUnload>Intervall-Entladen: alle {0} Spielstunden</HaulersDream.Setting.IntervalUnload>
+<HaulersDream.Setting.IntervalUnloadOff>Intervall-Entladen: aus (nur Arbeitsende / Mahlzeiten und Erholung / Übergewicht / manuell)</HaulersDream.Setting.IntervalUnloadOff>
+<HaulersDream.Setting.AlertCannotUnload>Warnen (roter Alarm), wenn eine Spielfigur ihr Inventar nicht entladen kann</HaulersDream.Setting.AlertCannotUnload>
+<HaulersDream.Setting.AlertCannotUnloadDesc>Zeigt unten rechts einen kritischen Alarm im „Feuer!“-Stil, wenn eine oder mehrere Spielfiguren aufgesammelte Gegenstände tragen, die sie nicht wegräumen können — entweder kann nichts auf der Karte sie lagern (kein Vorrat / keine Abwurfzone / keine erreichbare Zelle), oder sie tragen Gegenstände schon viel zu lange, ohne zu entladen (Lager unerreichbar, oder ein anderer Mod bricht den Transport-/Entlade-Auftrag immer wieder ab). Ein Alarm deckt alle betroffenen Spielfiguren ab; fahre mit der Maus darüber, um Pfeile auf sie zu richten, klicke, um durch sie zu wechseln. Dies ist deine Garantie, dass Inventare nie stillschweigend zu „schwarzen Löchern“ werden.</HaulersDream.Setting.AlertCannotUnloadDesc>
+<HaulersDream.Setting.AlertStuckHours>…eine Spielfigur markieren, nachdem sie nicht entladene Gegenstände {0} Spielstunden lang getragen hat</HaulersDream.Setting.AlertStuckHours>
+<HaulersDream.Setting.VerboseLogging>Ausführliche Debug-Protokollierung</HaulersDream.Setting.VerboseLogging>
+<HaulersDream.Gizmo.UnloadNow>Inventar entladen</HaulersDream.Gizmo.UnloadNow>
+<HaulersDream.Gizmo.UnloadNowDesc>Lässt diese Spielfigur alles, was sie aufgesammelt hat, zum nächsten gültigen Lager tragen.</HaulersDream.Gizmo.UnloadNowDesc>
+<HaulersDream.Gizmo.UnloadNowDrafted>Im Wehrdienst: hole diese Spielfigur aus dem Wehrdienst, um zu entladen.</HaulersDream.Gizmo.UnloadNowDrafted>
+<HaulersDream.Gizmo.AutoHaul>Erträge automatisch transportieren</HaulersDream.Gizmo.AutoHaul>
+<HaulersDream.Gizmo.AutoHaulDesc>Wenn aktiviert, sammelt diese Spielfigur automatisch ihre eigenen Arbeitserträge auf und fegt beim Arbeiten Beute aus der Nähe in ihr Inventar. Schalte es aus, um diese Spielfigur vom automatischen Transportieren abzuhalten — sie wird dennoch alles wegräumen, was sie bereits trägt.</HaulersDream.Gizmo.AutoHaulDesc>
+<HaulersDream.Alert.CannotUnload>Inventar kann nicht entladen werden ({0})</HaulersDream.Alert.CannotUnload>
+<HaulersDream.Alert.CannotUnloadDesc.NoStorage>Diese Spielfiguren tragen aufgesammelte Gegenstände, für die es keinen Platz gibt — kein Vorrat und keine Abwurfzone auf der Karte nimmt sie an, und es wurde kein erreichbarer Ort gefunden. Lege einen Vorrat an (ein Abwurf-Vorrat nimmt Gesteinsbrocken und die meisten Abfälle an) oder erlaube ihren Gegenstandstyp in einem bestehenden:\n\n{0}\n\nBis dahin bleiben die Gegenstände in ihrem Inventar. Klicke diesen Alarm an, um durch die Spielfiguren zu wechseln; fahre mit der Maus darüber, um sie hervorzuheben.</HaulersDream.Alert.CannotUnloadDesc.NoStorage>
+<HaulersDream.Alert.CannotUnloadDesc.Stuck>Diese Spielfiguren tragen aufgesammelte Gegenstände schon lange, ohne sie zu entladen. Das Lager ist von dort, wo sie sind, vielleicht unerreichbar, oder ein anderer Mod bricht ihren Transport-/Entlade-Auftrag immer wieder ab:\n\n{0}\n\nPrüfe auf einen erreichbaren, erlaubten Vorrat und auf einen Mod, der ihre Aufträge unterbricht. Klicke diesen Alarm an, um durch die Spielfiguren zu wechseln; fahre mit der Maus darüber, um sie hervorzuheben.</HaulersDream.Alert.CannotUnloadDesc.Stuck>
+<HaulersDream.PlanRoute.Option>Priorisiertes {0} planen…</HaulersDream.PlanRoute.Option>
+<HaulersDream.PlanRoute.ConstructGerund>Bauen</HaulersDream.PlanRoute.ConstructGerund>
+<HaulersDream.PlanRoute.MiningGerundFallback>Bergbau</HaulersDream.PlanRoute.MiningGerundFallback>
+<HaulersDream.PlanRoute.Title>Route planen: {0}</HaulersDream.PlanRoute.Title>
+<HaulersDream.PlanRoute.ModeChained>Verkettet — die nächsten paar</HaulersDream.PlanRoute.ModeChained>
+<HaulersDream.PlanRoute.ModeChainedDesc>Routet die gewählte Anzahl der nächstgelegenen Ziele derselben Art, beginnend bei dem, das du angeklickt hast.</HaulersDream.PlanRoute.ModeChainedDesc>
+<HaulersDream.PlanRoute.ModeVein>Berührend — die ganze Ader</HaulersDream.PlanRoute.ModeVein>
+<HaulersDream.PlanRoute.ModeVeinDesc>Routet das zusammenhängende Bündel sich berührender Ziele derselben Art (eine Erzader, ein Pflanzenflecken) nach außen von dem, das du angeklickt hast, bis zur gewählten Menge.</HaulersDream.PlanRoute.ModeVeinDesc>
+<HaulersDream.PlanRoute.ModeRadius>Im Radius</HaulersDream.PlanRoute.ModeRadius>
+<HaulersDream.PlanRoute.ModeRadiusDesc>Routet jedes Ziel derselben Art innerhalb des gewählten Radius um das, das du angeklickt hast.</HaulersDream.PlanRoute.ModeRadiusDesc>
+<HaulersDream.PlanRoute.ModeRooms>In Raum/Räumen</HaulersDream.PlanRoute.ModeRooms>
+<HaulersDream.PlanRoute.ModeRoomsDesc>Routet jedes Ziel derselben Art in den gewählten Räumen. Der Raum, der das von dir angeklickte Ziel enthält, ist immer enthalten; wähle weitere Räume unten. Hinweis: Der offene Außenbereich zählt als ein großer Bereich, begrenzt durch die Mengen-Obergrenze.</HaulersDream.PlanRoute.ModeRoomsDesc>
+<HaulersDream.PlanRoute.ModeZone>Ganze Anbauzone</HaulersDream.PlanRoute.ModeZone>
+<HaulersDream.PlanRoute.ModeZoneDesc>Routet jedes Ziel derselben Art innerhalb der Anbauzone, in der die angeklickte Pflanze steht — bearbeite das ganze Feld mit einem Klick. Beim Ernten gelten der Reife-Filter und die Wachstumsschwelle weiterhin.</HaulersDream.PlanRoute.ModeZoneDesc>
+<HaulersDream.PlanRoute.PickRooms>Räume wählen…</HaulersDream.PlanRoute.PickRooms>
+<HaulersDream.PlanRoute.PickRoomsStop>Fertig mit Wählen (klicke in einen Raum, um ihn hinzuzufügen)</HaulersDream.PlanRoute.PickRoomsStop>
+<HaulersDream.PlanRoute.RoomsHeader>Räume: {0}</HaulersDream.PlanRoute.RoomsHeader>
+<HaulersDream.PlanRoute.RoomGone>(Raum existiert nicht mehr)</HaulersDream.PlanRoute.RoomGone>
+<HaulersDream.PlanRoute.RadiusLabel>Radius: {0} Zellen</HaulersDream.PlanRoute.RadiusLabel>
+<HaulersDream.PlanRoute.Amount>Menge: {0}</HaulersDream.PlanRoute.Amount>
+<HaulersDream.PlanRoute.VeinAll>Alle</HaulersDream.PlanRoute.VeinAll>
+<HaulersDream.PlanRoute.MaxTravel>Max. Reise: {0}</HaulersDream.PlanRoute.MaxTravel>
+<HaulersDream.PlanRoute.MaxTravelNoLimit>kein Limit</HaulersDream.PlanRoute.MaxTravelNoLimit>
+<HaulersDream.PlanRoute.Smart>Cleveres Routing (zum Lager zurückkreisen)</HaulersDream.PlanRoute.Smart>
+<HaulersDream.PlanRoute.SmartDesc>Ordnet die Halte so, dass die gesamte Fahrt — die Ziele einsammeln und zu dem Vorrat zurückkehren, in den die Güter gehören — so kurz wie möglich ist und die Route neben diesem Lager endet. Wenn dies aus ist, werden die Halte allein für den kürzesten Einsammelweg geordnet.</HaulersDream.PlanRoute.SmartDesc>
+<HaulersDream.PlanRoute.AllowHarvest>Ernten nicht markierter Pflanzen erlauben</HaulersDream.PlanRoute.AllowHarvest>
+<HaulersDream.PlanRoute.AllowHarvestDesc>Zieht auch Pflanzen derselben Art in der Nähe in die Route, selbst wenn du sie noch nicht zur Ernte markiert hast — solange sie mindestens die Wachstumsschwelle unten erreichen. Lässt dich einen ganzen reif genug gewordenen Flecken mit einem Klick ernten. Wenn dies aus ist, deckt die Route nur bereits zur Ernte markierte Pflanzen ab.</HaulersDream.PlanRoute.AllowHarvestDesc>
+<HaulersDream.PlanRoute.GrowthThreshold>Wachstumsschwelle: {0}%</HaulersDream.PlanRoute.GrowthThreshold>
+<HaulersDream.PlanRoute.PickStart>Zwingend einzuschließende Ziele wählen…</HaulersDream.PlanRoute.PickStart>
+<HaulersDream.PlanRoute.PickStop>Fertig mit Wählen (klicke auf die Karte, um hinzuzufügen)</HaulersDream.PlanRoute.PickStop>
+<HaulersDream.PlanRoute.PickHeader>Zwingend einschließen: {0}</HaulersDream.PlanRoute.PickHeader>
+<HaulersDream.PlanRoute.PickRoleHint>Markiere ein Ziel mit S (Start) oder E (Ende), um festzulegen, wo die Route beginnt oder endet — sonst wird jedes dort platziert, wo es am kürzesten ist.</HaulersDream.PlanRoute.PickRoleHint>
+<HaulersDream.PlanRoute.PickStartBtn>S</HaulersDream.PlanRoute.PickStartBtn>
+<HaulersDream.PlanRoute.PickEndBtn>E</HaulersDream.PlanRoute.PickEndBtn>
+<HaulersDream.PlanRoute.PickStartBadge>(Start)</HaulersDream.PlanRoute.PickStartBadge>
+<HaulersDream.PlanRoute.PickEndBadge>(Ende)</HaulersDream.PlanRoute.PickEndBadge>
+<HaulersDream.PlanRoute.PickStartTip>Macht dies zum START der Route — dem ersten Halt, den die Spielfigur besucht. Klicke erneut, um es zu löschen.</HaulersDream.PlanRoute.PickStartTip>
+<HaulersDream.PlanRoute.PickEndTip>Macht dies zum ENDE der Route — dem letzten Halt, kurz vor der Rückkehr zum Lager. Klicke erneut, um es zu löschen.</HaulersDream.PlanRoute.PickEndTip>
+<HaulersDream.PlanRoute.Selection>Auswahl: {0}</HaulersDream.PlanRoute.Selection>
+<HaulersDream.PlanRoute.DistanceBasis>Distanz: {0}</HaulersDream.PlanRoute.DistanceBasis>
+<HaulersDream.PlanRoute.SelMostStops>Meiste Halte pro Reise</HaulersDream.PlanRoute.SelMostStops>
+<HaulersDream.PlanRoute.SelNearest>Nächstes zum angeklickten Ziel</HaulersDream.PlanRoute.SelNearest>
+<HaulersDream.PlanRoute.DistStraight>Luftlinie</HaulersDream.PlanRoute.DistStraight>
+<HaulersDream.PlanRoute.DistWalking>Echter Gehweg</HaulersDream.PlanRoute.DistWalking>
+<HaulersDream.PlanRoute.FogCaution>Vorsicht: Möglicherweise sind nicht alle Ader-Gegenstände sichtbar. Während du abbaust und mehr aufdeckst, erweitert sich die Route, um sie ebenfalls abzudecken.</HaulersDream.PlanRoute.FogCaution>
+<HaulersDream.PlanRoute.Estimate>Geschätzte Zeit: ~{0} Stunden ({1} Halte, ~{2} Zellen Einsammeln)</HaulersDream.PlanRoute.Estimate>
+<HaulersDream.PlanRoute.Cells>{0} Zellen</HaulersDream.PlanRoute.Cells>
+<HaulersDream.PlanRoute.EstimateLimited>— auf das Reiselimit gekürzt</HaulersDream.PlanRoute.EstimateLimited>
+<HaulersDream.PlanRoute.EstimateUnreachable>— einige Ziele können nicht erreicht werden</HaulersDream.PlanRoute.EstimateUnreachable>
+<HaulersDream.PlanRoute.EstimateNone>Keine erreichbaren Halte für diese Route.</HaulersDream.PlanRoute.EstimateNone>
+<HaulersDream.PlanRoute.Append>Anhängen</HaulersDream.PlanRoute.Append>
+<HaulersDream.PlanRoute.Replace>Ersetzen</HaulersDream.PlanRoute.Replace>
+<HaulersDream.PlanRoute.Cancel>Abbrechen</HaulersDream.PlanRoute.Cancel>
+<HaulersDream.PlanRoute.NoTargets>Keine Ziele in der Nähe zum Routen.</HaulersDream.PlanRoute.NoTargets>
+<HaulersDream.PlanRoute.WaitingForMaterials>Route festgelegt — Baupläne werden gebaut, sobald Materialien verfügbar werden.</HaulersDream.PlanRoute.WaitingForMaterials>
+<HaulersDream.PlanRoute.NoMaterials>(Materialien nicht verfügbar)</HaulersDream.PlanRoute.NoMaterials>
+<HaulersDream.PlanRoute.Planned>Eine Route mit {0} Halten geplant.</HaulersDream.PlanRoute.Planned>
+<HaulersDream.PlanRoute.Capped>Eine Route mit {0} Halten geplant (begrenzt, um sie effizient zu halten).</HaulersDream.PlanRoute.Capped>
+<HaulersDream.PlanRoute.DistanceLimited>Eine Route mit {0} Halten geplant (auf das Reiselimit gekürzt).</HaulersDream.PlanRoute.DistanceLimited>
+<HaulersDream.PlanRoute.Partial>Eine Route mit {0} Halten geplant ({1} in der Nähe konnten nicht erreicht werden).</HaulersDream.PlanRoute.Partial>
+<HaulersDream.PlanCraft.Option>Priorisierte Herstellung planen…</HaulersDream.PlanCraft.Option>
+<HaulersDream.PlanCraft.Title>Herstellung planen: {0}</HaulersDream.PlanCraft.Title>
+<HaulersDream.PlanCraft.NoBills>Keine stapelbaren Aufträge hier. Füge einen Produktionsauftrag hinzu (Kochen, Drogen, einfache Teile — keine Aufträge, die einen unfertigen Gegenstand brauchen), um einen Stapel zu planen.</HaulersDream.PlanCraft.NoBills>
+<HaulersDream.PlanCraft.Repeat>Wiederholen: {0} Mal</HaulersDream.PlanCraft.Repeat>
+<HaulersDream.PlanCraft.Timeout>Zeitlimit: {0}h</HaulersDream.PlanCraft.Timeout>
+<HaulersDream.PlanCraft.TimeoutOff>Zeitlimit: keines</HaulersDream.PlanCraft.TimeoutOff>
+<HaulersDream.PlanCraft.Resolved>Wird {0}× in einem Durchgang herstellen.</HaulersDream.PlanCraft.Resolved>
+<HaulersDream.PlanCraft.ResolvedTrimmed>Wird {0}× in einem Durchgang herstellen — {1}.</HaulersDream.PlanCraft.ResolvedTrimmed>
+<HaulersDream.PlanCraft.LimitResources>begrenzt durch verfügbare Zutaten</HaulersDream.PlanCraft.LimitResources>
+<HaulersDream.PlanCraft.LimitMass>begrenzt dadurch, wie viel die Spielfigur tragen kann</HaulersDream.PlanCraft.LimitMass>
+<HaulersDream.PlanCraft.LimitTimeout>begrenzt durch das Zeitlimit</HaulersDream.PlanCraft.LimitTimeout>
+<HaulersDream.PlanCraft.LimitBillRepeat>begrenzt durch die verbleibende Anzahl des Auftrags</HaulersDream.PlanCraft.LimitBillRepeat>
+<HaulersDream.PlanCraft.Ingredients>Bringt: {0}</HaulersDream.PlanCraft.Ingredients>
+<HaulersDream.PlanCraft.IngredientsMixed>Bringt eine Mischung aus Zutaten (pro Herstellung gewählt, am stärksten verderbliche zuerst, wenn aktiviert).</HaulersDream.PlanCraft.IngredientsMixed>
+<HaulersDream.PlanCraft.EstTime>Herstellungszeit: ~{0}h (zzgl. der Holfahrt; die Produkte werden danach in den besten Vorrat transportiert)</HaulersDream.PlanCraft.EstTime>
+<HaulersDream.PlanCraft.Infeasible>Lässt sich nicht stapeln: {0}</HaulersDream.PlanCraft.Infeasible>
+<HaulersDream.PlanCraft.Confirm>Priorisieren</HaulersDream.PlanCraft.Confirm>
+<HaulersDream.PlanCraft.Cancel>Abbrechen</HaulersDream.PlanCraft.Cancel>
+<HaulersDream.PlanCraft.Started>Stapelherstellung von {0}× {1}.</HaulersDream.PlanCraft.Started>
+<HaulersDream.PlanCraft.CouldNotStart>Der Stapel konnte nicht gestartet werden (die Werkbank ist möglicherweise in Benutzung).</HaulersDream.PlanCraft.CouldNotStart>
+<HaulersDream.PlanCraft.JobReport>stellt {0} her (Stapel {1}/{2}).</HaulersDream.PlanCraft.JobReport>
+<HaulersDream.PlanCraft.BlockUnsupported>dieses Rezept lässt sich nicht stapeln</HaulersDream.PlanCraft.BlockUnsupported>
+<HaulersDream.PlanCraft.BlockNoIngredient>keine verfügbare Zutat für {0}</HaulersDream.PlanCraft.BlockNoIngredient>
+<HaulersDream.PlanCraft.BlockNoReps>nicht genug Ressourcen für auch nur einen Durchlauf</HaulersDream.PlanCraft.BlockNoReps>
+<HaulersDream.PlanCraft.BlockBillNotActive>der Auftrag ist ausgesetzt oder bereits erfüllt</HaulersDream.PlanCraft.BlockBillNotActive>
+<HaulersDream.HaulToSite.Option>Transport von Materialien zu {0} priorisieren</HaulersDream.HaulToSite.Option>
+<HaulersDream.HaulToSite.CouldNotStart>Im Moment sind keine erreichbaren Materialien zum Transportieren da.</HaulersDream.HaulToSite.CouldNotStart>
+<HaulersDream.HaulNearby.Option>Alles in der Nähe transportieren</HaulersDream.HaulNearby.Option>
+<HaulersDream.HaulNearby.CouldNotStart>Im Moment ist nichts in der Nähe zu transportieren.</HaulersDream.HaulNearby.CouldNotStart>
+<HaulersDream.PickUp.Option>{0} aufnehmen</HaulersDream.PickUp.Option>
+<HaulersDream.PickUp.CouldNotStart>{0} kann {1} nicht aufnehmen — trägt bereits so viel wie möglich, und es gibt keinen Ort, um es hinzutransportieren.</HaulersDream.PickUp.CouldNotStart>
+<HaulersDream.PlanRoute.AlsoBuild>Auch bauen (an jedem Halt transportieren + bauen)</HaulersDream.PlanRoute.AlsoBuild>
+<HaulersDream.PlanRoute.AlsoBuildDesc>Wenn dies aktiviert ist, liefert die Spielfigur Materialien zu einer Baustelle und BAUT sie, bevor sie zur nächsten weitergeht — sie sammelt die Materialien der gesamten Route im Voraus und behält sie im Inventar. Wenn es deaktiviert ist, füllt die Spielfigur die Baustellen nur mit Materialien auf (andere können bauen). So oder so bleiben die Baustellen für andere Spielfiguren offen, sodass mehrere denselben Durchlauf parallel beliefern können; wer als Zweiter ankommt, behält seinen Überschuss einfach für den nächsten Halt oder entlädt ihn am Ende.</HaulersDream.PlanRoute.AlsoBuildDesc>
+<HaulersDream.Setting.CraftBatchTimeout>Standard-Zeitlimit für Herstellungsstapel: {0}h</HaulersDream.Setting.CraftBatchTimeout>
+<HaulersDream.Setting.CraftBatchTimeoutOff>Standard-Zeitlimit für Herstellungsstapel: keines</HaulersDream.Setting.CraftBatchTimeoutOff>
+<HaulersDream.Setting.InventoryCraftDeliver>Herstellungszutaten im Inventar tragen (weniger Fahrten)</HaulersDream.Setting.InventoryCraftDeliver>
+<HaulersDream.Setting.InventoryCraftDeliverDesc>Wenn eine Spielfigur einen Herstellungsauftrag beginnt, der Zutaten aus zwei oder mehr getrennten Stapeln benötigt, sammelt sie zuerst ALLE in einem Durchgang in ihr Inventar — bei Bedarf überladen, mit der Verlangsamung als Preis (es sei denn, striktes Traggewicht ist aktiv) — geht einmal zur Werkbank und fertigt aus dem getragenen Vorrat. Funktioniert für jedes Rezept, auch für solche, die zuerst einen unfertigen Gegenstand bauen (Kleidung, Waffen, Skulpturen). Die Herstellung selbst ist zu 100 % unverändert, sodass nichts dupliziert oder verloren gehen kann. Wenn ein anderer Mod den Transport von Herstellungszutaten verwaltet, hält sich Hauler's Dream automatisch zurück (es sammelt sie stattdessen), sodass sich jede Herstellungsschleife von selbst auflöst. Erfordert „getragene Zutaten zählen für die Herstellung“ oben.</HaulersDream.Setting.InventoryCraftDeliverDesc>
+<HaulersDream.PrepGather.Report>sammelt Herstellungszutaten.</HaulersDream.PrepGather.Report>
+<HaulersDream.BulkHaul.Report>transportiert alles in der Nähe.</HaulersDream.BulkHaul.Report>
+<HaulersDream.JobReport.DefaultDestination>Vorrat</HaulersDream.JobReport.DefaultDestination>
+<HaulersDream.JobReport.EnRoute.Load>{ORIGINAL} (auf dem Weg nach {DESTINATION})</HaulersDream.JobReport.EnRoute.Load>
+<HaulersDream.JobReport.EnRoute.Unload>{ORIGINAL} (auf dem Weg nach {DESTINATION})</HaulersDream.JobReport.EnRoute.Unload>
+<HaulersDream.JobReport.CloserTo.Load>{ORIGINAL} (näher an {DESTINATION})</HaulersDream.JobReport.CloserTo.Load>
+<HaulersDream.JobReport.CloserTo.Unload>{ORIGINAL} (näher an {DESTINATION})</HaulersDream.JobReport.CloserTo.Unload>
+<HaulersDream.JobReport.Efficient.Load>Transportiert {ORIGINAL} effizient</HaulersDream.JobReport.Efficient.Load>
+<HaulersDream.JobReport.Efficient.Unload>Transportiert {ORIGINAL} effizient</HaulersDream.JobReport.Efficient.Unload>
+<HaulersDream.LoadPackAnimal.Report>lädt Gegenstände auf ein Lasttier.</HaulersDream.LoadPackAnimal.Report>
+<HaulersDream.LoadPackAnimal.BulkOption>Gegenstände in der Nähe auf Lasttier laden (im Stapel)</HaulersDream.LoadPackAnimal.BulkOption>
+<HaulersDream.LoadPackAnimal.CouldNotStart>Im Moment ist nichts in der Nähe, um es auf ein Lasttier zu laden.</HaulersDream.LoadPackAnimal.CouldNotStart>
+<HaulersDream.LoadPackAnimal.NoCarrier>Kein nutzbares Lasttier mit freiem Platz in der Nähe.</HaulersDream.LoadPackAnimal.NoCarrier>
+<HaulersDream.UnloadCarrier.Report>entlädt {0}.</HaulersDream.UnloadCarrier.Report>
+<HaulersDream.UnloadCarrier.Option>Stapel-Entladen von {0} priorisieren</HaulersDream.UnloadCarrier.Option>
+<HaulersDream.UnloadCarrier.CouldNotStart>Das Stapel-Entladen dieses Lasttiers konnte im Moment nicht gestartet werden.</HaulersDream.UnloadCarrier.CouldNotStart>
+<HaulersDream.Setting.LoadPackAnimalBulk>Stapel-Auftrag „Auf Lasttier laden“</HaulersDream.Setting.LoadPackAnimalBulk>
+<HaulersDream.Setting.LoadPackAnimalBulkDesc>Fügt auf einer Karawanen-/Auswärtskarte einen Rechtsklick-Auftrag „Gegenstände in der Nähe auf Lasttier laden (im Stapel)“ hinzu: Ein Kolonist fegt mehrere Stapel aus der Nähe in sein Inventar und lädt sie in einer Fahrt auf ein Lasttier, anstatt einen Stapel nach dem anderen zu tragen. Das einteilige „Auf Lasttier laden“ aus dem Grundspiel funktioniert weiterhin daneben.</HaulersDream.Setting.LoadPackAnimalBulkDesc>
+<HaulersDream.Setting.AutoDivertToPackAnimal>Auf Lasttiere abladen (Karawanen)</HaulersDream.Setting.AutoDivertToPackAnimal>
+<HaulersDream.Setting.AutoDivertToPackAnimalDesc>Auf einer Karawanen-/Auswärtskarte laden Spielfiguren ihre aufgesammelte Beute auf das nächste eigene Lasttier ab — genauso, wie sie zu Hause in einen Vorrat entladen würden: wenn ihr Arbeitsdurchlauf endet, bevor sie ruhen/essen/entspannen, beim regelmäßigen Auffangnetz und sofort, wenn sie überladen sind (um beweglich zu bleiben). Wenn dies deaktiviert ist, reitet die Beute einfach im eigenen Inventar der Spielfiguren nach Hause (oder verwende den manuellen Stapel-Lade-Auftrag / Karawane neu bilden). All dies erfordert außerdem, dass das automatische Entladen aktiviert ist (und das Abladen bei Überladung ist im Modus mit striktem Traggewicht deaktiviert).</HaulersDream.Setting.AutoDivertToPackAnimalDesc>
+<HaulersDream.Setting.EnableBulkUnloadCarriers>Lasttiere in einem Besuch im Stapel entladen</HaulersDream.Setting.EnableBulkUnloadCarriers>
+<HaulersDream.Setting.EnableBulkUnloadCarriersDesc>Wenn ein Lasttier auf „entladen“ gestellt ist, geht ein Träger EINMAL zu ihm und holt viele Stapel aus ihm in seinen eigenen Rucksack (und transportiert sie dann wie üblich in den Vorrat), anstatt wie im Grundspiel einen Stapel pro Gang. Der letzte/überzählige Stapel kommt in die Hände des Trägers und wird direkt transportiert. Wenn dies deaktiviert ist, wird das einteilige Entladen des Grundspiels unverändert verwendet.</HaulersDream.Setting.EnableBulkUnloadCarriersDesc>
+<HaulersDream.Setting.MinFreeSpaceToUnloadCarrier>Mindestens freier Rucksackplatz zum Starten: {0}</HaulersDream.Setting.MinFreeSpaceToUnloadCarrier>
+<HaulersDream.Setting.ReserveCarrierOnUnload>Das Lasttier während des Entladens reservieren</HaulersDream.Setting.ReserveCarrierOnUnload>
+<HaulersDream.Setting.ReserveCarrierOnUnloadDesc>Beansprucht das Lasttier für die Dauer des Entladens exklusiv. Deaktiviert (Standard) lässt zu, dass Anleinen, Karawanenbildung oder ein zweiter Träger es unterbrechen — das Entladen bricht sauber ab, wenn eine andere Spielfigur das Tier beansprucht.</HaulersDream.Setting.ReserveCarrierOnUnloadDesc>
+<HaulersDream.Setting.VisualUnloadDelay>Entladeverzögerung pro Stapel: {0} Ticks</HaulersDream.Setting.VisualUnloadDelay>
+<HaulersDream.LoadTransporter.Report>belädt einen Transporter im Stapel.</HaulersDream.LoadTransporter.Report>
+<HaulersDream.LoadTransporter.Option>Stapel-Beladen von {0} priorisieren</HaulersDream.LoadTransporter.Option>
+<HaulersDream.LoadTransporter.CouldNotStart>Im Moment ist nichts in der Nähe, um es im Stapel in diesen Transporter zu laden.</HaulersDream.LoadTransporter.CouldNotStart>
+<HaulersDream.Setting.EnableBulkLoadTransporters>Transporter und Shuttles in einer Fahrt im Stapel beladen</HaulersDream.Setting.EnableBulkLoadTransporters>
+<HaulersDream.Setting.EnableBulkLoadTransportersDesc>Wenn eine Transportkapsel oder ein Shuttle auf Beladen gestellt ist, beansprucht ein Träger einen Teil ihrer Frachtliste, fegt mehrere Stapel aus der Nähe in sein Inventar, geht EINMAL zum Transporter und legt sie alle ab — anstatt wie im Grundspiel einen Stapel pro Gang in den Händen. Mehrere Träger teilen sich eine große Frachtliste ohne Doppeltransport, und die Kapsel steigt nicht ein und startet nicht, bis die beanspruchte Fracht drin ist. Wenn dies deaktiviert ist, wird das einteilige Beladen von Transportern aus dem Grundspiel unverändert verwendet.</HaulersDream.Setting.EnableBulkLoadTransportersDesc>
+<HaulersDream.Setting.BulkLoadAiUpdateFrequency>Intervall der Lade-Überprüfung: {0} Ticks</HaulersDream.Setting.BulkLoadAiUpdateFrequency>
+<HaulersDream.LoadPortal.Report>belädt ein Portal im Stapel.</HaulersDream.LoadPortal.Report>
+<HaulersDream.LoadPortal.Option>Stapel-Beladen von {0} priorisieren</HaulersDream.LoadPortal.Option>
+<HaulersDream.LoadPortal.CouldNotStart>Im Moment ist nichts in der Nähe, um es im Stapel in dieses Portal zu laden.</HaulersDream.LoadPortal.CouldNotStart>
+<HaulersDream.Setting.EnableBulkLoadPortal>Kartenportale in einer Fahrt im Stapel beladen</HaulersDream.Setting.EnableBulkLoadPortal>
+<HaulersDream.Setting.EnableBulkLoadPortalDesc>Wenn ein Kartenportal (Grubentor, Höhlen- oder Gewölbeausgang, „Karte betreten“-Portal) auf Beladen gestellt ist, beansprucht ein Träger einen Teil seiner Frachtliste, fegt mehrere Stapel aus der Nähe in sein Inventar, geht EINMAL zum Portal und legt sie alle ab — anstatt wie im Grundspiel einen Stapel pro Gang in den Händen. Die abgelegten Gegenstände teleportieren auf die andere Karte. Mehrere Träger teilen sich eine große Frachtliste ohne Doppeltransport. Wenn dies deaktiviert ist, wird das einteilige Beladen von Portalen aus dem Grundspiel unverändert verwendet.</HaulersDream.Setting.EnableBulkLoadPortalDesc>
+<HaulersDream.LoadVehicle.Report>belädt ein Fahrzeug im Stapel.</HaulersDream.LoadVehicle.Report>
+<HaulersDream.LoadVehicle.Option>Stapel-Beladen von {0} priorisieren</HaulersDream.LoadVehicle.Option>
+<HaulersDream.LoadVehicle.CouldNotStart>Im Moment ist nichts in der Nähe, um es im Stapel in dieses Fahrzeug zu laden.</HaulersDream.LoadVehicle.CouldNotStart>
+<HaulersDream.Setting.EnableVehicleFramework>Fahrzeug-Integration</HaulersDream.Setting.EnableVehicleFramework>
+<HaulersDream.Setting.EnableVehicleFrameworkDesc>Hauptschalter für die Fahrzeugfunktionen von Hauler's Dream: das Beladen der Fracht eines Fahrzeugs in einer Fahrt im Stapel (unten) und das Laden von Gegenständen auf ein Fahrzeug (statt auf ein Lasttier) auf die ereignisgerechte Weise, sodass die Frachtliste des Fahrzeugs synchron bleibt. Das Deaktivieren schaltet NUR diese Funktionen ab — es schaltet NICHT die Sicherheitskorrekturen ab, die verhindern, dass das Stapel-Entladen von Hauler's Dream die eigene Fracht-Benutzeroberfläche eines Fahrzeugs stört, und es schaltet NICHT das Essen aus oder das Bauen aus der Fracht eines geparkten Fahrzeugs ab (diese folgen den Schaltern „Essen auf Rädern“ und „Aus Inventar bauen“ oben). Ohne installierten Fahrzeug-Mod hat dies überhaupt keine Wirkung. Standardmäßig aktiviert.</HaulersDream.Setting.EnableVehicleFrameworkDesc>
+<HaulersDream.Setting.EnableBulkLoadVehicles>Fahrzeuge in einer Fahrt im Stapel beladen</HaulersDream.Setting.EnableBulkLoadVehicles>
+<HaulersDream.Setting.EnableBulkLoadVehiclesDesc>Wenn ein Fahrzeug (am Boden oder in der Luft) auf Fracht laden gestellt ist, beansprucht ein Träger einen Teil seiner Frachtliste, fegt mehrere Stapel aus der Nähe in sein Inventar, geht EINMAL zum Fahrzeug und legt sie alle ab — anstatt des üblichen einen Stapels pro Gang in den Händen. Mehrere Träger teilen sich eine große Frachtliste ohne Doppeltransport und respektieren dabei die Frachtkapazität des Fahrzeugs. Wenn dies deaktiviert ist, wird das einteilige Beladen des Fahrzeugs unverändert verwendet. Erfordert „Fahrzeug-Integration“ oben.</HaulersDream.Setting.EnableBulkLoadVehiclesDesc>
+<HaulersDream.BulkRefuel.Report>betankt im Stapel.</HaulersDream.BulkRefuel.Report>
+<HaulersDream.BulkRefuel.Option>Stapel-Betanken von {0} priorisieren</HaulersDream.BulkRefuel.Option>
+<HaulersDream.BulkRefuel.CouldNotStart>Im Moment ist nichts in der Nähe, um das damit im Stapel zu betanken.</HaulersDream.BulkRefuel.CouldNotStart>
+<HaulersDream.Setting.EnableBulkRefuel>In einer Fahrt im Stapel betanken</HaulersDream.Setting.EnableBulkRefuel>
+<HaulersDream.Setting.EnableBulkRefuelDesc>Wenn etwas Treibstoff braucht (das Chemfuel eines Shuttles, ein Tiefenbohrer, ein Generator — alles Betankbare), fegt ein Träger genug Treibstoff aus der Nähe in sein Inventar, geht EINMAL hin und füllt es in einer Fahrt — anstatt wie im Grundspiel einen Stapel pro Gang in den Händen. Greift nur, wenn mehr als ein Treibstoffstapel (mehr als eine Fahrt im Grundspiel) benötigt wird; ein Betanken mit nur einem Stapel wird dem Grundspiel überlassen. Rechtsklicke ein Betankbares für „Stapel-Betanken priorisieren“, oder lass es als gewöhnliche Betankungsarbeit laufen. Wenn dies deaktiviert ist, wird das einteilige Betanken des Grundspiels unverändert verwendet. Standardmäßig aktiviert.</HaulersDream.Setting.EnableBulkRefuelDesc>
+<HaulersDream.Setting.SkipHaulWhileBleeding>Beim starken Bluten keinen Transport beginnen</HaulersDream.Setting.SkipHaulWhileBleeding>
+<HaulersDream.Setting.SkipHaulWhileBleedingDesc>Wenn eine Spielfigur blutet (über einem winzigen Schwellenwert), BEGINNT sie keinen neuen Aufsammel- oder Stapel-Transportdurchgang — sie sollte behandelt werden, nicht zum Aufräumen abdriften. Dies blockiert nur das STARTEN eines Transports: Eine Spielfigur, die bereits aufgesammelte Güter trägt, entlädt sie weiterhin normal, sodass nie etwas liegenbleibt. Standardmäßig aktiviert.</HaulersDream.Setting.SkipHaulWhileBleedingDesc>
+<HaulersDream.Setting.ClosestDestUnloadOrder>Nächstgelegenes Ziel zuerst entladen</HaulersDream.Setting.ClosestDestUnloadOrder>
+<HaulersDream.Setting.ClosestDestUnloadOrderDesc>Wenn eine Spielfigur ihre Entladefahrt mit mehreren verschiedenen Gegenständen macht, besucht sie zuerst das nächstgelegene Lagerziel und leert alles dorthin Gehörende, bevor sie zum nächsten weitergeht — weniger Zickzack durch die Basis. Deaktiviert verwendet die vorherige Reihenfolge (nach Gegenstandskategorie). Standardmäßig aktiviert.</HaulersDream.Setting.ClosestDestUnloadOrderDesc>
+<HaulersDream.Setting.EnRoutePickup>Lose Gegenstände auf dem Weg zu einer Arbeit aufgreifen</HaulersDream.Setting.EnRoutePickup>
+<HaulersDream.Setting.EnRoutePickupDesc>Wenn eine Spielfigur kurz davor ist, zu einer Arbeit aufzubrechen, und ein loser transportierbarer Gegenstand ungefähr auf dem Weg liegt, greift sie ihn zuerst in ihr Inventar — sodass der verirrte Gegenstand auf einer Fahrt, die die Spielfigur ohnehin gemacht hätte, in den Vorrat reitet, ohne zusätzliche Extrafahrt. Der Gegenstand wird als nachverfolgter Hauler's-Dream-Transport aufgenommen und durch das normale Entladen weggeräumt, sodass er nie verloren geht, selbst wenn das automatische Entladen aus ist. Greift nur, wenn die resultierende Fahrt nahe an der direkten Route bleibt, überschreibt nie den opportunistischen Transport des Grundspiels, respektiert den Schalter „Erträge automatisch transportieren“ jeder Spielfigur und hält sich zurück, wenn die Spielfigur stattdessen ihre Ladung abladen würde. Standardmäßig aktiviert; es ändert, wie Spielfiguren sich bewegen, also wird ein Umschalten erst wirksam, wenn eine Spielfigur das nächste Mal eine Arbeit aufnimmt.</HaulersDream.Setting.EnRoutePickupDesc>
+<HaulersDream.Setting.EnRoutePathChecker>Auf-dem-Weg-Prüfung: {0}</HaulersDream.Setting.EnRoutePathChecker>
+<HaulersDream.Setting.EnRoutePathCheckerDesc>Wie sorgfältig nach dem günstigen Distanztest bestätigt wird, dass ein Kandidat-Gegenstand „auf dem Weg“ liegt. Günstig (der Standard) zählt nur Kartenregionen, ist also schnell, aber die Umwegdistanz kann schwanken. Wegfindung (früher Stopp) und Wegfindung (gründlich) laufen den echten Weg ab, um genau zu sein — „früher Stopp“ gibt das Suchen auf, sobald ein Kandidat außerhalb der Reichweite fällt (schneller), „gründlich“ prüft jeden verbleibenden Kandidaten (am langsamsten, findet einen Transport, wenn es einen gibt, z. B. in einer verwinkelten Bergbasis). Wenn ein Mod zur Wegfindungsgenauigkeit installiert ist, übernehmen die beiden Wegfindungs-Modi automatisch dessen Genauigkeit.</HaulersDream.Setting.EnRoutePathCheckerDesc>
+<HaulersDream.Setting.EnRoutePathVanilla>Günstig (Regionenzahl)</HaulersDream.Setting.EnRoutePathVanilla>
+<HaulersDream.Setting.EnRoutePathDefault>Wegfindung (früher Stopp)</HaulersDream.Setting.EnRoutePathDefault>
+<HaulersDream.Setting.EnRoutePathPathfinding>Wegfindung (gründlich)</HaulersDream.Setting.EnRoutePathPathfinding>
+<HaulersDream.Setting.StorageRouting>Nachschub näher heranbringen, bevor er zu einer Arbeit getragen wird</HaulersDream.Setting.StorageRouting>
+<HaulersDream.Setting.StorageRoutingDesc>Die „Transportieren vor Tragen“-Funktion. Bevor eine Spielfigur eine Ressource zu einer Baustelle oder Werkbank trägt, verlagert sie zuerst den größten Stapel dieses Materials in der Nähe in einen Vorrat NÄHER zu dem Ort, an dem es verwendet wird — sodass diese und jede spätere Holfahrt eine kürzere Fahrt ist. Greift nur, wenn der nähere Vorrat wirklich näher an der Arbeit liegt als der aktuelle Platz des Stapels, verlagert nie einen Stapel, den eine andere Spielfigur bereits transportiert, und respektiert den Schalter „Erträge automatisch transportieren“ jeder Spielfigur. Die Verlagerung ist ein normaler Transport, sodass das Material nie verloren geht. Standardmäßig aktiviert; es ändert, wie Spielfiguren sich bewegen, also wird ein Umschalten erst wirksam, wenn eine Spielfigur das nächste Mal eine solche Arbeit aufnimmt.</HaulersDream.Setting.StorageRoutingDesc>
+<HaulersDream.Setting.RouteSupplies>Baumaterialien näher an die Baustelle verlagern</HaulersDream.Setting.RouteSupplies>
+<HaulersDream.Setting.RouteSuppliesDesc>Wendet die Verlagerung vor dem Tragen auf Baumaterial-Lieferungen an. (Keine Wirkung, solange „Baumaterial im Inventar tragen“ aktiv ist — diese Funktion verkürzt die Fahrten bereits auf ihre eigene Weise.)</HaulersDream.Setting.RouteSuppliesDesc>
+<HaulersDream.Setting.RouteIngredients>Herstellungszutaten näher an die Werkbank verlagern</HaulersDream.Setting.RouteIngredients>
+<HaulersDream.Setting.RouteIngredientsDesc>Wendet die Verlagerung vor dem Tragen auf die Zutaten von Herstellungsaufträgen an. (Keine Wirkung, solange „Auftragszutaten in einem Durchgang sammeln“ aktiv ist — diese Funktion verkürzt die Fahrten bereits auf ihre eigene Weise.)</HaulersDream.Setting.RouteIngredientsDesc>
+<HaulersDream.Setting.RouteToEqualPriority>Verlagern in Lager gleicher Priorität erlauben</HaulersDream.Setting.RouteToEqualPriority>
+<HaulersDream.Setting.RouteToEqualPriorityDesc>Verlagert einen Stapel auch in ein Lager der GLEICHEN Priorität, wenn es näher an der Arbeit liegt (nicht nur in Lager höherer Priorität). Standardmäßig aktiviert — wenn du es deaktivierst, wird die Verlagerung auf strikt höher priorisierte Ziele beschränkt.</HaulersDream.Setting.RouteToEqualPriorityDesc>
+<HaulersDream.Setting.RouteToStockpiles>Verlagern in einfache Lagerzonen erlauben</HaulersDream.Setting.RouteToStockpiles>
+<HaulersDream.Setting.RouteToStockpilesDesc>Lässt einfache Lagerzonen (nicht nur Lagergebäude wie Regale) als Verlagerungsziele zu. Standardmäßig aktiviert — wenn du es deaktivierst, wird nur in Lagergebäude verlagert.</HaulersDream.Setting.RouteToStockpilesDesc>
+<HaulersDream.Setting.StorageFilters>Filtern, welche Lagergebäude der Transport verwenden darf</HaulersDream.Setting.StorageFilters>
+<HaulersDream.Setting.StorageFiltersDesc>Wenn aktiviert, kannst du einschränken, welche LagerGEBÄUDE (Regale und Lagereinheiten aus Mods — nie einfache Lagerzonen) Träger für opportunistische und Routing-Transporte verwenden dürfen, pro Gebäude oder pro Mod. Eine Spielfigur, die bereits eine Ladung trägt, kann IMMER noch entladen, sodass nie etwas liegenbleibt. Standardmäßig aktiviert, mit den kuratierten Standardregeln unten — lege deine eigenen Regeln pro Gebäude oder pro Mod fest.</HaulersDream.Setting.StorageFiltersDesc>
+<HaulersDream.Setting.StorageFilterUseDefaults>Kuratierte Standardregeln verwenden</HaulersDream.Setting.StorageFilterUseDefaults>
+<HaulersDream.Setting.StorageFilterUseDefaultsDesc>Wendet sinnvolle situationsabhängige Standardregeln an: Opportunistische Aufsammler dürfen jeden Vorrat verwenden (außer dem langsamen Satz unten); ein Transport, der vor dem Tragen zu besserem Lager umgeleitet wird, zielt nur auf bekannte Behälter-Mods. Deine ausdrücklichen Entscheidungen pro Gebäude/pro Mod überschreiben diese immer. Deaktiviert = nur deine ausdrücklichen Entscheidungen schränken etwas ein.</HaulersDream.Setting.StorageFilterUseDefaultsDesc>
+<HaulersDream.Setting.StorageFilterDenyLwm>Langsames Lager bei opportunistischen Transporten überspringen</HaulersDream.Setting.StorageFilterDenyLwm>
+<HaulersDream.Setting.StorageFilterDenyLwmDesc>Manches dichte/tiefe Lager hat eine Einlageverzögerung, sodass ein Halt dort mitten in der Fahrt nicht wirklich „auf dem Weg“ liegt. Wenn aktiviert, meiden opportunistische und Transporte-vor-dem-Tragen solches Lager (eine bewusste Entladefahrt kann es weiterhin verwenden — deine Ladung bleibt nie liegen).</HaulersDream.Setting.StorageFilterDenyLwmDesc>
+<HaulersDream.Setting.StorageFilterButton>Lagergebäude-Regeln bearbeiten…</HaulersDream.Setting.StorageFilterButton>
+<HaulersDream.StorageFilter.Title>Lagergebäude-Regeln</HaulersDream.StorageFilter.Title>
+<HaulersDream.StorageFilter.Desc>Lege fest, ob Träger jedes Lagergebäude verwenden dürfen, pro Gebäude oder pro Mod. Erlauben erzwingt es an, Verbieten erzwingt es aus, und Standard lässt die kuratierten Regeln entscheiden. Eine Entscheidung pro Gebäude überschreibt die Entscheidung seines Mods; ein ausdrückliches Verbieten überschreibt ein Erlauben. Einfache Lagerzonen sind immer erlaubt.</HaulersDream.StorageFilter.Desc>
+<HaulersDream.StorageFilter.ResetAll>Auf Standard zurücksetzen</HaulersDream.StorageFilter.ResetAll>
+<HaulersDream.StorageFilter.StateDefault>Standard</HaulersDream.StorageFilter.StateDefault>
+<HaulersDream.StorageFilter.StateAllow>Erlauben</HaulersDream.StorageFilter.StateAllow>
+<HaulersDream.StorageFilter.StateDeny>Verbieten</HaulersDream.StorageFilter.StateDeny>
+<HaulersDream.Setting.CleanupOnSave>Stapel-Lade-Aufträge beim Speichern bereinigen</HaulersDream.Setting.CleanupOnSave>
+<HaulersDream.Setting.CleanupOnSaveDesc>Wenn das Spiel speichert, während eine Spielfigur mitten im Stapel-Beladen ist, versetzt Hauler's Dream diese Spielfigur für das Speichern zurück in den Leerlauf, damit die Speicherdatei nicht auf die eigenen Auftragstypen von Hauler's Dream verweist — was bedeutet, dass du den Mod später deinstallieren kannst, ohne dass die Speicherung einen Fehler wirft. Die Spielfigur behält alle aufgefegten Güter und entlädt sie danach normal. Standardmäßig aktiviert; deaktiviere es, wenn du nie vorhast, den Mod zu entfernen.</HaulersDream.Setting.CleanupOnSaveDesc>
+<HaulersDream.Setting.SoftlockDrop>Eingeschlossene Fracht aus festsitzenden Spielfiguren befreien</HaulersDream.Setting.SoftlockDrop>
+<HaulersDream.Setting.SoftlockDropDesc>Wenn eine Spielfigur nicht mehr transportieren kann, während sie Güter trägt, die Hauler's Dream aufgenommen hat — ihre Transportarbeit wurde deaktiviert, oder ein Mechanoid ist ruhend / selbst abgeschaltet — werden die getragenen Güter für den normalen Transport in der Nähe fallen gelassen, anstatt für immer in dieser Spielfigur eingeschlossen zu bleiben. Ein Mechanoid, der gleich AUFLADEN will, liefert zuerst seine getragenen Güter in den Vorrat (oder lässt sie in der Nähe fallen, wenn es keinen Ort dafür gibt), damit sie nicht verderben oder Tragplatz belegen, während er auf dem Ladegerät sitzt. Berührt nur die selbst aufgenommenen Gegenstände von Hauler's Dream. Standardmäßig aktiviert (ein Sicherheitsnetz).</HaulersDream.Setting.SoftlockDropDesc>
+<HaulersDream.Setting.OpportunisticLoad>Getragene Fracht unterwegs in Transporte abladen</HaulersDream.Setting.OpportunisticLoad>
+<HaulersDream.Setting.OpportunisticLoadDesc>Eine Spielfigur, die bereits Gegenstände trägt, auf die eine Transportkapsel, ein Shuttle, ein Kartenportal oder ein Fahrzeug in der Nähe wartet, weicht ab, um sie abzuladen, anstatt einen brandneuen Aufsammeldurchlauf zu beginnen. Weniger verschwendete Gänge. Standardmäßig deaktiviert (es ändert, welche Aufgabe eine Spielfigur als Nächstes aufnimmt).</HaulersDream.Setting.OpportunisticLoadDesc>
+<HaulersDream.Setting.LoadOpportunityRadius>Suchradius für Abladen-unterwegs: {0} Felder</HaulersDream.Setting.LoadOpportunityRadius>
+<HaulersDream.Setting.ContinuousLoading>Rechtsklick-Auftrag „Bis vollständig beladen“</HaulersDream.Setting.ContinuousLoading>
+<HaulersDream.Setting.ContinuousLoadingDesc>Fügt einen Rechtsklick-Auftrag hinzu, der einen Kurier (auch im Wehrdienst) durch jede Transportgruppe in der Nähe schickt, die noch Beladen braucht, und die Aufträge verkettet, bis sie alle voll sind — praktisch, um eine große Karawane mit einem Befehl zu beladen. Standardmäßig deaktiviert (Opt-in-Komfort).</HaulersDream.Setting.ContinuousLoadingDesc>
+<HaulersDream.ContinuousLoad.Option>Bis vollständig beladen (durchgehend) — {0}</HaulersDream.ContinuousLoad.Option>
+<HaulersDream.ContinuousLoad.CouldNotStart>Im Moment ist nichts in der Nähe, um es da im Stapel hineinzuladen.</HaulersDream.ContinuousLoad.CouldNotStart>
+<HaulersDream.Setting.LoadHybridPathing>Stapel-Lade-Halte nach echter Wegfindung ordnen</HaulersDream.Setting.LoadHybridPathing>
+<HaulersDream.Setting.LoadHybridPathingDesc>Wenn mehrere Stapel zu einem Transport gefegt werden, wird die Gehreihenfolge für die nächsten paar Kandidaten mit echter Wegfindung statt mit Luftliniendistanz gewählt — etwas bessere Routen auf vollgestopften Karten, zu etwas zusätzlichem Wegfindungsaufwand. Standardmäßig deaktiviert; die Luftlinienreihenfolge erzeugt bereits korrekte, fahrtenarme Ladungen.</HaulersDream.Setting.LoadHybridPathingDesc>
+<HaulersDream.Setting.LoadPathfindingCandidates>Wegfindungs-Kandidaten pro Halt: {0}</HaulersDream.Setting.LoadPathfindingCandidates>
+<HaulersDream.Setting.AutoOpenTransporterContents>Inhalt-Reiter für ausgewählte Transporter automatisch öffnen</HaulersDream.Setting.AutoOpenTransporterContents>
+<HaulersDream.Setting.AutoOpenTransporterContentsDesc>Wenn du eine einzelne Transportkapsel oder ein Shuttle auswählst, wird automatisch ihr Inhalt-Reiter geöffnet, sodass du sehen kannst, was sie lädt. Standardmäßig deaktiviert (es ändert, welcher Reiter offen ist, wenn du Dinge anklickst).</HaulersDream.Setting.AutoOpenTransporterContentsDesc>
+<HaulersDream.Setting.AutoOpenCarrierGear>Ausrüstungs-Reiter für ausgewählte Träger automatisch öffnen</HaulersDream.Setting.AutoOpenCarrierGear>
+<HaulersDream.Setting.AutoOpenCarrierGearDesc>Wenn du ein Lasttier oder einen anderen Träger auswählst, wird automatisch sein Ausrüstungs-Reiter geöffnet, um zu sehen, was es trägt. Standardmäßig deaktiviert.</HaulersDream.Setting.AutoOpenCarrierGearDesc>
+<HaulersDream.Setting.EnableStorageNetworkBulkLoad>Im Stapel aus dem Lagernetzwerk laden (experimentell)</HaulersDream.Setting.EnableStorageNetworkBulkLoad>
+<HaulersDream.Setting.EnableStorageNetworkBulkLoadDesc>Wenn der Mod Storage Network installiert ist, lässt es das Stapel-Beladen die in seinen Netzwerk-Servern gelagerten Gegenstände aufsammeln, sodass ein Transporter, eine Kapsel, ein Portal oder ein Fahrzeug in einer Fahrt gefüllt wird statt Stapel für Stapel. Die Gegenstände werden durch ein nutzbares, erreichbares Terminal gezogen und von Storage Network bei Bedarf materialisiert. Standardmäßig deaktiviert: Dies ist experimentell und hängt vom Verhalten von Storage Network ab. Ohne es laden Netzwerk-Gegenstände weiterhin auf die normale Weise (ein Stapel pro Fahrt).</HaulersDream.Setting.EnableStorageNetworkBulkLoadDesc>
+<HaulersDream.Setting.ResetToDefaults>Auf Standard zurücksetzen</HaulersDream.Setting.ResetToDefaults>
+<HaulersDream.Setting.ResetToDefaultsConfirm>Alle Einstellungen von Hauler's Dream auf ihre Standardwerte zurücksetzen? Deine Entlade-Regeln pro Gegenstand, Routenvorlieben und der Lagerfilter werden ebenfalls gelöscht. Dies kann nicht rückgängig gemacht werden.</HaulersDream.Setting.ResetToDefaultsConfirm>
+<HaulersDream.Cat.Features>Funktionen</HaulersDream.Cat.Features>
+<HaulersDream.Cat.Features.Help>Schalte ganze Funktionsfamilien an oder aus. Hauler's Dream erledigt die Arbeit vieler einzelner Mods — schalte alle aus, die du lieber nicht nutzen möchtest. Detaillierte Optionen für jede Familie befinden sich auf den anderen Seiten.</HaulersDream.Cat.Features.Help>
+<HaulersDream.Cat.Features.Intro>Jede Karte unten aktiviert oder deaktiviert eine ganze Funktionsfamilie. Die Feinabstimmung für jede befindet sich auf ihrer eigenen Seite in der Liste links.</HaulersDream.Cat.Features.Intro>
+<HaulersDream.Cat.Hauling>Transport</HaulersDream.Cat.Hauling>
+<HaulersDream.Cat.Hauling.Help>Wie Kolonisten Dinge aufnehmen: das Traglimit, das clevere Überladen, das Stapel-Aufsammeln eines ganzen Bereichs in einer Fahrt und das Aufräumen loser Gegenstände während der Arbeit.</HaulersDream.Cat.Hauling.Help>
+<HaulersDream.Cat.Unloading>Entladen</HaulersDream.Cat.Unloading>
+<HaulersDream.Cat.Unloading.Help>Wann und wie getragene Güter weggeräumt werden: automatische Entladefahrten, Entladen vor Ruhezeiten, Umgang mit Überschuss, Reihenfolge der Ablieferung und Regeln pro Gegenstand.</HaulersDream.Cat.Unloading.Help>
+<HaulersDream.Cat.BuildCraft>Bauen &amp; Herstellen</HaulersDream.Cat.BuildCraft>
+<HaulersDream.Cat.BuildCraft.Help>Materialien aus dem Inventar für Bau- und Herstellungsaufträge beziehen, plus Nahrungslieferung zwischen Spielfiguren und Wahl der Zutaten nach Verderblichkeit zuerst.</HaulersDream.Cat.BuildCraft.Help>
+<HaulersDream.Cat.BulkLoading>Stapel-Beladen</HaulersDream.Cat.BulkLoading>
+<HaulersDream.Cat.BulkLoading.Help>Beladen und Entladen von Lasttieren, Transportkapseln, Shuttles, Kartenportalen, Betankbaren und Fahrzeugen in einer Fahrt.</HaulersDream.Cat.BulkLoading.Help>
+<HaulersDream.Cat.Routing>Routing &amp; Lager</HaulersDream.Cat.Routing>
+<HaulersDream.Cat.Routing.Help>Gegenstände aufgreifen, die ungefähr auf dem Weg liegen, Nachschub näher dorthin verlagern, wo er verwendet wird, und filtern, welches Lager der Transport verwenden darf.</HaulersDream.Cat.Routing.Help>
+<HaulersDream.Cat.Yields>Arbeit &amp; Erträge</HaulersDream.Cat.Yields>
+<HaulersDream.Cat.Yields.Help>Welche Arbeitserträge aufgesammelt werden, Kadaver nach einer Tötung in den Vorrat transportieren und Ausrüstung von Leichen während des Transports abnehmen.</HaulersDream.Cat.Yields.Help>
+<HaulersDream.Cat.Who>Wer arbeitet</HaulersDream.Cat.Who>
+<HaulersDream.Cat.Who.Help>Auf welche Spielfiguren Hauler's Dream zutrifft — Mechs, Tiere, im Wehrdienst Befindliche, Kolonisten außerhalb der Karte — plus Übersteuerungen, die jede Spielfigur transportieren, putzen oder Pflanzen schneiden lassen.</HaulersDream.Cat.Who.Help>
+<HaulersDream.Cat.Planners>Planer</HaulersDream.Cat.Planners>
+<HaulersDream.Cat.Planners.Help>Der Rechtsklick-Routenplaner und der Stations-Herstellungsplaner sowie ihre Standardwerte.</HaulersDream.Cat.Planners.Help>
+<HaulersDream.Cat.Advanced>Erweitert</HaulersDream.Cat.Advanced>
+<HaulersDream.Cat.Advanced.Help>Entlade-Zeitsteuerung, der Sicherheitsalarm für festsitzende Fracht, Speicher-Bereinigung und Entwickler-Diagnostik.</HaulersDream.Cat.Advanced.Help>
+<HaulersDream.Cat.Migration>Migration</HaulersDream.Cat.Migration>
+<HaulersDream.Cat.Migration.Help>Wird angezeigt, weil du noch einen oder mehrere Mods aktiv hast, die Hauler's Dream ersetzt (einschließlich übersetzter oder „Continued“-Versionen). Sie gleichzeitig mit Hauler's Dream laufen zu lassen, lässt sie um dieselben Transportaufträge streiten — was so aussehen kann, als wäre das Aufnehmen kaputt. Folge den Schritten, um sie sauber zu entfernen.</HaulersDream.Cat.Migration.Help>
+<HaulersDream.Migration.DetectedHead>Ersetzte Mods noch aktiv</HaulersDream.Migration.DetectedHead>
+<HaulersDream.Migration.Intro>Hauler's Dream ist ein einzelner Ersatz für die unten genannten Mods, die du noch aktiviert hast. Sie neben Hauler's Dream laufen zu lassen, lässt sie um dieselben Transportaufträge konkurrieren, sodass das Aufnehmen kaputt oder unzuverlässig aussehen kann. Entferne sie mit den sauberen Schritten unten.</HaulersDream.Migration.Intro>
+<HaulersDream.Migration.DisableButton>Sie für mich deaktivieren</HaulersDream.Migration.DisableButton>
+<HaulersDream.Migration.DisableButton.Help>Deaktiviert jeden oben aufgeführten ersetzten Mod und startet RimWorld neu. Eine Änderung der Mod-Liste wird erst nach einem Neustart wirksam, also ist dies dasselbe, was das Mods-Menü tut. Speichere dein Spiel (und stelle deine Kolonisten idealerweise in den Wehrdienst — siehe die Schritte), bevor du dies verwendest.</HaulersDream.Migration.DisableButton.Help>
+<HaulersDream.Migration.DisableTitle>Ersetzte Mods deaktivieren?</HaulersDream.Migration.DisableTitle>
+<HaulersDream.Migration.DisableConfirm>Dies deaktiviert {0} und STARTET RimWorld sofort NEU.\n\nStelle sicher, dass du dein Spiel zuerst GESPEICHERT hast — und stelle deine Kolonisten idealerweise in den Wehrdienst (siehe die Schritte auf diesem Reiter), damit nichts kaputtgeht, wenn die alten Mods mitten in einer Aufgabe entfernt werden.\n\nJetzt neu starten?</HaulersDream.Migration.DisableConfirm>
+<HaulersDream.Migration.StepsHead>Für einen sauberen Übergang</HaulersDream.Migration.StepsHead>
+<HaulersDream.Migration.Step1>1.  Öffne deinen Spielstand und stelle ALLE deine Kolonisten in den WEHRDIENST, dann speichere das Spiel. Der Wehrdienst bricht ihre aktuellen Aufgaben ab, was Fehler vermeidet, die die anderen Mods werfen können, wenn sie mitten in einer Aufgabe entfernt werden.</HaulersDream.Migration.Step1>
+<HaulersDream.Migration.Step2>2.  Deaktiviere alle oben aufgeführten Mods — verwende die Schaltfläche „Sie für mich deaktivieren“, oder beende zum Hauptmenü und schalte sie selbst im Mods-Menü aus.</HaulersDream.Migration.Step2>
+<HaulersDream.Migration.Step3>3.  Nachdem das Spiel neu gestartet ist, lade deinen Spielstand erneut und speichere ihn dann noch einmal — die entfernten Mods sind jetzt vollständig aus dem Spiel.</HaulersDream.Migration.Step3>
+<HaulersDream.Migration.Step4>4.  Stelle sicher, dass Hauler's Dream aktiviert ist, hole deine Kolonisten aus dem Wehrdienst zurück und mach weiter.</HaulersDream.Migration.Step4>
+<HaulersDream.Advanced.DevHint>Entwickler-Diagnostik erscheint hier, wenn der Entwicklermodus aktiviert ist.</HaulersDream.Advanced.DevHint>
+<HaulersDream.FeatGroup.Core>Kern</HaulersDream.FeatGroup.Core>
+<HaulersDream.FeatGroup.Loading>Beladen &amp; Träger</HaulersDream.FeatGroup.Loading>
+<HaulersDream.FeatGroup.BuildCraft>Bauen &amp; Herstellen</HaulersDream.FeatGroup.BuildCraft>
+<HaulersDream.FeatGroup.Planning>Planungswerkzeuge</HaulersDream.FeatGroup.Planning>
+<HaulersDream.FeatGroup.Wyu>Opportunistischer Transport</HaulersDream.FeatGroup.Wyu>
+<HaulersDream.Feat.Master.Name>Hauler's Dream aktivieren</HaulersDream.Feat.Master.Name>
+<HaulersDream.Feat.Master.Blurb>Hauptschalter für alles automatische Verhalten</HaulersDream.Feat.Master.Blurb>
+<HaulersDream.Feat.AutoUnload.Name>Automatisches Entladen</HaulersDream.Feat.AutoUnload.Name>
+<HaulersDream.Feat.AutoUnload.Blurb>Spielfiguren machen ihre eigenen Entladefahrten. Aus = Entladen nur über die Schaltfläche pro Spielfigur.</HaulersDream.Feat.AutoUnload.Blurb>
+<HaulersDream.Feat.BulkHaul.Name>Stapel-Transport</HaulersDream.Feat.BulkHaul.Name>
+<HaulersDream.Feat.BulkHaul.Blurb>Viele Gegenstände in der Nähe in einer Fahrt ins Inventar fegen</HaulersDream.Feat.BulkHaul.Blurb>
+<HaulersDream.Feat.Sweep.Name>Während der Arbeit aufräumen</HaulersDream.Feat.Sweep.Name>
+<HaulersDream.Feat.Sweep.Blurb>Auch lose Gegenstände nahe dem Arbeitsplatz aufgreifen</HaulersDream.Feat.Sweep.Blurb>
+<HaulersDream.Feat.UnloadCarriers.Name>Lasttiere im Stapel entladen</HaulersDream.Feat.UnloadCarriers.Name>
+<HaulersDream.Feat.UnloadCarriers.Blurb>Einen Träger in einem Besuch in einen Rucksack entleeren</HaulersDream.Feat.UnloadCarriers.Blurb>
+<HaulersDream.Feat.LoadTransporters.Name>Transporter &amp; Shuttles beladen</HaulersDream.Feat.LoadTransporters.Name>
+<HaulersDream.Feat.LoadTransporters.Blurb>Kapseln und Shuttles in einer Fahrt füllen</HaulersDream.Feat.LoadTransporters.Blurb>
+<HaulersDream.Feat.LoadPortal.Name>Kartenportale beladen</HaulersDream.Feat.LoadPortal.Name>
+<HaulersDream.Feat.LoadPortal.Blurb>Grubentore und Höhlenausgänge im Stapel beladen</HaulersDream.Feat.LoadPortal.Blurb>
+<HaulersDream.Feat.Refuel.Name>Stapel-Betanken</HaulersDream.Feat.Refuel.Name>
+<HaulersDream.Feat.Refuel.Blurb>Ein Betankbares in einer Fahrt auffüllen</HaulersDream.Feat.Refuel.Blurb>
+<HaulersDream.Feat.Vehicles.Name>Fahrzeugfracht</HaulersDream.Feat.Vehicles.Name>
+<HaulersDream.Feat.Vehicles.Blurb>Fahrzeugfracht im Stapel beladen (benötigt einen Fahrzeug-Mod)</HaulersDream.Feat.Vehicles.Blurb>
+<HaulersDream.Feat.BuildFromInv.Name>Aus Inventar bauen</HaulersDream.Feat.BuildFromInv.Name>
+<HaulersDream.Feat.BuildFromInv.Blurb>Mit getragenen und Karawanen-Materialien bauen</HaulersDream.Feat.BuildFromInv.Blurb>
+<HaulersDream.Feat.CraftFromInv.Name>Aus getragenen Materialien herstellen</HaulersDream.Feat.CraftFromInv.Name>
+<HaulersDream.Feat.CraftFromInv.Blurb>Aufträge können Zutaten verwenden, die Spielfiguren bereits tragen</HaulersDream.Feat.CraftFromInv.Blurb>
+<HaulersDream.Feat.ConstructDeliver.Name>Materialien für große Bauten tragen</HaulersDream.Feat.ConstructDeliver.Name>
+<HaulersDream.Feat.ConstructDeliver.Blurb>Weniger Fahrten zu großen oder geballten Bauaufträgen</HaulersDream.Feat.ConstructDeliver.Blurb>
+<HaulersDream.Feat.Meals.Name>Essen auf Rädern</HaulersDream.Feat.Meals.Name>
+<HaulersDream.Feat.Meals.Blurb>Eine hungrige Spielfigur isst Nahrung, die eine andere Spielfigur trägt</HaulersDream.Feat.Meals.Blurb>
+<HaulersDream.Feat.PlanRoutes.Name>Routenplaner</HaulersDream.Feat.PlanRoutes.Name>
+<HaulersDream.Feat.PlanRoutes.Blurb>Rechtsklick-Werkzeug zum Planen einer Transport-/Arbeitsroute</HaulersDream.Feat.PlanRoutes.Blurb>
+<HaulersDream.Feat.PlanCrafting.Name>Herstellungsplaner</HaulersDream.Feat.PlanCrafting.Name>
+<HaulersDream.Feat.PlanCrafting.Blurb>Einen Werkbank-Auftrag in einem Durchgang vielfach stapeln</HaulersDream.Feat.PlanCrafting.Blurb>
+<HaulersDream.Feat.EnRoute.Name>Aufnahme unterwegs</HaulersDream.Feat.EnRoute.Name>
+<HaulersDream.Feat.EnRoute.Blurb>Lose Gegenstände aufgreifen, die auf dem Weg zu einer Arbeit liegen</HaulersDream.Feat.EnRoute.Blurb>
+<HaulersDream.Feat.StorageRouting.Name>Verbraucherbewusstes Routing</HaulersDream.Feat.StorageRouting.Name>
+<HaulersDream.Feat.StorageRouting.Blurb>Nachschub in Lager näher dorthin bewegen, wo er verwendet wird</HaulersDream.Feat.StorageRouting.Blurb>
+<HaulersDream.Feat.StorageFilters.Name>Lagerfilter</HaulersDream.Feat.StorageFilters.Name>
+<HaulersDream.Feat.StorageFilters.Blurb>Einschränken, welche Lagergebäude der Transport verwenden darf</HaulersDream.Feat.StorageFilters.Blurb>
+<HaulersDream.Head.BulkHaul>Stapel-Transport</HaulersDream.Head.BulkHaul>
+<HaulersDream.Head.WhileWorking>Während der Arbeit</HaulersDream.Head.WhileWorking>
+<HaulersDream.Head.Construction>Bau</HaulersDream.Head.Construction>
+<HaulersDream.Head.Crafting>Herstellung</HaulersDream.Head.Crafting>
+<HaulersDream.Head.Food>Nahrung</HaulersDream.Head.Food>
+<HaulersDream.Head.PackAnimals>Lasttiere</HaulersDream.Head.PackAnimals>
+<HaulersDream.Head.Transporters>Transporter, Portale &amp; Betanken</HaulersDream.Head.Transporters>
+<HaulersDream.Head.Vehicles>Fahrzeuge</HaulersDream.Head.Vehicles>
+<HaulersDream.Head.AdvancedLoading>Erweitertes Beladen</HaulersDream.Head.AdvancedLoading>
+<HaulersDream.Head.StorageRouting>Verbraucherbewusstes Lager-Routing</HaulersDream.Head.StorageRouting>
+<HaulersDream.Head.StorageFilters>Lagergebäude-Filter</HaulersDream.Head.StorageFilters>
+<HaulersDream.Head.AfterKill>Nach einer Tötung</HaulersDream.Head.AfterKill>
+<HaulersDream.Head.Stripping>Ausziehen</HaulersDream.Head.Stripping>
+<HaulersDream.Head.Batches>Herstellungsstapel</HaulersDream.Head.Batches>
+<HaulersDream.Head.RoutePlanning>Routenplanung</HaulersDream.Head.RoutePlanning>
+<HaulersDream.Head.UnloadTiming>Entlade-Zeitsteuerung</HaulersDream.Head.UnloadTiming>
+<HaulersDream.Head.SafetyNet>Sicherheitsnetz</HaulersDream.Head.SafetyNet>
+<HaulersDream.Head.Developer>Entwickler</HaulersDream.Head.Developer>
+<HaulersDream.Profile.Default>Standard (Profil, integriert)</HaulersDream.Profile.Default>
+<HaulersDream.Profile.Custom>Benutzerdefiniert (ungespeichert)</HaulersDream.Profile.Custom>
+<HaulersDream.Profile.Named>{0} (Profil)</HaulersDream.Profile.Named>
+<HaulersDream.Profile.NamedDirty>{0} (Profil, ungespeicherte Änderungen)</HaulersDream.Profile.NamedDirty>
+<HaulersDream.Profile.SaveChanges>Änderungen an „{0}“ speichern</HaulersDream.Profile.SaveChanges>
+<HaulersDream.Profile.CreateNew>Neues Profil erstellen…</HaulersDream.Profile.CreateNew>
+<HaulersDream.Profile.SaveAsNew>Als neues Profil speichern…</HaulersDream.Profile.SaveAsNew>
+<HaulersDream.Profile.Delete>Profil „{0}“ löschen</HaulersDream.Profile.Delete>
+<HaulersDream.Profile.DeleteConfirm>Das Profil „{0}“ löschen? Deine aktuellen Einstellungen bleiben, wie sie sind.</HaulersDream.Profile.DeleteConfirm>
+<HaulersDream.Profile.NameDialogTitle>Profilname:</HaulersDream.Profile.NameDialogTitle>
+<HaulersDream.Profile.SelectorTip>Einstellungsprofile. Wähle ein gespeichertes Profil, setze auf den integrierten Standard zurück oder speichere deine aktuellen Einstellungen als neues Profil. „Benutzerdefiniert (ungespeichert)“ bedeutet, dass du Einstellungen geändert hast, die noch in keinem Profil gespeichert sind.</HaulersDream.Profile.SelectorTip>
+<HaulersDream.Profile.Copy>Profil kopieren…</HaulersDream.Profile.Copy>
+<HaulersDream.Profile.Paste>Profil einfügen…</HaulersDream.Profile.Paste>
+<HaulersDream.Profile.CopyTitle>Profil kopieren</HaulersDream.Profile.CopyTitle>
+<HaulersDream.Profile.CopyInfo>Teile diesen Code mit einem anderen Spieler. Er enthält die Mod-Version und nur die Einstellungen, die du gegenüber den Standardwerten dieser Version geändert hast, sodass er kurz bleibt.</HaulersDream.Profile.CopyInfo>
+<HaulersDream.Profile.CopyToClipboard>In die Zwischenablage kopieren</HaulersDream.Profile.CopyToClipboard>
+<HaulersDream.Profile.CopiedMsg>Profilcode in die Zwischenablage kopiert.</HaulersDream.Profile.CopiedMsg>
+<HaulersDream.Profile.PasteTitle>Profil einfügen</HaulersDream.Profile.PasteTitle>
+<HaulersDream.Profile.PasteTokenLabel>Profilcode:</HaulersDream.Profile.PasteTokenLabel>
+<HaulersDream.Profile.PasteFromClipboard>Aus der Zwischenablage einfügen</HaulersDream.Profile.PasteFromClipboard>
+<HaulersDream.Profile.PasteInvalid>Das sieht nicht nach einem gültigen Hauler's-Dream-Profilcode aus.</HaulersDream.Profile.PasteInvalid>
+<HaulersDream.Profile.PasteCreate>Profil erstellen</HaulersDream.Profile.PasteCreate>
+<HaulersDream.Common.Off>Aus</HaulersDream.Common.Off>
+<HaulersDream.Common.On>An</HaulersDream.Common.On>
+<HaulersDream.Unit.Tiles>{0} Felder</HaulersDream.Unit.Tiles>
+<HaulersDream.Unit.Ticks>{0} Ticks</HaulersDream.Unit.Ticks>
+<HaulersDream.Unit.Hours>{0} h</HaulersDream.Unit.Hours>
+<HaulersDream.Setting.CarryLimit.Lab>Traglimit</HaulersDream.Setting.CarryLimit.Lab>
+<HaulersDream.Setting.Overload.Lab>Cleveres Überladen</HaulersDream.Setting.Overload.Lab>
+<HaulersDream.Setting.PickupMode.Lab>Aufnahme-Verhalten</HaulersDream.Setting.PickupMode.Lab>
+<HaulersDream.Setting.PickupMode.Help>Wie eine Spielfigur einen Gegenstand, den sie gleich transportieren will, in ihre Ladung aufnimmt.</HaulersDream.Setting.PickupMode.Help>
+<HaulersDream.Setting.PickupMode.Drop>Fallen lassen, dann transportieren</HaulersDream.Setting.PickupMode.Drop>
+<HaulersDream.Setting.PickupMode.DropDesc>Realistisch: Der Gegenstand wird kurz auf den Boden fallen gelassen, dann aufgesammelt — sodass ein anderer Träger ihn noch mitten im Schritt schnappen kann.</HaulersDream.Setting.PickupMode.DropDesc>
+<HaulersDream.Setting.PickupMode.Direct>Ins Inventar</HaulersDream.Setting.PickupMode.Direct>
+<HaulersDream.Setting.PickupMode.DirectDesc>Der Gegenstand geht ohne Bodenschritt direkt ins Inventar der Spielfigur.</HaulersDream.Setting.PickupMode.DirectDesc>
+<HaulersDream.Setting.BulkHaulTrigger.Lab>Auslöser für Stapel-Transport</HaulersDream.Setting.BulkHaulTrigger.Lab>
+<HaulersDream.Setting.KeepWorkingMargin.Lab>Vor einer längeren Verlagerung entladen</HaulersDream.Setting.KeepWorkingMargin.Lab>
+<HaulersDream.Setting.MinFreeSpaceToUnloadCarrier.Lab>Mindestens freier Rucksackplatz zum Starten</HaulersDream.Setting.MinFreeSpaceToUnloadCarrier.Lab>
+<HaulersDream.Setting.MinFreeSpaceToUnloadCarrier.Help>Ein Träger braucht mindestens so viel von seiner Tragkapazität frei, bevor er beginnt, ein Lasttier zu entleeren, damit sein eigener Rucksack nicht sofort überläuft.</HaulersDream.Setting.MinFreeSpaceToUnloadCarrier.Help>
+<HaulersDream.Setting.VisualUnloadDelay.Lab>Entladeverzögerung pro Stapel</HaulersDream.Setting.VisualUnloadDelay.Lab>
+<HaulersDream.Setting.VisualUnloadDelay.Help>Eine kleine kosmetische Pause zwischen jedem Stapel während eines Stapel-Entladens, damit es als bewusste Handlung wirkt. 0 = sofort.</HaulersDream.Setting.VisualUnloadDelay.Help>
+<HaulersDream.Setting.BulkLoadAiUpdateFrequency.Lab>Intervall der Lade-Überprüfung</HaulersDream.Setting.BulkLoadAiUpdateFrequency.Lab>
+<HaulersDream.Setting.BulkLoadAiUpdateFrequency.Help>Wie oft ein laufender Stapel-Lade-Auftrag erneut überprüft, ob seine getragene Fracht von der Gruppe noch gewünscht wird. Niedriger = reaktiveres Umleiten, höher = günstiger.</HaulersDream.Setting.BulkLoadAiUpdateFrequency.Help>
+<HaulersDream.Setting.LoadOpportunityRadius.Lab>Suchradius für Abladen-unterwegs</HaulersDream.Setting.LoadOpportunityRadius.Lab>
+<HaulersDream.Setting.LoadOpportunityRadius.Help>Wie weit eine tragende Spielfigur nach einem bedürftigen Transporter sucht, um im Vorbeigehen Fracht hineinzuladen.</HaulersDream.Setting.LoadOpportunityRadius.Help>
+<HaulersDream.Setting.LoadPathfindingCandidates.Lab>Wegfindungs-Kandidaten pro Halt</HaulersDream.Setting.LoadPathfindingCandidates.Lab>
+<HaulersDream.Setting.LoadPathfindingCandidates.Help>Wie viele der nächstgelegenen Aufnahme-Halte mit echter Wegfindung statt mit Luftliniendistanz neu eingestuft werden. Höher = genauere Reihenfolge, mehr CPU.</HaulersDream.Setting.LoadPathfindingCandidates.Help>
+<HaulersDream.Setting.DefaultBatchSize.Lab>Standard-Stapelgröße</HaulersDream.Setting.DefaultBatchSize.Lab>
+<HaulersDream.Setting.DefaultBatchSize.Help>Die Startmenge für einen neu gestapelten Auftrag.</HaulersDream.Setting.DefaultBatchSize.Help>
+<HaulersDream.Setting.RouteMaxAmount.Lab>Maximum des „Menge“-Reglers der Route</HaulersDream.Setting.RouteMaxAmount.Lab>
+<HaulersDream.Setting.RouteMaxAmount.Help>Das obere Ende des Menge-Reglers im Routenplaner (vor der „Alle“-Stufe).</HaulersDream.Setting.RouteMaxAmount.Help>
+<HaulersDream.Setting.RouteOrderEffort.Lab>Besuchsreihenfolge exakt lösen bis zu</HaulersDream.Setting.RouteOrderEffort.Lab>
+<HaulersDream.Setting.RouteOrderEffort.Help>Routen mit höchstens so vielen Halten erhalten eine exakt optimale Besuchsreihenfolge; größere Routen verwenden eine schnelle Näherung. Höher löst exakter, kostet aber mehr CPU.</HaulersDream.Setting.RouteOrderEffort.Help>
+<HaulersDream.Setting.CraftBatchTimeout.Lab>Standard-Zeitlimit für Herstellungsstapel</HaulersDream.Setting.CraftBatchTimeout.Lab>
+<HaulersDream.Setting.CraftBatchTimeout.Help>Echtzeit-Obergrenze für einen Herstellungsstapel, bevor er von selbst endet. 0 = kein Limit. Pro Stapel überschreibbar.</HaulersDream.Setting.CraftBatchTimeout.Help>
+<HaulersDream.Setting.UnloadGrace.Lab>Sammelfenster</HaulersDream.Setting.UnloadGrace.Lab>
+<HaulersDream.Setting.UnloadGrace.Help>Wie lange eine Spielfigur nach ihrer letzten Aufnahme weiter sammelt, bevor sie eine automatische Entladefahrt macht. Höher = eine arbeitende Spielfigur sammelt über die ganze Arbeit hinweg weiter; sie entlädt dennoch früher, sobald sie voll ist.</HaulersDream.Setting.UnloadGrace.Help>
+<HaulersDream.Setting.IntervalUnload.Lab>Intervall-Entlade-Auffangnetz</HaulersDream.Setting.IntervalUnload.Lab>
+<HaulersDream.Setting.IntervalUnload.Help>Ein regelmäßiges erzwungenes Entladen, falls jeder andere Entlade-Auslöser verschluckt wird (Wehrdienst, Lord-Pflichten, Aufträge aus Mods). 0 = aus.</HaulersDream.Setting.IntervalUnload.Help>
+<HaulersDream.Setting.AlertStuckHours.Lab>Eine festsitzende Spielfigur markieren nach</HaulersDream.Setting.AlertStuckHours.Lab>
+<HaulersDream.Setting.AlertStuckHours.Help>Wie lange eine Spielfigur Transportfracht halten darf, die sie nicht wegräumen kann (mit einem existierenden Ziel), bevor der Alarm sie markiert.</HaulersDream.Setting.AlertStuckHours.Help>
+<HaulersDream.Setting.EnRoutePathChecker.Lab>Auf-dem-Weg-Prüfung</HaulersDream.Setting.EnRoutePathChecker.Lab>
+<HaulersDream.Setting.AutoStripMode.Lab>Automatisch ausziehen während des Transports</HaulersDream.Setting.AutoStripMode.Lab>
+<HaulersDream.Setting.AutoStrip.Help>Beim Transport einer Leiche zuerst ihre Ausrüstung abnehmen und die Beute mitnehmen. „Nur Entsorgung“ zieht nur Leichen aus, die zu einer Abwurfzone gehen. „Aus“ lässt Leichen bekleidet (manuelle Ausziehen-Aufträge sammeln dennoch ihre Ausrüstung ein).</HaulersDream.Setting.AutoStrip.Help>
+<HaulersDream.Setting.TaintedSmeltable.Lab>Kontaminierte Kleidung — einschmelzbar</HaulersDream.Setting.TaintedSmeltable.Lab>
+<HaulersDream.Setting.TaintedNonSmeltable.Lab>Kontaminierte Kleidung — nicht einschmelzbar</HaulersDream.Setting.TaintedNonSmeltable.Lab>
+<HaulersDream.Setting.Tainted.Help>Was mit kontaminierter (von Toten getragener) Kleidung geschehen soll, die während eines Ausziehens entfernt wird: nehmen, auf der Leiche lassen, fallen lassen und verbieten oder zerstören.</HaulersDream.Setting.Tainted.Help>
+<HaulersDream.Setting.RouteSelection.Lab>Routenauswahl</HaulersDream.Setting.RouteSelection.Lab>
+<HaulersDream.Setting.RouteSelection.Help>Wie der Planer auswählt, welche Ziele in eine Route aufgenommen werden.</HaulersDream.Setting.RouteSelection.Help>
+<HaulersDream.Setting.RouteDistance.Lab>Distanzgrundlage</HaulersDream.Setting.RouteDistance.Lab>
+<HaulersDream.Setting.RouteDistance.Help>Wie der Planer die Distanz zwischen Halten misst.</HaulersDream.Setting.RouteDistance.Help>
+<HaulersDream.Setting.ShareForBuilding.Help>Materialien, die eine Spielfigur bereits in ihr Inventar aufgesammelt hat, zählen für den Bau in der Nähe, sodass sie ohne separate Holfahrt bauen kann.</HaulersDream.Setting.ShareForBuilding.Help>
+<HaulersDream.Setting.ShareMeetInMiddle.Help>Wenn ein Bau oder Auftrag ein Material aus dem Inventar eines Trägers zieht, geht ein untätiger Träger auf den Arbeiter zu, sodass sie sich früher treffen.</HaulersDream.Setting.ShareMeetInMiddle.Help>
+<HaulersDream.Setting.ItemUnload.Help>Lege Regeln für einzelne Gegenstände fest: den ganzen Stapel behalten, höchstens eine festgelegte Menge behalten oder ihn immer entladen — und überschreibe damit die Überschuss-Einstellung für diesen Gegenstand.</HaulersDream.Setting.ItemUnload.Help>
+<HaulersDream.Setting.HideGizmo.Help>Verbirgt die Schaltfläche „Inventar entladen“ pro Spielfigur, die erscheint, wenn ein Kolonist aufgesammelte Güter trägt.</HaulersDream.Setting.HideGizmo.Help>
+<HaulersDream.Setting.StorageFilterButton.Help>Bearbeite Erlauben/Verbieten-Regeln pro Gebäude und pro Mod dafür, welches Lager der Transport verwenden darf.</HaulersDream.Setting.StorageFilterButton.Help>
+<HaulersDream.Setting.PauseWhileDrafted.Help>Während eine Spielfigur im Wehrdienst ist, hört Hauler's Dream auf, für sie neue Aufsammel- und Aufräumdurchgänge zu starten.</HaulersDream.Setting.PauseWhileDrafted.Help>
+<HaulersDream.Setting.AllowIncapable.Help>Lässt eine Spielfigur, die unfähig zum Transportieren ist, dennoch die Erträge ihrer eigenen Arbeit aufsammeln (Bergbau, Ernten, …).</HaulersDream.Setting.AllowIncapable.Help>
+<HaulersDream.Setting.EnableOnNonHomeMaps.Help>Lässt Hauler's Dream auch auf Karawanen- und anderen Auswärtskarten laufen, nicht nur in deiner Heimatkolonie.</HaulersDream.Setting.EnableOnNonHomeMaps.Help>
+<HaulersDream.Setting.VerboseLogging.Help>Zusätzliche Entwickler-Protokollierung. Nur verfügbar — und protokolliert nur — im Entwicklermodus.</HaulersDream.Setting.VerboseLogging.Help>
+<HaulersDream.Setting.BulkHaulSecond.S>Beim 2. Auftrag</HaulersDream.Setting.BulkHaulSecond.S>
+<HaulersDream.Setting.BulkHaulAlways.S>Immer</HaulersDream.Setting.BulkHaulAlways.S>
+<HaulersDream.Setting.EnRoutePathVanilla.S>Günstig</HaulersDream.Setting.EnRoutePathVanilla.S>
+<HaulersDream.Setting.EnRoutePathDefault.S>Genau</HaulersDream.Setting.EnRoutePathDefault.S>
+<HaulersDream.Setting.EnRoutePathPathfinding.S>Gründlich</HaulersDream.Setting.EnRoutePathPathfinding.S>
+<HaulersDream.Setting.AutoStripAll.S>Alle Transporte</HaulersDream.Setting.AutoStripAll.S>
+<HaulersDream.Setting.AutoStripDisposal.S>Nur Entsorgung</HaulersDream.Setting.AutoStripDisposal.S>
+<HaulersDream.Setting.AutoStripOff.S>Aus</HaulersDream.Setting.AutoStripOff.S>
+<HaulersDream.Setting.TaintedTake.S>Nehmen</HaulersDream.Setting.TaintedTake.S>
+<HaulersDream.Setting.TaintedLeave.S>Lassen</HaulersDream.Setting.TaintedLeave.S>
+<HaulersDream.Setting.TaintedForbid.S>Fallen lassen &amp; verbieten</HaulersDream.Setting.TaintedForbid.S>
+<HaulersDream.Setting.TaintedDestroy.S>Zerstören</HaulersDream.Setting.TaintedDestroy.S>
+<HaulersDream.PlanRoute.SelMostStops.S>Meiste Halte</HaulersDream.PlanRoute.SelMostStops.S>
+<HaulersDream.PlanRoute.SelNearest.S>Nächste</HaulersDream.PlanRoute.SelNearest.S>
+<HaulersDream.PlanRoute.DistStraight.S>Luftlinie</HaulersDream.PlanRoute.DistStraight.S>
+<HaulersDream.PlanRoute.DistWalking.S>Gehweg</HaulersDream.PlanRoute.DistWalking.S>
+<HaulersDream.Setting.EnRoutePathVanilla.H>Schnelle begrenzte Regionenzahl-Flutung — die günstigste Prüfung, am wenigsten genau.</HaulersDream.Setting.EnRoutePathVanilla.H>
+<HaulersDream.Setting.EnRoutePathDefault.H>Echte A*-Wegkosten; stoppt das Suchen bei einem Reichweiten-Fehlschlag. Genauer, mehr CPU.</HaulersDream.Setting.EnRoutePathDefault.H>
+<HaulersDream.Setting.EnRoutePathPathfinding.H>Echte A*-Wegkosten; sucht weiter nach der besten Übereinstimmung. Am genauesten, am meisten CPU.</HaulersDream.Setting.EnRoutePathPathfinding.H>
+<HaulersDream.PlanRoute.SelMostStops.H>Bevorzugt Ziele, die die meisten Halte in eine Reisedistanz packen.</HaulersDream.PlanRoute.SelMostStops.H>
+<HaulersDream.PlanRoute.SelNearest.H>Bevorzugt die Ziele, die dem von dir angeklickten am nächsten sind.</HaulersDream.PlanRoute.SelNearest.H>
+<HaulersDream.PlanRoute.DistStraight.H>Misst die Distanz als Luftlinie — schnell.</HaulersDream.PlanRoute.DistStraight.H>
+<HaulersDream.PlanRoute.DistWalking.H>Misst die Distanz entlang des echten Gehwegs — langsamer, genauer.</HaulersDream.PlanRoute.DistWalking.H>
+<HaulersDream.Setting.HaulHarvest.Help>Sammelt geerntete Feldfrüchte und Erträge geschnittener Pflanzen ins Inventar, während die Spielfigur arbeitet.</HaulersDream.Setting.HaulHarvest.Help>
+<HaulersDream.Setting.HaulMining.Help>Sammelt abgebautes Erz und Gesteinsbrocken ins Inventar, während die Spielfigur abbaut.</HaulersDream.Setting.HaulMining.Help>
+<HaulersDream.Setting.HaulDeepDrill.Help>Sammelt den Ausstoß des Tiefenbohrers ins Inventar, während er produziert wird.</HaulersDream.Setting.HaulDeepDrill.Help>
+<HaulersDream.Setting.HaulDeconstruct.Help>Sammelt das Bergungsgut aus abgerissenen Gebäuden ins Inventar.</HaulersDream.Setting.HaulDeconstruct.Help>
+<HaulersDream.Setting.HaulAnimals.Help>Sammelt Milch, Wolle und andere von Tieren gewonnene Produkte ins Inventar.</HaulersDream.Setting.HaulAnimals.Help>
+<HaulersDream.Setting.HaulUninstall.Help>Auf einer Karawanen- oder anderen Auswärtskarte (nie deiner Heimatkolonie) sammelt es ein Gebäude, das du abbaust — jetzt ein verkleinerter Gegenstand — direkt in das Inventar des Arbeiters, sodass mehrere abgebaute Strukturen in EINER Fahrt zu den Lasttieren getragen werden statt eines Hin-und-Her-Gangs pro Gegenstand. Greift nur dort, wo der Gegenstand tatsächlich abgeliefert werden kann (eine Lagerzone/Zone oder ein Lasttier). Auf deiner Heimatkarte tut dies nichts: Dort wird ein abgebautes Gebäude für den normalen Transport oder den Wiederaufbau auf dem Boden gelassen.</HaulersDream.Setting.HaulUninstall.Help>
+<HaulersDream.Cat.Hauling.Intro>Wie Kolonisten Dinge aufnehmen — wie viel sie tragen, wann sie überladen und was sie aufkehren.</HaulersDream.Cat.Hauling.Intro>
+<HaulersDream.Cat.Unloading.Intro>Wann und wie Kolonisten ihre getragenen Güter wegräumen.</HaulersDream.Cat.Unloading.Intro>
+<HaulersDream.Cat.BuildCraft.Intro>Bezug von Bau- und Herstellungsmaterialien aus dem Inventar, Nahrungslieferung und Wahl der Zutaten.</HaulersDream.Cat.BuildCraft.Intro>
+<HaulersDream.Cat.BulkLoading.Intro>Beladen und Entladen von Trägern, Transporten, Portalen, Betankbaren und Fahrzeugen in einer Fahrt.</HaulersDream.Cat.BulkLoading.Intro>
+<HaulersDream.Cat.Routing.Intro>Gegenstände unterwegs aufgreifen, Nachschub näher dorthin verlagern, wo er verwendet wird, und Lager filtern.</HaulersDream.Cat.Routing.Intro>
+<HaulersDream.Cat.Yields.Intro>Welche Arbeitserträge aufgesammelt werden, Kadaver nach einer Tötung transportieren und Ausrüstung abnehmen.</HaulersDream.Cat.Yields.Intro>
+<HaulersDream.Cat.Who.Intro>Auf welche Spielfiguren Hauler's Dream zutrifft, und Übersteuerungen, die jede Spielfigur bestimmte Arbeit tun lassen.</HaulersDream.Cat.Who.Intro>
+<HaulersDream.Cat.Planners.Intro>Die Rechtsklick-Routen- und Herstellungsplaner sowie ihre Standardwerte.</HaulersDream.Cat.Planners.Intro>
+<HaulersDream.Cat.Advanced.Intro>Entlade-Zeitsteuerung, der Sicherheitsalarm für festsitzende Fracht, Speicher-Bereinigung und Entwicklerwerkzeuge.</HaulersDream.Cat.Advanced.Intro>
+<HaulersDream.Head.CarryWeight>Traggewicht</HaulersDream.Head.CarryWeight>
+<HaulersDream.Head.Pickup>Aufnahme</HaulersDream.Head.Pickup>
+<HaulersDream.Head.AutoUnloadTrips>Automatische Entladefahrten</HaulersDream.Head.AutoUnloadTrips>
+<HaulersDream.Head.DropOff>Ablieferungsverhalten</HaulersDream.Head.DropOff>
+<HaulersDream.Head.ItemRulesDisplay>Regeln pro Gegenstand &amp; Anzeige</HaulersDream.Head.ItemRulesDisplay>
+<HaulersDream.Head.EnRoute>Aufnahme unterwegs</HaulersDream.Head.EnRoute>
+<HaulersDream.Head.WhoCanHaul>Wer aufsammeln &amp; transportieren kann</HaulersDream.Head.WhoCanHaul>
+<HaulersDream.Head.PlanningTools>Planungswerkzeuge</HaulersDream.Head.PlanningTools>
+<HaulersDream.Setting.Overload.Ceiling>Obergrenze</HaulersDream.Setting.Overload.Ceiling>
+</LanguageData>

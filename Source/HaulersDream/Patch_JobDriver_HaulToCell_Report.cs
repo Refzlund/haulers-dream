@@ -132,7 +132,9 @@ namespace HaulersDream
                 if (zone != null && !zone.label.NullOrEmpty())
                     return zone.label;
             }
-            return cell.IsValid ? cell.ToString() : "storage";
+            if (cell.IsValid)
+                return cell.ToString();
+            return "HaulersDream.JobReport.DefaultDestination".Translate();
         }
     }
 }

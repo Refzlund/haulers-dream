@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LanguageData>
+
+<HaulersDream_UnloadInventory.reportString>正在卸载货物栏。</HaulersDream_UnloadInventory.reportString>
+<HaulersDream_SelfPickup.reportString>正在收集收获的物资。</HaulersDream_SelfPickup.reportString>
+<HaulersDream_OverloadConstructDeliver.reportString>正在运送材料。</HaulersDream_OverloadConstructDeliver.reportString>
+<HaulersDream_ConstructDeliverBuild.reportString>正在运送材料以建造。</HaulersDream_ConstructDeliverBuild.reportString>
+<HaulersDream_ClaimFromHauler.reportString>正在从搬运者处取得材料。</HaulersDream_ClaimFromHauler.reportString>
+<HaulersDream_BatchCraft.reportString>正在批量制作。</HaulersDream_BatchCraft.reportString>
+<HaulersDream_InventoryDoBill.reportString>正在制作。</HaulersDream_InventoryDoBill.reportString>
+<HaulersDream_BillPrepGather.reportString>正在收集制作原料。</HaulersDream_BillPrepGather.reportString>
+<HaulersDream_BulkHaul.reportString>正在搬运附近的一切。</HaulersDream_BulkHaul.reportString>
+<HaulersDream_LoadPackAnimal.reportString>正在将物品装载到驮兽上。</HaulersDream_LoadPackAnimal.reportString>
+<HaulersDream_UnloadCarrierInBulk.reportString>正在卸载驮兽。</HaulersDream_UnloadCarrierInBulk.reportString>
+<HaulersDream_LoadTransportersInBulk.reportString>正在批量装载运输舱。</HaulersDream_LoadTransportersInBulk.reportString>
+<HaulersDream_LoadPortalInBulk.reportString>正在批量装载传送门。</HaulersDream_LoadPortalInBulk.reportString>
+<HaulersDream_LoadVehicleInBulk.reportString>正在批量装载载具。</HaulersDream_LoadVehicleInBulk.reportString>
+<HaulersDream_BulkRefuel.reportString>正在批量添加燃料。</HaulersDream_BulkRefuel.reportString>
+</LanguageData>

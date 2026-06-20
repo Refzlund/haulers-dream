@@ -177,7 +177,7 @@ namespace HaulersDream
             {
                 scanner = scanner,
                 designation = DesignationDefOf.Mine,
-                gerund = wgDef.gerund ?? "mining",
+                gerund = wgDef.gerund ?? (string)"HaulersDream.PlanRoute.MiningGerundFallback".Translate(),
                 yieldDef = veinDef?.building?.mineableThing,
                 scope = RouteTargetScope.SameDefOrDesignated,
             };
