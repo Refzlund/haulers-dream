@@ -501,6 +501,65 @@
   <HaulersDream.Migration.Step4>4.  Make sure Hauler's Dream is enabled, undraft your colonists, and carry on.</HaulersDream.Migration.Step4>
   <HaulersDream.Advanced.DevHint>Developer diagnostics appear here when Developer mode is enabled.</HaulersDream.Advanced.DevHint>
 
+  <!-- Report issue: bottom nav action + the report dialog -->
+  <HaulersDream.Report.NavLabel>Report an issue</HaulersDream.Report.NavLabel>
+  <HaulersDream.Report.NavLabel.Help>Send the developer a bug report, feature request, or mod-compatibility request. Your active mod list and game version are included to help diagnose the problem.</HaulersDream.Report.NavLabel.Help>
+  <HaulersDream.Report.DialogTitle>Report an issue</HaulersDream.Report.DialogTitle>
+  <HaulersDream.Report.DialogIntro>What kind of report is this, and what happened? This goes straight to the developer.</HaulersDream.Report.DialogIntro>
+  <HaulersDream.Report.TypeLabel>Type</HaulersDream.Report.TypeLabel>
+  <HaulersDream.Report.Type.Bug>Bug</HaulersDream.Report.Type.Bug>
+  <HaulersDream.Report.Type.Feature>Feature request</HaulersDream.Report.Type.Feature>
+  <HaulersDream.Report.Type.Compatibility>Mod compatibility</HaulersDream.Report.Type.Compatibility>
+  <HaulersDream.Report.Type.Other>Something else</HaulersDream.Report.Type.Other>
+  <HaulersDream.Report.DescribeLabel>Describe it (what happened, steps to reproduce, and what you expected):</HaulersDream.Report.DescribeLabel>
+  <HaulersDream.Report.IncludeLog>Also attach the full game log (Player.log)</HaulersDream.Report.IncludeLog>
+  <HaulersDream.Report.IncludeLog.Help>Hauler's Dream's own log is always included. Tick this to also attach the tail of your full Player.log; it is larger and may contain other mods' messages, but it is the most useful attachment for diagnosing a bug.</HaulersDream.Report.IncludeLog.Help>
+  <HaulersDream.Report.AutoMeta>Your active mods, game version, OS, and Hauler's Dream's own log are included automatically.</HaulersDream.Report.AutoMeta>
+  <HaulersDream.Report.AddScreenshots>Add screenshots…</HaulersDream.Report.AddScreenshots>
+  <HaulersDream.Report.ScreenshotsSelected>{0} selected</HaulersDream.Report.ScreenshotsSelected>
+  <HaulersDream.Report.ClearScreenshots>Clear</HaulersDream.Report.ClearScreenshots>
+  <HaulersDream.Report.Uploading>Uploading screenshot {0}/{1}…</HaulersDream.Report.Uploading>
+  <HaulersDream.Report.SentPartial>Some screenshots could not be uploaded ({0}).</HaulersDream.Report.SentPartial>
+  <HaulersDream.Report.PickTitle>Add screenshots</HaulersDream.Report.PickTitle>
+  <HaulersDream.Report.PickSubtitle>{0} of {1} selected</HaulersDream.Report.PickSubtitle>
+  <HaulersDream.Report.PickEmpty>No Steam screenshots found for RimWorld. Take one with the Steam overlay (Shift+Tab, or the F12 hotkey) and it will appear here.</HaulersDream.Report.PickEmpty>
+  <HaulersDream.Report.PickConfirm>Add ({0})</HaulersDream.Report.PickConfirm>
+  <HaulersDream.Report.PickMax>You can attach at most {0} screenshots.</HaulersDream.Report.PickMax>
+  <HaulersDream.Report.Submit>Send report</HaulersDream.Report.Submit>
+  <HaulersDream.Report.Retry>Retry</HaulersDream.Report.Retry>
+  <HaulersDream.Report.Sending>Sending…</HaulersDream.Report.Sending>
+  <HaulersDream.Report.SentBody>Thanks! Your report was sent.\n\nIf it's a bug, the attached log will help track it down.</HaulersDream.Report.SentBody>
+  <HaulersDream.Report.RateLimited>You're sending reports too quickly. Please wait a minute and try again.</HaulersDream.Report.RateLimited>
+  <HaulersDream.Report.NetworkError>Couldn't reach the report server: {0}\nCheck your connection and try again.</HaulersDream.Report.NetworkError>
+  <HaulersDream.Report.ServerError>The report server returned an error (HTTP {0}). Please try again later.</HaulersDream.Report.ServerError>
+  <!-- My reports: the list/detail view that opens from the nav button -->
+  <HaulersDream.Report.MyReports.Title>Your reports</HaulersDream.Report.MyReports.Title>
+  <HaulersDream.Report.MyReports.Loading>Loading your reports…</HaulersDream.Report.MyReports.Loading>
+  <HaulersDream.Report.MyReports.Empty>You haven't sent any reports yet.</HaulersDream.Report.MyReports.Empty>
+  <HaulersDream.Report.MyReports.CreateNew>Create new report</HaulersDream.Report.MyReports.CreateNew>
+  <HaulersDream.Report.MyReports.Refresh>Refresh</HaulersDream.Report.MyReports.Refresh>
+  <HaulersDream.Report.MyReports.LoadError>Couldn't load your reports (HTTP {0}).</HaulersDream.Report.MyReports.LoadError>
+  <HaulersDream.Report.MyReports.NetworkError>Couldn't reach the report server: {0}</HaulersDream.Report.MyReports.NetworkError>
+  <HaulersDream.Report.Status.Open>Open</HaulersDream.Report.Status.Open>
+  <HaulersDream.Report.Status.Solved>Solved</HaulersDream.Report.Status.Solved>
+  <HaulersDream.Report.Status.Closed>Closed</HaulersDream.Report.Status.Closed>
+  <HaulersDream.Report.Status.Submitted>Submitted</HaulersDream.Report.Status.Submitted>
+  <HaulersDream.Report.Detail.Status>Status: {0}</HaulersDream.Report.Detail.Status>
+  <HaulersDream.Report.Detail.Loading>Loading…</HaulersDream.Report.Detail.Loading>
+  <HaulersDream.Report.Detail.Back>Back</HaulersDream.Report.Detail.Back>
+  <HaulersDream.Report.Detail.CommentsHeader>Replies ({0})</HaulersDream.Report.Detail.CommentsHeader>
+  <HaulersDream.Report.Detail.NoComments>No replies yet. The developer's responses will appear here.</HaulersDream.Report.Detail.NoComments>
+  <HaulersDream.Report.Detail.Unavailable>Replies couldn't be loaded right now. Please try again later.</HaulersDream.Report.Detail.Unavailable>
+  <HaulersDream.Report.Detail.OpenOnGitHub>View on GitHub</HaulersDream.Report.Detail.OpenOnGitHub>
+  <HaulersDream.Report.Detail.Send>Send</HaulersDream.Report.Detail.Send>
+  <HaulersDream.Report.Detail.Sending>Sending…</HaulersDream.Report.Detail.Sending>
+  <HaulersDream.Report.Detail.CommentPosted>Comment sent.</HaulersDream.Report.Detail.CommentPosted>
+  <HaulersDream.Report.Detail.CommentFailed>Couldn't send (HTTP {0}).</HaulersDream.Report.Detail.CommentFailed>
+  <HaulersDream.Report.Detail.CommentEmpty>Write a comment first.</HaulersDream.Report.Detail.CommentEmpty>
+  <HaulersDream.Report.Detail.NoIssue>Commenting opens once this report is picked up on the tracker.</HaulersDream.Report.Detail.NoIssue>
+  <HaulersDream.Report.Role.You>You</HaulersDream.Report.Role.You>
+  <HaulersDream.Report.Role.Developer>Developer</HaulersDream.Report.Role.Developer>
+
   <!-- Feature hub: group subheaders -->
   <HaulersDream.FeatGroup.Core>Core</HaulersDream.FeatGroup.Core>
   <HaulersDream.FeatGroup.Loading>Loading &amp; carriers</HaulersDream.FeatGroup.Loading>

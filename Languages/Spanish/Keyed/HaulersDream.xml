@@ -408,6 +408,63 @@
 <HaulersDream.Migration.Step3>3.  Tras reiniciarse la partida, vuelve a cargar tu guardado y luego guárdalo una vez más: los mods quitados ya están totalmente fuera de juego.</HaulersDream.Migration.Step3>
 <HaulersDream.Migration.Step4>4.  Asegúrate de que Hauler's Dream está activado, anula el reclutamiento de tus colonos y continúa.</HaulersDream.Migration.Step4>
 <HaulersDream.Advanced.DevHint>Los diagnósticos para desarrolladores aparecen aquí cuando el modo de desarrollador está activado.</HaulersDream.Advanced.DevHint>
+<HaulersDream.Report.NavLabel>Informar de un problema</HaulersDream.Report.NavLabel>
+<HaulersDream.Report.NavLabel.Help>Envía al desarrollador un informe de error, una petición de función o una petición de compatibilidad con otros mods. Se incluyen tu lista de mods activos y la versión del juego para ayudar a diagnosticar el problema.</HaulersDream.Report.NavLabel.Help>
+<HaulersDream.Report.DialogTitle>Informar de un problema</HaulersDream.Report.DialogTitle>
+<HaulersDream.Report.DialogIntro>¿Qué tipo de informe es y qué ha pasado? Esto va directo al desarrollador.</HaulersDream.Report.DialogIntro>
+<HaulersDream.Report.TypeLabel>Tipo</HaulersDream.Report.TypeLabel>
+<HaulersDream.Report.Type.Bug>Error</HaulersDream.Report.Type.Bug>
+<HaulersDream.Report.Type.Feature>Petición de función</HaulersDream.Report.Type.Feature>
+<HaulersDream.Report.Type.Compatibility>Compatibilidad con mods</HaulersDream.Report.Type.Compatibility>
+<HaulersDream.Report.Type.Other>Otra cosa</HaulersDream.Report.Type.Other>
+<HaulersDream.Report.DescribeLabel>Descríbelo (qué ha pasado, pasos para reproducirlo y qué esperabas):</HaulersDream.Report.DescribeLabel>
+<HaulersDream.Report.IncludeLog>Adjuntar también el registro completo de la partida (Player.log)</HaulersDream.Report.IncludeLog>
+<HaulersDream.Report.IncludeLog.Help>El propio registro de Hauler's Dream siempre se incluye. Marca esto para adjuntar además el final de tu Player.log completo; es más grande y puede contener mensajes de otros mods, pero es el adjunto más útil para diagnosticar un error.</HaulersDream.Report.IncludeLog.Help>
+<HaulersDream.Report.AutoMeta>Tu lista de mods activos, la versión del juego, el sistema operativo y el propio registro de Hauler's Dream se incluyen automáticamente.</HaulersDream.Report.AutoMeta>
+<HaulersDream.Report.Submit>Enviar informe</HaulersDream.Report.Submit>
+<HaulersDream.Report.Retry>Reintentar</HaulersDream.Report.Retry>
+<HaulersDream.Report.Sending>Enviando…</HaulersDream.Report.Sending>
+<HaulersDream.Report.SentBody>¡Gracias! Tu informe se ha enviado.\n\nSi es un error, el registro adjunto ayudará a localizarlo.</HaulersDream.Report.SentBody>
+<HaulersDream.Report.RateLimited>Estás enviando informes demasiado rápido. Espera un minuto e inténtalo de nuevo.</HaulersDream.Report.RateLimited>
+<HaulersDream.Report.NetworkError>No se pudo contactar con el servidor de informes: {0}\nComprueba tu conexión e inténtalo de nuevo.</HaulersDream.Report.NetworkError>
+<HaulersDream.Report.ServerError>El servidor de informes devolvió un error (HTTP {0}). Inténtalo de nuevo más tarde.</HaulersDream.Report.ServerError>
+<!-- Mis informes: la vista de lista/detalle que se abre desde el botón de navegación -->
+<HaulersDream.Report.MyReports.Title>Tus informes</HaulersDream.Report.MyReports.Title>
+<HaulersDream.Report.MyReports.Loading>Cargando tus informes…</HaulersDream.Report.MyReports.Loading>
+<HaulersDream.Report.MyReports.Empty>Aún no has enviado ningún informe.</HaulersDream.Report.MyReports.Empty>
+<HaulersDream.Report.MyReports.CreateNew>Crear un nuevo informe</HaulersDream.Report.MyReports.CreateNew>
+<HaulersDream.Report.MyReports.Refresh>Actualizar</HaulersDream.Report.MyReports.Refresh>
+<HaulersDream.Report.MyReports.LoadError>No se pudieron cargar tus informes (HTTP {0}).</HaulersDream.Report.MyReports.LoadError>
+<HaulersDream.Report.MyReports.NetworkError>No se pudo contactar con el servidor de informes: {0}</HaulersDream.Report.MyReports.NetworkError>
+<HaulersDream.Report.Status.Open>Abierto</HaulersDream.Report.Status.Open>
+<HaulersDream.Report.Status.Solved>Resuelto</HaulersDream.Report.Status.Solved>
+<HaulersDream.Report.Status.Closed>Cerrado</HaulersDream.Report.Status.Closed>
+<HaulersDream.Report.Status.Submitted>Enviado</HaulersDream.Report.Status.Submitted>
+<HaulersDream.Report.Detail.Status>Estado: {0}</HaulersDream.Report.Detail.Status>
+<HaulersDream.Report.Detail.Loading>Cargando…</HaulersDream.Report.Detail.Loading>
+<HaulersDream.Report.Detail.Back>Atrás</HaulersDream.Report.Detail.Back>
+<HaulersDream.Report.Detail.CommentsHeader>Respuestas ({0})</HaulersDream.Report.Detail.CommentsHeader>
+<HaulersDream.Report.Detail.NoComments>Aún no hay respuestas. Las respuestas del desarrollador aparecerán aquí.</HaulersDream.Report.Detail.NoComments>
+<HaulersDream.Report.Detail.Unavailable>Las respuestas no se pudieron cargar ahora mismo. Inténtalo de nuevo más tarde.</HaulersDream.Report.Detail.Unavailable>
+<HaulersDream.Report.Detail.OpenOnGitHub>Ver en GitHub</HaulersDream.Report.Detail.OpenOnGitHub>
+<HaulersDream.Report.Detail.Send>Enviar</HaulersDream.Report.Detail.Send>
+<HaulersDream.Report.Detail.Sending>Enviando…</HaulersDream.Report.Detail.Sending>
+<HaulersDream.Report.Detail.CommentPosted>Comentario enviado.</HaulersDream.Report.Detail.CommentPosted>
+<HaulersDream.Report.Detail.CommentFailed>No se pudo enviar (HTTP {0}).</HaulersDream.Report.Detail.CommentFailed>
+<HaulersDream.Report.Detail.CommentEmpty>Escribe primero un comentario.</HaulersDream.Report.Detail.CommentEmpty>
+<HaulersDream.Report.Detail.NoIssue>Podrás comentar cuando este informe se registre en el seguimiento de incidencias.</HaulersDream.Report.Detail.NoIssue>
+<HaulersDream.Report.Role.You>Tú</HaulersDream.Report.Role.You>
+<HaulersDream.Report.Role.Developer>Desarrollador</HaulersDream.Report.Role.Developer>
+<HaulersDream.Report.AddScreenshots>Añadir capturas de pantalla…</HaulersDream.Report.AddScreenshots>
+<HaulersDream.Report.ScreenshotsSelected>{0} seleccionadas</HaulersDream.Report.ScreenshotsSelected>
+<HaulersDream.Report.ClearScreenshots>Borrar</HaulersDream.Report.ClearScreenshots>
+<HaulersDream.Report.Uploading>Subiendo captura {0}/{1}…</HaulersDream.Report.Uploading>
+<HaulersDream.Report.SentPartial>No se pudieron subir algunas capturas ({0}).</HaulersDream.Report.SentPartial>
+<HaulersDream.Report.PickTitle>Añadir capturas de pantalla</HaulersDream.Report.PickTitle>
+<HaulersDream.Report.PickSubtitle>{0} de {1} seleccionadas</HaulersDream.Report.PickSubtitle>
+<HaulersDream.Report.PickEmpty>No se encontraron capturas de Steam para RimWorld. Toma una con la superposición de Steam (Shift+Tab, o la tecla F12) y aparecerá aquí.</HaulersDream.Report.PickEmpty>
+<HaulersDream.Report.PickConfirm>Añadir ({0})</HaulersDream.Report.PickConfirm>
+<HaulersDream.Report.PickMax>Puedes adjuntar como máximo {0} capturas de pantalla.</HaulersDream.Report.PickMax>
 <HaulersDream.FeatGroup.Core>Núcleo</HaulersDream.FeatGroup.Core>
 <HaulersDream.FeatGroup.Loading>Carga y porteadores</HaulersDream.FeatGroup.Loading>
 <HaulersDream.FeatGroup.BuildCraft>Construcción y fabricación</HaulersDream.FeatGroup.BuildCraft>

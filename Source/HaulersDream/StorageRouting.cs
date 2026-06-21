@@ -161,9 +161,8 @@ namespace HaulersDream
             if (job == null)
                 return null;
             MarkRelocation(job, consumeCell);
-            if (s.verboseLogging)
-                HDLog.Dbg($"Routing: {pawn} relocates {thing.def?.label} (x{thing.stackCount}) closer to {consumeCell} " +
-                          $"before carrying (from {fromHereSq} -> {fromStoreSq} sq to target).");
+            HDLog.Dbg($"Routing: {pawn} relocates {thing.def?.label} (x{thing.stackCount}) closer to {consumeCell} " +
+                      $"before carrying (from {fromHereSq} -> {fromStoreSq} sq to target).");
             return job;
         }
 

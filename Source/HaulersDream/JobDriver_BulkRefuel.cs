@@ -197,8 +197,7 @@ namespace HaulersDream
                 }
                 fuelList.Clear();
 
-                if (HaulersDreamMod.Settings?.verboseLogging == true)
-                    HDLog.Dbg($"BulkRefuel: {pawn} deposited fuel into {Refuelable?.LabelShort} (from {beforeCount} carried stack(s), fuel now {comp.Fuel:0.#}).");
+                HDLog.Dbg($"BulkRefuel: {pawn} deposited fuel into {Refuelable?.LabelShort} (from {beforeCount} carried stack(s), fuel now {comp.Fuel:0.#}).");
             };
             deposit.defaultCompleteMode = ToilCompleteMode.Instant;
             yield return deposit;

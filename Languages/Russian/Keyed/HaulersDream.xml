@@ -408,6 +408,63 @@
 <HaulersDream.Migration.Step3>3.  После перезапуска игры загрузите сохранение снова, затем сохраните его ещё раз — удалённые моды теперь полностью устранены.</HaulersDream.Migration.Step3>
 <HaulersDream.Migration.Step4>4.  Убедитесь, что Hauler's Dream включён, демобилизуйте колонистов и продолжайте.</HaulersDream.Migration.Step4>
 <HaulersDream.Advanced.DevHint>Диагностика для разработчиков появляется здесь, когда включён режим разработчика.</HaulersDream.Advanced.DevHint>
+<HaulersDream.Report.NavLabel>Сообщить о проблеме</HaulersDream.Report.NavLabel>
+<HaulersDream.Report.NavLabel.Help>Отправьте разработчику отчёт об ошибке, пожелание новой функции или запрос на совместимость с модом. К отчёту прилагаются ваш список активных модов и версия игры, чтобы помочь в диагностике проблемы.</HaulersDream.Report.NavLabel.Help>
+<HaulersDream.Report.DialogTitle>Сообщить о проблеме</HaulersDream.Report.DialogTitle>
+<HaulersDream.Report.DialogIntro>Какого рода это отчёт и что произошло? Он отправится напрямую разработчику.</HaulersDream.Report.DialogIntro>
+<HaulersDream.Report.TypeLabel>Тип</HaulersDream.Report.TypeLabel>
+<HaulersDream.Report.Type.Bug>Ошибка</HaulersDream.Report.Type.Bug>
+<HaulersDream.Report.Type.Feature>Пожелание функции</HaulersDream.Report.Type.Feature>
+<HaulersDream.Report.Type.Compatibility>Совместимость с модами</HaulersDream.Report.Type.Compatibility>
+<HaulersDream.Report.Type.Other>Что-то другое</HaulersDream.Report.Type.Other>
+<HaulersDream.Report.DescribeLabel>Опишите её (что произошло, как воспроизвести и что вы ожидали):</HaulersDream.Report.DescribeLabel>
+<HaulersDream.Report.IncludeLog>Также приложить полный журнал игры (Player.log)</HaulersDream.Report.IncludeLog>
+<HaulersDream.Report.IncludeLog.Help>Собственный журнал Hauler's Dream прилагается всегда. Отметьте, чтобы также приложить конец вашего полного Player.log; он больше и может содержать сообщения других модов, но это самое полезное вложение для диагностики ошибки.</HaulersDream.Report.IncludeLog.Help>
+<HaulersDream.Report.AutoMeta>Ваш список активных модов, версия игры, ОС и собственный журнал Hauler's Dream добавляются автоматически.</HaulersDream.Report.AutoMeta>
+<HaulersDream.Report.Submit>Отправить отчёт</HaulersDream.Report.Submit>
+<HaulersDream.Report.Retry>Повторить</HaulersDream.Report.Retry>
+<HaulersDream.Report.Sending>Отправка…</HaulersDream.Report.Sending>
+<HaulersDream.Report.SentBody>Спасибо! Ваш отчёт отправлен.\n\nЕсли это ошибка, приложенный журнал поможет её отследить.</HaulersDream.Report.SentBody>
+<HaulersDream.Report.RateLimited>Вы отправляете отчёты слишком часто. Подождите минуту и попробуйте снова.</HaulersDream.Report.RateLimited>
+<HaulersDream.Report.NetworkError>Не удалось связаться с сервером отчётов: {0}\nПроверьте подключение и попробуйте снова.</HaulersDream.Report.NetworkError>
+<HaulersDream.Report.ServerError>Сервер отчётов вернул ошибку (HTTP {0}). Пожалуйста, попробуйте позже.</HaulersDream.Report.ServerError>
+  <!-- My reports: the list/detail view that opens from the nav button -->
+  <HaulersDream.Report.MyReports.Title>Ваши отчёты</HaulersDream.Report.MyReports.Title>
+  <HaulersDream.Report.MyReports.Loading>Загрузка ваших отчётов…</HaulersDream.Report.MyReports.Loading>
+  <HaulersDream.Report.MyReports.Empty>Вы ещё не отправили ни одного отчёта.</HaulersDream.Report.MyReports.Empty>
+  <HaulersDream.Report.MyReports.CreateNew>Создать новый отчёт</HaulersDream.Report.MyReports.CreateNew>
+  <HaulersDream.Report.MyReports.Refresh>Обновить</HaulersDream.Report.MyReports.Refresh>
+  <HaulersDream.Report.MyReports.LoadError>Не удалось загрузить ваши отчёты (HTTP {0}).</HaulersDream.Report.MyReports.LoadError>
+  <HaulersDream.Report.MyReports.NetworkError>Не удалось связаться с сервером отчётов: {0}</HaulersDream.Report.MyReports.NetworkError>
+  <HaulersDream.Report.Status.Open>Открыт</HaulersDream.Report.Status.Open>
+  <HaulersDream.Report.Status.Solved>Решён</HaulersDream.Report.Status.Solved>
+  <HaulersDream.Report.Status.Closed>Закрыт</HaulersDream.Report.Status.Closed>
+  <HaulersDream.Report.Status.Submitted>Отправлен</HaulersDream.Report.Status.Submitted>
+  <HaulersDream.Report.Detail.Status>Статус: {0}</HaulersDream.Report.Detail.Status>
+  <HaulersDream.Report.Detail.Loading>Загрузка…</HaulersDream.Report.Detail.Loading>
+  <HaulersDream.Report.Detail.Back>Назад</HaulersDream.Report.Detail.Back>
+  <HaulersDream.Report.Detail.CommentsHeader>Ответы ({0})</HaulersDream.Report.Detail.CommentsHeader>
+  <HaulersDream.Report.Detail.NoComments>Ответов пока нет. Ответы разработчика появятся здесь.</HaulersDream.Report.Detail.NoComments>
+  <HaulersDream.Report.Detail.Unavailable>Сейчас не удалось загрузить ответы. Пожалуйста, попробуйте позже.</HaulersDream.Report.Detail.Unavailable>
+  <HaulersDream.Report.Detail.OpenOnGitHub>Открыть на GitHub</HaulersDream.Report.Detail.OpenOnGitHub>
+  <HaulersDream.Report.Detail.Send>Отправить</HaulersDream.Report.Detail.Send>
+  <HaulersDream.Report.Detail.Sending>Отправка…</HaulersDream.Report.Detail.Sending>
+  <HaulersDream.Report.Detail.CommentPosted>Комментарий отправлен.</HaulersDream.Report.Detail.CommentPosted>
+  <HaulersDream.Report.Detail.CommentFailed>Не удалось отправить (HTTP {0}).</HaulersDream.Report.Detail.CommentFailed>
+  <HaulersDream.Report.Detail.CommentEmpty>Сначала напишите комментарий.</HaulersDream.Report.Detail.CommentEmpty>
+  <HaulersDream.Report.Detail.NoIssue>Комментирование станет доступно, как только этот отчёт будет принят в трекере.</HaulersDream.Report.Detail.NoIssue>
+  <HaulersDream.Report.Role.You>Вы</HaulersDream.Report.Role.You>
+  <HaulersDream.Report.Role.Developer>Разработчик</HaulersDream.Report.Role.Developer>
+<HaulersDream.Report.AddScreenshots>Добавить скриншоты…</HaulersDream.Report.AddScreenshots>
+<HaulersDream.Report.ScreenshotsSelected>выбрано: {0}</HaulersDream.Report.ScreenshotsSelected>
+<HaulersDream.Report.ClearScreenshots>Очистить</HaulersDream.Report.ClearScreenshots>
+<HaulersDream.Report.Uploading>Загрузка скриншота {0}/{1}…</HaulersDream.Report.Uploading>
+<HaulersDream.Report.SentPartial>Некоторые скриншоты не удалось загрузить ({0}).</HaulersDream.Report.SentPartial>
+<HaulersDream.Report.PickTitle>Добавить скриншоты</HaulersDream.Report.PickTitle>
+<HaulersDream.Report.PickSubtitle>выбрано {0} из {1}</HaulersDream.Report.PickSubtitle>
+<HaulersDream.Report.PickEmpty>Скриншоты Steam для RimWorld не найдены. Сделайте снимок через оверлей Steam (Shift+Tab или горячая клавиша F12), и он появится здесь.</HaulersDream.Report.PickEmpty>
+<HaulersDream.Report.PickConfirm>Добавить ({0})</HaulersDream.Report.PickConfirm>
+<HaulersDream.Report.PickMax>Можно приложить не более {0} скриншотов.</HaulersDream.Report.PickMax>
 <HaulersDream.FeatGroup.Core>Основное</HaulersDream.FeatGroup.Core>
 <HaulersDream.FeatGroup.Loading>Загрузка и носители</HaulersDream.FeatGroup.Loading>
 <HaulersDream.FeatGroup.BuildCraft>Строительство и изготовление</HaulersDream.FeatGroup.BuildCraft>

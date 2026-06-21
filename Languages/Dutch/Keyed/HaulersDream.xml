@@ -408,6 +408,63 @@
 <HaulersDream.Migration.Step3>3.  Nadat het spel herstart is, laad je opgeslagen spel opnieuw, en sla het dan nog een keer op — de verwijderde mods zijn nu volledig uit beeld.</HaulersDream.Migration.Step3>
 <HaulersDream.Migration.Step4>4.  Zorg dat Hauler's Dream is ingeschakeld, hef de oproep van je kolonisten op, en ga verder.</HaulersDream.Migration.Step4>
 <HaulersDream.Advanced.DevHint>Ontwikkelaarsdiagnostiek verschijnt hier wanneer de Ontwikkelaarsmodus is ingeschakeld.</HaulersDream.Advanced.DevHint>
+<HaulersDream.Report.NavLabel>Een probleem melden</HaulersDream.Report.NavLabel>
+<HaulersDream.Report.NavLabel.Help>Stuur de ontwikkelaar een bugmelding, functieverzoek of verzoek om modcompatibiliteit. Je actieve modlijst en spelversie worden meegestuurd om het probleem te helpen achterhalen.</HaulersDream.Report.NavLabel.Help>
+<HaulersDream.Report.DialogTitle>Een probleem melden</HaulersDream.Report.DialogTitle>
+<HaulersDream.Report.DialogIntro>Wat voor melding is dit, en wat gebeurde er? Dit gaat rechtstreeks naar de ontwikkelaar.</HaulersDream.Report.DialogIntro>
+<HaulersDream.Report.TypeLabel>Type</HaulersDream.Report.TypeLabel>
+<HaulersDream.Report.Type.Bug>Bug</HaulersDream.Report.Type.Bug>
+<HaulersDream.Report.Type.Feature>Functieverzoek</HaulersDream.Report.Type.Feature>
+<HaulersDream.Report.Type.Compatibility>Modcompatibiliteit</HaulersDream.Report.Type.Compatibility>
+<HaulersDream.Report.Type.Other>Iets anders</HaulersDream.Report.Type.Other>
+<HaulersDream.Report.DescribeLabel>Beschrijf het (wat gebeurde er, stappen om het te reproduceren, en wat je verwachtte):</HaulersDream.Report.DescribeLabel>
+<HaulersDream.Report.IncludeLog>Ook het volledige spellogboek meesturen (Player.log)</HaulersDream.Report.IncludeLog>
+<HaulersDream.Report.IncludeLog.Help>Het eigen logboek van Hauler's Dream wordt altijd meegestuurd. Vink dit aan om ook het einde van je volledige Player.log mee te sturen; dat is groter en kan berichten van andere mods bevatten, maar het is de nuttigste bijlage om een bug op te sporen.</HaulersDream.Report.IncludeLog.Help>
+<HaulersDream.Report.AutoMeta>Je actieve modlijst, spelversie, besturingssysteem en het eigen logboek van Hauler's Dream worden automatisch meegestuurd.</HaulersDream.Report.AutoMeta>
+<HaulersDream.Report.Submit>Melding versturen</HaulersDream.Report.Submit>
+<HaulersDream.Report.Retry>Opnieuw proberen</HaulersDream.Report.Retry>
+<HaulersDream.Report.Sending>Versturen…</HaulersDream.Report.Sending>
+<HaulersDream.Report.SentBody>Bedankt! Je melding is verzonden.\n\nAls het een bug is, helpt het meegestuurde logboek om hem op te sporen.</HaulersDream.Report.SentBody>
+<HaulersDream.Report.RateLimited>Je verstuurt te snel meldingen. Wacht een minuut en probeer het opnieuw.</HaulersDream.Report.RateLimited>
+<HaulersDream.Report.NetworkError>Kon de meldingsserver niet bereiken: {0}\nControleer je verbinding en probeer het opnieuw.</HaulersDream.Report.NetworkError>
+<HaulersDream.Report.ServerError>De meldingsserver gaf een fout terug (HTTP {0}). Probeer het later opnieuw.</HaulersDream.Report.ServerError>
+  <!-- My reports: the list/detail view that opens from the nav button -->
+  <HaulersDream.Report.MyReports.Title>Jouw meldingen</HaulersDream.Report.MyReports.Title>
+  <HaulersDream.Report.MyReports.Loading>Je meldingen laden…</HaulersDream.Report.MyReports.Loading>
+  <HaulersDream.Report.MyReports.Empty>Je hebt nog geen meldingen verstuurd.</HaulersDream.Report.MyReports.Empty>
+  <HaulersDream.Report.MyReports.CreateNew>Nieuwe melding maken</HaulersDream.Report.MyReports.CreateNew>
+  <HaulersDream.Report.MyReports.Refresh>Vernieuwen</HaulersDream.Report.MyReports.Refresh>
+  <HaulersDream.Report.MyReports.LoadError>Kon je meldingen niet laden (HTTP {0}).</HaulersDream.Report.MyReports.LoadError>
+  <HaulersDream.Report.MyReports.NetworkError>Kon de meldingsserver niet bereiken: {0}</HaulersDream.Report.MyReports.NetworkError>
+  <HaulersDream.Report.Status.Open>Open</HaulersDream.Report.Status.Open>
+  <HaulersDream.Report.Status.Solved>Opgelost</HaulersDream.Report.Status.Solved>
+  <HaulersDream.Report.Status.Closed>Gesloten</HaulersDream.Report.Status.Closed>
+  <HaulersDream.Report.Status.Submitted>Verzonden</HaulersDream.Report.Status.Submitted>
+  <HaulersDream.Report.Detail.Status>Status: {0}</HaulersDream.Report.Detail.Status>
+  <HaulersDream.Report.Detail.Loading>Laden…</HaulersDream.Report.Detail.Loading>
+  <HaulersDream.Report.Detail.Back>Terug</HaulersDream.Report.Detail.Back>
+  <HaulersDream.Report.Detail.CommentsHeader>Reacties ({0})</HaulersDream.Report.Detail.CommentsHeader>
+  <HaulersDream.Report.Detail.NoComments>Nog geen reacties. De reacties van de ontwikkelaar verschijnen hier.</HaulersDream.Report.Detail.NoComments>
+  <HaulersDream.Report.Detail.Unavailable>Reacties konden nu niet worden geladen. Probeer het later opnieuw.</HaulersDream.Report.Detail.Unavailable>
+  <HaulersDream.Report.Detail.OpenOnGitHub>Bekijken op GitHub</HaulersDream.Report.Detail.OpenOnGitHub>
+  <HaulersDream.Report.Detail.Send>Verzenden</HaulersDream.Report.Detail.Send>
+  <HaulersDream.Report.Detail.Sending>Verzenden…</HaulersDream.Report.Detail.Sending>
+  <HaulersDream.Report.Detail.CommentPosted>Reactie verzonden.</HaulersDream.Report.Detail.CommentPosted>
+  <HaulersDream.Report.Detail.CommentFailed>Verzenden mislukt (HTTP {0}).</HaulersDream.Report.Detail.CommentFailed>
+  <HaulersDream.Report.Detail.CommentEmpty>Schrijf eerst een reactie.</HaulersDream.Report.Detail.CommentEmpty>
+  <HaulersDream.Report.Detail.NoIssue>Reageren kan zodra deze melding is opgepakt in de tracker.</HaulersDream.Report.Detail.NoIssue>
+  <HaulersDream.Report.Role.You>Jij</HaulersDream.Report.Role.You>
+  <HaulersDream.Report.Role.Developer>Ontwikkelaar</HaulersDream.Report.Role.Developer>
+<HaulersDream.Report.AddScreenshots>Schermafbeeldingen toevoegen…</HaulersDream.Report.AddScreenshots>
+<HaulersDream.Report.ScreenshotsSelected>{0} geselecteerd</HaulersDream.Report.ScreenshotsSelected>
+<HaulersDream.Report.ClearScreenshots>Wissen</HaulersDream.Report.ClearScreenshots>
+<HaulersDream.Report.Uploading>Schermafbeelding {0}/{1} uploaden…</HaulersDream.Report.Uploading>
+<HaulersDream.Report.SentPartial>Sommige schermafbeeldingen konden niet worden geüpload ({0}).</HaulersDream.Report.SentPartial>
+<HaulersDream.Report.PickTitle>Schermafbeeldingen toevoegen</HaulersDream.Report.PickTitle>
+<HaulersDream.Report.PickSubtitle>{0} van {1} geselecteerd</HaulersDream.Report.PickSubtitle>
+<HaulersDream.Report.PickEmpty>Geen Steam-schermafbeeldingen voor RimWorld gevonden. Maak er een met de Steam-overlay (Shift+Tab, of de F12-sneltoets) en hij verschijnt hier.</HaulersDream.Report.PickEmpty>
+<HaulersDream.Report.PickConfirm>Toevoegen ({0})</HaulersDream.Report.PickConfirm>
+<HaulersDream.Report.PickMax>Je kunt hoogstens {0} schermafbeeldingen meesturen.</HaulersDream.Report.PickMax>
 <HaulersDream.FeatGroup.Core>Kern</HaulersDream.FeatGroup.Core>
 <HaulersDream.FeatGroup.Loading>Laden en dragers</HaulersDream.FeatGroup.Loading>
 <HaulersDream.FeatGroup.BuildCraft>Bouwen en vervaardigen</HaulersDream.FeatGroup.BuildCraft>

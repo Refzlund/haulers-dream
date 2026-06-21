@@ -111,12 +111,9 @@ namespace HaulersDream
             // This is the fix for "a cook holding raw food still reads 'missing ingredients'".
             int beforeSelf = outList.Count;
             AddCarrierStacks(worker, worker, bill, outList);
-            if (HaulersDreamMod.Settings != null && HaulersDreamMod.Settings.verboseLogging)
-            {
-                var wc = worker.GetComp<CompHauledToInventory>();
-                HDLog.Dbg($"DoBill ingredient-share for {worker} / {bill.recipe?.defName ?? "?"}: " +
-                          $"worker tagged={wc?.GetHashSet().Count ?? 0}, self-pass added {outList.Count - beforeSelf} stack(s).");
-            }
+            var wc = worker.GetComp<CompHauledToInventory>();
+            HDLog.Dbg($"DoBill ingredient-share for {worker} / {bill.recipe?.defName ?? "?"}: " +
+                      $"worker tagged={wc?.PeekHashSet().Count ?? 0}, self-pass added {outList.Count - beforeSelf} stack(s).");
 
             var pawns = map.mapPawns.SpawnedPawnsInFaction(Faction.OfPlayer);
             for (int i = 0; i < pawns.Count; i++)

@@ -94,8 +94,7 @@ namespace HaulersDream
             }
             __result = prep;
 
-            if (s.verboseLogging)
-                HDLog.Dbg($"[BillPrep] {pawn} gathers {floorIdx.Count} ingredient stacks for {job.bill.recipe.defName} in one sweep.");
+            HDLog.Dbg($"[BillPrep] {pawn} gathers {floorIdx.Count} ingredient stacks for {job.bill.recipe.defName} in one sweep.");
         }
 
         private static bool IsEligibleCrafter(Pawn pawn)

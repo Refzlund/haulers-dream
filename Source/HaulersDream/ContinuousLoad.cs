@@ -106,9 +106,8 @@ namespace HaulersDream
                 job.playerForced = true;
                 // EnqueueFirst so the chain runs immediately after this finish action (ahead of any idle backstop).
                 pawn.jobs.jobQueue.EnqueueFirst(job, JobTag.Misc);
-                if (s.verboseLogging)
-                    HDLog.Dbg($"ContinuousLoad: {pawn} chaining to {adapter.GetParentThing()?.LabelShort} " +
-                              $"(group {adapter.GetUniqueLoadID()}) after finishing group {finishedKey}.");
+                HDLog.Dbg($"ContinuousLoad: {pawn} chaining to {adapter.GetParentThing()?.LabelShort} " +
+                          $"(group {adapter.GetUniqueLoadID()}) after finishing group {finishedKey}.");
                 return true;
             }
             return false;

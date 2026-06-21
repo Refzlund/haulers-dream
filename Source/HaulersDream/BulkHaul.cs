@@ -476,8 +476,7 @@ namespace HaulersDream
             for (int i = 0; i < things.Count; i++)
                 job.targetQueueB.Add(things[i]);
             job.count = 1; // sentinel: Job.count defaults to -1, which reads as "broken" in several vanilla checks
-            if (s.verboseLogging) // Dbg re-checks, but don't build the interpolated string on every silent success
-                HDLog.Dbg($"BulkHaul: {pawn} sweeping {things.Count} stacks (~{running:0.#}kg / ceiling {(float.IsPositiveInfinity(ceiling) ? -1 : ceiling):0.#}kg, forced={forced}).");
+            HDLog.Dbg($"BulkHaul: {pawn} sweeping {things.Count} stacks (~{running:0.#}kg / ceiling {(float.IsPositiveInfinity(ceiling) ? -1 : ceiling):0.#}kg, forced={forced}).");
             return job;
         }
 

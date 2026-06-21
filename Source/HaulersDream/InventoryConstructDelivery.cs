@@ -89,8 +89,7 @@ namespace HaulersDream
             int handCap = pawn.carryTracker.MaxStackSpaceEver(def);
             if (handCap <= 0)
             {
-                if (s.verboseLogging)
-                    HDLog.Dbg($"inv-deliver skip: handCap<=0 for {def.label} ({pawn})");
+                HDLog.Dbg($"inv-deliver skip: handCap<=0 for {def.label} ({pawn})");
                 return null;
             }
 
@@ -171,8 +170,7 @@ namespace HaulersDream
             // (worth-it gate already requires clusterNeed > handCap across 2+ sites) is never a "one hand-trip".
             if (!multiSite && !forced && frameNeed <= handCap)
             {
-                if (s.verboseLogging)
-                    HDLog.Dbg($"inv-deliver skip: need {frameNeed} <= handCap {handCap} for {def.label} → {needer.LabelShort} (one hand-trip suffices)");
+                HDLog.Dbg($"inv-deliver skip: need {frameNeed} <= handCap {handCap} for {def.label} → {needer.LabelShort} (one hand-trip suffices)");
                 return null; // a single hand-trip already satisfies it
             }
             // Plain right-click order (not a route stop) whose remaining need fits ONE hand-stack, where the
@@ -184,9 +182,8 @@ namespace HaulersDream
             if (!multiSite && forced && RouteIntent == ConstructRouteIntent.None && frameNeed <= handCap
                 && vanillaJob != null && vanillaJob.targetQueueB != null && vanillaJob.targetQueueB.Count > 0)
             {
-                if (s.verboseLogging)
-                    HDLog.Dbg($"inv-deliver skip: forced one-hand order for {def.label} → {needer.LabelShort}, " +
-                              $"vanilla batches {vanillaJob.targetQueueB.Count} more needer(s) (keep vanilla cluster delivery)");
+                HDLog.Dbg($"inv-deliver skip: forced one-hand order for {def.label} → {needer.LabelShort}, " +
+                          $"vanilla batches {vanillaJob.targetQueueB.Count} more needer(s) (keep vanilla cluster delivery)");
                 return null;
             }
 
@@ -201,8 +198,7 @@ namespace HaulersDream
             int ceiling = ConstructDeliveryPlan.GatherCeiling(level, maxCap, baseCap, cur, unit, gatherNeed);
             if (!forced && ceiling <= handCap)
             {
-                if (s.verboseLogging)
-                    HDLog.Dbg($"inv-deliver skip: ceiling {ceiling} <= handCap {handCap} for {def.label} (cur mass {cur:0.0}/{baseCap:0.0}kg, unit {unit:0.###})");
+                HDLog.Dbg($"inv-deliver skip: ceiling {ceiling} <= handCap {handCap} for {def.label} (cur mass {cur:0.0}/{baseCap:0.0}kg, unit {unit:0.###})");
                 return null; // can't carry more than one hand-load right now -> hands are already optimal
             }
             if (forced && ceiling < 1)
@@ -222,9 +218,8 @@ namespace HaulersDream
                 : ConstructDeliveryPlan.PlanLoad(level, maxCap, baseCap, cur, unit, loadDemand, handCap, available);
             if (targetLoad <= 0)
             {
-                if (s.verboseLogging)
-                    HDLog.Dbg($"inv-deliver skip: targetLoad 0 for {def.label} → {needer.LabelShort} " +
-                              $"(available {available} in {stacks.Count} stacks near stockpile, need {frameNeed}, handCap {handCap}, ceiling {ceiling})");
+                HDLog.Dbg($"inv-deliver skip: targetLoad 0 for {def.label} → {needer.LabelShort} " +
+                          $"(available {available} in {stacks.Count} stacks near stockpile, need {frameNeed}, handCap {handCap}, ceiling {ceiling})");
                 return null;
             }
 

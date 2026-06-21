@@ -2,7 +2,7 @@ Settings-window category icons are from Lucide (https://lucide.dev), used under 
 
 Icons used (recoloured white, rasterized to PNG): sliders-horizontal, package,
 inbox, hammer, boxes, route, pickaxe, users, clipboard-list, settings-2,
-triangle-alert (the conditional "Migration" tab).
+triangle-alert (the conditional "Migration" tab), bug (the "Report an issue" row).
 
 ----------------------------------------------------------------------
 ISC License

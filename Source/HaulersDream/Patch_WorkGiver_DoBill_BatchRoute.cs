@@ -92,8 +92,7 @@ namespace HaulersDream
             BatchCraftHandoff.Set(bj, plan);
             __result = bj;
 
-            if (HaulersDreamMod.Settings?.verboseLogging ?? false)
-                HDLog.Dbg($"[Batch] {pawn} batch-crafting {plan.resolvedReps}× {bill.recipe.defName} (requested {size}).");
+            HDLog.Dbg($"[Batch] {pawn} batch-crafting {plan.resolvedReps}× {bill.recipe.defName} (requested {size}).");
         }
 
         /// <summary>Does the pawn already carry tagged stock tied to this bill — either a leftover INGREDIENT still

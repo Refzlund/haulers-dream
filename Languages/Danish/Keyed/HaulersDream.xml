@@ -408,6 +408,63 @@
 <HaulersDream.Migration.Step3>3.  Efter spillet genstarter, indlæs dit gemte spil igen, og gem det så endnu en gang — de fjernede mods er nu helt ude af billedet.</HaulersDream.Migration.Step3>
 <HaulersDream.Migration.Step4>4.  Sørg for, at Hauler's Dream er slået til, afindkald dine kolonister, og fortsæt.</HaulersDream.Migration.Step4>
 <HaulersDream.Advanced.DevHint>Udviklerdiagnostik vises her, når Udviklertilstand er aktiveret.</HaulersDream.Advanced.DevHint>
+<HaulersDream.Report.NavLabel>Rapportér et problem</HaulersDream.Report.NavLabel>
+<HaulersDream.Report.NavLabel.Help>Send udvikleren en fejlrapport, et ønske om en funktion eller en anmodning om mod-kompatibilitet. Din aktive modliste og spilversion sendes med for at hjælpe med at finde problemet.</HaulersDream.Report.NavLabel.Help>
+<HaulersDream.Report.DialogTitle>Rapportér et problem</HaulersDream.Report.DialogTitle>
+<HaulersDream.Report.DialogIntro>Hvilken slags rapport er det, og hvad skete der? Den går direkte til udvikleren.</HaulersDream.Report.DialogIntro>
+<HaulersDream.Report.TypeLabel>Type</HaulersDream.Report.TypeLabel>
+<HaulersDream.Report.Type.Bug>Fejl</HaulersDream.Report.Type.Bug>
+<HaulersDream.Report.Type.Feature>Ønske om funktion</HaulersDream.Report.Type.Feature>
+<HaulersDream.Report.Type.Compatibility>Mod-kompatibilitet</HaulersDream.Report.Type.Compatibility>
+<HaulersDream.Report.Type.Other>Noget andet</HaulersDream.Report.Type.Other>
+<HaulersDream.Report.DescribeLabel>Beskriv det (hvad der skete, trin til at genskabe det, og hvad du forventede):</HaulersDream.Report.DescribeLabel>
+<HaulersDream.Report.IncludeLog>Vedlæg også hele spilloggen (Player.log)</HaulersDream.Report.IncludeLog>
+<HaulersDream.Report.IncludeLog.Help>Hauler's Dreams egen log sendes altid med. Sæt flueben her for også at vedhæfte slutningen af din fulde Player.log; den er større og kan indeholde beskeder fra andre mods, men den er den mest nyttige vedhæftning til at finde en fejl.</HaulersDream.Report.IncludeLog.Help>
+<HaulersDream.Report.AutoMeta>Din aktive modliste, spilversion, styresystem og Hauler's Dreams egen log sendes med automatisk.</HaulersDream.Report.AutoMeta>
+<HaulersDream.Report.Submit>Send rapport</HaulersDream.Report.Submit>
+<HaulersDream.Report.Retry>Prøv igen</HaulersDream.Report.Retry>
+<HaulersDream.Report.Sending>Sender…</HaulersDream.Report.Sending>
+<HaulersDream.Report.SentBody>Tak! Din rapport blev sendt.\n\nHvis det er en fejl, hjælper den vedlagte log med at spore den.</HaulersDream.Report.SentBody>
+<HaulersDream.Report.RateLimited>Du sender rapporter for hurtigt. Vent et minut, og prøv igen.</HaulersDream.Report.RateLimited>
+<HaulersDream.Report.NetworkError>Kunne ikke nå rapportserveren: {0}\nTjek din forbindelse, og prøv igen.</HaulersDream.Report.NetworkError>
+<HaulersDream.Report.ServerError>Rapportserveren returnerede en fejl (HTTP {0}). Prøv igen senere.</HaulersDream.Report.ServerError>
+  <!-- My reports: the list/detail view that opens from the nav button -->
+  <HaulersDream.Report.MyReports.Title>Dine rapporter</HaulersDream.Report.MyReports.Title>
+  <HaulersDream.Report.MyReports.Loading>Indlæser dine rapporter…</HaulersDream.Report.MyReports.Loading>
+  <HaulersDream.Report.MyReports.Empty>Du har endnu ikke sendt nogen rapporter.</HaulersDream.Report.MyReports.Empty>
+  <HaulersDream.Report.MyReports.CreateNew>Opret ny rapport</HaulersDream.Report.MyReports.CreateNew>
+  <HaulersDream.Report.MyReports.Refresh>Opdater</HaulersDream.Report.MyReports.Refresh>
+  <HaulersDream.Report.MyReports.LoadError>Kunne ikke indlæse dine rapporter (HTTP {0}).</HaulersDream.Report.MyReports.LoadError>
+  <HaulersDream.Report.MyReports.NetworkError>Kunne ikke nå rapportserveren: {0}</HaulersDream.Report.MyReports.NetworkError>
+  <HaulersDream.Report.Status.Open>Åben</HaulersDream.Report.Status.Open>
+  <HaulersDream.Report.Status.Solved>Løst</HaulersDream.Report.Status.Solved>
+  <HaulersDream.Report.Status.Closed>Lukket</HaulersDream.Report.Status.Closed>
+  <HaulersDream.Report.Status.Submitted>Indsendt</HaulersDream.Report.Status.Submitted>
+  <HaulersDream.Report.Detail.Status>Status: {0}</HaulersDream.Report.Detail.Status>
+  <HaulersDream.Report.Detail.Loading>Indlæser…</HaulersDream.Report.Detail.Loading>
+  <HaulersDream.Report.Detail.Back>Tilbage</HaulersDream.Report.Detail.Back>
+  <HaulersDream.Report.Detail.CommentsHeader>Svar ({0})</HaulersDream.Report.Detail.CommentsHeader>
+  <HaulersDream.Report.Detail.NoComments>Ingen svar endnu. Udviklerens svar vises her.</HaulersDream.Report.Detail.NoComments>
+  <HaulersDream.Report.Detail.Unavailable>Svar kunne ikke indlæses lige nu. Prøv igen senere.</HaulersDream.Report.Detail.Unavailable>
+  <HaulersDream.Report.Detail.OpenOnGitHub>Vis på GitHub</HaulersDream.Report.Detail.OpenOnGitHub>
+  <HaulersDream.Report.Detail.Send>Send</HaulersDream.Report.Detail.Send>
+  <HaulersDream.Report.Detail.Sending>Sender…</HaulersDream.Report.Detail.Sending>
+  <HaulersDream.Report.Detail.CommentPosted>Kommentar sendt.</HaulersDream.Report.Detail.CommentPosted>
+  <HaulersDream.Report.Detail.CommentFailed>Kunne ikke sende (HTTP {0}).</HaulersDream.Report.Detail.CommentFailed>
+  <HaulersDream.Report.Detail.CommentEmpty>Skriv en kommentar først.</HaulersDream.Report.Detail.CommentEmpty>
+  <HaulersDream.Report.Detail.NoIssue>Du kan kommentere, så snart denne rapport er taget op på trackeren.</HaulersDream.Report.Detail.NoIssue>
+  <HaulersDream.Report.Role.You>Dig</HaulersDream.Report.Role.You>
+  <HaulersDream.Report.Role.Developer>Udvikler</HaulersDream.Report.Role.Developer>
+<HaulersDream.Report.AddScreenshots>Tilføj skærmbilleder…</HaulersDream.Report.AddScreenshots>
+<HaulersDream.Report.ScreenshotsSelected>{0} valgt</HaulersDream.Report.ScreenshotsSelected>
+<HaulersDream.Report.ClearScreenshots>Ryd</HaulersDream.Report.ClearScreenshots>
+<HaulersDream.Report.Uploading>Uploader skærmbillede {0}/{1}…</HaulersDream.Report.Uploading>
+<HaulersDream.Report.SentPartial>Nogle skærmbilleder kunne ikke uploades ({0}).</HaulersDream.Report.SentPartial>
+<HaulersDream.Report.PickTitle>Tilføj skærmbilleder</HaulersDream.Report.PickTitle>
+<HaulersDream.Report.PickSubtitle>{0} af {1} valgt</HaulersDream.Report.PickSubtitle>
+<HaulersDream.Report.PickEmpty>Ingen Steam-skærmbilleder fundet for RimWorld. Tag et med Steam-overlayet (Shift+Tab, eller F12-genvejen), så dukker det op her.</HaulersDream.Report.PickEmpty>
+<HaulersDream.Report.PickConfirm>Tilføj ({0})</HaulersDream.Report.PickConfirm>
+<HaulersDream.Report.PickMax>Du kan højst vedhæfte {0} skærmbilleder.</HaulersDream.Report.PickMax>
 <HaulersDream.FeatGroup.Core>Kerne</HaulersDream.FeatGroup.Core>
 <HaulersDream.FeatGroup.Loading>Læsning og bærere</HaulersDream.FeatGroup.Loading>
 <HaulersDream.FeatGroup.BuildCraft>Byggeri og fremstilling</HaulersDream.FeatGroup.BuildCraft>

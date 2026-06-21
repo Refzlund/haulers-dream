@@ -408,6 +408,63 @@
 <HaulersDream.Migration.Step3>3.  게임이 재시작된 뒤 저장을 다시 불러오고, 한 번 더 저장하세요 — 제거된 모드가 이제 완전히 빠졌습니다.</HaulersDream.Migration.Step3>
 <HaulersDream.Migration.Step4>4.  Hauler's Dream이 활성화되어 있는지 확인하고, 정착민의 징집을 해제한 뒤 계속하세요.</HaulersDream.Migration.Step4>
 <HaulersDream.Advanced.DevHint>개발자 모드가 활성화되면 여기에 개발자 진단이 나타납니다.</HaulersDream.Advanced.DevHint>
+<HaulersDream.Report.NavLabel>문제 신고</HaulersDream.Report.NavLabel>
+<HaulersDream.Report.NavLabel.Help>개발자에게 버그 신고, 기능 요청, 또는 모드 호환성 요청을 보냅니다. 문제 진단에 도움이 되도록 현재 활성 모드 목록과 게임 버전이 함께 포함됩니다.</HaulersDream.Report.NavLabel.Help>
+<HaulersDream.Report.DialogTitle>문제 신고</HaulersDream.Report.DialogTitle>
+<HaulersDream.Report.DialogIntro>어떤 종류의 신고이며, 무슨 일이 있었나요? 이 내용은 개발자에게 곧장 전달됩니다.</HaulersDream.Report.DialogIntro>
+<HaulersDream.Report.TypeLabel>종류</HaulersDream.Report.TypeLabel>
+<HaulersDream.Report.Type.Bug>버그</HaulersDream.Report.Type.Bug>
+<HaulersDream.Report.Type.Feature>기능 요청</HaulersDream.Report.Type.Feature>
+<HaulersDream.Report.Type.Compatibility>모드 호환성</HaulersDream.Report.Type.Compatibility>
+<HaulersDream.Report.Type.Other>그 외</HaulersDream.Report.Type.Other>
+<HaulersDream.Report.DescribeLabel>설명해 주세요 (무슨 일이 있었는지, 재현 단계, 그리고 기대한 결과):</HaulersDream.Report.DescribeLabel>
+<HaulersDream.Report.IncludeLog>전체 게임 로그(Player.log)도 함께 첨부</HaulersDream.Report.IncludeLog>
+<HaulersDream.Report.IncludeLog.Help>Hauler's Dream 자체 로그는 항상 포함됩니다. 이 항목을 체크하면 전체 Player.log의 끝부분도 함께 첨부합니다. 용량이 더 크고 다른 모드의 메시지가 섞여 있을 수 있지만, 버그를 진단하는 데 가장 유용한 첨부 파일입니다.</HaulersDream.Report.IncludeLog.Help>
+<HaulersDream.Report.AutoMeta>활성 모드 목록, 게임 버전, 운영체제, 그리고 Hauler's Dream 자체 로그가 자동으로 포함됩니다.</HaulersDream.Report.AutoMeta>
+<HaulersDream.Report.Submit>신고 보내기</HaulersDream.Report.Submit>
+<HaulersDream.Report.Retry>다시 시도</HaulersDream.Report.Retry>
+<HaulersDream.Report.Sending>보내는 중…</HaulersDream.Report.Sending>
+<HaulersDream.Report.SentBody>감사합니다! 신고가 전송되었습니다.\n\n버그라면 첨부된 로그가 원인을 찾는 데 도움이 됩니다.</HaulersDream.Report.SentBody>
+<HaulersDream.Report.RateLimited>신고를 너무 빠르게 보내고 있습니다. 잠시 기다렸다가 다시 시도하세요.</HaulersDream.Report.RateLimited>
+<HaulersDream.Report.NetworkError>신고 서버에 연결할 수 없습니다: {0}\n연결 상태를 확인하고 다시 시도하세요.</HaulersDream.Report.NetworkError>
+<HaulersDream.Report.ServerError>신고 서버가 오류를 반환했습니다 (HTTP {0}). 나중에 다시 시도하세요.</HaulersDream.Report.ServerError>
+  <!-- My reports: the list/detail view that opens from the nav button -->
+  <HaulersDream.Report.MyReports.Title>내 신고</HaulersDream.Report.MyReports.Title>
+  <HaulersDream.Report.MyReports.Loading>신고를 불러오는 중…</HaulersDream.Report.MyReports.Loading>
+  <HaulersDream.Report.MyReports.Empty>아직 보낸 신고가 없습니다.</HaulersDream.Report.MyReports.Empty>
+  <HaulersDream.Report.MyReports.CreateNew>새 신고 작성</HaulersDream.Report.MyReports.CreateNew>
+  <HaulersDream.Report.MyReports.Refresh>새로 고침</HaulersDream.Report.MyReports.Refresh>
+  <HaulersDream.Report.MyReports.LoadError>신고를 불러올 수 없습니다 (HTTP {0}).</HaulersDream.Report.MyReports.LoadError>
+  <HaulersDream.Report.MyReports.NetworkError>신고 서버에 연결할 수 없습니다: {0}</HaulersDream.Report.MyReports.NetworkError>
+  <HaulersDream.Report.Status.Open>처리 중</HaulersDream.Report.Status.Open>
+  <HaulersDream.Report.Status.Solved>해결됨</HaulersDream.Report.Status.Solved>
+  <HaulersDream.Report.Status.Closed>종료됨</HaulersDream.Report.Status.Closed>
+  <HaulersDream.Report.Status.Submitted>제출됨</HaulersDream.Report.Status.Submitted>
+  <HaulersDream.Report.Detail.Status>상태: {0}</HaulersDream.Report.Detail.Status>
+  <HaulersDream.Report.Detail.Loading>불러오는 중…</HaulersDream.Report.Detail.Loading>
+  <HaulersDream.Report.Detail.Back>뒤로</HaulersDream.Report.Detail.Back>
+  <HaulersDream.Report.Detail.CommentsHeader>답변 ({0})</HaulersDream.Report.Detail.CommentsHeader>
+  <HaulersDream.Report.Detail.NoComments>아직 답변이 없습니다. 개발자의 응답이 여기에 표시됩니다.</HaulersDream.Report.Detail.NoComments>
+  <HaulersDream.Report.Detail.Unavailable>지금은 답변을 불러올 수 없습니다. 나중에 다시 시도하세요.</HaulersDream.Report.Detail.Unavailable>
+  <HaulersDream.Report.Detail.OpenOnGitHub>GitHub에서 보기</HaulersDream.Report.Detail.OpenOnGitHub>
+  <HaulersDream.Report.Detail.Send>보내기</HaulersDream.Report.Detail.Send>
+  <HaulersDream.Report.Detail.Sending>보내는 중…</HaulersDream.Report.Detail.Sending>
+  <HaulersDream.Report.Detail.CommentPosted>댓글을 보냈습니다.</HaulersDream.Report.Detail.CommentPosted>
+  <HaulersDream.Report.Detail.CommentFailed>보낼 수 없습니다 (HTTP {0}).</HaulersDream.Report.Detail.CommentFailed>
+  <HaulersDream.Report.Detail.CommentEmpty>먼저 댓글을 작성하세요.</HaulersDream.Report.Detail.CommentEmpty>
+  <HaulersDream.Report.Detail.NoIssue>이 신고가 트래커에 등록되면 댓글을 달 수 있습니다.</HaulersDream.Report.Detail.NoIssue>
+  <HaulersDream.Report.Role.You>나</HaulersDream.Report.Role.You>
+  <HaulersDream.Report.Role.Developer>개발자</HaulersDream.Report.Role.Developer>
+<HaulersDream.Report.AddScreenshots>스크린샷 추가…</HaulersDream.Report.AddScreenshots>
+<HaulersDream.Report.ScreenshotsSelected>{0}개 선택됨</HaulersDream.Report.ScreenshotsSelected>
+<HaulersDream.Report.ClearScreenshots>지우기</HaulersDream.Report.ClearScreenshots>
+<HaulersDream.Report.Uploading>스크린샷 업로드 중 {0}/{1}…</HaulersDream.Report.Uploading>
+<HaulersDream.Report.SentPartial>일부 스크린샷을 업로드하지 못했습니다 ({0}개).</HaulersDream.Report.SentPartial>
+<HaulersDream.Report.PickTitle>스크린샷 추가</HaulersDream.Report.PickTitle>
+<HaulersDream.Report.PickSubtitle>{1}개 중 {0}개 선택됨</HaulersDream.Report.PickSubtitle>
+<HaulersDream.Report.PickEmpty>RimWorld의 Steam 스크린샷을 찾을 수 없습니다. Steam 오버레이(Shift+Tab, 또는 F12 단축키)로 한 장 찍으면 여기에 나타납니다.</HaulersDream.Report.PickEmpty>
+<HaulersDream.Report.PickConfirm>추가 ({0}개)</HaulersDream.Report.PickConfirm>
+<HaulersDream.Report.PickMax>스크린샷은 최대 {0}개까지 첨부할 수 있습니다.</HaulersDream.Report.PickMax>
 <HaulersDream.FeatGroup.Core>핵심</HaulersDream.FeatGroup.Core>
 <HaulersDream.FeatGroup.Loading>적재 및 운반체</HaulersDream.FeatGroup.Loading>
 <HaulersDream.FeatGroup.BuildCraft>건설 및 제작</HaulersDream.FeatGroup.BuildCraft>

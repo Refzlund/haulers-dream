@@ -273,8 +273,7 @@ namespace HaulersDream
                 job.targetQueueB.Add(things[i]);
             job.countQueue = new List<int>(counts);
             job.count = 1; // sentinel: a -1 Job.count reads as "broken" in some vanilla checks
-            if (s.verboseLogging)
-                HDLog.Dbg($"TransportLoad: {pawn} sweeping {things.Count} stacks for group {loadable.GetUniqueLoadID()} (~{running:0.#}kg).");
+            HDLog.Dbg($"TransportLoad: {pawn} sweeping {things.Count} stacks for group {loadable.GetUniqueLoadID()} (~{running:0.#}kg).");
             return job;
         }
 
