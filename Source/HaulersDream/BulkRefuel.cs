@@ -163,8 +163,7 @@ namespace HaulersDream
                 return null;
             job.count = 1; // sentinel: a -1 Job.count reads as "broken" in some vanilla checks
 
-            if (HaulersDreamMod.Settings?.verboseLogging == true)
-                HDLog.Dbg($"BulkRefuel: {pawn} sweeping {job.targetQueueB.Count} fuel stack(s) for {refuelable.LabelShort} (deficit {deficit}, queued ~{running}).");
+            HDLog.Dbg($"BulkRefuel: {pawn} sweeping {job.targetQueueB.Count} fuel stack(s) for {refuelable.LabelShort} (deficit {deficit}, queued ~{running}).");
             return job;
         }
 

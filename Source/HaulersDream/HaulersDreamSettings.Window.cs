@@ -254,13 +254,23 @@ namespace HaulersDream
                 DrawNavRow(new Rect(inner.x, y, inner.width, rowH), cd, rowH, tint: null);
                 y += rowH + 2f;
             }
-            // Conditional warning row pinned to the BOTTOM of the nav column ("justify-between"), shown only while the
-            // user still has a mod HD replaces active. Mathf.Max keeps it from overlapping the list on a short window.
+            // Bottom-pinned rows ("justify-between" with the scrolling category list above). The "Report issue"
+            // action row is ALWAYS shown; the Migration warning row is shown only while a replaced mod is still
+            // active and sits at the very BOTTOM, with Report just above it. Mathf.Max keeps them from overlapping
+            // the category list on a short window.
+            float bottom = inner.yMax;
             if (ModReplacements.AnyActive)
             {
                 var mig = cats[(int)SettingsCat.Migration];
-                float bottomY = Mathf.Max(y, inner.yMax - rowH);
-                DrawNavRow(new Rect(inner.x, bottomY, inner.width, rowH), mig, rowH, tint: MigrationWarn);
+                float migY = Mathf.Max(y + rowH + 2f, bottom - rowH);
+                float repY = Mathf.Max(y, migY - rowH - 2f);
+                DrawReportRow(new Rect(inner.x, repY, inner.width, rowH), rowH);
+                DrawNavRow(new Rect(inner.x, migY, inner.width, rowH), mig, rowH, tint: MigrationWarn);
+            }
+            else
+            {
+                float repY = Mathf.Max(y, bottom - rowH);
+                DrawReportRow(new Rect(inner.x, repY, inner.width, rowH), rowH);
             }
             Text.Font = f;
             Text.Anchor = anchor;
@@ -304,6 +314,55 @@ namespace HaulersDream
                 currentCat = cd.cat;
                 contentScroll = Vector2.zero;
             }
+        }
+
+        private static Texture2D reportIconCache;
+        private static bool reportIconResolved;
+        private static Texture2D ReportIcon
+        {
+            get
+            {
+                if (!reportIconResolved)
+                {
+                    reportIconCache = ContentFinder<Texture2D>.Get("HaulersDream/Settings/Bug", reportFailure: false);
+                    reportIconResolved = true;
+                }
+                return reportIconCache;
+            }
+        }
+
+        // The always-visible "Report issue" action row. It is NOT a category — it never becomes "selected" and has
+        // no content panel; clicking it opens the report dialog. Styled a touch quieter than the tabs (lower-alpha
+        // bug icon + label) so it doesn't pull focus, while still showing a hover highlight so it reads as clickable.
+        private void DrawReportRow(Rect row, float rowH)
+        {
+            bool over = Mouse.IsOver(row);
+            if (over) Widgets.DrawBoxSolid(row, new Color(1f, 1f, 1f, 0.06f));
+
+            float dim = over ? 0.72f : 0.5f; // quieter than the tabs' 0.75 baseline; lifts a little on hover
+            var icon = ReportIcon;
+            const float navIconSize = 20f;   // a hair smaller than the 22px category icons
+            var iconBox = new Rect(row.x + 10f, row.y + (rowH - navIconSize) / 2f, navIconSize, navIconSize);
+            if (icon != null)
+            {
+                var col = GUI.color;
+                GUI.color = new Color(1f, 1f, 1f, dim);
+                GUI.DrawTexture(iconBox, icon, ScaleMode.ScaleToFit);
+                GUI.color = col;
+            }
+
+            var labelRect = new Rect(iconBox.xMax + 8f, row.y, row.xMax - iconBox.xMax - 12f, rowH);
+            Text.Font = GameFont.Small;
+            Text.Anchor = TextAnchor.MiddleLeft;
+            var lcol = GUI.color;
+            GUI.color = new Color(1f, 1f, 1f, dim);
+            Widgets.Label(labelRect, "HaulersDream.Report.NavLabel".Translate());
+            GUI.color = lcol;
+
+            if (over)
+                HDSettingsUI.SetHelp("HaulersDream.Report.NavLabel".Translate(), "HaulersDream.Report.NavLabel.Help".Translate());
+            if (Widgets.ButtonInvisible(row))
+                Find.WindowStack.Add(new Dialog_MyReports());
         }
 
         private void DrawContent(Rect rect)

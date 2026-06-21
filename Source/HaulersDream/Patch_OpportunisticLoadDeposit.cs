@@ -100,9 +100,8 @@ namespace HaulersDream
             // playerForced: this is an autonomous opportunistic divert, so urgent needs still outrank it and a
             // genuine player order is never overridden.
             __result = new ThinkResult(job, __result.SourceNode, __result.Tag, __result.FromQueue);
-            if (s.verboseLogging)
-                HDLog.Dbg($"{pawn} opportunistically diverting to deposit carried cargo into "
-                          + $"{loadable.GetParentThing()?.LabelShort} (kind {loadable.Kind}).");
+            HDLog.Dbg($"{pawn} opportunistically diverting to deposit carried cargo into "
+                      + $"{loadable.GetParentThing()?.LabelShort} (kind {loadable.Kind}).");
         }
 
         /// <summary>

@@ -372,8 +372,7 @@ namespace HaulersDream
             job.countQueue = new List<int> { take };
             job.count = 1; // sentinel: Job.count defaults to -1 (reads as "broken" in several vanilla checks)
             MarkEnRoute(job, jobCell); // cosmetic: lets the report rewrite / dev overlay name the bound-for job cell
-            if (s.verboseLogging)
-                HDLog.Dbg($"En-route: {pawn} grabs x{take} {thing.def?.label} on the way to its job.");
+            HDLog.Dbg($"En-route: {pawn} grabs x{take} {thing.def?.label} on the way to its job.");
             return job;
         }
 

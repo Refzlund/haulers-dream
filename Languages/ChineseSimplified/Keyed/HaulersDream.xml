@@ -408,6 +408,63 @@
 <HaulersDream.Migration.Step3>3.  游戏重启后，再次读取你的存档，然后再保存一次——被移除的模组现已彻底退出。</HaulersDream.Migration.Step3>
 <HaulersDream.Migration.Step4>4.  确保 Hauler's Dream 已启用，取消征召你的殖民者，然后继续游戏。</HaulersDream.Migration.Step4>
 <HaulersDream.Advanced.DevHint>启用开发者模式时，开发者诊断会显示在这里。</HaulersDream.Advanced.DevHint>
+<HaulersDream.Report.NavLabel>报告问题</HaulersDream.Report.NavLabel>
+<HaulersDream.Report.NavLabel.Help>向开发者发送漏洞报告、功能请求或模组兼容性请求。会附带你已启用的模组列表和游戏版本，以帮助诊断问题。</HaulersDream.Report.NavLabel.Help>
+<HaulersDream.Report.DialogTitle>报告问题</HaulersDream.Report.DialogTitle>
+<HaulersDream.Report.DialogIntro>这是哪一类报告，发生了什么？此内容会直接发送给开发者。</HaulersDream.Report.DialogIntro>
+<HaulersDream.Report.TypeLabel>类型</HaulersDream.Report.TypeLabel>
+<HaulersDream.Report.Type.Bug>漏洞</HaulersDream.Report.Type.Bug>
+<HaulersDream.Report.Type.Feature>功能请求</HaulersDream.Report.Type.Feature>
+<HaulersDream.Report.Type.Compatibility>模组兼容性</HaulersDream.Report.Type.Compatibility>
+<HaulersDream.Report.Type.Other>其他</HaulersDream.Report.Type.Other>
+<HaulersDream.Report.DescribeLabel>请描述（发生了什么、重现步骤，以及你预期的结果）：</HaulersDream.Report.DescribeLabel>
+<HaulersDream.Report.IncludeLog>同时附带完整的游戏日志（Player.log）</HaulersDream.Report.IncludeLog>
+<HaulersDream.Report.IncludeLog.Help>Hauler's Dream 自己的日志始终会被附带。勾选此项可同时附带你完整 Player.log 的末尾部分；它体积更大，可能包含其他模组的信息，但它是诊断漏洞时最有用的附件。</HaulersDream.Report.IncludeLog.Help>
+<HaulersDream.Report.AutoMeta>你已启用的模组列表、游戏版本、操作系统，以及 Hauler's Dream 自己的日志都会自动附带。</HaulersDream.Report.AutoMeta>
+<HaulersDream.Report.Submit>发送报告</HaulersDream.Report.Submit>
+<HaulersDream.Report.Retry>重试</HaulersDream.Report.Retry>
+<HaulersDream.Report.Sending>正在发送…</HaulersDream.Report.Sending>
+<HaulersDream.Report.SentBody>谢谢！你的报告已发送。\n\n如果这是个漏洞，所附的日志将有助于追查它。</HaulersDream.Report.SentBody>
+<HaulersDream.Report.RateLimited>你发送报告太频繁了。请等待一分钟后再试。</HaulersDream.Report.RateLimited>
+<HaulersDream.Report.NetworkError>无法连接到报告服务器：{0}\n请检查你的网络连接后再试。</HaulersDream.Report.NetworkError>
+<HaulersDream.Report.ServerError>报告服务器返回了一个错误（HTTP {0}）。请稍后再试。</HaulersDream.Report.ServerError>
+  <!-- My reports: the list/detail view that opens from the nav button -->
+  <HaulersDream.Report.MyReports.Title>你的报告</HaulersDream.Report.MyReports.Title>
+  <HaulersDream.Report.MyReports.Loading>正在加载你的报告…</HaulersDream.Report.MyReports.Loading>
+  <HaulersDream.Report.MyReports.Empty>你还没有发送过任何报告。</HaulersDream.Report.MyReports.Empty>
+  <HaulersDream.Report.MyReports.CreateNew>创建新报告</HaulersDream.Report.MyReports.CreateNew>
+  <HaulersDream.Report.MyReports.Refresh>刷新</HaulersDream.Report.MyReports.Refresh>
+  <HaulersDream.Report.MyReports.LoadError>无法加载你的报告（HTTP {0}）。</HaulersDream.Report.MyReports.LoadError>
+  <HaulersDream.Report.MyReports.NetworkError>无法连接到报告服务器：{0}</HaulersDream.Report.MyReports.NetworkError>
+  <HaulersDream.Report.Status.Open>待处理</HaulersDream.Report.Status.Open>
+  <HaulersDream.Report.Status.Solved>已解决</HaulersDream.Report.Status.Solved>
+  <HaulersDream.Report.Status.Closed>已关闭</HaulersDream.Report.Status.Closed>
+  <HaulersDream.Report.Status.Submitted>已提交</HaulersDream.Report.Status.Submitted>
+  <HaulersDream.Report.Detail.Status>状态：{0}</HaulersDream.Report.Detail.Status>
+  <HaulersDream.Report.Detail.Loading>正在加载…</HaulersDream.Report.Detail.Loading>
+  <HaulersDream.Report.Detail.Back>返回</HaulersDream.Report.Detail.Back>
+  <HaulersDream.Report.Detail.CommentsHeader>回复（{0}）</HaulersDream.Report.Detail.CommentsHeader>
+  <HaulersDream.Report.Detail.NoComments>暂无回复。开发者的回应会显示在这里。</HaulersDream.Report.Detail.NoComments>
+  <HaulersDream.Report.Detail.Unavailable>暂时无法加载回复，请稍后再试。</HaulersDream.Report.Detail.Unavailable>
+  <HaulersDream.Report.Detail.OpenOnGitHub>在 GitHub 上查看</HaulersDream.Report.Detail.OpenOnGitHub>
+  <HaulersDream.Report.Detail.Send>发送</HaulersDream.Report.Detail.Send>
+  <HaulersDream.Report.Detail.Sending>正在发送…</HaulersDream.Report.Detail.Sending>
+  <HaulersDream.Report.Detail.CommentPosted>回复已发送。</HaulersDream.Report.Detail.CommentPosted>
+  <HaulersDream.Report.Detail.CommentFailed>发送失败（HTTP {0}）。</HaulersDream.Report.Detail.CommentFailed>
+  <HaulersDream.Report.Detail.CommentEmpty>请先写一条回复。</HaulersDream.Report.Detail.CommentEmpty>
+  <HaulersDream.Report.Detail.NoIssue>此报告被加入跟踪列表后即可回复。</HaulersDream.Report.Detail.NoIssue>
+  <HaulersDream.Report.Role.You>你</HaulersDream.Report.Role.You>
+  <HaulersDream.Report.Role.Developer>开发者</HaulersDream.Report.Role.Developer>
+<HaulersDream.Report.AddScreenshots>添加截图…</HaulersDream.Report.AddScreenshots>
+<HaulersDream.Report.ScreenshotsSelected>已选择 {0} 张</HaulersDream.Report.ScreenshotsSelected>
+<HaulersDream.Report.ClearScreenshots>清除</HaulersDream.Report.ClearScreenshots>
+<HaulersDream.Report.Uploading>正在上传截图 {0}/{1}…</HaulersDream.Report.Uploading>
+<HaulersDream.Report.SentPartial>有些截图未能上传（{0}）。</HaulersDream.Report.SentPartial>
+<HaulersDream.Report.PickTitle>添加截图</HaulersDream.Report.PickTitle>
+<HaulersDream.Report.PickSubtitle>已选择 {0} / {1} 张</HaulersDream.Report.PickSubtitle>
+<HaulersDream.Report.PickEmpty>未找到 RimWorld 的 Steam 截图。用 Steam 覆盖层（Shift+Tab，或 F12 快捷键）截一张，它就会显示在这里。</HaulersDream.Report.PickEmpty>
+<HaulersDream.Report.PickConfirm>添加（{0}）</HaulersDream.Report.PickConfirm>
+<HaulersDream.Report.PickMax>你最多可附带 {0} 张截图。</HaulersDream.Report.PickMax>
 <HaulersDream.FeatGroup.Core>核心</HaulersDream.FeatGroup.Core>
 <HaulersDream.FeatGroup.Loading>装载与运载者</HaulersDream.FeatGroup.Loading>
 <HaulersDream.FeatGroup.BuildCraft>建造与制作</HaulersDream.FeatGroup.BuildCraft>

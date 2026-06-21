@@ -408,6 +408,63 @@
 <HaulersDream.Migration.Step3>3.  ゲームが再起動したら、セーブをもう一度読み込み、それからもう一度保存してください — 外したMODはこれで完全に無関係になりました。</HaulersDream.Migration.Step3>
 <HaulersDream.Migration.Step4>4.  Hauler's Dreamが有効になっていることを確認し、入植者の徴兵を解除して、続けてください。</HaulersDream.Migration.Step4>
 <HaulersDream.Advanced.DevHint>開発者モードが有効なとき、ここに開発者向け診断が表示されます。</HaulersDream.Advanced.DevHint>
+<HaulersDream.Report.NavLabel>問題を報告</HaulersDream.Report.NavLabel>
+<HaulersDream.Report.NavLabel.Help>開発者にバグ報告・機能リクエスト・MOD互換性リクエストを送ります。問題の診断に役立てるため、現在有効なMODリストとゲームバージョンが添付されます。</HaulersDream.Report.NavLabel.Help>
+<HaulersDream.Report.DialogTitle>問題を報告</HaulersDream.Report.DialogTitle>
+<HaulersDream.Report.DialogIntro>どんな種類の報告で、何が起きましたか？これは開発者に直接届きます。</HaulersDream.Report.DialogIntro>
+<HaulersDream.Report.TypeLabel>種類</HaulersDream.Report.TypeLabel>
+<HaulersDream.Report.Type.Bug>バグ</HaulersDream.Report.Type.Bug>
+<HaulersDream.Report.Type.Feature>機能リクエスト</HaulersDream.Report.Type.Feature>
+<HaulersDream.Report.Type.Compatibility>MOD互換性</HaulersDream.Report.Type.Compatibility>
+<HaulersDream.Report.Type.Other>その他</HaulersDream.Report.Type.Other>
+<HaulersDream.Report.DescribeLabel>内容を記入してください（何が起きたか、再現手順、期待した動作）：</HaulersDream.Report.DescribeLabel>
+<HaulersDream.Report.IncludeLog>完全なゲームログ（Player.log）も添付する</HaulersDream.Report.IncludeLog>
+<HaulersDream.Report.IncludeLog.Help>Hauler's Dream自身のログは常に添付されます。これにチェックを入れると、完全なPlayer.logの末尾も添付します。サイズは大きく、他のMODのメッセージが含まれることもありますが、バグの診断には最も役立つ添付ファイルです。</HaulersDream.Report.IncludeLog.Help>
+<HaulersDream.Report.AutoMeta>現在有効なMODリスト、ゲームバージョン、OS、そしてHauler's Dream自身のログは自動で添付されます。</HaulersDream.Report.AutoMeta>
+<HaulersDream.Report.Submit>報告を送信</HaulersDream.Report.Submit>
+<HaulersDream.Report.Retry>再試行</HaulersDream.Report.Retry>
+<HaulersDream.Report.Sending>送信中…</HaulersDream.Report.Sending>
+<HaulersDream.Report.SentBody>ありがとうございます！報告を送信しました。\n\nバグの場合は、添付されたログが原因の特定に役立ちます。</HaulersDream.Report.SentBody>
+<HaulersDream.Report.RateLimited>報告の送信が速すぎます。1分ほど待ってからもう一度お試しください。</HaulersDream.Report.RateLimited>
+<HaulersDream.Report.NetworkError>報告サーバーに接続できませんでした：{0}\n接続を確認してもう一度お試しください。</HaulersDream.Report.NetworkError>
+<HaulersDream.Report.ServerError>報告サーバーがエラーを返しました（HTTP {0}）。しばらくしてからもう一度お試しください。</HaulersDream.Report.ServerError>
+  <!-- My reports: the list/detail view that opens from the nav button -->
+  <HaulersDream.Report.MyReports.Title>あなたの報告</HaulersDream.Report.MyReports.Title>
+  <HaulersDream.Report.MyReports.Loading>あなたの報告を読み込み中…</HaulersDream.Report.MyReports.Loading>
+  <HaulersDream.Report.MyReports.Empty>まだ報告を送信していません。</HaulersDream.Report.MyReports.Empty>
+  <HaulersDream.Report.MyReports.CreateNew>新しい報告を作成</HaulersDream.Report.MyReports.CreateNew>
+  <HaulersDream.Report.MyReports.Refresh>更新</HaulersDream.Report.MyReports.Refresh>
+  <HaulersDream.Report.MyReports.LoadError>あなたの報告を読み込めませんでした（HTTP {0}）。</HaulersDream.Report.MyReports.LoadError>
+  <HaulersDream.Report.MyReports.NetworkError>報告サーバーに接続できませんでした：{0}</HaulersDream.Report.MyReports.NetworkError>
+  <HaulersDream.Report.Status.Open>対応中</HaulersDream.Report.Status.Open>
+  <HaulersDream.Report.Status.Solved>解決済み</HaulersDream.Report.Status.Solved>
+  <HaulersDream.Report.Status.Closed>完了</HaulersDream.Report.Status.Closed>
+  <HaulersDream.Report.Status.Submitted>送信済み</HaulersDream.Report.Status.Submitted>
+  <HaulersDream.Report.Detail.Status>状態：{0}</HaulersDream.Report.Detail.Status>
+  <HaulersDream.Report.Detail.Loading>読み込み中…</HaulersDream.Report.Detail.Loading>
+  <HaulersDream.Report.Detail.Back>戻る</HaulersDream.Report.Detail.Back>
+  <HaulersDream.Report.Detail.CommentsHeader>返信（{0}）</HaulersDream.Report.Detail.CommentsHeader>
+  <HaulersDream.Report.Detail.NoComments>まだ返信はありません。開発者からの返答はここに表示されます。</HaulersDream.Report.Detail.NoComments>
+  <HaulersDream.Report.Detail.Unavailable>今は返信を読み込めませんでした。しばらくしてからもう一度お試しください。</HaulersDream.Report.Detail.Unavailable>
+  <HaulersDream.Report.Detail.OpenOnGitHub>GitHubで表示</HaulersDream.Report.Detail.OpenOnGitHub>
+  <HaulersDream.Report.Detail.Send>送信</HaulersDream.Report.Detail.Send>
+  <HaulersDream.Report.Detail.Sending>送信中…</HaulersDream.Report.Detail.Sending>
+  <HaulersDream.Report.Detail.CommentPosted>コメントを送信しました。</HaulersDream.Report.Detail.CommentPosted>
+  <HaulersDream.Report.Detail.CommentFailed>送信できませんでした（HTTP {0}）。</HaulersDream.Report.Detail.CommentFailed>
+  <HaulersDream.Report.Detail.CommentEmpty>先にコメントを入力してください。</HaulersDream.Report.Detail.CommentEmpty>
+  <HaulersDream.Report.Detail.NoIssue>この報告がトラッカーで取り上げられると、コメントできるようになります。</HaulersDream.Report.Detail.NoIssue>
+  <HaulersDream.Report.Role.You>あなた</HaulersDream.Report.Role.You>
+  <HaulersDream.Report.Role.Developer>開発者</HaulersDream.Report.Role.Developer>
+<HaulersDream.Report.AddScreenshots>スクリーンショットを追加…</HaulersDream.Report.AddScreenshots>
+<HaulersDream.Report.ScreenshotsSelected>{0}枚を選択中</HaulersDream.Report.ScreenshotsSelected>
+<HaulersDream.Report.ClearScreenshots>クリア</HaulersDream.Report.ClearScreenshots>
+<HaulersDream.Report.Uploading>スクリーンショットをアップロード中 {0}/{1}…</HaulersDream.Report.Uploading>
+<HaulersDream.Report.SentPartial>一部のスクリーンショットをアップロードできませんでした（{0}枚）。</HaulersDream.Report.SentPartial>
+<HaulersDream.Report.PickTitle>スクリーンショットを追加</HaulersDream.Report.PickTitle>
+<HaulersDream.Report.PickSubtitle>{1}枚中{0}枚を選択中</HaulersDream.Report.PickSubtitle>
+<HaulersDream.Report.PickEmpty>RimWorldのSteamスクリーンショットが見つかりません。Steamオーバーレイ（Shift+Tab、またはF12ホットキー）で撮影すると、ここに表示されます。</HaulersDream.Report.PickEmpty>
+<HaulersDream.Report.PickConfirm>追加（{0}）</HaulersDream.Report.PickConfirm>
+<HaulersDream.Report.PickMax>添付できるスクリーンショットは最大{0}枚です。</HaulersDream.Report.PickMax>
 <HaulersDream.FeatGroup.Core>コア</HaulersDream.FeatGroup.Core>
 <HaulersDream.FeatGroup.Loading>積み込み &amp; 運搬者</HaulersDream.FeatGroup.Loading>
 <HaulersDream.FeatGroup.BuildCraft>建築 &amp; 製作</HaulersDream.FeatGroup.BuildCraft>

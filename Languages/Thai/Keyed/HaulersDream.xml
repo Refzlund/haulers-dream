@@ -408,6 +408,63 @@
 <HaulersDream.Migration.Step3>3.  หลังเกมรีสตาร์ท โหลดเซฟของคุณอีกครั้ง แล้วบันทึกมันอีกหน — ตอนนี้ม็อดที่ถอดออกหมดไปจากภาพอย่างสมบูรณ์</HaulersDream.Migration.Step3>
 <HaulersDream.Migration.Step4>4.  ตรวจสอบให้แน่ใจว่า Hauler's Dream เปิดใช้งานอยู่ ยกเลิกการเกณฑ์ชาวอาณานิคม แล้วเล่นต่อ</HaulersDream.Migration.Step4>
 <HaulersDream.Advanced.DevHint>การวินิจฉัยสำหรับนักพัฒนาจะปรากฏที่นี่เมื่อเปิดโหมดนักพัฒนา</HaulersDream.Advanced.DevHint>
+<HaulersDream.Report.NavLabel>รายงานปัญหา</HaulersDream.Report.NavLabel>
+<HaulersDream.Report.NavLabel.Help>ส่งรายงานบั๊ก คำขอฟีเจอร์ หรือคำขอความเข้ากันได้กับม็อดอื่นไปยังผู้พัฒนา รายการม็อดที่เปิดใช้งานอยู่และเวอร์ชันเกมของคุณจะถูกแนบไปด้วยเพื่อช่วยวินิจฉัยปัญหา</HaulersDream.Report.NavLabel.Help>
+<HaulersDream.Report.DialogTitle>รายงานปัญหา</HaulersDream.Report.DialogTitle>
+<HaulersDream.Report.DialogIntro>รายงานนี้เป็นประเภทใด และเกิดอะไรขึ้น? ข้อความนี้จะส่งตรงถึงผู้พัฒนา</HaulersDream.Report.DialogIntro>
+<HaulersDream.Report.TypeLabel>ประเภท</HaulersDream.Report.TypeLabel>
+<HaulersDream.Report.Type.Bug>บั๊ก</HaulersDream.Report.Type.Bug>
+<HaulersDream.Report.Type.Feature>คำขอฟีเจอร์</HaulersDream.Report.Type.Feature>
+<HaulersDream.Report.Type.Compatibility>ความเข้ากันได้กับม็อด</HaulersDream.Report.Type.Compatibility>
+<HaulersDream.Report.Type.Other>อื่นๆ</HaulersDream.Report.Type.Other>
+<HaulersDream.Report.DescribeLabel>อธิบายปัญหา (เกิดอะไรขึ้น ขั้นตอนที่ทำให้เกิดซ้ำ และสิ่งที่คุณคาดหวัง):</HaulersDream.Report.DescribeLabel>
+<HaulersDream.Report.IncludeLog>แนบบันทึกเกมฉบับเต็มด้วย (Player.log)</HaulersDream.Report.IncludeLog>
+<HaulersDream.Report.IncludeLog.Help>บันทึกของ Hauler's Dream เองจะถูกแนบไปด้วยเสมอ ติ๊กตรงนี้เพื่อแนบส่วนท้ายของ Player.log ฉบับเต็มของคุณด้วย ไฟล์นี้มีขนาดใหญ่กว่าและอาจมีข้อความจากม็อดอื่นปนอยู่ แต่ก็เป็นไฟล์แนบที่มีประโยชน์ที่สุดสำหรับการวินิจฉัยบั๊ก</HaulersDream.Report.IncludeLog.Help>
+<HaulersDream.Report.AutoMeta>รายการม็อดที่เปิดใช้งานอยู่ เวอร์ชันเกม ระบบปฏิบัติการ และบันทึกของ Hauler's Dream เองจะถูกแนบโดยอัตโนมัติ</HaulersDream.Report.AutoMeta>
+<HaulersDream.Report.Submit>ส่งรายงาน</HaulersDream.Report.Submit>
+<HaulersDream.Report.Retry>ลองอีกครั้ง</HaulersDream.Report.Retry>
+<HaulersDream.Report.Sending>กำลังส่ง…</HaulersDream.Report.Sending>
+<HaulersDream.Report.SentBody>ขอบคุณ! รายงานของคุณถูกส่งแล้ว\n\nหากเป็นบั๊ก บันทึกที่แนบมาจะช่วยให้ตามหาต้นเหตุได้</HaulersDream.Report.SentBody>
+<HaulersDream.Report.RateLimited>คุณส่งรายงานถี่เกินไป กรุณารอสักครู่แล้วลองอีกครั้ง</HaulersDream.Report.RateLimited>
+<HaulersDream.Report.NetworkError>ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์รายงานได้: {0}\nตรวจสอบการเชื่อมต่อของคุณแล้วลองอีกครั้ง</HaulersDream.Report.NetworkError>
+<HaulersDream.Report.ServerError>เซิร์ฟเวอร์รายงานส่งคืนข้อผิดพลาด (HTTP {0}) กรุณาลองใหม่ภายหลัง</HaulersDream.Report.ServerError>
+  <!-- My reports: the list/detail view that opens from the nav button -->
+  <HaulersDream.Report.MyReports.Title>รายงานของคุณ</HaulersDream.Report.MyReports.Title>
+  <HaulersDream.Report.MyReports.Loading>กำลังโหลดรายงานของคุณ…</HaulersDream.Report.MyReports.Loading>
+  <HaulersDream.Report.MyReports.Empty>คุณยังไม่ได้ส่งรายงานใดๆ</HaulersDream.Report.MyReports.Empty>
+  <HaulersDream.Report.MyReports.CreateNew>สร้างรายงานใหม่</HaulersDream.Report.MyReports.CreateNew>
+  <HaulersDream.Report.MyReports.Refresh>รีเฟรช</HaulersDream.Report.MyReports.Refresh>
+  <HaulersDream.Report.MyReports.LoadError>ไม่สามารถโหลดรายงานของคุณได้ (HTTP {0})</HaulersDream.Report.MyReports.LoadError>
+  <HaulersDream.Report.MyReports.NetworkError>ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์รายงานได้: {0}</HaulersDream.Report.MyReports.NetworkError>
+  <HaulersDream.Report.Status.Open>เปิดอยู่</HaulersDream.Report.Status.Open>
+  <HaulersDream.Report.Status.Solved>แก้ไขแล้ว</HaulersDream.Report.Status.Solved>
+  <HaulersDream.Report.Status.Closed>ปิดแล้ว</HaulersDream.Report.Status.Closed>
+  <HaulersDream.Report.Status.Submitted>ส่งแล้ว</HaulersDream.Report.Status.Submitted>
+  <HaulersDream.Report.Detail.Status>สถานะ: {0}</HaulersDream.Report.Detail.Status>
+  <HaulersDream.Report.Detail.Loading>กำลังโหลด…</HaulersDream.Report.Detail.Loading>
+  <HaulersDream.Report.Detail.Back>กลับ</HaulersDream.Report.Detail.Back>
+  <HaulersDream.Report.Detail.CommentsHeader>การตอบกลับ ({0})</HaulersDream.Report.Detail.CommentsHeader>
+  <HaulersDream.Report.Detail.NoComments>ยังไม่มีการตอบกลับ คำตอบของผู้พัฒนาจะปรากฏที่นี่</HaulersDream.Report.Detail.NoComments>
+  <HaulersDream.Report.Detail.Unavailable>ขณะนี้ไม่สามารถโหลดการตอบกลับได้ กรุณาลองใหม่ภายหลัง</HaulersDream.Report.Detail.Unavailable>
+  <HaulersDream.Report.Detail.OpenOnGitHub>ดูบน GitHub</HaulersDream.Report.Detail.OpenOnGitHub>
+  <HaulersDream.Report.Detail.Send>ส่ง</HaulersDream.Report.Detail.Send>
+  <HaulersDream.Report.Detail.Sending>กำลังส่ง…</HaulersDream.Report.Detail.Sending>
+  <HaulersDream.Report.Detail.CommentPosted>ส่งความคิดเห็นแล้ว</HaulersDream.Report.Detail.CommentPosted>
+  <HaulersDream.Report.Detail.CommentFailed>ส่งไม่สำเร็จ (HTTP {0})</HaulersDream.Report.Detail.CommentFailed>
+  <HaulersDream.Report.Detail.CommentEmpty>กรุณาเขียนความคิดเห็นก่อน</HaulersDream.Report.Detail.CommentEmpty>
+  <HaulersDream.Report.Detail.NoIssue>จะแสดงความคิดเห็นได้เมื่อรายงานนี้ถูกบันทึกในระบบติดตามปัญหาแล้ว</HaulersDream.Report.Detail.NoIssue>
+  <HaulersDream.Report.Role.You>คุณ</HaulersDream.Report.Role.You>
+  <HaulersDream.Report.Role.Developer>ผู้พัฒนา</HaulersDream.Report.Role.Developer>
+<HaulersDream.Report.AddScreenshots>เพิ่มภาพหน้าจอ…</HaulersDream.Report.AddScreenshots>
+<HaulersDream.Report.ScreenshotsSelected>เลือกแล้ว {0} ภาพ</HaulersDream.Report.ScreenshotsSelected>
+<HaulersDream.Report.ClearScreenshots>ล้าง</HaulersDream.Report.ClearScreenshots>
+<HaulersDream.Report.Uploading>กำลังอัปโหลดภาพหน้าจอ {0}/{1}…</HaulersDream.Report.Uploading>
+<HaulersDream.Report.SentPartial>มีภาพหน้าจอบางส่วนที่อัปโหลดไม่สำเร็จ ({0})</HaulersDream.Report.SentPartial>
+<HaulersDream.Report.PickTitle>เพิ่มภาพหน้าจอ</HaulersDream.Report.PickTitle>
+<HaulersDream.Report.PickSubtitle>เลือกแล้ว {0} จาก {1}</HaulersDream.Report.PickSubtitle>
+<HaulersDream.Report.PickEmpty>ไม่พบภาพหน้าจอ Steam สำหรับ RimWorld ถ่ายภาพหนึ่งด้วยโอเวอร์เลย์ของ Steam (Shift+Tab หรือปุ่มลัด F12) แล้วมันจะปรากฏที่นี่</HaulersDream.Report.PickEmpty>
+<HaulersDream.Report.PickConfirm>เพิ่ม ({0})</HaulersDream.Report.PickConfirm>
+<HaulersDream.Report.PickMax>คุณแนบภาพหน้าจอได้มากที่สุด {0} ภาพ</HaulersDream.Report.PickMax>
 <HaulersDream.FeatGroup.Core>หลัก</HaulersDream.FeatGroup.Core>
 <HaulersDream.FeatGroup.Loading>การบรรทุกและตัวขนส่ง</HaulersDream.FeatGroup.Loading>
 <HaulersDream.FeatGroup.BuildCraft>การก่อสร้างและการผลิต</HaulersDream.FeatGroup.BuildCraft>

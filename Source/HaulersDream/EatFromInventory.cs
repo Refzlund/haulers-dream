@@ -190,9 +190,8 @@ namespace HaulersDream
             if (s.shareMeetInMiddle)
                 SharedInventoryApproach.MaybeApproach(best, getter);
 
-            if (s.verboseLogging)
-                HDLog.Dbg($"MealsOnWheels: {eater} -> {foodDef?.defName ?? "?"} carried by " +
-                          $"{(best.ParentHolder as Pawn_InventoryTracker)?.pawn} (pass {bestPass}).");
+            HDLog.Dbg($"MealsOnWheels: {eater} -> {foodDef?.defName ?? "?"} carried by " +
+                      $"{(best.ParentHolder as Pawn_InventoryTracker)?.pawn} (pass {bestPass}).");
         }
 
         /// <summary>Extract the rot primitives off an already-acceptable <paramref name="stack"/> (the

@@ -423,10 +423,29 @@ namespace HaulersDream
         // (excluded from the field==Scribe==Reset drift triple). See SettingsProfiles.cs for the logic.
         [ProfileMeta] public List<SettingsProfile> savedProfiles = new List<SettingsProfile>();
         [ProfileMeta] public string activeProfileName = "";
+        // Stable per-install reporter token sent with every report so the player can view their OWN reports (and
+        // their GitHub issue status) in the in-game "My reports" view. Generated once on first use (see ReporterId)
+        // then persisted; [ProfileMeta] so it is exempt from the field==Scribe==Reset drift triple, never reset (it
+        // is identity, not a tunable), and not captured by profile snapshots.
+        [ProfileMeta] public string reporterId = "";
         // Recursion guard: a profile snapshot is itself a HaulersDreamSettings; while (de)serializing it the nested
         // savedProfiles/activeProfileName section is skipped (a snapshot has no profiles of its own).
         public static bool SerializingSnapshot;
         [System.NonSerialized] private HaulersDreamSettings defaultsSnapshotCache;
+
+        /// <summary>The per-install reporter token, generated (random GUID) and persisted on first access.</summary>
+        public string ReporterId
+        {
+            get
+            {
+                if (string.IsNullOrEmpty(reporterId))
+                {
+                    reporterId = System.Guid.NewGuid().ToString("N");
+                    Write(); // persist immediately so the id is stable from the very first report
+                }
+                return reporterId;
+            }
+        }
 
         public bool IsTypeEnabled(HaulSourceType type)
             => WorkTypePolicy.IsTypeEnabled(type, haulHarvest, haulMining, haulDeepDrill, haulDeconstruct, haulAnimals, haulStrip, haulUninstall);
@@ -582,10 +601,12 @@ namespace HaulersDream
             {
                 Scribe_Collections.Look(ref savedProfiles, "savedProfiles", LookMode.Deep);
                 Scribe_Values.Look(ref activeProfileName, "activeProfileName", "");
+                Scribe_Values.Look(ref reporterId, "reporterId", "");
                 if (Scribe.mode == LoadSaveMode.LoadingVars)
                 {
                     if (savedProfiles == null) savedProfiles = new List<SettingsProfile>();
                     if (activeProfileName == null) activeProfileName = "";
+                    if (reporterId == null) reporterId = "";
                 }
             }
         }

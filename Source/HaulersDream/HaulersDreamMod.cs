@@ -24,6 +24,10 @@ namespace HaulersDream
             Instance = this;
             Settings = GetSettings<HaulersDreamSettings>();
 
+            // Start the always-on disk debug trail next to Player.log. Resolved here (main thread) where the Unity
+            // path API is safe to read; the writer then runs on its own background thread.
+            HDDebugLog.ConfigureDirectory(UnityEngine.Application.consoleLogPath);
+
             var harmony = new Harmony(HarmonyId);
             ApplyPatchesResilient(harmony, Assembly.GetExecutingAssembly());
             HDLog.Msg("initialised — carry limit defaults to each pawn's max carrying capacity.");
@@ -208,9 +212,27 @@ namespace HaulersDream
         /// <summary>The one place the log prefix is defined. Change it here and every HD log line updates.</summary>
         public const string Tag = "[Hauler's Dream] ";
 
-        /// <summary>Verbose debug line — Dev Mode + the verbose-logging setting only.</summary>
+        // Every channel — including verbose DBG, which a normal player never sees in the console — is written to an
+        // always-on, disk-backed trail (HDDebugLog) so an in-game issue report carries Hauler's Dream's own recent
+        // history WITHOUT the player having to turn verbose logging on first. Disk-backed (size-capped + rotated)
+        // rather than RAM so a long session can't grow an unbounded in-memory buffer. Thread-safe: HDDebugLog's
+        // queue is lock-free, so the off-main-thread universal exception finalizer (which logs via ErrOnce) is safe.
+        // The disk write is the only added cost on a DBG call; the interpolated string is built by the caller either
+        // way, so always-capturing it just enqueues an already-built line.
+        private static void Emit(string level, string message)
+        {
+            HDDebugLog.Enqueue(System.DateTime.Now.ToString("MM-dd HH:mm:ss") + " " + level + " " + message);
+        }
+
+        /// <summary>The captured HD trail (newest lines) for the in-game issue reporter. Null when empty.</summary>
+        public static string GetReportLog() => HDDebugLog.GetReportTail(HDDebugLog.ReportTailBytes);
+
+        /// <summary>Verbose debug line — ALWAYS written to the disk trail (so it appears in a report without the
+        /// player enabling verbose logging); printed to the console only with Dev Mode AND the verbose-logging
+        /// setting on (parity with the old console behaviour — debug spam never reaches a normal player).</summary>
         public static void Dbg(string message)
         {
+            Emit("DBG", message);
             if (Prefs.DevMode && HaulersDreamMod.Settings != null && HaulersDreamMod.Settings.verboseLogging)
                 Log.Message(Tag + message);
         }
@@ -218,6 +240,7 @@ namespace HaulersDream
         /// <summary>An ALWAYS-emitted plain message carrying the tag — mod init, optional-mod-detected notices, etc.</summary>
         public static void Msg(string message)
         {
+            Emit("MSG", message);
             Log.Message(Tag + message);
         }
 
@@ -227,12 +250,14 @@ namespace HaulersDream
         /// `warned` latch where one-shot is wanted).</summary>
         public static void Warn(string message)
         {
+            Emit("WARN", message);
             Log.Warning(Tag + message);
         }
 
         /// <summary>A tag-carrying warning logged at most ONCE per <paramref name="key"/>. Mirrors <c>Log.WarningOnce</c>.</summary>
         public static void WarnOnce(string message, int key)
         {
+            Emit("WARN", message);
             Log.WarningOnce(Tag + message, key);
         }
 
@@ -240,6 +265,7 @@ namespace HaulersDream
         /// faults (a transpiler IL match broke, a foreign WorkGiver threw). No dedup.</summary>
         public static void Err(string message)
         {
+            Emit("ERR", message);
             Log.Error(Tag + message);
         }
 
@@ -247,6 +273,7 @@ namespace HaulersDream
         /// every tick/scan and must not flood the log. Mirrors <c>Log.ErrorOnce</c>.</summary>
         public static void ErrOnce(string message, int key)
         {
+            Emit("ERR", message);
             Log.ErrorOnce(Tag + message, key);
         }
 
