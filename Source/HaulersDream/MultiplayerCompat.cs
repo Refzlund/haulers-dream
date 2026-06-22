@@ -1,5 +1,4 @@
 using System;
-using System.Reflection;
 using Multiplayer.API;
 using RimWorld;
 using Verse;
@@ -26,11 +25,20 @@ namespace HaulersDream
     /// guarantee that by JIT isolation: <see cref="Active"/> is computed from <see cref="ModLister"/> (a Verse type,
     /// no MP reference), and EVERY method that touches an <c>Multiplayer.API</c> type lives in the nested
     /// <see cref="MpHooks"/> class and is only ever CALLED from behind the <see cref="Active"/> gate. The CLR JITs a
-    /// method on first call, so a never-called <see cref="MpHooks"/> method never resolves the absent assembly. The
-    /// <c>[SyncMethod]</c> attributes elsewhere are pure metadata — never resolved unless reflected (which only
-    /// happens inside <see cref="MpHooks.Register"/>), so they are inert in a non-MP game. This is the same
-    /// single-assembly pattern LWM Deep Storage ships. Mirrors the other <c>*Compat</c> shims: detect once, do
-    /// nothing when absent.</para>
+    /// method on first call, so a never-called <see cref="MpHooks"/> method never resolves the absent assembly.</para>
+    ///
+    /// <para>CRITICAL — why the synced methods are registered PROGRAMMATICALLY, not via a <c>[SyncMethod]</c>
+    /// attribute: an attribute bakes a reference to <c>Multiplayer.API.SyncMethodAttribute</c> into the method's
+    /// METADATA. Unlike a method BODY (resolved lazily at JIT, so JIT isolation protects it), an attribute is
+    /// resolved EAGERLY by ANY reflection that enumerates a member's attributes — and Mono materializes ALL of a
+    /// member's attributes even when the caller filters for a single type. So one <c>GetCustomAttributes</c> call
+    /// anywhere (the mod's own resilient-patch scan in <see cref="HaulersDreamMod"/>, another mod's reflection, a
+    /// vanilla attribute sweep) throws <c>TypeLoadException: Could not resolve type ... SyncMethodAttribute</c> in a
+    /// non-MP game and bricks startup (issue #6). Attributes therefore CANNOT be JIT-isolated. We register each
+    /// synced method BY NAME inside the MP-gated <see cref="MpHooks.Register"/> instead — exactly equivalent to the
+    /// attribute (<c>MP.RegisterAll</c> is just sugar for the same per-method <c>RegisterSyncMethod</c>) but with
+    /// ZERO <c>Multiplayer.API</c> reference in HD's metadata, so no reflection can ever trip over it. Mirrors the
+    /// other <c>*Compat</c> shims: detect once, do nothing when absent.</para>
     /// </summary>
     [StaticConstructorOnStartup]
     public static class MultiplayerCompat
@@ -84,9 +92,10 @@ namespace HaulersDream
 
         // ----------------------------------------------------------------------------------------------------
         // Synced methods (player-initiated mutations that bypass the job system). Each is a PLAIN static method
-        // whose BODY contains NO Multiplayer.API type — only the [SyncMethod] ATTRIBUTE references MP, and an
-        // attribute is inert until reflected (which only happens inside the MP-gated MpHooks.Register). So these
-        // run directly in a non-MP game and become synced commands in an MP game. They take a Pawn/Bill (both
+        // whose BODY contains NO Multiplayer.API type and which carries NO [SyncMethod] attribute (a baked
+        // attribute would put a Multiplayer.API reference in HD's metadata and crash any reflection in a non-MP
+        // game — see the class remarks / issue #6). They are wired up BY NAME in MpHooks.Register (MP-gated), so
+        // they run directly in a non-MP game and become synced commands in an MP game. They take a Pawn/Bill (both
         // natively MP-serializable) rather than a ThingComp so the wire form is unambiguous.
         // ----------------------------------------------------------------------------------------------------
 
@@ -96,7 +105,6 @@ namespace HaulersDream
         /// that must run on every client, not just the clicker). The current value is read locally in the gizmo
         /// callback and the desired value is passed in, so the command is idempotent across clients.
         /// </summary>
-        [SyncMethod]
         public static void SetAutoHaulYields(Pawn pawn, bool value)
         {
             var comp = pawn?.GetComp<CompHauledToInventory>();
@@ -113,7 +121,6 @@ namespace HaulersDream
         /// deterministically on every client. Player-facing toasts inside the called helpers are gated by
         /// <see cref="ShouldShowLocalFeedback"/> at their source so they don't appear on every client.
         /// </summary>
-        [SyncMethod]
         public static void UnloadInventoryNow(Pawn pawn)
         {
             if (pawn == null)
@@ -131,7 +138,6 @@ namespace HaulersDream
         /// batch-size dialog / bill float-menu (a write to the SCRIBED <c>batchBills</c> dictionary). Callers must
         /// invoke this ONCE on commit (dialog close / menu pick), never per-frame, to avoid command spam.
         /// </summary>
-        [SyncMethod]
         public static void SetBillBatch(Bill bill, bool on, int size)
         {
             HaulersDreamGameComponent.Instance?.SetBatch(bill, on, size);
@@ -147,11 +153,19 @@ namespace HaulersDream
         {
             internal static void Register()
             {
-                // Scans this assembly for every [SyncMethod]/[SyncField]/[SyncWorker]-attributed member and wires it
-                // up. We use the attribute form (vs explicit RegisterSyncMethod-by-name) so each synced method is
-                // self-contained next to the feature it belongs to (the route/craft/batch synced entry points live
-                // in their own files) — RegisterAll finds them all in one pass.
-                MP.RegisterAll(Assembly.GetExecutingAssembly());
+                // Register each synced method BY NAME instead of via a [SyncMethod] attribute + MP.RegisterAll. The
+                // attribute form bakes a Multiplayer.API reference into the method's metadata that ANY reflection
+                // resolves eagerly and crashes on in a non-MP game (issue #6 — see the class remarks). This is the
+                // exact equivalent — RegisterAll simply calls RegisterSyncMethod for each attributed method — but it
+                // leaves HD's metadata free of any Multiplayer.API attribute reference. Each method has a single,
+                // unambiguous overload, so RegisterSyncMethod resolves it by name without explicit arg types. Keep
+                // this list in sync with the synced entry points (the canonical inventory of HD's MP surface):
+                // MultiplayerCompat's three, plus the batch-craft and route synced commands in their own files.
+                MP.RegisterSyncMethod(typeof(MultiplayerCompat), nameof(SetAutoHaulYields));
+                MP.RegisterSyncMethod(typeof(MultiplayerCompat), nameof(UnloadInventoryNow));
+                MP.RegisterSyncMethod(typeof(MultiplayerCompat), nameof(SetBillBatch));
+                MP.RegisterSyncMethod(typeof(JobDriver_BatchCraft), nameof(JobDriver_BatchCraft.StartBatchCraftSynced));
+                MP.RegisterSyncMethod(typeof(RouteExecutor), nameof(RouteExecutor.ExecuteRouteSynced));
             }
 
             internal static bool InMpGame() => MP.IsInMultiplayer;

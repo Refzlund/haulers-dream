@@ -294,7 +294,7 @@ namespace HaulersDream
         /// Order a batch-craft job — the SYNCED entry point invoked by <see cref="Dialog_PlanCraft"/> on confirm.
         ///
         /// <para>Multiplayer correctness: this runs as a COMMAND replayed on EVERY client (the mod's
-        /// <see cref="MultiplayerCompat"/> shim auto-registers every <c>[SyncMethod]</c> via <c>MP.RegisterAll</c>),
+        /// <see cref="MultiplayerCompat"/> shim registers it by name with <c>MP.RegisterSyncMethod</c>),
         /// so the <see cref="CraftBatchPlan"/> is RE-RESOLVED here from MP-serializable primitives — NOT shipped. The
         /// old path computed the plan only on the ordering client and stashed it in the static
         /// <see cref="BatchCraftHandoff"/> map, which does NOT travel over the wire: other clients then found no
@@ -310,10 +310,11 @@ namespace HaulersDream
         ///
         /// <para>Args are all MP-serializable (Pawn, Building_WorkTable, Bill, int) — never the un-serializable
         /// <see cref="CraftBatchPlan"/>. In a non-MP game this is a plain static method called directly, so
-        /// single-player behaviour is unchanged. The method BODY references NO <c>Multiplayer.API</c> type (only the
-        /// fully-qualified attribute), so it stays vanilla-safe per the soft-dep isolation rules.</para>
+        /// single-player behaviour is unchanged. The method BODY references NO <c>Multiplayer.API</c> type, and it
+        /// carries NO <c>[SyncMethod]</c> attribute (which would bake a Multiplayer.API reference into HD's metadata and
+        /// crash any reflection in a non-MP game — issue #6); it is registered by name from the MP-gated
+        /// <see cref="MultiplayerCompat"/> shim, so it stays vanilla-safe per the soft-dep isolation rules.</para>
         /// </summary>
-        [Multiplayer.API.SyncMethod]
         public static void StartBatchCraftSynced(Pawn pawn, Building_WorkTable bench, Bill bill, int requestedReps, int timeoutTicks)
         {
             if (pawn?.jobs == null || bench == null || bill == null)
