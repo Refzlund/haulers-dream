@@ -33,10 +33,11 @@ namespace HaulersDream
         /// (<see cref="RoutePlanner"/> reads only synced inputs — verified deterministic). When MP is absent the
         /// attribute is inert and this just runs <see cref="Execute"/> directly, so single-player is unchanged.</para>
         ///
-        /// <para>The method BODY references NO Multiplayer.API type — only the fully-qualified attribute does — so a
-        /// non-MP game never resolves the unshipped API assembly (see <see cref="MultiplayerCompat"/>).</para>
+        /// <para>The method BODY references NO Multiplayer.API type, and it carries NO <c>[SyncMethod]</c> attribute
+        /// (which would bake a Multiplayer.API reference into HD's metadata and crash any reflection in a non-MP game —
+        /// issue #6). It is registered by name from the MP-gated <see cref="MultiplayerCompat"/> shim instead, so a
+        /// non-MP game never resolves the unshipped API assembly.</para>
         /// </summary>
-        [Multiplayer.API.SyncMethod]
         public static void ExecuteRouteSynced(Pawn pawn, Thing clicked, string workGiverDefName, RouteMode mode,
             int amount, int radius, float maxDistance, bool smart, bool allowHarvest, int growthThreshold, bool replace,
             List<Thing> mustInclude, HaulersDream.Core.RouteSelectionMethod selectionMethod,

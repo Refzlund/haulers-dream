@@ -153,21 +153,50 @@ namespace HaulersDream
         // (which inherit attributes via the vanilla JobDriver chain) are NOT treated as patches.
         private static bool IsHarmonyPatchContainer(Type type)
         {
-            if (type.GetCustomAttributes(typeof(HarmonyPatch), inherit: false).Length > 0)
+            if (HasDirectHarmonyAttribute(type))
                 return true;
             const BindingFlags all = BindingFlags.Public | BindingFlags.NonPublic
                 | BindingFlags.Static | BindingFlags.Instance | BindingFlags.DeclaredOnly;
             foreach (var m in type.GetMethods(all))
-            {
-                if (m.GetCustomAttributes(typeof(HarmonyPatch), inherit: false).Length > 0
-                    || m.GetCustomAttributes(typeof(HarmonyPrefix), inherit: false).Length > 0
-                    || m.GetCustomAttributes(typeof(HarmonyPostfix), inherit: false).Length > 0
-                    || m.GetCustomAttributes(typeof(HarmonyTranspiler), inherit: false).Length > 0
-                    || m.GetCustomAttributes(typeof(HarmonyFinalizer), inherit: false).Length > 0
-                    || m.GetCustomAttributes(typeof(HarmonyReversePatch), inherit: false).Length > 0)
+                if (HasDirectHarmonyAttribute(m))
                     return true;
-            }
             return false;
+        }
+
+        /// <summary>
+        /// True if <paramref name="member"/> carries a DIRECT (inherit:false) Harmony injection/patch attribute.
+        ///
+        /// DEFENSE-IN-DEPTH (issue #6): reading a member's attributes can THROW. Mono materializes ALL of a member's
+        /// attributes to filter by type, so a SINGLE attribute whose type can't be resolved — e.g. a soft-dep
+        /// optional-mod attribute (a <c>Multiplayer.API</c> <c>[SyncMethod]</c> when the Multiplayer mod isn't loaded)
+        /// whose assembly is absent — throws <c>TypeLoadException</c> for the WHOLE probe. Letting that escape here
+        /// would brick the entire mod's startup (the loop in <see cref="ApplyPatchesResilient"/> dies and NO patch is
+        /// applied). A member whose attributes can't be resolved is never an HD Harmony patch target (HD patch methods
+        /// carry only Harmony attributes, all resolvable), so on a resolution failure we log once and treat it as
+        /// "no Harmony attribute," then keep scanning — the same resilient-degrade stance as
+        /// <see cref="ApplyPatchesResilient"/>. HD itself no longer bakes any such attribute (synced methods are now
+        /// registered programmatically — see <c>MultiplayerCompat</c>), so this is a backstop against a future or
+        /// foreign one, not the primary fix for #6.
+        /// </summary>
+        private static bool HasDirectHarmonyAttribute(MemberInfo member)
+        {
+            try
+            {
+                return member.GetCustomAttributes(typeof(HarmonyPatch), inherit: false).Length > 0
+                    || member.GetCustomAttributes(typeof(HarmonyPrefix), inherit: false).Length > 0
+                    || member.GetCustomAttributes(typeof(HarmonyPostfix), inherit: false).Length > 0
+                    || member.GetCustomAttributes(typeof(HarmonyTranspiler), inherit: false).Length > 0
+                    || member.GetCustomAttributes(typeof(HarmonyFinalizer), inherit: false).Length > 0
+                    || member.GetCustomAttributes(typeof(HarmonyReversePatch), inherit: false).Length > 0;
+            }
+            catch (Exception e)
+            {
+                string where = (member.DeclaringType?.FullName ?? "?") + "." + member.Name;
+                HDLog.WarnOnce("could not read attributes on " + where + " (likely an optional-mod attribute whose "
+                    + "assembly isn't loaded) — treating it as a non-patch member so startup isn't bricked. "
+                    + e.GetType().Name, ("HD.attrProbe." + where).GetHashCode());
+                return false;
+            }
         }
 
         public override void DoSettingsWindowContents(Rect inRect) => Settings.DoWindowContents(inRect);
