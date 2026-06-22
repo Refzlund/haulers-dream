@@ -1,5 +1,27 @@
 # haulers-dream
 
+## 1.9.0
+
+### Minor Changes
+
+- 351a90b: feat/fix: five player-reported improvements.
+
+  Mechanoid carry capacity now tracks the mech's own "carrying capacity" (the value shown on the mech's UI panel) instead of a flat amount. A vanilla lifter and a modded high-capacity loader now haul amounts that match their carrying capacity rather than the same small default. The per-mech haul multiplier still applies on top, and humanlikes, animals, and Combat Extended users are unchanged.
+
+  Fixed red errors when right-clicking eggs (or other items held inside a container building, like an egg box) with a colonist selected. Those items are not lying on the floor, so the pickup and haul-nearby orders now skip them instead of throwing.
+
+  You can now order a pawn to pick an item straight into its inventory while DRAFTED, and the order works on forbidden items (for example, food dropped in a prison cell that got auto-forbidden). The picked item is carried until the pawn is undrafted, then put away in normal storage, unforbidden.
+
+  Fixed pawns getting stuck in an endless "gathering ingredients" loop when crafting or cooking a recipe with many ingredients under the "Do until you have X" bill setting (for example baking pies in a large multi-ingredient oven). Such recipes now use the game's normal ingredient gathering.
+
+  Fixed Hauler's Dream interfering with order-based recycling mods (such as Recycle This): an item you have marked for recycling is no longer scooped into a pawn's inventory before the recycling job can carry it to the workbench. Hauler's Dream now leaves items alone when another mod has claimed them with an order.
+
+### Patch Changes
+
+- 50a1dab: fix: under Combat Extended, mechanoids now haul according to their carrying capacity.
+
+  With Combat Extended installed, a hauler mechanoid was limited by Combat Extended's carry weight (a flat body-size value, around 42 kg for most lifters) regardless of its carrying capacity, so a vanilla lifter (carrying capacity 52) and a modded advanced loader (158) both hauled about the same small amount, and a fuller mech crawled once it passed that tiny limit. Hauler's Dream now sets a player mechanoid's Combat Extended carry weight to its carrying capacity, so it loads up to that capacity without hitting Combat Extended's over-capacity slowdown (Combat Extended's encumbrance and fit checks now follow the carrying-capacity number). The mech-haul multiplier in the settings now also applies under Combat Extended. Pawns other than your own mechanoids, and games without Combat Extended, are unaffected.
+
 ## 1.8.1
 
 ### Patch Changes
