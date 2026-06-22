@@ -23,7 +23,7 @@ namespace HaulersDream
     /// </summary>
     public class FloatMenuOptionProvider_PickUpIntoInventory : FloatMenuOptionProvider
     {
-        public override bool Drafted => false;
+        public override bool Drafted => true; // issue #3: also offer this while drafted (grab a dropped item now)
         public override bool Undrafted => true;
         public override bool Multiselect => false;
         public override bool MechanoidCanDo => false;
@@ -44,21 +44,30 @@ namespace HaulersDream
                 yield break;
             if (pawn.GetComp<CompHauledToInventory>() == null || pawn.inventory == null)
                 yield break; // the pickup loads into inventory, tracked via the comp
-            // The vanilla can-haul bar for a PLAYER ORDER (matches FloatMenuOptionProvider_HaulNearby and vanilla
-            // "Prioritize hauling"): a hauling-capable, manipulation-capable pawn. (Drafted pawns never reach here —
-            // Drafted => false; incapable-of-hauling and no-manipulation are excluded below.)
-            if (pawn.WorkTagIsDisabled(WorkTags.Hauling) || !pawn.health.capacities.CapableOf(PawnCapacityDefOf.Manipulation))
+            // The can-haul bar for a PLAYER ORDER: a manipulation-capable pawn. When the pawn is NOT drafted we also
+            // keep vanilla's "hauling work enabled" requirement (parity with "Prioritize hauling" and the nearby-haul
+            // order); a DRAFTED pawn is taking an explicit one-off order, so — like HD's bulk-load orders — only
+            // physical manipulation is required (issue #3: let a drafted pawn grab a dropped stack).
+            if (!pawn.health.capacities.CapableOf(PawnCapacityDefOf.Manipulation))
+                yield break;
+            if (!pawn.Drafted && pawn.WorkTagIsDisabled(WorkTags.Hauling))
                 yield break;
 
             for (int i = 0; i < things.Count; i++)
             {
                 var clicked = things[i];
+                // A non-spawned / contained thing (e.g. eggs held inside an egg box, items in a container building —
+                // they reach ClickedThings via vanilla SelectableContainedThings when the building has
+                // containedItemsSelectable) has no map/position; the spawned-only haul checks below would NRE on it
+                // (issue #2). Pickup operates on spawned ground stacks only.
+                if (clicked == null || !clicked.Spawned)
+                    continue;
                 // Plain haulable ground ITEM only. Exclude VF VehiclePawns (a vehicle is a Pawn, not an Item, so the
                 // category check already excludes it, but IsVehicle is explicit per the design and returns false when
                 // VF is absent) and CORPSES — in 1.6 a corpse def IS ThingCategory.Item + EverHaulable (verified:
                 // ThingDefGenerator_Corpses), so the category filter does NOT exclude it; leave corpses to their own
                 // hauling/rot flow rather than offering "Pick up corpse".
-                if (clicked?.def == null || clicked.def.category != ThingCategory.Item || !clicked.def.EverHaulable)
+                if (clicked.def == null || clicked.def.category != ThingCategory.Item || !clicked.def.EverHaulable)
                     continue;
                 if (clicked is Corpse || VehicleFrameworkCompat.IsVehicle(clicked))
                     continue;
@@ -69,9 +78,16 @@ namespace HaulersDream
                 // stockpile can still be picked up / upgraded.
                 if (clicked.IsInValidBestStorage())
                     continue;
-                // The same bar vanilla "Prioritize hauling" uses (EverHaulable / fogged / forbidden+allowed-area /
-                // reservable / reachable). forced:true mirrors a player order.
-                if (!HaulAIUtility.PawnCanAutomaticallyHaul(pawn, clicked, forced: true))
+                // Explicit player order: allow even a FORBIDDEN stack (e.g. food auto-forbidden in a prison cell —
+                // the exact case this order exists for, issue #3), unlike the automatic-haul bar
+                // (HaulAIUtility.PawnCanAutomaticallyHaul) which rejects anything forbidden. Still require the
+                // basics — not fogged, not burning, reservable, reachable — with forced reservation/path (a manual
+                // order). The bulk driver already accepts a forbidden playerForced primary and unforbids the stack
+                // when it reaches storage, so the picked food ends up retrievable in normal storage.
+                if (clicked.Position.Fogged(pawn.Map)
+                    || clicked.IsBurning()
+                    || !pawn.CanReserve(clicked, 1, -1, null, ignoreOtherReservations: true)
+                    || !pawn.CanReach(clicked, PathEndMode.ClosestTouch, Danger.Deadly))
                     continue;
 
                 var clickedLocal = clicked;

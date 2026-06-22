@@ -248,6 +248,10 @@ namespace HaulersDream
                     return true; // only the immediate work area
                 if (comp.pendingSelfPickups.Contains(t) || t.IsForbidden(pawn) || claimed.Contains(t) || t.IsInValidStorage())
                     return true;
+                // #5: leave items another mod has claimed via a designation (e.g. a Recycle This recycle/destroy
+                // order) — scooping them into inventory hides them from that mod's spawned-only WorkGiver.
+                if (ForeignOrderGuard.ClaimedByForeignOrder(t))
+                    return true;
                 // Capacity first (pure arithmetic) — at/over the overload ceiling nothing more fits, so don't
                 // pay the reachability/storage cost. cur mass doesn't change as we record (we only queue
                 // pending), so the hoisted (sweepMaxCap/sweepBaseCap/sweepCur) read above gates the whole sweep

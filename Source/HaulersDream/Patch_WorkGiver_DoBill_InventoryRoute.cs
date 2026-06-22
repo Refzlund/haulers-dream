@@ -41,6 +41,16 @@ namespace HaulersDream
             var job = __result;
             if (job == null || job.def != JobDefOf.DoBill || job.bill?.recipe == null)
                 return;
+            // #4: never route an ALLOW-MIX recipe (cooking — meals/pies/etc.) through the inventory gather. Such a
+            // recipe value-fills each ingredient slot greedily across MANY stacks, and vanilla's AllowMix chooser
+            // disagrees with the per-stack "any usable tagged stock" re-gather guard below: for a multi-slot recipe
+            // (e.g. a pie with several nutrition slots) under "Do until X" the two never converge, so the pawn loops
+            // forever in the gather phase and the product count never rises (issue #4). Leave AllowMix bills to
+            // vanilla's native one-stack-per-trip gather, which always crafts; the BATCH route
+            // (Patch_WorkGiver_DoBill_BatchRoute) still handles AllowMix correctly via the mix-aware planner. This
+            // only forgoes the one-sweep optimization for cooking, never correctness.
+            if (job.bill.recipe.allowMixingIngredients)
+                return;
             if (forced || job.playerForced)
                 return; // a player-ordered craft must start crafting, not detour through a gather job
             // Common Sense owns the vanilla DoBill driver (its MakeNewToils Prefix re-deposits ingredients to the
