@@ -23,6 +23,13 @@ namespace HaulersDream
         {
             Instance = this;
             Settings = GetSettings<HaulersDreamSettings>();
+            // Baseline the work-override snapshot from the loaded settings so the FIRST WriteSettings of the
+            // session (e.g. closing the settings window without changing anything) does not spuriously re-sync
+            // work types. Pawns already reflect the loaded settings — vanilla re-syncs disabled work types on
+            // save load. See WriteSettings (issue #59).
+            syncedAllPawnsCanHaul = Settings.allPawnsCanHaul;
+            syncedAllPawnsCanClean = Settings.allPawnsCanClean;
+            syncedAllPawnsCanCutPlants = Settings.allPawnsCanCutPlants;
 
             // Start the always-on disk debug trail next to Player.log. Resolved here (main thread) where the Unity
             // path API is safe to read; the writer then runs on its own background thread.
@@ -203,24 +210,48 @@ namespace HaulersDream
 
         public override string SettingsCategory() => "HaulersDream.SettingsCategory".Translate();
 
+        // The work-override toggle values last synced to pawns via Notify_DisabledWorkTypesChanged. HD's
+        // WorkOverride patches key disabled work types off EXACTLY these three settings, so a pawn's cached
+        // disabled work types only go stale when one of them changes. WriteSettings compares against these to
+        // re-sync ONLY on a real change (issue #59). Baselined from the loaded settings in the constructor.
+        private static bool syncedAllPawnsCanHaul, syncedAllPawnsCanClean, syncedAllPawnsCanCutPlants;
+
         public override void WriteSettings()
         {
             base.WriteSettings();
-            // Re-sync work priorities when the settings window closes: toggling a work override
-            // (allPawnsCanHaul/Clean/CutPlants) OFF otherwise leaves STALE priorities — the work scan runs off
-            // priorities, so a pawn keeps doing the now-forbidden work while the work tab draws the box locked
-            // (vanilla only re-syncs disabled work types on save load). Notifying unconditionally on every
-            // settings close is cheap (it just re-reads GetDisabledWorkTypes and zeroes disabled priorities).
-            // No try/catch: a re-sync failure is a real bug to surface as a red error, not a silent warning.
-            if (Current.Game != null)
+            var s = Settings;
+            if (Current.Game == null || s == null)
+                return;
+            // Re-sync work priorities ONLY when a work-override toggle actually changed. Toggling allPawnsCanHaul/
+            // Clean/CutPlants changes what Pawn.CombinedDisabledWorkTags / GetDisabledWorkTypes report (HD's
+            // WorkOverride patches), so a stale cache otherwise leaves a pawn doing now-forbidden work while the
+            // work tab draws the box locked (vanilla only re-syncs disabled work types on save load). NOTHING
+            // else HD persists affects disabled work types.
+            //
+            // The old code notified on EVERY settings write — including no-op window closes and HD's own dialogs
+            // that call WriteSettings to persist routing/storage settings — which fired
+            // Notify_DisabledWorkTypesChanged on every player pawn each time, needlessly running every OTHER mod's
+            // patches on that method. With one such mod throwing inside its patch (issue #59: a work-defaults mod
+            // whose postfix did a LINQ .First() that matched nothing), the exception propagated out of
+            // WriteSettings -> Dialog_ModSettings.PreClose and BROKE the settings-window close. Gating the re-sync
+            // on a real change keeps the necessary refresh while no longer poking unrelated work-type listeners on
+            // every write. (When a toggle DID change, HD still notifies — that is the legitimate re-sync; any throw
+            // from another mod's patch there is that mod's bug, on a notify HD genuinely needs to make.)
+            if (s.allPawnsCanHaul == syncedAllPawnsCanHaul
+                && s.allPawnsCanClean == syncedAllPawnsCanClean
+                && s.allPawnsCanCutPlants == syncedAllPawnsCanCutPlants)
+                return;
+            syncedAllPawnsCanHaul = s.allPawnsCanHaul;
+            syncedAllPawnsCanClean = s.allPawnsCanClean;
+            syncedAllPawnsCanCutPlants = s.allPawnsCanCutPlants;
+
+            // No try/catch: an HD re-sync failure is a real bug to surface as a red error, not a silent warning.
+            var pawns = PawnsFinder.AllMapsCaravansAndTravellingTransporters_Alive;
+            for (int i = 0; i < pawns.Count; i++)
             {
-                var pawns = PawnsFinder.AllMapsCaravansAndTravellingTransporters_Alive;
-                for (int i = 0; i < pawns.Count; i++)
-                {
-                    var p = pawns[i];
-                    if (p?.Faction != null && p.Faction.IsPlayer)
-                        p.Notify_DisabledWorkTypesChanged();
-                }
+                var p = pawns[i];
+                if (p?.Faction != null && p.Faction.IsPlayer)
+                    p.Notify_DisabledWorkTypesChanged();
             }
         }
     }

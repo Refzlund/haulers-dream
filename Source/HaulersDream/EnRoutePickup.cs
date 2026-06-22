@@ -582,6 +582,12 @@ namespace HaulersDream
                 for (int g = 0; g < groups.Count; g++)
                 {
                     var slotGroup = groups[g];
+                    // Skip a modded/torn SlotGroup with no settings rather than NRE on Settings below (issue #58
+                    // robustness; mirrors the HaulToStack store-cell loop and its chosen-group guard). Such a
+                    // group is not a valid storage destination anyway. (Settings == parent.GetStoreSettings(),
+                    // so a non-null Settings also guarantees a non-null parent for slotGroup.parent below.)
+                    if (slotGroup?.Settings == null)
+                        continue;
                     var pr = slotGroup.Settings.Priority;
                     // Strictly better than the thing's current storage (opportunistic hauls upgrade, never lateral
                     // — WYU StoreUtility.cs:218-220 with no beforeCarry target). Unstored is never a destination.
