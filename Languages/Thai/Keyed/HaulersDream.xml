@@ -131,6 +131,7 @@
 <HaulersDream.Setting.OpportunisticUnload>วางของระหว่างเดินผ่านคลัง</HaulersDream.Setting.OpportunisticUnload>
 <HaulersDream.Setting.OpportunisticUnloadDesc>เมื่อตัวละครที่ถือของที่เก็บไว้ออกเดินทางไกลไปทำงานถัดไปและมีโซนกองเก็บอยู่ราวกับอยู่ระหว่างทาง มันจะวางของลงขณะเดินผ่าน แทนที่จะแบกมันข้ามแผนที่และเดินแยกอีกเที่ยวภายหลัง</HaulersDream.Setting.OpportunisticUnloadDesc>
 <HaulersDream.Stat.Overload>Hauler's Dream — บรรทุกเกิน</HaulersDream.Stat.Overload>
+<HaulersDream.Stat.MechCarryCapacity>Hauler's Dream — ความจุการบรรทุก</HaulersDream.Stat.MechCarryCapacity>
 <HaulersDream.Setting.WorkTypesHeader>เก็บผลผลิตจากงานชนิดเหล่านี้:</HaulersDream.Setting.WorkTypesHeader>
 <HaulersDream.Setting.HaulHarvest>พืช — เก็บเกี่ยวและตัด</HaulersDream.Setting.HaulHarvest>
 <HaulersDream.Setting.HaulMining>การขุด — แร่และก้อนหิน</HaulersDream.Setting.HaulMining>

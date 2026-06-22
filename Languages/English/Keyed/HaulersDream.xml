@@ -151,6 +151,7 @@
   <HaulersDream.Setting.OpportunisticUnload>Drop off on the way past storage</HaulersDream.Setting.OpportunisticUnload>
   <HaulersDream.Setting.OpportunisticUnloadDesc>When a pawn carrying scooped goods heads off on a long trip for its next job and a stockpile is roughly on the way, it drops the load off as it passes, instead of carrying it across the map and making a separate trip later.</HaulersDream.Setting.OpportunisticUnloadDesc>
   <HaulersDream.Stat.Overload>Hauler's Dream — overloaded</HaulersDream.Stat.Overload>
+  <HaulersDream.Stat.MechCarryCapacity>Hauler's Dream — carrying capacity</HaulersDream.Stat.MechCarryCapacity>
 
   <HaulersDream.Setting.WorkTypesHeader>Scoop yields from these kinds of work:</HaulersDream.Setting.WorkTypesHeader>
   <HaulersDream.Setting.HaulHarvest>Plants — harvest &amp; cut</HaulersDream.Setting.HaulHarvest>

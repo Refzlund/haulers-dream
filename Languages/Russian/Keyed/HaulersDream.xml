@@ -131,6 +131,7 @@
 <HaulersDream.Setting.OpportunisticUnload>Сгружать по пути мимо склада</HaulersDream.Setting.OpportunisticUnload>
 <HaulersDream.Setting.OpportunisticUnloadDesc>Когда пешка, несущая собранные товары, отправляется в долгую дорогу к следующей работе, и склад примерно по пути, она сгружает груз, проходя мимо, вместо того чтобы тащить его через всю карту и делать отдельную ходку позже.</HaulersDream.Setting.OpportunisticUnloadDesc>
 <HaulersDream.Stat.Overload>Hauler's Dream — перегружен</HaulersDream.Stat.Overload>
+<HaulersDream.Stat.MechCarryCapacity>Hauler's Dream — грузоподъёмность</HaulersDream.Stat.MechCarryCapacity>
 <HaulersDream.Setting.WorkTypesHeader>Собирать результаты этих видов работ:</HaulersDream.Setting.WorkTypesHeader>
 <HaulersDream.Setting.HaulHarvest>Растения — сбор урожая и срезание</HaulersDream.Setting.HaulHarvest>
 <HaulersDream.Setting.HaulMining>Добыча — руда и обломки</HaulersDream.Setting.HaulMining>

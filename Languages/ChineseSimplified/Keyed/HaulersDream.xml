@@ -131,6 +131,7 @@
 <HaulersDream.Setting.OpportunisticUnload>路过储存区时顺手卸货</HaulersDream.Setting.OpportunisticUnload>
 <HaulersDream.Setting.OpportunisticUnloadDesc>当一个带着收取货物的小人为其下一个任务出发踏上长途，而某个储存区大致在途中时，它会路过时把货物卸下，而不是带着它横跨整张地图、之后再单独跑一趟。</HaulersDream.Setting.OpportunisticUnloadDesc>
 <HaulersDream.Stat.Overload>Hauler's Dream——超载</HaulersDream.Stat.Overload>
+<HaulersDream.Stat.MechCarryCapacity>Hauler's Dream——携带量</HaulersDream.Stat.MechCarryCapacity>
 <HaulersDream.Setting.WorkTypesHeader>从这些种类的工作中收取产出：</HaulersDream.Setting.WorkTypesHeader>
 <HaulersDream.Setting.HaulHarvest>植物——收获与砍伐</HaulersDream.Setting.HaulHarvest>
 <HaulersDream.Setting.HaulMining>采掘——矿石与碎块</HaulersDream.Setting.HaulMining>

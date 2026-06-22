@@ -131,6 +131,7 @@
 <HaulersDream.Setting.OpportunisticUnload>Scarica al passaggio davanti al deposito</HaulersDream.Setting.OpportunisticUnload>
 <HaulersDream.Setting.OpportunisticUnloadDesc>Quando una pedina che trasporta merce raccolta parte per un lungo viaggio verso il prossimo lavoro e una zona di stoccaggio è grossomodo sul tragitto, scarica il carico al passaggio, invece di portarselo attraverso la mappa e fare un viaggio separato più tardi.</HaulersDream.Setting.OpportunisticUnloadDesc>
 <HaulersDream.Stat.Overload>Hauler's Dream — sovraccarico</HaulersDream.Stat.Overload>
+<HaulersDream.Stat.MechCarryCapacity>Hauler's Dream — capacità di carico</HaulersDream.Stat.MechCarryCapacity>
 <HaulersDream.Setting.WorkTypesHeader>Raccogli i prodotti da questi tipi di lavoro:</HaulersDream.Setting.WorkTypesHeader>
 <HaulersDream.Setting.HaulHarvest>Piante — raccolta e taglio</HaulersDream.Setting.HaulHarvest>
 <HaulersDream.Setting.HaulMining>Estrazione — minerali e blocchi</HaulersDream.Setting.HaulMining>

@@ -131,6 +131,7 @@
 <HaulersDream.Setting.OpportunisticUnload>Déposer au passage devant un stockage</HaulersDream.Setting.OpportunisticUnload>
 <HaulersDream.Setting.OpportunisticUnloadDesc>Quand un pion portant des biens ramassés part pour un long trajet vers sa prochaine tâche et qu'un stock est à peu près sur le chemin, il dépose la charge au passage, au lieu de la trimballer à travers la carte et de faire un trajet séparé plus tard.</HaulersDream.Setting.OpportunisticUnloadDesc>
 <HaulersDream.Stat.Overload>Hauler's Dream — surchargé</HaulersDream.Stat.Overload>
+<HaulersDream.Stat.MechCarryCapacity>Hauler's Dream — capacité de charge</HaulersDream.Stat.MechCarryCapacity>
 <HaulersDream.Setting.WorkTypesHeader>Ramasser les produits de ces types de travail :</HaulersDream.Setting.WorkTypesHeader>
 <HaulersDream.Setting.HaulHarvest>Plantes — récolte &amp; coupe</HaulersDream.Setting.HaulHarvest>
 <HaulersDream.Setting.HaulMining>Extraction — minerai &amp; fragments</HaulersDream.Setting.HaulMining>

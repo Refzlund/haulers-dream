@@ -131,6 +131,7 @@
 <HaulersDream.Setting.OpportunisticUnload>Descarregar ao passar pelo armazenamento</HaulersDream.Setting.OpportunisticUnload>
 <HaulersDream.Setting.OpportunisticUnloadDesc>Quando um peão carregando bens recolhidos sai numa viagem longa para o próximo trabalho e um depósito está mais ou menos no caminho, ele descarrega ao passar, em vez de carregar a carga pelo mapa inteiro e fazer uma viagem separada depois.</HaulersDream.Setting.OpportunisticUnloadDesc>
 <HaulersDream.Stat.Overload>Hauler's Dream — sobrecarregado</HaulersDream.Stat.Overload>
+<HaulersDream.Stat.MechCarryCapacity>Hauler's Dream — capacidade de carga</HaulersDream.Stat.MechCarryCapacity>
 <HaulersDream.Setting.WorkTypesHeader>Recolher resultados destes tipos de trabalho:</HaulersDream.Setting.WorkTypesHeader>
 <HaulersDream.Setting.HaulHarvest>Plantas — colher e cortar</HaulersDream.Setting.HaulHarvest>
 <HaulersDream.Setting.HaulMining>Mineração — minério e fragmentos</HaulersDream.Setting.HaulMining>

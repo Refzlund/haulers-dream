@@ -131,6 +131,7 @@
 <HaulersDream.Setting.OpportunisticUnload>Afleveren onderweg langs de opslag</HaulersDream.Setting.OpportunisticUnload>
 <HaulersDream.Setting.OpportunisticUnloadDesc>Wanneer een figuur dat opgepakte goederen draagt op een lange trip voor zijn volgende taak vertrekt en een voorraad ruwweg op de weg ligt, lost het de lading af terwijl het passeert, in plaats van het over de kaart te dragen en later een aparte trip te maken.</HaulersDream.Setting.OpportunisticUnloadDesc>
 <HaulersDream.Stat.Overload>Hauler's Dream — overladen</HaulersDream.Stat.Overload>
+<HaulersDream.Stat.MechCarryCapacity>Hauler's Dream — draagvermogen</HaulersDream.Stat.MechCarryCapacity>
 <HaulersDream.Setting.WorkTypesHeader>Opbrengsten oppakken uit deze soorten werk:</HaulersDream.Setting.WorkTypesHeader>
 <HaulersDream.Setting.HaulHarvest>Planten — oogsten en knippen</HaulersDream.Setting.HaulHarvest>
 <HaulersDream.Setting.HaulMining>Delven — erts en brokken</HaulersDream.Setting.HaulMining>

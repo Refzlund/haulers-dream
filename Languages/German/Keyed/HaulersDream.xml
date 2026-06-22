@@ -131,6 +131,7 @@
 <HaulersDream.Setting.OpportunisticUnload>Im Vorbeigehen am Lager abliefern</HaulersDream.Setting.OpportunisticUnload>
 <HaulersDream.Setting.OpportunisticUnloadDesc>Wenn eine Spielfigur, die aufgesammelte Güter trägt, zu ihrer nächsten Arbeit auf eine lange Fahrt aufbricht und ein Vorrat ungefähr auf dem Weg liegt, lädt sie die Ladung im Vorbeigehen ab, anstatt sie quer über die Karte zu tragen und später eine separate Fahrt zu machen.</HaulersDream.Setting.OpportunisticUnloadDesc>
 <HaulersDream.Stat.Overload>Hauler's Dream — überladen</HaulersDream.Stat.Overload>
+<HaulersDream.Stat.MechCarryCapacity>Hauler's Dream — Tragfähigkeit</HaulersDream.Stat.MechCarryCapacity>
 <HaulersDream.Setting.WorkTypesHeader>Erträge aus diesen Arbeitsarten aufsammeln:</HaulersDream.Setting.WorkTypesHeader>
 <HaulersDream.Setting.HaulHarvest>Pflanzen — ernten &amp; schneiden</HaulersDream.Setting.HaulHarvest>
 <HaulersDream.Setting.HaulMining>Bergbau — Erz &amp; Brocken</HaulersDream.Setting.HaulMining>

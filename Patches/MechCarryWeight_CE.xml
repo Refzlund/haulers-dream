@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Patch>
+
+  <!-- Issue #54: under Combat Extended, make a player mechanoid's CE carry weight equal its CarryingCapacity (the
+       mech's UI carry stat) so it hauls per its carrying capacity instead of CE's body-size default (~42 for any
+       0.7-body mech), and so CE's per-pickup fit check + move-speed encumbrance are tuned to that capacity rather
+       than fighting it. See HaulersDream.StatPart_MechCarryWeightCE — it only affects player mechs; every other
+       pawn keeps CE's own CarryWeight.
+
+       Gated by PatchOperationConditional on the CarryWeight StatDef existing, which is true only when Combat
+       Extended (any variant) is loaded — so this is a no-op (no patch error) without CE, regardless of CE's mod
+       display name. The non-CE case is handled in code by HaulersDream.CarryCapacity. -->
+  <Operation Class="PatchOperationConditional">
+    <xpath>/Defs/StatDef[defName="CarryWeight"]/parts</xpath>
+    <match Class="PatchOperationAdd">
+      <xpath>/Defs/StatDef[defName="CarryWeight"]/parts</xpath>
+      <value>
+        <li Class="HaulersDream.StatPart_MechCarryWeightCE" />
+      </value>
+    </match>
+  </Operation>
+
+</Patch>
