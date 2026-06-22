@@ -1,0 +1,75 @@
+using System.Collections.Generic;
+using RimWorld;
+using Verse;
+
+namespace HaulersDream
+{
+    /// <summary>
+    /// Respect other mods' per-item ORDERS so Hauler's Dream doesn't steal an item another mod has claimed
+    /// (issue #5 — e.g. Recycle This / Recycle This (Continued), Simple Recycling, and the order-to-recycle family).
+    ///
+    /// <para>Those mods mark a specific item with a <see cref="Designation"/> and then a WorkGiver carries it to a
+    /// workbench to smelt/scrap it. Crucially, that WorkGiver scans only SPAWNED designated things
+    /// (<c>DesignationManager.SpawnedDesignationsOfDef</c> / <c>AnySpawnedDesignationOfDef</c>). HD's autonomous
+    /// hauling intake scoops loose haulable items into a pawn's INVENTORY (which despawns them), so if it grabs a
+    /// designated item before that WorkGiver runs, the order silently stalls — the item is no longer findable. This
+    /// is HD-specific: vanilla hauling moves the item to STORAGE, where it stays spawned + designated + processable;
+    /// only HD's into-inventory scoop hides it.</para>
+    ///
+    /// <para>So HD's autonomous inventory sweeps/pickups must LEAVE such items alone. We treat an item as claimed if
+    /// it carries any designation OTHER than a HAUL designation: a haul designation (vanilla <c>Haul</c>, Allow
+    /// Tool's "Haul Urgently") means "haul this," which HD doing is correct; any other designation on an item means
+    /// a mod has claimed it for its own action (recycle, destroy, mend, ...), so HD must not intercept it. This is a
+    /// general rule (it costs HD nothing — those items were never HD's to take) and needs no per-mod knowledge.</para>
+    ///
+    /// <para>Cheap: the overwhelmingly common "no designation" case is a single O(1) dictionary miss
+    /// (<c>DesignationManager.HasMapDesignationOn</c>, backed by a <c>Dictionary&lt;Thing, List&lt;Designation&gt;&gt;</c>),
+    /// so this adds no measurable cost to the per-candidate haul gates.</para>
+    /// </summary>
+    internal static class ForeignOrderGuard
+    {
+        /// <summary>
+        /// True when <paramref name="thing"/> carries a non-haul designation, i.e. another mod has claimed it for a
+        /// specific action and HD's autonomous into-inventory intake must skip it. False (don't skip) when there is
+        /// no designation, only a haul designation, or no map.
+        /// </summary>
+        internal static bool ClaimedByForeignOrder(Thing thing)
+        {
+            var map = thing?.Map;
+            if (map == null)
+                return false;
+            var dm = map.designationManager;
+            // O(1) fast path: the item has no designation at all (almost always). No allocation, no list scan.
+            if (!dm.HasMapDesignationOn(thing))
+                return false;
+            EnsureHaulDefsResolved();
+            var list = dm.AllDesignationsOn(thing);
+            for (int i = 0; i < list.Count; i++)
+            {
+                var def = list[i].def;
+                if (def == null || def == haulDef || def == haulUrgentDef)
+                    continue; // "haul this" → HD hauling it is correct; not a foreign claim
+                return true;  // any other designation → a mod's per-item order owns this item → leave it alone
+            }
+            return false;
+        }
+
+        // Haul designations resolved lazily by defName on first actual use (only when an item HAS a designation —
+        // i.e. during gameplay, after defs are loaded). vanilla "Haul" and Allow Tool's "HaulUrgentlyDesignation"
+        // are optional/version-dependent, so resolve silently (null when absent). Resolved by NAME to avoid a hard
+        // reference to either def (Allow Tool is an optional dep; the vanilla name is resolved the same way for
+        // uniformity).
+        private static bool haulDefsResolved;
+        private static DesignationDef haulDef;
+        private static DesignationDef haulUrgentDef;
+
+        private static void EnsureHaulDefsResolved()
+        {
+            if (haulDefsResolved)
+                return;
+            haulDefsResolved = true;
+            haulDef = DefDatabase<DesignationDef>.GetNamedSilentFail("Haul");
+            haulUrgentDef = DefDatabase<DesignationDef>.GetNamedSilentFail("HaulUrgentlyDesignation");
+        }
+    }
+}

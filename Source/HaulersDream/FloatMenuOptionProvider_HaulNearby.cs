@@ -46,7 +46,12 @@ namespace HaulersDream
             for (int i = 0; i < things.Count; i++)
             {
                 var clicked = things[i];
-                if (clicked?.def == null || clicked.def.category != ThingCategory.Item || !clicked.def.EverHaulable)
+                // Skip non-spawned / contained things (e.g. eggs held inside an egg box, which reach ClickedThings
+                // via vanilla SelectableContainedThings): they have no map/position, so the spawned-only haul check
+                // below would NRE on them (issue #2). The sweep is over spawned ground stacks only.
+                if (clicked == null || !clicked.Spawned)
+                    continue;
+                if (clicked.def == null || clicked.def.category != ThingCategory.Item || !clicked.def.EverHaulable)
                     continue;
                 // The same bar vanilla "Prioritize hauling" uses (EverHaulable / fogged / forbidden+allowed-area /
                 // reservable / reachable). forced:true mirrors a player order.

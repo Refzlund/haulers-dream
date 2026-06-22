@@ -151,6 +151,13 @@ namespace HaulersDream
                 // bleeding pawn isn't blocked from hauling outright — and no unload path is affected.
                 if (!YieldRouter.FitToStartHaul(pawn))
                     return null;
+                // #5: don't convert a haul whose target another mod has CLAIMED via a designation (e.g. Recycle
+                // This's recycle/destroy order) into an into-inventory sweep — that despawns the item and hides it
+                // from that mod's WorkGiver (which scans only SPAWNED designated things), stalling the order. Let
+                // vanilla haul it instead (to storage, where it stays spawned + designated + processable). Automatic
+                // path only; an explicit player order on such an item (forced) is the player's deliberate choice.
+                if (ForeignOrderGuard.ClaimedByForeignOrder(primary))
+                    return null;
             }
             // CHEAP FRONT GATE (microstutter fix): the work scan calls JobOnThing for every haulable candidate
             // it considers, and on a cache miss the build below runs the full pool enumeration + ClaimedByOtherPawns
@@ -655,9 +662,10 @@ namespace HaulersDream
                 pool.RemoveAt(bestIdx); // taken or rejected — either way it leaves the pool
 
                 // Eligibility — never sweep what another pawn is en route to, what this pawn can't legally
-                // haul (per-pawn area forbiddance, reservations, burning, social-propriety, bill-bound), or
-                // what has no better storage to go to (it would strand in inventory).
-                if (t.IsForbidden(pawn) || claimed.Contains(t))
+                // haul (per-pawn area forbiddance, reservations, burning, social-propriety, bill-bound), what
+                // another mod has claimed via a designation (#5: a Recycle This item — scooping it into inventory
+                // would hide it from that mod's spawned-only WorkGiver), or what has no better storage to go to.
+                if (t.IsForbidden(pawn) || claimed.Contains(t) || ForeignOrderGuard.ClaimedByForeignOrder(t))
                     continue;
                 // Capacity math first — pure arithmetic, vs PawnCanAutomaticallyHaulFast's region-walk
                 // (CanReach): an over-heavy/over-bulky candidate never pays the pathfinding cost.
