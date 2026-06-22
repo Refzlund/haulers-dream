@@ -131,6 +131,7 @@
 <HaulersDream.Setting.OpportunisticUnload>保管庫を通りがかりに降ろす</HaulersDream.Setting.OpportunisticUnload>
 <HaulersDream.Setting.OpportunisticUnloadDesc>回収した物資を運ぶポーンが次のジョブで長い移動に出るとき、ほぼ通り道に備蓄ゾーンがあれば、マップを横断して運び後で別の往復をするのではなく、通りがかりに荷を降ろします。</HaulersDream.Setting.OpportunisticUnloadDesc>
 <HaulersDream.Stat.Overload>Hauler's Dream — 過積載</HaulersDream.Stat.Overload>
+<HaulersDream.Stat.MechCarryCapacity>Hauler's Dream — 運搬能力</HaulersDream.Stat.MechCarryCapacity>
 <HaulersDream.Setting.WorkTypesHeader>これらの種類の作業から収穫物を回収：</HaulersDream.Setting.WorkTypesHeader>
 <HaulersDream.Setting.HaulHarvest>植物 — 収穫 &amp; 伐採</HaulersDream.Setting.HaulHarvest>
 <HaulersDream.Setting.HaulMining>採掘 — 鉱石 &amp; 塊</HaulersDream.Setting.HaulMining>

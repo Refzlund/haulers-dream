@@ -131,6 +131,7 @@
 <HaulersDream.Setting.OpportunisticUnload>저장고를 지나는 길에 내려놓기</HaulersDream.Setting.OpportunisticUnload>
 <HaulersDream.Setting.OpportunisticUnloadDesc>주워 담은 물건을 운반 중인 폰이 다음 작업을 위해 먼 길을 나서고 저장 구역이 대략 가는 길에 있을 때, 맵을 가로질러 짐을 나르고 나중에 별도로 이동하는 대신 지나가면서 짐을 내려놓습니다.</HaulersDream.Setting.OpportunisticUnloadDesc>
 <HaulersDream.Stat.Overload>Hauler's Dream — 과적</HaulersDream.Stat.Overload>
+<HaulersDream.Stat.MechCarryCapacity>Hauler's Dream — 운반 용량</HaulersDream.Stat.MechCarryCapacity>
 <HaulersDream.Setting.WorkTypesHeader>이런 종류의 작업에서 산출물 줍기:</HaulersDream.Setting.WorkTypesHeader>
 <HaulersDream.Setting.HaulHarvest>식물 — 수확 및 베기</HaulersDream.Setting.HaulHarvest>
 <HaulersDream.Setting.HaulMining>채굴 — 광석 및 덩어리</HaulersDream.Setting.HaulMining>

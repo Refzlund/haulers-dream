@@ -131,6 +131,7 @@
 <HaulersDream.Setting.OpportunisticUnload>Скидати дорогою повз склад</HaulersDream.Setting.OpportunisticUnload>
 <HaulersDream.Setting.OpportunisticUnloadDesc>Коли пішак, що несе зібрані речі, вирушає в довгу ходку до наступної роботи, а склад приблизно на шляху, він скидає вантаж, проходячи повз, замість того щоб нести його через усю карту й робити окрему ходку пізніше.</HaulersDream.Setting.OpportunisticUnloadDesc>
 <HaulersDream.Stat.Overload>Hauler's Dream — перевантажений</HaulersDream.Stat.Overload>
+<HaulersDream.Stat.MechCarryCapacity>Hauler's Dream — вантажопідйомність</HaulersDream.Stat.MechCarryCapacity>
 <HaulersDream.Setting.WorkTypesHeader>Збирати продукти з цих видів робіт:</HaulersDream.Setting.WorkTypesHeader>
 <HaulersDream.Setting.HaulHarvest>Рослини — збір урожаю та зрізання</HaulersDream.Setting.HaulHarvest>
 <HaulersDream.Setting.HaulMining>Видобуток — руда та брили</HaulersDream.Setting.HaulMining>

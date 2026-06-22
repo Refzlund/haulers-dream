@@ -131,6 +131,7 @@
 <HaulersDream.Setting.OpportunisticUnload>Aflæs på vejen forbi lager</HaulersDream.Setting.OpportunisticUnload>
 <HaulersDream.Setting.OpportunisticUnloadDesc>Når en figur, der bærer opsamlede varer, tager af sted på en lang tur til sin næste opgave, og en lagerzone nogenlunde er på vejen, aflæsser den læsset, mens den passerer forbi, i stedet for at bære det tværs over kortet og lave en særskilt tur senere.</HaulersDream.Setting.OpportunisticUnloadDesc>
 <HaulersDream.Stat.Overload>Hauler's Dream — overlæsset</HaulersDream.Stat.Overload>
+<HaulersDream.Stat.MechCarryCapacity>Hauler's Dream — bæreevne</HaulersDream.Stat.MechCarryCapacity>
 <HaulersDream.Setting.WorkTypesHeader>Saml udbytte op fra disse slags arbejde:</HaulersDream.Setting.WorkTypesHeader>
 <HaulersDream.Setting.HaulHarvest>Planter — høst og klip</HaulersDream.Setting.HaulHarvest>
 <HaulersDream.Setting.HaulMining>Udvinding — malm og brokker</HaulersDream.Setting.HaulMining>

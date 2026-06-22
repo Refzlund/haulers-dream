@@ -131,6 +131,7 @@
 <HaulersDream.Setting.OpportunisticUnload>Zrzucaj po drodze obok magazynu</HaulersDream.Setting.OpportunisticUnload>
 <HaulersDream.Setting.OpportunisticUnloadDesc>Gdy pionek niosący nazbierane towary rusza w długą podróż po swoje następne zadanie, a składowisko jest mniej więcej po drodze, zrzuca ładunek, gdy przechodzi obok, zamiast nieść go przez całą mapę i robić później osobną wyprawę.</HaulersDream.Setting.OpportunisticUnloadDesc>
 <HaulersDream.Stat.Overload>Hauler's Dream — przeciążony</HaulersDream.Stat.Overload>
+<HaulersDream.Stat.MechCarryCapacity>Hauler's Dream — udźwig</HaulersDream.Stat.MechCarryCapacity>
 <HaulersDream.Setting.WorkTypesHeader>Zgarniaj plony z tych rodzajów pracy:</HaulersDream.Setting.WorkTypesHeader>
 <HaulersDream.Setting.HaulHarvest>Rośliny — zbiór i ścinanie</HaulersDream.Setting.HaulHarvest>
 <HaulersDream.Setting.HaulMining>Wydobycie — ruda i bryły</HaulersDream.Setting.HaulMining>

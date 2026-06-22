@@ -37,9 +37,17 @@ namespace HaulersDream
                 val = w; // override CE's body-size CarryWeight with the mech's carrying capacity
         }
 
-        // ExplanationPart is abstract on StatPart, so it must be implemented; return null to add no extra
-        // stat-tooltip line (and hence introduce no new translation key — the transform is the load-bearing part).
-        public override string ExplanationPart(StatRequest req) => null;
+        // The line shown in the CE CarryWeight stat tooltip's breakdown when this part fires, so a player
+        // inspecting a hauler mech sees WHY its carry weight equals its carrying capacity (issue #54: the user
+        // saw a mech with carrying capacity 52/158 but a ~24.5/42 carry weight and had no explanation). Same
+        // label-plus-value shape as StatPart_Overload; null when the part does not apply (every non-player /
+        // non-mech pawn, where CE's own CarryWeight stands).
+        public override string ExplanationPart(StatRequest req)
+        {
+            if (TryGetMechCarryWeight(req, out float w))
+                return "HaulersDream.Stat.MechCarryCapacity".Translate() + ": " + w.ToString("0.##");
+            return null;
+        }
 
         private static bool TryGetMechCarryWeight(StatRequest req, out float weight)
         {
