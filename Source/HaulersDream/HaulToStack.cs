@@ -222,6 +222,14 @@ namespace HaulersDream
                     var group = groups[g];
                     if (group == chosenGroup)
                         continue; // already scanned first
+                    // A modded SlotGroup can momentarily expose a null Settings (half-built, or a mod tearing
+                    // storage down off the main thread). HD already guards the CHOSEN group's Settings in this
+                    // method's preamble (chosenGroup?.Settings); mirror that EXACTLY here so HD's own storage
+                    // loop skips such a group rather than NRE on group.Settings below — a group with no settings
+                    // is not a valid destination anyway. (Settings == parent.GetStoreSettings(), so a non-null
+                    // Settings also guarantees a non-null parent for group.parent below.) Issue #58 robustness.
+                    if (group?.Settings == null)
+                        continue;
                     var priority = group.Settings.Priority;
                     if ((int)priority > (int)chosenPriority)
                         continue;
