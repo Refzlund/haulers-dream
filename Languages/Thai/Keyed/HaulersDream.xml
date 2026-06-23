@@ -80,6 +80,8 @@
 <HaulersDream.Setting.PlanCraftingDesc>เครื่องมือวางแผนคลิกขวาบนโต๊ะทำงานที่ทำใบสั่งงานเป็นชุดหลายครั้งด้วยการไปหยิบวัตถุดิบเที่ยวเดียว ปิด = ซ่อนตัวเลือกเมนู</HaulersDream.Setting.PlanCraftingDesc>
 <HaulersDream.Setting.BatchByDefault>ทำใบสั่งงานใหม่เป็นชุดโดยค่าเริ่มต้น</HaulersDream.Setting.BatchByDefault>
 <HaulersDream.Setting.BatchByDefaultDesc>ใบสั่งงานผลิตและทำอาหารที่คุณเพิ่มตั้งแต่นี้ไปจะเริ่มในโหมด "ชุด": ชาวอาณานิคมจะไปหยิบวัตถุดิบทั้งชุดในเที่ยวเดียว ทำทั้งหมดที่โต๊ะ (อาหารจะไม่เน่าขณะที่พวกเขาทำงาน) แล้วขนทุกอย่างไปยังคลัง มีผลเฉพาะใบสั่งงานที่เพิ่งเพิ่มเท่านั้น — ใบสั่งงานที่มีอยู่จะคงการตั้งค่าปัจจุบันไว้</HaulersDream.Setting.BatchByDefaultDesc>
+  <HaulersDream.Setting.AllowBatchUnderCommonSense>Batch even with Common Sense active</HaulersDream.Setting.AllowBatchUnderCommonSense>
+  <HaulersDream.Setting.AllowBatchUnderCommonSenseDesc>Normally Hauler's Dream lets Common Sense run the cooking and crafting, so bills are made one item at a time. Turn this on to let bills you marked for batching still batch, while Common Sense keeps handling the rest. Batch crafting uses its own separate job, so it won't clash with Common Sense's "clean first" and "haul all ingredients" features.</HaulersDream.Setting.AllowBatchUnderCommonSenseDesc>
 <HaulersDream.Setting.DefaultBatchSize>ขนาดชุดเริ่มต้น: {0}</HaulersDream.Setting.DefaultBatchSize>
 <HaulersDream.Batch.MenuPrefix>ชุด</HaulersDream.Batch.MenuPrefix>
 <HaulersDream.Batch.SetSize>ขนาดชุด: {0}…</HaulersDream.Batch.SetSize>

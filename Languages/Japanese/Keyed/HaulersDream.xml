@@ -80,6 +80,8 @@
 <HaulersDream.Setting.PlanCraftingDesc>作業台上で、1回の材料運搬で作業指示を複数回まとめて実行する右クリック計画ツールです。オフ＝メニューの選択肢が非表示になります。</HaulersDream.Setting.PlanCraftingDesc>
 <HaulersDream.Setting.BatchByDefault>新しい作業指示をデフォルトでバッチ化する</HaulersDream.Setting.BatchByDefault>
 <HaulersDream.Setting.BatchByDefaultDesc>今後追加する製作・調理の作業指示が「バッチ」モードで始まります。入植者は1回の往復で材料一式を取りに行き、作業台ですべて作り（作業中に食料は傷みません）、それからすべてを保管庫へ運びます。新たに追加された作業指示にのみ影響します。既存の作業指示は現在の設定を保ちます。</HaulersDream.Setting.BatchByDefaultDesc>
+  <HaulersDream.Setting.AllowBatchUnderCommonSense>Batch even with Common Sense active</HaulersDream.Setting.AllowBatchUnderCommonSense>
+  <HaulersDream.Setting.AllowBatchUnderCommonSenseDesc>Normally Hauler's Dream lets Common Sense run the cooking and crafting, so bills are made one item at a time. Turn this on to let bills you marked for batching still batch, while Common Sense keeps handling the rest. Batch crafting uses its own separate job, so it won't clash with Common Sense's "clean first" and "haul all ingredients" features.</HaulersDream.Setting.AllowBatchUnderCommonSenseDesc>
 <HaulersDream.Setting.DefaultBatchSize>デフォルトのバッチサイズ：{0}</HaulersDream.Setting.DefaultBatchSize>
 <HaulersDream.Batch.MenuPrefix>バッチ</HaulersDream.Batch.MenuPrefix>
 <HaulersDream.Batch.SetSize>バッチサイズ：{0}…</HaulersDream.Batch.SetSize>

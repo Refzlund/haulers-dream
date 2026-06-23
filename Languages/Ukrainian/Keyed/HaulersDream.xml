@@ -80,6 +80,8 @@
 <HaulersDream.Setting.PlanCraftingDesc>Інструмент планування за правим кліком на верстатах, що групує завдання кілька разів за одну ходку по інгредієнти. Вимкнено = опція меню прихована.</HaulersDream.Setting.PlanCraftingDesc>
 <HaulersDream.Setting.BatchByDefault>Групувати нові завдання за замовчуванням</HaulersDream.Setting.BatchByDefault>
 <HaulersDream.Setting.BatchByDefaultDesc>Завдання виготовлення та готування, які ви ДОДАЄТЕ відтепер, починаються в режимі «партія»: колоніст приносить цілу партію інгредієнтів за одну ходку, виготовляє їх усі за верстатом (їжа не псується, поки він працює), потім переносить усе до складу. Впливає лише на щойно додані завдання — наявні завдання зберігають свою поточну настройку.</HaulersDream.Setting.BatchByDefaultDesc>
+  <HaulersDream.Setting.AllowBatchUnderCommonSense>Batch even with Common Sense active</HaulersDream.Setting.AllowBatchUnderCommonSense>
+  <HaulersDream.Setting.AllowBatchUnderCommonSenseDesc>Normally Hauler's Dream lets Common Sense run the cooking and crafting, so bills are made one item at a time. Turn this on to let bills you marked for batching still batch, while Common Sense keeps handling the rest. Batch crafting uses its own separate job, so it won't clash with Common Sense's "clean first" and "haul all ingredients" features.</HaulersDream.Setting.AllowBatchUnderCommonSenseDesc>
 <HaulersDream.Setting.DefaultBatchSize>Розмір партії за замовчуванням: {0}</HaulersDream.Setting.DefaultBatchSize>
 <HaulersDream.Batch.MenuPrefix>Партія</HaulersDream.Batch.MenuPrefix>
 <HaulersDream.Batch.SetSize>Розмір партії: {0}…</HaulersDream.Batch.SetSize>

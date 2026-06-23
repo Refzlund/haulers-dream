@@ -80,6 +80,8 @@
 <HaulersDream.Setting.PlanCraftingDesc>Højreklik-planlægningsværktøjet på arbejdsbænke, der gentager en opgave flere gange med én ingrediens-tur. Fra = menupunktet er skjult.</HaulersDream.Setting.PlanCraftingDesc>
 <HaulersDream.Setting.BatchByDefault>Lav opgaver i hold som standard</HaulersDream.Setting.BatchByDefault>
 <HaulersDream.Setting.BatchByDefaultDesc>Fremstillings- og madlavningsopgaver, du TILFØJER fra nu af, starter i "hold"-tilstand: kolonisten henter et helt hold ingredienser på én tur, laver dem alle ved bænken (mad fordærves ikke, mens de arbejder) og transporterer derefter alt til lager. Påvirker kun nyligt tilføjede opgaver — eksisterende opgaver beholder deres nuværende indstilling.</HaulersDream.Setting.BatchByDefaultDesc>
+  <HaulersDream.Setting.AllowBatchUnderCommonSense>Batch even with Common Sense active</HaulersDream.Setting.AllowBatchUnderCommonSense>
+  <HaulersDream.Setting.AllowBatchUnderCommonSenseDesc>Normally Hauler's Dream lets Common Sense run the cooking and crafting, so bills are made one item at a time. Turn this on to let bills you marked for batching still batch, while Common Sense keeps handling the rest. Batch crafting uses its own separate job, so it won't clash with Common Sense's "clean first" and "haul all ingredients" features.</HaulersDream.Setting.AllowBatchUnderCommonSenseDesc>
 <HaulersDream.Setting.DefaultBatchSize>Standard holdstørrelse: {0}</HaulersDream.Setting.DefaultBatchSize>
 <HaulersDream.Batch.MenuPrefix>Hold</HaulersDream.Batch.MenuPrefix>
 <HaulersDream.Batch.SetSize>Holdstørrelse: {0}…</HaulersDream.Batch.SetSize>
