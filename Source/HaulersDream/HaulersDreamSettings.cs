@@ -118,10 +118,11 @@ namespace HaulersDream
         public int defaultBatchSize = 10;   // initial per-batch quantity for a freshly-batched bill
         // Common Sense compat: HD normally cedes the whole DoBill flow to Common Sense (its cleaning / haul-all
         // toils re-deposit HD's gathered ingredients and would loop). Batch crafting is a SEPARATE driver
-        // (HaulersDream_BatchCraft) Common Sense never patches, so it can run safely under CS. This opt-in lets
-        // batch-flagged bills batch even while Common Sense owns the cook flow; the looping inventory-gather and
-        // ingredient-share paths stay ceded regardless. OFF by default so existing CS users are unchanged.
-        public bool allowBatchUnderCommonSense = false;
+        // (HaulersDream_BatchCraft) Common Sense never patches, so it can run safely under CS. ON by default so
+        // batch-flagged bills still batch under Common Sense; the looping inventory-gather and ingredient-share
+        // paths stay ceded regardless. Turn OFF to hand the whole cook/craft flow to Common Sense (batching is
+        // then suppressed and its dropdown options are hidden — see CommonSenseCompat.BatchSuppressedByCommonSense).
+        public bool allowBatchUnderCommonSense = true;
 
         // --- bulk hauling (the native Pick-Up-And-Haul: a haul trip sweeps everything around into inventory) ---
         public bool bulkHaul = true;
@@ -535,7 +536,7 @@ namespace HaulersDream
             Scribe_Values.Look(ref planCrafting, "planCrafting", true);
             Scribe_Values.Look(ref batchByDefault, "batchByDefault", false);
             Scribe_Values.Look(ref defaultBatchSize, "defaultBatchSize", 10);
-            Scribe_Values.Look(ref allowBatchUnderCommonSense, "allowBatchUnderCommonSense", false);
+            Scribe_Values.Look(ref allowBatchUnderCommonSense, "allowBatchUnderCommonSense", true);
             Scribe_Values.Look(ref autoStripMode, "autoStripMode", AutoStripMode.AllHauls);
             Scribe_Values.Look(ref stripColonistCorpses, "stripColonistCorpses", false);
             Scribe_Values.Look(ref taintedSmeltablePolicy, "taintedSmeltablePolicy", TaintedApparelPolicy.Take);
@@ -681,7 +682,7 @@ namespace HaulersDream
             planCrafting = true;
             batchByDefault = false;
             defaultBatchSize = 10;
-            allowBatchUnderCommonSense = false;
+            allowBatchUnderCommonSense = true;
             autoStripMode = AutoStripMode.AllHauls;
             stripColonistCorpses = false;
             taintedSmeltablePolicy = TaintedApparelPolicy.Take;

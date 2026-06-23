@@ -96,6 +96,18 @@ namespace HaulersDream
             }
         }
 
+        /// <summary>
+        /// True when HD is ceding the BATCH-CRAFT path to Common Sense right now, so a batch-flagged bill will NOT
+        /// actually batch (it falls back to CS's one-at-a-time cook flow). Exactly <see cref="OwnsDoBillFlow"/> AND
+        /// the <c>allowBatchUnderCommonSense</c> opt-in being OFF (the opt-in defaults ON, so this is normally false
+        /// even under CS). Single source of truth for both (a) the batch-route conversion gate
+        /// (Patch_WorkGiver_DoBill_BatchRoute) and (b) hiding the "Batch: …" dropdown options + row marker
+        /// (Patch_BillRepeatMode_Batch), so the player is never offered or shown a batch mode that won't run.
+        /// False whenever CS doesn't own the flow (CS absent, or its cleaning/haul-all both off) or the opt-in is on.
+        /// </summary>
+        public static bool BatchSuppressedByCommonSense
+            => OwnsDoBillFlow && !(HaulersDreamMod.Settings?.allowBatchUnderCommonSense ?? true);
+
         private static void Init()
         {
             initialized = true;
