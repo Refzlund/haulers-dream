@@ -241,6 +241,19 @@ namespace HaulersDream
             var s = HaulersDreamMod.Settings;
             if (s == null || !s.batchWorkDeliveries || __result == null || pawn?.Map == null)
                 return;
+            // #64: NEVER expand a FORCED delivery. A forced delivery is either a HD construction-route stop (the
+            // route builds each stop via JobOnThing(forced:true) and EnqueueLasts it) or a player "prioritize
+            // deliver" order. A bloated needer queue on a job that sits UNSTARTED in the route queue pre-registers
+            // vanilla "enroute" (at TryMakePreToilReservations time) on ~20 extra blueprints the one-hand-load
+            // delivery will never actually deposit to; across a long route's many overlapping stops those claims
+            // accumulate past each blueprint's need, so vanilla reads the blueprint as fully supplied
+            // (GetSpaceRemainingWithEnroute == 0) and NO pawn will deliver or build it until it's cancelled and
+            // re-placed (the reported "blueprints corrupted by the build-order planner"). Only AUTONOMOUS
+            // deliveries (forced == false) are batched: they run immediately and deposit the whole batch, releasing
+            // their enroute, so they never leak. The route still delivers to every blueprint — one stop per
+            // blueprint — it just no longer over-claims via per-job batching. (issue #64)
+            if (forced)
+                return;
             if (__result.def != JobDefOf.HaulToContainer || __result.haulMode != HaulMode.ToContainer || c is Blueprint_Install)
                 return;
             var carried = __result.targetA.Thing;

@@ -51,6 +51,11 @@ namespace HaulersDream
             // only forgoes the one-sweep optimization for cooking, never correctness.
             if (job.bill.recipe.allowMixingIngredients)
                 return;
+            // #63: never route a bill whose chosen ingredients are stackLimit==1 (stone chunks). Vanilla places
+            // such ingredients one-per-trip onto the bench's lone interaction cell, which turns HD's gather relay
+            // into an endless bench<->storage loop (the "Bulk Stonecutting (Forked)" report). Leave it to vanilla.
+            if (BillRouteGate.ChosenIngredientsUnstackable(job))
+                return;
             if (forced || job.playerForced)
                 return; // a player-ordered craft must start crafting, not detour through a gather job
             // Common Sense owns the vanilla DoBill driver (its MakeNewToils Prefix re-deposits ingredients to the
