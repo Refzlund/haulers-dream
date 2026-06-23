@@ -57,11 +57,19 @@ namespace HaulersDream
             // tracking-comp requirement — the batch tags products/leftovers for the unload pass.
             if (!CraftBatchPlanner.CanPawnBatch(pawn, bill))
                 return;
-            // "Do until you have X" overshoot guard (whole-colony): products this or other pawns already banked in
+            // "Do until you have X" START guard (whole-colony): products this or other pawns already banked in
             // INVENTORY are invisible to vanilla's CountProducts, so vanilla keeps offering the bill (world count <
             // target) even when enough are made and in transit to storage. Count the in-flight banked products toward
             // the target; if it's satisfied, don't start another batch — cancel the job so no pawn over-produces.
             // Vanilla pauses the bill itself once those products reach storage (then it stops offering it entirely).
+            //
+            // OVERSHOOT-BY-Y (issue #3): this START gate deliberately uses the plain MayCraftMore (START threshold X,
+            // NOT X+Y). The overshoot only widens the per-rep CONTINUE gate once a batch is ALREADY RUNNING (see
+            // JobDriver_BatchCraft.craftCheck), matching the feature's intent: "once it STARTS (vanilla starts it
+            // while count < X), keep crafting past X up to X+Y". So a fresh batch must still only START when below X
+            // — gating the start at X+Y would (re)start a batch even after the target X is already met, which is not
+            // wanted. This guard is not consulted again mid-batch (the running driver owns the X..X+Y continuation),
+            // so leaving it at targetCount cannot prevent the overshoot — it only governs whether a NEW batch begins.
             if (bill is Bill_Production bpTarget
                 && bpTarget.repeatMode == BillRepeatModeDefOf.TargetCount
                 && !bpTarget.recipe.products.NullOrEmpty()

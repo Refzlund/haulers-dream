@@ -124,5 +124,22 @@ namespace HaulersDream.Tests
             Assert.That(RouteEstimate.MineWorkTicks(100, true, 0f), Is.EqualTo(0f));
             Assert.That(RouteEstimate.MineWorkTicks(0, true, 1f), Is.EqualTo(0f));
         }
+
+        [Test]
+        public void SowWorkTicks_WorkOverSpeed()
+        {
+            // default sowWork 10, plantWorkSpeed 1 → 10 ticks; faster speed → fewer ticks.
+            Assert.That(RouteEstimate.SowWorkTicks(10f, 1f), Is.EqualTo(10f).Within(1e-3f));
+            Assert.That(RouteEstimate.SowWorkTicks(10f, 2f), Is.EqualTo(5f).Within(1e-3f));
+            Assert.That(RouteEstimate.SowWorkTicks(20f, 4f), Is.EqualTo(5f).Within(1e-3f));
+        }
+
+        [Test]
+        public void SowWorkTicks_DegradesOnZeroInputs()
+        {
+            Assert.That(RouteEstimate.SowWorkTicks(10f, 0f), Is.EqualTo(0f));  // no speed
+            Assert.That(RouteEstimate.SowWorkTicks(0f, 1f), Is.EqualTo(0f));   // no work
+            Assert.That(RouteEstimate.SowWorkTicks(-5f, 1f), Is.EqualTo(0f));  // negative work
+        }
     }
 }
