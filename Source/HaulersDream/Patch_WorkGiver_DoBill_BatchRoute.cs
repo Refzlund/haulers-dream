@@ -34,6 +34,10 @@ namespace HaulersDream
             // DEPOSITED into its container, so a pawn-driven batch-craft that gathers into inventory is invalid there.
             if (!BillRouteGate.MayRouteToInventory(job.targetA.Thing))
                 return;
+            // #63: never batch a bill whose chosen ingredients are stackLimit==1 (stone chunks) — the same lone-
+            // interaction-cell re-place loop that bites the inventory route. Leave it to vanilla's native gather.
+            if (BillRouteGate.ChosenIngredientsUnstackable(job))
+                return;
             var bench = (Building_WorkTable)job.targetA.Thing;
             // #4: never batch-convert a MECH worker's bill — HD's gather-into-inventory batch is a colonist scoop
             // feature, and a mech (ignores forbidden, work-range-bounded) can dead-end an HD inventory-gather into

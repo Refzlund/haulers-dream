@@ -1,5 +1,6 @@
 using RimWorld;
 using Verse;
+using Verse.AI;
 
 namespace HaulersDream
 {
@@ -53,5 +54,32 @@ namespace HaulersDream
         /// </summary>
         public static bool WorkerMayShareCraft(Pawn worker) =>
             worker?.RaceProps != null && !worker.RaceProps.IsMechanoid;
+
+        /// <summary>
+        /// #63 (Bulk Stonecutting compat): does any ingredient vanilla chose for this DoBill <paramref name="job"/>
+        /// have <c>stackLimit == 1</c> (stone chunks)? Such ingredients are carried ONE-PER-TRIP and vanilla
+        /// places each onto the bench's single ingredient/interaction cell. HD's gather-into-inventory relay then
+        /// loops forever on them: the chunk gathered into inventory is pulled back out by vanilla's DoBill and
+        /// dropped on that lone cell, which makes the next bill scan prefer a <c>HaulStuffOffBillGiverJob</c> over
+        /// crafting; HD re-converts to a <c>BillPrepGather</c> and the pawn runs bench&lt;-&gt;storage endlessly
+        /// (reported with "Bulk Stonecutting (Forked)", whose 10x recipes always plan ~10 single-chunk stacks).
+        /// So HD must NOT route such a bill — leave it to vanilla's native one-stack-per-trip gather, which crafts
+        /// correctly. Read from vanilla's OWN chosen ingredient queue, so it covers any recipe whose actual chosen
+        /// ingredients are unstackable, not just chunks. Returns false (route normally) when the queue is empty —
+        /// an inventory-sourced / unfinished-thing resume has no floor queue and never loops.
+        /// </summary>
+        public static bool ChosenIngredientsUnstackable(Job job)
+        {
+            var queue = job?.targetQueueB;
+            if (queue == null)
+                return false;
+            for (int i = 0; i < queue.Count; i++)
+            {
+                var def = queue[i].Thing?.def;
+                if (def != null && def.stackLimit == 1)
+                    return true;
+            }
+            return false;
+        }
     }
 }
