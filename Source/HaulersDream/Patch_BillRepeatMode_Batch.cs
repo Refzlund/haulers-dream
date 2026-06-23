@@ -59,7 +59,10 @@ namespace HaulersDream
             // --- the three batch variants (only when this recipe can actually be batched) ---
             // Each carries a hover tooltip (FloatMenuOption.tooltip) explaining what that batch mode does (issue #3
             // also asks for dropdown tooltips). The tooltip is set on the option after construction.
-            if (comp != null && CraftBatchPlanner.CanBatch(bill))
+            // Hidden entirely while Common Sense is suppressing batching (its opt-in is OFF and CS owns the cook
+            // flow): batch-flagged bills won't actually batch in that state, so offering the modes would mislead —
+            // the player just sees the vanilla modes. Same predicate the route conversion uses (single source).
+            if (comp != null && CraftBatchPlanner.CanBatch(bill) && !CommonSenseCompat.BatchSuppressedByCommonSense)
             {
                 string prefix = "HaulersDream.Batch.MenuPrefix".Translate();
                 var optDoX = new FloatMenuOption(prefix + ": " + BillRepeatModeDefOf.RepeatCount.LabelCap, delegate
@@ -144,12 +147,15 @@ namespace HaulersDream
         {
             var comp = HaulersDreamGameComponent.Instance;
             // Gate the marker on CanBatch too: a bill that still carries the batch FLAG but is NOT actually batched
-            // must not show a misleading "×N". Two ways that happens: (a) a save whose recipe is NOT batchable
+            // must not show a misleading "×N". Three ways that happens: (a) a save whose recipe is NOT batchable
             // (smelting / take-entire-stacks / unfinished-thing / a non-Bill_Production) keeps the flag but routes as
             // vanilla; (b) its repeat mode is now a non-vanilla one HD won't batch (e.g. an Everybody Gets One mode —
-            // see CraftBatchPlanner.CanBatch). NOTE: mixing recipes (cooked meals, kibble, pemmican, chemfuel, beer)
-            // ARE batchable via the mix-aware per-rep value-fill path, so CanBatch returns true and the marker shows.
-            if (comp != null && comp.IsBatchBill(__instance) && CraftBatchPlanner.CanBatch(__instance))
+            // see CraftBatchPlanner.CanBatch); (c) Common Sense is suppressing batching (its opt-in is OFF and CS
+            // owns the cook flow), so the flagged bill routes as a plain CS-handled bill — match the hidden dropdown
+            // options. NOTE: mixing recipes (cooked meals, kibble, pemmican, chemfuel, beer) ARE batchable via the
+            // mix-aware per-rep value-fill path, so CanBatch returns true and the marker shows.
+            if (comp != null && comp.IsBatchBill(__instance) && CraftBatchPlanner.CanBatch(__instance)
+                && !CommonSenseCompat.BatchSuppressedByCommonSense)
                 __result = "HaulersDream.Batch.RowMarker".Translate(comp.BatchSizeOf(__instance)) + __result;
         }
     }
