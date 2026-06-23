@@ -267,7 +267,12 @@ namespace HaulersDream
                 else if (bp.repeatMode == BillRepeatModeDefOf.TargetCount
                          && !bill.recipe.products.NullOrEmpty() && bill.recipe.products[0].count > 0)
                 {
-                    int shortfall = bp.targetCount - EffectiveProductCount(bp);
+                    // "Overshoot by Y" (issue #3): the per-rep gate keeps crafting up to X+Y, so the planner must
+                    // GATHER enough ingredients for X+Y too — otherwise the batch would pre-load for only the X
+                    // shortfall, craft to X, and stop one rep short of the overshoot for lack of materials. Y == 0
+                    // (no overshoot, or non-TargetCount) leaves this byte-identical to the original X shortfall.
+                    int overshoot = HaulersDreamGameComponent.Instance?.BatchOvershootOf(bp) ?? 0;
+                    int shortfall = (bp.targetCount + overshoot) - EffectiveProductCount(bp);
                     plan.billReps = shortfall <= 0
                         ? 0
                         : Mathf.CeilToInt(shortfall / (float)bill.recipe.products[0].count);

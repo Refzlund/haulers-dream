@@ -473,15 +473,25 @@ namespace HaulersDream
                 if (repsDone >= repsTarget) { JumpToToil(done); return; }
                 if (PastDeadline()) { JumpToToil(done); return; }
                 if (job.bill == null || job.bill.suspended) { JumpToToil(done); return; }
+                // Issue #1: between reps (never mid-item), yield the pawn from a long batch when it urgently needs to
+                // eat/sleep, is about to break, or is drafted/in danger — so a "Do forever" batch can't pin a pawn.
+                // JumpToToil(done) runs the FinishAction, which unloads the carried products+leftovers and lets the
+                // pawn go satisfy the need: "finish this item, put everything away, then go". A player-FORCED batch
+                // ("do now") never yields (BatchYieldPolicy short-circuits on playerForced). Conservative thresholds:
+                // only GENUINELY urgent points trigger, so a normal batch isn't shredded by minor needs.
+                if (ShouldYieldNow()) { JumpToToil(done); return; }
                 // "Do until you have X": the products this batch already banked sit in the pawn's INVENTORY, which
                 // vanilla's CountProducts can't see — so a plain ShouldDoNow() reads a stale count and the batch
                 // runs every planned rep past the target and never pauses. Gate TargetCount bills on the EFFECTIVE
-                // count (world + in-flight banked) instead; vanilla pauses the bill once they're delivered. Other
-                // repeat modes (RepeatCount decrements its own field; Forever) count correctly → use vanilla's gate.
+                // count (world + in-flight banked) instead; vanilla pauses the bill once they're delivered. The
+                // "overshoot by Y" (issue #3) widens the CONTINUE target to X+Y so a started batch finishes to X+Y
+                // rather than stopping the instant the count crosses X. Other repeat modes (RepeatCount decrements
+                // its own field; Forever) count correctly → use vanilla's gate.
                 if (job.bill is Bill_Production bpTc && bpTc.repeatMode == BillRepeatModeDefOf.TargetCount
                     && bpTc.recipe.WorkerCounter.CanCountProducts(bpTc))
                 {
-                    if (!BatchPausePolicy.MayCraftMore(CraftBatchPlanner.EffectiveProductCount(bpTc), bpTc.targetCount, bpTc.paused))
+                    int overshoot = HaulersDreamGameComponent.Instance?.BatchOvershootOf(bpTc) ?? 0;
+                    if (!BatchPausePolicy.MayCraftMore(CraftBatchPlanner.EffectiveProductCount(bpTc), bpTc.targetCount, overshoot, bpTc.paused))
                     { JumpToToil(done); return; }
                 }
                 else if (!job.bill.ShouldDoNow()) { JumpToToil(done); return; }
@@ -737,6 +747,30 @@ namespace HaulersDream
         // ---- helpers ----
 
         private bool PastDeadline() => deadlineTick > 0 && Find.TickManager.TicksGame >= deadlineTick;
+
+        /// <summary>
+        /// Issue #1 — "Do forever" (and any batch) must not freeze a pawn that urgently needs to eat / sleep / is
+        /// about to break or fight. Called from <c>craftCheck</c> BETWEEN reps, so a yield only ever happens AFTER
+        /// the current item is finished — the batch is never abandoned mid-craft. On yield the driver jumps to the
+        /// "done" toil, whose <c>AddFinishAction</c> already unloads the carried products + tagged leftovers and
+        /// frees the pawn to go satisfy the need; so the whole model is "finish this item, put everything away, then
+        /// go" and relies entirely on that existing FinishAction unload (no separate drop/unload path here).
+        ///
+        /// <para>Conservative by design (delegates the decision to the unit-tested <see cref="BatchYieldPolicy"/>):
+        /// a player-FORCED batch never yields (the player asked for the whole batch), and only GENUINELY urgent
+        /// needs trigger — urgent hunger / very tired / an imminent (major+) mental break / drafted / downed — so a
+        /// normal batch isn't shredded by a merely-Hungry or slightly-low recreation pawn.</para>
+        /// </summary>
+        private bool ShouldYieldNow()
+        {
+            var needs = pawn?.needs;
+            int food = needs?.food != null ? (int)needs.food.CurCategory : -1;
+            int rest = needs?.rest != null ? (int)needs.rest.CurCategory : -1;
+            var breaker = pawn?.mindState?.mentalBreaker;
+            bool breakImminent = breaker != null && (breaker.BreakMajorIsImminent || breaker.BreakExtremeIsImminent);
+            bool inDanger = pawn != null && pawn.Downed;
+            return BatchYieldPolicy.ShouldYield(job.playerForced, food, rest, breakImminent, pawn?.Drafted ?? false, inDanger);
+        }
 
         /// <summary>Should this carried thing's rot be frozen right now? True only while actively crafting at the
         /// bench AND the thing is one of this batch's ingredient defs — so the rot-freeze patch leaves the pawn's

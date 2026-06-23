@@ -72,6 +72,18 @@ namespace HaulersDream.Core
         }
 
         /// <summary>
+        /// Ticks to sow one plant in a cell (vanilla JobDriver_Sow): work accrues at <c>plantWorkSpeed</c> per
+        /// tick until it reaches the plant's <c>sowWork</c>. A pure lower-bound UI estimate (it ignores the small
+        /// per-cell walk between adjacent cells, which the route's leg distances already account for).
+        /// </summary>
+        public static float SowWorkTicks(float sowWork, float plantWorkSpeed)
+        {
+            if (plantWorkSpeed <= 0f || sowWork <= 0f)
+                return 0f;
+            return sowWork / plantWorkSpeed;
+        }
+
+        /// <summary>
         /// Ticks to mine one rock (vanilla JobDriver_Mine): a pick-hit lands every <c>100/miningSpeed</c> ticks
         /// dealing 80 damage to natural rock / 40 to other mineables, until hit points reach zero. Continuous
         /// approximation (good enough for a UI estimate): <c>hitPoints · 100 / (damagePerHit · miningSpeed)</c>.

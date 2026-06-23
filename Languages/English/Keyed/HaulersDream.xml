@@ -773,4 +773,17 @@
   <!-- Smart-overload graph marker -->
   <HaulersDream.Setting.Overload.Ceiling>ceiling</HaulersDream.Setting.Overload.Ceiling>
 
+  <HaulersDream.Batch.SetOvershoot>Batch overshoot: +{0}…</HaulersDream.Batch.SetOvershoot>
+  <HaulersDream.Batch.OvershootDialogTitle>Batch overshoot — {0}</HaulersDream.Batch.OvershootDialogTitle>
+  <HaulersDream.Batch.OvershootLabel>Overshoot by {0} past the target</HaulersDream.Batch.OvershootLabel>
+  <HaulersDream.Batch.OvershootLabelOff>Overshoot: off (stop at the target)</HaulersDream.Batch.OvershootLabelOff>
+  <HaulersDream.Batch.OvershootDesc>For a "Do until you have X" batch: once a colonist starts it (while below X), keep making up to this many more, finishing a useful round number while they're already at the bench instead of stopping the moment the count reaches X. Still capped by available materials.</HaulersDream.Batch.OvershootDesc>
+  <HaulersDream.Batch.TipDoX>Make a set number each time, gathering the whole batch in one trip.</HaulersDream.Batch.TipDoX>
+  <HaulersDream.Batch.TipUntilX>Keep stock topped up to a target count, making a batch whenever it runs low.</HaulersDream.Batch.TipUntilX>
+  <HaulersDream.Batch.TipForever>Keep making this in batches. The colonist finishes the current item, then stops to eat, sleep, or relax if it urgently needs to, putting everything away first.</HaulersDream.Batch.TipForever>
+  <HaulersDream.Batch.TipSize>How many to make per batch. The colonist gathers all the ingredients in one trip.</HaulersDream.Batch.TipSize>
+  <HaulersDream.Batch.TipOvershoot>For "Do until you have X": keep making a little past the target once started, so the colonist finishes a round number while already at the bench.</HaulersDream.Batch.TipOvershoot>
+  <HaulersDream.PlanRoute.SowingGerundFallback>sowing</HaulersDream.PlanRoute.SowingGerundFallback>
+  <HaulersDream.PlanRoute.ModeSowZone>Whole growing zone</HaulersDream.PlanRoute.ModeSowZone>
+  <HaulersDream.PlanRoute.ModeSowZoneDesc>Sow every empty growable cell inside this growing zone — plant the whole field from one click.</HaulersDream.PlanRoute.ModeSowZoneDesc>
 </LanguageData>

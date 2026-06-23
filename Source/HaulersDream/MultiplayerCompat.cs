@@ -144,6 +144,17 @@ namespace HaulersDream
         }
 
         /// <summary>
+        /// Set the per-save "overshoot by Y" amount for a bill (issue #3). Replaces the direct
+        /// <c>GameComponent.SetBatchOvershoot</c> write from the overshoot dialog / bill float-menu (a write to the
+        /// SCRIBED <c>batchOvershoots</c> dictionary — synced world state). Like <see cref="SetBillBatch"/>, callers
+        /// must invoke this ONCE on commit (dialog close / menu pick), never per-frame, to avoid command spam.
+        /// </summary>
+        public static void SetBillBatchOvershoot(Bill bill, int y)
+        {
+            HaulersDreamGameComponent.Instance?.SetBatchOvershoot(bill, y);
+        }
+
+        /// <summary>
         /// The single class that touches <c>Multiplayer.API</c> types in its method BODIES. Every member here is
         /// invoked ONLY from behind the <see cref="Active"/> gate, so in a non-MP game these methods are never
         /// called → never JIT'd → the unshipped API assembly is never resolved. Do NOT call any member of this
@@ -164,8 +175,10 @@ namespace HaulersDream
                 MP.RegisterSyncMethod(typeof(MultiplayerCompat), nameof(SetAutoHaulYields));
                 MP.RegisterSyncMethod(typeof(MultiplayerCompat), nameof(UnloadInventoryNow));
                 MP.RegisterSyncMethod(typeof(MultiplayerCompat), nameof(SetBillBatch));
+                MP.RegisterSyncMethod(typeof(MultiplayerCompat), nameof(SetBillBatchOvershoot));
                 MP.RegisterSyncMethod(typeof(JobDriver_BatchCraft), nameof(JobDriver_BatchCraft.StartBatchCraftSynced));
                 MP.RegisterSyncMethod(typeof(RouteExecutor), nameof(RouteExecutor.ExecuteRouteSynced));
+                MP.RegisterSyncMethod(typeof(SowRouteExecutor), nameof(SowRouteExecutor.ExecuteSowRouteSynced));
             }
 
             internal static bool InMpGame() => MP.IsInMultiplayer;

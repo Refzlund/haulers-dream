@@ -57,15 +57,20 @@ namespace HaulersDream
             EverybodyGetsOneCompat.TryInsertModes(opts, bill);
 
             // --- the three batch variants (only when this recipe can actually be batched) ---
+            // Each carries a hover tooltip (FloatMenuOption.tooltip) explaining what that batch mode does (issue #3
+            // also asks for dropdown tooltips). The tooltip is set on the option after construction.
             if (comp != null && CraftBatchPlanner.CanBatch(bill))
             {
                 string prefix = "HaulersDream.Batch.MenuPrefix".Translate();
-                opts.Add(new FloatMenuOption(prefix + ": " + BillRepeatModeDefOf.RepeatCount.LabelCap, delegate
+                var optDoX = new FloatMenuOption(prefix + ": " + BillRepeatModeDefOf.RepeatCount.LabelCap, delegate
                 {
                     bill.repeatMode = BillRepeatModeDefOf.RepeatCount;
                     EnableBatch(comp, bill);
-                }));
-                opts.Add(new FloatMenuOption(prefix + ": " + BillRepeatModeDefOf.TargetCount.LabelCap, delegate
+                });
+                optDoX.tooltip = "HaulersDream.Batch.TipDoX".Translate();
+                opts.Add(optDoX);
+
+                var optUntil = new FloatMenuOption(prefix + ": " + BillRepeatModeDefOf.TargetCount.LabelCap, delegate
                 {
                     if (!bill.recipe.WorkerCounter.CanCountProducts(bill))
                         Messages.Message("RecipeCannotHaveTargetCount".Translate(), MessageTypeDefOf.RejectInput, historical: false);
@@ -74,20 +79,42 @@ namespace HaulersDream
                         bill.repeatMode = BillRepeatModeDefOf.TargetCount;
                         EnableBatch(comp, bill);
                     }
-                }));
-                opts.Add(new FloatMenuOption(prefix + ": " + BillRepeatModeDefOf.Forever.LabelCap, delegate
+                });
+                optUntil.tooltip = "HaulersDream.Batch.TipUntilX".Translate();
+                opts.Add(optUntil);
+
+                var optForever = new FloatMenuOption(prefix + ": " + BillRepeatModeDefOf.Forever.LabelCap, delegate
                 {
                     bill.repeatMode = BillRepeatModeDefOf.Forever;
                     EnableBatch(comp, bill);
-                }));
+                });
+                optForever.tooltip = "HaulersDream.Batch.TipForever".Translate();
+                opts.Add(optForever);
 
                 // Per-bill size: a small slider popup (the bills tab row is too cramped for an inline stepper).
                 // Shown only while this bill is batching; the label carries the current size.
                 if (comp.IsBatchBill(bill))
-                    opts.Add(new FloatMenuOption("HaulersDream.Batch.SetSize".Translate(comp.BatchSizeOf(bill)), delegate
+                {
+                    var optSize = new FloatMenuOption("HaulersDream.Batch.SetSize".Translate(comp.BatchSizeOf(bill)), delegate
                     {
                         Find.WindowStack.Add(new Dialog_BatchSize(bill));
-                    }));
+                    });
+                    optSize.tooltip = "HaulersDream.Batch.TipSize".Translate();
+                    opts.Add(optSize);
+
+                    // Per-bill "overshoot by Y" (issue #3): meaningful ONLY for a Do-until-X (TargetCount) batch —
+                    // it widens the stop target from X to X+Y. Shown only when this bill is batching AND in
+                    // TargetCount mode; the label carries the current Y (0 = off / stop exactly at X).
+                    if (bill.repeatMode == BillRepeatModeDefOf.TargetCount)
+                    {
+                        var optOver = new FloatMenuOption("HaulersDream.Batch.SetOvershoot".Translate(comp.BatchOvershootOf(bill)), delegate
+                        {
+                            Find.WindowStack.Add(new Dialog_BatchOvershoot(bill));
+                        });
+                        optOver.tooltip = "HaulersDream.Batch.TipOvershoot".Translate();
+                        opts.Add(optOver);
+                    }
+                }
             }
 
             Find.WindowStack.Add(new FloatMenu(opts));
@@ -137,22 +164,39 @@ namespace HaulersDream
     [HarmonyPatch(typeof(Bill_Production), nameof(Bill_Production.Clone))]
     public static class Patch_Bill_Production_Clone
     {
+        /// <summary>The batch state carried from a source bill to its clone: <see cref="size"/> (0 = source was NOT
+        /// batching, so AddBill won't re-batch a pasted plain bill) and <see cref="overshoot"/> (the "overshoot by Y"
+        /// amount, carried alongside size so a pasted batch bill keeps both — issue #3).</summary>
+        internal sealed class CarryState
+        {
+            public int size;
+            public int overshoot;
+            public CarryState(int size, int overshoot) { this.size = size; this.overshoot = overshoot; }
+        }
+
         // Weak keys: an un-pasted clipboard clone is collected without leaking; entries are drained in AddBill.
-        internal static readonly ConditionalWeakTable<Bill, StrongBox<int>> Carry =
-            new ConditionalWeakTable<Bill, StrongBox<int>>();
+        internal static readonly ConditionalWeakTable<Bill, CarryState> Carry =
+            new ConditionalWeakTable<Bill, CarryState>();
 
         static void Postfix(Bill_Production __instance, ref Bill __result)
         {
             if (!(__result is Bill_Production clone))
                 return;
             var comp = HaulersDreamGameComponent.Instance;
-            int size = 0; // 0 = source was NOT batching (kept so AddBill won't re-batch a pasted plain bill)
+            int size = 0;       // 0 = source was NOT batching (kept so AddBill won't re-batch a pasted plain bill)
+            int overshoot = 0;  // carried only when the source was batching (overshoot is meaningless on a plain bill)
             if (comp != null && comp.IsBatchBill(__instance))
+            {
                 size = comp.BatchSizeOf(__instance);              // source is a live bill (real loadID)
-            else if (Carry.TryGetValue(__instance, out var box))
-                size = box.Value;                                  // source is itself an un-IDed clone (clipboard)
+                overshoot = comp.BatchOvershootOf(__instance);
+            }
+            else if (Carry.TryGetValue(__instance, out var prev))
+            {
+                size = prev.size;                                  // source is itself an un-IDed clone (clipboard)
+                overshoot = prev.overshoot;
+            }
             Carry.Remove(clone);
-            Carry.Add(clone, new StrongBox<int>(size));
+            Carry.Add(clone, new CarryState(size, overshoot));
         }
     }
 
@@ -175,11 +219,14 @@ namespace HaulersDream
             var comp = HaulersDreamGameComponent.Instance;
             if (comp == null)
                 return;
-            if (Patch_Bill_Production_Clone.Carry.TryGetValue(bill, out var box))
+            if (Patch_Bill_Production_Clone.Carry.TryGetValue(bill, out var carried))
             {
                 Patch_Bill_Production_Clone.Carry.Remove(bill);
-                if (box.Value > 0)
-                    comp.SetBatch(bill, true, box.Value);          // copied/pasted batch bill keeps its exact size
+                if (carried.size > 0)
+                {
+                    comp.SetBatch(bill, true, carried.size);       // copied/pasted batch bill keeps its exact size
+                    comp.SetBatchOvershoot(bill, carried.overshoot); // …and its overshoot-by-Y (0 = none; key removed)
+                }
                 return;                                            // a clone never falls through to the default
             }
             var s = HaulersDreamMod.Settings;
