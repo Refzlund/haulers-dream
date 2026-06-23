@@ -80,6 +80,8 @@
 <HaulersDream.Setting.PlanCraftingDesc>Lo strumento di pianificazione col tasto destro sui banchi da lavoro che esegue un ordine di lavoro più volte con un solo viaggio per gli ingredienti. Disattivato = l'opzione del menù è nascosta.</HaulersDream.Setting.PlanCraftingDesc>
 <HaulersDream.Setting.BatchByDefault>Raggruppa in lotti i nuovi ordini di lavoro per impostazione predefinita</HaulersDream.Setting.BatchByDefault>
 <HaulersDream.Setting.BatchByDefaultDesc>Gli ordini di lavoro di produzione e cucina che AGGIUNGI d'ora in poi partono in modalità "lotto": il colono recupera un intero lotto di ingredienti in un solo viaggio, li produce tutti al banco (il cibo non si guasta mentre lavora), poi trasporta tutto al deposito. Riguarda solo gli ordini di lavoro appena aggiunti — quelli esistenti mantengono l'impostazione attuale.</HaulersDream.Setting.BatchByDefaultDesc>
+  <HaulersDream.Setting.AllowBatchUnderCommonSense>Batch even with Common Sense active</HaulersDream.Setting.AllowBatchUnderCommonSense>
+  <HaulersDream.Setting.AllowBatchUnderCommonSenseDesc>Normally Hauler's Dream lets Common Sense run the cooking and crafting, so bills are made one item at a time. Turn this on to let bills you marked for batching still batch, while Common Sense keeps handling the rest. Batch crafting uses its own separate job, so it won't clash with Common Sense's "clean first" and "haul all ingredients" features.</HaulersDream.Setting.AllowBatchUnderCommonSenseDesc>
 <HaulersDream.Setting.DefaultBatchSize>Dimensione lotto predefinita: {0}</HaulersDream.Setting.DefaultBatchSize>
 <HaulersDream.Batch.MenuPrefix>Lotto</HaulersDream.Batch.MenuPrefix>
 <HaulersDream.Batch.SetSize>Dimensione lotto: {0}…</HaulersDream.Batch.SetSize>

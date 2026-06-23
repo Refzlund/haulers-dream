@@ -80,6 +80,8 @@
 <HaulersDream.Setting.PlanCraftingDesc>Het rechtsklik-planhulpmiddel op werkbanken dat een taak meerdere keren batcht met één ingrediëntentrip. Uit = de menu-optie is verborgen.</HaulersDream.Setting.PlanCraftingDesc>
 <HaulersDream.Setting.BatchByDefault>Nieuwe taken standaard batchen</HaulersDream.Setting.BatchByDefault>
 <HaulersDream.Setting.BatchByDefaultDesc>Vervaardigings- en kooktaken die je vanaf nu TOEVOEGT starten in "batch"-modus: de kolonist haalt een hele batch ingrediënten in één trip, maakt ze allemaal aan de bank (eten bederft niet terwijl ze werken), en sjouwt vervolgens alles naar de opslag. Beïnvloedt alleen nieuw toegevoegde taken — bestaande taken behouden hun huidige instelling.</HaulersDream.Setting.BatchByDefaultDesc>
+  <HaulersDream.Setting.AllowBatchUnderCommonSense>Batch even with Common Sense active</HaulersDream.Setting.AllowBatchUnderCommonSense>
+  <HaulersDream.Setting.AllowBatchUnderCommonSenseDesc>Normally Hauler's Dream lets Common Sense run the cooking and crafting, so bills are made one item at a time. Turn this on to let bills you marked for batching still batch, while Common Sense keeps handling the rest. Batch crafting uses its own separate job, so it won't clash with Common Sense's "clean first" and "haul all ingredients" features.</HaulersDream.Setting.AllowBatchUnderCommonSenseDesc>
 <HaulersDream.Setting.DefaultBatchSize>Standaard batchgrootte: {0}</HaulersDream.Setting.DefaultBatchSize>
 <HaulersDream.Batch.MenuPrefix>Batch</HaulersDream.Batch.MenuPrefix>
 <HaulersDream.Batch.SetSize>Batchgrootte: {0}…</HaulersDream.Batch.SetSize>

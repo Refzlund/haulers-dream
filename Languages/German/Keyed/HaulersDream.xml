@@ -80,6 +80,8 @@
 <HaulersDream.Setting.PlanCraftingDesc>Das Rechtsklick-Planungswerkzeug an Werkbänken, das einen Auftrag mehrmals mit einer Zutatenfahrt stapelt. Aus = die Menüoption ist verborgen.</HaulersDream.Setting.PlanCraftingDesc>
 <HaulersDream.Setting.BatchByDefault>Neue Aufträge standardmäßig stapeln</HaulersDream.Setting.BatchByDefault>
 <HaulersDream.Setting.BatchByDefaultDesc>Herstellungs- und Kochaufträge, die du ab jetzt HINZUFÜGST, beginnen im „Stapel“-Modus: Der Kolonist holt einen ganzen Stapel Zutaten in einer Fahrt, stellt sie alle an der Werkbank her (Nahrung verdirbt nicht, während er arbeitet) und transportiert dann alles zum Lager. Betrifft nur neu hinzugefügte Aufträge — bestehende Aufträge behalten ihre aktuelle Einstellung.</HaulersDream.Setting.BatchByDefaultDesc>
+  <HaulersDream.Setting.AllowBatchUnderCommonSense>Batch even with Common Sense active</HaulersDream.Setting.AllowBatchUnderCommonSense>
+  <HaulersDream.Setting.AllowBatchUnderCommonSenseDesc>Normally Hauler's Dream lets Common Sense run the cooking and crafting, so bills are made one item at a time. Turn this on to let bills you marked for batching still batch, while Common Sense keeps handling the rest. Batch crafting uses its own separate job, so it won't clash with Common Sense's "clean first" and "haul all ingredients" features.</HaulersDream.Setting.AllowBatchUnderCommonSenseDesc>
 <HaulersDream.Setting.DefaultBatchSize>Standard-Stapelgröße: {0}</HaulersDream.Setting.DefaultBatchSize>
 <HaulersDream.Batch.MenuPrefix>Stapel</HaulersDream.Batch.MenuPrefix>
 <HaulersDream.Batch.SetSize>Stapelgröße: {0}…</HaulersDream.Batch.SetSize>

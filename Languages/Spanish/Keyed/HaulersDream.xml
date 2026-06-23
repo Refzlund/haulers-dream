@@ -80,6 +80,8 @@
 <HaulersDream.Setting.PlanCraftingDesc>La herramienta de planificación con clic derecho en las mesas de trabajo que repite una tarea varias veces con un solo viaje de ingredientes. Desactivado = la opción del menú queda oculta.</HaulersDream.Setting.PlanCraftingDesc>
 <HaulersDream.Setting.BatchByDefault>Agrupar las nuevas tareas en lote por defecto</HaulersDream.Setting.BatchByDefault>
 <HaulersDream.Setting.BatchByDefaultDesc>Las tareas de fabricación y de cocina que AÑADAS a partir de ahora empiezan en modo «lote»: el colono trae todo un lote de ingredientes en un viaje, los elabora todos en la mesa (la comida no se echa a perder mientras trabaja) y luego lo transporta todo al almacén. Solo afecta a las tareas recién añadidas; las tareas existentes conservan su ajuste actual.</HaulersDream.Setting.BatchByDefaultDesc>
+  <HaulersDream.Setting.AllowBatchUnderCommonSense>Batch even with Common Sense active</HaulersDream.Setting.AllowBatchUnderCommonSense>
+  <HaulersDream.Setting.AllowBatchUnderCommonSenseDesc>Normally Hauler's Dream lets Common Sense run the cooking and crafting, so bills are made one item at a time. Turn this on to let bills you marked for batching still batch, while Common Sense keeps handling the rest. Batch crafting uses its own separate job, so it won't clash with Common Sense's "clean first" and "haul all ingredients" features.</HaulersDream.Setting.AllowBatchUnderCommonSenseDesc>
 <HaulersDream.Setting.DefaultBatchSize>Tamaño de lote por defecto: {0}</HaulersDream.Setting.DefaultBatchSize>
 <HaulersDream.Batch.MenuPrefix>Lote</HaulersDream.Batch.MenuPrefix>
 <HaulersDream.Batch.SetSize>Tamaño de lote: {0}…</HaulersDream.Batch.SetSize>

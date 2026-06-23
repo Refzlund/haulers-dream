@@ -967,6 +967,10 @@ namespace HaulersDream
             craftBatchTimeoutHours = Mathf.Round(HDSettingsUI.Slider(c, "HaulersDream.Setting.CraftBatchTimeout.Lab".Translate(),
                 craftBatchTimeoutHours, 0f, 8f, craftBatchTimeoutHours <= 0f ? OffLabel : Hours(craftBatchTimeoutHours),
                 "HaulersDream.Setting.CraftBatchTimeout.Help".Translate()) * 2f) / 2f;
+            // Common Sense compat opt-in — only meaningful (and only shown) when Common Sense is installed.
+            if (CommonSenseCompat.IsActive)
+                allowBatchUnderCommonSense = HDSettingsUI.Checkbox(c, "HaulersDream.Setting.AllowBatchUnderCommonSense".Translate(),
+                    allowBatchUnderCommonSense, "HaulersDream.Setting.AllowBatchUnderCommonSenseDesc".Translate());
 
             HDSettingsUI.Header(c, "HaulersDream.Head.RoutePlanning".Translate());
             routeMaxAmount = Mathf.RoundToInt(HDSettingsUI.Slider(c, "HaulersDream.Setting.RouteMaxAmount.Lab".Translate(),

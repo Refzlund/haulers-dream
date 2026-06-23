@@ -44,9 +44,15 @@ namespace HaulersDream
             // the "10 jobs in one tick" loop. Matches the injection + InventoryRoute gates (single source of truth).
             if (!BillRouteGate.WorkerMayShareCraft(pawn))
                 return;
-            // Cede to Common Sense when it owns the DoBill driver — don't batch-convert into a re-haul loop.
-            // (Moved below the cheap gates above: the reflective toggle read now happens only on a convertible job.)
-            if (CommonSenseCompat.OwnsDoBillFlow)
+            // Common Sense: by default HD cedes the whole DoBill flow to CS (its cleaning / haul-all toils
+            // re-deposit gathered ingredients onto the bench and would loop). But batch crafting runs on a
+            // SEPARATE driver (HaulersDream_BatchCraft) whose MakeNewToils override CS never patches — so CS's
+            // re-depositing toils structurally cannot run on a batch job, and the loop drivers (the inventory-route
+            // gather + the chooser ingredient-share, both still ceded) stay closed. The opt-in
+            // `allowBatchUnderCommonSense` lets batch-flagged bills batch even while CS owns the cook flow; OFF by
+            // default so existing CS users are unchanged. (Reflective toggle read happens only on a convertible job.)
+            if (CommonSenseCompat.OwnsDoBillFlow
+                && !(HaulersDreamMod.Settings?.allowBatchUnderCommonSense ?? false))
                 return;
             var bill = job.bill;
 

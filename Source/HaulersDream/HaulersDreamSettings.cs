@@ -116,6 +116,12 @@ namespace HaulersDream
         // Batch-Y bill mode: when ON, a newly-created batchable bill starts in batch mode at defaultBatchSize.
         public bool batchByDefault = false; // OFF by default so existing players see no change until they opt in
         public int defaultBatchSize = 10;   // initial per-batch quantity for a freshly-batched bill
+        // Common Sense compat: HD normally cedes the whole DoBill flow to Common Sense (its cleaning / haul-all
+        // toils re-deposit HD's gathered ingredients and would loop). Batch crafting is a SEPARATE driver
+        // (HaulersDream_BatchCraft) Common Sense never patches, so it can run safely under CS. This opt-in lets
+        // batch-flagged bills batch even while Common Sense owns the cook flow; the looping inventory-gather and
+        // ingredient-share paths stay ceded regardless. OFF by default so existing CS users are unchanged.
+        public bool allowBatchUnderCommonSense = false;
 
         // --- bulk hauling (the native Pick-Up-And-Haul: a haul trip sweeps everything around into inventory) ---
         public bool bulkHaul = true;
@@ -529,6 +535,7 @@ namespace HaulersDream
             Scribe_Values.Look(ref planCrafting, "planCrafting", true);
             Scribe_Values.Look(ref batchByDefault, "batchByDefault", false);
             Scribe_Values.Look(ref defaultBatchSize, "defaultBatchSize", 10);
+            Scribe_Values.Look(ref allowBatchUnderCommonSense, "allowBatchUnderCommonSense", false);
             Scribe_Values.Look(ref autoStripMode, "autoStripMode", AutoStripMode.AllHauls);
             Scribe_Values.Look(ref stripColonistCorpses, "stripColonistCorpses", false);
             Scribe_Values.Look(ref taintedSmeltablePolicy, "taintedSmeltablePolicy", TaintedApparelPolicy.Take);
@@ -674,6 +681,7 @@ namespace HaulersDream
             planCrafting = true;
             batchByDefault = false;
             defaultBatchSize = 10;
+            allowBatchUnderCommonSense = false;
             autoStripMode = AutoStripMode.AllHauls;
             stripColonistCorpses = false;
             taintedSmeltablePolicy = TaintedApparelPolicy.Take;

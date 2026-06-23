@@ -80,6 +80,8 @@
 <HaulersDream.Setting.PlanCraftingDesc>작업대에서 한 번의 재료 이동으로 작업 지시를 여러 번 묶어 처리하는 우클릭 계획 도구입니다. 꺼짐 = 메뉴 옵션이 숨겨집니다.</HaulersDream.Setting.PlanCraftingDesc>
 <HaulersDream.Setting.BatchByDefault>새 작업 지시를 기본적으로 일괄 처리</HaulersDream.Setting.BatchByDefault>
 <HaulersDream.Setting.BatchByDefaultDesc>지금부터 추가하는 제작 및 요리 작업 지시가 "일괄" 모드로 시작됩니다: 정착민이 한 번 이동으로 재료 한 묶음 전체를 가져와 작업대에서 전부 만든 뒤(작업 중에는 음식이 상하지 않음), 모두 저장고로 운반합니다. 새로 추가된 작업 지시에만 영향을 주며, 기존 작업 지시는 현재 설정을 유지합니다.</HaulersDream.Setting.BatchByDefaultDesc>
+  <HaulersDream.Setting.AllowBatchUnderCommonSense>Batch even with Common Sense active</HaulersDream.Setting.AllowBatchUnderCommonSense>
+  <HaulersDream.Setting.AllowBatchUnderCommonSenseDesc>Normally Hauler's Dream lets Common Sense run the cooking and crafting, so bills are made one item at a time. Turn this on to let bills you marked for batching still batch, while Common Sense keeps handling the rest. Batch crafting uses its own separate job, so it won't clash with Common Sense's "clean first" and "haul all ingredients" features.</HaulersDream.Setting.AllowBatchUnderCommonSenseDesc>
 <HaulersDream.Setting.DefaultBatchSize>기본 일괄 크기: {0}</HaulersDream.Setting.DefaultBatchSize>
 <HaulersDream.Batch.MenuPrefix>일괄</HaulersDream.Batch.MenuPrefix>
 <HaulersDream.Batch.SetSize>일괄 크기: {0}…</HaulersDream.Batch.SetSize>
