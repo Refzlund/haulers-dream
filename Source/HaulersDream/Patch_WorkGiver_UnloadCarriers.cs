@@ -95,6 +95,22 @@ namespace HaulersDream
             if (CarrierIsMidLoadOrHaul(carrier))
                 return false;
 
+            // 2b. Directed-activity stand-down (AUTONOMOUS only): the carrier itself is engaged in a Lord/duty-driven
+            //     activity — most importantly an Anomaly psychic-ritual TARGET (a role pawn, usually a prisoner, given
+            //     a ritual duty). HD's bulk unload empties the WHOLE inventory in ONE atomic visit, so it strips the
+            //     target before the ritual locks it and the ritual is CALLED OFF (the reported bug — vanilla's slow
+            //     one-stack-per-trip unload is interruptible and didn't trip it, which is why PUAH users never saw it).
+            //     Mirrors the GetLord/duty stand-down every other autonomous HD inventory path has. Gated on !forced so
+            //     a player work-prioritised "unload now" (and the HD bulk-unload float-menu order, which bypasses this
+            //     gate entirely) still overrides. Regression-safe for the feature's main case: a NON-roaming arrived
+            //     caravan pack animal is spawned with no Lord/duty (and cancelled-transporter colonists have their Lord
+            //     removed via CompTransporter.TryRemoveLord), so it unloads normally. A ROAMING (rope-managed) animal
+            //     briefly carries a LordJob_ReturnedCaravan penning duty while being led to a pen — during that window
+            //     HD defers to vanilla's one-stack unload, which is benign and self-resolves once it's penned (the
+            //     UnloadEverything flag stays set, so HD resumes the next scan).
+            if (!forced && PawnUnloadChecker.InDirectedActivity(carrier))
+                return false;
+
             // 3. The hauler's hands must be empty — the visit ENDS by putting the overflow stack into the carry
             //    tracker, so a pre-occupied carry tracker would block that and strand the visit.
             if (pawn.carryTracker.innerContainer != null && pawn.carryTracker.innerContainer.Count > 0)

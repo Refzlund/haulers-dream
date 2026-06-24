@@ -14,7 +14,11 @@ rmSync(stage, { recursive: true, force: true })
 mkdirSync(stage, { recursive: true })
 
 // Mod content. PDBs are excluded — players don't need them and they bloat the upload.
-const trees = ['About', 'Defs', 'Patches', 'Languages']
+// Keep this list in sync with the csproj DeployToRimWorld target's content trees (About/Defs/
+// Patches/Languages/Textures): a folder missing here ships to the Workshop without it even though
+// it works in a local deploy. (Textures was the icon-less-on-Workshop bug — the settings icons live
+// under Textures/HaulersDream/Settings and load fine locally but were never uploaded.)
+const trees = ['About', 'Defs', 'Patches', 'Languages', 'Textures']
 for (const tree of trees) {
 	const src = resolve(repoRoot, tree)
 	if (existsSync(src)) cpSync(src, resolve(stage, tree), { recursive: true })

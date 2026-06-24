@@ -834,19 +834,19 @@ namespace HaulersDream
             var s = HaulersDreamMod.Settings;
             if (s == null)
                 return false;
-            // #4 Lord-activity stand-down: a pawn under a Lord is in a DIRECTED group activity — a ritual/ceremony
-            // (the gatherer carries bioferrite / other offerings into its inventory ON PURPOSE, and a psychic-
-            // ritual offering toil reads pawn.inventory directly), caravan forming, a party / marriage / gathering,
-            // a hunt or defend assignment, a quest lord, etc. HD must never autonomously scoop INTO, ADOPT, or
-            // EMPTY such a pawn's inventory — doing so steals the ritual offering (the bug report) or disassembles
-            // a forming caravan's hand-loaded cargo. GetLord()!=null SUBSUMES IsFormingCaravan (verified:
-            // IsFormingCaravan == GetLord() + a LordJob_FormAndSendCaravan), so this one gate covers every Lord-
-            // directed activity — vanilla, DLC (Ideology rituals, Anomaly psychic rituals), and modded — without
-            // enumerating LordJob types. This is the AUTONOMOUS eligibility gate; explicit PLAYER orders are
-            // unaffected, because every forced path bypasses IsEligible (PawnUnloadChecker's forced unload short-
-            // circuits with `forced ||`; BulkRefuel / TransportLoad pass playerOrder; a forced HaulNearby degrades
-            // to a plain vanilla haul). Once the Lord ends (GetLord()==null) HD resumes normally next interval.
-            if (p.GetLord() != null)
+            // #4 Directed-activity stand-down: a pawn under a Lord OR driven by a ritual/quest DUTY is in a DIRECTED
+            // activity — a ritual/ceremony (the gatherer carries bioferrite / other offerings into its inventory ON
+            // PURPOSE, and a psychic-ritual offering toil reads pawn.inventory directly; the ritual TARGET is driven
+            // by a duty), caravan forming, a party / marriage / gathering, a hunt or defend assignment, a quest lord,
+            // etc. HD must never autonomously scoop INTO, ADOPT, or EMPTY such a pawn's inventory — doing so steals
+            // the ritual offering / target (the bug reports) or disassembles a forming caravan's hand-loaded cargo.
+            // InDirectedActivity = GetLord()!=null (subsumes IsFormingCaravan) OR mindState.duty!=null (covers a
+            // ritual target that isn't in the Lord's ownedPawns), covering every directed activity — vanilla, DLC
+            // (Ideology/Anomaly rituals), and modded — without enumerating LordJob/duty types. This is the AUTONOMOUS
+            // eligibility gate; explicit PLAYER orders are unaffected, because every forced path bypasses IsEligible
+            // (PawnUnloadChecker's forced unload short-circuits with `forced ||`; BulkRefuel / TransportLoad pass
+            // playerOrder; a forced HaulNearby degrades to a plain vanilla haul). Resumes when the activity ends.
+            if (PawnUnloadChecker.InDirectedActivity(p))
                 return false;
             bool eligible = EligibilityPolicy.IsEligible(
                 isMechanoid: p.RaceProps.IsMechanoid,

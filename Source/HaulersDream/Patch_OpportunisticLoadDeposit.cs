@@ -239,7 +239,7 @@ namespace HaulersDream
         /// reused driver skips its fill phase and only deposits the pawn's carried tagged surplus the target still
         /// wants. Returns null if the job can't make its (trivial, empty-queue) reservations.
         /// </summary>
-        private static Job BuildDepositOnlyJob(Pawn pawn, IManagedLoadable loadable)
+        internal static Job BuildDepositOnlyJob(Pawn pawn, IManagedLoadable loadable)
         {
             var target = loadable.GetParentThing();
             if (target == null)

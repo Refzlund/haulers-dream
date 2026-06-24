@@ -51,7 +51,7 @@ namespace HaulersDream
             // the autonomous adopt+unload down independently), but this explicit early-out makes the intent
             // unmissable and also suppresses an autonomous unload of ALREADY-TAGGED loot mid-activity. A FORCED
             // unload (the "unload now" gizmo, the bulk-haul finish flush) is a deliberate override and still runs.
-            if (!forced && InLordActivity(pawn))
+            if (!forced && InDirectedActivity(pawn))
                 return;
 
             // A pawn mid bill-prep-gather is CARRYING INGREDIENTS TO A BENCH ON PURPOSE — an auto-unload queued now
@@ -201,13 +201,24 @@ namespace HaulersDream
             }
         }
 
-        /// <summary>True if the pawn is currently under a Lord — i.e. engaged in a DIRECTED group activity (a
-        /// ritual/ceremony, caravan forming, a party/gathering/marriage, a quest lord). <c>GetLord()!=null</c>
-        /// subsumes <see cref="CaravanFormingUtility.IsFormingCaravan"/> (which is itself a GetLord + LordJob check),
-        /// so it is the single robust signal that HD's autonomous inventory manipulation must stand down — the
-        /// pawn's inventory is purposeful (an offering, hand-loaded cargo) and must not be scooped/adopted/emptied.
-        /// Vanilla + DLC + modded Lord activities are all covered without enumerating LordJob types.</summary>
-        internal static bool InLordActivity(Pawn p) => p?.GetLord() != null;
+        /// <summary>True if the pawn is engaged in a DIRECTED activity HD's autonomous inventory manipulation must
+        /// stand down for (a ritual/ceremony, caravan forming, a party/gathering/marriage, a quest lord). Two signals,
+        /// EITHER sufficient:
+        /// <list type="bullet">
+        /// <item><c>GetLord()!=null</c> — a member of a Lord's ownedPawns. Subsumes
+        /// <see cref="CaravanFormingUtility.IsFormingCaravan"/> (itself a GetLord + LordJob check). Covers
+        /// participants/gatherers (a pawn carrying a ritual offering ON PURPOSE).</item>
+        /// <item><c>mindState.duty!=null</c> — driven by a PawnDuty even if NOT in the Lord's ownedPawns. This is
+        /// the load-bearing addition for a ritual TARGET: an Anomaly psychic-ritual target is given a ritual duty
+        /// (e.g. DeliverPawnToPsychicRitualCell) and must not be emptied out from under the ritual — the previous
+        /// <c>GetLord()</c>-only gate let a hauler bulk-unload such a target and FAIL the ritual (the reported bug).
+        /// A normal idle/working colonist has a NULL duty, so this never over-suppresses ordinary hauling (the same
+        /// signal <see cref="OpportunisticUnload"/> already uses).</item>
+        /// </list>
+        /// Vanilla + DLC + modded directed activities are covered without enumerating LordJob/duty types. The pawn's
+        /// inventory is purposeful (an offering, hand-loaded cargo) and must not be scooped/adopted/emptied. Explicit
+        /// player (forced) orders bypass this at each call site.</summary>
+        internal static bool InDirectedActivity(Pawn p) => p != null && (p.GetLord() != null || p.mindState?.duty != null);
 
         /// <summary>
         /// Surplus adoption: tag inventory stacks with surplus above the pawn's keep-stock, so stock HD never
@@ -224,13 +235,13 @@ namespace HaulersDream
             var inner = pawn.inventory?.innerContainer;
             if (inner == null || comp == null)
                 return;
-            // #4 Lord-activity stand-down (REQUIRED here even though the autonomous caller is already gated): the
+            // #4 Directed-activity stand-down (REQUIRED here even though the autonomous caller is already gated): the
             // FORCED unload path reaches AdoptSurplusInventory with eligible==true (forced) and only !IsFormingCaravan
-            // — so a ritual pawn (a Lord, but NOT forming a caravan) would have its untagged offering ADOPTED (tagged)
-            // and then shipped off. Guarding here makes adoption never touch ANY Lord-directed pawn's purposeful
-            // inventory, regardless of caller or forced flag. (GetLord()!=null subsumes the existing IsFormingCaravan
-            // gate at the call site.)
-            if (pawn.GetLord() != null)
+            // — so a ritual pawn (a Lord/duty, but NOT forming a caravan) would have its untagged offering ADOPTED
+            // (tagged) and then shipped off. Guarding here makes adoption never touch ANY directed pawn's purposeful
+            // inventory, regardless of caller or forced flag. (InDirectedActivity subsumes the IsFormingCaravan gate
+            // at the call site and also covers a ritual target driven by a duty without Lord membership.)
+            if (InDirectedActivity(pawn))
                 return;
             var settings = HaulersDreamMod.Settings;
             int adopted = 0;
