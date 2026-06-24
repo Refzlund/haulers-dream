@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using HarmonyLib;
 using RimWorld;
 using Verse;
@@ -49,6 +50,15 @@ namespace HaulersDream
                 return true; // not the loading lord (drafted manual enter, etc.) -> vanilla
             int group = duty.transportersGroup;
             if (group < 0)
+                return true;
+            // Authoritative "loading is done" signal overrides HD's in-flight gate: the instant the group's GOODS
+            // manifest is empty, let the pawn board — otherwise a lingering claim or a still-tearing-down HD loader
+            // job keeps the pawn "waiting" after the cargo is already aboard (the reported bug). NOTE the boarding
+            // pawns are themselves listed in leftToLoad until they enter, so we check for any NON-PAWN transferable
+            // still to load, NOT AnyInGroupHasAnythingLeftToLoad (which stays true while pawns wait). While real
+            // goods remain (claimed-but-not-yet-deposited cargo is still in leftToLoad), this is false and the gate
+            // below still blocks — so it can never let a pawn board before the cargo is actually in.
+            if (!BulkLoadAntiConflict.GroupHasGoodsLeftToLoad(pawn.Map, group))
                 return true;
             var ledger = HaulersDreamGameComponent.Instance;
             if (ledger != null && ledger.LoadAnyClaimsInProgress(group))
@@ -111,6 +121,13 @@ namespace HaulersDream
             var portal = duty.focus.Thing as MapPortal;
             if (portal == null)
                 return true;
+            // Authoritative "loading is done" signal (mirrors the transporter gate): once the portal's GOODS
+            // manifest is empty, let the pawn enter even if an HD claim/loader hasn't fully torn down — otherwise
+            // the pawn keeps "waiting" after the cargo is already in. Check NON-PAWN transferables (entering pawns
+            // sit in leftToLoad until they enter); claimed-but-undeposited goods are still listed, so this can't let
+            // a pawn enter early.
+            if (!BulkLoadAntiConflict.HasGoodsLeftToLoad(portal.leftToLoad))
+                return true;
             var ledger = HaulersDreamGameComponent.Instance;
             if (ledger != null && ledger.LoadAnyClaimsInProgress(MapPortalBulkTarget.LedgerKey(portal)))
             {
@@ -131,6 +148,43 @@ namespace HaulersDream
     /// <summary>Shared helpers for the anti-conflict patches.</summary>
     internal static class BulkLoadAntiConflict
     {
+        // Reused scratch for the per-group transporter lookup (board gate runs on the main think-tree thread only,
+        // for the handful of pawns under a load-and-enter duty — not a hot path; cleared after each use).
+        private static readonly List<CompTransporter> tmpTransporters = new List<CompTransporter>();
+
+        /// <summary>True if any transporter in <paramref name="groupID"/> still has a NON-PAWN (cargo) transferable
+        /// left to load. The boarding pawns sit in <c>leftToLoad</c> until they enter, so this deliberately ignores
+        /// pawn transferables — it answers "is there still CARGO to load?", the authoritative board-release signal.</summary>
+        internal static bool GroupHasGoodsLeftToLoad(Map map, int groupID)
+        {
+            if (map == null || groupID < 0)
+                return false;
+            TransporterUtility.GetTransportersInGroup(groupID, map, tmpTransporters);
+            bool goods = false;
+            for (int i = 0; i < tmpTransporters.Count && !goods; i++)
+                goods = HasGoodsLeftToLoad(tmpTransporters[i]?.leftToLoad);
+            tmpTransporters.Clear();
+            return goods;
+        }
+
+        /// <summary>True if <paramref name="leftToLoad"/> contains any NON-PAWN transferable still owing units —
+        /// i.e. real cargo, not a boarding/entering pawn (which sits in the manifest until it enters).</summary>
+        internal static bool HasGoodsLeftToLoad(List<TransferableOneWay> leftToLoad)
+        {
+            if (leftToLoad == null)
+                return false;
+            for (int i = 0; i < leftToLoad.Count; i++)
+            {
+                var tr = leftToLoad[i];
+                if (tr == null || tr.CountToTransfer <= 0)
+                    continue;
+                if (tr.AnyThing is Pawn)
+                    continue; // a boarding pawn, not cargo
+                return true;
+            }
+            return false;
+        }
+
         /// <summary>True if a spawned pawn on this transporter's map runs HD's bulk-load driver targeting this group.</summary>
         internal static bool AnyHdLoaderForGroup(CompTransporter transporter)
         {
