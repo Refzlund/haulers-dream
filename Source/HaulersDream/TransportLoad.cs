@@ -83,6 +83,60 @@ namespace HaulersDream
         /// <summary>The shared "potential bulk work" gate, with the feature flag resolved by the caller (so the portal
         /// path can gate on <c>enableBulkLoadPortal</c> while the transporter path gates on
         /// <c>enableBulkLoadTransporters</c>). Everything else is identical.</summary>
+        /// <summary>
+        /// A pawn that is a BOARDING PASSENGER of THIS loadable (its boarding-lord duty targets this exact
+        /// transporter group / portal). Such a pawn is Lord-driven, so <see cref="YieldRouter.IsEligible"/> stands it
+        /// down for every autonomous HD action — but loading the very shuttle/portal it is about to board IS its
+        /// directed task, not an interruption of one. Admitting it here (and ONLY here, for ITS OWN loadable) lets a
+        /// selected passenger bulk-load instead of one-stack vanilla loading, without loosening the global eligibility
+        /// gate that protects ritual/caravan/quest inventories. Scoped tightly: only the two boarding duties, only when
+        /// the duty's group/focus matches this loadable; any other duty (ritual, caravan, …) and any other loadable
+        /// fall through to the normal IsEligible reject. The board/launch timing is still governed by the anti-conflict
+        /// board gate (it releases on the goods manifest emptying), so this can't cause a premature launch.
+        /// </summary>
+        private static bool IsBoardingPassengerFor(Pawn pawn, IManagedLoadable loadable)
+        {
+            var duty = pawn?.mindState?.duty;
+            if (duty == null || loadable == null)
+                return false;
+            if (loadable.Kind == LoadableKind.Transporter && duty.def == DutyDefOf.LoadAndEnterTransporters)
+                return duty.transportersGroup >= 0 && duty.transportersGroup == loadable.GetUniqueLoadID();
+            if (loadable.Kind == LoadableKind.Portal && duty.def == DutyDefOf.LoadAndEnterPortal)
+                return duty.focus.Thing != null && duty.focus.Thing == loadable.GetParentThing();
+            return false;
+        }
+
+        /// <summary>True if the pawn is carrying a tagged inventory stack that the reused deposit driver would
+        /// actually MOVE into <paramref name="loadable"/> — i.e. the stack is SURPLUS above the pawn's keep-stock
+        /// (<see cref="InventorySurplus.SurplusOf"/> &gt; 0) AND the manifest still wants this EXACT thing (a 3-tier
+        /// <see cref="TransferableUtility.TransferableMatchingDesperate"/> match with CountToTransfer &gt; 0,
+        /// variant-aware). This MIRRORS the driver's own <c>HasDepositableForGroup</c> predicate, so the deposit-only
+        /// recovery only fires when the driver will deposit ≥1 unit — keying on claimable-by-def instead would
+        /// re-issue a NO-OP deposit-only job forever (a keep-stock livelock for kept-but-wanted stock, or an
+        /// off-variant the manifest can't accept). Read-only (PeekHashSet). Rare path (a stranded passenger whose
+        /// ground sweep is empty), so materialising the manifest here is fine.</summary>
+        private static bool HoldsCargoLoadableWants(Pawn pawn, IManagedLoadable loadable)
+        {
+            var comp = pawn?.GetComp<CompHauledToInventory>();
+            var inner = pawn?.inventory?.innerContainer;
+            if (comp == null || inner == null || loadable == null)
+                return false;
+            var manifest = loadable.GetTransferables();
+            if (manifest == null || manifest.Count == 0)
+                return false;
+            foreach (var t in comp.PeekHashSet())
+            {
+                if (t == null || t.Destroyed || t.def == null || !inner.Contains(t))
+                    continue;
+                if (InventorySurplus.SurplusOf(pawn, t) <= 0)
+                    continue; // entirely within keep-stock → the deposit loop would move 0
+                var match = TransferableUtility.TransferableMatchingDesperate(t, manifest, TransferAsOneMode.PodsOrCaravanPacking);
+                if (match != null && match.CountToTransfer > 0)
+                    return true;
+            }
+            return false;
+        }
+
         private static bool HasPotentialBulkWork(Pawn pawn, IManagedLoadable loadable, bool featureEnabled)
         {
             if (!featureEnabled || loadable == null)
@@ -93,7 +147,10 @@ namespace HaulersDream
                 return false;
             // Auto-path eligibility (the work-scan / utility takeover route). Player orders skip this in the menu
             // provider (deposit goes into a container → nothing strands), so this gate is for the automatic path.
-            if (!YieldRouter.IsEligible(pawn))
+            // A boarding PASSENGER of this loadable is admitted: loading the shuttle/portal it's about to board is its
+            // directed task (it's otherwise IsEligible-ineligible only because it's Lord-driven). MUST stay in lockstep
+            // with the same carve-out in TryGiveBulkJob, or HasJob/JobOn diverge into the "10 jobs in one tick" loop.
+            if (!IsBoardingPassengerFor(pawn, loadable) && !YieldRouter.IsEligible(pawn))
                 return false;
             var ledger = HaulersDreamGameComponent.Instance;
             if (ledger == null)
@@ -185,7 +242,10 @@ namespace HaulersDream
                 return null;
             if (pawn.GetComp<CompHauledToInventory>() == null || pawn.inventory == null)
                 return null;
-            if (!playerOrder && !YieldRouter.IsEligible(pawn))
+            // Admit a boarding PASSENGER of this loadable (see IsBoardingPassengerFor) past the autonomous-eligibility
+            // gate — loading the shuttle/portal it's about to board is its directed task. Lockstep with the identical
+            // carve-out in HasPotentialBulkWork (a HasJob/JobOn divergence would loop). Player orders already bypass.
+            if (!playerOrder && !IsBoardingPassengerFor(pawn, loadable) && !YieldRouter.IsEligible(pawn))
                 return null;
 
             var ledger = HaulersDreamGameComponent.Instance;
@@ -265,7 +325,22 @@ namespace HaulersDream
                     ref running, ceiling, ref bulkRoom, ref massLeft);
 
             if (things.Count == 0)
+            {
+                // DEPOSIT-ONLY recovery for a boarding PASSENGER that is already carrying tagged cargo this loadable
+                // still wants but has nothing left to sweep from the ground. This happens when the passenger was
+                // INTERRUPTED mid bulk-load (urgent need / draft / mental break) with swept cargo stranded in its
+                // inventory: a Lord-driven passenger never reaches the Work-tree deposit/unload path a free hauler
+                // uses, so without this the cargo sits in its pack, the manifest never empties, and the board gate
+                // blocks it forever ("stuck waiting"). Returning a deposit-only job (empty sweep queue) lets the
+                // boarding tree's JobGiver_LoadTransporters node shed that cargo INTO the transporter before it falls
+                // through to the Enter node. Scoped to the passenger case (a free hauler's stranded cargo is handled
+                // by its Work-tree opportunistic deposit/unload); HoldsCargoLoadableWants mirrors the driver's own
+                // deposit predicate (surplus-above-keep AND a manifest variant-match), so the recovery job is issued
+                // ONLY when the deposit will actually move ≥1 unit — never a no-op that would re-fire forever.
+                if (!playerOrder && IsBoardingPassengerFor(pawn, loadable) && HoldsCargoLoadableWants(pawn, loadable))
+                    return Patch_OpportunisticLoadDeposit.BuildDepositOnlyJob(pawn, loadable);
                 return null; // nothing reachable to sweep of the claimable defs
+            }
 
             var job = JobMaker.MakeJob(jobDef, loadable.GetParentThing());
             job.targetQueueB = new List<LocalTargetInfo>(things.Count);
