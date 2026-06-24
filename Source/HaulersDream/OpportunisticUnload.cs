@@ -209,6 +209,21 @@ namespace HaulersDream
             if (now - comp.lastOpportunisticUnloadTick < DivertCooldownTicks)
                 return false;
 
+            // SETTLE gate for the run-OVER path (mirrors TryGetEndOfRunUnloadJob's settle): the pawn picking ONE
+            // non-yield job does NOT mean its yield run is over. In a busy colony the work scan constantly hands a
+            // just-scooped miner/harvester a nearby cleaning/other job for a tick, and the relaxed run-end criteria
+            // (no minimum-trip floor) then diverted it home to unload after a SINGLE mined/harvested cell — the
+            // reported "mine 1 block, run all the way back" / "run back to clean 1 thing", far short of a full pack.
+            // While the pawn is still actively scooping (lastYieldTick within unloadGraceTicks) it is MID-RUN: keep
+            // its load and let it accumulate toward the smart-overload ceiling (the at-ceiling trigger handles a
+            // genuinely-full pawn; the interval/idle backstop catches an idle one). Treat the run as over for the
+            // relaxed criteria ONLY once it has settled — so a brief non-yield detour no longer ends the run. When
+            // entering downtime (rest/eat/recreate) the settle is bypassed (put the load away first), matching the
+            // end-of-run path. The strict continuing-yield path (runOver=false, ShouldUnloadOnWay's trip floor) is
+            // unchanged — a continuing mine/harvest run was already never interrupted between adjacent cells.
+            if (runOver && !IsEnteringDowntime(pawn, s) && now - comp.lastYieldTick < s.unloadGraceTicks)
+                return false;
+
             // Where the pawn is heading. Most work jobs set targetA; grow-zone harvests use targetQueueA
             // (targetA is Invalid), so fall back to the first queued cell.
             IntVec3 target = workJob.targetA.Cell;
