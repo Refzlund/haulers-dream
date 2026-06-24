@@ -1,5 +1,33 @@
 # haulers-dream
 
+## 1.11.0
+
+### Minor Changes
+
+- fb04e90: feat: shuttle/transporter passengers now bulk-load the very transport they're about to board.
+
+  Previously the pawns you selected to ride a shuttle (or load + board a transporter) did vanilla one-stack-at-a-time loading, because Hauler's Dream stands its bulk-load down for any pawn directed by a Lord (which a boarding passenger is). Bulk loading only happened if a separate, non-boarding hauler was free. Now a boarding passenger is allowed to bulk-load the exact transport it's assigned to board: it sweeps its share of the cargo in one trip, deposits it, then boards. The carve-out is tight, only the pawn's own shuttle/portal, so ritual, caravan, and quest inventories stay protected.
+
+  If such a passenger is interrupted mid-load (it gets hungry, drafted, has a mental break) while carrying gathered cargo, it now deposits that cargo into the transport on its next step instead of carrying it off, so loading can't get stuck.
+
+### Patch Changes
+
+- fb04e90: fix: shuttle/transporter pawns stuck "waiting" after loading, and psychic-ritual target being emptied.
+
+  Shuttle and transporter loading: after the cargo was fully loaded, the colonists assigned to board would keep "waiting" and had to be forced in. Hauler's Dream's board gate kept blocking based on its own internal loading bookkeeping, which could linger a moment after the goods were already aboard. The gate now lets a pawn board the instant the group's cargo manifest is empty (the game's own "loading done" signal), so pawns board on their own. It still never boards before the cargo is physically in, so nothing launches early.
+
+  Psychic rituals: a ritual target could have its inventory emptied as a ritual started, which cancelled the ritual. A previous fix stood Hauler's Dream down for pawns taking part in a ritual, but a ritual TARGET is directed differently and slipped through. Hauler's Dream now also stands its automatic inventory handling down for any pawn driven by a ritual/quest duty (not just full ritual participants), and no longer bulk-empties a pawn that is busy with a directed activity. Explicit player orders are unaffected, and normal pack-animal unloading still works.
+
+- fb04e90: fix: settings icons missing on the Steam Workshop build.
+
+  The mod-settings window icons (the category and feature icons under Textures/HaulersDream/Settings) showed up in a local install but not in the Steam Workshop version. The Workshop packaging script copied About, Defs, Patches, and Languages but not the Textures folder, so the published mod shipped without any of its icon art (the local deploy, which does copy Textures, hid the gap). The packaging now includes Textures, matching the local deploy. Re-publishing the Workshop item picks up the icons.
+
+- 97d9768: fix: pawns mining/harvesting no longer run home to unload after a single block.
+
+  When a pawn mined or harvested, scooped the yield, and the work scan then handed it a nearby non-yield job (often cleaning), Hauler's Dream diverted it all the way to storage to unload after that single item, far short of a full load. So a pawn sent to mine would run out, mine one block, run all the way back, and repeat, instead of accumulating a pack and making one trip.
+
+  The "drop your load before unrelated work" divert now waits for the same brief settle the end-of-run unload already uses: while a pawn is still actively scooping (mid mine/harvest run), a quick non-yield detour no longer counts as the run being over, so it keeps its load and keeps working until it is full, the run genuinely winds down, or it heads off to rest or eat. Continuous same-task work and the full-inventory trip are unchanged.
+
 ## 1.10.0
 
 ### Minor Changes
