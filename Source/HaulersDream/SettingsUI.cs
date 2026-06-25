@@ -23,6 +23,20 @@ namespace HaulersDream
         public float StartY;     // CurY at the control's top (content-view-local; same space as the real draw)
         public float Height;     // total laid-out height of the control
     }
+
+    /// <summary>
+    /// One category row in a <see cref="HDSettingsUI.YieldMatrix"/>: a label/help plus the currently-selected
+    /// column index (<see cref="Value"/>, mutated in place when the user clicks a radio). <see cref="AllowDirect"/>
+    /// = false hides the last column (e.g. stripping can never go straight to inventory), so that column shows an
+    /// inert dash instead of a radio.
+    /// </summary>
+    public sealed class YieldMatrixRow
+    {
+        public string Label;
+        public string Help;
+        public int Value;
+        public bool AllowDirect = true;
+    }
     /// <summary>
     /// Immediate-mode vertical layout cursor for the settings content column. Replaces Listing_Standard so
     /// every widget can compute its own dynamic height (wrapped labels, two-line sliders, cards) and the
@@ -385,6 +399,150 @@ namespace HaulersDream
             Text.Font = f;
             c.Gap(RowGap);
             return enabled ? chosen : selected;
+        }
+
+        // ---- radio matrix: one row per category, a shared set of columns drawn once as headers ----
+        // A compact table where every row picks one of the SAME options (e.g. the per-category yield behaviour).
+        // The column names are shown once at the top instead of repeating on every row, and each cell is a native
+        // radio. Integrates with the three ctx modes exactly like the other helpers: NORMAL draws header + every row;
+        // COLLECT records one OptionEntry per row (advancing CurY identically so nav StartY/Height are correct, no
+        // draw); FILTER-RENDER consumes one ordinal per row and draws the column header plus ONLY the matching rows
+        // (so a searched category stays editable in the results, with its columns labelled for context). Selected
+        // index is read+written through each row's Value (mutated in place on click; the caller maps it back).
+        private const float YieldLabelFrac = 0.44f;   // fraction of the row width given to the category label column
+
+        public static void YieldMatrix(SettingsCtx c, string[] colLabels, string[] colHelps, IList<YieldMatrixRow> rows)
+        {
+            // FILTER-RENDER: count one ordinal per row (1:1 with collect mode), then draw the header + matching rows.
+            if (c.RenderOrdinals != null)
+            {
+                int baseOrd = c.Ordinal;
+                c.Ordinal += rows.Count;
+                bool any = false;
+                for (int i = 0; i < rows.Count; i++)
+                    if (c.RenderOrdinals.Contains(baseOrd + i)) { any = true; break; }
+                if (!any) return;
+                MatrixHeader(c, colLabels, colHelps);
+                for (int i = 0; i < rows.Count; i++)
+                    if (c.RenderOrdinals.Contains(baseOrd + i))
+                        MatrixRow(c, colLabels, colHelps, rows[i]);
+                return;
+            }
+
+            // NORMAL + COLLECT: header (advances CurY in both; draws only when not collecting), then every row.
+            MatrixHeader(c, colLabels, colHelps);
+            for (int i = 0; i < rows.Count; i++)
+            {
+                float startY = c.CurY;
+                MatrixRow(c, colLabels, colHelps, rows[i]);
+                if (c.Collecting)
+                {
+                    c.Sink.Add(new OptionEntry
+                    {
+                        CatId = c.CurrentCatId, Header = c.CurrentHeader, Name = rows[i].Label, Desc = rows[i].Help,
+                        Ordinal = c.Ordinal++, StartY = startY, Height = c.CurY - startY,
+                    });
+                }
+            }
+        }
+
+        // The column-name header for a YieldMatrix. Advances CurY whether or not it draws (so COLLECT mode lays the
+        // table out identically and the rows' recorded StartY match the real draw). Not a searchable control — never
+        // touches Ordinal.
+        private static void MatrixHeader(SettingsCtx c, string[] colLabels, string[] colHelps)
+        {
+            const float hH = 34f;
+            var r = c.Row(hH);
+            if (c.Collecting) return;
+            float labelW = c.Width * YieldLabelFrac;
+            int cols = Mathf.Max(1, colLabels.Length);
+            float colW = (c.Width - labelW) / cols;
+            var f = Text.Font;
+            var anchor = Text.Anchor;
+            var ww = Text.WordWrap;
+            var col = GUI.color;
+            Text.Font = GameFont.Tiny;
+            Text.Anchor = TextAnchor.LowerCenter;   // sit the labels at the bottom, hugging the rows below
+            Text.WordWrap = true;
+            GUI.color = new Color(0.80f, 0.84f, 0.92f);
+            for (int i = 0; i < cols; i++)
+            {
+                var cell = new Rect(labelW + i * colW, r.y, colW, r.height);
+                Widgets.Label(cell, colLabels[i]);
+                if (colHelps != null && i < colHelps.Length) Hover(cell, colLabels[i], colHelps[i]);
+            }
+            GUI.color = new Color(1f, 1f, 1f, 0.12f);
+            Widgets.DrawLineHorizontal(r.x, r.yMax - 1f, r.width);
+            GUI.color = col;
+            Text.WordWrap = ww;
+            Text.Anchor = anchor;
+            Text.Font = f;
+        }
+
+        // One category row of a YieldMatrix: label on the left, a native radio centred under each column. Advances
+        // CurY whether or not it draws. The whole row gets a faint top rule; hovering the label or a column cell
+        // registers the matching help into the info panel.
+        private static void MatrixRow(SettingsCtx c, string[] colLabels, string[] colHelps, YieldMatrixRow row)
+        {
+            var f = Text.Font;
+            Text.Font = GameFont.Small;
+            float labelW = c.Width * YieldLabelFrac;
+            float h = Mathf.Max(32f, Text.CalcHeight(row.Label, labelW - 10f));
+            var r = c.Row(h);
+            if (c.Collecting) { Text.Font = f; return; }
+
+            int cols = Mathf.Max(1, colLabels.Length);
+            float colW = (c.Width - labelW) / cols;
+
+            var col = GUI.color;
+            GUI.color = new Color(1f, 1f, 1f, 0.07f);
+            Widgets.DrawLineHorizontal(r.x, r.y, r.width);   // faint row separator
+            GUI.color = col;
+
+            // Anywhere on the row, show the row's current choice as the info-panel value line (like the other helpers).
+            if (Mouse.IsOver(r))
+                SetStatus(colLabels[Mathf.Clamp(row.Value, 0, colLabels.Length - 1)], ValueColor);
+
+            var labelRect = new Rect(r.x, r.y, labelW - 6f, r.height);
+            if (Mouse.IsOver(labelRect))
+            {
+                Widgets.DrawBoxSolid(labelRect, new Color(1f, 1f, 1f, 0.04f));
+                SetHelp(row.Label, row.Help);
+            }
+            var anchor = Text.Anchor;
+            Text.Anchor = TextAnchor.MiddleLeft;
+            GUI.color = new Color(0.90f, 0.90f, 0.94f);
+            Widgets.Label(labelRect, row.Label);
+            GUI.color = col;
+            Text.Anchor = anchor;
+
+            for (int i = 0; i < cols; i++)
+            {
+                var cell = new Rect(labelW + i * colW, r.y, colW, r.height);
+                // A column the row doesn't support (e.g. "collect directly" for stripping): inert dash, no radio.
+                if (!row.AllowDirect && i == cols - 1)
+                {
+                    var dc = GUI.color;
+                    var da = Text.Anchor;
+                    GUI.color = new Color(1f, 1f, 1f, 0.20f);
+                    Text.Anchor = TextAnchor.MiddleCenter;
+                    Widgets.Label(cell, "—");
+                    Text.Anchor = da;
+                    GUI.color = dc;
+                    continue;
+                }
+                if (Mouse.IsOver(cell))
+                {
+                    Widgets.DrawBoxSolid(cell, new Color(1f, 1f, 1f, 0.04f));
+                    if (colHelps != null && i < colHelps.Length) SetHelp(colLabels[i], colHelps[i]);
+                }
+                float dotX = cell.x + (cell.width - 24f) / 2f;
+                float dotY = cell.y + (cell.height - 24f) / 2f;
+                if (Widgets.RadioButton(dotX, dotY, row.Value == i))
+                    row.Value = i;
+            }
+
+            Text.Font = f;
         }
 
         // ---- a left-aligned button that opens a dialog ----

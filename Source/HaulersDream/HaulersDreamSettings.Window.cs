@@ -1037,16 +1037,8 @@ namespace HaulersDream
             manualPickupOption = HDSettingsUI.Checkbox(c, "HaulersDream.Setting.ManualPickup".Translate(),
                 manualPickupOption, "HaulersDream.Setting.ManualPickupDesc".Translate());
 
-            HDSettingsUI.Header(c, "HaulersDream.Head.WhileWorking".Translate());
-            sweepNearbyWhileWorking = HDSettingsUI.Checkbox(c, "HaulersDream.Setting.SweepNearbyWhileWorking".Translate(),
-                sweepNearbyWhileWorking, "HaulersDream.Setting.SweepNearbyWhileWorkingDesc".Translate());
-            haulToStack = HDSettingsUI.Checkbox(c, "HaulersDream.Setting.HaulToStack".Translate(),
-                haulToStack, "HaulersDream.Setting.HaulToStackDesc".Translate());
-            keepWorkingWhenFull = HDSettingsUI.Checkbox(c, "HaulersDream.Setting.KeepWorkingWhenFull".Translate(),
-                keepWorkingWhenFull, "HaulersDream.Setting.KeepWorkingWhenFullDesc".Translate());
-            keepWorkingMarginCells = Mathf.RoundToInt(HDSettingsUI.Slider(c, "HaulersDream.Setting.KeepWorkingMargin.Lab".Translate(),
-                keepWorkingMarginCells, 0f, 30f, Tiles(keepWorkingMarginCells),
-                "HaulersDream.Setting.KeepWorkingMarginDesc".Translate(), enabled: keepWorkingWhenFull, indent: 24f));
+            // The "While working" group (sweep-nearby + keep-working-when-full) moved to the Work & yields tab, next
+            // to the per-category yield behaviour it governs. "Top up existing stacks" moved to the Unloading tab.
         }
 
         // ===================== UNLOADING =====================
@@ -1070,6 +1062,10 @@ namespace HaulersDream
                 unloadBeforeEating, "HaulersDream.Setting.UnloadBeforeEatingDesc".Translate(), enabled: markForUnload, indent: 24f);
 
             HDSettingsUI.Header(c, "HaulersDream.Head.DropOff".Translate());
+            // "Top up existing stacks" governs WHERE goods get put away (prefer a partial stack), so it lives with the
+            // drop-off options. Moved here from the Hauling tab's old "While working" section; field/key/behaviour unchanged.
+            haulToStack = HDSettingsUI.Checkbox(c, "HaulersDream.Setting.HaulToStack".Translate(),
+                haulToStack, "HaulersDream.Setting.HaulToStackDesc".Translate());
             opportunisticUnload = HDSettingsUI.Checkbox(c, "HaulersDream.Setting.OpportunisticUnload".Translate(),
                 opportunisticUnload, "HaulersDream.Setting.OpportunisticUnloadDesc".Translate());
             closestDestinationUnloadOrder = HDSettingsUI.Checkbox(c, "HaulersDream.Setting.ClosestDestUnloadOrder".Translate(),
@@ -1255,15 +1251,6 @@ namespace HaulersDream
             "HaulersDream.Setting.Yield.DirectDesc".Translate().ToString(),
         };
 
-        // One 3-way yield-behaviour row. `labelKey`/`helpKey` are the per-category strings; the result maps
-        // directly to YieldBehavior via the segment order above.
-        private YieldBehavior YieldRow(SettingsCtx c, YieldBehavior current, string labelKey, string helpKey,
-            string[] labels, string[] helps)
-        {
-            int idx = HDSettingsUI.Segmented(c, labelKey.Translate(), (int)current, labels, helps, helpKey.Translate());
-            return (YieldBehavior)idx;
-        }
-
         private void DrawYieldsCat(SettingsCtx c)
         {
             HDSettingsUI.Note(c, "HaulersDream.Cat.Yields.Intro".Translate());
@@ -1274,22 +1261,46 @@ namespace HaulersDream
             var yLab = YieldLabels3();
             var yHelp = YieldHelps3();
 
-            yieldHarvest = YieldRow(c, yieldHarvest, "HaulersDream.Setting.Yield.Harvest", "HaulersDream.Setting.Yield.HarvestHelp", yLab, yHelp);
-            yieldLogging = YieldRow(c, yieldLogging, "HaulersDream.Setting.Yield.Logging", "HaulersDream.Setting.Yield.LoggingHelp", yLab, yHelp);
-            yieldMining = YieldRow(c, yieldMining, "HaulersDream.Setting.Yield.Mining", "HaulersDream.Setting.Yield.MiningHelp", yLab, yHelp);
-            yieldChunks = YieldRow(c, yieldChunks, "HaulersDream.Setting.Yield.Chunks", "HaulersDream.Setting.Yield.ChunksHelp", yLab, yHelp);
-            yieldDeepDrill = YieldRow(c, yieldDeepDrill, "HaulersDream.Setting.Yield.DeepDrill", "HaulersDream.Setting.Yield.DeepDrillHelp", yLab, yHelp);
-            yieldDeconstruct = YieldRow(c, yieldDeconstruct, "HaulersDream.Setting.Yield.Deconstruct", "HaulersDream.Setting.Yield.DeconstructHelp", yLab, yHelp);
-            yieldAnimals = YieldRow(c, yieldAnimals, "HaulersDream.Setting.Yield.Animals", "HaulersDream.Setting.Yield.AnimalsHelp", yLab, yHelp);
+            // One radio-matrix row per work-result category; the three columns (the shared YieldBehavior options) are
+            // labelled once at the top. STRIP is 2-way only: removed gear can never go straight to inventory
+            // (YieldRouter force-drops it), so AllowDirect=false hides its "collect directly" column; a stored
+            // DirectToInventory (migrated/odd value) shows as DropThenHaul (Value 1).
+            var rHarvest = new YieldMatrixRow { Label = "HaulersDream.Setting.Yield.Harvest".Translate(), Help = "HaulersDream.Setting.Yield.HarvestHelp".Translate(), Value = (int)yieldHarvest };
+            var rLogging = new YieldMatrixRow { Label = "HaulersDream.Setting.Yield.Logging".Translate(), Help = "HaulersDream.Setting.Yield.LoggingHelp".Translate(), Value = (int)yieldLogging };
+            var rMining = new YieldMatrixRow { Label = "HaulersDream.Setting.Yield.Mining".Translate(), Help = "HaulersDream.Setting.Yield.MiningHelp".Translate(), Value = (int)yieldMining };
+            var rChunks = new YieldMatrixRow { Label = "HaulersDream.Setting.Yield.Chunks".Translate(), Help = "HaulersDream.Setting.Yield.ChunksHelp".Translate(), Value = (int)yieldChunks };
+            var rDeepDrill = new YieldMatrixRow { Label = "HaulersDream.Setting.Yield.DeepDrill".Translate(), Help = "HaulersDream.Setting.Yield.DeepDrillHelp".Translate(), Value = (int)yieldDeepDrill };
+            var rDeconstruct = new YieldMatrixRow { Label = "HaulersDream.Setting.Yield.Deconstruct".Translate(), Help = "HaulersDream.Setting.Yield.DeconstructHelp".Translate(), Value = (int)yieldDeconstruct };
+            var rAnimals = new YieldMatrixRow { Label = "HaulersDream.Setting.Yield.Animals".Translate(), Help = "HaulersDream.Setting.Yield.AnimalsHelp".Translate(), Value = (int)yieldAnimals };
+            var rStrip = new YieldMatrixRow { Label = "HaulersDream.Setting.Yield.Strip".Translate(), Help = "HaulersDream.Setting.Yield.StripHelp".Translate(), Value = yieldStrip == YieldBehavior.Disabled ? 0 : 1, AllowDirect = false };
+            var rUninstall = new YieldMatrixRow { Label = "HaulersDream.Setting.Yield.Uninstall".Translate(), Help = "HaulersDream.Setting.Yield.UninstallHelp".Translate(), Value = (int)yieldUninstall };
 
-            // STRIP is 2-way only: it can never go straight-to-inventory (YieldRouter force-drops removed gear). A
-            // stored DirectToInventory (from a migrated/odd value) is clamped to DropThenHaul (index 1) for display.
-            int stripSel = yieldStrip == YieldBehavior.Disabled ? 0 : 1;
-            int stripIdx = HDSettingsUI.Segmented(c, "HaulersDream.Setting.Yield.Strip".Translate(), stripSel,
-                new[] { yLab[0], yLab[1] }, new[] { yHelp[0], yHelp[1] }, "HaulersDream.Setting.Yield.StripHelp".Translate());
-            yieldStrip = stripIdx == 0 ? YieldBehavior.Disabled : YieldBehavior.DropThenHaul;
+            var yieldRows = new List<YieldMatrixRow>
+            {
+                rHarvest, rLogging, rMining, rChunks, rDeepDrill, rDeconstruct, rAnimals, rStrip, rUninstall,
+            };
+            HDSettingsUI.YieldMatrix(c, yLab, yHelp, yieldRows);
 
-            yieldUninstall = YieldRow(c, yieldUninstall, "HaulersDream.Setting.Yield.Uninstall", "HaulersDream.Setting.Yield.UninstallHelp", yLab, yHelp);
+            yieldHarvest = (YieldBehavior)rHarvest.Value;
+            yieldLogging = (YieldBehavior)rLogging.Value;
+            yieldMining = (YieldBehavior)rMining.Value;
+            yieldChunks = (YieldBehavior)rChunks.Value;
+            yieldDeepDrill = (YieldBehavior)rDeepDrill.Value;
+            yieldDeconstruct = (YieldBehavior)rDeconstruct.Value;
+            yieldAnimals = (YieldBehavior)rAnimals.Value;
+            yieldStrip = rStrip.Value == 0 ? YieldBehavior.Disabled : YieldBehavior.DropThenHaul;
+            yieldUninstall = (YieldBehavior)rUninstall.Value;
+
+            // While working — what a pawn does about its load WHILE producing results. Moved here from the Hauling tab
+            // to sit next to the yields it governs; same fields/keys/behaviour, only the location changed.
+            HDSettingsUI.Header(c, "HaulersDream.Head.WhileWorking".Translate());
+            sweepNearbyWhileWorking = HDSettingsUI.Checkbox(c, "HaulersDream.Setting.SweepNearbyWhileWorking".Translate(),
+                sweepNearbyWhileWorking, "HaulersDream.Setting.SweepNearbyWhileWorkingDesc".Translate());
+            keepWorkingWhenFull = HDSettingsUI.Checkbox(c, "HaulersDream.Setting.KeepWorkingWhenFull".Translate(),
+                keepWorkingWhenFull, "HaulersDream.Setting.KeepWorkingWhenFullDesc".Translate());
+            keepWorkingMarginCells = Mathf.RoundToInt(HDSettingsUI.Slider(c, "HaulersDream.Setting.KeepWorkingMargin.Lab".Translate(),
+                keepWorkingMarginCells, 0f, 30f, Tiles(keepWorkingMarginCells),
+                "HaulersDream.Setting.KeepWorkingMarginDesc".Translate(), enabled: keepWorkingWhenFull, indent: 24f));
 
             HDSettingsUI.Header(c, "HaulersDream.Head.AfterKill".Translate());
             haulTamedSlaughter = HDSettingsUI.Checkbox(c, "HaulersDream.Setting.HaulTamedSlaughter".Translate(),

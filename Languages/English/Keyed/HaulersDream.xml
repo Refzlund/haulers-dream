@@ -160,15 +160,15 @@
   <HaulersDream.Stat.Overload>Hauler's Dream — overloaded</HaulersDream.Stat.Overload>
   <HaulersDream.Stat.MechCarryCapacity>Hauler's Dream — carrying capacity</HaulersDream.Stat.MechCarryCapacity>
 
-  <!-- Per-category yield behaviour (issue #79): each kind of work result independently chooses Off / Drop &amp; haul / To inventory. -->
+  <!-- Per-category yield behaviour (issue #79): each kind of work result independently chooses Leave on ground / Drop, then collect / Collect directly. -->
   <HaulersDream.Setting.Yield.Header>Collect work results</HaulersDream.Setting.Yield.Header>
-  <HaulersDream.Setting.Yield.Intro>For each kind of work, choose what happens to the result: leave it on the ground, drop it then have the working pawn carry it, or take it straight into the pawn's inventory. Most setups can leave these on Drop &amp; haul.</HaulersDream.Setting.Yield.Intro>
+  <HaulersDream.Setting.Yield.Intro>When a pawn finishes a piece of work, choose what happens to the result. Both "collect" options carry it out in the worker's own inventory and put it away on the next unload trip; they differ only in whether it drops on the floor first. Most setups can leave these on "Drop, then collect".</HaulersDream.Setting.Yield.Intro>
   <HaulersDream.Setting.Yield.Off>Leave on ground</HaulersDream.Setting.Yield.Off>
-  <HaulersDream.Setting.Yield.OffDesc>The pawn leaves the result where it falls and a normal hauler collects it later, exactly like vanilla. Best for heavy or low-value things you don't want carried in a pocket (for example, stone chunks).</HaulersDream.Setting.Yield.OffDesc>
-  <HaulersDream.Setting.Yield.Drop>Drop &amp; haul</HaulersDream.Setting.Yield.Drop>
-  <HaulersDream.Setting.Yield.DropDesc>The result drops on the floor, then the working pawn picks it up and carries it out. Another hauler or a closer stockpile can still grab it mid-step, so it's the most vanilla-like choice. Good when you have spare haulers.</HaulersDream.Setting.Yield.DropDesc>
-  <HaulersDream.Setting.Yield.Direct>To inventory</HaulersDream.Setting.Yield.Direct>
-  <HaulersDream.Setting.Yield.DirectDesc>The result goes straight into the working pawn's inventory. It never touches the floor and no one else can take it, so the working pawn always carries its own results out. Good for keeping work areas clear and for caravans or away maps. A heavy load slows the pawn down.</HaulersDream.Setting.Yield.DirectDesc>
+  <HaulersDream.Setting.Yield.OffDesc>The worker leaves the result where it falls and a normal hauler collects it later, exactly like vanilla. Best for heavy or low-value things you don't want carried in inventory, like stone chunks.</HaulersDream.Setting.Yield.OffDesc>
+  <HaulersDream.Setting.Yield.Drop>Drop, then collect</HaulersDream.Setting.Yield.Drop>
+  <HaulersDream.Setting.Yield.DropDesc>The result drops on the floor, then the working pawn picks it up into its own inventory and carries it out on the next unload trip. Because it touches the floor first, another hauler or a closer stockpile can still grab it, so it's the most vanilla-like choice. Good when you have spare haulers.</HaulersDream.Setting.Yield.DropDesc>
+  <HaulersDream.Setting.Yield.Direct>Collect directly</HaulersDream.Setting.Yield.Direct>
+  <HaulersDream.Setting.Yield.DirectDesc>The result goes straight into the working pawn's inventory without ever touching the floor, then rides out on the next unload trip. No one else can take it, so the worker always carries its own results away. Keeps work areas clear and suits caravans and away maps. A heavy load slows the pawn down.</HaulersDream.Setting.Yield.DirectDesc>
   <HaulersDream.Setting.Yield.Harvest>Harvest (crops &amp; berries)</HaulersDream.Setting.Yield.Harvest>
   <HaulersDream.Setting.Yield.HarvestHelp>Crops, berries and other food/plant harvest yields.</HaulersDream.Setting.Yield.HarvestHelp>
   <HaulersDream.Setting.Yield.Logging>Logging (trees &amp; cacti)</HaulersDream.Setting.Yield.Logging>
@@ -183,8 +183,8 @@
   <HaulersDream.Setting.Yield.DeconstructHelp>Materials salvaged from deconstructed buildings.</HaulersDream.Setting.Yield.DeconstructHelp>
   <HaulersDream.Setting.Yield.Animals>Animal products (milk &amp; wool)</HaulersDream.Setting.Yield.Animals>
   <HaulersDream.Setting.Yield.AnimalsHelp>Milk, wool and other products gathered from animals.</HaulersDream.Setting.Yield.AnimalsHelp>
-  <HaulersDream.Setting.Yield.Strip>Stripping — removed gear (always dropped first)</HaulersDream.Setting.Yield.Strip>
-  <HaulersDream.Setting.Yield.StripHelp>Gear removed by a Strip order. It always drops first and is then hauled (it can't go straight to a pocket).</HaulersDream.Setting.Yield.StripHelp>
+  <HaulersDream.Setting.Yield.Strip>Stripping (removed gear)</HaulersDream.Setting.Yield.Strip>
+  <HaulersDream.Setting.Yield.StripHelp>Gear removed by a Strip order. It always drops on the floor first and is then collected, so it can't go straight to inventory.</HaulersDream.Setting.Yield.StripHelp>
   <HaulersDream.Setting.Yield.Uninstall>Uninstalling (minified buildings)</HaulersDream.Setting.Yield.Uninstall>
   <HaulersDream.Setting.Yield.UninstallHelp>On caravans and away maps only: a minified building from an Uninstall order is carried so it batches onto pack animals in one trip. Has no effect on your home map.</HaulersDream.Setting.Yield.UninstallHelp>
 
