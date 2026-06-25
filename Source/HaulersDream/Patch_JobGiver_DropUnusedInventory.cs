@@ -41,4 +41,41 @@ namespace HaulersDream
             return comp == null || thing == null || !comp.PeekHashSet().Contains(thing);
         }
     }
+
+    /// <summary>
+    /// (Issue #81) Keep an HD-hauled DRUG in inventory until HD's unload trip stores it.
+    ///
+    /// <para><see cref="JobGiver_DropUnusedInventory.TryGiveJob"/> runs a second, UN-gated loop every think pass that
+    /// drops every inventory thing for which <see cref="JobGiver_DropUnusedInventory.ShouldKeepDrugInInventory"/>
+    /// returns false — i.e. any drug the colonist isn't scheduled to take, isn't carrying per its drug policy, and
+    /// isn't addicted/dependent on. A recreational drug like a smokeleaf joint hits all of those, so the instant a
+    /// pawn picks one up via HD's "Pick up X" order or an en-route grab, vanilla drops it back at the pawn's feet
+    /// (reported in #81: only drugs are affected; every non-drug haulable rides to storage fine, because the loop
+    /// only ever looks at <c>IsDrug</c> things).</para>
+    ///
+    /// <para>This postfix forces "keep" for any drug HD has tagged via <see cref="CompHauledToInventory"/>, so the
+    /// joint stays in the pack for HD's storage-aware unload trip instead of being dumped. It complements the #62
+    /// Prefix on the private <c>Drop</c> helper above: in pure vanilla either guard alone is enough (both loops in
+    /// <c>TryGiveJob</c> funnel through <c>Drop</c>). But <c>ShouldKeepDrugInInventory</c> is the canonical
+    /// keep-or-drop gate, so when another mod reimplements this drop loop — inlining the drop and bypassing the
+    /// private <c>Drop</c> that #62 vetoes — HD's cargo is still kept as long as that mod consults the predicate
+    /// (the usual pattern). That is the case the #81 report (a heavily-modded load order) hits, where a tagged drug
+    /// is dropped despite #62. The same predicate also gates vanilla's "pick up drug" float-menu on a GROUND stack,
+    /// which HD never has tagged, so that UI is unchanged.</para>
+    ///
+    /// <para>It only ever flips false -> true, and only for a thing already in HD's tagged set — a colonist's own
+    /// recreational/personal drugs (never HD-tagged) keep dropping exactly as in vanilla. PeekHashSet is the
+    /// read-only view (no self-heal / Rand / CE re-notify), correct on this per-think-pass gate.</para>
+    /// </summary>
+    [HarmonyPatch(typeof(JobGiver_DropUnusedInventory), nameof(JobGiver_DropUnusedInventory.ShouldKeepDrugInInventory))]
+    public static class Patch_JobGiver_DropUnusedInventory_ShouldKeepDrug
+    {
+        static void Postfix(ref bool __result, Pawn pawn, Thing drug)
+        {
+            if (__result) return; // vanilla already keeps it — nothing to do
+            var comp = pawn?.GetComp<CompHauledToInventory>();
+            if (comp != null && drug != null && comp.PeekHashSet().Contains(drug))
+                __result = true; // HD-hauled cargo: keep it for the unload trip instead of dropping
+        }
+    }
 }
