@@ -80,8 +80,8 @@
 <HaulersDream.Setting.PlanCraftingDesc>Инструмент планирования по правому клику на верстаках, который повторяет заказ несколько раз за одну ходку за ингредиентами. Выкл = пункт меню скрыт.</HaulersDream.Setting.PlanCraftingDesc>
 <HaulersDream.Setting.BatchByDefault>Группировать новые заказы по умолчанию</HaulersDream.Setting.BatchByDefault>
 <HaulersDream.Setting.BatchByDefaultDesc>Заказы на изготовление и готовку, которые вы ДОБАВЛЯЕТЕ отныне, начинаются в режиме «партии»: колонист приносит целую партию ингредиентов за одну ходку, делает их все на верстаке (еда не портится, пока он работает), затем переносит всё на склад. Затрагивает только вновь добавленные заказы — существующие заказы сохраняют текущую настройку.</HaulersDream.Setting.BatchByDefaultDesc>
-  <HaulersDream.Setting.AllowBatchUnderCommonSense>Batch even with Common Sense active</HaulersDream.Setting.AllowBatchUnderCommonSense>
-  <HaulersDream.Setting.AllowBatchUnderCommonSenseDesc>On by default. Lets bills you marked for batching still batch while Common Sense is active, instead of being made one item at a time. Batch crafting uses its own separate job, so it won't clash with Common Sense's "clean first" and "haul all ingredients" features. Turn this off to hand all cooking and crafting over to Common Sense. The batch options then disappear from the bill menu.</HaulersDream.Setting.AllowBatchUnderCommonSenseDesc>
+  <HaulersDream.Setting.AllowBatchUnderCommonSense>Партии даже при активном Common Sense</HaulersDream.Setting.AllowBatchUnderCommonSense>
+  <HaulersDream.Setting.AllowBatchUnderCommonSenseDesc>Включено по умолчанию. Позволяет заданиям, отмеченным вами для партийного производства, по-прежнему изготавливаться партиями при активном Common Sense, вместо изготовления по одному предмету за раз. Партийное изготовление использует собственное отдельное задание, поэтому оно не конфликтует с функциями Common Sense «сначала убраться» и «принести все ингредиенты». Отключите это, чтобы полностью передать всю готовку и изготовление в ведение Common Sense. Тогда опции партий исчезнут из меню заданий.</HaulersDream.Setting.AllowBatchUnderCommonSenseDesc>
 <HaulersDream.Setting.DefaultBatchSize>Размер партии по умолчанию: {0}</HaulersDream.Setting.DefaultBatchSize>
 <HaulersDream.Batch.MenuPrefix>Партия</HaulersDream.Batch.MenuPrefix>
 <HaulersDream.Batch.SetSize>Размер партии: {0}…</HaulersDream.Batch.SetSize>
@@ -196,8 +196,8 @@
 <HaulersDream.PlanRoute.PickStop>Готово (кликните по карте, чтобы добавить)</HaulersDream.PlanRoute.PickStop>
 <HaulersDream.PlanRoute.PickHeader>Обязательно включить: {0}</HaulersDream.PlanRoute.PickHeader>
 <HaulersDream.PlanRoute.PickRoleHint>Пометьте цель S (начало) или E (конец), чтобы закрепить, где маршрут начинается или заканчивается — иначе каждая размещается там, где короче всего.</HaulersDream.PlanRoute.PickRoleHint>
-<HaulersDream.PlanRoute.PickStartBtn>S</HaulersDream.PlanRoute.PickStartBtn>
-<HaulersDream.PlanRoute.PickEndBtn>E</HaulersDream.PlanRoute.PickEndBtn>
+<HaulersDream.PlanRoute.PickStartBtn>Н</HaulersDream.PlanRoute.PickStartBtn>
+<HaulersDream.PlanRoute.PickEndBtn>К</HaulersDream.PlanRoute.PickEndBtn>
 <HaulersDream.PlanRoute.PickStartBadge>(начало)</HaulersDream.PlanRoute.PickStartBadge>
 <HaulersDream.PlanRoute.PickEndBadge>(конец)</HaulersDream.PlanRoute.PickEndBadge>
 <HaulersDream.PlanRoute.PickStartTip>Сделать это НАЧАЛОМ маршрута — первой остановкой, которую посещает пешка. Кликните снова, чтобы сбросить.</HaulersDream.PlanRoute.PickStartTip>
@@ -630,51 +630,51 @@
 <HaulersDream.Head.WhoCanHaul>Кто может собирать и переносить</HaulersDream.Head.WhoCanHaul>
 <HaulersDream.Head.PlanningTools>Инструменты планирования</HaulersDream.Head.PlanningTools>
 <HaulersDream.Setting.Overload.Ceiling>потолок</HaulersDream.Setting.Overload.Ceiling>
-  <HaulersDream.Setting.MechHaulMultiplier.Lab>Mechanoid carrying capacity</HaulersDream.Setting.MechHaulMultiplier.Lab>
-  <HaulersDream.Setting.MechHaulMultiplierDesc>Multiplies how much your work mechanoids carry per hauling trip, on top of their real carrying capacity. At ×1.0 (the default) a mech hauls exactly as much as its carrying capacity allows; raise it so a dedicated lifter mech makes fewer, bigger trips. The mech is slowed by the extra load the same way a colonist is, so the smart-overload bargain stays balanced. Only affects your own mechanoids, and has no effect while Combat Extended is installed (CE manages carry weight itself).</HaulersDream.Setting.MechHaulMultiplierDesc>
-  <HaulersDream.Setting.ShowAutoHaulGizmo>Show the per-pawn auto-haul toggle</HaulersDream.Setting.ShowAutoHaulGizmo>
+  <HaulersDream.Setting.MechHaulMultiplier.Lab>Грузоподъёмность механоидов</HaulersDream.Setting.MechHaulMultiplier.Lab>
+  <HaulersDream.Setting.MechHaulMultiplierDesc>Умножает то, сколько ваши рабочие механоиды переносят за одну ходку, поверх их реальной грузоподъёмности. При ×1.0 (по умолчанию) механоид переносит ровно столько, сколько позволяет его грузоподъёмность; повысьте это значение, чтобы выделенный механоид-грузчик делал меньше, но более крупных ходок. Механоид замедляется от лишнего груза так же, как колонист, поэтому условия умной перегрузки остаются сбалансированными. Влияет только на ваших собственных механоидов и не действует, пока установлен Combat Extended (CE сам управляет переносимым весом).</HaulersDream.Setting.MechHaulMultiplierDesc>
+  <HaulersDream.Setting.ShowAutoHaulGizmo>Показывать переключатель авто-переноски у каждого пешки</HaulersDream.Setting.ShowAutoHaulGizmo>
   <HaulersDream.Setting.ShowAutoHaulGizmo.Help>Adds an "Auto-haul yields" toggle to each eligible pawn's command bar so you can stop individual pawns from automatically scooping and hauling. Off by default to keep the command bar uncluttered; pawns still auto-haul either way, this only controls whether the toggle is shown. A pawn's saved preference is still honoured even while the toggle is hidden.</HaulersDream.Setting.ShowAutoHaulGizmo.Help>
-<HaulersDream.Batch.SetOvershoot>Batch overshoot: +{0}…</HaulersDream.Batch.SetOvershoot>
-<HaulersDream.Batch.OvershootDialogTitle>Batch overshoot — {0}</HaulersDream.Batch.OvershootDialogTitle>
-<HaulersDream.Batch.OvershootLabel>Overshoot by {0} past the target</HaulersDream.Batch.OvershootLabel>
-<HaulersDream.Batch.OvershootLabelOff>Overshoot: off (stop at the target)</HaulersDream.Batch.OvershootLabelOff>
-<HaulersDream.Batch.OvershootDesc>For a "Do until you have X" batch: once a colonist starts it (while below X), keep making up to this many more, finishing a useful round number while they're already at the bench instead of stopping the moment the count reaches X. Still capped by available materials.</HaulersDream.Batch.OvershootDesc>
-<HaulersDream.Batch.TipDoX>Make a set number each time, gathering the whole batch in one trip.</HaulersDream.Batch.TipDoX>
-<HaulersDream.Batch.TipUntilX>Keep stock topped up to a target count, making a batch whenever it runs low.</HaulersDream.Batch.TipUntilX>
-<HaulersDream.Batch.TipForever>Keep making this in batches. The colonist finishes the current item, then stops to eat, sleep, or relax if it urgently needs to, putting everything away first.</HaulersDream.Batch.TipForever>
-<HaulersDream.Batch.TipSize>How many to make per batch. The colonist gathers all the ingredients in one trip.</HaulersDream.Batch.TipSize>
-<HaulersDream.Batch.TipOvershoot>For "Do until you have X": keep making a little past the target once started, so the colonist finishes a round number while already at the bench.</HaulersDream.Batch.TipOvershoot>
-<HaulersDream.PlanRoute.SowingGerundFallback>sowing</HaulersDream.PlanRoute.SowingGerundFallback>
-<HaulersDream.PlanRoute.ModeSowZone>Whole growing zone</HaulersDream.PlanRoute.ModeSowZone>
-<HaulersDream.PlanRoute.ModeSowZoneDesc>Sow every empty growable cell inside this growing zone — plant the whole field from one click.</HaulersDream.PlanRoute.ModeSowZoneDesc>
-<HaulersDream.Setting.Yield.Header>Collect work results</HaulersDream.Setting.Yield.Header>
-<HaulersDream.Setting.Yield.Intro>For each kind of work, choose what happens to the result: leave it on the ground, drop it then have the working pawn haul it, or take it straight into the pawn's inventory.</HaulersDream.Setting.Yield.Intro>
+<HaulersDream.Batch.SetOvershoot>Превышение партии: +{0}…</HaulersDream.Batch.SetOvershoot>
+<HaulersDream.Batch.OvershootDialogTitle>Превышение партии — {0}</HaulersDream.Batch.OvershootDialogTitle>
+<HaulersDream.Batch.OvershootLabel>Превышать цель на {0}</HaulersDream.Batch.OvershootLabel>
+<HaulersDream.Batch.OvershootLabelOff>Превышение: выкл (останавливаться на цели)</HaulersDream.Batch.OvershootLabelOff>
+<HaulersDream.Batch.OvershootDesc>Для партии в режиме «Делать, пока не накопится X»: как только колонист начнёт работу (пока количество ниже X), он сделает ещё до стольких единиц, завершая удобное круглое число, раз уж он уже у верстака, вместо того чтобы остановиться в тот же момент, когда счётчик достигнет X. Всё равно ограничено доступными материалами.</HaulersDream.Batch.OvershootDesc>
+<HaulersDream.Batch.TipDoX>Делать заданное количество за раз, собирая всю партию за одну ходку.</HaulersDream.Batch.TipDoX>
+<HaulersDream.Batch.TipUntilX>Поддерживать запас до целевого количества, делая партию, когда он заканчивается.</HaulersDream.Batch.TipUntilX>
+<HaulersDream.Batch.TipForever>Продолжать делать это партиями. Колонист доделывает текущий предмет, затем останавливается, чтобы поесть, поспать или отдохнуть, если это срочно нужно, сначала убрав всё на место.</HaulersDream.Batch.TipForever>
+<HaulersDream.Batch.TipSize>Сколько делать за одну партию. Колонист собирает все ингредиенты за одну ходку.</HaulersDream.Batch.TipSize>
+<HaulersDream.Batch.TipOvershoot>Для режима «Делать, пока не накопится X»: после начала работы делать немного сверх цели, чтобы колонист завершил круглое число, раз уж он уже у верстака.</HaulersDream.Batch.TipOvershoot>
+<HaulersDream.PlanRoute.SowingGerundFallback>посев</HaulersDream.PlanRoute.SowingGerundFallback>
+<HaulersDream.PlanRoute.ModeSowZone>Вся зона выращивания</HaulersDream.PlanRoute.ModeSowZone>
+<HaulersDream.PlanRoute.ModeSowZoneDesc>Засеять каждую пустую пригодную для посева клетку внутри этой зоны выращивания — засадить всё поле одним кликом.</HaulersDream.PlanRoute.ModeSowZoneDesc>
+<HaulersDream.Setting.Yield.Header>Сбор результатов работы</HaulersDream.Setting.Yield.Header>
+<HaulersDream.Setting.Yield.Intro>Когда пешка заканчивает часть работы, выберите, что происходит с результатом. Оба варианта «собирать» уносят его в собственном инвентаре работника и убирают на место в следующей ходке на разгрузку; они различаются лишь тем, падает ли результат сначала на пол. В большинстве случаев можно оставить эти настройки на «Бросить, затем собрать».</HaulersDream.Setting.Yield.Intro>
 <HaulersDream.Setting.Yield.Off>Off</HaulersDream.Setting.Yield.Off>
-<HaulersDream.Setting.Yield.OffDesc>Hauler's Dream leaves the result on the ground, exactly like vanilla — a hauler may carry it away later.</HaulersDream.Setting.Yield.OffDesc>
-<HaulersDream.Setting.Yield.Drop>Drop &amp; haul</HaulersDream.Setting.Yield.Drop>
-<HaulersDream.Setting.Yield.DropDesc>The result drops on the floor, then the working pawn scoops it up and carries it out. Another hauler can still grab it mid-step.</HaulersDream.Setting.Yield.DropDesc>
-<HaulersDream.Setting.Yield.Direct>To inventory</HaulersDream.Setting.Yield.Direct>
-<HaulersDream.Setting.Yield.DirectDesc>The result goes straight into the working pawn's inventory, never touching the floor.</HaulersDream.Setting.Yield.DirectDesc>
-<HaulersDream.Setting.Yield.Harvest>Harvest (crops &amp; berries)</HaulersDream.Setting.Yield.Harvest>
-<HaulersDream.Setting.Yield.HarvestHelp>Crops, berries and other food/plant harvest yields.</HaulersDream.Setting.Yield.HarvestHelp>
-<HaulersDream.Setting.Yield.Logging>Logging (trees &amp; cacti)</HaulersDream.Setting.Yield.Logging>
-<HaulersDream.Setting.Yield.LoggingHelp>Wood and other yields from felling trees and cacti.</HaulersDream.Setting.Yield.LoggingHelp>
-<HaulersDream.Setting.Yield.Mining>Mining (ore &amp; resources)</HaulersDream.Setting.Yield.Mining>
-<HaulersDream.Setting.Yield.MiningHelp>Ore, components and other resources from mining — not stone chunks.</HaulersDream.Setting.Yield.MiningHelp>
-<HaulersDream.Setting.Yield.Chunks>Mining (chunks)</HaulersDream.Setting.Yield.Chunks>
-<HaulersDream.Setting.Yield.ChunksHelp>Stone and slag chunks from mining. Set this to Off to leave heavy chunks on the ground instead of loading them into inventory.</HaulersDream.Setting.Yield.ChunksHelp>
-<HaulersDream.Setting.Yield.DeepDrill>Deep drilling</HaulersDream.Setting.Yield.DeepDrill>
-<HaulersDream.Setting.Yield.DeepDrillHelp>Resources produced by deep drills.</HaulersDream.Setting.Yield.DeepDrillHelp>
-<HaulersDream.Setting.Yield.Deconstruct>Deconstruction salvage</HaulersDream.Setting.Yield.Deconstruct>
-<HaulersDream.Setting.Yield.DeconstructHelp>Materials salvaged from deconstructed buildings.</HaulersDream.Setting.Yield.DeconstructHelp>
-<HaulersDream.Setting.Yield.Animals>Animal products (milk &amp; wool)</HaulersDream.Setting.Yield.Animals>
-<HaulersDream.Setting.Yield.AnimalsHelp>Milk, wool and other products gathered from animals.</HaulersDream.Setting.Yield.AnimalsHelp>
-<HaulersDream.Setting.Yield.Strip>Stripping (removed gear)</HaulersDream.Setting.Yield.Strip>
-<HaulersDream.Setting.Yield.StripHelp>Gear removed by a Strip order. This always drops then hauls (it cannot go straight to inventory).</HaulersDream.Setting.Yield.StripHelp>
-<HaulersDream.Setting.Yield.Uninstall>Uninstalling (minified buildings)</HaulersDream.Setting.Yield.Uninstall>
+<HaulersDream.Setting.Yield.OffDesc>Работник оставляет результат там, где он упал, а обычный грузчик заберёт его позже, ровно как в ванили. Лучше всего для тяжёлых или малоценных вещей, которые вы не хотите носить в инвентаре, например каменных обломков.</HaulersDream.Setting.Yield.OffDesc>
+<HaulersDream.Setting.Yield.Drop>Бросить, затем собрать</HaulersDream.Setting.Yield.Drop>
+<HaulersDream.Setting.Yield.DropDesc>Результат падает на пол, затем работающий пешка подбирает его в свой инвентарь и уносит в следующей ходке на разгрузку. Поскольку он сначала касается пола, другой грузчик или более близкий склад всё ещё может его забрать, поэтому это наиболее близкий к ванильному вариант. Хорош, когда у вас есть свободные грузчики.</HaulersDream.Setting.Yield.DropDesc>
+<HaulersDream.Setting.Yield.Direct>Собирать напрямую</HaulersDream.Setting.Yield.Direct>
+<HaulersDream.Setting.Yield.DirectDesc>Результат попадает прямо в инвентарь работающего пешки, ни разу не касаясь пола, а затем вывозится в следующей ходке на разгрузку. Никто другой не может его забрать, поэтому работник всегда уносит результаты своего труда сам. Это держит рабочие зоны чистыми и подходит для караванов и вылазочных карт. Тяжёлый груз замедляет пешку.</HaulersDream.Setting.Yield.DirectDesc>
+<HaulersDream.Setting.Yield.Harvest>Сбор урожая (культуры и ягоды)</HaulersDream.Setting.Yield.Harvest>
+<HaulersDream.Setting.Yield.HarvestHelp>Культуры, ягоды и другие пищевые/растительные урожаи.</HaulersDream.Setting.Yield.HarvestHelp>
+<HaulersDream.Setting.Yield.Logging>Заготовка древесины (деревья и кактусы)</HaulersDream.Setting.Yield.Logging>
+<HaulersDream.Setting.Yield.LoggingHelp>Древесина и другие материалы от рубки деревьев и кактусов.</HaulersDream.Setting.Yield.LoggingHelp>
+<HaulersDream.Setting.Yield.Mining>Добыча (руда и ресурсы)</HaulersDream.Setting.Yield.Mining>
+<HaulersDream.Setting.Yield.MiningHelp>Руда, компоненты и другие ресурсы от добычи — не каменные обломки.</HaulersDream.Setting.Yield.MiningHelp>
+<HaulersDream.Setting.Yield.Chunks>Добыча (обломки)</HaulersDream.Setting.Yield.Chunks>
+<HaulersDream.Setting.Yield.ChunksHelp>Каменные и шлаковые обломки от добычи. Установите «Выкл», чтобы оставлять тяжёлые обломки на земле, а не загружать их в инвентарь.</HaulersDream.Setting.Yield.ChunksHelp>
+<HaulersDream.Setting.Yield.DeepDrill>Глубинное бурение</HaulersDream.Setting.Yield.DeepDrill>
+<HaulersDream.Setting.Yield.DeepDrillHelp>Ресурсы, добытые глубинными бурами.</HaulersDream.Setting.Yield.DeepDrillHelp>
+<HaulersDream.Setting.Yield.Deconstruct>Материалы от демонтажа</HaulersDream.Setting.Yield.Deconstruct>
+<HaulersDream.Setting.Yield.DeconstructHelp>Материалы, полученные от демонтированных построек.</HaulersDream.Setting.Yield.DeconstructHelp>
+<HaulersDream.Setting.Yield.Animals>Продукты животных (молоко и шерсть)</HaulersDream.Setting.Yield.Animals>
+<HaulersDream.Setting.Yield.AnimalsHelp>Молоко, шерсть и другие продукты, собранные с животных.</HaulersDream.Setting.Yield.AnimalsHelp>
+<HaulersDream.Setting.Yield.Strip>Раздевание (снятое снаряжение)</HaulersDream.Setting.Yield.Strip>
+<HaulersDream.Setting.Yield.StripHelp>Снаряжение, снятое приказом «Раздеть». Оно всегда сначала падает на пол, а затем собирается, поэтому не может попасть прямо в инвентарь.</HaulersDream.Setting.Yield.StripHelp>
+<HaulersDream.Setting.Yield.Uninstall>Демонтаж установки (свёрнутые постройки)</HaulersDream.Setting.Yield.Uninstall>
 <HaulersDream.Setting.Yield.UninstallHelp>Minified buildings from an Uninstall order (on caravan / away maps, so they batch onto pack animals).</HaulersDream.Setting.Yield.UninstallHelp>
-<HaulersDream.Setting.PerPawnButtonsNote>These add command buttons to each colonist; they don't change automatic hauling.</HaulersDream.Setting.PerPawnButtonsNote>
-<HaulersDream.Search.Placeholder>Search settings…</HaulersDream.Search.Placeholder>
-<HaulersDream.Search.NoResults>No settings match your search.</HaulersDream.Search.NoResults>
-<HaulersDream.Search.Clear>Clear search</HaulersDream.Search.Clear>
+<HaulersDream.Setting.PerPawnButtonsNote>Они добавляют кнопки команд каждому колонисту; они не меняют автоматическую переноску.</HaulersDream.Setting.PerPawnButtonsNote>
+<HaulersDream.Search.Placeholder>Поиск настроек…</HaulersDream.Search.Placeholder>
+<HaulersDream.Search.NoResults>Нет настроек, соответствующих вашему запросу.</HaulersDream.Search.NoResults>
+<HaulersDream.Search.Clear>Очистить поиск</HaulersDream.Search.Clear>
 </LanguageData>
