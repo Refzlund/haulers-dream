@@ -80,8 +80,8 @@
 <HaulersDream.Setting.PlanCraftingDesc>La herramienta de planificación con clic derecho en las mesas de trabajo que repite una tarea varias veces con un solo viaje de ingredientes. Desactivado = la opción del menú queda oculta.</HaulersDream.Setting.PlanCraftingDesc>
 <HaulersDream.Setting.BatchByDefault>Agrupar las nuevas tareas en lote por defecto</HaulersDream.Setting.BatchByDefault>
 <HaulersDream.Setting.BatchByDefaultDesc>Las tareas de fabricación y de cocina que AÑADAS a partir de ahora empiezan en modo «lote»: el colono trae todo un lote de ingredientes en un viaje, los elabora todos en la mesa (la comida no se echa a perder mientras trabaja) y luego lo transporta todo al almacén. Solo afecta a las tareas recién añadidas; las tareas existentes conservan su ajuste actual.</HaulersDream.Setting.BatchByDefaultDesc>
-  <HaulersDream.Setting.AllowBatchUnderCommonSense>Batch even with Common Sense active</HaulersDream.Setting.AllowBatchUnderCommonSense>
-  <HaulersDream.Setting.AllowBatchUnderCommonSenseDesc>On by default. Lets bills you marked for batching still batch while Common Sense is active, instead of being made one item at a time. Batch crafting uses its own separate job, so it won't clash with Common Sense's "clean first" and "haul all ingredients" features. Turn this off to hand all cooking and crafting over to Common Sense. The batch options then disappear from the bill menu.</HaulersDream.Setting.AllowBatchUnderCommonSenseDesc>
+  <HaulersDream.Setting.AllowBatchUnderCommonSense>Hacer lotes incluso con Common Sense activo</HaulersDream.Setting.AllowBatchUnderCommonSense>
+  <HaulersDream.Setting.AllowBatchUnderCommonSenseDesc>Activado por defecto. Permite que las órdenes de trabajo que marcaste para hacer en lotes sigan procesándose en lotes mientras Common Sense está activo, en lugar de fabricarse de uno en uno. La fabricación en lotes usa su propio trabajo independiente, así que no entrará en conflicto con las funciones de "limpiar primero" y "transportar todos los ingredientes" de Common Sense. Desactiva esto para entregar toda la cocina y la fabricación a Common Sense. Las opciones de lote desaparecen entonces del menú de la orden de trabajo.</HaulersDream.Setting.AllowBatchUnderCommonSenseDesc>
 <HaulersDream.Setting.DefaultBatchSize>Tamaño de lote por defecto: {0}</HaulersDream.Setting.DefaultBatchSize>
 <HaulersDream.Batch.MenuPrefix>Lote</HaulersDream.Batch.MenuPrefix>
 <HaulersDream.Batch.SetSize>Tamaño de lote: {0}…</HaulersDream.Batch.SetSize>
@@ -117,8 +117,8 @@
 <HaulersDream.Overload.Free>Sin ralentización: llevar libremente</HaulersDream.Overload.Free>
 <HaulersDream.Overload.Fair>Justo (equilibrado)</HaulersDream.Overload.Fair>
 <HaulersDream.Overload.Off>Desactivado: no sobrecargar nunca</HaulersDream.Overload.Off>
-<HaulersDream.Overload.Eager>Ansioso por sobrecargar ({0})</HaulersDream.Overload.Eager>
-<HaulersDream.Overload.Cautious>Cauto ({0})</HaulersDream.Overload.Cautious>
+<HaulersDream.Overload.Eager>Ansioso por sobrecargar</HaulersDream.Overload.Eager>
+<HaulersDream.Overload.Cautious>Cauto</HaulersDream.Overload.Cautious>
 <HaulersDream.Setting.StrictCarryWeight>Peso de carga estricto (no sobrecargar)</HaulersDream.Setting.StrictCarryWeight>
 <HaulersDream.Setting.StrictCarryWeightDesc>Cuando está ACTIVADO, los peones nunca llevan por encima del 100 % de su peso máximo y nunca interrumpen el trabajo para descargar estando llenos: siguen cosechando y dejan el excedente en el suelo para el transporte normal (que se recoge al pasar). Cuando está DESACTIVADO (por defecto), los peones se sobrecargan según la barra de arriba y van a descargar una vez llenos.</HaulersDream.Setting.StrictCarryWeightDesc>
 <HaulersDream.Setting.KeepWorkingWhenFull>Seguir trabajando estando lleno (no interrumpir para descargar)</HaulersDream.Setting.KeepWorkingWhenFull>
@@ -134,16 +134,6 @@
 <HaulersDream.Setting.OpportunisticUnloadDesc>Cuando un peón que lleva bienes recogidos se va en un viaje largo a su próximo trabajo y un almacén le queda más o menos de camino, deja la carga al pasar, en lugar de llevarla por todo el mapa y hacer un viaje aparte más tarde.</HaulersDream.Setting.OpportunisticUnloadDesc>
 <HaulersDream.Stat.Overload>Hauler's Dream — sobrecargado</HaulersDream.Stat.Overload>
 <HaulersDream.Stat.MechCarryCapacity>Hauler's Dream — capacidad de carga</HaulersDream.Stat.MechCarryCapacity>
-<HaulersDream.Setting.WorkTypesHeader>Recoger rendimientos de estos tipos de trabajo:</HaulersDream.Setting.WorkTypesHeader>
-<HaulersDream.Setting.HaulHarvest>Plantas — cosechar y cortar</HaulersDream.Setting.HaulHarvest>
-<HaulersDream.Setting.HaulMining>Minería — mineral y rocas</HaulersDream.Setting.HaulMining>
-<HaulersDream.Setting.HaulDeepDrill>Perforadoras profundas</HaulersDream.Setting.HaulDeepDrill>
-<HaulersDream.Setting.HaulDeconstruct>Restos de desmontaje</HaulersDream.Setting.HaulDeconstruct>
-<HaulersDream.Setting.HaulAnimals>Animales — ordeñar y esquilar</HaulersDream.Setting.HaulAnimals>
-<HaulersDream.Setting.HaulUninstall>Desinstalación — edificios miniaturizados (mapas de caravana/lejanos)</HaulersDream.Setting.HaulUninstall>
-<HaulersDream.Setting.HaulStrip>Desvestir — equipo retirado (transportar el equipo de una orden de Desvestir)</HaulersDream.Setting.HaulStrip>
-<HaulersDream.Setting.HaulStripDesc>Cuando un colono desviste a un prisionero, a un peón abatido o a un cadáver (una orden de Desvestir que TÚ colocas a mano), las armas, el equipo y la ropa retirados se recogen en su inventario justo después de desvestir, y se transportan a casa en un solo viaje. Este es el interruptor que rige el transporte del equipo desvestido; es independiente de «Desvestir automáticamente al transportar» de más arriba: aquel solo desviste un cadáver mientras está SIENDO transportado (botín al inventario); ESTE transporta el equipo que una orden manual de Desvestir deja caer al suelo. Así que puedes poner desvestir-automáticamente-al-transportar en «nunca» y aun así hacer que los desvestidos ordenados a mano recojan y transporten su equipo, siempre que esto esté activado. La ropa contaminada de un cadáver sigue las elecciones de ropa contaminada de la sección de desvestir automático (las piezas marcadas como «dejarla en el cadáver» quedan en el suelo, sin recoger). Para un objetivo vivo, se pone en cola un desvestido de seguimiento al final de los trabajos del que desviste, por si el objetivo vuelve a vestirse con las sobras; no hace nada si el objetivo se quedó desnudo.</HaulersDream.Setting.HaulStripDesc>
-<HaulersDream.Setting.HaulStripCrossRef>Independiente de «Desvestir automáticamente al transportar» de cerca de arriba: aquel desviste un cadáver mientras se transporta (botín al inventario); este transporta el equipo que una orden manual de Desvestir deja caer.</HaulersDream.Setting.HaulStripCrossRef>
 <HaulersDream.Setting.WorkOverrideHeader>Anulaciones de incapacidad para trabajar (desactivado = juego base):</HaulersDream.Setting.WorkOverrideHeader>
 <HaulersDream.Setting.AllCanHaul>Todos los peones pueden transportar</HaulersDream.Setting.AllCanHaul>
 <HaulersDream.Setting.AllCanHaulDesc>Ningún trasfondo, rasgo, gen, título real, rol ideológico, dolencia o restricción de misión puede hacer que un peón sea incapaz de transportar. Se aplica a la pestaña de trabajo, a la priorización con clic derecho, al trabajo automático y a los planificadores de este mod. (Asigna una prioridad de trabajo después de activarlo: los peones recién capacitados empiezan sin asignar, como cualquier otro trabajo).</HaulersDream.Setting.AllCanHaulDesc>
@@ -552,16 +542,9 @@
 <HaulersDream.Common.Off>Desactivado</HaulersDream.Common.Off>
 <HaulersDream.Common.On>Activado</HaulersDream.Common.On>
 <HaulersDream.Unit.Tiles>{0} casillas</HaulersDream.Unit.Tiles>
-<HaulersDream.Unit.Ticks>{0} tics</HaulersDream.Unit.Ticks>
 <HaulersDream.Unit.Hours>{0} h</HaulersDream.Unit.Hours>
 <HaulersDream.Setting.CarryLimit.Lab>Límite de carga</HaulersDream.Setting.CarryLimit.Lab>
 <HaulersDream.Setting.Overload.Lab>Sobrecarga inteligente</HaulersDream.Setting.Overload.Lab>
-<HaulersDream.Setting.PickupMode.Lab>Gestión de la recogida</HaulersDream.Setting.PickupMode.Lab>
-<HaulersDream.Setting.PickupMode.Help>Cómo coge un peón un objeto que está a punto de transportar para añadirlo a su carga.</HaulersDream.Setting.PickupMode.Help>
-<HaulersDream.Setting.PickupMode.Drop>Dejar y luego transportar</HaulersDream.Setting.PickupMode.Drop>
-<HaulersDream.Setting.PickupMode.DropDesc>Realista: el objeto se deja brevemente en el suelo y luego se recoge, de modo que otro transportador aún puede cogerlo a mitad de paso.</HaulersDream.Setting.PickupMode.DropDesc>
-<HaulersDream.Setting.PickupMode.Direct>Al inventario</HaulersDream.Setting.PickupMode.Direct>
-<HaulersDream.Setting.PickupMode.DirectDesc>El objeto pasa directamente al inventario del peón sin paso por el suelo.</HaulersDream.Setting.PickupMode.DirectDesc>
 <HaulersDream.Setting.BulkHaulTrigger.Lab>Disparador del transporte en lote</HaulersDream.Setting.BulkHaulTrigger.Lab>
 <HaulersDream.Setting.KeepWorkingMargin.Lab>Descargar antes de un desplazamiento más largo</HaulersDream.Setting.KeepWorkingMargin.Lab>
 <HaulersDream.Setting.MinFreeSpaceToUnloadCarrier.Lab>Espacio libre mínimo en la mochila para empezar</HaulersDream.Setting.MinFreeSpaceToUnloadCarrier.Lab>
@@ -630,12 +613,6 @@
 <HaulersDream.PlanRoute.SelNearest.H>Prefiere los objetivos más cercanos al que clicaste.</HaulersDream.PlanRoute.SelNearest.H>
 <HaulersDream.PlanRoute.DistStraight.H>Mide la distancia en línea recta: rápido.</HaulersDream.PlanRoute.DistStraight.H>
 <HaulersDream.PlanRoute.DistWalking.H>Mide la distancia a lo largo del trayecto real a pie: más lento, más preciso.</HaulersDream.PlanRoute.DistWalking.H>
-<HaulersDream.Setting.HaulHarvest.Help>Recoge en el inventario los cultivos cosechados y los rendimientos de plantas cortadas a medida que el peón trabaja.</HaulersDream.Setting.HaulHarvest.Help>
-<HaulersDream.Setting.HaulMining.Help>Recoge en el inventario el mineral minado y las rocas a medida que el peón mina.</HaulersDream.Setting.HaulMining.Help>
-<HaulersDream.Setting.HaulDeepDrill.Help>Recoge en el inventario la producción de la perforadora profunda a medida que se produce.</HaulersDream.Setting.HaulDeepDrill.Help>
-<HaulersDream.Setting.HaulDeconstruct.Help>Recoge en el inventario los restos de los edificios desmontados.</HaulersDream.Setting.HaulDeconstruct.Help>
-<HaulersDream.Setting.HaulAnimals.Help>Recoge en el inventario la leche, la lana y otros productos obtenidos de los animales.</HaulersDream.Setting.HaulAnimals.Help>
-<HaulersDream.Setting.HaulUninstall.Help>En un mapa de caravana u otro mapa lejano (nunca en tu colonia de origen), recoge un edificio que desinstalas —ahora un objeto miniaturizado— directamente en el inventario del trabajador, de modo que varias estructuras desinstaladas se llevan a los animales de carga en UN viaje en lugar de una caminata de ida y vuelta por objeto. Solo se activa donde el objeto se puede entregar de verdad (un almacén/zona o un animal de carga). En tu mapa de origen esto no hace nada: allí, un edificio desinstalado se deja en el suelo para el transporte normal o la reinstalación.</HaulersDream.Setting.HaulUninstall.Help>
 <HaulersDream.Cat.Hauling.Intro>Cómo recogen las cosas los colonos: cuánto llevan, cuándo se sobrecargan, y qué barren.</HaulersDream.Cat.Hauling.Intro>
 <HaulersDream.Cat.Unloading.Intro>Cuándo y cómo guardan los colonos sus bienes acarreados.</HaulersDream.Cat.Unloading.Intro>
 <HaulersDream.Cat.BuildCraft.Intro>Obtener materiales de construcción y fabricación del inventario, entrega de comida, y elección de ingredientes.</HaulersDream.Cat.BuildCraft.Intro>
@@ -646,7 +623,6 @@
 <HaulersDream.Cat.Planners.Intro>Los planificadores de rutas y de fabricación con clic derecho, y sus valores por defecto.</HaulersDream.Cat.Planners.Intro>
 <HaulersDream.Cat.Advanced.Intro>Sincronización de la descarga, la alerta de seguridad de carga atascada, la limpieza al guardar, y las herramientas para desarrolladores.</HaulersDream.Cat.Advanced.Intro>
 <HaulersDream.Head.CarryWeight>Peso de carga</HaulersDream.Head.CarryWeight>
-<HaulersDream.Head.Pickup>Recogida</HaulersDream.Head.Pickup>
 <HaulersDream.Head.AutoUnloadTrips>Viajes de descarga automáticos</HaulersDream.Head.AutoUnloadTrips>
 <HaulersDream.Head.DropOff>Comportamiento de descarga</HaulersDream.Head.DropOff>
 <HaulersDream.Head.ItemRulesDisplay>Reglas por objeto y visualización</HaulersDream.Head.ItemRulesDisplay>
@@ -654,21 +630,51 @@
 <HaulersDream.Head.WhoCanHaul>Quién puede recoger y transportar</HaulersDream.Head.WhoCanHaul>
 <HaulersDream.Head.PlanningTools>Herramientas de planificación</HaulersDream.Head.PlanningTools>
 <HaulersDream.Setting.Overload.Ceiling>tope</HaulersDream.Setting.Overload.Ceiling>
-  <HaulersDream.Setting.MechHaulMultiplier.Lab>Mechanoid carrying capacity</HaulersDream.Setting.MechHaulMultiplier.Lab>
-  <HaulersDream.Setting.MechHaulMultiplierDesc>Multiplies how much your work mechanoids carry per hauling trip, on top of their real carrying capacity. At ×1.0 (the default) a mech hauls exactly as much as its carrying capacity allows; raise it so a dedicated lifter mech makes fewer, bigger trips. The mech is slowed by the extra load the same way a colonist is, so the smart-overload bargain stays balanced. Only affects your own mechanoids, and has no effect while Combat Extended is installed (CE manages carry weight itself).</HaulersDream.Setting.MechHaulMultiplierDesc>
-  <HaulersDream.Setting.ShowAutoHaulGizmo>Show the per-pawn auto-haul toggle</HaulersDream.Setting.ShowAutoHaulGizmo>
+  <HaulersDream.Setting.MechHaulMultiplier.Lab>Capacidad de carga de mecanoides</HaulersDream.Setting.MechHaulMultiplier.Lab>
+  <HaulersDream.Setting.MechHaulMultiplierDesc>Multiplica cuánto cargan tus mecanoides de trabajo por viaje de transporte, además de su capacidad de carga real. En ×1.0 (el valor por defecto) un mecanoide transporta exactamente lo que permite su capacidad de carga; súbelo para que un mecanoide dedicado al transporte haga viajes menos numerosos y más grandes. El mecanoide se ralentiza por la carga adicional igual que un colono, así que el trato de sobrecarga inteligente sigue equilibrado. Solo afecta a tus propios mecanoides y no tiene efecto mientras Combat Extended esté instalado (CE gestiona el peso de carga por su cuenta).</HaulersDream.Setting.MechHaulMultiplierDesc>
+  <HaulersDream.Setting.ShowAutoHaulGizmo>Mostrar el interruptor de transporte automático por colono</HaulersDream.Setting.ShowAutoHaulGizmo>
   <HaulersDream.Setting.ShowAutoHaulGizmo.Help>Adds an "Auto-haul yields" toggle to each eligible pawn's command bar so you can stop individual pawns from automatically scooping and hauling. Off by default to keep the command bar uncluttered; pawns still auto-haul either way, this only controls whether the toggle is shown. A pawn's saved preference is still honoured even while the toggle is hidden.</HaulersDream.Setting.ShowAutoHaulGizmo.Help>
-<HaulersDream.Batch.SetOvershoot>Batch overshoot: +{0}…</HaulersDream.Batch.SetOvershoot>
-<HaulersDream.Batch.OvershootDialogTitle>Batch overshoot — {0}</HaulersDream.Batch.OvershootDialogTitle>
-<HaulersDream.Batch.OvershootLabel>Overshoot by {0} past the target</HaulersDream.Batch.OvershootLabel>
-<HaulersDream.Batch.OvershootLabelOff>Overshoot: off (stop at the target)</HaulersDream.Batch.OvershootLabelOff>
-<HaulersDream.Batch.OvershootDesc>For a "Do until you have X" batch: once a colonist starts it (while below X), keep making up to this many more, finishing a useful round number while they're already at the bench instead of stopping the moment the count reaches X. Still capped by available materials.</HaulersDream.Batch.OvershootDesc>
-<HaulersDream.Batch.TipDoX>Make a set number each time, gathering the whole batch in one trip.</HaulersDream.Batch.TipDoX>
-<HaulersDream.Batch.TipUntilX>Keep stock topped up to a target count, making a batch whenever it runs low.</HaulersDream.Batch.TipUntilX>
-<HaulersDream.Batch.TipForever>Keep making this in batches. The colonist finishes the current item, then stops to eat, sleep, or relax if it urgently needs to, putting everything away first.</HaulersDream.Batch.TipForever>
-<HaulersDream.Batch.TipSize>How many to make per batch. The colonist gathers all the ingredients in one trip.</HaulersDream.Batch.TipSize>
-<HaulersDream.Batch.TipOvershoot>For "Do until you have X": keep making a little past the target once started, so the colonist finishes a round number while already at the bench.</HaulersDream.Batch.TipOvershoot>
-<HaulersDream.PlanRoute.SowingGerundFallback>sowing</HaulersDream.PlanRoute.SowingGerundFallback>
-<HaulersDream.PlanRoute.ModeSowZone>Whole growing zone</HaulersDream.PlanRoute.ModeSowZone>
-<HaulersDream.PlanRoute.ModeSowZoneDesc>Sow every empty growable cell inside this growing zone — plant the whole field from one click.</HaulersDream.PlanRoute.ModeSowZoneDesc>
+<HaulersDream.Batch.SetOvershoot>Exceso del lote: +{0}…</HaulersDream.Batch.SetOvershoot>
+<HaulersDream.Batch.OvershootDialogTitle>Exceso del lote — {0}</HaulersDream.Batch.OvershootDialogTitle>
+<HaulersDream.Batch.OvershootLabel>Excederse en {0} más allá del objetivo</HaulersDream.Batch.OvershootLabel>
+<HaulersDream.Batch.OvershootLabelOff>Exceso: desactivado (detenerse en el objetivo)</HaulersDream.Batch.OvershootLabelOff>
+<HaulersDream.Batch.OvershootDesc>Para un lote de "Hacer hasta tener X": una vez que un colono lo empieza (estando por debajo de X), sigue fabricando hasta esta cantidad adicional, completando una cifra redonda útil mientras ya está en la mesa de trabajo en lugar de detenerse en el instante en que la cuenta alcanza X. Sigue limitado por los materiales disponibles.</HaulersDream.Batch.OvershootDesc>
+<HaulersDream.Batch.TipDoX>Fabrica una cantidad fija cada vez, reuniendo todo el lote en un solo viaje.</HaulersDream.Batch.TipDoX>
+<HaulersDream.Batch.TipUntilX>Mantén las existencias surtidas hasta una cuenta objetivo, fabricando un lote cada vez que se agoten.</HaulersDream.Batch.TipUntilX>
+<HaulersDream.Batch.TipForever>Sigue fabricando esto en lotes. El colono termina el objeto actual y luego se detiene para comer, dormir o relajarse si lo necesita con urgencia, guardándolo todo primero.</HaulersDream.Batch.TipForever>
+<HaulersDream.Batch.TipSize>Cuántos fabricar por lote. El colono reúne todos los ingredientes en un solo viaje.</HaulersDream.Batch.TipSize>
+<HaulersDream.Batch.TipOvershoot>Para "Hacer hasta tener X": sigue fabricando un poco más allá del objetivo una vez empezado, para que el colono complete una cifra redonda mientras ya está en la mesa de trabajo.</HaulersDream.Batch.TipOvershoot>
+<HaulersDream.PlanRoute.SowingGerundFallback>sembrando</HaulersDream.PlanRoute.SowingGerundFallback>
+<HaulersDream.PlanRoute.ModeSowZone>Toda la zona de cultivo</HaulersDream.PlanRoute.ModeSowZone>
+<HaulersDream.PlanRoute.ModeSowZoneDesc>Siembra todas las celdas cultivables vacías dentro de esta zona de cultivo: planta todo el campo con un solo clic.</HaulersDream.PlanRoute.ModeSowZoneDesc>
+<HaulersDream.Setting.Yield.Header>Recoger resultados del trabajo</HaulersDream.Setting.Yield.Header>
+<HaulersDream.Setting.Yield.Intro>Cuando un colono termina una tarea, elige qué pasa con el resultado. Ambas opciones de "recoger" lo llevan en el propio inventario del trabajador y lo guardan en el siguiente viaje de descarga; solo se diferencian en si cae al suelo primero. La mayoría de las configuraciones pueden dejar esto en "Soltar y luego recoger".</HaulersDream.Setting.Yield.Intro>
+<HaulersDream.Setting.Yield.Off>Off</HaulersDream.Setting.Yield.Off>
+<HaulersDream.Setting.Yield.OffDesc>El trabajador deja el resultado donde cae y un transportista normal lo recoge más tarde, exactamente como en la vanilla. Lo mejor para cosas pesadas o de poco valor que no quieres llevar en el inventario, como los trozos de piedra.</HaulersDream.Setting.Yield.OffDesc>
+<HaulersDream.Setting.Yield.Drop>Soltar y luego recoger</HaulersDream.Setting.Yield.Drop>
+<HaulersDream.Setting.Yield.DropDesc>El resultado cae al suelo y luego el colono que trabaja lo recoge en su propio inventario y lo lleva fuera en el siguiente viaje de descarga. Como toca el suelo primero, otro transportista o un almacén más cercano todavía puede tomarlo, así que es la opción más parecida a la vanilla. Buena cuando tienes transportistas de sobra.</HaulersDream.Setting.Yield.DropDesc>
+<HaulersDream.Setting.Yield.Direct>Recoger directamente</HaulersDream.Setting.Yield.Direct>
+<HaulersDream.Setting.Yield.DirectDesc>El resultado va directo al inventario del colono que trabaja sin tocar nunca el suelo, y luego sale en el siguiente viaje de descarga. Nadie más puede tomarlo, así que el trabajador siempre se lleva sus propios resultados. Mantiene despejadas las áreas de trabajo y es ideal para caravanas y mapas externos. Una carga pesada ralentiza al colono.</HaulersDream.Setting.Yield.DirectDesc>
+<HaulersDream.Setting.Yield.Harvest>Cosecha (cultivos y bayas)</HaulersDream.Setting.Yield.Harvest>
+<HaulersDream.Setting.Yield.HarvestHelp>Cultivos, bayas y otras cosechas de comida o plantas.</HaulersDream.Setting.Yield.HarvestHelp>
+<HaulersDream.Setting.Yield.Logging>Tala (árboles y cactus)</HaulersDream.Setting.Yield.Logging>
+<HaulersDream.Setting.Yield.LoggingHelp>Madera y otros productos de talar árboles y cactus.</HaulersDream.Setting.Yield.LoggingHelp>
+<HaulersDream.Setting.Yield.Mining>Minería (mineral y recursos)</HaulersDream.Setting.Yield.Mining>
+<HaulersDream.Setting.Yield.MiningHelp>Mineral, componentes y otros recursos de la minería, no trozos de piedra.</HaulersDream.Setting.Yield.MiningHelp>
+<HaulersDream.Setting.Yield.Chunks>Minería (trozos)</HaulersDream.Setting.Yield.Chunks>
+<HaulersDream.Setting.Yield.ChunksHelp>Trozos de piedra y escoria de la minería. Ponlo en Desactivado para dejar los trozos pesados en el suelo en lugar de cargarlos en el inventario.</HaulersDream.Setting.Yield.ChunksHelp>
+<HaulersDream.Setting.Yield.DeepDrill>Perforación profunda</HaulersDream.Setting.Yield.DeepDrill>
+<HaulersDream.Setting.Yield.DeepDrillHelp>Recursos producidos por las perforadoras profundas.</HaulersDream.Setting.Yield.DeepDrillHelp>
+<HaulersDream.Setting.Yield.Deconstruct>Material de desmantelamiento</HaulersDream.Setting.Yield.Deconstruct>
+<HaulersDream.Setting.Yield.DeconstructHelp>Materiales recuperados de edificios desmantelados.</HaulersDream.Setting.Yield.DeconstructHelp>
+<HaulersDream.Setting.Yield.Animals>Productos animales (leche y lana)</HaulersDream.Setting.Yield.Animals>
+<HaulersDream.Setting.Yield.AnimalsHelp>Leche, lana y otros productos recogidos de los animales.</HaulersDream.Setting.Yield.AnimalsHelp>
+<HaulersDream.Setting.Yield.Strip>Despojo (equipo retirado)</HaulersDream.Setting.Yield.Strip>
+<HaulersDream.Setting.Yield.StripHelp>Equipo retirado por una orden de Despojar. Siempre cae al suelo primero y luego se recoge, así que no puede ir directo al inventario.</HaulersDream.Setting.Yield.StripHelp>
+<HaulersDream.Setting.Yield.Uninstall>Desinstalación (edificios miniaturizados)</HaulersDream.Setting.Yield.Uninstall>
+<HaulersDream.Setting.Yield.UninstallHelp>Minified buildings from an Uninstall order (on caravan / away maps, so they batch onto pack animals).</HaulersDream.Setting.Yield.UninstallHelp>
+<HaulersDream.Setting.PerPawnButtonsNote>Estos añaden botones de orden a cada colono; no cambian el transporte automático.</HaulersDream.Setting.PerPawnButtonsNote>
+<HaulersDream.Search.Placeholder>Buscar opciones…</HaulersDream.Search.Placeholder>
+<HaulersDream.Search.NoResults>Ninguna opción coincide con tu búsqueda.</HaulersDream.Search.NoResults>
+<HaulersDream.Search.Clear>Borrar búsqueda</HaulersDream.Search.Clear>
 </LanguageData>

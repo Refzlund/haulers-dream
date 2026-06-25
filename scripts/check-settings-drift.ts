@@ -188,7 +188,7 @@ async function main() {
 	// Profile-management metadata ([ProfileMeta]) is persisted but is NOT a tunable setting: the saved-profile
 	// list and active-profile name are user data that ResetToDefaults must NEVER wipe, so they're exempt from the
 	// field==Scribe==Reset triple (they'd otherwise demand a reset assignment that would delete the user's profiles).
-	const META_FIELDS = new Set(['savedProfiles', 'activeProfileName', 'reporterId'])
+	const META_FIELDS = new Set(['savedProfiles', 'activeProfileName', 'reporterId', 'settingsSchemaVersion'])
 
 	// A serialized field = a field decl that is NOT [System.NonSerialized] AND has an initializer.
 	// (A `private` cache without `= ...` and no Scribe entry is not a setting; skip it.)

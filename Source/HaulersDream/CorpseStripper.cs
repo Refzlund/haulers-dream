@@ -108,7 +108,7 @@ namespace HaulersDream
         internal static void QueueReStripIfNeeded(Pawn stripper, Thing target)
         {
             var s = HaulersDreamMod.Settings;
-            if (s == null || !s.haulStrip)
+            if (s == null || !s.IsTypeEnabled(HaulSourceType.Strip))
                 return;
             // Living pawns only: a corpse can't re-dress, and the gear is already scooped/queued.
             if (!(target is Pawn victim) || victim.Dead || !victim.Spawned)

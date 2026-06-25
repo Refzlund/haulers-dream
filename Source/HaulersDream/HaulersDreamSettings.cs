@@ -27,9 +27,6 @@ namespace HaulersDream
         // --- carry limit (the headline change: default = full max carrying capacity) ---
         public float carryLimitFraction = 1.0f;
 
-        // --- pickup mode ---
-        public PickupMode pickupMode = PickupMode.DropThenHaul;
-
         // --- unload defaults / sharing ---
         public bool markForUnload = true;     // automatic unloading (end of work run / checkpoints / full / interval); off = gizmo-only
         // Also put away surplus a colonist is carrying that HD did NOT scoop (trade/mod/manual stock), not just
@@ -380,14 +377,28 @@ namespace HaulersDream
         public bool allowAnimals = false;
         public bool allowIncapable = false;   // let pawns incapable of hauling still scoop their own yields
 
-        // --- per-work-type toggles ---
-        public bool haulHarvest = true;
-        public bool haulMining = true;
-        public bool haulDeepDrill = true;
-        public bool haulDeconstruct = true;
-        public bool haulAnimals = true;
-        public bool haulStrip = true;   // gear removed by a strip order (pawn or corpse) gets scooped + hauled
-        public bool haulUninstall = true;   // the minified building from an uninstall order — scooped (non-home maps only, see YieldRouter) so it batches onto pack animals in one caravan-load trip
+        // --- per-category yield behavior (issue #79): each work-result category independently chooses Off /
+        // Drop & haul / Straight-to-inventory. Default DropThenHaul for every category == the legacy behavior
+        // (all per-work toggles on + the old global pickupMode = DropThenHaul). Harvest split into {Harvest,
+        // Logging}; Mining split into {Mining (ore/resources), Chunks}. Scribe writes the enum NAME, so the
+        // integer order (which must match the UI segment order [Off, Drop & haul, To inventory]) is save-safe. ---
+        public YieldBehavior yieldHarvest = YieldBehavior.DropThenHaul;     // crops / berries / food harvest
+        public YieldBehavior yieldLogging = YieldBehavior.DropThenHaul;     // wood / cacti from felling trees
+        public YieldBehavior yieldMining = YieldBehavior.DropThenHaul;      // ore / resources — NOT stone chunks
+        public YieldBehavior yieldChunks = YieldBehavior.DropThenHaul;      // stone / slag chunks from mining
+        public YieldBehavior yieldDeepDrill = YieldBehavior.DropThenHaul;   // deep-drill portions
+        public YieldBehavior yieldDeconstruct = YieldBehavior.DropThenHaul; // deconstruction salvage
+        public YieldBehavior yieldAnimals = YieldBehavior.DropThenHaul;     // milk / wool / animal products
+        public YieldBehavior yieldStrip = YieldBehavior.DropThenHaul;       // gear removed by a strip order (always drop-then-haul; UI hides the "to inventory" option)
+        public YieldBehavior yieldUninstall = YieldBehavior.DropThenHaul;   // the minified building from an uninstall order — scooped (non-home maps only, see YieldRouter) so it batches onto pack animals in one caravan-load trip
+
+        // Settings schema version, bumped when a one-time on-load migration is needed. 0 = pre-#79 (per-work bools
+        // + global pickupMode); 1 = the per-category yieldX model. The migration runs at most once (guarded on
+        // settingsSchemaVersion < 1) and then stamps this to CurrentSettingsSchema so it never re-runs. [ProfileMeta]:
+        // it is serialized plumbing, NOT a user-facing tunable, so the profile system must ignore it when comparing a
+        // config against the defaults (the on-load stamp to 1 would otherwise read a pristine config as "Custom").
+        [ProfileMeta] public int settingsSchemaVersion = 0;
+        private const int CurrentSettingsSchema = 1;
 
         // --- unloading ---
         // The "settle" window: how long after its LAST pickup a pawn keeps accumulating before an automatic
@@ -454,8 +465,13 @@ namespace HaulersDream
             }
         }
 
-        public bool IsTypeEnabled(HaulSourceType type)
-            => WorkTypePolicy.IsTypeEnabled(type, haulHarvest, haulMining, haulDeepDrill, haulDeconstruct, haulAnimals, haulStrip, haulUninstall);
+        /// <summary>The per-category <see cref="YieldBehavior"/> the player chose for a given work-result type.</summary>
+        public YieldBehavior BehaviorFor(HaulSourceType type) => WorkTypePolicy.BehaviorFor(type,
+            yieldHarvest, yieldLogging, yieldMining, yieldChunks, yieldDeepDrill,
+            yieldDeconstruct, yieldAnimals, yieldStrip, yieldUninstall);
+
+        /// <summary>True if HD does ANYTHING for this category (Drop & haul or To inventory); false = Off/vanilla.</summary>
+        public bool IsTypeEnabled(HaulSourceType type) => BehaviorFor(type) != YieldBehavior.Disabled;
 
         public float EffectiveCapacity(float maxCapacityKg) => CarryMath.EffectiveCapacity(maxCapacityKg, carryLimitFraction);
 
@@ -473,7 +489,6 @@ namespace HaulersDream
             base.ExposeData();
             Scribe_Values.Look(ref masterEnabled, "masterEnabled", true);
             Scribe_Values.Look(ref carryLimitFraction, "carryLimitFraction", 1.0f);
-            Scribe_Values.Look(ref pickupMode, "pickupMode", PickupMode.DropThenHaul);
             Scribe_Values.Look(ref markForUnload, "markForUnload", true);
             Scribe_Values.Look(ref unloadBeforeSleep, "unloadBeforeSleep", true);
             Scribe_Values.Look(ref unloadBeforeLeisure, "unloadBeforeLeisure", true);
@@ -584,13 +599,27 @@ namespace HaulersDream
             Scribe_Values.Look(ref mechHaulMultiplier, "mechHaulMultiplier", 1.0f);
             Scribe_Values.Look(ref allowAnimals, "allowAnimals", false);
             Scribe_Values.Look(ref allowIncapable, "allowIncapable", false);
-            Scribe_Values.Look(ref haulHarvest, "haulHarvest", true);
-            Scribe_Values.Look(ref haulMining, "haulMining", true);
-            Scribe_Values.Look(ref haulDeepDrill, "haulDeepDrill", true);
-            Scribe_Values.Look(ref haulDeconstruct, "haulDeconstruct", true);
-            Scribe_Values.Look(ref haulAnimals, "haulAnimals", true);
-            Scribe_Values.Look(ref haulStrip, "haulStrip", true);
-            Scribe_Values.Look(ref haulUninstall, "haulUninstall", true);
+            Scribe_Values.Look(ref yieldHarvest, "yieldHarvest", YieldBehavior.DropThenHaul);
+            Scribe_Values.Look(ref yieldLogging, "yieldLogging", YieldBehavior.DropThenHaul);
+            Scribe_Values.Look(ref yieldMining, "yieldMining", YieldBehavior.DropThenHaul);
+            Scribe_Values.Look(ref yieldChunks, "yieldChunks", YieldBehavior.DropThenHaul);
+            Scribe_Values.Look(ref yieldDeepDrill, "yieldDeepDrill", YieldBehavior.DropThenHaul);
+            Scribe_Values.Look(ref yieldDeconstruct, "yieldDeconstruct", YieldBehavior.DropThenHaul);
+            Scribe_Values.Look(ref yieldAnimals, "yieldAnimals", YieldBehavior.DropThenHaul);
+            Scribe_Values.Look(ref yieldStrip, "yieldStrip", YieldBehavior.DropThenHaul);
+            Scribe_Values.Look(ref yieldUninstall, "yieldUninstall", YieldBehavior.DropThenHaul);
+            Scribe_Values.Look(ref settingsSchemaVersion, "settingsSchemaVersion", 0);
+            // One-time migration of the pre-#79 per-work bools + global pickupMode into the 9 yieldX values.
+            // Guarded on the schema version so it runs AT MOST ONCE: a fresh install / already-migrated save
+            // (schemaVersion >= 1) keeps its 9 fields untouched. On a legacy save the old nodes are read into
+            // locals (absent nodes yield the old defaults, which map to the correct new defaults — harmless on a
+            // fresh state). The stamp afterwards guarantees we never re-migrate and clobber a player's choices.
+            if (Scribe.mode == LoadSaveMode.LoadingVars)
+            {
+                if (settingsSchemaVersion < 1)
+                    MigrateLegacyYieldSettings();
+                settingsSchemaVersion = CurrentSettingsSchema;
+            }
             Scribe_Values.Look(ref allPawnsCanHaul, "allPawnsCanHaul", false);
             Scribe_Values.Look(ref allPawnsCanClean, "allPawnsCanClean", false);
             Scribe_Values.Look(ref allPawnsCanCutPlants, "allPawnsCanCutPlants", false);
@@ -628,7 +657,6 @@ namespace HaulersDream
         {
             masterEnabled = true;
             carryLimitFraction = 1.0f;
-            pickupMode = PickupMode.DropThenHaul;
             markForUnload = true;
             unloadBeforeSleep = true;
             unloadBeforeLeisure = true;
@@ -723,13 +751,16 @@ namespace HaulersDream
             mechHaulMultiplier = 1.0f;
             allowAnimals = false;
             allowIncapable = false;
-            haulHarvest = true;
-            haulMining = true;
-            haulDeepDrill = true;
-            haulDeconstruct = true;
-            haulAnimals = true;
-            haulStrip = true;
-            haulUninstall = true;
+            yieldHarvest = YieldBehavior.DropThenHaul;
+            yieldLogging = YieldBehavior.DropThenHaul;
+            yieldMining = YieldBehavior.DropThenHaul;
+            yieldChunks = YieldBehavior.DropThenHaul;
+            yieldDeepDrill = YieldBehavior.DropThenHaul;
+            yieldDeconstruct = YieldBehavior.DropThenHaul;
+            yieldAnimals = YieldBehavior.DropThenHaul;
+            yieldStrip = YieldBehavior.DropThenHaul;
+            yieldUninstall = YieldBehavior.DropThenHaul;
+            settingsSchemaVersion = 0;
             allPawnsCanHaul = false;
             allPawnsCanClean = false;
             allPawnsCanCutPlants = false;
@@ -843,6 +874,41 @@ namespace HaulersDream
                 if (!string.IsNullOrEmpty(name) && have.Add(name))
                     itemUnloadRules.Add(EncodeRule(name, new ItemUnloadRule(ItemUnloadMode.KeepAll)));
             keepDefNames = null;
+        }
+
+        // ----- issue #79: one-time migration of the pre-#79 per-work bools + global pickupMode -> the 9 yieldX -----
+        // Runs ONCE, only on a load whose settingsSchemaVersion < 1 (see ExposeData). Reads the OLD save nodes into
+        // LOCALS via Scribe_Values.Look with the OLD defaults (old per-work bools defaulted true; old pickupMode
+        // defaulted DropThenHaul), then maps them through the pure WorkTypePolicy.MapLegacyYield. This is LOSSLESS:
+        // an off toggle -> Disabled, an on toggle -> the old global pickup mode (Drop/Direct); Strip was ALWAYS
+        // drop-then-haul, so it ignores the global mode (forceDropOnly). The split categories inherit their parent's
+        // legacy toggle (Logging<-haulHarvest, Chunks<-haulMining), matching the pre-split behavior exactly. On a
+        // brand-new state the old nodes are absent, so every local reads its old default and maps to DropThenHaul —
+        // identical to the field initializers, so a fresh install is unaffected. Mirrors the keepDefNames idiom.
+        private void MigrateLegacyYieldSettings()
+        {
+            // Read the legacy nodes into locals with the OLD defaults (absent node -> old default).
+            PickupMode legacyPickupMode = PickupMode.DropThenHaul;
+            bool haulHarvest = true, haulMining = true, haulDeepDrill = true, haulDeconstruct = true,
+                 haulAnimals = true, haulStrip = true, haulUninstall = true;
+            Scribe_Values.Look(ref legacyPickupMode, "pickupMode", PickupMode.DropThenHaul);
+            Scribe_Values.Look(ref haulHarvest, "haulHarvest", true);
+            Scribe_Values.Look(ref haulMining, "haulMining", true);
+            Scribe_Values.Look(ref haulDeepDrill, "haulDeepDrill", true);
+            Scribe_Values.Look(ref haulDeconstruct, "haulDeconstruct", true);
+            Scribe_Values.Look(ref haulAnimals, "haulAnimals", true);
+            Scribe_Values.Look(ref haulStrip, "haulStrip", true);
+            Scribe_Values.Look(ref haulUninstall, "haulUninstall", true);
+
+            yieldHarvest     = WorkTypePolicy.MapLegacyYield(haulHarvest, legacyPickupMode, forceDropOnly: false);
+            yieldLogging     = WorkTypePolicy.MapLegacyYield(haulHarvest, legacyPickupMode, forceDropOnly: false); // split inherits haulHarvest
+            yieldMining      = WorkTypePolicy.MapLegacyYield(haulMining, legacyPickupMode, forceDropOnly: false);
+            yieldChunks      = WorkTypePolicy.MapLegacyYield(haulMining, legacyPickupMode, forceDropOnly: false);  // split inherits haulMining
+            yieldDeepDrill   = WorkTypePolicy.MapLegacyYield(haulDeepDrill, legacyPickupMode, forceDropOnly: false);
+            yieldDeconstruct = WorkTypePolicy.MapLegacyYield(haulDeconstruct, legacyPickupMode, forceDropOnly: false);
+            yieldAnimals     = WorkTypePolicy.MapLegacyYield(haulAnimals, legacyPickupMode, forceDropOnly: false);
+            yieldStrip       = WorkTypePolicy.MapLegacyYield(haulStrip, legacyPickupMode, forceDropOnly: true);    // strip was ALWAYS drop-then-haul
+            yieldUninstall   = WorkTypePolicy.MapLegacyYield(haulUninstall, legacyPickupMode, forceDropOnly: false);
         }
 
     }

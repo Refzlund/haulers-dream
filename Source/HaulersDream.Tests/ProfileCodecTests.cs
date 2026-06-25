@@ -30,7 +30,7 @@ namespace HaulersDream.Tests
             {
                 { "carryLimitFraction", "0.75" },
                 { "overloadLevel", "3" },
-                { "pickupMode", "DirectToInventory" },
+                { "yieldChunks", "Disabled" },
                 { "strictCarryWeight", "1" },
             };
             var c = RoundTrip("1.2.0", "Hauler build", changed);

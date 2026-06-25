@@ -60,6 +60,14 @@ namespace HaulersDream
                 return true;
 
             var pawn = FindWorker(center, map, out var type);
+            // Refine the coarse work type into the split categories BEFORE the enabled gate so each
+            // independently-configurable category (Harvest/Logging, Mining/Chunks) is honored: a tree-fell
+            // routes as Logging, a stone/slag chunk as Chunks. Both classifiers fail-safe to the original
+            // type (Harvest/Mining) on any null/unexpected input. The pawn-target read is null-guarded inside
+            // IsLoggingYield; `thing` is the freshly placed yield in scope here. DeepDrill is never reached by
+            // the chunk refinement (this only runs for type == Mining; deep-drill is classified DeepDrill).
+            if (type == HaulSourceType.Harvest && IsLoggingYield(pawn)) type = HaulSourceType.Logging;
+            else if (type == HaulSourceType.Mining && IsChunkYield(thing)) type = HaulSourceType.Chunks;
             if (pawn == null || !s.IsTypeEnabled(type))
                 return true;
 
@@ -77,7 +85,7 @@ namespace HaulersDream
             // containers via the GenDrop chain, whose callers run bookkeeping on the placed result —
             // consuming the placement is unverified there, and letting the clothes hit the floor before
             // the scoop is the natural reading of a strip anyway.
-            if (s.pickupMode == PickupMode.DropThenHaul || type == HaulSourceType.Strip)
+            if (s.BehaviorFor(type) == YieldBehavior.DropThenHaul || type == HaulSourceType.Strip)
             {
                 // Realistic mode: let the yield land on the ground; the postfix (OnTryPlaceThingPost)
                 // records the just-placed thing so the producer scoops it up afterward.
@@ -398,7 +406,7 @@ namespace HaulersDream
             deconstructCapturePawn = null;
             deconstructCapturedLeavings = null;
             var s = HaulersDreamMod.Settings;
-            if (s == null || !s.haulDeconstruct || map == null)
+            if (s == null || !s.IsTypeEnabled(HaulSourceType.Deconstruct) || map == null)
                 return;
             var pawn = FindDeconstructor(area, map, diedThing);
             if (pawn == null)
@@ -445,7 +453,7 @@ namespace HaulersDream
                 // Never pull stored stock back out (it merged into a stockpile); respect per-pawn forbiddance.
                 if (t.IsForbidden(pawn) || t.IsInValidStorage())
                     continue;
-                if (s.pickupMode == PickupMode.DropThenHaul)
+                if (s.BehaviorFor(HaulSourceType.Deconstruct) == YieldBehavior.DropThenHaul)
                     RecordSelfPickup(pawn, t); // leavings are already on the ground -> scoop them up afterward
                 else
                     RouteIntoInventory(pawn, t, HaulSourceType.Deconstruct, out _, out _);
@@ -641,6 +649,31 @@ namespace HaulersDream
             }
             return total;
         }
+
+        // ---- yield classification (Harvest->Logging, Mining->Chunks split) ----------------------
+
+        /// <summary>
+        /// Harvest -> Logging refinement. The worked plant is still LIVE at GenPlace time (vanilla places the
+        /// yield BEFORE PlantCollected destroys the plant — decompile-verified), reachable as the producing
+        /// pawn's current job target. <c>plant.def.plant.IsTree</c> is vanilla's canonical wood-vs-food test
+        /// (trees and cacti). A null pawn, a null/absent job target, or a non-plant target leaves the type as
+        /// Harvest (the safe default — crops/berries).
+        /// </summary>
+        private static bool IsLoggingYield(Pawn producer)
+        {
+            var plant = producer?.CurJob?.targetA.Thing as Plant;
+            return plant != null && plant.def.plant.IsTree; // null/non-plant -> stays Harvest (safe default)
+        }
+
+        /// <summary>
+        /// Mining -> Chunks refinement, decided by the YIELDED def alone (the Mineable that produced it is
+        /// already destroyed by place-time, so there is nothing to inspect on the source). Stone chunks have
+        /// category StoneChunks (a child of Chunks) and slag is directly Chunks, so an <c>IsWithinCategory</c>
+        /// test against the Chunks parent covers both; mined ore/resources and deep-drill output are NOT under
+        /// Chunks, so they stay Mining. Null/def-less yield -> stays Mining (safe default).
+        /// </summary>
+        private static bool IsChunkYield(Thing yielded)
+            => yielded?.def != null && yielded.def.IsWithinCategory(ThingCategoryDefOf.Chunks);
 
         // ---- pawn inference ---------------------------------------------------------------------
 

@@ -80,8 +80,8 @@
 <HaulersDream.Setting.PlanCraftingDesc>工作台上的右键规划工具，用一趟原料行程把一个工单批量制作多次。关闭＝隐藏该菜单选项。</HaulersDream.Setting.PlanCraftingDesc>
 <HaulersDream.Setting.BatchByDefault>新工单默认批量</HaulersDream.Setting.BatchByDefault>
 <HaulersDream.Setting.BatchByDefaultDesc>从现在起你添加的制作和烹饪工单以“批量”模式开始：殖民者一趟取来整批原料，在工作台前一次全部制作（工作期间食物不会腐烂），然后把一切搬到储存区。仅影响新添加的工单——已有的工单保持当前设置。</HaulersDream.Setting.BatchByDefaultDesc>
-  <HaulersDream.Setting.AllowBatchUnderCommonSense>Batch even with Common Sense active</HaulersDream.Setting.AllowBatchUnderCommonSense>
-  <HaulersDream.Setting.AllowBatchUnderCommonSenseDesc>On by default. Lets bills you marked for batching still batch while Common Sense is active, instead of being made one item at a time. Batch crafting uses its own separate job, so it won't clash with Common Sense's "clean first" and "haul all ingredients" features. Turn this off to hand all cooking and crafting over to Common Sense. The batch options then disappear from the bill menu.</HaulersDream.Setting.AllowBatchUnderCommonSenseDesc>
+  <HaulersDream.Setting.AllowBatchUnderCommonSense>即使启用了常识（Common Sense）也进行批量制作</HaulersDream.Setting.AllowBatchUnderCommonSense>
+  <HaulersDream.Setting.AllowBatchUnderCommonSenseDesc>默认开启。让你标记为批量制作的工单在常识（Common Sense）启用时仍能批量制作，而不是一次只做一件。批量制作使用其自己独立的工作，因此不会与常识的“先清扫”和“搬运全部原料”功能相冲突。关闭此项可将所有烹饪和制作全部交给常识处理，届时工单菜单中的批量选项将会消失。</HaulersDream.Setting.AllowBatchUnderCommonSenseDesc>
 <HaulersDream.Setting.DefaultBatchSize>默认批量大小：{0}</HaulersDream.Setting.DefaultBatchSize>
 <HaulersDream.Batch.MenuPrefix>批量</HaulersDream.Batch.MenuPrefix>
 <HaulersDream.Batch.SetSize>批量大小：{0}…</HaulersDream.Batch.SetSize>
@@ -117,8 +117,8 @@
 <HaulersDream.Overload.Free>不减速——自由携带</HaulersDream.Overload.Free>
 <HaulersDream.Overload.Fair>适中（平衡）</HaulersDream.Overload.Fair>
 <HaulersDream.Overload.Off>关闭——绝不超载</HaulersDream.Overload.Off>
-<HaulersDream.Overload.Eager>积极超载（{0}）</HaulersDream.Overload.Eager>
-<HaulersDream.Overload.Cautious>谨慎（{0}）</HaulersDream.Overload.Cautious>
+<HaulersDream.Overload.Eager>积极超载</HaulersDream.Overload.Eager>
+<HaulersDream.Overload.Cautious>谨慎</HaulersDream.Overload.Cautious>
 <HaulersDream.Setting.StrictCarryWeight>严格携带质量（不超载）</HaulersDream.Setting.StrictCarryWeight>
 <HaulersDream.Setting.StrictCarryWeightDesc>开启时，小人绝不携带超过其最大质量的100%，也绝不在装满时中断工作去卸载——它会继续收获，把多余的留在地上交给正常搬运（路过时顺手拾取）。关闭时（默认），小人按上方滑块超载，装满后即前去卸载。</HaulersDream.Setting.StrictCarryWeightDesc>
 <HaulersDream.Setting.KeepWorkingWhenFull>装满时继续工作（不中断去卸载）</HaulersDream.Setting.KeepWorkingWhenFull>
@@ -134,16 +134,6 @@
 <HaulersDream.Setting.OpportunisticUnloadDesc>当一个带着收取货物的小人为其下一个任务出发踏上长途，而某个储存区大致在途中时，它会路过时把货物卸下，而不是带着它横跨整张地图、之后再单独跑一趟。</HaulersDream.Setting.OpportunisticUnloadDesc>
 <HaulersDream.Stat.Overload>Hauler's Dream——超载</HaulersDream.Stat.Overload>
 <HaulersDream.Stat.MechCarryCapacity>Hauler's Dream——携带量</HaulersDream.Stat.MechCarryCapacity>
-<HaulersDream.Setting.WorkTypesHeader>从这些种类的工作中收取产出：</HaulersDream.Setting.WorkTypesHeader>
-<HaulersDream.Setting.HaulHarvest>植物——收获与砍伐</HaulersDream.Setting.HaulHarvest>
-<HaulersDream.Setting.HaulMining>采掘——矿石与碎块</HaulersDream.Setting.HaulMining>
-<HaulersDream.Setting.HaulDeepDrill>深岩钻机</HaulersDream.Setting.HaulDeepDrill>
-<HaulersDream.Setting.HaulDeconstruct>拆除残料</HaulersDream.Setting.HaulDeconstruct>
-<HaulersDream.Setting.HaulAnimals>动物——挤奶与剪毛</HaulersDream.Setting.HaulAnimals>
-<HaulersDream.Setting.HaulUninstall>拆装——小型化建筑（商队/外出地图）</HaulersDream.Setting.HaulUninstall>
-<HaulersDream.Setting.HaulStrip>扒取——移除的装备（搬运扒取命令得到的装备）</HaulersDream.Setting.HaulStrip>
-<HaulersDream.Setting.HaulStripDesc>当殖民者扒取一名囚犯、一个倒地的小人或一具尸体（由你手动下达的扒取命令）时，移除的武器、装备和衣物会在扒取后立即被收进它的货物栏，并一趟搬回家。这是管辖搬运扒下装备的开关——它独立于上方的“搬运时自动扒取”：那个只在尸体被搬运时扒取它（战利品进货物栏）；这个则搬运手动扒取命令掉在地上的装备。因此你可以把搬运时自动扒取设为“从不”，仍让手动下达的扒取去收取并搬运其装备，只要此项开启即可。来自尸体的污损服装遵循自动扒取部分中的污损服装选项（设为“留在尸体上”的衣物留在地上，不被收取）。对于活着的目标，会在扒取者的任务末尾排入一次后续扒取，以防目标用残留物再次给自己穿上衣物；若目标保持赤裸则什么也不做。</HaulersDream.Setting.HaulStripDesc>
-<HaulersDream.Setting.HaulStripCrossRef>独立于顶部附近的“搬运时自动扒取”：那个在搬运尸体时扒下它（战利品进货物栏）；这个搬运手动扒取命令掉落的装备。</HaulersDream.Setting.HaulStripCrossRef>
 <HaulersDream.Setting.WorkOverrideHeader>无工作能力覆盖（关闭＝原版）：</HaulersDream.Setting.WorkOverrideHeader>
 <HaulersDream.Setting.AllCanHaul>所有小人都能搬运</HaulersDream.Setting.AllCanHaul>
 <HaulersDream.Setting.AllCanHaulDesc>没有任何背景故事、特性、基因、皇室头衔、意识形态角色、健康状况或任务限制能让小人无法搬运。适用于工作选项卡、右键优先处理、自动工作以及本模组的规划器。（启用后请分配一个工作优先级——新获得能力的小人初始未分配，和任何其他工作一样。）</HaulersDream.Setting.AllCanHaulDesc>
@@ -206,8 +196,8 @@
 <HaulersDream.PlanRoute.PickStop>挑选完成（点击地图以添加）</HaulersDream.PlanRoute.PickStop>
 <HaulersDream.PlanRoute.PickHeader>必含：{0}</HaulersDream.PlanRoute.PickHeader>
 <HaulersDream.PlanRoute.PickRoleHint>把某个目标标为 S（起点）或 E（终点），以固定路径的起止位置——否则每个目标都会被放在最短的位置。</HaulersDream.PlanRoute.PickRoleHint>
-<HaulersDream.PlanRoute.PickStartBtn>S</HaulersDream.PlanRoute.PickStartBtn>
-<HaulersDream.PlanRoute.PickEndBtn>E</HaulersDream.PlanRoute.PickEndBtn>
+<HaulersDream.PlanRoute.PickStartBtn>始</HaulersDream.PlanRoute.PickStartBtn>
+<HaulersDream.PlanRoute.PickEndBtn>终</HaulersDream.PlanRoute.PickEndBtn>
 <HaulersDream.PlanRoute.PickStartBadge>（起点）</HaulersDream.PlanRoute.PickStartBadge>
 <HaulersDream.PlanRoute.PickEndBadge>（终点）</HaulersDream.PlanRoute.PickEndBadge>
 <HaulersDream.PlanRoute.PickStartTip>把这里设为路径的起点——小人造访的第一站。再次点击可清除。</HaulersDream.PlanRoute.PickStartTip>
@@ -552,16 +542,9 @@
 <HaulersDream.Common.Off>关闭</HaulersDream.Common.Off>
 <HaulersDream.Common.On>开启</HaulersDream.Common.On>
 <HaulersDream.Unit.Tiles>{0} 格</HaulersDream.Unit.Tiles>
-<HaulersDream.Unit.Ticks>{0} tick</HaulersDream.Unit.Ticks>
 <HaulersDream.Unit.Hours>{0} 小时</HaulersDream.Unit.Hours>
 <HaulersDream.Setting.CarryLimit.Lab>携带上限</HaulersDream.Setting.CarryLimit.Lab>
 <HaulersDream.Setting.Overload.Lab>智能超载</HaulersDream.Setting.Overload.Lab>
-<HaulersDream.Setting.PickupMode.Lab>拾取处理</HaulersDream.Setting.PickupMode.Lab>
-<HaulersDream.Setting.PickupMode.Help>小人如何把一件即将搬运的物品纳入它的载量。</HaulersDream.Setting.PickupMode.Help>
-<HaulersDream.Setting.PickupMode.Drop>先丢下，再搬运</HaulersDream.Setting.PickupMode.Drop>
-<HaulersDream.Setting.PickupMode.DropDesc>真实：物品会被短暂地丢到地上，然后再收取——这样另一名搬运者仍能在中途抓走它。</HaulersDream.Setting.PickupMode.DropDesc>
-<HaulersDream.Setting.PickupMode.Direct>直接进货物栏</HaulersDream.Setting.PickupMode.Direct>
-<HaulersDream.Setting.PickupMode.DirectDesc>物品不经地面这一步，直接进入小人的货物栏。</HaulersDream.Setting.PickupMode.DirectDesc>
 <HaulersDream.Setting.BulkHaulTrigger.Lab>批量搬运触发</HaulersDream.Setting.BulkHaulTrigger.Lab>
 <HaulersDream.Setting.KeepWorkingMargin.Lab>较长转移前先卸载</HaulersDream.Setting.KeepWorkingMargin.Lab>
 <HaulersDream.Setting.MinFreeSpaceToUnloadCarrier.Lab>开始所需的最小背包空闲空间</HaulersDream.Setting.MinFreeSpaceToUnloadCarrier.Lab>
@@ -630,12 +613,6 @@
 <HaulersDream.PlanRoute.SelNearest.H>偏好离你点选的那个最近的目标。</HaulersDream.PlanRoute.SelNearest.H>
 <HaulersDream.PlanRoute.DistStraight.H>以直线测量距离——快。</HaulersDream.PlanRoute.DistStraight.H>
 <HaulersDream.PlanRoute.DistWalking.H>沿真实步行路径测量距离——较慢，更准确。</HaulersDream.PlanRoute.DistWalking.H>
-<HaulersDream.Setting.HaulHarvest.Help>在小人工作时把收获的作物和砍伐植物的产出收进货物栏。</HaulersDream.Setting.HaulHarvest.Help>
-<HaulersDream.Setting.HaulMining.Help>在小人采掘时把采出的矿石和岩石碎块收进货物栏。</HaulersDream.Setting.HaulMining.Help>
-<HaulersDream.Setting.HaulDeepDrill.Help>在深岩钻机产出时把其产物收进货物栏。</HaulersDream.Setting.HaulDeepDrill.Help>
-<HaulersDream.Setting.HaulDeconstruct.Help>把拆除建筑得到的残料收进货物栏。</HaulersDream.Setting.HaulDeconstruct.Help>
-<HaulersDream.Setting.HaulAnimals.Help>把从动物身上采集的奶、毛及其他产物收进货物栏。</HaulersDream.Setting.HaulAnimals.Help>
-<HaulersDream.Setting.HaulUninstall.Help>在商队或其他外出地图上（绝不在你的主殖民地），把你拆装的建筑——此时已成为小型化物品——直接收进工人的货物栏，这样几座拆装的结构就能一趟运到驮兽处，而不是每件物品一个来回。仅在物品确实能被交付处（一个储存区/区域或一只驮兽）时才触发。在你的主基地地图上这什么也不做：在那里，一座拆装的建筑会被留在地上交给正常搬运或重新安装。</HaulersDream.Setting.HaulUninstall.Help>
 <HaulersDream.Cat.Hauling.Intro>殖民者如何拾取东西——它们携带多少、何时超载，以及它们清扫什么。</HaulersDream.Cat.Hauling.Intro>
 <HaulersDream.Cat.Unloading.Intro>殖民者何时、如何收起所携带的货物。</HaulersDream.Cat.Unloading.Intro>
 <HaulersDream.Cat.BuildCraft.Intro>从货物栏取用建造和制作材料、食物运送，以及原料选择。</HaulersDream.Cat.BuildCraft.Intro>
@@ -646,7 +623,6 @@
 <HaulersDream.Cat.Planners.Intro>右键路径和制作规划器，及其默认值。</HaulersDream.Cat.Planners.Intro>
 <HaulersDream.Cat.Advanced.Intro>卸载时机、被困货物安全警报、保存清理，以及开发者工具。</HaulersDream.Cat.Advanced.Intro>
 <HaulersDream.Head.CarryWeight>携带质量</HaulersDream.Head.CarryWeight>
-<HaulersDream.Head.Pickup>拾取</HaulersDream.Head.Pickup>
 <HaulersDream.Head.AutoUnloadTrips>自动卸载行程</HaulersDream.Head.AutoUnloadTrips>
 <HaulersDream.Head.DropOff>卸货行为</HaulersDream.Head.DropOff>
 <HaulersDream.Head.ItemRulesDisplay>单项物品规则与显示</HaulersDream.Head.ItemRulesDisplay>
@@ -654,21 +630,51 @@
 <HaulersDream.Head.WhoCanHaul>谁能收取与搬运</HaulersDream.Head.WhoCanHaul>
 <HaulersDream.Head.PlanningTools>规划工具</HaulersDream.Head.PlanningTools>
 <HaulersDream.Setting.Overload.Ceiling>上限</HaulersDream.Setting.Overload.Ceiling>
-  <HaulersDream.Setting.MechHaulMultiplier.Lab>Mechanoid carrying capacity</HaulersDream.Setting.MechHaulMultiplier.Lab>
-  <HaulersDream.Setting.MechHaulMultiplierDesc>Multiplies how much your work mechanoids carry per hauling trip, on top of their real carrying capacity. At ×1.0 (the default) a mech hauls exactly as much as its carrying capacity allows; raise it so a dedicated lifter mech makes fewer, bigger trips. The mech is slowed by the extra load the same way a colonist is, so the smart-overload bargain stays balanced. Only affects your own mechanoids, and has no effect while Combat Extended is installed (CE manages carry weight itself).</HaulersDream.Setting.MechHaulMultiplierDesc>
-  <HaulersDream.Setting.ShowAutoHaulGizmo>Show the per-pawn auto-haul toggle</HaulersDream.Setting.ShowAutoHaulGizmo>
+  <HaulersDream.Setting.MechHaulMultiplier.Lab>机械体搬运能力</HaulersDream.Setting.MechHaulMultiplier.Lab>
+  <HaulersDream.Setting.MechHaulMultiplierDesc>在你的工作机械体真实承载能力的基础上，再倍增它们每趟搬运的运量。在×1.0（默认值）时，机械体每趟搬运量恰好等于其承载能力所允许的量；调高此值可让专职的搬运机械体减少趟数、每趟搬得更多。机械体会像殖民者一样因额外负重而减速，因此智能超载的得失权衡依然保持平衡。仅影响你自己的机械体，且在安装了战斗扩展（Combat Extended）时无效（CE 会自行管理承重）。</HaulersDream.Setting.MechHaulMultiplierDesc>
+  <HaulersDream.Setting.ShowAutoHaulGizmo>显示每个殖民者的自动搬运开关</HaulersDream.Setting.ShowAutoHaulGizmo>
   <HaulersDream.Setting.ShowAutoHaulGizmo.Help>Adds an "Auto-haul yields" toggle to each eligible pawn's command bar so you can stop individual pawns from automatically scooping and hauling. Off by default to keep the command bar uncluttered; pawns still auto-haul either way, this only controls whether the toggle is shown. A pawn's saved preference is still honoured even while the toggle is hidden.</HaulersDream.Setting.ShowAutoHaulGizmo.Help>
-<HaulersDream.Batch.SetOvershoot>Batch overshoot: +{0}…</HaulersDream.Batch.SetOvershoot>
-<HaulersDream.Batch.OvershootDialogTitle>Batch overshoot — {0}</HaulersDream.Batch.OvershootDialogTitle>
-<HaulersDream.Batch.OvershootLabel>Overshoot by {0} past the target</HaulersDream.Batch.OvershootLabel>
-<HaulersDream.Batch.OvershootLabelOff>Overshoot: off (stop at the target)</HaulersDream.Batch.OvershootLabelOff>
-<HaulersDream.Batch.OvershootDesc>For a "Do until you have X" batch: once a colonist starts it (while below X), keep making up to this many more, finishing a useful round number while they're already at the bench instead of stopping the moment the count reaches X. Still capped by available materials.</HaulersDream.Batch.OvershootDesc>
-<HaulersDream.Batch.TipDoX>Make a set number each time, gathering the whole batch in one trip.</HaulersDream.Batch.TipDoX>
-<HaulersDream.Batch.TipUntilX>Keep stock topped up to a target count, making a batch whenever it runs low.</HaulersDream.Batch.TipUntilX>
-<HaulersDream.Batch.TipForever>Keep making this in batches. The colonist finishes the current item, then stops to eat, sleep, or relax if it urgently needs to, putting everything away first.</HaulersDream.Batch.TipForever>
-<HaulersDream.Batch.TipSize>How many to make per batch. The colonist gathers all the ingredients in one trip.</HaulersDream.Batch.TipSize>
-<HaulersDream.Batch.TipOvershoot>For "Do until you have X": keep making a little past the target once started, so the colonist finishes a round number while already at the bench.</HaulersDream.Batch.TipOvershoot>
-<HaulersDream.PlanRoute.SowingGerundFallback>sowing</HaulersDream.PlanRoute.SowingGerundFallback>
-<HaulersDream.PlanRoute.ModeSowZone>Whole growing zone</HaulersDream.PlanRoute.ModeSowZone>
-<HaulersDream.PlanRoute.ModeSowZoneDesc>Sow every empty growable cell inside this growing zone — plant the whole field from one click.</HaulersDream.PlanRoute.ModeSowZoneDesc>
+<HaulersDream.Batch.SetOvershoot>批量超额制作：+{0}…</HaulersDream.Batch.SetOvershoot>
+<HaulersDream.Batch.OvershootDialogTitle>批量超额制作 — {0}</HaulersDream.Batch.OvershootDialogTitle>
+<HaulersDream.Batch.OvershootLabel>在目标数量之外超额制作 {0} 个</HaulersDream.Batch.OvershootLabel>
+<HaulersDream.Batch.OvershootLabelOff>超额制作：关闭（达到目标数量即停止）</HaulersDream.Batch.OvershootLabelOff>
+<HaulersDream.Batch.OvershootDesc>用于“制作直到拥有X个”的批量作业：当殖民者开始作业时（数量仍低于X），允许其额外多制作这么多个，以便在他们已经待在工作台前时凑成一个实用的整数，而不是数量一达到X就立刻停手。仍受可用材料数量的限制。</HaulersDream.Batch.OvershootDesc>
+<HaulersDream.Batch.TipDoX>每次制作固定数量，一趟取齐整批所需的材料。</HaulersDream.Batch.TipDoX>
+<HaulersDream.Batch.TipUntilX>将库存补足到目标数量，每当库存不足时便制作一批。</HaulersDream.Batch.TipUntilX>
+<HaulersDream.Batch.TipForever>持续分批制作此物品。殖民者会做完当前这一件，如果急需，便会先把所有物品放好，然后停下来去吃饭、睡觉或娱乐。</HaulersDream.Batch.TipForever>
+<HaulersDream.Batch.TipSize>每批制作的数量。殖民者会一趟取齐所有原料。</HaulersDream.Batch.TipSize>
+<HaulersDream.Batch.TipOvershoot>用于“制作直到拥有X个”：一旦开始，便在达到目标后再多做一点，让殖民者在还待在工作台前时凑成一个整数。</HaulersDream.Batch.TipOvershoot>
+<HaulersDream.PlanRoute.SowingGerundFallback>播种</HaulersDream.PlanRoute.SowingGerundFallback>
+<HaulersDream.PlanRoute.ModeSowZone>整个种植区</HaulersDream.PlanRoute.ModeSowZone>
+<HaulersDream.PlanRoute.ModeSowZoneDesc>播种此种植区内所有空着的可种植格子——一键种满整片田地。</HaulersDream.PlanRoute.ModeSowZoneDesc>
+<HaulersDream.Setting.Yield.Header>收取工作成果</HaulersDream.Setting.Yield.Header>
+<HaulersDream.Setting.Yield.Intro>当殖民者完成一项工作时，选择成果的去向。两个“收取”选项都会将成果装入作业者自己的物品栏并在下一趟卸货时放好；它们的区别仅在于是否先掉落到地上。大多数配置都可将这些保持为“先掉落，再收取”。</HaulersDream.Setting.Yield.Intro>
+<HaulersDream.Setting.Yield.Off>Off</HaulersDream.Setting.Yield.Off>
+<HaulersDream.Setting.Yield.OffDesc>作业者把成果留在掉落处，由普通搬运者稍后收取，与原版完全一致。最适合那些你不想装进物品栏的笨重或低价值物品，例如石块。</HaulersDream.Setting.Yield.OffDesc>
+<HaulersDream.Setting.Yield.Drop>先掉落，再收取</HaulersDream.Setting.Yield.Drop>
+<HaulersDream.Setting.Yield.DropDesc>成果先掉落在地上，然后工作殖民者将其拾入自己的物品栏，并在下一趟卸货时带出。由于先落了地，其他搬运者或更近的仓储区仍可取走它，因此这是最接近原版的选择。在你有富余搬运人手时很合适。</HaulersDream.Setting.Yield.DropDesc>
+<HaulersDream.Setting.Yield.Direct>直接收取</HaulersDream.Setting.Yield.Direct>
+<HaulersDream.Setting.Yield.DirectDesc>成果完全不落地，直接进入工作殖民者的物品栏，随后在下一趟卸货时被带出。其他人无法取走，因此作业者总是自己把成果带走。能保持工作区整洁，适合商队和外出地图。负重过大会使该殖民者减速。</HaulersDream.Setting.Yield.DirectDesc>
+<HaulersDream.Setting.Yield.Harvest>收获（作物 &amp; 浆果）</HaulersDream.Setting.Yield.Harvest>
+<HaulersDream.Setting.Yield.HarvestHelp>作物、浆果及其他食物／植物的收获产物。</HaulersDream.Setting.Yield.HarvestHelp>
+<HaulersDream.Setting.Yield.Logging>伐木（树木 &amp; 仙人掌）</HaulersDream.Setting.Yield.Logging>
+<HaulersDream.Setting.Yield.LoggingHelp>砍伐树木和仙人掌所得的木材及其他产物。</HaulersDream.Setting.Yield.LoggingHelp>
+<HaulersDream.Setting.Yield.Mining>采矿（矿石 &amp; 资源）</HaulersDream.Setting.Yield.Mining>
+<HaulersDream.Setting.Yield.MiningHelp>采矿所得的矿石、零部件及其他资源——不含石块。</HaulersDream.Setting.Yield.MiningHelp>
+<HaulersDream.Setting.Yield.Chunks>采矿（碎块）</HaulersDream.Setting.Yield.Chunks>
+<HaulersDream.Setting.Yield.ChunksHelp>采矿产生的石块和矿渣碎块。将此项设为关闭，可把笨重的碎块留在地上，而不是装进物品栏。</HaulersDream.Setting.Yield.ChunksHelp>
+<HaulersDream.Setting.Yield.DeepDrill>深钻</HaulersDream.Setting.Yield.DeepDrill>
+<HaulersDream.Setting.Yield.DeepDrillHelp>深钻机产出的资源。</HaulersDream.Setting.Yield.DeepDrillHelp>
+<HaulersDream.Setting.Yield.Deconstruct>拆除回收物</HaulersDream.Setting.Yield.Deconstruct>
+<HaulersDream.Setting.Yield.DeconstructHelp>从拆除的建筑中回收的材料。</HaulersDream.Setting.Yield.DeconstructHelp>
+<HaulersDream.Setting.Yield.Animals>动物产物（奶 &amp; 羊毛）</HaulersDream.Setting.Yield.Animals>
+<HaulersDream.Setting.Yield.AnimalsHelp>从动物身上采集的奶、羊毛及其他产物。</HaulersDream.Setting.Yield.AnimalsHelp>
+<HaulersDream.Setting.Yield.Strip>扒取（取下的装备）</HaulersDream.Setting.Yield.Strip>
+<HaulersDream.Setting.Yield.StripHelp>通过扒取命令取下的装备。它总是先掉落到地上再被收取，因此无法直接进入物品栏。</HaulersDream.Setting.Yield.StripHelp>
+<HaulersDream.Setting.Yield.Uninstall>拆卸（小型化的建筑）</HaulersDream.Setting.Yield.Uninstall>
+<HaulersDream.Setting.Yield.UninstallHelp>Minified buildings from an Uninstall order (on caravan / away maps, so they batch onto pack animals).</HaulersDream.Setting.Yield.UninstallHelp>
+<HaulersDream.Setting.PerPawnButtonsNote>这些会给每个殖民者添加指令按钮；它们不会改变自动搬运行为。</HaulersDream.Setting.PerPawnButtonsNote>
+<HaulersDream.Search.Placeholder>搜索设置…</HaulersDream.Search.Placeholder>
+<HaulersDream.Search.NoResults>没有设置项与你的搜索匹配。</HaulersDream.Search.NoResults>
+<HaulersDream.Search.Clear>清除搜索</HaulersDream.Search.Clear>
 </LanguageData>
