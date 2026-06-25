@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using HaulersDream.Core;
 using RimWorld;
 using Verse;
+using Verse.AI;
 
 namespace HaulersDream
 {
@@ -194,10 +195,16 @@ namespace HaulersDream
         }
 
         /// <summary>Can the unload place this anywhere — a real stockpile/container, OR (failing that) a
-        /// desperate home-area cell (exactly the two destinations JobDriver_UnloadHauledInventory tries)?
-        /// Wrapped in Rand.PushState/PopState so it is safe to call from the per-frame alert/render path: both
-        /// StoreUtility probes consume the global Rand stream, which would otherwise desync seeded RNG
-        /// (multiplayer) and flicker the result between alert recalculations.</summary>
+        /// desperate home-area floor cell? Mirrors the driver's real storage probe
+        /// (<see cref="StoreUtility.TryFindBestBetterStorageFor"/>) plus a SAFE re-implementation of vanilla's
+        /// home-area radial-cell fallback (see <see cref="HasDesperateHomeAreaCell"/>). It deliberately does NOT
+        /// call <c>StoreUtility.TryFindStoreCellNearColonyDesperate</c>, whose final
+        /// <c>RCellFinder.TryFindRandomSpotJustOutsideColony</c> leg throws a vanilla NullReferenceException for a
+        /// degenerate single-pawn colony with the pawn far from home (issue #76); since this method is re-evaluated
+        /// ~once/second from the cannot-unload alert, that caught-NRE's Mono stack capture WAS the periodic hitch.
+        /// Wrapped in Rand.PushState/PopState so it is safe to call from the per-frame alert/render path: the
+        /// probes consume the global Rand stream, which would otherwise desync seeded RNG (multiplayer) and flicker
+        /// the result between alert recalculations.</summary>
         public static bool HasUnloadDestination(Pawn pawn, Thing thing)
         {
             if (pawn?.Map == null || thing == null)
@@ -215,13 +222,51 @@ namespace HaulersDream
                 {
                     return StoreUtility.TryFindBestBetterStorageFor(thing, pawn, pawn.Map, StoragePriority.Unstored,
                                pawn.Faction, out _, out _)
-                           || StoreUtility.TryFindStoreCellNearColonyDesperate(thing, pawn, out _);
+                           || HasDesperateHomeAreaCell(pawn, thing);
                 }
             }
             finally
             {
                 Rand.PopState();
             }
+        }
+
+        /// <summary>
+        /// SAFE re-implementation of ONLY the home-area radial-cell leg of vanilla
+        /// <c>StoreUtility.TryFindStoreCellNearColonyDesperate</c> (RimWorld 1.6): scan the cells around the
+        /// carrier, accepting the first reachable, in-home-area, non-slot-group cell that
+        /// <see cref="StoreUtility.IsGoodStoreCell"/> approves. Identical loop bounds / order / predicates to
+        /// vanilla so a "desperate" destination this reports is one the unload driver would actually use.
+        ///
+        /// It deliberately OMITS vanilla's final <c>RCellFinder.TryFindRandomSpotJustOutsideColony</c> leg: that
+        /// inner <c>FinalValidator</c> dereferences <c>c.GetDistrict(map).Room</c> on random map cells, which is
+        /// null for a degenerate single-pawn "Adventure Mode" colony with the pawn far outside the home area —
+        /// throwing a vanilla NullReferenceException attributed (in release Mono) to
+        /// <c>TryFindStoreCellNearColonyDesperate</c> (issue #76). Because this destination probe is a read-only
+        /// "can it be put away?" question — NOT the driver actually carrying an item to a drop cell — the
+        /// just-outside-colony random spot adds nothing here (a pawn far in the wilderness genuinely has no
+        /// home-area destination, which is exactly the black-hole the alert should surface), so dropping that leg
+        /// is behaviour-correct, not merely a workaround.
+        ///
+        /// Cannot throw for these inputs: the caller guarantees a non-null spawned carrier + map (the entry guard
+        /// in <see cref="HasUnloadDestination"/>), every call below is non-throwing for a non-null carrier/map, and
+        /// the <c>Rand.RangeInclusive</c> runs inside the caller's Rand.PushState/PopState scope.
+        /// </summary>
+        private static bool HasDesperateHomeAreaCell(Pawn carrier, Thing item)
+        {
+            var map = carrier.Map;
+            for (int i = -4; i < 20; i++)
+            {
+                int num = (i < 0) ? Rand.RangeInclusive(0, 4) : i;
+                IntVec3 cell = carrier.Position + GenRadial.RadialPattern[num];
+                if (cell.InBounds(map)
+                    && map.areaManager.Home[cell]
+                    && carrier.CanReach(cell, PathEndMode.ClosestTouch, Danger.Deadly)
+                    && cell.GetSlotGroup(map) == null
+                    && StoreUtility.IsGoodStoreCell(cell, map, item, carrier, carrier.Faction))
+                    return true;
+            }
+            return false;
         }
 
         /// <summary>
