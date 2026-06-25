@@ -23,7 +23,12 @@ namespace HaulersDream
     /// EXCEPTION POLICY (deliberate, see <c>no-exception-suppression</c>): the writer loop catches an I/O fault,
     /// reports it ONCE via <see cref="Log.Error"/> (so it stays visible, not swallowed), and then disables disk
     /// logging for the rest of the session. A background-thread exception would otherwise terminate the process —
-    /// a logger must never crash the game it is logging for. The main-thread reader (<see cref="GetReportTail"/>)
+    /// a logger must never crash the game it is logging for. The ONE exception caught WITHOUT being logged is
+    /// <see cref="ThreadAbortException"/>: that is the runtime aborting this background thread during normal
+    /// shutdown / AppDomain teardown (a benign lifecycle signal, not a disk fault), so logging it would post a
+    /// scary red "I/O error" for an ordinary game exit. This is NOT suppression: a genuine I/O fault is a
+    /// different exception type that still hits the general catch and is surfaced loudly + latches logging off.
+    /// The main-thread reader (<see cref="GetReportTail"/>)
     /// intentionally has NO try/catch, so a read fault surfaces normally in the report flow.
     /// </summary>
     public static class HDDebugLog
@@ -185,6 +190,19 @@ namespace HaulersDream
                         size = 0;
                     }
                 }
+            }
+            catch (ThreadAbortException)
+            {
+                // Benign teardown signal, NOT an I/O fault. The runtime aborts this IsBackground thread during
+                // normal shutdown / AppDomain teardown, injecting a ThreadAbortException into the blocking
+                // signal.WaitOne or an in-flight fs.Write/Flush. We must NOT Log.Error it (that would post a scary
+                // red "I/O error" for an ordinary game exit, masquerading as a disk fault). This is distinct from
+                // the genuine I/O catch below and is NOT exception suppression: a real I/O fault is a different
+                // exception type that still reaches that catch and is surfaced loudly + disables disk logging.
+                // We latch `disabled` so any late Enqueue is a cheap no-op, do NOT call Thread.ResetAbort (we WANT
+                // this thread to end; the abort auto-rethrows after this block and terminates it), and do NOT
+                // dispose `fs` (a Dispose re-flush could rethrow; the OS/finalizer reclaims the handle on teardown).
+                disabled = true;
             }
             catch (Exception e)
             {
