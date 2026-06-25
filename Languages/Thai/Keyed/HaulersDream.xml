@@ -674,4 +674,7 @@
 <HaulersDream.Setting.Yield.Uninstall>Uninstalling (minified buildings)</HaulersDream.Setting.Yield.Uninstall>
 <HaulersDream.Setting.Yield.UninstallHelp>Minified buildings from an Uninstall order (on caravan / away maps, so they batch onto pack animals).</HaulersDream.Setting.Yield.UninstallHelp>
 <HaulersDream.Setting.PerPawnButtonsNote>These add command buttons to each colonist; they don't change automatic hauling.</HaulersDream.Setting.PerPawnButtonsNote>
+<HaulersDream.Search.Placeholder>Search settings…</HaulersDream.Search.Placeholder>
+<HaulersDream.Search.NoResults>No settings match your search.</HaulersDream.Search.NoResults>
+<HaulersDream.Search.Clear>Clear search</HaulersDream.Search.Clear>
 </LanguageData>

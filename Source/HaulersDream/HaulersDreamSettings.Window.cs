@@ -81,6 +81,23 @@ namespace HaulersDream
             { 1700f, 1700f, 1700f, 1700f, 1700f, 1700f, 1700f, 1700f, 1700f, 1700f, 1700f };
         private static readonly Dictionary<SettingsCat, Texture2D> iconCache = new Dictionary<SettingsCat, Texture2D>();
 
+        // ===== settings search (fuzzy finder over every tab) =====
+        // A search box sits above the nav column. While it has text, the content area shows ranked matches across
+        // all tabs (instead of the current tab) and the tabs go "inactive"; clicking a match jumps to its tab,
+        // scrolls the real control into view, and flashes a yellow highlight. EVERYTHING below is inert (the normal
+        // tab UI draws byte-for-byte as before) whenever searchQuery is empty AND no nav/highlight is pending.
+        private static string searchQuery = "";
+        private static List<OptionEntry> searchRegistry;   // collect-mode snapshot; built lazily, null when inactive
+        private static List<OptionEntry> scoredResults;     // sorted desc by score; recomputed when the query text changes
+        private static string scoredForQuery;               // guards re-scoring (the query the current scoredResults are for)
+        // One-frame (actually 2-frame) scroll defer after a navigate: the target tab must draw once so catHeight is
+        // fresh before we clamp the scroll. frames counts down; cleared at 0.
+        private static (int catId, int ordinal, float startY, int frames)? pendingNav;
+        // The control to flash after a navigate. startY/height are STASHED here because the registry is nulled on
+        // navigate (so the highlight can't re-derive them from it).
+        private static (int catId, int ordinal, float startY, float height)? highlightTarget;
+        private static float highlightStart;                // Time.realtimeSinceStartup captured at navigate
+
         private static Texture2D IconFor(CatDef cd)
         {
             if (!iconCache.TryGetValue(cd.cat, out var tex))
@@ -188,10 +205,16 @@ namespace HaulersDream
             const float gap = 12f;
             float navW = Mathf.Clamp(body.width * 0.20f, 150f, 192f);
             float helpW = Mathf.Clamp(body.width * 0.26f, 200f, 290f);
-            var navRect = new Rect(body.x, body.y, navW, body.height);
+
+            // Reserve a 28px strip above the nav column for the search box and shrink the nav's y/height to match.
+            // (Suppressed in MP: the body is already locked there, so we'd have returned above — but keep nav full-
+            // height in that case for safety; we never reach here in MP because of the early return.)
+            var searchRect = new Rect(body.x, body.y, navW, 28f);
+            var navRect = new Rect(body.x, body.y + 32f, navW, body.height - 32f);
             var contentRect = new Rect(navRect.xMax + gap, body.y, body.width - navW - helpW - 2f * gap, body.height);
             var helpRect = new Rect(contentRect.xMax + gap, body.y, helpW, body.height);
 
+            DrawSearchBox(searchRect);
             DrawNav(navRect);
             DrawContent(contentRect);
             DrawHelp(helpRect);
@@ -238,6 +261,59 @@ namespace HaulersDream
             }
 
             Find.WindowStack.Add(new FloatMenu(opts));
+        }
+
+        // The fuzzy-search box above the nav column. A plain text field full-width; a greyed placeholder when empty;
+        // a small "×" clear button (over the right edge) when it has text. Editing the query invalidates the cached
+        // registry/results lazily (the registry is (re)built in DrawContent, the scores recomputed when the text
+        // changes). Suppressed in an active multiplayer session (the body is locked — we also early-return before
+        // ever reaching here in MP, but the guard keeps the search inert if that path ever changes).
+        private void DrawSearchBox(Rect rect)
+        {
+            if (MultiplayerCompat.InMultiplayerGame)
+                return;
+
+            bool hadText = !searchQuery.NullOrEmpty();
+            // Leave room on the right for the clear button when there's text, so the caret never sits under it.
+            float fieldW = hadText ? rect.width - 24f : rect.width;
+            var fieldRect = new Rect(rect.x, rect.y, fieldW, rect.height);
+            searchQuery = Widgets.TextField(fieldRect, searchQuery ?? "");
+
+            // Greyed placeholder, drawn over the (empty) field.
+            if (searchQuery.NullOrEmpty())
+            {
+                var f = Text.Font;
+                var anchor = Text.Anchor;
+                var col = GUI.color;
+                Text.Font = GameFont.Small;
+                Text.Anchor = TextAnchor.MiddleLeft;
+                GUI.color = new Color(0.7f, 0.7f, 0.74f, 0.6f);
+                var ph = fieldRect;
+                ph.xMin += 6f;
+                Widgets.Label(ph, "HaulersDream.Search.Placeholder".Translate());
+                GUI.color = col;
+                Text.Anchor = anchor;
+                Text.Font = f;
+            }
+            else
+            {
+                // Clear "×" button overlaying the right side of the strip.
+                var clearRect = new Rect(rect.xMax - 22f, rect.y, 22f, rect.height);
+                TooltipHandler.TipRegion(clearRect, "HaulersDream.Search.Clear".Translate());
+                if (Widgets.ButtonText(clearRect, "×"))
+                    searchQuery = "";
+            }
+
+            // When the query goes empty (cleared by the × or by the user), drop the cached registry/results so the
+            // normal tab UI resumes and a later search rebuilds fresh.
+            if (searchQuery.NullOrEmpty())
+            {
+                searchRegistry = null;
+                scoredResults = null;
+                scoredForQuery = null;
+            }
+            // (No action needed when the text merely changes: DrawContent rebuilds the registry if needed and the
+            // scorer recomputes whenever searchQuery != scoredForQuery.)
         }
 
         private void DrawNav(Rect rect)
@@ -309,12 +385,30 @@ namespace HaulersDream
             Widgets.Label(labelRect, cd.nameKey.Translate());
             GUI.color = lcol;
 
+            // While a search is active the tabs are "inactive": overlay a translucent dim so they read as greyed
+            // (the overlay leaves the normal, non-search draw above byte-for-byte unchanged). Clicking a row still
+            // switches tabs as usual but also clears the search so the chosen tab shows immediately.
+            bool searching = !searchQuery.NullOrEmpty();
+            if (searching && !Mouse.IsOver(row))
+                Widgets.DrawBoxSolid(row, new Color(0.1f, 0.1f, 0.12f, 0.45f));
+
             if (Mouse.IsOver(row))
                 HDSettingsUI.SetHelp(cd.nameKey.Translate(), cd.helpKey.Translate());
             if (Widgets.ButtonInvisible(row))
             {
                 currentCat = cd.cat;
                 contentScroll = Vector2.zero;
+                // A manual tab switch cancels any pending search-jump scroll/highlight (otherwise a stale pendingNav
+                // could re-scroll this tab once it's reached, or a queued highlight could flash unexpectedly).
+                pendingNav = null;
+                highlightTarget = null;
+                if (searching)
+                {
+                    searchQuery = "";
+                    searchRegistry = null;
+                    scoredResults = null;
+                    scoredForQuery = null;
+                }
             }
         }
 
@@ -367,22 +461,16 @@ namespace HaulersDream
                 Find.WindowStack.Add(new Dialog_MyReports());
         }
 
-        private void DrawContent(Rect rect)
+        // Reserve the scrollbar width, then lay out content a gutter short of it (same 12px gutter as between the
+        // nav and the content) so rows/headers never touch the scrollbar. Shared constants so the SEARCH registry
+        // build uses the EXACT same content width as the real draw (StartY/Height alignment depends on it).
+        private const float ContentScrollbarW = 16f;
+        private const float ContentRightGutter = 12f;
+
+        // Dispatch one tab's content into a SettingsCtx (real draw or — when c.Collecting — a layout-only pass).
+        private void DrawCat(SettingsCtx c, SettingsCat cat)
         {
-            // The Migration tab is conditional; if it's somehow the current tab while no replaced mod is active
-            // (its nav row is hidden then), fall back to Features so nothing draws an empty page.
-            if (currentCat == SettingsCat.Migration && !ModReplacements.AnyActive)
-                currentCat = SettingsCat.Features;
-            int idx = (int)currentCat;
-            // Reserve the scrollbar width, then lay out content a gutter short of it (same 12px gutter as between
-            // the nav and the content) so rows/headers never touch the scrollbar.
-            const float scrollbarW = 16f;
-            const float rightGutter = 12f;
-            var view = new Rect(0f, 0f, rect.width - scrollbarW, Mathf.Max(catHeight[idx], rect.height));
-            Widgets.BeginScrollView(rect, ref contentScroll, view);
-            var c = new SettingsCtx(view.width - rightGutter);
-            c.Gap(2f);
-            switch (currentCat)
+            switch (cat)
             {
                 case SettingsCat.Features: DrawFeaturesCat(c); break;
                 case SettingsCat.Hauling: DrawHaulingCat(c); break;
@@ -396,8 +484,298 @@ namespace HaulersDream
                 case SettingsCat.Advanced: DrawAdvancedCat(c); break;
                 case SettingsCat.Migration: DrawMigrationCat(c); break;
             }
+        }
+
+        private void DrawContent(Rect rect)
+        {
+            bool searching = !searchQuery.NullOrEmpty();
+
+            // ---- SEARCH MODE: results across all tabs replace the current tab ----
+            if (searching)
+            {
+                EnsureSearchRegistry(rect);
+                EnsureScored();
+                DrawSearchResults(rect);
+                return;
+            }
+
+            // ---- NORMAL MODE: the current tab (byte-for-byte as before, plus an inert scroll/highlight defer) ----
+            // The Migration tab is conditional; if it's somehow the current tab while no replaced mod is active
+            // (its nav row is hidden then), fall back to Features so nothing draws an empty page.
+            if (currentCat == SettingsCat.Migration && !ModReplacements.AnyActive)
+                currentCat = SettingsCat.Features;
+            int idx = (int)currentCat;
+
+            // Deferred scroll-into-view after a navigate: once the target tab is current, clamp the scroll to bring
+            // the target control near the top. Applied for ~2 frames so the clamp uses a fresh catHeight (the target
+            // tab must draw once to measure). Done BEFORE BeginScrollView so the position takes effect this frame.
+            if (pendingNav.HasValue && pendingNav.Value.catId == idx)
+            {
+                var pn = pendingNav.Value;
+                contentScroll.y = Mathf.Clamp(pn.startY - 12f, 0f,
+                    Mathf.Max(0f, catHeight[idx] - rect.height));
+                int left = pn.frames - 1;
+                pendingNav = left > 0 ? (pn.catId, pn.ordinal, pn.startY, left) : ((int, int, float, int)?)null;
+            }
+
+            var view = new Rect(0f, 0f, rect.width - ContentScrollbarW, Mathf.Max(catHeight[idx], rect.height));
+            Widgets.BeginScrollView(rect, ref contentScroll, view);
+            var c = new SettingsCtx(view.width - ContentRightGutter);
+            c.Gap(2f);
+            DrawCat(c, currentCat);
             catHeight[idx] = c.CurY + 8f;
+
+            // Highlight flash on the just-navigated control. Drawn INSIDE the scroll view (view-local coords) AFTER
+            // the tab content so it overlays the real control. startY/height were stashed at navigate (the registry
+            // is nulled then). Blink-then-fade over 1.5s; cleared when done.
+            DrawNavHighlight(view, idx);
+
             Widgets.EndScrollView();
+        }
+
+        // Build the collect-mode registry: a layout-only pass over every searchable tab (Migration excluded) using
+        // the SAME content width the real draw uses, with the SAME per-tab CurY reset (Gap(2)), so each recorded
+        // OptionEntry.StartY/Height lines up with the live draw (scroll + highlight depend on this). Built lazily
+        // (only when searchRegistry == null) and honours all mod-present/devmode conditionals automatically (it
+        // runs the real Draw*Cat methods, just with side effects suppressed).
+        private void EnsureSearchRegistry(Rect rect)
+        {
+            if (searchRegistry != null)
+                return;
+            float view = rect.width - ContentScrollbarW;
+            var cc = new SettingsCtx(view - ContentRightGutter)
+            {
+                Collecting = true,
+                Sink = new List<OptionEntry>(),
+            };
+            foreach (var cd in cats)
+            {
+                if (cd.cat == SettingsCat.Migration)
+                    continue;
+                cc.CurY = 0f;
+                cc.Gap(2f);            // mirror DrawContent's leading gap so StartY matches the real draw
+                cc.CurrentCatId = (int)cd.cat;
+                cc.CurrentHeader = null;
+                cc.Ordinal = 0;
+                DrawCat(cc, cd.cat);
+            }
+            searchRegistry = cc.Sink;
+            scoredForQuery = null; // force a re-score against the fresh registry
+        }
+
+        // Score the registry against the current query (only when the query text changed). Keep only matches
+        // (OptionScore > 0), ordered by descending score. CategoryAndHeaderText feeds the tab name + header into the
+        // category-weighted field so "carriers" finds the "Loading & carriers" header even though the DISPLAY shows
+        // the icon + header (this string is scoring-only).
+        private void EnsureScored()
+        {
+            if (searchRegistry == null)
+            {
+                scoredResults = null;
+                return;
+            }
+            if (searchQuery == scoredForQuery && scoredResults != null)
+                return;
+            var scored = new List<(OptionEntry e, float s)>(searchRegistry.Count);
+            foreach (var e in searchRegistry)
+            {
+                float s = SettingsSearch.OptionScore(searchQuery, e.Name, e.Desc, CategoryAndHeaderText(e));
+                if (s > 0f)
+                    scored.Add((e, s));
+            }
+            scored.Sort((a, b) => b.s.CompareTo(a.s));
+            scoredResults = new List<OptionEntry>(scored.Count);
+            for (int i = 0; i < scored.Count; i++)
+                scoredResults.Add(scored[i].e);
+            scoredForQuery = searchQuery;
+        }
+
+        // Scoring text for the category-weighted field: the tab's display name + " " + the section header (if any).
+        private static string CategoryAndHeaderText(OptionEntry e)
+        {
+            string cat = cats[e.CatId].nameKey.Translate();
+            return e.Header.NullOrEmpty() ? cat : cat + " " + e.Header;
+        }
+
+        // A group of search matches that share the same (CatId, Header): the REAL editable controls under that
+        // section drawn by a filtered re-run of the tab's Draw*Cat (see SettingsCtx.RenderOrdinals). Best = the
+        // top-scoring member (the navigate target for the section-header click); ordinals = the matching controls.
+        private sealed class ResultGroup
+        {
+            public int CatId;
+            public string Header;        // section header text (may be null)
+            public OptionEntry Best;     // first (= highest-scoring) member encountered — the navigate target
+            public readonly HashSet<int> Ordinals = new HashSet<int>();
+        }
+
+        // Render the ranked matches as REAL, EDITABLE controls grouped under clean section headers. Results are
+        // grouped by (CatId, Header) and the groups ordered by max member score DESC (= first-appearance order, since
+        // scoredResults is already sorted desc). For each group we draw an HDSettingsUI-style section header (icon +
+        // heading; the WHOLE bar navigates to the best member) then re-run the tab's Draw*Cat filtered to that group's
+        // ordinals (SettingsCtx.RenderOrdinals), so the controls are the genuine bindings — fully editable. Section
+        // height is measured/cached (searchResultsHeight) the same way the tabs use catHeight, since the filtered
+        // controls' height isn't known until drawn.
+        private void DrawSearchResults(Rect rect)
+        {
+            var results = scoredResults;
+            float pad = 6f;
+            float contentW = rect.width - ContentScrollbarW - ContentRightGutter;
+
+            // ---- empty: centred no-results note (unchanged) ----
+            if (results == null || results.Count == 0)
+            {
+                var view0 = new Rect(0f, 0f, rect.width - ContentScrollbarW, Mathf.Max(pad + 40f, rect.height));
+                Widgets.BeginScrollView(rect, ref contentScroll, view0);
+                var f0 = Text.Font;
+                var a0 = Text.Anchor;
+                var c0 = GUI.color;
+                Text.Font = GameFont.Small;
+                Text.Anchor = TextAnchor.MiddleCenter;
+                GUI.color = new Color(0.72f, 0.72f, 0.76f);
+                Widgets.Label(new Rect(0f, pad, contentW, 40f), "HaulersDream.Search.NoResults".Translate());
+                GUI.color = c0;
+                Text.Anchor = a0;
+                Text.Font = f0;
+                Widgets.EndScrollView();
+                return;
+            }
+
+            // ---- group by (CatId, Header), preserving first-appearance order (= max-score-desc) ----
+            var groups = new List<ResultGroup>();
+            var byKey = new Dictionary<(int, string), ResultGroup>();
+            foreach (var e in results)
+            {
+                var key = (e.CatId, e.Header ?? "");
+                if (!byKey.TryGetValue(key, out var g))
+                {
+                    g = new ResultGroup { CatId = e.CatId, Header = e.Header, Best = e };
+                    byKey[key] = g;
+                    groups.Add(g);
+                }
+                g.Ordinals.Add(e.Ordinal);
+            }
+
+            // The view height isn't known until the filtered controls draw, so seed from the cached measure (like
+            // catHeight). The cursor's final CurY refreshes it after this frame's draw.
+            var view = new Rect(0f, 0f, rect.width - ContentScrollbarW,
+                Mathf.Max(searchResultsHeight, rect.height));
+            Widgets.BeginScrollView(rect, ref contentScroll, view);
+
+            // One shared layout cursor over the SAME content width as the real tab draw, so the filtered controls land
+            // at identical x/width (input lands at the drawn rects).
+            var c = new SettingsCtx(view.width - ContentRightGutter);
+            c.Gap(pad);
+
+            for (int gi = 0; gi < groups.Count; gi++)
+            {
+                var g = groups[gi];
+                // Generous breathing room between sections — more than the normal 32px Header gap — so the top
+                // results stand out. A lighter lead-in before the very first group; a wider gap between sections.
+                c.Gap(gi == 0 ? 22f : 40f);
+
+                DrawResultSectionHeader(c, g);
+                c.Gap(10f); // pad below the section header before its controls
+
+                // Re-draw the tab filtered to ONLY this group's matching ordinals: the real, editable bindings run.
+                c.RenderOrdinals = g.Ordinals;
+                c.Ordinal = 0;
+                c.CurrentCatId = g.CatId;
+                DrawCat(c, (SettingsCat)g.CatId);
+                c.RenderOrdinals = null; // never leaks into a normal draw
+            }
+
+            searchResultsHeight = c.CurY + pad;
+            Widgets.EndScrollView();
+        }
+
+        // Cached measured height of the current search-results layout (seeded large so the first frame never
+        // under-sizes the scroll viewport; replaced by the true CurY after the first draw, then stable per query).
+        private static float searchResultsHeight = 1700f;
+
+        private const float HeaderRowH = 26f;
+
+        // A search-results SECTION header drawn through the shared layout cursor, mirroring HDSettingsUI.Header's bar:
+        // a 26px grey box, the category icon (~text height, vertically centred) + ONLY the section heading title (no
+        // "<Tab> — " prefix). The WHOLE bar is clickable -> Navigate to the group's best member (switch tab + scroll
+        // + highlight). A faint hover wash signals it's clickable.
+        private void DrawResultSectionHeader(SettingsCtx c, ResultGroup g)
+        {
+            var r = c.Row(HeaderRowH);
+            Widgets.DrawBoxSolid(r, new Color(1f, 1f, 1f, 0.09f)); // same bar as HDSettingsUI.Header
+            if (Mouse.IsOver(r)) Widgets.DrawBoxSolid(r, new Color(1f, 1f, 1f, 0.06f)); // faint hover wash
+
+            var cd = cats[g.CatId];
+            var icon = IconFor(cd);
+            const float iconSize = 18f; // ~text height — not much taller than the label
+            var iconBox = new Rect(r.x + 6f, r.y + (r.height - iconSize) / 2f, iconSize, iconSize);
+            if (icon != null)
+            {
+                var icol = GUI.color;
+                GUI.color = new Color(1f, 1f, 1f, 0.85f);
+                GUI.DrawTexture(iconBox, icon, ScaleMode.ScaleToFit);
+                GUI.color = icol;
+            }
+
+            // ONLY the heading title (drop the "<Tab> — " prefix). Fall back to the tab name for headerless controls
+            // (rare — most controls live under a section header).
+            string title = g.Header.NullOrEmpty() ? cd.nameKey.Translate().ToString() : g.Header;
+            var labelRect = new Rect(iconBox.xMax + 8f, r.y, r.xMax - iconBox.xMax - 10f, r.height);
+            var f = Text.Font;
+            var anchor = Text.Anchor;
+            var lcol = GUI.color;
+            Text.Font = GameFont.Small;
+            Text.Anchor = TextAnchor.MiddleLeft; // vertically centre the label in the bar
+            GUI.color = new Color(0.86f, 0.88f, 0.95f);
+            Widgets.Label(labelRect, title);
+            GUI.color = lcol;
+            Text.Anchor = anchor;
+            Text.Font = f;
+
+            if (Mouse.IsOver(r))
+                HDSettingsUI.SetHelp(cd.nameKey.Translate(),
+                    g.Header.NullOrEmpty() ? cd.helpKey.Translate().ToString() : g.Header);
+            if (Widgets.ButtonInvisible(r))
+                Navigate(g.Best);
+        }
+
+        // Jump to the control behind a search result: switch to its tab, clear the search, queue the scroll-into-view
+        // (2-frame defer so catHeight is fresh) and the highlight flash. startY/height are stashed for the highlight
+        // because the registry is nulled here.
+        private void Navigate(OptionEntry e)
+        {
+            currentCat = (SettingsCat)e.CatId;
+            searchQuery = "";
+            searchRegistry = null;
+            scoredResults = null;
+            scoredForQuery = null;
+            contentScroll = Vector2.zero;
+            pendingNav = (e.CatId, e.Ordinal, e.StartY, 2);
+            highlightTarget = (e.CatId, e.Ordinal, e.StartY, e.Height);
+            highlightStart = Time.realtimeSinceStartup;
+        }
+
+        // The post-navigate yellow flash. Drawn inside the scroll view (view-local), padded ~4px around the stashed
+        // target rect, blinking then fading over 1.5s. Self-clears when done or when the tab no longer matches.
+        private void DrawNavHighlight(Rect view, int currentIdx)
+        {
+            if (!highlightTarget.HasValue || highlightTarget.Value.catId != currentIdx)
+                return;
+            float t = (Time.realtimeSinceStartup - highlightStart) / 1.5f;
+            if (t >= 1f)
+            {
+                highlightTarget = null;
+                return;
+            }
+            var ht = highlightTarget.Value;
+            float alpha = (1f - t) * (0.35f + 0.65f * Mathf.Abs(Mathf.Sin(t * Mathf.PI * 5f)));
+            var box = new Rect(0f, ht.startY - 4f, view.width, ht.height + 8f);
+            var col = GUI.color;
+            // Translucent yellow wash + a brighter yellow border. DrawBoxSolid takes an explicit fill colour; the
+            // DrawBox outline reads GUI.color.
+            Widgets.DrawBoxSolid(box, new Color(1f, 0.92f, 0.4f, alpha * 0.35f));
+            GUI.color = new Color(1f, 0.92f, 0.4f, Mathf.Min(1f, alpha));
+            Widgets.DrawBox(box, 2);
+            GUI.color = col;
         }
 
         private void DrawHelp(Rect rect)
