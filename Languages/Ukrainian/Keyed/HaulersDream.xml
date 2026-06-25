@@ -117,8 +117,8 @@
 <HaulersDream.Overload.Free>Без сповільнення — нести вільно</HaulersDream.Overload.Free>
 <HaulersDream.Overload.Fair>Помірно (збалансовано)</HaulersDream.Overload.Fair>
 <HaulersDream.Overload.Off>Вимкнено — ніколи не перевантажувати</HaulersDream.Overload.Off>
-<HaulersDream.Overload.Eager>Охоче перевантажувати ({0})</HaulersDream.Overload.Eager>
-<HaulersDream.Overload.Cautious>Обережно ({0})</HaulersDream.Overload.Cautious>
+<HaulersDream.Overload.Eager>Охоче перевантажувати</HaulersDream.Overload.Eager>
+<HaulersDream.Overload.Cautious>Обережно</HaulersDream.Overload.Cautious>
 <HaulersDream.Setting.StrictCarryWeight>Сувора вантажна вага (не перевантажувати)</HaulersDream.Setting.StrictCarryWeight>
 <HaulersDream.Setting.StrictCarryWeightDesc>Коли УВІМКНЕНО, пішаки ніколи не несуть понад 100% своєї максимальної ваги й ніколи не переривають роботу, щоб розвантажитися, коли повні — вони продовжують збирати урожай і лишають надлишок на землі для звичайного перенесення (підбирається дорогою повз). Коли ВИМКНЕНО (за замовчуванням), пішаки перевантажуються за повзунком вище й вирушають розвантажуватися, щойно наповняться.</HaulersDream.Setting.StrictCarryWeightDesc>
 <HaulersDream.Setting.KeepWorkingWhenFull>Продовжувати роботу, коли повний (не відриватися на розвантаження)</HaulersDream.Setting.KeepWorkingWhenFull>
@@ -542,7 +542,6 @@
 <HaulersDream.Common.Off>Вимкнено</HaulersDream.Common.Off>
 <HaulersDream.Common.On>Увімкнено</HaulersDream.Common.On>
 <HaulersDream.Unit.Tiles>{0} клітин</HaulersDream.Unit.Tiles>
-<HaulersDream.Unit.Ticks>{0} тіків</HaulersDream.Unit.Ticks>
 <HaulersDream.Unit.Hours>{0} год</HaulersDream.Unit.Hours>
 <HaulersDream.Setting.CarryLimit.Lab>Ліміт перенесення</HaulersDream.Setting.CarryLimit.Lab>
 <HaulersDream.Setting.Overload.Lab>Розумне перевантаження</HaulersDream.Setting.Overload.Lab>
@@ -624,7 +623,6 @@
 <HaulersDream.Cat.Planners.Intro>Планувальники маршрутів і виготовлення за правим кліком та їхні стандарти.</HaulersDream.Cat.Planners.Intro>
 <HaulersDream.Cat.Advanced.Intro>Час розвантаження, запобіжне сповіщення про застряглий вантаж, прибирання при збереженні та інструменти для розробників.</HaulersDream.Cat.Advanced.Intro>
 <HaulersDream.Head.CarryWeight>Вантажна вага</HaulersDream.Head.CarryWeight>
-<HaulersDream.Head.Pickup>Підбирання</HaulersDream.Head.Pickup>
 <HaulersDream.Head.AutoUnloadTrips>Автоматичні ходки розвантаження</HaulersDream.Head.AutoUnloadTrips>
 <HaulersDream.Head.DropOff>Поведінка скидання</HaulersDream.Head.DropOff>
 <HaulersDream.Head.ItemRulesDisplay>Правила для окремих речей та відображення</HaulersDream.Head.ItemRulesDisplay>
@@ -675,4 +673,5 @@
 <HaulersDream.Setting.Yield.StripHelp>Gear removed by a Strip order. This always drops then hauls (it cannot go straight to inventory).</HaulersDream.Setting.Yield.StripHelp>
 <HaulersDream.Setting.Yield.Uninstall>Uninstalling (minified buildings)</HaulersDream.Setting.Yield.Uninstall>
 <HaulersDream.Setting.Yield.UninstallHelp>Minified buildings from an Uninstall order (on caravan / away maps, so they batch onto pack animals).</HaulersDream.Setting.Yield.UninstallHelp>
+<HaulersDream.Setting.PerPawnButtonsNote>These add command buttons to each colonist; they don't change automatic hauling.</HaulersDream.Setting.PerPawnButtonsNote>
 </LanguageData>

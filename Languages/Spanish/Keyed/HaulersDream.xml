@@ -117,8 +117,8 @@
 <HaulersDream.Overload.Free>Sin ralentización: llevar libremente</HaulersDream.Overload.Free>
 <HaulersDream.Overload.Fair>Justo (equilibrado)</HaulersDream.Overload.Fair>
 <HaulersDream.Overload.Off>Desactivado: no sobrecargar nunca</HaulersDream.Overload.Off>
-<HaulersDream.Overload.Eager>Ansioso por sobrecargar ({0})</HaulersDream.Overload.Eager>
-<HaulersDream.Overload.Cautious>Cauto ({0})</HaulersDream.Overload.Cautious>
+<HaulersDream.Overload.Eager>Ansioso por sobrecargar</HaulersDream.Overload.Eager>
+<HaulersDream.Overload.Cautious>Cauto</HaulersDream.Overload.Cautious>
 <HaulersDream.Setting.StrictCarryWeight>Peso de carga estricto (no sobrecargar)</HaulersDream.Setting.StrictCarryWeight>
 <HaulersDream.Setting.StrictCarryWeightDesc>Cuando está ACTIVADO, los peones nunca llevan por encima del 100 % de su peso máximo y nunca interrumpen el trabajo para descargar estando llenos: siguen cosechando y dejan el excedente en el suelo para el transporte normal (que se recoge al pasar). Cuando está DESACTIVADO (por defecto), los peones se sobrecargan según la barra de arriba y van a descargar una vez llenos.</HaulersDream.Setting.StrictCarryWeightDesc>
 <HaulersDream.Setting.KeepWorkingWhenFull>Seguir trabajando estando lleno (no interrumpir para descargar)</HaulersDream.Setting.KeepWorkingWhenFull>
@@ -542,7 +542,6 @@
 <HaulersDream.Common.Off>Desactivado</HaulersDream.Common.Off>
 <HaulersDream.Common.On>Activado</HaulersDream.Common.On>
 <HaulersDream.Unit.Tiles>{0} casillas</HaulersDream.Unit.Tiles>
-<HaulersDream.Unit.Ticks>{0} tics</HaulersDream.Unit.Ticks>
 <HaulersDream.Unit.Hours>{0} h</HaulersDream.Unit.Hours>
 <HaulersDream.Setting.CarryLimit.Lab>Límite de carga</HaulersDream.Setting.CarryLimit.Lab>
 <HaulersDream.Setting.Overload.Lab>Sobrecarga inteligente</HaulersDream.Setting.Overload.Lab>
@@ -624,7 +623,6 @@
 <HaulersDream.Cat.Planners.Intro>Los planificadores de rutas y de fabricación con clic derecho, y sus valores por defecto.</HaulersDream.Cat.Planners.Intro>
 <HaulersDream.Cat.Advanced.Intro>Sincronización de la descarga, la alerta de seguridad de carga atascada, la limpieza al guardar, y las herramientas para desarrolladores.</HaulersDream.Cat.Advanced.Intro>
 <HaulersDream.Head.CarryWeight>Peso de carga</HaulersDream.Head.CarryWeight>
-<HaulersDream.Head.Pickup>Recogida</HaulersDream.Head.Pickup>
 <HaulersDream.Head.AutoUnloadTrips>Viajes de descarga automáticos</HaulersDream.Head.AutoUnloadTrips>
 <HaulersDream.Head.DropOff>Comportamiento de descarga</HaulersDream.Head.DropOff>
 <HaulersDream.Head.ItemRulesDisplay>Reglas por objeto y visualización</HaulersDream.Head.ItemRulesDisplay>
@@ -675,4 +673,5 @@
 <HaulersDream.Setting.Yield.StripHelp>Gear removed by a Strip order. This always drops then hauls (it cannot go straight to inventory).</HaulersDream.Setting.Yield.StripHelp>
 <HaulersDream.Setting.Yield.Uninstall>Uninstalling (minified buildings)</HaulersDream.Setting.Yield.Uninstall>
 <HaulersDream.Setting.Yield.UninstallHelp>Minified buildings from an Uninstall order (on caravan / away maps, so they batch onto pack animals).</HaulersDream.Setting.Yield.UninstallHelp>
+<HaulersDream.Setting.PerPawnButtonsNote>These add command buttons to each colonist; they don't change automatic hauling.</HaulersDream.Setting.PerPawnButtonsNote>
 </LanguageData>

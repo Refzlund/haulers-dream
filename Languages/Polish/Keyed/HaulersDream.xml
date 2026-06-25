@@ -117,8 +117,8 @@
 <HaulersDream.Overload.Free>Bez spowolnienia — noś dowolnie</HaulersDream.Overload.Free>
 <HaulersDream.Overload.Fair>Umiarkowane (zrównoważone)</HaulersDream.Overload.Fair>
 <HaulersDream.Overload.Off>Wyłączone — nigdy nie przeciążaj</HaulersDream.Overload.Off>
-<HaulersDream.Overload.Eager>Chętne do przeciążania ({0})</HaulersDream.Overload.Eager>
-<HaulersDream.Overload.Cautious>Ostrożne ({0})</HaulersDream.Overload.Cautious>
+<HaulersDream.Overload.Eager>Chętne do przeciążania</HaulersDream.Overload.Eager>
+<HaulersDream.Overload.Cautious>Ostrożne</HaulersDream.Overload.Cautious>
 <HaulersDream.Setting.StrictCarryWeight>Ścisły udźwig (nie przeciążaj)</HaulersDream.Setting.StrictCarryWeight>
 <HaulersDream.Setting.StrictCarryWeightDesc>Gdy WŁĄCZONE, pionki nigdy nie niosą ponad 100% swojej maksymalnej masy i nigdy nie przerywają pracy, by się rozładować, gdy są pełne — zbierają dalej i zostawiają nadwyżkę na ziemi do normalnego znoszenia (podnoszoną przy przejściu obok). Gdy WYŁĄCZONE (domyślnie), pionki przeciążają się według suwaka powyżej i ruszają się rozładować, gdy są pełne.</HaulersDream.Setting.StrictCarryWeightDesc>
 <HaulersDream.Setting.KeepWorkingWhenFull>Pracuj dalej, gdy pełny (nie przerywaj, by się rozładować)</HaulersDream.Setting.KeepWorkingWhenFull>
@@ -542,7 +542,6 @@
 <HaulersDream.Common.Off>Wyłączone</HaulersDream.Common.Off>
 <HaulersDream.Common.On>Włączone</HaulersDream.Common.On>
 <HaulersDream.Unit.Tiles>{0} kafelków</HaulersDream.Unit.Tiles>
-<HaulersDream.Unit.Ticks>{0} tyknięć</HaulersDream.Unit.Ticks>
 <HaulersDream.Unit.Hours>{0} h</HaulersDream.Unit.Hours>
 <HaulersDream.Setting.CarryLimit.Lab>Limit noszenia</HaulersDream.Setting.CarryLimit.Lab>
 <HaulersDream.Setting.Overload.Lab>Inteligentne przeciążenie</HaulersDream.Setting.Overload.Lab>
@@ -624,7 +623,6 @@
 <HaulersDream.Cat.Planners.Intro>Plannery tras i wytwarzania z prawego przycisku oraz ich ustawienia domyślne.</HaulersDream.Cat.Planners.Intro>
 <HaulersDream.Cat.Advanced.Intro>Czas rozładunku, alarm bezpieczeństwa o utkniętym ładunku, sprzątanie przy zapisie i narzędzia deweloperskie.</HaulersDream.Cat.Advanced.Intro>
 <HaulersDream.Head.CarryWeight>Udźwig</HaulersDream.Head.CarryWeight>
-<HaulersDream.Head.Pickup>Podnoszenie</HaulersDream.Head.Pickup>
 <HaulersDream.Head.AutoUnloadTrips>Automatyczne wyprawy rozładunkowe</HaulersDream.Head.AutoUnloadTrips>
 <HaulersDream.Head.DropOff>Zachowanie zrzutu</HaulersDream.Head.DropOff>
 <HaulersDream.Head.ItemRulesDisplay>Reguły poszczególnych przedmiotów i wyświetlanie</HaulersDream.Head.ItemRulesDisplay>
@@ -675,4 +673,5 @@
 <HaulersDream.Setting.Yield.StripHelp>Gear removed by a Strip order. This always drops then hauls (it cannot go straight to inventory).</HaulersDream.Setting.Yield.StripHelp>
 <HaulersDream.Setting.Yield.Uninstall>Uninstalling (minified buildings)</HaulersDream.Setting.Yield.Uninstall>
 <HaulersDream.Setting.Yield.UninstallHelp>Minified buildings from an Uninstall order (on caravan / away maps, so they batch onto pack animals).</HaulersDream.Setting.Yield.UninstallHelp>
+<HaulersDream.Setting.PerPawnButtonsNote>These add command buttons to each colonist; they don't change automatic hauling.</HaulersDream.Setting.PerPawnButtonsNote>
 </LanguageData>

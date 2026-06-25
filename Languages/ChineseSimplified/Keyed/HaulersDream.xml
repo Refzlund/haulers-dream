@@ -117,8 +117,8 @@
 <HaulersDream.Overload.Free>不减速——自由携带</HaulersDream.Overload.Free>
 <HaulersDream.Overload.Fair>适中（平衡）</HaulersDream.Overload.Fair>
 <HaulersDream.Overload.Off>关闭——绝不超载</HaulersDream.Overload.Off>
-<HaulersDream.Overload.Eager>积极超载（{0}）</HaulersDream.Overload.Eager>
-<HaulersDream.Overload.Cautious>谨慎（{0}）</HaulersDream.Overload.Cautious>
+<HaulersDream.Overload.Eager>积极超载</HaulersDream.Overload.Eager>
+<HaulersDream.Overload.Cautious>谨慎</HaulersDream.Overload.Cautious>
 <HaulersDream.Setting.StrictCarryWeight>严格携带质量（不超载）</HaulersDream.Setting.StrictCarryWeight>
 <HaulersDream.Setting.StrictCarryWeightDesc>开启时，小人绝不携带超过其最大质量的100%，也绝不在装满时中断工作去卸载——它会继续收获，把多余的留在地上交给正常搬运（路过时顺手拾取）。关闭时（默认），小人按上方滑块超载，装满后即前去卸载。</HaulersDream.Setting.StrictCarryWeightDesc>
 <HaulersDream.Setting.KeepWorkingWhenFull>装满时继续工作（不中断去卸载）</HaulersDream.Setting.KeepWorkingWhenFull>
@@ -542,7 +542,6 @@
 <HaulersDream.Common.Off>关闭</HaulersDream.Common.Off>
 <HaulersDream.Common.On>开启</HaulersDream.Common.On>
 <HaulersDream.Unit.Tiles>{0} 格</HaulersDream.Unit.Tiles>
-<HaulersDream.Unit.Ticks>{0} tick</HaulersDream.Unit.Ticks>
 <HaulersDream.Unit.Hours>{0} 小时</HaulersDream.Unit.Hours>
 <HaulersDream.Setting.CarryLimit.Lab>携带上限</HaulersDream.Setting.CarryLimit.Lab>
 <HaulersDream.Setting.Overload.Lab>智能超载</HaulersDream.Setting.Overload.Lab>
@@ -624,7 +623,6 @@
 <HaulersDream.Cat.Planners.Intro>右键路径和制作规划器，及其默认值。</HaulersDream.Cat.Planners.Intro>
 <HaulersDream.Cat.Advanced.Intro>卸载时机、被困货物安全警报、保存清理，以及开发者工具。</HaulersDream.Cat.Advanced.Intro>
 <HaulersDream.Head.CarryWeight>携带质量</HaulersDream.Head.CarryWeight>
-<HaulersDream.Head.Pickup>拾取</HaulersDream.Head.Pickup>
 <HaulersDream.Head.AutoUnloadTrips>自动卸载行程</HaulersDream.Head.AutoUnloadTrips>
 <HaulersDream.Head.DropOff>卸货行为</HaulersDream.Head.DropOff>
 <HaulersDream.Head.ItemRulesDisplay>单项物品规则与显示</HaulersDream.Head.ItemRulesDisplay>
@@ -675,4 +673,5 @@
 <HaulersDream.Setting.Yield.StripHelp>Gear removed by a Strip order. This always drops then hauls (it cannot go straight to inventory).</HaulersDream.Setting.Yield.StripHelp>
 <HaulersDream.Setting.Yield.Uninstall>Uninstalling (minified buildings)</HaulersDream.Setting.Yield.Uninstall>
 <HaulersDream.Setting.Yield.UninstallHelp>Minified buildings from an Uninstall order (on caravan / away maps, so they batch onto pack animals).</HaulersDream.Setting.Yield.UninstallHelp>
+<HaulersDream.Setting.PerPawnButtonsNote>These add command buttons to each colonist; they don't change automatic hauling.</HaulersDream.Setting.PerPawnButtonsNote>
 </LanguageData>

@@ -117,8 +117,8 @@
 <HaulersDream.Overload.Free>Без замедления — нести свободно</HaulersDream.Overload.Free>
 <HaulersDream.Overload.Fair>Умеренно (сбалансированно)</HaulersDream.Overload.Fair>
 <HaulersDream.Overload.Off>Выкл — никогда не перегружать</HaulersDream.Overload.Off>
-<HaulersDream.Overload.Eager>Охотно перегружать ({0})</HaulersDream.Overload.Eager>
-<HaulersDream.Overload.Cautious>Осторожно ({0})</HaulersDream.Overload.Cautious>
+<HaulersDream.Overload.Eager>Охотно перегружать</HaulersDream.Overload.Eager>
+<HaulersDream.Overload.Cautious>Осторожно</HaulersDream.Overload.Cautious>
 <HaulersDream.Setting.StrictCarryWeight>Строгий вес переноски (не перегружать)</HaulersDream.Setting.StrictCarryWeight>
 <HaulersDream.Setting.StrictCarryWeightDesc>Когда ВКЛ, пешки никогда не несут сверх 100% своего максимального веса и никогда не прерывают работу для разгрузки при заполнении — они продолжают сбор урожая и оставляют излишек на земле для обычной переноски (подбирается по пути мимо). Когда ВЫКЛ (по умолчанию), пешки перегружаются согласно ползунку выше и уходят на разгрузку, как только заполнятся.</HaulersDream.Setting.StrictCarryWeightDesc>
 <HaulersDream.Setting.KeepWorkingWhenFull>Продолжать работу при заполнении (не прерываться на разгрузку)</HaulersDream.Setting.KeepWorkingWhenFull>
@@ -542,7 +542,6 @@
 <HaulersDream.Common.Off>Выкл</HaulersDream.Common.Off>
 <HaulersDream.Common.On>Вкл</HaulersDream.Common.On>
 <HaulersDream.Unit.Tiles>{0} клеток</HaulersDream.Unit.Tiles>
-<HaulersDream.Unit.Ticks>{0} тиков</HaulersDream.Unit.Ticks>
 <HaulersDream.Unit.Hours>{0} ч</HaulersDream.Unit.Hours>
 <HaulersDream.Setting.CarryLimit.Lab>Предел переноски</HaulersDream.Setting.CarryLimit.Lab>
 <HaulersDream.Setting.Overload.Lab>Умная перегрузка</HaulersDream.Setting.Overload.Lab>
@@ -624,7 +623,6 @@
 <HaulersDream.Cat.Planners.Intro>Планировщики маршрутов и изготовления по правому клику, и их значения по умолчанию.</HaulersDream.Cat.Planners.Intro>
 <HaulersDream.Cat.Advanced.Intro>Тайминг разгрузки, страховочная тревога застрявшего груза, очистка при сохранении и инструменты для разработчиков.</HaulersDream.Cat.Advanced.Intro>
 <HaulersDream.Head.CarryWeight>Вес переноски</HaulersDream.Head.CarryWeight>
-<HaulersDream.Head.Pickup>Подбор</HaulersDream.Head.Pickup>
 <HaulersDream.Head.AutoUnloadTrips>Автоматические ходки для разгрузки</HaulersDream.Head.AutoUnloadTrips>
 <HaulersDream.Head.DropOff>Поведение сброса</HaulersDream.Head.DropOff>
 <HaulersDream.Head.ItemRulesDisplay>Правила по предметам и отображение</HaulersDream.Head.ItemRulesDisplay>
@@ -675,4 +673,5 @@
 <HaulersDream.Setting.Yield.StripHelp>Gear removed by a Strip order. This always drops then hauls (it cannot go straight to inventory).</HaulersDream.Setting.Yield.StripHelp>
 <HaulersDream.Setting.Yield.Uninstall>Uninstalling (minified buildings)</HaulersDream.Setting.Yield.Uninstall>
 <HaulersDream.Setting.Yield.UninstallHelp>Minified buildings from an Uninstall order (on caravan / away maps, so they batch onto pack animals).</HaulersDream.Setting.Yield.UninstallHelp>
+<HaulersDream.Setting.PerPawnButtonsNote>These add command buttons to each colonist; they don't change automatic hauling.</HaulersDream.Setting.PerPawnButtonsNote>
 </LanguageData>

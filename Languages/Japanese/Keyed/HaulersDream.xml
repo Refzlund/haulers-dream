@@ -117,8 +117,8 @@
 <HaulersDream.Overload.Free>速度低下なし — 自由に運ぶ</HaulersDream.Overload.Free>
 <HaulersDream.Overload.Fair>標準（バランス型）</HaulersDream.Overload.Fair>
 <HaulersDream.Overload.Off>オフ — 決して過積載しない</HaulersDream.Overload.Off>
-<HaulersDream.Overload.Eager>積極的に過積載（{0}）</HaulersDream.Overload.Eager>
-<HaulersDream.Overload.Cautious>慎重（{0}）</HaulersDream.Overload.Cautious>
+<HaulersDream.Overload.Eager>積極的に過積載</HaulersDream.Overload.Eager>
+<HaulersDream.Overload.Cautious>慎重</HaulersDream.Overload.Cautious>
 <HaulersDream.Setting.StrictCarryWeight>厳格な携行重量（過積載しない）</HaulersDream.Setting.StrictCarryWeight>
 <HaulersDream.Setting.StrictCarryWeightDesc>オンにすると、ポーンは決して最大重量の100%を超えて運ばず、満杯のときに作業を中断して降ろしに行くこともありません。収穫を続け、余剰を通常の運搬用に地面へ残します（通りがかりに拾われます）。オフ（デフォルト）にすると、ポーンは上のスライダーに従って過積載し、満杯になると降ろしに向かいます。</HaulersDream.Setting.StrictCarryWeightDesc>
 <HaulersDream.Setting.KeepWorkingWhenFull>満杯でも作業を続ける（中断して降ろしに行かない）</HaulersDream.Setting.KeepWorkingWhenFull>
@@ -542,7 +542,6 @@
 <HaulersDream.Common.Off>オフ</HaulersDream.Common.Off>
 <HaulersDream.Common.On>オン</HaulersDream.Common.On>
 <HaulersDream.Unit.Tiles>{0}マス</HaulersDream.Unit.Tiles>
-<HaulersDream.Unit.Ticks>{0}ティック</HaulersDream.Unit.Ticks>
 <HaulersDream.Unit.Hours>{0}時間</HaulersDream.Unit.Hours>
 <HaulersDream.Setting.CarryLimit.Lab>携行上限</HaulersDream.Setting.CarryLimit.Lab>
 <HaulersDream.Setting.Overload.Lab>賢い過積載</HaulersDream.Setting.Overload.Lab>
@@ -624,7 +623,6 @@
 <HaulersDream.Cat.Planners.Intro>右クリックのルートと製作のプランナー、およびそれらのデフォルト。</HaulersDream.Cat.Planners.Intro>
 <HaulersDream.Cat.Advanced.Intro>荷下ろしのタイミング、貨物が閉じ込められたときの安全警告、保存時の片付け、開発者向けツール。</HaulersDream.Cat.Advanced.Intro>
 <HaulersDream.Head.CarryWeight>携行重量</HaulersDream.Head.CarryWeight>
-<HaulersDream.Head.Pickup>拾い上げ</HaulersDream.Head.Pickup>
 <HaulersDream.Head.AutoUnloadTrips>自動の降ろし往復</HaulersDream.Head.AutoUnloadTrips>
 <HaulersDream.Head.DropOff>降ろしの動作</HaulersDream.Head.DropOff>
 <HaulersDream.Head.ItemRulesDisplay>アイテムごとのルール &amp; 表示</HaulersDream.Head.ItemRulesDisplay>
@@ -675,4 +673,5 @@
 <HaulersDream.Setting.Yield.StripHelp>Gear removed by a Strip order. This always drops then hauls (it cannot go straight to inventory).</HaulersDream.Setting.Yield.StripHelp>
 <HaulersDream.Setting.Yield.Uninstall>Uninstalling (minified buildings)</HaulersDream.Setting.Yield.Uninstall>
 <HaulersDream.Setting.Yield.UninstallHelp>Minified buildings from an Uninstall order (on caravan / away maps, so they batch onto pack animals).</HaulersDream.Setting.Yield.UninstallHelp>
+<HaulersDream.Setting.PerPawnButtonsNote>These add command buttons to each colonist; they don't change automatic hauling.</HaulersDream.Setting.PerPawnButtonsNote>
 </LanguageData>

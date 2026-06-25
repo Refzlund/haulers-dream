@@ -117,8 +117,8 @@
 <HaulersDream.Overload.Free>Ingen fartnedsætning — bær frit</HaulersDream.Overload.Free>
 <HaulersDream.Overload.Fair>Rimelig (afbalanceret)</HaulersDream.Overload.Fair>
 <HaulersDream.Overload.Off>Fra — overlæs aldrig</HaulersDream.Overload.Off>
-<HaulersDream.Overload.Eager>Ivrig efter at overlæsse ({0})</HaulersDream.Overload.Eager>
-<HaulersDream.Overload.Cautious>Forsigtig ({0})</HaulersDream.Overload.Cautious>
+<HaulersDream.Overload.Eager>Ivrig efter at overlæsse</HaulersDream.Overload.Eager>
+<HaulersDream.Overload.Cautious>Forsigtig</HaulersDream.Overload.Cautious>
 <HaulersDream.Setting.StrictCarryWeight>Streng bærevægt (overlæs ikke)</HaulersDream.Setting.StrictCarryWeight>
 <HaulersDream.Setting.StrictCarryWeightDesc>Når den er SLÅET TIL, bærer figurer aldrig ud over 100 % af deres maksimale vægt og afbryder aldrig arbejdet for at aflæsse, mens de er fulde — de bliver ved med at høste og efterlader overskuddet på jorden til normal transport (samlet op, når de går forbi). Når den er SLÅET FRA (standard), overlæsser figurer ifølge skyderen ovenfor og tager af sted for at aflæsse, når de er fulde.</HaulersDream.Setting.StrictCarryWeightDesc>
 <HaulersDream.Setting.KeepWorkingWhenFull>Bliv ved med at arbejde, når du er fuld (afbryd ikke for at aflæsse)</HaulersDream.Setting.KeepWorkingWhenFull>
@@ -542,7 +542,6 @@
 <HaulersDream.Common.Off>Fra</HaulersDream.Common.Off>
 <HaulersDream.Common.On>Til</HaulersDream.Common.On>
 <HaulersDream.Unit.Tiles>{0} felter</HaulersDream.Unit.Tiles>
-<HaulersDream.Unit.Ticks>{0} tikker</HaulersDream.Unit.Ticks>
 <HaulersDream.Unit.Hours>{0} t</HaulersDream.Unit.Hours>
 <HaulersDream.Setting.CarryLimit.Lab>Bæregrænse</HaulersDream.Setting.CarryLimit.Lab>
 <HaulersDream.Setting.Overload.Lab>Smart overlæsning</HaulersDream.Setting.Overload.Lab>
@@ -624,7 +623,6 @@
 <HaulersDream.Cat.Planners.Intro>Højreklik-rute- og fremstillingsplanlæggerne samt deres standarder.</HaulersDream.Cat.Planners.Intro>
 <HaulersDream.Cat.Advanced.Intro>Aflæsningstidspunkt, sikkerhedsalarmen for fastlåst last, oprydning ved gemning og udviklerværktøjer.</HaulersDream.Cat.Advanced.Intro>
 <HaulersDream.Head.CarryWeight>Bærevægt</HaulersDream.Head.CarryWeight>
-<HaulersDream.Head.Pickup>Opsamling</HaulersDream.Head.Pickup>
 <HaulersDream.Head.AutoUnloadTrips>Automatiske aflæsningsture</HaulersDream.Head.AutoUnloadTrips>
 <HaulersDream.Head.DropOff>Afleveringsadfærd</HaulersDream.Head.DropOff>
 <HaulersDream.Head.ItemRulesDisplay>Regler pr. vare og visning</HaulersDream.Head.ItemRulesDisplay>
@@ -675,4 +673,5 @@
 <HaulersDream.Setting.Yield.StripHelp>Gear removed by a Strip order. This always drops then hauls (it cannot go straight to inventory).</HaulersDream.Setting.Yield.StripHelp>
 <HaulersDream.Setting.Yield.Uninstall>Uninstalling (minified buildings)</HaulersDream.Setting.Yield.Uninstall>
 <HaulersDream.Setting.Yield.UninstallHelp>Minified buildings from an Uninstall order (on caravan / away maps, so they batch onto pack animals).</HaulersDream.Setting.Yield.UninstallHelp>
+<HaulersDream.Setting.PerPawnButtonsNote>These add command buttons to each colonist; they don't change automatic hauling.</HaulersDream.Setting.PerPawnButtonsNote>
 </LanguageData>

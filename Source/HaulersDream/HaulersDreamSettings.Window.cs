@@ -15,9 +15,11 @@ namespace HaulersDream
             if (lv == 0) return "HaulersDream.Overload.Free".Translate();
             if (lv >= OverloadTuning.OffLevel) return "HaulersDream.Overload.Off".Translate();
             if (lv == OverloadTuning.FairLevel) return "HaulersDream.Overload.Fair".Translate();
+            // Show only the word tier (Eager / Fair / Cautious) — the numeric "(N)" is dropped from the readout.
+            // The XML values for these keys no longer carry a {0} placeholder, so no argument is passed.
             return lv < OverloadTuning.FairLevel
-                ? "HaulersDream.Overload.Eager".Translate(lv)
-                : "HaulersDream.Overload.Cautious".Translate(lv);
+                ? "HaulersDream.Overload.Eager".Translate()
+                : "HaulersDream.Overload.Cautious".Translate();
         }
 
         // ===== 3-pane settings window (icon nav · options · info panel), styled after Camera+ =====
@@ -531,7 +533,7 @@ namespace HaulersDream
 
         // ===== helpers for readouts =====
         private static string Tiles(int n) => "HaulersDream.Unit.Tiles".Translate(n);
-        private static string Ticks(int n) => "HaulersDream.Unit.Ticks".Translate(n);
+        // (Ticks readout helper removed — its three callers now show in-game hours / seconds directly.)
         private static string Hours(float h) => "HaulersDream.Unit.Hours".Translate(h.ToString("0.#"));
         private static string OffLabel => "HaulersDream.Common.Off".Translate();
 
@@ -634,9 +636,9 @@ namespace HaulersDream
             strictCarryWeight = HDSettingsUI.Checkbox(c, "HaulersDream.Setting.StrictCarryWeight".Translate(),
                 strictCarryWeight, "HaulersDream.Setting.StrictCarryWeightDesc".Translate());
 
-            // Pick-up handling moved to per-category yield behaviour (Work & yields tab); this header now hosts the
-            // bleeding-skip toggle, which is also about whether/how a pawn picks an item up.
-            HDSettingsUI.Header(c, "HaulersDream.Head.Pickup".Translate());
+            // Pick-up handling moved to per-category yield behaviour (Work & yields tab). The lone bleeding-skip
+            // toggle that remained no longer warrants its own one-item "Pick-up" header — it now sits with the
+            // carry-weight controls above it (header removed; the toggle itself is unchanged).
             skipHaulWhileBleeding = HDSettingsUI.Checkbox(c, "HaulersDream.Setting.SkipHaulWhileBleeding".Translate(),
                 skipHaulWhileBleeding, "HaulersDream.Setting.SkipHaulWhileBleedingDesc".Translate());
 
@@ -675,6 +677,11 @@ namespace HaulersDream
             HDSettingsUI.Note(c, "HaulersDream.Cat.Unloading.Intro".Translate());
 
             HDSettingsUI.Header(c, "HaulersDream.Head.AutoUnloadTrips".Translate());
+            // The most behavior-defining unloading knob (moved here from Advanced). Same field/key/serialization;
+            // only the location and the numeric readout changed (raw ticks -> in-game hours, ticks/2500).
+            unloadGraceTicks = Mathf.RoundToInt(HDSettingsUI.Slider(c, "HaulersDream.Setting.UnloadGrace.Lab".Translate(),
+                unloadGraceTicks, 0f, 7500f, string.Format("~{0:0.0} h", unloadGraceTicks / 2500f),
+                "HaulersDream.Setting.UnloadGrace.Help".Translate()) / 50f) * 50;
             markForUnload = HDSettingsUI.Checkbox(c, "HaulersDream.Setting.MarkForUnload".Translate(),
                 markForUnload, "HaulersDream.Feat.AutoUnload.Blurb".Translate());
             unloadBeforeSleep = HDSettingsUI.Checkbox(c, "HaulersDream.Setting.UnloadBeforeSleep".Translate(),
@@ -699,8 +706,12 @@ namespace HaulersDream
                 : "HaulersDream.Setting.ItemUnloadButton".Translate();
             HDSettingsUI.Button(c, itemBtn, () => Find.WindowStack.Add(new Dialog_ItemUnloadSettings(this)),
                 "HaulersDream.Setting.ItemUnload.Help".Translate());
-            hideGizmo = HDSettingsUI.Checkbox(c, "HaulersDream.Setting.HideGizmo".Translate(),
-                hideGizmo, "HaulersDream.Setting.HideGizmo.Help".Translate());
+            // The two per-pawn gizmo toggles both read as "Show the … button". hideGizmo's binding is INVERTED so the
+            // checkbox means "show": checked => button shown. Field default unchanged (hideGizmo=false => box checked).
+            HDSettingsUI.Note(c, "HaulersDream.Setting.PerPawnButtonsNote".Translate());
+            bool showUnloadBtn = HDSettingsUI.Checkbox(c, "HaulersDream.Setting.HideGizmo".Translate(),
+                !hideGizmo, "HaulersDream.Setting.HideGizmo.Help".Translate());
+            hideGizmo = !showUnloadBtn;
             showAutoHaulGizmo = HDSettingsUI.Checkbox(c, "HaulersDream.Setting.ShowAutoHaulGizmo".Translate(),
                 showAutoHaulGizmo, "HaulersDream.Setting.ShowAutoHaulGizmo.Help".Translate());
         }
@@ -759,7 +770,7 @@ namespace HaulersDream
             reserveCarrierOnUnload = HDSettingsUI.Checkbox(c, "HaulersDream.Setting.ReserveCarrierOnUnload".Translate(),
                 reserveCarrierOnUnload, "HaulersDream.Setting.ReserveCarrierOnUnloadDesc".Translate(), enabled: enableBulkUnloadCarriers, indent: 24f);
             visualUnloadDelay = Mathf.RoundToInt(HDSettingsUI.Slider(c, "HaulersDream.Setting.VisualUnloadDelay.Lab".Translate(),
-                visualUnloadDelay, 0f, 30f, Ticks(visualUnloadDelay),
+                visualUnloadDelay, 0f, 30f, string.Format("~{0:0.0}s", visualUnloadDelay / 60f),
                 "HaulersDream.Setting.VisualUnloadDelay.Help".Translate(), enabled: enableBulkUnloadCarriers, indent: 24f));
             loadPackAnimalBulk = HDSettingsUI.Checkbox(c, "HaulersDream.Setting.LoadPackAnimalBulk".Translate(),
                 loadPackAnimalBulk, "HaulersDream.Setting.LoadPackAnimalBulkDesc".Translate());
@@ -770,7 +781,7 @@ namespace HaulersDream
             enableBulkLoadTransporters = HDSettingsUI.Checkbox(c, "HaulersDream.Setting.EnableBulkLoadTransporters".Translate(),
                 enableBulkLoadTransporters, "HaulersDream.Setting.EnableBulkLoadTransportersDesc".Translate());
             bulkLoadAiUpdateFrequency = Mathf.RoundToInt(HDSettingsUI.Slider(c, "HaulersDream.Setting.BulkLoadAiUpdateFrequency.Lab".Translate(),
-                bulkLoadAiUpdateFrequency, 10f, 240f, Ticks(bulkLoadAiUpdateFrequency),
+                bulkLoadAiUpdateFrequency, 10f, 240f, string.Format("~{0:0.0}s", bulkLoadAiUpdateFrequency / 60f),
                 "HaulersDream.Setting.BulkLoadAiUpdateFrequency.Help".Translate(), enabled: enableBulkLoadTransporters, indent: 24f) / 10f) * 10;
             enableBulkLoadPortal = HDSettingsUI.Checkbox(c, "HaulersDream.Setting.EnableBulkLoadPortal".Translate(),
                 enableBulkLoadPortal, "HaulersDream.Setting.EnableBulkLoadPortalDesc".Translate());
@@ -1031,9 +1042,7 @@ namespace HaulersDream
         {
             HDSettingsUI.Note(c, "HaulersDream.Cat.Advanced.Intro".Translate());
             HDSettingsUI.Header(c, "HaulersDream.Head.UnloadTiming".Translate());
-            unloadGraceTicks = Mathf.RoundToInt(HDSettingsUI.Slider(c, "HaulersDream.Setting.UnloadGrace.Lab".Translate(),
-                unloadGraceTicks, 0f, 7500f, Ticks(unloadGraceTicks),
-                "HaulersDream.Setting.UnloadGrace.Help".Translate()) / 50f) * 50;
+            // unloadGraceTicks (the most behavior-defining unloading knob) was moved to the TOP of DrawUnloadingCat.
             intervalUnloadHours = Mathf.Round(HDSettingsUI.Slider(c, "HaulersDream.Setting.IntervalUnload.Lab".Translate(),
                 intervalUnloadHours, 0f, 24f, intervalUnloadHours <= 0f ? OffLabel : Hours(intervalUnloadHours),
                 "HaulersDream.Setting.IntervalUnload.Help".Translate()) * 2f) / 2f;

@@ -117,8 +117,8 @@
 <HaulersDream.Overload.Free>속도 저하 없음 — 자유롭게 운반</HaulersDream.Overload.Free>
 <HaulersDream.Overload.Fair>적정 (균형)</HaulersDream.Overload.Fair>
 <HaulersDream.Overload.Off>꺼짐 — 절대 과적 안 함</HaulersDream.Overload.Off>
-<HaulersDream.Overload.Eager>적극적 과적 ({0})</HaulersDream.Overload.Eager>
-<HaulersDream.Overload.Cautious>신중함 ({0})</HaulersDream.Overload.Cautious>
+<HaulersDream.Overload.Eager>적극적 과적</HaulersDream.Overload.Eager>
+<HaulersDream.Overload.Cautious>신중함</HaulersDream.Overload.Cautious>
 <HaulersDream.Setting.StrictCarryWeight>엄격한 운반 무게 (과적 안 함)</HaulersDream.Setting.StrictCarryWeight>
 <HaulersDream.Setting.StrictCarryWeightDesc>켜면 폰은 최대 무게의 100%를 절대 넘게 운반하지 않으며, 가득 찼다고 작업을 멈추고 내려놓으러 가지 않습니다 — 계속 수확하고 잉여는 평소 운반을 위해 바닥에 남깁니다(지나가는 길에 주움). 꺼면(기본값) 폰은 위의 슬라이더에 따라 과적하고 가득 차면 내려놓으러 갑니다.</HaulersDream.Setting.StrictCarryWeightDesc>
 <HaulersDream.Setting.KeepWorkingWhenFull>가득 차도 계속 작업 (내려놓으러 중단하지 않음)</HaulersDream.Setting.KeepWorkingWhenFull>
@@ -542,7 +542,6 @@
 <HaulersDream.Common.Off>꺼짐</HaulersDream.Common.Off>
 <HaulersDream.Common.On>켜짐</HaulersDream.Common.On>
 <HaulersDream.Unit.Tiles>{0}칸</HaulersDream.Unit.Tiles>
-<HaulersDream.Unit.Ticks>{0}틱</HaulersDream.Unit.Ticks>
 <HaulersDream.Unit.Hours>{0}시간</HaulersDream.Unit.Hours>
 <HaulersDream.Setting.CarryLimit.Lab>운반 한도</HaulersDream.Setting.CarryLimit.Lab>
 <HaulersDream.Setting.Overload.Lab>스마트 과적</HaulersDream.Setting.Overload.Lab>
@@ -624,7 +623,6 @@
 <HaulersDream.Cat.Planners.Intro>우클릭 경로 및 제작 플래너, 그리고 그 기본값.</HaulersDream.Cat.Planners.Intro>
 <HaulersDream.Cat.Advanced.Intro>내려놓기 타이밍, 막힌 화물 안전 경보, 저장 정리, 그리고 개발자 도구.</HaulersDream.Cat.Advanced.Intro>
 <HaulersDream.Head.CarryWeight>운반 무게</HaulersDream.Head.CarryWeight>
-<HaulersDream.Head.Pickup>줍기</HaulersDream.Head.Pickup>
 <HaulersDream.Head.AutoUnloadTrips>자동 내려놓기 이동</HaulersDream.Head.AutoUnloadTrips>
 <HaulersDream.Head.DropOff>하차 동작</HaulersDream.Head.DropOff>
 <HaulersDream.Head.ItemRulesDisplay>물품별 규칙 및 표시</HaulersDream.Head.ItemRulesDisplay>
@@ -675,4 +673,5 @@
 <HaulersDream.Setting.Yield.StripHelp>Gear removed by a Strip order. This always drops then hauls (it cannot go straight to inventory).</HaulersDream.Setting.Yield.StripHelp>
 <HaulersDream.Setting.Yield.Uninstall>Uninstalling (minified buildings)</HaulersDream.Setting.Yield.Uninstall>
 <HaulersDream.Setting.Yield.UninstallHelp>Minified buildings from an Uninstall order (on caravan / away maps, so they batch onto pack animals).</HaulersDream.Setting.Yield.UninstallHelp>
+<HaulersDream.Setting.PerPawnButtonsNote>These add command buttons to each colonist; they don't change automatic hauling.</HaulersDream.Setting.PerPawnButtonsNote>
 </LanguageData>

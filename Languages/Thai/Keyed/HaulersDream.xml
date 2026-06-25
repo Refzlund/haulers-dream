@@ -117,8 +117,8 @@
 <HaulersDream.Overload.Free>ไม่ช้าลง — ขนได้อย่างอิสระ</HaulersDream.Overload.Free>
 <HaulersDream.Overload.Fair>พอดี (สมดุล)</HaulersDream.Overload.Fair>
 <HaulersDream.Overload.Off>ปิด — ไม่บรรทุกเกินเลย</HaulersDream.Overload.Off>
-<HaulersDream.Overload.Eager>กระตือรือร้นที่จะบรรทุกเกิน ({0})</HaulersDream.Overload.Eager>
-<HaulersDream.Overload.Cautious>ระมัดระวัง ({0})</HaulersDream.Overload.Cautious>
+<HaulersDream.Overload.Eager>กระตือรือร้นที่จะบรรทุกเกิน</HaulersDream.Overload.Eager>
+<HaulersDream.Overload.Cautious>ระมัดระวัง</HaulersDream.Overload.Cautious>
 <HaulersDream.Setting.StrictCarryWeight>น้ำหนักการขนเข้มงวด (ไม่บรรทุกเกิน)</HaulersDream.Setting.StrictCarryWeight>
 <HaulersDream.Setting.StrictCarryWeightDesc>เมื่อเปิด ตัวละครจะไม่ขนเกิน 100% ของน้ำหนักสูงสุดและไม่หยุดงานเพื่อไปขนของออกเมื่อเต็ม — มันจะเก็บเกี่ยวต่อและทิ้งส่วนเกินไว้บนพื้นเพื่อให้ขนของตามปกติ (เก็บขึ้นระหว่างเดินผ่าน) เมื่อปิด (ค่าเริ่มต้น) ตัวละครจะบรรทุกเกินตามแถบเลื่อนด้านบนและออกไปขนของออกเมื่อเต็ม</HaulersDream.Setting.StrictCarryWeightDesc>
 <HaulersDream.Setting.KeepWorkingWhenFull>ทำงานต่อเมื่อเต็ม (ไม่หยุดงานเพื่อไปขนของออก)</HaulersDream.Setting.KeepWorkingWhenFull>
@@ -542,7 +542,6 @@
 <HaulersDream.Common.Off>ปิด</HaulersDream.Common.Off>
 <HaulersDream.Common.On>เปิด</HaulersDream.Common.On>
 <HaulersDream.Unit.Tiles>{0} ช่อง</HaulersDream.Unit.Tiles>
-<HaulersDream.Unit.Ticks>{0} ติ๊ก</HaulersDream.Unit.Ticks>
 <HaulersDream.Unit.Hours>{0} ชม.</HaulersDream.Unit.Hours>
 <HaulersDream.Setting.CarryLimit.Lab>ขีดจำกัดการขน</HaulersDream.Setting.CarryLimit.Lab>
 <HaulersDream.Setting.Overload.Lab>การบรรทุกเกินอัจฉริยะ</HaulersDream.Setting.Overload.Lab>
@@ -624,7 +623,6 @@
 <HaulersDream.Cat.Planners.Intro>ตัววางแผนเส้นทางและตัววางแผนการผลิตจากเมนูคลิกขวา และค่าเริ่มต้นของมัน</HaulersDream.Cat.Planners.Intro>
 <HaulersDream.Cat.Advanced.Intro>จังหวะการขนของออก การแจ้งเตือนความปลอดภัยกรณีสัมภาระติดค้าง การล้างข้อมูลตอนเซฟ และเครื่องมือสำหรับนักพัฒนา</HaulersDream.Cat.Advanced.Intro>
 <HaulersDream.Head.CarryWeight>น้ำหนักที่ขนได้</HaulersDream.Head.CarryWeight>
-<HaulersDream.Head.Pickup>การหยิบของ</HaulersDream.Head.Pickup>
 <HaulersDream.Head.AutoUnloadTrips>การขนของออกอัตโนมัติ</HaulersDream.Head.AutoUnloadTrips>
 <HaulersDream.Head.DropOff>พฤติกรรมการวางของ</HaulersDream.Head.DropOff>
 <HaulersDream.Head.ItemRulesDisplay>กฎรายไอเท็มและการแสดงผล</HaulersDream.Head.ItemRulesDisplay>
@@ -675,4 +673,5 @@
 <HaulersDream.Setting.Yield.StripHelp>Gear removed by a Strip order. This always drops then hauls (it cannot go straight to inventory).</HaulersDream.Setting.Yield.StripHelp>
 <HaulersDream.Setting.Yield.Uninstall>Uninstalling (minified buildings)</HaulersDream.Setting.Yield.Uninstall>
 <HaulersDream.Setting.Yield.UninstallHelp>Minified buildings from an Uninstall order (on caravan / away maps, so they batch onto pack animals).</HaulersDream.Setting.Yield.UninstallHelp>
+<HaulersDream.Setting.PerPawnButtonsNote>These add command buttons to each colonist; they don't change automatic hauling.</HaulersDream.Setting.PerPawnButtonsNote>
 </LanguageData>
