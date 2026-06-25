@@ -1,5 +1,45 @@
 # haulers-dream
 
+## 1.12.0
+
+### Minor Changes
+
+- edecf55: Per-category control over collecting work results.
+
+  Each kind of work result now has its own behavior: leave it on the ground (Off), drop then haul it, or take it straight into the working pawn's inventory. The old global "pick-up handling" switch and the on/off work-type checkboxes are replaced by one list under "Collect work results" in the Work & yields tab.
+
+  Mining is split into ore/resources and chunks, and plant work is split into harvest (crops & berries) and logging (trees & cacti), so you can, for example, send ore straight to inventory while leaving heavy chunks on the ground. Existing settings migrate automatically: anything that was on keeps its old drop-or-direct behavior, anything that was off becomes Off, and the split categories inherit their old combined setting.
+
+- edecf55: Search box for the settings.
+
+  There's now a search field above the tab list. Type part of an option's name, its description, or its category and the tabs step aside to show just the matching settings. It's a best-match search, so a small typo or a couple of words in the wrong order still finds the right thing; closer matches sort to the top.
+
+  The results aren't a read-only list: each match is the real control, fully editable right there in the search panel. Matches stay grouped under their section heading (with the tab's icon next to it), and clicking a heading jumps to that tab and briefly highlights the option so you can see where it lives.
+
+- edecf55: Clearer "Work & yields" tab.
+
+  The three choices for each work result are renamed so they read as one idea instead of two unrelated destinations: Leave on ground / Drop, then collect / Collect directly. Both "collect" options end up in the working pawn's own inventory and get put away on the next unload trip; the only difference is whether the result drops on the floor first (which lets another hauler grab it). The help text spells that out.
+
+  The nine categories are now a compact table with the three choices shown once as column headers and a radio per cell, instead of the same three-button strip repeated on every row.
+
+  "Keep working when full" and "Tidy up while working" moved onto this tab, next to the yields they govern; "Top up existing stacks" moved to the Unloading tab.
+
+### Patch Changes
+
+- d87bfb8: Stop colonists from instantly dropping a picked-up drug.
+
+  When a pawn picked a smokeleaf joint (or any drug) into its inventory, via the "Pick up X" order or an on-the-way grab, it would drop it again the moment it looked for its next job, leaving it on the ground. Vanilla drops any inventory drug a colonist isn't scheduled or addicted to keep, and that sweep wasn't recognising a drug Hauler's Dream was carrying to storage. A drug Hauler's Dream has picked up now stays in the pack until the unload trip puts it away, the same as every other haulable. Non-drug items were never affected.
+
+- edecf55: Clearer settings throughout.
+
+  A full pass over the settings to make options understandable at a glance: plain-language labels in place of internal terms (no more "scoop", "consumer-aware", "en-route", "accumulate window", "ticks"), one consistent name per feature, and help text that says what each option does and what its default is. Fixed cross-references that pointed at the wrong control name.
+
+  Notable: the work-result options now read "Leave on ground / Drop & haul / To inventory" with a short "why pick this" for each; "How long a pawn keeps collecting before a trip" (formerly "Accumulate window") is shown in hours and moved to the Unloading page; the "Routing & storage" page is now "On-the-way hauling"; and timing readouts show seconds/hours instead of raw ticks. No behavior changes.
+
+- edecf55: Translations filled in across all 14 languages.
+
+  The per-category work-result options, the settings search box, and a backlog of other recently added strings were still showing English in the translated games. They are now translated in Simplified Chinese, Danish, Dutch, French, German, Italian, Japanese, Korean, Polish, Brazilian Portuguese, Russian, Spanish, Thai, and Ukrainian. Proper names like "Hauler's Dream" stay as-is.
+
 ## 1.11.1
 
 ### Patch Changes
