@@ -38,7 +38,10 @@ namespace HaulersDream
             sb.AppendLine($"{HDLog.Tag}{DiagVersion} {pawn}: max={max:0.#}kg current={cur:0.#}kg limit={cap:0.#}kg " +
                           $"encumbrance={CarryMath.EncumbranceFraction(cur, max):P0} eligible={YieldRouter.IsEligible(pawn)}");
             sb.AppendLine($"  settings: shareForCrafting={s.shareForCrafting} shareForBuilding={s.shareForBuilding} " +
-                          $"pickupMode={s.pickupMode} drafted={pawn.Drafted}");
+                          $"drafted={pawn.Drafted}");
+            sb.AppendLine($"  yields: harvest={s.yieldHarvest} logging={s.yieldLogging} mining={s.yieldMining} " +
+                          $"chunks={s.yieldChunks} deepDrill={s.yieldDeepDrill} deconstruct={s.yieldDeconstruct} " +
+                          $"animals={s.yieldAnimals} strip={s.yieldStrip} uninstall={s.yieldUninstall}");
             sb.AppendLine($"  TRACKED (tagged / shareable) x{tracked?.Count ?? 0}:");
             if (tracked != null)
                 foreach (var t in tracked)

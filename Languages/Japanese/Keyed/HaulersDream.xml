@@ -134,16 +134,6 @@
 <HaulersDream.Setting.OpportunisticUnloadDesc>回収した物資を運ぶポーンが次のジョブで長い移動に出るとき、ほぼ通り道に備蓄ゾーンがあれば、マップを横断して運び後で別の往復をするのではなく、通りがかりに荷を降ろします。</HaulersDream.Setting.OpportunisticUnloadDesc>
 <HaulersDream.Stat.Overload>Hauler's Dream — 過積載</HaulersDream.Stat.Overload>
 <HaulersDream.Stat.MechCarryCapacity>Hauler's Dream — 運搬能力</HaulersDream.Stat.MechCarryCapacity>
-<HaulersDream.Setting.WorkTypesHeader>これらの種類の作業から収穫物を回収：</HaulersDream.Setting.WorkTypesHeader>
-<HaulersDream.Setting.HaulHarvest>植物 — 収穫 &amp; 伐採</HaulersDream.Setting.HaulHarvest>
-<HaulersDream.Setting.HaulMining>採掘 — 鉱石 &amp; 塊</HaulersDream.Setting.HaulMining>
-<HaulersDream.Setting.HaulDeepDrill>深部ドリル</HaulersDream.Setting.HaulDeepDrill>
-<HaulersDream.Setting.HaulDeconstruct>解体の回収品</HaulersDream.Setting.HaulDeconstruct>
-<HaulersDream.Setting.HaulAnimals>動物 — 搾乳 &amp; 採毛</HaulersDream.Setting.HaulAnimals>
-<HaulersDream.Setting.HaulUninstall>撤去 — 小型化した建造物（キャラバン/遠征マップ）</HaulersDream.Setting.HaulUninstall>
-<HaulersDream.Setting.HaulStrip>はぎ取り — 取り外した装備（はぎ取り指示の装備を運搬）</HaulersDream.Setting.HaulStrip>
-<HaulersDream.Setting.HaulStripDesc>入植者が囚人・気絶したポーン・死体をはぎ取る（あなたが手動で出したはぎ取り指示）とき、取り外した武器・装備・衣服はぎ取り直後に所持品へ回収され、1回の往復で家へ運ばれます。これがはぎ取った装備の運搬を司る切り替えで、上方の「運搬しながら自動はぎ取り」とは独立しています。そちらは運搬中の死体をはぎ取る（戦利品を所持品へ）だけ。こちらは手動のはぎ取り指示が地面に落とした装備を運搬します。そのため運搬中の自動はぎ取りを「しない」にしつつ、これがオンであれば、手動指示したはぎ取りはその装備を回収し運搬できます。死体からの汚染衣服は自動はぎ取りセクションの汚染衣服の選択に従います（「死体に残す」の品は地面に置かれたまま、回収されません）。生きた対象の場合、対象が余り物から再び服を着るのに備えて、はぎ取り役のジョブの最後に追いのはぎ取りが予約されます。対象が裸のままなら何もしません。</HaulersDream.Setting.HaulStripDesc>
-<HaulersDream.Setting.HaulStripCrossRef>上部付近の「運搬しながら自動はぎ取り」とは独立しています。そちらは運搬中の死体をはぎ取る（戦利品を所持品へ）。こちらは手動のはぎ取り指示が落とした装備を運搬します。</HaulersDream.Setting.HaulStripCrossRef>
 <HaulersDream.Setting.WorkOverrideHeader>作業不能の上書き（オフ＝バニラ）：</HaulersDream.Setting.WorkOverrideHeader>
 <HaulersDream.Setting.AllCanHaul>すべてのポーンが運搬できる</HaulersDream.Setting.AllCanHaul>
 <HaulersDream.Setting.AllCanHaulDesc>どんな生い立ち・特性・遺伝子・王位・イデオロギーの役職・健康状態・クエストの制約も、ポーンを運搬不能にできなくなります。作業タブ、右クリックの優先指定、自動作業、このMODのプランナーに適用されます。（有効化した後に作業優先度を割り当ててください。新たに可能になったポーンは、他の作業同様に未割り当てで始まります。）</HaulersDream.Setting.AllCanHaulDesc>
@@ -556,12 +546,6 @@
 <HaulersDream.Unit.Hours>{0}時間</HaulersDream.Unit.Hours>
 <HaulersDream.Setting.CarryLimit.Lab>携行上限</HaulersDream.Setting.CarryLimit.Lab>
 <HaulersDream.Setting.Overload.Lab>賢い過積載</HaulersDream.Setting.Overload.Lab>
-<HaulersDream.Setting.PickupMode.Lab>拾い上げの扱い</HaulersDream.Setting.PickupMode.Lab>
-<HaulersDream.Setting.PickupMode.Help>ポーンが運搬しようとするアイテムをどう自分の荷に取り込むか。</HaulersDream.Setting.PickupMode.Help>
-<HaulersDream.Setting.PickupMode.Drop>落としてから運搬</HaulersDream.Setting.PickupMode.Drop>
-<HaulersDream.Setting.PickupMode.DropDesc>リアル：アイテムは一瞬床に落とされてから回収されます — そのため別の運搬役が途中でつかむこともできます。</HaulersDream.Setting.PickupMode.DropDesc>
-<HaulersDream.Setting.PickupMode.Direct>所持品へ</HaulersDream.Setting.PickupMode.Direct>
-<HaulersDream.Setting.PickupMode.DirectDesc>アイテムは床を経由せず、まっすぐポーンの所持品に入ります。</HaulersDream.Setting.PickupMode.DirectDesc>
 <HaulersDream.Setting.BulkHaulTrigger.Lab>一括運搬のトリガー</HaulersDream.Setting.BulkHaulTrigger.Lab>
 <HaulersDream.Setting.KeepWorkingMargin.Lab>より長い移動の前に降ろす</HaulersDream.Setting.KeepWorkingMargin.Lab>
 <HaulersDream.Setting.MinFreeSpaceToUnloadCarrier.Lab>開始に必要な最小のバックパック空き</HaulersDream.Setting.MinFreeSpaceToUnloadCarrier.Lab>
@@ -630,12 +614,6 @@
 <HaulersDream.PlanRoute.SelNearest.H>クリックしたものに最も近い目標を優先する。</HaulersDream.PlanRoute.SelNearest.H>
 <HaulersDream.PlanRoute.DistStraight.H>距離を直線として測る — 高速。</HaulersDream.PlanRoute.DistStraight.H>
 <HaulersDream.PlanRoute.DistWalking.H>距離を実際の歩行経路に沿って測る — 遅いが、より正確。</HaulersDream.PlanRoute.DistWalking.H>
-<HaulersDream.Setting.HaulHarvest.Help>ポーンが作業しながら、収穫した作物と伐採した植物の収穫物を所持品に回収します。</HaulersDream.Setting.HaulHarvest.Help>
-<HaulersDream.Setting.HaulMining.Help>ポーンが採掘しながら、採掘した鉱石と岩塊を所持品に回収します。</HaulersDream.Setting.HaulMining.Help>
-<HaulersDream.Setting.HaulDeepDrill.Help>深部ドリルの産出物が生み出されるそばから所持品に回収します。</HaulersDream.Setting.HaulDeepDrill.Help>
-<HaulersDream.Setting.HaulDeconstruct.Help>解体した建造物の回収品を所持品に回収します。</HaulersDream.Setting.HaulDeconstruct.Help>
-<HaulersDream.Setting.HaulAnimals.Help>動物から集めた乳・羊毛その他の産物を所持品に回収します。</HaulersDream.Setting.HaulAnimals.Help>
-<HaulersDream.Setting.HaulUninstall.Help>キャラバンやその他の遠征マップ（ホーム入植地は決して含まない）で、撤去した建造物 — 今は小型化したアイテム — を作業者の所持品へまっすぐ回収します。そのため、複数の撤去した構造物が、アイテムごとに1往復するのではなく1回の往復で荷物運搬動物まで運ばれます。アイテムが実際に届けられる場所（備蓄ゾーン/ゾーンまたは荷物運搬動物）がある場合のみ作動します。ホームマップではこれは何もしません：そこでは、撤去した建造物は通常の運搬や再設置のために地面に残されます。</HaulersDream.Setting.HaulUninstall.Help>
 <HaulersDream.Cat.Hauling.Intro>入植者がどう物を拾うか — どれだけ運ぶか、いつ過積載するか、何をかき集めるか。</HaulersDream.Cat.Hauling.Intro>
 <HaulersDream.Cat.Unloading.Intro>入植者が携行した物資をいつどう片付けるか。</HaulersDream.Cat.Unloading.Intro>
 <HaulersDream.Cat.BuildCraft.Intro>所持品からの建築・製作資材の調達、食料配達、材料選択。</HaulersDream.Cat.BuildCraft.Intro>
@@ -671,4 +649,30 @@
 <HaulersDream.PlanRoute.SowingGerundFallback>sowing</HaulersDream.PlanRoute.SowingGerundFallback>
 <HaulersDream.PlanRoute.ModeSowZone>Whole growing zone</HaulersDream.PlanRoute.ModeSowZone>
 <HaulersDream.PlanRoute.ModeSowZoneDesc>Sow every empty growable cell inside this growing zone — plant the whole field from one click.</HaulersDream.PlanRoute.ModeSowZoneDesc>
+<HaulersDream.Setting.Yield.Header>Collect work results</HaulersDream.Setting.Yield.Header>
+<HaulersDream.Setting.Yield.Intro>For each kind of work, choose what happens to the result: leave it on the ground, drop it then have the working pawn haul it, or take it straight into the pawn's inventory.</HaulersDream.Setting.Yield.Intro>
+<HaulersDream.Setting.Yield.Off>Off</HaulersDream.Setting.Yield.Off>
+<HaulersDream.Setting.Yield.OffDesc>Hauler's Dream leaves the result on the ground, exactly like vanilla — a hauler may carry it away later.</HaulersDream.Setting.Yield.OffDesc>
+<HaulersDream.Setting.Yield.Drop>Drop &amp; haul</HaulersDream.Setting.Yield.Drop>
+<HaulersDream.Setting.Yield.DropDesc>The result drops on the floor, then the working pawn scoops it up and carries it out. Another hauler can still grab it mid-step.</HaulersDream.Setting.Yield.DropDesc>
+<HaulersDream.Setting.Yield.Direct>To inventory</HaulersDream.Setting.Yield.Direct>
+<HaulersDream.Setting.Yield.DirectDesc>The result goes straight into the working pawn's inventory, never touching the floor.</HaulersDream.Setting.Yield.DirectDesc>
+<HaulersDream.Setting.Yield.Harvest>Harvest (crops &amp; berries)</HaulersDream.Setting.Yield.Harvest>
+<HaulersDream.Setting.Yield.HarvestHelp>Crops, berries and other food/plant harvest yields.</HaulersDream.Setting.Yield.HarvestHelp>
+<HaulersDream.Setting.Yield.Logging>Logging (trees &amp; cacti)</HaulersDream.Setting.Yield.Logging>
+<HaulersDream.Setting.Yield.LoggingHelp>Wood and other yields from felling trees and cacti.</HaulersDream.Setting.Yield.LoggingHelp>
+<HaulersDream.Setting.Yield.Mining>Mining (ore &amp; resources)</HaulersDream.Setting.Yield.Mining>
+<HaulersDream.Setting.Yield.MiningHelp>Ore, components and other resources from mining — not stone chunks.</HaulersDream.Setting.Yield.MiningHelp>
+<HaulersDream.Setting.Yield.Chunks>Mining (chunks)</HaulersDream.Setting.Yield.Chunks>
+<HaulersDream.Setting.Yield.ChunksHelp>Stone and slag chunks from mining. Set this to Off to leave heavy chunks on the ground instead of loading them into inventory.</HaulersDream.Setting.Yield.ChunksHelp>
+<HaulersDream.Setting.Yield.DeepDrill>Deep drilling</HaulersDream.Setting.Yield.DeepDrill>
+<HaulersDream.Setting.Yield.DeepDrillHelp>Resources produced by deep drills.</HaulersDream.Setting.Yield.DeepDrillHelp>
+<HaulersDream.Setting.Yield.Deconstruct>Deconstruction salvage</HaulersDream.Setting.Yield.Deconstruct>
+<HaulersDream.Setting.Yield.DeconstructHelp>Materials salvaged from deconstructed buildings.</HaulersDream.Setting.Yield.DeconstructHelp>
+<HaulersDream.Setting.Yield.Animals>Animal products (milk &amp; wool)</HaulersDream.Setting.Yield.Animals>
+<HaulersDream.Setting.Yield.AnimalsHelp>Milk, wool and other products gathered from animals.</HaulersDream.Setting.Yield.AnimalsHelp>
+<HaulersDream.Setting.Yield.Strip>Stripping (removed gear)</HaulersDream.Setting.Yield.Strip>
+<HaulersDream.Setting.Yield.StripHelp>Gear removed by a Strip order. This always drops then hauls (it cannot go straight to inventory).</HaulersDream.Setting.Yield.StripHelp>
+<HaulersDream.Setting.Yield.Uninstall>Uninstalling (minified buildings)</HaulersDream.Setting.Yield.Uninstall>
+<HaulersDream.Setting.Yield.UninstallHelp>Minified buildings from an Uninstall order (on caravan / away maps, so they batch onto pack animals).</HaulersDream.Setting.Yield.UninstallHelp>
 </LanguageData>

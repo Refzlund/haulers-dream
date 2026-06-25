@@ -112,7 +112,7 @@
   <HaulersDream.Setting.AutoStripAll>on every corpse haul (stockpile, grave, cremation, butchering)</HaulersDream.Setting.AutoStripAll>
   <HaulersDream.Setting.AutoStripDisposal>on disposal hauls only (grave, sarcophagus, cremation, butchering — not plain stockpile hauls)</HaulersDream.Setting.AutoStripDisposal>
   <HaulersDream.Setting.AutoStripOff>never — don't strip while hauling (vanilla behaviour)</HaulersDream.Setting.AutoStripOff>
-  <HaulersDream.Setting.AutoStripCrossRef>"Never" only turns off this strip-while-hauling shortcut. It does NOT stop hauling stripped gear: a Strip order you place by hand still runs normally, and its dropped weapons and clothes are still scooped up and hauled home — controlled by the separate "Stripping — removed gear" work toggle (under "Scoop yields from these kinds of work" further below).</HaulersDream.Setting.AutoStripCrossRef>
+  <HaulersDream.Setting.AutoStripCrossRef>"Never" only turns off this strip-while-hauling shortcut. It does NOT stop hauling stripped gear: a Strip order you place by hand still runs normally, and its dropped weapons and clothes are still scooped up and hauled home — controlled by the separate "Stripping (removed gear)" option (under "Collect work results" further below).</HaulersDream.Setting.AutoStripCrossRef>
   <HaulersDream.Setting.StripColonists>Also strip player-faction corpses</HaulersDream.Setting.StripColonists>
   <HaulersDream.Setting.StripColonistsDesc>With this off (default), your own dead — colonists and colony animals — keep their gear and their dignity; only strangers and enemies are looted.</HaulersDream.Setting.StripColonistsDesc>
   <HaulersDream.Setting.TaintedSmeltable>Tainted apparel (smeltable): {0}</HaulersDream.Setting.TaintedSmeltable>
@@ -155,16 +155,33 @@
   <HaulersDream.Stat.Overload>Hauler's Dream — overloaded</HaulersDream.Stat.Overload>
   <HaulersDream.Stat.MechCarryCapacity>Hauler's Dream — carrying capacity</HaulersDream.Stat.MechCarryCapacity>
 
-  <HaulersDream.Setting.WorkTypesHeader>Scoop yields from these kinds of work:</HaulersDream.Setting.WorkTypesHeader>
-  <HaulersDream.Setting.HaulHarvest>Plants — harvest &amp; cut</HaulersDream.Setting.HaulHarvest>
-  <HaulersDream.Setting.HaulMining>Mining — ore &amp; chunks</HaulersDream.Setting.HaulMining>
-  <HaulersDream.Setting.HaulDeepDrill>Deep drills</HaulersDream.Setting.HaulDeepDrill>
-  <HaulersDream.Setting.HaulDeconstruct>Deconstruction salvage</HaulersDream.Setting.HaulDeconstruct>
-  <HaulersDream.Setting.HaulAnimals>Animals — milk &amp; shear</HaulersDream.Setting.HaulAnimals>
-  <HaulersDream.Setting.HaulUninstall>Uninstalling — minified buildings (caravan/away maps)</HaulersDream.Setting.HaulUninstall>
-  <HaulersDream.Setting.HaulStrip>Stripping — removed gear (haul gear from a Strip order)</HaulersDream.Setting.HaulStrip>
-  <HaulersDream.Setting.HaulStripDesc>When a colonist strips a prisoner, a downed pawn, or a corpse (a Strip order YOU place, by hand), the removed weapons, gear and clothes are scooped into its inventory right after the strip, and hauled home in one trip. This is the toggle that governs hauling stripped gear — it is independent of "Auto-strip while hauling" higher up: that one only strips a corpse while it is BEING hauled (loot to inventory); THIS one hauls the gear a manual Strip order drops on the ground. So you can set auto-strip-while-hauling to "never" and still have manually-ordered strips scoop and haul their gear, as long as this is on. Tainted apparel from a corpse follows the tainted-apparel choices in the auto-strip section ("leave it on the corpse" pieces stay on the ground, unscooped). For a living target, a follow-up strip is queued at the end of the stripper's jobs in case the target dresses itself again from leftovers; it does nothing if the target stayed bare.</HaulersDream.Setting.HaulStripDesc>
-  <HaulersDream.Setting.HaulStripCrossRef>Independent of "Auto-strip while hauling" near the top: that strips a corpse as it is hauled (loot to inventory); this hauls the gear a manual Strip order drops.</HaulersDream.Setting.HaulStripCrossRef>
+  <!-- Per-category yield behaviour (issue #79): each kind of work result independently chooses Off / Drop &amp; haul / To inventory. -->
+  <HaulersDream.Setting.Yield.Header>Collect work results</HaulersDream.Setting.Yield.Header>
+  <HaulersDream.Setting.Yield.Intro>For each kind of work, choose what happens to the result: leave it on the ground, drop it then have the working pawn haul it, or take it straight into the pawn's inventory.</HaulersDream.Setting.Yield.Intro>
+  <HaulersDream.Setting.Yield.Off>Off</HaulersDream.Setting.Yield.Off>
+  <HaulersDream.Setting.Yield.OffDesc>Hauler's Dream leaves the result on the ground, exactly like vanilla — a hauler may carry it away later.</HaulersDream.Setting.Yield.OffDesc>
+  <HaulersDream.Setting.Yield.Drop>Drop &amp; haul</HaulersDream.Setting.Yield.Drop>
+  <HaulersDream.Setting.Yield.DropDesc>The result drops on the floor, then the working pawn scoops it up and carries it out. Another hauler can still grab it mid-step.</HaulersDream.Setting.Yield.DropDesc>
+  <HaulersDream.Setting.Yield.Direct>To inventory</HaulersDream.Setting.Yield.Direct>
+  <HaulersDream.Setting.Yield.DirectDesc>The result goes straight into the working pawn's inventory, never touching the floor.</HaulersDream.Setting.Yield.DirectDesc>
+  <HaulersDream.Setting.Yield.Harvest>Harvest (crops &amp; berries)</HaulersDream.Setting.Yield.Harvest>
+  <HaulersDream.Setting.Yield.HarvestHelp>Crops, berries and other food/plant harvest yields.</HaulersDream.Setting.Yield.HarvestHelp>
+  <HaulersDream.Setting.Yield.Logging>Logging (trees &amp; cacti)</HaulersDream.Setting.Yield.Logging>
+  <HaulersDream.Setting.Yield.LoggingHelp>Wood and other yields from felling trees and cacti.</HaulersDream.Setting.Yield.LoggingHelp>
+  <HaulersDream.Setting.Yield.Mining>Mining (ore &amp; resources)</HaulersDream.Setting.Yield.Mining>
+  <HaulersDream.Setting.Yield.MiningHelp>Ore, components and other resources from mining — not stone chunks.</HaulersDream.Setting.Yield.MiningHelp>
+  <HaulersDream.Setting.Yield.Chunks>Mining (chunks)</HaulersDream.Setting.Yield.Chunks>
+  <HaulersDream.Setting.Yield.ChunksHelp>Stone and slag chunks from mining. Set this to Off to leave heavy chunks on the ground instead of loading them into inventory.</HaulersDream.Setting.Yield.ChunksHelp>
+  <HaulersDream.Setting.Yield.DeepDrill>Deep drilling</HaulersDream.Setting.Yield.DeepDrill>
+  <HaulersDream.Setting.Yield.DeepDrillHelp>Resources produced by deep drills.</HaulersDream.Setting.Yield.DeepDrillHelp>
+  <HaulersDream.Setting.Yield.Deconstruct>Deconstruction salvage</HaulersDream.Setting.Yield.Deconstruct>
+  <HaulersDream.Setting.Yield.DeconstructHelp>Materials salvaged from deconstructed buildings.</HaulersDream.Setting.Yield.DeconstructHelp>
+  <HaulersDream.Setting.Yield.Animals>Animal products (milk &amp; wool)</HaulersDream.Setting.Yield.Animals>
+  <HaulersDream.Setting.Yield.AnimalsHelp>Milk, wool and other products gathered from animals.</HaulersDream.Setting.Yield.AnimalsHelp>
+  <HaulersDream.Setting.Yield.Strip>Stripping (removed gear)</HaulersDream.Setting.Yield.Strip>
+  <HaulersDream.Setting.Yield.StripHelp>Gear removed by a Strip order. This always drops then hauls (it cannot go straight to inventory).</HaulersDream.Setting.Yield.StripHelp>
+  <HaulersDream.Setting.Yield.Uninstall>Uninstalling (minified buildings)</HaulersDream.Setting.Yield.Uninstall>
+  <HaulersDream.Setting.Yield.UninstallHelp>Minified buildings from an Uninstall order (on caravan / away maps, so they batch onto pack animals).</HaulersDream.Setting.Yield.UninstallHelp>
 
   <HaulersDream.Setting.WorkOverrideHeader>Work-incapability overrides (off = vanilla):</HaulersDream.Setting.WorkOverrideHeader>
   <HaulersDream.Setting.AllCanHaul>All pawns can haul</HaulersDream.Setting.AllCanHaul>
@@ -662,12 +679,6 @@
   <!-- Clean slider/segment labels + new help text -->
   <HaulersDream.Setting.CarryLimit.Lab>Carry limit</HaulersDream.Setting.CarryLimit.Lab>
   <HaulersDream.Setting.Overload.Lab>Smart overload</HaulersDream.Setting.Overload.Lab>
-  <HaulersDream.Setting.PickupMode.Lab>Pick-up handling</HaulersDream.Setting.PickupMode.Lab>
-  <HaulersDream.Setting.PickupMode.Help>How a pawn takes an item it is about to haul into its load.</HaulersDream.Setting.PickupMode.Help>
-  <HaulersDream.Setting.PickupMode.Drop>Drop, then haul</HaulersDream.Setting.PickupMode.Drop>
-  <HaulersDream.Setting.PickupMode.DropDesc>Realistic: the item is briefly dropped on the floor, then scooped — so another hauler can still grab it mid-step.</HaulersDream.Setting.PickupMode.DropDesc>
-  <HaulersDream.Setting.PickupMode.Direct>Into inventory</HaulersDream.Setting.PickupMode.Direct>
-  <HaulersDream.Setting.PickupMode.DirectDesc>The item goes straight into the pawn's inventory with no floor step.</HaulersDream.Setting.PickupMode.DirectDesc>
   <HaulersDream.Setting.BulkHaulTrigger.Lab>Bulk-haul trigger</HaulersDream.Setting.BulkHaulTrigger.Lab>
   <HaulersDream.Setting.KeepWorkingMargin.Lab>Unload before a longer relocation</HaulersDream.Setting.KeepWorkingMargin.Lab>
   <HaulersDream.Setting.MinFreeSpaceToUnloadCarrier.Lab>Minimum free backpack space to start</HaulersDream.Setting.MinFreeSpaceToUnloadCarrier.Lab>
@@ -743,13 +754,6 @@
   <HaulersDream.PlanRoute.DistStraight.H>Measure distance as a straight line — fast.</HaulersDream.PlanRoute.DistStraight.H>
   <HaulersDream.PlanRoute.DistWalking.H>Measure distance along the real walking path — slower, more accurate.</HaulersDream.PlanRoute.DistWalking.H>
 
-  <!-- Help for the work-yield toggles (previously had no description) -->
-  <HaulersDream.Setting.HaulHarvest.Help>Scoop harvested crops and cut-plant yields into inventory as the pawn works.</HaulersDream.Setting.HaulHarvest.Help>
-  <HaulersDream.Setting.HaulMining.Help>Scoop mined ore and rock chunks into inventory as the pawn mines.</HaulersDream.Setting.HaulMining.Help>
-  <HaulersDream.Setting.HaulDeepDrill.Help>Scoop deep-drill output into inventory as it is produced.</HaulersDream.Setting.HaulDeepDrill.Help>
-  <HaulersDream.Setting.HaulDeconstruct.Help>Scoop the salvage from deconstructed buildings into inventory.</HaulersDream.Setting.HaulDeconstruct.Help>
-  <HaulersDream.Setting.HaulAnimals.Help>Scoop milk, wool and other products gathered from animals into inventory.</HaulersDream.Setting.HaulAnimals.Help>
-  <HaulersDream.Setting.HaulUninstall.Help>On a caravan or other away map (never your home colony), scoop a building you uninstall — now a minified item — straight into the worker's inventory, so several uninstalled structures are carried to the pack animals in ONE trip instead of one back-and-forth walk per item. Only fires where the item can actually be delivered (a stockpile/zone or a pack animal). On your home map this does nothing: there, an uninstalled building is left on the ground for normal hauling or re-installation.</HaulersDream.Setting.HaulUninstall.Help>
 
   <!-- Per-page top descriptors -->
   <HaulersDream.Cat.Hauling.Intro>How colonists pick things up — how much they carry, when they overload, and what they sweep up.</HaulersDream.Cat.Hauling.Intro>

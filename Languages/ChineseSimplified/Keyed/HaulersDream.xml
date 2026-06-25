@@ -134,16 +134,6 @@
 <HaulersDream.Setting.OpportunisticUnloadDesc>当一个带着收取货物的小人为其下一个任务出发踏上长途，而某个储存区大致在途中时，它会路过时把货物卸下，而不是带着它横跨整张地图、之后再单独跑一趟。</HaulersDream.Setting.OpportunisticUnloadDesc>
 <HaulersDream.Stat.Overload>Hauler's Dream——超载</HaulersDream.Stat.Overload>
 <HaulersDream.Stat.MechCarryCapacity>Hauler's Dream——携带量</HaulersDream.Stat.MechCarryCapacity>
-<HaulersDream.Setting.WorkTypesHeader>从这些种类的工作中收取产出：</HaulersDream.Setting.WorkTypesHeader>
-<HaulersDream.Setting.HaulHarvest>植物——收获与砍伐</HaulersDream.Setting.HaulHarvest>
-<HaulersDream.Setting.HaulMining>采掘——矿石与碎块</HaulersDream.Setting.HaulMining>
-<HaulersDream.Setting.HaulDeepDrill>深岩钻机</HaulersDream.Setting.HaulDeepDrill>
-<HaulersDream.Setting.HaulDeconstruct>拆除残料</HaulersDream.Setting.HaulDeconstruct>
-<HaulersDream.Setting.HaulAnimals>动物——挤奶与剪毛</HaulersDream.Setting.HaulAnimals>
-<HaulersDream.Setting.HaulUninstall>拆装——小型化建筑（商队/外出地图）</HaulersDream.Setting.HaulUninstall>
-<HaulersDream.Setting.HaulStrip>扒取——移除的装备（搬运扒取命令得到的装备）</HaulersDream.Setting.HaulStrip>
-<HaulersDream.Setting.HaulStripDesc>当殖民者扒取一名囚犯、一个倒地的小人或一具尸体（由你手动下达的扒取命令）时，移除的武器、装备和衣物会在扒取后立即被收进它的货物栏，并一趟搬回家。这是管辖搬运扒下装备的开关——它独立于上方的“搬运时自动扒取”：那个只在尸体被搬运时扒取它（战利品进货物栏）；这个则搬运手动扒取命令掉在地上的装备。因此你可以把搬运时自动扒取设为“从不”，仍让手动下达的扒取去收取并搬运其装备，只要此项开启即可。来自尸体的污损服装遵循自动扒取部分中的污损服装选项（设为“留在尸体上”的衣物留在地上，不被收取）。对于活着的目标，会在扒取者的任务末尾排入一次后续扒取，以防目标用残留物再次给自己穿上衣物；若目标保持赤裸则什么也不做。</HaulersDream.Setting.HaulStripDesc>
-<HaulersDream.Setting.HaulStripCrossRef>独立于顶部附近的“搬运时自动扒取”：那个在搬运尸体时扒下它（战利品进货物栏）；这个搬运手动扒取命令掉落的装备。</HaulersDream.Setting.HaulStripCrossRef>
 <HaulersDream.Setting.WorkOverrideHeader>无工作能力覆盖（关闭＝原版）：</HaulersDream.Setting.WorkOverrideHeader>
 <HaulersDream.Setting.AllCanHaul>所有小人都能搬运</HaulersDream.Setting.AllCanHaul>
 <HaulersDream.Setting.AllCanHaulDesc>没有任何背景故事、特性、基因、皇室头衔、意识形态角色、健康状况或任务限制能让小人无法搬运。适用于工作选项卡、右键优先处理、自动工作以及本模组的规划器。（启用后请分配一个工作优先级——新获得能力的小人初始未分配，和任何其他工作一样。）</HaulersDream.Setting.AllCanHaulDesc>
@@ -556,12 +546,6 @@
 <HaulersDream.Unit.Hours>{0} 小时</HaulersDream.Unit.Hours>
 <HaulersDream.Setting.CarryLimit.Lab>携带上限</HaulersDream.Setting.CarryLimit.Lab>
 <HaulersDream.Setting.Overload.Lab>智能超载</HaulersDream.Setting.Overload.Lab>
-<HaulersDream.Setting.PickupMode.Lab>拾取处理</HaulersDream.Setting.PickupMode.Lab>
-<HaulersDream.Setting.PickupMode.Help>小人如何把一件即将搬运的物品纳入它的载量。</HaulersDream.Setting.PickupMode.Help>
-<HaulersDream.Setting.PickupMode.Drop>先丢下，再搬运</HaulersDream.Setting.PickupMode.Drop>
-<HaulersDream.Setting.PickupMode.DropDesc>真实：物品会被短暂地丢到地上，然后再收取——这样另一名搬运者仍能在中途抓走它。</HaulersDream.Setting.PickupMode.DropDesc>
-<HaulersDream.Setting.PickupMode.Direct>直接进货物栏</HaulersDream.Setting.PickupMode.Direct>
-<HaulersDream.Setting.PickupMode.DirectDesc>物品不经地面这一步，直接进入小人的货物栏。</HaulersDream.Setting.PickupMode.DirectDesc>
 <HaulersDream.Setting.BulkHaulTrigger.Lab>批量搬运触发</HaulersDream.Setting.BulkHaulTrigger.Lab>
 <HaulersDream.Setting.KeepWorkingMargin.Lab>较长转移前先卸载</HaulersDream.Setting.KeepWorkingMargin.Lab>
 <HaulersDream.Setting.MinFreeSpaceToUnloadCarrier.Lab>开始所需的最小背包空闲空间</HaulersDream.Setting.MinFreeSpaceToUnloadCarrier.Lab>
@@ -630,12 +614,6 @@
 <HaulersDream.PlanRoute.SelNearest.H>偏好离你点选的那个最近的目标。</HaulersDream.PlanRoute.SelNearest.H>
 <HaulersDream.PlanRoute.DistStraight.H>以直线测量距离——快。</HaulersDream.PlanRoute.DistStraight.H>
 <HaulersDream.PlanRoute.DistWalking.H>沿真实步行路径测量距离——较慢，更准确。</HaulersDream.PlanRoute.DistWalking.H>
-<HaulersDream.Setting.HaulHarvest.Help>在小人工作时把收获的作物和砍伐植物的产出收进货物栏。</HaulersDream.Setting.HaulHarvest.Help>
-<HaulersDream.Setting.HaulMining.Help>在小人采掘时把采出的矿石和岩石碎块收进货物栏。</HaulersDream.Setting.HaulMining.Help>
-<HaulersDream.Setting.HaulDeepDrill.Help>在深岩钻机产出时把其产物收进货物栏。</HaulersDream.Setting.HaulDeepDrill.Help>
-<HaulersDream.Setting.HaulDeconstruct.Help>把拆除建筑得到的残料收进货物栏。</HaulersDream.Setting.HaulDeconstruct.Help>
-<HaulersDream.Setting.HaulAnimals.Help>把从动物身上采集的奶、毛及其他产物收进货物栏。</HaulersDream.Setting.HaulAnimals.Help>
-<HaulersDream.Setting.HaulUninstall.Help>在商队或其他外出地图上（绝不在你的主殖民地），把你拆装的建筑——此时已成为小型化物品——直接收进工人的货物栏，这样几座拆装的结构就能一趟运到驮兽处，而不是每件物品一个来回。仅在物品确实能被交付处（一个储存区/区域或一只驮兽）时才触发。在你的主基地地图上这什么也不做：在那里，一座拆装的建筑会被留在地上交给正常搬运或重新安装。</HaulersDream.Setting.HaulUninstall.Help>
 <HaulersDream.Cat.Hauling.Intro>殖民者如何拾取东西——它们携带多少、何时超载，以及它们清扫什么。</HaulersDream.Cat.Hauling.Intro>
 <HaulersDream.Cat.Unloading.Intro>殖民者何时、如何收起所携带的货物。</HaulersDream.Cat.Unloading.Intro>
 <HaulersDream.Cat.BuildCraft.Intro>从货物栏取用建造和制作材料、食物运送，以及原料选择。</HaulersDream.Cat.BuildCraft.Intro>
@@ -671,4 +649,30 @@
 <HaulersDream.PlanRoute.SowingGerundFallback>sowing</HaulersDream.PlanRoute.SowingGerundFallback>
 <HaulersDream.PlanRoute.ModeSowZone>Whole growing zone</HaulersDream.PlanRoute.ModeSowZone>
 <HaulersDream.PlanRoute.ModeSowZoneDesc>Sow every empty growable cell inside this growing zone — plant the whole field from one click.</HaulersDream.PlanRoute.ModeSowZoneDesc>
+<HaulersDream.Setting.Yield.Header>Collect work results</HaulersDream.Setting.Yield.Header>
+<HaulersDream.Setting.Yield.Intro>For each kind of work, choose what happens to the result: leave it on the ground, drop it then have the working pawn haul it, or take it straight into the pawn's inventory.</HaulersDream.Setting.Yield.Intro>
+<HaulersDream.Setting.Yield.Off>Off</HaulersDream.Setting.Yield.Off>
+<HaulersDream.Setting.Yield.OffDesc>Hauler's Dream leaves the result on the ground, exactly like vanilla — a hauler may carry it away later.</HaulersDream.Setting.Yield.OffDesc>
+<HaulersDream.Setting.Yield.Drop>Drop &amp; haul</HaulersDream.Setting.Yield.Drop>
+<HaulersDream.Setting.Yield.DropDesc>The result drops on the floor, then the working pawn scoops it up and carries it out. Another hauler can still grab it mid-step.</HaulersDream.Setting.Yield.DropDesc>
+<HaulersDream.Setting.Yield.Direct>To inventory</HaulersDream.Setting.Yield.Direct>
+<HaulersDream.Setting.Yield.DirectDesc>The result goes straight into the working pawn's inventory, never touching the floor.</HaulersDream.Setting.Yield.DirectDesc>
+<HaulersDream.Setting.Yield.Harvest>Harvest (crops &amp; berries)</HaulersDream.Setting.Yield.Harvest>
+<HaulersDream.Setting.Yield.HarvestHelp>Crops, berries and other food/plant harvest yields.</HaulersDream.Setting.Yield.HarvestHelp>
+<HaulersDream.Setting.Yield.Logging>Logging (trees &amp; cacti)</HaulersDream.Setting.Yield.Logging>
+<HaulersDream.Setting.Yield.LoggingHelp>Wood and other yields from felling trees and cacti.</HaulersDream.Setting.Yield.LoggingHelp>
+<HaulersDream.Setting.Yield.Mining>Mining (ore &amp; resources)</HaulersDream.Setting.Yield.Mining>
+<HaulersDream.Setting.Yield.MiningHelp>Ore, components and other resources from mining — not stone chunks.</HaulersDream.Setting.Yield.MiningHelp>
+<HaulersDream.Setting.Yield.Chunks>Mining (chunks)</HaulersDream.Setting.Yield.Chunks>
+<HaulersDream.Setting.Yield.ChunksHelp>Stone and slag chunks from mining. Set this to Off to leave heavy chunks on the ground instead of loading them into inventory.</HaulersDream.Setting.Yield.ChunksHelp>
+<HaulersDream.Setting.Yield.DeepDrill>Deep drilling</HaulersDream.Setting.Yield.DeepDrill>
+<HaulersDream.Setting.Yield.DeepDrillHelp>Resources produced by deep drills.</HaulersDream.Setting.Yield.DeepDrillHelp>
+<HaulersDream.Setting.Yield.Deconstruct>Deconstruction salvage</HaulersDream.Setting.Yield.Deconstruct>
+<HaulersDream.Setting.Yield.DeconstructHelp>Materials salvaged from deconstructed buildings.</HaulersDream.Setting.Yield.DeconstructHelp>
+<HaulersDream.Setting.Yield.Animals>Animal products (milk &amp; wool)</HaulersDream.Setting.Yield.Animals>
+<HaulersDream.Setting.Yield.AnimalsHelp>Milk, wool and other products gathered from animals.</HaulersDream.Setting.Yield.AnimalsHelp>
+<HaulersDream.Setting.Yield.Strip>Stripping (removed gear)</HaulersDream.Setting.Yield.Strip>
+<HaulersDream.Setting.Yield.StripHelp>Gear removed by a Strip order. This always drops then hauls (it cannot go straight to inventory).</HaulersDream.Setting.Yield.StripHelp>
+<HaulersDream.Setting.Yield.Uninstall>Uninstalling (minified buildings)</HaulersDream.Setting.Yield.Uninstall>
+<HaulersDream.Setting.Yield.UninstallHelp>Minified buildings from an Uninstall order (on caravan / away maps, so they batch onto pack animals).</HaulersDream.Setting.Yield.UninstallHelp>
 </LanguageData>

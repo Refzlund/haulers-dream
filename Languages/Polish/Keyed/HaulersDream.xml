@@ -134,16 +134,6 @@
 <HaulersDream.Setting.OpportunisticUnloadDesc>Gdy pionek niosący nazbierane towary rusza w długą podróż po swoje następne zadanie, a składowisko jest mniej więcej po drodze, zrzuca ładunek, gdy przechodzi obok, zamiast nieść go przez całą mapę i robić później osobną wyprawę.</HaulersDream.Setting.OpportunisticUnloadDesc>
 <HaulersDream.Stat.Overload>Hauler's Dream — przeciążony</HaulersDream.Stat.Overload>
 <HaulersDream.Stat.MechCarryCapacity>Hauler's Dream — udźwig</HaulersDream.Stat.MechCarryCapacity>
-<HaulersDream.Setting.WorkTypesHeader>Zgarniaj plony z tych rodzajów pracy:</HaulersDream.Setting.WorkTypesHeader>
-<HaulersDream.Setting.HaulHarvest>Rośliny — zbiór i ścinanie</HaulersDream.Setting.HaulHarvest>
-<HaulersDream.Setting.HaulMining>Wydobycie — ruda i bryły</HaulersDream.Setting.HaulMining>
-<HaulersDream.Setting.HaulDeepDrill>Głębokie świdry</HaulersDream.Setting.HaulDeepDrill>
-<HaulersDream.Setting.HaulDeconstruct>Złom z rozbiórki</HaulersDream.Setting.HaulDeconstruct>
-<HaulersDream.Setting.HaulAnimals>Zwierzęta — mleko i strzyżenie</HaulersDream.Setting.HaulAnimals>
-<HaulersDream.Setting.HaulUninstall>Demontaż — zminiaturyzowane budynki (mapy karawany/wyjazdowe)</HaulersDream.Setting.HaulUninstall>
-<HaulersDream.Setting.HaulStrip>Obdzieranie — zdjęty sprzęt (znoś sprzęt z rozkazu Obdrzyj)</HaulersDream.Setting.HaulStrip>
-<HaulersDream.Setting.HaulStripDesc>Gdy kolonista obdziera więźnia, powalonego pionka lub zwłoki (rozkaz Obdrzyj, który składasz ręcznie), zdjęte bronie, sprzęt i ubrania są zgarniane do jego bagażu zaraz po obdzieraniu i znoszone do domu w jednej wyprawie. To jest przełącznik rządzący znoszeniem obdartego sprzętu — jest niezależny od „Automatyczne obdzieranie podczas znoszenia” wyżej: tamto obdziera zwłoki tylko podczas ich ZNOSZENIA (łup do bagażu); TO znosi sprzęt, który ręczny rozkaz Obdrzyj upuszcza na ziemię. Więc możesz ustawić automatyczne obdzieranie-podczas-znoszenia na „nigdy”, a ręcznie zlecone obdzieranie wciąż będzie zgarniać i znosić swój sprzęt, dopóki to jest włączone. Skażona odzież ze zwłok kieruje się wyborami dla skażonej odzieży z sekcji automatycznego obdzierania (elementy „zostaw je na zwłokach” pozostają na ziemi, niezgarnięte). Dla żywego celu kolejne obdzieranie jest kolejkowane na końcu zadań obdzierającego, na wypadek gdyby cel ponownie się ubrał z resztek; nie robi nic, jeśli cel pozostał nagi.</HaulersDream.Setting.HaulStripDesc>
-<HaulersDream.Setting.HaulStripCrossRef>Niezależne od „Automatyczne obdzieranie podczas znoszenia” bliżej góry: tamto obdziera zwłoki podczas ich znoszenia (łup do bagażu); to znosi sprzęt, który upuszcza ręczny rozkaz Obdrzyj.</HaulersDream.Setting.HaulStripCrossRef>
 <HaulersDream.Setting.WorkOverrideHeader>Nadpisania niezdolności do pracy (wyłączone = jak w podstawce):</HaulersDream.Setting.WorkOverrideHeader>
 <HaulersDream.Setting.AllCanHaul>Wszystkie pionki mogą znosić</HaulersDream.Setting.AllCanHaul>
 <HaulersDream.Setting.AllCanHaulDesc>Żadna historia postaci, cecha, gen, tytuł królewski, rola ideologii, stan zdrowia ani ograniczenie zadaniowe nie mogą uczynić pionka niezdolnym do znoszenia. Dotyczy karty pracy, priorytetyzowania z prawego przycisku, automatycznej pracy oraz plannerów tego moda. (Przypisz priorytet pracy po włączeniu — nowo zdolne pionki zaczynają bez przypisania, jak każda inna praca).</HaulersDream.Setting.AllCanHaulDesc>
@@ -556,12 +546,6 @@
 <HaulersDream.Unit.Hours>{0} h</HaulersDream.Unit.Hours>
 <HaulersDream.Setting.CarryLimit.Lab>Limit noszenia</HaulersDream.Setting.CarryLimit.Lab>
 <HaulersDream.Setting.Overload.Lab>Inteligentne przeciążenie</HaulersDream.Setting.Overload.Lab>
-<HaulersDream.Setting.PickupMode.Lab>Obsługa podnoszenia</HaulersDream.Setting.PickupMode.Lab>
-<HaulersDream.Setting.PickupMode.Help>Jak pionek bierze do swojego ładunku przedmiot, który ma znieść.</HaulersDream.Setting.PickupMode.Help>
-<HaulersDream.Setting.PickupMode.Drop>Upuść, potem znieś</HaulersDream.Setting.PickupMode.Drop>
-<HaulersDream.Setting.PickupMode.DropDesc>Realistycznie: przedmiot jest na chwilę upuszczany na podłogę, a potem zgarniany — więc inny tragarz wciąż może go chwycić w trakcie.</HaulersDream.Setting.PickupMode.DropDesc>
-<HaulersDream.Setting.PickupMode.Direct>Do bagażu</HaulersDream.Setting.PickupMode.Direct>
-<HaulersDream.Setting.PickupMode.DirectDesc>Przedmiot trafia prosto do bagażu pionka bez kroku na podłodze.</HaulersDream.Setting.PickupMode.DirectDesc>
 <HaulersDream.Setting.BulkHaulTrigger.Lab>Wyzwalacz masowego znoszenia</HaulersDream.Setting.BulkHaulTrigger.Lab>
 <HaulersDream.Setting.KeepWorkingMargin.Lab>Rozładuj przed dłuższym przemieszczeniem</HaulersDream.Setting.KeepWorkingMargin.Lab>
 <HaulersDream.Setting.MinFreeSpaceToUnloadCarrier.Lab>Minimalne wolne miejsce w plecaku, by zacząć</HaulersDream.Setting.MinFreeSpaceToUnloadCarrier.Lab>
@@ -630,12 +614,6 @@
 <HaulersDream.PlanRoute.SelNearest.H>Preferuj cele najbliższe temu, który kliknąłeś.</HaulersDream.PlanRoute.SelNearest.H>
 <HaulersDream.PlanRoute.DistStraight.H>Mierz odległość jako linię prostą — szybko.</HaulersDream.PlanRoute.DistStraight.H>
 <HaulersDream.PlanRoute.DistWalking.H>Mierz odległość wzdłuż rzeczywistej ścieżki marszu — wolniej, dokładniej.</HaulersDream.PlanRoute.DistWalking.H>
-<HaulersDream.Setting.HaulHarvest.Help>Zgarniaj zebrane plony i ścięte rośliny do bagażu, gdy pionek pracuje.</HaulersDream.Setting.HaulHarvest.Help>
-<HaulersDream.Setting.HaulMining.Help>Zgarniaj wydobytą rudę i bryły skalne do bagażu, gdy pionek wydobywa.</HaulersDream.Setting.HaulMining.Help>
-<HaulersDream.Setting.HaulDeepDrill.Help>Zgarniaj wyjście głębokiego świdra do bagażu, gdy jest wytwarzane.</HaulersDream.Setting.HaulDeepDrill.Help>
-<HaulersDream.Setting.HaulDeconstruct.Help>Zgarniaj złom z rozebranych budynków do bagażu.</HaulersDream.Setting.HaulDeconstruct.Help>
-<HaulersDream.Setting.HaulAnimals.Help>Zgarniaj mleko, wełnę i inne produkty zebrane od zwierząt do bagażu.</HaulersDream.Setting.HaulAnimals.Help>
-<HaulersDream.Setting.HaulUninstall.Help>Na mapie karawany lub innej wyjazdowej (nigdy w twojej domowej kolonii) zgarniaj budynek, który demontujesz — teraz zminiaturyzowany przedmiot — prosto do bagażu pracownika, tak by kilka zdemontowanych konstrukcji było niesionych do zwierząt jucznych w JEDNEJ wyprawie zamiast jednego spaceru tam i z powrotem na przedmiot. Uruchamia się tylko tam, gdzie przedmiot faktycznie można dostarczyć (składowisko/strefa lub zwierzę juczne). Na twojej domowej mapie nie robi nic: tam zdemontowany budynek jest zostawiany na ziemi do normalnego znoszenia lub ponownej instalacji.</HaulersDream.Setting.HaulUninstall.Help>
 <HaulersDream.Cat.Hauling.Intro>Jak koloniści podnoszą rzeczy — ile niosą, kiedy się przeciążają i co zmiatają.</HaulersDream.Cat.Hauling.Intro>
 <HaulersDream.Cat.Unloading.Intro>Kiedy i jak koloniści odkładają swoje niesione towary.</HaulersDream.Cat.Unloading.Intro>
 <HaulersDream.Cat.BuildCraft.Intro>Pozyskiwanie materiałów budowlanych i do wytwarzania z bagażu, dostarczanie jedzenia i wybór składników.</HaulersDream.Cat.BuildCraft.Intro>
@@ -671,4 +649,30 @@
 <HaulersDream.PlanRoute.SowingGerundFallback>sowing</HaulersDream.PlanRoute.SowingGerundFallback>
 <HaulersDream.PlanRoute.ModeSowZone>Whole growing zone</HaulersDream.PlanRoute.ModeSowZone>
 <HaulersDream.PlanRoute.ModeSowZoneDesc>Sow every empty growable cell inside this growing zone — plant the whole field from one click.</HaulersDream.PlanRoute.ModeSowZoneDesc>
+<HaulersDream.Setting.Yield.Header>Collect work results</HaulersDream.Setting.Yield.Header>
+<HaulersDream.Setting.Yield.Intro>For each kind of work, choose what happens to the result: leave it on the ground, drop it then have the working pawn haul it, or take it straight into the pawn's inventory.</HaulersDream.Setting.Yield.Intro>
+<HaulersDream.Setting.Yield.Off>Off</HaulersDream.Setting.Yield.Off>
+<HaulersDream.Setting.Yield.OffDesc>Hauler's Dream leaves the result on the ground, exactly like vanilla — a hauler may carry it away later.</HaulersDream.Setting.Yield.OffDesc>
+<HaulersDream.Setting.Yield.Drop>Drop &amp; haul</HaulersDream.Setting.Yield.Drop>
+<HaulersDream.Setting.Yield.DropDesc>The result drops on the floor, then the working pawn scoops it up and carries it out. Another hauler can still grab it mid-step.</HaulersDream.Setting.Yield.DropDesc>
+<HaulersDream.Setting.Yield.Direct>To inventory</HaulersDream.Setting.Yield.Direct>
+<HaulersDream.Setting.Yield.DirectDesc>The result goes straight into the working pawn's inventory, never touching the floor.</HaulersDream.Setting.Yield.DirectDesc>
+<HaulersDream.Setting.Yield.Harvest>Harvest (crops &amp; berries)</HaulersDream.Setting.Yield.Harvest>
+<HaulersDream.Setting.Yield.HarvestHelp>Crops, berries and other food/plant harvest yields.</HaulersDream.Setting.Yield.HarvestHelp>
+<HaulersDream.Setting.Yield.Logging>Logging (trees &amp; cacti)</HaulersDream.Setting.Yield.Logging>
+<HaulersDream.Setting.Yield.LoggingHelp>Wood and other yields from felling trees and cacti.</HaulersDream.Setting.Yield.LoggingHelp>
+<HaulersDream.Setting.Yield.Mining>Mining (ore &amp; resources)</HaulersDream.Setting.Yield.Mining>
+<HaulersDream.Setting.Yield.MiningHelp>Ore, components and other resources from mining — not stone chunks.</HaulersDream.Setting.Yield.MiningHelp>
+<HaulersDream.Setting.Yield.Chunks>Mining (chunks)</HaulersDream.Setting.Yield.Chunks>
+<HaulersDream.Setting.Yield.ChunksHelp>Stone and slag chunks from mining. Set this to Off to leave heavy chunks on the ground instead of loading them into inventory.</HaulersDream.Setting.Yield.ChunksHelp>
+<HaulersDream.Setting.Yield.DeepDrill>Deep drilling</HaulersDream.Setting.Yield.DeepDrill>
+<HaulersDream.Setting.Yield.DeepDrillHelp>Resources produced by deep drills.</HaulersDream.Setting.Yield.DeepDrillHelp>
+<HaulersDream.Setting.Yield.Deconstruct>Deconstruction salvage</HaulersDream.Setting.Yield.Deconstruct>
+<HaulersDream.Setting.Yield.DeconstructHelp>Materials salvaged from deconstructed buildings.</HaulersDream.Setting.Yield.DeconstructHelp>
+<HaulersDream.Setting.Yield.Animals>Animal products (milk &amp; wool)</HaulersDream.Setting.Yield.Animals>
+<HaulersDream.Setting.Yield.AnimalsHelp>Milk, wool and other products gathered from animals.</HaulersDream.Setting.Yield.AnimalsHelp>
+<HaulersDream.Setting.Yield.Strip>Stripping (removed gear)</HaulersDream.Setting.Yield.Strip>
+<HaulersDream.Setting.Yield.StripHelp>Gear removed by a Strip order. This always drops then hauls (it cannot go straight to inventory).</HaulersDream.Setting.Yield.StripHelp>
+<HaulersDream.Setting.Yield.Uninstall>Uninstalling (minified buildings)</HaulersDream.Setting.Yield.Uninstall>
+<HaulersDream.Setting.Yield.UninstallHelp>Minified buildings from an Uninstall order (on caravan / away maps, so they batch onto pack animals).</HaulersDream.Setting.Yield.UninstallHelp>
 </LanguageData>

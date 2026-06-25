@@ -134,16 +134,6 @@
 <HaulersDream.Setting.OpportunisticUnloadDesc>Cuando un peón que lleva bienes recogidos se va en un viaje largo a su próximo trabajo y un almacén le queda más o menos de camino, deja la carga al pasar, en lugar de llevarla por todo el mapa y hacer un viaje aparte más tarde.</HaulersDream.Setting.OpportunisticUnloadDesc>
 <HaulersDream.Stat.Overload>Hauler's Dream — sobrecargado</HaulersDream.Stat.Overload>
 <HaulersDream.Stat.MechCarryCapacity>Hauler's Dream — capacidad de carga</HaulersDream.Stat.MechCarryCapacity>
-<HaulersDream.Setting.WorkTypesHeader>Recoger rendimientos de estos tipos de trabajo:</HaulersDream.Setting.WorkTypesHeader>
-<HaulersDream.Setting.HaulHarvest>Plantas — cosechar y cortar</HaulersDream.Setting.HaulHarvest>
-<HaulersDream.Setting.HaulMining>Minería — mineral y rocas</HaulersDream.Setting.HaulMining>
-<HaulersDream.Setting.HaulDeepDrill>Perforadoras profundas</HaulersDream.Setting.HaulDeepDrill>
-<HaulersDream.Setting.HaulDeconstruct>Restos de desmontaje</HaulersDream.Setting.HaulDeconstruct>
-<HaulersDream.Setting.HaulAnimals>Animales — ordeñar y esquilar</HaulersDream.Setting.HaulAnimals>
-<HaulersDream.Setting.HaulUninstall>Desinstalación — edificios miniaturizados (mapas de caravana/lejanos)</HaulersDream.Setting.HaulUninstall>
-<HaulersDream.Setting.HaulStrip>Desvestir — equipo retirado (transportar el equipo de una orden de Desvestir)</HaulersDream.Setting.HaulStrip>
-<HaulersDream.Setting.HaulStripDesc>Cuando un colono desviste a un prisionero, a un peón abatido o a un cadáver (una orden de Desvestir que TÚ colocas a mano), las armas, el equipo y la ropa retirados se recogen en su inventario justo después de desvestir, y se transportan a casa en un solo viaje. Este es el interruptor que rige el transporte del equipo desvestido; es independiente de «Desvestir automáticamente al transportar» de más arriba: aquel solo desviste un cadáver mientras está SIENDO transportado (botín al inventario); ESTE transporta el equipo que una orden manual de Desvestir deja caer al suelo. Así que puedes poner desvestir-automáticamente-al-transportar en «nunca» y aun así hacer que los desvestidos ordenados a mano recojan y transporten su equipo, siempre que esto esté activado. La ropa contaminada de un cadáver sigue las elecciones de ropa contaminada de la sección de desvestir automático (las piezas marcadas como «dejarla en el cadáver» quedan en el suelo, sin recoger). Para un objetivo vivo, se pone en cola un desvestido de seguimiento al final de los trabajos del que desviste, por si el objetivo vuelve a vestirse con las sobras; no hace nada si el objetivo se quedó desnudo.</HaulersDream.Setting.HaulStripDesc>
-<HaulersDream.Setting.HaulStripCrossRef>Independiente de «Desvestir automáticamente al transportar» de cerca de arriba: aquel desviste un cadáver mientras se transporta (botín al inventario); este transporta el equipo que una orden manual de Desvestir deja caer.</HaulersDream.Setting.HaulStripCrossRef>
 <HaulersDream.Setting.WorkOverrideHeader>Anulaciones de incapacidad para trabajar (desactivado = juego base):</HaulersDream.Setting.WorkOverrideHeader>
 <HaulersDream.Setting.AllCanHaul>Todos los peones pueden transportar</HaulersDream.Setting.AllCanHaul>
 <HaulersDream.Setting.AllCanHaulDesc>Ningún trasfondo, rasgo, gen, título real, rol ideológico, dolencia o restricción de misión puede hacer que un peón sea incapaz de transportar. Se aplica a la pestaña de trabajo, a la priorización con clic derecho, al trabajo automático y a los planificadores de este mod. (Asigna una prioridad de trabajo después de activarlo: los peones recién capacitados empiezan sin asignar, como cualquier otro trabajo).</HaulersDream.Setting.AllCanHaulDesc>
@@ -556,12 +546,6 @@
 <HaulersDream.Unit.Hours>{0} h</HaulersDream.Unit.Hours>
 <HaulersDream.Setting.CarryLimit.Lab>Límite de carga</HaulersDream.Setting.CarryLimit.Lab>
 <HaulersDream.Setting.Overload.Lab>Sobrecarga inteligente</HaulersDream.Setting.Overload.Lab>
-<HaulersDream.Setting.PickupMode.Lab>Gestión de la recogida</HaulersDream.Setting.PickupMode.Lab>
-<HaulersDream.Setting.PickupMode.Help>Cómo coge un peón un objeto que está a punto de transportar para añadirlo a su carga.</HaulersDream.Setting.PickupMode.Help>
-<HaulersDream.Setting.PickupMode.Drop>Dejar y luego transportar</HaulersDream.Setting.PickupMode.Drop>
-<HaulersDream.Setting.PickupMode.DropDesc>Realista: el objeto se deja brevemente en el suelo y luego se recoge, de modo que otro transportador aún puede cogerlo a mitad de paso.</HaulersDream.Setting.PickupMode.DropDesc>
-<HaulersDream.Setting.PickupMode.Direct>Al inventario</HaulersDream.Setting.PickupMode.Direct>
-<HaulersDream.Setting.PickupMode.DirectDesc>El objeto pasa directamente al inventario del peón sin paso por el suelo.</HaulersDream.Setting.PickupMode.DirectDesc>
 <HaulersDream.Setting.BulkHaulTrigger.Lab>Disparador del transporte en lote</HaulersDream.Setting.BulkHaulTrigger.Lab>
 <HaulersDream.Setting.KeepWorkingMargin.Lab>Descargar antes de un desplazamiento más largo</HaulersDream.Setting.KeepWorkingMargin.Lab>
 <HaulersDream.Setting.MinFreeSpaceToUnloadCarrier.Lab>Espacio libre mínimo en la mochila para empezar</HaulersDream.Setting.MinFreeSpaceToUnloadCarrier.Lab>
@@ -630,12 +614,6 @@
 <HaulersDream.PlanRoute.SelNearest.H>Prefiere los objetivos más cercanos al que clicaste.</HaulersDream.PlanRoute.SelNearest.H>
 <HaulersDream.PlanRoute.DistStraight.H>Mide la distancia en línea recta: rápido.</HaulersDream.PlanRoute.DistStraight.H>
 <HaulersDream.PlanRoute.DistWalking.H>Mide la distancia a lo largo del trayecto real a pie: más lento, más preciso.</HaulersDream.PlanRoute.DistWalking.H>
-<HaulersDream.Setting.HaulHarvest.Help>Recoge en el inventario los cultivos cosechados y los rendimientos de plantas cortadas a medida que el peón trabaja.</HaulersDream.Setting.HaulHarvest.Help>
-<HaulersDream.Setting.HaulMining.Help>Recoge en el inventario el mineral minado y las rocas a medida que el peón mina.</HaulersDream.Setting.HaulMining.Help>
-<HaulersDream.Setting.HaulDeepDrill.Help>Recoge en el inventario la producción de la perforadora profunda a medida que se produce.</HaulersDream.Setting.HaulDeepDrill.Help>
-<HaulersDream.Setting.HaulDeconstruct.Help>Recoge en el inventario los restos de los edificios desmontados.</HaulersDream.Setting.HaulDeconstruct.Help>
-<HaulersDream.Setting.HaulAnimals.Help>Recoge en el inventario la leche, la lana y otros productos obtenidos de los animales.</HaulersDream.Setting.HaulAnimals.Help>
-<HaulersDream.Setting.HaulUninstall.Help>En un mapa de caravana u otro mapa lejano (nunca en tu colonia de origen), recoge un edificio que desinstalas —ahora un objeto miniaturizado— directamente en el inventario del trabajador, de modo que varias estructuras desinstaladas se llevan a los animales de carga en UN viaje en lugar de una caminata de ida y vuelta por objeto. Solo se activa donde el objeto se puede entregar de verdad (un almacén/zona o un animal de carga). En tu mapa de origen esto no hace nada: allí, un edificio desinstalado se deja en el suelo para el transporte normal o la reinstalación.</HaulersDream.Setting.HaulUninstall.Help>
 <HaulersDream.Cat.Hauling.Intro>Cómo recogen las cosas los colonos: cuánto llevan, cuándo se sobrecargan, y qué barren.</HaulersDream.Cat.Hauling.Intro>
 <HaulersDream.Cat.Unloading.Intro>Cuándo y cómo guardan los colonos sus bienes acarreados.</HaulersDream.Cat.Unloading.Intro>
 <HaulersDream.Cat.BuildCraft.Intro>Obtener materiales de construcción y fabricación del inventario, entrega de comida, y elección de ingredientes.</HaulersDream.Cat.BuildCraft.Intro>
@@ -671,4 +649,30 @@
 <HaulersDream.PlanRoute.SowingGerundFallback>sowing</HaulersDream.PlanRoute.SowingGerundFallback>
 <HaulersDream.PlanRoute.ModeSowZone>Whole growing zone</HaulersDream.PlanRoute.ModeSowZone>
 <HaulersDream.PlanRoute.ModeSowZoneDesc>Sow every empty growable cell inside this growing zone — plant the whole field from one click.</HaulersDream.PlanRoute.ModeSowZoneDesc>
+<HaulersDream.Setting.Yield.Header>Collect work results</HaulersDream.Setting.Yield.Header>
+<HaulersDream.Setting.Yield.Intro>For each kind of work, choose what happens to the result: leave it on the ground, drop it then have the working pawn haul it, or take it straight into the pawn's inventory.</HaulersDream.Setting.Yield.Intro>
+<HaulersDream.Setting.Yield.Off>Off</HaulersDream.Setting.Yield.Off>
+<HaulersDream.Setting.Yield.OffDesc>Hauler's Dream leaves the result on the ground, exactly like vanilla — a hauler may carry it away later.</HaulersDream.Setting.Yield.OffDesc>
+<HaulersDream.Setting.Yield.Drop>Drop &amp; haul</HaulersDream.Setting.Yield.Drop>
+<HaulersDream.Setting.Yield.DropDesc>The result drops on the floor, then the working pawn scoops it up and carries it out. Another hauler can still grab it mid-step.</HaulersDream.Setting.Yield.DropDesc>
+<HaulersDream.Setting.Yield.Direct>To inventory</HaulersDream.Setting.Yield.Direct>
+<HaulersDream.Setting.Yield.DirectDesc>The result goes straight into the working pawn's inventory, never touching the floor.</HaulersDream.Setting.Yield.DirectDesc>
+<HaulersDream.Setting.Yield.Harvest>Harvest (crops &amp; berries)</HaulersDream.Setting.Yield.Harvest>
+<HaulersDream.Setting.Yield.HarvestHelp>Crops, berries and other food/plant harvest yields.</HaulersDream.Setting.Yield.HarvestHelp>
+<HaulersDream.Setting.Yield.Logging>Logging (trees &amp; cacti)</HaulersDream.Setting.Yield.Logging>
+<HaulersDream.Setting.Yield.LoggingHelp>Wood and other yields from felling trees and cacti.</HaulersDream.Setting.Yield.LoggingHelp>
+<HaulersDream.Setting.Yield.Mining>Mining (ore &amp; resources)</HaulersDream.Setting.Yield.Mining>
+<HaulersDream.Setting.Yield.MiningHelp>Ore, components and other resources from mining — not stone chunks.</HaulersDream.Setting.Yield.MiningHelp>
+<HaulersDream.Setting.Yield.Chunks>Mining (chunks)</HaulersDream.Setting.Yield.Chunks>
+<HaulersDream.Setting.Yield.ChunksHelp>Stone and slag chunks from mining. Set this to Off to leave heavy chunks on the ground instead of loading them into inventory.</HaulersDream.Setting.Yield.ChunksHelp>
+<HaulersDream.Setting.Yield.DeepDrill>Deep drilling</HaulersDream.Setting.Yield.DeepDrill>
+<HaulersDream.Setting.Yield.DeepDrillHelp>Resources produced by deep drills.</HaulersDream.Setting.Yield.DeepDrillHelp>
+<HaulersDream.Setting.Yield.Deconstruct>Deconstruction salvage</HaulersDream.Setting.Yield.Deconstruct>
+<HaulersDream.Setting.Yield.DeconstructHelp>Materials salvaged from deconstructed buildings.</HaulersDream.Setting.Yield.DeconstructHelp>
+<HaulersDream.Setting.Yield.Animals>Animal products (milk &amp; wool)</HaulersDream.Setting.Yield.Animals>
+<HaulersDream.Setting.Yield.AnimalsHelp>Milk, wool and other products gathered from animals.</HaulersDream.Setting.Yield.AnimalsHelp>
+<HaulersDream.Setting.Yield.Strip>Stripping (removed gear)</HaulersDream.Setting.Yield.Strip>
+<HaulersDream.Setting.Yield.StripHelp>Gear removed by a Strip order. This always drops then hauls (it cannot go straight to inventory).</HaulersDream.Setting.Yield.StripHelp>
+<HaulersDream.Setting.Yield.Uninstall>Uninstalling (minified buildings)</HaulersDream.Setting.Yield.Uninstall>
+<HaulersDream.Setting.Yield.UninstallHelp>Minified buildings from an Uninstall order (on caravan / away maps, so they batch onto pack animals).</HaulersDream.Setting.Yield.UninstallHelp>
 </LanguageData>

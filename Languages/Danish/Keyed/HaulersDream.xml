@@ -134,16 +134,6 @@
 <HaulersDream.Setting.OpportunisticUnloadDesc>Når en figur, der bærer opsamlede varer, tager af sted på en lang tur til sin næste opgave, og en lagerzone nogenlunde er på vejen, aflæsser den læsset, mens den passerer forbi, i stedet for at bære det tværs over kortet og lave en særskilt tur senere.</HaulersDream.Setting.OpportunisticUnloadDesc>
 <HaulersDream.Stat.Overload>Hauler's Dream — overlæsset</HaulersDream.Stat.Overload>
 <HaulersDream.Stat.MechCarryCapacity>Hauler's Dream — bæreevne</HaulersDream.Stat.MechCarryCapacity>
-<HaulersDream.Setting.WorkTypesHeader>Saml udbytte op fra disse slags arbejde:</HaulersDream.Setting.WorkTypesHeader>
-<HaulersDream.Setting.HaulHarvest>Planter — høst og klip</HaulersDream.Setting.HaulHarvest>
-<HaulersDream.Setting.HaulMining>Udvinding — malm og brokker</HaulersDream.Setting.HaulMining>
-<HaulersDream.Setting.HaulDeepDrill>Dybdebor</HaulersDream.Setting.HaulDeepDrill>
-<HaulersDream.Setting.HaulDeconstruct>Nedbrydningsskrot</HaulersDream.Setting.HaulDeconstruct>
-<HaulersDream.Setting.HaulAnimals>Dyr — malk og klip</HaulersDream.Setting.HaulAnimals>
-<HaulersDream.Setting.HaulUninstall>Afmontering — komprimerede bygninger (karavane-/fjernkort)</HaulersDream.Setting.HaulUninstall>
-<HaulersDream.Setting.HaulStrip>Afklædning — fjernet udstyr (transportér udstyr fra en Afklæd-ordre)</HaulersDream.Setting.HaulStrip>
-<HaulersDream.Setting.HaulStripDesc>Når en kolonist afklæder en fange, en nedslået figur eller et lig (en Afklæd-ordre, DU placerer selv), samles de fjernede våben, udstyr og tøj op i dens inventar lige efter afklædningen og transporteres hjem på én tur. Dette er den kontakt, der styrer transport af afklædt udstyr — den er uafhængig af "Afklæd automatisk under transport" højere oppe: den afklæder kun et lig, mens det ER ved at blive transporteret (bytte til inventar); DENNE transporterer det udstyr, en manuel Afklæd-ordre lægger på jorden. Så du kan sætte afklæd-under-transport til "aldrig" og stadig få manuelt bestilte afklædninger til at samle deres udstyr op og transportere det, så længe denne er slået til. Besudlet beklædning fra et lig følger de valg for besudlet beklædning, der er i automatisk afklædning-sektionen ("lad det blive på liget"-stykker bliver liggende på jorden, usamlet). For et levende mål sættes en opfølgende afklædning i kø ved afslutningen af afklæderens opgaver, i tilfælde af at målet klæder sig på igen fra rester; den gør ingenting, hvis målet forblev bart.</HaulersDream.Setting.HaulStripDesc>
-<HaulersDream.Setting.HaulStripCrossRef>Uafhængig af "Afklæd automatisk under transport" tæt på toppen: den afklæder et lig, mens det transporteres (bytte til inventar); denne transporterer det udstyr, en manuel Afklæd-ordre lægger.</HaulersDream.Setting.HaulStripCrossRef>
 <HaulersDream.Setting.WorkOverrideHeader>Tilsidesættelser af arbejdsudygtighed (fra = vanilla):</HaulersDream.Setting.WorkOverrideHeader>
 <HaulersDream.Setting.AllCanHaul>Alle figurer kan transportere</HaulersDream.Setting.AllCanHaul>
 <HaulersDream.Setting.AllCanHaulDesc>Ingen baggrundshistorie, egenskab, gen, kongelig titel, ideologirolle, helbredstilstand eller questbegrænsning kan gøre en figur ude af stand til at transportere. Gælder arbejdsfanen, højreklik-prioritering, automatisk arbejde og dette mods planlæggere. (Tildel en arbejdsprioritet efter aktivering — nyligt dygtiggjorte figurer starter uden tildeling, ligesom alt andet arbejde.)</HaulersDream.Setting.AllCanHaulDesc>
@@ -556,12 +546,6 @@
 <HaulersDream.Unit.Hours>{0} t</HaulersDream.Unit.Hours>
 <HaulersDream.Setting.CarryLimit.Lab>Bæregrænse</HaulersDream.Setting.CarryLimit.Lab>
 <HaulersDream.Setting.Overload.Lab>Smart overlæsning</HaulersDream.Setting.Overload.Lab>
-<HaulersDream.Setting.PickupMode.Lab>Opsamlingshåndtering</HaulersDream.Setting.PickupMode.Lab>
-<HaulersDream.Setting.PickupMode.Help>Hvordan en figur tager en vare, den skal til at transportere, ind i sit læs.</HaulersDream.Setting.PickupMode.Help>
-<HaulersDream.Setting.PickupMode.Drop>Læg, transportér så</HaulersDream.Setting.PickupMode.Drop>
-<HaulersDream.Setting.PickupMode.DropDesc>Realistisk: varen lægges kortvarigt på gulvet og samles så op — så en anden transportør stadig kan gribe den undervejs.</HaulersDream.Setting.PickupMode.DropDesc>
-<HaulersDream.Setting.PickupMode.Direct>Ind i inventar</HaulersDream.Setting.PickupMode.Direct>
-<HaulersDream.Setting.PickupMode.DirectDesc>Varen går direkte ind i figurens inventar uden et gulvtrin.</HaulersDream.Setting.PickupMode.DirectDesc>
 <HaulersDream.Setting.BulkHaulTrigger.Lab>Massetransport-udløser</HaulersDream.Setting.BulkHaulTrigger.Lab>
 <HaulersDream.Setting.KeepWorkingMargin.Lab>Aflæs før en længere flytning</HaulersDream.Setting.KeepWorkingMargin.Lab>
 <HaulersDream.Setting.MinFreeSpaceToUnloadCarrier.Lab>Minimum ledig rygsækplads for at starte</HaulersDream.Setting.MinFreeSpaceToUnloadCarrier.Lab>
@@ -630,12 +614,6 @@
 <HaulersDream.PlanRoute.SelNearest.H>Foretræk de mål, der er nærmest det, du klikkede på.</HaulersDream.PlanRoute.SelNearest.H>
 <HaulersDream.PlanRoute.DistStraight.H>Mål afstand som en lige linje — hurtigt.</HaulersDream.PlanRoute.DistStraight.H>
 <HaulersDream.PlanRoute.DistWalking.H>Mål afstand langs den reelle gangsti — langsommere, mere nøjagtigt.</HaulersDream.PlanRoute.DistWalking.H>
-<HaulersDream.Setting.HaulHarvest.Help>Saml høstede afgrøder og klip-plante-udbytte op i inventaret, mens figuren arbejder.</HaulersDream.Setting.HaulHarvest.Help>
-<HaulersDream.Setting.HaulMining.Help>Saml udvundet malm og stenbrokker op i inventaret, mens figuren udvinder.</HaulersDream.Setting.HaulMining.Help>
-<HaulersDream.Setting.HaulDeepDrill.Help>Saml dybdebor-output op i inventaret, efterhånden som det produceres.</HaulersDream.Setting.HaulDeepDrill.Help>
-<HaulersDream.Setting.HaulDeconstruct.Help>Saml skrottet fra nedbrudte bygninger op i inventaret.</HaulersDream.Setting.HaulDeconstruct.Help>
-<HaulersDream.Setting.HaulAnimals.Help>Saml mælk, uld og andre produkter samlet fra dyr op i inventaret.</HaulersDream.Setting.HaulAnimals.Help>
-<HaulersDream.Setting.HaulUninstall.Help>På et karavane- eller andet fjernkort (aldrig din hjemmekoloni), saml en bygning, du afmonterer — nu en komprimeret genstand — direkte op i arbejderens inventar, så flere afmonterede strukturer bæres til pakdyrene på ÉN tur i stedet for én gåtur frem og tilbage pr. genstand. Udløses kun, hvor genstanden rent faktisk kan leveres (en lagerzone/zone eller et pakdyr). På dit hjemmekort gør dette ingenting: der efterlades en afmonteret bygning på jorden til normal transport eller genmontering.</HaulersDream.Setting.HaulUninstall.Help>
 <HaulersDream.Cat.Hauling.Intro>Hvordan kolonister samler ting op — hvor meget de bærer, hvornår de overlæsser, og hvad de fejer op.</HaulersDream.Cat.Hauling.Intro>
 <HaulersDream.Cat.Unloading.Intro>Hvornår og hvordan kolonister lægger deres medbragte varer væk.</HaulersDream.Cat.Unloading.Intro>
 <HaulersDream.Cat.BuildCraft.Intro>Hentning af byg- og fremstillingsmaterialer fra inventar, madlevering og ingrediensvalg.</HaulersDream.Cat.BuildCraft.Intro>
@@ -671,4 +649,30 @@
 <HaulersDream.PlanRoute.SowingGerundFallback>sowing</HaulersDream.PlanRoute.SowingGerundFallback>
 <HaulersDream.PlanRoute.ModeSowZone>Whole growing zone</HaulersDream.PlanRoute.ModeSowZone>
 <HaulersDream.PlanRoute.ModeSowZoneDesc>Sow every empty growable cell inside this growing zone — plant the whole field from one click.</HaulersDream.PlanRoute.ModeSowZoneDesc>
+<HaulersDream.Setting.Yield.Header>Collect work results</HaulersDream.Setting.Yield.Header>
+<HaulersDream.Setting.Yield.Intro>For each kind of work, choose what happens to the result: leave it on the ground, drop it then have the working pawn haul it, or take it straight into the pawn's inventory.</HaulersDream.Setting.Yield.Intro>
+<HaulersDream.Setting.Yield.Off>Off</HaulersDream.Setting.Yield.Off>
+<HaulersDream.Setting.Yield.OffDesc>Hauler's Dream leaves the result on the ground, exactly like vanilla — a hauler may carry it away later.</HaulersDream.Setting.Yield.OffDesc>
+<HaulersDream.Setting.Yield.Drop>Drop &amp; haul</HaulersDream.Setting.Yield.Drop>
+<HaulersDream.Setting.Yield.DropDesc>The result drops on the floor, then the working pawn scoops it up and carries it out. Another hauler can still grab it mid-step.</HaulersDream.Setting.Yield.DropDesc>
+<HaulersDream.Setting.Yield.Direct>To inventory</HaulersDream.Setting.Yield.Direct>
+<HaulersDream.Setting.Yield.DirectDesc>The result goes straight into the working pawn's inventory, never touching the floor.</HaulersDream.Setting.Yield.DirectDesc>
+<HaulersDream.Setting.Yield.Harvest>Harvest (crops &amp; berries)</HaulersDream.Setting.Yield.Harvest>
+<HaulersDream.Setting.Yield.HarvestHelp>Crops, berries and other food/plant harvest yields.</HaulersDream.Setting.Yield.HarvestHelp>
+<HaulersDream.Setting.Yield.Logging>Logging (trees &amp; cacti)</HaulersDream.Setting.Yield.Logging>
+<HaulersDream.Setting.Yield.LoggingHelp>Wood and other yields from felling trees and cacti.</HaulersDream.Setting.Yield.LoggingHelp>
+<HaulersDream.Setting.Yield.Mining>Mining (ore &amp; resources)</HaulersDream.Setting.Yield.Mining>
+<HaulersDream.Setting.Yield.MiningHelp>Ore, components and other resources from mining — not stone chunks.</HaulersDream.Setting.Yield.MiningHelp>
+<HaulersDream.Setting.Yield.Chunks>Mining (chunks)</HaulersDream.Setting.Yield.Chunks>
+<HaulersDream.Setting.Yield.ChunksHelp>Stone and slag chunks from mining. Set this to Off to leave heavy chunks on the ground instead of loading them into inventory.</HaulersDream.Setting.Yield.ChunksHelp>
+<HaulersDream.Setting.Yield.DeepDrill>Deep drilling</HaulersDream.Setting.Yield.DeepDrill>
+<HaulersDream.Setting.Yield.DeepDrillHelp>Resources produced by deep drills.</HaulersDream.Setting.Yield.DeepDrillHelp>
+<HaulersDream.Setting.Yield.Deconstruct>Deconstruction salvage</HaulersDream.Setting.Yield.Deconstruct>
+<HaulersDream.Setting.Yield.DeconstructHelp>Materials salvaged from deconstructed buildings.</HaulersDream.Setting.Yield.DeconstructHelp>
+<HaulersDream.Setting.Yield.Animals>Animal products (milk &amp; wool)</HaulersDream.Setting.Yield.Animals>
+<HaulersDream.Setting.Yield.AnimalsHelp>Milk, wool and other products gathered from animals.</HaulersDream.Setting.Yield.AnimalsHelp>
+<HaulersDream.Setting.Yield.Strip>Stripping (removed gear)</HaulersDream.Setting.Yield.Strip>
+<HaulersDream.Setting.Yield.StripHelp>Gear removed by a Strip order. This always drops then hauls (it cannot go straight to inventory).</HaulersDream.Setting.Yield.StripHelp>
+<HaulersDream.Setting.Yield.Uninstall>Uninstalling (minified buildings)</HaulersDream.Setting.Yield.Uninstall>
+<HaulersDream.Setting.Yield.UninstallHelp>Minified buildings from an Uninstall order (on caravan / away maps, so they batch onto pack animals).</HaulersDream.Setting.Yield.UninstallHelp>
 </LanguageData>

@@ -134,16 +134,6 @@
 <HaulersDream.Setting.OpportunisticUnloadDesc>เมื่อตัวละครที่ถือของที่เก็บไว้ออกเดินทางไกลไปทำงานถัดไปและมีโซนกองเก็บอยู่ราวกับอยู่ระหว่างทาง มันจะวางของลงขณะเดินผ่าน แทนที่จะแบกมันข้ามแผนที่และเดินแยกอีกเที่ยวภายหลัง</HaulersDream.Setting.OpportunisticUnloadDesc>
 <HaulersDream.Stat.Overload>Hauler's Dream — บรรทุกเกิน</HaulersDream.Stat.Overload>
 <HaulersDream.Stat.MechCarryCapacity>Hauler's Dream — ความจุการบรรทุก</HaulersDream.Stat.MechCarryCapacity>
-<HaulersDream.Setting.WorkTypesHeader>เก็บผลผลิตจากงานชนิดเหล่านี้:</HaulersDream.Setting.WorkTypesHeader>
-<HaulersDream.Setting.HaulHarvest>พืช — เก็บเกี่ยวและตัด</HaulersDream.Setting.HaulHarvest>
-<HaulersDream.Setting.HaulMining>การขุด — แร่และก้อนหิน</HaulersDream.Setting.HaulMining>
-<HaulersDream.Setting.HaulDeepDrill>เครื่องเจาะลึก</HaulersDream.Setting.HaulDeepDrill>
-<HaulersDream.Setting.HaulDeconstruct>เศษวัสดุจากการรื้อถอน</HaulersDream.Setting.HaulDeconstruct>
-<HaulersDream.Setting.HaulAnimals>สัตว์ — รีดนมและตัดขน</HaulersDream.Setting.HaulAnimals>
-<HaulersDream.Setting.HaulUninstall>การถอนการติดตั้ง — อาคารย่อขนาด (แผนที่คาราวาน/นอกฐาน)</HaulersDream.Setting.HaulUninstall>
-<HaulersDream.Setting.HaulStrip>การถอดของ — อุปกรณ์ที่ถอดออก (ขนอุปกรณ์จากคำสั่งถอดของ)</HaulersDream.Setting.HaulStrip>
-<HaulersDream.Setting.HaulStripDesc>เมื่อชาวอาณานิคมถอดของนักโทษ ตัวละครที่ล้มลง หรือศพ (คำสั่งถอดของที่คุณวางด้วยมือ) อาวุธ อุปกรณ์ และเสื้อผ้าที่ถอดออกจะถูกเก็บเข้าสัมภาระของมันทันทีหลังการถอด และขนกลับบ้านในเที่ยวเดียว นี่คือสวิตช์ที่ควบคุมการขนของที่ถอดออก — เป็นอิสระจาก "ถอดของอัตโนมัติขณะขนของ" ด้านบน: อันนั้นถอดศพเฉพาะขณะกำลังถูกขนเท่านั้น (ของเข้าสัมภาระ) ส่วนอันนี้ขนอุปกรณ์ที่คำสั่งถอดของด้วยมือวางลงบนพื้น ดังนั้นคุณสามารถตั้งถอดของอัตโนมัติขณะขนเป็น "ไม่เลย" และยังให้การถอดที่สั่งด้วยมือเก็บและขนอุปกรณ์ได้ ตราบใดที่อันนี้เปิดอยู่ เครื่องแต่งกายแปดเปื้อนจากศพจะเป็นไปตามตัวเลือกเครื่องแต่งกายแปดเปื้อนในส่วนถอดของอัตโนมัติ (ชิ้นที่ตั้งเป็น "ทิ้งไว้บนศพ" จะคงอยู่บนพื้น ไม่ถูกเก็บ) สำหรับเป้าหมายที่ยังมีชีวิต จะมีการถอดของตามเพิ่มถูกจัดคิวไว้ท้ายงานของผู้ถอด เผื่อเป้าหมายแต่งตัวเองใหม่จากของที่เหลือ มันจะไม่ทำอะไรหากเป้าหมายยังคงเปลือยอยู่</HaulersDream.Setting.HaulStripDesc>
-<HaulersDream.Setting.HaulStripCrossRef>เป็นอิสระจาก "ถอดของอัตโนมัติขณะขนของ" ใกล้ด้านบน: อันนั้นถอดศพขณะกำลังถูกขน (ของเข้าสัมภาระ) อันนี้ขนอุปกรณ์ที่คำสั่งถอดของด้วยมือวางลง</HaulersDream.Setting.HaulStripCrossRef>
 <HaulersDream.Setting.WorkOverrideHeader>การลบล้างความไร้ความสามารถในการทำงาน (ปิด = เกมพื้นฐาน):</HaulersDream.Setting.WorkOverrideHeader>
 <HaulersDream.Setting.AllCanHaul>ตัวละครทุกตัวขนของได้</HaulersDream.Setting.AllCanHaul>
 <HaulersDream.Setting.AllCanHaulDesc>ไม่มีภูมิหลัง คุณสมบัติ ยีน บรรดาศักดิ์ บทบาทอุดมการณ์ ภาวะสุขภาพ หรือข้อจำกัดจากภารกิจใดที่ทำให้ตัวละครขนของไม่ได้ มีผลกับแท็บงาน การให้ความสำคัญแบบคลิกขวา งานอัตโนมัติ และตัววางแผนของม็อดนี้ (กำหนดลำดับความสำคัญของงานหลังเปิดใช้ — ตัวละครที่เพิ่งทำได้จะเริ่มแบบยังไม่กำหนด เหมือนงานอื่นๆ)</HaulersDream.Setting.AllCanHaulDesc>
@@ -556,12 +546,6 @@
 <HaulersDream.Unit.Hours>{0} ชม.</HaulersDream.Unit.Hours>
 <HaulersDream.Setting.CarryLimit.Lab>ขีดจำกัดการขน</HaulersDream.Setting.CarryLimit.Lab>
 <HaulersDream.Setting.Overload.Lab>การบรรทุกเกินอัจฉริยะ</HaulersDream.Setting.Overload.Lab>
-<HaulersDream.Setting.PickupMode.Lab>วิธีหยิบของ</HaulersDream.Setting.PickupMode.Lab>
-<HaulersDream.Setting.PickupMode.Help>วิธีที่ตัวละครหยิบของที่กำลังจะขนเข้าสู่สัมภาระของตน</HaulersDream.Setting.PickupMode.Help>
-<HaulersDream.Setting.PickupMode.Drop>วางลงก่อน แล้วค่อยขน</HaulersDream.Setting.PickupMode.Drop>
-<HaulersDream.Setting.PickupMode.DropDesc>สมจริง: ของจะถูกวางลงบนพื้นชั่วครู่ แล้วจึงเก็บขึ้น — ผู้ขนของคนอื่นจึงยังคว้ามันไปได้ระหว่างขั้นตอนนี้</HaulersDream.Setting.PickupMode.DropDesc>
-<HaulersDream.Setting.PickupMode.Direct>เข้าสัมภาระเลย</HaulersDream.Setting.PickupMode.Direct>
-<HaulersDream.Setting.PickupMode.DirectDesc>ของจะเข้าสู่สัมภาระของตัวละครโดยตรงโดยไม่ผ่านขั้นวางบนพื้น</HaulersDream.Setting.PickupMode.DirectDesc>
 <HaulersDream.Setting.BulkHaulTrigger.Lab>ตัวกระตุ้นการขนของแบบรวม</HaulersDream.Setting.BulkHaulTrigger.Lab>
 <HaulersDream.Setting.KeepWorkingMargin.Lab>ขนของออกก่อนการย้ายที่ไกลขึ้น</HaulersDream.Setting.KeepWorkingMargin.Lab>
 <HaulersDream.Setting.MinFreeSpaceToUnloadCarrier.Lab>พื้นที่ว่างในเป้ขั้นต่ำที่จะเริ่ม</HaulersDream.Setting.MinFreeSpaceToUnloadCarrier.Lab>
@@ -630,12 +614,6 @@
 <HaulersDream.PlanRoute.SelNearest.H>เลือกเป้าหมายที่อยู่ใกล้กับเป้าหมายที่คุณคลิกที่สุด</HaulersDream.PlanRoute.SelNearest.H>
 <HaulersDream.PlanRoute.DistStraight.H>วัดระยะทางเป็นแนวเส้นตรง — เร็ว</HaulersDream.PlanRoute.DistStraight.H>
 <HaulersDream.PlanRoute.DistWalking.H>วัดระยะทางตามเส้นทางเดินจริง — ช้ากว่า แม่นยำกว่า</HaulersDream.PlanRoute.DistWalking.H>
-<HaulersDream.Setting.HaulHarvest.Help>เก็บพืชผลที่เก็บเกี่ยวและผลผลิตจากการตัดพืชเข้าสัมภาระขณะตัวละครทำงาน</HaulersDream.Setting.HaulHarvest.Help>
-<HaulersDream.Setting.HaulMining.Help>เก็บแร่ที่ขุดได้และก้อนหินเข้าสัมภาระขณะตัวละครขุด</HaulersDream.Setting.HaulMining.Help>
-<HaulersDream.Setting.HaulDeepDrill.Help>เก็บผลผลิตจากเครื่องเจาะลึกเข้าสัมภาระขณะที่มันถูกผลิตออกมา</HaulersDream.Setting.HaulDeepDrill.Help>
-<HaulersDream.Setting.HaulDeconstruct.Help>เก็บเศษวัสดุที่ได้จากอาคารที่รื้อถอนเข้าสัมภาระ</HaulersDream.Setting.HaulDeconstruct.Help>
-<HaulersDream.Setting.HaulAnimals.Help>เก็บนม ขนสัตว์ และผลผลิตอื่นๆ ที่เก็บได้จากสัตว์เข้าสัมภาระ</HaulersDream.Setting.HaulAnimals.Help>
-<HaulersDream.Setting.HaulUninstall.Help>บนแผนที่คาราวานหรือแผนที่นอกฐานอื่นๆ (ไม่เคยบนอาณานิคมบ้านของคุณ) ให้เก็บอาคารที่คุณถอนการติดตั้ง — ซึ่งตอนนี้เป็นไอเท็มย่อขนาด — เข้าสัมภาระของคนทำงานโดยตรง เพื่อให้ขนโครงสร้างที่ถอนติดตั้งหลายชิ้นไปยังสัตว์บรรทุกได้ในเที่ยวเดียวแทนที่จะต้องเดินไปกลับทีละชิ้น จะทำงานเฉพาะที่ของชิ้นนั้นสามารถถูกนำไปส่งได้จริง (คลัง/โซน หรือสัตว์บรรทุก) บนแผนที่บ้านของคุณ ฟีเจอร์นี้ไม่ทำอะไรเลย: ที่นั่น อาคารที่ถอนติดตั้งจะถูกทิ้งไว้บนพื้นเพื่อให้ขนของตามปกติหรือติดตั้งใหม่</HaulersDream.Setting.HaulUninstall.Help>
 <HaulersDream.Cat.Hauling.Intro>วิธีที่ชาวอาณานิคมหยิบของ — ขนได้มากแค่ไหน เมื่อใดจึงบรรทุกเกิน และกวาดเก็บอะไรบ้าง</HaulersDream.Cat.Hauling.Intro>
 <HaulersDream.Cat.Unloading.Intro>เมื่อใดและอย่างไรที่ชาวอาณานิคมจะเก็บของที่ถืออยู่</HaulersDream.Cat.Unloading.Intro>
 <HaulersDream.Cat.BuildCraft.Intro>การจัดหาวัสดุก่อสร้างและวัตถุดิบผลิตจากสัมภาระ การส่งอาหาร และการเลือกวัตถุดิบ</HaulersDream.Cat.BuildCraft.Intro>
@@ -671,4 +649,30 @@
 <HaulersDream.PlanRoute.SowingGerundFallback>sowing</HaulersDream.PlanRoute.SowingGerundFallback>
 <HaulersDream.PlanRoute.ModeSowZone>Whole growing zone</HaulersDream.PlanRoute.ModeSowZone>
 <HaulersDream.PlanRoute.ModeSowZoneDesc>Sow every empty growable cell inside this growing zone — plant the whole field from one click.</HaulersDream.PlanRoute.ModeSowZoneDesc>
+<HaulersDream.Setting.Yield.Header>Collect work results</HaulersDream.Setting.Yield.Header>
+<HaulersDream.Setting.Yield.Intro>For each kind of work, choose what happens to the result: leave it on the ground, drop it then have the working pawn haul it, or take it straight into the pawn's inventory.</HaulersDream.Setting.Yield.Intro>
+<HaulersDream.Setting.Yield.Off>Off</HaulersDream.Setting.Yield.Off>
+<HaulersDream.Setting.Yield.OffDesc>Hauler's Dream leaves the result on the ground, exactly like vanilla — a hauler may carry it away later.</HaulersDream.Setting.Yield.OffDesc>
+<HaulersDream.Setting.Yield.Drop>Drop &amp; haul</HaulersDream.Setting.Yield.Drop>
+<HaulersDream.Setting.Yield.DropDesc>The result drops on the floor, then the working pawn scoops it up and carries it out. Another hauler can still grab it mid-step.</HaulersDream.Setting.Yield.DropDesc>
+<HaulersDream.Setting.Yield.Direct>To inventory</HaulersDream.Setting.Yield.Direct>
+<HaulersDream.Setting.Yield.DirectDesc>The result goes straight into the working pawn's inventory, never touching the floor.</HaulersDream.Setting.Yield.DirectDesc>
+<HaulersDream.Setting.Yield.Harvest>Harvest (crops &amp; berries)</HaulersDream.Setting.Yield.Harvest>
+<HaulersDream.Setting.Yield.HarvestHelp>Crops, berries and other food/plant harvest yields.</HaulersDream.Setting.Yield.HarvestHelp>
+<HaulersDream.Setting.Yield.Logging>Logging (trees &amp; cacti)</HaulersDream.Setting.Yield.Logging>
+<HaulersDream.Setting.Yield.LoggingHelp>Wood and other yields from felling trees and cacti.</HaulersDream.Setting.Yield.LoggingHelp>
+<HaulersDream.Setting.Yield.Mining>Mining (ore &amp; resources)</HaulersDream.Setting.Yield.Mining>
+<HaulersDream.Setting.Yield.MiningHelp>Ore, components and other resources from mining — not stone chunks.</HaulersDream.Setting.Yield.MiningHelp>
+<HaulersDream.Setting.Yield.Chunks>Mining (chunks)</HaulersDream.Setting.Yield.Chunks>
+<HaulersDream.Setting.Yield.ChunksHelp>Stone and slag chunks from mining. Set this to Off to leave heavy chunks on the ground instead of loading them into inventory.</HaulersDream.Setting.Yield.ChunksHelp>
+<HaulersDream.Setting.Yield.DeepDrill>Deep drilling</HaulersDream.Setting.Yield.DeepDrill>
+<HaulersDream.Setting.Yield.DeepDrillHelp>Resources produced by deep drills.</HaulersDream.Setting.Yield.DeepDrillHelp>
+<HaulersDream.Setting.Yield.Deconstruct>Deconstruction salvage</HaulersDream.Setting.Yield.Deconstruct>
+<HaulersDream.Setting.Yield.DeconstructHelp>Materials salvaged from deconstructed buildings.</HaulersDream.Setting.Yield.DeconstructHelp>
+<HaulersDream.Setting.Yield.Animals>Animal products (milk &amp; wool)</HaulersDream.Setting.Yield.Animals>
+<HaulersDream.Setting.Yield.AnimalsHelp>Milk, wool and other products gathered from animals.</HaulersDream.Setting.Yield.AnimalsHelp>
+<HaulersDream.Setting.Yield.Strip>Stripping (removed gear)</HaulersDream.Setting.Yield.Strip>
+<HaulersDream.Setting.Yield.StripHelp>Gear removed by a Strip order. This always drops then hauls (it cannot go straight to inventory).</HaulersDream.Setting.Yield.StripHelp>
+<HaulersDream.Setting.Yield.Uninstall>Uninstalling (minified buildings)</HaulersDream.Setting.Yield.Uninstall>
+<HaulersDream.Setting.Yield.UninstallHelp>Minified buildings from an Uninstall order (on caravan / away maps, so they batch onto pack animals).</HaulersDream.Setting.Yield.UninstallHelp>
 </LanguageData>
