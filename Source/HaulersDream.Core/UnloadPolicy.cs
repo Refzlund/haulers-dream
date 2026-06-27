@@ -69,6 +69,17 @@ namespace HaulersDream.Core
             => !strictCarryWeight && markForUnload;
 
         /// <summary>
+        /// Whether the hit-the-carry-ceiling trigger may fire its FORCED storage unload NOW (issue #84). Extends
+        /// <see cref="FullTriggerAllowed"/> with the divert cooldown: a pawn pinned at its carry ceiling re-enters
+        /// this trigger on every further scoop-while-full, so without the cooldown it re-issues a forced unload
+        /// each time and ping-pongs ONE stack per trip instead of accumulating a real load. The cooldown is the
+        /// same one the pass-by and pack-animal diverts use — once any unload decision is made, don't re-decide
+        /// for the cooldown window. Pure so the exact gate is unit-pinned.
+        /// </summary>
+        public static bool FullTriggerReady(bool strictCarryWeight, bool markForUnload, bool divertCooldownElapsed)
+            => FullTriggerAllowed(strictCarryWeight, markForUnload) && divertCooldownElapsed;
+
+        /// <summary>
         /// Whether the end-of-work-run trigger may issue an unload: the work scan just came up EMPTY for
         /// a pawn carrying tracked goods, so before it drifts off to recreation/idle it makes the
         /// consolidated unload trip. No grace gate on purpose — an empty work scan means the pickup
