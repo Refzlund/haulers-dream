@@ -36,3 +36,13 @@ const translations = Bun.spawn(['bun', resolve(import.meta.dir, 'check-translati
 	cwd: repoRoot,
 })
 if ((await translations.exited) !== 0) throw new Error('Translation parity check failed (see output above).')
+
+// Guard the drop-protection defence (issues #62/#81/#87 — pawns dropping HD-scooped inventory cargo). Fails
+// the build if any layer of the guard is weakened (un-healed tag read, a dropped seam, the Core policy or the
+// startup tripwire removed). See check-drop-protection.ts.
+const dropProtection = Bun.spawn(['bun', resolve(import.meta.dir, 'check-drop-protection.ts')], {
+	stdout: 'inherit',
+	stderr: 'inherit',
+	cwd: repoRoot,
+})
+if ((await dropProtection.exited) !== 0) throw new Error('Drop-protection check failed (see output above).')

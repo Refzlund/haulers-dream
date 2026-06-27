@@ -37,6 +37,7 @@ namespace HaulersDream
 
             var harmony = new Harmony(HarmonyId);
             ApplyPatchesResilient(harmony, Assembly.GetExecutingAssembly());
+            VerifyDropProtection(harmony);
             HDLog.Msg("initialised — carry limit defaults to each pawn's max carrying capacity.");
         }
 
@@ -81,6 +82,63 @@ namespace HaulersDream
                 HDLog.Warn($"{applied} patch class(es) applied, {failed} skipped due to missing targets (see errors above).");
 
             AttachUniversalExceptionTagger(harmony);
+        }
+
+        // The protection-critical vanilla seams behind HD's single most-reported, most-recurring bug — pawns
+        // dropping the crops/milk/drugs HD scooped into their inventory (issues #62, #81, #87). Each entry is a
+        // (type, method) that one of HD's guard patches MUST bind to; if any silently stops binding (a private
+        // vanilla method renamed in a point-release, a guard class deleted in a refactor), the bug returns with no
+        // other symptom. The set is duplicated, by design, in scripts/check-drop-protection.ts so the build fails
+        // too — runtime tripwire + build tripwire + the Core oracle tests are the "won't recur unnoticed" net.
+        private static readonly (Type type, string method)[] DropProtectionTargets =
+        {
+            (typeof(JobGiver_DropUnusedInventory), "TryGiveJob"),                 // Layer 1: re-arm the food clock
+            (typeof(JobGiver_DropUnusedInventory), "Drop"),                      // Layer 2: per-drop veto
+            (typeof(JobGiver_DropUnusedInventory), "ShouldKeepDrugInInventory"), // #81: keep tagged drugs
+        };
+
+        /// <summary>
+        /// Startup tripwire for the recurring "pawns drop scooped inventory cargo" bug. Verifies that every
+        /// protection-critical vanilla seam (a) still EXISTS on this RimWorld build and (b) actually carries an
+        /// HD guard patch, and logs a LOUD error (not the quiet Warn the resilient apply path uses for ordinary
+        /// optional features) the moment one doesn't — so a future RimWorld rename or a regressed patch shows up
+        /// in the player's log and the in-game HD report instead of as silently dropped crops. This never throws
+        /// and never disables anything; it only makes a silent breakage loud.
+        /// </summary>
+        private static void VerifyDropProtection(Harmony harmony)
+        {
+            foreach (var (type, methodName) in DropProtectionTargets)
+            {
+                var method = AccessTools.Method(type, methodName);
+                if (method == null)
+                {
+                    HDLog.Err($"DROP-PROTECTION TRIPWIRE: vanilla {type.Name}.{methodName} was not found on this "
+                        + "RimWorld build (renamed or removed). Hauler's Dream can no longer stop pawns from "
+                        + "dropping the crops / milk / drugs it scooped into their inventory — this needs a code "
+                        + "update. Please report it with this log attached.");
+                    continue;
+                }
+                if (!HasHdPatch(Harmony.GetPatchInfo(method)))
+                    HDLog.Err($"DROP-PROTECTION TRIPWIRE: vanilla {type.Name}.{methodName} exists but Hauler's "
+                        + "Dream's guard did not attach to it, so pawns may drop scooped inventory cargo. Another "
+                        + "mod may have replaced the method, or HD's guard patch is missing. Please report it with "
+                        + "this log attached.");
+            }
+        }
+
+        // True if HD owns a prefix / postfix / transpiler on this method (the actual guards; the universal
+        // exception tagger's finalizer does NOT count — we want to confirm the GUARD bound, not just any HD patch).
+        private static bool HasHdPatch(Patches info)
+            => info != null && (OwnedByHd(info.Prefixes) || OwnedByHd(info.Postfixes) || OwnedByHd(info.Transpilers));
+
+        private static bool OwnedByHd(IEnumerable<Patch> patches)
+        {
+            if (patches == null)
+                return false;
+            foreach (var p in patches)
+                if (p != null && p.owner == HarmonyId)
+                    return true;
+            return false;
         }
 
         // The universal tagger (Issue #3): the SINGLE mechanism that fulfils "tell the user/developer an exception
