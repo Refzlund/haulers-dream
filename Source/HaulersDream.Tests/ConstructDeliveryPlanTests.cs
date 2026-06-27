@@ -19,6 +19,22 @@ namespace HaulersDream.Tests
             float maxCap = Cap, float baseCap = Base, float cur = Gear, float unit = Steel)
             => ConstructDeliveryPlan.PlanLoad(level, maxCap, baseCap, cur, unit, frameNeed, handCap, available);
 
+        // --- ShouldQueryNeederSpace: the issue #88 despawn guard. EnrouteSafety.SpaceRemainingSafe must only
+        //     ask vanilla for a needer's remaining space when the needer is still spawned (its Map is non-null)
+        //     AND we know the material. Pinned here so a refactor that re-weakens the guard re-introduces the
+        //     NRE at build time, not in players' games. ---
+
+        [Test]
+        public void QueryNeederSpace_OnlyWhenSpawnedAndHasDef()
+        {
+            Assert.That(ConstructDeliveryPlan.ShouldQueryNeederSpace(neederSpawned: true, hasResourceDef: true), Is.True);
+            // A despawned needer (the #88 case: another pawn finished/destroyed it mid-job) -> never query.
+            Assert.That(ConstructDeliveryPlan.ShouldQueryNeederSpace(neederSpawned: false, hasResourceDef: true), Is.False);
+            // No known material -> nothing to size, never query.
+            Assert.That(ConstructDeliveryPlan.ShouldQueryNeederSpace(neederSpawned: true, hasResourceDef: false), Is.False);
+            Assert.That(ConstructDeliveryPlan.ShouldQueryNeederSpace(neederSpawned: false, hasResourceDef: false), Is.False);
+        }
+
         [Test]
         public void Geothermal_Fair_LoadsPastHandStack()
         {
