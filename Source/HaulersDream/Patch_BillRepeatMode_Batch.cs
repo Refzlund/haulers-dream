@@ -51,10 +51,13 @@ namespace HaulersDream
             }));
 
             // --- COMPAT: re-add any OTHER mod's custom repeat modes that we just skipped by replacing this menu.
-            // Everybody Gets One adds its "one per person" / "X per person" / "with surplus" modes via a transpiler
-            // on this very method; our full-replace prefix would hide them entirely. Invoke EGO's own inserter so
-            // its modes reappear with EGO's exact labels + guards. No-op when EGO isn't installed. ---
+            // Everybody Gets One adds its "one per person" / "X per person" / "with surplus" modes, and Compositable
+            // Loadouts adds its "X per Tag" mode, each via a transpiler on this very method; our full-replace prefix
+            // would hide them entirely. Invoke each mod's own inserter so its modes reappear with that mod's exact
+            // labels + guards. No-op when the mod isn't installed. (HD never batches a non-vanilla repeat mode —
+            // CraftBatchPlanner.CanBatch only accepts the three vanilla modes — so those bills route as plain vanilla.) ---
             EverybodyGetsOneCompat.TryInsertModes(opts, bill);
+            CompositableLoadoutsCompat.TryInsertModes(opts, bill);
 
             // --- the three batch variants (only when this recipe can actually be batched) ---
             // Each carries a hover tooltip (FloatMenuOption.tooltip) explaining what that batch mode does (issue #3

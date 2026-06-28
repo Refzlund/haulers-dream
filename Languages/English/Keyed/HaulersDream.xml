@@ -46,6 +46,8 @@
   <HaulersDream.ItemUnload.ModeKeepAll>Never unload</HaulersDream.ItemUnload.ModeKeepAll>
   <HaulersDream.ItemUnload.ModeKeepAtMost>Keep at most</HaulersDream.ItemUnload.ModeKeepAtMost>
   <HaulersDream.ItemUnload.ModeUnloadAlways>Always unload</HaulersDream.ItemUnload.ModeUnloadAlways>
+  <HaulersDream.ItemUnload.ModeMixed>Mixed</HaulersDream.ItemUnload.ModeMixed>
+  <HaulersDream.ItemUnload.SetCategoryTip>Apply one rule to every item in this category at once, instead of setting them one by one. Handy for big groups like ammo.</HaulersDream.ItemUnload.SetCategoryTip>
   <HaulersDream.Setting.UnloadBeforeSleep>Put load away before sleeping</HaulersDream.Setting.UnloadBeforeSleep>
   <HaulersDream.Setting.UnloadBeforeSleepDesc>When a pawn finishes working and is tired (about to sleep), it makes its unload trip first, then goes to bed empty — instead of carrying its collected load into bed. It still keeps collecting normally while it's actually working.</HaulersDream.Setting.UnloadBeforeSleepDesc>
   <HaulersDream.Setting.UnloadBeforeLeisure>Put load away before recreation</HaulersDream.Setting.UnloadBeforeLeisure>
@@ -187,6 +189,8 @@
   <HaulersDream.Setting.Yield.StripHelp>Gear removed by a Strip order. It always drops on the floor first and is then collected, so it can't go straight to inventory.</HaulersDream.Setting.Yield.StripHelp>
   <HaulersDream.Setting.Yield.Uninstall>Uninstalling (minified buildings)</HaulersDream.Setting.Yield.Uninstall>
   <HaulersDream.Setting.Yield.UninstallHelp>On caravans and away maps only: a minified building from an Uninstall order is carried so it batches onto pack animals in one trip. Has no effect on your home map.</HaulersDream.Setting.Yield.UninstallHelp>
+  <HaulersDream.Setting.Yield.Fishing>Fishing (catch)</HaulersDream.Setting.Yield.Fishing>
+  <HaulersDream.Setting.Yield.FishingHelp>Fish and other catch pulled from a fishing spot. Needs the Odyssey expansion; the row is hidden without it.</HaulersDream.Setting.Yield.FishingHelp>
 
   <HaulersDream.Setting.WorkOverrideHeader>Let any pawn do these jobs (off = unchanged):</HaulersDream.Setting.WorkOverrideHeader>
   <HaulersDream.Setting.AllCanHaul>All pawns can haul</HaulersDream.Setting.AllCanHaul>

@@ -30,6 +30,7 @@
 <HaulersDream.ItemUnload.ModeKeepAll>No descargar nunca</HaulersDream.ItemUnload.ModeKeepAll>
 <HaulersDream.ItemUnload.ModeKeepAtMost>Conservar como máximo</HaulersDream.ItemUnload.ModeKeepAtMost>
 <HaulersDream.ItemUnload.ModeUnloadAlways>Descargar siempre</HaulersDream.ItemUnload.ModeUnloadAlways>
+  <HaulersDream.ItemUnload.ModeMixed>Mixed</HaulersDream.ItemUnload.ModeMixed>
 <HaulersDream.Setting.UnloadBeforeSleep>Guardar la carga antes de dormir</HaulersDream.Setting.UnloadBeforeSleep>
 <HaulersDream.Setting.UnloadBeforeSleepDesc>Cuando un peón termina de trabajar y está cansado (a punto de dormir), hace primero su viaje de descarga y luego se va a la cama sin carga, en lugar de llevarse a la cama lo que ha recogido. Sigue acumulando con normalidad mientras está trabajando de verdad.</HaulersDream.Setting.UnloadBeforeSleepDesc>
 <HaulersDream.Setting.UnloadBeforeLeisure>Guardar la carga antes del ocio</HaulersDream.Setting.UnloadBeforeLeisure>
@@ -677,4 +678,7 @@
 <HaulersDream.Search.Placeholder>Buscar opciones…</HaulersDream.Search.Placeholder>
 <HaulersDream.Search.NoResults>Ninguna opción coincide con tu búsqueda.</HaulersDream.Search.NoResults>
 <HaulersDream.Search.Clear>Borrar búsqueda</HaulersDream.Search.Clear>
+  <HaulersDream.ItemUnload.SetCategoryTip>Apply one rule to every item in this category at once, instead of setting them one by one. Handy for big groups like ammo.</HaulersDream.ItemUnload.SetCategoryTip>
+  <HaulersDream.Setting.Yield.Fishing>Fishing (catch)</HaulersDream.Setting.Yield.Fishing>
+  <HaulersDream.Setting.Yield.FishingHelp>Fish and other catch pulled from a fishing spot. Needs the Odyssey expansion; the row is hidden without it.</HaulersDream.Setting.Yield.FishingHelp>
 </LanguageData>

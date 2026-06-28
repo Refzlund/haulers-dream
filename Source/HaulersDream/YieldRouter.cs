@@ -791,6 +791,16 @@ namespace HaulersDream
                 // OnTryPlaceThing additionally gates this type to NON-HOME maps (a home-map uninstall is left for
                 // normal hauling / re-installation), and the scoop only fires where the item is deliverable.
                 case JobDriver_Uninstall _: type = HaulSourceType.Uninstall; return true;
+                // A fishing catch (Odyssey) is placed via GenPlace.TryPlaceThing(Near) at the FISHER's position in
+                // JobDriver_Fish.CompleteFishingToil, so the existing GenPlace hook fires and the true-producer check
+                // — the pawn standing on the drop cell — already matches; the catch then routes like any other yield.
+                // Matching the base JobDriver_Fish ALSO covers any mod subclass (Vanilla Fishing Expanded with Odyssey
+                // active, Medieval Overhaul) that routes its catch through the vanilla colonist fishing driver.
+                // DELIBERATELY NOT JobDriver_FishAnimal: that driver is issued ONLY by JobGiver_GetFood (a HUNGRY
+                // animal fishing to EAT — the catch is sized to a single meal and is the animal's own food, not a
+                // colony yield), so scooping it would make a Haul-trained bear pocket/haul its meal before eating.
+                // The animal's catch is left alone.
+                case JobDriver_Fish _: type = HaulSourceType.Fishing; return true;
                 default: type = default; return false;
             }
         }

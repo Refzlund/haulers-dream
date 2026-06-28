@@ -391,6 +391,12 @@ namespace HaulersDream
         public YieldBehavior yieldAnimals = YieldBehavior.DropThenHaul;     // milk / wool / animal products
         public YieldBehavior yieldStrip = YieldBehavior.DropThenHaul;       // gear removed by a strip order (always drop-then-haul; UI hides the "to inventory" option)
         public YieldBehavior yieldUninstall = YieldBehavior.DropThenHaul;   // the minified building from an uninstall order — scooped (non-home maps only, see YieldRouter) so it batches onto pack animals in one caravan-load trip
+        // Fish catch (Odyssey fishing) — the colonist JobDriver_Fish (NOT JobDriver_FishAnimal, which is a hungry
+        // animal feeding itself). A BRAND-NEW category with no legacy boolean to migrate, so MigrateLegacyYieldSettings
+        // deliberately leaves it alone: on an old save the absent yieldFishing node simply stays at this
+        // field-initializer default (DropThenHaul). The UI row is shown only when ModsConfig.OdysseyActive (the
+        // fishing mechanic needs the Odyssey DLC).
+        public YieldBehavior yieldFishing = YieldBehavior.DropThenHaul;     // fish catch (Odyssey fishing) — JobDriver_Fish
 
         // Settings schema version, bumped when a one-time on-load migration is needed. 0 = pre-#79 (per-work bools
         // + global pickupMode); 1 = the per-category yieldX model. The migration runs at most once (guarded on
@@ -468,7 +474,7 @@ namespace HaulersDream
         /// <summary>The per-category <see cref="YieldBehavior"/> the player chose for a given work-result type.</summary>
         public YieldBehavior BehaviorFor(HaulSourceType type) => WorkTypePolicy.BehaviorFor(type,
             yieldHarvest, yieldLogging, yieldMining, yieldChunks, yieldDeepDrill,
-            yieldDeconstruct, yieldAnimals, yieldStrip, yieldUninstall);
+            yieldDeconstruct, yieldAnimals, yieldStrip, yieldUninstall, yieldFishing);
 
         /// <summary>True if HD does ANYTHING for this category (Drop & haul or To inventory); false = Off/vanilla.</summary>
         public bool IsTypeEnabled(HaulSourceType type) => BehaviorFor(type) != YieldBehavior.Disabled;
@@ -608,8 +614,10 @@ namespace HaulersDream
             Scribe_Values.Look(ref yieldAnimals, "yieldAnimals", YieldBehavior.DropThenHaul);
             Scribe_Values.Look(ref yieldStrip, "yieldStrip", YieldBehavior.DropThenHaul);
             Scribe_Values.Look(ref yieldUninstall, "yieldUninstall", YieldBehavior.DropThenHaul);
+            Scribe_Values.Look(ref yieldFishing, "yieldFishing", YieldBehavior.DropThenHaul);
             Scribe_Values.Look(ref settingsSchemaVersion, "settingsSchemaVersion", 0);
-            // One-time migration of the pre-#79 per-work bools + global pickupMode into the 9 yieldX values.
+            // One-time migration of the pre-#79 per-work bools + global pickupMode into the 9 LEGACY yieldX values
+            // (yieldFishing is a newer category with no legacy bool — it is left at its field default, never migrated).
             // Guarded on the schema version so it runs AT MOST ONCE: a fresh install / already-migrated save
             // (schemaVersion >= 1) keeps its 9 fields untouched. On a legacy save the old nodes are read into
             // locals (absent nodes yield the old defaults, which map to the correct new defaults — harmless on a
@@ -760,6 +768,7 @@ namespace HaulersDream
             yieldAnimals = YieldBehavior.DropThenHaul;
             yieldStrip = YieldBehavior.DropThenHaul;
             yieldUninstall = YieldBehavior.DropThenHaul;
+            yieldFishing = YieldBehavior.DropThenHaul;
             settingsSchemaVersion = 0;
             allPawnsCanHaul = false;
             allPawnsCanClean = false;

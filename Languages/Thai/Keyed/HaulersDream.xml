@@ -30,6 +30,7 @@
 <HaulersDream.ItemUnload.ModeKeepAll>ไม่ขนออกเลย</HaulersDream.ItemUnload.ModeKeepAll>
 <HaulersDream.ItemUnload.ModeKeepAtMost>เก็บไว้มากที่สุด</HaulersDream.ItemUnload.ModeKeepAtMost>
 <HaulersDream.ItemUnload.ModeUnloadAlways>ขนออกเสมอ</HaulersDream.ItemUnload.ModeUnloadAlways>
+  <HaulersDream.ItemUnload.ModeMixed>Mixed</HaulersDream.ItemUnload.ModeMixed>
 <HaulersDream.Setting.UnloadBeforeSleep>เก็บของออกก่อนนอน</HaulersDream.Setting.UnloadBeforeSleep>
 <HaulersDream.Setting.UnloadBeforeSleepDesc>เมื่อตัวละครทำงานเสร็จและเหนื่อย (กำลังจะนอน) มันจะออกไปขนของออกก่อน แล้วจึงเข้านอนตัวเปล่า — แทนที่จะแบกของที่เก็บไว้ขึ้นเตียง มันยังสะสมของตามปกติขณะที่กำลังทำงานจริง</HaulersDream.Setting.UnloadBeforeSleepDesc>
 <HaulersDream.Setting.UnloadBeforeLeisure>เก็บของออกก่อนพักผ่อน</HaulersDream.Setting.UnloadBeforeLeisure>
@@ -677,4 +678,7 @@
 <HaulersDream.Search.Placeholder>ค้นหาการตั้งค่า…</HaulersDream.Search.Placeholder>
 <HaulersDream.Search.NoResults>ไม่มีการตั้งค่าที่ตรงกับการค้นหาของคุณ</HaulersDream.Search.NoResults>
 <HaulersDream.Search.Clear>ล้างการค้นหา</HaulersDream.Search.Clear>
+  <HaulersDream.ItemUnload.SetCategoryTip>Apply one rule to every item in this category at once, instead of setting them one by one. Handy for big groups like ammo.</HaulersDream.ItemUnload.SetCategoryTip>
+  <HaulersDream.Setting.Yield.Fishing>Fishing (catch)</HaulersDream.Setting.Yield.Fishing>
+  <HaulersDream.Setting.Yield.FishingHelp>Fish and other catch pulled from a fishing spot. Needs the Odyssey expansion; the row is hidden without it.</HaulersDream.Setting.Yield.FishingHelp>
 </LanguageData>

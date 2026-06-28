@@ -18,6 +18,7 @@ namespace HaulersDream.Tests
         [TestCase(HaulSourceType.Animal)]
         [TestCase(HaulSourceType.Strip)]
         [TestCase(HaulSourceType.Uninstall)]
+        [TestCase(HaulSourceType.Fishing)]
         public void BehaviorFor_RoutesEachTypeToItsOwnSlot(HaulSourceType type)
         {
             // The slot for `type` gets DirectToInventory; every other slot gets Disabled. The result must be the
@@ -26,8 +27,20 @@ namespace HaulersDream.Tests
             var got = WorkTypePolicy.BehaviorFor(type,
                 S(HaulSourceType.Harvest), S(HaulSourceType.Logging), S(HaulSourceType.Mining), S(HaulSourceType.Chunks),
                 S(HaulSourceType.DeepDrill), S(HaulSourceType.Deconstruct), S(HaulSourceType.Animal), S(HaulSourceType.Strip),
-                S(HaulSourceType.Uninstall));
+                S(HaulSourceType.Uninstall), S(HaulSourceType.Fishing));
             Assert.That(got, Is.EqualTo(YieldBehavior.DirectToInventory), $"{type} must read its own slot");
+        }
+
+        [Test]
+        public void BehaviorFor_FishingReadsTheFishingSlot()
+        {
+            // Explicit per-type assertion (mirrors the per-slot pattern above): Fishing must return exactly the
+            // `fishing` argument and nothing else, even when every other slot carries a different value.
+            var got = WorkTypePolicy.BehaviorFor(HaulSourceType.Fishing,
+                YieldBehavior.Disabled, YieldBehavior.Disabled, YieldBehavior.Disabled, YieldBehavior.Disabled,
+                YieldBehavior.Disabled, YieldBehavior.Disabled, YieldBehavior.Disabled, YieldBehavior.Disabled,
+                YieldBehavior.Disabled, fishing: YieldBehavior.DirectToInventory);
+            Assert.That(got, Is.EqualTo(YieldBehavior.DirectToInventory));
         }
 
         [Test]
@@ -38,7 +51,7 @@ namespace HaulersDream.Tests
                 Assert.That(WorkTypePolicy.BehaviorFor(t,
                     YieldBehavior.DropThenHaul, YieldBehavior.DropThenHaul, YieldBehavior.DropThenHaul, YieldBehavior.DropThenHaul,
                     YieldBehavior.DropThenHaul, YieldBehavior.DropThenHaul, YieldBehavior.DropThenHaul, YieldBehavior.DropThenHaul,
-                    YieldBehavior.DropThenHaul), Is.EqualTo(YieldBehavior.DropThenHaul), t.ToString());
+                    YieldBehavior.DropThenHaul, YieldBehavior.DropThenHaul), Is.EqualTo(YieldBehavior.DropThenHaul), t.ToString());
         }
 
         [Test]
@@ -48,7 +61,7 @@ namespace HaulersDream.Tests
                 Assert.That(WorkTypePolicy.BehaviorFor(t,
                     YieldBehavior.Disabled, YieldBehavior.Disabled, YieldBehavior.Disabled, YieldBehavior.Disabled,
                     YieldBehavior.Disabled, YieldBehavior.Disabled, YieldBehavior.Disabled, YieldBehavior.Disabled,
-                    YieldBehavior.Disabled), Is.EqualTo(YieldBehavior.Disabled), t.ToString());
+                    YieldBehavior.Disabled, YieldBehavior.Disabled), Is.EqualTo(YieldBehavior.Disabled), t.ToString());
         }
 
         [Test]
@@ -59,7 +72,8 @@ namespace HaulersDream.Tests
             Assert.That(WorkTypePolicy.BehaviorFor(bogus,
                 YieldBehavior.DirectToInventory, YieldBehavior.DirectToInventory, YieldBehavior.DirectToInventory,
                 YieldBehavior.DirectToInventory, YieldBehavior.DirectToInventory, YieldBehavior.DirectToInventory,
-                YieldBehavior.DirectToInventory, YieldBehavior.DirectToInventory, YieldBehavior.DirectToInventory),
+                YieldBehavior.DirectToInventory, YieldBehavior.DirectToInventory, YieldBehavior.DirectToInventory,
+                YieldBehavior.DirectToInventory),
                 Is.EqualTo(YieldBehavior.Disabled));
         }
 

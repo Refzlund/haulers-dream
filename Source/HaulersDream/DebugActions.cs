@@ -41,7 +41,8 @@ namespace HaulersDream
                           $"drafted={pawn.Drafted}");
             sb.AppendLine($"  yields: harvest={s.yieldHarvest} logging={s.yieldLogging} mining={s.yieldMining} " +
                           $"chunks={s.yieldChunks} deepDrill={s.yieldDeepDrill} deconstruct={s.yieldDeconstruct} " +
-                          $"animals={s.yieldAnimals} strip={s.yieldStrip} uninstall={s.yieldUninstall}");
+                          $"animals={s.yieldAnimals} strip={s.yieldStrip} uninstall={s.yieldUninstall} " +
+                          $"fishing={s.yieldFishing}");
             sb.AppendLine($"  TRACKED (tagged / shareable) x{tracked?.Count ?? 0}:");
             if (tracked != null)
                 foreach (var t in tracked)
