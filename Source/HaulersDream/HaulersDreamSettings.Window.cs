@@ -1274,11 +1274,16 @@ namespace HaulersDream
             var rAnimals = new YieldMatrixRow { Label = "HaulersDream.Setting.Yield.Animals".Translate(), Help = "HaulersDream.Setting.Yield.AnimalsHelp".Translate(), Value = (int)yieldAnimals };
             var rStrip = new YieldMatrixRow { Label = "HaulersDream.Setting.Yield.Strip".Translate(), Help = "HaulersDream.Setting.Yield.StripHelp".Translate(), Value = yieldStrip == YieldBehavior.Disabled ? 0 : 1, AllowDirect = false };
             var rUninstall = new YieldMatrixRow { Label = "HaulersDream.Setting.Yield.Uninstall".Translate(), Help = "HaulersDream.Setting.Yield.UninstallHelp".Translate(), Value = (int)yieldUninstall };
+            // Fishing (Odyssey only): the catch from a fishing spot. Shown ONLY when ModsConfig.OdysseyActive — the
+            // mechanic needs the Odyssey DLC, so without it the row would just confuse the player.
+            var rFishing = new YieldMatrixRow { Label = "HaulersDream.Setting.Yield.Fishing".Translate(), Help = "HaulersDream.Setting.Yield.FishingHelp".Translate(), Value = (int)yieldFishing };
 
             var yieldRows = new List<YieldMatrixRow>
             {
                 rHarvest, rLogging, rMining, rChunks, rDeepDrill, rDeconstruct, rAnimals, rStrip, rUninstall,
             };
+            if (ModsConfig.OdysseyActive)
+                yieldRows.Add(rFishing);
             HDSettingsUI.YieldMatrix(c, yLab, yHelp, yieldRows);
 
             yieldHarvest = (YieldBehavior)rHarvest.Value;
@@ -1290,6 +1295,10 @@ namespace HaulersDream
             yieldAnimals = (YieldBehavior)rAnimals.Value;
             yieldStrip = rStrip.Value == 0 ? YieldBehavior.Disabled : YieldBehavior.DropThenHaul;
             yieldUninstall = (YieldBehavior)rUninstall.Value;
+            // Only read the Fishing row back when it was actually shown (otherwise its untouched Value would just
+            // re-assign the current default — harmless, but only persist a real player edit on Odyssey).
+            if (ModsConfig.OdysseyActive)
+                yieldFishing = (YieldBehavior)rFishing.Value;
 
             // While working — what a pawn does about its load WHILE producing results. Moved here from the Hauling tab
             // to sit next to the yields it governs; same fields/keys/behaviour, only the location changed.

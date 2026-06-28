@@ -677,4 +677,8 @@
 <HaulersDream.Search.Placeholder>搜索设置…</HaulersDream.Search.Placeholder>
 <HaulersDream.Search.NoResults>没有设置项与你的搜索匹配。</HaulersDream.Search.NoResults>
 <HaulersDream.Search.Clear>清除搜索</HaulersDream.Search.Clear>
+  <HaulersDream.ItemUnload.SetCategory>Set whole category…</HaulersDream.ItemUnload.SetCategory>
+  <HaulersDream.ItemUnload.SetCategoryTip>Apply one rule to every item in this category at once, instead of setting them one by one. Handy for big groups like ammo.</HaulersDream.ItemUnload.SetCategoryTip>
+  <HaulersDream.Setting.Yield.Fishing>Fishing (catch)</HaulersDream.Setting.Yield.Fishing>
+  <HaulersDream.Setting.Yield.FishingHelp>Fish and other catch pulled from a fishing spot. Needs the Odyssey expansion; the row is hidden without it.</HaulersDream.Setting.Yield.FishingHelp>
 </LanguageData>

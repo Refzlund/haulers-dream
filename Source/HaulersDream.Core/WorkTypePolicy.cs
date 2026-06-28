@@ -6,7 +6,7 @@ namespace HaulersDream.Core
         public static YieldBehavior BehaviorFor(HaulSourceType type,
             YieldBehavior harvest, YieldBehavior logging, YieldBehavior mining, YieldBehavior chunks,
             YieldBehavior deepDrill, YieldBehavior deconstruct, YieldBehavior animal, YieldBehavior strip,
-            YieldBehavior uninstall)
+            YieldBehavior uninstall, YieldBehavior fishing)
         {
             switch (type)
             {
@@ -19,6 +19,7 @@ namespace HaulersDream.Core
                 case HaulSourceType.Animal:      return animal;
                 case HaulSourceType.Strip:       return strip;
                 case HaulSourceType.Uninstall:   return uninstall;
+                case HaulSourceType.Fishing:     return fishing;
                 default:                         return YieldBehavior.Disabled; // unknown -> do nothing (safe)
             }
         }
