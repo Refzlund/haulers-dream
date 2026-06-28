@@ -35,7 +35,44 @@ const SEAMS = [
 	{ name: 'ShouldKeepDrugInInventory', attr: 'nameof(JobGiver_DropUnusedInventory.ShouldKeepDrugInInventory)' },
 ]
 
+// The bulk-LOAD deposit GATES (HasDepositable*) decide whether the running load job has anything to put onto the
+// transporter/portal/vehicle/pack-animal. They MUST read the same HEALED view (GetHashSet) the deposit driver
+// reads — else a scooped stack that merged into a same-def inventory stack after tagging is invisible to the gate,
+// the load ends early, and the merge-survivor cargo silently never loads (the #62/#87 stale-view class on the load
+// side). This is the generalization of the drop-guard rule to the load gates: DECISIONS read the healed view.
+// NOTE: PackAnimalLoad.HasDepositableSurplus is deliberately EXCLUDED — it is a multi-context probe (one caller
+// is the Alert on the OnGUI render path, where GetHashSet's mutating self-heal would MP-desync), and the actual
+// pack-animal deposit (JobDriver_LoadPackAnimal) already reads the healed view directly, so it has no gate/driver
+// split. Only the three bulk-LOAD driver gates below ARE the deposit decision and must read the healed view.
+const LOAD_GATES = [
+	{ file: 'Source/HaulersDream/JobDriver_LoadTransportersInBulk.cs', method: 'HasDepositableForGroup' },
+	{ file: 'Source/HaulersDream/JobDriver_LoadPortalInBulk.cs', method: 'HasDepositableForPortal' },
+	{ file: 'Source/HaulersDream/JobDriver_LoadVehicleInBulk.cs', method: 'HasDepositableForVehicle' },
+]
+
 const errors: string[] = []
+
+/** Slice a C# method body by brace-matching from its DEFINITION (signature ending in `{`, not a `=> call();`
+ *  expression-body or a call site). Null if not found. */
+function sliceMethodBody(src: string, methodName: string): string | null {
+	// A definition is `<name>(<params>) {` — the matching `)` is followed by `{`. A call is `<name>();` and an
+	// expression-bodied delegate is `<name>() => ...;` — both end in `;`, so requiring `{` after `)` skips them.
+	const sig = new RegExp(`\\b${escapeRe(methodName)}\\s*\\([^)]*\\)\\s*\\{`).exec(src)
+	if (!sig) return null
+	let i = src.indexOf('{', sig.index)
+	if (i < 0) return null
+	let depth = 0
+	const start = i
+	for (; i < src.length; i++) {
+		const c = src[i]
+		if (c === '{') depth++
+		else if (c === '}') {
+			depth--
+			if (depth === 0) return src.slice(start + 1, i)
+		}
+	}
+	return null
+}
 
 async function read(path: string, label: string): Promise<string | null> {
 	const f = Bun.file(path)
@@ -141,6 +178,29 @@ async function main() {
 		}
 	}
 
+	// 6. The bulk-LOAD deposit gates must read the HEALED view (GetHashSet), not the un-healed PeekHashSet — the
+	//    same stale-view class as the drop guards, on the load side (merge-survivor cargo silently never loaded).
+	for (const gate of LOAD_GATES) {
+		const src = await read(resolve(repoRoot, gate.file), gate.file)
+		if (!src) continue
+		const body = sliceMethodBody(src, gate.method)
+		if (body === null) {
+			errors.push(`${gate.file}: deposit gate ${gate.method}() not found — the load-gate healed-view check can't verify it.`)
+			continue
+		}
+		if (body.includes('PeekHashSet')) {
+			errors.push(
+				`${gate.file}: ${gate.method}() reads PeekHashSet (the UN-healed view). A scooped stack that merged ` +
+					`after tagging is then invisible to the load gate, so the merge-survivor cargo silently never loads ` +
+					`onto the transporter/portal/vehicle/animal (the #62/#87 stale-view class on the load side). ` +
+					`Use GetHashSet().`
+			)
+		}
+		if (!body.includes('GetHashSet')) {
+			errors.push(`${gate.file}: ${gate.method}() no longer reads the tag set via GetHashSet — the deposit gate must consult the healed owned set.`)
+		}
+	}
+
 	if (errors.length > 0) {
 		console.error(`\n[drop-protection] FAIL — ${errors.length} problem(s):\n`)
 		for (const e of errors) console.error(`  ✗ ${e}`)
@@ -153,8 +213,8 @@ async function main() {
 	}
 
 	console.log(
-		`[drop-protection] PASS — 3 vanilla seams guarded with the healed tag set, Core policy + startup ` +
-			`tripwire + oracle tests all present.`
+		`[drop-protection] PASS — 3 vanilla drop seams + ${LOAD_GATES.length} bulk-load gates read the healed tag ` +
+			`set, Core policy + startup tripwire + oracle tests all present.`
 	)
 }
 

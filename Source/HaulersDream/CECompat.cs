@@ -101,8 +101,24 @@ namespace HaulersDream
             // loading (degrade SAFE — report inactive, the mod then behaves as without CE — vanilla math).
             active = canFitInInventory != null;
             if (active)
+            {
                 HDLog.Msg("Combat Extended detected — inventory loading defers to CE's "
                             + "weight+bulk capacity, smart overload stands down, HoldTracker integration on.");
+                // Silent-degrade tripwire: `active` gates ONLY on the fit check, but the DROP-PREVENTION seams are
+                // separate members. If CE renamed Notify_HoldTrackerItem or the Loadout API, NotifyHeld no-ops and
+                // LoadoutKeepCount returns 0 with no other symptom — CE's loadout enforcement then floor-drops the
+                // cargo HD scooped (or ships CE-loadout ammo to storage and CE re-fetches it): the exact #62/#81/#84
+                // class on a seam the vanilla-only VerifyDropProtection tripwire does not watch. Surface the drift
+                // loudly (logging only — behaviour already degrades safely member-by-member).
+                if (notifyHoldTracker == null)
+                    HDLog.Warn("Combat Extended present but Utility_HoldTracker.Notify_HoldTrackerItem(Pawn, Thing, int) "
+                               + "did not resolve; HD cannot shield its scooped cargo from CE's loadout drop — a CE "
+                               + "rename likely. Please report it. HD continues; CE-loadout pawns may drop scooped goods.");
+                if (getLoadout == null || loadoutSlotsGetter == null || slotThingDefGetter == null || slotCountGetter == null)
+                    HDLog.Warn("Combat Extended present but its Loadout API (Utility_Loadouts.GetLoadout / Loadout.Slots / "
+                               + "LoadoutSlot.thingDef|count) did not fully resolve; HD cannot read CE loadouts to keep "
+                               + "loadout ammo with the pawn — a CE rename likely. Please report it. HD continues.");
+            }
             else
                 // CE is present (CompInventory resolved) but its load-bearing weight+bulk fit check did not bind
                 // (a CE fork/version renamed the method) — degrade SAFE (report inactive => HD uses vanilla mass

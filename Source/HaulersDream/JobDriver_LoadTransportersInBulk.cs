@@ -132,7 +132,11 @@ namespace HaulersDream
             var adp = EnsureAdapter() as LoadTransportersAdapter;
             if (hcomp == null || inner == null || adp == null)
                 return false;
-            foreach (var t in hcomp.PeekHashSet())
+            // HEALED view (not Peek): the deposit driver reads GetHashSet (JobDriver_LoadInBulkBase), so this gate
+            // must too — else a scooped stack that MERGED into a same-def inventory stack after tagging is invisible
+            // here, the gate says "nothing to deposit", the load ends early, and the merge-survivor cargo never loads
+            // onto the transporter (it rides to storage instead). Same #62/#87 stale-view class on the load side.
+            foreach (var t in hcomp.GetHashSet())
             {
                 if (t == null || t.Destroyed || !inner.Contains(t))
                     continue;
