@@ -94,10 +94,19 @@ namespace HaulersDream
             // Compat guard: only substitute for VANILLA's own unload. If another mod injected a custom unload job at
             // this think-node, leave it untouched — we must not clobber a foreign unload flow. The real case here is
             // Common Sense, which PREFIXES JobGiver_UnloadYourInventory.TryGiveJob to return its own UnloadMarkedItems
-            // job (def != UnloadInventory). (Combat Extended only transpiles this node's CONDITION, so vanilla still
-            // returns UnloadInventory and HD still correctly substitutes for a CE-influenced vanilla unload. Pick Up
-            // And Haul does NOT reach this node — it enqueues its unload on the job queue — so it isn't a concern here.)
-            if (__result.def != JobDefOf.UnloadInventory)
+            // job (a different def). (Combat Extended only transpiles this node's CONDITION, so vanilla still returns
+            // its own unload job and HD still correctly substitutes for a CE-influenced vanilla unload. Pick Up And
+            // Haul does NOT reach this node — it enqueues its unload on the job queue — so it isn't a concern here.)
+            //
+            // The def to compare against is the one the hooked giver ACTUALLY produces: vanilla
+            // JobGiver_UnloadYourInventory.TryGiveJob returns JobMaker.MakeJob(JobDefOf.UnloadYourInventory)
+            // (decompile-verified) — NOT JobDefOf.UnloadInventory, which is a DIFFERENT vanilla JobDef. The gate
+            // previously compared against UnloadInventory, so it was ALWAYS true and this whole substitution never
+            // fired since it shipped (arriving pawns just ran vanilla's desperate near-drop, ignoring storage
+            // filters/priorities, and HD never deregistered the moved tags). Comparing against UnloadYourInventory
+            // enables it — so arriving pawns (psycast Skip home, drop-pod/transporter arrival, caravan unpack) now
+            // route their HD-tagged surplus to proper storage instead of the nearest pile.
+            if (__result.def != JobDefOf.UnloadYourInventory)
                 return;
             var comp = pawn.GetComp<CompHauledToInventory>();
             var carried = comp?.GetHashSet();
