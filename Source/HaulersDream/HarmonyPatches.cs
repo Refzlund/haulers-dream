@@ -108,6 +108,19 @@ namespace HaulersDream
             // route their HD-tagged surplus to proper storage instead of the nearest pile.
             if (__result.def != JobDefOf.UnloadYourInventory)
                 return;
+            // MAP GATE: only substitute on a map where HD's storage-unload driver can actually DRAIN the inventory
+            // — a home map, or any map with player storage (e.g. a Vehicle Framework RV interior, a settled away
+            // camp). On a storage-less non-home map (an escape-ship visit, a non-pocket portal destination) the
+            // driver hits its "rides home" branch (JobDriver_UnloadHauledInventory: !IsPlayerHome && no storage
+            // found) and ends Succeeded WITHOUT removing anything. Vanilla recomputes UnloadEverything over ALL
+            // inventory, so keeping the stack leaves the flag armed and the think tree re-issues UnloadYourInventory
+            // every pass — we'd re-substitute forever (a ~3-tick busy loop where the pawn does no other work).
+            // Falling through here lets vanilla's own unload run, which near-drops as a last resort and drains the
+            // flag (the pre-fix behaviour on such maps). This is the same MapGate.ShouldUnloadToStorage route every
+            // OTHER HD unload trigger (OpportunisticUnload, PawnUnloadChecker, YieldRouter.MaybeUnloadBecauseFull)
+            // already takes — the substitution was the lone path missing it.
+            if (pawn.Map == null || !MapGate.ShouldUnloadToStorage(pawn.Map))
+                return;
             var comp = pawn.GetComp<CompHauledToInventory>();
             var carried = comp?.GetHashSet();
             if (carried == null || carried.Count == 0)

@@ -131,8 +131,22 @@ namespace HaulersDream
         static void Postfix(ref bool __result, Pawn pawn, Thing drug)
         {
             if (__result) return; // vanilla already keeps it — nothing to do
-            var comp = pawn?.GetComp<CompHauledToInventory>();
-            if (comp != null && drug != null && comp.GetHashSet().Contains(drug))
+            if (pawn == null || drug == null)
+                return;
+            // UI-PATH GUARD: GetHashSet's self-heal MUTATES synced world state (re-tags the scribed set, re-notifies
+            // CE HoldTracker), so it must run ONLY on a synced path. Vanilla calls this predicate from TWO sites: the
+            // in-tick drop loop (drug = an INVENTORY thing — synced think path) and FloatMenuOptionProvider_PickUpItem
+            // .GetOptionsFor (drug = a GROUND stack the player right-clicked — float-menu generation on the clicking
+            // client's UI thread, NOT a synced command). Healing on the UI caller desyncs MP. Gate on "drug is in THIS
+            // pawn's inventory": always true on the in-tick caller (heal correct), always false on the float-menu
+            // caller (ground stack) — so the heal is skipped there, and since a ground drug is never HD-tagged the
+            // result is unchanged anyway. Cheap O(1) ThingOwner.Contains. (PackAnimalLoad.cs documents this same
+            // un-healed-view vs healed-view mutation hazard for the alert/OnGUI render path.)
+            var inner = pawn.inventory?.innerContainer;
+            if (inner == null || !inner.Contains(drug))
+                return;
+            var comp = pawn.GetComp<CompHauledToInventory>();
+            if (comp != null && comp.GetHashSet().Contains(drug))
                 __result = true; // HD-hauled cargo: keep it for the unload trip instead of dropping
         }
     }
