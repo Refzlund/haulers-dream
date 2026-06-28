@@ -85,9 +85,11 @@ namespace HaulersDream
 
             // Declare intent to the enroute system so other pawns don't over-deliver to this needer.
             // GetSpaceRemainingWithEnroute excludes our own claim, so registering never blocks ourselves.
-            if (Needer is IHaulEnroute enroute && resourceDef != null && !Needer.DestroyedOrNull() && pawn.Map != null)
+            // Needer.Spawned (not the weaker !DestroyedOrNull()) so a needer despawned in the job-queue window
+            // is excluded — vanilla's GetSpaceRemainingWithEnroute would NRE on its null Map otherwise (#88).
+            if (Needer is IHaulEnroute enroute && resourceDef != null && Needer.Spawned && pawn.Map != null)
             {
-                int want = Mathf.Min(job.count, enroute.GetSpaceRemainingWithEnroute(resourceDef, pawn));
+                int want = Mathf.Min(job.count, EnrouteSafety.SpaceRemainingSafe(Needer, resourceDef, pawn));
                 if (want > 0)
                     pawn.Map.enrouteManager.AddEnroute(enroute, pawn, resourceDef, want);
             }
@@ -101,9 +103,9 @@ namespace HaulersDream
                     for (int i = 0; i < neederQ.Count; i++)
                     {
                         var n = neederQ[i].Thing;
-                        if (n is IHaulEnroute qe && !n.DestroyedOrNull())
+                        if (n is IHaulEnroute qe && n.Spawned) // Spawned: same #88 despawn-window guard as above
                         {
-                            int qwant = qe.GetSpaceRemainingWithEnroute(resourceDef, pawn);
+                            int qwant = EnrouteSafety.SpaceRemainingSafe(n, resourceDef, pawn);
                             if (qwant > 0)
                                 pawn.Map.enrouteManager.AddEnroute(qe, pawn, resourceDef, qwant);
                         }
@@ -290,10 +292,9 @@ namespace HaulersDream
                     Thing cand = queue[i].Thing;
                     bool usable = cand != null && !cand.Destroyed && cand.Spawned && cand is IConstructible
                         && !cand.IsForbidden(pawn) && pawn.CanReach(cand, PathEndMode.Touch, Danger.Deadly);
-                    int candSpace = usable
-                        ? ((cand is IHaulEnroute ce) ? ce.GetSpaceRemainingWithEnroute(resourceDef, pawn)
-                                                     : ((IConstructible)cand).ThingCountNeeded(resourceDef))
-                        : 0;
+                    // usable already requires cand.Spawned + IConstructible, so this is byte-identical to the old
+                    // inline ternary; routing it through EnrouteSafety keeps every needer-space query NRE-safe.
+                    int candSpace = usable ? EnrouteSafety.SpaceRemainingSafe(cand, resourceDef, pawn) : 0;
                     if (!usable || candSpace <= 0)
                     {
                         if (cand is IHaulEnroute skipE)
@@ -354,17 +355,10 @@ namespace HaulersDream
             return false;
         }
 
-        private int SpaceInNeeder()
-        {
-            var n = Needer;
-            if (n == null || resourceDef == null)
-                return 0;
-            if (n is IHaulEnroute he)
-                return Mathf.Max(0, he.GetSpaceRemainingWithEnroute(resourceDef, pawn));
-            if (n is IConstructible ic)
-                return Mathf.Max(0, ic.ThingCountNeeded(resourceDef));
-            return 0;
-        }
+        // Despawn-safe: a needer that another pawn finished/despawned mid-job has a null Map, and vanilla's
+        // enroute query derefs it (issue #88). EnrouteSafety reports 0 ("gone -> no space") so the deliver loop
+        // drains to the next toil where FailOn ends the job; byte-identical for a live needer.
+        private int SpaceInNeeder() => EnrouteSafety.SpaceRemainingSafe(Needer, resourceDef, pawn);
 
         /// <summary>Units worth LOADING this trip: at least this needer's need, or the whole-route demand a
         /// haul+build route stamped into job.count at creation (whichever is larger).</summary>

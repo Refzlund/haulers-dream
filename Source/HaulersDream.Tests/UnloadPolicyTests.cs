@@ -83,6 +83,18 @@ namespace HaulersDream.Tests
         }
 
         [Test]
+        public void FullTriggerReady_DebouncesTheForcedUnload()
+        {
+            // (#84) The ceiling trigger may only force an unload when it is allowed AND the divert cooldown has
+            // elapsed — without the cooldown a pawn pinned at its carry ceiling ping-pongs one stack per trip.
+            Assert.That(UnloadPolicy.FullTriggerReady(strictCarryWeight: false, markForUnload: true, divertCooldownElapsed: true), Is.True);
+            Assert.That(UnloadPolicy.FullTriggerReady(strictCarryWeight: false, markForUnload: true, divertCooldownElapsed: false), Is.False);
+            // The allow gate still dominates: strict mode / auto-unload-off never fire, cooldown notwithstanding.
+            Assert.That(UnloadPolicy.FullTriggerReady(strictCarryWeight: true, markForUnload: true, divertCooldownElapsed: true), Is.False);
+            Assert.That(UnloadPolicy.FullTriggerReady(strictCarryWeight: false, markForUnload: false, divertCooldownElapsed: true), Is.False);
+        }
+
+        [Test]
         public void WithinGrace_Skips()
         {
             Assert.That(Decide(ticksSinceYield: 30, grace: 60), Is.EqualTo(UnloadDecision.Skip));

@@ -171,7 +171,10 @@ namespace HaulersDream
             var inner = pawn.inventory?.innerContainer;
             if (vehicle == null || hcomp == null || inner == null)
                 return false;
-            foreach (var t in hcomp.PeekHashSet())
+            // HEALED view (not Peek): the deposit driver reads GetHashSet, so this gate must too — else a scooped
+            // stack that MERGED into a same-def inventory stack after tagging is invisible here, the gate says
+            // "nothing to deposit", and the merge-survivor cargo never loads onto the vehicle. Same #62/#87 class.
+            foreach (var t in hcomp.GetHashSet())
             {
                 if (t == null || t.Destroyed || !inner.Contains(t))
                     continue;

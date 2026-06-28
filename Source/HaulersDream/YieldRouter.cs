@@ -356,6 +356,19 @@ namespace HaulersDream
             // forced unload below fires exactly as before — byte-identical.
             if (s.keepWorkingWhenFull)
                 return;
+            // (#84) Debounce the forced storage unload. WITHOUT this, a pawn pinned at its carry ceiling re-enters
+            // this trigger on every further scoop-while-full and re-issues a forced unload each time — ping-ponging
+            // one stack per trip back and forth to storage instead of accumulating a load and making one trip. The
+            // cooldown stamp is shared with the pass-by / pack-animal diverts (NotifyDiverted): once any unload
+            // decision is made, don't make another for DivertCooldownTicks. The player's manual gizmo and debug
+            // unloads call CheckIfShouldUnload directly (not through here), so they are never debounced.
+            var comp = pawn?.GetComp<CompHauledToInventory>();
+            int now = Find.TickManager?.TicksGame ?? 0;
+            bool cooldownElapsed = comp == null
+                || now - comp.lastOpportunisticUnloadTick >= OpportunisticUnload.DivertCooldownTicks;
+            if (!Core.UnloadPolicy.FullTriggerReady(s.strictCarryWeight, s.markForUnload, cooldownElapsed))
+                return;
+            OpportunisticUnload.NotifyDiverted(pawn); // stamp so the next ceiling hit / pass-by waits out the cooldown
             // forced: bypass the post-pickup grace period — being full IS the signal to unload.
             PawnUnloadChecker.CheckIfShouldUnload(pawn, forced: true);
         }

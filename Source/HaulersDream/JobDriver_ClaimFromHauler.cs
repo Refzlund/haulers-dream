@@ -55,10 +55,13 @@ namespace HaulersDream
                 return false;
 
             // Declare intent to the enroute system so others don't over-deliver to this needer (mirrors the
-            // construct-deliver driver). GetSpaceRemainingWithEnroute excludes our own claim.
-            if (Needer is IHaulEnroute enroute && resourceDef != null && !Needer.DestroyedOrNull() && pawn.Map != null)
+            // construct-deliver driver). GetSpaceRemainingWithEnroute excludes our own claim. This runs at
+            // StartJob time, which can be after the job sat in the queue, so the needer may have despawned
+            // meanwhile: gate on Needer.Spawned (not the weaker !DestroyedOrNull(), which lets a plain-despawned
+            // needer through) and route the count through EnrouteSafety so vanilla's null-Map deref can't NRE (#88).
+            if (Needer is IHaulEnroute enroute && resourceDef != null && Needer.Spawned && pawn.Map != null)
             {
-                int want = Mathf.Min(job.count, enroute.GetSpaceRemainingWithEnroute(resourceDef, pawn));
+                int want = Mathf.Min(job.count, EnrouteSafety.SpaceRemainingSafe(Needer, resourceDef, pawn));
                 if (want > 0)
                     pawn.Map.enrouteManager.AddEnroute(enroute, pawn, resourceDef, want);
             }

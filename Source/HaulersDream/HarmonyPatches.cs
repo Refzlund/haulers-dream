@@ -94,10 +94,32 @@ namespace HaulersDream
             // Compat guard: only substitute for VANILLA's own unload. If another mod injected a custom unload job at
             // this think-node, leave it untouched — we must not clobber a foreign unload flow. The real case here is
             // Common Sense, which PREFIXES JobGiver_UnloadYourInventory.TryGiveJob to return its own UnloadMarkedItems
-            // job (def != UnloadInventory). (Combat Extended only transpiles this node's CONDITION, so vanilla still
-            // returns UnloadInventory and HD still correctly substitutes for a CE-influenced vanilla unload. Pick Up
-            // And Haul does NOT reach this node — it enqueues its unload on the job queue — so it isn't a concern here.)
-            if (__result.def != JobDefOf.UnloadInventory)
+            // job (a different def). (Combat Extended only transpiles this node's CONDITION, so vanilla still returns
+            // its own unload job and HD still correctly substitutes for a CE-influenced vanilla unload. Pick Up And
+            // Haul does NOT reach this node — it enqueues its unload on the job queue — so it isn't a concern here.)
+            //
+            // The def to compare against is the one the hooked giver ACTUALLY produces: vanilla
+            // JobGiver_UnloadYourInventory.TryGiveJob returns JobMaker.MakeJob(JobDefOf.UnloadYourInventory)
+            // (decompile-verified) — NOT JobDefOf.UnloadInventory, which is a DIFFERENT vanilla JobDef. The gate
+            // previously compared against UnloadInventory, so it was ALWAYS true and this whole substitution never
+            // fired since it shipped (arriving pawns just ran vanilla's desperate near-drop, ignoring storage
+            // filters/priorities, and HD never deregistered the moved tags). Comparing against UnloadYourInventory
+            // enables it — so arriving pawns (psycast Skip home, drop-pod/transporter arrival, caravan unpack) now
+            // route their HD-tagged surplus to proper storage instead of the nearest pile.
+            if (__result.def != JobDefOf.UnloadYourInventory)
+                return;
+            // MAP GATE: only substitute on a map where HD's storage-unload driver can actually DRAIN the inventory
+            // — a home map, or any map with player storage (e.g. a Vehicle Framework RV interior, a settled away
+            // camp). On a storage-less non-home map (an escape-ship visit, a non-pocket portal destination) the
+            // driver hits its "rides home" branch (JobDriver_UnloadHauledInventory: !IsPlayerHome && no storage
+            // found) and ends Succeeded WITHOUT removing anything. Vanilla recomputes UnloadEverything over ALL
+            // inventory, so keeping the stack leaves the flag armed and the think tree re-issues UnloadYourInventory
+            // every pass — we'd re-substitute forever (a ~3-tick busy loop where the pawn does no other work).
+            // Falling through here lets vanilla's own unload run, which near-drops as a last resort and drains the
+            // flag (the pre-fix behaviour on such maps). This is the same MapGate.ShouldUnloadToStorage route every
+            // OTHER HD unload trigger (OpportunisticUnload, PawnUnloadChecker, YieldRouter.MaybeUnloadBecauseFull)
+            // already takes — the substitution was the lone path missing it.
+            if (pawn.Map == null || !MapGate.ShouldUnloadToStorage(pawn.Map))
                 return;
             var comp = pawn.GetComp<CompHauledToInventory>();
             var carried = comp?.GetHashSet();

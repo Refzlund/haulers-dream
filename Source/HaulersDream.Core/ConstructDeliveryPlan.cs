@@ -87,6 +87,19 @@ namespace HaulersDream.Core
             => clusterNeederCount >= 2 && handStackCap > 0 && clusterNeedUnits > handStackCap;
 
         /// <summary>
+        /// Whether HD may query a construction needer's remaining space at all: only when the needer is still
+        /// SPAWNED and we know which material we're delivering. This pins the guard that prevents the issue #88
+        /// NullReferenceException — vanilla's enroute space query dereferences the needer's <c>Map</c>, which is
+        /// null once another pawn has finished or despawned the needer mid-job, and the older guard
+        /// (<c>!DestroyedOrNull()</c>) let a plain-despawned needer through. The runtime wrapper
+        /// (<c>EnrouteSafety.SpaceRemainingSafe</c>) reports 0 space when this is false, so the delivery job
+        /// aborts cleanly instead of throwing. Pure, so a refactor that re-weakens the guard is caught by a test
+        /// rather than by players hitting the crash again.
+        /// </summary>
+        public static bool ShouldQueryNeederSpace(bool neederSpawned, bool hasResourceDef)
+            => neederSpawned && hasResourceDef;
+
+        /// <summary>
         /// The mass-and-demand-capped ceiling for how many units the pawn could usefully load for this
         /// needer, ignoring how much is currently on the floor — used to bound the nearby-resource gather
         /// before the real <see cref="PlanLoad"/> (which takes the gathered availability into account).

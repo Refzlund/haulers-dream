@@ -48,6 +48,13 @@ namespace HaulersDream
             var comp = pawn?.GetComp<CompHauledToInventory>();
             if (inner == null || comp == null)
                 return false;
+            // Reads the un-healed PeekHashSet ON PURPOSE: unlike the transporter/portal/vehicle deposit GATES, this
+            // is a multi-context PROBE — one caller is Alert_CannotUnloadInventory on the OnGUI render path, where
+            // GetHashSet's self-heal (it mutates the tag set + CE HoldTracker) would be an MP desync. It is NOT the
+            // pack-animal deposit gate: the actual deposit (JobDriver_LoadPackAnimal) reads the HEALED GetHashSet
+            // directly, so a merge-survivor stack IS deposited once a load runs. The only cost of the un-healed read
+            // here is that a pawn whose ONLY surplus is a merge-survivor might not get a load OFFERED — a benign
+            // under-report (the loot then rides to storage), the same class as the alert's own under-report.
             foreach (var t in comp.PeekHashSet())
                 if (t != null && !t.Destroyed && inner.Contains(t) && InventorySurplus.SurplusOf(pawn, t) > 0)
                     return true;
