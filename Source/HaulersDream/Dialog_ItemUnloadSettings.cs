@@ -34,6 +34,14 @@ namespace HaulersDream
         private Vector2 scroll;
         private float viewHeight = 500f;
 
+        // Per-category aggregate shown on each category row's button: the single rule shared by EVERY eligible def in
+        // that category's subtree, or "Mixed" when they differ. Instance state (depends on `working`), computed lazily
+        // for the categories actually drawn and reused across frames; the WHOLE cache is dropped (catAggDirty) on any
+        // rule edit, so a draw walks a subtree only on the first frame after a change — never per frame (CE's ammo
+        // tree is huge). Every `working` write goes through PutRule/DropRule (or sets the flag) so it can't go stale.
+        private readonly Dictionary<ThingCategoryDef, CatAgg> catAggCache = new Dictionary<ThingCategoryDef, CatAgg>();
+        private bool catAggDirty = true;
+
         // Built once — def data never changes at runtime. Which categories contain any eligible item, the eligible
         // defs directly under each category (sorted by label), and the full recursive set of eligible defs under
         // each category's subtree (used by the per-category bulk-set button — precomputed so a click is O(k) and we
@@ -54,6 +62,9 @@ namespace HaulersDream
         private const float AmountWidth = 58f;
         // Default "keep at most" amount applied by the per-category bulk-set (and a sensible per-item starting point).
         private const int DefaultKeepAtMost = 25;
+
+        // The shared state of a category's whole eligible subtree, shown on its row button.
+        private enum CatAgg { Default, KeepAll, KeepAtMost, UnloadAlways, Mixed }
 
         public override Vector2 InitialSize => new Vector2(640f, 720f);
 
@@ -158,6 +169,7 @@ namespace HaulersDream
                 foreach (var key in live)
                     working.Remove(key);
                 amountBuffers.Clear();
+                catAggDirty = true; // rules changed -> category aggregates recompute on the next draw
             }
             y += 30f;
 
@@ -209,19 +221,22 @@ namespace HaulersDream
                     ToggleCategory(cat, open);
             }
 
-            // Right-aligned "Set whole category…" button, sized like the per-item mode button for visual
-            // consistency. Only shown when NOT searching — same as the expand arrow above: during a search the
-            // tree is force-opened and the rows are a FILTERED subset, so a category-level bulk action there would
-            // be ambiguous (apply to the visible matches, or the whole subtree?). Hiding it sidesteps that and
-            // keeps search purely about finding individual items; the button is always available with search
-            // cleared, where it unambiguously applies to the full subtree.
+            // Right-aligned category button, sized like the per-item mode button for visual consistency. Its LABEL is
+            // the category's aggregate state — the single rule shared by every item in the subtree (Default / Never
+            // unload / Keep at most / Always unload), or "Mixed" when they differ — so a category row reads at a glance
+            // like an item row does, and editing one item flips its categories to "Mixed". Clicking it opens the
+            // bulk-set menu (the tooltip explains that). Only shown when NOT searching — same as the expand arrow
+            // above: during a search the tree is force-opened and the rows are a FILTERED subset, so a category-level
+            // bulk action there would be ambiguous (apply to the visible matches, or the whole subtree?). Hiding it
+            // sidesteps that and keeps search purely about finding individual items; the button is always available
+            // with search cleared, where it unambiguously applies to the full subtree.
             float labelWidth = width - x - 22f;
             if (!search.filter.Active)
             {
                 var catBtnRect = new Rect(width - ModeBtnWidth - 2f, curY + (CatHeight - (RowHeight - 4f)) / 2f,
                     ModeBtnWidth, RowHeight - 4f);
                 TooltipHandler.TipRegion(catBtnRect, "HaulersDream.ItemUnload.SetCategoryTip".Translate());
-                if (Widgets.ButtonText(catBtnRect, "HaulersDream.ItemUnload.SetCategory".Translate()))
+                if (Widgets.ButtonText(catBtnRect, CatAggLabel(GetCatAgg(cat))))
                     OpenCategoryMenu(cat);
                 // Shrink the label/invisible-toggle rect so it no longer overlaps the bulk-set button (a click on
                 // the button must not also toggle the fold).
@@ -292,7 +307,7 @@ namespace HaulersDream
                 if (amt != rule.amount)
                 {
                     rule.amount = amt;
-                    working[def.defName] = rule;
+                    PutRule(def.defName, rule);
                 }
             }
 
@@ -319,19 +334,19 @@ namespace HaulersDream
             {
                 new FloatMenuOption("HaulersDream.ItemUnload.ModeDefault".Translate(), () =>
                 {
-                    working.Remove(name);
+                    DropRule(name);
                     amountBuffers.Remove(name);
                 }),
                 new FloatMenuOption("HaulersDream.ItemUnload.ModeKeepAll".Translate(), () =>
-                    working[name] = new ItemUnloadRule(ItemUnloadMode.KeepAll)),
+                    PutRule(name, new ItemUnloadRule(ItemUnloadMode.KeepAll))),
                 new FloatMenuOption("HaulersDream.ItemUnload.ModeKeepAtMost".Translate(), () =>
                 {
-                    int dflt = working.TryGetValue(name, out var r) && r.amount > 0 ? r.amount : 25;
-                    working[name] = new ItemUnloadRule(ItemUnloadMode.KeepAtMost, dflt);
+                    int dflt = working.TryGetValue(name, out var r) && r.amount > 0 ? r.amount : DefaultKeepAtMost;
+                    PutRule(name, new ItemUnloadRule(ItemUnloadMode.KeepAtMost, dflt));
                     amountBuffers.Remove(name); // refresh the edit buffer from the new value
                 }),
                 new FloatMenuOption("HaulersDream.ItemUnload.ModeUnloadAlways".Translate(), () =>
-                    working[name] = new ItemUnloadRule(ItemUnloadMode.UnloadAlways)),
+                    PutRule(name, new ItemUnloadRule(ItemUnloadMode.UnloadAlways))),
             };
             Find.WindowStack.Add(new FloatMenu(opts));
         }
@@ -376,7 +391,87 @@ namespace HaulersDream
                     working[name] = new ItemUnloadRule(rule.mode, rule.amount);
                 amountBuffers.Remove(name);
             }
+            catAggDirty = true; // the whole subtree changed -> category aggregates recompute on the next draw
             SoundDefOf.Tick_High.PlayOneShotOnCamera();
+        }
+
+        // Single funnel for per-item rule writes so the category-aggregate cache is invalidated with every edit.
+        private void PutRule(string defName, ItemUnloadRule rule)
+        {
+            working[defName] = rule;
+            catAggDirty = true;
+        }
+
+        private void DropRule(string defName)
+        {
+            working.Remove(defName);
+            catAggDirty = true;
+        }
+
+        // The aggregate label shown on a category row button. Lazily computed from the precomputed subtree + the live
+        // `working` rules and cached; the cache is dropped whole whenever a rule changes (catAggDirty), so a draw
+        // recomputes a category at most once per edit, then reads O(1) every frame after.
+        private CatAgg GetCatAgg(ThingCategoryDef cat)
+        {
+            if (catAggDirty)
+            {
+                catAggCache.Clear();
+                catAggDirty = false;
+            }
+            if (catAggCache.TryGetValue(cat, out var agg))
+                return agg;
+            agg = ComputeCatAgg(cat);
+            catAggCache[cat] = agg;
+            return agg;
+        }
+
+        // Default when every eligible def in the subtree has no rule; one of the three modes when they ALL carry the
+        // identical rule (same mode, and same amount too for KeepAtMost); Mixed otherwise. A def can appear more than
+        // once in the subtree list (multi-category membership) — harmless, since the same def carries the same rule.
+        private CatAgg ComputeCatAgg(ThingCategoryDef cat)
+        {
+            if (subtreeDefs == null || !subtreeDefs.TryGetValue(cat, out var defs) || defs.Count == 0)
+                return CatAgg.Default;
+            bool first = true;
+            bool firstHasRule = false;
+            ItemUnloadRule firstRule = default;
+            foreach (var def in defs)
+            {
+                bool hasRule = working.TryGetValue(def.defName, out var rule);
+                if (first)
+                {
+                    first = false;
+                    firstHasRule = hasRule;
+                    firstRule = rule;
+                    continue;
+                }
+                if (hasRule != firstHasRule)
+                    return CatAgg.Mixed;
+                if (hasRule && (rule.mode != firstRule.mode
+                                || (rule.mode == ItemUnloadMode.KeepAtMost && rule.amount != firstRule.amount)))
+                    return CatAgg.Mixed;
+            }
+            if (!firstHasRule)
+                return CatAgg.Default;
+            switch (firstRule.mode)
+            {
+                case ItemUnloadMode.KeepAll: return CatAgg.KeepAll;
+                case ItemUnloadMode.KeepAtMost: return CatAgg.KeepAtMost;
+                case ItemUnloadMode.UnloadAlways: return CatAgg.UnloadAlways;
+                default: return CatAgg.Default;
+            }
+        }
+
+        private static string CatAggLabel(CatAgg agg)
+        {
+            switch (agg)
+            {
+                case CatAgg.KeepAll: return "HaulersDream.ItemUnload.ModeKeepAll".Translate();
+                case CatAgg.KeepAtMost: return "HaulersDream.ItemUnload.ModeKeepAtMost".Translate();
+                case CatAgg.UnloadAlways: return "HaulersDream.ItemUnload.ModeUnloadAlways".Translate();
+                case CatAgg.Mixed: return "HaulersDream.ItemUnload.ModeMixed".Translate();
+                default: return "HaulersDream.ItemUnload.ModeDefault".Translate();
+            }
         }
 
         // True if this category (or any descendant) has an eligible item whose label matches the search.

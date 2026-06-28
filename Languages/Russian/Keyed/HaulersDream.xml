@@ -30,6 +30,7 @@
 <HaulersDream.ItemUnload.ModeKeepAll>Никогда не разгружать</HaulersDream.ItemUnload.ModeKeepAll>
 <HaulersDream.ItemUnload.ModeKeepAtMost>Держать не более</HaulersDream.ItemUnload.ModeKeepAtMost>
 <HaulersDream.ItemUnload.ModeUnloadAlways>Всегда разгружать</HaulersDream.ItemUnload.ModeUnloadAlways>
+  <HaulersDream.ItemUnload.ModeMixed>Mixed</HaulersDream.ItemUnload.ModeMixed>
 <HaulersDream.Setting.UnloadBeforeSleep>Убирать груз перед сном</HaulersDream.Setting.UnloadBeforeSleep>
 <HaulersDream.Setting.UnloadBeforeSleepDesc>Когда пешка заканчивает работу и устала (вот-вот уснёт), она сначала совершает ходку для разгрузки, а затем ложится спать налегке — вместо того чтобы тащить собранный груз в кровать. Во время самой работы она по-прежнему накапливает груз как обычно.</HaulersDream.Setting.UnloadBeforeSleepDesc>
 <HaulersDream.Setting.UnloadBeforeLeisure>Убирать груз перед отдыхом</HaulersDream.Setting.UnloadBeforeLeisure>
@@ -677,7 +678,6 @@
 <HaulersDream.Search.Placeholder>Поиск настроек…</HaulersDream.Search.Placeholder>
 <HaulersDream.Search.NoResults>Нет настроек, соответствующих вашему запросу.</HaulersDream.Search.NoResults>
 <HaulersDream.Search.Clear>Очистить поиск</HaulersDream.Search.Clear>
-  <HaulersDream.ItemUnload.SetCategory>Set whole category…</HaulersDream.ItemUnload.SetCategory>
   <HaulersDream.ItemUnload.SetCategoryTip>Apply one rule to every item in this category at once, instead of setting them one by one. Handy for big groups like ammo.</HaulersDream.ItemUnload.SetCategoryTip>
   <HaulersDream.Setting.Yield.Fishing>Fishing (catch)</HaulersDream.Setting.Yield.Fishing>
   <HaulersDream.Setting.Yield.FishingHelp>Fish and other catch pulled from a fishing spot. Needs the Odyssey expansion; the row is hidden without it.</HaulersDream.Setting.Yield.FishingHelp>

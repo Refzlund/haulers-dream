@@ -30,6 +30,7 @@
 <HaulersDream.ItemUnload.ModeKeepAll>Nie entladen</HaulersDream.ItemUnload.ModeKeepAll>
 <HaulersDream.ItemUnload.ModeKeepAtMost>Höchstens behalten</HaulersDream.ItemUnload.ModeKeepAtMost>
 <HaulersDream.ItemUnload.ModeUnloadAlways>Immer entladen</HaulersDream.ItemUnload.ModeUnloadAlways>
+  <HaulersDream.ItemUnload.ModeMixed>Mixed</HaulersDream.ItemUnload.ModeMixed>
 <HaulersDream.Setting.UnloadBeforeSleep>Ladung vor dem Schlafen wegräumen</HaulersDream.Setting.UnloadBeforeSleep>
 <HaulersDream.Setting.UnloadBeforeSleepDesc>Wenn eine Spielfigur die Arbeit beendet und müde ist (kurz vorm Schlafen), macht sie zuerst ihre Entladefahrt und geht dann leer ins Bett — anstatt ihre aufgesammelte Ladung mit ins Bett zu tragen. Sie sammelt weiterhin normal an, solange sie tatsächlich arbeitet.</HaulersDream.Setting.UnloadBeforeSleepDesc>
 <HaulersDream.Setting.UnloadBeforeLeisure>Ladung vor der Erholung wegräumen</HaulersDream.Setting.UnloadBeforeLeisure>
@@ -677,7 +678,6 @@
 <HaulersDream.Search.Placeholder>Einstellungen durchsuchen…</HaulersDream.Search.Placeholder>
 <HaulersDream.Search.NoResults>Keine Einstellungen entsprechen Ihrer Suche.</HaulersDream.Search.NoResults>
 <HaulersDream.Search.Clear>Suche löschen</HaulersDream.Search.Clear>
-  <HaulersDream.ItemUnload.SetCategory>Set whole category…</HaulersDream.ItemUnload.SetCategory>
   <HaulersDream.ItemUnload.SetCategoryTip>Apply one rule to every item in this category at once, instead of setting them one by one. Handy for big groups like ammo.</HaulersDream.ItemUnload.SetCategoryTip>
   <HaulersDream.Setting.Yield.Fishing>Fishing (catch)</HaulersDream.Setting.Yield.Fishing>
   <HaulersDream.Setting.Yield.FishingHelp>Fish and other catch pulled from a fishing spot. Needs the Odyssey expansion; the row is hidden without it.</HaulersDream.Setting.Yield.FishingHelp>

@@ -30,6 +30,7 @@
 <HaulersDream.ItemUnload.ModeKeepAll>从不卸载</HaulersDream.ItemUnload.ModeKeepAll>
 <HaulersDream.ItemUnload.ModeKeepAtMost>最多保留</HaulersDream.ItemUnload.ModeKeepAtMost>
 <HaulersDream.ItemUnload.ModeUnloadAlways>始终卸载</HaulersDream.ItemUnload.ModeUnloadAlways>
+  <HaulersDream.ItemUnload.ModeMixed>Mixed</HaulersDream.ItemUnload.ModeMixed>
 <HaulersDream.Setting.UnloadBeforeSleep>睡觉前先收起货物</HaulersDream.Setting.UnloadBeforeSleep>
 <HaulersDream.Setting.UnloadBeforeSleepDesc>当小人结束工作且疲惫（即将睡觉）时，会先去卸载，然后空手就寝——而不是把收取的货物带上床。它在实际工作时仍正常积攒货物。</HaulersDream.Setting.UnloadBeforeSleepDesc>
 <HaulersDream.Setting.UnloadBeforeLeisure>娱乐前先收起货物</HaulersDream.Setting.UnloadBeforeLeisure>
@@ -677,7 +678,6 @@
 <HaulersDream.Search.Placeholder>搜索设置…</HaulersDream.Search.Placeholder>
 <HaulersDream.Search.NoResults>没有设置项与你的搜索匹配。</HaulersDream.Search.NoResults>
 <HaulersDream.Search.Clear>清除搜索</HaulersDream.Search.Clear>
-  <HaulersDream.ItemUnload.SetCategory>Set whole category…</HaulersDream.ItemUnload.SetCategory>
   <HaulersDream.ItemUnload.SetCategoryTip>Apply one rule to every item in this category at once, instead of setting them one by one. Handy for big groups like ammo.</HaulersDream.ItemUnload.SetCategoryTip>
   <HaulersDream.Setting.Yield.Fishing>Fishing (catch)</HaulersDream.Setting.Yield.Fishing>
   <HaulersDream.Setting.Yield.FishingHelp>Fish and other catch pulled from a fishing spot. Needs the Odyssey expansion; the row is hidden without it.</HaulersDream.Setting.Yield.FishingHelp>

@@ -30,6 +30,7 @@
 <HaulersDream.ItemUnload.ModeKeepAll>降ろさない</HaulersDream.ItemUnload.ModeKeepAll>
 <HaulersDream.ItemUnload.ModeKeepAtMost>最大保持数</HaulersDream.ItemUnload.ModeKeepAtMost>
 <HaulersDream.ItemUnload.ModeUnloadAlways>常に降ろす</HaulersDream.ItemUnload.ModeUnloadAlways>
+  <HaulersDream.ItemUnload.ModeMixed>Mixed</HaulersDream.ItemUnload.ModeMixed>
 <HaulersDream.Setting.UnloadBeforeSleep>就寝前に荷物を片付ける</HaulersDream.Setting.UnloadBeforeSleep>
 <HaulersDream.Setting.UnloadBeforeSleepDesc>ポーンが作業を終えて疲れている（もうすぐ就寝する）とき、回収した荷物を抱えたままベッドに入るのではなく、先に降ろしに行ってから手ぶらで寝ます。実際に作業している間は通常どおり荷物をためていきます。</HaulersDream.Setting.UnloadBeforeSleepDesc>
 <HaulersDream.Setting.UnloadBeforeLeisure>娯楽の前に荷物を片付ける</HaulersDream.Setting.UnloadBeforeLeisure>
@@ -677,7 +678,6 @@
 <HaulersDream.Search.Placeholder>設定を検索…</HaulersDream.Search.Placeholder>
 <HaulersDream.Search.NoResults>検索に一致する設定はありません。</HaulersDream.Search.NoResults>
 <HaulersDream.Search.Clear>検索をクリア</HaulersDream.Search.Clear>
-  <HaulersDream.ItemUnload.SetCategory>Set whole category…</HaulersDream.ItemUnload.SetCategory>
   <HaulersDream.ItemUnload.SetCategoryTip>Apply one rule to every item in this category at once, instead of setting them one by one. Handy for big groups like ammo.</HaulersDream.ItemUnload.SetCategoryTip>
   <HaulersDream.Setting.Yield.Fishing>Fishing (catch)</HaulersDream.Setting.Yield.Fishing>
   <HaulersDream.Setting.Yield.FishingHelp>Fish and other catch pulled from a fishing spot. Needs the Odyssey expansion; the row is hidden without it.</HaulersDream.Setting.Yield.FishingHelp>

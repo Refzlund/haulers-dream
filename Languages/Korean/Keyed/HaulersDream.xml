@@ -30,6 +30,7 @@
 <HaulersDream.ItemUnload.ModeKeepAll>내려놓지 않음</HaulersDream.ItemUnload.ModeKeepAll>
 <HaulersDream.ItemUnload.ModeKeepAtMost>최대 보유</HaulersDream.ItemUnload.ModeKeepAtMost>
 <HaulersDream.ItemUnload.ModeUnloadAlways>항상 내려놓음</HaulersDream.ItemUnload.ModeUnloadAlways>
+  <HaulersDream.ItemUnload.ModeMixed>Mixed</HaulersDream.ItemUnload.ModeMixed>
 <HaulersDream.Setting.UnloadBeforeSleep>잠자기 전에 짐 내려놓기</HaulersDream.Setting.UnloadBeforeSleep>
 <HaulersDream.Setting.UnloadBeforeSleepDesc>폰이 작업을 마치고 피곤할 때(잠자기 직전), 주워 담은 짐을 침대로 가져가지 않고 먼저 내려놓으러 갔다가 빈 몸으로 자러 갑니다. 실제로 작업 중일 때는 평소처럼 계속 짐을 쌓습니다.</HaulersDream.Setting.UnloadBeforeSleepDesc>
 <HaulersDream.Setting.UnloadBeforeLeisure>여가 전에 짐 내려놓기</HaulersDream.Setting.UnloadBeforeLeisure>
@@ -677,7 +678,6 @@
 <HaulersDream.Search.Placeholder>설정 검색…</HaulersDream.Search.Placeholder>
 <HaulersDream.Search.NoResults>검색과 일치하는 설정이 없습니다.</HaulersDream.Search.NoResults>
 <HaulersDream.Search.Clear>검색 지우기</HaulersDream.Search.Clear>
-  <HaulersDream.ItemUnload.SetCategory>Set whole category…</HaulersDream.ItemUnload.SetCategory>
   <HaulersDream.ItemUnload.SetCategoryTip>Apply one rule to every item in this category at once, instead of setting them one by one. Handy for big groups like ammo.</HaulersDream.ItemUnload.SetCategoryTip>
   <HaulersDream.Setting.Yield.Fishing>Fishing (catch)</HaulersDream.Setting.Yield.Fishing>
   <HaulersDream.Setting.Yield.FishingHelp>Fish and other catch pulled from a fishing spot. Needs the Odyssey expansion; the row is hidden without it.</HaulersDream.Setting.Yield.FishingHelp>
