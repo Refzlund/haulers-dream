@@ -1,5 +1,31 @@
 # haulers-dream
 
+## 1.12.1
+
+### Patch Changes
+
+- a34cdeb: Arriving pawns now put hauled cargo into proper storage instead of the nearest pile.
+
+  When a pawn arrived somewhere with a full inventory (returning from a caravan, dropping in by pod or transporter, or teleported home by a psycast), the game's "unload everything" routine dropped its cargo into the closest storage it could find, ignoring your storage filters and priorities. Hauler's Dream was meant to step in there and route the cargo it had been hauling to proper storage instead, but a long-standing mix-up of two similarly named jobs meant that step never actually ran. It runs now, so cargo a pawn was carrying for Hauler's Dream lands where you'd want it on arrival, the same as a normal haul trip.
+
+  This only takes over on maps where there is somewhere to put the cargo (your home base, or an away map you've set up storage on). On a bare map with no storage, the cargo keeps riding home in the pawn's inventory exactly as before, so a pawn arriving on, say, an escape-ship visit just goes about its business instead of getting stuck retrying an unload it can't finish.
+
+- a34cdeb: Fix a red error when one worker finishes a build another was hauling materials to.
+
+  When several mechs or pawns built a large structure together (a substructure floor, for example), one of them could throw an error and drop its task if a different worker finished the exact piece it was still carrying materials toward. Hauler's Dream was asking the build site how much more it needed at the instant that site was completed and removed, which the game cannot answer about something that no longer exists. It now confirms the site is still there first and quietly moves on when it is gone, so the worker just picks its next job with no error and nothing carried is lost.
+
+- a34cdeb: Fix scooped crops sometimes not loading onto a caravan, transporter, portal, or vehicle.
+
+  When a pawn scooped a harvest that merged into a stack it was already carrying, the bulk loader could decide it had nothing left to load and finish early, leaving that merged stack behind to go to storage instead of onto the carrier. The loader's "is there anything to load" check was reading an outdated list of carried stacks, while the actual loading step read the corrected one, so a stack that had merged after being picked up fell through the gap. The check now reads the same corrected list the loading step uses, so a merged stack is recognized and loaded. This is the loading-side cousin of the dropped-crops bug, on the same merge trigger.
+
+- a34cdeb: Stop pawns from dropping scooped crops on the ground again.
+
+  Harvested crops, milk, eggs and other raw food a pawn had picked up to haul would sometimes get dumped back at its feet instead of carried to storage. It came back recently with psychoid leaves. The cause is a vanilla routine that clears raw food out of a colonist's inventory after a couple of in-game days, and on established saves it could slip past the old guard when a scooped stack had merged with another one. Now, while a pawn is carrying raw food it picked up, that vanilla routine is held off entirely, and the per-item guard reads the corrected list of carried stacks so a merged stack is no longer missed. So this does not quietly return in a future update, the mod also checks at startup that the protection is actually in place and reports loudly if it is not, the build fails if any layer of the guard is weakened, and a test pins the exact vanilla rule it relies on.
+
+- a34cdeb: Stop pawns from unloading one stack at a time while working at full capacity.
+
+  When a pawn had no room to build up a load (for example under Combat Extended, or when the carry limit is set below a pawn's full capacity), every single thing it scooped while working sent it off to unload a single stack at storage and come straight back for the next one. Harvesting a rice field turned into a constant back and forth, one stack per trip. The "I'm full, unload now" trigger now waits the same short cooldown between trips that the mod's other unload triggers already use, so the pawn gathers a worthwhile load and makes one trip instead of many.
+
 ## 1.12.0
 
 ### Minor Changes
