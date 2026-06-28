@@ -1,5 +1,23 @@
 # haulers-dream
 
+## 1.13.0
+
+### Minor Changes
+
+- 3276639: Fishing catches are now collected like any other work result.
+
+  With the Odyssey expansion, a pawn that finishes fishing carries its catch out to storage on its own, the same way it already does for harvested crops, mined ore, and salvage, instead of leaving the fish on the bank for a separate hauling trip. A new "Fishing (catch)" row on the Work & yields settings tab controls it: drop and collect, collect straight to inventory, or leave it on the ground for a normal hauler. The row only shows when Odyssey is active. Catches from fishing mods that build on the base game's fishing, such as Vanilla Fishing Expanded or Medieval Overhaul, are covered too, because they produce the catch through the same fishing job. An animal fishing to feed itself keeps its meal.
+
+- 3276639: Set item unload rules for a whole category at once.
+
+  The Individual Item Unload Settings window can now apply a rule to an entire category in one action instead of going item by item. Each category shows the rule its items share ("Default", "Never unload", "Keep at most", "Always unload", or "Mixed" when they differ), and clicking it sets the whole category at once. That turns setting up a large group like a combat mod's many ammo types into a single click. The list also covers every item in the game and your installed mods, organised by category the way a workbench's bill filter is.
+
+### Patch Changes
+
+- 3276639: Show Compositable Loadouts' bill mode again.
+
+  If you run Compositable Loadouts, its extra repeat mode ("X per Tag", make one of something per colonist assigned a loadout tag) went missing from the bill's repeat dropdown while Hauler's Dream was installed. Hauler's Dream rebuilds that dropdown to add its batch options, and in doing so it was leaving out modes that other mods add. It now puts Compositable Loadouts' mode back, the same way it already does for Everybody Gets One.
+
 ## 1.12.1
 
 ### Patch Changes
