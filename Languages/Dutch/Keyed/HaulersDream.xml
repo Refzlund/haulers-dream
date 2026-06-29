@@ -681,4 +681,25 @@
   <HaulersDream.ItemUnload.SetCategoryTip>Apply one rule to every item in this category at once, instead of setting them one by one. Handy for big groups like ammo.</HaulersDream.ItemUnload.SetCategoryTip>
   <HaulersDream.Setting.Yield.Fishing>Fishing (catch)</HaulersDream.Setting.Yield.Fishing>
   <HaulersDream.Setting.Yield.FishingHelp>Fish and other catch pulled from a fishing spot. Needs the Odyssey expansion; the row is hidden without it.</HaulersDream.Setting.Yield.FishingHelp>
+  <!-- Main-menu report notifications -->
+  <HaulersDream.Report.Notify.Fixed>Your report was fixed</HaulersDream.Report.Notify.Fixed>
+  <HaulersDream.Report.Notify.DevReplied>The developer replied</HaulersDream.Report.Notify.DevReplied>
+  <HaulersDream.Report.Notify.NewComment>New reply on your report</HaulersDream.Report.Notify.NewComment>
+  <HaulersDream.Report.Notify.StatusChanged>Status changed: {0}</HaulersDream.Report.Notify.StatusChanged>
+  <HaulersDream.Report.Notify.OutOfDate>An update is available (you have {0})</HaulersDream.Report.Notify.OutOfDate>
+  <HaulersDream.Report.Notify.MoreCount>and {0} more</HaulersDream.Report.Notify.MoreCount>
+
+  <HaulersDream.Head.Notifications>Main menu notifications</HaulersDream.Head.Notifications>
+  <HaulersDream.Setting.Notify.Intro>Show updates about your submitted reports in the corner of the main menu: when the developer replies, when one of your issues is fixed, and when that fix is available in an update. Click a card to read or reply in game; click the x to dismiss it.</HaulersDream.Setting.Notify.Intro>
+  <HaulersDream.Setting.NotifyThreshold.Lab>Show notifications for</HaulersDream.Setting.NotifyThreshold.Lab>
+  <HaulersDream.Setting.NotifyThreshold.Help>How much surfaces on the main menu. The further right, the less you see. Nothing is ever shown for a report you did not submit.</HaulersDream.Setting.NotifyThreshold.Help>
+  <HaulersDream.Setting.NotifyThreshold.All>Any event</HaulersDream.Setting.NotifyThreshold.All>
+  <HaulersDream.Setting.NotifyThreshold.All.Desc>New replies, status changes, and fixes.</HaulersDream.Setting.NotifyThreshold.All.Desc>
+  <HaulersDream.Setting.NotifyThreshold.Comments>Replies</HaulersDream.Setting.NotifyThreshold.Comments>
+  <HaulersDream.Setting.NotifyThreshold.Comments.Desc>New replies and fixes, but not minor status changes.</HaulersDream.Setting.NotifyThreshold.Comments.Desc>
+  <HaulersDream.Setting.NotifyThreshold.Fixed>Fixes</HaulersDream.Setting.NotifyThreshold.Fixed>
+  <HaulersDream.Setting.NotifyThreshold.Fixed.Desc>Only when one of your reports is fixed, with a heads-up if a newer version is available.</HaulersDream.Setting.NotifyThreshold.Fixed.Desc>
+  <HaulersDream.Setting.NotifyThreshold.Never>Never</HaulersDream.Setting.NotifyThreshold.Never>
+  <HaulersDream.Setting.NotifyThreshold.Never.Desc>Turn the main-menu notifications off entirely.</HaulersDream.Setting.NotifyThreshold.Never.Desc>
+
 </LanguageData>

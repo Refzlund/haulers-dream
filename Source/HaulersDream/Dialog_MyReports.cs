@@ -33,6 +33,7 @@ namespace HaulersDream
         private string commentMsg = "";    // inline feedback under the comment box
         private bool resetScrollOnThread;
         private bool autoOpenedCreate;
+        private string deepLinkReportId;   // when opened from a notification: load this report's thread directly
 
         private Vector2 listScroll;
         private Vector2 detailScroll;
@@ -46,12 +47,19 @@ namespace HaulersDream
             draggable = true;
         }
 
+        /// <summary>Open straight into one report's thread (used by the main-menu notification click).</summary>
+        public Dialog_MyReports(string openReportId) : this()
+        {
+            deepLinkReportId = openReportId;
+        }
+
         public override Vector2 InitialSize => new Vector2(640f, 640f);
 
         public override void PostOpen()
         {
             base.PostOpen();
-            LoadList();
+            if (!deepLinkReportId.NullOrEmpty()) LoadThreadById(deepLinkReportId);
+            else LoadList();
         }
 
         public override void DoWindowContents(Rect inRect)
@@ -251,10 +259,12 @@ namespace HaulersDream
             var backRect = new Rect(0f, btnRowY, 120f, 32f);
             if (Widgets.ButtonText(backRect, "HaulersDream.Report.Detail.Back".Translate()))
             {
-                view = View.List;
                 thread = null;
                 commentDraft = "";
                 commentMsg = "";
+                // A deep-linked open never loaded the list; fetch it now so Back lands on the report list.
+                if (reports == null) LoadList();
+                else view = View.List;
             }
             float x = backRect.xMax + 8f;
             if (thread != null && !thread.url.NullOrEmpty())
@@ -287,18 +297,20 @@ namespace HaulersDream
             StartGet(ReportApi.MyReportsUrl());
         }
 
-        private void LoadThread(ReportSummary r)
+        private void LoadThread(ReportSummary r) => LoadThreadById(r.id);
+
+        private void LoadThreadById(string reportId)
         {
             AbortReq();
             thread = null;
-            detailReportId = r.id;
+            detailReportId = reportId;
             commentDraft = "";
             commentMsg = "";
             view = View.Loading;
             statusMsg = "HaulersDream.Report.Detail.Loading".Translate();
             pending = Pending.Thread;
             resetScrollOnThread = true;
-            StartGet(ReportApi.ThreadUrl(r.id));
+            StartGet(ReportApi.ThreadUrl(reportId));
         }
 
         /// <summary>Re-fetch the open thread without flipping to the loading view (used after a comment posts).</summary>

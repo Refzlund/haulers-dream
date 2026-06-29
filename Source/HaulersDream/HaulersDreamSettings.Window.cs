@@ -1456,6 +1456,27 @@ namespace HaulersDream
             cleanupOnSave = HDSettingsUI.Checkbox(c, "HaulersDream.Setting.CleanupOnSave".Translate(),
                 cleanupOnSave, "HaulersDream.Setting.CleanupOnSaveDesc".Translate());
 
+            HDSettingsUI.Header(c, "HaulersDream.Head.Notifications".Translate());
+            HDSettingsUI.Note(c, "HaulersDream.Setting.Notify.Intro".Translate());
+            int notify = HDSettingsUI.Segmented(c, "HaulersDream.Setting.NotifyThreshold.Lab".Translate(),
+                (int)notifyThreshold,
+                new[]
+                {
+                    "HaulersDream.Setting.NotifyThreshold.All".Translate().ToString(),
+                    "HaulersDream.Setting.NotifyThreshold.Comments".Translate().ToString(),
+                    "HaulersDream.Setting.NotifyThreshold.Fixed".Translate().ToString(),
+                    "HaulersDream.Setting.NotifyThreshold.Never".Translate().ToString()
+                },
+                new[]
+                {
+                    "HaulersDream.Setting.NotifyThreshold.All.Desc".Translate().ToString(),
+                    "HaulersDream.Setting.NotifyThreshold.Comments.Desc".Translate().ToString(),
+                    "HaulersDream.Setting.NotifyThreshold.Fixed.Desc".Translate().ToString(),
+                    "HaulersDream.Setting.NotifyThreshold.Never.Desc".Translate().ToString()
+                },
+                "HaulersDream.Setting.NotifyThreshold.Help".Translate());
+            notifyThreshold = (NotifyThreshold)Mathf.Clamp(notify, 0, 3);
+
             if (Prefs.DevMode)
             {
                 HDSettingsUI.Header(c, "HaulersDream.Head.Developer".Translate());

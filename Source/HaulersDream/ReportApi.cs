@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Text;
+using HaulersDream.Core;
 using RimWorld;
 using UnityEngine;
 using UnityEngine.Networking;
@@ -33,6 +34,9 @@ namespace HaulersDream
         /// header) to scope the "my reports" + thread reads to this install.</summary>
         public static string ReporterId() => HaulersDreamMod.Settings != null ? HaulersDreamMod.Settings.ReporterId : "";
 
+        /// <summary>The running mod version (the assembly version, e.g. "1.13.0.0"), for the out-of-date check.</summary>
+        public static string ModVersionString() => ModVersion();
+
         /// <summary>URL for posting one attachment to a just-created report.</summary>
         public static string AttachmentUrl(string reportId, string fileName) =>
             Endpoint + "/" + reportId + "/attachment?name=" + UnityWebRequest.EscapeURL(fileName ?? "attachment");
@@ -45,6 +49,10 @@ namespace HaulersDream
 
         /// <summary>URL for posting a comment on one report (POST; send the reporter id as X-Reporter-Id).</summary>
         public static string CommentUrl(string reportId) => Endpoint + "/" + reportId + "/comment";
+
+        /// <summary>URL for the notification feed: the player's report events newer than <paramref name="sinceMs"/>
+        /// (GET; send the reporter id as X-Reporter-Id). Served from D1 only, so it is cheap to poll once per launch.</summary>
+        public static string EventsUrl(long sinceMs) => Endpoint + "/events?since=" + sinceMs.ToString(CultureInfo.InvariantCulture);
 
         /// <summary>Build the comment POST body: <c>{ "body": "..." }</c>.</summary>
         public static string BuildCommentJson(string body) => "{\"body\":" + JsonStr(body ?? string.Empty) + "}";
@@ -275,6 +283,34 @@ namespace HaulersDream
             return t;
         }
 
+        /// <summary>Parse the GET /events response into the notification feed (events + latest version + server now).</summary>
+        public static EventFeed ParseEvents(string json)
+        {
+            var feed = new EventFeed();
+            if (!(MiniJson.Parse(json) is Dictionary<string, object> root)) return feed;
+            feed.latestVersion = Str(root, "latestVersion");
+            feed.now = (long)Num(root, "now");
+            if (root.TryGetValue("events", out var arr) && arr is List<object> items)
+            {
+                foreach (var it in items)
+                {
+                    if (it is Dictionary<string, object> o)
+                        feed.events.Add(new NotifyEvent
+                        {
+                            Id = Str(o, "id"),
+                            Kind = NotifyEvent.ParseKind(Str(o, "kind")),
+                            CreatedAt = (long)Num(o, "createdAt"),
+                            ReportId = Str(o, "reportId"),
+                            Title = Str(o, "title"),
+                            Status = Str(o, "status"),
+                            Url = Str(o, "url"),
+                            Role = Str(o, "role")
+                        });
+                }
+            }
+            return feed;
+        }
+
         private static string Str(Dictionary<string, object> o, string k) =>
             o != null && o.TryGetValue(k, out var v) && v is string s ? s : null;
 
@@ -304,6 +340,14 @@ namespace HaulersDream
         public string body;
         public string createdAt; // ISO-8601 (from GitHub)
         public string role;      // maintainer / reporter / github
+    }
+
+    /// <summary>The parsed GET /events response: the player's recent report events + the latest published version.</summary>
+    internal class EventFeed
+    {
+        public string latestVersion;                       // version live on the Steam Workshop (or null)
+        public long now;                                   // server clock (ms) at the response
+        public List<NotifyEvent> events = new List<NotifyEvent>();
     }
 
     /// <summary>A report's full status + comment thread (the detail view).</summary>

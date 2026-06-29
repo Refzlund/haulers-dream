@@ -440,6 +440,12 @@ namespace HaulersDream
         public bool showAutoHaulGizmo = false;
         public bool verboseLogging = false;
 
+        // --- main-menu report notifications ---
+        // How noisy the bottom-right notifications on the main menu are (new comments / status changes /
+        // fixes on the player's own reports). A user-facing tunable, so it IS part of profile snapshots and
+        // the reset. NotifyThreshold.Never is the full opt-out (it also stops the once-per-launch poll).
+        public NotifyThreshold notifyThreshold = NotifyThreshold.All;
+
         // --- settings profiles (named presets) ---
         // Default = the built-in defaults (immutable; selecting it acts as "reset"). A named profile stores a full
         // snapshot of every setting; the selector shows "Custom (unsaved)" when the live values differ from the
@@ -452,6 +458,12 @@ namespace HaulersDream
         // then persisted; [ProfileMeta] so it is exempt from the field==Scribe==Reset drift triple, never reset (it
         // is identity, not a tunable), and not captured by profile snapshots.
         [ProfileMeta] public string reporterId = "";
+        // The newest report-event timestamp (ms) the player is "caught up" on, plus the ids of events they
+        // dismissed individually. Per-install notification state, NOT a tunable: [ProfileMeta] so they are
+        // exempt from the field==Scribe==Reset drift triple and are never reset or captured by a profile
+        // snapshot (mirrors reporterId). See ReportNotifications.
+        [ProfileMeta] public long lastSeenEventCursor = 0;
+        [ProfileMeta] public List<string> dismissedEventIds = new List<string>();
         // Recursion guard: a profile snapshot is itself a HaulersDreamSettings; while (de)serializing it the nested
         // savedProfiles/activeProfileName section is skipped (a snapshot has no profiles of its own).
         public static bool SerializingSnapshot;
@@ -639,6 +651,7 @@ namespace HaulersDream
             Scribe_Values.Look(ref hideGizmo, "hideGizmo", false);
             Scribe_Values.Look(ref showAutoHaulGizmo, "showAutoHaulGizmo", false);
             Scribe_Values.Look(ref verboseLogging, "verboseLogging", false);
+            Scribe_Values.Look(ref notifyThreshold, "notifyThreshold", NotifyThreshold.All);
 
             // Profile list + active name. Skipped while serializing a profile's own snapshot (the recursion guard),
             // since a snapshot is itself a HaulersDreamSettings and must not carry a nested profile list.
@@ -647,11 +660,14 @@ namespace HaulersDream
                 Scribe_Collections.Look(ref savedProfiles, "savedProfiles", LookMode.Deep);
                 Scribe_Values.Look(ref activeProfileName, "activeProfileName", "");
                 Scribe_Values.Look(ref reporterId, "reporterId", "");
+                Scribe_Values.Look(ref lastSeenEventCursor, "lastSeenEventCursor", 0L);
+                Scribe_Collections.Look(ref dismissedEventIds, "dismissedEventIds", LookMode.Value);
                 if (Scribe.mode == LoadSaveMode.LoadingVars)
                 {
                     if (savedProfiles == null) savedProfiles = new List<SettingsProfile>();
                     if (activeProfileName == null) activeProfileName = "";
                     if (reporterId == null) reporterId = "";
+                    if (dismissedEventIds == null) dismissedEventIds = new List<string>();
                 }
             }
         }
@@ -781,6 +797,7 @@ namespace HaulersDream
             hideGizmo = false;
             showAutoHaulGizmo = false;
             verboseLogging = false;
+            notifyThreshold = NotifyThreshold.All;
         }
 
         /// <summary>The decoded per-item rules keyed by defName, including entries whose mod is currently absent
