@@ -66,10 +66,10 @@ namespace HaulersDream
 
             if (!started)
             {
-                started = true; // kick at most once per launch
-                if (s.notifyThreshold == NotifyThreshold.Never) return;   // fully opted out -> never poll
+                if (s.notifyThreshold == NotifyThreshold.Never) return;   // opted out: don't poll, don't latch (re-check if turned on)
                 string rid = s.reporterId;                                 // RAW field: do NOT generate an id just to poll
-                if (rid.NullOrEmpty()) return;                             // never submitted a report -> nothing to fetch
+                if (rid.NullOrEmpty()) return;                             // no reports yet: re-check after the first one is filed
+                started = true;                                            // latch only once a poll actually starts (so a first report this session can still show)
                 StartPoll(rid, s.lastSeenEventCursor);
             }
 
@@ -195,17 +195,19 @@ namespace HaulersDream
         {
             var prevAnchor = Text.Anchor; var prevFont = Text.Font; var prevCol = GUI.color;
 
+            var statusColor = StatusColorFor(e);
             Widgets.DrawBoxSolid(card, new Color(0.10f, 0.11f, 0.13f, 0.92f));
             Widgets.DrawBox(card, 1);
-            Widgets.DrawBoxSolid(new Rect(card.x, card.y, 3f, card.height), AccentFor(e)); // left accent stripe
+            Widgets.DrawBoxSolid(new Rect(card.x, card.y, 3f, card.height), statusColor); // left stripe = status colour
 
             var inner = card.ContractedBy(8f);
             const float closeW = 18f;
 
+            // The status word, coloured by status (open=green, comment=yellow, resolved=purple, closed=red).
             Text.Font = GameFont.Small;
             Text.Anchor = TextAnchor.UpperLeft;
-            GUI.color = Color.white;
-            Widgets.Label(new Rect(inner.x, inner.y, inner.width - closeW - 4f, 22f), Headline(e));
+            GUI.color = statusColor;
+            Widgets.Label(new Rect(inner.x, inner.y, inner.width - closeW - 4f, 22f), StatusWord(e));
 
             Text.Font = GameFont.Tiny;
             GUI.color = new Color(1f, 1f, 1f, 0.6f);
@@ -233,41 +235,28 @@ namespace HaulersDream
             else if (Widgets.ButtonInvisible(card)) toOpen = e;
         }
 
-        private static Color AccentFor(NotifyEvent e)
+        // The card's status colour, the "vibe at a glance": a comment is always yellow; otherwise the
+        // colour follows the issue status (open=green, resolved=purple, closed=muted red).
+        private static Color StatusColorFor(NotifyEvent e)
         {
-            switch (e.Kind)
+            if (e.Kind == NotifyEventKind.Comment) return new Color(0.95f, 0.80f, 0.30f); // yellow
+            switch (e.Status)
             {
-                case NotifyEventKind.Fixed: return new Color(0.4f, 0.3f, 0.62f, 0.9f);   // solved / purple
-                case NotifyEventKind.Comment: return new Color(0.3f, 0.5f, 0.85f, 0.9f); // blue
-                default: return new Color(0.55f, 0.55f, 0.6f, 0.9f);                     // state / grey
+                case "solved": return new Color(0.62f, 0.47f, 0.85f); // purple
+                case "closed": return new Color(0.82f, 0.40f, 0.40f); // muted red
+                default: return new Color(0.38f, 0.76f, 0.45f);       // open / submitted -> green
             }
         }
 
-        private static string Headline(NotifyEvent e)
+        // The coloured status word shown as the card's headline.
+        private static string StatusWord(NotifyEvent e)
         {
-            switch (e.Kind)
+            if (e.Kind == NotifyEventKind.Comment) return "HaulersDream.Report.Notify.Word.Comment".Translate();
+            switch (e.Status)
             {
-                case NotifyEventKind.Fixed:
-                    return "HaulersDream.Report.Notify.Fixed".Translate();
-                case NotifyEventKind.Comment:
-                    return (e.Role == "maintainer"
-                        ? "HaulersDream.Report.Notify.DevReplied"
-                        : "HaulersDream.Report.Notify.NewComment").Translate();
-                case NotifyEventKind.State:
-                    return "HaulersDream.Report.Notify.StatusChanged".Translate(StatusLabel(e.Status));
-                default:
-                    return "HaulersDream.Report.Notify.NewComment".Translate();
-            }
-        }
-
-        private static string StatusLabel(string status)
-        {
-            switch (status)
-            {
-                case "open": return "HaulersDream.Report.Status.Open".Translate();
-                case "solved": return "HaulersDream.Report.Status.Solved".Translate();
-                case "closed": return "HaulersDream.Report.Status.Closed".Translate();
-                default: return "HaulersDream.Report.Status.Submitted".Translate();
+                case "solved": return "HaulersDream.Report.Notify.Word.Resolved".Translate();
+                case "closed": return "HaulersDream.Report.Notify.Word.Closed".Translate();
+                default: return "HaulersDream.Report.Notify.Word.Open".Translate();
             }
         }
     }
