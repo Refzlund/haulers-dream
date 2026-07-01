@@ -38,6 +38,7 @@ namespace HaulersDream
             var harmony = new Harmony(HarmonyId);
             ApplyPatchesResilient(harmony, Assembly.GetExecutingAssembly());
             VerifyDropProtection(harmony);
+            HaulersDreamSettings.VerifyProfileIntegrity();
             HDLog.Msg("initialised — carry limit defaults to each pawn's max carrying capacity.");
         }
 

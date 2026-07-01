@@ -97,6 +97,16 @@ namespace HaulersDream
                     foreach (var kv in rp)
                         d[kv.Key] = CloneRoutePrefs(kv.Value);
                     return d;
+                case Dictionary<string, SowRouteTemplate> sr:
+                    var sd = new Dictionary<string, SowRouteTemplate>(sr.Count);
+                    foreach (var kv in sr)
+                        sd[kv.Key] = CloneSowTemplate(kv.Value);
+                    return sd;
+                case Dictionary<string, RemoveFloorRouteTemplate> rf:
+                    var rfd = new Dictionary<string, RemoveFloorRouteTemplate>(rf.Count);
+                    foreach (var kv in rf)
+                        rfd[kv.Key] = CloneRemoveFloorTemplate(kv.Value);
+                    return rfd;
                 case string _:
                     return v; // immutable
                 default:
@@ -119,6 +129,26 @@ namespace HaulersDream
                 mode = s.mode, maxTravel = s.maxTravel, radius = s.radius, amount = s.amount, smart = s.smart,
                 allowHarvest = s.allowHarvest, growthThreshold = s.growthThreshold,
                 selectionMethod = s.selectionMethod, distanceBasis = s.distanceBasis,
+            };
+        }
+
+        private static SowRouteTemplate CloneSowTemplate(SowRouteTemplate s)
+        {
+            if (s == null) return null;
+            return new SowRouteTemplate
+            {
+                mode = s.mode, maxTravel = s.maxTravel, radius = s.radius, amount = s.amount,
+                smart = s.smart, selectionMethod = s.selectionMethod,
+            };
+        }
+
+        private static RemoveFloorRouteTemplate CloneRemoveFloorTemplate(RemoveFloorRouteTemplate s)
+        {
+            if (s == null) return null;
+            return new RemoveFloorRouteTemplate
+            {
+                mode = s.mode, maxTravel = s.maxTravel, radius = s.radius, amount = s.amount,
+                selectionMethod = s.selectionMethod,
             };
         }
 
@@ -146,6 +176,20 @@ namespace HaulersDream
                 && a.selectionMethod == b.selectionMethod && a.distanceBasis == b.distanceBasis;
         }
 
+        // The two remembered-route templates already carry a field-by-field ValueEquals; reuse it (single source of
+        // truth for their field list) with a null-safe wrapper so two missing entries compare equal.
+        private static bool SowTemplateEqual(SowRouteTemplate a, SowRouteTemplate b)
+        {
+            if (a == null || b == null) return a == null && b == null;
+            return a.ValueEquals(b);
+        }
+
+        private static bool RemoveFloorTemplateEqual(RemoveFloorRouteTemplate a, RemoveFloorRouteTemplate b)
+        {
+            if (a == null || b == null) return a == null && b == null;
+            return a.ValueEquals(b);
+        }
+
         private static bool ValuesEqual(object x, object y)
         {
             if (x == null || y == null) return x == null && y == null;
@@ -163,14 +207,27 @@ namespace HaulersDream
                     foreach (var kv in dx)
                         if (!dy.TryGetValue(kv.Key, out var p2) || !RoutePrefsEqual(kv.Value, p2)) return false;
                     return true;
+                case Dictionary<string, SowRouteTemplate> sx:
+                    var sy = y as Dictionary<string, SowRouteTemplate>;
+                    if (sy == null || sx.Count != sy.Count) return false;
+                    foreach (var kv in sx)
+                        if (!sy.TryGetValue(kv.Key, out var s2) || !SowTemplateEqual(kv.Value, s2)) return false;
+                    return true;
+                case Dictionary<string, RemoveFloorRouteTemplate> rx:
+                    var ry = y as Dictionary<string, RemoveFloorRouteTemplate>;
+                    if (ry == null || rx.Count != ry.Count) return false;
+                    foreach (var kv in rx)
+                        if (!ry.TryGetValue(kv.Key, out var r2) || !RemoveFloorTemplateEqual(kv.Value, r2)) return false;
+                    return true;
                 default:
-                    // Compare floats with a small tolerance instead of exact equality: a float that was persisted
-                    // to the config and reloaded can differ from the in-memory ResetToDefaults() default by a
-                    // byte-level round-trip / format artifact, which spuriously flags a fresh DEFAULT config as
-                    // "Custom (unsaved)" (reported under the Chinese locale). The tolerance (1e-4) is far below any
-                    // HD setting's observable granularity (percentage sliders read at 1% / 0.01, and the smallest
-                    // float default is bleedThresholdPerDay = 0.001), so no user-visible change is ever masked;
-                    // ints, bools, enums and strings still compare exactly.
+                    // Compare floats with a small tolerance rather than exact bit-equality: a float persisted to the
+                    // config and reloaded can differ from the in-memory ResetToDefaults() default by a round-trip /
+                    // formatting artifact. The tolerance (1e-4) is far below any HD setting's observable granularity
+                    // (percentage sliders read at 1% / 0.01; the smallest float default is bleedThresholdPerDay =
+                    // 0.001), so no user-visible change is ever masked; ints, bools, enums and strings compare
+                    // exactly. NOTE: the reported "Custom (unsaved)" on a pristine config was NOT a float artifact —
+                    // it was the two Dictionary cases above (remembered sow / remove-floor routes) falling through to
+                    // this reference-equality Equals; this tolerance is defensive hardening, not that fix.
                     if (x is float fa && y is float fb)
                         return fa == fb || System.Math.Abs(fa - fb) <= 1e-4f;
                     return x.Equals(y);
@@ -256,6 +313,59 @@ namespace HaulersDream
         {
             ResetToDefaults();
             activeProfileName = "";
+        }
+
+        /// <summary>Startup tripwire for the profile system's value-equality / clone / codec coverage. Every serialized
+        /// REFERENCE-type setting needs a matching case in <see cref="ValuesEqual"/>, <see cref="CloneValue"/>, and
+        /// the copy/paste codec; a field that is missing one makes a pristine (or freshly reset) config compare
+        /// UNEQUAL to the defaults, so the selector wrongly reads "Custom (unsaved)" and "Create/Copy profile" can
+        /// throw (this was the reported bug: the two remembered-route dictionaries fell through to reference equality).
+        /// This exercises the real capture + compare + export/import paths on a fresh default — plus a synthesized
+        /// remembered-route entry so the two template dictionaries are actually encoded — and logs a LOUD error the
+        /// moment the invariant breaks, turning a silent "always Custom" regression into something visible in the log
+        /// (mirroring the drop-protection tripwire). Never throws and never disables anything.</summary>
+        public static void VerifyProfileIntegrity()
+        {
+            try
+            {
+                var a = new HaulersDreamSettings();
+                a.ResetToDefaults();
+                var b = new HaulersDreamSettings();
+                b.ResetToDefaults();
+
+                // A fresh default must equal another fresh default. If a serialized reference field lacks a
+                // ValuesEqual case (so it compares by reference), this is false and the selector shows "Custom".
+                if (!StateEquals(a, b))
+                    HDLog.Err("PROFILE TRIPWIRE: two freshly-reset default configurations do not compare equal — a "
+                        + "serialized reference-type setting is missing a ValuesEqual case in SettingsProfiles, so the "
+                        + "profile selector shows \"Custom (unsaved)\" on a pristine or just-reset config. Please "
+                        + "report this with the log attached.");
+
+                // Capturing a snapshot must not throw (a missing CloneValue case throws) and must round-trip equal.
+                var snap = a.CaptureSnapshot();
+                if (!StateEquals(a, snap))
+                    HDLog.Err("PROFILE TRIPWIRE: a captured profile snapshot does not equal its source — a serialized "
+                        + "reference-type setting is cloned or compared incorrectly in SettingsProfiles. Please report "
+                        + "this with the log attached.");
+
+                // Export -> import must round-trip a profile that actually USES the reference-type template
+                // dictionaries, so the copy/paste codec's encode + parse are exercised (not just the empty no-op).
+                var withData = a.CaptureSnapshot();
+                withData.rememberedSowRoutesByDef["HaulersDreamProfileSelfTest"] = new SowRouteTemplate { maxTravel = 42 };
+                withData.rememberedRemoveFloorRoutesByDef["HaulersDreamProfileSelfTest"] = new RemoveFloorRouteTemplate { radius = 3 };
+                var token = a.ExportProfileToString(withData, "self-test");
+                if (!a.TryImportProfileFromString(token, out _, out var back) || !StateEquals(withData, back))
+                    HDLog.Err("PROFILE TRIPWIRE: a profile that uses remembered sow / remove-floor routes does not "
+                        + "survive copy -> paste — the copy/paste codec is missing an encode/parse case in "
+                        + "SettingsProfiles. Please report this with the log attached.");
+            }
+            catch (System.Exception e)
+            {
+                HDLog.Err($"PROFILE TRIPWIRE: capturing or comparing a default profile threw {e.GetType().Name}: "
+                    + $"{e.Message} — a serialized reference-type setting is missing a CloneValue / codec case in "
+                    + "SettingsProfiles, so \"Create new profile\" / \"Copy profile\" will fail. Please report this "
+                    + "with the log attached.");
+            }
         }
 
         /// <summary>Overwrite the active named profile with the current live values.</summary>
@@ -446,6 +556,10 @@ namespace HaulersDream
                         + RS + string.Join(US.ToString(), sf.allowed ?? Enumerable.Empty<string>());
                 case Dictionary<string, RouteDialogPrefs> rp:
                     return string.Join(RS.ToString(), rp.Select(kv => kv.Key + US + EncodeRoutePrefs(kv.Value)));
+                case Dictionary<string, SowRouteTemplate> sr:
+                    return string.Join(RS.ToString(), sr.Select(kv => kv.Key + US + EncodeSowTemplate(kv.Value)));
+                case Dictionary<string, RemoveFloorRouteTemplate> rf:
+                    return string.Join(RS.ToString(), rf.Select(kv => kv.Key + US + EncodeRemoveFloorTemplate(kv.Value)));
                 case Enum e:
                     return e.ToString();
                 case float f:
@@ -474,6 +588,33 @@ namespace HaulersDream
             });
         }
 
+        private static string EncodeSowTemplate(SowRouteTemplate p)
+        {
+            if (p == null) p = new SowRouteTemplate();
+            return string.Join(US.ToString(), new[]
+            {
+                p.mode.ToString(),
+                p.maxTravel.ToString(CultureInfo.InvariantCulture),
+                p.radius.ToString(CultureInfo.InvariantCulture),
+                p.amount.ToString(CultureInfo.InvariantCulture),
+                p.smart ? "1" : "0",
+                p.selectionMethod.ToString(),
+            });
+        }
+
+        private static string EncodeRemoveFloorTemplate(RemoveFloorRouteTemplate p)
+        {
+            if (p == null) p = new RemoveFloorRouteTemplate();
+            return string.Join(US.ToString(), new[]
+            {
+                p.mode.ToString(),
+                p.maxTravel.ToString(CultureInfo.InvariantCulture),
+                p.radius.ToString(CultureInfo.InvariantCulture),
+                p.amount.ToString(CultureInfo.InvariantCulture),
+                p.selectionMethod.ToString(),
+            });
+        }
+
         // Decode a string value into the field on the target, dispatched by the field's declared type. A value that
         // fails to parse (corrupt paste, an enum name from a newer version) is skipped with a visible warning so the
         // rest of the profile still imports — malformed external input is not a fault to crash on.
@@ -499,6 +640,8 @@ namespace HaulersDream
                 return s.Length == 0 ? new List<string>() : new List<string>(s.Split(US).Where(x => x.Length > 0));
             if (t == typeof(StorageBuildingFilter)) return ParseFilter(s);
             if (t == typeof(Dictionary<string, RouteDialogPrefs>)) return ParseRoutePrefsDict(s);
+            if (t == typeof(Dictionary<string, SowRouteTemplate>)) return ParseSowTemplateDict(s);
+            if (t == typeof(Dictionary<string, RemoveFloorRouteTemplate>)) return ParseRemoveFloorTemplateDict(s);
             return Convert.ChangeType(s, t, CultureInfo.InvariantCulture);
         }
 
@@ -536,6 +679,47 @@ namespace HaulersDream
                     growthThreshold = int.Parse(f[7], CultureInfo.InvariantCulture),
                     selectionMethod = (RouteSelectionMethod)Enum.Parse(typeof(RouteSelectionMethod), f[8]),
                     distanceBasis = (RouteDistanceBasis)Enum.Parse(typeof(RouteDistanceBasis), f[9]),
+                };
+            }
+            return d;
+        }
+
+        private static Dictionary<string, SowRouteTemplate> ParseSowTemplateDict(string s)
+        {
+            var d = new Dictionary<string, SowRouteTemplate>();
+            if (s.Length == 0) return d;
+            foreach (var entry in s.Split(RS))
+            {
+                var f = entry.Split(US);
+                if (f.Length < 7) continue; // key + 6 fields
+                d[f[0]] = new SowRouteTemplate
+                {
+                    mode = (SowRouteMode)Enum.Parse(typeof(SowRouteMode), f[1]),
+                    maxTravel = int.Parse(f[2], CultureInfo.InvariantCulture),
+                    radius = int.Parse(f[3], CultureInfo.InvariantCulture),
+                    amount = int.Parse(f[4], CultureInfo.InvariantCulture),
+                    smart = f[5] == "1",
+                    selectionMethod = (RouteSelectionMethod)Enum.Parse(typeof(RouteSelectionMethod), f[6]),
+                };
+            }
+            return d;
+        }
+
+        private static Dictionary<string, RemoveFloorRouteTemplate> ParseRemoveFloorTemplateDict(string s)
+        {
+            var d = new Dictionary<string, RemoveFloorRouteTemplate>();
+            if (s.Length == 0) return d;
+            foreach (var entry in s.Split(RS))
+            {
+                var f = entry.Split(US);
+                if (f.Length < 6) continue; // key + 5 fields
+                d[f[0]] = new RemoveFloorRouteTemplate
+                {
+                    mode = (RemoveFloorRouteMode)Enum.Parse(typeof(RemoveFloorRouteMode), f[1]),
+                    maxTravel = int.Parse(f[2], CultureInfo.InvariantCulture),
+                    radius = int.Parse(f[3], CultureInfo.InvariantCulture),
+                    amount = int.Parse(f[4], CultureInfo.InvariantCulture),
+                    selectionMethod = (RouteSelectionMethod)Enum.Parse(typeof(RouteSelectionMethod), f[5]),
                 };
             }
             return d;
