@@ -6,13 +6,14 @@ namespace HaulersDream
 {
     /// <summary>
     /// Adds a "Plan prioritized removing floor…" option to the right-click float menu when the clicked CELL has a
-    /// removable floor — the remove-floor analogue of the sow-cell <see cref="FloatMenuOptionProvider_PlanSowRoute"/>.
+    /// floor MARKED for removal — the remove-floor analogue of the sow-cell <see cref="FloatMenuOptionProvider_PlanSowRoute"/>.
     /// Removing floor is cell-based (vanilla <see cref="WorkGiver_ConstructRemoveFloor"/> targets cells, not Things),
     /// so it can't be surfaced by clicking a Thing; we hook the clicked CELL instead.
     ///
     /// <para>A vanilla auto-discovered provider (all <see cref="FloatMenuOptionProvider"/> subclasses are found by
     /// reflection), so it needs no Harmony patching. <see cref="GetOptions"/> is the per-MENU hook (it reads
-    /// <c>ClickedCell</c>); we emit at most one option, only when the clicked cell itself has a removable floor.</para>
+    /// <c>ClickedCell</c>); we emit at most one option, only when the clicked cell's floor is already marked for
+    /// removal (issue #110 — it previously appeared over every built floor and cluttered the menu).</para>
     /// </summary>
     public class FloatMenuOptionProvider_PlanRemoveFloorRoute : FloatMenuOptionProvider
     {
@@ -44,7 +45,9 @@ namespace HaulersDream
             if (pawn.Map.fogGrid.IsFogged(cell))
                 yield break;
 
-            // Only offer the option when the clicked cell itself has a removable floor (the route's anchor).
+            // Only offer the option when the clicked cell's floor is already MARKED for removal (issue #110 — it used
+            // to appear over every removable floor, cluttering the menu when hauling / cleaning). IsRemovableFloorCell
+            // now requires the RemoveFloor designation, so this is both the visibility gate and the route's anchor.
             if (!RemoveFloorRouteSelection.IsRemovableFloorCell(pawn, cell))
                 yield break;
 

@@ -15,9 +15,10 @@ namespace HaulersDream
     /// <see cref="SowRouteExecutor"/> pipeline.
     ///
     /// <para>Unlike sowing (which needs no designation — the zone + plant def drive it), the remove-floor WorkGiver's
-    /// base gate REQUIRES the RemoveFloor designation on the cell, so we ADD the designation BEFORE calling
-    /// <c>HasJobOnCell</c>. Adding designations + queueing jobs are synced world mutations that only run inside the
-    /// synced <see cref="Execute"/> path.</para>
+    /// base gate REQUIRES the RemoveFloor designation on the cell. Since issue #110 the planner only selects cells that
+    /// are ALREADY marked for removal, so the designation is normally present already; the <c>AddDesignation</c> below
+    /// stays as a defensive safety net (it fires only if an undesignated cell somehow reaches here). Adding
+    /// designations + queueing jobs are synced world mutations that only run inside the synced <see cref="Execute"/> path.</para>
     /// </summary>
     public static class RemoveFloorRouteExecutor
     {
@@ -93,8 +94,9 @@ namespace HaulersDream
             var map = pawn.Map;
 
             // Build a forced RemoveFloor job per cell, in route order. The RemoveFloor WorkGiver's base gate needs the
-            // designation PRESENT, so add it first when absent, then let HasJobOnCell re-validate (terrain removable,
-            // no blocking building, reservable). No try/catch: a vanilla WorkGiver throwing is a real bug to surface.
+            // designation PRESENT; since #110 the planner only selects already-marked cells, so the AddDesignation is a
+            // safety net (normally a no-op). Then HasJobOnCell re-validates (terrain removable, no blocking building,
+            // reservable). No try/catch: a vanilla WorkGiver throwing is a real bug to surface.
             var jobs = new List<Job>(plan.cells.Count);
             var jobCells = new List<IntVec3>(plan.cells.Count);
             for (int i = 0; i < plan.cells.Count; i++)
