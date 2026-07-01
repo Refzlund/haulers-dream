@@ -705,7 +705,7 @@
 
   <!-- PR #91: multi-target planner + remember-plan toggle + remove-floor route -->
   <HaulersDream.PlanRoute.OptionRemembered>Запланировать приоритетное {0} (запомнено)</HaulersDream.PlanRoute.OptionRemembered>
-  <HaulersDream.PlanRoute.RememberToggleTip>Запоминать план: если включено, планирование приоритетного маршрута одним щелчком повторно применяет настройки, использованные в прошлый раз для этого вида цели, минуя окно планировщика. Если выключено, планировщик открывается каждый раз, чтобы вы могли изменить маршрут.</HaulersDream.PlanRoute.RememberToggleTip>
+  <HaulersDream.PlanRoute.RememberToggleTip>Запоминать план: главный переключатель запомненных маршрутов в один щелчок. Если включено, у цели, для которой вы сохранили план (кнопкой «Запомнить» в планировщике), показывается «Запланировать приоритетное … (запомнено)» и выполняется одним щелчком; если выключено, планировщик открывается каждый раз. Цель без сохранённого плана всегда открывает планировщик, даже когда это включено.</HaulersDream.PlanRoute.RememberToggleTip>
   <HaulersDream.PlanRoute.AddTarget>Добавить тип цели…</HaulersDream.PlanRoute.AddTarget>
   <HaulersDream.PlanRoute.AddTargetStop>Завершить добавление типов</HaulersDream.PlanRoute.AddTargetStop>
   <HaulersDream.PlanRoute.TargetTypesHeader>Типы целей: {0}</HaulersDream.PlanRoute.TargetTypesHeader>
@@ -714,5 +714,7 @@
   <HaulersDream.PlanRoute.RemoveFloorGerund>удаление пола</HaulersDream.PlanRoute.RemoveFloorGerund>
   <HaulersDream.PlanRoute.ModeFloorArea>Область — соединённый пол</HaulersDream.PlanRoute.ModeFloorArea>
   <HaulersDream.PlanRoute.ModeFloorAreaDesc>Удаляет пол на всём смежном участке снимаемого пола вокруг выбранной клетки (весь пол руин), до предела маршрута.</HaulersDream.PlanRoute.ModeFloorAreaDesc>
-  <HaulersDream.PlanRoute.RememberCheckbox>Запоминать план</HaulersDream.PlanRoute.RememberCheckbox>
+  <HaulersDream.PlanRoute.RememberButton>Запомнить эти настройки</HaulersDream.PlanRoute.RememberButton>
+  <HaulersDream.PlanRoute.RememberButtonDesc>Сохраняет эти настройки как запомненный план для этого вида цели, чтобы в её меню правого щелчка появлялось «Запланировать приоритетное … (запомнено)» для выполнения одним щелчком (пока включён переключатель интерфейса «Запоминать план»). Это перезапишет любой план, ранее запомненный для этого типа.</HaulersDream.PlanRoute.RememberButtonDesc>
+  <HaulersDream.PlanRoute.RememberedConfirm>План запомнен для {0}.</HaulersDream.PlanRoute.RememberedConfirm>
 </LanguageData>

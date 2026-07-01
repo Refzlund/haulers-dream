@@ -705,7 +705,7 @@
 
   <!-- PR #91: multi-target planner + remember-plan toggle + remove-floor route -->
   <HaulersDream.PlanRoute.OptionRemembered>Planifier {0} priorisé (mémorisé)</HaulersDream.PlanRoute.OptionRemembered>
-  <HaulersDream.PlanRoute.RememberToggleTip>Mémoriser le plan : activé, planifier un itinéraire priorisé réutilise en un clic les réglages utilisés la dernière fois pour ce type de cible, sans ouvrir la fenêtre du planificateur. Désactivé, le planificateur s’ouvre à chaque fois pour ajuster l’itinéraire.</HaulersDream.PlanRoute.RememberToggleTip>
+  <HaulersDream.PlanRoute.RememberToggleTip>Mémoriser le plan : l’interrupteur principal des itinéraires mémorisés en un clic. Activé, une cible pour laquelle tu as enregistré un plan (avec le bouton Mémoriser du planificateur) affiche « Planifier … priorisé (mémorisé) » et l’exécute en un clic ; désactivé, le planificateur s’ouvre à chaque fois. Une cible sans plan enregistré ouvre toujours le planificateur, même lorsque ceci est activé.</HaulersDream.PlanRoute.RememberToggleTip>
   <HaulersDream.PlanRoute.AddTarget>Ajouter un type de cible…</HaulersDream.PlanRoute.AddTarget>
   <HaulersDream.PlanRoute.AddTargetStop>Terminer l’ajout de types</HaulersDream.PlanRoute.AddTargetStop>
   <HaulersDream.PlanRoute.TargetTypesHeader>Types de cible : {0}</HaulersDream.PlanRoute.TargetTypesHeader>
@@ -714,5 +714,7 @@
   <HaulersDream.PlanRoute.RemoveFloorGerund>retrait du sol</HaulersDream.PlanRoute.RemoveFloorGerund>
   <HaulersDream.PlanRoute.ModeFloorArea>Zone — le sol contigu</HaulersDream.PlanRoute.ModeFloorArea>
   <HaulersDream.PlanRoute.ModeFloorAreaDesc>Retire le sol sur toute la parcelle contiguë de sol amovible autour de la case cliquée (tout le sol des ruines), jusqu’à la limite de l’itinéraire.</HaulersDream.PlanRoute.ModeFloorAreaDesc>
-  <HaulersDream.PlanRoute.RememberCheckbox>Mémoriser le plan</HaulersDream.PlanRoute.RememberCheckbox>
+  <HaulersDream.PlanRoute.RememberButton>Mémoriser ces réglages</HaulersDream.PlanRoute.RememberButton>
+  <HaulersDream.PlanRoute.RememberButtonDesc>Enregistre ces réglages comme plan mémorisé pour ce type de cible, afin que son menu clic droit propose « Planifier … priorisé (mémorisé) » pour l’exécuter en un clic (tant que l’interrupteur d’interface Mémoriser le plan est activé). Ceci écrase tout plan précédemment mémorisé pour ce type.</HaulersDream.PlanRoute.RememberButtonDesc>
+  <HaulersDream.PlanRoute.RememberedConfirm>Plan mémorisé pour {0}.</HaulersDream.PlanRoute.RememberedConfirm>
 </LanguageData>

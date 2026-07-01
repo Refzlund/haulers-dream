@@ -109,11 +109,13 @@ namespace HaulersDream
 
         // --- planners (the right-click "Plan prioritized …" tools) ---
         public bool planRoutes = true;   // route planner (harvest/mine/clean/deconstruct/construction routes)
-        // "Remember plan" interface toggle (bottom-right play-settings row): when ON (the default), a "Plan
-        // prioritized …" click reuses the last-used settings for that target type in one click (skipping the dialog);
-        // when OFF the dialog opens as usual. Controlled by the interface toggle and a checkbox in the plan dialog,
-        // not the settings window (hence not drawn there). A brand-new target type still opens the dialog the first
-        // time (there is nothing to reuse yet), so ON-by-default never skips a plan the player hasn't set up.
+        // "Remember plan" interface toggle (bottom-right play-settings row) — the MASTER SWITCH for one-click
+        // remembered routes. When ON (the default), a target type that has an explicit remembered template (saved via
+        // the "Remember" button in a plan dialog — see rememberedRoutesByDef) shows "Plan prioritized … (remembered)"
+        // and runs that template in one click; when OFF, the planner dialog always opens. The toggle alone is NOT
+        // enough: with no saved template for a type its option stays the plain "Plan prioritized …" (opens the dialog),
+        // even while the toggle is on — so ON-by-default never one-clicks a plan the player never chose to remember.
+        // Lives on the interface toggle only (not the settings window, hence not drawn there).
         public bool rememberPlan = true;
         public bool planCrafting = true; // station crafting planner (batch a bill N times in one go)
         // Batch-Y bill mode: when ON, a newly-created batchable bill starts in batch mode at defaultBatchSize.
@@ -356,6 +358,53 @@ namespace HaulersDream
             if (routePrefsByDef == null)
                 routePrefsByDef = new Dictionary<string, RouteDialogPrefs>();
             routePrefsByDef[defName] = prefs;
+        }
+
+        // Explicit "remembered" route templates — a SEPARATE layer from routePrefsByDef above. routePrefsByDef is the
+        // per-instance auto-restore the plan dialog writes on EVERY close (so the window reopens the way you left it);
+        // these dictionaries are written ONLY when the player presses the "Remember" button in a plan dialog. Their
+        // presence is what makes a specific type's right-click menu read "Plan prioritized … (remembered)" and run in
+        // one click — rememberPlan (the interface toggle) is the master switch that must ALSO be on. Keyed by the
+        // specific type: the target ThingDef (thing route), the growing zone's plant ThingDef (sow), or the clicked
+        // cell's floor TerrainDef (remove-floor).
+        public Dictionary<string, RouteDialogPrefs> rememberedRoutesByDef = new Dictionary<string, RouteDialogPrefs>();
+        public Dictionary<string, SowRouteTemplate> rememberedSowRoutesByDef = new Dictionary<string, SowRouteTemplate>();
+        public Dictionary<string, RemoveFloorRouteTemplate> rememberedRemoveFloorRoutesByDef = new Dictionary<string, RemoveFloorRouteTemplate>();
+
+        public RouteDialogPrefs GetRememberedRoute(string defName)
+            => defName != null && rememberedRoutesByDef != null && rememberedRoutesByDef.TryGetValue(defName, out var t) ? t : null;
+
+        public void SetRememberedRoute(string defName, RouteDialogPrefs template)
+        {
+            if (defName == null || template == null)
+                return;
+            if (rememberedRoutesByDef == null)
+                rememberedRoutesByDef = new Dictionary<string, RouteDialogPrefs>();
+            rememberedRoutesByDef[defName] = template;
+        }
+
+        public SowRouteTemplate GetRememberedSowRoute(string defName)
+            => defName != null && rememberedSowRoutesByDef != null && rememberedSowRoutesByDef.TryGetValue(defName, out var t) ? t : null;
+
+        public void SetRememberedSowRoute(string defName, SowRouteTemplate template)
+        {
+            if (defName == null || template == null)
+                return;
+            if (rememberedSowRoutesByDef == null)
+                rememberedSowRoutesByDef = new Dictionary<string, SowRouteTemplate>();
+            rememberedSowRoutesByDef[defName] = template;
+        }
+
+        public RemoveFloorRouteTemplate GetRememberedRemoveFloorRoute(string defName)
+            => defName != null && rememberedRemoveFloorRoutesByDef != null && rememberedRemoveFloorRoutesByDef.TryGetValue(defName, out var t) ? t : null;
+
+        public void SetRememberedRemoveFloorRoute(string defName, RemoveFloorRouteTemplate template)
+        {
+            if (defName == null || template == null)
+                return;
+            if (rememberedRemoveFloorRoutesByDef == null)
+                rememberedRemoveFloorRoutesByDef = new Dictionary<string, RemoveFloorRouteTemplate>();
+            rememberedRemoveFloorRoutesByDef[defName] = template;
         }
 
         // --- station crafting planner ---
@@ -621,6 +670,16 @@ namespace HaulersDream
             Scribe_Collections.Look(ref routePrefsByDef, "routePrefsByDef", LookMode.Value, LookMode.Deep);
             if (Scribe.mode == LoadSaveMode.LoadingVars && routePrefsByDef == null)
                 routePrefsByDef = new Dictionary<string, RouteDialogPrefs>();
+            // Explicit remembered templates (the "Remember" button). Separate stores from routePrefsByDef; see fields.
+            Scribe_Collections.Look(ref rememberedRoutesByDef, "rememberedRoutesByDef", LookMode.Value, LookMode.Deep);
+            Scribe_Collections.Look(ref rememberedSowRoutesByDef, "rememberedSowRoutesByDef", LookMode.Value, LookMode.Deep);
+            Scribe_Collections.Look(ref rememberedRemoveFloorRoutesByDef, "rememberedRemoveFloorRoutesByDef", LookMode.Value, LookMode.Deep);
+            if (Scribe.mode == LoadSaveMode.LoadingVars)
+            {
+                if (rememberedRoutesByDef == null) rememberedRoutesByDef = new Dictionary<string, RouteDialogPrefs>();
+                if (rememberedSowRoutesByDef == null) rememberedSowRoutesByDef = new Dictionary<string, SowRouteTemplate>();
+                if (rememberedRemoveFloorRoutesByDef == null) rememberedRemoveFloorRoutesByDef = new Dictionary<string, RemoveFloorRouteTemplate>();
+            }
             Scribe_Values.Look(ref pauseWhileDrafted, "pauseWhileDrafted", true);
             Scribe_Values.Look(ref allowMechanoids, "allowMechanoids", true);
             Scribe_Values.Look(ref mechHaulMultiplier, "mechHaulMultiplier", 1.0f);
@@ -781,6 +840,9 @@ namespace HaulersDream
             routeOrderExactMax = RouteOrderPolicy.ExactMax;
             craftBatchTimeoutHours = 2f;
             routePrefsByDef = new Dictionary<string, RouteDialogPrefs>();
+            rememberedRoutesByDef = new Dictionary<string, RouteDialogPrefs>();
+            rememberedSowRoutesByDef = new Dictionary<string, SowRouteTemplate>();
+            rememberedRemoveFloorRoutesByDef = new Dictionary<string, RemoveFloorRouteTemplate>();
             pauseWhileDrafted = true;
             allowMechanoids = true;
             mechHaulMultiplier = 1.0f;

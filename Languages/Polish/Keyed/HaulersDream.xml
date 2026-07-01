@@ -705,7 +705,7 @@
 
   <!-- PR #91: multi-target planner + remember-plan toggle + remove-floor route -->
   <HaulersDream.PlanRoute.OptionRemembered>Zaplanuj spriorytetyzowane {0} (zapamiętane)</HaulersDream.PlanRoute.OptionRemembered>
-  <HaulersDream.PlanRoute.RememberToggleTip>Zapamiętaj plan: gdy włączone, planowanie priorytetowej trasy jednym kliknięciem używa ustawień ostatnio użytych dla tego rodzaju celu, pomijając okno planera. Gdy wyłączone, planer otwiera się za każdym razem, aby dostosować trasę.</HaulersDream.PlanRoute.RememberToggleTip>
+  <HaulersDream.PlanRoute.RememberToggleTip>Zapamiętaj plan: główny przełącznik zapamiętanych tras obsługiwanych jednym kliknięciem. Gdy włączone, cel, dla którego zapisano plan (przyciskiem Zapamiętaj w planerze), pokazuje „Zaplanuj spriorytetyzowane … (zapamiętane)” i uruchamia go jednym kliknięciem; gdy wyłączone, planer otwiera się za każdym razem. Cel bez zapisanego planu zawsze otwiera planer, nawet gdy to jest włączone.</HaulersDream.PlanRoute.RememberToggleTip>
   <HaulersDream.PlanRoute.AddTarget>Dodaj typ celu…</HaulersDream.PlanRoute.AddTarget>
   <HaulersDream.PlanRoute.AddTargetStop>Zakończ dodawanie typów</HaulersDream.PlanRoute.AddTargetStop>
   <HaulersDream.PlanRoute.TargetTypesHeader>Typy celów: {0}</HaulersDream.PlanRoute.TargetTypesHeader>
@@ -714,5 +714,7 @@
   <HaulersDream.PlanRoute.RemoveFloorGerund>usuwanie podłogi</HaulersDream.PlanRoute.RemoveFloorGerund>
   <HaulersDream.PlanRoute.ModeFloorArea>Obszar — połączona podłoga</HaulersDream.PlanRoute.ModeFloorArea>
   <HaulersDream.PlanRoute.ModeFloorAreaDesc>Usuwa podłogę na całym ciągłym obszarze usuwalnej podłogi wokół klikniętego pola (całą podłogę ruin), aż do limitu trasy.</HaulersDream.PlanRoute.ModeFloorAreaDesc>
-  <HaulersDream.PlanRoute.RememberCheckbox>Zapamiętaj plan</HaulersDream.PlanRoute.RememberCheckbox>
+  <HaulersDream.PlanRoute.RememberButton>Zapamiętaj te ustawienia</HaulersDream.PlanRoute.RememberButton>
+  <HaulersDream.PlanRoute.RememberButtonDesc>Zapisuje te ustawienia jako zapamiętany plan dla tego rodzaju celu, aby jego menu prawego przycisku myszy oferowało „Zaplanuj spriorytetyzowane … (zapamiętane)” do uruchomienia go jednym kliknięciem (gdy przełącznik interfejsu Zapamiętaj plan jest włączony). Zastępuje to każdy plan wcześniej zapamiętany dla tego typu.</HaulersDream.PlanRoute.RememberButtonDesc>
+  <HaulersDream.PlanRoute.RememberedConfirm>Zapamiętano plan dla {0}.</HaulersDream.PlanRoute.RememberedConfirm>
 </LanguageData>

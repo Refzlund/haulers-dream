@@ -705,7 +705,7 @@
 
   <!-- PR #91: multi-target planner + remember-plan toggle + remove-floor route -->
   <HaulersDream.PlanRoute.OptionRemembered>Priorisiertes {0} planen (gemerkt)</HaulersDream.PlanRoute.OptionRemembered>
-  <HaulersDream.PlanRoute.RememberToggleTip>Plan merken: Wenn aktiv, übernimmt das Planen einer priorisierten Route mit einem Klick die zuletzt für diese Art Ziel verwendeten Einstellungen und überspringt das Planerfenster. Wenn aus, öffnet sich der Planer jedes Mal, damit du die Route anpassen kannst.</HaulersDream.PlanRoute.RememberToggleTip>
+  <HaulersDream.PlanRoute.RememberToggleTip>Plan merken: der Hauptschalter für gemerkte Routen mit einem Klick. Wenn aktiv, zeigt ein Ziel, für das du einen Plan gespeichert hast (über die Schaltfläche „Merken“ im Planer), „Priorisiertes … planen (gemerkt)“ an und führt ihn mit einem Klick aus; wenn aus, öffnet sich jedes Mal der Planer. Ein Ziel ohne gespeicherten Plan öffnet immer den Planer, auch wenn dies aktiv ist.</HaulersDream.PlanRoute.RememberToggleTip>
   <HaulersDream.PlanRoute.AddTarget>Zieltyp hinzufügen…</HaulersDream.PlanRoute.AddTarget>
   <HaulersDream.PlanRoute.AddTargetStop>Typen fertig hinzugefügt</HaulersDream.PlanRoute.AddTargetStop>
   <HaulersDream.PlanRoute.TargetTypesHeader>Zieltypen: {0}</HaulersDream.PlanRoute.TargetTypesHeader>
@@ -714,5 +714,7 @@
   <HaulersDream.PlanRoute.RemoveFloorGerund>Bodenentfernung</HaulersDream.PlanRoute.RemoveFloorGerund>
   <HaulersDream.PlanRoute.ModeFloorArea>Bereich — der zusammenhängende Boden</HaulersDream.PlanRoute.ModeFloorArea>
   <HaulersDream.PlanRoute.ModeFloorAreaDesc>Entfernt den Boden auf dem gesamten zusammenhängenden Bereich entfernbaren Bodens um die angeklickte Kachel (der ganze Ruinenboden), bis zum Routenlimit.</HaulersDream.PlanRoute.ModeFloorAreaDesc>
-  <HaulersDream.PlanRoute.RememberCheckbox>Plan merken</HaulersDream.PlanRoute.RememberCheckbox>
+  <HaulersDream.PlanRoute.RememberButton>Diese Einstellungen merken</HaulersDream.PlanRoute.RememberButton>
+  <HaulersDream.PlanRoute.RememberButtonDesc>Speichert diese Einstellungen als gemerkten Plan für diese Art Ziel, sodass sein Rechtsklick-Menü „Priorisiertes … planen (gemerkt)“ anbietet, um ihn mit einem Klick auszuführen (solange der Schalter „Plan merken“ aktiv ist). Dies überschreibt jeden Plan, den du für diesen Typ zuvor gemerkt hast.</HaulersDream.PlanRoute.RememberButtonDesc>
+  <HaulersDream.PlanRoute.RememberedConfirm>Plan für {0} gemerkt.</HaulersDream.PlanRoute.RememberedConfirm>
 </LanguageData>

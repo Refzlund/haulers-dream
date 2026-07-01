@@ -74,7 +74,7 @@ namespace HaulersDream
             preventCameraMotion = false;
         }
 
-        public override Vector2 InitialSize => new Vector2(460f, 674f);
+        public override Vector2 InitialSize => new Vector2(460f, 686f);
 
         public override void DoWindowContents(Rect inRect)
         {
@@ -132,9 +132,21 @@ namespace HaulersDream
             l.Gap(4f);
             l.Label(EstimateText());
 
-            // "Remember plan" — the in-dialog twin of the bottom-right interface toggle (hovering it blinks it).
+            // "Remember" — save THESE settings as the explicit one-click template for this plant type (keyed by the
+            // zone's plant). Once saved, sowing this plant reads "(remembered)" and runs the template in one click
+            // while the interface toggle is on; hovering the button blinks that toggle to show the link.
             l.Gap(6f);
-            Patch_PlaySettings.DrawRememberPlanRow(l);
+            Patch_PlaySettings.DrawRememberButton(l, () =>
+            {
+                var s = HaulersDreamMod.Settings;
+                var plantDef = zone?.GetPlantDefToGrow();
+                if (s == null || plantDef == null)
+                    return;
+                s.SetRememberedSowRoute(plantDef.defName, CurrentTemplate());
+                HaulersDreamMod.Instance?.WriteSettings();
+                Messages.Message("HaulersDream.PlanRoute.RememberedConfirm".Translate(plantDef.LabelCap),
+                    MessageTypeDefOf.TaskCompletion, historical: false);
+            });
 
             l.End();
 
@@ -314,47 +326,44 @@ namespace HaulersDream
             // cell and the plan is recomputed deterministically (precomputed: null).
             SowRouteExecutor.ExecuteSowRouteSynced(pawn, anchor, mode, EffectiveAmount(), radius, MaxDistance(), smart,
                 replace, picked, selectionMethod, HaulersDreamMod.Settings?.routeOrderExactMax ?? RouteOrderPolicy.ExactMax);
-
-            // Remember this confirmed plan so the "Remember plan" toggle can replay it in one click. Sowing has no
-            // ThingDef anchor to key per-type prefs by (unlike the harvest/mine route), so a single session-scoped
-            // last-plan is kept. It is only READ on the clicking client to build the synced command above (whose args
-            // then replicate to every client), so it stays multiplayer-safe.
-            lastPlan = new Remembered
-            {
-                mode = mode, effAmount = EffectiveAmount(), radius = radius, maxDistance = MaxDistance(),
-                smart = smart, selectionMethod = selectionMethod,
-            };
         }
 
-        // Session-scoped memory of the last confirmed sow plan (see Execute). null until one is confirmed. The
-        // Append/Replace choice is NOT stored — it follows the Queue Order key (Shift) at one-click time, like vanilla.
-        private static Remembered lastPlan;
-        private sealed class Remembered
+        /// <summary>Snapshot the dialog's current knobs as a portable <see cref="SowRouteTemplate"/> (the "no limit"
+        /// max-travel and "All" amount stored as -1 sentinels). Used by the "Remember" button to save this plant's
+        /// explicit one-click template into <see cref="HaulersDreamSettings.rememberedSowRoutesByDef"/>.</summary>
+        private SowRouteTemplate CurrentTemplate() => new SowRouteTemplate
         {
-            public SowRouteMode mode;
-            public int effAmount;
-            public int radius;
-            public float maxDistance;
-            public bool smart;
-            public RouteSelectionMethod selectionMethod;
-        }
+            mode = mode,
+            maxTravel = maxTravel >= NoLimitStep ? -1 : maxTravel,
+            radius = radius,
+            amount = amount > amountMax ? -1 : amount,
+            smart = smart,
+            selectionMethod = selectionMethod,
+        };
 
-        /// <summary>True once a sow plan has been confirmed this session, so the "Remember plan" one-click has
-        /// something to replay (otherwise the float menu opens the dialog to establish it).</summary>
-        public static bool HasRemembered => lastPlan != null;
-
-        /// <summary>Replay the last confirmed sow plan on <paramref name="anchor"/> without opening the dialog (the
-        /// "Remember plan" one-click). The zone is re-derived from the anchor by the synced executor.
+        /// <summary>Replay the EXPLICIT <paramref name="template"/> the player saved for this plant type with the
+        /// "Remember" button — stored per plant <see cref="ThingDef"/> in
+        /// <see cref="HaulersDreamSettings.rememberedSowRoutesByDef"/> — on <paramref name="anchor"/> without opening
+        /// the dialog. The zone is re-derived from the anchor by the synced executor; the raw template values are
+        /// resolved to effective route args here (mirroring the dialog's own resolution). The template is read only on
+        /// the clicking client to build the synced command (whose args then replicate), so it stays multiplayer-safe.
         /// <paramref name="replace"/> follows the vanilla queued-order convention (plain click replaces, Shift
         /// appends), derived from <see cref="KeyBindingDefOf.QueueOrder"/> by the caller at click time.</summary>
-        public static void ExecuteRemembered(Pawn pawn, IntVec3 anchor, bool replace)
+        public static void ExecuteRemembered(Pawn pawn, IntVec3 anchor, SowRouteTemplate template, bool replace)
         {
-            var r = lastPlan;
-            if (r == null || pawn?.Map == null || !anchor.IsValid || !anchor.InBounds(pawn.Map))
+            if (template == null || pawn?.Map == null || !anchor.IsValid || !anchor.InBounds(pawn.Map))
                 return;
-            SowRouteExecutor.ExecuteSowRouteSynced(pawn, anchor, r.mode, r.effAmount, r.radius, r.maxDistance, r.smart,
-                replace, new List<IntVec3> { anchor }, r.selectionMethod,
-                HaulersDreamMod.Settings?.routeOrderExactMax ?? RouteOrderPolicy.ExactMax);
+            var s = HaulersDreamMod.Settings;
+            int amountMax = Mathf.Clamp(s?.routeMaxAmount ?? 50, 5, RouteSelection.HardCap);
+            int effAmount = (template.amount < 1 || template.amount > amountMax) ? RouteSelection.AllAmount : template.amount;
+            int restoredMaxTravel = template.maxTravel < MaxTravelMin ? NoLimitStep : Mathf.Clamp(template.maxTravel, MaxTravelMin, NoLimitStep);
+            float maxDistance = template.mode == SowRouteMode.Chained
+                ? (restoredMaxTravel >= NoLimitStep ? float.PositiveInfinity : restoredMaxTravel)
+                : float.PositiveInfinity;
+            int radius = Mathf.Clamp(template.radius, 2, RadiusMax);
+            SowRouteExecutor.ExecuteSowRouteSynced(pawn, anchor, template.mode, effAmount, radius, maxDistance,
+                template.smart, replace, new List<IntVec3> { anchor }, template.selectionMethod,
+                s?.routeOrderExactMax ?? RouteOrderPolicy.ExactMax);
         }
 
         public override void PostClose()

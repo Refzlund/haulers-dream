@@ -705,7 +705,7 @@
 
   <!-- PR #91: multi-target planner + remember-plan toggle + remove-floor route -->
   <HaulersDream.PlanRoute.OptionRemembered>Plan geprioriteerd(e) {0} (onthouden)</HaulersDream.PlanRoute.OptionRemembered>
-  <HaulersDream.PlanRoute.RememberToggleTip>Plan onthouden: indien aan, hergebruikt het plannen van een geprioriteerde route met één klik de instellingen die je het laatst voor dat soort doel gebruikte, en slaat het plannervenster over. Indien uit, opent de planner elke keer zodat je de route kunt aanpassen.</HaulersDream.PlanRoute.RememberToggleTip>
+  <HaulersDream.PlanRoute.RememberToggleTip>Plan onthouden: de hoofdschakelaar voor onthouden routes met één klik. Indien aan toont een doel waarvoor je een plan hebt opgeslagen (met de knop Onthouden in de planner) «Plan geprioriteerd(e) … (onthouden)» en voert het met één klik uit; indien uit opent de planner elke keer. Een doel zonder opgeslagen plan opent altijd de planner, ook terwijl dit aan staat.</HaulersDream.PlanRoute.RememberToggleTip>
   <HaulersDream.PlanRoute.AddTarget>Doeltype toevoegen…</HaulersDream.PlanRoute.AddTarget>
   <HaulersDream.PlanRoute.AddTargetStop>Klaar met toevoegen</HaulersDream.PlanRoute.AddTargetStop>
   <HaulersDream.PlanRoute.TargetTypesHeader>Doeltypen: {0}</HaulersDream.PlanRoute.TargetTypesHeader>
@@ -714,5 +714,7 @@
   <HaulersDream.PlanRoute.RemoveFloorGerund>vloer verwijderen</HaulersDream.PlanRoute.RemoveFloorGerund>
   <HaulersDream.PlanRoute.ModeFloorArea>Gebied — de aaneengesloten vloer</HaulersDream.PlanRoute.ModeFloorArea>
   <HaulersDream.PlanRoute.ModeFloorAreaDesc>Verwijder vloer over de hele aaneengesloten lap verwijderbare vloer rond de aangeklikte tegel (de hele ruïnevloer), tot aan de routelimiet.</HaulersDream.PlanRoute.ModeFloorAreaDesc>
-  <HaulersDream.PlanRoute.RememberCheckbox>Plan onthouden</HaulersDream.PlanRoute.RememberCheckbox>
+  <HaulersDream.PlanRoute.RememberButton>Deze instellingen onthouden</HaulersDream.PlanRoute.RememberButton>
+  <HaulersDream.PlanRoute.RememberButtonDesc>Slaat deze instellingen op als het onthouden plan voor dit soort doel, zodat het rechtsklikmenu «Plan geprioriteerd(e) … (onthouden)» aanbiedt om het met één klik uit te voeren (zolang de interfaceschakelaar Plan onthouden aan staat). Dit overschrijft elk plan dat je eerder voor dit type had onthouden.</HaulersDream.PlanRoute.RememberButtonDesc>
+  <HaulersDream.PlanRoute.RememberedConfirm>Plan onthouden voor {0}.</HaulersDream.PlanRoute.RememberedConfirm>
 </LanguageData>

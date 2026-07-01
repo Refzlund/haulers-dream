@@ -705,7 +705,7 @@
 
   <!-- PR #91: multi-target planner + remember-plan toggle + remove-floor route -->
   <HaulersDream.PlanRoute.OptionRemembered>规划优先{0}（已记住）</HaulersDream.PlanRoute.OptionRemembered>
-  <HaulersDream.PlanRoute.RememberToggleTip>记住方案：开启后，规划优先路线时会一键沿用你上次对该类目标使用的设置，跳过规划窗口。关闭后，每次都会打开规划窗口，便于你调整路线。</HaulersDream.PlanRoute.RememberToggleTip>
+  <HaulersDream.PlanRoute.RememberToggleTip>记住方案：一键沿用已记住路线的总开关。开启后，对于你已保存方案的目标（用规划器中的“记住”按钮保存），会显示“规划优先…（已记住）”并一键执行；关闭后，每次都会打开规划器。没有已保存方案的目标始终会打开规划器，即使此项已开启。</HaulersDream.PlanRoute.RememberToggleTip>
   <HaulersDream.PlanRoute.AddTarget>添加目标类型…</HaulersDream.PlanRoute.AddTarget>
   <HaulersDream.PlanRoute.AddTargetStop>完成添加类型</HaulersDream.PlanRoute.AddTargetStop>
   <HaulersDream.PlanRoute.TargetTypesHeader>目标类型：{0}</HaulersDream.PlanRoute.TargetTypesHeader>
@@ -714,5 +714,7 @@
   <HaulersDream.PlanRoute.RemoveFloorGerund>拆除地板</HaulersDream.PlanRoute.RemoveFloorGerund>
   <HaulersDream.PlanRoute.ModeFloorArea>区域 — 相连的地板</HaulersDream.PlanRoute.ModeFloorArea>
   <HaulersDream.PlanRoute.ModeFloorAreaDesc>拆除点击处周围整片相连的可拆除地板（整片废墟地板），直到达到路线上限。</HaulersDream.PlanRoute.ModeFloorAreaDesc>
-  <HaulersDream.PlanRoute.RememberCheckbox>记住方案</HaulersDream.PlanRoute.RememberCheckbox>
+  <HaulersDream.PlanRoute.RememberButton>记住这些设置</HaulersDream.PlanRoute.RememberButton>
+  <HaulersDream.PlanRoute.RememberButtonDesc>将这些设置保存为该类目标的已记住方案，使其右键菜单提供“规划优先…（已记住）”以一键执行（需在“记住方案”界面开关开启时）。这会覆盖你之前为该类型记住的任何方案。</HaulersDream.PlanRoute.RememberButtonDesc>
+  <HaulersDream.PlanRoute.RememberedConfirm>已为{0}记住此方案。</HaulersDream.PlanRoute.RememberedConfirm>
 </LanguageData>

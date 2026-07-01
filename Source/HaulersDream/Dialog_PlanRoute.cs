@@ -154,7 +154,7 @@ namespace HaulersDream
 
         // Rooms mode adds a picker button + a 3-row room list, so kinds that offer it need the taller layout too.
         public override Vector2 InitialSize => new Vector2(460f,
-            isHarvest || allowedModes.Contains(RouteMode.Rooms) ? 834f : 754f);
+            isHarvest || allowedModes.Contains(RouteMode.Rooms) ? 846f : 766f);
 
         public override void DoWindowContents(Rect inRect)
         {
@@ -299,11 +299,21 @@ namespace HaulersDream
                 GUI.color = Color.white;
             }
 
-            // "Remember plan" — the in-dialog twin of the bottom-right interface toggle (hovering it blinks that
-            // toggle). With it on, re-clicking "Plan prioritized …" on this kind of target reuses these settings in
-            // one click next time; off opens this dialog each time.
+            // "Remember" — save THESE settings as the explicit one-click template for this target type (a separate
+            // layer from the per-instance settings PostClose auto-restores). Once saved, this kind of target's
+            // right-click menu reads "(remembered)" and runs the template in one click while the interface toggle is
+            // on; hovering the button blinks that toggle to show the link.
             l.Gap(6f);
-            Patch_PlaySettings.DrawRememberPlanRow(l);
+            Patch_PlaySettings.DrawRememberButton(l, () =>
+            {
+                var s = HaulersDreamMod.Settings;
+                if (s == null || clicked?.def == null)
+                    return;
+                s.SetRememberedRoute(clicked.def.defName, CurrentPrefs());
+                HaulersDreamMod.Instance?.WriteSettings();
+                Messages.Message("HaulersDream.PlanRoute.RememberedConfirm".Translate(clicked.def.LabelCap),
+                    MessageTypeDefOf.TaskCompletion, historical: false);
+            });
 
             l.End();
 
@@ -830,23 +840,23 @@ namespace HaulersDream
         }
 
         /// <summary>
-        /// One-click "remembered" execution (the "Remember plan" interface toggle): replay the route settings last
-        /// used on this target type — stored per <see cref="ThingDef"/> in <see cref="HaulersDreamSettings.routePrefsByDef"/>
+        /// One-click "remembered" execution: replay the EXPLICIT template the player saved for this target type with
+        /// the "Remember" button — stored per <see cref="ThingDef"/> in <see cref="HaulersDreamSettings.rememberedRoutesByDef"/>
         /// — WITHOUT opening the dialog. Reconstructs the exact synced commit <see cref="Execute"/> would build,
         /// seeding the transient per-session inputs (must-include list, pinned start/end, secondary target defs) to
         /// their defaults, since only the persisted knobs are remembered. <paramref name="replace"/> follows the
         /// vanilla queued-order convention (plain click REPLACES current work; the Queue Order key / Shift APPENDS) —
         /// the caller derives it from <see cref="KeyBindingDefOf.QueueOrder"/> at click time. Returns false (and does
-        /// nothing) when there are no remembered prefs for the clicked def yet, so the caller opens the dialog instead.
+        /// nothing) when there is no saved template for the clicked def, so the caller opens the dialog instead.
         /// </summary>
         public static bool ExecuteRemembered(Pawn pawn, Thing clicked, RouteWorkKind kind, bool replace)
         {
             if (pawn?.Map == null || clicked?.def == null || kind == null)
                 return false;
             var s = HaulersDreamMod.Settings;
-            var prefs = s?.GetRoutePrefs(clicked.def.defName);
+            var prefs = s?.GetRememberedRoute(clicked.def.defName);
             if (prefs == null)
-                return false; // nothing remembered yet — the caller opens the dialog to establish it
+                return false; // no saved template — the caller opens the dialog to establish one
 
             // Coerce the remembered mode to one this kind actually offers (a stale pref, or the global default on a
             // kind that doesn't offer it) — exactly like the constructor does.
@@ -906,6 +916,23 @@ namespace HaulersDream
         private bool IsConstruction => kind?.scanner is WorkGiver_ConstructDeliverResourcesToBlueprints;
         private bool alsoBuild = true;
 
+        /// <summary>Snapshot the dialog's current knobs as a portable <see cref="RouteDialogPrefs"/> (the "no limit"
+        /// max-travel and "All" amount stored as -1 sentinels). Shared by <see cref="PostClose"/> (the per-instance
+        /// auto-restore into <see cref="HaulersDreamSettings.routePrefsByDef"/>) and the "Remember" button (the
+        /// explicit one-click template into <see cref="HaulersDreamSettings.rememberedRoutesByDef"/>).</summary>
+        private RouteDialogPrefs CurrentPrefs() => new RouteDialogPrefs
+        {
+            mode = mode,
+            maxTravel = maxTravel >= NoLimitStep ? -1 : maxTravel, // store "no limit" as -1 (portable across NoLimitStep)
+            radius = radius,
+            amount = amount > amountMax ? -1 : amount,             // store "All" as -1 (portable across the slider's max)
+            smart = smart,
+            allowHarvest = allowHarvest,
+            growthThreshold = growthThreshold,
+            selectionMethod = selectionMethod,
+            distanceBasis = distanceBasis,
+        };
+
         public override void PostClose()
         {
             base.PostClose();
@@ -913,23 +940,14 @@ namespace HaulersDream
                 Find.Targeter.StopTargeting(); // don't leave a picker armed after the dialog closes
             preview?.ClearPreview();
 
-            // Remember these options for this kind of target so they don't need re-applying next time (this
-            // session and across restarts). Keyed by the clicked thing's ThingDef.
+            // Auto-restore layer: remember these options for this kind of target so they don't need re-applying next
+            // time the DIALOG opens (this session and across restarts). Keyed by the clicked thing's ThingDef. This is
+            // NOT the "(remembered)" one-click template — that is written only by the Remember button (CurrentPrefs →
+            // SetRememberedRoute); this write happens on every close and just repopulates the window.
             var s = HaulersDreamMod.Settings;
             if (s != null && clicked?.def != null)
             {
-                s.SetRoutePrefs(clicked.def.defName, new RouteDialogPrefs
-                {
-                    mode = mode,
-                    maxTravel = maxTravel >= NoLimitStep ? -1 : maxTravel, // store "no limit" as -1 (portable across NoLimitStep)
-                    radius = radius,
-                    amount = amount > amountMax ? -1 : amount, // store "All" as -1 (portable across the slider's max)
-                    smart = smart,
-                    allowHarvest = allowHarvest,
-                    growthThreshold = growthThreshold,
-                    selectionMethod = selectionMethod,
-                    distanceBasis = distanceBasis,
-                });
+                s.SetRoutePrefs(clicked.def.defName, CurrentPrefs());
                 HaulersDreamMod.Instance?.WriteSettings();
             }
         }

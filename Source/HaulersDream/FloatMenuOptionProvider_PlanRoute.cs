@@ -54,12 +54,13 @@ namespace HaulersDream
                 Thing anchor = thing;
                 RouteWorkKind capturedKind = kind;
 
-                // "Remember plan" (interface toggle): when it's ON and this target type already has remembered route
-                // settings, the option reuses them in ONE click (skipping the dialog) and its label gains a
-                // "(remembered)" hint. With the toggle off, or the first time for a new target type, it opens the
-                // dialog as usual (which then records the settings for next time).
+                // "(remembered)": show the one-click option ONLY when this target type has an explicit saved template
+                // (created with the "Remember" button in the dialog) AND the interface toggle is on. The toggle alone
+                // is not enough — without a saved template the plain "Plan prioritized …" opens the dialog, even with
+                // the toggle on. This is the deliberate two-part gate: master switch + a template the player chose to
+                // save (NOT the settings the dialog auto-restores, which exist for every type ever planned).
                 bool remember = HaulersDreamMod.Settings.rememberPlan
-                    && HaulersDreamMod.Settings.GetRoutePrefs(anchor.def?.defName) != null;
+                    && HaulersDreamMod.Settings.GetRememberedRoute(anchor.def?.defName) != null;
                 string label = remember
                     ? "HaulersDream.PlanRoute.OptionRemembered".Translate(kind.gerund)
                     : baseLabel;

@@ -705,7 +705,7 @@
 
   <!-- PR #91: multi-target planner + remember-plan toggle + remove-floor route -->
   <HaulersDream.PlanRoute.OptionRemembered>優先{0}を計画（記憶済み）</HaulersDream.PlanRoute.OptionRemembered>
-  <HaulersDream.PlanRoute.RememberToggleTip>計画を記憶：オンのとき、優先経路の計画は、その種類の対象に前回使った設定をワンクリックで再利用し、計画ウィンドウを省略します。オフのときは、毎回計画ウィンドウが開き、経路を調整できます。</HaulersDream.PlanRoute.RememberToggleTip>
+  <HaulersDream.PlanRoute.RememberToggleTip>計画を記憶：ワンクリックで記憶した経路を使うための親スイッチです。オンのとき、（計画ウィンドウの「記憶」ボタンで）計画を保存した対象には「優先…を計画（記憶済み）」が表示され、ワンクリックで実行されます。オフのときは、毎回計画ウィンドウが開きます。保存した計画がない対象は、これがオンでも常に計画ウィンドウが開きます。</HaulersDream.PlanRoute.RememberToggleTip>
   <HaulersDream.PlanRoute.AddTarget>対象の種類を追加…</HaulersDream.PlanRoute.AddTarget>
   <HaulersDream.PlanRoute.AddTargetStop>種類の追加を終了</HaulersDream.PlanRoute.AddTargetStop>
   <HaulersDream.PlanRoute.TargetTypesHeader>対象の種類：{0}</HaulersDream.PlanRoute.TargetTypesHeader>
@@ -714,5 +714,7 @@
   <HaulersDream.PlanRoute.RemoveFloorGerund>床の撤去</HaulersDream.PlanRoute.RemoveFloorGerund>
   <HaulersDream.PlanRoute.ModeFloorArea>エリア — 連続した床</HaulersDream.PlanRoute.ModeFloorArea>
   <HaulersDream.PlanRoute.ModeFloorAreaDesc>クリックしたタイルの周囲にある、撤去可能な床がひとつながりになった範囲全体（廃墟の床全体）を、経路の上限まで撤去します。</HaulersDream.PlanRoute.ModeFloorAreaDesc>
-  <HaulersDream.PlanRoute.RememberCheckbox>計画を記憶</HaulersDream.PlanRoute.RememberCheckbox>
+  <HaulersDream.PlanRoute.RememberButton>これらの設定を記憶</HaulersDream.PlanRoute.RememberButton>
+  <HaulersDream.PlanRoute.RememberButtonDesc>これらの設定をこの種類の対象の記憶済み計画として保存し、右クリックメニューに「優先…を計画（記憶済み）」を表示して、（「計画を記憶」のインターフェーススイッチがオンのあいだ）ワンクリックで実行できるようにします。この種類に以前記憶した計画があれば上書きされます。</HaulersDream.PlanRoute.RememberButtonDesc>
+  <HaulersDream.PlanRoute.RememberedConfirm>{0}の計画を記憶しました。</HaulersDream.PlanRoute.RememberedConfirm>
 </LanguageData>

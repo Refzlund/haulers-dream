@@ -705,7 +705,7 @@
 
   <!-- PR #91: multi-target planner + remember-plan toggle + remove-floor route -->
   <HaulersDream.PlanRoute.OptionRemembered>Planejar {0} priorizada (lembrada)</HaulersDream.PlanRoute.OptionRemembered>
-  <HaulersDream.PlanRoute.RememberToggleTip>Lembrar plano: quando ativado, planejar uma rota priorizada reutiliza com um clique as configurações usadas por último para aquele tipo de alvo, pulando a janela do planejador. Quando desativado, o planejador abre a cada vez para você ajustar a rota.</HaulersDream.PlanRoute.RememberToggleTip>
+  <HaulersDream.PlanRoute.RememberToggleTip>Lembrar plano: o interruptor principal das rotas lembradas de um clique. Quando ativado, um alvo para o qual você salvou um plano (com o botão Lembrar no planejador) mostra «Planejar … priorizada (lembrada)» e o executa com um clique; quando desativado, o planejador abre a cada vez. Um alvo sem plano salvo sempre abre o planejador, mesmo enquanto isto está ativado.</HaulersDream.PlanRoute.RememberToggleTip>
   <HaulersDream.PlanRoute.AddTarget>Adicionar tipo de alvo…</HaulersDream.PlanRoute.AddTarget>
   <HaulersDream.PlanRoute.AddTargetStop>Concluir adição de tipos</HaulersDream.PlanRoute.AddTargetStop>
   <HaulersDream.PlanRoute.TargetTypesHeader>Tipos de alvo: {0}</HaulersDream.PlanRoute.TargetTypesHeader>
@@ -714,5 +714,7 @@
   <HaulersDream.PlanRoute.RemoveFloorGerund>remoção de piso</HaulersDream.PlanRoute.RemoveFloorGerund>
   <HaulersDream.PlanRoute.ModeFloorArea>Área — o piso contíguo</HaulersDream.PlanRoute.ModeFloorArea>
   <HaulersDream.PlanRoute.ModeFloorAreaDesc>Remove o piso em toda a mancha contígua de piso removível ao redor do bloco clicado (todo o piso da ruína), até o limite da rota.</HaulersDream.PlanRoute.ModeFloorAreaDesc>
-  <HaulersDream.PlanRoute.RememberCheckbox>Lembrar plano</HaulersDream.PlanRoute.RememberCheckbox>
+  <HaulersDream.PlanRoute.RememberButton>Lembrar estas configurações</HaulersDream.PlanRoute.RememberButton>
+  <HaulersDream.PlanRoute.RememberButtonDesc>Salva estas configurações como o plano lembrado para este tipo de alvo, para que seu menu de clique direito ofereça «Planejar … priorizada (lembrada)» para executá-lo com um clique (enquanto o interruptor de interface Lembrar plano estiver ativado). Isto substitui qualquer plano que você tenha lembrado anteriormente para este tipo.</HaulersDream.PlanRoute.RememberButtonDesc>
+  <HaulersDream.PlanRoute.RememberedConfirm>Plano lembrado para {0}.</HaulersDream.PlanRoute.RememberedConfirm>
 </LanguageData>

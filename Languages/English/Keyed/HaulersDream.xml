@@ -824,7 +824,7 @@
   <HaulersDream.PlanRoute.ModeSowZoneDesc>Sow every empty growable cell inside this growing zone — plant the whole field from one click.</HaulersDream.PlanRoute.ModeSowZoneDesc>
   <!-- PR #91: multi-target planner + remember-plan toggle + remove-floor route -->
   <HaulersDream.PlanRoute.OptionRemembered>Plan prioritized {0} (remembered)</HaulersDream.PlanRoute.OptionRemembered>
-  <HaulersDream.PlanRoute.RememberToggleTip>Remember plan: when on, planning a prioritized route reuses the settings you last used for that kind of target in one click, skipping the planner window. When off, the planner opens each time so you can adjust the route.</HaulersDream.PlanRoute.RememberToggleTip>
+  <HaulersDream.PlanRoute.RememberToggleTip>Remember plan: the master switch for one-click remembered routes. When on, a target you have saved a plan for (with the Remember button in the planner) shows "Plan prioritized … (remembered)" and runs it in one click; when off, the planner opens each time. A target with no saved plan always opens the planner, even while this is on.</HaulersDream.PlanRoute.RememberToggleTip>
   <HaulersDream.PlanRoute.AddTarget>Add target type…</HaulersDream.PlanRoute.AddTarget>
   <HaulersDream.PlanRoute.AddTargetStop>Done adding types</HaulersDream.PlanRoute.AddTargetStop>
   <HaulersDream.PlanRoute.TargetTypesHeader>Target types: {0}</HaulersDream.PlanRoute.TargetTypesHeader>
@@ -833,5 +833,7 @@
   <HaulersDream.PlanRoute.RemoveFloorGerund>removing floor</HaulersDream.PlanRoute.RemoveFloorGerund>
   <HaulersDream.PlanRoute.ModeFloorArea>Area — the connected floor</HaulersDream.PlanRoute.ModeFloorArea>
   <HaulersDream.PlanRoute.ModeFloorAreaDesc>Remove flooring across the whole contiguous patch of removable floor around the clicked tile — the entire ruin floor — up to the route cap.</HaulersDream.PlanRoute.ModeFloorAreaDesc>
-  <HaulersDream.PlanRoute.RememberCheckbox>Remember plan</HaulersDream.PlanRoute.RememberCheckbox>
+  <HaulersDream.PlanRoute.RememberButton>Remember these settings</HaulersDream.PlanRoute.RememberButton>
+  <HaulersDream.PlanRoute.RememberButtonDesc>Save these settings as the remembered plan for this kind of target, so its right-click menu offers "Plan prioritized … (remembered)" to run it in one click (while the Remember plan interface toggle is on). This overwrites any plan you had previously remembered for this type.</HaulersDream.PlanRoute.RememberButtonDesc>
+  <HaulersDream.PlanRoute.RememberedConfirm>Remembered this plan for {0}.</HaulersDream.PlanRoute.RememberedConfirm>
 </LanguageData>

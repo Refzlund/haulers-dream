@@ -705,7 +705,7 @@
 
   <!-- PR #91: multi-target planner + remember-plan toggle + remove-floor route -->
   <HaulersDream.PlanRoute.OptionRemembered>Planificar {0} priorizado (recordado)</HaulersDream.PlanRoute.OptionRemembered>
-  <HaulersDream.PlanRoute.RememberToggleTip>Recordar plan: si está activado, planificar una ruta priorizada reutiliza con un clic los ajustes que usaste por última vez para ese tipo de objetivo, omitiendo la ventana del planificador. Si está desactivado, el planificador se abre cada vez para que ajustes la ruta.</HaulersDream.PlanRoute.RememberToggleTip>
+  <HaulersDream.PlanRoute.RememberToggleTip>Recordar plan: el interruptor principal de las rutas recordadas de un clic. Si está activado, un objetivo para el que hayas guardado un plan (con el botón Recordar del planificador) muestra «Planificar … priorizado (recordado)» y lo ejecuta con un clic; si está desactivado, el planificador se abre cada vez. Un objetivo sin plan guardado siempre abre el planificador, incluso mientras esto está activado.</HaulersDream.PlanRoute.RememberToggleTip>
   <HaulersDream.PlanRoute.AddTarget>Añadir tipo de objetivo…</HaulersDream.PlanRoute.AddTarget>
   <HaulersDream.PlanRoute.AddTargetStop>Terminar de añadir tipos</HaulersDream.PlanRoute.AddTargetStop>
   <HaulersDream.PlanRoute.TargetTypesHeader>Tipos de objetivo: {0}</HaulersDream.PlanRoute.TargetTypesHeader>
@@ -714,5 +714,7 @@
   <HaulersDream.PlanRoute.RemoveFloorGerund>eliminación de suelo</HaulersDream.PlanRoute.RemoveFloorGerund>
   <HaulersDream.PlanRoute.ModeFloorArea>Área — el suelo contiguo</HaulersDream.PlanRoute.ModeFloorArea>
   <HaulersDream.PlanRoute.ModeFloorAreaDesc>Quita el suelo en toda la zona contigua de suelo removible alrededor de la casilla pulsada (todo el suelo de las ruinas), hasta el límite de la ruta.</HaulersDream.PlanRoute.ModeFloorAreaDesc>
-  <HaulersDream.PlanRoute.RememberCheckbox>Recordar plan</HaulersDream.PlanRoute.RememberCheckbox>
+  <HaulersDream.PlanRoute.RememberButton>Recordar estos ajustes</HaulersDream.PlanRoute.RememberButton>
+  <HaulersDream.PlanRoute.RememberButtonDesc>Guarda estos ajustes como el plan recordado para este tipo de objetivo, de modo que su menú de clic derecho ofrezca «Planificar … priorizado (recordado)» para ejecutarlo con un clic (mientras el interruptor de interfaz Recordar plan esté activado). Esto sobrescribe cualquier plan que hubieras recordado antes para este tipo.</HaulersDream.PlanRoute.RememberButtonDesc>
+  <HaulersDream.PlanRoute.RememberedConfirm>Plan recordado para {0}.</HaulersDream.PlanRoute.RememberedConfirm>
 </LanguageData>

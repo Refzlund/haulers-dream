@@ -705,7 +705,7 @@
 
   <!-- PR #91: multi-target planner + remember-plan toggle + remove-floor route -->
   <HaulersDream.PlanRoute.OptionRemembered>วางแผนให้ความสำคัญ {0} (จำไว้)</HaulersDream.PlanRoute.OptionRemembered>
-  <HaulersDream.PlanRoute.RememberToggleTip>จดจำแผน: เมื่อเปิด การวางแผนเส้นทางแบบให้ความสำคัญจะใช้การตั้งค่าที่คุณใช้ล่าสุดกับเป้าหมายชนิดนั้นซ้ำด้วยคลิกเดียว โดยข้ามหน้าต่างวางแผน เมื่อปิด หน้าต่างวางแผนจะเปิดทุกครั้งเพื่อให้คุณปรับเส้นทางได้</HaulersDream.PlanRoute.RememberToggleTip>
+  <HaulersDream.PlanRoute.RememberToggleTip>จดจำแผน: สวิตช์หลักสำหรับเส้นทางที่จำไว้แบบคลิกเดียว เมื่อเปิด เป้าหมายที่คุณบันทึกแผนไว้ (ด้วยปุ่มจดจำในตัววางแผน) จะแสดง “วางแผนให้ความสำคัญ … (จำไว้)” และทำงานด้วยคลิกเดียว เมื่อปิด หน้าต่างวางแผนจะเปิดทุกครั้ง เป้าหมายที่ไม่มีแผนบันทึกไว้จะเปิดหน้าต่างวางแผนเสมอ แม้ขณะที่เปิดตัวเลือกนี้อยู่</HaulersDream.PlanRoute.RememberToggleTip>
   <HaulersDream.PlanRoute.AddTarget>เพิ่มชนิดเป้าหมาย…</HaulersDream.PlanRoute.AddTarget>
   <HaulersDream.PlanRoute.AddTargetStop>เสร็จสิ้นการเพิ่มชนิด</HaulersDream.PlanRoute.AddTargetStop>
   <HaulersDream.PlanRoute.TargetTypesHeader>ชนิดเป้าหมาย: {0}</HaulersDream.PlanRoute.TargetTypesHeader>
@@ -714,5 +714,7 @@
   <HaulersDream.PlanRoute.RemoveFloorGerund>การรื้อพื้น</HaulersDream.PlanRoute.RemoveFloorGerund>
   <HaulersDream.PlanRoute.ModeFloorArea>พื้นที่ — พื้นที่เชื่อมต่อกัน</HaulersDream.PlanRoute.ModeFloorArea>
   <HaulersDream.PlanRoute.ModeFloorAreaDesc>รื้อพื้นทั่วทั้งผืนพื้นที่รื้อได้ซึ่งเชื่อมต่อกันรอบช่องที่คลิก (พื้นซากปรักหักพังทั้งหมด) จนถึงขีดจำกัดของเส้นทาง</HaulersDream.PlanRoute.ModeFloorAreaDesc>
-  <HaulersDream.PlanRoute.RememberCheckbox>จดจำแผน</HaulersDream.PlanRoute.RememberCheckbox>
+  <HaulersDream.PlanRoute.RememberButton>จดจำการตั้งค่านี้</HaulersDream.PlanRoute.RememberButton>
+  <HaulersDream.PlanRoute.RememberButtonDesc>บันทึกการตั้งค่านี้เป็นแผนที่จำไว้สำหรับเป้าหมายชนิดนี้ เพื่อให้เมนูคลิกขวาของมันมีตัวเลือก “วางแผนให้ความสำคัญ … (จำไว้)” สำหรับทำงานด้วยคลิกเดียว (ขณะที่สวิตช์อินเทอร์เฟซจดจำแผนเปิดอยู่) การทำเช่นนี้จะเขียนทับแผนใดๆ ที่คุณเคยจำไว้ก่อนหน้าสำหรับชนิดนี้</HaulersDream.PlanRoute.RememberButtonDesc>
+  <HaulersDream.PlanRoute.RememberedConfirm>จำแผนนี้สำหรับ {0} แล้ว</HaulersDream.PlanRoute.RememberedConfirm>
 </LanguageData>

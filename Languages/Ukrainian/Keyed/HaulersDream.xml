@@ -705,7 +705,7 @@
 
   <!-- PR #91: multi-target planner + remember-plan toggle + remove-floor route -->
   <HaulersDream.PlanRoute.OptionRemembered>Спланувати пріоритетне {0} (запам’ятовано)</HaulersDream.PlanRoute.OptionRemembered>
-  <HaulersDream.PlanRoute.RememberToggleTip>Запам’ятовувати план: коли увімкнено, планування пріоритетного маршруту одним клацанням повторно застосовує налаштування, востаннє використані для цього виду цілі, оминаючи вікно планувальника. Коли вимкнено, планувальник відкривається щоразу, щоб ви могли змінити маршрут.</HaulersDream.PlanRoute.RememberToggleTip>
+  <HaulersDream.PlanRoute.RememberToggleTip>Запам’ятовувати план: головний перемикач запам’ятованих маршрутів в одне клацання. Коли увімкнено, у цілі, для якої ви зберегли план (кнопкою «Запам’ятати» в планувальнику), показується «Спланувати пріоритетне … (запам’ятовано)» і виконується одним клацанням; коли вимкнено, планувальник відкривається щоразу. Ціль без збереженого плану завжди відкриває планувальник, навіть коли це увімкнено.</HaulersDream.PlanRoute.RememberToggleTip>
   <HaulersDream.PlanRoute.AddTarget>Додати тип цілі…</HaulersDream.PlanRoute.AddTarget>
   <HaulersDream.PlanRoute.AddTargetStop>Завершити додавання типів</HaulersDream.PlanRoute.AddTargetStop>
   <HaulersDream.PlanRoute.TargetTypesHeader>Типи цілей: {0}</HaulersDream.PlanRoute.TargetTypesHeader>
@@ -714,5 +714,7 @@
   <HaulersDream.PlanRoute.RemoveFloorGerund>видалення підлоги</HaulersDream.PlanRoute.RemoveFloorGerund>
   <HaulersDream.PlanRoute.ModeFloorArea>Область — з’єднана підлога</HaulersDream.PlanRoute.ModeFloorArea>
   <HaulersDream.PlanRoute.ModeFloorAreaDesc>Видаляє підлогу на всій суміжній ділянці знімної підлоги навколо вибраної клітинки (усю підлогу руїн), до межі маршруту.</HaulersDream.PlanRoute.ModeFloorAreaDesc>
-  <HaulersDream.PlanRoute.RememberCheckbox>Запам’ятовувати план</HaulersDream.PlanRoute.RememberCheckbox>
+  <HaulersDream.PlanRoute.RememberButton>Запам’ятати ці налаштування</HaulersDream.PlanRoute.RememberButton>
+  <HaulersDream.PlanRoute.RememberButtonDesc>Зберігає ці налаштування як запам’ятований план для цього виду цілі, щоб у її меню правого клацання пропонувалося «Спланувати пріоритетне … (запам’ятовано)» для виконання одним клацанням (поки увімкнено перемикач інтерфейсу «Запам’ятовувати план»). Це перезапише будь-який план, раніше запам’ятований для цього типу.</HaulersDream.PlanRoute.RememberButtonDesc>
+  <HaulersDream.PlanRoute.RememberedConfirm>План запам’ятовано для {0}.</HaulersDream.PlanRoute.RememberedConfirm>
 </LanguageData>

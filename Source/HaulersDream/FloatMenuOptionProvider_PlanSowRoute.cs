@@ -60,10 +60,12 @@ namespace HaulersDream
                 yield break;
 
             string gerund = SowGerund();
-            // "Remember plan": when the toggle is on AND a sow plan has been confirmed this session, reuse it in one
-            // click and mark the label "(remembered)"; otherwise open the dialog (which, once confirmed, becomes the
-            // remembered plan). See Dialog_PlanSowRoute.ExecuteRemembered.
-            bool remember = HaulersDreamMod.Settings.rememberPlan && Dialog_PlanSowRoute.HasRemembered;
+            // "(remembered)": show the one-click option ONLY when this plant type has an explicit saved template
+            // (created with the "Remember" button in the dialog) AND the interface toggle is on. The toggle alone is
+            // not enough — without a saved template the plain "Plan prioritized …" opens the dialog, even with the
+            // toggle on. See Dialog_PlanSowRoute.ExecuteRemembered.
+            var template = HaulersDreamMod.Settings.GetRememberedSowRoute(plantDef.defName);
+            bool remember = HaulersDreamMod.Settings.rememberPlan && template != null;
             string label = remember
                 ? "HaulersDream.PlanRoute.OptionRemembered".Translate(gerund)
                 : "HaulersDream.PlanRoute.Option".Translate(gerund);
@@ -72,7 +74,7 @@ namespace HaulersDream
             {
                 if (remember)
                     // Plain click REPLACES current work; the Queue Order key (Shift) APPENDS — read at click time.
-                    Dialog_PlanSowRoute.ExecuteRemembered(pawn, anchor, replace: !KeyBindingDefOf.QueueOrder.IsDownEvent);
+                    Dialog_PlanSowRoute.ExecuteRemembered(pawn, anchor, template, replace: !KeyBindingDefOf.QueueOrder.IsDownEvent);
                 else
                     Find.WindowStack.Add(new Dialog_PlanSowRoute(pawn, anchor, zone));
             });

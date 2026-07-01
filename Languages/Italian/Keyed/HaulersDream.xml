@@ -705,7 +705,7 @@
 
   <!-- PR #91: multi-target planner + remember-plan toggle + remove-floor route -->
   <HaulersDream.PlanRoute.OptionRemembered>Pianifica {0} prioritizzato (memorizzato)</HaulersDream.PlanRoute.OptionRemembered>
-  <HaulersDream.PlanRoute.RememberToggleTip>Ricorda piano: se attivo, pianificare un percorso prioritario riutilizza con un clic le impostazioni usate l’ultima volta per quel tipo di bersaglio, saltando la finestra del pianificatore. Se disattivo, il pianificatore si apre ogni volta per regolare il percorso.</HaulersDream.PlanRoute.RememberToggleTip>
+  <HaulersDream.PlanRoute.RememberToggleTip>Ricorda piano: l’interruttore principale dei percorsi ricordati con un clic. Se attivo, un bersaglio per cui hai salvato un piano (con il pulsante Ricorda del pianificatore) mostra «Pianifica … prioritizzato (memorizzato)» e lo esegue con un clic; se disattivo, il pianificatore si apre ogni volta. Un bersaglio senza piano salvato apre sempre il pianificatore, anche mentre questo è attivo.</HaulersDream.PlanRoute.RememberToggleTip>
   <HaulersDream.PlanRoute.AddTarget>Aggiungi tipo di bersaglio…</HaulersDream.PlanRoute.AddTarget>
   <HaulersDream.PlanRoute.AddTargetStop>Fine aggiunta tipi</HaulersDream.PlanRoute.AddTargetStop>
   <HaulersDream.PlanRoute.TargetTypesHeader>Tipi di bersaglio: {0}</HaulersDream.PlanRoute.TargetTypesHeader>
@@ -714,5 +714,7 @@
   <HaulersDream.PlanRoute.RemoveFloorGerund>rimozione pavimento</HaulersDream.PlanRoute.RemoveFloorGerund>
   <HaulersDream.PlanRoute.ModeFloorArea>Area — il pavimento contiguo</HaulersDream.PlanRoute.ModeFloorArea>
   <HaulersDream.PlanRoute.ModeFloorAreaDesc>Rimuove la pavimentazione sull’intera area contigua di pavimento rimovibile attorno alla casella cliccata (tutto il pavimento della rovina), fino al limite del percorso.</HaulersDream.PlanRoute.ModeFloorAreaDesc>
-  <HaulersDream.PlanRoute.RememberCheckbox>Ricorda piano</HaulersDream.PlanRoute.RememberCheckbox>
+  <HaulersDream.PlanRoute.RememberButton>Ricorda queste impostazioni</HaulersDream.PlanRoute.RememberButton>
+  <HaulersDream.PlanRoute.RememberButtonDesc>Salva queste impostazioni come piano ricordato per questo tipo di bersaglio, così il suo menu del tasto destro offre «Pianifica … prioritizzato (memorizzato)» per eseguirlo con un clic (mentre l’interruttore dell’interfaccia Ricorda piano è attivo). Questo sovrascrive qualsiasi piano che avevi memorizzato in precedenza per questo tipo.</HaulersDream.PlanRoute.RememberButtonDesc>
+  <HaulersDream.PlanRoute.RememberedConfirm>Piano memorizzato per {0}.</HaulersDream.PlanRoute.RememberedConfirm>
 </LanguageData>

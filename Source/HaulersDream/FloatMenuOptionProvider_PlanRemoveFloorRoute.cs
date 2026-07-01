@@ -50,9 +50,13 @@ namespace HaulersDream
 
             IntVec3 anchor = cell;
             string gerund = "HaulersDream.PlanRoute.RemoveFloorGerund".Translate();
-            // "Remember plan": one-click reuse of the last confirmed remove-floor plan when the toggle is on and one
-            // exists this session; otherwise open the dialog. See Dialog_PlanRemoveFloorRoute.ExecuteRemembered.
-            bool remember = HaulersDreamMod.Settings.rememberPlan && Dialog_PlanRemoveFloorRoute.HasRemembered;
+            // "(remembered)": show the one-click option ONLY when this floor type has an explicit saved template
+            // (created with the "Remember" button in the dialog) AND the interface toggle is on. The toggle alone is
+            // not enough — without a saved template the plain "Plan prioritized …" opens the dialog, even with the
+            // toggle on. Keyed by the clicked cell's floor terrain. See Dialog_PlanRemoveFloorRoute.ExecuteRemembered.
+            var terrain = pawn.Map.terrainGrid.TerrainAt(anchor);
+            var template = HaulersDreamMod.Settings.GetRememberedRemoveFloorRoute(terrain?.defName);
+            bool remember = HaulersDreamMod.Settings.rememberPlan && template != null;
             string label = remember
                 ? "HaulersDream.PlanRoute.OptionRemembered".Translate(gerund)
                 : "HaulersDream.PlanRoute.Option".Translate(gerund);
@@ -61,7 +65,7 @@ namespace HaulersDream
             {
                 if (remember)
                     // Plain click REPLACES current work; the Queue Order key (Shift) APPENDS — read at click time.
-                    Dialog_PlanRemoveFloorRoute.ExecuteRemembered(pawn, anchor, replace: !KeyBindingDefOf.QueueOrder.IsDownEvent);
+                    Dialog_PlanRemoveFloorRoute.ExecuteRemembered(pawn, anchor, template, replace: !KeyBindingDefOf.QueueOrder.IsDownEvent);
                 else
                     Find.WindowStack.Add(new Dialog_PlanRemoveFloorRoute(pawn, anchor));
             });
