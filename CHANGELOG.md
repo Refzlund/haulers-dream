@@ -1,5 +1,43 @@
 # haulers-dream
 
+## 1.14.0
+
+### Minor Changes
+
+- ce98d8a: Keep an item in a pawn's inventory without hauling it off.
+
+  Right-clicking a haulable item on the ground now offers "Keep X in inventory" next to the existing "Pick up X". The difference is what happens after: "Pick up X" grabs the item to haul it away to storage, while "Keep X in inventory" makes the pawn take it and hold onto it. Hauler's Dream never hauls a kept item to storage, and the game's routine "drop unused inventory" cleanup leaves it alone, so a colonist can carry a spare weapon, a doctor can keep a stack of medicine on hand, or a hauler can hold something you want moved by hand later. To let go of a kept item, have the pawn use it up or drop it from the Gear tab. A "Keep in inventory" order can be turned off in the mod options if you only want the haul version. (#103)
+
+- ce98d8a: See the status of your reports right on the main menu.
+
+  When you file an in-game report, or the developer replies to one, marks it solved, or ships a fix in an update, a small card appears in the bottom-right of the main menu. Each of your reports gets a single card that updates as things happen, for example from open to a new comment, so there is never a pile-up. The card is colour-coded so you can read it at a glance: green for open, yellow for a new comment, and purple for resolved. Click it to read the reply or comment back without leaving the game, or press the x to hide it until there is new activity. It only shows reports you submitted, so a fresh game with no reports shows nothing.
+
+  A "Main menu notifications" setting on the Advanced tab lets you choose how much shows up, from every event (including the confirmation that a report is open) down to only fixes, with a heads-up when a newer version is available, or turn it off entirely.
+
+- ce98d8a: Plan a route over more than one kind of target.
+
+  The route planner can now gather several types of target in one run. Next to the existing forced-target picker there is an "Add target type…" button: click it, then click another plant, ore, or other same-work target on the map, and the route includes every one of that kind too. So a colonist can harvest a field of berries and a field of rice on the same trip, or mine steel and components together, instead of planning each type on its own. It works for the def-based jobs (harvesting, cutting, mining); the primary target you right-clicked is always kept and each added type can be removed again. (#96)
+
+- ce98d8a: Plan a route to remove floors.
+
+  Right-clicking a tile that has a removable floor now offers "Plan prioritized removing floor…", the same way the planner already works for harvesting or mining. Pick the whole connected patch of floor, the nearest few tiles, or a radius, and a colonist strips the flooring in one efficient trip rather than you shift-clicking every tile by hand. It is handy for clearing the floors out of ruins to keep colony wealth down, especially when they sit at the edge of the map. (#96)
+
+- ce98d8a: Remember a route you like, and run it again in one click.
+
+  Open the planner on any kind of target, set it up the way you want, then press the new "Remember these settings" button at the bottom of the window. That saves the plan for that specific type of target: berry bushes, walls, a stone floor, whatever you clicked. The button then reads "Already remembered" until you change a setting, so you can tell at a glance that what is on screen is the saved plan. From then on its right-click menu reads "Plan prioritized … (remembered)" and choosing it runs that saved plan straight away, skipping the planner window. A plain click replaces the current job and Shift-clicking appends to the queue, the same as any other prioritized order.
+
+  Only a type you have actually remembered shows the "(remembered)" option. Everything else keeps opening the planner as before, so the shortcut never fires a plan you did not set up. Pressing Remember again on the same type overwrites what was saved for it. This is separate from the settings the planner already restores each time you reopen it for a type; those still come back as they did, but they are not what the one-click runs.
+
+  The "Remember plan" toggle in the bottom-right corner is the master switch. Turn it off to pause every one-click remembered route without losing what you saved, and turn it back on to use them again. Hovering the Remember button blinks that toggle and points an arrow at it, so you can see they belong together. Harvesting and mining routes are remembered per target type, sowing is remembered per plant, and floor removal is remembered per floor type.
+
+### Patch Changes
+
+- ce98d8a: Be clearer about which errors are actually Hauler's Dream, and fix a Vehicle Framework warning.
+
+  When an error passes through a method Hauler's Dream patches, its note in the log now says plainly whether Hauler's Dream's own code was in the error or whether it only happens to patch that method. A report about a "value does not fall within the expected range" error (#97) is the second kind: the fault is in the game's own drop-unused-inventory check reading a drug that a mod adds but that isn't in the pawn's drug policy, and Hauler's Dream is only a bystander in the call stack. The note now reflects that instead of implying Hauler's Dream caused it.
+
+  Separately, with Vehicle Framework installed, Hauler's Dream could log a harmless "could not attach the exception tagger" warning: it was trying to tag a method Vehicle Framework inherits from a shared generic base, which Harmony won't patch in that form. It now tags the method that actually runs, so the warning is gone and the vehicle-loading behaviour is unchanged.
+
 ## 1.13.0
 
 ### Minor Changes
