@@ -142,6 +142,12 @@ namespace HaulersDream
         // unload), instead of vanilla's hand-haul-to-storage. Default ON for discoverability; tagged so it is
         // never a "black hole" even with auto-unload off. Additive to vanilla's right-click haul options.
         public bool manualPickupOption = true;
+        // The "Keep X in inventory" float-menu order on a haulable ground item: take the clicked stack into the pawn's
+        // inventory and HOLD it — HD never hauls it to storage and vanilla's drop-unused never sheds it (the sibling
+        // of "Pick up X", which picks up to HAUL). For holding an item the pawn should carry (a mod's inventory item,
+        // a caravan supply, a roleplay keepsake). Release it by consuming it or dropping it from the gear tab. Default
+        // ON for discoverability; additive to vanilla's right-click options and shown alongside "Pick up X".
+        public bool keepInInventoryOption = true;
         // When a single stack is too big to carry in one armful (e.g. 75 steel but the pawn can hold 72), take it
         // in the INVENTORY and deliver the whole stack in one trip, instead of hand-carrying a partial load and
         // leaving the rest behind. Applies to ordered and automatic single-stack hauls alike.
@@ -595,6 +601,7 @@ namespace HaulersDream
             Scribe_Values.Look(ref bulkHaulTrigger, "bulkHaulTrigger", BulkHaulTrigger.SecondTasked);
             Scribe_Values.Look(ref haulNearbyOption, "haulNearbyOption", true);
             Scribe_Values.Look(ref manualPickupOption, "manualPickupOption", true);
+            Scribe_Values.Look(ref keepInInventoryOption, "keepInInventoryOption", true);
             Scribe_Values.Look(ref haulOversizedInInventory, "haulOversizedInInventory", true);
             Scribe_Values.Look(ref sweepNearbyWhileWorking, "sweepNearbyWhileWorking", true);
             Scribe_Values.Look(ref loadPackAnimalBulk, "loadPackAnimalBulk", true);
@@ -772,6 +779,7 @@ namespace HaulersDream
             bulkHaulTrigger = BulkHaulTrigger.SecondTasked;
             haulNearbyOption = true;
             manualPickupOption = true;
+            keepInInventoryOption = true;
             haulOversizedInInventory = true;
             sweepNearbyWhileWorking = true;
             loadPackAnimalBulk = true;

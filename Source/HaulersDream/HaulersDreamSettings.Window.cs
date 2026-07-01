@@ -1036,6 +1036,9 @@ namespace HaulersDream
             // "Pick up X" is independent of the bulk sweep (its provider gates only on manualPickupOption).
             manualPickupOption = HDSettingsUI.Checkbox(c, "HaulersDream.Setting.ManualPickup".Translate(),
                 manualPickupOption, "HaulersDream.Setting.ManualPickupDesc".Translate());
+            // "Keep X in inventory" is the hold-it sibling of "Pick up X" (pick up to HAUL vs pick up to HOLD).
+            keepInInventoryOption = HDSettingsUI.Checkbox(c, "HaulersDream.Setting.KeepInInventory".Translate(),
+                keepInInventoryOption, "HaulersDream.Setting.KeepInInventoryDesc".Translate());
 
             // The "While working" group (sweep-nearby + keep-working-when-full) moved to the Work & yields tab, next
             // to the per-category yield behaviour it governs. "Top up existing stacks" moved to the Unloading tab.

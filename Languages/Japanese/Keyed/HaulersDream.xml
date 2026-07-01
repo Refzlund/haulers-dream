@@ -66,6 +66,8 @@
 <HaulersDream.Setting.HaulNearbyOptionDesc>運搬可能なアイテムの右クリックメニューに（運搬できるポーン向けに）「近くのものをすべて運搬」の選択肢を追加します。これは即座に一括かき集めを開始するので、一括運搬を発動させるために2つの運搬を優先指定する必要がなくなります。バニラの「運搬を優先」も、単一アイテム運搬として並んで表示され続けます。</HaulersDream.Setting.HaulNearbyOptionDesc>
 <HaulersDream.Setting.ManualPickup>右クリックに「Xを拾う」の指示を追加</HaulersDream.Setting.ManualPickup>
 <HaulersDream.Setting.ManualPickupDesc>地面の運搬可能アイテムの右クリックメニューに「Xを拾う」の選択肢を追加します。ポーンはクリックされた山を、追跡対象のHauler's Dream運搬として所持品へ直接拾い、それは通常の荷下ろしによって片付けられます。そのため自動荷下ろしがオフでも決して失われません。バニラの右クリック運搬選択肢への追加です。</HaulersDream.Setting.ManualPickupDesc>
+<HaulersDream.Setting.KeepInInventory>右クリックに「Xを所持品に保持」の指示を追加</HaulersDream.Setting.KeepInInventory>
+<HaulersDream.Setting.KeepInInventoryDesc>地面の運搬可能アイテムの右クリックメニューに、「Xを拾う」と並んで「Xを所持品に保持」の選択肢を追加します。ポーンはクリックされた山を自分の所持品に取り込み、持ち続けます。Hauler's Dreamはそれを保管庫へ運び去ることは決してなく、ゲームの日常的な「未使用の所持品を捨てる」整理でもそれが捨てられることはありません。ポーンに意図的にアイテムを持たせたいときに使ってください。あとで手放すには、ポーンにそれを使い切らせるか、装備タブから捨てさせてください。バニラの右クリック選択肢への追加です。</HaulersDream.Setting.KeepInInventoryDesc>
 <HaulersDream.Setting.HaulOversized>規格外の山を所持品で運ぶ</HaulersDream.Setting.HaulOversized>
 <HaulersDream.Setting.HaulOversizedDesc>単一の山が一抱えで運ぶには大きすぎるとき（例：ポーンが72しか持てないのに鋼鉄の山が75）、ポーンは一部だけを手で運んで残りを置いていくのではなく、所持品でそれを抱え、山全体を1回の往復で届けます。指示・自動の両方の運搬に適用されます。実際に保管庫が受け入れられる分しか運ばないので、何も取り残されません。</HaulersDream.Setting.HaulOversizedDesc>
 <HaulersDream.Setting.SweepNearbyWhileWorking>作業しながら片付ける — 近くの落ちたアイテムも回収する</HaulersDream.Setting.SweepNearbyWhileWorking>
@@ -256,6 +258,9 @@
 <HaulersDream.HaulNearby.CouldNotStart>今、近くに運搬するものがありません。</HaulersDream.HaulNearby.CouldNotStart>
 <HaulersDream.PickUp.Option>{0}を拾う</HaulersDream.PickUp.Option>
 <HaulersDream.PickUp.CouldNotStart>{0}は{1}を拾えません — すでに運べるだけ運んでおり、運搬する場所もありません。</HaulersDream.PickUp.CouldNotStart>
+<HaulersDream.Keep.Option>{0}を所持品に保持</HaulersDream.Keep.Option>
+<HaulersDream.Keep.CouldNotStart>{0}は今これ以上{1}を持てません — すでに運べるだけ運んでいます。</HaulersDream.Keep.CouldNotStart>
+<HaulersDream.Keep.Report>アイテムを保持している。</HaulersDream.Keep.Report>
 <HaulersDream.PlanRoute.AlsoBuild>同時に建築（各立ち寄りで運搬＋建築）</HaulersDream.PlanRoute.AlsoBuild>
 <HaulersDream.PlanRoute.AlsoBuildDesc>これをオンにすると、ポーンは現場に資材を届け、次へ移る前にそれを建築します — ルート全体の資材を前もって集め、所持品に保持します。オフにすると、ポーンは現場に資材を補給するだけ（他のポーンが建築できます）。どちらにせよ現場は他のポーンに開かれたままなので、複数が並行して同じ運行を供給できます。2番手で着いた者は単に余剰を次の立ち寄りに残すか、最後に降ろします。</HaulersDream.PlanRoute.AlsoBuildDesc>
 <HaulersDream.Setting.CraftBatchTimeout>デフォルトの製作バッチのタイムアウト：{0}時間</HaulersDream.Setting.CraftBatchTimeout>

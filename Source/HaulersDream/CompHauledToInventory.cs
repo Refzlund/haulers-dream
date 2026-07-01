@@ -13,6 +13,13 @@ namespace HaulersDream
     public class CompHauledToInventory : ThingComp
     {
         private HashSet<Thing> takenToInventory = new HashSet<Thing>();
+        // Stacks the player told this pawn to KEEP in inventory (the "Keep X in inventory" order). Distinct from
+        // takenToInventory (which HD unloads to storage): a kept stack is HELD — the unload never touches it
+        // (InventorySurplus returns 0 for it) and vanilla's drop-unused never sheds it. Thing-ref (not a count) so it
+        // auto-releases: the GetHashSet heal drops any entry that was consumed/destroyed or that left this inventory
+        // (used in a recipe, dropped from the gear tab), which is how a kept item is un-kept — no bookkeeping tick.
+        // Kept stacks are added canMerge:false, so they never fold into personal/hauled stock (kept stays isolated).
+        private HashSet<Thing> kept = new HashSet<Thing>();
         public int lastYieldTick = -99999;
 
         /// <summary>Tick the <see cref="GetHashSet"/> self-heal last ran. The heal (an <c>owner.Count</c> inventory
@@ -107,6 +114,12 @@ namespace HaulersDream
             // be re-fetched — the "unloads its own sidearm" bug). A rare def overlap (harvested healroot +
             // personal herbal medicine) tags both; harmless: the surplus is merely unloaded to storage.
             var owner = (parent as Pawn)?.inventory?.innerContainer;
+            // Maintain the KEPT set on the same heal beat: drop refs consumed/destroyed or that left this inventory
+            // (used in a recipe, or dropped from the gear tab). That removal IS the release path — a kept item stops
+            // being kept the moment it is no longer held. Runs on the synced/decision path only (GetHashSet), so it
+            // never mutates from a render/alert read; identical across MP clients (each prunes the same dead refs).
+            if (kept.Count > 0)
+                kept.RemoveWhere(x => x == null || x.Destroyed || owner == null || !owner.Contains(x));
             if (owner != null && (takenToInventory.Count > 0 || carryOver.Count > 0))
             {
                 var pawn = parent as Pawn;
@@ -220,6 +233,23 @@ namespace HaulersDream
         /// May contain destroyed or out-of-inventory tags; callers guard each entry.</summary>
         public HashSet<Thing> PeekHashSet() => takenToInventory;
 
+        /// <summary>The KEPT-in-inventory set WITHOUT side effects — for the read-only unload-surplus math and the
+        /// drop-unused guards. May hold a stale ref (a stack dropped from the gear tab isn't pruned until the next
+        /// GetHashSet heal), but a stale ref never matches a LIVE inventory thing, so a <c>Contains(liveThing)</c>
+        /// test is safe; the heal (GetHashSet) is what removes stale entries.</summary>
+        public HashSet<Thing> PeekKept() => kept;
+
+        /// <summary>Mark <paramref name="thing"/> as kept in this pawn's inventory (the "Keep X in inventory" order),
+        /// so HD's unload never hauls it away and vanilla's drop-unused never sheds it, until it leaves inventory.
+        /// Called from <see cref="JobDriver_KeepInInventory"/> on every MP client (the ordered job replicates), so the
+        /// set stays deterministic. No-op on null.</summary>
+        public void RegisterKept(Thing thing)
+        {
+            if (thing == null)
+                return;
+            kept.Add(thing);
+        }
+
         public void Deregister(Thing thing)
         {
             // Mutates the tracked set -> force a re-heal next GetHashSet (HD-GETHASHSET), so a same-tick share/
@@ -261,10 +291,13 @@ namespace HaulersDream
         {
             base.PostExposeData();
             Scribe_Collections.Look(ref takenToInventory, "haulersDreamTakenToInventory", LookMode.Reference);
+            Scribe_Collections.Look(ref kept, "haulersDreamKept", LookMode.Reference);
             Scribe_Values.Look(ref lastYieldTick, "haulersDreamLastYieldTick", -99999);
             Scribe_Values.Look(ref autoHaulYields, "haulersDreamAutoHaulYields", true);
             if (takenToInventory == null)
                 takenToInventory = new HashSet<Thing>();
+            if (kept == null)
+                kept = new HashSet<Thing>();
         }
     }
 }

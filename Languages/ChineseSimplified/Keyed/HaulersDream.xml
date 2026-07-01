@@ -66,6 +66,8 @@
 <HaulersDream.Setting.HaulNearbyOptionDesc>在可搬运物品的右键菜单上（对能搬运的小人）添加“搬运附近的一切”选项，它会立即开始一次批量清扫——这样你就不必为了触发批量搬运而去优先处理两个搬运。原版的“优先搬运”仍会与它并列出现，用于单件搬运。</HaulersDream.Setting.HaulNearbyOptionDesc>
 <HaulersDream.Setting.ManualPickup>添加“拾取 X”右键命令</HaulersDream.Setting.ManualPickup>
 <HaulersDream.Setting.ManualPickupDesc>在地上可搬运物品的右键菜单上添加“拾取 X”选项。小人会把所点选的那一堆直接拾进货物栏，作为一次受追踪的 Hauler's Dream 搬运，随后由正常的卸载流程收起——因此即便自动卸载关闭也绝不会丢失。是对原版右键搬运选项的补充。</HaulersDream.Setting.ManualPickupDesc>
+<HaulersDream.Setting.KeepInInventory>添加“将 X 留在货物栏”右键命令</HaulersDream.Setting.KeepInInventory>
+<HaulersDream.Setting.KeepInInventoryDesc>在地上可搬运物品的右键菜单上，在“拾取 X”旁边添加“将 X 留在货物栏”选项。小人会把所点选的那一堆收进自己的货物栏并一直带着：Hauler's Dream 绝不会把它搬去储存，游戏日常的“丢弃未使用货物”清理也不会把它扔掉。当你想让某个小人有意携带某件物品时使用它。要日后放下它，就让小人把它用掉，或从其装备栏中丢弃。是对原版右键选项的补充。</HaulersDream.Setting.KeepInInventoryDesc>
 <HaulersDream.Setting.HaulOversized>用货物栏携带超大物品堆</HaulersDream.Setting.HaulOversized>
 <HaulersDream.Setting.HaulOversizedDesc>当单堆物品太大、一抱拿不下时（例如一堆75的钢铁而小人只能拿72），小人会把它装进货物栏，一趟运完整堆——而不是手提一部分、把其余留下。对被命令和自动的搬运均适用；只承载储存区实际能接收的量，因此不会有物资被遗弃。</HaulersDream.Setting.HaulOversizedDesc>
 <HaulersDream.Setting.SweepNearbyWhileWorking>边工作边整理——把附近的散落物品也一并收取</HaulersDream.Setting.SweepNearbyWhileWorking>
@@ -256,6 +258,9 @@
 <HaulersDream.HaulNearby.CouldNotStart>当前附近没有可搬运的东西。</HaulersDream.HaulNearby.CouldNotStart>
 <HaulersDream.PickUp.Option>拾取 {0}</HaulersDream.PickUp.Option>
 <HaulersDream.PickUp.CouldNotStart>{0} 无法拾取 {1}——已尽可能多地携带，且无处可搬运它。</HaulersDream.PickUp.CouldNotStart>
+<HaulersDream.Keep.Option>将 {0} 留在货物栏</HaulersDream.Keep.Option>
+<HaulersDream.Keep.CouldNotStart>{0} 现在无法再多带 {1}——已尽可能多地携带了。</HaulersDream.Keep.CouldNotStart>
+<HaulersDream.Keep.Report>正在留存一件物品。</HaulersDream.Keep.Report>
 <HaulersDream.PlanRoute.AlsoBuild>同时建造（每站搬运＋建造）</HaulersDream.PlanRoute.AlsoBuild>
 <HaulersDream.PlanRoute.AlsoBuildDesc>开启此项时，小人会先向一处工地交付材料并将其建造完成，再前往下一处——预先采集整条路径的材料并保存在货物栏中。关闭它时，小人只为各工地备料（他人可来建造）。无论哪种方式，工地都对其他小人开放，因此多人可并行供应同一趟；后到者只需为下一站保留多余材料，或在最后卸下它。</HaulersDream.PlanRoute.AlsoBuildDesc>
 <HaulersDream.Setting.CraftBatchTimeout>默认制作批量超时：{0}小时</HaulersDream.Setting.CraftBatchTimeout>

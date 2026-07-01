@@ -16,6 +16,7 @@ namespace HaulersDream
         public static JobDef HaulersDream_InventoryDoBill; // retired (dup risk); def kept for save-compat
         public static JobDef HaulersDream_BillPrepGather;
         public static JobDef HaulersDream_BulkHaul;
+        public static JobDef HaulersDream_KeepInInventory; // "Keep X in inventory": hold an item, never hauled/dropped
         public static JobDef HaulersDream_LoadPackAnimal; // load scooped loot onto a pack animal (caravan/away map)
         public static JobDef HaulersDream_UnloadCarrierInBulk; // bulk-empty a flagged pack animal into the hauler's backpack
         public static JobDef HaulersDream_LoadTransportersInBulk; // bulk-load a transporter/shuttle group from swept inventory

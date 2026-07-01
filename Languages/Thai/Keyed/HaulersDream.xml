@@ -66,6 +66,8 @@
 <HaulersDream.Setting.HaulNearbyOptionDesc>เพิ่มตัวเลือก "ขนทุกอย่างที่อยู่ใกล้" ในเมนูคลิกขวาบนไอเท็มที่ขนได้ (สำหรับตัวละครที่ขนของได้) ซึ่งจะเริ่มการกวาดแบบรวมทันที — คุณจึงไม่ต้องสั่งให้ความสำคัญสองการขนเพื่อกระตุ้นการขนแบบรวม "ให้ความสำคัญการขนของ" ของเกมพื้นฐานยังคงปรากฏข้างๆ สำหรับการขนของชิ้นเดียว</HaulersDream.Setting.HaulNearbyOptionDesc>
 <HaulersDream.Setting.ManualPickup>เพิ่มคำสั่งคลิกขวา "หยิบ X"</HaulersDream.Setting.ManualPickup>
 <HaulersDream.Setting.ManualPickupDesc>เพิ่มตัวเลือก "หยิบ X" ในเมนูคลิกขวาบนไอเท็มบนพื้นที่ขนได้ ตัวละครจะหยิบกองที่คลิกเข้าสัมภาระโดยตรงในฐานะการขนของ Hauler's Dream ที่ถูกติดตาม ซึ่งจะถูกเก็บโดยการขนของออกตามปกติ — มันจึงไม่เคยสูญหายแม้ปิดการขนของออกอัตโนมัติ เป็นส่วนเพิ่มจากตัวเลือกการขนคลิกขวาของเกมพื้นฐาน</HaulersDream.Setting.ManualPickupDesc>
+<HaulersDream.Setting.KeepInInventory>เพิ่มคำสั่งคลิกขวา "เก็บ X ไว้ในสัมภาระ"</HaulersDream.Setting.KeepInInventory>
+<HaulersDream.Setting.KeepInInventoryDesc>เพิ่มตัวเลือก "เก็บ X ไว้ในสัมภาระ" ในเมนูคลิกขวาบนไอเท็มบนพื้นที่ขนได้ ข้าง ๆ "หยิบ X" ตัวละครจะหยิบกองที่คลิกเข้าสัมภาระและถือมันไว้: Hauler's Dream จะไม่ขนมันไปเก็บที่คลังเลย และการเก็บกวาดตามปกติของเกมที่ทิ้งสัมภาระที่ไม่ได้ใช้ก็จะไม่แตะต้องมัน ใช้เมื่อคุณต้องการให้ตัวละครถือไอเท็มไว้โดยตั้งใจ หากต้องการปล่อยมันในภายหลัง ให้ตัวละครใช้มันจนหมดหรือทิ้งมันจากแท็บอุปกรณ์ เป็นส่วนเพิ่มจากตัวเลือกคลิกขวาของเกมพื้นฐาน</HaulersDream.Setting.KeepInInventoryDesc>
 <HaulersDream.Setting.HaulOversized>ขนกองขนาดใหญ่เกินในสัมภาระ</HaulersDream.Setting.HaulOversized>
 <HaulersDream.Setting.HaulOversizedDesc>เมื่อกองเดียวใหญ่เกินกว่าจะถือในอ้อมแขนเดียว (เช่น เหล็กกอง 75 เมื่อตัวละครถือได้แค่ 72) ตัวละครจะเก็บมันไว้ในสัมภาระและส่งทั้งกองในเที่ยวเดียว — แทนที่จะถือบางส่วนในมือและทิ้งที่เหลือไว้ ใช้ได้ทั้งการขนที่สั่งและอัตโนมัติ จะขนเท่าที่คลังรับได้จริงเท่านั้น จึงไม่มีอะไรถูกทิ้งค้าง</HaulersDream.Setting.HaulOversizedDesc>
 <HaulersDream.Setting.SweepNearbyWhileWorking>เก็บกวาดขณะทำงาน — เก็บของที่ตกหล่นใกล้ๆ ขึ้นมาด้วย</HaulersDream.Setting.SweepNearbyWhileWorking>
@@ -256,6 +258,9 @@
 <HaulersDream.HaulNearby.CouldNotStart>ไม่มีอะไรให้ขนใกล้ๆ ตอนนี้</HaulersDream.HaulNearby.CouldNotStart>
 <HaulersDream.PickUp.Option>หยิบ {0}</HaulersDream.PickUp.Option>
 <HaulersDream.PickUp.CouldNotStart>{0} หยิบ {1} ไม่ได้ — ถืออยู่เต็มที่แล้ว และไม่มีที่ให้ขนมันไป</HaulersDream.PickUp.CouldNotStart>
+<HaulersDream.Keep.Option>เก็บ {0} ไว้ในสัมภาระ</HaulersDream.Keep.Option>
+<HaulersDream.Keep.CouldNotStart>{0} ถือ {1} เพิ่มอีกไม่ได้ตอนนี้ — ถืออยู่เต็มที่แล้ว</HaulersDream.Keep.CouldNotStart>
+<HaulersDream.Keep.Report>กำลังเก็บไอเท็มไว้</HaulersDream.Keep.Report>
 <HaulersDream.PlanRoute.AlsoBuild>สร้างด้วย (ขน + ก่อสร้างแต่ละจุดแวะ)</HaulersDream.PlanRoute.AlsoBuild>
 <HaulersDream.PlanRoute.AlsoBuildDesc>เมื่อเปิดสิ่งนี้ ตัวละครจะส่งวัสดุไปยังจุดและก่อสร้างมันก่อนจะไปยังจุดถัดไป — รวบรวมวัสดุของทั้งเส้นทางไว้ล่วงหน้าและเก็บไว้ในสัมภาระ เมื่อปิด ตัวละครจะเพียงเติมวัสดุให้จุดต่างๆ เท่านั้น (คนอื่นก่อสร้างได้) ไม่ว่าจะอย่างไร จุดต่างๆ ยังเปิดให้ตัวละครอื่นเข้าถึงได้ หลายคนจึงจัดส่งในรอบเดียวกันแบบขนานได้ ใครที่มาถึงเป็นคนที่สองก็เพียงเก็บส่วนเกินไว้สำหรับจุดแวะถัดไปหรือขนมันออกตอนจบ</HaulersDream.PlanRoute.AlsoBuildDesc>
 <HaulersDream.Setting.CraftBatchTimeout>เวลาหมดอายุของชุดการผลิตเริ่มต้น: {0}ชม.</HaulersDream.Setting.CraftBatchTimeout>
