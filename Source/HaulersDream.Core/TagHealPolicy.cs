@@ -17,9 +17,10 @@ namespace HaulersDream.Core
     /// Two correctness boundaries it must NEVER cross, both encoded here so they are unit-testable:
     /// <list type="bullet">
     /// <item>It is bounded to ALREADY-SCOOPED defs (the union), so a pawn's non-scooped kit is never claimed.</item>
-    /// <item>It must never tag a genuine Simple Sidearms remembered sidearm (a separate Thing of a scooped
-    ///   weapon's def): SS would re-fetch it, producing the "unloads its own sidearm" bug. The
-    ///   <see cref="Stack.IsRememberedSidearm"/> flag (resolved Verse-side per candidate) excludes it.</item>
+    /// <item>It must never tag a stack another system keeps for the pawn (a separate Thing of a scooped
+    ///   weapon's def): a genuine Simple Sidearms remembered sidearm, or a Grab Your Tool carried tool — that
+    ///   mod would re-fetch it, producing the "unloads its own sidearm/tool" bug. The
+    ///   <see cref="Stack.ExcludeFromTag"/> flag (resolved Verse-side per candidate) excludes it.</item>
     /// </list>
     ///
     /// This class holds NO Verse types: defs are opaque <c>object</c> tokens (the live <c>ThingDef</c>
@@ -44,18 +45,19 @@ namespace HaulersDream.Core
             /// (no duplicate stamp / CE re-notify; the runtime's set-add would no-op anyway).</summary>
             public readonly bool AlreadyTagged;
 
-            /// <summary>True if this stack is a GENUINE Simple Sidearms remembered sidearm (precise (def,stuff)
-            /// match) — it must be excluded even when its def is in the scooped union. Resolved Verse-side and
-            /// only needs to be accurate for union-member, not-already-tagged stacks (the only ones it can
-            /// affect); the runtime computes it lazily for exactly those to preserve its reflection
-            /// short-circuit.</summary>
-            public readonly bool IsRememberedSidearm;
+            /// <summary>True if this stack must be excluded from tagging because another system actively keeps it
+            /// for the pawn — a GENUINE Simple Sidearms remembered sidearm (precise (def,stuff) match) or a Grab
+            /// Your Tool carried tool — so it must be left alone even when its def is in the scooped union.
+            /// Resolved Verse-side and only needs to be accurate for union-member, not-already-tagged stacks (the
+            /// only ones it can affect); the runtime computes it lazily for exactly those to preserve its
+            /// reflection short-circuit.</summary>
+            public readonly bool ExcludeFromTag;
 
-            public Stack(object def, bool alreadyTagged, bool isRememberedSidearm)
+            public Stack(object def, bool alreadyTagged, bool excludeFromTag)
             {
                 Def = def;
                 AlreadyTagged = alreadyTagged;
-                IsRememberedSidearm = isRememberedSidearm;
+                ExcludeFromTag = excludeFromTag;
             }
         }
 
@@ -116,7 +118,7 @@ namespace HaulersDream.Core
             for (int i = 0; i < stacks.Count; i++)
             {
                 var s = stacks[i];
-                if (s.Def != null && !s.AlreadyTagged && !s.IsRememberedSidearm && scoopedUnion.Contains(s.Def))
+                if (s.Def != null && !s.AlreadyTagged && !s.ExcludeFromTag && scoopedUnion.Contains(s.Def))
                     outIndices.Add(i);
             }
         }

@@ -612,18 +612,20 @@ namespace HaulersDream
         {
             if (owner == null || def == null)
                 return null;
-            // Prefer a same-def stack that is NOT a genuine Simple Sidearms remembered sidearm, so the scoop's
-            // unload-tag never lands on the pawn's own sidearm (weapons don't stack, so a sidearm of the scooped
-            // weapon's def is a separate same-def stack that could be returned here as "first of def"). A remembered
-            // sidearm is only returned as a last resort (all same-def stacks are sidearms — rare), so the caller
-            // still has a stack to register. pawn==null keeps the old behavior for non-scoop callers.
+            // Prefer a same-def stack that is NOT a kept sidearm/tool, so the scoop's unload-tag never lands on the
+            // pawn's own Simple Sidearms remembered sidearm or Grab Your Tool carried tool (weapons don't stack, so
+            // a sidearm/tool of the scooped weapon's def is a separate same-def stack that could be returned here as
+            // "first of def"). A kept sidearm/tool is only returned as a last resort (all same-def stacks are kept —
+            // rare), so the caller still has a stack to register. pawn==null keeps the old behavior for non-scoop
+            // callers; both keep-checks are inert when their mod is absent.
             Thing fallback = null;
             for (int i = 0; i < owner.Count; i++)
             {
                 var t = owner[i];
                 if (t?.def != def)
                     continue;
-                if (pawn != null && SimpleSidearmsCompat.IsRememberedSidearm(pawn, t))
+                if (pawn != null && (SimpleSidearmsCompat.IsRememberedSidearm(pawn, t)
+                                     || GrabYourToolCompat.IsCarriedTool(pawn, t)))
                 {
                     if (fallback == null)
                         fallback = t;
