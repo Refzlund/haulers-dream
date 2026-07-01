@@ -1,5 +1,21 @@
 # haulers-dream
 
+## 1.15.0
+
+### Minor Changes
+
+- 908c58a: Keep the tools your pawns carry when you use Grab Your Tool.
+
+  If you run Grab Your Tool, often alongside a tool mod like Tools O' Plenty, so colonists carry pickaxes, hammers, sickles, and other work tools in their inventory, Hauler's Dream now leaves those tools alone instead of shipping them off to storage. Before, it could treat a carried tool as spare inventory and haul it away, and Grab Your Tool would just fetch it back, so a pawn kept picking the same tool up again. Now a colonist's carried tools stay put.
+
+  This turns on by itself when Grab Your Tool is installed. Tools carried as Simple Sidearms were already handled, so between the two, tool mods that lean on either carrier are covered. If you would rather a specific tool go to storage anyway, set an "Unload always" rule for it in the individual item unload settings and that still wins.
+
+### Patch Changes
+
+- 908c58a: Add an in-game mod icon and a load-order hint for auto-sorters.
+
+  Hauler's Dream now ships a mod icon (the "HD" logo), so it shows its own icon in the in-game mod list and in mod managers instead of a blank placeholder. It also tells auto-sorters (RimSort, RimPy, Mod Manager) to load after Combat Extended when both are installed, since that is the one framework it shares a patched game method with. Hauler's Dream is otherwise load-order independent, so no manual sorting is needed; the biggest thing you can do for it is to remove the older hauling mods it replaces (like Pick Up And Haul), which its Migration tab can turn off for you in one click.
+
 ## 1.14.0
 
 ### Minor Changes
