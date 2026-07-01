@@ -717,4 +717,6 @@
   <HaulersDream.PlanRoute.RememberButton>이 설정 기억</HaulersDream.PlanRoute.RememberButton>
   <HaulersDream.PlanRoute.RememberButtonDesc>이 설정을 해당 종류 대상의 기억된 계획으로 저장하여, 우클릭 메뉴에 "우선 지정 … 계획 (기억됨)"이 표시되어 (계획 기억 인터페이스 스위치가 켜져 있는 동안) 한 번의 클릭으로 실행할 수 있게 합니다. 이 종류에 대해 이전에 기억한 계획이 있으면 덮어씁니다.</HaulersDream.PlanRoute.RememberButtonDesc>
   <HaulersDream.PlanRoute.RememberedConfirm>{0}의 계획을 기억했습니다.</HaulersDream.PlanRoute.RememberedConfirm>
+  <HaulersDream.PlanRoute.RememberButtonSaved>이미 기억됨</HaulersDream.PlanRoute.RememberButtonSaved>
+  <HaulersDream.PlanRoute.RememberButtonSavedDesc>이 설정은 이미 해당 종류 대상의 기억된 계획으로 저장되어 있습니다. 다른 계획을 저장하려면 아무 설정이나 변경하세요.</HaulersDream.PlanRoute.RememberButtonSavedDesc>
 </LanguageData>

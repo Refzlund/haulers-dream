@@ -717,4 +717,6 @@
   <HaulersDream.PlanRoute.RememberButton>Zapamiętaj te ustawienia</HaulersDream.PlanRoute.RememberButton>
   <HaulersDream.PlanRoute.RememberButtonDesc>Zapisuje te ustawienia jako zapamiętany plan dla tego rodzaju celu, aby jego menu prawego przycisku myszy oferowało „Zaplanuj spriorytetyzowane … (zapamiętane)” do uruchomienia go jednym kliknięciem (gdy przełącznik interfejsu Zapamiętaj plan jest włączony). Zastępuje to każdy plan wcześniej zapamiętany dla tego typu.</HaulersDream.PlanRoute.RememberButtonDesc>
   <HaulersDream.PlanRoute.RememberedConfirm>Zapamiętano plan dla {0}.</HaulersDream.PlanRoute.RememberedConfirm>
+  <HaulersDream.PlanRoute.RememberButtonSaved>Już zapamiętany</HaulersDream.PlanRoute.RememberButtonSaved>
+  <HaulersDream.PlanRoute.RememberButtonSavedDesc>Te ustawienia są już zapisane jako zapamiętany plan dla tego rodzaju celu. Zmień dowolne ustawienie, aby zapisać inny plan.</HaulersDream.PlanRoute.RememberButtonSavedDesc>
 </LanguageData>

@@ -72,17 +72,18 @@ namespace HaulersDream
             preventCameraMotion = false;
         }
 
-        public override Vector2 InitialSize => new Vector2(460f, 646f);
+        public override Vector2 InitialSize => new Vector2(460f, 652f);
 
         public override void DoWindowContents(Rect inRect)
         {
             const float btnH = 36f;
+            const float rememberH = 30f;   // the "Remember" button row, just above Cancel/Append/Replace
             if (pickingMode && !Find.Targeter.IsTargeting)
             {
                 if (rearmRequested) { rearmRequested = false; BeginPicking(); }
                 else pickingMode = false;
             }
-            var body = new Rect(inRect.x, inRect.y, inRect.width, inRect.height - btnH - 8f);
+            var body = new Rect(inRect.x, inRect.y, inRect.width, inRect.height - btnH - rememberH - 6f - 8f);
 
             var l = new Listing_Standard();
             l.Begin(body);
@@ -127,23 +128,11 @@ namespace HaulersDream
             l.Gap(4f);
             l.Label(EstimateText());
 
-            // "Remember" — save THESE settings as the explicit one-click template for this floor type (keyed by the
-            // clicked cell's floor terrain). Once saved, removing this floor reads "(remembered)" and runs the
-            // template in one click while the interface toggle is on; hovering the button blinks that toggle.
-            l.Gap(6f);
-            Patch_PlaySettings.DrawRememberButton(l, () =>
-            {
-                var s = HaulersDreamMod.Settings;
-                var terrain = pawn?.Map?.terrainGrid?.TerrainAt(anchor);
-                if (s == null || terrain == null)
-                    return;
-                s.SetRememberedRemoveFloorRoute(terrain.defName, CurrentTemplate());
-                HaulersDreamMod.Instance?.WriteSettings();
-                Messages.Message("HaulersDream.PlanRoute.RememberedConfirm".Translate(terrain.LabelCap),
-                    MessageTypeDefOf.TaskCompletion, historical: false);
-            });
-
             l.End();
+
+            // "Remember" — full-width button at the bottom, just above Cancel/Append/Replace. Saves THESE settings as
+            // the one-click template for this floor type (keyed by the clicked cell's floor terrain).
+            DoRememberButton(new Rect(inRect.x, inRect.yMax - btnH - 6f - rememberH, inRect.width, rememberH));
 
             float third = (inRect.width - 16f) / 3f;
             float by = inRect.yMax - btnH;
@@ -334,6 +323,39 @@ namespace HaulersDream
             amount = amount > amountMax ? -1 : amount,
             selectionMethod = selectionMethod,
         };
+
+        // The "Remember" button's LOCAL rect + hover, captured each frame so ExtraOnGUI can draw a screen-space
+        // pointer arrow to the bottom-right interface toggle (the window's GUI group would clip an in-content arrow).
+        private Rect rememberBtnLocalRect;
+        private bool rememberBtnHovered;
+
+        // Draw the bottom "Remember" button: "Already remembered" (faint, disabled) when the current settings already
+        // equal this floor type's saved template, otherwise a live button that saves them.
+        private void DoRememberButton(Rect row)
+        {
+            var s = HaulersDreamMod.Settings;
+            var terrain = pawn?.Map?.terrainGrid?.TerrainAt(anchor);
+            var saved = terrain != null ? s?.GetRememberedRemoveFloorRoute(terrain.defName) : null;
+            bool alreadyRemembered = saved != null && saved.ValueEquals(CurrentTemplate());
+            Patch_PlaySettings.DrawRememberButton(row, alreadyRemembered, () =>
+            {
+                if (s == null || terrain == null)
+                    return;
+                s.SetRememberedRemoveFloorRoute(terrain.defName, CurrentTemplate());
+                HaulersDreamMod.Instance?.WriteSettings();
+                Messages.Message("HaulersDream.PlanRoute.RememberedConfirm".Translate(terrain.LabelCap),
+                    MessageTypeDefOf.TaskCompletion, historical: false);
+            });
+            rememberBtnLocalRect = row;
+            rememberBtnHovered = Mouse.IsOver(row);
+        }
+
+        public override void ExtraOnGUI()
+        {
+            base.ExtraOnGUI();
+            if (rememberBtnHovered)
+                Patch_PlaySettings.DrawRememberArrow(windowRect, rememberBtnLocalRect);
+        }
 
         /// <summary>Replay the EXPLICIT <paramref name="template"/> the player saved for this floor type with the
         /// "Remember" button — stored per floor <see cref="TerrainDef"/> in

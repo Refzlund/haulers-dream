@@ -717,4 +717,6 @@
   <HaulersDream.PlanRoute.RememberButton>これらの設定を記憶</HaulersDream.PlanRoute.RememberButton>
   <HaulersDream.PlanRoute.RememberButtonDesc>これらの設定をこの種類の対象の記憶済み計画として保存し、右クリックメニューに「優先…を計画（記憶済み）」を表示して、（「計画を記憶」のインターフェーススイッチがオンのあいだ）ワンクリックで実行できるようにします。この種類に以前記憶した計画があれば上書きされます。</HaulersDream.PlanRoute.RememberButtonDesc>
   <HaulersDream.PlanRoute.RememberedConfirm>{0}の計画を記憶しました。</HaulersDream.PlanRoute.RememberedConfirm>
+  <HaulersDream.PlanRoute.RememberButtonSaved>記憶済み</HaulersDream.PlanRoute.RememberButtonSaved>
+  <HaulersDream.PlanRoute.RememberButtonSavedDesc>これらの設定は、この種類の対象の記憶済み計画としてすでに保存されています。いずれかの設定を変更すると、別の計画を保存できます。</HaulersDream.PlanRoute.RememberButtonSavedDesc>
 </LanguageData>

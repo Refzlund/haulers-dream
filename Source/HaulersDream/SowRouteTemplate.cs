@@ -33,5 +33,11 @@ namespace HaulersDream
             Scribe_Values.Look(ref smart, "smart", true);
             Scribe_Values.Look(ref selectionMethod, "selectionMethod", RouteSelectionMethod.MostStopsPerTravel);
         }
+
+        /// <summary>Field-by-field value equality against another template (see
+        /// <see cref="RouteDialogPrefs.ValueEquals"/> — used to show "Already remembered" on the button).</summary>
+        public bool ValueEquals(SowRouteTemplate o) => o != null
+            && mode == o.mode && maxTravel == o.maxTravel && radius == o.radius && amount == o.amount
+            && smart == o.smart && selectionMethod == o.selectionMethod;
     }
 }

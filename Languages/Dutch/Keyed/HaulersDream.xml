@@ -717,4 +717,6 @@
   <HaulersDream.PlanRoute.RememberButton>Deze instellingen onthouden</HaulersDream.PlanRoute.RememberButton>
   <HaulersDream.PlanRoute.RememberButtonDesc>Slaat deze instellingen op als het onthouden plan voor dit soort doel, zodat het rechtsklikmenu «Plan geprioriteerd(e) … (onthouden)» aanbiedt om het met één klik uit te voeren (zolang de interfaceschakelaar Plan onthouden aan staat). Dit overschrijft elk plan dat je eerder voor dit type had onthouden.</HaulersDream.PlanRoute.RememberButtonDesc>
   <HaulersDream.PlanRoute.RememberedConfirm>Plan onthouden voor {0}.</HaulersDream.PlanRoute.RememberedConfirm>
+  <HaulersDream.PlanRoute.RememberButtonSaved>Al onthouden</HaulersDream.PlanRoute.RememberButtonSaved>
+  <HaulersDream.PlanRoute.RememberButtonSavedDesc>Deze instellingen zijn al opgeslagen als het onthouden plan voor dit soort doel. Wijzig een instelling om een ander plan op te slaan.</HaulersDream.PlanRoute.RememberButtonSavedDesc>
 </LanguageData>

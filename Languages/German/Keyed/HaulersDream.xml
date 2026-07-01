@@ -717,4 +717,6 @@
   <HaulersDream.PlanRoute.RememberButton>Diese Einstellungen merken</HaulersDream.PlanRoute.RememberButton>
   <HaulersDream.PlanRoute.RememberButtonDesc>Speichert diese Einstellungen als gemerkten Plan für diese Art Ziel, sodass sein Rechtsklick-Menü „Priorisiertes … planen (gemerkt)“ anbietet, um ihn mit einem Klick auszuführen (solange der Schalter „Plan merken“ aktiv ist). Dies überschreibt jeden Plan, den du für diesen Typ zuvor gemerkt hast.</HaulersDream.PlanRoute.RememberButtonDesc>
   <HaulersDream.PlanRoute.RememberedConfirm>Plan für {0} gemerkt.</HaulersDream.PlanRoute.RememberedConfirm>
+  <HaulersDream.PlanRoute.RememberButtonSaved>Bereits gemerkt</HaulersDream.PlanRoute.RememberButtonSaved>
+  <HaulersDream.PlanRoute.RememberButtonSavedDesc>Diese Einstellungen sind bereits als gemerkter Plan für diese Art Ziel gespeichert. Ändere eine beliebige Einstellung, um einen anderen Plan zu speichern.</HaulersDream.PlanRoute.RememberButtonSavedDesc>
 </LanguageData>

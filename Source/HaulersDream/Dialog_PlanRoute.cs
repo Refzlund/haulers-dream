@@ -154,11 +154,12 @@ namespace HaulersDream
 
         // Rooms mode adds a picker button + a 3-row room list, so kinds that offer it need the taller layout too.
         public override Vector2 InitialSize => new Vector2(460f,
-            isHarvest || allowedModes.Contains(RouteMode.Rooms) ? 846f : 766f);
+            isHarvest || allowedModes.Contains(RouteMode.Rooms) ? 860f : 772f);
 
         public override void DoWindowContents(Rect inRect)
         {
             const float btnH = 36f;
+            const float rememberH = 30f;   // the "Remember" button row, just above Cancel/Append/Replace
             // (Re-)arm the pickers only on request (button press / right after a consumed pick — RimWorld's
             // Targeter fires its action once then stops, so multi-pick needs a re-arm). A stop WITHOUT a
             // pending request is the player cancelling via ESC/right-click: exit picking cleanly.
@@ -177,7 +178,7 @@ namespace HaulersDream
                 if (rearmRequested) { rearmRequested = false; BeginSecondaryPicking(); }
                 else pickingSecondary = false;
             }
-            var body = new Rect(inRect.x, inRect.y, inRect.width, inRect.height - btnH - 8f);
+            var body = new Rect(inRect.x, inRect.y, inRect.width, inRect.height - btnH - rememberH - 6f - 8f);
 
             var l = new Listing_Standard();
             l.Begin(body);
@@ -299,23 +300,12 @@ namespace HaulersDream
                 GUI.color = Color.white;
             }
 
-            // "Remember" — save THESE settings as the explicit one-click template for this target type (a separate
-            // layer from the per-instance settings PostClose auto-restores). Once saved, this kind of target's
-            // right-click menu reads "(remembered)" and runs the template in one click while the interface toggle is
-            // on; hovering the button blinks that toggle to show the link.
-            l.Gap(6f);
-            Patch_PlaySettings.DrawRememberButton(l, () =>
-            {
-                var s = HaulersDreamMod.Settings;
-                if (s == null || clicked?.def == null)
-                    return;
-                s.SetRememberedRoute(clicked.def.defName, CurrentPrefs());
-                HaulersDreamMod.Instance?.WriteSettings();
-                Messages.Message("HaulersDream.PlanRoute.RememberedConfirm".Translate(clicked.def.LabelCap),
-                    MessageTypeDefOf.TaskCompletion, historical: false);
-            });
-
             l.End();
+
+            // "Remember" — full-width button at the bottom, just above Cancel/Append/Replace (a separate layer from
+            // the per-instance settings PostClose auto-restores). Once saved, this kind of target's right-click menu
+            // reads "(remembered)" and runs the template in one click while the interface toggle is on.
+            DoRememberButton(new Rect(inRect.x, inRect.yMax - btnH - 6f - rememberH, inRect.width, rememberH));
 
             float third = (inRect.width - 16f) / 3f;
             float by = inRect.yMax - btnH;
@@ -915,6 +905,39 @@ namespace HaulersDream
         // hard-reserves the sites (enroute claims only), so other haulers keep supplying the rest in parallel.
         private bool IsConstruction => kind?.scanner is WorkGiver_ConstructDeliverResourcesToBlueprints;
         private bool alsoBuild = true;
+
+        // The "Remember" button's LOCAL rect + hover, captured each frame so ExtraOnGUI can draw a screen-space
+        // pointer arrow from it to the bottom-right interface toggle (drawing the arrow inside DoWindowContents is no
+        // good — the window's GUI group clips it at the window edge, well short of the toggle).
+        private Rect rememberBtnLocalRect;
+        private bool rememberBtnHovered;
+
+        // Draw the bottom "Remember" button: "Already remembered" (faint, disabled) when the current settings already
+        // equal this type's saved template, otherwise a live button that saves them as the template.
+        private void DoRememberButton(Rect row)
+        {
+            var s = HaulersDreamMod.Settings;
+            var saved = s?.GetRememberedRoute(clicked?.def?.defName);
+            bool alreadyRemembered = saved != null && saved.ValueEquals(CurrentPrefs());
+            Patch_PlaySettings.DrawRememberButton(row, alreadyRemembered, () =>
+            {
+                if (s == null || clicked?.def == null)
+                    return;
+                s.SetRememberedRoute(clicked.def.defName, CurrentPrefs());
+                HaulersDreamMod.Instance?.WriteSettings();
+                Messages.Message("HaulersDream.PlanRoute.RememberedConfirm".Translate(clicked.def.LabelCap),
+                    MessageTypeDefOf.TaskCompletion, historical: false);
+            });
+            rememberBtnLocalRect = row;
+            rememberBtnHovered = Mouse.IsOver(row);
+        }
+
+        public override void ExtraOnGUI()
+        {
+            base.ExtraOnGUI();
+            if (rememberBtnHovered)
+                Patch_PlaySettings.DrawRememberArrow(windowRect, rememberBtnLocalRect);
+        }
 
         /// <summary>Snapshot the dialog's current knobs as a portable <see cref="RouteDialogPrefs"/> (the "no limit"
         /// max-travel and "All" amount stored as -1 sentinels). Shared by <see cref="PostClose"/> (the per-instance

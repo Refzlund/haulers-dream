@@ -717,4 +717,6 @@
   <HaulersDream.PlanRoute.RememberButton>Запомнить эти настройки</HaulersDream.PlanRoute.RememberButton>
   <HaulersDream.PlanRoute.RememberButtonDesc>Сохраняет эти настройки как запомненный план для этого вида цели, чтобы в её меню правого щелчка появлялось «Запланировать приоритетное … (запомнено)» для выполнения одним щелчком (пока включён переключатель интерфейса «Запоминать план»). Это перезапишет любой план, ранее запомненный для этого типа.</HaulersDream.PlanRoute.RememberButtonDesc>
   <HaulersDream.PlanRoute.RememberedConfirm>План запомнен для {0}.</HaulersDream.PlanRoute.RememberedConfirm>
+  <HaulersDream.PlanRoute.RememberButtonSaved>Уже запомнено</HaulersDream.PlanRoute.RememberButtonSaved>
+  <HaulersDream.PlanRoute.RememberButtonSavedDesc>Эти настройки уже сохранены как запомненный план для этого вида цели. Измените любую настройку, чтобы сохранить другой план.</HaulersDream.PlanRoute.RememberButtonSavedDesc>
 </LanguageData>

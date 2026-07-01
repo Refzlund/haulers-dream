@@ -836,4 +836,6 @@
   <HaulersDream.PlanRoute.RememberButton>Remember these settings</HaulersDream.PlanRoute.RememberButton>
   <HaulersDream.PlanRoute.RememberButtonDesc>Save these settings as the remembered plan for this kind of target, so its right-click menu offers "Plan prioritized … (remembered)" to run it in one click (while the Remember plan interface toggle is on). This overwrites any plan you had previously remembered for this type.</HaulersDream.PlanRoute.RememberButtonDesc>
   <HaulersDream.PlanRoute.RememberedConfirm>Remembered this plan for {0}.</HaulersDream.PlanRoute.RememberedConfirm>
+  <HaulersDream.PlanRoute.RememberButtonSaved>Already remembered</HaulersDream.PlanRoute.RememberButtonSaved>
+  <HaulersDream.PlanRoute.RememberButtonSavedDesc>These settings are already saved as the remembered plan for this kind of target. Change any setting to save a different plan.</HaulersDream.PlanRoute.RememberButtonSavedDesc>
 </LanguageData>

@@ -717,4 +717,6 @@
   <HaulersDream.PlanRoute.RememberButton>记住这些设置</HaulersDream.PlanRoute.RememberButton>
   <HaulersDream.PlanRoute.RememberButtonDesc>将这些设置保存为该类目标的已记住方案，使其右键菜单提供“规划优先…（已记住）”以一键执行（需在“记住方案”界面开关开启时）。这会覆盖你之前为该类型记住的任何方案。</HaulersDream.PlanRoute.RememberButtonDesc>
   <HaulersDream.PlanRoute.RememberedConfirm>已为{0}记住此方案。</HaulersDream.PlanRoute.RememberedConfirm>
+  <HaulersDream.PlanRoute.RememberButtonSaved>已记住</HaulersDream.PlanRoute.RememberButtonSaved>
+  <HaulersDream.PlanRoute.RememberButtonSavedDesc>这些设置已保存为该类目标的已记住方案。更改任意设置即可保存为不同的方案。</HaulersDream.PlanRoute.RememberButtonSavedDesc>
 </LanguageData>

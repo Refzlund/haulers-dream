@@ -717,4 +717,6 @@
   <HaulersDream.PlanRoute.RememberButton>Mémoriser ces réglages</HaulersDream.PlanRoute.RememberButton>
   <HaulersDream.PlanRoute.RememberButtonDesc>Enregistre ces réglages comme plan mémorisé pour ce type de cible, afin que son menu clic droit propose « Planifier … priorisé (mémorisé) » pour l’exécuter en un clic (tant que l’interrupteur d’interface Mémoriser le plan est activé). Ceci écrase tout plan précédemment mémorisé pour ce type.</HaulersDream.PlanRoute.RememberButtonDesc>
   <HaulersDream.PlanRoute.RememberedConfirm>Plan mémorisé pour {0}.</HaulersDream.PlanRoute.RememberedConfirm>
+  <HaulersDream.PlanRoute.RememberButtonSaved>Déjà mémorisé</HaulersDream.PlanRoute.RememberButtonSaved>
+  <HaulersDream.PlanRoute.RememberButtonSavedDesc>Ces réglages sont déjà enregistrés comme plan mémorisé pour ce type de cible. Modifiez un réglage pour enregistrer un plan différent.</HaulersDream.PlanRoute.RememberButtonSavedDesc>
 </LanguageData>

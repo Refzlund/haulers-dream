@@ -717,4 +717,6 @@
   <HaulersDream.PlanRoute.RememberButton>Husk disse indstillinger</HaulersDream.PlanRoute.RememberButton>
   <HaulersDream.PlanRoute.RememberButtonDesc>Gemmer disse indstillinger som den huskede plan for denne slags mål, så dens højreklikmenu tilbyder «Planlæg prioriteret … (husket)» til at køre den med ét klik (mens interfacekontakten Husk plan er slået til). Dette overskriver enhver plan, du tidligere havde husket for denne type.</HaulersDream.PlanRoute.RememberButtonDesc>
   <HaulersDream.PlanRoute.RememberedConfirm>Plan husket for {0}.</HaulersDream.PlanRoute.RememberedConfirm>
+  <HaulersDream.PlanRoute.RememberButtonSaved>Allerede husket</HaulersDream.PlanRoute.RememberButtonSaved>
+  <HaulersDream.PlanRoute.RememberButtonSavedDesc>Disse indstillinger er allerede gemt som den huskede plan for denne slags mål. Ændr en hvilken som helst indstilling for at gemme en anden plan.</HaulersDream.PlanRoute.RememberButtonSavedDesc>
 </LanguageData>

@@ -717,4 +717,6 @@
   <HaulersDream.PlanRoute.RememberButton>จดจำการตั้งค่านี้</HaulersDream.PlanRoute.RememberButton>
   <HaulersDream.PlanRoute.RememberButtonDesc>บันทึกการตั้งค่านี้เป็นแผนที่จำไว้สำหรับเป้าหมายชนิดนี้ เพื่อให้เมนูคลิกขวาของมันมีตัวเลือก “วางแผนให้ความสำคัญ … (จำไว้)” สำหรับทำงานด้วยคลิกเดียว (ขณะที่สวิตช์อินเทอร์เฟซจดจำแผนเปิดอยู่) การทำเช่นนี้จะเขียนทับแผนใดๆ ที่คุณเคยจำไว้ก่อนหน้าสำหรับชนิดนี้</HaulersDream.PlanRoute.RememberButtonDesc>
   <HaulersDream.PlanRoute.RememberedConfirm>จำแผนนี้สำหรับ {0} แล้ว</HaulersDream.PlanRoute.RememberedConfirm>
+  <HaulersDream.PlanRoute.RememberButtonSaved>จำไว้แล้ว</HaulersDream.PlanRoute.RememberButtonSaved>
+  <HaulersDream.PlanRoute.RememberButtonSavedDesc>การตั้งค่านี้ถูกบันทึกเป็นแผนที่จำไว้สำหรับเป้าหมายชนิดนี้อยู่แล้ว เปลี่ยนการตั้งค่าใดๆ เพื่อบันทึกเป็นแผนอื่น</HaulersDream.PlanRoute.RememberButtonSavedDesc>
 </LanguageData>

@@ -717,4 +717,6 @@
   <HaulersDream.PlanRoute.RememberButton>Lembrar estas configurações</HaulersDream.PlanRoute.RememberButton>
   <HaulersDream.PlanRoute.RememberButtonDesc>Salva estas configurações como o plano lembrado para este tipo de alvo, para que seu menu de clique direito ofereça «Planejar … priorizada (lembrada)» para executá-lo com um clique (enquanto o interruptor de interface Lembrar plano estiver ativado). Isto substitui qualquer plano que você tenha lembrado anteriormente para este tipo.</HaulersDream.PlanRoute.RememberButtonDesc>
   <HaulersDream.PlanRoute.RememberedConfirm>Plano lembrado para {0}.</HaulersDream.PlanRoute.RememberedConfirm>
+  <HaulersDream.PlanRoute.RememberButtonSaved>Já lembrado</HaulersDream.PlanRoute.RememberButtonSaved>
+  <HaulersDream.PlanRoute.RememberButtonSavedDesc>Estas configurações já estão salvas como o plano lembrado para este tipo de alvo. Altere qualquer configuração para salvar um plano diferente.</HaulersDream.PlanRoute.RememberButtonSavedDesc>
 </LanguageData>

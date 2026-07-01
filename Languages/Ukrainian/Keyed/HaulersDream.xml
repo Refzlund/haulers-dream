@@ -717,4 +717,6 @@
   <HaulersDream.PlanRoute.RememberButton>Запам’ятати ці налаштування</HaulersDream.PlanRoute.RememberButton>
   <HaulersDream.PlanRoute.RememberButtonDesc>Зберігає ці налаштування як запам’ятований план для цього виду цілі, щоб у її меню правого клацання пропонувалося «Спланувати пріоритетне … (запам’ятовано)» для виконання одним клацанням (поки увімкнено перемикач інтерфейсу «Запам’ятовувати план»). Це перезапише будь-який план, раніше запам’ятований для цього типу.</HaulersDream.PlanRoute.RememberButtonDesc>
   <HaulersDream.PlanRoute.RememberedConfirm>План запам’ятовано для {0}.</HaulersDream.PlanRoute.RememberedConfirm>
+  <HaulersDream.PlanRoute.RememberButtonSaved>Уже запам’ятано</HaulersDream.PlanRoute.RememberButtonSaved>
+  <HaulersDream.PlanRoute.RememberButtonSavedDesc>Ці налаштування вже збережено як запам’ятований план для цього виду цілі. Змініть будь-яке налаштування, щоб зберегти інший план.</HaulersDream.PlanRoute.RememberButtonSavedDesc>
 </LanguageData>

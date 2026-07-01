@@ -717,4 +717,6 @@
   <HaulersDream.PlanRoute.RememberButton>Ricorda queste impostazioni</HaulersDream.PlanRoute.RememberButton>
   <HaulersDream.PlanRoute.RememberButtonDesc>Salva queste impostazioni come piano ricordato per questo tipo di bersaglio, così il suo menu del tasto destro offre «Pianifica … prioritizzato (memorizzato)» per eseguirlo con un clic (mentre l’interruttore dell’interfaccia Ricorda piano è attivo). Questo sovrascrive qualsiasi piano che avevi memorizzato in precedenza per questo tipo.</HaulersDream.PlanRoute.RememberButtonDesc>
   <HaulersDream.PlanRoute.RememberedConfirm>Piano memorizzato per {0}.</HaulersDream.PlanRoute.RememberedConfirm>
+  <HaulersDream.PlanRoute.RememberButtonSaved>Già memorizzato</HaulersDream.PlanRoute.RememberButtonSaved>
+  <HaulersDream.PlanRoute.RememberButtonSavedDesc>Queste impostazioni sono già salvate come piano memorizzato per questo tipo di bersaglio. Modifica una qualsiasi impostazione per salvare un piano diverso.</HaulersDream.PlanRoute.RememberButtonSavedDesc>
 </LanguageData>
