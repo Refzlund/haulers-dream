@@ -20,6 +20,16 @@ const drift = Bun.spawn(['bun', resolve(import.meta.dir, 'check-settings-drift.t
 })
 if ((await drift.exited) !== 0) throw new Error('Settings-drift check failed (see output above).')
 
+// Guard profile-codec coverage: every serialized reference-type setting must appear in all four dispatch sites
+// (CloneValue / ValuesEqual / EncodeFieldValue / ParseFieldValue). A missing case is the silent "always Custom
+// (unsaved)" bug. Runtime backstop: HaulersDreamSettings.VerifyProfileIntegrity(). See check-profile-codec.ts.
+const profileCodec = Bun.spawn(['bun', resolve(import.meta.dir, 'check-profile-codec.ts')], {
+	stdout: 'inherit',
+	stderr: 'inherit',
+	cwd: repoRoot,
+})
+if ((await profileCodec.exited) !== 0) throw new Error('Profile-codec coverage check failed (see output above).')
+
 // Guard the Steam Workshop description against Steam's 8000-character truncation limit.
 const steamDesc = Bun.spawn(['bun', resolve(import.meta.dir, 'check-steam-description.ts')], {
 	stdout: 'inherit',

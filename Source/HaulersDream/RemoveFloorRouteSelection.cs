@@ -11,12 +11,11 @@ namespace HaulersDream
     /// either pipeline.
     ///
     /// <para>Eligibility mirrors vanilla <see cref="Designator_RemoveFloor.CanDesignateCell"/> CONSERVATIVELY (right
-    /// terrain removable, not under a solid wall, no building whose foundation-affordance would break). It is a
-    /// SUPERSET-safe filter — the authoritative check runs again at job-build time
-    /// (<c>scanner.HasJobOnCell(pawn, c, forced:true)</c>, which re-tests reservation + the same gates), so a
-    /// slightly-too-permissive cell here just queues nothing, never a wrong job. Unlike the designator we do NOT
-    /// reject an already-designated cell: an already-marked removable cell is still a valid route stop (the pawn just
-    /// does it); the executor adds the designation only when it's absent.</para>
+    /// terrain removable, not under a solid wall, no building whose foundation-affordance would break) AND requires the
+    /// cell already carry a <see cref="DesignationDefOf.RemoveFloor"/> designation (issue #110 — the route only
+    /// prioritizes floors the player has already ordered removed). It is a SUPERSET-safe filter — the authoritative
+    /// check runs again at job-build time (<c>scanner.HasJobOnCell(pawn, c, forced:true)</c>, which re-tests
+    /// reservation + the same gates), so a slightly-too-permissive cell here just queues nothing, never a wrong job.</para>
     ///
     /// <para>DETERMINISTIC for Multiplayer: candidates are gathered from synced map state (terrain grid, buildings,
     /// designations) and ordered by cell index before any cap — so every client computes the same set. The Area
@@ -178,11 +177,19 @@ namespace HaulersDream
         }
 
         /// <summary>
-        /// Whether a top-layer floor can be REMOVED at this cell, mirroring vanilla
-        /// <see cref="Designator_RemoveFloor.CanDesignateCell"/> conservatively. Used both to build the candidate set
-        /// and to validate a player's manual cell pick. Reachability is NOT checked here (the planner does that); the
-        /// authoritative recheck is <c>scanner.HasJobOnCell</c> at job-build time. Deliberately does NOT reject an
-        /// already-RemoveFloor-designated cell — that cell is still a valid route stop.
+        /// Whether this cell is a valid REMOVE-FLOOR route stop: its top-layer floor is removable (the removability
+        /// gates mirror vanilla <see cref="Designator_RemoveFloor.CanDesignateCell"/> conservatively) AND it is already
+        /// MARKED for removal (carries a <see cref="DesignationDefOf.RemoveFloor"/> designation). Note the designation
+        /// clause is the OPPOSITE of the vanilla designator, which REJECTS an already-marked cell — here an
+        /// already-marked cell is exactly what the route prioritizes. Used both to build the candidate set and to
+        /// validate a player's manual cell pick. Reachability is NOT checked here (the planner does that); the
+        /// authoritative recheck is <c>scanner.HasJobOnCell</c> at job-build time.
+        ///
+        /// <para>Issue #110: the route only covers floors the player has ALREADY ordered removed — so the "Plan
+        /// prioritized removing floor" right-click option appears only over a marked floor (it used to appear over
+        /// every built floor, which cluttered the menu when hauling / cleaning), and the route prioritizes what was
+        /// marked rather than designating extra floors on its own. Mark floors with the vanilla Remove-floor order
+        /// first, then prioritize their removal here.</para>
         /// </summary>
         public static bool IsRemovableFloorCell(Pawn pawn, IntVec3 c)
         {
@@ -190,6 +197,12 @@ namespace HaulersDream
                 return false;
             var map = pawn.Map;
             if (!c.InBounds(map) || c.Fogged(map))
+                return false;
+
+            // Issue #110: only floors the player has already MARKED for removal are route stops. Cheap per-cell lookup
+            // (DesignationManager indexes designations by cell), placed first so an unmarked cell short-circuits before
+            // the terrain / edifice / building checks below.
+            if (map.designationManager.DesignationAt(c, DesignationDefOf.RemoveFloor) == null)
                 return false;
 
             // The load-bearing vanilla gate: the terrain grid's top layer must be removable here.
