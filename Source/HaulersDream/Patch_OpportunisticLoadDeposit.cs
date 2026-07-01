@@ -49,7 +49,7 @@ namespace HaulersDream
         // job-substituting mod (e.g. "While You Are Nearby", which postfixes this same method to swap in a nearby
         // equivalent job) has had its say. Otherwise HD might divert off a job that mod is about to replace.
         [HarmonyPriority(Priority.Last)]
-        static void Postfix(ref ThinkResult __result, Pawn pawn)
+        static void Postfix(ref ThinkResult __result, Pawn pawn, JobGiver_Work __instance)
         {
             var s = HaulersDreamMod.Settings;
             if (s == null || !s.enableOpportunisticLoad)
@@ -62,6 +62,11 @@ namespace HaulersDream
             var assigned = __result.Job;
             if (assigned.playerForced)
                 return; // never pre-empt a player-prioritized job
+            // Never divert off EMERGENCY / medical / rescue / firefighting work (see ProtectedWork) — the same
+            // guard as the opportunistic-unload postfix. This feature is opt-in (enableOpportunisticLoad, default
+            // OFF), but the medical protection applies identically.
+            if (ProtectedWork.IsProtected(assigned, __instance.emergency))
+                return;
 
             // Never divert off an HD job (it already owns/loads/uses the carried cargo) or vanilla's unload.
             // Identified by the driver living in THIS assembly (covers every HD job without enumerating defs) —

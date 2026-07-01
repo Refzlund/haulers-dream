@@ -209,6 +209,13 @@ namespace HaulersDream
         {
             if (p?.jobs == null || p.Drafted)
                 return false;
+            // A pawn resting for medical care (in bed, or waiting for a tend/surgery) is never an unload/self-pickup
+            // checkpoint: sending it to shed its load or grab pending drops would stand it up, and the medical think
+            // tree would re-lay it down (the reported bed thrash). This also covers the case where its current job
+            // is Ingest (eating in bed) or a Wait, both of which the checks below would otherwise treat as a
+            // checkpoint. See ProtectedWork.
+            if (ProtectedWork.IsRestingPatient(p))
+                return false;
             if (p.jobs.jobQueue != null && p.jobs.jobQueue.Count > 0)
                 return false;
             if (p.CurJob == null)

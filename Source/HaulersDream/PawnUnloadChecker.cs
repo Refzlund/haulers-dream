@@ -42,6 +42,14 @@ namespace HaulersDream
             if (pawn.Drafted)
                 return;
 
+            // Never queue an AUTOMATIC unload onto a pawn resting for medical care / in bed: it would be dequeued
+            // the moment LayDown re-evaluates and yank the patient upright, then the medical think tree lays it back
+            // down — the reported "patient waiting for treatment stands up and lies back down" thrash. A FORCED
+            // unload (the "unload now" gizmo, the bulk-haul finish flush) is a deliberate override and still runs.
+            // This single chokepoint covers both the interval loop and the idle backstop. See ProtectedWork.
+            if (!forced && ProtectedWork.IsRestingPatient(pawn))
+                return;
+
             // #4 Lord-activity stand-down (AUTOMATIC only): a pawn under a Lord is in a directed group activity —
             // a ritual (its offering, e.g. bioferrite for an Anomaly psychic ritual, sits in inventory ON PURPOSE
             // and a gather toil reads pawn.inventory directly), caravan forming, a party / marriage / gathering, a

@@ -73,6 +73,14 @@ namespace HaulersDream
                 || !getter.RaceProps.ToolUser
                 || !getter.health.capacities.CapableOf(PawnCapacityDefOf.Manipulation))
                 return;                          // the fetching hand must have hands (getter usually == eater)
+            // Don't let a bed-resting patient SELF-FETCH food from another pawn's inventory: it would get a
+            // TakeFromOtherInventory job, stand up and walk to the holder, then the medical think tree re-lays it
+            // down — the reported "patient waiting for treatment stands up and lies back down" loop. Suppress ONLY
+            // the self-fetch case (getter == eater, i.e. JobGiver_GetFood); the doctor-feed path
+            // (WorkGiver_FeedPatient, getter != eater) is exactly how such a patient SHOULD be fed, so it keeps
+            // working — a doctor still brings a colonist's carried meal to the patient in bed. See ProtectedWork.
+            if (getter == eater && ProtectedWork.IsRestingPatient(eater))
+                return;
             var map = eater.Map;
             if (map == null)
                 return;                          // caravan / world-map is out of scope (mapPawns would NRE)
