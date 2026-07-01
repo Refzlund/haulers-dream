@@ -74,7 +74,7 @@ namespace HaulersDream
             preventCameraMotion = false;
         }
 
-        public override Vector2 InitialSize => new Vector2(460f, 640f);
+        public override Vector2 InitialSize => new Vector2(460f, 674f);
 
         public override void DoWindowContents(Rect inRect)
         {
@@ -131,6 +131,10 @@ namespace HaulersDream
             RefreshPlanIfNeeded();
             l.Gap(4f);
             l.Label(EstimateText());
+
+            // "Remember plan" — the in-dialog twin of the bottom-right interface toggle (hovering it blinks it).
+            l.Gap(6f);
+            Patch_PlaySettings.DrawRememberPlanRow(l);
 
             l.End();
 
@@ -310,6 +314,45 @@ namespace HaulersDream
             // cell and the plan is recomputed deterministically (precomputed: null).
             SowRouteExecutor.ExecuteSowRouteSynced(pawn, anchor, mode, EffectiveAmount(), radius, MaxDistance(), smart,
                 replace, picked, selectionMethod, HaulersDreamMod.Settings?.routeOrderExactMax ?? RouteOrderPolicy.ExactMax);
+
+            // Remember this confirmed plan so the "Remember plan" toggle can replay it in one click. Sowing has no
+            // ThingDef anchor to key per-type prefs by (unlike the harvest/mine route), so a single session-scoped
+            // last-plan is kept. It is only READ on the clicking client to build the synced command above (whose args
+            // then replicate to every client), so it stays multiplayer-safe.
+            lastPlan = new Remembered
+            {
+                mode = mode, effAmount = EffectiveAmount(), radius = radius, maxDistance = MaxDistance(),
+                smart = smart, selectionMethod = selectionMethod, replace = replace,
+            };
+        }
+
+        // Session-scoped memory of the last confirmed sow plan (see Execute). null until one is confirmed.
+        private static Remembered lastPlan;
+        private sealed class Remembered
+        {
+            public SowRouteMode mode;
+            public int effAmount;
+            public int radius;
+            public float maxDistance;
+            public bool smart;
+            public RouteSelectionMethod selectionMethod;
+            public bool replace;
+        }
+
+        /// <summary>True once a sow plan has been confirmed this session, so the "Remember plan" one-click has
+        /// something to replay (otherwise the float menu opens the dialog to establish it).</summary>
+        public static bool HasRemembered => lastPlan != null;
+
+        /// <summary>Replay the last confirmed sow plan on <paramref name="anchor"/> without opening the dialog (the
+        /// "Remember plan" one-click). The zone is re-derived from the anchor by the synced executor.</summary>
+        public static void ExecuteRemembered(Pawn pawn, IntVec3 anchor)
+        {
+            var r = lastPlan;
+            if (r == null || pawn?.Map == null || !anchor.IsValid || !anchor.InBounds(pawn.Map))
+                return;
+            SowRouteExecutor.ExecuteSowRouteSynced(pawn, anchor, r.mode, r.effAmount, r.radius, r.maxDistance, r.smart,
+                r.replace, new List<IntVec3> { anchor }, r.selectionMethod,
+                HaulersDreamMod.Settings?.routeOrderExactMax ?? RouteOrderPolicy.ExactMax);
         }
 
         public override void PostClose()

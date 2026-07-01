@@ -714,4 +714,5 @@
   <HaulersDream.PlanRoute.RemoveFloorGerund>床の撤去</HaulersDream.PlanRoute.RemoveFloorGerund>
   <HaulersDream.PlanRoute.ModeFloorArea>エリア — 連続した床</HaulersDream.PlanRoute.ModeFloorArea>
   <HaulersDream.PlanRoute.ModeFloorAreaDesc>クリックしたタイルの周囲にある、撤去可能な床がひとつながりになった範囲全体（廃墟の床全体）を、経路の上限まで撤去します。</HaulersDream.PlanRoute.ModeFloorAreaDesc>
+  <HaulersDream.PlanRoute.RememberCheckbox>計画を記憶</HaulersDream.PlanRoute.RememberCheckbox>
 </LanguageData>

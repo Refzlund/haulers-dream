@@ -50,11 +50,29 @@ namespace HaulersDream
 
             IntVec3 anchor = cell;
             string gerund = "HaulersDream.PlanRoute.RemoveFloorGerund".Translate();
-            string label = "HaulersDream.PlanRoute.Option".Translate(gerund);
+            // "Remember plan": one-click reuse of the last confirmed remove-floor plan when the toggle is on and one
+            // exists this session; otherwise open the dialog. See Dialog_PlanRemoveFloorRoute.ExecuteRemembered.
+            bool remember = HaulersDreamMod.Settings.rememberPlan && Dialog_PlanRemoveFloorRoute.HasRemembered;
+            string label = remember
+                ? "HaulersDream.PlanRoute.OptionRemembered".Translate(gerund)
+                : "HaulersDream.PlanRoute.Option".Translate(gerund);
 
             var option = new FloatMenuOption(label, () =>
-                Find.WindowStack.Add(new Dialog_PlanRemoveFloorRoute(pawn, anchor)));
-            yield return FloatMenuUtility.DecoratePrioritizedTask(option, pawn, anchor);
+            {
+                if (remember)
+                    Dialog_PlanRemoveFloorRoute.ExecuteRemembered(pawn, anchor);
+                else
+                    Find.WindowStack.Add(new Dialog_PlanRemoveFloorRoute(pawn, anchor));
+            });
+            var decorated = FloatMenuUtility.DecoratePrioritizedTask(option, pawn, anchor);
+            // Hovering the option blinks the bottom-right "Remember plan" interface toggle (chain any existing action).
+            var prevHover = decorated.mouseoverGuiAction;
+            decorated.mouseoverGuiAction = r =>
+            {
+                prevHover?.Invoke(r);
+                UIHighlighter.HighlightTag(Patch_PlaySettings.RememberPlanHighlightTag);
+            };
+            yield return decorated;
         }
     }
 }

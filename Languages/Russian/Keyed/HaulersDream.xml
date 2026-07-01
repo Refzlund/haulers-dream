@@ -714,4 +714,5 @@
   <HaulersDream.PlanRoute.RemoveFloorGerund>удаление пола</HaulersDream.PlanRoute.RemoveFloorGerund>
   <HaulersDream.PlanRoute.ModeFloorArea>Область — соединённый пол</HaulersDream.PlanRoute.ModeFloorArea>
   <HaulersDream.PlanRoute.ModeFloorAreaDesc>Удаляет пол на всём смежном участке снимаемого пола вокруг выбранной клетки (весь пол руин), до предела маршрута.</HaulersDream.PlanRoute.ModeFloorAreaDesc>
+  <HaulersDream.PlanRoute.RememberCheckbox>Запоминать план</HaulersDream.PlanRoute.RememberCheckbox>
 </LanguageData>

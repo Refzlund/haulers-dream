@@ -714,4 +714,5 @@
   <HaulersDream.PlanRoute.RemoveFloorGerund>retrait du sol</HaulersDream.PlanRoute.RemoveFloorGerund>
   <HaulersDream.PlanRoute.ModeFloorArea>Zone — le sol contigu</HaulersDream.PlanRoute.ModeFloorArea>
   <HaulersDream.PlanRoute.ModeFloorAreaDesc>Retire le sol sur toute la parcelle contiguë de sol amovible autour de la case cliquée (tout le sol des ruines), jusqu’à la limite de l’itinéraire.</HaulersDream.PlanRoute.ModeFloorAreaDesc>
+  <HaulersDream.PlanRoute.RememberCheckbox>Mémoriser le plan</HaulersDream.PlanRoute.RememberCheckbox>
 </LanguageData>

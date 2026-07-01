@@ -714,4 +714,5 @@
   <HaulersDream.PlanRoute.RemoveFloorGerund>usuwanie podłogi</HaulersDream.PlanRoute.RemoveFloorGerund>
   <HaulersDream.PlanRoute.ModeFloorArea>Obszar — połączona podłoga</HaulersDream.PlanRoute.ModeFloorArea>
   <HaulersDream.PlanRoute.ModeFloorAreaDesc>Usuwa podłogę na całym ciągłym obszarze usuwalnej podłogi wokół klikniętego pola (całą podłogę ruin), aż do limitu trasy.</HaulersDream.PlanRoute.ModeFloorAreaDesc>
+  <HaulersDream.PlanRoute.RememberCheckbox>Zapamiętaj plan</HaulersDream.PlanRoute.RememberCheckbox>
 </LanguageData>

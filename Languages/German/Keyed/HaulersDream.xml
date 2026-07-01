@@ -714,4 +714,5 @@
   <HaulersDream.PlanRoute.RemoveFloorGerund>Bodenentfernung</HaulersDream.PlanRoute.RemoveFloorGerund>
   <HaulersDream.PlanRoute.ModeFloorArea>Bereich — der zusammenhängende Boden</HaulersDream.PlanRoute.ModeFloorArea>
   <HaulersDream.PlanRoute.ModeFloorAreaDesc>Entfernt den Boden auf dem gesamten zusammenhängenden Bereich entfernbaren Bodens um die angeklickte Kachel (der ganze Ruinenboden), bis zum Routenlimit.</HaulersDream.PlanRoute.ModeFloorAreaDesc>
+  <HaulersDream.PlanRoute.RememberCheckbox>Plan merken</HaulersDream.PlanRoute.RememberCheckbox>
 </LanguageData>

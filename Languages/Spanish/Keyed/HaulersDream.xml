@@ -714,4 +714,5 @@
   <HaulersDream.PlanRoute.RemoveFloorGerund>eliminación de suelo</HaulersDream.PlanRoute.RemoveFloorGerund>
   <HaulersDream.PlanRoute.ModeFloorArea>Área — el suelo contiguo</HaulersDream.PlanRoute.ModeFloorArea>
   <HaulersDream.PlanRoute.ModeFloorAreaDesc>Quita el suelo en toda la zona contigua de suelo removible alrededor de la casilla pulsada (todo el suelo de las ruinas), hasta el límite de la ruta.</HaulersDream.PlanRoute.ModeFloorAreaDesc>
+  <HaulersDream.PlanRoute.RememberCheckbox>Recordar plan</HaulersDream.PlanRoute.RememberCheckbox>
 </LanguageData>

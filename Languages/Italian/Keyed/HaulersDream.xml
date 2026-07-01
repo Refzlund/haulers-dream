@@ -714,4 +714,5 @@
   <HaulersDream.PlanRoute.RemoveFloorGerund>rimozione pavimento</HaulersDream.PlanRoute.RemoveFloorGerund>
   <HaulersDream.PlanRoute.ModeFloorArea>Area — il pavimento contiguo</HaulersDream.PlanRoute.ModeFloorArea>
   <HaulersDream.PlanRoute.ModeFloorAreaDesc>Rimuove la pavimentazione sull’intera area contigua di pavimento rimovibile attorno alla casella cliccata (tutto il pavimento della rovina), fino al limite del percorso.</HaulersDream.PlanRoute.ModeFloorAreaDesc>
+  <HaulersDream.PlanRoute.RememberCheckbox>Ricorda piano</HaulersDream.PlanRoute.RememberCheckbox>
 </LanguageData>

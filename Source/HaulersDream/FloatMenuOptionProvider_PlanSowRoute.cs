@@ -60,11 +60,30 @@ namespace HaulersDream
                 yield break;
 
             string gerund = SowGerund();
-            string label = "HaulersDream.PlanRoute.Option".Translate(gerund);
+            // "Remember plan": when the toggle is on AND a sow plan has been confirmed this session, reuse it in one
+            // click and mark the label "(remembered)"; otherwise open the dialog (which, once confirmed, becomes the
+            // remembered plan). See Dialog_PlanSowRoute.ExecuteRemembered.
+            bool remember = HaulersDreamMod.Settings.rememberPlan && Dialog_PlanSowRoute.HasRemembered;
+            string label = remember
+                ? "HaulersDream.PlanRoute.OptionRemembered".Translate(gerund)
+                : "HaulersDream.PlanRoute.Option".Translate(gerund);
 
             var option = new FloatMenuOption(label, () =>
-                Find.WindowStack.Add(new Dialog_PlanSowRoute(pawn, anchor, zone)));
-            yield return FloatMenuUtility.DecoratePrioritizedTask(option, pawn, anchor);
+            {
+                if (remember)
+                    Dialog_PlanSowRoute.ExecuteRemembered(pawn, anchor);
+                else
+                    Find.WindowStack.Add(new Dialog_PlanSowRoute(pawn, anchor, zone));
+            });
+            var decorated = FloatMenuUtility.DecoratePrioritizedTask(option, pawn, anchor);
+            // Hovering the option blinks the bottom-right "Remember plan" interface toggle (chain any existing action).
+            var prevHover = decorated.mouseoverGuiAction;
+            decorated.mouseoverGuiAction = r =>
+            {
+                prevHover?.Invoke(r);
+                UIHighlighter.HighlightTag(Patch_PlaySettings.RememberPlanHighlightTag);
+            };
+            yield return decorated;
         }
 
         // The route's anchor cell: the clicked cell if it's sowable, else the first sowable cell of the zone (so a

@@ -714,4 +714,5 @@
   <HaulersDream.PlanRoute.RemoveFloorGerund>видалення підлоги</HaulersDream.PlanRoute.RemoveFloorGerund>
   <HaulersDream.PlanRoute.ModeFloorArea>Область — з’єднана підлога</HaulersDream.PlanRoute.ModeFloorArea>
   <HaulersDream.PlanRoute.ModeFloorAreaDesc>Видаляє підлогу на всій суміжній ділянці знімної підлоги навколо вибраної клітинки (усю підлогу руїн), до межі маршруту.</HaulersDream.PlanRoute.ModeFloorAreaDesc>
+  <HaulersDream.PlanRoute.RememberCheckbox>Запам’ятовувати план</HaulersDream.PlanRoute.RememberCheckbox>
 </LanguageData>

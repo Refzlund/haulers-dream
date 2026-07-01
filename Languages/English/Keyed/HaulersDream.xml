@@ -833,4 +833,5 @@
   <HaulersDream.PlanRoute.RemoveFloorGerund>removing floor</HaulersDream.PlanRoute.RemoveFloorGerund>
   <HaulersDream.PlanRoute.ModeFloorArea>Area — the connected floor</HaulersDream.PlanRoute.ModeFloorArea>
   <HaulersDream.PlanRoute.ModeFloorAreaDesc>Remove flooring across the whole contiguous patch of removable floor around the clicked tile — the entire ruin floor — up to the route cap.</HaulersDream.PlanRoute.ModeFloorAreaDesc>
+  <HaulersDream.PlanRoute.RememberCheckbox>Remember plan</HaulersDream.PlanRoute.RememberCheckbox>
 </LanguageData>

@@ -714,4 +714,5 @@
   <HaulersDream.PlanRoute.RemoveFloorGerund>바닥 제거</HaulersDream.PlanRoute.RemoveFloorGerund>
   <HaulersDream.PlanRoute.ModeFloorArea>구역 — 연결된 바닥</HaulersDream.PlanRoute.ModeFloorArea>
   <HaulersDream.PlanRoute.ModeFloorAreaDesc>클릭한 칸 주변에서 제거 가능한 바닥이 이어진 전체 구역(폐허 바닥 전체)을 경로 상한까지 제거합니다.</HaulersDream.PlanRoute.ModeFloorAreaDesc>
+  <HaulersDream.PlanRoute.RememberCheckbox>계획 기억</HaulersDream.PlanRoute.RememberCheckbox>
 </LanguageData>

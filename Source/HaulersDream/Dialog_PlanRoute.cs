@@ -158,7 +158,7 @@ namespace HaulersDream
 
         // Rooms mode adds a picker button + a 3-row room list, so kinds that offer it need the taller layout too.
         public override Vector2 InitialSize => new Vector2(460f,
-            isHarvest || allowedModes.Contains(RouteMode.Rooms) ? 800f : 720f);
+            isHarvest || allowedModes.Contains(RouteMode.Rooms) ? 834f : 754f);
 
         public override void DoWindowContents(Rect inRect)
         {
@@ -302,6 +302,12 @@ namespace HaulersDream
                 l.Label("HaulersDream.PlanRoute.FogCaution".Translate());
                 GUI.color = Color.white;
             }
+
+            // "Remember plan" — the in-dialog twin of the bottom-right interface toggle (hovering it blinks that
+            // toggle). With it on, re-clicking "Plan prioritized …" on this kind of target reuses these settings in
+            // one click next time; off opens this dialog each time.
+            l.Gap(6f);
+            Patch_PlaySettings.DrawRememberPlanRow(l);
 
             l.End();
 

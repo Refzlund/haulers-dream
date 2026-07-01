@@ -714,4 +714,5 @@
   <HaulersDream.PlanRoute.RemoveFloorGerund>remoção de piso</HaulersDream.PlanRoute.RemoveFloorGerund>
   <HaulersDream.PlanRoute.ModeFloorArea>Área — o piso contíguo</HaulersDream.PlanRoute.ModeFloorArea>
   <HaulersDream.PlanRoute.ModeFloorAreaDesc>Remove o piso em toda a mancha contígua de piso removível ao redor do bloco clicado (todo o piso da ruína), até o limite da rota.</HaulersDream.PlanRoute.ModeFloorAreaDesc>
+  <HaulersDream.PlanRoute.RememberCheckbox>Lembrar plano</HaulersDream.PlanRoute.RememberCheckbox>
 </LanguageData>

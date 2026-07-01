@@ -714,4 +714,5 @@
   <HaulersDream.PlanRoute.RemoveFloorGerund>การรื้อพื้น</HaulersDream.PlanRoute.RemoveFloorGerund>
   <HaulersDream.PlanRoute.ModeFloorArea>พื้นที่ — พื้นที่เชื่อมต่อกัน</HaulersDream.PlanRoute.ModeFloorArea>
   <HaulersDream.PlanRoute.ModeFloorAreaDesc>รื้อพื้นทั่วทั้งผืนพื้นที่รื้อได้ซึ่งเชื่อมต่อกันรอบช่องที่คลิก (พื้นซากปรักหักพังทั้งหมด) จนถึงขีดจำกัดของเส้นทาง</HaulersDream.PlanRoute.ModeFloorAreaDesc>
+  <HaulersDream.PlanRoute.RememberCheckbox>จดจำแผน</HaulersDream.PlanRoute.RememberCheckbox>
 </LanguageData>

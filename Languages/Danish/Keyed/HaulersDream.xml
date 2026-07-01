@@ -714,4 +714,5 @@
   <HaulersDream.PlanRoute.RemoveFloorGerund>fjernelse af gulv</HaulersDream.PlanRoute.RemoveFloorGerund>
   <HaulersDream.PlanRoute.ModeFloorArea>Område — det sammenhængende gulv</HaulersDream.PlanRoute.ModeFloorArea>
   <HaulersDream.PlanRoute.ModeFloorAreaDesc>Fjern gulv i hele det sammenhængende felt af gulv, der kan fjernes, omkring den klikkede flise (hele ruingulvet), op til rutens grænse.</HaulersDream.PlanRoute.ModeFloorAreaDesc>
+  <HaulersDream.PlanRoute.RememberCheckbox>Husk plan</HaulersDream.PlanRoute.RememberCheckbox>
 </LanguageData>

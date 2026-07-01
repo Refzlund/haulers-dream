@@ -714,4 +714,5 @@
   <HaulersDream.PlanRoute.RemoveFloorGerund>vloer verwijderen</HaulersDream.PlanRoute.RemoveFloorGerund>
   <HaulersDream.PlanRoute.ModeFloorArea>Gebied — de aaneengesloten vloer</HaulersDream.PlanRoute.ModeFloorArea>
   <HaulersDream.PlanRoute.ModeFloorAreaDesc>Verwijder vloer over de hele aaneengesloten lap verwijderbare vloer rond de aangeklikte tegel (de hele ruïnevloer), tot aan de routelimiet.</HaulersDream.PlanRoute.ModeFloorAreaDesc>
+  <HaulersDream.PlanRoute.RememberCheckbox>Plan onthouden</HaulersDream.PlanRoute.RememberCheckbox>
 </LanguageData>

@@ -46,5 +46,30 @@ namespace HaulersDream
                 HaulersDreamMod.Instance?.WriteSettings(); // persist the flip immediately (global mod setting)
             }
         }
+
+        /// <summary>
+        /// Draw the "Remember plan" checkbox INSIDE a plan dialog. It reflects and toggles the SAME global
+        /// <see cref="HaulersDreamSettings.rememberPlan"/> the bottom-right interface toggle controls, so the two stay
+        /// in sync. While the row is hovered it flashes that interface toggle (via <see cref="RememberPlanHighlightTag"/>,
+        /// the yellow blink), so the player sees the checkbox and the toggle are the same setting. Always shown,
+        /// whatever the toggle's current state. Shared by the thing / sow / remove-floor plan dialogs.
+        /// </summary>
+        public static void DrawRememberPlanRow(Listing_Standard l)
+        {
+            var s = HaulersDreamMod.Settings;
+            if (s == null)
+                return;
+            var row = l.GetRect(24f);
+            if (Mouse.IsOver(row))
+                UIHighlighter.HighlightTag(RememberPlanHighlightTag); // blink the interface toggle to show the link
+            bool val = s.rememberPlan;
+            Widgets.CheckboxLabeled(row, "HaulersDream.PlanRoute.RememberCheckbox".Translate(), ref val);
+            TooltipHandler.TipRegion(row, "HaulersDream.PlanRoute.RememberToggleTip".Translate());
+            if (val != s.rememberPlan)
+            {
+                s.rememberPlan = val;
+                HaulersDreamMod.Instance?.WriteSettings();
+            }
+        }
     }
 }

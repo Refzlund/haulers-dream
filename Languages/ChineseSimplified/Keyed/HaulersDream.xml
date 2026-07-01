@@ -714,4 +714,5 @@
   <HaulersDream.PlanRoute.RemoveFloorGerund>拆除地板</HaulersDream.PlanRoute.RemoveFloorGerund>
   <HaulersDream.PlanRoute.ModeFloorArea>区域 — 相连的地板</HaulersDream.PlanRoute.ModeFloorArea>
   <HaulersDream.PlanRoute.ModeFloorAreaDesc>拆除点击处周围整片相连的可拆除地板（整片废墟地板），直到达到路线上限。</HaulersDream.PlanRoute.ModeFloorAreaDesc>
+  <HaulersDream.PlanRoute.RememberCheckbox>记住方案</HaulersDream.PlanRoute.RememberCheckbox>
 </LanguageData>
