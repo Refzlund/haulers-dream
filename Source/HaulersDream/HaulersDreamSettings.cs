@@ -295,11 +295,11 @@ namespace HaulersDream
         // walking to the next), instead of the category->defName order. Strictly-better; ON. OFF = existing order.
         public bool closestDestinationUnloadOrder = true;
 
-        // ===== While You're Up parity (C2 — en-route pickup, default OFF) =====
+        // ===== While You're Up parity (C2 — en-route pickup, default ON) =====
         // The signature WYU mechanic: when a pawn is about to start a job, and a loose haulable lies roughly
         // ALONG the way, grab it into inventory first (as a tagged HD bulk-haul pickup, serviced by the normal
         // unload) so the stray item rides to storage on a trip the pawn was making anyway. A behavior-CHANGING
-        // feature, so OFF by default (the postfix's first line returns when off — byte-inert on existing saves).
+        // feature that ships ON; when turned off, the postfix's first line returns, so it is fully inert.
         public bool enRoutePickup = true;
         // How strictly the "is the store roughly on the path?" check is confirmed after the cheap straight-line
         // ratio cascade. Vanilla = cheap bounded region-count flood (fastest, least accurate); Default / Pathfinding
@@ -307,23 +307,23 @@ namespace HaulersDream
         // Vanilla here (the perf-conscious choice — the A* modes are opt-in), unlike WYU's own Default default.
         public EnRoutePathChecker enRoutePathChecker = EnRoutePathChecker.Vanilla;
 
-        // ===== While You're Up parity (C3 — consumer-aware storage routing, default OFF) =====
+        // ===== While You're Up parity (C3 — consumer-aware storage routing, default ON) =====
         // "Haul before carry": before a pawn carries a resource to a build site / crafting bill, relocate the
         // largest nearby stack of that material to storage CLOSER to the consuming job (so future fetches are
-        // short), and grab same-/equal-priority extras. A behavior-CHANGING feature, so the MASTER is OFF by
-        // default (StorageRouting's first line returns when off — byte-inert on existing saves). The 4 sub-toggles
-        // default ON but are inert while the master is OFF.
+        // short), and grab same-/equal-priority extras. A behavior-CHANGING feature; the MASTER ships ON (when
+        // off, StorageRouting's first line returns, so it is fully inert). The 4 sub-toggles default ON and are
+        // inert while the master is OFF.
         public bool storageRouting = true;              // MASTER (default ON)
         public bool routeSupplies = true;               // relocate construction supplies closer to the build site
         public bool routeIngredients = true;            // relocate bill ingredients closer to the bench
         public bool routeToEqualPriority = true;        // allow relocating into an EQUAL-priority store (not just higher)
         public bool routeToStockpiles = true;           // plain stockpile zones are eligible relocation targets
 
-        // ===== While You're Up parity (C4 — storage building permit/deny filter, default OFF) =====
+        // ===== While You're Up parity (C4 — storage building permit/deny filter, default ON) =====
         // The SHARED filter (plan G4/G7): one object, one Scribe_Deep field, one dialog — read by en-route
-        // (C2), before-carry routing (C3), and the permit/deny dialog (C4). MASTER toggle, default OFF, so the
-        // whole feature is byte-inert on existing saves until opted in (StorageBuildingFilter.Enabled gates
-        // every query to allow-all when off, and W3's funnel postfix early-returns before any work).
+        // (C2), before-carry routing (C3), and the permit/deny dialog (C4). MASTER toggle, default ON; when off,
+        // StorageBuildingFilter.Enabled gates every query to allow-all and W3's funnel postfix early-returns
+        // before any work, so the whole feature is fully inert when disabled.
         public bool storageFiltersEnabled = true;
         // When ON, the curated per-context default permit/deny sets apply (WYU "auto-manage"): opportunistic
         // = allow-all minus the slow set; before-carry = deny-all except a curated container allow-list.

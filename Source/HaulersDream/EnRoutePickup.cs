@@ -15,8 +15,8 @@ namespace HaulersDream
     /// about to set off on a job, and a loose haulable lies roughly ALONG the way to that job, the pawn grabs it
     /// into its inventory first (as a tagged HD bulk-haul pickup, serviced by the normal storage-aware unload),
     /// so the stray item rides to storage on a trip the pawn was making anyway — zero extra round-trips.
-    /// DEFAULT OFF (a behavior-CHANGING feature); the very first line of the postfix returns when it's off, so
-    /// the whole feature is byte-inert on an existing save until opted in.
+    /// DEFAULT ON (a behavior-CHANGING feature that ships enabled); the very first line of the postfix returns
+    /// when it's off, so the whole feature is fully inert when disabled.
     ///
     /// HOW: a Harmony POSTFIX on <see cref="Pawn_JobTracker.TryOpportunisticJob"/> — the single vanilla seam that
     /// already exists to prefix an opportunistic haul onto a job (decompile-verified signature
