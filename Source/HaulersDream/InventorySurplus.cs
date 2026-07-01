@@ -75,6 +75,25 @@ namespace HaulersDream
                         return over <= 0 ? 0 : System.Math.Min(thing.stackCount, over);
                 }
             }
+            else if (!hdSwept && GrabYourToolCompat.IsCarriedTool(pawn, thing)
+                     && !SimpleSidearmsCompat.IsRememberedSidearm(pawn, thing))
+            {
+                // Grab Your Tool carries this weapon-tool for the pawn's work jobs and swaps it in/out of the
+                // equipment slot, keeping it on the pawn; if HD unloaded it to storage GYT would just re-fetch it
+                // (an unload<->pickup loop). Keep the whole stack. Placed ABOVE the Simple Sidearms branch on
+                // purpose: SS's (def,stuff) remembered-count reads 0 for a GYT tool SS never remembered, so the SS
+                // branch would otherwise report full surplus and unload it (and the SS branch intercepts every
+                // weapon first when SS is active). The !hdSwept guard keeps a genuinely HD-swept loose weapon
+                // unloadable, so this can never create a black hole (same discipline as the SS keep). Inert when
+                // GYT is absent (IsCarriedTool short-circuits on !IsActive), and an explicit per-def "Unload
+                // always" rule still wins — it is handled by the TryGetItemRule branch above, before this.
+                //
+                // The !IsRememberedSidearm gate defers a tool SS ALSO precisely remembers to the SS branch below,
+                // whose count-aware (def,stuff) keep unloads a HAULED DUPLICATE of that pair while keeping the one
+                // wanted copy — so a GYT+SS user still gets SS's dedup. A GYT tool SS does NOT remember (or SS
+                // absent — IsRememberedSidearm is false then) is kept here, which is the whole point of the fix.
+                return 0;
+            }
             else if (SimpleSidearmsCompat.IsActive
                      && (def.IsRangedWeapon || def.IsMeleeWeapon)
                      && SimpleSidearmsCompat.MemoryApiOk)

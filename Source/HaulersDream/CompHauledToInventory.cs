@@ -130,10 +130,11 @@ namespace HaulersDream
                 var union = tmpScoopedUnion ?? (tmpScoopedUnion = new HashSet<object>());
                 TagHealPolicy.BuildScoopedUnion(liveDefs, carryOver, union); // union = live-tag defs ∪ carry-over defs
 
-                // Flatten the inventory into the policy's per-stack view. IsRememberedSidearm (a Simple Sidearms
-                // reflection walk) is resolved LAZILY — only for a union-member, not-already-tagged stack (the
-                // only stacks the exclusion can affect) — preserving the original's reflection short-circuit
-                // (and IsRememberedSidearm itself short-circuits cheaply on any non-weapon stack regardless).
+                // Flatten the inventory into the policy's per-stack view. The keep-exclusion (a Simple Sidearms
+                // reflection walk, and the Grab Your Tool carried-tool check) is resolved LAZILY — only for a
+                // union-member, not-already-tagged stack (the only stacks the exclusion can affect) — preserving
+                // the original's reflection short-circuit (and both checks short-circuit cheaply on a non-weapon
+                // stack, or when their mod is absent, regardless).
                 var stacks = tmpStacks ?? (tmpStacks = new List<TagHealPolicy.Stack>());
                 stacks.Clear();
                 for (int i = 0; i < owner.Count; i++)
@@ -142,8 +143,12 @@ namespace HaulersDream
                     var def = thing?.def;
                     bool alreadyTagged = thing != null && takenToInventory.Contains(thing);
                     bool candidate = def != null && !alreadyTagged && union.Contains(def);
-                    bool sidearm = candidate && SimpleSidearmsCompat.IsRememberedSidearm(pawn, thing);
-                    stacks.Add(new TagHealPolicy.Stack(def, alreadyTagged, sidearm));
+                    // Never auto-tag a stack another system keeps for the pawn: a genuine SS remembered sidearm, or
+                    // a Grab Your Tool carried tool. Tagging it would make HD ship it to storage while that mod
+                    // re-fetches it (an unload<->pickup loop).
+                    bool excludeFromTag = candidate && (SimpleSidearmsCompat.IsRememberedSidearm(pawn, thing)
+                                                        || GrabYourToolCompat.IsCarriedTool(pawn, thing));
+                    stacks.Add(new TagHealPolicy.Stack(def, alreadyTagged, excludeFromTag));
                 }
 
                 var toTag = tmpTagIndices ?? (tmpTagIndices = new List<int>());

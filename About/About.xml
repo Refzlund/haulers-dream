@@ -18,6 +18,12 @@
   </modDependencies>
   <loadAfter>
     <li>brrainz.harmony</li>
+    <!-- Hauler's Dream is load-order-independent by design: its shared-seam patches use HarmonyPriority
+         and its mod compat is reflection-only. Combat Extended is the one framework it shares a patched
+         vanilla seam with (both prefix JobGiver_DropUnusedInventory.Drop) and whose MassUtility.Capacity
+         it reads, so it declares that ordering explicitly for auto-sorters (RimSort/RimPy/Mod Manager).
+         Soft rule: it only orders HD after CE when CE is installed, and never requires CE. -->
+    <li>CETeam.CombatExtended</li>
   </loadAfter>
   <description>Colonists use their inventories smartly when moving items, and carry out their tasks more efficiently: fewer round-trips, less walking back and forth, more time actually working.
 
