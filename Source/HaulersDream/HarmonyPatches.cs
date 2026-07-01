@@ -194,6 +194,14 @@ namespace HaulersDream
 
             if (__result.IsValid && __result.Job != null)
             {
+                // NEVER divert a pawn off EMERGENCY / medical / rescue / firefighting work to unload first — that
+                // delay is the reported "no one tends the bleeding after a fight / rescue never happens / fires
+                // ignored", even at priority 1. JobGiver_Work runs THIS seam for the emergency node too
+                // (__instance.emergency), and rescue is a NON-emergency Doctor-worktype giver, so classify by the
+                // node flag plus the job's own WorkGiver emergency flag / worktype (see ProtectedWork). Additive:
+                // ordinary work (mining/hauling/cleaning) still diverts to an opportunistic unload exactly as before.
+                if (ProtectedWork.IsProtected(__result.Job, __instance.emergency))
+                    return;
                 // Compat guard: only DIVERT (replace __result with our unload) off a job we may safely clobber —
                 // i.e. NEVER replace a FOREIGN custom unload job that the vanilla work scan legitimately returned.
                 // The reachable case is a mod that routes its carrier/inventory unload through a real WorkGiver:

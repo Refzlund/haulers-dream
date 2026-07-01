@@ -164,6 +164,15 @@ namespace HaulersDream
                         if (!dy.TryGetValue(kv.Key, out var p2) || !RoutePrefsEqual(kv.Value, p2)) return false;
                     return true;
                 default:
+                    // Compare floats with a small tolerance instead of exact equality: a float that was persisted
+                    // to the config and reloaded can differ from the in-memory ResetToDefaults() default by a
+                    // byte-level round-trip / format artifact, which spuriously flags a fresh DEFAULT config as
+                    // "Custom (unsaved)" (reported under the Chinese locale). The tolerance (1e-4) is far below any
+                    // HD setting's observable granularity (percentage sliders read at 1% / 0.01, and the smallest
+                    // float default is bleedThresholdPerDay = 0.001), so no user-visible change is ever masked;
+                    // ints, bools, enums and strings still compare exactly.
+                    if (x is float fa && y is float fb)
+                        return fa == fb || System.Math.Abs(fa - fb) <= 1e-4f;
                     return x.Equals(y);
             }
         }

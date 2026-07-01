@@ -97,7 +97,7 @@ namespace HaulersDream
             // out of a bed it's resting in (medical / already lying down — the GetJoyInBed path inherits this
             // base TryGiveJob), or out of caravan formation on the home map. The interval / idle safety net
             // still unloads such a pawn AFTER its current activity, without interrupting it.
-            if (pawn.InBed() || pawn.IsFormingCaravan() || pawn.mindState?.duty != null)
+            if (ProtectedWork.IsRestingPatient(pawn) || pawn.IsFormingCaravan() || pawn.mindState?.duty != null)
                 return null;
             if (pawn.CurJobDef == HaulersDreamDefOf.HaulersDream_UnloadInventory || PawnUnloadChecker.HasQueuedUnload(pawn))
                 return null;
@@ -183,6 +183,12 @@ namespace HaulersDream
                 return false;
             if (pawn?.Map == null || workJob?.def == null || pawn.Drafted || workJob.playerForced)
                 return false; // never defer player-prioritized work
+            // Never divert off EMERGENCY / medical / rescue / firefighting work, and never off a resting patient
+            // (see ProtectedWork). The postfix already gates on the emergency node; this covers any other caller
+            // and the non-emergency Doctor/Warden givers (notably rescue) by workgiver. The resting-patient guard
+            // is defensive: a patient shouldn't be handed a work job, but its 211-tick job-override re-scan can.
+            if (ProtectedWork.IsProtected(workJob, false) || ProtectedWork.IsRestingPatient(pawn))
+                return false;
             if (workJob.def == HaulersDreamDefOf.HaulersDream_UnloadInventory
                 || pawn.CurJobDef == HaulersDreamDefOf.HaulersDream_UnloadInventory)
                 return false;
@@ -318,6 +324,11 @@ namespace HaulersDream
             // Never defer a player-prioritized job, and never divert while drafted.
             if (pawn.Drafted || workJob.playerForced)
                 return false;
+            // Never relocate-unload off EMERGENCY / medical / rescue / firefighting work or a resting patient
+            // (mirrors ShouldDivert; see ProtectedWork). This feature is opt-in (keepWorkingWhenFull, default OFF),
+            // but the same medical guard applies.
+            if (ProtectedWork.IsProtected(workJob, false) || ProtectedWork.IsRestingPatient(pawn))
+                return false;
             if (workJob.def == HaulersDreamDefOf.HaulersDream_UnloadInventory
                 || pawn.CurJobDef == HaulersDreamDefOf.HaulersDream_UnloadInventory
                 || pawn.CurJobDef == HaulersDreamDefOf.HaulersDream_BillPrepGather)
@@ -416,6 +427,12 @@ namespace HaulersDream
             if (s == null || pawn?.Map == null || pawn.jobs == null)
                 return null;
             if (pawn.Faction != Faction.OfPlayerSilentFail)
+                return null;
+            // Never issue an end-of-run unload to a resting patient. A patient in bed re-runs its think tree every
+            // ~211 ticks (LayDown's job-override check); if it carries tagged cargo, JobGiver_Work finds no work and
+            // reaches this end-of-run path, which would stand the patient up to unload — then the medical think tree
+            // lays it back down, and it thrashes (the reported "stands up / lies down"). See ProtectedWork.
+            if (ProtectedWork.IsRestingPatient(pawn))
                 return null;
             // The auto-unload master switch (off = gizmo-only). Required for BOTH the home storage unload (the
             // home path re-checks it via EndOfRunUnloadAllowed below) and the caravan pack-animal offload, so
