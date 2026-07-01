@@ -702,4 +702,15 @@
   <HaulersDream.Setting.NotifyThreshold.Never>Never</HaulersDream.Setting.NotifyThreshold.Never>
   <HaulersDream.Setting.NotifyThreshold.Never.Desc>Turn the main-menu notifications off entirely.</HaulersDream.Setting.NotifyThreshold.Never.Desc>
 
+  <!-- PR #91: multi-target planner + remember-plan toggle + remove-floor route -->
+  <HaulersDream.PlanRoute.OptionRemembered>우선 지정 {0} 계획 (기억됨)</HaulersDream.PlanRoute.OptionRemembered>
+  <HaulersDream.PlanRoute.RememberToggleTip>계획 기억: 켜면 우선 경로를 계획할 때 해당 종류의 대상에 마지막으로 사용한 설정을 한 번의 클릭으로 재사용하고 계획 창을 건너뜁니다. 끄면 매번 계획 창이 열려 경로를 조정할 수 있습니다.</HaulersDream.PlanRoute.RememberToggleTip>
+  <HaulersDream.PlanRoute.AddTarget>대상 종류 추가…</HaulersDream.PlanRoute.AddTarget>
+  <HaulersDream.PlanRoute.AddTargetStop>종류 추가 완료</HaulersDream.PlanRoute.AddTargetStop>
+  <HaulersDream.PlanRoute.TargetTypesHeader>대상 종류: {0}</HaulersDream.PlanRoute.TargetTypesHeader>
+  <HaulersDream.PlanRoute.AddTargetHint>지도에서 다른 종류의 대상을 클릭하면 이 경로에도 함께 수집합니다.</HaulersDream.PlanRoute.AddTargetHint>
+  <HaulersDream.PlanRoute.PrimaryBadge>(주 대상)</HaulersDream.PlanRoute.PrimaryBadge>
+  <HaulersDream.PlanRoute.RemoveFloorGerund>바닥 제거</HaulersDream.PlanRoute.RemoveFloorGerund>
+  <HaulersDream.PlanRoute.ModeFloorArea>구역 — 연결된 바닥</HaulersDream.PlanRoute.ModeFloorArea>
+  <HaulersDream.PlanRoute.ModeFloorAreaDesc>클릭한 칸 주변에서 제거 가능한 바닥이 이어진 전체 구역(폐허 바닥 전체)을 경로 상한까지 제거합니다.</HaulersDream.PlanRoute.ModeFloorAreaDesc>
 </LanguageData>

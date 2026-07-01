@@ -106,7 +106,7 @@ namespace HaulersDream
         public static List<Thing> Select(Pawn pawn, Thing clicked, RouteWorkKind kind, RouteMode mode, int amount,
             int radius, bool allowHarvest, int growthThreshold, IReadOnlyList<Thing> mustInclude,
             out bool capped, out bool fogCaution, out int mustIncludeCount,
-            IReadOnlyList<IntVec3> roomAnchors = null)
+            IReadOnlyList<IntVec3> roomAnchors = null, IReadOnlyList<ThingDef> extraDefs = null)
         {
             capped = false;
             fogCaution = false;
@@ -123,18 +123,20 @@ namespace HaulersDream
                 mode = allowed[0];
 
             // MUST-INCLUDE prefix: the clicked anchor + any picked targets. Always kept, anchor first.
-            var forced = BuildForced(pawn, clicked, kind, mustInclude);
+            var forced = BuildForced(pawn, clicked, kind, mustInclude, extraDefs);
             mustIncludeCount = forced.Count;
             var forcedSet = new HashSet<Thing>(forced);
 
             List<Thing> auto;
             switch (mode)
             {
-                case RouteMode.Radius: auto = SelectRadius(pawn, clicked, kind, allowHarvest, growthThreshold, radius); break;
-                case RouteMode.Chained: auto = SelectChained(pawn, clicked, kind, allowHarvest, growthThreshold); break;
+                case RouteMode.Radius: auto = SelectRadius(pawn, clicked, kind, allowHarvest, growthThreshold, radius, extraDefs); break;
+                case RouteMode.Chained: auto = SelectChained(pawn, clicked, kind, allowHarvest, growthThreshold, extraDefs); break;
+                // Vein floods the clicked def's own contiguous cluster (a vein is one def by nature); a secondary
+                // target of another def is still routed if the player PICKED it (it rides the forced prefix).
                 case RouteMode.Vein: auto = SelectVein(pawn, clicked, kind, allowHarvest, growthThreshold, out fogCaution); break;
-                case RouteMode.Rooms: auto = SelectRooms(pawn, clicked, kind, allowHarvest, growthThreshold, roomAnchors); break;
-                case RouteMode.Zone: auto = SelectZone(pawn, clicked, kind, allowHarvest, growthThreshold); break;
+                case RouteMode.Rooms: auto = SelectRooms(pawn, clicked, kind, allowHarvest, growthThreshold, roomAnchors, extraDefs); break;
+                case RouteMode.Zone: auto = SelectZone(pawn, clicked, kind, allowHarvest, growthThreshold, extraDefs); break;
                 default: auto = new List<Thing>(); break;
             }
             auto.RemoveAll(t => forcedSet.Contains(t)); // a picked target is already in the forced prefix — no dup
@@ -176,7 +178,8 @@ namespace HaulersDream
         // The must-include prefix: clicked anchor first, then each player-picked target that is a valid same-kind
         // target (deduped). Reachability is NOT filtered here — ComputeLegs does that, so an unreachable pick is
         // surfaced as "can't be reached" like any other unreachable target rather than silently vanishing.
-        private static List<Thing> BuildForced(Pawn pawn, Thing clicked, RouteWorkKind kind, IReadOnlyList<Thing> mustInclude)
+        private static List<Thing> BuildForced(Pawn pawn, Thing clicked, RouteWorkKind kind, IReadOnlyList<Thing> mustInclude,
+            IReadOnlyList<ThingDef> extraDefs = null)
         {
             var forced = new List<Thing>();
             var seen = new HashSet<Thing>();
@@ -187,7 +190,7 @@ namespace HaulersDream
                     var t = mustInclude[i];
                     if (t == null || seen.Contains(t))
                         continue;
-                    if (IsValidRouteTarget(pawn, clicked, kind, t)) { forced.Add(t); seen.Add(t); }
+                    if (IsValidRouteTarget(pawn, clicked, kind, t, extraDefs)) { forced.Add(t); seen.Add(t); }
                 }
             return forced;
         }
@@ -198,11 +201,12 @@ namespace HaulersDream
         /// player's manual "must include" pick. Does NOT apply the growth threshold (an explicit pick bypasses it,
         /// exactly like the clicked anchor) and does NOT check reachability (the planner does).
         /// </summary>
-        public static bool IsValidRouteTarget(Pawn pawn, Thing clicked, RouteWorkKind kind, Thing t)
+        public static bool IsValidRouteTarget(Pawn pawn, Thing clicked, RouteWorkKind kind, Thing t,
+            IReadOnlyList<ThingDef> extraDefs = null)
         {
             if (t == null || !t.Spawned || clicked == null)
                 return false;
-            if (!MatchesScope(pawn?.Map ?? clicked.Map, clicked, kind, t))
+            if (!MatchesScope(pawn?.Map ?? clicked.Map, clicked, kind, t, extraDefs))
                 return false;
             if (pawn != null && t.IsForbidden(pawn))
                 return false;
@@ -213,9 +217,25 @@ namespace HaulersDream
             return true;
         }
 
+        /// <summary>True when <paramref name="def"/> is one of the route's ACCEPTED target defs: the clicked anchor's
+        /// def, or any player-added secondary target def (issue #96 multi-target — e.g. berries + rice harvested in one
+        /// route). A null/empty <paramref name="extraDefs"/> reduces this to the single-def behaviour.</summary>
+        private static bool DefAccepted(ThingDef def, Thing clicked, IReadOnlyList<ThingDef> extraDefs)
+        {
+            if (def == clicked.def)
+                return true;
+            if (extraDefs != null)
+                for (int i = 0; i < extraDefs.Count; i++)
+                    if (extraDefs[i] == def)
+                        return true;
+            return false;
+        }
+
         /// <summary>Is <paramref name="t"/> "the same kind of target" as the clicked thing under the kind's scope?
-        /// (See <see cref="RouteTargetScope"/> — the WORK decides the grouping, not the ThingDef.)</summary>
-        private static bool MatchesScope(Map map, Thing clicked, RouteWorkKind kind, Thing t)
+        /// (See <see cref="RouteTargetScope"/> — the WORK decides the grouping, not the ThingDef.) For the def-based
+        /// scopes, <paramref name="extraDefs"/> widens "same def" to the set of accepted target defs (multi-target).</summary>
+        private static bool MatchesScope(Map map, Thing clicked, RouteWorkKind kind, Thing t,
+            IReadOnlyList<ThingDef> extraDefs = null)
         {
             switch (kind?.scope ?? RouteTargetScope.SameDef)
             {
@@ -227,7 +247,7 @@ namespace HaulersDream
                     return kind.designation != null && map != null
                            && map.designationManager.DesignationOn(t, kind.designation) != null;
                 case RouteTargetScope.SameDefOrDesignated:
-                    if (t.def == clicked.def)
+                    if (DefAccepted(t.def, clicked, extraDefs))
                         return true;
                     if (kind.designation == null || map == null)
                         return false;
@@ -236,7 +256,7 @@ namespace HaulersDream
                                || map.designationManager.DesignationAt(t.Position, DesignationDefOf.MineVein) != null;
                     return map.designationManager.DesignationOn(t, kind.designation) != null;
                 default:
-                    return t.def == clicked.def;
+                    return DefAccepted(t.def, clicked, extraDefs);
             }
         }
 
@@ -349,11 +369,12 @@ namespace HaulersDream
         public static int EffectiveAmount(int amount)
             => amount == AllAmount || amount <= 0 ? HardCap : Math.Min(amount, HardCap);
 
-        private static List<Thing> SelectRadius(Pawn pawn, Thing clicked, RouteWorkKind kind, bool allowHarvest, int threshold, int radius)
+        private static List<Thing> SelectRadius(Pawn pawn, Thing clicked, RouteWorkKind kind, bool allowHarvest, int threshold, int radius,
+            IReadOnlyList<ThingDef> extraDefs = null)
         {
             float r = radius <= 0 ? 1 : radius;
             var hits = new List<Thing>();
-            foreach (var t in SameKind(pawn, clicked, kind, allowHarvest, threshold))
+            foreach (var t in SameKind(pawn, clicked, kind, allowHarvest, threshold, extraDefs))
                 if ((t.Position - clicked.Position).LengthHorizontal <= r)
                     hits.Add(t);
             SortByDistanceTo(hits, clicked.Position);
@@ -361,9 +382,10 @@ namespace HaulersDream
             return hits;
         }
 
-        private static List<Thing> SelectChained(Pawn pawn, Thing clicked, RouteWorkKind kind, bool allowHarvest, int threshold)
+        private static List<Thing> SelectChained(Pawn pawn, Thing clicked, RouteWorkKind kind, bool allowHarvest, int threshold,
+            IReadOnlyList<ThingDef> extraDefs = null)
         {
-            var hits = new List<Thing>(SameKind(pawn, clicked, kind, allowHarvest, threshold));
+            var hits = new List<Thing>(SameKind(pawn, clicked, kind, allowHarvest, threshold, extraDefs));
             SortByDistanceTo(hits, clicked.Position);
             EnsureAnchorFirst(hits, clicked);
             return hits; // bounded to HardCap (and then by the max-travel span) in Select / the planner
@@ -386,7 +408,7 @@ namespace HaulersDream
         // room — picking it makes the room filter near-meaningless there, so the Amount cap (nearest-first) is
         // what bounds an outdoor selection.
         private static List<Thing> SelectRooms(Pawn pawn, Thing clicked, RouteWorkKind kind, bool allowHarvest,
-            int threshold, IReadOnlyList<IntVec3> roomAnchors)
+            int threshold, IReadOnlyList<IntVec3> roomAnchors, IReadOnlyList<ThingDef> extraDefs = null)
         {
             var map = pawn.Map;
             var roomIds = new HashSet<int>();
@@ -406,7 +428,7 @@ namespace HaulersDream
             var hits = new List<Thing>();
             if (roomIds.Count == 0)
                 return hits; // doorless void (shouldn't happen for spawned filth) — nothing to bound by
-            foreach (var t in SameKind(pawn, clicked, kind, allowHarvest, threshold))
+            foreach (var t in SameKind(pawn, clicked, kind, allowHarvest, threshold, extraDefs))
             {
                 var r = t.Position.GetRoom(map);
                 if (r != null && roomIds.Contains(r.ID))
@@ -420,14 +442,15 @@ namespace HaulersDream
         // Zone mode: same-kind targets standing in the growing zone the clicked plant is in ("this whole field").
         // The harvest ripeness / allow-unmarked gate still applies via SameKind, so an unripe corner of the zone
         // isn't routed.
-        private static List<Thing> SelectZone(Pawn pawn, Thing clicked, RouteWorkKind kind, bool allowHarvest, int threshold)
+        private static List<Thing> SelectZone(Pawn pawn, Thing clicked, RouteWorkKind kind, bool allowHarvest, int threshold,
+            IReadOnlyList<ThingDef> extraDefs = null)
         {
             var hits = new List<Thing>();
             var zone = GrowingZoneFor(clicked, pawn.Map);
             if (zone == null)
                 return hits;
             var zm = pawn.Map.zoneManager;
-            foreach (var t in SameKind(pawn, clicked, kind, allowHarvest, threshold))
+            foreach (var t in SameKind(pawn, clicked, kind, allowHarvest, threshold, extraDefs))
                 if (zm.ZoneAt(t.Position) == zone)
                     hits.Add(t);
             SortByDistanceTo(hits, clicked.Position);
@@ -522,10 +545,11 @@ namespace HaulersDream
         // for harvest, ANY filth for cleaning, ANY marked thing for deconstruct, ANY blueprint/frame for
         // construction (see RouteTargetScope). Reachability is NOT filtered here — the planner (ComputeLegs)
         // does that per-stop so unreachable candidates still count toward selectedCount for the UI.
-        private static IEnumerable<Thing> SameKind(Pawn pawn, Thing clicked, RouteWorkKind kind, bool allowHarvest, int threshold)
+        private static IEnumerable<Thing> SameKind(Pawn pawn, Thing clicked, RouteWorkKind kind, bool allowHarvest, int threshold,
+            IReadOnlyList<ThingDef> extraDefs = null)
         {
             var seen = new HashSet<Thing>();
-            foreach (var t in ScopeCandidates(pawn.Map, clicked, kind))
+            foreach (var t in ScopeCandidates(pawn.Map, clicked, kind, extraDefs))
             {
                 if (t == null || !t.Spawned || t.IsForbidden(pawn) || !seen.Add(t))
                     continue;
@@ -538,7 +562,8 @@ namespace HaulersDream
         // Raw candidate enumeration per scope. Same-def scopes use the def lister; designation scopes walk the
         // designation manager (so a marked door joins a marked wall's deconstruct route); filth/blueprints use
         // their thing-request groups.
-        private static IEnumerable<Thing> ScopeCandidates(Map map, Thing clicked, RouteWorkKind kind)
+        private static IEnumerable<Thing> ScopeCandidates(Map map, Thing clicked, RouteWorkKind kind,
+            IReadOnlyList<ThingDef> extraDefs = null)
         {
             switch (kind.scope)
             {
@@ -566,6 +591,18 @@ namespace HaulersDream
                 case RouteTargetScope.SameDefOrDesignated:
                     foreach (var t in map.listerThings.ThingsOfDef(clicked.def))
                         yield return t;
+                    // Secondary target defs (issue #96): also list every spawned thing of each added def, so a mining
+                    // route can gather, say, steel + component veins in one pass. SameKind's `seen` set dedupes and its
+                    // per-candidate harvest gate still applies.
+                    if (extraDefs != null)
+                        for (int i = 0; i < extraDefs.Count; i++)
+                        {
+                            var d = extraDefs[i];
+                            if (d == null || d == clicked.def)
+                                continue;
+                            foreach (var t in map.listerThings.ThingsOfDef(d))
+                                yield return t;
+                        }
                     if (kind.designation == DesignationDefOf.Mine)
                     {
                         // Mining designations live on CELLS — surface the mineable at each designated cell.
@@ -594,6 +631,18 @@ namespace HaulersDream
                 default: // SameDef
                     foreach (var t in map.listerThings.ThingsOfDef(clicked.def))
                         yield return t;
+                    // Secondary target defs (issue #96): also list every spawned thing of each added def, so a harvest
+                    // route can gather, say, berries + rice in one pass. SameKind's `seen` set dedupes and its
+                    // per-candidate harvest gate (IncludeForHarvest) still applies to each secondary-def plant.
+                    if (extraDefs != null)
+                        for (int i = 0; i < extraDefs.Count; i++)
+                        {
+                            var d = extraDefs[i];
+                            if (d == null || d == clicked.def)
+                                continue;
+                            foreach (var t in map.listerThings.ThingsOfDef(d))
+                                yield return t;
+                        }
                     yield break;
             }
         }

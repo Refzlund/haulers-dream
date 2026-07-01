@@ -56,7 +56,12 @@ namespace HaulersDream
             return s != null && s.enableVehicleFramework && s.enableBulkLoadVehicles;
         }
 
-        static MethodBase TargetMethod() => TargetJobOnThing;
+        // Normalise to the DECLARING method so Harmony patches the closed generic base
+        // WorkGiver_CarryToVehicle<TransferableOneWay>.JobOnThing directly rather than the inherited MethodInfo off the
+        // WorkGiver_PackVehicle subclass (whose ReflectedType != DeclaringType, which Harmony refuses). This is a no-op
+        // when the resolved method is already declared, so it never changes the shipped, working redirect target — it
+        // only guarantees the redirect and the universal exception tagger converge on the SAME patchable method.
+        static MethodBase TargetMethod() => HaulersDreamMod.NormalizeToDeclared(TargetJobOnThing);
 
         // `pawn` and `t` bind by name to the original JobOnThing(Pawn pawn, Thing t, bool forced) params (t IS the
         // vehicle, already a Thing -> no cast / no Vehicles.* type). VF already decided this pawn should load `t`.

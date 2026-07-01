@@ -109,6 +109,10 @@ namespace HaulersDream
 
         // --- planners (the right-click "Plan prioritized …" tools) ---
         public bool planRoutes = true;   // route planner (harvest/mine/clean/deconstruct/construction routes)
+        // "Remember plan" interface toggle (bottom-right play-settings row): when ON, a "Plan prioritized …" click
+        // reuses the last-used route settings for that target type in one click (skipping the dialog); when OFF the
+        // dialog opens as usual. Controlled by the interface toggle, not the settings window (hence not drawn there).
+        public bool rememberPlan = false;
         public bool planCrafting = true; // station crafting planner (batch a bill N times in one go)
         // Batch-Y bill mode: when ON, a newly-created batchable bill starts in batch mode at defaultBatchSize.
         public bool batchByDefault = false; // OFF by default so existing players see no change until they opt in
@@ -566,6 +570,7 @@ namespace HaulersDream
             Scribe_Values.Look(ref orderedConstructTether, "orderedConstructTether", true);
             Scribe_Values.Look(ref haulToSiteOption, "haulToSiteOption", true);
             Scribe_Values.Look(ref planRoutes, "planRoutes", true);
+            Scribe_Values.Look(ref rememberPlan, "rememberPlan", false);
             Scribe_Values.Look(ref planCrafting, "planCrafting", true);
             Scribe_Values.Look(ref batchByDefault, "batchByDefault", false);
             Scribe_Values.Look(ref defaultBatchSize, "defaultBatchSize", 10);
@@ -731,6 +736,7 @@ namespace HaulersDream
             orderedConstructTether = true;
             haulToSiteOption = true;
             planRoutes = true;
+            rememberPlan = false;
             planCrafting = true;
             batchByDefault = false;
             defaultBatchSize = 10;

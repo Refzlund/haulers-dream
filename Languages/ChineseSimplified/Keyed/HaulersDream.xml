@@ -702,4 +702,15 @@
   <HaulersDream.Setting.NotifyThreshold.Never>Never</HaulersDream.Setting.NotifyThreshold.Never>
   <HaulersDream.Setting.NotifyThreshold.Never.Desc>Turn the main-menu notifications off entirely.</HaulersDream.Setting.NotifyThreshold.Never.Desc>
 
+  <!-- PR #91: multi-target planner + remember-plan toggle + remove-floor route -->
+  <HaulersDream.PlanRoute.OptionRemembered>规划优先{0}（已记住）</HaulersDream.PlanRoute.OptionRemembered>
+  <HaulersDream.PlanRoute.RememberToggleTip>记住方案：开启后，规划优先路线时会一键沿用你上次对该类目标使用的设置，跳过规划窗口。关闭后，每次都会打开规划窗口，便于你调整路线。</HaulersDream.PlanRoute.RememberToggleTip>
+  <HaulersDream.PlanRoute.AddTarget>添加目标类型…</HaulersDream.PlanRoute.AddTarget>
+  <HaulersDream.PlanRoute.AddTargetStop>完成添加类型</HaulersDream.PlanRoute.AddTargetStop>
+  <HaulersDream.PlanRoute.TargetTypesHeader>目标类型：{0}</HaulersDream.PlanRoute.TargetTypesHeader>
+  <HaulersDream.PlanRoute.AddTargetHint>在地图上点击另一种目标，将其也纳入此路线。</HaulersDream.PlanRoute.AddTargetHint>
+  <HaulersDream.PlanRoute.PrimaryBadge>（主要）</HaulersDream.PlanRoute.PrimaryBadge>
+  <HaulersDream.PlanRoute.RemoveFloorGerund>拆除地板</HaulersDream.PlanRoute.RemoveFloorGerund>
+  <HaulersDream.PlanRoute.ModeFloorArea>区域 — 相连的地板</HaulersDream.PlanRoute.ModeFloorArea>
+  <HaulersDream.PlanRoute.ModeFloorAreaDesc>拆除点击处周围整片相连的可拆除地板（整片废墟地板），直到达到路线上限。</HaulersDream.PlanRoute.ModeFloorAreaDesc>
 </LanguageData>

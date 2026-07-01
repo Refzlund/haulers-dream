@@ -702,4 +702,15 @@
   <HaulersDream.Setting.NotifyThreshold.Never>Never</HaulersDream.Setting.NotifyThreshold.Never>
   <HaulersDream.Setting.NotifyThreshold.Never.Desc>Turn the main-menu notifications off entirely.</HaulersDream.Setting.NotifyThreshold.Never.Desc>
 
+  <!-- PR #91: multi-target planner + remember-plan toggle + remove-floor route -->
+  <HaulersDream.PlanRoute.OptionRemembered>Planlæg prioriteret {0} (husket)</HaulersDream.PlanRoute.OptionRemembered>
+  <HaulersDream.PlanRoute.RememberToggleTip>Husk plan: når slået til, genbruger en prioriteret rute med ét klik de indstillinger, du sidst brugte til den slags mål, og springer planlæggervinduet over. Når slået fra, åbnes planlæggeren hver gang, så du kan justere ruten.</HaulersDream.PlanRoute.RememberToggleTip>
+  <HaulersDream.PlanRoute.AddTarget>Tilføj måltype…</HaulersDream.PlanRoute.AddTarget>
+  <HaulersDream.PlanRoute.AddTargetStop>Færdig med at tilføje typer</HaulersDream.PlanRoute.AddTargetStop>
+  <HaulersDream.PlanRoute.TargetTypesHeader>Måltyper: {0}</HaulersDream.PlanRoute.TargetTypesHeader>
+  <HaulersDream.PlanRoute.AddTargetHint>Klik på en anden slags mål på kortet for også at samle det i denne rute.</HaulersDream.PlanRoute.AddTargetHint>
+  <HaulersDream.PlanRoute.PrimaryBadge>(primær)</HaulersDream.PlanRoute.PrimaryBadge>
+  <HaulersDream.PlanRoute.RemoveFloorGerund>fjernelse af gulv</HaulersDream.PlanRoute.RemoveFloorGerund>
+  <HaulersDream.PlanRoute.ModeFloorArea>Område — det sammenhængende gulv</HaulersDream.PlanRoute.ModeFloorArea>
+  <HaulersDream.PlanRoute.ModeFloorAreaDesc>Fjern gulv i hele det sammenhængende felt af gulv, der kan fjernes, omkring den klikkede flise (hele ruingulvet), op til rutens grænse.</HaulersDream.PlanRoute.ModeFloorAreaDesc>
 </LanguageData>

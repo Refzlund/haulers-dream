@@ -179,6 +179,7 @@ namespace HaulersDream
                 MP.RegisterSyncMethod(typeof(JobDriver_BatchCraft), nameof(JobDriver_BatchCraft.StartBatchCraftSynced));
                 MP.RegisterSyncMethod(typeof(RouteExecutor), nameof(RouteExecutor.ExecuteRouteSynced));
                 MP.RegisterSyncMethod(typeof(SowRouteExecutor), nameof(SowRouteExecutor.ExecuteSowRouteSynced));
+                MP.RegisterSyncMethod(typeof(RemoveFloorRouteExecutor), nameof(RemoveFloorRouteExecutor.ExecuteRemoveFloorRouteSynced));
             }
 
             internal static bool InMpGame() => MP.IsInMultiplayer;

@@ -702,4 +702,15 @@
   <HaulersDream.Setting.NotifyThreshold.Never>Never</HaulersDream.Setting.NotifyThreshold.Never>
   <HaulersDream.Setting.NotifyThreshold.Never.Desc>Turn the main-menu notifications off entirely.</HaulersDream.Setting.NotifyThreshold.Never.Desc>
 
+  <!-- PR #91: multi-target planner + remember-plan toggle + remove-floor route -->
+  <HaulersDream.PlanRoute.OptionRemembered>วางแผนให้ความสำคัญ {0} (จำไว้)</HaulersDream.PlanRoute.OptionRemembered>
+  <HaulersDream.PlanRoute.RememberToggleTip>จดจำแผน: เมื่อเปิด การวางแผนเส้นทางแบบให้ความสำคัญจะใช้การตั้งค่าที่คุณใช้ล่าสุดกับเป้าหมายชนิดนั้นซ้ำด้วยคลิกเดียว โดยข้ามหน้าต่างวางแผน เมื่อปิด หน้าต่างวางแผนจะเปิดทุกครั้งเพื่อให้คุณปรับเส้นทางได้</HaulersDream.PlanRoute.RememberToggleTip>
+  <HaulersDream.PlanRoute.AddTarget>เพิ่มชนิดเป้าหมาย…</HaulersDream.PlanRoute.AddTarget>
+  <HaulersDream.PlanRoute.AddTargetStop>เสร็จสิ้นการเพิ่มชนิด</HaulersDream.PlanRoute.AddTargetStop>
+  <HaulersDream.PlanRoute.TargetTypesHeader>ชนิดเป้าหมาย: {0}</HaulersDream.PlanRoute.TargetTypesHeader>
+  <HaulersDream.PlanRoute.AddTargetHint>คลิกเป้าหมายชนิดอื่นบนแผนที่เพื่อรวมไว้ในเส้นทางนี้ด้วย</HaulersDream.PlanRoute.AddTargetHint>
+  <HaulersDream.PlanRoute.PrimaryBadge>(หลัก)</HaulersDream.PlanRoute.PrimaryBadge>
+  <HaulersDream.PlanRoute.RemoveFloorGerund>การรื้อพื้น</HaulersDream.PlanRoute.RemoveFloorGerund>
+  <HaulersDream.PlanRoute.ModeFloorArea>พื้นที่ — พื้นที่เชื่อมต่อกัน</HaulersDream.PlanRoute.ModeFloorArea>
+  <HaulersDream.PlanRoute.ModeFloorAreaDesc>รื้อพื้นทั่วทั้งผืนพื้นที่รื้อได้ซึ่งเชื่อมต่อกันรอบช่องที่คลิก (พื้นซากปรักหักพังทั้งหมด) จนถึงขีดจำกัดของเส้นทาง</HaulersDream.PlanRoute.ModeFloorAreaDesc>
 </LanguageData>

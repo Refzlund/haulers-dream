@@ -702,4 +702,15 @@
   <HaulersDream.Setting.NotifyThreshold.Never>Never</HaulersDream.Setting.NotifyThreshold.Never>
   <HaulersDream.Setting.NotifyThreshold.Never.Desc>Turn the main-menu notifications off entirely.</HaulersDream.Setting.NotifyThreshold.Never.Desc>
 
+  <!-- PR #91: multi-target planner + remember-plan toggle + remove-floor route -->
+  <HaulersDream.PlanRoute.OptionRemembered>Спланувати пріоритетне {0} (запам’ятовано)</HaulersDream.PlanRoute.OptionRemembered>
+  <HaulersDream.PlanRoute.RememberToggleTip>Запам’ятовувати план: коли увімкнено, планування пріоритетного маршруту одним клацанням повторно застосовує налаштування, востаннє використані для цього виду цілі, оминаючи вікно планувальника. Коли вимкнено, планувальник відкривається щоразу, щоб ви могли змінити маршрут.</HaulersDream.PlanRoute.RememberToggleTip>
+  <HaulersDream.PlanRoute.AddTarget>Додати тип цілі…</HaulersDream.PlanRoute.AddTarget>
+  <HaulersDream.PlanRoute.AddTargetStop>Завершити додавання типів</HaulersDream.PlanRoute.AddTargetStop>
+  <HaulersDream.PlanRoute.TargetTypesHeader>Типи цілей: {0}</HaulersDream.PlanRoute.TargetTypesHeader>
+  <HaulersDream.PlanRoute.AddTargetHint>Клацніть інший вид цілі на карті, щоб додати його до цього маршруту.</HaulersDream.PlanRoute.AddTargetHint>
+  <HaulersDream.PlanRoute.PrimaryBadge>(основна)</HaulersDream.PlanRoute.PrimaryBadge>
+  <HaulersDream.PlanRoute.RemoveFloorGerund>видалення підлоги</HaulersDream.PlanRoute.RemoveFloorGerund>
+  <HaulersDream.PlanRoute.ModeFloorArea>Область — з’єднана підлога</HaulersDream.PlanRoute.ModeFloorArea>
+  <HaulersDream.PlanRoute.ModeFloorAreaDesc>Видаляє підлогу на всій суміжній ділянці знімної підлоги навколо вибраної клітинки (усю підлогу руїн), до межі маршруту.</HaulersDream.PlanRoute.ModeFloorAreaDesc>
 </LanguageData>

@@ -702,4 +702,15 @@
   <HaulersDream.Setting.NotifyThreshold.Never>Never</HaulersDream.Setting.NotifyThreshold.Never>
   <HaulersDream.Setting.NotifyThreshold.Never.Desc>Turn the main-menu notifications off entirely.</HaulersDream.Setting.NotifyThreshold.Never.Desc>
 
+  <!-- PR #91: multi-target planner + remember-plan toggle + remove-floor route -->
+  <HaulersDream.PlanRoute.OptionRemembered>Pianifica {0} prioritizzato (memorizzato)</HaulersDream.PlanRoute.OptionRemembered>
+  <HaulersDream.PlanRoute.RememberToggleTip>Ricorda piano: se attivo, pianificare un percorso prioritario riutilizza con un clic le impostazioni usate l’ultima volta per quel tipo di bersaglio, saltando la finestra del pianificatore. Se disattivo, il pianificatore si apre ogni volta per regolare il percorso.</HaulersDream.PlanRoute.RememberToggleTip>
+  <HaulersDream.PlanRoute.AddTarget>Aggiungi tipo di bersaglio…</HaulersDream.PlanRoute.AddTarget>
+  <HaulersDream.PlanRoute.AddTargetStop>Fine aggiunta tipi</HaulersDream.PlanRoute.AddTargetStop>
+  <HaulersDream.PlanRoute.TargetTypesHeader>Tipi di bersaglio: {0}</HaulersDream.PlanRoute.TargetTypesHeader>
+  <HaulersDream.PlanRoute.AddTargetHint>Clicca un altro tipo di bersaglio sulla mappa per includerlo anche in questo percorso.</HaulersDream.PlanRoute.AddTargetHint>
+  <HaulersDream.PlanRoute.PrimaryBadge>(principale)</HaulersDream.PlanRoute.PrimaryBadge>
+  <HaulersDream.PlanRoute.RemoveFloorGerund>rimozione pavimento</HaulersDream.PlanRoute.RemoveFloorGerund>
+  <HaulersDream.PlanRoute.ModeFloorArea>Area — il pavimento contiguo</HaulersDream.PlanRoute.ModeFloorArea>
+  <HaulersDream.PlanRoute.ModeFloorAreaDesc>Rimuove la pavimentazione sull’intera area contigua di pavimento rimovibile attorno alla casella cliccata (tutto il pavimento della rovina), fino al limite del percorso.</HaulersDream.PlanRoute.ModeFloorAreaDesc>
 </LanguageData>

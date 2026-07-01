@@ -702,4 +702,15 @@
   <HaulersDream.Setting.NotifyThreshold.Never>Never</HaulersDream.Setting.NotifyThreshold.Never>
   <HaulersDream.Setting.NotifyThreshold.Never.Desc>Turn the main-menu notifications off entirely.</HaulersDream.Setting.NotifyThreshold.Never.Desc>
 
+  <!-- PR #91: multi-target planner + remember-plan toggle + remove-floor route -->
+  <HaulersDream.PlanRoute.OptionRemembered>Priorisiertes {0} planen (gemerkt)</HaulersDream.PlanRoute.OptionRemembered>
+  <HaulersDream.PlanRoute.RememberToggleTip>Plan merken: Wenn aktiv, übernimmt das Planen einer priorisierten Route mit einem Klick die zuletzt für diese Art Ziel verwendeten Einstellungen und überspringt das Planerfenster. Wenn aus, öffnet sich der Planer jedes Mal, damit du die Route anpassen kannst.</HaulersDream.PlanRoute.RememberToggleTip>
+  <HaulersDream.PlanRoute.AddTarget>Zieltyp hinzufügen…</HaulersDream.PlanRoute.AddTarget>
+  <HaulersDream.PlanRoute.AddTargetStop>Typen fertig hinzugefügt</HaulersDream.PlanRoute.AddTargetStop>
+  <HaulersDream.PlanRoute.TargetTypesHeader>Zieltypen: {0}</HaulersDream.PlanRoute.TargetTypesHeader>
+  <HaulersDream.PlanRoute.AddTargetHint>Klicke auf eine andere Art Ziel auf der Karte, um sie ebenfalls in diese Route aufzunehmen.</HaulersDream.PlanRoute.AddTargetHint>
+  <HaulersDream.PlanRoute.PrimaryBadge>(primär)</HaulersDream.PlanRoute.PrimaryBadge>
+  <HaulersDream.PlanRoute.RemoveFloorGerund>Bodenentfernung</HaulersDream.PlanRoute.RemoveFloorGerund>
+  <HaulersDream.PlanRoute.ModeFloorArea>Bereich — der zusammenhängende Boden</HaulersDream.PlanRoute.ModeFloorArea>
+  <HaulersDream.PlanRoute.ModeFloorAreaDesc>Entfernt den Boden auf dem gesamten zusammenhängenden Bereich entfernbaren Bodens um die angeklickte Kachel (der ganze Ruinenboden), bis zum Routenlimit.</HaulersDream.PlanRoute.ModeFloorAreaDesc>
 </LanguageData>

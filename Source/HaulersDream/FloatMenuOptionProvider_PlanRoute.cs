@@ -47,12 +47,22 @@ namespace HaulersDream
                 if (kind == null)
                     continue;
 
-                string label = "HaulersDream.PlanRoute.Option".Translate(kind.gerund);
-                if (!seenLabels.Add(label))
+                string baseLabel = "HaulersDream.PlanRoute.Option".Translate(kind.gerund);
+                if (!seenLabels.Add(baseLabel))
                     continue; // one "Plan prioritized X…" per distinct work kind, however many targets share it
 
                 Thing anchor = thing;
                 RouteWorkKind capturedKind = kind;
+
+                // "Remember plan" (interface toggle): when it's ON and this target type already has remembered route
+                // settings, the option reuses them in ONE click (skipping the dialog) and its label gains a
+                // "(remembered)" hint. With the toggle off, or the first time for a new target type, it opens the
+                // dialog as usual (which then records the settings for next time).
+                bool remember = HaulersDreamMod.Settings.rememberPlan
+                    && HaulersDreamMod.Settings.GetRoutePrefs(anchor.def?.defName) != null;
+                string label = remember
+                    ? "HaulersDream.PlanRoute.OptionRemembered".Translate(kind.gerund)
+                    : baseLabel;
 
                 // A construction route is ALWAYS offered — even when this instant has no deliverable materials.
                 // This matches WorkKindResolver's documented design ("a route over [blueprints] should be plannable
@@ -60,7 +70,7 @@ namespace HaulersDream
                 // and the route delivers to whichever stops have free materials (in optimal order) while the rest
                 // build as materials become available. The OLD gate disabled the WHOLE option whenever just the
                 // ANCHOR lacked free materials right now — wrong even when other stops are fully stocked.
-                if (HaulersDreamMod.Settings != null && HaulersDreamMod.Settings.verboseLogging
+                if (HaulersDreamMod.Settings.verboseLogging
                     && kind.scanner is WorkGiver_ConstructDeliverResourcesToBlueprints)
                 {
                     // No try/catch: a throw here is a real bug to surface, not hide behind a verbose-only line.
@@ -70,11 +80,26 @@ namespace HaulersDream
                 }
 
                 var option = new FloatMenuOption(label, () =>
-                    Find.WindowStack.Add(new Dialog_PlanRoute(pawn, anchor, capturedKind)))
+                {
+                    if (remember)
+                        Dialog_PlanRoute.ExecuteRemembered(pawn, anchor, capturedKind);
+                    else
+                        Find.WindowStack.Add(new Dialog_PlanRoute(pawn, anchor, capturedKind));
+                })
                 {
                     iconThing = anchor,
                 };
-                yield return FloatMenuUtility.DecoratePrioritizedTask(option, pawn, anchor);
+                var decorated = FloatMenuUtility.DecoratePrioritizedTask(option, pawn, anchor);
+                // Hovering the option flashes the bottom-right "Remember plan" interface toggle, so the player can see
+                // which setting controls this one-click behaviour (and whether it's currently on). Chain any mouseover
+                // action DecoratePrioritizedTask may have set rather than replacing it.
+                var prevHover = decorated.mouseoverGuiAction;
+                decorated.mouseoverGuiAction = r =>
+                {
+                    prevHover?.Invoke(r);
+                    UIHighlighter.HighlightTag(Patch_PlaySettings.RememberPlanHighlightTag);
+                };
+                yield return decorated;
             }
         }
     }

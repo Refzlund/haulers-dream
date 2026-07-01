@@ -702,4 +702,15 @@
   <HaulersDream.Setting.NotifyThreshold.Never>Never</HaulersDream.Setting.NotifyThreshold.Never>
   <HaulersDream.Setting.NotifyThreshold.Never.Desc>Turn the main-menu notifications off entirely.</HaulersDream.Setting.NotifyThreshold.Never.Desc>
 
+  <!-- PR #91: multi-target planner + remember-plan toggle + remove-floor route -->
+  <HaulersDream.PlanRoute.OptionRemembered>Plan geprioriteerd(e) {0} (onthouden)</HaulersDream.PlanRoute.OptionRemembered>
+  <HaulersDream.PlanRoute.RememberToggleTip>Plan onthouden: indien aan, hergebruikt het plannen van een geprioriteerde route met één klik de instellingen die je het laatst voor dat soort doel gebruikte, en slaat het plannervenster over. Indien uit, opent de planner elke keer zodat je de route kunt aanpassen.</HaulersDream.PlanRoute.RememberToggleTip>
+  <HaulersDream.PlanRoute.AddTarget>Doeltype toevoegen…</HaulersDream.PlanRoute.AddTarget>
+  <HaulersDream.PlanRoute.AddTargetStop>Klaar met toevoegen</HaulersDream.PlanRoute.AddTargetStop>
+  <HaulersDream.PlanRoute.TargetTypesHeader>Doeltypen: {0}</HaulersDream.PlanRoute.TargetTypesHeader>
+  <HaulersDream.PlanRoute.AddTargetHint>Klik op een ander soort doel op de kaart om het ook in deze route mee te nemen.</HaulersDream.PlanRoute.AddTargetHint>
+  <HaulersDream.PlanRoute.PrimaryBadge>(primair)</HaulersDream.PlanRoute.PrimaryBadge>
+  <HaulersDream.PlanRoute.RemoveFloorGerund>vloer verwijderen</HaulersDream.PlanRoute.RemoveFloorGerund>
+  <HaulersDream.PlanRoute.ModeFloorArea>Gebied — de aaneengesloten vloer</HaulersDream.PlanRoute.ModeFloorArea>
+  <HaulersDream.PlanRoute.ModeFloorAreaDesc>Verwijder vloer over de hele aaneengesloten lap verwijderbare vloer rond de aangeklikte tegel (de hele ruïnevloer), tot aan de routelimiet.</HaulersDream.PlanRoute.ModeFloorAreaDesc>
 </LanguageData>

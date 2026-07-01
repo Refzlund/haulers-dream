@@ -702,4 +702,15 @@
   <HaulersDream.Setting.NotifyThreshold.Never>Never</HaulersDream.Setting.NotifyThreshold.Never>
   <HaulersDream.Setting.NotifyThreshold.Never.Desc>Turn the main-menu notifications off entirely.</HaulersDream.Setting.NotifyThreshold.Never.Desc>
 
+  <!-- PR #91: multi-target planner + remember-plan toggle + remove-floor route -->
+  <HaulersDream.PlanRoute.OptionRemembered>Zaplanuj spriorytetyzowane {0} (zapamiętane)</HaulersDream.PlanRoute.OptionRemembered>
+  <HaulersDream.PlanRoute.RememberToggleTip>Zapamiętaj plan: gdy włączone, planowanie priorytetowej trasy jednym kliknięciem używa ustawień ostatnio użytych dla tego rodzaju celu, pomijając okno planera. Gdy wyłączone, planer otwiera się za każdym razem, aby dostosować trasę.</HaulersDream.PlanRoute.RememberToggleTip>
+  <HaulersDream.PlanRoute.AddTarget>Dodaj typ celu…</HaulersDream.PlanRoute.AddTarget>
+  <HaulersDream.PlanRoute.AddTargetStop>Zakończ dodawanie typów</HaulersDream.PlanRoute.AddTargetStop>
+  <HaulersDream.PlanRoute.TargetTypesHeader>Typy celów: {0}</HaulersDream.PlanRoute.TargetTypesHeader>
+  <HaulersDream.PlanRoute.AddTargetHint>Kliknij inny rodzaj celu na mapie, aby dołączyć go również do tej trasy.</HaulersDream.PlanRoute.AddTargetHint>
+  <HaulersDream.PlanRoute.PrimaryBadge>(główny)</HaulersDream.PlanRoute.PrimaryBadge>
+  <HaulersDream.PlanRoute.RemoveFloorGerund>usuwanie podłogi</HaulersDream.PlanRoute.RemoveFloorGerund>
+  <HaulersDream.PlanRoute.ModeFloorArea>Obszar — połączona podłoga</HaulersDream.PlanRoute.ModeFloorArea>
+  <HaulersDream.PlanRoute.ModeFloorAreaDesc>Usuwa podłogę na całym ciągłym obszarze usuwalnej podłogi wokół klikniętego pola (całą podłogę ruin), aż do limitu trasy.</HaulersDream.PlanRoute.ModeFloorAreaDesc>
 </LanguageData>

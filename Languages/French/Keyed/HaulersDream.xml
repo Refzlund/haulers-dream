@@ -702,4 +702,15 @@
   <HaulersDream.Setting.NotifyThreshold.Never>Never</HaulersDream.Setting.NotifyThreshold.Never>
   <HaulersDream.Setting.NotifyThreshold.Never.Desc>Turn the main-menu notifications off entirely.</HaulersDream.Setting.NotifyThreshold.Never.Desc>
 
+  <!-- PR #91: multi-target planner + remember-plan toggle + remove-floor route -->
+  <HaulersDream.PlanRoute.OptionRemembered>Planifier {0} priorisé (mémorisé)</HaulersDream.PlanRoute.OptionRemembered>
+  <HaulersDream.PlanRoute.RememberToggleTip>Mémoriser le plan : activé, planifier un itinéraire priorisé réutilise en un clic les réglages utilisés la dernière fois pour ce type de cible, sans ouvrir la fenêtre du planificateur. Désactivé, le planificateur s’ouvre à chaque fois pour ajuster l’itinéraire.</HaulersDream.PlanRoute.RememberToggleTip>
+  <HaulersDream.PlanRoute.AddTarget>Ajouter un type de cible…</HaulersDream.PlanRoute.AddTarget>
+  <HaulersDream.PlanRoute.AddTargetStop>Terminer l’ajout de types</HaulersDream.PlanRoute.AddTargetStop>
+  <HaulersDream.PlanRoute.TargetTypesHeader>Types de cible : {0}</HaulersDream.PlanRoute.TargetTypesHeader>
+  <HaulersDream.PlanRoute.AddTargetHint>Cliquez sur un autre type de cible sur la carte pour l’inclure aussi dans cet itinéraire.</HaulersDream.PlanRoute.AddTargetHint>
+  <HaulersDream.PlanRoute.PrimaryBadge>(principal)</HaulersDream.PlanRoute.PrimaryBadge>
+  <HaulersDream.PlanRoute.RemoveFloorGerund>retrait du sol</HaulersDream.PlanRoute.RemoveFloorGerund>
+  <HaulersDream.PlanRoute.ModeFloorArea>Zone — le sol contigu</HaulersDream.PlanRoute.ModeFloorArea>
+  <HaulersDream.PlanRoute.ModeFloorAreaDesc>Retire le sol sur toute la parcelle contiguë de sol amovible autour de la case cliquée (tout le sol des ruines), jusqu’à la limite de l’itinéraire.</HaulersDream.PlanRoute.ModeFloorAreaDesc>
 </LanguageData>
