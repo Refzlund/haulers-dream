@@ -82,7 +82,11 @@ namespace HaulersDream
                 var option = new FloatMenuOption(label, () =>
                 {
                     if (remember)
-                        Dialog_PlanRoute.ExecuteRemembered(pawn, anchor, capturedKind);
+                        // Vanilla queued-order semantics, read at click time: plain click REPLACES current work; the
+                        // Queue Order key (Shift by default) APPENDS to the queue — the same as shift-clicking any
+                        // other prioritized order.
+                        Dialog_PlanRoute.ExecuteRemembered(pawn, anchor, capturedKind,
+                            replace: !KeyBindingDefOf.QueueOrder.IsDownEvent);
                     else
                         Find.WindowStack.Add(new Dialog_PlanRoute(pawn, anchor, capturedKind));
                 })

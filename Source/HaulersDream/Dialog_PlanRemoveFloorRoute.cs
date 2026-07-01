@@ -316,11 +316,12 @@ namespace HaulersDream
             lastPlan = new Remembered
             {
                 mode = mode, effAmount = EffectiveAmount(), radius = radius, maxDistance = MaxDistance(),
-                selectionMethod = selectionMethod, replace = replace,
+                selectionMethod = selectionMethod,
             };
         }
 
         // Session-scoped memory of the last confirmed remove-floor plan (see Execute). null until one is confirmed.
+        // The Append/Replace choice is NOT stored — it follows the Queue Order key (Shift) at one-click time, vanilla.
         private static Remembered lastPlan;
         private sealed class Remembered
         {
@@ -329,7 +330,6 @@ namespace HaulersDream
             public int radius;
             public float maxDistance;
             public RouteSelectionMethod selectionMethod;
-            public bool replace;
         }
 
         /// <summary>True once a remove-floor plan has been confirmed this session, so the "Remember plan" one-click
@@ -337,14 +337,16 @@ namespace HaulersDream
         public static bool HasRemembered => lastPlan != null;
 
         /// <summary>Replay the last confirmed remove-floor plan on <paramref name="anchor"/> without opening the
-        /// dialog (the "Remember plan" one-click).</summary>
-        public static void ExecuteRemembered(Pawn pawn, IntVec3 anchor)
+        /// dialog (the "Remember plan" one-click). <paramref name="replace"/> follows the vanilla queued-order
+        /// convention (plain click replaces, Shift appends), derived from <see cref="KeyBindingDefOf.QueueOrder"/> by
+        /// the caller at click time.</summary>
+        public static void ExecuteRemembered(Pawn pawn, IntVec3 anchor, bool replace)
         {
             var r = lastPlan;
             if (r == null || pawn?.Map == null || !anchor.IsValid || !anchor.InBounds(pawn.Map))
                 return;
             RemoveFloorRouteExecutor.ExecuteRemoveFloorRouteSynced(pawn, anchor, r.mode, r.effAmount, r.radius,
-                r.maxDistance, r.replace, new List<IntVec3> { anchor }, r.selectionMethod,
+                r.maxDistance, replace, new List<IntVec3> { anchor }, r.selectionMethod,
                 HaulersDreamMod.Settings?.routeOrderExactMax ?? RouteOrderPolicy.ExactMax);
         }
 

@@ -21,10 +21,6 @@ namespace HaulersDream
         // Route-calc overrides (seeded from the global mod-settings defaults the first time a type is opened).
         public RouteSelectionMethod selectionMethod = RouteSelectionMethod.MostStopsPerTravel;
         public RouteDistanceBasis distanceBasis = RouteDistanceBasis.StraightLine;
-        // The last confirm button used on this target type (true = Replace/start-now, false = Append). Remembered so
-        // the "Remember plan" one-click reuse (see FloatMenuOptionProvider_PlanRoute) replays the same action the
-        // player last chose. Defaults to Replace, matching the "prioritize now" feel of the right-click option.
-        public bool lastReplace = true;
 
         public void ExposeData()
         {
@@ -37,7 +33,6 @@ namespace HaulersDream
             Scribe_Values.Look(ref growthThreshold, "growthThreshold", 80);
             Scribe_Values.Look(ref selectionMethod, "selectionMethod", RouteSelectionMethod.MostStopsPerTravel);
             Scribe_Values.Look(ref distanceBasis, "distanceBasis", RouteDistanceBasis.StraightLine);
-            Scribe_Values.Look(ref lastReplace, "lastReplace", true);
         }
     }
 }

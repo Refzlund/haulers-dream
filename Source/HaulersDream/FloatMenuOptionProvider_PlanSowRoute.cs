@@ -71,7 +71,8 @@ namespace HaulersDream
             var option = new FloatMenuOption(label, () =>
             {
                 if (remember)
-                    Dialog_PlanSowRoute.ExecuteRemembered(pawn, anchor);
+                    // Plain click REPLACES current work; the Queue Order key (Shift) APPENDS — read at click time.
+                    Dialog_PlanSowRoute.ExecuteRemembered(pawn, anchor, replace: !KeyBindingDefOf.QueueOrder.IsDownEvent);
                 else
                     Find.WindowStack.Add(new Dialog_PlanSowRoute(pawn, anchor, zone));
             });

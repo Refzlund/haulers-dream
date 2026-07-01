@@ -74,10 +74,6 @@ namespace HaulersDream
         private bool SupportsMultiTarget => kind != null
             && (kind.scope == RouteTargetScope.SameDef || kind.scope == RouteTargetScope.SameDefOrDesignated);
 
-        // The confirm button actually used this session (Append=false / Replace=true), or null if the dialog was
-        // cancelled — persisted into the per-def prefs so the "Remember plan" one-click reuse replays the same action.
-        private bool? sessionExecutedReplace;
-
         // Which selection modes this kind of work offers (default first) — see RouteSelection.AllowedModes.
         // Chained/Touching make no sense for cleaning; Rooms makes no sense for an ore vein.
         private readonly List<RouteMode> allowedModes;
@@ -838,10 +834,12 @@ namespace HaulersDream
         /// used on this target type — stored per <see cref="ThingDef"/> in <see cref="HaulersDreamSettings.routePrefsByDef"/>
         /// — WITHOUT opening the dialog. Reconstructs the exact synced commit <see cref="Execute"/> would build,
         /// seeding the transient per-session inputs (must-include list, pinned start/end, secondary target defs) to
-        /// their defaults, since only the persisted knobs are remembered. Returns false (and does nothing) when there
-        /// are no remembered prefs for the clicked def yet, so the caller falls back to opening the dialog.
+        /// their defaults, since only the persisted knobs are remembered. <paramref name="replace"/> follows the
+        /// vanilla queued-order convention (plain click REPLACES current work; the Queue Order key / Shift APPENDS) —
+        /// the caller derives it from <see cref="KeyBindingDefOf.QueueOrder"/> at click time. Returns false (and does
+        /// nothing) when there are no remembered prefs for the clicked def yet, so the caller opens the dialog instead.
         /// </summary>
-        public static bool ExecuteRemembered(Pawn pawn, Thing clicked, RouteWorkKind kind)
+        public static bool ExecuteRemembered(Pawn pawn, Thing clicked, RouteWorkKind kind, bool replace)
         {
             if (pawn?.Map == null || clicked?.def == null || kind == null)
                 return false;
@@ -875,7 +873,7 @@ namespace HaulersDream
             bool isConstruction = kind.scanner is WorkGiver_ConstructDeliverResourcesToBlueprints;
 
             RouteExecutor.ExecuteRouteSynced(pawn, clicked, WorkKindResolver.WorkKindId(kind), mode, effAmount, radius,
-                maxDistance, prefs.smart, prefs.allowHarvest, growthThreshold, prefs.lastReplace, picked,
+                maxDistance, prefs.smart, prefs.allowHarvest, growthThreshold, replace, picked,
                 prefs.selectionMethod, prefs.distanceBasis, s.routeOrderExactMax, null, null, isConstruction,
                 roomAnchors, null);
             return true;
@@ -900,7 +898,6 @@ namespace HaulersDream
                 radius, MaxDistance(), smart, allowHarvest, growthThreshold, replace, picked, selectionMethod,
                 distanceBasis, HaulersDreamMod.Settings?.routeOrderExactMax ?? RouteOrderPolicy.ExactMax,
                 startNode, endNode, IsConstruction && alsoBuild, roomAnchors, secondaryDefs);
-            sessionExecutedReplace = replace; // remembered by PostClose so a "Remember plan" reuse replays this action
         }
 
         // Construction routes offer two behaviours: HAUL-ONLY (fill the sites with materials — others can build)
@@ -921,9 +918,6 @@ namespace HaulersDream
             var s = HaulersDreamMod.Settings;
             if (s != null && clicked?.def != null)
             {
-                // Preserve the previously-remembered Append/Replace choice when the dialog is CANCELLED (no execute
-                // this session); overwrite it only when the player actually confirmed via a button.
-                bool lastReplace = sessionExecutedReplace ?? (s.GetRoutePrefs(clicked.def.defName)?.lastReplace ?? true);
                 s.SetRoutePrefs(clicked.def.defName, new RouteDialogPrefs
                 {
                     mode = mode,
@@ -935,7 +929,6 @@ namespace HaulersDream
                     growthThreshold = growthThreshold,
                     selectionMethod = selectionMethod,
                     distanceBasis = distanceBasis,
-                    lastReplace = lastReplace,
                 });
                 HaulersDreamMod.Instance?.WriteSettings();
             }
