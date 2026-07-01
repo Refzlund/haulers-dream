@@ -66,6 +66,8 @@
 <HaulersDream.Setting.HaulNearbyOptionDesc>在可搬运物品的右键菜单上（对能搬运的小人）添加“搬运附近的一切”选项，它会立即开始一次批量清扫——这样你就不必为了触发批量搬运而去优先处理两个搬运。原版的“优先搬运”仍会与它并列出现，用于单件搬运。</HaulersDream.Setting.HaulNearbyOptionDesc>
 <HaulersDream.Setting.ManualPickup>添加“拾取 X”右键命令</HaulersDream.Setting.ManualPickup>
 <HaulersDream.Setting.ManualPickupDesc>在地上可搬运物品的右键菜单上添加“拾取 X”选项。小人会把所点选的那一堆直接拾进货物栏，作为一次受追踪的 Hauler's Dream 搬运，随后由正常的卸载流程收起——因此即便自动卸载关闭也绝不会丢失。是对原版右键搬运选项的补充。</HaulersDream.Setting.ManualPickupDesc>
+<HaulersDream.Setting.KeepInInventory>添加“将 X 留在货物栏”右键命令</HaulersDream.Setting.KeepInInventory>
+<HaulersDream.Setting.KeepInInventoryDesc>在地上可搬运物品的右键菜单上，在“拾取 X”旁边添加“将 X 留在货物栏”选项。小人会把所点选的那一堆收进自己的货物栏并一直带着：Hauler's Dream 绝不会把它搬去储存，游戏日常的“丢弃未使用货物”清理也不会把它扔掉。当你想让某个小人有意携带某件物品时使用它。要日后放下它，就让小人把它用掉，或从其装备栏中丢弃。是对原版右键选项的补充。</HaulersDream.Setting.KeepInInventoryDesc>
 <HaulersDream.Setting.HaulOversized>用货物栏携带超大物品堆</HaulersDream.Setting.HaulOversized>
 <HaulersDream.Setting.HaulOversizedDesc>当单堆物品太大、一抱拿不下时（例如一堆75的钢铁而小人只能拿72），小人会把它装进货物栏，一趟运完整堆——而不是手提一部分、把其余留下。对被命令和自动的搬运均适用；只承载储存区实际能接收的量，因此不会有物资被遗弃。</HaulersDream.Setting.HaulOversizedDesc>
 <HaulersDream.Setting.SweepNearbyWhileWorking>边工作边整理——把附近的散落物品也一并收取</HaulersDream.Setting.SweepNearbyWhileWorking>
@@ -256,6 +258,9 @@
 <HaulersDream.HaulNearby.CouldNotStart>当前附近没有可搬运的东西。</HaulersDream.HaulNearby.CouldNotStart>
 <HaulersDream.PickUp.Option>拾取 {0}</HaulersDream.PickUp.Option>
 <HaulersDream.PickUp.CouldNotStart>{0} 无法拾取 {1}——已尽可能多地携带，且无处可搬运它。</HaulersDream.PickUp.CouldNotStart>
+<HaulersDream.Keep.Option>将 {0} 留在货物栏</HaulersDream.Keep.Option>
+<HaulersDream.Keep.CouldNotStart>{0} 现在无法再多带 {1}——已尽可能多地携带了。</HaulersDream.Keep.CouldNotStart>
+<HaulersDream.Keep.Report>正在留存一件物品。</HaulersDream.Keep.Report>
 <HaulersDream.PlanRoute.AlsoBuild>同时建造（每站搬运＋建造）</HaulersDream.PlanRoute.AlsoBuild>
 <HaulersDream.PlanRoute.AlsoBuildDesc>开启此项时，小人会先向一处工地交付材料并将其建造完成，再前往下一处——预先采集整条路径的材料并保存在货物栏中。关闭它时，小人只为各工地备料（他人可来建造）。无论哪种方式，工地都对其他小人开放，因此多人可并行供应同一趟；后到者只需为下一站保留多余材料，或在最后卸下它。</HaulersDream.PlanRoute.AlsoBuildDesc>
 <HaulersDream.Setting.CraftBatchTimeout>默认制作批量超时：{0}小时</HaulersDream.Setting.CraftBatchTimeout>
@@ -681,4 +686,42 @@
   <HaulersDream.ItemUnload.SetCategoryTip>Apply one rule to every item in this category at once, instead of setting them one by one. Handy for big groups like ammo.</HaulersDream.ItemUnload.SetCategoryTip>
   <HaulersDream.Setting.Yield.Fishing>Fishing (catch)</HaulersDream.Setting.Yield.Fishing>
   <HaulersDream.Setting.Yield.FishingHelp>Fish and other catch pulled from a fishing spot. Needs the Odyssey expansion; the row is hidden without it.</HaulersDream.Setting.Yield.FishingHelp>
+  <!-- Main-menu report notifications -->
+  <HaulersDream.Report.Notify.Source>Hauler's Dream</HaulersDream.Report.Notify.Source>
+  <HaulersDream.Report.Notify.Word.Open>待处理</HaulersDream.Report.Notify.Word.Open>
+  <HaulersDream.Report.Notify.Word.Comment>新评论</HaulersDream.Report.Notify.Word.Comment>
+  <HaulersDream.Report.Notify.Word.Resolved>已解决</HaulersDream.Report.Notify.Word.Resolved>
+  <HaulersDream.Report.Notify.Word.Closed>已关闭</HaulersDream.Report.Notify.Word.Closed>
+  <HaulersDream.Report.Notify.OutOfDate>有可用更新（你当前为 {0}）</HaulersDream.Report.Notify.OutOfDate>
+  <HaulersDream.Report.Notify.MoreCount>还有 {0} 条</HaulersDream.Report.Notify.MoreCount>
+
+  <HaulersDream.Head.Notifications>主菜单通知</HaulersDream.Head.Notifications>
+  <HaulersDream.Setting.Notify.Intro>在主菜单角落显示你提交的报告的最新动态：报告被打开时、开发者回复时、你的某个问题被修复时，以及该修复在更新中可用时。点击卡片可在游戏内阅读或回复；点击 x 可将其关闭。</HaulersDream.Setting.Notify.Intro>
+  <HaulersDream.Setting.NotifyThreshold.Lab>显示以下通知</HaulersDream.Setting.NotifyThreshold.Lab>
+  <HaulersDream.Setting.NotifyThreshold.Help>主菜单上显示的数量。越往右显示越少。对于不是你提交的报告，永远不会显示任何内容。</HaulersDream.Setting.NotifyThreshold.Help>
+  <HaulersDream.Setting.NotifyThreshold.All>任何事件</HaulersDream.Setting.NotifyThreshold.All>
+  <HaulersDream.Setting.NotifyThreshold.All.Desc>当报告被打开、收到回复、状态变更或被修复时。</HaulersDream.Setting.NotifyThreshold.All.Desc>
+  <HaulersDream.Setting.NotifyThreshold.Comments>回复</HaulersDream.Setting.NotifyThreshold.Comments>
+  <HaulersDream.Setting.NotifyThreshold.Comments.Desc>新的回复和修复，但不包括打开或轻微状态变更的卡片。</HaulersDream.Setting.NotifyThreshold.Comments.Desc>
+  <HaulersDream.Setting.NotifyThreshold.Fixed>修复</HaulersDream.Setting.NotifyThreshold.Fixed>
+  <HaulersDream.Setting.NotifyThreshold.Fixed.Desc>仅当你的某个报告被修复时，如有更新版本会有提示。</HaulersDream.Setting.NotifyThreshold.Fixed.Desc>
+  <HaulersDream.Setting.NotifyThreshold.Never>从不</HaulersDream.Setting.NotifyThreshold.Never>
+  <HaulersDream.Setting.NotifyThreshold.Never.Desc>完全关闭主菜单通知。</HaulersDream.Setting.NotifyThreshold.Never.Desc>
+
+  <!-- PR #91: multi-target planner + remember-plan toggle + remove-floor route -->
+  <HaulersDream.PlanRoute.OptionRemembered>规划优先{0}（已记住）</HaulersDream.PlanRoute.OptionRemembered>
+  <HaulersDream.PlanRoute.RememberToggleTip>记住方案：一键沿用已记住路线的总开关。开启后，对于你已保存方案的目标（用规划器中的“记住”按钮保存），会显示“规划优先…（已记住）”并一键执行；关闭后，每次都会打开规划器。没有已保存方案的目标始终会打开规划器，即使此项已开启。</HaulersDream.PlanRoute.RememberToggleTip>
+  <HaulersDream.PlanRoute.AddTarget>添加目标类型…</HaulersDream.PlanRoute.AddTarget>
+  <HaulersDream.PlanRoute.AddTargetStop>完成添加类型</HaulersDream.PlanRoute.AddTargetStop>
+  <HaulersDream.PlanRoute.TargetTypesHeader>目标类型：{0}</HaulersDream.PlanRoute.TargetTypesHeader>
+  <HaulersDream.PlanRoute.AddTargetHint>在地图上点击另一种目标，将其也纳入此路线。</HaulersDream.PlanRoute.AddTargetHint>
+  <HaulersDream.PlanRoute.PrimaryBadge>（主要）</HaulersDream.PlanRoute.PrimaryBadge>
+  <HaulersDream.PlanRoute.RemoveFloorGerund>拆除地板</HaulersDream.PlanRoute.RemoveFloorGerund>
+  <HaulersDream.PlanRoute.ModeFloorArea>区域 — 相连的地板</HaulersDream.PlanRoute.ModeFloorArea>
+  <HaulersDream.PlanRoute.ModeFloorAreaDesc>拆除点击处周围整片相连的可拆除地板（整片废墟地板），直到达到路线上限。</HaulersDream.PlanRoute.ModeFloorAreaDesc>
+  <HaulersDream.PlanRoute.RememberButton>记住这些设置</HaulersDream.PlanRoute.RememberButton>
+  <HaulersDream.PlanRoute.RememberButtonDesc>将这些设置保存为该类目标的已记住方案，使其右键菜单提供“规划优先…（已记住）”以一键执行（需在“记住方案”界面开关开启时）。这会覆盖你之前为该类型记住的任何方案。</HaulersDream.PlanRoute.RememberButtonDesc>
+  <HaulersDream.PlanRoute.RememberedConfirm>已为{0}记住此方案。</HaulersDream.PlanRoute.RememberedConfirm>
+  <HaulersDream.PlanRoute.RememberButtonSaved>已记住</HaulersDream.PlanRoute.RememberButtonSaved>
+  <HaulersDream.PlanRoute.RememberButtonSavedDesc>这些设置已保存为该类目标的已记住方案。更改任意设置即可保存为不同的方案。</HaulersDream.PlanRoute.RememberButtonSavedDesc>
 </LanguageData>

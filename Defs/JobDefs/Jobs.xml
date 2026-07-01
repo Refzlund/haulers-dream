@@ -98,6 +98,16 @@
     <suspendable>false</suspendable>
   </JobDef>
 
+  <!-- "Keep X in inventory": take the clicked stack into inventory and HOLD it (never hauled to storage, never
+       shed by vanilla's drop-unused). The report string is overridden by JobDriver_KeepInInventory.GetReport
+       (the Keyed HaulersDream.Keep.Report), so this inline value is only a fallback. -->
+  <JobDef>
+    <defName>HaulersDream_KeepInInventory</defName>
+    <driverClass>HaulersDream.JobDriver_KeepInInventory</driverClass>
+    <reportString>keeping an item.</reportString>
+    <suspendable>false</suspendable>
+  </JobDef>
+
   <!-- Load scooped/tagged inventory loot onto a pack animal — the away-map (caravan) counterpart to the
        storage unload. Optional sweep of nearby ground stacks into inventory (the manual bulk order) then a
        deposit pass transferring the tagged surplus into the carrier (see JobDriver_LoadPackAnimal). -->

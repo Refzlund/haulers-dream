@@ -66,6 +66,8 @@
 <HaulersDream.Setting.HaulNearbyOptionDesc>Tilføjer en "Transporter alt i nærheden"-mulighed til højreklikmenuen på en transportabel vare (for figurer, der kan transportere), som starter en massefejning med det samme — så du ikke behøver at prioritere to transporter for at udløse massetransport. Vanillas "Prioritér transport" vises stadig ved siden af den til transport af en enkelt vare.</HaulersDream.Setting.HaulNearbyOptionDesc>
 <HaulersDream.Setting.ManualPickup>Tilføj en "Saml X op"-højreklikordre</HaulersDream.Setting.ManualPickup>
 <HaulersDream.Setting.ManualPickupDesc>Tilføjer en "Saml X op"-mulighed til højreklikmenuen på en transportabel vare på jorden. Figuren samler den klikkede stak direkte op i sit inventar som en sporet Hauler's Dream-transport, som derefter lægges væk ved den normale aflæsning — så den går aldrig tabt, selv hvis automatisk aflæsning er slået fra. Tilføjes oven i vanillas højreklik-transportmuligheder.</HaulersDream.Setting.ManualPickupDesc>
+<HaulersDream.Setting.KeepInInventory>Tilføj en "Behold X i inventar"-højreklikordre</HaulersDream.Setting.KeepInInventory>
+<HaulersDream.Setting.KeepInInventoryDesc>Tilføjer en "Behold X i inventar"-mulighed til højreklikmenuen på en transportabel vare på jorden, ved siden af "Saml X op". Figuren tager den klikkede stak op i sit inventar og beholder den: Hauler's Dream transporterer den aldrig væk til opbevaring, og spillets rutinemæssige oprydning, der smider ubrugt inventar, rører den ikke. Brug den, når du med vilje vil have en figur til at bære en genstand. For at slippe den senere, lad figuren bruge den op eller smide den fra sin udrustningsfane. Tilføjes oven i vanillas højreklikmuligheder.</HaulersDream.Setting.KeepInInventoryDesc>
 <HaulersDream.Setting.HaulOversized>Bær overdimensionerede stakke i inventaret</HaulersDream.Setting.HaulOversized>
 <HaulersDream.Setting.HaulOversizedDesc>Når en enkelt stak er for stor til at bære i ét favntag (for eksempel en 75-stak stål, når figuren kun kan holde 72), tager figuren den i sit inventar og leverer hele stakken på én tur — i stedet for at håndbære et delvist læs og efterlade resten. Gælder både bestilte og automatiske transporter; bærer kun så meget, som lageret rent faktisk kan tage imod, så intet efterlades.</HaulersDream.Setting.HaulOversizedDesc>
 <HaulersDream.Setting.SweepNearbyWhileWorking>Ryd op mens du arbejder — saml også nærliggende løse varer op</HaulersDream.Setting.SweepNearbyWhileWorking>
@@ -256,6 +258,9 @@
 <HaulersDream.HaulNearby.CouldNotStart>Intet at transportere i nærheden lige nu.</HaulersDream.HaulNearby.CouldNotStart>
 <HaulersDream.PickUp.Option>Saml {0} op</HaulersDream.PickUp.Option>
 <HaulersDream.PickUp.CouldNotStart>{0} kan ikke samle {1} op — bærer allerede så meget, de kan, og der er ingen steder at transportere det hen.</HaulersDream.PickUp.CouldNotStart>
+<HaulersDream.Keep.Option>Behold {0} i inventar</HaulersDream.Keep.Option>
+<HaulersDream.Keep.CouldNotStart>{0} kan ikke rumme mere {1} lige nu — bærer allerede så meget, de kan.</HaulersDream.Keep.CouldNotStart>
+<HaulersDream.Keep.Report>beholder en genstand.</HaulersDream.Keep.Report>
 <HaulersDream.PlanRoute.AlsoBuild>Byg også (transportér + byg ved hvert stop)</HaulersDream.PlanRoute.AlsoBuild>
 <HaulersDream.PlanRoute.AlsoBuildDesc>Med dette slået til leverer figuren materialer til en plads og BYGGER den, før den går videre til den næste — samler hele rutens materialer på forhånd og beholder dem i inventaret. Med det slået fra fylder figuren kun pladserne med materialer (andre kan bygge). Uanset hvad forbliver pladserne åbne for andre figurer, så flere kan forsyne samme runde parallelt; den, der ankommer som nummer to, beholder simpelthen sit overskud til det næste stop eller aflæsser det til sidst.</HaulersDream.PlanRoute.AlsoBuildDesc>
 <HaulersDream.Setting.CraftBatchTimeout>Standard tidsfrist for fremstillingshold: {0}t</HaulersDream.Setting.CraftBatchTimeout>
@@ -681,4 +686,42 @@
   <HaulersDream.ItemUnload.SetCategoryTip>Apply one rule to every item in this category at once, instead of setting them one by one. Handy for big groups like ammo.</HaulersDream.ItemUnload.SetCategoryTip>
   <HaulersDream.Setting.Yield.Fishing>Fishing (catch)</HaulersDream.Setting.Yield.Fishing>
   <HaulersDream.Setting.Yield.FishingHelp>Fish and other catch pulled from a fishing spot. Needs the Odyssey expansion; the row is hidden without it.</HaulersDream.Setting.Yield.FishingHelp>
+  <!-- Main-menu report notifications -->
+  <HaulersDream.Report.Notify.Source>Hauler's Dream</HaulersDream.Report.Notify.Source>
+  <HaulersDream.Report.Notify.Word.Open>Åben</HaulersDream.Report.Notify.Word.Open>
+  <HaulersDream.Report.Notify.Word.Comment>Ny kommentar</HaulersDream.Report.Notify.Word.Comment>
+  <HaulersDream.Report.Notify.Word.Resolved>Løst</HaulersDream.Report.Notify.Word.Resolved>
+  <HaulersDream.Report.Notify.Word.Closed>Lukket</HaulersDream.Report.Notify.Word.Closed>
+  <HaulersDream.Report.Notify.OutOfDate>En opdatering er tilgængelig (du har {0})</HaulersDream.Report.Notify.OutOfDate>
+  <HaulersDream.Report.Notify.MoreCount>og {0} mere</HaulersDream.Report.Notify.MoreCount>
+
+  <HaulersDream.Head.Notifications>Meddelelser i hovedmenuen</HaulersDream.Head.Notifications>
+  <HaulersDream.Setting.Notify.Intro>Viser nyt om dine indsendte rapporter i hjørnet af hovedmenuen: når en rapport åbnes, når udvikleren svarer, når et af dine problemer er rettet, og når rettelsen er tilgængelig i en opdatering. Klik på et kort for at læse eller svare i spillet; klik på x'et for at afvise det.</HaulersDream.Setting.Notify.Intro>
+  <HaulersDream.Setting.NotifyThreshold.Lab>Vis meddelelser for</HaulersDream.Setting.NotifyThreshold.Lab>
+  <HaulersDream.Setting.NotifyThreshold.Help>Hvor meget der vises i hovedmenuen. Jo længere til højre, jo mindre ser du. Der vises aldrig noget for en rapport, du ikke har indsendt.</HaulersDream.Setting.NotifyThreshold.Help>
+  <HaulersDream.Setting.NotifyThreshold.All>Enhver hændelse</HaulersDream.Setting.NotifyThreshold.All>
+  <HaulersDream.Setting.NotifyThreshold.All.Desc>Når en rapport åbnes, får et svar, ændrer status eller bliver rettet.</HaulersDream.Setting.NotifyThreshold.All.Desc>
+  <HaulersDream.Setting.NotifyThreshold.Comments>Svar</HaulersDream.Setting.NotifyThreshold.Comments>
+  <HaulersDream.Setting.NotifyThreshold.Comments.Desc>Nye svar og rettelser, men ikke kortene for åbnede eller mindre statusændringer.</HaulersDream.Setting.NotifyThreshold.Comments.Desc>
+  <HaulersDream.Setting.NotifyThreshold.Fixed>Rettelser</HaulersDream.Setting.NotifyThreshold.Fixed>
+  <HaulersDream.Setting.NotifyThreshold.Fixed.Desc>Kun når en af dine rapporter bliver rettet, med en påmindelse hvis en nyere version er tilgængelig.</HaulersDream.Setting.NotifyThreshold.Fixed.Desc>
+  <HaulersDream.Setting.NotifyThreshold.Never>Aldrig</HaulersDream.Setting.NotifyThreshold.Never>
+  <HaulersDream.Setting.NotifyThreshold.Never.Desc>Slå meddelelserne i hovedmenuen helt fra.</HaulersDream.Setting.NotifyThreshold.Never.Desc>
+
+  <!-- PR #91: multi-target planner + remember-plan toggle + remove-floor route -->
+  <HaulersDream.PlanRoute.OptionRemembered>Planlæg prioriteret {0} (husket)</HaulersDream.PlanRoute.OptionRemembered>
+  <HaulersDream.PlanRoute.RememberToggleTip>Husk plan: hovedkontakten for huskede ruter med ét klik. Når slået til viser et mål, du har gemt en plan for (med knappen Husk i planlæggeren), «Planlæg prioriteret … (husket)» og kører den med ét klik; når slået fra åbnes planlæggeren hver gang. Et mål uden gemt plan åbner altid planlæggeren, også mens dette er slået til.</HaulersDream.PlanRoute.RememberToggleTip>
+  <HaulersDream.PlanRoute.AddTarget>Tilføj måltype…</HaulersDream.PlanRoute.AddTarget>
+  <HaulersDream.PlanRoute.AddTargetStop>Færdig med at tilføje typer</HaulersDream.PlanRoute.AddTargetStop>
+  <HaulersDream.PlanRoute.TargetTypesHeader>Måltyper: {0}</HaulersDream.PlanRoute.TargetTypesHeader>
+  <HaulersDream.PlanRoute.AddTargetHint>Klik på en anden slags mål på kortet for også at samle det i denne rute.</HaulersDream.PlanRoute.AddTargetHint>
+  <HaulersDream.PlanRoute.PrimaryBadge>(primær)</HaulersDream.PlanRoute.PrimaryBadge>
+  <HaulersDream.PlanRoute.RemoveFloorGerund>fjernelse af gulv</HaulersDream.PlanRoute.RemoveFloorGerund>
+  <HaulersDream.PlanRoute.ModeFloorArea>Område — det sammenhængende gulv</HaulersDream.PlanRoute.ModeFloorArea>
+  <HaulersDream.PlanRoute.ModeFloorAreaDesc>Fjern gulv i hele det sammenhængende felt af gulv, der kan fjernes, omkring den klikkede flise (hele ruingulvet), op til rutens grænse.</HaulersDream.PlanRoute.ModeFloorAreaDesc>
+  <HaulersDream.PlanRoute.RememberButton>Husk disse indstillinger</HaulersDream.PlanRoute.RememberButton>
+  <HaulersDream.PlanRoute.RememberButtonDesc>Gemmer disse indstillinger som den huskede plan for denne slags mål, så dens højreklikmenu tilbyder «Planlæg prioriteret … (husket)» til at køre den med ét klik (mens interfacekontakten Husk plan er slået til). Dette overskriver enhver plan, du tidligere havde husket for denne type.</HaulersDream.PlanRoute.RememberButtonDesc>
+  <HaulersDream.PlanRoute.RememberedConfirm>Plan husket for {0}.</HaulersDream.PlanRoute.RememberedConfirm>
+  <HaulersDream.PlanRoute.RememberButtonSaved>Allerede husket</HaulersDream.PlanRoute.RememberButtonSaved>
+  <HaulersDream.PlanRoute.RememberButtonSavedDesc>Disse indstillinger er allerede gemt som den huskede plan for denne slags mål. Ændr en hvilken som helst indstilling for at gemme en anden plan.</HaulersDream.PlanRoute.RememberButtonSavedDesc>
 </LanguageData>

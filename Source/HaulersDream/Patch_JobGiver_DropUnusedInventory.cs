@@ -94,11 +94,15 @@ namespace HaulersDream
     [HarmonyPatch(typeof(JobGiver_DropUnusedInventory), "Drop")]
     public static class Patch_JobGiver_DropUnusedInventory_Drop
     {
-        // Return false to SKIP vanilla's inventory drop for an HD-tagged stack (it belongs to HD's unload trip).
+        // Return false to SKIP vanilla's inventory drop for an HD-tagged stack (it belongs to HD's unload trip) OR a
+        // KEPT stack (the "Keep X in inventory" order — the pawn is deliberately holding it). PeekKept is
+        // side-effect-free and a stale ref never matches this live inventory thing.
         static bool Prefix(Pawn pawn, Thing thing)
         {
             var comp = pawn?.GetComp<CompHauledToInventory>();
-            return comp == null || thing == null || !comp.GetHashSet().Contains(thing);
+            if (comp == null || thing == null)
+                return true;
+            return !comp.GetHashSet().Contains(thing) && !comp.PeekKept().Contains(thing);
         }
     }
 
@@ -146,8 +150,8 @@ namespace HaulersDream
             if (inner == null || !inner.Contains(drug))
                 return;
             var comp = pawn.GetComp<CompHauledToInventory>();
-            if (comp != null && comp.GetHashSet().Contains(drug))
-                __result = true; // HD-hauled cargo: keep it for the unload trip instead of dropping
+            if (comp != null && (comp.GetHashSet().Contains(drug) || comp.PeekKept().Contains(drug)))
+                __result = true; // HD-hauled cargo (keep for the unload trip) OR a kept drug ("Keep X in inventory")
         }
     }
 }

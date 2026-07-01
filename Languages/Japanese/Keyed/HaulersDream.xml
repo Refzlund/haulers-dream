@@ -66,6 +66,8 @@
 <HaulersDream.Setting.HaulNearbyOptionDesc>運搬可能なアイテムの右クリックメニューに（運搬できるポーン向けに）「近くのものをすべて運搬」の選択肢を追加します。これは即座に一括かき集めを開始するので、一括運搬を発動させるために2つの運搬を優先指定する必要がなくなります。バニラの「運搬を優先」も、単一アイテム運搬として並んで表示され続けます。</HaulersDream.Setting.HaulNearbyOptionDesc>
 <HaulersDream.Setting.ManualPickup>右クリックに「Xを拾う」の指示を追加</HaulersDream.Setting.ManualPickup>
 <HaulersDream.Setting.ManualPickupDesc>地面の運搬可能アイテムの右クリックメニューに「Xを拾う」の選択肢を追加します。ポーンはクリックされた山を、追跡対象のHauler's Dream運搬として所持品へ直接拾い、それは通常の荷下ろしによって片付けられます。そのため自動荷下ろしがオフでも決して失われません。バニラの右クリック運搬選択肢への追加です。</HaulersDream.Setting.ManualPickupDesc>
+<HaulersDream.Setting.KeepInInventory>右クリックに「Xを所持品に保持」の指示を追加</HaulersDream.Setting.KeepInInventory>
+<HaulersDream.Setting.KeepInInventoryDesc>地面の運搬可能アイテムの右クリックメニューに、「Xを拾う」と並んで「Xを所持品に保持」の選択肢を追加します。ポーンはクリックされた山を自分の所持品に取り込み、持ち続けます。Hauler's Dreamはそれを保管庫へ運び去ることは決してなく、ゲームの日常的な「未使用の所持品を捨てる」整理でもそれが捨てられることはありません。ポーンに意図的にアイテムを持たせたいときに使ってください。あとで手放すには、ポーンにそれを使い切らせるか、装備タブから捨てさせてください。バニラの右クリック選択肢への追加です。</HaulersDream.Setting.KeepInInventoryDesc>
 <HaulersDream.Setting.HaulOversized>規格外の山を所持品で運ぶ</HaulersDream.Setting.HaulOversized>
 <HaulersDream.Setting.HaulOversizedDesc>単一の山が一抱えで運ぶには大きすぎるとき（例：ポーンが72しか持てないのに鋼鉄の山が75）、ポーンは一部だけを手で運んで残りを置いていくのではなく、所持品でそれを抱え、山全体を1回の往復で届けます。指示・自動の両方の運搬に適用されます。実際に保管庫が受け入れられる分しか運ばないので、何も取り残されません。</HaulersDream.Setting.HaulOversizedDesc>
 <HaulersDream.Setting.SweepNearbyWhileWorking>作業しながら片付ける — 近くの落ちたアイテムも回収する</HaulersDream.Setting.SweepNearbyWhileWorking>
@@ -256,6 +258,9 @@
 <HaulersDream.HaulNearby.CouldNotStart>今、近くに運搬するものがありません。</HaulersDream.HaulNearby.CouldNotStart>
 <HaulersDream.PickUp.Option>{0}を拾う</HaulersDream.PickUp.Option>
 <HaulersDream.PickUp.CouldNotStart>{0}は{1}を拾えません — すでに運べるだけ運んでおり、運搬する場所もありません。</HaulersDream.PickUp.CouldNotStart>
+<HaulersDream.Keep.Option>{0}を所持品に保持</HaulersDream.Keep.Option>
+<HaulersDream.Keep.CouldNotStart>{0}は今これ以上{1}を持てません — すでに運べるだけ運んでいます。</HaulersDream.Keep.CouldNotStart>
+<HaulersDream.Keep.Report>アイテムを保持している。</HaulersDream.Keep.Report>
 <HaulersDream.PlanRoute.AlsoBuild>同時に建築（各立ち寄りで運搬＋建築）</HaulersDream.PlanRoute.AlsoBuild>
 <HaulersDream.PlanRoute.AlsoBuildDesc>これをオンにすると、ポーンは現場に資材を届け、次へ移る前にそれを建築します — ルート全体の資材を前もって集め、所持品に保持します。オフにすると、ポーンは現場に資材を補給するだけ（他のポーンが建築できます）。どちらにせよ現場は他のポーンに開かれたままなので、複数が並行して同じ運行を供給できます。2番手で着いた者は単に余剰を次の立ち寄りに残すか、最後に降ろします。</HaulersDream.PlanRoute.AlsoBuildDesc>
 <HaulersDream.Setting.CraftBatchTimeout>デフォルトの製作バッチのタイムアウト：{0}時間</HaulersDream.Setting.CraftBatchTimeout>
@@ -681,4 +686,42 @@
   <HaulersDream.ItemUnload.SetCategoryTip>Apply one rule to every item in this category at once, instead of setting them one by one. Handy for big groups like ammo.</HaulersDream.ItemUnload.SetCategoryTip>
   <HaulersDream.Setting.Yield.Fishing>Fishing (catch)</HaulersDream.Setting.Yield.Fishing>
   <HaulersDream.Setting.Yield.FishingHelp>Fish and other catch pulled from a fishing spot. Needs the Odyssey expansion; the row is hidden without it.</HaulersDream.Setting.Yield.FishingHelp>
+  <!-- Main-menu report notifications -->
+  <HaulersDream.Report.Notify.Source>Hauler's Dream</HaulersDream.Report.Notify.Source>
+  <HaulersDream.Report.Notify.Word.Open>対応中</HaulersDream.Report.Notify.Word.Open>
+  <HaulersDream.Report.Notify.Word.Comment>新しいコメント</HaulersDream.Report.Notify.Word.Comment>
+  <HaulersDream.Report.Notify.Word.Resolved>解決済み</HaulersDream.Report.Notify.Word.Resolved>
+  <HaulersDream.Report.Notify.Word.Closed>完了</HaulersDream.Report.Notify.Word.Closed>
+  <HaulersDream.Report.Notify.OutOfDate>アップデートが利用可能です（現在 {0}）</HaulersDream.Report.Notify.OutOfDate>
+  <HaulersDream.Report.Notify.MoreCount>他 {0} 件</HaulersDream.Report.Notify.MoreCount>
+
+  <HaulersDream.Head.Notifications>メインメニューの通知</HaulersDream.Head.Notifications>
+  <HaulersDream.Setting.Notify.Intro>送信したレポートの最新情報をメインメニューの隅に表示します：レポートが開かれたとき、開発者が返信したとき、あなたの問題のひとつが修正されたとき、そしてその修正がアップデートで利用可能になったとき。カードをクリックするとゲーム内で読んだり返信したりできます。x をクリックすると閉じます。</HaulersDream.Setting.Notify.Intro>
+  <HaulersDream.Setting.NotifyThreshold.Lab>通知を表示する対象</HaulersDream.Setting.NotifyThreshold.Lab>
+  <HaulersDream.Setting.NotifyThreshold.Help>メインメニューに表示される量です。右に行くほど表示は少なくなります。あなたが送信していないレポートについては何も表示されません。</HaulersDream.Setting.NotifyThreshold.Help>
+  <HaulersDream.Setting.NotifyThreshold.All>すべてのイベント</HaulersDream.Setting.NotifyThreshold.All>
+  <HaulersDream.Setting.NotifyThreshold.All.Desc>レポートが開かれた、返信を受けた、ステータスが変わった、または修正されたとき。</HaulersDream.Setting.NotifyThreshold.All.Desc>
+  <HaulersDream.Setting.NotifyThreshold.Comments>返信</HaulersDream.Setting.NotifyThreshold.Comments>
+  <HaulersDream.Setting.NotifyThreshold.Comments.Desc>新しい返信と修正。ただし、オープンや軽微なステータス変更のカードは含みません。</HaulersDream.Setting.NotifyThreshold.Comments.Desc>
+  <HaulersDream.Setting.NotifyThreshold.Fixed>修正</HaulersDream.Setting.NotifyThreshold.Fixed>
+  <HaulersDream.Setting.NotifyThreshold.Fixed.Desc>あなたのレポートのひとつが修正されたときのみ。より新しいバージョンが利用可能な場合はお知らせします。</HaulersDream.Setting.NotifyThreshold.Fixed.Desc>
+  <HaulersDream.Setting.NotifyThreshold.Never>表示しない</HaulersDream.Setting.NotifyThreshold.Never>
+  <HaulersDream.Setting.NotifyThreshold.Never.Desc>メインメニューの通知を完全にオフにします。</HaulersDream.Setting.NotifyThreshold.Never.Desc>
+
+  <!-- PR #91: multi-target planner + remember-plan toggle + remove-floor route -->
+  <HaulersDream.PlanRoute.OptionRemembered>優先{0}を計画（記憶済み）</HaulersDream.PlanRoute.OptionRemembered>
+  <HaulersDream.PlanRoute.RememberToggleTip>計画を記憶：ワンクリックで記憶した経路を使うための親スイッチです。オンのとき、（計画ウィンドウの「記憶」ボタンで）計画を保存した対象には「優先…を計画（記憶済み）」が表示され、ワンクリックで実行されます。オフのときは、毎回計画ウィンドウが開きます。保存した計画がない対象は、これがオンでも常に計画ウィンドウが開きます。</HaulersDream.PlanRoute.RememberToggleTip>
+  <HaulersDream.PlanRoute.AddTarget>対象の種類を追加…</HaulersDream.PlanRoute.AddTarget>
+  <HaulersDream.PlanRoute.AddTargetStop>種類の追加を終了</HaulersDream.PlanRoute.AddTargetStop>
+  <HaulersDream.PlanRoute.TargetTypesHeader>対象の種類：{0}</HaulersDream.PlanRoute.TargetTypesHeader>
+  <HaulersDream.PlanRoute.AddTargetHint>マップ上で別の種類の対象をクリックすると、この経路にも加えられます。</HaulersDream.PlanRoute.AddTargetHint>
+  <HaulersDream.PlanRoute.PrimaryBadge>（主）</HaulersDream.PlanRoute.PrimaryBadge>
+  <HaulersDream.PlanRoute.RemoveFloorGerund>床の撤去</HaulersDream.PlanRoute.RemoveFloorGerund>
+  <HaulersDream.PlanRoute.ModeFloorArea>エリア — 連続した床</HaulersDream.PlanRoute.ModeFloorArea>
+  <HaulersDream.PlanRoute.ModeFloorAreaDesc>クリックしたタイルの周囲にある、撤去可能な床がひとつながりになった範囲全体（廃墟の床全体）を、経路の上限まで撤去します。</HaulersDream.PlanRoute.ModeFloorAreaDesc>
+  <HaulersDream.PlanRoute.RememberButton>これらの設定を記憶</HaulersDream.PlanRoute.RememberButton>
+  <HaulersDream.PlanRoute.RememberButtonDesc>これらの設定をこの種類の対象の記憶済み計画として保存し、右クリックメニューに「優先…を計画（記憶済み）」を表示して、（「計画を記憶」のインターフェーススイッチがオンのあいだ）ワンクリックで実行できるようにします。この種類に以前記憶した計画があれば上書きされます。</HaulersDream.PlanRoute.RememberButtonDesc>
+  <HaulersDream.PlanRoute.RememberedConfirm>{0}の計画を記憶しました。</HaulersDream.PlanRoute.RememberedConfirm>
+  <HaulersDream.PlanRoute.RememberButtonSaved>記憶済み</HaulersDream.PlanRoute.RememberButtonSaved>
+  <HaulersDream.PlanRoute.RememberButtonSavedDesc>これらの設定は、この種類の対象の記憶済み計画としてすでに保存されています。いずれかの設定を変更すると、別の計画を保存できます。</HaulersDream.PlanRoute.RememberButtonSavedDesc>
 </LanguageData>

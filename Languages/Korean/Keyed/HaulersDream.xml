@@ -66,6 +66,8 @@
 <HaulersDream.Setting.HaulNearbyOptionDesc>운반 가능한 물건의 우클릭 메뉴(운반할 수 있는 폰에 한해)에 "주변 전부 운반" 옵션을 추가하여, 즉시 대량 쓸어 담기를 시작합니다 — 그래서 대량 운반을 유발하려고 두 운반을 우선 지정할 필요가 없습니다. 단일 물건 운반을 위한 바닐라의 "운반 우선 지정"도 함께 나타납니다.</HaulersDream.Setting.HaulNearbyOptionDesc>
 <HaulersDream.Setting.ManualPickup>"X 줍기" 우클릭 명령 추가</HaulersDream.Setting.ManualPickup>
 <HaulersDream.Setting.ManualPickupDesc>운반 가능한 바닥 물건의 우클릭 메뉴에 "X 줍기" 옵션을 추가합니다. 폰이 클릭한 더미를 추적되는 Hauler's Dream 운반으로서 소지품에 곧장 줍고, 이후 평소 내려놓기로 치워집니다 — 그래서 자동 내려놓기가 꺼져 있어도 절대 잃어버리지 않습니다. 바닐라의 우클릭 운반 옵션에 추가되는 기능입니다.</HaulersDream.Setting.ManualPickupDesc>
+<HaulersDream.Setting.KeepInInventory>"X 소지품에 보관" 우클릭 명령 추가</HaulersDream.Setting.KeepInInventory>
+<HaulersDream.Setting.KeepInInventoryDesc>운반 가능한 바닥 물건의 우클릭 메뉴에 "X 줍기" 옆에 "X 소지품에 보관" 옵션을 추가합니다. 폰이 클릭한 더미를 자기 소지품에 넣고 계속 지닙니다: Hauler's Dream은 그것을 창고로 운반해 가지 않으며, 사용하지 않는 소지품을 버리는 게임의 일상적인 정리도 그것을 버리지 않습니다. 폰이 물건을 일부러 지니게 하고 싶을 때 사용하세요. 나중에 놓으려면 폰이 그것을 다 쓰게 하거나 장비 탭에서 떨어뜨리게 하세요. 바닐라의 우클릭 옵션에 추가되는 기능입니다.</HaulersDream.Setting.KeepInInventoryDesc>
 <HaulersDream.Setting.HaulOversized>초과 크기 더미를 소지품에 운반</HaulersDream.Setting.HaulOversized>
 <HaulersDream.Setting.HaulOversizedDesc>단일 더미가 한 아름에 담기에 너무 클 때(예: 폰이 72만 들 수 있는데 강철 75개 더미일 때), 폰이 그것을 소지품에 넣어 한 번 이동으로 더미 전체를 전달합니다 — 일부만 손으로 나르고 나머지를 남기는 대신. 명령한 운반과 자동 운반 모두에 적용되며, 저장고가 실제로 받을 수 있는 만큼만 운반하므로 아무것도 방치되지 않습니다.</HaulersDream.Setting.HaulOversizedDesc>
 <HaulersDream.Setting.SweepNearbyWhileWorking>작업하면서 정리 — 주변의 흩어진 물건도 줍기</HaulersDream.Setting.SweepNearbyWhileWorking>
@@ -256,6 +258,9 @@
 <HaulersDream.HaulNearby.CouldNotStart>지금 주변에 운반할 것이 없습니다.</HaulersDream.HaulNearby.CouldNotStart>
 <HaulersDream.PickUp.Option>{0} 줍기</HaulersDream.PickUp.Option>
 <HaulersDream.PickUp.CouldNotStart>{0}이(가) {1}을(를) 주울 수 없습니다 — 이미 운반할 수 있는 만큼 운반 중이고, 운반할 곳도 없습니다.</HaulersDream.PickUp.CouldNotStart>
+<HaulersDream.Keep.Option>{0} 소지품에 보관</HaulersDream.Keep.Option>
+<HaulersDream.Keep.CouldNotStart>{0}이(가) 지금은 {1}을(를) 더 지닐 수 없습니다 — 이미 운반할 수 있는 만큼 운반 중입니다.</HaulersDream.Keep.CouldNotStart>
+<HaulersDream.Keep.Report>물건을 보관하는 중.</HaulersDream.Keep.Report>
 <HaulersDream.PlanRoute.AlsoBuild>함께 건설 (각 정거장에서 운반 + 건설)</HaulersDream.PlanRoute.AlsoBuild>
 <HaulersDream.PlanRoute.AlsoBuildDesc>이것이 켜져 있으면 폰이 한 현장에 자재를 전달하고 다음으로 넘어가기 전에 건설합니다 — 경로 전체의 자재를 미리 모아 소지품에 보관합니다. 꺼져 있으면 폰은 현장에 자재만 채웁니다(다른 폰이 건설할 수 있음). 어느 쪽이든 현장은 다른 폰에게 열려 있어 여러 폰이 같은 작업을 병렬로 공급할 수 있습니다. 두 번째로 도착한 폰은 단순히 잉여를 다음 정거장에 쓰거나 마지막에 내려놓습니다.</HaulersDream.PlanRoute.AlsoBuildDesc>
 <HaulersDream.Setting.CraftBatchTimeout>기본 제작 일괄 제한 시간: {0}시간</HaulersDream.Setting.CraftBatchTimeout>
@@ -681,4 +686,42 @@
   <HaulersDream.ItemUnload.SetCategoryTip>Apply one rule to every item in this category at once, instead of setting them one by one. Handy for big groups like ammo.</HaulersDream.ItemUnload.SetCategoryTip>
   <HaulersDream.Setting.Yield.Fishing>Fishing (catch)</HaulersDream.Setting.Yield.Fishing>
   <HaulersDream.Setting.Yield.FishingHelp>Fish and other catch pulled from a fishing spot. Needs the Odyssey expansion; the row is hidden without it.</HaulersDream.Setting.Yield.FishingHelp>
+  <!-- Main-menu report notifications -->
+  <HaulersDream.Report.Notify.Source>Hauler's Dream</HaulersDream.Report.Notify.Source>
+  <HaulersDream.Report.Notify.Word.Open>처리 중</HaulersDream.Report.Notify.Word.Open>
+  <HaulersDream.Report.Notify.Word.Comment>새 댓글</HaulersDream.Report.Notify.Word.Comment>
+  <HaulersDream.Report.Notify.Word.Resolved>해결됨</HaulersDream.Report.Notify.Word.Resolved>
+  <HaulersDream.Report.Notify.Word.Closed>종료됨</HaulersDream.Report.Notify.Word.Closed>
+  <HaulersDream.Report.Notify.OutOfDate>업데이트가 있습니다 (현재 {0})</HaulersDream.Report.Notify.OutOfDate>
+  <HaulersDream.Report.Notify.MoreCount>외 {0}개</HaulersDream.Report.Notify.MoreCount>
+
+  <HaulersDream.Head.Notifications>메인 메뉴 알림</HaulersDream.Head.Notifications>
+  <HaulersDream.Setting.Notify.Intro>제출한 보고서에 대한 소식을 메인 메뉴 구석에 표시합니다: 보고서가 열렸을 때, 개발자가 답장했을 때, 문제 중 하나가 해결되었을 때, 그리고 그 해결이 업데이트로 제공될 때. 카드를 클릭하면 게임 내에서 읽거나 답장할 수 있습니다. x를 클릭하면 닫힙니다.</HaulersDream.Setting.Notify.Intro>
+  <HaulersDream.Setting.NotifyThreshold.Lab>알림을 표시할 항목</HaulersDream.Setting.NotifyThreshold.Lab>
+  <HaulersDream.Setting.NotifyThreshold.Help>메인 메뉴에 표시되는 양입니다. 오른쪽으로 갈수록 적게 표시됩니다. 제출하지 않은 보고서는 아무것도 표시되지 않습니다.</HaulersDream.Setting.NotifyThreshold.Help>
+  <HaulersDream.Setting.NotifyThreshold.All>모든 이벤트</HaulersDream.Setting.NotifyThreshold.All>
+  <HaulersDream.Setting.NotifyThreshold.All.Desc>보고서가 열리거나, 답장을 받거나, 상태가 바뀌거나, 해결되었을 때.</HaulersDream.Setting.NotifyThreshold.All.Desc>
+  <HaulersDream.Setting.NotifyThreshold.Comments>답장</HaulersDream.Setting.NotifyThreshold.Comments>
+  <HaulersDream.Setting.NotifyThreshold.Comments.Desc>새 답장과 수정. 단, 열림이나 사소한 상태 변경 카드는 제외합니다.</HaulersDream.Setting.NotifyThreshold.Comments.Desc>
+  <HaulersDream.Setting.NotifyThreshold.Fixed>수정</HaulersDream.Setting.NotifyThreshold.Fixed>
+  <HaulersDream.Setting.NotifyThreshold.Fixed.Desc>보고서 중 하나가 수정되었을 때만, 더 새로운 버전이 있으면 알려 드립니다.</HaulersDream.Setting.NotifyThreshold.Fixed.Desc>
+  <HaulersDream.Setting.NotifyThreshold.Never>안 함</HaulersDream.Setting.NotifyThreshold.Never>
+  <HaulersDream.Setting.NotifyThreshold.Never.Desc>메인 메뉴 알림을 완전히 끕니다.</HaulersDream.Setting.NotifyThreshold.Never.Desc>
+
+  <!-- PR #91: multi-target planner + remember-plan toggle + remove-floor route -->
+  <HaulersDream.PlanRoute.OptionRemembered>우선 지정 {0} 계획 (기억됨)</HaulersDream.PlanRoute.OptionRemembered>
+  <HaulersDream.PlanRoute.RememberToggleTip>계획 기억: 한 번의 클릭으로 기억된 경로를 실행하는 주 스위치입니다. 켜면 (계획기의 기억 버튼으로) 계획을 저장한 대상에 "우선 지정 … 계획 (기억됨)"이 표시되어 한 번의 클릭으로 실행됩니다. 끄면 매번 계획 창이 열립니다. 저장된 계획이 없는 대상은 이것이 켜져 있어도 항상 계획 창이 열립니다.</HaulersDream.PlanRoute.RememberToggleTip>
+  <HaulersDream.PlanRoute.AddTarget>대상 종류 추가…</HaulersDream.PlanRoute.AddTarget>
+  <HaulersDream.PlanRoute.AddTargetStop>종류 추가 완료</HaulersDream.PlanRoute.AddTargetStop>
+  <HaulersDream.PlanRoute.TargetTypesHeader>대상 종류: {0}</HaulersDream.PlanRoute.TargetTypesHeader>
+  <HaulersDream.PlanRoute.AddTargetHint>지도에서 다른 종류의 대상을 클릭하면 이 경로에도 함께 수집합니다.</HaulersDream.PlanRoute.AddTargetHint>
+  <HaulersDream.PlanRoute.PrimaryBadge>(주 대상)</HaulersDream.PlanRoute.PrimaryBadge>
+  <HaulersDream.PlanRoute.RemoveFloorGerund>바닥 제거</HaulersDream.PlanRoute.RemoveFloorGerund>
+  <HaulersDream.PlanRoute.ModeFloorArea>구역 — 연결된 바닥</HaulersDream.PlanRoute.ModeFloorArea>
+  <HaulersDream.PlanRoute.ModeFloorAreaDesc>클릭한 칸 주변에서 제거 가능한 바닥이 이어진 전체 구역(폐허 바닥 전체)을 경로 상한까지 제거합니다.</HaulersDream.PlanRoute.ModeFloorAreaDesc>
+  <HaulersDream.PlanRoute.RememberButton>이 설정 기억</HaulersDream.PlanRoute.RememberButton>
+  <HaulersDream.PlanRoute.RememberButtonDesc>이 설정을 해당 종류 대상의 기억된 계획으로 저장하여, 우클릭 메뉴에 "우선 지정 … 계획 (기억됨)"이 표시되어 (계획 기억 인터페이스 스위치가 켜져 있는 동안) 한 번의 클릭으로 실행할 수 있게 합니다. 이 종류에 대해 이전에 기억한 계획이 있으면 덮어씁니다.</HaulersDream.PlanRoute.RememberButtonDesc>
+  <HaulersDream.PlanRoute.RememberedConfirm>{0}의 계획을 기억했습니다.</HaulersDream.PlanRoute.RememberedConfirm>
+  <HaulersDream.PlanRoute.RememberButtonSaved>이미 기억됨</HaulersDream.PlanRoute.RememberButtonSaved>
+  <HaulersDream.PlanRoute.RememberButtonSavedDesc>이 설정은 이미 해당 종류 대상의 기억된 계획으로 저장되어 있습니다. 다른 계획을 저장하려면 아무 설정이나 변경하세요.</HaulersDream.PlanRoute.RememberButtonSavedDesc>
 </LanguageData>

@@ -66,6 +66,8 @@
 <HaulersDream.Setting.HaulNearbyOptionDesc>Dodaje opcję „Znieś wszystko w pobliżu” do menu z prawego przycisku na znoszalnym przedmiocie (dla pionków, które mogą znosić), która natychmiast rozpoczyna masowe zgarnianie — więc nie musisz priorytetyzować dwóch znoszeń, by wyzwolić masowe znoszenie. „Priorytetyzuj znoszenie” z podstawki wciąż pojawia się obok dla znoszenia pojedynczego przedmiotu.</HaulersDream.Setting.HaulNearbyOptionDesc>
 <HaulersDream.Setting.ManualPickup>Dodaj rozkaz z prawego przycisku „Podnieś X”</HaulersDream.Setting.ManualPickup>
 <HaulersDream.Setting.ManualPickupDesc>Dodaje opcję „Podnieś X” do menu z prawego przycisku na znoszalnym przedmiocie na ziemi. Pionek bierze kliknięty stos prosto do swojego bagażu jako śledzone znoszenie Hauler's Dream, które następnie jest odkładane przez normalne rozładowywanie — więc nigdy nie ginie, nawet jeśli automatyczne rozładowywanie jest wyłączone. Dodatkowe do opcji znoszenia z prawego przycisku z podstawki.</HaulersDream.Setting.ManualPickupDesc>
+<HaulersDream.Setting.KeepInInventory>Dodaj rozkaz z prawego przycisku „Trzymaj X w bagażu”</HaulersDream.Setting.KeepInInventory>
+<HaulersDream.Setting.KeepInInventoryDesc>Dodaje opcję „Trzymaj X w bagażu” do menu z prawego przycisku na znoszalnym przedmiocie na ziemi, obok „Podnieś X”. Pionek bierze kliknięty stos do swojego bagażu i trzyma go przy sobie: Hauler's Dream nigdy nie znosi go do magazynu, a rutynowe porządki gry, które każą wyrzucać nieużywany bagaż, go nie ruszają. Użyj tego, gdy chcesz, aby pionek celowo niósł jakiś przedmiot. Aby go później porzucić, każ pionkowi go zużyć lub wyrzucić z zakładki Ekwipunek. Dodatkowe do opcji z prawego przycisku z podstawki.</HaulersDream.Setting.KeepInInventoryDesc>
 <HaulersDream.Setting.HaulOversized>Noś ponadwymiarowe stosy w bagażu</HaulersDream.Setting.HaulOversized>
 <HaulersDream.Setting.HaulOversizedDesc>Gdy pojedynczy stos jest zbyt duży, by unieść go w jednym naręczu (na przykład stos 75 stali, gdy pionek może utrzymać tylko 72), pionek bierze go do bagażu i dostarcza cały stos w jednej wyprawie — zamiast nieść w rękach częściowy ładunek i zostawiać resztę. Dotyczy zarówno zleconych, jak i automatycznych znoszeń; niesie tylko tyle, ile magazyn faktycznie może przyjąć, więc nic nie utknie.</HaulersDream.Setting.HaulOversizedDesc>
 <HaulersDream.Setting.SweepNearbyWhileWorking>Sprzątaj podczas pracy — zgarniaj też pobliskie luźne przedmioty</HaulersDream.Setting.SweepNearbyWhileWorking>
@@ -256,6 +258,9 @@
 <HaulersDream.HaulNearby.CouldNotStart>Nic do zniesienia w pobliżu w tej chwili.</HaulersDream.HaulNearby.CouldNotStart>
 <HaulersDream.PickUp.Option>Podnieś {0}</HaulersDream.PickUp.Option>
 <HaulersDream.PickUp.CouldNotStart>{0} nie może podnieść {1} — niesie już tyle, ile może, a nie ma gdzie tego znieść.</HaulersDream.PickUp.CouldNotStart>
+<HaulersDream.Keep.Option>Trzymaj {0} w bagażu</HaulersDream.Keep.Option>
+<HaulersDream.Keep.CouldNotStart>{0} nie może teraz pomieścić więcej {1} — niesie już tyle, ile może.</HaulersDream.Keep.CouldNotStart>
+<HaulersDream.Keep.Report>zatrzymywanie przedmiotu.</HaulersDream.Keep.Report>
 <HaulersDream.PlanRoute.AlsoBuild>Buduj również (znoś + buduj każdy przystanek)</HaulersDream.PlanRoute.AlsoBuild>
 <HaulersDream.PlanRoute.AlsoBuildDesc>Z tym włączonym pionek dostarcza materiały na miejsce i BUDUJE je, zanim przejdzie do następnego — zbierając materiały całej trasy z góry i trzymając je w bagażu. Z tym wyłączonym pionek tylko zaopatruje miejsca w materiały (inni mogą budować). Tak czy inaczej miejsca pozostają otwarte dla innych pionków, więc kilku może równolegle zaopatrywać ten sam przebieg; kto przybędzie drugi, po prostu zachowuje swoją nadwyżkę na następny przystanek lub rozładowuje ją na końcu.</HaulersDream.PlanRoute.AlsoBuildDesc>
 <HaulersDream.Setting.CraftBatchTimeout>Domyślny limit czasu partii wytwarzania: {0}h</HaulersDream.Setting.CraftBatchTimeout>
@@ -681,4 +686,42 @@
   <HaulersDream.ItemUnload.SetCategoryTip>Apply one rule to every item in this category at once, instead of setting them one by one. Handy for big groups like ammo.</HaulersDream.ItemUnload.SetCategoryTip>
   <HaulersDream.Setting.Yield.Fishing>Fishing (catch)</HaulersDream.Setting.Yield.Fishing>
   <HaulersDream.Setting.Yield.FishingHelp>Fish and other catch pulled from a fishing spot. Needs the Odyssey expansion; the row is hidden without it.</HaulersDream.Setting.Yield.FishingHelp>
+  <!-- Main-menu report notifications -->
+  <HaulersDream.Report.Notify.Source>Hauler's Dream</HaulersDream.Report.Notify.Source>
+  <HaulersDream.Report.Notify.Word.Open>Otwarte</HaulersDream.Report.Notify.Word.Open>
+  <HaulersDream.Report.Notify.Word.Comment>Nowy komentarz</HaulersDream.Report.Notify.Word.Comment>
+  <HaulersDream.Report.Notify.Word.Resolved>Rozwiązane</HaulersDream.Report.Notify.Word.Resolved>
+  <HaulersDream.Report.Notify.Word.Closed>Zamknięte</HaulersDream.Report.Notify.Word.Closed>
+  <HaulersDream.Report.Notify.OutOfDate>Dostępna jest aktualizacja (masz {0})</HaulersDream.Report.Notify.OutOfDate>
+  <HaulersDream.Report.Notify.MoreCount>i {0} więcej</HaulersDream.Report.Notify.MoreCount>
+
+  <HaulersDream.Head.Notifications>Powiadomienia w menu głównym</HaulersDream.Head.Notifications>
+  <HaulersDream.Setting.Notify.Intro>Pokazuje w rogu menu głównego informacje o Twoich zgłoszeniach: gdy zgłoszenie zostaje otwarte, gdy deweloper odpowiada, gdy jeden z Twoich problemów zostaje naprawiony i gdy poprawka jest dostępna w aktualizacji. Kliknij kartę, aby przeczytać lub odpowiedzieć w grze; kliknij x, aby ją zamknąć.</HaulersDream.Setting.Notify.Intro>
+  <HaulersDream.Setting.NotifyThreshold.Lab>Pokazuj powiadomienia dla</HaulersDream.Setting.NotifyThreshold.Lab>
+  <HaulersDream.Setting.NotifyThreshold.Help>Ile pojawia się w menu głównym. Im dalej w prawo, tym mniej widzisz. Nigdy nie jest pokazywane nic dla zgłoszenia, którego nie wysłałeś.</HaulersDream.Setting.NotifyThreshold.Help>
+  <HaulersDream.Setting.NotifyThreshold.All>Dowolne zdarzenie</HaulersDream.Setting.NotifyThreshold.All>
+  <HaulersDream.Setting.NotifyThreshold.All.Desc>Gdy zgłoszenie zostaje otwarte, otrzymuje odpowiedź, zmienia status lub zostaje naprawione.</HaulersDream.Setting.NotifyThreshold.All.Desc>
+  <HaulersDream.Setting.NotifyThreshold.Comments>Odpowiedzi</HaulersDream.Setting.NotifyThreshold.Comments>
+  <HaulersDream.Setting.NotifyThreshold.Comments.Desc>Nowe odpowiedzi i poprawki, ale nie karty otwarcia ani drobnych zmian statusu.</HaulersDream.Setting.NotifyThreshold.Comments.Desc>
+  <HaulersDream.Setting.NotifyThreshold.Fixed>Poprawki</HaulersDream.Setting.NotifyThreshold.Fixed>
+  <HaulersDream.Setting.NotifyThreshold.Fixed.Desc>Tylko gdy jedno z Twoich zgłoszeń zostanie naprawione, z informacją, jeśli dostępna jest nowsza wersja.</HaulersDream.Setting.NotifyThreshold.Fixed.Desc>
+  <HaulersDream.Setting.NotifyThreshold.Never>Nigdy</HaulersDream.Setting.NotifyThreshold.Never>
+  <HaulersDream.Setting.NotifyThreshold.Never.Desc>Całkowicie wyłącz powiadomienia w menu głównym.</HaulersDream.Setting.NotifyThreshold.Never.Desc>
+
+  <!-- PR #91: multi-target planner + remember-plan toggle + remove-floor route -->
+  <HaulersDream.PlanRoute.OptionRemembered>Zaplanuj spriorytetyzowane {0} (zapamiętane)</HaulersDream.PlanRoute.OptionRemembered>
+  <HaulersDream.PlanRoute.RememberToggleTip>Zapamiętaj plan: główny przełącznik zapamiętanych tras obsługiwanych jednym kliknięciem. Gdy włączone, cel, dla którego zapisano plan (przyciskiem Zapamiętaj w planerze), pokazuje „Zaplanuj spriorytetyzowane … (zapamiętane)” i uruchamia go jednym kliknięciem; gdy wyłączone, planer otwiera się za każdym razem. Cel bez zapisanego planu zawsze otwiera planer, nawet gdy to jest włączone.</HaulersDream.PlanRoute.RememberToggleTip>
+  <HaulersDream.PlanRoute.AddTarget>Dodaj typ celu…</HaulersDream.PlanRoute.AddTarget>
+  <HaulersDream.PlanRoute.AddTargetStop>Zakończ dodawanie typów</HaulersDream.PlanRoute.AddTargetStop>
+  <HaulersDream.PlanRoute.TargetTypesHeader>Typy celów: {0}</HaulersDream.PlanRoute.TargetTypesHeader>
+  <HaulersDream.PlanRoute.AddTargetHint>Kliknij inny rodzaj celu na mapie, aby dołączyć go również do tej trasy.</HaulersDream.PlanRoute.AddTargetHint>
+  <HaulersDream.PlanRoute.PrimaryBadge>(główny)</HaulersDream.PlanRoute.PrimaryBadge>
+  <HaulersDream.PlanRoute.RemoveFloorGerund>usuwanie podłogi</HaulersDream.PlanRoute.RemoveFloorGerund>
+  <HaulersDream.PlanRoute.ModeFloorArea>Obszar — połączona podłoga</HaulersDream.PlanRoute.ModeFloorArea>
+  <HaulersDream.PlanRoute.ModeFloorAreaDesc>Usuwa podłogę na całym ciągłym obszarze usuwalnej podłogi wokół klikniętego pola (całą podłogę ruin), aż do limitu trasy.</HaulersDream.PlanRoute.ModeFloorAreaDesc>
+  <HaulersDream.PlanRoute.RememberButton>Zapamiętaj te ustawienia</HaulersDream.PlanRoute.RememberButton>
+  <HaulersDream.PlanRoute.RememberButtonDesc>Zapisuje te ustawienia jako zapamiętany plan dla tego rodzaju celu, aby jego menu prawego przycisku myszy oferowało „Zaplanuj spriorytetyzowane … (zapamiętane)” do uruchomienia go jednym kliknięciem (gdy przełącznik interfejsu Zapamiętaj plan jest włączony). Zastępuje to każdy plan wcześniej zapamiętany dla tego typu.</HaulersDream.PlanRoute.RememberButtonDesc>
+  <HaulersDream.PlanRoute.RememberedConfirm>Zapamiętano plan dla {0}.</HaulersDream.PlanRoute.RememberedConfirm>
+  <HaulersDream.PlanRoute.RememberButtonSaved>Już zapamiętany</HaulersDream.PlanRoute.RememberButtonSaved>
+  <HaulersDream.PlanRoute.RememberButtonSavedDesc>Te ustawienia są już zapisane jako zapamiętany plan dla tego rodzaju celu. Zmień dowolne ustawienie, aby zapisać inny plan.</HaulersDream.PlanRoute.RememberButtonSavedDesc>
 </LanguageData>

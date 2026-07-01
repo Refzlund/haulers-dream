@@ -42,7 +42,7 @@ namespace HaulersDream
             int amount, int radius, float maxDistance, bool smart, bool allowHarvest, int growthThreshold, bool replace,
             List<Thing> mustInclude, HaulersDream.Core.RouteSelectionMethod selectionMethod,
             HaulersDream.Core.RouteDistanceBasis distanceBasis, int exactMax, Thing startNode, Thing endNode,
-            bool alsoBuild, List<IntVec3> roomAnchors)
+            bool alsoBuild, List<IntVec3> roomAnchors, List<ThingDef> extraDefs)
         {
             // Re-derive the live work kind from its portable id on THIS client (deterministic — same synced state →
             // same scanner). A null means the thing is no longer routable / the id didn't reproduce (the world
@@ -56,7 +56,7 @@ namespace HaulersDream
             Execute(pawn, clicked, kind, mode, amount, radius, maxDistance, smart, allowHarvest, growthThreshold,
                 replace, precomputed: null, mustInclude: mustInclude, selectionMethod: selectionMethod,
                 distanceBasis: distanceBasis, exactMax: exactMax, startNode: startNode, endNode: endNode,
-                alsoBuild: alsoBuild, roomAnchors: roomAnchors);
+                alsoBuild: alsoBuild, roomAnchors: roomAnchors, extraDefs: extraDefs);
         }
 
         public static void Execute(Pawn pawn, Thing clicked, RouteWorkKind kind, RouteMode mode, int amount, int radius,
@@ -66,7 +66,7 @@ namespace HaulersDream
             HaulersDream.Core.RouteDistanceBasis distanceBasis = HaulersDream.Core.RouteDistanceBasis.StraightLine,
             int exactMax = HaulersDream.Core.RouteOrderPolicy.ExactMax,
             Thing startNode = null, Thing endNode = null, bool alsoBuild = false,
-            IReadOnlyList<IntVec3> roomAnchors = null)
+            IReadOnlyList<IntVec3> roomAnchors = null, IReadOnlyList<ThingDef> extraDefs = null)
         {
             if (pawn?.Map == null || clicked == null || kind?.scanner == null)
                 return;
@@ -77,7 +77,7 @@ namespace HaulersDream
             var plan = (precomputed != null && precomputed.stops.Count > 0)
                 ? precomputed
                 : RoutePlanner.Plan(pawn, clicked, kind, mode, amount, radius, maxDistance, smart, allowHarvest, growthThreshold,
-                    mustInclude, selectionMethod, distanceBasis, exactMax, startNode, endNode, roomAnchors);
+                    mustInclude, selectionMethod, distanceBasis, exactMax, startNode, endNode, roomAnchors, extraDefs);
             if (plan.stops.Count == 0)
             {
                 // Player-facing toast: only on the issuing client (in MP this command replays on every client, but

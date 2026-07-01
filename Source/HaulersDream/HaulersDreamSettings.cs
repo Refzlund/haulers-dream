@@ -109,6 +109,14 @@ namespace HaulersDream
 
         // --- planners (the right-click "Plan prioritized …" tools) ---
         public bool planRoutes = true;   // route planner (harvest/mine/clean/deconstruct/construction routes)
+        // "Remember plan" interface toggle (bottom-right play-settings row) — the MASTER SWITCH for one-click
+        // remembered routes. When ON (the default), a target type that has an explicit remembered template (saved via
+        // the "Remember" button in a plan dialog — see rememberedRoutesByDef) shows "Plan prioritized … (remembered)"
+        // and runs that template in one click; when OFF, the planner dialog always opens. The toggle alone is NOT
+        // enough: with no saved template for a type its option stays the plain "Plan prioritized …" (opens the dialog),
+        // even while the toggle is on — so ON-by-default never one-clicks a plan the player never chose to remember.
+        // Lives on the interface toggle only (not the settings window, hence not drawn there).
+        public bool rememberPlan = true;
         public bool planCrafting = true; // station crafting planner (batch a bill N times in one go)
         // Batch-Y bill mode: when ON, a newly-created batchable bill starts in batch mode at defaultBatchSize.
         public bool batchByDefault = false; // OFF by default so existing players see no change until they opt in
@@ -134,6 +142,12 @@ namespace HaulersDream
         // unload), instead of vanilla's hand-haul-to-storage. Default ON for discoverability; tagged so it is
         // never a "black hole" even with auto-unload off. Additive to vanilla's right-click haul options.
         public bool manualPickupOption = true;
+        // The "Keep X in inventory" float-menu order on a haulable ground item: take the clicked stack into the pawn's
+        // inventory and HOLD it — HD never hauls it to storage and vanilla's drop-unused never sheds it (the sibling
+        // of "Pick up X", which picks up to HAUL). For holding an item the pawn should carry (a mod's inventory item,
+        // a caravan supply, a roleplay keepsake). Release it by consuming it or dropping it from the gear tab. Default
+        // ON for discoverability; additive to vanilla's right-click options and shown alongside "Pick up X".
+        public bool keepInInventoryOption = true;
         // When a single stack is too big to carry in one armful (e.g. 75 steel but the pawn can hold 72), take it
         // in the INVENTORY and deliver the whole stack in one trip, instead of hand-carrying a partial load and
         // leaving the rest behind. Applies to ordered and automatic single-stack hauls alike.
@@ -352,6 +366,53 @@ namespace HaulersDream
             routePrefsByDef[defName] = prefs;
         }
 
+        // Explicit "remembered" route templates — a SEPARATE layer from routePrefsByDef above. routePrefsByDef is the
+        // per-instance auto-restore the plan dialog writes on EVERY close (so the window reopens the way you left it);
+        // these dictionaries are written ONLY when the player presses the "Remember" button in a plan dialog. Their
+        // presence is what makes a specific type's right-click menu read "Plan prioritized … (remembered)" and run in
+        // one click — rememberPlan (the interface toggle) is the master switch that must ALSO be on. Keyed by the
+        // specific type: the target ThingDef (thing route), the growing zone's plant ThingDef (sow), or the clicked
+        // cell's floor TerrainDef (remove-floor).
+        public Dictionary<string, RouteDialogPrefs> rememberedRoutesByDef = new Dictionary<string, RouteDialogPrefs>();
+        public Dictionary<string, SowRouteTemplate> rememberedSowRoutesByDef = new Dictionary<string, SowRouteTemplate>();
+        public Dictionary<string, RemoveFloorRouteTemplate> rememberedRemoveFloorRoutesByDef = new Dictionary<string, RemoveFloorRouteTemplate>();
+
+        public RouteDialogPrefs GetRememberedRoute(string defName)
+            => defName != null && rememberedRoutesByDef != null && rememberedRoutesByDef.TryGetValue(defName, out var t) ? t : null;
+
+        public void SetRememberedRoute(string defName, RouteDialogPrefs template)
+        {
+            if (defName == null || template == null)
+                return;
+            if (rememberedRoutesByDef == null)
+                rememberedRoutesByDef = new Dictionary<string, RouteDialogPrefs>();
+            rememberedRoutesByDef[defName] = template;
+        }
+
+        public SowRouteTemplate GetRememberedSowRoute(string defName)
+            => defName != null && rememberedSowRoutesByDef != null && rememberedSowRoutesByDef.TryGetValue(defName, out var t) ? t : null;
+
+        public void SetRememberedSowRoute(string defName, SowRouteTemplate template)
+        {
+            if (defName == null || template == null)
+                return;
+            if (rememberedSowRoutesByDef == null)
+                rememberedSowRoutesByDef = new Dictionary<string, SowRouteTemplate>();
+            rememberedSowRoutesByDef[defName] = template;
+        }
+
+        public RemoveFloorRouteTemplate GetRememberedRemoveFloorRoute(string defName)
+            => defName != null && rememberedRemoveFloorRoutesByDef != null && rememberedRemoveFloorRoutesByDef.TryGetValue(defName, out var t) ? t : null;
+
+        public void SetRememberedRemoveFloorRoute(string defName, RemoveFloorRouteTemplate template)
+        {
+            if (defName == null || template == null)
+                return;
+            if (rememberedRemoveFloorRoutesByDef == null)
+                rememberedRemoveFloorRoutesByDef = new Dictionary<string, RemoveFloorRouteTemplate>();
+            rememberedRemoveFloorRoutesByDef[defName] = template;
+        }
+
         // --- station crafting planner ---
         public float craftBatchTimeoutHours = 2f;   // default wall-clock cap for a batch (0 = no limit); per-batch overridable
 
@@ -440,6 +501,12 @@ namespace HaulersDream
         public bool showAutoHaulGizmo = false;
         public bool verboseLogging = false;
 
+        // --- main-menu report notifications ---
+        // How noisy the bottom-right notifications on the main menu are (new comments / status changes /
+        // fixes on the player's own reports). A user-facing tunable, so it IS part of profile snapshots and
+        // the reset. NotifyThreshold.Never is the full opt-out (it also stops the once-per-launch poll).
+        public NotifyThreshold notifyThreshold = NotifyThreshold.All;
+
         // --- settings profiles (named presets) ---
         // Default = the built-in defaults (immutable; selecting it acts as "reset"). A named profile stores a full
         // snapshot of every setting; the selector shows "Custom (unsaved)" when the live values differ from the
@@ -452,6 +519,14 @@ namespace HaulersDream
         // then persisted; [ProfileMeta] so it is exempt from the field==Scribe==Reset drift triple, never reset (it
         // is identity, not a tunable), and not captured by profile snapshots.
         [ProfileMeta] public string reporterId = "";
+        // Per-report notification watermarks, keyed by report id. notifySeenComment[id] is the last comment
+        // timestamp (ms) the player has seen for that report (advanced when they click its card, so a "comment"
+        // card falls back to the plain status); notifyDismissed[id] is the activity time at which they pressed x
+        // (the card stays hidden until something newer arrives). Per-install notification state, NOT a tunable:
+        // [ProfileMeta] so they are exempt from the field==Scribe==Reset drift triple and are never reset or
+        // captured by a profile snapshot (mirrors reporterId). See ReportNotifications.
+        [ProfileMeta] public Dictionary<string, long> notifySeenComment = new Dictionary<string, long>();
+        [ProfileMeta] public Dictionary<string, long> notifyDismissed = new Dictionary<string, long>();
         // Recursion guard: a profile snapshot is itself a HaulersDreamSettings; while (de)serializing it the nested
         // savedProfiles/activeProfileName section is skipped (a snapshot has no profiles of its own).
         public static bool SerializingSnapshot;
@@ -526,6 +601,7 @@ namespace HaulersDream
             Scribe_Values.Look(ref bulkHaulTrigger, "bulkHaulTrigger", BulkHaulTrigger.SecondTasked);
             Scribe_Values.Look(ref haulNearbyOption, "haulNearbyOption", true);
             Scribe_Values.Look(ref manualPickupOption, "manualPickupOption", true);
+            Scribe_Values.Look(ref keepInInventoryOption, "keepInInventoryOption", true);
             Scribe_Values.Look(ref haulOversizedInInventory, "haulOversizedInInventory", true);
             Scribe_Values.Look(ref sweepNearbyWhileWorking, "sweepNearbyWhileWorking", true);
             Scribe_Values.Look(ref loadPackAnimalBulk, "loadPackAnimalBulk", true);
@@ -554,6 +630,7 @@ namespace HaulersDream
             Scribe_Values.Look(ref orderedConstructTether, "orderedConstructTether", true);
             Scribe_Values.Look(ref haulToSiteOption, "haulToSiteOption", true);
             Scribe_Values.Look(ref planRoutes, "planRoutes", true);
+            Scribe_Values.Look(ref rememberPlan, "rememberPlan", true);
             Scribe_Values.Look(ref planCrafting, "planCrafting", true);
             Scribe_Values.Look(ref batchByDefault, "batchByDefault", false);
             Scribe_Values.Look(ref defaultBatchSize, "defaultBatchSize", 10);
@@ -600,6 +677,16 @@ namespace HaulersDream
             Scribe_Collections.Look(ref routePrefsByDef, "routePrefsByDef", LookMode.Value, LookMode.Deep);
             if (Scribe.mode == LoadSaveMode.LoadingVars && routePrefsByDef == null)
                 routePrefsByDef = new Dictionary<string, RouteDialogPrefs>();
+            // Explicit remembered templates (the "Remember" button). Separate stores from routePrefsByDef; see fields.
+            Scribe_Collections.Look(ref rememberedRoutesByDef, "rememberedRoutesByDef", LookMode.Value, LookMode.Deep);
+            Scribe_Collections.Look(ref rememberedSowRoutesByDef, "rememberedSowRoutesByDef", LookMode.Value, LookMode.Deep);
+            Scribe_Collections.Look(ref rememberedRemoveFloorRoutesByDef, "rememberedRemoveFloorRoutesByDef", LookMode.Value, LookMode.Deep);
+            if (Scribe.mode == LoadSaveMode.LoadingVars)
+            {
+                if (rememberedRoutesByDef == null) rememberedRoutesByDef = new Dictionary<string, RouteDialogPrefs>();
+                if (rememberedSowRoutesByDef == null) rememberedSowRoutesByDef = new Dictionary<string, SowRouteTemplate>();
+                if (rememberedRemoveFloorRoutesByDef == null) rememberedRemoveFloorRoutesByDef = new Dictionary<string, RemoveFloorRouteTemplate>();
+            }
             Scribe_Values.Look(ref pauseWhileDrafted, "pauseWhileDrafted", true);
             Scribe_Values.Look(ref allowMechanoids, "allowMechanoids", true);
             Scribe_Values.Look(ref mechHaulMultiplier, "mechHaulMultiplier", 1.0f);
@@ -639,6 +726,7 @@ namespace HaulersDream
             Scribe_Values.Look(ref hideGizmo, "hideGizmo", false);
             Scribe_Values.Look(ref showAutoHaulGizmo, "showAutoHaulGizmo", false);
             Scribe_Values.Look(ref verboseLogging, "verboseLogging", false);
+            Scribe_Values.Look(ref notifyThreshold, "notifyThreshold", NotifyThreshold.All);
 
             // Profile list + active name. Skipped while serializing a profile's own snapshot (the recursion guard),
             // since a snapshot is itself a HaulersDreamSettings and must not carry a nested profile list.
@@ -647,11 +735,15 @@ namespace HaulersDream
                 Scribe_Collections.Look(ref savedProfiles, "savedProfiles", LookMode.Deep);
                 Scribe_Values.Look(ref activeProfileName, "activeProfileName", "");
                 Scribe_Values.Look(ref reporterId, "reporterId", "");
+                Scribe_Collections.Look(ref notifySeenComment, "notifySeenComment", LookMode.Value, LookMode.Value);
+                Scribe_Collections.Look(ref notifyDismissed, "notifyDismissed", LookMode.Value, LookMode.Value);
                 if (Scribe.mode == LoadSaveMode.LoadingVars)
                 {
                     if (savedProfiles == null) savedProfiles = new List<SettingsProfile>();
                     if (activeProfileName == null) activeProfileName = "";
                     if (reporterId == null) reporterId = "";
+                    if (notifySeenComment == null) notifySeenComment = new Dictionary<string, long>();
+                    if (notifyDismissed == null) notifyDismissed = new Dictionary<string, long>();
                 }
             }
         }
@@ -687,6 +779,7 @@ namespace HaulersDream
             bulkHaulTrigger = BulkHaulTrigger.SecondTasked;
             haulNearbyOption = true;
             manualPickupOption = true;
+            keepInInventoryOption = true;
             haulOversizedInInventory = true;
             sweepNearbyWhileWorking = true;
             loadPackAnimalBulk = true;
@@ -715,6 +808,7 @@ namespace HaulersDream
             orderedConstructTether = true;
             haulToSiteOption = true;
             planRoutes = true;
+            rememberPlan = true;
             planCrafting = true;
             batchByDefault = false;
             defaultBatchSize = 10;
@@ -754,6 +848,9 @@ namespace HaulersDream
             routeOrderExactMax = RouteOrderPolicy.ExactMax;
             craftBatchTimeoutHours = 2f;
             routePrefsByDef = new Dictionary<string, RouteDialogPrefs>();
+            rememberedRoutesByDef = new Dictionary<string, RouteDialogPrefs>();
+            rememberedSowRoutesByDef = new Dictionary<string, SowRouteTemplate>();
+            rememberedRemoveFloorRoutesByDef = new Dictionary<string, RemoveFloorRouteTemplate>();
             pauseWhileDrafted = true;
             allowMechanoids = true;
             mechHaulMultiplier = 1.0f;
@@ -781,6 +878,7 @@ namespace HaulersDream
             hideGizmo = false;
             showAutoHaulGizmo = false;
             verboseLogging = false;
+            notifyThreshold = NotifyThreshold.All;
         }
 
         /// <summary>The decoded per-item rules keyed by defName, including entries whose mod is currently absent

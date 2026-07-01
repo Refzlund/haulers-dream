@@ -66,6 +66,8 @@
 <HaulersDream.Setting.HaulNearbyOptionDesc>เพิ่มตัวเลือก "ขนทุกอย่างที่อยู่ใกล้" ในเมนูคลิกขวาบนไอเท็มที่ขนได้ (สำหรับตัวละครที่ขนของได้) ซึ่งจะเริ่มการกวาดแบบรวมทันที — คุณจึงไม่ต้องสั่งให้ความสำคัญสองการขนเพื่อกระตุ้นการขนแบบรวม "ให้ความสำคัญการขนของ" ของเกมพื้นฐานยังคงปรากฏข้างๆ สำหรับการขนของชิ้นเดียว</HaulersDream.Setting.HaulNearbyOptionDesc>
 <HaulersDream.Setting.ManualPickup>เพิ่มคำสั่งคลิกขวา "หยิบ X"</HaulersDream.Setting.ManualPickup>
 <HaulersDream.Setting.ManualPickupDesc>เพิ่มตัวเลือก "หยิบ X" ในเมนูคลิกขวาบนไอเท็มบนพื้นที่ขนได้ ตัวละครจะหยิบกองที่คลิกเข้าสัมภาระโดยตรงในฐานะการขนของ Hauler's Dream ที่ถูกติดตาม ซึ่งจะถูกเก็บโดยการขนของออกตามปกติ — มันจึงไม่เคยสูญหายแม้ปิดการขนของออกอัตโนมัติ เป็นส่วนเพิ่มจากตัวเลือกการขนคลิกขวาของเกมพื้นฐาน</HaulersDream.Setting.ManualPickupDesc>
+<HaulersDream.Setting.KeepInInventory>เพิ่มคำสั่งคลิกขวา "เก็บ X ไว้ในสัมภาระ"</HaulersDream.Setting.KeepInInventory>
+<HaulersDream.Setting.KeepInInventoryDesc>เพิ่มตัวเลือก "เก็บ X ไว้ในสัมภาระ" ในเมนูคลิกขวาบนไอเท็มบนพื้นที่ขนได้ ข้าง ๆ "หยิบ X" ตัวละครจะหยิบกองที่คลิกเข้าสัมภาระและถือมันไว้: Hauler's Dream จะไม่ขนมันไปเก็บที่คลังเลย และการเก็บกวาดตามปกติของเกมที่ทิ้งสัมภาระที่ไม่ได้ใช้ก็จะไม่แตะต้องมัน ใช้เมื่อคุณต้องการให้ตัวละครถือไอเท็มไว้โดยตั้งใจ หากต้องการปล่อยมันในภายหลัง ให้ตัวละครใช้มันจนหมดหรือทิ้งมันจากแท็บอุปกรณ์ เป็นส่วนเพิ่มจากตัวเลือกคลิกขวาของเกมพื้นฐาน</HaulersDream.Setting.KeepInInventoryDesc>
 <HaulersDream.Setting.HaulOversized>ขนกองขนาดใหญ่เกินในสัมภาระ</HaulersDream.Setting.HaulOversized>
 <HaulersDream.Setting.HaulOversizedDesc>เมื่อกองเดียวใหญ่เกินกว่าจะถือในอ้อมแขนเดียว (เช่น เหล็กกอง 75 เมื่อตัวละครถือได้แค่ 72) ตัวละครจะเก็บมันไว้ในสัมภาระและส่งทั้งกองในเที่ยวเดียว — แทนที่จะถือบางส่วนในมือและทิ้งที่เหลือไว้ ใช้ได้ทั้งการขนที่สั่งและอัตโนมัติ จะขนเท่าที่คลังรับได้จริงเท่านั้น จึงไม่มีอะไรถูกทิ้งค้าง</HaulersDream.Setting.HaulOversizedDesc>
 <HaulersDream.Setting.SweepNearbyWhileWorking>เก็บกวาดขณะทำงาน — เก็บของที่ตกหล่นใกล้ๆ ขึ้นมาด้วย</HaulersDream.Setting.SweepNearbyWhileWorking>
@@ -256,6 +258,9 @@
 <HaulersDream.HaulNearby.CouldNotStart>ไม่มีอะไรให้ขนใกล้ๆ ตอนนี้</HaulersDream.HaulNearby.CouldNotStart>
 <HaulersDream.PickUp.Option>หยิบ {0}</HaulersDream.PickUp.Option>
 <HaulersDream.PickUp.CouldNotStart>{0} หยิบ {1} ไม่ได้ — ถืออยู่เต็มที่แล้ว และไม่มีที่ให้ขนมันไป</HaulersDream.PickUp.CouldNotStart>
+<HaulersDream.Keep.Option>เก็บ {0} ไว้ในสัมภาระ</HaulersDream.Keep.Option>
+<HaulersDream.Keep.CouldNotStart>{0} ถือ {1} เพิ่มอีกไม่ได้ตอนนี้ — ถืออยู่เต็มที่แล้ว</HaulersDream.Keep.CouldNotStart>
+<HaulersDream.Keep.Report>กำลังเก็บไอเท็มไว้</HaulersDream.Keep.Report>
 <HaulersDream.PlanRoute.AlsoBuild>สร้างด้วย (ขน + ก่อสร้างแต่ละจุดแวะ)</HaulersDream.PlanRoute.AlsoBuild>
 <HaulersDream.PlanRoute.AlsoBuildDesc>เมื่อเปิดสิ่งนี้ ตัวละครจะส่งวัสดุไปยังจุดและก่อสร้างมันก่อนจะไปยังจุดถัดไป — รวบรวมวัสดุของทั้งเส้นทางไว้ล่วงหน้าและเก็บไว้ในสัมภาระ เมื่อปิด ตัวละครจะเพียงเติมวัสดุให้จุดต่างๆ เท่านั้น (คนอื่นก่อสร้างได้) ไม่ว่าจะอย่างไร จุดต่างๆ ยังเปิดให้ตัวละครอื่นเข้าถึงได้ หลายคนจึงจัดส่งในรอบเดียวกันแบบขนานได้ ใครที่มาถึงเป็นคนที่สองก็เพียงเก็บส่วนเกินไว้สำหรับจุดแวะถัดไปหรือขนมันออกตอนจบ</HaulersDream.PlanRoute.AlsoBuildDesc>
 <HaulersDream.Setting.CraftBatchTimeout>เวลาหมดอายุของชุดการผลิตเริ่มต้น: {0}ชม.</HaulersDream.Setting.CraftBatchTimeout>
@@ -681,4 +686,42 @@
   <HaulersDream.ItemUnload.SetCategoryTip>Apply one rule to every item in this category at once, instead of setting them one by one. Handy for big groups like ammo.</HaulersDream.ItemUnload.SetCategoryTip>
   <HaulersDream.Setting.Yield.Fishing>Fishing (catch)</HaulersDream.Setting.Yield.Fishing>
   <HaulersDream.Setting.Yield.FishingHelp>Fish and other catch pulled from a fishing spot. Needs the Odyssey expansion; the row is hidden without it.</HaulersDream.Setting.Yield.FishingHelp>
+  <!-- Main-menu report notifications -->
+  <HaulersDream.Report.Notify.Source>Hauler's Dream</HaulersDream.Report.Notify.Source>
+  <HaulersDream.Report.Notify.Word.Open>เปิดอยู่</HaulersDream.Report.Notify.Word.Open>
+  <HaulersDream.Report.Notify.Word.Comment>ความคิดเห็นใหม่</HaulersDream.Report.Notify.Word.Comment>
+  <HaulersDream.Report.Notify.Word.Resolved>แก้ไขแล้ว</HaulersDream.Report.Notify.Word.Resolved>
+  <HaulersDream.Report.Notify.Word.Closed>ปิดแล้ว</HaulersDream.Report.Notify.Word.Closed>
+  <HaulersDream.Report.Notify.OutOfDate>มีอัปเดตพร้อมใช้งาน (คุณมี {0})</HaulersDream.Report.Notify.OutOfDate>
+  <HaulersDream.Report.Notify.MoreCount>และอีก {0} รายการ</HaulersDream.Report.Notify.MoreCount>
+
+  <HaulersDream.Head.Notifications>การแจ้งเตือนในเมนูหลัก</HaulersDream.Head.Notifications>
+  <HaulersDream.Setting.Notify.Intro>แสดงความเคลื่อนไหวเกี่ยวกับรายงานที่คุณส่งไว้ที่มุมของเมนูหลัก: เมื่อมีการเปิดรายงาน เมื่อผู้พัฒนาตอบกลับ เมื่อปัญหาของคุณได้รับการแก้ไข และเมื่อการแก้ไขนั้นพร้อมใช้งานในอัปเดต คลิกที่การ์ดเพื่ออ่านหรือตอบกลับในเกม คลิกที่ x เพื่อปิด</HaulersDream.Setting.Notify.Intro>
+  <HaulersDream.Setting.NotifyThreshold.Lab>แสดงการแจ้งเตือนสำหรับ</HaulersDream.Setting.NotifyThreshold.Lab>
+  <HaulersDream.Setting.NotifyThreshold.Help>จำนวนที่แสดงในเมนูหลัก ยิ่งไปทางขวายิ่งเห็นน้อยลง จะไม่มีการแสดงอะไรเลยสำหรับรายงานที่คุณไม่ได้ส่ง</HaulersDream.Setting.NotifyThreshold.Help>
+  <HaulersDream.Setting.NotifyThreshold.All>ทุกเหตุการณ์</HaulersDream.Setting.NotifyThreshold.All>
+  <HaulersDream.Setting.NotifyThreshold.All.Desc>เมื่อรายงานถูกเปิด ได้รับการตอบกลับ เปลี่ยนสถานะ หรือได้รับการแก้ไข</HaulersDream.Setting.NotifyThreshold.All.Desc>
+  <HaulersDream.Setting.NotifyThreshold.Comments>การตอบกลับ</HaulersDream.Setting.NotifyThreshold.Comments>
+  <HaulersDream.Setting.NotifyThreshold.Comments.Desc>การตอบกลับและการแก้ไขใหม่ แต่ไม่รวมการ์ดการเปิดหรือการเปลี่ยนสถานะเล็กน้อย</HaulersDream.Setting.NotifyThreshold.Comments.Desc>
+  <HaulersDream.Setting.NotifyThreshold.Fixed>การแก้ไข</HaulersDream.Setting.NotifyThreshold.Fixed>
+  <HaulersDream.Setting.NotifyThreshold.Fixed.Desc>เฉพาะเมื่อรายงานของคุณรายการหนึ่งได้รับการแก้ไข พร้อมแจ้งเตือนหากมีเวอร์ชันใหม่กว่า</HaulersDream.Setting.NotifyThreshold.Fixed.Desc>
+  <HaulersDream.Setting.NotifyThreshold.Never>ไม่เลย</HaulersDream.Setting.NotifyThreshold.Never>
+  <HaulersDream.Setting.NotifyThreshold.Never.Desc>ปิดการแจ้งเตือนในเมนูหลักทั้งหมด</HaulersDream.Setting.NotifyThreshold.Never.Desc>
+
+  <!-- PR #91: multi-target planner + remember-plan toggle + remove-floor route -->
+  <HaulersDream.PlanRoute.OptionRemembered>วางแผนให้ความสำคัญ {0} (จำไว้)</HaulersDream.PlanRoute.OptionRemembered>
+  <HaulersDream.PlanRoute.RememberToggleTip>จดจำแผน: สวิตช์หลักสำหรับเส้นทางที่จำไว้แบบคลิกเดียว เมื่อเปิด เป้าหมายที่คุณบันทึกแผนไว้ (ด้วยปุ่มจดจำในตัววางแผน) จะแสดง “วางแผนให้ความสำคัญ … (จำไว้)” และทำงานด้วยคลิกเดียว เมื่อปิด หน้าต่างวางแผนจะเปิดทุกครั้ง เป้าหมายที่ไม่มีแผนบันทึกไว้จะเปิดหน้าต่างวางแผนเสมอ แม้ขณะที่เปิดตัวเลือกนี้อยู่</HaulersDream.PlanRoute.RememberToggleTip>
+  <HaulersDream.PlanRoute.AddTarget>เพิ่มชนิดเป้าหมาย…</HaulersDream.PlanRoute.AddTarget>
+  <HaulersDream.PlanRoute.AddTargetStop>เสร็จสิ้นการเพิ่มชนิด</HaulersDream.PlanRoute.AddTargetStop>
+  <HaulersDream.PlanRoute.TargetTypesHeader>ชนิดเป้าหมาย: {0}</HaulersDream.PlanRoute.TargetTypesHeader>
+  <HaulersDream.PlanRoute.AddTargetHint>คลิกเป้าหมายชนิดอื่นบนแผนที่เพื่อรวมไว้ในเส้นทางนี้ด้วย</HaulersDream.PlanRoute.AddTargetHint>
+  <HaulersDream.PlanRoute.PrimaryBadge>(หลัก)</HaulersDream.PlanRoute.PrimaryBadge>
+  <HaulersDream.PlanRoute.RemoveFloorGerund>การรื้อพื้น</HaulersDream.PlanRoute.RemoveFloorGerund>
+  <HaulersDream.PlanRoute.ModeFloorArea>พื้นที่ — พื้นที่เชื่อมต่อกัน</HaulersDream.PlanRoute.ModeFloorArea>
+  <HaulersDream.PlanRoute.ModeFloorAreaDesc>รื้อพื้นทั่วทั้งผืนพื้นที่รื้อได้ซึ่งเชื่อมต่อกันรอบช่องที่คลิก (พื้นซากปรักหักพังทั้งหมด) จนถึงขีดจำกัดของเส้นทาง</HaulersDream.PlanRoute.ModeFloorAreaDesc>
+  <HaulersDream.PlanRoute.RememberButton>จดจำการตั้งค่านี้</HaulersDream.PlanRoute.RememberButton>
+  <HaulersDream.PlanRoute.RememberButtonDesc>บันทึกการตั้งค่านี้เป็นแผนที่จำไว้สำหรับเป้าหมายชนิดนี้ เพื่อให้เมนูคลิกขวาของมันมีตัวเลือก “วางแผนให้ความสำคัญ … (จำไว้)” สำหรับทำงานด้วยคลิกเดียว (ขณะที่สวิตช์อินเทอร์เฟซจดจำแผนเปิดอยู่) การทำเช่นนี้จะเขียนทับแผนใดๆ ที่คุณเคยจำไว้ก่อนหน้าสำหรับชนิดนี้</HaulersDream.PlanRoute.RememberButtonDesc>
+  <HaulersDream.PlanRoute.RememberedConfirm>จำแผนนี้สำหรับ {0} แล้ว</HaulersDream.PlanRoute.RememberedConfirm>
+  <HaulersDream.PlanRoute.RememberButtonSaved>จำไว้แล้ว</HaulersDream.PlanRoute.RememberButtonSaved>
+  <HaulersDream.PlanRoute.RememberButtonSavedDesc>การตั้งค่านี้ถูกบันทึกเป็นแผนที่จำไว้สำหรับเป้าหมายชนิดนี้อยู่แล้ว เปลี่ยนการตั้งค่าใดๆ เพื่อบันทึกเป็นแผนอื่น</HaulersDream.PlanRoute.RememberButtonSavedDesc>
 </LanguageData>

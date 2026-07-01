@@ -171,10 +171,27 @@ namespace HaulersDream
             // Materialise first: harmony.Patch(...) below mutates the patch registry, so we must not iterate a live
             // view of it.
             var methods = new List<MethodBase>(harmony.GetPatchedMethods());
+            var seen = new HashSet<MethodBase>();
             int tagged = 0;
-            foreach (var method in methods)
+            foreach (var raw in methods)
             {
-                if (method == null)
+                if (raw == null)
+                    continue;
+                // Normalise to the DECLARING method. GetPatchedMethods() can hand back a method whose ReflectedType is
+                // a SUBCLASS that merely inherits it (e.g. Vehicle Framework's WorkGiver_PackVehicle inheriting
+                // JobOnThing from the closed generic base WorkGiver_CarryToVehicle<TransferableOneWay>). Harmony refuses
+                // to patch such a method ("You can only patch implemented methods — patch the declared method ...
+                // instead"), which is the ArgumentException a VF user reported. The declaring method is the one that
+                // actually runs, so tagging it is equivalent (Steam VF report).
+                var method = NormalizeToDeclared(raw);
+                // Skip methods Harmony can't patch anyway: an abstract method has no body, and an OPEN generic
+                // definition has no concrete code. (A CLOSED generic like WorkGiver_CarryToVehicle<TransferableOneWay>
+                // is fine — ContainsGenericParameters is false there — so it is NOT skipped.)
+                if (method is MethodInfo nmi && (nmi.IsAbstract || nmi.ContainsGenericParameters))
+                    continue;
+                // Several patched entries can collapse onto the SAME declaring method after normalisation (generic
+                // code-sharing across reference-type instantiations) — tag it once.
+                if (!seen.Add(method))
                     continue;
                 var info = Harmony.GetPatchInfo(method);
                 if (info?.Finalizers != null && AlreadyHasHandlingFinalizer(info.Finalizers))
@@ -192,6 +209,24 @@ namespace HaulersDream
                 }
             }
             HDLog.Dbg($"exception tagger attached to {tagged} of {methods.Count} patched method(s).");
+        }
+
+        /// <summary>
+        /// Re-resolve a possibly-INHERITED method to the form Harmony can patch: one whose <c>ReflectedType</c> equals
+        /// its <c>DeclaringType</c>. <see cref="HarmonyLib.AccessTools.Method(Type, string, Type[], Type[])"/> called on
+        /// a subclass returns the base's <see cref="MethodInfo"/> with <c>ReflectedType</c> set to that subclass, which
+        /// Harmony rejects for patching. Re-resolving on the declaring type (e.g. Vehicle Framework's
+        /// <c>WorkGiver_CarryToVehicle&lt;TransferableOneWay&gt;.JobOnThing</c>) yields the shared method that actually
+        /// runs. A constructor, an already-declared method, or a member that can't be re-resolved passes through
+        /// unchanged — this is a no-op whenever normalisation is unnecessary, so it never alters a method that was
+        /// already fine.
+        /// </summary>
+        internal static MethodBase NormalizeToDeclared(MethodBase m)
+        {
+            if (!(m is MethodInfo mi) || mi.DeclaringType == null || mi.ReflectedType == mi.DeclaringType)
+                return m;
+            var paramTypes = Array.ConvertAll(mi.GetParameters(), p => p.ParameterType);
+            return AccessTools.DeclaredMethod(mi.DeclaringType, mi.Name, paramTypes) ?? m;
         }
 
         /// <summary>True if any of <paramref name="finalizers"/> is an HD-owned finalizer that OBSERVES the
@@ -411,11 +446,21 @@ namespace HaulersDream
                 string where = __originalMethod != null
                     ? (__originalMethod.DeclaringType?.FullName + "." + __originalMethod.Name)
                     : "a patched method";
+                // Distinguish HD actually being in the throw path from HD merely PATCHING the method. If none of HD's
+                // own frames appear in the exception's stack trace, the fault is entirely in the original method or
+                // another mod's patch (a common false-blame source: e.g. a vanilla DrugPolicy indexer throwing for a
+                // modded drug missing from the pawn's policy, issue #97). Making the breadcrumb state this plainly lets
+                // report triage — automated or human — attribute the exception correctly instead of blaming HD for
+                // simply having a patch on the same method.
+                bool hdInStack = __exception.StackTrace != null && __exception.StackTrace.Contains("HaulersDream.");
+                string blame = hdInStack
+                    ? "Hauler's Dream's own code IS in this exception's stack, so it may be involved — though the "
+                        + "original method or another mod's patch on it could still be the real cause."
+                    : "Hauler's Dream only PATCHES this method; its own code is NOT in this exception's stack trace, so "
+                        + "the cause is the original method or another mod, not Hauler's Dream.";
                 ErrOnce(
-                    $"an exception passed through {where} — a method Hauler's Dream patches. Hauler's Dream is in "
-                    + "the call stack but did not necessarily cause this (the original method or another mod's "
-                    + "patch may have). Re-throwing it unchanged so the game still reports it below — "
-                    + $"[{__exception.GetType().Name}: {__exception.Message}]",
+                    $"an exception passed through {where} — a method Hauler's Dream patches. {blame} Re-throwing it "
+                    + $"unchanged so the game still reports it below — [{__exception.GetType().Name}: {__exception.Message}]",
                     __originalMethod != null ? __originalMethod.GetHashCode() : where.GetHashCode());
             }
             return __exception; // NEVER null — that would swallow the exception. Returning it re-throws it.

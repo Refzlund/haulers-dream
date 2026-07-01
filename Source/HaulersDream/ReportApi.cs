@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Text;
+using HaulersDream.Core;
 using RimWorld;
 using UnityEngine;
 using UnityEngine.Networking;
@@ -33,6 +34,9 @@ namespace HaulersDream
         /// header) to scope the "my reports" + thread reads to this install.</summary>
         public static string ReporterId() => HaulersDreamMod.Settings != null ? HaulersDreamMod.Settings.ReporterId : "";
 
+        /// <summary>The running mod version (the assembly version, e.g. "1.13.0.0"), for the out-of-date check.</summary>
+        public static string ModVersionString() => ModVersion();
+
         /// <summary>URL for posting one attachment to a just-created report.</summary>
         public static string AttachmentUrl(string reportId, string fileName) =>
             Endpoint + "/" + reportId + "/attachment?name=" + UnityWebRequest.EscapeURL(fileName ?? "attachment");
@@ -45,6 +49,11 @@ namespace HaulersDream
 
         /// <summary>URL for posting a comment on one report (POST; send the reporter id as X-Reporter-Id).</summary>
         public static string CommentUrl(string reportId) => Endpoint + "/" + reportId + "/comment";
+
+        /// <summary>URL for the per-report status feed: the current status (open / solved / closed) + last-comment
+        /// time of each of the player's own reports (GET; send the reporter id as X-Reporter-Id). Served from D1
+        /// only, so it is cheap to poll once per launch.</summary>
+        public static string StatusUrl() => Endpoint + "/status";
 
         /// <summary>Build the comment POST body: <c>{ "body": "..." }</c>.</summary>
         public static string BuildCommentJson(string body) => "{\"body\":" + JsonStr(body ?? string.Empty) + "}";
@@ -275,6 +284,33 @@ namespace HaulersDream
             return t;
         }
 
+        /// <summary>Parse the GET /status response into the per-report status feed (one entry per report +
+        /// latest version + server now).</summary>
+        public static StatusFeed ParseReportStatuses(string json)
+        {
+            var feed = new StatusFeed();
+            if (!(MiniJson.Parse(json) is Dictionary<string, object> root)) return feed;
+            feed.latestVersion = Str(root, "latestVersion");
+            feed.now = (long)Num(root, "now");
+            if (root.TryGetValue("reports", out var arr) && arr is List<object> items)
+            {
+                foreach (var it in items)
+                {
+                    if (it is Dictionary<string, object> o)
+                        feed.reports.Add(new ReportStatus
+                        {
+                            ReportId = Str(o, "reportId"),
+                            Title = Str(o, "title"),
+                            Url = Str(o, "url"),
+                            Status = Str(o, "status"),
+                            StatusAt = (long)Num(o, "statusAt"),
+                            LastCommentAt = (long)Num(o, "lastCommentAt")
+                        });
+                }
+            }
+            return feed;
+        }
+
         private static string Str(Dictionary<string, object> o, string k) =>
             o != null && o.TryGetValue(k, out var v) && v is string s ? s : null;
 
@@ -304,6 +340,15 @@ namespace HaulersDream
         public string body;
         public string createdAt; // ISO-8601 (from GitHub)
         public string role;      // maintainer / reporter / github
+    }
+
+    /// <summary>The parsed GET /status response: the current status of each of the player's reports + the latest
+    /// published version. One <see cref="ReportStatus"/> per report; the planner collapses each to a single card.</summary>
+    internal class StatusFeed
+    {
+        public string latestVersion;                       // version live on the Steam Workshop (or null)
+        public long now;                                   // server clock (ms) at the response
+        public List<ReportStatus> reports = new List<ReportStatus>();
     }
 
     /// <summary>A report's full status + comment thread (the detail view).</summary>

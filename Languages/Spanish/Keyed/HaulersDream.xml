@@ -66,6 +66,8 @@
 <HaulersDream.Setting.HaulNearbyOptionDesc>Añade una opción «Transportar todo lo cercano» al menú del clic derecho sobre un objeto transportable (para peones capaces de transportar), que inicia un barrido en lote de inmediato, para que no tengas que priorizar dos transportes para activar el transporte en lote. La «Priorizar transporte» del juego base sigue apareciendo junto a ella para un transporte de un solo objeto.</HaulersDream.Setting.HaulNearbyOptionDesc>
 <HaulersDream.Setting.ManualPickup>Añadir una orden de clic derecho «Recoger X»</HaulersDream.Setting.ManualPickup>
 <HaulersDream.Setting.ManualPickupDesc>Añade una opción «Recoger X» al menú del clic derecho sobre un objeto transportable en el suelo. El peón recoge la pila clicada directamente en su inventario como un transporte de Hauler's Dream rastreado, que luego se guarda mediante la descarga normal, así que nunca se pierde aunque la descarga automática esté desactivada. Se añade a las opciones de transporte del clic derecho del juego base.</HaulersDream.Setting.ManualPickupDesc>
+<HaulersDream.Setting.KeepInInventory>Añadir una orden de clic derecho «Mantener X en el inventario»</HaulersDream.Setting.KeepInInventory>
+<HaulersDream.Setting.KeepInInventoryDesc>Añade una opción «Mantener X en el inventario» al menú del clic derecho sobre un objeto transportable en el suelo, junto a «Recoger X». El peón recoge la pila clicada en su inventario y la conserva: Hauler's Dream nunca la transporta al almacenamiento, y la limpieza rutinaria del juego que suelta el inventario no utilizado no la toca. Úsala cuando quieras que un peón lleve un objeto a propósito. Para soltarlo más tarde, haz que el peón lo gaste o lo tire desde su pestaña de Equipo. Se añade a las opciones del clic derecho del juego base.</HaulersDream.Setting.KeepInInventoryDesc>
 <HaulersDream.Setting.HaulOversized>Llevar pilas de tamaño excesivo en el inventario</HaulersDream.Setting.HaulOversized>
 <HaulersDream.Setting.HaulOversizedDesc>Cuando una sola pila es demasiado grande para llevarla en una brazada (por ejemplo, una pila de 75 de acero cuando el peón solo puede llevar 72), el peón la coge en su inventario y entrega toda la pila en un solo viaje, en lugar de acarrear a mano una carga parcial y dejar el resto atrás. Se aplica tanto a transportes ordenados como automáticos; solo lleva tanto como el almacén pueda aceptar de verdad, así que no se queda nada abandonado.</HaulersDream.Setting.HaulOversizedDesc>
 <HaulersDream.Setting.SweepNearbyWhileWorking>Ordenar mientras se trabaja: recoger también los objetos sueltos cercanos</HaulersDream.Setting.SweepNearbyWhileWorking>
@@ -256,6 +258,9 @@
 <HaulersDream.HaulNearby.CouldNotStart>Nada que transportar cerca ahora mismo.</HaulersDream.HaulNearby.CouldNotStart>
 <HaulersDream.PickUp.Option>Recoger {0}</HaulersDream.PickUp.Option>
 <HaulersDream.PickUp.CouldNotStart>{0} no puede recoger {1}: ya lleva todo lo que puede y no hay dónde transportarlo.</HaulersDream.PickUp.CouldNotStart>
+<HaulersDream.Keep.Option>Mantener {0} en el inventario</HaulersDream.Keep.Option>
+<HaulersDream.Keep.CouldNotStart>{0} no puede llevar más {1} ahora mismo: ya lleva todo lo que puede.</HaulersDream.Keep.CouldNotStart>
+<HaulersDream.Keep.Report>guardando un objeto.</HaulersDream.Keep.Report>
 <HaulersDream.PlanRoute.AlsoBuild>Construir también (transportar + construir cada parada)</HaulersDream.PlanRoute.AlsoBuild>
 <HaulersDream.PlanRoute.AlsoBuildDesc>Con esto activado, el peón entrega materiales a un sitio y lo CONSTRUYE antes de pasar al siguiente, reuniendo de antemano los materiales de toda la ruta y guardándolos en el inventario. Con esto desactivado, el peón solo abastece los sitios con materiales (otros pueden construir). En cualquier caso, los sitios siguen abiertos a otros peones, así que varios pueden abastecer la misma ronda en paralelo; el que llega segundo simplemente conserva su excedente para la siguiente parada o lo descarga al final.</HaulersDream.PlanRoute.AlsoBuildDesc>
 <HaulersDream.Setting.CraftBatchTimeout>Tiempo límite por defecto de lote de fabricación: {0} h</HaulersDream.Setting.CraftBatchTimeout>
@@ -681,4 +686,42 @@
   <HaulersDream.ItemUnload.SetCategoryTip>Apply one rule to every item in this category at once, instead of setting them one by one. Handy for big groups like ammo.</HaulersDream.ItemUnload.SetCategoryTip>
   <HaulersDream.Setting.Yield.Fishing>Fishing (catch)</HaulersDream.Setting.Yield.Fishing>
   <HaulersDream.Setting.Yield.FishingHelp>Fish and other catch pulled from a fishing spot. Needs the Odyssey expansion; the row is hidden without it.</HaulersDream.Setting.Yield.FishingHelp>
+  <!-- Main-menu report notifications -->
+  <HaulersDream.Report.Notify.Source>Hauler's Dream</HaulersDream.Report.Notify.Source>
+  <HaulersDream.Report.Notify.Word.Open>Abierto</HaulersDream.Report.Notify.Word.Open>
+  <HaulersDream.Report.Notify.Word.Comment>Nuevo comentario</HaulersDream.Report.Notify.Word.Comment>
+  <HaulersDream.Report.Notify.Word.Resolved>Resuelto</HaulersDream.Report.Notify.Word.Resolved>
+  <HaulersDream.Report.Notify.Word.Closed>Cerrado</HaulersDream.Report.Notify.Word.Closed>
+  <HaulersDream.Report.Notify.OutOfDate>Hay una actualización disponible (tienes {0})</HaulersDream.Report.Notify.OutOfDate>
+  <HaulersDream.Report.Notify.MoreCount>y {0} más</HaulersDream.Report.Notify.MoreCount>
+
+  <HaulersDream.Head.Notifications>Notificaciones del menú principal</HaulersDream.Head.Notifications>
+  <HaulersDream.Setting.Notify.Intro>Muestra novedades sobre tus informes enviados en la esquina del menú principal: cuando se abre un informe, cuando el desarrollador responde, cuando se soluciona uno de tus problemas y cuando esa solución está disponible en una actualización. Haz clic en una tarjeta para leerla o responder en el juego; haz clic en la x para descartarla.</HaulersDream.Setting.Notify.Intro>
+  <HaulersDream.Setting.NotifyThreshold.Lab>Mostrar notificaciones para</HaulersDream.Setting.NotifyThreshold.Lab>
+  <HaulersDream.Setting.NotifyThreshold.Help>Cuánto aparece en el menú principal. Cuanto más a la derecha, menos verás. Nunca se muestra nada de un informe que no hayas enviado.</HaulersDream.Setting.NotifyThreshold.Help>
+  <HaulersDream.Setting.NotifyThreshold.All>Cualquier evento</HaulersDream.Setting.NotifyThreshold.All>
+  <HaulersDream.Setting.NotifyThreshold.All.Desc>Cuando un informe se abre, recibe una respuesta, cambia de estado o se soluciona.</HaulersDream.Setting.NotifyThreshold.All.Desc>
+  <HaulersDream.Setting.NotifyThreshold.Comments>Respuestas</HaulersDream.Setting.NotifyThreshold.Comments>
+  <HaulersDream.Setting.NotifyThreshold.Comments.Desc>Nuevas respuestas y soluciones, pero no las tarjetas de apertura o de cambios de estado menores.</HaulersDream.Setting.NotifyThreshold.Comments.Desc>
+  <HaulersDream.Setting.NotifyThreshold.Fixed>Soluciones</HaulersDream.Setting.NotifyThreshold.Fixed>
+  <HaulersDream.Setting.NotifyThreshold.Fixed.Desc>Solo cuando se soluciona uno de tus informes, con un aviso si hay una versión más reciente disponible.</HaulersDream.Setting.NotifyThreshold.Fixed.Desc>
+  <HaulersDream.Setting.NotifyThreshold.Never>Nunca</HaulersDream.Setting.NotifyThreshold.Never>
+  <HaulersDream.Setting.NotifyThreshold.Never.Desc>Desactivar por completo las notificaciones del menú principal.</HaulersDream.Setting.NotifyThreshold.Never.Desc>
+
+  <!-- PR #91: multi-target planner + remember-plan toggle + remove-floor route -->
+  <HaulersDream.PlanRoute.OptionRemembered>Planificar {0} priorizado (recordado)</HaulersDream.PlanRoute.OptionRemembered>
+  <HaulersDream.PlanRoute.RememberToggleTip>Recordar plan: el interruptor principal de las rutas recordadas de un clic. Si está activado, un objetivo para el que hayas guardado un plan (con el botón Recordar del planificador) muestra «Planificar … priorizado (recordado)» y lo ejecuta con un clic; si está desactivado, el planificador se abre cada vez. Un objetivo sin plan guardado siempre abre el planificador, incluso mientras esto está activado.</HaulersDream.PlanRoute.RememberToggleTip>
+  <HaulersDream.PlanRoute.AddTarget>Añadir tipo de objetivo…</HaulersDream.PlanRoute.AddTarget>
+  <HaulersDream.PlanRoute.AddTargetStop>Terminar de añadir tipos</HaulersDream.PlanRoute.AddTargetStop>
+  <HaulersDream.PlanRoute.TargetTypesHeader>Tipos de objetivo: {0}</HaulersDream.PlanRoute.TargetTypesHeader>
+  <HaulersDream.PlanRoute.AddTargetHint>Haz clic en otro tipo de objetivo en el mapa para incluirlo también en esta ruta.</HaulersDream.PlanRoute.AddTargetHint>
+  <HaulersDream.PlanRoute.PrimaryBadge>(principal)</HaulersDream.PlanRoute.PrimaryBadge>
+  <HaulersDream.PlanRoute.RemoveFloorGerund>eliminación de suelo</HaulersDream.PlanRoute.RemoveFloorGerund>
+  <HaulersDream.PlanRoute.ModeFloorArea>Área — el suelo contiguo</HaulersDream.PlanRoute.ModeFloorArea>
+  <HaulersDream.PlanRoute.ModeFloorAreaDesc>Quita el suelo en toda la zona contigua de suelo removible alrededor de la casilla pulsada (todo el suelo de las ruinas), hasta el límite de la ruta.</HaulersDream.PlanRoute.ModeFloorAreaDesc>
+  <HaulersDream.PlanRoute.RememberButton>Recordar estos ajustes</HaulersDream.PlanRoute.RememberButton>
+  <HaulersDream.PlanRoute.RememberButtonDesc>Guarda estos ajustes como el plan recordado para este tipo de objetivo, de modo que su menú de clic derecho ofrezca «Planificar … priorizado (recordado)» para ejecutarlo con un clic (mientras el interruptor de interfaz Recordar plan esté activado). Esto sobrescribe cualquier plan que hubieras recordado antes para este tipo.</HaulersDream.PlanRoute.RememberButtonDesc>
+  <HaulersDream.PlanRoute.RememberedConfirm>Plan recordado para {0}.</HaulersDream.PlanRoute.RememberedConfirm>
+  <HaulersDream.PlanRoute.RememberButtonSaved>Ya recordado</HaulersDream.PlanRoute.RememberButtonSaved>
+  <HaulersDream.PlanRoute.RememberButtonSavedDesc>Estos ajustes ya están guardados como el plan recordado para este tipo de objetivo. Cambia cualquier ajuste para guardar un plan diferente.</HaulersDream.PlanRoute.RememberButtonSavedDesc>
 </LanguageData>

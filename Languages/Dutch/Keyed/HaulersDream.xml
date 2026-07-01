@@ -66,6 +66,8 @@
 <HaulersDream.Setting.HaulNearbyOptionDesc>Voegt een optie "Sjouw alles in de buurt" toe aan het rechtsklikmenu op een sjouwbaar item (voor figuren die kunnen sjouwen), die onmiddellijk een bulkveging start — zodat je niet twee sjouwtrips hoeft te prioriteren om bulksjouwen te activeren. Vanilla's "Sjouwen prioriteren" verschijnt er nog steeds naast voor een sjouwtrip van één item.</HaulersDream.Setting.HaulNearbyOptionDesc>
 <HaulersDream.Setting.ManualPickup>Een rechtsklikorder "X oppakken" toevoegen</HaulersDream.Setting.ManualPickup>
 <HaulersDream.Setting.ManualPickupDesc>Voegt een optie "X oppakken" toe aan het rechtsklikmenu op een sjouwbaar item op de grond. De figuur pakt de aangeklikte stapel rechtstreeks in zijn inventaris als een gevolgde Hauler's Dream-sjouwtrip, die vervolgens door het normale uitladen wordt opgeborgen — zodat het nooit verloren gaat, zelfs niet als automatisch uitladen uit staat. Aanvullend op vanilla's rechtsklik-sjouwopties.</HaulersDream.Setting.ManualPickupDesc>
+<HaulersDream.Setting.KeepInInventory>Een rechtsklikorder "X in inventaris houden" toevoegen</HaulersDream.Setting.KeepInInventory>
+<HaulersDream.Setting.KeepInInventoryDesc>Voegt een optie "X in inventaris houden" toe aan het rechtsklikmenu op een sjouwbaar item op de grond, naast "X oppakken". De figuur neemt de aangeklikte stapel in zijn inventaris en houdt hem vast: Hauler's Dream sjouwt hem nooit weg naar opslag, en de routinematige opruiming van het spel die ongebruikte inventaris laat vallen, raakt hem niet aan. Gebruik het wanneer je een figuur met opzet een item wilt laten dragen. Om het later los te laten, laat de figuur het opgebruiken of laten vallen via zijn Uitrusting-tabblad. Aanvullend op vanilla's rechtsklikopties.</HaulersDream.Setting.KeepInInventoryDesc>
 <HaulersDream.Setting.HaulOversized>Te grote stapels in de inventaris dragen</HaulersDream.Setting.HaulOversized>
 <HaulersDream.Setting.HaulOversizedDesc>Wanneer één enkele stapel te groot is om in één armvol te dragen (bijvoorbeeld een stapel van 75 staal terwijl de figuur er maar 72 kan vasthouden), neemt de figuur het in zijn inventaris en bezorgt de hele stapel in één trip — in plaats van een gedeeltelijke lading met de hand te dragen en de rest achter te laten. Geldt voor zowel bevolen als automatische sjouwtrips; draagt alleen zoveel als de opslag daadwerkelijk kan accepteren, zodat er niets achterblijft.</HaulersDream.Setting.HaulOversizedDesc>
 <HaulersDream.Setting.SweepNearbyWhileWorking>Opruimen tijdens het werken — schep ook nabije losse spullen op</HaulersDream.Setting.SweepNearbyWhileWorking>
@@ -256,6 +258,9 @@
 <HaulersDream.HaulNearby.CouldNotStart>Op dit moment niets in de buurt om te sjouwen.</HaulersDream.HaulNearby.CouldNotStart>
 <HaulersDream.PickUp.Option>{0} oppakken</HaulersDream.PickUp.Option>
 <HaulersDream.PickUp.CouldNotStart>{0} kan {1} niet oppakken — draagt al zoveel als het kan, en er is nergens om het naartoe te sjouwen.</HaulersDream.PickUp.CouldNotStart>
+<HaulersDream.Keep.Option>{0} in inventaris houden</HaulersDream.Keep.Option>
+<HaulersDream.Keep.CouldNotStart>{0} kan nu niet meer {1} vasthouden — draagt al zoveel als het kan.</HaulersDream.Keep.CouldNotStart>
+<HaulersDream.Keep.Report>een item bewaren.</HaulersDream.Keep.Report>
 <HaulersDream.PlanRoute.AlsoBuild>Ook bouwen (sjouwen + bouwen bij elke stop)</HaulersDream.PlanRoute.AlsoBuild>
 <HaulersDream.PlanRoute.AlsoBuildDesc>Met dit aan bezorgt de figuur materialen bij een locatie en BOUWT die voordat het naar de volgende gaat — door de materialen van de hele route vooraf te verzamelen en in de inventaris te houden. Met het uit vult de figuur de locaties alleen met materialen (anderen kunnen bouwen). Hoe dan ook blijven de locaties open voor andere figuren, zodat er meerdere parallel aan dezelfde ronde kunnen leveren; wie als tweede aankomt, houdt simpelweg zijn overschot voor de volgende stop of lost het aan het eind uit.</HaulersDream.PlanRoute.AlsoBuildDesc>
 <HaulersDream.Setting.CraftBatchTimeout>Standaard vervaardigingsbatch-time-out: {0}u</HaulersDream.Setting.CraftBatchTimeout>
@@ -681,4 +686,42 @@
   <HaulersDream.ItemUnload.SetCategoryTip>Apply one rule to every item in this category at once, instead of setting them one by one. Handy for big groups like ammo.</HaulersDream.ItemUnload.SetCategoryTip>
   <HaulersDream.Setting.Yield.Fishing>Fishing (catch)</HaulersDream.Setting.Yield.Fishing>
   <HaulersDream.Setting.Yield.FishingHelp>Fish and other catch pulled from a fishing spot. Needs the Odyssey expansion; the row is hidden without it.</HaulersDream.Setting.Yield.FishingHelp>
+  <!-- Main-menu report notifications -->
+  <HaulersDream.Report.Notify.Source>Hauler's Dream</HaulersDream.Report.Notify.Source>
+  <HaulersDream.Report.Notify.Word.Open>Open</HaulersDream.Report.Notify.Word.Open>
+  <HaulersDream.Report.Notify.Word.Comment>Nieuwe reactie</HaulersDream.Report.Notify.Word.Comment>
+  <HaulersDream.Report.Notify.Word.Resolved>Opgelost</HaulersDream.Report.Notify.Word.Resolved>
+  <HaulersDream.Report.Notify.Word.Closed>Gesloten</HaulersDream.Report.Notify.Word.Closed>
+  <HaulersDream.Report.Notify.OutOfDate>Er is een update beschikbaar (je hebt {0})</HaulersDream.Report.Notify.OutOfDate>
+  <HaulersDream.Report.Notify.MoreCount>en nog {0}</HaulersDream.Report.Notify.MoreCount>
+
+  <HaulersDream.Head.Notifications>Meldingen in hoofdmenu</HaulersDream.Head.Notifications>
+  <HaulersDream.Setting.Notify.Intro>Toont in de hoek van het hoofdmenu updates over je ingediende meldingen: wanneer een melding wordt geopend, wanneer de ontwikkelaar reageert, wanneer een van je problemen is opgelost en wanneer die oplossing beschikbaar is in een update. Klik op een kaart om deze in het spel te lezen of te beantwoorden; klik op de x om deze te sluiten.</HaulersDream.Setting.Notify.Intro>
+  <HaulersDream.Setting.NotifyThreshold.Lab>Meldingen tonen voor</HaulersDream.Setting.NotifyThreshold.Lab>
+  <HaulersDream.Setting.NotifyThreshold.Help>Hoeveel er in het hoofdmenu verschijnt. Hoe verder naar rechts, hoe minder je ziet. Er wordt nooit iets getoond voor een melding die je niet hebt ingediend.</HaulersDream.Setting.NotifyThreshold.Help>
+  <HaulersDream.Setting.NotifyThreshold.All>Elke gebeurtenis</HaulersDream.Setting.NotifyThreshold.All>
+  <HaulersDream.Setting.NotifyThreshold.All.Desc>Wanneer een melding wordt geopend, een reactie krijgt, van status verandert of wordt opgelost.</HaulersDream.Setting.NotifyThreshold.All.Desc>
+  <HaulersDream.Setting.NotifyThreshold.Comments>Reacties</HaulersDream.Setting.NotifyThreshold.Comments>
+  <HaulersDream.Setting.NotifyThreshold.Comments.Desc>Nieuwe reacties en oplossingen, maar niet de kaarten voor geopende of kleine statuswijzigingen.</HaulersDream.Setting.NotifyThreshold.Comments.Desc>
+  <HaulersDream.Setting.NotifyThreshold.Fixed>Oplossingen</HaulersDream.Setting.NotifyThreshold.Fixed>
+  <HaulersDream.Setting.NotifyThreshold.Fixed.Desc>Alleen wanneer een van je meldingen is opgelost, met een waarschuwing als er een nieuwere versie beschikbaar is.</HaulersDream.Setting.NotifyThreshold.Fixed.Desc>
+  <HaulersDream.Setting.NotifyThreshold.Never>Nooit</HaulersDream.Setting.NotifyThreshold.Never>
+  <HaulersDream.Setting.NotifyThreshold.Never.Desc>De meldingen in het hoofdmenu volledig uitschakelen.</HaulersDream.Setting.NotifyThreshold.Never.Desc>
+
+  <!-- PR #91: multi-target planner + remember-plan toggle + remove-floor route -->
+  <HaulersDream.PlanRoute.OptionRemembered>Plan geprioriteerd(e) {0} (onthouden)</HaulersDream.PlanRoute.OptionRemembered>
+  <HaulersDream.PlanRoute.RememberToggleTip>Plan onthouden: de hoofdschakelaar voor onthouden routes met één klik. Indien aan toont een doel waarvoor je een plan hebt opgeslagen (met de knop Onthouden in de planner) «Plan geprioriteerd(e) … (onthouden)» en voert het met één klik uit; indien uit opent de planner elke keer. Een doel zonder opgeslagen plan opent altijd de planner, ook terwijl dit aan staat.</HaulersDream.PlanRoute.RememberToggleTip>
+  <HaulersDream.PlanRoute.AddTarget>Doeltype toevoegen…</HaulersDream.PlanRoute.AddTarget>
+  <HaulersDream.PlanRoute.AddTargetStop>Klaar met toevoegen</HaulersDream.PlanRoute.AddTargetStop>
+  <HaulersDream.PlanRoute.TargetTypesHeader>Doeltypen: {0}</HaulersDream.PlanRoute.TargetTypesHeader>
+  <HaulersDream.PlanRoute.AddTargetHint>Klik op een ander soort doel op de kaart om het ook in deze route mee te nemen.</HaulersDream.PlanRoute.AddTargetHint>
+  <HaulersDream.PlanRoute.PrimaryBadge>(primair)</HaulersDream.PlanRoute.PrimaryBadge>
+  <HaulersDream.PlanRoute.RemoveFloorGerund>vloer verwijderen</HaulersDream.PlanRoute.RemoveFloorGerund>
+  <HaulersDream.PlanRoute.ModeFloorArea>Gebied — de aaneengesloten vloer</HaulersDream.PlanRoute.ModeFloorArea>
+  <HaulersDream.PlanRoute.ModeFloorAreaDesc>Verwijder vloer over de hele aaneengesloten lap verwijderbare vloer rond de aangeklikte tegel (de hele ruïnevloer), tot aan de routelimiet.</HaulersDream.PlanRoute.ModeFloorAreaDesc>
+  <HaulersDream.PlanRoute.RememberButton>Deze instellingen onthouden</HaulersDream.PlanRoute.RememberButton>
+  <HaulersDream.PlanRoute.RememberButtonDesc>Slaat deze instellingen op als het onthouden plan voor dit soort doel, zodat het rechtsklikmenu «Plan geprioriteerd(e) … (onthouden)» aanbiedt om het met één klik uit te voeren (zolang de interfaceschakelaar Plan onthouden aan staat). Dit overschrijft elk plan dat je eerder voor dit type had onthouden.</HaulersDream.PlanRoute.RememberButtonDesc>
+  <HaulersDream.PlanRoute.RememberedConfirm>Plan onthouden voor {0}.</HaulersDream.PlanRoute.RememberedConfirm>
+  <HaulersDream.PlanRoute.RememberButtonSaved>Al onthouden</HaulersDream.PlanRoute.RememberButtonSaved>
+  <HaulersDream.PlanRoute.RememberButtonSavedDesc>Deze instellingen zijn al opgeslagen als het onthouden plan voor dit soort doel. Wijzig een instelling om een ander plan op te slaan.</HaulersDream.PlanRoute.RememberButtonSavedDesc>
 </LanguageData>

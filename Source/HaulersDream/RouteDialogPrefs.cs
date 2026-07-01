@@ -34,5 +34,13 @@ namespace HaulersDream
             Scribe_Values.Look(ref selectionMethod, "selectionMethod", RouteSelectionMethod.MostStopsPerTravel);
             Scribe_Values.Look(ref distanceBasis, "distanceBasis", RouteDistanceBasis.StraightLine);
         }
+
+        /// <summary>Field-by-field value equality against another prefs snapshot. Used to tell whether the dialog's
+        /// CURRENT settings already ARE this type's remembered template (so the "Remember" button can show
+        /// "Already remembered" and disable itself until something changes).</summary>
+        public bool ValueEquals(RouteDialogPrefs o) => o != null
+            && mode == o.mode && maxTravel == o.maxTravel && radius == o.radius && amount == o.amount
+            && smart == o.smart && allowHarvest == o.allowHarvest && growthThreshold == o.growthThreshold
+            && selectionMethod == o.selectionMethod && distanceBasis == o.distanceBasis;
     }
 }

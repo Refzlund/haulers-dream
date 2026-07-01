@@ -93,6 +93,26 @@ jobs:
           path: dist/HaulersDream
           changeNote: ${{ steps.notes.outputs.note }}
 
+      # Record the just-published Workshop version on the reports backend (reports.refzlund.com) so the
+      # in-game main-menu notifications can warn players who are not on the latest version. Uses the same
+      # `wrangler d1 execute` path the reports repo uses for migrations. Best-effort: it runs only when the
+      # Cloudflare secrets are present and never fails the release (the version is already live on Steam).
+      # Requires repo secrets CLOUDFLARE_API_TOKEN + CLOUDFLARE_ACCOUNT_ID (a token scoped to D1:Edit on
+      # the reports account); the projectID is the public reports ingest token (also baked into the mod).
+      - name: Record latest version on reports backend
+        if: steps.ver.outputs.new == 'true'
+        continue-on-error: true
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          if [ -z "$CLOUDFLARE_API_TOKEN" ] || [ -z "$CLOUDFLARE_ACCOUNT_ID" ]; then
+            echo "Cloudflare secrets not set; skipping latest-version update (notifications will fall back to no out-of-date warning)."
+            exit 0
+          fi
+          bunx wrangler d1 execute reports-db --remote \
+            --command "UPDATE projects SET latest_version = '${{ steps.ver.outputs.version }}' WHERE id = 'XfgH9t8FHTV39guTPe1V86xg'"
+
       - name: Tag + GitHub Release
         if: steps.ver.outputs.new == 'true'
         env:

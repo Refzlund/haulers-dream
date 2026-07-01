@@ -63,6 +63,17 @@ namespace HaulersDream
         private Vector2 pickedScroll;
         private const float PickedRowH = 26f;
 
+        // Secondary target DEFS (issue #96 multi-target): additional ThingDefs of the SAME work kind to also gather
+        // (e.g. berries + rice in one harvest route, or steel + component veins in one mining route). The clicked
+        // anchor's own def is always the primary target and is NOT listed here. Only offered for the def-based scopes
+        // (SameDef / SameDefOrDesignated) — filth/blueprints/designated-only already gather every same-work target
+        // regardless of def. Transient per dialog session, so (like `picked`) not saved with the per-def prefs.
+        private readonly List<ThingDef> secondaryDefs = new List<ThingDef>();
+        private bool pickingSecondary;   // the "add target type" picker is armed
+        private Vector2 secondaryScroll;
+        private bool SupportsMultiTarget => kind != null
+            && (kind.scope == RouteTargetScope.SameDef || kind.scope == RouteTargetScope.SameDefOrDesignated);
+
         // Which selection modes this kind of work offers (default first) — see RouteSelection.AllowedModes.
         // Chained/Touching make no sense for cleaning; Rooms makes no sense for an ore vein.
         private readonly List<RouteMode> allowedModes;
@@ -143,11 +154,12 @@ namespace HaulersDream
 
         // Rooms mode adds a picker button + a 3-row room list, so kinds that offer it need the taller layout too.
         public override Vector2 InitialSize => new Vector2(460f,
-            isHarvest || allowedModes.Contains(RouteMode.Rooms) ? 800f : 720f);
+            isHarvest || allowedModes.Contains(RouteMode.Rooms) ? 860f : 772f);
 
         public override void DoWindowContents(Rect inRect)
         {
             const float btnH = 36f;
+            const float rememberH = 30f;   // the "Remember" button row, just above Cancel/Append/Replace
             // (Re-)arm the pickers only on request (button press / right after a consumed pick — RimWorld's
             // Targeter fires its action once then stops, so multi-pick needs a re-arm). A stop WITHOUT a
             // pending request is the player cancelling via ESC/right-click: exit picking cleanly.
@@ -161,7 +173,12 @@ namespace HaulersDream
                 if (rearmRequested) { rearmRequested = false; BeginRoomPicking(); }
                 else pickingRoom = false;
             }
-            var body = new Rect(inRect.x, inRect.y, inRect.width, inRect.height - btnH - 8f);
+            if (pickingSecondary && !Find.Targeter.IsTargeting)
+            {
+                if (rearmRequested) { rearmRequested = false; BeginSecondaryPicking(); }
+                else pickingSecondary = false;
+            }
+            var body = new Rect(inRect.x, inRect.y, inRect.width, inRect.height - btnH - rememberH - 6f - 8f);
 
             var l = new Listing_Standard();
             l.Begin(body);
@@ -255,6 +272,14 @@ namespace HaulersDream
                     new FloatMenuOption(HaulersDreamSettings.DistanceBasisLabel(RouteDistanceBasis.WalkingPath), () => distanceBasis = RouteDistanceBasis.WalkingPath),
                 }));
 
+            // Secondary target TYPES (issue #96): add other defs of this same work kind so the route gathers them
+            // all in one go (berries + rice, steel + components). Only meaningful for the def-based scopes.
+            if (SupportsMultiTarget)
+            {
+                l.Gap(8f);
+                DoSecondarySection(l);
+            }
+
             // Must-include picker: click specific same-kind targets that MUST be in the route (they're always
             // routed regardless of mode/amount/max-travel, and bypass the growth threshold). The clicked anchor
             // is pre-listed. Order doesn't matter — the route still visits them by the shortest path.
@@ -276,6 +301,11 @@ namespace HaulersDream
             }
 
             l.End();
+
+            // "Remember" — full-width button at the bottom, just above Cancel/Append/Replace (a separate layer from
+            // the per-instance settings PostClose auto-restores). Once saved, this kind of target's right-click menu
+            // reads "(remembered)" and runs the template in one click while the interface toggle is on.
+            DoRememberButton(new Rect(inRect.x, inRect.yMax - btnH - 6f - rememberH, inRect.width, rememberH));
 
             float third = (inRect.width - 16f) / 3f;
             float by = inRect.yMax - btnH;
@@ -401,6 +431,8 @@ namespace HaulersDream
             {
                 if (pickingMode)
                     TogglePicking(); // one targeter — arming the room picker disarms the must-include picker
+                if (pickingSecondary)
+                    StopSecondaryPicking();
                 pickingRoom = true;
                 rearmRequested = true; // armed by DoWindowContents' targeter check
             }
@@ -474,7 +506,10 @@ namespace HaulersDream
             int roomHash = roomAnchors.Count;
             for (int i = 0; i < roomAnchors.Count; i++)
                 roomHash = roomHash * 31 + roomAnchors[i].x * 4099 + roomAnchors[i].z;
-            string selSig = $"{(int)mode}|{EffectiveAmount()}|{radius}|{(smart ? 1 : 0)}|{(allowHarvest ? 1 : 0)}|{growthThreshold}|pk{pickHash}|rm{roomHash}|sm{(int)selectionMethod}|db{(int)distanceBasis}";
+            int defHash = secondaryDefs.Count;
+            for (int i = 0; i < secondaryDefs.Count; i++)
+                defHash = defHash * 31 + (secondaryDefs[i]?.shortHash ?? 0);
+            string selSig = $"{(int)mode}|{EffectiveAmount()}|{radius}|{(smart ? 1 : 0)}|{(allowHarvest ? 1 : 0)}|{growthThreshold}|pk{pickHash}|rm{roomHash}|sd{defHash}|sm{(int)selectionMethod}|db{(int)distanceBasis}";
             // DEBOUNCE the expensive recompute: ComputeLegs runs up to ~100 pathfinds (more with walking-path),
             // and the amount/radius/growth SLIDERS step selSig on every integer of a drag — an uncontrolled drag
             // would fire a pathfinding storm per frame. Recompute only once the signature has held still for a
@@ -492,7 +527,7 @@ namespace HaulersDream
                 if (pendingSelSigFrames >= SelSigDebounceFrames || cachedLegs == null)
                 {
                     legsSig = selSig;
-                    cachedLegs = RoutePlanner.ComputeLegs(pawn, clicked, kind, mode, EffectiveAmount(), radius, smart, allowHarvest, growthThreshold, picked, selectionMethod, distanceBasis, roomAnchors);
+                    cachedLegs = RoutePlanner.ComputeLegs(pawn, clicked, kind, mode, EffectiveAmount(), radius, smart, allowHarvest, growthThreshold, picked, selectionMethod, distanceBasis, roomAnchors, secondaryDefs);
                     legsChanged = true;
                 }
             }
@@ -639,6 +674,8 @@ namespace HaulersDream
             {
                 if (pickingRoom)
                     StopRoomPicking(); // one targeter — arming the must-include picker disarms the room picker
+                if (pickingSecondary)
+                    StopSecondaryPicking();
                 pickingMode = true;
                 rearmRequested = true; // armed by DoWindowContents' targeter check
             }
@@ -659,7 +696,7 @@ namespace HaulersDream
                 canTargetLocations = false,
                 mapObjectTargetsMustBeAutoAttackable = false, // mineables aren't "auto-attackable" — don't reject them
                 validator = ti => ti.Thing != null
-                    && RouteSelection.IsValidRouteTarget(pawn, clicked, kind, ti.Thing)
+                    && RouteSelection.IsValidRouteTarget(pawn, clicked, kind, ti.Thing, secondaryDefs)
                     && pawn.CanReach(ti.Thing, PathEndMode.Touch, Danger.Deadly),
             };
             // caster:null so the targeter doesn't auto-cancel when the pawn isn't selected (Targeter.ConfirmStillValid).
@@ -672,11 +709,174 @@ namespace HaulersDream
         {
             var thing = target.Thing;
             if (thing != null && !picked.Contains(thing)
-                && RouteSelection.IsValidRouteTarget(pawn, clicked, kind, thing))
+                && RouteSelection.IsValidRouteTarget(pawn, clicked, kind, thing, secondaryDefs))
                 picked.Add(thing);
             // The Targeter fires once then stops; request a re-arm so DoWindowContents keeps the picker
             // armed for the next pick (multi-pick) — a stop WITHOUT this request is the player cancelling.
             rearmRequested = true;
+        }
+
+        // ── Secondary target-type picker (issue #96 multi-target) ──────────────────────────────────────────
+
+        private void DoSecondarySection(Listing_Standard l)
+        {
+            if (l.ButtonText(pickingSecondary
+                    ? "HaulersDream.PlanRoute.AddTargetStop".Translate()
+                    : "HaulersDream.PlanRoute.AddTarget".Translate()))
+                ToggleSecondaryPicking();
+            l.Label("HaulersDream.PlanRoute.TargetTypesHeader".Translate(secondaryDefs.Count + 1));
+            GUI.color = new Color(0.7f, 0.7f, 0.7f);
+            Text.Font = GameFont.Tiny;
+            l.Label("HaulersDream.PlanRoute.AddTargetHint".Translate());
+            Text.Font = GameFont.Small;
+            GUI.color = Color.white;
+            DrawSecondaryList(l.GetRect(3f * PickedRowH)); // ~3 rows visible, scroll for more
+        }
+
+        private void DrawSecondaryList(Rect outRect)
+        {
+            Widgets.DrawMenuSection(outRect);
+            var inner = outRect.ContractedBy(2f);
+            int rows = secondaryDefs.Count + 1; // row 0 is the primary (clicked) def
+            float viewH = rows * PickedRowH;
+            var viewRect = new Rect(0f, 0f, inner.width - 16f, Mathf.Max(viewH, inner.height));
+            Widgets.BeginScrollView(inner, ref secondaryScroll, viewRect);
+            float y = 0f;
+            int removeAt = -1;
+            const float bw = 22f;
+            for (int i = 0; i < rows; i++)
+            {
+                var def = i == 0 ? clicked?.def : secondaryDefs[i - 1];
+                var row = new Rect(0f, y, viewRect.width, PickedRowH);
+                if (i % 2 == 1)
+                    Widgets.DrawLightHighlight(row);
+                // Far-right ✕ (remove) — only for secondaries; the primary (clicked) def is always in the route.
+                var rmRect = new Rect(row.xMax - bw, y + 2f, bw, PickedRowH - 4f);
+                if (i > 0 && Widgets.ButtonText(rmRect, "✕"))
+                    removeAt = i - 1;
+                string label = def?.LabelCap.ToString() ?? "?";
+                if (i == 0)
+                    label += "  " + "HaulersDream.PlanRoute.PrimaryBadge".Translate();
+                var labelRect = new Rect(row.x + 4f, y, rmRect.x - row.x - 6f, PickedRowH);
+                var prevAnchor = Text.Anchor;
+                Text.Anchor = TextAnchor.MiddleLeft;
+                Widgets.Label(labelRect, label.Truncate(labelRect.width));
+                Text.Anchor = prevAnchor;
+                y += PickedRowH;
+            }
+            Widgets.EndScrollView();
+            if (removeAt >= 0)
+                secondaryDefs.RemoveAt(removeAt);
+        }
+
+        private void ToggleSecondaryPicking()
+        {
+            if (pickingSecondary)
+            {
+                StopSecondaryPicking();
+            }
+            else
+            {
+                if (pickingMode) TogglePicking();   // one targeter — free it from the must-include picker…
+                if (pickingRoom) StopRoomPicking(); // …or the room picker
+                pickingSecondary = true;
+                rearmRequested = true; // armed by DoWindowContents' targeter check
+            }
+        }
+
+        private void StopSecondaryPicking()
+        {
+            pickingSecondary = false;
+            rearmRequested = false;
+            if (Find.Targeter.IsTargeting)
+                Find.Targeter.StopTargeting();
+        }
+
+        private void BeginSecondaryPicking()
+        {
+            var tp = new TargetingParameters
+            {
+                canTargetPawns = false,
+                canTargetBuildings = true,  // mineables (ThingCategory.Building)
+                canTargetPlants = true,     // other harvest / cut plants
+                canTargetItems = true,      // vanilla catch-all category; the validator constrains to same-work targets
+                canTargetLocations = false,
+                mapObjectTargetsMustBeAutoAttackable = false,
+                validator = ti => ti.Thing != null && IsSecondaryPick(ti.Thing),
+            };
+            // caster:null — see BeginPicking (the targeter must not auto-cancel when the pawn isn't selected).
+            Find.Targeter.BeginTargeting(tp, OnSecondaryPicked, (Pawn)null);
+        }
+
+        // A valid secondary "target type": a DIFFERENT def than the anchor (and not already added) whose OWN work
+        // resolves to the SAME work kind — same designation AND scope. So berries + rice both resolve to "harvest
+        // plants" and merge, but a tree to CUT (a different designation) can never join a harvest route.
+        private bool IsSecondaryPick(Thing t)
+        {
+            if (t?.def == null || t.def == clicked?.def || secondaryDefs.Contains(t.def))
+                return false;
+            var k2 = WorkKindResolver.Resolve(pawn, t);
+            return k2 != null && kind != null && k2.designation == kind.designation && k2.scope == kind.scope;
+        }
+
+        private void OnSecondaryPicked(LocalTargetInfo target)
+        {
+            var t = target.Thing;
+            if (t?.def != null && IsSecondaryPick(t))
+                secondaryDefs.Add(t.def);
+            // The Targeter fires once then stops; request a re-arm so DoWindowContents keeps the picker armed for the
+            // next type (multi-pick) — a stop WITHOUT this request is the player cancelling.
+            rearmRequested = true;
+        }
+
+        /// <summary>
+        /// One-click "remembered" execution: replay the EXPLICIT template the player saved for this target type with
+        /// the "Remember" button — stored per <see cref="ThingDef"/> in <see cref="HaulersDreamSettings.rememberedRoutesByDef"/>
+        /// — WITHOUT opening the dialog. Reconstructs the exact synced commit <see cref="Execute"/> would build,
+        /// seeding the transient per-session inputs (must-include list, pinned start/end, secondary target defs) to
+        /// their defaults, since only the persisted knobs are remembered. <paramref name="replace"/> follows the
+        /// vanilla queued-order convention (plain click REPLACES current work; the Queue Order key / Shift APPENDS) —
+        /// the caller derives it from <see cref="KeyBindingDefOf.QueueOrder"/> at click time. Returns false (and does
+        /// nothing) when there is no saved template for the clicked def, so the caller opens the dialog instead.
+        /// </summary>
+        public static bool ExecuteRemembered(Pawn pawn, Thing clicked, RouteWorkKind kind, bool replace)
+        {
+            if (pawn?.Map == null || clicked?.def == null || kind == null)
+                return false;
+            var s = HaulersDreamMod.Settings;
+            var prefs = s?.GetRememberedRoute(clicked.def.defName);
+            if (prefs == null)
+                return false; // no saved template — the caller opens the dialog to establish one
+
+            // Coerce the remembered mode to one this kind actually offers (a stale pref, or the global default on a
+            // kind that doesn't offer it) — exactly like the constructor does.
+            var allowedModes = RouteSelection.AllowedModes(kind, clicked, pawn.Map);
+            var mode = allowedModes.Contains(prefs.mode) ? prefs.mode : allowedModes[0];
+
+            int amountMax = Mathf.Clamp(s.routeMaxAmount, 5, RouteSelection.HardCap);
+            int effAmount = (prefs.amount < 1 || prefs.amount > amountMax) ? RouteSelection.AllAmount : prefs.amount;
+
+            int restoredMaxTravel = prefs.maxTravel < MaxTravelMin ? NoLimitStep : Mathf.Clamp(prefs.maxTravel, MaxTravelMin, NoLimitStep);
+            float maxDistance = mode == RouteMode.Chained
+                ? (restoredMaxTravel >= NoLimitStep ? float.PositiveInfinity : restoredMaxTravel)
+                : float.PositiveInfinity;
+
+            int radius = Mathf.Clamp(prefs.radius, 2, RadiusMax);
+
+            int harvestMinPct = kind.designation == DesignationDefOf.HarvestPlant
+                ? Mathf.Clamp(Mathf.RoundToInt((clicked.def?.plant?.harvestMinGrowth ?? 0f) * 100f), 0, 99) : 0;
+            int growthThreshold = Mathf.Clamp(prefs.growthThreshold, harvestMinPct, 100);
+
+            // Transient per-session inputs default to "just the clicked anchor / no pins / no secondary types".
+            var picked = new List<Thing> { clicked };
+            var roomAnchors = new List<IntVec3> { clicked.Position };
+            bool isConstruction = kind.scanner is WorkGiver_ConstructDeliverResourcesToBlueprints;
+
+            RouteExecutor.ExecuteRouteSynced(pawn, clicked, WorkKindResolver.WorkKindId(kind), mode, effAmount, radius,
+                maxDistance, prefs.smart, prefs.allowHarvest, growthThreshold, replace, picked,
+                prefs.selectionMethod, prefs.distanceBasis, s.routeOrderExactMax, null, null, isConstruction,
+                roomAnchors, null);
+            return true;
         }
 
         private void Execute(bool replace)
@@ -697,7 +897,7 @@ namespace HaulersDream
             RouteExecutor.ExecuteRouteSynced(pawn, clicked, WorkKindResolver.WorkKindId(kind), mode, EffectiveAmount(),
                 radius, MaxDistance(), smart, allowHarvest, growthThreshold, replace, picked, selectionMethod,
                 distanceBasis, HaulersDreamMod.Settings?.routeOrderExactMax ?? RouteOrderPolicy.ExactMax,
-                startNode, endNode, IsConstruction && alsoBuild, roomAnchors);
+                startNode, endNode, IsConstruction && alsoBuild, roomAnchors, secondaryDefs);
         }
 
         // Construction routes offer two behaviours: HAUL-ONLY (fill the sites with materials — others can build)
@@ -706,30 +906,71 @@ namespace HaulersDream
         private bool IsConstruction => kind?.scanner is WorkGiver_ConstructDeliverResourcesToBlueprints;
         private bool alsoBuild = true;
 
+        // The "Remember" button's LOCAL rect + hover, captured each frame so ExtraOnGUI can draw a screen-space
+        // pointer arrow from it to the bottom-right interface toggle (drawing the arrow inside DoWindowContents is no
+        // good — the window's GUI group clips it at the window edge, well short of the toggle).
+        private Rect rememberBtnLocalRect;
+        private bool rememberBtnHovered;
+
+        // Draw the bottom "Remember" button: "Already remembered" (faint, disabled) when the current settings already
+        // equal this type's saved template, otherwise a live button that saves them as the template.
+        private void DoRememberButton(Rect row)
+        {
+            var s = HaulersDreamMod.Settings;
+            var saved = s?.GetRememberedRoute(clicked?.def?.defName);
+            bool alreadyRemembered = saved != null && saved.ValueEquals(CurrentPrefs());
+            Patch_PlaySettings.DrawRememberButton(row, alreadyRemembered, () =>
+            {
+                if (s == null || clicked?.def == null)
+                    return;
+                s.SetRememberedRoute(clicked.def.defName, CurrentPrefs());
+                HaulersDreamMod.Instance?.WriteSettings();
+                Messages.Message("HaulersDream.PlanRoute.RememberedConfirm".Translate(clicked.def.LabelCap),
+                    MessageTypeDefOf.TaskCompletion, historical: false);
+            });
+            rememberBtnLocalRect = row;
+            rememberBtnHovered = Mouse.IsOver(row);
+        }
+
+        public override void ExtraOnGUI()
+        {
+            base.ExtraOnGUI();
+            if (rememberBtnHovered)
+                Patch_PlaySettings.DrawRememberArrow(windowRect, rememberBtnLocalRect);
+        }
+
+        /// <summary>Snapshot the dialog's current knobs as a portable <see cref="RouteDialogPrefs"/> (the "no limit"
+        /// max-travel and "All" amount stored as -1 sentinels). Shared by <see cref="PostClose"/> (the per-instance
+        /// auto-restore into <see cref="HaulersDreamSettings.routePrefsByDef"/>) and the "Remember" button (the
+        /// explicit one-click template into <see cref="HaulersDreamSettings.rememberedRoutesByDef"/>).</summary>
+        private RouteDialogPrefs CurrentPrefs() => new RouteDialogPrefs
+        {
+            mode = mode,
+            maxTravel = maxTravel >= NoLimitStep ? -1 : maxTravel, // store "no limit" as -1 (portable across NoLimitStep)
+            radius = radius,
+            amount = amount > amountMax ? -1 : amount,             // store "All" as -1 (portable across the slider's max)
+            smart = smart,
+            allowHarvest = allowHarvest,
+            growthThreshold = growthThreshold,
+            selectionMethod = selectionMethod,
+            distanceBasis = distanceBasis,
+        };
+
         public override void PostClose()
         {
             base.PostClose();
-            if ((pickingMode || pickingRoom) && Find.Targeter.IsTargeting)
+            if ((pickingMode || pickingRoom || pickingSecondary) && Find.Targeter.IsTargeting)
                 Find.Targeter.StopTargeting(); // don't leave a picker armed after the dialog closes
             preview?.ClearPreview();
 
-            // Remember these options for this kind of target so they don't need re-applying next time (this
-            // session and across restarts). Keyed by the clicked thing's ThingDef.
+            // Auto-restore layer: remember these options for this kind of target so they don't need re-applying next
+            // time the DIALOG opens (this session and across restarts). Keyed by the clicked thing's ThingDef. This is
+            // NOT the "(remembered)" one-click template — that is written only by the Remember button (CurrentPrefs →
+            // SetRememberedRoute); this write happens on every close and just repopulates the window.
             var s = HaulersDreamMod.Settings;
             if (s != null && clicked?.def != null)
             {
-                s.SetRoutePrefs(clicked.def.defName, new RouteDialogPrefs
-                {
-                    mode = mode,
-                    maxTravel = maxTravel >= NoLimitStep ? -1 : maxTravel, // store "no limit" as -1 (portable across NoLimitStep)
-                    radius = radius,
-                    amount = amount > amountMax ? -1 : amount, // store "All" as -1 (portable across the slider's max)
-                    smart = smart,
-                    allowHarvest = allowHarvest,
-                    growthThreshold = growthThreshold,
-                    selectionMethod = selectionMethod,
-                    distanceBasis = distanceBasis,
-                });
+                s.SetRoutePrefs(clicked.def.defName, CurrentPrefs());
                 HaulersDreamMod.Instance?.WriteSettings();
             }
         }

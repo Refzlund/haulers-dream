@@ -60,11 +60,33 @@ namespace HaulersDream
                 yield break;
 
             string gerund = SowGerund();
-            string label = "HaulersDream.PlanRoute.Option".Translate(gerund);
+            // "(remembered)": show the one-click option ONLY when this plant type has an explicit saved template
+            // (created with the "Remember" button in the dialog) AND the interface toggle is on. The toggle alone is
+            // not enough — without a saved template the plain "Plan prioritized …" opens the dialog, even with the
+            // toggle on. See Dialog_PlanSowRoute.ExecuteRemembered.
+            var template = HaulersDreamMod.Settings.GetRememberedSowRoute(plantDef.defName);
+            bool remember = HaulersDreamMod.Settings.rememberPlan && template != null;
+            string label = remember
+                ? "HaulersDream.PlanRoute.OptionRemembered".Translate(gerund)
+                : "HaulersDream.PlanRoute.Option".Translate(gerund);
 
             var option = new FloatMenuOption(label, () =>
-                Find.WindowStack.Add(new Dialog_PlanSowRoute(pawn, anchor, zone)));
-            yield return FloatMenuUtility.DecoratePrioritizedTask(option, pawn, anchor);
+            {
+                if (remember)
+                    // Plain click REPLACES current work; the Queue Order key (Shift) APPENDS — read at click time.
+                    Dialog_PlanSowRoute.ExecuteRemembered(pawn, anchor, template, replace: !KeyBindingDefOf.QueueOrder.IsDownEvent);
+                else
+                    Find.WindowStack.Add(new Dialog_PlanSowRoute(pawn, anchor, zone));
+            });
+            var decorated = FloatMenuUtility.DecoratePrioritizedTask(option, pawn, anchor);
+            // Hovering the option blinks the bottom-right "Remember plan" interface toggle (chain any existing action).
+            var prevHover = decorated.mouseoverGuiAction;
+            decorated.mouseoverGuiAction = r =>
+            {
+                prevHover?.Invoke(r);
+                UIHighlighter.HighlightTag(Patch_PlaySettings.RememberPlanHighlightTag);
+            };
+            yield return decorated;
         }
 
         // The route's anchor cell: the clicked cell if it's sowable, else the first sowable cell of the zone (so a

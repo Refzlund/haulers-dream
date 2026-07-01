@@ -40,6 +40,13 @@ namespace HaulersDream
                 comp = pawn.GetComp<CompHauledToInventory>();
             bool hdSwept = comp?.PeekHashSet().Contains(thing) == true;
 
+            // Player "keep in inventory" (the "Keep X in inventory" order): this exact stack is HELD, so it is never
+            // surplus and the unload never hauls it away. Checked before the per-item rules / keep-mods so an explicit
+            // keep wins even over an UnloadAlways rule — the player deliberately kept THIS stack. PeekKept is a
+            // side-effect-free read (a stale ref never matches a live inventory thing), safe on the alert/render path.
+            if (comp != null && comp.PeekKept().Contains(thing))
+                return 0;
+
             // An explicit per-item rule (mod options -> Individual Item Unload Settings) OVERRIDES both HD's
             // auto-detected keep-mods and the global keep-stock for that def. Keyed by defName, so it is
             // fallback-safe (a missing-mod rule simply never matches). This is the single shared choke point that

@@ -47,12 +47,23 @@ namespace HaulersDream
                 if (kind == null)
                     continue;
 
-                string label = "HaulersDream.PlanRoute.Option".Translate(kind.gerund);
-                if (!seenLabels.Add(label))
+                string baseLabel = "HaulersDream.PlanRoute.Option".Translate(kind.gerund);
+                if (!seenLabels.Add(baseLabel))
                     continue; // one "Plan prioritized X…" per distinct work kind, however many targets share it
 
                 Thing anchor = thing;
                 RouteWorkKind capturedKind = kind;
+
+                // "(remembered)": show the one-click option ONLY when this target type has an explicit saved template
+                // (created with the "Remember" button in the dialog) AND the interface toggle is on. The toggle alone
+                // is not enough — without a saved template the plain "Plan prioritized …" opens the dialog, even with
+                // the toggle on. This is the deliberate two-part gate: master switch + a template the player chose to
+                // save (NOT the settings the dialog auto-restores, which exist for every type ever planned).
+                bool remember = HaulersDreamMod.Settings.rememberPlan
+                    && HaulersDreamMod.Settings.GetRememberedRoute(anchor.def?.defName) != null;
+                string label = remember
+                    ? "HaulersDream.PlanRoute.OptionRemembered".Translate(kind.gerund)
+                    : baseLabel;
 
                 // A construction route is ALWAYS offered — even when this instant has no deliverable materials.
                 // This matches WorkKindResolver's documented design ("a route over [blueprints] should be plannable
@@ -60,7 +71,7 @@ namespace HaulersDream
                 // and the route delivers to whichever stops have free materials (in optimal order) while the rest
                 // build as materials become available. The OLD gate disabled the WHOLE option whenever just the
                 // ANCHOR lacked free materials right now — wrong even when other stops are fully stocked.
-                if (HaulersDreamMod.Settings != null && HaulersDreamMod.Settings.verboseLogging
+                if (HaulersDreamMod.Settings.verboseLogging
                     && kind.scanner is WorkGiver_ConstructDeliverResourcesToBlueprints)
                 {
                     // No try/catch: a throw here is a real bug to surface, not hide behind a verbose-only line.
@@ -70,11 +81,30 @@ namespace HaulersDream
                 }
 
                 var option = new FloatMenuOption(label, () =>
-                    Find.WindowStack.Add(new Dialog_PlanRoute(pawn, anchor, capturedKind)))
+                {
+                    if (remember)
+                        // Vanilla queued-order semantics, read at click time: plain click REPLACES current work; the
+                        // Queue Order key (Shift by default) APPENDS to the queue — the same as shift-clicking any
+                        // other prioritized order.
+                        Dialog_PlanRoute.ExecuteRemembered(pawn, anchor, capturedKind,
+                            replace: !KeyBindingDefOf.QueueOrder.IsDownEvent);
+                    else
+                        Find.WindowStack.Add(new Dialog_PlanRoute(pawn, anchor, capturedKind));
+                })
                 {
                     iconThing = anchor,
                 };
-                yield return FloatMenuUtility.DecoratePrioritizedTask(option, pawn, anchor);
+                var decorated = FloatMenuUtility.DecoratePrioritizedTask(option, pawn, anchor);
+                // Hovering the option flashes the bottom-right "Remember plan" interface toggle, so the player can see
+                // which setting controls this one-click behaviour (and whether it's currently on). Chain any mouseover
+                // action DecoratePrioritizedTask may have set rather than replacing it.
+                var prevHover = decorated.mouseoverGuiAction;
+                decorated.mouseoverGuiAction = r =>
+                {
+                    prevHover?.Invoke(r);
+                    UIHighlighter.HighlightTag(Patch_PlaySettings.RememberPlanHighlightTag);
+                };
+                yield return decorated;
             }
         }
     }

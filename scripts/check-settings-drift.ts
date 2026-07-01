@@ -31,6 +31,7 @@ interface FieldDecl {
 	type: string
 	defaultExpr: string | null // null = no initializer (e.g. a private cache with no `= ...`)
 	nonSerialized: boolean
+	profileMeta: boolean // [ProfileMeta]: persisted plumbing/identity, exempt from the field==Scribe==Reset triple
 }
 
 /** Slice the body of a method/region between a header marker and its matching brace depth. */
@@ -85,11 +86,15 @@ function parseFieldDecls(classBody: string): FieldDecl[] {
 		const nonSerialized =
 			line.includes('[System.NonSerialized]') ||
 			(i > 0 && lines[i - 1].trim().startsWith('[System.NonSerialized]'))
+		const profileMeta =
+			line.includes('[ProfileMeta]') ||
+			(i > 0 && lines[i - 1].trim().startsWith('[ProfileMeta]'))
 		fields.push({
 			name,
 			type,
 			defaultExpr: init !== undefined ? normalize(init) : null,
 			nonSerialized,
+			profileMeta,
 		})
 	}
 	return fields
@@ -186,9 +191,17 @@ async function main() {
 	let checkedCollection = 0
 
 	// Profile-management metadata ([ProfileMeta]) is persisted but is NOT a tunable setting: the saved-profile
-	// list and active-profile name are user data that ResetToDefaults must NEVER wipe, so they're exempt from the
-	// field==Scribe==Reset triple (they'd otherwise demand a reset assignment that would delete the user's profiles).
-	const META_FIELDS = new Set(['savedProfiles', 'activeProfileName', 'reporterId', 'settingsSchemaVersion'])
+	// list, active-profile name, reporter identity, and per-install notification cursor are user/plumbing data
+	// that ResetToDefaults must NEVER wipe, so they're exempt from the field==Scribe==Reset triple. The exemption
+	// is driven by the [ProfileMeta] attribute on the field (so a new such field auto-exempts); a small explicit
+	// set covers any meta field that predates / lacks the attribute.
+	const META_FIELDS = new Set([
+		'savedProfiles',
+		'activeProfileName',
+		'reporterId',
+		'settingsSchemaVersion',
+		...fields.filter((f) => f.profileMeta).map((f) => f.name),
+	])
 
 	// A serialized field = a field decl that is NOT [System.NonSerialized] AND has an initializer.
 	// (A `private` cache without `= ...` and no Scribe entry is not a setting; skip it.)

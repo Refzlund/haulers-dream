@@ -66,6 +66,8 @@
 <HaulersDream.Setting.HaulNearbyOptionDesc>Aggiunge un'opzione "Trasporta tutto nelle vicinanze" al menù del tasto destro su un oggetto trasportabile (per le pedine che possono trasportare), che avvia subito una raccolta in massa — così non devi prioritizzare due trasporti per innescare il trasporto in blocco. La "Prioritizza trasporto" vanilla compare comunque accanto a essa per un trasporto di un singolo oggetto.</HaulersDream.Setting.HaulNearbyOptionDesc>
 <HaulersDream.Setting.ManualPickup>Aggiungi un ordine "Raccogli X" col tasto destro</HaulersDream.Setting.ManualPickup>
 <HaulersDream.Setting.ManualPickupDesc>Aggiunge un'opzione "Raccogli X" al menù del tasto destro su un oggetto trasportabile a terra. La pedina raccoglie la pila cliccata direttamente nell'inventario come un trasporto tracciato da Hauler's Dream, che viene poi riposto dallo scarico normale — così non va mai perso anche se lo scarico automatico è disattivato. Si aggiunge alle opzioni di trasporto del tasto destro vanilla.</HaulersDream.Setting.ManualPickupDesc>
+<HaulersDream.Setting.KeepInInventory>Aggiungi un ordine "Tieni X nell'inventario" col tasto destro</HaulersDream.Setting.KeepInInventory>
+<HaulersDream.Setting.KeepInInventoryDesc>Aggiunge un'opzione "Tieni X nell'inventario" al menù del tasto destro su un oggetto trasportabile a terra, accanto a "Raccogli X". La pedina prende la pila cliccata nell'inventario e la conserva: Hauler's Dream non la trasporta mai al deposito, e la normale pulizia del gioco che fa scaricare l'inventario inutilizzato non la tocca. Usalo quando vuoi che una pedina porti un oggetto di proposito. Per lasciarlo andare in seguito, fai in modo che la pedina lo consumi o lo lasci cadere dalla sua scheda Equipaggiamento. Si aggiunge alle opzioni del tasto destro vanilla.</HaulersDream.Setting.KeepInInventoryDesc>
 <HaulersDream.Setting.HaulOversized>Trasporta nell'inventario le pile sovradimensionate</HaulersDream.Setting.HaulOversized>
 <HaulersDream.Setting.HaulOversizedDesc>Quando una singola pila è troppo grande da trasportare in una sola bracciata (per esempio una pila di 75 di acciaio quando la pedina può tenerne solo 72), la pedina la prende nell'inventario e consegna l'intera pila in un solo viaggio — invece di portare a mano un carico parziale e lasciare indietro il resto. Si applica sia ai trasporti ordinati sia a quelli automatici; trasporta solo quanto il deposito può effettivamente accettare, così nulla resta abbandonato.</HaulersDream.Setting.HaulOversizedDesc>
 <HaulersDream.Setting.SweepNearbyWhileWorking>Riordina mentre lavori — raccogli anche gli oggetti sparsi nelle vicinanze</HaulersDream.Setting.SweepNearbyWhileWorking>
@@ -256,6 +258,9 @@
 <HaulersDream.HaulNearby.CouldNotStart>Niente da trasportare nelle vicinanze al momento.</HaulersDream.HaulNearby.CouldNotStart>
 <HaulersDream.PickUp.Option>Raccogli {0}</HaulersDream.PickUp.Option>
 <HaulersDream.PickUp.CouldNotStart>{0} non può raccogliere {1} — sta già trasportando quanto può, e non c'è dove trasportarlo.</HaulersDream.PickUp.CouldNotStart>
+<HaulersDream.Keep.Option>Tieni {0} nell'inventario</HaulersDream.Keep.Option>
+<HaulersDream.Keep.CouldNotStart>{0} non può tenere altro {1} in questo momento — sta già trasportando quanto può.</HaulersDream.Keep.CouldNotStart>
+<HaulersDream.Keep.Report>conserva un oggetto.</HaulersDream.Keep.Report>
 <HaulersDream.PlanRoute.AlsoBuild>Costruisci anche (trasporta + costruisci ogni fermata)</HaulersDream.PlanRoute.AlsoBuild>
 <HaulersDream.PlanRoute.AlsoBuildDesc>Con questo attivo, la pedina consegna i materiali a un cantiere e lo COSTRUISCE prima di passare al successivo — raccogliendo in anticipo i materiali dell'intero percorso e tenendoli nell'inventario. Con questo disattivato, la pedina si limita a rifornire i cantieri di materiali (altri possono costruire). In entrambi i casi i cantieri restano aperti ad altre pedine, così diverse possono rifornire lo stesso giro in parallelo; chi arriva secondo si tiene semplicemente l'eccesso per la fermata successiva o lo scarica alla fine.</HaulersDream.PlanRoute.AlsoBuildDesc>
 <HaulersDream.Setting.CraftBatchTimeout>Scadenza predefinita del lotto di produzione: {0}h</HaulersDream.Setting.CraftBatchTimeout>
@@ -681,4 +686,42 @@
   <HaulersDream.ItemUnload.SetCategoryTip>Apply one rule to every item in this category at once, instead of setting them one by one. Handy for big groups like ammo.</HaulersDream.ItemUnload.SetCategoryTip>
   <HaulersDream.Setting.Yield.Fishing>Fishing (catch)</HaulersDream.Setting.Yield.Fishing>
   <HaulersDream.Setting.Yield.FishingHelp>Fish and other catch pulled from a fishing spot. Needs the Odyssey expansion; the row is hidden without it.</HaulersDream.Setting.Yield.FishingHelp>
+  <!-- Main-menu report notifications -->
+  <HaulersDream.Report.Notify.Source>Hauler's Dream</HaulersDream.Report.Notify.Source>
+  <HaulersDream.Report.Notify.Word.Open>Aperta</HaulersDream.Report.Notify.Word.Open>
+  <HaulersDream.Report.Notify.Word.Comment>Nuovo commento</HaulersDream.Report.Notify.Word.Comment>
+  <HaulersDream.Report.Notify.Word.Resolved>Risolta</HaulersDream.Report.Notify.Word.Resolved>
+  <HaulersDream.Report.Notify.Word.Closed>Chiusa</HaulersDream.Report.Notify.Word.Closed>
+  <HaulersDream.Report.Notify.OutOfDate>È disponibile un aggiornamento (hai {0})</HaulersDream.Report.Notify.OutOfDate>
+  <HaulersDream.Report.Notify.MoreCount>e altri {0}</HaulersDream.Report.Notify.MoreCount>
+
+  <HaulersDream.Head.Notifications>Notifiche del menu principale</HaulersDream.Head.Notifications>
+  <HaulersDream.Setting.Notify.Intro>Mostra nell'angolo del menu principale gli aggiornamenti sulle tue segnalazioni inviate: quando una segnalazione viene aperta, quando lo sviluppatore risponde, quando uno dei tuoi problemi viene risolto e quando la correzione è disponibile in un aggiornamento. Clicca una scheda per leggerla o rispondere nel gioco; clicca la x per chiuderla.</HaulersDream.Setting.Notify.Intro>
+  <HaulersDream.Setting.NotifyThreshold.Lab>Mostra notifiche per</HaulersDream.Setting.NotifyThreshold.Lab>
+  <HaulersDream.Setting.NotifyThreshold.Help>Quanto appare nel menu principale. Più vai a destra, meno vedi. Non viene mai mostrato nulla per una segnalazione che non hai inviato.</HaulersDream.Setting.NotifyThreshold.Help>
+  <HaulersDream.Setting.NotifyThreshold.All>Qualsiasi evento</HaulersDream.Setting.NotifyThreshold.All>
+  <HaulersDream.Setting.NotifyThreshold.All.Desc>Quando una segnalazione viene aperta, riceve una risposta, cambia stato o viene risolta.</HaulersDream.Setting.NotifyThreshold.All.Desc>
+  <HaulersDream.Setting.NotifyThreshold.Comments>Risposte</HaulersDream.Setting.NotifyThreshold.Comments>
+  <HaulersDream.Setting.NotifyThreshold.Comments.Desc>Nuove risposte e correzioni, ma non le schede di apertura o di piccoli cambi di stato.</HaulersDream.Setting.NotifyThreshold.Comments.Desc>
+  <HaulersDream.Setting.NotifyThreshold.Fixed>Correzioni</HaulersDream.Setting.NotifyThreshold.Fixed>
+  <HaulersDream.Setting.NotifyThreshold.Fixed.Desc>Solo quando una delle tue segnalazioni viene risolta, con un avviso se è disponibile una versione più recente.</HaulersDream.Setting.NotifyThreshold.Fixed.Desc>
+  <HaulersDream.Setting.NotifyThreshold.Never>Mai</HaulersDream.Setting.NotifyThreshold.Never>
+  <HaulersDream.Setting.NotifyThreshold.Never.Desc>Disattiva completamente le notifiche del menu principale.</HaulersDream.Setting.NotifyThreshold.Never.Desc>
+
+  <!-- PR #91: multi-target planner + remember-plan toggle + remove-floor route -->
+  <HaulersDream.PlanRoute.OptionRemembered>Pianifica {0} prioritizzato (memorizzato)</HaulersDream.PlanRoute.OptionRemembered>
+  <HaulersDream.PlanRoute.RememberToggleTip>Ricorda piano: l’interruttore principale dei percorsi ricordati con un clic. Se attivo, un bersaglio per cui hai salvato un piano (con il pulsante Ricorda del pianificatore) mostra «Pianifica … prioritizzato (memorizzato)» e lo esegue con un clic; se disattivo, il pianificatore si apre ogni volta. Un bersaglio senza piano salvato apre sempre il pianificatore, anche mentre questo è attivo.</HaulersDream.PlanRoute.RememberToggleTip>
+  <HaulersDream.PlanRoute.AddTarget>Aggiungi tipo di bersaglio…</HaulersDream.PlanRoute.AddTarget>
+  <HaulersDream.PlanRoute.AddTargetStop>Fine aggiunta tipi</HaulersDream.PlanRoute.AddTargetStop>
+  <HaulersDream.PlanRoute.TargetTypesHeader>Tipi di bersaglio: {0}</HaulersDream.PlanRoute.TargetTypesHeader>
+  <HaulersDream.PlanRoute.AddTargetHint>Clicca un altro tipo di bersaglio sulla mappa per includerlo anche in questo percorso.</HaulersDream.PlanRoute.AddTargetHint>
+  <HaulersDream.PlanRoute.PrimaryBadge>(principale)</HaulersDream.PlanRoute.PrimaryBadge>
+  <HaulersDream.PlanRoute.RemoveFloorGerund>rimozione pavimento</HaulersDream.PlanRoute.RemoveFloorGerund>
+  <HaulersDream.PlanRoute.ModeFloorArea>Area — il pavimento contiguo</HaulersDream.PlanRoute.ModeFloorArea>
+  <HaulersDream.PlanRoute.ModeFloorAreaDesc>Rimuove la pavimentazione sull’intera area contigua di pavimento rimovibile attorno alla casella cliccata (tutto il pavimento della rovina), fino al limite del percorso.</HaulersDream.PlanRoute.ModeFloorAreaDesc>
+  <HaulersDream.PlanRoute.RememberButton>Ricorda queste impostazioni</HaulersDream.PlanRoute.RememberButton>
+  <HaulersDream.PlanRoute.RememberButtonDesc>Salva queste impostazioni come piano ricordato per questo tipo di bersaglio, così il suo menu del tasto destro offre «Pianifica … prioritizzato (memorizzato)» per eseguirlo con un clic (mentre l’interruttore dell’interfaccia Ricorda piano è attivo). Questo sovrascrive qualsiasi piano che avevi memorizzato in precedenza per questo tipo.</HaulersDream.PlanRoute.RememberButtonDesc>
+  <HaulersDream.PlanRoute.RememberedConfirm>Piano memorizzato per {0}.</HaulersDream.PlanRoute.RememberedConfirm>
+  <HaulersDream.PlanRoute.RememberButtonSaved>Già memorizzato</HaulersDream.PlanRoute.RememberButtonSaved>
+  <HaulersDream.PlanRoute.RememberButtonSavedDesc>Queste impostazioni sono già salvate come piano memorizzato per questo tipo di bersaglio. Modifica una qualsiasi impostazione per salvare un piano diverso.</HaulersDream.PlanRoute.RememberButtonSavedDesc>
 </LanguageData>

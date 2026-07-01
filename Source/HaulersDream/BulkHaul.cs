@@ -553,18 +553,7 @@ namespace HaulersDream
             // Clamp to the worth-it mass ceiling for this pawn (per-pawn base cap × the overload break-even ratio),
             // exactly as BuildBulkJob prices the primary, so a single oversized/heavy stack never plans more than the
             // pawn can actually carry into inventory. Under CE also clamp to CE's live weight+bulk fit.
-            float maxCap = CarryCapacity.Of(pawn);
-            float baseCap = CarryMath.EffectiveCapacity(maxCap, s.carryLimitFraction);
-            float ceiling = BulkHaulPolicy.CeilingKg(s.overloadLevel, OverloadGate.NoOverloadFor(pawn, s), baseCap);
-            float running = MassUtility.GearAndInventoryMass(pawn);
-            int take = BulkHaulPolicy.CountWithinCeiling(ceiling, running, clicked.GetStatValue(StatDefOf.Mass), clicked.stackCount);
-            take = Math.Min(take, CECompat.MaxFitCount(pawn, clicked));
-            float bulkPer = CECompat.BulkPerUnit(clicked);
-            float bulkRoom = CECompat.AvailableBulk(pawn); // +∞ without CE
-            // +∞ bulkRoom = unlimited (no CE / fail-open); (int)Math.Floor(∞/x) would be int.MinValue and kill the
-            // plan — skip the clamp instead. Mirrors BuildBulkJob's primary bulk clamp exactly.
-            if (bulkPer > 0f && !float.IsPositiveInfinity(bulkRoom))
-                take = Math.Min(take, (int)Math.Floor(bulkRoom / bulkPer));
+            int take = MassClampedTake(pawn, clicked, clicked.stackCount, s);
             if (take <= 0)
                 return null; // nothing fits in inventory under the ceiling -> caller hand-hauls it
 
@@ -577,6 +566,56 @@ namespace HaulersDream
             job.targetQueueB = new List<LocalTargetInfo> { clicked };
             job.countQueue = new List<int> { take };
             job.count = 1;
+            return job;
+        }
+
+        /// <summary>The number of units of <paramref name="thing"/> a single pickup/keep should take into
+        /// <paramref name="pawn"/>'s inventory, clamped to the worth-it mass ceiling (per-pawn base cap × the overload
+        /// break-even ratio) and — under Combat Extended — CE's live weight+bulk fit. Shared by the "Pick up X" and
+        /// "Keep X in inventory" builders and re-applied live at pickup time by their drivers. <paramref name="planned"/>
+        /// caps the request (the clicked stack's size for a full take).</summary>
+        internal static int MassClampedTake(Pawn pawn, Thing thing, int planned, HaulersDreamSettings s)
+        {
+            if (pawn == null || thing == null || s == null)
+                return 0;
+            float maxCap = CarryCapacity.Of(pawn);
+            float baseCap = CarryMath.EffectiveCapacity(maxCap, s.carryLimitFraction);
+            float ceiling = BulkHaulPolicy.CeilingKg(s.overloadLevel, OverloadGate.NoOverloadFor(pawn, s), baseCap);
+            float running = MassUtility.GearAndInventoryMass(pawn);
+            int take = BulkHaulPolicy.CountWithinCeiling(ceiling, running, thing.GetStatValue(StatDefOf.Mass),
+                Math.Min(planned, thing.stackCount));
+            take = Math.Min(take, CECompat.MaxFitCount(pawn, thing));
+            float bulkPer = CECompat.BulkPerUnit(thing);
+            float bulkRoom = CECompat.AvailableBulk(pawn); // +∞ without CE
+            // +∞ bulkRoom = unlimited (no CE / fail-open); (int)Math.Floor(∞/x) would be int.MinValue and kill the
+            // plan — skip the clamp instead. Mirrors BuildBulkJob's primary bulk clamp exactly.
+            if (bulkPer > 0f && !float.IsPositiveInfinity(bulkRoom))
+                take = Math.Min(take, (int)Math.Floor(bulkRoom / bulkPer));
+            return take;
+        }
+
+        /// <summary>
+        /// The "Keep X in inventory" order (see <see cref="FloatMenuOptionProvider_KeepInInventory"/>): build a
+        /// single-target <see cref="JobDriver_KeepInInventory"/> job that takes the clicked stack into the pawn's
+        /// inventory as a KEPT item (recorded on <see cref="CompHauledToInventory"/>), which HD's unload never hauls
+        /// away and vanilla's drop-unused never sheds. The counterpart to <see cref="BuildPickUpJob"/> ("pick up to
+        /// haul") — here the item is HELD, not stored, so there is NO map/storage gate (a pawn can hold an item on any
+        /// map). Mass/CE-clamped to what the pawn can carry; returns null when not one more unit fits under the ceiling.
+        /// </summary>
+        internal static Job BuildKeepJob(Pawn pawn, Thing clicked)
+        {
+            if (pawn == null || clicked == null || !clicked.Spawned)
+                return null;
+            var s = HaulersDreamMod.Settings;
+            if (s == null || pawn.Map == null)
+                return null;
+            if (pawn.GetComp<CompHauledToInventory>() == null || pawn.inventory == null)
+                return null;
+            int take = MassClampedTake(pawn, clicked, clicked.stackCount, s);
+            if (take <= 0)
+                return null; // nothing fits in inventory under the ceiling
+            var job = JobMaker.MakeJob(HaulersDreamDefOf.HaulersDream_KeepInInventory, clicked);
+            job.count = take;
             return job;
         }
 

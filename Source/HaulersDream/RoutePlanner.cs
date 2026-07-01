@@ -73,18 +73,21 @@ namespace HaulersDream
             int radius, float maxDistance, bool smart, bool allowHarvest, int growthThreshold, IReadOnlyList<Thing> mustInclude = null,
             RouteSelectionMethod selectionMethod = RouteSelectionMethod.MostStopsPerTravel,
             RouteDistanceBasis distanceBasis = RouteDistanceBasis.StraightLine, int exactMax = RouteOrderPolicy.ExactMax,
-            Thing startNode = null, Thing endNode = null, IReadOnlyList<IntVec3> roomAnchors = null)
+            Thing startNode = null, Thing endNode = null, IReadOnlyList<IntVec3> roomAnchors = null,
+            IReadOnlyList<ThingDef> extraDefs = null)
             => Truncate(ComputeLegs(pawn, clicked, kind, mode, amount, radius, smart, allowHarvest, growthThreshold,
-                mustInclude, selectionMethod, distanceBasis, roomAnchors), maxDistance, startNode, endNode, exactMax);
+                mustInclude, selectionMethod, distanceBasis, roomAnchors, extraDefs), maxDistance, startNode, endNode, exactMax);
 
         /// <param name="mustInclude">player-picked targets (plus the clicked anchor) that must always be in the route.</param>
         /// <param name="selectionMethod">greedy cheapest-insertion (most stops per travel) vs nearest-to-the-clicked-target.</param>
         /// <param name="distanceBasis">straight-line, or real pathfound distances (small routes only).</param>
         /// <param name="roomAnchors">Rooms mode only: cells whose rooms bound the selection.</param>
+        /// <param name="extraDefs">secondary target defs to also gather (issue #96 multi-target); null = the clicked def only.</param>
         public static RouteLegs ComputeLegs(Pawn pawn, Thing clicked, RouteWorkKind kind, RouteMode mode, int amount,
             int radius, bool smart, bool allowHarvest, int growthThreshold, IReadOnlyList<Thing> mustInclude = null,
             RouteSelectionMethod selectionMethod = RouteSelectionMethod.MostStopsPerTravel,
-            RouteDistanceBasis distanceBasis = RouteDistanceBasis.StraightLine, IReadOnlyList<IntVec3> roomAnchors = null)
+            RouteDistanceBasis distanceBasis = RouteDistanceBasis.StraightLine, IReadOnlyList<IntVec3> roomAnchors = null,
+            IReadOnlyList<ThingDef> extraDefs = null)
         {
             var legs = new RouteLegs { pawn = pawn, kind = kind };
             if (pawn?.Map == null || clicked == null || kind == null)
@@ -92,7 +95,7 @@ namespace HaulersDream
             // No try/catch: a route-planning failure is a real bug to surface as a red error on the player's
             // "plan route" click, not a verbose-only debug line that swallows the error and returns an empty route.
             var selected = RouteSelection.Select(pawn, clicked, kind, mode, amount, radius, allowHarvest, growthThreshold,
-                mustInclude, out bool cappedByAmount, out bool fogCaution, out int mustIncludeCount, roomAnchors);
+                mustInclude, out bool cappedByAmount, out bool fogCaution, out int mustIncludeCount, roomAnchors, extraDefs);
             legs.cappedByAmount = cappedByAmount;
             legs.fogCaution = fogCaution;
             legs.selectedCount = selected.Count;
