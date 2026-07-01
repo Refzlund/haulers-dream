@@ -271,6 +271,9 @@ namespace HaulersDream
             sentNote = attachFailed > 0 ? "HaulersDream.Report.SentPartial".Translate(attachFailed) : "";
             HDLog.Msg("issue report submitted" + (attachFailed > 0 ? $" ({attachFailed} attachment(s) failed)" : "") + ".");
             onSent?.Invoke();
+            // Re-poll the main-menu notifications so the new report's card appears without a relaunch. The 201
+            // response already means the report + its issue + the "open" event are committed, so this is race-free.
+            ReportNotifications.Refresh();
         }
 
         private void PollRequest()
@@ -290,7 +293,18 @@ namespace HaulersDream
             {
                 if (!ok) { Fail(code, err, respText); return; }
                 reportId = ExtractReportId(respText);
-                if (reportId != null && attachments.Count > 0)
+                // A 2xx with NO report id means the backend did not actually create a report — the response came
+                // from something other than our ingest (a proxy/redirect/CDN page). Do NOT tell the player it
+                // worked; surface it as a failure and log the body so it can be diagnosed.
+                if (reportId == null)
+                {
+                    phase = Phase.Failed;
+                    statusMsg = "HaulersDream.Report.ServerError".Translate(code.ToString());
+                    HDLog.Warn("issue report accepted (HTTP " + code + ") but no report id was returned; nothing was persisted. Body: " + Trunc(respText));
+                    return;
+                }
+                HDLog.Msg("issue report accepted (HTTP " + code + "), id=" + reportId + ".");
+                if (attachments.Count > 0)
                 {
                     attachIndex = 0;
                     attachFailed = 0;
@@ -298,7 +312,6 @@ namespace HaulersDream
                 }
                 else
                 {
-                    if (reportId == null) attachFailed = attachments.Count; // couldn't link attachments
                     FinishSend();
                 }
                 return;
@@ -338,6 +351,14 @@ namespace HaulersDream
             if (string.IsNullOrEmpty(json)) return null;
             var m = Regex.Match(json, "\"id\"\\s*:\\s*\"([^\"]+)\"");
             return m.Success ? m.Groups[1].Value : null;
+        }
+
+        // Collapse a response body onto one line and cap it, for a single diagnostic log entry.
+        private static string Trunc(string s)
+        {
+            if (string.IsNullOrEmpty(s)) return "(empty)";
+            s = s.Replace("\r", " ").Replace("\n", " ");
+            return s.Length > 300 ? s.Substring(0, 300) + "..." : s;
         }
 
         public override void PostClose()

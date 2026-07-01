@@ -591,6 +591,7 @@
   <HaulersDream.Report.Role.Developer>Developer</HaulersDream.Report.Role.Developer>
 
   <!-- Main-menu report notifications -->
+  <HaulersDream.Report.Notify.Source>Hauler's Dream</HaulersDream.Report.Notify.Source>
   <HaulersDream.Report.Notify.Word.Open>Open</HaulersDream.Report.Notify.Word.Open>
   <HaulersDream.Report.Notify.Word.Comment>New comment</HaulersDream.Report.Notify.Word.Comment>
   <HaulersDream.Report.Notify.Word.Resolved>Resolved</HaulersDream.Report.Notify.Word.Resolved>

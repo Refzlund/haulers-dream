@@ -462,12 +462,14 @@ namespace HaulersDream
         // then persisted; [ProfileMeta] so it is exempt from the field==Scribe==Reset drift triple, never reset (it
         // is identity, not a tunable), and not captured by profile snapshots.
         [ProfileMeta] public string reporterId = "";
-        // The newest report-event timestamp (ms) the player is "caught up" on, plus the ids of events they
-        // dismissed individually. Per-install notification state, NOT a tunable: [ProfileMeta] so they are
-        // exempt from the field==Scribe==Reset drift triple and are never reset or captured by a profile
-        // snapshot (mirrors reporterId). See ReportNotifications.
-        [ProfileMeta] public long lastSeenEventCursor = 0;
-        [ProfileMeta] public List<string> dismissedEventIds = new List<string>();
+        // Per-report notification watermarks, keyed by report id. notifySeenComment[id] is the last comment
+        // timestamp (ms) the player has seen for that report (advanced when they click its card, so a "comment"
+        // card falls back to the plain status); notifyDismissed[id] is the activity time at which they pressed x
+        // (the card stays hidden until something newer arrives). Per-install notification state, NOT a tunable:
+        // [ProfileMeta] so they are exempt from the field==Scribe==Reset drift triple and are never reset or
+        // captured by a profile snapshot (mirrors reporterId). See ReportNotifications.
+        [ProfileMeta] public Dictionary<string, long> notifySeenComment = new Dictionary<string, long>();
+        [ProfileMeta] public Dictionary<string, long> notifyDismissed = new Dictionary<string, long>();
         // Recursion guard: a profile snapshot is itself a HaulersDreamSettings; while (de)serializing it the nested
         // savedProfiles/activeProfileName section is skipped (a snapshot has no profiles of its own).
         public static bool SerializingSnapshot;
@@ -665,14 +667,15 @@ namespace HaulersDream
                 Scribe_Collections.Look(ref savedProfiles, "savedProfiles", LookMode.Deep);
                 Scribe_Values.Look(ref activeProfileName, "activeProfileName", "");
                 Scribe_Values.Look(ref reporterId, "reporterId", "");
-                Scribe_Values.Look(ref lastSeenEventCursor, "lastSeenEventCursor", 0L);
-                Scribe_Collections.Look(ref dismissedEventIds, "dismissedEventIds", LookMode.Value);
+                Scribe_Collections.Look(ref notifySeenComment, "notifySeenComment", LookMode.Value, LookMode.Value);
+                Scribe_Collections.Look(ref notifyDismissed, "notifyDismissed", LookMode.Value, LookMode.Value);
                 if (Scribe.mode == LoadSaveMode.LoadingVars)
                 {
                     if (savedProfiles == null) savedProfiles = new List<SettingsProfile>();
                     if (activeProfileName == null) activeProfileName = "";
                     if (reporterId == null) reporterId = "";
-                    if (dismissedEventIds == null) dismissedEventIds = new List<string>();
+                    if (notifySeenComment == null) notifySeenComment = new Dictionary<string, long>();
+                    if (notifyDismissed == null) notifyDismissed = new Dictionary<string, long>();
                 }
             }
         }

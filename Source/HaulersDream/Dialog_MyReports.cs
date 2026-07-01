@@ -256,7 +256,7 @@ namespace HaulersDream
                 DrawDim(new Rect(0f, commentY, inRect.width, 24f), "HaulersDream.Report.Detail.NoIssue".Translate());
             }
 
-            var backRect = new Rect(0f, btnRowY, 120f, 32f);
+            var backRect = new Rect(0f, btnRowY, 100f, 32f);
             if (Widgets.ButtonText(backRect, "HaulersDream.Report.Detail.Back".Translate()))
             {
                 thread = null;
@@ -267,9 +267,19 @@ namespace HaulersDream
                 else view = View.List;
             }
             float x = backRect.xMax + 8f;
+
+            // Refresh: re-pull this report's status + comments (a live GitHub read) without leaving the view.
+            var refreshRect = new Rect(x, btnRowY, 110f, 32f);
+            if (Widgets.ButtonText(refreshRect, "HaulersDream.Report.MyReports.Refresh".Translate()) && pending == Pending.None)
+            {
+                commentMsg = "";
+                RefreshThreadSilent();
+            }
+            x = refreshRect.xMax + 8f;
+
             if (thread != null && !thread.url.NullOrEmpty())
             {
-                var ghRect = new Rect(x, btnRowY, 190f, 32f);
+                var ghRect = new Rect(x, btnRowY, 180f, 32f);
                 if (Widgets.ButtonText(ghRect, "HaulersDream.Report.Detail.OpenOnGitHub".Translate()))
                     Application.OpenURL(thread.url);
                 x = ghRect.xMax + 8f;

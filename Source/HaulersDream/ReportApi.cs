@@ -50,9 +50,10 @@ namespace HaulersDream
         /// <summary>URL for posting a comment on one report (POST; send the reporter id as X-Reporter-Id).</summary>
         public static string CommentUrl(string reportId) => Endpoint + "/" + reportId + "/comment";
 
-        /// <summary>URL for the notification feed: the player's report events newer than <paramref name="sinceMs"/>
-        /// (GET; send the reporter id as X-Reporter-Id). Served from D1 only, so it is cheap to poll once per launch.</summary>
-        public static string EventsUrl(long sinceMs) => Endpoint + "/events?since=" + sinceMs.ToString(CultureInfo.InvariantCulture);
+        /// <summary>URL for the per-report status feed: the current status (open / solved / closed) + last-comment
+        /// time of each of the player's own reports (GET; send the reporter id as X-Reporter-Id). Served from D1
+        /// only, so it is cheap to poll once per launch.</summary>
+        public static string StatusUrl() => Endpoint + "/status";
 
         /// <summary>Build the comment POST body: <c>{ "body": "..." }</c>.</summary>
         public static string BuildCommentJson(string body) => "{\"body\":" + JsonStr(body ?? string.Empty) + "}";
@@ -283,28 +284,27 @@ namespace HaulersDream
             return t;
         }
 
-        /// <summary>Parse the GET /events response into the notification feed (events + latest version + server now).</summary>
-        public static EventFeed ParseEvents(string json)
+        /// <summary>Parse the GET /status response into the per-report status feed (one entry per report +
+        /// latest version + server now).</summary>
+        public static StatusFeed ParseReportStatuses(string json)
         {
-            var feed = new EventFeed();
+            var feed = new StatusFeed();
             if (!(MiniJson.Parse(json) is Dictionary<string, object> root)) return feed;
             feed.latestVersion = Str(root, "latestVersion");
             feed.now = (long)Num(root, "now");
-            if (root.TryGetValue("events", out var arr) && arr is List<object> items)
+            if (root.TryGetValue("reports", out var arr) && arr is List<object> items)
             {
                 foreach (var it in items)
                 {
                     if (it is Dictionary<string, object> o)
-                        feed.events.Add(new NotifyEvent
+                        feed.reports.Add(new ReportStatus
                         {
-                            Id = Str(o, "id"),
-                            Kind = NotifyEvent.ParseKind(Str(o, "kind")),
-                            CreatedAt = (long)Num(o, "createdAt"),
                             ReportId = Str(o, "reportId"),
                             Title = Str(o, "title"),
-                            Status = Str(o, "status"),
                             Url = Str(o, "url"),
-                            Role = Str(o, "role")
+                            Status = Str(o, "status"),
+                            StatusAt = (long)Num(o, "statusAt"),
+                            LastCommentAt = (long)Num(o, "lastCommentAt")
                         });
                 }
             }
@@ -342,12 +342,13 @@ namespace HaulersDream
         public string role;      // maintainer / reporter / github
     }
 
-    /// <summary>The parsed GET /events response: the player's recent report events + the latest published version.</summary>
-    internal class EventFeed
+    /// <summary>The parsed GET /status response: the current status of each of the player's reports + the latest
+    /// published version. One <see cref="ReportStatus"/> per report; the planner collapses each to a single card.</summary>
+    internal class StatusFeed
     {
         public string latestVersion;                       // version live on the Steam Workshop (or null)
         public long now;                                   // server clock (ms) at the response
-        public List<NotifyEvent> events = new List<NotifyEvent>();
+        public List<ReportStatus> reports = new List<ReportStatus>();
     }
 
     /// <summary>A report's full status + comment thread (the detail view).</summary>
