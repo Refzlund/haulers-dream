@@ -682,25 +682,26 @@
   <HaulersDream.Setting.Yield.Fishing>Fishing (catch)</HaulersDream.Setting.Yield.Fishing>
   <HaulersDream.Setting.Yield.FishingHelp>Fish and other catch pulled from a fishing spot. Needs the Odyssey expansion; the row is hidden without it.</HaulersDream.Setting.Yield.FishingHelp>
   <!-- Main-menu report notifications -->
-  <HaulersDream.Report.Notify.Word.Open>Open</HaulersDream.Report.Notify.Word.Open>
-  <HaulersDream.Report.Notify.Word.Comment>New comment</HaulersDream.Report.Notify.Word.Comment>
-  <HaulersDream.Report.Notify.Word.Resolved>Resolved</HaulersDream.Report.Notify.Word.Resolved>
-  <HaulersDream.Report.Notify.Word.Closed>Closed</HaulersDream.Report.Notify.Word.Closed>
-  <HaulersDream.Report.Notify.OutOfDate>An update is available (you have {0})</HaulersDream.Report.Notify.OutOfDate>
-  <HaulersDream.Report.Notify.MoreCount>and {0} more</HaulersDream.Report.Notify.MoreCount>
+  <HaulersDream.Report.Notify.Source>Hauler's Dream</HaulersDream.Report.Notify.Source>
+  <HaulersDream.Report.Notify.Word.Open>처리 중</HaulersDream.Report.Notify.Word.Open>
+  <HaulersDream.Report.Notify.Word.Comment>새 댓글</HaulersDream.Report.Notify.Word.Comment>
+  <HaulersDream.Report.Notify.Word.Resolved>해결됨</HaulersDream.Report.Notify.Word.Resolved>
+  <HaulersDream.Report.Notify.Word.Closed>종료됨</HaulersDream.Report.Notify.Word.Closed>
+  <HaulersDream.Report.Notify.OutOfDate>업데이트가 있습니다 (현재 {0})</HaulersDream.Report.Notify.OutOfDate>
+  <HaulersDream.Report.Notify.MoreCount>외 {0}개</HaulersDream.Report.Notify.MoreCount>
 
-  <HaulersDream.Head.Notifications>Main menu notifications</HaulersDream.Head.Notifications>
-  <HaulersDream.Setting.Notify.Intro>Show updates about your submitted reports in the corner of the main menu: when a report is opened, when the developer replies, when one of your issues is fixed, and when that fix is available in an update. Click a card to read or reply in game; click the x to dismiss it.</HaulersDream.Setting.Notify.Intro>
-  <HaulersDream.Setting.NotifyThreshold.Lab>Show notifications for</HaulersDream.Setting.NotifyThreshold.Lab>
-  <HaulersDream.Setting.NotifyThreshold.Help>How much surfaces on the main menu. The further right, the less you see. Nothing is ever shown for a report you did not submit.</HaulersDream.Setting.NotifyThreshold.Help>
-  <HaulersDream.Setting.NotifyThreshold.All>Any event</HaulersDream.Setting.NotifyThreshold.All>
-  <HaulersDream.Setting.NotifyThreshold.All.Desc>When a report opens, gets a reply, changes status, or is fixed.</HaulersDream.Setting.NotifyThreshold.All.Desc>
-  <HaulersDream.Setting.NotifyThreshold.Comments>Replies</HaulersDream.Setting.NotifyThreshold.Comments>
-  <HaulersDream.Setting.NotifyThreshold.Comments.Desc>New replies and fixes, but not the opened or minor status-change cards.</HaulersDream.Setting.NotifyThreshold.Comments.Desc>
-  <HaulersDream.Setting.NotifyThreshold.Fixed>Fixes</HaulersDream.Setting.NotifyThreshold.Fixed>
-  <HaulersDream.Setting.NotifyThreshold.Fixed.Desc>Only when one of your reports is fixed, with a heads-up if a newer version is available.</HaulersDream.Setting.NotifyThreshold.Fixed.Desc>
-  <HaulersDream.Setting.NotifyThreshold.Never>Never</HaulersDream.Setting.NotifyThreshold.Never>
-  <HaulersDream.Setting.NotifyThreshold.Never.Desc>Turn the main-menu notifications off entirely.</HaulersDream.Setting.NotifyThreshold.Never.Desc>
+  <HaulersDream.Head.Notifications>메인 메뉴 알림</HaulersDream.Head.Notifications>
+  <HaulersDream.Setting.Notify.Intro>제출한 보고서에 대한 소식을 메인 메뉴 구석에 표시합니다: 보고서가 열렸을 때, 개발자가 답장했을 때, 문제 중 하나가 해결되었을 때, 그리고 그 해결이 업데이트로 제공될 때. 카드를 클릭하면 게임 내에서 읽거나 답장할 수 있습니다. x를 클릭하면 닫힙니다.</HaulersDream.Setting.Notify.Intro>
+  <HaulersDream.Setting.NotifyThreshold.Lab>알림을 표시할 항목</HaulersDream.Setting.NotifyThreshold.Lab>
+  <HaulersDream.Setting.NotifyThreshold.Help>메인 메뉴에 표시되는 양입니다. 오른쪽으로 갈수록 적게 표시됩니다. 제출하지 않은 보고서는 아무것도 표시되지 않습니다.</HaulersDream.Setting.NotifyThreshold.Help>
+  <HaulersDream.Setting.NotifyThreshold.All>모든 이벤트</HaulersDream.Setting.NotifyThreshold.All>
+  <HaulersDream.Setting.NotifyThreshold.All.Desc>보고서가 열리거나, 답장을 받거나, 상태가 바뀌거나, 해결되었을 때.</HaulersDream.Setting.NotifyThreshold.All.Desc>
+  <HaulersDream.Setting.NotifyThreshold.Comments>답장</HaulersDream.Setting.NotifyThreshold.Comments>
+  <HaulersDream.Setting.NotifyThreshold.Comments.Desc>새 답장과 수정. 단, 열림이나 사소한 상태 변경 카드는 제외합니다.</HaulersDream.Setting.NotifyThreshold.Comments.Desc>
+  <HaulersDream.Setting.NotifyThreshold.Fixed>수정</HaulersDream.Setting.NotifyThreshold.Fixed>
+  <HaulersDream.Setting.NotifyThreshold.Fixed.Desc>보고서 중 하나가 수정되었을 때만, 더 새로운 버전이 있으면 알려 드립니다.</HaulersDream.Setting.NotifyThreshold.Fixed.Desc>
+  <HaulersDream.Setting.NotifyThreshold.Never>안 함</HaulersDream.Setting.NotifyThreshold.Never>
+  <HaulersDream.Setting.NotifyThreshold.Never.Desc>메인 메뉴 알림을 완전히 끕니다.</HaulersDream.Setting.NotifyThreshold.Never.Desc>
 
   <!-- PR #91: multi-target planner + remember-plan toggle + remove-floor route -->
   <HaulersDream.PlanRoute.OptionRemembered>우선 지정 {0} 계획 (기억됨)</HaulersDream.PlanRoute.OptionRemembered>

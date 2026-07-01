@@ -682,25 +682,26 @@
   <HaulersDream.Setting.Yield.Fishing>Fishing (catch)</HaulersDream.Setting.Yield.Fishing>
   <HaulersDream.Setting.Yield.FishingHelp>Fish and other catch pulled from a fishing spot. Needs the Odyssey expansion; the row is hidden without it.</HaulersDream.Setting.Yield.FishingHelp>
   <!-- Main-menu report notifications -->
-  <HaulersDream.Report.Notify.Word.Open>Open</HaulersDream.Report.Notify.Word.Open>
-  <HaulersDream.Report.Notify.Word.Comment>New comment</HaulersDream.Report.Notify.Word.Comment>
-  <HaulersDream.Report.Notify.Word.Resolved>Resolved</HaulersDream.Report.Notify.Word.Resolved>
-  <HaulersDream.Report.Notify.Word.Closed>Closed</HaulersDream.Report.Notify.Word.Closed>
-  <HaulersDream.Report.Notify.OutOfDate>An update is available (you have {0})</HaulersDream.Report.Notify.OutOfDate>
-  <HaulersDream.Report.Notify.MoreCount>and {0} more</HaulersDream.Report.Notify.MoreCount>
+  <HaulersDream.Report.Notify.Source>Hauler's Dream</HaulersDream.Report.Notify.Source>
+  <HaulersDream.Report.Notify.Word.Open>Otwarte</HaulersDream.Report.Notify.Word.Open>
+  <HaulersDream.Report.Notify.Word.Comment>Nowy komentarz</HaulersDream.Report.Notify.Word.Comment>
+  <HaulersDream.Report.Notify.Word.Resolved>Rozwiązane</HaulersDream.Report.Notify.Word.Resolved>
+  <HaulersDream.Report.Notify.Word.Closed>Zamknięte</HaulersDream.Report.Notify.Word.Closed>
+  <HaulersDream.Report.Notify.OutOfDate>Dostępna jest aktualizacja (masz {0})</HaulersDream.Report.Notify.OutOfDate>
+  <HaulersDream.Report.Notify.MoreCount>i {0} więcej</HaulersDream.Report.Notify.MoreCount>
 
-  <HaulersDream.Head.Notifications>Main menu notifications</HaulersDream.Head.Notifications>
-  <HaulersDream.Setting.Notify.Intro>Show updates about your submitted reports in the corner of the main menu: when a report is opened, when the developer replies, when one of your issues is fixed, and when that fix is available in an update. Click a card to read or reply in game; click the x to dismiss it.</HaulersDream.Setting.Notify.Intro>
-  <HaulersDream.Setting.NotifyThreshold.Lab>Show notifications for</HaulersDream.Setting.NotifyThreshold.Lab>
-  <HaulersDream.Setting.NotifyThreshold.Help>How much surfaces on the main menu. The further right, the less you see. Nothing is ever shown for a report you did not submit.</HaulersDream.Setting.NotifyThreshold.Help>
-  <HaulersDream.Setting.NotifyThreshold.All>Any event</HaulersDream.Setting.NotifyThreshold.All>
-  <HaulersDream.Setting.NotifyThreshold.All.Desc>When a report opens, gets a reply, changes status, or is fixed.</HaulersDream.Setting.NotifyThreshold.All.Desc>
-  <HaulersDream.Setting.NotifyThreshold.Comments>Replies</HaulersDream.Setting.NotifyThreshold.Comments>
-  <HaulersDream.Setting.NotifyThreshold.Comments.Desc>New replies and fixes, but not the opened or minor status-change cards.</HaulersDream.Setting.NotifyThreshold.Comments.Desc>
-  <HaulersDream.Setting.NotifyThreshold.Fixed>Fixes</HaulersDream.Setting.NotifyThreshold.Fixed>
-  <HaulersDream.Setting.NotifyThreshold.Fixed.Desc>Only when one of your reports is fixed, with a heads-up if a newer version is available.</HaulersDream.Setting.NotifyThreshold.Fixed.Desc>
-  <HaulersDream.Setting.NotifyThreshold.Never>Never</HaulersDream.Setting.NotifyThreshold.Never>
-  <HaulersDream.Setting.NotifyThreshold.Never.Desc>Turn the main-menu notifications off entirely.</HaulersDream.Setting.NotifyThreshold.Never.Desc>
+  <HaulersDream.Head.Notifications>Powiadomienia w menu głównym</HaulersDream.Head.Notifications>
+  <HaulersDream.Setting.Notify.Intro>Pokazuje w rogu menu głównego informacje o Twoich zgłoszeniach: gdy zgłoszenie zostaje otwarte, gdy deweloper odpowiada, gdy jeden z Twoich problemów zostaje naprawiony i gdy poprawka jest dostępna w aktualizacji. Kliknij kartę, aby przeczytać lub odpowiedzieć w grze; kliknij x, aby ją zamknąć.</HaulersDream.Setting.Notify.Intro>
+  <HaulersDream.Setting.NotifyThreshold.Lab>Pokazuj powiadomienia dla</HaulersDream.Setting.NotifyThreshold.Lab>
+  <HaulersDream.Setting.NotifyThreshold.Help>Ile pojawia się w menu głównym. Im dalej w prawo, tym mniej widzisz. Nigdy nie jest pokazywane nic dla zgłoszenia, którego nie wysłałeś.</HaulersDream.Setting.NotifyThreshold.Help>
+  <HaulersDream.Setting.NotifyThreshold.All>Dowolne zdarzenie</HaulersDream.Setting.NotifyThreshold.All>
+  <HaulersDream.Setting.NotifyThreshold.All.Desc>Gdy zgłoszenie zostaje otwarte, otrzymuje odpowiedź, zmienia status lub zostaje naprawione.</HaulersDream.Setting.NotifyThreshold.All.Desc>
+  <HaulersDream.Setting.NotifyThreshold.Comments>Odpowiedzi</HaulersDream.Setting.NotifyThreshold.Comments>
+  <HaulersDream.Setting.NotifyThreshold.Comments.Desc>Nowe odpowiedzi i poprawki, ale nie karty otwarcia ani drobnych zmian statusu.</HaulersDream.Setting.NotifyThreshold.Comments.Desc>
+  <HaulersDream.Setting.NotifyThreshold.Fixed>Poprawki</HaulersDream.Setting.NotifyThreshold.Fixed>
+  <HaulersDream.Setting.NotifyThreshold.Fixed.Desc>Tylko gdy jedno z Twoich zgłoszeń zostanie naprawione, z informacją, jeśli dostępna jest nowsza wersja.</HaulersDream.Setting.NotifyThreshold.Fixed.Desc>
+  <HaulersDream.Setting.NotifyThreshold.Never>Nigdy</HaulersDream.Setting.NotifyThreshold.Never>
+  <HaulersDream.Setting.NotifyThreshold.Never.Desc>Całkowicie wyłącz powiadomienia w menu głównym.</HaulersDream.Setting.NotifyThreshold.Never.Desc>
 
   <!-- PR #91: multi-target planner + remember-plan toggle + remove-floor route -->
   <HaulersDream.PlanRoute.OptionRemembered>Zaplanuj spriorytetyzowane {0} (zapamiętane)</HaulersDream.PlanRoute.OptionRemembered>
