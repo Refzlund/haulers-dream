@@ -50,7 +50,10 @@ namespace HaulersDream
                     continue;
                 if (clicked.def == null || clicked.def.category != ThingCategory.Item || !clicked.def.EverHaulable)
                     continue;
-                if (clicked is Corpse || VehicleFrameworkCompat.IsVehicle(clicked))
+                // CORPSES are allowed, like "Pick up X" (a corpse def IS ThingCategory.Item + EverHaulable in 1.6):
+                // a kept corpse is simply held whole — no auto-strip (stripping fires on HAUL pickups; a keep is a
+                // deliberate "hold this" order), released like any kept item from the gear tab.
+                if (VehicleFrameworkCompat.IsVehicle(clicked))
                     continue;
                 // NOTE: unlike "Pick up X", we do NOT skip a stack already in valid storage — the player may want to
                 // take a stored item out and hold it. Still require the basics: not fogged, not burning, reservable,

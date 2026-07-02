@@ -240,7 +240,7 @@ namespace HaulersDream
             StripAndScoop(hauler, corpse, s);
         }
 
-        // Which hauls trigger a strip. AllHauls: any of the three corpse-moving jobs. DisposalOnly: only
+        // Which hauls trigger a strip. AllHauls: any of the corpse-moving jobs. DisposalOnly: only
         // where the gear would otherwise be LOST — interment (a casket container) or a corpse bill
         // (cremation/butchering); a plain stockpile haul leaves the body dressed.
         private static bool QualifyingHaul(Job job, AutoStripMode mode)
@@ -255,6 +255,17 @@ namespace HaulersDream
             }
             if (job.def == JobDefOf.HaulToCell)
                 return mode == AutoStripMode.AllHauls; // stockpile haul — only under "every haul"
+            // HD's bulk pickup ("Pick up X" on a corpse, or "Haul everything nearby" anchored on a corpse whose
+            // best storage is a cell — the two ways a corpse enters the bulk driver; the automatic scan never
+            // assigns one since WorkGiver_HaulGeneral.JobOnThing nulls corpses, and the sweep pool skips
+            // them): semantically a STORAGE haul (the unload pass delivers to best storage), so
+            // it strips exactly like HaulToCell — under "every haul" only. The eventual destination is unknown at
+            // pickup, so under DisposalOnly a picked corpse that later unloads into a grave arrives dressed —
+            // accepted: the gear is buried with it (recoverable by exhuming), and a clothed corpse rarely fits
+            // the inventory mass clamp anyway (it then falls back to the hand-haul, whose TryStartCarry seam
+            // strips at interment as before). "Keep X in inventory" is NOT a haul and never strips.
+            if (job.def == HaulersDreamDefOf.HaulersDream_BulkHaul)
+                return mode == AutoStripMode.AllHauls;
             return false; // caravan packing, transport pods, anything else: never strip
         }
 
