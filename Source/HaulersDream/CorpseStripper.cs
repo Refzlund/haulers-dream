@@ -255,9 +255,9 @@ namespace HaulersDream
             }
             if (job.def == JobDefOf.HaulToCell)
                 return mode == AutoStripMode.AllHauls; // stockpile haul — only under "every haul"
-            // HD's bulk pickup ("Pick up X" on a corpse, or "Haul everything nearby" anchored on a corpse whose
-            // best storage is a cell — the two ways a corpse enters the bulk driver; the automatic scan never
-            // assigns one since WorkGiver_HaulGeneral.JobOnThing nulls corpses, and the sweep pool skips
+            // HD's bulk pickup ("Pick up X" on a corpse, or "Haul everything nearby" anchored on one — the two
+            // ways a corpse enters the bulk driver; the automatic scan never assigns one since
+            // WorkGiver_HaulGeneral.JobOnThing nulls corpses, and the sweep pool skips
             // them): semantically a STORAGE haul (the unload pass delivers to best storage), so
             // it strips exactly like HaulToCell — under "every haul" only. The eventual destination is unknown at
             // pickup, so under DisposalOnly a picked corpse that later unloads into a grave arrives dressed —

@@ -160,8 +160,8 @@ namespace HaulersDream
                 if (loadIndex != 0 && t.IsInValidBestStorage()) { loadIndex++; JumpToToil(loadDecide); return; }
 
                 // Auto-strip-on-haul parity for a corpse pickup ("Pick up X", or "Haul everything nearby"
-                // anchored on a corpse whose best storage is a CELL — the two corpse entries into this driver;
-                // the automatic scan never assigns one): the hand-haul path strips at the
+                // anchored on a corpse — the two corpse entries into this driver; the automatic scan never
+                // assigns one): the hand-haul path strips at the
                 // Pawn_CarryTracker.TryStartCarry seam, which an inventory pickup never crosses, so mirror it
                 // here — same timing (the corpse is still spawned, the pickup is committed to this stack) and
                 // the same self-gating call (mode / faction / opt-out / QualifyingHaul — which recognizes this
