@@ -159,6 +159,18 @@ namespace HaulersDream
                 // Same re-check as loadDecide: a swept extra stored (best) mid-walk stays in storage.
                 if (loadIndex != 0 && t.IsInValidBestStorage()) { loadIndex++; JumpToToil(loadDecide); return; }
 
+                // Auto-strip-on-haul parity for a corpse pickup ("Pick up X", or "Haul everything nearby"
+                // anchored on a corpse — the two corpse entries into this driver; the automatic scan never
+                // assigns one): the hand-haul path strips at the
+                // Pawn_CarryTracker.TryStartCarry seam, which an inventory pickup never crosses, so mirror it
+                // here — same timing (the corpse is still spawned, the pickup is committed to this stack) and
+                // the same self-gating call (mode / faction / opt-out / QualifyingHaul — which recognizes this
+                // job def under AllHauls only). Runs BEFORE the mass clamp below so the scooped loot's weight
+                // is counted before deciding how much of the corpse still fits. A throw here is a real bug and
+                // stays visible (the toil error names this driver), matching the seam guard's philosophy.
+                if (t is Corpse corpsePickup)
+                    CorpseStripper.MaybeStripForHaul(pawn, corpsePickup);
+
                 // Re-clamp the planned count to the LIVE remaining room (mass may have shifted since planning).
                 int count = BulkHaulPolicy.CountWithinCeiling(CeilingKgLive(HaulersDreamMod.Settings),
                     MassUtility.GearAndInventoryMass(pawn), t.GetStatValue(StatDefOf.Mass),

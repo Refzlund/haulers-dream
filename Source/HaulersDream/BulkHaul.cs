@@ -304,8 +304,17 @@ namespace HaulersDream
 
         private static Job BuildBulkJob(Pawn pawn, Thing primary, Job vanillaJob, bool forced, bool forceSweep = false)
         {
-            if (vanillaJob == null || vanillaJob.def != JobDefOf.HaulToCell)
-                return null; // container destinations (graves, pods) keep their dedicated vanilla flow
+            // A CONTAINER destination (a grave-destined corpse, container storage) is accepted ONLY for the
+            // explicit "Haul everything nearby" order (forceSweep): the anchor is pocketed like anything else and
+            // the unload's container branch delivers it. The AUTOMATIC scan and the forced single-order takeover
+            // stay cell-only (HasPotentialBulkWork gates the scan the same way), so ordinary container-storage
+            // hauls keep their dedicated vanilla flow. targetB.Cell below is the container's PositionHeld (a fine
+            // search-radius anchor), and StorageSpaceForDef finds no slot group at it -> int.MaxValue -> the
+            // primary's def simply gets no plan-time storage budget (the unload re-clamps at delivery anyway).
+            if (vanillaJob == null
+                || (vanillaJob.def != JobDefOf.HaulToCell
+                    && !(forceSweep && vanillaJob.def == JobDefOf.HaulToContainer)))
+                return null;
             var s = HaulersDreamMod.Settings;
             var map = pawn?.Map;
             if (s == null || !s.bulkHaul || map == null || primary == null || !primary.Spawned)
@@ -499,8 +508,13 @@ namespace HaulersDream
             if (pawn == null || clicked == null)
                 return null;
             var vanilla = HaulAIUtility.HaulToStorageJob(pawn, clicked, forced: true);
-            if (vanilla == null || vanilla.def != JobDefOf.HaulToCell)
-                return null; // no storage / container destination -> caller falls back to the vanilla haul
+            // Accept a CONTAINER destination too (a grave-destined corpse, container storage): the explicit
+            // "Haul everything nearby" order previously degraded to a plain single hand-haul there — the player
+            // asked for a sweep and got no sweep. The bulk driver pockets the anchor like anything else and the
+            // unload's container branch delivers it (graves included). No storage at all still returns null
+            // (the caller falls back to the vanilla haul, whose fail reason explains it).
+            if (vanilla == null || (vanilla.def != JobDefOf.HaulToCell && vanilla.def != JobDefOf.HaulToContainer))
+                return null;
             return BuildBulkJob(pawn, clicked, vanilla, forced: true, forceSweep: true);
         }
 
@@ -615,6 +629,38 @@ namespace HaulersDream
             if (take <= 0)
                 return null; // nothing fits in inventory under the ceiling
             var job = JobMaker.MakeJob(HaulersDreamDefOf.HaulersDream_KeepInInventory, clicked);
+            job.count = take;
+            return job;
+        }
+
+        /// <summary>
+        /// The "Keep X in inventory" order for an item held INSIDE a spawned container building (vanilla's egg box —
+        /// the only vanilla def with containedItemsSelectable — or a modded container that flags its contents):
+        /// the same job as <see cref="BuildKeepJob"/>, with the container as target B so
+        /// <see cref="JobDriver_KeepInInventory"/> takes its container branch — walk to the container and pull the
+        /// clamped count straight from its inner ThingOwner, instead of scooping off the ground. PURE planning like
+        /// every builder here (the item's continued presence in the container is re-verified live at the take);
+        /// mass/CE-clamped identically; returns null when the item already left the container or not one more unit
+        /// fits under the carry ceiling.
+        /// </summary>
+        internal static Job BuildKeepFromContainerJob(Pawn pawn, Thing clicked, Thing container)
+        {
+            if (pawn == null || clicked == null || container == null || !container.Spawned)
+                return null;
+            var s = HaulersDreamMod.Settings;
+            if (s == null || pawn.Map == null || container.Map != pawn.Map)
+                return null;
+            if (pawn.GetComp<CompHauledToInventory>() == null || pawn.inventory == null)
+                return null;
+            // Still inside that container right now (the float menu builds options speculatively; the driver
+            // re-verifies at the take, so a mid-walk removal degrades to a quiet no-op there).
+            var inner = container.TryGetInnerInteractableThingOwner();
+            if (inner == null || !inner.Contains(clicked))
+                return null;
+            int take = MassClampedTake(pawn, clicked, clicked.stackCount, s);
+            if (take <= 0)
+                return null; // nothing fits in inventory under the ceiling
+            var job = JobMaker.MakeJob(HaulersDreamDefOf.HaulersDream_KeepInInventory, clicked, container);
             job.count = take;
             return job;
         }

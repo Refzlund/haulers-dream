@@ -59,17 +59,23 @@ namespace HaulersDream
                 // A non-spawned / contained thing (e.g. eggs held inside an egg box, items in a container building —
                 // they reach ClickedThings via vanilla SelectableContainedThings when the building has
                 // containedItemsSelectable) has no map/position; the spawned-only haul checks below would NRE on it
-                // (issue #2). Pickup operates on spawned ground stacks only.
+                // (issue #2). Pickup operates on spawned ground stacks only — DELIBERATE, not just defensive: a
+                // contained item is already in (container) storage, so "pick up to haul" could only round-trip it
+                // back via the unload, the same rationale as the IsInValidBestStorage skip below. Taking a stored
+                // item out to CARRY it is the "Keep X in inventory" order, whose container branch handles this.
                 if (clicked == null || !clicked.Spawned)
                     continue;
                 // Plain haulable ground ITEM only. Exclude VF VehiclePawns (a vehicle is a Pawn, not an Item, so the
                 // category check already excludes it, but IsVehicle is explicit per the design and returns false when
-                // VF is absent) and CORPSES — in 1.6 a corpse def IS ThingCategory.Item + EverHaulable (verified:
-                // ThingDefGenerator_Corpses), so the category filter does NOT exclude it; leave corpses to their own
-                // hauling/rot flow rather than offering "Pick up corpse".
+                // VF is absent). CORPSES are deliberately ALLOWED (in 1.6 a corpse def IS ThingCategory.Item +
+                // EverHaulable — ThingDefGenerator_Corpses): the whole point of this order is "grab it now, store it
+                // later", and a fresh kill left on the ground gets eaten by predators (player report: a dead rabbit
+                // with no way to pocket it). The unload pass delivers a corpse like anything else — its storage probe
+                // finds stockpiles AND grave containers — and a corpse too heavy for inventory falls back to the plain
+                // hand-haul below. Auto-strip-on-haul parity is kept in the bulk driver (see JobDriver_BulkHaul).
                 if (clicked.def == null || clicked.def.category != ThingCategory.Item || !clicked.def.EverHaulable)
                     continue;
-                if (clicked is Corpse || VehicleFrameworkCompat.IsVehicle(clicked))
+                if (VehicleFrameworkCompat.IsVehicle(clicked))
                     continue;
                 // Already in its best storage: "pick up into inventory" could only end in the pawn re-storing it
                 // (the mandatory unload finish-action re-stores any HD-swept stack), a no-op round-trip the user sees
@@ -119,8 +125,10 @@ namespace HaulersDream
                 {
                     iconThing = clicked,
                 };
+                // One option PER DISTINCT clicked thing (a mixed pile — two different corpses, a corpse plus
+                // loot — offers each; vanilla lists one "Prioritize hauling" per thing the same way). Labels
+                // carry each thing's LabelCap (def + stack count), which disambiguates in practice.
                 yield return FloatMenuUtility.DecoratePrioritizedTask(option, pawn, clicked);
-                yield break; // one pick-up option per click; vanilla's "Prioritize hauling" still appears alongside
             }
         }
     }
