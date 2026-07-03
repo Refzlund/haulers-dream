@@ -103,6 +103,26 @@ namespace HaulersDream.Core
             => stackCount > handCap && deliverable > handCap;
 
         /// <summary>
+        /// #115: should a haul be DECLINED for the into-inventory sweep because carrying it in inventory would move
+        /// FEWER units per trip than a plain hand-haul? Under Combat Extended a very BULKY stack (e.g. a heavy cannon
+        /// shell) fits fewer units in inventory — CE caps inventory by weight AND bulk — than a hands-carry armful,
+        /// which is mass/volume-limited only (CE does not bulk-limit the carry tracker). Routing it through inventory
+        /// then delivers a trickle where hands would carry a full armful (the "one round at a time into the shelf"
+        /// report). True = keep vanilla's single hand-haul instead of converting.
+        ///
+        /// Only meaningful with CE active (<paramref name="ceActive"/>): without CE, inventory and hands share the one
+        /// mass/volume limit, so <paramref name="inventoryFit"/> &lt; <paramref name="handArmful"/> would arise only for
+        /// an already-loaded pawn — where declining would wrongly abort a legitimate accumulation, so it stays false.
+        /// A <paramref name="forceSweep"/> (the explicit "haul everything nearby" order) is never declined.
+        /// </summary>
+        /// <param name="ceActive">Combat Extended present (the bulk dimension exists).</param>
+        /// <param name="forceSweep">An explicit player sweep order — always convert, never decline.</param>
+        /// <param name="inventoryFit">Units of this stack that fit in inventory (mass + CE bulk clamped).</param>
+        /// <param name="handArmful">Units a hands-carry would take for this def (vanilla MaxStackSpaceEver).</param>
+        public static bool InventoryHaulWorseThanHands(bool ceActive, bool forceSweep, int inventoryFit, int handArmful)
+            => ceActive && !forceSweep && inventoryFit < handArmful;
+
+        /// <summary>
         /// How many units of a candidate stack to take, given the running load: fits under the ceiling,
         /// never more than the stack holds. Massless items are taken in full.
         /// </summary>
