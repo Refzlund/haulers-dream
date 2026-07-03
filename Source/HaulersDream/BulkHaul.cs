@@ -390,6 +390,45 @@ namespace HaulersDream
             if (primaryTake <= 0)
                 return null;
 
+            // #115: under Combat Extended, a very BULKY item (e.g. a 22-bulk cannon shell) fits FEWER units in
+            // INVENTORY (CE caps inventory by weight AND bulk) than a plain hands-carry would (vanilla
+            // MaxStackSpaceEver — handCap above — is mass/volume-limited only; CE does not bulk-limit the carry
+            // tracker). Converting such a haul into an into-inventory sweep then delivers ONE round per trip where a
+            // vanilla hand-haul carries a full armful — the reported "hauls CE ammo into the shelf one round at a
+            // time". When inventory would carry fewer than hands, DON'T convert: return null so vanilla's single
+            // hand-haul __result stands (it carries more, in one trip; the hands are a separate capacity, so this is
+            // safe even for a pawn already holding an inventory load). forceSweep (the explicit "Haul everything
+            // nearby" order) is exempt — the player asked to sweep. Gated on CE: without it inventory and hands share
+            // the one mass/volume limit, so primaryTake < handCap arises only for an already-loaded pawn, where
+            // declining would wrongly abort a legitimate accumulation. It fires for the reported bulky-ammo case
+            // (inventory holds ~1 of a many-armful stack) and, more broadly, whenever a CE pawn's inventory would
+            // carry fewer than its hands this trip (a bulk-bound stack, or an already-loaded pawn) — in every case
+            // the vanilla hand-haul moves more per trip, and worst case is a single hand-haul, self-correcting next
+            // scan. Light ammo (low bulk, empty-ish pawn) fits a full armful (primaryTake >= handCap) → still sweeps.
+            if (BulkHaulPolicy.InventoryHaulWorseThanHands(CECompat.IsActive, forceSweep, primaryTake, handCap))
+                return null;
+
+            // Destination space for the primary's def across the chosen storage GROUP (all its cells) — computed
+            // here (not only for the swept-extras budget below) so the #114 clamp can use it before the pickup
+            // commits. int.MaxValue means "more than any plan can take" (a large deficit / a group over the scan cap).
+            int primarySpace = StorageSpaceForDef(pawn, primary, storeCell, map);
+
+            // #114: if the primary is ALREADY in valid storage (a lower-priority store being UPGRADED to a better
+            // one), clamp the pickup to the destination's real remaining space. Otherwise HD pockets the whole source
+            // stack, drops only what fits at the destination, and the unload carries the excess right back to the
+            // origin store — the wasteful round trip the reporter saw as the high-priority store filling "piecemeal"
+            // (many pawns each haul a full stack, drop two or three, carry the rest back). Loose loot (not yet in
+            // valid storage) is deliberately NOT clamped: pocketing the whole stack and letting the unload distribute
+            // the remainder across OTHER stores is the intended sweep (leaving it on the ground would be worse), and
+            // primarySpace is int.MaxValue when the destination has a large deficit, so this binds only when the
+            // destination genuinely has little room — exactly the over-haul case.
+            if (primarySpace != int.MaxValue && primary.IsInValidStorage())
+            {
+                primaryTake = Math.Min(primaryTake, primarySpace);
+                if (primaryTake <= 0)
+                    return null;
+            }
+
             running += primaryTake * primaryUnit;
             bulkRoom -= primaryTake * primaryBulk;
 
@@ -410,7 +449,9 @@ namespace HaulersDream
             // Reused per-thread scratch, Cleared here (never trusted to be empty from a prior call).
             var spaceLeftByDef = scratchSpaceLeftByDef ?? (scratchSpaceLeftByDef = new Dictionary<ThingDef, int>());
             spaceLeftByDef.Clear();
-            int primarySpace = StorageSpaceForDef(pawn, primary, storeCell, map);
+            // primarySpace was computed above (for the #114 clamp); seed the def's remaining budget from it. When the
+            // #114 clamp bound primaryTake to primarySpace this is 0 (the store is now fully subscribed for this def),
+            // so same-def swept extras are correctly rejected downstream (TakeNearestEligible).
             if (primarySpace != int.MaxValue)
                 spaceLeftByDef[primary.def] = primarySpace - primaryTake;
 

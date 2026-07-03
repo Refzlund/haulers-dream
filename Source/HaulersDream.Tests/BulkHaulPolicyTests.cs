@@ -278,5 +278,38 @@ namespace HaulersDream.Tests
                                 $"CountWithinCeiling({c}, {m}, {u}, {n})");
                         }
         }
+
+        // ── InventoryHaulWorseThanHands: #115 (CE-bulky ammo delivered one round at a time via inventory) ──
+
+        [Test]
+        public void InvWorseThanHands_CE_BulkyShell_InventoryFewerThanHands_Declines()
+        {
+            // The reporter's case: a heavy cannon shell fits ~1 in CE-bulk-limited inventory but a hand-armful is
+            // several → decline the inventory conversion so the vanilla hand-haul (which carries more) stands.
+            Assert.That(BulkHaulPolicy.InventoryHaulWorseThanHands(ceActive: true, forceSweep: false, inventoryFit: 1, handArmful: 6), Is.True);
+        }
+
+        [Test]
+        public void InvWorseThanHands_CE_InventoryAtLeastHands_Converts()
+        {
+            // Light ammo / normal goods: inventory holds a full armful or more → convert (sweep) as before.
+            Assert.That(BulkHaulPolicy.InventoryHaulWorseThanHands(true, false, inventoryFit: 6, handArmful: 6), Is.False);
+            Assert.That(BulkHaulPolicy.InventoryHaulWorseThanHands(true, false, inventoryFit: 40, handArmful: 6), Is.False);
+        }
+
+        [Test]
+        public void InvWorseThanHands_NoCE_NeverDeclines()
+        {
+            // Without CE, inventory and hands share the one mass/volume limit; a small inventoryFit means the pawn is
+            // already loaded, where declining would abort a legitimate accumulation — so it must stay false.
+            Assert.That(BulkHaulPolicy.InventoryHaulWorseThanHands(ceActive: false, forceSweep: false, inventoryFit: 1, handArmful: 6), Is.False);
+        }
+
+        [Test]
+        public void InvWorseThanHands_ForceSweep_NeverDeclines()
+        {
+            // The explicit "haul everything nearby" order always sweeps — the player asked for it.
+            Assert.That(BulkHaulPolicy.InventoryHaulWorseThanHands(ceActive: true, forceSweep: true, inventoryFit: 1, handArmful: 6), Is.False);
+        }
     }
 }
