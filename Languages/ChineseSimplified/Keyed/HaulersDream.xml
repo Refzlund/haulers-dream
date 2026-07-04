@@ -637,7 +637,7 @@
 <HaulersDream.Head.PlanningTools>规划工具</HaulersDream.Head.PlanningTools>
 <HaulersDream.Setting.Overload.Ceiling>上限</HaulersDream.Setting.Overload.Ceiling>
   <HaulersDream.Setting.MechHaulMultiplier.Lab>机械体搬运能力</HaulersDream.Setting.MechHaulMultiplier.Lab>
-  <HaulersDream.Setting.MechHaulMultiplierDesc>在你的工作机械体真实承载能力的基础上，再倍增它们每趟搬运的运量。在×1.0（默认值）时，机械体每趟搬运量恰好等于其承载能力所允许的量；调高此值可让专职的搬运机械体减少趟数、每趟搬得更多。机械体会像殖民者一样因额外负重而减速，因此智能超载的得失权衡依然保持平衡。仅影响你自己的机械体，且在安装了战斗扩展（Combat Extended）时无效（CE 会自行管理承重）。</HaulersDream.Setting.MechHaulMultiplierDesc>
+  <HaulersDream.Setting.MechHaulMultiplierDesc>在你的工作机械体真实承载能力的基础上，再倍增它们每趟搬运的运量。在×1.0（默认值）时，机械体每趟搬运量恰好等于其承载能力所允许的量；调高此值可让专职的搬运机械体减少趟数、每趟搬得更多。机械体会像殖民者一样因额外负重而减速，因此智能超载的得失权衡依然保持平衡。仅影响你自己的机械体。安装了战斗扩展（Combat Extended）时：在×1.0（默认值）下本项不生效，由战斗扩展自行管理机械体的承重；仅当你将其调高到×1.0以上时，Hauler's Dream 才会接管，将机械体的战斗扩展承重设为其携带量（承载能力）乘以该倍数。</HaulersDream.Setting.MechHaulMultiplierDesc>
   <HaulersDream.Setting.ShowAutoHaulGizmo>显示每个殖民者的自动搬运开关</HaulersDream.Setting.ShowAutoHaulGizmo>
   <HaulersDream.Setting.ShowAutoHaulGizmo.Help>Adds an "Auto-haul yields" toggle to each eligible pawn's command bar so you can stop individual pawns from automatically scooping and hauling. Off by default to keep the command bar uncluttered; pawns still auto-haul either way, this only controls whether the toggle is shown. A pawn's saved preference is still honoured even while the toggle is hidden.</HaulersDream.Setting.ShowAutoHaulGizmo.Help>
 <HaulersDream.Batch.SetOvershoot>批量超额制作：+{0}…</HaulersDream.Batch.SetOvershoot>

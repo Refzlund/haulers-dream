@@ -62,5 +62,22 @@ namespace HaulersDream.Tests
                 statCarryingCapacity: 158f, massUtilityCapacity: 40f, mechMultiplier: 3f);
             Assert.That(cap, Is.EqualTo(40f));
         }
+
+        // ── #118: the CE mech-carry override is OPT-IN above ×1.0 (default = inert, CE owns carry weight) ──
+        [Test]
+        public void CeMechCarryOverride_InertAtDefaultMultiplier()
+        {
+            // ×1.0 (default) and any value at or below it → HD does not touch the mech's CE carry weight.
+            Assert.That(CarryCapacityPolicy.CeMechCarryOverrideActive(1.0f), Is.False);
+            Assert.That(CarryCapacityPolicy.CeMechCarryOverrideActive(0.5f), Is.False);
+        }
+
+        [Test]
+        public void CeMechCarryOverride_ActiveOnlyWhenRaisedAboveDefault()
+        {
+            // The player raised the slider → HD sets the mech's CE carry weight to carrying capacity × multiplier.
+            Assert.That(CarryCapacityPolicy.CeMechCarryOverrideActive(1.1f), Is.True);
+            Assert.That(CarryCapacityPolicy.CeMechCarryOverrideActive(5.0f), Is.True);
+        }
     }
 }

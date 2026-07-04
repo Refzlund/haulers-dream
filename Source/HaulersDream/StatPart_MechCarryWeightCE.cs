@@ -25,9 +25,15 @@ namespace HaulersDream
     ///
     /// <para>Added to CE's CarryWeight StatDef via <c>Patches/MechCarryWeight_CE.xml</c>, gated on the stat
     /// existing (i.e. CE loaded). Affects ONLY player-faction mechanoids; every other pawn keeps CE's own
-    /// CarryWeight, so CE's humanlike/animal weight model is untouched. <c>mechHaulMultiplier</c> (default 1.0)
-    /// applies on top, so a CE user can now also scale mech hauling with that slider (it was previously inert
-    /// under CE).</para>
+    /// CarryWeight, so CE's humanlike/animal weight model is untouched.</para>
+    ///
+    /// <para>OPT-IN under CE (issue #118): this part fires ONLY when the "Mechanoid carrying capacity" slider
+    /// (<c>mechHaulMultiplier</c>) is raised ABOVE the default ×1.0. At ×1.0 it stands down and CE keeps its own
+    /// carry weight, matching what every language's setting description promises ("no effect while Combat Extended
+    /// is installed"). #54 originally applied this override unconditionally under CE, which contradicted that
+    /// description and overrode CE's mech encumbrance model even at the default; gating it on an explicit slider
+    /// opt-in restores the documented default while keeping the boost available. When it does fire, the multiplier
+    /// scales the carrying-capacity base (e.g. a 158-capacity loader at ×1.5 gets a 237 CE carry weight).</para>
     /// </summary>
     public class StatPart_MechCarryWeightCE : StatPart
     {
@@ -59,12 +65,21 @@ namespace HaulersDream
                 return false; // humanlikes / animals keep CE's own CarryWeight
             if (pawn.Faction == null || !pawn.Faction.IsPlayer)
                 return false; // only the player's own mechs
-            // The mech's hauling stat (the UI "carrying capacity" panel value) × HD's optional per-mech multiplier
-            // (default 1.0). This becomes the mech's CE carry weight, so CE's fit check + encumbrance + HD's ceiling
-            // all key off the carrying capacity. Mirrors the non-CE mech branch in CarryCapacity.Of.
-            float statCap = pawn.GetStatValue(StatDefOf.CarryingCapacity);
+            // OPT-IN under Combat Extended (issue #118): at the default multiplier ×1.0 this part does NOT fire, so
+            // Combat Extended owns the mech's carry weight exactly as every language's setting description promises
+            // ("no effect while Combat Extended is installed"). Only when the player RAISES the "Mechanoid carrying
+            // capacity" slider above ×1.0 — an explicit opt-in to have HD manage mech hauling under CE — does HD set
+            // the mech's CE carry weight to its carrying-capacity stat × the multiplier (the issue #54 behavior, now
+            // gated). This keeps HD out of CE's encumbrance model by default while preserving the boost for those who
+            // want it. (The non-CE mech path in CarryCapacity.Of is unchanged — without CE there is no CarryWeight
+            // stat to defer to, so HD sizes mech hauling by carrying capacity there as before.)
             float mult = HaulersDreamMod.Settings?.mechHaulMultiplier ?? 1f;
-            weight = statCap * (mult > 0f ? mult : 1f);
+            if (!Core.CarryCapacityPolicy.CeMechCarryOverrideActive(mult))
+                return false; // ×1.0 (default) or lower → CE keeps its own carry weight
+            // The mech's hauling stat (the UI "carrying capacity" panel value) × the multiplier becomes its CE carry
+            // weight, so CE's fit check + encumbrance + HD's ceiling all key off carrying capacity.
+            float statCap = pawn.GetStatValue(StatDefOf.CarryingCapacity);
+            weight = statCap * mult;
             return weight > 0f;
         }
     }

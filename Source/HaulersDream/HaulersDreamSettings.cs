@@ -430,7 +430,10 @@ namespace HaulersDream
         // mech hauls proportionally more per trip. 1.0 = the mech's true carrying capacity, unchanged (default —
         // byte-identical). Applied to the SINGLE capacity value both the overload ceiling and the move-speed
         // slowdown read (via CarryCapacity / PawnMassCache), so the "carry more / move slower" bargain stays in
-        // lockstep. Inert under Combat Extended (CE owns the encumbrance model). Only affects player work mechs.
+        // lockstep. Only affects player work mechs. Under Combat Extended: at ×1.0 (default) HD stays inert and CE
+        // owns the mech's carry weight (issue #118 — every language's description promised this); ONLY when raised
+        // above ×1.0 does HD set the mech's CE carry weight to its carrying capacity × the multiplier (the opt-in
+        // #54 boost — see StatPart_MechCarryWeightCE).
         public float mechHaulMultiplier = 1.0f;
         // Let colony hauling animals (not wild/enemy) scoop nearby loot into their inventory and run HD's
         // bulk-haul, the same way colonists do. Opt-in (default OFF) so the out-of-the-box scope stays

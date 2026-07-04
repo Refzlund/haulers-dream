@@ -49,5 +49,17 @@ namespace HaulersDream.Core
             }
             return massUtilityCapacity;
         }
+
+        /// <summary>
+        /// Issue #118: under Combat Extended, should Hauler's Dream OVERRIDE a player mech's CE carry weight (setting
+        /// it to the carrying-capacity stat × the multiplier), or stand down and let CE own it? HD stands down at the
+        /// default multiplier (×1.0), matching what every language's setting description promises ("no effect while
+        /// Combat Extended is installed"), and only overrides once the player raises the "Mechanoid carrying capacity"
+        /// slider ABOVE ×1.0 as an explicit opt-in. Pins the opt-in boundary so a future edit can't silently revert to
+        /// the always-on override that contradicted the documented default. (Only consulted under CE — the non-CE mech
+        /// path in <see cref="BaseCapacity"/> is independent.)
+        /// </summary>
+        /// <param name="mechMultiplier">The "Mechanoid carrying capacity" slider (<c>mechHaulMultiplier</c>), default 1.0.</param>
+        public static bool CeMechCarryOverrideActive(float mechMultiplier) => mechMultiplier > 1.0f;
     }
 }
