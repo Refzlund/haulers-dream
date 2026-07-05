@@ -63,6 +63,30 @@ namespace HaulersDream.Core
             => maxCapacityKg <= 0f ? 0f : currentMassKg / maxCapacityKg;
 
         /// <summary>
+        /// How many units fit in a pawn's remaining BULK room, Combat Extended's second carry dimension
+        /// (weight is the first; vanilla has no bulk). The runtime feeds CE's live numbers here so every
+        /// bulk clamp shares ONE tested division instead of re-inlining the two float gotchas: an INFINITE
+        /// room (CE absent, or CE's read failed open) must mean "never binds" (a raw <c>(int)(infinity / x)</c>
+        /// cast is int.MinValue and would silently kill every plan), and a nonpositive per-unit bulk means
+        /// the dimension does not apply to this item at all (also "never binds", NOT "fits zero").
+        /// Previously overlooked (issue #125): the construction planner had NO bulk term, so it offered
+        /// inventory loads the driver's bulk-clamped take could never perform, an infinite re-offer loop.
+        /// </summary>
+        /// <param name="bulkRoomAvailable">Remaining bulk capacity (CE's availableBulk). May be negative
+        /// (an over-capacity pawn), or positive infinity when the dimension is absent.</param>
+        /// <param name="bulkPerUnit">Bulk of ONE unit of the item; &lt;= 0 means bulk never binds for it.</param>
+        /// <returns>Whole units that fit; 0 when the room is used up; int.MaxValue when bulk never binds.</returns>
+        public static int UnitsThatFitBulk(float bulkRoomAvailable, float bulkPerUnit)
+        {
+            if (bulkPerUnit <= 0f || float.IsPositiveInfinity(bulkRoomAvailable))
+                return int.MaxValue;
+            if (bulkRoomAvailable <= 0f)
+                return 0;
+            double units = Math.Floor(bulkRoomAvailable / (double)bulkPerUnit);
+            return units >= int.MaxValue ? int.MaxValue : (int)units;
+        }
+
+        /// <summary>
         /// True once the pawn's current mass has reached the effective carry limit — the signal to
         /// stop scooping and run the single unload pass.
         /// </summary>

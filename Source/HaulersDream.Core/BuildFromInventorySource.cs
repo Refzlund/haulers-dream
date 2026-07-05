@@ -1,3 +1,5 @@
+using System;
+
 namespace HaulersDream.Core
 {
     /// <summary>Where a candidate inventory/floor stack of a needed construction material lives, relative to
@@ -46,6 +48,26 @@ namespace HaulersDream.Core
         public static bool IsAvailable(int ownUnits, int floorUnits, int otherUnits, int packUnits,
             int amountNeeded, bool allowPartial)
             => IsAvailable(TotalAvailable(ownUnits, floorUnits, otherUnits, packUnits), amountNeeded, allowPartial);
+
+        /// <summary>
+        /// Whether a construction delivery should be served straight from the WORKER'S OWN carried stock
+        /// instead of fetching a floor/shelf stack. True when the carried units cover at least one full
+        /// delivery chunk, the lesser of the site's remaining need and one hand-load (deliveries move at
+        /// most a hand-load per deposit either way, so carried stock that fills a whole chunk beats ANY
+        /// fetch trip: same units moved, zero fetch walk). Below that threshold a floor fetch moves MORE
+        /// units per trip, so vanilla's fetch stands. Previously overlooked (the Steam "goes to the nearest
+        /// shelf instead" report): the planner only consulted inventory when the FLOOR was empty map-wide,
+        /// so a pawn already carrying the material still walked to a shelf for it.
+        /// </summary>
+        /// <param name="ownUnits">Units of the needed material in the worker's own inventory.</param>
+        /// <param name="neededUnits">Units the site still needs (space remaining, enroute-aware).</param>
+        /// <param name="handStackCap">Units one hand-carry moves (<c>MaxStackSpaceEver</c>); the per-deposit chunk size.</param>
+        public static bool OwnInventoryCoversDelivery(int ownUnits, int neededUnits, int handStackCap)
+        {
+            if (neededUnits <= 0 || handStackCap <= 0)
+                return false;
+            return ownUnits >= Math.Min(neededUnits, handStackCap);
+        }
 
         // ---- (B) source-priority ordering ----
 

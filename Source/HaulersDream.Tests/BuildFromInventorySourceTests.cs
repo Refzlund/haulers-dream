@@ -324,5 +324,70 @@ namespace HaulersDream.Tests
             var sorted = SortByComparator(input);
             Assert.That(sorted.ConvertAll(c => c.Index), Is.EqualTo(new[] { 3, 1, 0, 2 }));
         }
+
+        // ---- OwnInventoryCoversDelivery (the "walks to a shelf while carrying the material" fix) ----
+        // Threshold contract: fire exactly when carried stock covers one full delivery chunk,
+        // min(neededUnits, handStackCap). At or above it, delivering from inventory moves the same
+        // units per deposit as any fetch would, with zero fetch walk; below it, a floor fetch moves
+        // strictly more per trip, so vanilla must stand.
+
+        [Test]
+        public void OwnCovers_WholeNeed_True()
+        {
+            // The Steam report: a wall needs 5, the pawn carries plenty.
+            Assert.That(BuildFromInventorySource.OwnInventoryCoversDelivery(70, 5, 75), Is.True);
+        }
+
+        [Test]
+        public void OwnCovers_ExactNeed_True()
+        {
+            Assert.That(BuildFromInventorySource.OwnInventoryCoversDelivery(5, 5, 75), Is.True);
+        }
+
+        [Test]
+        public void OwnCovers_OneShortOfNeed_False()
+        {
+            // Partial coverage below one chunk: a single floor fetch delivers the whole need in one
+            // trip, so splitting it (deliver 4, then fetch 1) would cost a trip.
+            Assert.That(BuildFromInventorySource.OwnInventoryCoversDelivery(4, 5, 75), Is.False);
+        }
+
+        [Test]
+        public void OwnCovers_FullHandChunkOfBigNeed_True()
+        {
+            // Need exceeds one hand-load: carrying a full chunk (75) is as good as any fetch trip,
+            // so deliver it now and let the next scan handle the remainder.
+            Assert.That(BuildFromInventorySource.OwnInventoryCoversDelivery(75, 110, 75), Is.True);
+        }
+
+        [Test]
+        public void OwnCovers_PartialChunkOfBigNeed_False()
+        {
+            // 40 carried against a 110 need with 75-unit hands: a fetch trip moves 75, the carried
+            // stock only 40, so the fetch wins.
+            Assert.That(BuildFromInventorySource.OwnInventoryCoversDelivery(40, 110, 75), Is.False);
+        }
+
+        [Test]
+        public void OwnCovers_NothingCarried_False()
+        {
+            Assert.That(BuildFromInventorySource.OwnInventoryCoversDelivery(0, 5, 75), Is.False);
+        }
+
+        [Test]
+        public void OwnCovers_NoNeed_False()
+        {
+            // Nothing to deliver: never offer a job for it.
+            Assert.That(BuildFromInventorySource.OwnInventoryCoversDelivery(70, 0, 75), Is.False);
+            Assert.That(BuildFromInventorySource.OwnInventoryCoversDelivery(70, -1, 75), Is.False);
+        }
+
+        [Test]
+        public void OwnCovers_NoHandCap_False()
+        {
+            // A pawn that cannot move a single unit by hand cannot deposit chunks either.
+            Assert.That(BuildFromInventorySource.OwnInventoryCoversDelivery(70, 5, 0), Is.False);
+            Assert.That(BuildFromInventorySource.OwnInventoryCoversDelivery(70, 5, -1), Is.False);
+        }
     }
 }

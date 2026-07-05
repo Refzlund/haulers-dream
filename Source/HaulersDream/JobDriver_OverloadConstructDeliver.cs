@@ -12,8 +12,10 @@ namespace HaulersDream
     /// hand-stack of one material) by carrying it in the pawn's INVENTORY instead of its hands. The hands
     /// are stack-limited (~75 steel), so vanilla shuttles a generator's 340 steel in ~5 trips; the
     /// inventory is mass-limited, so the pawn loads a full capacity-load (more, with smart overload) and
-    /// makes far fewer trips. Triggered by <see cref="Patch_ResourceDeliverJobFor_Inventory"/> only when
-    /// the math says inventory beats hands; otherwise the vanilla hand-carry runs unchanged.
+    /// makes far fewer trips. Triggered by <see cref="Patch_ResourceDeliverJobFor_Inventory"/> when the
+    /// math says inventory beats hands, or when the pawn already carries the material (the job then
+    /// starts with an empty stack queue and Phase 1 falls straight through to the deliver phase);
+    /// otherwise the vanilla hand-carry runs unchanged.
     ///
     /// Phase 1 (LOAD): walk to nearby floor stacks and <c>TakeToInventory</c> up to the smart ceiling /
     /// needer need. Phase 2 (DELIVER): walk to the needer once, then repeatedly pull a hand-sized chunk
@@ -402,9 +404,13 @@ namespace HaulersDream
             var s = HaulersDreamMod.Settings;
             if (s == null || resourceDef == null)
                 return 0;
-            // Combat Extended: a bulk-full pawn has no headroom even when weight says otherwise — without this
-            // the load loop would walk every queued stack taking 0 (the take getter is bulk-clamped) for nothing.
-            if (CECompat.IsActive && CECompat.AvailableBulk(pawn) <= 0f)
+            // Combat Extended: bulk is a second capacity dimension. Per-DEF fit (not just "any bulk room
+            // left") so a pawn whose remaining sliver of bulk fits ZERO units of THIS material stops loading
+            // and delivers what it holds, instead of walking every queued stack taking 0 (the take getter is
+            // bulk-clamped). Shares CECompat.FitUnitsByBulk with the planner's creation-time gate, so the
+            // offer decision and this headroom can never diverge on the bulk dimension again (issue #125).
+            int bulkFit = CECompat.FitUnitsByBulk(pawn, resourceDef); // int.MaxValue without CE
+            if (bulkFit <= 0)
                 return 0;
             float maxCap = CarryCapacity.Of(pawn);
             float baseCap = CarryMath.EffectiveCapacity(maxCap, s.carryLimitFraction);
@@ -414,8 +420,8 @@ namespace HaulersDream
             // never slowed by StatPart) must not get penalty-free overload headroom. Player mechs DO overload
             // here and are slowed for it, like colonists.
             int level = OverloadGate.NoOverloadFor(pawn, s) ? OverloadTuning.OffLevel : s.overloadLevel;
-            return OverloadPolicy.UnitsToCarry(level, maxCap, baseCap, cur, unit,
-                demandUnits: int.MaxValue, availableUnits: int.MaxValue);
+            return Mathf.Min(OverloadPolicy.UnitsToCarry(level, maxCap, baseCap, cur, unit,
+                demandUnits: int.MaxValue, availableUnits: int.MaxValue), bulkFit);
         }
 
         private Thing NextResourceStack()
