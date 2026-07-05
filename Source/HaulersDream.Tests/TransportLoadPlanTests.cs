@@ -90,5 +90,18 @@ namespace HaulersDream.Tests
         [Test]
         public void Units_ZeroOfferedTakesNone()
             => Assert.That(TransportLoadPlan.UnitsWithinMassBudget(1000f, 1f, 0), Is.EqualTo(0));
+
+        [Test]
+        public void Units_HugeBudgetTakesWholeOffer_NoIntOverflow()
+        {
+            // The previously-overlooked overflow: an uncapped portal at overload level 0 hands the sweep a
+            // float.MaxValue trip budget, the division overflows to infinity, and net48's out-of-range (int) cast
+            // yielded int.MinValue, so the clamp answered 0 for every stack and the sweep silently built nothing.
+            // A budget that covers the whole offer must simply take the whole offer.
+            Assert.That(TransportLoadPlan.UnitsWithinMassBudget(float.MaxValue, 0.5f, 75), Is.EqualTo(75));
+            Assert.That(TransportLoadPlan.UnitsWithinMassBudget(float.PositiveInfinity, 0.5f, 75), Is.EqualTo(75));
+            // A finite ratio beyond int range must also clamp to the offer, not wrap negative.
+            Assert.That(TransportLoadPlan.UnitsWithinMassBudget(3e9f, 1f, 400), Is.EqualTo(400));
+        }
     }
 }

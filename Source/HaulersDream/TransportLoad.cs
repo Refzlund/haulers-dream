@@ -251,7 +251,9 @@ namespace HaulersDream
             var ledger = HaulersDreamGameComponent.Instance;
             if (ledger == null)
                 return null;
-            ledger.LoadRegisterOrUpdate(loadable);
+            // Capture the entry: the fair-share divisor below reads its pawnClaims to skip co-loaders that already
+            // carry a slice. Never null here (loadable was null-checked above; register always yields an entry).
+            var entry = ledger.LoadRegisterOrUpdate(loadable);
             var claimable = ledger.LoadAvailableToClaim(loadable, pawn);
             if (claimable.Count == 0)
                 return null;
@@ -290,6 +292,34 @@ namespace HaulersDream
             // AppendNetworkClaimables / StorageNetworkCompat path below handles the network case separately.
             AddStoredClaimables(pool, claimable, map);
             var claimedByOthers = RouteSelection.ClaimedByOtherPawns(pawn);
+
+            // FAIR SHARE across ready co-loaders (the "only one pawn gathers the dungeon loot" fix). Every bound
+            // above is per-PAWN (claim units, carry ceiling, trip mass, CE bulk); nothing bounded the claim per-PEER.
+            // That was the previously-overlooked term: the first asker's plan swallowed the whole manifest up to its
+            // smart-overload ceiling (275 percent of capacity by default, unbounded at level 0), the other ordered
+            // pawns saw nothing claimable, and the portal board gate then held them from entering, so they wandered.
+            // Clamp this plan's mass to an even split of the claimable pool across the asker plus every other READY
+            // co-loader (boarding passengers of this loadable with no live claim; claim holders' slices are already
+            // excluded from `claimable`). A lone loader is never clamped (ShareMassBudget returns its no-clamp
+            // sentinel for a divisor of 1), and a player order means "this pawn loads, as much as it can", so it
+            // keeps the full trip budget.
+            if (!playerOrder)
+            {
+                int coLoaders = CountClaimlessCoLoaders(pawn, loadable, entry);
+                if (coLoaders > 0)
+                {
+                    // Multiplayer determinism: the pool arrives in HashSet order (per-client), and the float mass
+                    // sum below is order-sensitive in its low bits, so an unsorted sum could nudge the share across
+                    // a unit boundary on one client only and desync the committed claim. Normalize to thingIDNumber
+                    // order first. This is behavior-neutral for item selection: the sweep's NearestEligible picks
+                    // min(distance, thingIDNumber) over the WHOLE pool each step, which is order-independent.
+                    pool.Sort(ByThingId);
+                    float claimableMass = ClaimablePoolMass(pawn, pool, claimable, claimedByOthers, out float heaviestUnit);
+                    float share = LoadFairShare.ShareMassBudget(claimableMass, heaviestUnit, 1 + coLoaders);
+                    if (share < massLeft)
+                        massLeft = share;
+                }
+            }
 
             // Reused working sets (Cleared at use), copied into the fresh job-owned queues below.
             var things = scratchThings ?? (scratchThings = new List<Thing>());
@@ -350,6 +380,117 @@ namespace HaulersDream
             job.count = 1; // sentinel: a -1 Job.count reads as "broken" in some vanilla checks
             HDLog.Dbg($"TransportLoad: {pawn} sweeping {things.Count} stacks for group {loadable.GetUniqueLoadID()} (~{running:0.#}kg).");
             return job;
+        }
+
+        /// <summary>
+        /// How many OTHER ready co-loaders the fair-share split divides across: spawned boarding passengers of THIS
+        /// loadable (their whole duty is "load this, then enter", so they are guaranteed idle until the manifest
+        /// empties) that could actually run a bulk-load job (not downed/drafted/mentally broken, manipulation
+        /// capable per vanilla's own load gate, carrier comp + inventory present) and hold NO live claim on this
+        /// task. Claim holders are excluded because their slice is already subtracted from the asker's claimable
+        /// map; counting them again would over-divide. Free haulers are deliberately NOT counted: they have a colony
+        /// of other work and no board gate holds them, so dividing for pawns that may never come would shrink every
+        /// share for nothing (a lone-hauler plan stays exactly as big as before). Deterministic: a plain count over
+        /// the spawned-pawn list (Multiplayer runs this in sim on every client; order does not matter for a count).
+        /// </summary>
+        private static int CountClaimlessCoLoaders(Pawn asker, IManagedLoadable loadable, LoadLedgerEntry entry)
+        {
+            var map = asker?.Map;
+            if (map?.mapPawns == null || loadable == null)
+                return 0;
+            var claims = entry?.pawnClaims;
+            var spawned = map.mapPawns.AllPawnsSpawned;
+            int count = 0;
+            for (int i = 0; i < spawned.Count; i++)
+            {
+                var p = spawned[i];
+                if (p == null || p == asker)
+                    continue;
+                // Cheapest reject first: most spawned pawns hold no boarding duty at all.
+                if (!IsBoardingPassengerFor(p, loadable))
+                    continue;
+                if (p.Downed || p.Drafted || p.InMentalState)
+                    continue; // won't run its load duty right now
+                if (p.health?.capacities == null || !p.health.capacities.CapableOf(PawnCapacityDefOf.Manipulation))
+                    continue; // vanilla's HasJobOnPortal/loading gate: no manipulation, no hauling
+                if (p.GetComp<CompHauledToInventory>() == null || p.inventory == null)
+                    continue; // can't run the bulk driver at all
+                if (claims != null && claims.ContainsKey(p))
+                    continue; // already carries its slice (excluded from `claimable` too)
+                count++;
+            }
+            return count;
+        }
+
+        // Deterministic pool order for the fair-share mass sum (see the sort at the TryGiveBulkJob call site): the
+        // float total in ClaimablePoolMass is order-sensitive in its low bits while the pool arrives in per-client
+        // HashSet order, so summing unsorted could nudge one client's share across a unit boundary and desync the
+        // committed claim. Static so the sort never allocates a delegate per plan. Null-tolerant (a null entry sorts
+        // first) because the sweep's own scans tolerate null pool entries.
+        private static readonly System.Comparison<Thing> ByThingId =
+            (a, b) => (a?.thingIDNumber ?? int.MinValue).CompareTo(b?.thingIDNumber ?? int.MinValue);
+
+        // Scratch for the fair-share pre-pass (per-def remaining claimable units, decremented as pool stacks are
+        // counted so over-supplied defs don't inflate the mass). [ThreadStatic] + lazy-init per this file's scratch
+        // convention; Cleared at use, never trusted empty. SAFETY: one ClaimablePoolMass call runs to completion
+        // (no nested re-entry) before the next reuse on a thread.
+        [System.ThreadStatic] private static Dictionary<ThingDef, int> scratchShareLeft;
+
+        /// <summary>
+        /// Total mass of what THIS asker could claim from the already-built pool: stacks of claimable defs, each
+        /// counted up to the def's remaining claimable units, skipping stacks other pawns' jobs already queued and
+        /// stacks forbidden to the asker. Also reports the HEAVIEST counted unit mass, the no-starvation floor for
+        /// <see cref="LoadFairShare.ShareMassBudget"/> (heaviest, not lightest, so EVERY claimable stack stays
+        /// unit-affordable within one share and the fairness clamp alone can never mass-starve a pick; a lightest
+        /// floor could leave a heavy item unclaimable by the whole crew). The expensive per-stack gates
+        /// (reachability, CE bulk) are deliberately NOT mirrored here: including an unsweepable stack inflates the
+        /// claimable pool mass (the share's numerator; the loader count is untouched) equally for every asker, which
+        /// OVER-sizes shares. The excess only dilutes evenness (an asker may take somewhat more than its fair
+        /// fraction of the actually sweepable goods, a diluted form of the concentration this clamp exists to stop)
+        /// and self-heals through the re-offer when a job ends; it can never starve a pawn or over-claim the ledger.
+        /// PURE read (no pool mutation, no reservations). Stuff-aware: mass comes from each stack's own
+        /// <c>GetStatValue(Mass)</c>, not the def's base mass. The float sum runs in pool order and feeds a claim
+        /// decision, so the caller MUST hand over a deterministically ordered pool (TryGiveBulkJob sorts it by
+        /// thingIDNumber first).
+        /// </summary>
+        /// <param name="pawn">The asker (forbidden-ness is evaluated against its allowed areas).</param>
+        /// <param name="pool">The sweep candidate pool (loose haulables plus stored claimables), already built and
+        /// already in deterministic order.</param>
+        /// <param name="claimable">The asker's per-def claimable map from the ledger; not mutated (copied into the
+        /// scratch counter).</param>
+        /// <param name="claimedByOthers">Stacks already queued by other pawns' jobs (per-thing claims).</param>
+        /// <param name="heaviestUnitMass">Unit mass of the heaviest counted item, or 0 when none had positive mass.</param>
+        private static float ClaimablePoolMass(Pawn pawn, List<Thing> pool, Dictionary<ThingDef, int> claimable,
+            HashSet<Thing> claimedByOthers, out float heaviestUnitMass)
+        {
+            heaviestUnitMass = 0f;
+            var left = scratchShareLeft ?? (scratchShareLeft = new Dictionary<ThingDef, int>());
+            left.Clear();
+            foreach (var kv in claimable)
+                if (kv.Key != null && kv.Value > 0)
+                    left[kv.Key] = kv.Value;
+            if (left.Count == 0)
+                return 0f;
+
+            float total = 0f;
+            for (int i = 0; i < pool.Count; i++)
+            {
+                var t = pool[i];
+                if (t?.def == null || !left.TryGetValue(t.def, out int remaining) || remaining <= 0)
+                    continue;
+                if (claimedByOthers.Contains(t) || t.IsForbidden(pawn))
+                    continue;
+                int units = Math.Min(t.stackCount, remaining);
+                if (units <= 0)
+                    continue;
+                float unit = t.GetStatValue(StatDefOf.Mass);
+                total += units * unit;
+                left[t.def] = remaining - units;
+                if (unit > heaviestUnitMass)
+                    heaviestUnitMass = unit;
+            }
+            left.Clear();
+            return total;
         }
 
         /// <summary>

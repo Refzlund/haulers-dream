@@ -58,8 +58,15 @@ namespace HaulersDream.Core
                 return offeredCount;
             if (massBudgetKg <= 0f)
                 return 0;
-            int fits = (int)Math.Floor(massBudgetKg / unitMassKg);
-            return Math.Min(fits, offeredCount);
+            float ratio = massBudgetKg / unitMassKg;
+            // Short-circuit BEFORE the int cast when the whole offer fits. Previously overlooked: a huge or infinite
+            // budget (float.MaxValue trip mass at overload level 0 on an uncapped portal, or the fair-share no-clamp
+            // sentinel) made the float division overflow to infinity, and net48's (int) cast of an out-of-range
+            // double yields int.MinValue, so the clamp answered 0 for EVERY stack and the sweep silently built
+            // nothing. ratio < offeredCount also proves the cast below is in int range (offeredCount is an int).
+            if (ratio >= offeredCount)
+                return offeredCount;
+            return (int)Math.Floor(ratio);
         }
     }
 }
