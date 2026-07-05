@@ -311,5 +311,119 @@ namespace HaulersDream.Tests
             // The explicit "haul everything nearby" order always sweeps — the player asked for it.
             Assert.That(BulkHaulPolicy.InventoryHaulWorseThanHands(ceActive: true, forceSweep: true, inventoryFit: 1, handArmful: 6), Is.False);
         }
+
+        // ---- InventoryHaulWorseThanHands + stack clamp: #124 (chunks hauled one at a time under CE) ----
+        //
+        // Reporter setup (issue #124 follow-up + 124-hd.log): CE CarryWeight 215.6 kg with 41 in use, CE Bulk
+        // capacity 530 with 25 in use, a chunk-stacking tweak raising chunk stackLimit above 1 (FrozenSnowFox
+        // Tweaks "Stackable Chunks" in the reported mod list). Chunks: vanilla Mass 18 to 25 kg (granite 25),
+        // CE Bulk 1 (CE's Bulk StatDef defaultBaseValue, no chunk patch exists). Every field chunk is its own
+        // 1-count stack, so the CE inventory fit is clamped to 1 while the def-level hand armful is the modded
+        // stackLimit: the old comparison (1 < N) declined every AUTOMATIC chunk haul and vanilla hand-hauled
+        // one chunk per trip, while the forceSweep order (which skips the guard) swept 7 chunks (the log).
+
+        /// <summary>CE's CanFitInInventory count for a stack, replicated from the decompile-verified source
+        /// (CompInventory.cs: count = FloorToInt(Min(availBulk / unitBulk, availWeight / unitWeight, stackCount)),
+        /// zero-guards per CE: a non-positive per-unit stat never binds and falls back to stackCount).</summary>
+        private static int CeFitCount(float availWeight, float availBulk, float unitWeight, float unitBulk, int stackCount)
+        {
+            float byWeight = unitWeight <= 0f ? stackCount : availWeight / unitWeight;
+            float byBulk = unitBulk <= 0f ? stackCount : availBulk / unitBulk;
+            return (int)System.Math.Floor(System.Math.Min(byBulk, System.Math.Min(byWeight, (float)stackCount)));
+        }
+
+        [Test]
+        public void InvWorseThanHands_124_LoneChunk_ModdedStackLimit_NowConverts()
+        {
+            // Reporter's numbers: available weight 215.6 - 41 = 174.6, available bulk 530 - 25 = 505;
+            // granite chunk 25 kg, Bulk 1, lying alone (stackCount 1); modded chunk stackLimit 5 = handCap.
+            int inventoryFit = CeFitCount(availWeight: 174.6f, availBulk: 505f, unitWeight: 25f, unitBulk: 1f, stackCount: 1);
+            Assert.That(inventoryFit, Is.EqualTo(1), "CE fits the whole 1-count chunk stack in inventory");
+
+            // Pre #124 comparison (def-level overload): fit 1 against armful 5 wrongly declined the sweep.
+            Assert.That(BulkHaulPolicy.InventoryHaulWorseThanHands(true, false, inventoryFit, handArmful: 5), Is.True,
+                "the old def-level comparison is what hauled chunks one at a time");
+
+            // Post #124: hands cannot move more than the whole 1-count stack either, so the sweep proceeds.
+            Assert.That(BulkHaulPolicy.InventoryHaulWorseThanHands(true, false, inventoryFit, handCap: 5, stackCount: 1), Is.False,
+                "a whole stack that fits in inventory must never be declined");
+        }
+
+        [Test]
+        public void InvWorseThanHands_124_ChunkFieldPlan_SweepsMultipleChunksPerTrip()
+        {
+            // End-to-end plan oracle mirroring BuildBulkJob's decision sequence for the reporter's chunk field:
+            // ceiling = CE strict carry weight 215.6, running gear+inventory 41, granite chunks 25 kg / Bulk 1
+            // each as 1-count stacks. Proves the post-fix AUTOMATIC decision is "sweep several chunks in one
+            // trip" (the forced order already did exactly this in the reporter's log: 7 stacks, ceiling 215.6).
+            const float ceiling = 215.6f;
+            const float chunkMass = 25f;
+            const float chunkBulk = 1f;
+            const int handCap = 5;
+            float running = 41f;
+            float availWeight = 174.6f;
+            float availBulk = 505f;
+
+            // The primary chunk: fits under the ceiling and in CE inventory, whole stack -> not declined.
+            int primaryTake = BulkHaulPolicy.CountWithinCeiling(ceiling, running, chunkMass, 1);
+            primaryTake = System.Math.Min(primaryTake, CeFitCount(availWeight, availBulk, chunkMass, chunkBulk, 1));
+            Assert.That(primaryTake, Is.EqualTo(1));
+            Assert.That(BulkHaulPolicy.InventoryHaulWorseThanHands(true, false, primaryTake, handCap, stackCount: 1), Is.False);
+            running += primaryTake * chunkMass;
+
+            // The sweep loop: keep taking 1-count chunk stacks while they fit under the ceiling (BuildBulkJob's
+            // loop condition running < ceiling - 0.0001f with per-candidate CountWithinCeiling).
+            int sweptChunks = 0;
+            while (running < ceiling - 0.0001f)
+            {
+                int take = BulkHaulPolicy.CountWithinCeiling(ceiling, running, chunkMass, 1);
+                if (take <= 0)
+                    break;
+                sweptChunks++;
+                running += take * chunkMass;
+            }
+
+            // 41 + 6 * 25 = 191 fits; the 7th chunk would pass 215.6 -> six chunks ride in one trip (the live
+            // log's forced sweep carried 7 stacks of mixed 18 to 25 kg chunks against the same ceiling).
+            Assert.That(1 + sweptChunks, Is.EqualTo(6), "one trip now moves the whole nearby chunk cluster");
+        }
+
+        [Test]
+        public void InvWorseThanHands_115_ShelfStackOfShells_StillDeclines()
+        {
+            // #115 regression pin with CE's real 155mm HE shell numbers (Defs/Ammo/Shell/155mmHowitzer.xml:
+            // stackLimit 25, Mass 46.7, Bulk 47.67). A shelf stack of 25 shells, a strong pawn with bulk room
+            // for one shell only: inventory trickles 1 while hands move a full armful of the SAME stack.
+            int inventoryFit = CeFitCount(availWeight: 174.6f, availBulk: 55f, unitWeight: 46.7f, unitBulk: 47.67f, stackCount: 25);
+            Assert.That(inventoryFit, Is.EqualTo(1), "CE bulk-binds the shell fit to a single round");
+            Assert.That(BulkHaulPolicy.InventoryHaulWorseThanHands(true, false, inventoryFit, handCap: 25, stackCount: 25), Is.True,
+                "bulky ammo in a big stack keeps the vanilla hand-haul (#115 must not regress)");
+        }
+
+        [Test]
+        public void InvWorseThanHands_PartialFitOfBiggerStack_StillDeclines()
+        {
+            // Inventory takes 2 of a 3-count stack while one armful would move all 3: hands still win.
+            Assert.That(BulkHaulPolicy.InventoryHaulWorseThanHands(true, false, inventoryFit: 2, handCap: 10, stackCount: 3), Is.True);
+        }
+
+        [Test]
+        public void InvWorseThanHands_LoneBulkyRound_WholeStackFits_Converts()
+        {
+            // A single heavy round on the ground (stackCount 1): hands also move exactly 1, and the sweep
+            // additionally collects the neighbors, so inventory is never worse for a whole-stack fit.
+            Assert.That(BulkHaulPolicy.InventoryHaulWorseThanHands(true, false, inventoryFit: 1, handCap: 10, stackCount: 1), Is.False);
+        }
+
+        [Test]
+        public void InvWorseThanHands_DefLevelOverload_KeepsOldSemantics()
+        {
+            // The 4-argument overload is the pre #124 shape kept for compatibility: it behaves as if the stack
+            // were at least an armful (stackCount unbounded), so the two overloads agree there.
+            Assert.That(BulkHaulPolicy.InventoryHaulWorseThanHands(true, false, 1, 6),
+                Is.EqualTo(BulkHaulPolicy.InventoryHaulWorseThanHands(true, false, 1, 6, int.MaxValue)));
+            Assert.That(BulkHaulPolicy.InventoryHaulWorseThanHands(true, false, 6, 6),
+                Is.EqualTo(BulkHaulPolicy.InventoryHaulWorseThanHands(true, false, 6, 6, int.MaxValue)));
+        }
     }
 }

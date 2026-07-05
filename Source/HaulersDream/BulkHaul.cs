@@ -392,20 +392,26 @@ namespace HaulersDream
 
             // #115: under Combat Extended, a very BULKY item (e.g. a 22-bulk cannon shell) fits FEWER units in
             // INVENTORY (CE caps inventory by weight AND bulk) than a plain hands-carry would (vanilla
-            // MaxStackSpaceEver — handCap above — is mass/volume-limited only; CE does not bulk-limit the carry
+            // MaxStackSpaceEver, handCap above, is stack/volume-limited only; CE does not bulk-limit the carry
             // tracker). Converting such a haul into an into-inventory sweep then delivers ONE round per trip where a
-            // vanilla hand-haul carries a full armful — the reported "hauls CE ammo into the shelf one round at a
-            // time". When inventory would carry fewer than hands, DON'T convert: return null so vanilla's single
-            // hand-haul __result stands (it carries more, in one trip; the hands are a separate capacity, so this is
-            // safe even for a pawn already holding an inventory load). forceSweep (the explicit "Haul everything
-            // nearby" order) is exempt — the player asked to sweep. Gated on CE: without it inventory and hands share
-            // the one mass/volume limit, so primaryTake < handCap arises only for an already-loaded pawn, where
-            // declining would wrongly abort a legitimate accumulation. It fires for the reported bulky-ammo case
-            // (inventory holds ~1 of a many-armful stack) and, more broadly, whenever a CE pawn's inventory would
-            // carry fewer than its hands this trip (a bulk-bound stack, or an already-loaded pawn) — in every case
-            // the vanilla hand-haul moves more per trip, and worst case is a single hand-haul, self-correcting next
-            // scan. Light ammo (low bulk, empty-ish pawn) fits a full armful (primaryTake >= handCap) → still sweeps.
-            if (BulkHaulPolicy.InventoryHaulWorseThanHands(CECompat.IsActive, forceSweep, primaryTake, handCap))
+            // vanilla hand-haul carries a full armful, the reported "hauls CE ammo into the shelf one round at a
+            // time". When inventory would carry fewer units OF THIS STACK than hands, DON'T convert: return null so
+            // vanilla's single hand-haul __result stands (it carries more, in one trip; the hands are a separate
+            // capacity, so this is safe even for a pawn already holding an inventory load). forceSweep (the explicit
+            // "Haul everything nearby" order) is exempt, the player asked to sweep. Gated on CE: without it inventory
+            // and hands share the one mass/volume limit, so a small primaryTake arises only for an already-loaded
+            // pawn, where declining would wrongly abort a legitimate accumulation.
+            //
+            // #124 (previously overlooked): the hands side must be clamped by the stack's LIVE COUNT, because
+            // primaryTake already is (CountWithinCeiling and CE's CanFitInInventory both cap at stackCount). A rock
+            // chunk under a chunk-stacking mod (stackLimit raised above 1; every field chunk still its own 1-count
+            // stack) otherwise compared fit 1 against def armful N and declined EVERY automatic chunk haul, one
+            // hand-haul per chunk, while the forceSweep order (which skips this guard) swept fine. Hands cannot move
+            // more than the whole stack either, so when the whole stack fits in inventory the sweep is never worse
+            // and the guard now only fires on a genuine partial fit of a multi-unit stack. Bulky ammo stays declined
+            // whenever hands would move more of its stack than inventory fits (the #115 trickle); only a stack that
+            // fits WHOLE in inventory now converts, where converting also sweeps the neighbors on top.
+            if (BulkHaulPolicy.InventoryHaulWorseThanHands(CECompat.IsActive, forceSweep, primaryTake, handCap, primary.stackCount))
                 return null;
 
             // Destination space for the primary's def across the chosen storage GROUP (all its cells) — computed
