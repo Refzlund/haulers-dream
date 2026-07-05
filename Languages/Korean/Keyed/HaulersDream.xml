@@ -68,6 +68,10 @@
 <HaulersDream.Setting.ManualPickupDesc>운반 가능한 바닥 물건의 우클릭 메뉴에 "X 줍기" 옵션을 추가합니다. 폰이 클릭한 더미를 추적되는 Hauler's Dream 운반으로서 소지품에 곧장 줍고, 이후 평소 내려놓기로 치워집니다 — 그래서 자동 내려놓기가 꺼져 있어도 절대 잃어버리지 않습니다. 바닐라의 우클릭 운반 옵션에 추가되는 기능입니다.</HaulersDream.Setting.ManualPickupDesc>
 <HaulersDream.Setting.KeepInInventory>"X 소지품에 보관" 우클릭 명령 추가</HaulersDream.Setting.KeepInInventory>
 <HaulersDream.Setting.KeepInInventoryDesc>운반 가능한 바닥 물건의 우클릭 메뉴에 "X 줍기" 옆에 "X 소지품에 보관" 옵션을 추가합니다. 폰이 클릭한 더미를 자기 소지품에 넣고 계속 지닙니다: Hauler's Dream은 그것을 창고로 운반해 가지 않으며, 사용하지 않는 소지품을 버리는 게임의 일상적인 정리도 그것을 버리지 않습니다. 폰이 물건을 일부러 지니게 하고 싶을 때 사용하세요. 나중에 놓으려면 폰이 그것을 다 쓰게 하거나 장비 탭에서 떨어뜨리게 하세요. 바닐라의 우클릭 옵션에 추가되는 기능입니다.</HaulersDream.Setting.KeepInInventoryDesc>
+<HaulersDream.Setting.PickupDelay.Lab>더미당 줍기 지연</HaulersDream.Setting.PickupDelay.Lab>
+<HaulersDream.Setting.PickupDelay.Help>폰이 각 더미를 소지품에 넣기 전에 그 자리에서 작업하는 시간입니다(바닐라의 줍기 진행 막대가 표시됩니다). Hauler's Dream이 아이템을 소지품에 넣는 모든 곳에 적용됩니다: 대량 운반의 쓸어담기 순회, 이동 중 줍기, 작업 산출물 회수, "X 줍기"와 "X 소지품에 보관" 명령, 그리고 대량 적재와 대량 연료 보급의 바닥 줍기 단계. 120틱(약 2초)은 바닐라 자체의 줍기 명령 지연과 정확히 같습니다. 0 = 즉시(이전 동작).</HaulersDream.Setting.PickupDelay.Help>
+<HaulersDream.Setting.PickupDelay.Instant>즉시</HaulersDream.Setting.PickupDelay.Instant>
+<HaulersDream.Setting.PickupDelay.Vanilla>바닐라</HaulersDream.Setting.PickupDelay.Vanilla>
 <HaulersDream.Setting.HaulOversized>초과 크기 더미를 소지품에 운반</HaulersDream.Setting.HaulOversized>
 <HaulersDream.Setting.HaulOversizedDesc>단일 더미가 한 아름에 담기에 너무 클 때(예: 폰이 72만 들 수 있는데 강철 75개 더미일 때), 폰이 그것을 소지품에 넣어 한 번 이동으로 더미 전체를 전달합니다 — 일부만 손으로 나르고 나머지를 남기는 대신. 명령한 운반과 자동 운반 모두에 적용되며, 저장고가 실제로 받을 수 있는 만큼만 운반하므로 아무것도 방치되지 않습니다.</HaulersDream.Setting.HaulOversizedDesc>
 <HaulersDream.Setting.SweepNearbyWhileWorking>작업하면서 정리 — 주변의 흩어진 물건도 줍기</HaulersDream.Setting.SweepNearbyWhileWorking>

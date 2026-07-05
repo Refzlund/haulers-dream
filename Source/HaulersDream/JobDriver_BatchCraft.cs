@@ -442,6 +442,9 @@ namespace HaulersDream
 
             // No <checkEncumbrance> on the JobDef, so TakeToInventory does not cap at 100% — BatchGatherCount carries
             // the whole still-needed amount (overweight) so the batch's ingredients arrive in one trip.
+            // Deliberately NO #121 pickup pause here (see PickupPause): vanilla DoBill collects ingredients
+            // with instant StartCarryThing grabs, so delaying this gather would make HD slower than vanilla
+            // at the same action.
             yield return Toils_Haul.TakeToInventory(LoadStackInd, () => BatchGatherCount(job.GetTarget(LoadStackInd).Thing));
 
             yield return Toils_Jump.Jump(loadDecide);

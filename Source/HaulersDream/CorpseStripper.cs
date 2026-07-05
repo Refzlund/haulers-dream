@@ -396,6 +396,9 @@ namespace HaulersDream
         // Load the stripped loot into the hauler's inventory (tagged — the unload pass, shared
         // inventories, and CE HoldTracker all pick it up from there). Whatever doesn't fit the
         // carry/CE limits simply stays on the ground as an ordinary haulable.
+        // Deliberately NO #121 pickup pause here (see PickupPause): this scoop fires inside vanilla's
+        // Pawn_CarryTracker.TryStartCarry seam as a side effect of a committed corpse carry (no HD toil
+        // exists to pace); the BulkHaul corpse path already pays the pause in its own take loop.
         private static void ScoopLoot(Pawn hauler, List<ThingCount> loot, HaulersDreamSettings s)
         {
             var inv = hauler.inventory?.GetDirectlyHeldThings();

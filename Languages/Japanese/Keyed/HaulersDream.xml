@@ -68,6 +68,10 @@
 <HaulersDream.Setting.ManualPickupDesc>地面の運搬可能アイテムの右クリックメニューに「Xを拾う」の選択肢を追加します。ポーンはクリックされた山を、追跡対象のHauler's Dream運搬として所持品へ直接拾い、それは通常の荷下ろしによって片付けられます。そのため自動荷下ろしがオフでも決して失われません。バニラの右クリック運搬選択肢への追加です。</HaulersDream.Setting.ManualPickupDesc>
 <HaulersDream.Setting.KeepInInventory>右クリックに「Xを所持品に保持」の指示を追加</HaulersDream.Setting.KeepInInventory>
 <HaulersDream.Setting.KeepInInventoryDesc>地面の運搬可能アイテムの右クリックメニューに、「Xを拾う」と並んで「Xを所持品に保持」の選択肢を追加します。ポーンはクリックされた山を自分の所持品に取り込み、持ち続けます。Hauler's Dreamはそれを保管庫へ運び去ることは決してなく、ゲームの日常的な「未使用の所持品を捨てる」整理でもそれが捨てられることはありません。ポーンに意図的にアイテムを持たせたいときに使ってください。あとで手放すには、ポーンにそれを使い切らせるか、装備タブから捨てさせてください。バニラの右クリック選択肢への追加です。</HaulersDream.Setting.KeepInInventoryDesc>
+<HaulersDream.Setting.PickupDelay.Lab>1山ごとの拾い上げ遅延</HaulersDream.Setting.PickupDelay.Lab>
+<HaulersDream.Setting.PickupDelay.Help>ポーンが各山を所持品に入れる前に、その場で作業する時間です（バニラの拾い上げ進行バーが表示されます）。Hauler's Dreamがアイテムを所持品に入れるすべての場面に適用されます：一括運搬の回収巡回、移動中のついで拾い、作業成果物の回収、「Xを拾う」「Xを所持品に保持」の指示、そして一括積み込み・一括燃料補給での地面からの回収。120ティック（約2秒）はバニラ自身の「拾う」指示の遅延と完全に同じです。0＝即時（従来の挙動）。</HaulersDream.Setting.PickupDelay.Help>
+<HaulersDream.Setting.PickupDelay.Instant>即時</HaulersDream.Setting.PickupDelay.Instant>
+<HaulersDream.Setting.PickupDelay.Vanilla>バニラ</HaulersDream.Setting.PickupDelay.Vanilla>
 <HaulersDream.Setting.HaulOversized>規格外の山を所持品で運ぶ</HaulersDream.Setting.HaulOversized>
 <HaulersDream.Setting.HaulOversizedDesc>単一の山が一抱えで運ぶには大きすぎるとき（例：ポーンが72しか持てないのに鋼鉄の山が75）、ポーンは一部だけを手で運んで残りを置いていくのではなく、所持品でそれを抱え、山全体を1回の往復で届けます。指示・自動の両方の運搬に適用されます。実際に保管庫が受け入れられる分しか運ばないので、何も取り残されません。</HaulersDream.Setting.HaulOversizedDesc>
 <HaulersDream.Setting.SweepNearbyWhileWorking>作業しながら片付ける — 近くの落ちたアイテムも回収する</HaulersDream.Setting.SweepNearbyWhileWorking>

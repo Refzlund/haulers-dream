@@ -43,6 +43,12 @@ namespace HaulersDream
                 // forbidden ground stack (a forced player order); its destruction mid-walk fails the goto cleanly.
                 yield return Toils_Goto.GotoThing(ContainerInd, PathEndMode.Touch).FailOnDespawnedOrNull(ContainerInd);
 
+                // Vanilla-like pickup pause (#121), anchored on the spawned CONTAINER: the item itself is
+                // unspawned inside it, so anchoring on ItemInd would render the bar on the pawn; the box is the
+                // thing the pawn visibly works at. Mirrors the goto's fail condition so a box destroyed
+                // mid-pause ends the job promptly instead of finishing a pointless wait.
+                yield return PickupPause.MakeToil(ContainerInd).FailOnDespawnedOrNull(ContainerInd);
+
                 Toil extract = ToilMaker.MakeToil("HD_Keep_TakeFromContainer");
                 extract.initAction = delegate
                 {
@@ -82,6 +88,11 @@ namespace HaulersDream
             // only fail when the stack is gone, not when it is forbidden. Job-bound reservations release at job end
             // (CleanupCurrentJob).
             yield return Toils_Goto.GotoThing(ItemInd, PathEndMode.ClosestTouch).FailOnDespawnedOrNull(ItemInd);
+
+            // Vanilla-like pickup pause (#121): a keep order is exactly vanilla's "pick up into inventory"
+            // case, so it pays vanilla's exact wait. Mirrors the goto's fail condition (gone = fail promptly;
+            // forbidden stays allowed, this is a forced order).
+            yield return PickupPause.MakeToil(ItemInd).FailOnDespawnedOrNull(ItemInd);
 
             Toil take = ToilMaker.MakeToil("HD_Keep_Take");
             take.initAction = delegate

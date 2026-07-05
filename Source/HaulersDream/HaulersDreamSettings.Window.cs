@@ -915,6 +915,18 @@ namespace HaulersDream
         private static string Hours(float h) => "HaulersDream.Unit.Hours".Translate(h.ToString("0.#"));
         private static string OffLabel => "HaulersDream.Common.Off".Translate();
 
+        // Readout for the pickup-delay slider: "Instant" at 0, seconds otherwise, and a tag on vanilla's exact
+        // value so the player can find the "vanilla-like" point the setting promises (0 / vanilla / custom).
+        private static string PickupDelayLabel(int ticks)
+        {
+            if (ticks <= 0)
+                return "HaulersDream.Setting.PickupDelay.Instant".Translate();
+            string secs = string.Format("~{0:0.0}s", ticks / 60f);
+            if (ticks == PickupDelayPolicy.VanillaDelayTicks)
+                return secs + " (" + "HaulersDream.Setting.PickupDelay.Vanilla".Translate() + ")";
+            return secs;
+        }
+
         // ===================== MIGRATION (conditional clean-transition guide) =====================
         // Reachable only when ModReplacements.AnyActive (the nav row is hidden + DrawContent redirects otherwise), so
         // ActiveNames is non-empty here. Lists the replaced mods the user still has active, offers a one-click
@@ -1039,6 +1051,13 @@ namespace HaulersDream
             // "Keep X in inventory" is the hold-it sibling of "Pick up X" (pick up to HAUL vs pick up to HOLD).
             keepInInventoryOption = HDSettingsUI.Checkbox(c, "HaulersDream.Setting.KeepInInventory".Translate(),
                 keepInInventoryOption, "HaulersDream.Setting.KeepInInventoryDesc".Translate());
+            // The vanilla-like pickup pause (#121). Spans EVERY HD pickup-into-inventory (bulk sweep, en-route,
+            // self-pickup, "Pick up X" / "Keep X", the ground-sweep half of bulk loading / refueling), so it sits
+            // with the pickup orders but is deliberately NOT gated on the bulkHaul toggle. Steps of 10 so the
+            // vanilla value (120) is easy to land on; the readout names 0 and the exact vanilla point.
+            pickupDelayTicks = Mathf.RoundToInt(HDSettingsUI.Slider(c, "HaulersDream.Setting.PickupDelay.Lab".Translate(),
+                pickupDelayTicks, 0f, PickupDelayPolicy.SliderMaxTicks, PickupDelayLabel(pickupDelayTicks),
+                "HaulersDream.Setting.PickupDelay.Help".Translate()) / 10f) * 10;
 
             // The "While working" group (sweep-nearby + keep-working-when-full) moved to the Work & yields tab, next
             // to the per-category yield behaviour it governs. "Top up existing stacks" moved to the Unloading tab.
