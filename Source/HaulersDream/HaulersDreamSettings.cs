@@ -213,6 +213,11 @@ namespace HaulersDream
         // A2: drop HD-tagged items from a pawn that can no longer haul (hauling disabled, or a mech charging /
         // dormant / self-shutting-down) so swept cargo is never trapped forever. Anti-softlock recovery; ON.
         public bool enableSoftlockDrop = true;
+        // Issue #123: a temporary quest pawn (lodger/helper from another faction) drops everything it picked up
+        // while under player control at the moment it reverts to its home faction, keeping only what it arrived
+        // with plus equipped weapons and worn apparel. Item-loss prevention; ON. The arrival snapshot is always
+        // recorded (cheap bookkeeping); this gates only the drop, so enabling mid-quest still works.
+        public bool enableQuestPawnDrop = true;
         // B1: a pawn already carrying needed cargo diverts to deposit it into the nearest needy transporter /
         // portal / vehicle, instead of starting a fresh pickup. Behavior-changing autonomous trigger; OFF.
         public bool enableOpportunisticLoad = false;
@@ -619,6 +624,7 @@ namespace HaulersDream
             Scribe_Values.Look(ref enableBulkUnloadCarriers, "enableBulkUnloadCarriers", true);
             Scribe_Values.Look(ref cleanupOnSave, "cleanupOnSave", true);
             Scribe_Values.Look(ref enableSoftlockDrop, "enableSoftlockDrop", true);
+            Scribe_Values.Look(ref enableQuestPawnDrop, "enableQuestPawnDrop", true);
             Scribe_Values.Look(ref enableOpportunisticLoad, "enableOpportunisticLoad", false);
             Scribe_Values.Look(ref loadOpportunityScanRadius, "loadOpportunityScanRadius", 30);
             Scribe_Values.Look(ref enableContinuousLoading, "enableContinuousLoading", false);
@@ -797,6 +803,7 @@ namespace HaulersDream
             enableBulkUnloadCarriers = true;
             cleanupOnSave = true;
             enableSoftlockDrop = true;
+            enableQuestPawnDrop = true;
             enableOpportunisticLoad = false;
             loadOpportunityScanRadius = 30;
             enableContinuousLoading = false;

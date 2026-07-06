@@ -1456,6 +1456,8 @@ namespace HaulersDream
                 "HaulersDream.Setting.AlertStuckHours.Help".Translate(), enabled: alertCannotUnload, indent: 24f) * 2f) / 2f;
             enableSoftlockDrop = HDSettingsUI.Checkbox(c, "HaulersDream.Setting.SoftlockDrop".Translate(),
                 enableSoftlockDrop, "HaulersDream.Setting.SoftlockDropDesc".Translate());
+            enableQuestPawnDrop = HDSettingsUI.Checkbox(c, "HaulersDream.Setting.QuestPawnDrop".Translate(),
+                enableQuestPawnDrop, "HaulersDream.Setting.QuestPawnDropDesc".Translate());
             cleanupOnSave = HDSettingsUI.Checkbox(c, "HaulersDream.Setting.CleanupOnSave".Translate(),
                 cleanupOnSave, "HaulersDream.Setting.CleanupOnSaveDesc".Translate());
 

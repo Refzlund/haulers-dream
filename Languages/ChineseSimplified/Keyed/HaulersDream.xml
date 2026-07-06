@@ -354,6 +354,8 @@
 <HaulersDream.Setting.CleanupOnSaveDesc>当游戏在某个小人正进行批量装载途中保存时，Hauler's Dream 会为这次保存把该小人收回到空闲状态，使存档文件不引用 Hauler's Dream 自己的任务类型——这意味着你日后可以卸载本模组而不会让存档报错。该小人会保留任何已清扫的货物，之后正常卸载它们。默认开启；若你绝不打算移除本模组，可关闭。</HaulersDream.Setting.CleanupOnSaveDesc>
 <HaulersDream.Setting.SoftlockDrop>从卡住的小人处释放被困货物</HaulersDream.Setting.SoftlockDrop>
 <HaulersDream.Setting.SoftlockDropDesc>如果一个小人在携带 Hauler's Dream 拾取的货物时再也无法搬运——它的搬运工作被禁用，或某个机械体处于休眠/自我关闭状态——所携带的货物会被丢在附近交给正常搬运，而不是永远被困在那个小人身上。一个即将充能的机械体会先把它携带的货物送到储存区（或在无处存放时丢在附近），免得它们在机械体停坐于充能器上时腐烂或占用携带空间。只动 Hauler's Dream 自己拾取的物品。默认开启（一道安全网）。</HaulersDream.Setting.SoftlockDropDesc>
+  <HaulersDream.Setting.QuestPawnDrop>任务客人离开时丢下捡到的物品</HaulersDream.Setting.QuestPawnDrop>
+  <HaulersDream.Setting.QuestPawnDropDesc>任务期间借给你的临时小人（来自其他派系的寄宿者、难民、援助者）可能会在物品栏里装着餐食、药品或其他殖民地物资。通常他们回归自己的派系时会带走身上的一切。开启此选项后，这样的小人在脱离你的控制的那一刻，会把在你这里捡到的所有东西丢在原地，只保留来时携带的物品，以及装备的武器和穿着的衣物。无论以何种方式结束都适用：任务结束、背叛或被逮捕。默认开启。</HaulersDream.Setting.QuestPawnDropDesc>
 <HaulersDream.Setting.OpportunisticLoad>途中把所携带的货物存入运输工具</HaulersDream.Setting.OpportunisticLoad>
 <HaulersDream.Setting.OpportunisticLoadDesc>一个已经携带着附近某个运输舱、穿梭机、地图传送门或载具正等待的物品的小人，会绕道把它们卸下，而不是另起一趟全新的取货行程。减少无谓的奔走。默认关闭（它改变小人接下来选取哪项任务）。</HaulersDream.Setting.OpportunisticLoadDesc>
 <HaulersDream.Setting.LoadOpportunityRadius>途中存货搜索半径：{0} 格</HaulersDream.Setting.LoadOpportunityRadius>

@@ -354,6 +354,8 @@
 <HaulersDream.Setting.CleanupOnSaveDesc>ポーンが一括積み込みの途中でゲームが保存されるとき、Hauler's Dreamはそのポーンを保存のためにいったん待機状態に戻し、セーブファイルがHauler's Dream独自のジョブ種を参照しないようにします — つまり、後でセーブをエラーにせずにMODをアンインストールできます。ポーンはかき集めた物資をすべて保持し、その後通常どおり降ろします。デフォルトはオンです。MODを決して外す予定がないならオフにしてください。</HaulersDream.Setting.CleanupOnSaveDesc>
 <HaulersDream.Setting.SoftlockDrop>動けなくなったポーンから閉じ込められた貨物を解放する</HaulersDream.Setting.SoftlockDrop>
 <HaulersDream.Setting.SoftlockDropDesc>Hauler's Dreamが拾った物資を運んでいるポーンがもう運搬できなくなった場合 — 運搬作業が無効になった、またはメカノイドが休眠/自己停止した — 携行中の物資は、そのポーンに永久に閉じ込められる代わりに、通常の運搬用に近くへ落とされます。チャージしようとしているメカノイドは、まず携行中の物資を保管庫へ届け（置き場がなければ近くへ落とし）、それらがチャージャーに座っている間に傷んだり携行スペースを取ったりしないようにします。Hauler's Dream自身が拾ったアイテムだけに手を加えます。デフォルトはオンです（安全網）。</HaulersDream.Setting.SoftlockDropDesc>
+  <HaulersDream.Setting.QuestPawnDrop>クエストの客は去るときに拾った物を置いていく</HaulersDream.Setting.QuestPawnDrop>
+  <HaulersDream.Setting.QuestPawnDropDesc>クエスト中に借り受ける一時的なポーン（下宿人、難民、他派閥の助っ人）は、食事や医薬品などコロニーの物資を所持品に抱え込むことがあります。通常、自分の派閥に戻るときに持っている物をすべて持ち去ってしまいます。これをオンにすると、そのようなポーンはあなたの管理下から外れた瞬間、あなたの元で拾ったすべての物をその場に落とします。到着時に持っていた物と、装備した武器や着ている服だけを保持します。滞在がどのように終わっても適用されます：クエスト終了、裏切り、逮捕。デフォルトはオンです。</HaulersDream.Setting.QuestPawnDropDesc>
 <HaulersDream.Setting.OpportunisticLoad>道中で携行中の貨物を輸送機に預ける</HaulersDream.Setting.OpportunisticLoad>
 <HaulersDream.Setting.OpportunisticLoadDesc>近くの輸送ポッド・シャトル・マップポータル・車両が待っているアイテムをすでに携行しているポーンは、まったく新しい取得運行を始める代わりに、迂回してそれらを預けに行きます。無駄な歩行が減ります。デフォルトはオフです（ポーンが次に取るタスクを変えるため）。</HaulersDream.Setting.OpportunisticLoadDesc>
 <HaulersDream.Setting.LoadOpportunityRadius>道中預けの探索半径：{0}マス</HaulersDream.Setting.LoadOpportunityRadius>
