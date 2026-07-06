@@ -19,6 +19,16 @@ namespace HaulersDream
     [HarmonyPatch(typeof(BillRepeatModeUtility), nameof(BillRepeatModeUtility.MakeConfigFloatMenu))]
     public static class Patch_BillRepeatModeUtility_MakeConfigFloatMenu
     {
+        // Run FIRST among prefixes so HD's prefix is the one that executes when another mod ALSO full-replaces
+        // this method with a return-false prefix (e.g. Ingredient Threshold). Harmony runs prefixes
+        // highest-priority first, and a prefix that returns false skips every remaining prefix AND the original
+        // (the generated wrapper is `if (runOriginal) runOriginal = prefix(...)`), so among competing
+        // full-replace prefixes ONLY the highest-priority one runs. At Priority.First HD wins that race and
+        // re-adds the other mods' modes (the *Compat.TryInsertModes calls) so its menu is the COMPLETE one; at a
+        // lower priority HD would be skipped entirely and its own "Batch: ..." modes (and the re-added compat
+        // modes) would vanish. Transpiler-based mods (EGO, Compositable Loadouts) live in the original body,
+        // which HD's return-false skips, so they are re-added via the shims the same way regardless.
+        [HarmonyPriority(Priority.First)]
         static bool Prefix(Bill_Production bill)
         {
             var comp = HaulersDreamGameComponent.Instance;
@@ -58,6 +68,11 @@ namespace HaulersDream
             // CraftBatchPlanner.CanBatch only accepts the three vanilla modes — so those bills route as plain vanilla.) ---
             EverybodyGetsOneCompat.TryInsertModes(opts, bill);
             CompositableLoadoutsCompat.TryInsertModes(opts, bill);
+            // Ingredient Threshold adds its mode with its OWN return-false prefix on this method (not a transpiler).
+            // Two competing full-replace prefixes: only the highest-priority one runs (see the Priority.First note
+            // above), so HD wins and IT's prefix never runs. Re-add its mode here so HD's winning menu still offers
+            // it and its "Ingredient Threshold" mode stays selectable (issue #126).
+            IngredientThresholdCompat.TryInsertModes(opts, bill);
 
             // --- the three batch variants (only when this recipe can actually be batched) ---
             // Each carries a hover tooltip (FloatMenuOption.tooltip) explaining what that batch mode does (issue #3
