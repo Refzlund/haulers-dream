@@ -104,23 +104,47 @@ namespace HaulersDream.Core
 
         /// <summary>
         /// #115: should a haul be DECLINED for the into-inventory sweep because carrying it in inventory would move
-        /// FEWER units per trip than a plain hand-haul? Under Combat Extended a very BULKY stack (e.g. a heavy cannon
-        /// shell) fits fewer units in inventory — CE caps inventory by weight AND bulk — than a hands-carry armful,
-        /// which is mass/volume-limited only (CE does not bulk-limit the carry tracker). Routing it through inventory
-        /// then delivers a trickle where hands would carry a full armful (the "one round at a time into the shelf"
-        /// report). True = keep vanilla's single hand-haul instead of converting.
+        /// FEWER units of the hauled stack per trip than a plain hand-haul? Under Combat Extended a very BULKY stack
+        /// (e.g. a heavy cannon shell) fits fewer units in inventory (CE caps inventory by weight AND bulk) than a
+        /// hands-carry armful, which is stack/volume-limited only (CE does not bulk-limit the carry tracker). Routing
+        /// it through inventory then delivers a trickle where hands would carry a full armful (the "one round at a
+        /// time into the shelf" report). True = keep vanilla's single hand-haul instead of converting.
+        ///
+        /// #124 (previously overlooked): <paramref name="inventoryFit"/> is clamped by the stack's live count, so it
+        /// must be compared against what hands would move OF THAT SAME STACK, min(<paramref name="handCap"/>,
+        /// <paramref name="stackCount"/>), never the def-level armful alone. A lone rock chunk under a chunk-stacking
+        /// mod (stackLimit raised above 1, each field chunk still a 1-count stack) otherwise compares fit 1 against
+        /// armful N and wrongly declines EVERY automatic chunk haul: hands cannot move more than the whole stack
+        /// either, and the sweep takes the neighbors on top. When the whole stack fits in inventory the inventory
+        /// route is never worse, so the decline only fires for a genuine partial fit of a bigger stack.
         ///
         /// Only meaningful with CE active (<paramref name="ceActive"/>): without CE, inventory and hands share the one
-        /// mass/volume limit, so <paramref name="inventoryFit"/> &lt; <paramref name="handArmful"/> would arise only for
-        /// an already-loaded pawn — where declining would wrongly abort a legitimate accumulation, so it stays false.
+        /// mass/volume limit, so a small <paramref name="inventoryFit"/> would arise only for an already-loaded pawn,
+        /// where declining would wrongly abort a legitimate accumulation, so it stays false.
         /// A <paramref name="forceSweep"/> (the explicit "haul everything nearby" order) is never declined.
         /// </summary>
         /// <param name="ceActive">Combat Extended present (the bulk dimension exists).</param>
-        /// <param name="forceSweep">An explicit player sweep order — always convert, never decline.</param>
+        /// <param name="forceSweep">An explicit player sweep order: always convert, never decline.</param>
+        /// <param name="inventoryFit">Units of this stack that fit in inventory (mass + CE bulk clamped, and never
+        /// more than the stack holds).</param>
+        /// <param name="handCap">Units a hands-carry could take of this DEF per armful (vanilla MaxStackSpaceEver,
+        /// which is min(stackLimit, CarryingCapacity / VolumePerUnit) and ignores the live stack's count).</param>
+        /// <param name="stackCount">The hauled stack's live count. Clamps the hands side: a hand-haul of this stack
+        /// moves at most this many units, whatever the def-level armful says.</param>
+        public static bool InventoryHaulWorseThanHands(bool ceActive, bool forceSweep, int inventoryFit, int handCap, int stackCount)
+            => ceActive && !forceSweep && inventoryFit < Math.Min(handCap, stackCount);
+
+        /// <summary>
+        /// Def-level overload kept for source/binary compatibility (pre #124 shape): compares against the raw
+        /// def armful with no stack clamp, i.e. behaves as if the stack were at least an armful. Prefer the
+        /// <c>stackCount</c> overload; this one wrongly declines a stack smaller than one armful (issue #124).
+        /// </summary>
+        /// <param name="ceActive">Combat Extended present (the bulk dimension exists).</param>
+        /// <param name="forceSweep">An explicit player sweep order: always convert, never decline.</param>
         /// <param name="inventoryFit">Units of this stack that fit in inventory (mass + CE bulk clamped).</param>
         /// <param name="handArmful">Units a hands-carry would take for this def (vanilla MaxStackSpaceEver).</param>
         public static bool InventoryHaulWorseThanHands(bool ceActive, bool forceSweep, int inventoryFit, int handArmful)
-            => ceActive && !forceSweep && inventoryFit < handArmful;
+            => InventoryHaulWorseThanHands(ceActive, forceSweep, inventoryFit, handArmful, int.MaxValue);
 
         /// <summary>
         /// How many units of a candidate stack to take, given the running load: fits under the ceiling,
