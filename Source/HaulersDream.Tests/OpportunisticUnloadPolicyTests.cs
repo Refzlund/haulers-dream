@@ -146,5 +146,43 @@ namespace HaulersDream.Tests
             Assert.That(RunEnd(toTarget: 2, toStorage: 11, storageToTarget: 11), Is.True);  // detour 20 == bar
             Assert.That(RunEnd(toTarget: 2, toStorage: 12, storageToTarget: 11), Is.False); // detour 21 > bar
         }
+
+        // --- downtime-swap severity gates (issue #122): the unload-before-eating/sleep swap must stand
+        // down at the critical need category, so a starving pawn eats NOW and an exhausted pawn sleeps
+        // NOW. Vanilla enum values pinned as ints (HungerCategory / RestCategory: 0..3). ---
+
+        [Test]
+        public void FoodSwap_AllowedBelowStarving()
+        {
+            // Fed(0) / Hungry(1) / UrgentlyHungry(2): the swap may replace the food job (the divert
+            // cooldown then guarantees the very next determination keeps the vanilla food job).
+            Assert.That(OpportunisticUnloadPolicy.MaySwapFoodJobForUnload(0), Is.True);
+            Assert.That(OpportunisticUnloadPolicy.MaySwapFoodJobForUnload(1), Is.True);
+            Assert.That(OpportunisticUnloadPolicy.MaySwapFoodJobForUnload(2), Is.True);
+        }
+
+        [Test]
+        public void FoodSwap_StandsDownAtStarving()
+        {
+            // Starving(3): the pawn is taking malnutrition damage, so the vanilla food job must run
+            // unchanged. Anything at or beyond Starving (a hypothetical modded category) also stands down.
+            Assert.That(OpportunisticUnloadPolicy.MaySwapFoodJobForUnload(3), Is.False);
+            Assert.That(OpportunisticUnloadPolicy.MaySwapFoodJobForUnload(4), Is.False);
+        }
+
+        [Test]
+        public void RestSwap_AllowedBelowExhausted()
+        {
+            Assert.That(OpportunisticUnloadPolicy.MaySwapRestJobForUnload(0), Is.True);
+            Assert.That(OpportunisticUnloadPolicy.MaySwapRestJobForUnload(1), Is.True);
+            Assert.That(OpportunisticUnloadPolicy.MaySwapRestJobForUnload(2), Is.True);
+        }
+
+        [Test]
+        public void RestSwap_StandsDownAtExhausted()
+        {
+            Assert.That(OpportunisticUnloadPolicy.MaySwapRestJobForUnload(3), Is.False);
+            Assert.That(OpportunisticUnloadPolicy.MaySwapRestJobForUnload(4), Is.False);
+        }
     }
 }

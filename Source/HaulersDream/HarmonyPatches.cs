@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Reflection;
 using HarmonyLib;
+using HaulersDream.Core;
 using RimWorld;
 using RimWorld.Planet;
 using UnityEngine;
@@ -121,40 +122,54 @@ namespace HaulersDream
             // already takes — the substitution was the lone path missing it.
             if (pawn.Map == null || !MapGate.ShouldUnloadToStorage(pawn.Map))
                 return;
-            var comp = pawn.GetComp<CompHauledToInventory>();
-            var carried = comp?.GetHashSet();
-            if (carried == null || carried.Count == 0)
-                return; // no tracked items -> leave vanilla's unload as-is
-            if (pawn.CurJobDef == HaulersDreamDefOf.HaulersDream_UnloadInventory)
-                return;
-            // Substitute only when our unload can actually PROGRESS right now: at least one tagged stack that is
-            // still in inventory, reservable by this pawn, AND genuinely SURPLUS (above the pawn's keep-stock).
-            // Otherwise (every tagged stack reserved by another pawn, OR all tagged stock is now keep-stock — e.g.
-            // carried ammo a compat mod keeps, which has SurplusOf 0) our job would end with nothing to do while
-            // vanilla's UnloadEverything flag stays set — the think tree re-issues it every few ticks forever, and
-            // vanilla's own unload (which always progresses by dropping near) never drains the flag. The SurplusOf
-            // check matches PawnUnloadChecker.AnyUnloadable and the driver's own FirstUnloadableThing selection,
-            // so the three agree on "is there anything to unload."
-            var inner = pawn.inventory?.innerContainer;
-            if (inner == null)
-                return;
-            bool anyUnloadable = false;
-            foreach (var t in carried)
+            // #122 SEAM BOUNDARY (degrade, keep vanilla): everything below fans out into the tag set, the
+            // surplus math, and its compat shims, the same throw-prone graph as the downtime swaps (see
+            // Patch_JobGiver_GetRest_UnloadFirst's class doc). On a throw, report once and leave vanilla's own
+            // unload job standing, so the pawn still drains its UnloadEverything flag instead of losing this
+            // think node to the sorter's catch-and-skip on every pass.
+            try
             {
-                if (t != null && inner.Contains(t) && pawn.CanReserve(t) && InventorySurplus.SurplusOf(pawn, t) > 0)
+                var comp = pawn.GetComp<CompHauledToInventory>();
+                var carried = comp?.GetHashSet();
+                if (carried == null || carried.Count == 0)
+                    return; // no tracked items -> leave vanilla's unload as-is
+                if (pawn.CurJobDef == HaulersDreamDefOf.HaulersDream_UnloadInventory)
+                    return;
+                // Substitute only when our unload can actually PROGRESS right now: at least one tagged stack that is
+                // still in inventory, reservable by this pawn, AND genuinely SURPLUS (above the pawn's keep-stock).
+                // Otherwise (every tagged stack reserved by another pawn, OR all tagged stock is now keep-stock, e.g.
+                // carried ammo a compat mod keeps, which has SurplusOf 0) our job would end with nothing to do while
+                // vanilla's UnloadEverything flag stays set, the think tree re-issues it every few ticks forever, and
+                // vanilla's own unload (which always progresses by dropping near) never drains the flag. The SurplusOf
+                // check matches PawnUnloadChecker.AnyUnloadable and the driver's own FirstUnloadableThing selection,
+                // so the three agree on "is there anything to unload."
+                var inner = pawn.inventory?.innerContainer;
+                if (inner == null)
+                    return;
+                bool anyUnloadable = false;
+                foreach (var t in carried)
                 {
-                    anyUnloadable = true;
-                    break;
+                    if (t != null && inner.Contains(t) && pawn.CanReserve(t) && InventorySurplus.SurplusOf(pawn, t) > 0)
+                    {
+                        anyUnloadable = true;
+                        break;
+                    }
                 }
+                if (!anyUnloadable)
+                    return;
+                var job = JobMaker.MakeJob(HaulersDreamDefOf.HaulersDream_UnloadInventory);
+                if (job.TryMakePreToilReservations(pawn, false))
+                    __result = job;
             }
-            if (!anyUnloadable)
-                return;
-            var job = JobMaker.MakeJob(HaulersDreamDefOf.HaulersDream_UnloadInventory);
-            if (job.TryMakePreToilReservations(pawn, false))
-                __result = job;
+            catch (Exception ex)
+            {
+                HDGuard.SeamDegraded(ex, "JobGiver_UnloadYourInventory.TryGiveJob (HD unload substitution)", pawn,
+                    "kept vanilla's own unload job, so the pawn still empties its inventory.");
+            }
         }
 
-        // Seam guard (fix/mix): a throw here would break this pawn's vanilla unload selection. Log + rethrow.
+        // Seam guard (fix/mix): covers throws HD's self-degrading postfix above did NOT cause (the vanilla body,
+        // another mod's patch on this method). Log + rethrow.
         static Exception Finalizer(Exception __exception, Pawn pawn)
             => HDGuard.SeamThrew(__exception, "JobGiver_UnloadYourInventory.TryGiveJob (HD unload substitution)", pawn,
                 "this pawn's inventory-unload selection failed this scan.");
@@ -192,6 +207,28 @@ namespace HaulersDream
             if (comp == null || comp.PeekHashSet().Count == 0)
                 return;
 
+            // #122 SEAM BOUNDARY (degrade, keep vanilla): both branches below fan out into the surplus math,
+            // storage scans, and compat shims, the same throw-prone graph as the downtime swaps (see
+            // Patch_JobGiver_GetRest_UnloadFirst's class doc). A repeatable throw here used to cost the pawn its
+            // ENTIRE work selection on every scan ("refuses to do any other tasks" in issue #122) because the
+            // enclosing think node catches and skips a throwing child. On a throw, report once and leave
+            // vanilla's chosen work job standing.
+            try
+            {
+                PostfixInner(ref __result, pawn, __instance);
+            }
+            catch (Exception ex)
+            {
+                HDGuard.SeamDegraded(ex, "JobGiver_Work.TryIssueJobPackage (HD opportunistic unload)", pawn,
+                    "kept vanilla's chosen work job, so the pawn keeps working.");
+            }
+        }
+
+        // The actual divert/end-of-run logic, split out so the boundary above stays a readable frame. Ref
+        // semantics preserved: __result flows through unchanged unless a divert/end-of-run unload replaces it
+        // (each replacement is the branch's last act, so a throw can never leave a torn half-applied result).
+        static void PostfixInner(ref ThinkResult __result, Pawn pawn, JobGiver_Work __instance)
+        {
             if (__result.IsValid && __result.Job != null)
             {
                 // NEVER divert a pawn off EMERGENCY / medical / rescue / firefighting work to unload first — that
@@ -268,7 +305,24 @@ namespace HaulersDream
     /// is ever reached. These three postfixes swap the downtime job for an unload trip when the pawn is carrying
     /// scooped goods and the matching toggle is on; once it unloads (and is empty) the need-giver re-fires next
     /// determination and the pawn rests/eats/relaxes normally. A severity gate keeps a critically tired/starving
-    /// pawn from detouring — it sleeps/eats now (the load is then caught on wake by the interval safety net).
+    /// pawn from detouring; it sleeps/eats now (the load is then caught on wake by the interval safety net), and
+    /// the boundary categories are pinned in <see cref="OpportunisticUnloadPolicy"/> (NUnit-tested).
+    ///
+    /// <para>#122 SEAM BOUNDARY (the reading-until-starvation loop): these nodes are NEED-critical. RimWorld's
+    /// think infrastructure catches a throwing node, logs it (one entry the log window collapses under its
+    /// repeat counter), and SKIPS it (ThinkNode_PrioritySorter, decompile-verified). A mid-job pawn's only
+    /// urgent-need rescue is a node clearing CheckForJobOverride's min priority (JobDriver_Reading re-checks
+    /// every 600 ticks at 9.1; JobGiver_GetFood reports 9.5, but JobGiver_GetRest reports at most 8, BELOW the
+    /// threshold, so the mid-book rescue is FOOD-only; the rest seam still matters on every ordinary full
+    /// determination, which applies no threshold). So a REPEATABLE
+    /// throw anywhere in this node's call graph (HD's swap helper fans out into surplus math, storage scans,
+    /// and compat shims for Simple Sidearms / Grab Your Tool / DBH / CE, any of which a foreign mod or stale state
+    /// can break) used to cost the pawn its food job on EVERY think while the joy node kept issuing "read a
+    /// book": the pawn read nonstop, refused all other tasks, and starved to death. Each postfix therefore
+    /// catches its OWN enhancement's throw, reports once with attribution (<see cref="HDGuard.SeamDegraded"/>),
+    /// and leaves vanilla's already-computed job standing, so the pawn still eats/sleeps/relaxes. The Finalizer
+    /// stays for throws HD did NOT cause (the vanilla body, another mod's patch on the same method): there is
+    /// no vanilla result to preserve in that case, so log-and-rethrow remains correct there.</para>
     /// </summary>
     [HarmonyPatch(typeof(JobGiver_GetRest), "TryGiveJob")]
     public static class Patch_JobGiver_GetRest_UnloadFirst
@@ -276,14 +330,27 @@ namespace HaulersDream
         static void Postfix(ref Job __result, Pawn pawn)
         {
             // Don't detour an EXHAUSTED pawn (about to collapse) — let it sleep now.
-            if (__result == null || pawn?.needs?.rest == null || pawn.needs.rest.CurCategory == RestCategory.Exhausted)
+            if (__result == null || pawn?.needs?.rest == null
+                || !OpportunisticUnloadPolicy.MaySwapRestJobForUnload((int)pawn.needs.rest.CurCategory))
                 return;
-            var unload = OpportunisticUnload.TryGetPreDowntimeUnloadJob(pawn, HaulersDreamMod.Settings?.unloadBeforeSleep ?? false);
+            Job unload;
+            try
+            {
+                unload = OpportunisticUnload.TryGetPreDowntimeUnloadJob(pawn, HaulersDreamMod.Settings?.unloadBeforeSleep ?? false);
+            }
+            catch (Exception ex)
+            {
+                // #122 boundary (see the class doc): report once, keep vanilla's rest job, the pawn still sleeps.
+                HDGuard.SeamDegraded(ex, "JobGiver_GetRest.TryGiveJob (HD unload-before-sleep)", pawn,
+                    "kept vanilla's rest job, so the pawn still sleeps.");
+                return;
+            }
             if (unload != null)
                 __result = unload;
         }
 
-        // Seam guard (fix/mix): a throw here would break this pawn's REST job selection (it could fail to sleep).
+        // Seam guard (fix/mix): covers throws HD's self-degrading postfix above did NOT cause (the vanilla body,
+        // another mod's patch on this method); a throw there breaks this pawn's REST selection for the scan.
         static Exception Finalizer(Exception __exception, Pawn pawn)
             => HDGuard.SeamThrew(__exception, "JobGiver_GetRest.TryGiveJob (HD unload-before-sleep)", pawn,
                 "this pawn's rest-job selection failed this scan.");
@@ -295,14 +362,29 @@ namespace HaulersDream
         static void Postfix(ref Job __result, Pawn pawn)
         {
             // Don't detour a STARVING pawn (taking damage) — let it eat now.
-            if (__result == null || pawn?.needs?.food == null || pawn.needs.food.CurCategory == HungerCategory.Starving)
+            if (__result == null || pawn?.needs?.food == null
+                || !OpportunisticUnloadPolicy.MaySwapFoodJobForUnload((int)pawn.needs.food.CurCategory))
                 return;
-            var unload = OpportunisticUnload.TryGetPreDowntimeUnloadJob(pawn, HaulersDreamMod.Settings?.unloadBeforeEating ?? false);
+            Job unload;
+            try
+            {
+                unload = OpportunisticUnload.TryGetPreDowntimeUnloadJob(pawn, HaulersDreamMod.Settings?.unloadBeforeEating ?? false);
+            }
+            catch (Exception ex)
+            {
+                // #122 boundary (the shared doc sits on Patch_JobGiver_GetRest_UnloadFirst): report once, keep
+                // vanilla's food job, the pawn still eats.
+                // This is THE seam whose death starved reading pawns: joy outlives food in the needs sorter.
+                HDGuard.SeamDegraded(ex, "JobGiver_GetFood.TryGiveJob (HD unload-before-eating)", pawn,
+                    "kept vanilla's food job, so the pawn still eats.");
+                return;
+            }
             if (unload != null)
                 __result = unload;
         }
 
-        // Seam guard (fix/mix): a throw here would break this pawn's FOOD job selection (it could fail to eat).
+        // Seam guard (fix/mix): covers throws HD's self-degrading postfix above did NOT cause (the vanilla body,
+        // another mod's patch on this method); a throw there breaks this pawn's FOOD selection for the scan.
         static Exception Finalizer(Exception __exception, Pawn pawn)
             => HDGuard.SeamThrew(__exception, "JobGiver_GetFood.TryGiveJob (HD unload-before-eating)", pawn,
                 "this pawn's food-job selection failed this scan.");
@@ -315,12 +397,25 @@ namespace HaulersDream
         {
             if (__result == null)
                 return;
-            var unload = OpportunisticUnload.TryGetPreDowntimeUnloadJob(pawn, HaulersDreamMod.Settings?.unloadBeforeLeisure ?? false);
+            Job unload;
+            try
+            {
+                unload = OpportunisticUnload.TryGetPreDowntimeUnloadJob(pawn, HaulersDreamMod.Settings?.unloadBeforeLeisure ?? false);
+            }
+            catch (Exception ex)
+            {
+                // #122 boundary (the shared doc sits on Patch_JobGiver_GetRest_UnloadFirst): report once, keep
+                // vanilla's joy job.
+                HDGuard.SeamDegraded(ex, "JobGiver_GetJoy.TryGiveJob (HD unload-before-leisure)", pawn,
+                    "kept vanilla's joy job, so the pawn still gets recreation.");
+                return;
+            }
             if (unload != null)
                 __result = unload;
         }
 
-        // Seam guard (fix/mix): a throw here would break this pawn's JOY/recreation job selection.
+        // Seam guard (fix/mix): covers throws HD's self-degrading postfix above did NOT cause (the vanilla body,
+        // another mod's patch on this method); a throw there breaks this pawn's JOY selection for the scan.
         static Exception Finalizer(Exception __exception, Pawn pawn)
             => HDGuard.SeamThrew(__exception, "JobGiver_GetJoy.TryGiveJob (HD unload-before-leisure)", pawn,
                 "this pawn's joy-job selection failed this scan.");
@@ -447,7 +542,12 @@ namespace HaulersDream
     /// animals — never player faction — are rejected), <see cref="YieldRouter.IsEligible"/> (which returns
     /// <c>allowAnimals</c> for an animal, so with the setting OFF this is false and the whole path is a no-op →
     /// byte-identical to today), the tracking comp, and the bulkHaul/map gates. No try/catch: a failure is a real
-    /// bug to surface, exactly like <see cref="Patch_WorkGiver_HaulGeneral_BulkHaul"/>.
+    /// bug to surface, the same log-and-rethrow policy as <see cref="Patch_WorkGiver_HaulGeneral_BulkHaul"/>,
+    /// though the seam classes differ: a WorkGiver-level throw is sandboxed by vanilla's per-WorkGiver catch
+    /// inside <c>JobGiver_Work.TryIssueJobPackage</c>, while a throw at THIS think node costs the animal its
+    /// haul node for that scan (the enclosing think node logs one collapsed entry and skips it). That blast
+    /// radius is acceptable for an opt-in, default-OFF, non-need feature (the animal just hauls nothing that
+    /// scan); need-critical nodes get the #122 degrade boundary instead.
     /// </summary>
     [HarmonyPatch(typeof(JobGiver_Haul), "TryGiveJob")]
     public static class Patch_JobGiver_Haul_AnimalBulk

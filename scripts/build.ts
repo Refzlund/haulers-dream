@@ -56,3 +56,15 @@ const dropProtection = Bun.spawn(['bun', resolve(import.meta.dir, 'check-drop-pr
 	cwd: repoRoot,
 })
 if ((await dropProtection.exited) !== 0) throw new Error('Drop-protection check failed (see output above).')
+
+// Guard the #122 think-node seam boundaries (pawns read books until they starved because a throwing HD
+// enhancement cost them their food node every think; vanilla logs one collapsed entry and skips the node).
+// Fails the build if a seam postfix loses its degrade boundary (try + SeamDegraded, no rethrow), the
+// meals-on-wheels catch stops restoring vanilla's outputs, or the Core severity gates drift.
+// See check-need-seam-guards.ts.
+const needSeams = Bun.spawn(['bun', resolve(import.meta.dir, 'check-need-seam-guards.ts')], {
+	stdout: 'inherit',
+	stderr: 'inherit',
+	cwd: repoRoot,
+})
+if ((await needSeams.exited) !== 0) throw new Error('Need-seam guard check failed (see output above).')

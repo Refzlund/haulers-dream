@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using HaulersDream.Core;
 using HarmonyLib;
@@ -54,6 +55,26 @@ namespace HaulersDream
             var s = HaulersDreamMod.Settings;
             if (s == null || !s.enableOpportunisticLoad)
                 return; // feature OFF -> byte-inert
+            // #122 SEAM BOUNDARY (degrade, keep vanilla): the divert scan below fans out into the surplus math,
+            // the load ledger, and Vehicle Framework reflection; a repeatable throw here would cost the pawn its
+            // ENTIRE work selection on every scan (the enclosing think node catches and skips a throwing child;
+            // see Patch_JobGiver_GetRest_UnloadFirst's class doc). On a throw, report once and leave vanilla's
+            // chosen work job standing. __result is only ever replaced with a FULLY built deposit job (its
+            // reservations already made), so a late throw (e.g. in the trailing debug line) can at worst keep an
+            // already-valid divert; there is no torn half-applied state.
+            try
+            {
+                PostfixInner(ref __result, pawn, __instance, s);
+            }
+            catch (Exception ex)
+            {
+                HDGuard.SeamDegraded(ex, "JobGiver_Work.TryIssueJobPackage (HD opportunistic load deposit)", pawn,
+                    "kept vanilla's chosen work job, so the pawn keeps working.");
+            }
+        }
+
+        static void PostfixInner(ref ThinkResult __result, Pawn pawn, JobGiver_Work __instance, HaulersDreamSettings s)
+        {
             // Only act on a freshly-issued, real, non-forced job for an eligible carrying pawn.
             if (!__result.IsValid || __result.Job == null)
                 return;
