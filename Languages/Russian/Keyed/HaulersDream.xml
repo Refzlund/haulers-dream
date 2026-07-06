@@ -688,6 +688,7 @@
 <HaulersDream.Setting.PerPawnButtonsNote>Они добавляют кнопки команд каждому колонисту; они не меняют автоматическую переноску.</HaulersDream.Setting.PerPawnButtonsNote>
 <HaulersDream.Search.Placeholder>Поиск настроек…</HaulersDream.Search.Placeholder>
 <HaulersDream.Search.NoResults>Нет настроек, соответствующих вашему запросу.</HaulersDream.Search.NoResults>
+<HaulersDream.Search.More>Показаны {0} лучших совпадений. Уточните запрос, чтобы увидеть остальные.</HaulersDream.Search.More>
 <HaulersDream.Search.Clear>Очистить поиск</HaulersDream.Search.Clear>
   <HaulersDream.ItemUnload.SetCategoryTip>Apply one rule to every item in this category at once, instead of setting them one by one. Handy for big groups like ammo.</HaulersDream.ItemUnload.SetCategoryTip>
   <HaulersDream.Setting.Yield.Fishing>Fishing (catch)</HaulersDream.Setting.Yield.Fishing>

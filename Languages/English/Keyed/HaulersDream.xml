@@ -13,6 +13,7 @@
   <!-- Settings search box (above the tab list): type to find any setting across every tab; click a match to jump to it. -->
   <HaulersDream.Search.Placeholder>Search settings…</HaulersDream.Search.Placeholder>
   <HaulersDream.Search.NoResults>No settings match your search.</HaulersDream.Search.NoResults>
+  <HaulersDream.Search.More>Showing the top {0} matches. Refine your search to see the rest.</HaulersDream.Search.More>
   <HaulersDream.Search.Clear>Clear search</HaulersDream.Search.Clear>
 
   <!-- Settings window tabs -->

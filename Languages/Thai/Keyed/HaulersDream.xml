@@ -688,6 +688,7 @@
 <HaulersDream.Setting.PerPawnButtonsNote>ปุ่มเหล่านี้เพิ่มปุ่มคำสั่งให้กับชาวอาณานิคมแต่ละคน แต่ไม่เปลี่ยนแปลงการขนของอัตโนมัติ</HaulersDream.Setting.PerPawnButtonsNote>
 <HaulersDream.Search.Placeholder>ค้นหาการตั้งค่า…</HaulersDream.Search.Placeholder>
 <HaulersDream.Search.NoResults>ไม่มีการตั้งค่าที่ตรงกับการค้นหาของคุณ</HaulersDream.Search.NoResults>
+<HaulersDream.Search.More>กำลังแสดง {0} รายการที่ตรงที่สุด ปรับการค้นหาให้แคบลงเพื่อดูรายการที่เหลือ</HaulersDream.Search.More>
 <HaulersDream.Search.Clear>ล้างการค้นหา</HaulersDream.Search.Clear>
   <HaulersDream.ItemUnload.SetCategoryTip>Apply one rule to every item in this category at once, instead of setting them one by one. Handy for big groups like ammo.</HaulersDream.ItemUnload.SetCategoryTip>
   <HaulersDream.Setting.Yield.Fishing>Fishing (catch)</HaulersDream.Setting.Yield.Fishing>

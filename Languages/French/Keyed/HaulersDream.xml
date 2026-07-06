@@ -688,6 +688,7 @@
 <HaulersDream.Setting.PerPawnButtonsNote>Ceci ajoute des boutons de commande à chaque colon ; cela ne change pas le transport automatique.</HaulersDream.Setting.PerPawnButtonsNote>
 <HaulersDream.Search.Placeholder>Rechercher des paramètres…</HaulersDream.Search.Placeholder>
 <HaulersDream.Search.NoResults>Aucun paramètre ne correspond à votre recherche.</HaulersDream.Search.NoResults>
+<HaulersDream.Search.More>Affichage des {0} meilleurs résultats. Affinez votre recherche pour voir les autres.</HaulersDream.Search.More>
 <HaulersDream.Search.Clear>Effacer la recherche</HaulersDream.Search.Clear>
   <HaulersDream.ItemUnload.SetCategoryTip>Apply one rule to every item in this category at once, instead of setting them one by one. Handy for big groups like ammo.</HaulersDream.ItemUnload.SetCategoryTip>
   <HaulersDream.Setting.Yield.Fishing>Fishing (catch)</HaulersDream.Setting.Yield.Fishing>

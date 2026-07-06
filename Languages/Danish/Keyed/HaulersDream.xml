@@ -688,6 +688,7 @@
 <HaulersDream.Setting.PerPawnButtonsNote>Disse tilføjer kommandoknapper til hver kolonist; de ændrer ikke automatisk bæring.</HaulersDream.Setting.PerPawnButtonsNote>
 <HaulersDream.Search.Placeholder>Søg i indstillinger…</HaulersDream.Search.Placeholder>
 <HaulersDream.Search.NoResults>Ingen indstillinger matcher din søgning.</HaulersDream.Search.NoResults>
+<HaulersDream.Search.More>Viser de {0} bedste resultater. Forfin din søgning for at se resten.</HaulersDream.Search.More>
 <HaulersDream.Search.Clear>Ryd søgning</HaulersDream.Search.Clear>
   <HaulersDream.ItemUnload.SetCategoryTip>Apply one rule to every item in this category at once, instead of setting them one by one. Handy for big groups like ammo.</HaulersDream.ItemUnload.SetCategoryTip>
   <HaulersDream.Setting.Yield.Fishing>Fishing (catch)</HaulersDream.Setting.Yield.Fishing>

@@ -688,6 +688,7 @@
 <HaulersDream.Setting.PerPawnButtonsNote>이것들은 각 정착민에게 명령 버튼을 추가합니다. 자동 운반을 변경하지는 않습니다.</HaulersDream.Setting.PerPawnButtonsNote>
 <HaulersDream.Search.Placeholder>설정 검색…</HaulersDream.Search.Placeholder>
 <HaulersDream.Search.NoResults>검색과 일치하는 설정이 없습니다.</HaulersDream.Search.NoResults>
+<HaulersDream.Search.More>상위 {0}개 결과를 표시합니다. 나머지를 보려면 검색어를 좁혀 주세요.</HaulersDream.Search.More>
 <HaulersDream.Search.Clear>검색 지우기</HaulersDream.Search.Clear>
   <HaulersDream.ItemUnload.SetCategoryTip>Apply one rule to every item in this category at once, instead of setting them one by one. Handy for big groups like ammo.</HaulersDream.ItemUnload.SetCategoryTip>
   <HaulersDream.Setting.Yield.Fishing>Fishing (catch)</HaulersDream.Setting.Yield.Fishing>

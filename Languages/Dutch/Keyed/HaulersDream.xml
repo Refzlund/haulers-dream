@@ -688,6 +688,7 @@
 <HaulersDream.Setting.PerPawnButtonsNote>Deze voegen knoppen toe aan elke kolonist; ze veranderen niets aan het automatische sjouwen.</HaulersDream.Setting.PerPawnButtonsNote>
 <HaulersDream.Search.Placeholder>Instellingen zoeken…</HaulersDream.Search.Placeholder>
 <HaulersDream.Search.NoResults>Geen instellingen komen overeen met je zoekopdracht.</HaulersDream.Search.NoResults>
+<HaulersDream.Search.More>De {0} beste resultaten worden getoond. Verfijn je zoekopdracht om de rest te zien.</HaulersDream.Search.More>
 <HaulersDream.Search.Clear>Zoekopdracht wissen</HaulersDream.Search.Clear>
   <HaulersDream.ItemUnload.SetCategoryTip>Apply one rule to every item in this category at once, instead of setting them one by one. Handy for big groups like ammo.</HaulersDream.ItemUnload.SetCategoryTip>
   <HaulersDream.Setting.Yield.Fishing>Fishing (catch)</HaulersDream.Setting.Yield.Fishing>

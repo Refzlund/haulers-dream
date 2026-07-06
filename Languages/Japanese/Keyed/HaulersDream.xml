@@ -688,6 +688,7 @@
 <HaulersDream.Setting.PerPawnButtonsNote>これらは各入植者にコマンドボタンを追加します。自動運搬の挙動は変わりません。</HaulersDream.Setting.PerPawnButtonsNote>
 <HaulersDream.Search.Placeholder>設定を検索…</HaulersDream.Search.Placeholder>
 <HaulersDream.Search.NoResults>検索に一致する設定はありません。</HaulersDream.Search.NoResults>
+<HaulersDream.Search.More>上位 {0} 件の結果を表示しています。残りを見るには検索を絞り込んでください。</HaulersDream.Search.More>
 <HaulersDream.Search.Clear>検索をクリア</HaulersDream.Search.Clear>
   <HaulersDream.ItemUnload.SetCategoryTip>Apply one rule to every item in this category at once, instead of setting them one by one. Handy for big groups like ammo.</HaulersDream.ItemUnload.SetCategoryTip>
   <HaulersDream.Setting.Yield.Fishing>Fishing (catch)</HaulersDream.Setting.Yield.Fishing>
