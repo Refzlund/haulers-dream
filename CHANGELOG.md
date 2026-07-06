@@ -1,5 +1,50 @@
 # haulers-dream
 
+## 1.16.0
+
+### Minor Changes
+
+- 96c2cd7: Picking items up now takes a moment, with vanilla's pickup progress bar.
+
+  Pawns used to vacuum stacks into their inventory instantly, which felt off next to the visible work delay vanilla shows when you order a pawn to pick something up. Now every Hauler's Dream pickup into inventory pauses at the stack with the familiar progress bar first: bulk hauling sweeps, picking things up along the way, scooping up mining and harvest yields, the "Pick up X" and "Keep X in inventory" orders, and the part of bulk loading and bulk refueling where pawns gather stacks off the ground. The default is 120 ticks per stack (about 2 seconds), which is exactly the delay vanilla itself uses for its pick up order, so an ordered pickup feels identical to vanilla and bulk work reads as deliberate effort instead of teleportation.
+
+  A new "Pickup delay per stack" slider in the Hauling settings controls it. Slide it to 0 for the old instant pickups, leave it at 120 for the vanilla feel, or pick your own pace. Gathering ingredients for crafting and construction is deliberately not delayed, since vanilla grabs work materials instantly too, and unloading keeps its own separate pacing setting.
+
+- 3a265fd: Temporary quest pawns drop what they picked up when they leave your control.
+
+  Pawns lent to you during quests (lodgers, refugees, helpers from other factions) used to walk away with whatever ended up in their inventory: meals they grabbed, medicine, anything they pocketed while working for you. The moment such a pawn reverts to its own faction (the quest ends, they betray you, or they get arrested), it now drops everything it picked up while with the colony right where it stands, so your colonists can haul it back. It keeps only what it arrived with, plus its equipped weapons and worn apparel, which stay untouched. A pawn that leaves while inside one of your caravans already hands its load to the other caravan members, so nothing is lost there either.
+
+  On by default; you can turn it off under Advanced, Safety net.
+
+### Patch Changes
+
+- a54a1bc: Fixed pawns standing at a construction site doing nothing forever under Combat Extended (issue #125, "can't make buildings with textile"), and fixed builders walking to a shelf for material they already carry (the Steam "build from inventory sometimes just doesn't work" report).
+
+  The stand-in-place case was a re-offer livelock: the inventory construction delivery planned its load with mass math only, while the delivery driver's pickup is clamped by Combat Extended's bulk. A pawn whose remaining bulk fits zero units of the material (loadout-full pawns, and textiles from mods without a CE patch default to Bulk 1.0 per unit) got a job it could never load, completed it with zero progress the same tick, and was offered the identical job again, forever. Right clicking converted the same way and died the same way. The reporter's log retains 2251 repeats of the identical delivery line across two pawns and two sessions. The planner now checks the same per material bulk fit the driver uses, declines the conversion whenever one bulk capped inventory trip cannot beat a plain hand carry (hands are not bulk limited in CE), and clamps the gather and the load plan by that fit otherwise. Bulk blocked pawns fall back to vanilla hand delivery and actually build.
+
+  The shelf detour case: the planner only consulted a pawn's inventory when the whole map had no floor stock of the material, so a builder carrying enough for the ordered wall still fetched from the nearest shelf first. Deliveries (ordered and automatic) are now served straight from the builder's own carried stock whenever it covers at least one full delivery chunk, the lesser of the site's remaining need and one hand load. That also lets a Combat Extended pawn whose bulk is full of the very material it should deliver unload it into the build instead of livelocking. This honors the "Build from inventory (use already-carried materials)" setting: with it off, own carried stock is never spent this way, and bulk blocked pawns still fall back to the working vanilla hand delivery.
+
+- f23e23e: Fixed designated chunks being hauled one at a time under Combat Extended even with Bulk hauling set to Always (issue #124). The Combat Extended guard from the one round at a time ammo fix compared how many units fit in inventory (capped by the stack's live count) against a def level hand armful. With a chunk stacking mod raising the chunk stack limit above one, every lone field chunk (always a 1 count stack) compared 1 against that armful and wrongly declined the automatic bulk sweep, so vanilla hand hauled one chunk per trip. The hands side is now clamped by the stack's live count: a stack that fits whole in inventory is never declined, because hands cannot move more than the whole stack either. Bulky ammo in big shelf stacks still declines exactly as before, keeping the one round at a time fix intact. The explicit haul everything nearby order was unaffected and still sweeps.
+- 019396d: Stop the infinite haul loop on freshly extracted hemogen packs (and any other storage haul that keeps failing to place).
+
+  Reported with a clean save: after extracting hemogen packs from prisoners, haulers paced the barracks corridor forever, "hauling hemogen pack" in hand, never depositing, until a manual prioritize order replaced the stuck job. The cause is that vanilla's storage haul retries without any bound inside one job: every failed drop re-resolves storage from wherever the pawn now stands, retargets the same job and walks again, and with no storage resolving it retargets to a bare ground spot and walks again all the same. Because Hauler's Dream intentionally lets several haulers deliver to the same tile (the haul to stack feature skips vanilla's destination cell reservation), two haulers can converge on the same few viable cells and invalidate each other's arrivals indefinitely, so that retry cycle never ends.
+
+  Storage hauls now carry a small retry budget: a job that fails to place its load several times in a row (without delivering a single unit in between) is ended, the carried stack is set down at the pawn's feet like any failed haul, and that item is left alone by the automatic haul scan for a few seconds so the identical doomed job is not rebuilt instantly. The same short pause follows a haul that found no storage anywhere and had to set its load down on open ground, so the next storage attempt is not rebuilt on the spot against unchanged storage. Everything self heals: once the backoff passes the item is hauled normally, and an explicit player order always works immediately. Healthy hauls stay far from the budget: a legitimate re-route resolves in one or two retries, topping up a near full stack counts as progress rather than failure (each partial delivery resets the budget), and multi item unload trips reset it on every delivered item.
+
+- b71ce2d: Colonists ordered to leave an underground map with loot now share the gathering instead of one pawn claiming everything while the rest wander.
+
+  When several colonists were sent through an exit portal (a pit gate or cave exit) together with loot, the first pawn to plan its load claimed the whole manifest up to its smart overload ceiling, which routinely covers an entire dungeon haul. The other ordered pawns then found nothing left to claim, and the board gate held them back from entering while goods remained, so they idled and wandered until the one loaded pawn finished. Bulk load plans are now clamped to an even mass share of the claimable loot across every ready co loader (the pawns ordered to board that portal or transporter group), with a floor so every share stays big enough to hold any single remaining item (a heavy sculpture never becomes unclaimable just because the even split runs smaller than it). A lone loader, a player ordered load, and vehicle loading keep their full plan exactly as before.
+
+  A pawn that has nothing left to claim (every remaining item is another loader's in flight slice) now boards the portal instead of pacing next to it, matching how the base game behaves. The pawns still gathering finish the manifest.
+
+  Also fixes a silent failure where bulk portal loading at overload level "Free" (level 0) built empty plans: the unlimited trip budget overflowed an integer conversion and every stack read as unaffordable, so those pawns quietly fell back to loading one stack at a time.
+
+- 89150ec: Stop pawns from reading books nonstop until they starve to death when another mod (or stale item state) breaks a job check Hauler's Dream participates in.
+
+  When a thinking step raises an error, RimWorld logs it once (an entry that is easy to miss among repeats) and skips that step, and a pawn absorbed in a book only rechecks its urgent needs every few hundred ticks. Hauler's Dream adds logic to several of those thinking steps (put the load away before eating or sleeping, eat a meal a colonist is carrying, shed cargo before a mech charges), and that logic touches many other mods' items and compatibility hooks. If any of that raised an error, the whole food check failed every single time, while the recreation check kept handing the pawn its book: the pawn read nonstop, refused every other task, and eventually starved (issue 122). The same failure on the charge check could drain a mech to forced shutdown.
+
+  Hauler's Dream's additions to the food, rest, joy, work, unload, and mech charge checks now contain their own failures: the problem is reported once in the log (with the stack trace pointing at the actual culprit), and the vanilla decision stands, so the pawn still eats, sleeps, works, and charges no matter what failed inside the enhancement. The carried-meal search also skips items that are not actually edible instead of tripping over them. A new build guard keeps these boundaries from regressing.
+
 ## 1.15.5
 
 ### Patch Changes
