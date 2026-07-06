@@ -1,5 +1,27 @@
 # haulers-dream
 
+## 1.16.2
+
+### Patch Changes
+
+- 94e3212: Fix two issues reported from a large modded save: pawns over hauling into a small high priority stockpile, and the settings search dropping the framerate while typing.
+
+  Bulk hauling now shares one storage budget per destination stockpile or shelf group across every item type bound for it, instead of letting each type price that group's free space on its own. Before, a pawn moving food up to a small stockpile could pocket the meat and the harvest as if each had the whole stockpile to itself, drop only what fit, then carry the rest back to where it came from. A group's empty cells are now spent once for the whole trip, so a pawn takes only what the destination can actually hold and leaves the rest at the source for the next haul cycle. Hauling a single item type was already handled correctly and is unchanged.
+
+  The settings search now shows the top matches (up to 30) with a note when more exist, instead of drawing every match every frame. A short or broad query, including the prefixes you pass through while typing a longer word, could match most of the settings and redraw all of them each frame, which dropped the framerate whenever the search box had text in it. Refining the query narrows the list to reach the rest.
+
+- 94e3212: Make in-game issue reporting work for players whose system blocks the report connection, and fix the report dialog's clipped error message.
+
+  Some players' reports failed with "Unknown Error" because their Unity/Mono TLS stack could not validate the report server's (valid) certificate. Every report request now accepts the certificate for Hauler's Dream's own first-party report endpoint, which restores reporting for those players. This does drop chain validation on those specific requests, so it is worth being clear about what they carry: the tail of your Player.log (which can include local file paths and your OS username), your SteamID64 and Steam persona name, your active mod list, the per-install token that scopes reads to your own reports, and any log or screenshot you chose to attach. The decision still stands because these requests go only to Hauler's Dream's own endpoint, the alternative leaves affected players unable to report at all, and certificate pinning would break on the report host's routine certificate rotation. The handler is scoped to the report requests only, never a global override, so nothing else in the game is affected.
+
+  When the connection still fails (for example a firewall or antivirus blocking RimWorld), the error message now says so, in all 15 languages, and the dialog's status area is measured from the actual message so even a long or wrapped translation is no longer clipped to a sliver of red. Also silences two startup warnings about texture-holding classes missing the StaticConstructorOnStartup attribute, which makes the "Remember plan" toggle icon load reliably instead of ever falling back to a magenta placeholder.
+
+- 94e3212: Fix the per-pawn "Unload inventory" button setting reading as "Hide" in every translation, and stop the button from sitting among a pawn's ability gizmos.
+
+  The checkbox that controls the per-pawn "Unload inventory" button turns the button on when it is checked, but every translated language still labelled it "Hide the ... button" (only the English text had been updated to say "Show"). All languages now read "Show", matching what the toggle actually does.
+
+  The "Unload inventory" and per-pawn auto-haul buttons now declare a deliberate position instead of falling into the unordered default group. Left unset, they shared that group with the pawn's role and ability commands, and with a gizmo-reordering mod the unload button could end up wedged between abilities like a leader's speech and accusation. They now sit together in their own slot below the ability gizmos.
+
 ## 1.16.1
 
 ### Patch Changes
