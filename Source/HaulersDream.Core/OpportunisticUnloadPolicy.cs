@@ -92,6 +92,45 @@ namespace HaulersDream.Core
             return loadFraction >= minLoadFraction;
         }
 
+        /*
+            ──────────────────────────────
+             Downtime-swap severity gates
+            ──────────────────────────────
+            The rest / food / joy think-node postfixes may swap the pawn's downtime job for an
+            unload trip ("put the load away before relaxing"), but NEVER when the need is
+            already critical: a starving pawn is taking malnutrition damage and an exhausted
+            pawn is about to collapse, so they must eat / sleep NOW and shed the load afterwards
+            (the interval safety net catches it on wake). These gates are the single source of
+            truth for that severity boundary; the Verse layer passes the vanilla enum as an int.
+
+            → KEY: issue #122. A reading pawn's ONLY mid-job hunger rescue is the 600-tick
+              CheckForJobOverride(9.1) reaching a food job. Anything that consistently costs the
+              food node its job (a throw, or an unbounded swap) leaves the pawn reading until it
+              starves to death. The Starving stand-down below is one of the two layers that keep
+              the swap bounded (the other is the divert cooldown).
+        */
+
+        /// <summary>Vanilla <c>RimWorld.HungerCategory.Starving</c> (Fed=0, Hungry=1, UrgentlyHungry=2,
+        /// Starving=3), the same int-pinned enum convention as <see cref="BatchYieldPolicy"/>.</summary>
+        public const int HungerStarving = 3;
+
+        /// <summary>Vanilla <c>RimWorld.RestCategory.Exhausted</c> (Rested=0, Tired=1, VeryTired=2,
+        /// Exhausted=3).</summary>
+        public const int RestExhausted = 3;
+
+        /// <summary>Whether the unload-before-eating swap may replace a food job for a pawn at
+        /// <paramref name="hungerCategory"/> (the vanilla <c>HungerCategory</c> as an int). False at
+        /// Starving: the pawn is taking damage and must eat NOW, so the swap stands down and the vanilla
+        /// food job runs unchanged.</summary>
+        public static bool MaySwapFoodJobForUnload(int hungerCategory)
+            => hungerCategory < HungerStarving;
+
+        /// <summary>Whether the unload-before-sleep swap may replace a rest job for a pawn at
+        /// <paramref name="restCategory"/> (the vanilla <c>RestCategory</c> as an int). False at
+        /// Exhausted: the pawn is about to collapse and must sleep NOW.</summary>
+        public static bool MaySwapRestJobForUnload(int restCategory)
+            => restCategory < RestExhausted;
+
         /// <summary>Run-end detour-bar floor (tiles) — see <see cref="ShouldUnloadOnRunEnd"/>.</summary>
         public const int RunEndMinDetourTiles = 20;
 

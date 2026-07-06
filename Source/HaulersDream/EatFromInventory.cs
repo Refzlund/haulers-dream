@@ -1,3 +1,4 @@
+using System;
 using HarmonyLib;
 using HaulersDream.Core;
 using RimWorld;
@@ -85,6 +86,39 @@ namespace HaulersDream
             if (map == null)
                 return;                          // caravan / world-map is out of scope (mapPawns would NRE)
 
+            // #122 SEAM BOUNDARY (degrade to pure vanilla): this scan runs INSIDE JobGiver_GetFood.TryGiveJob,
+            // whose enclosing think node catches a throwing child, logs one collapsed entry, and SKIPS it, and
+            // a mid-job pawn's only urgent-hunger rescue is that node succeeding (JobDriver_Reading re-checks
+            // needs every 600 ticks; decompile-verified). The scan below evaluates OTHER pawns' carried items
+            // through vanilla FoodUtility.BestFoodInInventory (whose WillEat chain many mods patch) plus VF
+            // reflection, code vanilla never runs on this path, so HD used to AMPLIFY any one poison item/patch
+            // into "this pawn can never eat": every think threw, food was skipped, the joy node kept issuing
+            // reading, and the pawn starved to death (issue #122). On a throw: report once with attribution,
+            // restore the outputs to exactly what vanilla computed, and return: the pawn behaves as if
+            // meals-on-wheels found nothing, and vanilla's own food search (which already ran) stands.
+            var vanillaFoodSource = foodSource;
+            var vanillaFoodDef = foodDef;
+            try
+            {
+                ScanAndResolve(ref __result, getter, eater, ref foodSource, ref foodDef, map, s);
+            }
+            catch (Exception ex)
+            {
+                foodSource = vanillaFoodSource;
+                foodDef = vanillaFoodDef;
+                __result = false; // the body only runs when vanilla failed (guarded above), so false IS vanilla's result
+                HDGuard.SeamDegraded(ex, "FoodUtility.TryFindBestFoodSourceFor (HD meals-on-wheels)", eater,
+                    "kept vanilla's result (no food found by HD), so food selection itself keeps working.");
+            }
+        }
+
+        /// <summary>The meals-on-wheels holder scan + resolution (the postfix body proper). The three outputs
+        /// are written only once a winning stack exists; any throw (mid-scan, or in the trailing
+        /// approach-nudge/log after the writes) is contained by the caller's #122 boundary, which restores all
+        /// three outputs to vanilla's values, so the caller can never observe a torn resolution.</summary>
+        private static void ScanAndResolve(ref bool __result, Pawn getter, Pawn eater,
+            ref Thing foodSource, ref ThingDef foodDef, Map map, HaulersDreamSettings s)
+        {
             bool allowDrug = !eater.IsTeetotaler();
 
             // --- scan eligible holders (this list includes animals, so pack/colony animals are covered) ---
@@ -204,17 +238,29 @@ namespace HaulersDream
 
         /// <summary>Extract the rot primitives off an already-acceptable <paramref name="stack"/> (the
         /// non-null result of FoodUtility.BestFoodInInventory) and classify it via the pure Core decision.
-        /// Returns false only for the degenerate None (which Classify never produces for acceptable:true,
-        /// so a non-null stack always yields a real candidate). ticksUntilRot uses the NeverRots sentinel
-        /// for a frozen/inactive/non-rottable stack.</summary>
+        /// Returns false only for a non-ingestible stack (below) or the degenerate None (which Classify never
+        /// produces for acceptable:true, so an ingestible stack always yields a real candidate). ticksUntilRot
+        /// uses the NeverRots sentinel for a frozen/inactive/non-rottable stack.</summary>
         private static bool ClassifyStack(Thing stack, out MealCandidatePass pass, out int ticksUntilRot)
         {
+            // Precondition (#122 hardening): vanilla BestFoodInInventory checks def.IsNutritionGivingIngestible
+            // BEFORE its WillEat chain (decompile-verified), so a WillEat patch alone cannot hand us a
+            // non-ingestible. The realistic vectors are a foreign postfix on BestFoodInInventory itself
+            // replacing its result, or def state mutated at runtime; either would NRE here and (pre-boundary)
+            // take the whole food node down with it. A stack we can't rank is simply not a candidate.
+            var ingestible = stack.def?.ingestible;
+            if (ingestible == null)
+            {
+                pass = MealCandidatePass.None;
+                ticksUntilRot = MealsOnWheelsSelection.NeverRots;
+                return false;
+            }
             var rot = stack.TryGetComp<CompRottable>();
             bool freshActiveRottable = rot != null && rot.Active && rot.Stage == RotStage.Fresh;
             ticksUntilRot = (rot != null && rot.Active)
                 ? rot.TicksUntilRotAtCurrentTemp
                 : MealsOnWheelsSelection.NeverRots;
-            int prefRank = (int)stack.def.ingestible.preferability;
+            int prefRank = (int)ingestible.preferability;
             pass = MealsOnWheelsSelection.Classify(true, prefRank, freshActiveRottable, ticksUntilRot);
             return MealsOnWheelsSelection.IsCandidate(pass);
         }

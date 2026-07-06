@@ -1,3 +1,4 @@
+using System;
 using HarmonyLib;
 using RimWorld;
 using Verse;
@@ -43,35 +44,53 @@ namespace HaulersDream
             if (pawn == null || pawn.Faction != Faction.OfPlayerSilentFail || !pawn.RaceProps.IsMechanoid)
                 return;
 
-            var comp = pawn.TryGetComp<CompHauledToInventory>();
-            var owner = pawn.inventory?.innerContainer;
-            if (comp == null || owner == null)
-                return;
-            if (!HasLiveTaggedCargo(comp, owner))
-                return; // nothing scooped aboard — let it charge unchanged
-
-            // Critically low → a delivery trip is unwise; just drop at its feet so the cargo doesn't rot/occupy
-            // during the charge, and let the mech charge now.
-            var energy = pawn.needs?.energy;
-            bool energyOk = energy != null && energy.CurLevel > CriticalEnergyFloor;
-
-            // Deliver to storage first when there's somewhere to deliver to AND energy is fine: queue a forced
-            // unload (the tested PawnUnloadChecker path — it validates reservations before queuing) and suppress
-            // the charge THIS cycle. The mech's think tree runs the queued unload first (its ThinkNode_QueuedJob
-            // sits above this charge giver), then the charger fires again next cycle with the cargo gone.
-            if (energyOk && HasDeliverableSurplus(pawn, comp, owner))
+            // #122 SEAM BOUNDARY (degrade, keep vanilla): the mech CHARGE node is need-critical the same way
+            // food is for a colonist, and everything below fans into the same throw-prone graph the downtime
+            // swaps use (SurplusOf and its compat shims, HasUnloadDestination storage scans, the unload
+            // queueing, the tagged-cargo drop). A repeatable throw here would cost the mech its charge job on
+            // every think (the enclosing think node catches, logs a collapsed entry, and skips the child), so
+            // it never charges and drains to forced shutdown, the mech version of #122. On a throw, report
+            // once and leave vanilla's charge job standing, so the mech still charges. Torn-state safety: the
+            // only __result write (the null deferral) is immediately followed by return; a throw after a
+            // successfully queued unload leaves that valid queued job in place and the mech charges now, then
+            // unloads, which is benign.
+            try
             {
-                PawnUnloadChecker.CheckIfShouldUnload(pawn, forced: true);
-                if (PawnUnloadChecker.HasQueuedUnload(pawn))
-                {
-                    __result = null; // defer the charge one cycle so the delivery runs first
+                var comp = pawn.TryGetComp<CompHauledToInventory>();
+                var owner = pawn.inventory?.innerContainer;
+                if (comp == null || owner == null)
                     return;
-                }
-            }
+                if (!HasLiveTaggedCargo(comp, owner))
+                    return; // nothing scooped aboard, let it charge unchanged
 
-            // Fallback (no reachable destination, couldn't queue, or critically low): drop at feet so the cargo
-            // is freed (stops decaying in inventory, frees carry capacity) and a hauler reclaims it; charge now.
-            HaulersDreamGameComponent.DropTaggedCargo(pawn);
+                // Critically low → a delivery trip is unwise; just drop at its feet so the cargo doesn't rot/occupy
+                // during the charge, and let the mech charge now.
+                var energy = pawn.needs?.energy;
+                bool energyOk = energy != null && energy.CurLevel > CriticalEnergyFloor;
+
+                // Deliver to storage first when there's somewhere to deliver to AND energy is fine: queue a forced
+                // unload (the tested PawnUnloadChecker path, which validates reservations before queuing) and suppress
+                // the charge THIS cycle. The mech's think tree runs the queued unload first (its ThinkNode_QueuedJob
+                // sits above this charge giver), then the charger fires again next cycle with the cargo gone.
+                if (energyOk && HasDeliverableSurplus(pawn, comp, owner))
+                {
+                    PawnUnloadChecker.CheckIfShouldUnload(pawn, forced: true);
+                    if (PawnUnloadChecker.HasQueuedUnload(pawn))
+                    {
+                        __result = null; // defer the charge one cycle so the delivery runs first
+                        return;
+                    }
+                }
+
+                // Fallback (no reachable destination, couldn't queue, or critically low): drop at feet so the cargo
+                // is freed (stops decaying in inventory, frees carry capacity) and a hauler reclaims it; charge now.
+                HaulersDreamGameComponent.DropTaggedCargo(pawn);
+            }
+            catch (Exception ex)
+            {
+                HDGuard.SeamDegraded(ex, "JobGiver_GetEnergy_Charger.TryGiveJob (HD shed-cargo-before-charge)", pawn,
+                    "kept vanilla's charge job, so the mech still charges.");
+            }
         }
 
         private static bool HasLiveTaggedCargo(CompHauledToInventory comp, Verse.ThingOwner<Thing> owner)
