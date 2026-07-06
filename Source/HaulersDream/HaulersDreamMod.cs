@@ -431,12 +431,19 @@ namespace HaulersDream
             Log.ErrorOnce(Tag + message, key);
         }
 
+        // The (method, exception type) pairs whose FULL origin stack the universal finalizer has already captured
+        // this session. ConcurrentDictionary because that finalizer can run off the main thread (a threading mod's
+        // work scan), and TryAdd is the atomic "first time for this (method, exception type) pair?" test.
+        private static readonly System.Collections.Concurrent.ConcurrentDictionary<int, bool> stackLoggedKeys =
+            new System.Collections.Concurrent.ConcurrentDictionary<int, bool>();
+
         /// <summary>
         /// The universal exception breadcrumb (Issue #3) attached to EVERY method Hauler's Dream patches (see
         /// <see cref="HaulersDreamMod.AttachUniversalExceptionTagger"/>). It runs as a Harmony FINALIZER, so it
-        /// observes any exception thrown by the original method or by any patch on it. It logs a tagged,
-        /// once-per-method breadcrumb and then RE-THROWS the exception unchanged by returning it — returning null
-        /// would swallow it, which we never do. The wording is deliberately HONEST: HD's code being in the stack
+        /// observes any exception thrown by the original method or by any patch on it. It logs a tagged breadcrumb
+        /// (with the full origin stack once per method and exception type) and then RE-THROWS the exception unchanged
+        /// by returning it. Returning null would swallow it, which we never do. The wording is deliberately HONEST:
+        /// HD's code being in the stack
         /// does not mean HD caused the fault (the original method or another mod's patch may have), so we never
         /// claim blame — we only make HD's involvement visible.
         /// </summary>
@@ -455,14 +462,31 @@ namespace HaulersDream
                 // simply having a patch on the same method.
                 bool hdInStack = __exception.StackTrace != null && __exception.StackTrace.Contains("HaulersDream.");
                 string blame = hdInStack
-                    ? "Hauler's Dream's own code IS in this exception's stack, so it may be involved — though the "
+                    ? "Hauler's Dream's own code IS in this exception's stack, so it may be involved, though the "
                         + "original method or another mod's patch on it could still be the real cause."
                     : "Hauler's Dream only PATCHES this method; its own code is NOT in this exception's stack trace, so "
                         + "the cause is the original method or another mod, not Hauler's Dream.";
+                // Dedupe key per (patched method, exception type): each DISTINCT fault at a method gets logged once,
+                // so a second, different exception later at the same method is not hidden by the first, while a fault
+                // that repeats every tick is still logged only once. (net48 has no System.HashCode, so combine by hand.)
+                int methodKey = __originalMethod != null ? __originalMethod.GetHashCode() : where.GetHashCode();
+                int key = unchecked((methodKey * 397) ^ __exception.GetType().GetHashCode());
+                // The first time each (method, exception type) surfaces this session, append the FULL exception (type,
+                // message, and the origin stack that names the real fault). This breadcrumb is the ONLY record of that
+                // stack: returning __exception re-throws it (via `throw ex`), which restamps the trace at the rethrow
+                // site, so the game's own report of the same exception "below" points back here instead of at the true
+                // source. Only the first occurrence carries the stack (a full stack is roughly twenty lines, and the
+                // report trail is size capped, so writing one every tick would evict the rest of Hauler's Dream's
+                // history); the terse type and message carries the repeats. Without this, a report of an exception that
+                // merely passed through a patched method shows only the rethrow site and gets mis-attributed to
+                // Hauler's Dream (issue #126: a corrupt workbench bill's CountProducts NRE read as an EndCurrentJob fault).
+                string detail = stackLoggedKeys.TryAdd(key, true)
+                    ? "\n" + __exception
+                    : $"[{__exception.GetType().Name}: {__exception.Message}]";
                 ErrOnce(
-                    $"an exception passed through {where} — a method Hauler's Dream patches. {blame} Re-throwing it "
-                    + $"unchanged so the game still reports it below — [{__exception.GetType().Name}: {__exception.Message}]",
-                    __originalMethod != null ? __originalMethod.GetHashCode() : where.GetHashCode());
+                    $"an exception passed through {where}, a method Hauler's Dream patches. {blame} Re-throwing it "
+                    + $"unchanged so the game still reports it below. {detail}",
+                    key);
             }
             return __exception; // NEVER null — that would swallow the exception. Returning it re-throws it.
         }
