@@ -233,5 +233,58 @@ namespace HaulersDream.Tests
             Assert.That(trips, Is.EqualTo(expected), "should reload once per ceiling-worth, not per wall");
             Assert.That(trips, Is.LessThan(walls), "must be far fewer trips than walls");
         }
+
+        // --- InventoryLoadWorseThanHands: the issue #125 CE-bulk decline gate. Pins the DIRECTION and the
+        //     BOUNDARY of the predicate the planner uses to leave vanilla's hand delivery standing, so a
+        //     refactor flipping <= to < (or inverting the sense) re-breaks at build time, not in a
+        //     player's colony as a stand-in-place livelock. ---
+
+        [Test]
+        public void BulkDecline_ZeroFit_Declines()
+        {
+            // The issue #125 reporter's state: a loadout-full CE pawn fits ZERO units of a Bulk-1.0
+            // textile. Offering the load anyway is the livelock; the plan must decline.
+            Assert.That(ConstructDeliveryPlan.InventoryLoadWorseThanHands(bulkFitUnits: 0, handStackCap: 75), Is.True);
+        }
+
+        [Test]
+        public void BulkDecline_FitEqualsHandCap_Declines()
+        {
+            // At exactly one hand-load, an inventory trip moves no more than the hands do and only adds
+            // the gather walking: hands win, decline.
+            Assert.That(ConstructDeliveryPlan.InventoryLoadWorseThanHands(bulkFitUnits: 75, handStackCap: 75), Is.True);
+        }
+
+        [Test]
+        public void BulkDecline_FitOneOverHandCap_Converts()
+        {
+            // Strictly more than one hand-load fits: the conversion carries more per trip, keep it.
+            Assert.That(ConstructDeliveryPlan.InventoryLoadWorseThanHands(bulkFitUnits: 76, handStackCap: 75), Is.False);
+        }
+
+        [Test]
+        public void BulkDecline_NoCeSentinel_Converts()
+        {
+            // Without CE the runtime passes int.MaxValue ("bulk never binds"): the gate must be inert.
+            Assert.That(ConstructDeliveryPlan.InventoryLoadWorseThanHands(int.MaxValue, handStackCap: 75), Is.False);
+        }
+
+        [Test]
+        public void BulkDecline_ZeroHandCap_DeclinesOnlyZeroFit()
+        {
+            // A pawn that cannot hand-carry this def at all: hands move nothing, so inventory wins
+            // whenever it fits anything; only a zero fit still declines.
+            Assert.That(ConstructDeliveryPlan.InventoryLoadWorseThanHands(bulkFitUnits: 0, handStackCap: 0), Is.True);
+            Assert.That(ConstructDeliveryPlan.InventoryLoadWorseThanHands(bulkFitUnits: 1, handStackCap: 0), Is.False);
+        }
+
+        [Test]
+        public void BulkDecline_NegativeHandCap_TreatedAsZero()
+        {
+            // Defensive: the runtime guards handCap > 0 before calling, but a negative cap must behave
+            // like zero, never like "decline everything below a negative bound".
+            Assert.That(ConstructDeliveryPlan.InventoryLoadWorseThanHands(bulkFitUnits: 1, handStackCap: -5), Is.False);
+            Assert.That(ConstructDeliveryPlan.InventoryLoadWorseThanHands(bulkFitUnits: 0, handStackCap: -5), Is.True);
+        }
     }
 }

@@ -1,6 +1,7 @@
 using System;
 using System.Reflection;
 using HarmonyLib;
+using HaulersDream.Core;
 using RimWorld;
 using Verse;
 
@@ -252,6 +253,27 @@ namespace HaulersDream
                 return 0f;
             // No try/catch: GetStatValueAbstract is a vanilla call (bulkStat null-checked above) — surface a throw.
             return def.GetStatValueAbstract(bulkStat);
+        }
+
+        /// <summary>
+        /// How many MORE units of <paramref name="def"/> the pawn's remaining CE BULK room allows.
+        /// Def-level and unclamped by any live stack, so a PLANNER can gate/bound a load that will span
+        /// several stacks (<see cref="MaxFitCount"/> is capped at one stack's count, per CE's semantics,
+        /// which under-measures a multi-stack gather; the issue #124 lesson). int.MaxValue when CE is off,
+        /// the pawn has no CompInventory, or the def carries no bulk (the dimension never binds); 0 when
+        /// the room is used up. Weight is NOT considered here: the callers' vanilla mass math already
+        /// covers it (CE postfixes <c>MassUtility.Capacity</c> with its CarryWeight).
+        /// </summary>
+        public static int FitUnitsByBulk(Pawn pawn, ThingDef def)
+        {
+            if (!IsActive || pawn == null || def == null)
+                return int.MaxValue;
+            float perUnit = BulkPerUnitAbstract(def);
+            if (perUnit <= 0f)
+                return int.MaxValue; // no bulk stat resolved, or a zero-bulk item: bulk never binds
+            // AvailableBulk reads CE's live CompInventory (PositiveInfinity when unavailable; the pure
+            // helper maps that to "never binds" rather than the int.MinValue a raw cast would produce).
+            return CarryMath.UnitsThatFitBulk(AvailableBulk(pawn), perUnit);
         }
 
         /// <summary>

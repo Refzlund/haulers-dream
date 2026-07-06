@@ -1,3 +1,5 @@
+using System;
+
 namespace HaulersDream.Core
 {
     /// <summary>
@@ -85,6 +87,25 @@ namespace HaulersDream.Core
         /// <param name="handStackCap">Units that fit in the hands in one carry (<c>MaxStackSpaceEver</c>).</param>
         public static bool MultiSiteWorthIt(int clusterNeederCount, int clusterNeedUnits, int handStackCap)
             => clusterNeederCount >= 2 && handStackCap > 0 && clusterNeedUnits > handStackCap;
+
+        /// <summary>
+        /// Whether to DECLINE converting a construction delivery into an inventory LOAD because the pawn's
+        /// bulk-capped inventory fit cannot beat a plain hand-carry. Bulk is Combat Extended's second carry
+        /// dimension; CE does not bulk-limit the carry tracker, so one hand-trip always moves a full
+        /// <paramref name="handStackCap"/> regardless of bulk. A fit of ZERO means the driver could not
+        /// load a single unit: offering the job anyway completes it with zero progress the same tick and
+        /// the work scan re-offers it forever, the issue #125 stand-in-place livelock. A fit at or below
+        /// one hand-load moves no more per trip than the hands do, so converting would only add walking.
+        /// Without CE the caller passes int.MaxValue ("bulk never binds") and this never declines. Mirrors
+        /// the BulkHaul issue #115 guard at the construct-delivery altitude. A nonpositive
+        /// <paramref name="handStackCap"/> (the pawn cannot hand-carry this def at all) declines only a
+        /// zero fit, because inventory then beats hands whenever it fits anything.
+        /// </summary>
+        /// <param name="bulkFitUnits">Units of the material the pawn's remaining CE bulk room fits
+        /// (int.MaxValue when the dimension never binds).</param>
+        /// <param name="handStackCap">Units one hand-carry moves (<c>MaxStackSpaceEver</c>).</param>
+        public static bool InventoryLoadWorseThanHands(int bulkFitUnits, int handStackCap)
+            => bulkFitUnits <= Math.Max(handStackCap, 0);
 
         /// <summary>
         /// Whether HD may query a construction needer's remaining space at all: only when the needer is still

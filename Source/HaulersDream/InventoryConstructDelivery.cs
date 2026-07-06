@@ -12,8 +12,10 @@ namespace HaulersDream
     /// SINGLE needer that wants more than one hand-stack of one material (a geothermal generator's 340
     /// steel, a big sculpture, a turret), replace it with a <see cref="JobDriver_OverloadConstructDeliver"/>
     /// job that loads the material into the inventory (mass-limited, can overload) and makes far fewer
-    /// trips. Only fires when the carry math says inventory beats hands; otherwise the vanilla hand-carry
-    /// — including the F5 needer batching — runs unchanged. See <see cref="InventoryConstructDelivery"/>.
+    /// trips. Fires when the carry math says inventory beats hands, OR (with build-from-inventory on)
+    /// when the pawn's own inventory already covers the delivery, which then deposits the carried stock
+    /// with no load trip at all; otherwise the vanilla hand-carry (including the F5 needer batching)
+    /// runs unchanged. See <see cref="InventoryConstructDelivery"/>.
     /// </summary>
     // ORDERING CONTRACT (see the full chain in SharedInventoryPatches.cs): ICD runs AFTER F3b (High=600) and BEFORE
     // both Batch (Low=200) and Routing (Last). ICD converts a vanilla floor HaulToContainer to its inventory-overload
@@ -63,7 +65,10 @@ namespace HaulersDream
     /// Builds the inventory-delivery job: decides (via the pure <see cref="ConstructDeliveryPlan"/>) whether
     /// inventory beats hands for this needer + material + pawn, gathers enough nearby floor stock, and
     /// assembles a single-needer <c>HaulersDream_OverloadConstructDeliver</c> job. Returns null to leave
-    /// the vanilla hand-carry in place.
+    /// the vanilla hand-carry in place. Two capacity truths bound every conversion: material the pawn
+    /// ALREADY carries is delivered without any gather (and without capacity gates, since depositing frees
+    /// capacity), and a load-trip plan is clamped by Combat Extended's BULK fit so the job never promises
+    /// a pickup the driver's bulk-clamped take toil cannot perform (the issue #125 re-offer livelock).
     /// </summary>
     internal static class InventoryConstructDelivery
     {
@@ -99,6 +104,43 @@ namespace HaulersDream
             if (frameNeed <= 0)
                 return null;
 
+            // Deliver from the pawn's OWN carried stock when it covers at least one full delivery chunk
+            // (min(frameNeed, handCap)). This fixes the reported "walks to the nearest shelf while carrying
+            // the material" detour. Fires for forced AND auto, and bypasses the trip-economics skips and
+            // the whole load phase below: a deposit from inventory needs NO capacity headroom (it FREES
+            // capacity), so it must not be blocked by the mass/bulk gates, including a Combat Extended
+            // bulk-full pawn whose fullness IS this material. Gated on buildFromInventory: this branch
+            // spends UNTAGGED organic own stock (CE loadout ammo included), and that toggle is the shipped
+            // user contract for "use already-carried materials" (its OFF state documents reverting to the
+            // legacy tagged-only sourcing), so the opt-out must cover this path too. Both settings default
+            // ON, so at defaults the gate changes nothing; with it OFF the bulk gate below still declines
+            // to a working vanilla hand job, so the issue #125 livelock stays fixed either way.
+            int ownCount = s.buildFromInventory ? OrganicInventoryShare.CountOrganicOfDef(pawn, def) : 0;
+            bool ownCovers = s.buildFromInventory
+                && BuildFromInventorySource.OwnInventoryCoversDelivery(ownCount, frameNeed, handCap);
+
+            // Combat Extended: bulk is a second carry dimension the mass math below can't see, but the
+            // driver's take toil IS bulk-clamped (OverloadGate.CountToPickUp -> CECompat.MaxFitCount). A
+            // plan that ignores bulk offers a load the driver can never pick up: the job completes with
+            // zero progress the same tick and the work scan re-offers it forever, the issue #125 "pawn
+            // stands at the site doing nothing" livelock (unpatched mod materials default to CE Bulk 1.0,
+            // so textiles bind long before weight does). Decline via the Core-tested predicate (the same
+            // shape as the BulkHaul #115 guard): when one bulk-capped inventory trip cannot beat a single
+            // hand-carry (hands are not bulk-limited in CE), leave vanilla's hand delivery standing. That
+            // covers forced orders too, which otherwise convert for the tether and die the same way ("not
+            // even right clicking solves it").
+            int bulkFit = int.MaxValue;
+            if (!ownCovers)
+            {
+                bulkFit = CECompat.FitUnitsByBulk(pawn, def); // int.MaxValue without CE
+                if (ConstructDeliveryPlan.InventoryLoadWorseThanHands(bulkFit, handCap))
+                {
+                    HDLog.Dbg($"inv-deliver skip: CE bulk fits {bulkFit} <= handCap {handCap} of {def.label} " +
+                              $"for {pawn} (hand-carry beats a bulk-capped inventory trip)");
+                    return null;
+                }
+            }
+
             // Mass / overload capacity. Computed up-front (not just before the gather) because the multi-site
             // cluster scan below bounds itself to ONE overloaded trip's worth of demand — there is no point
             // queuing nearby sites a single trip can't serve. Reads go through the per-(pawn,tick) memo: this is a
@@ -117,8 +159,13 @@ namespace HaulersDream
             // never slowed by StatPart) must not gather past its plain limit penalty-free. Player mechs DO
             // overload here and are slowed for it, like colonists.
             int level = OverloadGate.NoOverloadFor(pawn, s) ? OverloadTuning.OffLevel : s.overloadLevel;
-            // The most units of def this pawn could carry in ONE overloaded trip (mass-limited, demand-unbounded).
-            int maxLoadUnits = ConstructDeliveryPlan.GatherCeiling(level, maxCap, baseCap, cur, unit, int.MaxValue);
+            // The most units of def this pawn could carry in ONE trip. Own-inventory deliveries carry what is
+            // already held (no loading), so their trip bound is the held count; a load trip is mass-limited
+            // AND (under CE) bulk-limited, so the cluster scan below can't queue sites a real trip can't serve.
+            int maxLoadUnits = ownCovers
+                ? ownCount
+                : UnityEngine.Mathf.Min(
+                    ConstructDeliveryPlan.GatherCeiling(level, maxCap, baseCap, cur, unit, int.MaxValue), bulkFit);
 
             // MULTI-SITE cluster (non-route only): deliver one inventory load to MANY nearby same-material sites.
             // CRITICAL: vanilla's FindNearbyNeeders caps its batch (targetB + targetQueueB) at ONE hand-load of
@@ -168,7 +215,9 @@ namespace HaulersDream
             // our driver carries the tether/route hooks. NOT always trip-neutral though: see the cluster
             // exception below. Auto deliveries keep the "hands already optimal" fast path. The multi-site branch
             // (worth-it gate already requires clusterNeed > handCap across 2+ sites) is never a "one hand-trip".
-            if (!multiSite && !forced && frameNeed <= handCap)
+            // BOTH vanilla-keep skips yield to ownCovers: vanilla would walk to a floor/shelf stack for material
+            // the pawn already carries, a strictly worse trip than depositing straight from inventory.
+            if (!ownCovers && !multiSite && !forced && frameNeed <= handCap)
             {
                 HDLog.Dbg($"inv-deliver skip: need {frameNeed} <= handCap {handCap} for {def.label} → {needer.LabelShort} (one hand-trip suffices)");
                 return null; // a single hand-trip already satisfies it
@@ -179,7 +228,9 @@ namespace HaulersDream
             // conversion would deliver to one needer and discard the rest of the cluster, COSTING trips.
             // Route stops (RouteIntent != None) still always convert — routes depend on per-stop jobs.
             // A multi-site conversion carries the whole cluster, so it does NOT discard it -> doesn't skip.
-            if (!multiSite && forced && RouteIntent == ConstructRouteIntent.None && frameNeed <= handCap
+            // ownCovers converts despite a vanilla batch: the carried stock serves the primary now, and the
+            // rest of the batch is re-offered fresh on the next scan (from inventory while stock lasts).
+            if (!ownCovers && !multiSite && forced && RouteIntent == ConstructRouteIntent.None && frameNeed <= handCap
                 && vanillaJob != null && vanillaJob.targetQueueB != null && vanillaJob.targetQueueB.Count > 0)
             {
                 HDLog.Dbg($"inv-deliver skip: forced one-hand order for {def.label} → {needer.LabelShort}, " +
@@ -195,37 +246,58 @@ namespace HaulersDream
                 && RouteDemandByDef.TryGetValue(def, out int routeNeed) && routeNeed > gatherNeed)
                 gatherNeed = routeNeed;
 
-            int ceiling = ConstructDeliveryPlan.GatherCeiling(level, maxCap, baseCap, cur, unit, gatherNeed);
-            if (!forced && ceiling <= handCap)
-            {
-                HDLog.Dbg($"inv-deliver skip: ceiling {ceiling} <= handCap {handCap} for {def.label} (cur mass {cur:0.0}/{baseCap:0.0}kg, unit {unit:0.###})");
-                return null; // can't carry more than one hand-load right now -> hands are already optimal
-            }
-            if (forced && ceiling < 1)
-                ceiling = handCap; // ordered: always proceed with at least a hand-load's worth of gathering
-
-            // Gather around the STOCKPILE (the resource vanilla found), wherever it is on the map — the build site
-            // is frequently far from where the material is stored, and the pawn loads from the stockpile.
             var stacks = new List<Thing>();
-            int available = Gather(pawn, def, resource.Position, ceiling, stacks);
-
-            // An ordered delivery loads whatever is actually available toward the full need (the driver's take
-            // toil still applies the smart-overload ceiling per pickup); the auto path keeps the planned math.
-            // For a multi-site cluster the demand is the whole cluster's combined need, not one frame's.
-            int loadDemand = multiSite ? clusterNeed : frameNeed;
-            int targetLoad = forced
-                ? UnityEngine.Mathf.Min(gatherNeed, available)
-                : ConstructDeliveryPlan.PlanLoad(level, maxCap, baseCap, cur, unit, loadDemand, handCap, available);
-            if (targetLoad <= 0)
+            Thing ownStack = null;
+            int targetLoad;
+            if (ownCovers)
             {
-                HDLog.Dbg($"inv-deliver skip: targetLoad 0 for {def.label} → {needer.LabelShort} " +
-                          $"(available {available} in {stacks.Count} stacks near stockpile, need {frameNeed}, handCap {handCap}, ceiling {ceiling})");
-                return null;
+                // No gather: the load is already in the pawn's inventory. The driver's entry gate sees the
+                // carried stock covering the immediate needer and jumps straight to the deliver phase; with
+                // an EMPTY stack queue it can never detour to the floor even when carrying only a partial
+                // chunk (NextResourceStack drains an empty queue and falls through to deliver).
+                ownStack = YieldRouter.InventoryStackOfDef(pawn.inventory?.GetDirectlyHeldThings(), def);
+                if (ownStack == null)
+                    return null; // counted stock just vanished (same-tick mutation) -> leave vanilla in place
+                targetLoad = UnityEngine.Mathf.Min(gatherNeed, ownCount);
             }
+            else
+            {
+                // Bulk-clamped like maxLoadUnits above: gather no more than one REAL trip can load.
+                int ceiling = UnityEngine.Mathf.Min(
+                    ConstructDeliveryPlan.GatherCeiling(level, maxCap, baseCap, cur, unit, gatherNeed), bulkFit);
+                if (!forced && ceiling <= handCap)
+                {
+                    HDLog.Dbg($"inv-deliver skip: ceiling {ceiling} <= handCap {handCap} for {def.label} (cur mass {cur:0.0}/{baseCap:0.0}kg, unit {unit:0.###})");
+                    return null; // can't carry more than one hand-load right now -> hands are already optimal
+                }
+                if (forced && ceiling < 1)
+                    ceiling = handCap; // ordered: always proceed with at least a hand-load's worth of gathering
 
-            TrimToCount(stacks, targetLoad);
-            if (stacks.Count == 0)
-                return null;
+                // Gather around the STOCKPILE (the resource vanilla found), wherever it is on the map; the build site
+                // is frequently far from where the material is stored, and the pawn loads from the stockpile.
+                int available = Gather(pawn, def, resource.Position, ceiling, stacks);
+
+                // An ordered delivery loads whatever is actually available toward the full need (the driver's take
+                // toil still applies the smart-overload ceiling per pickup); the auto path keeps the planned math.
+                // For a multi-site cluster the demand is the whole cluster's combined need, not one frame's.
+                int loadDemand = multiSite ? clusterNeed : frameNeed;
+                targetLoad = forced
+                    ? UnityEngine.Mathf.Min(gatherNeed, available)
+                    : ConstructDeliveryPlan.PlanLoad(level, maxCap, baseCap, cur, unit, loadDemand, handCap, available);
+                // The plan must never promise more than the driver's CE-clamped take can load this trip
+                // (bulkFit > handCap is guaranteed here, so a surviving auto plan still beats one hand-load).
+                targetLoad = UnityEngine.Mathf.Min(targetLoad, bulkFit);
+                if (targetLoad <= 0)
+                {
+                    HDLog.Dbg($"inv-deliver skip: targetLoad 0 for {def.label} → {needer.LabelShort} " +
+                              $"(available {available} in {stacks.Count} stacks near stockpile, need {frameNeed}, handCap {handCap}, ceiling {ceiling})");
+                    return null;
+                }
+
+                TrimToCount(stacks, targetLoad);
+                if (stacks.Count == 0)
+                    return null;
+            }
 
             var job = JobMaker.MakeJob(tetherBuild
                 ? HaulersDreamDefOf.HaulersDream_ConstructDeliverBuild
@@ -234,7 +306,10 @@ namespace HaulersDream
             // grabbed it, TryMakePreToilReservations fails and vanilla re-runs — no no-op loop). ALL stacks
             // (including the primary) go in the queue; the driver pops them as it loads, overwriting the
             // transient targetA. The needer is both container (B) and primary needer (C).
-            job.targetA = stacks[0];
+            // Own-inventory deliveries point targetA at the CARRIED stack instead: the driver resolves its
+            // resourceDef from it, and its reservation-failure tolerance (carried stock present) keeps the
+            // job alive even if another pawn had somehow reserved the held stack.
+            job.targetA = ownCovers ? ownStack : stacks[0];
             job.targetQueueA = new List<LocalTargetInfo>();
             for (int i = 0; i < stacks.Count; i++)
                 job.targetQueueA.Add(stacks[i]);
@@ -255,11 +330,12 @@ namespace HaulersDream
             job.count = targetLoad;
             job.haulMode = HaulMode.ToContainer;
 
+            string source = ownCovers ? $"own inventory, {ownCount} carried" : $"{stacks.Count} stacks";
             HDLog.Dbg(multiSite
                 ? $"{pawn} inventory-delivers {targetLoad}x {def.label} to a {clusterNeeders.Count}-site cluster " +
-                  $"(primary {needer.LabelShort}, cluster need {clusterNeed}, hand cap {handCap}, {stacks.Count} stacks)."
+                  $"(primary {needer.LabelShort}, cluster need {clusterNeed}, hand cap {handCap}, {source})."
                 : $"{pawn} inventory-delivers {targetLoad}x {def.label} to {needer.LabelShort} " +
-                  $"(need {frameNeed}, hand cap {handCap}, {stacks.Count} stacks).");
+                  $"(need {frameNeed}, hand cap {handCap}, {source}).");
             return job;
         }
 

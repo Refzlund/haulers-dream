@@ -154,8 +154,10 @@ namespace HaulersDream
             countCache?.Clear();
         }
 
-        /// <summary>Sum every organic stack of <paramref name="def"/> in <paramref name="carrier"/>'s inventory.</summary>
-        private static int CountOrganicOfDef(Pawn carrier, ThingDef def)
+        /// <summary>Sum every organic stack of <paramref name="def"/> in <paramref name="carrier"/>'s inventory.
+        /// Internal so the construction planner can read a worker's OWN carried stock through the same loop
+        /// (single source of truth for "how much of this def is in that pawn's innerContainer").</summary>
+        internal static int CountOrganicOfDef(Pawn carrier, ThingDef def)
         {
             var owner = carrier?.inventory?.innerContainer;
             if (owner == null)
