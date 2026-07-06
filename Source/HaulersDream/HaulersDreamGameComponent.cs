@@ -260,10 +260,11 @@ namespace HaulersDream
         {
             base.ExposeData();
             // Subsystem scribe blocks, in the ORIGINAL order so the save format is byte-identical:
-            // veinTrackers -> batchBills -> loadTasks -> loadVehicleTasks.
+            // veinTrackers -> batchBills -> loadTasks -> loadVehicleTasks -> questPawnSnapshots (append-only).
             ExposeVein();
             ExposeBatchBills();
             ExposeLedger();
+            ExposeQuestPawns();
         }
     }
 }
