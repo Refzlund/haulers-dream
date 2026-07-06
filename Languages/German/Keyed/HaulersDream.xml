@@ -155,7 +155,7 @@
 <HaulersDream.AllowAnimalsDesc>Standardmäßig deaktiviert. Wenn aktiviert, tragen Kolonietiere, die im Transportieren ausgebildet sind, mehrere Stapel auf einmal — sie nehmen Beute aus der Nähe in ihr Inventar und führen den Stapel-Transport von Hauler's Dream aus statt eines Stapels pro Fahrt. Dies erreicht nur Tiere, die im Transportieren ausgebildet werden KÖNNEN: solche mit fortgeschrittener Trainierbarkeit und einem ausreichend großen Körper (Huskys, Labradore, Elefanten, Bären, Thrumbos usw.). Tiere, die nicht im Transportieren ausgebildet werden können — eine Hauskatze und dergleichen — führen den Transportauftrag von vornherein nie aus (unabhängig von dieser Einstellung), sie sind also von diesem Schalter unberührt. Nur deine eigenen Kolonietiere sind betroffen; wilde und feindliche Tiere sind nie betroffen.</HaulersDream.AllowAnimalsDesc>
 <HaulersDream.Setting.AllowIncapable>Zum Transportieren unfähigen Spielfiguren erlauben, ihre eigenen Erträge aufzusammeln</HaulersDream.Setting.AllowIncapable>
 <HaulersDream.Setting.EnableOnNonHomeMaps>Auch auf Karawanen-/Nicht-Heimatkarten arbeiten</HaulersDream.Setting.EnableOnNonHomeMaps>
-<HaulersDream.Setting.HideGizmo>Die Schaltfläche „Inventar entladen“ pro Spielfigur verbergen</HaulersDream.Setting.HideGizmo>
+<HaulersDream.Setting.HideGizmo>Die Schaltfläche „Inventar entladen“ pro Spielfigur anzeigen</HaulersDream.Setting.HideGizmo>
 <HaulersDream.Setting.UnloadGrace>Sammelfenster: nach der letzten Aufnahme noch {0} Ticks (~60/Sek.) weiter aufnehmen, bevor die Entladefahrt gemacht wird. Höher = Spielfiguren überladen mehr und machen weniger, größere Fahrten; sie entladen dennoch sofort, sobald sie voll sind (die Überlade-Obergrenze).</HaulersDream.Setting.UnloadGrace>
 <HaulersDream.Setting.IntervalUnload>Intervall-Entladen: alle {0} Spielstunden</HaulersDream.Setting.IntervalUnload>
 <HaulersDream.Setting.IntervalUnloadOff>Intervall-Entladen: aus (nur Arbeitsende / Mahlzeiten und Erholung / Übergewicht / manuell)</HaulersDream.Setting.IntervalUnloadOff>
@@ -431,7 +431,7 @@
 <HaulersDream.Report.Sending>Wird gesendet…</HaulersDream.Report.Sending>
 <HaulersDream.Report.SentBody>Danke! Dein Bericht wurde gesendet.\n\nFalls es ein Fehler ist, hilft das angehängte Protokoll dabei, ihn aufzuspüren.</HaulersDream.Report.SentBody>
 <HaulersDream.Report.RateLimited>Du sendest Berichte zu schnell. Bitte warte eine Minute und versuche es erneut.</HaulersDream.Report.RateLimited>
-<HaulersDream.Report.NetworkError>Der Berichtsserver war nicht erreichbar: {0}\nÜberprüfe deine Verbindung und versuche es erneut.</HaulersDream.Report.NetworkError>
+<HaulersDream.Report.NetworkError>Der Berichtsserver war nicht erreichbar: {0}\nÜberprüfe deine Internetverbindung sowie Firewall und Virenschutz, die RimWorld blockieren könnten, und versuche es erneut.</HaulersDream.Report.NetworkError>
 <HaulersDream.Report.ServerError>Der Berichtsserver hat einen Fehler zurückgegeben (HTTP {0}). Bitte versuche es später erneut.</HaulersDream.Report.ServerError>
 <!-- Meine Berichte: die Listen-/Detailansicht, die über die Navigationsschaltfläche geöffnet wird -->
 <HaulersDream.Report.MyReports.Title>Deine Berichte</HaulersDream.Report.MyReports.Title>
@@ -596,7 +596,7 @@
 <HaulersDream.Setting.ShareForBuilding.Help>Materialien, die eine Spielfigur bereits in ihr Inventar aufgesammelt hat, zählen für den Bau in der Nähe, sodass sie ohne separate Holfahrt bauen kann.</HaulersDream.Setting.ShareForBuilding.Help>
 <HaulersDream.Setting.ShareMeetInMiddle.Help>Wenn ein Bau oder Auftrag ein Material aus dem Inventar eines Trägers zieht, geht ein untätiger Träger auf den Arbeiter zu, sodass sie sich früher treffen.</HaulersDream.Setting.ShareMeetInMiddle.Help>
 <HaulersDream.Setting.ItemUnload.Help>Lege Regeln für einzelne Gegenstände fest: den ganzen Stapel behalten, höchstens eine festgelegte Menge behalten oder ihn immer entladen — und überschreibe damit die Überschuss-Einstellung für diesen Gegenstand.</HaulersDream.Setting.ItemUnload.Help>
-<HaulersDream.Setting.HideGizmo.Help>Verbirgt die Schaltfläche „Inventar entladen“ pro Spielfigur, die erscheint, wenn ein Kolonist aufgesammelte Güter trägt.</HaulersDream.Setting.HideGizmo.Help>
+<HaulersDream.Setting.HideGizmo.Help>Zeigt die Schaltfläche „Inventar entladen“ pro Spielfigur an, die erscheint, wenn ein Kolonist aufgesammelte Güter trägt. Standardmäßig aktiviert; deaktivieren, um die Schaltfläche auszublenden.</HaulersDream.Setting.HideGizmo.Help>
 <HaulersDream.Setting.StorageFilterButton.Help>Bearbeite Erlauben/Verbieten-Regeln pro Gebäude und pro Mod dafür, welches Lager der Transport verwenden darf.</HaulersDream.Setting.StorageFilterButton.Help>
 <HaulersDream.Setting.PauseWhileDrafted.Help>Während eine Spielfigur im Wehrdienst ist, hört Hauler's Dream auf, für sie neue Aufsammel- und Aufräumdurchgänge zu starten.</HaulersDream.Setting.PauseWhileDrafted.Help>
 <HaulersDream.Setting.AllowIncapable.Help>Lässt eine Spielfigur, die unfähig zum Transportieren ist, dennoch die Erträge ihrer eigenen Arbeit aufsammeln (Bergbau, Ernten, …).</HaulersDream.Setting.AllowIncapable.Help>
@@ -688,6 +688,7 @@
 <HaulersDream.Setting.PerPawnButtonsNote>Diese fügen jedem Kolonisten Befehlsschaltflächen hinzu; sie ändern nichts am automatischen Schleppen.</HaulersDream.Setting.PerPawnButtonsNote>
 <HaulersDream.Search.Placeholder>Einstellungen durchsuchen…</HaulersDream.Search.Placeholder>
 <HaulersDream.Search.NoResults>Keine Einstellungen entsprechen Ihrer Suche.</HaulersDream.Search.NoResults>
+<HaulersDream.Search.More>Die {0} besten Treffer werden angezeigt. Verfeinern Sie Ihre Suche, um die übrigen zu sehen.</HaulersDream.Search.More>
 <HaulersDream.Search.Clear>Suche löschen</HaulersDream.Search.Clear>
   <HaulersDream.ItemUnload.SetCategoryTip>Apply one rule to every item in this category at once, instead of setting them one by one. Handy for big groups like ammo.</HaulersDream.ItemUnload.SetCategoryTip>
   <HaulersDream.Setting.Yield.Fishing>Fishing (catch)</HaulersDream.Setting.Yield.Fishing>

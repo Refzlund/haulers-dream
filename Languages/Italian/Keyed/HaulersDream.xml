@@ -155,7 +155,7 @@
 <HaulersDream.AllowAnimalsDesc>Disattivato per impostazione predefinita. Quando è ATTIVO, gli animali della colonia addestrati al Trasporto portano diverse pile alla volta — raccogliendo il bottino vicino nel loro inventario ed eseguendo il trasporto in blocco di Hauler's Dream invece di una pila per viaggio. Questo riguarda solo gli animali che POSSONO essere addestrati al Trasporto: quelli con addestrabilità Avanzata e un corpo abbastanza grande (husky, labrador, elefanti, orsi, thrumbo, ecc.). Gli animali che non possono essere addestrati al Trasporto — un gatto di casa e simili — non eseguono comunque il lavoro di trasporto in primo luogo (vero a prescindere da questa impostazione), perciò non sono influenzati da questo interruttore. Vengono toccati solo i tuoi animali della colonia; gli animali selvatici e nemici non vengono mai influenzati.</HaulersDream.AllowAnimalsDesc>
 <HaulersDream.Setting.AllowIncapable>Permetti alle pedine incapaci di trasportare di raccogliere i propri prodotti</HaulersDream.Setting.AllowIncapable>
 <HaulersDream.Setting.EnableOnNonHomeMaps>Funziona anche sulle mappe carovana / non domestiche</HaulersDream.Setting.EnableOnNonHomeMaps>
-<HaulersDream.Setting.HideGizmo>Nascondi il pulsante "Svuota inventario" per ogni pedina</HaulersDream.Setting.HideGizmo>
+<HaulersDream.Setting.HideGizmo>Mostra il pulsante "Svuota inventario" per ogni pedina</HaulersDream.Setting.HideGizmo>
 <HaulersDream.Setting.UnloadGrace>Finestra di accumulo: continua a raccogliere per {0} tick (~60/sec) dopo l'ultima raccolta prima di fare il viaggio di scarico. Più alto = le pedine si sovraccaricano di più e fanno meno viaggi ma più grandi; scaricano comunque subito una volta piene (il tetto del sovraccarico).</HaulersDream.Setting.UnloadGrace>
 <HaulersDream.Setting.IntervalUnload>Scarico a intervalli: ogni {0} ore di gioco</HaulersDream.Setting.IntervalUnload>
 <HaulersDream.Setting.IntervalUnloadOff>Scarico a intervalli: disattivato (solo fine turno di lavoro / pasti e svago / sovrappeso / manuale)</HaulersDream.Setting.IntervalUnloadOff>
@@ -431,7 +431,7 @@
 <HaulersDream.Report.Sending>Invio in corso…</HaulersDream.Report.Sending>
 <HaulersDream.Report.SentBody>Grazie! La tua segnalazione è stata inviata.\n\nSe si tratta di un bug, il registro allegato aiuterà a rintracciarlo.</HaulersDream.Report.SentBody>
 <HaulersDream.Report.RateLimited>Stai inviando segnalazioni troppo in fretta. Attendi un minuto e riprova.</HaulersDream.Report.RateLimited>
-<HaulersDream.Report.NetworkError>Impossibile raggiungere il server delle segnalazioni: {0}\nControlla la connessione e riprova.</HaulersDream.Report.NetworkError>
+<HaulersDream.Report.NetworkError>Impossibile raggiungere il server delle segnalazioni: {0}\nControlla la connessione a Internet ed eventuali firewall o antivirus che potrebbero bloccare RimWorld, poi riprova.</HaulersDream.Report.NetworkError>
 <HaulersDream.Report.ServerError>Il server delle segnalazioni ha restituito un errore (HTTP {0}). Riprova più tardi.</HaulersDream.Report.ServerError>
 <!-- Le mie segnalazioni: la vista elenco/dettaglio che si apre dal pulsante di navigazione -->
 <HaulersDream.Report.MyReports.Title>Le tue segnalazioni</HaulersDream.Report.MyReports.Title>
@@ -596,7 +596,7 @@
 <HaulersDream.Setting.ShareForBuilding.Help>I materiali che una pedina ha già raccolto nel suo inventario contano per la costruzione vicina, così può costruire senza un viaggio di recupero separato.</HaulersDream.Setting.ShareForBuilding.Help>
 <HaulersDream.Setting.ShareMeetInMiddle.Help>Quando una costruzione o un ordine di lavoro attingerà un materiale dall'inventario di un portatore, un portatore inattivo cammina verso il lavoratore così si incontrano prima.</HaulersDream.Setting.ShareMeetInMiddle.Help>
 <HaulersDream.Setting.ItemUnload.Help>Imposta regole per i singoli oggetti: tieni l'intera pila, tieni al massimo una quantità stabilita, o scaricalo sempre — sovrascrivendo l'impostazione dell'eccesso per quell'oggetto.</HaulersDream.Setting.ItemUnload.Help>
-<HaulersDream.Setting.HideGizmo.Help>Nascondi il pulsante "Svuota inventario" per ogni pedina che appare quando un colono sta trasportando merce raccolta.</HaulersDream.Setting.HideGizmo.Help>
+<HaulersDream.Setting.HideGizmo.Help>Mostra il pulsante "Svuota inventario" per ogni pedina che appare quando un colono sta trasportando merce raccolta. Attivo per impostazione predefinita; disattivalo per nascondere il pulsante.</HaulersDream.Setting.HideGizmo.Help>
 <HaulersDream.Setting.StorageFilterButton.Help>Modifica le regole di consenti/nega per edificio e per mod su quale deposito il trasporto può usare.</HaulersDream.Setting.StorageFilterButton.Help>
 <HaulersDream.Setting.PauseWhileDrafted.Help>Mentre una pedina è arruolata, Hauler's Dream smette di avviare nuove raccolte e raccolte in massa per essa.</HaulersDream.Setting.PauseWhileDrafted.Help>
 <HaulersDream.Setting.AllowIncapable.Help>Consenti a una pedina incapace di Trasporto di raccogliere comunque i prodotti del proprio lavoro (estrazione, raccolta, …).</HaulersDream.Setting.AllowIncapable.Help>
@@ -688,6 +688,7 @@
 <HaulersDream.Setting.PerPawnButtonsNote>Questi aggiungono pulsanti di comando a ogni colono; non modificano il trasporto automatico.</HaulersDream.Setting.PerPawnButtonsNote>
 <HaulersDream.Search.Placeholder>Cerca impostazioni…</HaulersDream.Search.Placeholder>
 <HaulersDream.Search.NoResults>Nessuna impostazione corrisponde alla tua ricerca.</HaulersDream.Search.NoResults>
+<HaulersDream.Search.More>Mostrati i primi {0} risultati. Affina la ricerca per vedere gli altri.</HaulersDream.Search.More>
 <HaulersDream.Search.Clear>Cancella ricerca</HaulersDream.Search.Clear>
   <HaulersDream.ItemUnload.SetCategoryTip>Apply one rule to every item in this category at once, instead of setting them one by one. Handy for big groups like ammo.</HaulersDream.ItemUnload.SetCategoryTip>
   <HaulersDream.Setting.Yield.Fishing>Fishing (catch)</HaulersDream.Setting.Yield.Fishing>

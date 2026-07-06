@@ -348,12 +348,9 @@ namespace HaulersDream
 
         private void StartGet(string url)
         {
-            req = new UnityWebRequest(url, "GET")
-            {
-                downloadHandler = new DownloadHandlerBuffer(),
-                timeout = 30
-            };
-            req.SetRequestHeader("User-Agent", ReportApi.UserAgent());
+            req = ReportApi.NewRequest(url, "GET");
+            req.downloadHandler = new DownloadHandlerBuffer();
+            req.timeout = 30;
             req.SetRequestHeader("X-Reporter-Id", ReportApi.ReporterId());
             req.SendWebRequest();
         }
@@ -361,14 +358,11 @@ namespace HaulersDream
         private void StartPost(string url, string json)
         {
             var bytes = Encoding.UTF8.GetBytes(json ?? "{}");
-            req = new UnityWebRequest(url, "POST")
-            {
-                uploadHandler = new UploadHandlerRaw(bytes),
-                downloadHandler = new DownloadHandlerBuffer(),
-                timeout = 30
-            };
+            req = ReportApi.NewRequest(url, "POST");
+            req.uploadHandler = new UploadHandlerRaw(bytes);
+            req.downloadHandler = new DownloadHandlerBuffer();
+            req.timeout = 30;
             req.SetRequestHeader("Content-Type", "application/json");
-            req.SetRequestHeader("User-Agent", ReportApi.UserAgent());
             req.SetRequestHeader("X-Reporter-Id", ReportApi.ReporterId());
             req.SendWebRequest();
         }

@@ -88,8 +88,14 @@ namespace HaulersDream
         // tab UI draws byte-for-byte as before) whenever searchQuery is empty AND no nav/highlight is pending.
         private static string searchQuery = "";
         private static List<OptionEntry> searchRegistry;   // collect-mode snapshot; built lazily, null when inactive
-        private static List<OptionEntry> scoredResults;     // sorted desc by score; recomputed when the query text changes
+        private static List<OptionEntry> scoredResults;     // sorted desc by score, CAPPED to MaxSearchResults; recomputed when the query text changes
         private static string scoredForQuery;               // guards re-scoring (the query the current scoredResults are for)
+        private static int scoredTotal;                     // total matches BEFORE the cap (for the "N more" note)
+        // Cap on how many matches the results view draws. A short/broad query (passed through while typing, e.g.
+        // "m" -> "me" -> "meat") can match most of the ~135 controls; the results view draws every match as a real
+        // widget EVERY frame, so an uncapped broad match tanks FPS while the box is non-empty (issue #138). Ranked
+        // results mean the top matches are the useful ones; the rest are reachable by refining the query.
+        private const int MaxSearchResults = 30;
         // One-frame (actually 2-frame) scroll defer after a navigate: the target tab must draw once so catHeight is
         // fresh before we clamp the scroll. frames counts down; cleared at 0.
         private static (int catId, int ordinal, float startY, int frames)? pendingNav;
@@ -584,8 +590,12 @@ namespace HaulersDream
                     scored.Add((e, s));
             }
             scored.Sort((a, b) => b.s.CompareTo(a.s));
-            scoredResults = new List<OptionEntry>(scored.Count);
-            for (int i = 0; i < scored.Count; i++)
+            scoredTotal = scored.Count;
+            // Cap to the top matches so the per-frame results draw stays bounded no matter how broad the query is
+            // (see MaxSearchResults). The note at the foot of DrawSearchResults reports how many were hidden.
+            int shown = Mathf.Min(scored.Count, MaxSearchResults);
+            scoredResults = new List<OptionEntry>(shown);
+            for (int i = 0; i < shown; i++)
                 scoredResults.Add(scored[i].e);
             scoredForQuery = searchQuery;
         }
@@ -682,6 +692,26 @@ namespace HaulersDream
                 c.CurrentCatId = g.CatId;
                 DrawCat(c, (SettingsCat)g.CatId);
                 c.RenderOrdinals = null; // never leaks into a normal draw
+            }
+
+            // Capped results: a foot note telling the user the view is showing only the top matches, so they can
+            // refine to reach the rest (the cap is what keeps a broad query's per-frame draw cheap, see
+            // MaxSearchResults). Only when the query actually matched more than the cap.
+            if (scoredTotal > scoredResults.Count)
+            {
+                c.Gap(24f);
+                string more = "HaulersDream.Search.More".Translate(scoredResults.Count);
+                var pf = Text.Font;
+                var pa = Text.Anchor;
+                var pcol = GUI.color;
+                Text.Font = GameFont.Small;
+                var mr = c.Row(Mathf.Max(Text.LineHeightOf(GameFont.Small), Text.CalcHeight(more, c.Width)));
+                Text.Anchor = TextAnchor.MiddleCenter;
+                GUI.color = new Color(0.72f, 0.72f, 0.76f);
+                Widgets.Label(mr, more);
+                Text.Font = pf;
+                Text.Anchor = pa;
+                GUI.color = pcol;
             }
 
             searchResultsHeight = c.CurY + pad;

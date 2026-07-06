@@ -155,7 +155,7 @@
 <HaulersDream.AllowAnimalsDesc>기본 꺼짐. 켜면 운반 훈련을 받은 정착지 동물이 한 번에 여러 더미를 운반합니다 — 인근 전리품을 소지품에 줍고, 이동당 한 더미 대신 Hauler's Dream의 대량 운반을 수행합니다. 이것은 운반 훈련이 가능한 동물에게만 적용됩니다: 고급 훈련성과 충분히 큰 몸집을 가진 동물(허스키, 래브라도, 코끼리, 곰, 스럼보 등). 운반 훈련이 불가능한 동물 — 집고양이 등 — 은 애초에 운반 작업을 수행하지 않으므로(이 설정과 무관하게 참) 이 토글의 영향을 받지 않습니다. 당신의 정착지 동물만 대상이며, 야생 및 적 동물은 절대 영향을 받지 않습니다.</HaulersDream.AllowAnimalsDesc>
 <HaulersDream.Setting.AllowIncapable>운반 불능 폰이 자기 산출물은 줍도록 허용</HaulersDream.Setting.AllowIncapable>
 <HaulersDream.Setting.EnableOnNonHomeMaps>카라반 / 비본거지 맵에서도 작동</HaulersDream.Setting.EnableOnNonHomeMaps>
-<HaulersDream.Setting.HideGizmo>폰별 "소지품 내려놓기" 버튼 숨기기</HaulersDream.Setting.HideGizmo>
+<HaulersDream.Setting.HideGizmo>폰별 "소지품 내려놓기" 버튼 표시</HaulersDream.Setting.HideGizmo>
 <HaulersDream.Setting.UnloadGrace>축적 시간: 마지막 줍기 이후 내려놓으러 가기 전까지 {0}틱(~초당 60) 동안 계속 줍기. 높을수록 폰이 더 많이 과적하고 더 적은 횟수로 더 크게 이동합니다. 가득 차면(과적 상한) 여전히 즉시 내려놓습니다.</HaulersDream.Setting.UnloadGrace>
 <HaulersDream.Setting.IntervalUnload>간격 내려놓기: 게임 내 {0}시간마다</HaulersDream.Setting.IntervalUnload>
 <HaulersDream.Setting.IntervalUnloadOff>간격 내려놓기: 꺼짐 (작업 종료 / 식사 및 여가 / 과적 / 수동일 때만)</HaulersDream.Setting.IntervalUnloadOff>
@@ -431,7 +431,7 @@
 <HaulersDream.Report.Sending>보내는 중…</HaulersDream.Report.Sending>
 <HaulersDream.Report.SentBody>감사합니다! 신고가 전송되었습니다.\n\n버그라면 첨부된 로그가 원인을 찾는 데 도움이 됩니다.</HaulersDream.Report.SentBody>
 <HaulersDream.Report.RateLimited>신고를 너무 빠르게 보내고 있습니다. 잠시 기다렸다가 다시 시도하세요.</HaulersDream.Report.RateLimited>
-<HaulersDream.Report.NetworkError>신고 서버에 연결할 수 없습니다: {0}\n연결 상태를 확인하고 다시 시도하세요.</HaulersDream.Report.NetworkError>
+<HaulersDream.Report.NetworkError>신고 서버에 연결할 수 없습니다: {0}\n인터넷 연결과 RimWorld를 차단할 수 있는 방화벽이나 백신 프로그램을 확인한 뒤 다시 시도하세요.</HaulersDream.Report.NetworkError>
 <HaulersDream.Report.ServerError>신고 서버가 오류를 반환했습니다 (HTTP {0}). 나중에 다시 시도하세요.</HaulersDream.Report.ServerError>
   <!-- My reports: the list/detail view that opens from the nav button -->
   <HaulersDream.Report.MyReports.Title>내 신고</HaulersDream.Report.MyReports.Title>
@@ -596,7 +596,7 @@
 <HaulersDream.Setting.ShareForBuilding.Help>폰이 이미 소지품에 주워 담은 자재가 인근 건설에 셈해져, 별도의 가져오기 이동 없이 건설할 수 있습니다.</HaulersDream.Setting.ShareForBuilding.Help>
 <HaulersDream.Setting.ShareMeetInMiddle.Help>건설이나 작업 지시가 운반체의 소지품에서 자재를 가져올 때, 한가한 운반체가 더 빨리 만나도록 작업자 쪽으로 걸어갑니다.</HaulersDream.Setting.ShareMeetInMiddle.Help>
 <HaulersDream.Setting.ItemUnload.Help>개별 물품에 대한 규칙을 설정합니다: 더미 전체 보유, 정해진 양까지만 보유, 또는 항상 내려놓기 — 그 물품에 대해 잉여 설정을 무시합니다.</HaulersDream.Setting.ItemUnload.Help>
-<HaulersDream.Setting.HideGizmo.Help>정착민이 주워 담은 물건을 운반 중일 때 나타나는 폰별 '소지품 내려놓기' 버튼을 숨깁니다.</HaulersDream.Setting.HideGizmo.Help>
+<HaulersDream.Setting.HideGizmo.Help>정착민이 주워 담은 물건을 운반 중일 때 나타나는 폰별 "소지품 내려놓기" 버튼을 표시합니다. 기본값은 켜짐이며, 끄면 버튼이 숨겨집니다.</HaulersDream.Setting.HideGizmo.Help>
 <HaulersDream.Setting.StorageFilterButton.Help>운반이 사용할 수 있는 저장고에 대한 건물별 및 모드별 허용/거부 규칙을 편집합니다.</HaulersDream.Setting.StorageFilterButton.Help>
 <HaulersDream.Setting.PauseWhileDrafted.Help>폰이 징집된 동안, Hauler's Dream은 그 폰에 대해 새 줍기와 쓸기를 시작하지 않습니다.</HaulersDream.Setting.PauseWhileDrafted.Help>
 <HaulersDream.Setting.AllowIncapable.Help>운반 불능인 폰이라도 자기 작업(채굴, 수확 등)의 산출물은 줍게 합니다.</HaulersDream.Setting.AllowIncapable.Help>
@@ -688,6 +688,7 @@
 <HaulersDream.Setting.PerPawnButtonsNote>이것들은 각 정착민에게 명령 버튼을 추가합니다. 자동 운반을 변경하지는 않습니다.</HaulersDream.Setting.PerPawnButtonsNote>
 <HaulersDream.Search.Placeholder>설정 검색…</HaulersDream.Search.Placeholder>
 <HaulersDream.Search.NoResults>검색과 일치하는 설정이 없습니다.</HaulersDream.Search.NoResults>
+<HaulersDream.Search.More>상위 {0}개 결과를 표시합니다. 나머지를 보려면 검색어를 좁혀 주세요.</HaulersDream.Search.More>
 <HaulersDream.Search.Clear>검색 지우기</HaulersDream.Search.Clear>
   <HaulersDream.ItemUnload.SetCategoryTip>Apply one rule to every item in this category at once, instead of setting them one by one. Handy for big groups like ammo.</HaulersDream.ItemUnload.SetCategoryTip>
   <HaulersDream.Setting.Yield.Fishing>Fishing (catch)</HaulersDream.Setting.Yield.Fishing>

@@ -155,7 +155,7 @@
 <HaulersDream.AllowAnimalsDesc>Désactivé par défaut. Lorsque ACTIVÉ, les animaux de la colonie dressés au Transport portent plusieurs piles à la fois — ramassant le butin proche dans leur inventaire et exécutant le transport groupé de Hauler's Dream au lieu d'une pile par trajet. Cela ne touche que les animaux qui PEUVENT être dressés au Transport : ceux avec un dressage Avancé et un corps assez grand (huskies, labradors, éléphants, ours, thrumbos, etc.). Les animaux qui ne peuvent pas être dressés au Transport — un chat de maison et autres — n'exécutent jamais la tâche de transport en premier lieu (vrai quel que soit ce réglage), ils ne sont donc pas affectés par cette bascule. Seuls vos propres animaux de la colonie sont touchés ; les animaux sauvages et ennemis ne sont jamais affectés.</HaulersDream.AllowAnimalsDesc>
 <HaulersDream.Setting.AllowIncapable>Autoriser les pions incapables de transporter à ramasser leurs propres produits</HaulersDream.Setting.AllowIncapable>
 <HaulersDream.Setting.EnableOnNonHomeMaps>Fonctionner aussi sur les cartes de caravane / hors domicile</HaulersDream.Setting.EnableOnNonHomeMaps>
-<HaulersDream.Setting.HideGizmo>Masquer le bouton « Décharger l'inventaire » par pion</HaulersDream.Setting.HideGizmo>
+<HaulersDream.Setting.HideGizmo>Afficher le bouton « Décharger l'inventaire » par pion</HaulersDream.Setting.HideGizmo>
 <HaulersDream.Setting.UnloadGrace>Fenêtre d'accumulation : continuer à ramasser pendant {0} ticks (~60/s) après le dernier ramassage avant de faire le trajet de déchargement. Plus élevé = les pions se surchargent davantage et font moins de trajets, plus gros ; ils déchargent tout de même immédiatement une fois pleins (le plafond de surcharge).</HaulersDream.Setting.UnloadGrace>
 <HaulersDream.Setting.IntervalUnload>Déchargement à intervalle : toutes les {0} heures de jeu</HaulersDream.Setting.IntervalUnload>
 <HaulersDream.Setting.IntervalUnloadOff>Déchargement à intervalle : désactivé (uniquement fin de séquence de travail / repas et loisirs / surcharge / manuel)</HaulersDream.Setting.IntervalUnloadOff>
@@ -431,7 +431,7 @@
 <HaulersDream.Report.Sending>Envoi en cours…</HaulersDream.Report.Sending>
 <HaulersDream.Report.SentBody>Merci ! Votre rapport a été envoyé.\n\nS'il s'agit d'un bug, le journal joint aidera à le retrouver.</HaulersDream.Report.SentBody>
 <HaulersDream.Report.RateLimited>Vous envoyez des rapports trop rapidement. Veuillez patienter une minute et réessayer.</HaulersDream.Report.RateLimited>
-<HaulersDream.Report.NetworkError>Impossible de joindre le serveur de rapports : {0}\nVérifiez votre connexion et réessayez.</HaulersDream.Report.NetworkError>
+<HaulersDream.Report.NetworkError>Impossible de joindre le serveur de rapports : {0}\nVérifiez votre connexion Internet, ainsi qu'un éventuel pare-feu ou antivirus qui pourrait bloquer RimWorld, puis réessayez.</HaulersDream.Report.NetworkError>
 <HaulersDream.Report.ServerError>Le serveur de rapports a renvoyé une erreur (HTTP {0}). Veuillez réessayer plus tard.</HaulersDream.Report.ServerError>
 <!-- Mes rapports : la vue liste/détail qui s'ouvre depuis le bouton de navigation -->
 <HaulersDream.Report.MyReports.Title>Vos rapports</HaulersDream.Report.MyReports.Title>
@@ -596,7 +596,7 @@
 <HaulersDream.Setting.ShareForBuilding.Help>Les matériaux qu'un pion a déjà ramassés dans son inventaire comptent pour la construction proche, il peut donc construire sans trajet de collecte séparé.</HaulersDream.Setting.ShareForBuilding.Help>
 <HaulersDream.Setting.ShareMeetInMiddle.Help>Quand une construction ou une tâche va puiser un matériau dans l'inventaire d'un porteur, un porteur inactif marche vers le travailleur pour qu'ils se rejoignent plus tôt.</HaulersDream.Setting.ShareMeetInMiddle.Help>
 <HaulersDream.Setting.ItemUnload.Help>Définir des règles pour des objets individuels : garder toute la pile, garder au plus une quantité définie, ou toujours le décharger — prévalant sur le réglage de surplus pour cet objet.</HaulersDream.Setting.ItemUnload.Help>
-<HaulersDream.Setting.HideGizmo.Help>Masquer le bouton « Décharger l'inventaire » par pion qui apparaît quand un colon porte des biens ramassés.</HaulersDream.Setting.HideGizmo.Help>
+<HaulersDream.Setting.HideGizmo.Help>Afficher le bouton « Décharger l'inventaire » par pion qui apparaît quand un colon porte des biens ramassés. Activé par défaut ; désactivez-le pour masquer le bouton.</HaulersDream.Setting.HideGizmo.Help>
 <HaulersDream.Setting.StorageFilterButton.Help>Modifier les règles d'autorisation/refus par bâtiment et par mod pour quel stockage le transport peut utiliser.</HaulersDream.Setting.StorageFilterButton.Help>
 <HaulersDream.Setting.PauseWhileDrafted.Help>Pendant qu'un pion est mobilisé, Hauler's Dream cesse de démarrer de nouveaux ramassages et balayages pour lui.</HaulersDream.Setting.PauseWhileDrafted.Help>
 <HaulersDream.Setting.AllowIncapable.Help>Laisser un pion incapable de Transport ramasser tout de même les produits de son propre travail (extraction, récolte, …).</HaulersDream.Setting.AllowIncapable.Help>
@@ -688,6 +688,7 @@
 <HaulersDream.Setting.PerPawnButtonsNote>Ceci ajoute des boutons de commande à chaque colon ; cela ne change pas le transport automatique.</HaulersDream.Setting.PerPawnButtonsNote>
 <HaulersDream.Search.Placeholder>Rechercher des paramètres…</HaulersDream.Search.Placeholder>
 <HaulersDream.Search.NoResults>Aucun paramètre ne correspond à votre recherche.</HaulersDream.Search.NoResults>
+<HaulersDream.Search.More>Affichage des {0} meilleurs résultats. Affinez votre recherche pour voir les autres.</HaulersDream.Search.More>
 <HaulersDream.Search.Clear>Effacer la recherche</HaulersDream.Search.Clear>
   <HaulersDream.ItemUnload.SetCategoryTip>Apply one rule to every item in this category at once, instead of setting them one by one. Handy for big groups like ammo.</HaulersDream.ItemUnload.SetCategoryTip>
   <HaulersDream.Setting.Yield.Fishing>Fishing (catch)</HaulersDream.Setting.Yield.Fishing>

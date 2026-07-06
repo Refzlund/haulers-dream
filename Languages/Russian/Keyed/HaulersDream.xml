@@ -155,7 +155,7 @@
 <HaulersDream.AllowAnimalsDesc>По умолчанию выкл. Когда ВКЛ, животные колонии, обученные Переноске, несут сразу несколько стопок — подбирая ближайшую добычу в свой инвентарь и выполняя массовую переноску Hauler's Dream вместо одной стопки за ходку. Это касается только животных, которых МОЖНО обучить Переноске: с продвинутой обучаемостью и достаточно крупным телом (хаски, лабрадоры, слоны, медведи, трумбо и т. д.). Животные, которых нельзя обучить Переноске — кошка-домохозяйка и подобные — вообще никогда не выполняют задачу переноски (это так независимо от настройки), поэтому этот переключатель на них не влияет. Затрагиваются только ваши собственные животные колонии; дикие и вражеские животные никогда не затрагиваются.</HaulersDream.AllowAnimalsDesc>
 <HaulersDream.Setting.AllowIncapable>Разрешить пешкам, неспособным к переноске, собирать собственные результаты</HaulersDream.Setting.AllowIncapable>
 <HaulersDream.Setting.EnableOnNonHomeMaps>Также работать на картах караванов / не-домашних картах</HaulersDream.Setting.EnableOnNonHomeMaps>
-<HaulersDream.Setting.HideGizmo>Скрыть индивидуальную кнопку «Разгрузить инвентарь»</HaulersDream.Setting.HideGizmo>
+<HaulersDream.Setting.HideGizmo>Показать индивидуальную кнопку «Разгрузить инвентарь»</HaulersDream.Setting.HideGizmo>
 <HaulersDream.Setting.UnloadGrace>Окно накопления: продолжать подбирать ещё {0} тиков (~60/сек) после последнего подбора, прежде чем совершать ходку для разгрузки. Больше = пешки больше перегружаются и делают меньше, но более крупных ходок; они всё равно разгружаются сразу при заполнении (потолок перегрузки).</HaulersDream.Setting.UnloadGrace>
 <HaulersDream.Setting.IntervalUnload>Разгрузка по интервалу: каждые {0} игровых часов</HaulersDream.Setting.IntervalUnload>
 <HaulersDream.Setting.IntervalUnloadOff>Разгрузка по интервалу: выкл (только конец рабочего захода / приёмы пищи и отдых / перегруз / вручную)</HaulersDream.Setting.IntervalUnloadOff>
@@ -431,7 +431,7 @@
 <HaulersDream.Report.Sending>Отправка…</HaulersDream.Report.Sending>
 <HaulersDream.Report.SentBody>Спасибо! Ваш отчёт отправлен.\n\nЕсли это ошибка, приложенный журнал поможет её отследить.</HaulersDream.Report.SentBody>
 <HaulersDream.Report.RateLimited>Вы отправляете отчёты слишком часто. Подождите минуту и попробуйте снова.</HaulersDream.Report.RateLimited>
-<HaulersDream.Report.NetworkError>Не удалось связаться с сервером отчётов: {0}\nПроверьте подключение и попробуйте снова.</HaulersDream.Report.NetworkError>
+<HaulersDream.Report.NetworkError>Не удалось связаться с сервером отчётов: {0}\nПроверьте подключение к интернету, а также брандмауэр или антивирус, которые могут блокировать RimWorld, и попробуйте снова.</HaulersDream.Report.NetworkError>
 <HaulersDream.Report.ServerError>Сервер отчётов вернул ошибку (HTTP {0}). Пожалуйста, попробуйте позже.</HaulersDream.Report.ServerError>
   <!-- My reports: the list/detail view that opens from the nav button -->
   <HaulersDream.Report.MyReports.Title>Ваши отчёты</HaulersDream.Report.MyReports.Title>
@@ -596,7 +596,7 @@
 <HaulersDream.Setting.ShareForBuilding.Help>Материалы, которые пешка уже собрала в свой инвентарь, засчитываются для ближайшего строительства, поэтому она может строить без отдельной ходки за ними.</HaulersDream.Setting.ShareForBuilding.Help>
 <HaulersDream.Setting.ShareMeetInMiddle.Help>Когда постройка или заказ будет брать материал из инвентаря носителя, простаивающий носитель идёт навстречу работнику, чтобы они встретились раньше.</HaulersDream.Setting.ShareMeetInMiddle.Help>
 <HaulersDream.Setting.ItemUnload.Help>Задайте правила для отдельных предметов: держать всю стопку, держать не более заданного количества или всегда разгружать его — переопределяя настройку излишка для этого предмета.</HaulersDream.Setting.ItemUnload.Help>
-<HaulersDream.Setting.HideGizmo.Help>Скрыть индивидуальную кнопку «Разгрузить инвентарь», которая появляется, когда колонист несёт собранные товары.</HaulersDream.Setting.HideGizmo.Help>
+<HaulersDream.Setting.HideGizmo.Help>Показать индивидуальную кнопку «Разгрузить инвентарь», которая появляется, когда колонист несёт собранные товары. Включено по умолчанию; отключите, чтобы скрыть кнопку.</HaulersDream.Setting.HideGizmo.Help>
 <HaulersDream.Setting.StorageFilterButton.Help>Изменить правила «разрешить/запретить» по постройке и по моду для того, какой склад может использовать переноска.</HaulersDream.Setting.StorageFilterButton.Help>
 <HaulersDream.Setting.PauseWhileDrafted.Help>Пока пешка мобилизована, Hauler's Dream перестаёт запускать для неё новые сборы и сметания.</HaulersDream.Setting.PauseWhileDrafted.Help>
 <HaulersDream.Setting.AllowIncapable.Help>Позволить пешке, неспособной к Переноске, всё же собирать результаты своей собственной работы (добыча, сбор урожая, …).</HaulersDream.Setting.AllowIncapable.Help>
@@ -688,6 +688,7 @@
 <HaulersDream.Setting.PerPawnButtonsNote>Они добавляют кнопки команд каждому колонисту; они не меняют автоматическую переноску.</HaulersDream.Setting.PerPawnButtonsNote>
 <HaulersDream.Search.Placeholder>Поиск настроек…</HaulersDream.Search.Placeholder>
 <HaulersDream.Search.NoResults>Нет настроек, соответствующих вашему запросу.</HaulersDream.Search.NoResults>
+<HaulersDream.Search.More>Показаны {0} лучших совпадений. Уточните запрос, чтобы увидеть остальные.</HaulersDream.Search.More>
 <HaulersDream.Search.Clear>Очистить поиск</HaulersDream.Search.Clear>
   <HaulersDream.ItemUnload.SetCategoryTip>Apply one rule to every item in this category at once, instead of setting them one by one. Handy for big groups like ammo.</HaulersDream.ItemUnload.SetCategoryTip>
   <HaulersDream.Setting.Yield.Fishing>Fishing (catch)</HaulersDream.Setting.Yield.Fishing>

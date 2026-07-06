@@ -13,6 +13,7 @@
   <!-- Settings search box (above the tab list): type to find any setting across every tab; click a match to jump to it. -->
   <HaulersDream.Search.Placeholder>Search settings…</HaulersDream.Search.Placeholder>
   <HaulersDream.Search.NoResults>No settings match your search.</HaulersDream.Search.NoResults>
+  <HaulersDream.Search.More>Showing the top {0} matches. Refine your search to see the rest.</HaulersDream.Search.More>
   <HaulersDream.Search.Clear>Clear search</HaulersDream.Search.Clear>
 
   <!-- Settings window tabs -->
@@ -571,7 +572,7 @@
   <HaulersDream.Report.Sending>Sending…</HaulersDream.Report.Sending>
   <HaulersDream.Report.SentBody>Thanks! Your report was sent.\n\nIf it's a bug, the attached log will help track it down.</HaulersDream.Report.SentBody>
   <HaulersDream.Report.RateLimited>You're sending reports too quickly. Please wait a minute and try again.</HaulersDream.Report.RateLimited>
-  <HaulersDream.Report.NetworkError>Couldn't reach the report server: {0}\nCheck your connection and try again.</HaulersDream.Report.NetworkError>
+  <HaulersDream.Report.NetworkError>Couldn't reach the report server: {0}\nCheck your internet connection, and any firewall or antivirus that may be blocking RimWorld, then try again.</HaulersDream.Report.NetworkError>
   <HaulersDream.Report.ServerError>The report server returned an error (HTTP {0}). Please try again later.</HaulersDream.Report.ServerError>
   <!-- My reports: the list/detail view that opens from the nav button -->
   <HaulersDream.Report.MyReports.Title>Your reports</HaulersDream.Report.MyReports.Title>

@@ -155,7 +155,7 @@
 <HaulersDream.AllowAnimalsDesc>Domyślnie wyłączone. Gdy WŁĄCZONE, zwierzęta kolonii wyszkolone w Znoszeniu niosą kilka stosów naraz — podbierając pobliski łup do swojego bagażu i wykonując masowe znoszenie Hauler's Dream zamiast jednego stosu na wyprawę. Dotyczy to tylko zwierząt, które MOGĄ być szkolone w Znoszeniu: tych z Zaawansowaną szkolnością i wystarczająco dużym ciałem (husky, labradory, słonie, niedźwiedzie, thrumbo itd.). Zwierzęta, których nie da się wyszkolić w Znoszeniu — kot pokojowy i tym podobne — i tak nigdy nie wykonują zadania znoszenia (niezależnie od tego ustawienia), więc ten przełącznik ich nie dotyczy. Ruszane są tylko twoje własne zwierzęta kolonii; dzikie i wrogie zwierzęta nigdy nie są dotknięte.</HaulersDream.AllowAnimalsDesc>
 <HaulersDream.Setting.AllowIncapable>Pozwól pionkom niezdolnym do znoszenia zgarniać własne plony</HaulersDream.Setting.AllowIncapable>
 <HaulersDream.Setting.EnableOnNonHomeMaps>Działaj też na mapach karawany / nie-domowych</HaulersDream.Setting.EnableOnNonHomeMaps>
-<HaulersDream.Setting.HideGizmo>Ukryj przycisk „Rozładuj ekwipunek” dla każdego pionka</HaulersDream.Setting.HideGizmo>
+<HaulersDream.Setting.HideGizmo>Pokaż przycisk „Rozładuj ekwipunek” dla każdego pionka</HaulersDream.Setting.HideGizmo>
 <HaulersDream.Setting.UnloadGrace>Okno gromadzenia: podbieraj dalej przez {0} tyknięć (~60/s) po ostatnim podniesieniu, zanim odbędzie się wyprawa rozładunkowa. Wyżej = pionki przeciążają się bardziej i robią mniej, większych wypraw; wciąż rozładowują się natychmiast, gdy są pełne (pułap przeciążenia).</HaulersDream.Setting.UnloadGrace>
 <HaulersDream.Setting.IntervalUnload>Rozładunek interwałowy: co {0} godzin w grze</HaulersDream.Setting.IntervalUnload>
 <HaulersDream.Setting.IntervalUnloadOff>Rozładunek interwałowy: wyłączony (tylko koniec pracy / posiłki i wypoczynek / przeciążenie / ręcznie)</HaulersDream.Setting.IntervalUnloadOff>
@@ -431,7 +431,7 @@
 <HaulersDream.Report.Sending>Wysyłanie…</HaulersDream.Report.Sending>
 <HaulersDream.Report.SentBody>Dziękujemy! Twoje zgłoszenie zostało wysłane.\n\nJeśli to błąd, dołączony dziennik pomoże go wytropić.</HaulersDream.Report.SentBody>
 <HaulersDream.Report.RateLimited>Wysyłasz zgłoszenia zbyt szybko. Odczekaj minutę i spróbuj ponownie.</HaulersDream.Report.RateLimited>
-<HaulersDream.Report.NetworkError>Nie udało się połączyć z serwerem zgłoszeń: {0}\nSprawdź swoje połączenie i spróbuj ponownie.</HaulersDream.Report.NetworkError>
+<HaulersDream.Report.NetworkError>Nie udało się połączyć z serwerem zgłoszeń: {0}\nSprawdź połączenie z internetem oraz zaporę sieciową lub program antywirusowy, które mogą blokować RimWorld, i spróbuj ponownie.</HaulersDream.Report.NetworkError>
 <HaulersDream.Report.ServerError>Serwer zgłoszeń zwrócił błąd (HTTP {0}). Spróbuj ponownie później.</HaulersDream.Report.ServerError>
   <!-- My reports: the list/detail view that opens from the nav button -->
   <HaulersDream.Report.MyReports.Title>Twoje zgłoszenia</HaulersDream.Report.MyReports.Title>
@@ -596,7 +596,7 @@
 <HaulersDream.Setting.ShareForBuilding.Help>Materiały, które pionek już zgarnął do swojego bagażu, liczą się do pobliskiej budowy, więc może budować bez osobnej wyprawy po nie.</HaulersDream.Setting.ShareForBuilding.Help>
 <HaulersDream.Setting.ShareMeetInMiddle.Help>Gdy budowa lub zlecenie pobierze materiał z bagażu nosiciela, bezczynny nosiciel idzie ku pracownikowi, by spotkali się szybciej.</HaulersDream.Setting.ShareMeetInMiddle.Help>
 <HaulersDream.Setting.ItemUnload.Help>Ustaw reguły dla poszczególnych przedmiotów: zachowaj cały stos, zachowaj najwyżej ustaloną ilość lub zawsze go rozładowuj — nadpisując ustawienie nadwyżki dla tego przedmiotu.</HaulersDream.Setting.ItemUnload.Help>
-<HaulersDream.Setting.HideGizmo.Help>Ukryj przycisk „Rozładuj ekwipunek” dla każdego pionka, który pojawia się, gdy kolonista niesie nazbierane towary.</HaulersDream.Setting.HideGizmo.Help>
+<HaulersDream.Setting.HideGizmo.Help>Pokaż przycisk „Rozładuj ekwipunek” dla każdego pionka, który pojawia się, gdy kolonista niesie nazbierane towary. Włączone domyślnie; wyłącz, aby ukryć przycisk.</HaulersDream.Setting.HideGizmo.Help>
 <HaulersDream.Setting.StorageFilterButton.Help>Edytuj reguły zezwól/odmów na budynek i na mod dla tego, którego magazynu może używać znoszenie.</HaulersDream.Setting.StorageFilterButton.Help>
 <HaulersDream.Setting.PauseWhileDrafted.Help>Gdy pionek jest wcielony, Hauler's Dream przestaje zaczynać dla niego nowe zgarnięcia i zmiatania.</HaulersDream.Setting.PauseWhileDrafted.Help>
 <HaulersDream.Setting.AllowIncapable.Help>Pozwól pionkowi niezdolnemu do Znoszenia mimo to zgarniać plony z własnej pracy (wydobycie, zbieranie, …).</HaulersDream.Setting.AllowIncapable.Help>
@@ -688,6 +688,7 @@
 <HaulersDream.Setting.PerPawnButtonsNote>Te dodają przyciski rozkazów do każdego kolonisty; nie zmieniają automatycznego znoszenia.</HaulersDream.Setting.PerPawnButtonsNote>
 <HaulersDream.Search.Placeholder>Szukaj w ustawieniach…</HaulersDream.Search.Placeholder>
 <HaulersDream.Search.NoResults>Żadne ustawienia nie pasują do wyszukiwania.</HaulersDream.Search.NoResults>
+<HaulersDream.Search.More>Wyświetlono {0} najlepszych wyników. Zawęź wyszukiwanie, aby zobaczyć pozostałe.</HaulersDream.Search.More>
 <HaulersDream.Search.Clear>Wyczyść wyszukiwanie</HaulersDream.Search.Clear>
   <HaulersDream.ItemUnload.SetCategoryTip>Apply one rule to every item in this category at once, instead of setting them one by one. Handy for big groups like ammo.</HaulersDream.ItemUnload.SetCategoryTip>
   <HaulersDream.Setting.Yield.Fishing>Fishing (catch)</HaulersDream.Setting.Yield.Fishing>

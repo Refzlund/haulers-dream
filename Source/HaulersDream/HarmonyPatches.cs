@@ -435,6 +435,15 @@ namespace HaulersDream
         // same BadTex fallback.
         private static readonly Texture2D DropIcon = ContentFinder<Texture2D>.Get("UI/Buttons/Drop", false) ?? BaseContent.BadTex;
 
+        // A deliberate sort order for HD's two per-pawn gizmos (#140). Gizmos sort ascending by Gizmo.Order;
+        // vanilla leaves most commands at the default 0 and gives ability gizmos ~5f (Command_Ability.Order =
+        // 5f + category/level offsets). Left unset, HD's gizmos sat in the unordered 0 bucket alongside the
+        // pawn's role/ability commands, and a gizmo-reordering mod (the reporter runs Reverse Commands and an
+        // ideology patch) could wedge the "Unload inventory" button between abilities like "leader speech" and
+        // "accusation". A small positive value keeps both HD gizmos together in their own slot, after the pawn's
+        // main command gizmos and clearly below the ability cluster, instead of tangled among the abilities.
+        private const float GizmoOrder = 2f;
+
         static IEnumerable<Gizmo> Postfix(IEnumerable<Gizmo> __result, Pawn __instance)
         {
             foreach (var gizmo in __result)
@@ -469,6 +478,7 @@ namespace HaulersDream
                     defaultLabel = "HaulersDream.Gizmo.AutoHaul".Translate(),
                     defaultDesc = "HaulersDream.Gizmo.AutoHaulDesc".Translate(),
                     icon = DropIcon,
+                    Order = GizmoOrder,
                     isActive = () => comp.autoHaulYields,
                     // MP: autoHaulYields is a SCRIBED bool (synced world state). A raw click-time flip
                     // (comp.autoHaulYields = !comp.autoHaulYields) only mutates the clicking client and desyncs in
@@ -505,6 +515,7 @@ namespace HaulersDream
                 defaultLabel = "HaulersDream.Gizmo.UnloadNow".Translate(),
                 defaultDesc = "HaulersDream.Gizmo.UnloadNowDesc".Translate(),
                 icon = DropIcon,
+                Order = GizmoOrder,
                 action = () =>
                 {
                     // MP: the MapGate branch below (GizmoLoadNearest enqueues jobs via jobQueue.EnqueueFirst;

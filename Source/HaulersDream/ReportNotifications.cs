@@ -23,6 +23,11 @@ namespace HaulersDream
     /// thread), mirroring <see cref="Dialog_MyReports"/>. The whole entry point is wrapped so a draw fault can
     /// never break the menu; it degrades to no cards and one logged line.
     /// </summary>
+    // StaticConstructorOnStartup: the class holds static Texture2D fields (dotTex/refreshTex), which
+    // RimWorld's startup scan flags with a "probably needs a StaticConstructorOnStartup attribute"
+    // warning when the attribute is absent. The textures themselves are still created lazily on the
+    // main thread at first draw; this only pins the (trivial) static init to startup and quiets the scan.
+    [StaticConstructorOnStartup]
     internal static class ReportNotifications
     {
         // poll lifecycle (per launch)
@@ -110,12 +115,9 @@ namespace HaulersDream
 
         private static void StartPoll(string reporterId)
         {
-            req = new UnityWebRequest(ReportApi.StatusUrl(), "GET")
-            {
-                downloadHandler = new DownloadHandlerBuffer(),
-                timeout = 20
-            };
-            req.SetRequestHeader("User-Agent", ReportApi.UserAgent());
+            req = ReportApi.NewRequest(ReportApi.StatusUrl(), "GET");
+            req.downloadHandler = new DownloadHandlerBuffer();
+            req.timeout = 20;
             req.SetRequestHeader("X-Reporter-Id", reporterId);
             req.SendWebRequest();
         }

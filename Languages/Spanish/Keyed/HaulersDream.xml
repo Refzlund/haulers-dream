@@ -155,7 +155,7 @@
 <HaulersDream.AllowAnimalsDesc>Desactivado por defecto. Cuando está ACTIVADO, los animales de la colonia adiestrados en Transportar llevan varias pilas a la vez —recogiendo botín cercano en su inventario y ejecutando el transporte en lote de Hauler's Dream en lugar de una pila por viaje—. Esto solo alcanza a los animales que PUEDEN adiestrarse en Transportar: los de adiestrabilidad avanzada y cuerpo lo bastante grande (huskies, labradores, elefantes, osos, thrumbos, etc.). Los animales que no pueden adiestrarse en Transportar —un gato de compañía y similares— nunca ejecutan el trabajo de transporte de entrada (cierto al margen de este ajuste), así que no les afecta este interruptor. Solo se toca a tus propios animales de la colonia; los animales salvajes y enemigos nunca se ven afectados.</HaulersDream.AllowAnimalsDesc>
 <HaulersDream.Setting.AllowIncapable>Permitir que los peones incapaces de transportar recojan sus propios rendimientos</HaulersDream.Setting.AllowIncapable>
 <HaulersDream.Setting.EnableOnNonHomeMaps>Trabajar también en mapas de caravana / no domésticos</HaulersDream.Setting.EnableOnNonHomeMaps>
-<HaulersDream.Setting.HideGizmo>Ocultar el botón «Descargar inventario» de cada peón</HaulersDream.Setting.HideGizmo>
+<HaulersDream.Setting.HideGizmo>Mostrar el botón «Descargar inventario» de cada peón</HaulersDream.Setting.HideGizmo>
 <HaulersDream.Setting.UnloadGrace>Ventana de acumulación: seguir recogiendo durante {0} tics (~60/s) tras la última recogida antes de hacer el viaje de descarga. Mayor = los peones se sobrecargan más y hacen menos viajes, pero más grandes; aun así descargan de inmediato una vez llenos (el tope de sobrecarga).</HaulersDream.Setting.UnloadGrace>
 <HaulersDream.Setting.IntervalUnload>Descarga por intervalo: cada {0} horas de juego</HaulersDream.Setting.IntervalUnload>
 <HaulersDream.Setting.IntervalUnloadOff>Descarga por intervalo: desactivada (solo al final de la jornada de trabajo / comidas y ocio / sobrepeso / manual)</HaulersDream.Setting.IntervalUnloadOff>
@@ -431,7 +431,7 @@
 <HaulersDream.Report.Sending>Enviando…</HaulersDream.Report.Sending>
 <HaulersDream.Report.SentBody>¡Gracias! Tu informe se ha enviado.\n\nSi es un error, el registro adjunto ayudará a localizarlo.</HaulersDream.Report.SentBody>
 <HaulersDream.Report.RateLimited>Estás enviando informes demasiado rápido. Espera un minuto e inténtalo de nuevo.</HaulersDream.Report.RateLimited>
-<HaulersDream.Report.NetworkError>No se pudo contactar con el servidor de informes: {0}\nComprueba tu conexión e inténtalo de nuevo.</HaulersDream.Report.NetworkError>
+<HaulersDream.Report.NetworkError>No se pudo contactar con el servidor de informes: {0}\nComprueba tu conexión a Internet y cualquier cortafuegos o antivirus que pueda estar bloqueando RimWorld, e inténtalo de nuevo.</HaulersDream.Report.NetworkError>
 <HaulersDream.Report.ServerError>El servidor de informes devolvió un error (HTTP {0}). Inténtalo de nuevo más tarde.</HaulersDream.Report.ServerError>
 <!-- Mis informes: la vista de lista/detalle que se abre desde el botón de navegación -->
 <HaulersDream.Report.MyReports.Title>Tus informes</HaulersDream.Report.MyReports.Title>
@@ -596,7 +596,7 @@
 <HaulersDream.Setting.ShareForBuilding.Help>Los materiales que un peón ya recogió en su inventario cuentan para la construcción cercana, de modo que puede construir sin un viaje de búsqueda aparte.</HaulersDream.Setting.ShareForBuilding.Help>
 <HaulersDream.Setting.ShareMeetInMiddle.Help>Cuando una construcción o tarea va a sacar un material del inventario de un porteador, un porteador ocioso camina hacia el trabajador para que se encuentren antes.</HaulersDream.Setting.ShareMeetInMiddle.Help>
 <HaulersDream.Setting.ItemUnload.Help>Define reglas para objetos individuales: conservar toda la pila, conservar como máximo una cantidad fijada, o descargarlo siempre, anulando el ajuste de excedente para ese objeto.</HaulersDream.Setting.ItemUnload.Help>
-<HaulersDream.Setting.HideGizmo.Help>Oculta el botón «Descargar inventario» de cada peón que aparece cuando un colono lleva bienes recogidos.</HaulersDream.Setting.HideGizmo.Help>
+<HaulersDream.Setting.HideGizmo.Help>Muestra el botón «Descargar inventario» de cada peón que aparece cuando un colono lleva bienes recogidos. Activado por defecto; desactívalo para ocultar el botón.</HaulersDream.Setting.HideGizmo.Help>
 <HaulersDream.Setting.StorageFilterButton.Help>Edita las reglas de permitir/denegar por edificio y por mod sobre qué almacenamiento puede usar el transporte.</HaulersDream.Setting.StorageFilterButton.Help>
 <HaulersDream.Setting.PauseWhileDrafted.Help>Mientras un peón está reclutado, Hauler's Dream deja de iniciar nuevas recogidas y barridos para él.</HaulersDream.Setting.PauseWhileDrafted.Help>
 <HaulersDream.Setting.AllowIncapable.Help>Deja que un peón incapaz de Transportar recoja igualmente los rendimientos de su propio trabajo (minería, cosecha, …).</HaulersDream.Setting.AllowIncapable.Help>
@@ -688,6 +688,7 @@
 <HaulersDream.Setting.PerPawnButtonsNote>Estos añaden botones de orden a cada colono; no cambian el transporte automático.</HaulersDream.Setting.PerPawnButtonsNote>
 <HaulersDream.Search.Placeholder>Buscar opciones…</HaulersDream.Search.Placeholder>
 <HaulersDream.Search.NoResults>Ninguna opción coincide con tu búsqueda.</HaulersDream.Search.NoResults>
+<HaulersDream.Search.More>Mostrando los {0} mejores resultados. Refina tu búsqueda para ver el resto.</HaulersDream.Search.More>
 <HaulersDream.Search.Clear>Borrar búsqueda</HaulersDream.Search.Clear>
   <HaulersDream.ItemUnload.SetCategoryTip>Apply one rule to every item in this category at once, instead of setting them one by one. Handy for big groups like ammo.</HaulersDream.ItemUnload.SetCategoryTip>
   <HaulersDream.Setting.Yield.Fishing>Fishing (catch)</HaulersDream.Setting.Yield.Fishing>

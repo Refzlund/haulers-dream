@@ -568,7 +568,7 @@ namespace HaulersDream
                 jobCell.x, jobCell.y, jobCell.z, out int midX, out int _, out int midZ);
 
             // G7: declare the OPPORTUNISTIC purpose so the shared filter applies its opportunistic curated/deny
-            // set; the BulkHaul.StorageSpaceForDef-style per-group/cell filter checks below honor it directly
+            // set; the BulkHaul.ScanGroup-style per-group/cell filter checks below honor it directly
             // (we enumerate groups ourselves, so the StoreUtility funnel postfix doesn't intercept this path).
             using (StorageBuildingFilter.PushContext(StorageFilterContext.Opportunistic))
             {
@@ -612,7 +612,7 @@ namespace HaulersDream
                             continue;
                         // A linked StorageGroup can pool cells from MULTIPLE buildings, so a denied building's
                         // cell must be dropped individually even when its group was allowed (mirrors
-                        // BulkHaul.StorageSpaceForDef). Only runs when the filter is active.
+                        // BulkHaul.ScanGroup). Only runs when the filter is active.
                         if (filter != null && !filter.IsCellAllowed(cell, map))
                             continue;
                         closestSlot = cell;

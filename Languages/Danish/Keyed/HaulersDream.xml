@@ -155,7 +155,7 @@
 <HaulersDream.AllowAnimalsDesc>Slået fra som standard. Når den er SLÅET TIL, bærer kolonidyr, der er trænet i Transport, flere stakke ad gangen — samler nærliggende bytte op i deres inventar og kører Hauler's Dreams massetransport i stedet for én stak pr. tur. Dette når kun dyr, der KAN trænes i Transport: dem med Avanceret trænbarhed og en stor nok krop (huskyer, labradorer, elefanter, bjørne, thrumboer osv.). Dyr, der ikke kan trænes i Transport — en huskat og lignende — kører aldrig transportopgaven til at begynde med (uanset denne indstilling), så de er upåvirkede af denne kontakt. Kun dine egne kolonidyr berøres; vilde og fjendtlige dyr påvirkes aldrig.</HaulersDream.AllowAnimalsDesc>
 <HaulersDream.Setting.AllowIncapable>Tillad figurer, der ikke kan transportere, at samle deres eget udbytte op</HaulersDream.Setting.AllowIncapable>
 <HaulersDream.Setting.EnableOnNonHomeMaps>Virk også på karavane-/ikke-hjemmekort</HaulersDream.Setting.EnableOnNonHomeMaps>
-<HaulersDream.Setting.HideGizmo>Skjul "Aflæs inventar"-knappen pr. figur</HaulersDream.Setting.HideGizmo>
+<HaulersDream.Setting.HideGizmo>Vis "Aflæs inventar"-knappen pr. figur</HaulersDream.Setting.HideGizmo>
 <HaulersDream.Setting.UnloadGrace>Akkumuleringsvindue: bliv ved med at samle op i {0} tikker (~60/sek.) efter den sidste opsamling, før aflæsningsturen laves. Højere = figurer overlæsser mere og laver færre, større ture; de aflæsser stadig med det samme, når de er fulde (overlæsningsloftet).</HaulersDream.Setting.UnloadGrace>
 <HaulersDream.Setting.IntervalUnload>Intervalaflæsning: hver {0} spilletime</HaulersDream.Setting.IntervalUnload>
 <HaulersDream.Setting.IntervalUnloadOff>Intervalaflæsning: fra (kun afslutning af arbejdsrunde / måltider og fritid / overvægt / manuel)</HaulersDream.Setting.IntervalUnloadOff>
@@ -431,7 +431,7 @@
 <HaulersDream.Report.Sending>Sender…</HaulersDream.Report.Sending>
 <HaulersDream.Report.SentBody>Tak! Din rapport blev sendt.\n\nHvis det er en fejl, hjælper den vedlagte log med at spore den.</HaulersDream.Report.SentBody>
 <HaulersDream.Report.RateLimited>Du sender rapporter for hurtigt. Vent et minut, og prøv igen.</HaulersDream.Report.RateLimited>
-<HaulersDream.Report.NetworkError>Kunne ikke nå rapportserveren: {0}\nTjek din forbindelse, og prøv igen.</HaulersDream.Report.NetworkError>
+<HaulersDream.Report.NetworkError>Kunne ikke nå rapportserveren: {0}\nTjek din internetforbindelse samt eventuel firewall eller antivirus, der kan blokere RimWorld, og prøv igen.</HaulersDream.Report.NetworkError>
 <HaulersDream.Report.ServerError>Rapportserveren returnerede en fejl (HTTP {0}). Prøv igen senere.</HaulersDream.Report.ServerError>
   <!-- My reports: the list/detail view that opens from the nav button -->
   <HaulersDream.Report.MyReports.Title>Dine rapporter</HaulersDream.Report.MyReports.Title>
@@ -596,7 +596,7 @@
 <HaulersDream.Setting.ShareForBuilding.Help>Materialer, en figur allerede har samlet op i sit inventar, tæller med til nærliggende byggeri, så den kan bygge uden en særskilt hente-tur.</HaulersDream.Setting.ShareForBuilding.Help>
 <HaulersDream.Setting.ShareMeetInMiddle.Help>Når et byg eller en opgave vil trække et materiale fra en bærers inventar, går en ledig bærer hen mod arbejderen, så de mødes hurtigere.</HaulersDream.Setting.ShareMeetInMiddle.Help>
 <HaulersDream.Setting.ItemUnload.Help>Sæt regler for individuelle varer: behold hele stakken, behold højst en fastsat mængde, eller aflæs den altid — hvilket tilsidesætter overskudsindstillingen for den vare.</HaulersDream.Setting.ItemUnload.Help>
-<HaulersDream.Setting.HideGizmo.Help>Skjul 'Aflæs inventar'-knappen pr. figur, der vises, når en kolonist bærer opsamlede varer.</HaulersDream.Setting.HideGizmo.Help>
+<HaulersDream.Setting.HideGizmo.Help>Vis "Aflæs inventar"-knappen pr. figur, der vises, når en kolonist bærer opsamlede varer. Slået til som standard; slå det fra for at skjule knappen.</HaulersDream.Setting.HideGizmo.Help>
 <HaulersDream.Setting.StorageFilterButton.Help>Redigér tillad/afvis-regler pr. bygning og pr. mod for, hvilket lager transport må bruge.</HaulersDream.Setting.StorageFilterButton.Help>
 <HaulersDream.Setting.PauseWhileDrafted.Help>Mens en figur er indkaldt, stopper Hauler's Dream med at starte nye opsamlinger og fejninger for den.</HaulersDream.Setting.PauseWhileDrafted.Help>
 <HaulersDream.Setting.AllowIncapable.Help>Lad en figur, der ikke kan transportere, stadig samle udbyttet op fra sit eget arbejde (udvinding, høst, …).</HaulersDream.Setting.AllowIncapable.Help>
@@ -688,6 +688,7 @@
 <HaulersDream.Setting.PerPawnButtonsNote>Disse tilføjer kommandoknapper til hver kolonist; de ændrer ikke automatisk bæring.</HaulersDream.Setting.PerPawnButtonsNote>
 <HaulersDream.Search.Placeholder>Søg i indstillinger…</HaulersDream.Search.Placeholder>
 <HaulersDream.Search.NoResults>Ingen indstillinger matcher din søgning.</HaulersDream.Search.NoResults>
+<HaulersDream.Search.More>Viser de {0} bedste resultater. Forfin din søgning for at se resten.</HaulersDream.Search.More>
 <HaulersDream.Search.Clear>Ryd søgning</HaulersDream.Search.Clear>
   <HaulersDream.ItemUnload.SetCategoryTip>Apply one rule to every item in this category at once, instead of setting them one by one. Handy for big groups like ammo.</HaulersDream.ItemUnload.SetCategoryTip>
   <HaulersDream.Setting.Yield.Fishing>Fishing (catch)</HaulersDream.Setting.Yield.Fishing>
