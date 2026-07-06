@@ -120,6 +120,9 @@ namespace HaulersDream
 
             // No <checkEncumbrance> on the JobDef: by default the pawn loads the bill's full count for this stack
             // OVERWEIGHT (the speed debuff is the accepted price of one trip); strict mode honours the ceiling.
+            // Deliberately NO #121 pickup pause here (see PickupPause): vanilla DoBill collects ingredients
+            // with instant StartCarryThing grabs, so delaying this gather would make HD slower than vanilla
+            // at the same action.
             yield return Toils_Haul.TakeToInventory(StackInd, () =>
             {
                 plannedTake = 0;

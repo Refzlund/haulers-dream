@@ -208,6 +208,9 @@ namespace HaulersDream
 
             // No checkEncumbrance on the job, so TakeToInventory does NOT cap at over-encumbered (100%);
             // our own getter applies the smart overload ceiling instead.
+            // Deliberately NO #121 pickup pause here (see PickupPause): vanilla construct delivery grabs each
+            // resource stack instantly via StartCarryThing, so delaying this gather would make HD slower than
+            // vanilla at the same action.
             yield return Toils_Haul.TakeToInventory(ResourceInd, () =>
             {
                 var st = job.GetTarget(ResourceInd).Thing;

@@ -148,6 +148,14 @@ namespace HaulersDream
         // a caravan supply, a roleplay keepsake). Release it by consuming it or dropping it from the gear tab. Default
         // ON for discoverability; additive to vanilla's right-click options and shown alongside "Pick up X".
         public bool keepInInventoryOption = true;
+        // The vanilla-like pickup pause (#121): ticks a pawn stands at each stack (with vanilla's pickup progress
+        // bar) before the stack enters its inventory, across every HD pickup-into-inventory: the bulk-haul sweep,
+        // en-route pickup, self-pickup of work yields, "Pick up X" / "Keep X in inventory", and the ground-sweep
+        // half of bulk loading / refueling. Default = vanilla's own player "Pick up" delay
+        // (FloatMenuOptionProvider_PickUpItem writes Job.takeInventoryDelay = 120 in all three pick-up
+        // options, decompile-verified). 0 = instant, the pre-#121 behavior. The effective value is clamped
+        // by PickupDelayPolicy.TicksPerStack.
+        public int pickupDelayTicks = PickupDelayPolicy.VanillaDelayTicks;
         // When a single stack is too big to carry in one armful (e.g. 75 steel but the pawn can hold 72), take it
         // in the INVENTORY and deliver the whole stack in one trip, instead of hand-carrying a partial load and
         // leaving the rest behind. Applies to ordered and automatic single-stack hauls alike.
@@ -610,6 +618,7 @@ namespace HaulersDream
             Scribe_Values.Look(ref haulNearbyOption, "haulNearbyOption", true);
             Scribe_Values.Look(ref manualPickupOption, "manualPickupOption", true);
             Scribe_Values.Look(ref keepInInventoryOption, "keepInInventoryOption", true);
+            Scribe_Values.Look(ref pickupDelayTicks, "pickupDelayTicks", PickupDelayPolicy.VanillaDelayTicks);
             Scribe_Values.Look(ref haulOversizedInInventory, "haulOversizedInInventory", true);
             Scribe_Values.Look(ref sweepNearbyWhileWorking, "sweepNearbyWhileWorking", true);
             Scribe_Values.Look(ref loadPackAnimalBulk, "loadPackAnimalBulk", true);
@@ -789,6 +798,7 @@ namespace HaulersDream
             haulNearbyOption = true;
             manualPickupOption = true;
             keepInInventoryOption = true;
+            pickupDelayTicks = PickupDelayPolicy.VanillaDelayTicks;
             haulOversizedInInventory = true;
             sweepNearbyWhileWorking = true;
             loadPackAnimalBulk = true;

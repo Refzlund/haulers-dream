@@ -134,6 +134,20 @@ put away (see the in-game "Cannot unload inventory" alert).
   buildings), so it's covered transitively. (ASF + Neat + LWM verified by decompiling/cloning the
   assemblies; the multi-pawn no-reserve race onto one LWM/ASF multi-stack cell is also bounded by the same
   deposit re-gate — extra trips at worst, never loss.)
+  HD's **pickup delay** (the per-stack pause with a progress bar before items enter a pawn's inventory,
+  issue #121) also cannot collide with LWM's own "storing takes time" delay, verified against LWM's source:
+  LWM's only active timing patch is a postfix on the toil factory `Toils_Haul.PlaceHauledThingInCell`
+  (`Deep_Storage_Pause.cs`), which fires when placing INTO a cell whose slot-group parent carries
+  `CompDeepStorage`; HD's pickup toils never call that factory (they `SplitOff` + `TryAdd` straight into
+  `pawn.inventory`), and LWM applies no delay at all to taking items OUT of its units. On the extraction
+  side, LWM's `Deep_Storage_RemoveFrom.cs` IS compiled, but its `[HarmonyPatch]` attribute is commented out
+  so `PatchAll` never applies it, and it is not a delay anyway: it is a stack-fill transpiler on
+  `StartCarryThing`'s delegate that tops up the picked stack from other stacks in the same deep-storage
+  cell. The old storing-wait experiment, `Deep_Storage_Wait_NotUsed.cs` (the abandoned precursor of
+  `Deep_Storage_Pause`, also targeting the place-into-cell toil), is the file excluded from LWM's csproj
+  compile list entirely. So bulk-picking FROM a deep storage unit pays only HD's pickup delay, and
+  depositing INTO one pays only LWM's storing delay: opposite phases, no double delay, no shared Harmony
+  target.
 - **Storage Network** (`BlackMouse.StorageNetwork`) — a *virtual* (Applied-Energistics-style) storage: its
   items live **despawned** inside server/terminal buildings, so they're invisible to HD's spawned-item
   sweep and HD falls back to vanilla one-stack loading by default. An **opt-in** setting ("Bulk-load from

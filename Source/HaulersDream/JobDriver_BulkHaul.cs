@@ -145,6 +145,15 @@ namespace HaulersDream
             loadGoto.defaultCompleteMode = ToilCompleteMode.PatherArrival;
             yield return loadGoto;
 
+            // Vanilla-like pickup pause (#121): the wait-with-progress-bar vanilla's JobDriver_TakeInventory
+            // shows for a player "Pick up" order, paid once per swept stack (between arrival and the take,
+            // inside the decide->goto->take jump loop). Covers every entry into this driver: the automatic
+            // sweep, "Pick up X", "Haul everything nearby", keep-orders' sibling flows, and en-route pickups
+            // (the mid-route pause IS the vanilla-like feel there). Deliberately NO fail conditions: a stack
+            // sniped or forbidden mid-pause must SKIP (the take re-validates and advances), never fail the
+            // whole sweep.
+            yield return PickupPause.MakeToil(StackInd);
+
             Toil take = ToilMaker.MakeToil("HD_Bulk_Take");
             take.initAction = delegate
             {

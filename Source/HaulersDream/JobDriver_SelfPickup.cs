@@ -57,6 +57,13 @@ namespace HaulersDream
             };
             yield return gotoThing;
 
+            // Vanilla-like pickup pause (#121): scooping an own-work drop is still a pickup into inventory, so
+            // it pays the same per-stack wait (with progress bar) as the bulk-haul sweep. No fail conditions:
+            // a drop stolen or stored mid-pause just no-ops in the take below and the loop moves on. (Only the
+            // DropThenHaul route comes through here; the DirectToInventory route pockets yields inside the
+            // GenPlace prefix, where no pawn action exists to pace; see YieldRouter.)
+            yield return PickupPause.MakeToil(TargetIndex.A);
+
             var take = new Toil
             {
                 initAction = () =>

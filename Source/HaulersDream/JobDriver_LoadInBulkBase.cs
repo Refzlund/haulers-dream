@@ -146,6 +146,13 @@ namespace HaulersDream
             sweepGoto.defaultCompleteMode = ToilCompleteMode.PatherArrival;
             yield return sweepGoto;
 
+            // Vanilla-like pickup pause (#121): the ground-sweep half of a bulk load (transporter / portal /
+            // vehicle) is the same pickup-into-inventory as a bulk-haul sweep, so it paces identically. HD's
+            // deposit phase transfers the whole tagged load at the target in one toil, so this per-stack pause
+            // is the flow's only pacing, mirroring where vanilla makes loading cost time (per-stack trips).
+            // No fail conditions: a swept stack gone mid-pause is skipped by the take's re-validation.
+            yield return PickupPause.MakeToil(StackInd);
+
             Toil sweepTake = ToilMaker.MakeToil(ToilPrefix + "_SweepTake");
             sweepTake.initAction = delegate
             {

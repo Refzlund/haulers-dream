@@ -515,6 +515,10 @@ namespace HaulersDream
                 StoreUtility.CurrentStoragePriorityOf(thing), pawn.Faction, out _, out _, needAccurateResult: false);
         }
 
+        // Deliberately NO #121 pickup pause here (see PickupPause): this runs inside Harmony placement seams
+        // (the GenPlace prefix / the deconstruct-leavings capture) mid-work-toil (no pawn job/toil exists to
+        // pace) and replaces a vanilla ground spawn that is itself instant; the DropThenHaul route pays the
+        // pause in JobDriver_SelfPickup instead.
         private static bool RouteIntoInventory(Pawn pawn, Thing thing, HaulSourceType type, out Thing taken, out bool fullyConsumed)
         {
             taken = null;

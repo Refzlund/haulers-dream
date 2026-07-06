@@ -178,6 +178,9 @@ namespace HaulersDream
             // reads defaultCompleteMode/defaultDuration when the toil STARTS, before initAction runs, so the delay
             // cannot be set per-iteration in initAction — it is fixed for the whole job, which is fine: a setting
             // change mid-job is not expected and would only affect the next job).
+            // Deliberately NOT the #121 pickupDelayTicks pause (see PickupPause): this is a carrier-to-backpack
+            // transfer with its own shipped pacing (visualUnloadDelay, vanilla-unload cadence), not a ground
+            // pickup; re-basing it on the 120-tick pickup default would change released unload behavior.
             int delay = Settings?.visualUnloadDelay ?? 0;
             Toil wait = delay > 0 ? Toils_General.Wait(delay) : Toils_General.Label();
             yield return wait;

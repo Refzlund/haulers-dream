@@ -104,6 +104,12 @@ namespace HaulersDream
             sweepGoto.defaultCompleteMode = ToilCompleteMode.PatherArrival;
             yield return sweepGoto;
 
+            // Vanilla-like pickup pause (#121): sweeping fuel stacks into inventory paces like the bulk-haul
+            // sweep. (Vanilla refueling's own 240-tick bar sits AT the refuelable; HD's deposit there is one
+            // Refuel call, so this per-stack pause is the flow's pickup-side pacing.) No fail conditions: a
+            // fuel stack gone mid-pause is skipped by the take's re-validation.
+            yield return PickupPause.MakeToil(FuelInd);
+
             Toil sweepTake = ToilMaker.MakeToil("HD_Bref_SweepTake");
             sweepTake.initAction = delegate
             {
