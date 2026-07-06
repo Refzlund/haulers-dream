@@ -1,0 +1,9 @@
+---
+"haulers-dream": patch
+---
+
+Stop the infinite haul loop on freshly extracted hemogen packs (and any other storage haul that keeps failing to place).
+
+Reported with a clean save: after extracting hemogen packs from prisoners, haulers paced the barracks corridor forever, "hauling hemogen pack" in hand, never depositing, until a manual prioritize order replaced the stuck job. The cause is that vanilla's storage haul retries without any bound inside one job: every failed drop re-resolves storage from wherever the pawn now stands, retargets the same job and walks again, and with no storage resolving it retargets to a bare ground spot and walks again all the same. Because Hauler's Dream intentionally lets several haulers deliver to the same tile (the haul to stack feature skips vanilla's destination cell reservation), two haulers can converge on the same few viable cells and invalidate each other's arrivals indefinitely, so that retry cycle never ends.
+
+Storage hauls now carry a small retry budget: a job that fails to place its load several times in a row (without delivering a single unit in between) is ended, the carried stack is set down at the pawn's feet like any failed haul, and that item is left alone by the automatic haul scan for a few seconds so the identical doomed job is not rebuilt instantly. The same short pause follows a haul that found no storage anywhere and had to set its load down on open ground, so the next storage attempt is not rebuilt on the spot against unchanged storage. Everything self heals: once the backoff passes the item is hauled normally, and an explicit player order always works immediately. Healthy hauls stay far from the budget: a legitimate re-route resolves in one or two retries, topping up a near full stack counts as progress rather than failure (each partial delivery resets the budget), and multi item unload trips reset it on every delivered item.
