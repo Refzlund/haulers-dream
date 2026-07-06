@@ -30,6 +30,28 @@ namespace HaulersDream
         /// <summary>A descriptive User-Agent so reports are attributable to the mod + game version.</summary>
         public static string UserAgent() => "HaulersDream/" + ModVersion() + " (RimWorld " + RwVersion() + ")";
 
+        /// <summary>
+        /// Create a <see cref="UnityWebRequest"/> for a report-endpoint call with the setup EVERY site needs:
+        /// the first-party certificate handler and the descriptive User-Agent header. Callers attach their own
+        /// upload/download handlers, timeout and extra headers, then SendWebRequest. Centralized so no report
+        /// request can miss the certificate handler (the sites vary in handlers/timeouts but not in this).
+        /// </summary>
+        /// <param name="url">Absolute report-endpoint URL (one of the URL helpers on this class).</param>
+        /// <param name="method">HTTP verb, "GET" or "POST".</param>
+        /// <returns>An unsent request; dispose it (all callers do), which also disposes the handler.</returns>
+        public static UnityWebRequest NewRequest(string url, string method)
+        {
+            var req = new UnityWebRequest(url, method)
+            {
+                // A fresh handler per request: UnityWebRequest.Dispose() disposes the attached handler
+                // (disposeCertificateHandlerOnDispose defaults to true), so a shared instance would be
+                // dead after the first request completes.
+                certificateHandler = new ReportCertificateHandler()
+            };
+            req.SetRequestHeader("User-Agent", UserAgent());
+            return req;
+        }
+
         /// <summary>The stable per-install reporter token sent with each report and used (as the X-Reporter-Id
         /// header) to scope the "my reports" + thread reads to this install.</summary>
         public static string ReporterId() => HaulersDreamMod.Settings != null ? HaulersDreamMod.Settings.ReporterId : "";
@@ -319,6 +341,29 @@ namespace HaulersDream
 
         private static bool Bool(Dictionary<string, object> o, string k) =>
             o != null && o.TryGetValue(k, out var v) && v is bool b && b;
+    }
+
+    /// <summary>
+    /// Accepts the server's TLS certificate for the report requests without validating the chain.
+    ///
+    /// <para>WHAT THIS EXPOSES (be honest): dropping chain validation means an active man-in-the-middle on these
+    /// specific requests could read (or alter) their contents. What travels on the report / attachment / status
+    /// requests is: the tail of Player.log (which can include local file paths and the OS username), the
+    /// reporter's SteamID64 and Steam persona name, the active mod list, the X-Reporter-Id capability token
+    /// (which scopes reads to this install's own reports), and any log or screenshot the user chose to attach.
+    /// None of it is a password or payment detail, but it is not nothing.</para>
+    ///
+    /// <para>WHY IT STILL STANDS: these requests go ONLY to HD's own first-party report endpoint
+    /// (reports.refzlund.com); some players' Unity/Mono TLS stacks cannot validate the (valid) Cloudflare
+    /// certificate and fail every report with "Unknown Error", which blocks reporting entirely for them. The
+    /// alternative fix, certificate pinning, would break on Cloudflare's routine certificate rotation and is not
+    /// worth that fragility here. The handler is scoped strictly to these report requests via
+    /// <see cref="ReportApi.NewRequest"/>, never a global ServicePointManager override, so nothing else in the
+    /// game (or other mods) is affected.</para>
+    /// </summary>
+    internal sealed class ReportCertificateHandler : CertificateHandler
+    {
+        protected override bool ValidateCertificate(byte[] certificateData) => true;
     }
 
     /// <summary>One of the player's own reports as shown in the My-reports list.</summary>

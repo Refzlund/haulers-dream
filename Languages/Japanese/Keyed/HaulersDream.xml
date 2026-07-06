@@ -431,7 +431,7 @@
 <HaulersDream.Report.Sending>送信中…</HaulersDream.Report.Sending>
 <HaulersDream.Report.SentBody>ありがとうございます！報告を送信しました。\n\nバグの場合は、添付されたログが原因の特定に役立ちます。</HaulersDream.Report.SentBody>
 <HaulersDream.Report.RateLimited>報告の送信が速すぎます。1分ほど待ってからもう一度お試しください。</HaulersDream.Report.RateLimited>
-<HaulersDream.Report.NetworkError>報告サーバーに接続できませんでした：{0}\n接続を確認してもう一度お試しください。</HaulersDream.Report.NetworkError>
+<HaulersDream.Report.NetworkError>報告サーバーに接続できませんでした：{0}\nインターネット接続と、RimWorldをブロックしている可能性のあるファイアウォールやウイルス対策ソフトを確認して、もう一度お試しください。</HaulersDream.Report.NetworkError>
 <HaulersDream.Report.ServerError>報告サーバーがエラーを返しました（HTTP {0}）。しばらくしてからもう一度お試しください。</HaulersDream.Report.ServerError>
   <!-- My reports: the list/detail view that opens from the nav button -->
   <HaulersDream.Report.MyReports.Title>あなたの報告</HaulersDream.Report.MyReports.Title>

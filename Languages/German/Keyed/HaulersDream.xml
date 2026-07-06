@@ -431,7 +431,7 @@
 <HaulersDream.Report.Sending>Wird gesendet…</HaulersDream.Report.Sending>
 <HaulersDream.Report.SentBody>Danke! Dein Bericht wurde gesendet.\n\nFalls es ein Fehler ist, hilft das angehängte Protokoll dabei, ihn aufzuspüren.</HaulersDream.Report.SentBody>
 <HaulersDream.Report.RateLimited>Du sendest Berichte zu schnell. Bitte warte eine Minute und versuche es erneut.</HaulersDream.Report.RateLimited>
-<HaulersDream.Report.NetworkError>Der Berichtsserver war nicht erreichbar: {0}\nÜberprüfe deine Verbindung und versuche es erneut.</HaulersDream.Report.NetworkError>
+<HaulersDream.Report.NetworkError>Der Berichtsserver war nicht erreichbar: {0}\nÜberprüfe deine Internetverbindung sowie Firewall und Virenschutz, die RimWorld blockieren könnten, und versuche es erneut.</HaulersDream.Report.NetworkError>
 <HaulersDream.Report.ServerError>Der Berichtsserver hat einen Fehler zurückgegeben (HTTP {0}). Bitte versuche es später erneut.</HaulersDream.Report.ServerError>
 <!-- Meine Berichte: die Listen-/Detailansicht, die über die Navigationsschaltfläche geöffnet wird -->
 <HaulersDream.Report.MyReports.Title>Deine Berichte</HaulersDream.Report.MyReports.Title>

@@ -431,7 +431,7 @@
 <HaulersDream.Report.Sending>กำลังส่ง…</HaulersDream.Report.Sending>
 <HaulersDream.Report.SentBody>ขอบคุณ! รายงานของคุณถูกส่งแล้ว\n\nหากเป็นบั๊ก บันทึกที่แนบมาจะช่วยให้ตามหาต้นเหตุได้</HaulersDream.Report.SentBody>
 <HaulersDream.Report.RateLimited>คุณส่งรายงานถี่เกินไป กรุณารอสักครู่แล้วลองอีกครั้ง</HaulersDream.Report.RateLimited>
-<HaulersDream.Report.NetworkError>ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์รายงานได้: {0}\nตรวจสอบการเชื่อมต่อของคุณแล้วลองอีกครั้ง</HaulersDream.Report.NetworkError>
+<HaulersDream.Report.NetworkError>ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์รายงานได้: {0}\nตรวจสอบการเชื่อมต่ออินเทอร์เน็ต รวมถึงไฟร์วอลล์หรือโปรแกรมป้องกันไวรัสที่อาจบล็อก RimWorld แล้วลองอีกครั้ง</HaulersDream.Report.NetworkError>
 <HaulersDream.Report.ServerError>เซิร์ฟเวอร์รายงานส่งคืนข้อผิดพลาด (HTTP {0}) กรุณาลองใหม่ภายหลัง</HaulersDream.Report.ServerError>
   <!-- My reports: the list/detail view that opens from the nav button -->
   <HaulersDream.Report.MyReports.Title>รายงานของคุณ</HaulersDream.Report.MyReports.Title>

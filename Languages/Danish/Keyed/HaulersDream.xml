@@ -431,7 +431,7 @@
 <HaulersDream.Report.Sending>Sender…</HaulersDream.Report.Sending>
 <HaulersDream.Report.SentBody>Tak! Din rapport blev sendt.\n\nHvis det er en fejl, hjælper den vedlagte log med at spore den.</HaulersDream.Report.SentBody>
 <HaulersDream.Report.RateLimited>Du sender rapporter for hurtigt. Vent et minut, og prøv igen.</HaulersDream.Report.RateLimited>
-<HaulersDream.Report.NetworkError>Kunne ikke nå rapportserveren: {0}\nTjek din forbindelse, og prøv igen.</HaulersDream.Report.NetworkError>
+<HaulersDream.Report.NetworkError>Kunne ikke nå rapportserveren: {0}\nTjek din internetforbindelse samt eventuel firewall eller antivirus, der kan blokere RimWorld, og prøv igen.</HaulersDream.Report.NetworkError>
 <HaulersDream.Report.ServerError>Rapportserveren returnerede en fejl (HTTP {0}). Prøv igen senere.</HaulersDream.Report.ServerError>
   <!-- My reports: the list/detail view that opens from the nav button -->
   <HaulersDream.Report.MyReports.Title>Dine rapporter</HaulersDream.Report.MyReports.Title>

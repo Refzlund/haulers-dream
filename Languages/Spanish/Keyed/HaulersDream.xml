@@ -431,7 +431,7 @@
 <HaulersDream.Report.Sending>Enviando…</HaulersDream.Report.Sending>
 <HaulersDream.Report.SentBody>¡Gracias! Tu informe se ha enviado.\n\nSi es un error, el registro adjunto ayudará a localizarlo.</HaulersDream.Report.SentBody>
 <HaulersDream.Report.RateLimited>Estás enviando informes demasiado rápido. Espera un minuto e inténtalo de nuevo.</HaulersDream.Report.RateLimited>
-<HaulersDream.Report.NetworkError>No se pudo contactar con el servidor de informes: {0}\nComprueba tu conexión e inténtalo de nuevo.</HaulersDream.Report.NetworkError>
+<HaulersDream.Report.NetworkError>No se pudo contactar con el servidor de informes: {0}\nComprueba tu conexión a Internet y cualquier cortafuegos o antivirus que pueda estar bloqueando RimWorld, e inténtalo de nuevo.</HaulersDream.Report.NetworkError>
 <HaulersDream.Report.ServerError>El servidor de informes devolvió un error (HTTP {0}). Inténtalo de nuevo más tarde.</HaulersDream.Report.ServerError>
 <!-- Mis informes: la vista de lista/detalle que se abre desde el botón de navegación -->
 <HaulersDream.Report.MyReports.Title>Tus informes</HaulersDream.Report.MyReports.Title>

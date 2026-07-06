@@ -431,7 +431,7 @@
 <HaulersDream.Report.Sending>Надсилання…</HaulersDream.Report.Sending>
 <HaulersDream.Report.SentBody>Дякуємо! Ваш звіт надіслано.\n\nЯкщо це баг, прикріплений журнал допоможе його відстежити.</HaulersDream.Report.SentBody>
 <HaulersDream.Report.RateLimited>Ви надсилаєте звіти надто швидко. Зачекайте хвилину й спробуйте знову.</HaulersDream.Report.RateLimited>
-<HaulersDream.Report.NetworkError>Не вдалося зв'язатися із сервером звітів: {0}\nПеревірте з'єднання й спробуйте знову.</HaulersDream.Report.NetworkError>
+<HaulersDream.Report.NetworkError>Не вдалося зв'язатися із сервером звітів: {0}\nПеревірте підключення до інтернету, а також брандмауер чи антивірус, які можуть блокувати RimWorld, і спробуйте знову.</HaulersDream.Report.NetworkError>
 <HaulersDream.Report.ServerError>Сервер звітів повернув помилку (HTTP {0}). Спробуйте знову пізніше.</HaulersDream.Report.ServerError>
   <!-- My reports: the list/detail view that opens from the nav button -->
   <HaulersDream.Report.MyReports.Title>Ваші звіти</HaulersDream.Report.MyReports.Title>

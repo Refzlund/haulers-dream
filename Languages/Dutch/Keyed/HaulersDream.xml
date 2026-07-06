@@ -431,7 +431,7 @@
 <HaulersDream.Report.Sending>Versturen…</HaulersDream.Report.Sending>
 <HaulersDream.Report.SentBody>Bedankt! Je melding is verzonden.\n\nAls het een bug is, helpt het meegestuurde logboek om hem op te sporen.</HaulersDream.Report.SentBody>
 <HaulersDream.Report.RateLimited>Je verstuurt te snel meldingen. Wacht een minuut en probeer het opnieuw.</HaulersDream.Report.RateLimited>
-<HaulersDream.Report.NetworkError>Kon de meldingsserver niet bereiken: {0}\nControleer je verbinding en probeer het opnieuw.</HaulersDream.Report.NetworkError>
+<HaulersDream.Report.NetworkError>Kon de meldingsserver niet bereiken: {0}\nControleer je internetverbinding en eventuele firewall of antivirussoftware die RimWorld kan blokkeren, en probeer het opnieuw.</HaulersDream.Report.NetworkError>
 <HaulersDream.Report.ServerError>De meldingsserver gaf een fout terug (HTTP {0}). Probeer het later opnieuw.</HaulersDream.Report.ServerError>
   <!-- My reports: the list/detail view that opens from the nav button -->
   <HaulersDream.Report.MyReports.Title>Jouw meldingen</HaulersDream.Report.MyReports.Title>

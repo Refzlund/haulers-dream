@@ -431,7 +431,7 @@
 <HaulersDream.Report.Sending>Отправка…</HaulersDream.Report.Sending>
 <HaulersDream.Report.SentBody>Спасибо! Ваш отчёт отправлен.\n\nЕсли это ошибка, приложенный журнал поможет её отследить.</HaulersDream.Report.SentBody>
 <HaulersDream.Report.RateLimited>Вы отправляете отчёты слишком часто. Подождите минуту и попробуйте снова.</HaulersDream.Report.RateLimited>
-<HaulersDream.Report.NetworkError>Не удалось связаться с сервером отчётов: {0}\nПроверьте подключение и попробуйте снова.</HaulersDream.Report.NetworkError>
+<HaulersDream.Report.NetworkError>Не удалось связаться с сервером отчётов: {0}\nПроверьте подключение к интернету, а также брандмауэр или антивирус, которые могут блокировать RimWorld, и попробуйте снова.</HaulersDream.Report.NetworkError>
 <HaulersDream.Report.ServerError>Сервер отчётов вернул ошибку (HTTP {0}). Пожалуйста, попробуйте позже.</HaulersDream.Report.ServerError>
   <!-- My reports: the list/detail view that opens from the nav button -->
   <HaulersDream.Report.MyReports.Title>Ваши отчёты</HaulersDream.Report.MyReports.Title>

@@ -431,7 +431,7 @@
 <HaulersDream.Report.Sending>Wysyłanie…</HaulersDream.Report.Sending>
 <HaulersDream.Report.SentBody>Dziękujemy! Twoje zgłoszenie zostało wysłane.\n\nJeśli to błąd, dołączony dziennik pomoże go wytropić.</HaulersDream.Report.SentBody>
 <HaulersDream.Report.RateLimited>Wysyłasz zgłoszenia zbyt szybko. Odczekaj minutę i spróbuj ponownie.</HaulersDream.Report.RateLimited>
-<HaulersDream.Report.NetworkError>Nie udało się połączyć z serwerem zgłoszeń: {0}\nSprawdź swoje połączenie i spróbuj ponownie.</HaulersDream.Report.NetworkError>
+<HaulersDream.Report.NetworkError>Nie udało się połączyć z serwerem zgłoszeń: {0}\nSprawdź połączenie z internetem oraz zaporę sieciową lub program antywirusowy, które mogą blokować RimWorld, i spróbuj ponownie.</HaulersDream.Report.NetworkError>
 <HaulersDream.Report.ServerError>Serwer zgłoszeń zwrócił błąd (HTTP {0}). Spróbuj ponownie później.</HaulersDream.Report.ServerError>
   <!-- My reports: the list/detail view that opens from the nav button -->
   <HaulersDream.Report.MyReports.Title>Twoje zgłoszenia</HaulersDream.Report.MyReports.Title>

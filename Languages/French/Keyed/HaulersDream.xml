@@ -431,7 +431,7 @@
 <HaulersDream.Report.Sending>Envoi en cours…</HaulersDream.Report.Sending>
 <HaulersDream.Report.SentBody>Merci ! Votre rapport a été envoyé.\n\nS'il s'agit d'un bug, le journal joint aidera à le retrouver.</HaulersDream.Report.SentBody>
 <HaulersDream.Report.RateLimited>Vous envoyez des rapports trop rapidement. Veuillez patienter une minute et réessayer.</HaulersDream.Report.RateLimited>
-<HaulersDream.Report.NetworkError>Impossible de joindre le serveur de rapports : {0}\nVérifiez votre connexion et réessayez.</HaulersDream.Report.NetworkError>
+<HaulersDream.Report.NetworkError>Impossible de joindre le serveur de rapports : {0}\nVérifiez votre connexion Internet, ainsi qu'un éventuel pare-feu ou antivirus qui pourrait bloquer RimWorld, puis réessayez.</HaulersDream.Report.NetworkError>
 <HaulersDream.Report.ServerError>Le serveur de rapports a renvoyé une erreur (HTTP {0}). Veuillez réessayer plus tard.</HaulersDream.Report.ServerError>
 <!-- Mes rapports : la vue liste/détail qui s'ouvre depuis le bouton de navigation -->
 <HaulersDream.Report.MyReports.Title>Vos rapports</HaulersDream.Report.MyReports.Title>

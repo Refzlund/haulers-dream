@@ -431,7 +431,7 @@
 <HaulersDream.Report.Sending>正在发送…</HaulersDream.Report.Sending>
 <HaulersDream.Report.SentBody>谢谢！你的报告已发送。\n\n如果这是个漏洞，所附的日志将有助于追查它。</HaulersDream.Report.SentBody>
 <HaulersDream.Report.RateLimited>你发送报告太频繁了。请等待一分钟后再试。</HaulersDream.Report.RateLimited>
-<HaulersDream.Report.NetworkError>无法连接到报告服务器：{0}\n请检查你的网络连接后再试。</HaulersDream.Report.NetworkError>
+<HaulersDream.Report.NetworkError>无法连接到报告服务器：{0}\n请检查你的网络连接，以及可能拦截 RimWorld 的防火墙或杀毒软件，然后再试一次。</HaulersDream.Report.NetworkError>
 <HaulersDream.Report.ServerError>报告服务器返回了一个错误（HTTP {0}）。请稍后再试。</HaulersDream.Report.ServerError>
   <!-- My reports: the list/detail view that opens from the nav button -->
   <HaulersDream.Report.MyReports.Title>你的报告</HaulersDream.Report.MyReports.Title>

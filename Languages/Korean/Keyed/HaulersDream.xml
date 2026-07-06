@@ -431,7 +431,7 @@
 <HaulersDream.Report.Sending>보내는 중…</HaulersDream.Report.Sending>
 <HaulersDream.Report.SentBody>감사합니다! 신고가 전송되었습니다.\n\n버그라면 첨부된 로그가 원인을 찾는 데 도움이 됩니다.</HaulersDream.Report.SentBody>
 <HaulersDream.Report.RateLimited>신고를 너무 빠르게 보내고 있습니다. 잠시 기다렸다가 다시 시도하세요.</HaulersDream.Report.RateLimited>
-<HaulersDream.Report.NetworkError>신고 서버에 연결할 수 없습니다: {0}\n연결 상태를 확인하고 다시 시도하세요.</HaulersDream.Report.NetworkError>
+<HaulersDream.Report.NetworkError>신고 서버에 연결할 수 없습니다: {0}\n인터넷 연결과 RimWorld를 차단할 수 있는 방화벽이나 백신 프로그램을 확인한 뒤 다시 시도하세요.</HaulersDream.Report.NetworkError>
 <HaulersDream.Report.ServerError>신고 서버가 오류를 반환했습니다 (HTTP {0}). 나중에 다시 시도하세요.</HaulersDream.Report.ServerError>
   <!-- My reports: the list/detail view that opens from the nav button -->
   <HaulersDream.Report.MyReports.Title>내 신고</HaulersDream.Report.MyReports.Title>

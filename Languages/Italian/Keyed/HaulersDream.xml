@@ -431,7 +431,7 @@
 <HaulersDream.Report.Sending>Invio in corso…</HaulersDream.Report.Sending>
 <HaulersDream.Report.SentBody>Grazie! La tua segnalazione è stata inviata.\n\nSe si tratta di un bug, il registro allegato aiuterà a rintracciarlo.</HaulersDream.Report.SentBody>
 <HaulersDream.Report.RateLimited>Stai inviando segnalazioni troppo in fretta. Attendi un minuto e riprova.</HaulersDream.Report.RateLimited>
-<HaulersDream.Report.NetworkError>Impossibile raggiungere il server delle segnalazioni: {0}\nControlla la connessione e riprova.</HaulersDream.Report.NetworkError>
+<HaulersDream.Report.NetworkError>Impossibile raggiungere il server delle segnalazioni: {0}\nControlla la connessione a Internet ed eventuali firewall o antivirus che potrebbero bloccare RimWorld, poi riprova.</HaulersDream.Report.NetworkError>
 <HaulersDream.Report.ServerError>Il server delle segnalazioni ha restituito un errore (HTTP {0}). Riprova più tardi.</HaulersDream.Report.ServerError>
 <!-- Le mie segnalazioni: la vista elenco/dettaglio che si apre dal pulsante di navigazione -->
 <HaulersDream.Report.MyReports.Title>Le tue segnalazioni</HaulersDream.Report.MyReports.Title>

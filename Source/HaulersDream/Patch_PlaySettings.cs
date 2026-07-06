@@ -21,6 +21,11 @@ namespace HaulersDream
     /// route planner feature is enabled.</para>
     /// </summary>
     [HarmonyPatch(typeof(PlaySettings), nameof(PlaySettings.DoPlaySettingsGlobalControls))]
+    // StaticConstructorOnStartup: RememberPlanIcon loads via ContentFinder in a static field initializer.
+    // Without this, the type can be initialized before game content is loaded (or off the main thread),
+    // the icon silently falls back to BadTex (magenta), and RimWorld's startup scan logs a
+    // "probably needs a StaticConstructorOnStartup attribute" warning. Coexists fine with HarmonyPatch.
+    [StaticConstructorOnStartup]
     public static class Patch_PlaySettings
     {
         /// <summary>UIHighlighter tag shared by this toggle (registers the opportunity) and the plan float-menu

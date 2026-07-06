@@ -118,7 +118,23 @@ namespace HaulersDream
             Widgets.Label(new Rect(0f, y, inRect.width, 24f), "HaulersDream.Report.DescribeLabel".Translate());
             y += 24f;
             float btnRowY = inRect.height - 36f;
-            const float checkH = 26f, shotH = 34f, noteH = 22f, statusH = 24f;
+            const float checkH = 26f, shotH = 34f, noteH = 22f;
+            // Reserve the status line's height from the ACTUAL rendered message, not a fixed guess. A fixed
+            // height clips when (a) a long localized NetworkError wraps its second line onto a third (Polish /
+            // Russian / German / Japanese all overflow the inner width), or (b) Tiny is unavailable
+            // (DisableTinyText / Steam Deck / a language whose font canBeTiny is false), where the game
+            // substitutes the taller Small font at draw time. So we set Text.Font = Tiny FIRST (which flips to
+            // Small when unsupported, exactly as the draw will), then measure the real message via CalcHeight
+            // (it wraps at inRect.width and uses the current font). A two-Tiny-line floor keeps a sane reserve
+            // when the message is empty/short. The description area shrinks to compensate (it has its own 80f
+            // floor), so even a three-line message never overlaps the button row.
+            var prevFontForMetric = Text.Font;
+            Text.Font = GameFont.Tiny;
+            float twoLineFloor = Text.LineHeightOf(GameFont.Tiny) * 2f + 2f;
+            float statusH = statusMsg.NullOrEmpty()
+                ? twoLineFloor
+                : Mathf.Max(twoLineFloor, Text.CalcHeight(statusMsg, inRect.width));
+            Text.Font = prevFontForMetric;
             float reserveBelowDesc = 6f + checkH + shotH + noteH + statusH + 8f;
             var descRect = new Rect(0f, y, inRect.width, Mathf.Max(80f, btnRowY - reserveBelowDesc - y));
             description = WidgetsCompat.TextAreaScrollable(descRect, description, ref descScroll);
@@ -215,13 +231,10 @@ namespace HaulersDream
             string json = ReportApi.BuildJson(typeId, description.Trim(), includeGameLog);
             byte[] body = Encoding.UTF8.GetBytes(json);
 
-            req = new UnityWebRequest(ReportApi.Endpoint, "POST")
-            {
-                uploadHandler = new UploadHandlerRaw(body) { contentType = "application/json; charset=utf-8" },
-                downloadHandler = new DownloadHandlerBuffer(),
-                timeout = 30
-            };
-            req.SetRequestHeader("User-Agent", ReportApi.UserAgent());
+            req = ReportApi.NewRequest(ReportApi.Endpoint, "POST");
+            req.uploadHandler = new UploadHandlerRaw(body) { contentType = "application/json; charset=utf-8" };
+            req.downloadHandler = new DownloadHandlerBuffer();
+            req.timeout = 30;
             req.SendWebRequest();
 
             stage = Stage.Report;
@@ -249,13 +262,10 @@ namespace HaulersDream
                 }
 
                 byte[] bytes = File.ReadAllBytes(path);
-                req = new UnityWebRequest(ReportApi.AttachmentUrl(reportId, Path.GetFileName(path)), "POST")
-                {
-                    uploadHandler = new UploadHandlerRaw(bytes) { contentType = contentType },
-                    downloadHandler = new DownloadHandlerBuffer(),
-                    timeout = 120
-                };
-                req.SetRequestHeader("User-Agent", ReportApi.UserAgent());
+                req = ReportApi.NewRequest(ReportApi.AttachmentUrl(reportId, Path.GetFileName(path)), "POST");
+                req.uploadHandler = new UploadHandlerRaw(bytes) { contentType = contentType };
+                req.downloadHandler = new DownloadHandlerBuffer();
+                req.timeout = 120;
                 req.SendWebRequest();
                 stage = Stage.Attachment;
                 statusMsg = "HaulersDream.Report.Uploading".Translate(attachIndex + 1, attachments.Count);
