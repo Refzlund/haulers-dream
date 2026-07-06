@@ -155,7 +155,7 @@
 <HaulersDream.AllowAnimalsDesc>ปิดไว้โดยค่าเริ่มต้น เมื่อเปิด สัตว์อาณานิคมที่ฝึกการขนของแล้วจะแบกหลายกองพร้อมกัน — หยิบของที่ได้ใกล้ๆ เข้าสัมภาระและทำการขนของแบบรวมของ Hauler's Dream แทนที่จะขนทีละกองต่อเที่ยว สิ่งนี้มีผลเฉพาะสัตว์ที่ฝึกการขนของได้: ตัวที่มีความสามารถในการฝึกขั้นสูงและลำตัวใหญ่พอ (ฮัสกี้ ลาบราดอร์ ช้าง หมี ธรัมโบ ฯลฯ) สัตว์ที่ฝึกการขนของไม่ได้ — แมวแม่บ้านและสัตว์ทำนองนั้น — จะไม่ทำงานขนของตั้งแต่แรกอยู่แล้ว (จริงไม่ว่าจะตั้งค่านี้อย่างไร) จึงไม่ได้รับผลกระทบจากสวิตช์นี้ จะแตะเฉพาะสัตว์อาณานิคมของคุณเองเท่านั้น สัตว์ป่าและสัตว์ศัตรูไม่เคยได้รับผลกระทบ</HaulersDream.AllowAnimalsDesc>
 <HaulersDream.Setting.AllowIncapable>อนุญาตให้ตัวละครที่ขนของไม่ได้เก็บผลผลิตของตัวเอง</HaulersDream.Setting.AllowIncapable>
 <HaulersDream.Setting.EnableOnNonHomeMaps>ทำงานบนแผนที่คาราวาน/นอกฐานด้วย</HaulersDream.Setting.EnableOnNonHomeMaps>
-<HaulersDream.Setting.HideGizmo>ซ่อนปุ่ม "ขนของออกจากกระเป๋า" รายตัว</HaulersDream.Setting.HideGizmo>
+<HaulersDream.Setting.HideGizmo>แสดงปุ่ม "ขนของออกจากกระเป๋า" รายตัว</HaulersDream.Setting.HideGizmo>
 <HaulersDream.Setting.UnloadGrace>หน้าต่างสะสม: เก็บของต่อไปอีก {0} ติ๊ก (~60/วินาที) หลังการหยิบครั้งสุดท้ายก่อนออกไปขนของออก สูงขึ้น = ตัวละครบรรทุกเกินมากขึ้นและเดินน้อยลงแต่เที่ยวใหญ่ขึ้น พวกมันยังขนของออกทันทีเมื่อเต็ม (เพดานการบรรทุกเกิน)</HaulersDream.Setting.UnloadGrace>
 <HaulersDream.Setting.IntervalUnload>ขนของออกตามช่วงเวลา: ทุก {0} ชั่วโมงในเกม</HaulersDream.Setting.IntervalUnload>
 <HaulersDream.Setting.IntervalUnloadOff>ขนของออกตามช่วงเวลา: ปิด (เฉพาะจบรอบงาน / มื้ออาหารและการพักผ่อน / น้ำหนักเกิน / ด้วยมือ)</HaulersDream.Setting.IntervalUnloadOff>
@@ -596,7 +596,7 @@
 <HaulersDream.Setting.ShareForBuilding.Help>วัสดุที่ตัวละครเก็บเข้าสัมภาระไว้แล้วจะถูกนับให้กับการก่อสร้างที่อยู่ใกล้ ทำให้สามารถก่อสร้างได้โดยไม่ต้องเดินไปหยิบของแยกอีกเที่ยว</HaulersDream.Setting.ShareForBuilding.Help>
 <HaulersDream.Setting.ShareMeetInMiddle.Help>เมื่อการก่อสร้างหรือใบสั่งงานจะดึงวัสดุจากสัมภาระของผู้แบกของ ผู้แบกของที่ว่างอยู่จะเดินเข้าหาคนทำงานเพื่อให้เจอกันเร็วขึ้น</HaulersDream.Setting.ShareMeetInMiddle.Help>
 <HaulersDream.Setting.ItemUnload.Help>ตั้งกฎสำหรับของแต่ละชิ้น: เก็บทั้งกอง, เก็บไว้มากที่สุดตามจำนวนที่กำหนด, หรือขนออกเสมอ — โดยลบล้างการตั้งค่าของส่วนเกินสำหรับของชิ้นนั้น</HaulersDream.Setting.ItemUnload.Help>
-<HaulersDream.Setting.HideGizmo.Help>ซ่อนปุ่ม 'ขนของออกจากกระเป๋า' รายตัวที่ปรากฏเมื่อชาวอาณานิคมกำลังถือของที่เก็บไว้</HaulersDream.Setting.HideGizmo.Help>
+<HaulersDream.Setting.HideGizmo.Help>แสดงปุ่ม "ขนของออกจากกระเป๋า" รายตัวที่ปรากฏเมื่อชาวอาณานิคมกำลังถือของที่เก็บไว้ เปิดใช้งานโดยค่าเริ่มต้น ปิดเพื่อซ่อนปุ่ม</HaulersDream.Setting.HideGizmo.Help>
 <HaulersDream.Setting.StorageFilterButton.Help>แก้ไขกฎอนุญาต/ปฏิเสธรายอาคารและรายม็อดว่าผู้ขนของจะใช้คลังใดได้</HaulersDream.Setting.StorageFilterButton.Help>
 <HaulersDream.Setting.PauseWhileDrafted.Help>ขณะที่ตัวละครถูกเกณฑ์ Hauler's Dream จะหยุดเริ่มการเก็บและการกวาดของใหม่ให้ตัวละครนั้น</HaulersDream.Setting.PauseWhileDrafted.Help>
 <HaulersDream.Setting.AllowIncapable.Help>ให้ตัวละครที่ขนของไม่ได้ยังคงเก็บผลผลิตจากงานของตัวเองได้ (การขุด, การเก็บเกี่ยว, …)</HaulersDream.Setting.AllowIncapable.Help>

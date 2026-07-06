@@ -155,7 +155,7 @@
 <HaulersDream.AllowAnimalsDesc>默认关闭。开启时，训练了搬运的殖民地动物会一次携带多堆物品——把附近的战利品拾进货物栏并执行 Hauler's Dream 的批量搬运，而不是一趟一堆。这只会影响能被训练搬运的动物：具有高级可训练度且体型足够大的（哈士奇、拉布拉多、大象、熊、敲击兽等）。无法被训练搬运的动物——家政猫之类——根本不会执行搬运任务（无论此设置如何均是如此），因此不受此开关影响。只动你自己的殖民地动物；野生和敌方动物绝不受影响。</HaulersDream.AllowAnimalsDesc>
 <HaulersDream.Setting.AllowIncapable>允许无法搬运的小人收取自己的产出</HaulersDream.Setting.AllowIncapable>
 <HaulersDream.Setting.EnableOnNonHomeMaps>也在商队/非主基地地图上工作</HaulersDream.Setting.EnableOnNonHomeMaps>
-<HaulersDream.Setting.HideGizmo>隐藏每个小人的“卸载货物栏”按钮</HaulersDream.Setting.HideGizmo>
+<HaulersDream.Setting.HideGizmo>显示每个小人的“卸载货物栏”按钮</HaulersDream.Setting.HideGizmo>
 <HaulersDream.Setting.UnloadGrace>积攒窗口：在最后一次拾取后，继续拾取 {0} tick（约60/秒）再去卸载。值越高＝小人超载越多、往返更少更大；它们一旦装满仍会立即卸载（超载上限）。</HaulersDream.Setting.UnloadGrace>
 <HaulersDream.Setting.IntervalUnload>间隔卸载：每 {0} 游戏小时</HaulersDream.Setting.IntervalUnload>
 <HaulersDream.Setting.IntervalUnloadOff>间隔卸载：关闭（仅在工作结束/用餐和娱乐/超重/手动时）</HaulersDream.Setting.IntervalUnloadOff>
@@ -596,7 +596,7 @@
 <HaulersDream.Setting.ShareForBuilding.Help>小人已收进货物栏的材料会计入附近的建造，因此它无需单独跑一趟取料即可建造。</HaulersDream.Setting.ShareForBuilding.Help>
 <HaulersDream.Setting.ShareMeetInMiddle.Help>当一项建造或工单将从某个运载者的货物栏取用材料时，一个空闲的运载者会走向工人，以便更早相遇。</HaulersDream.Setting.ShareMeetInMiddle.Help>
 <HaulersDream.Setting.ItemUnload.Help>为单个物品设置规则：保留整堆、最多保留一个设定的数量，或始终卸载它——对该物品覆盖多余物品设置。</HaulersDream.Setting.ItemUnload.Help>
-<HaulersDream.Setting.HideGizmo.Help>隐藏当殖民者携带收取货物时出现的、每个小人的“卸载货物栏”按钮。</HaulersDream.Setting.HideGizmo.Help>
+<HaulersDream.Setting.HideGizmo.Help>显示当殖民者携带收取货物时出现的、每个小人的“卸载货物栏”按钮。默认开启；关闭后将隐藏该按钮。</HaulersDream.Setting.HideGizmo.Help>
 <HaulersDream.Setting.StorageFilterButton.Help>编辑按建筑和按模组的允许/拒绝规则，决定搬运可使用哪些储存。</HaulersDream.Setting.StorageFilterButton.Help>
 <HaulersDream.Setting.PauseWhileDrafted.Help>当一个小人被征召时，Hauler's Dream 停止为它启动新的收取和清扫。</HaulersDream.Setting.PauseWhileDrafted.Help>
 <HaulersDream.Setting.AllowIncapable.Help>让一个无法从事搬运的小人仍能收取它自己工作（采掘、收获……）的产出。</HaulersDream.Setting.AllowIncapable.Help>

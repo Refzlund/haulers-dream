@@ -155,7 +155,7 @@
 <HaulersDream.AllowAnimalsDesc>デフォルトはオフです。オンにすると、運搬を訓練された入植地の動物が一度に複数の山を運びます — 近くの戦利品を所持品に拾い、1往復1山ではなくHauler's Dreamの一括運搬を実行します。これは運搬訓練ができる動物 — 上級の訓練可能性と十分に大きな体を持つ動物（ハスキー、ラブラドール、ゾウ、クマ、サンブロなど）にしか及びません。運搬訓練できない動物 — 家政婦ネコのたぐい — はそもそも運搬ジョブを実行しません（この設定に関係なく当てはまります）ので、この切り替えの影響を受けません。手を加えられるのはあなた自身の入植地の動物だけで、野生や敵の動物が影響を受けることは決してありません。</HaulersDream.AllowAnimalsDesc>
 <HaulersDream.Setting.AllowIncapable>運搬不能なポーンが自分の収穫物を回収するのを許可する</HaulersDream.Setting.AllowIncapable>
 <HaulersDream.Setting.EnableOnNonHomeMaps>キャラバン/非ホームマップでも作動する</HaulersDream.Setting.EnableOnNonHomeMaps>
-<HaulersDream.Setting.HideGizmo>ポーンごとの「所持品を降ろす」ボタンを隠す</HaulersDream.Setting.HideGizmo>
+<HaulersDream.Setting.HideGizmo>ポーンごとの「所持品を降ろす」ボタンを表示する</HaulersDream.Setting.HideGizmo>
 <HaulersDream.Setting.UnloadGrace>蓄積ウィンドウ：最後の拾い上げから{0}ティック（約60/秒）の間、降ろしに行く前も拾い続けます。大きいほどポーンは多く過積載し、回数の少ない大きな往復をします。それでも満杯になれば即座に降ろします（過積載の上限）。</HaulersDream.Setting.UnloadGrace>
 <HaulersDream.Setting.IntervalUnload>間隔降ろし：ゲーム内{0}時間ごと</HaulersDream.Setting.IntervalUnload>
 <HaulersDream.Setting.IntervalUnloadOff>間隔降ろし：オフ（作業の終わり/食事と娯楽/積みすぎ/手動のみ）</HaulersDream.Setting.IntervalUnloadOff>
@@ -596,7 +596,7 @@
 <HaulersDream.Setting.ShareForBuilding.Help>ポーンがすでに所持品に回収した資材が近くの建築に算入されるので、別の取得往復なしで建築できます。</HaulersDream.Setting.ShareForBuilding.Help>
 <HaulersDream.Setting.ShareMeetInMiddle.Help>建築や作業指示が運搬者の所持品から資材を引き出すとき、手の空いた運搬者が作業者に向かって歩き、より早く落ち合います。</HaulersDream.Setting.ShareMeetInMiddle.Help>
 <HaulersDream.Setting.ItemUnload.Help>個別アイテムのルールを設定します：山ごと保持、設定した量まで保持、または常に降ろす — そのアイテムについて余剰設定を上書きします。</HaulersDream.Setting.ItemUnload.Help>
-<HaulersDream.Setting.HideGizmo.Help>入植者が回収した物資を携行しているときに表示される、ポーンごとの「所持品を降ろす」ボタンを隠します。</HaulersDream.Setting.HideGizmo.Help>
+<HaulersDream.Setting.HideGizmo.Help>入植者が回収した物資を携行しているときに表示される、ポーンごとの「所持品を降ろす」ボタンを表示します。既定でオン。オフにするとボタンが非表示になります。</HaulersDream.Setting.HideGizmo.Help>
 <HaulersDream.Setting.StorageFilterButton.Help>運搬が使える保管庫について、建造物ごと・MODごとの許可/拒否ルールを編集します。</HaulersDream.Setting.StorageFilterButton.Help>
 <HaulersDream.Setting.PauseWhileDrafted.Help>ポーンが徴兵されている間、Hauler's Dreamはそのポーンの新たな回収やかき集めの開始を止めます。</HaulersDream.Setting.PauseWhileDrafted.Help>
 <HaulersDream.Setting.AllowIncapable.Help>運搬不能なポーンでも、自分の作業（採掘、収穫…）の収穫物を回収できるようにします。</HaulersDream.Setting.AllowIncapable.Help>
