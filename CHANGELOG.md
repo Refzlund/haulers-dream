@@ -1,5 +1,25 @@
 # haulers-dream
 
+## 1.16.6
+
+### Patch Changes
+
+- 7ebe671: Show "Batch: ..." on a bill's repeat-mode button when batch mode is on, so it is obvious at a glance.
+
+  When you turn on batch mode for a bill, that choice only showed up inside the repeat-mode dropdown you had to open first. The button itself still read the plain "Do forever" (or "Do X times", or "Do until you have X"), so a bill that was quietly batching looked exactly like one that was not, and one player spent a couple of hours puzzled by a bill's behaviour before realising batch mode had been left on. The button now reads "Batch: Do forever" and so on whenever the bill is actually batching, using the same wording the dropdown already shows.
+
+  This works with both the vanilla bills tab and Nice Bill Tab. With Nice Bill Tab installed the label shows on its own bill rows and in the shared details dialog as well; without it, nothing changes.
+
+- 4460224: Stop a colonist from pacing forever instead of relaxing when the only thing they are carrying is something they keep on purpose.
+
+  When a colonist finished its work while still carrying hauled goods, Hauler's Dream would send it to put the load away before wandering off to relax. The check for "is there anything to put away" only asked whether a carried stack was in the pack and free to grab, not whether any of it was actually surplus. So if the last thing a colonist was carrying was personal stock it deliberately keeps (its own food, drugs, a loadout item), the put-away trip found nothing to do, ended, and started again a moment later, over and over. The colonist paced in place and never settled into leisure. The end-of-work put-away now uses the same "is there real surplus to store" test as the actual unload and the carry-weight alert, so a colonist holding only keep-stock just heads off to relax and hangs on to it until real surplus turns up.
+
+- 4460224: Sweeping loose items into a colonist's pack no longer takes longer than plain vanilla hauling.
+
+  The pickup delay (the short pause and progress bar a colonist shows while pocketing a stack) used to apply to everything a colonist scooped up, including the automatic sweeps. So clearing a removed floor, a mined-out room, or any big pile of small stacks meant a couple of seconds spent on every single "2 wood" stack, when in vanilla the same debris would be swept up instantly.
+
+  The delay now matches what vanilla actually does: only the deliberate "Pick up X" and "Keep X in inventory" orders are paced (exactly like vanilla's own pickup delay), while automatic hauling, scooping up your own work yields, and loading are instant again. Two new options under the pickup delay let you opt those automatic cases back in if you liked the old feel, one for automatic hauling and cleanup and one for loading transporters and pack animals. Both are off by default, so out of the box cleanup is as fast as vanilla.
+
 ## 1.16.5
 
 ### Patch Changes
