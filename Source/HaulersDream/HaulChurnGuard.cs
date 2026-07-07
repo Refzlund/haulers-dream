@@ -131,6 +131,14 @@ namespace HaulersDream
         internal static int CountRetarget(Job job)
             => ++CounterFor(job).retargets;
 
+        /// <summary>The current redirect tally for <paramref name="job"/> WITHOUT incrementing it. The in-flight
+        /// re-route (<see cref="Patch_CarryHauledThingToCell_ReRoute"/>) reads the shared per-job budget to decide
+        /// whether another mid-carry redirect is still allowed before it spends one. Returns 0 for a job with no
+        /// state, or one whose pooled instance was recycled (loadID mismatch), so a fresh job always gets the full
+        /// budget.</summary>
+        internal static int PeekRetargets(Job job)
+            => retargetsByJob.TryGetValue(job, out var c) && c.loadID == job.loadID ? c.retargets : 0;
+
         /// <summary>Remember that <paramref name="job"/>'s current delivery DEGRADED to a non-storage aside
         /// spot. The placement fail branch only does that after a map-wide storage re-find came up empty, so
         /// when the aside placement later completes, the thing has earned the same re-offer backoff as a
@@ -443,5 +451,93 @@ namespace HaulersDream
         static System.Exception Finalizer(System.Exception __exception)
             => HDGuard.SeamThrew(__exception, "JobDriver_HaulToCell.Notify_Starting (HD per-thing churn guard)",
                 null, "per-thing churn tally not attached; the per-job arrival guard still applies for this job.");
+    }
+
+    /// <summary>
+    /// The CORE strengthening (issue #144 follow-up): make Haul To Stack's multi-pawn hauls RE-ROUTE in hand when
+    /// their shared destination cell fills mid-carry, instead of letting vanilla fail the whole job and drop the
+    /// item at the pawn's feet, the drop-and-rescan that IS the reported loop. Haul To Stack deliberately leaves
+    /// the destination cell unreserved so several pawns can pile onto one tile
+    /// (<see cref="Patch_JobDriver_HaulToCell_NoCellReservation"/>); vanilla's <see cref="JobDriver_HaulToCell"/>
+    /// was never built for that, so <see cref="Toils_Haul.CarryHauledThingToCell"/>'s fail-on ends the job the
+    /// instant the cell stops being valid storage (it filled while the pawn walked over).
+    ///
+    /// <para>This postfix PREPENDS an end-condition to that carry toil. CheckCurrentToilEndOrFail evaluates a
+    /// toil's endConditions in order, so ours runs BEFORE vanilla's fail-on: for a stackable no-reserve storage
+    /// haul whose cell just went invalid, it re-resolves another stacking cell (StoreUtility's own search, which
+    /// HD refines to a partial stack so the load still consolidates), retargets the job and restarts the path, so
+    /// the pawn keeps carrying to a good cell and vanilla's fail-on then reads the new VALID target and does not
+    /// fire. The item is never dropped and the pawn never paces. It reserves NOTHING, so the multi-pawn stacking
+    /// that is the whole point of the feature stays fully on.</para>
+    ///
+    /// <para>Bounded by the SAME per-job budget the arrival re-route uses: once a delivery has redirected past
+    /// <see cref="HaulChurnPolicy.MaxRetargetsPerJob"/> times it stops re-routing and lets vanilla's fail-on run
+    /// (drop), which the per-thing tally then escalates to the re-offer backoff, the safety net. Scoped to exactly
+    /// the reported loop: a vanilla <c>JobDefOf.HaulToCell</c> storage haul of a STACKABLE thing while Haul To
+    /// Stack is on. Inert otherwise, and when the feature is off (vanilla reserves the cell, so there is no
+    /// contention to re-route). A pooled toil is Clear()'d on ReturnToPool (endConditions emptied), so the inserted
+    /// condition never accumulates across reuses. Multiplayer: the retarget + StartPath run on the synced job tick
+    /// and read only synced storage + tally state, so every client redirects to the same cell.</para>
+    /// </summary>
+    [HarmonyPatch(typeof(Toils_Haul), nameof(Toils_Haul.CarryHauledThingToCell))]
+    public static class Patch_CarryHauledThingToCell_ReRoute
+    {
+        static void Postfix(Toil __result, TargetIndex squareIndex, PathEndMode pathEndMode)
+        {
+            if (__result == null)
+                return;
+            // Prepend, so this runs before vanilla's storage-invalid fail-on for the same toil.
+            __result.endConditions.Insert(0, () => ReRouteIfDestinationFilled(__result, squareIndex, pathEndMode));
+        }
+
+        /// <summary>The prepended end-condition. ALWAYS returns Ongoing (it never ends the toil): its only job is
+        /// the side effect of redirecting a stranded stacking haul to a fresh cell so vanilla's own fail-on then
+        /// sees a valid target. When it cannot (feature off, unstackable, over budget, or no other cell) it leaves
+        /// the invalid cell to vanilla's fail-on, which drops the item as before and feeds the per-thing backoff.</summary>
+        static JobCondition ReRouteIfDestinationFilled(Toil toil, TargetIndex squareIndex, PathEndMode pathEndMode)
+        {
+            try
+            {
+                var actor = toil.actor;
+                var job = actor?.jobs?.curJob;
+                if (job == null || job.def != JobDefOf.HaulToCell || job.haulMode != HaulMode.ToCellStorage)
+                    return JobCondition.Ongoing; // only the vanilla storage haul carries the fail-on we pre-empt
+                var settings = HaulersDreamMod.Settings;
+                if (settings == null || !settings.haulToStack)
+                    return JobCondition.Ongoing; // feature off -> vanilla reserves the cell, nothing can strand it
+                var carried = actor.carryTracker?.CarriedThing;
+                if (carried?.def == null || carried.def.stackLimit <= 1)
+                    return JobCondition.Ongoing; // unstackables keep vanilla's reserved cell -> no contention
+                var cell = job.GetTarget(squareIndex).Cell;
+                if (cell.IsValidStorageFor(actor.Map, carried))
+                    return JobCondition.Ongoing; // still a good destination -> keep walking (the common case)
+
+                // The shared cell filled or went invalid while we carried toward it. Redirect in hand to another
+                // stacking cell rather than dropping the load, bounded by the same budget the arrival re-route uses.
+                if (HaulChurnPolicy.ShouldBail(HaulChurnGuard.PeekRetargets(job)))
+                    return JobCondition.Ongoing; // redirected too many times -> let vanilla drop it -> backoff net
+                if (StoreUtility.TryFindBestBetterStoreCellFor(carried, actor, actor.Map, StoragePriority.Unstored,
+                        actor.Faction, out var newCell) && newCell.IsValid && newCell != cell)
+                {
+                    HaulChurnGuard.CountRetarget(job);
+                    job.SetTarget(squareIndex, newCell);
+                    actor.pather.StartPath(newCell, pathEndMode);
+                }
+                return JobCondition.Ongoing;
+            }
+            catch (System.Exception e)
+            {
+                // Degrade to vanilla: log once (HD-attributed), let the vanilla fail-on handle the filled cell.
+                HDGuard.SeamDegraded(e, "Toils_Haul.CarryHauledThingToCell (HD stacking re-route)", toil?.actor,
+                    "in-flight re-route skipped; vanilla's fail-on drops the item as before.");
+                return JobCondition.Ongoing;
+            }
+        }
+
+        // Seam guard: a throw while BUILDING the toil (the Insert above) would break haul-job construction. Log it
+        // attributably, then rethrow (never swallow). The tick-time lambda has its own degrade try/catch above.
+        static System.Exception Finalizer(System.Exception __exception)
+            => HDGuard.SeamThrew(__exception, "Toils_Haul.CarryHauledThingToCell (HD stacking re-route wrap)", null,
+                "in-flight re-route not attached; vanilla's fail-on handles a filled cell as before.");
     }
 }
