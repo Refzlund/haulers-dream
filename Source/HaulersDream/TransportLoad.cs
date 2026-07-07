@@ -265,6 +265,16 @@ namespace HaulersDream
             // behavior-identical (claimable ≤ the live manifest, so it's the binding per-def cap either way).
             var claimLeft = new Dictionary<ThingDef, int>(claimable);
 
+            // Per-VARIANT demand gate (issue #156). The claim/ledger accounting above is per ThingDef, correct for
+            // the concurrency split, but BLIND to quality/stuff/hitpoints. So the def-keyed sweep below would happily
+            // scoop an EXCELLENT-quality jacket for a manifest that asked for a NORMAL one (the reported shuttle bug),
+            // because both are the same def. Vanilla's own loader only ever picks things belonging to a WANTED
+            // transferable, so it never does this. This budget restores that: a candidate must match a wanted
+            // manifest variant (quality/stuff/hitpoints, via the SAME TransferAsOne vanilla uses) and may take at most
+            // that variant's remaining count. Built once from the live manifest; consulted in TryQualify/ClampNetworkTake
+            // and committed at each real pick. See VariantBudget.
+            var variants = new VariantBudget(loadable.GetTransferables());
+
             // Carry ceiling (smart overload) + the trip-mass budget (pawn free space AND group headroom).
             float maxCap = CarryCapacity.Of(pawn);
             float baseCap = CarryMath.EffectiveCapacity(maxCap, s.carryLimitFraction);
@@ -330,7 +340,7 @@ namespace HaulersDream
 
             while (things.Count < MaxStacks && running < ceiling - 0.0001f && massLeft > 0.0001f)
             {
-                var next = NearestEligible(pawn, pool, from, claimedByOthers, claimLeft,
+                var next = NearestEligible(pawn, pool, from, claimedByOthers, claimLeft, variants,
                     ceiling, running, bulkRoom, massLeft, out int take);
                 if (next == null)
                     break;
@@ -341,6 +351,7 @@ namespace HaulersDream
                 bulkRoom -= take * CECompat.BulkPerUnit(next);
                 massLeft -= take * unit;
                 claimLeft[next.def] = Math.Max(0, (claimLeft.TryGetValue(next.def, out int l) ? l : 0) - take);
+                variants.Commit(next, take); // decrement the picked variant's remaining demand (issue #156)
                 from = next.Position;
             }
 
@@ -351,7 +362,7 @@ namespace HaulersDream
             // Bounded by the SAME claim/carry/mass/bulk budget as the sweep above; a stack SN can't materialise is
             // skipped by the driver's sweep toil (it requires Spawned), so this can never strand cargo or over-pull.
             if (s.enableStorageNetworkBulkLoad && StorageNetworkCompat.IsActive)
-                AppendNetworkClaimables(pawn, map, claimLeft, claimedByOthers, things, counts,
+                AppendNetworkClaimables(pawn, map, claimLeft, variants, claimedByOthers, things, counts,
                     ref running, ceiling, ref bulkRoom, ref massLeft);
 
             if (things.Count == 0)
@@ -543,7 +554,7 @@ namespace HaulersDream
         /// no reservations and no spawning here (the materialisation is SN's, at job start, not during this probe).
         /// </summary>
         private static void AppendNetworkClaimables(Pawn pawn, Map map, Dictionary<ThingDef, int> claimLeft,
-            HashSet<Thing> claimedByOthers, List<Thing> things, List<int> counts,
+            VariantBudget variants, HashSet<Thing> claimedByOthers, List<Thing> things, List<int> counts,
             ref float running, float ceiling, ref float bulkRoom, ref float massLeft)
         {
             var terminals = StorageNetworkCompat.UsableTerminals(pawn, map);
@@ -584,9 +595,9 @@ namespace HaulersDream
                             continue; // wrong def / gone / already planned (or seen via another terminal on this network)
                         if (claimedByOthers.Contains(t))
                             continue; // another pawn already has this exact network stack queued
-                        int take = ClampNetworkTake(pawn, t, claimAvail, ceiling, running, bulkRoom, massLeft);
+                        int take = ClampNetworkTake(pawn, t, claimAvail, variants, ceiling, running, bulkRoom, massLeft);
                         if (take <= 0)
-                            continue; // too heavy/bulky for the remaining budget — a lighter neighbour may still fit
+                            continue; // too heavy/bulky, or not a wanted variant; a lighter or right-variant neighbour may still fit
                         things.Add(t);
                         counts.Add(take);
                         float unit = t.GetStatValue(StatDefOf.Mass);
@@ -594,6 +605,7 @@ namespace HaulersDream
                         bulkRoom -= take * CECompat.BulkPerUnit(t);
                         massLeft -= take * unit;
                         claimLeft[def] = Math.Max(0, claimAvail - take);
+                        variants.Commit(t, take); // decrement the picked variant's remaining demand (issue #156)
                     }
                 }
             }
@@ -604,7 +616,7 @@ namespace HaulersDream
         // trip-mass UnitsWithinMassBudget), MINUS the spawned-thing gates (IsForbidden / PawnCanAutomaticallyHaulFast
         // / ExtraSweepReach) — those don't apply to a despawned network stack, whose reach/usability is gated once at
         // the TERMINAL in StorageNetworkCompat.UsableTerminals.
-        private static int ClampNetworkTake(Pawn pawn, Thing chosen, int claimAvail,
+        private static int ClampNetworkTake(Pawn pawn, Thing chosen, int claimAvail, VariantBudget variants,
             float ceiling, float running, float bulkRoom, float massLeft)
         {
             float unit = chosen.GetStatValue(StatDefOf.Mass);
@@ -614,8 +626,11 @@ namespace HaulersDream
             if (bulkPer > 0f && !float.IsPositiveInfinity(bulkRoom))
                 carryAffordable = Math.Min(carryAffordable, (int)Math.Floor(bulkRoom / bulkPer));
             int massAffordable = TransportLoadPlan.UnitsWithinMassBudget(massLeft, unit, chosen.stackCount);
-            return TransportLoadPlan.DeliverableUnits(chosen.stackCount, claimAvail, claimAvail,
+            int deliverable = TransportLoadPlan.DeliverableUnits(chosen.stackCount, claimAvail, claimAvail,
                 Math.Min(carryAffordable, massAffordable));
+            // Per-variant demand gate (issue #156): a network stack of a wanted DEF must still match a wanted
+            // manifest VARIANT (quality/stuff/hitpoints) and fit its remaining count, same rule as the ground sweep.
+            return variants.Cap(chosen, deliverable);
         }
 
         // Nearest pool candidate of a CLAIMABLE def within reach, clamped per-stack via DeliverableUnits under the
@@ -626,7 +641,7 @@ namespace HaulersDream
         // by default, and the off-path below is byte-IDENTICAL to before (the on-path is a separate early-return
         // branch that runs no pathfinding when off — see the single `if (loadHybridPathing)` gate).
         private static Thing NearestEligible(Pawn pawn, List<Thing> pool, IntVec3 from, HashSet<Thing> claimedByOthers,
-            Dictionary<ThingDef, int> claimLeft,
+            Dictionary<ThingDef, int> claimLeft, VariantBudget variants,
             float ceiling, float running, float bulkRoom, float massLeft, out int take)
         {
             // B3 ON: re-rank the top-N straight-line-nearest QUALIFYING candidates by real path cost. Gated on the
@@ -634,7 +649,7 @@ namespace HaulersDream
             // default path — when it's off, execution falls straight through to the unchanged straight-line loop.
             if (HaulersDreamMod.Settings?.loadHybridPathing == true)
             {
-                var ranked = NearestEligibleHybrid(pawn, pool, from, claimedByOthers, claimLeft,
+                var ranked = NearestEligibleHybrid(pawn, pool, from, claimedByOthers, claimLeft, variants,
                     ceiling, running, bulkRoom, massLeft, out take);
                 return ranked;
             }
@@ -661,10 +676,10 @@ namespace HaulersDream
                 var chosen = pool[bestIdx];
                 pool.RemoveAt(bestIdx);
 
-                int deliverable = TryQualify(pawn, chosen, claimedByOthers, claimLeft,
+                int deliverable = TryQualify(pawn, chosen, claimedByOthers, claimLeft, variants,
                     ceiling, running, bulkRoom, massLeft);
                 if (deliverable <= 0)
-                    continue; // forbidden / claimed / too heavy / no claim budget — a neighbor may still fit
+                    continue; // forbidden / claimed / too heavy / no claim budget / not a wanted variant; a neighbor may still fit
                 take = deliverable;
                 return chosen;
             }
@@ -687,7 +702,7 @@ namespace HaulersDream
         // in the pool for the next NearestEligible call (so a single sweep still considers them). Returns null (and
         // take 0) when nothing qualifies — identical outcome to the off-path's bestIdx < 0 / loop-exhaustion.
         private static Thing NearestEligibleHybrid(Pawn pawn, List<Thing> pool, IntVec3 from, HashSet<Thing> claimedByOthers,
-            Dictionary<ThingDef, int> claimLeft,
+            Dictionary<ThingDef, int> claimLeft, VariantBudget variants,
             float ceiling, float running, float bulkRoom, float massLeft, out int take)
         {
             take = 0;
@@ -721,7 +736,7 @@ namespace HaulersDream
                 var chosen = pool[bestIdx];
                 pool.RemoveAt(bestIdx);
 
-                int deliverable = TryQualify(pawn, chosen, claimedByOthers, claimLeft,
+                int deliverable = TryQualify(pawn, chosen, claimedByOthers, claimLeft, variants,
                     ceiling, running, bulkRoom, massLeft);
                 if (deliverable <= 0)
                     continue; // permanently ineligible this sweep — stays out of the pool (off-path parity)
@@ -785,7 +800,8 @@ namespace HaulersDream
         // or 0 when the candidate is forbidden / claimed by another pawn / too heavy/bulky / out of claim budget.
         // PURE — no pool mutation (the caller owns removal), no reservations.
         private static int TryQualify(Pawn pawn, Thing chosen, HashSet<Thing> claimedByOthers,
-            Dictionary<ThingDef, int> claimLeft, float ceiling, float running, float bulkRoom, float massLeft)
+            Dictionary<ThingDef, int> claimLeft, VariantBudget variants,
+            float ceiling, float running, float bulkRoom, float massLeft)
         {
             if (chosen.IsForbidden(pawn) || claimedByOthers.Contains(chosen))
                 return 0;
@@ -807,6 +823,12 @@ namespace HaulersDream
                 chosen.stackCount, claimAvail, claimAvail, Math.Min(carryAffordable, massAffordable));
             if (deliverable <= 0)
                 return 0; // too heavy / no claim budget left — a lighter/other-def neighbor may still fit
+            // Per-variant demand gate (issue #156): cap to what a WANTED manifest variant still wants (quality/stuff/
+            // hitpoints-aware). 0 when this is an off-quality item of a wanted def, or that variant is already spoken
+            // for this sweep, so the def-keyed pool never loads the wrong quality onto a transporter/portal/vehicle.
+            deliverable = variants.Cap(chosen, deliverable);
+            if (deliverable <= 0)
+                return 0;
             if (!HaulAIUtility.PawnCanAutomaticallyHaulFast(pawn, chosen, forced: false))
                 return 0;
             if (!ExtraSweepReach.Allows(pawn, chosen))
@@ -831,6 +853,101 @@ namespace HaulersDream
             finally
             {
                 path?.ReleaseToPool();
+            }
+        }
+
+        /// <summary>
+        /// Per-VARIANT remaining-demand tracker for one bulk-load plan: the term HD's per-def pool had DROPPED
+        /// (issue #156: a shuttle asked to load a NORMAL-quality jacket was loaded with an EXCELLENT one sitting
+        /// nearer, because both share a <see cref="ThingDef"/> and the sweep only ever consulted the def). The claim
+        /// ledger is per def (correct for the concurrency split, but blind to quality/stuff/hitpoints); vanilla's own
+        /// loader (<c>LoadTransportersJobUtility.FindThingToLoad</c>) only picks things belonging to a WANTED
+        /// transferable, so it never scoops an off-quality item of a wanted def. This restores that behaviour for the
+        /// sweep: a candidate is matched to a wanted manifest transferable by vanilla's variant-strict
+        /// <see cref="TransferableUtility.TransferAsOne"/> (<c>PodsOrCaravanPacking</c> mode: quality + stuff +
+        /// hitpoints aware, and crucially with NO def-only fallback, unlike <c>TransferableMatchingDesperate</c>), and
+        /// may take at most that variant's remaining <c>CountToTransfer</c>.
+        ///
+        /// SCOPE: per-pawn (built fresh from the live manifest each plan). The cross-pawn per-variant split is NOT
+        /// ledger-tracked (the ledger is per def), so under heavy CONCURRENT loading of a MIXED-quality manifest two
+        /// pawns could still each target the same tier; the deposit's per-member clamp
+        /// (<c>LoadTransportersAdapter.MemberRemainingFor</c>) bounds the actual over-load, and the reported
+        /// single-tier case is fully covered. Keyed by the transferable REFERENCE (stable within one plan, since
+        /// <c>GetTransferables</c> is materialised once). <see cref="Match"/> returns the FIRST wanted transferable
+        /// that BOTH matches the variant AND still has remaining demand, so a transporter GROUP whose two members each
+        /// want the same variant is served correctly (each member's own entry drains in turn). Deterministic (wanted
+        /// is in manifest order, identical across MP clients).
+        /// </summary>
+        private sealed class VariantBudget
+        {
+            private readonly List<TransferableOneWay> wanted;
+            private readonly Dictionary<TransferableOneWay, int> left;
+
+            /// <summary>Build from the wanted manifest (each entry already has <c>CountToTransfer &gt; 0</c>, but the
+            /// guard is kept so a caller passing an unfiltered list stays correct).</summary>
+            /// <param name="wanted">The manifest's wanted transferables (from <c>IManagedLoadable.GetTransferables</c>);
+            /// held by reference and never mutated.</param>
+            public VariantBudget(List<TransferableOneWay> wanted)
+            {
+                this.wanted = wanted ?? new List<TransferableOneWay>();
+                left = new Dictionary<TransferableOneWay, int>(this.wanted.Count);
+                for (int i = 0; i < this.wanted.Count; i++)
+                {
+                    var tr = this.wanted[i];
+                    if (tr != null && tr.HasAnyThing && tr.CountToTransfer > 0)
+                        left[tr] = tr.CountToTransfer;
+                }
+            }
+
+            /// <summary>The first wanted transferable whose variant matches <paramref name="thing"/> (vanilla
+            /// <see cref="TransferableUtility.TransferAsOne"/>, quality/stuff/hitpoints aware, NO def fallback) AND
+            /// still has remaining demand this plan, or null when the manifest wants no such variant (an off-quality
+            /// item of a wanted def) or every matching variant is already spoken for.</summary>
+            private TransferableOneWay Match(Thing thing)
+            {
+                if (thing == null)
+                    return null;
+                for (int i = 0; i < wanted.Count; i++)
+                {
+                    var tr = wanted[i];
+                    if (tr == null || !left.TryGetValue(tr, out int rem) || rem <= 0)
+                        continue;
+                    if (TransferableUtility.TransferAsOne(thing, tr.AnyThing, TransferAsOneMode.PodsOrCaravanPacking))
+                        return tr;
+                }
+                return null;
+            }
+
+            /// <summary>Cap <paramref name="desired"/> to what a matching wanted variant still wants; 0 when the
+            /// manifest wants no matching variant (the candidate is rejected). PURE (no mutation), so it is safe to
+            /// call speculatively on the hybrid path's non-chosen candidates.</summary>
+            /// <param name="thing">The candidate stack being qualified.</param>
+            /// <param name="desired">Units the other budgets (claim / carry / mass) already allow for this stack.</param>
+            /// <returns>The variant-capped take (≤ <paramref name="desired"/>), or 0 to reject the candidate.</returns>
+            public int Cap(Thing thing, int desired)
+            {
+                if (desired <= 0)
+                    return 0;
+                var m = Match(thing);
+                if (m == null)
+                    return 0;
+                int rem = left[m];
+                return desired < rem ? desired : rem;
+            }
+
+            /// <summary>Commit <paramref name="take"/> units of <paramref name="thing"/> against its matched variant
+            /// (decrement its remaining demand). Called ONLY at a real commit site, never speculatively. A no-op when
+            /// nothing matches (can't happen after a positive <see cref="Cap"/> with <c>left</c> unchanged in between,
+            /// but stays safe).</summary>
+            /// <param name="thing">The stack just committed to the plan.</param>
+            /// <param name="take">Units committed (must equal the value <see cref="Cap"/> returned for this stack).</param>
+            public void Commit(Thing thing, int take)
+            {
+                if (take <= 0)
+                    return;
+                var m = Match(thing);
+                if (m != null)
+                    left[m] = Math.Max(0, left[m] - take);
             }
         }
     }
