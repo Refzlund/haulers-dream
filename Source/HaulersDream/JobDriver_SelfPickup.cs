@@ -62,7 +62,7 @@ namespace HaulersDream
             // a drop stolen or stored mid-pause just no-ops in the take below and the loop moves on. (Only the
             // DropThenHaul route comes through here; the DirectToInventory route pockets yields inside the
             // GenPlace prefix, where no pawn action exists to pace; see YieldRouter.)
-            yield return PickupPause.MakeToil(TargetIndex.A);
+            yield return PickupPause.MakeToil(TargetIndex.A, PickupDelayContext.AutoHaul);
 
             var take = new Toil
             {

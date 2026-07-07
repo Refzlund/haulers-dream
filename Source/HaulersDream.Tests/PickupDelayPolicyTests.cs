@@ -78,5 +78,42 @@ namespace HaulersDream.Tests
             Assert.That(PickupDelayPolicy.SliderMaxTicks, Is.GreaterThanOrEqualTo(PickupDelayPolicy.VanillaDelayTicks));
             Assert.That(PickupDelayPolicy.SliderMaxTicks, Is.LessThanOrEqualTo(PickupDelayPolicy.MaxDelayTicks));
         }
+
+        // ── ShouldPause: WHICH pickups the delay applies to (the vanilla-faithful scope) ────────────────
+
+        // (context, onHauling, onLoading) -> should the pause show?
+        // ManualCarry: ALWAYS, whatever the toggles (vanilla's own delayed pickup order).
+        [TestCase(PickupDelayContext.ManualCarry, false, false, ExpectedResult = true)]
+        [TestCase(PickupDelayContext.ManualCarry, true, true, ExpectedResult = true)]
+        [TestCase(PickupDelayContext.ManualCarry, false, true, ExpectedResult = true)]
+        // AutoHaul: only when hauling is opted in; the loading toggle must NOT affect it.
+        [TestCase(PickupDelayContext.AutoHaul, false, false, ExpectedResult = false)]
+        [TestCase(PickupDelayContext.AutoHaul, true, false, ExpectedResult = true)]
+        [TestCase(PickupDelayContext.AutoHaul, false, true, ExpectedResult = false)]
+        // Loading: only when loading is opted in; the hauling toggle must NOT affect it.
+        [TestCase(PickupDelayContext.Loading, false, false, ExpectedResult = false)]
+        [TestCase(PickupDelayContext.Loading, false, true, ExpectedResult = true)]
+        [TestCase(PickupDelayContext.Loading, true, false, ExpectedResult = false)]
+        public bool ShouldPause_Matrix(PickupDelayContext context, bool onHauling, bool onLoading)
+            => PickupDelayPolicy.ShouldPause(context, onHauling, onLoading);
+
+        [Test]
+        public void ShouldPause_DefaultScope_IsVanillaFaithful_OnlyManualCarry()
+        {
+            // Both toggles off (the shipped default): only the deliberate carry order pauses; automatic hauling
+            // and loading are instant, exactly like vanilla (floor-removal debris is swept without a delay).
+            Assert.That(PickupDelayPolicy.ShouldPause(PickupDelayContext.ManualCarry, false, false), Is.True);
+            Assert.That(PickupDelayPolicy.ShouldPause(PickupDelayContext.AutoHaul, false, false), Is.False);
+            Assert.That(PickupDelayPolicy.ShouldPause(PickupDelayContext.Loading, false, false), Is.False);
+        }
+
+        [Test]
+        public void ShouldPause_BothOptIns_RestorePauseEverywhere()
+        {
+            // Turning both opt-ins on is the pre-scope "delay everywhere" feel: every context pauses.
+            Assert.That(PickupDelayPolicy.ShouldPause(PickupDelayContext.ManualCarry, true, true), Is.True);
+            Assert.That(PickupDelayPolicy.ShouldPause(PickupDelayContext.AutoHaul, true, true), Is.True);
+            Assert.That(PickupDelayPolicy.ShouldPause(PickupDelayContext.Loading, true, true), Is.True);
+        }
     }
 }

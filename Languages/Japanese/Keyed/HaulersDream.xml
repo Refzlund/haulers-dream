@@ -69,9 +69,13 @@
 <HaulersDream.Setting.KeepInInventory>右クリックに「Xを所持品に保持」の指示を追加</HaulersDream.Setting.KeepInInventory>
 <HaulersDream.Setting.KeepInInventoryDesc>地面の運搬可能アイテムの右クリックメニューに、「Xを拾う」と並んで「Xを所持品に保持」の選択肢を追加します。ポーンはクリックされた山を自分の所持品に取り込み、持ち続けます。Hauler's Dreamはそれを保管庫へ運び去ることは決してなく、ゲームの日常的な「未使用の所持品を捨てる」整理でもそれが捨てられることはありません。ポーンに意図的にアイテムを持たせたいときに使ってください。あとで手放すには、ポーンにそれを使い切らせるか、装備タブから捨てさせてください。バニラの右クリック選択肢への追加です。</HaulersDream.Setting.KeepInInventoryDesc>
 <HaulersDream.Setting.PickupDelay.Lab>1山ごとの拾い上げ遅延</HaulersDream.Setting.PickupDelay.Lab>
-<HaulersDream.Setting.PickupDelay.Help>ポーンが各山を所持品に入れる前に、その場で作業する時間です（バニラの拾い上げ進行バーが表示されます）。Hauler's Dreamがアイテムを所持品に入れるすべての場面に適用されます：一括運搬の回収巡回、移動中のついで拾い、作業成果物の回収、「Xを拾う」「Xを所持品に保持」の指示、そして一括積み込み・一括燃料補給での地面からの回収。120ティック（約2秒）はバニラ自身の「拾う」指示の遅延と完全に同じです。0＝即時（従来の挙動）。</HaulersDream.Setting.PickupDelay.Help>
+<HaulersDream.Setting.PickupDelay.Help>入植者が各物品の山の前で、原版の拾得プログレスバーを表示しながら作業し、背包に入れるまでの時間です。既定では「Xを拾う」「Xを背包に保持」という意図的な指示にのみ適用され、原版自身の拾得ディレイと完全に同じです。自動運搬と積載は即時のままなので、床撤去で出た残材の片付けが原版より遅くなることはありません。下の2つの選択肢でそれらにもディレイを付けられます。120ティック（約2秒）が原版の値です。0＝どこでも即時。</HaulersDream.Setting.PickupDelay.Help>
 <HaulersDream.Setting.PickupDelay.Instant>即時</HaulersDream.Setting.PickupDelay.Instant>
 <HaulersDream.Setting.PickupDelay.Vanilla>バニラ</HaulersDream.Setting.PickupDelay.Vanilla>
+  <HaulersDream.Setting.PickupDelayOnHauling>自動運搬と片付けにもディレイを付ける</HaulersDream.Setting.PickupDelayOnHauling>
+  <HaulersDream.Setting.PickupDelayOnHaulingDesc>入植者が散らばった物品を自動で背包にまとめて運ぶとき、自分の作業産物（床撤去・採掘・収穫）を拾うとき、または一括給油用の燃料を集めるときにも拾得ディレイを表示します。既定ではオフで、片付けは原版と同じ速さのままです。各物品の山で入植者が目に見えて作業するのを好む場合はオンにしてください。</HaulersDream.Setting.PickupDelayOnHaulingDesc>
+  <HaulersDream.Setting.PickupDelayOnLoading>輸送ポッドと駄獣の積載にもディレイを付ける</HaulersDream.Setting.PickupDelayOnLoading>
+  <HaulersDream.Setting.PickupDelayOnLoadingDesc>入植者が輸送ポッド・ポータル・駄獣に積むために物品を背包へまとめるときにも拾得ディレイを表示します。既定ではオフで、積載は原版と同じ速さのままです。各物品の山を手動拾得のように計時したい場合はオンにしてください。</HaulersDream.Setting.PickupDelayOnLoadingDesc>
 <HaulersDream.Setting.HaulOversized>規格外の山を所持品で運ぶ</HaulersDream.Setting.HaulOversized>
 <HaulersDream.Setting.HaulOversizedDesc>単一の山が一抱えで運ぶには大きすぎるとき（例：ポーンが72しか持てないのに鋼鉄の山が75）、ポーンは一部だけを手で運んで残りを置いていくのではなく、所持品でそれを抱え、山全体を1回の往復で届けます。指示・自動の両方の運搬に適用されます。実際に保管庫が受け入れられる分しか運ばないので、何も取り残されません。</HaulersDream.Setting.HaulOversizedDesc>
 <HaulersDream.Setting.SweepNearbyWhileWorking>作業しながら片付ける — 近くの落ちたアイテムも回収する</HaulersDream.Setting.SweepNearbyWhileWorking>

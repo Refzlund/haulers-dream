@@ -1081,13 +1081,18 @@ namespace HaulersDream
             // "Keep X in inventory" is the hold-it sibling of "Pick up X" (pick up to HAUL vs pick up to HOLD).
             keepInInventoryOption = HDSettingsUI.Checkbox(c, "HaulersDream.Setting.KeepInInventory".Translate(),
                 keepInInventoryOption, "HaulersDream.Setting.KeepInInventoryDesc".Translate());
-            // The vanilla-like pickup pause (#121). Spans EVERY HD pickup-into-inventory (bulk sweep, en-route,
-            // self-pickup, "Pick up X" / "Keep X", the ground-sweep half of bulk loading / refueling), so it sits
-            // with the pickup orders but is deliberately NOT gated on the bulkHaul toggle. Steps of 10 so the
-            // vanilla value (120) is easy to land on; the readout names 0 and the exact vanilla point.
+            // The vanilla-like pickup pause (#121). The slider is the MAGNITUDE; by default the delay only paces the
+            // deliberate carry orders ("Pick up X" / "Keep X in inventory"), matching vanilla's own pickup delay,
+            // while automatic hauling and loading stay instant like vanilla. The two checkboxes opt those automatic
+            // families back in. Steps of 10 so the vanilla value (120) is easy to land on; the readout names 0 and
+            // the exact vanilla point.
             pickupDelayTicks = Mathf.RoundToInt(HDSettingsUI.Slider(c, "HaulersDream.Setting.PickupDelay.Lab".Translate(),
                 pickupDelayTicks, 0f, PickupDelayPolicy.SliderMaxTicks, PickupDelayLabel(pickupDelayTicks),
                 "HaulersDream.Setting.PickupDelay.Help".Translate()) / 10f) * 10;
+            pickupDelayOnHauling = HDSettingsUI.Checkbox(c, "HaulersDream.Setting.PickupDelayOnHauling".Translate(),
+                pickupDelayOnHauling, "HaulersDream.Setting.PickupDelayOnHaulingDesc".Translate());
+            pickupDelayOnLoading = HDSettingsUI.Checkbox(c, "HaulersDream.Setting.PickupDelayOnLoading".Translate(),
+                pickupDelayOnLoading, "HaulersDream.Setting.PickupDelayOnLoadingDesc".Translate());
 
             // The "While working" group (sweep-nearby + keep-working-when-full) moved to the Work & yields tab, next
             // to the per-category yield behaviour it governs. "Top up existing stacks" moved to the Unloading tab.

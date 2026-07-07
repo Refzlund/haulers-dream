@@ -151,7 +151,7 @@ namespace HaulersDream
             // deposit phase transfers the whole tagged load at the target in one toil, so this per-stack pause
             // is the flow's only pacing, mirroring where vanilla makes loading cost time (per-stack trips).
             // No fail conditions: a swept stack gone mid-pause is skipped by the take's re-validation.
-            yield return PickupPause.MakeToil(StackInd);
+            yield return PickupPause.MakeToil(StackInd, PickupDelayContext.Loading);
 
             Toil sweepTake = ToilMaker.MakeToil(ToilPrefix + "_SweepTake");
             sweepTake.initAction = delegate

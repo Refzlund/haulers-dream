@@ -1,11 +1,32 @@
 namespace HaulersDream.Core
 {
+    /// <summary>Which kind of "pocket a stack into inventory" a pickup pause is being built for, so the delay
+    /// can match VANILLA's boundary: vanilla delays ONLY the deliberate player "Pick up" / carry order, and
+    /// sweeps every hauled/loaded stack instantly (issue: floor removal debris took as long as a manual pickup).
+    /// The scope toggles opt the two automatic families back into the delay.</summary>
+    public enum PickupDelayContext
+    {
+        /// <summary>A DELIBERATE player order to hold/pocket a specific stack ("Keep X in inventory", "Pick up
+        /// X"): vanilla's own delayed pickup. Always paced by the delay (governed only by the magnitude slider).</summary>
+        ManualCarry,
+
+        /// <summary>AUTOMATIC hauling or sweeping loose stacks into inventory (the bulk-haul sweep, scooping up
+        /// one's own work yields, bulk refuel). Vanilla hauls these instantly, so the pause is opt-in.</summary>
+        AutoHaul,
+
+        /// <summary>Loading stacks into transporters / portals / pack animals. Vanilla loads these instantly, so
+        /// the pause is opt-in (independently of the hauling toggle).</summary>
+        Loading
+    }
+
     /// <summary>
     /// Pure decision logic for the vanilla-like PICKUP PAUSE (issue #121): how many ticks a pawn stands at a
     /// stack, showing a progress bar, before the stack enters its inventory. One knob (ticks per stack), three
     /// shapes: 0 = instant (the pre-feature behavior), <see cref="VanillaDelayTicks"/> = exactly vanilla's
-    /// player "Pick up" order, anything else = custom. No game types, unit-tested headlessly; the game-layer
-    /// <c>PickupPause</c> turns the result into a Wait toil with vanilla's progress bar.
+    /// player "Pick up" order, anything else = custom. A second axis, <see cref="ShouldPause"/>, scopes WHICH
+    /// pickups the delay applies to (default: only the deliberate carry order, matching vanilla). No game types,
+    /// unit-tested headlessly; the game-layer <c>PickupPause</c> turns the result into a Wait toil with vanilla's
+    /// progress bar.
     ///
     /// Vanilla evidence (decompiled 1.6 Assembly-CSharp): <c>JobDriver_TakeInventory.MakeNewToils</c> gates its
     /// wait on <c>job.takeInventoryDelay &gt; 0</c> and shows it via <c>Toils_General.Wait(takeInventoryDelay)</c>
@@ -51,6 +72,30 @@ namespace HaulersDream.Core
             if (configuredTicks <= 0)
                 return 0;
             return configuredTicks > MaxDelayTicks ? MaxDelayTicks : configuredTicks;
+        }
+
+        /// <summary>
+        /// Whether a pickup in the given <paramref name="context"/> should show the pause, given the two opt-in
+        /// scope toggles. <see cref="PickupDelayContext.ManualCarry"/> ALWAYS pauses (it is vanilla's own delayed
+        /// pickup order, so pacing it is the vanilla-faithful default); the two AUTOMATIC families pause only when
+        /// the player opts in, because vanilla sweeps and loads those instantly. Orthogonal to the magnitude:
+        /// <see cref="TicksPerStack"/> still gates everything (a magnitude of 0 skips every pause regardless).
+        /// </summary>
+        /// <param name="context">What kind of pickup this pause is for.</param>
+        /// <param name="delayOnHauling">The <c>pickupDelayOnHauling</c> opt-in: pace automatic hauling / sweeps /
+        /// refuel like a manual pickup.</param>
+        /// <param name="delayOnLoading">The <c>pickupDelayOnLoading</c> opt-in: pace transporter / pack-animal
+        /// loading like a manual pickup.</param>
+        /// <returns>True if the pause toil should be built for this context.</returns>
+        public static bool ShouldPause(PickupDelayContext context, bool delayOnHauling, bool delayOnLoading)
+        {
+            switch (context)
+            {
+                case PickupDelayContext.ManualCarry: return true;
+                case PickupDelayContext.AutoHaul: return delayOnHauling;
+                case PickupDelayContext.Loading: return delayOnLoading;
+                default: return false;
+            }
         }
     }
 }
