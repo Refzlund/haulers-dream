@@ -93,8 +93,9 @@ namespace HaulersDream
     }
 
     /// <summary>
-    /// Item 3+4 (COOK / AllowMix path): make <c>cookSpoilingFirst</c> actually work for cooking.
-    /// EVERY vanilla cooking recipe sets <c>allowMixingIngredients=true</c>, so it flows through
+    /// Item 3+4 (COOK / AllowMix path): make the two opt-in cook keys actually work for cooking, namely
+    /// <c>cookSpoilingFirst</c> (most-perishable first) and <c>cookMostStockFirst</c> (#137, most-stocked
+    /// def first). EVERY vanilla cooking recipe sets <c>allowMixingIngredients=true</c>, so it flows through
     /// <c>TryFindBestBillIngredientsInSet_AllowMix</c> — NOT the NoMix Prefix above. That method's
     /// FIRST statement re-sorts the candidate list with
     /// <c>availableThings.SortBy(valuePerUnit, squaredDistance)</c> and has no <c>alreadySorted</c>
@@ -102,11 +103,11 @@ namespace HaulersDream
     /// that single <c>GenCollection.SortBy&lt;Thing,float,int&gt;</c> call to
     /// <see cref="SpoilingFirst.SortAllowMix"/>, forwarding the SAME receiver list + the SAME two key
     /// selectors and pushing <c>bill</c> + <c>Settings</c>. The vanilla greedy fill loop below it is
-    /// left byte-for-byte intact; only the order it walks changes — and only for cook-food bills with
-    /// the toggle on (else <see cref="SpoilingFirst.SortAllowMix"/> calls vanilla's SortBy verbatim,
-    /// so chemfuel/patchleather/non-cook bills are byte-identical). The butcher NoMix path is
-    /// untouched. Fail-loud: if the IL match ever breaks, Harmony logs and the feature reverts to
-    /// vanilla (a no-op) — never silently wrong.
+    /// left byte-for-byte intact; only the order it walks changes, and only for cook-food bills with a
+    /// cook key on (else <see cref="SpoilingFirst.SortAllowMix"/> calls vanilla's SortBy verbatim,
+    /// so chemfuel/patchleather/non-cook bills, and cooking with both keys off, are byte-identical). The
+    /// butcher NoMix path is untouched. Fail-loud: if the IL match ever breaks, Harmony logs and the
+    /// feature reverts to vanilla (a no-op), never silently wrong.
     /// </summary>
     [HarmonyPatch(typeof(WorkGiver_DoBill), "TryFindBestBillIngredientsInSet_AllowMix")]
     public static class Patch_WorkGiver_DoBill_TryFindBestBillIngredientsInSet_AllowMix

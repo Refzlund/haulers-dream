@@ -835,11 +835,14 @@ namespace HaulersDream
             var bill = job.bill;
             float radiusSq = bill != null ? bill.ingredientSearchRadius * bill.ingredientSearchRadius : float.MaxValue;
             IntVec3 root = Bench?.Position ?? pawn.Position;
-            // Spoiling-first preference among the already-valid candidates, gated on the two toggles. With
-            // both off, cmpOn is false and the pick reduces to the exact original nearest-to-pawn behaviour
-            // (non-food batch bills byte-identical). The spoiling RANK is the new primary key; distance stays
-            // the secondary key (the comparator's index-equivalent tiebreak).
-            bool cmpOn = SpoilingFirst.AnyToggleOn(HaulersDreamMod.Settings);
+            // Spoiling-first / most-stocked-first preference among the already-valid candidates, gated on the
+            // cook toggles. With all off, useCmp is false and the pick reduces to the exact original
+            // nearest-to-pawn behaviour (non-food batch bills byte-identical). applyStock is the #137 stock-desc
+            // primary key and is cook-food only (IsCookBill), so non-food crafts never rank by stock; the
+            // spoiling RANK is the secondary key and distance stays the final tiebreak.
+            var s = HaulersDreamMod.Settings;
+            bool applyStock = s != null && s.cookMostStockFirst && SpoilingFirst.IsCookBill(bill, s);
+            bool useCmp = SpoilingFirst.AnyToggleOn(s) || applyStock;
             Thing best = null;
             int bestDist = int.MaxValue;
             // The candidate def list: NON-mixing = the frozen per-slot plan defs; MIXING = the union of every mix
@@ -876,8 +879,8 @@ namespace HaulersDream
                         continue; // bonus ingredient: cap reach at Some (don't fetch crafting stock from vacuum/fire)
                     int dist = (t.Position - pawn.Position).LengthHorizontalSquared;
                     if (best == null
-                        || (cmpOn ? SpoilingFirst.BetterThan(t, dist, best, bestDist, HaulersDreamMod.Settings)
-                                  : dist < bestDist))
+                        || (useCmp ? SpoilingFirst.CookBetterThan(t, dist, best, bestDist, applyStock, s)
+                                   : dist < bestDist))
                     {
                         bestDist = dist;
                         best = t;
@@ -1087,7 +1090,10 @@ namespace HaulersDream
             if (slots.Count == 0)
                 return false;
 
-            bool spoilingOn = SpoilingFirst.AnyToggleOn(HaulersDreamMod.Settings);
+            var settings = HaulersDreamMod.Settings;
+            bool spoilingOn = SpoilingFirst.AnyToggleOn(settings);
+            // #137 most-stocked-first, cook-food only (IsCookBill) so non-food batch mixes never rank by stock.
+            bool applyStock = settings != null && settings.cookMostStockFirst && SpoilingFirst.IsCookBill(bill, settings);
 
             for (int s = 0; s < slots.Count; s++)
             {
@@ -1123,23 +1129,28 @@ namespace HaulersDream
                     }
                     if (count <= 0)
                         continue;
-                    cands.Add(new MixCand { def = def, vpu = vpu, count = count, rep = rep });
+                    int stock = applyStock ? SpoilingFirst.StockOfDef(def, pawn.Map) : 0;
+                    cands.Add(new MixCand { def = def, vpu = vpu, count = count, rep = rep, stock = stock });
                 }
 
                 if (cands.Count == 0)
                     return false; // no usable stock for this slot in inventory → can't make this rep
 
-                // Order the candidates. Spoiling-first (most-perishable carried stock first) when enabled, then by
-                // value ascending (the vanilla AllowMix key — cheaper food first); else purely value ascending. The
-                // spoiling comparison reuses SpoilingFirst.BetterThan (honours the cook/butcher toggle distinction
-                // and the Fresh/Active gating) on the representative stacks, with no distance tiebreak (dist 0,0).
+                // Order the candidates. #137 most-stocked-first (cook-food only) is the primary key when on, so the
+                // def the colony has the most of is consumed first; then spoiling-first (most-perishable carried
+                // stock first) when enabled; then value ascending (the vanilla AllowMix key, cheaper food first);
+                // else purely value ascending. The spoiling comparison reuses SpoilingFirst.BetterThan (honours the
+                // cook/butcher toggle distinction and the Fresh/Active gating) on the representative stacks, with no
+                // distance tiebreak (dist 0,0).
                 cands.Sort((a, b) =>
                 {
+                    if (applyStock && a.stock != b.stock)
+                        return b.stock.CompareTo(a.stock); // stock descending: use up the surplus def first
                     if (spoilingOn && a.rep != null && b.rep != null)
                     {
                         // BetterThan(x, _, y, _) is "x should rank before y". Translate to a sign for List.Sort.
-                        if (SpoilingFirst.BetterThan(a.rep, 0, b.rep, 0, HaulersDreamMod.Settings)) return -1;
-                        if (SpoilingFirst.BetterThan(b.rep, 0, a.rep, 0, HaulersDreamMod.Settings)) return 1;
+                        if (SpoilingFirst.BetterThan(a.rep, 0, b.rep, 0, settings)) return -1;
+                        if (SpoilingFirst.BetterThan(b.rep, 0, a.rep, 0, settings)) return 1;
                     }
                     int c = a.vpu.CompareTo(b.vpu); // value ascending (vanilla AllowMix order)
                     if (c != 0) return c;
@@ -1190,6 +1201,8 @@ namespace HaulersDream
             public float vpu;
             public int count;
             public Thing rep;
+            // Colony stockpile count of this def, filled only for the most-stocked-first cook path (#137); 0 otherwise.
+            public int stock;
         }
 
         // =======================================================================================================

@@ -119,6 +119,8 @@
 <HaulersDream.Setting.ButcherSpoilingFirstDesc>当殖民者为一项屠宰工单挑选尸体时，会从工单本就允许的尸体中（在其原料搜索范围内）选择最临近腐烂的那具，而不只是最近的那具——这样肉就能在腐烂前回收。只重新排序使用哪具本就合格的尸体；绝不改变配方、搜索范围或工单接受哪些尸体。冷冻的尸体留到最后（它们不会腐烂）。对普通屠宰工单和 Hauler's Dream 批量均适用。默认开启。</HaulersDream.Setting.ButcherSpoilingFirstDesc>
 <HaulersDream.Setting.CookSpoilingFirst>优先用最临近腐烂的食物烹饪</HaulersDream.Setting.CookSpoilingFirst>
 <HaulersDream.Setting.CookSpoilingFirstDesc>当殖民者为一项烹饪工单挑选易腐原料（肉、蔬菜及其他会腐烂的食物——不含尸体）时，会从工单本就允许的原料中（在其原料搜索范围内）选择最临近腐烂的那一堆，而不只是最近的那一堆——这样食物就能在腐烂前被吃掉。只重新排序使用哪份本就合格的原料；绝不改变配方、搜索范围，也不影响非易腐的制作（钢铁、布料等不受影响）。冷冻的食物留到最后。对普通烹饪工单和 Hauler's Dream 批量均适用。默认开启。</HaulersDream.Setting.CookSpoilingFirstDesc>
+  <HaulersDream.Setting.CookMostStockFirst>优先使用库存最多的食材烹饪</HaulersDream.Setting.CookMostStockFirst>
+  <HaulersDream.Setting.CookMostStockFirstDesc>当殖民者为烹饪配方挑选食材时，会优先选择殖民地库存最多的食物，从而消耗过剩物资并保留稀缺食材（无需再手动禁止）。仅调整已符合条件的食材的使用顺序；不会改变配方、搜索半径或配方接受的食材，且仅影响烹饪（布料、皮革、钢铁等制作不受影响）。当同时启用“优先使用最易腐烂的食物”时，本选项优先，因此会先用充足的冷冻农产品而非稀缺的新鲜食物；若你更希望按新鲜度烹饪，请关闭此项。默认关闭。</HaulersDream.Setting.CookMostStockFirstDesc>
 <HaulersDream.Setting.Overload>智能超载：{0}</HaulersDream.Setting.Overload>
 <HaulersDream.Setting.OverloadDesc>小人会超过其最大质量的100%来携带材料以减少往返，但越超载移动越慢——并且只在更少的往返确实值得那点减速时才这么做（对排队的建造/制作工作也是如此）。向左滑＝更轻的减速＋更大的载量，向右＝更重的减速＋更小的载量。</HaulersDream.Setting.OverloadDesc>
 <HaulersDream.Overload.Free>不减速——自由携带</HaulersDream.Overload.Free>

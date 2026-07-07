@@ -272,6 +272,7 @@ namespace HaulersDream
         // candidates the one closest to spoiling (lowest CompRottable.TicksUntilRotAtCurrentTemp) is preferred. ---
         public bool butcherSpoilingFirst = true; // corpses chosen for a butcher bill: most-spoiled first
         public bool cookSpoilingFirst = true;    // rottable non-corpse food chosen for a cook bill: most-spoiled first
+        public bool cookMostStockFirst = false;  // #137 opt-in: cook with the most-stocked food def first (use surplus, preserve scarce)
 
         // --- smart overload (carry past 100% capacity to save trips) ---
         // 0 = no slowdown (carry freely) ... FairLevel = balanced ... OffLevel = never overload.
@@ -661,6 +662,7 @@ namespace HaulersDream
             Scribe_Values.Look(ref haulTamedSlaughter, "haulTamedSlaughter", true);
             Scribe_Values.Look(ref butcherSpoilingFirst, "butcherSpoilingFirst", true);
             Scribe_Values.Look(ref cookSpoilingFirst, "cookSpoilingFirst", true);
+            Scribe_Values.Look(ref cookMostStockFirst, "cookMostStockFirst", false);
             Scribe_Values.Look(ref overloadLevel, "overloadLevel", OverloadTuning.FairLevel);
             Scribe_Values.Look(ref strictCarryWeight, "strictCarryWeight", false);
             Scribe_Values.Look(ref keepWorkingWhenFull, "keepWorkingWhenFull", false);
@@ -841,6 +843,7 @@ namespace HaulersDream
             haulTamedSlaughter = true;
             butcherSpoilingFirst = true;
             cookSpoilingFirst = true;
+            cookMostStockFirst = false;
             overloadLevel = OverloadTuning.FairLevel;
             strictCarryWeight = false;
             keepWorkingWhenFull = false;
