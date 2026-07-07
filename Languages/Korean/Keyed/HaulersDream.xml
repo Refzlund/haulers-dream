@@ -69,9 +69,13 @@
 <HaulersDream.Setting.KeepInInventory>"X 소지품에 보관" 우클릭 명령 추가</HaulersDream.Setting.KeepInInventory>
 <HaulersDream.Setting.KeepInInventoryDesc>운반 가능한 바닥 물건의 우클릭 메뉴에 "X 줍기" 옆에 "X 소지품에 보관" 옵션을 추가합니다. 폰이 클릭한 더미를 자기 소지품에 넣고 계속 지닙니다: Hauler's Dream은 그것을 창고로 운반해 가지 않으며, 사용하지 않는 소지품을 버리는 게임의 일상적인 정리도 그것을 버리지 않습니다. 폰이 물건을 일부러 지니게 하고 싶을 때 사용하세요. 나중에 놓으려면 폰이 그것을 다 쓰게 하거나 장비 탭에서 떨어뜨리게 하세요. 바닐라의 우클릭 옵션에 추가되는 기능입니다.</HaulersDream.Setting.KeepInInventoryDesc>
 <HaulersDream.Setting.PickupDelay.Lab>더미당 줍기 지연</HaulersDream.Setting.PickupDelay.Lab>
-<HaulersDream.Setting.PickupDelay.Help>폰이 각 더미를 소지품에 넣기 전에 그 자리에서 작업하는 시간입니다(바닐라의 줍기 진행 막대가 표시됩니다). Hauler's Dream이 아이템을 소지품에 넣는 모든 곳에 적용됩니다: 대량 운반의 쓸어담기 순회, 이동 중 줍기, 작업 산출물 회수, "X 줍기"와 "X 소지품에 보관" 명령, 그리고 대량 적재와 대량 연료 보급의 바닥 줍기 단계. 120틱(약 2초)은 바닐라 자체의 줍기 명령 지연과 정확히 같습니다. 0 = 즉시(이전 동작).</HaulersDream.Setting.PickupDelay.Help>
+<HaulersDream.Setting.PickupDelay.Help>정착민이 각 더미 앞에서 바닐라의 줍기 진행 막대를 표시하며 작업한 뒤 인벤토리에 넣기까지 걸리는 시간입니다. 기본값에서는 '집기', '인벤토리에 보관' 같은 의도적 명령에만 적용되며, 바닐라 자체의 줍기 지연과 정확히 같습니다. 자동 운반과 적재는 즉시 유지되어, 바닥 철거로 나온 잔해 청소가 바닐라보다 느려지지 않습니다. 아래 두 옵션으로 그것들에도 지연을 줄 수 있습니다. 120틱(약 2초)이 바닐라 값입니다. 0 = 어디서나 즉시.</HaulersDream.Setting.PickupDelay.Help>
 <HaulersDream.Setting.PickupDelay.Instant>즉시</HaulersDream.Setting.PickupDelay.Instant>
 <HaulersDream.Setting.PickupDelay.Vanilla>바닐라</HaulersDream.Setting.PickupDelay.Vanilla>
+  <HaulersDream.Setting.PickupDelayOnHauling>자동 운반과 청소에도 지연 적용</HaulersDream.Setting.PickupDelayOnHauling>
+  <HaulersDream.Setting.PickupDelayOnHaulingDesc>정착민이 흩어진 물건을 자동으로 인벤토리에 쓸어 담아 운반할 때, 자기 작업 산물(바닥 철거·채굴·수확)을 주울 때, 또는 대량 재급유용 연료를 모을 때에도 줍기 지연을 표시합니다. 기본값은 꺼짐으로, 청소가 바닐라만큼 빠르게 유지됩니다. 정착민이 각 더미에서 눈에 띄게 작업하길 원하면 켜세요.</HaulersDream.Setting.PickupDelayOnHaulingDesc>
+  <HaulersDream.Setting.PickupDelayOnLoading>수송정과 짐 나르는 동물 적재에도 지연 적용</HaulersDream.Setting.PickupDelayOnLoading>
+  <HaulersDream.Setting.PickupDelayOnLoadingDesc>정착민이 수송정, 차원문, 짐 나르는 동물에 싣기 위해 물건을 인벤토리에 모을 때에도 줍기 지연을 표시합니다. 기본값은 꺼짐으로, 적재가 바닐라만큼 빠르게 유지됩니다. 각 더미를 수동 줍기처럼 계시하려면 켜세요.</HaulersDream.Setting.PickupDelayOnLoadingDesc>
 <HaulersDream.Setting.HaulOversized>초과 크기 더미를 소지품에 운반</HaulersDream.Setting.HaulOversized>
 <HaulersDream.Setting.HaulOversizedDesc>단일 더미가 한 아름에 담기에 너무 클 때(예: 폰이 72만 들 수 있는데 강철 75개 더미일 때), 폰이 그것을 소지품에 넣어 한 번 이동으로 더미 전체를 전달합니다 — 일부만 손으로 나르고 나머지를 남기는 대신. 명령한 운반과 자동 운반 모두에 적용되며, 저장고가 실제로 받을 수 있는 만큼만 운반하므로 아무것도 방치되지 않습니다.</HaulersDream.Setting.HaulOversizedDesc>
 <HaulersDream.Setting.SweepNearbyWhileWorking>작업하면서 정리 — 주변의 흩어진 물건도 줍기</HaulersDream.Setting.SweepNearbyWhileWorking>

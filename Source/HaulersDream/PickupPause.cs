@@ -48,13 +48,22 @@ namespace HaulersDream
         /// picked up. Anchors the progress bar and the facing; resolved per tick, so a loop driver re-pointing
         /// the slot each pass retargets both for free. An unspawned target (an item inside a container) renders
         /// the bar on the pawn instead, which is the correct visual for standing at the container.</param>
+        /// <param name="context">Which kind of pickup this is, so the delay matches vanilla's boundary: a
+        /// deliberate carry order always paces (vanilla's own delayed pickup), automatic hauling/sweeps and
+        /// transporter/pack-animal loading pace only when the matching opt-in is on (they are instant in vanilla).
+        /// Read once here at build time, so the whole job's pickups share one decision (the flag is stable for the
+        /// job's life) and the toil COUNT never depends on it: an out-of-scope or 0-tick pause is an instant no-op
+        /// label, exactly like the pre-scope 0-tick path, so a save reloaded with a changed setting keeps its
+        /// scribed toil indices.</param>
         /// <returns>The toil to yield between the goto toil and the take toil. Never null.</returns>
-        public static Toil MakeToil(TargetIndex stackInd)
+        public static Toil MakeToil(TargetIndex stackInd, PickupDelayContext context)
         {
             // Null settings mirrors the sibling wait's fallback (JobDriver_UnloadCarrierInBulk: `?? 0`):
             // degrade to the old instant behavior. Unreachable in practice; jobs only run with live settings.
-            int ticks = PickupDelayPolicy.TicksPerStack(HaulersDreamMod.Settings?.pickupDelayTicks ?? 0);
-            if (ticks <= 0)
+            var s = HaulersDreamMod.Settings;
+            int ticks = PickupDelayPolicy.TicksPerStack(s?.pickupDelayTicks ?? 0);
+            if (ticks <= 0 || !PickupDelayPolicy.ShouldPause(context,
+                    s?.pickupDelayOnHauling ?? false, s?.pickupDelayOnLoading ?? false))
                 return Toils_General.Label();
             Toil wait = Toils_General.Wait(ticks, stackInd);
             wait.WithProgressBarToilDelay(stackInd);

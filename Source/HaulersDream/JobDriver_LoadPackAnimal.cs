@@ -119,7 +119,7 @@ namespace HaulersDream
             // Vanilla-like pickup pause (#121): the FILL sweep pockets ground stacks exactly like the bulk-haul
             // sweep, so it paces identically. The DEPOSIT phase (inventory -> carrier) is untouched. No fail
             // conditions: a swept stack gone mid-pause is skipped by the take's re-validation.
-            yield return PickupPause.MakeToil(StackInd);
+            yield return PickupPause.MakeToil(StackInd, PickupDelayContext.Loading);
 
             Toil sweepTake = ToilMaker.MakeToil("HD_Lpa_SweepTake");
             sweepTake.initAction = delegate

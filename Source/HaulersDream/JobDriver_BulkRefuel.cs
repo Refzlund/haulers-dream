@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using HaulersDream.Core;
 using RimWorld;
 using Verse;
 using Verse.AI;
@@ -108,7 +109,7 @@ namespace HaulersDream
             // sweep. (Vanilla refueling's own 240-tick bar sits AT the refuelable; HD's deposit there is one
             // Refuel call, so this per-stack pause is the flow's pickup-side pacing.) No fail conditions: a
             // fuel stack gone mid-pause is skipped by the take's re-validation.
-            yield return PickupPause.MakeToil(FuelInd);
+            yield return PickupPause.MakeToil(FuelInd, PickupDelayContext.AutoHaul);
 
             Toil sweepTake = ToilMaker.MakeToil("HD_Bref_SweepTake");
             sweepTake.initAction = delegate

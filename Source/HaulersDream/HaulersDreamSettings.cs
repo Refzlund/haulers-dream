@@ -149,13 +149,19 @@ namespace HaulersDream
         // ON for discoverability; additive to vanilla's right-click options and shown alongside "Pick up X".
         public bool keepInInventoryOption = true;
         // The vanilla-like pickup pause (#121): ticks a pawn stands at each stack (with vanilla's pickup progress
-        // bar) before the stack enters its inventory, across every HD pickup-into-inventory: the bulk-haul sweep,
-        // en-route pickup, self-pickup of work yields, "Pick up X" / "Keep X in inventory", and the ground-sweep
-        // half of bulk loading / refueling. Default = vanilla's own player "Pick up" delay
+        // bar) before the stack enters its inventory. Default = vanilla's own player "Pick up" delay
         // (FloatMenuOptionProvider_PickUpItem writes Job.takeInventoryDelay = 120 in all three pick-up
         // options, decompile-verified). 0 = instant, the pre-#121 behavior. The effective value is clamped
         // by PickupDelayPolicy.TicksPerStack.
         public int pickupDelayTicks = PickupDelayPolicy.VanillaDelayTicks;
+        // WHERE the pause applies (PickupDelayPolicy.ShouldPause). Vanilla-faithful by default: a deliberate carry
+        // order ("Keep X in inventory" / "Pick up X") always pays the delay like vanilla's own pickup, but the two
+        // AUTOMATIC families are instant unless opted in, because vanilla sweeps and loads those with no pickup
+        // delay (floor-removal debris must not take longer than a vanilla haul). onHauling = the automatic
+        // bulk-haul sweep, self-pickup of work yields, and bulk refuel; onLoading = transporter / portal /
+        // pack-animal loading. Both default OFF; turning both on restores the pre-scope "delay everywhere" feel.
+        public bool pickupDelayOnHauling = false;
+        public bool pickupDelayOnLoading = false;
         // When a single stack is too big to carry in one armful (e.g. 75 steel but the pawn can hold 72), take it
         // in the INVENTORY and deliver the whole stack in one trip, instead of hand-carrying a partial load and
         // leaving the rest behind. Applies to ordered and automatic single-stack hauls alike.
@@ -620,6 +626,8 @@ namespace HaulersDream
             Scribe_Values.Look(ref manualPickupOption, "manualPickupOption", true);
             Scribe_Values.Look(ref keepInInventoryOption, "keepInInventoryOption", true);
             Scribe_Values.Look(ref pickupDelayTicks, "pickupDelayTicks", PickupDelayPolicy.VanillaDelayTicks);
+            Scribe_Values.Look(ref pickupDelayOnHauling, "pickupDelayOnHauling", false);
+            Scribe_Values.Look(ref pickupDelayOnLoading, "pickupDelayOnLoading", false);
             Scribe_Values.Look(ref haulOversizedInInventory, "haulOversizedInInventory", true);
             Scribe_Values.Look(ref sweepNearbyWhileWorking, "sweepNearbyWhileWorking", true);
             Scribe_Values.Look(ref loadPackAnimalBulk, "loadPackAnimalBulk", true);
@@ -801,6 +809,8 @@ namespace HaulersDream
             manualPickupOption = true;
             keepInInventoryOption = true;
             pickupDelayTicks = PickupDelayPolicy.VanillaDelayTicks;
+            pickupDelayOnHauling = false;
+            pickupDelayOnLoading = false;
             haulOversizedInInventory = true;
             sweepNearbyWhileWorking = true;
             loadPackAnimalBulk = true;

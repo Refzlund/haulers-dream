@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using HaulersDream.Core;
 using RimWorld;
 using Verse;
 using Verse.AI;
@@ -47,7 +48,7 @@ namespace HaulersDream
                 // unspawned inside it, so anchoring on ItemInd would render the bar on the pawn; the box is the
                 // thing the pawn visibly works at. Mirrors the goto's fail condition so a box destroyed
                 // mid-pause ends the job promptly instead of finishing a pointless wait.
-                yield return PickupPause.MakeToil(ContainerInd).FailOnDespawnedOrNull(ContainerInd);
+                yield return PickupPause.MakeToil(ContainerInd, PickupDelayContext.ManualCarry).FailOnDespawnedOrNull(ContainerInd);
 
                 Toil extract = ToilMaker.MakeToil("HD_Keep_TakeFromContainer");
                 extract.initAction = delegate
@@ -92,7 +93,7 @@ namespace HaulersDream
             // Vanilla-like pickup pause (#121): a keep order is exactly vanilla's "pick up into inventory"
             // case, so it pays vanilla's exact wait. Mirrors the goto's fail condition (gone = fail promptly;
             // forbidden stays allowed, this is a forced order).
-            yield return PickupPause.MakeToil(ItemInd).FailOnDespawnedOrNull(ItemInd);
+            yield return PickupPause.MakeToil(ItemInd, PickupDelayContext.ManualCarry).FailOnDespawnedOrNull(ItemInd);
 
             Toil take = ToilMaker.MakeToil("HD_Keep_Take");
             take.initAction = delegate
