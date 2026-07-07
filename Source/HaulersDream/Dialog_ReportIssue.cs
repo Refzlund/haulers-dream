@@ -64,6 +64,12 @@ namespace HaulersDream
             absorbInputAroundWindow = true;
             closeOnClickedOutside = false; // don't lose a half-written report on a stray outside click
             draggable = true;
+            // Let Enter start a new line in the description instead of catching it as the window's accept key.
+            // WindowStack.Notify_PressedAccept only steals Return/KeypadEnter from a window whose closeOnAccept is
+            // true (its default), before DoWindowContents runs, so the text area never sees the key. Every vanilla
+            // dialog with a text field turns this off for the same reason; the report is submitted with the Send
+            // button, never Enter, so nothing else depends on the accept key. Escape still closes (closeOnCancel).
+            closeOnAccept = false;
         }
 
         public override Vector2 InitialSize => new Vector2(560f, 560f);

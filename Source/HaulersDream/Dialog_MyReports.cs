@@ -45,6 +45,9 @@ namespace HaulersDream
             absorbInputAroundWindow = true;
             closeOnClickedOutside = false;
             draggable = true;
+            // Let Enter start a new line in the reply box instead of catching it as the window's accept key (the
+            // same reason Dialog_ReportIssue turns this off; a comment is posted with the Send button, not Enter).
+            closeOnAccept = false;
         }
 
         /// <summary>Open straight into one report's thread (used by the main-menu notification click).</summary>
