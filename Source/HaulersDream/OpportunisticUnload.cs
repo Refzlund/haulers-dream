@@ -472,21 +472,15 @@ namespace HaulersDream
             if (!MapGate.ShouldUnloadToStorage(pawn.Map))
                 return PackAnimalLoad.TryGetOpportunisticLoadJob(pawn);
 
-            // At least one tracked stack must be in inventory and reservable, or the job ends
-            // Incompletable instantly and this would re-issue every think cycle (same guard as the
-            // vanilla-unload substitution patch).
-            var inner = pawn.inventory?.innerContainer;
-            if (inner == null)
-                return null;
-            bool anyUnloadable = false;
-            foreach (var t in tracked)
-            {
-                if (t != null && inner.Contains(t) && pawn.CanReserve(t))
-                {
-                    anyUnloadable = true;
-                    break;
-                }
-            }
+            // At least one tracked stack must have SURPLUS above the pawn's keep-stock, or the unload finds
+            // nothing to move (the driver's FirstUnloadableThing skips every keep-stock stack), ends the job,
+            // and this trigger re-issues on every cooldown forever: the pawn paces on a keep-stock-only load
+            // instead of drifting off to leisure (issue #152). Routed through the SAME
+            // PawnUnloadChecker.AnyUnloadable that every OTHER unload trigger and the driver's surplus math use,
+            // so the gate and the driver can never disagree again. This end-of-run path alone re-checked
+            // present-and-reservable WITHOUT the surplus test, so a tracked stack that was entirely personal
+            // food / drugs / inventoryStock / CE loadout slipped the gate and looped.
+            bool anyUnloadable = PawnUnloadChecker.AnyUnloadable(pawn, tracked);
 
             bool alreadyUnloading = pawn.CurJobDef == HaulersDreamDefOf.HaulersDream_UnloadInventory
                                     || PawnUnloadChecker.HasQueuedUnload(pawn);
