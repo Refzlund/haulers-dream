@@ -108,8 +108,11 @@ namespace HaulersDream.Core
         //  identical job at once. The pawn never arrives, so the per-job counter never ticks and no delivery
         //  aside-degrades, and the reported loop paces on with nothing ever counted (confirmed by a report log full
         //  of the haul yet with zero churn-bail lines). This layer counts those whole-job failures PER THING
-        //  across job instances and, once a thing fails too many in quick succession, stamps it into the SAME
-        //  re-offer backoff the per-job layer uses.
+        //  across job instances, and escalates in two steps: once a thing fails too many hauls in quick succession
+        //  HD first ACTIVELY RESCUES it (a directed recovery haul that reserves its destination cell, so no
+        //  competing hauler can invalidate it mid-carry, the exact cause of the loop, see HaulChurnGuard.IsRecovering
+        //  and the HaulToStack patches); only if that reserved-cell haul ALSO keeps failing does it fall back to the
+        //  re-offer backoff the per-job layer uses (the safety net, so a genuinely un-storable item stops pacing).
 
         /// <summary>
         /// How many storage-haul jobs for ONE thing may fail in quick succession (each within
@@ -160,5 +163,59 @@ namespace HaulersDream.Core
         /// <see cref="RecordThingFailure"/>).</param>
         public static bool ShouldBackOffThing(int failCount)
             => failCount >= MaxFailedJobsPerThing;
+
+        /// <summary>
+        /// How many DIRECTED recovery hauls (a haul that reserves its destination cell, so it holds the cell
+        /// exclusively and cannot be invalidated by a competing hauler) a thing may fail before HD gives up on
+        /// actively rescuing it and falls back to the re-offer backoff. A reserved-cell haul behaves exactly like a
+        /// vanilla haul, so it should complete on the first attempt; three is a generous bound that only trips when
+        /// storage is genuinely, persistently unavailable (in which case the backoff safety net takes over).
+        /// </summary>
+        public const int MaxRecoveryAttempts = 3;
+
+        /// <summary>The escalation step to take after a thing's storage haul just failed. Drives the two-stage
+        /// per-thing response: count rapid failures, then actively rescue, then (only if rescue keeps failing) back
+        /// off.</summary>
+        public enum StorageHaulFailureResponse
+        {
+            /// <summary>Still inside the normal rapid-failure window and below the recovery threshold: keep
+            /// tallying, take no special action.</summary>
+            KeepCounting,
+
+            /// <summary>The rapid-failure budget was just reached: switch this thing to directed recovery, so its
+            /// next haul reserves its destination cell and completes instead of oscillating.</summary>
+            StartRecovery,
+
+            /// <summary>A directed recovery haul failed but attempts remain: keep this thing in recovery and let it
+            /// try another reserved-cell haul.</summary>
+            KeepRecovering,
+
+            /// <summary>Directed recovery kept failing (storage is genuinely unavailable): stop actively rescuing
+            /// and fall back to the re-offer backoff so the pointless pacing ends.</summary>
+            GiveUpAndBackOff
+        }
+
+        /// <summary>
+        /// Decide the response to a failed storage haul of a thing, given whether it is already in directed recovery
+        /// and the thing's post-increment counts. When NOT recovering, the thing enters recovery the moment its
+        /// rapid-failure count reaches <see cref="MaxFailedJobsPerThing"/>. When recovering, it keeps trying
+        /// reserved-cell hauls until its recovery attempts reach <see cref="MaxRecoveryAttempts"/>, then falls back
+        /// to the backoff. Pure: the caller supplies the already-updated counts and owns the live state.
+        /// </summary>
+        /// <param name="recovering">Whether the thing is currently in directed recovery.</param>
+        /// <param name="failCount">The thing's rapid-failure count AFTER folding in this failure (used only when
+        /// <paramref name="recovering"/> is false).</param>
+        /// <param name="recoveryAttempts">The thing's recovery-attempt count AFTER incrementing for this failure
+        /// (used only when <paramref name="recovering"/> is true).</param>
+        public static StorageHaulFailureResponse OnStorageHaulFailed(bool recovering, int failCount, int recoveryAttempts)
+        {
+            if (recovering)
+                return recoveryAttempts >= MaxRecoveryAttempts
+                    ? StorageHaulFailureResponse.GiveUpAndBackOff
+                    : StorageHaulFailureResponse.KeepRecovering;
+            return failCount >= MaxFailedJobsPerThing
+                ? StorageHaulFailureResponse.StartRecovery
+                : StorageHaulFailureResponse.KeepCounting;
+        }
     }
 }

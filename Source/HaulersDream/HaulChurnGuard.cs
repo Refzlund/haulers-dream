@@ -78,13 +78,28 @@ namespace HaulersDream
         private static readonly object sync = new object();
         private static readonly Dictionary<int, int> backoffUntil = new Dictionary<int, int>();
 
-        // thingIDNumber -> (tick of the thing's last counted failure, rapid-failure count). A stackable storage
-        // haul that keeps failing BEFORE its placement toil runs (the unreserved destination cell going invalid
-        // mid-walk / mid-carry) never reaches the per-job arrival counter, so this per-thing tally is what stamps
-        // such a thing into backoffUntil once it fails MaxFailedJobsPerThing times in quick succession (#144).
-        // Guarded by the same `sync` lock (both are tiny dictionary ops); cleared on success and on game load.
-        private static readonly Dictionary<int, (int lastFailTick, int failCount)> thingFails
-            = new Dictionary<int, (int lastFailTick, int failCount)>();
+        /// <summary>Per-thing churn state: the rapid-failure tally while counting, plus the directed-recovery flag
+        /// and its attempt count once the thing is being actively rescued.</summary>
+        private struct ThingChurnEntry
+        {
+            /// <summary>Tick of the thing's last counted failure (for the gap-based rapid-failure window).</summary>
+            internal int lastFailTick;
+            /// <summary>Rapid failures counted while the thing is NOT yet in recovery.</summary>
+            internal int failCount;
+            /// <summary>Whether the thing is in directed recovery, so its haul reserves its destination cell.</summary>
+            internal bool recovering;
+            /// <summary>Failed recovery hauls so far (only meaningful while <see cref="recovering"/> is true).</summary>
+            internal int recoveryAttempts;
+        }
+
+        // Per-thing churn state (thingIDNumber -> entry). A stackable storage haul that keeps failing BEFORE its
+        // placement toil runs (the unreserved destination cell going invalid mid-walk / mid-carry) never reaches
+        // the per-job arrival counter, so this per-thing tally is what escalates the response (#144): first count
+        // rapid failures, then flip the thing to directed RECOVERY (its haul reserves its cell, see IsRecovering),
+        // and only if recovery also keeps failing stamp it into backoffUntil. Guarded by the same `sync` lock (all
+        // tiny dictionary ops); an entry is removed on success and on game load.
+        private static readonly Dictionary<int, ThingChurnEntry> thingState
+            = new Dictionary<int, ThingChurnEntry>();
 
         // Reused prune scratch (only ever touched under the lock).
         private static readonly List<int> expiredScratch = new List<int>();
@@ -105,7 +120,7 @@ namespace HaulersDream
             lock (sync)
             {
                 backoffUntil.Clear();
-                thingFails.Clear();
+                thingState.Clear();
             }
             // Loads never interleave with the running sim, so a plain reference swap is race-free here.
             retargetsByJob = new ConditionalWeakTable<Job, Counter>();
@@ -194,12 +209,15 @@ namespace HaulersDream
 
         /// <summary>Record that a stackable storage <see cref="JobDriver_HaulToCell"/> job for
         /// <paramref name="thing"/> ended WITHOUT depositing it (an Incompletable goto/carry storage-invalid fail,
-        /// or the per-job arrival guard's own bail). Folds the failure into the thing's rapid-failure tally; once
-        /// it reaches <see cref="HaulChurnPolicy.MaxFailedJobsPerThing"/> failures in quick succession the thing is
-        /// stamped into the SAME re-offer backoff the per-job layer uses (so the automatic scan stops rebuilding
-        /// the identical doomed job) and its tally resets, giving it a fresh budget after the window. This is the
-        /// layer that bounds the reported loop the arrival guard never sees: the pawn fails before it ever reaches
-        /// the placement toil, so nothing counted the churn.</summary>
+        /// or the per-job arrival guard's own bail). Drives the two-stage per-thing escalation
+        /// (<see cref="HaulChurnPolicy.OnStorageHaulFailed"/>): while COUNTING, folds the failure into the
+        /// rapid-failure tally and, once it reaches <see cref="HaulChurnPolicy.MaxFailedJobsPerThing"/> in quick
+        /// succession, flips the thing to directed RECOVERY (so <see cref="IsRecovering"/> reads true and its next
+        /// haul reserves its destination cell, breaking the loop by construction); while RECOVERING, counts the
+        /// failed recovery hauls and, once they reach <see cref="HaulChurnPolicy.MaxRecoveryAttempts"/> (storage is
+        /// genuinely unavailable), stamps the thing into the re-offer backoff the per-job layer uses so the pointless
+        /// pacing ends. This is the layer that catches the loop the arrival guard never sees: the pawn fails before
+        /// it ever reaches the placement toil, so nothing counted the churn.</summary>
         internal static void NoteThingHaulFailed(Thing thing)
         {
             if (thing == null)
@@ -207,32 +225,70 @@ namespace HaulersDream
             int now = Find.TickManager?.TicksGame ?? 0;
             lock (sync)
             {
-                thingFails.TryGetValue(thing.thingIDNumber, out var state);
-                HaulChurnPolicy.RecordThingFailure(now, state.lastFailTick, state.failCount,
-                    out int newLast, out int newCount);
-                if (HaulChurnPolicy.ShouldBackOffThing(newCount))
+                thingState.TryGetValue(thing.thingIDNumber, out var st);
+                if (st.recovering)
                 {
-                    thingFails.Remove(thing.thingIDNumber);
-                    StampBackoffLocked(thing, now);
-                    HDLog.Dbg($"{thing.LabelShort} failed {newCount} storage hauls in quick succession; "
-                              + "backing it off from the automatic haul scan.");
+                    // A directed reserved-cell recovery haul still failed. Count the attempt; once recovery has
+                    // exhausted its budget the item is treated as genuinely un-storable and handed to the backoff.
+                    int attempts = st.recoveryAttempts + 1;
+                    if (HaulChurnPolicy.OnStorageHaulFailed(true, 0, attempts)
+                        == HaulChurnPolicy.StorageHaulFailureResponse.GiveUpAndBackOff)
+                    {
+                        thingState.Remove(thing.thingIDNumber);
+                        StampBackoffLocked(thing, now);
+                        HDLog.Dbg($"{thing.LabelShort} directed recovery still failed after {attempts} attempt(s); "
+                                  + "falling back to the re-offer backoff.");
+                    }
+                    else
+                    {
+                        st.recoveryAttempts = attempts;
+                        thingState[thing.thingIDNumber] = st;
+                    }
+                    return;
+                }
+
+                // Still counting rapid failures. Fold this one in; at the budget, flip to directed recovery.
+                HaulChurnPolicy.RecordThingFailure(now, st.lastFailTick, st.failCount, out int newLast, out int newCount);
+                if (HaulChurnPolicy.OnStorageHaulFailed(false, newCount, 0)
+                    == HaulChurnPolicy.StorageHaulFailureResponse.StartRecovery)
+                {
+                    thingState[thing.thingIDNumber] =
+                        new ThingChurnEntry { recovering = true, recoveryAttempts = 0, lastFailTick = now };
+                    HDLog.Dbg($"{thing.LabelShort} failed {newCount} storage hauls in quick succession; directing a "
+                              + "reserved-cell recovery haul to break the loop.");
                 }
                 else
                 {
-                    thingFails[thing.thingIDNumber] = (newLast, newCount);
+                    st.lastFailTick = newLast;
+                    st.failCount = newCount;
+                    thingState[thing.thingIDNumber] = st;
                 }
             }
         }
 
-        /// <summary>A stackable storage haul for <paramref name="thing"/> SUCCEEDED (it reached storage): clear
-        /// its rapid-failure tally, the loop is broken. Nothing un-stamps an active backoff, but a stored thing is
-        /// off the floor and the scan will not re-offer it regardless.</summary>
+        /// <summary>A stackable storage haul for <paramref name="thing"/> SUCCEEDED (it reached storage): clear all
+        /// its churn state, the loop is broken (whether it resolved on its own or a directed recovery haul carried
+        /// it home). Nothing un-stamps an active backoff, but a stored thing is off the floor and the scan will not
+        /// re-offer it regardless.</summary>
         internal static void NoteThingHaulSucceeded(Thing thing)
         {
             if (thing == null)
                 return;
             lock (sync)
-                thingFails.Remove(thing.thingIDNumber);
+                thingState.Remove(thing.thingIDNumber);
+        }
+
+        /// <summary>Whether <paramref name="thing"/> is currently in DIRECTED RECOVERY: it looped enough automatic
+        /// hauls that HD is now actively rescuing it, so its storage haul must reserve its destination cell (restoring
+        /// vanilla's one-pawn-per-cell exclusivity) and skip the stack-consolidation cell refinement. Read by the two
+        /// HaulToStack patches at job-build and reservation time. Fast-pathed to no lock when nothing is in churn
+        /// state at all (the overwhelming common case), mirroring <see cref="IsBackedOff"/>.</summary>
+        internal static bool IsRecovering(Thing thing)
+        {
+            if (thing == null || thingState.Count == 0)
+                return false;
+            lock (sync)
+                return thingState.TryGetValue(thing.thingIDNumber, out var st) && st.recovering;
         }
 
         /// <summary>Whether <paramref name="thing"/> is inside its churn backoff window (suppressed from the
@@ -398,16 +454,21 @@ namespace HaulersDream
     /// (the pawn never arrives to place) and no delivery aside-degrades, so nothing stamps the thing off, leaving
     /// a report log full of the haul yet with ZERO churn-bail lines, exactly as the reporter's log shows. This
     /// postfix attaches a finish action to each such job that tallies its outcome per THING across job instances
-    /// (<see cref="HaulChurnGuard.NoteThingHaulFailed"/> / <see cref="HaulChurnGuard.NoteThingHaulSucceeded"/>);
-    /// past the budget the thing rides the same re-offer backoff Layer 1 uses.
+    /// (<see cref="HaulChurnGuard.NoteThingHaulFailed"/> / <see cref="HaulChurnGuard.NoteThingHaulSucceeded"/>),
+    /// which escalates the response: past the budget it flips the thing to directed RECOVERY (its next haul reserves
+    /// its destination cell, so it completes instead of oscillating, see <see cref="HaulChurnGuard.IsRecovering"/>
+    /// and the HaulToStack patches), and only if that reserved-cell haul also keeps failing does it fall back to the
+    /// re-offer backoff Layer 2 uses.
     ///
     /// <para>Scoped to exactly the jobs that can loop this way: an AUTOMATIC (non-player-forced) storage haul of a
     /// STACKABLE thing while HaulToStack is on, the same predicate under which
     /// <see cref="Patch_JobDriver_HaulToCell_NoCellReservation"/> removes the cell reservation. With the feature
     /// off vanilla reserves the cell (which prevents the contention outright), so this stays completely inert.
     /// Player-forced orders never count and bypass the backoff, so an explicit order always works, exactly how
-    /// the reporter un-stuck a looping pawn. Multiplayer: the tally mutates only on the synced job-cleanup path
-    /// and is keyed on thingIDNumber + TicksGame, so every client stamps identically.</para>
+    /// the reporter un-stuck a looping pawn. Directed recovery keeps every other HD feature intact (it is a normal,
+    /// non-forced haul that merely reserves its cell, so en-route pickups and the bulk-haul upgrade still apply).
+    /// Multiplayer: the state mutates only on the synced job-cleanup path and is keyed on thingIDNumber + TicksGame,
+    /// so every client escalates identically.</para>
     /// </summary>
     [HarmonyPatch(typeof(JobDriver_HaulToCell), nameof(JobDriver_HaulToCell.Notify_Starting))]
     public static class Patch_JobDriver_HaulToCell_PerThingChurnGuard
@@ -425,10 +486,10 @@ namespace HaulersDream
                 return; // unstackables keep vanilla's cell reservation (see the no-reserve patch) -> can't loop this way
 
             // Tally this job's outcome per THING when it ends. A success clears the loop; an Incompletable finish
-            // (the goto/carry storage-invalid fails, and Layer 1's own bail) counts toward the per-thing backoff
-            // budget. Other end conditions (a drafted/interrupted pawn) are deliberately ignored: neither a loop
-            // signal nor proof the thing can be stored. The captured `thing` is read only for its thingIDNumber,
-            // so a destroyed/merged stack at finish time is harmless.
+            // (the goto/carry storage-invalid fails, and Layer 1's own bail) drives the per-thing escalation
+            // (count -> directed recovery -> backoff). Other end conditions (a drafted/interrupted pawn) are
+            // deliberately ignored: neither a loop signal nor proof the thing can be stored. The captured `thing` is
+            // read only for its thingIDNumber, so a destroyed/merged stack at finish time is harmless.
             __instance.AddFinishAction(condition =>
             {
                 if (condition == JobCondition.Succeeded)

@@ -58,6 +58,11 @@ namespace HaulersDream
                 return;
             if (t.def.stackLimit <= 1)
                 return; // unstackables have nothing to top up
+            // A thing under directed recovery (issue #144) must take vanilla's plain best cell, which its recovery
+            // job reserves exclusively, NOT the nearest PARTIAL-stack cell contended by other haulers, the very
+            // contention that stranded it. Skip the stack refinement for it (the prefix below reserves the cell).
+            if (HaulChurnGuard.IsRecovering(t))
+                return;
             // No try/catch: a refinement failure is a real bug to surface as a red error, not a silent warning.
             var better = HaulToStack.FindStackCell(t, carrier, map, faction, foundCell);
             if (better.IsValid)
@@ -86,6 +91,11 @@ namespace HaulersDream
             var hauled = job.GetTarget(TargetIndex.A).Thing;
             if (hauled?.def == null || hauled.def.stackLimit <= 1)
                 return true; // vanilla reserves both cell + thing
+            // Directed recovery (issue #144 follow-up): a thing HD is actively rescuing from the pace-and-drop loop
+            // must reserve its destination CELL like vanilla, so no competing hauler can fill and invalidate it
+            // mid-carry (the exact cause of the loop). Fall through to vanilla (reserve both cell + thing) for it.
+            if (HaulChurnGuard.IsRecovering(hauled))
+                return true;
             // Storage haul of a STACKABLE: reserve only the THING being hauled. The destination cell stays
             // unreserved so other haulers can pick (and stack onto) the same cell.
             __result = __instance.pawn.Reserve(job.GetTarget(TargetIndex.A), job, 1, -1, null, errorOnFailed);

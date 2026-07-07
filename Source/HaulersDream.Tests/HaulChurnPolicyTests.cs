@@ -336,5 +336,94 @@ namespace HaulersDream.Tests
             // The gap must span at least one pace-and-drop cycle so a real loop keeps accumulating.
             Assert.That(HaulChurnPolicy.FailGapTicks, Is.GreaterThanOrEqualTo(120));
         }
+
+        // --- directed-recovery escalation (#144 follow-up: rescue first, back off only as a last resort) ---
+
+        [Test]
+        public void BelowBudget_KeepsCounting()
+        {
+            Assert.That(
+                HaulChurnPolicy.OnStorageHaulFailed(recovering: false,
+                    failCount: HaulChurnPolicy.MaxFailedJobsPerThing - 1, recoveryAttempts: 0),
+                Is.EqualTo(HaulChurnPolicy.StorageHaulFailureResponse.KeepCounting));
+        }
+
+        [Test]
+        public void AtBudget_StartsRecovery_NotBackoff()
+        {
+            // The whole point of the follow-up: hitting the rapid-failure budget ACTIVELY rescues the item (a
+            // reserved-cell haul) rather than immediately abandoning it to the backoff.
+            Assert.That(
+                HaulChurnPolicy.OnStorageHaulFailed(recovering: false,
+                    failCount: HaulChurnPolicy.MaxFailedJobsPerThing, recoveryAttempts: 0),
+                Is.EqualTo(HaulChurnPolicy.StorageHaulFailureResponse.StartRecovery));
+        }
+
+        [Test]
+        public void RecoveringWithAttemptsLeft_KeepsRecovering()
+        {
+            Assert.That(
+                HaulChurnPolicy.OnStorageHaulFailed(recovering: true, failCount: 0,
+                    recoveryAttempts: HaulChurnPolicy.MaxRecoveryAttempts - 1),
+                Is.EqualTo(HaulChurnPolicy.StorageHaulFailureResponse.KeepRecovering));
+        }
+
+        [Test]
+        public void RecoveryExhausted_FallsBackToBackoff()
+        {
+            Assert.That(
+                HaulChurnPolicy.OnStorageHaulFailed(recovering: true, failCount: 0,
+                    recoveryAttempts: HaulChurnPolicy.MaxRecoveryAttempts),
+                Is.EqualTo(HaulChurnPolicy.StorageHaulFailureResponse.GiveUpAndBackOff));
+        }
+
+        [Test]
+        public void FullEscalation_CountsThenRescuesThenBacksOff_InThatOrder()
+        {
+            // Drive the whole two-stage machine the way the Verse glue does: rapid failures count up to the budget
+            // (entering recovery on exactly the budget-th), then failed recovery hauls count up to the recovery
+            // budget (backing off on exactly the last attempt), and never the reverse order.
+            int enteredRecoveryAt = -1, backedOffAt = -1;
+
+            // Stage 1: counting -> recovery.
+            int count = 0;
+            for (int failure = 1; failure <= HaulChurnPolicy.MaxFailedJobsPerThing; failure++)
+            {
+                count++; // one rapid failure inside the gap window
+                if (HaulChurnPolicy.OnStorageHaulFailed(false, count, 0)
+                    == HaulChurnPolicy.StorageHaulFailureResponse.StartRecovery)
+                {
+                    enteredRecoveryAt = failure;
+                    break;
+                }
+            }
+
+            // Stage 2: recovery -> backoff.
+            int attempts = 0;
+            for (int r = 1; r <= HaulChurnPolicy.MaxRecoveryAttempts; r++)
+            {
+                attempts++;
+                if (HaulChurnPolicy.OnStorageHaulFailed(true, 0, attempts)
+                    == HaulChurnPolicy.StorageHaulFailureResponse.GiveUpAndBackOff)
+                {
+                    backedOffAt = r;
+                    break;
+                }
+            }
+
+            Assert.That(enteredRecoveryAt, Is.EqualTo(HaulChurnPolicy.MaxFailedJobsPerThing),
+                "recovery starts on exactly the budget-th rapid failure");
+            Assert.That(backedOffAt, Is.EqualTo(HaulChurnPolicy.MaxRecoveryAttempts),
+                "backoff is the last resort, on exactly the final recovery attempt");
+        }
+
+        [Test]
+        public void RecoveryBudget_IsSmallSoRescueIsBriefBeforeTheSafetyNet()
+        {
+            // A reserved-cell haul should complete on the first try; a couple of attempts is a generous bound
+            // before handing a genuinely un-storable item to the backoff, so recovery never itself becomes a loop.
+            Assert.That(HaulChurnPolicy.MaxRecoveryAttempts, Is.GreaterThanOrEqualTo(1));
+            Assert.That(HaulChurnPolicy.MaxRecoveryAttempts, Is.LessThanOrEqualTo(5));
+        }
     }
 }
