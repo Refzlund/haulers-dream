@@ -301,5 +301,112 @@ namespace HaulersDream.Tests
                                         $"Compare diverged from old for ({ak},{at},{ai} | {bk},{bt},{bi})");
                                 }
         }
+
+        // ---- CompareCookRank (#137 opt-in most-stocked-first cook key, spoil rank as the tiebreak) ----
+
+        [Test]
+        public void CompareCookRank_StockOff_ReducesExactlyToSpoilRank()
+        {
+            // The backward-compat proof: with the most-stocked-first key OFF, CompareCookRank must equal
+            // CompareSpoilRank for EVERY input (stock is ignored), so the existing cook path is byte-identical.
+            var kinds = new[] { IngredientSpoilKind.None, IngredientSpoilKind.Corpse, IngredientSpoilKind.Food };
+            var tickVals = new[] { 0, 100, 500, 72000000, SpoilingFirstSelection.NeverRots };
+            var stockVals = new[] { 0, 1, 50, 9999 };
+
+            foreach (var ak in kinds)
+                foreach (var at in tickVals)
+                    foreach (var asg in stockVals)
+                        foreach (var bk in kinds)
+                            foreach (var bt in tickVals)
+                                foreach (var bsg in stockVals)
+                                {
+                                    int expected = SpoilingFirstSelection.CompareSpoilRank(ak, at, bk, bt);
+                                    int actual = SpoilingFirstSelection.CompareCookRank(
+                                        mostStockFirst: false, asg, ak, at, bsg, bk, bt);
+                                    Assert.That(Math.Sign(actual), Is.EqualTo(Math.Sign(expected)),
+                                        $"stock-off diverged from spoil rank for ({asg},{ak},{at} | {bsg},{bk},{bt})");
+                                }
+        }
+
+        [Test]
+        public void CompareCookRank_StockOn_HigherStockFirst()
+        {
+            // Descending stock is the primary key: the def the colony has more of goes first.
+            Assert.That(SpoilingFirstSelection.CompareCookRank(true,
+                500, IngredientSpoilKind.Food, 100, 5, IngredientSpoilKind.Food, 100), Is.LessThan(0));
+            Assert.That(SpoilingFirstSelection.CompareCookRank(true,
+                5, IngredientSpoilKind.Food, 100, 500, IngredientSpoilKind.Food, 100), Is.GreaterThan(0));
+        }
+
+        [Test]
+        public void CompareCookRank_StockOn_HigherStockBeatsMoreSpoiled()
+        {
+            // The headline #137 behaviour: an abundant frozen stack (huge ticks) is used BEFORE a scarce
+            // nearly-rotting stack, because stock outranks spoilage. With the key OFF the same inputs flip
+            // (the more-spoiled one wins), proving the toggle changes the outcome.
+            Assert.That(SpoilingFirstSelection.CompareCookRank(true,
+                500, IngredientSpoilKind.Food, 72000000, 5, IngredientSpoilKind.Food, 100), Is.LessThan(0));
+            Assert.That(SpoilingFirstSelection.CompareCookRank(false,
+                500, IngredientSpoilKind.Food, 72000000, 5, IngredientSpoilKind.Food, 100), Is.GreaterThan(0));
+        }
+
+        [Test]
+        public void CompareCookRank_StockOn_EqualStock_FallsToSpoilRank()
+        {
+            // Among stacks of the SAME abundant def (equal stock), the most-spoiling one still goes first.
+            Assert.That(SpoilingFirstSelection.CompareCookRank(true,
+                500, IngredientSpoilKind.Food, 100, 500, IngredientSpoilKind.Food, 500), Is.LessThan(0));
+            Assert.That(SpoilingFirstSelection.CompareCookRank(true,
+                500, IngredientSpoilKind.Food, 500, 500, IngredientSpoilKind.Food, 100), Is.GreaterThan(0));
+        }
+
+        [Test]
+        public void CompareCookRank_StockOn_EqualStockEqualTicks_ReturnsZero_SoCallerDecides()
+        {
+            // Stock ties AND spoil rank ties -> 0, leaving the AllowMix path's value/distance keys to decide.
+            Assert.That(SpoilingFirstSelection.CompareCookRank(true,
+                42, IngredientSpoilKind.Food, 200, 42, IngredientSpoilKind.Food, 200), Is.EqualTo(0));
+            // Equal stock, both non-eligible -> spoil rank is 0 too, so the whole thing is 0.
+            Assert.That(SpoilingFirstSelection.CompareCookRank(true,
+                7, IngredientSpoilKind.None, 0, 7, IngredientSpoilKind.None, SpoilingFirstSelection.NeverRots),
+                Is.EqualTo(0));
+        }
+
+        [Test]
+        public void CompareCookRank_StockOn_NonEligibleStacksStillRankByStock()
+        {
+            // Even when neither candidate is rottable (e.g. rice vs corn a mixed-veggie meal both accept, both
+            // frozen so None), the stock key still orders them: the more-stocked def is used up first.
+            Assert.That(SpoilingFirstSelection.CompareCookRank(true,
+                800, IngredientSpoilKind.None, SpoilingFirstSelection.NeverRots,
+                50, IngredientSpoilKind.None, SpoilingFirstSelection.NeverRots), Is.LessThan(0));
+        }
+
+        [Test]
+        public void CompareCookRank_Antisymmetry_BothToggleStates()
+        {
+            var reps = new (int stock, IngredientSpoilKind kind, int ticks)[]
+            {
+                (0,   IngredientSpoilKind.None,   SpoilingFirstSelection.NeverRots),
+                (50,  IngredientSpoilKind.Food,   100),
+                (50,  IngredientSpoilKind.Food,   500),
+                (500, IngredientSpoilKind.Corpse, 50),
+                (500, IngredientSpoilKind.Food,   72000000),
+                (999, IngredientSpoilKind.None,   0),
+            };
+            foreach (var stockOn in new[] { false, true })
+                for (int i = 0; i < reps.Length; i++)
+                    for (int j = 0; j < reps.Length; j++)
+                    {
+                        int ab = SpoilingFirstSelection.CompareCookRank(stockOn,
+                            reps[i].stock, reps[i].kind, reps[i].ticks,
+                            reps[j].stock, reps[j].kind, reps[j].ticks);
+                        int ba = SpoilingFirstSelection.CompareCookRank(stockOn,
+                            reps[j].stock, reps[j].kind, reps[j].ticks,
+                            reps[i].stock, reps[i].kind, reps[i].ticks);
+                        Assert.That(Math.Sign(ab), Is.EqualTo(-Math.Sign(ba)),
+                            $"CompareCookRank antisymmetry violated (stockOn={stockOn}) for ({i},{j})");
+                    }
+        }
     }
 }

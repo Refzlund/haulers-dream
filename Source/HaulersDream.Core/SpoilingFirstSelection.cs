@@ -59,5 +59,25 @@ namespace HaulersDream.Core
             int c = CompareSpoilRank(aKind, aTicks, bKind, bTicks);
             return c != 0 ? c : aIndex.CompareTo(bIndex);  // stable tiebreak == vanilla order for the rest
         }
+
+        /// <summary>The COOK-ingredient rank with an optional most-stocked-first PRIMARY key (issue #137,
+        /// the opt-in "use up my surplus, preserve scarce ingredients" behaviour). When
+        /// <paramref name="mostStockFirst"/> is on, the candidate whose def has the higher total colony
+        /// stock is chosen first (descending stock); the spoil rank then breaks stock ties (so among stacks
+        /// of the SAME abundant def the most-spoiling one still goes first). When it is OFF this reduces
+        /// EXACTLY to <see cref="CompareSpoilRank"/>, so the existing cook path is byte-identical.
+        /// Returns 0 only when the stock key is off-or-tied AND the spoil rank ties, leaving the caller's
+        /// vanilla value/distance tiebreak intact.</summary>
+        /// <param name="mostStockFirst">Whether the most-stocked def is preferred first (the #137 toggle).</param>
+        /// <param name="aStock">Candidate a's colony stock of its def (0 when the toggle is off).</param>
+        /// <param name="bStock">Candidate b's colony stock of its def (0 when the toggle is off).</param>
+        public static int CompareCookRank(bool mostStockFirst,
+            int aStock, IngredientSpoilKind aKind, int aTicks,
+            int bStock, IngredientSpoilKind bKind, int bTicks)
+        {
+            if (mostStockFirst && aStock != bStock)
+                return bStock.CompareTo(aStock);  // higher stock first -> the surplus def is used before scarce ones
+            return CompareSpoilRank(aKind, aTicks, bKind, bTicks);
+        }
     }
 }

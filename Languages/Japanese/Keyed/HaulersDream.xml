@@ -119,6 +119,8 @@
 <HaulersDream.Setting.ButcherSpoilingFirstDesc>入植者が解体の作業指示用に死体を選ぶとき、単に最も近いものではなく、最も腐りかけのもの（作業指示がすでに許可した死体の中で、その材料探索半径内）を選びます。そのため肉が傷む前に回収されます。すでに有効な死体のうちどれを使うかの順序を変えるだけで、レシピ・探索半径・作業指示が受け入れる死体を変えることは決してありません。凍った死体は最後に回されます（傷んでいないため）。通常の解体の作業指示とHauler's Dreamのバッチの両方に適用されます。デフォルトはオンです。</HaulersDream.Setting.ButcherSpoilingFirstDesc>
 <HaulersDream.Setting.CookSpoilingFirst>最も傷んだ食料から先に調理する</HaulersDream.Setting.CookSpoilingFirst>
 <HaulersDream.Setting.CookSpoilingFirstDesc>入植者が調理の作業指示用に傷みやすい材料（肉・野菜その他の腐る食料 — 死体は除く）を選ぶとき、単に最も近いものではなく、最も腐りかけの山（作業指示がすでに許可した材料の中で、その材料探索半径内）を選びます。そのため食料が傷む前に食べられます。すでに有効な材料のうちどれを使うかの順序を変えるだけで、レシピ・探索半径や腐らない製作（鋼鉄・布など）を変えることは決してありません。凍った食料は最後に回されます。通常の調理の作業指示とHauler's Dreamのバッチの両方に適用されます。デフォルトはオンです。</HaulersDream.Setting.CookSpoilingFirstDesc>
+  <HaulersDream.Setting.CookMostStockFirst>在庫の最も多い食材から優先して調理する</HaulersDream.Setting.CookMostStockFirst>
+  <HaulersDream.Setting.CookMostStockFirstDesc>入植者が調理作業の食材を選ぶ際、コロニーに最も多くある食料を優先し、余剰を消費して希少な食材を温存します（手動で禁止する必要はありません）。すでに有効な食材の使用順序を並べ替えるだけで、レシピ、探索範囲、作業が受け入れる食材は変更せず、調理のみに影響します（布・革・鋼などの製作には影響しません）。「最も腐りやすい食料から調理する」も有効な場合はこちらが優先され、希少な生鮮食品より豊富な冷凍食材が先に使われます。鮮度を優先して調理したい場合はオフのままにしてください。既定ではオフです。</HaulersDream.Setting.CookMostStockFirstDesc>
 <HaulersDream.Setting.Overload>賢い過積載：{0}</HaulersDream.Setting.Overload>
 <HaulersDream.Setting.OverloadDesc>ポーンは往復を減らすために最大重量の100%を超えて資材を運びますが、過積載が増えるほど移動が遅くなります。そして、より少ない往復が本当に速度低下に見合うときだけそれを行います（予約済みの建築/製作作業も含む）。左にスライドで軽い速度低下＋大きな積載、右で重い速度低下＋小さな積載になります。</HaulersDream.Setting.OverloadDesc>
 <HaulersDream.Overload.Free>速度低下なし — 自由に運ぶ</HaulersDream.Overload.Free>

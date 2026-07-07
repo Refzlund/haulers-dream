@@ -1177,6 +1177,8 @@ namespace HaulersDream
                 butcherSpoilingFirst, "HaulersDream.Setting.ButcherSpoilingFirstDesc".Translate());
             cookSpoilingFirst = HDSettingsUI.Checkbox(c, "HaulersDream.Setting.CookSpoilingFirst".Translate(),
                 cookSpoilingFirst, "HaulersDream.Setting.CookSpoilingFirstDesc".Translate());
+            cookMostStockFirst = HDSettingsUI.Checkbox(c, "HaulersDream.Setting.CookMostStockFirst".Translate(),
+                cookMostStockFirst, "HaulersDream.Setting.CookMostStockFirstDesc".Translate());
 
             HDSettingsUI.Header(c, "HaulersDream.Head.Food".Translate());
             mealsOnWheels = HDSettingsUI.Checkbox(c, "HaulersDream.Setting.MealsOnWheels".Translate(),

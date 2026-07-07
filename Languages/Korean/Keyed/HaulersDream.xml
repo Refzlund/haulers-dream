@@ -119,6 +119,8 @@
 <HaulersDream.Setting.ButcherSpoilingFirstDesc>정착민이 도축 작업 지시에 쓸 시체를 고를 때, 단순히 가장 가까운 것이 아니라(작업 지시가 이미 허용하는 시체 중에서, 그 재료 탐색 반경 내에서) 가장 썩기 직전인 시체를 고릅니다 — 그래서 고기가 상하기 전에 회수됩니다. 이미 유효한 시체 중 어느 것을 쓸지 순서만 바꾸며, 제작법·탐색 반경·작업 지시가 받는 시체는 절대 바꾸지 않습니다. 얼어붙은 시체는 마지막으로 남깁니다(상하지 않으므로). 일반 도축 작업 지시와 Hauler's Dream 일괄 처리 모두에 적용됩니다. 기본 켜짐.</HaulersDream.Setting.ButcherSpoilingFirstDesc>
 <HaulersDream.Setting.CookSpoilingFirst>가장 많이 상한 식량부터 요리</HaulersDream.Setting.CookSpoilingFirst>
 <HaulersDream.Setting.CookSpoilingFirstDesc>정착민이 요리 작업 지시에 쓸 부패성 재료(고기, 채소, 기타 썩는 식량 — 시체 제외)를 고를 때, 단순히 가장 가까운 것이 아니라(작업 지시가 이미 허용하는 재료 중에서, 그 재료 탐색 반경 내에서) 가장 썩기 직전인 더미를 고릅니다 — 그래서 음식이 상하기 전에 먹힙니다. 이미 유효한 재료 중 어느 것을 쓸지 순서만 바꾸며, 제작법·탐색 반경·비부패성 제작(강철, 천 등은 손대지 않음)은 절대 바꾸지 않습니다. 얼어붙은 음식은 마지막으로 남깁니다. 일반 요리 작업 지시와 Hauler's Dream 일괄 처리 모두에 적용됩니다. 기본 켜짐.</HaulersDream.Setting.CookSpoilingFirstDesc>
+  <HaulersDream.Setting.CookMostStockFirst>재고가 가장 많은 재료부터 요리하기</HaulersDream.Setting.CookMostStockFirst>
+  <HaulersDream.Setting.CookMostStockFirstDesc>정착민이 요리 작업의 재료를 고를 때 식민지에 가장 많은 음식을 우선 사용하여 잉여분을 소진하고 부족한 재료를 아낍니다(더 이상 수동으로 금지할 필요 없음). 이미 유효한 재료의 사용 순서만 재배치하며, 조리법·검색 반경·작업이 허용하는 재료는 바꾸지 않고 요리에만 영향을 줍니다(천·가죽·강철 등의 제작은 건드리지 않음). '가장 상하기 쉬운 음식부터 요리하기'도 켜져 있으면 이 옵션이 우선하여, 부족한 신선 식품보다 풍부한 냉동 식자재를 먼저 사용합니다. 신선도 기준으로 요리하려면 꺼 두세요. 기본값은 꺼짐입니다.</HaulersDream.Setting.CookMostStockFirstDesc>
 <HaulersDream.Setting.Overload>스마트 과적: {0}</HaulersDream.Setting.Overload>
 <HaulersDream.Setting.OverloadDesc>폰은 이동을 줄이려고 최대 무게의 100%를 넘어서까지 자재를 운반하지만, 과적할수록 더 느리게 움직입니다 — 그리고 더 적은 이동이 그 속도 저하를 감수할 만할 때만(대기 중인 건설/제작 작업 포함) 그렇게 합니다. 왼쪽으로 밀면 속도 저하가 가벼워지고 적재량이 커지며, 오른쪽으로 밀면 속도 저하가 무거워지고 적재량이 작아집니다.</HaulersDream.Setting.OverloadDesc>
 <HaulersDream.Overload.Free>속도 저하 없음 — 자유롭게 운반</HaulersDream.Overload.Free>
