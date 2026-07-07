@@ -111,9 +111,17 @@ namespace HaulersDream
             // This is the fix for "a cook holding raw food still reads 'missing ingredients'".
             int beforeSelf = outList.Count;
             AddCarrierStacks(worker, worker, bill, outList);
-            var wc = worker.GetComp<CompHauledToInventory>();
-            HDLog.Dbg($"DoBill ingredient-share for {worker} / {bill.recipe?.defName ?? "?"}: " +
-                      $"worker tagged={wc?.PeekHashSet().Count ?? 0}, self-pass added {outList.Count - beforeSelf} stack(s).");
+            // Log only when HD actually contributed a carried ingredient (the actionable signal). The old
+            // unconditional log fired on EVERY DoBill ingredient scan, so an idle surgeon re-scanning a surgery
+            // it cannot yet start drowned the report ring buffer in "added 0 stack(s)" lines (560 of 568 lines in
+            // the #144 report), burying every other diagnostic. The negative case teaches nothing on a hot scan.
+            int selfAdded = outList.Count - beforeSelf;
+            if (selfAdded > 0)
+            {
+                var wc = worker.GetComp<CompHauledToInventory>();
+                HDLog.Dbg($"DoBill ingredient-share for {worker} / {bill.recipe?.defName ?? "?"}: " +
+                          $"worker tagged={wc?.PeekHashSet().Count ?? 0}, self-pass added {selfAdded} stack(s).");
+            }
 
             var pawns = map.mapPawns.SpawnedPawnsInFaction(Faction.OfPlayer);
             for (int i = 0; i < pawns.Count; i++)

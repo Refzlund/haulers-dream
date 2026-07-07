@@ -238,5 +238,103 @@ namespace HaulersDream.Tests
             Assert.That(HaulChurnPolicy.BackoffTicks, Is.GreaterThanOrEqualTo(250));
             Assert.That(HaulChurnPolicy.BackoffTicks, Is.LessThanOrEqualTo(1250));
         }
+
+        // --- per-THING failed-job budget (#144: the loop that fails before the placement toil) -------------
+
+        [Test]
+        public void FirstFailure_StartsTallyAtOne()
+        {
+            HaulChurnPolicy.RecordThingFailure(nowTick: 1000, lastFailTick: 0, priorCount: 0,
+                out int newLast, out int newCount);
+            Assert.That(newCount, Is.EqualTo(1));
+            Assert.That(newLast, Is.EqualTo(1000), "the last-failure tick advances to now");
+        }
+
+        [Test]
+        public void RapidFailure_ExactlyAtTheGap_StillCounts()
+        {
+            // A failure exactly FailGapTicks after the previous one is still the same run (the gap is inclusive).
+            HaulChurnPolicy.RecordThingFailure(nowTick: 1000 + HaulChurnPolicy.FailGapTicks, lastFailTick: 1000,
+                priorCount: 1, out int newLast, out int newCount);
+            Assert.That(newCount, Is.EqualTo(2));
+            Assert.That(newLast, Is.EqualTo(1000 + HaulChurnPolicy.FailGapTicks));
+        }
+
+        [Test]
+        public void IsolatedFailure_PastGap_ResetsToOne()
+        {
+            // The next failure lands more than a gap after the previous one -> a new run, not the same loop.
+            HaulChurnPolicy.RecordThingFailure(nowTick: 1000 + HaulChurnPolicy.FailGapTicks + 1, lastFailTick: 1000,
+                priorCount: 3, out int _, out int newCount);
+            Assert.That(newCount, Is.EqualTo(1));
+        }
+
+        [Test]
+        public void ShouldBackOff_OnlyAtOrPastTheBudget()
+        {
+            Assert.That(HaulChurnPolicy.ShouldBackOffThing(HaulChurnPolicy.MaxFailedJobsPerThing - 1), Is.False);
+            Assert.That(HaulChurnPolicy.ShouldBackOffThing(HaulChurnPolicy.MaxFailedJobsPerThing), Is.True);
+            Assert.That(HaulChurnPolicy.ShouldBackOffThing(HaulChurnPolicy.MaxFailedJobsPerThing + 1), Is.True);
+        }
+
+        [Test]
+        public void SustainedLoop_TripsBackoffExactlyAtTheBudget()
+        {
+            // Reproduce the reported loop: the same pack fails a storage haul every ~200 ticks (inside the gap),
+            // never delivering. Drive the pure policy the way the Verse glue does and prove it backs the thing off
+            // on exactly the MaxFailedJobsPerThing-th failure, and no sooner.
+            const int cadence = 200; // ticks between pace-and-drop cycles, comfortably under FailGapTicks
+            Assert.That(cadence, Is.LessThanOrEqualTo(HaulChurnPolicy.FailGapTicks));
+            int last = 0, count = 0, tick = 10_000;
+            int backedOffAtFailure = -1;
+            for (int failure = 1; failure <= HaulChurnPolicy.MaxFailedJobsPerThing; failure++)
+            {
+                HaulChurnPolicy.RecordThingFailure(tick, last, count, out last, out count);
+                if (HaulChurnPolicy.ShouldBackOffThing(count))
+                {
+                    backedOffAtFailure = failure;
+                    break;
+                }
+                tick += cadence;
+            }
+            Assert.That(backedOffAtFailure, Is.EqualTo(HaulChurnPolicy.MaxFailedJobsPerThing),
+                "the loop must be bounded on exactly the budget-th rapid failure");
+        }
+
+        [Test]
+        public void WellSpacedFailures_NeverTripBackoff()
+        {
+            // A busy colony where the same item legitimately fails a haul now and then, each failure more than a
+            // gap after the last, must NEVER accumulate to a backoff: every failure resets the run to one.
+            int last = 0, count = 0, tick = 10_000;
+            for (int i = 0; i < 20; i++)
+            {
+                HaulChurnPolicy.RecordThingFailure(tick, last, count, out last, out count);
+                Assert.That(count, Is.EqualTo(1), "each well-spaced failure restarts the run");
+                Assert.That(HaulChurnPolicy.ShouldBackOffThing(count), Is.False);
+                tick += HaulChurnPolicy.FailGapTicks + 1; // just past the gap each time
+            }
+        }
+
+        [Test]
+        public void SuccessClearedTally_NextFailureStartsFresh()
+        {
+            // The Verse glue clears the tally on a Succeeded finish; the policy models "no prior" as priorCount 0.
+            // After a success wipes the count, the next failure starts a brand-new run at one.
+            HaulChurnPolicy.RecordThingFailure(nowTick: 10_100, lastFailTick: 10_000, priorCount: 0,
+                out int _, out int newCount);
+            Assert.That(newCount, Is.EqualTo(1));
+        }
+
+        [Test]
+        public void PerThingBudget_IsTightButAboveTransients()
+        {
+            // Four whole-job failures for one item is unambiguously the loop; keep the budget low enough to stop
+            // the pacing quickly, but above a legitimate one-or-two-reroute transient.
+            Assert.That(HaulChurnPolicy.MaxFailedJobsPerThing, Is.GreaterThanOrEqualTo(3));
+            Assert.That(HaulChurnPolicy.MaxFailedJobsPerThing, Is.LessThanOrEqualTo(6));
+            // The gap must span at least one pace-and-drop cycle so a real loop keeps accumulating.
+            Assert.That(HaulChurnPolicy.FailGapTicks, Is.GreaterThanOrEqualTo(120));
+        }
     }
 }

@@ -98,5 +98,67 @@ namespace HaulersDream.Core
         /// <param name="suppressedUntilTick">The stamp produced by <see cref="SuppressUntil"/>.</param>
         public static bool IsSuppressed(int nowTick, int suppressedUntilTick)
             => nowTick < suppressedUntilTick;
+
+        // --- Per-THING failed-job budget (the recurring "still loops" layer, issue #144) -------------------
+        //  The per-JOB budget above only counts failed PLACEMENT ARRIVALS. But a vanilla JobDriver_HaulToCell
+        //  storage haul can fail BEFORE it ever reaches the placement toil: with the destination cell left
+        //  unreserved (HaulToStack), the cell's IsValidStorageFor can flip to false while the pawn is still
+        //  walking to the item (the GotoThing fail-on) or carrying it (CarryHauledThingToCell's fail-on), which
+        //  ends the job Incompletable and drops the stack at the pawn's feet. The work scan then rebuilds an
+        //  identical job at once. The pawn never arrives, so the per-job counter never ticks and no delivery
+        //  aside-degrades, and the reported loop paces on with nothing ever counted (confirmed by a report log full
+        //  of the haul yet with zero churn-bail lines). This layer counts those whole-job failures PER THING
+        //  across job instances and, once a thing fails too many in quick succession, stamps it into the SAME
+        //  re-offer backoff the per-job layer uses.
+
+        /// <summary>
+        /// How many storage-haul jobs for ONE thing may fail in quick succession (each within
+        /// <see cref="FailGapTicks"/> of the previous) before the thing is backed off from the automatic haul
+        /// scan. A legitimate haul does not fail the same thing repeatedly: it either succeeds (which resets
+        /// the tally) or the thing is stored by someone else, so four rapid whole-job failures for one item is
+        /// already the pacing loop, not a transient re-route.
+        /// </summary>
+        public const int MaxFailedJobsPerThing = 4;
+
+        /// <summary>
+        /// The maximum gap (in game ticks) between two consecutive failed storage hauls of the same thing for
+        /// them to still count as the SAME churn run. 300 ticks (5 seconds at normal speed) comfortably spans a
+        /// single pace-and-drop cycle, so a sustained loop keeps accumulating, while an isolated failure whose
+        /// next failure is more than this apart resets the tally to one (it was not a loop). This gap-based
+        /// reset (rather than a fixed window from the first failure) makes the bound robust to a slow loop
+        /// cadence without ever accumulating unrelated, well-spaced failures.
+        /// </summary>
+        public const int FailGapTicks = 300;
+
+        /// <summary>
+        /// Fold one more failed storage haul of a thing into its running tally. Resets the count to one when
+        /// this failure is the first seen (<paramref name="priorCount"/> &lt;= 0) or came more than
+        /// <see cref="FailGapTicks"/> after the previous one (an isolated failure, not a loop); otherwise
+        /// increments it. The last-failure tick is always advanced to now, so the next call measures its gap
+        /// from THIS failure.
+        /// </summary>
+        /// <param name="nowTick">The tick this failure occurred.</param>
+        /// <param name="lastFailTick">The tick of the thing's previous counted failure (ignored when
+        /// <paramref name="priorCount"/> is 0).</param>
+        /// <param name="priorCount">The thing's failure count before this one (0 if none tracked).</param>
+        /// <param name="newLastFailTick">Out: the tick to store as the thing's latest failure (always
+        /// <paramref name="nowTick"/>).</param>
+        /// <param name="newCount">Out: the thing's failure count after folding this failure in.</param>
+        public static void RecordThingFailure(int nowTick, int lastFailTick, int priorCount,
+            out int newLastFailTick, out int newCount)
+        {
+            newLastFailTick = nowTick;
+            newCount = (priorCount <= 0 || nowTick - lastFailTick > FailGapTicks) ? 1 : priorCount + 1;
+        }
+
+        /// <summary>
+        /// Whether a thing that has now failed <paramref name="failCount"/> storage hauls in quick succession
+        /// must be backed off. Reaching (not merely exceeding) the budget bails: the fourth rapid failure is the
+        /// one that stops the loop.
+        /// </summary>
+        /// <param name="failCount">The thing's current rapid-failure count (from
+        /// <see cref="RecordThingFailure"/>).</param>
+        public static bool ShouldBackOffThing(int failCount)
+            => failCount >= MaxFailedJobsPerThing;
     }
 }

@@ -78,6 +78,14 @@ namespace HaulersDream
         private static readonly object sync = new object();
         private static readonly Dictionary<int, int> backoffUntil = new Dictionary<int, int>();
 
+        // thingIDNumber -> (tick of the thing's last counted failure, rapid-failure count). A stackable storage
+        // haul that keeps failing BEFORE its placement toil runs (the unreserved destination cell going invalid
+        // mid-walk / mid-carry) never reaches the per-job arrival counter, so this per-thing tally is what stamps
+        // such a thing into backoffUntil once it fails MaxFailedJobsPerThing times in quick succession (#144).
+        // Guarded by the same `sync` lock (both are tiny dictionary ops); cleared on success and on game load.
+        private static readonly Dictionary<int, (int lastFailTick, int failCount)> thingFails
+            = new Dictionary<int, (int lastFailTick, int failCount)>();
+
         // Reused prune scratch (only ever touched under the lock).
         private static readonly List<int> expiredScratch = new List<int>();
 
@@ -95,7 +103,10 @@ namespace HaulersDream
         internal static void Clear()
         {
             lock (sync)
+            {
                 backoffUntil.Clear();
+                thingFails.Clear();
+            }
             // Loads never interleave with the running sim, so a plain reference swap is race-free here.
             retargetsByJob = new ConditionalWeakTable<Job, Counter>();
         }
@@ -160,20 +171,68 @@ namespace HaulersDream
         {
             if (thing == null)
                 return;
+            lock (sync)
+                StampBackoffLocked(thing, Find.TickManager?.TicksGame ?? 0);
+        }
+
+        /// <summary>The body of <see cref="StampBackoff"/>, assuming the caller ALREADY holds <c>sync</c>, so
+        /// <see cref="NoteThingHaulFailed"/> can stamp within its own locked tally update without re-taking the
+        /// lock or re-reading the tick. Prunes expired stamps, then stamps <paramref name="thing"/>.</summary>
+        private static void StampBackoffLocked(Thing thing, int now)
+        {
+            // Opportunistic prune: drop every expired stamp (the table only ever holds recent churn).
+            expiredScratch.Clear();
+            foreach (var pair in backoffUntil)
+                if (!HaulChurnPolicy.IsSuppressed(now, pair.Value))
+                    expiredScratch.Add(pair.Key);
+            for (int i = 0; i < expiredScratch.Count; i++)
+                backoffUntil.Remove(expiredScratch[i]);
+            expiredScratch.Clear();
+
+            backoffUntil[thing.thingIDNumber] = HaulChurnPolicy.SuppressUntil(now);
+        }
+
+        /// <summary>Record that a stackable storage <see cref="JobDriver_HaulToCell"/> job for
+        /// <paramref name="thing"/> ended WITHOUT depositing it (an Incompletable goto/carry storage-invalid fail,
+        /// or the per-job arrival guard's own bail). Folds the failure into the thing's rapid-failure tally; once
+        /// it reaches <see cref="HaulChurnPolicy.MaxFailedJobsPerThing"/> failures in quick succession the thing is
+        /// stamped into the SAME re-offer backoff the per-job layer uses (so the automatic scan stops rebuilding
+        /// the identical doomed job) and its tally resets, giving it a fresh budget after the window. This is the
+        /// layer that bounds the reported loop the arrival guard never sees: the pawn fails before it ever reaches
+        /// the placement toil, so nothing counted the churn.</summary>
+        internal static void NoteThingHaulFailed(Thing thing)
+        {
+            if (thing == null)
+                return;
             int now = Find.TickManager?.TicksGame ?? 0;
             lock (sync)
             {
-                // Opportunistic prune: drop every expired stamp (the table only ever holds recent churn).
-                expiredScratch.Clear();
-                foreach (var pair in backoffUntil)
-                    if (!HaulChurnPolicy.IsSuppressed(now, pair.Value))
-                        expiredScratch.Add(pair.Key);
-                for (int i = 0; i < expiredScratch.Count; i++)
-                    backoffUntil.Remove(expiredScratch[i]);
-                expiredScratch.Clear();
-
-                backoffUntil[thing.thingIDNumber] = HaulChurnPolicy.SuppressUntil(now);
+                thingFails.TryGetValue(thing.thingIDNumber, out var state);
+                HaulChurnPolicy.RecordThingFailure(now, state.lastFailTick, state.failCount,
+                    out int newLast, out int newCount);
+                if (HaulChurnPolicy.ShouldBackOffThing(newCount))
+                {
+                    thingFails.Remove(thing.thingIDNumber);
+                    StampBackoffLocked(thing, now);
+                    HDLog.Dbg($"{thing.LabelShort} failed {newCount} storage hauls in quick succession; "
+                              + "backing it off from the automatic haul scan.");
+                }
+                else
+                {
+                    thingFails[thing.thingIDNumber] = (newLast, newCount);
+                }
             }
+        }
+
+        /// <summary>A stackable storage haul for <paramref name="thing"/> SUCCEEDED (it reached storage): clear
+        /// its rapid-failure tally, the loop is broken. Nothing un-stamps an active backoff, but a stored thing is
+        /// off the floor and the scan will not re-offer it regardless.</summary>
+        internal static void NoteThingHaulSucceeded(Thing thing)
+        {
+            if (thing == null)
+                return;
+            lock (sync)
+                thingFails.Remove(thing.thingIDNumber);
         }
 
         /// <summary>Whether <paramref name="thing"/> is inside its churn backoff window (suppressed from the
@@ -327,5 +386,62 @@ namespace HaulersDream
             if (HaulChurnGuard.IsBackedOff(t))
                 __result = null; // leave it where it lies; retried automatically once the window passes
         }
+    }
+
+    /// <summary>
+    /// Layer 3, the per-THING failed-job budget (issue #144: the loop that "still" reproduced after Layer 1).
+    /// The reported pacing is a rapid SEQUENCE of vanilla <see cref="JobDriver_HaulToCell"/> storage jobs that
+    /// each fail BEFORE the placement toil runs: with the destination cell unreserved (HaulToStack), the cell's
+    /// <c>IsValidStorageFor</c> flips to false while the pawn walks to the item (vanilla's GotoThing fail-on) or
+    /// carries it (CarryHauledThingToCell's fail-on), ending the job Incompletable and dropping the stack at the
+    /// pawn's feet; the work scan rebuilds an identical job at once. The per-job arrival budget never counts these
+    /// (the pawn never arrives to place) and no delivery aside-degrades, so nothing stamps the thing off, leaving
+    /// a report log full of the haul yet with ZERO churn-bail lines, exactly as the reporter's log shows. This
+    /// postfix attaches a finish action to each such job that tallies its outcome per THING across job instances
+    /// (<see cref="HaulChurnGuard.NoteThingHaulFailed"/> / <see cref="HaulChurnGuard.NoteThingHaulSucceeded"/>);
+    /// past the budget the thing rides the same re-offer backoff Layer 1 uses.
+    ///
+    /// <para>Scoped to exactly the jobs that can loop this way: an AUTOMATIC (non-player-forced) storage haul of a
+    /// STACKABLE thing while HaulToStack is on, the same predicate under which
+    /// <see cref="Patch_JobDriver_HaulToCell_NoCellReservation"/> removes the cell reservation. With the feature
+    /// off vanilla reserves the cell (which prevents the contention outright), so this stays completely inert.
+    /// Player-forced orders never count and bypass the backoff, so an explicit order always works, exactly how
+    /// the reporter un-stuck a looping pawn. Multiplayer: the tally mutates only on the synced job-cleanup path
+    /// and is keyed on thingIDNumber + TicksGame, so every client stamps identically.</para>
+    /// </summary>
+    [HarmonyPatch(typeof(JobDriver_HaulToCell), nameof(JobDriver_HaulToCell.Notify_Starting))]
+    public static class Patch_JobDriver_HaulToCell_PerThingChurnGuard
+    {
+        static void Postfix(JobDriver_HaulToCell __instance)
+        {
+            var settings = HaulersDreamMod.Settings;
+            if (settings == null || !settings.haulToStack)
+                return; // the cell-reservation-skipping feature (the loop's cause) is off -> vanilla reserves the cell
+            var job = __instance.job;
+            if (job == null || job.playerForced || job.haulMode != HaulMode.ToCellStorage)
+                return;
+            var thing = job.GetTarget(TargetIndex.A).Thing;
+            if (thing?.def == null || thing.def.stackLimit <= 1)
+                return; // unstackables keep vanilla's cell reservation (see the no-reserve patch) -> can't loop this way
+
+            // Tally this job's outcome per THING when it ends. A success clears the loop; an Incompletable finish
+            // (the goto/carry storage-invalid fails, and Layer 1's own bail) counts toward the per-thing backoff
+            // budget. Other end conditions (a drafted/interrupted pawn) are deliberately ignored: neither a loop
+            // signal nor proof the thing can be stored. The captured `thing` is read only for its thingIDNumber,
+            // so a destroyed/merged stack at finish time is harmless.
+            __instance.AddFinishAction(condition =>
+            {
+                if (condition == JobCondition.Succeeded)
+                    HaulChurnGuard.NoteThingHaulSucceeded(thing);
+                else if (condition == JobCondition.Incompletable)
+                    HaulChurnGuard.NoteThingHaulFailed(thing);
+            });
+        }
+
+        // Seam guard (fix/mix): a throw in this Notify_Starting postfix would break HaulToCell startup wholesale.
+        // Log it attributably, then rethrow (never swallow).
+        static System.Exception Finalizer(System.Exception __exception)
+            => HDGuard.SeamThrew(__exception, "JobDriver_HaulToCell.Notify_Starting (HD per-thing churn guard)",
+                null, "per-thing churn tally not attached; the per-job arrival guard still applies for this job.");
     }
 }
