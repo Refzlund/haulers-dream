@@ -214,6 +214,13 @@ namespace HaulersDream
             int now = Find.TickManager?.TicksGame ?? 0;
             if (now - comp.lastOpportunisticUnloadTick < DivertCooldownTicks)
                 return false;
+            // Same class of gap #152 fixed on the end-of-run trigger: a tracked stack existing isn't enough,
+            // it must have SURPLUS above the pawn's keep-stock, or the unload this divert builds finds nothing
+            // to move (FirstUnloadableThing skips every keep-stock stack), ends instantly, and, before the
+            // per-job-transition throttle above, this trigger re-ran its expensive search on every subsequent
+            // target. Routed through the SAME PawnUnloadChecker.AnyUnloadable every other unload trigger uses.
+            if (!PawnUnloadChecker.AnyUnloadable(pawn, tracked))
+                return false;
 
             // SETTLE gate for the run-OVER path (mirrors TryGetEndOfRunUnloadJob's settle): the pawn picking ONE
             // non-yield job does NOT mean its yield run is over. In a busy colony the work scan constantly hands a
@@ -261,6 +268,19 @@ namespace HaulersDream
                     loadFraction, now - comp.lastOpportunisticUnloadTick >= DivertCooldownTicks,
                     tracked.Count, cap > 0f))
                 return false;
+
+            // Claim the cooldown the MOMENT the expensive search below is about to run, whether it ends up
+            // finding a divert or not (issue #160-class hitch). A pawn on a continuing yield run (harvesting a
+            // zone, mining/deconstructing through many adjacent targets) re-enters this check on EVERY job
+            // transition, once per target; once its load crosses MinLoadFraction, the pre-gate above passes on
+            // every single one of those transitions, so without this stamp TryFindBestBetterStoreCellFor
+            // (below) reran on every plant/vein/wall for the whole run, with no backoff, for every pawn doing it
+            // at once: a real per-tick cost, not just a logic hiccup, and the reported "colonists standing"
+            // stutter scales with both the target count and the number of simultaneous harvesters. Stamping
+            // here (not only on an ACCEPTED divert, which is all NotifyDiverted covered before) bounds the
+            // search to once per DivertCooldownTicks per pawn regardless of the outcome, matching this field's
+            // own documented purpose ("prevents a divert loop"), just extended to a REJECTED attempt too.
+            comp.lastOpportunisticUnloadTick = now;
 
             // The storage we'd unload to. Pick a STORABLE tracked item as the storage-cell representative: keying
             // off an arbitrary first item meant an un-storable one (e.g. a rock chunk, which no default stockpile
@@ -345,6 +365,11 @@ namespace HaulersDream
             int now = Find.TickManager?.TicksGame ?? 0;
             if (now - comp.lastOpportunisticUnloadTick < DivertCooldownTicks)
                 return false; // a recent (possibly failed) divert — don't loop
+            // Same class of gap #152 fixed on the end-of-run trigger (see ShouldDivert above): a tracked stack
+            // existing isn't enough, it must have surplus above keep-stock, or this rule keeps re-checking (and
+            // re-running the expensive search below) an overloaded pawn whose whole pack is personal stock.
+            if (!PawnUnloadChecker.AnyUnloadable(pawn, comp.PeekHashSet()))
+                return false;
 
             // Is the pawn actually overloaded right now (paying the move-speed drag)? Mirror StatPart_Overload's
             // signal: encumbrance ratio > 1 -> the overload speed factor is < 1. The rule only pays off then.
@@ -370,6 +395,12 @@ namespace HaulersDream
             }
             if (!target.IsValid)
                 return false;
+
+            // Claim the cooldown before the expensive search below, win or lose, same reasoning as ShouldDivert
+            // (issue #160-class hitch): a pawn that STAYS overloaded through many consecutive yield targets would
+            // otherwise re-run TryFindBestBetterStoreCellFor on every single one, with no backoff, for as long as
+            // it keeps failing the KeepWorkingPolicy distance math.
+            comp.lastOpportunisticUnloadTick = now;
 
             // The storage we'd unload to — the nearest accepting cell for any STORABLE tracked stack (same
             // representative-pick as ShouldDivert: an un-storable rock chunk must not suppress the whole rule).

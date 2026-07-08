@@ -35,6 +35,29 @@ namespace HaulersDream
         private int loadIndex;
         private bool loadedAnything;
 
+        // The loop-reentry toil, kept so a pathing failure can jump back to it instead of ending the whole
+        // job (see Notify_PatherFailed below). Assigned once in MakeNewToils, same convention as
+        // JobDriver_SelfPickup's loop field.
+        private Toil loadDecideToil;
+
+        /// <summary>
+        /// A mid-walk pathing failure to ONE swept stack must not cost the pawn the whole sweep (issue #160,
+        /// same fix as JobDriver_SelfPickup): the chain can include stacks queued minutes earlier, and by the
+        /// time an older one is walked to, another pawn or a freshly-placed stack in the same busy work area
+        /// can have transiently blocked its only approach, a race no reachability check taken at plan time can
+        /// foresee. The vanilla default (JobDriver.Notify_PatherFailed) ends the job as ErroredPather, and
+        /// Pawn_JobTracker.EndCurrentJob's response to that condition is a hardcoded, uninterruptible 250-tick
+        /// JobDefOf.Wait (decompile-verified) that a freshly queued job can't preempt. Advancing loadIndex and
+        /// jumping back to loadDecide mirrors exactly what loadDecide/loadGoto/take already do for every OTHER
+        /// invalid-stack case (despawned, forbidden, claimed): skip this one step, keep walking the rest of
+        /// the chain, flush whatever loaded at the end regardless.
+        /// </summary>
+        public override void Notify_PatherFailed()
+        {
+            loadIndex++;
+            JumpToToil(loadDecideToil);
+        }
+
         // MP determinism: reused snapshot of the tagged set for the step-1 fold in DepositSwept, so absorbers are
         // visited in a client-stable thingIDNumber order. [ThreadStatic] + lazy-init matches this assembly's
         // hook-reachable scratch convention; cleared at use, never trusted empty / never aliased into job state.
@@ -85,6 +108,7 @@ namespace HaulersDream
             Toil end = Toils_General.Label();
 
             Toil loadDecide = ToilMaker.MakeToil("HD_Bulk_LoadDecide");
+            loadDecideToil = loadDecide;
             loadDecide.initAction = delegate
             {
                 var queue = job.targetQueueB;
@@ -149,13 +173,19 @@ namespace HaulersDream
             // shows for a player "Pick up" order, paid once per swept stack (between arrival and the take,
             // inside the decide->goto->take jump loop). Deliberately NO fail conditions: a stack sniped or
             // forbidden mid-pause must SKIP (the take re-validates and advances), never fail the whole sweep.
-            // Scope (PickupDelayPolicy.ShouldPause): a DELIBERATE player order (playerForced: "Pick up X",
-            // "Haul everything nearby") paces like vanilla's own pickup; the AUTOMATIC sweep and the en-route
-            // grab (playerForced false) are a haul vanilla does instantly, so they pace only when the player opts
-            // hauling into the delay. playerForced is stable for the job's life, so deciding the context once here
-            // is sound.
+            //
+            // Scope (PickupDelayPolicy.ShouldPause), corrected from playerForced (issue #159/#156): this ONE
+            // driver services several player orders with different vanilla equivalents: "Pick up X" mimics
+            // vanilla's delayed TakeInventory order, but "Prioritize hauling" (including a shift-queued 2nd
+            // order taking over the sweep) and "Haul everything nearby" mimic vanilla's HaulToCell, which is
+            // NEVER paced. All of them set job.playerForced = true (it just means "the player ordered this"),
+            // so that flag can't tell a carry-into-inventory order from a haul-to-storage one, and using it here
+            // wrongly paced the two storage-bound orders. job.takeInventoryDelay is vanilla's OWN field for
+            // exactly "this job takes something into inventory with a delay" (BuildPickUpJob is the only
+            // builder that sets it, mirroring vanilla's own "Pick up" float-menu write), so it identifies ONLY
+            // that order regardless of playerForced. Read once here; the field never changes for the job's life.
             yield return PickupPause.MakeToil(StackInd,
-                job.playerForced ? PickupDelayContext.ManualCarry : PickupDelayContext.AutoHaul);
+                job.takeInventoryDelay > 0 ? PickupDelayContext.ManualCarry : PickupDelayContext.AutoHaul);
 
             Toil take = ToilMaker.MakeToil("HD_Bulk_Take");
             take.initAction = delegate

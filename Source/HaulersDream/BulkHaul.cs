@@ -102,10 +102,13 @@ namespace HaulersDream
         // The cached Job plus the loadID it carried at insert. JobMaker.ReturnToPool → Job.Clear() sets
         // loadID = -1 and MakeJob assigns a fresh UniqueIDsManager id (decompile-verified), so a same-tick
         // pool-recycled instance — even one reused for an identically-shaped job — can never validate.
+        // jobState is the forced-probe freshness token (see JobStateSignature), unused (0) for automatic
+        // entries, which stay fresh purely by the per-tick clear below.
         private struct CachedPlan
         {
             public Job job;
             public int loadID;
+            public int jobState;
         }
 
         // Self-register the per-session plan-cache clear so the game-load hygiene sweep can never forget it (see
@@ -175,16 +178,28 @@ namespace HaulersDream
             // build with nothing else nearby (oversized-in-inventory, secondTasked takeover).
             if (!forced && !HasPotentialBulkWork(pawn, primary, vanillaJob))
                 return null;
-            // The memo is keyed on TicksGame, which FREEZES while paused — but forced probes (the float
-            // menu builds its options, and the click re-calls JobOnThing) run while paused. A cached null
-            // rejection ("no second order queued yet") taken early in a pause would then be served after
-            // the player queues the first order later in the SAME pause, turning the advertised "order a
-            // second haul nearby" flow into a single haul. So for forced probes while paused, bypass the
-            // memo entirely (neither read nor write) — every paused right-click re-plans fresh. Automatic
-            // probes don't run while paused (the work scan is tick-driven), so they keep the memo.
-            bool bypassMemo = forced && (Find.TickManager?.Paused ?? false);
-            if (bypassMemo)
-                return BuildBulkJob(pawn, primary, vanillaJob, forced);
+            // The memo is keyed on TicksGame, which FREEZES while paused, and a forced probe (the float
+            // menu's hover preview calls HasJobOnThing then JobOnThing again to build the option; clicking
+            // it calls JobOnThing once more; re-opening the menu or re-clicking while still deciding does
+            // it all again) re-enters this many times a second while paused, for the SAME pawn and primary,
+            // with nothing about the world actually changed between calls. The previous fix bypassed the
+            // memo entirely for forced-while-paused to avoid a narrower bug (a cached "no second order yet"
+            // rejection outliving the player queuing that second order later in the same pause), but that
+            // made every one of those repeat probes redo the full pool + snowball + per-stack storage-search
+            // build from scratch, hundreds of times within a couple of real seconds. That is the ~10-second
+            // "Standing" freeze still reported after the earlier fix (issue #160): the debug log shows this
+            // exact pattern, a single paused ordering interaction producing 300-900+ identical rebuilds for
+            // one pawn, and it compounds with several pawns/orders happening at once.
+            //
+            // Fix: while paused, still serve the cache, but gate a forced entry's freshness on this pawn's
+            // JOB STATE (JobStateSignature) instead of the frozen tick. SecondTaskedNearby (the only thing a
+            // forced plan's outcome depends on beyond the primary itself) reads only this pawn's current job
+            // and job queue, and neither can change without either a tick advancing (already covered by the
+            // per-tick clear) or a new/replaced job appearing on this pawn (which the signature catches:
+            // queueing bumps the queue length, a takeover/interrupt swaps in a new current-job loadID). So a
+            // genuinely new situation still rebuilds fresh, the exact correctness the old bypass protected,
+            // while a repeated probe with nothing queued in between now hits the cache instead of paying the
+            // full cost again.
             int tick = Find.TickManager?.TicksGame ?? -1;
             var cache = planCache ?? (planCache = new Dictionary<long, CachedPlan>());
             if (tick != cacheTick)
@@ -195,7 +210,8 @@ namespace HaulersDream
             long key = ((long)pawn.thingIDNumber << 32) | (uint)primary.thingIDNumber;
             if (forced)
                 key = ~key; // forced and automatic plans differ (the trigger) — separate cache lines
-            if (cache.TryGetValue(key, out var cached))
+            int jobState = forced ? JobStateSignature(pawn) : 0;
+            if (cache.TryGetValue(key, out var cached) && (!forced || cached.jobState == jobState))
             {
                 // The cache holds LIVE Job instances, and vanilla's JobMaker.ReturnToPool can recycle one
                 // same-tick: the stored loadID is the proof of identity (Clear() resets it to -1, MakeJob
@@ -207,11 +223,23 @@ namespace HaulersDream
                     && cached.job.def == HaulersDreamDefOf.HaulersDream_BulkHaul
                     && cached.job.targetA.Thing == primary)
                     return cached.job;
-                cache.Remove(key);
             }
             var plan = BuildBulkJob(pawn, primary, vanillaJob, forced);
-            cache[key] = new CachedPlan { job = plan, loadID = plan?.loadID ?? -1 };
+            cache[key] = new CachedPlan { job = plan, loadID = plan?.loadID ?? -1, jobState = jobState };
             return plan;
+        }
+
+        /// <summary>The forced-plan cache-freshness token for <paramref name="pawn"/>: its current job's loadID
+        /// combined with its queued-job count. Everything <see cref="SecondTaskedNearby"/> reads (the current
+        /// job and the job queue) can only change via a new/replaced job on this pawn or a tick advancing, and a
+        /// new/replaced job always moves one of these two numbers, so an unchanged signature means an unchanged
+        /// answer for any other primary sharing this pawn, see the memo comment in <see cref="TryBuildBulkJob"/>.
+        /// </summary>
+        private static int JobStateSignature(Pawn pawn)
+        {
+            int curLoadId = pawn.CurJob?.loadID ?? -1;
+            int queueCount = pawn.jobs?.jobQueue?.Count ?? 0;
+            return unchecked(curLoadId * 397 ^ queueCount);
         }
 
         /// <summary>Drop every cached plan and reset the tick stamp. Called on game load (FinalizeInit):
@@ -628,6 +656,13 @@ namespace HaulersDream
             job.targetQueueB = new List<LocalTargetInfo> { clicked };
             job.countQueue = new List<int> { take };
             job.count = 1;
+            // Mark this AS a genuine "take into inventory" order: vanilla's own field for exactly that concept
+            // (its "Pick up" float-menu writes the same 120, per PickupDelayPolicy.VanillaDelayTicks), never read
+            // by this driver's OWN toils otherwise. JobDriver_BulkHaul reads it back to decide the pickup-pause
+            // context (issue #159/#156): unlike playerForced (true for EVERY player order this driver ever runs,
+            // including "Prioritize hauling"/"Haul everything nearby", which vanilla hauls to storage instantly),
+            // this field is set ONLY here, so it can't be confused with a storage-bound sweep.
+            job.takeInventoryDelay = PickupDelayPolicy.VanillaDelayTicks;
             return job;
         }
 
