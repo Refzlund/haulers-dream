@@ -16,11 +16,35 @@ namespace HaulersDream
     {
         public override bool TryMakePreToilReservations(bool errorOnFailed) => true;
 
+        // The loop toil, kept so a pathing failure can jump back to it instead of ending the whole job (see
+        // Notify_PatherFailed below).
+        private Toil loop;
+
+        /// <summary>
+        /// A mid-walk pathing failure to ONE pending drop must not cost the pawn the WHOLE scoop run (issue
+        /// #160): this job pops through a queue accumulated over an entire work run, and by the time an older
+        /// entry is walked to, another pawn or a freshly-dropped stack in the same busy work area can have
+        /// transiently blocked its only approach a plain reachability check at pop time can't foresee (the
+        /// TakeNextValidPending reachability gate only rules out a target that's ALREADY unreachable when
+        /// queued; a race with several other self-picking colonists in the same field is a live, moving
+        /// target). The vanilla default (JobDriver.Notify_PatherFailed) ends the job as ErroredPather, and
+        /// Pawn_JobTracker.EndCurrentJob's response to that condition is a hardcoded, uninterruptible 250-tick
+        /// JobDefOf.Wait (decompile-verified) that a freshly queued job can't preempt: exactly the reported
+        /// "colonists standing 'Wait' for ~10 seconds", compounding once per stuck target and once per pawn.
+        /// The failed target was already popped out of pendingSelfPickups (TakeNextValidPending), so it's
+        /// already left for normal hauling; jumping back to the loop just tries the next one, mirroring how
+        /// the loop toil already skips a target that despawned mid-walk.
+        /// </summary>
+        public override void Notify_PatherFailed()
+        {
+            JumpToToil(loop);
+        }
+
         public override IEnumerable<Toil> MakeNewToils()
         {
             var comp = pawn.TryGetComp<CompHauledToInventory>();
 
-            var loop = new Toil
+            loop = new Toil
             {
                 initAction = () =>
                 {

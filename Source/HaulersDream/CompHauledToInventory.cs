@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using HaulersDream.Core;
 using RimWorld;
 using Verse;
+using Verse.AI;
 
 namespace HaulersDream
 {
@@ -265,11 +266,27 @@ namespace HaulersDream
 
         /// <summary>The next still-valid pending drop this pawn can scoop, or null. Prunes invalid ones:
         /// despawned/destroyed, on another map (a pawn that changed maps must not walk foreign coords or
-        /// scoop across maps), or forbidden (the player forbade it, or vanilla forbade a yield it never
-        /// credited to a player pawn — e.g. a mineable finished off by an explosion).</summary>
+        /// scoop across maps), forbidden (the player forbade it, or vanilla forbade a yield it never
+        /// credited to a player pawn, e.g. a mineable finished off by an explosion), or genuinely
+        /// UNREACHABLE (issue #160: this queue is filled over a whole work run, from the producer's own drops
+        /// via RecordSelfPickup, which never checks reachability because the item is always right where the
+        /// pawn just worked, plus the area-cleanup sweep's nearby loose stacks; by the time an OLDER entry is
+        /// walked to, a later-dropped stack, another pawn, or a newly-grown plant can have sealed off its only
+        /// approach). JobDriver_SelfPickup's goto toil has no custom fail handler, so walking toward an
+        /// unreachable target lets vanilla's own pathing failure end the job as Errored, and vanilla's
+        /// Pawn_JobTracker.EndCurrentJob response to an Errored/ErroredPather condition is a hardcoded,
+        /// uninterruptible 250-tick JobDefOf.Wait (decompile-verified): a freshly EnqueueFirst'd self-pickup
+        /// just sits queued behind it, since EnqueueFirst never preempts a job already running, only
+        /// ThinkNode_QueuedJob's own next determination does. Repeating for however many pending stacks are
+        /// similarly stuck is exactly the reported "colonists standing 'Wait' for ~10 seconds, worse with more
+        /// colonists". Checked with the SAME PawnCanAutomaticallyHaulFast every sibling picker (BulkHaul's
+        /// snowball, the area-cleanup sweep) already gates on, so an entry that would have been skipped there
+        /// is never even queued into the sweep in the first place; this is the one intake path (a producer's
+        /// own fresh drop) that never had that check.</summary>
         public Thing TakeNextValidPending()
         {
             var pawn = parent as Pawn;
+            int skippedUnreachable = 0;
             while (pendingSelfPickups.Count > 0)
             {
                 var t = pendingSelfPickups[pendingSelfPickups.Count - 1];
@@ -278,11 +295,21 @@ namespace HaulersDream
                 // now only reachable across vacuum/fire). Cap reach at Some here too: a popped-but-unreachable
                 // entry is discarded (left for normal hauling), never walked to — so the producer never sends a
                 // suit-less pawn into space to scoop its own drop. Self-heals existing saves.
-                if (t != null && t.Spawned && !t.Destroyed
-                    && pawn != null && t.MapHeld == pawn.Map && !t.IsForbidden(pawn)
-                    && ExtraSweepReach.Allows(pawn, t))
-                    return t;
+                if (t == null || !t.Spawned || t.Destroyed
+                    || pawn == null || t.MapHeld != pawn.Map || t.IsForbidden(pawn)
+                    || !ExtraSweepReach.Allows(pawn, t))
+                    continue;
+                if (!HaulAIUtility.PawnCanAutomaticallyHaulFast(pawn, t, forced: false))
+                {
+                    skippedUnreachable++;
+                    continue; // leave it on the ground for normal hauling; never walk into a pathing failure
+                }
+                if (skippedUnreachable > 0)
+                    HDLog.Dbg($"{pawn} self-pickup: skipped {skippedUnreachable} unreachable pending drop(s).");
+                return t;
             }
+            if (skippedUnreachable > 0)
+                HDLog.Dbg($"{pawn} self-pickup: skipped {skippedUnreachable} unreachable pending drop(s); queue now empty.");
             return null;
         }
 

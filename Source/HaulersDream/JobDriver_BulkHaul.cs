@@ -35,6 +35,29 @@ namespace HaulersDream
         private int loadIndex;
         private bool loadedAnything;
 
+        // The loop-reentry toil, kept so a pathing failure can jump back to it instead of ending the whole
+        // job (see Notify_PatherFailed below). Assigned once in MakeNewToils, same convention as
+        // JobDriver_SelfPickup's loop field.
+        private Toil loadDecideToil;
+
+        /// <summary>
+        /// A mid-walk pathing failure to ONE swept stack must not cost the pawn the whole sweep (issue #160,
+        /// same fix as JobDriver_SelfPickup): the chain can include stacks queued minutes earlier, and by the
+        /// time an older one is walked to, another pawn or a freshly-placed stack in the same busy work area
+        /// can have transiently blocked its only approach, a race no reachability check taken at plan time can
+        /// foresee. The vanilla default (JobDriver.Notify_PatherFailed) ends the job as ErroredPather, and
+        /// Pawn_JobTracker.EndCurrentJob's response to that condition is a hardcoded, uninterruptible 250-tick
+        /// JobDefOf.Wait (decompile-verified) that a freshly queued job can't preempt. Advancing loadIndex and
+        /// jumping back to loadDecide mirrors exactly what loadDecide/loadGoto/take already do for every OTHER
+        /// invalid-stack case (despawned, forbidden, claimed): skip this one step, keep walking the rest of
+        /// the chain, flush whatever loaded at the end regardless.
+        /// </summary>
+        public override void Notify_PatherFailed()
+        {
+            loadIndex++;
+            JumpToToil(loadDecideToil);
+        }
+
         // MP determinism: reused snapshot of the tagged set for the step-1 fold in DepositSwept, so absorbers are
         // visited in a client-stable thingIDNumber order. [ThreadStatic] + lazy-init matches this assembly's
         // hook-reachable scratch convention; cleared at use, never trusted empty / never aliased into job state.
@@ -85,6 +108,7 @@ namespace HaulersDream
             Toil end = Toils_General.Label();
 
             Toil loadDecide = ToilMaker.MakeToil("HD_Bulk_LoadDecide");
+            loadDecideToil = loadDecide;
             loadDecide.initAction = delegate
             {
                 var queue = job.targetQueueB;
