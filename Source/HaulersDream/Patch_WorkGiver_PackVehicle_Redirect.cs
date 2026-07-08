@@ -89,7 +89,20 @@ namespace HaulersDream
             // there is no claimable HD work for this pawn (ineligible, or every manifest unit already claimed by other
             // bulk haulers). Only when this passes do we pay TransportLoad.TryGiveBulkJob's pool build + nearest-scan.
             if (!TransportLoad.HasPotentialBulkWork(pawn, adapter))
-                return; // no claimable bulk work -> leave VF's single-stack job
+            {
+                // issue #164: same fully-covered guard as the transporter/portal paths. VF's own pack job has no
+                // visibility into HD's in-flight claims, so when every remaining manifest unit is already covered by
+                // other pawns' live claims (not yet delivered), VF would hand this pawn a REDUNDANT single-stack haul
+                // on top. Null the result so VF's workgiver sees no work here, the same way the transporter/portal
+                // prefixes suppress vanilla's own HasJob. A released claim (interrupted hauler) re-opens the gate next
+                // scan cycle, so this is never a permanent block.
+                if (HaulersDreamGameComponent.Instance?.LoadFullyClaimedByOthers(adapter) ?? false)
+                {
+                    __result = null;
+                    return;
+                }
+                return; // no claimable bulk work (ineligible / nothing to sweep) -> leave VF's single-stack job
+            }
             var bulk = TransportLoad.TryGiveBulkJob(pawn, adapter);
             if (bulk != null)
                 __result = bulk; // upgrade to a one-trip bulk load; if HD builds none, VF's single-stack stands
