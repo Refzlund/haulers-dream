@@ -289,5 +289,37 @@ namespace HaulersDream.Core
                     return true;
             return false;
         }
+
+        /// <summary>
+        /// True when something is still needed AND every remaining unit of it is already covered by SOME pawn's
+        /// live claim (regardless of which pawn): there is no leftover slice nobody has claimed yet.
+        /// Independent of any particular asker, unlike <see cref="AvailableToClaim"/>/<see cref="HasWork"/> (which
+        /// exclude the asker's own claim so a re-plan is stable): this answers "is the remaining manifest fully
+        /// spoken for by the colony's in-flight haulers", the question a vanilla-fallback gate needs before handing
+        /// a pawn a job vanilla's own claim-unaware logic would otherwise duplicate (issue #164: vanilla's own
+        /// loader only ever looks at its own leftToLoad want-vs-delivered count, which does not shrink until a
+        /// claimed unit is physically DEPOSITED, so as long as HD's live claims cover 100% of what is still
+        /// undelivered, letting a further pawn fall through to vanilla's own check would issue genuinely redundant
+        /// hauling on top of what other pawns are already carrying, over-filling the destination once everyone
+        /// delivers). Returns false when nothing is needed at all (the manifest is simply done, not "claimed").
+        /// </summary>
+        public static bool FullyClaimed(
+            IReadOnlyDictionary<TDef, int> totalNeeded,
+            IReadOnlyDictionary<TDef, int> totalClaimed)
+        {
+            if (totalNeeded == null)
+                return false;
+            bool anyNeeded = false;
+            foreach (var kv in totalNeeded)
+            {
+                if (kv.Value <= 0)
+                    continue;
+                anyNeeded = true;
+                int claimed = totalClaimed != null && totalClaimed.TryGetValue(kv.Key, out int c) ? c : 0;
+                if (claimed < kv.Value)
+                    return false; // this def still has an unclaimed remainder
+            }
+            return anyNeeded;
+        }
     }
 }

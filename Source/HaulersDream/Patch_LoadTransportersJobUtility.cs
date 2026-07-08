@@ -35,7 +35,21 @@ namespace HaulersDream
             // valid target that ends the same tick and re-fires forever (the "10 jobs in one tick" loop). So
             // TryGiveBulkJob — the SAME authoritative build the JobOn prefix runs — is the source of truth here too.
             if (!TransportLoad.HasPotentialBulkWork(pawn, adapter))
+            {
+                // issue #164: HD has no NEW work for this pawn: either it's ineligible, the manifest is done, or
+                // (the reported case) every remaining unit is already claimed by OTHER pawns who are still mid-trip
+                // (not yet delivered). Vanilla's own HasJobOnTransporter only tracks physical deliveries, so it
+                // would still see "steel still wanted" and hand this pawn a REDUNDANT haul on top of what's already
+                // in flight, over-filling the group once everyone delivers. Only suppress vanilla in that specific
+                // fully-covered case; a genuinely ineligible pawn or a done manifest falls through unchanged (vanilla
+                // would find nothing either way there).
+                if (HaulersDreamGameComponent.Instance?.LoadFullyClaimedByOthers(adapter) ?? false)
+                {
+                    __result = false;
+                    return false;
+                }
                 return true; // HD has no work (not eligible / nothing claimable) -> let vanilla try
+            }
             var job = TransportLoad.TryGiveBulkJob(pawn, adapter); // side-effect-free (claim happens later in the driver) -> safe to build speculatively
             if (job == null)
                 return true; // nothing HD can actually build -> let vanilla decide (its HasJob self-checks FindThingToLoad), no asymmetric loop
@@ -59,7 +73,13 @@ namespace HaulersDream
                 return true;
             var job = TransportLoad.TryGiveBulkJob(p, adapter);
             if (job == null)
+            {
+                // Same fully-covered guard as HasJob's prefix (issue #164): a menu click or a re-scan can reach
+                // JobOn directly without a fresh HasJob check in between, so this must stand on its own too.
+                if (HaulersDreamGameComponent.Instance?.LoadFullyClaimedByOthers(adapter) ?? false)
+                    return false; // already fully covered by other pawns' in-flight claims -> don't let vanilla duplicate
                 return true; // HD couldn't build a job -> fall through to vanilla single-item load
+            }
             __result = job;
             return false;
         }

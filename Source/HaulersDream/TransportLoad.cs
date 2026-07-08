@@ -137,6 +137,49 @@ namespace HaulersDream
             return false;
         }
 
+        /// <summary>
+        /// Mass of HD-tagged surplus cargo the pawn ALREADY carries that is STRANDED with respect to
+        /// <paramref name="loadable"/>: a def its manifest does not want AT ALL (not even the def-only fallback
+        /// tier), left over from an interrupted bulk-load of a DIFFERENT target (a forced job redirect, or any
+        /// other mid-sweep interrupt). Such cargo can never be shed by THIS job's own deposit loop (the per-family
+        /// <c>DepositOne</c> no-ops when no member wants the def at all), so counting it toward the smart-overload
+        /// ceiling here would shrink every future plan's carry room around dead weight this job can do nothing
+        /// about, down to as little as one stack forever (issue #167/#168: a pawn redirected mid-sweep to load a
+        /// DIFFERENT transporter/portal never uses its real carry capacity again). The stranded cargo still rides
+        /// along physically (the live overload speed penalty, computed elsewhere from actual carried mass, is
+        /// unaffected by this) and sheds via HD's normal opportunistic unload the next time the pawn goes idle;
+        /// this only stops a fresh plan from phantom-shrinking around it in the meantime.
+        /// </summary>
+        private static float StrandedSurplusMass(Pawn pawn, IManagedLoadable loadable)
+        {
+            var comp = pawn?.GetComp<CompHauledToInventory>();
+            var inner = pawn?.inventory?.innerContainer;
+            if (comp == null || inner == null || loadable == null)
+                return 0f;
+            var manifest = loadable.GetTransferables();
+            if (manifest == null || manifest.Count == 0)
+                return 0f;
+            float stranded = 0f;
+            // PeekHashSet (read-only): this feeds a planning-only budget, not a real deposit decision. GetHashSet
+            // would mutate (CE re-notify / tag-age sync), which a speculative probe (this whole method is reachable
+            // from a menu-hover build) must never trigger.
+            foreach (var t in comp.PeekHashSet())
+            {
+                if (t == null || t.Destroyed || t.def == null || !inner.Contains(t))
+                    continue;
+                int surplus = InventorySurplus.SurplusOf(pawn, t);
+                if (surplus <= 0)
+                    continue; // personal kit stays with the pawn either way
+                // Same 3-tier match the deposit path itself uses to decide "does ANY member want this at all":
+                // if nothing here wants it even loosely, this job's deposit loop will never touch it.
+                var match = TransferableUtility.TransferableMatchingDesperate(t, manifest, TransferAsOneMode.PodsOrCaravanPacking);
+                if (match != null && match.CountToTransfer > 0)
+                    continue; // wanted here → not stranded, counts toward the ceiling normally
+                stranded += surplus * t.GetStatValue(StatDefOf.Mass);
+            }
+            return stranded;
+        }
+
         private static bool HasPotentialBulkWork(Pawn pawn, IManagedLoadable loadable, bool featureEnabled)
         {
             if (!featureEnabled || loadable == null)
@@ -279,10 +322,29 @@ namespace HaulersDream
             float maxCap = CarryCapacity.Of(pawn);
             float baseCap = CarryMath.EffectiveCapacity(maxCap, s.carryLimitFraction);
             float ceiling = BulkHaulPolicy.CeilingKg(s.overloadLevel, OverloadGate.NoOverloadFor(pawn, s), baseCap);
-            float running = MassUtility.GearAndInventoryMass(pawn);
+            // Exclude stranded cargo (issue #167/#168) so a redirected pawn's fresh plan sizes against its REAL
+            // available room instead of phantom-shrinking around dead weight this job can never deposit anyway.
+            float realMass = MassUtility.GearAndInventoryMass(pawn);
+            float strandedMass = StrandedSurplusMass(pawn, loadable);
+            float running = Math.Max(0f, realMass - strandedMass);
             float bulkRoom = CECompat.AvailableBulk(pawn);
 
-            float pawnFree = float.IsPositiveInfinity(ceiling) ? float.MaxValue : Math.Max(0f, ceiling - running);
+            // The stranded-mass exclusion frees PLANNING room (so the sweep doesn't phantom-shrink around dead weight),
+            // but the pawn STILL physically carries that cargo — it has NOT freed any real room. Cap pawnFree to the
+            // REAL physical free room so the sweep never queues more mass than the pawn can hold. Without this cap,
+            // a pawn at/over the ceiling with stranded cargo (running < ceiling but realMass >= ceiling) would get a
+            // plan with stacks the runtime driver rejects (sweepDecide checks GearAndInventoryMass < ceiling) → the
+            // job no-op loops 64 passes → Incompletable → re-issue forever — a livelock regression (review finding).
+            float pawnFree;
+            if (float.IsPositiveInfinity(ceiling))
+                pawnFree = float.MaxValue;
+            else
+            {
+                pawnFree = Math.Max(0f, ceiling - running);
+                float realFree = Math.Max(0f, ceiling - realMass);
+                if (pawnFree > realFree)
+                    pawnFree = realFree;
+            }
             float tripMass = TransportLoadPlan.TripMassBudget(pawnFree,
                 loadable.GetMassCapacity(), loadable.GetMassUsage(), loadable.HasMassCap);
             float massLeft = tripMass; // shrinks as stacks are committed (destination + pawn mass headroom)
@@ -410,6 +472,15 @@ namespace HaulersDream
             if (map?.mapPawns == null || loadable == null)
                 return 0;
             var claims = entry?.pawnClaims;
+            // TEMP/QUEST MAP EXTENSION (issue #167a): on the home colony an ordinary free hauler is deliberately
+            // NOT counted below (see IsBoardingPassengerFor's cheapest-reject-first branch): it has a colony of
+            // other work and no board gate holds it here, so dividing for one that may never come would shrink
+            // every REAL co-loader's share for nothing. That reasoning does not hold on a non-home map (a raided/
+            // looted site, an event map): everyone spawned there is normally present specifically to gather this
+            // and leave, so a free hauler who could ALSO claim this exact task RIGHT NOW is a genuine co-loader,
+            // not a maybe, reusing the same live gate the asker itself passed (HasPotentialBulkWork) rather than
+            // guessing from "idle" alone.
+            bool countFreeHaulersToo = !map.IsPlayerHome;
             var spawned = map.mapPawns.AllPawnsSpawned;
             int count = 0;
             for (int i = 0; i < spawned.Count; i++)
@@ -417,18 +488,33 @@ namespace HaulersDream
                 var p = spawned[i];
                 if (p == null || p == asker)
                     continue;
-                // Cheapest reject first: most spawned pawns hold no boarding duty at all.
-                if (!IsBoardingPassengerFor(p, loadable))
-                    continue;
-                if (p.Downed || p.Drafted || p.InMentalState)
-                    continue; // won't run its load duty right now
-                if (p.health?.capacities == null || !p.health.capacities.CapableOf(PawnCapacityDefOf.Manipulation))
-                    continue; // vanilla's HasJobOnPortal/loading gate: no manipulation, no hauling
-                if (p.GetComp<CompHauledToInventory>() == null || p.inventory == null)
-                    continue; // can't run the bulk driver at all
                 if (claims != null && claims.ContainsKey(p))
                     continue; // already carries its slice (excluded from `claimable` too)
-                count++;
+                if (IsBoardingPassengerFor(p, loadable))
+                {
+                    if (p.Downed || p.Drafted || p.InMentalState)
+                        continue; // won't run its load duty right now
+                    if (p.health?.capacities == null || !p.health.capacities.CapableOf(PawnCapacityDefOf.Manipulation))
+                        continue; // vanilla's HasJobOnPortal/loading gate: no manipulation, no hauling
+                    if (p.GetComp<CompHauledToInventory>() == null || p.inventory == null)
+                        continue; // can't run the bulk driver at all
+                    count++;
+                    continue;
+                }
+                if (countFreeHaulersToo && HasPotentialBulkWork(p, loadable))
+                {
+                    // Same health/comp gates the boarding branch applies above (review finding): a downed casualty
+                    // on a raiding-camp temp map passes HasPotentialBulkWork (it only checks Drafted, not Downed or
+                    // InMentalState), but it can never actually run the job. Counting it would inflate the divisor
+                    // and shrink every active hauler's fair-share slice for nothing.
+                    if (p.Downed || p.InMentalState)
+                        continue;
+                    if (p.health?.capacities == null || !p.health.capacities.CapableOf(PawnCapacityDefOf.Manipulation))
+                        continue;
+                    if (p.GetComp<CompHauledToInventory>() == null || p.inventory == null)
+                        continue;
+                    count++;
+                }
             }
             return count;
         }

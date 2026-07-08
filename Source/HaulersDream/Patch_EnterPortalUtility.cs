@@ -36,7 +36,17 @@ namespace HaulersDream
             // the same tick and re-fires forever (the "10 jobs in one tick" loop). So TryGiveBulkJob — the SAME
             // authoritative build the JobOn prefix runs — is the source of truth here too.
             if (!TransportLoad.HasPotentialBulkWorkPortal(pawn, adapter))
+            {
+                // issue #164: same fully-covered guard as the transporter path. Vanilla's own HasJobOnPortal only
+                // tracks physical deliveries, so it would hand this pawn a REDUNDANT haul on top of what other
+                // pawns are already carrying (not yet delivered) toward this same portal.
+                if (HaulersDreamGameComponent.Instance?.LoadFullyClaimedByOthers(adapter) ?? false)
+                {
+                    __result = false;
+                    return false;
+                }
                 return true; // HD has no work (not eligible / nothing claimable) -> let vanilla try
+            }
             var job = TransportLoad.TryGiveBulkJob(pawn, adapter); // side-effect-free (claim happens later in the driver) -> safe to build speculatively
             if (job == null)
                 return true; // nothing HD can actually build -> let vanilla decide (its HasJob self-checks FindThingToLoad), no asymmetric loop
@@ -60,7 +70,13 @@ namespace HaulersDream
                 return true;
             var job = TransportLoad.TryGiveBulkJob(p, adapter);
             if (job == null)
+            {
+                // Same fully-covered guard as HasJob's prefix (issue #164): a menu click or a re-scan can reach
+                // JobOn directly without a fresh HasJob check in between, so this must stand on its own too.
+                if (HaulersDreamGameComponent.Instance?.LoadFullyClaimedByOthers(adapter) ?? false)
+                    return false; // already fully covered by other pawns' in-flight claims -> don't let vanilla duplicate
                 return true; // HD couldn't build a job -> fall through to vanilla single-item load
+            }
             __result = job;
             return false;
         }
