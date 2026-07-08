@@ -170,6 +170,19 @@ namespace HaulersDream
         public bool LoadAnyClaimsInProgress(int taskId)
             => loadTasks.TryGetValue(taskId, out var entry) && entry != null && entry.AnyClaimed();
 
+        /// <summary>True when the loadable still needs something AND every remaining unit is already covered by
+        /// SOME live pawn claim (see <see cref="LoadLedgerEntry.FullyClaimed"/>). Used to stop a vanilla-fallback
+        /// gate (issue #164) from handing a further pawn a job that would duplicate cargo other pawns are already
+        /// carrying toward this same loadable but haven't delivered yet (vanilla's own loader only tracks physical
+        /// deliveries, so it can't see an HD claim as "already spoken for").</summary>
+        public bool LoadFullyClaimedByOthers(IManagedLoadable loadable)
+        {
+            if (loadable == null)
+                return false;
+            return BucketFor(loadable).TryGetValue(loadable.GetUniqueLoadID(), out var entry) && entry != null
+                   && entry.FullyClaimed();
+        }
+
         /// <summary>Drop every ledger entry tied to a removed map (clears its Pawn/Map refs, so an orphaned entry
         /// can't keep <c>AnyClaimsInProgress</c> true and block boarding forever).</summary>
         public void Notify_LoadMapRemoved(Map map)

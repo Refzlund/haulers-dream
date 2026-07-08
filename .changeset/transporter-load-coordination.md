@@ -1,0 +1,13 @@
+---
+"haulers-dream": patch
+---
+
+Fix several bulk-loading bugs affecting transport pods and map portals when several colonists load them at once, or when a colonist's job gets redirected mid-load.
+
+The first bug caused a transport pod told to load a large quantity of something (say 300 steel) to end up overfilled and unable to launch, needing a manual reselect. Once several colonists had already claimed enough between them to cover the order, a further idle colonist could still fall back to vanilla's own loading logic, which has no idea HD's colonists were already carrying the rest of it over. That colonist would then haul in even more, past what was actually needed. Colonists no longer fall back to vanilla's loader while every remaining unit is already accounted for by others still mid-trip.
+
+The second bug showed up after forcing a colonist already loading one transport pod to load a different one instead (or, less directly, after any other job interruption mid-load): that colonist would keep hauling only one small stack per trip afterward, never using its full carry capacity again, until you cancelled the load order and re-issued it. Whatever it was still carrying from the interrupted load, but that the new destination didn't want at all, was quietly counted against its carry limit forever, since nothing else ever prompted it to put that leftover away. Planning a new load now looks past that leftover cargo instead of treating it as permanent dead weight.
+
+The third bug affected loading a shuttle on a temporary map (a raided camp, an event site): the first colonist to respond could claim the entire order for itself, leaving the rest to wander with nothing to do or fall back to slow one-stack-at-a-time hauling. On a temporary map, where everyone present is normally there specifically to load up and leave, colonists now divide a large order between each other the same way they already do when everyone is boarding the same shuttle.
+
+A fourth report, about the wrong specific xenogerm or genepack sometimes getting loaded when several near-identical ones are available, turned out to be a limitation in the base game's own item-matching that sits upstream of anything Hauler's Dream controls, so it isn't something this fix could address.

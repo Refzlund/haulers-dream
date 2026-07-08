@@ -49,6 +49,9 @@ namespace HaulersDream
         public bool AnyClaimed()
             => LoadLedger<ThingDef, Pawn>.AnyClaimed(totalClaimed);
 
+        public bool FullyClaimed()
+            => LoadLedger<ThingDef, Pawn>.FullyClaimed(totalNeeded, totalClaimed);
+
         public void ApplyClaim(Pawn pawn, IReadOnlyDictionary<ThingDef, int> newPlan)
             => LoadLedger<ThingDef, Pawn>.ApplyClaim(totalClaimed, pawnClaims, pawn, newPlan);
 

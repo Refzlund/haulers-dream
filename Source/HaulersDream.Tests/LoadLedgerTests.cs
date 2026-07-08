@@ -251,5 +251,82 @@ namespace HaulersDream.Tests
             Assert.That(pawnClaims.Count, Is.EqualTo(0));
             AssertInvariant(totalClaimed, pawnClaims);
         }
+
+        // --- FullyClaimed (issue #164: the vanilla-fallback guard) ---
+
+        [Test]
+        public void FullyClaimed_NothingNeeded_IsFalse()
+        {
+            // A done manifest is not "fully claimed": there's simply nothing left to talk about.
+            var needed = new Dictionary<string, int>();
+            var claimed = new Dictionary<string, int>();
+            Assert.That(LoadLedger<string, int>.FullyClaimed(needed, claimed), Is.False);
+        }
+
+        [Test]
+        public void FullyClaimed_NeededButUnclaimed_IsFalse()
+        {
+            var needed = Need(("steel", 100));
+            var claimed = new Dictionary<string, int>();
+            Assert.That(LoadLedger<string, int>.FullyClaimed(needed, claimed), Is.False);
+        }
+
+        [Test]
+        public void FullyClaimed_PartiallyClaimed_IsFalse()
+        {
+            // 60 of 100 claimed, 40 units still have nobody hauling them.
+            var needed = Need(("steel", 100));
+            var claimed = Need(("steel", 60));
+            Assert.That(LoadLedger<string, int>.FullyClaimed(needed, claimed), Is.False);
+        }
+
+        [Test]
+        public void FullyClaimed_ExactlyCovered_IsTrue()
+        {
+            var needed = Need(("steel", 100));
+            var claimed = Need(("steel", 100));
+            Assert.That(LoadLedger<string, int>.FullyClaimed(needed, claimed), Is.True);
+        }
+
+        [Test]
+        public void FullyClaimed_CoveredAcrossSeveralPawnsClaims_IsTrue()
+        {
+            // The claim total doesn't care WHO holds it: 60 + 40 covers the same 100 as one pawn holding it all.
+            var totalClaimed = new Dictionary<string, int>();
+            var pawnClaims = new Dictionary<int, Dictionary<string, int>>();
+            LoadLedger<string, int>.ApplyClaim(totalClaimed, pawnClaims, 1, Need(("steel", 60)));
+            LoadLedger<string, int>.ApplyClaim(totalClaimed, pawnClaims, 2, Need(("steel", 40)));
+            var needed = Need(("steel", 100));
+            Assert.That(LoadLedger<string, int>.FullyClaimed(needed, totalClaimed), Is.True);
+        }
+
+        [Test]
+        public void FullyClaimed_OverClaimed_IsStillTrue()
+        {
+            // An opportunistic over-claim (shouldn't normally happen, but the guard must not choke on it).
+            var needed = Need(("steel", 100));
+            var claimed = Need(("steel", 120));
+            Assert.That(LoadLedger<string, int>.FullyClaimed(needed, claimed), Is.True);
+        }
+
+        [Test]
+        public void FullyClaimed_OneOfTwoDefsUncovered_IsFalse()
+        {
+            // Steel fully claimed, but wood still has an unclaimed remainder: the manifest as a WHOLE is not
+            // fully covered, so a vanilla fallback should still be allowed to pick up the wood.
+            var needed = Need(("steel", 100), ("wood", 30));
+            var claimed = Need(("steel", 100), ("wood", 10));
+            Assert.That(LoadLedger<string, int>.FullyClaimed(needed, claimed), Is.False);
+        }
+
+        [Test]
+        public void FullyClaimed_UnclaimableDefLeftover_IsFalse()
+        {
+            // A def HD structurally never claims (e.g. a corpse it always leaves to vanilla) keeps a permanent
+            // needed>claimed gap for that def; the guard must correctly still let vanilla try for it.
+            var needed = Need(("steel", 100), ("corpse", 1));
+            var claimed = Need(("steel", 100)); // corpse never appears in totalClaimed
+            Assert.That(LoadLedger<string, int>.FullyClaimed(needed, claimed), Is.False);
+        }
     }
 }
