@@ -264,10 +264,10 @@ namespace HaulersDream
             takenToInventory.Remove(thing);
         }
 
-        /// <summary>The next still-valid pending drop this pawn can scoop, or null. Prunes invalid ones:
-        /// despawned/destroyed, on another map (a pawn that changed maps must not walk foreign coords or
-        /// scoop across maps), forbidden (the player forbade it, or vanilla forbade a yield it never
-        /// credited to a player pawn, e.g. a mineable finished off by an explosion), or genuinely
+        /// <summary>The still-valid pending drop NEAREST to this pawn's current position, or null. Prunes invalid
+        /// ones along the way: despawned/destroyed, on another map (a pawn that changed maps must not walk
+        /// foreign coords or scoop across maps), forbidden (the player forbade it, or vanilla forbade a yield it
+        /// never credited to a player pawn, e.g. a mineable finished off by an explosion), or genuinely
         /// UNREACHABLE (issue #160: this queue is filled over a whole work run, from the producer's own drops
         /// via RecordSelfPickup, which never checks reachability because the item is always right where the
         /// pawn just worked, plus the area-cleanup sweep's nearby loose stacks; by the time an OLDER entry is
@@ -282,35 +282,62 @@ namespace HaulersDream
         /// colonists". Checked with the SAME PawnCanAutomaticallyHaulFast every sibling picker (BulkHaul's
         /// snowball, the area-cleanup sweep) already gates on, so an entry that would have been skipped there
         /// is never even queued into the sweep in the first place; this is the one intake path (a producer's
-        /// own fresh drop) that never had that check.</summary>
+        /// own fresh drop) that never had that check.
+        ///
+        /// NEAREST rather than last-queued (the previous behavior): the list is built nearest-to-farthest per
+        /// sweep event but across a whole work run, so blindly popping its tail walked the FARTHEST entry ever
+        /// queued first. Scanning for the entry nearest to the pawn's CURRENT position (not wherever it stood
+        /// when the item was queued) is what "take what's closer" actually means, and it composes with
+        /// <see cref="SelfPickupClaims"/>: a pawn's own queue can still hold an over-reaching sweep candidate a
+        /// closer colleague hasn't reclaimed yet, so preferring the nearest one here keeps that pawn's walking
+        /// path sensible even before any cross-pawn reassignment happens.</summary>
         public Thing TakeNextValidPending()
         {
             var pawn = parent as Pawn;
-            int skippedUnreachable = 0;
-            while (pendingSelfPickups.Count > 0)
+            if (pawn == null)
             {
-                var t = pendingSelfPickups[pendingSelfPickups.Count - 1];
-                pendingSelfPickups.RemoveAt(pendingSelfPickups.Count - 1);
+                pendingSelfPickups.Clear();
+                return null;
+            }
+            int skippedUnreachable = 0;
+            int bestIndex = -1;
+            float bestDistSq = float.MaxValue;
+            for (int i = pendingSelfPickups.Count - 1; i >= 0; i--)
+            {
+                var t = pendingSelfPickups[i];
                 // The self-pickup queue is persisted, so an entry can be stale (queued before the danger cap, or
-                // now only reachable across vacuum/fire). Cap reach at Some here too: a popped-but-unreachable
-                // entry is discarded (left for normal hauling), never walked to — so the producer never sends a
-                // suit-less pawn into space to scoop its own drop. Self-heals existing saves.
-                if (t == null || !t.Spawned || t.Destroyed
-                    || pawn == null || t.MapHeld != pawn.Map || t.IsForbidden(pawn)
-                    || !ExtraSweepReach.Allows(pawn, t))
-                    continue;
-                if (!HaulAIUtility.PawnCanAutomaticallyHaulFast(pawn, t, forced: false))
+                // now only reachable across vacuum/fire). Discard it here (left for normal hauling), never
+                // walked to, so the producer never sends a suit-less pawn into space to scoop its own drop.
+                // Self-heals existing saves.
+                bool valid = t != null && t.Spawned && !t.Destroyed
+                    && t.MapHeld == pawn.Map && !t.IsForbidden(pawn) && ExtraSweepReach.Allows(pawn, t);
+                if (valid && !HaulAIUtility.PawnCanAutomaticallyHaulFast(pawn, t, forced: false))
                 {
-                    skippedUnreachable++;
-                    continue; // leave it on the ground for normal hauling; never walk into a pathing failure
+                    valid = false;
+                    skippedUnreachable++; // leave it on the ground for normal hauling; never walk into a pathing failure
                 }
-                if (skippedUnreachable > 0)
-                    HDLog.Dbg($"{pawn} self-pickup: skipped {skippedUnreachable} unreachable pending drop(s).");
-                return t;
+                if (!valid)
+                {
+                    pendingSelfPickups.RemoveAt(i);
+                    SelfPickupClaims.Release(t, pawn);
+                    continue;
+                }
+                float distSq = (t.Position - pawn.Position).LengthHorizontalSquared;
+                if (distSq < bestDistSq)
+                {
+                    bestDistSq = distSq;
+                    bestIndex = i;
+                }
             }
             if (skippedUnreachable > 0)
-                HDLog.Dbg($"{pawn} self-pickup: skipped {skippedUnreachable} unreachable pending drop(s); queue now empty.");
-            return null;
+                HDLog.Dbg($"{pawn} self-pickup: skipped {skippedUnreachable} unreachable pending drop(s)"
+                    + (bestIndex < 0 ? "; queue now empty." : "."));
+            if (bestIndex < 0)
+                return null;
+            var best = pendingSelfPickups[bestIndex];
+            pendingSelfPickups.RemoveAt(bestIndex);
+            SelfPickupClaims.Release(best, pawn);
+            return best;
         }
 
         public void NotifyYieldPicked()

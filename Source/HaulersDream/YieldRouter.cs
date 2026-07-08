@@ -136,8 +136,11 @@ namespace HaulersDream
             // destination, leave it on the ground at the work spot (vanilla) rather than scooping it to a
             // desperate far/feet drop at unload. The nearby sweep below still grabs OTHER loose items that DO
             // have a destination, so a clean-up pass isn't lost just because this one yield has nowhere to go.
-            if (HasScoopDestination(pawn, thing) && !comp.pendingSelfPickups.Contains(thing))
-                comp.pendingSelfPickups.Add(thing);
+            // Routed through SelfPickupClaims (not a raw Add) for consistency with every other pending-queue
+            // entry point; the pawn just produced this yield standing right where it is, so in practice it is
+            // always the closer (or only) claimant, and the shared arbitration is a no-op here almost always.
+            if (HasScoopDestination(pawn, thing))
+                SelfPickupClaims.Claim(thing, pawn);
             // Clean the surrounding area in the same pass: also queue nearby loose haulables for self-pickup
             // (cooldown-debounced, so this scans at most once per work spot — not once per dropped stack).
             // (Self-gates bleeding internally — see MaybeSweepNearbyIntoPending.)
@@ -228,7 +231,8 @@ namespace HaulersDream
 
             var claimed = RouteSelection.ClaimedByOtherPawns(pawn);
             float radiusSq = SweepRadius * SweepRadius;
-            int added = 0;
+            int added = 0;        // candidates fully vetted this scan (bounds the SweepMaxStacks cap)
+            int claimedForMe = 0; // of those, how many actually ended up owned by THIS pawn (see SelfPickupClaims)
 
             // HOIST (HD-MASS): the pawn's capacity and current mass are INVARIANT across this whole sweep — it
             // only QUEUES pending pickups (comp.pendingSelfPickups.Add), it never adds to the pawn's inventory,
@@ -276,8 +280,14 @@ namespace HaulersDream
                 if (!StoreUtility.TryFindBestBetterStorageFor(t, pawn, map, StoreUtility.CurrentStoragePriorityOf(t),
                         pawn.Faction, out _, out _, needAccurateResult: false))
                     return true; // nowhere better to put it -> don't scoop it only to strand it in inventory
-                comp.pendingSelfPickups.Add(t);
+                // Coordinate with any OTHER pawn already sweeping the same area (issue: "5 rows of pawns, 5 rows
+                // of stacks" crossing paths): SelfPickupClaims transfers ownership to whichever pawn is actually
+                // closer right now, so this candidate counts toward the scan cap either way (it was fully vetted
+                // above regardless of who ends up walking to it), but only counts toward THIS pawn's own queued
+                // total (the log + whether to start its job) when the claim actually lands with it.
                 added++;
+                if (SelfPickupClaims.Claim(t, pawn))
+                    claimedForMe++;
                 return true;
             }
 
@@ -320,9 +330,10 @@ namespace HaulersDream
                     break;
             sweepBuf.Clear();
 
-            if (added > 0)
+            if (claimedForMe > 0)
             {
-                HDLog.Dbg($"{pawn} area-sweep: queued {added} nearby loose stack(s) into self-pickup.");
+                HDLog.Dbg($"{pawn} area-sweep: queued {claimedForMe} nearby loose stack(s) into self-pickup"
+                    + (claimedForMe < added ? $" ({added - claimedForMe} left with a closer colonist)." : "."));
                 EnsureSelfPickupJob(pawn, comp);
             }
         }

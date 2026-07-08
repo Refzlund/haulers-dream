@@ -167,10 +167,12 @@ namespace HaulersDream
                 {
                     case TaintedApparelPolicy.LeaveOnCorpse:
                         pending.RemoveAt(i); // already off the body — just don't scoop it
+                        SelfPickupClaims.Release(ap, stripper);
                         break;
                     case TaintedApparelPolicy.DropAndForbid:
                         ap.SetForbidden(true, warnOnFail: false);
                         pending.RemoveAt(i);
+                        SelfPickupClaims.Release(ap, stripper);
                         break;
                     case TaintedApparelPolicy.Destroy:
                         // Same guards as the auto-strip: never quest/relic; never a merged stack
@@ -179,6 +181,7 @@ namespace HaulersDream
                         if (!ap.questTags.NullOrEmpty() || ap.IsRelic() || ap.stackCount != 1)
                             break;
                         pending.RemoveAt(i);
+                        SelfPickupClaims.Release(ap, stripper);
                         ap.Destroy(DestroyMode.Vanish);
                         break;
                 }

@@ -109,10 +109,12 @@ namespace HaulersDream
                         // off, OR with keep-working-when-full ON, NOTHING fires to make room DURING the run —
                         // re-adding would walk the pawn back to take zero, forever. Abandon the drop to normal
                         // hauling instead (it's spawned and unforbidden); keep-working-when-full deliberately
-                        // leaves the overflow on the ground for normal hauling.
+                        // leaves the overflow on the ground for normal hauling. Re-claimed through
+                        // SelfPickupClaims (TakeNextValidPending already released it on pop), so a colleague who
+                        // is now closer can pick it up instead of it silently reserving this pawn's spot.
                         if (comp != null && thing != null && s != null && s.markForUnload && !s.strictCarryWeight
-                            && !s.keepWorkingWhenFull && !comp.pendingSelfPickups.Contains(thing))
-                            comp.pendingSelfPickups.Add(thing);
+                            && !s.keepWorkingWhenFull)
+                            SelfPickupClaims.Claim(thing, pawn);
                         YieldRouter.MaybeUnloadBecauseFull(pawn, s);
                         EndJobWith(JobCondition.Succeeded);
                         return;
