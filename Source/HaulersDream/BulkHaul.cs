@@ -628,6 +628,13 @@ namespace HaulersDream
             job.targetQueueB = new List<LocalTargetInfo> { clicked };
             job.countQueue = new List<int> { take };
             job.count = 1;
+            // Mark this AS a genuine "take into inventory" order: vanilla's own field for exactly that concept
+            // (its "Pick up" float-menu writes the same 120, per PickupDelayPolicy.VanillaDelayTicks), never read
+            // by this driver's OWN toils otherwise. JobDriver_BulkHaul reads it back to decide the pickup-pause
+            // context (issue #159/#156): unlike playerForced (true for EVERY player order this driver ever runs,
+            // including "Prioritize hauling"/"Haul everything nearby", which vanilla hauls to storage instantly),
+            // this field is set ONLY here, so it can't be confused with a storage-bound sweep.
+            job.takeInventoryDelay = PickupDelayPolicy.VanillaDelayTicks;
             return job;
         }
 

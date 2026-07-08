@@ -149,13 +149,19 @@ namespace HaulersDream
             // shows for a player "Pick up" order, paid once per swept stack (between arrival and the take,
             // inside the decide->goto->take jump loop). Deliberately NO fail conditions: a stack sniped or
             // forbidden mid-pause must SKIP (the take re-validates and advances), never fail the whole sweep.
-            // Scope (PickupDelayPolicy.ShouldPause): a DELIBERATE player order (playerForced: "Pick up X",
-            // "Haul everything nearby") paces like vanilla's own pickup; the AUTOMATIC sweep and the en-route
-            // grab (playerForced false) are a haul vanilla does instantly, so they pace only when the player opts
-            // hauling into the delay. playerForced is stable for the job's life, so deciding the context once here
-            // is sound.
+            //
+            // Scope (PickupDelayPolicy.ShouldPause), corrected from playerForced (issue #159/#156): this ONE
+            // driver services several player orders with different vanilla equivalents: "Pick up X" mimics
+            // vanilla's delayed TakeInventory order, but "Prioritize hauling" (including a shift-queued 2nd
+            // order taking over the sweep) and "Haul everything nearby" mimic vanilla's HaulToCell, which is
+            // NEVER paced. All of them set job.playerForced = true (it just means "the player ordered this"),
+            // so that flag can't tell a carry-into-inventory order from a haul-to-storage one, and using it here
+            // wrongly paced the two storage-bound orders. job.takeInventoryDelay is vanilla's OWN field for
+            // exactly "this job takes something into inventory with a delay" (BuildPickUpJob is the only
+            // builder that sets it, mirroring vanilla's own "Pick up" float-menu write), so it identifies ONLY
+            // that order regardless of playerForced. Read once here; the field never changes for the job's life.
             yield return PickupPause.MakeToil(StackInd,
-                job.playerForced ? PickupDelayContext.ManualCarry : PickupDelayContext.AutoHaul);
+                job.takeInventoryDelay > 0 ? PickupDelayContext.ManualCarry : PickupDelayContext.AutoHaul);
 
             Toil take = ToilMaker.MakeToil("HD_Bulk_Take");
             take.initAction = delegate
