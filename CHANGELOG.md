@@ -1,5 +1,29 @@
 # haulers-dream
 
+## 1.16.8
+
+### Patch Changes
+
+- 473875f: Fix a much bigger cause of the same colonists-freezing-in-place bug (#160): giving a bulk-haul order while the game was paused could rebuild the whole sweep plan hundreds of times in a couple of real seconds for nothing.
+
+  Bulk-haul orders remember their plan for the rest of the tick so opening a menu or clicking doesn't redo the same expensive search over and over, but that memory was deliberately skipped whenever the game was paused, to make sure queuing a second nearby order was noticed right away. The debug logs you sent showed exactly what that costs in practice: a single paused ordering session rebuilding the same plan for the same colonist several hundred times in a few seconds, worse with more colonists or orders queued at once. The fix keeps that memory turned on while paused too, but only reuses it as long as nothing about that colonist's current job or queue has actually changed since, so a genuinely new order still gets noticed immediately while a repeated click or hover no longer pays for a full rebuild.
+
+- 473875f: Fix the real cause of colonists standing still for about ten seconds while harvesting or mining, worse with several colonists working the same area (#160).
+
+  Both the self-pickup job (a colonist scooping its own dropped yields) and the bulk-haul sweep walk a whole list of ground stacks in one trip. In a busy area with several colonists moving around, a stack that was reachable when it got queued can become blocked by the time the colonist actually walks to it. Neither job handled that gracefully, so a single blocked stack ended the entire job, and vanilla's own response to that kind of failure is a hardcoded few-second wait that a freshly queued job cannot interrupt. With several colonists hitting this independently in the same field, the waits stacked up into the reported freeze. Both jobs now just skip a stack they can no longer reach and carry on with the rest of the list, the same way they already skip a stack that got stolen or forbidden.
+
+  Also closed a smaller gap in the same area: a colonist's own dropped yields are queued for pickup without checking whether they can actually be reached, unlike every other picker in the mod. They're now checked the same way, so a permanently unreachable drop is left for normal hauling instead of being walked toward at all.
+
+- 473875f: Fix the pickup pause and progress bar still showing up on "Haul everything nearby" and a shift-queued second "Prioritize hauling" order.
+
+  The recent change that made automatic cleanup instant again missed two of the ways a colonist can end up sweeping several stacks into their pack: clicking "Haul everything nearby", and shift-queuing a second "Prioritize hauling" order near one already in progress (which takes over as one sweep). Both are the same kind of order as plain "Prioritize hauling" and should be just as instant, but they were still pausing on every stack because the code was telling them apart from a genuinely paced order using the wrong signal, one that every deliberate hauling order sets regardless of what kind it is. It now checks the one thing that actually means "pocket this into inventory and hold onto it", the same way vanilla's own delayed pickup does, so only "Pick up X" and "Keep X in inventory" pace, and both bulk-sweep orders are instant again like plain "Prioritize hauling" already was.
+
+- 473875f: Fix colonists periodically freezing in place for several seconds while harvesting, mining, or deconstructing, especially with several of them working at once.
+
+  Hauler's Dream re-checks whether a colonist should drop off its accumulated load on the way to its next job every time it picks up a new one. Once a colonist working through a field, a mineral vein, or a row of walls was carrying enough to make that check worth running, it reran a real storage search on every single plant, chunk, or wall in the run with nothing slowing it down, because that search only ever backed off after an actual drop-off, not after a "not worth it right now" answer. With several colonists doing this at the same time, the searches piled up and the game visibly stalled. The check now backs off for a little while after it runs regardless of the answer, so it can no longer be repeated on every single item in a run.
+
+  While looking into this, the same gap issue #152 fixed on the end-of-run drop-off check turned up on two of its siblings, the "drop it off on the way" check and the opt-in "drop it off before a long walk while overloaded" check: both would consider a colonist a candidate to divert as long as it was carrying anything at all, even if none of it was actually surplus to store. Both now require some real surplus first, same as every other drop-off trigger.
+
 ## 1.16.7
 
 ### Patch Changes
