@@ -324,12 +324,27 @@ namespace HaulersDream
             float ceiling = BulkHaulPolicy.CeilingKg(s.overloadLevel, OverloadGate.NoOverloadFor(pawn, s), baseCap);
             // Exclude stranded cargo (issue #167/#168) so a redirected pawn's fresh plan sizes against its REAL
             // available room instead of phantom-shrinking around dead weight this job can never deposit anyway.
-            float running = MassUtility.GearAndInventoryMass(pawn) - StrandedSurplusMass(pawn, loadable);
-            if (running < 0f)
-                running = 0f;
+            float realMass = MassUtility.GearAndInventoryMass(pawn);
+            float strandedMass = StrandedSurplusMass(pawn, loadable);
+            float running = Math.Max(0f, realMass - strandedMass);
             float bulkRoom = CECompat.AvailableBulk(pawn);
 
-            float pawnFree = float.IsPositiveInfinity(ceiling) ? float.MaxValue : Math.Max(0f, ceiling - running);
+            // The stranded-mass exclusion frees PLANNING room (so the sweep doesn't phantom-shrink around dead weight),
+            // but the pawn STILL physically carries that cargo — it has NOT freed any real room. Cap pawnFree to the
+            // REAL physical free room so the sweep never queues more mass than the pawn can hold. Without this cap,
+            // a pawn at/over the ceiling with stranded cargo (running < ceiling but realMass >= ceiling) would get a
+            // plan with stacks the runtime driver rejects (sweepDecide checks GearAndInventoryMass < ceiling) → the
+            // job no-op loops 64 passes → Incompletable → re-issue forever — a livelock regression (review finding).
+            float pawnFree;
+            if (float.IsPositiveInfinity(ceiling))
+                pawnFree = float.MaxValue;
+            else
+            {
+                pawnFree = Math.Max(0f, ceiling - running);
+                float realFree = Math.Max(0f, ceiling - realMass);
+                if (pawnFree > realFree)
+                    pawnFree = realFree;
+            }
             float tripMass = TransportLoadPlan.TripMassBudget(pawnFree,
                 loadable.GetMassCapacity(), loadable.GetMassUsage(), loadable.HasMassCap);
             float massLeft = tripMass; // shrinks as stacks are committed (destination + pawn mass headroom)
@@ -487,7 +502,19 @@ namespace HaulersDream
                     continue;
                 }
                 if (countFreeHaulersToo && HasPotentialBulkWork(p, loadable))
+                {
+                    // Same health/comp gates the boarding branch applies above (review finding): a downed casualty
+                    // on a raiding-camp temp map passes HasPotentialBulkWork (it only checks Drafted, not Downed or
+                    // InMentalState), but it can never actually run the job. Counting it would inflate the divisor
+                    // and shrink every active hauler's fair-share slice for nothing.
+                    if (p.Downed || p.InMentalState)
+                        continue;
+                    if (p.health?.capacities == null || !p.health.capacities.CapableOf(PawnCapacityDefOf.Manipulation))
+                        continue;
+                    if (p.GetComp<CompHauledToInventory>() == null || p.inventory == null)
+                        continue;
                     count++;
+                }
             }
             return count;
         }
