@@ -95,6 +95,24 @@ namespace HaulersDream
 
             // ---- cell branch ----
             yield return carryToCell;
+
+            // DIAGNOSTIC (issue #162): inject a non-behavioral end-condition into the carry toil that logs
+            // when the destination cell becomes invalid for an unstackable item. This runs BEFORE vanilla's
+            // own fail-on (inserted at position 0), so we capture the exact moment the cell goes invalid —
+            // the moment that ends the job Incompletable and drops the item. Always returns Ongoing (never
+            // changes behavior). Grep for "[#162]" in the debug log.
+            carryToCell.endConditions.Insert(0, () =>
+            {
+                var carried = pawn.carryTracker?.CarriedThing;
+                if (carried == null || carried.def == null || carried.def.stackLimit > 1)
+                    return JobCondition.Ongoing;
+                var targetCell = job.GetTarget(TargetIndex.B).Cell;
+                if (targetCell.IsValid && pawn.Map != null && !targetCell.IsValidStorageFor(pawn.Map, carried))
+                    HDLog.Dbg($"[#162] carry: {pawn} carrying {carried.LabelShort} to {targetCell} "
+                              + "- cell is now INVALID (this triggers the carry fail-on -> drop -> re-scoop loop)");
+                return JobCondition.Ongoing;
+            });
+
             yield return Toils_Haul.PlaceHauledThingInCell(TargetIndex.B, carryToCell, true);
 
             yield return releaseReservation;
@@ -193,6 +211,14 @@ namespace HaulersDream
                         return;
                     }
 
+                    // DIAGNOSTIC (issue #162): trace what the unload driver decides for each item, so the
+                    // "endless pacing" loop — which produces ZERO existing log messages — becomes visible.
+                    // Grep for "[#162]" in the debug log.
+                    bool diagUnstack = next.Thing?.def?.stackLimit <= 1;
+                    if (diagUnstack)
+                        HDLog.Dbg($"[#162] unload: {pawn} processing {next.Thing.LabelShort} "
+                                  + $"(stackLimit={next.Thing.def.stackLimit}, carried={carried.Count}, pos={pawn.Position})");
+
                     if (StoreUtility.TryFindBestBetterStorageFor(next.Thing, pawn, pawn.Map, StoragePriority.Unstored,
                             pawn.Faction, out var cell, out var destination))
                     {
@@ -213,8 +239,13 @@ namespace HaulersDream
                         bool reserveDest = cell == IntVec3.Invalid
                                            || next.Thing.def.stackLimit <= 1
                                            || HaulersDreamMod.Settings == null || !HaulersDreamMod.Settings.haulToStack;
+                        if (diagUnstack)
+                            HDLog.Dbg($"[#162] unload: {next.Thing.LabelShort} -> storage {cell}"
+                                      + (cell == IntVec3.Invalid ? " (container)" : "")
+                                      + $", reserveDest={reserveDest}");
                         if (reserveDest && !pawn.Map.reservationManager.Reserve(pawn, job, job.targetB))
                         {
+                            HDLog.Dbg($"[#162] unload: {next.Thing.LabelShort} RESERVE FAILED for {cell}");
                             // Untag only when the drop actually happened — a failed drop leaves the thing in
                             // inventory, where a missing tag would strand it untracked (gizmo hidden, never retried).
                             if (pawn.inventory.innerContainer.TryDrop(next.Thing, ThingPlaceMode.Near, next.Count, out _))
@@ -238,6 +269,8 @@ namespace HaulersDream
                     }
                     else if (StoreUtility.TryFindStoreCellNearColonyDesperate(next.Thing, pawn, out var desperateCell))
                     {
+                        if (diagUnstack)
+                            HDLog.Dbg($"[#162] unload: {next.Thing.LabelShort} -> desperate cell {desperateCell}");
                         // No stockpile (not even a dumping zone) accepts this def — rock chunks are excluded from
                         // the default stockpile preset, and many modded materials/crops sit in a category no
                         // stockpile allows. Vanilla's own unload (JobDriver_UnloadYourInventory) does NOT give up
@@ -286,6 +319,7 @@ namespace HaulersDream
                         // route, area-sweep) skip it for a short window, breaking the re-scoop cycle. The window is
                         // brief and self-healing: once storage opens up (the player zones it, a slot frees), the
                         // next scan after the window hauls it normally.
+                        HDLog.Dbg($"[#162] unload: {next.Thing.LabelShort} -> NOWHERE to store, stamping backoff");
                         HaulChurnGuard.StampBackoff(next.Thing);
                         if (pawn.inventory.innerContainer.TryDrop(next.Thing, ThingPlaceMode.Near, next.Count, out _))
                         {
