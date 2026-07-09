@@ -73,7 +73,10 @@ namespace HaulersDream
                 var inCarry = pawn.carryTracker?.innerContainer?.Contains(held) == true;
                 var inInv = pawn.inventory?.innerContainer?.Contains(held) == true;
                 HDLog.Dbg($"[#162] FINISH: {pawn} job ended {condition}, held={held?.LabelShort ?? "null"} "
-                          + $"inCarry={inCarry} inInv={inInv} carryTracker={pawn.carryTracker?.CarriedThing?.LabelShort ?? "empty"}");
+                          + $"inCarry={inCarry} inInv={inInv} carryTracker={pawn.carryTracker?.CarriedThing?.LabelShort ?? "empty"}"
+                          + (held != null && held.Spawned
+                              ? $" SPAWNED at {held.Position} inStorage={held.IsInValidStorage()} map={held.MapHeld}"
+                              : ""));
                 if (comp == null || held == null || held.Destroyed)
                     return;
                 if (inCarry || inInv)
