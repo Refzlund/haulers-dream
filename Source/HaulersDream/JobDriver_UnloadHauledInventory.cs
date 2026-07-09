@@ -278,6 +278,15 @@ namespace HaulersDream
                         // tagged in inventory and every retry re-fails on the same first-ordered item. End
                         // Incompletable so the checker re-queues once the pawn has moved and space frees; the tag
                         // stays (the item is still in inventory) so it's retried and the gizmo stays available.
+                        //
+                        // STAMP BACKOFF (issue #162): an item with NOWHERE to store (no stockpile accepts its def,
+                        // e.g. body parts outside the default preset) would be dropped, immediately re-scooped by
+                        // the same pawn's en-route/sweep, and re-unloaded into the same failure — an endless pacing
+                        // loop. Stamp the churn backoff so both the vanilla haul scan AND the HD intake paths (en-
+                        // route, area-sweep) skip it for a short window, breaking the re-scoop cycle. The window is
+                        // brief and self-healing: once storage opens up (the player zones it, a slot frees), the
+                        // next scan after the window hauls it normally.
+                        HaulChurnGuard.StampBackoff(next.Thing);
                         if (pawn.inventory.innerContainer.TryDrop(next.Thing, ThingPlaceMode.Near, next.Count, out _))
                         {
                             carried.Remove(next.Thing);

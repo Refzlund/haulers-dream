@@ -291,6 +291,10 @@ namespace HaulersDream
                 return CandidateOutcome.HardFail;
             if (thing.IsForbidden(pawn))
                 return CandidateOutcome.HardFail;
+            // Skip items the churn guard has backed off (issue #162: an unstackable with no storage gets scooped,
+            // unloaded, dropped, re-scooped — an endless loop). The backoff window is brief and self-healing.
+            if (HaulChurnGuard.IsBackedOff(thing))
+                return CandidateOutcome.HardFail;
             // #5: leave items another mod has claimed via a designation (e.g. a Recycle This recycle/destroy order)
             // — scooping them into inventory en route hides them from that mod's spawned-only WorkGiver.
             if (ForeignOrderGuard.ClaimedByForeignOrder(thing))
