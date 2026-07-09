@@ -548,20 +548,23 @@ namespace HaulersDream
     [HarmonyPatch(typeof(Pawn_JobTracker), nameof(Pawn_JobTracker.StartJob))]
     public static class Patch_Diag_JobStartLog
     {
-        static void Postfix(Pawn ___pawn, Job job)
+        static void Postfix(Pawn_JobTracker __instance, Job newJob)
         {
-            if (job == null || ___pawn == null)
+            if (newJob == null)
                 return;
-            var carry = ___pawn.carryTracker?.CarriedThing;
-            var comp = ___pawn.TryGetComp<CompHauledToInventory>();
+            var pawn = __instance?.pawn;
+            if (pawn == null)
+                return;
+            var carry = pawn.carryTracker?.CarriedThing;
+            var comp = pawn.TryGetComp<CompHauledToInventory>();
             int tracked = comp?.PeekHashSet()?.Count ?? 0;
             if (carry == null && tracked == 0)
                 return; // pawn has no items — not relevant to the haul loop
-            HDLog.Dbg($"[#162] job-start: {___pawn} starting {job.def?.defName}"
-                      + (job.targetA.HasThing ? $" target={job.targetA.Thing?.LabelShort}" : "")
+            HDLog.Dbg($"[#162] job-start: {pawn} starting {newJob.def?.defName}"
+                      + (newJob.targetA.HasThing ? $" target={newJob.targetA.Thing?.LabelShort}" : "")
                       + (carry != null ? $" carrying={carry.LabelShort}" : "")
                       + (tracked > 0 ? $" tracked={tracked}" : "")
-                      + $" pos={___pawn.Position}");
+                      + $" pos={pawn.Position}");
         }
     }
 }
