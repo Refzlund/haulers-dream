@@ -41,9 +41,16 @@ namespace HaulersDream
             // A failure here is a real bug: it must stay a visible red error, never a silent downgrade. The
             // Finalizer below does exactly that (logs with HD + pawn context, then RETHROWS — see HDGuard), so the
             // fault still propagates to RimWorld's handler but is now attributable instead of an anonymous stack.
+            var vanillaJob = __result;
             var bulk = BulkHaul.TryBuildBulkJob(pawn, t, __result, forced);
             if (bulk != null)
                 __result = bulk;
+            // DIAGNOSTIC (issue #162): trace whether the vanilla haul job is converted to a bulk haul or left
+            // as vanilla. This reveals whether the kidney goes through HD's inventory or vanilla hand-carry.
+            if (t?.def?.stackLimit <= 1)
+                HDLog.Dbg($"[#162] HaulGeneral: {pawn} item={t.LabelShort} (def={t.def?.defName}) "
+                          + $"vanillaJob={(vanillaJob != null ? vanillaJob.def?.defName : "null")} "
+                          + $"-> {(bulk != null ? "BULK HAUL" : "vanilla haul")}");
         }
 
         // Seam guard (fix/mix): WorkGiver_HaulGeneral.JobOnThing is the funnel for BOTH the automatic haul scan and
