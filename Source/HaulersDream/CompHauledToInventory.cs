@@ -300,7 +300,14 @@ namespace HaulersDream
                 return null;
             }
             int skippedUnreachable = 0;
-            int bestIndex = -1;
+            // Track the Thing REFERENCE, not its list index. The cleanup pass below removes stale entries with
+            // RemoveAt(i), which shifts every entry above i down by one — so a `bestIndex` captured earlier in
+            // the scan (at a higher index) silently drifts past the end of the now-shorter list, and the
+            // post-loop `pendingSelfPickups[bestIndex]` throws ArgumentOutOfRangeException (issue #172).
+            // The Thing reference is immune to index shifts; Remove(thing) finds it in O(n) (trivial for a
+            // pending queue that holds at most a handful of drops from one work run), and the list never holds
+            // duplicates (every intake path — SelfPickupClaims.Claim, YieldRouter — guards with Contains).
+            Thing best = null;
             float bestDistSq = float.MaxValue;
             for (int i = pendingSelfPickups.Count - 1; i >= 0; i--)
             {
@@ -326,16 +333,15 @@ namespace HaulersDream
                 if (distSq < bestDistSq)
                 {
                     bestDistSq = distSq;
-                    bestIndex = i;
+                    best = t;
                 }
             }
             if (skippedUnreachable > 0)
                 HDLog.Dbg($"{pawn} self-pickup: skipped {skippedUnreachable} unreachable pending drop(s)"
-                    + (bestIndex < 0 ? "; queue now empty." : "."));
-            if (bestIndex < 0)
+                    + (best == null ? "; queue now empty." : "."));
+            if (best == null)
                 return null;
-            var best = pendingSelfPickups[bestIndex];
-            pendingSelfPickups.RemoveAt(bestIndex);
+            pendingSelfPickups.Remove(best);
             SelfPickupClaims.Release(best, pawn);
             return best;
         }
