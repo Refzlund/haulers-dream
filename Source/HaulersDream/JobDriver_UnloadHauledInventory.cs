@@ -70,10 +70,13 @@ namespace HaulersDream
             AddFinishAction(condition =>
             {
                 var held = job.GetTarget(TargetIndex.A).Thing;
+                var inCarry = pawn.carryTracker?.innerContainer?.Contains(held) == true;
+                var inInv = pawn.inventory?.innerContainer?.Contains(held) == true;
+                HDLog.Dbg($"[#162] FINISH: {pawn} job ended {condition}, held={held?.LabelShort ?? "null"} "
+                          + $"inCarry={inCarry} inInv={inInv} carryTracker={pawn.carryTracker?.CarriedThing?.LabelShort ?? "empty"}");
                 if (comp == null || held == null || held.Destroyed)
                     return;
-                if (pawn.carryTracker?.innerContainer?.Contains(held) == true
-                    || pawn.inventory?.innerContainer?.Contains(held) == true)
+                if (inCarry || inInv)
                     comp.RegisterHauledItem(held);
             });
 
@@ -159,6 +162,7 @@ namespace HaulersDream
                     }
 
                     var toPull = thing;
+                    var carryBefore = pawn.carryTracker?.CarriedThing;
                     pawn.inventory.innerContainer.TryTransferToContainer(thing, pawn.carryTracker.innerContainer, countToDrop, out thing);
                     if (thing == null)
                     {
@@ -168,11 +172,16 @@ namespace HaulersDream
                         // "unloading inventory" job (the reported caravan-return stall). Mark it skipped for THIS
                         // job and loop to the next tracked item; the tag stays, so it's retried on the next unload
                         // trigger (and the cannot-unload alert still surfaces it if it stays genuinely stuck).
+                        HDLog.Dbg($"[#162] pull FAILED: {pawn} could not pull {toPull.LabelShort} (def={toPull.def?.defName}) "
+                                  + $"into carry tracker — blocked by {carryBefore?.LabelShort ?? "nothing"} "
+                                  + $"(def={carryBefore?.def?.defName}), carryTracker has {carryBefore?.stackCount ?? 0}");
                         if (toPull != null)
                             skippedThisJob.Add(toPull);
                         pawn.jobs.curDriver.JumpToToil(wait);
                         return;
                     }
+                    HDLog.Dbg($"[#162] pull OK: {pawn} pulled {thing.LabelShort} (def={thing.def?.defName}, count={countToDrop}) "
+                              + $"into carry tracker");
                     job.count = countToDrop;
                     job.SetTarget(TargetIndex.A, thing);
                     carried.Remove(thing);
