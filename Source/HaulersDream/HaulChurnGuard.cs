@@ -540,4 +540,28 @@ namespace HaulersDream
             => HDGuard.SeamThrew(__exception, "Toils_Haul.CarryHauledThingToCell (HD stacking re-route wrap)", null,
                 "in-flight re-route not attached; vanilla's fail-on handles a filled cell as before.");
     }
+
+    // DIAGNOSTIC (issue #162): log job STARTS for any pawn that is carrying something or has tracked inventory,
+    // so the "pacing up and down" loop — which is silent in every existing log — reveals which jobs are
+    // thrashing. This postfix fires on every StartJob but only logs for pawns with items (carry tracker or
+    // tracked inventory), keeping the log clean. Grep for [#162] job-start.
+    [HarmonyPatch(typeof(Pawn_JobTracker), nameof(Pawn_JobTracker.StartJob))]
+    public static class Patch_Diag_JobStartLog
+    {
+        static void Postfix(Pawn ___pawn, Job job)
+        {
+            if (job == null || ___pawn == null)
+                return;
+            var carry = ___pawn.carryTracker?.CarriedThing;
+            var comp = ___pawn.TryGetComp<CompHauledToInventory>();
+            int tracked = comp?.PeekHashSet()?.Count ?? 0;
+            if (carry == null && tracked == 0)
+                return; // pawn has no items — not relevant to the haul loop
+            HDLog.Dbg($"[#162] job-start: {___pawn} starting {job.def?.defName}"
+                      + (job.targetA.HasThing ? $" target={job.targetA.Thing?.LabelShort}" : "")
+                      + (carry != null ? $" carrying={carry.LabelShort}" : "")
+                      + (tracked > 0 ? $" tracked={tracked}" : "")
+                      + $" pos={___pawn.Position}");
+        }
+    }
 }
