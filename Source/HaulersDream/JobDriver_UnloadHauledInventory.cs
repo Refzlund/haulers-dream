@@ -73,10 +73,7 @@ namespace HaulersDream
                 var inCarry = pawn.carryTracker?.innerContainer?.Contains(held) == true;
                 var inInv = pawn.inventory?.innerContainer?.Contains(held) == true;
                 HDLog.Dbg($"[#162] FINISH: {pawn} job ended {condition}, held={held?.LabelShort ?? "null"} "
-                          + $"inCarry={inCarry} inInv={inInv} carryTracker={pawn.carryTracker?.CarriedThing?.LabelShort ?? "empty"}"
-                          + (held != null && held.Spawned
-                              ? $" SPAWNED at {held.Position} inStorage={held.IsInValidStorage()} map={held.MapHeld}"
-                              : ""));
+                          + (held != null && held.Spawned ? $"inStorage={held.IsInValidStorage()}" : ""));
                 if (comp == null || held == null || held.Destroyed)
                     return;
                 if (inCarry || inInv)
@@ -114,8 +111,7 @@ namespace HaulersDream
                     return JobCondition.Ongoing;
                 var targetCell = job.GetTarget(TargetIndex.B).Cell;
                 if (targetCell.IsValid && pawn.Map != null && !targetCell.IsValidStorageFor(pawn.Map, carried))
-                    HDLog.Dbg($"[#162] carry: {pawn} carrying {carried.LabelShort} (def={carried.def?.defName}) "
-                              + $"to {targetCell} - cell is now INVALID (this triggers the carry fail-on -> drop -> re-scoop loop)");
+                    HDLog.Dbg($"[#162] carry: {carried.LabelShort} to {targetCell} cell INVALID");
                 return JobCondition.Ongoing;
             });
 
@@ -169,22 +165,12 @@ namespace HaulersDream
                     pawn.inventory.innerContainer.TryTransferToContainer(thing, pawn.carryTracker.innerContainer, countToDrop, out thing);
                     if (thing == null)
                     {
-                        // Nothing moved — the one-stack carry tracker is blocked by a non-mergeable passenger, or
-                        // another mod is holding this stack (a combat mod re-grabbing its ammo, etc.). Do NOT
-                        // end+requeue on the SAME first-ordered item forever: that churn freezes the pawn in the
-                        // "unloading inventory" job (the reported caravan-return stall). Mark it skipped for THIS
-                        // job and loop to the next tracked item; the tag stays, so it's retried on the next unload
-                        // trigger (and the cannot-unload alert still surfaces it if it stays genuinely stuck).
-                        HDLog.Dbg($"[#162] pull FAILED: {pawn} could not pull {toPull.LabelShort} (def={toPull.def?.defName}) "
-                                  + $"into carry tracker — blocked by {carryBefore?.LabelShort ?? "nothing"} "
-                                  + $"(def={carryBefore?.def?.defName}), carryTracker has {carryBefore?.stackCount ?? 0}");
+                        HDLog.Dbg($"[#162] pull FAILED: {toPull.LabelShort} blocked by {carryBefore?.LabelShort ?? "nothing"}");
                         if (toPull != null)
                             skippedThisJob.Add(toPull);
                         pawn.jobs.curDriver.JumpToToil(wait);
                         return;
                     }
-                    HDLog.Dbg($"[#162] pull OK: {pawn} pulled {thing.LabelShort} (def={thing.def?.defName}, count={countToDrop}) "
-                              + $"into carry tracker");
                     job.count = countToDrop;
                     job.SetTarget(TargetIndex.A, thing);
                     carried.Remove(thing);
@@ -223,12 +209,9 @@ namespace HaulersDream
                         return;
                     }
 
-                    // DIAGNOSTIC (issue #162): trace what the unload driver decides for each item, so the
-                    // "endless pacing" loop — which produces ZERO existing log messages — becomes visible.
-                    // Grep for "[#162]" in the debug log.
-                    HDLog.Dbg($"[#162] unload: {pawn} processing {next.Thing.LabelShort} "
-                              + $"(def={next.Thing.def?.defName}, stackLimit={next.Thing.def?.stackLimit}, "
-                              + $"carried={carried.Count}, pos={pawn.Position})");
+                    // DIAGNOSTIC (issue #162): trace what the unload driver decides for each item.
+                    if (next.Thing?.def?.stackLimit <= 1)
+                        HDLog.Dbg($"[#162] unload: {next.Thing.LabelShort} (carried={carried.Count})");
 
                     if (StoreUtility.TryFindBestBetterStorageFor(next.Thing, pawn, pawn.Map, StoragePriority.Unstored,
                             pawn.Faction, out var cell, out var destination))
@@ -250,9 +233,6 @@ namespace HaulersDream
                         bool reserveDest = cell == IntVec3.Invalid
                                            || next.Thing.def.stackLimit <= 1
                                            || HaulersDreamMod.Settings == null || !HaulersDreamMod.Settings.haulToStack;
-                        HDLog.Dbg($"[#162] unload: {next.Thing.LabelShort} -> storage {cell}"
-                                  + (cell == IntVec3.Invalid ? " (container)" : "")
-                                  + $", reserveDest={reserveDest}, haulToStack={HaulersDreamMod.Settings?.haulToStack}");
                         if (reserveDest && !pawn.Map.reservationManager.Reserve(pawn, job, job.targetB))
                         {
                             HDLog.Dbg($"[#162] unload: {next.Thing.LabelShort} RESERVE FAILED for {cell}");

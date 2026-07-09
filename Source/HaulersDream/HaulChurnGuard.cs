@@ -429,8 +429,15 @@ namespace HaulersDream
             if (job == null || job.playerForced || job.haulMode != HaulMode.ToCellStorage)
                 return;
             var thing = job.GetTarget(TargetIndex.A).Thing;
-            if (thing?.def == null || thing.def.stackLimit <= 1)
-                return; // unstackables keep vanilla's cell reservation (see the no-reserve patch) -> can't loop this way
+            if (thing?.def == null)
+                return;
+            // NOTE: unstackables (stackLimit <= 1) are NOT excluded — the original assumption was that
+            // "unstackables keep vanilla's cell reservation, so they can't loop." That is FALSE: the
+            // HaulToCell carry toil's fail-on can fire for unstackables too (the destination cell goes
+            // invalid mid-carry for reasons unrelated to multi-pawn cell contention — e.g. the cell is
+            // occupied by a different-def item placed between the storage search and the arrival, or the
+            // storage settings changed). Without this guard, the workgiver instantly re-creates the
+            // identical doomed HaulToCell, producing the reported rapid up-and-down pacing loop (issue #162).
 
             // Tally this job's outcome per THING when it ends. A success clears the loop; an Incompletable finish
             // (the goto/carry storage-invalid fails, and Layer 1's own bail) counts toward the per-thing backoff
@@ -506,8 +513,8 @@ namespace HaulersDream
                 if (settings == null || !settings.haulToStack)
                     return JobCondition.Ongoing; // feature off -> vanilla reserves the cell, nothing can strand it
                 var carried = actor.carryTracker?.CarriedThing;
-                if (carried?.def == null || carried.def.stackLimit <= 1)
-                    return JobCondition.Ongoing; // unstackables keep vanilla's reserved cell -> no contention
+                if (carried?.def == null)
+                    return JobCondition.Ongoing; // nothing carried -> nothing to re-route
                 var cell = job.GetTarget(squareIndex).Cell;
                 if (cell.IsValidStorageFor(actor.Map, carried))
                     return JobCondition.Ongoing; // still a good destination -> keep walking (the common case)
@@ -539,32 +546,5 @@ namespace HaulersDream
         static System.Exception Finalizer(System.Exception __exception)
             => HDGuard.SeamThrew(__exception, "Toils_Haul.CarryHauledThingToCell (HD stacking re-route wrap)", null,
                 "in-flight re-route not attached; vanilla's fail-on handles a filled cell as before.");
-    }
-
-    // DIAGNOSTIC (issue #162): log job STARTS for any pawn that is carrying something or has tracked inventory,
-    // so the "pacing up and down" loop — which is silent in every existing log — reveals which jobs are
-    // thrashing. This postfix fires on every StartJob but only logs for pawns with items (carry tracker or
-    // tracked inventory), keeping the log clean. Grep for [#162] job-start.
-    [HarmonyPatch(typeof(Pawn_JobTracker), nameof(Pawn_JobTracker.StartJob))]
-    public static class Patch_Diag_JobStartLog
-    {
-        static void Postfix(Pawn_JobTracker __instance, Job newJob)
-        {
-            if (newJob == null)
-                return;
-            var pawn = __instance?.pawn;
-            if (pawn == null)
-                return;
-            var carry = pawn.carryTracker?.CarriedThing;
-            var comp = pawn.TryGetComp<CompHauledToInventory>();
-            int tracked = comp?.PeekHashSet()?.Count ?? 0;
-            if (carry == null && tracked == 0)
-                return; // pawn has no items — not relevant to the haul loop
-            HDLog.Dbg($"[#162] job-start: {pawn} starting {newJob.def?.defName}"
-                      + (newJob.targetA.HasThing ? $" target={newJob.targetA.Thing?.LabelShort}" : "")
-                      + (carry != null ? $" carrying={carry.LabelShort}" : "")
-                      + (tracked > 0 ? $" tracked={tracked}" : "")
-                      + $" pos={pawn.Position}");
-        }
     }
 }

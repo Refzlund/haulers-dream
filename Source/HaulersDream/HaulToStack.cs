@@ -85,12 +85,7 @@ namespace HaulersDream
             // vanilla's cell reservation for them — byte-identical for stackables (the only things stacking helps).
             var hauled = job.GetTarget(TargetIndex.A).Thing;
             if (hauled?.def == null || hauled.def.stackLimit <= 1)
-            {
-                if (hauled?.def?.stackLimit <= 1)
-                    HDLog.Dbg($"[#162] HaulToCell prefix: {__instance.pawn} hauling {hauled.LabelShort} "
-                              + $"(def={hauled.def?.defName}) -> vanilla reserves cell+thing");
                 return true; // vanilla reserves both cell + thing
-            }
             // Storage haul of a STACKABLE: reserve only the THING being hauled. The destination cell stays
             // unreserved so other haulers can pick (and stack onto) the same cell.
             __result = __instance.pawn.Reserve(job.GetTarget(TargetIndex.A), job, 1, -1, null, errorOnFailed);
