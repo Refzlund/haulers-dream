@@ -203,9 +203,15 @@ namespace HaulersDream
                             job.SetTarget(TargetIndex.B, cell);
 
                         // Haul-to-stack: storage CELLS are deliberately not reserved (multiple pawns may
-                        // deliver to — and stack onto — the same tile; see HaulToStack). Containers keep
+                        // deliver to — and stack onto — the same tile; see HaulToStack). UNSTACKABLE items
+                        // (stackLimit <= 1 — organs, body parts, weapons) are excluded from this: they can
+                        // NEVER stack onto a shared cell, so leaving the cell unreserved gains them nothing,
+                        // but it lets another hauler fill the same cell mid-carry, invalidating it and looping
+                        // the pawn (issue #162 — endless pacing in hospital/prison). Mirrors the same guard on
+                        // the vanilla HaulToCell path (HaulToStack.cs NoCellReservation prefix). Containers keep
                         // their reservation: their capacity coordination is the enroute/reservation system.
                         bool reserveDest = cell == IntVec3.Invalid
+                                           || next.Thing.def.stackLimit <= 1
                                            || HaulersDreamMod.Settings == null || !HaulersDreamMod.Settings.haulToStack;
                         if (reserveDest && !pawn.Map.reservationManager.Reserve(pawn, job, job.targetB))
                         {
@@ -243,7 +249,11 @@ namespace HaulersDream
                         job.SetTarget(TargetIndex.B, desperateCell);
                         // A desperate destination is always a plain cell (never a container). Match the storage
                         // branch: don't reserve the cell when haul-to-stack is on (several pawns may stack onto it).
-                        bool reserveDest = HaulersDreamMod.Settings == null || !HaulersDreamMod.Settings.haulToStack;
+                        // Unstackables (stackLimit <= 1) still reserve: they can't share a cell and leaving it
+                        // unreserved loops them (issue #162 — same guard as the storage branch above and the
+                        // vanilla HaulToCell prefix).
+                        bool reserveDest = next.Thing.def.stackLimit <= 1
+                                           || HaulersDreamMod.Settings == null || !HaulersDreamMod.Settings.haulToStack;
                         if (reserveDest && !pawn.Map.reservationManager.Reserve(pawn, job, job.targetB))
                         {
                             if (pawn.inventory.innerContainer.TryDrop(next.Thing, ThingPlaceMode.Near, next.Count, out _))

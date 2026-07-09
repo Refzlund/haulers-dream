@@ -233,7 +233,7 @@ namespace HaulersDream
         /// the result between alert recalculations.</summary>
         public static bool HasUnloadDestination(Pawn pawn, Thing thing)
         {
-            if (pawn?.Map == null || thing == null)
+            if (pawn?.Map == null || thing == null || thing.Destroyed || thing.def == null)
                 return false;
             Rand.PushState();
             try
