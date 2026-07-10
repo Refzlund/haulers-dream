@@ -1,5 +1,35 @@
 # haulers-dream
 
+## 1.16.13
+
+### Patch Changes
+
+- 63cd8f9: Fix the "Unload inventory" button appearing wedged among a leader's ability buttons instead of at the end of the command bar (issue #140).
+
+  Hauler's Dream adds two per-pawn command buttons, an auto-haul toggle and an "Unload inventory" action. Their sort position was set to a middling value, which usually put them near the end but could strand them in the middle of the row when a pawn had many buttons whose own sort values straddled it. This was most visible on an ideoligion leader, whose ability buttons pushed the Unload button into their midst. The two buttons now sort to the very end of the command bar, with Unload last, so they no longer interleave with abilities or anything else. An earlier attempt at this blamed an unrelated mod and did not actually move the buttons; this one fixes the sort itself.
+
+- 63cd8f9: Load shuttles and transport pods starting from the item nearest the colonist rather than the item nearest the shuttle, to cut out wasteful back-and-forth (issue #171).
+
+  When a colonist some distance from a shuttle was told to load it, Hauler's Dream planned the pickup order starting from the item closest to the shuttle, so the colonist would walk past nearby items to grab a far one first and then double back. It now plans the order starting from the colonist's own position and collects along a sensible path, grabbing what is on the way instead of crossing the map and returning. Which items and how many get loaded is unchanged, since this only affects the order they are collected in, so the earlier fix for loading the correct quality and quantity (issue #156) is preserved.
+
+- 63cd8f9: Stop the planner right-click options from appearing for colonists that cannot do the work, and add an option to also hide them for colonists not assigned to it (issue #176).
+
+  The route and craft planner options could still show up on a colonist incapable of the underlying work in some cases, such as a research bench offering a hauling route, or a sowing route on a colonist below the plant's required sowing skill. Those now stay hidden, matching how the base game gates the same work.
+
+  There is also a new setting, "Plan work for unassigned pawns" (under Planning tools, on by default so existing behavior is unchanged). Turn it off to also hide the planner for a colonist who is capable of the work but has that work type unchecked in its Work tab, so only colonists actually assigned to the work are offered it. Colonists who simply cannot do the work are always hidden regardless of this setting. Translations for all supported languages are included.
+
+- 63cd8f9: Fix colonists looping forever between hauling and unloading at a RimIOT (Logistic Matrix) terminal instead of eating or resting (issue #177).
+
+  With RimIOT and a stack-size-increasing mod both installed, a stored item could sit as two partial stacks that can never merge into one (for example 400 and 700 against a limit of 1000). Hauler's Dream would sweep both partials into a colonist's inventory, haul them back, and steer each deposit toward a partial stack again, while RimIOT re-spread them, so the same colonist swept and unloaded the same items every few seconds without end and eventually starved. RimIOT settles these stacks on its own when left alone; the trouble was Hauler's Dream repeatedly picking them back up before it could.
+
+  Hauler's Dream now recognizes storage that belongs to a RimIOT network and keeps its bulk sweep and its stack-topping out of it, letting RimIOT manage its own contents. This only activates when RimIOT is installed and changes nothing for anyone not running it. Regular hauling to and from ordinary storage is unaffected, and directly ordered hauls still work on network items.
+
+- 63cd8f9: Fix colonists getting stuck forever trying to start a large batch craft when they cannot carry all the ingredients in one trip, most often under Combat Extended.
+
+  When a batch crafting job needed more ingredients than a colonist could carry at once (common under Combat Extended, or with strict carry weight and overloading turned off), the colonist would pick up as much as it could, find it still could not make even one item, haul everything back to storage, and immediately start the same job again, looping without ever crafting or resting. It was worst for recipes that mix ingredients (cooked meals, kibble, pemmican, chemfuel, beer), where the plan did not account for bulk at all, so the colonist could gather a full load and still be unable to craft a single item.
+
+  Now a colonist gathers only as many whole crafting rounds as actually fit its carry capacity on each trip, picking up every ingredient type in proportion instead of filling up on one, crafts them, then goes back for more until the batch is done. The batch size itself is never reduced because of carry capacity, since other mods can change how much a pawn carries and that is not something to generalize on. If a single round genuinely cannot be carried, the batch quietly steps aside and lets the base game craft one at a time rather than looping. Colonists that can overload as normal are unaffected.
+
 ## 1.16.12
 
 ### Patch Changes
