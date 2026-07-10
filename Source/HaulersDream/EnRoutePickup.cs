@@ -138,6 +138,19 @@ namespace HaulersDream
             // get treated, not detour to grab a stray item. INTAKE-only — a pawn already carrying still unloads.
             if (!YieldRouter.FitToStartHaul(pawn))
                 return null;
+            // PROTECTED-WORK gate (the reported "surgeon carries blood into the operating room"): en-route pickup
+            // prepends onto the job the pawn is ABOUT to do, and for a surgery/tend DoBill that means a doctor was
+            // scooping loose hemogen/organs on the trip out to fetch the operation's medicine, then carrying them
+            // through the whole surgery. A pawn heading to protected work (doctoring / rescue / warden / firefight)
+            // must stay focused and NOT accumulate a haul load en route. This is INTAKE-only: any load the pawn is
+            // ALREADY carrying is still shed by the protected-work unload divert (OpportunisticUnload.ShouldDivert,
+            // tuned by the unloadDetour setting). Only the grab is suppressed, so the doctor arrives unburdened.
+            if (ProtectedWork.IsProtected(job, false))
+            {
+                HDLog.Dbg("[unloadDetour] en-route grab suppressed: " + pawn.LabelShort + " heading to protected work ("
+                    + (job.workGiverDef?.workType?.defName ?? "?") + "/" + (job.def?.defName ?? "?") + ").");
+                return null;
+            }
 
             // G2 SELF no-op: if the pawn already holds (current or queued) an HD pickup/bulk job, it is already
             // about to sweep loot into inventory — don't stack another en-route pickup on top.
