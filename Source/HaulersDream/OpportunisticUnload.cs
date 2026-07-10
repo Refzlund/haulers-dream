@@ -156,9 +156,12 @@ namespace HaulersDream
         }
 
         // Per-JobDef memo of IsYieldOrHaulJobDef (driverClass assignability is immutable per def -> safe forever).
-        // Main-thread only (the work-scan postfix runs on the main think loop); a plain Dictionary is correct.
-        private static readonly System.Collections.Generic.Dictionary<JobDef, bool> yieldOrHaulCache =
-            new System.Collections.Generic.Dictionary<JobDef, bool>();
+        // Reached from the per-pawn work scan, which a threading mod (e.g. RimThreaded) may fan onto worker
+        // threads, so use a ConcurrentDictionary: lock-free reads, and a racing double-compute is harmless
+        // because the value is a pure function of the immutable driverClass. Single-threaded behaviour is
+        // identical to the prior plain Dictionary.
+        private static readonly System.Collections.Concurrent.ConcurrentDictionary<JobDef, bool> yieldOrHaulCache =
+            new System.Collections.Concurrent.ConcurrentDictionary<JobDef, bool>();
 
         private static bool ComputeIsYieldOrHaulJobDef(System.Type dc)
         {
