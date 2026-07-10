@@ -138,17 +138,32 @@ namespace HaulersDream
             // get treated, not detour to grab a stray item. INTAKE-only — a pawn already carrying still unloads.
             if (!YieldRouter.FitToStartHaul(pawn))
                 return null;
-            // PROTECTED-WORK gate (the reported "surgeon carries blood into the operating room"): en-route pickup
-            // prepends onto the job the pawn is ABOUT to do, and for a surgery/tend DoBill that means a doctor was
-            // scooping loose hemogen/organs on the trip out to fetch the operation's medicine, then carrying them
-            // through the whole surgery. A pawn heading to protected work (doctoring / rescue / warden / firefight)
-            // must stay focused and NOT accumulate a haul load en route. This is INTAKE-only: any load the pawn is
-            // ALREADY carrying is still shed by the protected-work unload divert (OpportunisticUnload.ShouldDivert,
-            // tuned by the unloadDetour setting). Only the grab is suppressed, so the doctor arrives unburdened.
-            if (ProtectedWork.IsProtected(job, false))
+
+            // PROTECTED-WORK UNLOAD DETOUR (the reported "doctor carries blood to/through surgery"). The en-route seam
+            // prepends onto the job the pawn is ABOUT to do, so it is the ONE place a load can be shed DURING the trip
+            // out to fetch a surgery's medicine (the divert at job-assignment cannot, because the doctor is empty then
+            // and only picks the loot up here. Policy when heading to protected work (a surgery/tend DoBill, rescue,
+            // warden, firefight): a pawn ALREADY carrying an unloadable surplus must SHED or HOLD, never pile on more.
+            //   - storage within the unloadDetour budget on the way (ShouldDivert's protected zero-detour geometry) ->
+            //     prepend an unload so it drops the load at the shelf instead of carrying it through the operation;
+            //   - otherwise carry what it has, but do NOT grab (return null) so it doesn't accumulate mid-operation.
+            // An UNBURDENED pawn falls through to the normal grab below, so it STILL hauls loose loot on the way
+            // ("while you're up"). ShouldDivert stamps its own cooldown, so this can't ping-pong grab<->unload.
+            if (ProtectedWork.IsProtected(job, false)
+                && PawnUnloadChecker.AnyUnloadable(pawn, comp.GetHashSet()))
             {
-                HDLog.Dbg("[unloadDetour] en-route grab suppressed: " + pawn.LabelShort + " heading to protected work ("
-                    + (job.workGiverDef?.workType?.defName ?? "?") + "/" + (job.def?.defName ?? "?") + ").");
+                if (OpportunisticUnload.ShouldDivert(pawn, job, runOver: false, protectedZeroDetourOnly: true))
+                {
+                    var unloadJob = JobMaker.MakeJob(HaulersDreamDefOf.HaulersDream_UnloadInventory);
+                    if (unloadJob.TryMakePreToilReservations(pawn, false))
+                    {
+                        OpportunisticUnload.NotifyDiverted(pawn);
+                        HDLog.Dbg("[unloadDetour] en-route unload prepended: " + pawn.LabelShort + " sheds its load on the way to protected work ("
+                            + (job.workGiverDef?.workType?.defName ?? "?") + ").");
+                        return unloadJob;
+                    }
+                }
+                // Carrying surplus but storage is not cheaply on the way: hold the load, don't accumulate more.
                 return null;
             }
 
