@@ -364,6 +364,13 @@ namespace HaulersDream
             // unloaded, dropped, re-scooped — an endless loop). The backoff window is brief and self-healing.
             if (HaulChurnGuard.IsBackedOff(thing))
                 return CandidateOutcome.HardFail;
+            // RimIOT compat (#177 + #184): leave RimIOT's items to RimIOT. A stack in a logistic-network cell (#177)
+            // or in the ground apron of a powered interface terminal (#184) must not be en-route-grabbed, or HD
+            // pockets the network's full-overflow ground drop and force-unloads it back into the still-full network
+            // forever. This en-route path was the one pickup route #177 left un-gated (the reported #184 loop). Inert
+            // (IsPresent short-circuits) when RimIOT is absent.
+            if (RimIOTCompat.IsPresent && RimIOTCompat.IsRimIOTHandledCell(map, thing.Position))
+                return CandidateOutcome.HardFail;
             // #5: leave items another mod has claimed via a designation (e.g. a Recycle This recycle/destroy order)
             // — scooping them into inventory en route hides them from that mod's spawned-only WorkGiver.
             if (ForeignOrderGuard.ClaimedByForeignOrder(thing))
