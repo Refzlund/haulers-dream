@@ -431,6 +431,10 @@
 <HaulersDream.Report.Type.Compatibility>MOD互換性</HaulersDream.Report.Type.Compatibility>
 <HaulersDream.Report.Type.Other>その他</HaulersDream.Report.Type.Other>
 <HaulersDream.Report.DescribeLabel>内容を記入してください（何が起きたか、再現手順、期待した動作）：</HaulersDream.Report.DescribeLabel>
+<HaulersDream.Report.Placeholder.Bug>何が起きたか：[どこがおかしかったか]\n期待していた動作：[本来どうなるはずだったか]\nいつ・どのように起きるか：[どの入植者・仕事・保管場所・他のMODが関係していたか]</HaulersDream.Report.Placeholder.Bug>
+<HaulersDream.Report.Placeholder.Feature>どうしてほしいか：[望む変更や新しいオプション]\nどう役立つか：[解決される問題、またはどんなときに重要か]</HaulersDream.Report.Placeholder.Feature>
+<HaulersDream.Report.Placeholder.Compatibility>どのMODがHauler's Dreamと競合するか：[相手のMOD名]\n両方を有効にすると何が問題になるか：[実際に起きること]\n期待していた動作：[本来どう動くべきか]</HaulersDream.Report.Placeholder.Compatibility>
+<HaulersDream.Report.Placeholder.Other>何を伝えたいですか？[理解して対応するのに役立つことを何でも]</HaulersDream.Report.Placeholder.Other>
 <HaulersDream.Report.IncludeLog>完全なゲームログ（Player.log）も添付する</HaulersDream.Report.IncludeLog>
 <HaulersDream.Report.IncludeLog.Help>Hauler's Dream自身のログは常に添付されます。これにチェックを入れると、完全なPlayer.logの末尾も添付します。サイズは大きく、他のMODのメッセージが含まれることもありますが、バグの診断には最も役立つ添付ファイルです。</HaulersDream.Report.IncludeLog.Help>
 <HaulersDream.Report.AutoMeta>現在有効なMODリスト、ゲームバージョン、OS、そしてHauler's Dream自身のログは自動で添付されます。</HaulersDream.Report.AutoMeta>

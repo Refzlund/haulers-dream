@@ -24,17 +24,19 @@ namespace HaulersDream
         private struct TypeDef
         {
             public ReportKind kind;
-            public string id;        // sent as meta.type
+            public string id;              // sent as meta.type
             public string labelKey;
-            public TypeDef(ReportKind kind, string id, string labelKey) { this.kind = kind; this.id = id; this.labelKey = labelKey; }
+            public string placeholderKey;  // ghost text guiding what to write for this report kind
+            public TypeDef(ReportKind kind, string id, string labelKey, string placeholderKey)
+            { this.kind = kind; this.id = id; this.labelKey = labelKey; this.placeholderKey = placeholderKey; }
         }
 
         private static readonly TypeDef[] Types =
         {
-            new TypeDef(ReportKind.Bug,           "bug",           "HaulersDream.Report.Type.Bug"),
-            new TypeDef(ReportKind.Feature,       "feature",       "HaulersDream.Report.Type.Feature"),
-            new TypeDef(ReportKind.Compatibility, "compatibility", "HaulersDream.Report.Type.Compatibility"),
-            new TypeDef(ReportKind.Other,         "other",         "HaulersDream.Report.Type.Other"),
+            new TypeDef(ReportKind.Bug,           "bug",           "HaulersDream.Report.Type.Bug",           "HaulersDream.Report.Placeholder.Bug"),
+            new TypeDef(ReportKind.Feature,       "feature",       "HaulersDream.Report.Type.Feature",       "HaulersDream.Report.Placeholder.Feature"),
+            new TypeDef(ReportKind.Compatibility, "compatibility", "HaulersDream.Report.Type.Compatibility", "HaulersDream.Report.Placeholder.Compatibility"),
+            new TypeDef(ReportKind.Other,         "other",         "HaulersDream.Report.Type.Other",         "HaulersDream.Report.Placeholder.Other"),
         };
 
         private ReportKind kind = ReportKind.Bug;
@@ -146,6 +148,26 @@ namespace HaulersDream
             description = WidgetsCompat.TextAreaScrollable(descRect, description, ref descScroll);
             if (description != null && description.Length > ReportApi.MaxCommentChars)
                 description = description.Substring(0, ReportApi.MaxCommentChars);
+            // Greyed placeholder guiding what to write, drawn over the (empty) description box. It swaps with the
+            // selected report type and vanishes the moment the player types. Mirrors the settings search box's
+            // empty-field placeholder; a Label is non-interactive, so it never eats the text area's input.
+            if (editable && description.NullOrEmpty())
+            {
+                var phFont = Text.Font;
+                var phAnchor = Text.Anchor;
+                var phColor = GUI.color;
+                Text.Font = GameFont.Small;
+                Text.Anchor = TextAnchor.UpperLeft;
+                GUI.color = new Color(0.7f, 0.7f, 0.74f, 0.6f);
+                var ph = descRect;
+                ph.xMin += 6f;   // match the text area's left text inset
+                ph.yMin += 4f;
+                ph.xMax -= 16f;  // stay clear of the scroll gutter so lines wrap close to where real text would
+                Widgets.Label(ph, PlaceholderKey().Translate());
+                GUI.color = phColor;
+                Text.Anchor = phAnchor;
+                Text.Font = phFont;
+            }
             y = descRect.yMax + 6f;
 
             // Attach full game log toggle.
@@ -223,6 +245,15 @@ namespace HaulersDream
             var closeRect = new Rect(inRect.width / 2f - 75f, inRect.height - 36f, 150f, 32f);
             if (Widgets.ButtonText(closeRect, "CloseButton".Translate()))
                 Close();
+        }
+
+        // The placeholder (ghost text) key for the currently-selected report type; falls back to Other.
+        private string PlaceholderKey()
+        {
+            foreach (var t in Types)
+                if (t.kind == kind)
+                    return t.placeholderKey;
+            return "HaulersDream.Report.Placeholder.Other";
         }
 
         private void Submit()

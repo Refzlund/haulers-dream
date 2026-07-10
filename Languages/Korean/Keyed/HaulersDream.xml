@@ -431,6 +431,10 @@
 <HaulersDream.Report.Type.Compatibility>모드 호환성</HaulersDream.Report.Type.Compatibility>
 <HaulersDream.Report.Type.Other>그 외</HaulersDream.Report.Type.Other>
 <HaulersDream.Report.DescribeLabel>설명해 주세요 (무슨 일이 있었는지, 재현 단계, 그리고 기대한 결과):</HaulersDream.Report.DescribeLabel>
+<HaulersDream.Report.Placeholder.Bug>무슨 일이 있었나요: [무엇이 잘못되었는지]\n대신 기대한 결과: [원래 어떻게 되어야 했는지]\n언제 또는 어떻게 발생하나요: [어떤 정착민, 작업, 저장 구역, 또는 다른 모드가 관련되었는지]</HaulersDream.Report.Placeholder.Bug>
+<HaulersDream.Report.Placeholder.Feature>원하는 것: [바라는 변경 사항이나 새 옵션]\n어떻게 도움이 되나요: [해결되는 문제, 또는 언제 중요한지]</HaulersDream.Report.Placeholder.Feature>
+<HaulersDream.Report.Placeholder.Compatibility>어떤 모드가 Hauler's Dream과 충돌하나요: [상대 모드의 이름]\n둘 다 켰을 때 무엇이 잘못되나요: [실제로 보이는 현상]\n대신 기대한 결과: [원래 어떻게 동작해야 하는지]</HaulersDream.Report.Placeholder.Compatibility>
+<HaulersDream.Report.Placeholder.Other>무엇을 알려주고 싶으신가요? [이해하고 조치하는 데 도움이 되는 것은 무엇이든]</HaulersDream.Report.Placeholder.Other>
 <HaulersDream.Report.IncludeLog>전체 게임 로그(Player.log)도 함께 첨부</HaulersDream.Report.IncludeLog>
 <HaulersDream.Report.IncludeLog.Help>Hauler's Dream 자체 로그는 항상 포함됩니다. 이 항목을 체크하면 전체 Player.log의 끝부분도 함께 첨부합니다. 용량이 더 크고 다른 모드의 메시지가 섞여 있을 수 있지만, 버그를 진단하는 데 가장 유용한 첨부 파일입니다.</HaulersDream.Report.IncludeLog.Help>
 <HaulersDream.Report.AutoMeta>활성 모드 목록, 게임 버전, 운영체제, 그리고 Hauler's Dream 자체 로그가 자동으로 포함됩니다.</HaulersDream.Report.AutoMeta>

@@ -562,6 +562,11 @@
   <HaulersDream.Report.Type.Compatibility>Mod compatibility</HaulersDream.Report.Type.Compatibility>
   <HaulersDream.Report.Type.Other>Something else</HaulersDream.Report.Type.Other>
   <HaulersDream.Report.DescribeLabel>Describe it (what happened, steps to reproduce, and what you expected):</HaulersDream.Report.DescribeLabel>
+  <!-- Ghost text shown in the empty description box; guides what to write per report type. Swaps with the selected type and disappears once the player types. Use \n for line breaks; keep the bracketed [hints] as fill-in prompts. -->
+  <HaulersDream.Report.Placeholder.Bug>What happened: [what went wrong]\nWhat you expected instead: [what should have happened]\nWhen or how it happens: [which colonists, jobs, storage, or other mods were involved]</HaulersDream.Report.Placeholder.Bug>
+  <HaulersDream.Report.Placeholder.Feature>What you would like: [the change or new option]\nWhy it would help: [the problem it solves, or when it matters]</HaulersDream.Report.Placeholder.Feature>
+  <HaulersDream.Report.Placeholder.Compatibility>Which mod conflicts with Hauler's Dream: [the other mod's name]\nWhat goes wrong with both enabled: [what you see happen]\nWhat you expected instead: [how it should behave]</HaulersDream.Report.Placeholder.Compatibility>
+  <HaulersDream.Report.Placeholder.Other>What would you like to tell us? [share anything that helps us understand and act on it]</HaulersDream.Report.Placeholder.Other>
   <HaulersDream.Report.IncludeLog>Also attach the full game log (Player.log)</HaulersDream.Report.IncludeLog>
   <HaulersDream.Report.IncludeLog.Help>Hauler's Dream's own log is always included. Tick this to also attach the tail of your full Player.log; it is larger and may contain other mods' messages, but it is the most useful attachment for diagnosing a bug.</HaulersDream.Report.IncludeLog.Help>
   <HaulersDream.Report.AutoMeta>Your active mods, game version, OS, and Hauler's Dream's own log are included automatically.</HaulersDream.Report.AutoMeta>

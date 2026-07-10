@@ -431,6 +431,10 @@
 <HaulersDream.Report.Type.Compatibility>Compatibilité de mod</HaulersDream.Report.Type.Compatibility>
 <HaulersDream.Report.Type.Other>Autre chose</HaulersDream.Report.Type.Other>
 <HaulersDream.Report.DescribeLabel>Décrivez-le (ce qui s'est passé, les étapes pour le reproduire, et ce que vous attendiez) :</HaulersDream.Report.DescribeLabel>
+<HaulersDream.Report.Placeholder.Bug>Ce qui s'est passé : [ce qui n'a pas fonctionné]\nCe que vous attendiez à la place : [ce qui aurait dû se passer]\nQuand ou comment cela se produit : [quels colons, tâches, stockage ou autres mods étaient impliqués]</HaulersDream.Report.Placeholder.Bug>
+<HaulersDream.Report.Placeholder.Feature>Ce que vous aimeriez : [le changement ou la nouvelle option]\nEn quoi cela aiderait : [le problème que cela résout, ou quand c'est utile]</HaulersDream.Report.Placeholder.Feature>
+<HaulersDream.Report.Placeholder.Compatibility>Quel mod entre en conflit avec Hauler's Dream : [le nom de l'autre mod]\nCe qui ne va pas avec les deux activés : [ce que vous voyez se produire]\nCe que vous attendiez à la place : [comment cela devrait se comporter]</HaulersDream.Report.Placeholder.Compatibility>
+<HaulersDream.Report.Placeholder.Other>Que souhaitez-vous nous dire ? [partagez tout ce qui nous aide à comprendre et à agir]</HaulersDream.Report.Placeholder.Other>
 <HaulersDream.Report.IncludeLog>Joindre aussi le journal complet du jeu (Player.log)</HaulersDream.Report.IncludeLog>
 <HaulersDream.Report.IncludeLog.Help>Le propre journal de Hauler's Dream est toujours inclus. Cochez ceci pour joindre aussi la fin de votre Player.log complet ; il est plus volumineux et peut contenir les messages d'autres mods, mais c'est la pièce jointe la plus utile pour diagnostiquer un bug.</HaulersDream.Report.IncludeLog.Help>
 <HaulersDream.Report.AutoMeta>Votre liste de mods active, la version du jeu, le système d'exploitation et le propre journal de Hauler's Dream sont inclus automatiquement.</HaulersDream.Report.AutoMeta>

@@ -431,6 +431,10 @@
 <HaulersDream.Report.Type.Compatibility>Mod-Kompatibilität</HaulersDream.Report.Type.Compatibility>
 <HaulersDream.Report.Type.Other>Etwas anderes</HaulersDream.Report.Type.Other>
 <HaulersDream.Report.DescribeLabel>Beschreibe es (was passiert ist, Schritte zum Nachstellen und was du erwartet hast):</HaulersDream.Report.DescribeLabel>
+<HaulersDream.Report.Placeholder.Bug>Was passiert ist: [was schiefgelaufen ist]\nWas du stattdessen erwartet hast: [was hätte passieren sollen]\nWann oder wie es passiert: [welche Kolonisten, Aufgaben, Lager oder anderen Mods beteiligt waren]</HaulersDream.Report.Placeholder.Bug>
+<HaulersDream.Report.Placeholder.Feature>Was du dir wünschst: [die Änderung oder neue Option]\nWarum es helfen würde: [das Problem, das es löst, oder wann es wichtig ist]</HaulersDream.Report.Placeholder.Feature>
+<HaulersDream.Report.Placeholder.Compatibility>Welcher Mod mit Hauler's Dream in Konflikt steht: [Name des anderen Mods]\nWas mit beiden aktiviert schiefgeht: [was du beobachtest]\nWas du stattdessen erwartet hast: [wie es sich verhalten sollte]</HaulersDream.Report.Placeholder.Compatibility>
+<HaulersDream.Report.Placeholder.Other>Was möchtest du uns mitteilen? [teile alles, was uns hilft, es zu verstehen und darauf zu reagieren]</HaulersDream.Report.Placeholder.Other>
 <HaulersDream.Report.IncludeLog>Auch das vollständige Spielprotokoll anhängen (Player.log)</HaulersDream.Report.IncludeLog>
 <HaulersDream.Report.IncludeLog.Help>Das eigene Protokoll von Hauler's Dream wird immer mitgesendet. Aktiviere dies, um auch das Ende deines vollständigen Player.log anzuhängen; es ist größer und kann Meldungen anderer Mods enthalten, ist aber der nützlichste Anhang, um einen Fehler einzugrenzen.</HaulersDream.Report.IncludeLog.Help>
 <HaulersDream.Report.AutoMeta>Deine aktive Mod-Liste, deine Spielversion, dein Betriebssystem und das eigene Protokoll von Hauler's Dream werden automatisch mitgesendet.</HaulersDream.Report.AutoMeta>

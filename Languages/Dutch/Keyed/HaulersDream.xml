@@ -431,6 +431,10 @@
 <HaulersDream.Report.Type.Compatibility>Modcompatibiliteit</HaulersDream.Report.Type.Compatibility>
 <HaulersDream.Report.Type.Other>Iets anders</HaulersDream.Report.Type.Other>
 <HaulersDream.Report.DescribeLabel>Beschrijf het (wat gebeurde er, stappen om het te reproduceren, en wat je verwachtte):</HaulersDream.Report.DescribeLabel>
+<HaulersDream.Report.Placeholder.Bug>Wat er gebeurde: [wat er misging]\nWat je in plaats daarvan verwachtte: [wat er had moeten gebeuren]\nWanneer of hoe het gebeurt: [welke kolonisten, taken, opslag of andere mods erbij betrokken waren]</HaulersDream.Report.Placeholder.Bug>
+<HaulersDream.Report.Placeholder.Feature>Wat je zou willen: [de wijziging of nieuwe optie]\nWaarom het zou helpen: [het probleem dat het oplost, of wanneer het uitmaakt]</HaulersDream.Report.Placeholder.Feature>
+<HaulersDream.Report.Placeholder.Compatibility>Welke mod met Hauler's Dream botst: [de naam van de andere mod]\nWat er misgaat met beide ingeschakeld: [wat je ziet gebeuren]\nWat je in plaats daarvan verwachtte: [hoe het zich zou moeten gedragen]</HaulersDream.Report.Placeholder.Compatibility>
+<HaulersDream.Report.Placeholder.Other>Wat zou je ons willen vertellen? [deel alles wat ons helpt het te begrijpen en er iets mee te doen]</HaulersDream.Report.Placeholder.Other>
 <HaulersDream.Report.IncludeLog>Ook het volledige spellogboek meesturen (Player.log)</HaulersDream.Report.IncludeLog>
 <HaulersDream.Report.IncludeLog.Help>Het eigen logboek van Hauler's Dream wordt altijd meegestuurd. Vink dit aan om ook het einde van je volledige Player.log mee te sturen; dat is groter en kan berichten van andere mods bevatten, maar het is de nuttigste bijlage om een bug op te sporen.</HaulersDream.Report.IncludeLog.Help>
 <HaulersDream.Report.AutoMeta>Je actieve modlijst, spelversie, besturingssysteem en het eigen logboek van Hauler's Dream worden automatisch meegestuurd.</HaulersDream.Report.AutoMeta>

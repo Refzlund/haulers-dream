@@ -431,6 +431,10 @@
 <HaulersDream.Report.Type.Compatibility>Сумісність з модами</HaulersDream.Report.Type.Compatibility>
 <HaulersDream.Report.Type.Other>Щось інше</HaulersDream.Report.Type.Other>
 <HaulersDream.Report.DescribeLabel>Опишіть це (що сталося, кроки для відтворення та чого ви очікували):</HaulersDream.Report.DescribeLabel>
+<HaulersDream.Report.Placeholder.Bug>Що сталося: [що пішло не так]\nЩо ви очікували натомість: [що мало статися]\nКоли або як це відбувається: [які колоністи, роботи, склади чи інші моди були задіяні]</HaulersDream.Report.Placeholder.Bug>
+<HaulersDream.Report.Placeholder.Feature>Що б ви хотіли: [зміна або нова опція]\nЧим це допоможе: [яку проблему вирішує або коли це важливо]</HaulersDream.Report.Placeholder.Feature>
+<HaulersDream.Report.Placeholder.Compatibility>Який мод конфліктує з Hauler's Dream: [назва іншого мода]\nЩо йде не так, коли обидва ввімкнені: [що ви бачите]\nЩо ви очікували натомість: [як це має працювати]</HaulersDream.Report.Placeholder.Compatibility>
+<HaulersDream.Report.Placeholder.Other>Що б ви хотіли нам розповісти? [напишіть будь-що, що допоможе нам зрозуміти й діяти]</HaulersDream.Report.Placeholder.Other>
 <HaulersDream.Report.IncludeLog>Також прикріпити повний ігровий журнал (Player.log)</HaulersDream.Report.IncludeLog>
 <HaulersDream.Report.IncludeLog.Help>Власний журнал Hauler's Dream додається завжди. Позначте це, щоб також прикріпити кінець вашого повного Player.log; він більший і може містити повідомлення інших модів, але це найкорисніше вкладення для діагностики бага.</HaulersDream.Report.IncludeLog.Help>
 <HaulersDream.Report.AutoMeta>Ваш активний список модів, версія гри, ОС і власний журнал Hauler's Dream додаються автоматично.</HaulersDream.Report.AutoMeta>

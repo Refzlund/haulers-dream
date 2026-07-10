@@ -431,6 +431,10 @@
 <HaulersDream.Report.Type.Compatibility>Zgodność z modem</HaulersDream.Report.Type.Compatibility>
 <HaulersDream.Report.Type.Other>Coś innego</HaulersDream.Report.Type.Other>
 <HaulersDream.Report.DescribeLabel>Opisz to (co się stało, kroki do odtworzenia oraz czego oczekiwałeś):</HaulersDream.Report.DescribeLabel>
+<HaulersDream.Report.Placeholder.Bug>Co się stało: [co poszło nie tak]\nCzego oczekiwałeś zamiast tego: [co powinno się wydarzyć]\nKiedy lub jak to się dzieje: [którzy koloniści, jakie prace, magazyny lub inne mody były zamieszane]</HaulersDream.Report.Placeholder.Bug>
+<HaulersDream.Report.Placeholder.Feature>Co chciałbyś: [zmiana lub nowa opcja]\nDlaczego by pomogło: [problem, który rozwiązuje, lub kiedy ma znaczenie]</HaulersDream.Report.Placeholder.Feature>
+<HaulersDream.Report.Placeholder.Compatibility>Który mod koliduje z Hauler's Dream: [nazwa drugiego moda]\nCo się psuje przy obu włączonych: [co widzisz]\nCzego oczekiwałeś zamiast tego: [jak powinno działać]</HaulersDream.Report.Placeholder.Compatibility>
+<HaulersDream.Report.Placeholder.Other>Co chciałbyś nam przekazać? [napisz cokolwiek, co pomoże nam zrozumieć i zareagować]</HaulersDream.Report.Placeholder.Other>
 <HaulersDream.Report.IncludeLog>Dołącz również pełny dziennik gry (Player.log)</HaulersDream.Report.IncludeLog>
 <HaulersDream.Report.IncludeLog.Help>Własny dziennik Hauler's Dream jest dołączany zawsze. Zaznacz to, aby dołączyć też końcówkę twojego pełnego Player.log; jest on większy i może zawierać komunikaty innych modów, ale to najprzydatniejszy załącznik przy diagnozowaniu błędu.</HaulersDream.Report.IncludeLog.Help>
 <HaulersDream.Report.AutoMeta>Twoja aktywna lista modów, wersja gry, system operacyjny oraz własny dziennik Hauler's Dream są dołączane automatycznie.</HaulersDream.Report.AutoMeta>
