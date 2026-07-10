@@ -1,5 +1,25 @@
 # haulers-dream
 
+## 1.17.0
+
+### Minor Changes
+
+- f14d0ee: Add guiding placeholder text to the in-game "Report an issue" description box.
+
+  The description box now shows greyed example prompts that change with the report type, so it is clearer what to write. A bug report suggests noting what happened, what you expected, and when it happens; a feature request asks for the change and why it would help; a compatibility report asks which mod conflicts and what goes wrong with both enabled. The hint disappears the moment you start typing. It is translated into all 14 supported languages.
+
+### Patch Changes
+
+- 27f3a92: Stop Hauler's Dream from disabling Common Sense's spoiling-ingredient cooking sort.
+
+  Both mods reorder a cooking bill's ingredients by rewriting the same piece of game code, and only one can win, so depending on load order Hauler's Dream could win and silently switch off Common Sense's default spoilage-first sort (sometimes with a one-time yellow "[Common Sense] ... patch 0 didn't work" log line). Hauler's Dream now steps aside from that sort whenever Common Sense is installed, so Common Sense's feature always works. Hauler's Dream's own spoilage sort is the same idea Common Sense provides, so a default cook is unaffected, and its separate batch-cooking picker still honors Hauler's Dream's cook-order options either way.
+
+  A code-level investigation (cloning Common Sense) also confirmed that running the two mods together is not the cause of the red errors some players attributed to it: no Hauler's Dream fault was found in the interaction. Hauler's Dream tags any error it is responsible for with its own name, so a red error's stack trace shows whether it belongs to Hauler's Dream or elsewhere.
+
+- 27f3a92: Verify and strengthen compatibility with the 1.6 multithreading and performance mods (RimThreaded, RimSmooth).
+
+  A code-level investigation (including cloning RimThreaded's source) confirmed Hauler's Dream stays compatible with the multithreading and performance mods available for 1.6: RimThreaded - Continued parallelizes only particles, background random numbers, and sound, and RimSmooth is single-threaded, so neither runs Hauler's Dream's hauling or job code across threads. Hauler's Dream was already built for thread-safety on its busy code paths. As forward-insurance for a future mod that threads pawn AI, two internal per-tick caches were hardened to match their already thread-safe siblings, with no change to how the mod behaves for anyone.
+
 ## 1.16.13
 
 ### Patch Changes
