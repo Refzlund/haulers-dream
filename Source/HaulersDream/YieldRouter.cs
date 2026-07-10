@@ -260,6 +260,11 @@ namespace HaulersDream
                     return true; // only the immediate work area
                 if (comp.pendingSelfPickups.Contains(t) || t.IsForbidden(pawn) || claimed.Contains(t) || t.IsInValidStorage())
                     return true;
+                // Skip items the churn guard has backed off (issue #162: an unstackable with no storage gets
+                // scooped, unloaded, dropped, re-scooped — an endless loop). The backoff window is brief and
+                // self-healing, so the item is retried automatically once it passes.
+                if (HaulChurnGuard.IsBackedOff(t))
+                    return true;
                 // #5: leave items another mod has claimed via a designation (e.g. a Recycle This recycle/destroy
                 // order) — scooping them into inventory hides them from that mod's spawned-only WorkGiver.
                 if (ForeignOrderGuard.ClaimedByForeignOrder(t))

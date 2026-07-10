@@ -590,6 +590,20 @@
 <HaulersDream.Setting.AlertStuckHours.Lab>Markér en fastlåst figur efter</HaulersDream.Setting.AlertStuckHours.Lab>
 <HaulersDream.Setting.AlertStuckHours.Help>Hvor længe en figur må holde på transportlast, den ikke kan lægge væk (med en destination, der findes), før alarmen markerer den.</HaulersDream.Setting.AlertStuckHours.Help>
 <HaulersDream.Setting.EnRoutePathChecker.Lab>Tjek for "på vejen"</HaulersDream.Setting.EnRoutePathChecker.Lab>
+  <HaulersDream.Head.OpportunisticDetour>Afstikker for at samle op undervejs</HaulersDream.Head.OpportunisticDetour>
+  <HaulersDream.Setting.OpportunisticDetour.Lab>Afstikker-afstand</HaulersDream.Setting.OpportunisticDetour.Lab>
+  <HaulersDream.Setting.OpportunisticDetour.Desc>Hvor langt en figur, der allerede er på vej til lager, går ud af sin vej for at samle en løs vare op, den passerer. Afstandene er ekstra felter i forhold til at gå direkte: Fra samler aldrig en vare op undervejs; Kort tager kun det, der praktisk talt ligger lige på vejen (cirka 4 felter); Standard, standardvalget, tillader en kort afstikker (cirka 10 felter); Lang tager afstikkere, der er umagen værd (cirka 20 felter). Måles som afstand i lige linje, så en smule rækker længere på en lang transport. Gælder kun, mens "Grib løse varer, der er på vejen til en opgave" er slået til.</HaulersDream.Setting.OpportunisticDetour.Desc>
+  <HaulersDream.Setting.Detour.Off.S>Fra</HaulersDream.Setting.Detour.Off.S>
+  <HaulersDream.Setting.Detour.Short.S>Kort</HaulersDream.Setting.Detour.Short.S>
+  <HaulersDream.Setting.Detour.Standard.S>Standard</HaulersDream.Setting.Detour.Standard.S>
+  <HaulersDream.Setting.Detour.Long.S>Lang</HaulersDream.Setting.Detour.Long.S>
+  <HaulersDream.Setting.Detour.Off.H>Lav aldrig afstikkere: en figur samler ikke en vare op undervejs og bærer et opsamlet læs gennem hele opgaven. Genopretter den strenge "forsink aldrig arbejdet"-adfærd. (0 ekstra felter)</HaulersDream.Setting.Detour.Off.H>
+  <HaulersDream.Setting.Detour.Short.H>Kun når det praktisk talt intet koster, cirka en vare lige på vejen. Cirka 4 ekstra felters afstand.</HaulersDream.Setting.Detour.Short.H>
+  <HaulersDream.Setting.Detour.Standard.H>Tillad en kort afstikker for at undgå en ekstra tur. Cirka 10 ekstra felters afstand.</HaulersDream.Setting.Detour.Standard.H>
+  <HaulersDream.Setting.Detour.Long.H>Tag afstikkere, der er umagen værd, og byt en lille, bevidst forsinkelse på vigtigt arbejde for færre ture. Cirka 20 ekstra felters afstand.</HaulersDream.Setting.Detour.Long.H>
+  <HaulersDream.Head.UnloadDetour>Aflæsning under vigtigt arbejde</HaulersDream.Head.UnloadDetour>
+  <HaulersDream.Setting.UnloadDetour.Lab>Aflæsningsafstikker under vigtigt arbejde</HaulersDream.Setting.UnloadDetour.Lab>
+  <HaulersDream.Setting.UnloadDetour.Desc>Hvor langt en figur, der udfører ikke-akut vigtigt arbejde (en planlagt operation, en redning, en fangevogteropgave), går ud af sin vej for at aflevere et opsamlet læs ved lager, typisk på turen ud for at hente medicinen til indgrebet. Afstandene er ekstra felter i forhold til at gå direkte: Fra bærer læsset gennem hele opgaven (den gamle strenge adfærd uden afstikker); Kort, standardvalget, tillader en afstikker på cirka 4 felter, så læsset sættes af ved en næsten gratis passage; Standard tillader cirka 10 felter; Lang tillader cirka 20 og bytter en lille, bevidst forsinkelse af operationen for færre ture. Kræver, at automatisk aflæsning er slået til (det er den som standard); dette er en separat funktion, adskilt fra kontakten "Aflæs på vejen forbi lager".</HaulersDream.Setting.UnloadDetour.Desc>
 <HaulersDream.Setting.AutoStripMode.Lab>Afklæd automatisk under transport</HaulersDream.Setting.AutoStripMode.Lab>
 <HaulersDream.Setting.AutoStrip.Help>Når et lig transporteres, afklædes dets udstyr først, og byttet bæres med. 'Kun bortskaffelse' afklæder kun lig på vej til en smidezone. 'Fra' lader lig være påklædte (manuelle Afklæd-ordrer samler stadig deres udstyr op).</HaulersDream.Setting.AutoStrip.Help>
 <HaulersDream.Setting.TaintedSmeltable.Lab>Besudlet beklædning — smelteligt</HaulersDream.Setting.TaintedSmeltable.Lab>

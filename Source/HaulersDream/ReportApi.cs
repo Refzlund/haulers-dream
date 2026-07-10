@@ -116,6 +116,10 @@ namespace HaulersDream
             // Logs: HD's own buffer first (always), then the full game log when opted in.
             var logNames = new List<string>(2);
             var logTexts = new List<string>(2);
+            // Drain the background writer's queue to disk FIRST, so the tail we read next includes the newest
+            // lines (the events leading right up to hitting "report") instead of missing whatever was still
+            // in-flight. Blocks briefly; the writer keeps running for the rest of the session.
+            HDDebugLog.FlushBlocking();
             string hdLog = HDLog.GetReportLog();
             if (!string.IsNullOrEmpty(hdLog)) { logNames.Add("Hauler's Dream"); logTexts.Add(hdLog); }
             if (includeGameLog)

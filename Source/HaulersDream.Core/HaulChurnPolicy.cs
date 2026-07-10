@@ -160,5 +160,45 @@ namespace HaulersDream.Core
         /// <see cref="RecordThingFailure"/>).</param>
         public static bool ShouldBackOffThing(int failCount)
             => failCount >= MaxFailedJobsPerThing;
+
+        // --- Per-THING haul-ASIDE ping-pong bound (issue #162) ----------------------------------------------
+        //  A DIFFERENT loop than the storage churn above, and the reason all prior fixes missed it. When an item
+        //  sits on a cell a vanilla work-giver wants cleared (a bill-giver's ingredient cell, a growing/mining/
+        //  construction cell), vanilla issues HaulAIUtility.HaulAsideJobFor: a HaulToCell with
+        //  HaulMode.ToCellNonStorage and count 99999 that moves the item to the NEAREST valid cell. In a cramped
+        //  room the nearest valid cell is an adjacent cell the work-giver ALSO wants cleared, so the item ping-pongs
+        //  between two cells forever, every haul reported Succeeded (decompile-confirmed against Assembly-CSharp:
+        //  HaulAsideJobFor -> CanHaulAside -> TryFindSpotToPlaceHaulableCloseTo). The storage churn layers never
+        //  fire on it: they gate on HaulMode.ToCellStorage and count only Incompletable ends, while this is
+        //  ToCellNonStorage and Succeeded.
+        //
+        //  Storability is NOT the discriminator: the reported log proved the looping item WAS storable (the instant
+        //  the shuffle broke, the mod's own bulk-haul stored it). It bounces only because the work-giver's aside
+        //  outranks the storage haul, so the pawn keeps clearing the cell and never gets to store the item. The
+        //  bound is therefore about the BOUNCE: the moment an item is hauled aside, further HaulAsideJobFor for it
+        //  is suppressed, and each subsequent denial RE-ARMS that window from the current tick, so while a work-giver
+        //  keeps asking the item is relocated ONCE and then never re-probed (no periodic recurrence). The one aside
+        //  that clears the work cell still runs; only the SECOND, returning haul is denied (the "there and back" the
+        //  player sees as pacing), so the pawn does something productive instead (hauls the item to storage, or moves
+        //  on). A null aside job is a state every vanilla caller already handles (exactly as when CanHaulAside finds
+        //  no spot), so the break is clean for all five callers, not just the bill-giver one the report hit. Storage
+        //  hauling is untouched: only the aside path is suppressed.
+
+        /// <summary>
+        /// How long (game ticks) an item stays suppressed from further haul-aside after the LAST time a work-giver
+        /// asked to clear its cell. While such requests keep coming the Verse glue re-arms this window at the denial
+        /// seam, so the item is relocated exactly ONCE and then never re-probed (no periodic recurrence); this value
+        /// is the grace period once the requests stop, after which the item is retried if it is aside'd again. 2500
+        /// ticks (~40 s at normal speed) comfortably spans a lull between requests without a premature retry, while
+        /// staying finite so a resolved situation is not frozen forever (also deliberately longer than
+        /// <see cref="BackoffTicks"/>, the trigger being a persistent condition). Storage hauling is never suppressed
+        /// by this, so a freed stockpile still stores the item immediately.
+        /// </summary>
+        public const int AsideBackoffTicks = 2500;
+
+        /// <summary>The tick until which an aside-suppressed item stays suppressed from further haul-aside.</summary>
+        /// <param name="nowTick">The current game tick (the moment the item was first hauled aside).</param>
+        public static int AsideSuppressUntil(int nowTick)
+            => nowTick + AsideBackoffTicks;
     }
 }

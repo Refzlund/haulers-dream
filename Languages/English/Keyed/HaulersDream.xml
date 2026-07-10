@@ -755,6 +755,22 @@
   <HaulersDream.Setting.AlertStuckHours.Lab>Flag a stuck pawn after</HaulersDream.Setting.AlertStuckHours.Lab>
   <HaulersDream.Setting.AlertStuckHours.Help>How long a pawn may hold haul cargo it cannot put away (with a destination that exists) before the alert flags it.</HaulersDream.Setting.AlertStuckHours.Help>
   <HaulersDream.Setting.EnRoutePathChecker.Lab>On-the-way check</HaulersDream.Setting.EnRoutePathChecker.Lab>
+
+  <!-- Detour tolerance. Two separate knobs share the same four tiers (the segment buttons show the extra-tile budget): the grab-on-the-way PICKUP (Routing tab) and the protected-work UNLOAD during important work (Unloading tab). -->
+  <HaulersDream.Head.OpportunisticDetour>Grab-on-the-way detour</HaulersDream.Head.OpportunisticDetour>
+  <HaulersDream.Setting.OpportunisticDetour.Lab>Detour distance</HaulersDream.Setting.OpportunisticDetour.Lab>
+  <HaulersDream.Setting.OpportunisticDetour.Desc>How far a pawn already walking to storage will step out of its way to grab a loose item it passes. Distances are extra tiles of travel over going straight: Off never grabs a passing item; Short takes only what is practically on the exact path (about 4 tiles); Standard, the default, allows a short detour (about 10 tiles); Long takes worthwhile detours (about 20 tiles). Measured as straight-line distance, so a little goes further on a long haul. Only applies while "Grab loose items that are on the way to a job" is on.</HaulersDream.Setting.OpportunisticDetour.Desc>
+  <HaulersDream.Setting.Detour.Off.S>Off</HaulersDream.Setting.Detour.Off.S>
+  <HaulersDream.Setting.Detour.Short.S>Short</HaulersDream.Setting.Detour.Short.S>
+  <HaulersDream.Setting.Detour.Standard.S>Standard</HaulersDream.Setting.Detour.Standard.S>
+  <HaulersDream.Setting.Detour.Long.S>Long</HaulersDream.Setting.Detour.Long.S>
+  <HaulersDream.Setting.Detour.Off.H>Never detour: a pawn will not grab a passing item, and carries a scooped load through the whole task. Restores the strict "never delay the work" behavior. (0 extra tiles)</HaulersDream.Setting.Detour.Off.H>
+  <HaulersDream.Setting.Detour.Short.H>Only when it costs practically nothing, roughly an item on the exact path. About 4 extra tiles of travel.</HaulersDream.Setting.Detour.Short.H>
+  <HaulersDream.Setting.Detour.Standard.H>Allow a short detour to avoid a second trip. About 10 extra tiles of travel.</HaulersDream.Setting.Detour.Standard.H>
+  <HaulersDream.Setting.Detour.Long.H>Take worthwhile detours, trading a small deliberate delay on important work for fewer trips. About 20 extra tiles of travel.</HaulersDream.Setting.Detour.Long.H>
+  <HaulersDream.Head.UnloadDetour>Unloading during important work</HaulersDream.Head.UnloadDetour>
+  <HaulersDream.Setting.UnloadDetour.Lab>Unload detour during important work</HaulersDream.Setting.UnloadDetour.Lab>
+  <HaulersDream.Setting.UnloadDetour.Desc>How far a pawn on non-emergency important work (an elective surgery, a rescue, a warden task) will step out of its way to drop a scooped load at storage, typically on the trip out to fetch the operation's medicine. Distances are extra tiles of travel over going straight: Off carries the load through the whole task (the old strict zero-detour behavior); Short, the default, allows about a 4-tile detour so the load is shed on a near-free pass-by; Standard allows about 10 tiles; Long allows about 20, trading a small deliberate surgery delay for fewer trips. Requires automatic unloading to be on (it is by default); this is a separate feature from the on-the-way drop-off toggle.</HaulersDream.Setting.UnloadDetour.Desc>
   <HaulersDream.Setting.AutoStripMode.Lab>Auto-strip while hauling</HaulersDream.Setting.AutoStripMode.Lab>
   <HaulersDream.Setting.AutoStrip.Help>When hauling a corpse, strip its gear first and carry the loot along. 'Disposal only' strips only corpses headed to a dumping zone. 'Off' leaves corpses dressed (manual Strip orders still pick up their gear).</HaulersDream.Setting.AutoStrip.Help>
   <HaulersDream.Setting.TaintedSmeltable.Lab>Tainted apparel — smeltable</HaulersDream.Setting.TaintedSmeltable.Lab>

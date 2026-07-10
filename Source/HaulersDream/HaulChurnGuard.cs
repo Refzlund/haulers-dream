@@ -226,9 +226,7 @@ namespace HaulersDream
                               + "backing it off from the automatic haul scan.");
                 }
                 else
-                {
                     thingFails[thing.thingIDNumber] = (newLast, newCount);
-                }
             }
         }
 
@@ -426,11 +424,19 @@ namespace HaulersDream
             if (settings == null || !settings.haulToStack)
                 return; // the cell-reservation-skipping feature (the loop's cause) is off -> vanilla reserves the cell
             var job = __instance.job;
+            var tgt = job?.GetTarget(TargetIndex.A).Thing;
             if (job == null || job.playerForced || job.haulMode != HaulMode.ToCellStorage)
+                return; // per-thing guard needs an unforced ToCellStorage haul (storage hauls are the loop's domain)
+            var thing = tgt;
+            if (thing?.def == null)
                 return;
-            var thing = job.GetTarget(TargetIndex.A).Thing;
-            if (thing?.def == null || thing.def.stackLimit <= 1)
-                return; // unstackables keep vanilla's cell reservation (see the no-reserve patch) -> can't loop this way
+            // NOTE: unstackables (stackLimit <= 1) are NOT excluded — the original assumption was that
+            // "unstackables keep vanilla's cell reservation, so they can't loop." That is FALSE: the
+            // HaulToCell carry toil's fail-on can fire for unstackables too (the destination cell goes
+            // invalid mid-carry for reasons unrelated to multi-pawn cell contention — e.g. the cell is
+            // occupied by a different-def item placed between the storage search and the arrival, or the
+            // storage settings changed). Without this guard, the workgiver instantly re-creates the
+            // identical doomed HaulToCell, producing the reported rapid up-and-down pacing loop (issue #162).
 
             // Tally this job's outcome per THING when it ends. A success clears the loop; an Incompletable finish
             // (the goto/carry storage-invalid fails, and Layer 1's own bail) counts toward the per-thing backoff
@@ -506,8 +512,8 @@ namespace HaulersDream
                 if (settings == null || !settings.haulToStack)
                     return JobCondition.Ongoing; // feature off -> vanilla reserves the cell, nothing can strand it
                 var carried = actor.carryTracker?.CarriedThing;
-                if (carried?.def == null || carried.def.stackLimit <= 1)
-                    return JobCondition.Ongoing; // unstackables keep vanilla's reserved cell -> no contention
+                if (carried?.def == null)
+                    return JobCondition.Ongoing; // nothing carried -> nothing to re-route
                 var cell = job.GetTarget(squareIndex).Cell;
                 if (cell.IsValidStorageFor(actor.Map, carried))
                     return JobCondition.Ongoing; // still a good destination -> keep walking (the common case)

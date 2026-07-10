@@ -45,5 +45,31 @@ namespace HaulersDream.Core
         /// non-emergency Doctor/Firefighter/Warden work (notably rescue) the flags miss.</param>
         public static bool IsProtectedWork(bool nodeIsEmergency, bool workGiverEmergency, string workTypeDefName)
             => nodeIsEmergency || workGiverEmergency || IsProtectedWorkType(workTypeDefName);
+
+        /// <summary>
+        /// The #107 divert-gate decision for protected work: is this a TRUE emergency whose divert must be
+        /// HARD-BLOCKED? True emergencies (tend the bleeding, firefight, emergency take-to-bed) are the
+        /// emergency-node / emergency-workgiver jobs; they are never diverted for any reason, exactly as issue #107
+        /// established. (Splitting this out from <see cref="MayZeroDetourUnload"/> so the safety-critical
+        /// emergency-vs-non-emergency boundary is pinned by tests, not left implicit in the Verse postfix.)
+        /// </summary>
+        /// <param name="isProtected">The job is protected work (see <see cref="IsProtectedWork"/>).</param>
+        /// <param name="isEmergency">The job is emergency-flagged (its issuing node or its workgiver).</param>
+        public static bool MustHardBlockDivert(bool isProtected, bool isEmergency)
+            => isProtected && isEmergency;
+
+        /// <summary>
+        /// The #107 divert-gate decision for protected work: may this job take a ZERO-DETOUR pass-by unload (shed a
+        /// scooped load ONLY when storage is already on the way, never adding travel, so the work is never delayed)?
+        /// Deliberately narrow: ONLY a NON-emergency <paramref name="isDoBill"/> (the reported "a doctor carries
+        /// scooped organs through an elective-surgery queue" case). Rescue and warden work, though non-emergency,
+        /// keep the hard block because their urgency should not be delayed even by a free drop; a true emergency is
+        /// already excluded by <paramref name="isEmergency"/>.
+        /// </summary>
+        /// <param name="isProtected">The job is protected work.</param>
+        /// <param name="isEmergency">The job is emergency-flagged (its issuing node or its workgiver).</param>
+        /// <param name="isDoBill">The job is a DoBill (a surgery when the bill-giver is a patient).</param>
+        public static bool MayZeroDetourUnload(bool isProtected, bool isEmergency, bool isDoBill)
+            => isProtected && !isEmergency && isDoBill;
     }
 }

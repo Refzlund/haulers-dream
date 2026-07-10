@@ -69,5 +69,58 @@ namespace HaulersDream.Tests
             Assert.That(ProtectedWorkPolicy.IsProtectedWorkType("Hauling"), Is.False);
             Assert.That(ProtectedWorkPolicy.IsProtectedWorkType(null), Is.False);
         }
+
+        // --- the #107 divert-gate split (issue: a doctor carries scooped organs through an elective-surgery queue,
+        // never unloading). A protected job is now sorted into exactly one of three buckets: HARD-BLOCK (a true
+        // emergency, never touched), ZERO-DETOUR-ELIGIBLE (a non-emergency surgery, may shed a load that is already
+        // on the way), or carry-on (rescue/warden, still never diverted but not hard-blocked). These two predicates
+        // are the safety boundary, so the emergency-vs-non-emergency line is pinned here, not left in the postfix. ---
+
+        [Test]
+        public void HardBlock_OnlyWhenProtectedAndEmergency()
+        {
+            // A tend-the-bleeding / firefight / emergency take-to-bed job: never diverted for any reason (#107).
+            Assert.That(ProtectedWorkPolicy.MustHardBlockDivert(isProtected: true, isEmergency: true), Is.True);
+            // Non-emergency protected work (elective surgery, rescue, warden) is NOT hard-blocked: it may still be
+            // considered for the zero-detour pass-by below.
+            Assert.That(ProtectedWorkPolicy.MustHardBlockDivert(isProtected: true, isEmergency: false), Is.False);
+            // Ordinary work is never hard-blocked here (the normal divert path governs it).
+            Assert.That(ProtectedWorkPolicy.MustHardBlockDivert(isProtected: false, isEmergency: false), Is.False);
+            // Defensive: an emergency flag implies protected in practice (emergency => protected), so this row is
+            // unreachable from the live inputs, but the pure predicate still must not hard-block unprotected work.
+            Assert.That(ProtectedWorkPolicy.MustHardBlockDivert(isProtected: false, isEmergency: true), Is.False);
+        }
+
+        [Test]
+        public void ZeroDetour_OnlyForNonEmergencySurgery()
+        {
+            // The reported case: a non-emergency DoBill (surgery) may shed a load that sits on the path. This is the
+            // ONLY protected bucket that opens the zero-detour door.
+            Assert.That(ProtectedWorkPolicy.MayZeroDetourUnload(isProtected: true, isEmergency: false, isDoBill: true), Is.True);
+        }
+
+        [Test]
+        public void ZeroDetour_NeverForAnEmergency()
+        {
+            // A surgery flagged emergency (patient bleeding out on the table) keeps the hard block: no drop, however
+            // free, may sit between the doctor and the operation.
+            Assert.That(ProtectedWorkPolicy.MayZeroDetourUnload(isProtected: true, isEmergency: true, isDoBill: true), Is.False);
+        }
+
+        [Test]
+        public void ZeroDetour_NeverForRescueOrWarden()
+        {
+            // Rescue / warden work is protected and non-emergency, but it is NOT a DoBill, so it stays carry-on:
+            // its urgency should not be delayed even by a free drop. Only surgery (DoBill) qualifies.
+            Assert.That(ProtectedWorkPolicy.MayZeroDetourUnload(isProtected: true, isEmergency: false, isDoBill: false), Is.False);
+        }
+
+        [Test]
+        public void ZeroDetour_NeverForOrdinaryWork()
+        {
+            // Unprotected work never routes through the zero-detour path (the normal, richer divert gate handles it),
+            // even for a DoBill that is not protected (a crafting bill at a workbench).
+            Assert.That(ProtectedWorkPolicy.MayZeroDetourUnload(isProtected: false, isEmergency: false, isDoBill: true), Is.False);
+        }
     }
 }

@@ -231,14 +231,24 @@ namespace HaulersDream
         {
             if (__result.IsValid && __result.Job != null)
             {
-                // NEVER divert a pawn off EMERGENCY / medical / rescue / firefighting work to unload first — that
-                // delay is the reported "no one tends the bleeding after a fight / rescue never happens / fires
-                // ignored", even at priority 1. JobGiver_Work runs THIS seam for the emergency node too
-                // (__instance.emergency), and rescue is a NON-emergency Doctor-worktype giver, so classify by the
-                // node flag plus the job's own WorkGiver emergency flag / worktype (see ProtectedWork). Additive:
-                // ordinary work (mining/hauling/cleaning) still diverts to an opportunistic unload exactly as before.
-                if (ProtectedWork.IsProtected(__result.Job, __instance.emergency))
+                // NEVER divert a pawn off a TRUE EMERGENCY (tend-the-bleeding, firefight, emergency take-to-bed) to
+                // unload first: that delay is the reported "no one tends the bleeding after a fight / fires ignored",
+                // even at priority 1. JobGiver_Work runs THIS seam for the emergency node too (__instance.emergency),
+                // so classify by the node flag plus the job's own WorkGiver emergency flag. NON-emergency protected
+                // work (an elective surgery, or a rescue / warden task the emergency flags don't mark) is NOT hard-
+                // blocked: it may still shed its load when storage is essentially ON the way, a zero-detour drop
+                // that never delays the work (passed as protectedZeroDetourOnly below, geometry-gated in ShouldDivert
+                // to a handful of tiles). Ordinary work (mining/hauling/cleaning) still diverts exactly as before.
+                bool protectedWork = ProtectedWork.IsProtected(__result.Job, __instance.emergency);
+                bool emergencyProtected = __instance.emergency || (__result.Job.workGiverDef?.emergency ?? false);
+                if (ProtectedWorkPolicy.MustHardBlockDivert(protectedWork, emergencyProtected))
                     return;
+                // The zero-detour shed is scoped to a surgery DoBill (the reported "a doctor carries organs through
+                // an elective-surgery queue" case). Rescue and warden work, though non-emergency, keep the old hard
+                // block (their urgency shouldn't be delayed even by a free drop) via ShouldDivert's own IsProtected
+                // gate when protectedZeroDetourOnly is false.
+                bool zeroDetourEligible = ProtectedWorkPolicy.MayZeroDetourUnload(
+                    protectedWork, emergencyProtected, __result.Job.def == JobDefOf.DoBill);
                 // Compat guard: only DIVERT (replace __result with our unload) off a job we may safely clobber —
                 // i.e. NEVER replace a FOREIGN custom unload job that the vanilla work scan legitimately returned.
                 // The reachable case is a mod that routes its carrier/inventory unload through a real WorkGiver:
@@ -269,7 +279,7 @@ namespace HaulersDream
                 // with the toggle OFF ShouldUnloadBeforeRelocation returns false, so the gate is exactly
                 // ShouldDivert as before (byte-identical). Continuing-yield-work (runOver false) still keeps
                 // accumulating unless this relocation rule fires.
-                if (!OpportunisticUnload.ShouldDivert(pawn, __result.Job, runOver)
+                if (!OpportunisticUnload.ShouldDivert(pawn, __result.Job, runOver, protectedZeroDetourOnly: zeroDetourEligible)
                     && !OpportunisticUnload.ShouldUnloadBeforeRelocation(pawn, __result.Job))
                     return;
                 var job = JobMaker.MakeJob(HaulersDreamDefOf.HaulersDream_UnloadInventory);

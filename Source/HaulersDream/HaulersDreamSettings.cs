@@ -327,6 +327,20 @@ namespace HaulersDream
         // Vanilla here (the perf-conscious choice — the A* modes are opt-in), unlike WYU's own Default default.
         public EnRoutePathChecker enRoutePathChecker = EnRoutePathChecker.Vanilla;
 
+        // GRAB-ON-THE-WAY pickup detour: how far a pawn will step out of its way to grab a loose item it passes on
+        // the way to storage. DEFAULT Standard; Off never grabs a passing item; the budget each level maps to (extra
+        // tiles walked) is OpportunisticUnloadPolicy.DetourBudgetTiles. The UNLOAD-during-important-work detour is a
+        // SEPARATE knob (unloadDetour) so a doctor can be given more room to drop a load off than a hauler gets to
+        // grab one.
+        public OpportunisticDetour opportunisticDetour = OpportunisticDetour.Standard;
+
+        // UNLOAD-during-important-work detour: how far a pawn on non-emergency protected work (elective surgery /
+        // rescue / warden) will step out of its way to shed a scooped load at storage (typically on the trip out to
+        // fetch the operation's medicine). DEFAULT Short (about a 4-tile detour, so it is NOT zero-detour by default,
+        // as requested); Off restores the strict "carry the load through the whole task" behavior; Standard / Long
+        // give a doctor progressively more room to drop off, trading a small deliberate surgery delay for fewer trips.
+        public OpportunisticDetour unloadDetour = OpportunisticDetour.Short;
+
         // ===== While You're Up parity (C3 — consumer-aware storage routing, default ON) =====
         // "Haul before carry": before a pawn carries a resource to a build site / crafting bill, relocate the
         // largest nearby stack of that material to storage CLOSER to the consuming job (so future fetches are
@@ -681,6 +695,8 @@ namespace HaulersDream
             Scribe_Values.Look(ref closestDestinationUnloadOrder, "closestDestinationUnloadOrder", true);
             Scribe_Values.Look(ref enRoutePickup, "enRoutePickup", true);
             Scribe_Values.Look(ref enRoutePathChecker, "enRoutePathChecker", EnRoutePathChecker.Vanilla);
+            Scribe_Values.Look(ref opportunisticDetour, "opportunisticDetour", OpportunisticDetour.Standard);
+            Scribe_Values.Look(ref unloadDetour, "unloadDetour", OpportunisticDetour.Short);
             Scribe_Values.Look(ref storageRouting, "storageRouting", true);
             Scribe_Values.Look(ref routeSupplies, "routeSupplies", true);
             Scribe_Values.Look(ref routeIngredients, "routeIngredients", true);
@@ -864,6 +880,8 @@ namespace HaulersDream
             closestDestinationUnloadOrder = true;
             enRoutePickup = true;
             enRoutePathChecker = EnRoutePathChecker.Vanilla;
+            opportunisticDetour = OpportunisticDetour.Standard;
+            unloadDetour = OpportunisticDetour.Short;
             storageRouting = true;
             routeSupplies = true;
             routeIngredients = true;

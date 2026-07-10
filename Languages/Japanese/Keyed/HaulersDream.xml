@@ -590,6 +590,20 @@
 <HaulersDream.Setting.AlertStuckHours.Lab>動けないポーンにフラグを立てるまで</HaulersDream.Setting.AlertStuckHours.Lab>
 <HaulersDream.Setting.AlertStuckHours.Help>ポーンが、（存在する行き先があるのに）片付けられない運搬貨物を、警告がフラグを立てるまでどれだけの間保持してよいか。</HaulersDream.Setting.AlertStuckHours.Help>
 <HaulersDream.Setting.EnRoutePathChecker.Lab>道中チェック</HaulersDream.Setting.EnRoutePathChecker.Lab>
+  <HaulersDream.Head.OpportunisticDetour>ついで拾いの寄り道</HaulersDream.Head.OpportunisticDetour>
+  <HaulersDream.Setting.OpportunisticDetour.Lab>寄り道の距離</HaulersDream.Setting.OpportunisticDetour.Lab>
+  <HaulersDream.Setting.OpportunisticDetour.Desc>すでに保管庫へ向かっているポーンが、通りかかった落ちているアイテムを拾うためにどれだけ道を外れるか。距離はまっすぐ進む場合に対する追加の移動マス数です。オフは通りかかったアイテムを決して拾いません。短は事実上ちょうど道の上にあるものだけを取ります（約 4 マス）。標準（デフォルト）は短い寄り道を許します（約 10 マス）。長は割に合う寄り道をします（約 20 マス）。直線距離で測るので、長い運搬ではわずかな値でもより遠くまで届きます。「ジョブへの道中にある落ちたアイテムをつかむ」がオンのときだけ適用されます。</HaulersDream.Setting.OpportunisticDetour.Desc>
+  <HaulersDream.Setting.Detour.Off.S>オフ</HaulersDream.Setting.Detour.Off.S>
+  <HaulersDream.Setting.Detour.Short.S>短</HaulersDream.Setting.Detour.Short.S>
+  <HaulersDream.Setting.Detour.Standard.S>標準</HaulersDream.Setting.Detour.Standard.S>
+  <HaulersDream.Setting.Detour.Long.S>長</HaulersDream.Setting.Detour.Long.S>
+  <HaulersDream.Setting.Detour.Off.H>決して寄り道しない：ポーンは通りかかったアイテムを拾わず、回収済みの荷物を作業の間ずっと抱えたまま運びます。厳格な「作業を決して遅らせない」動作に戻します。（追加 0 マス）</HaulersDream.Setting.Detour.Off.H>
+  <HaulersDream.Setting.Detour.Short.H>ほぼ無コストのときだけ、おおよそちょうど道の上にある1アイテム程度。追加の移動は約 4 マス。</HaulersDream.Setting.Detour.Short.H>
+  <HaulersDream.Setting.Detour.Standard.H>2回目の往復を避けるための短い寄り道を許します。追加の移動は約 10 マス。</HaulersDream.Setting.Detour.Standard.H>
+  <HaulersDream.Setting.Detour.Long.H>割に合う寄り道をします。重要な作業では、意図的なわずかな遅れと引き換えに往復を減らします。追加の移動は約 20 マス。</HaulersDream.Setting.Detour.Long.H>
+  <HaulersDream.Head.UnloadDetour>重要な作業中の荷降ろし</HaulersDream.Head.UnloadDetour>
+  <HaulersDream.Setting.UnloadDetour.Lab>重要な作業中の降ろし寄り道</HaulersDream.Setting.UnloadDetour.Lab>
+  <HaulersDream.Setting.UnloadDetour.Desc>緊急でない重要な作業（予定手術、救助、看守の仕事）をしているポーンが、回収済みの荷物を保管庫に降ろすためにどれだけ道を外れるか。ふつうはその手術の薬を取りに行く道すがらです。距離はまっすぐ進む場合に対する追加の移動マス数です。オフは荷物を作業の間ずっと抱えたまま運びます（従来の厳格な寄り道ゼロの動作）。短（デフォルト）は約 4 マスの寄り道を許し、ほぼ無料の通りがかりで荷物を降ろします。標準は約 10 マスを許します。長は約 20 マスを許し、意図的なわずかな手術の遅れと引き換えに往復を減らします。回収した物資の自動降ろしがオンである必要があります（デフォルトでオン）。これは「保管庫を通りがかりに降ろす」の切り替えとは別の機能です。</HaulersDream.Setting.UnloadDetour.Desc>
 <HaulersDream.Setting.AutoStripMode.Lab>運搬しながら自動はぎ取り</HaulersDream.Setting.AutoStripMode.Lab>
 <HaulersDream.Setting.AutoStrip.Help>死体を運搬するとき、まず装備をはぎ取り、戦利品を一緒に運びます。「処分のみ」は投棄ゾーンへ向かう死体だけをはぎ取ります。「しない」は死体を着衣のままにします（手動のはぎ取り指示は引き続き装備を回収します）。</HaulersDream.Setting.AutoStrip.Help>
 <HaulersDream.Setting.TaintedSmeltable.Lab>汚染衣服 — 精錬可能</HaulersDream.Setting.TaintedSmeltable.Lab>

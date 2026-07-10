@@ -34,6 +34,11 @@ namespace HaulersDream
             // Start the always-on disk debug trail next to Player.log. Resolved here (main thread) where the Unity
             // path API is safe to read; the writer then runs on its own background thread.
             HDDebugLog.ConfigureDirectory(UnityEngine.Application.consoleLogPath);
+            // Flush the trail cleanly on game exit so its TAIL is never lost. Application.quitting fires on the main
+            // thread BEFORE the runtime aborts the writer's background thread, so this drains the final lines
+            // (frequently the exact moment being diagnosed) that the abort would otherwise drop. Subscribed once,
+            // here at construction, on the main thread as Unity requires.
+            UnityEngine.Application.quitting += () => HDDebugLog.FlushAndClose();
 
             var harmony = new Harmony(HarmonyId);
             ApplyPatchesResilient(harmony, Assembly.GetExecutingAssembly());

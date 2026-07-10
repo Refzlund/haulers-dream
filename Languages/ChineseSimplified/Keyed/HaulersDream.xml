@@ -590,6 +590,20 @@
 <HaulersDream.Setting.AlertStuckHours.Lab>标记卡住的小人于</HaulersDream.Setting.AlertStuckHours.Lab>
 <HaulersDream.Setting.AlertStuckHours.Help>小人可以持有它无法收起的搬运货物（且存在一个目的地）多久之后，警报才标记它。</HaulersDream.Setting.AlertStuckHours.Help>
 <HaulersDream.Setting.EnRoutePathChecker.Lab>途中检查</HaulersDream.Setting.EnRoutePathChecker.Lab>
+  <HaulersDream.Head.OpportunisticDetour>顺路抓取绕行</HaulersDream.Head.OpportunisticDetour>
+  <HaulersDream.Setting.OpportunisticDetour.Lab>绕行距离</HaulersDream.Setting.OpportunisticDetour.Lab>
+  <HaulersDream.Setting.OpportunisticDetour.Desc>一个已经在前往储存途中的小人，会偏离原路多远去抓取它路过的一件散落物品。距离以在直行基础上多走的格数计：关闭从不抓取路过的物品；短只取几乎正好在必经路径上的物品（约 4 格）；标准（默认值）允许短距离绕行（约 10 格）；长会走值得的绕行（约 20 格）。以直线距离衡量，因此在长途搬运中一点点就能走得更远。仅在开启“抓取前往任务途中的散落物品”时生效。</HaulersDream.Setting.OpportunisticDetour.Desc>
+  <HaulersDream.Setting.Detour.Off.S>关闭</HaulersDream.Setting.Detour.Off.S>
+  <HaulersDream.Setting.Detour.Short.S>短</HaulersDream.Setting.Detour.Short.S>
+  <HaulersDream.Setting.Detour.Standard.S>标准</HaulersDream.Setting.Detour.Standard.S>
+  <HaulersDream.Setting.Detour.Long.S>长</HaulersDream.Setting.Detour.Long.S>
+  <HaulersDream.Setting.Detour.Off.H>从不绕行：小人不会去抓取路过的物品，并会把已收取的一批货物带着做完整项工作。恢复严格的“绝不延误工作”行为。（额外 0 格）</HaulersDream.Setting.Detour.Off.H>
+  <HaulersDream.Setting.Detour.Short.H>仅当几乎毫无代价时，大致相当于正好在必经路径上的一件物品。约额外多走 4 格。</HaulersDream.Setting.Detour.Short.H>
+  <HaulersDream.Setting.Detour.Standard.H>允许短距离绕行以省去第二趟。约额外多走 10 格。</HaulersDream.Setting.Detour.Standard.H>
+  <HaulersDream.Setting.Detour.Long.H>走值得的绕行，用重要工作上一点有意的小延迟换取更少的往返。约额外多走 20 格。</HaulersDream.Setting.Detour.Long.H>
+  <HaulersDream.Head.UnloadDetour>重要工作期间卸货</HaulersDream.Head.UnloadDetour>
+  <HaulersDream.Setting.UnloadDetour.Lab>重要工作中的卸货绕行</HaulersDream.Setting.UnloadDetour.Lab>
+  <HaulersDream.Setting.UnloadDetour.Desc>一个正在从事非紧急重要工作（择期手术、救援、看守任务）的小人，会偏离原路多远去在储存处卸下已收取的一批货物，通常是在外出取该手术所需药品的路上。距离以在直行基础上多走的格数计：关闭会把货物带着做完整项工作（旧的严格零绕行行为）；短（默认值）允许约 4 格的绕行，于是在几乎免费的顺路时卸下货物；标准允许约 10 格；长允许约 20 格，用一点有意的手术小延迟换取更少的往返。需要开启自动卸载（默认即为开启）；这是与“路过储存区时顺手卸货”开关相互独立的功能。</HaulersDream.Setting.UnloadDetour.Desc>
 <HaulersDream.Setting.AutoStripMode.Lab>搬运时自动扒取</HaulersDream.Setting.AutoStripMode.Lab>
 <HaulersDream.Setting.AutoStrip.Help>搬运尸体时，先扒下它的装备并随身带走战利品。“仅处置”只扒取前往倾倒区的尸体。“关闭”让尸体保持着装（手动扒取命令仍会收取其装备）。</HaulersDream.Setting.AutoStrip.Help>
 <HaulersDream.Setting.TaintedSmeltable.Lab>污损的服装——可熔炼</HaulersDream.Setting.TaintedSmeltable.Lab>

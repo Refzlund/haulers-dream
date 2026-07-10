@@ -70,10 +70,11 @@ namespace HaulersDream
             AddFinishAction(condition =>
             {
                 var held = job.GetTarget(TargetIndex.A).Thing;
+                var inCarry = pawn.carryTracker?.innerContainer?.Contains(held) == true;
+                var inInv = pawn.inventory?.innerContainer?.Contains(held) == true;
                 if (comp == null || held == null || held.Destroyed)
                     return;
-                if (pawn.carryTracker?.innerContainer?.Contains(held) == true
-                    || pawn.inventory?.innerContainer?.Contains(held) == true)
+                if (inCarry || inInv)
                     comp.RegisterHauledItem(held);
             });
 
@@ -95,6 +96,7 @@ namespace HaulersDream
 
             // ---- cell branch ----
             yield return carryToCell;
+
             yield return Toils_Haul.PlaceHauledThingInCell(TargetIndex.B, carryToCell, true);
 
             yield return releaseReservation;
@@ -144,12 +146,6 @@ namespace HaulersDream
                     pawn.inventory.innerContainer.TryTransferToContainer(thing, pawn.carryTracker.innerContainer, countToDrop, out thing);
                     if (thing == null)
                     {
-                        // Nothing moved — the one-stack carry tracker is blocked by a non-mergeable passenger, or
-                        // another mod is holding this stack (a combat mod re-grabbing its ammo, etc.). Do NOT
-                        // end+requeue on the SAME first-ordered item forever: that churn freezes the pawn in the
-                        // "unloading inventory" job (the reported caravan-return stall). Mark it skipped for THIS
-                        // job and loop to the next tracked item; the tag stays, so it's retried on the next unload
-                        // trigger (and the cannot-unload alert still surfaces it if it stays genuinely stuck).
                         if (toPull != null)
                             skippedThisJob.Add(toPull);
                         pawn.jobs.curDriver.JumpToToil(wait);
@@ -203,9 +199,15 @@ namespace HaulersDream
                             job.SetTarget(TargetIndex.B, cell);
 
                         // Haul-to-stack: storage CELLS are deliberately not reserved (multiple pawns may
-                        // deliver to — and stack onto — the same tile; see HaulToStack). Containers keep
+                        // deliver to — and stack onto — the same tile; see HaulToStack). UNSTACKABLE items
+                        // (stackLimit <= 1 — organs, body parts, weapons) are excluded from this: they can
+                        // NEVER stack onto a shared cell, so leaving the cell unreserved gains them nothing,
+                        // but it lets another hauler fill the same cell mid-carry, invalidating it and looping
+                        // the pawn (issue #162 — endless pacing in hospital/prison). Mirrors the same guard on
+                        // the vanilla HaulToCell path (HaulToStack.cs NoCellReservation prefix). Containers keep
                         // their reservation: their capacity coordination is the enroute/reservation system.
                         bool reserveDest = cell == IntVec3.Invalid
+                                           || next.Thing.def.stackLimit <= 1
                                            || HaulersDreamMod.Settings == null || !HaulersDreamMod.Settings.haulToStack;
                         if (reserveDest && !pawn.Map.reservationManager.Reserve(pawn, job, job.targetB))
                         {
@@ -243,7 +245,11 @@ namespace HaulersDream
                         job.SetTarget(TargetIndex.B, desperateCell);
                         // A desperate destination is always a plain cell (never a container). Match the storage
                         // branch: don't reserve the cell when haul-to-stack is on (several pawns may stack onto it).
-                        bool reserveDest = HaulersDreamMod.Settings == null || !HaulersDreamMod.Settings.haulToStack;
+                        // Unstackables (stackLimit <= 1) still reserve: they can't share a cell and leaving it
+                        // unreserved loops them (issue #162 — same guard as the storage branch above and the
+                        // vanilla HaulToCell prefix).
+                        bool reserveDest = next.Thing.def.stackLimit <= 1
+                                           || HaulersDreamMod.Settings == null || !HaulersDreamMod.Settings.haulToStack;
                         if (reserveDest && !pawn.Map.reservationManager.Reserve(pawn, job, job.targetB))
                         {
                             if (pawn.inventory.innerContainer.TryDrop(next.Thing, ThingPlaceMode.Near, next.Count, out _))
@@ -268,6 +274,15 @@ namespace HaulersDream
                         // tagged in inventory and every retry re-fails on the same first-ordered item. End
                         // Incompletable so the checker re-queues once the pawn has moved and space frees; the tag
                         // stays (the item is still in inventory) so it's retried and the gizmo stays available.
+                        //
+                        // STAMP BACKOFF (issue #162): an item with NOWHERE to store (no stockpile accepts its def,
+                        // e.g. body parts outside the default preset) would be dropped, immediately re-scooped by
+                        // the same pawn's en-route/sweep, and re-unloaded into the same failure — an endless pacing
+                        // loop. Stamp the churn backoff so both the vanilla haul scan AND the HD intake paths (en-
+                        // route, area-sweep) skip it for a short window, breaking the re-scoop cycle. The window is
+                        // brief and self-healing: once storage opens up (the player zones it, a slot frees), the
+                        // next scan after the window hauls it normally.
+                        HaulChurnGuard.StampBackoff(next.Thing);
                         if (pawn.inventory.innerContainer.TryDrop(next.Thing, ThingPlaceMode.Near, next.Count, out _))
                         {
                             carried.Remove(next.Thing);

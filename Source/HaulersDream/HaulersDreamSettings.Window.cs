@@ -22,6 +22,33 @@ namespace HaulersDream
                 : "HaulersDream.Overload.Cautious".Translate();
         }
 
+        // The four OpportunisticDetour segment labels with their extra-tile budget appended in parentheses, so a
+        // player reading the picker sees "Standard (10)" instead of a bare word that tells them nothing about how
+        // far the pawn will actually stray. Off shows no number (it never detours); Short/Standard/Long show their
+        // OpportunisticUnloadPolicy budget (the single source of truth), so the readout can never drift from the
+        // real behavior. Shared by both detour pickers (grab-on-the-way pickup and protected-work unload).
+        private static string[] DetourSegmentLabels()
+        {
+            string Numbered(string key, int tiles) => $"{key.Translate()} ({tiles})";
+            return new[]
+            {
+                "HaulersDream.Setting.Detour.Off.S".Translate().ToString(),
+                Numbered("HaulersDream.Setting.Detour.Short.S", OpportunisticUnloadPolicy.DetourTilesShort),
+                Numbered("HaulersDream.Setting.Detour.Standard.S", OpportunisticUnloadPolicy.DetourTilesStandard),
+                Numbered("HaulersDream.Setting.Detour.Long.S", OpportunisticUnloadPolicy.DetourTilesLong),
+            };
+        }
+
+        // The four OpportunisticDetour segment tooltips (unchanged text, shared by both detour pickers).
+        private static string[] DetourSegmentHelp()
+            => new[]
+            {
+                "HaulersDream.Setting.Detour.Off.H".Translate().ToString(),
+                "HaulersDream.Setting.Detour.Short.H".Translate().ToString(),
+                "HaulersDream.Setting.Detour.Standard.H".Translate().ToString(),
+                "HaulersDream.Setting.Detour.Long.H".Translate().ToString(),
+            };
+
         // ===== 3-pane settings window (icon nav · options · info panel), styled after Camera+ =====
         // Replaces the old tabbed Listing_Standard window. The scroll height is the TRUE measured content
         // height (SettingsCtx.CurY), and sub-options are GREYED (not hidden) when their master is off, so the
@@ -1130,6 +1157,18 @@ namespace HaulersDream
             unloadAllSurplus = HDSettingsUI.Checkbox(c, "HaulersDream.Setting.UnloadAllSurplus".Translate(),
                 unloadAllSurplus, "HaulersDream.Setting.UnloadAllSurplusDesc".Translate());
 
+            // Protected-work UNLOAD detour (issue #107): its OWN section, not a child of opportunistic unload. How far
+            // a pawn on non-emergency important work (elective surgery / rescue / warden) strays to shed a scooped load
+            // at storage, e.g. on the trip out to fetch the operation's medicine. Gated on the auto-unload master
+            // (markForUnload) since the divert IS a form of auto-unload; independent of opportunisticUnload (the
+            // behaviour was decoupled in OpportunisticUnload.ShouldDivert). Default Short (~4 tiles) so it is NOT
+            // strictly zero-detour; Off carries the load through the whole task. Enum order Off/Short/Standard/Long.
+            HDSettingsUI.Header(c, "HaulersDream.Head.UnloadDetour".Translate());
+            int uDet = HDSettingsUI.Segmented(c, "HaulersDream.Setting.UnloadDetour.Lab".Translate(),
+                (int)unloadDetour, DetourSegmentLabels(), DetourSegmentHelp(),
+                "HaulersDream.Setting.UnloadDetour.Desc".Translate(), enabled: markForUnload);
+            unloadDetour = (OpportunisticDetour)uDet;
+
             HDSettingsUI.Header(c, "HaulersDream.Head.ItemRulesDisplay".Translate());
             int ruleCount = ItemRuleCount;
             string itemBtn = ruleCount > 0
@@ -1266,6 +1305,16 @@ namespace HaulersDream
                 new[] { "HaulersDream.Setting.EnRoutePathVanilla.H".Translate().ToString(), "HaulersDream.Setting.EnRoutePathDefault.H".Translate().ToString(), "HaulersDream.Setting.EnRoutePathPathfinding.H".Translate().ToString() },
                 "HaulersDream.Setting.EnRoutePathCheckerDesc".Translate(), enabled: enRoutePickup, indent: 24f);
             enRoutePathChecker = chk == 0 ? EnRoutePathChecker.Vanilla : (chk == 1 ? EnRoutePathChecker.Default : EnRoutePathChecker.Pathfinding);
+
+            // The grab-on-the-way PICKUP detour: how far a pawn strays to scoop a loose item it passes on the way to
+            // storage. Gated on enRoutePickup because the whole en-route pickup path bails when that feature is off,
+            // so the knob has no effect then. The protected-work UNLOAD detour is a SEPARATE knob (unloadDetour, in
+            // the Unloading tab). Enum order is Off/Short/Standard/Long, so the cast is the segment index directly.
+            HDSettingsUI.Header(c, "HaulersDream.Head.OpportunisticDetour".Translate());
+            int det = HDSettingsUI.Segmented(c, "HaulersDream.Setting.OpportunisticDetour.Lab".Translate(),
+                (int)opportunisticDetour, DetourSegmentLabels(), DetourSegmentHelp(),
+                "HaulersDream.Setting.OpportunisticDetour.Desc".Translate(), enabled: enRoutePickup);
+            opportunisticDetour = (OpportunisticDetour)det;
 
             HDSettingsUI.Header(c, "HaulersDream.Head.StorageRouting".Translate());
             storageRouting = HDSettingsUI.Checkbox(c, "HaulersDream.Setting.StorageRouting".Translate(),

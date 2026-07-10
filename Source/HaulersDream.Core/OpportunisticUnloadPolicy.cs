@@ -159,5 +159,82 @@ namespace HaulersDream.Core
             int bar = Math.Max(minDetourTiles, (int)(maxDetourFraction * pawnToTarget));
             return detour <= bar;
         }
+
+        /// <summary>
+        /// Max extra straight-line tiles a PROTECTED-work pass-by unload may add and still count as "zero detour".
+        /// The whole point of the protected-work relaxation is to NEVER delay medical / rescue / firefighting work
+        /// (issue #107), so storage must sit essentially ON the pawn's path to its next destination: a few steps off
+        /// the line, no more. Deliberately tiny, unlike the normal <see cref="MaxDetourFraction"/> journey bar.
+        /// </summary>
+        /// <summary>Budget (extra tiles walked) for <see cref="OpportunisticDetour.Short"/>: only a near-free
+        /// pass-by, roughly an item on the exact path. This was the original single fixed zero-detour budget.</summary>
+        public const int DetourTilesShort = 4;
+
+        /// <summary>Budget for <see cref="OpportunisticDetour.Standard"/> (the default): a short detour is worth
+        /// saving a second trip.</summary>
+        public const int DetourTilesStandard = 10;
+
+        /// <summary>Budget for <see cref="OpportunisticDetour.Long"/>: take worthwhile detours (on protected work
+        /// this trades a small, deliberate delay for fewer trips).</summary>
+        public const int DetourTilesLong = 20;
+
+        /// <summary>
+        /// The extra-tiles budget for a detour-tolerance level. <see cref="OpportunisticDetour.Off"/> is not mapped
+        /// here (the callers skip the behavior outright rather than pass a zero budget); it returns the Standard
+        /// budget defensively so a caller that forgets the Off-gate degrades to the default rather than to 0.
+        /// </summary>
+        public static int DetourBudgetTiles(OpportunisticDetour tolerance)
+        {
+            switch (tolerance)
+            {
+                case OpportunisticDetour.Short:
+                    return DetourTilesShort;
+                case OpportunisticDetour.Long:
+                    return DetourTilesLong;
+                default:
+                    return DetourTilesStandard;
+            }
+        }
+
+        /// <summary>
+        /// Protected-work variant of <see cref="ShouldUnloadOnWay"/>: a pawn on NON-emergency protected work (an
+        /// elective surgery, a rescue, a warden task) may shed its scooped load ONLY when its storage is on the way
+        /// to its next destination, within <paramref name="budgetTiles"/> extra tiles, so the drop stays a cheap
+        /// pass-by (issue #107: at the default budget the delay is minor; the player tunes it via
+        /// <see cref="OpportunisticDetour"/>). There is deliberately NO minimum-trip or load-fraction floor: if it
+        /// is within budget, take it whatever the load size (the caller has confirmed something IS unloadable).
+        /// </summary>
+        /// <param name="pawnToTarget">Straight-line tiles from the pawn to its next destination.</param>
+        /// <param name="pawnToStorage">Straight-line tiles from the pawn to the storage cell.</param>
+        /// <param name="storageToTarget">Straight-line tiles from the storage cell to the destination.</param>
+        /// <param name="budgetTiles">Max extra tiles the pass-by may add over going straight (the tolerance budget).</param>
+        public static bool ShouldUnloadZeroDetour(int pawnToTarget, int pawnToStorage, int storageToTarget, int budgetTiles)
+        {
+            int detour = pawnToStorage + storageToTarget - pawnToTarget;
+            if (detour < 0)
+                detour = 0;
+            return detour <= budgetTiles;
+        }
+
+        /// <summary>
+        /// The pickup MIRROR of <see cref="ShouldUnloadZeroDetour"/>: a pawn ALREADY walking to storage may grab a
+        /// loose haulable that sits on that path, so the item rides along on a trip it was making anyway and the
+        /// offload is not meaningfully delayed. Reported case: a hauler carrying scooped goods to the shelves steps
+        /// right over a loose organ and leaves it, because an HD unload trip cannot opportunistically scoop. Same
+        /// <paramref name="budgetTiles"/> budget as the unload mirror: the extra tiles of pawn -&gt; thing -&gt;
+        /// destination over going straight to the destination must stay within it. Floats because the en-route
+        /// caller works in straight-line <c>DistanceTo</c> (no rounding step to lose).
+        /// </summary>
+        /// <param name="pawnToDest">Straight-line tiles from the pawn to the store destination it is heading to.</param>
+        /// <param name="pawnToThing">Straight-line tiles from the pawn to the loose item.</param>
+        /// <param name="thingToDest">Straight-line tiles from the loose item to the store destination.</param>
+        /// <param name="budgetTiles">Max extra tiles the grab may add over going straight (the tolerance budget).</param>
+        public static bool ShouldGrabOnWay(float pawnToDest, float pawnToThing, float thingToDest, int budgetTiles)
+        {
+            float detour = pawnToThing + thingToDest - pawnToDest;
+            if (detour < 0f)
+                detour = 0f;
+            return detour <= budgetTiles;
+        }
     }
 }
