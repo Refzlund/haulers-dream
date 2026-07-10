@@ -431,6 +431,10 @@
 <HaulersDream.Report.Type.Compatibility>ความเข้ากันได้กับม็อด</HaulersDream.Report.Type.Compatibility>
 <HaulersDream.Report.Type.Other>อื่นๆ</HaulersDream.Report.Type.Other>
 <HaulersDream.Report.DescribeLabel>อธิบายปัญหา (เกิดอะไรขึ้น ขั้นตอนที่ทำให้เกิดซ้ำ และสิ่งที่คุณคาดหวัง):</HaulersDream.Report.DescribeLabel>
+<HaulersDream.Report.Placeholder.Bug>เกิดอะไรขึ้น: [อะไรผิดพลาด]\nสิ่งที่คุณคาดหวังแทน: [สิ่งที่ควรจะเกิดขึ้น]\nเกิดขึ้นเมื่อใดหรืออย่างไร: [ชาวอาณานิคม งาน พื้นที่จัดเก็บ หรือม็อดอื่นใดที่เกี่ยวข้อง]</HaulersDream.Report.Placeholder.Bug>
+<HaulersDream.Report.Placeholder.Feature>สิ่งที่คุณต้องการ: [การเปลี่ยนแปลงหรือตัวเลือกใหม่]\nมันช่วยได้อย่างไร: [ปัญหาที่มันแก้ หรือเมื่อใดที่มันสำคัญ]</HaulersDream.Report.Placeholder.Feature>
+<HaulersDream.Report.Placeholder.Compatibility>ม็อดใดที่ขัดแย้งกับ Hauler's Dream: [ชื่อม็อดอีกตัว]\nเกิดอะไรผิดพลาดเมื่อเปิดใช้งานทั้งคู่: [สิ่งที่คุณเห็นเกิดขึ้น]\nสิ่งที่คุณคาดหวังแทน: [ควรทำงานอย่างไร]</HaulersDream.Report.Placeholder.Compatibility>
+<HaulersDream.Report.Placeholder.Other>คุณอยากบอกอะไรเรา? [บอกอะไรก็ได้ที่ช่วยให้เราเข้าใจและดำเนินการได้]</HaulersDream.Report.Placeholder.Other>
 <HaulersDream.Report.IncludeLog>แนบบันทึกเกมฉบับเต็มด้วย (Player.log)</HaulersDream.Report.IncludeLog>
 <HaulersDream.Report.IncludeLog.Help>บันทึกของ Hauler's Dream เองจะถูกแนบไปด้วยเสมอ ติ๊กตรงนี้เพื่อแนบส่วนท้ายของ Player.log ฉบับเต็มของคุณด้วย ไฟล์นี้มีขนาดใหญ่กว่าและอาจมีข้อความจากม็อดอื่นปนอยู่ แต่ก็เป็นไฟล์แนบที่มีประโยชน์ที่สุดสำหรับการวินิจฉัยบั๊ก</HaulersDream.Report.IncludeLog.Help>
 <HaulersDream.Report.AutoMeta>รายการม็อดที่เปิดใช้งานอยู่ เวอร์ชันเกม ระบบปฏิบัติการ และบันทึกของ Hauler's Dream เองจะถูกแนบโดยอัตโนมัติ</HaulersDream.Report.AutoMeta>

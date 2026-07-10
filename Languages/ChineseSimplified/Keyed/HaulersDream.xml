@@ -431,6 +431,10 @@
 <HaulersDream.Report.Type.Compatibility>模组兼容性</HaulersDream.Report.Type.Compatibility>
 <HaulersDream.Report.Type.Other>其他</HaulersDream.Report.Type.Other>
 <HaulersDream.Report.DescribeLabel>请描述（发生了什么、重现步骤，以及你预期的结果）：</HaulersDream.Report.DescribeLabel>
+<HaulersDream.Report.Placeholder.Bug>发生了什么：[哪里出了问题]\n你原本预期的结果：[本应发生什么]\n何时或如何发生：[涉及哪些殖民者、工作、存储区或其他模组]</HaulersDream.Report.Placeholder.Bug>
+<HaulersDream.Report.Placeholder.Feature>你希望有什么：[想要的改动或新选项]\n它有什么帮助：[能解决的问题，或什么时候有用]</HaulersDream.Report.Placeholder.Feature>
+<HaulersDream.Report.Placeholder.Compatibility>哪个模组与 Hauler's Dream 冲突：[另一个模组的名称]\n两者同时启用时出了什么问题：[你看到发生了什么]\n你原本预期的结果：[它本应如何表现]</HaulersDream.Report.Placeholder.Compatibility>
+<HaulersDream.Report.Placeholder.Other>你想告诉我们什么？[任何有助于我们理解并处理的信息]</HaulersDream.Report.Placeholder.Other>
 <HaulersDream.Report.IncludeLog>同时附带完整的游戏日志（Player.log）</HaulersDream.Report.IncludeLog>
 <HaulersDream.Report.IncludeLog.Help>Hauler's Dream 自己的日志始终会被附带。勾选此项可同时附带你完整 Player.log 的末尾部分；它体积更大，可能包含其他模组的信息，但它是诊断漏洞时最有用的附件。</HaulersDream.Report.IncludeLog.Help>
 <HaulersDream.Report.AutoMeta>你已启用的模组列表、游戏版本、操作系统，以及 Hauler's Dream 自己的日志都会自动附带。</HaulersDream.Report.AutoMeta>

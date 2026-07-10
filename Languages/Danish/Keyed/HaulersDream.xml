@@ -431,6 +431,10 @@
 <HaulersDream.Report.Type.Compatibility>Mod-kompatibilitet</HaulersDream.Report.Type.Compatibility>
 <HaulersDream.Report.Type.Other>Noget andet</HaulersDream.Report.Type.Other>
 <HaulersDream.Report.DescribeLabel>Beskriv det (hvad der skete, trin til at genskabe det, og hvad du forventede):</HaulersDream.Report.DescribeLabel>
+<HaulersDream.Report.Placeholder.Bug>Hvad der skete: [hvad der gik galt]\nHvad du forventede i stedet: [hvad der burde være sket]\nHvornår eller hvordan det sker: [hvilke kolonister, opgaver, lager eller andre mods der var involveret]</HaulersDream.Report.Placeholder.Bug>
+<HaulersDream.Report.Placeholder.Feature>Hvad du gerne vil have: [ændringen eller den nye mulighed]\nHvorfor det ville hjælpe: [problemet det løser, eller hvornår det betyder noget]</HaulersDream.Report.Placeholder.Feature>
+<HaulersDream.Report.Placeholder.Compatibility>Hvilket mod der er i konflikt med Hauler's Dream: [navnet på det andet mod]\nHvad der går galt med begge slået til: [hvad du ser ske]\nHvad du forventede i stedet: [hvordan det burde opføre sig]</HaulersDream.Report.Placeholder.Compatibility>
+<HaulersDream.Report.Placeholder.Other>Hvad vil du gerne fortælle os? [del alt, hvad der hjælper os med at forstå det og handle på det]</HaulersDream.Report.Placeholder.Other>
 <HaulersDream.Report.IncludeLog>Vedlæg også hele spilloggen (Player.log)</HaulersDream.Report.IncludeLog>
 <HaulersDream.Report.IncludeLog.Help>Hauler's Dreams egen log sendes altid med. Sæt flueben her for også at vedhæfte slutningen af din fulde Player.log; den er større og kan indeholde beskeder fra andre mods, men den er den mest nyttige vedhæftning til at finde en fejl.</HaulersDream.Report.IncludeLog.Help>
 <HaulersDream.Report.AutoMeta>Din aktive modliste, spilversion, styresystem og Hauler's Dreams egen log sendes med automatisk.</HaulersDream.Report.AutoMeta>
