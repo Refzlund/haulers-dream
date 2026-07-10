@@ -401,7 +401,9 @@ namespace HaulersDream
             int level = settings != null ? OverloadGate.EffectiveLevel(settings) : OverloadTuning.OffLevel;
 
             plan.massReps = CraftBatchMath.RepsByMass(level, maxCap, baseCap, curMass, massPerRep, plan.requestedReps);
-            // CE bulk clamp (weight stays the floor). bulkPerRep is 0 when CE is inactive or for the mixing path.
+            // CE bulk clamp (weight stays the floor). bulkPerRep is 0 when CE is inactive. After this, plan.massReps =
+            // the whole rounds that fit ONE trip by weight AND, under CE, bulk. It is used ONLY as the feasibility
+            // gate below now (does the pawn fit at least one round?), NEVER as a batch-SIZE cap.
             if (CECompat.IsActive && bulkPerRep > 0f)
             {
                 int bulkReps = (int)System.Math.Floor(CECompat.AvailableBulk(pawn) / bulkPerRep);
@@ -409,15 +411,24 @@ namespace HaulersDream
                     plan.massReps = bulkReps < 0 ? 0 : bulkReps;
             }
             plan.timeoutReps = CraftBatchMath.RepsByTimeout(plan.ticksPerRep, plan.timeoutTicks);
-            // Mass does NOT cap the rep COUNT unless the player chose strict carry weight. Otherwise the pawn
-            // OVERLOADS (carries overweight, accepting the speed debuff) and/or makes multiple trips to craft every
-            // rep the resources allow — so the count is bounded by AVAILABLE RESOURCES (and the timeout safety),
-            // never by "you can't carry it all at once". A heavy ingredient (an 18 kg stone chunk) must never make a
-            // well-stocked batch read "not enough resources".
-            int massCap = (settings != null && OverloadGate.NoOverload(settings)) ? plan.massReps : int.MaxValue;
-            plan.resolvedReps = CraftBatchMath.Resolve(plan.requestedReps, plan.availabilityReps, massCap, plan.timeoutReps);
+            // Part 1 (requirement #3): carry weight/bulk must NEVER cap the batch SIZE (other mods alter capacity
+            // unpredictably). The batch is sized by requested / availability / timeout / bill ONLY. When the pawn
+            // can't overload (strict carry weight, overload Off, or Combat Extended), it simply can't carry the whole
+            // batch at once, so JobDriver_BatchCraft gathers the WHOLE ROUNDS that fit per trip and LOOPS. The
+            // overload path is byte-identical: it already passed int.MaxValue here (the pawn overloads in one trip),
+            // so only the no-overload path changes (its former plan.massReps size-cap is gone, so a heavy/bulky
+            // ingredient no longer shrinks a well-stocked batch).
+            plan.resolvedReps = CraftBatchMath.Resolve(plan.requestedReps, plan.availabilityReps, int.MaxValue, plan.timeoutReps);
             if (plan.billReps < plan.resolvedReps)
                 plan.resolvedReps = plan.billReps; // never plan more reps than the bill itself will run
+            // Anti-loop feasibility gate: when the pawn can't overload, a batch is viable ONLY if at least one whole
+            // round fits its live weight+bulk capacity (plan.massReps counts exactly that for one trip). If not even
+            // one round fits, mark it infeasible so the auto-route cedes to vanilla's one-at-a-time DoBill (hands are
+            // not bulk-limited under CE) and the dialog disables Confirm, rather than dispatching a batch that gathers
+            // zero and re-fires forever (the reported CE mixing loop). Overload mode never blocks here. Falls through
+            // to the BlockNoReps reason below (kept generic, no new translation key).
+            if (settings != null && OverloadGate.NoOverload(settings) && plan.resolvedReps >= 1 && plan.massReps < 1)
+                plan.resolvedReps = 0;
             plan.feasible = plan.resolvedReps >= 1;
             if (!plan.feasible && plan.blockReason == null)
                 plan.blockReason = "HaulersDream.PlanCraft.BlockNoReps".Translate();
@@ -431,9 +442,10 @@ namespace HaulersDream
         /// sum the available VALUE across every bill-usable candidate def (units × value-per-unit, mirroring vanilla's
         /// <c>IngredientValueGetter.ValuePerUnitOf</c>) and divide by the slot's per-rep value target
         /// (<c>GetBaseCount</c>) via <see cref="CraftBatchMath.MixAvailableReps"/>; the batch is bounded by the
-        /// SCARCEST slot. The same mass/timeout/bill caps are applied via <see cref="FinalizeCaps"/> (the CE-bulk clamp
-        /// is skipped for the mixing path — the per-def mix isn't known until craft time — so weight is the only
-        /// carry cap, exactly as for a heavy NoMix ingredient).
+        /// SCARCEST slot. The same mass/timeout/bill caps are applied via <see cref="FinalizeCaps"/>, including a
+        /// CONSERVATIVE (heaviest-mix) CE bulk-per-rep so the "one whole round fits" feasibility gate is bulk-aware
+        /// for mixing too. The exact per-def mix isn't known until craft time, so the estimate over-states the round
+        /// cost (safe: it only ever makes the gate stricter, never promises a batch the pawn can't start).
         /// </summary>
         private static CraftBatchPlan ResolveMixing(CraftBatchPlan plan, Pawn pawn, Building_WorkTable bench, Bill bill, RecipeDef recipe)
         {
@@ -441,6 +453,11 @@ namespace HaulersDream
 
             int availabilityReps = int.MaxValue; // min over slots; int.MaxValue = no constraint (no positive-value slot)
             float massPerRep = 0f;
+            // Conservative CE bulk of one rep, mirroring the mass estimate below. Was hard-coded 0 (the confirmed CE
+            // batch-craft loop: bulk was never enforced for a mixing recipe, so the plan promised reps the bulk-
+            // clamped gather could not load even one of). 0 without CE (BulkPerUnitAbstract returns 0), so the CE-bulk
+            // clamp in FinalizeCaps is a no-op there and the non-CE mixing path stays byte-identical.
+            float bulkPerRep = 0f;
             var valueGetter = recipe.IngredientValueGetter;
 
             for (int s = 0; s < recipe.ingredients.Count; s++)
@@ -452,6 +469,7 @@ namespace HaulersDream
 
                 double totalSlotValue = 0.0;     // Σ over candidate defs of availableUnits × value-per-unit
                 float bestMassPerValue = 0f;      // max over candidate defs of (mass / value-per-unit) — conservative
+                float bestBulkPerValue = 0f;      // max over candidate defs of (CE bulk / value-per-unit), conservative
                 foreach (var cand in ing.filter.AllowedThingDefs)
                 {
                     if (cand == null)
@@ -463,10 +481,17 @@ namespace HaulersDream
                     float vpu = valueGetter.ValuePerUnitOf(cand);
                     if (vpu <= 0f)
                         continue; // a valueless def can never satisfy the slot (and would /0 below)
+                    // Availability gates only the AVAILABLE-value sum (totalSlotValue), NOT the round-cost estimate
+                    // below (note: no early continue on avail). The driver's per-trip RoundMass/RoundBulk
+                    // (BestMassPerValue/BestBulkPerValue) iterate EVERY bill-allowed def with no stock filter, so the
+                    // plan must size a round over that same all-allowed set. If the plan estimated the round cost over
+                    // in-stock defs only, it could size a round lighter than the driver can gather (an out-of-stock,
+                    // heavier-per-value allowed def), and a feasible plan would then hand the driver a round it cannot
+                    // fill: craft-0, forced unload, re-batch, forever (the reported CE loop, mixing path). Estimating
+                    // over the same set both sides keeps the invariant plan.feasible => driver trip-1 rounds >= 1.
                     int avail = AvailableUnits(pawn, cand, bill, bench);
-                    if (avail <= 0)
-                        continue;
-                    totalSlotValue += avail * (double)vpu;
+                    if (avail > 0)
+                        totalSlotValue += avail * (double)vpu;
                     // Mass estimate: one rep needs perRepValue worth of value from SOME mix of these defs; the heaviest
                     // way to supply a unit of value is the def with the largest mass-per-value, so use that as a safe
                     // OVER-estimate (an over-estimate only ever lowers the mass cap, which is safe — never promises a
@@ -474,6 +499,15 @@ namespace HaulersDream
                     float massPerValue = cand.GetStatValueAbstract(StatDefOf.Mass) / vpu;
                     if (massPerValue > bestMassPerValue)
                         bestMassPerValue = massPerValue;
+                    // Same conservative shape for CE bulk (0 without CE). Used only by the feasibility gate: it must
+                    // OVER-estimate the round's bulk so a batch is offered only when at least one whole round provably
+                    // fits (weight AND bulk), which is exactly what stops the mixing loop.
+                    if (CECompat.IsActive)
+                    {
+                        float bulkPerValue = CECompat.BulkPerUnitAbstract(cand) / vpu;
+                        if (bulkPerValue > bestBulkPerValue)
+                            bestBulkPerValue = bulkPerValue;
+                    }
                 }
 
                 int slotReps = CraftBatchMath.MixAvailableReps(perRepValue, totalSlotValue);
@@ -487,13 +521,17 @@ namespace HaulersDream
                 if (slotReps < availabilityReps)
                     availabilityReps = slotReps;
                 if (perRepValue > 0.0)
+                {
                     massPerRep += (float)(perRepValue) * bestMassPerValue;
+                    bulkPerRep += (float)(perRepValue) * bestBulkPerValue;
+                }
             }
 
             plan.availabilityReps = availabilityReps;
-            // Mixing skips the CE-bulk clamp (bulkPerRep 0): the per-def mix isn't known until craft time, so weight is
-            // the only carry cap here (consistent with how a heavy NoMix ingredient is handled — overload, don't block).
-            FinalizeCaps(plan, pawn, bench, recipe, massPerRep, bulkPerRep: 0f);
+            // Same caps as the NoMix path, INCLUDING the CE-bulk feasibility term now (the conservative per-rep bulk
+            // above): weight is no longer a batch-SIZE cap (Part 1), but "at least one whole round fits weight+bulk"
+            // gates feasibility so a mixing batch the pawn can't even start under CE cedes to vanilla instead of looping.
+            FinalizeCaps(plan, pawn, bench, recipe, massPerRep, bulkPerRep);
             return plan;
         }
 

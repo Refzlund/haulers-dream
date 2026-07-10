@@ -124,6 +124,48 @@ namespace HaulersDream.Core
             return r < 0 ? 0 : r;
         }
 
+        /// <summary>
+        /// How many WHOLE recipe rounds (one rep's full ingredient set across EVERY slot) a pawn can gather in ONE
+        /// trip, bounded by weight room, Combat Extended bulk room, and the reps still to craft. A "round" costs
+        /// <paramref name="massPerRoundKg"/> weight and <paramref name="bulkPerRound"/> bulk; the pawn has
+        /// <paramref name="freeWeightKg"/> weight room and <paramref name="freeBulk"/> bulk room right now. A
+        /// non-positive per-round COST in a dimension means that dimension does not constrain the count (a massless
+        /// round, or a bulkless round / Combat Extended absent, where the caller passes 0), so it never divides by
+        /// zero and a 0-cost dimension is simply ignored. This is the per-trip gather bound for the no-overload batch
+        /// loop (<c>JobDriver_BatchCraft</c>): the driver gathers exactly this many whole rounds, crafts them, then
+        /// recomputes and gathers the next batch, so it can never fill capacity on ONE ingredient type and stall
+        /// with an incomplete round (the Combat Extended batch-craft loop). Returns 0 when not even one whole round
+        /// fits (the caller then cedes to vanilla one-at-a-time crafting) or nothing remains to craft.
+        /// </summary>
+        /// <param name="freeWeightKg">Weight room now (effective carry cap minus current gear+inventory mass). May be negative when over capacity.</param>
+        /// <param name="massPerRoundKg">Weight of one whole round's ingredients; &lt;= 0 means weight never binds.</param>
+        /// <param name="freeBulk">Combat Extended bulk room now (positive infinity when CE is absent).</param>
+        /// <param name="bulkPerRound">Bulk of one whole round's ingredients; &lt;= 0 means bulk never binds.</param>
+        /// <param name="remainingReps">Reps still to craft (caps the trip so it never over-gathers the batch).</param>
+        public static int WholeRoundsThatFit(float freeWeightKg, float massPerRoundKg,
+            float freeBulk, float bulkPerRound, int remainingReps)
+        {
+            if (remainingReps <= 0)
+                return 0;
+            int r = Min(Min(RoundsInDimension(freeWeightKg, massPerRoundKg),
+                            RoundsInDimension(freeBulk, bulkPerRound)), remainingReps);
+            return r < 0 ? 0 : r;
+        }
+
+        /// <summary>Whole units of a per-round cost that fit a free budget: <c>floor(free / perRound)</c>. A
+        /// non-positive per-round cost never constrains (<c>int.MaxValue</c>, the dimension does not apply); a
+        /// non-positive budget fits none. Guards the infinite-budget case (CE absent feeds positive infinity) so a
+        /// raw cast can never produce <c>int.MinValue</c>.</summary>
+        private static int RoundsInDimension(float free, float perRound)
+        {
+            if (perRound <= 0f)
+                return int.MaxValue;
+            if (free <= 0f)
+                return 0;
+            double n = Math.Floor(free / (double)perRound);
+            return n >= int.MaxValue ? int.MaxValue : (int)n;
+        }
+
         // ---- MIXING-recipe math (allowMixingIngredients == true: meals, kibble, pemmican, chemfuel, beer) ----
         //
         // A mixing recipe fills ONE ingredient slot from MULTIPLE candidate defs by VALUE (nutrition for food,
