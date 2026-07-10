@@ -327,6 +327,13 @@ namespace HaulersDream
         // Vanilla here (the perf-conscious choice — the A* modes are opt-in), unlike WYU's own Default default.
         public EnRoutePathChecker enRoutePathChecker = EnRoutePathChecker.Vanilla;
 
+        // How far a pawn will step out of its way to take a free-ish opportunity on a trip it is already making:
+        // grab a loose item it passes on the way to storage, or shed a scooped load while on non-emergency
+        // protected work (elective surgery / rescue / warden). One knob for both "zero-detour" behaviors. DEFAULT
+        // Standard (a short detour); Off restores the strict "never delay the work" behavior; Short is the original
+        // near-free-only budget; Long trades a small deliberate delay for fewer trips. See OpportunisticDetour.
+        public OpportunisticDetour opportunisticDetour = OpportunisticDetour.Standard;
+
         // ===== While You're Up parity (C3 — consumer-aware storage routing, default ON) =====
         // "Haul before carry": before a pawn carries a resource to a build site / crafting bill, relocate the
         // largest nearby stack of that material to storage CLOSER to the consuming job (so future fetches are
@@ -681,6 +688,7 @@ namespace HaulersDream
             Scribe_Values.Look(ref closestDestinationUnloadOrder, "closestDestinationUnloadOrder", true);
             Scribe_Values.Look(ref enRoutePickup, "enRoutePickup", true);
             Scribe_Values.Look(ref enRoutePathChecker, "enRoutePathChecker", EnRoutePathChecker.Vanilla);
+            Scribe_Values.Look(ref opportunisticDetour, "opportunisticDetour", OpportunisticDetour.Standard);
             Scribe_Values.Look(ref storageRouting, "storageRouting", true);
             Scribe_Values.Look(ref routeSupplies, "routeSupplies", true);
             Scribe_Values.Look(ref routeIngredients, "routeIngredients", true);
@@ -864,6 +872,7 @@ namespace HaulersDream
             closestDestinationUnloadOrder = true;
             enRoutePickup = true;
             enRoutePathChecker = EnRoutePathChecker.Vanilla;
+            opportunisticDetour = OpportunisticDetour.Standard;
             storageRouting = true;
             routeSupplies = true;
             routeIngredients = true;

@@ -590,6 +590,17 @@
 <HaulersDream.Setting.AlertStuckHours.Lab>Segnala una pedina bloccata dopo</HaulersDream.Setting.AlertStuckHours.Lab>
 <HaulersDream.Setting.AlertStuckHours.Help>Quanto a lungo una pedina può tenere carico da trasportare che non riesce a riporre (con una destinazione che esiste) prima che l'allarme la segnali.</HaulersDream.Setting.AlertStuckHours.Help>
 <HaulersDream.Setting.EnRoutePathChecker.Lab>Controllo "sul tragitto"</HaulersDream.Setting.EnRoutePathChecker.Lab>
+  <HaulersDream.Head.OpportunisticDetour>Deviazioni opportunistiche</HaulersDream.Head.OpportunisticDetour>
+  <HaulersDream.Setting.OpportunisticDetour.Lab>Distanza di deviazione</HaulersDream.Setting.OpportunisticDetour.Lab>
+  <HaulersDream.Setting.OpportunisticDetour.Desc>Quanto una pedina si scosta dal suo percorso per cogliere un'occasione gratuita durante un tragitto che sta già facendo: raccogliere un oggetto sparso che incontra andando al deposito, o scaricare un carico raccolto mentre svolge un lavoro medico, di soccorso o di sorvegliante non urgente. "Disattivato" non devia mai (un medico porta il suo carico per tutto l'intervento; un trasportatore lascia gli oggetti che incontra). "Breve" prende solo ciò che è praticamente sul percorso esatto. "Standard", l'impostazione predefinita, consente una breve deviazione. "Lunga" prende le deviazioni che ne valgono la pena, scambiando un piccolo ritardo su un lavoro importante con meno viaggi. Misurata come distanza extra in linea d'aria, quindi un po' rende di più su un lungo trasporto.</HaulersDream.Setting.OpportunisticDetour.Desc>
+  <HaulersDream.Setting.Detour.Off.S>Disattivato</HaulersDream.Setting.Detour.Off.S>
+  <HaulersDream.Setting.Detour.Short.S>Breve</HaulersDream.Setting.Detour.Short.S>
+  <HaulersDream.Setting.Detour.Standard.S>Standard</HaulersDream.Setting.Detour.Standard.S>
+  <HaulersDream.Setting.Detour.Long.S>Lunga</HaulersDream.Setting.Detour.Long.S>
+  <HaulersDream.Setting.Detour.Off.H>Non deviare mai: le pedine non raccolgono un oggetto che incontrano né scaricano un carico. Ripristina il comportamento rigido "non ritardare mai il lavoro".</HaulersDream.Setting.Detour.Off.H>
+  <HaulersDream.Setting.Detour.Short.H>Solo quando non costa praticamente nulla, all'incirca un oggetto sul percorso esatto. Era il budget fisso originale.</HaulersDream.Setting.Detour.Short.H>
+  <HaulersDream.Setting.Detour.Standard.H>Consenti una breve deviazione per evitare un secondo viaggio. L'impostazione predefinita.</HaulersDream.Setting.Detour.Standard.H>
+  <HaulersDream.Setting.Detour.Long.H>Prendi le deviazioni che ne valgono la pena. Su un lavoro importante scambia un piccolo ritardo deliberato con meno viaggi.</HaulersDream.Setting.Detour.Long.H>
 <HaulersDream.Setting.AutoStripMode.Lab>Spoglia automaticamente durante il trasporto</HaulersDream.Setting.AutoStripMode.Lab>
 <HaulersDream.Setting.AutoStrip.Help>Quando trasporti un cadavere, spoglia prima il suo equipaggiamento e porta il bottino insieme. "Solo smaltimento" spoglia solo i cadaveri diretti a una zona di scarico. "Disattivato" lascia i cadaveri vestiti (gli ordini di Spoglia manuali raccolgono comunque il loro equipaggiamento).</HaulersDream.Setting.AutoStrip.Help>
 <HaulersDream.Setting.TaintedSmeltable.Lab>Vestiario contaminato — fondibile</HaulersDream.Setting.TaintedSmeltable.Lab>

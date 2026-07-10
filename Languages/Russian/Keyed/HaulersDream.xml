@@ -590,6 +590,17 @@
 <HaulersDream.Setting.AlertStuckHours.Lab>Отмечать застрявшую пешку после</HaulersDream.Setting.AlertStuckHours.Lab>
 <HaulersDream.Setting.AlertStuckHours.Help>Как долго пешка может держать груз переноски, который не может убрать (с существующим местом назначения), прежде чем тревога её отметит.</HaulersDream.Setting.AlertStuckHours.Help>
 <HaulersDream.Setting.EnRoutePathChecker.Lab>Проверка «по пути»</HaulersDream.Setting.EnRoutePathChecker.Lab>
+  <HaulersDream.Head.OpportunisticDetour>Попутные крюки</HaulersDream.Head.OpportunisticDetour>
+  <HaulersDream.Setting.OpportunisticDetour.Lab>Дальность крюка</HaulersDream.Setting.OpportunisticDetour.Lab>
+  <HaulersDream.Setting.OpportunisticDetour.Desc>Насколько далеко пешка отклонится от своего пути, чтобы воспользоваться бесплатной возможностью на ходке, которую она и так совершает: подобрать рассыпанный предмет, мимо которого проходит по дороге на склад, или сбросить собранный груз во время несрочной медицинской, спасательной или надзорной работы. «Выкл» никогда не отклоняется (врач несёт свой груз через всю операцию; переносчик оставляет предметы, мимо которых проходит). «Короткий» берёт только то, что практически прямо на пути. «Стандартный», по умолчанию, допускает короткий крюк. «Длинный» совершает стоящие крюки, обменивая небольшую задержку важной работы на меньшее число ходок. Измеряется как лишнее расстояние по прямой, так что чуть-чуть значит больше на долгой переноске.</HaulersDream.Setting.OpportunisticDetour.Desc>
+  <HaulersDream.Setting.Detour.Off.S>Выкл</HaulersDream.Setting.Detour.Off.S>
+  <HaulersDream.Setting.Detour.Short.S>Короткий</HaulersDream.Setting.Detour.Short.S>
+  <HaulersDream.Setting.Detour.Standard.S>Стандартный</HaulersDream.Setting.Detour.Standard.S>
+  <HaulersDream.Setting.Detour.Long.S>Длинный</HaulersDream.Setting.Detour.Long.S>
+  <HaulersDream.Setting.Detour.Off.H>Никогда не отклоняться: пешки не подберут проходимый предмет и не сбросят груз. Восстанавливает строгое поведение «никогда не задерживать работу».</HaulersDream.Setting.Detour.Off.H>
+  <HaulersDream.Setting.Detour.Short.H>Только когда это практически ничего не стоит, примерно предмет прямо на пути. Это был исходный фиксированный бюджет.</HaulersDream.Setting.Detour.Short.H>
+  <HaulersDream.Setting.Detour.Standard.H>Допускать короткий крюк, чтобы избежать второй ходки. По умолчанию.</HaulersDream.Setting.Detour.Standard.H>
+  <HaulersDream.Setting.Detour.Long.H>Совершать стоящие крюки. На важной работе это обменивает небольшую, намеренную задержку на меньшее число ходок.</HaulersDream.Setting.Detour.Long.H>
 <HaulersDream.Setting.AutoStripMode.Lab>Автообдирание при переноске</HaulersDream.Setting.AutoStripMode.Lab>
 <HaulersDream.Setting.AutoStrip.Help>При переноске трупа сначала снять с него снаряжение и нести добычу с собой. «Только утилизация» обдирает только трупы, направляемые в зону свалки. «Выкл» оставляет трупы одетыми (заказы «Раздеть» вручную всё равно собирают их снаряжение).</HaulersDream.Setting.AutoStrip.Help>
 <HaulersDream.Setting.TaintedSmeltable.Lab>Осквернённая одежда — переплавляемая</HaulersDream.Setting.TaintedSmeltable.Lab>

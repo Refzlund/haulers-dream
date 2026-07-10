@@ -9,6 +9,10 @@
     <reportString>unloading inventory.</reportString>
     <casualInterruptible>false</casualInterruptible>
     <suspendable>false</suspendable>
+    <!-- Load-bearing for the en-route "grab on the way to storage" pickup: vanilla TryOpportunisticJob (the
+         seam Patch_Pawn_JobTracker_EnRoutePickup hooks) returns null the instant this is false, so without it a
+         pawn walking an unload trip could never scoop a loose item it passes (it does the zero-detour grab). -->
+    <allowOpportunisticPrefix>true</allowOpportunisticPrefix>
   </JobDef>
 
   <!-- DropThenHaul mode: the producer scoops up its own fresh ground drops. -->

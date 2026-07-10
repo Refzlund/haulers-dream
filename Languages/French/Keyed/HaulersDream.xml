@@ -590,6 +590,17 @@
 <HaulersDream.Setting.AlertStuckHours.Lab>Signaler un pion bloqué après</HaulersDream.Setting.AlertStuckHours.Lab>
 <HaulersDream.Setting.AlertStuckHours.Help>Combien de temps un pion peut détenir une cargaison de transport qu'il ne peut pas ranger (avec une destination qui existe) avant que l'alerte ne le signale.</HaulersDream.Setting.AlertStuckHours.Help>
 <HaulersDream.Setting.EnRoutePathChecker.Lab>Vérification du « sur le chemin »</HaulersDream.Setting.EnRoutePathChecker.Lab>
+  <HaulersDream.Head.OpportunisticDetour>Détours opportunistes</HaulersDream.Head.OpportunisticDetour>
+  <HaulersDream.Setting.OpportunisticDetour.Lab>Distance de détour</HaulersDream.Setting.OpportunisticDetour.Lab>
+  <HaulersDream.Setting.OpportunisticDetour.Desc>Jusqu'où un pion s'écarte de son chemin pour saisir une occasion gratuite lors d'un trajet qu'il fait déjà : ramasser un objet épars qu'il croise en allant au stockage, ou déposer une charge ramassée tout en effectuant un travail médical, de sauvetage ou de gardien non urgent. « Désactivé » ne fait jamais de détour (un médecin porte sa charge pendant toute la chirurgie ; un transporteur laisse les objets qu'il croise). « Court » ne prend que ce qui est pratiquement sur le chemin exact. « Standard », par défaut, permet un court détour. « Long » prend les détours qui en valent la peine, échangeant un léger retard sur un travail important contre moins de trajets. Mesuré en distance supplémentaire à vol d'oiseau, donc un peu va plus loin sur un long transport.</HaulersDream.Setting.OpportunisticDetour.Desc>
+  <HaulersDream.Setting.Detour.Off.S>Désactivé</HaulersDream.Setting.Detour.Off.S>
+  <HaulersDream.Setting.Detour.Short.S>Court</HaulersDream.Setting.Detour.Short.S>
+  <HaulersDream.Setting.Detour.Standard.S>Standard</HaulersDream.Setting.Detour.Standard.S>
+  <HaulersDream.Setting.Detour.Long.S>Long</HaulersDream.Setting.Detour.Long.S>
+  <HaulersDream.Setting.Detour.Off.H>Jamais de détour : les pions ne saisiront pas un objet croisé ni ne déposeront une charge. Rétablit le comportement strict « ne jamais retarder le travail ».</HaulersDream.Setting.Detour.Off.H>
+  <HaulersDream.Setting.Detour.Short.H>Seulement quand cela ne coûte pratiquement rien, à peu près un objet sur le chemin exact. C'était le budget fixe d'origine.</HaulersDream.Setting.Detour.Short.H>
+  <HaulersDream.Setting.Detour.Standard.H>Permettre un court détour pour éviter un second trajet. Le réglage par défaut.</HaulersDream.Setting.Detour.Standard.H>
+  <HaulersDream.Setting.Detour.Long.H>Prendre les détours qui en valent la peine. Sur un travail important, cela échange un léger retard délibéré contre moins de trajets.</HaulersDream.Setting.Detour.Long.H>
 <HaulersDream.Setting.AutoStripMode.Lab>Déshabiller automatiquement pendant le transport</HaulersDream.Setting.AutoStripMode.Lab>
 <HaulersDream.Setting.AutoStrip.Help>Quand on transporte un cadavre, le déshabiller d'abord et emporter le butin avec. « Élimination seulement » ne déshabille que les cadavres en route vers une zone de dépotoir. « Désactivé » laisse les cadavres habillés (les ordres de Déshabillage manuels ramassent tout de même leur équipement).</HaulersDream.Setting.AutoStrip.Help>
 <HaulersDream.Setting.TaintedSmeltable.Lab>Vêtements souillés — fusibles</HaulersDream.Setting.TaintedSmeltable.Lab>

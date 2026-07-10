@@ -176,18 +176,23 @@ namespace HaulersDream
         /// <param name="runOver">The pawn just picked a NON-yield, NON-haul job, so its accumulate run is over —
         /// use the relaxed run-end criteria (drop a worthwhile load at nearby storage even on a short hop)
         /// instead of the strict "real journey on the way" bar. Settle-window-independent by design.</param>
-        internal static bool ShouldDivert(Pawn pawn, Job workJob, bool runOver = false)
+        internal static bool ShouldDivert(Pawn pawn, Job workJob, bool runOver = false, bool protectedZeroDetourOnly = false)
         {
             var s = HaulersDreamMod.Settings;
             if (s == null || !s.opportunisticUnload || !s.markForUnload)
                 return false;
             if (pawn?.Map == null || workJob?.def == null || pawn.Drafted || workJob.playerForced)
                 return false; // never defer player-prioritized work
-            // Never divert off EMERGENCY / medical / rescue / firefighting work, and never off a resting patient
-            // (see ProtectedWork). The postfix already gates on the emergency node; this covers any other caller
-            // and the non-emergency Doctor/Warden givers (notably rescue) by workgiver. The resting-patient guard
-            // is defensive: a patient shouldn't be handed a work job, but its 211-tick job-override re-scan can.
-            if (ProtectedWork.IsProtected(workJob, false) || ProtectedWork.IsRestingPatient(pawn))
+            // Never divert off a resting patient (see ProtectedWork). Defensive: a patient shouldn't be handed a
+            // work job, but its 211-tick job-override re-scan can.
+            if (ProtectedWork.IsRestingPatient(pawn))
+                return false;
+            // Protected work (medical / rescue / firefighting) normally never diverts to unload (issue #107). The
+            // ONE exception is the protected zero-detour path: the caller (the work postfix) has vetted this as
+            // NON-emergency protected work and allows a shed ONLY when storage is essentially on the way (the
+            // zero-detour geometry gate below), so it never DELAYS the work. Every other caller still hard-blocks
+            // (this method also covers the non-emergency Doctor/Warden givers, notably rescue, by workgiver).
+            if (!protectedZeroDetourOnly && ProtectedWork.IsProtected(workJob, false))
                 return false;
             if (workJob.def == HaulersDreamDefOf.HaulersDream_UnloadInventory
                 || pawn.CurJobDef == HaulersDreamDefOf.HaulersDream_UnloadInventory)
@@ -234,12 +239,26 @@ namespace HaulersDream
             // entering downtime (rest/eat/recreate) the settle is bypassed (put the load away first), matching the
             // end-of-run path. The strict continuing-yield path (runOver=false, ShouldUnloadOnWay's trip floor) is
             // unchanged — a continuing mine/harvest run was already never interrupted between adjacent cells.
-            if (runOver && !IsEnteringDowntime(pawn, s) && now - comp.lastYieldTick < s.unloadGraceTicks)
+            // (Bypassed on the protected zero-detour path: the settle window is about not ending a YIELD run early,
+            // which is irrelevant to a doctor on protected work, where a free pass-by drop is worth taking.)
+            if (!protectedZeroDetourOnly && runOver && !IsEnteringDowntime(pawn, s)
+                && now - comp.lastYieldTick < s.unloadGraceTicks)
                 return false;
 
             // Where the pawn is heading. Most work jobs set targetA; grow-zone harvests use targetQueueA
             // (targetA is Invalid), so fall back to the first queued cell.
             IntVec3 target = workJob.targetA.Cell;
+            // Protected zero-detour: measure the pass-by against the pawn's FIRST real destination. An
+            // ingredient-gathering job (a surgery / craft DoBill) walks OUT to fetch its first ingredient (the
+            // medicine / materials) BEFORE returning to the bill-giver it is already standing next to, so that
+            // outbound leg is the one where storage may sit on the way (the reported "grabbing that medicine" trip).
+            // Only for a spawned map ingredient (an inventory-sourced one has no outbound leg).
+            if (protectedZeroDetourOnly)
+            {
+                var qB = workJob.targetQueueB;
+                if (qB != null && qB.Count > 0 && qB[0].HasThing && qB[0].Thing.Spawned)
+                    target = qB[0].Thing.Position;
+            }
             if (!target.IsValid)
             {
                 var queue = workJob.targetQueueA;
@@ -264,7 +283,10 @@ namespace HaulersDream
             // short-circuits a divert the full math would reject anyway (both full paths bail below
             // MinLoadFraction), so behavior is identical — the storage search just no longer runs for the common
             // "carrying too little to bother" case.
-            if (!OpportunisticUnloadPolicy.ShouldAttemptDivert(
+            // (Skipped on the protected zero-detour path: a free pass-by is worth taking at ANY load size, so its
+            // decision is the pure geometry below, not the load-fraction bar this pre-gate enforces for the normal
+            // "worth a detour" path.)
+            if (!protectedZeroDetourOnly && !OpportunisticUnloadPolicy.ShouldAttemptDivert(
                     loadFraction, now - comp.lastOpportunisticUnloadTick >= DivertCooldownTicks,
                     tracked.Count, cap > 0f))
                 return false;
@@ -315,6 +337,18 @@ namespace HaulersDream
             int pawnToStorage = CellDist(pawn.Position, storageCell);
             int storageToTarget = CellDist(storageCell, target);
 
+            // Protected zero-detour: the pawn is on non-emergency protected work, so shed only when storage is on
+            // the way, within the player's detour budget (issue #107: at the Standard default this is a short
+            // pass-by, not a real delay; Off disables it entirely so the load is carried through the work; Long
+            // trades a small deliberate delay for fewer trips). No trip/load floor: within budget, take it.
+            if (protectedZeroDetourOnly)
+            {
+                var detour = HaulersDreamMod.Settings?.opportunisticDetour ?? OpportunisticDetour.Standard;
+                if (detour == OpportunisticDetour.Off)
+                    return false;
+                return OpportunisticUnloadPolicy.ShouldUnloadZeroDetour(pawnToTarget, pawnToStorage, storageToTarget,
+                    OpportunisticUnloadPolicy.DetourBudgetTiles(detour));
+            }
             // Run-end (switched to non-yield work): relaxed criteria — shed the load at nearby storage even on
             // a short hop. Otherwise (continuing a yield run / a haul): the strict "real journey on the way" bar.
             return runOver

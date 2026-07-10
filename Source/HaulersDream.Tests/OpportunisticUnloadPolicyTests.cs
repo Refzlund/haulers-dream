@@ -147,6 +147,129 @@ namespace HaulersDream.Tests
             Assert.That(RunEnd(toTarget: 2, toStorage: 12, storageToTarget: 11), Is.False); // detour 21 > bar
         }
 
+        // --- protected-work zero-detour (issue #107 relaxation): a doctor on NON-emergency medical work sheds its
+        // scooped load ONLY when storage is essentially on the way, so the drop never DELAYS the surgery. No
+        // minimum-trip or load floor (the geometry alone decides); the guard is that the detour stays tiny. ---
+
+        static bool ZeroDetour(int toTarget, int toStorage, int storageToTarget,
+            int budget = OpportunisticUnloadPolicy.DetourTilesShort)
+            => OpportunisticUnloadPolicy.ShouldUnloadZeroDetour(toTarget, toStorage, storageToTarget, budget);
+
+        [Test]
+        public void ZeroDetour_StorageOnThePath_Diverts()
+        {
+            // The reported case: the doctor walks out to fetch medicine (a real trip) and its organ storage sits on
+            // that line (detour 0) -> shed on the way, no delay to the surgery.
+            Assert.That(ZeroDetour(toTarget: 20, toStorage: 12, storageToTarget: 8), Is.True); // detour 0
+        }
+
+        [Test]
+        public void ZeroDetour_NoMinimumTripFloor_ShedsEvenOnAShortHop()
+        {
+            // Unlike ShouldUnloadOnWay (16-tile floor), a free pass-by is taken even on a local trip: a doctor
+            // operating right next to storage still drops its load. Load size is irrelevant (no load parameter).
+            Assert.That(ZeroDetour(toTarget: 3, toStorage: 2, storageToTarget: 1), Is.True); // detour 0, trip 3
+        }
+
+        [Test]
+        public void ZeroDetour_RealDetour_DoesNotDivert()
+        {
+            // The #107 invariant: storage OFF the path (a genuine out-and-back) must NOT pull a doctor away from
+            // medical work, whatever the load. detour = 10 + 10 - 4 = 16 >> 4 -> blocked.
+            Assert.That(ZeroDetour(toTarget: 4, toStorage: 10, storageToTarget: 10), Is.False);
+        }
+
+        [Test]
+        public void ZeroDetour_AtTheTileBudget_Boundary()
+        {
+            // detour exactly at the budget (DetourTilesShort=4) is allowed; one past is not.
+            Assert.That(ZeroDetour(toTarget: 10, toStorage: 8, storageToTarget: 6), Is.True);  // detour 4 == budget
+            Assert.That(ZeroDetour(toTarget: 10, toStorage: 9, storageToTarget: 6), Is.False); // detour 5 > budget
+        }
+
+        // --- on-the-way pickup (the pickup mirror of the zero-detour unload): while a pawn is already walking to
+        // storage, it may grab a loose haulable that sits on that path so the item rides along for free. Same
+        // 4-tile detour budget; no trip/load floor (the pawn is going there regardless). ---
+
+        static bool GrabOnWay(float pawnToDest, float pawnToThing, float thingToDest,
+            int budget = OpportunisticUnloadPolicy.DetourTilesShort)
+            => OpportunisticUnloadPolicy.ShouldGrabOnWay(pawnToDest, pawnToThing, thingToDest, budget);
+
+        [Test]
+        public void GrabOnWay_ItemUnderfoot_Grabs()
+        {
+            // The reported case: a kidney on the pawn's exact tile while it heads to the shelves ~10 tiles off.
+            // pawnToThing 0, thingToDest == pawnToDest -> detour 0.
+            Assert.That(GrabOnWay(pawnToDest: 10f, pawnToThing: 0f, thingToDest: 10f), Is.True);
+        }
+
+        [Test]
+        public void GrabOnWay_ItemOnTheStraightPath_Grabs()
+        {
+            // pawn ---- item ---- dest: swinging past the item adds nothing (detour 0).
+            Assert.That(GrabOnWay(pawnToDest: 10f, pawnToThing: 4f, thingToDest: 6f), Is.True);
+        }
+
+        [Test]
+        public void GrabOnWay_ItemOffToTheSide_DoesNotGrab()
+        {
+            // A real out-and-back: detour = 8 + 8 - 10 = 6 > 4 -> leave it (the offload is not delayed).
+            Assert.That(GrabOnWay(pawnToDest: 10f, pawnToThing: 8f, thingToDest: 8f), Is.False);
+        }
+
+        [Test]
+        public void GrabOnWay_ItemBehindThePawn_DoesNotGrab()
+        {
+            // Item in the OPPOSITE direction from storage: detour = 5 + 15 - 10 = 10 -> not on the way.
+            Assert.That(GrabOnWay(pawnToDest: 10f, pawnToThing: 5f, thingToDest: 15f), Is.False);
+        }
+
+        [Test]
+        public void GrabOnWay_AtTheTileBudget_Boundary()
+        {
+            // detour exactly at the budget (DetourTilesShort=4) is allowed; one past is not.
+            Assert.That(GrabOnWay(pawnToDest: 10f, pawnToThing: 8f, thingToDest: 6f), Is.True);  // detour 4 == budget
+            Assert.That(GrabOnWay(pawnToDest: 10f, pawnToThing: 9f, thingToDest: 6f), Is.False); // detour 5 > budget
+        }
+
+        // --- configurable detour tolerance (OpportunisticDetour): one knob picks the tile budget both zero-detour
+        // behaviors share. Off is handled by the callers (they skip the behavior), so the mapping never returns 0. ---
+
+        [Test]
+        public void DetourBudget_MapsEachLevel()
+        {
+            Assert.That(OpportunisticUnloadPolicy.DetourBudgetTiles(OpportunisticDetour.Short),
+                Is.EqualTo(OpportunisticUnloadPolicy.DetourTilesShort));
+            Assert.That(OpportunisticUnloadPolicy.DetourBudgetTiles(OpportunisticDetour.Standard),
+                Is.EqualTo(OpportunisticUnloadPolicy.DetourTilesStandard));
+            Assert.That(OpportunisticUnloadPolicy.DetourBudgetTiles(OpportunisticDetour.Long),
+                Is.EqualTo(OpportunisticUnloadPolicy.DetourTilesLong));
+        }
+
+        [Test]
+        public void DetourBudget_OffDegradesToStandard_NotZero()
+        {
+            // Off is meant to be gated at the call site; if it ever reaches the mapping, it must fall back to the
+            // default budget (a caller that forgot the Off-gate degrades to Standard, never to "detour 0 only").
+            Assert.That(OpportunisticUnloadPolicy.DetourBudgetTiles(OpportunisticDetour.Off),
+                Is.EqualTo(OpportunisticUnloadPolicy.DetourTilesStandard));
+        }
+
+        [Test]
+        public void Budget_WidensTheThreshold_ForBothMirrors()
+        {
+            // A detour of 8: rejected under the Short budget (4), accepted under the Standard budget (10). Proves
+            // the tolerance actually changes what qualifies, symmetrically for the unload and the pickup.
+            Assert.That(ZeroDetour(toTarget: 10, toStorage: 9, storageToTarget: 9,
+                budget: OpportunisticUnloadPolicy.DetourTilesShort), Is.False);    // detour 8 > 4
+            Assert.That(ZeroDetour(toTarget: 10, toStorage: 9, storageToTarget: 9,
+                budget: OpportunisticUnloadPolicy.DetourTilesStandard), Is.True);  // detour 8 <= 10
+            Assert.That(GrabOnWay(pawnToDest: 10f, pawnToThing: 9f, thingToDest: 9f,
+                budget: OpportunisticUnloadPolicy.DetourTilesShort), Is.False);    // detour 8 > 4
+            Assert.That(GrabOnWay(pawnToDest: 10f, pawnToThing: 9f, thingToDest: 9f,
+                budget: OpportunisticUnloadPolicy.DetourTilesStandard), Is.True);  // detour 8 <= 10
+        }
+
         // --- downtime-swap severity gates (issue #122): the unload-before-eating/sleep swap must stand
         // down at the critical need category, so a starving pawn eats NOW and an exhausted pawn sleeps
         // NOW. Vanilla enum values pinned as ints (HungerCategory / RestCategory: 0..3). ---

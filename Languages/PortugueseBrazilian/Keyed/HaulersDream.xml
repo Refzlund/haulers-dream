@@ -590,6 +590,17 @@
 <HaulersDream.Setting.AlertStuckHours.Lab>Sinalizar um peão travado após</HaulersDream.Setting.AlertStuckHours.Lab>
 <HaulersDream.Setting.AlertStuckHours.Help>Por quanto tempo um peão pode segurar carga de transporte que não consegue guardar (com um destino que existe) antes que o alerta o sinalize.</HaulersDream.Setting.AlertStuckHours.Help>
 <HaulersDream.Setting.EnRoutePathChecker.Lab>Verificação de "está no caminho"</HaulersDream.Setting.EnRoutePathChecker.Lab>
+  <HaulersDream.Head.OpportunisticDetour>Desvios oportunistas</HaulersDream.Head.OpportunisticDetour>
+  <HaulersDream.Setting.OpportunisticDetour.Lab>Distância de desvio</HaulersDream.Setting.OpportunisticDetour.Lab>
+  <HaulersDream.Setting.OpportunisticDetour.Desc>O quanto um peão sai do seu caminho para aproveitar uma oportunidade gratuita numa viagem que já está fazendo: pegar um item solto que passa a caminho do armazenamento, ou largar uma carga recolhida enquanto faz um trabalho médico, de resgate ou de carcereiro não urgente. "Desligado" nunca desvia (um médico carrega sua carga durante toda a cirurgia; um transportador deixa os itens por que passa). "Curto" só pega o que está praticamente no caminho exato. "Padrão", o valor padrão, permite um desvio curto. "Longo" faz desvios que valem a pena, trocando um pequeno atraso num trabalho importante por menos viagens. Medido como distância extra em linha reta, então um pouco rende mais num transporte longo.</HaulersDream.Setting.OpportunisticDetour.Desc>
+  <HaulersDream.Setting.Detour.Off.S>Desligado</HaulersDream.Setting.Detour.Off.S>
+  <HaulersDream.Setting.Detour.Short.S>Curto</HaulersDream.Setting.Detour.Short.S>
+  <HaulersDream.Setting.Detour.Standard.S>Padrão</HaulersDream.Setting.Detour.Standard.S>
+  <HaulersDream.Setting.Detour.Long.S>Longo</HaulersDream.Setting.Detour.Long.S>
+  <HaulersDream.Setting.Detour.Off.H>Nunca desviar: os peões não pegam um item de passagem nem largam uma carga. Restaura o comportamento rígido de "nunca atrasar o trabalho".</HaulersDream.Setting.Detour.Off.H>
+  <HaulersDream.Setting.Detour.Short.H>Só quando não custa praticamente nada, mais ou menos um item no caminho exato. Este era o orçamento fixo original.</HaulersDream.Setting.Detour.Short.H>
+  <HaulersDream.Setting.Detour.Standard.H>Permitir um desvio curto para evitar uma segunda viagem. O padrão.</HaulersDream.Setting.Detour.Standard.H>
+  <HaulersDream.Setting.Detour.Long.H>Fazer desvios que valem a pena. Num trabalho importante, isso troca um pequeno atraso deliberado por menos viagens.</HaulersDream.Setting.Detour.Long.H>
 <HaulersDream.Setting.AutoStripMode.Lab>Despojar automaticamente durante o transporte</HaulersDream.Setting.AutoStripMode.Lab>
 <HaulersDream.Setting.AutoStrip.Help>Ao transportar um cadáver, despoja o equipamento dele primeiro e leva o despojo junto. 'Só descarte' despoja apenas cadáveres rumo a uma zona de descarte. 'Desligado' deixa os cadáveres vestidos (ordens de Despojar manuais ainda recolhem o equipamento deles).</HaulersDream.Setting.AutoStrip.Help>
 <HaulersDream.Setting.TaintedSmeltable.Lab>Roupas contaminadas — fundíveis</HaulersDream.Setting.TaintedSmeltable.Lab>

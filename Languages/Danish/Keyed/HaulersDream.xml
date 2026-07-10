@@ -590,6 +590,17 @@
 <HaulersDream.Setting.AlertStuckHours.Lab>Markér en fastlåst figur efter</HaulersDream.Setting.AlertStuckHours.Lab>
 <HaulersDream.Setting.AlertStuckHours.Help>Hvor længe en figur må holde på transportlast, den ikke kan lægge væk (med en destination, der findes), før alarmen markerer den.</HaulersDream.Setting.AlertStuckHours.Help>
 <HaulersDream.Setting.EnRoutePathChecker.Lab>Tjek for "på vejen"</HaulersDream.Setting.EnRoutePathChecker.Lab>
+  <HaulersDream.Head.OpportunisticDetour>Lejlighedsvise afstikkere</HaulersDream.Head.OpportunisticDetour>
+  <HaulersDream.Setting.OpportunisticDetour.Lab>Afstikker-afstand</HaulersDream.Setting.OpportunisticDetour.Lab>
+  <HaulersDream.Setting.OpportunisticDetour.Desc>Hvor langt en figur går ud af sin vej for at gribe en gratis lejlighed på en tur, den allerede er i gang med: at samle en løs vare op, den passerer på vej til lager, eller at aflevere et opsamlet læs, mens den udfører ikke-akut medicinsk, rednings- eller fangevogterarbejde. "Fra" laver aldrig afstikkere (en læge bærer sit læs gennem hele operationen; en transportør efterlader varer, den går forbi). "Kort" tager kun det, der praktisk talt ligger lige på vejen. "Standard", standardvalget, tillader en kort afstikker. "Lang" tager afstikkere, der er umagen værd, og bytter en lille forsinkelse på vigtigt arbejde for færre ture. Måles som ekstra afstand i lige linje, så en smule rækker længere på en lang transport.</HaulersDream.Setting.OpportunisticDetour.Desc>
+  <HaulersDream.Setting.Detour.Off.S>Fra</HaulersDream.Setting.Detour.Off.S>
+  <HaulersDream.Setting.Detour.Short.S>Kort</HaulersDream.Setting.Detour.Short.S>
+  <HaulersDream.Setting.Detour.Standard.S>Standard</HaulersDream.Setting.Detour.Standard.S>
+  <HaulersDream.Setting.Detour.Long.S>Lang</HaulersDream.Setting.Detour.Long.S>
+  <HaulersDream.Setting.Detour.Off.H>Lav aldrig afstikkere: figurer samler ikke en vare op, de går forbi, og afleverer ikke et læs. Genopretter den strenge "forsink aldrig arbejdet"-adfærd.</HaulersDream.Setting.Detour.Off.H>
+  <HaulersDream.Setting.Detour.Short.H>Kun når det praktisk talt intet koster, cirka en vare lige på vejen. Dette var det oprindelige faste budget.</HaulersDream.Setting.Detour.Short.H>
+  <HaulersDream.Setting.Detour.Standard.H>Tillad en kort afstikker for at undgå en ekstra tur. Standardvalget.</HaulersDream.Setting.Detour.Standard.H>
+  <HaulersDream.Setting.Detour.Long.H>Tag afstikkere, der er umagen værd. På vigtigt arbejde bytter dette en lille, bevidst forsinkelse for færre ture.</HaulersDream.Setting.Detour.Long.H>
 <HaulersDream.Setting.AutoStripMode.Lab>Afklæd automatisk under transport</HaulersDream.Setting.AutoStripMode.Lab>
 <HaulersDream.Setting.AutoStrip.Help>Når et lig transporteres, afklædes dets udstyr først, og byttet bæres med. 'Kun bortskaffelse' afklæder kun lig på vej til en smidezone. 'Fra' lader lig være påklædte (manuelle Afklæd-ordrer samler stadig deres udstyr op).</HaulersDream.Setting.AutoStrip.Help>
 <HaulersDream.Setting.TaintedSmeltable.Lab>Besudlet beklædning — smelteligt</HaulersDream.Setting.TaintedSmeltable.Lab>

@@ -1267,6 +1267,17 @@ namespace HaulersDream
                 "HaulersDream.Setting.EnRoutePathCheckerDesc".Translate(), enabled: enRoutePickup, indent: 24f);
             enRoutePathChecker = chk == 0 ? EnRoutePathChecker.Vanilla : (chk == 1 ? EnRoutePathChecker.Default : EnRoutePathChecker.Pathfinding);
 
+            // Not gated by enRoutePickup: this same knob governs the protected-work drop-off (surgery/rescue/warden),
+            // which is a separate feature from the grab-on-the-way pickup. Enum order is Off/Short/Standard/Long, so
+            // the cast is the segment index directly.
+            HDSettingsUI.Header(c, "HaulersDream.Head.OpportunisticDetour".Translate());
+            int det = HDSettingsUI.Segmented(c, "HaulersDream.Setting.OpportunisticDetour.Lab".Translate(),
+                (int)opportunisticDetour,
+                new[] { "HaulersDream.Setting.Detour.Off.S".Translate().ToString(), "HaulersDream.Setting.Detour.Short.S".Translate().ToString(), "HaulersDream.Setting.Detour.Standard.S".Translate().ToString(), "HaulersDream.Setting.Detour.Long.S".Translate().ToString() },
+                new[] { "HaulersDream.Setting.Detour.Off.H".Translate().ToString(), "HaulersDream.Setting.Detour.Short.H".Translate().ToString(), "HaulersDream.Setting.Detour.Standard.H".Translate().ToString(), "HaulersDream.Setting.Detour.Long.H".Translate().ToString() },
+                "HaulersDream.Setting.OpportunisticDetour.Desc".Translate());
+            opportunisticDetour = (OpportunisticDetour)det;
+
             HDSettingsUI.Header(c, "HaulersDream.Head.StorageRouting".Translate());
             storageRouting = HDSettingsUI.Checkbox(c, "HaulersDream.Setting.StorageRouting".Translate(),
                 storageRouting, "HaulersDream.Setting.StorageRoutingDesc".Translate());

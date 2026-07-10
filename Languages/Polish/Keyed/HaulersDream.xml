@@ -590,6 +590,17 @@
 <HaulersDream.Setting.AlertStuckHours.Lab>Oznacz utkniętego pionka po</HaulersDream.Setting.AlertStuckHours.Lab>
 <HaulersDream.Setting.AlertStuckHours.Help>Jak długo pionek może trzymać niesiony ładunek, którego nie może odłożyć (mając istniejący cel), zanim alarm go oznaczy.</HaulersDream.Setting.AlertStuckHours.Help>
 <HaulersDream.Setting.EnRoutePathChecker.Lab>Sprawdzanie „po drodze”</HaulersDream.Setting.EnRoutePathChecker.Lab>
+  <HaulersDream.Head.OpportunisticDetour>Objazdy okazyjne</HaulersDream.Head.OpportunisticDetour>
+  <HaulersDream.Setting.OpportunisticDetour.Lab>Dystans objazdu</HaulersDream.Setting.OpportunisticDetour.Lab>
+  <HaulersDream.Setting.OpportunisticDetour.Desc>Jak daleko pionek zboczy z drogi, by skorzystać z darmowej okazji podczas wyprawy, którą i tak odbywa: chwycić luźny przedmiot mijany w drodze do magazynu albo odłożyć nazbierany ładunek podczas nienaglącej pracy medycznej, ratunkowej lub dozorcy. „Wyłączone” nigdy nie zbacza (lekarz niesie ładunek przez całą operację; tragarz zostawia przedmioty, które mija). „Krótki” bierze tylko to, co jest praktycznie dokładnie na trasie. „Standardowy”, domyślny, pozwala na krótki objazd. „Długi” podejmuje warte tego objazdy, wymieniając niewielkie opóźnienie ważnej pracy na mniej wypraw. Mierzone jako dodatkowa odległość w linii prostej, więc odrobina znaczy więcej przy długim znoszeniu.</HaulersDream.Setting.OpportunisticDetour.Desc>
+  <HaulersDream.Setting.Detour.Off.S>Wyłączone</HaulersDream.Setting.Detour.Off.S>
+  <HaulersDream.Setting.Detour.Short.S>Krótki</HaulersDream.Setting.Detour.Short.S>
+  <HaulersDream.Setting.Detour.Standard.S>Standardowy</HaulersDream.Setting.Detour.Standard.S>
+  <HaulersDream.Setting.Detour.Long.S>Długi</HaulersDream.Setting.Detour.Long.S>
+  <HaulersDream.Setting.Detour.Off.H>Nigdy nie zbaczaj: pionki nie chwycą mijanego przedmiotu ani nie odłożą ładunku. Przywraca ścisłe zachowanie „nigdy nie opóźniaj pracy”.</HaulersDream.Setting.Detour.Off.H>
+  <HaulersDream.Setting.Detour.Short.H>Tylko gdy praktycznie nic nie kosztuje, mniej więcej przedmiot dokładnie na trasie. To był pierwotny stały budżet.</HaulersDream.Setting.Detour.Short.H>
+  <HaulersDream.Setting.Detour.Standard.H>Pozwól na krótki objazd, by uniknąć drugiej wyprawy. Domyślne.</HaulersDream.Setting.Detour.Standard.H>
+  <HaulersDream.Setting.Detour.Long.H>Podejmuj warte tego objazdy. Przy ważnej pracy wymienia to niewielkie, celowe opóźnienie na mniej wypraw.</HaulersDream.Setting.Detour.Long.H>
 <HaulersDream.Setting.AutoStripMode.Lab>Automatyczne obdzieranie podczas znoszenia</HaulersDream.Setting.AutoStripMode.Lab>
 <HaulersDream.Setting.AutoStrip.Help>Przy znoszeniu zwłok najpierw obdzieraj ich sprzęt i nieś łup ze sobą. „Tylko utylizacja” obdziera tylko zwłoki zmierzające do strefy zrzutu. „Wyłączone” zostawia zwłoki ubrane (ręczne rozkazy Obdrzyj wciąż zgarniają ich sprzęt).</HaulersDream.Setting.AutoStrip.Help>
 <HaulersDream.Setting.TaintedSmeltable.Lab>Skażona odzież — przetapialna</HaulersDream.Setting.TaintedSmeltable.Lab>

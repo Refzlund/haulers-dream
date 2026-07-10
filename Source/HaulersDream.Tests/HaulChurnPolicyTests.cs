@@ -336,5 +336,66 @@ namespace HaulersDream.Tests
             // The gap must span at least one pace-and-drop cycle so a real loop keeps accumulating.
             Assert.That(HaulChurnPolicy.FailGapTicks, Is.GreaterThanOrEqualTo(120));
         }
+
+        // --- per-THING haul-ASIDE ping-pong bound (#162: the ToCellNonStorage/Succeeded loop) ---------------
+        //  Storability is not the discriminator (the looping item can be storable); the bound just stamps an item on
+        //  its first aside and denies the repeat, so the pure policy here is the suppression window arithmetic and
+        //  the "stamp on the first aside, re-arm on each denial" glue is exercised in-game.
+
+        [Test]
+        public void AsideSuppressUntil_AddsTheAsideWindow()
+        {
+            Assert.That(HaulChurnPolicy.AsideSuppressUntil(1000),
+                Is.EqualTo(1000 + HaulChurnPolicy.AsideBackoffTicks));
+        }
+
+        [Test]
+        public void AsideWindow_ChecksWithIsSuppressed()
+        {
+            // The aside guard reuses the same IsSuppressed window arithmetic as the storage backoff.
+            int until = HaulChurnPolicy.AsideSuppressUntil(1000);
+            Assert.That(HaulChurnPolicy.IsSuppressed(until - 1, until), Is.True, "the last window tick is suppressed");
+            Assert.That(HaulChurnPolicy.IsSuppressed(until, until), Is.False, "the window end is exclusive");
+        }
+
+        [Test]
+        public void AsideBackoff_IsLongerThanStorageBackoff()
+        {
+            // The aside trigger is a persistent condition (an item with nowhere valid to go), so its window is
+            // deliberately longer than the storage re-offer backoff to keep the residual re-probe churn negligible,
+            // while staying finite so a resolved situation is retried.
+            Assert.That(HaulChurnPolicy.AsideBackoffTicks, Is.GreaterThan(HaulChurnPolicy.BackoffTicks));
+        }
+
+        /// <summary>
+        /// ORACLE: the reported #162 ping-pong under the "relocate once, then stop" bound. The Verse aside-guard
+        /// stamps an item the moment it is FIRST hauled aside, and RE-ARMS the window on every subsequent denial, so
+        /// while a work-giver keeps asking to clear the item's cell the item is relocated once and then never
+        /// re-probed (the returning "back" haul the player sees as pacing is denied, and the window never lapses to
+        /// allow a fresh burst); the window only expires once those requests stop, after which a still-stuck item is
+        /// retried. Driving the pure window arithmetic the glue uses, against the logged cadence:
+        /// </summary>
+        [Test]
+        public void Oracle_AsidePingPong_SuppressedFromTheFirstAsideAndReArmedWhileRequestsContinue()
+        {
+            int firstAside = 15_750; // the tick the logged loop began
+            int until = HaulChurnPolicy.AsideSuppressUntil(firstAside);
+
+            // The returning haul ~30 ticks later (the #162 log cadence) is inside the window, so it is denied: the
+            // "there and back" never gets its "back", which is what stops the pacing.
+            Assert.That(HaulChurnPolicy.IsSuppressed(firstAside + 30, until), Is.True,
+                "the second, returning aside is suppressed, so the ping-pong never starts");
+
+            // Re-arm on that denial: the window is re-stamped from the current tick, so it moves strictly forward
+            // and a persistently-requested aside never falls out of suppression (no ~40 s recurrence).
+            int reArmed = HaulChurnPolicy.AsideSuppressUntil(firstAside + 30);
+            Assert.That(reArmed, Is.GreaterThan(until), "re-arming pushes the window strictly forward");
+            Assert.That(HaulChurnPolicy.IsSuppressed(until, reArmed), Is.True,
+                "what would have been the old window's end is still suppressed after a re-arm");
+
+            // The window is finite: once requests stop, no further re-arm happens and a still-stuck item is retried.
+            Assert.That(HaulChurnPolicy.IsSuppressed(reArmed, reArmed), Is.False,
+                "the window end is exclusive, so after the requests stop the item is offered to the aside path again");
+        }
     }
 }

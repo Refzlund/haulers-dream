@@ -590,6 +590,17 @@
 <HaulersDream.Setting.AlertStuckHours.Lab>ตั้งธงตัวละครที่ติดค้างหลังจาก</HaulersDream.Setting.AlertStuckHours.Lab>
 <HaulersDream.Setting.AlertStuckHours.Help>นานเท่าไรที่ตัวละครอาจถือสัมภาระขนของที่เก็บไว้ไม่ได้ (ทั้งที่มีปลายทางอยู่จริง) ก่อนที่การแจ้งเตือนจะตั้งธงมัน</HaulersDream.Setting.AlertStuckHours.Help>
 <HaulersDream.Setting.EnRoutePathChecker.Lab>การตรวจระหว่างทาง</HaulersDream.Setting.EnRoutePathChecker.Lab>
+  <HaulersDream.Head.OpportunisticDetour>การอ้อมระหว่างทาง</HaulersDream.Head.OpportunisticDetour>
+  <HaulersDream.Setting.OpportunisticDetour.Lab>ระยะการอ้อม</HaulersDream.Setting.OpportunisticDetour.Lab>
+  <HaulersDream.Setting.OpportunisticDetour.Desc>ตัวละครจะเบี่ยงออกจากทางไกลแค่ไหนเพื่อคว้าโอกาสฟรีในเที่ยวที่มันกำลังเดินทางอยู่แล้ว: หยิบของที่ตกหล่นซึ่งมันเดินผ่านระหว่างทางไปคลัง หรือแวะเอาของที่เก็บไว้ไปวางลงขณะทำงานการแพทย์ การช่วยเหลือ หรือการคุมนักโทษที่ไม่ฉุกเฉิน ปิดจะไม่อ้อมเลย (หมอจะถือของไว้ตลอดการผ่าตัด ผู้ขนของจะทิ้งของที่มันเดินผ่านไว้) สั้นจะเก็บเฉพาะของที่แทบจะอยู่บนเส้นทางพอดี มาตรฐาน (ค่าเริ่มต้น) อนุญาตให้อ้อมสั้นๆ ยาวจะอ้อมเมื่อคุ้มค่า โดยแลกความล่าช้าเล็กน้อยของงานสำคัญกับจำนวนเที่ยวที่น้อยลง วัดเป็นระยะทางเส้นตรงเพิ่มเติม ดังนั้นค่าน้อยๆ จึงไปได้ไกลกว่าในการขนของทางไกล</HaulersDream.Setting.OpportunisticDetour.Desc>
+  <HaulersDream.Setting.Detour.Off.S>ปิด</HaulersDream.Setting.Detour.Off.S>
+  <HaulersDream.Setting.Detour.Short.S>สั้น</HaulersDream.Setting.Detour.Short.S>
+  <HaulersDream.Setting.Detour.Standard.S>มาตรฐาน</HaulersDream.Setting.Detour.Standard.S>
+  <HaulersDream.Setting.Detour.Long.S>ยาว</HaulersDream.Setting.Detour.Long.S>
+  <HaulersDream.Setting.Detour.Off.H>ไม่อ้อมเลย: ตัวละครจะไม่คว้าของที่เดินผ่านหรือแวะวางของ คืนค่าพฤติกรรม "ไม่หน่วงงานเด็ดขาด" ที่เข้มงวด</HaulersDream.Setting.Detour.Off.H>
+  <HaulersDream.Setting.Detour.Short.H>เฉพาะเมื่อแทบไม่มีต้นทุน ราวๆ ของหนึ่งชิ้นที่อยู่บนเส้นทางพอดี นี่คืองบประมาณตายตัวเดิม</HaulersDream.Setting.Detour.Short.H>
+  <HaulersDream.Setting.Detour.Standard.H>อนุญาตให้อ้อมสั้นๆ เพื่อเลี่ยงการเดินเที่ยวที่สอง ค่าเริ่มต้น</HaulersDream.Setting.Detour.Standard.H>
+  <HaulersDream.Setting.Detour.Long.H>อ้อมเมื่อคุ้มค่า ในงานสำคัญ นี่คือการแลกความล่าช้าเล็กน้อยที่ตั้งใจไว้กับจำนวนเที่ยวที่น้อยลง</HaulersDream.Setting.Detour.Long.H>
 <HaulersDream.Setting.AutoStripMode.Lab>ถอดของอัตโนมัติขณะขนของ</HaulersDream.Setting.AutoStripMode.Lab>
 <HaulersDream.Setting.AutoStrip.Help>เมื่อขนศพ ให้ถอดของจากศพก่อนแล้วนำของไปด้วย 'เฉพาะการกำจัด' จะถอดเฉพาะศพที่มุ่งหน้าไปยังโซนทิ้งของ 'ปิด' จะปล่อยศพไว้พร้อมเครื่องแต่งกาย (คำสั่งถอดของด้วยมือยังคงเก็บของจากศพอยู่)</HaulersDream.Setting.AutoStrip.Help>
 <HaulersDream.Setting.TaintedSmeltable.Lab>เครื่องแต่งกายแปดเปื้อน — หลอมได้</HaulersDream.Setting.TaintedSmeltable.Lab>

@@ -99,6 +99,9 @@ namespace HaulersDream
         // — never trusted to be empty from a prior call.
         [ThreadStatic] private static List<Thing> scratchHaulables;
         [ThreadStatic] private static Dictionary<Thing, IntVec3> scratchStoreCellCache;
+        // Reused per-thread snapshot of the tracked (scooped) set for FirstTrackedStoreCell's ordered scan; same
+        // convention and single-call-to-completion safety as the two buffers above.
+        [ThreadStatic] private static List<Thing> scratchTracked;
 
         /// <summary>
         /// Build the en-route pickup job for the pawn about to start <paramref name="job"/>, or null when no
@@ -141,9 +144,32 @@ namespace HaulersDream
             if (AlreadyHaulingIntoInventory(pawn))
                 return null;
 
-            // The DIRECT job target the pawn is heading to. For a DoBill the pawn walks first to an ingredient
-            // (WYU OpportunityDetour.cs:100), so use the first queued ingredient's cell; otherwise targetA.
-            LocalTargetInfo jobTarget = ResolveJobTarget(job);
+            // Are we augmenting the pawn's own UNLOAD trip to storage, rather than an ordinary work job? On an
+            // unload trip the pawn is ALREADY walking to a store cell, so a loose haulable sitting on that path can
+            // ride along for free (the reported "walked right over an organ on the way to the shelves" gap). The
+            // unload job carries no destination yet (its driver resolves each store cell mid-trip), so resolve the
+            // first tracked stack's store cell ourselves and treat THAT as the target; the zero-detour gate below
+            // keeps the grab strictly on the way so it never delays the offload.
+            // Off disables the unload-trip pickup: unloadTrip stays false, so this UnloadInventory job falls through
+            // to the ordinary path (ResolveJobTarget -> invalid target on a target-less unload job -> no pickup).
+            bool unloadTrip = job.def == HaulersDreamDefOf.HaulersDream_UnloadInventory
+                && s.opportunisticDetour != OpportunisticDetour.Off;
+
+            // The DIRECT target the pawn is heading to. Unload trip: the resolved store cell. DoBill: the pawn walks
+            // first to an ingredient (WYU OpportunityDetour.cs:100), so use the first queued ingredient's cell.
+            // Otherwise targetA.
+            LocalTargetInfo jobTarget;
+            if (unloadTrip)
+            {
+                IntVec3 dest = FirstTrackedStoreCell(pawn, comp);
+                if (!dest.IsValid)
+                    return null; // no store destination -> nothing to be "on the way" to
+                jobTarget = dest;
+            }
+            else
+            {
+                jobTarget = ResolveJobTarget(job);
+            }
             IntVec3 jobCell = jobTarget.Cell;
             if (!jobCell.IsValid || jobCell.IsForbidden(pawn))
                 return null;
@@ -156,7 +182,9 @@ namespace HaulersDream
             // should shed its load, not accumulate more. Computed from the SAME live numbers the unload divert
             // reads (scooped load fraction, a storable representative cell, the divert cooldown), so the two
             // features hand off at exactly the same boundary.
-            if (MustStandDownForUnload(pawn, comp, s))
+            // On an unload trip the pawn is ALREADY shedding, and the zero-detour gate makes any top-up strictly
+            // free, so the accumulate-vs-shed conflict this mutex guards against cannot arise; skip it there.
+            if (!unloadTrip && MustStandDownForUnload(pawn, comp, s))
                 return null;
 
             // ----- the candidate cascade (Core EnRoutePickupPolicy interleave contract) ----------------------
@@ -187,6 +215,12 @@ namespace HaulersDream
             EnRoutePickupPolicy.MaxRanges ranges = default;
             ranges.Reset(); // WYU defaults (MaxStartToThing=30, ...PctOrigTrip=0.5, MaxStoreToJob=50, ...Pct=0.6)
 
+            // Zero-detour budget for the unload-trip pickup (see OpportunisticDetour), or -1 on an ordinary work
+            // trip, which disables the gate so the full WYU trip-ratio cascade governs "on the way" instead.
+            int zeroDetourBudget = unloadTrip
+                ? OpportunisticUnloadPolicy.DetourBudgetTiles(s.opportunisticDetour)
+                : -1;
+
             float pawnToJob = pawn.Position.DistanceTo(jobCell);
 
             try
@@ -211,7 +245,7 @@ namespace HaulersDream
 
                     var thing = haulables[i];
                     var result = TryCandidate(pawn, thing, jobCell, pawnToJob, in ranges, claimed, comp,
-                        storeCellCache, map, s, out Job picked);
+                        storeCellCache, map, s, zeroDetourBudget, out Job picked);
                     if (picked != null)
                         return picked;
 
@@ -261,7 +295,8 @@ namespace HaulersDream
         /// </summary>
         private static CandidateOutcome TryCandidate(Pawn pawn, Thing thing, IntVec3 jobCell, float pawnToJob,
             in EnRoutePickupPolicy.MaxRanges ranges, HashSet<Thing> claimed, CompHauledToInventory comp,
-            Dictionary<Thing, IntVec3> storeCellCache, Map map, HaulersDreamSettings s, out Job picked)
+            Dictionary<Thing, IntVec3> storeCellCache, Map map, HaulersDreamSettings s, int zeroDetourBudget,
+            out Job picked)
         {
             picked = null;
             if (thing == null || !thing.Spawned || thing.Map != map || thing == comp.parent)
@@ -273,6 +308,14 @@ namespace HaulersDream
 
             float pawnToThing = pawn.Position.DistanceTo(thing.Position);
             float thingToJob = thing.Position.DistanceTo(jobCell);
+
+            // UNLOAD-TRIP ZERO-DETOUR GATE: while the pawn is already walking to storage, only grab an item within
+            // the player's detour budget of that path, so topping up stays a cheap pass-by (the pickup mirror of the
+            // zero-detour unload). Absolute, so HardFail: widening the range band cannot make an off-path item
+            // on-the-way. Budget < 0 means an ordinary work trip, which keeps the full WYU trip-ratio cascade below.
+            if (zeroDetourBudget >= 0
+                && !OpportunisticUnloadPolicy.ShouldGrabOnWay(pawnToJob, pawnToThing, thingToJob, zeroDetourBudget))
+                return CandidateOutcome.HardFail;
 
             // PHASE 1 — the cheap pawn/thing/job ratio gates, BEFORE the costly store search.
             var before = EnRoutePickupPolicy.CheckBeforeStore(pawnToThing, pawnToJob, thingToJob, in ranges);
@@ -518,17 +561,40 @@ namespace HaulersDream
         /// to drop it" check, picking a STORABLE representative exactly like
         /// <see cref="OpportunisticUnload.ShouldDivert"/> (an un-storable rock chunk must not suppress it).</summary>
         private static bool HasStorableTrackedCell(Pawn pawn, CompHauledToInventory comp)
+            => FirstTrackedStoreCell(pawn, comp).IsValid;
+
+        /// <summary>
+        /// The best store cell for the first storable tracked (scooped) stack, or Invalid when none of the pawn's
+        /// tracked stacks can be stored. This APPROXIMATES the destination an unload trip heads to (the unload
+        /// driver orders items by category then defName, so its true first stop may differ), which is a good-enough
+        /// "already heading there" reference for the zero-detour pickup: any grabbed item rides in INVENTORY and is
+        /// stored whenever the driver reaches it, so a few tiles of slack in this reference never strands anything.
+        /// Read-only (PeekHashSet, needAccurateResult:false, MP-safe: no Rand). Scans in thingIDNumber order (a
+        /// stable total order synced via UniqueIDsManager) so every MP client resolves the SAME representative and
+        /// the zero-detour gate agrees (a plain HashSet iteration would pick a client-dependent stack and desync).
+        /// </summary>
+        private static IntVec3 FirstTrackedStoreCell(Pawn pawn, CompHauledToInventory comp)
         {
+            var tracked = scratchTracked ?? (scratchTracked = new List<Thing>());
+            tracked.Clear();
             foreach (var t in comp.PeekHashSet())
+                if (t != null && !t.Destroyed)
+                    tracked.Add(t);
+            tracked.Sort((a, b) => a.thingIDNumber.CompareTo(b.thingIDNumber));
+
+            IntVec3 result = IntVec3.Invalid;
+            for (int i = 0; i < tracked.Count; i++)
             {
-                if (t == null || t.Destroyed)
-                    continue;
-                StoreUtility.TryFindBestBetterStoreCellFor(t, pawn, pawn.Map,
+                StoreUtility.TryFindBestBetterStoreCellFor(tracked[i], pawn, pawn.Map,
                     StoragePriority.Unstored, pawn.Faction, out IntVec3 cell, needAccurateResult: false);
                 if (cell.IsValid)
-                    return true;
+                {
+                    result = cell;
+                    break;
+                }
             }
-            return false;
+            tracked.Clear();
+            return result;
         }
 
         // ---- job target resolution ------------------------------------------------------------------------

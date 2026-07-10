@@ -226,9 +226,7 @@ namespace HaulersDream
                               + "backing it off from the automatic haul scan.");
                 }
                 else
-                {
                     thingFails[thing.thingIDNumber] = (newLast, newCount);
-                }
             }
         }
 
@@ -426,9 +424,10 @@ namespace HaulersDream
             if (settings == null || !settings.haulToStack)
                 return; // the cell-reservation-skipping feature (the loop's cause) is off -> vanilla reserves the cell
             var job = __instance.job;
+            var tgt = job?.GetTarget(TargetIndex.A).Thing;
             if (job == null || job.playerForced || job.haulMode != HaulMode.ToCellStorage)
-                return;
-            var thing = job.GetTarget(TargetIndex.A).Thing;
+                return; // per-thing guard needs an unforced ToCellStorage haul (storage hauls are the loop's domain)
+            var thing = tgt;
             if (thing?.def == null)
                 return;
             // NOTE: unstackables (stackLimit <= 1) are NOT excluded — the original assumption was that

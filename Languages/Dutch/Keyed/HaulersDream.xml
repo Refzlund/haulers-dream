@@ -590,6 +590,17 @@
 <HaulersDream.Setting.AlertStuckHours.Lab>Markeer een vastgelopen figuur na</HaulersDream.Setting.AlertStuckHours.Lab>
 <HaulersDream.Setting.AlertStuckHours.Help>Hoe lang een figuur sjouwvracht mag vasthouden die het niet kan opbergen (met een bestemming die bestaat) voordat het alarm het markeert.</HaulersDream.Setting.AlertStuckHours.Help>
 <HaulersDream.Setting.EnRoutePathChecker.Lab>Onderweg-controle</HaulersDream.Setting.EnRoutePathChecker.Lab>
+  <HaulersDream.Head.OpportunisticDetour>Opportunistische omwegen</HaulersDream.Head.OpportunisticDetour>
+  <HaulersDream.Setting.OpportunisticDetour.Lab>Omwegafstand</HaulersDream.Setting.OpportunisticDetour.Lab>
+  <HaulersDream.Setting.OpportunisticDetour.Desc>Hoe ver een figuur van zijn weg afwijkt om een gratis kans mee te pikken op een trip die het toch al maakt: een los item oppakken waar het langs komt op weg naar de opslag, of een opgepakte lading afleveren tijdens niet-dringend medisch, reddings- of cipierwerk. "Uit" wijkt nooit af (een dokter draagt zijn lading door de hele operatie heen; een sjouwer laat spullen liggen waar het langs loopt). "Kort" pakt alleen mee wat praktisch precies op de route ligt. "Standaard", de standaardwaarde, staat een korte omweg toe. "Lang" maakt de moeite waard zijnde omwegen en ruilt een kleine vertraging op belangrijk werk in voor minder trips. Gemeten als extra afstand in vogelvlucht, dus een beetje reikt verder op een lange sjouwtrip.</HaulersDream.Setting.OpportunisticDetour.Desc>
+  <HaulersDream.Setting.Detour.Off.S>Uit</HaulersDream.Setting.Detour.Off.S>
+  <HaulersDream.Setting.Detour.Short.S>Kort</HaulersDream.Setting.Detour.Short.S>
+  <HaulersDream.Setting.Detour.Standard.S>Standaard</HaulersDream.Setting.Detour.Standard.S>
+  <HaulersDream.Setting.Detour.Long.S>Lang</HaulersDream.Setting.Detour.Long.S>
+  <HaulersDream.Setting.Detour.Off.H>Nooit afwijken: figuren pakken geen item op waar ze langs komen en leveren geen lading af. Herstelt het strikte "vertraag het werk nooit"-gedrag.</HaulersDream.Setting.Detour.Off.H>
+  <HaulersDream.Setting.Detour.Short.H>Alleen wanneer het praktisch niets kost, ruwweg een item precies op de route. Dit was het oorspronkelijke vaste budget.</HaulersDream.Setting.Detour.Short.H>
+  <HaulersDream.Setting.Detour.Standard.H>Sta een korte omweg toe om een tweede trip te vermijden. De standaard.</HaulersDream.Setting.Detour.Standard.H>
+  <HaulersDream.Setting.Detour.Long.H>Maak de moeite waard zijnde omwegen. Op belangrijk werk ruilt dit een kleine, bewuste vertraging in voor minder trips.</HaulersDream.Setting.Detour.Long.H>
 <HaulersDream.Setting.AutoStripMode.Lab>Automatisch uitkleden tijdens het sjouwen</HaulersDream.Setting.AutoStripMode.Lab>
 <HaulersDream.Setting.AutoStrip.Help>Bij het sjouwen van een lijk, kleed eerst zijn uitrusting uit en draag de buit mee. 'Alleen afvoer' kleedt alleen lijken uit die naar een stortzone gaan. 'Uit' laat lijken aangekleed (handmatige uitkleedorders pakken hun uitrusting nog steeds op).</HaulersDream.Setting.AutoStrip.Help>
 <HaulersDream.Setting.TaintedSmeltable.Lab>Besmette kleding — smeltbaar</HaulersDream.Setting.TaintedSmeltable.Lab>
