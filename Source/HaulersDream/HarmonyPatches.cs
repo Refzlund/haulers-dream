@@ -445,14 +445,19 @@ namespace HaulersDream
         // same BadTex fallback.
         private static readonly Texture2D DropIcon = ContentFinder<Texture2D>.Get("UI/Buttons/Drop", false) ?? BaseContent.BadTex;
 
-        // A deliberate sort order for HD's two per-pawn gizmos (#140). Gizmos sort ascending by Gizmo.Order;
-        // vanilla leaves most commands at the default 0 and gives ability gizmos ~5f (Command_Ability.Order =
-        // 5f + category/level offsets). Left unset, HD's gizmos sat in the unordered 0 bucket alongside the
-        // pawn's role/ability commands, and a gizmo-reordering mod (the reporter runs Reverse Commands and an
-        // ideology patch) could wedge the "Unload inventory" button between abilities like "leader speech" and
-        // "accusation". A small positive value keeps both HD gizmos together in their own slot, after the pawn's
-        // main command gizmos and clearly below the ability cluster, instead of tangled among the abilities.
-        private const float GizmoOrder = 2f;
+        // Sort order for HD's two per-pawn gizmos (#140): put them at the very END of the command bar, always.
+        // GizmoGridDrawer.DrawGizmoGrid sorts EVERY gizmo globally, ascending by Gizmo.Order (SortStable), and that
+        // sort alone decides bar position (the grouping pass afterwards only MERGES same-label duplicates, which
+        // HD's uniquely-labelled gizmos never do). The earlier fix used 2f, but a MIDDLE value is exactly what wedges
+        // the button between other gizmos: vanilla ability gizmos are ~5f (Command_Ability.Order = 5f + offsets) but
+        // ideology role-ability / modded gizmos can carry Orders on either side of a small constant, so 2f still
+        // landed the "Unload inventory" button between abilities (the reported bug). Taking the MAXIMUM finite Order
+        // removes the ambiguity: float.MaxValue.CompareTo(anyFinite) is always +1 (overflow-safe, no subtraction), so
+        // HD sorts strictly after every finite-Order gizmo and can only ever TIE another float.MaxValue, never lose.
+        // Above the vanilla ceiling (AbandonCommand = 3000f) and every ability, so it is reliably last.
+        // NOTE: Reverse Commands (which the reporter runs) only reverses the right-click FLOAT MENU, not the gizmo
+        // bar (its patches are all FloatMenu*), so it does not affect this ordering.
+        private const float GizmoOrder = float.MaxValue;
 
         static IEnumerable<Gizmo> Postfix(IEnumerable<Gizmo> __result, Pawn __instance)
         {

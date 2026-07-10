@@ -89,6 +89,8 @@
 <HaulersDream.Setting.PlanRoutesDesc>수확·채굴·청소·해체·건설 경로를 위한 우클릭 계획 도구입니다. 꺼짐 = 메뉴 옵션이 어디서든 숨겨집니다.</HaulersDream.Setting.PlanRoutesDesc>
 <HaulersDream.Setting.PlanCrafting>제작 플래너 활성화 ("우선 지정 제작 계획…")</HaulersDream.Setting.PlanCrafting>
 <HaulersDream.Setting.PlanCraftingDesc>작업대에서 한 번의 재료 이동으로 작업 지시를 여러 번 묶어 처리하는 우클릭 계획 도구입니다. 꺼짐 = 메뉴 옵션이 숨겨집니다.</HaulersDream.Setting.PlanCraftingDesc>
+<HaulersDream.Setting.PlanForUnassignedWork>미배정 폰에게도 작업 계획</HaulersDream.Setting.PlanForUnassignedWork>
+<HaulersDream.Setting.PlanForUnassignedWorkDesc>켜짐(기본값): 폰이 해당 작업을 할 수 있지만 작업 탭에서 그 작업 유형의 체크를 해제한 경우에도 플래너가 표시됩니다. 꺼짐: 그런 폰에게는 플래너가 숨겨져, 실제로 해당 작업에 배정된 폰에게만 표시됩니다. 해당 작업을 할 수 없는 폰은 항상 숨겨집니다.</HaulersDream.Setting.PlanForUnassignedWorkDesc>
 <HaulersDream.Setting.BatchByDefault>새 작업 지시를 기본적으로 일괄 처리</HaulersDream.Setting.BatchByDefault>
 <HaulersDream.Setting.BatchByDefaultDesc>지금부터 추가하는 제작 및 요리 작업 지시가 "일괄" 모드로 시작됩니다: 정착민이 한 번 이동으로 재료 한 묶음 전체를 가져와 작업대에서 전부 만든 뒤(작업 중에는 음식이 상하지 않음), 모두 저장고로 운반합니다. 새로 추가된 작업 지시에만 영향을 주며, 기존 작업 지시는 현재 설정을 유지합니다.</HaulersDream.Setting.BatchByDefaultDesc>
   <HaulersDream.Setting.AllowBatchUnderCommonSense>Common Sense 활성화 시에도 일괄 작업 허용</HaulersDream.Setting.AllowBatchUnderCommonSense>

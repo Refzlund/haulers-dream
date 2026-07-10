@@ -52,6 +52,11 @@ namespace HaulersDream
                              && pawn.CanReach(bench, PathEndMode.InteractionCell, Danger.Deadly);
                 if (!offer)
                     continue;
+                // "Plan for unassigned work" off: hide the crafting plan when NONE of the bench's batchable bills'
+                // work types is assigned (priority 0) for this pawn. A bench can host several work types, so ANY one
+                // assigned batchable-bill work type still shows it. Capability was already checked (CanDoBillsAt).
+                if (WorkOverride.HidePlanCraftForUnassigned(pawn, bench))
+                    continue;
 
                 var benchLocal = bench;
                 var option = new FloatMenuOption("HaulersDream.PlanCraft.Option".Translate(),

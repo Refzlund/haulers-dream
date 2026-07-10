@@ -83,7 +83,11 @@ namespace HaulersDream
                     // A workbench/bill station is a DoBill scanner target — but a "route" over a stationary bench is
                     // nonsensical (you stand at it and craft). Those stations get the dedicated crafting planner
                     // (Dialog_PlanCraft / FloatMenuOptionProvider_PlanCraft) instead, so never offer a route for them.
-                    if (scanner is WorkGiver_DoBill)
+                    // WorkGiver_Researcher is skipped for the same "not a route" reason plus vanilla parity: research
+                    // is non-prioritizable in vanilla, and a research "route" is degenerate (a single research bench).
+                    // Excluding it at this single resolver chokepoint also blocks remembered-route replay of research
+                    // (ResolveById re-runs Resolve), so no Intellectual-capable pawn ever gets research force-queued.
+                    if (scanner is WorkGiver_DoBill || scanner is WorkGiver_Researcher)
                         continue;
 
                     // This loop probes ARBITRARY third-party WorkGivers (an open, mod-extensible contract), so

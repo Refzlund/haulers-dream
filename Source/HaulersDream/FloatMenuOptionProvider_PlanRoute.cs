@@ -46,6 +46,11 @@ namespace HaulersDream
                 RouteWorkKind kind = WorkKindResolver.Resolve(pawn, thing);
                 if (kind == null)
                     continue;
+                // "Plan for unassigned work" off: hide this route for a pawn CAPABLE of the resolved work but with
+                // that work type unassigned (priority 0). Per-kind (continue, not yield break): another clicked
+                // thing of a DIFFERENT, assigned work type still shows. The kind's work type is its scanner's.
+                if (PlannerGate.HideForUnassigned(pawn, kind.scanner?.def?.workType))
+                    continue;
 
                 string baseLabel = "HaulersDream.PlanRoute.Option".Translate(kind.gerund);
                 if (!seenLabels.Add(baseLabel))

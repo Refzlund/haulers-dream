@@ -88,6 +88,15 @@ namespace HaulersDream
         private int repsDone;
         private int deadlineTick;   // absolute TicksGame after which no NEW rep starts; 0 = no timeout
         private bool planResolved;
+        // No-overload batch LOOP (Part 2): when the pawn can't overload (strict carry weight / overload Off / Combat
+        // Extended) it can't carry the whole batch at once, so each gather trip loads only roundsThisTrip WHOLE rounds
+        // (what fits its live weight+bulk capacity), crafts them, then loops back to gather the next batch. In overload
+        // mode these are unused (the pawn gathers the whole batch in one trip, so LoadRepsTarget returns repsTarget).
+        // Scribed so a save mid-batch keeps the trip size / anti-loop baseline.
+        private int roundsThisTrip;
+        // repsDone at the START of the current gather trip: the anti-loop guard refuses to re-gather after a trip that
+        // crafted nothing (repsDone unchanged), so the driver can never spin on a zero-progress gather.
+        private int repsDoneAtTripStart;
         // Cursor over the recipe slots while carrying+placing THIS rep's ingredients onto the bench cell (Phase 3).
         // Scribed so a save taken mid-place resumes the carry/place loop at the same slot instead of double-placing
         // or skipping one. Reset to 0 at the start of each rep.
@@ -210,6 +219,8 @@ namespace HaulersDream
             Scribe_Values.Look(ref planResolved, "hdBatchPlanResolved", false);
             Scribe_Values.Look(ref placeSlotCursor, "hdBatchPlaceSlotCursor", 0);
             Scribe_Values.Look(ref placeSlotRemaining, "hdBatchPlaceSlotRemaining", -1);
+            Scribe_Values.Look(ref roundsThisTrip, "hdBatchRoundsThisTrip", 0);
+            Scribe_Values.Look(ref repsDoneAtTripStart, "hdBatchRepsDoneAtTripStart", 0);
             if (ingredientDefs == null) ingredientDefs = new List<ThingDef>();
             if (perRepCounts == null) perRepCounts = new List<int>();
         }
@@ -270,6 +281,12 @@ namespace HaulersDream
                 // current ingredients so the job degrades to "craft once" instead of doing nothing/erroring.
                 RecoverPlanFromBill();
             }
+            // Size the FIRST gather trip for the no-overload round loop (Part 2). Done here (once, at start) rather
+            // than in a new PHASE-1 toil so the scribed toil index of an in-flight batch save is unchanged. Later
+            // trips recompute in PrepareNextTrip; overload mode ignores roundsThisTrip (LoadRepsTarget returns
+            // repsTarget). planResolved is scribed, so a save/load mid-batch keeps this trip size, not a re-read.
+            roundsThisTrip = RoundsThatFitNow();
+            repsDoneAtTripStart = repsDone;
             planResolved = true;
         }
 
@@ -395,13 +412,19 @@ namespace HaulersDream
             // ---- PHASE 1: pre-load every rep's ingredients into inventory ----
 
             Toil gotoBench = Toils_Goto.GotoThing(BenchInd, PathEndMode.InteractionCell);
-            // Honest count: once gathering is done (we've arrived at the bench), cap the batch to what the loaded
-            // ingredients ACTUALLY support, so the "(n/X)" report shows how many CAN be made. The plan's
+            // Honest count (OVERLOAD mode only): once the whole batch is gathered in one trip, cap the batch to what
+            // the loaded ingredients ACTUALLY support, so the "(n/X)" report shows how many CAN be made. The plan's
             // availability estimate counts reservable in-radius stock but does NOT path-check it, so it can
-            // over-promise reps the gather then couldn't reach; this reflects the real load. Runs once (gotoBench
-            // is entered once, after Phase 1) and only ever LOWERS the target — a fully-stocked batch is unchanged.
+            // over-promise reps the gather couldn't reach; this reflects the real load, and only ever LOWERS the
+            // target. In the NO-OVERLOAD loop this must NOT run: a trip loads only roundsThisTrip rounds, so lowering
+            // the target to that would cap the whole batch to one trip and defeat the loop. Reachability is instead
+            // handled by the loop (a trip that can reach nothing more ends the batch, see PrepareNextTrip), and
+            // gotoBench is re-entered every trip, so the guard also stops per-trip shrinkage.
             gotoBench.AddFinishAction(() =>
             {
+                var s = HaulersDreamMod.Settings;
+                if (s != null && OverloadGate.NoOverload(s))
+                    return; // no-overload loop owns the target; the driver loops instead of capping to one trip
                 int loadable = MaxRepsLoadable();
                 if (loadable < repsTarget)
                     repsTarget = loadable;
@@ -500,14 +523,21 @@ namespace HaulersDream
                 else if (!job.bill.ShouldDoNow()) { JumpToToil(done); return; }
                 // Decide THIS rep's per-slot ingredient list. For a MIXING recipe, recompute the mix from CURRENT
                 // inventory by value (greedy value-fill, mirroring vanilla AllowMix) and write it into ingredientDefs/
-                // perRepCounts — the carry/place/consume loop below then runs UNCHANGED on that per-def list. If the
-                // mix can't be filled from what's on hand, end the batch cleanly. For a NON-mixing recipe the frozen
-                // per-slot plan is used and we just check one rep is loaded (the original behaviour, byte-identical).
-                if (MixingRecipe)
+                // perRepCounts (the carry/place/consume loop below then runs UNCHANGED on that per-def list). For a
+                // NON-mixing recipe the frozen per-slot plan is used and we just check one rep is loaded.
+                bool haveRep = MixingRecipe ? BuildMixForRep() : HasOneRepInInventory();
+                if (!haveRep)
                 {
-                    if (!BuildMixForRep()) { JumpToToil(done); return; }
+                    // This trip's gathered rounds are all crafted. In the no-overload loop, gather the NEXT batch of
+                    // whole rounds (PrepareNextTrip jumps to the gather phase) instead of ending, so the pawn crafts
+                    // "as many rounds as possible" over multiple trips. When no next trip is possible (batch complete,
+                    // capacity can't fit even one round even after dropping the banked products, or nothing reachable
+                    // remains), end cleanly. Overload mode always takes the else (it gathered the whole batch already),
+                    // so this is byte-identical to the original "end when a rep isn't loaded" there.
+                    if (PrepareNextTrip()) { JumpToToil(loadDecide); return; }
+                    JumpToToil(done);
+                    return;
                 }
-                else if (!HasOneRepInInventory()) { JumpToToil(done); return; }
                 // Start this rep's carry+place loop at slot 0 (uninitialised remaining) with empty placedThings.
                 placeSlotCursor = 0;
                 placeSlotRemaining = -1;
@@ -811,14 +841,18 @@ namespace HaulersDream
             return Mathf.Min(need, stack.stackCount); // carry freely (overweight) — fewest trips
         }
 
-        /// <summary>Units of <paramref name="def"/> still to load = (perRep×reps for slots using this def) − inventory.</summary>
+        /// <summary>Units of <paramref name="def"/> still to load = (perRep times <see cref="LoadRepsTarget"/> for
+        /// slots using this def) minus inventory. The multiplier is the WHOLE BATCH in overload mode (gather it all in
+        /// one overweight trip) but only THIS TRIP's whole rounds (<see cref="roundsThisTrip"/>) in the no-overload
+        /// loop, so the pawn loads every ingredient TYPE in lockstep and never fills capacity on one type.</summary>
         private int NeededUnits(ThingDef def)
         {
             if (def == null) return 0;
+            int loadReps = LoadRepsTarget();
             int want = 0;
             for (int i = 0; i < ingredientDefs.Count; i++)
                 if (ingredientDefs[i] == def)
-                    want += perRepCounts[i] * repsTarget;
+                    want += perRepCounts[i] * loadReps;
             if (want <= 0) return 0;
             return Mathf.Max(0, want - InventoryCountOfDef(def));
         }
@@ -978,6 +1012,195 @@ namespace HaulersDream
             return max == int.MaxValue ? 0 : max;
         }
 
+        // ===================== no-overload batch LOOP (Part 2): per-trip whole-round gather + cede =================
+        //
+        // When the pawn CANNOT overload (strict carry weight / overload Off / Combat Extended) it can't carry the
+        // whole batch at once, so a gather trip loads only roundsThisTrip WHOLE rounds (what fits its live weight+bulk
+        // capacity), crafts them, then loops back to gather the next batch (PrepareNextTrip). Bounding the gather to
+        // whole rounds is what gathers every ingredient TYPE in lockstep, so the pawn never fills capacity on one type
+        // and stalls with an incomplete round (the reported CE loop). When not even one round fits, the batch cedes to
+        // vanilla one-at-a-time crafting. In OVERLOAD mode none of this runs: LoadRepsTarget returns the whole batch.
+
+        /// <summary>The rep count the gather aims to LOAD right now: the whole batch (<see cref="repsTarget"/>) in
+        /// overload mode (gather it all in one overweight trip, the original behaviour) but only THIS trip's whole
+        /// rounds (<see cref="roundsThisTrip"/>) when the pawn can't overload. Read by <see cref="NeededUnits"/> and
+        /// <see cref="SlotValueNeeded"/> so both the non-mixing and mixing gathers respect the per-trip bound.</summary>
+        private int LoadRepsTarget()
+        {
+            var s = HaulersDreamMod.Settings;
+            return (s != null && OverloadGate.NoOverload(s)) ? roundsThisTrip : repsTarget;
+        }
+
+        /// <summary>
+        /// How many WHOLE recipe rounds fit the pawn's LIVE capacity right now, capped by the reps still to craft.
+        /// Overload mode returns the whole remaining batch (one overweight trip, the original single-load behaviour).
+        /// No-overload mode measures BOTH weight (effective carry cap minus current gear+inventory mass, CE-aware via
+        /// <see cref="CarryCapacity.Of"/>) AND Combat Extended bulk (<see cref="CECompat.AvailableBulk"/>) through the
+        /// unit-tested <see cref="CraftBatchMath.WholeRoundsThatFit"/>, so a trip never over-promises what the bulk-
+        /// clamped gather can load. Deterministic (MassUtility / CE stat reads only), so it stays Multiplayer-safe.
+        /// 0 when nothing remains or not even one round fits.
+        /// </summary>
+        private int RoundsThatFitNow()
+        {
+            int remaining = repsTarget - repsDone;
+            if (remaining <= 0)
+                return 0;
+            var s = HaulersDreamMod.Settings;
+            if (s == null || !OverloadGate.NoOverload(s))
+                return remaining; // overload: gather the whole remaining batch in one (overweight) trip
+            float maxCap = CarryCapacity.Of(pawn);
+            float baseCap = CarryMath.EffectiveCapacity(maxCap, s.carryLimitFraction);
+            float freeWeight = baseCap - MassUtility.GearAndInventoryMass(pawn);
+            float freeBulk = CECompat.AvailableBulk(pawn); // +Infinity without CE, so bulk never binds
+            return CraftBatchMath.WholeRoundsThatFit(freeWeight, RoundMass(), freeBulk, RoundBulk(), remaining);
+        }
+
+        /// <summary>Mass (kg) of one whole recipe round's ingredients. NON-mixing: the frozen per-slot plan. MIXING:
+        /// a CONSERVATIVE over-estimate (per slot, perRepValue times the heaviest candidate's mass-per-value) because
+        /// the exact per-def mix isn't chosen until craft time. Over-stating the round cost only ever LOWERS the
+        /// rounds-that-fit count, which keeps the gather within capacity (never a stalled incomplete round).</summary>
+        private float RoundMass()
+        {
+            if (MixingRecipe)
+            {
+                var slots = MixSlots();
+                float m = 0f;
+                for (int s = 0; s < slots.Count; s++)
+                    if (slots[s].perRepValue > 0.0)
+                        m += (float)slots[s].perRepValue * BestMassPerValue(slots[s]);
+                return m;
+            }
+            float mm = 0f;
+            for (int i = 0; i < ingredientDefs.Count; i++)
+                mm += perRepCounts[i] * ingredientDefs[i].GetStatValueAbstract(StatDefOf.Mass);
+            return mm;
+        }
+
+        /// <summary>Combat Extended bulk of one whole recipe round's ingredients (0 without CE, so bulk never binds);
+        /// the conservative mixing estimate mirrors <see cref="RoundMass"/>.</summary>
+        private float RoundBulk()
+        {
+            if (!CECompat.IsActive)
+                return 0f;
+            if (MixingRecipe)
+            {
+                var slots = MixSlots();
+                float b = 0f;
+                for (int s = 0; s < slots.Count; s++)
+                    if (slots[s].perRepValue > 0.0)
+                        b += (float)slots[s].perRepValue * BestBulkPerValue(slots[s]);
+                return b;
+            }
+            float bb = 0f;
+            for (int i = 0; i < ingredientDefs.Count; i++)
+                bb += perRepCounts[i] * CECompat.BulkPerUnitAbstract(ingredientDefs[i]);
+            return bb;
+        }
+
+        /// <summary>Max over a mixing slot's candidate defs of (mass / value-per-unit): the heaviest way to buy one
+        /// unit of the slot's value, mirroring the planner's conservative round-mass estimate.</summary>
+        private float BestMassPerValue(MixSlot slot)
+        {
+            float best = 0f;
+            for (int i = 0; i < slot.defs.Count; i++)
+            {
+                float vpu = ValuePerUnit(slot.defs[i]);
+                if (vpu <= 0f)
+                    continue;
+                float mpv = slot.defs[i].GetStatValueAbstract(StatDefOf.Mass) / vpu;
+                if (mpv > best)
+                    best = mpv;
+            }
+            return best;
+        }
+
+        /// <summary>Max over a mixing slot's candidate defs of (CE bulk / value-per-unit): the bulkiest way to buy one
+        /// unit of the slot's value (0 without CE, since <see cref="CECompat.BulkPerUnitAbstract"/> returns 0).</summary>
+        private float BestBulkPerValue(MixSlot slot)
+        {
+            float best = 0f;
+            for (int i = 0; i < slot.defs.Count; i++)
+            {
+                float vpu = ValuePerUnit(slot.defs[i]);
+                if (vpu <= 0f)
+                    continue;
+                float bpv = CECompat.BulkPerUnitAbstract(slot.defs[i]) / vpu;
+                if (bpv > best)
+                    best = bpv;
+            }
+            return best;
+        }
+
+        /// <summary>
+        /// Set up the NEXT no-overload gather trip, or report that the batch must END. Returns TRUE when another trip
+        /// is prepared (the caller jumps back to the gather phase); FALSE when the batch should end (the caller jumps
+        /// to the done toil, whose finish action unloads any leftovers once).
+        ///
+        /// <para>Ends (returns false) when: overload is allowed (that path gathered the whole batch already, no loop);
+        /// the batch is complete; the LAST trip crafted NOTHING (belt-and-suspenders anti-loop, so the driver can
+        /// never spin on a zero-progress gather); not even one whole round fits the pawn's live capacity even after
+        /// dropping the banked products (cede to vanilla's one-at-a-time crafting, mirroring the issue #125
+        /// InventoryLoadWorseThanHands cede); or no needed ingredient stack is reachable. Products banked from the
+        /// crafted rounds eat carry capacity, so if none fit WITH them held they are dropped at the bench first to
+        /// reopen space, then it retries.</para>
+        /// </summary>
+        private bool PrepareNextTrip()
+        {
+            var s = HaulersDreamMod.Settings;
+            if (s == null || !OverloadGate.NoOverload(s))
+                return false; // overload mode gathered the whole batch in one trip; there is no loop
+            if (repsDone >= repsTarget)
+                return false; // batch complete
+            // Anti-loop: a trip that crafted nothing must never re-gather (it would spin forever at zero progress).
+            if (repsDone <= repsDoneAtTripStart)
+                return false;
+            // Leaving the bench to fetch again, so carried ingredients spoil normally during the walk/gather.
+            ActivelyCrafting = false;
+            int r = RoundsThatFitNow();
+            if (r <= 0)
+            {
+                DropBatchProducts();     // free the capacity the banked products were eating, then retry
+                r = RoundsThatFitNow();
+                if (r <= 0)
+                    return false;        // one round genuinely doesn't fit even empty-handed, so cede to vanilla
+            }
+            roundsThisTrip = r;
+            repsDoneAtTripStart = repsDone;
+            if (FindNeededStack() == null)
+                return false; // nothing reachable left to gather, so end (leftovers ride the unload)
+            return true;
+        }
+
+        /// <summary>
+        /// Drop the batch's banked PRODUCTS out of inventory at the bench so they stop eating carry capacity for the
+        /// next rounds. Mid-loop the tagged inventory set is the banked products (pre-loaded INGREDIENTS stay
+        /// untagged), and we additionally skip any tagged stack still USABLE as an ingredient for this bill so a
+        /// dialog batch that started while the pawn carried a craftable surplus never sheds something it could still
+        /// cook. The dropped products are Spawned + haulable, exactly like vanilla crafting leaves a product for a
+        /// hauler (never lost, never duplicated); the tag is deregistered (it self-heals anyway once the thing leaves
+        /// inventory).
+        /// </summary>
+        private void DropBatchProducts()
+        {
+            var comp = Comp;
+            var owner = Inv;
+            if (comp == null || owner == null || pawn.Map == null)
+                return;
+            var bill = job.bill;
+            // Snapshot the tag set so the drop, which mutates inventory + the tag set, can't corrupt the iteration.
+            var tagged = new List<Thing>(comp.PeekHashSet());
+            for (int i = 0; i < tagged.Count; i++)
+            {
+                var t = tagged[i];
+                if (t == null || !owner.Contains(t))
+                    continue;
+                if (bill != null && InventoryShare.IsUsableForBill(t, bill))
+                    continue; // a usable ingredient, not a product: keep it to craft the next rounds
+                if (owner.TryDrop(t, pawn.Position, pawn.Map, ThingPlaceMode.Near, out _))
+                    comp.Deregister(t);
+            }
+        }
+
         // ========================= MIXING-recipe helpers (used only when MixingRecipe) =========================
 
         private List<ThingDef> mixDefUnionCache;
@@ -1032,13 +1255,15 @@ namespace HaulersDream
             return total;
         }
 
-        /// <summary>The VALUE still to load into THIS slot for the whole batch = perRepValue × repsTarget −
-        /// currentInventorySlotValue (floored at 0).</summary>
+        /// <summary>The VALUE still to load into THIS slot = perRepValue times <see cref="LoadRepsTarget"/> minus
+        /// currentInventorySlotValue (floored at 0). The multiplier is the whole batch in overload mode, but only this
+        /// trip's whole rounds (<see cref="roundsThisTrip"/>) in the no-overload loop, so a mixing slot is filled to
+        /// this trip's rounds and no further.</summary>
         private double SlotValueNeeded(MixSlot slot)
         {
             if (slot == null || slot.perRepValue <= 0.0)
                 return 0.0;
-            double want = slot.perRepValue * repsTarget;
+            double want = slot.perRepValue * LoadRepsTarget();
             double have = CurrentInventorySlotValue(slot);
             double need = want - have;
             return need > 0.0 ? need : 0.0;

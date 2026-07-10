@@ -161,6 +161,17 @@ namespace HaulersDream
                 // path only; an explicit player order on such an item (forced) is the player's deliberate choice.
                 if (ForeignOrderGuard.ClaimedByForeignOrder(primary))
                     return null;
+                // RimIOT compat (#177): on the AUTOMATIC path, never UPGRADE a haul of a stack sitting in a
+                // RimIOT logistic-network cell into an into-inventory bulk sweep. Re-pocketing network partials
+                // every scan is the pickup half of the reported infinite loop (the forced unload re-deposits
+                // them, HaulToStack re-partitions them, the scan re-lists them). Returning null here leaves
+                // __result untouched so vanilla's own single haul-out still stands, and RimIOT's TickRebalance
+                // converges the partials once HD stops re-picking them up. FORCED player orders ("Haul everything
+                // nearby", "Pick up X") use BuildBulkJobForced / BuildPickUpJob and never reach this branch, so an
+                // explicit order on a network item is still honored. IsActive short-circuits before any reflection
+                // when RimIOT is absent, so this line is byte-identical then.
+                if (RimIOTCompat.IsActive && RimIOTCompat.IsNetworkManagedCell(pawn.Map, primary.Position))
+                    return null;
             }
             // CHEAP FRONT GATE (microstutter fix): the work scan calls JobOnThing for every haulable candidate
             // it considers, and on a cache miss the build below runs the full pool enumeration + ClaimedByOtherPawns
@@ -318,11 +329,20 @@ namespace HaulersDream
             // Cast to the concrete HashSet<Thing> the lister returns (its ThingsPotentiallyNeedingHauling
             // return type is the ICollection<Thing> interface, decompile-verified) so the foreach binds the
             // struct enumerator and boxes nothing on this hot per-candidate gate.
+            // RimIOT compat (#177): hoist the active latch once so the per-candidate network check below pays a
+            // single field read (not a property call) per stack, and nothing at all when RimIOT is absent.
+            bool rimIOTActive = RimIOTCompat.IsActive;
             foreach (var t in (HashSet<Thing>)map.listerHaulables.ThingsPotentiallyNeedingHauling())
             {
                 if (t == null || t == primary || !t.Spawned || t.Map != map || t is Corpse)
                     continue;
                 if (t.def == null || !t.def.EverHaulable)
+                    continue;
+                // RimIOT compat (#177): a stack in a RimIOT logistic-network cell is never a bulk-sweep candidate
+                // (HD leaves the network's contents to RimIOT), so it must not make this cheap gate report "worth
+                // sweeping" and trigger the heavy scan. Keeps the gate a SUPERSET of the build's accept set (the
+                // build's pool excludes the same stacks), so it never suppresses a plan the build would produce.
+                if (rimIOTActive && RimIOTCompat.IsNetworkManagedCell(map, t.Position))
                     continue;
                 if ((t.Position - primary.Position).LengthHorizontalSquared <= poolRadiusSq)
                     return true;
@@ -764,6 +784,12 @@ namespace HaulersDream
         {
             pool.Clear();
             float radiusSq = poolRadius * poolRadius;
+            // RimIOT compat (#177): a stack in a RimIOT logistic-network cell is never pocketed as a swept extra
+            // (HD leaves the network's contents to RimIOT, which consolidates them itself; sweeping and
+            // re-depositing them is the loop). Hoist the active latch once so the per-candidate check pays a single
+            // field read per stack, and nothing at all when RimIOT is absent. Applies on EVERY path (automatic and
+            // the forced "haul everything nearby"), so a player sweep vacuums loose loot but leaves the network be.
+            bool rimIOTActive = RimIOTCompat.IsActive;
             // Cast to the concrete HashSet<Thing> backing the lister (ThingsPotentiallyNeedingHauling's return type is
             // the ICollection<Thing> interface; the field is a HashSet<Thing>, decompile-verified) so the foreach binds
             // the struct enumerator and boxes nothing on this per-pawn-scan pool build. `as` + null fallback to the
@@ -782,6 +808,8 @@ namespace HaulersDream
                         continue;
                     if ((t.Position - primary.Position).LengthHorizontalSquared > radiusSq)
                         continue;
+                    if (rimIOTActive && RimIOTCompat.IsNetworkManagedCell(map, t.Position))
+                        continue; // RimIOT owns its network's stacks (see the hoist comment above)
                     pool.Add(t);
                 }
                 return;
@@ -796,6 +824,8 @@ namespace HaulersDream
                     continue;
                 if ((t.Position - primary.Position).LengthHorizontalSquared > radiusSq)
                     continue;
+                if (rimIOTActive && RimIOTCompat.IsNetworkManagedCell(map, t.Position))
+                    continue; // RimIOT owns its network's stacks (see the hoist comment above)
                 pool.Add(t);
             }
         }

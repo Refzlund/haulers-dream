@@ -35,6 +35,10 @@ namespace HaulersDream
             // Growing gets no plan-sow option). The "all pawns can …" overrides flow through WorkTypeIsDisabled.
             if (pawn.WorkTypeIsDisabled(WorkTypeDefOf.Growing))
                 yield break;
+            // "Plan for unassigned work" off: also hide the option for a pawn CAPABLE of Growing but with Growing
+            // unassigned (priority 0) in its Work tab (default on = shown regardless, the permissive behavior).
+            if (PlannerGate.HideForUnassigned(pawn, WorkTypeDefOf.Growing))
+                yield break;
             if (pawn.thinker?.TryGetMainTreeThinkNode<RimWorld.JobGiver_Work>() == null)
                 yield break;
 
@@ -50,6 +54,15 @@ namespace HaulersDream
 
             var plantDef = zone.GetPlantDefToGrow();
             if (plantDef?.plant == null)
+                yield break;
+
+            // Mirror vanilla WorkGiver_GrowerSow.JobOnCell's sowMinSkill gate: a plant with a minimum Plants skill
+            // (e.g. devilstrand, sowMinSkill 10) cannot be sown by a pawn under that skill, so offering a sow route
+            // for it is a false affordance. A colony mech uses its fixed skill level (mechFixedSkillLevel) instead.
+            int sowMin = plantDef.plant.sowMinSkill;
+            if (sowMin > 0
+                && ((pawn.skills != null && pawn.skills.GetSkill(SkillDefOf.Plants).Level < sowMin)
+                    || (pawn.IsColonyMech && pawn.RaceProps.mechFixedSkillLevel < sowMin)))
                 yield break;
 
             // Only offer the option when there's actually something sowable in the zone (the clicked cell itself, or

@@ -89,6 +89,8 @@
 <HaulersDream.Setting.PlanRoutesDesc>เครื่องมือวางแผนคลิกขวาสำหรับเส้นทางการเก็บเกี่ยว การขุด การทำความสะอาด การรื้อถอน และการก่อสร้าง ปิด = ซ่อนตัวเลือกเมนูทุกที่</HaulersDream.Setting.PlanRoutesDesc>
 <HaulersDream.Setting.PlanCrafting>เปิดใช้งานตัววางแผนการผลิต ("วางแผนให้ความสำคัญการผลิต…")</HaulersDream.Setting.PlanCrafting>
 <HaulersDream.Setting.PlanCraftingDesc>เครื่องมือวางแผนคลิกขวาบนโต๊ะทำงานที่ทำใบสั่งงานเป็นชุดหลายครั้งด้วยการไปหยิบวัตถุดิบเที่ยวเดียว ปิด = ซ่อนตัวเลือกเมนู</HaulersDream.Setting.PlanCraftingDesc>
+<HaulersDream.Setting.PlanForUnassignedWork>วางแผนงานให้ตัวละครที่ยังไม่ได้กำหนด</HaulersDream.Setting.PlanForUnassignedWork>
+<HaulersDream.Setting.PlanForUnassignedWorkDesc>เปิด (ค่าเริ่มต้น): ตัววางแผนจะแสดงแม้กับตัวละครที่ทำงานนั้นได้ แต่ไม่ได้ติ๊กประเภทงานนั้นในแท็บงานของตน ปิด: ตัววางแผนจะถูกซ่อนสำหรับตัวละครเหล่านั้น จึงเสนอเฉพาะตัวละครที่ได้รับการกำหนดให้ทำงานนั้นจริง ตัวละครที่ทำงานนั้นไม่ได้จะถูกซ่อนเสมอ</HaulersDream.Setting.PlanForUnassignedWorkDesc>
 <HaulersDream.Setting.BatchByDefault>ทำใบสั่งงานใหม่เป็นชุดโดยค่าเริ่มต้น</HaulersDream.Setting.BatchByDefault>
 <HaulersDream.Setting.BatchByDefaultDesc>ใบสั่งงานผลิตและทำอาหารที่คุณเพิ่มตั้งแต่นี้ไปจะเริ่มในโหมด "ชุด": ชาวอาณานิคมจะไปหยิบวัตถุดิบทั้งชุดในเที่ยวเดียว ทำทั้งหมดที่โต๊ะ (อาหารจะไม่เน่าขณะที่พวกเขาทำงาน) แล้วขนทุกอย่างไปยังคลัง มีผลเฉพาะใบสั่งงานที่เพิ่งเพิ่มเท่านั้น — ใบสั่งงานที่มีอยู่จะคงการตั้งค่าปัจจุบันไว้</HaulersDream.Setting.BatchByDefaultDesc>
   <HaulersDream.Setting.AllowBatchUnderCommonSense>ทำเป็นชุดได้แม้เปิดใช้ Common Sense</HaulersDream.Setting.AllowBatchUnderCommonSense>

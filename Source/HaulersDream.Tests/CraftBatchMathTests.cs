@@ -182,6 +182,81 @@ namespace HaulersDream.Tests
             Assert.That(CraftBatchMath.Resolve(12, byAvail, byMass, byTimeout), Is.EqualTo(3));      // timeout is the binding cap
         }
 
+        // ---- WholeRoundsThatFit (per-trip round gather bound for the no-overload / Combat Extended batch loop) ----
+
+        [Test]
+        public void WholeRoundsThatFit_WeightBinds()
+        {
+            // 30 kg room, 10 kg per round -> 3 rounds. Bulk unconstrained (per-round bulk 0); reps not the limit.
+            Assert.That(CraftBatchMath.WholeRoundsThatFit(freeWeightKg: 30f, massPerRoundKg: 10f,
+                freeBulk: float.PositiveInfinity, bulkPerRound: 0f, remainingReps: 100), Is.EqualTo(3));
+        }
+
+        [Test]
+        public void WholeRoundsThatFit_BulkBinds()
+        {
+            // Weight unconstrained (massless round); 5 bulk room, 2 bulk per round -> floor(5/2) = 2 rounds.
+            Assert.That(CraftBatchMath.WholeRoundsThatFit(freeWeightKg: 1000f, massPerRoundKg: 0f,
+                freeBulk: 5f, bulkPerRound: 2f, remainingReps: 100), Is.EqualTo(2));
+        }
+
+        [Test]
+        public void WholeRoundsThatFit_RemainingBinds()
+        {
+            // Weight + bulk both allow many, but only 4 reps remain to craft -> 4.
+            Assert.That(CraftBatchMath.WholeRoundsThatFit(100f, 1f, 100f, 1f, remainingReps: 4), Is.EqualTo(4));
+        }
+
+        [Test]
+        public void WholeRoundsThatFit_ZeroCostDimensions_DoNotConstrain_NoDivideByZero()
+        {
+            // Both per-round costs 0 (a massless AND bulkless round, or CE absent) -> only remaining bounds it (no /0).
+            Assert.That(CraftBatchMath.WholeRoundsThatFit(0f, 0f, 0f, 0f, remainingReps: 7), Is.EqualTo(7));
+            // Zero weight cost but a real bulk cost -> bulk still binds (dimensions are independent).
+            Assert.That(CraftBatchMath.WholeRoundsThatFit(0f, 0f, 9f, 3f, remainingReps: 7), Is.EqualTo(3));
+        }
+
+        [Test]
+        public void WholeRoundsThatFit_OneRoundExceedsBudget_IsZero()
+        {
+            // One round's weight exceeds the room -> 0 (the caller cedes to vanilla one-at-a-time crafting).
+            Assert.That(CraftBatchMath.WholeRoundsThatFit(5f, 10f, float.PositiveInfinity, 0f, 100), Is.EqualTo(0));
+            // One round's bulk exceeds the room -> 0, even with ample weight room.
+            Assert.That(CraftBatchMath.WholeRoundsThatFit(1000f, 1f, 1f, 3f, 100), Is.EqualTo(0));
+        }
+
+        [Test]
+        public void WholeRoundsThatFit_NoRemaining_IsZero()
+        {
+            Assert.That(CraftBatchMath.WholeRoundsThatFit(100f, 1f, 100f, 1f, remainingReps: 0), Is.EqualTo(0));
+            Assert.That(CraftBatchMath.WholeRoundsThatFit(100f, 1f, 100f, 1f, remainingReps: -3), Is.EqualTo(0));
+        }
+
+        [Test]
+        public void WholeRoundsThatFit_NegativeFreeWeight_IsZero_ProductsFilledCapacity()
+        {
+            // Over capacity (banked products eating weight) -> negative room -> 0 rounds fit. The driver then drops
+            // the products to reopen capacity and recomputes; the pure math just reports "none fit right now".
+            Assert.That(CraftBatchMath.WholeRoundsThatFit(-4f, 10f, float.PositiveInfinity, 0f, 50), Is.EqualTo(0));
+        }
+
+        [Test]
+        public void WholeRoundsThatFit_CombatExtendedAbsent_BulkNeverBinds()
+        {
+            // CE absent: caller passes +inf bulk room and 0 per-round bulk -> bulk imposes no cap, weight decides.
+            Assert.That(CraftBatchMath.WholeRoundsThatFit(20f, 4f, float.PositiveInfinity, 0f, 100), Is.EqualTo(5));
+        }
+
+        [Test]
+        public void WholeRoundsThatFit_MultiSlotRound_AggregatesEverySlotCost()
+        {
+            // A multi-slot round's mass/bulk is the SUM over slots (e.g. 6 kg steel + 4 kg cloth = 10 kg per round);
+            // R is computed against that aggregate, so every slot is gathered in lockstep. 25 kg room / 10 = 2 rounds.
+            float massPerRound = 6f + 4f;
+            float bulkPerRound = 0.3f + 0.5f; // both slots contribute bulk under CE
+            Assert.That(CraftBatchMath.WholeRoundsThatFit(25f, massPerRound, 100f, bulkPerRound, 100), Is.EqualTo(2));
+        }
+
         // ---- Mixing-recipe math (allowMixingIngredients: cooked meals, kibble, pemmican, chemfuel, beer) ----
 
         /// <summary>An INDEPENDENT, different-looking reimplementation of the greedy per-slot value-fill — used to

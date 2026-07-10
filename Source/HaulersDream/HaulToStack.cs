@@ -161,6 +161,15 @@ namespace HaulersDream
             var chosenGroup = vanillaCell.GetSlotGroup(map);
             if (chosenGroup?.Settings == null)
                 return IntVec3.Invalid;
+            // RimIOT compat (#177): if vanilla routed this deposit INTO a RimIOT logistic-network group, HD must
+            // NOT re-steer the cell. RimIOT owns cell selection and consolidation inside its own network, and HD's
+            // steer-toward-a-partial refinement is exactly what defeats RimIOT's TickRebalance convergence (the
+            // stack-size-mod infinite haul loop). Keep vanilla's pick unchanged (return Invalid); RimIOT converges
+            // the partials itself. This must run BEFORE the ScanGroup skip below, or a network-bound deposit could
+            // be steered OUT to an equal-priority non-network partial (moving items out of the player's network).
+            // IsActive short-circuits before any reflection when RimIOT is absent (byte-identical then).
+            if (RimIOTCompat.IsActive && RimIOTCompat.IsNetworkManagedGroup(map, chosenGroup))
+                return IntVec3.Invalid;
             var chosenPriority = chosenGroup.Settings.Priority;
 
             var room = vanillaCell.GetRoom(map);
@@ -176,6 +185,14 @@ namespace HaulersDream
             // One group's cells; returns false when the scan budget runs out (the caller stops scanning).
             bool ScanGroup(SlotGroup group)
             {
+                // RimIOT compat (#177): never reroute a deposit INTO a RimIOT-network-managed group (let RimIOT own
+                // consolidation within its network). Skipping the WHOLE group is correct (network membership is a
+                // per-SlotGroup property: all its cells share one parent) and cheap (one check per candidate group,
+                // not per cell). Returns true = "not a budget exhaustion, keep scanning the other groups". Covers
+                // the case where vanilla chose a NON-network cell but a network partial of the same def sits nearby;
+                // the chosen-network case is already handled by the early-out above. Inert when RimIOT is absent.
+                if (RimIOTCompat.IsActive && RimIOTCompat.IsNetworkManagedGroup(map, group))
+                    return true;
                 var cells = group.CellsList;
                 for (int i = 0; i < cells.Count; i++)
                 {

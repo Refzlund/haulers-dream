@@ -129,6 +129,58 @@ namespace HaulersDream
             return false;
         }
 
+        /// <summary>
+        /// True if the "Plan prioritized crafting..." option must be HIDDEN for <paramref name="pawn"/> at
+        /// <paramref name="bench"/> because the "plan for unassigned work" setting is off and NONE of the work types
+        /// that would do this bench's batchable bills is assigned (work priority > 0) in the pawn's Work tab. The
+        /// bench counterpart of <see cref="PlannerGate.HideForUnassigned"/>: a bench can host bills of several work
+        /// types (a recipe's requiredGiverWorkType overrides the bench default, e.g. psychite tea is Cooking work at
+        /// a drug lab), so the option still shows as long as ANY batchable bill's work type is assigned. Incapability
+        /// of every bench work type is already handled by <see cref="CanDoBillsAt"/>, so this only covers the
+        /// capable-but-unassigned case. Never hides when settings are absent, the toggle is on, or the pawn has no
+        /// workSettings (mechs, which the provider gates out anyway).
+        /// </summary>
+        internal static bool HidePlanCraftForUnassigned(Pawn pawn, Building_WorkTable bench)
+        {
+            var s = HaulersDreamMod.Settings;
+            if (s == null || s.planForUnassignedWork)
+                return false;
+            if (pawn?.workSettings == null || bench?.def == null)
+                return false;
+            var bills = bench.BillStack?.Bills;
+            if (bills == null)
+                return false;
+            var benchTypes = BillWorkTypesFor(bench.def);
+            for (int i = 0; i < bills.Count; i++)
+            {
+                var bill = bills[i];
+                if (!CraftBatchPlanner.CanPawnBatch(pawn, bill))
+                    continue;
+                // A bill's effective work type is its recipe's requiredGiverWorkType when set (it overrides the bench
+                // default), else every DoBill work type that claims this bench (BillWorkTypesFor). Any ASSIGNED one
+                // keeps the option visible.
+                var required = bill.recipe?.requiredGiverWorkType;
+                if (required != null)
+                {
+                    if (pawn.workSettings.GetPriority(required) > 0)
+                        return false;
+                }
+                else if (benchTypes.Count == 0)
+                {
+                    // No DoBill giver claims this bench (modded oddity), don't hide on a guess (mirrors CanDoBillsAt).
+                    return false;
+                }
+                else
+                {
+                    for (int t = 0; t < benchTypes.Count; t++)
+                        if (pawn.workSettings.GetPriority(benchTypes[t]) > 0)
+                            return false;
+                }
+            }
+            // No batchable bill has an assigned work type, so hide the option.
+            return true;
+        }
+
         private static List<WorkTypeDef> BillWorkTypesFor(ThingDef benchDef)
         {
             if (billWorkTypesByBench.TryGetValue(benchDef, out var cached))

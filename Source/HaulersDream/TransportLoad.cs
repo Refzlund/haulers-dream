@@ -398,7 +398,18 @@ namespace HaulersDream
             var counts = scratchCounts ?? (scratchCounts = new List<int>());
             things.Clear();
             counts.Clear();
-            var from = loadable.GetParentThing()?.Position ?? pawn.Position;
+            // Seed the greedy nearest-neighbour pickup chain at the PAWN, not the container (issue #171). Seeding at
+            // the container ordered the queue nearest-container-first, so a pawn that started far from the container
+            // (the classic caravan-return case) walked all the way to the container-nearest stack first, then back
+            // outward, then home to deposit: a wasteful there-and-back. Pawn-seeding sweeps the pawn's own nearest
+            // stack first and snowballs outward, matching vanilla (LoadTransportersJobUtility.FindThingToLoad uses
+            // ClosestThingReachable from the pawn) and HD's sibling route planners (RoutePlanner/SowRoutePlanner/
+            // RemoveFloorRoutePlanner all seed from pawn.Position). Eligibility (the #156 VariantBudget quality/count
+            // filter) is per-candidate and order-independent, so no unwanted variant is ever loaded and demand is never
+            // exceeded, whatever the seed. When a hard cap (the MaxStacks/mass/bulk/ceiling loop below) binds before
+            // every eligible stack is taken, WHICH nearest eligible subset fills that cap does shift with the seed:
+            // that is the intended #171 gain (the pawn's own nearby stacks win), not a #156 regression.
+            var from = pawn.Position;
 
             while (things.Count < MaxStacks && running < ceiling - 0.0001f && massLeft > 0.0001f)
             {

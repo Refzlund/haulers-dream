@@ -110,6 +110,8 @@
   <HaulersDream.Setting.PlanRoutesDesc>The right-click planning tool for harvesting, mining, cleaning, deconstruction and construction routes. Off = the menu option is hidden everywhere.</HaulersDream.Setting.PlanRoutesDesc>
   <HaulersDream.Setting.PlanCrafting>Enable the crafting planner ("Plan prioritized crafting…")</HaulersDream.Setting.PlanCrafting>
   <HaulersDream.Setting.PlanCraftingDesc>The right-click planning tool on workbenches that batches a bill several times with one ingredient trip. Off = the menu option is hidden.</HaulersDream.Setting.PlanCraftingDesc>
+  <HaulersDream.Setting.PlanForUnassignedWork>Plan work for unassigned pawns</HaulersDream.Setting.PlanForUnassignedWork>
+  <HaulersDream.Setting.PlanForUnassignedWorkDesc>When on (default), the planner offers work orders even for a pawn that is capable of the work but has that work type unchecked in its Work tab. When off, the planner is hidden for such pawns, so only pawns actually assigned to the work are offered. Pawns who are incapable of the work are always hidden.</HaulersDream.Setting.PlanForUnassignedWorkDesc>
   <HaulersDream.Setting.BatchByDefault>Batch new bills by default</HaulersDream.Setting.BatchByDefault>
   <HaulersDream.Setting.BatchByDefaultDesc>Crafting and cooking bills you ADD from now on start in "batch" mode: the colonist fetches a whole batch of ingredients in one trip, makes them all at the bench (food won't spoil while they work), then hauls everything to storage. Only affects newly-added bills — existing bills keep their current setting.</HaulersDream.Setting.BatchByDefaultDesc>
   <HaulersDream.Setting.AllowBatchUnderCommonSense>Batch even with Common Sense active</HaulersDream.Setting.AllowBatchUnderCommonSense>
