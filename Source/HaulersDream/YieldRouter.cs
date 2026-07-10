@@ -265,6 +265,11 @@ namespace HaulersDream
                 // self-healing, so the item is retried automatically once it passes.
                 if (HaulChurnGuard.IsBackedOff(t))
                     return true;
+                // RimIOT compat (#177 + #184): leave RimIOT's items to RimIOT. A logistic-network cell (#177) or the
+                // ground apron of a powered interface terminal (#184) is not a work-spot sweep candidate, else HD
+                // re-pockets the network's full-overflow ground drop into the endless loop. Inert without RimIOT.
+                if (RimIOTCompat.IsPresent && RimIOTCompat.IsRimIOTHandledCell(map, t.Position))
+                    return true;
                 // #5: leave items another mod has claimed via a designation (e.g. a Recycle This recycle/destroy
                 // order) — scooping them into inventory hides them from that mod's spawned-only WorkGiver.
                 if (ForeignOrderGuard.ClaimedByForeignOrder(t))
