@@ -179,7 +179,13 @@ namespace HaulersDream
         internal static bool ShouldDivert(Pawn pawn, Job workJob, bool runOver = false, bool protectedZeroDetourOnly = false)
         {
             var s = HaulersDreamMod.Settings;
-            if (s == null || !s.opportunisticUnload || !s.markForUnload)
+            if (s == null || !s.markForUnload)
+                return false;
+            // The general on-the-way unload (protectedZeroDetourOnly == false) is gated by the opportunisticUnload
+            // toggle. The protected-work pass-by (issue #107) is its OWN feature, controlled solely by its unloadDetour
+            // setting (Off disables it, checked in that branch below), so it does NOT require opportunisticUnload: a
+            // doctor can shed a load during elective surgery even with the general on-the-way unload turned off.
+            if (!protectedZeroDetourOnly && !s.opportunisticUnload)
                 return false;
             if (pawn?.Map == null || workJob?.def == null || pawn.Drafted || workJob.playerForced)
                 return false; // never defer player-prioritized work
@@ -218,14 +224,23 @@ namespace HaulersDream
                 return false;
             int now = Find.TickManager?.TicksGame ?? 0;
             if (now - comp.lastOpportunisticUnloadTick < DivertCooldownTicks)
+            {
+                if (protectedZeroDetourOnly)
+                    HDLog.Dbg("[unloadDetour] " + pawn.LabelShort + ": protected-work unload on cooldown ("
+                        + (now - comp.lastOpportunisticUnloadTick) + "<" + DivertCooldownTicks + " ticks) -> keep carrying.");
                 return false;
+            }
             // Same class of gap #152 fixed on the end-of-run trigger: a tracked stack existing isn't enough,
             // it must have SURPLUS above the pawn's keep-stock, or the unload this divert builds finds nothing
             // to move (FirstUnloadableThing skips every keep-stock stack), ends instantly, and, before the
             // per-job-transition throttle above, this trigger re-ran its expensive search on every subsequent
             // target. Routed through the SAME PawnUnloadChecker.AnyUnloadable every other unload trigger uses.
             if (!PawnUnloadChecker.AnyUnloadable(pawn, tracked))
+            {
+                if (protectedZeroDetourOnly)
+                    HDLog.Dbg("[unloadDetour] " + pawn.LabelShort + ": nothing unloadable above keep-stock -> keep carrying.");
                 return false;
+            }
 
             // SETTLE gate for the run-OVER path (mirrors TryGetEndOfRunUnloadJob's settle): the pawn picking ONE
             // non-yield job does NOT mean its yield run is over. In a busy colony the work scan constantly hands a
@@ -331,7 +346,11 @@ namespace HaulersDream
             // meal/recreation checkpoint triggers (both storage-independent) still make the unload trip,
             // and the unload driver itself desperately-stores the un-storable items.
             if (!storageCell.IsValid)
+            {
+                if (protectedZeroDetourOnly)
+                    HDLog.Dbg("[unloadDetour] " + pawn.LabelShort + ": no better storage cell found for the carried load -> keep carrying.");
                 return false;
+            }
 
             int pawnToTarget = CellDist(pawn.Position, target);
             int pawnToStorage = CellDist(pawn.Position, storageCell);
@@ -347,9 +366,21 @@ namespace HaulersDream
             {
                 var detour = HaulersDreamMod.Settings?.unloadDetour ?? OpportunisticDetour.Short;
                 if (detour == OpportunisticDetour.Off)
+                {
+                    // [unloadDetour] disk-only trace (issue: "doctor won't shed next to a free shelf"). HDLog.Dbg is
+                    // written to HaulersDream-debug.log but NOT the player's console, so it is diagnostic-only noise.
+                    HDLog.Dbg("[unloadDetour] " + pawn.LabelShort + ": protected-work unload disabled (unloadDetour=Off).");
                     return false;
-                return OpportunisticUnloadPolicy.ShouldUnloadZeroDetour(pawnToTarget, pawnToStorage, storageToTarget,
-                    OpportunisticUnloadPolicy.DetourBudgetTiles(detour));
+                }
+                int budget = OpportunisticUnloadPolicy.DetourBudgetTiles(detour);
+                int extra = pawnToStorage + storageToTarget - pawnToTarget;
+                if (extra < 0)
+                    extra = 0;
+                bool take = OpportunisticUnloadPolicy.ShouldUnloadZeroDetour(pawnToTarget, pawnToStorage, storageToTarget, budget);
+                HDLog.Dbg("[unloadDetour] " + pawn.LabelShort + " on protected work: pawn->target=" + pawnToTarget
+                    + " pawn->store=" + pawnToStorage + " store->target=" + storageToTarget + " extra-detour=" + extra
+                    + " vs budget=" + budget + " (" + detour + ") -> " + (take ? "SHED at storage" : "keep carrying"));
+                return take;
             }
             // Run-end (switched to non-yield work): relaxed criteria — shed the load at nearby storage even on
             // a short hop. Otherwise (continuing a yield run / a haul): the strict "real journey on the way" bar.

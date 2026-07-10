@@ -1152,19 +1152,22 @@ namespace HaulersDream
                 haulToStack, "HaulersDream.Setting.HaulToStackDesc".Translate());
             opportunisticUnload = HDSettingsUI.Checkbox(c, "HaulersDream.Setting.OpportunisticUnload".Translate(),
                 opportunisticUnload, "HaulersDream.Setting.OpportunisticUnloadDesc".Translate());
-            // Protected-work UNLOAD detour (issue #107): how far a pawn on non-emergency important work (elective
-            // surgery / rescue / warden) strays to shed a scooped load at storage, e.g. on the trip out to fetch the
-            // operation's medicine. Sub-option of opportunistic unload (the protected path requires it). Default Short
-            // (~4 tiles) so it is NOT strictly zero-detour; Off carries the load through the whole task. Enum order is
-            // Off/Short/Standard/Long, so the cast is the segment index directly.
-            int uDet = HDSettingsUI.Segmented(c, "HaulersDream.Setting.UnloadDetour.Lab".Translate(),
-                (int)unloadDetour, DetourSegmentLabels(), DetourSegmentHelp(),
-                "HaulersDream.Setting.UnloadDetour.Desc".Translate(), enabled: opportunisticUnload, indent: 24f);
-            unloadDetour = (OpportunisticDetour)uDet;
             closestDestinationUnloadOrder = HDSettingsUI.Checkbox(c, "HaulersDream.Setting.ClosestDestUnloadOrder".Translate(),
                 closestDestinationUnloadOrder, "HaulersDream.Setting.ClosestDestUnloadOrderDesc".Translate());
             unloadAllSurplus = HDSettingsUI.Checkbox(c, "HaulersDream.Setting.UnloadAllSurplus".Translate(),
                 unloadAllSurplus, "HaulersDream.Setting.UnloadAllSurplusDesc".Translate());
+
+            // Protected-work UNLOAD detour (issue #107): its OWN section, not a child of opportunistic unload. How far
+            // a pawn on non-emergency important work (elective surgery / rescue / warden) strays to shed a scooped load
+            // at storage, e.g. on the trip out to fetch the operation's medicine. Gated on the auto-unload master
+            // (markForUnload) since the divert IS a form of auto-unload; independent of opportunisticUnload (the
+            // behaviour was decoupled in OpportunisticUnload.ShouldDivert). Default Short (~4 tiles) so it is NOT
+            // strictly zero-detour; Off carries the load through the whole task. Enum order Off/Short/Standard/Long.
+            HDSettingsUI.Header(c, "HaulersDream.Head.UnloadDetour".Translate());
+            int uDet = HDSettingsUI.Segmented(c, "HaulersDream.Setting.UnloadDetour.Lab".Translate(),
+                (int)unloadDetour, DetourSegmentLabels(), DetourSegmentHelp(),
+                "HaulersDream.Setting.UnloadDetour.Desc".Translate(), enabled: markForUnload);
+            unloadDetour = (OpportunisticDetour)uDet;
 
             HDSettingsUI.Header(c, "HaulersDream.Head.ItemRulesDisplay".Translate());
             int ruleCount = ItemRuleCount;

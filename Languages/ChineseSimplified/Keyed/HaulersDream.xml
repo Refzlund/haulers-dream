@@ -601,8 +601,9 @@
   <HaulersDream.Setting.Detour.Short.H>仅当几乎毫无代价时，大致相当于正好在必经路径上的一件物品。约额外多走 4 格。</HaulersDream.Setting.Detour.Short.H>
   <HaulersDream.Setting.Detour.Standard.H>允许短距离绕行以省去第二趟。约额外多走 10 格。</HaulersDream.Setting.Detour.Standard.H>
   <HaulersDream.Setting.Detour.Long.H>走值得的绕行，用重要工作上一点有意的小延迟换取更少的往返。约额外多走 20 格。</HaulersDream.Setting.Detour.Long.H>
+  <HaulersDream.Head.UnloadDetour>重要工作期间卸货</HaulersDream.Head.UnloadDetour>
   <HaulersDream.Setting.UnloadDetour.Lab>重要工作中的卸货绕行</HaulersDream.Setting.UnloadDetour.Lab>
-  <HaulersDream.Setting.UnloadDetour.Desc>一个正在从事非紧急重要工作（择期手术、救援、看守任务）的小人，会偏离原路多远去在储存处卸下已收取的一批货物，通常是在外出取该手术所需药品的路上。距离以在直行基础上多走的格数计：关闭会把货物带着做完整项工作（旧的严格零绕行行为）；短（默认值）允许约 4 格的绕行，于是在几乎免费的顺路时卸下货物；标准允许约 10 格；长允许约 20 格，用一点有意的手术小延迟换取更少的往返。仅在开启“路过储存区时顺手卸货”时生效。</HaulersDream.Setting.UnloadDetour.Desc>
+  <HaulersDream.Setting.UnloadDetour.Desc>一个正在从事非紧急重要工作（择期手术、救援、看守任务）的小人，会偏离原路多远去在储存处卸下已收取的一批货物，通常是在外出取该手术所需药品的路上。距离以在直行基础上多走的格数计：关闭会把货物带着做完整项工作（旧的严格零绕行行为）；短（默认值）允许约 4 格的绕行，于是在几乎免费的顺路时卸下货物；标准允许约 10 格；长允许约 20 格，用一点有意的手术小延迟换取更少的往返。需要开启自动卸载（默认即为开启）；这是与“路过储存区时顺手卸货”开关相互独立的功能。</HaulersDream.Setting.UnloadDetour.Desc>
 <HaulersDream.Setting.AutoStripMode.Lab>搬运时自动扒取</HaulersDream.Setting.AutoStripMode.Lab>
 <HaulersDream.Setting.AutoStrip.Help>搬运尸体时，先扒下它的装备并随身带走战利品。“仅处置”只扒取前往倾倒区的尸体。“关闭”让尸体保持着装（手动扒取命令仍会收取其装备）。</HaulersDream.Setting.AutoStrip.Help>
 <HaulersDream.Setting.TaintedSmeltable.Lab>污损的服装——可熔炼</HaulersDream.Setting.TaintedSmeltable.Lab>
