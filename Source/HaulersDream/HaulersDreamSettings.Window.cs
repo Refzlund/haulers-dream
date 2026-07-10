@@ -1507,6 +1507,8 @@ namespace HaulersDream
                 planRoutes, "HaulersDream.Setting.PlanRoutesDesc".Translate());
             planCrafting = HDSettingsUI.Checkbox(c, "HaulersDream.Setting.PlanCrafting".Translate(),
                 planCrafting, "HaulersDream.Setting.PlanCraftingDesc".Translate());
+            planForUnassignedWork = HDSettingsUI.Checkbox(c, "HaulersDream.Setting.PlanForUnassignedWork".Translate(),
+                planForUnassignedWork, "HaulersDream.Setting.PlanForUnassignedWorkDesc".Translate());
 
             HDSettingsUI.Header(c, "HaulersDream.Head.Batches".Translate());
             batchByDefault = HDSettingsUI.Checkbox(c, "HaulersDream.Setting.BatchByDefault".Translate(),

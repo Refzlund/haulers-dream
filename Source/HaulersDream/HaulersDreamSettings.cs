@@ -118,6 +118,12 @@ namespace HaulersDream
         // Lives on the interface toggle only (not the settings window, hence not drawn there).
         public bool rememberPlan = true;
         public bool planCrafting = true; // station crafting planner (batch a bill N times in one go)
+        // "Plan for unassigned work": when ON (the default, permissive, backward-compatible behavior), the "Plan
+        // prioritized ..." options appear for any pawn CAPABLE of the work, even if that work type is unchecked
+        // (priority 0) in the pawn's Work tab. When OFF, the planner is hidden for such capable-but-UNASSIGNED
+        // pawns, so only pawns actually assigned to the work are offered it. Pawns INCAPABLE of the work are hidden
+        // either way (each provider's WorkTypeIsDisabled gate already covers that).
+        public bool planForUnassignedWork = true;
         // Batch-Y bill mode: when ON, a newly-created batchable bill starts in batch mode at defaultBatchSize.
         public bool batchByDefault = false; // OFF by default so existing players see no change until they opt in
         public int defaultBatchSize = 10;   // initial per-batch quantity for a freshly-batched bill
@@ -673,6 +679,7 @@ namespace HaulersDream
             Scribe_Values.Look(ref planRoutes, "planRoutes", true);
             Scribe_Values.Look(ref rememberPlan, "rememberPlan", true);
             Scribe_Values.Look(ref planCrafting, "planCrafting", true);
+            Scribe_Values.Look(ref planForUnassignedWork, "planForUnassignedWork", true);
             Scribe_Values.Look(ref batchByDefault, "batchByDefault", false);
             Scribe_Values.Look(ref defaultBatchSize, "defaultBatchSize", 10);
             Scribe_Values.Look(ref allowBatchUnderCommonSense, "allowBatchUnderCommonSense", true);
@@ -858,6 +865,7 @@ namespace HaulersDream
             planRoutes = true;
             rememberPlan = true;
             planCrafting = true;
+            planForUnassignedWork = true;
             batchByDefault = false;
             defaultBatchSize = 10;
             allowBatchUnderCommonSense = true;

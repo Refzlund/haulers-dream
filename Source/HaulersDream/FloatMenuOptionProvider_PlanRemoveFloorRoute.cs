@@ -36,6 +36,10 @@ namespace HaulersDream
             // WorkTypeIsDisabled.
             if (pawn.WorkTypeIsDisabled(WorkTypeDefOf.Construction))
                 yield break;
+            // "Plan for unassigned work" off: also hide the option for a pawn CAPABLE of Construction but with
+            // Construction unassigned (priority 0) in its Work tab (default on = shown, the permissive behavior).
+            if (PlannerGate.HideForUnassigned(pawn, WorkTypeDefOf.Construction))
+                yield break;
             if (pawn.thinker?.TryGetMainTreeThinkNode<RimWorld.JobGiver_Work>() == null)
                 yield break;
 

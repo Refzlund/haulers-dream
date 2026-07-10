@@ -89,6 +89,8 @@
 <HaulersDream.Setting.PlanRoutesDesc>収穫・採掘・清掃・解体・建築ルート用の右クリック計画ツールです。オフ＝メニューの選択肢がどこにも表示されなくなります。</HaulersDream.Setting.PlanRoutesDesc>
 <HaulersDream.Setting.PlanCrafting>製作プランナーを有効化（「優先製作を計画…」）</HaulersDream.Setting.PlanCrafting>
 <HaulersDream.Setting.PlanCraftingDesc>作業台上で、1回の材料運搬で作業指示を複数回まとめて実行する右クリック計画ツールです。オフ＝メニューの選択肢が非表示になります。</HaulersDream.Setting.PlanCraftingDesc>
+<HaulersDream.Setting.PlanForUnassignedWork>未割り当てのポーンにも作業を計画</HaulersDream.Setting.PlanForUnassignedWork>
+<HaulersDream.Setting.PlanForUnassignedWorkDesc>オン（デフォルト）：その作業を行う能力はあるが作業タブでその作業タイプのチェックを外しているポーンにも、プランナーが表示されます。オフ：そのようなポーンにはプランナーが非表示になり、実際にその作業に割り当てられたポーンにのみ表示されます。その作業を行えないポーンは常に非表示です。</HaulersDream.Setting.PlanForUnassignedWorkDesc>
 <HaulersDream.Setting.BatchByDefault>新しい作業指示をデフォルトでバッチ化する</HaulersDream.Setting.BatchByDefault>
 <HaulersDream.Setting.BatchByDefaultDesc>今後追加する製作・調理の作業指示が「バッチ」モードで始まります。入植者は1回の往復で材料一式を取りに行き、作業台ですべて作り（作業中に食料は傷みません）、それからすべてを保管庫へ運びます。新たに追加された作業指示にのみ影響します。既存の作業指示は現在の設定を保ちます。</HaulersDream.Setting.BatchByDefaultDesc>
   <HaulersDream.Setting.AllowBatchUnderCommonSense>Common Sense有効時もバッチ生産する</HaulersDream.Setting.AllowBatchUnderCommonSense>

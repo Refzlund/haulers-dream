@@ -89,6 +89,8 @@
 <HaulersDream.Setting.PlanRoutesDesc>用于收获、采掘、清洁、拆除和建造路径的右键规划工具。关闭＝该菜单选项在各处都隐藏。</HaulersDream.Setting.PlanRoutesDesc>
 <HaulersDream.Setting.PlanCrafting>启用制作规划器（“规划优先制作…”）</HaulersDream.Setting.PlanCrafting>
 <HaulersDream.Setting.PlanCraftingDesc>工作台上的右键规划工具，用一趟原料行程把一个工单批量制作多次。关闭＝隐藏该菜单选项。</HaulersDream.Setting.PlanCraftingDesc>
+<HaulersDream.Setting.PlanForUnassignedWork>为未分配的小人规划工作</HaulersDream.Setting.PlanForUnassignedWork>
+<HaulersDream.Setting.PlanForUnassignedWorkDesc>开启时（默认），即使小人有能力从事该工作、但在其工作选项卡中未勾选该工作类型，仍会为其显示规划器。关闭时，对这类小人隐藏规划器，因此只为实际分配了该工作的小人显示。没有能力从事该工作的小人始终隐藏。</HaulersDream.Setting.PlanForUnassignedWorkDesc>
 <HaulersDream.Setting.BatchByDefault>新工单默认批量</HaulersDream.Setting.BatchByDefault>
 <HaulersDream.Setting.BatchByDefaultDesc>从现在起你添加的制作和烹饪工单以“批量”模式开始：殖民者一趟取来整批原料，在工作台前一次全部制作（工作期间食物不会腐烂），然后把一切搬到储存区。仅影响新添加的工单——已有的工单保持当前设置。</HaulersDream.Setting.BatchByDefaultDesc>
   <HaulersDream.Setting.AllowBatchUnderCommonSense>即使启用了常识（Common Sense）也进行批量制作</HaulersDream.Setting.AllowBatchUnderCommonSense>
