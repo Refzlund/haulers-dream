@@ -337,13 +337,15 @@ namespace HaulersDream
             int pawnToStorage = CellDist(pawn.Position, storageCell);
             int storageToTarget = CellDist(storageCell, target);
 
-            // Protected zero-detour: the pawn is on non-emergency protected work, so shed only when storage is on
-            // the way, within the player's detour budget (issue #107: at the Standard default this is a short
-            // pass-by, not a real delay; Off disables it entirely so the load is carried through the work; Long
-            // trades a small deliberate delay for fewer trips). No trip/load floor: within budget, take it.
+            // Protected-work unload detour: the pawn is on non-emergency protected work (elective surgery / rescue /
+            // warden), so shed the scooped load only when storage is within the player's UNLOAD detour budget
+            // (unloadDetour, separate from the grab-on-the-way pickup budget). Issue #107: at the Short default this
+            // is about a 4-tile pass-by, not a real delay; Off disables it entirely so the load is carried through
+            // the whole task; Standard/Long give a doctor progressively more room to drop off, trading a small
+            // deliberate surgery delay for fewer trips. No trip/load floor: within budget, take it.
             if (protectedZeroDetourOnly)
             {
-                var detour = HaulersDreamMod.Settings?.opportunisticDetour ?? OpportunisticDetour.Standard;
+                var detour = HaulersDreamMod.Settings?.unloadDetour ?? OpportunisticDetour.Short;
                 if (detour == OpportunisticDetour.Off)
                     return false;
                 return OpportunisticUnloadPolicy.ShouldUnloadZeroDetour(pawnToTarget, pawnToStorage, storageToTarget,

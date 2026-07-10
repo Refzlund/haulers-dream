@@ -2,11 +2,11 @@
 "haulers-dream": patch
 ---
 
-Add a "Detour distance" setting for how far pawns step out of their way to take a free opportunity.
+Add two "detour distance" settings that control how far pawns step out of their way to take a free opportunity, each showing the extra-tile budget.
 
-Two behaviors let a colonist make the most of a trip it is already taking: grabbing a loose item it passes on the way to storage, and, while doing non-emergency medical, rescue, or warden work, dropping off a scooped load when storage is on the way. A new setting under Routing controls how far out of its way a pawn will go for either one:
+Two separate behaviors let a colonist make the most of a trip it is already taking, and each now has its own knob. Both use the same four levels, and the picker shows the extra-tile budget so the choice is not just a bare word (Off = 0, Short = about 4, Standard = about 10, Long = about 20 extra tiles of travel):
 
-- Off never detours, so pawns leave items they walk past and a doctor carries its load through the whole surgery.
-- Short only takes what is practically on the exact path.
-- Standard, the default, allows a short detour to save a second trip. On an elective (non-emergency) surgery this can add a brief one-time walk to drop a load off; true emergencies such as tending the wounded, and all rescue and warden work, are never affected.
-- Long takes worthwhile detours, trading a small delay on important work for fewer trips.
+- "Grab-on-the-way detour" (under Routing) sets how far a pawn already walking to storage will step aside to grab a loose item it passes. Default Standard (about 10 tiles). Only applies while en-route pickup is on.
+- "Unload detour during important work" (under Unloading, beneath "Drop off carried loot on the way past storage") sets how far a pawn on non-emergency medical, rescue, or warden work will step aside to drop a scooped load at storage, typically on the trip out to fetch the operation's medicine. Default Short (about 4 tiles), so a doctor sheds the load on a near-free pass-by instead of only when storage is exactly on the path.
+
+Each level is measured as extra straight-line tiles over going straight, so a little goes further on a long haul. Off turns the behavior off entirely: a hauler leaves items it walks past, and a doctor carries its load through the whole task. True emergencies such as tending the wounded are never diverted, whatever the unload setting.

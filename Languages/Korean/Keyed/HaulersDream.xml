@@ -590,17 +590,19 @@
 <HaulersDream.Setting.AlertStuckHours.Lab>막힌 폰을 표시하는 시간</HaulersDream.Setting.AlertStuckHours.Lab>
 <HaulersDream.Setting.AlertStuckHours.Help>폰이 치울 수 없는(목적지는 존재하는) 운반 화물을 경보가 표시하기 전까지 얼마나 오래 보유할 수 있는지.</HaulersDream.Setting.AlertStuckHours.Help>
 <HaulersDream.Setting.EnRoutePathChecker.Lab>가는 길 확인</HaulersDream.Setting.EnRoutePathChecker.Lab>
-  <HaulersDream.Head.OpportunisticDetour>지나는 길 우회</HaulersDream.Head.OpportunisticDetour>
+  <HaulersDream.Head.OpportunisticDetour>지나는 길에 줍는 우회</HaulersDream.Head.OpportunisticDetour>
   <HaulersDream.Setting.OpportunisticDetour.Lab>우회 거리</HaulersDream.Setting.OpportunisticDetour.Lab>
-  <HaulersDream.Setting.OpportunisticDetour.Desc>폰이 이미 나선 이동 중에 공짜 기회를 잡으려고 얼마나 벗어나는지: 저장고로 가는 길에 지나치는 흩어진 물건을 줍거나, 긴급하지 않은 의료·구조·간수 작업을 하는 동안 주워 담은 짐을 내려놓는 것입니다. 꺼짐은 절대 우회하지 않습니다(의사는 수술 내내 짐을 지니고, 운반자는 지나치는 물건을 그대로 둡니다). 짧게는 사실상 정확히 경로 위에 있는 것만 가져갑니다. 표준(기본값)은 짧은 우회를 허용합니다. 길게는 값어치 있는 우회를 하여, 중요한 작업의 약간의 지연을 이동 감소와 맞바꿉니다. 추가 직선 거리로 측정하므로, 먼 운반에서는 작은 값도 더 멀리 미칩니다.</HaulersDream.Setting.OpportunisticDetour.Desc>
+  <HaulersDream.Setting.OpportunisticDetour.Desc>이미 저장고로 가고 있는 폰이 지나치는 흩어진 물건 하나를 줍기 위해 얼마나 길에서 벗어나는지. 거리는 곧바로 가는 것에 비해 추가로 이동하는 칸 수입니다. 꺼짐은 지나치는 물건을 절대 줍지 않습니다. 짧게는 사실상 정확히 경로 위에 있는 것만 가져갑니다(약 4칸). 표준(기본값)은 짧은 우회를 허용합니다(약 10칸). 길게는 값어치 있는 우회를 합니다(약 20칸). 직선 거리로 측정하므로, 먼 운반에서는 작은 값도 더 멀리 미칩니다. "작업으로 가는 길에 있는 흩어진 물건 줍기"가 켜져 있을 때만 적용됩니다.</HaulersDream.Setting.OpportunisticDetour.Desc>
   <HaulersDream.Setting.Detour.Off.S>꺼짐</HaulersDream.Setting.Detour.Off.S>
   <HaulersDream.Setting.Detour.Short.S>짧게</HaulersDream.Setting.Detour.Short.S>
   <HaulersDream.Setting.Detour.Standard.S>표준</HaulersDream.Setting.Detour.Standard.S>
   <HaulersDream.Setting.Detour.Long.S>길게</HaulersDream.Setting.Detour.Long.S>
-  <HaulersDream.Setting.Detour.Off.H>절대 우회 안 함: 폰은 지나치는 물건을 줍거나 짐을 내려놓지 않습니다. 엄격한 "작업을 절대 지연하지 않음" 동작으로 되돌립니다.</HaulersDream.Setting.Detour.Off.H>
-  <HaulersDream.Setting.Detour.Short.H>사실상 비용이 없을 때만, 대략 정확히 경로 위의 물건 하나 정도. 이것이 원래의 고정 예산이었습니다.</HaulersDream.Setting.Detour.Short.H>
-  <HaulersDream.Setting.Detour.Standard.H>두 번째 이동을 피하기 위한 짧은 우회를 허용합니다. 기본값.</HaulersDream.Setting.Detour.Standard.H>
-  <HaulersDream.Setting.Detour.Long.H>값어치 있는 우회를 합니다. 중요한 작업에서는 의도적인 약간의 지연을 이동 감소와 맞바꿉니다.</HaulersDream.Setting.Detour.Long.H>
+  <HaulersDream.Setting.Detour.Off.H>절대 우회 안 함: 폰은 지나치는 물건을 줍지 않고, 주워 담은 짐을 작업 내내 지니고 다닙니다. 엄격한 "작업을 절대 지연하지 않음" 동작으로 되돌립니다. (추가 0칸)</HaulersDream.Setting.Detour.Off.H>
+  <HaulersDream.Setting.Detour.Short.H>사실상 비용이 없을 때만, 대략 정확히 경로 위의 물건 하나 정도. 추가 이동 약 4칸.</HaulersDream.Setting.Detour.Short.H>
+  <HaulersDream.Setting.Detour.Standard.H>두 번째 이동을 피하기 위한 짧은 우회를 허용합니다. 추가 이동 약 10칸.</HaulersDream.Setting.Detour.Standard.H>
+  <HaulersDream.Setting.Detour.Long.H>값어치 있는 우회를 합니다. 중요한 작업에서는 의도적인 약간의 지연을 이동 감소와 맞바꿉니다. 추가 이동 약 20칸.</HaulersDream.Setting.Detour.Long.H>
+  <HaulersDream.Setting.UnloadDetour.Lab>중요 작업 중 내려놓기 우회</HaulersDream.Setting.UnloadDetour.Lab>
+  <HaulersDream.Setting.UnloadDetour.Desc>긴급하지 않은 중요 작업(예정된 수술, 구조, 간수 임무)을 하는 폰이 주워 담은 짐을 저장고에 내려놓기 위해 얼마나 길에서 벗어나는지. 보통 그 수술의 약품을 가지러 나가는 길입니다. 거리는 곧바로 가는 것에 비해 추가로 이동하는 칸 수입니다. 꺼짐은 짐을 작업 내내 지니고 다닙니다(기존의 엄격한 우회 없음 동작). 짧게(기본값)는 약 4칸의 우회를 허용하여 거의 공짜로 지나칠 때 짐을 내려놓습니다. 표준은 약 10칸을 허용합니다. 길게는 약 20칸을 허용하여, 의도적인 약간의 수술 지연을 이동 감소와 맞바꿉니다. "저장고를 지나는 길에 내려놓기"가 켜져 있을 때만 적용됩니다.</HaulersDream.Setting.UnloadDetour.Desc>
 <HaulersDream.Setting.AutoStripMode.Lab>운반하면서 자동 벗기기</HaulersDream.Setting.AutoStripMode.Lab>
 <HaulersDream.Setting.AutoStrip.Help>시체를 운반할 때 먼저 그 장비를 벗기고 전리품을 함께 운반합니다. '처리만'은 투기 구역으로 향하는 시체만 벗깁니다. '꺼짐'은 시체를 옷 입은 채로 둡니다(수동 벗기기 명령은 여전히 장비를 줍습니다).</HaulersDream.Setting.AutoStrip.Help>
 <HaulersDream.Setting.TaintedSmeltable.Lab>오염된 의복 — 제련 가능</HaulersDream.Setting.TaintedSmeltable.Lab>
