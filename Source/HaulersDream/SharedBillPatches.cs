@@ -112,6 +112,22 @@ namespace HaulersDream
     [HarmonyPatch(typeof(WorkGiver_DoBill), "TryFindBestBillIngredientsInSet_AllowMix")]
     public static class Patch_WorkGiver_DoBill_TryFindBestBillIngredientsInSet_AllowMix
     {
+        // Cede the cook-ingredient sort to Common Sense when it is loaded. CS transpiles the SAME single SortBy
+        // call in this method (its own _AllowMix patch, IngredientPriority.cs), and two transpilers cannot both
+        // rewrite it: whichever Harmony applies first wins and the other silently breaks. In the default config
+        // CS's transpiler is always active (its Prepare is `!optimal_patching_in_use || prefer_spoiling_ingredients`,
+        // and optimal_patching_in_use defaults false), so if HD ran first and replaced the SortBy, CS would log
+        // "[Common Sense] TryFindBestBillIngredientsInSet_AllowMix patch 0 didn't work" and lose its default-on
+        // spoiling-ingredient sort. HD defers whenever CS is present, exactly as it already cedes the whole DoBill
+        // flow to CS (see CommonSenseCompat.OwnsDoBillFlow): CS owns THIS non-batch (vanilla-chooser) cook sort. HD's
+        // cook keys (cookSpoilingFirst default on, cookMostStockFirst default off) still drive HD's own batch-cook
+        // ingredient picker (JobDriver_BatchCraft via SpoilingFirst.CookBetterThan, CS-immune by design), so only
+        // this vanilla-chooser path cedes. With CS absent, HD patches this path as normal too (SortAllowMix reads
+        // the keys live, so a runtime toggle still applies). Prepare runs once at patch
+        // time; all mod assemblies are loaded before any patching, so IsActive sees CS regardless of load order, and
+        // the gate keys on CS PRESENCE (not on who patched first), so there is no ordering race.
+        static bool Prepare() => !CommonSenseCompat.IsActive;
+
         // The target: Verse.GenCollection.SortBy<T,TSortBy,TThenBy>(List<T>, Func<T,TSortBy>, Func<T,TThenBy>).
         private static readonly MethodInfo SortBy3 = AccessTools.GetDeclaredMethods(typeof(GenCollection))
             .Find(m => m.Name == "SortBy"

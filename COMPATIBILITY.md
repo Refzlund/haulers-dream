@@ -41,6 +41,21 @@ put away (see the in-game "Cannot unload inventory" alert).
   HD-tagged, so HD re-issues. **Test:** mark an item via CS's gear tab while a pawn also carries
   HD-scooped stock (no deadlock); interrupt an HD haul mid-carry (item returns to inventory, HD
   re-unloads, nothing stranded). No load-order requirement.
+- **Cook-ingredient sort: HD now cedes to CS.** Both mods transpile the *same* `SortBy` call in
+  `WorkGiver_DoBill.TryFindBestBillIngredientsInSet_AllowMix` to reorder a cooking bill's ingredients (CS
+  by spoilage; HD's optional `cookSpoilingFirst` (default on, itself spoilage-first) and `cookMostStockFirst` (default off)). Two
+  transpilers cannot both rewrite one call, so previously load order decided the winner, and when HD won,
+  CS logged a one-time yellow `[Common Sense] ... patch 0 didn't work` and its default spoilage sort went
+  silent. HD's transpiler now stands down whenever Common Sense is installed (a `Prepare()` gate), so CS's
+  sort always applies cleanly on that non-batch cook path; HD's own batch-cook ingredient picker still honors
+  the cook keys (it is CS-immune by design). (Same cede philosophy as the DoBill flow above.)
+- **Red errors while running both are not HD-caused (verified by cloning CS).** Two independent code-level
+  passes found no HD-caused uncaught exception in the interaction. The once-suspected "started 10 jobs in
+  one tick" churn is impossible: HD's bulk-haul job leaves `targetB` at `IntVec3.Invalid` (-1000,-1000,-1000),
+  so Common Sense's opportunistic-haul distance gate never passes and CS just skips HD's job. Every shared
+  Harmony seam is condition-disjoint or cedes. HD tags any error it *is* responsible for with its `HDGuard`
+  signature, so a red naming HaulersDream is HD's to fix and one that does not (for example a `[Common Sense]`
+  frame) is not; check the stack trace for that signature before attributing reds.
 
 ### "Haul Urgently" — Allow Tool & Keyz' Allow Utilities (verified by cloning both)
 - **Allow Tool** (`unlimitedhugs.allowtool`) and **Keyz' Allow Utilities** (`keyz182.allowtoolutils`)
@@ -101,6 +116,31 @@ put away (see the in-game "Cannot unload inventory" alert).
   haul-on-the-way; it transpiles `Pawn_JobTracker.TryOpportunisticJob`, a **different** seam from HD's
   work-scan postfix, so the two don't collide. (HD *replaces* this mod's role — running both is redundant,
   not harmful.)
+- **Rust / native job-assignment mods (for example Celeritas Smart Pawn).** A mod that scores *which pawn
+  takes which job* and injects its pick at the front of a work giver's candidate list sits at a different
+  layer from HD, which upgrades *how* a chosen haul executes (a postfix on `WorkGiver_HaulGeneral.JobOnThing`).
+  HD only reads the candidate/haulable lists such a mod injects into, so there is no shared patch target: HD
+  simply bulk-upgrades a haul the other mod picked, and its self-healing tagged unload plus anti-churn guards
+  bound any friction to extra trips, never a crash or a stranded item. (Celeritas Smart Pawn itself has been
+  removed from the Steam Workshop and is closed-source native Rust, so it cannot be regression-tested; a crash
+  originating in its own FFI engine is attributable to it, not to HD, via HD's `HDGuard` error signatures.)
+
+### Threading and performance mods (compatible; HD is thread-safe on its hot paths)
+- **RimThreaded - Continued** (`LuniX`, 1.6) parallelizes only particle simulation and drawing,
+  background-thread RNG, and off-thread sound, with **no shared patch targets** with HD's hauling/job code;
+  **RimSmooth** (1.6) is 26 single-threaded perf tweaks (caching, tick throttling, dictionary lookups).
+  Neither threads the per-pawn WorkGiver/JobGiver scan, so HD's job code runs single-threaded under both:
+  **compatible by construction.** (The classic `cseelhoff` RimThreaded *does* thread pawn AI across pawns,
+  but it is 1.4-only; it is the reference threat model for the note below.)
+- **HD is already thread-safe where it counts,** by design: its hot scan-path scratch is `[ThreadStatic]`
+  and its cross-pawn arbitration tables (the anti-churn guards, the cache registry) are `lock`-guarded,
+  because a threading mod does not auto-fix a non-whitelisted mod's own statics. As forward-insurance against
+  a future 1.6 AI-threading mod (for example RimMT, if it threads AI), two more per-tick memos were hardened
+  to match their already-`[ThreadStatic]` siblings: `HaulToStack`'s stack-cell memo is now `[ThreadStatic]`
+  (like `BulkHaul`'s plan cache) and the yield/haul job-def memo is a `ConcurrentDictionary`. Both are zero
+  behaviour change single-threaded. A few genuinely cross-pawn structures (self-pickup claims, the load
+  ledger, the inventory-tag re-heal) stay main-thread-scoped: latent only under a full pawn-AI-threading mod,
+  documented for that day rather than locked pre-emptively.
 
 ### Overlap by design — composes
 - **Smarter Deconstruction & Mining** (`mlie.smarterdeconstructionandmining`) — postfixes

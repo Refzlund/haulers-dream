@@ -101,9 +101,15 @@ namespace HaulersDream
         // too. The carrier is part of the key because IsGoodStoreCell validates per CARRIER (allowed
         // area, its own reservations, reachability) — serving one pawn's cell to another hands out a job
         // that fails synchronously and re-scans the same tick ("started 10 jobs in one tick").
-        private static int cacheTick = -1;
-        private static readonly Dictionary<(int thingId, int carrierId, int cellIdx), IntVec3> cellCache
-            = new Dictionary<(int thingId, int carrierId, int cellIdx), IntVec3>();
+        // [ThreadStatic] to match the sibling BulkHaul.planCache: FindStackCell runs on the per-candidate
+        // HasJobOnThing probe, which a threading mod (e.g. RimThreaded) may fan onto worker threads, and one
+        // shared Dictionary mutated concurrently would tear. Each worker thread keeps its own per-tick memo,
+        // lazily built at the read site (ThreadStatic field initializers only run on the static-ctor thread).
+        // Correctness is unchanged single-threaded: the per-tick clear self-scopes per thread, and the
+        // IsGoodStoreCell re-validation on every cached hit is the real stale/cross-session guard (the tick
+        // stamp is belt-and-braces), exactly as BulkHaul.planCache leans on its loadID re-check.
+        [ThreadStatic] private static int cacheTick;
+        [ThreadStatic] private static Dictionary<(int thingId, int carrierId, int cellIdx), IntVec3> cellCache;
 
         // Self-register the per-session cell-memo clear with the game-load hygiene sweep (see CacheRegistry), so it
         // can never be forgotten. The static ctor runs once, the first time any member is touched (the only way the
@@ -119,7 +125,7 @@ namespace HaulersDream
         internal static void Clear()
         {
             cacheTick = -1;
-            cellCache.Clear();
+            cellCache?.Clear();
         }
 
         /// <summary>The best same-room (or, outside, in-radius) cell holding a partial stack
@@ -134,10 +140,16 @@ namespace HaulersDream
             // CompHauledToInventory.lastHealTick); when -1 we recompute live and never cache. (The cached-hit
             // path is already re-validated by IsGoodStoreCell below, but the tick guard closes the populate side
             // and is consistent with the count caches.)
-            if (tick != -1 && tick != cacheTick)
+            if (tick != -1)
             {
-                cellCache.Clear();
-                cacheTick = tick;
+                // Lazy per-thread init (ThreadStatic initializers only run on the static-ctor thread), so every
+                // cellCache access below stays under this tick != -1 guard where it is guaranteed non-null.
+                cellCache ??= new Dictionary<(int thingId, int carrierId, int cellIdx), IntVec3>();
+                if (tick != cacheTick)
+                {
+                    cellCache.Clear();
+                    cacheTick = tick;
+                }
             }
             var key = (t.thingIDNumber, carrier.thingIDNumber, map.cellIndices.CellToIndex(vanillaCell));
             if (tick != -1 && cellCache.TryGetValue(key, out var cached))
