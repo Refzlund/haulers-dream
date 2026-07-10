@@ -1,5 +1,40 @@
 # haulers-dream
 
+## 1.16.12
+
+### Patch Changes
+
+- e0a30ca: Let a colonist grab a loose item it walks over on its way to store things away.
+
+  A hauler carrying scooped goods to the shelves would step right over a loose item on the floor, even one on its exact path, and leave it for a second trip. That is because the scoop-on-the-way behavior only kicks in when a colonist sets off toward other work; once it is already on a storage run, it could not pick anything else up.
+
+  Now, while a colonist is walking to storage, it grabs a loose haulable that sits on that path, so the item rides along on a trip it was making anyway. By default it only does this for a short detour at most, so the trip is barely affected, and how far it will step out of its way is adjustable (see the new "Grab-on-the-way detour" setting under Routing). It still leaves alone anything reserved by someone else, forbidden, or with nowhere better to go.
+
+- e0a30ca: Fix a colonist pacing back and forth forever carrying an item in a cramped room (issue #162).
+
+  When an item sits on a spot the game wants cleared for other work (an ingredient cell of a workbench mid-bill, a growing or mining or construction spot), the base game keeps hauling it "aside" to the nearest free tile. In a tight room that nearest free tile is the adjacent spot the game also wants cleared, so the item gets shuffled between two cells endlessly, a fresh short haul every half second, and a colonist can spend all day on it. This is a base-game behaviour rather than something Hauler's Dream causes, but because the mod keeps colonists hauling until their queue runs dry, an idle hauler would reliably fall into it.
+
+  The earlier attempts at this bug all watched for the wrong kind of haul (a haul toward storage that fails), while this loop is a haul aside that succeeds every time, so none of them ever saw it. Now, the moment a colonist hauls an item aside, Hauler's Dream stops offering to haul that same item aside again for a while. The one haul that clears the work spot still happens, so the item is relocated a single time, but the back-and-forth shuffle can never start, and the colonist goes on to do something useful with it (often hauling it to storage) instead of pacing. As long as the work spot keeps demanding to be cleared the item stays put, so the shuffle cannot start up again later either. Nothing about normal storage hauling is affected.
+
+- e0a30ca: Add two "detour distance" settings that control how far pawns step out of their way to take a free opportunity, each showing the extra-tile budget.
+
+  Two separate behaviors let a colonist make the most of a trip it is already taking, and each now has its own knob. Both use the same four levels, and the picker shows the extra-tile budget so the choice is not just a bare word (Off = 0, Short = about 4, Standard = about 10, Long = about 20 extra tiles of travel):
+
+  - "Grab-on-the-way detour" (under Routing) sets how far a pawn already walking to storage will step aside to grab a loose item it passes. Default Standard (about 10 tiles). Only applies while en-route pickup is on.
+  - "Unload detour during important work" (its own section in the Unloading tab, tied to automatic unloading) sets how far a pawn on non-emergency medical, rescue, or warden work will step aside to drop a scooped load at storage, typically on the trip out to fetch the operation's medicine. Default Short (about 4 tiles), so a doctor sheds the load on a near-free pass-by instead of only when storage is exactly on the path.
+
+  Each level is measured as extra straight-line tiles over going straight, so a little goes further on a long haul. Off turns the behavior off entirely: a hauler leaves items it walks past, and a doctor carries its load through the whole task. True emergencies such as tending the wounded are never diverted, whatever the unload setting.
+
+- e0a30ca: Fix colonists endlessly pacing when unloading unstackable items (extracted organs, body parts) from inventory in a crowded hospital or prison.
+
+  The unload driver dropped the destination cell reservation for ALL items when Haul To Stack was on — including unstackables like kidneys, which can never share a cell. Without the reservation, another hauler could fill the same cell mid-carry, invalidating it, causing the carry toil to fail and drop the item at the pawn's feet. The item was then re-scooped and re-unloaded, creating the reported endless pacing loop. Stackable items (hemogen packs) were unaffected because the in-flight re-route layer actively redirected them — but that layer deliberately skipped unstackables, leaving them with zero protection on the unload path. The unload driver now reserves the destination cell for unstackables, mirroring the guard the vanilla HaulToCell patch already applies. Also fixes a NullReferenceException in the cannot-unload alert when a scanned item is destroyed mid-scan.
+
+- e0a30ca: Let a colonist shed scooped items during elective medical work when its storage is right on the way.
+
+  Hauler's Dream never pulls a doctor (or firefighter, or warden) off their work to go put away items they scooped up earlier: interrupting someone rushing to tend a bleeding patient could get that patient killed. The side effect was that a doctor working through a queue of elective surgeries would carry those scooped items around the whole time, never dropping them off, even when walking right past their storage to fetch the operation's medicine.
+
+  Now, while a doctor is doing an elective (non-emergency) surgery, it drops its scooped load off when (and only when) its storage is close to the path it is already walking. Typically this is the trip out to fetch the operation's medicine. By default this is about a 4-tile detour at most, so the surgery is barely delayed, and you can tune it or turn it off entirely with the new "Unload detour during important work" setting (under Unloading). A true emergency such as tending the wounded or fighting a fire is never interrupted at all, and rescue and warden work are still left completely alone. If the storage is not on the way, the doctor simply carries the load until it has a free moment, as it did previously.
+
 ## 1.16.11
 
 ### Patch Changes
