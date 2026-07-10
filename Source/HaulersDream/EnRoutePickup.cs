@@ -158,8 +158,6 @@ namespace HaulersDream
                     if (unloadJob.TryMakePreToilReservations(pawn, false))
                     {
                         OpportunisticUnload.NotifyDiverted(pawn);
-                        HDLog.Dbg("[unloadDetour] en-route unload prepended: " + pawn.LabelShort + " sheds its load on the way to protected work ("
-                            + (job.workGiverDef?.workType?.defName ?? "?") + ").");
                         return unloadJob;
                     }
                 }

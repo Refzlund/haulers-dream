@@ -249,14 +249,6 @@ namespace HaulersDream
                 // gate when protectedZeroDetourOnly is false.
                 bool zeroDetourEligible = ProtectedWorkPolicy.MayZeroDetourUnload(
                     protectedWork, emergencyProtected, __result.Job.def == JobDefOf.DoBill);
-                // [unloadDetour] disk-only trace: for any PROTECTED-work job the doctor is handed, record whether it
-                // qualifies for the zero-detour shed (notably whether a surgery is recognized as a DoBill). Written to
-                // HaulersDream-debug.log only, never the player's console. Diagnosing "doctor won't drop off next to a
-                // free shelf during surgery".
-                if (protectedWork)
-                    HDLog.Dbg("[unloadDetour] " + pawn.LabelShort + " protected job=" + (__result.Job.def?.defName ?? "null")
-                        + " emergency=" + emergencyProtected + " isDoBill=" + (__result.Job.def == JobDefOf.DoBill)
-                        + " -> zeroDetourEligible=" + zeroDetourEligible);
                 // Compat guard: only DIVERT (replace __result with our unload) off a job we may safely clobber —
                 // i.e. NEVER replace a FOREIGN custom unload job that the vanilla work scan legitimately returned.
                 // The reachable case is a mod that routes its carrier/inventory unload through a real WorkGiver:
