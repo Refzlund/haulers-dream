@@ -2,6 +2,6 @@
 "haulers-dream": patch
 ---
 
-Collect harvested and drilled yields consistently, as the pawn works.
+Collect harvested and drilled yields in visible sections under "Drop & haul".
 
-Under "Drop & haul", a working pawn now pockets its own yield as each item is produced, instead of waiting until its whole current job ends. This fixes two inconsistencies with the same cause. Harvesting a growing zone left the yield piling up on the ground until the entire field was finished and only then swept it up, while a single "Harvest" order collected each plant immediately. Deep-drill output was never collected until the drill was exhausted. Now all harvest modes (growing-zone auto-harvest, a Harvest order, and cutting plants) and deep drilling behave the same way. A pawn still leaves a yield on the ground when it has nowhere to store it or is already carrying too much.
+The "Drop & haul" setting drops each yield on the ground so you can see it was produced, then has the pawn sweep it up shortly after. Two cases broke that. Auto-harvesting a growing zone let a whole field's yield pile up on the ground and only swept it once the entire field was cut, and a deep drill never collected its output until it ran dry. A large field is now harvested and collected in small sections, so a pawn drops a handful, picks them up soon after without wandering off, and moves on to the next section. A deep driller pauses to gather its accumulated yield as it works instead of leaving everything until the end. A single harvest or plant-cut order, and a player's forced "prioritize harvest", still clear their full batch as before. A pawn continues to leave a yield on the ground when it has nowhere to store it or is already carrying too much.
