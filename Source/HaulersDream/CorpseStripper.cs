@@ -103,6 +103,38 @@ namespace HaulersDream
 
     public static class CorpseStripper
     {
+        /// <summary>
+        /// SHARED INTAKE GUARD (issue #187a): true when <paramref name="t"/> is a LOOSE tainted-apparel piece the
+        /// player's keep-policy says HD must NOT haul to storage — the resolved <see cref="StripPolicy.ApparelAction"/>
+        /// is LeaveOnCorpse or DropAndForbid. The auto-strip loop already keeps such pieces off the haul at strip
+        /// time, but once a piece is OFF the body and loose on the ground (a manual Strip order, a bench/rot drop
+        /// when the corpse is destroyed) it becomes an unforbidden haulable that HD's grab paths would re-pocket
+        /// with no policy awareness — the reported bug. Every HD intake gate (en-route pickup, work-spot sweep,
+        /// bulk-haul pool + its cheap potential-work probe) calls this so a keep-on-corpse rag is skipped wherever
+        /// it lands, trigger-agnostically.
+        ///
+        /// "Tainted" is the game's own definition, IDENTICAL to <see cref="StripAndScoop"/>'s per-piece test:
+        /// WornByCorpse AND the apparel kind cares (careIfWornByCorpse). WornByCorpse is STICKY (it persists after
+        /// the piece leaves the body — see <see cref="ApplyTaintedPolicyToPending"/>), so a loose stripped piece
+        /// still reads tainted here. Inert (false) for non-apparel, untainted apparel, and the Take/Destroy
+        /// resolutions, so ordinary apparel hauling is byte-identical for the Take/Smelt defaults.
+        /// </summary>
+        /// <param name="t">The candidate haulable an intake gate is about to pocket.</param>
+        /// <param name="s">Live settings (the two tainted policies); a null settings reads as "leave nothing".</param>
+        internal static bool ShouldLeaveTaintedApparel(Thing t, HaulersDreamSettings s)
+        {
+            // Cheapest reject first: with neither category set to a keep-out-of-storage policy no piece is ever
+            // left, so the default config never pays the type-check or the per-piece reads below.
+            if (s == null || !StripPolicy.LeavesAnyTainted(s.taintedSmeltablePolicy, s.taintedNonSmeltablePolicy))
+                return false;
+            if (!(t is Apparel ap) || ap.def.apparel == null)
+                return false;
+            if (!ap.WornByCorpse || !ap.def.apparel.careIfWornByCorpse)
+                return false;
+            return StripPolicy.LeaveWhereItIs(tainted: true, ap.Smeltable,
+                s.taintedSmeltablePolicy, s.taintedNonSmeltablePolicy);
+        }
+
         /// <summary>After stripping a LIVING pawn, append a vanilla Strip job at the end of the stripper's
         /// queue so re-equipped clothing (a prisoner dressing from the leftovers) gets stripped again.</summary>
         internal static void QueueReStripIfNeeded(Pawn stripper, Thing target)
@@ -143,8 +175,9 @@ namespace HaulersDream
         /// LeaveOnCorpse to a LIVING target's strip would destroy gear outside the policies'
         /// documented corpse scope (or churn with the re-strip net) — living strips scoop everything
         /// as before. A mixed pending list (harvest yields and the like) is untouched by the apparel
-        /// filter. LeaveOnCorpse can't apply to a piece already off the body — it degrades to "don't
-        /// scoop" (an ordinary ground haulable).
+        /// filter. LeaveOnCorpse can't put a piece already off the body back ON it, so it degrades to
+        /// DropAndForbid: the rag is forbidden in place (not scooped, and no vanilla hauler takes it either)
+        /// — honoring the keep-out-of-storage intent instead of leaving it a free ground haulable (#187a).
         /// </summary>
         internal static void ApplyTaintedPolicyToPending(Pawn stripper, bool corpseStrip)
         {
@@ -166,7 +199,11 @@ namespace HaulersDream
                 switch (action)
                 {
                     case TaintedApparelPolicy.LeaveOnCorpse:
-                        pending.RemoveAt(i); // already off the body — just don't scoop it
+                        // Already off the body — LeaveOnCorpse can't put it back on, so degrade to DropAndForbid:
+                        // forbid it in place so NO pawn (HD or vanilla) hauls the rag home. (The intake gates'
+                        // ShouldLeaveTaintedApparel also skips it, but the forbid is what stops vanilla haulers.)
+                        ap.SetForbidden(true, warnOnFail: false);
+                        pending.RemoveAt(i); // don't scoop it
                         SelfPickupClaims.Release(ap, stripper);
                         break;
                     case TaintedApparelPolicy.DropAndForbid:

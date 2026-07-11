@@ -40,16 +40,33 @@ namespace HaulersDream
         // assembly's hook-reachable scratch convention; Cleared at the point of use, never trusted empty.
         [ThreadStatic] private static List<Thing> sweepScratch;
 
+        /// <summary>
+        /// Per-placement handoff from the GenPlace prefix to its postfix. Carries the producer to credit the
+        /// drop to (null for a placement HD isn't routing — an ordinary drop, or a deconstruct leaving handled
+        /// by the separate capture path) and the producer's resolved work type. Passed via Harmony <c>__state</c>
+        /// (per-invocation, stack-local) so a NESTED TryPlaceThing — a modded comp spawning a side product
+        /// mid-placement — can't clobber it, which a static handoff would.
+        /// </summary>
+        public struct YieldDrop
+        {
+            /// <summary>The producer to credit the fresh drop to, or null when this placement isn't a routed yield.</summary>
+            public Pawn pawn;
+            /// <summary>The producer's resolved work type — meaningful only when <see cref="pawn"/> is non-null. Selects
+            /// the postfix path (Strip stays deferred; all others pocket inline) and labels the scoop log.</summary>
+            public HaulSourceType type;
+        }
+
         // ---- GenPlace path (plants / mining / deep drill / animals) -----------------------------
 
         /// <returns>true to let vanilla place the (remaining) thing; false to fully consume it.</returns>
-        /// <param name="dropPawn">The producer awaiting the postfix (DropThenHaul), carried per-invocation
-        /// via Harmony's <c>__state</c> — a static handoff would be cleared by a NESTED TryPlaceThing call
-        /// (e.g. a modded comp spawning a side product mid-placement), losing the outer scoop.</param>
+        /// <param name="drop">The producer + work type awaiting the postfix (DropThenHaul / Strip), carried
+        /// per-invocation via Harmony's <c>__state</c> — a static handoff would be cleared by a NESTED
+        /// TryPlaceThing call (e.g. a modded comp spawning a side product mid-placement), losing the outer
+        /// scoop. Left at default (<c>pawn == null</c>) for a placement HD isn't routing.</param>
         public static bool OnTryPlaceThing(Thing thing, IntVec3 center, Map map, ThingPlaceMode mode,
-            ref Thing lastResultingThing, ref bool result, out Pawn dropPawn)
+            ref Thing lastResultingThing, ref bool result, out YieldDrop drop)
         {
-            dropPawn = null;
+            drop = default;
             if (map == null || thing == null || thing.Destroyed || thing.def == null)
                 return true;
             if (!InferencePolicy.IsRoutablePlacement(routing, mode == ThingPlaceMode.Near, thing.def.category == ThingCategory.Item))
@@ -87,9 +104,13 @@ namespace HaulersDream
             // the scoop is the natural reading of a strip anyway.
             if (s.BehaviorFor(type) == YieldBehavior.DropThenHaul || type == HaulSourceType.Strip)
             {
-                // Realistic mode: let the yield land on the ground; the postfix (OnTryPlaceThingPost)
-                // records the just-placed thing so the producer scoops it up afterward.
-                dropPawn = pawn;
+                // Realistic mode: let the yield land on the ground, then the postfix (OnTryPlaceThingPost)
+                // pockets it into the producer per item — right where it is, with no dependency on the
+                // producing job ending (a batched grow-zone harvest / a never-ending deep drill). Strip is
+                // the one exception the postfix keeps deferred (its tainted-apparel policy filters the pending
+                // queue at job end); the type carries the branch decision + the scoop log label.
+                drop.pawn = pawn;
+                drop.type = type;
                 return true;
             }
 
@@ -103,10 +124,11 @@ namespace HaulersDream
             return true; // nothing taken, or partial: vanilla places the remainder
         }
 
-        /// <summary>Postfix side of the GenPlace hook: in DropThenHaul mode, record the dropped yield.
-        /// <paramref name="dropPawn"/> is the prefix's out value, delivered through Harmony <c>__state</c>.</summary>
-        public static void OnTryPlaceThingPost(Thing lastResultingThing, Pawn dropPawn)
+        /// <summary>Postfix side of the GenPlace hook: pocket the producer's just-dropped yield (DropThenHaul).
+        /// <paramref name="drop"/> is the prefix's out value, delivered through Harmony <c>__state</c>.</summary>
+        public static void OnTryPlaceThingPost(Thing lastResultingThing, YieldDrop drop)
         {
+            var dropPawn = drop.pawn;
             // No producer from the prefix: this is a DECONSTRUCT leaving (FindWorker never matches a
             // deconstructor — JobDriver_Deconstruct is absent from TryGetWorkType). Hand it to the active
             // capture, which scoops all leavings once DoLeavingsFor completes. (When no capture is active,
@@ -123,10 +145,72 @@ namespace HaulersDream
             // OUT of a stockpile only to re-unload it later (a churn loop). Leave stored goods stored.
             if (lastResultingThing.IsInValidStorage())
                 return;
-            RecordSelfPickup(dropPawn, lastResultingThing);
+            // STRIP is the one producer kept on the DEFERRED path. A manual Strip ORDER's dropped gear must
+            // pass through CorpseStripper.ApplyTaintedPolicyToPending at JOB END, which forbids/removes
+            // LeaveOnCorpse/DropAndForbid tainted apparel from the pending queue BEFORE the self-pickup scoops
+            // it. That forbid CANNOT be set from this hook — vanilla's TryDrop chain un-forbids its result right
+            // after placement — so it must run later; pocketing a strip drop inline here would bypass the policy
+            // (#187a). Strip jobs also END promptly (one target), so the deferred self-pickup runs right away —
+            // Strip never had the long/never-ending-job problem the inline pocket below solves.
+            if (drop.type == HaulSourceType.Strip)
+            {
+                RecordSelfPickup(dropPawn, lastResultingThing);
+                return;
+            }
+            // Every other DropThenHaul producer pockets its own fresh drop INLINE, per item.
+            ScoopOwnDrop(dropPawn, lastResultingThing, drop.type);
         }
 
-        /// <summary>Queue a fresh ground drop for the producer to scoop up (DropThenHaul mode).</summary>
+        /// <summary>
+        /// DropThenHaul mode (every producer EXCEPT Strip — see <see cref="OnTryPlaceThingPost"/>): the producer
+        /// immediately pockets its OWN just-dropped yield into inventory, per item, right here in the GenPlace
+        /// postfix, then sweeps nearby OTHER loose items into the deferred self-pickup queue.
+        ///
+        /// Pocketing inline — instead of queuing the own drop for the deferred <see cref="JobDriver_SelfPickup"/>
+        /// — is what makes a grow-zone field harvest drain per-plant and a <c>ToilCompleteMode.Never</c> deep
+        /// drill drain per-portion: neither depends on the producing job ENDING. The old front-queued self-pickup
+        /// could not run until the current job finished, so a batched <see cref="JobDriver_PlantWork"/> piled a
+        /// whole field's yield on the floor before collecting it, and a deep drill (which never ends per portion)
+        /// left its portions on the ground indefinitely (#187b). Single-item producers (mining, designated
+        /// harvest, cut, animal-gather, uninstall, fishing) were already prompt because their job ends per item;
+        /// routing them through the same inline pocket simply makes every producer collect consistently as it works.
+        ///
+        /// The own drop is pocketed via the SAME proven inline path (<see cref="RouteIntoInventory"/>) the
+        /// DirectToInventory mode and the deconstruct capture use. That path self-gates on a real storage
+        /// destination (<see cref="HasScoopDestination"/>) and the smart-overload carry ceiling
+        /// (<see cref="OverloadGate.CountToPickUp(Pawn,Thing,HaulersDreamSettings)"/>): with no destination, or
+        /// when the pawn is at its ceiling, it leaves the yield on the ground exactly as before (an undeliverable
+        /// or over-ceiling yield is never force-carried — it stays for normal hauling, and a full pawn breaks off
+        /// to unload via MaybeUnloadBecauseFull). Because the own drop goes straight into inventory (or is left
+        /// grounded), it is NEVER added to <c>pendingSelfPickups</c>, so the deferred self-pickup can't
+        /// double-handle a stack that is already gone; that job now serves only the nearby-OTHER-items sweep below.
+        /// </summary>
+        private static void ScoopOwnDrop(Pawn pawn, Thing thing, HaulSourceType type)
+        {
+            var comp = pawn?.GetComp<CompHauledToInventory>();
+            if (comp == null || pawn.jobs == null)
+                return;
+            // Pocket the producer's own fresh drop straight into inventory (per item). RouteIntoInventory
+            // self-gates on destination + carry ceiling, so the no-destination / full / softlock (can't-scoop)
+            // invariants all hold — it simply leaves the yield grounded when it can't take it.
+            RouteIntoInventory(pawn, thing, type, out _, out _);
+            // Clean the surrounding area in the same pass: queue nearby loose OTHER haulables for the deferred
+            // self-pickup job (cooldown-debounced, so this scans at most once per work spot). Called
+            // unconditionally — not only on a successful pocket — so nearby items are still swept when THIS one
+            // yield had nowhere to go; when the pocket DID succeed, RouteIntoInventory already ran the same sweep,
+            // so the cooldown makes this a cheap no-op rather than a second scan.
+            MaybeSweepNearbyIntoPending(pawn, thing.Position);
+            // Start the deferred self-pickup job for anything the sweep queued (the own drop is NOT in that queue
+            // — it was pocketed inline above). C5 master + C1 bleeding INTAKE gates, identical to the old path.
+            if (MasterEnable.Active && FitToStartHaul(pawn))
+                EnsureSelfPickupJob(pawn, comp);
+        }
+
+        /// <summary>Queue a fresh ground drop for the producer to scoop up via the deferred
+        /// <see cref="JobDriver_SelfPickup"/> (the DEFERRED DropThenHaul path). Now used only where the drop
+        /// must NOT be pocketed inline: a Strip order's gear (so <see cref="CorpseStripper.ApplyTaintedPolicyToPending"/>
+        /// can filter tainted apparel out of the queue at job end) and deconstruct leavings (the capture path).
+        /// Non-Strip GenPlace producers pocket inline via <see cref="ScoopOwnDrop"/> instead.</summary>
         private static void RecordSelfPickup(Pawn pawn, Thing thing)
         {
             var comp = pawn?.GetComp<CompHauledToInventory>();
@@ -269,6 +353,11 @@ namespace HaulersDream
                 // ground apron of a powered interface terminal (#184) is not a work-spot sweep candidate, else HD
                 // re-pockets the network's full-overflow ground drop into the endless loop. Inert without RimIOT.
                 if (RimIOTCompat.IsPresent && RimIOTCompat.IsRimIOTHandledCell(map, t.Position))
+                    return true;
+                // #187a: a loose tainted-apparel piece the keep-policy says to leave (LeaveOnCorpse / DropAndForbid)
+                // — a corpse's rag dropped by a bench/rot — is never swept into inventory here. Inert for
+                // non-apparel / untainted / the Take-Smelt defaults, so the work-spot sweep is byte-identical.
+                if (CorpseStripper.ShouldLeaveTaintedApparel(t, s))
                     return true;
                 // #5: leave items another mod has claimed via a designation (e.g. a Recycle This recycle/destroy
                 // order) — scooping them into inventory hides them from that mod's spawned-only WorkGiver.
@@ -537,9 +626,10 @@ namespace HaulersDream
         }
 
         // Deliberately NO #121 pickup pause here (see PickupPause): this runs inside Harmony placement seams
-        // (the GenPlace prefix / the deconstruct-leavings capture) mid-work-toil (no pawn job/toil exists to
-        // pace) and replaces a vanilla ground spawn that is itself instant; the DropThenHaul route pays the
-        // pause in JobDriver_SelfPickup instead.
+        // (the GenPlace prefix / postfix / the deconstruct-leavings capture) mid-work-toil (no pawn job/toil
+        // exists to pace) and replaces a vanilla ground spawn that is itself instant. A producer's OWN drop is
+        // pocketed here (ScoopOwnDrop) unpaced, exactly like the DirectToInventory route; only the DEFERRED items
+        // (Strip gear, deconstruct leavings, swept-nearby loose stacks) pay the pause in JobDriver_SelfPickup.
         private static bool RouteIntoInventory(Pawn pawn, Thing thing, HaulSourceType type, out Thing taken, out bool fullyConsumed)
         {
             taken = null;

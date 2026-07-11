@@ -7,10 +7,16 @@ using Verse.AI;
 namespace HaulersDream
 {
     /// <summary>
-    /// DropThenHaul mode: after a work run drops yields on the floor, the producer scoops up its own
-    /// recorded fresh drops (CompHauledToInventory.pendingSelfPickups) into inventory, gated by the
-    /// carry limit. Enqueued at the FRONT of the job queue, so it runs the instant the harvest/mine
-    /// run ends and the remaining designated work is re-selected afterwards.
+    /// Scoops the pawn's recorded pending drops (CompHauledToInventory.pendingSelfPickups) into inventory,
+    /// gated by the carry limit. Enqueued at the FRONT of the job queue, so it runs the instant the current
+    /// job ends and the remaining designated work is re-selected afterwards.
+    ///
+    /// The pending queue now holds only drops that are DELIBERATELY deferred, NOT the producer's own fresh
+    /// non-strip yields (those pocket inline in the GenPlace postfix — see YieldRouter.ScoopOwnDrop — so a
+    /// batched grow-zone harvest or a never-ending deep drill collects as it works). What still queues here:
+    /// nearby OTHER loose items swept while working (MaybeSweepNearbyIntoPending), a manual Strip order's
+    /// dropped gear (deferred so the tainted-apparel policy can filter it at job end), and deconstruct
+    /// leavings — all of which come from jobs that end promptly, so this front-queued job runs right away.
     /// </summary>
     public class JobDriver_SelfPickup : JobDriver
     {
@@ -81,11 +87,11 @@ namespace HaulersDream
             };
             yield return gotoThing;
 
-            // Vanilla-like pickup pause (#121): scooping an own-work drop is still a pickup into inventory, so
+            // Vanilla-like pickup pause (#121): collecting a DEFERRED drop is still a pickup into inventory, so
             // it pays the same per-stack wait (with progress bar) as the bulk-haul sweep. No fail conditions:
-            // a drop stolen or stored mid-pause just no-ops in the take below and the loop moves on. (Only the
-            // DropThenHaul route comes through here; the DirectToInventory route pockets yields inside the
-            // GenPlace prefix, where no pawn action exists to pace; see YieldRouter.)
+            // a drop stolen or stored mid-pause just no-ops in the take below and the loop moves on. (Only
+            // DEFERRED drops reach here: a swept-nearby stack, a Strip order's gear, or a deconstruct leaving. A
+            // producer's OWN non-strip yield is pocketed inline in the GenPlace postfix, unpaced; see YieldRouter.)
             yield return PickupPause.MakeToil(TargetIndex.A, PickupDelayContext.AutoHaul);
 
             var take = new Toil

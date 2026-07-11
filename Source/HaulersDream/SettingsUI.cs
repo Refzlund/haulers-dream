@@ -22,6 +22,13 @@ namespace HaulersDream
         public int Ordinal;      // stable per-(CatId, Ordinal) id — the Nth recorded control in that category
         public float StartY;     // CurY at the control's top (content-view-local; same space as the real draw)
         public float Height;     // total laid-out height of the control
+
+        // Lower-cased (invariant) Name/Desc, precomputed ONCE when the registry is built (see
+        // HaulersDreamSettings.EnsureSearchRegistry) so the per-keystroke scorer never re-lower-cases these fixed
+        // strings — the FPS fix for issue #138. Null when the source field is null. Search-scoring use only
+        // (fed to SettingsSearch.OptionScoreLower).
+        public string NameLower;
+        public string DescLower;
     }
 
     /// <summary>

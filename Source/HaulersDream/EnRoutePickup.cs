@@ -371,6 +371,12 @@ namespace HaulersDream
             // (IsPresent short-circuits) when RimIOT is absent.
             if (RimIOTCompat.IsPresent && RimIOTCompat.IsRimIOTHandledCell(map, thing.Position))
                 return CandidateOutcome.HardFail;
+            // #187a: a loose tainted-apparel piece the player's keep-policy says HD must not haul (LeaveOnCorpse /
+            // DropAndForbid) — a corpse's rag that ended up on the ground (a manual Strip, a bench/rot drop) — is
+            // never grabbed en route (the reported "cloth tunic re-grabbed en-route"). Can never qualify -> HardFail.
+            // Inert for non-apparel / untainted / the Take-Smelt defaults, so ordinary hauling is byte-identical.
+            if (CorpseStripper.ShouldLeaveTaintedApparel(thing, s))
+                return CandidateOutcome.HardFail;
             // #5: leave items another mod has claimed via a designation (e.g. a Recycle This recycle/destroy order)
             // — scooping them into inventory en route hides them from that mod's spawned-only WorkGiver.
             if (ForeignOrderGuard.ClaimedByForeignOrder(thing))

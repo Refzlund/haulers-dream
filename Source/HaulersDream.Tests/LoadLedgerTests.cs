@@ -252,6 +252,63 @@ namespace HaulersDream.Tests
             AssertInvariant(totalClaimed, pawnClaims);
         }
 
+        // --- #188: an opportunistic DEPOSIT-ONLY divert must claim its incoming carried cargo ---
+
+        [Test]
+        public void OpportunisticDeposit_ClaimsCarriedSurplus_HidesRemainderFromOthers()
+        {
+            // Regression #188: a pawn diverting to deposit carried cargo "on the way" records a claim sized from the
+            // tagged surplus it carries (per def, min(carried, availableToClaim)). Without it, its incoming cargo was
+            // invisible, so every other carrying pawn read the same available-to-claim, diverted onto the same tiny
+            // remainder, and all but one arrived to a drained manifest and returned its cargo. Mirrors
+            // HaulersDreamGameComponent.LoadClaimCarriedSurplus over the pure ledger types + the DepositCount min.
+            var needed = Need(("steel", 5));
+            var totalClaimed = new Dictionary<string, int>();
+            var pawnClaims = new Dictionary<int, Dictionary<string, int>>();
+
+            // Pawn A carries 5 surplus steel; the target still wants 5 → A's claim = min(5, 5) = 5.
+            var availA = LoadLedger<string, int>.AvailableToClaim(needed, totalClaimed, pawnClaims, 1);
+            int carriedA = 5;
+            int planA = OpportunisticLoadPolicy.DepositCount(carriedA, availA.TryGetValue("steel", out int a) ? a : 0);
+            Assert.That(planA, Is.EqualTo(5));
+            LoadLedger<string, int>.ApplyClaim(totalClaimed, pawnClaims, 1, Need(("steel", planA)));
+            AssertInvariant(totalClaimed, pawnClaims);
+
+            // Pawn B (also carrying steel) now sees NOTHING available → it won't pile onto the same remainder.
+            var availB = LoadLedger<string, int>.AvailableToClaim(needed, totalClaimed, pawnClaims, 2);
+            Assert.That(availB.ContainsKey("steel"), Is.False);
+            Assert.That(LoadLedger<string, int>.HasWork(needed, totalClaimed, pawnClaims, 2), Is.False);
+
+            // A re-planning still sees its own 5 (idempotent), and its deposit settles need to exactly 0.
+            var replanA = LoadLedger<string, int>.AvailableToClaim(needed, totalClaimed, pawnClaims, 1);
+            Assert.That(replanA["steel"], Is.EqualTo(5));
+            LoadLedger<string, int>.Settle(needed, totalClaimed, pawnClaims, 1, "steel", 5);
+            Assert.That(needed.ContainsKey("steel"), Is.False);
+            Assert.That(LoadLedger<string, int>.AnyClaimed(totalClaimed), Is.False);
+            AssertInvariant(totalClaimed, pawnClaims);
+        }
+
+        [Test]
+        public void OpportunisticDeposit_ClaimClampedToCarried_LeavesRemainderForOthers()
+        {
+            // The claim is min(carried, available): a pawn carrying only 3 of a needed 10 claims 3, leaving 7 for
+            // other couriers (the fix must NOT over-claim the whole manifest off one pawn's small load).
+            var needed = Need(("steel", 10));
+            var totalClaimed = new Dictionary<string, int>();
+            var pawnClaims = new Dictionary<int, Dictionary<string, int>>();
+
+            var availA = LoadLedger<string, int>.AvailableToClaim(needed, totalClaimed, pawnClaims, 1);
+            int carriedA = 3;
+            int planA = OpportunisticLoadPolicy.DepositCount(carriedA, availA.TryGetValue("steel", out int a) ? a : 0);
+            Assert.That(planA, Is.EqualTo(3)); // min(3, 10)
+            LoadLedger<string, int>.ApplyClaim(totalClaimed, pawnClaims, 1, Need(("steel", planA)));
+
+            // A second pawn still sees the uncovered 7 and may divert for it.
+            var availB = LoadLedger<string, int>.AvailableToClaim(needed, totalClaimed, pawnClaims, 2);
+            Assert.That(availB["steel"], Is.EqualTo(7));
+            AssertInvariant(totalClaimed, pawnClaims);
+        }
+
         // --- FullyClaimed (issue #164: the vanilla-fallback guard) ---
 
         [Test]

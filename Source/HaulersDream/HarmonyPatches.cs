@@ -25,14 +25,14 @@ namespace HaulersDream
             typeof(Action<Thing, int>), typeof(Predicate<IntVec3>), typeof(Rot4?), typeof(int)
         });
 
-        // __state carries the producer from prefix to postfix PER INVOCATION (Harmony binds it by name
-        // across the pair) — structurally immune to nested TryPlaceThing calls, which would clear a
+        // __state carries the producer + work type from prefix to postfix PER INVOCATION (Harmony binds it by
+        // name across the pair) — structurally immune to nested TryPlaceThing calls, which would clear a
         // static handoff (a modded comp spawning a side product mid-placement → missed scoop).
-        static bool Prefix(Thing thing, IntVec3 center, Map map, ThingPlaceMode mode, ref Thing lastResultingThing, ref bool __result, out Pawn __state)
+        static bool Prefix(Thing thing, IntVec3 center, Map map, ThingPlaceMode mode, ref Thing lastResultingThing, ref bool __result, out YieldRouter.YieldDrop __state)
             => YieldRouter.OnTryPlaceThing(thing, center, map, mode, ref lastResultingThing, ref __result, out __state);
 
-        // DropThenHaul mode: after vanilla places the yield, record it for the producer to scoop up.
-        static void Postfix(Thing lastResultingThing, Pawn __state) => YieldRouter.OnTryPlaceThingPost(lastResultingThing, __state);
+        // DropThenHaul mode: after vanilla places the yield, the producer pockets it inline (Strip stays deferred).
+        static void Postfix(Thing lastResultingThing, YieldRouter.YieldDrop __state) => YieldRouter.OnTryPlaceThingPost(lastResultingThing, __state);
     }
 
     /// <summary>

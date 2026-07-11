@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using HaulersDream.Core;
 using Verse;
 using Verse.AI;
 
@@ -126,6 +127,33 @@ namespace HaulersDream
                     if (thing?.def == null || counts[i] <= 0)
                         continue;
                     plan[thing.def] = (plan.TryGetValue(thing.def, out int cur) ? cur : 0) + counts[i];
+                }
+            entry.ApplyClaim(pawn, plan);
+        }
+
+        /// <summary>Record a DEPOSIT-ONLY pawn's claim from the tagged SURPLUS it already carries — there is no sweep
+        /// queue to derive a plan from (the opportunistic divert + the boarding-passenger recovery build an
+        /// empty-<c>targetQueueB</c> job). Per def the claim is <c>min(carriedSurplus, availableToClaim)</c>, so the
+        /// target's remaining need reflects this incoming cargo and other carrying pawns don't all pile onto the same
+        /// small remainder (#188). Registers the task if needed; an empty plan safely releases any prior claim this
+        /// pawn held and records nothing. Uses <see cref="InventorySurplus.SurplusByDef"/> — the identical surplus math
+        /// the divert scan reads — and integer per-def sums (no floats / Rand), so it is multiplayer-deterministic.</summary>
+        public void LoadClaimCarriedSurplus(Pawn pawn, IManagedLoadable loadable)
+        {
+            if (pawn == null || loadable == null)
+                return;
+            var entry = LoadRegisterOrUpdate(loadable);
+            if (entry == null)
+                return;
+            var avail = entry.AvailableToClaim(pawn);
+            var plan = new Dictionary<ThingDef, int>();
+            if (avail.Count > 0)
+                foreach (var kv in InventorySurplus.SurplusByDef(pawn))
+                {
+                    int availForDef = avail.TryGetValue(kv.Key, out int a) ? a : 0;
+                    int n = OpportunisticLoadPolicy.DepositCount(kv.Value, availForDef); // min(carried, available)
+                    if (n > 0)
+                        plan[kv.Key] = n;
                 }
             entry.ApplyClaim(pawn, plan);
         }
