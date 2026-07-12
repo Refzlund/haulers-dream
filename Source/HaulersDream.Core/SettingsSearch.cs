@@ -61,23 +61,43 @@ namespace HaulersDream.Core
             if (string.IsNullOrEmpty(query) || string.IsNullOrEmpty(text))
                 return 0f;
 
-            string t = text.ToLowerInvariant();
+            // Lower-case ONCE, whole-string, then delegate. Lower-casing the entire query and THEN splitting on
+            // whitespace yields the exact same tokens as lower-casing each token individually — invariant casing is a
+            // per-character map that never changes a char's whitespace-ness or the string length — so this stays
+            // behaviour-identical to the old per-token lowering (the case-insensitivity tests pin this).
+            return FieldScoreLower(query.ToLowerInvariant(), text.ToLowerInvariant());
+        }
+
+        /// <summary>
+        /// <see cref="FieldScore"/> for callers that already hold the LOWER-CASED query and text. The settings search
+        /// scores every registered control on every keystroke, so it lower-cases the query once per keystroke and
+        /// reuses each control's precomputed lower-cased name/description (see <c>OptionEntry.NameLower/DescLower</c>)
+        /// instead of re-lowering the same ~135×2 fixed strings each frame (issue #138).
+        /// </summary>
+        /// <param name="queryLower">The user query, already <see cref="string.ToLowerInvariant"/>; null/empty -> 0.</param>
+        /// <param name="textLower">The field text, already <see cref="string.ToLowerInvariant"/>; null/empty -> 0.</param>
+        /// <returns>[0,1] — the mean of each query token's best single-token match against the text; identical to
+        /// <see cref="FieldScore"/> on the un-lowered originals.</returns>
+        private static float FieldScoreLower(string queryLower, string textLower)
+        {
+            if (string.IsNullOrEmpty(queryLower) || string.IsNullOrEmpty(textLower))
+                return 0f;
 
             // Split the query into tokens on whitespace. We sum each token's best score and divide by the token count
             // so a query of N tokens needs all N to land well to score high (one stray token halves a 2-token query).
             float sum = 0f;
             int count = 0;
-            int i = 0, n = query.Length;
+            int i = 0, n = queryLower.Length;
             while (i < n)
             {
                 // skip whitespace
-                while (i < n && char.IsWhiteSpace(query[i])) i++;
+                while (i < n && char.IsWhiteSpace(queryLower[i])) i++;
                 if (i >= n) break;
                 int start = i;
-                while (i < n && !char.IsWhiteSpace(query[i])) i++;
-                string token = query.Substring(start, i - start).ToLowerInvariant();
+                while (i < n && !char.IsWhiteSpace(queryLower[i])) i++;
+                string token = queryLower.Substring(start, i - start); // already lower-cased (queryLower is)
                 if (token.Length == 0) continue;
-                sum += TokenScore(token, t);
+                sum += TokenScore(token, textLower);
                 count++;
             }
 
@@ -92,9 +112,37 @@ namespace HaulersDream.Core
         /// </summary>
         public static float OptionScore(string query, string name, string description, string category)
         {
-            float nameScore = FieldScore(query, name);
-            float descScore = FieldScore(query, description);
-            float catScore = FieldScore(query, category);
+            if (string.IsNullOrEmpty(query))
+                return 0f; // no query -> every field scores 0 -> not a match (matches FieldScore's empty-query result)
+
+            // Lower-case the query ONCE, then delegate. Each field is lowered here too because this raw-string entry
+            // point is not the per-keystroke hot path (the UI calls OptionScoreLower with precomputed field text).
+            string q = query.ToLowerInvariant();
+            return OptionScoreLower(
+                q,
+                name == null ? null : name.ToLowerInvariant(),
+                description == null ? null : description.ToLowerInvariant(),
+                category == null ? null : category.ToLowerInvariant());
+        }
+
+        /// <summary>
+        /// <see cref="OptionScore"/> for the per-keystroke UI hot path: every argument is ALREADY
+        /// <see cref="string.ToLowerInvariant"/>. The settings search lower-cases the query once per keystroke and
+        /// passes each control's precomputed lower-cased name/description (<c>OptionEntry.NameLower/DescLower</c>) plus
+        /// the lower-cased category text, so scoring the full ~135-control registry no longer re-lower-cases the same
+        /// fixed strings on every frame. Result is identical to <see cref="OptionScore"/> on the un-lowered originals.
+        /// </summary>
+        /// <param name="queryLower">The user query, already lower-cased (invariant); null/empty -> 0 (no match).</param>
+        /// <param name="nameLower">The control name, already lower-cased (invariant); null treated as empty.</param>
+        /// <param name="descLower">The control description, already lower-cased (invariant); null treated as empty.</param>
+        /// <param name="categoryLower">The category/header text, already lower-cased (invariant); null treated as empty.</param>
+        /// <returns>Weighted relevance in [0, WeightName+WeightDesc+WeightCategory], or 0 when the match is too weak to
+        /// count (the name/description must reach <see cref="NameDescFloor"/>, or the category <see cref="CategoryFloor"/>).</returns>
+        public static float OptionScoreLower(string queryLower, string nameLower, string descLower, string categoryLower)
+        {
+            float nameScore = FieldScoreLower(queryLower, nameLower);
+            float descScore = FieldScoreLower(queryLower, descLower);
+            float catScore = FieldScoreLower(queryLower, categoryLower);
 
             // Gate: a result must be backed by a real hit in the name/description, or a strong category hit. Without
             // this a stray fuzzy brush against one field (or a generic category word) would surface unrelated options.
@@ -203,18 +251,35 @@ namespace HaulersDream.Core
             return score < 0f ? 0f : score;
         }
 
+        // Reused two-row DP scratch for BoundedLevenshtein. TypoScore slides a window across every field of every
+        // registered control on EVERY keystroke, so a fresh pair of int[] per call was tens of thousands of gen0
+        // allocations per keystroke -> the FPS drop in issue #138. The DP fully writes indices 0..winLen of each row
+        // before any read (row 0 is seeded prev[j]=j; every later row writes cur[0..winLen] left-to-right before the
+        // next row reads it as prev), so reuse across calls is sound and no stale value can leak. Guard-grown to the
+        // largest window seen. [ThreadStatic] + lazy-init mirrors the assembly's hook-reachable scratch convention
+        // (HaulersDream.BulkHaul.scratchThings / PawnMassCache) and keeps it correct if a worker thread ever scores.
+        [ThreadStatic] private static int[] levPrev;
+        [ThreadStatic] private static int[] levCur;
+
         /// <summary>
         /// Levenshtein distance between <paramref name="token"/> and the window of <paramref name="text"/> starting at
         /// <paramref name="winStart"/> of length <paramref name="winLen"/>, with early-exit once the running minimum of
         /// a row exceeds <paramref name="cutoff"/> (then returns cutoff+1, a value the caller treats as "too far").
-        /// Two rolling rows -> O(len * winLen) time, O(winLen) space, no per-char heap allocation beyond the two rows.
+        /// Two rolling rows -> O(len * winLen) time, O(winLen) space, no per-call heap allocation (the rows are reused
+        /// <see cref="levPrev"/>/<see cref="levCur"/> scratch).
         /// </summary>
         private static int BoundedLevenshtein(string token, string text, int winStart, int winLen, int cutoff)
         {
             int n = token.Length;
-            // prev[j] = distance of token[0..0] (empty) prefix... we use the classic two-row DP.
-            int[] prev = new int[winLen + 1];
-            int[] cur = new int[winLen + 1];
+            // Classic two-row DP over reused scratch. Grow both rows together to the window width (+1 for the empty
+            // prefix column); a bigger buffer from a prior call is fine since only indices 0..winLen are ever touched.
+            if (levPrev == null || levPrev.Length < winLen + 1)
+            {
+                levPrev = new int[winLen + 1];
+                levCur = new int[winLen + 1];
+            }
+            int[] prev = levPrev;
+            int[] cur = levCur;
             for (int j = 0; j <= winLen; j++) prev[j] = j;
 
             for (int i = 1; i <= n; i++)

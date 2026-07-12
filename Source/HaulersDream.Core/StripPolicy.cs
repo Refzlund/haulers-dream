@@ -47,5 +47,32 @@ namespace HaulersDream.Core
                 return TaintedApparelPolicy.Take;
             return smeltable ? smeltablePolicy : nonSmeltablePolicy;
         }
+
+        /// <summary>
+        /// Should a stripped/loose piece be LEFT where it is (never hauled to storage) rather than taken home?
+        /// True only for the two "keep it out of storage" resolutions of <see cref="ApparelAction"/> —
+        /// <see cref="TaintedApparelPolicy.LeaveOnCorpse"/> and <see cref="TaintedApparelPolicy.DropAndForbid"/>.
+        /// <see cref="TaintedApparelPolicy.Take"/> is hauled, and <see cref="TaintedApparelPolicy.Destroy"/>
+        /// resolves false too: a still-loose Destroy piece fell through the strip loop's quest/relic/merged guard
+        /// and is then treated as loot (Take), so HD should haul it like the guard's Take fallback does — not
+        /// strand it. This is the decision every runtime intake gate consults for a loose tainted apparel piece
+        /// (issue #187a: a keep-on-corpse piece that ended up on the ground was being re-hauled).
+        /// </summary>
+        public static bool LeaveWhereItIs(bool tainted, bool smeltable,
+            TaintedApparelPolicy smeltablePolicy, TaintedApparelPolicy nonSmeltablePolicy)
+            => IsLeavePolicy(ApparelAction(tainted, smeltable, smeltablePolicy, nonSmeltablePolicy));
+
+        /// <summary>
+        /// Does EITHER tainted category resolve to a "leave where it is" policy? A cheap pre-gate for the runtime
+        /// intake checks: when this is false (the Take/Smelt defaults) no loose piece is ever left, so the
+        /// per-candidate apparel test can be skipped entirely — keeping the default config byte-identical.
+        /// </summary>
+        public static bool LeavesAnyTainted(TaintedApparelPolicy smeltablePolicy, TaintedApparelPolicy nonSmeltablePolicy)
+            => IsLeavePolicy(smeltablePolicy) || IsLeavePolicy(nonSmeltablePolicy);
+
+        /// <summary>True for the two policies that keep a piece out of colony storage (leave it on the corpse,
+        /// or drop-and-forbid it in place).</summary>
+        private static bool IsLeavePolicy(TaintedApparelPolicy p)
+            => p == TaintedApparelPolicy.LeaveOnCorpse || p == TaintedApparelPolicy.DropAndForbid;
     }
 }

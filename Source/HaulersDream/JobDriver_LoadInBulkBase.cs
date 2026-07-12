@@ -69,7 +69,15 @@ namespace HaulersDream
             adapter = BuildLoadable();
             if (adapter != null)
             {
-                HaulersDreamGameComponent.Instance?.LoadClaim(pawn, job, adapter);
+                // A normal bulk load records its claim from the swept ground stacks (targetQueueB/countQueue). A
+                // DEPOSIT-ONLY job has an EMPTY targetQueueB (its only builders are the opportunistic divert and the
+                // boarding-passenger recovery), so instead claim from the tagged SURPLUS the pawn already carries —
+                // otherwise that incoming cargo is invisible to other couriers and they all divert onto the same
+                // small remainder (#188). Empty queue uniquely identifies a deposit-only job.
+                if (job.targetQueueB != null && job.targetQueueB.Count > 0)
+                    HaulersDreamGameComponent.Instance?.LoadClaim(pawn, job, adapter);
+                else
+                    HaulersDreamGameComponent.Instance?.LoadClaimCarriedSurplus(pawn, adapter);
                 OnExtraClaim();
             }
         }

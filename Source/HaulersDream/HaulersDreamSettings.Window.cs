@@ -344,6 +344,7 @@ namespace HaulersDream
                 searchRegistry = null;
                 scoredResults = null;
                 scoredForQuery = null;
+                groupedResults = null;
             }
             // (No action needed when the text merely changes: DrawContent rebuilds the registry if needed and the
             // scorer recomputes whenever searchQuery != scoredForQuery.)
@@ -441,6 +442,7 @@ namespace HaulersDream
                     searchRegistry = null;
                     scoredResults = null;
                     scoredForQuery = null;
+                    groupedResults = null;
                 }
             }
         }
@@ -593,7 +595,16 @@ namespace HaulersDream
                 DrawCat(cc, cd.cat);
             }
             searchRegistry = cc.Sink;
+            // Precompute each entry's lower-cased Name/Desc ONCE, here at registry-build time, so the per-keystroke
+            // scoring pass (EnsureScored) never re-lower-cases these ~135×2 fixed strings — the FPS fix for #138.
+            for (int k = 0; k < searchRegistry.Count; k++)
+            {
+                var oe = searchRegistry[k];
+                oe.NameLower = oe.Name?.ToLowerInvariant();
+                oe.DescLower = oe.Desc?.ToLowerInvariant();
+            }
             scoredForQuery = null; // force a re-score against the fresh registry
+            groupedResults = null; // and rebuild the result grouping against the fresh registry (Fix B)
         }
 
         // Score the registry against the current query (only when the query text changed). Keep only matches
@@ -605,14 +616,20 @@ namespace HaulersDream
             if (searchRegistry == null)
             {
                 scoredResults = null;
+                groupedResults = null;
                 return;
             }
             if (searchQuery == scoredForQuery && scoredResults != null)
                 return;
+            // Lower-case the query ONCE per re-score, then score every control via the pre-lowered hot-path scorer:
+            // each entry reuses its precomputed NameLower/DescLower and only the small per-entry category string is
+            // lowered here (as it was inside OptionScore before). This is the per-keystroke cost the FPS fix targets.
+            string queryLower = searchQuery?.ToLowerInvariant();
             var scored = new List<(OptionEntry e, float s)>(searchRegistry.Count);
             foreach (var e in searchRegistry)
             {
-                float s = SettingsSearch.OptionScore(searchQuery, e.Name, e.Desc, CategoryAndHeaderText(e));
+                float s = SettingsSearch.OptionScoreLower(queryLower, e.NameLower, e.DescLower,
+                    CategoryAndHeaderText(e).ToLowerInvariant());
                 if (s > 0f)
                     scored.Add((e, s));
             }
@@ -625,6 +642,40 @@ namespace HaulersDream
             for (int i = 0; i < shown; i++)
                 scoredResults.Add(scored[i].e);
             scoredForQuery = searchQuery;
+
+            // Fix B: the (CatId, Header) grouping is a pure function of scoredResults, which is recomputed only when
+            // the query changes (or the registry is rebuilt — both funnel through here). Build it ONCE now instead of
+            // re-allocating a List + Dictionary + a HashSet per group on EVERY OnGUI frame in DrawSearchResults.
+            BuildResultGroups();
+        }
+
+        // Fix B: build the (CatId, Header) result grouping consumed by DrawSearchResults. Called from EnsureScored so
+        // it rebuilds in lock-step with scoredResults (never per-frame). Groups preserve first-appearance order
+        // (= max-score-desc, since scoredResults is already sorted). Empty/absent results -> null (the empty-state
+        // note in DrawSearchResults handles that). The static cache is nulled at every scoredResults reset site.
+        private static List<ResultGroup> groupedResults;
+
+        private void BuildResultGroups()
+        {
+            if (scoredResults == null || scoredResults.Count == 0)
+            {
+                groupedResults = null;
+                return;
+            }
+            var groups = new List<ResultGroup>();
+            var byKey = new Dictionary<(int, string), ResultGroup>();
+            foreach (var e in scoredResults)
+            {
+                var key = (e.CatId, e.Header ?? "");
+                if (!byKey.TryGetValue(key, out var g))
+                {
+                    g = new ResultGroup { CatId = e.CatId, Header = e.Header, Best = e };
+                    byKey[key] = g;
+                    groups.Add(g);
+                }
+                g.Ordinals.Add(e.Ordinal);
+            }
+            groupedResults = groups;
         }
 
         // Scoring text for the category-weighted field: the tab's display name + " " + the section header (if any).
@@ -677,20 +728,18 @@ namespace HaulersDream
                 return;
             }
 
-            // ---- group by (CatId, Header), preserving first-appearance order (= max-score-desc) ----
-            var groups = new List<ResultGroup>();
-            var byKey = new Dictionary<(int, string), ResultGroup>();
-            foreach (var e in results)
-            {
-                var key = (e.CatId, e.Header ?? "");
-                if (!byKey.TryGetValue(key, out var g))
-                {
-                    g = new ResultGroup { CatId = e.CatId, Header = e.Header, Best = e };
-                    byKey[key] = g;
-                    groups.Add(g);
-                }
-                g.Ordinals.Add(e.Ordinal);
-            }
+            // ---- grouping: built ONCE per query in EnsureScored (Fix B), just read here ----
+            // (was freshly allocating a List + Dictionary + a HashSet per group EVERY frame — issue #138). The cache
+            // is kept in lock-step with scoredResults; the guard rebuilds defensively only if it is somehow absent
+            // while results exist (shouldn't happen — the reset sites null both together), degrading to the old
+            // per-frame build rather than crashing.
+            if (groupedResults == null)
+                BuildResultGroups();
+            var groups = groupedResults;
+            // Unreachable in practice (results is non-empty here, so BuildResultGroups produced groups); guard only so
+            // a broken invariant draws nothing rather than NREs. No scroll view is open yet, so just return.
+            if (groups == null || groups.Count == 0)
+                return;
 
             // The view height isn't known until the filtered controls draw, so seed from the cached measure (like
             // catHeight). The cursor's final CurY refreshes it after this frame's draw.
@@ -805,6 +854,7 @@ namespace HaulersDream
             searchRegistry = null;
             scoredResults = null;
             scoredForQuery = null;
+            groupedResults = null;
             contentScroll = Vector2.zero;
             pendingNav = (e.CatId, e.Ordinal, e.StartY, 2);
             highlightTarget = (e.CatId, e.Ordinal, e.StartY, e.Height);
@@ -1120,6 +1170,8 @@ namespace HaulersDream
                 pickupDelayOnHauling, "HaulersDream.Setting.PickupDelayOnHaulingDesc".Translate());
             pickupDelayOnLoading = HDSettingsUI.Checkbox(c, "HaulersDream.Setting.PickupDelayOnLoading".Translate(),
                 pickupDelayOnLoading, "HaulersDream.Setting.PickupDelayOnLoadingDesc".Translate());
+            // (The "delay directly collected harvests" opt-in lives on the Work & yields tab, next to the harvest
+            // yield-collection behaviour it belongs with.)
 
             // The "While working" group (sweep-nearby + keep-working-when-full) moved to the Work & yields tab, next
             // to the per-category yield behaviour it governs. "Top up existing stacks" moved to the Unloading tab.
@@ -1413,6 +1465,12 @@ namespace HaulersDream
             HDSettingsUI.Header(c, "HaulersDream.Head.WhileWorking".Translate());
             sweepNearbyWhileWorking = HDSettingsUI.Checkbox(c, "HaulersDream.Setting.SweepNearbyWhileWorking".Translate(),
                 sweepNearbyWhileWorking, "HaulersDream.Setting.SweepNearbyWhileWorkingDesc".Translate());
+            // A lone "order → harvest" with no other harvest right next to it is collected on the spot; this opt-in
+            // shows the pickup progress bar for those pickups (needs the pickup delay magnitude above zero, on the
+            // Hauling tab). Off by default = one-off harvests are collected instantly. A clustered field's sectioned
+            // sweep is unaffected (it follows the "also delay automatic hauling" setting instead).
+            pickupDelayOnDirectHarvest = HDSettingsUI.Checkbox(c, "HaulersDream.Setting.PickupDelayOnDirectHarvest".Translate(),
+                pickupDelayOnDirectHarvest, "HaulersDream.Setting.PickupDelayOnDirectHarvestDesc".Translate());
             keepWorkingWhenFull = HDSettingsUI.Checkbox(c, "HaulersDream.Setting.KeepWorkingWhenFull".Translate(),
                 keepWorkingWhenFull, "HaulersDream.Setting.KeepWorkingWhenFullDesc".Translate());
             keepWorkingMarginCells = Mathf.RoundToInt(HDSettingsUI.Slider(c, "HaulersDream.Setting.KeepWorkingMargin.Lab".Translate(),

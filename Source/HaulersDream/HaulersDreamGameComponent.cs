@@ -152,6 +152,12 @@ namespace HaulersDream
             // holds stale refs while disabled). Mirrors BLFT's SoftlockCleaner cadence + time-slicing.
             RunSoftlockDropDriver(tick);
 
+            // Deep-drill yield leash (#187b): a deep drill never ends (ToilCompleteMode.Never), so a driller's
+            // front-queued self-pickup can't run and its "Drop & haul" portions pile up. On a short interval,
+            // briefly interrupt a driller with a big enough pending pile so the pickup fires; the work scan then
+            // re-issues the drill (progress lives on the CompDeepDrill). Self-gates on the interval + per-pawn gates.
+            RunYieldLeash(tick);
+
             var s = HaulersDreamMod.Settings;
             if (s == null || !s.markForUnload
                 || !SchedulePolicy.IntervalDueNow(tick, s.intervalUnloadHours))

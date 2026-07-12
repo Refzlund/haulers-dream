@@ -33,15 +33,19 @@ namespace HaulersDream
     /// <c>TryMakePreToilReservations</c> returns true for an empty queue and the fill toils jump straight to the
     /// deposit loop), so NO new JobDef or driver is needed — see <see cref="BuildDepositOnlyJob"/>.
     ///
-    /// CLAIM BALANCE (no double-claim): the deposit-only job records NO ledger claim. Its driver's
-    /// <c>Notify_Starting → HaulersDreamGameComponent.LoadClaim</c> computes the plan from the (empty) sweep
-    /// queue, so <c>ApplyClaim</c> gets an empty plan: it releases any prior claim this pawn held and records
-    /// nothing. The deposit then settles via the over-deposit branch of <c>LoadLedger.Settle</c> (credit the
-    /// unclaimed units into <c>totalClaimed</c>, then decrement by the deposited count) so <c>totalNeeded</c> and
+    /// CLAIM BALANCE (#188 — count the incoming cargo): the deposit-only job DOES record a ledger claim, sized from
+    /// the tagged SURPLUS the pawn already carries (per def, <c>min(carriedSurplus, availableToClaim)</c>). Its
+    /// driver's <c>Notify_Starting</c> sees the EMPTY sweep queue and routes to
+    /// <c>HaulersDreamGameComponent.LoadClaimCarriedSurplus</c> instead of the queue-based <c>LoadClaim</c>, so the
+    /// target's remaining need reflects this incoming cargo and OTHER carrying pawns don't all pile onto the same
+    /// small remainder (before this, a diverting pawn added nothing to <c>totalClaimed</c>, so every other courier
+    /// read the same available-to-claim and diverted too, then arrived to a drained manifest and returned its cargo).
+    /// The deposit then settles via the over-deposit branch of <c>LoadLedger.Settle</c> (any units deposited beyond
+    /// the recorded claim are credited into <c>totalClaimed</c> first, then decremented) so <c>totalNeeded</c> and
     /// <c>totalClaimed</c> stay balanced exactly as for any deposit. On every non-Success end the driver's finish
-    /// action calls <c>LoadReleaseClaimsForPawn</c> (idempotent; a no-op here since this job claimed nothing). The
-    /// policy reads the ledger's <c>AvailableToClaim</c> ONLY to decide whether a divert is worthwhile — it never
-    /// reserves against it.
+    /// action calls <c>LoadReleaseClaimsForPawn</c> (idempotent), which now returns this job's carried-surplus claim
+    /// to the pool so an abandoned divert frees the manifest for others. The policy reads the ledger's
+    /// <c>AvailableToClaim</c> to decide whether a divert is worthwhile AND to size the claim.
     /// </summary>
     [HarmonyPatch(typeof(JobGiver_Work), nameof(JobGiver_Work.TryIssueJobPackage))]
     public static class Patch_OpportunisticLoadDeposit
@@ -115,7 +119,7 @@ namespace HaulersDream
 
             // Find the best (nearest) needy target within radius that wants some carried surplus, plus the chosen
             // deposit count — the policy clamps to the smaller of carried-surplus and the target's available-to-claim.
-            var loadable = FindBestOpportunity(pawn, comp, radius);
+            var loadable = FindBestOpportunity(pawn, radius);
             if (loadable == null)
                 return;
 
@@ -136,7 +140,7 @@ namespace HaulersDream
         /// headroom for a def the pawn carries as tagged surplus (per <see cref="OpportunisticLoadPolicy"/>), or
         /// null. Read-only: registers/refreshes each candidate's ledger entry (idempotent) but records NO claim.
         /// </summary>
-        private static IManagedLoadable FindBestOpportunity(Pawn pawn, CompHauledToInventory comp, float radius)
+        private static IManagedLoadable FindBestOpportunity(Pawn pawn, float radius)
         {
             var map = pawn.Map;
             var ledger = HaulersDreamGameComponent.Instance;
@@ -144,8 +148,9 @@ namespace HaulersDream
                 return null;
 
             // The pawn's carried tagged SURPLUS per def (the only thing a deposit-only divert can shed). Built once
-            // and reused across every candidate. Empty -> nothing to divert for.
-            var carried = CarriedSurplusByDef(pawn, comp);
+            // and reused across every candidate. Empty -> nothing to divert for. Shared with the ledger's
+            // carried-surplus claim so the scan and the recorded claim use identical surplus math (#188).
+            var carried = InventorySurplus.SurplusByDef(pawn);
             if (carried.Count == 0)
                 return null;
 
@@ -236,27 +241,6 @@ namespace HaulersDream
                     return true;
             }
             return false;
-        }
-
-        /// <summary>The pawn's carried tagged SURPLUS per def (units above its personal keep-stock, summed across
-        /// stacks of the same def) — the only cargo a deposit-only divert can shed. Read-only (PeekHashSet); a
-        /// stack still in inventory with positive <see cref="InventorySurplus.SurplusOf"/> contributes.</summary>
-        private static Dictionary<ThingDef, int> CarriedSurplusByDef(Pawn pawn, CompHauledToInventory comp)
-        {
-            var result = new Dictionary<ThingDef, int>();
-            var inner = pawn.inventory?.innerContainer;
-            if (inner == null)
-                return result;
-            foreach (var t in comp.PeekHashSet())
-            {
-                if (t == null || t.Destroyed || t.def == null || !inner.Contains(t))
-                    continue;
-                int surplus = InventorySurplus.SurplusOf(pawn, t);
-                if (surplus <= 0)
-                    continue;
-                result[t.def] = (result.TryGetValue(t.def, out int cur) ? cur : 0) + surplus;
-            }
-            return result;
         }
 
         /// <summary>

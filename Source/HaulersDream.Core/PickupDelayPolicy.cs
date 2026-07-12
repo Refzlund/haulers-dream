@@ -16,7 +16,13 @@ namespace HaulersDream.Core
 
         /// <summary>Loading stacks into transporters / portals / pack animals. Vanilla loads these instantly, so
         /// the pause is opt-in (independently of the hauling toggle).</summary>
-        Loading
+        Loading,
+
+        /// <summary>An ISOLATED plant harvest collected immediately (not held for a nearby cluster): the yield
+        /// dropped visibly and the same pawn scoops it up on the spot. Paused when the dedicated direct-harvest
+        /// opt-in is on (independent of the hauling/loading opt-ins), so a one-off ordered harvest is collected
+        /// snappily by default and paces only when the player asks for it.</summary>
+        DirectHarvest
     }
 
     /// <summary>
@@ -86,14 +92,21 @@ namespace HaulersDream.Core
         /// refuel like a manual pickup.</param>
         /// <param name="delayOnLoading">The <c>pickupDelayOnLoading</c> opt-in: pace transporter / pack-animal
         /// loading like a manual pickup.</param>
+        /// <param name="delayOnDirectHarvest">The <c>pickupDelayOnDirectHarvest</c> opt-in (default off): pace an
+        /// ISOLATED harvest collected on the spot. Its OWN independent gate (like <paramref name="delayOnHauling"/>
+        /// for auto-haul and <paramref name="delayOnLoading"/> for loading) — the base magnitude (ticks &gt; 0) is
+        /// still required, but the hauling/loading opt-ins do NOT affect it, so a one-off harvest can pace without
+        /// pacing every automatic haul.</param>
         /// <returns>True if the pause toil should be built for this context.</returns>
-        public static bool ShouldPause(PickupDelayContext context, bool delayOnHauling, bool delayOnLoading)
+        public static bool ShouldPause(PickupDelayContext context, bool delayOnHauling, bool delayOnLoading,
+            bool delayOnDirectHarvest = false)
         {
             switch (context)
             {
                 case PickupDelayContext.ManualCarry: return true;
                 case PickupDelayContext.AutoHaul: return delayOnHauling;
                 case PickupDelayContext.Loading: return delayOnLoading;
+                case PickupDelayContext.DirectHarvest: return delayOnDirectHarvest;
                 default: return false;
             }
         }

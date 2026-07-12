@@ -115,5 +115,23 @@ namespace HaulersDream.Tests
             Assert.That(PickupDelayPolicy.ShouldPause(PickupDelayContext.AutoHaul, true, true), Is.True);
             Assert.That(PickupDelayPolicy.ShouldPause(PickupDelayContext.Loading, true, true), Is.True);
         }
+
+        // DirectHarvest: an isolated ordered harvest collected on the spot. Paces on its OWN opt-in alone
+        // (independent of the hauling/loading toggles); the base magnitude (ticks > 0) is gated separately.
+        // (context, onHauling, onLoading, onDirectHarvest) -> should the pause show?
+        [TestCase(false, false, false, ExpectedResult = false)] // direct-harvest off -> instant
+        [TestCase(true, false, false, ExpectedResult = false)]  // direct-harvest off, hauling on -> still instant
+        [TestCase(false, false, true, ExpectedResult = true)]   // direct-harvest on, hauling off -> pace (independent)
+        [TestCase(true, true, true, ExpectedResult = true)]     // direct-harvest on -> pace
+        public bool ShouldPause_DirectHarvest_FollowsItsOwnToggle(bool onHauling, bool onLoading, bool onDirectHarvest)
+            => PickupDelayPolicy.ShouldPause(PickupDelayContext.DirectHarvest, onHauling, onLoading, onDirectHarvest);
+
+        [Test]
+        public void ShouldPause_DirectHarvest_HaulingAndLoadingIrrelevant()
+        {
+            // Only the direct-harvest opt-in decides a direct harvest; the hauling and loading toggles must not.
+            Assert.That(PickupDelayPolicy.ShouldPause(PickupDelayContext.DirectHarvest, true, true, false), Is.False);
+            Assert.That(PickupDelayPolicy.ShouldPause(PickupDelayContext.DirectHarvest, false, false, true), Is.True);
+        }
     }
 }

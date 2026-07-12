@@ -168,6 +168,13 @@ namespace HaulersDream
         // pack-animal loading. Both default OFF; turning both on restores the pre-scope "delay everywhere" feel.
         public bool pickupDelayOnHauling = false;
         public bool pickupDelayOnLoading = false;
+        // Pacing opt-in for an ISOLATED harvest collected on the spot (a one-off "order → harvest" with no nearby
+        // cluster; PickupDelayContext.DirectHarvest). Its OWN independent toggle, like pickupDelayOnHauling /
+        // pickupDelayOnLoading — the base magnitude (pickupDelayTicks > 0) is still required, but the hauling and
+        // loading opt-ins do NOT affect it. Default OFF so a lone ordered harvest is collected snappily; turn it on
+        // to show the pickup progress bar for those. A clustered field's sectioned sweep is unaffected (it uses the
+        // AutoHaul context, gated on pickupDelayOnHauling).
+        public bool pickupDelayOnDirectHarvest = false;
         // When a single stack is too big to carry in one armful (e.g. 75 steel but the pawn can hold 72), take it
         // in the INVENTORY and deliver the whole stack in one trip, instead of hand-carrying a partial load and
         // leaving the rest behind. Applies to ordered and automatic single-stack hauls alike.
@@ -648,6 +655,7 @@ namespace HaulersDream
             Scribe_Values.Look(ref pickupDelayTicks, "pickupDelayTicks", PickupDelayPolicy.VanillaDelayTicks);
             Scribe_Values.Look(ref pickupDelayOnHauling, "pickupDelayOnHauling", false);
             Scribe_Values.Look(ref pickupDelayOnLoading, "pickupDelayOnLoading", false);
+            Scribe_Values.Look(ref pickupDelayOnDirectHarvest, "pickupDelayOnDirectHarvest", false);
             Scribe_Values.Look(ref haulOversizedInInventory, "haulOversizedInInventory", true);
             Scribe_Values.Look(ref sweepNearbyWhileWorking, "sweepNearbyWhileWorking", true);
             Scribe_Values.Look(ref loadPackAnimalBulk, "loadPackAnimalBulk", true);
@@ -834,6 +842,7 @@ namespace HaulersDream
             pickupDelayTicks = PickupDelayPolicy.VanillaDelayTicks;
             pickupDelayOnHauling = false;
             pickupDelayOnLoading = false;
+            pickupDelayOnDirectHarvest = false;
             haulOversizedInInventory = true;
             sweepNearbyWhileWorking = true;
             loadPackAnimalBulk = true;

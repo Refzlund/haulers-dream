@@ -145,14 +145,45 @@ namespace HaulersDream
             // (cooldown-debounced, so this scans at most once per work spot — not once per dropped stack).
             // (Self-gates bleeding internally — see MaybeSweepNearbyIntoPending.)
             MaybeSweepNearbyIntoPending(pawn, thing.Position);
+            // Plant-work drops (harvest/cut, whether a batched grow-zone Harvest or a single-plant "order →
+            // harvest" / "cut plants" job) decide between piling a VISIBLE section and collecting on the spot by
+            // PROXIMITY to the pawn's previous harvest:
+            //  - a CLUSTERED harvest (near + recent to the last one — "a lot of harvest next to each other")
+            //    holds until a full section has piled, then sweeps it, matching a batched field;
+            //  - an ISOLATED harvest (a one-off order, or the first of a run) drops visibly and is scooped up
+            //    right away, so the pawn doesn't leave it and wander off (the reported one-off-harvest case).
+            // Every other producer (mining, deep drill, deconstruct, animal, strip, ...) collects each drop
+            // immediately, unchanged. The tail of a cluster shorter than a section is collected by the idle
+            // backstop when the pawn next pauses, and the pile stays claimed + ground-haulable meanwhile, so it is
+            // never lost. A null curDriver reads as non-plant (is-pattern) -> immediate, the safe default.
+            bool plantWork = pawn.jobs.curDriver is JobDriver_PlantWork;
+            bool clustered = false;
+            if (plantWork)
+            {
+                // Compare against the PREVIOUS harvest marker, then advance it to this drop for the next call.
+                int now = Find.TickManager?.TicksGame ?? 0;
+                IntVec3 prev = comp.lastPlantHarvestCell;
+                clustered = HarvestSectionPolicy.IsClustered(prev.IsValid,
+                    Math.Abs(thing.Position.x - prev.x), Math.Abs(thing.Position.z - prev.z),
+                    now - comp.lastPlantHarvestTick,
+                    HarvestSectionPolicy.ClusterRadius, HarvestSectionPolicy.ClusterRecencyTicks);
+                comp.lastPlantHarvestCell = thing.Position;
+                comp.lastPlantHarvestTick = now;
+            }
+            bool collectNow = HarvestSectionPolicy.ShouldCollectNow(
+                plantWork, clustered, comp.pendingSelfPickups.Count, HarvestSectionPolicy.SectionSize);
+            // An immediately-collected ISOLATED harvest paces its pickup by the dedicated direct-harvest opt-in
+            // (PickupDelayContext.DirectHarvest, default off = snappy); a clustered section sweep and every other
+            // producer keep the ordinary auto-haul pacing. `plantWork && !clustered` is exactly that isolated case.
+            bool directHarvest = plantWork && !clustered;
             // C5 master gate + C1 bleeding gate (G1 INTAKE-only): don't START a self-pickup job when the master
             // switch is off, or for a badly bleeding pawn (it should get treated first). The drop is still
             // RECORDED above (pendingSelfPickups), so once master is back on / the pawn stops bleeding the idle
             // backstop / next drop re-queues it; nothing is lost, nothing unloads. The unload-path callers of
             // EnsureSelfPickupJob (PawnUnloadChecker) intentionally stay UNGATED, so a carrying pawn always
             // empties its pockets — the gate lives at this intake call site, not in the shared method.
-            if (MasterEnable.Active && FitToStartHaul(pawn))
-                EnsureSelfPickupJob(pawn, comp);
+            if (MasterEnable.Active && FitToStartHaul(pawn) && collectNow)
+                EnsureSelfPickupJob(pawn, comp, directHarvest);
         }
 
         /// <summary>
@@ -163,7 +194,11 @@ namespace HaulersDream
         /// stop the pawn from ever scooping its drops again. This is self-correcting: any new drop, or the
         /// idle backstop, re-queues it.
         /// </summary>
-        internal static void EnsureSelfPickupJob(Pawn pawn, CompHauledToInventory comp = null)
+        /// <param name="directHarvest">True when this pickup is an ISOLATED harvest collected on the spot, so its
+        /// pickups pace by the direct-harvest opt-in rather than the ordinary auto-haul one (see
+        /// <see cref="CompHauledToInventory.selfPickupDirectHarvest"/>). Only the isolated-harvest call site passes
+        /// true; every other caller (sweep, idle backstop, unload checker, drill leash) leaves it false.</param>
+        internal static void EnsureSelfPickupJob(Pawn pawn, CompHauledToInventory comp = null, bool directHarvest = false)
         {
             if (pawn?.jobs == null)
                 return;
@@ -171,6 +206,10 @@ namespace HaulersDream
             if (comp == null || comp.pendingSelfPickups.Count == 0 || HasSelfPickupJob(pawn))
                 return;
 
+            // Tag the pacing of the job we are ABOUT TO create (read once in JobDriver_SelfPickup.MakeNewToils).
+            // Set only after the dedup early-return above, so a call that finds a job already queued never flips
+            // the pacing of the job already built.
+            comp.selfPickupDirectHarvest = directHarvest;
             var job = JobMaker.MakeJob(HaulersDreamDefOf.HaulersDream_SelfPickup);
             if (job.TryMakePreToilReservations(pawn, false))
             {
@@ -269,6 +308,11 @@ namespace HaulersDream
                 // ground apron of a powered interface terminal (#184) is not a work-spot sweep candidate, else HD
                 // re-pockets the network's full-overflow ground drop into the endless loop. Inert without RimIOT.
                 if (RimIOTCompat.IsPresent && RimIOTCompat.IsRimIOTHandledCell(map, t.Position))
+                    return true;
+                // #187a: a loose tainted-apparel piece the keep-policy says to leave (LeaveOnCorpse / DropAndForbid)
+                // — a corpse's rag dropped by a bench/rot — is never swept into inventory here. Inert for
+                // non-apparel / untainted / the Take-Smelt defaults, so the work-spot sweep is byte-identical.
+                if (CorpseStripper.ShouldLeaveTaintedApparel(t, s))
                     return true;
                 // #5: leave items another mod has claimed via a designation (e.g. a Recycle This recycle/destroy
                 // order) — scooping them into inventory hides them from that mod's spawned-only WorkGiver.

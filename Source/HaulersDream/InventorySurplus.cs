@@ -141,6 +141,36 @@ namespace HaulersDream
             return System.Math.Min(thing.stackCount, surplus);
         }
 
+        /// <summary>
+        /// The pawn's HD-tagged carried SURPLUS per def — units of each tagged inventory stack above the pawn's
+        /// personal keep-stock (<see cref="SurplusOf(Pawn,Thing)"/>), summed across stacks of the same def. The
+        /// only cargo a deposit-only opportunistic load can shed, and the amount the ledger records as that
+        /// divert's incoming claim (#188). Read-only: iterates <see cref="CompHauledToInventory.PeekHashSet"/> (no
+        /// self-heal / mutation — safe on the scan path) and counts only a tagged stack still physically in the
+        /// pawn's inventory. Per-def integer SUMS with no ordering dependence, so the result is
+        /// multiplayer-deterministic. The single choke point BOTH the opportunistic-divert scan and the ledger's
+        /// carried-surplus claim read, so the claim and the scan use identical surplus math.
+        /// </summary>
+        /// <param name="pawn">The carrying pawn; null (or a pawn without inventory / the HD carry comp) → empty.</param>
+        public static Dictionary<ThingDef, int> SurplusByDef(Pawn pawn)
+        {
+            var result = new Dictionary<ThingDef, int>();
+            var inner = pawn?.inventory?.innerContainer;
+            var comp = pawn?.GetComp<CompHauledToInventory>();
+            if (inner == null || comp == null)
+                return result;
+            foreach (var t in comp.PeekHashSet())
+            {
+                if (t == null || t.Destroyed || t.def == null || !inner.Contains(t))
+                    continue;
+                int surplus = SurplusOf(pawn, t);
+                if (surplus <= 0)
+                    continue;
+                result[t.def] = (result.TryGetValue(t.def, out int cur) ? cur : 0) + surplus;
+            }
+            return result;
+        }
+
         /// <summary>Total units of <paramref name="def"/> in the pawn's inventory — served from the hoisted
         /// per-def scratch dict when present (one pass, shared across every stack of the same def in a
         /// "has any surplus" scan), else the per-call full-inventory walk. Behaviour-identical either way.</summary>

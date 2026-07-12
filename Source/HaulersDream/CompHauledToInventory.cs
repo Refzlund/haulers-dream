@@ -57,6 +57,19 @@ namespace HaulersDream
         /// Transient (in-flight timing, not scribed).</summary>
         public int lastSweepTick = -99999;
 
+        /// <summary>Cell of this pawn's PREVIOUS plant-work yield drop, with <see cref="lastPlantHarvestTick"/> —
+        /// the marker the cluster test compares the next harvest against (near + recent = continuing a cluster =
+        /// hold for a section; else isolated = collect now). Transient (a fresh run-local hint, not scribed; after
+        /// load the first harvest is simply treated as isolated, which is the safe default).</summary>
+        public IntVec3 lastPlantHarvestCell = IntVec3.Invalid;
+        public int lastPlantHarvestTick = -99999;
+
+        /// <summary>Whether the pawn's NEXT self-pickup job should pace its pickups as an ISOLATED direct harvest
+        /// (<see cref="Core.PickupDelayContext.DirectHarvest"/>) rather than an ordinary auto-haul sweep — set when
+        /// an isolated harvest enqueues the job, read once when the job builds its toils. Transient; on a mid-job
+        /// reload it defaults to the ordinary auto-haul pacing, and the pause is toil-count-stable either way.</summary>
+        public bool selfPickupDirectHarvest;
+
         /// <summary>
         /// Fresh ground drops this pawn produced and should scoop up (DropThenHaul mode). Transient —
         /// not scribed: it's in-flight state rebuilt as drops happen, and persisting live Thing

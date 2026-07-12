@@ -344,6 +344,11 @@ namespace HaulersDream
                 // set (the build's pool excludes the same stacks), so it never suppresses a plan the build produces.
                 if (rimIOTPresent && RimIOTCompat.IsRimIOTHandledCell(map, t.Position))
                     continue;
+                // #187a: a keep-on-corpse tainted rag the pool build (BuildPoolInto) will skip must not make this
+                // cheap gate report "worth sweeping" and trigger the heavy scan — keeps the gate a SUPERSET of the
+                // build's accept set (both skip exactly these), so it never suppresses a plan the build produces.
+                if (CorpseStripper.ShouldLeaveTaintedApparel(t, s))
+                    continue;
                 if ((t.Position - primary.Position).LengthHorizontalSquared <= poolRadiusSq)
                     return true;
             }
@@ -790,6 +795,8 @@ namespace HaulersDream
             // network's overflow drop, which HD re-pockets + re-unloads forever). Hoist the present latch once so the
             // per-candidate check pays a single field read per stack, and nothing at all when RimIOT is absent.
             bool rimIOTPresent = RimIOTCompat.IsPresent;
+            // #187a: settings for the tainted-apparel keep gate (ShouldLeaveTaintedApparel), read once per scan.
+            var s = HaulersDreamMod.Settings;
             // Cast to the concrete HashSet<Thing> backing the lister (ThingsPotentiallyNeedingHauling's return type is
             // the ICollection<Thing> interface; the field is a HashSet<Thing>, decompile-verified) so the foreach binds
             // the struct enumerator and boxes nothing on this per-pawn-scan pool build. `as` + null fallback to the
@@ -810,6 +817,8 @@ namespace HaulersDream
                         continue;
                     if (rimIOTPresent && RimIOTCompat.IsRimIOTHandledCell(map, t.Position))
                         continue; // RimIOT owns its network cells + interface apron (see the hoist comment above)
+                    if (CorpseStripper.ShouldLeaveTaintedApparel(t, s))
+                        continue; // a keep-on-corpse tainted rag (LeaveOnCorpse / DropAndForbid) — never swept
                     pool.Add(t);
                 }
                 return;
@@ -826,6 +835,8 @@ namespace HaulersDream
                     continue;
                 if (rimIOTPresent && RimIOTCompat.IsRimIOTHandledCell(map, t.Position))
                     continue; // RimIOT owns its network cells + interface apron (see the hoist comment above)
+                if (CorpseStripper.ShouldLeaveTaintedApparel(t, s))
+                    continue; // a keep-on-corpse tainted rag (LeaveOnCorpse / DropAndForbid) — never swept
                 pool.Add(t);
             }
         }

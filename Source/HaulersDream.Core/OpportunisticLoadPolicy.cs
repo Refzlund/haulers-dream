@@ -19,8 +19,11 @@ namespace HaulersDream.Core
     /// remaining minus OTHER pawns' in-flight claims). Diverting toward a def that other bulk couriers have
     /// already fully claimed would be a wasted trip — the manifest is "needed" but no headroom is left to
     /// usefully deliver. So the deposit count is bounded by the available-to-claim, exactly like the normal
-    /// planner's claimable slice. (The deposit itself records NO new claim — it is an over-deposit the ledger's
-    /// Settle credits-then-decrements — so this is a divert-WORTHWHILE gate, not a reservation.)
+    /// planner's claimable slice. (#188: the deposit-only job NOW records a ledger claim sized by this
+    /// <see cref="DepositCount"/> when it starts, via <c>HaulersDreamGameComponent.LoadClaimCarriedSurplus</c>, so a
+    /// second carrying pawn sees the need already covered and won't also divert; any units deposited beyond the
+    /// recorded claim settle via the ledger's over-deposit branch. So this is both a divert-WORTHWHILE gate AND a
+    /// reservation.)
     /// </summary>
     public static class OpportunisticLoadPolicy
     {
