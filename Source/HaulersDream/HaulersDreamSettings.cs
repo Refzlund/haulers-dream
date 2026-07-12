@@ -168,11 +168,12 @@ namespace HaulersDream
         // pack-animal loading. Both default OFF; turning both on restores the pre-scope "delay everywhere" feel.
         public bool pickupDelayOnHauling = false;
         public bool pickupDelayOnLoading = false;
-        // Extra pacing gate for an ISOLATED harvest collected on the spot (a one-off "order → harvest" with no
-        // nearby cluster; PickupDelayContext.DirectHarvest). It is ADDITIONAL to pickupDelayOnHauling, so a direct
-        // harvest paces only when BOTH are on. Default OFF so a lone ordered harvest is collected snappily even
-        // with hauling pacing enabled ("directly collecting ordered harvests"); turn it on to show the pickup
-        // progress bar for those too. A clustered field's sectioned sweep is unaffected (it uses onHauling).
+        // Pacing opt-in for an ISOLATED harvest collected on the spot (a one-off "order → harvest" with no nearby
+        // cluster; PickupDelayContext.DirectHarvest). Its OWN independent toggle, like pickupDelayOnHauling /
+        // pickupDelayOnLoading — the base magnitude (pickupDelayTicks > 0) is still required, but the hauling and
+        // loading opt-ins do NOT affect it. Default OFF so a lone ordered harvest is collected snappily; turn it on
+        // to show the pickup progress bar for those. A clustered field's sectioned sweep is unaffected (it uses the
+        // AutoHaul context, gated on pickupDelayOnHauling).
         public bool pickupDelayOnDirectHarvest = false;
         // When a single stack is too big to carry in one armful (e.g. 75 steel but the pawn can hold 72), take it
         // in the INVENTORY and deliver the whole stack in one trip, instead of hand-carrying a partial load and

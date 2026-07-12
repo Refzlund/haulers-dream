@@ -116,22 +116,22 @@ namespace HaulersDream.Tests
             Assert.That(PickupDelayPolicy.ShouldPause(PickupDelayContext.Loading, true, true), Is.True);
         }
 
-        // DirectHarvest: an isolated ordered harvest collected on the spot. Paces ONLY when BOTH the hauling
-        // opt-in AND the direct-harvest opt-in are on, so a one-off harvest stays snappy by default.
+        // DirectHarvest: an isolated ordered harvest collected on the spot. Paces on its OWN opt-in alone
+        // (independent of the hauling/loading toggles); the base magnitude (ticks > 0) is gated separately.
         // (context, onHauling, onLoading, onDirectHarvest) -> should the pause show?
-        [TestCase(false, false, false, ExpectedResult = false)] // both off (default) -> instant
-        [TestCase(true, false, false, ExpectedResult = false)]  // hauling on but direct-harvest off -> still instant
-        [TestCase(false, false, true, ExpectedResult = false)]  // direct-harvest on but hauling off -> instant
-        [TestCase(true, false, true, ExpectedResult = true)]    // BOTH on -> pace
-        public bool ShouldPause_DirectHarvest_NeedsBothToggles(bool onHauling, bool onLoading, bool onDirectHarvest)
+        [TestCase(false, false, false, ExpectedResult = false)] // direct-harvest off -> instant
+        [TestCase(true, false, false, ExpectedResult = false)]  // direct-harvest off, hauling on -> still instant
+        [TestCase(false, false, true, ExpectedResult = true)]   // direct-harvest on, hauling off -> pace (independent)
+        [TestCase(true, true, true, ExpectedResult = true)]     // direct-harvest on -> pace
+        public bool ShouldPause_DirectHarvest_FollowsItsOwnToggle(bool onHauling, bool onLoading, bool onDirectHarvest)
             => PickupDelayPolicy.ShouldPause(PickupDelayContext.DirectHarvest, onHauling, onLoading, onDirectHarvest);
 
         [Test]
-        public void ShouldPause_DirectHarvest_LoadingToggleIrrelevant()
+        public void ShouldPause_DirectHarvest_HaulingAndLoadingIrrelevant()
         {
-            // The loading opt-in must never affect a direct harvest, only the hauling + direct-harvest pair does.
-            Assert.That(PickupDelayPolicy.ShouldPause(PickupDelayContext.DirectHarvest, false, true, false), Is.False);
-            Assert.That(PickupDelayPolicy.ShouldPause(PickupDelayContext.DirectHarvest, true, true, true), Is.True);
+            // Only the direct-harvest opt-in decides a direct harvest; the hauling and loading toggles must not.
+            Assert.That(PickupDelayPolicy.ShouldPause(PickupDelayContext.DirectHarvest, true, true, false), Is.False);
+            Assert.That(PickupDelayPolicy.ShouldPause(PickupDelayContext.DirectHarvest, false, false, true), Is.True);
         }
     }
 }
