@@ -1,5 +1,35 @@
 # haulers-dream
 
+## 1.18.0
+
+### Minor Changes
+
+- 4a80b83: Collect harvested and drilled yields consistently, with visible drops.
+
+  Under "Drop & haul", a harvested or cut plant's yield drops on the ground and is then collected, but the timing now depends on how the plants are laid out. When a pawn works through plants close together (within two tiles of the previous one), their yields pile up visibly and are swept in sections, like harvesting a field. A one-off harvest with nothing next to it drops visibly and is picked up on the spot, so the pawn no longer leaves it and wanders off. Deep-drill output is also collected as the drill runs instead of only when it is exhausted. A pawn still leaves a yield on the ground when it has nowhere to store it or is already carrying too much.
+
+  A new option on the Work & yields tab, "Delay directly collected harvests" (off by default), shows the pickup-delay progress bar for those on-the-spot harvest pickups too. It just needs the pickup delay to be set above zero; one-off ordered harvests stay quick to collect unless you opt in.
+
+### Patch Changes
+
+- 4a80b83: Respect "leave non-smeltable clothing on corpses" for loose apparel too.
+
+  With the keep-on-corpse policy set, tainted clothing that had already come off a corpse and was lying on the ground (from a manual Strip order, a butchering or cremation bill at a bench, or a corpse rotting away) was still hauled off to storage. Hauler's Dream now leaves such pieces where they are across all of its automatic pickup paths, and forbids a manually-stripped piece so nothing hauls it, matching what the setting promises. The default policy (take and smelt) is unchanged.
+
+- 4a80b83: Stop several pawns diverting to the same small transport-loading need.
+
+  When a transport pod, drop capsule, or vehicle needed only a small remaining amount of an item, several pawns who were already carrying that item would all divert to deliver it at once. Only one was needed, so the rest arrived to a filled manifest and had to carry their cargo back. An opportunistic delivery now reserves the amount it will bring against that target, so other carrying pawns see the remaining need already covered and keep to their original jobs. The reservation is released if the delivery is interrupted.
+
+- 4a80b83: Fix a frame-rate drop when typing in the settings search box.
+
+  Typing in the settings-window search field could stutter the game: the search re-scored every registered option from scratch on each keystroke (allocating heavily inside its typo-tolerance matching) and rebuilt its grouped results every frame. The search now reuses its scratch buffers, lowercases the option text once when the list is built, and caches the grouped results per query, so typing stays smooth.
+
+  Note: a hard cap to 60 FPS while any text field is focused comes from a separate frame-limiter mod, not from Hauler's Dream.
+
+- 4a80b83: Stop the diagnostic log from flooding when another mod faults every tick.
+
+  Hauler's Dream tags any error that passes through a method it patches, so a report shows whether the mod was involved (it usually isn't — the tag says so). When another mod's fault repeats every tick, such as a broken pawn whose AI keeps throwing, that tag was written on every occurrence and could fill Hauler's Dream's own report log with hundreds of identical lines, crowding out the rest of its history. The first occurrence is now logged in full, with the stack that names the real source, and the repeats are collapsed to a short recurring note, so the report stays useful. The error itself is still passed through unchanged, exactly as before.
+
 ## 1.17.1
 
 ### Patch Changes
