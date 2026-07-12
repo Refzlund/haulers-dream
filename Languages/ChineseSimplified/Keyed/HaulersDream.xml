@@ -76,6 +76,8 @@
   <HaulersDream.Setting.PickupDelayOnHaulingDesc>当殖民者自动把散落物品收入背包搬走、拾取自己的劳作产出（拆地板、采矿、收割），或为批量加注燃料收集燃料时，也显示拾取延迟。默认关闭，使清扫与原版一样快；若希望殖民者在每堆物品前明显地工作，可开启。</HaulersDream.Setting.PickupDelayOnHaulingDesc>
   <HaulersDream.Setting.PickupDelayOnLoading>装载运输舱与驮兽也加延迟</HaulersDream.Setting.PickupDelayOnLoading>
   <HaulersDream.Setting.PickupDelayOnLoadingDesc>当殖民者把物品堆收入背包以装载运输舱、传送门或驮兽时，也显示拾取延迟。默认关闭，使装载与原版一样快；开启后每堆物品都会像手动拾取那样计时。</HaulersDream.Setting.PickupDelayOnLoadingDesc>
+  <HaulersDream.Setting.PickupDelayOnDirectHarvest>直接就地收取的收获物也加延迟</HaulersDream.Setting.PickupDelayOnDirectHarvest>
+  <HaulersDream.Setting.PickupDelayOnDirectHarvestDesc>当殖民者就地收取单个收获物时（一处被下令收割、旁边没有其他收获物的作物，因而会被立即拾取，而不是并入附近的一堆）也显示拾取延迟。这是在"自动搬运与清扫也加延迟"之上的附加项，因此只有在那项也开启时才有效果。默认关闭，使一次性的下令收割无需停顿即可收取；成片田地的清扫已经遵循搬运设置。</HaulersDream.Setting.PickupDelayOnDirectHarvestDesc>
 <HaulersDream.Setting.HaulOversized>用货物栏携带超大物品堆</HaulersDream.Setting.HaulOversized>
 <HaulersDream.Setting.HaulOversizedDesc>当单堆物品太大、一抱拿不下时（例如一堆75的钢铁而小人只能拿72），小人会把它装进货物栏，一趟运完整堆——而不是手提一部分、把其余留下。对被命令和自动的搬运均适用；只承载储存区实际能接收的量，因此不会有物资被遗弃。</HaulersDream.Setting.HaulOversizedDesc>
 <HaulersDream.Setting.SweepNearbyWhileWorking>边工作边整理——把附近的散落物品也一并收取</HaulersDream.Setting.SweepNearbyWhileWorking>

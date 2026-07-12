@@ -1170,6 +1170,12 @@ namespace HaulersDream
                 pickupDelayOnHauling, "HaulersDream.Setting.PickupDelayOnHaulingDesc".Translate());
             pickupDelayOnLoading = HDSettingsUI.Checkbox(c, "HaulersDream.Setting.PickupDelayOnLoading".Translate(),
                 pickupDelayOnLoading, "HaulersDream.Setting.PickupDelayOnLoadingDesc".Translate());
+            // An ISOLATED harvest collected on the spot (a one-off "order → harvest" with no nearby cluster) is
+            // collected snappily by default even when hauling pacing is on; this opt-in shows the pickup progress
+            // bar for those too. It is additional to "on automatic hauling", so it only has an effect while that is
+            // also on. A clustered field's sectioned sweep already follows the hauling toggle.
+            pickupDelayOnDirectHarvest = HDSettingsUI.Checkbox(c, "HaulersDream.Setting.PickupDelayOnDirectHarvest".Translate(),
+                pickupDelayOnDirectHarvest, "HaulersDream.Setting.PickupDelayOnDirectHarvestDesc".Translate());
 
             // The "While working" group (sweep-nearby + keep-working-when-full) moved to the Work & yields tab, next
             // to the per-category yield behaviour it governs. "Top up existing stacks" moved to the Unloading tab.

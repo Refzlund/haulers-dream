@@ -76,6 +76,8 @@
   <HaulersDream.Setting.PickupDelayOnHaulingDesc>정착민이 흩어진 물건을 자동으로 인벤토리에 쓸어 담아 운반할 때, 자기 작업 산물(바닥 철거·채굴·수확)을 주울 때, 또는 대량 재급유용 연료를 모을 때에도 줍기 지연을 표시합니다. 기본값은 꺼짐으로, 청소가 바닐라만큼 빠르게 유지됩니다. 정착민이 각 더미에서 눈에 띄게 작업하길 원하면 켜세요.</HaulersDream.Setting.PickupDelayOnHaulingDesc>
   <HaulersDream.Setting.PickupDelayOnLoading>수송정과 짐 나르는 동물 적재에도 지연 적용</HaulersDream.Setting.PickupDelayOnLoading>
   <HaulersDream.Setting.PickupDelayOnLoadingDesc>정착민이 수송정, 차원문, 짐 나르는 동물에 싣기 위해 물건을 인벤토리에 모을 때에도 줍기 지연을 표시합니다. 기본값은 꺼짐으로, 적재가 바닐라만큼 빠르게 유지됩니다. 각 더미를 수동 줍기처럼 계시하려면 켜세요.</HaulersDream.Setting.PickupDelayOnLoadingDesc>
+  <HaulersDream.Setting.PickupDelayOnDirectHarvest>직접 그 자리에서 거둔 수확물에도 지연 적용</HaulersDream.Setting.PickupDelayOnDirectHarvest>
+  <HaulersDream.Setting.PickupDelayOnDirectHarvestDesc>정착민이 그 자리에서 단독 수확물을 거둘 때에도 줍기 지연을 표시합니다(명령으로 수확되었고 바로 옆에 다른 수확물이 없어, 근처 무더기에 합쳐지지 않고 즉시 주워지는 경우). '자동 운반과 청소에도 지연 적용'에 더해지는 설정이라, 그 항목도 켜져 있을 때에만 효과가 있습니다. 기본값은 꺼짐으로, 일회성 명령 수확물은 멈춤 없이 주워집니다. 밀집한 밭의 일괄 청소는 이미 운반 설정을 따릅니다.</HaulersDream.Setting.PickupDelayOnDirectHarvestDesc>
 <HaulersDream.Setting.HaulOversized>초과 크기 더미를 소지품에 운반</HaulersDream.Setting.HaulOversized>
 <HaulersDream.Setting.HaulOversizedDesc>단일 더미가 한 아름에 담기에 너무 클 때(예: 폰이 72만 들 수 있는데 강철 75개 더미일 때), 폰이 그것을 소지품에 넣어 한 번 이동으로 더미 전체를 전달합니다 — 일부만 손으로 나르고 나머지를 남기는 대신. 명령한 운반과 자동 운반 모두에 적용되며, 저장고가 실제로 받을 수 있는 만큼만 운반하므로 아무것도 방치되지 않습니다.</HaulersDream.Setting.HaulOversizedDesc>
 <HaulersDream.Setting.SweepNearbyWhileWorking>작업하면서 정리 — 주변의 흩어진 물건도 줍기</HaulersDream.Setting.SweepNearbyWhileWorking>

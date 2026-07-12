@@ -39,8 +39,10 @@ namespace HaulersDream
     {
         // The most plant cells one auto-harvest run collects before the job ends and its yields are swept up.
         // Small enough that a field is collected in visible sections (the "big pile then one sweep" becomes
-        // several small sweeps); large enough that the per-section re-scan overhead stays negligible.
-        private const int SectionSize = 8;
+        // several small sweeps); large enough that the per-section re-scan overhead stays negligible. Shared with
+        // the clustered single-plant collection hold (HarvestSectionPolicy.ShouldCollectNow) so the batched
+        // grow-zone path and the one-plant-per-job order path pile into the SAME size section.
+        private const int SectionSize = HarvestSectionPolicy.SectionSize;
 
         static void Postfix(ref Job __result, Pawn pawn, IntVec3 c, bool forced)
         {

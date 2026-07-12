@@ -76,6 +76,8 @@
   <HaulersDream.Setting.PickupDelayOnHaulingDesc>入植者が散らばった物品を自動で背包にまとめて運ぶとき、自分の作業産物（床撤去・採掘・収穫）を拾うとき、または一括給油用の燃料を集めるときにも拾得ディレイを表示します。既定ではオフで、片付けは原版と同じ速さのままです。各物品の山で入植者が目に見えて作業するのを好む場合はオンにしてください。</HaulersDream.Setting.PickupDelayOnHaulingDesc>
   <HaulersDream.Setting.PickupDelayOnLoading>輸送ポッドと駄獣の積載にもディレイを付ける</HaulersDream.Setting.PickupDelayOnLoading>
   <HaulersDream.Setting.PickupDelayOnLoadingDesc>入植者が輸送ポッド・ポータル・駄獣に積むために物品を背包へまとめるときにも拾得ディレイを表示します。既定ではオフで、積載は原版と同じ速さのままです。各物品の山を手動拾得のように計時したい場合はオンにしてください。</HaulersDream.Setting.PickupDelayOnLoadingDesc>
+  <HaulersDream.Setting.PickupDelayOnDirectHarvest>直接その場で回収した収穫物にもディレイを付ける</HaulersDream.Setting.PickupDelayOnDirectHarvest>
+  <HaulersDream.Setting.PickupDelayOnDirectHarvestDesc>入植者がその場で単独の収穫物を回収するときにも拾得ディレイを表示します（命令で収穫され、すぐ隣に他の収穫物がないため、近くの山にまとめられずに即座に拾われるもの）。「自動運搬と片付けにもディレイを付ける」に対する追加設定であり、そちらもオンのときにのみ効果があります。既定ではオフで、単発の命令収穫は一時停止なしで回収されます。密集した畑の一括回収はすでに運搬設定に従います。</HaulersDream.Setting.PickupDelayOnDirectHarvestDesc>
 <HaulersDream.Setting.HaulOversized>規格外の山を所持品で運ぶ</HaulersDream.Setting.HaulOversized>
 <HaulersDream.Setting.HaulOversizedDesc>単一の山が一抱えで運ぶには大きすぎるとき（例：ポーンが72しか持てないのに鋼鉄の山が75）、ポーンは一部だけを手で運んで残りを置いていくのではなく、所持品でそれを抱え、山全体を1回の往復で届けます。指示・自動の両方の運搬に適用されます。実際に保管庫が受け入れられる分しか運ばないので、何も取り残されません。</HaulersDream.Setting.HaulOversizedDesc>
 <HaulersDream.Setting.SweepNearbyWhileWorking>作業しながら片付ける — 近くの落ちたアイテムも回収する</HaulersDream.Setting.SweepNearbyWhileWorking>

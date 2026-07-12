@@ -86,7 +86,19 @@ namespace HaulersDream
             // a drop stolen or stored mid-pause just no-ops in the take below and the loop moves on. (Only the
             // DropThenHaul route comes through here; the DirectToInventory route pockets yields inside the
             // GenPlace prefix, where no pawn action exists to pace; see YieldRouter.)
-            yield return PickupPause.MakeToil(TargetIndex.A, PickupDelayContext.AutoHaul);
+            //
+            // Pace an ISOLATED harvest collected on the spot by the direct-harvest opt-in instead of the hauling
+            // one — but decide that at RUN time from how many drops this job will actually sweep, not just the
+            // create-time flag. DirectHarvest applies ONLY to a LONE isolated harvest: exactly one pending drop
+            // AND the job was flagged a direct harvest. A clustered field's SECTION (or an isolated collect that
+            // also sweeps a leftover pile / swept-nearby clutter) has >1 pending, so it keeps the ordinary AutoHaul
+            // pace — a section sweep must follow the hauling toggle, not the direct-harvest one. The flag alone is
+            // frozen by whichever drop CREATED the job (a grow-zone section's job is created by its isolated first
+            // plant), so the Count == 1 guard is what keeps a batched section on AutoHaul.
+            var pickupContext = comp != null && comp.selfPickupDirectHarvest && comp.pendingSelfPickups.Count == 1
+                ? PickupDelayContext.DirectHarvest
+                : PickupDelayContext.AutoHaul;
+            yield return PickupPause.MakeToil(TargetIndex.A, pickupContext);
 
             var take = new Toil
             {

@@ -2,6 +2,8 @@
 "haulers-dream": patch
 ---
 
-Collect harvested and drilled yields in visible sections under "Drop & haul".
+Collect harvested and drilled yields consistently, with visible drops.
 
-The "Drop & haul" setting drops each yield on the ground so you can see it was produced, then has the pawn sweep it up shortly after. Two cases broke that. Auto-harvesting a growing zone let a whole field's yield pile up on the ground and only swept it once the entire field was cut, and a deep drill never collected its output until it ran dry. A large field is now harvested and collected in small sections, so a pawn drops a handful, picks them up soon after without wandering off, and moves on to the next section. A deep driller pauses to gather its accumulated yield as it works instead of leaving everything until the end. A single harvest or plant-cut order, and a player's forced "prioritize harvest", still clear their full batch as before. A pawn continues to leave a yield on the ground when it has nowhere to store it or is already carrying too much.
+Under "Drop & haul", a harvested or cut plant's yield drops on the ground and is then collected, but the timing now depends on how the plants are laid out. When a pawn works through plants close together (within two tiles of the previous one), their yields pile up visibly and are swept in sections, like harvesting a field. A one-off harvest with nothing next to it drops visibly and is picked up on the spot, so the pawn no longer leaves it and wanders off. Deep-drill output is also collected as the drill runs instead of only when it is exhausted. A pawn still leaves a yield on the ground when it has nowhere to store it or is already carrying too much.
+
+A new option, "Also delay directly collected harvests" (off by default), shows the pickup-delay progress bar for those on-the-spot harvest pickups too. It only applies when "Also delay automatic hauling" is on as well, so one-off ordered harvests stay quick to collect unless you opt in.

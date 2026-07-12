@@ -63,7 +63,8 @@ namespace HaulersDream
             var s = HaulersDreamMod.Settings;
             int ticks = PickupDelayPolicy.TicksPerStack(s?.pickupDelayTicks ?? 0);
             if (ticks <= 0 || !PickupDelayPolicy.ShouldPause(context,
-                    s?.pickupDelayOnHauling ?? false, s?.pickupDelayOnLoading ?? false))
+                    s?.pickupDelayOnHauling ?? false, s?.pickupDelayOnLoading ?? false,
+                    s?.pickupDelayOnDirectHarvest ?? false))
                 return Toils_General.Label();
             Toil wait = Toils_General.Wait(ticks, stackInd);
             wait.WithProgressBarToilDelay(stackInd);
