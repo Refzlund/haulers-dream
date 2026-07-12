@@ -266,5 +266,58 @@ namespace HaulersDream
             int c = SpoilingFirstSelection.CompareCookRank(applyStock, sb, cb.kind, cb.ticks, sa, ca.kind, ca.ticks);
             return c != 0 ? c < 0 : distB < distA;   // distance breaks a stock+spoil tie (== BetterThan's index tiebreak)
         }
+
+        /// <summary>#192 — layer the most-stocked-first cook key (#137) ON TOP of an EXISTING candidate order,
+        /// for the Common Sense path. When CS is loaded it owns the vanilla AllowMix cook-ingredient sort
+        /// (<c>CommonSense.IngredientPriority.DoSort</c>) and HD cedes its own competing transpiler
+        /// (<see cref="Patch_WorkGiver_DoBill_TryFindBestBillIngredientsInSet_AllowMix"/>), so HD's most-stocked-first
+        /// key never reached the vanilla chooser and looked like it "did nothing" for CS users. HD calls this as a
+        /// POSTFIX on CS's <c>DoSort</c> (see <c>Patch_CommonSense_IngredientPriority_DoSort</c>): it STABLE-reorders
+        /// the already-sorted list so the def the colony has the most of floats to the front, while CS's
+        /// spoiling/medical order is PRESERVED within each def. That preservation is exact: every stack of one def
+        /// shares the same colony stock count, so a stable stock-desc sort only moves whole-def GROUPS and never
+        /// disturbs CS's ordering inside a group.
+        ///
+        /// A no-op (list left byte-identical) unless it is a cook-food bill (<see cref="IsCookBill"/>) AND
+        /// <see cref="HaulersDreamSettings.cookMostStockFirst"/> is on, so non-cook bills and the feature-off case
+        /// leave CS's order untouched. Cold path (runs once when a colonist starts a cook bill, not per tick), so the
+        /// small per-call arrays are fine; the comparator is a struct holding the stock array, so Array.Sort
+        /// allocates no closure.</summary>
+        /// <param name="things">CS's already-sorted candidate list, reordered in place.</param>
+        /// <param name="bill">The bill being filled (gates on it being a cook-food bill).</param>
+        /// <param name="s">HD settings (gates on <see cref="HaulersDreamSettings.cookMostStockFirst"/>).</param>
+        public static void ApplyMostStockStable(List<Thing> things, Bill bill, HaulersDreamSettings s)
+        {
+            if (things == null || things.Count < 2 || s == null || !s.cookMostStockFirst) return;
+            if (!IsCookBill(bill, s)) return;
+
+            int n = things.Count;
+            var stock = new int[n];
+            var order = new int[n];
+            for (int i = 0; i < n; i++)
+            {
+                stock[i] = StockOf(things[i]);
+                order[i] = i;
+            }
+            Array.Sort(order, 0, n, new StockDescStableComparer(stock));
+            var sorted = new Thing[n];
+            for (int i = 0; i < n; i++) sorted[i] = things[order[i]];
+            for (int i = 0; i < n; i++) things[i] = sorted[i];
+        }
+
+        /// <summary>Stable descending-by-colony-stock index comparator (stock desc, then original index asc): the
+        /// most-stocked def sorts first, and equal-stock candidates keep their input order, so the underlying sort
+        /// (CS's spoiling/medical order) is preserved within each def. Holds the per-call stock array in a field so
+        /// Array.Sort allocates no closure. A total order (the index tiebreak), as Array.Sort requires.</summary>
+        private struct StockDescStableComparer : IComparer<int>
+        {
+            private readonly int[] stock;
+            public StockDescStableComparer(int[] stock) { this.stock = stock; }
+            public int Compare(int x, int y)
+            {
+                int c = stock[y].CompareTo(stock[x]);   // most-stocked first
+                return c != 0 ? c : x.CompareTo(y);      // preserve the input order within equal stock (stable)
+            }
+        }
     }
 }
