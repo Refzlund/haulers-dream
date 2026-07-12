@@ -1,5 +1,5 @@
 ---
-"haulers-dream": patch
+"haulers-dream": minor
 ---
 
 Collect harvested and drilled yields consistently, with visible drops.
