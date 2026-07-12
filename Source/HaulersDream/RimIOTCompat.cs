@@ -79,17 +79,25 @@ namespace HaulersDream
         // per-call array, since it is a degraded, cold path.
         [ThreadStatic] private static object[] apiArgs;
 
-        // #184: the RimIOT interface-terminal def (RimIOT_Interface, thingClass RimIOT.Building_Interface), resolved
-        // by NAME as a plain Verse ThingDef so NO RimIOT type is referenced (JIT-isolation preserved, exactly like the
-        // network members above). Null when RimIOT is absent OR the def was renamed -> the interface-apron gate then
-        // degrades to false (HD behaves as without RimIOT).
-        private static ThingDef interfaceDef;
+        // #184/#192: EVERY RimIOT interface-terminal def, resolved ROBUSTLY. The overflow-drop loop sits by the
+        // "interaction terminal", whose def was RimIOT_Interface / thingClass RimIOT.Building_Interface when #184 was
+        // written — but a RimIOT update can rename the def or add interface variants (a large / wireless terminal),
+        // and a single hardcoded defName silently misses those, leaving the apron gate off and the loop unbroken
+        // (issue #192, still-looping on 1.18.0). We instead collect ALL defs whose thingClass IS Building_Interface
+        // or a SUBCLASS of it (version-proof), keeping the known defName as a fallback. NO RimIOT type is referenced:
+        // the base type is held as a plain System.Type and only IsAssignableFrom is called, so JIT-isolation holds
+        // (a non-RimIOT game never reaches Init past the presence gate). Empty -> the apron gate degrades to false
+        // (HD behaves as without RimIOT) and Init WARNs once.
+        private static List<ThingDef> interfaceDefs;
 
-        // #184: how far from a powered interface a loose stack is still inside the terminal's deposit apron. The
-        // full-network overflow drop lands at the depositing pawn's cell (ThingPlaceMode.Near) and the pawn stands
-        // AdjacentTo8WayOrInside the interface, so the stack sits within ~1 tile of the pawn + ~1 tile of near-scatter
-        // = Chebyshev <= 2 of the interface. A bounded square apron; widen only if a report shows farther scatter.
-        private const int InterfaceApronRadius = 2;
+        // #184/#192: how far from a powered interface a loose stack is still inside the terminal's deposit apron.
+        // The full-network overflow drop is GenPlace.TryPlaceThing(pawn.Position, ThingPlaceMode.Near): the pawn
+        // stands adjacent to the interface (~1 tile), and Near then scans an EXPANDING radial pattern for a free
+        // cell — around a FULL, overflowing terminal the near cells are packed with prior drops, so the placement
+        // is pushed several tiles out. #184's Chebyshev-2 apron assumed the pawn's own free cell; #192 shows the
+        // scatter reaches farther, so widen to 4 (a 9x9 apron). This only makes HD LEAVE loose stacks by a RimIOT
+        // terminal to RimIOT / vanilla hauling (never lost), so a generous apron is the safe direction.
+        private const int InterfaceApronRadius = 4;
 
         // #184: per-(map, tick) snapshot of every SPAWNED, POWERED interface's cell, so the per-candidate proximity
         // test on the hot bulk-haul / en-route scan pays a single dictionary hit + a short cell loop, and the
@@ -150,9 +158,37 @@ namespace HaulersDream
             if (ModLister.GetActiveModWithIdentifier("CN.RimIOT", ignorePostfix: true) == null)
                 return;
             present = true;
-            // #184: resolve the interface-terminal def up front (a Verse ThingDef, no RimIOT type). Independent of the
-            // network-query reflection below, so the interface-apron gate survives a RimIOT network-API rename.
-            interfaceDef = DefDatabase<ThingDef>.GetNamedSilentFail("RimIOT_Interface");
+            // #184/#192: resolve EVERY interface-terminal def up front (plain Verse ThingDefs, no RimIOT type held).
+            // Independent of the network-query reflection below, so the interface-apron gate survives a RimIOT
+            // network-API rename. Match by the Building_Interface base type (IsAssignableFrom) so a renamed def or an
+            // added interface variant is still caught; fall back to the known defName if that type ever fails to
+            // resolve. Init runs lazily on the first in-game IsActive/IsPresent hit, so DefDatabase is fully loaded.
+            interfaceDefs = new List<ThingDef>();
+            var interfaceBaseType = AccessTools.TypeByName("RimIOT.Building_Interface");
+            var allDefs = DefDatabase<ThingDef>.AllDefsListForReading;
+            for (int i = 0; i < allDefs.Count; i++)
+            {
+                var def = allDefs[i];
+                if (def?.thingClass == null)
+                    continue;
+                bool isInterface = interfaceBaseType != null
+                    ? interfaceBaseType.IsAssignableFrom(def.thingClass)
+                    : def.defName == "RimIOT_Interface";
+                if (isInterface)
+                    interfaceDefs.Add(def);
+            }
+            // Belt-and-braces: if the base type resolved but matched nothing (e.g. thingClass swapped to a wrapper),
+            // still honour the known defName so a partial rename doesn't blank the gate.
+            if (interfaceDefs.Count == 0)
+            {
+                var byName = DefDatabase<ThingDef>.GetNamedSilentFail("RimIOT_Interface");
+                if (byName != null)
+                    interfaceDefs.Add(byName);
+            }
+            if (interfaceDefs.Count == 0)
+                HDLog.Warn("RimIOT present but no interface-terminal def resolved (RimIOT.Building_Interface / "
+                           + "RimIOT_Interface); HD's interface-apron overflow-drop gate is OFF (a RimIOT rename "
+                           + "likely). Please report it. HD continues.");
             var apiType = AccessTools.TypeByName("RimIOT.RimIOTApi");
             if (apiType != null)
                 apiGetNetwork = AccessTools.Method(apiType, "GetNetworkForContainer",
@@ -263,7 +299,7 @@ namespace HaulersDream
         /// <param name="cell">The cell to test (a haulable stack's Position).</param>
         public static bool IsNearPoweredInterface(Map map, IntVec3 cell)
         {
-            if (!IsPresent || interfaceDef == null || map == null)
+            if (!IsPresent || interfaceDefs == null || interfaceDefs.Count == 0 || map == null)
                 return false;
             int tick = Find.TickManager?.TicksGame ?? 0;
             if (!interfaceCellsMemo.TryGet(tick, map.uniqueID, out var cells))
@@ -286,20 +322,23 @@ namespace HaulersDream
         /// risk), defaulting to powered when a terminal has no power comp, exactly RimIOT's own
         /// <c>Building_Interface.IsPowered</c> rule (decompile-verified). <c>listerThings.ThingsOfDef</c> is the
         /// pre-indexed per-def list (O(1) lookup + a handful of interfaces), so this is cheap even on the hot
-        /// scan.</summary>
+        /// scan even across the (typically one or two) interface defs.</summary>
         /// <param name="map">The map to snapshot.</param>
         private static List<IntVec3> BuildPoweredInterfaceCells(Map map)
         {
             var list = new List<IntVec3>();
-            var things = map.listerThings.ThingsOfDef(interfaceDef);
-            for (int i = 0; i < things.Count; i++)
+            for (int d = 0; d < interfaceDefs.Count; d++)
             {
-                var t = things[i];
-                if (t == null || !t.Spawned)
-                    continue;
-                var power = t.TryGetComp<CompPowerTrader>();
-                if (power == null || power.PowerOn)
-                    list.Add(t.Position);
+                var things = map.listerThings.ThingsOfDef(interfaceDefs[d]);
+                for (int i = 0; i < things.Count; i++)
+                {
+                    var t = things[i];
+                    if (t == null || !t.Spawned)
+                        continue;
+                    var power = t.TryGetComp<CompPowerTrader>();
+                    if (power == null || power.PowerOn)
+                        list.Add(t.Position);
+                }
             }
             return list;
         }
