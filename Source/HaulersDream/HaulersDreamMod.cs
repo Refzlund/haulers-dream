@@ -436,11 +436,19 @@ namespace HaulersDream
             Log.ErrorOnce(Tag + message, key);
         }
 
-        // The (method, exception type) pairs whose FULL origin stack the universal finalizer has already captured
-        // this session. ConcurrentDictionary because that finalizer can run off the main thread (a threading mod's
-        // work scan), and TryAdd is the atomic "first time for this (method, exception type) pair?" test.
-        private static readonly System.Collections.Concurrent.ConcurrentDictionary<int, bool> stackLoggedKeys =
-            new System.Collections.Concurrent.ConcurrentDictionary<int, bool>();
+        // Per-(method, exception type) occurrence COUNT this session. ConcurrentDictionary + AddOrUpdate is the
+        // atomic increment (the finalizer can run off the main thread — a threading mod's work scan). Drives the
+        // first-occurrence-full-then-suppress-repeats rate limit below: a fault that merely PASSES THROUGH an
+        // HD-patched method can recur every tick (a persistently broken pawn in a heavily-modded save — issue #190:
+        // another mod's mechanoid-DPS NRE and the broken pawn's think-tree failing through EndCurrentJob every
+        // tick), and the report trail is size capped, so a breadcrumb per occurrence would evict the rest of HD's
+        // own history from the trail a bug report ships.
+        private static readonly System.Collections.Concurrent.ConcurrentDictionary<int, int> stackLoggedCounts =
+            new System.Collections.Concurrent.ConcurrentDictionary<int, int>();
+
+        // After the first full breadcrumb, note a STILL-recurring fault only at these occurrence counts, so the
+        // recurrence stays visible in the trail without a per-tick flood (a handful of lines instead of hundreds).
+        private static bool IsRepeatCheckpoint(int count) => count == 10 || count == 100 || count == 1000 || count % 10000 == 0;
 
         /// <summary>
         /// The universal exception breadcrumb (Issue #3) attached to EVERY method Hauler's Dream patches (see
@@ -476,22 +484,31 @@ namespace HaulersDream
                 // that repeats every tick is still logged only once. (net48 has no System.HashCode, so combine by hand.)
                 int methodKey = __originalMethod != null ? __originalMethod.GetHashCode() : where.GetHashCode();
                 int key = unchecked((methodKey * 397) ^ __exception.GetType().GetHashCode());
-                // The first time each (method, exception type) surfaces this session, append the FULL exception (type,
-                // message, and the origin stack that names the real fault). This breadcrumb is the ONLY record of that
-                // stack: returning __exception re-throws it (via `throw ex`), which restamps the trace at the rethrow
-                // site, so the game's own report of the same exception "below" points back here instead of at the true
-                // source. Only the first occurrence carries the stack (a full stack is roughly twenty lines, and the
-                // report trail is size capped, so writing one every tick would evict the rest of Hauler's Dream's
-                // history); the terse type and message carries the repeats. Without this, a report of an exception that
-                // merely passed through a patched method shows only the rethrow site and gets mis-attributed to
-                // Hauler's Dream (issue #126: a corrupt workbench bill's CountProducts NRE read as an EndCurrentJob fault).
-                string detail = stackLoggedKeys.TryAdd(key, true)
-                    ? "\n" + __exception
-                    : $"[{__exception.GetType().Name}: {__exception.Message}]";
-                ErrOnce(
-                    $"an exception passed through {where}, a method Hauler's Dream patches. {blame} Re-throwing it "
-                    + $"unchanged so the game still reports it below. {detail}",
-                    key);
+                // RATE LIMIT (issue #190): a fault that merely PASSES THROUGH an HD-patched method can recur every
+                // tick, and the report trail is size capped — a breadcrumb per occurrence would evict the rest of
+                // HD's history. So log the FIRST occurrence of each (method, exception type) in FULL — with the origin
+                // stack that names the real fault — then SUPPRESS the repeats (a few terse checkpoints aside). The
+                // full stack matters because returning __exception re-throws it (via `throw ex`), which restamps the
+                // trace at THIS site, so the game's own report of the same exception "below" points back here instead
+                // of at the true source; without the first-occurrence stack it gets mis-attributed to Hauler's Dream
+                // (issue #126: a corrupt workbench bill's CountProducts NRE read as an EndCurrentJob fault).
+                int count = stackLoggedCounts.AddOrUpdate(key, 1, (_, c) => c + 1);
+                if (count == 1)
+                {
+                    // First time: the full breadcrumb, once to the disk trail AND the console (Log.ErrorOnce dedupes
+                    // the console by key). The exception "below" (the game's own report) names the same fault.
+                    ErrOnce(
+                        $"an exception passed through {where}, a method Hauler's Dream patches. {blame} Re-throwing it "
+                        + $"unchanged so the game still reports it below.\n" + __exception,
+                        key);
+                }
+                else if (IsRepeatCheckpoint(count))
+                {
+                    // Still recurring: a terse DISK-ONLY note (Dbg — never re-hits the console, stays out of a normal
+                    // player's log) so the recurrence stays visible at a few thresholds without the per-tick flood.
+                    Dbg($"the exception through {where} [{__exception.GetType().Name}: {__exception.Message}] has now "
+                        + $"recurred {count}x this session — per-occurrence logging suppressed to protect the report trail.");
+                }
             }
             return __exception; // NEVER null — that would swallow the exception. Returning it re-throws it.
         }
