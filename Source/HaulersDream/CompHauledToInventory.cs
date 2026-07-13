@@ -14,13 +14,23 @@ namespace HaulersDream
     public class CompHauledToInventory : ThingComp
     {
         private HashSet<Thing> takenToInventory = new HashSet<Thing>();
-        // Stacks the player told this pawn to KEEP in inventory (the "Keep X in inventory" order). Distinct from
-        // takenToInventory (which HD unloads to storage): a kept stack is HELD — the unload never touches it
-        // (InventorySurplus returns 0 for it) and vanilla's drop-unused never sheds it. Thing-ref (not a count) so it
-        // auto-releases: the GetHashSet heal drops any entry that was consumed/destroyed or that left this inventory
-        // (used in a recipe, dropped from the gear tab), which is how a kept item is un-kept — no bookkeeping tick.
-        // Kept stacks are added canMerge:false, so they never fold into personal/hauled stock (kept stays isolated).
-        private HashSet<Thing> kept = new HashSet<Thing>();
+        // Per-def amount the player pinned this pawn to KEEP in inventory (issue #197: "keep N of a def", set by the
+        // "Keep X in inventory" order's slider or the Gear-tab keep button). keptCounts[def] = N means HD holds up to
+        // N units of def: the unload never sheds the first N (InventorySurplus treats only held-above-N as surplus)
+        // and vanilla's drop-unused never touches a kept def. Distinct from takenToInventory (which HD unloads).
+        //
+        // This REPLACES the old whole-stack `kept` HashSet<Thing> (a Thing-ref set that auto-released when the stack
+        // left inventory). The amount model persists a def→count instead, so the player can dial and SEE the amount;
+        // it is pruned when the pawn no longer holds ANY of the def (see the heal below), which preserves the old
+        // "un-keep when it's gone" behavior without pinning a specific Thing. Pre-#197 saves are migrated on the
+        // first heal (see legacyKept).
+        private Dictionary<ThingDef, int> keptCounts = new Dictionary<ThingDef, int>();
+
+        // MIGRATION (transient): a pre-#197 save scribed the old whole-stack `kept` Thing-set under
+        // "haulersDreamKept". We load it here (Reference mode) and, on the first heal after load, fold each still-held
+        // kept Thing into keptCounts[def] (keep at least what the pawn holds of that def), then clear it — so an
+        // in-progress "keep this stack" order survives the upgrade as a def keep-count. Null once migrated/absent.
+        [System.NonSerialized] private HashSet<Thing> legacyKept;
         public int lastYieldTick = -99999;
 
         /// <summary>Tick the <see cref="GetHashSet"/> self-heal last ran. The heal (an <c>owner.Count</c> inventory
@@ -128,12 +138,30 @@ namespace HaulersDream
             // be re-fetched — the "unloads its own sidearm" bug). A rare def overlap (harvested healroot +
             // personal herbal medicine) tags both; harmless: the surplus is merely unloaded to storage.
             var owner = (parent as Pawn)?.inventory?.innerContainer;
-            // Maintain the KEPT set on the same heal beat: drop refs consumed/destroyed or that left this inventory
-            // (used in a recipe, or dropped from the gear tab). That removal IS the release path — a kept item stops
-            // being kept the moment it is no longer held. Runs on the synced/decision path only (GetHashSet), so it
-            // never mutates from a render/alert read; identical across MP clients (each prunes the same dead refs).
-            if (kept.Count > 0)
-                kept.RemoveWhere(x => x == null || x.Destroyed || owner == null || !owner.Contains(x));
+            // Migrate a pre-#197 whole-stack keep set into per-def keep-counts, once, on the first heal after load:
+            // keep at least as many of each still-held kept def as the pawn currently holds. Runs on the synced heal
+            // path so every MP client migrates identically.
+            if (legacyKept != null && owner != null)
+            {
+                foreach (var t in legacyKept)
+                {
+                    if (t == null || t.Destroyed || !owner.Contains(t) || t.def == null)
+                        continue;
+                    int held = CountOfDef(owner, t.def);
+                    if (held > 0 && (!keptCounts.TryGetValue(t.def, out int cur) || cur < held))
+                        keptCounts[t.def] = held;
+                }
+                // Only discard the legacy set once the inventory was actually available to fold from, so a heal that
+                // somehow ran before the inventory tracker resolved retries on the next heal instead of losing the
+                // pre-#197 keep.
+                legacyKept = null;
+            }
+            // Maintain the KEEP counts on the same heal beat: drop a def's pin once the pawn holds NONE of it (used
+            // up, dropped from the gear tab, consumed in a recipe). That prune IS the release path — a keep stops the
+            // moment the def is gone, matching the old Thing-ref auto-release. Runs on the synced/decision path only
+            // (GetHashSet), so it never mutates from a render/alert read; identical across MP clients.
+            if (keptCounts.Count > 0)
+                PruneEmptyKeptCounts(owner);
             if (owner != null && (takenToInventory.Count > 0 || carryOver.Count > 0))
             {
                 var pawn = parent as Pawn;
@@ -252,21 +280,84 @@ namespace HaulersDream
         /// May contain destroyed or out-of-inventory tags; callers guard each entry.</summary>
         public HashSet<Thing> PeekHashSet() => takenToInventory;
 
-        /// <summary>The KEPT-in-inventory set WITHOUT side effects — for the read-only unload-surplus math and the
-        /// drop-unused guards. May hold a stale ref (a stack dropped from the gear tab isn't pruned until the next
-        /// GetHashSet heal), but a stale ref never matches a LIVE inventory thing, so a <c>Contains(liveThing)</c>
-        /// test is safe; the heal (GetHashSet) is what removes stale entries.</summary>
-        public HashSet<Thing> PeekKept() => kept;
+        /// <summary>The units of <paramref name="def"/> this pawn is pinned to keep in inventory (issue #197), or 0
+        /// if none. Side-effect-free — safe on the render/alert/surplus path. Read by <see cref="InventorySurplus"/>
+        /// (keep the first N, unload the rest) and the drop-unused guards (never drop a kept def).</summary>
+        /// <param name="def">The item def to query. Null yields 0.</param>
+        public int KeptCountOf(ThingDef def)
+            => def != null && keptCounts.TryGetValue(def, out int n) && n > 0 ? n : 0;
 
-        /// <summary>Mark <paramref name="thing"/> as kept in this pawn's inventory (the "Keep X in inventory" order),
-        /// so HD's unload never hauls it away and vanilla's drop-unused never sheds it, until it leaves inventory.
-        /// Called from <see cref="JobDriver_KeepInInventory"/> on every MP client (the ordered job replicates), so the
-        /// set stays deterministic. No-op on null.</summary>
-        public void RegisterKept(Thing thing)
+        /// <summary>True iff this pawn keeps any amount of <paramref name="def"/> (a fast, allocation-free gate for
+        /// the drop-unused guards and the Gear-tab "is kept" display).</summary>
+        /// <param name="def">The item def to query.</param>
+        public bool IsKeptDef(ThingDef def) => KeptCountOf(def) > 0;
+
+        /// <summary>The whole keep-count map WITHOUT side effects — for the Gear-tab UI to show every active pin. The
+        /// caller must not mutate it (writes go through <see cref="SetKeptCount"/> / <see cref="AddKeptCount"/>, which
+        /// are MP-synced).</summary>
+        public Dictionary<ThingDef, int> PeekKeptCounts() => keptCounts;
+
+        /// <summary>ADD <paramref name="count"/> to the keep-count for <paramref name="def"/> (the "Keep N in
+        /// inventory" order: each order raises the amount held-and-kept by what it pocketed). Called from
+        /// <see cref="JobDriver_KeepInInventory"/> on every MP client (the ordered job replicates), so the map stays
+        /// deterministic without an explicit sync method. No-op on null/non-positive count.</summary>
+        /// <param name="def">The item def being kept.</param>
+        /// <param name="count">Units to add to the keep pin (the amount just pocketed).</param>
+        public void AddKeptCount(ThingDef def, int count)
         {
-            if (thing == null)
+            if (def == null || count <= 0)
                 return;
-            kept.Add(thing);
+            keptCounts.TryGetValue(def, out int cur);
+            keptCounts[def] = cur + count;
+        }
+
+        /// <summary>SET the absolute keep-count for <paramref name="def"/> (the Gear-tab slider / toggle: the player
+        /// dials an exact amount). A count &lt;= 0 removes the pin entirely. NOT MP-safe on its own — the Gear-tab
+        /// caller routes through <c>MultiplayerCompat.SetKeptCount</c> so every client applies the same write.</summary>
+        /// <param name="def">The item def to pin. Null is a no-op.</param>
+        /// <param name="count">The absolute amount to keep; 0 or less clears the pin.</param>
+        public void SetKeptCount(ThingDef def, int count)
+        {
+            if (def == null)
+                return;
+            if (count <= 0)
+                keptCounts.Remove(def);
+            else
+                keptCounts[def] = count;
+        }
+
+        /// <summary>Total units of <paramref name="def"/> across every stack in <paramref name="owner"/>. Small
+        /// helper for the keep-count prune + migration (kept defs are few).</summary>
+        private static int CountOfDef(ThingOwner owner, ThingDef def)
+        {
+            if (owner == null || def == null)
+                return 0;
+            int n = 0;
+            for (int i = 0; i < owner.Count; i++)
+            {
+                var t = owner[i];
+                if (t != null && t.def == def)
+                    n += t.stackCount;
+            }
+            return n;
+        }
+
+        // Reused scratch for the keep-count prune, so the per-tick heal allocates nothing when pruning.
+        [System.ThreadStatic] private static List<ThingDef> tmpKeptToPrune;
+
+        /// <summary>Drop every keep pin whose def the pawn no longer holds ANY of — the release path (a keep ends
+        /// when the def is gone). Called from the synced heal only.</summary>
+        /// <param name="owner">The pawn's inventory container.</param>
+        private void PruneEmptyKeptCounts(ThingOwner owner)
+        {
+            var toPrune = tmpKeptToPrune ?? (tmpKeptToPrune = new List<ThingDef>());
+            toPrune.Clear();
+            foreach (var kv in keptCounts)
+                if (kv.Value <= 0 || CountOfDef(owner, kv.Key) <= 0)
+                    toPrune.Add(kv.Key);
+            for (int i = 0; i < toPrune.Count; i++)
+                keptCounts.Remove(toPrune[i]);
+            toPrune.Clear();
         }
 
         public void Deregister(Thing thing)
@@ -369,13 +460,21 @@ namespace HaulersDream
         {
             base.PostExposeData();
             Scribe_Collections.Look(ref takenToInventory, "haulersDreamTakenToInventory", LookMode.Reference);
-            Scribe_Collections.Look(ref kept, "haulersDreamKept", LookMode.Reference);
+            // #197: the per-def keep-count map (new single source of truth). A pre-#197 save has no such key, so this
+            // starts empty and is filled by the legacy migration below.
+            Scribe_Collections.Look(ref keptCounts, "haulersDreamKeptCounts", LookMode.Def, LookMode.Value);
+            // Pre-#197 whole-stack keep set: read + resolve ONLY on load (both load phases, never on save) so an
+            // in-progress "keep this stack" order migrates into keptCounts on the first heal (see GetHashSet), and the
+            // stale key is never written back. LookMode.Reference needs both LoadingVars (record IDs) and
+            // ResolvingCrossRefs (resolve to Things) to bind the refs.
+            if (Scribe.mode == LoadSaveMode.LoadingVars || Scribe.mode == LoadSaveMode.ResolvingCrossRefs)
+                Scribe_Collections.Look(ref legacyKept, "haulersDreamKept", LookMode.Reference);
             Scribe_Values.Look(ref lastYieldTick, "haulersDreamLastYieldTick", -99999);
             Scribe_Values.Look(ref autoHaulYields, "haulersDreamAutoHaulYields", true);
             if (takenToInventory == null)
                 takenToInventory = new HashSet<Thing>();
-            if (kept == null)
-                kept = new HashSet<Thing>();
+            if (keptCounts == null)
+                keptCounts = new Dictionary<ThingDef, int>();
         }
     }
 }

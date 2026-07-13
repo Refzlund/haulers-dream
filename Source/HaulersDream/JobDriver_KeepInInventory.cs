@@ -7,18 +7,20 @@ using Verse.AI;
 namespace HaulersDream
 {
     /// <summary>
-    /// "Keep X in inventory": walk to the clicked stack and take it into the pawn's inventory as a KEPT item
-    /// (registered on <see cref="CompHauledToInventory"/> via <see cref="CompHauledToInventory.RegisterKept"/>), so
-    /// HD's unload never hauls it away and vanilla's drop-unused never sheds it. Two shapes, chosen by target B:
-    /// the GROUND branch (no B) scoops a spawned stack off the ground; the CONTAINER branch (B = a spawned container
-    /// building — vanilla's egg box, or a modded container that flags its contents selectable) walks to the container and pulls the clamped count
-    /// straight from its inner ThingOwner (the item itself is unspawned in there, so the ground toils would insta-fail
-    /// on it). The counterpart to <see cref="JobDriver_BulkHaul"/>'s "pick up to haul" — here the item is HELD, not
-    /// stored: single-target, no nearby sweep, and NO forced unload. The player releases a kept item simply by
-    /// consuming it or dropping it from the pawn's gear tab (the comp's heal then forgets it). The take is
-    /// mass/CE-clamped live and added canMerge:false so a kept stack never folds into — and thus never wrongly
-    /// keeps — the pawn's personal or HD-hauled stock. Ordered via TryTakeOrderedJob (multiplayer auto-syncs the
-    /// order), and the registration runs inside the driver on every client, so the kept set stays deterministic.
+    /// "Keep N in inventory": walk to the clicked stack and take the player-chosen amount (job.count, set by the
+    /// order's slider — see <see cref="BulkHaul.BuildKeepJob"/>) into the pawn's inventory, raising the per-def keep
+    /// pin on <see cref="CompHauledToInventory"/> by what was taken (<see cref="CompHauledToInventory.AddKeptCount"/>)
+    /// so HD's unload keeps the first N of the def and vanilla's drop-unused never sheds it (#197). Two shapes,
+    /// chosen by target B: the GROUND branch (no B) scoops a spawned stack off the ground; the CONTAINER branch
+    /// (B = a spawned container building — vanilla's egg box, or a modded container that flags its contents
+    /// selectable) walks to the container and pulls the clamped count straight from its inner ThingOwner (the item
+    /// itself is unspawned in there, so the ground toils would insta-fail on it). The counterpart to
+    /// <see cref="JobDriver_BulkHaul"/>'s "pick up to haul" — here the amount is HELD, not stored: single-target, no
+    /// nearby sweep, and NO forced unload. The pawn stops keeping the def once it holds none of it (the comp's heal
+    /// prunes the pin), and the Gear-tab keep control edits the amount directly. The take is mass/CE-clamped live and
+    /// added canMerge:true (one merged stack per def keeps the surplus math clean; the per-def count does the
+    /// keeping). Ordered via TryTakeOrderedJob (multiplayer auto-syncs the order), and the count is raised inside the
+    /// driver on every client, so the keep map stays deterministic.
     /// </summary>
     public class JobDriver_KeepInInventory : JobDriver
     {
@@ -73,12 +75,14 @@ namespace HaulersDream
                     if (count <= 0)
                         return;
                     // Owner→owner transfer (splits internally; the container's own removal notifications fire).
-                    // canMerge:false keeps the kept stack ISOLATED from personal / HD-hauled stock, exactly like
-                    // the ground branch.
-                    int moved = inner.TryTransferToContainer(t, inv, count, out var transferred,
-                        canMergeWithExistingStacks: false);
-                    if (moved > 0 && transferred != null)
-                        comp.RegisterKept(transferred);
+                    // canMerge:true folds it into the pawn's existing stock of this def — the per-def keep-count
+                    // (#197) does the keeping now, so there is no need to isolate a specific stack (and one merged
+                    // stack per def makes the surplus math clean). Raise the keep pin by what actually moved.
+                    var defKept = t.def;
+                    int moved = inner.TryTransferToContainer(t, inv, count, out _,
+                        canMergeWithExistingStacks: true);
+                    if (moved > 0)
+                        comp.AddKeptCount(defKept, moved);
                 };
                 extract.defaultCompleteMode = ToilCompleteMode.Instant;
                 yield return extract;
@@ -113,14 +117,17 @@ namespace HaulersDream
                 if (count <= 0)
                     return;
                 // SplitOff with count >= stackCount despawns the thing itself (full-stack take); a partial split
-                // returns a fresh unspawned thing. Either way TryAdd takes the plain-add path.
+                // returns a fresh unspawned thing.
+                var defKept = t.def;
                 var split = t.SplitOff(count);
                 if (split == null || split.Destroyed || split.stackCount <= 0)
                     return;
-                // canMerge:false keeps the kept stack ISOLATED from personal / HD-hauled stock, so keeping never
-                // accidentally protects the pawn's own kit or a scooped haul (mirrors the bulk driver's isolation).
-                if (inv.TryAdd(split, canMergeWithExistingStacks: false))
-                    comp.RegisterKept(split);
+                int took = split.stackCount;
+                // canMerge:true folds it into the pawn's existing stock of this def — the per-def keep-count (#197)
+                // does the keeping, so no isolated stack is needed (one merged stack per def keeps the surplus math
+                // clean). Raise the keep pin by what we took only once it is actually in the pack.
+                if (inv.TryAdd(split, canMergeWithExistingStacks: true))
+                    comp.AddKeptCount(defKept, took);
                 else if (!split.Destroyed)
                     // Never let the split vanish if inventory somehow refuses it — put it back on the ground.
                     GenPlace.TryPlaceThing(split, pawn.Position, pawn.Map, ThingPlaceMode.Near);

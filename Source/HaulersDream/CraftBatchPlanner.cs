@@ -138,7 +138,7 @@ namespace HaulersDream
                    // THAT work type.
                    && bill.recipe.PawnSatisfiesSkillRequirements(pawn)
                    && (bill.recipe.requiredGiverWorkType == null
-                       || !pawn.WorkTypeIsDisabled(bill.recipe.requiredGiverWorkType));
+                       || !WorkCapabilityProbe.IsDisabled(pawn, bill.recipe.requiredGiverWorkType));
         }
 
         /// <summary>Does the bench have at least one bill this pawn can batch?</summary>

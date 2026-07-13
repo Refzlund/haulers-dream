@@ -154,6 +154,10 @@ namespace HaulersDream
         // a caravan supply, a roleplay keepsake). Release it by consuming it or dropping it from the gear tab. Default
         // ON for discoverability; additive to vanilla's right-click options and shown alongside "Pick up X".
         public bool keepInInventoryOption = true;
+        // #197: the per-item "keep N in inventory" chip on the pawn Gear tab (always shows the kept amount for a kept
+        // def; appears on hover to start keeping any inventory item; a slider sets the exact amount). Default ON for
+        // discoverability; a purely additive UI element, so turning it off just hides the chip.
+        public bool keepInventoryGearButton = true;
         // The vanilla-like pickup pause (#121): ticks a pawn stands at each stack (with vanilla's pickup progress
         // bar) before the stack enters its inventory. Default = vanilla's own player "Pick up" delay
         // (FloatMenuOptionProvider_PickUpItem writes Job.takeInventoryDelay = 120 in all three pick-up
@@ -652,6 +656,7 @@ namespace HaulersDream
             Scribe_Values.Look(ref haulNearbyOption, "haulNearbyOption", true);
             Scribe_Values.Look(ref manualPickupOption, "manualPickupOption", true);
             Scribe_Values.Look(ref keepInInventoryOption, "keepInInventoryOption", true);
+            Scribe_Values.Look(ref keepInventoryGearButton, "keepInventoryGearButton", true);
             Scribe_Values.Look(ref pickupDelayTicks, "pickupDelayTicks", PickupDelayPolicy.VanillaDelayTicks);
             Scribe_Values.Look(ref pickupDelayOnHauling, "pickupDelayOnHauling", false);
             Scribe_Values.Look(ref pickupDelayOnLoading, "pickupDelayOnLoading", false);
@@ -839,6 +844,7 @@ namespace HaulersDream
             haulNearbyOption = true;
             manualPickupOption = true;
             keepInInventoryOption = true;
+            keepInventoryGearButton = true;
             pickupDelayTicks = PickupDelayPolicy.VanillaDelayTicks;
             pickupDelayOnHauling = false;
             pickupDelayOnLoading = false;

@@ -56,6 +56,19 @@ namespace HaulersDream
         [System.ThreadStatic] private static int workCacheTick;
         [System.ThreadStatic] private static Dictionary<long, bool> workCache;
 
+        // #138 perf — per-tick memo for the FLOAT-MENU suppress probe (the PLAYER-order path). Right-clicking a
+        // transporter/shuttle with a live manifest builds the menu, and the vanilla-option suppressor
+        // (Patch_SuppressVanillaLoadFloatMenu) probes "would HD give a bulk job here?" via a full TryGiveBulkJob
+        // (pool scan + variant budget) for EVERY (workGiver, transporter) the build touches — one manifest can be
+        // probed several times per right-click (multiple transporters share a group; the menu can re-enter). This
+        // memoizes the BOOLEAN result per (TicksGame, pawn, loadableId) so the group is planned at most once per
+        // tick. Distinct from workCache (the AUTOMATIC path uses playerOrder:false); this one is playerOrder:true, so
+        // it must never be conflated with the auto memo. Same discipline: boolean-only (no claim/reservation — the
+        // probe is side-effect-free), tick-stamped self-clear, and the `tick != -1` populate guard is the
+        // cross-session safeguard. Cleared alongside workCache on load.
+        [System.ThreadStatic] private static int menuProbeTick;
+        [System.ThreadStatic] private static Dictionary<long, bool> menuProbeCache;
+
         // Self-register the per-session load-work memo clear with the game-load hygiene sweep (see CacheRegistry), so
         // it can never be forgotten. The static ctor runs once, the first time any member is touched (the only way
         // the memo can hold cross-session data); ClearLoadWorkCache resets the FinalizeInit (main) thread's slot —
@@ -73,6 +86,40 @@ namespace HaulersDream
         {
             workCache?.Clear();
             workCacheTick = -1;
+            menuProbeCache?.Clear();
+            menuProbeTick = -1;
+        }
+
+        /// <summary>
+        /// #138 perf: the CACHED "would HD give a bulk-load job for this player order?" probe used by the vanilla-
+        /// option suppressor when a transporter/shuttle/portal menu is built. Returns the SAME answer as
+        /// <c>TryGiveBulkJob(pawn, loadable, playerOrder: true) != null</c> — the probe is side-effect-free planning —
+        /// but memoized per (TicksGame, pawn, loadableId) so one manifest is planned at most once per right-click no
+        /// matter how many transporters in its group get probed. On a null-tick (menu edge / uninitialised) it falls
+        /// back to a direct probe and never populates the memo, exactly like the auto path's guard.
+        /// </summary>
+        /// <param name="pawn">The ordering pawn.</param>
+        /// <param name="loadable">The transporter/portal/vehicle load target.</param>
+        /// <returns>True iff HD would issue a bulk-load job (so the vanilla single-item option should be suppressed).</returns>
+        public static bool WouldGiveBulkJobForMenu(Pawn pawn, IManagedLoadable loadable)
+        {
+            if (pawn == null || loadable == null)
+                return false;
+            int tick = Find.TickManager?.TicksGame ?? -1;
+            if (tick == -1)
+                return TryGiveBulkJob(pawn, loadable, playerOrder: true) != null;
+            var cache = menuProbeCache ?? (menuProbeCache = new Dictionary<long, bool>());
+            if (tick != menuProbeTick)
+            {
+                cache.Clear();
+                menuProbeTick = tick;
+            }
+            long key = ((long)pawn.thingIDNumber << 32) | (uint)loadable.GetUniqueLoadID();
+            if (cache.TryGetValue(key, out bool cached))
+                return cached;
+            bool result = TryGiveBulkJob(pawn, loadable, playerOrder: true) != null;
+            cache[key] = result;
+            return result;
         }
 
         /// <summary>Is there bulk-load work for this pawn on the TRANSPORTER loadable? Feature on, not drafted,

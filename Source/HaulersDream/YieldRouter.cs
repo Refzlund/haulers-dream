@@ -982,7 +982,7 @@ namespace HaulersDream
                 // Type-level, not WorkTags.Hauling: "incapable of dumb labor" disables via
                 // ManualDumb/Commoner without setting the Hauling tag, and the type check also
                 // composes with the F23 all-pawns-can-haul override.
-                incapableOfHauling: p.WorkTypeIsDisabled(WorkTypeDefOf.Hauling),
+                incapableOfHauling: WorkCapabilityProbe.IsDisabled(p, WorkTypeDefOf.Hauling),
                 allowMechanoids: s.allowMechanoids,
                 pauseWhileDrafted: s.pauseWhileDrafted,
                 allowIncapable: s.allowIncapable,

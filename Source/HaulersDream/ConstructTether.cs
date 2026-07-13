@@ -33,7 +33,7 @@ namespace HaulersDream
             // Frame ready to build → vanilla's own FinishFrame does the building with full fidelity.
             if (site is Frame frame && frame.IsCompleted())
             {
-                if (pawn.WorkTypeIsDisabled(WorkTypeDefOf.Construction))
+                if (WorkCapabilityProbe.IsDisabled(pawn, WorkTypeDefOf.Construction))
                     return false; // a haul-capable-only pawn delivered — building is someone else's job
                 // No try/catch: GenConstruct.CanConstruct is a vanilla call — a throw is a real bug to surface.
                 if (!GenConstruct.CanConstruct(frame, pawn, checkSkills: true, forced: true))

@@ -45,7 +45,52 @@ namespace HaulersDream
     /// </summary>
     public static class WorkKindResolver
     {
+        // #138 perf — per-tick memo of the resolve result. Resolve walks EVERY directly-orderable WorkGiver_Scanner
+        // (all work types × their givers, each doing a validity/reach probe) for a clicked thing, and the route
+        // planner's float-menu provider resolves this for every thing under the cursor when a menu is built. A
+        // right-click that re-opens the menu on the same tick, or a second planner provider probing the same thing,
+        // otherwise re-runs the whole scanner walk. Memoize (result, keyed on TicksGame + pawn + thing) so a given
+        // (pawn, thing) is resolved at most once per tick. RouteWorkKind holds only Def singletons + strings (no Thing
+        // refs — verified), so a cached value is safe to reuse; the tick stamp self-clears each tick and the
+        // `tick != -1` populate guard is the cross-session safeguard (registered with CacheRegistry on load).
+        [System.ThreadStatic] private static int resolveCacheTick;
+        [System.ThreadStatic] private static System.Collections.Generic.Dictionary<long, RouteWorkKind> resolveCache;
+
+        static WorkKindResolver() => CacheRegistry.Register(ClearResolveCache);
+
+        /// <summary>Drop the per-tick resolve memo (FinalizeInit hygiene; the tick-stamp + <c>tick != -1</c> guard is
+        /// the real cross-session safeguard). Clears only this thread's slot.</summary>
+        public static void ClearResolveCache()
+        {
+            resolveCache?.Clear();
+            resolveCacheTick = -1;
+        }
+
+        /// <summary>Resolve a clicked Thing to its <see cref="RouteWorkKind"/>, memoized per (tick, pawn, thing) — see
+        /// the class remarks. Behaviour-identical to <see cref="ResolveUncached"/>; only repeated same-tick resolves
+        /// of the same (pawn, thing) are short-circuited.</summary>
         public static RouteWorkKind Resolve(Pawn pawn, Thing clicked)
+        {
+            if (pawn == null || clicked == null)
+                return null;
+            int tick = Find.TickManager?.TicksGame ?? -1;
+            if (tick == -1)
+                return ResolveUncached(pawn, clicked);
+            var cache = resolveCache ?? (resolveCache = new System.Collections.Generic.Dictionary<long, RouteWorkKind>());
+            if (tick != resolveCacheTick)
+            {
+                cache.Clear();
+                resolveCacheTick = tick;
+            }
+            long key = ((long)pawn.thingIDNumber << 32) | (uint)clicked.thingIDNumber;
+            if (cache.TryGetValue(key, out var cached))
+                return cached;
+            var result = ResolveUncached(pawn, clicked);
+            cache[key] = result;
+            return result;
+        }
+
+        private static RouteWorkKind ResolveUncached(Pawn pawn, Thing clicked)
         {
             if (pawn?.Map == null || clicked == null || !clicked.Spawned || clicked.Map != pawn.Map)
                 return null;
@@ -76,7 +121,7 @@ namespace HaulersDream
                     // "Prioritize…" does: a pawn that won't do cleaning gets no "Plan prioritized cleaning".
                     // The "all pawns can haul/clean/cut plants" overrides flow through automatically — they
                     // make WorkTypeIsDisabled itself return false (see WorkOverride).
-                    if (wgDef.workType != null && pawn.WorkTypeIsDisabled(wgDef.workType))
+                    if (wgDef.workType != null && WorkCapabilityProbe.IsDisabled(pawn, wgDef.workType))
                         continue;
                     if (!(wgDef.Worker is WorkGiver_Scanner scanner))
                         continue;
@@ -187,7 +232,7 @@ namespace HaulersDream
             var wgDef = PlantsCutDef();
             if (wgDef == null || !(wgDef.Worker is WorkGiver_Scanner scanner))
                 return null;
-            if (pawn.WorkTypeIsDisabled(wgDef.workType))
+            if (WorkCapabilityProbe.IsDisabled(pawn, wgDef.workType))
                 return null;
 
             // ignoreOtherReservations: true mirrors the forced (player-prioritized) job path the route uses.
@@ -259,7 +304,7 @@ namespace HaulersDream
                 return null;
             if (clicked.Faction != pawn.Faction)
                 return null;
-            if (pawn.WorkTypeIsDisabled(WorkTypeDefOf.Construction))
+            if (WorkCapabilityProbe.IsDisabled(pawn, WorkTypeDefOf.Construction))
                 return null;
 
             // No try/catch: pawn.CanReach is a vanilla call — a throw is a real bug to surface, not hide.

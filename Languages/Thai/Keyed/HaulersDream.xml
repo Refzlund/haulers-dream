@@ -68,6 +68,8 @@
 <HaulersDream.Setting.ManualPickupDesc>เพิ่มตัวเลือก "หยิบ X" ในเมนูคลิกขวาบนไอเท็มบนพื้นที่ขนได้ ตัวละครจะหยิบกองที่คลิกเข้าสัมภาระโดยตรงในฐานะการขนของ Hauler's Dream ที่ถูกติดตาม ซึ่งจะถูกเก็บโดยการขนของออกตามปกติ — มันจึงไม่เคยสูญหายแม้ปิดการขนของออกอัตโนมัติ เป็นส่วนเพิ่มจากตัวเลือกการขนคลิกขวาของเกมพื้นฐาน</HaulersDream.Setting.ManualPickupDesc>
 <HaulersDream.Setting.KeepInInventory>เพิ่มคำสั่งคลิกขวา "เก็บ X ไว้ในสัมภาระ"</HaulersDream.Setting.KeepInInventory>
 <HaulersDream.Setting.KeepInInventoryDesc>เพิ่มตัวเลือก "เก็บ X ไว้ในสัมภาระ" ในเมนูคลิกขวาบนไอเท็มบนพื้นที่ขนได้ ข้าง ๆ "หยิบ X" ตัวละครจะหยิบกองที่คลิกเข้าสัมภาระและถือมันไว้: Hauler's Dream จะไม่ขนมันไปเก็บที่คลังเลย และการเก็บกวาดตามปกติของเกมที่ทิ้งสัมภาระที่ไม่ได้ใช้ก็จะไม่แตะต้องมัน ใช้เมื่อคุณต้องการให้ตัวละครถือไอเท็มไว้โดยตั้งใจ หากต้องการปล่อยมันในภายหลัง ให้ตัวละครใช้มันจนหมดหรือทิ้งมันจากแท็บอุปกรณ์ เป็นส่วนเพิ่มจากตัวเลือกคลิกขวาของเกมพื้นฐาน</HaulersDream.Setting.KeepInInventoryDesc>
+  <HaulersDream.Setting.KeepGearButton>แสดงตัวควบคุม "จำนวนที่จะเก็บไว้" ในแท็บอุปกรณ์</HaulersDream.Setting.KeepGearButton>
+  <HaulersDream.Setting.KeepGearButtonDesc>เพิ่มตัวควบคุมขนาดเล็กทางด้านขวาของแต่ละไอเทมในแท็บอุปกรณ์ของชาวอาณานิคม เลื่อนเมาส์ไปที่ไอเทมใดในกระเป๋าเพื่อกำหนดว่าจะให้พอว์นเก็บไว้ในเป้กี่ชิ้น ไอเทมที่เก็บไว้จะแสดงจำนวนที่เก็บไว้เสมอ Hauler's Dream จะเก็บไว้ตามจำนวนนั้นและถือว่าที่เหลือเป็นส่วนเกินที่ต้องขนออกไป ตั้งค่าเป็น 0 เพื่อหยุดเก็บ เป็นเพียงองค์ประกอบส่วนติดต่อผู้ใช้ การปิดจะเพียงซ่อนตัวควบคุมนี้</HaulersDream.Setting.KeepGearButtonDesc>
 <HaulersDream.Setting.PickupDelay.Lab>ความหน่วงการเก็บต่อกอง</HaulersDream.Setting.PickupDelay.Lab>
 <HaulersDream.Setting.PickupDelay.Help>ระยะเวลาที่ชาวอาณานิคมทำงานที่กองของแต่ละกอง โดยแสดงแถบความคืบหน้าการหยิบแบบดั้งเดิม ก่อนที่มันจะเข้าไปในกระเป๋า ค่าเริ่มต้นจะมีผลเฉพาะคำสั่งที่ตั้งใจอย่าง 'หยิบ X' และ 'เก็บ X ไว้ในกระเป๋า' เท่านั้น เหมือนกับดีเลย์การหยิบของตัวเกมดั้งเดิมทุกประการ ส่วนการขนและการบรรทุกอัตโนมัติยังคงทันที ดังนั้นการเก็บกวาดเศษวัสดุจากการรื้อพื้นจึงไม่ช้ากว่าแบบดั้งเดิม ใช้สองตัวเลือกด้านล่างเพื่อหน่วงสิ่งเหล่านั้นด้วยได้ 120 ติ๊ก (ราว 2 วินาที) คือค่าดั้งเดิม 0 = ทันทีทุกกรณี</HaulersDream.Setting.PickupDelay.Help>
 <HaulersDream.Setting.PickupDelay.Instant>ทันที</HaulersDream.Setting.PickupDelay.Instant>
@@ -275,6 +277,11 @@
 <HaulersDream.Keep.Option>เก็บ {0} ไว้ในสัมภาระ</HaulersDream.Keep.Option>
 <HaulersDream.Keep.CouldNotStart>{0} ถือ {1} เพิ่มอีกไม่ได้ตอนนี้ — ถืออยู่เต็มที่แล้ว</HaulersDream.Keep.CouldNotStart>
 <HaulersDream.Keep.Report>กำลังเก็บไอเท็มไว้</HaulersDream.Keep.Report>
+  <HaulersDream.Keep.SliderLabel>เก็บ {1} {0} ชิ้น</HaulersDream.Keep.SliderLabel>
+  <HaulersDream.Keep.GearChip>เก็บ</HaulersDream.Keep.GearChip>
+  <HaulersDream.Keep.GearSliderLabel>เก็บ {1} {0} ชิ้น</HaulersDream.Keep.GearSliderLabel>
+  <HaulersDream.Keep.GearTooltipKept>กำลังเก็บ {1} {0} ชิ้นไว้ในกระเป๋าของพอว์นนี้ คลิกเพื่อเปลี่ยนจำนวน ตั้งเป็น 0 เพื่อหยุดเก็บ</HaulersDream.Keep.GearTooltipKept>
+  <HaulersDream.Keep.GearTooltipOff>เก็บ {0} ไว้บางส่วนในกระเป๋าของพอว์นนี้ Hauler's Dream จะเก็บไว้ตามจำนวนนี้และจะไม่ขนที่เหลือออกไป คลิกเพื่อเลือกจำนวน</HaulersDream.Keep.GearTooltipOff>
 <HaulersDream.PlanRoute.AlsoBuild>สร้างด้วย (ขน + ก่อสร้างแต่ละจุดแวะ)</HaulersDream.PlanRoute.AlsoBuild>
 <HaulersDream.PlanRoute.AlsoBuildDesc>เมื่อเปิดสิ่งนี้ ตัวละครจะส่งวัสดุไปยังจุดและก่อสร้างมันก่อนจะไปยังจุดถัดไป — รวบรวมวัสดุของทั้งเส้นทางไว้ล่วงหน้าและเก็บไว้ในสัมภาระ เมื่อปิด ตัวละครจะเพียงเติมวัสดุให้จุดต่างๆ เท่านั้น (คนอื่นก่อสร้างได้) ไม่ว่าจะอย่างไร จุดต่างๆ ยังเปิดให้ตัวละครอื่นเข้าถึงได้ หลายคนจึงจัดส่งในรอบเดียวกันแบบขนานได้ ใครที่มาถึงเป็นคนที่สองก็เพียงเก็บส่วนเกินไว้สำหรับจุดแวะถัดไปหรือขนมันออกตอนจบ</HaulersDream.PlanRoute.AlsoBuildDesc>
 <HaulersDream.Setting.CraftBatchTimeout>เวลาหมดอายุของชุดการผลิตเริ่มต้น: {0}ชม.</HaulersDream.Setting.CraftBatchTimeout>

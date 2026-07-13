@@ -724,7 +724,9 @@ namespace HaulersDream
         /// haul") — here the item is HELD, not stored, so there is NO map/storage gate (a pawn can hold an item on any
         /// map). Mass/CE-clamped to what the pawn can carry; returns null when not one more unit fits under the ceiling.
         /// </summary>
-        internal static Job BuildKeepJob(Pawn pawn, Thing clicked)
+        /// <param name="keepCount">Units the player chose to keep (from the order slider, #197), or &lt;= 0 to keep
+        /// the whole clicked stack. Capped to the stack size and the pawn's carry ceiling.</param>
+        internal static Job BuildKeepJob(Pawn pawn, Thing clicked, int keepCount = -1)
         {
             if (pawn == null || clicked == null || !clicked.Spawned)
                 return null;
@@ -733,7 +735,8 @@ namespace HaulersDream
                 return null;
             if (pawn.GetComp<CompHauledToInventory>() == null || pawn.inventory == null)
                 return null;
-            int take = MassClampedTake(pawn, clicked, clicked.stackCount, s);
+            int planned = keepCount > 0 ? keepCount : clicked.stackCount;
+            int take = MassClampedTake(pawn, clicked, planned, s);
             if (take <= 0)
                 return null; // nothing fits in inventory under the ceiling
             var job = JobMaker.MakeJob(HaulersDreamDefOf.HaulersDream_KeepInInventory, clicked);
@@ -751,7 +754,9 @@ namespace HaulersDream
         /// mass/CE-clamped identically; returns null when the item already left the container or not one more unit
         /// fits under the carry ceiling.
         /// </summary>
-        internal static Job BuildKeepFromContainerJob(Pawn pawn, Thing clicked, Thing container)
+        /// <param name="keepCount">Units the player chose to keep (from the order slider, #197), or &lt;= 0 to keep
+        /// the whole clicked stack. Capped to the stack size and the pawn's carry ceiling.</param>
+        internal static Job BuildKeepFromContainerJob(Pawn pawn, Thing clicked, Thing container, int keepCount = -1)
         {
             if (pawn == null || clicked == null || container == null || !container.Spawned)
                 return null;
@@ -765,7 +770,8 @@ namespace HaulersDream
             var inner = container.TryGetInnerInteractableThingOwner();
             if (inner == null || !inner.Contains(clicked))
                 return null;
-            int take = MassClampedTake(pawn, clicked, clicked.stackCount, s);
+            int planned = keepCount > 0 ? keepCount : clicked.stackCount;
+            int take = MassClampedTake(pawn, clicked, planned, s);
             if (take <= 0)
                 return null; // nothing fits in inventory under the ceiling
             var job = JobMaker.MakeJob(HaulersDreamDefOf.HaulersDream_KeepInInventory, clicked, container);

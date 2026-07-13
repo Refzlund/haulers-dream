@@ -68,6 +68,8 @@
 <HaulersDream.Setting.ManualPickupDesc>在地上可搬运物品的右键菜单上添加“拾取 X”选项。小人会把所点选的那一堆直接拾进货物栏，作为一次受追踪的 Hauler's Dream 搬运，随后由正常的卸载流程收起——因此即便自动卸载关闭也绝不会丢失。是对原版右键搬运选项的补充。</HaulersDream.Setting.ManualPickupDesc>
 <HaulersDream.Setting.KeepInInventory>添加“将 X 留在货物栏”右键命令</HaulersDream.Setting.KeepInInventory>
 <HaulersDream.Setting.KeepInInventoryDesc>在地上可搬运物品的右键菜单上，在“拾取 X”旁边添加“将 X 留在货物栏”选项。小人会把所点选的那一堆收进自己的货物栏并一直带着：Hauler's Dream 绝不会把它搬去储存，游戏日常的“丢弃未使用货物”清理也不会把它扔掉。当你想让某个小人有意携带某件物品时使用它。要日后放下它，就让小人把它用掉，或从其装备栏中丢弃。是对原版右键选项的补充。</HaulersDream.Setting.KeepInInventoryDesc>
+  <HaulersDream.Setting.KeepGearButton>在装备标签页显示"保留数量"控件</HaulersDream.Setting.KeepGearButton>
+  <HaulersDream.Setting.KeepGearButtonDesc>在殖民者装备标签页中每件物品右侧添加一个小控件。将鼠标悬停在任意携带物品上即可设置该小人应在背包中保留多少；被保留的物品会始终显示保留数量。Hauler's Dream 会保留该数量，其余视为多余并搬运走。将数量设为 0 即停止保留。纯界面元素；关闭后只是隐藏该控件。</HaulersDream.Setting.KeepGearButtonDesc>
 <HaulersDream.Setting.PickupDelay.Lab>每堆拾取延迟</HaulersDream.Setting.PickupDelay.Lab>
 <HaulersDream.Setting.PickupDelay.Help>殖民者在每个物品堆前工作、显示原版拾取进度条、然后将其收入背包所需的时间。默认仅对“捡起X”和“将X留在背包中”这类主动指令生效，与原版自身的拾取延迟完全一致；自动搬运和装载保持即时，因此清扫拆除地板产生的碎料绝不会比原版更慢。使用下方两个选项也可为其加上延迟。120刻（约2秒）为原版数值。0＝处处即时。</HaulersDream.Setting.PickupDelay.Help>
 <HaulersDream.Setting.PickupDelay.Instant>立即</HaulersDream.Setting.PickupDelay.Instant>
@@ -275,6 +277,11 @@
 <HaulersDream.Keep.Option>将 {0} 留在货物栏</HaulersDream.Keep.Option>
 <HaulersDream.Keep.CouldNotStart>{0} 现在无法再多带 {1}——已尽可能多地携带了。</HaulersDream.Keep.CouldNotStart>
 <HaulersDream.Keep.Report>正在留存一件物品。</HaulersDream.Keep.Report>
+  <HaulersDream.Keep.SliderLabel>保留 {0} 个{1}</HaulersDream.Keep.SliderLabel>
+  <HaulersDream.Keep.GearChip>保留</HaulersDream.Keep.GearChip>
+  <HaulersDream.Keep.GearSliderLabel>保留 {0} 个{1}</HaulersDream.Keep.GearSliderLabel>
+  <HaulersDream.Keep.GearTooltipKept>在此小人的背包中保留 {0} 个{1}。点击可修改数量；设为 0 即停止保留。</HaulersDream.Keep.GearTooltipKept>
+  <HaulersDream.Keep.GearTooltipOff>在此小人的背包中保留一些{0}。Hauler's Dream 会保留这么多，其余绝不搬走。点击选择数量。</HaulersDream.Keep.GearTooltipOff>
 <HaulersDream.PlanRoute.AlsoBuild>同时建造（每站搬运＋建造）</HaulersDream.PlanRoute.AlsoBuild>
 <HaulersDream.PlanRoute.AlsoBuildDesc>开启此项时，小人会先向一处工地交付材料并将其建造完成，再前往下一处——预先采集整条路径的材料并保存在货物栏中。关闭它时，小人只为各工地备料（他人可来建造）。无论哪种方式，工地都对其他小人开放，因此多人可并行供应同一趟；后到者只需为下一站保留多余材料，或在最后卸下它。</HaulersDream.PlanRoute.AlsoBuildDesc>
 <HaulersDream.Setting.CraftBatchTimeout>默认制作批量超时：{0}小时</HaulersDream.Setting.CraftBatchTimeout>

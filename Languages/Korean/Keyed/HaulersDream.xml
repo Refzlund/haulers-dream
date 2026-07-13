@@ -68,6 +68,8 @@
 <HaulersDream.Setting.ManualPickupDesc>운반 가능한 바닥 물건의 우클릭 메뉴에 "X 줍기" 옵션을 추가합니다. 폰이 클릭한 더미를 추적되는 Hauler's Dream 운반으로서 소지품에 곧장 줍고, 이후 평소 내려놓기로 치워집니다 — 그래서 자동 내려놓기가 꺼져 있어도 절대 잃어버리지 않습니다. 바닐라의 우클릭 운반 옵션에 추가되는 기능입니다.</HaulersDream.Setting.ManualPickupDesc>
 <HaulersDream.Setting.KeepInInventory>"X 소지품에 보관" 우클릭 명령 추가</HaulersDream.Setting.KeepInInventory>
 <HaulersDream.Setting.KeepInInventoryDesc>운반 가능한 바닥 물건의 우클릭 메뉴에 "X 줍기" 옆에 "X 소지품에 보관" 옵션을 추가합니다. 폰이 클릭한 더미를 자기 소지품에 넣고 계속 지닙니다: Hauler's Dream은 그것을 창고로 운반해 가지 않으며, 사용하지 않는 소지품을 버리는 게임의 일상적인 정리도 그것을 버리지 않습니다. 폰이 물건을 일부러 지니게 하고 싶을 때 사용하세요. 나중에 놓으려면 폰이 그것을 다 쓰게 하거나 장비 탭에서 떨어뜨리게 하세요. 바닐라의 우클릭 옵션에 추가되는 기능입니다.</HaulersDream.Setting.KeepInInventoryDesc>
+  <HaulersDream.Setting.KeepGearButton>장비 탭에 "보관 수량" 컨트롤 표시</HaulersDream.Setting.KeepGearButton>
+  <HaulersDream.Setting.KeepGearButtonDesc>주민의 장비 탭에서 각 물품 오른쪽에 작은 컨트롤을 추가합니다. 소지품의 아무 물품에나 마우스를 올리면 그 폰이 배낭에 얼마나 보관할지 설정할 수 있으며, 보관 중인 물품에는 항상 보관 수량이 표시됩니다. Hauler's Dream은 그만큼 보관하고 나머지는 옮겨야 할 잉여로 처리합니다. 수량을 0으로 설정하면 보관을 중단합니다. 순수한 UI 요소이며, 끄면 컨트롤만 숨겨집니다.</HaulersDream.Setting.KeepGearButtonDesc>
 <HaulersDream.Setting.PickupDelay.Lab>더미당 줍기 지연</HaulersDream.Setting.PickupDelay.Lab>
 <HaulersDream.Setting.PickupDelay.Help>정착민이 각 더미 앞에서 바닐라의 줍기 진행 막대를 표시하며 작업한 뒤 인벤토리에 넣기까지 걸리는 시간입니다. 기본값에서는 '집기', '인벤토리에 보관' 같은 의도적 명령에만 적용되며, 바닐라 자체의 줍기 지연과 정확히 같습니다. 자동 운반과 적재는 즉시 유지되어, 바닥 철거로 나온 잔해 청소가 바닐라보다 느려지지 않습니다. 아래 두 옵션으로 그것들에도 지연을 줄 수 있습니다. 120틱(약 2초)이 바닐라 값입니다. 0 = 어디서나 즉시.</HaulersDream.Setting.PickupDelay.Help>
 <HaulersDream.Setting.PickupDelay.Instant>즉시</HaulersDream.Setting.PickupDelay.Instant>
@@ -275,6 +277,11 @@
 <HaulersDream.Keep.Option>{0} 소지품에 보관</HaulersDream.Keep.Option>
 <HaulersDream.Keep.CouldNotStart>{0}이(가) 지금은 {1}을(를) 더 지닐 수 없습니다 — 이미 운반할 수 있는 만큼 운반 중입니다.</HaulersDream.Keep.CouldNotStart>
 <HaulersDream.Keep.Report>물건을 보관하는 중.</HaulersDream.Keep.Report>
+  <HaulersDream.Keep.SliderLabel>{1} {0}개 보관</HaulersDream.Keep.SliderLabel>
+  <HaulersDream.Keep.GearChip>보관</HaulersDream.Keep.GearChip>
+  <HaulersDream.Keep.GearSliderLabel>{1} {0}개 보관</HaulersDream.Keep.GearSliderLabel>
+  <HaulersDream.Keep.GearTooltipKept>이 폰의 소지품에 {1} {0}개를 보관합니다. 클릭하여 수량 변경, 0으로 설정하면 보관을 중단합니다.</HaulersDream.Keep.GearTooltipKept>
+  <HaulersDream.Keep.GearTooltipOff>이 폰의 소지품에 {0}을(를) 얼마간 보관합니다. Hauler's Dream이 그만큼 보관하고 나머지는 절대 옮기지 않습니다. 클릭하여 수량을 선택하세요.</HaulersDream.Keep.GearTooltipOff>
 <HaulersDream.PlanRoute.AlsoBuild>함께 건설 (각 정거장에서 운반 + 건설)</HaulersDream.PlanRoute.AlsoBuild>
 <HaulersDream.PlanRoute.AlsoBuildDesc>이것이 켜져 있으면 폰이 한 현장에 자재를 전달하고 다음으로 넘어가기 전에 건설합니다 — 경로 전체의 자재를 미리 모아 소지품에 보관합니다. 꺼져 있으면 폰은 현장에 자재만 채웁니다(다른 폰이 건설할 수 있음). 어느 쪽이든 현장은 다른 폰에게 열려 있어 여러 폰이 같은 작업을 병렬로 공급할 수 있습니다. 두 번째로 도착한 폰은 단순히 잉여를 다음 정거장에 쓰거나 마지막에 내려놓습니다.</HaulersDream.PlanRoute.AlsoBuildDesc>
 <HaulersDream.Setting.CraftBatchTimeout>기본 제작 일괄 제한 시간: {0}시간</HaulersDream.Setting.CraftBatchTimeout>
