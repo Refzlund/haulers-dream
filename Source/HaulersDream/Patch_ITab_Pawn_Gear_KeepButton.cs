@@ -126,7 +126,10 @@ namespace HaulersDream
             {
                 // Active pin: amber fill + count, so it reads as "held: N" at a glance and stays visible without hover.
                 Widgets.DrawBoxSolid(chip, new Color(0.85f, 0.66f, 0.20f, chipHovered ? 0.55f : 0.38f));
-                GUI.color = new Color(0.16f, 0.13f, 0.05f);
+                // Count in a warm off-white (white with a yellow tint). The amber fill is semi-transparent over the
+                // dark Gear tab, so it reads dark; a dark count on it had poor contrast — bright warm text keeps the
+                // number legible without hover while staying in the amber theme.
+                GUI.color = new Color(1f, 0.95f, 0.75f);
                 Widgets.Label(chip, keptN.ToString());
                 GUI.color = new Color(0.85f, 0.66f, 0.20f, 0.9f);
                 Widgets.DrawBox(chip);
