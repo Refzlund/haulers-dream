@@ -1,5 +1,25 @@
 # haulers-dream
 
+## 1.19.0
+
+### Minor Changes
+
+- 363b4cf: Choose how much to keep in inventory, set it from the Gear tab, and smoother shuttle/route menus.
+
+  "Keep in inventory" now lets you pick an amount. Right-clicking a stack and choosing "Keep in inventory" opens a slider (just like the vanilla "pick up some" dialog) so you can hold an exact amount, such as 50 silver, instead of the whole stack. Hauler's Dream keeps that many and treats the rest as surplus to haul away, and the game's "drop unused inventory" cleanup leaves the kept amount alone.
+
+  A new keep control on the Gear tab. Hover any item in a colonist's inventory to set how many of it that pawn should hold onto; items being kept always show the amount, so you can see and change it at a glance. Setting the amount to 0 stops keeping. It can be turned off in the mod options if you would rather not see it. (Kept amounts save with your game and sync in multiplayer.)
+
+  Performance. Right-clicking a shuttle or transporter that has a load list no longer re-plans the whole load several times while building the menu; the plan is now reused within the same click, so opening the menu is lighter. The route planner also reuses its per-target work lookup within a click. Closing the mod options window fully restores framerate, as the settings screen only does work while it is open.
+
+### Patch Changes
+
+- 363b4cf: Fix a compatibility crash on malformed modded pawns, and stop foreign errors being blamed on Hauler's Dream (#197).
+
+  Some modded pawns, such as a Dead Man's Switch "humanoid mech" summoned by WVC's voidlink, are built in a way that makes RimWorld's own work-type check throw whenever anything asks whether they can do a job (vanilla reads a couple of pawn fields without confirming they exist). Hauler's Dream offers hauling to mechs, so it was one of the things asking, and a single broken pawn could interrupt a hauling scan. Hauler's Dream now treats such a pawn as unable to do that work and moves on, reporting the fault once with the real source named, so one malformed pawn no longer disrupts hauling.
+
+  It also no longer stamps its own name onto errors that merely pass through the two work-type methods it lightly patches. When the real cause is vanilla or another mod, the error now keeps its true origin in the log instead of pointing back at Hauler's Dream, so these get reported to the right place. The underlying summon failure itself is a defect in the other mods' pawn setup, not something Hauler's Dream can fix, but it no longer makes things worse or takes the blame.
+
 ## 1.18.2
 
 ### Patch Changes
