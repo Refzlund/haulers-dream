@@ -1158,6 +1158,9 @@ namespace HaulersDream
             // "Keep X in inventory" is the hold-it sibling of "Pick up X" (pick up to HAUL vs pick up to HOLD).
             keepInInventoryOption = HDSettingsUI.Checkbox(c, "HaulersDream.Setting.KeepInInventory".Translate(),
                 keepInInventoryOption, "HaulersDream.Setting.KeepInInventoryDesc".Translate());
+            // #197: the per-item keep chip on the Gear tab (set/see how much of a def a colonist holds onto).
+            keepInventoryGearButton = HDSettingsUI.Checkbox(c, "HaulersDream.Setting.KeepGearButton".Translate(),
+                keepInventoryGearButton, "HaulersDream.Setting.KeepGearButtonDesc".Translate());
             // The vanilla-like pickup pause (#121). The slider is the MAGNITUDE; by default the delay only paces the
             // deliberate carry orders ("Pick up X" / "Keep X in inventory"), matching vanilla's own pickup delay,
             // while automatic hauling and loading stay instant like vanilla. The two checkboxes opt those automatic

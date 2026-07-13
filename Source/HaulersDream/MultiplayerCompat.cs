@@ -155,6 +155,21 @@ namespace HaulersDream
         }
 
         /// <summary>
+        /// Set a pawn's per-def "keep N in inventory" amount (issue #197) from the Gear-tab keep control. Replaces a
+        /// direct <c>comp.SetKeptCount</c> write (a mutation of the SCRIBED <c>keptCounts</c> map — synced world state
+        /// that must run on every client, not just the clicker). The absolute amount is chosen locally on the slider
+        /// and passed in, so the command is idempotent across clients. A <paramref name="count"/> &lt;= 0 clears the
+        /// pin. <see cref="ThingDef"/> is a Def, natively MP-serializable by defName. Invoke ONCE on commit (dialog
+        /// close / toggle click), never per-frame, to avoid command spam.
+        /// </summary>
+        public static void SetKeptCount(Pawn pawn, ThingDef def, int count)
+        {
+            var comp = pawn?.GetComp<CompHauledToInventory>();
+            if (comp != null)
+                comp.SetKeptCount(def, count);
+        }
+
+        /// <summary>
         /// The single class that touches <c>Multiplayer.API</c> types in its method BODIES. Every member here is
         /// invoked ONLY from behind the <see cref="Active"/> gate, so in a non-MP game these methods are never
         /// called → never JIT'd → the unshipped API assembly is never resolved. Do NOT call any member of this
@@ -176,6 +191,7 @@ namespace HaulersDream
                 MP.RegisterSyncMethod(typeof(MultiplayerCompat), nameof(UnloadInventoryNow));
                 MP.RegisterSyncMethod(typeof(MultiplayerCompat), nameof(SetBillBatch));
                 MP.RegisterSyncMethod(typeof(MultiplayerCompat), nameof(SetBillBatchOvershoot));
+                MP.RegisterSyncMethod(typeof(MultiplayerCompat), nameof(SetKeptCount));
                 MP.RegisterSyncMethod(typeof(JobDriver_BatchCraft), nameof(JobDriver_BatchCraft.StartBatchCraftSynced));
                 MP.RegisterSyncMethod(typeof(RouteExecutor), nameof(RouteExecutor.ExecuteRouteSynced));
                 MP.RegisterSyncMethod(typeof(SowRouteExecutor), nameof(SowRouteExecutor.ExecuteSowRouteSynced));

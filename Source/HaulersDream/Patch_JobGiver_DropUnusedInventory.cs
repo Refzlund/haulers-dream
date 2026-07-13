@@ -95,14 +95,15 @@ namespace HaulersDream
     public static class Patch_JobGiver_DropUnusedInventory_Drop
     {
         // Return false to SKIP vanilla's inventory drop for an HD-tagged stack (it belongs to HD's unload trip) OR a
-        // KEPT stack (the "Keep X in inventory" order — the pawn is deliberately holding it). PeekKept is
-        // side-effect-free and a stale ref never matches this live inventory thing.
+        // KEPT def (#197: the "Keep N in inventory" order / Gear-tab keep button — the pawn is deliberately holding
+        // it). Blocking drop-unused for the WHOLE kept def is intended: any excess above the kept count is unloaded to
+        // storage by HD's own surplus-aware unload trip, not dumped on the floor by vanilla's crude drop loop.
         static bool Prefix(Pawn pawn, Thing thing)
         {
             var comp = pawn?.GetComp<CompHauledToInventory>();
             if (comp == null || thing == null)
                 return true;
-            return !comp.GetHashSet().Contains(thing) && !comp.PeekKept().Contains(thing);
+            return !comp.GetHashSet().Contains(thing) && !comp.IsKeptDef(thing.def);
         }
     }
 
@@ -150,8 +151,8 @@ namespace HaulersDream
             if (inner == null || !inner.Contains(drug))
                 return;
             var comp = pawn.GetComp<CompHauledToInventory>();
-            if (comp != null && (comp.GetHashSet().Contains(drug) || comp.PeekKept().Contains(drug)))
-                __result = true; // HD-hauled cargo (keep for the unload trip) OR a kept drug ("Keep X in inventory")
+            if (comp != null && (comp.GetHashSet().Contains(drug) || comp.IsKeptDef(drug.def)))
+                __result = true; // HD-hauled cargo (keep for the unload trip) OR a kept drug (#197 keep-in-inventory)
         }
     }
 }

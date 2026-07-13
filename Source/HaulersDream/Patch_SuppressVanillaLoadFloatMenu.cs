@@ -72,7 +72,11 @@ namespace HaulersDream
                 // all-pawn/corpse manifest (or one with nothing item-like left to claim) yields no HD job → leave the
                 // vanilla carry option so the player can still load by hand.
                 var adapter = LoadTransportersAdapter.TryCreate(clicked.TryGetComp<CompTransporter>());
-                if (adapter != null && TransportLoad.TryGiveBulkJob(pawn, adapter, playerOrder: true) != null)
+                // #138 perf: the CACHED probe — the full TryGiveBulkJob plan is memoized per (pawn, group, tick) so a
+                // group probed several times per right-click is planned once (behaviour-identical; the probe is
+                // side-effect-free). The A5 corpse/all-pawn fallback is preserved: a manifest with nothing item-like
+                // to claim still yields no job → the vanilla carry option survives.
+                if (adapter != null && TransportLoad.WouldGiveBulkJobForMenu(pawn, adapter))
                 {
                     __result = null; // HD's bulk-load float-menu provider supplies the order instead
                     return false;
@@ -86,7 +90,7 @@ namespace HaulersDream
                 if (pawn.mindState?.duty?.def == DutyDefOf.LoadAndEnterPortal)
                     return true;
                 var adapter = MapPortalBulkTarget.TryCreate(clicked as MapPortal);
-                if (adapter != null && TransportLoad.TryGiveBulkJob(pawn, adapter, playerOrder: true) != null)
+                if (adapter != null && TransportLoad.WouldGiveBulkJobForMenu(pawn, adapter))
                 {
                     __result = null; // HD's bulk-portal-load float-menu provider supplies the order instead
                     return false;

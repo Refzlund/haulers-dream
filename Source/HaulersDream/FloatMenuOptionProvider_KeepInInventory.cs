@@ -6,9 +6,9 @@ using Verse.AI;
 namespace HaulersDream
 {
     /// <summary>
-    /// "Keep X in inventory": a right-click order that takes the clicked stack into the pawn's inventory and
-    /// HOLDS it — HD never hauls it to storage and vanilla's drop-unused never sheds it (see
-    /// <see cref="JobDriver_KeepInInventory"/> / <see cref="CompHauledToInventory.RegisterKept"/>). Works on a ground
+    /// "Keep X in inventory": a right-click order that takes a player-chosen amount of the clicked stack into the
+    /// pawn's inventory and HOLDS it — HD never hauls it to storage and vanilla's drop-unused never sheds it (see
+    /// <see cref="JobDriver_KeepInInventory"/> / <see cref="CompHauledToInventory.AddKeptCount"/>). Works on a ground
     /// stack AND on a stack held inside a spawned container building (vanilla's egg box — the only vanilla def with
     /// containedItemsSelectable — plus any modded container storage that flags its contents selectable), which the driver extracts from the holder's
     /// inner ThingOwner. The counterpart to <see cref="FloatMenuOptionProvider_PickUpIntoInventory"/> ("Pick up X" =
@@ -92,20 +92,21 @@ namespace HaulersDream
                 var pawnLocal = pawn;
                 var option = new FloatMenuOption("HaulersDream.Keep.Option".Translate(clicked.LabelCap), () =>
                 {
-                    // No try/catch: a failure to build the order is a real bug to surface. Both builders return null
-                    // ONLY when the pawn's inventory is already at/over its carry ceiling and not one more unit fits
-                    // (the container builder also when the item already left the container).
-                    Job job = containerLocal != null
-                        ? BulkHaul.BuildKeepFromContainerJob(pawnLocal, clickedLocal, containerLocal)
-                        : BulkHaul.BuildKeepJob(pawnLocal, clickedLocal);
-                    if (job == null)
+                    // #197: let the player pick HOW MANY to keep. A multi-unit stack opens a vanilla Dialog_Slider
+                    // (like vanilla's "Pick up some…"), defaulting to the whole stack so the old one-click behavior is
+                    // just Enter; a single-unit stack skips the dialog. The chosen count flows into the ordered job
+                    // (BuildKeepJob), which MP auto-syncs via TryTakeOrderedJob — same path vanilla "Pick up some" uses.
+                    int max = clickedLocal.stackCount;
+                    if (max <= 1)
                     {
-                        Messages.Message("HaulersDream.Keep.CouldNotStart".Translate(pawnLocal.LabelShort, clickedLocal.LabelCap),
-                            clickedLocal, MessageTypeDefOf.RejectInput, historical: false);
+                        OrderKeep(pawnLocal, clickedLocal, containerLocal, max);
                         return;
                     }
-                    job.playerForced = true;
-                    pawnLocal.jobs.TryTakeOrderedJob(job, JobTag.Misc);
+                    Find.WindowStack.Add(new Dialog_Slider(
+                        n => "HaulersDream.Keep.SliderLabel".Translate(n, clickedLocal.LabelNoCount),
+                        1, max,
+                        n => OrderKeep(pawnLocal, clickedLocal, containerLocal, n),
+                        startingValue: max));
                 })
                 {
                     iconThing = clicked,
@@ -114,6 +115,31 @@ namespace HaulersDream
                 // per-thing "Prioritize hauling").
                 yield return FloatMenuUtility.DecoratePrioritizedTask(option, pawn, reachTarget);
             }
+        }
+
+        /// <summary>Build and issue the "Keep <paramref name="count"/> in inventory" order (ground or container
+        /// branch), toasting if HD cannot start it. Shared by the direct single-unit path and the slider's confirm.
+        /// <c>TryTakeOrderedJob</c> is the vanilla-auto-synced seam, so this is MP-safe from either caller.</summary>
+        /// <param name="pawn">The pawn to order.</param>
+        /// <param name="item">The clicked stack to keep from.</param>
+        /// <param name="container">The spawned container holding the item, or null for a ground stack.</param>
+        /// <param name="count">Units to keep (already 1..stackCount from the caller).</param>
+        private static void OrderKeep(Pawn pawn, Thing item, Thing container, int count)
+        {
+            // No try/catch: a failure to build the order is a real bug to surface. Both builders return null ONLY
+            // when the pawn's inventory is already at/over its carry ceiling and not one more unit fits (the
+            // container builder also when the item already left the container).
+            Job job = container != null
+                ? BulkHaul.BuildKeepFromContainerJob(pawn, item, container, count)
+                : BulkHaul.BuildKeepJob(pawn, item, count);
+            if (job == null)
+            {
+                Messages.Message("HaulersDream.Keep.CouldNotStart".Translate(pawn.LabelShort, item.LabelCap),
+                    item, MessageTypeDefOf.RejectInput, historical: false);
+                return;
+            }
+            job.playerForced = true;
+            pawn.jobs.TryTakeOrderedJob(job, JobTag.Misc);
         }
     }
 }

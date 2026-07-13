@@ -40,12 +40,21 @@ namespace HaulersDream
                 comp = pawn.GetComp<CompHauledToInventory>();
             bool hdSwept = comp?.PeekHashSet().Contains(thing) == true;
 
-            // Player "keep in inventory" (the "Keep X in inventory" order): this exact stack is HELD, so it is never
-            // surplus and the unload never hauls it away. Checked before the per-item rules / keep-mods so an explicit
-            // keep wins even over an UnloadAlways rule — the player deliberately kept THIS stack. PeekKept is a
-            // side-effect-free read (a stale ref never matches a live inventory thing), safe on the alert/render path.
-            if (comp != null && comp.PeekKept().Contains(thing))
-                return 0;
+            // Player "keep in inventory" (#197: the "Keep N in inventory" order slider + the Gear-tab keep button):
+            // this pawn is pinned to hold up to N units of the def, so only what it holds ABOVE N is surplus. Checked
+            // before the per-item rules / keep-mods so an explicit per-pawn keep wins even over an UnloadAlways rule —
+            // the player deliberately kept this def on this pawn. KeptCountOf is a side-effect-free read (safe on the
+            // alert/render path); the surplus arithmetic is the unit-tested Core policy. It can never black-hole: it
+            // only pins the first N, so any HD-swept excess above N still unloads normally.
+            if (comp != null)
+            {
+                int keptN = comp.KeptCountOf(def);
+                if (keptN > 0)
+                {
+                    int heldN = InventoryCountOfDef(pawn, def, invCountByDef);
+                    return KeepCountPolicy.SurplusForKeptDef(keptN, heldN, thing.stackCount);
+                }
+            }
 
             // An explicit per-item rule (mod options -> Individual Item Unload Settings) OVERRIDES both HD's
             // auto-detected keep-mods and the global keep-stock for that def. Keyed by defName, so it is
