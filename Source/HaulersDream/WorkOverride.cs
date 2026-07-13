@@ -124,7 +124,7 @@ namespace HaulersDream
             if (types.Count == 0)
                 return true; // no DoBill giver claims this bench (modded oddity) — don't block on a guess
             for (int i = 0; i < types.Count; i++)
-                if (!pawn.WorkTypeIsDisabled(types[i]))
+                if (!WorkCapabilityProbe.IsDisabled(pawn, types[i]))
                     return true;
             return false;
         }

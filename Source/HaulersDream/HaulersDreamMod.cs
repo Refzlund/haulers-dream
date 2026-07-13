@@ -158,6 +158,36 @@ namespace HaulersDream
                 priority = Priority.Last,
             };
 
+        // #197: the vanilla work-capability getters HD only POSTFIXES. A postfix is SKIPPED by Harmony when the
+        // original throws, so the universal tagger's finalizer on one of these can never be observing an HD fault
+        // — it can only convert a cleanly-propagating FOREIGN throw (a malformed modded pawn: vanilla's
+        // GetDisabledWorkTypes reads ageTracker / lifeStageWorkSettings with no null guard, e.g. a Dead Man's
+        // Switch humanoid mech) into an HD-RESTAMPED one, misreporting it as Hauler's Dream (the #197 report; same
+        // false-blame class as #97/#126/#190). Excluding these from the tagger lets such a fault propagate with its
+        // real stack so the game's own log names the true source. Property getters carry their get_ prefix.
+        private static readonly HashSet<(Type type, string name)> TaggerExcludedSafeGetters =
+            new HashSet<(Type type, string name)>
+            {
+                (typeof(Pawn), nameof(Pawn.GetDisabledWorkTypes)),
+                (typeof(Pawn), "get_" + nameof(Pawn.CombinedDisabledWorkTags)),
+            };
+
+        /// <summary>
+        /// True when <paramref name="method"/> is one of the work-capability getters HD only POSTFIXES
+        /// (<see cref="TaggerExcludedSafeGetters"/>) AND HD's patch there is STILL postfix-only, so the universal
+        /// tagger must be skipped for it (see that set's remark, issue #197). The postfix-only gate is
+        /// belt-and-braces: if HD ever adds a prefix/transpiler here, its own code really does enter the throw
+        /// path, the breadcrumb becomes meaningful again, and the tagger re-attaches automatically.
+        /// </summary>
+        private static bool IsSafePostfixOnlyBlameMagnet(MethodBase method, Patches info)
+        {
+            if (method?.DeclaringType == null || info == null)
+                return false;
+            if (!TaggerExcludedSafeGetters.Contains((method.DeclaringType, method.Name)))
+                return false;
+            return OwnedByHd(info.Postfixes) && !OwnedByHd(info.Prefixes) && !OwnedByHd(info.Transpilers);
+        }
+
         /// <summary>
         /// Once every HD patch is applied, attach a tagging FINALIZER to each method HD patched, so any exception
         /// that escapes the original (or another patch on it) is LOGGED with the <see cref="HDLog.Tag"/> breadcrumb
@@ -200,6 +230,8 @@ namespace HaulersDream
                 if (!seen.Add(method))
                     continue;
                 var info = Harmony.GetPatchInfo(method);
+                if (IsSafePostfixOnlyBlameMagnet(method, info))
+                    continue; // #197: excluded so a foreign fault through these getters keeps its real stack (see method)
                 if (info?.Finalizers != null && AlreadyHasHandlingFinalizer(info.Finalizers))
                     continue; // an HDGuard.SeamThrew finalizer already tags + rethrows here — don't double-log
                 try
@@ -451,6 +483,28 @@ namespace HaulersDream
         private static bool IsRepeatCheckpoint(int count) => count == 10 || count == 100 || count == 1000 || count % 10000 == 0;
 
         /// <summary>
+        /// True if Hauler's Dream owns a TRANSPILER on <paramref name="method"/>. A transpiler rewrites the
+        /// original method's IL in place, so a fault its edits introduced throws with only the original method's
+        /// frames and NO <c>HaulersDream.</c> frame — the finalizer's stack-trace check can't detect HD's
+        /// involvement there. The finalizer uses this so it never calls HD a pure "bystander" on a method HD
+        /// transpiles (QA #197: the categorical "not HD" wording would otherwise misdirect a report of HD's own
+        /// transpiler bug). Inlined here (not the private HaulersDreamMod.OwnedByHd) because that helper isn't
+        /// visible from HDLog; keyed on the public <see cref="HaulersDreamMod.HarmonyId"/>.
+        /// </summary>
+        private static bool HasHdTranspiler(MethodBase method)
+        {
+            if (method == null)
+                return false;
+            var transpilers = Harmony.GetPatchInfo(method)?.Transpilers;
+            if (transpilers == null)
+                return false;
+            foreach (var p in transpilers)
+                if (p != null && p.owner == HaulersDreamMod.HarmonyId)
+                    return true;
+            return false;
+        }
+
+        /// <summary>
         /// The universal exception breadcrumb (Issue #3) attached to EVERY method Hauler's Dream patches (see
         /// <see cref="HaulersDreamMod.AttachUniversalExceptionTagger"/>). It runs as a Harmony FINALIZER, so it
         /// observes any exception thrown by the original method or by any patch on it. It logs a tagged breadcrumb
@@ -474,11 +528,20 @@ namespace HaulersDream
                 // report triage — automated or human — attribute the exception correctly instead of blaming HD for
                 // simply having a patch on the same method.
                 bool hdInStack = __exception.StackTrace != null && __exception.StackTrace.Contains("HaulersDream.");
-                string blame = hdInStack
-                    ? "Hauler's Dream's own code IS in this exception's stack, so it may be involved, though the "
-                        + "original method or another mod's patch on it could still be the real cause."
-                    : "Hauler's Dream only PATCHES this method; its own code is NOT in this exception's stack trace, so "
-                        + "the cause is the original method or another mod, not Hauler's Dream.";
+                string blame;
+                if (hdInStack)
+                    blame = "Hauler's Dream's own code IS in this exception's stack, so it may be involved, though the "
+                        + "original method or another mod's patch on it could still be the real cause.";
+                else if (HasHdTranspiler(__originalMethod))
+                    // No HaulersDream. frame, but HD TRANSPILES this method (edits its IL), so its edits could still
+                    // be the cause even without a separate HD frame — never claim pure-bystander here (QA #197).
+                    blame = "Hauler's Dream TRANSPILES this method (it edits the method's IL), so even though its own "
+                        + "code is not a separate frame in the stack it could still be involved; the original method "
+                        + "or another mod's patch on it may also be the cause.";
+                else
+                    blame = "This is NOT a Hauler's Dream bug: Hauler's Dream only adds a postfix/prefix here (not an IL "
+                        + "edit) and its own code is NOT in this exception's stack trace, so the cause is the original "
+                        + "method or another mod. HD is only a bystander on the same method.";
                 // Dedupe key per (patched method, exception type): each DISTINCT fault at a method gets logged once,
                 // so a second, different exception later at the same method is not hidden by the first, while a fault
                 // that repeats every tick is still logged only once. (net48 has no System.HashCode, so combine by hand.)

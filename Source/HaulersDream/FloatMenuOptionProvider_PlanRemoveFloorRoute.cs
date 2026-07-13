@@ -34,7 +34,7 @@ namespace HaulersDream
             // Respect work incapability exactly like vanilla's construction work does (a pawn incapable of
             // Construction gets no plan-remove-floor option). The "all pawns can …" overrides flow through
             // WorkTypeIsDisabled.
-            if (pawn.WorkTypeIsDisabled(WorkTypeDefOf.Construction))
+            if (WorkCapabilityProbe.IsDisabled(pawn, WorkTypeDefOf.Construction))
                 yield break;
             // "Plan for unassigned work" off: also hide the option for a pawn CAPABLE of Construction but with
             // Construction unassigned (priority 0) in its Work tab (default on = shown, the permissive behavior).

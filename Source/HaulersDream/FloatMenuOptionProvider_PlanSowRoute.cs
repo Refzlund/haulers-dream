@@ -33,7 +33,7 @@ namespace HaulersDream
 
             // Respect work incapability exactly like vanilla's "Prioritize sowing" does (a pawn incapable of
             // Growing gets no plan-sow option). The "all pawns can …" overrides flow through WorkTypeIsDisabled.
-            if (pawn.WorkTypeIsDisabled(WorkTypeDefOf.Growing))
+            if (WorkCapabilityProbe.IsDisabled(pawn, WorkTypeDefOf.Growing))
                 yield break;
             // "Plan for unassigned work" off: also hide the option for a pawn CAPABLE of Growing but with Growing
             // unassigned (priority 0) in its Work tab (default on = shown regardless, the permissive behavior).

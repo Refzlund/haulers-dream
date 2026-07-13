@@ -121,7 +121,7 @@ namespace HaulersDream
                     // "Prioritize…" does: a pawn that won't do cleaning gets no "Plan prioritized cleaning".
                     // The "all pawns can haul/clean/cut plants" overrides flow through automatically — they
                     // make WorkTypeIsDisabled itself return false (see WorkOverride).
-                    if (wgDef.workType != null && pawn.WorkTypeIsDisabled(wgDef.workType))
+                    if (wgDef.workType != null && WorkCapabilityProbe.IsDisabled(pawn, wgDef.workType))
                         continue;
                     if (!(wgDef.Worker is WorkGiver_Scanner scanner))
                         continue;
@@ -232,7 +232,7 @@ namespace HaulersDream
             var wgDef = PlantsCutDef();
             if (wgDef == null || !(wgDef.Worker is WorkGiver_Scanner scanner))
                 return null;
-            if (pawn.WorkTypeIsDisabled(wgDef.workType))
+            if (WorkCapabilityProbe.IsDisabled(pawn, wgDef.workType))
                 return null;
 
             // ignoreOtherReservations: true mirrors the forced (player-prioritized) job path the route uses.
@@ -304,7 +304,7 @@ namespace HaulersDream
                 return null;
             if (clicked.Faction != pawn.Faction)
                 return null;
-            if (pawn.WorkTypeIsDisabled(WorkTypeDefOf.Construction))
+            if (WorkCapabilityProbe.IsDisabled(pawn, WorkTypeDefOf.Construction))
                 return null;
 
             // No try/catch: pawn.CanReach is a vanilla call — a throw is a real bug to surface, not hide.

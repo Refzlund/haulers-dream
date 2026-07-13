@@ -249,7 +249,7 @@ namespace HaulersDream
                 {
                     if (f.IsCompleted()
                         && InventoryConstructDelivery.RouteIntent == ConstructRouteIntent.HaulBuild
-                        && !pawn.WorkTypeIsDisabled(WorkTypeDefOf.Construction))
+                        && !WorkCapabilityProbe.IsDisabled(pawn, WorkTypeDefOf.Construction))
                     {
                         // No try/catch: GenConstruct.CanConstruct is a vanilla call — a throw is a real bug to surface.
                         if (GenConstruct.CanConstruct(f, pawn, checkSkills: true, forced: true))
