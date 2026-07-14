@@ -1,6 +1,6 @@
 {
   "name": "haulers-dream",
-  "version": "1.19.0",
+  "version": "1.20.0",
   "private": true,
   "description": "RimWorld mod: colonists use their inventories smartly when moving items — fewer round-trips, less walking, more working.",
   "repository": "github:refzlund/haulers-dream",
