@@ -1,5 +1,39 @@
 # haulers-dream
 
+## 1.20.0
+
+### Minor Changes
+
+- 97865a7: Eat, tend, and build from a vehicle's cargo when away from home (three new opt-in options for nomad runs).
+
+  If you use Vehicle Framework and travel with your base packed into vehicles, unpacking food, medicine, and building materials every time you settle for a while is tedious. Three new options extend the "Meals on Wheels" idea to a parked vehicle's cargo, treating it like a pack animal you can draw from:
+
+  A hungry colonist can eat food stored in a vehicle's cargo. A doctor with no reachable medicine on the map can tend using medicine carried in a vehicle, on a pack animal, or by another colonist, still respecting the patient's medical-care policy. A builder can pull construction materials from a vehicle's cargo.
+
+  All three are off by default and apply only on a non-home map (a caravan or temporary map), so a base's curated vehicle loadout is never touched. They appear in the mod options only when Vehicle Framework is installed, alongside the existing Meals on Wheels and Build from inventory toggles.
+
+### Patch Changes
+
+- 97865a7: Stop the unload and re-pickup loop for items a Compositable Loadouts loadout tells a pawn to keep (#200).
+
+  With Compositable Loadouts, a pawn assigned a loadout that keeps something (for example, medicine) would have Hauler's Dream haul it away as surplus, then the loadout would send the pawn to pick it back up, over and over. Hauler's Dream now counts what a pawn's Compositable Loadout keeps as inventory that pawn should hold onto, so it leaves that amount alone and only hauls away the true surplus. The back-and-forth stops.
+
+  This reads the loadout through reflection and does nothing when Compositable Loadouts is not installed.
+
+- 97865a7: Crafters now drop hauled items into storage on the way to the next craft, instead of carrying them through and dropping them on the floor (#201).
+
+  When a crafter grabbed a loose item on the way to a workbench (the "while you're up" pickup), it could carry that item all the way through the craft and then stand around before finally dropping it on the ground. Now, when a crafter is about to start a crafting or cooking bill and a stockpile sits roughly on the way to its ingredients, it drops the carried surplus off there first, so the item reaches storage while the pawn is fetching materials for the next craft.
+
+  This reuses the same "drop it off on the way" behavior doctors already use during elective surgery, honors the existing unload detour distance setting, and never sheds the materials the imminent craft itself needs.
+
+- 97865a7: "Haul Urgently" fills backpacks again when Combat Extended is installed alongside Allow Tool or Keyz' Allow Utilities.
+
+  The "Haul Urgently" order (from Allow Tool and its lighter reimplementation Keyz' Allow Utilities) is meant to sweep nearby items into a pawn's inventory in one trip, like the rest of Hauler's Dream. With Combat Extended present, an urgent haul was falling back to carrying a single stack by hand instead. An urgent haul is a deliberate command, so it now sweeps the whole nearby cluster into the backpack as intended, the same way "Haul everything nearby" does, while a lone bulky stack with nothing around it still travels by hand.
+
+- 97865a7: The "couldn't unload inventory" alert no longer points players at supported mods.
+
+  When a pawn was stuck unable to put its hauled items away, the alert suggested a mod might be canceling the unload and, in following that advice, players were disabling mods Hauler's Dream actually supports (such as Simple Sidearms). The message now leads with checking that there is accessible, unforbidden storage with space, and explicitly says the mods Hauler's Dream integrates with (Simple Sidearms, Smart Medicine, Combat Extended, Grab Your Tool, Item Policy) are not the cause and should not be disabled.
+
 ## 1.19.0
 
 ### Minor Changes
