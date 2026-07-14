@@ -121,7 +121,7 @@ namespace HaulersDream
         /// apply (vanilla job stands). PURE planning — no reservations, no designations, no world mutation —
         /// because the float menu calls JobOnThing speculatively while only BUILDING its options.
         /// </summary>
-        internal static Job TryBuildBulkJob(Pawn pawn, Thing primary, Job vanillaJob, bool forced)
+        internal static Job TryBuildBulkJob(Pawn pawn, Thing primary, Job vanillaJob, bool forced, bool forceSweep = false)
         {
             if (pawn == null || primary == null)
                 return null;
@@ -181,12 +181,17 @@ namespace HaulersDream
             // the first nearby haulable (so it's near-instant on a dense field) and is allocation-free (it iterates
             // the lister's HashSet via the struct enumerator and builds no list); worst case is O(haulables) when
             // nothing is near. Mirrors TransportLoad.HasPotentialBulkWork. When it rejects, the vanilla job stands
-            // and no heavy scan runs. It's a SUPERSET of the build's AUTOMATIC accept set: a plan with NO nearby sweepable is
-            // produced only by forceSweep / secondTasked (forced-only, and forced probes skip this gate) or the
-            // oversized-primary-in-inventory carve-out (which HasPotentialBulkWork itself lets through), so it
-            // never suppresses a plan the automatic build would have made. Skipped for forced probes: the float
-            // menu / player orders aren't the hot scan path, and a forced single-stack order can legitimately
-            // build with nothing else nearby (oversized-in-inventory, secondTasked takeover).
+            // and no heavy scan runs. It's a SUPERSET of the build's AUTOMATIC accept set: on the automatic path
+            // (!forced) a bulk plan needs a nearby sweepable, which this gate confirms, so it never suppresses a plan
+            // the automatic build would have made. A lone-stack plan with nothing else in the pool comes only from a
+            // FORCED probe (the "Haul everything nearby" button / a secondTasked takeover — forced == true, which
+            // skips this gate) or the oversized-primary-in-inventory carve-out (which HasPotentialBulkWork itself lets
+            // through). The automatic "Haul Urgently" haul is forceSweep BUT forced == false, so it too passes this
+            // gate; its only lone-stack case is a post-gate claim race (a neighbor was present when the gate ran but
+            // got swept away before the pool build), which the count<2 branch resolves by deferring a lone bulky stack
+            // to hands under CE. Skipped for forced probes: the float menu / player orders aren't the hot scan path,
+            // and a forced single-stack order can legitimately build with nothing else nearby (oversized-in-inventory,
+            // secondTasked takeover).
             if (!forced && !HasPotentialBulkWork(pawn, primary, vanillaJob))
                 return null;
             // The memo is keyed on TicksGame, which FREEZES while paused, and a forced probe (the float
@@ -221,6 +226,8 @@ namespace HaulersDream
             long key = ((long)pawn.thingIDNumber << 32) | (uint)primary.thingIDNumber;
             if (forced)
                 key = ~key; // forced and automatic plans differ (the trigger) — separate cache lines
+            if (forceSweep)
+                key ^= unchecked((long)0x5F5F5F5F5F5F5F5FL); // a forceSweep (urgent-haul) plan differs from an ordinary one
             int jobState = forced ? JobStateSignature(pawn) : 0;
             if (cache.TryGetValue(key, out var cached) && (!forced || cached.jobState == jobState))
             {
@@ -235,7 +242,7 @@ namespace HaulersDream
                     && cached.job.targetA.Thing == primary)
                     return cached.job;
             }
-            var plan = BuildBulkJob(pawn, primary, vanillaJob, forced);
+            var plan = BuildBulkJob(pawn, primary, vanillaJob, forced, forceSweep);
             cache[key] = new CachedPlan { job = plan, loadID = plan?.loadID ?? -1, jobState = jobState };
             return plan;
         }
@@ -280,10 +287,12 @@ namespace HaulersDream
         /// a HaulToCell destination (containers keep vanilla flow), on an allowed map, and at least one OTHER
         /// haulable within the same pool radius the build would use. Returns on the FIRST nearby hit (so it's
         /// near-instant on a dense field) and builds no list — it scans the lister's HashSet via the struct
-        /// enumerator, so it's allocation-free; worst case is O(haulables) when nothing is near. A SUPERSET of the build's AUTOMATIC-path accept set: the build yields a
-        /// plan with NO nearby sweepable only via forceSweep / secondTasked (both forced-only, and forced probes
-        /// skip this gate entirely) or the oversized-primary-in-inventory carve-out (handled below), so this
-        /// never rejects a plan the automatic build would have produced.
+        /// enumerator, so it's allocation-free; worst case is O(haulables) when nothing is near. A SUPERSET of the
+        /// build's AUTOMATIC-path accept set: on the automatic path the build yields a plan with NO nearby sweepable
+        /// only via a FORCED probe (forceSweep / secondTasked with forced == true, which skips this gate) or the
+        /// oversized-primary-in-inventory carve-out (handled below). The automatic Haul-Urgently haul is forceSweep
+        /// but forced == false, so it passes this gate too; its only lone-stack case is a post-gate claim race, not a
+        /// gate miss. So this never rejects a plan the automatic build would have produced.
         /// </summary>
         private static bool HasPotentialBulkWork(Pawn pawn, Thing primary, Job vanillaJob)
         {
@@ -559,16 +568,26 @@ namespace HaulersDream
                 }
                 else if (forceSweep)
                 {
-                    // The explicit "Haul everything nearby" button MUST always yield a bulk job — never degrade to
-                    // a vanilla single hand-haul. The reported bug: shift-clicking the button a second time found
-                    // the neighbors already swept/reserved by the first sweep, so the ground pool was empty
-                    // (things.Count == 1); the old `forceSweep || haulOversizedInInventory` gate then still required
-                    // the lone clicked stack to be OVERSIZED, so a normal stack fell through to `return null` and
-                    // the caller hauled it solo as "haul Nx steel". Build the single-item bulk regardless of size so
-                    // the order stays "haul everything nearby" (and the takeover prefix can fold it into a running
-                    // sweep). Clamp to real storage space so a lone oversized clicked stack never plans more than the
-                    // destination can take (no stranding); return null only when there is genuinely no room at all
-                    // (the caller then falls back to a plain forced haul).
+                    // A forceSweep order that collapsed to a lone stack (the cluster it would have swept was claimed
+                    // away by another hauler, or the button was clicked over an already-swept area). Two callers:
+                    //  - a player-ORDERED (forced) sweep — the "Haul everything nearby" button — MUST always yield a
+                    //    bulk job, never degrade to a vanilla single hand-haul (the reported "second click hauls one
+                    //    stack solo" bug: the neighbors were already swept/reserved, so pool == 1, and the old
+                    //    `forceSweep || haulOversizedInInventory` gate then required the lone stack to be OVERSIZED).
+                    //    Build the single-item bulk regardless of size (the takeover prefix can still fold it into a
+                    //    running sweep).
+                    //  - the AUTOMATIC "Haul Urgently" scan (forced == false, forceSweep == true via the urgent-haul
+                    //    postfix) must NOT re-open the CE #115 trickle. The multi-stack guard at ~#469 was EXEMPTED for
+                    //    forceSweep so the urgent CLUSTER sweep could run; here, with the pool collapsed to a lone
+                    //    BULKY stack, re-apply that same CE compare (passing forceSweep == false runs the real compare)
+                    //    so a stack that hands carry better stays a hand-haul — exactly as a non-forceSweep automatic
+                    //    haul would have declined at #469. Parity, no trickle; a lone non-bulky/oversized stack (hands
+                    //    NOT better) still backpacks in one trip.
+                    if (!forced && BulkHaulPolicy.InventoryHaulWorseThanHands(
+                            CECompat.IsActive, false, primaryTake, handCap, primary.stackCount))
+                        return null;
+                    // Clamp to real storage space so a lone oversized stack never plans more than the destination can
+                    // take (no stranding); return null only when there is genuinely no room at all.
                     counts[0] = Math.Min(counts[0], deliverable);
                     if (counts[0] <= 0)
                         return null;

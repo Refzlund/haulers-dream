@@ -39,7 +39,7 @@
 <HaulersDream.Setting.UnloadBeforeEatingDesc>当小人结束工作且饥饿（即将进食）时，会先卸载——这样它就不会把刚采掘的矿石带到餐桌上。</HaulersDream.Setting.UnloadBeforeEatingDesc>
 <HaulersDream.Setting.ShareHeader>在殖民者之间共享所携带的材料：</HaulersDream.Setting.ShareHeader>
 <HaulersDream.Setting.ShareForBuilding>使用所携带的材料进行建造</HaulersDream.Setting.ShareForBuilding>
-<HaulersDream.Setting.BuildFromInventory>从货物栏建造（使用已携带的材料）</HaulersDream.Setting.BuildFromInventory>
+<HaulersDream.Setting.BuildFromInventory>使用小人、殖民者或驮兽携带的材料进行建造</HaulersDream.Setting.BuildFromInventory>
 <HaulersDream.Setting.BuildFromInventoryDesc>建造中的小人可从某个小人或动物已携带的货物栏中取用建造材料——先是它自己的，然后是其他殖民者的，再然后是驮兽/商队货物的——而不仅是地上的散堆。因此，如果你用商队携带钢铁，在突袭或外出地图上下令造沙袋或墙，它就会用所携带的钢铁来造，而无需你先从驮兽身上把钢铁卸下。直接从货物栏运送到工地（无需先丢在运载者脚边）。这与上方的“使用所携带的材料进行建造”不同，后者只计入本模组自己收取的材料。绝不会从被征召、倒地或暴走的运载者处取用，也不会从已划归正在组建的商队的货物中取用；会预定该物品堆，以免两名建造者争抢。默认开启。</HaulersDream.Setting.BuildFromInventoryDesc>
 <HaulersDream.Setting.BuildFromInventoryPartial>允许用货物栏材料进行部分建造</HaulersDream.Setting.BuildFromInventoryPartial>
 <HaulersDream.Setting.BuildFromInventoryPartialDesc>通常，除非整件物品所需的材料都齐备，否则不会开始建造。开启此项后，即便货物栏中的材料少于所需总量，也会用现有的材料开始并推进框架的搭建——其余部分在材料逐渐到位时送达。这改变了游戏本体“要么全有要么全无”的规则，故默认关闭。需要“从货物栏建造”。</HaulersDream.Setting.BuildFromInventoryPartialDesc>
@@ -54,8 +54,14 @@
 <HaulersDream.Setting.MultiSiteConstructDeliverDesc>当自动或Shift点选的建造要向一簇需要相同材料的邻近工地交付时，小人会把整簇工地的合计需求一次性装进货物栏，并分别送达每处工地，而不是一趟只服务一个工地（此前只有路径规划器能这样做）。小人会先完成它正在干的工地，再去装载。需要上方的“用货物栏为单个大型建造携带材料”。</HaulersDream.Setting.MultiSiteConstructDeliverDesc>
 <HaulersDream.Setting.ShareHandHauled>向正把材料搬往储存区的殖民者索取材料（默认关闭）</HaulersDream.Setting.ShareHandHauled>
 <HaulersDream.Setting.ShareHandHauledDesc>当建造者需要某种材料，而唯一的存货正在一名将其搬往储存区的殖民者手中时，建造者会在途中拦下那名殖民者并取走那一堆，而不是等它到达储存区再去那里取。绝不会动正在向特定建造、工单或添加燃料任务交付的殖民者，并且只在确实能省下一趟时才这么做。（目前仅限建造。）</HaulersDream.Setting.ShareHandHauledDesc>
-<HaulersDream.Setting.MealsOnWheels>找不到食物时，食用其他殖民者携带的食物</HaulersDream.Setting.MealsOnWheels>
+<HaulersDream.Setting.MealsOnWheels>找不到食物时，从其他殖民者或驮兽携带的食物中取食</HaulersDream.Setting.MealsOnWheels>
 <HaulersDream.Setting.MealsOnWheelsDesc>当饥饿的殖民者在地图上或自己（或驮兽）的行囊中都找不到食物时，会走向另一名携带可接受食物的殖民者或驮兽，从其货物栏中取食——既减少往返，又能在所携带的餐食腐烂前抢救它们——而不是挨饿或长途跋涉去远处的储存区。只有在正常的食物搜索一无所获时才会启动，因此绝不会越过更近的餐食。会遵守进食者的食物方案、意识形态和禁酒状态；绝不取走家长正喂给婴儿的食物；绝不从被征召、倒地或暴走的运载者处取用；会预定该餐食，以免两名殖民者争抢；并优先取最临近腐烂的食物。默认开启。</HaulersDream.Setting.MealsOnWheelsDesc>
+  <HaulersDream.Setting.EatFromVehiclesAway>离家在外时也能从载具货舱取食</HaulersDream.Setting.EatFromVehiclesAway>
+  <HaulersDream.Setting.EatFromVehiclesAwayDesc>扩展"移动餐车"：在非家园地图上，饥饿的殖民者也可以像从驮兽身上那样，从停放的载具货舱中取用食物。仅在离家的地图上生效，家中载具的装载清单不受影响。默认关闭；需要开启"移动餐车"并安装载具框架。</HaulersDream.Setting.EatFromVehiclesAwayDesc>
+  <HaulersDream.Setting.MedicineFromVehiclesAway>离家在外时用载具或驮兽上的药品治疗</HaulersDream.Setting.MedicineFromVehiclesAway>
+  <HaulersDream.Setting.MedicineFromVehiclesAwayDesc>当地图上没有可用药品时，医生可以使用载具货舱、驮兽或其他殖民者身上携带的药品进行治疗。仅在离家的地图上生效，遵循病人的医疗策略。默认关闭；需要安装载具框架。</HaulersDream.Setting.MedicineFromVehiclesAwayDesc>
+  <HaulersDream.Setting.BuildFromVehiclesAway>离家在外时也能从载具货舱取建材</HaulersDream.Setting.BuildFromVehiclesAway>
+  <HaulersDream.Setting.BuildFromVehiclesAwayDesc>扩展"从库存建造"：在非家园地图上，建造者也可以像从驮兽身上那样，从停放的载具货舱中取用建材。仅在离家的地图上生效，家中载具的装载清单不受影响。默认关闭；需要开启"从库存建造"并安装载具框架。</HaulersDream.Setting.BuildFromVehiclesAwayDesc>
 <HaulersDream.Setting.BulkHaul>批量搬运——一趟搬运中拾取周围的一切</HaulersDream.Setting.BulkHaul>
 <HaulersDream.Setting.BulkHaulDesc>被派去搬运某一件物品的小人，会规划把周围一切可搬运的物品都拾进货物栏，并在一趟储存行程中送出全部。关闭＝原版每趟一件的搬运。</HaulersDream.Setting.BulkHaulDesc>
 <HaulersDream.Setting.BulkHaulSecond>仅当附近也下达了第二个搬运命令时，被命令的搬运才会清扫</HaulersDream.Setting.BulkHaulSecond>
@@ -182,7 +188,7 @@
 <HaulersDream.Gizmo.AutoHaulDesc>开启时，这个小人会在工作时自动收取自己的工作产出，并把附近的战利品清扫进货物栏。关闭它即可阻止这个小人自动搬运——它仍会收起任何已经携带的东西。</HaulersDream.Gizmo.AutoHaulDesc>
 <HaulersDream.Alert.CannotUnload>无法卸载货物栏（{0}）</HaulersDream.Alert.CannotUnload>
 <HaulersDream.Alert.CannotUnloadDesc.NoStorage>这些小人携带着无处存放的收取物品——地图上没有储存区或倾倒区接收它们，也找不到可到达的地点。请添加一个储存区（倾倒储存区可接收岩石碎块和大多数废料），或在已有储存区上允许它们的物品类型：\n\n{0}\n\n在此之前，物品会留在它们的货物栏中。点击此警报可循环切换到这些小人；悬停可指出它们。</HaulersDream.Alert.CannotUnloadDesc.NoStorage>
-<HaulersDream.Alert.CannotUnloadDesc.Stuck>这些小人携带收取物品很久了仍未卸载。可能是从它们所在位置无法到达储存区，或另一个模组反复取消它们的搬运/卸载任务：\n\n{0}\n\n请检查是否有可到达且允许的储存区，以及是否有模组在打断它们的任务。点击此警报可循环切换到这些小人；悬停可指出它们。</HaulersDream.Alert.CannotUnloadDesc.Stuck>
+<HaulersDream.Alert.CannotUnloadDesc.Stuck>这些小人已经携带收集到的物品很久却没有卸下。通常的原因是，从他们所在的位置没有可到达且允许存放的仓库能接收这些物品，所以请先检查这一点：\n\n{0}\n\n如果仓库看起来没问题，可能是某个会打断工作的模组（例如不断发出新命令的自动施法或自动工作模组）在他们卸货完成前取消了卸货。注意：Hauler's Dream 官方支持的模组，例如 Simple Sidearms、Smart Medicine、Combat Extended、Grab Your Tool、Item Policy 和 Compositable Loadouts，都不是原因，不应将其禁用；它们要保留的物品已被排除在卸货之外。点击此警报可在这些小人之间切换；悬停可标示他们。</HaulersDream.Alert.CannotUnloadDesc.Stuck>
 <HaulersDream.PlanRoute.Option>规划优先{0}…</HaulersDream.PlanRoute.Option>
 <HaulersDream.PlanRoute.ConstructGerund>建造</HaulersDream.PlanRoute.ConstructGerund>
 <HaulersDream.PlanRoute.MiningGerundFallback>采掘</HaulersDream.PlanRoute.MiningGerundFallback>

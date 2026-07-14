@@ -21,8 +21,12 @@ namespace HaulersDream
     /// This postfix runs the EXACT same conversion HD uses for ordinary hauls (<see cref="BulkHaul.TryBuildBulkJob"/>):
     /// when the urgent giver hands back a HaulToCell job and a sweep is worth it, swap it for a
     /// <see cref="JobDriver_BulkHaul"/> that picks up the whole nearby cluster and makes one storage trip. It
-    /// inherits ALL of HD's bulk-haul gating (the <c>bulkHaul</c> setting, eligibility, the map gate, the carry
-    /// ceiling, the trigger) for free — when HD's bulk-haul is off, urgent hauls stay vanilla, exactly as before.
+    /// inherits most of HD's bulk-haul gating (the <c>bulkHaul</c> setting, eligibility, the map gate, the carry
+    /// ceiling, and the <c>HasPotentialBulkWork</c> automatic front gate) for free — when HD's bulk-haul is off,
+    /// urgent hauls stay vanilla, exactly as before. It does NOT inherit the SecondTasked/Always TRIGGER: passing
+    /// <c>forceSweep: true</c> deliberately bypasses it, because an urgent order should sweep on its own (like HD's
+    /// "Haul everything nearby") rather than wait for a second queued haul. A lone bulky stack still defers to a hand
+    /// carry under Combat Extended via the build's count&lt;2 tail, so only a real nearby cluster is backpacked.
     ///
     /// SOFT DEPENDENCY: neither mod is referenced at compile time — the targets are resolved by string via
     /// <see cref="AccessTools"/>, and <see cref="Prepare"/> skips the whole patch when neither type is loaded, so
@@ -76,7 +80,13 @@ namespace HaulersDream
         // silently downgraded — matching Patch_WorkGiver_HaulGeneral_BulkHaul.
         static void Postfix(ref Job __result, Pawn __0, Thing __1, bool __2)
         {
-            var bulk = BulkHaul.TryBuildBulkJob(__0, __1, __result, __2);
+            // forceSweep: true — "Haul Urgently" is a deliberate aggressive order, so (like HD's own "Haul everything
+            // nearby") it bypasses the Combat Extended #115 guard ("backpacking one bulky stack is worse than hands"),
+            // which otherwise leaves an urgent haul as a single-stack HAND carry under CE — the reported CE + Keyz
+            // "pawns no longer backpack urgent hauls" break. On the automatic scan path (forced/__2 = false) the
+            // HasPotentialBulkWork front gate still runs, so a LONE bulky stack with nothing nearby stays a hand-carry
+            // (CE #115's benefit kept) and only a real nearby CLUSTER is swept into the backpack.
+            var bulk = BulkHaul.TryBuildBulkJob(__0, __1, __result, __2, forceSweep: true);
             if (bulk != null)
                 __result = bulk;
         }

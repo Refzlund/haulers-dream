@@ -137,12 +137,14 @@ namespace HaulersDream
                 // HD eligibility (excludes self/unspawned/dead/downed/drafted/mental/mid-HD-batch).
                 if (!InventoryShare.IsEligibleCarrier(holder, getter))
                     continue;
-                // [MOW] A VF vehicle is OFF-LIMITS as a food source: its cargo hold is a player-curated loadout VF
-                // manages (e.g. road-trip rations), so meals-on-wheels must not eat OUT of it and undo the loadout.
-                // Skip the vehicle itself. Gated on IsVehicle ONLY (a safety fix, not a feature): IsVehicle returns
-                // false when VF is absent. (Distinct from the InVehicle skip below, which excludes a holder RIDING
-                // inside a vehicle.)
-                if (VehicleFrameworkCompat.IsVehicle(holder))
+                // [MOW] A VF vehicle's cargo is a player-curated loadout VF manages. AT HOME it stays OFF-LIMITS as a
+                // food source (meals-on-wheels must not eat OUT of it and undo the loadout). AWAY from home the opt-in
+                // eatFromVehiclesAway (default OFF) lets a nomad camp eat from the wagons it brought, treating the
+                // vehicle like a pack animal (a mobile store). Gated on IsVehicle (false when VF absent), so the
+                // away-relaxation is inert without VF. (Distinct from the InVehicle skip below, which excludes a holder
+                // RIDING inside a vehicle — that stays unconditional; a rider's own inventory is unreachable.)
+                if (VehicleFrameworkCompat.IsVehicle(holder)
+                    && !(s.eatFromVehiclesAway && !map.IsPlayerHome))
                     continue;
                 // [MOW] Skip a holder riding INSIDE a vehicle (seat/cargo) — its inventory is unreachable, so pathing
                 // to it is wasted. Gated on InVehicle ONLY (a safety fix, not a feature): InVehicle returns false when

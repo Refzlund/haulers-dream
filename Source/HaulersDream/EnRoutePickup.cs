@@ -149,7 +149,8 @@ namespace HaulersDream
             //   - otherwise carry what it has, but do NOT grab (return null) so it doesn't accumulate mid-operation.
             // An UNBURDENED pawn falls through to the normal grab below, so it STILL hauls loose loot on the way
             // ("while you're up"). ShouldDivert stamps its own cooldown, so this can't ping-pong grab<->unload.
-            if (ProtectedWork.IsProtected(job, false)
+            bool protectedJob = ProtectedWork.IsProtected(job, false);
+            if (protectedJob
                 && PawnUnloadChecker.AnyUnloadable(pawn, comp.GetHashSet()))
             {
                 if (OpportunisticUnload.ShouldDivert(pawn, job, runOver: false, protectedZeroDetourOnly: true))
@@ -163,6 +164,34 @@ namespace HaulersDream
                 }
                 // Carrying surplus but storage is not cheaply on the way: hold the load, don't accumulate more.
                 return null;
+            }
+
+            // #201 CRAFTER SHED-ON-THE-WAY — deliver a carried surplus to storage BEFORE the next craft, "while she's
+            // there picking up materials." A crafter that grabbed loose loot en route to an earlier job (or holds any
+            // unrelated tagged surplus) otherwise carries it THROUGH the whole craft and sheds it only at the
+            // settle-gated end-of-run unload — what the player sees as "stands a while after finishing a bill, then
+            // drops it on the floor" (issue #201: the en-route component that rode through the craft). When the pawn
+            // is about to start a vanilla crafting/cooking DoBill (surgery/tend is the protected block above; HD's own
+            // BillPrepGather is an HD job ShouldDivert declines, so a prep's gathered ingredients are never shed here)
+            // and a stockpile sits within the unloadDetour budget of the outbound trip to the first floor ingredient,
+            // prepend the unload so the load reaches storage on the way. Reuses the SAME zero-detour geometry
+            // (protectedZeroDetourOnly) that bypasses the yield-run settle window and measures against the first
+            // SPAWNED ingredient cell — no new setting, honors unloadDetour (Off disables it), NotifyDiverted stamps
+            // the cooldown so it can't ping-pong. Unlike protected work we do NOT return null when storage is not on
+            // the way: an ordinary crafter still falls through to the normal en-route grab, so "while you're up" is
+            // preserved. HoldsStockUsableForBill keeps it from shedding the pawn's OWN materials for the imminent bill
+            // (share-for-crafting can source those from inventory) — only unrelated surplus is delivered.
+            if (!protectedJob && job.def == JobDefOf.DoBill && job.bill != null
+                && PawnUnloadChecker.AnyUnloadable(pawn, comp.GetHashSet())
+                && !HoldsStockUsableForBill(pawn, comp, job.bill)
+                && OpportunisticUnload.ShouldDivert(pawn, job, runOver: false, protectedZeroDetourOnly: true))
+            {
+                var craftUnloadJob = JobMaker.MakeJob(HaulersDreamDefOf.HaulersDream_UnloadInventory);
+                if (craftUnloadJob.TryMakePreToilReservations(pawn, false))
+                {
+                    OpportunisticUnload.NotifyDiverted(pawn);
+                    return craftUnloadJob;
+                }
             }
 
             // G2 SELF no-op: if the pawn already holds (current or queued) an HD pickup/bulk job, it is already
@@ -305,6 +334,25 @@ namespace HaulersDream
                 haulables.Clear();
                 storeCellCache.Clear();
             }
+        }
+
+        /// <summary>
+        /// #201: does the pawn carry any TAGGED stock the imminent <paramref name="bill"/> could consume from
+        /// inventory (share-for-crafting)? When it does, the crafter shed-on-the-way must NOT run — dropping it at
+        /// storage would rob the craft of its own materials and spark a re-gather loop. Mirrors the InventoryRoute
+        /// patch's HoldsTaggedStockForBill guard, so only UNRELATED surplus (an en-route haul riding through) is shed.
+        /// </summary>
+        private static bool HoldsStockUsableForBill(Pawn pawn, CompHauledToInventory comp, Bill bill)
+        {
+            if (bill?.recipe == null || comp == null)
+                return false;
+            var owner = pawn.inventory?.innerContainer;
+            if (owner == null)
+                return false;
+            foreach (var tagged in comp.GetHashSet())
+                if (tagged != null && owner.Contains(tagged) && InventoryShare.IsUsableForBill(tagged, bill))
+                    return true;
+            return false;
         }
 
         // A hard ceiling on band expansions so a fruitless scan can never spin: each expansion ×2 the ranges, so

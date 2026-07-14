@@ -39,7 +39,7 @@
 <HaulersDream.Setting.UnloadBeforeEatingDesc>ポーンが作業を終えて空腹（もうすぐ食事する）のとき、先に荷物を降ろします。採掘したばかりの鉱石を食卓まで運んでこないようにするためです。</HaulersDream.Setting.UnloadBeforeEatingDesc>
 <HaulersDream.Setting.ShareHeader>入植者間で携行中の資材を共有する：</HaulersDream.Setting.ShareHeader>
 <HaulersDream.Setting.ShareForBuilding>携行中の資材を建築に使う</HaulersDream.Setting.ShareForBuilding>
-<HaulersDream.Setting.BuildFromInventory>所持品から建築する（すでに携行中の資材を使う）</HaulersDream.Setting.BuildFromInventory>
+<HaulersDream.Setting.BuildFromInventory>ポーン・入植者・駄獣が持つ資材で建築する</HaulersDream.Setting.BuildFromInventory>
 <HaulersDream.Setting.BuildFromInventoryDesc>建築中のポーンは、地面に落ちた山だけでなく、ポーンや動物がすでに携行中の所持品（まず自分、次に他の入植者、次に荷物運搬動物/キャラバンの貨物）から建築資材を調達できます。そのため、キャラバンで鋼鉄を運んでいて襲撃先や遠征マップで土嚢や壁を指示すると、先に荷物運搬動物から降ろさなくても携行中の鋼鉄から建築します。所持品から現場へ直接届けられます（先に運搬者の足元へ落とすことはしません）。これは上の「携行中の資材を建築に使う」とは別物で、そちらはこのMODが自ら回収した資材だけを算入します。徴兵中・気絶中・狂乱中の運搬者からは決して調達せず、結成中のキャラバン向けに確保された貨物からも調達しません。2人の建築者が取り合わないよう山を確保します。デフォルトはオンです。</HaulersDream.Setting.BuildFromInventoryDesc>
 <HaulersDream.Setting.BuildFromInventoryPartial>所持品からの部分的な建築を許可する</HaulersDream.Setting.BuildFromInventoryPartial>
 <HaulersDream.Setting.BuildFromInventoryPartialDesc>通常、建築は全体に必要な資材がそろうまで開始されません。これをオンにすると、必要な総量に満たなくても、所持品にある資材だけで骨組みを開始し進めます。残りは資材が手に入り次第届けられます。バニラの全か無かのルールを変えるため、デフォルトはオフです。「所持品から建築する」が必要です。</HaulersDream.Setting.BuildFromInventoryPartialDesc>
@@ -54,8 +54,14 @@
 <HaulersDream.Setting.MultiSiteConstructDeliverDesc>自動またはShift+クリックの建築が、同じ資材を必要とする近くの建築現場の集まりへ配達するとき、ポーンは現場ごとに1往復するのではなく、集まり全体の合計需要を1回の往復で所持品に積み込み、それぞれの現場に届けます（以前はルートプランナーだけがこれを行っていました）。ポーンは積み込む前に、すでに作業中の現場を仕上げます。上の「大きな単一建築のために資材を所持品で運ぶ」が必要です。</HaulersDream.Setting.MultiSiteConstructDeliverDesc>
 <HaulersDream.Setting.ShareHandHauled>備蓄ゾーンへ運搬中の入植者から資材を取得する（デフォルトはオフ）</HaulersDream.Setting.ShareHandHauled>
 <HaulersDream.Setting.ShareHandHauledDesc>建築者がある資材を必要としていて、唯一の在庫が備蓄ゾーンへ運搬中の入植者の手にある場合、建築者はその在庫が保管庫に着くのを待って取りに行くのではなく、運搬中のその入植者と途中で落ち合って山を受け取ります。特定の建築・作業指示・燃料補給ジョブへ配達中の入植者には決して手を出さず、実際に往復を減らせるときだけ行います。（今のところ建築のみ。）</HaulersDream.Setting.ShareHandHauledDesc>
-<HaulersDream.Setting.MealsOnWheels>食料が見つからないとき、他の入植者が運んでいる食料を食べる</HaulersDream.Setting.MealsOnWheels>
+<HaulersDream.Setting.MealsOnWheels>食料が見つからないとき、他の入植者や駄獣が持つ食料を食べる</HaulersDream.Setting.MealsOnWheels>
 <HaulersDream.Setting.MealsOnWheelsDesc>空腹の入植者がマップ上や自分（あるいは荷物運搬動物）の荷物に食料を見つけられないとき、空腹のままでいたり遠い備蓄ゾーンまで歩いたりするのではなく、許容できる食料を運んでいる別の入植者や荷物運搬動物のところへ歩いて行き、その所持品から食べます。往復を減らし、携行中の食事が傷む前に救い出せます。通常の食料探索が何も見つけられなかったときだけ作動するので、より近い食事を上書きすることは決してありません。食べる側の食事方針・イデオロギー・禁酒主義を尊重し、親が赤ちゃんに与えている食料は決して取らず、徴兵中・気絶中・狂乱中の運搬者からは取らず、2人の入植者が取り合わないよう食事を確保し、最も傷みかけの食料を優先します。デフォルトはオンです。</HaulersDream.Setting.MealsOnWheelsDesc>
+  <HaulersDream.Setting.EatFromVehiclesAway>拠点を離れているとき車両の積荷からも食べる</HaulersDream.Setting.EatFromVehiclesAway>
+  <HaulersDream.Setting.EatFromVehiclesAwayDesc>「動く食堂」を拡張します。拠点外のマップでは、空腹の入植者が駄獣と同じように、停車中の車両の積荷から食料を取って食べられます。拠点を離れているときのみ有効で、拠点にある車両の積載内容には触れません。既定でオフ。「動く食堂」オンとVehicle Frameworkが必要です。</HaulersDream.Setting.EatFromVehiclesAwayDesc>
+  <HaulersDream.Setting.MedicineFromVehiclesAway>拠点を離れているとき車両や駄獣の薬で治療する</HaulersDream.Setting.MedicineFromVehiclesAway>
+  <HaulersDream.Setting.MedicineFromVehiclesAwayDesc>マップに到達可能な薬がないとき、医者が車両の積荷・駄獣・他の入植者が持つ薬を使って治療できます。拠点外のマップのみ有効で、患者の医療方針に従います。既定でオフ。Vehicle Frameworkが必要です。</HaulersDream.Setting.MedicineFromVehiclesAwayDesc>
+  <HaulersDream.Setting.BuildFromVehiclesAway>拠点を離れているとき車両の積荷からも建築する</HaulersDream.Setting.BuildFromVehiclesAway>
+  <HaulersDream.Setting.BuildFromVehiclesAwayDesc>「所持品から建築」を拡張します。拠点外のマップでは、建築者が駄獣と同じように、停車中の車両の積荷から資材を取れます。拠点を離れているときのみ有効で、拠点にある車両の積載内容には触れません。既定でオフ。「所持品から建築」オンとVehicle Frameworkが必要です。</HaulersDream.Setting.BuildFromVehiclesAwayDesc>
 <HaulersDream.Setting.BulkHaul>一括運搬 — 1回の運搬で周囲のものをすべて拾う</HaulersDream.Setting.BulkHaul>
 <HaulersDream.Setting.BulkHaulDesc>1つのアイテムを運搬しに送られたポーンが、周囲の運搬可能なものすべてを所持品に拾う計画を立て、まとめて1回の保管庫への往復で届けます。オフ＝バニラの1往復1アイテム運搬。</HaulersDream.Setting.BulkHaulDesc>
 <HaulersDream.Setting.BulkHaulSecond>指示した運搬は、近くにもう1つ運搬を指示したときだけかき集める</HaulersDream.Setting.BulkHaulSecond>
@@ -182,7 +188,7 @@
 <HaulersDream.Gizmo.AutoHaulDesc>オンのとき、このポーンは作業しながら自分の作業の収穫物を自動で回収し、近くの戦利品を所持品にかき集めます。オフにするとこのポーンの自動運搬を止めます — それでもすでに携行中のものは片付けます。</HaulersDream.Gizmo.AutoHaulDesc>
 <HaulersDream.Alert.CannotUnload>所持品を降ろせない（{0}）</HaulersDream.Alert.CannotUnload>
 <HaulersDream.Alert.CannotUnloadDesc.NoStorage>これらのポーンは、置き場のない回収済みアイテムを抱えています — マップ上のどの備蓄ゾーンや投棄ゾーンもそれらを受け入れず、到達可能な場所も見つかりませんでした。備蓄ゾーンを追加するか（投棄用備蓄ゾーンは岩塊やほとんどの廃棄物を受け入れます）、既存の備蓄ゾーンでそのアイテム種を許可してください：\n\n{0}\n\nそれまでアイテムは所持品にとどまります。この警告をクリックするとポーンを順に切り替え、ホバーすると彼らを示します。</HaulersDream.Alert.CannotUnloadDesc.NoStorage>
-<HaulersDream.Alert.CannotUnloadDesc.Stuck>これらのポーンは、回収済みアイテムを降ろさないまま長時間抱えています。彼らのいる場所から保管庫に到達できないか、他のMODが運搬/荷下ろしジョブを繰り返し取り消している可能性があります：\n\n{0}\n\n到達可能で許可された備蓄ゾーンがあるか、ジョブを妨げているMODがないかを確認してください。この警告をクリックするとポーンを順に切り替え、ホバーすると彼らを示します。</HaulersDream.Alert.CannotUnloadDesc.Stuck>
+<HaulersDream.Alert.CannotUnloadDesc.Stuck>これらのポーンは集めた物を長い間下ろさずに持ち運んでいます。よくある原因は、今いる場所から到達でき、かつ許可された保管庫が物を受け入れられないことなので、まずそれを確認してください：\n\n{0}\n\n保管庫に問題がなさそうなら、仕事を中断させるMod（例えば新しい命令を出し続けるオートキャストや自動作業Mod）が、荷下ろしが終わる前にキャンセルしているのかもしれません。注意：Hauler's Dream が公式に対応しているMod、たとえば Simple Sidearms、Smart Medicine、Combat Extended、Grab Your Tool、Item Policy、Compositable Loadouts は原因では「ありません」。無効化しないでください。それらが保持する物はすでに荷下ろしの対象から除外されています。この警告をクリックするとポーンを順に切り替え、カーソルを合わせると位置を示します。</HaulersDream.Alert.CannotUnloadDesc.Stuck>
 <HaulersDream.PlanRoute.Option>優先{0}を計画…</HaulersDream.PlanRoute.Option>
 <HaulersDream.PlanRoute.ConstructGerund>建築</HaulersDream.PlanRoute.ConstructGerund>
 <HaulersDream.PlanRoute.MiningGerundFallback>採掘</HaulersDream.PlanRoute.MiningGerundFallback>
