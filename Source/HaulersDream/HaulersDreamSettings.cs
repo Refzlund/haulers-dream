@@ -100,6 +100,18 @@ namespace HaulersDream
         // spoil. Acceptability (food policy / ideology / teetotaler) is delegated to vanilla.
         public bool mealsOnWheels = true;
 
+        // --- AWAY-FROM-HOME sourcing from VEHICLES (nomad support). Opt-in, default OFF. On a NON-HOME map only,
+        // let a pawn draw from a Vehicle Framework vehicle's cargo the same way it already can from a pack animal
+        // (a mobile store) — so a nomad camp is fed / built / tended from the wagons you brought, without unpacking.
+        // At home a parked vehicle's cargo stays a curated loadout HD never touches (the [MOW]/[ORG] skips hold);
+        // these options only relax that skip while away. All require VehicleFrameworkCompat.IsActive and no-op with
+        // VF absent. eatFromVehiclesAway extends Meals On Wheels; buildFromVehiclesAway extends Build From Inventory;
+        // medicineFromVehiclesAway is a NEW tend-from-inventory source (a doctor draws medicine carried in a vehicle /
+        // on a pack animal / by another colonist when the map itself has none), all away-only, all default OFF.
+        public bool eatFromVehiclesAway = false;
+        public bool medicineFromVehiclesAway = false;
+        public bool buildFromVehiclesAway = false;
+
         // --- haul to stack (prefer topping up existing stacks; destination cells unreserved) ---
         public bool haulToStack = true;
 
@@ -213,11 +225,13 @@ namespace HaulersDream
         // features (the bulk-load-into-vehicle WorkGiver/float-menu/driver and the pack-animal event-correct deposit
         // redirect). It does NOT gate the safety/correctness guards (the [UC1]/[UC2] vehicle-skip and the MOW/ORG
         // embarked-holder skip) — those fix a PRE-EXISTING HD↔VF misfire and are gated on VehicleFrameworkCompat
-        // .IsActive ONLY, so a feature toggle can never switch the bug back on. Eat-from / build-from a parked
-        // vehicle's cargo stays governed by the existing mealsOnWheels / buildFromInventory toggles (no new gate),
-        // and the master does NOT turn those off (turning the master off must never make HD break). With VF absent
-        // both fields are inert (every VF consumer also gates on IsActive). enableBulkLoadVehicles is the SUB-toggle
-        // for the active bulk-load feature; it requires the master.
+        // .IsActive ONLY, so a feature toggle can never switch the bug back on. A parked vehicle's cargo is NEVER
+        // eaten / built / tended from at home (the [MOW]/[ORG]/[UC] vehicle-skips hold); the three away-only opt-ins
+        // above (eatFromVehiclesAway / medicineFromVehiclesAway / buildFromVehiclesAway, all default OFF) relax that
+        // skip on a non-home map only, so a base's curated vehicle loadout is untouched while a nomad camp can draw
+        // from the wagons. The master does NOT turn those off (turning the master off must never make HD break).
+        // With VF absent every field is inert (every VF consumer also gates on IsActive). enableBulkLoadVehicles is
+        // the SUB-toggle for the active bulk-load feature; it requires the master.
         public bool enableVehicleFramework = true;
         public bool enableBulkLoadVehicles = true;
 
@@ -651,6 +665,9 @@ namespace HaulersDream
             Scribe_Values.Look(ref multiSiteConstructDeliver, "multiSiteConstructDeliver", true);
             Scribe_Values.Look(ref shareHandHauledToStorage, "shareHandHauledToStorage", false);
             Scribe_Values.Look(ref mealsOnWheels, "mealsOnWheels", true);
+            Scribe_Values.Look(ref eatFromVehiclesAway, "eatFromVehiclesAway", false);
+            Scribe_Values.Look(ref medicineFromVehiclesAway, "medicineFromVehiclesAway", false);
+            Scribe_Values.Look(ref buildFromVehiclesAway, "buildFromVehiclesAway", false);
             Scribe_Values.Look(ref bulkHaul, "bulkHaul", true);
             Scribe_Values.Look(ref bulkHaulTrigger, "bulkHaulTrigger", BulkHaulTrigger.SecondTasked);
             Scribe_Values.Look(ref haulNearbyOption, "haulNearbyOption", true);
@@ -839,6 +856,9 @@ namespace HaulersDream
             multiSiteConstructDeliver = true;
             shareHandHauledToStorage = false;
             mealsOnWheels = true;
+            eatFromVehiclesAway = false;
+            medicineFromVehiclesAway = false;
+            buildFromVehiclesAway = false;
             bulkHaul = true;
             bulkHaulTrigger = BulkHaulTrigger.SecondTasked;
             haulNearbyOption = true;

@@ -413,6 +413,8 @@ namespace HaulersDream
             keep += CECompat.LoadoutKeepCount(pawn, def);
             // Item Policy's per-pawn inventory-stock count: keep it too, or HD's unload fights its re-fetch loop.
             keep += ItemPolicyCompat.KeepCount(pawn, def);
+            // Compositable Loadouts' per-pawn loadout desired count (#200): same re-fetch-loop family as Item Policy.
+            keep += CompositableLoadoutsCompat.KeepCount(pawn, def);
             return keep;
         }
 

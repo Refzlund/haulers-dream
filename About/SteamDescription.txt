@@ -21,6 +21,7 @@ This results in fewer trips to do work and hauling items.
 [*] Strip corpses when hauling (configurable policies)
 [*] Gather resources into inventory when constructing, cooking etc.
 [*] Shared inventories — others draw from a carrier like a walking stockpile
+[*] Nomad-ready — eat, build, and tend from a colonist, a pack animal, or (with Vehicle Framework) a parked vehicle's cargo when away from home
 [/list]
 
 [h2]Smarter hauling[/h2]

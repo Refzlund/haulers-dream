@@ -1252,6 +1252,10 @@ namespace HaulersDream
                 buildFromInventory, "HaulersDream.Setting.BuildFromInventoryDesc".Translate());
             buildFromInventoryPartial = HDSettingsUI.Checkbox(c, "HaulersDream.Setting.BuildFromInventoryPartial".Translate(),
                 buildFromInventoryPartial, "HaulersDream.Setting.BuildFromInventoryPartialDesc".Translate(), enabled: buildFromInventory, indent: 24f);
+            // Away-from-home vehicle sourcing (nomad): only shown when Vehicle Framework is active (inert otherwise).
+            if (VehicleFrameworkCompat.IsActive)
+                buildFromVehiclesAway = HDSettingsUI.Checkbox(c, "HaulersDream.Setting.BuildFromVehiclesAway".Translate(),
+                    buildFromVehiclesAway, "HaulersDream.Setting.BuildFromVehiclesAwayDesc".Translate(), enabled: buildFromInventory, indent: 24f);
             inventoryConstructDeliver = HDSettingsUI.Checkbox(c, "HaulersDream.Setting.InventoryConstructDeliver".Translate(),
                 inventoryConstructDeliver, "HaulersDream.Setting.InventoryConstructDeliverDesc".Translate());
             multiSiteConstructDeliver = HDSettingsUI.Checkbox(c, "HaulersDream.Setting.MultiSiteConstructDeliver".Translate(),
@@ -1282,6 +1286,16 @@ namespace HaulersDream
             HDSettingsUI.Header(c, "HaulersDream.Head.Food".Translate());
             mealsOnWheels = HDSettingsUI.Checkbox(c, "HaulersDream.Setting.MealsOnWheels".Translate(),
                 mealsOnWheels, "HaulersDream.Setting.MealsOnWheelsDesc".Translate());
+            // Away-from-home vehicle sourcing (nomad): eat + tend from a vehicle's cargo on a non-home map. Only
+            // shown when Vehicle Framework is active (inert otherwise). Medicine is a standalone new source (tending),
+            // so it isn't gated on the eat toggle.
+            if (VehicleFrameworkCompat.IsActive)
+            {
+                eatFromVehiclesAway = HDSettingsUI.Checkbox(c, "HaulersDream.Setting.EatFromVehiclesAway".Translate(),
+                    eatFromVehiclesAway, "HaulersDream.Setting.EatFromVehiclesAwayDesc".Translate(), enabled: mealsOnWheels, indent: 24f);
+                medicineFromVehiclesAway = HDSettingsUI.Checkbox(c, "HaulersDream.Setting.MedicineFromVehiclesAway".Translate(),
+                    medicineFromVehiclesAway, "HaulersDream.Setting.MedicineFromVehiclesAwayDesc".Translate());
+            }
         }
 
         // ===================== BULK LOADING =====================

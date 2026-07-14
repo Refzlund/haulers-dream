@@ -51,16 +51,18 @@ namespace HaulersDream
         /// <summary>A holder this worker may organically source build material from — on top of
         /// <see cref="InventoryShare.IsEligibleCarrier"/>, also reject forming-caravan holders (earmarked cargo)
         /// and holders standing on a cell forbidden to the worker. (Self is handled by the caller, not here.)</summary>
-        private static bool IsEligibleOrganicHolder(Pawn carrier, Pawn worker)
+        private static bool IsEligibleOrganicHolder(Pawn carrier, Pawn worker, bool allowVehicles)
         {
             if (!InventoryShare.IsEligibleCarrier(carrier, worker))
                 return false;
-            // [ORG] A VF vehicle is OFF-LIMITS as a build-material source: its cargo hold is a player-curated loadout
-            // VF manages, so sourcing OUT of it (e.g. construction pulling the player's loaded steel back out) would
-            // undo the loadout. Skip the vehicle itself — both organic loops (CountOrganic + FindOrganicStack) gate
-            // through this helper. Gated on IsVehicle ONLY (a safety fix, not a feature): IsVehicle returns false when
-            // VF is absent. (Distinct from the InVehicle skip below, which excludes a holder RIDING inside a vehicle.)
-            if (VehicleFrameworkCompat.IsVehicle(carrier))
+            // [ORG] A VF vehicle's cargo is a player-curated loadout VF manages. AT HOME it stays OFF-LIMITS as a
+            // build-material source (pulling the player's loaded steel back out would undo the loadout). AWAY from
+            // home the opt-in buildFromVehiclesAway (passed as allowVehicles, default OFF) lets a nomad build from the
+            // wagons it brought, treating the vehicle like a pack animal. Both organic loops (CountOrganic +
+            // FindOrganicStack) gate through this helper. Gated on IsVehicle (false when VF absent), so the
+            // away-relaxation is inert without VF. (Distinct from the InVehicle skip below, which excludes a holder
+            // RIDING inside a vehicle — that stays unconditional.)
+            if (VehicleFrameworkCompat.IsVehicle(carrier) && !allowVehicles)
                 return false;
             // [ORG] Skip a holder riding INSIDE a vehicle (seat/cargo) — its inventory is unreachable, so pathing to
             // it is wasted (mirrors EatFromInventory's MOW guard). Gated on InVehicle ONLY (a safety fix, not a
@@ -129,11 +131,14 @@ namespace HaulersDream
             // Other colonists + pack animals are "fetch from another pawn" sources, gated off a non-home map.
             if (OtherPawnSourcesAllowedHere(map, s))
             {
+                // Away-only opt-in: a VF vehicle's cargo counts as a build-material source only on a non-home map
+                // with buildFromVehiclesAway on (IsVehicle is false without VF, so this is inert then).
+                bool allowVehicles = s.buildFromVehiclesAway && !map.IsPlayerHome;
                 var pawns = map.mapPawns.SpawnedPawnsInFaction(Faction.OfPlayer);
                 for (int i = 0; i < pawns.Count; i++)
                 {
                     var carrier = pawns[i];
-                    if (!IsEligibleOrganicHolder(carrier, worker)) // excludes worker -> no double-count
+                    if (!IsEligibleOrganicHolder(carrier, worker, allowVehicles)) // excludes worker -> no double-count
                         continue;
                     total += CountOrganicOfDef(carrier, def);
                 }
@@ -204,11 +209,14 @@ namespace HaulersDream
             // Other colonists + pack animals are "fetch from another pawn" sources, gated off a non-home map.
             if (OtherPawnSourcesAllowedHere(map, s))
             {
+                // Away-only opt-in: a VF vehicle's cargo is a fetchable build-material source only on a non-home map
+                // with buildFromVehiclesAway on (inert without VF, since IsVehicle is then false).
+                bool allowVehicles = s.buildFromVehiclesAway && !map.IsPlayerHome;
                 var pawns = map.mapPawns.SpawnedPawnsInFaction(Faction.OfPlayer);
                 for (int i = 0; i < pawns.Count; i++)
                 {
                     var carrier = pawns[i];
-                    if (!IsEligibleOrganicHolder(carrier, worker))
+                    if (!IsEligibleOrganicHolder(carrier, worker, allowVehicles))
                         continue;
                     ConsiderHolder(carrier, worker, def, ClassifyHolder(carrier, worker),
                         ref best, ref bestSource, ref bestDist, ref bestIndex, ref idx);

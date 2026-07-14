@@ -39,7 +39,7 @@
 <HaulersDream.Setting.UnloadBeforeEatingDesc>폰이 작업을 마치고 배가 고플 때(식사 직전), 먼저 짐을 내려놓습니다 — 방금 채굴한 광석을 식탁으로 가져가지 않도록.</HaulersDream.Setting.UnloadBeforeEatingDesc>
 <HaulersDream.Setting.ShareHeader>정착민 간에 운반 중인 자재 공유:</HaulersDream.Setting.ShareHeader>
 <HaulersDream.Setting.ShareForBuilding>운반 중인 자재를 건설에 사용</HaulersDream.Setting.ShareForBuilding>
-<HaulersDream.Setting.BuildFromInventory>소지품으로 건설 (이미 운반 중인 자재 사용)</HaulersDream.Setting.BuildFromInventory>
+<HaulersDream.Setting.BuildFromInventory>폰, 정착민, 짐짐승이 지닌 자재로 건설하기</HaulersDream.Setting.BuildFromInventory>
 <HaulersDream.Setting.BuildFromInventoryDesc>건설하는 폰이 바닥의 흩어진 더미뿐 아니라, 폰이나 동물이 이미 운반 중인 소지품 — 자기 것, 그다음 다른 정착민, 그다음 짐 운반 동물/카라반 화물 — 에서 건설 자재를 가져올 수 있습니다. 그래서 카라반에 강철을 싣고 가서 습격이나 외부 맵에서 모래주머니나 벽을 명령하면, 짐 운반 동물에서 먼저 내려놓지 않고도 운반 중인 강철로 건설합니다. 운반체의 발치에 먼저 떨어뜨리지 않고 소지품에서 바로 현장으로 전달합니다. 이는 위의 "운반 중인 자재를 건설에 사용"과 별개이며, 그쪽은 이 모드가 직접 주워 담은 자재만 셉니다. 징집된, 쓰러진, 광폭 상태의 운반체에서는 절대 가져오지 않으며, 편성 중인 카라반에 배정된 화물에서도 가져오지 않습니다. 두 건설자가 경쟁하지 않도록 더미를 예약합니다. 기본 켜짐.</HaulersDream.Setting.BuildFromInventoryDesc>
 <HaulersDream.Setting.BuildFromInventoryPartial>소지품으로 부분 건설 허용</HaulersDream.Setting.BuildFromInventoryPartial>
 <HaulersDream.Setting.BuildFromInventoryPartialDesc>보통은 전체에 충분한 자재가 있어야 건설이 시작됩니다. 이것을 켜면 필요한 전량에 못 미치더라도 존재하는 소지품 자재로 골조를 시작하고 진행합니다 — 나머지는 자재가 더 생기는 대로 전달됩니다. 바닐라의 전부-아니면-전무 규칙을 바꾸므로 기본 꺼짐입니다. "소지품으로 건설"이 필요합니다.</HaulersDream.Setting.BuildFromInventoryPartialDesc>
@@ -54,8 +54,14 @@
 <HaulersDream.Setting.MultiSiteConstructDeliverDesc>자동 또는 시프트클릭 건설이 같은 자재가 필요한 인근 건설 현장 무리에 전달할 때, 폰이 한 번 이동으로 그 무리의 합산 수요 전체를 소지품에 싣고 각 현장에 전달합니다 — 이동당 한 현장씩 처리하는 대신(이전에는 경로 플래너만 이렇게 했습니다). 폰은 이미 작업 중인 현장을 끝낸 뒤 적재합니다. 위의 "큰 단일 건설을 위해 소지품에 자재 운반"이 필요합니다.</HaulersDream.Setting.MultiSiteConstructDeliverDesc>
 <HaulersDream.Setting.ShareHandHauled>저장고로 운반 중인 정착민에게서 자재 가져오기 (기본 꺼짐)</HaulersDream.Setting.ShareHandHauled>
 <HaulersDream.Setting.ShareHandHauledDesc>건설자가 자재가 필요한데 유일한 재고가 저장 구역으로 그것을 운반 중인 정착민의 손에 있을 때, 건설자가 그 자재가 저장고에 도착해 거기서 가져오기를 기다리는 대신 운반 중인 그 정착민을 도중에 만나 더미를 받습니다. 특정 건설·작업 지시·연료 보급 작업에 전달 중인 정착민에게는 절대 손대지 않으며, 실제로 이동을 줄일 때만 작동합니다. (지금은 건설에만 적용됩니다.)</HaulersDream.Setting.ShareHandHauledDesc>
-<HaulersDream.Setting.MealsOnWheels>식량을 못 찾으면 다른 정착민이 운반 중인 식량 먹기</HaulersDream.Setting.MealsOnWheels>
+<HaulersDream.Setting.MealsOnWheels>음식을 찾을 수 없을 때 다른 정착민이나 짐짐승이 지닌 음식을 먹기</HaulersDream.Setting.MealsOnWheels>
 <HaulersDream.Setting.MealsOnWheelsDesc>배고픈 정착민이 맵이나 자기(또는 짐 운반 동물의) 짐에서 식량을 찾지 못하면, 적합한 식량을 운반 중인 다른 정착민이나 짐 운반 동물에게 걸어가 그 소지품에서 먹습니다 — 굶거나 먼 저장고로 가는 대신, 이동을 줄이고 운반 중인 음식이 상하기 전에 구해 냅니다. 평소 식량 탐색이 아무것도 못 찾았을 때만 작동하므로 더 가까운 음식을 절대 무시하지 않습니다. 먹는 자의 식량 정책, 이념, 금주 여부를 존중하며, 부모가 아기에게 먹이는 음식은 절대 가져가지 않고, 징집된·쓰러진·광폭 상태의 운반체에서는 가져가지 않으며, 두 정착민이 경쟁하지 않도록 음식을 예약하고, 가장 빨리 상할 음식을 우선합니다. 기본 켜짐.</HaulersDream.Setting.MealsOnWheelsDesc>
+  <HaulersDream.Setting.EatFromVehiclesAway>집을 떠났을 때 차량 화물칸에서도 먹기</HaulersDream.Setting.EatFromVehiclesAway>
+  <HaulersDream.Setting.EatFromVehiclesAwayDesc>"움직이는 식당"을 확장합니다. 집이 아닌 지도에서는 배고픈 정착민이 짐 나르는 동물처럼 주차된 차량의 화물칸에서도 음식을 꺼내 먹을 수 있습니다. 집을 떠났을 때만 적용되어 기지 차량의 적재 목록은 건드리지 않습니다. 기본값 꺼짐; "움직이는 식당" 켜짐과 Vehicle Framework 필요.</HaulersDream.Setting.EatFromVehiclesAwayDesc>
+  <HaulersDream.Setting.MedicineFromVehiclesAway>집을 떠났을 때 차량이나 짐짐승의 약으로 치료</HaulersDream.Setting.MedicineFromVehiclesAway>
+  <HaulersDream.Setting.MedicineFromVehiclesAwayDesc>지도에 닿을 수 있는 약이 없을 때, 의사가 차량 화물칸, 짐 나르는 동물, 다른 정착민이 지닌 약으로 치료할 수 있습니다. 집이 아닌 지도에서만 적용되며 환자의 의료 방침을 따릅니다. 기본값 꺼짐; Vehicle Framework 필요.</HaulersDream.Setting.MedicineFromVehiclesAwayDesc>
+  <HaulersDream.Setting.BuildFromVehiclesAway>집을 떠났을 때 차량 화물칸에서도 건설하기</HaulersDream.Setting.BuildFromVehiclesAway>
+  <HaulersDream.Setting.BuildFromVehiclesAwayDesc>"보관품에서 건설"을 확장합니다. 집이 아닌 지도에서는 건설자가 짐 나르는 동물처럼 주차된 차량의 화물칸에서도 자재를 가져올 수 있습니다. 집을 떠났을 때만 적용되어 기지 차량의 적재 목록은 건드리지 않습니다. 기본값 꺼짐; "보관품에서 건설" 켜짐과 Vehicle Framework 필요.</HaulersDream.Setting.BuildFromVehiclesAwayDesc>
 <HaulersDream.Setting.BulkHaul>대량 운반 — 한 번의 운반으로 주변 모든 것을 줍기</HaulersDream.Setting.BulkHaul>
 <HaulersDream.Setting.BulkHaulDesc>한 물건을 운반하러 보낸 폰이 주변의 운반 가능한 모든 것을 소지품에 줍도록 계획하여, 한 번의 저장 이동으로 전부 전달합니다. 꺼짐 = 이동당 한 물건씩 운반하는 바닐라 방식.</HaulersDream.Setting.BulkHaulDesc>
 <HaulersDream.Setting.BulkHaulSecond>명령한 운반은 인근에 두 번째 운반도 명령했을 때만 쓸어 담음</HaulersDream.Setting.BulkHaulSecond>
@@ -182,7 +188,7 @@
 <HaulersDream.Gizmo.AutoHaulDesc>켜져 있으면 이 폰은 작업하면서 자기 산출물을 자동으로 줍고 인근 전리품을 소지품에 쓸어 담습니다. 이 폰의 자동 운반을 멈추려면 끄세요 — 이미 운반 중인 것은 여전히 치웁니다.</HaulersDream.Gizmo.AutoHaulDesc>
 <HaulersDream.Alert.CannotUnload>소지품 내려놓기 불가 ({0})</HaulersDream.Alert.CannotUnload>
 <HaulersDream.Alert.CannotUnloadDesc.NoStorage>이 폰들은 둘 곳이 없는 주워 담은 물건을 운반 중입니다 — 맵의 어떤 저장 구역이나 투기 구역도 그것을 받지 않으며, 도달 가능한 자리도 찾지 못했습니다. 저장 구역을 추가하거나(투기 저장 구역은 바위 덩어리와 대부분의 폐기물을 받습니다), 기존 저장 구역에서 그 물품 종류를 허용하세요:\n\n{0}\n\n그때까지 물건은 소지품에 남습니다. 이 경보를 클릭하면 폰들을 차례로 순환하고, 마우스를 올리면 가리킵니다.</HaulersDream.Alert.CannotUnloadDesc.NoStorage>
-<HaulersDream.Alert.CannotUnloadDesc.Stuck>이 폰들은 주워 담은 물건을 내려놓지 못한 채 오랫동안 운반해 왔습니다. 그들이 있는 곳에서 저장고에 도달할 수 없거나, 다른 모드가 그들의 운반/내려놓기 작업을 반복해서 취소하고 있을 수 있습니다:\n\n{0}\n\n도달 가능하고 허용된 저장 구역이 있는지, 그리고 작업을 방해하는 모드가 있는지 확인하세요. 이 경보를 클릭하면 폰들을 차례로 순환하고, 마우스를 올리면 가리킵니다.</HaulersDream.Alert.CannotUnloadDesc.Stuck>
+<HaulersDream.Alert.CannotUnloadDesc.Stuck>이 폰들은 수집한 물건을 오랫동안 내려놓지 않고 들고 다니고 있습니다. 흔한 원인은 그들이 있는 위치에서 도달할 수 있고 허용된 저장고가 물건을 받을 수 없다는 것이니, 먼저 그것부터 확인하세요:\n\n{0}\n\n저장고가 괜찮아 보인다면, 작업을 중단시키는 모드(예: 계속 새 명령을 내리는 자동 시전이나 자동 작업 모드)가 하역이 끝나기 전에 취소하고 있을 수 있습니다. 참고: Hauler's Dream이 공식적으로 지원하는 모드, 예를 들어 Simple Sidearms, Smart Medicine, Combat Extended, Grab Your Tool, Item Policy, Compositable Loadouts는 원인이 '아니며' 비활성화해서는 안 됩니다. 그것들이 보관하는 물건은 이미 하역 대상에서 제외되어 있습니다. 이 경고를 클릭하면 폰들을 차례로 이동하고, 마우스를 올리면 위치를 표시합니다.</HaulersDream.Alert.CannotUnloadDesc.Stuck>
 <HaulersDream.PlanRoute.Option>우선 지정 {0} 계획…</HaulersDream.PlanRoute.Option>
 <HaulersDream.PlanRoute.ConstructGerund>건설</HaulersDream.PlanRoute.ConstructGerund>
 <HaulersDream.PlanRoute.MiningGerundFallback>채굴</HaulersDream.PlanRoute.MiningGerundFallback>
