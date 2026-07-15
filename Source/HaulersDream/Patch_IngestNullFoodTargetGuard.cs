@@ -37,6 +37,11 @@ namespace HaulersDream
             if (__instance is JobDriver_Ingest ingest && ingest.job != null
                 && ingest.job.targetA.Thing == null)
             {
+                // Log once per pawn so the underlying save/mod corruption stays diagnosable
+                // (replaces 81 red errors with a single yellow warning per pawn).
+                Log.WarningOnce("[Hauler's Dream] Ended a JobDriver_Ingest with a null food target for "
+                    + ingest.pawn?.LabelShort ?? "a pawn" + " — likely a save/load or mod-corruption artifact (#207).",
+                    ingest.pawn?.thingIDNumber ?? 0x207);
                 ingest.EndJobWith(JobCondition.Incompletable);
                 __result = true;
                 return false;
