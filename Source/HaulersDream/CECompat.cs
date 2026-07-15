@@ -48,6 +48,8 @@ namespace HaulersDream
         private static MethodInfo loadoutSlotsGetter;  // instance prop get: Loadout.Slots -> List<LoadoutSlot>
         private static MethodInfo slotThingDefGetter;  // instance prop get: LoadoutSlot.thingDef -> ThingDef (null for generic slots)
         private static MethodInfo slotCountGetter;     // instance prop get: LoadoutSlot.count -> int
+        private static MethodInfo slotGenericDefGetter; // instance prop get: LoadoutSlot.genericDef -> LoadoutGenericDef (null for specific slots)
+        private static MethodInfo lambdaGetter;         // instance prop get: LoadoutGenericDef.lambda -> Predicate<ThingDef>
         private static StatDef bulkStat;               // CE's per-item "Bulk" stat (data, no assembly ref needed)
         private static Type ammoDefType;               // CombatExtended.AmmoDef (a ThingDef subclass)
 
@@ -96,7 +98,11 @@ namespace HaulersDream
             {
                 slotThingDefGetter = AccessTools.PropertyGetter(slotType, "thingDef");
                 slotCountGetter = AccessTools.PropertyGetter(slotType, "count");
+                slotGenericDefGetter = AccessTools.PropertyGetter(slotType, "genericDef");
             }
+            var genericDefType = AccessTools.TypeByName("CombatExtended.LoadoutGenericDef");
+            if (genericDefType != null)
+                lambdaGetter = AccessTools.PropertyGetter(genericDefType, "lambda");
             bulkStat = DefDatabase<StatDef>.GetNamedSilentFail("Bulk");
             // The fit check is the load-bearing piece; without it we must not claim compatibility-managed
             // loading (degrade SAFE — report inactive, the mod then behaves as without CE — vanilla math).
@@ -119,6 +125,11 @@ namespace HaulersDream
                     HDLog.Warn("Combat Extended present but its Loadout API (Utility_Loadouts.GetLoadout / Loadout.Slots / "
                                + "LoadoutSlot.thingDef|count) did not fully resolve; HD cannot read CE loadouts to keep "
                                + "loadout ammo with the pawn — a CE rename likely. Please report it. HD continues.");
+                if (slotGenericDefGetter == null || lambdaGetter == null)
+                    HDLog.Warn("Combat Extended present but its generic-loadout API (LoadoutSlot.genericDef / "
+                               + "LoadoutGenericDef.lambda) did not fully resolve; HD cannot read CE's generic loadout "
+                               + "slots (e.g. GenericMeal) — meals and other generic-slot items may loop between "
+                               + "inventory and storage. A CE rename likely. Please report it. HD continues.");
             }
             else
                 // CE is present (CompInventory resolved) but its load-bearing weight+bulk fit check did not bind
@@ -293,12 +304,13 @@ namespace HaulersDream
 
         /// <summary>
         /// How many units of <paramref name="def"/> the pawn's assigned CE loadout wants it to CARRY —
-        /// the pawn's own ammo/sidearm reserve. The unload pass must not ship it to storage: CE's
+        /// the pawn's own ammo/sidearm/meal reserve. The unload pass must not ship it to storage: CE's
         /// JobGiver_UpdateLoadout would just re-fetch it (one churn cycle per sweep, the pawn temporarily
-        /// disarmed of ammo in between). Conservative: EXACT def matches only — generic-def slots ("any
-        /// AP ammo") are ignored, so at worst CE re-fetches once; guessing a generic match could instead
-        /// hoard swept goods in inventory. 0 when CE is absent or anything fails (fail-open, like the
-        /// other bridge members — the mod then behaves as without CE).
+        /// disarmed of ammo / without meals in between). Matches BOTH exact-def slots (a specific ammo or
+        /// weapon) AND generic-def slots (GenericMeal, GenericDrugs, GenericMedicine, generic ammo) by
+        /// invoking the generic slot's <c>lambda</c> predicate on <paramref name="def"/>. 0 when CE is
+        /// absent or anything fails (fail-open, like the other bridge members — the mod then behaves as
+        /// without CE).
         /// </summary>
         public static int LoadoutKeepCount(Pawn pawn, ThingDef def)
         {
@@ -307,7 +319,7 @@ namespace HaulersDream
                 || slotThingDefGetter == null || slotCountGetter == null)
                 return 0;
             // No try/catch: CE present + all loadout members resolved (checked above) — surface a real fault
-            // instead of silently shipping the pawn's loadout ammo/sidearms to storage. The loadout == null
+            // instead of silently shipping the pawn's loadout items to storage. The loadout == null
             // value-check below still degrades cleanly (a pawn with no assigned loadout keeps nothing extra).
             var loadout = getLoadout.Invoke(null, new object[] { pawn });
             if (loadout == null)
@@ -315,8 +327,51 @@ namespace HaulersDream
             int keep = 0;
             if (loadoutSlotsGetter.Invoke(loadout, null) is System.Collections.IEnumerable slots)
                 foreach (var slot in slots)
-                    if (slot != null && (slotThingDefGetter.Invoke(slot, null) as ThingDef) == def)
+                {
+                    if (slot == null)
+                        continue;
+                    // Specific slot: exact ThingDef match (existing behaviour).
+                    if ((slotThingDefGetter.Invoke(slot, null) as ThingDef) == def)
+                    {
                         keep += (int)slotCountGetter.Invoke(slot, null);
+                        continue;
+                    }
+                    // Generic slot: invoke the slot's LoadoutGenericDef.lambda predicate on def. CE's basic
+                    // generics (GenericMeal, GenericDrugs, GenericMedicine) are added to EVERY loadout and
+                    // are the most common source of the unload↔refetch loop — the generic def's lambda is
+                    // the authoritative match test (e.g. GenericMeal's lambda checks preferability, rot,
+                    // nutrition). The lambda is CE-defined code; catch to never let a throw here break the
+                    // whole keep-count path (worst case: the generic slot is skipped, same as before this fix).
+                    //
+                    // Note: KeepCountOf calls this per-def, so a generic slot with count N that matches
+                    // multiple defs (e.g. MealFine + MealSimple both pass GenericMeal.lambda) contributes N
+                    // to EACH def's keep — i.e. the pawn may hold N of each matching def, not N total. This
+                    // over-keeps relative to CE's "N across the category" semantics, but errs safe (no loop;
+                    // CE itself drops the one-time excess). Capping at the slot level across defs would need
+                    // cross-call state not worth the complexity for a benign over-keep.
+                    if (slotGenericDefGetter != null && lambdaGetter != null)
+                    {
+                        var genericDef = slotGenericDefGetter.Invoke(slot, null);
+                        if (genericDef != null)
+                        {
+                            try
+                            {
+                                var lambda = lambdaGetter.Invoke(genericDef, null) as Delegate;
+                                if (lambda != null && (bool)lambda.DynamicInvoke(def))
+                                    keep += (int)slotCountGetter.Invoke(slot, null);
+                            }
+                            catch (Exception)
+                            {
+                                // A CE lambda throw is non-fatal — degrade to "slot doesn't match" for this def.
+                                // Log once so a future CE version whose lambda throws doesn't silently re-open
+                                // the unload↔refetch loop (#204) with no diagnostic breadcrumb.
+                                HDLog.ErrOnce("CE LoadoutGenericDef.lambda threw for def " + (def?.defName ?? "null")
+                                              + " — generic loadout slot skipped for keep-count (non-fatal).",
+                                              unchecked((int)0xCE7A0001));
+                            }
+                        }
+                    }
+                }
             return keep;
         }
     }
