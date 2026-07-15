@@ -101,6 +101,50 @@ namespace HaulersDream
         }
     }
 
+    /// <summary>
+    /// LEAVE-ON-CORPSE FOR MANUAL STRIP ORDERS (#211): vanilla's <c>Pawn.Strip</c> (called from
+    /// <c>JobDriver_Strip</c> → <c>Corpse.Strip</c> → <c>InnerPawn.Strip</c>) calls
+    /// <c>apparel.DropAll(pos, forbid, dropLocked)</c> which strips EVERYTHING — including tainted pieces the
+    /// player's per-category policy says to leave on the body. The auto-strip path
+    /// (<see cref="CorpseStripper.StripAndScoop"/>) checks the policy per-piece BEFORE dropping and correctly
+    /// skips LeaveOnCorpse, but a player-ordered Strip goes through vanilla's code, which has no per-piece
+    /// filter. The drops land on the ground and HD's <see cref="CorpseStripper.ApplyTaintedPolicyToPending"/>
+    /// runs after the fact — it can forbid them in place but can't put them back on the body, so the user sees
+    /// "drop and forbid" behavior instead of the expected "stays on the corpse."
+    ///
+    /// This prefix injects a <c>selector</c> into <c>DropAll</c> that excludes LeaveOnCorpse pieces when the
+    /// pawn is dead, so they are never dropped and stay on the body. Narrow by design: fires only when
+    /// <c>pawn.Dead</c> (inside a corpse) and HD's settings have at least one LeaveOnCorpse policy; for living
+    /// pawns or when no leave policy is set, the original selector (typically null = strip all) is unchanged.
+    /// </summary>
+    [HarmonyPatch(typeof(Pawn_ApparelTracker), nameof(Pawn_ApparelTracker.DropAll))]
+    public static class Patch_DropAll_LeaveOnCorpse
+    {
+        static void Prefix(Pawn_ApparelTracker __instance, ref Predicate<Apparel> selector)
+        {
+            var pawn = __instance.pawn;
+            if (pawn == null || !pawn.Dead)
+                return;
+            var s = HaulersDreamMod.Settings;
+            if (s == null || !StripPolicy.LeavesAnyTainted(s.taintedSmeltablePolicy, s.taintedNonSmeltablePolicy))
+                return;
+
+            var original = selector;
+            selector = ap =>
+            {
+                // Same taint definition as StripAndScoop: WornByCorpse + the apparel kind cares.
+                if (ap.WornByCorpse && ap.def.apparel != null && ap.def.apparel.careIfWornByCorpse)
+                {
+                    var action = StripPolicy.ApparelAction(tainted: true, ap.Smeltable,
+                        s.taintedSmeltablePolicy, s.taintedNonSmeltablePolicy);
+                    if (action == TaintedApparelPolicy.LeaveOnCorpse)
+                        return false; // keep on the body — don't drop
+                }
+                return original == null || original(ap);
+            };
+        }
+    }
+
     public static class CorpseStripper
     {
         /// <summary>
@@ -178,6 +222,10 @@ namespace HaulersDream
         /// filter. LeaveOnCorpse can't put a piece already off the body back ON it, so it degrades to
         /// DropAndForbid: the rag is forbidden in place (not scooped, and no vanilla hauler takes it either)
         /// — honoring the keep-out-of-storage intent instead of leaving it a free ground haulable (#187a).
+        /// With <see cref="Patch_DropAll_LeaveOnCorpse"/> now preventing LeaveOnCorpse pieces from being
+        /// stripped in the first place, this degradation is a SAFETY NET for edge cases (a mod that calls
+        /// DropAll directly, or a future RimWorld code path that bypasses the prefix); the normal manual-strip
+        /// path never reaches it for LeaveOnCorpse pieces.
         /// </summary>
         internal static void ApplyTaintedPolicyToPending(Pawn stripper, bool corpseStrip)
         {
