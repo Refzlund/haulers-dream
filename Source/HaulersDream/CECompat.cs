@@ -342,6 +342,13 @@ namespace HaulersDream
                     // the authoritative match test (e.g. GenericMeal's lambda checks preferability, rot,
                     // nutrition). The lambda is CE-defined code; catch to never let a throw here break the
                     // whole keep-count path (worst case: the generic slot is skipped, same as before this fix).
+                    //
+                    // Note: KeepCountOf calls this per-def, so a generic slot with count N that matches
+                    // multiple defs (e.g. MealFine + MealSimple both pass GenericMeal.lambda) contributes N
+                    // to EACH def's keep — i.e. the pawn may hold N of each matching def, not N total. This
+                    // over-keeps relative to CE's "N across the category" semantics, but errs safe (no loop;
+                    // CE itself drops the one-time excess). Capping at the slot level across defs would need
+                    // cross-call state not worth the complexity for a benign over-keep.
                     if (slotGenericDefGetter != null && lambdaGetter != null)
                     {
                         var genericDef = slotGenericDefGetter.Invoke(slot, null);
@@ -353,9 +360,14 @@ namespace HaulersDream
                                 if (lambda != null && (bool)lambda.DynamicInvoke(def))
                                     keep += (int)slotCountGetter.Invoke(slot, null);
                             }
-                            catch
+                            catch (Exception)
                             {
                                 // A CE lambda throw is non-fatal — degrade to "slot doesn't match" for this def.
+                                // Log once so a future CE version whose lambda throws doesn't silently re-open
+                                // the unload↔refetch loop (#204) with no diagnostic breadcrumb.
+                                HDLog.ErrOnce("CE LoadoutGenericDef.lambda threw for def " + (def?.defName ?? "null")
+                                              + " — generic loadout slot skipped for keep-count (non-fatal).",
+                                              unchecked((int)0xCE7A0001));
                             }
                         }
                     }
