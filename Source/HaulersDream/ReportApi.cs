@@ -25,7 +25,7 @@ namespace HaulersDream
         public const int MaxCommentChars = 4000;     // in-game cap for the report/comment box (GitHub's hard limit is far higher)
         public const int MaxAttachments = 12;         // matches the backend per-report attachment count cap
         public const long MaxAttachmentBytes = 100L * 1024 * 1024; // 100 MB/file (matches the backend cap)
-        private const int LogTailBytes = 400 * 1024;  // attach only the tail of Player.log (the backend caps logs at 5 MB)
+        private const int LogTailBytes = 5 * 1024 * 1024;  // attach up to the backend's 5 MB log cap (full Player.log for most saves)
 
         /// <summary>A descriptive User-Agent so reports are attributable to the mod + game version.</summary>
         public static string UserAgent() => "HaulersDream/" + ModVersion() + " (RimWorld " + RwVersion() + ")";
