@@ -35,6 +35,44 @@ namespace HaulersDream.Tests
             Assert.That(ConstructDeliveryPlan.ShouldQueryNeederSpace(neederSpawned: false, hasResourceDef: false), Is.False);
         }
 
+        // --- ShouldForcedTakeover: the issue #219 "reserve the site for the builder" guard. HD's driver
+        //     restores vanilla's forced InterruptEnroutePawns ONLY when the delivery is player-forced AND the
+        //     needer is already fully claimed by OTHER pawns (space remaining 0). Pinned here so the "autonomous
+        //     hauling is left alone" invariant (byte-identical at defaults) can never silently regress. ---
+
+        [Test]
+        public void ForcedTakeover_OnlyWhenForcedAndFullyClaimed()
+        {
+            // A player-forced order to a needer whose remaining need is fully claimed by others (0 space) ->
+            // take it over (interrupt the helpers, then claim the freed space). This is the whole fix.
+            Assert.That(ConstructDeliveryPlan.ShouldForcedTakeover(playerForced: true, spaceRemainingUnits: 0), Is.True);
+        }
+
+        [Test]
+        public void ForcedTakeover_AutonomousNeverInterrupts()
+        {
+            // An AUTONOMOUS delivery never interrupts existing enroute pawns (vanilla parity) -> at defaults
+            // nothing changes for unordered hauling, even when the needer reads as fully claimed.
+            Assert.That(ConstructDeliveryPlan.ShouldForcedTakeover(playerForced: false, spaceRemainingUnits: 0), Is.False);
+        }
+
+        [Test]
+        public void ForcedTakeover_RoomRemainingNeedsNoTakeover()
+        {
+            // Space still remaining means there is room to claim ALONGSIDE the others (both keep delivering
+            // toward the shared need) -> no takeover, even when forced.
+            Assert.That(ConstructDeliveryPlan.ShouldForcedTakeover(playerForced: true, spaceRemainingUnits: 5), Is.False);
+            Assert.That(ConstructDeliveryPlan.ShouldForcedTakeover(playerForced: false, spaceRemainingUnits: 5), Is.False);
+        }
+
+        [Test]
+        public void ForcedTakeover_NonPositiveSpaceCountsAsClaimed()
+        {
+            // Space is clamped to 0 by EnrouteSafety, but guard defensively: any non-positive space on a forced
+            // order still means "fully claimed", so take over rather than skip.
+            Assert.That(ConstructDeliveryPlan.ShouldForcedTakeover(playerForced: true, spaceRemainingUnits: -3), Is.True);
+        }
+
         [Test]
         public void Geothermal_Fair_LoadsPastHandStack()
         {

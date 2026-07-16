@@ -121,6 +121,31 @@ namespace HaulersDream.Core
             => neederSpawned && hasResourceDef;
 
         /// <summary>
+        /// Whether an inventory construction delivery should TAKE the needer OVER from other pawns already
+        /// hauling to it: only when the delivery is PLAYER-FORCED (an explicit "prioritize constructing" order
+        /// or a tethered/route step of one) AND the needer's remaining need is already fully spoken for by
+        /// OTHER pawns' enroute claims (space remaining 0). This restores the behaviour vanilla's own
+        /// <c>JobDriver_HaulToContainer.UpdateTracker</c> has and HD's replacement driver had dropped: on a
+        /// forced order the ordered pawn calls <c>EnrouteManager.InterruptEnroutePawns</c> to clear the other
+        /// deliverers' claims (ending their jobs targeting this needer) and then claims the freed space itself,
+        /// instead of reading the needer as "fully claimed" and leaving the builder to bounce to the site and
+        /// wander off while helpers finish. The trigger is THIS material's space being 0; the interrupt clears
+        /// the needer's claims for every material on it (as vanilla does), and a tethered order then delivers
+        /// each remaining material, so the ordered builder handles the whole site (issue #219).
+        ///
+        /// <para>An AUTONOMOUS delivery NEVER takes over (this returns false), matching vanilla, where only a
+        /// player-forced haul interrupts existing enroute pawns, so at defaults nothing changes for unordered
+        /// hauling: two autonomous deliverers stay coordinated purely by the enroute budget. A nonzero
+        /// <paramref name="spaceRemainingUnits"/> means there is still room to add our own claim ALONGSIDE the
+        /// others, so no takeover is needed (both keep delivering toward the shared need).</para>
+        /// </summary>
+        /// <param name="playerForced">Whether the delivery job is a player-forced order (or a forced tether/route step).</param>
+        /// <param name="spaceRemainingUnits">The needer's enroute-aware remaining need for this material,
+        /// excluding our own not-yet-registered claim, so 0 means it is already fully claimed by OTHER pawns.</param>
+        public static bool ShouldForcedTakeover(bool playerForced, int spaceRemainingUnits)
+            => playerForced && spaceRemainingUnits <= 0;
+
+        /// <summary>
         /// The mass-and-demand-capped ceiling for how many units the pawn could usefully load for this
         /// needer, ignoring how much is currently on the floor — used to bound the nearby-resource gather
         /// before the real <see cref="PlanLoad"/> (which takes the gathered availability into account).

@@ -91,6 +91,22 @@ namespace HaulersDream
             // is excluded — vanilla's GetSpaceRemainingWithEnroute would NRE on its null Map otherwise (#88).
             if (Needer is IHaulEnroute enroute && resourceDef != null && Needer.Spawned && pawn.Map != null)
             {
+                // #219: a PLAYER-FORCED order (a right-click "prioritize constructing", or a tethered/route
+                // step of one) TAKES the needer over from any OTHER pawns already hauling to it, exactly like
+                // vanilla's JobDriver_HaulToContainer.UpdateTracker (interrupt-then-claim) which HD's custom
+                // driver replaced and had dropped. Without it, ordering a builder didn't stop idle haulers (or
+                // a work-drone) from piling onto the same frame, so the builder walked to the site, found it
+                // "fully claimed" / not yet buildable, and wandered off until the helper finished. SpaceRemaining
+                // excludes our own claim, but we have not registered one yet, so it equals vanilla's no-exclude
+                // check here (0 = fully claimed by OTHERS). InterruptEnroutePawns ends their jobs targeting this
+                // needer and clears its enroute claims (all materials on it, like vanilla), so we re-read the
+                // freed space before claiming our own; the tethered order then delivers each remaining material
+                // in turn, so the ordered builder handles the whole site. This is the issue's "reserve the site
+                // for the builder". Byte-inert for autonomous deliveries (never forced, so ShouldForcedTakeover
+                // is always false).
+                if (ConstructDeliveryPlan.ShouldForcedTakeover(job.playerForced,
+                        EnrouteSafety.SpaceRemainingSafe(Needer, resourceDef, pawn)))
+                    pawn.Map.enrouteManager.InterruptEnroutePawns(enroute, pawn);
                 int want = Mathf.Min(job.count, EnrouteSafety.SpaceRemainingSafe(Needer, resourceDef, pawn));
                 if (want > 0)
                     pawn.Map.enrouteManager.AddEnroute(enroute, pawn, resourceDef, want);
@@ -107,6 +123,12 @@ namespace HaulersDream
                         var n = neederQ[i].Thing;
                         if (n is IHaulEnroute qe && n.Spawned) // Spawned: same #88 despawn-window guard as above
                         {
+                            // #219: deliberately NO forced takeover for the opportunistic CLUSTER extras (only
+                            // the primary/ordered site above takes over). These are bonus same-material sites HD
+                            // topped the load off with, not the site the player clicked; a cluster site already
+                            // fully claimed by a dedicated helper yields qwant 0, so the builder simply skips it
+                            // (as before) and leaves it to that helper, rather than kicking a valid hauler off a
+                            // site it is only opportunistically visiting. Keeps the takeover surgical.
                             int qwant = EnrouteSafety.SpaceRemainingSafe(n, resourceDef, pawn);
                             if (qwant > 0)
                                 pawn.Map.enrouteManager.AddEnroute(qe, pawn, resourceDef, qwant);
