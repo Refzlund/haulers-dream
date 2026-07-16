@@ -1,5 +1,19 @@
 # haulers-dream
 
+## 1.20.4
+
+### Patch Changes
+
+- fdbc023: Stop the last way colonists could loop forever at a RimIOT (Logistic Matrix) terminal.
+
+  Earlier fixes stopped colonists picking loose items back up around a full terminal, but the loop could still "occasionally" come back. The real, deepest cause was different: RimIOT redirects a colonist who is walking to fetch an item, sending them to its terminal to grab a matching item straight out of the network instead. When Hauler's Dream had upgraded that fetch into a bulk haul, the colonist would pull the item out of the network and immediately carry it back in, moving nothing, forever, with no error to show for it.
+
+  Hauler's Dream now leaves delivery into a RimIOT network to RimIOT: when an automatic haul is headed for network storage it keeps the plain vanilla haul (which RimIOT handles correctly) instead of turning it into a bulk haul. As a second safety net, if another mod ever swaps a bulk haul's target out from under Hauler's Dream mid-job, the colonist no longer pockets the substituted network item, and Hauler's Dream backs that item off and prints one clear warning naming what happened, so a future loop of this shape is surfaced instead of silently repeating. None of this has any effect when RimIOT is not installed, and a forced "Haul" order always works as before.
+
+- 2ea8587: The "Unload inventory" pawn button now unloads immediately on a plain click, and queues on Shift+click.
+
+  Previously the button always added the unload behind the pawn's current job, so the pawn finished what it was doing first. Now a plain left-click makes the pawn drop its current job and go unload right away, which is what most people expect from the button. If you would rather keep the old behavior for a specific click, hold Shift while clicking and the unload is added to the job queue to run after the current job instead. There is no new setting, and automatic unloading is unchanged.
+
 ## 1.20.3
 
 ### Patch Changes
