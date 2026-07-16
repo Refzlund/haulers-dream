@@ -250,7 +250,7 @@
   <HaulersDream.Setting.VerboseLogging>Verbose debug logging</HaulersDream.Setting.VerboseLogging>
 
   <HaulersDream.Gizmo.UnloadNow>Unload inventory</HaulersDream.Gizmo.UnloadNow>
-  <HaulersDream.Gizmo.UnloadNowDesc>Make this pawn carry everything it has collected to the nearest valid storage.</HaulersDream.Gizmo.UnloadNowDesc>
+  <HaulersDream.Gizmo.UnloadNowDesc>Make this pawn carry everything it has collected to the nearest valid storage.\n\nLeft-click to unload now, interrupting its current job. Hold Shift and click to add it to the job queue instead, after the current job.</HaulersDream.Gizmo.UnloadNowDesc>
   <HaulersDream.Gizmo.UnloadNowDrafted>Drafted: undraft this pawn to unload.</HaulersDream.Gizmo.UnloadNowDrafted>
   <HaulersDream.Gizmo.AutoHaul>Auto-haul yields</HaulersDream.Gizmo.AutoHaul>
   <HaulersDream.Gizmo.AutoHaulDesc>When on, this pawn automatically picks up its own work results and gathers nearby loot into its inventory as it works. Turn it off to stop this pawn from auto-hauling — it will still put away anything it is already carrying.</HaulersDream.Gizmo.AutoHaulDesc>

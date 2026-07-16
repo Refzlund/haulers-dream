@@ -20,7 +20,13 @@ namespace HaulersDream
         /// TryTakeOrderedJob EnqueueFirst's the order, then ends the job — our finish action runs after) must
         /// be obeyed first; the load still flushes right after (forced stays true, so strict/grace/markForUnload
         /// can't strand it).</param>
-        public static void CheckIfShouldUnload(Pawn pawn, bool forced = false, bool behindQueuedWork = false)
+        /// <param name="immediate">#215: when true (a plain left-click of the "Unload now" gizmo), END the pawn's
+        /// current job after queuing the unload so it runs NOW instead of after the current job. Only meaningful on
+        /// the EnqueueFirst path (the gizmo always passes behindQueuedWork:false), so a queued-behind-work unload is
+        /// never force-interrupted. Defaults false, so every automatic caller (interval, idle backstop, bulk finish)
+        /// keeps the prior queue-behind-current behavior.</param>
+        public static void CheckIfShouldUnload(Pawn pawn, bool forced = false, bool behindQueuedWork = false,
+            bool immediate = false)
         {
             var comp = pawn?.GetComp<CompHauledToInventory>();
             if (comp == null)
@@ -180,6 +186,9 @@ namespace HaulersDream
                                 HDLog.Dbg($"{pawn} queued caravan pack-animal load ({carried.Count} tracked).");
                                 // Same one-trip ordering as the storage path: scoop pending fresh drops first.
                                 YieldRouter.EnsureSelfPickupJob(pawn);
+                                // #215 left-click: run the just-queued load NOW (only on the EnqueueFirst path).
+                                if (immediate && !(behindQueuedWork && hasPendingWork))
+                                    InterruptCurrentJob(pawn);
                             }
                             return;
                         }
@@ -200,6 +209,15 @@ namespace HaulersDream
                             // the queued work (acceptable: it's quick and at the pawn's feet) while the unload
                             // trip waits at the back.
                             YieldRouter.EnsureSelfPickupJob(pawn);
+                            // #215 left-click: interrupt the current job so this [SelfPickup, Unload] runs NOW.
+                            // Only on the EnqueueFirst path (the gizmo passes behindQueuedWork:false), never when
+                            // the unload was deliberately queued behind pending work. Gated on anyUnloadable so a
+                            // forced click that would enqueue a NO-OP unload (the gizmo shows for a tagged stack
+                            // that is now all keep-stock, surplus 0) doesn't yank the pawn off its work for nothing;
+                            // the no-op unload still queues (the forced-always-proceeds invariant) but runs behind
+                            // the current job, exactly as before #215.
+                            if (immediate && anyUnloadable && !(behindQueuedWork && hasPendingWork))
+                                InterruptCurrentJob(pawn);
                         }
                         return;
 
@@ -207,6 +225,29 @@ namespace HaulersDream
                         return;
                 }
             }
+        }
+
+        /// <summary>
+        /// #215 (left-click "Unload now"): end the pawn's CURRENT job so an unload / self-pickup / pack-animal-load
+        /// just <c>EnqueueFirst</c>'d in front of it runs immediately, instead of after the current job finishes.
+        /// <see cref="JobCondition.InterruptForced"/> is the same condition vanilla's own "order this now"
+        /// (<c>TryTakeOrderedJob</c> without queueing) uses to replace the current job, so the pawn drops what it was
+        /// doing and starts the queued housekeeping at once. Guarded: with no current job the queued work starts on
+        /// its own, and if the current job IS one of HD's housekeeping jobs (a second click while it already runs)
+        /// there is nothing to interrupt. Runs inside the same synced command as the enqueue, so it is
+        /// MP-deterministic.
+        /// </summary>
+        internal static void InterruptCurrentJob(Pawn pawn)
+        {
+            var cur = pawn?.jobs?.curJob;
+            if (cur == null)
+                return;
+            var def = cur.def;
+            if (def == HaulersDreamDefOf.HaulersDream_UnloadInventory
+                || def == HaulersDreamDefOf.HaulersDream_SelfPickup
+                || def == HaulersDreamDefOf.HaulersDream_LoadPackAnimal)
+                return;
+            pawn.jobs.EndCurrentJob(JobCondition.InterruptForced);
         }
 
         /// <summary>True if the pawn is engaged in a DIRECTED activity HD's autonomous inventory manipulation must

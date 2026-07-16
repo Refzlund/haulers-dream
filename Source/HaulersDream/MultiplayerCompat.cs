@@ -121,16 +121,20 @@ namespace HaulersDream
         /// deterministically on every client. Player-facing toasts inside the called helpers are gated by
         /// <see cref="ShouldShowLocalFeedback"/> at their source so they don't appear on every client.
         /// </summary>
-        public static void UnloadInventoryNow(Pawn pawn)
+        public static void UnloadInventoryNow(Pawn pawn, bool queue)
         {
             if (pawn == null)
                 return;
+            // #215: a plain left-click unloads immediately (interrupt the current job); Shift (queue == true) keeps
+            // the prior "queue behind the current job" behavior. `immediate == !queue` is threaded to whichever
+            // branch actually enqueues the job so the interrupt happens exactly where the job is queued.
+            bool immediate = !queue;
             // Mirrors the original gizmo action: off a home/storage map there's nowhere to unload, so load the
             // nearest pack animal with the carried loot instead; otherwise do the normal storage unload.
             if (pawn.Map != null && !MapGate.ShouldUnloadToStorage(pawn.Map))
-                PackAnimalLoad.GizmoLoadNearest(pawn);
+                PackAnimalLoad.GizmoLoadNearest(pawn, immediate);
             else
-                PawnUnloadChecker.CheckIfShouldUnload(pawn, true);
+                PawnUnloadChecker.CheckIfShouldUnload(pawn, forced: true, behindQueuedWork: false, immediate: immediate);
         }
 
         /// <summary>

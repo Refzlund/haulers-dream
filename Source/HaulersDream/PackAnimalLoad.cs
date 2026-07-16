@@ -156,7 +156,7 @@ namespace HaulersDream
 
         /// <summary>The "Unload now" gizmo while on a non-home map: load the nearest pack animal now. Manual, so
         /// gated only on enableOnNonHomeMaps (not the auto-divert toggle). Messages when no carrier is around.</summary>
-        internal static void GizmoLoadNearest(Pawn pawn)
+        internal static void GizmoLoadNearest(Pawn pawn, bool immediate = false)
         {
             var s = HaulersDreamMod.Settings;
             if (pawn?.Map == null || s == null || !s.enableOnNonHomeMaps || pawn.Drafted || HasLoadJob(pawn))
@@ -170,7 +170,9 @@ namespace HaulersDream
                     MessageTypeDefOf.RejectInput, historical: false);
                 return;
             }
-            QueueDepositOnly(pawn, carrier);
+            // #215: the "Unload now" gizmo on an away map. A plain left-click loads the carrier immediately
+            // (immediate == true); Shift queues it behind the current job (the prior behavior).
+            QueueDepositOnly(pawn, carrier, immediate);
         }
 
         // ---- coalescing vanilla "Load onto pack animal" (GiveToPackAnimal) orders into ONE trip --------------
@@ -249,13 +251,18 @@ namespace HaulersDream
             return job;
         }
 
-        private static void QueueDepositOnly(Pawn pawn, Pawn carrier)
+        private static void QueueDepositOnly(Pawn pawn, Pawn carrier, bool immediate = false)
         {
             var job = JobMaker.MakeJob(HaulersDreamDefOf.HaulersDream_LoadPackAnimal, carrier);
             if (pawn.jobs != null && job.TryMakePreToilReservations(pawn, false))
             {
                 pawn.jobs.jobQueue.EnqueueFirst(job, JobTag.Misc);
                 HDLog.Dbg($"{pawn} diverting to load {carrier} with carried loot.");
+                // #215 left-click: run the load NOW by ending the current job (the just-EnqueueFirst'd load then
+                // starts at once). The automatic auto-divert caller passes immediate:false, keeping its
+                // queue-behind-current behavior.
+                if (immediate)
+                    PawnUnloadChecker.InterruptCurrentJob(pawn);
             }
         }
 
