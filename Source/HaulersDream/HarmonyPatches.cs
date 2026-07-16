@@ -533,13 +533,21 @@ namespace HaulersDream
                 Order = GizmoOrder,
                 action = () =>
                 {
-                    // MP: the MapGate branch below (GizmoLoadNearest enqueues jobs via jobQueue.EnqueueFirst;
-                    // CheckIfShouldUnload adopts surplus into the SCRIBED hauled-item set) mutates synced world state
-                    // and is NOT covered by vanilla's TryTakeOrderedJob auto-sync. Route the whole action through the
-                    // [SyncMethod] shim so it runs once, as a command, on every client. UnloadInventoryNow contains
-                    // the IDENTICAL home/temp-map branch (GizmoLoadNearest vs CheckIfShouldUnload, ShouldUnloadToStorage
-                    // gate), so single-player behaviour is unchanged (it runs inline when MP is absent).
-                    MultiplayerCompat.UnloadInventoryNow(__instance);
+                    // #215: a plain left-click unloads NOW (interrupts the current job); holding the vanilla
+                    // queue-order key (Shift by default) appends the unload behind the current job instead, the
+                    // prior behavior. This matches how every other HD click order reads queue-vs-now (the
+                    // Plan-route float menus use the same KeyBindingDefOf.QueueOrder.IsDownEvent). The key state
+                    // is read HERE in interface context (it is only valid on the local client during the click)
+                    // and passed as a plain bool into the synced command below, so MP stays deterministic.
+                    bool queue = KeyBindingDefOf.QueueOrder.IsDownEvent;
+                    // MP: the MapGate branch inside UnloadInventoryNow (GizmoLoadNearest enqueues jobs via
+                    // jobQueue.EnqueueFirst; CheckIfShouldUnload adopts surplus into the SCRIBED hauled-item set)
+                    // mutates synced world state and is NOT covered by vanilla's TryTakeOrderedJob auto-sync.
+                    // Route the whole action through the [SyncMethod] shim so it runs once, as a command, on every
+                    // client. It contains the IDENTICAL home/temp-map branch (GizmoLoadNearest vs
+                    // CheckIfShouldUnload, ShouldUnloadToStorage gate), so single-player behaviour is unchanged
+                    // (it runs inline when MP is absent).
+                    MultiplayerCompat.UnloadInventoryNow(__instance, queue);
                 }
             };
             // The unload checker hard-gates drafted pawns (they must stand to orders, not march to
