@@ -137,6 +137,14 @@ namespace HaulersDream
                                  // so upgrade-sweeps from worse storage still work; the primary keeps vanilla's
                                  // semantics (it's what the work scan / order assigned).
                                  && (loadIndex == 0 || !t.IsInValidBestStorage());
+                    // #214 execution-time re-gate (defense-in-depth for the RimIOT terminal loop). BulkHaul's
+                    // plan-time gates checked the stack's cell when the job was BUILT, but a foreign patch (RimIOT's
+                    // Patch_StartPath_NetworkItemRedirect, priority 200) can rewrite this job's pickup target into a
+                    // network-INTERNAL stack AFTER that, during loadGoto's StartPath. So re-check the CURRENT stack's
+                    // cell here: on the AUTOMATIC path never pocket a stack now sitting in RimIOT-handled storage
+                    // (pocketing it out of the network and force-unloading it back is the net-zero loop). See RegateRimIOT.
+                    if (valid && ShouldSkipRimIOTRetarget(t, loadIndex))
+                        valid = false;
                     // RESERVE at the walk, not just at job start: start-time ReserveAsManyAsPossible may have
                     // failed for this stack (and the conflict since cleared), and a bare CanReserve leaves it
                     // up for grabs — another pawn could reserve it mid-walk and we'd yank it anyway (vanilla
@@ -201,6 +209,12 @@ namespace HaulersDream
                 // Same re-check as loadDecide: a swept extra stored (best) mid-walk stays in storage.
                 if (loadIndex != 0 && t.IsInValidBestStorage()) { loadIndex++; JumpToToil(loadDecide); return; }
 
+                // #214 execution-time re-gate (see loadDecide + ShouldSkipRimIOTRetarget). This is the ACTUAL
+                // pocket site: RimIOT rewrites targetB during loadGoto's StartPath, so the swap is only visible
+                // here. Never pocket a network-handled stack on the automatic path; skip it (nothing loads, so
+                // the finish flush queues no unload) and surface + back off the foreign retarget once.
+                if (ShouldSkipRimIOTRetarget(t, loadIndex)) { loadIndex++; JumpToToil(loadDecide); return; }
+
                 // Auto-strip-on-haul parity for a corpse pickup ("Pick up X", or "Haul everything nearby"
                 // anchored on a corpse — the two corpse entries into this driver; the automatic scan never
                 // assigns one): the hand-haul path strips at the
@@ -234,6 +248,36 @@ namespace HaulersDream
             yield return take;
 
             yield return end;
+        }
+
+        /// <summary>
+        /// #214 defense-in-depth: whether the CURRENT pickup stack <paramref name="t"/> must be skipped because a
+        /// foreign patch rewrote this AUTOMATIC bulk job's target into RimIOT-handled storage AFTER BulkHaul's
+        /// plan-time gates ran (RimIOT's <c>Patch_StartPath_NetworkItemRedirect</c> swaps <c>targetB</c> during
+        /// loadGoto's StartPath, pointing the pickup at a network-INTERNAL stack). Pocketing that stack out of the
+        /// network and force-unloading it back is the net-zero terminal loop (#177/#184/#192/#214).
+        ///
+        /// <para>Forced player orders are never re-gated: their one-shot semantics can't infinite-loop and the
+        /// player asked for it. When slot 0 (the anchor) is the swapped one (<paramref name="t"/> is no longer the
+        /// assigned primary; HD itself never swaps slot 0, only appends), the swap is a FOREIGN retarget:
+        /// <see cref="HaulChurnGuard.NoteForeignRetarget"/> surfaces it once and backs the real anchor off the
+        /// automatic haul scan so the loop cannot re-arm next tick. Inert without RimIOT
+        /// (<see cref="RimIOTCompat.IsPresent"/> is false).</para>
+        /// </summary>
+        /// <param name="t">The stack the driver is about to reserve/pocket (the job's current StackInd target).</param>
+        /// <param name="loadIndex">The chain position being loaded; slot 0 is the assigned anchor.</param>
+        private bool ShouldSkipRimIOTRetarget(Thing t, int loadIndex)
+        {
+            if (t == null || job.playerForced || !RimIOTCompat.IsPresent
+                || !RimIOTCompat.IsRimIOTHandledCell(pawn.Map, t.Position))
+                return false;
+            if (loadIndex == 0)
+            {
+                var anchor = job.GetTarget(PrimaryInd).Thing;
+                if (anchor != null && anchor != t)
+                    HaulChurnGuard.NoteForeignRetarget(pawn, anchor, t);
+            }
+            return true;
         }
 
         /// <summary>

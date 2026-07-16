@@ -89,6 +89,18 @@ namespace HaulersDream
         // Reused prune scratch (only ever touched under the lock).
         private static readonly List<int> expiredScratch = new List<int>();
 
+        // #214 net-zero SUCCESS-loop tally: thingIDNumber -> (tick of the last AUTOMATIC bulk re-anchor, how many
+        // in a row, the stack's size at that re-anchor). A stack re-hauled repeatedly WITHOUT shrinking (a foreign
+        // mod returning it) is stamped into the SAME `backoffUntil` (with the longer NetZeroBackoffTicks window)
+        // once its count reaches HaulChurnPolicy.MaxNetZeroReanchorsPerThing. Guarded by `sync`; pruned
+        // opportunistically (a legitimate haul's delivered anchor never revisits its entry) and cleared on load.
+        private static readonly Dictionary<int, (int lastTick, int count, int lastStackCount)> bulkAnchors
+            = new Dictionary<int, (int lastTick, int count, int lastStackCount)>();
+
+        // #214 warn-once-per-session keys (thingIDNumber): a PERSISTENT loop surfaces ONE actionable line, never a
+        // per-tick flood. Guarded by `sync`; cleared on game load (thingIDNumbers collide across saves).
+        private static readonly HashSet<int> loopWarned = new HashSet<int>();
+
         // Self-register the per-session clears with the game-load hygiene sweep (see CacheRegistry), so they
         // can never be forgotten. thingIDNumbers collide across saves, so a stale stamp could suppress an
         // unrelated item for up to BackoffTicks after a quickload; the load-time clear removes even that.
@@ -106,6 +118,8 @@ namespace HaulersDream
             {
                 backoffUntil.Clear();
                 thingFails.Clear();
+                bulkAnchors.Clear();
+                loopWarned.Clear();
             }
             // Loads never interleave with the running sim, so a plain reference swap is race-free here.
             retargetsByJob = new ConditionalWeakTable<Job, Counter>();
@@ -175,18 +189,24 @@ namespace HaulersDream
 
         /// <summary>Stamp <paramref name="thing"/> as churn-ended: the automatic haul scan will not re-offer it
         /// until the backoff window passes. Prunes expired stamps in the same breath, so the table stays tiny.</summary>
-        internal static void StampBackoff(Thing thing)
+        /// <param name="thing">The haulable to suppress from the automatic scan.</param>
+        /// <param name="ticks">How long to suppress it, in game ticks. Defaults to the short failure-churn window
+        /// (<see cref="HaulChurnPolicy.BackoffTicks"/>); the #214 success-loop layers pass the longer
+        /// <see cref="HaulChurnPolicy.NetZeroBackoffTicks"/> because a foreign re-fetcher is a persistent
+        /// condition.</param>
+        internal static void StampBackoff(Thing thing, int ticks = HaulChurnPolicy.BackoffTicks)
         {
             if (thing == null)
                 return;
             lock (sync)
-                StampBackoffLocked(thing, Find.TickManager?.TicksGame ?? 0);
+                StampBackoffLocked(thing, Find.TickManager?.TicksGame ?? 0, ticks);
         }
 
         /// <summary>The body of <see cref="StampBackoff"/>, assuming the caller ALREADY holds <c>sync</c>, so
         /// <see cref="NoteThingHaulFailed"/> can stamp within its own locked tally update without re-taking the
-        /// lock or re-reading the tick. Prunes expired stamps, then stamps <paramref name="thing"/>.</summary>
-        private static void StampBackoffLocked(Thing thing, int now)
+        /// lock or re-reading the tick. Prunes expired stamps, then stamps <paramref name="thing"/> for
+        /// <paramref name="ticks"/>.</summary>
+        private static void StampBackoffLocked(Thing thing, int now, int ticks = HaulChurnPolicy.BackoffTicks)
         {
             // Opportunistic prune: drop every expired stamp (the table only ever holds recent churn).
             expiredScratch.Clear();
@@ -197,7 +217,7 @@ namespace HaulersDream
                 backoffUntil.Remove(expiredScratch[i]);
             expiredScratch.Clear();
 
-            backoffUntil[thing.thingIDNumber] = HaulChurnPolicy.SuppressUntil(now);
+            backoffUntil[thing.thingIDNumber] = now + ticks;
         }
 
         /// <summary>Record that a stackable storage <see cref="JobDriver_HaulToCell"/> job for
@@ -239,6 +259,99 @@ namespace HaulersDream
                 return;
             lock (sync)
                 thingFails.Remove(thing.thingIDNumber);
+        }
+
+        /// <summary>
+        /// #214 GENERAL net-zero success-loop backstop. Record one AUTOMATIC bulk re-anchor on
+        /// <paramref name="thing"/> (called at BUILD time from <see cref="BulkHaul"/>, automatic path only). When
+        /// the SAME physical stack is re-hauled <see cref="HaulChurnPolicy.MaxNetZeroReanchorsPerThing"/> times in
+        /// quick succession without its stackCount dropping (net-zero: a foreign mod keeps returning it where HD
+        /// re-hauls it), stamp it into the re-offer backoff for the long
+        /// <see cref="HaulChurnPolicy.NetZeroBackoffTicks"/> window (the automatic scan then stops rebuilding the
+        /// doomed sweep, via the existing <see cref="Patch_WorkGiver_HaulGeneral_ChurnBackoff"/> gate) and surface
+        /// it once. A LEGITIMATE haul shrinks the stack each armful (resetting the tally) and a delivered stack
+        /// despawns (never recurs), so this fires only on a real loop. Forced one-shot orders can't loop and never
+        /// call in. Multiplayer: mutates only on the synced work-scan build path, keyed on thingIDNumber +
+        /// TicksGame, so every client tallies identically.
+        ///
+        /// <para>Deliberately GENERAL (not RimIOT-gated), like the failure-churn layers above: it is a general
+        /// anti-loop guard already scoped by its only call site (BulkHaul's automatic build, so it runs only when
+        /// the <c>bulkHaul</c> feature is on, exactly as Layer 3 is scoped by <c>haulToStack</c>). Options 1-2
+        /// cover ACTIVE RimIOT; this additionally catches the degraded-reflection RimIOT case AND any future
+        /// non-RimIOT bulk re-fetcher, so a new loop is SURFACED rather than silently recurring. It is observably
+        /// inert until a genuine net-zero loop (the tight discriminator never trips on healthy hauling), so a game
+        /// without any re-fetcher behaves as before.</para>
+        /// </summary>
+        internal static void NoteBulkAnchor(Thing thing)
+        {
+            if (thing?.def == null)
+                return;
+            int now = Find.TickManager?.TicksGame ?? 0;
+            string warn = null;
+            lock (sync)
+            {
+                PruneBulkAnchorsLocked(now);
+                bulkAnchors.TryGetValue(thing.thingIDNumber, out var state);
+                HaulChurnPolicy.RecordNetZeroReanchor(now, state.lastTick, state.count, state.lastStackCount,
+                    thing.stackCount, out int newTick, out int newCount);
+                if (HaulChurnPolicy.ShouldBackOffReanchored(newCount))
+                {
+                    bulkAnchors.Remove(thing.thingIDNumber);
+                    StampBackoffLocked(thing, now, HaulChurnPolicy.NetZeroBackoffTicks);
+                    if (loopWarned.Add(thing.thingIDNumber))
+                        warn = $"{thing.LabelShort} was bulk-hauled {newCount} times in quick succession without "
+                             + "moving (net-zero). Another mod is very likely returning it to where HD keeps "
+                             + "re-hauling it (a logistics or loadout mod, e.g. RimIOT). HD is backing it off its "
+                             + "automatic haul scan so pawns stop looping; a forced player order still hauls it. "
+                             + "Please report the mod combination (issue #214) if this is unexpected.";
+                }
+                else
+                    bulkAnchors[thing.thingIDNumber] = (newTick, newCount, thing.stackCount);
+            }
+            if (warn != null)
+                HDLog.Warn(warn); // log OUTSIDE the lock
+        }
+
+        /// <summary>
+        /// #214 defense-in-depth surfacing. A foreign patch (RimIOT's <c>Patch_StartPath_NetworkItemRedirect</c>)
+        /// swapped <paramref name="anchor"/> (HD's assigned bulk anchor) out for a network-internal stack
+        /// <paramref name="swappedTo"/> after the plan ran, and the driver declined to pocket the substitute (see
+        /// <see cref="JobDriver_BulkHaul.ShouldSkipRimIOTRetarget"/>). Back the REAL anchor off the automatic scan
+        /// for the long window so the loop can't re-arm next tick, and surface the interference once. Called from
+        /// the driver's automatic path only.
+        /// </summary>
+        internal static void NoteForeignRetarget(Pawn pawn, Thing anchor, Thing swappedTo)
+        {
+            if (anchor == null)
+                return;
+            StampBackoff(anchor, HaulChurnPolicy.NetZeroBackoffTicks);
+            bool warn;
+            lock (sync)
+                warn = loopWarned.Add(anchor.thingIDNumber);
+            if (warn)
+                HDLog.Warn($"{(pawn != null ? pawn.LabelShort : "A pawn")}'s bulk haul of {anchor.LabelShort} was "
+                    + $"retargeted by another mod into logistics-network storage ({swappedTo?.LabelShort ?? "a network stack"}). "
+                    + "HD declined to pocket the substitute and is backing the original off its automatic scan so "
+                    + "the terminal haul/unload loop can't form; a forced player order still hauls it. If "
+                    + "unexpected, please report the mod combination (issue #214).");
+        }
+
+        /// <summary>Keep <see cref="bulkAnchors"/> tiny. A LEGITIMATE haul's delivered anchor never revisits its
+        /// entry, so without a prune the table would grow with every distinct thing ever auto-bulk-hauled. An entry
+        /// older than <see cref="HaulChurnPolicy.ReanchorGapTicks"/> is dead (the next re-anchor of that thing
+        /// resets to one anyway), so drop those once the table grows past a small cap. Under <c>sync</c>; reuses
+        /// <see cref="expiredScratch"/>.</summary>
+        private static void PruneBulkAnchorsLocked(int now)
+        {
+            if (bulkAnchors.Count <= 64)
+                return;
+            expiredScratch.Clear();
+            foreach (var pair in bulkAnchors)
+                if (now - pair.Value.lastTick > HaulChurnPolicy.ReanchorGapTicks)
+                    expiredScratch.Add(pair.Key);
+            for (int i = 0; i < expiredScratch.Count; i++)
+                bulkAnchors.Remove(expiredScratch[i]);
+            expiredScratch.Clear();
         }
 
         /// <summary>Whether <paramref name="thing"/> is inside its churn backoff window (suppressed from the

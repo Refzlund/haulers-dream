@@ -413,6 +413,29 @@ namespace HaulersDream
             bool partialHandHaul = primary.stackCount > handCap;
 
             var storeCell = vanillaJob.targetB.Cell;
+
+            // #214 (the RimIOT terminal haul/unload loop, the ROOT fix). When RimIOT is active and this haul's
+            // DESTINATION is a logistic-network cell, DON'T upgrade it to an HD bulk haul; leave vanilla's
+            // HaulToCell standing. RimIOT owns delivery INTO its own network end to end (walk to the item ->
+            // carry -> terminal -> its own DepositHelper), and its StartPath retarget
+            // (Patch_StartPath_NetworkItemRedirect, priority 200) rewrites the pickup target of ANY job that
+            // walks to a network-def thing into a network-INTERNAL stack. HD's bulk driver then pockets that
+            // network stack out of the container (a distance-free SplitOff) and force-unloads it straight back,
+            // net-zero, with every job reporting Succeeded so no failure-keyed guard can see it (issues
+            // #177/#184/#192/#214). The bulk upgrade is the ONLY job shape RimIOT can turn into that loop:
+            // vanilla's HaulToCell keeps a CELL (not a thing) in targetB, so it fails RimIOT's retarget match and
+            // RimIOT delivers it correctly instead. Automatic path only (!forced): a one-shot player order can't
+            // infinite-loop and is the player's explicit choice. Extends #177's "cede network storage to RimIOT"
+            // from picking-up-FROM a network to delivering-INTO one. Tradeoff: an oversized network-bound stack
+            // hand-hauls in armfuls instead of one inventory trip (slower, but correct, and only into a RimIOT
+            // network). Inert without RimIOT (IsActive is false) and for forced orders.
+            if (!forced && RimIOTCompat.IsActive && RimIOTCompat.IsNetworkManagedCell(map, storeCell))
+            {
+                HDLog.Dbg($"{pawn} bulk-haul into a RimIOT network declined ({primary.LabelShort} -> {storeCell}); "
+                          + "left to vanilla + RimIOT so the terminal haul/unload loop can't form.");
+                return null;
+            }
+
             float searchRadius = Math.Max(MinSearchRadius,
                 (storeCell - primary.Position).LengthHorizontal * SearchRangeFraction);
 
@@ -613,6 +636,12 @@ namespace HaulersDream
                 job.targetQueueB.Add(things[i]);
             job.count = 1; // sentinel: Job.count defaults to -1, which reads as "broken" in several vanilla checks
             HDLog.Dbg($"BulkHaul: {pawn} sweeping {things.Count} stacks (~{running:0.#}kg / ceiling {(float.IsPositiveInfinity(ceiling) ? -1 : ceiling):0.#}kg, forced={forced}).");
+            // #214 general net-zero success-loop backstop: record this AUTOMATIC re-anchor on `primary`. If the
+            // same stack is re-built into a bulk haul repeatedly without shrinking (a foreign mod returning it),
+            // HaulChurnGuard backs it off the scan and surfaces it: the class-level net for any re-fetcher, beyond
+            // the RimIOT-specific gates. Forced one-shot orders can't infinite-loop, so they're excluded.
+            if (!forced)
+                HaulChurnGuard.NoteBulkAnchor(primary);
             return job;
         }
 
