@@ -200,5 +200,86 @@ namespace HaulersDream.Core
         /// <param name="nowTick">The current game tick (the moment the item was first hauled aside).</param>
         public static int AsideSuppressUntil(int nowTick)
             => nowTick + AsideBackoffTicks;
+
+        // --- Per-THING net-zero re-anchor SUCCESS-loop bound (issue #214) ------------------------------------
+        //  A THIRD kind of loop, and the reason #177/#184/#192 kept "occasionally" recurring: here every job
+        //  SUCCEEDS, so no failure signal exists for the layers above to see. When a foreign logistics mod keeps
+        //  returning a def to where HD re-hauls it (RimIOT's over-broad StartPath retarget rewrites HD's bulk
+        //  pickup into a network-internal stack that its own deposit then bounces straight back), HD re-anchors an
+        //  AUTOMATIC bulk haul on the SAME physical floor stack over and over while that stack never shrinks:
+        //  net-zero, forever, the pawn pinned at the terminal. This is the GENERAL backstop for that shape (any
+        //  re-fetcher, not just RimIOT), complementing the RimIOT-specific gates.
+        //
+        //  The net-zero test is what makes it FALSE-POSITIVE-FREE. A legitimate oversized haul re-anchors the same
+        //  stack too (armful by armful) but SHRINKS it every trip, and a delivered stack despawns and never
+        //  recurs, so only a stack that is re-hauled repeatedly WITHOUT shrinking is a loop. Reuses the same
+        //  re-offer backoff + scan gate the failure layers use; forced player orders bypass it.
+
+        /// <summary>
+        /// How many times HD may re-anchor an AUTOMATIC bulk haul on the SAME stack, in quick succession and
+        /// WITHOUT the stack shrinking (net-zero), before the stack is backed off from the automatic scan. A
+        /// legitimate multi-armful haul shrinks the stack every trip (resetting this), and a delivered stack
+        /// despawns, so six net-zero re-anchors is already the loop, not real work.
+        /// </summary>
+        public const int MaxNetZeroReanchorsPerThing = 6;
+
+        /// <summary>
+        /// The maximum gap (game ticks) between two net-zero re-anchors of one stack for them to count as the SAME
+        /// loop. 180 ticks (~3 s at normal speed) comfortably spans the terminal loop's ~1-2 s cadence, while a
+        /// re-anchor more than this apart resets the tally to one (not a loop). Gap-based (not a fixed window from
+        /// the first) so a slightly slower loop still accumulates without ever folding in well-spaced, unrelated
+        /// re-anchors.
+        /// </summary>
+        public const int ReanchorGapTicks = 180;
+
+        /// <summary>
+        /// How long (game ticks) a net-zero-looping stack stays backed off from the automatic haul scan. Longer
+        /// than <see cref="BackoffTicks"/> because the trigger is a PERSISTENT foreign condition (the other mod
+        /// keeps returning the item), so a short retry would just re-loop: 2500 ticks (~40 s) lets the pawn do
+        /// other work for a good while, and a still-present loop simply re-arms the window. Forced player orders
+        /// ignore the backoff entirely.
+        /// </summary>
+        public const int NetZeroBackoffTicks = 2500;
+
+        /// <summary>
+        /// Fold one more AUTOMATIC bulk re-anchor of a stack into its net-zero tally. Resets the count to one when
+        /// this is the first re-anchor seen (<paramref name="priorCount"/> &lt;= 0), when it came more than
+        /// <see cref="ReanchorGapTicks"/> after the previous one, OR when the stack SHRANK since the last
+        /// re-anchor (real delivery progress, never a loop); otherwise increments. The last-anchor tick is always
+        /// advanced to now so the next call measures its gap and progress from THIS re-anchor.
+        /// </summary>
+        /// <param name="nowTick">The tick this re-anchor occurred.</param>
+        /// <param name="lastTick">The tick of the stack's previous counted re-anchor (ignored when
+        /// <paramref name="priorCount"/> is 0).</param>
+        /// <param name="priorCount">The stack's re-anchor count before this one (0 if none tracked).</param>
+        /// <param name="lastStackCount">The stack's stackCount at its previous re-anchor (ignored when
+        /// <paramref name="priorCount"/> is 0).</param>
+        /// <param name="currentStackCount">The stack's stackCount now.</param>
+        /// <param name="newLastTick">Out: the tick to store as the stack's latest re-anchor (always
+        /// <paramref name="nowTick"/>).</param>
+        /// <param name="newCount">Out: the stack's re-anchor count after folding this one in.</param>
+        public static void RecordNetZeroReanchor(int nowTick, int lastTick, int priorCount, int lastStackCount,
+            int currentStackCount, out int newLastTick, out int newCount)
+        {
+            newLastTick = nowTick;
+            bool shrank = priorCount > 0 && currentStackCount < lastStackCount;
+            newCount = (priorCount <= 0 || nowTick - lastTick > ReanchorGapTicks || shrank) ? 1 : priorCount + 1;
+        }
+
+        /// <summary>
+        /// Whether a stack that has now net-zero-re-anchored <paramref name="count"/> times in quick succession
+        /// must be backed off. Reaching (not merely exceeding) the budget bails: the sixth net-zero re-anchor is
+        /// the one that stops the loop.
+        /// </summary>
+        /// <param name="count">The stack's current net-zero re-anchor count (from
+        /// <see cref="RecordNetZeroReanchor"/>).</param>
+        public static bool ShouldBackOffReanchored(int count)
+            => count >= MaxNetZeroReanchorsPerThing;
+
+        /// <summary>The tick until which a net-zero-looping stack stays suppressed from the automatic haul
+        /// scan.</summary>
+        /// <param name="nowTick">The current game tick (the moment the loop was detected).</param>
+        public static int NetZeroSuppressUntil(int nowTick)
+            => nowTick + NetZeroBackoffTicks;
     }
 }
