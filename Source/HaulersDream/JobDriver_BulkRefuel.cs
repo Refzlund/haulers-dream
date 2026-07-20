@@ -118,6 +118,11 @@ namespace HaulersDream
                 var counts = job.countQueue;
                 int planned = counts != null && loadIndex < counts.Count ? counts[loadIndex] : 0;
                 if (t == null || !t.Spawned || planned <= 0 || t.IsForbidden(pawn)) { loadIndex++; JumpToToil(sweepDecide); return; }
+                // No LIVE carry-weight re-clamp here (unlike JobDriver_BulkHaul / the bulk-load drivers): the
+                // planner already clamped every countQueue entry to the smart-overload ceiling, and this job never
+                // injects mass mid-run (no takeover/append, no scoop loop), so planned <= ceiling always holds. If a
+                // takeover/append is ever added to refuel, re-clamp planned via a live CeilingKg/CountWithinCeiling
+                // read here, exactly as those siblings do.
                 int count = System.Math.Min(planned, t.stackCount);
                 if (count <= 0) { loadIndex++; JumpToToil(sweepDecide); return; }
                 int groundBefore = t.stackCount;
