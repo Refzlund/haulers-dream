@@ -23,6 +23,28 @@ namespace HaulersDream.Tests
             Assert.That(Carry(OverloadTuning.OffLevel, demand: 200, available: 200), Is.EqualTo(30));
         }
 
+        // Strict carry weight + "Drop then collect" report. A strict pawn's SELF-PICKUP take runs at OffLevel
+        // with a huge active-run demand (OverloadGate.ActiveRunDemand = 1 << 20, meaning "more is coming, fill
+        // to the ceiling"), the strongest demand any intake applies. Even then, strict must fill to EXACTLY the
+        // carry-limit cap (baseCap) and never past it, for any carry-limit fraction. (The bulk-haul path caps
+        // via CeilingKg / CountWithinCeiling instead of this demand, but both bottom out in
+        // CarryMath.CountToPickUp(baseCap, ...), so this pins the shared invariant.) It answers the "carries
+        // very large quantities" report: a full load is capped at 100% of the carry limit by design (not a
+        // leak), and lowering the carry-limit fraction scales the cap identically on the drop-then-collect and
+        // collect-directly paths.
+        [TestCase(1.0f, 30)]
+        [TestCase(0.5f, 12)]
+        [TestCase(0.25f, 3)]
+        public void Strict_ActiveRunDemand_CapsAtCarryLimit(float fraction, int expected)
+        {
+            const int ActiveRunDemand = 1 << 20;
+            float baseCap = Cap * fraction;
+            int units = Carry(OverloadTuning.OffLevel, demand: ActiveRunDemand, available: ActiveRunDemand, baseCap: baseCap);
+            Assert.That(units, Is.EqualTo(expected));
+            // The loaded gear+resource mass never exceeds the carry-limit cap, whatever the demand.
+            Assert.That(Gear + units * Unit, Is.LessThanOrEqualTo(baseCap + 1e-4f));
+        }
+
         [Test]
         public void NoSlowdownLevel_CarriesEverythingDemanded()
         {
@@ -141,6 +163,61 @@ namespace HaulersDream.Tests
                 maxCapacityKg: 0f, baseCapKg: 0f, currentMassKg: 3f,
                 unitMassKg: 1f, demandUnits: 200, availableUnits: 200);
             Assert.That(units, Is.EqualTo(0));
+        }
+
+        // ── Absolute carry-weight cap (the "Max carry weight" setting) via UnitsToCarry maxCeilingKg ──────
+        // A hard ceiling applied on TOP of the fraction + overload: the lower limit always wins, and the load
+        // can never pass the cap. This is the "my pawns carry too much" lever. Massless items are unbounded by
+        // it, and the default (+infinity) leaves the overload math byte-identical.
+
+        static int CarryCapped(int level, float capKg, int demand = 1000, int available = 1000,
+            float current = Gear, float unit = Unit, float baseCap = Base)
+            => OverloadPolicy.UnitsToCarry(level, Cap, baseCap, current, unit, demand, available, maxCeilingKg: capKg);
+
+        [Test]
+        public void Cap_LimitsNoOverloadBaseline_BelowCarryLimit()
+        {
+            // Off level, 10 kg cap: from 5 kg gear only 5 units of 1 kg fit (below the 30-unit carry limit).
+            Assert.That(CarryCapped(OverloadTuning.OffLevel, capKg: 10f), Is.EqualTo(5));
+        }
+
+        [Test]
+        public void Cap_LimitsOverload_LowerLimitWins()
+        {
+            // Fair overload alone would allow roughly 2.75 × 35 = 96 kg; a 20 kg cap wins -> 15 units from 5 kg.
+            Assert.That(CarryCapped(OverloadTuning.FairLevel, capKg: 20f), Is.EqualTo(15));
+        }
+
+        [Test]
+        public void Cap_TamesNoSlowdownLevel()
+        {
+            // Level 0 alone carries the whole demand; the cap makes it finite (20 - 5 = 15 units).
+            Assert.That(CarryCapped(0, capKg: float.PositiveInfinity), Is.EqualTo(1000)); // uncapped: demand-bound
+            Assert.That(CarryCapped(0, capKg: 20f), Is.EqualTo(15));
+        }
+
+        [Test]
+        public void Cap_AboveCeiling_DoesNotBind()
+        {
+            // A 100 kg cap sits above the 35 kg base/strict ceiling, so it never binds: still 30 units.
+            Assert.That(CarryCapped(OverloadTuning.OffLevel, capKg: 100f), Is.EqualTo(30));
+        }
+
+        [Test]
+        public void Cap_MasslessItem_Ignored()
+        {
+            // A weightless item cannot be bounded by a weight cap: full stack (demand / availability only).
+            Assert.That(CarryCapped(OverloadTuning.OffLevel, capKg: 10f, demand: 40, available: 40, unit: 0f), Is.EqualTo(40));
+        }
+
+        [Test]
+        public void Cap_DefaultInfinity_IsBackwardCompatible()
+        {
+            // Omitting the cap (default +infinity) equals the pre-cap result at every level.
+            foreach (int lvl in new[] { 0, OverloadTuning.FairLevel, OverloadTuning.OffLevel })
+                Assert.That(OverloadPolicy.UnitsToCarry(lvl, Cap, Base, Gear, Unit, 200, 200),
+                    Is.EqualTo(OverloadPolicy.UnitsToCarry(lvl, Cap, Base, Gear, Unit, 200, 200, maxCeilingKg: float.PositiveInfinity)),
+                    $"level {lvl}");
         }
     }
 

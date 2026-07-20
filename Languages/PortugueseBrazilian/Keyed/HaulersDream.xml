@@ -30,7 +30,7 @@
 <HaulersDream.ItemUnload.ModeKeepAll>Nunca descarregar</HaulersDream.ItemUnload.ModeKeepAll>
 <HaulersDream.ItemUnload.ModeKeepAtMost>Manter no máximo</HaulersDream.ItemUnload.ModeKeepAtMost>
 <HaulersDream.ItemUnload.ModeUnloadAlways>Sempre descarregar</HaulersDream.ItemUnload.ModeUnloadAlways>
-  <HaulersDream.ItemUnload.ModeMixed>Mixed</HaulersDream.ItemUnload.ModeMixed>
+  <HaulersDream.ItemUnload.ModeMixed>Misto</HaulersDream.ItemUnload.ModeMixed>
 <HaulersDream.Setting.UnloadBeforeSleep>Guardar a carga antes de dormir</HaulersDream.Setting.UnloadBeforeSleep>
 <HaulersDream.Setting.UnloadBeforeSleepDesc>Quando um peão termina de trabalhar e está cansado (prestes a dormir), ele faz a viagem de descarregamento primeiro e então vai para a cama vazio — em vez de levar sua carga recolhida para a cama. Ele ainda acumula normalmente enquanto está de fato trabalhando.</HaulersDream.Setting.UnloadBeforeSleepDesc>
 <HaulersDream.Setting.UnloadBeforeLeisure>Guardar a carga antes da recreação</HaulersDream.Setting.UnloadBeforeLeisure>
@@ -731,9 +731,9 @@
 <HaulersDream.Search.NoResults>Nenhuma configuração corresponde à sua busca.</HaulersDream.Search.NoResults>
 <HaulersDream.Search.More>Mostrando os {0} melhores resultados. Refine sua busca para ver o restante.</HaulersDream.Search.More>
 <HaulersDream.Search.Clear>Limpar busca</HaulersDream.Search.Clear>
-  <HaulersDream.ItemUnload.SetCategoryTip>Apply one rule to every item in this category at once, instead of setting them one by one. Handy for big groups like ammo.</HaulersDream.ItemUnload.SetCategoryTip>
-  <HaulersDream.Setting.Yield.Fishing>Fishing (catch)</HaulersDream.Setting.Yield.Fishing>
-  <HaulersDream.Setting.Yield.FishingHelp>Fish and other catch pulled from a fishing spot. Needs the Odyssey expansion; the row is hidden without it.</HaulersDream.Setting.Yield.FishingHelp>
+  <HaulersDream.ItemUnload.SetCategoryTip>Aplica uma única regra a todos os itens desta categoria de uma vez, em vez de configurá-los um por um. Prático para grandes grupos como munição.</HaulersDream.ItemUnload.SetCategoryTip>
+  <HaulersDream.Setting.Yield.Fishing>Pesca (pescado)</HaulersDream.Setting.Yield.Fishing>
+  <HaulersDream.Setting.Yield.FishingHelp>Peixes e outros pescados tirados de um ponto de pesca. Requer a expansão Odyssey; a linha fica oculta sem ela.</HaulersDream.Setting.Yield.FishingHelp>
   <!-- Main-menu report notifications -->
   <HaulersDream.Report.Notify.Source>Hauler's Dream</HaulersDream.Report.Notify.Source>
   <HaulersDream.Report.Notify.Word.Open>Aberto</HaulersDream.Report.Notify.Word.Open>
@@ -773,16 +773,20 @@
   <HaulersDream.PlanRoute.RememberButtonSaved>Já lembrado</HaulersDream.PlanRoute.RememberButtonSaved>
   <HaulersDream.PlanRoute.RememberButtonSavedDesc>Estas configurações já estão salvas como o plano lembrado para este tipo de alvo. Altere qualquer configuração para salvar um plano diferente.</HaulersDream.PlanRoute.RememberButtonSavedDesc>
   <!-- Added: #222 strip-before-cremation, Steam urgent-haul bulk, Steam allow-outside-home scope -->
-  <HaulersDream.Setting.NonHomeMapsPlayerControlledOnly>Only on maps you control</HaulersDream.Setting.NonHomeMapsPlayerControlledOnly>
-  <HaulersDream.Setting.NonHomeMapsPlayerControlledOnly.Help>When Hauler's Dream works off your home colony, limit it to maps you actually control: your home, a temporary camp or settled site, and any map where you have built storage. It stands down on maps you are only passing through or attacking, such as ambush sites, enemy bases and hostile pocket maps. No effect unless 'Also work on caravan / non-home maps' is on.</HaulersDream.Setting.NonHomeMapsPlayerControlledOnly.Help>
-  <HaulersDream.Setting.BulkHaulUrgent>Bulk-haul urgent items</HaulersDream.Setting.BulkHaulUrgent>
-  <HaulersDream.Setting.BulkHaulUrgentDesc>When a pawn is sent to 'Haul Urgently' an item, it also pockets other urgent-marked stacks within a short radius and backpacks the whole cluster in one trip, instead of carrying them one at a time. Off restores the vanilla one-item-per-urgent-trip behaviour. Works with Allow Tool and Keyz' Allow Utilities.</HaulersDream.Setting.BulkHaulUrgentDesc>
-  <HaulersDream.Setting.BulkHaulUrgentRadius.Lab>Urgent pickup radius</HaulersDream.Setting.BulkHaulUrgentRadius.Lab>
-  <HaulersDream.Setting.BulkHaulUrgentRadius.Help>How close another 'Haul Urgently' stack must be to the one a pawn is fetching, to be scooped on the same trip. Small keeps it tight; larger sweeps a wider urgent cluster.</HaulersDream.Setting.BulkHaulUrgentRadius.Help>
-  <HaulersDream.Setting.BulkHaulUrgentIncludeNonUrgent>Also grab non-urgent items nearby</HaulersDream.Setting.BulkHaulUrgentIncludeNonUrgent>
-  <HaulersDream.Setting.BulkHaulUrgentIncludeNonUrgentDesc>While on an urgent haul, also pocket ordinary haulables in the vicinity and allow opportunistic pickup during urgent trips. Off means urgent trips carry only urgent-marked items.</HaulersDream.Setting.BulkHaulUrgentIncludeNonUrgentDesc>
-  <HaulersDream.Feat.BulkHaulUrgent.Name>Bulk-haul urgent items</HaulersDream.Feat.BulkHaulUrgent.Name>
-  <HaulersDream.Feat.BulkHaulUrgent.Blurb>Pocket nearby urgent-marked items in one trip</HaulersDream.Feat.BulkHaulUrgent.Blurb>
-  <HaulersDream.Setting.StripBeforeCremation>Strip gear before cremating</HaulersDream.Setting.StripBeforeCremation>
-  <HaulersDream.Setting.StripBeforeCremationDesc>When a corpse is about to be cremated (or burned in an incinerator), strip its weapons, apparel and carried items onto the crematorium tile first, so they can be hauled to storage instead of being destroyed with the body. Tainted apparel follows the policies below, and 'Also strip player-faction corpses' still decides whether your own dead are stripped. Off by default; leave it off if you deliberately cremate gear to destroy it.</HaulersDream.Setting.StripBeforeCremationDesc>
+  <HaulersDream.Setting.NonHomeMapsPlayerControlledOnly>Apenas em mapas que você controla</HaulersDream.Setting.NonHomeMapsPlayerControlledOnly>
+  <HaulersDream.Setting.NonHomeMapsPlayerControlledOnly.Help>Quando o Hauler's Dream atua fora da sua colônia principal, limite-o aos mapas que você realmente controla: sua base, um acampamento temporário ou local colonizado, e qualquer mapa onde você tenha construído armazenamento. Ele recua nos mapas por onde você só passa ou que ataca, como locais de emboscada, bases inimigas e mapas de bolso hostis. Sem efeito a menos que «Também trabalhar em mapas de caravana / fora de casa» esteja ligado.</HaulersDream.Setting.NonHomeMapsPlayerControlledOnly.Help>
+  <HaulersDream.Setting.BulkHaulUrgent>Transporte em massa de itens urgentes</HaulersDream.Setting.BulkHaulUrgent>
+  <HaulersDream.Setting.BulkHaulUrgentDesc>Quando um peão é enviado para «Transportar com urgência» um item, ele também guarda no bolso outras pilhas marcadas como urgentes dentro de um raio curto e leva o agrupamento inteiro na mochila em uma única viagem, em vez de carregá-las uma de cada vez. Desligado restaura o comportamento do jogo base de um item por viagem urgente. Funciona com o Allow Tool e o Allow Utilities do Keyz.</HaulersDream.Setting.BulkHaulUrgentDesc>
+  <HaulersDream.Setting.BulkHaulUrgentRadius.Lab>Raio de coleta urgente</HaulersDream.Setting.BulkHaulUrgentRadius.Lab>
+  <HaulersDream.Setting.BulkHaulUrgentRadius.Help>Quão perto outra pilha «Transportar com urgência» precisa estar daquela que um peão vai buscar para ser recolhida na mesma viagem. Pequeno mantém tudo bem próximo; maior varre um agrupamento urgente mais amplo.</HaulersDream.Setting.BulkHaulUrgentRadius.Help>
+  <HaulersDream.Setting.BulkHaulUrgentIncludeNonUrgent>Também pegar itens não urgentes por perto</HaulersDream.Setting.BulkHaulUrgentIncludeNonUrgent>
+  <HaulersDream.Setting.BulkHaulUrgentIncludeNonUrgentDesc>Durante um transporte urgente, também guardar no bolso os transportáveis comuns nas redondezas e permitir a coleta oportunista durante as viagens urgentes. Desligado significa que as viagens urgentes carregam apenas itens marcados como urgentes.</HaulersDream.Setting.BulkHaulUrgentIncludeNonUrgentDesc>
+  <HaulersDream.Feat.BulkHaulUrgent.Name>Transporte em massa de itens urgentes</HaulersDream.Feat.BulkHaulUrgent.Name>
+  <HaulersDream.Feat.BulkHaulUrgent.Blurb>Guarda no bolso os itens marcados como urgentes por perto em uma única viagem</HaulersDream.Feat.BulkHaulUrgent.Blurb>
+  <HaulersDream.Setting.StripBeforeCremation>Despojar o equipamento antes de cremar</HaulersDream.Setting.StripBeforeCremation>
+  <HaulersDream.Setting.StripBeforeCremationDesc>Quando um cadáver está prestes a ser cremado (ou queimado em um incinerador), despojar primeiro suas armas, roupas e itens carregados sobre a célula do crematório, para que possam ser transportados ao armazenamento em vez de destruídos junto com o corpo. As roupas contaminadas seguem as políticas abaixo, e «Também despojar cadáveres da facção do jogador» ainda decide se seus próprios mortos são despojados. Desligado por padrão; deixe desligado se você crema equipamento de propósito para destruí-lo.</HaulersDream.Setting.StripBeforeCremationDesc>
+  <HaulersDream.Setting.CarryMassCap.Lab>Peso de carga máximo</HaulersDream.Setting.CarryMassCap.Lab>
+  <HaulersDream.Setting.CarryMassCap.Off>Sem limite</HaulersDream.Setting.CarryMassCap.Off>
+  <HaulersDream.Setting.CarryMassCap.Value>{0} kg</HaulersDream.Setting.CarryMassCap.Value>
+  <HaulersDream.Setting.CarryMassCapDesc>Um teto rígido, em quilogramas, de quanto um peão carrega no inventário em uma viagem de transporte ou coleta. É a resposta direta a «meus peões carregam demais»: defina baixo (digamos 20 kg) e os peões reúnem uma carga pequena, descarregam e voltam, em vez de encher até a carga máxima. Funciona em conjunto com a porcentagem «Limite de carga» e a Sobrecarga inteligente acima, e o limite mais baixo sempre vence, então este teto nunca é ultrapassado nem com a sobrecarga ligada. Como o Limite de carga, conta apenas o que está guardado na mochila, não uma pilha carregada nas mãos, e não muda quanto material um peão busca para uma construção ou tarefa específica. Defina como 0 para não ter limite (o padrão).</HaulersDream.Setting.CarryMassCapDesc>
 </LanguageData>

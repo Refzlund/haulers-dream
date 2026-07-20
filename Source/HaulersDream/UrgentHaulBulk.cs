@@ -133,7 +133,8 @@ namespace HaulersDream
             // exact ceiling BulkHaul plans against, and the running gear+inventory mass after committing the
             // primary's take, so the first neighbour is priced against the real remaining room.
             float baseCap = CarryMath.EffectiveCapacity(CarryCapacity.Of(pawn), s.carryLimitFraction);
-            float ceiling = BulkHaulPolicy.CeilingKg(s.overloadLevel, OverloadGate.NoOverloadFor(pawn, s), baseCap);
+            float ceiling = BulkHaulPolicy.CeilingKg(s.overloadLevel, OverloadGate.NoOverloadFor(pawn, s), baseCap,
+                OverloadGate.MaxCeilingKg(s));
             float running = MassUtility.GearAndInventoryMass(pawn) + primaryTake * primary.GetStatValue(StatDefOf.Mass);
 
             float radius = Math.Max(1, s.bulkHaulUrgentRadius); // slider is 1..12; floor at 1 defensively

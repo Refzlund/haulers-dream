@@ -30,7 +30,7 @@
 <HaulersDream.ItemUnload.ModeKeepAll>从不卸载</HaulersDream.ItemUnload.ModeKeepAll>
 <HaulersDream.ItemUnload.ModeKeepAtMost>最多保留</HaulersDream.ItemUnload.ModeKeepAtMost>
 <HaulersDream.ItemUnload.ModeUnloadAlways>始终卸载</HaulersDream.ItemUnload.ModeUnloadAlways>
-  <HaulersDream.ItemUnload.ModeMixed>Mixed</HaulersDream.ItemUnload.ModeMixed>
+  <HaulersDream.ItemUnload.ModeMixed>混合</HaulersDream.ItemUnload.ModeMixed>
 <HaulersDream.Setting.UnloadBeforeSleep>睡觉前先收起货物</HaulersDream.Setting.UnloadBeforeSleep>
 <HaulersDream.Setting.UnloadBeforeSleepDesc>当小人结束工作且疲惫（即将睡觉）时，会先去卸载，然后空手就寝——而不是把收取的货物带上床。它在实际工作时仍正常积攒货物。</HaulersDream.Setting.UnloadBeforeSleepDesc>
 <HaulersDream.Setting.UnloadBeforeLeisure>娱乐前先收起货物</HaulersDream.Setting.UnloadBeforeLeisure>
@@ -731,9 +731,9 @@
 <HaulersDream.Search.NoResults>没有设置项与你的搜索匹配。</HaulersDream.Search.NoResults>
 <HaulersDream.Search.More>正在显示前 {0} 个匹配项。优化搜索以查看其余项目。</HaulersDream.Search.More>
 <HaulersDream.Search.Clear>清除搜索</HaulersDream.Search.Clear>
-  <HaulersDream.ItemUnload.SetCategoryTip>Apply one rule to every item in this category at once, instead of setting them one by one. Handy for big groups like ammo.</HaulersDream.ItemUnload.SetCategoryTip>
-  <HaulersDream.Setting.Yield.Fishing>Fishing (catch)</HaulersDream.Setting.Yield.Fishing>
-  <HaulersDream.Setting.Yield.FishingHelp>Fish and other catch pulled from a fishing spot. Needs the Odyssey expansion; the row is hidden without it.</HaulersDream.Setting.Yield.FishingHelp>
+  <HaulersDream.ItemUnload.SetCategoryTip>一次性把同一条规则应用到此类别中的每个物品，而不必逐个设置。对弹药之类的大类很方便。</HaulersDream.ItemUnload.SetCategoryTip>
+  <HaulersDream.Setting.Yield.Fishing>捕鱼（渔获）</HaulersDream.Setting.Yield.Fishing>
+  <HaulersDream.Setting.Yield.FishingHelp>从钓鱼点捕获的鱼和其他渔获。需要 Odyssey 扩展；没有它则此行隐藏。</HaulersDream.Setting.Yield.FishingHelp>
   <!-- Main-menu report notifications -->
   <HaulersDream.Report.Notify.Source>Hauler's Dream</HaulersDream.Report.Notify.Source>
   <HaulersDream.Report.Notify.Word.Open>待处理</HaulersDream.Report.Notify.Word.Open>
@@ -773,16 +773,20 @@
   <HaulersDream.PlanRoute.RememberButtonSaved>已记住</HaulersDream.PlanRoute.RememberButtonSaved>
   <HaulersDream.PlanRoute.RememberButtonSavedDesc>这些设置已保存为该类目标的已记住方案。更改任意设置即可保存为不同的方案。</HaulersDream.PlanRoute.RememberButtonSavedDesc>
   <!-- Added: #222 strip-before-cremation, Steam urgent-haul bulk, Steam allow-outside-home scope -->
-  <HaulersDream.Setting.NonHomeMapsPlayerControlledOnly>Only on maps you control</HaulersDream.Setting.NonHomeMapsPlayerControlledOnly>
-  <HaulersDream.Setting.NonHomeMapsPlayerControlledOnly.Help>When Hauler's Dream works off your home colony, limit it to maps you actually control: your home, a temporary camp or settled site, and any map where you have built storage. It stands down on maps you are only passing through or attacking, such as ambush sites, enemy bases and hostile pocket maps. No effect unless 'Also work on caravan / non-home maps' is on.</HaulersDream.Setting.NonHomeMapsPlayerControlledOnly.Help>
-  <HaulersDream.Setting.BulkHaulUrgent>Bulk-haul urgent items</HaulersDream.Setting.BulkHaulUrgent>
-  <HaulersDream.Setting.BulkHaulUrgentDesc>When a pawn is sent to 'Haul Urgently' an item, it also pockets other urgent-marked stacks within a short radius and backpacks the whole cluster in one trip, instead of carrying them one at a time. Off restores the vanilla one-item-per-urgent-trip behaviour. Works with Allow Tool and Keyz' Allow Utilities.</HaulersDream.Setting.BulkHaulUrgentDesc>
-  <HaulersDream.Setting.BulkHaulUrgentRadius.Lab>Urgent pickup radius</HaulersDream.Setting.BulkHaulUrgentRadius.Lab>
-  <HaulersDream.Setting.BulkHaulUrgentRadius.Help>How close another 'Haul Urgently' stack must be to the one a pawn is fetching, to be scooped on the same trip. Small keeps it tight; larger sweeps a wider urgent cluster.</HaulersDream.Setting.BulkHaulUrgentRadius.Help>
-  <HaulersDream.Setting.BulkHaulUrgentIncludeNonUrgent>Also grab non-urgent items nearby</HaulersDream.Setting.BulkHaulUrgentIncludeNonUrgent>
-  <HaulersDream.Setting.BulkHaulUrgentIncludeNonUrgentDesc>While on an urgent haul, also pocket ordinary haulables in the vicinity and allow opportunistic pickup during urgent trips. Off means urgent trips carry only urgent-marked items.</HaulersDream.Setting.BulkHaulUrgentIncludeNonUrgentDesc>
-  <HaulersDream.Feat.BulkHaulUrgent.Name>Bulk-haul urgent items</HaulersDream.Feat.BulkHaulUrgent.Name>
-  <HaulersDream.Feat.BulkHaulUrgent.Blurb>Pocket nearby urgent-marked items in one trip</HaulersDream.Feat.BulkHaulUrgent.Blurb>
-  <HaulersDream.Setting.StripBeforeCremation>Strip gear before cremating</HaulersDream.Setting.StripBeforeCremation>
-  <HaulersDream.Setting.StripBeforeCremationDesc>When a corpse is about to be cremated (or burned in an incinerator), strip its weapons, apparel and carried items onto the crematorium tile first, so they can be hauled to storage instead of being destroyed with the body. Tainted apparel follows the policies below, and 'Also strip player-faction corpses' still decides whether your own dead are stripped. Off by default; leave it off if you deliberately cremate gear to destroy it.</HaulersDream.Setting.StripBeforeCremationDesc>
+  <HaulersDream.Setting.NonHomeMapsPlayerControlledOnly>仅在你控制的地图上</HaulersDream.Setting.NonHomeMapsPlayerControlledOnly>
+  <HaulersDream.Setting.NonHomeMapsPlayerControlledOnly.Help>当 Hauler's Dream 在你的主基地之外工作时，将其限制在你真正控制的地图上：你的主基地、临时营地或已定居的据点，以及任何你已建有储存区的地图。在你只是路过或正在攻打的地图上（如伏击点、敌方基地和敌对口袋地图），它会停手。除非开启“也在商队/非主基地地图上工作”，否则无效。</HaulersDream.Setting.NonHomeMapsPlayerControlledOnly.Help>
+  <HaulersDream.Setting.BulkHaulUrgent>批量搬运紧急物品</HaulersDream.Setting.BulkHaulUrgent>
+  <HaulersDream.Setting.BulkHaulUrgentDesc>当一个小人被派去“紧急搬运”某个物品时，它还会把附近短半径内其他被标记为紧急的堆一并收入货物栏，一趟背走整簇，而不是一次搬一个。关闭则恢复原版每趟紧急搬运只搬一个物品的行为。可与 Allow Tool 和 Keyz' Allow Utilities 配合。</HaulersDream.Setting.BulkHaulUrgentDesc>
+  <HaulersDream.Setting.BulkHaulUrgentRadius.Lab>紧急拾取半径</HaulersDream.Setting.BulkHaulUrgentRadius.Lab>
+  <HaulersDream.Setting.BulkHaulUrgentRadius.Help>另一个“紧急搬运”的堆必须离小人正在取的那个多近，才会在同一趟顺手收走。值小则范围紧凑；值大则扫过更大的紧急物品簇。</HaulersDream.Setting.BulkHaulUrgentRadius.Help>
+  <HaulersDream.Setting.BulkHaulUrgentIncludeNonUrgent>同时抓取附近的非紧急物品</HaulersDream.Setting.BulkHaulUrgentIncludeNonUrgent>
+  <HaulersDream.Setting.BulkHaulUrgentIncludeNonUrgentDesc>在紧急搬运途中，也把附近的普通可搬运物收入货物栏，并允许在紧急搬运途中顺手拾取。关闭则表示紧急搬运只携带被标记为紧急的物品。</HaulersDream.Setting.BulkHaulUrgentIncludeNonUrgentDesc>
+  <HaulersDream.Feat.BulkHaulUrgent.Name>批量搬运紧急物品</HaulersDream.Feat.BulkHaulUrgent.Name>
+  <HaulersDream.Feat.BulkHaulUrgent.Blurb>一趟收走附近被标记为紧急的物品</HaulersDream.Feat.BulkHaulUrgent.Blurb>
+  <HaulersDream.Setting.StripBeforeCremation>火化前扒取装备</HaulersDream.Setting.StripBeforeCremation>
+  <HaulersDream.Setting.StripBeforeCremationDesc>当一具尸体即将被火化（或在焚化炉中焚烧）时，先把它的武器、衣物和随身物品扒到火化设施的格子上，这样它们就能被搬到储存区，而不是随尸体一同销毁。染污衣物遵循下方的策略，而“同时扒取玩家派系的尸体”仍决定是否扒取你自己的死者。默认关闭；如果你是故意火化装备来销毁它们，请保持关闭。</HaulersDream.Setting.StripBeforeCremationDesc>
+  <HaulersDream.Setting.CarryMassCap.Lab>最大携带质量</HaulersDream.Setting.CarryMassCap.Lab>
+  <HaulersDream.Setting.CarryMassCap.Off>无限制</HaulersDream.Setting.CarryMassCap.Off>
+  <HaulersDream.Setting.CarryMassCap.Value>{0} 千克</HaulersDream.Setting.CarryMassCap.Value>
+  <HaulersDream.Setting.CarryMassCapDesc>以千克为单位的硬性上限，限制小人在一趟搬运或收集中往货物栏里装多少。这是“我的小人携带太多”的直接答案：把它设低（比如 20 千克），小人就会收一小批、卸载、再回来，而不是装满到其全部携带质量。它与上方的“携带上限”百分比和智能超载协同工作，且始终以较低的限制为准，因此即使开启超载也绝不会超过此上限。与携带上限一样，它只计入装在背包里的东西，不算手上携带的那一堆，并且不改变小人为某个特定建造或工单取用多少材料。设为 0 表示无限制（默认）。</HaulersDream.Setting.CarryMassCapDesc>
 </LanguageData>

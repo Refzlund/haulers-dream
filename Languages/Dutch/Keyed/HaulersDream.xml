@@ -30,7 +30,7 @@
 <HaulersDream.ItemUnload.ModeKeepAll>Nooit uitladen</HaulersDream.ItemUnload.ModeKeepAll>
 <HaulersDream.ItemUnload.ModeKeepAtMost>Hoogstens behouden</HaulersDream.ItemUnload.ModeKeepAtMost>
 <HaulersDream.ItemUnload.ModeUnloadAlways>Altijd uitladen</HaulersDream.ItemUnload.ModeUnloadAlways>
-  <HaulersDream.ItemUnload.ModeMixed>Mixed</HaulersDream.ItemUnload.ModeMixed>
+  <HaulersDream.ItemUnload.ModeMixed>Gemengd</HaulersDream.ItemUnload.ModeMixed>
 <HaulersDream.Setting.UnloadBeforeSleep>Lading opbergen voor het slapen</HaulersDream.Setting.UnloadBeforeSleep>
 <HaulersDream.Setting.UnloadBeforeSleepDesc>Wanneer een figuur klaar is met werken en moe is (op het punt te gaan slapen), maakt het eerst zijn uitlaadtrip en gaat dan leeg naar bed — in plaats van zijn opgepakte lading mee naar bed te dragen. Het blijft tijdens het werken zelf nog steeds normaal verzamelen.</HaulersDream.Setting.UnloadBeforeSleepDesc>
 <HaulersDream.Setting.UnloadBeforeLeisure>Lading opbergen voor recreatie</HaulersDream.Setting.UnloadBeforeLeisure>
@@ -526,7 +526,7 @@
 <HaulersDream.Feat.CraftFromInv.Blurb>Taken kunnen ingrediënten gebruiken die figuren al dragen</HaulersDream.Feat.CraftFromInv.Blurb>
 <HaulersDream.Feat.ConstructDeliver.Name>Materialen dragen voor grote bouwwerken</HaulersDream.Feat.ConstructDeliver.Name>
 <HaulersDream.Feat.ConstructDeliver.Blurb>Minder trips naar grote of geclusterde bouwtaken</HaulersDream.Feat.ConstructDeliver.Blurb>
-<HaulersDream.Feat.Meals.Name>Meals on Wheels</HaulersDream.Feat.Meals.Name>
+<HaulersDream.Feat.Meals.Name>Maaltijden op wielen</HaulersDream.Feat.Meals.Name>
 <HaulersDream.Feat.Meals.Blurb>Een hongerige figuur eet eten dat een andere figuur draagt</HaulersDream.Feat.Meals.Blurb>
 <HaulersDream.Feat.PlanRoutes.Name>Routeplanner</HaulersDream.Feat.PlanRoutes.Name>
 <HaulersDream.Feat.PlanRoutes.Blurb>Rechtsklikhulpmiddel om een sjouw-/werkroute te plannen</HaulersDream.Feat.PlanRoutes.Blurb>
@@ -731,9 +731,9 @@
 <HaulersDream.Search.NoResults>Geen instellingen komen overeen met je zoekopdracht.</HaulersDream.Search.NoResults>
 <HaulersDream.Search.More>De {0} beste resultaten worden getoond. Verfijn je zoekopdracht om de rest te zien.</HaulersDream.Search.More>
 <HaulersDream.Search.Clear>Zoekopdracht wissen</HaulersDream.Search.Clear>
-  <HaulersDream.ItemUnload.SetCategoryTip>Apply one rule to every item in this category at once, instead of setting them one by one. Handy for big groups like ammo.</HaulersDream.ItemUnload.SetCategoryTip>
-  <HaulersDream.Setting.Yield.Fishing>Fishing (catch)</HaulersDream.Setting.Yield.Fishing>
-  <HaulersDream.Setting.Yield.FishingHelp>Fish and other catch pulled from a fishing spot. Needs the Odyssey expansion; the row is hidden without it.</HaulersDream.Setting.Yield.FishingHelp>
+  <HaulersDream.ItemUnload.SetCategoryTip>Pas in één keer één regel toe op elk item in deze categorie, in plaats van ze één voor één in te stellen. Handig voor grote groepen zoals munitie.</HaulersDream.ItemUnload.SetCategoryTip>
+  <HaulersDream.Setting.Yield.Fishing>Vissen (vangst)</HaulersDream.Setting.Yield.Fishing>
+  <HaulersDream.Setting.Yield.FishingHelp>Vis en andere vangst die uit een visstek wordt gehaald. Vereist de uitbreiding Odyssey; zonder die is de rij verborgen.</HaulersDream.Setting.Yield.FishingHelp>
   <!-- Main-menu report notifications -->
   <HaulersDream.Report.Notify.Source>Hauler's Dream</HaulersDream.Report.Notify.Source>
   <HaulersDream.Report.Notify.Word.Open>Open</HaulersDream.Report.Notify.Word.Open>
@@ -773,16 +773,20 @@
   <HaulersDream.PlanRoute.RememberButtonSaved>Al onthouden</HaulersDream.PlanRoute.RememberButtonSaved>
   <HaulersDream.PlanRoute.RememberButtonSavedDesc>Deze instellingen zijn al opgeslagen als het onthouden plan voor dit soort doel. Wijzig een instelling om een ander plan op te slaan.</HaulersDream.PlanRoute.RememberButtonSavedDesc>
   <!-- Added: #222 strip-before-cremation, Steam urgent-haul bulk, Steam allow-outside-home scope -->
-  <HaulersDream.Setting.NonHomeMapsPlayerControlledOnly>Only on maps you control</HaulersDream.Setting.NonHomeMapsPlayerControlledOnly>
-  <HaulersDream.Setting.NonHomeMapsPlayerControlledOnly.Help>When Hauler's Dream works off your home colony, limit it to maps you actually control: your home, a temporary camp or settled site, and any map where you have built storage. It stands down on maps you are only passing through or attacking, such as ambush sites, enemy bases and hostile pocket maps. No effect unless 'Also work on caravan / non-home maps' is on.</HaulersDream.Setting.NonHomeMapsPlayerControlledOnly.Help>
-  <HaulersDream.Setting.BulkHaulUrgent>Bulk-haul urgent items</HaulersDream.Setting.BulkHaulUrgent>
-  <HaulersDream.Setting.BulkHaulUrgentDesc>When a pawn is sent to 'Haul Urgently' an item, it also pockets other urgent-marked stacks within a short radius and backpacks the whole cluster in one trip, instead of carrying them one at a time. Off restores the vanilla one-item-per-urgent-trip behaviour. Works with Allow Tool and Keyz' Allow Utilities.</HaulersDream.Setting.BulkHaulUrgentDesc>
-  <HaulersDream.Setting.BulkHaulUrgentRadius.Lab>Urgent pickup radius</HaulersDream.Setting.BulkHaulUrgentRadius.Lab>
-  <HaulersDream.Setting.BulkHaulUrgentRadius.Help>How close another 'Haul Urgently' stack must be to the one a pawn is fetching, to be scooped on the same trip. Small keeps it tight; larger sweeps a wider urgent cluster.</HaulersDream.Setting.BulkHaulUrgentRadius.Help>
-  <HaulersDream.Setting.BulkHaulUrgentIncludeNonUrgent>Also grab non-urgent items nearby</HaulersDream.Setting.BulkHaulUrgentIncludeNonUrgent>
-  <HaulersDream.Setting.BulkHaulUrgentIncludeNonUrgentDesc>While on an urgent haul, also pocket ordinary haulables in the vicinity and allow opportunistic pickup during urgent trips. Off means urgent trips carry only urgent-marked items.</HaulersDream.Setting.BulkHaulUrgentIncludeNonUrgentDesc>
-  <HaulersDream.Feat.BulkHaulUrgent.Name>Bulk-haul urgent items</HaulersDream.Feat.BulkHaulUrgent.Name>
-  <HaulersDream.Feat.BulkHaulUrgent.Blurb>Pocket nearby urgent-marked items in one trip</HaulersDream.Feat.BulkHaulUrgent.Blurb>
-  <HaulersDream.Setting.StripBeforeCremation>Strip gear before cremating</HaulersDream.Setting.StripBeforeCremation>
-  <HaulersDream.Setting.StripBeforeCremationDesc>When a corpse is about to be cremated (or burned in an incinerator), strip its weapons, apparel and carried items onto the crematorium tile first, so they can be hauled to storage instead of being destroyed with the body. Tainted apparel follows the policies below, and 'Also strip player-faction corpses' still decides whether your own dead are stripped. Off by default; leave it off if you deliberately cremate gear to destroy it.</HaulersDream.Setting.StripBeforeCremationDesc>
+  <HaulersDream.Setting.NonHomeMapsPlayerControlledOnly>Alleen op kaarten die je beheert</HaulersDream.Setting.NonHomeMapsPlayerControlledOnly>
+  <HaulersDream.Setting.NonHomeMapsPlayerControlledOnly.Help>Wanneer Hauler's Dream buiten je thuiskolonie werkt, beperk het dan tot kaarten die je daadwerkelijk beheert: je thuis, een tijdelijk kamp of gevestigde locatie, en elke kaart waar je opslag hebt gebouwd. Het houdt zich in op kaarten waar je alleen doorheen trekt of die je aanvalt, zoals hinderlaagplekken, vijandelijke bases en vijandige zakkaarten. Geen effect tenzij „Ook werken op karavaan- / niet-thuiskaarten“ aan staat.</HaulersDream.Setting.NonHomeMapsPlayerControlledOnly.Help>
+  <HaulersDream.Setting.BulkHaulUrgent>Dringende items in bulk sjouwen</HaulersDream.Setting.BulkHaulUrgent>
+  <HaulersDream.Setting.BulkHaulUrgentDesc>Wanneer een figuur wordt gestuurd om een item „Dringend te sjouwen“, steekt het ook andere als dringend gemarkeerde stapels binnen een korte straal in zijn zak en draagt het hele cluster in één trip in de rugzak, in plaats van ze een voor een te dragen. Uit herstelt het vanilla-gedrag van één item per dringende trip. Werkt met Allow Tool en Keyz' Allow Utilities.</HaulersDream.Setting.BulkHaulUrgentDesc>
+  <HaulersDream.Setting.BulkHaulUrgentRadius.Lab>Straal voor dringend oppakken</HaulersDream.Setting.BulkHaulUrgentRadius.Lab>
+  <HaulersDream.Setting.BulkHaulUrgentRadius.Help>Hoe dichtbij een andere „Dringend sjouwen“-stapel moet zijn bij de stapel die een figuur ophaalt, om op dezelfde trip te worden meegenomen. Klein houdt het strak; groter veegt een breder dringend cluster op.</HaulersDream.Setting.BulkHaulUrgentRadius.Help>
+  <HaulersDream.Setting.BulkHaulUrgentIncludeNonUrgent>Pak ook niet-dringende items in de buurt</HaulersDream.Setting.BulkHaulUrgentIncludeNonUrgent>
+  <HaulersDream.Setting.BulkHaulUrgentIncludeNonUrgentDesc>Steek tijdens een dringende sjouwtrip ook gewone sjouwbare spullen in de omgeving in je zak en sta opportunistisch oppakken toe tijdens dringende trips. Uit betekent dat dringende trips alleen als dringend gemarkeerde items dragen.</HaulersDream.Setting.BulkHaulUrgentIncludeNonUrgentDesc>
+  <HaulersDream.Feat.BulkHaulUrgent.Name>Dringende items in bulk sjouwen</HaulersDream.Feat.BulkHaulUrgent.Name>
+  <HaulersDream.Feat.BulkHaulUrgent.Blurb>Steek nabije als dringend gemarkeerde items in één trip in je zak</HaulersDream.Feat.BulkHaulUrgent.Blurb>
+  <HaulersDream.Setting.StripBeforeCremation>Uitrusting uitkleden voor het cremeren</HaulersDream.Setting.StripBeforeCremation>
+  <HaulersDream.Setting.StripBeforeCremationDesc>Wanneer een lijk op het punt staat gecremeerd te worden (of verbrand in een verbrandingsoven), kleed het dan eerst zijn wapens, kleding en gedragen spullen uit op de crematoriumtegel, zodat ze naar opslag kunnen worden gesjouwd in plaats van met het lichaam te worden vernietigd. Besmette kleding volgt de regels hieronder, en „Ook lijken van de spelersfactie uitkleden“ bepaalt nog steeds of je eigen doden worden uitgekleed. Standaard uit; laat het uit als je met opzet uitrusting cremeert om die te vernietigen.</HaulersDream.Setting.StripBeforeCremationDesc>
+  <HaulersDream.Setting.CarryMassCap.Lab>Max. draaggewicht</HaulersDream.Setting.CarryMassCap.Lab>
+  <HaulersDream.Setting.CarryMassCap.Off>Geen limiet</HaulersDream.Setting.CarryMassCap.Off>
+  <HaulersDream.Setting.CarryMassCap.Value>{0} kg</HaulersDream.Setting.CarryMassCap.Value>
+  <HaulersDream.Setting.CarryMassCapDesc>Een harde bovengrens, in kilogram, voor hoeveel een figuur in zijn inventaris laadt op één sjouw- of verzameltrip. Dit is het directe antwoord op „mijn figuren dragen te veel“: zet hem laag (zeg 20 kg) en figuren verzamelen een kleine lading, laden uit en komen terug, in plaats van tot hun volle draaggewicht te vullen. Hij werkt samen met het percentage „Draaglimiet“ en Slim overladen hierboven, en de laagste limiet wint altijd, dus deze bovengrens wordt zelfs met overladen aan nooit overschreden. Net als de Draaglimiet telt hij alleen wat in de rugzak is opgeborgen, niet een stapel die in de handen wordt gedragen, en hij verandert niet hoeveel materiaal een figuur haalt voor een specifieke bouw of taak. Zet op 0 voor geen limiet (de standaard).</HaulersDream.Setting.CarryMassCapDesc>
 </LanguageData>

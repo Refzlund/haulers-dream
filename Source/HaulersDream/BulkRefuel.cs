@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using HaulersDream.Core;
 using RimWorld;
 using Verse;
 using Verse.AI;
@@ -49,6 +50,9 @@ namespace HaulersDream
         public static Job TryGiveBulkRefuelJob(Pawn pawn, Thing refuelable, bool playerOrder)
         {
             if (!FeatureEnabled)
+                return null;
+            var s = HaulersDreamMod.Settings;
+            if (s == null)
                 return null;
             if (pawn?.Map == null || refuelable == null || !refuelable.Spawned)
                 return null;
@@ -136,26 +140,41 @@ namespace HaulersDream
             if (fuels == null || fuels.Count < 2)
                 return null;
 
+            // Carry-weight ceiling (smart overload): the SAME ceiling every other into-inventory path respects
+            // (bulk-haul, the transporter/portal/vehicle bulk-load). It caps at 100% of the pawn's carry weight
+            // under strict carry weight / the "Off" slider / Combat Extended (baseCap), a break-even multiple of
+            // it at the Fair slider, and stays unbounded at "no slowdown". Without this clamp the refuel sweep
+            // sized purely by the refuelable's DEFICIT, so a large or modded-fuel deficit could load a pawn far
+            // past its carry limit. It was the lone into-inventory path that ignored the overload ceiling and,
+            // under strict, the exception that contradicted OverloadGate.NoOverload's own contract. A ceiling-trimmed
+            // partial sweep deposits what it carries and a later trip tops up the rest (the driver re-tags any
+            // leftover), exactly like the partial-deficit sweep the min=1 finder above already accepts.
+            float maxCap = CarryCapacity.Of(pawn);
+            float baseCap = CarryMath.EffectiveCapacity(maxCap, s.carryLimitFraction);
+            float ceiling = BulkHaulPolicy.CeilingKg(s.overloadLevel, OverloadGate.NoOverloadFor(pawn, s), baseCap,
+                OverloadGate.MaxCeilingKg(s));
+            float runningMass = MassUtility.GearAndInventoryMass(pawn);
+
             var job = JobMaker.MakeJob(HaulersDreamDefOf.HaulersDream_BulkRefuel, refuelable);
             job.targetQueueB = new List<LocalTargetInfo>(fuels.Count);
             job.countQueue = new List<int>(fuels.Count);
-            // Queue each stack, trimming the LAST stack so the running total doesn't wildly exceed the deficit
-            // (over-pick is otherwise safe — the deposit only consumes up to the deficit and any leftover stays
-            // HD-tagged for the normal unload — but trimming avoids hauling a whole extra stack we won't use).
+            // Queue each stack, clamped to BOTH the refuelable's deficit (over-pick is otherwise safe, but hauling
+            // a whole extra stack we won't use is wasteful) AND the carry-weight ceiling above (never overload past
+            // it). RefuelPlan.TakeFromStack takes min(deficit-remaining, stack, units-fitting-under-the-ceiling).
             int running = 0;
             for (int i = 0; i < fuels.Count && running < deficit; i++)
             {
                 var f = fuels[i];
                 if (f == null || f.stackCount <= 0)
                     continue;
-                int take = f.stackCount;
-                if (running + take > deficit)
-                    take = deficit - running;
+                float unit = f.GetStatValue(StatDefOf.Mass);
+                int take = RefuelPlan.TakeFromStack(deficit - running, ceiling, runningMass, unit, f.stackCount);
                 if (take <= 0)
-                    break;
+                    continue; // this stack does not fit the remaining carry weight; a lighter / massless one still might
                 job.targetQueueB.Add(new LocalTargetInfo(f));
                 job.countQueue.Add(take);
                 running += take;
+                runningMass += take * unit;
             }
             // After trimming, we may have collapsed to a single usable stack — re-apply the worth-it gate so a deficit
             // that one big stack covers (vanilla = one trip) doesn't get a redundant HD detour.

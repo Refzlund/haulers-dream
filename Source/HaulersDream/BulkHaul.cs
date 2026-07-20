@@ -461,7 +461,8 @@ namespace HaulersDream
             // slowed for it by StatPart_Overload (decision model and slowdown stay in lockstep).
             float maxCap = CarryCapacity.Of(pawn); // MassUtility.Capacity ×HD mech mult; under CE reads CE's CarryWeight
             float baseCap = CarryMath.EffectiveCapacity(maxCap, s.carryLimitFraction);
-            float ceiling = BulkHaulPolicy.CeilingKg(s.overloadLevel, OverloadGate.NoOverloadFor(pawn, s), baseCap);
+            float ceiling = BulkHaulPolicy.CeilingKg(s.overloadLevel, OverloadGate.NoOverloadFor(pawn, s), baseCap,
+                OverloadGate.MaxCeilingKg(s));
             float running = MassUtility.GearAndInventoryMass(pawn);
             float bulkRoom = CECompat.AvailableBulk(pawn); // +∞ without CE
 
@@ -764,7 +765,8 @@ namespace HaulersDream
                 return 0;
             float maxCap = CarryCapacity.Of(pawn);
             float baseCap = CarryMath.EffectiveCapacity(maxCap, s.carryLimitFraction);
-            float ceiling = BulkHaulPolicy.CeilingKg(s.overloadLevel, OverloadGate.NoOverloadFor(pawn, s), baseCap);
+            float ceiling = BulkHaulPolicy.CeilingKg(s.overloadLevel, OverloadGate.NoOverloadFor(pawn, s), baseCap,
+                OverloadGate.MaxCeilingKg(s));
             float running = MassUtility.GearAndInventoryMass(pawn);
             int take = BulkHaulPolicy.CountWithinCeiling(ceiling, running, thing.GetStatValue(StatDefOf.Mass),
                 Math.Min(planned, thing.stackCount));

@@ -1127,6 +1127,12 @@ namespace HaulersDream
             carryLimitFraction = HDSettingsUI.Slider(c, "HaulersDream.Setting.CarryLimit.Lab".Translate(),
                 carryLimitFraction, CarryMath.MinFraction, CarryMath.MaxFraction,
                 carryLimitFraction.ToStringPercent(), "HaulersDream.Setting.CarryLimitDesc".Translate());
+            // Absolute per-trip carry-weight cap (kg). 0 = no limit; the slider snaps to 5 kg steps up to 200.
+            string carryCapLabel = (carryMassCapKg <= 0f
+                ? "HaulersDream.Setting.CarryMassCap.Off".Translate()
+                : "HaulersDream.Setting.CarryMassCap.Value".Translate(carryMassCapKg.ToString("F0"))).ToString();
+            carryMassCapKg = Mathf.Round(HDSettingsUI.Slider(c, "HaulersDream.Setting.CarryMassCap.Lab".Translate(),
+                carryMassCapKg, 0f, 200f, carryCapLabel, "HaulersDream.Setting.CarryMassCapDesc".Translate()) / 5f) * 5f;
             overloadLevel = Mathf.RoundToInt(HDSettingsUI.Slider(c, "HaulersDream.Setting.Overload.Lab".Translate(),
                 overloadLevel, 0f, OverloadTuning.MaxLevel, OverloadLevelLabel(overloadLevel),
                 "HaulersDream.Setting.OverloadDesc".Translate(), enabled: !strictCarryWeight,

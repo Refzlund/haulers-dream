@@ -69,6 +69,38 @@ namespace HaulersDream.Tests
             Assert.That(BulkHaulPolicy.CeilingKg(99, false, 35f), Is.EqualTo(35f).Within(0.001f));
         }
 
+        // ── CeilingKg absolute cap (the "Max carry weight" setting): min(ratio × baseCap, cap) ───────
+
+        [Test]
+        public void Ceiling_AbsoluteCap_ClampsBelowRatioCeiling()
+        {
+            // Fair ratio × 35 is roughly 96 kg, but a 20 kg absolute cap wins.
+            Assert.That(BulkHaulPolicy.CeilingKg(OverloadTuning.FairLevel, false, 35f, 20f), Is.EqualTo(20f).Within(0.001f));
+        }
+
+        [Test]
+        public void Ceiling_AbsoluteCap_AboveCeiling_DoesNotBind()
+        {
+            // Strict ceiling = 35; a 100 kg cap sits above it, so the ceiling is unchanged.
+            Assert.That(BulkHaulPolicy.CeilingKg(OverloadTuning.OffLevel, false, 35f, 100f), Is.EqualTo(35f).Within(0.001f));
+        }
+
+        [Test]
+        public void Ceiling_AbsoluteCap_TamesNoSlowdownInfinity()
+        {
+            // Level 0 alone is unbounded, but an absolute cap makes it finite.
+            Assert.That(BulkHaulPolicy.CeilingKg(0, false, 35f, 40f), Is.EqualTo(40f).Within(0.001f));
+        }
+
+        [Test]
+        public void Ceiling_DefaultCap_IsInfinite_BackwardCompatible()
+        {
+            // Omitting the cap (default +infinity) keeps the ceiling equal to the pre-cap result exactly.
+            Assert.That(BulkHaulPolicy.CeilingKg(OverloadTuning.FairLevel, false, 35f),
+                Is.EqualTo(BulkHaulPolicy.CeilingKg(OverloadTuning.FairLevel, false, 35f, float.PositiveInfinity)).Within(0.001f));
+            Assert.That(float.IsPositiveInfinity(BulkHaulPolicy.CeilingKg(0, false, 35f)), Is.True);
+        }
+
         // ── TriggerSatisfied: automatic always sweeps; forced respects the finer-control option ─────
 
         [Test]

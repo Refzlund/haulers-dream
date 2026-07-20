@@ -34,6 +34,17 @@ namespace HaulersDream
             => NoOverload(s) ? OverloadTuning.OffLevel : s.overloadLevel;
 
         /// <summary>
+        /// The absolute carry-weight cap in kg (the "Max carry weight" setting), or
+        /// <see cref="float.PositiveInfinity"/> when unset (0). A hard ceiling on how much a pawn loads into
+        /// its inventory on any hauling / gathering / load trip, applied on top of the carry-limit fraction
+        /// and smart overload (the lower limit wins). It does not bound construction/crafting material runs:
+        /// those fetch exactly what a specific build or bill needs and already fall back to vanilla hand-carry
+        /// when inventory is not worth it.
+        /// </summary>
+        internal static float MaxCeilingKg(HaulersDreamSettings s)
+            => s != null && s.carryMassCapKg > 0f ? s.carryMassCapKg : float.PositiveInfinity;
+
+        /// <summary>
         /// The per-pawn half of the bargain: the overload deal is slowdown-FOR-capacity, so the pawns that
         /// may load past their carry limit must be exactly the pawns the <see cref="StatPart_Overload"/> can
         /// slow. Both this gate and the StatPart derive the shared strict/CE/level/race off-matrix from the
@@ -97,7 +108,8 @@ namespace HaulersDream
             float unit = thing.GetStatValue(StatDefOf.Mass);
             int count = OverloadPolicy.UnitsToCarry(
                 NoOverloadFor(pawn, s) ? OverloadTuning.OffLevel : s.overloadLevel, maxCap, baseCap, cur, unit,
-                demandUnits: ActiveRunDemand, availableUnits: thing.stackCount);
+                demandUnits: ActiveRunDemand, availableUnits: thing.stackCount,
+                maxCeilingKg: MaxCeilingKg(s));
             // Combat Extended adds a BULK dimension vanilla mass math can't see — defer to CE's own
             // canonical fit check (weight AND bulk). No-ops (int.MaxValue) without CE.
             return Math.Min(count, CECompat.MaxFitCount(pawn, thing));
