@@ -1,19 +1,31 @@
+using HaulersDream.Core;
 using RimWorld;
 using Verse;
 
 namespace HaulersDream
 {
     /// <summary>
-    /// The single "is Hauler's Dream active on THIS map?" gate. HD's autonomous behaviors stand down on a
-    /// non-home (caravan / raid / temporary) map when the player has turned off
-    /// <see cref="HaulersDreamSettings.enableOnNonHomeMaps"/> — because there is no player storage there, so
-    /// scooped loot would just strand in inventory until the pawn gets home. This was inlined ~10× as
-    /// <c>!s.enableOnNonHomeMaps &amp;&amp; !map.IsPlayerHome</c> (with an INCONSISTENT null-guard: some sites
-    /// pre-checked <c>map != null</c>, some relied on the caller, one folded a redundant null-check inline).
-    /// Centralizing it removes the drift risk and fixes the inconsistent null-handling in one place.
+    /// The single "is Hauler's Dream active on THIS map?" gate. HD is ALWAYS active on a player-home colony map.
+    /// Off the home colony its behaviour is scoped by two settings:
+    /// <list type="bullet">
+    /// <item><see cref="HaulersDreamSettings.enableOnNonHomeMaps"/> (the master off-home toggle, default on):
+    ///       with it off, HD is fully inert on every non-home (caravan / raid / temporary) map, because such a
+    ///       map has no player storage, so scooped loot would just strand in inventory until the pawn gets
+    ///       home;</item>
+    /// <item><see cref="HaulersDreamSettings.nonHomeMapsPlayerControlledOnly"/> (default off): for a nomad /
+    ///       no-home playstyle, restricts off-home activity to maps the player actually controls (see
+    ///       <see cref="IsPlayerControlled"/>: a settled or temporary camp, a player-faction site, any map with
+    ///       player storage), standing HD down on transient ambush / enemy / pocket maps. Default off preserves
+    ///       the shipped "work on every non-home map" behaviour for existing saves.</item>
+    /// </list>
+    /// The core stand-down was inlined ~10x as <c>!s.enableOnNonHomeMaps &amp;&amp; !map.IsPlayerHome</c> (with an
+    /// INCONSISTENT null-guard: some sites pre-checked <c>map != null</c>, some relied on the caller, one folded
+    /// a redundant null-check inline). Centralizing it here removed the drift risk, and the player-controlled
+    /// scope now layers on in the same place. The pure scope ladder lives in
+    /// <see cref="Core.MapEligibilityPolicy.HdActiveOnMap"/>.
     ///
     /// <para>NULL-MAP HANDLING (decided once, here): a null map is treated as ACTIVE (returns true), so the
-    /// gate never silently stands HD down on a null map — downstream code then hits its own null checks. This
+    /// gate never silently stands HD down on a null map; downstream code then hits its own null checks. This
     /// matches the only call site that could genuinely see a null map and deliberately did NOT bail
     /// (<see cref="YieldRouter.IsCandidate"/>'s <c>p.Map != null &amp;&amp; ...</c>). Sites that pre-guarantee a
     /// non-null map (the bulk-haul builders, the float-menu providers, the corpse strippers) never pass null,
@@ -24,10 +36,12 @@ namespace HaulersDream
     /// </summary>
     public static class MapGate
     {
-        /// <summary>True if HD's map-gated behaviors may run on <paramref name="map"/>: always on a player-home
-        /// map, on a non-home map only when <see cref="HaulersDreamSettings.enableOnNonHomeMaps"/> is on, and
-        /// (by the null-handling above) on a null map. The inverse of the old inline
-        /// <c>!s.enableOnNonHomeMaps &amp;&amp; !map.IsPlayerHome</c> stand-down.</summary>
+        /// <summary>True if HD's map-gated behaviors may run on <paramref name="map"/>. Always active on a
+        /// player-home map, and (by the null-handling above) on a null map or before settings load. On a
+        /// non-home map: active only when <see cref="HaulersDreamSettings.enableOnNonHomeMaps"/> is on, and when
+        /// <see cref="HaulersDreamSettings.nonHomeMapsPlayerControlledOnly"/> is on, only if the map is
+        /// <see cref="IsPlayerControlled"/> (so a nomad can keep HD off transient ambush / enemy maps). The
+        /// scope decision itself is the pure <see cref="Core.MapEligibilityPolicy.HdActiveOnMap"/>.</summary>
         public static bool HdActiveOnMap(Map map)
         {
             if (map == null)
@@ -35,8 +49,22 @@ namespace HaulersDream
             var s = HaulersDreamMod.Settings;
             if (s == null)
                 return true; // settings not loaded yet -> the stand-down can't fire without enableOnNonHomeMaps
-            return s.enableOnNonHomeMaps || map.IsPlayerHome;
+            // Only run IsPlayerControlled (a HasPlayerStorage slot-group scan) when the scope toggle is on: this
+            // is a hot initiation gate the repo tracks for microstutter, and the policy discards the controlled
+            // arg unless playerControlledOnly is on, so the short-circuit is behaviour-identical.
+            bool controlled = s.nonHomeMapsPlayerControlledOnly && IsPlayerControlled(map);
+            return MapEligibilityPolicy.HdActiveOnMap(map.IsPlayerHome, controlled,
+                s.enableOnNonHomeMaps, s.nonHomeMapsPlayerControlledOnly);
         }
+
+        /// <summary>True if <paramref name="map"/> is one the PLAYER controls, for HD's off-home scope: a
+        /// player-home map, a settled nomad camp / player-faction site (<see cref="Map.ParentFaction"/> is the
+        /// player), or any map with player storage (<see cref="HasPlayerStorage"/>, which catches a settled camp
+        /// the player gave shelves/zones or a Vehicle Framework RV interior). A bare ambush / enemy / pocket map
+        /// with none of these does not count. <see cref="Map.ParentFaction"/> can be null; the null-safe storage
+        /// fallback and the <c>map != null</c> guard keep this total.</summary>
+        public static bool IsPlayerControlled(Map map)
+            => map != null && (map.IsPlayerHome || map.ParentFaction == Faction.OfPlayer || HasPlayerStorage(map));
 
         /// <summary>
         /// True if a carrying pawn on <paramref name="map"/> should unload to MAP STORAGE (HD's storage-unload

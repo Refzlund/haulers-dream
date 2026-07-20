@@ -1083,6 +1083,7 @@ namespace HaulersDream
             markForUnload = Card(c, SettingsCat.Unloading, "HaulersDream.Feat.AutoUnload", markForUnload, "HaulersDream.Feat.AutoUnload.Blurb");
             bulkHaul = Card(c, SettingsCat.Hauling, "HaulersDream.Feat.BulkHaul", bulkHaul, "HaulersDream.Setting.BulkHaulDesc");
             sweepNearbyWhileWorking = Card(c, SettingsCat.Hauling, "HaulersDream.Feat.Sweep", sweepNearbyWhileWorking, "HaulersDream.Setting.SweepNearbyWhileWorkingDesc");
+            bulkHaulUrgent = Card(c, SettingsCat.Hauling, "HaulersDream.Feat.BulkHaulUrgent", bulkHaulUrgent, "HaulersDream.Setting.BulkHaulUrgentDesc");
 
             HDSettingsUI.Header(c, "HaulersDream.FeatGroup.Loading".Translate());
             enableBulkUnloadCarriers = Card(c, SettingsCat.BulkLoading, "HaulersDream.Feat.UnloadCarriers", enableBulkUnloadCarriers, "HaulersDream.Setting.EnableBulkUnloadCarriersDesc");
@@ -1152,6 +1153,16 @@ namespace HaulersDream
                 haulNearbyOption, "HaulersDream.Setting.HaulNearbyOptionDesc".Translate(), enabled: bulkHaul, indent: 24f);
             haulOversizedInInventory = HDSettingsUI.Checkbox(c, "HaulersDream.Setting.HaulOversized".Translate(),
                 haulOversizedInInventory, "HaulersDream.Setting.HaulOversizedDesc".Translate(), enabled: bulkHaul, indent: 24f);
+            // Steam feedback: bulk-pocket nearby "Haul Urgently" (Allow Tool / Keyz) items in one trip instead of
+            // one at a time. Independent of the general bulkHaul sweep above, so it is NOT gated on bulkHaul.
+            bulkHaulUrgent = HDSettingsUI.Checkbox(c, "HaulersDream.Setting.BulkHaulUrgent".Translate(),
+                bulkHaulUrgent, "HaulersDream.Setting.BulkHaulUrgentDesc".Translate());
+            bulkHaulUrgentRadius = Mathf.RoundToInt(HDSettingsUI.Slider(c, "HaulersDream.Setting.BulkHaulUrgentRadius.Lab".Translate(),
+                bulkHaulUrgentRadius, 1f, 12f, Tiles(bulkHaulUrgentRadius),
+                "HaulersDream.Setting.BulkHaulUrgentRadius.Help".Translate(), enabled: bulkHaulUrgent, indent: 24f));
+            bulkHaulUrgentIncludeNonUrgent = HDSettingsUI.Checkbox(c, "HaulersDream.Setting.BulkHaulUrgentIncludeNonUrgent".Translate(),
+                bulkHaulUrgentIncludeNonUrgent, "HaulersDream.Setting.BulkHaulUrgentIncludeNonUrgentDesc".Translate(),
+                enabled: bulkHaulUrgent, indent: 24f);
             // "Pick up X" is independent of the bulk sweep (its provider gates only on manualPickupOption).
             manualPickupOption = HDSettingsUI.Checkbox(c, "HaulersDream.Setting.ManualPickup".Translate(),
                 manualPickupOption, "HaulersDream.Setting.ManualPickupDesc".Translate());
@@ -1507,13 +1518,19 @@ namespace HaulersDream
                 new[] { "HaulersDream.Setting.AutoStripAll".Translate().ToString(), "HaulersDream.Setting.AutoStripDisposal".Translate().ToString(), "HaulersDream.Setting.AutoStripOff".Translate().ToString() },
                 "HaulersDream.Setting.AutoStrip.Help".Translate());
             autoStripMode = sm == 0 ? AutoStripMode.AllHauls : (sm == 1 ? AutoStripMode.DisposalOnly : AutoStripMode.Off);
+            // Enabled when auto-strip-on-haul is on OR strip-before-cremation is on: the cremation seam reads
+            // stripColonistCorpses too, so the player must be able to edit it in the standalone-cremation config.
             stripColonistCorpses = HDSettingsUI.Checkbox(c, "HaulersDream.Setting.StripColonists".Translate(),
                 stripColonistCorpses, "HaulersDream.Setting.StripColonistsDesc".Translate(),
-                enabled: autoStripMode != AutoStripMode.Off, indent: 24f);
+                enabled: autoStripMode != AutoStripMode.Off || stripBeforeCremation, indent: 24f);
+            // #222: strip-before-cremation is a SEPARATE seam (it fires at the cremation bench even with
+            // auto-strip off), so it is always enabled, not gated on autoStripMode.
+            stripBeforeCremation = HDSettingsUI.Checkbox(c, "HaulersDream.Setting.StripBeforeCremation".Translate(),
+                stripBeforeCremation, "HaulersDream.Setting.StripBeforeCremationDesc".Translate());
 
             // Tainted-apparel policy applies to gear removed during ANY strip (auto-strip-while-hauling above, or a
             // manual Strip order — the "Stripping (removed gear)" yield row at the top of this tab).
-            bool taintedShown = autoStripMode != AutoStripMode.Off || yieldStrip != YieldBehavior.Disabled;
+            bool taintedShown = autoStripMode != AutoStripMode.Off || yieldStrip != YieldBehavior.Disabled || stripBeforeCremation;
             int ts = HDSettingsUI.Segmented(c, "HaulersDream.Setting.TaintedSmeltable.Lab".Translate(),
                 (int)taintedSmeltablePolicy, TaintedOptionLabels(), TaintedOptionHelps(),
                 "HaulersDream.Setting.Tainted.Help".Translate(), enabled: taintedShown, indent: 24f);
@@ -1563,6 +1580,9 @@ namespace HaulersDream
                 allowIncapable, "HaulersDream.Setting.AllowIncapable.Help".Translate());
             enableOnNonHomeMaps = HDSettingsUI.Checkbox(c, "HaulersDream.Setting.EnableOnNonHomeMaps".Translate(),
                 enableOnNonHomeMaps, "HaulersDream.Setting.EnableOnNonHomeMaps.Help".Translate());
+            nonHomeMapsPlayerControlledOnly = HDSettingsUI.Checkbox(c, "HaulersDream.Setting.NonHomeMapsPlayerControlledOnly".Translate(),
+                nonHomeMapsPlayerControlledOnly, "HaulersDream.Setting.NonHomeMapsPlayerControlledOnly.Help".Translate(),
+                enabled: enableOnNonHomeMaps, indent: 24f);
 
             HDSettingsUI.Header(c, "HaulersDream.Setting.WorkOverrideHeader".Translate());
             allPawnsCanHaul = HDSettingsUI.Checkbox(c, "HaulersDream.Setting.AllCanHaul".Translate(),

@@ -107,6 +107,72 @@ namespace HaulersDream.Tests
             Assert.That(BulkHaulPolicy.TriggerSatisfied(BulkHaulTrigger.SecondTasked, forced: false, secondNearbyTasked: true), Is.True);
         }
 
+        // ── DecideOrderedHaul (#223): an oversized single order rides inventory, it does NOT sweep ─────
+
+        private static BulkHaulPolicy.OrderedHaulPlan Plan(
+            BulkHaulTrigger trigger = BulkHaulTrigger.SecondTasked, bool forced = true, bool forceSweep = false,
+            bool secondNearbyTasked = false, bool oversizedRidesInventory = false)
+            => BulkHaulPolicy.DecideOrderedHaul(trigger, forced, forceSweep, secondNearbyTasked, oversizedRidesInventory);
+
+        [Test]
+        public void OrderedHaul_ForceSweep_AlwaysSweeps_RegardlessOfTriggerForcedOrOversized()
+        {
+            // The explicit "Haul everything nearby" button always sweeps, whatever the trigger / oversized flags.
+            foreach (var trigger in new[] { BulkHaulTrigger.Always, BulkHaulTrigger.SecondTasked })
+                foreach (var oversized in new[] { false, true })
+                    foreach (var forced in new[] { false, true })
+                        Assert.That(Plan(trigger, forced: forced, forceSweep: true, oversizedRidesInventory: oversized),
+                            Is.EqualTo(BulkHaulPolicy.OrderedHaulPlan.SweepNeighbors),
+                            $"forceSweep must sweep (trigger={trigger}, forced={forced}, oversized={oversized})");
+        }
+
+        [Test]
+        public void OrderedHaul_AutomaticHaul_AlwaysSweeps_BothTriggers()
+        {
+            // Automatic (non-forced) work-scan hauls always sweep: the nearby haulables are already tasked.
+            Assert.That(Plan(BulkHaulTrigger.Always, forced: false), Is.EqualTo(BulkHaulPolicy.OrderedHaulPlan.SweepNeighbors));
+            Assert.That(Plan(BulkHaulTrigger.SecondTasked, forced: false), Is.EqualTo(BulkHaulPolicy.OrderedHaulPlan.SweepNeighbors));
+        }
+
+        [Test]
+        public void OrderedHaul_ForcedSingleOrder_NotOversized_IsVanillaSingle()
+        {
+            // The finer-control default: a lone forced order of a normal-size stack stays a vanilla single haul.
+            Assert.That(Plan(BulkHaulTrigger.SecondTasked, forced: true, secondNearbyTasked: false, oversizedRidesInventory: false),
+                Is.EqualTo(BulkHaulPolicy.OrderedHaulPlan.VanillaSingle));
+        }
+
+        [Test]
+        public void OrderedHaul_ForcedOversizedSingle_RidesInventory_DoesNotSweep_223()
+        {
+            // REGRESSION PIN #223: a forced order of an OVERSIZED stack, no second order tasked, SecondTasked
+            // trigger, must deliver JUST that stack via inventory (one trip), NOT sweep the neighborhood. The old
+            // gate let the oversized carve-out fall through into the sweep, so with stack-size mods every big-stack
+            // order behaved like "Haul everything nearby" and the SecondTasked setting had no effect.
+            Assert.That(Plan(BulkHaulTrigger.SecondTasked, forced: true, secondNearbyTasked: false, oversizedRidesInventory: true),
+                Is.EqualTo(BulkHaulPolicy.OrderedHaulPlan.InventorySingleStack));
+        }
+
+        [Test]
+        public void OrderedHaul_ForcedSecondTasked_Sweeps_RegardlessOfOversized()
+        {
+            // A genuine second nearby order under SecondTasked is the "clean up this area" signal: sweep either way.
+            Assert.That(Plan(BulkHaulTrigger.SecondTasked, forced: true, secondNearbyTasked: true, oversizedRidesInventory: false),
+                Is.EqualTo(BulkHaulPolicy.OrderedHaulPlan.SweepNeighbors));
+            Assert.That(Plan(BulkHaulTrigger.SecondTasked, forced: true, secondNearbyTasked: true, oversizedRidesInventory: true),
+                Is.EqualTo(BulkHaulPolicy.OrderedHaulPlan.SweepNeighbors));
+        }
+
+        [Test]
+        public void OrderedHaul_AlwaysTrigger_ForcedSingle_Sweeps_RegardlessOfOversized()
+        {
+            // Under Always, even a lone forced order sweeps (the setting opts every order into bulk), oversized or not.
+            Assert.That(Plan(BulkHaulTrigger.Always, forced: true, secondNearbyTasked: false, oversizedRidesInventory: false),
+                Is.EqualTo(BulkHaulPolicy.OrderedHaulPlan.SweepNeighbors));
+            Assert.That(Plan(BulkHaulTrigger.Always, forced: true, secondNearbyTasked: false, oversizedRidesInventory: true),
+                Is.EqualTo(BulkHaulPolicy.OrderedHaulPlan.SweepNeighbors));
+        }
+
         // ── DecideTakeover: the 2nd nearby haul order takes over with an immediate sweep ───────────────
 
         private static BulkHaulPolicy.BulkTakeoverAction Takeover(

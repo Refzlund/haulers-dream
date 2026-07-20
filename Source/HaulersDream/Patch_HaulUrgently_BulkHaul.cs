@@ -8,25 +8,35 @@ using Verse.AI;
 namespace HaulersDream
 {
     /// <summary>
-    /// Compatibility: make "Haul Urgently" sweep in bulk like every other HD haul, instead of falling back to
-    /// vanilla's one-item-at-a-time carry.
+    /// Compatibility: make "Haul Urgently" pocket the nearby urgent-marked cluster into the backpack in ONE trip,
+    /// instead of vanilla's one-item-at-a-time carry (the reported "pawns pick urgent items one by one").
     ///
     /// Allow Tool (<c>unlimitedhugs.allowtool</c>) and its performance-friendly reimplementation Keyz' Allow
-    /// Utilities (<c>keyz182.allowtoolutils</c>) BOTH implement urgent hauling as
+    /// Utilities (<c>keyz182.KeyzAllowUtilities</c>) BOTH implement urgent hauling as
     /// <c>WorkGiver_HaulUrgently : WorkGiver_Scanner</c> whose <c>JobOnThing</c> returns a plain single-stack
     /// <c>HaulAIUtility.HaulToStorageJob</c> (via a <c>JobOnThingDelegate</c>). That job NEVER routes through
     /// <see cref="WorkGiver_HaulGeneral.JobOnThing"/> — the funnel <see cref="Patch_WorkGiver_HaulGeneral_BulkHaul"/>
     /// patches — so HD's bulk sweep never saw it and an urgent haul moved one stack per trip.
     ///
-    /// This postfix runs the EXACT same conversion HD uses for ordinary hauls (<see cref="BulkHaul.TryBuildBulkJob"/>):
-    /// when the urgent giver hands back a HaulToCell job and a sweep is worth it, swap it for a
-    /// <see cref="JobDriver_BulkHaul"/> that picks up the whole nearby cluster and makes one storage trip. It
-    /// inherits most of HD's bulk-haul gating (the <c>bulkHaul</c> setting, eligibility, the map gate, the carry
-    /// ceiling, and the <c>HasPotentialBulkWork</c> automatic front gate) for free — when HD's bulk-haul is off,
-    /// urgent hauls stay vanilla, exactly as before. It does NOT inherit the SecondTasked/Always TRIGGER: passing
-    /// <c>forceSweep: true</c> deliberately bypasses it, because an urgent order should sweep on its own (like HD's
-    /// "Haul everything nearby") rather than wait for a second queued haul. A lone bulky stack still defers to a hand
-    /// carry under Combat Extended via the build's count&lt;2 tail, so only a real nearby cluster is backpacked.
+    /// This postfix converts the urgent haul into a <see cref="JobDriver_BulkHaul"/> in two INDEPENDENT stages:
+    /// <list type="number">
+    ///   <item><b>Feature 1</b> (<see cref="HaulersDreamSettings.bulkHaulUrgent"/>, default ON, independent of the
+    ///   general <c>bulkHaul</c> toggle): <see cref="UrgentHaulBulk.TryBuild"/> pockets the OTHER urgent-marked
+    ///   stacks within <see cref="HaulersDreamSettings.bulkHaulUrgentRadius"/> of the anchor, urgent-first. Unlike
+    ///   HD's general sweep it does NOT require each urgent stack to have strictly-better storage (urgent means
+    ///   "move it now"; the storage-aware unload re-homes them): the layer-2 fix for an urgent cluster with
+    ///   nowhere better collapsing to a single stack. When it builds a job, that job wins and we stop.</item>
+    ///   <item><b>Feature 2</b> (<see cref="HaulersDreamSettings.bulkHaulUrgentIncludeNonUrgent"/>, opt-in): on an
+    ///   urgent trip ALSO fold in ordinary nearby haulables. UrgentHaulBulk already adds them alongside the urgent
+    ///   ones (with normal better-storage eligibility) in its small radius; this stage additionally falls back to
+    ///   HD's general bulk sweep (<see cref="BulkHaul.TryBuildBulkJob"/>, wider radius, <c>forceSweep: true</c>)
+    ///   when there was no urgent cluster to build. With it OFF (default) an urgent trip carries only urgent items.</item>
+    /// </list>
+    ///
+    /// LAYER 1 (elsewhere): <see cref="ForeignOrderGuard"/> now whitelists the Keyz urgent designation (via
+    /// <see cref="UrgentHaulCompat"/>) alongside vanilla "Haul" and Allow Tool's, so a Keyz-urgent item is no
+    /// longer misread as foreign-claimed, which had been blocking the general bulk conversion + en-route/sweep
+    /// pickups for it.
     ///
     /// SOFT DEPENDENCY: neither mod is referenced at compile time — the targets are resolved by string via
     /// <see cref="AccessTools"/>, and <see cref="Prepare"/> skips the whole patch when neither type is loaded, so
@@ -36,8 +46,8 @@ namespace HaulersDream
     /// NOTE (the PUAH rebind, unchanged): both mods carry a Pick Up And Haul compat handler that, when PUAH is
     /// present, rebinds their <c>JobOnThingDelegate</c> to PUAH's bulk-into-inventory giver. HD is a PUAH
     /// replacement (it ships no <c>PickUpAndHaul.*</c> type), so that rebind never targets HD; if PUAH IS also
-    /// installed (unsupported), the urgent job becomes a PUAH inventory job (not a HaulToCell) and
-    /// <see cref="BulkHaul.TryBuildBulkJob"/> declines it — no conflict either way.
+    /// installed (unsupported), the urgent job becomes a PUAH inventory job (not a HaulToCell) and both stages
+    /// decline it, no conflict either way.
     /// </summary>
     [HarmonyPatch]
     public static class Patch_HaulUrgently_BulkHaul
@@ -45,7 +55,7 @@ namespace HaulersDream
         // The two known "Haul Urgently" workgivers, by full type name (string — no compile-time dependency).
         private static readonly string[] UrgentWorkGiverTypes =
         {
-            "KeyzAllowUtilities.WorkGiver_HaulUrgently", // Keyz' Allow Utilities (keyz182.allowtoolutils)
+            "KeyzAllowUtilities.WorkGiver_HaulUrgently", // Keyz' Allow Utilities (keyz182.KeyzAllowUtilities)
             "AllowTool.WorkGiver_HaulUrgently",          // Allow Tool (unlimitedhugs.allowtool)
         };
 
@@ -80,15 +90,31 @@ namespace HaulersDream
         // silently downgraded — matching Patch_WorkGiver_HaulGeneral_BulkHaul.
         static void Postfix(ref Job __result, Pawn __0, Thing __1, bool __2)
         {
-            // forceSweep: true — "Haul Urgently" is a deliberate aggressive order, so (like HD's own "Haul everything
-            // nearby") it bypasses the Combat Extended #115 guard ("backpacking one bulky stack is worse than hands"),
-            // which otherwise leaves an urgent haul as a single-stack HAND carry under CE — the reported CE + Keyz
-            // "pawns no longer backpack urgent hauls" break. On the automatic scan path (forced/__2 = false) the
-            // HasPotentialBulkWork front gate still runs, so a LONE bulky stack with nothing nearby stays a hand-carry
-            // (CE #115's benefit kept) and only a real nearby CLUSTER is swept into the backpack.
-            var bulk = BulkHaul.TryBuildBulkJob(__0, __1, __result, __2, forceSweep: true);
-            if (bulk != null)
-                __result = bulk;
+            var s = HaulersDreamMod.Settings;
+            if (s == null)
+                return; // settings not loaded yet, leave vanilla's single urgent haul untouched
+            // Feature 1 (independent of the general bulkHaul toggle): pocket the nearby urgent-marked cluster into
+            // the backpack in one trip. When it builds a job it wins outright and no further conversion runs.
+            if (s.bulkHaulUrgent)
+            {
+                var urgent = UrgentHaulBulk.TryBuild(__0, __1, __result, __2, s.bulkHaulUrgentIncludeNonUrgent);
+                if (urgent != null)
+                {
+                    __result = urgent;
+                    return;
+                }
+            }
+            // Feature 2 (opt-in): on an urgent trip also fold ordinary nearby haulables into the backpack via HD's
+            // general bulk sweep (wider radius, normal better-storage eligibility), the fallback when there was no
+            // urgent cluster to build. forceSweep: true, an urgent order is a deliberate aggressive sweep (bypasses
+            // the SecondTasked trigger, like "Haul everything nearby"); a lone bulky stack still defers to a hand
+            // carry under Combat Extended via the general builder's count<2 tail, so only a real cluster is backpacked.
+            if (s.bulkHaulUrgentIncludeNonUrgent)
+            {
+                var bulk = BulkHaul.TryBuildBulkJob(__0, __1, __result, __2, forceSweep: true);
+                if (bulk != null)
+                    __result = bulk;
+            }
         }
     }
 }

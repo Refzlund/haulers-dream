@@ -113,23 +113,26 @@ namespace HaulersDream
                 // steel-ikwa sidearm + a hauled plasteel ikwa keeps the steel and unloads the plasteel. Weapons are
                 // stackLimit 1, so each Thing is 0 or 1 of the count.
                 //
-                // pairKeep uses InventoryKeepCount (remembered MINUS the equipped primary), NOT raw RememberedCount:
-                // SS records the equipped primary in rememberedWeapons, but the primary lives in equipment (not
-                // innerContainer, which is what pairHave counts). Counting it in the keep but not the have made a
-                // hauled weapon matching the equipped primary's (def,stuff) read over = 1 - 1 = 0 and never unload —
-                // the reported "won't put away / re-stows" bug. (memoryApiOk==false is handled by the
-                // IsManagedKeepItem fallback below, not here, so we never compute have - 0 and strip a weapon kit.)
-                int pairKeep = SimpleSidearmsCompat.InventoryKeepCount(pawn, def, thing.Stuff);
+                // The keep is the remembered count MINUS the equipped primary, NOT raw RememberedCount: SS records
+                // the equipped primary in rememberedWeapons, but the primary lives in equipment (not innerContainer,
+                // which is what pairHave counts). Counting it in the keep but not the have made a hauled weapon
+                // matching the equipped primary's (def,stuff) read over = 1 - 1 = 0 and never unload (the reported
+                // "won't put away / re-stows" bug). That subtraction and the surplus clamp are the unit-tested Core
+                // policy (SidearmKeepMath.SurplusForPair), so the shipped math IS the tested representation.
+                // (memoryApiOk==false is handled by the IsManagedKeepItem fallback below, not here, so we never
+                // compute have - 0 and strip a weapon kit.)
+                int rememberedCount = SimpleSidearmsCompat.RememberedCount(pawn, def, thing.Stuff);
+                var primary = pawn.equipment?.Primary;
+                bool primaryMatchesPair = primary != null && primary.def == def && primary.Stuff == thing.Stuff;
                 int pairHave = YieldRouter.InventoryCountOfPair(pawn.inventory.innerContainer, def, thing.Stuff);
-                int over = pairHave - pairKeep;
-                int pairSurplus = over <= 0 ? 0 : System.Math.Min(thing.stackCount, over);
-                // Diagnostic (gated so the string/equipment read never runs unless verbose logging is on — SurplusOf
-                // is a hot path read by the unload driver, the gizmo, and the alert).
+                int pairSurplus = SidearmKeepMath.SurplusForPair(rememberedCount, primaryMatchesPair, pairHave, thing.stackCount);
+                // Diagnostic (gated so the string/equipment read never runs unless verbose logging is on: SurplusOf
+                // is a hot path read by the unload driver, the gizmo, and the alert). keep is re-derived through the
+                // same InventoryKeepCount -> KeepForPair policy for display parity with the shipped surplus.
                 if (settings != null && settings.verboseLogging)
                     HDLog.Dbg($"SurplusOf weapon {def.defName} (stuff={thing.Stuff?.defName ?? "none"}) for {pawn.LabelShort}: "
-                              + $"have={pairHave} keep={pairKeep} "
-                              + $"(remembered={SimpleSidearmsCompat.RememberedCount(pawn, def, thing.Stuff)}, "
-                              + $"primaryMatch={pawn.equipment?.Primary?.def == def && pawn.equipment?.Primary?.Stuff == thing.Stuff}) "
+                              + $"have={pairHave} keep={SimpleSidearmsCompat.InventoryKeepCount(pawn, def, thing.Stuff)} "
+                              + $"(remembered={rememberedCount}, primaryMatch={primaryMatchesPair}) "
                               + $"-> surplus={pairSurplus}");
                 return pairSurplus;
             }

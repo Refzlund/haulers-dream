@@ -196,6 +196,20 @@ namespace HaulersDream
         // leaving the rest behind. Applies to ordered and automatic single-stack hauls alike.
         public bool haulOversizedInInventory = true;
 
+        // "Haul Urgently" bulk pickup (Allow Tool / Keyz' Allow Utilities soft-dep). When a pawn is sent to
+        // haul an item marked "Haul Urgently", also pocket the OTHER urgent-marked stacks within a small radius
+        // into its inventory in one trip, urgent-first, instead of fetching them one at a time. Independent of
+        // the general bulkHaul toggle (a player can want surgical normal hauls but bulk urgent hauls). Default
+        // ON; inert when no urgent-haul mod is installed.
+        public bool bulkHaulUrgent = true;
+        // How close (tiles, measured as a radius) another "Haul Urgently" stack must be to the one a pawn is
+        // fetching, to be scooped on the same trip. Small keeps it tight; larger sweeps a wider urgent cluster.
+        public int bulkHaulUrgentRadius = 3;
+        // Feature 2 (opt-in): while on an urgent haul, also pocket ordinary (non-urgent) haulables in the same
+        // vicinity, and allow HD's opportunistic pickup during urgent trips. Default OFF so an urgent trip
+        // carries only urgent-marked items. Requires bulkHaulUrgent.
+        public bool bulkHaulUrgentIncludeNonUrgent = false;
+
         // While a pawn scoops its own WORK yields (deconstruct/mine/harvest), also sweep OTHER loose haulable
         // items lying around the work spot into its inventory, so the area is cleared in the same consolidated
         // trip instead of being left for separate hand-hauls. (Bulk hauling above does the same for dedicated
@@ -295,6 +309,12 @@ namespace HaulersDream
         // --- auto strip on haul (corpse hauls strip the body; loot rides in the hauler's inventory) ---
         public AutoStripMode autoStripMode = AutoStripMode.AllHauls;
         public bool stripColonistCorpses = false;              // your own dead are not loot (opt-in)
+        // #222: when a corpse is about to be cremated (or burned in an incinerator), strip its weapons, apparel
+        // and carried items onto the cremation tile first, so they can be hauled to storage instead of being
+        // destroyed with the body. A separate seam from auto-strip-on-haul (it fires at the cremation bench even
+        // when auto-strip is off), so it is independent of autoStripMode; it still honors stripColonistCorpses
+        // and the tainted-apparel policies. Default OFF (leave off to deliberately destroy gear by cremating).
+        public bool stripBeforeCremation = false;
         public TaintedApparelPolicy taintedSmeltablePolicy = TaintedApparelPolicy.Take;
         public TaintedApparelPolicy taintedNonSmeltablePolicy = TaintedApparelPolicy.Take;
 
@@ -551,6 +571,12 @@ namespace HaulersDream
         // only a user who explicitly chose a non-default interval keeps their value.)
         public float intervalUnloadHours = 1f;
         public bool enableOnNonHomeMaps = true;  // work on caravans / temporary maps too
+        // When HD works off the home colony (enableOnNonHomeMaps), limit it to maps the player actually
+        // controls: home, a temporary camp or settled site, and any map where the player has built storage.
+        // It stands down on maps the player is only passing through or attacking (ambush sites, enemy bases,
+        // hostile pocket maps). Default OFF so the shipped behavior (all non-home maps) is preserved; turn it
+        // on for a nomad who wants HD on their camps but not on transient raids. Requires enableOnNonHomeMaps.
+        public bool nonHomeMapsPlayerControlledOnly = false;
 
         // --- black-hole safety net: a red (critical) alert when a pawn is carrying scooped haul items it
         // cannot put away — nowhere on the map accepts them (no stockpile / dumping zone / reachable cell),
@@ -679,6 +705,9 @@ namespace HaulersDream
             Scribe_Values.Look(ref pickupDelayOnLoading, "pickupDelayOnLoading", false);
             Scribe_Values.Look(ref pickupDelayOnDirectHarvest, "pickupDelayOnDirectHarvest", false);
             Scribe_Values.Look(ref haulOversizedInInventory, "haulOversizedInInventory", true);
+            Scribe_Values.Look(ref bulkHaulUrgent, "bulkHaulUrgent", true);
+            Scribe_Values.Look(ref bulkHaulUrgentRadius, "bulkHaulUrgentRadius", 3);
+            Scribe_Values.Look(ref bulkHaulUrgentIncludeNonUrgent, "bulkHaulUrgentIncludeNonUrgent", false);
             Scribe_Values.Look(ref sweepNearbyWhileWorking, "sweepNearbyWhileWorking", true);
             Scribe_Values.Look(ref loadPackAnimalBulk, "loadPackAnimalBulk", true);
             Scribe_Values.Look(ref autoDivertToPackAnimal, "autoDivertToPackAnimal", true);
@@ -715,6 +744,7 @@ namespace HaulersDream
             Scribe_Values.Look(ref allowBatchUnderCommonSense, "allowBatchUnderCommonSense", true);
             Scribe_Values.Look(ref autoStripMode, "autoStripMode", AutoStripMode.AllHauls);
             Scribe_Values.Look(ref stripColonistCorpses, "stripColonistCorpses", false);
+            Scribe_Values.Look(ref stripBeforeCremation, "stripBeforeCremation", false);
             Scribe_Values.Look(ref taintedSmeltablePolicy, "taintedSmeltablePolicy", TaintedApparelPolicy.Take);
             Scribe_Values.Look(ref taintedNonSmeltablePolicy, "taintedNonSmeltablePolicy", TaintedApparelPolicy.Take);
             Scribe_Values.Look(ref haulWildKills, "haulWildKills", true);
@@ -804,6 +834,7 @@ namespace HaulersDream
             Scribe_Values.Look(ref alertCannotUnload, "alertCannotUnload", true);
             Scribe_Values.Look(ref alertStuckHours, "alertStuckHours", 12f);
             Scribe_Values.Look(ref enableOnNonHomeMaps, "enableOnNonHomeMaps", true);
+            Scribe_Values.Look(ref nonHomeMapsPlayerControlledOnly, "nonHomeMapsPlayerControlledOnly", false);
             Scribe_Values.Look(ref hideGizmo, "hideGizmo", false);
             Scribe_Values.Look(ref showAutoHaulGizmo, "showAutoHaulGizmo", false);
             Scribe_Values.Look(ref verboseLogging, "verboseLogging", false);
@@ -870,6 +901,9 @@ namespace HaulersDream
             pickupDelayOnLoading = false;
             pickupDelayOnDirectHarvest = false;
             haulOversizedInInventory = true;
+            bulkHaulUrgent = true;
+            bulkHaulUrgentRadius = 3;
+            bulkHaulUrgentIncludeNonUrgent = false;
             sweepNearbyWhileWorking = true;
             loadPackAnimalBulk = true;
             autoDivertToPackAnimal = true;
@@ -906,6 +940,7 @@ namespace HaulersDream
             allowBatchUnderCommonSense = true;
             autoStripMode = AutoStripMode.AllHauls;
             stripColonistCorpses = false;
+            stripBeforeCremation = false;
             taintedSmeltablePolicy = TaintedApparelPolicy.Take;
             taintedNonSmeltablePolicy = TaintedApparelPolicy.Take;
             haulWildKills = true;
@@ -969,6 +1004,7 @@ namespace HaulersDream
             alertCannotUnload = true;
             alertStuckHours = 12f;
             enableOnNonHomeMaps = true;
+            nonHomeMapsPlayerControlledOnly = false;
             hideGizmo = false;
             showAutoHaulGizmo = false;
             verboseLogging = false;

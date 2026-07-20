@@ -439,15 +439,18 @@ namespace HaulersDream
             float searchRadius = Math.Max(MinSearchRadius,
                 (storeCell - primary.Position).LengthHorizontal * SearchRangeFraction);
 
-            // The finer-control trigger: a forced single order stays single under SecondTasked. (The queue
-            // scan only matters — and only runs — for forced orders; automatic hauls always sweep.) Checked
-            // BEFORE any mass/CE math so a rejected probe never forces a CE inventory recompute.
-            // Carve-outs: forceSweep (the explicit "Haul everything nearby" button) always sweeps; and a forced
-            // order of an OVERSIZED stack rides inventory (bug 2) even with no second order tasked.
+            // Decide what this order actually does. A forced single order stays single under SecondTasked; the
+            // queue scan only matters (and only runs) for forced orders, since automatic hauls always sweep.
+            // Resolved BEFORE any mass/CE math so a rejected order never forces a CE inventory recompute. The
+            // three outcomes (see BulkHaulPolicy.DecideOrderedHaul): VanillaSingle keeps vanilla's single
+            // hand-haul; InventorySingleStack rides ONE oversized stack through inventory with no neighborhood
+            // sweep (#223: bug 2's one-trip benefit without letting an oversized stack imply a sweep, which is
+            // what made every forced haul behave like "Haul everything nearby" under stack-size mods);
+            // SweepNeighbors runs the full bulk sweep (forceSweep, automatic, Always, or a genuine second order).
             bool secondTasked = forced && SecondTaskedNearby(pawn, primary, searchRadius);
-            if (!forceSweep
-                && !(forced && partialHandHaul && s.haulOversizedInInventory)
-                && !BulkHaulPolicy.TriggerSatisfied(s.bulkHaulTrigger, forced, secondTasked))
+            var plan = BulkHaulPolicy.DecideOrderedHaul(s.bulkHaulTrigger, forced, forceSweep, secondTasked,
+                forced && partialHandHaul && s.haulOversizedInInventory);
+            if (plan == BulkHaulPolicy.OrderedHaulPlan.VanillaSingle)
                 return null;
 
             // The worth-it mass ceiling (smart-overload break-even; 100% under strict/off; ∞ at "no slowdown").
@@ -533,42 +536,53 @@ namespace HaulersDream
             running += primaryTake * primaryUnit;
             bulkRoom -= primaryTake * primaryBulk;
 
-            // Candidate pool: everything the haul system wants hauled, near the primary. Forbidden things are
-            // already absent from the lister, but area-forbiddance is PER-PAWN, so IsForbidden is re-checked.
-            // Reuse the per-thread scratch list (filled fresh below) — the work scan builds this for every
-            // distinct candidate it probes in a tick, so a fresh allocation per call was the hot-path GC cost.
-            var pool = scratchPool ?? (scratchPool = new List<Thing>());
-            BuildPoolInto(pool, pawn, primary, map, searchRadius * PoolRadiusHops);
-
-            // Commit the primary's take to its group budget so swept extras (any def, not just the primary's)
-            // see the room it has already claimed. When the #114 clamp bound primaryTake to the group's space this
-            // leaves the group fully subscribed; for un-clamped loose loot it debits the whole pocketed stack (the
-            // pre-#138 per-def seed did the same, only per def; now the empty cells are shared across defs).
-            if (!primaryDenied)
-                primaryBudget?.Consume(primary.def, primaryTake);
-
-            // Snowball: from the primary, repeatedly take the nearest eligible candidate within a hop radius of
-            // the LAST taken item — so the chain naturally picks things up "on the way" rather than zig-zagging.
-            // Reused per-thread working sets (Cleared + seeded with the primary), copied into the fresh job-owned
-            // queues at the end — never handed out themselves.
+            // The plan's working sets. things/counts ALWAYS start as just the primary (the bulk job's vehicle),
+            // whatever the plan; they are copied into the fresh job-owned queues at the end and never handed out
+            // themselves. Reused per-thread (Cleared + seeded with the primary).
             var things = scratchThings ?? (scratchThings = new List<Thing>());
             var counts = scratchCounts ?? (scratchCounts = new List<int>());
             things.Clear();
             counts.Clear();
             things.Add(primary);
             counts.Add(primaryTake);
-            var claimed = RouteSelection.ClaimedByOtherPawns(pawn);
-            var last = primary.Position;
-            while (things.Count < MaxStacks && running < ceiling - 0.0001f)
+
+            // #223: only a SweepNeighbors plan pulls in the neighborhood. An InventorySingleStack plan (a forced
+            // oversized single order under the SecondTasked trigger) delivers JUST the primary in one inventory
+            // trip and must NOT sweep, so it leaves things == [primary] and falls straight through to the
+            // single-stack tail below (whose else branch builds the oversized inventory plan, or degrades to a
+            // vanilla hand-haul when inventory isn't worth it). This is the fix: an ordered haul no longer sweeps
+            // merely because the clicked stack was oversized.
+            if (plan == BulkHaulPolicy.OrderedHaulPlan.SweepNeighbors)
             {
-                var next = TakeNearestEligible(pawn, pool, last, searchRadius, claimed, ceiling, running, bulkRoom, budgets, out int take);
-                if (next == null)
-                    break;
-                things.Add(next);
-                counts.Add(take);
-                running += take * next.GetStatValue(StatDefOf.Mass);
-                bulkRoom -= take * CECompat.BulkPerUnit(next);
-                last = next.Position;
+                // Candidate pool: everything the haul system wants hauled, near the primary. Forbidden things are
+                // already absent from the lister, but area-forbiddance is PER-PAWN, so IsForbidden is re-checked.
+                // Reuse the per-thread scratch list (filled fresh below); the work scan builds this for every
+                // distinct candidate it probes in a tick, so a fresh allocation per call was the hot-path GC cost.
+                var pool = scratchPool ?? (scratchPool = new List<Thing>());
+                BuildPoolInto(pool, pawn, primary, map, searchRadius * PoolRadiusHops);
+
+                // Commit the primary's take to its group budget so swept extras (any def, not just the primary's)
+                // see the room it has already claimed. When the #114 clamp bound primaryTake to the group's space
+                // this leaves the group fully subscribed; for un-clamped loose loot it debits the whole pocketed
+                // stack (the pre-#138 per-def seed did the same, only per def; now the empty cells are shared).
+                if (!primaryDenied)
+                    primaryBudget?.Consume(primary.def, primaryTake);
+
+                // Snowball: from the primary, repeatedly take the nearest eligible candidate within a hop radius of
+                // the LAST taken item, so the chain naturally picks things up "on the way" rather than zig-zagging.
+                var claimed = RouteSelection.ClaimedByOtherPawns(pawn);
+                var last = primary.Position;
+                while (things.Count < MaxStacks && running < ceiling - 0.0001f)
+                {
+                    var next = TakeNearestEligible(pawn, pool, last, searchRadius, claimed, ceiling, running, bulkRoom, budgets, out int take);
+                    if (next == null)
+                        break;
+                    things.Add(next);
+                    counts.Add(take);
+                    running += take * next.GetStatValue(StatDefOf.Mass);
+                    bulkRoom -= take * CECompat.BulkPerUnit(next);
+                    last = next.Position;
+                }
             }
 
             // A nearby FIRST player order exists (secondTasked) — but it may already be CARRIED in this pawn's

@@ -39,6 +39,26 @@ namespace HaulersDream.Core
         }
 
         /// <summary>
+        /// The keep-count to migrate a PRE-#197 whole-stack keep into (issue #225). The old model pinned whole
+        /// <c>Thing</c> stacks ("keep this stack"); #197 replaces that with a per-def amount. Migrate to the total the
+        /// player deliberately kept (<paramref name="sumOfKeptStackCounts"/>), but CAP it at the pawn's NON-TAGGED
+        /// units of the def (<c>held - taggedUnits</c>) so HD-scooped haul cargo the pawn also happens to carry is
+        /// never folded into the keep. Folding it in would pin the surplus (held == kept, so nothing unloads: the
+        /// reported "holds 9, keep 7, unloads nothing" bug, because the game-layer <c>CountOfDef</c> sums tagged haul
+        /// units into the held total). Floored at 0, so a def held ENTIRELY as tagged haul cargo migrates to a 0 keep
+        /// (all of it stays surplus). Pure integer min/max, order-free, so every multiplayer client migrates alike.
+        /// </summary>
+        /// <param name="sumOfKeptStackCounts">Total units across the still-held legacy-kept stacks of the def (what
+        /// the player pinned as whole stacks). Never negative in practice; treated as a plain lower operand.</param>
+        /// <param name="held">Total units of the def in the pawn's inventory: tagged haul cargo AND personal kit
+        /// (i.e. the game layer's <c>CountOfDef</c>).</param>
+        /// <param name="taggedUnits">Units of the def that are HD-tagged haul cargo (tracked for unload); these must
+        /// stay surplus, so they are excluded from the migrated keep.</param>
+        /// <returns><c>min(sumOfKeptStackCounts, max(0, held - taggedUnits))</c>: the units to pin as the keep.</returns>
+        public static int MigratedKeep(int sumOfKeptStackCounts, int held, int taggedUnits)
+            => System.Math.Min(sumOfKeptStackCounts, System.Math.Max(0, held - taggedUnits));
+
+        /// <summary>
         /// Clamp a requested keep amount into the valid range for a def the pawn could hold. Used by the slider
         /// (order and Gear tab) so a stored count never goes negative or exceeds a sane ceiling. A count of 0 means
         /// "not kept" (the caller removes the entry).

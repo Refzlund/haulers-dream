@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Reflection;
 using HarmonyLib;
+using HaulersDream.Core;
 using Verse;
 
 namespace HaulersDream
@@ -197,16 +198,16 @@ namespace HaulersDream
         /// </summary>
         public static int InventoryKeepCount(Pawn pawn, ThingDef def, ThingDef stuff)
         {
-            int keep = RememberedCount(pawn, def, stuff);
-            if (keep <= 0)
-                return 0;
             // The equipped primary satisfies one remembered entry of its pair from EQUIPMENT, so it must not pin an
-            // inventory copy. Subtract at most one (keep >= 1 here, so the result stays >= 0). Mirrors SS removing
-            // exactly the primary from its desiredSidearms before scanning inventory.
+            // inventory copy. The "remembered minus equipped primary, floored at 0" arithmetic is the unit-tested
+            // Core policy (SidearmKeepMath.KeepForPair), single-sourced so this keep and InventorySurplus's
+            // SurplusForPair can never drift. Mirrors SS removing exactly the primary from its desiredSidearms
+            // before scanning inventory. Reading Primary when remembered is 0 is a harmless side-effect-free read
+            // (KeepForPair returns 0 regardless), so the result is identical to the prior early-return form.
+            int remembered = RememberedCount(pawn, def, stuff);
             var primary = pawn?.equipment?.Primary;
-            if (primary != null && primary.def == def && primary.Stuff == stuff)
-                keep -= 1;
-            return keep;
+            bool primaryMatchesPair = primary != null && primary.def == def && primary.Stuff == stuff;
+            return SidearmKeepMath.KeepForPair(remembered, primaryMatchesPair);
         }
     }
 }
