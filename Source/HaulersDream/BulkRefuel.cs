@@ -151,7 +151,8 @@ namespace HaulersDream
             // leftover), exactly like the partial-deficit sweep the min=1 finder above already accepts.
             float maxCap = CarryCapacity.Of(pawn);
             float baseCap = CarryMath.EffectiveCapacity(maxCap, s.carryLimitFraction);
-            float ceiling = BulkHaulPolicy.CeilingKg(s.overloadLevel, OverloadGate.NoOverloadFor(pawn, s), baseCap);
+            float ceiling = BulkHaulPolicy.CeilingKg(s.overloadLevel, OverloadGate.NoOverloadFor(pawn, s), baseCap,
+                OverloadGate.MaxCeilingKg(s));
             float runningMass = MassUtility.GearAndInventoryMass(pawn);
 
             var job = JobMaker.MakeJob(HaulersDreamDefOf.HaulersDream_BulkRefuel, refuelable);

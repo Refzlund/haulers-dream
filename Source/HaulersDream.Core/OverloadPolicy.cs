@@ -72,16 +72,44 @@ namespace HaulersDream.Core
                && !isDrafted;
 
         /// <summary>
-        /// Units to pick up now.
+        /// Units to pick up now, bounded by the smart-overload ceiling and, when set, an absolute
+        /// carry-weight cap.
         /// </summary>
         /// <param name="overloadLevel">The slider level (0..<see cref="OverloadTuning.MaxLevel"/>).</param>
         /// <param name="maxCapacityKg">The pawn's TRUE max carry capacity (100%); overload extends past this.</param>
-        /// <param name="baseCapKg">The configured carry-limit mass (fraction × capacity) — the no-overload cap.</param>
+        /// <param name="baseCapKg">The configured carry-limit mass (fraction × capacity), the no-overload cap.</param>
         /// <param name="currentMassKg">The pawn's current gear+inventory mass.</param>
         /// <param name="unitMassKg">Per-unit mass of the resource.</param>
         /// <param name="demandUnits">Total units usefully needed (this job + future build/craft plans).</param>
         /// <param name="availableUnits">Units actually pickable right now.</param>
+        /// <param name="maxCeilingKg">Absolute cap on the pawn's total carried mass in kg (the "Max carry
+        /// weight" setting), or <see cref="float.PositiveInfinity"/> when unset. Applied on TOP of the
+        /// fractional limit and overload so the load never passes it; massless items are unbounded by it.</param>
         public static int UnitsToCarry(
+            int overloadLevel,
+            float maxCapacityKg,
+            float baseCapKg,
+            float currentMassKg,
+            float unitMassKg,
+            int demandUnits,
+            int availableUnits,
+            float maxCeilingKg = float.PositiveInfinity)
+        {
+            int units = UnitsToCarryUncapped(
+                overloadLevel, maxCapacityKg, baseCapKg, currentMassKg, unitMassKg, demandUnits, availableUnits);
+            // Absolute carry-weight cap: a hard ceiling the fractional/overload ceiling can never exceed.
+            // Massless items (unit <= 0) carry no weight, so a weight cap cannot bound them; leave them as-is.
+            if (float.IsPositiveInfinity(maxCeilingKg) || unitMassKg <= 0f)
+                return units;
+            return CarryMath.CountToPickUp(maxCeilingKg, currentMassKg, unitMassKg, units);
+        }
+
+        /// <summary>
+        /// The overload load-size decision WITHOUT the absolute carry-weight cap: the original smart-overload
+        /// economics. Kept as its own method so the cap in <see cref="UnitsToCarry"/> stays a clean post-filter
+        /// and this math is exactly the tested logic.
+        /// </summary>
+        private static int UnitsToCarryUncapped(
             int overloadLevel,
             float maxCapacityKg,
             float baseCapKg,
@@ -111,7 +139,7 @@ namespace HaulersDream.Core
 
             // Load up to ratio × the CONFIGURED base cap (total mass ceiling), then cap by demand/availability.
             // Scaling off baseCap (not raw capacity) means a player-reduced carry-limit fraction also scales the
-            // overload ceiling — otherwise any overload level silently nullifies the configured limit. At the
+            // overload ceiling; otherwise any overload level silently nullifies the configured limit. At the
             // default fraction (1.0, base == max) the two are identical.
             float room = ratio * baseCapKg - currentMassKg;
             if (room <= 0f)

@@ -27,6 +27,11 @@ namespace HaulersDream
         // --- carry limit (the headline change: default = full max carrying capacity) ---
         public float carryLimitFraction = 1.0f;
 
+        // Absolute per-trip carry-weight cap in kg on inventory loads (hauling / gathering / loading), on top
+        // of carryLimitFraction and smart overload (the lower limit wins). 0 = no cap (default). The direct
+        // "my pawns carry too much" lever; see OverloadGate.MaxCeilingKg.
+        public float carryMassCapKg = 0f;
+
         // --- unload defaults / sharing ---
         public bool markForUnload = true;     // automatic unloading (end of work run / checkpoints / full / interval); off = gizmo-only
         // Also put away surplus a colonist is carrying that HD did NOT scoop (trade/mod/manual stock), not just
@@ -664,6 +669,7 @@ namespace HaulersDream
             base.ExposeData();
             Scribe_Values.Look(ref masterEnabled, "masterEnabled", true);
             Scribe_Values.Look(ref carryLimitFraction, "carryLimitFraction", 1.0f);
+            Scribe_Values.Look(ref carryMassCapKg, "carryMassCapKg", 0f);
             Scribe_Values.Look(ref markForUnload, "markForUnload", true);
             Scribe_Values.Look(ref unloadBeforeSleep, "unloadBeforeSleep", true);
             Scribe_Values.Look(ref unloadBeforeLeisure, "unloadBeforeLeisure", true);
@@ -869,6 +875,7 @@ namespace HaulersDream
         {
             masterEnabled = true;
             carryLimitFraction = 1.0f;
+            carryMassCapKg = 0f;
             markForUnload = true;
             unloadBeforeSleep = true;
             unloadBeforeLeisure = true;

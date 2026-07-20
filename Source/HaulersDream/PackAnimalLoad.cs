@@ -404,7 +404,8 @@ namespace HaulersDream
         {
             float baseCap = CarryMath.EffectiveCapacity(CarryCapacity.Of(pawn),
                 s?.carryLimitFraction ?? CarryMath.MaxFraction);
-            return BulkHaulPolicy.CeilingKg(s?.overloadLevel ?? 0, OverloadGate.NoOverloadFor(pawn, s), baseCap);
+            return BulkHaulPolicy.CeilingKg(s?.overloadLevel ?? 0, OverloadGate.NoOverloadFor(pawn, s), baseCap,
+                OverloadGate.MaxCeilingKg(s));
         }
     }
 }

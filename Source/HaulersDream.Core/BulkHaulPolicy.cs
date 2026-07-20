@@ -35,13 +35,18 @@ namespace HaulersDream.Core
         /// <param name="overloadLevel">The smart-overload slider level.</param>
         /// <param name="strictCarryWeight">Strict mode: never overload regardless of the slider.</param>
         /// <param name="baseCapKg">The configured carry-limit mass (fraction × true capacity).</param>
-        public static float CeilingKg(int overloadLevel, bool strictCarryWeight, float baseCapKg)
+        /// <param name="maxCeilingKg">Absolute cap on total carried mass in kg (the "Max carry weight"
+        /// setting), or <see cref="float.PositiveInfinity"/> when unset. Clamps the ratio ceiling so no
+        /// hauling/load path loads past it, even at "no slowdown" (infinite ratio) or with overload on.</param>
+        public static float CeilingKg(int overloadLevel, bool strictCarryWeight, float baseCapKg,
+            float maxCeilingKg = float.PositiveInfinity)
         {
             if (baseCapKg <= 0f)
                 return 0f;
             int level = strictCarryWeight ? OverloadTuning.OffLevel : overloadLevel;
             float ratio = OverloadTuning.MaxOverloadRatio(level);
-            return float.IsPositiveInfinity(ratio) ? float.PositiveInfinity : ratio * baseCapKg;
+            float ceiling = float.IsPositiveInfinity(ratio) ? float.PositiveInfinity : ratio * baseCapKg;
+            return Math.Min(ceiling, maxCeilingKg);
         }
 
         /// <summary>

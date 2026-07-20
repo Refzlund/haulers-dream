@@ -368,7 +368,8 @@ namespace HaulersDream
             // Carry ceiling (smart overload) + the trip-mass budget (pawn free space AND group headroom).
             float maxCap = CarryCapacity.Of(pawn);
             float baseCap = CarryMath.EffectiveCapacity(maxCap, s.carryLimitFraction);
-            float ceiling = BulkHaulPolicy.CeilingKg(s.overloadLevel, OverloadGate.NoOverloadFor(pawn, s), baseCap);
+            float ceiling = BulkHaulPolicy.CeilingKg(s.overloadLevel, OverloadGate.NoOverloadFor(pawn, s), baseCap,
+                OverloadGate.MaxCeilingKg(s));
             // Exclude stranded cargo (issue #167/#168) so a redirected pawn's fresh plan sizes against its REAL
             // available room instead of phantom-shrinking around dead weight this job can never deposit anyway.
             float realMass = MassUtility.GearAndInventoryMass(pawn);
