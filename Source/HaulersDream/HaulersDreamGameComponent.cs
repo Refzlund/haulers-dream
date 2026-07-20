@@ -21,7 +21,13 @@ namespace HaulersDream
         /// <summary>The component for the running game (null at the main menu / before a game loads).</summary>
         public static HaulersDreamGameComponent Instance => Current.Game?.GetComponent<HaulersDreamGameComponent>();
 
-        public HaulersDreamGameComponent(Game game) { }
+        public HaulersDreamGameComponent(Game game)
+        {
+            // Constructed once per Game object, BEFORE any scribing of things — the earliest per-load moment HD
+            // owns. Zero the orphan-UFT heal counter here so a count from a load that aborted between
+            // PostLoadInit and FinalizeInit can never inflate the next load's aggregated repair message.
+            Patch_UnfinishedThing_ExposeData_OrphanBillGuard.healedDuringLoad = 0;
+        }
 
         public override void FinalizeInit()
         {
@@ -47,6 +53,14 @@ namespace HaulersDream
             // Hauler's Dream) before the tick loop starts, so the per-tick NullReferenceException flood never begins.
             // No-op on a clean save. See RepairOrphanedJobsAfterLoad.
             RepairOrphanedJobsAfterLoad();
+
+            // fix/mix recovery: detach UnfinishedThings bound to a bill that sits on NO bill stack (typically
+            // left by a bill-syncing mod that deep-saves live bills inside its own component — Bill.billStack is
+            // [Unsaved], so the bill loads stack-less and every haul scan touching the bound UFT NREs; affected
+            // pawns freeze under "Exception ticking … Suppressing further errors"). The ExposeData prefix heals
+            // scribed UFTs at PostLoadInit; this sweep is the subclass-override backstop and emits the single
+            // aggregated report. No-op on a clean save. See Patch_UftOrphanBillGuard.
+            UftOrphanBillGuard.RepairAfterLoadAndReport();
         }
 
         // fix/mix recovery: a save migrated off a mod that contributed a JobDef + JobDriver (e.g. Pick Up And

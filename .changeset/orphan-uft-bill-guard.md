@@ -1,0 +1,5 @@
+---
+"haulers-dream": patch
+---
+
+Self-heal saves where an unfinished thing (UFT) is bound to a bill that is on no bill stack — the state a bill-syncing mod (e.g. a workbench-group manager like WorkbenchConnect) leaves behind when it deep-saves live `Bill_ProductionWithUft` objects inside its own component. `Bill.billStack` is `[Unsaved]`, so after a load such a bill is stack-less while still bound to a real UnfinishedThing; every hauling scan that touches the UFT then crashes in `HaulAIUtility.PawnCanAutomaticallyHaulFast_NewTemp` / `Pawn_JobTracker.TryOpportunisticJob` (`uft.BoundBill` → `Bill.DeletedOrDereferenced` → `billStack.billGiver` NRE), and RimWorld's "Exception ticking … Suppressing further errors" freezes pawn after pawn mid-map. A new `UnfinishedThing.ExposeData` prefix unbinds the orphan pairing at PostLoadInit (and guards vanilla's own pre-save cleanup at Saving), and a once-per-load FinalizeInit sweep over the haulable set backstops modded UFT subclasses, reporting one aggregated repair message.
