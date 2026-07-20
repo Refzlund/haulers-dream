@@ -1,5 +1,0 @@
----
-"haulers-dream": patch
----
-
-Clamp bulk-refuel to the smart-overload carry-weight ceiling. The bulk-refuel courier sized its inventory sweep purely by the refuelable's fuel deficit, with no carry-weight limit, so it was the only into-inventory path that ignored the overload ceiling every other path (bulk hauling, transporter / portal / vehicle bulk-load) respects. Under strict carry weight that let a refuel courier load past 100% of its carry weight, contradicting the mod's own carry-limit contract; with heavy or modded fuels and a high-capacity refuelable it could overload badly. Bulk-refuel now uses the same ceiling as every other path: 100% of carry weight under strict carry weight, the "Off" slider, or Combat Extended; the configured break-even overload at other slider stops; and unbounded at "no slowdown" (so that stop is unchanged). A sweep the ceiling trims deposits what it carries and a later trip tops up the rest, exactly like the existing partial-sweep path. A new pure RefuelPlan.TakeFromStack helper and its oracle tests pin the deficit-and-ceiling clamp.
