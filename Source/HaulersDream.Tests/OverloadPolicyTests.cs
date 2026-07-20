@@ -23,6 +23,28 @@ namespace HaulersDream.Tests
             Assert.That(Carry(OverloadTuning.OffLevel, demand: 200, available: 200), Is.EqualTo(30));
         }
 
+        // Strict carry weight + "Drop then collect" report. A strict pawn's SELF-PICKUP take runs at OffLevel
+        // with a huge active-run demand (OverloadGate.ActiveRunDemand = 1 << 20, meaning "more is coming, fill
+        // to the ceiling"), the strongest demand any intake applies. Even then, strict must fill to EXACTLY the
+        // carry-limit cap (baseCap) and never past it, for any carry-limit fraction. (The bulk-haul path caps
+        // via CeilingKg / CountWithinCeiling instead of this demand, but both bottom out in
+        // CarryMath.CountToPickUp(baseCap, ...), so this pins the shared invariant.) It answers the "carries
+        // very large quantities" report: a full load is capped at 100% of the carry limit by design (not a
+        // leak), and lowering the carry-limit fraction scales the cap identically on the drop-then-collect and
+        // collect-directly paths.
+        [TestCase(1.0f, 30)]
+        [TestCase(0.5f, 12)]
+        [TestCase(0.25f, 3)]
+        public void Strict_ActiveRunDemand_CapsAtCarryLimit(float fraction, int expected)
+        {
+            const int ActiveRunDemand = 1 << 20;
+            float baseCap = Cap * fraction;
+            int units = Carry(OverloadTuning.OffLevel, demand: ActiveRunDemand, available: ActiveRunDemand, baseCap: baseCap);
+            Assert.That(units, Is.EqualTo(expected));
+            // The loaded gear+resource mass never exceeds the carry-limit cap, whatever the demand.
+            Assert.That(Gear + units * Unit, Is.LessThanOrEqualTo(baseCap + 1e-4f));
+        }
+
         [Test]
         public void NoSlowdownLevel_CarriesEverythingDemanded()
         {
