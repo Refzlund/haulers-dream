@@ -303,6 +303,30 @@ namespace HaulersDream
                 // unload (RuleProducesSurplus). KeepAll/Default defs are left to the normal (tagged-only) path.
                 if (!adoptAll && (settings == null || !settings.RuleProducesSurplus(t.def)))
                     continue;
+                // #222: never ADOPT (tag) a Simple Sidearms remembered sidearm or a Grab Your Tool carried tool,
+                // UNLESS the player set an explicit per-def "Unload always" rule on it. The keep exclusion itself is
+                // the SAME one the scoop self-heal applies (CompHauledToInventory.cs:191-193, excludeFromTag) and
+                // YieldRouter.InventoryStackOfDef uses; adoption was the ONE tagging path that lacked it. SurplusOf
+                // is per (def,stuff) PAIR, so a pawn carrying its remembered sidearm PLUS a same-pair LOOTED
+                // duplicate (HD strips enemy corpses) gets SurplusOf > 0 for BOTH Things (pairHave 2 minus pairKeep
+                // 1 = 1); without the guard adoption tagged the remembered sidearm too, and the unload driver (which
+                // unloads by ascending thingIDNumber) then shipped the pawn's OWN older sidearm to storage: the
+                // reported "pawns unload their sword/knife" bug. IsRememberedSidearm is a precise (def,stuff) match
+                // that ignores HD's tag, so it also skips the looted duplicate here; that copy is already
+                // scoop-tagged, so it still unloads.
+                //
+                // forcedUnload mirrors SurplusOf's OWN precedence (InventorySurplus.cs:68-70, and the documented
+                // GrabYourToolCompat "Unload always still wins" override): an explicit UnloadAlways rule makes the
+                // whole stack surplus BEFORE the SS/GYT keep is consulted. Adoption is the ONLY path that could tag a
+                // remembered sidearm/tool, so without this deferral that documented per-def override would be a
+                // silent no-op (a backward-incompatible change). KeepAtMost/KeepAll are NOT deferred: their excess
+                // still unloads via the already-tagged looted copy while the specific remembered sidearm stays kept.
+                // Both predicates are read-only and inert when SS/GYT are absent.
+                bool forcedUnload = settings != null && settings.TryGetItemRule(t.def, out var rule)
+                                    && rule.mode == ItemUnloadMode.UnloadAlways;
+                if (!forcedUnload
+                    && (SimpleSidearmsCompat.IsRememberedSidearm(pawn, t) || GrabYourToolCompat.IsCarriedTool(pawn, t)))
+                    continue;
                 // Only adopt surplus we can actually DELIVER. Adopting a stack with no storage destination would
                 // tag it and the unload pass would then relocate it to a desperate far/feet cell (the "drops it at
                 // a random spot" bug). Leave a no-destination stack UNTAGGED instead — it stays where it is, and

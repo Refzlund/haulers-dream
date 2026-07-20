@@ -15,8 +15,10 @@ namespace HaulersDream
     /// (B = a spawned container building — vanilla's egg box, or a modded container that flags its contents
     /// selectable) walks to the container and pulls the clamped count straight from its inner ThingOwner (the item
     /// itself is unspawned in there, so the ground toils would insta-fail on it). The counterpart to
-    /// <see cref="JobDriver_BulkHaul"/>'s "pick up to haul" — here the amount is HELD, not stored: single-target, no
-    /// nearby sweep, and NO forced unload. The pawn stops keeping the def once it holds none of it (the comp's heal
+    /// <see cref="JobDriver_BulkHaul"/>'s "pick up to haul", where the kept amount is HELD, not stored: single-target
+    /// and no nearby sweep, and the kept units themselves are never unloaded (the surplus math preserves the first N).
+    /// On finish, though, any SURPLUS the pawn already carries ABOVE its keep is flushed to storage (#225: a forced,
+    /// behind-queued-work unload gated on real surplus). The pawn stops keeping the def once it holds none of it (the comp's heal
     /// prunes the pin), and the Gear-tab keep control edits the amount directly. The take is mass/CE-clamped live and
     /// added canMerge:true (one merged stack per def keeps the surplus math clean; the per-def count does the
     /// keeping). Ordered via TryTakeOrderedJob (multiplayer auto-syncs the order), and the count is raised inside the
@@ -39,6 +41,21 @@ namespace HaulersDream
 
         public override IEnumerable<Toil> MakeNewToils()
         {
+            // Flush any SURPLUS above the pawn's keep-stock when the keep order ends (took the amount, target gone,
+            // or interrupted), shared by BOTH branches below. The keep driver otherwise never schedules an unload
+            // (unlike JobDriver_BulkHaul's sweep), and the order's TryTakeOrderedJob(requestQueueing:false) clears
+            // the queue, discarding the original pickup's queued forced unload, so on a busy pawn the surplus (e.g.
+            // holds 9, keep 7 -> unload 2) would linger (#225). forced:true so a pawn with pending work still flushes;
+            // behindQueuedWork:true EnqueueLasts it so real work is never preempted (the same contract as the
+            // bulk-haul finish flush). Gated on AnyUnloadable (which reads the HEALED set + InventorySurplus.SurplusOf)
+            // so it never queues a no-op unload and never touches the genuinely-kept first N units.
+            AddFinishAction(_ =>
+            {
+                var comp = pawn.GetComp<CompHauledToInventory>();
+                if (comp != null && PawnUnloadChecker.AnyUnloadable(pawn, comp.GetHashSet()))
+                    PawnUnloadChecker.CheckIfShouldUnload(pawn, forced: true, behindQueuedWork: true);
+            });
+
             if (job.GetTarget(ContainerInd).HasThing)
             {
                 // CONTAINER branch: goto/fail on the CONTAINER (the item is unspawned inside it — FailOnDespawnedOrNull

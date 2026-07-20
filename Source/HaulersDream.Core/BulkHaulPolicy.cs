@@ -53,6 +53,59 @@ namespace HaulersDream.Core
         public static bool TriggerSatisfied(BulkHaulTrigger trigger, bool forced, bool secondNearbyTasked)
             => !forced || trigger == BulkHaulTrigger.Always || secondNearbyTasked;
 
+        /// <summary>The three outcomes of a player's haul order, once the trigger and the oversized-stack
+        /// carve-out are resolved (see <see cref="DecideOrderedHaul"/>).</summary>
+        public enum OrderedHaulPlan
+        {
+            /// <summary>Keep vanilla's single hand-haul of just the clicked stack (no HD bulk job).</summary>
+            VanillaSingle,
+
+            /// <summary>Route the one oversized clicked stack through inventory for a single trip, WITHOUT
+            /// sweeping any neighbors (issue #223).</summary>
+            InventorySingleStack,
+
+            /// <summary>Sweep the clicked stack plus the nearby haulables into one bulk trip.</summary>
+            SweepNeighbors,
+        }
+
+        /// <summary>
+        /// What a haul order should actually do, once the trigger and the oversized-stack carve-out are
+        /// resolved. This replaces the old two-way "sweep or not" gate with three outcomes so an oversized
+        /// single order can ride inventory for one trip WITHOUT dragging in the neighborhood.
+        ///
+        /// Issue #223: the oversized carve-out used to short-circuit the "return null" gate and fall straight
+        /// into the sweep, so with stack-size mods (almost every clicked stack is oversized) every forced haul
+        /// behaved like "Haul everything nearby" and the <see cref="BulkHaulTrigger.SecondTasked"/> option never
+        /// took effect. Splitting the carve-out into its own plan preserves the one-trip delivery while keeping
+        /// a single order to just its one stack.
+        ///
+        /// Precedence, highest first: an explicit sweep (<paramref name="forceSweep"/>) and every automatic
+        /// (non-forced) haul always sweep; a forced order sweeps under <see cref="BulkHaulTrigger.Always"/> or
+        /// when a second nearby haul is already tasked; otherwise a forced order of an OVERSIZED stack
+        /// (<paramref name="oversizedRidesInventory"/>) delivers that one stack via inventory; anything left is a
+        /// plain vanilla single hand-haul.
+        /// </summary>
+        /// <param name="trigger">The bulk-haul trigger setting.</param>
+        /// <param name="forced">A player-ordered (forced) haul, not an automatic work-scan haul.</param>
+        /// <param name="forceSweep">The explicit "Haul everything nearby" order: always sweeps.</param>
+        /// <param name="secondNearbyTasked">Another haul order is already queued on a nearby item (the
+        /// SecondTasked "clean up this area" signal).</param>
+        /// <param name="oversizedRidesInventory">A forced order whose clicked stack is too big for one armful and
+        /// the oversized-into-inventory option is on: worth one inventory trip even with no second order tasked.</param>
+        public static OrderedHaulPlan DecideOrderedHaul(BulkHaulTrigger trigger, bool forced, bool forceSweep,
+            bool secondNearbyTasked, bool oversizedRidesInventory)
+        {
+            if (forceSweep)
+                return OrderedHaulPlan.SweepNeighbors;                    // explicit "haul everything nearby"
+            if (!forced)
+                return OrderedHaulPlan.SweepNeighbors;                    // automatic hauls always sweep
+            if (trigger == BulkHaulTrigger.Always || secondNearbyTasked)
+                return OrderedHaulPlan.SweepNeighbors;
+            if (oversizedRidesInventory)
+                return OrderedHaulPlan.InventorySingleStack;             // one big stack, one trip, NO sweep
+            return OrderedHaulPlan.VanillaSingle;
+        }
+
         /// <summary>What a player-ordered bulk haul arriving at the job tracker should do to an in-progress
         /// surgical first haul (see <see cref="DecideTakeover"/>).</summary>
         public enum BulkTakeoverAction

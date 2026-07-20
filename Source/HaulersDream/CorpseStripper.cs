@@ -145,6 +145,38 @@ namespace HaulersDream
         }
     }
 
+    /// <summary>
+    /// STRIP BEFORE CREMATION, vanilla (single-rep) seam (#222). A POSTFIX on the private
+    /// <c>Toils_Recipe.CalculateIngredients(Job, Pawn)</c>, which vanilla runs to resolve a bill's ingredient
+    /// Things immediately BEFORE it consumes/destroys them (its own body already runs the symmetric
+    /// autoStripCorpses strip at this exact point). Each resolved ingredient is offered to
+    /// <see cref="CorpseStripper.MaybeStripForCremation"/>, which strips a cremation-bound corpse onto the bill
+    /// tile so its gear is salvaged instead of burned; that method does all the gating (opt-in, non-autoStrip
+    /// recipes only), so a butcher bill (autoStripCorpses on) is never double-stripped. The HD batch-craft
+    /// driver runs its OWN replica of this seam and calls MaybeStripForCremation directly (see
+    /// JobDriver_BatchCraft); a batch job never invokes vanilla CalculateIngredients, so the two paths are
+    /// disjoint and no corpse is offered twice.
+    ///
+    /// Gated by <see cref="Prepare"/> so a RimWorld rename of the private method disables the whole patch (the
+    /// feature quietly no-ops) instead of crashing at startup, the same soft-guard idiom as
+    /// <c>Patch_ITab_Pawn_Gear_KeepButton</c>.
+    /// </summary>
+    [HarmonyPatch(typeof(Toils_Recipe), "CalculateIngredients")]
+    public static class Patch_Toils_Recipe_CalculateIngredients_CremationStrip
+    {
+        static bool Prepare() => AccessTools.Method(typeof(Toils_Recipe), "CalculateIngredients") != null;
+
+        static void Postfix(List<Thing> __result, Job job, Pawn actor)
+        {
+            if (__result == null || job == null)
+                return;
+            // job.RecipeDef == job.bill?.recipe (null when there is no bill); MaybeStripForCremation guards it.
+            var recipe = job.RecipeDef;
+            for (int i = 0; i < __result.Count; i++)
+                CorpseStripper.MaybeStripForCremation(actor, __result[i], recipe);
+        }
+    }
+
     public static class CorpseStripper
     {
         /// <summary>
@@ -328,6 +360,50 @@ namespace HaulersDream
             StripAndScoop(hauler, corpse, s);
         }
 
+        /// <summary>
+        /// STRIP BEFORE CREMATION (#222): when <paramref name="ingredient"/> is a corpse a bill is about to
+        /// consume with a recipe that would DESTROY its gear (cremation, a modded incinerator, any corpse
+        /// recipe with autoStripCorpses OFF), strip the body onto its own cell (the bill tile) FIRST so its
+        /// weapons, apparel and carried items become loose, un-forbidden haulables that the normal haul pass
+        /// salvages to storage instead of burning with the corpse. A no-op unless the player opted in
+        /// (stripBeforeCremation) and <see cref="CremationStripPolicy.ShouldStrip"/> passes: it SKIPS an
+        /// autoStripCorpses recipe (vanilla's consume seam already strips that, so no double strip), a bare
+        /// corpse (nothing to salvage, e.g. a haul-strip already ran), and the player's own dead unless
+        /// stripColonistCorpses is also on. Tainted apparel still follows the per-category policy (a
+        /// LeaveOnCorpse rag stays on the body and is cremated with it, for clean disposal).
+        ///
+        /// Called from BOTH cremation consume seams so single-rep and HD-batched cremation behave alike: a
+        /// Harmony postfix on vanilla <c>Toils_Recipe.CalculateIngredients</c>
+        /// (<see cref="Patch_Toils_Recipe_CalculateIngredients_CremationStrip"/>) for normal bills, and
+        /// directly from <c>JobDriver_BatchCraft.CalculateIngredientsFromPlacedThings</c> for batched bills.
+        /// Safe to call once per resolved ingredient: it gates itself and no-ops on any non-corpse ingredient.
+        /// </summary>
+        /// <param name="worker">The pawn running the bill, credited with the strip.</param>
+        /// <param name="ingredient">One resolved bill ingredient; only a <see cref="Corpse"/> is acted on.</param>
+        /// <param name="recipe">The bill's recipe, whose autoStripCorpses decides whether vanilla already stripped.</param>
+        internal static void MaybeStripForCremation(Pawn worker, Thing ingredient, RecipeDef recipe)
+        {
+            if (!(ingredient is Corpse corpse))
+                return;
+            var s = HaulersDreamMod.Settings;
+            if (s == null || recipe == null || worker == null)
+                return;
+            if (!corpse.Spawned || corpse.Map == null)
+                return;
+            var inner = corpse.InnerPawn;
+            if (inner == null)
+                return;
+            // The same "your own dead" test the on-haul strip uses (OfPlayerSilentFail never logs when there
+            // is no player faction). The pure policy composes the opt-ins and skip conditions.
+            bool isPlayerFactionCorpse = inner.Faction == Faction.OfPlayerSilentFail;
+            if (!CremationStripPolicy.ShouldStrip(s.stripBeforeCremation, recipe.autoStripCorpses,
+                    corpse.AnythingToStrip(), isPlayerFactionCorpse, s.stripColonistCorpses))
+                return;
+            // Drop the gear on the corpse's own cell (the cremation tile). No scoop: this is a disposal seam,
+            // the worker is not hauling the corpse home, so the dropped gear rides the normal haul pass instead.
+            StripCorpseDroppingLoot(worker, corpse, s);
+        }
+
         // Which hauls trigger a strip. AllHauls: any of the corpse-moving jobs. DisposalOnly: only
         // where the gear would otherwise be LOST — interment (a casket container) or a corpse bill
         // (cremation/butchering); a plain stockpile haul leaves the body dressed.
@@ -357,9 +433,29 @@ namespace HaulersDream
             return false; // caravan packing, transport pods, anything else: never strip
         }
 
-        private static void StripAndScoop(Pawn hauler, Corpse corpse, HaulersDreamSettings s)
+        /// <summary>
+        /// SHARED CORPSE-STRIP CORE: drop <paramref name="corpse"/>'s gear onto its OWN cell (the strip tile)
+        /// and return the pieces that became loose loot, applying every per-piece rule the auto-strip uses:
+        /// equipment + inventory are always loot; apparel follows the tainted-apparel policy (LeaveOnCorpse
+        /// stays on the body, DropAndForbid is forbidden in place, Destroy is destroyed), never touching a
+        /// quest, relic, locked, biocoded, or merged-stack piece. Drops are UN-forbidden so the normal haul
+        /// pass salvages them. On a body that had something to strip it also clears the pending Strip
+        /// designation, records <c>BodiesStripped</c> on <paramref name="actor"/>, and notifies the dead pawn's
+        /// faction exactly as a manual strip would. Shared by the on-haul scoop (<see cref="StripAndScoop"/>,
+        /// which then pockets the returned loot) and the cremation strip (<see cref="MaybeStripForCremation"/>,
+        /// which drops onto the cremation tile and does NOT scoop).
+        /// </summary>
+        /// <param name="actor">The pawn credited with the strip (the hauler, or the crafter at the cremation bench).</param>
+        /// <param name="corpse">The body to strip; the caller ensures it is Spawned.</param>
+        /// <param name="s">Live settings (the two tainted-apparel policies).</param>
+        /// <returns>The loose loot the corpse contributed, each entry carrying the EXACT count the body added (a
+        /// merged drop is excluded); or <c>null</c> when the body had nothing to strip, in which case no
+        /// designation/record/notify side effect ran either.</returns>
+        internal static List<ThingCount> StripCorpseDroppingLoot(Pawn actor, Corpse corpse, HaulersDreamSettings s)
         {
             var inner = corpse.InnerPawn;
+            if (inner == null)
+                return null;
             var map = corpse.Map;
             var pos = corpse.PositionHeld;
             // Each entry remembers what the CORPSE contributed: the drop result can be a pre-existing
@@ -460,18 +556,30 @@ namespace HaulersDream
             }
 
             if (!strippedAnything)
-                return;
+                return null; // nothing was on the body: no loot, and no strip consequences to record
 
             // The vanilla strip consequences, faithfully: the pending Strip designation is now moot, the
-            // hauler logs a stripped body, and the dead pawn's faction reacts exactly as to a manual strip.
+            // actor logs a stripped body, and the dead pawn's faction reacts exactly as to a manual strip.
             map.designationManager.DesignationOn(corpse, DesignationDefOf.Strip)?.Delete();
-            hauler.records?.Increment(RecordDefOf.BodiesStripped);
+            actor.records?.Increment(RecordDefOf.BodiesStripped);
             if (inner.Faction != null)
                 inner.Faction.Notify_MemberStripped(inner, Faction.OfPlayer);
 
+            return loot;
+        }
+
+        /// <summary>AUTO-STRIP ON HAUL: drop the corpse's gear on its cell, then SCOOP the loose loot into the
+        /// hauler's inventory (tagged for the unload pass). The strip core is shared with the cremation seam;
+        /// only this haul path scoops.</summary>
+        private static void StripAndScoop(Pawn hauler, Corpse corpse, HaulersDreamSettings s)
+        {
+            var loot = StripCorpseDroppingLoot(hauler, corpse, s);
+            if (loot == null)
+                return; // the body had nothing to strip
+
             // Scoop only into inventories the AUTOMATIC unload will serve: a pawn that fails
             // YieldRouter.IsEligible (a hauling-incapable cook fetching a butcher-bill corpse, with
-            // allowIncapable off) would carry the tagged loot forever — every automatic unload trigger
+            // allowIncapable off) would carry the tagged loot forever; every automatic unload trigger
             // skips ineligible pawns, and the only recovery is the manual gizmo. The strip itself
             // still happened: the gear stays on the ground as ordinary haulables for real haulers.
             if (YieldRouter.IsEligible(hauler))

@@ -139,17 +139,34 @@ namespace HaulersDream
             // personal herbal medicine) tags both; harmless: the surplus is merely unloaded to storage.
             var owner = (parent as Pawn)?.inventory?.innerContainer;
             // Migrate a pre-#197 whole-stack keep set into per-def keep-counts, once, on the first heal after load:
-            // keep at least as many of each still-held kept def as the pawn currently holds. Runs on the synced heal
-            // path so every MP client migrates identically.
+            // pin each still-held kept def to what the player pinned as whole stacks, EXCLUDING any HD-tagged haul
+            // cargo of the same def (#225). Runs on the synced heal path so every MP client migrates identically.
+            //
+            // SCOPE LIMITATION (#225): this only repairs a save that STILL carries the legacyKept signal (i.e. one
+            // loaded from a pre-#197 save). A keep pin that was ALREADY inflated by the shipped v1.19-v1.20 buggy
+            // migration is not retroactively fixed: that migration dropped the "haulersDreamKept" scribe key on
+            // re-save, so no signal remains to migrate from, and an inflated 9 is indistinguishable from a
+            // deliberately chosen 9. The player corrects such a pin directly via the Gear-tab keep control.
             if (legacyKept != null && owner != null)
             {
                 foreach (var t in legacyKept)
                 {
                     if (t == null || t.Destroyed || !owner.Contains(t) || t.def == null)
                         continue;
+                    // Migrate to what the player actually pinned as whole stacks (the sum of the still-held
+                    // legacy-kept stacks of this def), CAPPED at the non-tagged units (held - taggedUnits) so
+                    // freshly-scooped HD-tagged haul cargo of the same def is NEVER folded into the keep (#225).
+                    // CountOfDef sums the tagged haul units too, so the old `keptCounts[def] = held` pinned the
+                    // surplus (held == kept -> nothing ever unloaded: the "holds 9, keep 7, unloads nothing" bug).
                     int held = CountOfDef(owner, t.def);
-                    if (held > 0 && (!keptCounts.TryGetValue(t.def, out int cur) || cur < held))
-                        keptCounts[t.def] = held;
+                    int taggedUnits = TaggedUnitsOfDef(owner, t.def);
+                    int sumOfKeptStackCounts = SumLegacyKeptStackCounts(t.def, owner);
+                    int migrated = KeepCountPolicy.MigratedKeep(sumOfKeptStackCounts, held, taggedUnits);
+                    // Accumulate toward `migrated`, but never STOMP a live pin (a keep the player already dialed
+                    // this session) upward past it; another still-held stack of the same def is then a no-op. The
+                    // per-def sums make `migrated` identical across MP clients regardless of iteration order.
+                    if (migrated > 0 && (!keptCounts.TryGetValue(t.def, out int cur) || cur < migrated))
+                        keptCounts[t.def] = migrated;
                 }
                 // Only discard the legacy set once the inventory was actually available to fold from, so a heal that
                 // somehow ran before the inventory tracker resolved retries on the next heal instead of losing the
@@ -339,6 +356,40 @@ namespace HaulersDream
                 if (t != null && t.def == def)
                     n += t.stackCount;
             }
+            return n;
+        }
+
+        /// <summary>Sum of the still-held legacy-kept stacks of <paramref name="def"/> (issue #225 migration): the
+        /// units the player pinned as whole stacks under the pre-#197 model, the amount to migrate into the per-def
+        /// keep BEFORE the tagged-haul cap. Reads <see cref="legacyKept"/> (a handful of entries, so the scan is
+        /// trivial); counts only entries still in <paramref name="owner"/>, so a used-up / dropped kept stack adds 0.</summary>
+        /// <param name="def">The kept def being migrated.</param>
+        /// <param name="owner">The pawn's inventory container.</param>
+        private int SumLegacyKeptStackCounts(ThingDef def, ThingOwner owner)
+        {
+            if (legacyKept == null || def == null || owner == null)
+                return 0;
+            int n = 0;
+            foreach (var t in legacyKept)
+                if (t != null && !t.Destroyed && t.def == def && owner.Contains(t))
+                    n += t.stackCount;
+            return n;
+        }
+
+        /// <summary>Units of <paramref name="def"/> across the pawn's HD-TAGGED inventory stacks still held (the haul
+        /// cargo tracked in <see cref="takenToInventory"/>). The #225 migration subtracts these from the held total so
+        /// a pre-#197 whole-stack keep never folds freshly-scooped haul units into the keep pin.</summary>
+        /// <param name="owner">The pawn's inventory container (a tag OUT of inventory, e.g. in hands mid-craft, is
+        /// not counted, matching <see cref="CountOfDef"/>, which also only sees the container).</param>
+        /// <param name="def">The def whose tagged units to total.</param>
+        private int TaggedUnitsOfDef(ThingOwner owner, ThingDef def)
+        {
+            if (owner == null || def == null)
+                return 0;
+            int n = 0;
+            foreach (var t in takenToInventory)
+                if (t != null && !t.Destroyed && t.def == def && owner.Contains(t))
+                    n += t.stackCount;
             return n;
         }
 

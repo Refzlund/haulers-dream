@@ -771,6 +771,14 @@ namespace HaulersDream
                     // Spawned there) instead of being destroyed with the corpse.
                     if (recipe != null && recipe.autoStripCorpses && thing is IStrippable strippable && strippable.AnythingToStrip())
                         strippable.Strip();
+                    // #222 strip-before-cremation: a corpse bill whose recipe does NOT autoStripCorpses
+                    // (cremation, a modded incinerator) would DESTROY the gear, so offer the corpse to the
+                    // opt-in cremation strip, which drops it on this same bench cell. The else composes cleanly:
+                    // when autoStripCorpses is on the branch above already stripped, and a corpse haul-stripped
+                    // en route has AnythingToStrip() false, so neither path can double-strip. Gated fully inside
+                    // MaybeStripForCremation (opt-in, corpse-only), so it no-ops for every non-corpse ingredient.
+                    else
+                        CorpseStripper.MaybeStripForCremation(pawn, thing, recipe);
                 }
             }
             job.placedThings = null;
