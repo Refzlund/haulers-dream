@@ -113,9 +113,14 @@ namespace HaulersDream
             {
                 var queue = job.targetQueueB;
                 var counts = job.countQueue;
-                float ceiling = CeilingKgLive(HaulersDreamMod.Settings);
+                var s = HaulersDreamMod.Settings;
+                float ceiling = CeilingKgLive(s);
+                // BUDGET currency on both sides, the same one BulkHaul planned this chain in: a body already in
+                // the pocket is re-priced by the corpse allowance exactly as the planner priced it, so "is there
+                // ceiling left" gets the same answer here that it got at plan time. At the default allowance this
+                // is the plain GearAndInventoryMass read it replaced.
                 bool roomLeft = float.IsPositiveInfinity(ceiling)
-                                || MassUtility.GearAndInventoryMass(pawn) < ceiling - 0.0001f;
+                                || BulkHaul.BudgetedCarriedMassKg(pawn, CorpseAllowance(s)) < ceiling - 0.0001f;
                 // Under CE the live BULK room can fill before weight does — touring the remaining stacks
                 // to take 0 from each is pure walking; end the chain and flush what's loaded.
                 if (roomLeft && CECompat.IsActive && CECompat.AvailableBulk(pawn) <= 0f)
@@ -231,8 +236,19 @@ namespace HaulersDream
                     CorpseStripper.MaybeStripForHaul(pawn, corpsePickup);
 
                 // Re-clamp the planned count to the LIVE remaining room (mass may have shifted since planning).
-                int count = BulkHaulPolicy.CountWithinCeiling(CeilingKgLive(HaulersDreamMod.Settings),
-                    MassUtility.GearAndInventoryMass(pawn), t.GetStatValue(StatDefOf.Mass),
+                //
+                // Priced in the SAME BUDGET currency BulkHaul planned the chain in, on BOTH sides — the running
+                // total through BudgetedCarriedMassKg and the candidate's unit through BudgetMassKg. Re-clamping a
+                // discounted plan against undiscounted reality is not a stricter check, it is a different question,
+                // and it answered no to every body after the first: a colonist who had just pocketed a 60 kg corpse
+                // measured floor((96.25 − 63) / 60) = 0 for the next one, dropped it from the chain, and walked home
+                // with the single body the allowance was opted into precisely to move past. At the default allowance
+                // both calls are exact identities and this is the plain live-mass clamp it has always been.
+                var s = HaulersDreamMod.Settings;
+                float allowance = CorpseAllowance(s);
+                int count = BulkHaulPolicy.CountWithinCeiling(CeilingKgLive(s),
+                    BulkHaul.BudgetedCarriedMassKg(pawn, allowance),
+                    CorpseHaulPolicy.BudgetMassKg(t.GetStatValue(StatDefOf.Mass), t is Corpse, allowance),
                     System.Math.Min(planned, t.stackCount));
                 // Under Combat Extended also clamp to CE's live weight+bulk fit (exact — CE's inventory cache
                 // updates after every add, so the plan's optimism self-corrects here).
@@ -387,6 +403,11 @@ namespace HaulersDream
                 comp?.NotifyYieldPicked();
             return loaded;
         }
+
+        // The live corpse carry allowance, or the strictest possible value when settings are missing. 1f is an
+        // exact identity in both BudgetMassKg and BudgetedCarriedMassKg, so a null-settings clamp prices every
+        // body at its real weight — the same "null fails strict, never loose" rule CeilingKgLive follows below.
+        private static float CorpseAllowance(HaulersDreamSettings s) => s?.corpseCarryAllowance ?? 1f;
 
         // The live worth-it mass ceiling for THIS pawn (per-pawn base cap × the overload break-even ratio).
         // Pawn-aware gate (NoOverloadFor): only an ANIMAL (non-mech non-humanlike) stands down to the plain

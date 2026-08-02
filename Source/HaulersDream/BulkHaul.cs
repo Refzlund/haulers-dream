@@ -141,6 +141,13 @@ namespace HaulersDream
         [ThreadStatic] private static List<Thing> scratchThings;
         [ThreadStatic] private static List<int> scratchCounts;
 
+        // The containers this sweep has already promised a body to (the grave-overshoot clamp in
+        // TakeNearestEligible). Allocated for every sweep that reaches the snowball, at any setting: a hauler
+        // with a large enough ceiling can plan two bodies into a one-body grave without the corpse allowance
+        // being touched at all (a vanilla Lifter does exactly that at stock settings). [ThreadStatic] + lazy-init
+        // per the convention above; Cleared at the point of use, never trusted empty from a prior call.
+        [ThreadStatic] private static HashSet<IHaulDestination> scratchCorpseContainers;
+
         // The cached Job plus the loadID it carried at insert. JobMaker.ReturnToPool → Job.Clear() sets
         // loadID = -1 and MakeJob assigns a fresh UniqueIDsManager id (decompile-verified), so a same-tick
         // pool-recycled instance — even one reused for an identically-shaped job — can never validate.
@@ -317,6 +324,7 @@ namespace HaulersDream
             scratchGroupBudgets?.Clear();
             scratchThings?.Clear();
             scratchCounts?.Clear();
+            scratchCorpseContainers?.Clear();
             // RouteSelection's per-(pawn,tick) claimed-set memo is now cleared DIRECTLY by the game-load hygiene
             // sweep (it self-registers its ClearClaimedCache with CacheRegistry), so the former transitive call
             // from here is gone — the registry is the single source of truth and the two caches are decoupled.
@@ -368,6 +376,133 @@ namespace HaulersDream
             var reserver = t?.Map?.physicalInteractionReservationManager?.FirstReserverOf(t);
             return reserver != null && reserver.RaceProps != null && reserver.RaceProps.Animal
                    && reserver.Faction != Faction.OfPlayerSilentFail;
+        }
+
+        /// <summary>
+        /// May <paramref name="pawn"/> take <paramref name="corpse"/> into a bulk sweep at all? This is the WHO
+        /// and the WHICH; <see cref="CorpseSweepPolicy"/> answers only WHETHER corpses sweep, and both must say
+        /// yes. Two independent refusals, both decided by the pure policy: the hauler's own kind can be barred
+        /// from bodies (a player who wants only mechs on corpse duty, or only colonists), and a body can be barred
+        /// for being humanlike or for outweighing the configured cutoff.
+        ///
+        /// <para>At the shipped defaults — every kind allowed, humanlike allowed, no mass cutoff — this returns
+        /// true for EVERY pawn/corpse pair, so all four call sites are inert until a player changes one of them.
+        /// That is the property to preserve when editing this: it must stay true unconditionally at defaults.</para>
+        ///
+        /// <para>A <c>Corpse</c> with a null <c>InnerPawn</c> — its innerContainer emptied
+        /// (<c>Corpse.InnerPawn</c> returns null on <c>Count &lt;= 0</c>, decompile-verified; that is ONE of the
+        /// three states <c>Corpse.Bugged</c> covers, not the whole of it) — is refused
+        /// outright, and this is a SAFETY refusal rather than one of the two player restrictions. Such a body
+        /// cannot be weighed: <c>StatDefOf.Mass</c> carries <c>StatPart_BodySize</c>, which routes through
+        /// <c>PawnOrCorpseStatUtility.TryGetPawnOrCorpseStat</c> and calls <c>x.BodySize</c> on
+        /// <c>corpse.InnerPawn</c> with no null check, so merely ASKING for its mass throws. Refusing here is what
+        /// makes every downstream mass read in the sweep safe by construction — this predicate gates all four
+        /// corpse entries (both anchor checks and both pool walks), so a body that cannot be weighed never
+        /// reaches the planner's pricing or <c>TakeNearestEligible</c>'s. The far worse outcome is the one this
+        /// also prevents: pocketing such a body would poison <c>MassUtility.GearAndInventoryMass</c> for that
+        /// pawn permanently, since every later mass read walks the inventory and hits the same throw. Nothing is
+        /// lost by refusing — vanilla's own hand-haul never reads Mass, so the body still gets carried away.</para>
+        /// </summary>
+        /// <param name="pawn">The hauler; its race selects which of the three kind switches applies.</param>
+        /// <param name="corpse">The body under consideration, in either the anchor or the neighbour role.</param>
+        /// <param name="s">Live settings; null (settings not loaded) imposes no restriction, as everywhere else.</param>
+        private static bool MaySweepCorpse(Pawn pawn, Corpse corpse, HaulersDreamSettings s)
+        {
+            if (corpse == null)
+                return true;
+            // Ahead of the settings check because it is not a setting: an unweighable body is refused whatever
+            // the player has configured, and refusing here is what keeps every later GetStatValue(Mass) safe.
+            if (corpse.InnerPawn == null)
+                return false;
+            if (s == null)
+                return true;
+            if (!HaulerMaySweepCorpses(pawn, s))
+                return false;
+            var inner = corpse.InnerPawn;
+            bool humanlikeCorpse = inner.RaceProps != null && inner.RaceProps.Humanlike;
+            // The mass is READ only when a cutoff is actually set. GetStatValue is not free and this runs per
+            // corpse candidate on the scan path, while CorpseMayBeSwept ignores the number entirely at the
+            // default cutoff of 0 (= no limit) — so passing 0f there is provably the same answer, not a shortcut.
+            float massKg = s.corpseMaxHaulMassKg > 0f ? corpse.GetStatValue(StatDefOf.Mass) : 0f;
+            return CorpseHaulPolicy.CorpseMayBeSwept(humanlikeCorpse, s.corpseHaulHumanlike, massKg,
+                s.corpseMaxHaulMassKg);
+        }
+
+        /// <summary>
+        /// The HAULER half of <see cref="MaySweepCorpse"/> on its own: may this pawn's kind take part in corpse
+        /// hauling at all? Split out because it depends only on the pawn and the settings, never on the body, so a
+        /// scan that is about to test a hundred candidates can answer it ONCE — and split rather than re-derived at
+        /// the call sites, because a second copy of the mech/humanlike branch order is exactly how the cheap gate
+        /// and the real pool start classifying one pawn two ways (the divergence the call-site comments warn about).
+        /// </summary>
+        /// <param name="pawn">The hauler whose race selects which of the three kind switches applies.</param>
+        /// <param name="s">Live settings; null imposes no restriction, matching <see cref="MaySweepCorpse"/>.</param>
+        private static bool HaulerMaySweepCorpses(Pawn pawn, HaulersDreamSettings s)
+        {
+            if (s == null)
+                return true;
+            var race = pawn?.RaceProps;
+            return CorpseHaulPolicy.HaulerMaySweepCorpses(race != null && race.IsMechanoid,
+                race != null && race.Humanlike,
+                s.corpseHaulByColonists, s.corpseHaulByMechs, s.corpseHaulByAnimals);
+        }
+
+        /// <summary>
+        /// What <paramref name="pawn"/> is ALREADY carrying, expressed in the same BUDGET currency the carry
+        /// ceiling is spent in: <c>MassUtility.GearAndInventoryMass</c> with every corpse already in inventory
+        /// re-priced from what it weighs to what <see cref="CorpseHaulPolicy.BudgetMassKg"/> charges for it.
+        ///
+        /// <para>WHY THIS EXISTS AT ALL. The allowance discounts what a body COSTS against the ceiling, so
+        /// every number compared against that ceiling has to be discounted the same way — the running total
+        /// just as much as the per-candidate unit. Seeding the running total with the pawn's REAL mass while
+        /// charging it discounted increments mixes two currencies in one subtraction, and the mixture is not
+        /// merely imprecise, it cancels the feature: the planner admits two bodies (30 + 30 against 96), the
+        /// driver re-clamps the second against the 60 real kilograms the first one added, gets
+        /// <c>floor((96 − 63) / 60) = 0</c>, and skips it. The colonist walks the whole planned route and comes
+        /// home with one body, exactly as before opting in. So plan and execution must read this ONE function.</para>
+        ///
+        /// <para>The discount is not a claim about physics. The pawn is still hauling every real kilogram and
+        /// <c>StatPart_Overload</c> still reads the undiscounted <c>GearAndInventoryMass</c> and slows the pawn
+        /// for all of it — the setting buys a deliberate overshoot past the overload slider's break-even, and
+        /// this function is only how the planner keeps score of it.</para>
+        ///
+        /// <para>At the default allowance (and for any non-loosening or non-finite value) this returns
+        /// <c>MassUtility.GearAndInventoryMass(pawn)</c> and never touches the inventory at all — not merely
+        /// the same number, the same call, so the default path is unchanged and pays nothing for a feature it
+        /// is not using.</para>
+        /// </summary>
+        /// <param name="pawn">The hauler being planned for or loaded.</param>
+        /// <param name="corpseCarryAllowance">The live setting; at or below 1 (or non-finite) this is identity.</param>
+        internal static float BudgetedCarriedMassKg(Pawn pawn, float corpseCarryAllowance)
+        {
+            // Identity fast path FIRST: no container walk, no per-item stat reads, byte-identical to the plain
+            // mass read this replaced. The non-finite rejections mirror BudgetMassKg's own guard, so a +∞
+            // allowance cannot discount a carried body to weightless here either.
+            if (corpseCarryAllowance <= 1f
+                || float.IsNaN(corpseCarryAllowance)
+                || float.IsInfinity(corpseCarryAllowance))
+                return MassUtility.GearAndInventoryMass(pawn);
+
+            float mass = MassUtility.GearAndInventoryMass(pawn);
+            var inv = pawn?.inventory?.innerContainer;
+            if (inv == null)
+                return mass;
+
+            // Subtract only the DISCOUNT, which is what makes this exact rather than a re-derivation:
+            // MassUtility.InventoryMass charges each entry `GetStatValue(Mass) × stackCount`, so removing
+            // `(real − budget) × stackCount` per corpse leaves precisely that corpse's budgeted contribution
+            // and every other entry's real one. Multiplying by stackCount rather than assuming 1 mirrors the
+            // vanilla sum: corpses are stackLimit 1 today, and this stays right if that ever stops being true.
+            for (int i = 0; i < inv.Count; i++)
+            {
+                var carried = inv[i];
+                if (!(carried is Corpse))
+                    continue;
+                float realUnit = carried.GetStatValue(StatDefOf.Mass);
+                mass -= (realUnit - CorpseHaulPolicy.BudgetMassKg(realUnit, true, corpseCarryAllowance))
+                        * carried.stackCount;
+            }
+            return mass;
         }
 
         private static bool AcceptsHaulDestination(Job vanillaJob, Thing primary, HaulersDreamSettings s, bool forceSweep)
@@ -422,9 +557,17 @@ namespace HaulersDream
             // Corpse anchor, opt-in off: the build refuses it too, so reject before the pool walk. This is the
             // AUTOMATIC scan, so playerOrdered is false — an explicit order reaches BuildBulkJob directly and is
             // never gated by this cheap availability check.
-            if (primary is Corpse && !CorpseSweepPolicy.CanAnchorSweep(s.bulkHaul, s.bulkHaulCorpses,
-                    s.autoStripMode == AutoStripMode.DisposalOnly, playerOrdered: false))
-                return false;
+            if (primary is Corpse anchorCorpse)
+            {
+                if (!CorpseSweepPolicy.CanAnchorSweep(s.bulkHaul, s.bulkHaulCorpses,
+                        s.autoStripMode == AutoStripMode.DisposalOnly, playerOrdered: false))
+                    return false;
+                // The WHO/WHICH restrictions, through the SAME call the build's anchor gate makes. The superset
+                // invariant on this method only survives while the two are literally the one predicate — a filter
+                // added here and not there would reject a plan the build would have produced.
+                if (!MaySweepCorpse(pawn, anchorCorpse, s))
+                    return false;
+            }
             if (!MapGate.HdActiveOnMap(map))
                 return false;
             if (pawn.Faction != Faction.OfPlayerSilentFail || pawn.IsQuestLodger())
@@ -468,17 +611,37 @@ namespace HaulersDream
             // Hoisted for the same reason: one settings read for the whole walk instead of one per candidate.
             // playerOrdered: false — this is the cheap AVAILABILITY gate for the automatic scan; an explicit
             // order goes straight to BuildBulkJob and is never filtered here.
+            //
+            // The HAULER half of MaySweepCorpse is folded in here because it too is loop-invariant (it reads only
+            // this pawn and these settings). Folding is exactly equivalent to leaving it per-candidate — if this
+            // hauler's kind may not touch bodies then MaySweepCorpse refuses every corpse anyway, which is what
+            // sweepCorpses == false already means — and it takes the per-body call off the walk entirely for a
+            // pawn that was never allowed to carry one. The per-candidate MaySweepCorpse below still runs the
+            // BODY half, so the one predicate remains the single source of the WHO/WHICH answer.
             bool sweepCorpses = CorpseSweepPolicy.CanSweepAsNeighbor(s.bulkHaul, s.bulkHaulCorpses,
-                s.autoStripMode == AutoStripMode.DisposalOnly, playerOrdered: false);
+                s.autoStripMode == AutoStripMode.DisposalOnly, playerOrdered: false)
+                && HaulerMaySweepCorpses(pawn, s);
             foreach (var t in (HashSet<Thing>)map.listerHaulables.ThingsPotentiallyNeedingHauling())
             {
                 if (t == null || t == primary || !t.Spawned || t.Map != map)
                     continue;
-                // Kept in lockstep with BuildPoolInto: with the corpse opt-in off, a body must not make this gate
-                // report "worth sweeping" for a pool the build would then find empty.
-                if (!sweepCorpses && t is Corpse)
-                    continue;
                 if (t.def == null || !t.def.EverHaulable)
+                    continue;
+                // DISTANCE BEFORE ANYTHING THAT READS MORE THAN A FIELD. These filters are pure, side-effect-free
+                // tests ANDed together, so the set that survives them is the same in any order — the SUPERSET
+                // invariant this method's doc block promises is a property of the set, not of the sequence — while
+                // the cost is not: this walks the whole map's haulables, most of which are nowhere near the primary,
+                // and everything below is per-candidate work (a race lookup for each body, a per-cell RimIOT probe,
+                // an apparel walk) that a stack across the map never had any reason to pay for. Ordered identically
+                // in BuildPoolInto so the cheap gate and the real pool still read as one filter.
+                if ((t.Position - primary.Position).LengthHorizontalSquared > poolRadiusSq)
+                    continue;
+                // Kept in lockstep with BuildPoolInto: with the corpse opt-in off — or with this hauler's kind or
+                // this body barred by the WHO/WHICH restrictions — a body must not make this gate report "worth
+                // sweeping" for a pool the build would then find empty. Same predicate as the pool's, so the two
+                // cannot diverge; ReservedByWildAnimal stays absent here exactly as before (the gate is allowed to
+                // accept more than the pool, never less).
+                if (t is Corpse neighborCorpse && (!sweepCorpses || !MaySweepCorpse(pawn, neighborCorpse, s)))
                     continue;
                 // RimIOT compat (#177 + #184): a stack RimIOT owns (in a logistic-network cell, or in a powered
                 // interface's ground apron) is never a bulk-sweep candidate, so it must not make this cheap gate
@@ -491,8 +654,7 @@ namespace HaulersDream
                 // build's accept set (both skip exactly these), so it never suppresses a plan the build produces.
                 if (CorpseStripper.ShouldLeaveTaintedApparel(t, s))
                     continue;
-                if ((t.Position - primary.Position).LengthHorizontalSquared <= poolRadiusSq)
-                    return true;
+                return true;
             }
             return false;
         }
@@ -510,10 +672,19 @@ namespace HaulersDream
             // everything nearby" has always anchored on a body (it just never swept other bodies), and switching
             // a new setting off must not take away an order that already worked. "Pick up X" / "Keep X" reach
             // their own builders and are likewise untouched.
-            if (primary is Corpse && !forceSweep
-                && !CorpseSweepPolicy.CanAnchorSweep(s.bulkHaul, s.bulkHaulCorpses,
+            if (primary is Corpse anchorCorpse)
+            {
+                if (!forceSweep && !CorpseSweepPolicy.CanAnchorSweep(s.bulkHaul, s.bulkHaulCorpses,
                         s.autoStripMode == AutoStripMode.DisposalOnly, playerOrdered: forced || forceSweep))
-                return null;
+                    return null;
+                // The WHO/WHICH restrictions get NO forceSweep exemption, unlike the opt-in above. That exemption
+                // protects an order shape that PREDATES the opt-in; these settings instead answer "which haulers
+                // may carry which bodies", and a player who bars mechs from corpses (or caps corpse mass) means it
+                // for the order they just clicked too. Refusing here costs the SWEEP, not the haul: the caller
+                // falls back to vanilla's own single-body carry, which is exactly what the restriction asks for.
+                if (!MaySweepCorpse(pawn, anchorCorpse, s))
+                    return null;
+            }
             // Same map gate as YieldRouter.IsCandidate: with the mod disabled on non-home maps a sweep must
             // not fire there either — the driver's finish unload is forced:true and bypasses the checker's gate.
             if (!MapGate.HdActiveOnMap(map))
@@ -596,12 +767,37 @@ namespace HaulersDream
             float baseCap = CarryMath.EffectiveCapacity(maxCap, s.carryLimitFraction);
             float ceiling = BulkHaulPolicy.CeilingKg(s.overloadLevel, OverloadGate.NoOverloadFor(pawn, s), baseCap,
                 OverloadGate.MaxCeilingKg(s));
-            float running = MassUtility.GearAndInventoryMass(pawn);
+            // Seeded in BUDGET currency (see BudgetedCarriedMassKg), because every increment added to it below
+            // is a budget increment and the ceiling it is measured against is a budget ceiling. At the default
+            // allowance this is the plain GearAndInventoryMass call it replaced.
+            float running = BudgetedCarriedMassKg(pawn, s.corpseCarryAllowance);
             float bulkRoom = CECompat.AvailableBulk(pawn); // +∞ without CE
 
             // The primary itself must fit in inventory under the ceiling — if it can't, hands-carry (which has
             // no mass limit) is the better plan and there is nothing to sweep on top of it.
-            float primaryUnit = primary.GetStatValue(StatDefOf.Mass);
+            //
+            // BUDGET mass, not real mass: a corpse is priced at 1/allowance of what it weighs, so more than one
+            // body can clear the ceiling — the reported "one corpse per trip" is exactly this arithmetic (a
+            // humanlike body is 60 kg against a default ceiling near 96, so the second one never fit). At the
+            // default allowance of 1 BudgetMassKg returns the real mass and every number below is unchanged.
+            // ONE value feeds BOTH the fit test on the next line and the `running` charge at the end of this
+            // block; pricing a body one way to admit it and another way to bill it is how the loop's exit
+            // condition and the per-candidate test start disagreeing.
+            //
+            // KNOWN AND ACCEPTED: the headroom a discounted body frees is not reserved for other bodies, so a
+            // sweep anchored on a corpse can spend it on ordinary loot — at allowance 2.0 a 60 kg body books 30,
+            // and the 30 kg it did not book is room a stack of steel may take. Fencing it off means tracking the
+            // accumulated discount as a SECOND running total (bodies priced against one, everything else against
+            // the other) and threading it through TakeNearestEligible and the driver's live re-clamp as well.
+            // That is two numbers that must agree at every site — which is precisely the shape of the bug this
+            // pass exists to remove, where a discounted plan met an undiscounted re-clamp and the feature
+            // silently did nothing. One coherent currency is worth more than a second half-right one. The
+            // overshoot is bounded PER BODY (the slider stops at 3.0, so at most two thirds of one body's weight
+            // each) — across a full plan it accumulates, so say per body rather than implying a plan-wide cap —
+            // and it is honest either way: StatPart_Overload reads the real GearAndInventoryMass and slows the
+            // pawn for every kilogram of it, which is the same bargain the allowance itself is sold on.
+            float primaryUnit = CorpseHaulPolicy.BudgetMassKg(primary.GetStatValue(StatDefOf.Mass),
+                primary is Corpse, s.corpseCarryAllowance);
             int primaryTake = BulkHaulPolicy.CountWithinCeiling(ceiling, running, primaryUnit, primary.stackCount);
             primaryTake = Math.Min(primaryTake, CECompat.MaxFitCount(pawn, primary));
             float primaryBulk = CECompat.BulkPerUnit(primary);
@@ -722,18 +918,48 @@ namespace HaulersDream
                 if (!primaryDenied)
                     primaryBudget?.Consume(primary.def, primaryTake);
 
+                // The grave-overshoot clamp's per-plan set: which containers this sweep has already promised a
+                // body to. UNCONDITIONAL, not gated on the corpse allowance — the gate used to read "at the
+                // default allowance a hauler cannot fit a second body anyway", which is simply untrue of the
+                // hauler most likely to be carrying bodies: a vanilla Lifter's 144.4 kg ceiling takes two 60 kg
+                // corpses with room to spare at stock settings. Gating the clamp on the allowance therefore
+                // switched it off in exactly the case it exists to prevent. Reused per-thread scratch, Cleared
+                // here, never trusted empty from a prior call.
+                var corpseContainers = scratchCorpseContainers
+                    ?? (scratchCorpseContainers = new HashSet<IHaulDestination>());
+                corpseContainers.Clear();
+                // The anchor already owns its container: a body bound for a grave arrives here as vanilla's
+                // HaulToContainer with the grave in targetB, and that grave's one slot is spoken for.
+                if (primary is Corpse && vanillaJob.def == JobDefOf.HaulToContainer
+                    && vanillaJob.targetB.Thing is IHaulDestination anchorDestination)
+                    corpseContainers.Add(anchorDestination);
+
                 // Snowball: from the primary, repeatedly take the nearest eligible candidate within a hop radius of
                 // the LAST taken item, so the chain naturally picks things up "on the way" rather than zig-zagging.
                 var claimed = RouteSelection.ClaimedByOtherPawns(pawn);
                 var last = primary.Position;
+                // The guard stays correct once `running` carries BUDGET mass. It was never a claim about
+                // kilograms on the pawn; it asks "is there ceiling left to plan against", and both sides are now
+                // in the same budget currency as CountWithinCeiling's — that shared currency is the whole
+                // correctness condition. The SEED above (GearAndInventoryMass) stays real and undiscounted on
+                // purpose: we cannot know what a pawn already carries, so we never discount it. `running` is still
+                // strictly increasing per accepted stack (BudgetMassKg only ever divides a positive mass), so the
+                // loop still terminates on its own and MaxStacks bounds it regardless. Consequence worth naming:
+                // above allowance 1 the pawn genuinely carries more real kilograms than `ceiling`, and
+                // StatPart_Overload slows it for them — that is the trade the setting buys, not a leak.
                 while (things.Count < MaxStacks && running < ceiling - 0.0001f)
                 {
-                    var next = TakeNearestEligible(pawn, pool, last, searchRadius, claimed, ceiling, running, bulkRoom, budgets, out int take);
+                    var next = TakeNearestEligible(pawn, pool, last, searchRadius, claimed, ceiling, running, bulkRoom,
+                        budgets, s.corpseCarryAllowance, corpseContainers, out int take, out float unitMassKg);
                     if (next == null)
                         break;
                     things.Add(next);
                     counts.Add(take);
-                    running += take * next.GetStatValue(StatDefOf.Mass);
+                    // The BUDGET mass the fit test just priced this candidate at, handed back rather than
+                    // recomputed here: charging `running` a different number than the test that admitted the stack
+                    // is how the two drift apart, and a corpse admitted at a discount but billed in full would
+                    // stall the sweep one body in — the exact failure this whole change exists to remove.
+                    running += take * unitMassKg;
                     bulkRoom -= take * CECompat.BulkPerUnit(next);
                     last = next.Position;
                 }
@@ -920,8 +1146,22 @@ namespace HaulersDream
             float baseCap = CarryMath.EffectiveCapacity(maxCap, s.carryLimitFraction);
             float ceiling = BulkHaulPolicy.CeilingKg(s.overloadLevel, OverloadGate.NoOverloadFor(pawn, s), baseCap,
                 OverloadGate.MaxCeilingKg(s));
-            float running = MassUtility.GearAndInventoryMass(pawn);
-            int take = BulkHaulPolicy.CountWithinCeiling(ceiling, running, thing.GetStatValue(StatDefOf.Mass),
+            // Both sides of the comparison in BUDGET currency, the running total as much as the unit: a corpse
+            // already in the pawn's pocket is re-priced by the same allowance that prices the one being picked
+            // up (see BudgetedCarriedMassKg — charging a discounted unit against an undiscounted total is what
+            // silently cancels the whole feature). At the default allowance both are the plain real masses and
+            // this arithmetic is unchanged.
+            float running = BudgetedCarriedMassKg(pawn, s.corpseCarryAllowance);
+            // SCOPE, stated honestly rather than as a slogan: this is NOT a claim that the allowance means one
+            // thing everywhere. MassClampedTake backs the deliberate "Pick up X" and "Keep X" orders, and those
+            // builders bypass every corpse gate the sweep applies — no MaySweepCorpse, not even the bulkHaulCorpses
+            // opt-in — because a body the player explicitly clicked is not the automatic sweep asking. So with
+            // corpseHaulByColonists off, a colonist still gets the discount when the player picks a body up by
+            // hand. That is the existing, deliberate shape of those two orders; the allowance simply follows the
+            // same rule as the rest of the mass math there, instead of leaving those orders at the strict weight
+            // and refusing what a sweep of the same body would have taken.
+            int take = BulkHaulPolicy.CountWithinCeiling(ceiling, running,
+                CorpseHaulPolicy.BudgetMassKg(thing.GetStatValue(StatDefOf.Mass), thing is Corpse, s.corpseCarryAllowance),
                 Math.Min(planned, thing.stackCount));
             take = Math.Min(take, CECompat.MaxFitCount(pawn, thing));
             float bulkPer = CECompat.BulkPerUnit(thing);
@@ -1031,6 +1271,11 @@ namespace HaulersDream
             bool rimIOTPresent = RimIOTCompat.IsPresent;
             // #187a: settings for the tainted-apparel keep gate (ShouldLeaveTaintedApparel), read once per scan.
             var s = HaulersDreamMod.Settings;
+            // The HAULER half of MaySweepCorpse, hoisted out of both enumerator walks below exactly as the cheap
+            // gate hoists it: it reads only the pawn and the settings, so it cannot change between candidates, and
+            // a hauler barred from bodies rejects every corpse without a single per-body call. The per-candidate
+            // MaySweepCorpse still runs the BODY half, so this is a short-circuit, not a second copy of the rule.
+            bool corpsesForThisHauler = includeCorpses && HaulerMaySweepCorpses(pawn, s);
             // Cast to the concrete HashSet<Thing> backing the lister (ThingsPotentiallyNeedingHauling's return type is
             // the ICollection<Thing> interface; the field is a HashSet<Thing>, decompile-verified) so the foreach binds
             // the struct enumerator and boxes nothing on this per-pawn-scan pool build. `as` + null fallback to the
@@ -1043,12 +1288,20 @@ namespace HaulersDream
                 {
                     if (t == null || t == primary || !t.Spawned || t.Map != map)
                         continue;
-                    if (t is Corpse && (!includeCorpses || ReservedByWildAnimal(t)))
-                        continue; // corpse hauling keeps its own vanilla flow (see the includeCorpses note above)
                     if (!t.def.EverHaulable)
                         continue;
+                    // RADIUS BEFORE the per-candidate predicates below. All of these are pure tests ANDed
+                    // together, so the pool that results is identical whichever order they run in, while the cost
+                    // is not: this walks every haulable on the map and most of them are nowhere near the primary,
+                    // yet each one below pays a body lookup, a per-cell RimIOT probe or an apparel walk. Ordered
+                    // identically in HasPotentialBulkWork so the cheap gate and this pool still read as one filter.
                     if ((t.Position - primary.Position).LengthHorizontalSquared > radiusSq)
                         continue;
+                    // MaySweepCorpse is the WHO/WHICH restriction; it must be applied at BOTH enumerator paths
+                    // here and at the cheap gate's walk, or the three silently diverge.
+                    if (t is Corpse corpse
+                        && (!corpsesForThisHauler || ReservedByWildAnimal(t) || !MaySweepCorpse(pawn, corpse, s)))
+                        continue; // corpse hauling keeps its own vanilla flow (see the includeCorpses note above)
                     if (rimIOTPresent && RimIOTCompat.IsRimIOTHandledCell(map, t.Position))
                         continue; // RimIOT owns its network cells + interface apron (see the hoist comment above)
                     if (CorpseStripper.ShouldLeaveTaintedApparel(t, s))
@@ -1061,12 +1314,14 @@ namespace HaulersDream
             {
                 if (t == null || t == primary || !t.Spawned || t.Map != map)
                     continue;
-                if (t is Corpse && (!includeCorpses || ReservedByWildAnimal(t)))
-                    continue; // corpse hauling keeps its own vanilla flow (see the includeCorpses note above)
+                // The mirror of the fast path's filter above — kept character-for-character identical.
                 if (!t.def.EverHaulable)
                     continue;
                 if ((t.Position - primary.Position).LengthHorizontalSquared > radiusSq)
                     continue;
+                if (t is Corpse corpse
+                    && (!corpsesForThisHauler || ReservedByWildAnimal(t) || !MaySweepCorpse(pawn, corpse, s)))
+                    continue; // corpse hauling keeps its own vanilla flow (see the includeCorpses note above)
                 if (rimIOTPresent && RimIOTCompat.IsRimIOTHandledCell(map, t.Position))
                     continue; // RimIOT owns its network cells + interface apron (see the hoist comment above)
                 if (CorpseStripper.ShouldLeaveTaintedApparel(t, s))
@@ -1077,11 +1332,17 @@ namespace HaulersDream
 
         // The nearest pool candidate within `radius` of `from` that passes the full eligibility + capacity
         // gates. Removes the chosen (and any permanently-ineligible) candidates from the pool as it scans.
+        //
+        // `unitMassKg` reports the BUDGET mass this candidate was actually priced at, so the caller charges its
+        // `running` total exactly what the fit test here charged it — the two must never compute that number
+        // independently (see the call site).
         private static Thing TakeNearestEligible(Pawn pawn, List<Thing> pool, IntVec3 from, float radius,
             HashSet<Thing> claimed, float ceiling, float runningMass, float bulkRoom,
-            Dictionary<ISlotGroup, StorageGroupBudget> budgets, out int take)
+            Dictionary<ISlotGroup, StorageGroupBudget> budgets, float corpseAllowance,
+            HashSet<IHaulDestination> corpseContainers, out int take, out float unitMassKg)
         {
             take = 0;
+            unitMassKg = 0f;
             float radiusSq = radius * radius;
             while (true)
             {
@@ -1112,7 +1373,11 @@ namespace HaulersDream
                     continue;
                 // Capacity math first — pure arithmetic, vs PawnCanAutomaticallyHaulFast's region-walk
                 // (CanReach): an over-heavy/over-bulky candidate never pays the pathfinding cost.
-                int fits = BulkHaulPolicy.CountWithinCeiling(ceiling, runningMass, t.GetStatValue(StatDefOf.Mass), t.stackCount);
+                // BUDGET mass (see the primary's pricing in BuildBulkJob): a corpse counts as 1/allowance of what
+                // it weighs against the ceiling, the real mass for everything else and at the default allowance
+                // of 1. Reported back through unitMassKg so the caller bills what this test priced.
+                float unit = CorpseHaulPolicy.BudgetMassKg(t.GetStatValue(StatDefOf.Mass), t is Corpse, corpseAllowance);
+                int fits = BulkHaulPolicy.CountWithinCeiling(ceiling, runningMass, unit, t.stackCount);
                 fits = Math.Min(fits, CECompat.MaxFitCount(pawn, t)); // CE: weight AND bulk vs live inventory
                 float bulkPer = CECompat.BulkPerUnit(t);
                 // +∞ bulkRoom (no CE, or CE's bulk read failed fail-open) means the clamp never binds —
@@ -1130,7 +1395,36 @@ namespace HaulersDream
                     continue;
                 var currentPriority = StoreUtility.CurrentStoragePriorityOf(t);
                 if (!StoreUtility.TryFindBestBetterStorageFor(t, pawn, pawn.Map, currentPriority, pawn.Faction,
-                        out IntVec3 destCell, out _, needAccurateResult: false))
+                        out IntVec3 destCell, out IHaulDestination destContainer, needAccurateResult: false))
+                    continue;
+                // A container destination holds a FIXED number of bodies — a grave holds exactly one
+                // (Building_Grave.Accepts is false once HasCorpse) — yet it is exempt from this plan's storage
+                // budget: destCell is Invalid for a container, so ResolveGroupBudget below returns null and
+                // spaceLeft becomes int.MaxValue. Nothing else stops a sweep planning three bodies into one
+                // grave, and the unload's per-stack re-probe then leaves the surplus on the floor beside the
+                // graveyard. Scoped to CORPSES so no other cargo's flow moves, but applied at EVERY setting:
+                // the tempting gate is the corpse carry allowance, and it is wrong, because a vanilla Lifter
+                // mech (144.4 kg ceiling) already fits two 60 kg bodies at stock settings — the clamp would be
+                // switched off for the one hauler that most needs it.
+                //
+                // THE DISCRIMINATOR IS THE INVALID CELL, NOT A NON-NULL destContainer. `destContainer != null`
+                // reads like "this went to a container" and is in fact a TAUTOLOGY: TryFindBestBetterStorageFor
+                // returns true down two paths, and the SLOT-GROUP path ends `haulDestination = foundCell2
+                // .GetSlotGroup(map).parent` — an ISlotGroupParent, which vanilla declares as
+                // `ISlotGroupParent : IStoreSettingsParent, IHaulDestination` (decompile-verified), so an
+                // ordinary stockpile or shelf comes back non-null here too. Clamping on that would subscribe
+                // the whole STOCKPILE to the first swept body and refuse every body after it — a field of eight
+                // dead hares bound for one dumping zone would sweep two. Only the container path returns an
+                // Invalid cell (both of its exits set `foundCell = IntVec3.Invalid`), so that is the test; slot
+                // groups are already bounded, correctly and per def, by the #138 StorageGroupBudget below, and a
+                // second clamp on top of it would be pure over-restriction.
+                //
+                // The lighter case this now also covers, deliberately: two small animal bodies bound for one
+                // grave or casket used to both be planned and are no longer, which costs a swept extra one plan
+                // (the body stays put and the next scan picks it up) and saves a body dropped on the floor.
+                bool containerDestination = !destCell.IsValid && destContainer != null;
+                if (corpseContainers != null && containerDestination && t is Corpse
+                    && corpseContainers.Contains(destContainer))
                     continue;
                 // Per-GROUP storage budget (see BuildBulkJob, #138): the first stack targeting a group prices its
                 // real remaining space (empty cells shared across defs, partial stacks per def); planned stacks
@@ -1148,6 +1442,13 @@ namespace HaulersDream
                         continue; // the group is fully subscribed for this def, leave the stack at its origin
                 }
                 budget?.Consume(t.def, fits);
+                // Subscribe the container only for a body actually TAKEN. Booking it at the lookup above would
+                // burn the slot for a candidate that the budget checks then rejected — and a rejected candidate
+                // has already left the pool, so the next body would find the grave spoken for by nobody.
+                // Same true-container test as the clamp above: a slot-group destination is never subscribed.
+                if (corpseContainers != null && containerDestination && t is Corpse)
+                    corpseContainers.Add(destContainer);
+                unitMassKg = unit;
                 take = fits;
                 return t;
             }

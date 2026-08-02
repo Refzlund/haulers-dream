@@ -92,6 +92,22 @@
 <HaulersDream.Setting.HaulOversizedDesc>当单堆物品太大、一抱拿不下时（例如一堆75的钢铁而小人只能拿72），小人会把它装进货物栏，一趟运完整堆——而不是手提一部分、把其余留下。对被命令和自动的搬运均适用；只承载储存区实际能接收的量，因此不会有物资被遗弃。</HaulersDream.Setting.HaulOversizedDesc>
 <HaulersDream.Setting.BulkHaulCorpses>尸体搬运也像其他搬运一样顺手清扫、成批带走</HaulersDream.Setting.BulkHaulCorpses>
 <HaulersDream.Setting.BulkHaulCorpsesDesc>RimWorld 用一个单独的工作来处理尸体搬运，而 Hauler's Dream 从未接管过它——所以对尸体下达搬运命令只会搬走尸体本身，而且尸体总是一趟只取一具。开启后，尸体搬运的行为与其他搬运完全一致：尸体周围散落的物品会在同一趟里被扫进搬运者的货物栏，躺在另一次搬运旁边的尸体也能顺路带走。真正能带上多少仍由承重决定：类人尸体（约 60 公斤，而上限通常约 96 公斤）通常仍会独占一趟——受益的是小型动物，现在可以几只一起带回。自动扒取不受影响：小人取走的每具尸体，仍与用手搬运的尸体完全一样被扒取。</HaulersDream.Setting.BulkHaulCorpsesDesc>
+<HaulersDream.Setting.CorpseCarryAllowance.Lab>尸体承重折算</HaulersDream.Setting.CorpseCarryAllowance.Lab>
+<HaulersDream.Setting.CorpseCarryAllowance.Off>关闭（真实重量）</HaulersDream.Setting.CorpseCarryAllowance.Off>
+<HaulersDream.Setting.CorpseCarryAllowance.Value>×{0}</HaulersDream.Setting.CorpseCarryAllowance.Value>
+<HaulersDream.Setting.CorpseCarryAllowanceDesc>在计算一趟能带走几具尸体时，把尸体当作比实际更轻。类人尸体重 60 千克，而普通殖民者的搬运上限约为 96 千克，所以两具永远装不下，死者总是一具一具地取回——这正是“我的殖民者一次只搬一具尸体”的答案。×2.0 会把一具尸体在这个上限里占用的分量减半，于是原本只能搬一具的殖民者现在能带回三具；×3.0 减到三分之一，就是四具。本就能搬两具的搬运机械体还能走得更远。调高之前请先看清这笔交易：改变的只是账面，负重丝毫未减。殖民者扛起的是每一千克真实重量——三具尸体就是实打实的 180 千克，压在一个自身只有 35 千克的身躯上——所以他会被拖慢到本模组设定的最低速度，远远超出智能超载认为划算的界限。你选择的是一趟慢的，而不是好几趟快的，这也是本项默认关闭的原因。×1.0 不改变任何东西。</HaulersDream.Setting.CorpseCarryAllowanceDesc>
+<HaulersDream.Setting.CorpseMaxHaulMass.Lab>可成批搬运的最重尸体</HaulersDream.Setting.CorpseMaxHaulMass.Lab>
+<HaulersDream.Setting.CorpseMaxHaulMass.Off>无限制</HaulersDream.Setting.CorpseMaxHaulMass.Off>
+<HaulersDream.Setting.CorpseMaxHaulMass.Value>{0} 千克</HaulersDream.Setting.CorpseMaxHaulMass.Value>
+<HaulersDream.Setting.CorpseMaxHaulMassDesc>只有重量不超过此值的尸体才会被并入批量搬运；更重的仍旧单独搬运，与以前完全一样。用它把几具轻小的动物尸体一起带回家，而沉重的仍旧一趟一具——类人尸体为 60 千克，雪牛或敲击兽则远不止于此。设为 0 表示无限制（默认值）。</HaulersDream.Setting.CorpseMaxHaulMassDesc>
+<HaulersDream.Setting.CorpseHaulHumanlike>将人的尸体纳入批量搬运</HaulersDream.Setting.CorpseHaulHumanlike>
+<HaulersDream.Setting.CorpseHaulHumanlikeDesc>默认开启。人的尸体——你的死者、访客、袭击者——会像其他尸体一样被并入批量搬运。关闭它可让人彻底不参与成批搬运：无论上面的折算与重量上限如何设置，人都始终单独搬运，而动物与机械体的尸体仍会一起带回。适合希望自己的死者一具一具地安置、却想把当天的猎获一趟带回的殖民地。</HaulersDream.Setting.CorpseHaulHumanlikeDesc>
+<HaulersDream.Setting.CorpseHaulByColonists>允许殖民者批量搬运尸体</HaulersDream.Setting.CorpseHaulByColonists>
+<HaulersDream.Setting.CorpseHaulByColonistsDesc>默认开启。关闭它可把墓地这趟活交给你的机械体或动物：殖民者仍会搬运尸体，但像原版一样一趟一具，也绝不会顺路把别的尸体一并扫走。改变的只是成批与否——没有人被禁止搬运。</HaulersDream.Setting.CorpseHaulByColonistsDesc>
+<HaulersDream.Setting.CorpseHaulByMechs>允许工作机械体批量搬运尸体</HaulersDream.Setting.CorpseHaulByMechs>
+<HaulersDream.Setting.CorpseHaulByMechsDesc>默认开启。尸体搬运属于普通的搬运工作，所以专职的搬运机械体本来就会做；它更大的承载能力意味着它能一趟带回两具人的尸体，而殖民者做不到。关闭此项后，机械体仍会搬运尸体，但像原版一样一趟一具，也绝不会顺路把别的尸体一并扫走。改变的只是成批与否——没有人被禁止搬运。它只能收窄：若“允许机械体收取和搬运”处于关闭状态，机械体无论如何都不参与。</HaulersDream.Setting.CorpseHaulByMechsDesc>
+<HaulersDream.Setting.CorpseHaulByAnimals>允许受过搬运训练的动物批量搬运尸体</HaulersDream.Setting.CorpseHaulByAnimals>
+<HaulersDream.Setting.CorpseHaulByAnimalsDesc>默认开启。训练了搬运的殖民地动物会像收集普通战利品一样，把尸体并入批量搬运。如果你更愿意让哈士奇们别去碰死者，就关闭它。它只能收窄：若“允许殖民地动物收取和搬运”处于关闭状态，动物就绝不会批量搬运任何东西，尸体也不例外。</HaulersDream.Setting.CorpseHaulByAnimalsDesc>
 <HaulersDream.Setting.SweepNearbyWhileWorking>边工作边整理——把附近的散落物品也一并收取</HaulersDream.Setting.SweepNearbyWhileWorking>
 <HaulersDream.Setting.SweepNearbyWhileWorkingDesc>当小人在拆除、采掘或收获并收取自己的产出时，也会把工作地点周围散落的其他可搬运物品拾进货物栏，从而在这一趟整合行程中清空整片区域，而不是留给单独的搬运。只取需要搬运且有处可去的物品（绝不取另一名搬运者的目标或已入库的存货），并且只取到智能超载的上限为止。</HaulersDream.Setting.SweepNearbyWhileWorkingDesc>
 <HaulersDream.Setting.HaulToStack>堆叠搬运（补充已有物品堆，共享目标格）</HaulersDream.Setting.HaulToStack>

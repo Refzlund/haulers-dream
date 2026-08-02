@@ -217,6 +217,37 @@ namespace HaulersDream
         // nothing else. Default ON, for parity with item hauls. Carry weight still decides how much rides along,
         // so a 60 kg humanlike body is normally still a trip of its own; small animals batch. Requires bulkHaul.
         public bool bulkHaulCorpses = true;
+        // Discount on what a BODY costs against the bulk-haul carry ceiling, so more than one can fit in a trip.
+        // A humanlike corpse is 60 kg and a default colonist's ceiling is ~96 kg (35 kg carrying capacity × the
+        // "Fair" overload ratio), so two bodies never fit and the graveyard run is one body per trip — the Steam
+        // report behind this. At ×2.0 a body is BUDGETED as 30 kg, so two fit. THE TRADE-OFF, stated honestly:
+        // this changes the accounting only, never the load. The pawn still physically carries the real 120 kg, so
+        // it is still slowed as 120 kg, and the overload slider's "carry more, move slower" break-even no longer
+        // holds — the player is trading two fast trips for one slow one. That is exactly why it is opt-in.
+        // ×1.0 = off, today's behavior unchanged. Requires bulkHaulCorpses.
+        public float corpseCarryAllowance = 1.0f;
+        // Heaviest single BODY (kg) that may take part in a bulk corpse haul; anything heavier is left to vanilla's
+        // own one-body carry. Lets a colony batch the light animal bodies while heavy ones keep a trip each (a
+        // humanlike corpse is 60 kg; a muffalo or a thrumbo is heavier still). 0 = no limit — the default, and the
+        // same "0 means off" sentinel carryMassCapKg uses, so nothing changes until it is set.
+        // Requires bulkHaulCorpses.
+        public float corpseMaxHaulMassKg = 0f;
+        // Whether HUMANLIKE (person) bodies may take part in a bulk corpse haul at all. Off keeps people out of
+        // batched hauls entirely — a colonist, guest or raider body is then always carried on its own, however the
+        // allowance and weight cap above are set — while animal and mech bodies still batch. For a colony that
+        // wants its dead handled one at a time but its hunt kills brought home together. Default ON = today's
+        // behavior. Requires bulkHaulCorpses.
+        public bool corpseHaulHumanlike = true;
+        // WHO may bulk-haul bodies, so the graveyard run can be handed to one kind of hauler. All three are real,
+        // not decorative: vanilla's HaulCorpses work giver leaves canBeDoneByMechs at its default true and a
+        // Lifter's mechEnabledWorkTypes is exactly Hauling, so a work mech genuinely does haul bodies; vanilla's
+        // animal haul job has no corpse exclusion either, so a Haul-trained colony animal does too. Each of these
+        // only NARROWS what its race is already allowed to do — allowMechanoids / allowAnimals still decide
+        // whether that race runs HD at all, and turning one of these on can never bring back a race those turned
+        // off. All default ON = today's behavior. Each requires bulkHaulCorpses.
+        public bool corpseHaulByColonists = true;   // colonists and other humanlike haulers
+        public bool corpseHaulByMechs = true;       // player work mechanoids — narrows allowMechanoids
+        public bool corpseHaulByAnimals = true;     // Haul-trained colony animals — narrows allowAnimals
 
         // "Haul Urgently" bulk pickup (Allow Tool / Keyz' Allow Utilities soft-dep). When a pawn is sent to
         // haul an item marked "Haul Urgently", also pocket the OTHER urgent-marked stacks within a small radius
@@ -762,6 +793,12 @@ namespace HaulersDream
             Scribe_Values.Look(ref pickupDelayOnDirectHarvest, "pickupDelayOnDirectHarvest", false);
             Scribe_Values.Look(ref haulOversizedInInventory, "haulOversizedInInventory", true);
             Scribe_Values.Look(ref bulkHaulCorpses, "bulkHaulCorpses", true);
+            Scribe_Values.Look(ref corpseCarryAllowance, "corpseCarryAllowance", 1.0f);
+            Scribe_Values.Look(ref corpseMaxHaulMassKg, "corpseMaxHaulMassKg", 0f);
+            Scribe_Values.Look(ref corpseHaulHumanlike, "corpseHaulHumanlike", true);
+            Scribe_Values.Look(ref corpseHaulByColonists, "corpseHaulByColonists", true);
+            Scribe_Values.Look(ref corpseHaulByMechs, "corpseHaulByMechs", true);
+            Scribe_Values.Look(ref corpseHaulByAnimals, "corpseHaulByAnimals", true);
             Scribe_Values.Look(ref bulkHaulUrgent, "bulkHaulUrgent", true);
             Scribe_Values.Look(ref bulkHaulUrgentRadius, "bulkHaulUrgentRadius", 3);
             Scribe_Values.Look(ref bulkHaulUrgentIncludeNonUrgent, "bulkHaulUrgentIncludeNonUrgent", false);
@@ -971,6 +1008,12 @@ namespace HaulersDream
             pickupDelayOnDirectHarvest = false;
             haulOversizedInInventory = true;
             bulkHaulCorpses = true;
+            corpseCarryAllowance = 1.0f;
+            corpseMaxHaulMassKg = 0f;
+            corpseHaulHumanlike = true;
+            corpseHaulByColonists = true;
+            corpseHaulByMechs = true;
+            corpseHaulByAnimals = true;
             bulkHaulUrgent = true;
             bulkHaulUrgentRadius = 3;
             bulkHaulUrgentIncludeNonUrgent = false;

@@ -17,8 +17,13 @@ namespace HaulersDream.Core
     ///
     /// <para>WHAT THIS DELIBERATELY DOES NOT CHANGE: how much a hauler can carry. A humanlike corpse weighs
     /// around 60 kg against a default ceiling near 96 kg, so bodies still move one at a time — that is the carry
-    /// model working as designed, not a defect. Small animals (a hare at roughly 24 kg, a squirrel at 12) are
+    /// model working as designed, not a defect. Small animals (a hare and a squirrel both 12 kg, a raccoon 24) are
     /// what actually gain: several of them now ride home together, which they never could before.</para>
+    ///
+    /// <para>That last sentence describes THIS type's own scope, not a promise about the mod: a player who wants
+    /// several bodies per trip opts into <see cref="CorpseHaulPolicy"/>, which discounts what a body COSTS against
+    /// the ceiling without touching the ceiling itself. The two are deliberately separate — this one decides
+    /// WHETHER a corpse may join a sweep, that one decides HOW MUCH ROOM it takes once it has.</para>
     /// </summary>
     public static class CorpseSweepPolicy
     {

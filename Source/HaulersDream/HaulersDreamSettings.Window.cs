@@ -1163,6 +1163,41 @@ namespace HaulersDream
             // so they neither swept nor batched. A sub-option of the sweep above, hence gated on bulkHaul.
             bulkHaulCorpses = HDSettingsUI.Checkbox(c, "HaulersDream.Setting.BulkHaulCorpses".Translate(),
                 bulkHaulCorpses, "HaulersDream.Setting.BulkHaulCorpsesDesc".Translate(), enabled: bulkHaul, indent: 24f);
+            // Steam feedback: "colonists and mechs haul only one body at a time". A humanlike corpse is 60 kg
+            // against a default ~96 kg ceiling, so two never fit. These shape WHICH bodies batch and WHO batches
+            // them; every default is a deliberate no-op (allowance ×1.0, no weight cap, all three haulers allowed),
+            // so nobody sees a change until they opt in. Sub-options of the corpse toggle above, hence the chained
+            // `bulkHaul && bulkHaulCorpses` predicate — the file uses one indent level throughout, so a deeper
+            // group is expressed by narrowing `enabled:` rather than by indenting further.
+            string corpseAllowanceLabel = (corpseCarryAllowance <= 1.0f
+                ? "HaulersDream.Setting.CorpseCarryAllowance.Off".Translate()
+                : "HaulersDream.Setting.CorpseCarryAllowance.Value".Translate(corpseCarryAllowance.ToString("0.0"))).ToString();
+            // Snap to 0.1 steps for the same reason as the mech multiplier: the "×N.N" readout must equal the value
+            // actually applied, and exact ×1.0 (the no-op) has to stay reachable by dragging to the minimum.
+            corpseCarryAllowance = Mathf.Round(HDSettingsUI.Slider(c, "HaulersDream.Setting.CorpseCarryAllowance.Lab".Translate(),
+                corpseCarryAllowance, 1.0f, 3.0f, corpseAllowanceLabel,
+                "HaulersDream.Setting.CorpseCarryAllowanceDesc".Translate(),
+                enabled: bulkHaul && bulkHaulCorpses, indent: 24f) * 10f) / 10f;
+            // Per-body weight ceiling, 5 kg steps like the carry-weight cap above; 0 reads "No limit", not "0 kg".
+            string corpseMassCapLabel = (corpseMaxHaulMassKg <= 0f
+                ? "HaulersDream.Setting.CorpseMaxHaulMass.Off".Translate()
+                : "HaulersDream.Setting.CorpseMaxHaulMass.Value".Translate(corpseMaxHaulMassKg.ToString("F0"))).ToString();
+            corpseMaxHaulMassKg = Mathf.Round(HDSettingsUI.Slider(c, "HaulersDream.Setting.CorpseMaxHaulMass.Lab".Translate(),
+                corpseMaxHaulMassKg, 0f, 200f, corpseMassCapLabel,
+                "HaulersDream.Setting.CorpseMaxHaulMassDesc".Translate(),
+                enabled: bulkHaul && bulkHaulCorpses, indent: 24f) / 5f) * 5f;
+            corpseHaulHumanlike = HDSettingsUI.Checkbox(c, "HaulersDream.Setting.CorpseHaulHumanlike".Translate(),
+                corpseHaulHumanlike, "HaulersDream.Setting.CorpseHaulHumanlikeDesc".Translate(),
+                enabled: bulkHaul && bulkHaulCorpses, indent: 24f);
+            corpseHaulByColonists = HDSettingsUI.Checkbox(c, "HaulersDream.Setting.CorpseHaulByColonists".Translate(),
+                corpseHaulByColonists, "HaulersDream.Setting.CorpseHaulByColonistsDesc".Translate(),
+                enabled: bulkHaul && bulkHaulCorpses, indent: 24f);
+            corpseHaulByMechs = HDSettingsUI.Checkbox(c, "HaulersDream.Setting.CorpseHaulByMechs".Translate(),
+                corpseHaulByMechs, "HaulersDream.Setting.CorpseHaulByMechsDesc".Translate(),
+                enabled: bulkHaul && bulkHaulCorpses, indent: 24f);
+            corpseHaulByAnimals = HDSettingsUI.Checkbox(c, "HaulersDream.Setting.CorpseHaulByAnimals".Translate(),
+                corpseHaulByAnimals, "HaulersDream.Setting.CorpseHaulByAnimalsDesc".Translate(),
+                enabled: bulkHaul && bulkHaulCorpses, indent: 24f);
             // Steam feedback: bulk-pocket nearby "Haul Urgently" (Allow Tool / Keyz) items in one trip instead of
             // one at a time. Independent of the general bulkHaul sweep above, so it is NOT gated on bulkHaul.
             bulkHaulUrgent = HDSettingsUI.Checkbox(c, "HaulersDream.Setting.BulkHaulUrgent".Translate(),
