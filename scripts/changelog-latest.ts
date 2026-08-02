@@ -3,21 +3,42 @@
 //
 // --steam: emit a Steam-safe variant. The workshop upload embeds the change note inside a
 // quoted VDF string with no escaping, so double quotes (and backslashes) corrupt the manifest
-// and fail the whole upload. Steam renders BBCode rather than markdown, so bold/headings are
-// converted while we're at it.
+// and fail the whole upload. Steam renders BBCode rather than markdown, so bold/headings/links
+// are converted while we're at it.
 import { resolve } from 'node:path'
 import { packageVersion, repoRoot } from './lib'
 
 const steam = process.argv.includes('--steam')
 const version = await packageVersion()
 
-function emit(text: string) {
-	if (steam) {
-		text = text
+/**
+ * Markdown to the BBCode subset Steam renders.
+ *
+ * The LINK conversion is load-bearing, not cosmetic: every release note now ends with linked PR and issue
+ * references, and Steam does not understand `[text](url)`. Left alone it renders as a broken tag followed by a
+ * bare URL — `[PR #241]` is not a BBCode tag Steam knows, and the `(…)` around the address shows literally.
+ *
+ * Order matters. Links are converted FIRST, because the quote-stripping below would otherwise be free to run
+ * inside a URL, and because `[b]` insertion must not sit between a link's brackets.
+ */
+function toBBCode(text: string): string {
+	return (
+		text
+			// [label](https://…) -> [url=https://…]label[/url]. Kept deliberately narrow: no nested brackets in
+			// the label, and only http(s) targets, so a stray "[…](…)" in prose cannot produce a bogus tag.
+			.replace(/\[([^\]]+)\]\((https?:\/\/[^)\s]+)\)/g, '[url=$2]$1[/url]')
 			.replace(/^### (.+)$/gm, '[b]$1[/b]')
 			.replace(/\*\*([^*]+)\*\*/g, '[b]$1[/b]')
+			// VDF safety, NOT style: the change note is embedded in a quoted string with no escaping, so a double
+			// quote or backslash anywhere corrupts the manifest and fails the upload.
 			.replace(/"/g, "'")
 			.replace(/\\/g, '')
+	)
+}
+
+function emit(text: string) {
+	if (steam) {
+		text = toBBCode(text)
 		if (text.length > 7000) text = text.slice(0, 7000) + '\n…'
 	}
 	console.log(text)
