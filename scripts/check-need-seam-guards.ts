@@ -33,6 +33,7 @@ const HARMONY_PATCHES = resolve(repoRoot, 'Source/HaulersDream/HarmonyPatches.cs
 const LOAD_DEPOSIT = resolve(repoRoot, 'Source/HaulersDream/Patch_OpportunisticLoadDeposit.cs')
 const EAT_FROM_INVENTORY = resolve(repoRoot, 'Source/HaulersDream/EatFromInventory.cs')
 const MECH_CHARGE = resolve(repoRoot, 'Source/HaulersDream/Patch_MechShedCargoBeforeCharge.cs')
+const CHEMICAL_NEED = resolve(repoRoot, 'Source/HaulersDream/Patch_JobGiver_SatisfyChemicalNeed.cs')
 const HDGUARD = resolve(repoRoot, 'Source/HaulersDream/HDGuard.cs')
 const POLICY = resolve(repoRoot, 'Source/HaulersDream.Core/OpportunisticUnloadPolicy.cs')
 const TESTS = resolve(repoRoot, 'Source/HaulersDream.Tests/OpportunisticUnloadPolicyTests.cs')
@@ -79,6 +80,11 @@ const SEAMS = [
 		file: MECH_CHARGE,
 		cls: 'Patch_MechShedCargoBeforeCharge',
 		seam: 'JobGiver_GetEnergy_Charger.TryGiveJob (HD shed-cargo-before-charge)',
+	},
+	{
+		file: CHEMICAL_NEED,
+		cls: 'Patch_JobGiver_SatisfyChemicalNeed',
+		seam: 'JobGiver_SatisfyChemicalNeed.TryGiveJob (HD kept-drug withdrawal access)',
 	},
 ]
 

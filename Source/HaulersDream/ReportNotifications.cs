@@ -64,7 +64,7 @@ namespace HaulersDream
             }
             catch (Exception ex)
             {
-                HDLog.ErrOnce("main-menu notifications failed: " + ex, unchecked((int)0x4D4E4F54));
+                HDLog.ErrOnce("main-menu notifications failed: " + HDFault.Render(ex), unchecked((int)0x4D4E4F54));
             }
         }
 

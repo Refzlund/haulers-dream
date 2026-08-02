@@ -48,8 +48,16 @@ namespace HaulersDream
             // A player-ordered craft must start crafting, not detour through a relocation.
             if (forced || job.playerForced)
                 return;
-            // Workbenches only — never a Pawn bill giver (surgery) or other special giver (matches BillPrep).
-            if (!(job.targetA.Thing is Building_WorkTable))
+            // Workbenches only — never a Pawn bill giver (surgery) or other special giver — AND never a bench whose
+            // per-bench "Gather ingredients" switch is off (#230). Relocation belongs under that veto just as much as
+            // the two gather conversions do: it replaces the DoBill with a haul that ends at the CLOSER STORE, so the
+            // bill itself only starts on the pawn's next work scan. That separate-job-plus-rescan detour is exactly
+            // the cost the switch exists to remove, and it would falsify the gizmo's own promise of "starts the bill
+            // immediately". Sharing BillRouteGate.MayRouteToInventory keeps all three DoBill postfixes on ONE
+            // predicate. Side effect worth naming: this site never excluded Building_WorkTableAutonomous, so a mech
+            // gestator now forgoes the closer-storage relocation too. That is a small lost optimisation, not a
+            // defect — the bill falls back to vanilla's own fetch — and it makes the three postfixes agree.
+            if (!BillRouteGate.MayRouteToInventory(job.targetA.Thing))
                 return;
 
             // The consuming target: the workbench cell (where ingredients are carried to).

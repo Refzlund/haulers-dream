@@ -323,7 +323,9 @@ namespace HaulersDream
         /// This exercises the real capture + compare + export/import paths on a fresh default — plus a synthesized
         /// remembered-route entry so the two template dictionaries are actually encoded — and logs a LOUD error the
         /// moment the invariant breaks, turning a silent "always Custom" regression into something visible in the log
-        /// (mirroring the drop-protection tripwire). Never throws and never disables anything.</summary>
+        /// (mirroring the drop-protection tripwire). Never throws and never disables anything.
+        /// Also SCHEDULES <see cref="VerifySerializationIntegrity"/>, the half of the tripwire that runs settings
+        /// through the real Scribe serializer — deferred off the mod constructor, see the call at the end.</summary>
         public static void VerifyProfileIntegrity()
         {
             try
@@ -348,6 +350,15 @@ namespace HaulersDream
                         + "reference-type setting is cloned or compared incorrectly in SettingsProfiles. Please report "
                         + "this with the log attached.");
 
+                // #238: a snapshot must carry the CURRENT schema stamp, or its ExposeData re-runs the legacy yield
+                // migration on every load and wipes the nine "Collect work results" settings. CopySettings skips
+                // [ProfileMeta] fields, so this depends on the field INITIALIZER being CurrentSettingsSchema.
+                if (snap.settingsSchemaVersion != CurrentSettingsSchema)
+                    HDLog.Err("PROFILE TRIPWIRE: a captured profile snapshot carries settings schema "
+                        + $"{snap.settingsSchemaVersion}, not {CurrentSettingsSchema} — its saved copy will re-run the "
+                        + "one-time yield migration on every launch and reset the \"Collect work results\" settings. "
+                        + "Please report this with the log attached.");
+
                 // Export -> import must round-trip a profile that actually USES the reference-type template
                 // dictionaries, so the copy/paste codec's encode + parse are exercised (not just the empty no-op).
                 var withData = a.CaptureSnapshot();
@@ -366,6 +377,201 @@ namespace HaulersDream
                     + "SettingsProfiles, so \"Create new profile\" / \"Copy profile\" will fail. Please report this "
                     + "with the log attached.");
             }
+
+            // The SERIALIZER self-checks below are deliberately deferred off the mod constructor. Scribe_Deep.Look
+            // -> ScribeExtractor.SaveableFromNode -> BackCompatibility.GetBackCompatibleType is the first thing HD
+            // does that materialises GenTypes.AllTypes, and that walk Log.Errors once per BROKEN FOREIGN assembly
+            // in the load order. Run inline, someone else's red line would land in the middle of HD's own startup
+            // lines — a mod this project has already been misblamed for breaking. ExecuteWhenFinished queues the
+            // action until the startup long event completes: a mod ctor runs INSIDE that event, so currentEvent is
+            // non-null and its ShouldWaitUntilDisplayed is already false, and the "run it inline" branch of
+            // LongEventHandler.ExecuteWhenFinished is not taken. Scribe.mode is Inactive there (nothing is being
+            // loaded at the main menu); each check re-verifies that anyway and bails if not.
+            LongEventHandler.ExecuteWhenFinished(VerifySerializationIntegrity);
+        }
+
+        /// <summary>
+        /// The startup self-checks that run settings through the game's REAL serializer, in memory. Split from
+        /// <see cref="VerifyProfileIntegrity"/> so they can be deferred past the mod constructor (see the
+        /// LongEventHandler call there). Never throws; reports only through <see cref="HDLog.Err"/>.
+        /// </summary>
+        private static void VerifySerializationIntegrity()
+        {
+            try
+            {
+                var a = new HaulersDreamSettings();
+                a.ResetToDefaults();
+
+                // A PRISTINE snapshot: every value at its default, so Scribe writes almost no nodes. This is the
+                // shape that catches a wrong Scribe default — a field whose absent node reloads as something other
+                // than what the object held.
+                VerifyScribeRoundTrip(a.CaptureSnapshot());
+
+                // ...and a snapshot deliberately pushed OFF its defaults, because the pristine one is BLIND to the
+                // exact fault #238 was: a load-time side effect that rewrites a field TO its default. On a pristine
+                // snapshot such a rewrite is invisible (the value was already the default, so before == after);
+                // only a non-default value makes the overwrite show up as a difference. Every value here is written
+                // as a real node by Scribe and read straight back, and none of them is a legacy node, so no
+                // migration should fire. routeOrderExactMax is deliberately left inside [1,16] so the one
+                // sanctioned ExposeData clamp stays a no-op and cannot be mistaken for a fault.
+                var drifted = a.CaptureSnapshot();
+                drifted.yieldMining = YieldBehavior.Disabled;
+                drifted.yieldStrip = YieldBehavior.Disabled;
+                drifted.yieldHarvest = YieldBehavior.DirectToInventory;
+                drifted.unloadGraceTicks = 1234;
+                VerifyScribeRoundTrip(drifted);
+
+                VerifyLegacyYieldMigration();
+            }
+            catch (System.Exception e)
+            {
+                HDLog.Err("PROFILE TRIPWIRE: the settings serializer self-check could not run: " + e);
+            }
+        }
+
+        /// <summary>
+        /// Save -> load a settings snapshot through the game's REAL serializer (in memory) and assert nothing
+        /// changed. This is the hole issue #238 fell through: VerifyProfileIntegrity exercised capture, compare and
+        /// the copy/paste codec, but NOTHING exercised ExposeData — where a load-time migration was silently
+        /// rewriting nine settings on every launch, with both build guards green. Give it a source that is OFF its
+        /// defaults (see the caller): a rewrite-to-default cannot show up as a difference on a pristine one.
+        /// </summary>
+        private static void VerifyScribeRoundTrip(HaulersDreamSettings source)
+        {
+            if (Scribe.mode != LoadSaveMode.Inactive)
+                return; // never fight a (de)serialisation already in progress
+            bool prevSnap = SerializingSnapshot;
+            SerializingSnapshot = true; // exercise the PROFILE-SNAPSHOT path (no nested profile list)
+            try
+            {
+                string xml = Scribe.saver.DebugOutputFor(source);
+                if (string.IsNullOrEmpty(xml))
+                    return; // the saver refused — not a settings fault
+                var back = LoadFromSaveableXml(xml);
+
+                if (back == null || !StateEquals(source, back))
+                    HDLog.Err("PROFILE TRIPWIRE: a settings snapshot does not survive a save -> load round-trip "
+                        + "through the game's own settings serializer — HaulersDreamSettings.ExposeData is CHANGING "
+                        + "a value while loading it (a migration or a clamp firing when it should not). Saved "
+                        + "profiles will silently lose those settings on every launch. Please report this with the "
+                        + "log attached.");
+            }
+            catch (System.Exception ex)
+            {
+                HDLog.Err("PROFILE TRIPWIRE round-trip self-check could not run: " + HDFault.Render(ex));
+            }
+            finally
+            {
+                SerializingSnapshot = prevSnap;
+                if (Scribe.mode != LoadSaveMode.Inactive) Scribe.ForceStop();
+            }
+        }
+
+        // A pre-#80 config node exactly as an old file carries it: only the two values that player had CHANGED
+        // (Scribe omits anything equal to its default, so the other six legacy bools are simply absent), and no
+        // <settingsSchemaVersion> at all — the stamp did not exist yet. This is the input the #238 fix has to keep
+        // migrating: the probe must SEE the legacy nodes, the migration must map them, and the stamp must land.
+        private const string LegacyConfigProbeXml =
+            "<saveable><pickupMode>DirectToInventory</pickupMode><haulMining>False</haulMining></saveable>";
+
+        /// <summary>
+        /// Load the hard-coded pre-#80 fragment above through the real Scribe loader and assert the one-time yield
+        /// migration still produces the right ten values and stamps the schema. Nothing else covers this end to
+        /// end: the pure policy is a two-clause AND, while everything that can actually break — HasLegacyYieldNodes,
+        /// the field initializer, the ordering inside ExposeData — is Verse-coupled, and the round-trip check above
+        /// can never enter the migration branch (a snapshot it writes carries no legacy nodes by construction).
+        /// </summary>
+        private static void VerifyLegacyYieldMigration()
+        {
+            if (Scribe.mode != LoadSaveMode.Inactive)
+                return;
+            bool prevSnap = SerializingSnapshot;
+            // FALSE, unlike the round-trip check: a legacy configuration is a LIVE settings file, not a profile
+            // snapshot, so this exercises the full-file path (the migration branch itself runs before the
+            // profile-list block either way, so the assertions below do not depend on this).
+            SerializingSnapshot = false;
+            try
+            {
+                var migrated = LoadFromSaveableXml(LegacyConfigProbeXml);
+                if (migrated == null)
+                {
+                    HDLog.Err("PROFILE TRIPWIRE: a pre-#80 legacy settings node could not be loaded at all. "
+                        + "Upgrading from an old Hauler's Dream may lose the \"Collect work results\" options. "
+                        + "Please report this with the log attached.");
+                    return;
+                }
+
+                // pickupMode = DirectToInventory + haulMining = False, every other legacy toggle absent (old
+                // default true). Mining and its Chunks split go Disabled; Strip was always drop-then-haul so it
+                // ignores the global mode; everything else follows the global mode. Fishing is a post-#80 category
+                // with no legacy toggle and must stay untouched at its field default.
+                var problems = new List<string>();
+                ExpectYield(problems, "yieldHarvest", migrated.yieldHarvest, YieldBehavior.DirectToInventory);
+                ExpectYield(problems, "yieldLogging", migrated.yieldLogging, YieldBehavior.DirectToInventory);
+                ExpectYield(problems, "yieldMining", migrated.yieldMining, YieldBehavior.Disabled);
+                ExpectYield(problems, "yieldChunks", migrated.yieldChunks, YieldBehavior.Disabled);
+                ExpectYield(problems, "yieldDeepDrill", migrated.yieldDeepDrill, YieldBehavior.DirectToInventory);
+                ExpectYield(problems, "yieldDeconstruct", migrated.yieldDeconstruct, YieldBehavior.DirectToInventory);
+                ExpectYield(problems, "yieldAnimals", migrated.yieldAnimals, YieldBehavior.DirectToInventory);
+                ExpectYield(problems, "yieldStrip", migrated.yieldStrip, YieldBehavior.DropThenHaul);
+                ExpectYield(problems, "yieldUninstall", migrated.yieldUninstall, YieldBehavior.DirectToInventory);
+                ExpectYield(problems, "yieldFishing", migrated.yieldFishing, YieldBehavior.DropThenHaul);
+                if (migrated.settingsSchemaVersion != CurrentSettingsSchema)
+                    problems.Add($"settingsSchemaVersion={migrated.settingsSchemaVersion} "
+                        + $"(expected {CurrentSettingsSchema})");
+
+                if (problems.Count > 0)
+                    HDLog.Err("PROFILE TRIPWIRE: the one-time upgrade of a pre-#80 configuration no longer produces "
+                        + "the right \"Collect work results\" values — " + string.Join(", ", problems) + ". Anyone "
+                        + "upgrading from an old Hauler's Dream will silently get the wrong settings. Please report "
+                        + "this with the log attached.");
+            }
+            catch (System.Exception ex)
+            {
+                HDLog.Err("PROFILE TRIPWIRE legacy-migration self-check could not run: " + HDFault.Render(ex));
+            }
+            finally
+            {
+                SerializingSnapshot = prevSnap;
+                if (Scribe.mode != LoadSaveMode.Inactive) Scribe.ForceStop();
+            }
+        }
+
+        /// <summary>Record a "&lt;name&gt;=&lt;actual&gt; (expected &lt;want&gt;)" line when a migrated yield value
+        /// is not what the legacy mapping should have produced.</summary>
+        private static void ExpectYield(List<string> problems, string name, YieldBehavior actual, YieldBehavior want)
+        {
+            if (actual != want)
+                problems.Add($"{name}={actual} (expected {want})");
+        }
+
+        /// <summary>
+        /// Run the real Scribe loader over an in-memory <c>&lt;saveable&gt;…&lt;/saveable&gt;</c> fragment and
+        /// return the settings it produces. Mode + curXmlParent are exactly what ScribeLoader.InitLoading sets up
+        /// for a file; Scribe.ForceStop() in the finally clears curXmlParent AND the cross-ref / post-load-init
+        /// queues, so a later savegame load is untouched. The Class="…" attribute DebugOutputFor stamps (it
+        /// deep-saves through an IExposable-typed ref) is left alone deliberately: SaveableFromNode feeds it to
+        /// BackCompatibility.GetBackCompatibleType, which it also calls with typeof(T).FullName when the attribute
+        /// is absent — and for this type those two strings are identical (HaulersDream is not one of
+        /// GenTypes.IgnoredNamespaceNames), so stripping it would change nothing.
+        /// Callers own the Scribe.mode == Inactive check and the SerializingSnapshot scope.
+        /// </summary>
+        private static HaulersDreamSettings LoadFromSaveableXml(string saveableXml)
+        {
+            var doc = new System.Xml.XmlDocument();
+            doc.LoadXml("<HaulersDreamSelfTest>" + saveableXml + "</HaulersDreamSelfTest>");
+            HaulersDreamSettings loaded = null;
+            try
+            {
+                Scribe.mode = LoadSaveMode.LoadingVars;
+                Scribe.loader.curXmlParent = doc.DocumentElement;
+                Scribe_Deep.Look(ref loaded, "saveable");
+            }
+            finally
+            {
+                Scribe.ForceStop();
+            }
+            return loaded;
         }
 
         /// <summary>Overwrite the active named profile with the current live values.</summary>

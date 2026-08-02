@@ -113,6 +113,25 @@ namespace HaulersDream
         }
 
         /// <summary>
+        /// Set a workbench's per-bench "gather ingredients into inventory" opt-out (issue #230). Replaces the
+        /// gizmo's direct <c>comp.gatherIngredients = !comp.gatherIngredients</c> flip (a write to a SCRIBED field —
+        /// synced world state that must run on every client, not just the clicker). The current value is read
+        /// locally in the gizmo callback and the DESIRED value is passed in, so the command is idempotent across
+        /// clients and two racing clicks cannot double-flip it.
+        ///
+        /// <para>The parameter is a plain <see cref="Thing"/>, not a <see cref="Building"/> subclass: Thing is
+        /// natively MP-serializable, and the single unambiguous overload is what lets
+        /// <see cref="MpHooks.Register"/> resolve this method BY NAME with no explicit arg types. Carries NO
+        /// <c>[SyncMethod]</c> attribute for the same reason as every method here — see the class remarks.</para>
+        /// </summary>
+        public static void SetBenchGather(Thing bench, bool value)
+        {
+            var comp = bench?.TryGetComp<CompBenchGather>();
+            if (comp != null)
+                comp.gatherIngredients = value;
+        }
+
+        /// <summary>
         /// The "Unload inventory" gizmo action. The vanilla auto-sync only covers <c>TryTakeOrderedJob</c>; this
         /// action assigns jobs via <c>jobQueue.EnqueueFirst</c> / direct inventory adoption
         /// (<see cref="PawnUnloadChecker.CheckIfShouldUnload"/> → <c>RegisterHauledItem</c>, a SCRIBED-set write),
@@ -190,8 +209,9 @@ namespace HaulersDream
                 // leaves HD's metadata free of any Multiplayer.API attribute reference. Each method has a single,
                 // unambiguous overload, so RegisterSyncMethod resolves it by name without explicit arg types. Keep
                 // this list in sync with the synced entry points (the canonical inventory of HD's MP surface):
-                // MultiplayerCompat's three, plus the batch-craft and route synced commands in their own files.
+                // MultiplayerCompat's six, plus the batch-craft and route synced commands in their own files.
                 MP.RegisterSyncMethod(typeof(MultiplayerCompat), nameof(SetAutoHaulYields));
+                MP.RegisterSyncMethod(typeof(MultiplayerCompat), nameof(SetBenchGather));
                 MP.RegisterSyncMethod(typeof(MultiplayerCompat), nameof(UnloadInventoryNow));
                 MP.RegisterSyncMethod(typeof(MultiplayerCompat), nameof(SetBillBatch));
                 MP.RegisterSyncMethod(typeof(MultiplayerCompat), nameof(SetBillBatchOvershoot));

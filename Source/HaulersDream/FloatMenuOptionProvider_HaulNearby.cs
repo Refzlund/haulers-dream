@@ -37,10 +37,13 @@ namespace HaulersDream
             if (pawn.GetComp<CompHauledToInventory>() == null)
                 yield break; // the sweep loads into inventory, tracked via the comp
             // The vanilla can-haul bar for a PLAYER ORDER (matches FloatMenuOptionProvider_HaulToSite and vanilla
-            // "Prioritize hauling"): a hauling-capable, manipulation-capable pawn. (The bulk builder still applies
-            // YieldRouter.IsEligible internally and degrades to a plain haul for an ineligible pawn, so the swept
-            // inventory is always serviceable by the unload side — no black hole.)
-            if (pawn.WorkTagIsDisabled(WorkTags.Hauling) || !pawn.health.capacities.CapableOf(PawnCapacityDefOf.Manipulation))
+            // "Prioritize hauling"): a hauling-capable, manipulation-capable pawn. #229: the bar is the WORK TYPE,
+            // never the WorkTags.Hauling BIT — an "incapable of dumb labor" backstory disables the Hauling work
+            // type through the ManualDumb/Commoner tags without ever setting that bit, so the old tag check offered
+            // this order to exactly the pawns vanilla greys "Prioritize hauling" out for. See HaulOrderGate.
+            // Hidden rather than greyed (HD's house pattern); vanilla's own greyed row, which states the reason,
+            // still appears in the same menu.
+            if (HaulOrderGate.Blocks(pawn))
                 yield break;
 
             for (int i = 0; i < things.Count; i++)

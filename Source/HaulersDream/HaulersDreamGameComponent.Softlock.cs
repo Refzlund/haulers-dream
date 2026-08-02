@@ -91,9 +91,24 @@ namespace HaulersDream
             // set to never haul (a dedicated grower/crafter) still scoops its yields and still unloads them via
             // HD's own end-of-run / interval / idle / before-downtime paths (which don't use the vanilla Hauling
             // work giver). Dropping its cargo here caused the "pawn drops scooped items while it keeps working"
-            // bug. Only genuine incapability (WorkTagIsDisabled) or a stuck mech actually strands cargo.
+            // bug. Only genuine incapability or a stuck mech actually strands cargo.
+            //
+            // The incapability test must be the one that PREDICTS "HD's own unload will refuse this pawn", which is
+            // exactly PawnUnloadChecker's non-forced gate (YieldRouter.IsEligible -> EligibilityPolicy):
+            //   (a) the WORK TYPE, not the WorkTags.Hauling BIT (#229) — an "incapable of dumb labor" backstory
+            //       disables the Hauling work type through the ManualDumb/Commoner tags while leaving that bit
+            //       clear, so the old tag read was blind to precisely the pawns that CAN strand cargo. A pack-animal
+            //       load is the live case: JobDriver_LoadPackAnimal tags every swept stack in the pawn's own pack
+            //       for the whole sweep -> walk -> deposit trip, so an interruption on a non-home map left cargo that
+            //       the auto-unload refused (incapable) AND this backstop could not see.
+            //   (b) AND-ed with !allowIncapable, because with that setting ON such a pawn is fully serviced by HD's
+            //       unload paths. Swapping to the work type ALONE would re-open the "drops scooped items while still
+            //       working" bug for every allowIncapable pawn — the exact regression the NOTE above records.
+            // WorkCapabilityProbe (not a raw WorkTypeIsDisabled) keeps a malformed modded pawn from throwing out of
+            // this sweep, and routes through the allPawnsCanHaul override for free.
             bool drop = SoftlockDropPolicy.ShouldDrop(
-                haulingDisabled: pawn.WorkTagIsDisabled(WorkTags.Hauling),
+                haulingDisabled: WorkCapabilityProbe.IsDisabled(pawn, WorkTypeDefOf.Hauling)
+                                 && !(HaulersDreamMod.Settings?.allowIncapable ?? false),
                 isMech: pawn.RaceProps.IsMechanoid,
                 mechState: MechStateOf(pawn),
                 taggedCount: liveTagged,

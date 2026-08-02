@@ -44,13 +44,26 @@ namespace HaulersDream
                 yield break;
             if (pawn.GetComp<CompHauledToInventory>() == null || pawn.inventory == null)
                 yield break; // the pickup loads into inventory, tracked via the comp
-            // The can-haul bar for a PLAYER ORDER: a manipulation-capable pawn. When the pawn is NOT drafted we also
-            // keep vanilla's "hauling work enabled" requirement (parity with "Prioritize hauling" and the nearby-haul
-            // order); a DRAFTED pawn is taking an explicit one-off order, so — like HD's bulk-load orders — only
-            // physical manipulation is required (issue #3: let a drafted pawn grab a dropped stack).
-            if (!pawn.health.capacities.CapableOf(PawnCapacityDefOf.Manipulation))
-                yield break;
-            if (!pawn.Drafted && pawn.WorkTagIsDisabled(WorkTags.Hauling))
+            // The can-haul bar for a PLAYER ORDER: manipulation-capable AND allowed to do hauling work (#229 — the
+            // WORK TYPE, not the WorkTags.Hauling BIT, which an "incapable of dumb labor" backstory never sets even
+            // though it does disable the work type; see HaulOrderGate).
+            //
+            // The drafted carve-out issue #3 added here is DELIBERATELY GONE. A pick-up TAGS the stack on
+            // CompHauledToInventory (via BulkHaul.BuildPickUpJob), and the unload side (PawnUnloadChecker →
+            // YieldRouter.IsEligible) refuses an incapable pawn — so a drafted incapable pawn would end up holding
+            // cargo it can never automatically shed. #3's actual promise (a drafted pawn can grab a dropped stack)
+            // is preserved for every CAPABLE pawn.
+            //
+            // Do NOT claim a vanilla fallback here: vanilla's FloatMenuOptionProvider_PickUpItem bails on
+            // !PawnUtility.CanPickUp, which on the HOME map requires thingDef.orderedTakeGroup.max > 0, and only
+            // Drug and Medicine defs carry an orderedTakeGroup. For steel, a weapon, a meal or a chunk there is no
+            // vanilla "Pick up" at all, not even greyed. The mitigation for a blocked pawn is HD's sibling "Keep X
+            // in inventory" order, which carries no work-TYPE hauling gate (it keeps only its pre-#229 tag-bit
+            // bar, which the dumb-labor population never trips) precisely
+            // because it is the mirror image of this one: its driver only calls AddKeptCount, never
+            // RegisterHauledItem, so a keep never enters the haul pipeline and cannot strand. That asymmetry —
+            // gate the order that tags, exempt the order that pins — IS the #229 rule, not an exception to it.
+            if (HaulOrderGate.Blocks(pawn))
                 yield break;
 
             for (int i = 0; i < things.Count; i++)

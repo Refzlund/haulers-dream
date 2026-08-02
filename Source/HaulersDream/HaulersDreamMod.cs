@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Reflection;
 using HarmonyLib;
+using HaulersDream.Core;
 using RimWorld;
 using UnityEngine;
 using Verse;
@@ -191,8 +192,10 @@ namespace HaulersDream
         /// <summary>
         /// Once every HD patch is applied, attach a tagging FINALIZER to each method HD patched, so any exception
         /// that escapes the original (or another patch on it) is LOGGED with the <see cref="HDLog.Tag"/> breadcrumb
-        /// AND re-thrown unchanged. A Harmony finalizer that returns its <c>__exception</c> re-throws it (returning
-        /// null would SWALLOW it — which this never does), so the game still surfaces the error exactly as before;
+        /// AND left to propagate unchanged. The tagger is deliberately VOID: a finalizer that neither returns nor
+        /// replaces the exception cannot swallow OR restamp it, so Harmony emits a plain <c>rethrow</c> and the
+        /// game still surfaces the error with its original frames (see
+        /// <see cref="HDLog.UniversalExceptionFinalizer"/> for why that return type is load-bearing, issue #236);
         /// HD only ADDS a breadcrumb identifying that its code was in the call stack. This is the project-wide
         /// answer to "let errors pass through, but tag them," applied automatically to every seam HD hooks rather
         /// than relying on a hand-written finalizer per patch.
@@ -486,9 +489,9 @@ namespace HaulersDream
         /// True if Hauler's Dream owns a TRANSPILER on <paramref name="method"/>. A transpiler rewrites the
         /// original method's IL in place, so a fault its edits introduced throws with only the original method's
         /// frames and NO <c>HaulersDream.</c> frame — the finalizer's stack-trace check can't detect HD's
-        /// involvement there. The finalizer uses this so it never calls HD a pure "bystander" on a method HD
-        /// transpiles (QA #197: the categorical "not HD" wording would otherwise misdirect a report of HD's own
-        /// transpiler bug). Inlined here (not the private HaulersDreamMod.OwnedByHd) because that helper isn't
+        /// involvement there. The finalizer uses this so it never describes HD as a pure "bystander" on a method
+        /// HD transpiles (QA #197: a report of HD's OWN transpiler bug would otherwise be waved away).
+        /// Inlined here (not the private HaulersDreamMod.OwnedByHd) because that helper isn't
         /// visible from HDLog; keyed on the public <see cref="HaulersDreamMod.HarmonyId"/>.
         /// </summary>
         private static bool HasHdTranspiler(MethodBase method)
@@ -507,73 +510,111 @@ namespace HaulersDream
         /// <summary>
         /// The universal exception breadcrumb (Issue #3) attached to EVERY method Hauler's Dream patches (see
         /// <see cref="HaulersDreamMod.AttachUniversalExceptionTagger"/>). It runs as a Harmony FINALIZER, so it
-        /// observes any exception thrown by the original method or by any patch on it. It logs a tagged breadcrumb
-        /// (with the full origin stack once per method and exception type) and then RE-THROWS the exception unchanged
-        /// by returning it. Returning null would swallow it, which we never do. The wording is deliberately HONEST:
-        /// HD's code being in the stack
-        /// does not mean HD caused the fault (the original method or another mod's patch may have), so we never
-        /// claim blame — we only make HD's involvement visible.
+        /// observes any exception thrown by the original method or by any patch on it, logs a tagged breadcrumb
+        /// (with the full origin stack once per method and exception type), and lets the exception continue.
+        ///
+        /// <para><b>VOID is load-bearing (issue #236), not a style choice.</b> Harmony emits a plain
+        /// <c>rethrow</c> — which PRESERVES the exception's original frames — only when EVERY finalizer on the
+        /// patched method returns void; a finalizer whose return type is <see cref="Exception"/> flips it to
+        /// <c>throw ex</c>, which RESTAMPS the trace at the patched method and erases every frame above it
+        /// (verified by decompiling both the pinned reference, Lib.Harmony 2.3.6 <c>MethodPatcher.AddFinalizers</c>,
+        /// and the runtime the game actually loads, brrainz.harmony 2.4.1 <c>MethodCreator.AddFinalizers</c>: both
+        /// set <c>rethrowPossible = false</c> when <c>fix.ReturnType != typeof(void)</c>). Void also makes "never
+        /// swallow the exception" STRUCTURAL rather than a promise in a comment — there is no return value with
+        /// which to drop it.</para>
+        ///
+        /// <para><b>Where the restamp still happens, and why that is fine.</b> <c>rethrowPossible</c> is computed
+        /// over ALL finalizers on the method from ALL mods, so it is NOT enough for this one to be void.
+        /// (a) A FOREIGN non-void finalizer on the same method restores the restamp, and that is not HD's to
+        /// prevent. (b) HD's OWN <c>HDGuard.SeamThrew</c> finalizers return <see cref="Exception"/>, and on their
+        /// ~15 seams <see cref="HaulersDreamMod.AlreadyHasHandlingFinalizer"/> deliberately skips this tagger, so
+        /// HD's is the only finalizer and Harmony emits <c>throw ex</c> there. That restamp is ACCEPTED, not
+        /// overlooked: <c>SeamThrew</c> logs the fully-rendered exception (<c>HDFault.Render</c>, frame-rebuilding
+        /// and placeholder-proof) BEFORE it returns, so the origin frames are already in the log by the time the
+        /// trace is rewritten — the same first-occurrence-in-full contract this method uses.</para>
+        ///
+        /// <para><b>Do NOT "fix" that by converting the seams to void.</b> The rethrow-only seams could be, but
+        /// the two that CONTAIN — <c>HarmonyPatches.TryIssueJobPackage</c> and
+        /// <c>Patch_JobGiver_DropUnusedInventory.ShouldKeepDrugInInventory</c>, which return
+        /// <c>HDGuard.SeamContained</c> — CANNOT: suppressing an exception in a Harmony finalizer means returning
+        /// <c>null</c>, and a void finalizer has no return value with which to express that. Containment is what
+        /// keeps a colony working when a foreign work giver (#235) or a modded drug (#232) throws, so voiding
+        /// those two would silently re-break both.</para>
+        ///
+        /// <para>The wording is deliberately HONEST and never categorical. HD's code being in the stack does not
+        /// mean HD caused the fault, and — the #236 lesson — HD's code being ABSENT from the stack does not mean
+        /// HD is uninvolved. Both the classification and the four sentences live in
+        /// <see cref="BlamePolicy"/>, in the Verse-free half, so the wording contract is where the headless
+        /// tests can enforce it; this method only gathers the three facts and prints the verdict.</para>
         /// </summary>
-        public static Exception UniversalExceptionFinalizer(Exception __exception, MethodBase __originalMethod)
+        public static void UniversalExceptionFinalizer(Exception __exception, MethodBase __originalMethod)
         {
-            if (__exception != null)
+            if (__exception == null)
+                return;
+
+            string where = __originalMethod != null
+                ? (__originalMethod.DeclaringType?.FullName + "." + __originalMethod.Name)
+                : "a patched method";
+
+            // Dedupe key per (patched method, exception type): each DISTINCT fault at a method gets logged once,
+            // so a second, different exception later at the same method is not hidden by the first, while a fault
+            // that repeats every tick is still logged only once. (net48 has no System.HashCode, so combine by hand.)
+            int methodKey = __originalMethod != null ? __originalMethod.GetHashCode() : where.GetHashCode();
+            int key = unchecked((methodKey * 397) ^ __exception.GetType().GetHashCode());
+            // RATE LIMIT (issue #190): a fault that merely PASSES THROUGH an HD-patched method can recur every
+            // tick, and the report trail is size capped — a breadcrumb per occurrence would evict the rest of
+            // HD's history. So log the FIRST occurrence of each (method, exception type) in FULL — with the origin
+            // stack that names the real fault — then SUPPRESS the repeats (a few terse checkpoints aside).
+            //
+            // The counter is taken FIRST, and rendering + classifying happen INSIDE the first-occurrence branch:
+            // both walk the exception's stack frames (and the classifier asks Harmony for patch info), which for
+            // the per-tick recurring fault this limit exists for would otherwise be paid every tick and thrown
+            // away. Occurrence 2+ never used either value.
+            int count = stackLoggedCounts.AddOrUpdate(key, 1, (_, c) => c + 1);
+            if (count == 1)
             {
-                string where = __originalMethod != null
-                    ? (__originalMethod.DeclaringType?.FullName + "." + __originalMethod.Name)
-                    : "a patched method";
-                // Distinguish HD actually being in the throw path from HD merely PATCHING the method. If none of HD's
-                // own frames appear in the exception's stack trace, the fault is entirely in the original method or
-                // another mod's patch (a common false-blame source: e.g. a vanilla DrugPolicy indexer throwing for a
-                // modded drug missing from the pawn's policy, issue #97). Making the breadcrumb state this plainly lets
-                // report triage — automated or human — attribute the exception correctly instead of blaming HD for
-                // simply having a patch on the same method.
-                bool hdInStack = __exception.StackTrace != null && __exception.StackTrace.Contains("HaulersDream.");
-                string blame;
-                if (hdInStack)
-                    blame = "Hauler's Dream's own code IS in this exception's stack, so it may be involved, though the "
-                        + "original method or another mod's patch on it could still be the real cause.";
-                else if (HasHdTranspiler(__originalMethod))
-                    // No HaulersDream. frame, but HD TRANSPILES this method (edits its IL), so its edits could still
-                    // be the cause even without a separate HD frame — never claim pure-bystander here (QA #197).
-                    blame = "Hauler's Dream TRANSPILES this method (it edits the method's IL), so even though its own "
-                        + "code is not a separate frame in the stack it could still be involved; the original method "
-                        + "or another mod's patch on it may also be the cause.";
-                else
-                    blame = "This is NOT a Hauler's Dream bug: Hauler's Dream only adds a postfix/prefix here (not an IL "
-                        + "edit) and its own code is NOT in this exception's stack trace, so the cause is the original "
-                        + "method or another mod. HD is only a bystander on the same method.";
-                // Dedupe key per (patched method, exception type): each DISTINCT fault at a method gets logged once,
-                // so a second, different exception later at the same method is not hidden by the first, while a fault
-                // that repeats every tick is still logged only once. (net48 has no System.HashCode, so combine by hand.)
-                int methodKey = __originalMethod != null ? __originalMethod.GetHashCode() : where.GetHashCode();
-                int key = unchecked((methodKey * 397) ^ __exception.GetType().GetHashCode());
-                // RATE LIMIT (issue #190): a fault that merely PASSES THROUGH an HD-patched method can recur every
-                // tick, and the report trail is size capped — a breadcrumb per occurrence would evict the rest of
-                // HD's history. So log the FIRST occurrence of each (method, exception type) in FULL — with the origin
-                // stack that names the real fault — then SUPPRESS the repeats (a few terse checkpoints aside). The
-                // full stack matters because returning __exception re-throws it (via `throw ex`), which restamps the
-                // trace at THIS site, so the game's own report of the same exception "below" points back here instead
-                // of at the true source; without the first-occurrence stack it gets mis-attributed to Hauler's Dream
-                // (issue #126: a corrupt workbench bill's CountProducts NRE read as an EndCurrentJob fault).
-                int count = stackLoggedCounts.AddOrUpdate(key, 1, (_, c) => c + 1);
-                if (count == 1)
-                {
-                    // First time: the full breadcrumb, once to the disk trail AND the console (Log.ErrorOnce dedupes
-                    // the console by key). The exception "below" (the game's own report) names the same fault.
-                    ErrOnce(
-                        $"an exception passed through {where}, a method Hauler's Dream patches. {blame} Re-throwing it "
-                        + $"unchanged so the game still reports it below.\n" + __exception,
-                        key);
-                }
-                else if (IsRepeatCheckpoint(count))
-                {
-                    // Still recurring: a terse DISK-ONLY note (Dbg — never re-hits the console, stays out of a normal
-                    // player's log) so the recurrence stays visible at a few thresholds without the per-tick flood.
-                    Dbg($"the exception through {where} [{__exception.GetType().Name}: {__exception.Message}] has now "
-                        + $"recurred {count}x this session — per-occurrence logging suppressed to protect the report trail.");
-                }
+                // Render EXACTLY ONCE, and never from a string another mod controls (issues #235/#236).
+                // brrainz.harmony — which supplies the 0Harmony runtime HD runs against — installs a
+                // DEDUPLICATING trace renderer: the SECOND render of one exception returns a
+                // "duplicate stacktrace, see ref for original" placeholder instead of the frames. The old code
+                // rendered once to probe and again to log, so the log got the placeholder and the lines naming
+                // the real source were gone — the #236 report itself. HDFault.Render is placeholder-proof (it
+                // rebuilds from StackFrame objects when ToString() produced no frame lines) and total (a foreign
+                // ToString()/Message override that throws degrades instead of costing the whole breadcrumb,
+                // which Harmony would swallow silently).
+                string rendered = HDFault.Render(__exception);
+
+                // The HD-frame test reads FRAME OBJECTS, never the rendered text. Rendering once is necessary
+                // but not sufficient: HD's tagger runs at Priority.Last, so a foreign finalizer on the same
+                // method renders first and takes the first-render slot, leaving HD the placeholder — and
+                // Harmony's enhanced trace also ANNOTATES each frame with the patches on it, which for a method
+                // HD patched prints HD's own type names purely because HD patched it. Text would therefore give
+                // both a false negative and a false positive, the second asserting a fact that is untrue —
+                // exactly the false-blame class #236 exists to end. new StackTrace(ex, false).GetFrames() is not
+                // interceptable that way.
+                var involvement = BlamePolicy.Classify(HDFault.InvolvesHaulersDream(__exception),
+                    HasHdTranspiler(__originalMethod), HaulChurnGuard.PlacementWrapperIsAncestor);
+
+                // First time: the full breadcrumb, once to the disk trail AND the console (Log.ErrorOnce dedupes
+                // the console by key).
+                ErrOnce(
+                    $"an exception passed through {where}, a method Hauler's Dream patches. "
+                    + BlamePolicy.Describe(involvement)
+                    + " Hauler's Dream neither alters nor swallows it. The stack below is the one captured when "
+                    + "the exception reached this method; the game's own report continues from here.\n"
+                    + rendered,
+                    key);
             }
-            return __exception; // NEVER null — that would swallow the exception. Returning it re-throws it.
+            else if (IsRepeatCheckpoint(count))
+            {
+                // Still recurring: a terse DISK-ONLY note (Dbg — never re-hits the console, stays out of a normal
+                // player's log) so the recurrence stays visible at a few thresholds without the per-tick flood.
+                // Type name and message go through total readers for the same reason the full render does: a
+                // foreign override that throws here would silently cost the note (Harmony swallows it).
+                Dbg($"the exception through {where} [{HDFault.ExceptionTypeName(__exception)}: "
+                    + $"{HDFault.SafeMessage(__exception)}] has now recurred {count}x this session — "
+                    + "per-occurrence logging suppressed to protect the report trail.");
+            }
         }
     }
 }

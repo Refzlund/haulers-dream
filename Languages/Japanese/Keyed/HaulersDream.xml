@@ -58,6 +58,8 @@
 <HaulersDream.Setting.MealsOnWheelsDesc>空腹の入植者がマップ上や自分（あるいは荷物運搬動物）の荷物に食料を見つけられないとき、空腹のままでいたり遠い備蓄ゾーンまで歩いたりするのではなく、許容できる食料を運んでいる別の入植者や荷物運搬動物のところへ歩いて行き、その所持品から食べます。往復を減らし、携行中の食事が傷む前に救い出せます。通常の食料探索が何も見つけられなかったときだけ作動するので、より近い食事を上書きすることは決してありません。食べる側の食事方針・イデオロギー・禁酒主義を尊重し、親が赤ちゃんに与えている食料は決して取らず、徴兵中・気絶中・狂乱中の運搬者からは取らず、2人の入植者が取り合わないよう食事を確保し、最も傷みかけの食料を優先します。デフォルトはオンです。</HaulersDream.Setting.MealsOnWheelsDesc>
   <HaulersDream.Setting.EatFromVehiclesAway>拠点を離れているとき車両の積荷からも食べる</HaulersDream.Setting.EatFromVehiclesAway>
   <HaulersDream.Setting.EatFromVehiclesAwayDesc>「動く食堂」を拡張します。拠点外のマップでは、空腹の入植者が駄獣と同じように、停車中の車両の積荷から食料を取って食べられます。拠点を離れているときのみ有効で、拠点にある車両の積載内容には触れません。既定でオフ。「動く食堂」オンとVehicle Frameworkが必要です。</HaulersDream.Setting.EatFromVehiclesAwayDesc>
+  <HaulersDream.Setting.DrugsForWithdrawal>禁断症状の入植者が、別の入植者が保管している薬物を受け取れるようにする</HaulersDream.Setting.DrugsForWithdrawal>
+  <HaulersDream.Setting.DrugsForWithdrawalDesc>依存している薬物を渇望している、または禁断症状に陥っている入植者がマップ上でその薬物を見つけられないとき、それを持っている別の入植者のところまで歩いて行き、1回分だけ受け取ります。この方法で手が届くのは Hauler's Dream 自身が保持している薬物だけです——「インベントリに保管」で固定した分か、倉庫へ運搬中の荷物です。入植者が自分の薬物ポリシーに従って携行している薬物には、バニラとまったく同じく手を触れません。この機能がないと、ある入植者に薬物を保管させただけで依存者からその薬物を永久に隠すことになります。バニラはそれを決して許さず、持つ理由のない薬物は入植者に置かせます。徴兵中・戦闘不能・死亡・精神崩壊中の入植者、編成中のキャラバン、車両の積荷からは決して受け取りません。依存者に薬物を一切使わせたくない場合は、その薬物ポリシーで「依存時」に許可しないよう設定してください——それは今も完全に阻止します。既定でオンです。</HaulersDream.Setting.DrugsForWithdrawalDesc>
   <HaulersDream.Setting.MedicineFromVehiclesAway>拠点を離れているとき車両や駄獣の薬で治療する</HaulersDream.Setting.MedicineFromVehiclesAway>
   <HaulersDream.Setting.MedicineFromVehiclesAwayDesc>マップに到達可能な薬がないとき、医者が車両の積荷・駄獣・他の入植者が持つ薬を使って治療できます。拠点外のマップのみ有効で、患者の医療方針に従います。既定でオフ。Vehicle Frameworkが必要です。</HaulersDream.Setting.MedicineFromVehiclesAwayDesc>
   <HaulersDream.Setting.BuildFromVehiclesAway>拠点を離れているとき車両の積荷からも建築する</HaulersDream.Setting.BuildFromVehiclesAway>
@@ -171,7 +173,7 @@
 <HaulersDream.AllowMechanoidsDesc>あなたの作業用メカノイドがHauler's Dreamの回収と一括運搬を使うかどうかを司ります — 入植者と同じく収穫物や戦利品を所持品で運びます。これはメカが自身の作業で生み出す物資（収穫・伐採した植物、採掘した鉱石や塊、解体の回収品（メカが構造物を取り壊したときに解放される資材））の回収を対象とします。これはバニラのメカノイドのジョブ自体は変えません。作業メカは引き続き自力で採掘・収穫・解体します。この切り替えは、その結果をまとめた運搬のために所持品へ「も」回収するかどうかだけを決めます。メカが建築現場へどう資材を「届ける」かは別の話で、上の「大きな単一建築のために資材を所持品で運ぶ」設定（メカ・入植者を問わずあらゆる建築者に適用）が司ります。この切り替えはそれ自体では建築の配達を変えません。オンにすると、プレイヤーの作業メカも賢い過積載設定の下で能力の100%を超えて運べ、入植者と同じように速度低下します。</HaulersDream.AllowMechanoidsDesc>
 <HaulersDream.AllowAnimals>入植地の動物が回収・運搬するのを許可する</HaulersDream.AllowAnimals>
 <HaulersDream.AllowAnimalsDesc>デフォルトはオフです。オンにすると、運搬を訓練された入植地の動物が一度に複数の山を運びます — 近くの戦利品を所持品に拾い、1往復1山ではなくHauler's Dreamの一括運搬を実行します。これは運搬訓練ができる動物 — 上級の訓練可能性と十分に大きな体を持つ動物（ハスキー、ラブラドール、ゾウ、クマ、サンブロなど）にしか及びません。運搬訓練できない動物 — 家政婦ネコのたぐい — はそもそも運搬ジョブを実行しません（この設定に関係なく当てはまります）ので、この切り替えの影響を受けません。手を加えられるのはあなた自身の入植地の動物だけで、野生や敵の動物が影響を受けることは決してありません。</HaulersDream.AllowAnimalsDesc>
-<HaulersDream.Setting.AllowIncapable>運搬不能なポーンが自分の収穫物を回収するのを許可する</HaulersDream.Setting.AllowIncapable>
+<HaulersDream.Setting.AllowIncapable>運搬不能なポーンでも拾って運べるようにする</HaulersDream.Setting.AllowIncapable>
 <HaulersDream.Setting.EnableOnNonHomeMaps>キャラバン/非ホームマップでも作動する</HaulersDream.Setting.EnableOnNonHomeMaps>
 <HaulersDream.Setting.HideGizmo>ポーンごとの「所持品を降ろす」ボタンを表示する</HaulersDream.Setting.HideGizmo>
 <HaulersDream.Setting.UnloadGrace>蓄積ウィンドウ：最後の拾い上げから{0}ティック（約60/秒）の間、降ろしに行く前も拾い続けます。大きいほどポーンは多く過積載し、回数の少ない大きな往復をします。それでも満杯になれば即座に降ろします（過積載の上限）。</HaulersDream.Setting.UnloadGrace>
@@ -186,9 +188,14 @@
 <HaulersDream.Gizmo.UnloadNowDrafted>徴兵中：降ろすにはこのポーンの徴兵を解除してください。</HaulersDream.Gizmo.UnloadNowDrafted>
 <HaulersDream.Gizmo.AutoHaul>収穫物を自動運搬</HaulersDream.Gizmo.AutoHaul>
 <HaulersDream.Gizmo.AutoHaulDesc>オンのとき、このポーンは作業しながら自分の作業の収穫物を自動で回収し、近くの戦利品を所持品にかき集めます。オフにするとこのポーンの自動運搬を止めます — それでもすでに携行中のものは片付けます。</HaulersDream.Gizmo.AutoHaulDesc>
+<HaulersDream.Gizmo.BenchGather>材料を集める</HaulersDream.Gizmo.BenchGather>
+<HaulersDream.Gizmo.BenchGatherDescActive>ポーンは製作の前に、この作業台の作業指示に必要な材料を1回のかき集めで所持品にまとめます。\n\nこの作業台でオフにすると、代わりにRimWorld本来の動作になります。ポーンは一度に1山ずつ作業台へ直接運び、すぐに作業指示を開始します。材料がすでに作業台のすぐ隣にある場合は、そのほうが速いです。かき集めは別個の仕事なので、ポーンは作業台へ戻ってそれを終えたあと、次に仕事を探すときになってようやく作業指示に取りかかるからです。\n\nこの作業台にのみ影響し、ここでのバッチ製作にも及びます。この作業台でバッチに設定した作業指示は、代わりに1つずつ製作されます。他の作業台は変わりません。</HaulersDream.Gizmo.BenchGatherDescActive>
+<HaulersDream.Gizmo.BenchGatherDescInactive>ポーンはこの作業台の作業指示の材料を所持品に集めません。この作業台はRimWorld本来の動作を使います。ポーンは一度に1山ずつ作業台へ直接運び、すぐに作業指示を開始します。材料がすでに近くにある場合は、そのほうが速いです。\n\nこの作業台ではバッチ製作もオフなので、ここでバッチに設定した作業指示は1つずつ製作されます。\n\n再びオンにすると、ポーンはまた1回のかき集めですべてを集めます。この作業台にのみ影響します。</HaulersDream.Gizmo.BenchGatherDescInactive>
 <HaulersDream.Alert.CannotUnload>所持品を降ろせない（{0}）</HaulersDream.Alert.CannotUnload>
-<HaulersDream.Alert.CannotUnloadDesc.NoStorage>これらのポーンは、置き場のない回収済みアイテムを抱えています — マップ上のどの備蓄ゾーンや投棄ゾーンもそれらを受け入れず、到達可能な場所も見つかりませんでした。備蓄ゾーンを追加するか（投棄用備蓄ゾーンは岩塊やほとんどの廃棄物を受け入れます）、既存の備蓄ゾーンでそのアイテム種を許可してください：\n\n{0}\n\nそれまでアイテムは所持品にとどまります。この警告をクリックするとポーンを順に切り替え、ホバーすると彼らを示します。</HaulersDream.Alert.CannotUnloadDesc.NoStorage>
+<HaulersDream.Alert.CannotUnloadDesc.NoStorage>これらのポーンは、置き場のない回収済みアイテムを抱えています — マップ上のどの備蓄ゾーンや投棄ゾーンもそれらを受け入れず、到達可能な場所も見つかりませんでした。備蓄ゾーンを追加するか（投棄用備蓄ゾーンは岩塊やほとんどの廃棄物を受け入れます）、既存の備蓄ゾーンでそのアイテム種を許可してください：\n\n{0}\n\nそれまでポーンは、持ち歩き続ける代わりに作業している場所へアイテムを置きます（空きがあれば居住エリア内に置きます）。この警告をクリックするとポーンを順に切り替え、ホバーすると彼らを示します。</HaulersDream.Alert.CannotUnloadDesc.NoStorage>
 <HaulersDream.Alert.CannotUnloadDesc.Stuck>これらのポーンは集めた物を長い間下ろさずに持ち運んでいます。よくある原因は、今いる場所から到達でき、かつ許可された保管庫が物を受け入れられないことなので、まずそれを確認してください：\n\n{0}\n\n保管庫に問題がなさそうなら、仕事を中断させるMod（例えば新しい命令を出し続けるオートキャストや自動作業Mod）が、荷下ろしが終わる前にキャンセルしているのかもしれません。注意：Hauler's Dream が公式に対応しているMod、たとえば Simple Sidearms、Smart Medicine、Combat Extended、Grab Your Tool、Item Policy、Compositable Loadouts は原因では「ありません」。無効化しないでください。それらが保持する物はすでに荷下ろしの対象から除外されています。この警告をクリックするとポーンを順に切り替え、カーソルを合わせると位置を示します。</HaulersDream.Alert.CannotUnloadDesc.Stuck>
+<HaulersDream.Alert.WorkGiverQuarantined>他のModのエラーにより作業が無効化されました（{0}）</HaulersDream.Alert.WorkGiverQuarantined>
+<HaulersDream.Alert.WorkGiverQuarantinedDesc>RimWorld が作業を選んでいる最中に、他の Mod が繰り返しエラーを起こしました。しかもそれは RimWorld が保護していない箇所です。放置すると入植者は一切の作業をしなくなります。食事も睡眠も続けるため、エラーではなく怠けているように見えます。\n\nHauler's Dream は影響を受けた作業だけを無効化し、それ以外はそのまま動くようにしました：\n\n{0}\n\n原因の Mod が更新または削除されるまで、その作業が自動で行われることはありません。手動での指示は今までどおり有効です。右クリックの「優先」は Hauler's Dream が使う判定を通さず RimWorld が直接命令を作るため、1 件だけは実行されます。ただし入植者がそのまま作業を続けることはありません。これは Hauler's Dream の問題ではありません。ログを添えて、上に挙げた Mod に報告してください。ゲームを再起動すると一覧はリセットされます。</HaulersDream.Alert.WorkGiverQuarantinedDesc>
 <HaulersDream.PlanRoute.Option>優先{0}を計画…</HaulersDream.PlanRoute.Option>
 <HaulersDream.PlanRoute.ConstructGerund>建築</HaulersDream.PlanRoute.ConstructGerund>
 <HaulersDream.PlanRoute.MiningGerundFallback>採掘</HaulersDream.PlanRoute.MiningGerundFallback>
@@ -255,6 +262,8 @@
 <HaulersDream.PlanCraft.Repeat>繰り返し：{0}回</HaulersDream.PlanCraft.Repeat>
 <HaulersDream.PlanCraft.Timeout>タイムアウト：{0}時間</HaulersDream.PlanCraft.Timeout>
 <HaulersDream.PlanCraft.TimeoutOff>タイムアウト：なし</HaulersDream.PlanCraft.TimeoutOff>
+<HaulersDream.PlanCraft.RepeatBoxTip>繰り返し回数を直接入力できます。現在の材料で作れる数（{0}回）より多く指定しても構いません — 実際に可能な数まで自動的に調整され、その理由が下に表示されます。</HaulersDream.PlanCraft.RepeatBoxTip>
+<HaulersDream.PlanCraft.TimeoutBoxTip>制限時間（時間単位、{0}〜{1}）を直接入力できます。入力後、30分単位に丸められます。0で制限なし。</HaulersDream.PlanCraft.TimeoutBoxTip>
 <HaulersDream.PlanCraft.Resolved>一度に{0}回製作します。</HaulersDream.PlanCraft.Resolved>
 <HaulersDream.PlanCraft.ResolvedTrimmed>一度に{0}回製作します — {1}。</HaulersDream.PlanCraft.ResolvedTrimmed>
 <HaulersDream.PlanCraft.LimitResources>利用可能な材料による制限</HaulersDream.PlanCraft.LimitResources>
@@ -294,6 +303,8 @@
 <HaulersDream.Setting.CraftBatchTimeoutOff>デフォルトの製作バッチのタイムアウト：なし</HaulersDream.Setting.CraftBatchTimeoutOff>
 <HaulersDream.Setting.InventoryCraftDeliver>製作材料を所持品で運ぶ（往復削減）</HaulersDream.Setting.InventoryCraftDeliver>
 <HaulersDream.Setting.InventoryCraftDeliverDesc>ポーンが2つ以上の別々の山からの材料を要する製作の作業指示を開始するとき、まずそれらをすべて1回のかき集めで所持品に集め — 必要なら過積載し、速度低下を受け入れます（厳格な携行重量がオンでない限り） — 作業台へ一度だけ歩き、携行した在庫から製作します。先に未完成品を作るもの（衣服・武器・彫刻）を含め、あらゆるレシピで機能します。製作自体は100%バニラなので、複製や紛失は起こりません。他のMODが製作材料の運搬を管理している場合、Hauler's Dreamは自動的に手を引きます（代わりにそちらが集めます）ので、どんな製作ループも自然に解決します。上の「携行中の材料を製作に算入する」が必要です。</HaulersDream.Setting.InventoryCraftDeliverDesc>
+<HaulersDream.Setting.ShowBenchGatherGizmo>作業台ごとの「材料を集める」ボタンを表示</HaulersDream.Setting.ShowBenchGatherGizmo>
+<HaulersDream.Setting.ShowBenchGatherGizmoDesc>各作業台のコマンドバーに「材料を集める」トグルを追加します。特定の作業台だけ材料のかき集めをオフにして、そこではRimWorld本来の一度に1山ずつの動作を使えます。すぐ隣から補充している調理台や作業台のように、集めるほうが節約できる時間より高くつく場所に便利です。既定でオンです。これはボタンを表示するかどうかだけを決めるもので、すでにオフにした作業台はどちらの場合でもオフのままです。作業台をオフにする指定は常に上の設定より優先され、「製作材料を所持品で運ぶ（往復削減）」がオフでも機能します。バッチ製作はその設定に関係なく材料を集めるからです。</HaulersDream.Setting.ShowBenchGatherGizmoDesc>
 <HaulersDream.PrepGather.Report>製作の材料を集めている。</HaulersDream.PrepGather.Report>
 <HaulersDream.BulkHaul.Report>近くのものをすべて運搬している。</HaulersDream.BulkHaul.Report>
 <HaulersDream.JobReport.DefaultDestination>保管庫</HaulersDream.JobReport.DefaultDestination>
@@ -394,9 +405,9 @@
 <HaulersDream.Setting.LoadHybridPathingDesc>複数の山を輸送機へかき集めるとき、最も近い数件の候補について直線距離ではなく実際の経路探索で歩行順を選びます — 雑然としたマップでわずかに良いルートになりますが、いくらか追加の経路探索コストがかかります。デフォルトはオフです。直線距離の順序でもすでに正しく、往復の少ない積み込みになります。</HaulersDream.Setting.LoadHybridPathingDesc>
 <HaulersDream.Setting.LoadPathfindingCandidates>立ち寄りごとの経路探索候補数：{0}</HaulersDream.Setting.LoadPathfindingCandidates>
 <HaulersDream.Setting.AutoOpenTransporterContents>選択した輸送機の「中身」タブを自動で開く</HaulersDream.Setting.AutoOpenTransporterContents>
-<HaulersDream.Setting.AutoOpenTransporterContentsDesc>単一の輸送ポッドやシャトルを選択すると、何を積んでいるか見られるよう自動的にその「中身」タブを開きます。デフォルトはオフです（クリックしたときに開くタブを変えるため）。</HaulersDream.Setting.AutoOpenTransporterContentsDesc>
-<HaulersDream.Setting.AutoOpenCarrierGear>選択した運搬者の「装備」タブを自動で開く</HaulersDream.Setting.AutoOpenCarrierGear>
-<HaulersDream.Setting.AutoOpenCarrierGearDesc>荷物運搬動物やその他の運搬者を選択すると、何を運んでいるか見られるよう自動的にその「装備」タブを開きます。デフォルトはオフです。</HaulersDream.Setting.AutoOpenCarrierGearDesc>
+<HaulersDream.Setting.AutoOpenTransporterContentsDesc>単一の輸送ポッドやシャトルを選択すると、何を積んでいるか見られるよう自動的にその「中身」タブを開きます。選択が実際に変わったときだけ働くので、タブを閉じてから同じポッドをもう一度クリックしても閉じたままです。デフォルトはオフです（クリックしたときに開くタブを変えるため）。</HaulersDream.Setting.AutoOpenTransporterContentsDesc>
+<HaulersDream.Setting.AutoOpenCarrierGear>選択した荷物運搬動物・運搬者の「装備」タブを自動で開く</HaulersDream.Setting.AutoOpenCarrierGear>
+<HaulersDream.Setting.AutoOpenCarrierGearDesc>自陣営の荷物運搬動物・車両・その他の非人型の運搬者を選択し、その所持品に何か入っているとき、何を運んでいるか見られるよう、その積載物を表示するタブを自動的に開きます。「装備」タブ、車両なら「貨物」タブです。入植者に対しては決して行いません。入植者間をクリックして回るときは、ゲームが最後に開いたタブをそのまま保つからです。また選択が実際に変わったときだけ働くので、タブを閉じてから同じ運搬者をもう一度クリックしても閉じたままです。デフォルトはオフです（クリックしたときに開くタブを変えるため）。</HaulersDream.Setting.AutoOpenCarrierGearDesc>
 <HaulersDream.Setting.EnableStorageNetworkBulkLoad>Storage Networkからの一括積み込み（実験的）</HaulersDream.Setting.EnableStorageNetworkBulkLoad>
 <HaulersDream.Setting.EnableStorageNetworkBulkLoadDesc>Storage Network MODが導入されているとき、一括積み込みがそのネットワークサーバーに保管されたアイテムをかき集められるようにし、輸送ポッド・ポッド・ポータル・車両を1度に1山ずつではなく1回の往復で満たします。アイテムは使える到達可能な端末を通じて引き出され、Storage Networkによってオンデマンドで具現化されます。デフォルトはオフです：これは実験的で、Storage Networkの動作に依存します。これがなくても、ネットワークのアイテムは通常（1往復1山）の方法で積み込まれます。</HaulersDream.Setting.EnableStorageNetworkBulkLoadDesc>
 <HaulersDream.Setting.ResetToDefaults>デフォルトに戻す</HaulersDream.Setting.ResetToDefaults>
@@ -546,6 +557,7 @@
 <HaulersDream.Head.PackAnimals>荷物運搬動物</HaulersDream.Head.PackAnimals>
 <HaulersDream.Head.Transporters>輸送ポッド、ポータル &amp; 燃料補給</HaulersDream.Head.Transporters>
 <HaulersDream.Head.Vehicles>車両</HaulersDream.Head.Vehicles>
+<HaulersDream.Head.AutoOpenTabs>タブの自動オープン</HaulersDream.Head.AutoOpenTabs>
 <HaulersDream.Head.AdvancedLoading>高度な積み込み</HaulersDream.Head.AdvancedLoading>
 <HaulersDream.Head.StorageRouting>消費者を意識した保管庫ルーティング</HaulersDream.Head.StorageRouting>
 <HaulersDream.Head.StorageFilters>保管庫建造物フィルター</HaulersDream.Head.StorageFilters>
@@ -580,6 +592,7 @@
 <HaulersDream.Profile.PasteCreate>プロファイルを作成</HaulersDream.Profile.PasteCreate>
 <HaulersDream.Common.Off>オフ</HaulersDream.Common.Off>
 <HaulersDream.Common.On>オン</HaulersDream.Common.On>
+<HaulersDream.Common.NumberBoxTip>スライダーをドラッグする代わりに、正確な値（{0}〜{1}）を直接入力できます。</HaulersDream.Common.NumberBoxTip>
 <HaulersDream.Unit.Tiles>{0}マス</HaulersDream.Unit.Tiles>
 <HaulersDream.Unit.Hours>{0}時間</HaulersDream.Unit.Hours>
 <HaulersDream.Setting.CarryLimit.Lab>携行上限</HaulersDream.Setting.CarryLimit.Lab>
@@ -640,7 +653,7 @@
 <HaulersDream.Setting.HideGizmo.Help>入植者が回収した物資を携行しているときに表示される、ポーンごとの「所持品を降ろす」ボタンを表示します。既定でオン。オフにするとボタンが非表示になります。</HaulersDream.Setting.HideGizmo.Help>
 <HaulersDream.Setting.StorageFilterButton.Help>運搬が使える保管庫について、建造物ごと・MODごとの許可/拒否ルールを編集します。</HaulersDream.Setting.StorageFilterButton.Help>
 <HaulersDream.Setting.PauseWhileDrafted.Help>ポーンが徴兵されている間、Hauler's Dreamはそのポーンの新たな回収やかき集めの開始を止めます。</HaulersDream.Setting.PauseWhileDrafted.Help>
-<HaulersDream.Setting.AllowIncapable.Help>運搬不能なポーンでも、自分の作業（採掘、収穫…）の収穫物を回収できるようにします。</HaulersDream.Setting.AllowIncapable.Help>
+<HaulersDream.Setting.AllowIncapable.Help>既定ではオフで、バニラと同じ挙動です。運搬の作業が無効なポーン（「単純労働不能」の生い立ち、特性、遺伝子、うぬぼれの称号、イデオロギーの役割など）は Hauler's Dream の対象から完全に外れます——自分の作業成果を拾わず、右クリック指令「近くのものをすべて運搬」「拾う」「資材運搬を優先」「一括積み込みを優先」「一括燃料補給を優先」「一括荷下ろしを優先」も表示されません。これはバニラがそのポーンの「運搬を優先」をグレー表示にするのと同じです。オンにすると、そうしたポーンにも運搬作業を任せられます。2つだけ意図的にこの設定の対象外です。キャラバンマップで荷役動物への積み込みを命じること（バニラはどのポーンにも許可しています）と、ポーン自身の荷物を空にすることで、後者は物が取り残されないよう常に利用できます。逆に入植地の全員が運搬できるようにしたい場合は、下の「作業不能の上書き」を使ってください。</HaulersDream.Setting.AllowIncapable.Help>
 <HaulersDream.Setting.EnableOnNonHomeMaps.Help>ホーム入植地だけでなく、キャラバンやその他の非ホームマップでもHauler's Dreamを動かします。</HaulersDream.Setting.EnableOnNonHomeMaps.Help>
 <HaulersDream.Setting.VerboseLogging.Help>追加の開発者ログです。開発者モードでのみ利用可能で、ログを出力します。</HaulersDream.Setting.VerboseLogging.Help>
 <HaulersDream.Setting.BulkHaulSecond.S>2つ目の指示で</HaulersDream.Setting.BulkHaulSecond.S>

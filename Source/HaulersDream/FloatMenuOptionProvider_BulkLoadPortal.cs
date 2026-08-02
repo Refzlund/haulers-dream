@@ -35,9 +35,14 @@ namespace HaulersDream
                 yield break;
             if (pawn.GetComp<CompHauledToInventory>() == null || pawn.inventory == null)
                 yield break;
-            // Player order: only the physical capability is required (like vanilla load orders), NOT the Hauling
-            // work-tag / auto eligibility — the swept loot is deposited into the portal, so nothing strands.
-            if (!pawn.health.capacities.CapableOf(PawnCapacityDefOf.Manipulation))
+            // Player order: skips the AUTO eligibility gate (the swept loot is deposited into the portal, so
+            // nothing strands) but NOT the hauling-capability bar (#229). Loading a portal IS hauling work in
+            // vanilla — WorkGiverDef HaulToPortal declares <workType>Hauling</workType>
+            // (Core/Defs/WorkGiverDefs/WorkGivers.xml:1264-1267) — so vanilla greys its own "Load X into portal"
+            // out for a pawn whose Hauling work type is disabled, and HD's bulk replacement must not be a way
+            // around that. HaulOrderGate reads the WORK TYPE, not the WorkTags.Hauling bit an "incapable of dumb
+            // labor" backstory leaves clear.
+            if (HaulOrderGate.Blocks(pawn))
                 yield break;
             // Don't offer this while the pawn is under the portal-boarding lord (LoadAndEnterPortal) — let vanilla's
             // own gather-and-board flow run.

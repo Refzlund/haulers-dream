@@ -44,9 +44,15 @@ namespace HaulersDream
                 yield break;
             if (pawn.GetComp<CompHauledToInventory>() == null || pawn.inventory == null)
                 yield break;
-            // Player order: only the physical capability is required (like vanilla load orders), NOT the Hauling
-            // work-tag / auto eligibility — the swept loot is deposited into the vehicle, so nothing strands.
-            if (!pawn.health.capacities.CapableOf(PawnCapacityDefOf.Manipulation))
+            // Player order: skips the AUTO eligibility gate (the swept loot is deposited into the vehicle, so
+            // nothing strands) but NOT the hauling-capability bar (#229). This option SUBSTITUTES for VF's own
+            // autonomous load work-scan (WorkGiverDef PackVehicle, giverClass Vehicles.WorkGiver_PackVehicle,
+            // <workType>Hauling</workType> — verified in Vehicle-Framework/1.6/Defs/WorkGivers/
+            // WorkGivers_General.xml; it is the scan Patch_WorkGiver_PackVehicle_Redirect upgrades to a bulk job),
+            // so a pawn VF would never assign that work to must not get it through HD's order either.
+            // HaulOrderGate reads the WORK TYPE, not the WorkTags.Hauling bit an "incapable of dumb labor"
+            // backstory leaves clear.
+            if (HaulOrderGate.Blocks(pawn))
                 yield break;
             // Don't offer this while the pawn is under the boarding lord (LoadAndEnterTransporters) — let vanilla's
             // own gather-and-board flow run.

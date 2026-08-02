@@ -58,6 +58,8 @@
 <HaulersDream.Setting.MealsOnWheelsDesc>배고픈 정착민이 맵이나 자기(또는 짐 운반 동물의) 짐에서 식량을 찾지 못하면, 적합한 식량을 운반 중인 다른 정착민이나 짐 운반 동물에게 걸어가 그 소지품에서 먹습니다 — 굶거나 먼 저장고로 가는 대신, 이동을 줄이고 운반 중인 음식이 상하기 전에 구해 냅니다. 평소 식량 탐색이 아무것도 못 찾았을 때만 작동하므로 더 가까운 음식을 절대 무시하지 않습니다. 먹는 자의 식량 정책, 이념, 금주 여부를 존중하며, 부모가 아기에게 먹이는 음식은 절대 가져가지 않고, 징집된·쓰러진·광폭 상태의 운반체에서는 가져가지 않으며, 두 정착민이 경쟁하지 않도록 음식을 예약하고, 가장 빨리 상할 음식을 우선합니다. 기본 켜짐.</HaulersDream.Setting.MealsOnWheelsDesc>
   <HaulersDream.Setting.EatFromVehiclesAway>집을 떠났을 때 차량 화물칸에서도 먹기</HaulersDream.Setting.EatFromVehiclesAway>
   <HaulersDream.Setting.EatFromVehiclesAwayDesc>"움직이는 식당"을 확장합니다. 집이 아닌 지도에서는 배고픈 정착민이 짐 나르는 동물처럼 주차된 차량의 화물칸에서도 음식을 꺼내 먹을 수 있습니다. 집을 떠났을 때만 적용되어 기지 차량의 적재 목록은 건드리지 않습니다. 기본값 꺼짐; "움직이는 식당" 켜짐과 Vehicle Framework 필요.</HaulersDream.Setting.EatFromVehiclesAwayDesc>
+  <HaulersDream.Setting.DrugsForWithdrawal>금단 증상을 겪는 정착민이 다른 정착민이 보관 중인 약물을 받아 가도록 허용</HaulersDream.Setting.DrugsForWithdrawal>
+  <HaulersDream.Setting.DrugsForWithdrawalDesc>중독된 약물을 갈망하거나 금단 증상을 겪는 정착민이 지도에서 그 약물을 찾지 못하면, 그것을 지니고 있는 다른 정착민에게 걸어가 한 회분만 받아 갑니다. 이렇게 닿을 수 있는 것은 Hauler's Dream이 직접 붙들고 있는 약물뿐입니다 — "소지품에 보관"으로 지정한 분량이거나, 창고로 옮기는 중인 짐입니다. 정착민이 자신의 약물 정책에 따라 지니는 약물은 바닐라와 똑같이 손대지 않습니다. 이 기능이 없으면 한 정착민에게 약물을 보관하게 하는 것만으로 중독자에게서 그 약물을 영영 숨기게 되는데, 바닐라는 그런 상황을 결코 허용하지 않습니다. 바닐라에서는 지닐 이유가 없는 약물을 정착민이 내려놓습니다. 징집·기절·사망·정신 이상 상태의 정착민, 편성 중인 카라반, 차량 화물에서는 절대 가져오지 않습니다. 중독자가 약물을 아예 쓰지 못하게 하려면 약물 정책에서 그 약물을 "중독 시" 허용하지 않도록 설정하십시오 — 그것은 여전히 완전히 차단합니다. 기본적으로 켜져 있습니다.</HaulersDream.Setting.DrugsForWithdrawalDesc>
   <HaulersDream.Setting.MedicineFromVehiclesAway>집을 떠났을 때 차량이나 짐짐승의 약으로 치료</HaulersDream.Setting.MedicineFromVehiclesAway>
   <HaulersDream.Setting.MedicineFromVehiclesAwayDesc>지도에 닿을 수 있는 약이 없을 때, 의사가 차량 화물칸, 짐 나르는 동물, 다른 정착민이 지닌 약으로 치료할 수 있습니다. 집이 아닌 지도에서만 적용되며 환자의 의료 방침을 따릅니다. 기본값 꺼짐; Vehicle Framework 필요.</HaulersDream.Setting.MedicineFromVehiclesAwayDesc>
   <HaulersDream.Setting.BuildFromVehiclesAway>집을 떠났을 때 차량 화물칸에서도 건설하기</HaulersDream.Setting.BuildFromVehiclesAway>
@@ -171,7 +173,7 @@
 <HaulersDream.AllowMechanoidsDesc>당신의 작업 기계족이 Hauler's Dream의 줍기와 대량 운반을 사용할지 — 정착민처럼 산출물과 전리품을 소지품에 운반할지 — 를 다스립니다. 여기에는 기계가 자기 작업에서 생산하는 물건을 줍는 것이 포함됩니다: 수확/벤 식물, 채굴한 광석과 덩어리, 그리고 해체 회수물(기계가 구조물을 허물 때 나오는 자재). 이것은 바닐라 기계족 작업 자체를 바꾸지 않습니다: 작업 기계는 여전히 스스로 채굴·수확·해체를 합니다 — 이 토글은 그 결과물도 통합 운반을 위해 소지품에 줍는지만 결정합니다. 기계가 건설 현장에 자재를 어떻게 전달하는지는 별개 문제이며, 위의 "큰 단일 건설을 위해 소지품에 자재 운반" 설정이 다스립니다(기계든 정착민이든 모든 건설자에게 적용). 이 토글 자체는 건설 전달을 바꾸지 않습니다. 켜면 플레이어의 작업 기계도 스마트 과적 설정에 따라 용량의 100%를 넘게 운반할 수 있으며, 정착민과 같은 방식으로 그로 인해 느려집니다.</HaulersDream.AllowMechanoidsDesc>
 <HaulersDream.AllowAnimals>정착지 동물이 줍고 운반하도록 허용</HaulersDream.AllowAnimals>
 <HaulersDream.AllowAnimalsDesc>기본 꺼짐. 켜면 운반 훈련을 받은 정착지 동물이 한 번에 여러 더미를 운반합니다 — 인근 전리품을 소지품에 줍고, 이동당 한 더미 대신 Hauler's Dream의 대량 운반을 수행합니다. 이것은 운반 훈련이 가능한 동물에게만 적용됩니다: 고급 훈련성과 충분히 큰 몸집을 가진 동물(허스키, 래브라도, 코끼리, 곰, 스럼보 등). 운반 훈련이 불가능한 동물 — 집고양이 등 — 은 애초에 운반 작업을 수행하지 않으므로(이 설정과 무관하게 참) 이 토글의 영향을 받지 않습니다. 당신의 정착지 동물만 대상이며, 야생 및 적 동물은 절대 영향을 받지 않습니다.</HaulersDream.AllowAnimalsDesc>
-<HaulersDream.Setting.AllowIncapable>운반 불능 폰이 자기 산출물은 줍도록 허용</HaulersDream.Setting.AllowIncapable>
+<HaulersDream.Setting.AllowIncapable>운반이 불가능한 폰도 줍고 운반할 수 있게 허용</HaulersDream.Setting.AllowIncapable>
 <HaulersDream.Setting.EnableOnNonHomeMaps>카라반 / 비본거지 맵에서도 작동</HaulersDream.Setting.EnableOnNonHomeMaps>
 <HaulersDream.Setting.HideGizmo>폰별 "소지품 내려놓기" 버튼 표시</HaulersDream.Setting.HideGizmo>
 <HaulersDream.Setting.UnloadGrace>축적 시간: 마지막 줍기 이후 내려놓으러 가기 전까지 {0}틱(~초당 60) 동안 계속 줍기. 높을수록 폰이 더 많이 과적하고 더 적은 횟수로 더 크게 이동합니다. 가득 차면(과적 상한) 여전히 즉시 내려놓습니다.</HaulersDream.Setting.UnloadGrace>
@@ -186,9 +188,14 @@
 <HaulersDream.Gizmo.UnloadNowDrafted>징집됨: 내려놓으려면 이 폰의 징집을 해제하세요.</HaulersDream.Gizmo.UnloadNowDrafted>
 <HaulersDream.Gizmo.AutoHaul>산출물 자동 운반</HaulersDream.Gizmo.AutoHaul>
 <HaulersDream.Gizmo.AutoHaulDesc>켜져 있으면 이 폰은 작업하면서 자기 산출물을 자동으로 줍고 인근 전리품을 소지품에 쓸어 담습니다. 이 폰의 자동 운반을 멈추려면 끄세요 — 이미 운반 중인 것은 여전히 치웁니다.</HaulersDream.Gizmo.AutoHaulDesc>
+<HaulersDream.Gizmo.BenchGather>재료 모으기</HaulersDream.Gizmo.BenchGather>
+<HaulersDream.Gizmo.BenchGatherDescActive>폰이 제작 전에 이 작업대의 작업 지시 재료를 한 번의 쓸기로 소지품에 모읍니다.\n\n이 작업대에서 끄면 대신 RimWorld 자체 동작을 사용합니다. 폰이 한 번에 한 더미씩 작업대로 곧장 옮기고 즉시 작업 지시를 시작합니다. 재료가 이미 작업대 바로 옆에 있다면 그편이 더 빠릅니다. 쓸기는 별개의 작업이라, 폰은 작업대로 돌아와 그것을 끝낸 뒤 다음에 일거리를 찾을 때가 되어서야 그 작업 지시를 다시 잡기 때문입니다.\n\n이 작업대에만 적용되며, 여기서의 일괄 제작에도 적용됩니다. 이 작업대에서 일괄로 설정한 작업 지시는 하나씩 제작됩니다. 다른 작업대는 그대로입니다.</HaulersDream.Gizmo.BenchGatherDescActive>
+<HaulersDream.Gizmo.BenchGatherDescInactive>폰이 이 작업대의 작업 지시 재료를 소지품에 모으지 않습니다. 이 작업대는 RimWorld 자체 동작을 사용합니다. 폰이 한 번에 한 더미씩 작업대로 곧장 옮기고 즉시 작업 지시를 시작하며, 재료가 이미 가까이 있다면 그편이 더 빠릅니다.\n\n이 작업대에서는 일괄 제작도 꺼지므로, 여기서 일괄로 설정한 작업 지시는 하나씩 제작됩니다.\n\n다시 켜면 폰이 한 번의 쓸기로 모두 모읍니다. 이 작업대에만 적용됩니다.</HaulersDream.Gizmo.BenchGatherDescInactive>
 <HaulersDream.Alert.CannotUnload>소지품 내려놓기 불가 ({0})</HaulersDream.Alert.CannotUnload>
-<HaulersDream.Alert.CannotUnloadDesc.NoStorage>이 폰들은 둘 곳이 없는 주워 담은 물건을 운반 중입니다 — 맵의 어떤 저장 구역이나 투기 구역도 그것을 받지 않으며, 도달 가능한 자리도 찾지 못했습니다. 저장 구역을 추가하거나(투기 저장 구역은 바위 덩어리와 대부분의 폐기물을 받습니다), 기존 저장 구역에서 그 물품 종류를 허용하세요:\n\n{0}\n\n그때까지 물건은 소지품에 남습니다. 이 경보를 클릭하면 폰들을 차례로 순환하고, 마우스를 올리면 가리킵니다.</HaulersDream.Alert.CannotUnloadDesc.NoStorage>
+<HaulersDream.Alert.CannotUnloadDesc.NoStorage>이 폰들은 둘 곳이 없는 주워 담은 물건을 운반 중입니다 — 맵의 어떤 저장 구역이나 투기 구역도 그것을 받지 않으며, 도달 가능한 자리도 찾지 못했습니다. 저장 구역을 추가하거나(투기 저장 구역은 바위 덩어리와 대부분의 폐기물을 받습니다), 기존 저장 구역에서 그 물품 종류를 허용하세요:\n\n{0}\n\n그때까지 폰들은 그 물건을 계속 들고 다니는 대신 작업하던 자리에 내려놓습니다(자리가 있으면 거주 구역 안에 놓습니다). 이 경보를 클릭하면 폰들을 차례로 순환하고, 마우스를 올리면 가리킵니다.</HaulersDream.Alert.CannotUnloadDesc.NoStorage>
 <HaulersDream.Alert.CannotUnloadDesc.Stuck>이 폰들은 수집한 물건을 오랫동안 내려놓지 않고 들고 다니고 있습니다. 흔한 원인은 그들이 있는 위치에서 도달할 수 있고 허용된 저장고가 물건을 받을 수 없다는 것이니, 먼저 그것부터 확인하세요:\n\n{0}\n\n저장고가 괜찮아 보인다면, 작업을 중단시키는 모드(예: 계속 새 명령을 내리는 자동 시전이나 자동 작업 모드)가 하역이 끝나기 전에 취소하고 있을 수 있습니다. 참고: Hauler's Dream이 공식적으로 지원하는 모드, 예를 들어 Simple Sidearms, Smart Medicine, Combat Extended, Grab Your Tool, Item Policy, Compositable Loadouts는 원인이 '아니며' 비활성화해서는 안 됩니다. 그것들이 보관하는 물건은 이미 하역 대상에서 제외되어 있습니다. 이 경고를 클릭하면 폰들을 차례로 이동하고, 마우스를 올리면 위치를 표시합니다.</HaulersDream.Alert.CannotUnloadDesc.Stuck>
+<HaulersDream.Alert.WorkGiverQuarantined>다른 모드의 오류로 작업이 비활성화됨 ({0})</HaulersDream.Alert.WorkGiverQuarantined>
+<HaulersDream.Alert.WorkGiverQuarantinedDesc>RimWorld가 할 일을 고르는 도중, 그것도 RimWorld가 보호하지 않는 지점에서 다른 모드가 반복적으로 오류를 냈습니다. 그대로 두면 정착민이 어떤 일도 하지 않게 됩니다. 먹고 자는 것은 계속하므로 오류가 아니라 게으름처럼 보입니다.\n\nHauler's Dream은 문제가 된 작업만 꺼서 나머지는 그대로 돌아가게 했습니다:\n\n{0}\n\n원인이 된 모드를 업데이트하거나 제거하기 전까지 그 작업은 저절로 진행되지 않습니다. 직접 지시하는 것은 여전히 가능합니다. 우클릭 '우선 지정'은 Hauler's Dream이 사용하는 검사를 거치지 않고 RimWorld가 명령을 바로 만들기 때문에 한 건은 그대로 수행됩니다. 다만 정착민이 이어서 그 일을 계속하지는 않습니다. 이것은 Hauler's Dream의 문제가 아닙니다. 로그를 첨부해 위에 적힌 모드에 신고해 주세요. 게임을 다시 시작하면 목록은 초기화됩니다.</HaulersDream.Alert.WorkGiverQuarantinedDesc>
 <HaulersDream.PlanRoute.Option>우선 지정 {0} 계획…</HaulersDream.PlanRoute.Option>
 <HaulersDream.PlanRoute.ConstructGerund>건설</HaulersDream.PlanRoute.ConstructGerund>
 <HaulersDream.PlanRoute.MiningGerundFallback>채굴</HaulersDream.PlanRoute.MiningGerundFallback>
@@ -255,6 +262,8 @@
 <HaulersDream.PlanCraft.Repeat>반복: {0}회</HaulersDream.PlanCraft.Repeat>
 <HaulersDream.PlanCraft.Timeout>제한 시간: {0}시간</HaulersDream.PlanCraft.Timeout>
 <HaulersDream.PlanCraft.TimeoutOff>제한 시간: 없음</HaulersDream.PlanCraft.TimeoutOff>
+<HaulersDream.PlanCraft.RepeatBoxTip>반복 횟수를 정확하게 직접 입력할 수 있습니다. 지금 재료로 가능한 수({0}회)보다 많이 지정해도 됩니다 — 실제로 가능한 만큼으로 자동 조정되며, 그 이유가 아래에 표시됩니다.</HaulersDream.PlanCraft.RepeatBoxTip>
+<HaulersDream.PlanCraft.TimeoutBoxTip>제한 시간을 시간 단위({0}–{1})로 정확하게 입력할 수 있습니다. 입력을 마치면 30분 단위로 반올림됩니다. 0은 제한 없음입니다.</HaulersDream.PlanCraft.TimeoutBoxTip>
 <HaulersDream.PlanCraft.Resolved>{0}회를 한 번에 제작합니다.</HaulersDream.PlanCraft.Resolved>
 <HaulersDream.PlanCraft.ResolvedTrimmed>{0}회를 한 번에 제작합니다 — {1}.</HaulersDream.PlanCraft.ResolvedTrimmed>
 <HaulersDream.PlanCraft.LimitResources>가용 재료에 의해 제한됨</HaulersDream.PlanCraft.LimitResources>
@@ -294,6 +303,8 @@
 <HaulersDream.Setting.CraftBatchTimeoutOff>기본 제작 일괄 제한 시간: 없음</HaulersDream.Setting.CraftBatchTimeoutOff>
 <HaulersDream.Setting.InventoryCraftDeliver>제작 재료를 소지품에 운반 (이동 감소)</HaulersDream.Setting.InventoryCraftDeliver>
 <HaulersDream.Setting.InventoryCraftDeliverDesc>폰이 둘 이상의 별도 더미에서 재료가 필요한 제작 작업 지시를 시작하면, 먼저 한 번의 쓸기로 그것들을 전부 소지품에 모은 뒤 — 필요하면 과적하고 속도 저하를 감수하며(엄격한 운반 무게가 켜져 있지 않은 한) — 작업대로 한 번 걸어가서 운반 중인 재고로 제작합니다. 미완성 물품을 먼저 만드는 것(의복, 무기, 조각상)을 포함해 모든 제작법에 작동합니다. 제작 자체는 100% 바닐라이므로 아무것도 복제되거나 사라질 수 없습니다. 다른 모드가 제작 재료 운반을 관리하고 있으면 Hauler's Dream이 자동으로 물러나(대신 그 모드가 재료를 모음), 어떤 제작 루프든 저절로 해결됩니다. 위의 "운반 중인 재료를 제작에 셈"이 필요합니다.</HaulersDream.Setting.InventoryCraftDeliverDesc>
+<HaulersDream.Setting.ShowBenchGatherGizmo>작업대별 "재료 모으기" 버튼 표시</HaulersDream.Setting.ShowBenchGatherGizmo>
+<HaulersDream.Setting.ShowBenchGatherGizmoDesc>각 작업대의 명령 막대에 "재료 모으기" 토글을 추가하여, 특정 작업대 하나만 재료 모으기를 끄고 거기서는 RimWorld 자체의 한 번에 한 더미 동작이 돌아가게 할 수 있습니다. 바로 옆에서 채워 두는 화덕이나 작업대처럼, 모으는 데 드는 시간이 아끼는 시간보다 큰 곳에 유용합니다. 기본값은 켜짐입니다. 이 설정은 버튼을 보여줄지만 정할 뿐이며, 이미 꺼 둔 작업대는 어느 쪽이든 꺼진 상태로 남습니다. 작업대를 끄는 것은 항상 위 설정보다 우선하며, "제작 재료를 소지품에 운반 (이동 감소)"이 꺼져 있어도 작동합니다. 일괄 제작은 그 설정과 무관하게 재료를 모으기 때문입니다.</HaulersDream.Setting.ShowBenchGatherGizmoDesc>
 <HaulersDream.PrepGather.Report>제작 재료를 모으는 중.</HaulersDream.PrepGather.Report>
 <HaulersDream.BulkHaul.Report>주변 전부를 운반하는 중.</HaulersDream.BulkHaul.Report>
 <HaulersDream.JobReport.DefaultDestination>저장고</HaulersDream.JobReport.DefaultDestination>
@@ -394,9 +405,9 @@
 <HaulersDream.Setting.LoadHybridPathingDesc>여러 더미를 수송체로 쓸어 담을 때, 직선 거리 대신 가장 가까운 후보 몇 개에 대해 실제 경로 탐색으로 보행 순서를 고릅니다 — 어수선한 맵에서 약간 더 나은 경로를 얻지만, 추가 경로 탐색 비용이 듭니다. 기본 꺼짐. 직선 순서로도 이미 올바르고 이동이 적은 적재가 나옵니다.</HaulersDream.Setting.LoadHybridPathingDesc>
 <HaulersDream.Setting.LoadPathfindingCandidates>정거장당 경로 탐색 후보: {0}</HaulersDream.Setting.LoadPathfindingCandidates>
 <HaulersDream.Setting.AutoOpenTransporterContents>선택한 수송 포드의 내용물 탭 자동 열기</HaulersDream.Setting.AutoOpenTransporterContents>
-<HaulersDream.Setting.AutoOpenTransporterContentsDesc>수송 포드나 셔틀 하나를 선택하면 무엇을 싣고 있는지 볼 수 있도록 그 내용물 탭을 자동으로 엽니다. 기본 꺼짐 (물건을 클릭할 때 어느 탭이 열리는지를 바꿉니다).</HaulersDream.Setting.AutoOpenTransporterContentsDesc>
-<HaulersDream.Setting.AutoOpenCarrierGear>선택한 운반체의 장비 탭 자동 열기</HaulersDream.Setting.AutoOpenCarrierGear>
-<HaulersDream.Setting.AutoOpenCarrierGearDesc>짐 운반 동물이나 다른 운반체를 선택하면 무엇을 운반 중인지 볼 수 있도록 그 장비 탭을 자동으로 엽니다. 기본 꺼짐.</HaulersDream.Setting.AutoOpenCarrierGearDesc>
+<HaulersDream.Setting.AutoOpenTransporterContentsDesc>수송 포드나 셔틀 하나를 선택하면 무엇을 싣고 있는지 볼 수 있도록 그 내용물 탭을 자동으로 엽니다. 선택이 실제로 바뀔 때만 작동하므로, 탭을 닫은 뒤 같은 포드를 다시 클릭해도 닫힌 채로 있습니다. 기본 꺼짐 (물건을 클릭할 때 어느 탭이 열리는지를 바꿉니다).</HaulersDream.Setting.AutoOpenTransporterContentsDesc>
+<HaulersDream.Setting.AutoOpenCarrierGear>선택한 짐 운반 동물·운반체의 장비 탭 자동 열기</HaulersDream.Setting.AutoOpenCarrierGear>
+<HaulersDream.Setting.AutoOpenCarrierGearDesc>소지품에 무언가 들어 있는 내 짐 운반 동물, 차량, 그 밖의 비인간 운반체를 선택하면 무엇을 운반 중인지 볼 수 있도록 적재물을 보여 주는 탭을 자동으로 엽니다. 장비 탭이며, 차량이라면 화물 탭입니다. 정착민에게는 절대 그렇게 하지 않습니다. 정착민 사이를 클릭할 때는 게임이 이미 마지막으로 연 탭을 그대로 유지하기 때문입니다. 또한 선택이 실제로 바뀔 때만 작동하므로, 탭을 닫은 뒤 같은 운반체를 다시 클릭해도 닫힌 채로 있습니다. 기본 꺼짐 (물건을 클릭할 때 어느 탭이 열리는지를 바꿉니다).</HaulersDream.Setting.AutoOpenCarrierGearDesc>
 <HaulersDream.Setting.EnableStorageNetworkBulkLoad>저장 네트워크에서 대량 적재 (실험적)</HaulersDream.Setting.EnableStorageNetworkBulkLoad>
 <HaulersDream.Setting.EnableStorageNetworkBulkLoadDesc>저장 네트워크(Storage Network) 모드가 설치되어 있을 때, 대량 적재가 그 네트워크 서버에 저장된 물건도 쓸어 담아, 수송 포드·포드·차원문·차량이 한 번에 한 더미씩이 아니라 한 번 이동으로 채워지게 합니다. 물건은 사용 가능하고 도달 가능한 단말기를 통해 끌어와 저장 네트워크가 요청 시 실체화합니다. 기본 꺼짐: 이것은 실험적이며 저장 네트워크의 동작에 의존합니다. 없으면 네트워크 물건은 여전히 평소(이동당 한 더미) 방식으로 적재됩니다.</HaulersDream.Setting.EnableStorageNetworkBulkLoadDesc>
 <HaulersDream.Setting.ResetToDefaults>기본값으로 초기화</HaulersDream.Setting.ResetToDefaults>
@@ -546,6 +557,7 @@
 <HaulersDream.Head.PackAnimals>짐 운반 동물</HaulersDream.Head.PackAnimals>
 <HaulersDream.Head.Transporters>수송 포드, 차원문 및 연료 보급</HaulersDream.Head.Transporters>
 <HaulersDream.Head.Vehicles>차량</HaulersDream.Head.Vehicles>
+<HaulersDream.Head.AutoOpenTabs>탭 자동 열기</HaulersDream.Head.AutoOpenTabs>
 <HaulersDream.Head.AdvancedLoading>고급 적재</HaulersDream.Head.AdvancedLoading>
 <HaulersDream.Head.StorageRouting>소비처 인식 저장 경로</HaulersDream.Head.StorageRouting>
 <HaulersDream.Head.StorageFilters>저장 건물 필터</HaulersDream.Head.StorageFilters>
@@ -580,6 +592,7 @@
 <HaulersDream.Profile.PasteCreate>프로필 만들기</HaulersDream.Profile.PasteCreate>
 <HaulersDream.Common.Off>꺼짐</HaulersDream.Common.Off>
 <HaulersDream.Common.On>켜짐</HaulersDream.Common.On>
+<HaulersDream.Common.NumberBoxTip>슬라이더를 끄는 대신 정확한 값({0}–{1})을 직접 입력할 수 있습니다.</HaulersDream.Common.NumberBoxTip>
 <HaulersDream.Unit.Tiles>{0}칸</HaulersDream.Unit.Tiles>
 <HaulersDream.Unit.Hours>{0}시간</HaulersDream.Unit.Hours>
 <HaulersDream.Setting.CarryLimit.Lab>운반 한도</HaulersDream.Setting.CarryLimit.Lab>
@@ -640,7 +653,7 @@
 <HaulersDream.Setting.HideGizmo.Help>정착민이 주워 담은 물건을 운반 중일 때 나타나는 폰별 "소지품 내려놓기" 버튼을 표시합니다. 기본값은 켜짐이며, 끄면 버튼이 숨겨집니다.</HaulersDream.Setting.HideGizmo.Help>
 <HaulersDream.Setting.StorageFilterButton.Help>운반이 사용할 수 있는 저장고에 대한 건물별 및 모드별 허용/거부 규칙을 편집합니다.</HaulersDream.Setting.StorageFilterButton.Help>
 <HaulersDream.Setting.PauseWhileDrafted.Help>폰이 징집된 동안, Hauler's Dream은 그 폰에 대해 새 줍기와 쓸기를 시작하지 않습니다.</HaulersDream.Setting.PauseWhileDrafted.Help>
-<HaulersDream.Setting.AllowIncapable.Help>운반 불능인 폰이라도 자기 작업(채굴, 수확 등)의 산출물은 줍게 합니다.</HaulersDream.Setting.AllowIncapable.Help>
+<HaulersDream.Setting.AllowIncapable.Help>기본값은 꺼짐으로, 바닐라와 같습니다. 운반 작업이 비활성화된 폰("단순 노동 불가" 배경, 특성, 유전자, 오만한 작위, 이념 역할 등)은 Hauler's Dream에서 완전히 제외됩니다 — 자기 작업 결과물을 줍지 않고, 우클릭 명령 "주변 전부 운반", "줍기", "자재 운반 우선 지정", "대량 적재 우선 지정", "대량 연료 보급 우선 지정", "대량 내리기 우선 지정"도 표시되지 않습니다. 바닐라가 그 폰에 대해 "운반 우선"을 회색으로 처리하는 것과 같습니다. 이 옵션을 켜면 그런 폰에게도 운반 작업을 맡길 수 있습니다. 두 가지는 의도적으로 이 설정의 영향을 받지 않습니다. 카라반 지도에서 짐 운반 동물에 싣도록 명령하는 것(바닐라는 어떤 폰에게도 허용합니다), 그리고 폰 자신의 짐을 비우는 것으로, 후자는 무엇도 발이 묶이지 않도록 항상 사용할 수 있습니다. 반대로 정착지의 모두가 운반할 수 있게 하려면 아래의 "작업 불능 무시"를 사용하십시오.</HaulersDream.Setting.AllowIncapable.Help>
 <HaulersDream.Setting.EnableOnNonHomeMaps.Help>본거지 정착지뿐 아니라 카라반 및 기타 비본거지 맵에서도 Hauler's Dream을 실행합니다.</HaulersDream.Setting.EnableOnNonHomeMaps.Help>
 <HaulersDream.Setting.VerboseLogging.Help>추가 개발자 로깅. 개발자 모드에서만 사용 가능하며 — 개발자 모드에서만 기록합니다.</HaulersDream.Setting.VerboseLogging.Help>
 <HaulersDream.Setting.BulkHaulSecond.S>두 번째 명령 시</HaulersDream.Setting.BulkHaulSecond.S>

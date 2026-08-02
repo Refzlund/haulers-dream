@@ -264,15 +264,15 @@ namespace HaulersDream
 
         /// <summary>Can the unload place this anywhere — a real stockpile/container, OR (failing that) a
         /// desperate home-area floor cell? Mirrors the driver's real storage probe
-        /// (<see cref="StoreUtility.TryFindBestBetterStorageFor"/>) plus a SAFE re-implementation of vanilla's
-        /// home-area radial-cell fallback (see <see cref="HasDesperateHomeAreaCell"/>). It deliberately does NOT
-        /// call <c>StoreUtility.TryFindStoreCellNearColonyDesperate</c>, whose final
-        /// <c>RCellFinder.TryFindRandomSpotJustOutsideColony</c> leg throws a vanilla NullReferenceException for a
-        /// degenerate single-pawn colony with the pawn far from home (issue #76); since this method is re-evaluated
-        /// ~once/second from the cannot-unload alert, that caught-NRE's Mono stack capture WAS the periodic hitch.
+        /// (<see cref="StoreUtility.TryFindBestBetterStorageFor"/>) plus the SAME home-area radial-cell fallback
+        /// the driver itself now uses (<see cref="TryFindDesperateHomeAreaCell"/>), so the alert and the driver
+        /// cannot disagree. Neither calls <c>StoreUtility.TryFindStoreCellNearColonyDesperate</c> — see that
+        /// method for why its third leg is dropped for EVERYONE (issues #231 and #76).
         /// Wrapped in Rand.PushState/PopState so it is safe to call from the per-frame alert/render path: the
         /// probes consume the global Rand stream, which would otherwise desync seeded RNG (multiplayer) and flicker
-        /// the result between alert recalculations.</summary>
+        /// the result between alert recalculations. (This is the ALERT path's concern only — the driver calls
+        /// <see cref="TryFindDesperateHomeAreaCell"/> directly, once per unload step, exactly as vanilla's own
+        /// desperate search consumes the stream from a job.)</summary>
         public static bool HasUnloadDestination(Pawn pawn, Thing thing)
         {
             if (pawn?.Map == null || thing == null || thing.Destroyed || thing.def == null)
@@ -290,7 +290,7 @@ namespace HaulersDream
                 {
                     return StoreUtility.TryFindBestBetterStorageFor(thing, pawn, pawn.Map, StoragePriority.Unstored,
                                pawn.Faction, out _, out _)
-                           || HasDesperateHomeAreaCell(pawn, thing);
+                           || TryFindDesperateHomeAreaCell(pawn, thing, out _);
                 }
             }
             finally
@@ -300,40 +300,63 @@ namespace HaulersDream
         }
 
         /// <summary>
-        /// SAFE re-implementation of ONLY the home-area radial-cell leg of vanilla
-        /// <c>StoreUtility.TryFindStoreCellNearColonyDesperate</c> (RimWorld 1.6): scan the cells around the
-        /// carrier, accepting the first reachable, in-home-area, non-slot-group cell that
-        /// <see cref="StoreUtility.IsGoodStoreCell"/> approves. Identical loop bounds / order / predicates to
-        /// vanilla so a "desperate" destination this reports is one the unload driver would actually use.
+        /// The ONE home-area "desperate" cell search Hauler's Dream uses — shared by the cannot-unload ALERT
+        /// (via <see cref="HasUnloadDestination"/>) and by the unload DRIVER, so the alert can never claim a
+        /// destination the driver would not actually use. A faithful re-implementation of ONLY the home-area
+        /// radial-cell leg of vanilla <c>StoreUtility.TryFindStoreCellNearColonyDesperate</c> (RimWorld 1.6,
+        /// <c>StoreUtility.cs:378-386</c>): scan the cells around the carrier, returning the first reachable,
+        /// in-home-area, non-slot-group cell that <see cref="StoreUtility.IsGoodStoreCell"/> approves. Identical
+        /// loop bounds / order / predicates to vanilla, including the leading random-index draws.
         ///
-        /// It deliberately OMITS vanilla's final <c>RCellFinder.TryFindRandomSpotJustOutsideColony</c> leg: that
-        /// inner <c>FinalValidator</c> dereferences <c>c.GetDistrict(map).Room</c> on random map cells, which is
-        /// null for a degenerate single-pawn "Adventure Mode" colony with the pawn far outside the home area —
-        /// throwing a vanilla NullReferenceException attributed (in release Mono) to
-        /// <c>TryFindStoreCellNearColonyDesperate</c> (issue #76). Because this destination probe is a read-only
-        /// "can it be put away?" question — NOT the driver actually carrying an item to a drop cell — the
-        /// just-outside-colony random spot adds nothing here (a pawn far in the wilderness genuinely has no
-        /// home-area destination, which is exactly the black-hole the alert should surface), so dropping that leg
-        /// is behaviour-correct, not merely a workaround.
+        /// It deliberately OMITS vanilla's final <c>RCellFinder.TryFindRandomSpotJustOutsideColony</c> leg
+        /// (<c>StoreUtility.cs:388</c>) for BOTH callers, for two independent reasons:
+        /// <list type="number">
+        /// <item>It is NOT HOME-CONSTRAINED (issue #231). Its <c>FinalValidator</c> requires an OUTDOOR district
+        /// that TOUCHES THE MAP EDGE, and its last pass rolls a random cell over the whole map
+        /// (<c>RCellFinder.cs:773</c>) — the home area is never consulted. Vanilla only ever reaches it behind
+        /// the rare event-driven <c>UnloadEverything</c> flag, once per job; this mod's unload runs per tagged
+        /// stack, in a loop, for every hauling pawn, re-rolling a fresh random cell from each new position. That
+        /// is exactly the reported "items placed completely outside the Home area".</item>
+        /// <item>It THROWS for a degenerate colony (issue #76). That same <c>FinalValidator</c> dereferences
+        /// <c>c.GetDistrict(map).Room</c> on random map cells (<c>RCellFinder.cs:783-791</c>), which is null for a
+        /// single-pawn "Adventure Mode" colony with the pawn far outside the home area — a vanilla
+        /// NullReferenceException attributed (in release Mono) to <c>TryFindStoreCellNearColonyDesperate</c>. On
+        /// the alert path, re-evaluated ~once/second, that caught-NRE's Mono stack capture WAS the periodic hitch.</item>
+        /// </list>
+        /// When this finds nothing there is genuinely no home-area destination — which the driver answers with a
+        /// home-preferring drop where the pawn stands (<see cref="InventoryDrop.TryDropPreferHome"/>) and the alert
+        /// surfaces to the player.
         ///
-        /// Cannot throw for these inputs: the caller guarantees a non-null spawned carrier + map (the entry guard
-        /// in <see cref="HasUnloadDestination"/>), every call below is non-throwing for a non-null carrier/map, and
-        /// the <c>Rand.RangeInclusive</c> runs inside the caller's Rand.PushState/PopState scope.
+        /// Cannot throw for these inputs: the callers guarantee a non-null spawned carrier + map, and every call
+        /// below is non-throwing for a non-null carrier/map.
         /// </summary>
-        private static bool HasDesperateHomeAreaCell(Pawn carrier, Thing item)
+        /// <param name="carrier">The pawn holding the stack; the scan is centred on its position.</param>
+        /// <param name="item">The stack to be placed — passed to <see cref="StoreUtility.IsGoodStoreCell"/> so a
+        /// cell that could not actually accept it is rejected.</param>
+        /// <param name="cell">The accepted home-area cell, or <see cref="IntVec3.Invalid"/> when none was found.</param>
+        /// <returns>True when a usable home-area cell was found.</returns>
+        internal static bool TryFindDesperateHomeAreaCell(Pawn carrier, Thing item, out IntVec3 cell)
         {
             var map = carrier.Map;
-            for (int i = -4; i < 20; i++)
+            // Vanilla parity, verbatim: the leading RandomLeadTries iterations draw a RANDOM radial index (so two
+            // pawns unloading side by side don't always aim at the same cell), the rest walk outward in order.
+            // The Rand draw MUST stay inside the ternary — hoisting it would consume the global Rand stream on
+            // every iteration and desync multiplayer clients from vanilla's sequence.
+            for (int i = -UnloadFallbackPolicy.RandomLeadTries; i < UnloadFallbackPolicy.RadialCellsToTry; i++)
             {
-                int num = (i < 0) ? Rand.RangeInclusive(0, 4) : i;
-                IntVec3 cell = carrier.Position + GenRadial.RadialPattern[num];
-                if (cell.InBounds(map)
-                    && map.areaManager.Home[cell]
-                    && carrier.CanReach(cell, PathEndMode.ClosestTouch, Danger.Deadly)
-                    && cell.GetSlotGroup(map) == null
-                    && StoreUtility.IsGoodStoreCell(cell, map, item, carrier, carrier.Faction))
+                int num = (i < 0) ? Rand.RangeInclusive(0, UnloadFallbackPolicy.RandomLeadTries) : i;
+                IntVec3 candidate = carrier.Position + GenRadial.RadialPattern[num];
+                if (candidate.InBounds(map)
+                    && map.areaManager.Home[candidate]
+                    && carrier.CanReach(candidate, PathEndMode.ClosestTouch, Danger.Deadly)
+                    && candidate.GetSlotGroup(map) == null
+                    && StoreUtility.IsGoodStoreCell(candidate, map, item, carrier, carrier.Faction))
+                {
+                    cell = candidate;
                     return true;
+                }
             }
+            cell = IntVec3.Invalid;
             return false;
         }
 
@@ -402,11 +425,11 @@ namespace HaulersDream
         public static int KeepCountOf(Pawn pawn, ThingDef def)
         {
             int keep = 0;
-            var policy = pawn.drugs?.CurrentPolicy;
-            if (policy != null)
-                for (int i = 0; i < policy.Count; i++)
-                    if (policy[i].drug == def && policy[i].takeToInventory > 0)
-                        keep += policy[i].takeToInventory;
+            // Routed through the shared accessor (#232) rather than open-coded here — same integer-indexer walk,
+            // same SUM over duplicate entries, so the keep count is unchanged. What the accessor buys is that HD
+            // now has exactly one drug-policy read to audit, and it is one that cannot reach DrugPolicy's
+            // per-ThingDef indexer, whose no-entry path is a message-less throw.
+            keep += DrugPolicyLookup.TakeToInventoryTotal(pawn.drugs?.CurrentPolicy, def);
             var stockEntries = pawn.inventoryStock?.stockEntries;
             if (stockEntries != null)
                 foreach (var entry in stockEntries.Values)

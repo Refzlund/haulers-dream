@@ -58,6 +58,8 @@
 <HaulersDream.Setting.MealsOnWheelsDesc>当饥饿的殖民者在地图上或自己（或驮兽）的行囊中都找不到食物时，会走向另一名携带可接受食物的殖民者或驮兽，从其货物栏中取食——既减少往返，又能在所携带的餐食腐烂前抢救它们——而不是挨饿或长途跋涉去远处的储存区。只有在正常的食物搜索一无所获时才会启动，因此绝不会越过更近的餐食。会遵守进食者的食物方案、意识形态和禁酒状态；绝不取走家长正喂给婴儿的食物；绝不从被征召、倒地或暴走的运载者处取用；会预定该餐食，以免两名殖民者争抢；并优先取最临近腐烂的食物。默认开启。</HaulersDream.Setting.MealsOnWheelsDesc>
   <HaulersDream.Setting.EatFromVehiclesAway>离家在外时也能从载具货舱取食</HaulersDream.Setting.EatFromVehiclesAway>
   <HaulersDream.Setting.EatFromVehiclesAwayDesc>扩展"移动餐车"：在非家园地图上，饥饿的殖民者也可以像从驮兽身上那样，从停放的载具货舱中取用食物。仅在离家的地图上生效，家中载具的装载清单不受影响。默认关闭；需要开启"移动餐车"并安装载具框架。</HaulersDream.Setting.EatFromVehiclesAwayDesc>
+  <HaulersDream.Setting.DrugsForWithdrawal>让处于戒断中的殖民者从其他殖民者那里取走被保管的药物</HaulersDream.Setting.DrugsForWithdrawal>
+  <HaulersDream.Setting.DrugsForWithdrawalDesc>当一名殖民者渴求或正在戒断其成瘾的药物，而地图上又找不到任何一份时，他会走向随身携带该药物的另一名殖民者，并取走一剂。只有被拾荒者之梦本身固定住的药物才能通过这种方式取得——也就是"保管在背包中"的固定量，或正被搬运往仓库的货物。殖民者按自己用药方案携带的药物依然不可触碰，与原版完全一致。若没有这项功能，让一名殖民者保管某种药物就会把它对成瘾者永久藏起来，而原版从不允许这种情况：原版会让殖民者放下任何没有理由携带的药物。绝不会从被征召、倒地、死亡或精神失常的殖民者身上取走，也不会从正在组建的商队或载具货舱中取走。若要彻底阻止成瘾者用药，请在其用药方案中把该药物设为"成瘾时"不允许——那依然能完全阻止他。默认开启。</HaulersDream.Setting.DrugsForWithdrawalDesc>
   <HaulersDream.Setting.MedicineFromVehiclesAway>离家在外时用载具或驮兽上的药品治疗</HaulersDream.Setting.MedicineFromVehiclesAway>
   <HaulersDream.Setting.MedicineFromVehiclesAwayDesc>当地图上没有可用药品时，医生可以使用载具货舱、驮兽或其他殖民者身上携带的药品进行治疗。仅在离家的地图上生效，遵循病人的医疗策略。默认关闭；需要安装载具框架。</HaulersDream.Setting.MedicineFromVehiclesAwayDesc>
   <HaulersDream.Setting.BuildFromVehiclesAway>离家在外时也能从载具货舱取建材</HaulersDream.Setting.BuildFromVehiclesAway>
@@ -171,7 +173,7 @@
 <HaulersDream.AllowMechanoidsDesc>管辖你的工作机械体是否使用 Hauler's Dream 的收取和批量搬运——像殖民者一样把产出和战利品装进它们的货物栏。这涵盖收取机械体自身工作产出的物资：收获/砍伐的植物、采掘的矿石和碎块，以及拆除残料（机械体拆掉一处结构时释放的材料）。这并不会改变原版机械体的工作本身：一个工作机械体仍自行采掘、收获和拆除——此开关只决定它是否还把成果收进货物栏以进行整合搬运。机械体如何向工地交付材料是另一回事，由上方的“用货物栏为单个大型建造携带材料”设置管辖（该设置适用于任何建造者，机械体或殖民者）；此开关本身不改变建造交付。开启时，玩家的工作机械体也可在智能超载设置下超过100%容量携带，并像殖民者一样因此减速。</HaulersDream.AllowMechanoidsDesc>
 <HaulersDream.AllowAnimals>允许殖民地动物收取和搬运</HaulersDream.AllowAnimals>
 <HaulersDream.AllowAnimalsDesc>默认关闭。开启时，训练了搬运的殖民地动物会一次携带多堆物品——把附近的战利品拾进货物栏并执行 Hauler's Dream 的批量搬运，而不是一趟一堆。这只会影响能被训练搬运的动物：具有高级可训练度且体型足够大的（哈士奇、拉布拉多、大象、熊、敲击兽等）。无法被训练搬运的动物——家政猫之类——根本不会执行搬运任务（无论此设置如何均是如此），因此不受此开关影响。只动你自己的殖民地动物；野生和敌方动物绝不受影响。</HaulersDream.AllowAnimalsDesc>
-<HaulersDream.Setting.AllowIncapable>允许无法搬运的小人收取自己的产出</HaulersDream.Setting.AllowIncapable>
+<HaulersDream.Setting.AllowIncapable>让无法搬运的小人也能拾取和搬运</HaulersDream.Setting.AllowIncapable>
 <HaulersDream.Setting.EnableOnNonHomeMaps>也在商队/非主基地地图上工作</HaulersDream.Setting.EnableOnNonHomeMaps>
 <HaulersDream.Setting.HideGizmo>显示每个小人的“卸载货物栏”按钮</HaulersDream.Setting.HideGizmo>
 <HaulersDream.Setting.UnloadGrace>积攒窗口：在最后一次拾取后，继续拾取 {0} tick（约60/秒）再去卸载。值越高＝小人超载越多、往返更少更大；它们一旦装满仍会立即卸载（超载上限）。</HaulersDream.Setting.UnloadGrace>
@@ -186,9 +188,14 @@
 <HaulersDream.Gizmo.UnloadNowDrafted>已征召：取消征召该小人以卸载。</HaulersDream.Gizmo.UnloadNowDrafted>
 <HaulersDream.Gizmo.AutoHaul>自动搬运产出</HaulersDream.Gizmo.AutoHaul>
 <HaulersDream.Gizmo.AutoHaulDesc>开启时，这个小人会在工作时自动收取自己的工作产出，并把附近的战利品清扫进货物栏。关闭它即可阻止这个小人自动搬运——它仍会收起任何已经携带的东西。</HaulersDream.Gizmo.AutoHaulDesc>
+<HaulersDream.Gizmo.BenchGather>收集原料</HaulersDream.Gizmo.BenchGather>
+<HaulersDream.Gizmo.BenchGatherDescActive>小人在制作前会一次性把这个工作台工单所需的原料收进货物栏。\n\n为这个工作台关闭它，改用 RimWorld 自己的行为：小人一次只搬一堆直接送到工作台，并立刻开始工单。当原料本来就在工作台旁边时这样更快，因为那次收集是一个独立的工作——小人走回工作台把它做完，要等到下一次找活时才会重新接手这个工单。\n\n只影响这个工作台，并且同样涵盖批量制作：在这个工作台上设为“批量”的工单会改成一次做一个。其他工作台不受影响。</HaulersDream.Gizmo.BenchGatherDescActive>
+<HaulersDream.Gizmo.BenchGatherDescInactive>小人不会把这个工作台工单所需的原料收进货物栏。这个工作台使用 RimWorld 自己的行为：小人一次只搬一堆直接送到工作台并立刻开始工单，当原料本来就在附近时这样更快。\n\n这个工作台的批量制作同样关闭，所以在这里设为“批量”的工单会一次做一个。\n\n重新打开它即可让小人再次一次性收集所有原料。只影响这个工作台。</HaulersDream.Gizmo.BenchGatherDescInactive>
 <HaulersDream.Alert.CannotUnload>无法卸载货物栏（{0}）</HaulersDream.Alert.CannotUnload>
-<HaulersDream.Alert.CannotUnloadDesc.NoStorage>这些小人携带着无处存放的收取物品——地图上没有储存区或倾倒区接收它们，也找不到可到达的地点。请添加一个储存区（倾倒储存区可接收岩石碎块和大多数废料），或在已有储存区上允许它们的物品类型：\n\n{0}\n\n在此之前，物品会留在它们的货物栏中。点击此警报可循环切换到这些小人；悬停可指出它们。</HaulersDream.Alert.CannotUnloadDesc.NoStorage>
+<HaulersDream.Alert.CannotUnloadDesc.NoStorage>这些小人携带着无处存放的收取物品——地图上没有储存区或倾倒区接收它们，也找不到可到达的地点。请添加一个储存区（倾倒储存区可接收岩石碎块和大多数废料），或在已有储存区上允许它们的物品类型：\n\n{0}\n\n在此之前，小人会把这些物品放在它们工作的地方——只要有空位就放在住宅区内——而不是一直随身携带。点击此警报可循环切换到这些小人；悬停可指出它们。</HaulersDream.Alert.CannotUnloadDesc.NoStorage>
 <HaulersDream.Alert.CannotUnloadDesc.Stuck>这些小人已经携带收集到的物品很久却没有卸下。通常的原因是，从他们所在的位置没有可到达且允许存放的仓库能接收这些物品，所以请先检查这一点：\n\n{0}\n\n如果仓库看起来没问题，可能是某个会打断工作的模组（例如不断发出新命令的自动施法或自动工作模组）在他们卸货完成前取消了卸货。注意：Hauler's Dream 官方支持的模组，例如 Simple Sidearms、Smart Medicine、Combat Extended、Grab Your Tool、Item Policy 和 Compositable Loadouts，都不是原因，不应将其禁用；它们要保留的物品已被排除在卸货之外。点击此警报可在这些小人之间切换；悬停可标示他们。</HaulersDream.Alert.CannotUnloadDesc.Stuck>
+<HaulersDream.Alert.WorkGiverQuarantined>因其他模组的错误而停用了某类工作（{0}）</HaulersDream.Alert.WorkGiverQuarantined>
+<HaulersDream.Alert.WorkGiverQuarantinedDesc>在 RimWorld 挑选工作时，另一个模组反复出错，而且出错的位置是 RimWorld 并未加以保护的地方。若置之不理，你的殖民者将完全不做任何工作——他们照常吃饭睡觉，所以看起来像是偷懒，而不像是出了错。\n\nHauler's Dream 只停用了受影响的那类工作，其余一切照常运行：\n\n{0}\n\n在相关模组更新或被移除之前，这类工作不会再自动进行。你仍然可以手动指派：右键点击优先安排它依旧能派出一次工作，因为 RimWorld 会直接生成那条命令，不经过 Hauler's Dream 停用的那道检查——只是殖民者做完之后不会自己继续做下去。这不是 Hauler's Dream 的问题——请附上你的日志向上面列出的模组反馈。重启游戏后该列表会清空。</HaulersDream.Alert.WorkGiverQuarantinedDesc>
 <HaulersDream.PlanRoute.Option>规划优先{0}…</HaulersDream.PlanRoute.Option>
 <HaulersDream.PlanRoute.ConstructGerund>建造</HaulersDream.PlanRoute.ConstructGerund>
 <HaulersDream.PlanRoute.MiningGerundFallback>采掘</HaulersDream.PlanRoute.MiningGerundFallback>
@@ -255,6 +262,8 @@
 <HaulersDream.PlanCraft.Repeat>重复：{0} 次</HaulersDream.PlanCraft.Repeat>
 <HaulersDream.PlanCraft.Timeout>超时：{0}小时</HaulersDream.PlanCraft.Timeout>
 <HaulersDream.PlanCraft.TimeoutOff>超时：无</HaulersDream.PlanCraft.TimeoutOff>
+<HaulersDream.PlanCraft.RepeatBoxTip>直接输入精确的重复次数。可以填写超过当前材料所能支持的数量（目前为 {0} 次）——批量会自动缩减到实际可行的次数，原因显示在下方。</HaulersDream.PlanCraft.RepeatBoxTip>
+<HaulersDream.PlanCraft.TimeoutBoxTip>直接输入精确的超时时长（小时，{0}–{1}）。输入完成后会取整到最近的半小时；0 表示不限时。</HaulersDream.PlanCraft.TimeoutBoxTip>
 <HaulersDream.PlanCraft.Resolved>将一次制作 {0} 个。</HaulersDream.PlanCraft.Resolved>
 <HaulersDream.PlanCraft.ResolvedTrimmed>将一次制作 {0} 个——{1}。</HaulersDream.PlanCraft.ResolvedTrimmed>
 <HaulersDream.PlanCraft.LimitResources>受可用原料限制</HaulersDream.PlanCraft.LimitResources>
@@ -294,6 +303,8 @@
 <HaulersDream.Setting.CraftBatchTimeoutOff>默认制作批量超时：无</HaulersDream.Setting.CraftBatchTimeoutOff>
 <HaulersDream.Setting.InventoryCraftDeliver>用货物栏携带制作原料（更少往返）</HaulersDream.Setting.InventoryCraftDeliver>
 <HaulersDream.Setting.InventoryCraftDeliverDesc>当小人开始一个需要来自两堆或更多分散物品堆的原料的制作工单时，它会先一次性把它们全部收集进货物栏——必要时超重，接受减速（除非启用了严格携带质量）——只走一趟去工作台，并用所携带的存货来制作。对每个配方都有效，包括那些先制作一件未完成物品的（服装、武器、雕塑）。制作本身100%是原版的，因此不会有任何东西被复制或丢失。如果有其他模组在管理制作原料的搬运，Hauler's Dream 会自动让位（改由它去收集原料），这样任何制作循环都会自行解决。需要上方的“所携带的原料计入制作”。</HaulersDream.Setting.InventoryCraftDeliverDesc>
+<HaulersDream.Setting.ShowBenchGatherGizmo>显示每个工作台的“收集原料”按钮</HaulersDream.Setting.ShowBenchGatherGizmo>
+<HaulersDream.Setting.ShowBenchGatherGizmoDesc>在每个工作台的命令栏上添加一个“收集原料”开关，这样你就可以只关闭某一个工作台的原料收集，让 RimWorld 自己的一次一堆行为在那里运行。适合那些你就在旁边补货的炉灶或工作台——在那里收集花的时间比省下的还多。默认开启。这只控制按钮是否显示——你已经关掉的工作台无论如何都保持关闭。关闭某个工作台始终优先于上面的设置，而且即使“用货物栏携带制作原料（更少往返）”已关闭它依然有效，因为批量制作无论该设置如何都会收集原料。</HaulersDream.Setting.ShowBenchGatherGizmoDesc>
 <HaulersDream.PrepGather.Report>正在收集制作原料。</HaulersDream.PrepGather.Report>
 <HaulersDream.BulkHaul.Report>正在搬运附近的一切。</HaulersDream.BulkHaul.Report>
 <HaulersDream.JobReport.DefaultDestination>储存区</HaulersDream.JobReport.DefaultDestination>
@@ -394,9 +405,9 @@
 <HaulersDream.Setting.LoadHybridPathingDesc>当朝一个运输工具清扫若干堆物品时，对最近的几个候选用真实寻路而非直线距离来选取步行顺序——在杂乱地图上路径略好，代价是一些额外的寻路开销。默认关闭；直线顺序已能产出正确、往返少的装载。</HaulersDream.Setting.LoadHybridPathingDesc>
 <HaulersDream.Setting.LoadPathfindingCandidates>每站的寻路候选数：{0}</HaulersDream.Setting.LoadPathfindingCandidates>
 <HaulersDream.Setting.AutoOpenTransporterContents>为选中的运输舱自动打开“内容物”选项卡</HaulersDream.Setting.AutoOpenTransporterContents>
-<HaulersDream.Setting.AutoOpenTransporterContentsDesc>当你选中单个运输舱或穿梭机时，自动打开它的“内容物”选项卡，以便你看清它正在装载什么。默认关闭（它改变你点选东西时打开的是哪个选项卡）。</HaulersDream.Setting.AutoOpenTransporterContentsDesc>
-<HaulersDream.Setting.AutoOpenCarrierGear>为选中的运载者自动打开“装备”选项卡</HaulersDream.Setting.AutoOpenCarrierGear>
-<HaulersDream.Setting.AutoOpenCarrierGearDesc>当你选中一只驮兽或其他运载者时，自动打开它的“装备”选项卡，以查看它正在携带什么。默认关闭。</HaulersDream.Setting.AutoOpenCarrierGearDesc>
+<HaulersDream.Setting.AutoOpenTransporterContentsDesc>当你选中单个运输舱或穿梭机时，自动打开它的“内容物”选项卡，以便你看清它正在装载什么。它只在选择实际发生变化时才触发，所以如果你关闭该选项卡后再次点击同一个运输舱，它会保持关闭。默认关闭（它改变你点选东西时打开的是哪个选项卡）。</HaulersDream.Setting.AutoOpenTransporterContentsDesc>
+<HaulersDream.Setting.AutoOpenCarrierGear>为选中的驮兽和运载者自动打开“装备”选项卡</HaulersDream.Setting.AutoOpenCarrierGear>
+<HaulersDream.Setting.AutoOpenCarrierGearDesc>当你选中自己的驮兽、载具或其他非人形运载者，且其物品栏中有东西时，自动打开显示其载荷的那个选项卡：“装备”选项卡，载具则是“货物”选项卡。它绝不会对殖民者这样做：当你在殖民者之间点选时，游戏本来就会保持你上次打开的选项卡。它也只在选择实际发生变化时才触发，所以如果你关闭该选项卡后再次点击同一个运载者，它会保持关闭。默认关闭（它改变你点选东西时打开的是哪个选项卡）。</HaulersDream.Setting.AutoOpenCarrierGearDesc>
 <HaulersDream.Setting.EnableStorageNetworkBulkLoad>从储存网络批量装载（实验性）</HaulersDream.Setting.EnableStorageNetworkBulkLoad>
 <HaulersDream.Setting.EnableStorageNetworkBulkLoadDesc>当安装了储存网络（Storage Network）模组时，让批量装载清扫其网络服务器中储存的物品，从而一趟填满一个运输舱、舱体、传送门或载具，而不是一次一堆。物品通过一个可用、可到达的终端被取出，并由储存网络按需具现。默认关闭：这是实验性的，并依赖于储存网络的行为。不开启它，网络中的物品仍以正常的（一趟一堆）方式装载。</HaulersDream.Setting.EnableStorageNetworkBulkLoadDesc>
 <HaulersDream.Setting.ResetToDefaults>重置为默认</HaulersDream.Setting.ResetToDefaults>
@@ -546,6 +557,7 @@
 <HaulersDream.Head.PackAnimals>驮兽</HaulersDream.Head.PackAnimals>
 <HaulersDream.Head.Transporters>运输舱、传送门与添加燃料</HaulersDream.Head.Transporters>
 <HaulersDream.Head.Vehicles>载具</HaulersDream.Head.Vehicles>
+<HaulersDream.Head.AutoOpenTabs>自动打开选项卡</HaulersDream.Head.AutoOpenTabs>
 <HaulersDream.Head.AdvancedLoading>高级装载</HaulersDream.Head.AdvancedLoading>
 <HaulersDream.Head.StorageRouting>面向使用者的储存路径规划</HaulersDream.Head.StorageRouting>
 <HaulersDream.Head.StorageFilters>储存建筑筛选</HaulersDream.Head.StorageFilters>
@@ -580,6 +592,7 @@
 <HaulersDream.Profile.PasteCreate>创建配置档</HaulersDream.Profile.PasteCreate>
 <HaulersDream.Common.Off>关闭</HaulersDream.Common.Off>
 <HaulersDream.Common.On>开启</HaulersDream.Common.On>
+<HaulersDream.Common.NumberBoxTip>直接输入精确数值（{0}–{1}），无需拖动滑块。</HaulersDream.Common.NumberBoxTip>
 <HaulersDream.Unit.Tiles>{0} 格</HaulersDream.Unit.Tiles>
 <HaulersDream.Unit.Hours>{0} 小时</HaulersDream.Unit.Hours>
 <HaulersDream.Setting.CarryLimit.Lab>携带上限</HaulersDream.Setting.CarryLimit.Lab>
@@ -640,7 +653,7 @@
 <HaulersDream.Setting.HideGizmo.Help>显示当殖民者携带收取货物时出现的、每个小人的“卸载货物栏”按钮。默认开启；关闭后将隐藏该按钮。</HaulersDream.Setting.HideGizmo.Help>
 <HaulersDream.Setting.StorageFilterButton.Help>编辑按建筑和按模组的允许/拒绝规则，决定搬运可使用哪些储存。</HaulersDream.Setting.StorageFilterButton.Help>
 <HaulersDream.Setting.PauseWhileDrafted.Help>当一个小人被征召时，Hauler's Dream 停止为它启动新的收取和清扫。</HaulersDream.Setting.PauseWhileDrafted.Help>
-<HaulersDream.Setting.AllowIncapable.Help>让一个无法从事搬运的小人仍能收取它自己工作（采掘、收获……）的产出。</HaulersDream.Setting.AllowIncapable.Help>
+<HaulersDream.Setting.AllowIncapable.Help>默认关闭，与原版一致：一个搬运工作被禁用的小人（"无法从事粗活"的背景故事、特性、基因、自负的头衔、意识形态角色……）会被完全排除在拾荒者之梦之外——它不会拾取自己的工作产出，右键指令"搬运附近的一切""拾取""优先搬运材料至……""优先批量装载""优先为……批量添加燃料"和"优先批量卸载"也不会对它显示，正如原版会为该小人把"优先搬运"变灰一样。打开此项即可照样把这些搬运工作交给它们。有两项刻意永不受此设置限制：在商队地图上命令小人装载驮兽（原版允许任何小人这样做），以及清空小人自己的背包，那始终可用，以免有东西被滞留。如果你想让殖民地里的每个人都能搬运，请改用下方的"无工作能力覆盖"。</HaulersDream.Setting.AllowIncapable.Help>
 <HaulersDream.Setting.EnableOnNonHomeMaps.Help>也在商队和其他非主基地地图上运行 Hauler's Dream，而不仅是你的主殖民地。</HaulersDream.Setting.EnableOnNonHomeMaps.Help>
 <HaulersDream.Setting.VerboseLogging.Help>额外的开发者日志。仅在开发者模式下可用——且仅在该模式下记录。</HaulersDream.Setting.VerboseLogging.Help>
 <HaulersDream.Setting.BulkHaulSecond.S>第2个命令时</HaulersDream.Setting.BulkHaulSecond.S>

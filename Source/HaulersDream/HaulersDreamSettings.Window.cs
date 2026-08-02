@@ -1291,6 +1291,12 @@ namespace HaulersDream
                 shareForCrafting, "HaulersDream.Setting.ShareForCraftingDesc".Translate());
             inventoryCraftDeliver = HDSettingsUI.Checkbox(c, "HaulersDream.Setting.InventoryCraftDeliver".Translate(),
                 inventoryCraftDeliver, "HaulersDream.Setting.InventoryCraftDeliverDesc".Translate(), enabled: shareForCrafting, indent: 24f);
+            // Deliberately TOP-LEVEL — no `enabled:` gate and no indent, even though it sits under the gather
+            // settings it relates to (issue #230). The per-bench switch also governs BATCH gathering, and the batch
+            // route never reads inventoryCraftDeliver — so chaining this control to that setting would hide the
+            // only per-bench brake on batching in the exact configuration where batching is all that still gathers.
+            showBenchGatherGizmo = HDSettingsUI.Checkbox(c, "HaulersDream.Setting.ShowBenchGatherGizmo".Translate(),
+                showBenchGatherGizmo, "HaulersDream.Setting.ShowBenchGatherGizmoDesc".Translate());
             shareMeetInMiddle = HDSettingsUI.Checkbox(c, "HaulersDream.Setting.ShareMeetInMiddle".Translate(),
                 shareMeetInMiddle, "HaulersDream.Setting.ShareMeetInMiddle.Help".Translate());
             butcherSpoilingFirst = HDSettingsUI.Checkbox(c, "HaulersDream.Setting.ButcherSpoilingFirst".Translate(),
@@ -1313,6 +1319,10 @@ namespace HaulersDream
                 medicineFromVehiclesAway = HDSettingsUI.Checkbox(c, "HaulersDream.Setting.MedicineFromVehiclesAway".Translate(),
                     medicineFromVehiclesAway, "HaulersDream.Setting.MedicineFromVehiclesAwayDesc".Translate());
             }
+            // #229: a top-level option in the Build & Craft tab's Food section (NOT indented under Meals on Wheels —
+            // it is a separate leg, drugs not food, and does not depend on that toggle).
+            drugsForWithdrawal = HDSettingsUI.Checkbox(c, "HaulersDream.Setting.DrugsForWithdrawal".Translate(),
+                drugsForWithdrawal, "HaulersDream.Setting.DrugsForWithdrawalDesc".Translate());
         }
 
         // ===================== BULK LOADING =====================
@@ -1355,6 +1365,15 @@ namespace HaulersDream
                     enableBulkLoadVehicles, "HaulersDream.Setting.EnableBulkLoadVehiclesDesc".Translate(), enabled: enableVehicleFramework, indent: 24f);
             }
 
+            // A UI convenience, not a loading knob: it changes which inspect TAB is open when you click things, so
+            // it gets its own header instead of sitting among the opportunistic-load / pathfinding internals where
+            // nobody hunting "why does my Gear tab keep opening" would ever look (#224).
+            HDSettingsUI.Header(c, "HaulersDream.Head.AutoOpenTabs".Translate());
+            autoOpenTransporterContents = HDSettingsUI.Checkbox(c, "HaulersDream.Setting.AutoOpenTransporterContents".Translate(),
+                autoOpenTransporterContents, "HaulersDream.Setting.AutoOpenTransporterContentsDesc".Translate());
+            autoOpenCarrierGear = HDSettingsUI.Checkbox(c, "HaulersDream.Setting.AutoOpenCarrierGear".Translate(),
+                autoOpenCarrierGear, "HaulersDream.Setting.AutoOpenCarrierGearDesc".Translate());
+
             HDSettingsUI.Header(c, "HaulersDream.Head.AdvancedLoading".Translate());
             enableOpportunisticLoad = HDSettingsUI.Checkbox(c, "HaulersDream.Setting.OpportunisticLoad".Translate(),
                 enableOpportunisticLoad, "HaulersDream.Setting.OpportunisticLoadDesc".Translate());
@@ -1368,10 +1387,6 @@ namespace HaulersDream
             loadPathfindingCandidates = Mathf.RoundToInt(HDSettingsUI.Slider(c, "HaulersDream.Setting.LoadPathfindingCandidates.Lab".Translate(),
                 loadPathfindingCandidates, 2f, 24f, loadPathfindingCandidates.ToString(),
                 "HaulersDream.Setting.LoadPathfindingCandidates.Help".Translate(), enabled: loadHybridPathing, indent: 24f));
-            autoOpenTransporterContents = HDSettingsUI.Checkbox(c, "HaulersDream.Setting.AutoOpenTransporterContents".Translate(),
-                autoOpenTransporterContents, "HaulersDream.Setting.AutoOpenTransporterContentsDesc".Translate());
-            autoOpenCarrierGear = HDSettingsUI.Checkbox(c, "HaulersDream.Setting.AutoOpenCarrierGear".Translate(),
-                autoOpenCarrierGear, "HaulersDream.Setting.AutoOpenCarrierGearDesc".Translate());
             // Storage Network bulk-load (experimental, default off) — only shown when Storage Network is installed.
             if (StorageNetworkCompat.IsActive)
                 enableStorageNetworkBulkLoad = HDSettingsUI.Checkbox(c, "HaulersDream.Setting.EnableStorageNetworkBulkLoad".Translate(),

@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Patch>
+
+  <!--
+    Inject the per-bench "Gather ingredients" switch (issue #230) onto every bill-giving building.
+
+    WHY THE ANCHOR IS inspectorTabs/li="ITab_Bills" AND NOT thingClass="Building_WorkTable":
+    an xpath thingClass predicate is a LITERAL STRING match, so it only ever hits defs spelled exactly
+    "Building_WorkTable" — it silently misses every SUBCLASS. In vanilla Core alone that would drop
+    Building_WorkTable_HeatPush, which is the electric stove, the fuelled stove, the stonecutter's table,
+    the electric smelter and the electric crematorium — i.e. exactly the stove the feature was requested
+    for — plus every modded bench that subclasses either one. "Has a bills tab" is the honest test for
+    "this building takes crafting bills", and it is what Common Sense anchors its own per-bench toggle on.
+
+    THE COST is deliberate over-reach: a few bill givers that HD never routes anyway (mech gestators and
+    other autonomous worktables) also receive the comp. That is harmless — the comp is an inert scribed
+    bool, and CompBenchGather.CompGetGizmosExtra hides the button on anything BillRouteGate.IsRoutableBenchType
+    rejects, so no button ever appears where the gather did not apply in the first place.
+
+    OPERATION ORDER IS LOAD-BEARING, for two reasons that are worth stating precisely:
+      * PatchOperationSequence.ApplyWorker returns false at the FIRST failing child and runs no more of them.
+        So the operation that is most likely to match nothing must come LAST, or it would silently cancel the
+        ones after it.
+      * <success>Always</success> on the top-level sequence is what stops THAT abort from being reported as a
+        failed patch — an xpath matching nothing is a normal outcome here, not an error.
+    The three operations:
+      1. PatchOperationTest — present for parity with Common Sense's own per-bench toggle patch, which this
+         file mirrors. Be honest about what it does NOT buy: a failing child Add does not log anything.
+         PatchOperation.Apply only logs through Complete(modIdentifier), LoadedModManager calls Complete over
+         the flat list of TOP-LEVEL operations in ModContentPack.Patches, and PatchOperationSequence.Complete
+         does not recurse into children — so a child Add that matches nothing simply returns false, quietly.
+         The Test is therefore inert in the case it appears to guard (if op 2 would fail, op 3 is skipped
+         either way), and it can only ever subtract: a Test failure would also skip the op 3 fallback below.
+      2. Add into the existing <comps> — covers every bill giver that already has comps (nearly all of them).
+      3. Add a WHOLE <comps> node to the bill givers that have none. LAST, per the first rule above: in a
+         typical modlist this matches nothing, and aborting at the final operation skips nothing.
+    (HD's own HaulersDream_Pawns.xml has no such fallback and simply skips comps-less defs; this mirrors
+    Common Sense's more complete shape instead, so a bench def without comps still gets the switch.)
+  -->
+  <Operation Class="PatchOperationSequence">
+    <success>Always</success>
+    <operations>
+
+      <li Class="PatchOperationTest">
+        <xpath>Defs/ThingDef[inspectorTabs/li="ITab_Bills"]/comps</xpath>
+      </li>
+
+      <li Class="PatchOperationAdd">
+        <xpath>Defs/ThingDef[inspectorTabs/li="ITab_Bills"]/comps</xpath>
+        <value>
+          <li><compClass>HaulersDream.CompBenchGather</compClass></li>
+        </value>
+      </li>
+
+      <li Class="PatchOperationAdd">
+        <xpath>Defs/ThingDef[inspectorTabs/li="ITab_Bills" and not(comps)]</xpath>
+        <value>
+          <comps>
+            <li><compClass>HaulersDream.CompBenchGather</compClass></li>
+          </comps>
+        </value>
+      </li>
+
+    </operations>
+  </Operation>
+
+</Patch>

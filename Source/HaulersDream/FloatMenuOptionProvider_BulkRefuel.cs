@@ -33,9 +33,14 @@ namespace HaulersDream
                 yield break;
             if (pawn.GetComp<CompHauledToInventory>() == null || pawn.inventory == null)
                 yield break;
-            // Player order: only the physical capability is required (like vanilla refuel orders), NOT the Hauling
-            // work-tag / auto eligibility — the swept fuel is deposited into the refuelable, so nothing strands.
-            if (!pawn.health.capacities.CapableOf(PawnCapacityDefOf.Manipulation))
+            // Player order: skips the AUTO eligibility gate (the swept fuel is deposited into the refuelable, so
+            // nothing strands) but NOT the hauling-capability bar (#229). Refuelling IS hauling work in vanilla —
+            // WorkGiverDef Refuel declares <workType>Hauling</workType>
+            // (Core/Defs/WorkGiverDefs/WorkGivers.xml:1210-1213) — so vanilla greys its own "Refuel" out for a pawn
+            // whose Hauling work type is disabled, and HD's bulk replacement must not be a way around that.
+            // HaulOrderGate reads the WORK TYPE, not the WorkTags.Hauling bit an "incapable of dumb labor"
+            // backstory leaves clear.
+            if (HaulOrderGate.Blocks(pawn))
                 yield break;
 
             for (int i = 0; i < things.Count; i++)

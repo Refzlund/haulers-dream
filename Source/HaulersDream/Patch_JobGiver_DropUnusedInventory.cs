@@ -1,3 +1,4 @@
+using System;
 using HarmonyLib;
 using RimWorld;
 using Verse;
@@ -153,6 +154,111 @@ namespace HaulersDream
             var comp = pawn.GetComp<CompHauledToInventory>();
             if (comp != null && (comp.GetHashSet().Contains(drug) || comp.IsKeptDef(drug.def)))
                 __result = true; // HD-hauled cargo (keep for the unload trip) OR a kept drug (#197 keep-in-inventory)
+        }
+
+        /// <summary>
+        /// The seam name, minus the per-drug suffix the <see cref="Finalizer"/> appends. Kept as a constant so
+        /// the suffix is the ONLY thing that varies between reports and the dedupe stays predictable.
+        /// </summary>
+        private const string SeamBase = "JobGiver_DropUnusedInventory.ShouldKeepDrugInInventory (HD drop protection)";
+
+        /// <summary>
+        /// (Issue #232) Contain a throw out of this predicate and answer "keep it", the safe direction.
+        ///
+        /// <para>WHY THE SEAM NEEDS ONE. This predicate is vanilla's canonical keep-or-drop gate and it has two
+        /// callers, neither of which guards it. The in-tick one is <c>JobGiver_DropUnusedInventory.TryGiveJob</c>,
+        /// which does <c>if (!ShouldKeepDrugInInventory(...)) Drop(...)</c> for every drug in the pack, every
+        /// think pass, for every undrafted colonist standing in the Home area. The other is
+        /// <c>FloatMenuOptionProvider_PickUpItem.GetOptionsFor</c>, which is why the #232 report surfaced as
+        /// "right-clicking a colonist onto a drug throws" — the throw aborts the float-menu build, so the
+        /// pick-up options never appear.</para>
+        ///
+        /// <para>THE DEGRADE VALUE IS THE WHOLE POINT. When the original throws, <c>__result</c> is
+        /// <c>default(bool)</c> — <c>false</c> — and <c>false</c> is the DESTRUCTIVE answer here: it reads as
+        /// "the colonist has no reason to hold this", so the drop loop dumps that stack at their feet, again on
+        /// the very next think pass, forever. <c>true</c> is vanilla's own fall-through (the method returns
+        /// <c>false</c> only when a six-clause conjunction all holds), so it stops the drop and restores the
+        /// pick-up options, and it is stable across BOTH callers, so the two can never oscillate against each
+        /// other. It does not weaken the #62/#81/#197 drop protection either: for a tagged or player-kept drug
+        /// the postfix above would have forced <c>true</c> anyway.</para>
+        ///
+        /// <para>ONE HONEST OVER-REACH. A finalizer cannot tell "the original threw" from "a FOREIGN postfix
+        /// threw after the original returned <c>false</c>", so in that sub-case a legitimate <c>false</c> is
+        /// turned into <c>true</c> and a drug the colonist really should shed stays in the pack until whatever
+        /// threw is fixed. A thread-static "the original completed" latch was considered and REJECTED: it is
+        /// unreliable under patch ordering (a foreign postfix ordered before HD's leaves it unset either way) and
+        /// it adds re-entrancy surface to a UI-thread-reachable path, for a sub-case whose degrade already errs
+        /// in the safe direction.</para>
+        ///
+        /// <para>WHAT IT DOES NOT DO. It never repairs, replaces or edits the drug policy, and it never
+        /// remembers that a def throws. A <c>DrugPolicy</c> is shared, SCRIBED state and one caller is the
+        /// clicking client's UI thread, so writing to it there would be a save mutation and a multiplayer desync
+        /// — the same hazard the UI-path guard above documents for the tag-set self-heal. The throw therefore
+        /// still happens on every call; containment costs nothing on the non-throwing path.</para>
+        /// </summary>
+        /// <param name="__exception">Harmony's observed exception, null on the normal path.</param>
+        /// <param name="__result">The predicate's answer, forced to true when a foreign fault is contained.</param>
+        /// <param name="pawn">The colonist the check ran for; may be null.</param>
+        /// <param name="drug">The drug being checked; read for its <c>defName</c> only, never its label — see the
+        /// dedupe comment in the body.</param>
+        /// <returns>The exception when HD is implicated (Harmony rethrows), otherwise null (Harmony drops it).</returns>
+        static Exception Finalizer(Exception __exception, ref bool __result, Pawn pawn, Thing drug)
+        {
+            if (__exception == null)
+                return null; // the common path — no fault, nothing to report
+
+            // Per-DEF dedupe, mirroring WorkCapabilityProbe's per-(race, work type) key: one malformed drug def
+            // reports once instead of being hidden behind the first one, and the count is bounded at one entry per
+            // def per session. defName, never Label/LabelCap: a label lookup on the very data that just faulted
+            // could throw again and escape this finalizer, defeating the guard (the same care WorkCapabilityProbe
+            // documents). It also puts the def name into HDGuard's format-free disk breadcrumb — the line issue
+            // #235 proved survives when building the rich message does not.
+            string seam = SeamBase + " [drug def: " + (drug?.def?.defName ?? "unknown") + "]";
+
+            // HD's own fault stays loud (the no-swallow rule) — classified from FRAME OBJECTS, never from
+            // rendered trace text, because the 0Harmony the game loads collapses a repeat render into a
+            // placeholder (issue #236).
+            if (HDFault.InvolvesHaulersDream(__exception))
+                return HDGuard.SeamThrew(__exception, seam, pawn,
+                    "this colonist's keep-or-drop check for that drug failed, so the drop loop and the "
+                    + "right-click \"Pick up\" options for it are both unusable.");
+
+            __result = true; // vanilla's own fall-through answer: keep it (see the degrade rationale above)
+            return HDGuard.SeamContained(__exception, seam, pawn, ContainedConsequence(__exception));
+        }
+
+        /// <summary>
+        /// The consequence line for a contained fault: what HD did and what it costs, plus — for the exception
+        /// TYPE the one known cause actually produces, and only then — a factual note naming that cause.
+        ///
+        /// <para>THE TYPE GATE IS THE #236 CONTRACT, not fussiness. <see cref="HDGuard"/> appends its own
+        /// attribution clause to this same log line. An ungated "one known source is RimWorld's drug-policy
+        /// lookup" would therefore sit directly beside "the innermost frame belonging to another mod is X, so
+        /// that is the most likely source" whenever some other mod's postfix threw, say, a
+        /// <c>KeyNotFoundException</c> here — two sentences pointing the reader at two different culprits, which
+        /// is exactly the steering-the-report failure #236 exists to remove. For every other exception type HD
+        /// states only what it did and leaves attribution wholly to that clause. Note the sentence stays
+        /// non-exclusive ("one known source") even when it is emitted, because an
+        /// <see cref="ArgumentException"/> here could still come from somewhere else.</para>
+        /// </summary>
+        /// <param name="ex">The contained exception; read for its TYPE only, never dereferenced further.</param>
+        /// <returns>The consequence text for <see cref="HDGuard.SeamContained"/>.</returns>
+        private static string ContainedConsequence(Exception ex)
+        {
+            string didAndCost =
+                "Hauler's Dream answered \"keep this drug in the pack\", which is RimWorld's own fall-through "
+                + "answer for that check, so nothing is dropped and the right-click menu still builds; a failed "
+                + "call would otherwise read as \"drop it\" and the colonist would dump that stack at their feet "
+                + "on every think pass.";
+            string knownCause = ex is ArgumentException
+                ? " One known source of this exception here is RimWorld's own drug-policy lookup (DrugPolicy's "
+                  + "per-drug indexer), which raises an ArgumentException carrying no message when the colonist's "
+                  + "drug policy holds no entry for the drug being checked - that lookup runs before any Hauler's "
+                  + "Dream code on this path."
+                : string.Empty;
+            return didAndCost + knownCause
+                + " Hauler's Dream contains this, it never repairs the policy: rewriting saved drug policies is "
+                + "not something a hauling mod should do.";
         }
     }
 }

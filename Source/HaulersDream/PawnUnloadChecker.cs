@@ -328,8 +328,9 @@ namespace HaulersDream
                     && (SimpleSidearmsCompat.IsRememberedSidearm(pawn, t) || GrabYourToolCompat.IsCarriedTool(pawn, t)))
                     continue;
                 // Only adopt surplus we can actually DELIVER. Adopting a stack with no storage destination would
-                // tag it and the unload pass would then relocate it to a desperate far/feet cell (the "drops it at
-                // a random spot" bug). Leave a no-destination stack UNTAGGED instead — it stays where it is, and
+                // tag it, and the unload pass would then carry it off only to put it down again — since #231, on a
+                // home-area cell or at the pawn's feet rather than anywhere far, but still moved for no gain.
+                // Leave a no-destination stack UNTAGGED instead — it stays where it is, and
                 // Alert_CannotUnloadInventory (Condition A, tag-independent) still surfaces it as a real black hole.
                 if (InventorySurplus.SurplusOf(pawn, t) > 0 && InventorySurplus.HasUnloadDestination(pawn, t))
                 {

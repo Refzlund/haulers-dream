@@ -35,7 +35,13 @@ namespace HaulersDream
             if (pawn.GetComp<CompHauledToInventory>() == null || pawn.inventory == null
                 || pawn.carryTracker?.innerContainer == null || pawn.carryTracker.innerContainer.Count > 0)
                 yield break;
-            if (!pawn.health.capacities.CapableOf(PawnCapacityDefOf.Manipulation))
+            // #229: unloading a carrier IS hauling work in vanilla — WorkGiverDef UnloadCarriers declares
+            // <workType>Hauling</workType> (Core/Defs/WorkGiverDefs/WorkGivers.xml:1224-1227) — so vanilla greys
+            // its own unload option out for a pawn whose Hauling work type is disabled, and HD's bulk replacement
+            // must not be a way around that. HaulOrderGate reads the WORK TYPE, not the WorkTags.Hauling bit an
+            // "incapable of dumb labor" backstory leaves clear. (This is the pawn DOING the unload; the per-pawn
+            // "Unload inventory" gizmo that empties a pawn's OWN pack is a different, always-available thing.)
+            if (HaulOrderGate.Blocks(pawn))
                 yield break;
 
             for (int i = 0; i < things.Count; i++)

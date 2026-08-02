@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using HarmonyLib;
@@ -124,6 +125,44 @@ namespace HaulersDream
             // Loads never interleave with the running sim, so a plain reference swap is race-free here.
             retargetsByJob = new ConditionalWeakTable<Job, Counter>();
         }
+
+        // ANCESTOR MARKER for the universal exception breadcrumb (issue #236). Two scopes are marked today: the
+        // placement wrap below (which replaces the toil's initAction with a delegate that CALLS the original) and
+        // the unload's ground drop (InventoryDrop.TryDropMarked, issue #231). In both, HD sits on the call stack
+        // above everything the placement reaches (GenPlace.TryPlaceThing, ThingGrid.RegisterInCell, a storage
+        // mod's transpiled code in there...). Neither channel the exception finalizer normally reads can see
+        // that: the Harmony patch registry has no entry for HD on those callees (HD patches the toil FACTORY, not
+        // them), and a captured stack trace spans the throw site down to the observing method only — a caller is
+        // never in a callee's trace. So the finalizer can only learn about this by being TOLD, which is what this
+        // depth is for.
+        //
+        // → NOTE: coverage is these two scopes, NOT every HD path that can reach a placement. HD's bulk-haul,
+        //   bill-gather, refuel and transporter/portal/vehicle load drivers also call into GenPlace and are
+        //   currently UNMARKED, so a fault under one of those still classifies as "not observed". That is why
+        //   BlamePolicy's weakest verdict says outright that HD's own jobs are not tracked — the honest minimum
+        //   while the coverage gap stands. Marking a new scope is one Enter/try/finally/Exit; do it here rather
+        //   than widening the claim in the wording.
+        //
+        // [ThreadStatic] matches this assembly's hook-scratch convention (YieldRouter.routing, BulkHaul,
+        // CarriedHaulShare, CECompat): the marker must describe THIS thread's stack, and a mod fanning work onto
+        // a worker thread must not see another thread's scope. A depth COUNT, not a bool, so a nested placement
+        // (vanilla's fail branch can re-enter through another placement) cannot clear the outer scope early.
+        [ThreadStatic] private static int placementWrapperDepth;
+
+        /// <summary>True while this thread is inside one of HD's marked item-placement scopes, i.e. HD is a live
+        /// ancestor of whatever is running now. The exception breadcrumb reads this to say so instead of
+        /// concluding, from a stack that structurally could not contain the evidence, that HD is uninvolved.</summary>
+        internal static bool PlacementWrapperIsAncestor => placementWrapperDepth > 0;
+
+        /// <summary>Enter an HD item-placement scope on this thread. Always pair with
+        /// <see cref="ExitPlacementWrapper"/> in a <c>finally</c> — the placement THROWS in the #236 shape, and a
+        /// depth that did not unwind would make every later exception on this thread falsely claim an HD
+        /// ancestor.</summary>
+        internal static void EnterPlacementWrapper() => placementWrapperDepth++;
+
+        /// <summary>Leave an HD item-placement scope on this thread (see
+        /// <see cref="EnterPlacementWrapper"/>).</summary>
+        internal static void ExitPlacementWrapper() => placementWrapperDepth--;
 
         /// <summary>The live churn state for <paramref name="job"/>. A recycled Job instance (different loadID)
         /// starts fresh, so a pooled instance can never inherit a previous job's state.</summary>
@@ -400,7 +439,17 @@ namespace HaulersDream
                 var job = jobs?.curJob;
                 if (job == null)
                 {
-                    original();
+                    // Mark HD as an ancestor for the exception breadcrumb (#236) even on this bookkeeping-free
+                    // path: whether HD counts the arrival has no bearing on whether HD is on the call stack.
+                    HaulChurnGuard.EnterPlacementWrapper();
+                    try
+                    {
+                        original();
+                    }
+                    finally
+                    {
+                        HaulChurnGuard.ExitPlacementWrapper();
+                    }
                     return;
                 }
 
@@ -413,7 +462,20 @@ namespace HaulersDream
                 int countBefore = carriedBefore?.stackCount ?? 0;
                 var haulModeBefore = job.haulMode;
 
-                original();
+                // Mark HD as a live ancestor across the placement (#236). try/finally, not a bare pair: the
+                // placement can THROW (the #236 report is an InvalidOperationException out of a storage mod's
+                // own index, six frames below here), and the depth must unwind WITH the throw or every later
+                // exception on this thread would falsely name an HD ancestor. The churn accounting stays OUTSIDE
+                // the try so it still runs only on the normal-return path, exactly as before.
+                HaulChurnGuard.EnterPlacementWrapper();
+                try
+                {
+                    original();
+                }
+                finally
+                {
+                    HaulChurnGuard.ExitPlacementWrapper();
+                }
 
                 bool jobStillCurrent = jobs.curJob == job;
 
@@ -455,7 +517,22 @@ namespace HaulersDream
                     // thing; without it the scan instantly rebuilds the identical doomed storage job against
                     // unchanged storage. Read the note BEFORE NotifyPlaced drops it.
                     if (HaulChurnGuard.WasAsideDegraded(job))
+                    {
+                        // #231 diagnostics for the SECONDARY path out of this mod's control: vanilla's own aside
+                        // degrade (Toils_Haul.PlaceHauledThingInCell -> HaulAIUtility.CanHaulAside ->
+                        // TryFindSpotToPlaceHaulableCloseTo), a 100-region BFS with NO home-area test. The unload
+                        // driver's own fallbacks are home-constrained now; this one is vanilla's, so record where
+                        // the load actually landed rather than guessing. The degrade sets the cell on the SAME
+                        // target index the toil was built with (curJob.SetTarget(cellInd, storeCell)) and nothing
+                        // re-targets it before the successful arrival, so targetB is the aside cell for every
+                        // vanilla and HD caller (all of which pass TargetIndex.B).
+                        var asideCell = job.targetB.Cell;
+                        HDLog.Dbg($"aside-degrade {actor.LabelShort}: vanilla placed "
+                                  + $"{carriedBefore.ToStringSafe()} at {asideCell} "
+                                  + $"(inHome={InventoryDrop.IsInHome(actor.Map, asideCell)}, "
+                                  + $"pawnAt={actor.Position}); backing the thing off.");
                         HaulChurnGuard.StampBackoff(carriedBefore);
+                    }
                     HaulChurnGuard.NotifyPlaced(job);
                     return;
                 }

@@ -198,23 +198,31 @@ namespace HaulersDream
         [HarmonyPriority(Priority.Last)]
         static void Postfix(ref ThinkResult __result, Pawn pawn, JobGiver_Work __instance)
         {
-            // Cheap empty-pack pre-gate (HD-OPPUNLOAD): the common case is a pawn carrying nothing scooped, and
-            // BOTH branches below bail when the tracked set is empty (ShouldDivert and TryGetEndOfRunUnloadJob each
-            // return early on Count == 0). Short-circuit that here using the read-only PeekHashSet (no self-heal /
-            // reflection / state mutation on this hot scan path) BEFORE computing runOver / IsYieldOrHaulJobDef or
-            // entering the gated paths. A pawn without the comp likewise can never divert/unload.
-            var comp = pawn?.GetComp<CompHauledToInventory>();
-            if (comp == null || comp.PeekHashSet().Count == 0)
-                return;
-
-            // #122 SEAM BOUNDARY (degrade, keep vanilla): both branches below fan out into the surplus math,
+            // #122 SEAM BOUNDARY (degrade, keep vanilla): everything below fans out into the surplus math,
             // storage scans, and compat shims, the same throw-prone graph as the downtime swaps (see
             // Patch_JobGiver_GetRest_UnloadFirst's class doc). A repeatable throw here used to cost the pawn its
             // ENTIRE work selection on every scan ("refuses to do any other tasks" in issue #122) because the
             // enclosing think node catches and skips a throwing child. On a throw, report once and leave
             // vanilla's chosen work job standing.
+            //
+            // The pre-gate is INSIDE the try (#235): it dereferences the pawn and the comp's tag set, so it can
+            // throw too, and outside the try that throw would escape to the method Finalizer below — which
+            // classifies an unattributable fault as FOREIGN and contains it. Keeping every line of HD's own
+            // postfix inside this boundary is what makes that classification structurally safe. Zero cost: a try
+            // block adds nothing on the non-throwing path, so the fast return still happens before any
+            // allocation.
             try
             {
+                // Cheap empty-pack pre-gate (HD-OPPUNLOAD): the common case is a pawn carrying nothing scooped,
+                // and BOTH branches below bail when the tracked set is empty (ShouldDivert and
+                // TryGetEndOfRunUnloadJob each return early on Count == 0). Short-circuit that here using the
+                // read-only PeekHashSet (no self-heal / reflection / state mutation on this hot scan path)
+                // BEFORE computing runOver / IsYieldOrHaulJobDef or entering the gated paths. A pawn without the
+                // comp likewise can never divert/unload.
+                var comp = pawn?.GetComp<CompHauledToInventory>();
+                if (comp == null || comp.PeekHashSet().Count == 0)
+                    return;
+
                 PostfixInner(ref __result, pawn, __instance);
             }
             catch (Exception ex)
@@ -298,15 +306,74 @@ namespace HaulersDream
                 __result = new ThinkResult(unload, __instance, JobTag.UnloadingOwnInventory, false);
         }
 
+        /// <summary>
+        /// The seam name for this method, shared by the two report channels below so both breadcrumbs read the
+        /// same in the log while keeping distinct dedupe keys (see <see cref="HDGuard.SeamContained"/>).
+        /// </summary>
+        private const string Seam = "JobGiver_Work.TryIssueJobPackage (HD opportunistic unload/load)";
+
         // HARDENING (fix/mix): TryIssueJobPackage is the UNIVERSAL work-selection seam — every dumb-labor job
         // (haul, clean filth, clear pollution, corpse haul) flows through it. Vanilla has no try/catch here, and
         // this method carries TWO HD postfixes (this one + Patch_OpportunisticLoadDeposit). A single Finalizer on
         // the method wraps BOTH (Harmony finalizers wrap the whole patched method, so this catches a throw from
-        // Patch_OpportunisticLoadDeposit's postfix too — its stack trace identifies which one). See HDGuard:
-        // logs once with HD + pawn context, then RETHROWS so the fault still surfaces as a red error.
+        // Patch_OpportunisticLoadDeposit's postfix too — its stack trace identifies which one).
+        //
+        // CONTAINMENT (#235, "all colonists wandering idle, not tending wounds, but do eat"). Vanilla wraps only
+        // the per-WorkGiver SCAN in a try/catch; the TAIL call that turns the winning target into a job —
+        // `scannerWhoProvidedTarget.JobOnCell/JobOnThing(...)`, decompile-verified to sit AFTER the
+        // try/catch/finally — is completely unguarded. A mod that postfixes a WorkGiver's JobOnThing and throws
+        // there (in #235, Smarter Construction dereferencing two MapComponents unguarded for any wall-class
+        // frame) escapes the whole think node. RimWorld's ThinkNode_Priority / ThinkNode_PrioritySorter then
+        // catch it and SKIP the entire work node on every scan: the pawn does NO work at all, yet still eats and
+        // sleeps (those are separate nodes) and still obeys forced orders (a different think path), so it reads
+        // as laziness rather than an error. So:
+        //   - HD's OWN fault -> log + RETHROW, unchanged. HD's bugs must stay loud (the no-swallow rule), and an
+        //     HD-postfix fault is guaranteed to carry an HD frame: Mono never inlines a method that contains an
+        //     exception handler, and BOTH HD postfixes on this method wrap their work in try/catch (this one
+        //     since the pre-gate moved inside it, above; Patch_OpportunisticLoadDeposit likewise, bar three
+        //     cheap null/settings checks ahead of its try). So the frame test below is not a guess.
+        //   - Anything else -> report once with attribution, quarantine the offending work giver after repeated
+        //     faults (WorkGiverBlocklist), and return null so the pawn simply finds no work THIS scan instead of
+        //     losing work entirely. Same trade as the shipped Patch_JobGiver_Work_WorkGiverResilient (issue #7),
+        //     one method over.
+        // Detection is FRAME-based (HDFault), never a scan of rendered trace text: the 0Harmony runtime the game
+        // loads deduplicates repeat renders into a placeholder, so a text probe is unsound for most players.
+        //
+        // WHAT THE CONTAINED CALL RETURNS: deliberately whatever the wrapper's result local already holds, which
+        // is why this Finalizer does NOT take (or overwrite) __result. When the ORIGINAL threw — the #235 shape —
+        // that local is still default(ThinkResult), which is field-for-field identical to ThinkResult.NoJob
+        // (decompile-verified: NoJob is `new ThinkResult(null, null)` and IsValid is `Job != null`), so the pawn
+        // reads as "no work found". When a LATE postfix threw after vanilla had already chosen a job, the local
+        // holds that job and it is returned intact — strictly better than forcing NoJob there.
         static Exception Finalizer(Exception __exception, Pawn pawn)
-            => HDGuard.SeamThrew(__exception, "JobGiver_Work.TryIssueJobPackage (HD opportunistic unload/load)", pawn,
-                "that pawn's entire work selection failed this scan (hauling/cleaning/etc. will stall).");
+        {
+            // The scan context (which giver vanilla last cleared) is meaningful ONLY inside the call that
+            // recorded it, so read it here and drop it in the finally — unconditionally, on the success path too,
+            // which Harmony also runs finalizers on. A value that survived its scan would let a LATER, unrelated
+            // throw (a mod postfixing this method; a pre-loop throw that never entered the giver loop) confidently
+            // name an innocent giver — and, three faults later, get it switched off. Reading null there is the
+            // correct answer, and this finally is what makes null the answer.
+            var scanGiver = WorkGiverBlocklist.ScanContextGiver;
+            try
+            {
+                if (__exception == null)
+                    return null; // the common path — no fault, nothing to report
+
+                if (HDFault.InvolvesHaulersDream(__exception))
+                    return HDGuard.SeamThrew(__exception, Seam, pawn,
+                        "that pawn's entire work selection failed this scan (hauling/cleaning/etc. will stall).");
+
+                WorkGiverBlocklist.NoteSeamFault(__exception, scanGiver, pawn);
+                return HDGuard.SeamContained(__exception, Seam, pawn,
+                    "Hauler's Dream contained it so the rest of the game keeps running - this pawn simply found "
+                    + "no work this scan, instead of doing no work at all from now on while still eating and "
+                    + "sleeping.");
+            }
+            finally
+            {
+                WorkGiverBlocklist.ClearScanContext();
+            }
+        }
     }
 
     /// <summary>

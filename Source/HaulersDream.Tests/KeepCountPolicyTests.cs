@@ -60,6 +60,25 @@ namespace HaulersDream.Tests
             Assert.That(KeepCountPolicy.SurplusForKeptDef(-10, 40, 40), Is.EqualTo(40));
         }
 
+        // ── #229: after a withdrawing colleague takes a dose, the pin is UNDER-filled ─────────────
+
+        [Test]
+        public void Issue229_AfterATakeTheKeepIsUnderFilled_HolderDoesNotUnload()
+        {
+            // The kept-drug share moves ONE unit out of the holder's pinned stock (keep 20, held 19). The holder
+            // must not then decide the remainder is surplus and haul it away — the pin still wants 20, so 0 is
+            // surplus. The player's pin is a ceiling on what is kept, never a floor that triggers an unload.
+            Assert.That(KeepCountPolicy.SurplusForKeptDef(20, 19, 19), Is.EqualTo(0));
+        }
+
+        [Test]
+        public void Issue229_AboveTheKeep_StillShedsExactlyTheExcess()
+        {
+            // And the arithmetic above the pin is unchanged by any of that: the excess, and only the excess.
+            Assert.That(KeepCountPolicy.SurplusForKeptDef(20, 24, 24), Is.EqualTo(4));
+            Assert.That(KeepCountPolicy.SurplusForKeptDef(20, 23, 23), Is.EqualTo(3));
+        }
+
         // ── #225: keep 7, held 9 → unload exactly 2 ───────────────────────────────────────────────
 
         [Test]

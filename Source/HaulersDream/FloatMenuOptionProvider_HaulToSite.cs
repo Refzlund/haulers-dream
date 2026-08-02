@@ -31,7 +31,12 @@ namespace HaulersDream
                 yield break; // the haul-to-site order is disabled in mod options
             if (pawn.GetComp<CompHauledToInventory>() == null)
                 yield break; // the delivery driver tracks leftovers via the comp
-            if (pawn.WorkTagIsDisabled(WorkTags.Hauling) || !pawn.health.capacities.CapableOf(PawnCapacityDefOf.Manipulation))
+            // #229: the can-haul bar is the WORK TYPE, not the WorkTags.Hauling BIT — an "incapable of dumb labor"
+            // backstory disables the Hauling work type through the ManualDumb/Commoner tags while leaving that bit
+            // clear, so the old tag check offered this haul order to pawns vanilla refuses hauling work. See
+            // HaulOrderGate. Hidden rather than greyed (HD's house pattern); vanilla's own greyed "Prioritize
+            // hauling" row, which states the reason, is still in the same menu.
+            if (HaulOrderGate.Blocks(pawn))
                 yield break;
 
             for (int i = 0; i < things.Count; i++)

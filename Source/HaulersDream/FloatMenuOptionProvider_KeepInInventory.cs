@@ -12,9 +12,11 @@ namespace HaulersDream
     /// stack AND on a stack held inside a spawned container building (vanilla's egg box — the only vanilla def with
     /// containedItemsSelectable — plus any modded container storage that flags its contents selectable), which the driver extracts from the holder's
     /// inner ThingOwner. The counterpart to <see cref="FloatMenuOptionProvider_PickUpIntoInventory"/> ("Pick up X" =
-    /// pick up to HAUL): the same shape and gates, but with two deliberate differences — no storage/map gate (a pawn
-    /// can hold an item on any map), and it does NOT skip an item already in storage (the player may want to take a
-    /// stored item out to hold it — the whole reason the container branch exists). Both options appear side by side
+    /// pick up to HAUL): the same shape, but with three deliberate gate differences — no storage/map gate (a pawn
+    /// can hold an item on any map), it does NOT skip an item already in storage (the player may want to take a
+    /// stored item out to hold it — the whole reason the container branch exists), and no hauling-capability gate
+    /// (#229 gates the orders that make a pawn do hauling WORK; a keep pins an item instead of queueing it for
+    /// delivery, and provably never tags it for unload — see the evidence on the gate block below). Both options appear side by side
     /// on a haulable ground item so the player chooses hold-vs-haul. Release a kept item by consuming it or dropping
     /// it from the pawn's gear tab. Auto-discovered FloatMenuOptionProvider (no Harmony).
     /// </summary>
@@ -39,8 +41,40 @@ namespace HaulersDream
             // map (a caravan/raid pawn can hold an item too).
             if (pawn.GetComp<CompHauledToInventory>() == null || pawn.inventory == null)
                 yield break; // the keep loads into inventory, tracked via the comp
+            // Physical capability plus the pre-existing tag-bit bar below are the only bars here. NO work-TYPE
+            // hauling-capability gate (HaulOrderGate), deliberately —
+            // #229 gated the nine orders that make a pawn do HAULING WORK, and a keep is not one of them: it puts an
+            // item in the pack and PINS it there. Holding is not hauling.
+            //
+            // VERIFIED, not assumed (this is the claim the whole exemption rests on — a keep can never leave cargo
+            // an incapable pawn's unload would refuse to shed):
+            //   1. Both builders (BulkHaul.BuildKeepJob / BuildKeepFromContainerJob) only MakeJob; neither registers.
+            //   2. Both driver branches (JobDriver_KeepInInventory) call ONLY CompHauledToInventory.AddKeptCount —
+            //      a per-def keep PIN, the OPPOSITE of tagging for unload. The driver appears at none of the
+            //      RegisterHauledItem call sites in this assembly.
+            //   3. The driver's one unload touchpoint, its AddFinishAction, is gated on PawnUnloadChecker
+            //      .AnyUnloadable, which requires a stack ALREADY in the tag set with InventorySurplus.SurplusOf > 0.
+            //      Kept units take SurplusOf's keep-count branch (KeepCountPolicy.SurplusForKeptDef) and read 0, so
+            //      that flush can only shed cargo the pawn was ALREADY carrying from a prior scoop.
+            //   4. The only RegisterHauledItem reachable from that finish action (PawnUnloadChecker
+            //      .AdoptSurplusInventory) filters on the same SurplusOf > 0, so it never adopts kept units either.
+            //   5. And that flush passes forced:true, which bypasses YieldRouter.IsEligible outright
+            //      (`forced || IsEligible`) — so even a hypothetical surplus on an incapable pawn still delivers.
+            // Gating this order would therefore buy nothing and would take away the one HD way to make such a pawn
+            // hold anything at all. ("Pick up X" is gated precisely because it DOES tag, via BulkHaul.BuildPickUpJob.)
             if (!pawn.health.capacities.CapableOf(PawnCapacityDefOf.Manipulation))
                 yield break;
+            // The pre-#229 bar, kept BYTE-IDENTICAL on purpose so this file carries no behavioural delta for ANY
+            // pawn. It reads the WorkTags.Hauling BIT, not the Hauling work TYPE — and an "incapable of dumb labor"
+            // backstory (workDisables = ManualDumb) disables the TYPE while leaving the BIT clear, which is exactly
+            // why #229 introduced HaulOrderGate for the orders that DO tag. So this line never fires for the #229
+            // population; briefly swapping it for HaulOrderGate.Blocks silently removed this order from every
+            // undrafted dumb-labor pawn, which is the regression the restore above undoes.
+            //
+            // Whether a pawn whose Hauling BIT really is set should also be allowed to keep is a SEPARATE question
+            // the evidence above arguably settles ("holding is not hauling", and a keep provably cannot strand) —
+            // deliberately NOT decided here, because widening it is not part of #229. Remove this line only as an
+            // explicit, separate change.
             if (!pawn.Drafted && pawn.WorkTagIsDisabled(WorkTags.Hauling))
                 yield break;
 

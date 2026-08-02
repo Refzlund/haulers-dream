@@ -136,7 +136,7 @@ namespace HaulersDream
                         // happened — a failed drop leaves the item in inventory, where a missing tag would
                         // strand it untracked (gizmo hidden, never retried).
                         var original = thing;
-                        if (pawn.inventory.innerContainer.TryDrop(thing, ThingPlaceMode.Near, countToDrop, out thing))
+                        if (InventoryDrop.TryDropPreferHome(pawn, thing, countToDrop, "no-manipulation", out thing))
                             carried.Remove(original);
                         EndJobWith(JobCondition.Succeeded);
                         return;
@@ -189,8 +189,29 @@ namespace HaulersDream
                         return;
                     }
 
-                    if (StoreUtility.TryFindBestBetterStorageFor(next.Thing, pawn, pawn.Map, StoragePriority.Unstored,
-                            pawn.Faction, out var cell, out var destination))
+                    bool hasStorage = StoreUtility.TryFindBestBetterStorageFor(next.Thing, pawn, pawn.Map,
+                        StoragePriority.Unstored, pawn.Faction, out var cell, out var destination);
+                    // A null map is unreachable for a running driver (the storage probe above already passes
+                    // pawn.Map into vanilla), but note the one deliberate delta from the old if/else chain: it
+                    // used to fall THROUGH to the home-area scan, which would have dereferenced the null map;
+                    // treating "no map" as "not the home map" keeps the load tagged and ends the job cleanly.
+                    bool onHomeMap = pawn.Map != null && pawn.Map.IsPlayerHome;
+                    // The home-area radial scan runs ONLY when it can change the outcome — storage failed, on the
+                    // player's map — which is exactly the precedence UnloadFallbackPolicy.Choose encodes. Keeping
+                    // the short-circuit here (rather than probing eagerly and letting Choose discard it) is what
+                    // stops the common delivery path paying for a reachability scan per stack.
+                    var desperateCell = IntVec3.Invalid;
+                    bool hasHomeCell = !hasStorage && onHomeMap
+                                       && InventorySurplus.TryFindDesperateHomeAreaCell(pawn, next.Thing, out desperateCell);
+
+                    // Switching on the Core policy — rather than re-spelling the same precedence inline — is the
+                    // structural half of the #231 fix: UnloadPlacement has no "haul it outside the home area"
+                    // member, so this dispatch cannot express the behaviour that caused the bug. The other half is
+                    // scripts/check-no-desperate-leg.ts, which fails the build if the vanilla desperate search is
+                    // reintroduced anywhere in this assembly.
+                    switch (UnloadFallbackPolicy.Choose(hasStorage, onHomeMap, hasHomeCell))
+                    {
+                    case UnloadPlacement.Deliver:
                     {
                         job.SetTarget(TargetIndex.A, next.Thing);
                         if (cell == IntVec3.Invalid)
@@ -213,15 +234,16 @@ namespace HaulersDream
                         {
                             // Untag only when the drop actually happened — a failed drop leaves the thing in
                             // inventory, where a missing tag would strand it untracked (gizmo hidden, never retried).
-                            if (pawn.inventory.innerContainer.TryDrop(next.Thing, ThingPlaceMode.Near, next.Count, out _))
+                            if (InventoryDrop.TryDropPreferHome(pawn, next.Thing, next.Count, "reserve-failed-storage", out _))
                                 carried.Remove(next.Thing);
                             EndJobWith(JobCondition.Incompletable);
                             return;
                         }
                         countToDrop = next.Count;
                         lastDeliveredDef = next.Thing.def; // invalidate this def's dest cache after the place loops back
+                        break; // fall through the toil chain: pull from inventory -> carry to storage -> place
                     }
-                    else if (pawn.Map != null && !pawn.Map.IsPlayerHome)
+                    case UnloadPlacement.KeepInInventory:
                     {
                         // Non-home / temporary map (caravan, bandit camp): there is no player storage here, and
                         // dropping the tagged load on the ground abandons it when the caravan leaves. Keep it
@@ -229,18 +251,83 @@ namespace HaulersDream
                         // onto a pack animal (the over-encumbered auto-divert, the manual bulk-load order, or
                         // vanilla Reform Caravan). End Succeeded so the checker stops re-queuing. (A REAL stockpile
                         // on the map is still used by the TryFindBestBetterStorageFor branch above.)
+                        HDLog.Dbg($"unload {pawn.LabelShort}: on a non-home map ({pawn.Map}); keeping "
+                                  + $"{next.Thing.LabelShort} x{next.Count} tagged in inventory to ride home.");
                         EndJobWith(JobCondition.Succeeded);
                         return;
                     }
-                    else if (StoreUtility.TryFindStoreCellNearColonyDesperate(next.Thing, pawn, out var desperateCell))
+                    case UnloadPlacement.PlaceOnNearbyHomeCell:
                     {
                         // No stockpile (not even a dumping zone) accepts this def — rock chunks are excluded from
                         // the default stockpile preset, and many modded materials/crops sit in a category no
-                        // stockpile allows. Vanilla's own unload (JobDriver_UnloadYourInventory) does NOT give up
-                        // here: it carries the item to a DESPERATE home-area cell (any reachable spot in / just
-                        // outside the colony). Mirror that, so the item is actually HAULED away instead of dumped
-                        // wherever the pawn happened to be standing (a workbench / dining room) — where the next
-                        // work run would just re-scoop it (mine -> carry -> drop-at-feet -> re-scoop, forever).
+                        // stockpile allows. Rather than dump the load wherever the pawn happened to be standing (a
+                        // workbench / dining room — where the next work run would just re-scoop it: mine -> carry
+                        // -> drop-at-feet -> re-scoop, forever), carry it to a nearby HOME-AREA floor cell.
+                        //
+                        // This deliberately does NOT call StoreUtility.TryFindStoreCellNearColonyDesperate, whose
+                        // three legs are (RimWorld 1.6):
+                        //   1. TryFindBestBetterStoreCellFor (StoreUtility.cs:374) — DEAD here. The
+                        //      TryFindBestBetterStorageFor probe above is a strict superset of it, so reaching
+                        //      this branch already guarantees leg 1 re-fails. Nothing is lost by skipping it.
+                        //   2. 20 radial cells around the carrier gated on areaManager.Home (StoreUtility.cs:
+                        //      378-386) — home-constrained, radius ~2.5. This IS what we reproduce, verbatim, in
+                        //      InventorySurplus.TryFindDesperateHomeAreaCell (shared with the cannot-unload alert
+                        //      so the two can never disagree).
+                        //   3. RCellFinder.TryFindRandomSpotJustOutsideColony (StoreUtility.cs:388) — DROPPED
+                        //      (issue #231). It has NO home-area check at all: its FinalValidator requires an
+                        //      OUTDOOR district that TOUCHES THE MAP EDGE, and its final pass rolls a random cell
+                        //      over the whole map (its CellFinderLoose.TryGetRandomCellWith(..., 1000, ...) leg —
+                        //      cited by member, not line: decompiler line numbers for vanilla shift between ILSpy
+                        //      versions). Vanilla only reaches it behind the rare event-driven UnloadEverything
+                        //      flag, once per job; this driver ran it per tagged stack, in a loop, for every
+                        //      hauling pawn — and after each placement jumps back to `begin` and re-decides from
+                        //      the NEW position, re-rolling a fresh random cell. That is exactly the reported
+                        //      scattering of goods far outside the Home area. (It also NREs on a degenerate
+                        //      colony — issue #76.)
+                        //
+                        // Dropping leg 3 cannot resurrect the mine -> drop -> re-scoop loop it was guarding
+                        // against. Every path that lifts a stack off the ground IN ORDER TO PUT IT INTO STORAGE
+                        // first requires a storage destination for it, and this item has just been shown to have
+                        // none: the work-spot sweep (YieldRouter.cs:334), the scoop-time gate
+                        // YieldRouter.HasScoopDestination (YieldRouter.cs:574, re-checked at the take toil,
+                        // JobDriver_SelfPickup.cs:112), the bulk-haul pool (BulkHaul.cs:968), the en-route grab
+                        // (its own midway group walk, EnRoutePickup.cs:721, hard-failing the candidate at
+                        // EnRoutePickup.cs:446 when no allowed cell is found — NOT this probe), the auto-strip
+                        // scoop (CorpseStripper.ScoopLoot — the one site that USED to lack the gate, issue #234),
+                        // and vanilla's own HaulAIUtility.HaulToStorageJob.
+                        //
+                        // That quantifier is deliberately narrow — "to put it into storage", NOT "at all" — because
+                        // three other kinds of intake DO lift a stack off the ground with no storage probe. None of
+                        // them can cycle:
+                        //   • DELIVERY drivers, which lift a stack to CONSUME it at the job's own fixed target
+                        //     rather than to store it, so a storage probe would be the wrong question: bill
+                        //     ingredients to the bench (tagged at JobDriver_BillPrepGather.cs:161 and
+                        //     JobDriver_BatchCraft.cs:1679), fuel to the refuelable (JobDriver_BulkRefuel.cs:134),
+                        //     materials to a blueprint/frame (JobDriver_OverloadConstructDeliver.cs:485, whose
+                        //     phase-1 TakeToInventory walks nearby FLOOR stacks). So yes — with no stockpile
+                        //     accepting WoodLog, this branch puts the wood on a home-area cell and the autonomous
+                        //     construct-deliver giver may well pick it straight back up for a frame. That is not a
+                        //     loop: the stack is consumed into the frame, never re-dropped.
+                        //   • An explicit PLAYER ORDER, which requires no destination by design — forcing is the
+                        //     whole point of the click, and it takes a fresh click each time.
+                        //   • SURPLUS ADOPTION (PawnUnloadChecker.cs:334), which walks pawn.inventory
+                        //     .innerContainer ONLY and so never reaches a stack on the floor at all. It also gates
+                        //     on InventorySurplus.HasUnloadDestination (InventorySurplus.cs:276-296), deliberately
+                        //     WIDER than the probe above — TryFindBestBetterStorageFor OR
+                        //     TryFindDesperateHomeAreaCell — precisely so adoption and mech cargo shedding still
+                        //     work for a load this branch can only put on a home-area cell.
+                        //
+                        // The churn backoff the DropAtFeet branch stamps (HaulChurnGuard.StampBackoff, honoured by the
+                        // vanilla haul scan at HaulChurnGuard.cs:574, the work-spot sweep at YieldRouter.cs:305
+                        // and the en-route grab at EnRoutePickup.cs:413) is a SECONDARY belt only, and a leaky
+                        // one: it keys on the pre-drop inventory Thing's thingIDNumber, but the stack that reaches
+                        // the floor usually has a different id (a partial drop mints a new Thing via SplitOff; a
+                        // merge yields the ground stack's id), so it often does not cover what actually landed.
+                        // Do not rely on it as the reason this is safe.
+                        HDLog.Dbg($"unload {pawn.LabelShort}: no storage for {next.Thing.LabelShort} x{next.Count}; "
+                                  + $"hauling to home-area cell {desperateCell} "
+                                  + $"(dist={(desperateCell - pawn.Position).LengthHorizontal:0.#}, "
+                                  + $"home={InventoryDrop.IsInHome(pawn.Map, desperateCell)}).");
                         job.SetTarget(TargetIndex.A, next.Thing);
                         job.SetTarget(TargetIndex.B, desperateCell);
                         // A desperate destination is always a plain cell (never a container). Match the storage
@@ -252,7 +339,7 @@ namespace HaulersDream
                                            || HaulersDreamMod.Settings == null || !HaulersDreamMod.Settings.haulToStack;
                         if (reserveDest && !pawn.Map.reservationManager.Reserve(pawn, job, job.targetB))
                         {
-                            if (pawn.inventory.innerContainer.TryDrop(next.Thing, ThingPlaceMode.Near, next.Count, out _))
+                            if (InventoryDrop.TryDropPreferHome(pawn, next.Thing, next.Count, "reserve-failed-fallback", out _))
                             {
                                 carried.Remove(next.Thing);
                                 pawn.jobs.curDriver.JumpToToil(begin);
@@ -263,9 +350,9 @@ namespace HaulersDream
                         }
                         countToDrop = next.Count;
                         lastDeliveredDef = next.Thing.def; // invalidate this def's dest cache after the place loops back
-                        // fall through the toil chain: pull from inventory -> carry to the desperate cell -> place
+                        break; // fall through the toil chain: pull from inventory -> carry to the home cell -> place
                     }
-                    else
+                    default: // UnloadPlacement.DropAtFeet
                     {
                         // Truly nowhere reachable to store it -> drop at the pawn's feet and loop straight to the
                         // NEXT tagged item (ending per item made the drain cost one idle cycle per no-storage def).
@@ -283,13 +370,18 @@ namespace HaulersDream
                         // brief and self-healing: once storage opens up (the player zones it, a slot frees), the
                         // next scan after the window hauls it normally.
                         HaulChurnGuard.StampBackoff(next.Thing);
-                        if (pawn.inventory.innerContainer.TryDrop(next.Thing, ThingPlaceMode.Near, next.Count, out _))
+                        HDLog.Dbg($"unload {pawn.LabelShort}: no storage and no home-area cell within "
+                                  + $"{UnloadFallbackPolicy.RadialCellsToTry} radial cells for "
+                                  + $"{next.Thing.LabelShort} x{next.Count}; dropping here and backing it off.");
+                        if (InventoryDrop.TryDropPreferHome(pawn, next.Thing, next.Count, "nowhere", out _))
                         {
                             carried.Remove(next.Thing);
                             pawn.jobs.curDriver.JumpToToil(begin);
                             return;
                         }
                         EndJobWith(JobCondition.Incompletable);
+                        break;
+                    }
                     }
                 }
             };

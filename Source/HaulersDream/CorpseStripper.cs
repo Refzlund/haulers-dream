@@ -32,8 +32,8 @@ namespace HaulersDream
     /// them along — clean disposal). The DESTROY policy is the one deliberate exception to this mod's
     /// never-delete rule: an explicit opt-in, applied only to tainted apparel of the configured category.
     ///
-    /// Loot that doesn't fit the carry/CE limits stays on the ground as ordinary haulables (the bulk-haul
-    /// sweep picks it up later) — nothing is ever lost by stripping.
+    /// Loot that doesn't fit the carry/CE limits, or that no storage would accept, stays on the ground as
+    /// ordinary haulables (the bulk-haul sweep picks it up later) — nothing is ever lost by stripping.
     /// </summary>
     [HarmonyPatch(typeof(Pawn_CarryTracker), nameof(Pawn_CarryTracker.TryStartCarry),
         typeof(Thing), typeof(int), typeof(bool))]
@@ -306,8 +306,9 @@ namespace HaulersDream
         }
 
         /// <summary>Strip <paramref name="corpse"/> if this pickup qualifies under the settings. Loot is
-        /// scooped into <paramref name="hauler"/>'s inventory (tagged) where it fits; the rest stays on
-        /// the ground as normal haulables. Safe to call speculatively — it gates itself.</summary>
+        /// scooped into <paramref name="hauler"/>'s inventory (tagged) where it fits and has somewhere to
+        /// go; the rest stays on the ground as normal haulables. Safe to call speculatively — it gates
+        /// itself.</summary>
         internal static void MaybeStripForHaul(Pawn hauler, Corpse corpse)
         {
             var s = HaulersDreamMod.Settings;
@@ -569,8 +570,8 @@ namespace HaulersDream
         }
 
         /// <summary>AUTO-STRIP ON HAUL: drop the corpse's gear on its cell, then SCOOP the loose loot into the
-        /// hauler's inventory (tagged for the unload pass). The strip core is shared with the cremation seam;
-        /// only this haul path scoops.</summary>
+        /// hauler's inventory (tagged for the unload pass) where it fits and has somewhere to go. The strip
+        /// core is shared with the cremation seam; only this haul path scoops.</summary>
         private static void StripAndScoop(Pawn hauler, Corpse corpse, HaulersDreamSettings s)
         {
             var loot = StripCorpseDroppingLoot(hauler, corpse, s);
@@ -584,23 +585,37 @@ namespace HaulersDream
             // still happened: the gear stays on the ground as ordinary haulables for real haulers.
             if (YieldRouter.IsEligible(hauler))
             {
-                ScoopLoot(hauler, loot, s);
-                HDLog.Dbg($"{hauler} auto-stripped {corpse} on haul: {loot.Count} loot entries.");
+                int scooped = ScoopLoot(hauler, loot, s);
+                HDLog.Dbg($"{hauler} auto-stripped {corpse} on haul: scooped {scooped} of {loot.Count} loot entries.");
             }
         }
 
-        // Load the stripped loot into the hauler's inventory (tagged — the unload pass, shared
-        // inventories, and CE HoldTracker all pick it up from there). Whatever doesn't fit the
-        // carry/CE limits simply stays on the ground as an ordinary haulable.
-        // Deliberately NO #121 pickup pause here (see PickupPause): this scoop fires inside vanilla's
-        // Pawn_CarryTracker.TryStartCarry seam as a side effect of a committed corpse carry (no HD toil
-        // exists to pace); the BulkHaul corpse path already pays the pause in its own take loop.
-        private static void ScoopLoot(Pawn hauler, List<ThingCount> loot, HaulersDreamSettings s)
+        /// <summary>
+        /// Load the stripped loot into the hauler's inventory (tagged — the unload pass, shared inventories, and
+        /// CE HoldTracker all pick it up from there). A piece is scooped only when it FITS the carry/CE limits
+        /// AND some storage would accept it; anything else simply stays on the ground as an ordinary haulable —
+        /// spawned and UN-forbidden at the corpse's own cell, visible to <c>listerHaulables</c>, and collected
+        /// automatically the moment a stockpile accepts it. Per-PIECE, not all-or-nothing: a raider yields a
+        /// rifle, a vest, a tainted duster and drugs, and one unwanted rag must not strand the rifle.
+        ///
+        /// Deliberately NO #121 pickup pause here (see PickupPause): this scoop fires inside vanilla's
+        /// Pawn_CarryTracker.TryStartCarry seam as a side effect of a committed corpse carry (no HD toil
+        /// exists to pace); the BulkHaul corpse path already pays the pause in its own take loop.
+        /// </summary>
+        /// <param name="hauler">The pawn that stripped the body; the loot goes into its inventory.</param>
+        /// <param name="loot">The strip's per-piece drops, each entry capped at what the CORPSE contributed
+        /// (a merged drop may sit in a bigger pre-existing ground stack).</param>
+        /// <param name="s">Live settings — the smart-overload ceiling that sizes each take.</param>
+        /// <returns>How many of <paramref name="loot"/>'s entries were actually pocketed, so the caller can log
+        /// "scooped N of M" without the reader subtracting. Zero when the pawn has no inventory or comp.</returns>
+        private static int ScoopLoot(Pawn hauler, List<ThingCount> loot, HaulersDreamSettings s)
         {
             var inv = hauler.inventory?.GetDirectlyHeldThings();
             var comp = hauler.GetComp<CompHauledToInventory>();
             if (inv == null || comp == null)
-                return;
+                return 0;
+            int scooped = 0;
+            int noDestination = 0;
             for (int i = 0; i < loot.Count; i++)
             {
                 var t = loot[i].Thing;
@@ -617,6 +632,32 @@ namespace HaulersDream
                 take = Math.Min(take, loot[i].Count);
                 if (take <= 0)
                     continue;
+                // #234 — never pocket a piece with nowhere to go. This was the one non-player-ordered intake in the
+                // mod that skipped the destination probe all its siblings apply, so a tainted duster no stockpile
+                // accepts rode along to the hauler's next job (a butcher-bill fetch — QualifyingHaul admits DoBill)
+                // and got dumped at the bench. Reuse YieldRouter's gate instead of writing a second probe: it
+                // satisfies two load-bearing constraints by construction.
+                //   1. It takes the THING, not the def. Tainted apparel is rejected instance-by-instance
+                //      (SpecialThingFilterWorker_DeadmansApparel.Matches reads (t as Apparel)?.WornByCorpse), so a
+                //      def-level probe or per-def cache would answer "yes, apparel is allowed" and fix nothing.
+                //   2. It hard-codes needAccurateResult:false, which consumes no Rand — no multiplayer-determinism
+                //      hazard, hence none of the Rand.PushState/PopState wrapping that InventorySurplus
+                //      .HasUnloadDestination has to carry for its per-frame alert callers.
+                // No StorageBuildingFilter context is pushed, so the documented allow-all default (Unload) applies.
+                // That is deliberate: this asks only whether a home EXISTS, not which one to pick, and an intake
+                // probe NARROWER than the unload probe would under-admit — refusing a piece whose only home is a
+                // building the player denied for opportunistic routing, even though the unload would deliver it
+                // there happily. Neither this seam nor the bulk take toil is reachable from inside an
+                // Opportunistic/BeforeCarry scope anyway (StorageRouting.cs:238-240).
+                // ORDER: after IsInValidStorage above — mandatory, since a piece already in accepting storage is
+                // HOME and probing it would ask for something BETTER, a different and wrong question. After the
+                // capacity gate — pure arithmetic before a slot-group walk, the cost ordering documented at
+                // BulkHaul.cs:949-950; the outcome is identical either way.
+                if (!YieldRouter.HasScoopDestination(hauler, t))
+                {
+                    noDestination++;
+                    continue;
+                }
                 // SplitOff with count >= stackCount despawns the thing itself (full-stack pickup path).
                 var split = t.SplitOff(Math.Min(take, t.stackCount));
                 if (inv.TryAdd(split, canMergeWithExistingStacks: false))
@@ -625,6 +666,7 @@ namespace HaulersDream
                     comp.NotifyYieldPicked();
                     if (!split.Spawned)
                         split.Position = hauler.Position;
+                    scooped++;
                 }
                 else if (split != null && !split.Destroyed && !split.Spawned)
                 {
@@ -632,6 +674,18 @@ namespace HaulersDream
                     GenPlace.TryPlaceThing(split, hauler.Position, hauler.Map, ThingPlaceMode.Near);
                 }
             }
+            // Conditional: HDLog.Dbg ALWAYS writes the disk trail (HaulersDreamMod.cs:427-432), so an
+            // unconditional line would add noise to every bug report for the overwhelmingly common
+            // nothing-left-behind case. Recorded when it does happen, so a report shows the decision.
+            // "nowhere better to put them", not "no storage accepts them": a HasScoopDestination miss is
+            // TryFindBestBetterStorageFor failing for ANY reason — a full, reserved or unreachable cell
+            // (IsGoodStoreCell -> CanReserveNew / CanReach) as much as a filter rejection. The count is
+            // ENTRIES, not pieces: StripCorpseDroppingLoot's placedAction fires once per landing, so one
+            // stackable drop that split across two ground stacks contributes two entries pointing at the
+            // same merged Thing, and both are counted when it has nowhere to go.
+            if (noDestination > 0)
+                HDLog.Dbg($"{hauler} auto-strip: left {noDestination} stripped loot entr(ies) at the body — nowhere better to put them.");
+            return scooped;
         }
     }
 }

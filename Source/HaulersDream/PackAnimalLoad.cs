@@ -286,11 +286,19 @@ namespace HaulersDream
                 return null;
             if (pawn.GetComp<CompHauledToInventory>() == null || pawn.inventory == null)
                 return null;
-            // NO IsEligible gate here: this is a PLAYER ORDER (the float-menu provider is the gatekeeper), and the
-            // swept loot is deposited onto the ANIMAL — never stranded in the pawn's inventory — so the load/unload
-            // symmetry that gates the AUTOMATIC bulk-haul (BulkHaul.BuildBulkJob, which keeps its IsEligible gate)
-            // does not apply. A specialist incapable of dumb-labor hauling can still be ordered to load, matching
-            // vanilla "Load onto pack animal".
+            // NO IsEligible gate here: this is a PLAYER ORDER (the float-menu provider is the gatekeeper), and on
+            // COMPLETION the swept loot is deposited onto the ANIMAL, so the load/unload symmetry that gates the
+            // AUTOMATIC bulk-haul (BulkHaul.BuildBulkJob, which keeps its IsEligible gate) does not apply. It is
+            // not "never in the pawn's inventory", though — the driver tags each swept split on the pawn's own
+            // CompHauledToInventory for the sweep -> walk -> deposit trip, so an INTERRUPTED trip does leave tagged
+            // cargo on a hauling-incapable pawn that HD's automatic unload refuses; the anti-softlock auto-drop
+            // (whose incapability gate #229 corrected to the work TYPE) and the "Unload inventory" button recover
+            // it. A specialist incapable of dumb-labor hauling can still be ordered to load, matching
+            // vanilla "Load onto pack animal": RimWorld.FloatMenuOptionProvider_LoadOntoPackAnimal.GetOptionsFor
+            // applies NO capability gate at all (not even manipulation) and its AppliesInt only restricts the
+            // option to !IsFormingCaravan && !map.IsPlayerHome. After #229 the float-menu provider enforces the
+            // hauling-capability bar for every load target EXCEPT pack animals, for exactly that reason — this one
+            // vanilla twin is genuinely ungated, so HD keeps its manipulation-only bar here too.
 
             float ceiling = CeilingKg(pawn, s);
             float running = MassUtility.GearAndInventoryMass(pawn);

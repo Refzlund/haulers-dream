@@ -68,3 +68,27 @@ const needSeams = Bun.spawn(['bun', resolve(import.meta.dir, 'check-need-seam-gu
 	cwd: repoRoot,
 })
 if ((await needSeams.exited) !== 0) throw new Error('Need-seam guard check failed (see output above).')
+
+// Guard against re-introducing vanilla's "desperate" store-cell search. Its last leg picks a random map-edge
+// cell with no Home-area test (issue #231 — pawns scattering items outside the Home area) and NREs on a
+// degenerate colony (issue #76), yet it looks like the obvious helper for "the unload has nowhere to put this",
+// so a future simplification back to it would compile clean and pass every test. See check-no-desperate-leg.ts.
+const desperateLeg = Bun.spawn(['bun', resolve(import.meta.dir, 'check-no-desperate-leg.ts')], {
+	stdout: 'inherit',
+	stderr: 'inherit',
+	cwd: repoRoot,
+})
+if ((await desperateLeg.exited) !== 0) throw new Error('Desperate-leg guard check failed (see output above).')
+
+// Guard drug-policy access (issue #232). RimWorld's DrugPolicy[ThingDef] indexer throws a message-less
+// ArgumentException for a def it holds no entry for — "Value does not fall within the expected range." — and no
+// test and no ordinary save reproduces it, so the shorter `policy[def]` spelling compiles clean and regresses
+// silently. Fails the build if any read escapes DrugPolicyLookup, or if any part of the fix (the accessor, its
+// two call sites, the missing-entry constant, its tests, the seam finalizer) goes missing.
+// See check-drug-policy-access.ts.
+const drugPolicyAccess = Bun.spawn(['bun', resolve(import.meta.dir, 'check-drug-policy-access.ts')], {
+	stdout: 'inherit',
+	stderr: 'inherit',
+	cwd: repoRoot,
+})
+if ((await drugPolicyAccess.exited) !== 0) throw new Error('Drug-policy access check failed (see output above).')

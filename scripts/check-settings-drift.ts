@@ -20,6 +20,10 @@ const SETTINGS_PATH = resolve(repoRoot, 'Source/HaulersDream/HaulersDreamSetting
 // The settings GUI was split into a `partial class` file; the soft "referenced in UI" check must
 // scan it too (the DrawXxxTab / DoWindowContents bodies live here now, not in the main file).
 const SETTINGS_WINDOW_PATH = resolve(repoRoot, 'Source/HaulersDream/HaulersDreamSettings.Window.cs')
+// The third file of the `partial class HaulersDreamSettings`. Not part of the drift triple (no fields / no
+// ExposeData live here), but the ExposeData side-effect guard resolves helper bodies across ALL the partials —
+// a migration helper is just as dangerous sitting in a sibling file.
+const SETTINGS_PROFILES_PATH = resolve(repoRoot, 'Source/HaulersDream/SettingsProfiles.cs')
 
 // Scribe families that handle collections / deep objects (reset to a fresh instance, not a
 // string-compared scalar default). A serialized field surfacing through one of these is a
@@ -148,6 +152,115 @@ function normalize(expr: string): string {
 	return expr.replace(/\s+/g, ' ').trim()
 }
 
+// ---- ExposeData side-effect guard (issue #238) -----------------------------------------------------------
+// A setting must be written by exactly one thing on load: its own Scribe_*.Look. Anything ELSE in ExposeData
+// that assigns a setting field runs AFTER Look has already put the saved value there, so it can silently
+// overwrite what the player chose — exactly how #238 shipped (a stamp-guarded migration re-ran every launch
+// and reset nine yield settings, with every other build guard green).
+//
+// BE HONEST ABOUT WHAT THIS BUYS: it would NOT have caught #238 on its own. MigrateLegacyYieldSettings assigns
+// nine setting fields, so the broken build needed the same allowlist entry the fixed one has. Its value is that
+// no NEW such write can appear without someone writing down why it is safe — and that written reason is what a
+// reviewer checks. Note the limit precisely: an allowlisted helper is skipped WHOLE (see ALLOWED_EXPOSE_MUTATORS
+// below), so one that already has an entry can grow to write more setting fields without tripping anything here.
+// Reviewing a change to such a helper's body is a human job. Actual detection is the runtime tripwire's
+// (SettingsProfiles.VerifySerializationIntegrity, which round-trips a snapshot held OFF its defaults).
+//
+// HEURISTIC SCOPE — it reads C# with regexes, so it sees:
+//   yes: `foo = …`, compound `foo += …`, and `ref foo` passed to anything that is not a Scribe_*.Look
+//   no:  in-place mutation of a collection setting (`itemUnloadRules.Add(x)`, as MigrateLegacyKeepDefNames does)
+//   no:  a write behind an alias/reflection, or a helper reached through more than one call hop
+// String literals and comments are stripped first, so prose containing `foo = true` cannot fail the build.
+
+/** Assignments to a setting field that ExposeData is allowed to make DIRECTLY (each needs a reason here). */
+const ALLOWED_EXPOSE_MUTATIONS = new Set([
+	// A hand-edited config with k >= 22 makes the Held-Karp route solver allocate gigabytes (2^k*k) and
+	// overflow at k >= 31, so the loaded value is clamped to [1,16]. It only ever narrows an out-of-range
+	// value the UI cannot produce; an in-range player choice passes through untouched.
+	'routeOrderExactMax',
+])
+
+/** C# keywords that read like a call (`if (…)`) — never resolve these to a method body. */
+const CALL_LIKE_KEYWORDS = new Set([
+	'if', 'else', 'for', 'foreach', 'while', 'do', 'switch', 'case', 'catch', 'lock', 'using', 'fixed',
+	'return', 'throw', 'typeof', 'sizeof', 'nameof', 'default', 'checked', 'unchecked', 'when', 'new',
+])
+
+/** Helpers ExposeData may call that assign setting fields (each needs a reason here). */
+const ALLOWED_EXPOSE_MUTATORS = new Set([
+	// One-way pre-1.1.x "never unload" list -> itemUnloadRules. Early-returns when the legacy list is absent,
+	// so it is a no-op for every config that does not actually carry the legacy data.
+	'MigrateLegacyKeepDefNames',
+	// One-way pre-#79 per-work bools + global pickupMode -> the 9 yieldX values. Gated on
+	// SettingsSchemaPolicy.ShouldMigrateLegacyYields, which requires a legacy node to actually be PRESENT in
+	// the node being loaded (issue #238 — a stamp alone cannot tell "old config" from "never stamped").
+	'MigrateLegacyYieldSettings',
+])
+
+/** Blank out comments and string literals, preserving line count so "the line above" still lines up. */
+function stripNoise(body: string): string {
+	return body
+		.replace(/\/\*[\s\S]*?\*\//g, (m) => m.replace(/[^\n]/g, ' '))
+		.replace(/"(?:[^"\\\n]|\\.)*"/g, '""')
+		.replace(/\/\/[^\n]*/g, '')
+}
+
+/** The `if (x == null) x = new …;` idiom — same line or the line above, and about THIS field. */
+function isNullGuarded(name: string, line: string, prevLine: string): boolean {
+	const re = new RegExp(`\\b${name}\\s*==\\s*null`)
+	return re.test(line) || re.test(prevLine)
+}
+
+/**
+ * Names of setting fields written somewhere in `body`, ignoring the null-guard idiom
+ * (`if (x == null) x = new ...;`) which only fills in an ABSENT node rather than overwriting a loaded one.
+ */
+function mutatedSettingFields(body: string, settingNames: Set<string>): string[] {
+	const hits = new Set<string>()
+	// `name =` and compound `name += / |= / <<=` …, but never `==` / `=>` (and never `!=` / `<=` / `>=`, whose
+	// operator char is outside the compound class so the `=` can't be reached). The lookbehind drops member
+	// access, so `LookMode.Value` / `Mathf.Clamp` never register.
+	const assignRe = /(?<![\w.])([A-Za-z_]\w*)\s*(?:[+\-*/%&|^]|<<|>>)?=(?![=>])/g
+	// A field handed to a helper BY REF is rewritten just as surely as by an assignment. Scribe_*.Look is the one
+	// legitimate by-ref writer — that is the whole point of the guard.
+	const refRe = /(?<![\w.])ref\s+([A-Za-z_]\w*)/g
+	const lines = stripNoise(body).split('\n')
+	for (let i = 0; i < lines.length; i++) {
+		const line = lines[i]
+		const prev = i > 0 ? lines[i - 1] : ''
+		for (const m of line.matchAll(assignRe)) {
+			if (!settingNames.has(m[1])) continue
+			if (isNullGuarded(m[1], line, prev)) continue
+			hits.add(m[1])
+		}
+		for (const m of line.matchAll(refRe)) {
+			if (!settingNames.has(m[1])) continue
+			if (line.slice(0, m.index).includes('Scribe_')) continue
+			hits.add(m[1])
+		}
+	}
+	return [...hits]
+}
+
+/**
+ * The body of the method named `name`, or null when it isn't declared in `src`.
+ * Requires a return type (at least one token + whitespace) immediately before the name, which is what tells a
+ * DECLARATION apart from a statement-position CALL (`Helper();`) — the access modifier is optional, since a
+ * method with none is implicitly private and would otherwise be skipped.
+ */
+function methodBody(src: string, name: string): string | null {
+	const declRe = new RegExp(
+		`^[ \\t]*[A-Za-z_][\\w.<>\\[\\],?]*(?:\\s+[A-Za-z_][\\w.<>\\[\\],?]*)*\\s+${name}\\s*\\(`,
+		'm'
+	)
+	if (!declRe.test(src)) return null
+	try {
+		return sliceRegion(src, declRe)
+	} catch {
+		return null
+	}
+}
+
 /** Is this field type a collection / deep object (reset to a fresh instance, not a scalar)? */
 function isCollectionType(type: string): boolean {
 	return (
@@ -164,6 +277,9 @@ async function main() {
 	const src = (await Bun.file(SETTINGS_PATH).text()).replace(/\r\n/g, '\n')
 	// The GUI lives in the `partial class` window file; concatenate it for the UI-reference scan below.
 	const winSrc = (await Bun.file(SETTINGS_WINDOW_PATH).text()).replace(/\r\n/g, '\n')
+	const profilesSrc = (await Bun.file(SETTINGS_PROFILES_PATH).text()).replace(/\r\n/g, '\n')
+	// Every file of the partial class, for resolving a helper ExposeData calls wherever it happens to live.
+	const partialSrc = `${src}\n${winSrc}\n${profilesSrc}`
 
 	const classBody = sliceRegion(src, /public (?:partial )?class HaulersDreamSettings\s*:\s*ModSettings/)
 	const exposeBody = sliceRegion(src, /public override void ExposeData\(\)/)
@@ -306,6 +422,71 @@ async function main() {
 	for (const [name] of reset) {
 		if (!fieldNames.has(name)) {
 			warnings.push(`ResetToDefaults assigns "${name}" which is not a declared field.`)
+		}
+	}
+
+	// ---- ExposeData side-effect guard (issue #238): nothing but Scribe_*.Look may write a setting on load ----
+	const settingFieldNames = new Set(
+		serializedFields.filter((f) => scribeByName.has(f.name)).map((f) => f.name)
+	)
+	const mutationNote =
+		'A load-time side effect silently overwrites the value that was just loaded — see issue #238. If it is '
+		+ 'deliberate, add it to the allowlist with a comment explaining the guard that makes it safe.'
+
+	for (const name of mutatedSettingFields(exposeBody, settingFieldNames)) {
+		if (ALLOWED_EXPOSE_MUTATIONS.has(name)) continue
+		errors.push(`ExposeData MUTATES setting "${name}" outside a Scribe_*.Look. ${mutationNote}`)
+	}
+
+	// ...and the same for every helper ExposeData calls — that is where the #238 migration hid. Any call shape
+	// counts (arguments, or nested inside a condition: `Migrate(loadedVersion)` is exactly as dangerous as a
+	// bare `Migrate();`), and the body is resolved across ALL THREE files of the partial class, since a helper
+	// is no safer for sitting in a sibling file. A name that resolves to no declaration is simply skipped, so
+	// over-matching here costs nothing.
+	const exposeCalls = stripNoise(exposeBody)
+	const seenHelpers = new Set<string>()
+	for (const m of exposeCalls.matchAll(/(?<![\w.])([A-Za-z_]\w*)\s*\(/g)) {
+		const helper = m[1]
+		if (CALL_LIKE_KEYWORDS.has(helper)) continue // `if (`, `foreach (`, `switch (` … not a call
+		if (ALLOWED_EXPOSE_MUTATORS.has(helper)) continue
+		if (exposeCalls.slice(0, m.index).endsWith('new ')) continue // `new StorageBuildingFilter()` is a ctor
+		if (seenHelpers.has(helper)) continue
+		seenHelpers.add(helper)
+		const body = methodBody(partialSrc, helper)
+		if (body === null) continue // not declared here (a Verse/static call, not a settings helper)
+		for (const name of mutatedSettingFields(body, settingFieldNames)) {
+			errors.push(
+				`ExposeData calls ${helper}(), which MUTATES setting "${name}" outside a Scribe_*.Look. ${mutationNote}`
+			)
+		}
+	}
+
+	// The #238 gate only lets MigrateLegacyYieldSettings run when a legacy node is actually PRESENT, and it asks
+	// LegacyYieldNodeLabels which nodes those are. If the migration reads a label the probe doesn't list, that
+	// config never migrates; if the probe lists one the migration ignores, a modern config can migrate spuriously.
+	// Keep the two lists identical.
+	const labelsBlock = /string\[\] LegacyYieldNodeLabels\s*=\s*\{([^}]*)\}/.exec(partialSrc)
+	const migrateBody = methodBody(partialSrc, 'MigrateLegacyYieldSettings')
+	if (!labelsBlock) {
+		errors.push('LegacyYieldNodeLabels (the pre-#79 legacy-node probe list) is missing — see issue #238.')
+	} else if (migrateBody !== null) {
+		const probed = new Set([...labelsBlock[1].matchAll(/"([^"]+)"/g)].map((m) => m[1]))
+		const read = new Set(
+			[...migrateBody.matchAll(/Scribe_Values\.Look\(\s*ref\s+\w+\s*,\s*"([^"]+)"/g)].map((m) => m[1])
+		)
+		const missing = [...read].filter((l) => !probed.has(l))
+		const extra = [...probed].filter((l) => !read.has(l))
+		if (missing.length > 0) {
+			errors.push(
+				`MigrateLegacyYieldSettings reads legacy node(s) ${missing.map((l) => `"${l}"`).join(', ')} that `
+				+ 'LegacyYieldNodeLabels does not list, so a config carrying only those never migrates (issue #238).'
+			)
+		}
+		if (extra.length > 0) {
+			errors.push(
+				`LegacyYieldNodeLabels lists ${extra.map((l) => `"${l}"`).join(', ')}, which `
+				+ 'MigrateLegacyYieldSettings never reads — the presence probe would fire for nothing (issue #238).'
+			)
 		}
 	}
 

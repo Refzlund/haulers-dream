@@ -42,9 +42,15 @@ namespace HaulersDream
                 yield break;
             if (pawn.GetComp<CompHauledToInventory>() == null || pawn.inventory == null)
                 yield break;
-            // Player order: only the physical manipulation capability is required (like vanilla load orders) — the
-            // swept loot is deposited into the target, so nothing strands. Works even drafted (the chain too).
-            if (!pawn.health.capacities.CapableOf(PawnCapacityDefOf.Manipulation))
+            // Player order: skips the AUTO eligibility gate (the swept loot is deposited into the target, so
+            // nothing strands) but NOT the hauling-capability bar (#229). This is a thin entry over the SAME
+            // per-target bulk-load job the family providers build, and every target family it can reach is vanilla
+            // Hauling work (LoadTransporters / HaulToPortal in Core/Defs/WorkGiverDefs/WorkGivers.xml:1251-1254 /
+            // :1264-1267, VF's PackVehicle likewise <workType>Hauling</workType>), so it must apply the same bar or
+            // it becomes the way around all three. HaulOrderGate reads the WORK TYPE, not the WorkTags.Hauling bit
+            // an "incapable of dumb labor" backstory leaves clear. Still works while drafted (the chain too) for
+            // any pawn that clears the bar.
+            if (HaulOrderGate.Blocks(pawn))
                 yield break;
             // Don't offer this while the pawn is under a boarding lord — let vanilla's gather-and-board flow run.
             var dutyDef = pawn.mindState?.duty?.def;

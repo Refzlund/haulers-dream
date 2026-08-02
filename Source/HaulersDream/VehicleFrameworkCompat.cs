@@ -37,6 +37,7 @@ namespace HaulersDream
 
         private static Type vehiclePawnType;                 // Vehicles.VehiclePawn : Pawn  (the presence probe)
         private static Type vehicleDefType;                  // Vehicles.VehicleDef : ThingDef
+        private static Type vehicleCargoTabType;             // Vehicles.ITab_Vehicle_Cargo : ITab_Airdrop_Container : ITab
         private static MethodInfo inVehicleThing;            // static ext Vehicles.Ext_Vehicles.InVehicle(Thing) -> bool
         private static Func<Thing, bool> inVehicleDelegate;  // open delegate bound to inVehicleThing (no Invoke / no object[] per call)
         private static MethodInfo addOrTransfer;             // instance VehiclePawn.AddOrTransfer(Thing,int) -> int
@@ -77,6 +78,18 @@ namespace HaulersDream
                 return; // VF not loaded — the real precondition, no catch needed
 
             vehicleDefType = AccessTools.TypeByName("Vehicles.VehicleDef");
+
+            // The vehicle's CARGO inspect tab, for the auto-open-tab convenience (#224). A VehiclePawn has NO
+            // vanilla Gear tab to open: the abstract VehicleDef "BaseVehiclePawn" declares no ParentName, so it
+            // never inherits BasePawn's tab list, and its own <inspectorTabs> lists only the VF/caravan tabs
+            // (VehiclePawnBase.xml:4,77-82). ITab_Vehicle_Cargo is not an ITab_Pawn_Gear subclass either
+            // (ITab_Vehicle_Cargo : ITab_Airdrop_Container : ITab), so InspectPaneUtility.OpenTab's
+            // IsAssignableFrom match silently finds nothing when asked for Gear — the auto-open was a hard no-op
+            // on every vehicle until this handle existed.
+            // DELIBERATELY NOT part of the `active` conjunction below, nor of the drift warning: this is a
+            // COSMETIC convenience, so a VF fork that renamed this tab must lose that ONE auto-open, never the
+            // load-bearing bulk-load / deposit / capacity integration.
+            vehicleCargoTabType = AccessTools.TypeByName("Vehicles.ITab_Vehicle_Cargo");
 
             // InVehicle(Thing) — the (Thing) overload at Ext_Vehicles.cs:1017 (forward-compat durable; the (Pawn)
             // overload at :1006 is annotated "// TODO 1.7 - Remove"). A static extension method on Verse.Thing.
@@ -155,8 +168,14 @@ namespace HaulersDream
                      && cargoCapacityField != null
                      && cargoToLoadField != null;
             if (active)
+                // Report the COSMETIC cargo-tab handle here on the success path rather than in the Warn below:
+                // it is deliberately not part of `active` (a fork that renames the tab must keep the bulk-load
+                // integration), so a Warn would contradict the design — but without a line anywhere, such a fork
+                // would lose the auto-open-cargo-tab convenience with no signal at all.
                 HDLog.Msg("Vehicle Framework detected — bulk-load-into-vehicle + event-correct "
-                            + "pack-animal deposit on, eat-from / build-from a parked vehicle's cargo enabled.");
+                            + "pack-animal deposit on, eat-from / build-from a parked vehicle's cargo enabled"
+                            + " (auto-open cargo tab: " + (vehicleCargoTabType != null ? "on" : "unavailable — "
+                            + "Vehicles.ITab_Vehicle_Cargo did not resolve") + ").");
             else
                 // VF is present (VehiclePawn resolved) but one or more load-bearing deposit/capacity/manifest
                 // members did not bind (a VF version/API drift) — degrade SAFE (report inactive => HD behaves as
@@ -184,6 +203,13 @@ namespace HaulersDream
                 return false;
             return vehicleDefType.IsInstanceOfType(d);
         }
+
+        /// <summary>The <c>Vehicles.ITab_Vehicle_Cargo</c> type — the tab that shows a vehicle's load, which is
+        /// what the carrier auto-open (#224) must open for a vehicle since vehicles have no Gear tab at all. A BCL
+        /// <see cref="Type"/>, so no <c>Vehicles.*</c> type appears in the signature. Null when VF is absent /
+        /// inactive / this cosmetic handle did not bind — the caller then opens NOTHING, which is exactly the
+        /// pre-fix behaviour and never a wrong tab.</summary>
+        public static Type VehicleCargoTabType => IsActive ? vehicleCargoTabType : null;
 
         /// <summary>True if <paramref name="t"/> is currently inside a vehicle (riding a seat or stored in cargo) —
         /// its parent holder is a <c>VehicleRoleHandler</c> or a vehicle's inventory tracker, so its inventory is

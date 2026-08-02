@@ -36,10 +36,20 @@ namespace HaulersDream
                 yield break;
             if (pawn.GetComp<CompHauledToInventory>() == null)
                 yield break;
-            // Like vanilla's "Load onto pack animal" (and UNLIKE automatic hauling), this is a PLAYER ORDER, so
-            // it must NOT require the Hauling work-tag: a specialist incapable of dumb-labor hauling (e.g. a
-            // doctor delivering materials to construction) can still be ordered to load a pack animal, exactly
-            // as vanilla allows. Only the physical capability to pick things up is required.
+            // THE ONE EXCEPTION to #229's rule that an HD haul order applies vanilla's hauling-capability bar.
+            // Vanilla's twin here is genuinely UNGATED: RimWorld.FloatMenuOptionProvider_LoadOntoPackAnimal
+            // .GetOptionsFor applies no capability gate at all (not even manipulation), and its AppliesInt only
+            // restricts it to !IsFormingCaravan && !map.IsPlayerHome — it is not routed through a Hauling
+            // WorkGiverDef the way loading a transporter/portal/vehicle or refuelling is. So a specialist
+            // incapable of dumb-labor hauling can still be ordered to load a pack animal, exactly as vanilla
+            // allows, and HD keeps the manipulation-only bar to match.
+            //
+            // HONEST CAVEAT (do not restate the old "nothing can strand" claim): the swept stacks ARE tagged in the
+            // pawn's OWN pack for the whole sweep -> walk -> deposit trip (JobDriver_LoadPackAnimal registers each
+            // split on CompHauledToInventory), so an interruption mid-trip does leave tagged cargo on an incapable
+            // pawn that HD's automatic unload will refuse. That is caught by the anti-softlock auto-drop, whose
+            // incapability gate was corrected in #229 to read the work TYPE (see
+            // HaulersDreamGameComponent.Softlock); the per-pawn "Unload inventory" button is the manual recovery.
             if (!pawn.health.capacities.CapableOf(PawnCapacityDefOf.Manipulation))
                 yield break;
             var carrier = GiveToPackAnimalUtility.UsablePackAnimalWithTheMostFreeSpace(pawn);

@@ -55,6 +55,15 @@ namespace HaulersDream
             if (s == null || workGiver?.giverClass == null || pawn == null)
                 return true;
 
+            // #229 DEAD-END GUARD. HD's own bulk-load providers now hide their option for a pawn that may not be
+            // ordered to haul (HaulOrderGate). The probe below does NOT: TransportLoad.WouldGiveBulkJobForMenu ->
+            // TryGiveBulkJob(playerOrder: true) deliberately skips the eligibility gate for a player order
+            // (TransportLoad.cs:338), so it would still answer "yes" and this prefix would suppress vanilla's
+            // option — leaving the player with NO option at all, not even vanilla's greyed row explaining why.
+            // Stand down whenever HD's providers stand down, exactly like the boarding-lord mirrors below.
+            if (HaulOrderGate.Blocks(pawn))
+                return true;
+
             var clicked = target.Thing;
             if (clicked == null)
                 return true; // no concrete container to load into — let vanilla decide
