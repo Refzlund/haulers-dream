@@ -132,49 +132,67 @@ namespace HaulersDream
         }
 
         /// <summary>
-        /// True when picking <paramref name="def"/> means the pawn is STILL in an active accumulate run, so it
-        /// must NOT be diverted to unload (F38): yield-producing work (mine / deconstruct / plant harvest+cut /
-        /// deep-drill / gather animal resources / strip), OR a storage-bound haul (which already delivers the
-        /// pack to storage — bulk-haul sweeps it along). Every OTHER work job means the yield run is OVER, and
-        /// the pawn should shed its load before the unrelated work. Classified by the job's driverClass so it
-        /// mirrors YieldRouter's producer set exactly and composes with modded jobs subclassing those drivers.
+        /// What KIND of run <paramref name="def"/> belongs to (the pure <see cref="WorkRunPolicy"/> taxonomy):
+        /// yield-producing work (mine / deconstruct / plant harvest+cut / deep-drill / gather animal resources /
+        /// strip), a storage-bound haul (which already delivers the pack to storage — bulk-haul sweeps it along),
+        /// CONSTRUCTION (finishing a frame, or one of HD's inventory construct-deliveries), or anything else, which
+        /// means the run is OVER and the pawn should shed its load before the unrelated work. Classified by the
+        /// job's driverClass so it mirrors YieldRouter's producer set exactly and composes with modded jobs
+        /// subclassing those drivers.
+        ///
+        /// <para>Construction used to fall through to <see cref="WorkRunKind.Other"/>: a builder finishing a frame
+        /// therefore counted as having ENDED its run and took the relaxed run-end unload bar (no minimum-trip
+        /// floor) between every wall tile, walking to the stockpile each time. Vanilla's construct DELIVERY is a
+        /// <c>JobDriver_HaulToContainer</c> and so already took the strict bar — that asymmetry was the bug.</para>
         /// </summary>
-        internal static bool IsYieldOrHaulJobDef(JobDef def)
+        internal static WorkRunKind ClassifyJobDef(JobDef def)
         {
             if (def == null || def.driverClass == null)
-                return false;
-            // A JobDef's driverClass is immutable once defs are loaded, and the 9 IsAssignableFrom walks below are
-            // pure type-hierarchy checks — so the (def -> bool) answer is fixed for the whole session. Memoize it
+                return WorkRunKind.Other;
+            // A JobDef's driverClass is immutable once defs are loaded, and the IsAssignableFrom walks below are
+            // pure type-hierarchy checks — so the (def -> kind) answer is fixed for the whole session. Memoize it
             // in a static dictionary so this per-pawn-scan call (every work-found scan) becomes one dictionary
-            // lookup instead of 9 reflection walks. Keyed on the JobDef (cheap reference key); the set of defs is
-            // small and bounded, so the cache never grows unbounded.
-            if (yieldOrHaulCache.TryGetValue(def, out var cached))
+            // lookup instead of a dozen reflection walks. Keyed on the JobDef (cheap reference key); the set of defs
+            // is small and bounded, so the cache never grows unbounded.
+            if (runKindCache.TryGetValue(def, out var cached))
                 return cached;
-            bool result = ComputeIsYieldOrHaulJobDef(def.driverClass);
-            yieldOrHaulCache[def] = result;
+            var result = WorkRunPolicy.Classify(IsConstructionDriver(def.driverClass),
+                IsYieldDriver(def.driverClass), IsHaulDriver(def.driverClass));
+            runKindCache[def] = result;
             return result;
         }
 
-        // Per-JobDef memo of IsYieldOrHaulJobDef (driverClass assignability is immutable per def -> safe forever).
+        // Per-JobDef memo of ClassifyJobDef (driverClass assignability is immutable per def -> safe forever).
         // Reached from the per-pawn work scan, which a threading mod (e.g. RimThreaded) may fan onto worker
         // threads, so use a ConcurrentDictionary: lock-free reads, and a racing double-compute is harmless
         // because the value is a pure function of the immutable driverClass. Single-threaded behaviour is
-        // identical to the prior plain Dictionary.
-        private static readonly System.Collections.Concurrent.ConcurrentDictionary<JobDef, bool> yieldOrHaulCache =
-            new System.Collections.Concurrent.ConcurrentDictionary<JobDef, bool>();
+        // identical to a plain Dictionary.
+        private static readonly System.Collections.Concurrent.ConcurrentDictionary<JobDef, WorkRunKind> runKindCache =
+            new System.Collections.Concurrent.ConcurrentDictionary<JobDef, WorkRunKind>();
 
-        private static bool ComputeIsYieldOrHaulJobDef(System.Type dc)
-        {
-            return typeof(JobDriver_PlantWork).IsAssignableFrom(dc)
+        /// <summary>Construction work: vanilla's finish-a-frame and place-a-no-cost-frame drivers, plus HD's own
+        /// inventory construct-delivery (which backs both HD construct job defs). Vanilla's hand-carry construct
+        /// DELIVERY is a <c>JobDriver_HaulToContainer</c> and is caught by <see cref="IsHaulDriver"/> instead —
+        /// either way the run continues, and the Construction label is what the material-hold guard keys off.</summary>
+        private static bool IsConstructionDriver(System.Type dc)
+            => typeof(JobDriver_ConstructFinishFrame).IsAssignableFrom(dc)
+                || typeof(JobDriver_PlaceNoCostFrame).IsAssignableFrom(dc)
+                || typeof(JobDriver_OverloadConstructDeliver).IsAssignableFrom(dc);
+
+        /// <summary>Yield-producing work — the producer set YieldRouter scoops from.</summary>
+        private static bool IsYieldDriver(System.Type dc)
+            => typeof(JobDriver_PlantWork).IsAssignableFrom(dc)
                 || typeof(JobDriver_Mine).IsAssignableFrom(dc)
                 || typeof(JobDriver_OperateDeepDrill).IsAssignableFrom(dc)
                 || typeof(JobDriver_GatherAnimalBodyResources).IsAssignableFrom(dc)
                 || typeof(JobDriver_Strip).IsAssignableFrom(dc)
-                || typeof(JobDriver_Deconstruct).IsAssignableFrom(dc)
-                || typeof(JobDriver_HaulToCell).IsAssignableFrom(dc)
+                || typeof(JobDriver_Deconstruct).IsAssignableFrom(dc);
+
+        /// <summary>Storage-bound hauls, which deliver the carried pack themselves.</summary>
+        private static bool IsHaulDriver(System.Type dc)
+            => typeof(JobDriver_HaulToCell).IsAssignableFrom(dc)
                 || typeof(JobDriver_HaulToContainer).IsAssignableFrom(dc)
                 || typeof(JobDriver_BulkHaul).IsAssignableFrom(dc);
-        }
 
         /// <param name="runOver">The pawn just picked a NON-yield, NON-haul job, so its accumulate run is over —
         /// use the relaxed run-end criteria (drop a worthwhile load at nearby storage even on a short hop)
@@ -224,6 +242,14 @@ namespace HaulersDream
                 return false;
             var tracked = comp.GetHashSet();
             if (tracked.Count == 0)
+                return false;
+            // Never divert a builder away from material construction is about to eat. The pass-by unload is the one
+            // trigger with no settle window on the continuing-run path, so without this a builder heading to its next
+            // frame past a stockpile drops the very steel that frame wants and walks back for it. Applies on the
+            // protected zero-detour path too: that path only promises not to DELAY the work, and re-fetching the
+            // material afterwards is a cost either way. Never fires for a player-forced job (already refused above),
+            // and this whole method is the automatic path, so forced is false here by construction.
+            if (ConstructionMaterialHold.HoldsMaterialForActiveConstruction(pawn, comp))
                 return false;
             int now = Find.TickManager?.TicksGame ?? 0;
             if (now - comp.lastOpportunisticUnloadTick < DivertCooldownTicks)
@@ -521,6 +547,13 @@ namespace HaulersDream
                 return null;
             var tracked = comp.GetHashSet();
             if (tracked.Count == 0)
+                return null;
+            // Hold construction material the pawn is about to deliver (see ConstructionMaterialHold). This trigger
+            // fires whenever the work scan comes up empty for ONE cycle, which happens constantly between a
+            // builder's frames, and the settle gate below is bypassed the moment the pawn is entering downtime — so
+            // the guard has to sit ahead of it. Automatic path only (the gizmo and the finish flushes call
+            // PawnUnloadChecker directly with forced:true, which never holds).
+            if (ConstructionMaterialHold.HoldsMaterialForActiveConstruction(pawn, comp))
                 return null;
 
             // SETTLE gate: an empty work scan is NOT the end of the run by itself — in a busy colony work

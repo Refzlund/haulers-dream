@@ -82,6 +82,15 @@ namespace HaulersDream
             if (!forced && HoldsStockForActiveDoBill(pawn, comp))
                 return;
 
+            // The CONSTRUCTION counterpart of the DoBill guard above: leftover build material in the pack is what
+            // the next frame is about to eat, so an automatic unload must not ship it to storage first — the
+            // reported "walks back to the stockpile after every single wall tile". Vanilla has no construct-delivery
+            // unloading of its own, so there was nothing to inherit a guard from. HOLD, never a drop: the material
+            // stays tagged and goes out on the next trigger the moment construction stops wanting it. The gizmo
+            // (forced) still dumps everything.
+            if (ConstructionMaterialHold.HoldsMaterialForActiveConstruction(pawn, comp, forced))
+                return;
+
             // On a non-home / temporary map (a caravan / encounter site) there is no player storage to unload
             // to, so the storage-unload pass is never appropriate there. We DON'T bail here, though: the same
             // eligibility / grace / pending-work / surplus gating below decides WHEN to commit (so the caravan
@@ -179,7 +188,8 @@ namespace HaulersDream
                             var loadJob = PackAnimalLoad.TryGetOpportunisticLoadJob(pawn);
                             if (loadJob != null && pawn.jobs != null)
                             {
-                                if (behindQueuedWork && hasPendingWork)
+                                bool queueBehind = UnloadPolicy.QueueBehindPendingWork(behindQueuedWork, hasPendingWork);
+                                if (queueBehind)
                                     pawn.jobs.jobQueue.EnqueueLast(loadJob, JobTag.Misc);
                                 else
                                     pawn.jobs.jobQueue.EnqueueFirst(loadJob, JobTag.Misc);
@@ -187,7 +197,7 @@ namespace HaulersDream
                                 // Same one-trip ordering as the storage path: scoop pending fresh drops first.
                                 YieldRouter.EnsureSelfPickupJob(pawn);
                                 // #215 left-click: run the just-queued load NOW (only on the EnqueueFirst path).
-                                if (immediate && !(behindQueuedWork && hasPendingWork))
+                                if (immediate && !queueBehind)
                                     InterruptCurrentJob(pawn);
                             }
                             return;
@@ -196,11 +206,12 @@ namespace HaulersDream
                         var job = JobMaker.MakeJob(HaulersDreamDefOf.HaulersDream_UnloadInventory);
                         if (pawn.jobs != null && job.TryMakePreToilReservations(pawn, false))
                         {
-                            if (behindQueuedWork && hasPendingWork)
+                            bool queueBehind = UnloadPolicy.QueueBehindPendingWork(behindQueuedWork, hasPendingWork);
+                            if (queueBehind)
                                 pawn.jobs.jobQueue.EnqueueLast(job, JobTag.Misc);
                             else
                                 pawn.jobs.jobQueue.EnqueueFirst(job, JobTag.Misc);
-                            HDLog.Dbg($"{pawn} queued unload ({carried.Count} tracked, forced={forced}).");
+                            HDLog.Dbg($"{pawn} queued unload ({carried.Count} tracked, forced={forced}, behind={queueBehind}).");
                             // Both EnqueueFirst, so the queue reads [SelfPickup, Unload]: pending fresh drops are
                             // scooped BEFORE the unload runs — one trip regardless of which trigger queued the
                             // unload (the interval firing mid-long-job otherwise yields [Unload, SelfPickup]: a
@@ -216,7 +227,7 @@ namespace HaulersDream
                             // that is now all keep-stock, surplus 0) doesn't yank the pawn off its work for nothing;
                             // the no-op unload still queues (the forced-always-proceeds invariant) but runs behind
                             // the current job, exactly as before #215.
-                            if (immediate && anyUnloadable && !(behindQueuedWork && hasPendingWork))
+                            if (immediate && anyUnloadable && !queueBehind)
                                 InterruptCurrentJob(pawn);
                         }
                         return;
@@ -351,7 +362,15 @@ namespace HaulersDream
                 }
             }
             if (adopted > 0)
+            {
+                // Adoption is an INTAKE path like the other ten (scoop, sweep, bulk haul, bill prep, ...), so it
+                // stamps the same settle window they do: freshly tagged stock waits out the accumulate window
+                // before an automatic unload trip, rather than being shipped off the instant it is noticed. Only on
+                // a real adoption (RegisterHauledItem is idempotent, so a re-scan of already-tagged stock adopts
+                // nothing and cannot keep pushing the stamp forward and starving the unload).
+                comp.NotifyYieldPicked();
                 HDLog.Dbg($"{pawn} adopted {adopted} surplus inventory stack(s) it did not scoop (adoptAll={adoptAll}).");
+            }
         }
 
         /// <summary>True if at least one tracked stack still in the pawn's inventory has surplus above the
@@ -415,8 +434,12 @@ namespace HaulersDream
         /// True if the pawn has a queued job that is its OWN work (anything but the mod's self-pickup /
         /// unload housekeeping jobs) — i.e. it's mid-run and an automatic unload should defer behind it.
         /// Delegates to the unit-tested pure <see cref="UnloadPolicy.HasPendingRealWork"/>.
+        ///
+        /// <para>Also read by <see cref="JobDriver_SelfPickup"/>: with the ceiling unload now queued BEHIND pending
+        /// work, "is there queued work?" is the same question as "will the unload actually free space during this
+        /// run?", and both must answer it identically or the scoop re-queues a drop nothing will make room for.</para>
         /// </summary>
-        private static bool HasPendingRealWork(Pawn pawn)
+        internal static bool HasPendingRealWork(Pawn pawn)
         {
             var queue = pawn.jobs?.jobQueue;
             if (queue == null)

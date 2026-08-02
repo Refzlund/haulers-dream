@@ -284,6 +284,59 @@ namespace HaulersDream.Tests
             Assert.That(UnloadPolicy.HasPendingRealWork(new[] { (string)null, "Mine" }, SelfPickup, Unload), Is.True);
         }
 
+        // --- QueueBehindPendingWork: WHERE the queued unload goes. Decide() answers "may it run at all";
+        // this answers "does it go in front of the pawn's queued orders, or behind them". ---
+
+        [Test]
+        public void Placement_CallerAsksToWait_AndThereIsWork_GoesBehind()
+        {
+            // The reported case: shift-queue two strip orders, the pack fills on the first, and the forced
+            // full-pack unload used to be put in FRONT of the second order — so the colonist stripped one corpse,
+            // hauled the loot to base, and only then came back. It now waits its turn.
+            Assert.That(UnloadPolicy.QueueBehindPendingWork(behindQueuedWork: true, hasPendingWork: true), Is.True);
+        }
+
+        [Test]
+        public void Placement_CallerAsksToWait_ButNothingIsQueued_GoesFirst()
+        {
+            // Nothing to wait for, so waiting would just delay the trip. This is also what keeps the full-pack
+            // unload working during autonomous work, where the pawn's queue is empty.
+            Assert.That(UnloadPolicy.QueueBehindPendingWork(behindQueuedWork: true, hasPendingWork: false), Is.False);
+        }
+
+        [Test]
+        public void Placement_GizmoStillPreempts()
+        {
+            // "Unload now" passes behindQueuedWork:false and must go in front of everything, queued work or not —
+            // that button means now. (It is also the only caller allowed to interrupt the current job.)
+            Assert.That(UnloadPolicy.QueueBehindPendingWork(behindQueuedWork: false, hasPendingWork: true), Is.False);
+            Assert.That(UnloadPolicy.QueueBehindPendingWork(false, false), Is.False);
+        }
+
+        [Test]
+        public void Placement_MatchesTheRealWorkScan()
+        {
+            // The "is there anything to wait for" input is the same HasPendingRealWork signal Decide() uses, so the
+            // mod's own housekeeping jobs must never make an unload defer behind itself.
+            bool onlyHousekeeping = UnloadPolicy.HasPendingRealWork(new[] { SelfPickup, Unload }, SelfPickup, Unload);
+            Assert.That(UnloadPolicy.QueueBehindPendingWork(true, onlyHousekeeping), Is.False);
+
+            bool realOrder = UnloadPolicy.HasPendingRealWork(new[] { SelfPickup, "Strip" }, SelfPickup, Unload);
+            Assert.That(UnloadPolicy.QueueBehindPendingWork(true, realOrder), Is.True);
+        }
+
+        [Test]
+        public void Placement_IsIndependentOfWhetherTheUnloadWasAllowed()
+        {
+            // Decide() and placement are separate questions: a FORCED unload is allowed to run despite pending work
+            // (that is the point of forced), and it is the caller's behindQueuedWork flag — not the forced flag —
+            // that decides whether it jumps the queue. Pinning both together so a future merge of the two can't
+            // silently reintroduce the bug.
+            Assert.That(Decide(forced: true, hasPendingWork: true), Is.EqualTo(UnloadDecision.Queue));
+            Assert.That(UnloadPolicy.QueueBehindPendingWork(true, true), Is.True);
+            Assert.That(Decide(forced: false, hasPendingWork: true), Is.EqualTo(UnloadDecision.Skip));
+        }
+
         // --- EndOfRunUnloadAllowed: the work scan came up dry for a loaded pawn -> unload before
         // recreation/idle. Each gate is pinned individually off a passing baseline. ---
 

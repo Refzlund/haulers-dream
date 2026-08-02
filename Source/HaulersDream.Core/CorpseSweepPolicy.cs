@@ -36,8 +36,32 @@ namespace HaulersDream.Core
         /// corpse opt-in cannot revive one on its own.</param>
         /// <param name="bulkHaulCorpses">The corpse opt-in. Off restores the pre-fix behaviour exactly: corpse
         /// hauls stay vanilla's own single-body carry.</param>
-        public static bool CanAnchorSweep(bool bulkHaulEnabled, bool bulkHaulCorpses)
-            => bulkHaulEnabled && bulkHaulCorpses;
+        /// <param name="autoStripOnDisposalOnly">True when auto-strip is set to strip only on DISPOSAL hauls
+        /// (graves, cremation) rather than on every haul. See the paragraph below — this is the one case where an
+        /// automatic corpse anchor is refused even with the opt-in on.</param>
+        /// <param name="playerOrdered">True for an explicit order ("Pick up", "Haul everything nearby",
+        /// "Prioritise hauling"). A player who points at a body has asked for this trip specifically.</param>
+        public static bool CanAnchorSweep(bool bulkHaulEnabled, bool bulkHaulCorpses,
+            bool autoStripOnDisposalOnly, bool playerOrdered)
+            => bulkHaulEnabled && bulkHaulCorpses && (playerOrdered || !autoStripOnDisposalOnly);
+
+        // WHY the disposal-only carve-out, since it couples two settings that otherwise have nothing to say to
+        // each other. Auto-strip decides WHEN to undress a body, and under "disposal hauls only" it strips exactly
+        // when the body is on its way to a grave. It recognises that by the JOB: vanilla's haul-to-container is a
+        // burial, a stockpile haul is not. A bulk sweep is neither — the destination isn't known when the body is
+        // picked up, so the sweep can't be classified as a burial and doesn't strip.
+        //
+        // Before the corpse opt-in that cost nothing, because the automatic scan never produced a bulk haul for a
+        // corpse at all: every automatic grave run was vanilla's haul-to-container and stripped on pickup. Letting
+        // the scan anchor on corpses would quietly change that — a disposal-only player would start burying bodies
+        // with their gear still on, having changed no setting. The gear is recoverable by exhuming, so nothing is
+        // destroyed, but it is not what they asked for.
+        //
+        // So the automatic anchor stands down in that one configuration and vanilla's per-body haul (which strips)
+        // is left alone. An explicit order still sweeps: that was already true before this change for "Pick up"
+        // and "Haul everything nearby", and a player pointing at a body is asking for that trip. Every other
+        // auto-strip mode is unaffected — "every haul" strips on pickup either way, and with auto-strip off there
+        // is no stripping expectation to break.
 
         /// <summary>
         /// May a corpse be SWEPT UP as a neighbour of some other haul — pocketed on the way past, whether the

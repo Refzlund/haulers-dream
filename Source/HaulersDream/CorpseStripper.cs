@@ -116,6 +116,12 @@ namespace HaulersDream
     /// pawn is dead, so they are never dropped and stay on the body. Narrow by design: fires only when
     /// <c>pawn.Dead</c> (inside a corpse) and HD's settings have at least one LeaveOnCorpse policy; for living
     /// pawns or when no leave policy is set, the original selector (typically null = strip all) is unchanged.
+    ///
+    /// <para>HALF OF A PAIR. Refusing to drop a piece is only correct if the game also stops CLAIMING that piece
+    /// is strippable — otherwise a strip order is accepted, deletes its own designation and removes nothing, over
+    /// and over. <see cref="Patch_CanBeStrippedByColony_LeaveOnCorpse"/> is the other half; both consult the same
+    /// <see cref="CorpseStripper.StaysOnCorpse"/> rule behind the same
+    /// <see cref="StripPolicy.LeavesAnyTainted"/> pre-gate, so they cannot come apart.</para>
     /// </summary>
     [HarmonyPatch(typeof(Pawn_ApparelTracker), nameof(Pawn_ApparelTracker.DropAll))]
     public static class Patch_DropAll_LeaveOnCorpse

@@ -217,7 +217,7 @@ namespace HaulersDream
                 // and BOTH branches below bail when the tracked set is empty (ShouldDivert and
                 // TryGetEndOfRunUnloadJob each return early on Count == 0). Short-circuit that here using the
                 // read-only PeekHashSet (no self-heal / reflection / state mutation on this hot scan path)
-                // BEFORE computing runOver / IsYieldOrHaulJobDef or entering the gated paths. A pawn without the
+                // BEFORE computing runOver / ClassifyJobDef or entering the gated paths. A pawn without the
                 // comp likewise can never divert/unload.
                 var comp = pawn?.GetComp<CompHauledToInventory>();
                 if (comp == null || comp.PeekHashSet().Count == 0)
@@ -275,11 +275,13 @@ namespace HaulersDream
                     && divertDef.driverClass.Assembly != typeof(Patch_JobGiver_Work_OpportunisticUnload).Assembly
                     && divertDef.driverClass.Name.IndexOf("Unload", StringComparison.Ordinal) >= 0)
                     return;
-                // If the pawn just picked a NON-yield, NON-haul job, its accumulate run is over — divert it to
-                // shed its load at nearby storage first (relaxed run-end criteria). While it keeps picking
-                // yield work, runOver is false and the strict journey bar applies, so a continuing mining/
-                // deconstruct run is never interrupted (F38 preserved).
-                bool runOver = !OpportunisticUnload.IsYieldOrHaulJobDef(__result.Job.def);
+                // If the pawn just picked a job that is none of yield / haul / CONSTRUCTION work, its accumulate
+                // run is over — divert it to shed its load at nearby storage first (relaxed run-end criteria).
+                // While it keeps picking work of those kinds, runOver is false and the strict journey bar applies,
+                // so a continuing mining/deconstruct/build run is never interrupted (F38 preserved). Construction
+                // counts as continuing because a builder finishing a frame is mid-run: it was the relaxed run-end
+                // bar — which has no minimum-trip floor — that sent builders to the stockpile between wall tiles.
+                bool runOver = WorkRunPolicy.IsRunOver(OpportunisticUnload.ClassifyJobDef(__result.Job.def));
                 // KEEP WORKING WHEN FULL (opt-in, default OFF): a full pawn whose full-trigger was suppressed
                 // (YieldRouter.MaybeUnloadBecauseFull) sheds its load here ONLY before a long relocation — when
                 // its next work target is farther than the dropoff and it's actually overloaded (the weighted

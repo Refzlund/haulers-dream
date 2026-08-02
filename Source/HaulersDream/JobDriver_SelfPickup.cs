@@ -118,14 +118,22 @@ namespace HaulersDream
                     {
                         // Full. Re-queue this drop for the producer ONLY when an automatic unload can actually
                         // free space (default mode breaks off to unload now). In strict mode, with auto-unload
-                        // off, OR with keep-working-when-full ON, NOTHING fires to make room DURING the run —
-                        // re-adding would walk the pawn back to take zero, forever. Abandon the drop to normal
-                        // hauling instead (it's spawned and unforbidden); keep-working-when-full deliberately
-                        // leaves the overflow on the ground for normal hauling. Re-claimed through
-                        // SelfPickupClaims (TakeNextValidPending already released it on pop), so a colleague who
-                        // is now closer can pick it up instead of it silently reserving this pawn's spot.
+                        // off, with keep-working-when-full ON, OR with the player's own work still queued,
+                        // NOTHING fires to make room DURING the run — re-adding would walk the pawn back to take
+                        // zero, forever. Abandon the drop to normal hauling instead (it's spawned and unforbidden);
+                        // keep-working-when-full deliberately leaves the overflow on the ground for normal hauling.
+                        // Re-claimed through SelfPickupClaims (TakeNextValidPending already released it on pop),
+                        // so a colleague who is now closer can pick it up instead of it silently reserving this
+                        // pawn's spot.
+                        //
+                        // The queued-work term is the companion to the ceiling unload now deferring behind the
+                        // player's orders (YieldRouter.MaybeUnloadBecauseFull passes behindQueuedWork:true): with an
+                        // order waiting, that unload is EnqueueLast'd and runs AFTER it, so nothing frees space
+                        // during this run and the assumption this re-queue rests on is simply false. Read through
+                        // the same PawnUnloadChecker.HasPendingRealWork the unload itself uses, so the two can never
+                        // disagree about whether it will run now.
                         if (comp != null && thing != null && s != null && s.markForUnload && !s.strictCarryWeight
-                            && !s.keepWorkingWhenFull)
+                            && !s.keepWorkingWhenFull && !PawnUnloadChecker.HasPendingRealWork(pawn))
                             SelfPickupClaims.Claim(thing, pawn);
                         YieldRouter.MaybeUnloadBecauseFull(pawn, s);
                         EndJobWith(JobCondition.Succeeded);

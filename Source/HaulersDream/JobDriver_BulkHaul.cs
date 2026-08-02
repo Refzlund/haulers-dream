@@ -215,9 +215,12 @@ namespace HaulersDream
                 // the finish flush queues no unload) and surface + back off the foreign retarget once.
                 if (ShouldSkipRimIOTRetarget(t, loadIndex)) { loadIndex++; JumpToToil(loadDecide); return; }
 
-                // Auto-strip-on-haul parity for a corpse pickup ("Pick up X", or "Haul everything nearby"
-                // anchored on a corpse — the two corpse entries into this driver; the automatic scan never
-                // assigns one): the hand-haul path strips at the
+                // Auto-strip-on-haul parity for a corpse pickup. Four entries reach this driver now: "Pick up X"
+                // and "Haul everything nearby" anchored on a body, plus — since the corpse sweep opt-in — the
+                // automatic corpse-haul scan and "Prioritise hauling" on a body, both through the
+                // WorkGiver_HaulCorpses postfix. (Under "disposal hauls only" the automatic anchor stands down,
+                // so those bodies keep going by vanilla's haul-to-container, which strips; see CorpseSweepPolicy.)
+                // The hand-haul path strips at the
                 // Pawn_CarryTracker.TryStartCarry seam, which an inventory pickup never crosses, so mirror it
                 // here — same timing (the corpse is still spawned, the pickup is committed to this stack) and
                 // the same self-gating call (mode / faction / opt-out / QualifyingHaul — which recognizes this

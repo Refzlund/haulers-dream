@@ -395,7 +395,12 @@ namespace HaulersDream
                 // batch puts the pawn inside the pickup grace window (a non-forced check would skip), and because
                 // with markForUnload OFF every automatic trigger is gated off and the tagged products would
                 // otherwise strand in inventory forever. No-ops when nothing is tagged.
-                PawnUnloadChecker.CheckIfShouldUnload(pawn, forced: true);
+                // behindQueuedWork matches the other three finish flushes (bulk haul, carrier unload, keep-in-
+                // inventory): a player order that interrupted the batch is EnqueueFirst'd by vanilla and then ends
+                // this job, so our finish action runs with that order already waiting — it must be obeyed first.
+                // The batch is over, so nothing needs these products sooner; forced stays true, so grace / strict /
+                // auto-unload-off still cannot strand them.
+                PawnUnloadChecker.CheckIfShouldUnload(pawn, forced: true, behindQueuedWork: true);
             });
 
             this.FailOn(() =>

@@ -60,6 +60,27 @@ namespace HaulersDream.Core
         }
 
         /// <summary>
+        /// WHERE a queued unload goes in the pawn's job queue: BEHIND its pending real work (the caller
+        /// <c>EnqueueLast</c>s) or in FRONT of everything (<c>EnqueueFirst</c>).
+        ///
+        /// <para><see cref="Decide"/>'s <c>!forced &amp;&amp; hasPendingWork</c> rule already means "an automatic
+        /// unload must never jump a player's queued work" — but a FORCED unload skips that rule by design, and a
+        /// forced unload is not always the player asking for one NOW. The full-pack trigger, the batch-craft finish
+        /// flush and the bulk-haul finish flush are all forced (they must beat the settle window and work with
+        /// auto-unload off), yet they fire in the middle of a sequence of orders the player queued; jumping the
+        /// queue there is the reported "shift-queue two corpses to strip and the colonist strips one, hauls to
+        /// base, then comes back for the second". So the CALLER states whether its unload may wait
+        /// (<paramref name="behindQueuedWork"/>), and it waits only when there is actually something to wait for.</para>
+        ///
+        /// <para>The "Unload now" gizmo passes false, so it still preempts everything — that button means now.</para>
+        /// </summary>
+        /// <param name="behindQueuedWork">The caller is willing to have its unload wait for the pawn's queued work.</param>
+        /// <param name="hasPendingWork">The pawn has queued work that is its own real work (see
+        /// <see cref="HasPendingRealWork"/>) — i.e. there is something to wait for.</param>
+        public static bool QueueBehindPendingWork(bool behindQueuedWork, bool hasPendingWork)
+            => behindQueuedWork && hasPendingWork;
+
+        /// <summary>
         /// Whether the hit-the-carry-ceiling trigger may fire a FORCED unload: never in strict mode (the
         /// pawn keeps working and leaves the surplus on the ground for normal hauling), and never with
         /// auto-unload off (the player manages unloading via the gizmo). Pure so the gate — the exact

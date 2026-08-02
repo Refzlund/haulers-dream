@@ -15,9 +15,11 @@ namespace HaulersDream
     /// hand-carry round-trip per item. Fully automatic — no button, no designation: the plan is built the
     /// moment the haul job is created (work scan or right-click order), not after the first pickup.
     ///
-    /// HOW: a postfix on <see cref="WorkGiver_HaulGeneral.JobOnThing"/> — the single funnel both the automatic
+    /// HOW: a postfix on <see cref="WorkGiver_HaulGeneral.JobOnThing"/> — the funnel both the automatic
     /// work scan and the float menu's "Prioritize hauling" go through (decompile-verified; forced orders call
-    /// the same method with forced:true). When vanilla hands back a HaulToCell job and a sweep is worth it,
+    /// the same method with forced:true). Vanilla routes CORPSES through a second scanner instead, so
+    /// <see cref="Patch_WorkGiver_HaulCorpses_BulkHaul"/> mirrors this postfix there; between them the two cover
+    /// every haul the game hands out. When vanilla hands back a HaulToCell job and a sweep is worth it,
     /// we swap it for a <see cref="JobDriver_BulkHaul"/> whose target queue is the full pickup plan. When the
     /// sweep isn't possible (nothing else around, no inventory room, trigger says no) the vanilla job stands —
     /// fail-open, hands-carry is the best plan for a single stack anyway.
@@ -356,14 +358,16 @@ namespace HaulersDream
             if (vanillaJob.def != JobDefOf.HaulToContainer)
                 return false;
             return forceSweep
-                || (primary is Corpse && CorpseSweepPolicy.CanAnchorSweep(s.bulkHaul, s.bulkHaulCorpses));
+                || (primary is Corpse && CorpseSweepPolicy.CanAnchorSweep(s.bulkHaul, s.bulkHaulCorpses,
+                        s.autoStripMode == AutoStripMode.DisposalOnly, playerOrdered: forceSweep));
         }
 
         /// <summary>
         /// Cheap "is a bulk sweep even possible here?" reject for the AUTOMATIC work-scan path — run BEFORE the
         /// expensive pool/claimed/storage scans so a candidate that can't sweep costs only this. Mirrors
         /// <see cref="TransportLoad.HasPotentialBulkWork"/>: feature on, the comp present, the pawn auto-eligible,
-        /// a HaulToCell destination (containers keep vanilla flow), on an allowed map, and at least one OTHER
+        /// a destination the build would accept (<see cref="AcceptsHaulDestination"/> — the same call, so the two
+        /// cannot diverge), on an allowed map, and at least one OTHER
         /// haulable within the same pool radius the build would use. Returns on the FIRST nearby hit (so it's
         /// near-instant on a dense field) and builds no list — it scans the lister's HashSet via the struct
         /// enumerator, so it's allocation-free; worst case is O(haulables) when nothing is near. A SUPERSET of the
@@ -386,8 +390,11 @@ namespace HaulersDream
             // cheap gate. Widening it there would be an unrelated behaviour change.
             if (!AcceptsHaulDestination(vanillaJob, primary, s, forceSweep: false))
                 return false;
-            // Corpse anchor, opt-in off: the build refuses it too, so reject before the pool walk.
-            if (primary is Corpse && !CorpseSweepPolicy.CanAnchorSweep(s.bulkHaul, s.bulkHaulCorpses))
+            // Corpse anchor, opt-in off: the build refuses it too, so reject before the pool walk. This is the
+            // AUTOMATIC scan, so playerOrdered is false — an explicit order reaches BuildBulkJob directly and is
+            // never gated by this cheap availability check.
+            if (primary is Corpse && !CorpseSweepPolicy.CanAnchorSweep(s.bulkHaul, s.bulkHaulCorpses,
+                    s.autoStripMode == AutoStripMode.DisposalOnly, playerOrdered: false))
                 return false;
             if (!MapGate.HdActiveOnMap(map))
                 return false;
@@ -472,7 +479,8 @@ namespace HaulersDream
             // a new setting off must not take away an order that already worked. "Pick up X" / "Keep X" reach
             // their own builders and are likewise untouched.
             if (primary is Corpse && !forceSweep
-                && !CorpseSweepPolicy.CanAnchorSweep(s.bulkHaul, s.bulkHaulCorpses))
+                && !CorpseSweepPolicy.CanAnchorSweep(s.bulkHaul, s.bulkHaulCorpses,
+                        s.autoStripMode == AutoStripMode.DisposalOnly, playerOrdered: forced))
                 return null;
             // Same map gate as YieldRouter.IsCandidate: with the mod disabled on non-home maps a sweep must
             // not fire there either — the driver's finish unload is forced:true and bypasses the checker's gate.

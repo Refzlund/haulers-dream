@@ -458,8 +458,10 @@ namespace HaulersDream
 
         /// <summary>Radius (cells) around the primary site within which HD looks for additional same-material
         /// construction sites to batch into one inventory load. Generous (vanilla batches only an 8-tile radius),
-        /// but the real bound is one overloaded trip's worth of demand, applied nearest-first.</summary>
-        private const float ClusterScanRadius = 24f;
+        /// but the real bound is one overloaded trip's worth of demand, applied nearest-first. Shared with
+        /// <see cref="ConstructionMaterialHold"/> so "a site close enough to batch into one load" and "a site close
+        /// enough to keep holding the material for" are the same distance.</summary>
+        internal const float ClusterScanRadius = 24f;
 
         /// <summary>
         /// HD-owned nearby-needer discovery for multi-site delivery. Vanilla's FindNearbyNeeders caps its batch at
@@ -529,6 +531,30 @@ namespace HaulersDream
                     outScan.Add(t);
             }
         }
+
+        /// <summary>
+        /// Append every spawned blueprint/frame within <see cref="ClusterScanRadius"/> of <paramref name="anchor"/>
+        /// that still needs <paramref name="def"/> and passes the cheap validity checks (player faction, not
+        /// forbidden, not a Blueprint_Install). The shared entry point onto <see cref="CollectConstructibles"/> for
+        /// callers that only want "which nearby sites want this material" — used by
+        /// <see cref="ConstructionMaterialHold"/> so the material-hold guard and the delivery clusterer agree on
+        /// what counts as a nearby needer. Costs one pass over each of the two thing groups; the caller applies any
+        /// further (reachability) filtering, since that is the expensive part.
+        /// </summary>
+        internal static void CollectNeedersNear(Map map, ThingDef def, Pawn pawn, IntVec3 anchor, List<Thing> outScan)
+        {
+            if (map == null || def == null || pawn == null || outScan == null)
+                return;
+            float radiusSq = ClusterScanRadius * ClusterScanRadius;
+            // The dedupe list the clusterer uses to skip needers it has already queued; there are none here.
+            CollectConstructibles(map, ThingRequestGroup.Blueprint, def, pawn, anchor, radiusSq, NoneQueued, outScan);
+            CollectConstructibles(map, ThingRequestGroup.BuildingFrame, def, pawn, anchor, radiusSq, NoneQueued, outScan);
+        }
+
+        /// <summary>Immutable-by-convention empty "already queued" list for <see cref="CollectNeedersNear"/>.
+        /// <see cref="CollectConstructibles"/> only ever READS it (a <c>Contains</c> test), so one shared instance
+        /// is safe; it is never handed to a mutating caller.</summary>
+        private static readonly List<Thing> NoneQueued = new List<Thing>();
 
         /// <summary>Drop trailing stacks once the kept stacks already cover <paramref name="target"/> units.</summary>
         private static void TrimToCount(List<Thing> stacks, int target)

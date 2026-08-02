@@ -435,7 +435,12 @@ namespace HaulersDream
                 return;
             OpportunisticUnload.NotifyDiverted(pawn); // stamp so the next ceiling hit / pass-by waits out the cooldown
             // forced: bypass the post-pickup grace period — being full IS the signal to unload.
-            PawnUnloadChecker.CheckIfShouldUnload(pawn, forced: true);
+            // behindQueuedWork: the pack being full is not a reason to jump the player's own queued orders. `forced`
+            // exists here to beat the grace window and the auto-unload-off gate, but it ALSO skips Decide's
+            // "never preempt queued work" rule — which is how a shift-queued pair of strip orders turned into
+            // strip, haul the loot to base, come back for the second. The same contract JobDriver_BulkHaul's
+            // finish flush uses: the unload still happens, just after the orders the player already gave.
+            PawnUnloadChecker.CheckIfShouldUnload(pawn, forced: true, behindQueuedWork: true);
         }
 
         // NOTE: the old "unload as soon as over 100% capacity" trigger (MaybeUnloadBecauseOverEncumbered)

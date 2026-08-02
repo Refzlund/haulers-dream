@@ -426,22 +426,10 @@ namespace HaulersDream
         private int LoadTargetUnits() => Mathf.Max(SpaceInNeeder(), loadTargetUnits);
 
         /// <summary>More construction work queued after this job (route stops / a tethered build)? Then the
-        /// carried surplus is the NEXT stop's material, not a leftover.</summary>
-        private bool MoreConstructWorkQueued()
-        {
-            var q = pawn.jobs?.jobQueue;
-            if (q == null)
-                return false;
-            for (int i = 0; i < q.Count; i++)
-            {
-                var def = q[i]?.job?.def;
-                // HD's construct-deliver pair (HdJobDefSets — the single source of truth) OR vanilla's
-                // FinishFrame (a vanilla def, not part of the HD pair, so it stays ORed here).
-                if (def != null && (HdJobDefSets.ConstructDeliverJobs.Contains(def) || def == JobDefOf.FinishFrame))
-                    return true;
-            }
-            return false;
-        }
+        /// carried surplus is the NEXT stop's material, not a leftover. Hoisted into
+        /// <see cref="ConstructionMaterialHold"/> so this check and the material-hold guard that keeps the same
+        /// surplus out of a storage trip read the queue identically.</summary>
+        private bool MoreConstructWorkQueued() => ConstructionMaterialHold.MoreConstructWorkQueued(pawn);
 
         private Thing InventoryStackOfDef() => YieldRouter.InventoryStackOfDef(Inv, resourceDef);
 
@@ -520,6 +508,12 @@ namespace HaulersDream
                     registeredAny = true;
                 }
             }
+            // Stamp the settle window, exactly as every other intake path does when it tags a stack. Construction
+            // was the ONE tagging path that did not, so the "don't unload mid-stream right after a pickup" grace —
+            // and the run-end settle gate that reads the same stamp — were permanently dead for builders: a
+            // just-tagged leftover looked hours old, so the very next trigger sent the pawn to the stockpile.
+            if (registeredAny)
+                comp.NotifyYieldPicked();
             var s = HaulersDreamMod.Settings;
             // SUSPENSION keeps the job queued for resume with the inventory intact — flushing the load to
             // storage now would force a full re-gather on resume. (SuspendCurrentJob enqueues the job BEFORE
