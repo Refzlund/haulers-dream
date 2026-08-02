@@ -93,6 +93,18 @@ const billRouteGate = Bun.spawn(['bun', resolve(import.meta.dir, 'check-bill-rou
 })
 if ((await billRouteGate.exited) !== 0) throw new Error('Bill-route-gate check failed (see output above).')
 
+// Guard the trip budget the load planner hands the fair-share rule (the "one item per trip" family). That rule is
+// pure and well tested, yet the same user-visible bug shipped TWICE because the ARGUMENT was wrong both times —
+// first the unbounded sentinel, then a `baseCap - running` that is 0 for any geared pawn. The unit tests cannot
+// see it: HaulersDream.Tests references only HaulersDream.Core, so it observes the rule but never the arguments
+// the Verse glue passes. See check-trip-budget-substitution.ts.
+const tripBudget = Bun.spawn(['bun', resolve(import.meta.dir, 'check-trip-budget-substitution.ts')], {
+	stdout: 'inherit',
+	stderr: 'inherit',
+	cwd: repoRoot,
+})
+if ((await tripBudget.exited) !== 0) throw new Error('Trip-budget-substitution check failed (see output above).')
+
 // Guard drug-policy access (issue #232). RimWorld's DrugPolicy[ThingDef] indexer throws a message-less
 // ArgumentException for a def it holds no entry for — "Value does not fall within the expected range." — and no
 // test and no ordinary save reproduces it, so the shorter `policy[def]` spelling compiles clean and regresses

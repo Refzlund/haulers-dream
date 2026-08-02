@@ -159,6 +159,43 @@ namespace HaulersDream.Tests
             Assert.That(good, Is.EqualTo(float.PositiveInfinity), "no clamp: the remainder fits one pack");
         }
 
+        /// <summary>
+        /// The whole cave-exit load, driven with the TWO budgets the runtime really feeds — a substituted finite
+        /// decision budget and an unbounded clamp budget — rather than one value standing in for both.
+        ///
+        /// <para>This is the oracle that was missing. The single-budget runs hand the raw sentinel to the share
+        /// rule and so never exercise the substitution at all; both times this bug shipped, the rule was right and
+        /// the ARGUMENT was wrong, which no single-budget oracle can see. Here the decision budget is produced by
+        /// the same Core method the planner calls, so reinstating either historical mistake fails this test.</para>
+        /// </summary>
+        [Test]
+        public void CaveExit_WithTheRuntimesTwoBudgets_ClearsTheOrderInOneTrip()
+        {
+            const int Total = 200;            // insect jelly
+            const float UnitMass = 0.025f;
+            const int Divisor = 4;            // a crew of four ordered out
+            const float PackKg = 35f;         // one ordinary human packful
+
+            // What the planner computes for a pawn with no carry ceiling, however much gear it is wearing.
+            float decision = LoadFairShare.AskerTripBudgetKg(float.MaxValue, PackKg);
+
+            var sim = Sim.FromPool(new Stack("jelly", Total, UnitMass));
+            var trips = RunTripsToCompletion(sim, asker: 1, divisor: Divisor,
+                decisionBudgetKg: decision, clampBudgetKg: float.MaxValue);
+
+            Assert.That(trips, Is.EqualTo(new[] { Total }),
+                "an unbounded pawn must clear the order in one trip, not shuttle it a few units at a time");
+
+            // And the historical failure shapes, driven through the same simulation, to keep the oracle honest
+            // about what it is protecting against.
+            var zeroDecision = RunTripsToCompletion(Sim.FromPool(new Stack("jelly", Total, UnitMass)),
+                asker: 1, divisor: Divisor, decisionBudgetKg: 0f, clampBudgetKg: float.MaxValue);
+            Assert.That(zeroDecision.Count, Is.GreaterThan(1),
+                "sanity: a zero decision budget is the geared-pawn regression and DOES split");
+            Assert.That(zeroDecision, Has.Some.EqualTo(1),
+                "sanity: and it decays all the way to single units — the reported symptom");
+        }
+
         // ============ CountsAsCoLoader (who may shrink someone else's trip) ============
 
         /// <summary>
@@ -419,11 +456,27 @@ namespace HaulersDream.Tests
         /// <param name="divisor">The fair-share divisor for every round — 1 + the co-loaders
         /// <see cref="LoadFairShare.CountsAsCoLoader"/> accepts. Held constant because the bystanders it counts
         /// never claim anything, which is exactly the reported situation.</param>
-        /// <param name="tripBudgetKg">What the asker can carry in one trip (kg).</param>
+        /// <param name="tripBudgetKg">What the asker can carry in one trip (kg) — the CLAMP budget.</param>
         /// <returns>Units carried per trip, in order. Stops when nothing is claimable or a trip would be empty; a
         /// hard round cap keeps a regression from hanging the suite rather than failing it (the caller asserts the
         /// whole order was delivered, so hitting the cap fails).</returns>
         private static List<int> RunTripsToCompletion(Sim sim, int asker, int divisor, float tripBudgetKg)
+            => RunTripsToCompletion(sim, asker, divisor, tripBudgetKg, tripBudgetKg);
+
+        /// <summary>
+        /// The same simulation, but with the two budgets the RUNTIME actually feeds kept separate: a substituted,
+        /// finite <paramref name="decisionBudgetKg"/> for the share decision, and the raw (possibly unbounded)
+        /// <paramref name="clampBudgetKg"/> for the clamp.
+        ///
+        /// <para>Every single-budget oracle here is blind to a divergence between those two, which is exactly where
+        /// the one-item-per-trip bug lived BOTH times it shipped: first as an unreachable rule when the decision
+        /// budget was the unbounded sentinel, then as a zero decision budget for a geared pawn while the clamp
+        /// budget stayed unbounded. The rule itself was correct in both cases; the argument was not.</para>
+        /// </summary>
+        /// <param name="decisionBudgetKg">What the planner tells the share rule one trip is worth.</param>
+        /// <param name="clampBudgetKg">What actually bounds the trip once the share is known.</param>
+        private static List<int> RunTripsToCompletion(Sim sim, int asker, int divisor,
+            float decisionBudgetKg, float clampBudgetKg)
         {
             var trips = new List<int>();
             for (int round = 0; round < 500; round++)
@@ -432,8 +485,8 @@ namespace HaulersDream.Tests
                 if (available.Count == 0)
                     break;
                 float mass = ClaimableMass(sim, available, out float heaviest);
-                float share = LoadFairShare.ShareMassBudget(mass, heaviest, divisor, tripBudgetKg);
-                var plan = BuildPlan(sim, available, ClampedTripBudget(share, tripBudgetKg));
+                float share = LoadFairShare.ShareMassBudget(mass, heaviest, divisor, decisionBudgetKg);
+                var plan = BuildPlan(sim, available, ClampedTripBudget(share, clampBudgetKg));
                 int units = 0;
                 foreach (var kv in plan)
                     units += kv.Value;
