@@ -36,12 +36,7 @@ namespace HaulersDream
         [System.ThreadStatic] private static bool ownsCacheValue;
         [System.ThreadStatic] private static bool ownsCacheValid;
 
-        // Same per-tick memo shape for the NARROWER "CS is pocketing ingredients" read (see GathersIngredients).
-        // Kept as its OWN slot rather than derived from the owns-flow memo, because the two answers genuinely
-        // differ: CS's cleaning option alone owns the driver without gathering anything.
-        [System.ThreadStatic] private static int gathersCacheTick;
-        [System.ThreadStatic] private static bool gathersCacheValue;
-        [System.ThreadStatic] private static bool gathersCacheValid;
+        // GathersIngredients has NO memo on purpose — see the note on that property.
 
         // Self-register the per-tick owns-flow memo clear with the game-load hygiene sweep (see CacheRegistry). This
         // closes a gap: the memo was previously NEVER cleared on load, so a cross-session quickload landing on the
@@ -59,9 +54,6 @@ namespace HaulersDream
             ownsCacheValid = false;
             ownsCacheTick = -1;
             ownsCacheValue = false;
-            gathersCacheValid = false;
-            gathersCacheTick = -1;
-            gathersCacheValue = false;
         }
 
         /// <summary>Whether Common Sense is loaded (its Settings type resolves). Cached.</summary>
@@ -90,9 +82,13 @@ namespace HaulersDream
                     return false; // CS absent: fail-open, no reflection (the cheapest path — never touches the memo)
                 // Per-tick memo: the CS toggles are runtime-mutable only on settings-window close, so within one
                 // tick the two reflective reads are invariant. Recompute once per tick, reuse across every DoBill
-                // probe that tick. (Find.TickManager is non-null on every work-scan path; -1 fallback keeps a
-                // null-TickManager edge — e.g. a menu-time probe — correct by forcing a recompute.)
-                int tick = Find.TickManager?.TicksGame ?? -1;
+                // probe that tick.
+                //
+                // Read the tick through Current.Game, NOT Find.TickManager: Find.TickManager is a plain
+                // `Current.Game.tickManager` property, so `Find.TickManager?.X` null-checks the RESULT and still
+                // throws when there is no game at all (main menu, GenScene.GoToMainMenu nulls Current.Game).
+                // The -1 fallback then forces a recompute, which is correct outside a game.
+                int tick = Current.Game?.tickManager?.TicksGame ?? -1;
                 if (ownsCacheValid && ownsCacheTick == tick)
                     return ownsCacheValue;
                 bool readable = advCleaningField != null && advHaulAllField != null;
@@ -128,19 +124,16 @@ namespace HaulersDream
                     Init();
                 if (!active)
                     return false; // CS absent: nothing foreign is gathering (cheapest path — never touches the memo)
-                // Same per-tick memo rationale as OwnsDoBillFlow: the CS toggle only changes on its settings window
-                // closing, so the reflective read is invariant within a tick. This one is read from RENDER paths (a
-                // bench gizmo, the settings window), which run many times per tick.
-                int tick = Find.TickManager?.TicksGame ?? -1;
-                if (gathersCacheValid && gathersCacheTick == tick)
-                    return gathersCacheValue;
-                bool gathers = advHaulAllField == null
-                               || !(advHaulAllField.GetValue(null) is bool on)
-                               || on;
-                gathersCacheTick = tick;
-                gathersCacheValue = gathers;
-                gathersCacheValid = true;
-                return gathers;
+                // DELIBERATELY NOT MEMOIZED, unlike OwnsDoBillFlow. This is read only from render paths (a bench
+                // gizmo's description, the settings tab) — one reflective field read, not a per-pawn scan — so a
+                // memo saves nothing measurable. It would also be actively WRONG here on two counts: a tick-keyed
+                // memo never expires while the game is PAUSED, which is exactly when a player alt-tabs to Common
+                // Sense's options and turns this very setting off (they would still be told to turn off something
+                // they just turned off); and reading the tick at all drags in Current.Game, which does not exist
+                // when mod options are opened from the main menu.
+                return advHaulAllField == null
+                       || !(advHaulAllField.GetValue(null) is bool on)
+                       || on;
             }
         }
 

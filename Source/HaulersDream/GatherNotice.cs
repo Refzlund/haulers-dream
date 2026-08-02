@@ -32,10 +32,25 @@ namespace HaulersDream
     public static class GatherNotice
     {
         /// <summary>
-        /// Is HD's own one-sweep gather switched on? Reads the live setting; missing settings (very early init)
-        /// read as ON, matching the field's own default and every other early-init read in the mod.
+        /// Is HD's own one-sweep gather switched on? Reads the live settings; missing settings (very early init)
+        /// read as ON, matching the fields' own defaults and every other early-init read in the mod.
+        ///
+        /// <para>This must mirror the route's OWN entry condition in
+        /// <c>Patch_WorkGiver_DoBill_InventoryRoute</c> — all THREE of inventoryCraftDeliver, shareForCrafting and
+        /// markForUnload — not just the one checkbox the notice happens to name. Reading only the first let a
+        /// player switch the gather off via either of the other two and still be told, by the bench button, that
+        /// pawns gather here: the exact overclaim this whole change exists to remove.</para>
         /// </summary>
-        private static bool PlainGatherEnabled => HaulersDreamMod.Settings?.inventoryCraftDeliver ?? true;
+        private static bool PlainGatherEnabled
+        {
+            get
+            {
+                var s = HaulersDreamMod.Settings;
+                if (s == null)
+                    return true;
+                return s.inventoryCraftDeliver && s.shareForCrafting && s.markForUnload;
+            }
+        }
 
         /// <summary>Which caveat, if any, applies to HD's gather controls at this moment.</summary>
         public static BenchGatherNotice Current =>
@@ -76,15 +91,32 @@ namespace HaulersDream
                 }
                 case BenchGatherNotice.GlobalGatherOff:
                 {
-                    // Quote HD's own checkbox by its key, not by repeating its words, so the notice and the
-                    // control it points at cannot drift apart (and stay in step across all 16 languages).
-                    string settingLabel = "HaulersDream.Setting.InventoryCraftDeliver".Translate();
-                    string globalOff = "HaulersDream.Notice.GatherOffGlobally".Translate(settingLabel);
+                    // Name whichever setting is ACTUALLY off, not always the first one. Three separate checkboxes
+                    // can each switch the one-sweep gather off (see PlainGatherEnabled); pointing the player at a
+                    // box that is still ticked would be its own small lie. Quote each by its key rather than
+                    // repeating its words, so the notice and the control cannot drift apart across 16 languages.
+                    string globalOff = "HaulersDream.Notice.GatherOffGlobally".Translate(OffSettingLabel());
                     return globalOff;
                 }
                 default:
                     return null;
             }
+        }
+
+        /// <summary>
+        /// The label of the crafting-gather setting the player has actually switched off, for the
+        /// <see cref="BenchGatherNotice.GlobalGatherOff"/> sentence. Checked in the same order the route itself
+        /// tests them, so the first blocker is the one named. Falls back to the primary checkbox when settings are
+        /// missing (very early init), which is the only one the player would look for anyway.
+        /// </summary>
+        private static string OffSettingLabel()
+        {
+            var s = HaulersDreamMod.Settings;
+            if (s != null && !s.shareForCrafting)
+                return "HaulersDream.Setting.ShareForCrafting".Translate();
+            if (s != null && !s.markForUnload)
+                return "HaulersDream.Setting.MarkForUnload".Translate();
+            return "HaulersDream.Setting.InventoryCraftDeliver".Translate();
         }
     }
 }
