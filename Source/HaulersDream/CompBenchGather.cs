@@ -110,6 +110,18 @@ namespace HaulersDream
             string desc = gatherIngredients
                 ? "HaulersDream.Gizmo.BenchGatherDescActive".Translate()
                 : "HaulersDream.Gizmo.BenchGatherDescInactive".Translate();
+            // #243: this switch governs HD's gather and nothing else — it cannot govern gathering HD is not doing.
+            // Under Common Sense with its haul-all-ingredients option on, HD cedes the whole ingredient flow, so
+            // the state description below would promise (or deny) behaviour this button has no say over; likewise
+            // when HD's own one-sweep gather is switched off in mod options. Lead with the caveat in those cases.
+            // The BUTTON deliberately keeps working either way: it still governs batch crafting and the
+            // move-ingredients-closer detour at this bench, neither of which the caveats above touch.
+            if (!GatherNotice.BenchSwitchGovernsPlainGather)
+            {
+                string notice = GatherNotice.Text(GatherNotice.Current);
+                if (!string.IsNullOrEmpty(notice))
+                    desc = notice + "\n\n" + desc;
+            }
 
             // Deliberately NO Order. HD's per-pawn gizmos pin Order = float.MaxValue only because vanilla ABILITY
             // gizmos were wedging the "Unload inventory" button into the middle of the bar (#140); a BUILDING has no

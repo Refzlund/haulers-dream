@@ -33,6 +33,14 @@ namespace HaulersDream
                 yield break; // crafting planner disabled in mod options
             if (pawn.thinker?.TryGetMainTreeThinkNode<JobGiver_Work>() == null)
                 yield break; // only real workers get a crafting plan
+            // #243: this order gathers ingredients into inventory exactly like the automatic batch route does, so
+            // it has to answer to the same suppressors — it answered to NONE of them, which is how a player who
+            // had switched a bench off (or was running under Common Sense) could still be handed the order and
+            // still see their pawns pocket everything. Bill-independent half first, hoisted out of the loop: while
+            // Common Sense owns the ingredient-gather flow and the batch opt-in is off, no batch runs anywhere, so
+            // there is nothing to plan. Same read the batch dropdown and the route conversion use.
+            if (CommonSenseCompat.BatchSuppressedByCommonSense)
+                yield break;
 
             var seen = new HashSet<Building_WorkTable>();
             for (int i = 0; i < things.Count; i++)
@@ -40,6 +48,16 @@ namespace HaulersDream
                 if (!(things[i] is Building_WorkTable bench))
                     continue;
                 if (!seen.Add(bench) || !bench.Spawned || bench.Map != pawn.Map)
+                    continue;
+                // #243, per-bench half: the SAME gate both automatic gather routes consult before they convert a
+                // job (BillRouteGate.MayRouteToInventory). It covers two things this provider never checked. The
+                // bench's own "Gather ingredients" switch: a player who turned it off asked this bench to behave
+                // like vanilla, and an order that pre-loads a whole batch into inventory is the opposite of that.
+                // And the bench TYPE: Building_WorkTableAutonomous (the mech gestator family) derives from
+                // Building_WorkTable, so the `is Building_WorkTable` test above lets one through, yet an
+                // autonomous bench needs its ingredients DEPOSITED into its own container and can never be
+                // batch-crafted from inventory.
+                if (!BillRouteGate.MayRouteToInventory(bench))
                     continue;
 
                 // No try/catch: a throw here is a real bug to surface, not silently hide the option.

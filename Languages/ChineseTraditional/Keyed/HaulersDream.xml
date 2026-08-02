@@ -258,8 +258,10 @@
   <HaulersDream.Gizmo.AutoHaul>自動搬運產物</HaulersDream.Gizmo.AutoHaul>
   <HaulersDream.Gizmo.AutoHaulDesc>開啟時，此角色會在工作時自動拾取自己的工作產物並將周圍戰利品收集至背包。關閉時可停止此角色的自動搬運 — 角色仍會將當前已攜帶的任何物品存放好。</HaulersDream.Gizmo.AutoHaulDesc>
   <HaulersDream.Gizmo.BenchGather>收集原料</HaulersDream.Gizmo.BenchGather>
-  <HaulersDream.Gizmo.BenchGatherDescActive>角色在製作前會一次性將這個工作臺清單所需的原料收進背包。\n\n為這個工作臺關閉它，即可改用 RimWorld 自己的行為：角色一次只搬一堆直接送到工作臺，並立刻開始該清單。當原料本來就在工作臺旁邊時這樣更快，因為那次收集是一個獨立的工作 — 角色走回工作臺把它做完，要等到下一次尋找工作時才會重新接手這個清單。\n\n僅影響這個工作臺，並且同樣涵蓋批量製作：在這個工作臺上設為「批量」的清單會改成一次做一個。其他工作臺不受影響。</HaulersDream.Gizmo.BenchGatherDescActive>
+  <HaulersDream.Gizmo.BenchGatherDescActive>當由 Hauler's Dream 負責收集時，角色在製作前會一次性將這個工作臺清單所需的原料收進背包。\n\n為這個工作臺關閉它，即可改用 RimWorld 自己的行為：角色一次只搬一堆直接送到工作臺，並立刻開始該清單。當原料本來就在工作臺旁邊時這樣更快，因為那次收集是一個獨立的工作 — 角色走回工作臺把它做完，要等到下一次尋找工作時才會重新接手這個清單。\n\n僅影響這個工作臺，並且同樣涵蓋批量製作：在這個工作臺上設為「批量」的清單會改成一次做一個。其他工作臺不受影響。</HaulersDream.Gizmo.BenchGatherDescActive>
   <HaulersDream.Gizmo.BenchGatherDescInactive>角色不會將這個工作臺清單所需的原料收進背包。這個工作臺使用 RimWorld 自己的行為：角色一次只搬一堆直接送到工作臺並立刻開始該清單，當原料本來就在附近時這樣更快。\n\n這個工作臺的批量製作同樣關閉，因此在這裡設為「批量」的清單會一次做一個。\n\n重新開啟它即可讓角色再次一次性收集所有原料。僅影響這個工作臺。</HaulersDream.Gizmo.BenchGatherDescInactive>
+<HaulersDream.Notice.ForeignModGathers>目前是 {0} 在收集清單原料，而不是 Hauler's Dream。在該模組負責期間，Hauler's Dream 會完全讓位，它的任何收集選項——包含這一項——都無法改變你所看到的行為。若要停止收集，請關閉該模組自己的選項：「{1}」。</HaulersDream.Notice.ForeignModGathers>
+<HaulersDream.Notice.GatherOffGlobally>Hauler's Dream 自己的一次性收集已在模組選項中關閉（「{0}」），因此它不會在任何工作臺為一般製作清單收集原料。此按鈕仍然控制這裡的批次製作，以及將原料搬到更近處的繞行。</HaulersDream.Notice.GatherOffGlobally>
 
   <!-- Black-hole safety-net alert -->
   <HaulersDream.Alert.CannotUnload>無法卸載背包物品 ({0})</HaulersDream.Alert.CannotUnload>
@@ -383,7 +385,7 @@
 
   <!-- Settings: auto crafting-bill inventory delivery -->
   <HaulersDream.Setting.InventoryCraftDeliver>使用背包攜帶製作原料（減少往返次數）</HaulersDream.Setting.InventoryCraftDeliver>
-  <HaulersDream.Setting.InventoryCraftDeliverDesc>當角色開始執行需要來自兩個或更多不同堆疊原料的製作清單時，會先一次性將「所有」原料收集至背包中 — 必要時可超載並接受減速影響（除非已開啟嚴格負重） — 一次性走至工作臺並使用攜帶的原料進行製作。適用於所有配方，包含需先製作未完成物品的配方（服裝、武器、雕塑）。製作過程完全遵循原版機制，不會產生複製或遺失物品的情況。若有其他模組正在管理製作原料的搬運，Hauler's Dream 會自動讓位（改為收集原料），使任何製作迴圈自動解鎖。需要先開啟上方的「為製作清單使用攜帶的材料」設定。</HaulersDream.Setting.InventoryCraftDeliverDesc>
+  <HaulersDream.Setting.InventoryCraftDeliverDesc>當角色開始執行需要來自兩個或更多不同堆疊原料的製作清單時，會先一次性將「所有」原料收集至背包中 — 必要時可超載並接受減速影響（除非已開啟嚴格負重） — 一次性走至工作臺並使用攜帶的原料進行製作。適用於所有配方，包含需先製作未完成物品的配方（服裝、武器、雕塑）。製作過程完全遵循原版機制，不會產生複製或遺失物品的情況。若有其他模組正在管理製作原料的搬運，Hauler's Dream 會完全讓位，將收集原料交由該模組處理——使任何製作迴圈自動解鎖，而在此期間本設定對收集行為不會有任何作用。需要先開啟上方的「為製作清單使用攜帶的材料」設定。</HaulersDream.Setting.InventoryCraftDeliverDesc>
   <HaulersDream.Setting.ShowBenchGatherGizmo>顯示每個工作臺的「收集原料」按鈕</HaulersDream.Setting.ShowBenchGatherGizmo>
   <HaulersDream.Setting.ShowBenchGatherGizmoDesc>在每個工作臺的指令列上新增一個「收集原料」開關，讓你可以只關閉某一個工作臺的原料收集，改由 RimWorld 自己的一次一堆行為在那裡運作。適合那些你就在隔壁補貨的爐灶或工作臺 — 在那裡收集所花的時間比省下的還多。預設為開啟。這只控制按鈕是否顯示 — 你已經關閉的工作臺無論如何都保持關閉。關閉某個工作臺永遠優先於上方的設定，而且即使「以背包攜帶製作原料」已關閉它依然有效，因為批量製作無論該設定為何都會收集原料。</HaulersDream.Setting.ShowBenchGatherGizmoDesc>
 

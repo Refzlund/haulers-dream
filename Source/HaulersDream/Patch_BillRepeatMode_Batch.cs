@@ -77,14 +77,12 @@ namespace HaulersDream
             // --- the three batch variants (only when this recipe can actually be batched) ---
             // Each carries a hover tooltip (FloatMenuOption.tooltip) explaining what that batch mode does (issue #3
             // also asks for dropdown tooltips). The tooltip is set on the option after construction.
-            // Hidden entirely while Common Sense is suppressing batching (its opt-in is OFF and CS owns the cook
-            // flow): batch-flagged bills won't actually batch in that state, so offering the modes would mislead —
-            // the player just sees the vanilla modes. Same predicate the route conversion uses (single source).
-            // #230 adds the second suppressor on the same principle: this bill's own bench may have its per-bench
-            // "Gather ingredients" switch turned off, which also stops batching there (the batch route goes through
-            // BillRouteGate.MayRouteToInventory), so the modes are hidden at that bench too.
-            if (comp != null && CraftBatchPlanner.CanBatch(bill) && !CommonSenseCompat.BatchSuppressedByCommonSense
-                && !BillRouteGate.BatchSuppressedByBench(bill))
+            // Hidden entirely whenever a batch-flagged bill would not actually batch — Common Sense suppressing it
+            // (its opt-in OFF and CS owning the cook flow), or this bill's own bench having its per-bench "Gather
+            // ingredients" switch turned off (#230). Offering a mode that will not run is what misleads; the player
+            // just sees the vanilla modes instead. CraftBatchPlanner.BatchModeAvailable is the single source shared
+            // with the row's ×N marker and the repeat-mode button's prefix.
+            if (comp != null && CraftBatchPlanner.BatchModeAvailable(bill))
             {
                 string prefix = "HaulersDream.Batch.MenuPrefix".Translate();
                 var optDoX = new FloatMenuOption(prefix + ": " + BillRepeatModeDefOf.RepeatCount.LabelCap, delegate
@@ -168,19 +166,18 @@ namespace HaulersDream
         static void Postfix(Bill_Production __instance, ref string __result)
         {
             var comp = HaulersDreamGameComponent.Instance;
-            // Gate the marker on CanBatch too: a bill that still carries the batch FLAG but is NOT actually batched
-            // must not show a misleading "×N". Three ways that happens: (a) a save whose recipe is NOT batchable
-            // (smelting / take-entire-stacks / unfinished-thing / a non-Bill_Production) keeps the flag but routes as
-            // vanilla; (b) its repeat mode is now a non-vanilla one HD won't batch (e.g. an Everybody Gets One mode —
-            // see CraftBatchPlanner.CanBatch); (c) Common Sense is suppressing batching (its opt-in is OFF and CS
-            // owns the cook flow), so the flagged bill routes as a plain CS-handled bill — match the hidden dropdown
-            // options; or (d) #230: this bill's bench has its per-bench "Gather ingredients" switch turned off, so
-            // the batch route declines there and the bill crafts one at a time. NOTE: mixing recipes (cooked meals,
-            // kibble, pemmican, chemfuel, beer) ARE batchable via the mix-aware per-rep value-fill path, so CanBatch
-            // returns true and the marker shows.
-            if (comp != null && comp.IsBatchBill(__instance) && CraftBatchPlanner.CanBatch(__instance)
-                && !CommonSenseCompat.BatchSuppressedByCommonSense
-                && !BillRouteGate.BatchSuppressedByBench(__instance))
+            // Gate the marker on BatchModeAvailable too, not just the FLAG: a bill that still carries the batch flag
+            // but is NOT actually batched must not show a misleading "×N". Four ways that happens: (a) a save whose
+            // recipe is NOT batchable (smelting / take-entire-stacks / unfinished-thing / a non-Bill_Production)
+            // keeps the flag but routes as vanilla; (b) its repeat mode is now a non-vanilla one HD won't batch
+            // (e.g. an Everybody Gets One mode — see CraftBatchPlanner.CanBatch); (c) Common Sense is suppressing
+            // batching (its opt-in is OFF and CS owns the cook flow), so the flagged bill routes as a plain
+            // CS-handled bill; or (d) #230: this bill's bench has its per-bench "Gather ingredients" switch turned
+            // off, so the batch route declines there and the bill crafts one at a time. All four live in that one
+            // predicate, which the dropdown entries and the repeat-mode button read too, so the three never
+            // disagree. NOTE: mixing recipes (cooked meals, kibble, pemmican, chemfuel, beer) ARE batchable via the
+            // mix-aware per-rep value-fill path, so they pass and the marker shows.
+            if (comp != null && comp.IsBatchBill(__instance) && CraftBatchPlanner.BatchModeAvailable(__instance))
                 __result = "HaulersDream.Batch.RowMarker".Translate(comp.BatchSizeOf(__instance)) + __result;
         }
     }

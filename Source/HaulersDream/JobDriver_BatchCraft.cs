@@ -337,6 +337,22 @@ namespace HaulersDream
             if (pawn?.jobs == null || bench == null || bill == null)
                 return;
 
+            // #243: the last gate before the job exists. The float-menu option is already hidden at a bench whose
+            // "Gather ingredients" switch is off, but this is the AUTHORITATIVE commit point — and the player can
+            // flip that switch while the dialog sits open (it does not pause the game) — so it re-reads the gate
+            // rather than trusting the UI that called it.
+            //
+            // MP: deliberately only the SYNCED half of the menu's condition. MayRouteToInventory reads the
+            // building's type and the bench comp's SCRIBED bool, both identical on every client, so this command
+            // still executes the same everywhere. The menu's other suppressor (Common Sense + the per-client
+            // allowBatchUnderCommonSense setting) stays out of here precisely because it is per-client.
+            if (!BillRouteGate.MayRouteToInventory(bench))
+            {
+                if (MultiplayerCompat.ShouldShowLocalFeedback)
+                    Messages.Message("HaulersDream.PlanCraft.CouldNotStart".Translate(), pawn, MessageTypeDefOf.RejectInput, historical: false);
+                return;
+            }
+
             // Re-resolve against the (identical-on-every-client) current stock. The dialog already previewed a plan
             // locally for its UI, but we deliberately re-resolve here so the AUTHORITATIVE plan is computed inside the
             // synced command on every client — and so a feasibility race between preview and commit is caught the same

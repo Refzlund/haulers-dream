@@ -102,6 +102,29 @@ namespace HaulersDream
             return !r.products.NullOrEmpty() || !r.specialProducts.NullOrEmpty();
         }
 
+        /// <summary>
+        /// Will batch mode ACTUALLY run for this bill right now — i.e. may the UI offer or advertise it? The
+        /// recipe/mode test above plus the two live suppressors the batch ROUTE itself obeys: Common Sense owning
+        /// the ingredient-gather flow with the batch opt-in off, and this bill's own bench having its per-bench
+        /// "Gather ingredients" switch turned off (issue #230).
+        ///
+        /// <para>Extracted because three UI reads had grown their own copy of the same three-part condition — the
+        /// repeat-mode dropdown's "Batch: …" entries, the bill row's ×N marker and the repeat-mode button's
+        /// "Batch: " prefix. They must never disagree: a dropdown that offers a mode the row then refuses to mark
+        /// is exactly the "is batch even on?" confusion the button prefix was added to end. One predicate, three
+        /// callers, no drift. Semantics are unchanged from the three copies it replaces.</para>
+        ///
+        /// <para>This is the UI's read. It deliberately does NOT include the batch FLAG (<c>IsBatchBill</c>): the
+        /// dropdown asks "may I offer batching?" while the marker and the button ask "is this bill batching?", so
+        /// the flag stays at the call sites that need it.</para>
+        /// </summary>
+        /// <param name="bill">The bill being drawn; null reads as unavailable.</param>
+        /// <returns>False whenever a batch-flagged bill would silently fall back to one-at-a-time crafting.</returns>
+        public static bool BatchModeAvailable(Bill bill) =>
+            CanBatch(bill)
+            && !CommonSenseCompat.BatchSuppressedByCommonSense
+            && !BillRouteGate.BatchSuppressedByBench(bill);
+
         /// <summary>Does the bench have at least one bill this feature can batch right now?</summary>
         public static bool AnyBatchableBill(Building_WorkTable bench)
         {

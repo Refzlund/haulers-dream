@@ -42,12 +42,10 @@ namespace HaulersDream
                 return default;
             TaggedString label = bill.repeatMode.LabelCap;
             var comp = HaulersDreamGameComponent.Instance;
-            // #230: the bill's own bench may have its per-bench "Gather ingredients" switch off, which stops
-            // batching there — so the button drops the "Batch: " prefix at that bench, matching the hidden dropdown
-            // entries and row marker.
-            if (comp != null && comp.IsBatchBill(bill) && CraftBatchPlanner.CanBatch(bill)
-                && !CommonSenseCompat.BatchSuppressedByCommonSense
-                && !BillRouteGate.BatchSuppressedByBench(bill))
+            // BatchModeAvailable is the shared "will this bill actually batch right now" predicate (Common Sense
+            // suppression + the bill's own bench having its per-bench "Gather ingredients" switch off, #230), so
+            // the button drops the "Batch: " prefix exactly where the dropdown entries and the row marker vanish.
+            if (comp != null && comp.IsBatchBill(bill) && CraftBatchPlanner.BatchModeAvailable(bill))
             {
                 string prefix = "HaulersDream.Batch.MenuPrefix".Translate();
                 TaggedString prefixed = prefix + ": " + label.Resolve();

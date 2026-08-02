@@ -191,8 +191,10 @@
 <HaulersDream.Gizmo.AutoHaul>自动搬运产出</HaulersDream.Gizmo.AutoHaul>
 <HaulersDream.Gizmo.AutoHaulDesc>开启时，这个小人会在工作时自动收取自己的工作产出，并把附近的战利品清扫进货物栏。关闭它即可阻止这个小人自动搬运——它仍会收起任何已经携带的东西。</HaulersDream.Gizmo.AutoHaulDesc>
 <HaulersDream.Gizmo.BenchGather>收集原料</HaulersDream.Gizmo.BenchGather>
-<HaulersDream.Gizmo.BenchGatherDescActive>小人在制作前会一次性把这个工作台工单所需的原料收进货物栏。\n\n为这个工作台关闭它，改用 RimWorld 自己的行为：小人一次只搬一堆直接送到工作台，并立刻开始工单。当原料本来就在工作台旁边时这样更快，因为那次收集是一个独立的工作——小人走回工作台把它做完，要等到下一次找活时才会重新接手这个工单。\n\n只影响这个工作台，并且同样涵盖批量制作：在这个工作台上设为“批量”的工单会改成一次做一个。其他工作台不受影响。</HaulersDream.Gizmo.BenchGatherDescActive>
+<HaulersDream.Gizmo.BenchGatherDescActive>当由 Hauler's Dream 负责收集时，小人在制作前会一次性把这个工作台工单所需的原料收进货物栏。\n\n为这个工作台关闭它，改用 RimWorld 自己的行为：小人一次只搬一堆直接送到工作台，并立刻开始工单。当原料本来就在工作台旁边时这样更快，因为那次收集是一个独立的工作——小人走回工作台把它做完，要等到下一次找活时才会重新接手这个工单。\n\n只影响这个工作台，并且同样涵盖批量制作：在这个工作台上设为“批量”的工单会改成一次做一个。其他工作台不受影响。</HaulersDream.Gizmo.BenchGatherDescActive>
 <HaulersDream.Gizmo.BenchGatherDescInactive>小人不会把这个工作台工单所需的原料收进货物栏。这个工作台使用 RimWorld 自己的行为：小人一次只搬一堆直接送到工作台并立刻开始工单，当原料本来就在附近时这样更快。\n\n这个工作台的批量制作同样关闭，所以在这里设为“批量”的工单会一次做一个。\n\n重新打开它即可让小人再次一次性收集所有原料。只影响这个工作台。</HaulersDream.Gizmo.BenchGatherDescInactive>
+<HaulersDream.Notice.ForeignModGathers>目前是 {0} 在收集工单原料，而不是 Hauler's Dream。在那个模组负责期间，Hauler's Dream 会完全让位，它的任何收集选项——包括这一项——都无法改变你看到的行为。要停止收集，请关闭那个模组自己的选项：“{1}”。</HaulersDream.Notice.ForeignModGathers>
+<HaulersDream.Notice.GatherOffGlobally>Hauler's Dream 自己的一次性收集已在模组选项中关闭（“{0}”），因此它不会在任何工作台为普通制作工单收集原料。此按钮仍然控制这里的批量制作，以及把原料搬到更近处的绕行。</HaulersDream.Notice.GatherOffGlobally>
 <HaulersDream.Alert.CannotUnload>无法卸载货物栏（{0}）</HaulersDream.Alert.CannotUnload>
 <HaulersDream.Alert.CannotUnloadDesc.NoStorage>这些小人携带着无处存放的收取物品——地图上没有储存区或倾倒区接收它们，也找不到可到达的地点。请添加一个储存区（倾倒储存区可接收岩石碎块和大多数废料），或在已有储存区上允许它们的物品类型：\n\n{0}\n\n在此之前，小人会把这些物品放在它们工作的地方——只要有空位就放在住宅区内——而不是一直随身携带。点击此警报可循环切换到这些小人；悬停可指出它们。</HaulersDream.Alert.CannotUnloadDesc.NoStorage>
 <HaulersDream.Alert.CannotUnloadDesc.Stuck>这些小人已经携带收集到的物品很久却没有卸下。通常的原因是，从他们所在的位置没有可到达且允许存放的仓库能接收这些物品，所以请先检查这一点：\n\n{0}\n\n如果仓库看起来没问题，可能是某个会打断工作的模组（例如不断发出新命令的自动施法或自动工作模组）在他们卸货完成前取消了卸货。注意：Hauler's Dream 官方支持的模组，例如 Simple Sidearms、Smart Medicine、Combat Extended、Grab Your Tool、Item Policy 和 Compositable Loadouts，都不是原因，不应将其禁用；它们要保留的物品已被排除在卸货之外。点击此警报可在这些小人之间切换；悬停可标示他们。</HaulersDream.Alert.CannotUnloadDesc.Stuck>
@@ -304,7 +306,7 @@
 <HaulersDream.Setting.CraftBatchTimeout>默认制作批量超时：{0}小时</HaulersDream.Setting.CraftBatchTimeout>
 <HaulersDream.Setting.CraftBatchTimeoutOff>默认制作批量超时：无</HaulersDream.Setting.CraftBatchTimeoutOff>
 <HaulersDream.Setting.InventoryCraftDeliver>用货物栏携带制作原料（更少往返）</HaulersDream.Setting.InventoryCraftDeliver>
-<HaulersDream.Setting.InventoryCraftDeliverDesc>当小人开始一个需要来自两堆或更多分散物品堆的原料的制作工单时，它会先一次性把它们全部收集进货物栏——必要时超重，接受减速（除非启用了严格携带质量）——只走一趟去工作台，并用所携带的存货来制作。对每个配方都有效，包括那些先制作一件未完成物品的（服装、武器、雕塑）。制作本身100%是原版的，因此不会有任何东西被复制或丢失。如果有其他模组在管理制作原料的搬运，Hauler's Dream 会自动让位（改由它去收集原料），这样任何制作循环都会自行解决。需要上方的“所携带的原料计入制作”。</HaulersDream.Setting.InventoryCraftDeliverDesc>
+<HaulersDream.Setting.InventoryCraftDeliverDesc>当小人开始一个需要来自两堆或更多分散物品堆的原料的制作工单时，它会先一次性把它们全部收集进货物栏——必要时超重，接受减速（除非启用了严格携带质量）——只走一趟去工作台，并用所携带的存货来制作。对每个配方都有效，包括那些先制作一件未完成物品的（服装、武器、雕塑）。制作本身100%是原版的，因此不会有任何东西被复制或丢失。如果有其他模组在管理制作原料的搬运，Hauler's Dream 会完全让位，把收集原料交给那个模组——这样任何制作循环都会自行解决，而在此期间本设置对收集行为不起作用。需要上方的“所携带的原料计入制作”。</HaulersDream.Setting.InventoryCraftDeliverDesc>
 <HaulersDream.Setting.ShowBenchGatherGizmo>显示每个工作台的“收集原料”按钮</HaulersDream.Setting.ShowBenchGatherGizmo>
 <HaulersDream.Setting.ShowBenchGatherGizmoDesc>在每个工作台的命令栏上添加一个“收集原料”开关，这样你就可以只关闭某一个工作台的原料收集，让 RimWorld 自己的一次一堆行为在那里运行。适合那些你就在旁边补货的炉灶或工作台——在那里收集花的时间比省下的还多。默认开启。这只控制按钮是否显示——你已经关掉的工作台无论如何都保持关闭。关闭某个工作台始终优先于上面的设置，而且即使“用货物栏携带制作原料（更少往返）”已关闭它依然有效，因为批量制作无论该设置如何都会收集原料。</HaulersDream.Setting.ShowBenchGatherGizmoDesc>
 <HaulersDream.PrepGather.Report>正在收集制作原料。</HaulersDream.PrepGather.Report>

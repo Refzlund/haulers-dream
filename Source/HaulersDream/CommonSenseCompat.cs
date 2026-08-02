@@ -36,22 +36,32 @@ namespace HaulersDream
         [System.ThreadStatic] private static bool ownsCacheValue;
         [System.ThreadStatic] private static bool ownsCacheValid;
 
+        // Same per-tick memo shape for the NARROWER "CS is pocketing ingredients" read (see GathersIngredients).
+        // Kept as its OWN slot rather than derived from the owns-flow memo, because the two answers genuinely
+        // differ: CS's cleaning option alone owns the driver without gathering anything.
+        [System.ThreadStatic] private static int gathersCacheTick;
+        [System.ThreadStatic] private static bool gathersCacheValue;
+        [System.ThreadStatic] private static bool gathersCacheValid;
+
         // Self-register the per-tick owns-flow memo clear with the game-load hygiene sweep (see CacheRegistry). This
         // closes a gap: the memo was previously NEVER cleared on load, so a cross-session quickload landing on the
         // same TicksGame could briefly serve the previous game's owns-flow value on the main thread until the tick
-        // advanced. The static ctor runs once on first use (the only way the memo can hold cross-session data);
-        // ClearOwnsCache resets the FinalizeInit (main) thread's slot — other threads' memos are per-tick
+        // advanced. The static ctor runs once on first use (the only way a memo can hold cross-session data);
+        // ClearTickCaches resets the FinalizeInit (main) thread's slots — other threads' memos are per-tick
         // self-clearing, and a -1 tick forces a recompute regardless.
-        static CommonSenseCompat() => CacheRegistry.Register(ClearOwnsCache);
+        static CommonSenseCompat() => CacheRegistry.Register(ClearTickCaches);
 
-        /// <summary>Drop the main thread's per-tick owns-flow memo so an equal TicksGame across a quickload cannot
-        /// serve a previous session's value. Hygiene only — the next read recomputes from the live CS toggle fields
+        /// <summary>Drop the main thread's per-tick memos so an equal TicksGame across a quickload cannot serve a
+        /// previous session's value. Hygiene only — the next read recomputes from the live CS toggle fields
         /// (cheap reflection); the values are loop-invariant within a tick. Mirrors <see cref="PawnMassCache.Clear"/>.</summary>
-        private static void ClearOwnsCache()
+        private static void ClearTickCaches()
         {
             ownsCacheValid = false;
             ownsCacheTick = -1;
             ownsCacheValue = false;
+            gathersCacheValid = false;
+            gathersCacheTick = -1;
+            gathersCacheValue = false;
         }
 
         /// <summary>Whether Common Sense is loaded (its Settings type resolves). Cached.</summary>
@@ -95,6 +105,72 @@ namespace HaulersDream
                 return owns;
             }
         }
+
+        /// <summary>
+        /// The NARROW question the UI needs (issue #243): is Common Sense actually POCKETING bill ingredients right
+        /// now? CS is active AND its haul-all-ingredients option is on.
+        ///
+        /// <para>Deliberately narrower than <see cref="OwnsDoBillFlow"/>, which also trips on CS's cleaning option
+        /// alone. With cleaning alone CS still owns the driver — so HD must still cede — but its replacement toils
+        /// run vanilla's carry-in-hands collect and nothing goes into an inventory. A "another mod is gathering
+        /// ingredients" notice driven off <see cref="OwnsDoBillFlow"/> would therefore be FALSE in exactly that
+        /// configuration, which is why this is a separate read rather than a reuse.</para>
+        ///
+        /// <para>Unreadable field (a CS fork/rename) reads as ON, matching the fail-CLOSED stance
+        /// <see cref="OwnsDoBillFlow"/> takes on the same drift: CS ships the option ON, HD is ceding anyway, and a
+        /// notice that names the option to look at is still the most useful thing to say.</para>
+        /// </summary>
+        public static bool GathersIngredients
+        {
+            get
+            {
+                if (!initialized)
+                    Init();
+                if (!active)
+                    return false; // CS absent: nothing foreign is gathering (cheapest path — never touches the memo)
+                // Same per-tick memo rationale as OwnsDoBillFlow: the CS toggle only changes on its settings window
+                // closing, so the reflective read is invariant within a tick. This one is read from RENDER paths (a
+                // bench gizmo, the settings window), which run many times per tick.
+                int tick = Find.TickManager?.TicksGame ?? -1;
+                if (gathersCacheValid && gathersCacheTick == tick)
+                    return gathersCacheValue;
+                bool gathers = advHaulAllField == null
+                               || !(advHaulAllField.GetValue(null) is bool on)
+                               || on;
+                gathersCacheTick = tick;
+                gathersCacheValue = gathers;
+                gathersCacheValid = true;
+                return gathers;
+            }
+        }
+
+        /// <summary>
+        /// Common Sense's own label for the haul-all-ingredients option, read from CS's keyed translations at
+        /// runtime so the notice points at a control the player can actually find in THEIR language. Falls back to
+        /// the English wording CS ships when the key is absent (CS not loaded, or a fork that renamed it).
+        ///
+        /// <para>The key is CS's, not HD's, so it must stay out of HD's own Languages/ files — HD's translation
+        /// parity guard would otherwise demand 16 copies of a string HD does not own and cannot keep in step with
+        /// CS.</para>
+        /// </summary>
+        public static string HaulAllIngredientsOptionLabel
+        {
+            get
+            {
+                if (!HaulAllIngredientsLabelKey.CanTranslate())
+                    return "Pawns are encouraged to pick up all ingredients before hauling them to the crafting place";
+                string label = HaulAllIngredientsLabelKey.Translate();
+                return label;
+            }
+        }
+
+        /// <summary>CS's keyed id for the haul-all-ingredients option label (verified against the shipped
+        /// CommonSense.dll and its Languages/*/Keyed/strings.xml, which every CS translation carries).</summary>
+        private const string HaulAllIngredientsLabelKey = "advanced_haul_all_ings_label";
+
+        /// <summary>The mod's display name, for a notice that has to say whose behaviour the player is seeing.
+        /// A proper noun, so it is not translated.</summary>
+        public const string ModName = "Common Sense";
 
         /// <summary>
         /// True when HD is ceding the BATCH-CRAFT path to Common Sense right now, so a batch-flagged bill will NOT

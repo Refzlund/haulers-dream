@@ -1295,6 +1295,12 @@ namespace HaulersDream
                 shareForCrafting, "HaulersDream.Setting.ShareForCraftingDesc".Translate());
             inventoryCraftDeliver = HDSettingsUI.Checkbox(c, "HaulersDream.Setting.InventoryCraftDeliver".Translate(),
                 inventoryCraftDeliver, "HaulersDream.Setting.InventoryCraftDeliverDesc".Translate(), enabled: shareForCrafting, indent: 24f);
+            // #243: when another mod is doing the ingredient gathering, neither checkbox above can stop it — say so
+            // here, where the player comes to turn it off, rather than letting them conclude the settings are
+            // broken. Only the foreign-gatherer caveat belongs on this tab: the "HD's own gather is switched off"
+            // caveat that the per-bench button also shows would just restate the checkbox sitting right above it.
+            if (GatherNotice.Current == BenchGatherNotice.ForeignModGathers)
+                HDSettingsUI.Note(c, GatherNotice.Text(BenchGatherNotice.ForeignModGathers), indent: 24f);
             // Deliberately TOP-LEVEL — no `enabled:` gate and no indent, even though it sits under the gather
             // settings it relates to (issue #230). The per-bench switch also governs BATCH gathering, and the batch
             // route never reads inventoryCraftDeliver — so chaining this control to that setting would hide the

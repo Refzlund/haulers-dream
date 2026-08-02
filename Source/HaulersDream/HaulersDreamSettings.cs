@@ -15,10 +15,23 @@ namespace HaulersDream
     [StaticConstructorOnStartup]
     public partial class HaulersDreamSettings : ModSettings
     {
-        // --- master enable (no restart): one switch to disable ALL of Hauler's Dream. Default ON. When OFF, HD
-        // stops INITIATING new behavior (scoops / sweeps / bulk-haul / work-overrides) at the scoop entry points,
-        // but a pawn already carrying scooped goods STILL unloads (never a black hole) and the Unload gizmo stays
-        // available. Read live via MasterEnable.Active so it takes effect without a restart. ---
+        // --- master enable (no restart): the kill switch for HD's AUTOMATIC hauling behaviour. Default ON. Read
+        // live via MasterEnable.Active so it takes effect without a restart.
+        //
+        // What it covers: the AUTOMATIC intake entry points stop INITIATING new behaviour — the yield scoop and
+        // area-cleanup sweep (YieldRouter), bulk haul, urgent-haul bulk, en-route pickup, bulk refuel, and the
+        // closer-storage relocation (StorageRouting). Each reads MasterEnable.Active at its own entry.
+        //
+        // What it deliberately does NOT cover, and must not be described as covering:
+        //   * unloading — a pawn already carrying scooped goods STILL unloads and the Unload gizmo stays
+        //     available (conflict guard G1: gating the shared unload funnel would strand carried goods);
+        //   * the work-incapability overrides (see the note in WorkOverride);
+        //   * the crafting-ingredient GATHER routes — Patch_WorkGiver_DoBill_InventoryRoute (BillPrepGather),
+        //     Patch_WorkGiver_DoBill_BatchRoute (BatchCraft) and the player-ordered "Plan prioritized crafting"
+        //     read their own settings and the per-bench "Gather ingredients" switch, never MasterEnable.Active.
+        // So this is NOT "disable ALL of Hauler's Dream", which is what this comment used to say and what the
+        // user-facing description has always correctly avoided claiming ("automatic hauling behaviours").
+        // Widening the switch to cover the gather routes is a behaviour change, not a comment fix. ---
         public bool masterEnabled = true;
         // Dev-only: draw colored detour lines for en-route pickup / storage routing. DevMode only, NOT serialized,
         // reset to off on load (a transient diagnostic, never persisted).

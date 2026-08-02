@@ -80,6 +80,19 @@ const desperateLeg = Bun.spawn(['bun', resolve(import.meta.dir, 'check-no-desper
 })
 if ((await desperateLeg.exited) !== 0) throw new Error('Desperate-leg guard check failed (see output above).')
 
+// Guard the ingredient-gather gate (issue #243). Every entry point that gathers a bill's ingredients into a
+// pawn's inventory must consult BillRouteGate — the player-ordered "Plan prioritized crafting…" consulted
+// nothing at all, so a workbench whose "Gather ingredients" switch the player had turned off kept gathering.
+// A MISSING call compiles clean and passes every test, so only an inventory of the entry points catches it.
+// Fails the build if a registered entry point drops its gate, a new gather job appears outside them, or
+// MayRouteToInventory stops reading the per-bench switch. See check-bill-route-gate.ts.
+const billRouteGate = Bun.spawn(['bun', resolve(import.meta.dir, 'check-bill-route-gate.ts')], {
+	stdout: 'inherit',
+	stderr: 'inherit',
+	cwd: repoRoot,
+})
+if ((await billRouteGate.exited) !== 0) throw new Error('Bill-route-gate check failed (see output above).')
+
 // Guard drug-policy access (issue #232). RimWorld's DrugPolicy[ThingDef] indexer throws a message-less
 // ArgumentException for a def it holds no entry for — "Value does not fall within the expected range." — and no
 // test and no ordinary save reproduces it, so the shorter `policy[def]` spelling compiles clean and regresses
