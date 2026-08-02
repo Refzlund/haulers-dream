@@ -1,5 +1,18 @@
 # haulers-dream
 
+## 1.23.0
+
+### Minor Changes
+
+- da7bd2d: feat: settings for who bulk-hauls corpses, and an option to carry more than one body per trip ([PR #244](https://github.com/Refzlund/haulers-dream/pull/244))
+
+### Patch Changes
+
+- da7bd2d: fix: the "gather ingredients" button now tells you when another mod is doing the gathering instead ([PR #244](https://github.com/Refzlund/haulers-dream/pull/244), [issue #243](https://github.com/Refzlund/haulers-dream/issues/243))
+- da7bd2d: fix: colonists told to leave a cave with the loot now carry a full load instead of one item per trip ([PR #244](https://github.com/Refzlund/haulers-dream/pull/244))
+- da7bd2d: fix: a mech no longer carries two corpses to the same single-body grave and leaves one on the ground ([PR #244](https://github.com/Refzlund/haulers-dream/pull/244))
+- da7bd2d: fix: the "plan prioritized crafting" order now respects a workbench's "gather ingredients" button ([PR #244](https://github.com/Refzlund/haulers-dream/pull/244), [issue #243](https://github.com/Refzlund/haulers-dream/issues/243))
+
 ## 1.22.0
 
 ### Minor Changes
