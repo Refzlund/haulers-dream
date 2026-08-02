@@ -36,10 +36,26 @@ function toBBCode(text: string): string {
 	)
 }
 
+const REPO = 'https://github.com/Refzlund/haulers-dream'
+
+/** Steam rejects a change note past this; the cap is on the finished BBCode, footer included. */
+const STEAM_MAX = 7000
+
 function emit(text: string) {
 	if (steam) {
 		text = toBBCode(text)
-		if (text.length > 7000) text = text.slice(0, 7000) + '\n…'
+
+		// Point Steam readers at the release for the full notes. Only the Steam variant gets this — on the
+		// GitHub release you are already looking at the page it would link to. A bare URL is deliberate:
+		// Steam auto-links it, and it stays readable if the note is ever copied somewhere that does not.
+		const footer = `\n\nFull changelog: ${REPO}/releases/tag/v${version}`
+
+		// Budget for the footer BEFORE trimming, never append after. It is the reader's only way out to the
+		// complete notes, so it has to be the last thing dropped rather than the first — and appending past a
+		// cap-length body would push the whole note over the limit.
+		const room = STEAM_MAX - footer.length
+		if (text.length > room) text = text.slice(0, room - 2) + '\n…'
+		text += footer
 	}
 	console.log(text)
 }
