@@ -122,6 +122,23 @@ namespace HaulersDream
 
             var carried = comp.GetHashSet();
             int inventoryCount = pawn.inventory?.innerContainer?.Count ?? 0;
+
+            // "Unload now" must mean NOW even when an unload is already parked at the BACK of the queue.
+            // Decide() skips on alreadyUnloading before it looks at `forced`, which was harmless while every
+            // forced unload was EnqueueFirst'd — the queued unload WAS the next job. Since the full-pack and
+            // batch-craft triggers began deferring behind queued work, it no longer is: a pawn that filled up
+            // during a five-order queue has its unload sitting last, and a player pressing the gizmo would hit
+            // the alreadyUnloading skip and get silence, with the button still enabled. So a front-of-queue
+            // request PROMOTES the parked unload instead of queuing a second one.
+            if (forced && !behindQueuedWork && pawn.CurJobDef != HaulersDreamDefOf.HaulersDream_UnloadInventory
+                && TryPromoteQueuedUnloadToFront(pawn))
+            {
+                // #215: a plain gizmo click also ends the current job so the promoted unload starts this tick.
+                if (immediate)
+                    pawn.jobs?.EndCurrentJob(JobCondition.InterruptForced);
+                return;
+            }
+
             bool alreadyUnloading = pawn.CurJobDef == HaulersDreamDefOf.HaulersDream_UnloadInventory
                                     || HasQueuedUnload(pawn);
             int ticksSinceYield = (Find.TickManager?.TicksGame ?? 0) - comp.lastYieldTick;
@@ -385,6 +402,36 @@ namespace HaulersDream
             foreach (var t in carried)
                 if (t != null && inner.Contains(t) && InventorySurplus.SurplusOf(pawn, t) > 0)
                     return true;
+            return false;
+        }
+
+        /// <summary>
+        /// Move an already-queued unload to the FRONT of the pawn's job queue, so a "right now" request is
+        /// honoured instead of being swallowed by the "an unload is already queued" skip. Returns true when an
+        /// unload is queued — including when it was already first, which needs no move but is equally "handled",
+        /// so the caller must not queue a second one either way.
+        /// </summary>
+        /// <param name="pawn">The pawn whose queue to reorder. Null-safe.</param>
+        /// <returns>True if an unload is now at the front of the queue; false if none was queued at all, in which
+        /// case the caller should go on and decide a fresh unload normally.</returns>
+        private static bool TryPromoteQueuedUnloadToFront(Pawn pawn)
+        {
+            var queue = pawn?.jobs?.jobQueue;
+            if (queue == null || queue.Count == 0)
+                return false;
+            // Indexed, not foreach: JobQueue's enumerator boxes (same reason HasPendingRealWork walks by index).
+            for (int i = 0; i < queue.Count; i++)
+            {
+                var job = queue[i]?.job;
+                if (job?.def != HaulersDreamDefOf.HaulersDream_UnloadInventory)
+                    continue;
+                if (i == 0)
+                    return true; // already next; nothing to move, but the caller must not add another
+                // Extract preserves the Job instance (and its targets), so re-enqueuing cannot lose the plan.
+                var extracted = queue.Extract(job);
+                queue.EnqueueFirst(extracted?.job ?? job, JobTag.Misc);
+                return true;
+            }
             return false;
         }
 

@@ -550,13 +550,16 @@ namespace HaulersDream
             // haul giver nulls them and the sweep pool skipped them.)
             //
             // The eventual destination is unknown at pickup, so under DisposalOnly a picked corpse that later
-            // unloads into a grave arrives DRESSED. That was already true of the two manual entries and is
-            // accepted for the same reasons: the gear is buried with it (recoverable by exhuming), and nothing is
-            // destroyed. Widening the entries widens that window — a DisposalOnly player whose bodies are hauled
-            // to graves automatically will now see some interred with their gear on, where before every one of
-            // those hauls was a vanilla HaulToContainer stripped at the TryStartCarry seam. A body too heavy for
-            // the inventory ceiling still falls back to that hand-haul and strips as before, and the default
-            // "every corpse haul" mode is unaffected (it strips at pickup either way).
+            // unloads into a grave would arrive DRESSED. That is accepted for the two MANUAL entries — the gear
+            // is buried with the body, recoverable by exhuming, and nothing is destroyed — because the player
+            // pointed at that body and asked for the trip.
+            //
+            // It is NOT accepted for the automatic scan, which is why CorpseSweepPolicy stands the automatic
+            // corpse sweep down entirely in this mode (both as an anchor and as a swept neighbour). Otherwise a
+            // DisposalOnly player who changed no setting would start seeing bodies interred with their gear on,
+            // where before every automatic grave haul was a vanilla HaulToContainer stripped at the TryStartCarry
+            // seam. A body too heavy for the inventory ceiling still falls back to that hand-haul and strips as
+            // before, and the default "every corpse haul" mode is unaffected (it strips at pickup either way).
             // "Keep X in inventory" is NOT a haul and never strips.
             if (job.def == HaulersDreamDefOf.HaulersDream_BulkHaul)
                 return mode == AutoStripMode.AllHauls;

@@ -19,7 +19,7 @@ namespace HaulersDream.Tests
             // The whole point of the opt-in: switched off, a corpse is exactly as invisible to the sweep as it
             // was before the WorkGiver_HaulCorpses hook existed.
             Assert.That(CorpseSweepPolicy.CanAnchorSweep(true, false, false, false), Is.False);
-            Assert.That(CorpseSweepPolicy.CanSweepAsNeighbor(true, false), Is.False);
+            Assert.That(CorpseSweepPolicy.CanSweepAsNeighbor(true, false, false, false), Is.False);
         }
 
         [Test]
@@ -28,9 +28,9 @@ namespace HaulersDream.Tests
             // The corpse opt-in is a sub-option: it can never revive a sweep the master switch turned off, in
             // either role. (The settings window greys it out for the same reason.)
             Assert.That(CorpseSweepPolicy.CanAnchorSweep(false, true, false, false), Is.False);
-            Assert.That(CorpseSweepPolicy.CanSweepAsNeighbor(false, true), Is.False);
+            Assert.That(CorpseSweepPolicy.CanSweepAsNeighbor(false, true, false, false), Is.False);
             Assert.That(CorpseSweepPolicy.CanAnchorSweep(false, false, false, false), Is.False);
-            Assert.That(CorpseSweepPolicy.CanSweepAsNeighbor(false, false), Is.False);
+            Assert.That(CorpseSweepPolicy.CanSweepAsNeighbor(false, false, false, false), Is.False);
         }
 
         // ---- on => both roles open ----
@@ -41,7 +41,7 @@ namespace HaulersDream.Tests
             // Anchor = a haul ordered (or scanned) on the body itself, which now sweeps the loose loot around it.
             Assert.That(CorpseSweepPolicy.CanAnchorSweep(true, true, false, false), Is.True);
             // Neighbour = a body lying beside some other haul, now picked up on the way past.
-            Assert.That(CorpseSweepPolicy.CanSweepAsNeighbor(true, true), Is.True);
+            Assert.That(CorpseSweepPolicy.CanSweepAsNeighbor(true, true, false, false), Is.True);
         }
 
         [Test]
@@ -52,9 +52,11 @@ namespace HaulersDream.Tests
             // configuration that allowed one and not the other would be the confusing half of the feature.
             foreach (bool bulk in new[] { true, false })
                 foreach (bool corpses in new[] { true, false })
-                    Assert.That(CorpseSweepPolicy.CanSweepAsNeighbor(bulk, corpses),
-                        Is.EqualTo(CorpseSweepPolicy.CanAnchorSweep(bulk, corpses, false, false)),
-                        $"bulkHaul={bulk} bulkHaulCorpses={corpses}");
+                    foreach (bool disposalOnly in new[] { true, false })
+                        foreach (bool ordered in new[] { true, false })
+                            Assert.That(CorpseSweepPolicy.CanSweepAsNeighbor(bulk, corpses, disposalOnly, ordered),
+                                Is.EqualTo(CorpseSweepPolicy.CanAnchorSweep(bulk, corpses, disposalOnly, ordered)),
+                                $"bulkHaul={bulk} corpses={corpses} disposalOnly={disposalOnly} ordered={ordered}");
         }
 
         // ---- the disposal-only carve-out ----

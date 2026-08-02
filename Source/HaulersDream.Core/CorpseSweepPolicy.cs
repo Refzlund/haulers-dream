@@ -76,7 +76,13 @@ namespace HaulersDream.Core
         /// </summary>
         /// <param name="bulkHaulEnabled">The master bulk-haul setting.</param>
         /// <param name="bulkHaulCorpses">The corpse opt-in.</param>
-        public static bool CanSweepAsNeighbor(bool bulkHaulEnabled, bool bulkHaulCorpses)
-            => bulkHaulEnabled && bulkHaulCorpses;
+        /// <param name="autoStripOnDisposalOnly">See <see cref="CanAnchorSweep"/> — the neighbour role needs the
+        /// SAME carve-out, and for a sharper reason: a body swept up beside an ordinary haul reaches a grave by
+        /// exactly the same un-classifiable bulk job, so leaving it out here would have let the automatic scan
+        /// bury bodies dressed through the back door while the anchor stood politely down.</param>
+        /// <param name="playerOrdered">True for an explicit order.</param>
+        public static bool CanSweepAsNeighbor(bool bulkHaulEnabled, bool bulkHaulCorpses,
+            bool autoStripOnDisposalOnly, bool playerOrdered)
+            => bulkHaulEnabled && bulkHaulCorpses && (playerOrdered || !autoStripOnDisposalOnly);
     }
 }

@@ -349,6 +349,27 @@ namespace HaulersDream
         /// <param name="primary">The stack or body the haul is anchored on.</param>
         /// <param name="s">Live settings — the bulk-haul master switch and the corpse opt-in.</param>
         /// <param name="forceSweep">Whether this is an explicit sweep order rather than an ordinary haul.</param>
+        /// <summary>
+        /// True when a wild animal has physically reserved <paramref name="t"/> — a predator part-way through
+        /// eating a carcass. Vanilla's own corpse work giver refuses these outright:
+        /// <c>WorkGiver_HaulCorpses.JobOnThing</c> bails when <c>FirstReserverOf(t)</c> is an animal outside the
+        /// player's faction. The ANCHOR path inherits that for free (vanilla returns null and the postfix has
+        /// nothing to upgrade), but the sweep POOL builds its own candidate list, so it has to ask the same
+        /// question or HD would take a body out from under a feeding predator and fail its job — causing exactly
+        /// the behaviour the base game declines to cause.
+        ///
+        /// <para>An ordinary reservation check cannot stand in for this: a wild animal has no faction, and
+        /// <c>ReservationManager</c> ignores reservations when either side is factionless, so the physical
+        /// interaction reservation is the only trace such a predator leaves.</para>
+        /// </summary>
+        /// <param name="t">The candidate stack. Only meaningful for a corpse; cheap and false for anything else.</param>
+        private static bool ReservedByWildAnimal(Thing t)
+        {
+            var reserver = t?.Map?.physicalInteractionReservationManager?.FirstReserverOf(t);
+            return reserver != null && reserver.RaceProps != null && reserver.RaceProps.Animal
+                   && reserver.Faction != Faction.OfPlayerSilentFail;
+        }
+
         private static bool AcceptsHaulDestination(Job vanillaJob, Thing primary, HaulersDreamSettings s, bool forceSweep)
         {
             if (vanillaJob == null)
@@ -357,9 +378,17 @@ namespace HaulersDream
                 return true;
             if (vanillaJob.def != JobDefOf.HaulToContainer)
                 return false;
+            // playerOrdered is FALSE here, not `forceSweep`: the `forceSweep ||` above already returned for an
+            // explicit sweep, so this line is only ever reached on the automatic path. Passing the flag would
+            // read as if it could be true and invite someone to "simplify" the short-circuit away.
+            //
+            // Consequence worth naming: a container (grave) destination reached by "Prioritise hauling" — forced,
+            // but not forceSweep — is refused here under disposal-only stripping, even though BuildBulkJob's own
+            // anchor check would allow it. That is the conservative direction (the body goes by vanilla's
+            // haul-to-container, which strips) so it stays, rather than widening the cheap gate.
             return forceSweep
                 || (primary is Corpse && CorpseSweepPolicy.CanAnchorSweep(s.bulkHaul, s.bulkHaulCorpses,
-                        s.autoStripMode == AutoStripMode.DisposalOnly, playerOrdered: forceSweep));
+                        s.autoStripMode == AutoStripMode.DisposalOnly, playerOrdered: false));
         }
 
         /// <summary>
@@ -437,7 +466,10 @@ namespace HaulersDream
             // single field read (not a property call) per stack, and nothing at all when RimIOT is absent.
             bool rimIOTPresent = RimIOTCompat.IsPresent;
             // Hoisted for the same reason: one settings read for the whole walk instead of one per candidate.
-            bool sweepCorpses = CorpseSweepPolicy.CanSweepAsNeighbor(s.bulkHaul, s.bulkHaulCorpses);
+            // playerOrdered: false — this is the cheap AVAILABILITY gate for the automatic scan; an explicit
+            // order goes straight to BuildBulkJob and is never filtered here.
+            bool sweepCorpses = CorpseSweepPolicy.CanSweepAsNeighbor(s.bulkHaul, s.bulkHaulCorpses,
+                s.autoStripMode == AutoStripMode.DisposalOnly, playerOrdered: false);
             foreach (var t in (HashSet<Thing>)map.listerHaulables.ThingsPotentiallyNeedingHauling())
             {
                 if (t == null || t == primary || !t.Spawned || t.Map != map)
@@ -480,7 +512,7 @@ namespace HaulersDream
             // their own builders and are likewise untouched.
             if (primary is Corpse && !forceSweep
                 && !CorpseSweepPolicy.CanAnchorSweep(s.bulkHaul, s.bulkHaulCorpses,
-                        s.autoStripMode == AutoStripMode.DisposalOnly, playerOrdered: forced))
+                        s.autoStripMode == AutoStripMode.DisposalOnly, playerOrdered: forced || forceSweep))
                 return null;
             // Same map gate as YieldRouter.IsCandidate: with the mod disabled on non-home maps a sweep must
             // not fire there either — the driver's finish unload is forced:true and bypasses the checker's gate.
@@ -680,7 +712,8 @@ namespace HaulersDream
                 // only place in the mod where a corpse becomes a swept extra. Kept in lockstep with the identical
                 // hoisted check in HasPotentialBulkWork so the cheap gate stays a superset of this pool.
                 BuildPoolInto(pool, pawn, primary, map, searchRadius * PoolRadiusHops,
-                    includeCorpses: CorpseSweepPolicy.CanSweepAsNeighbor(s.bulkHaul, s.bulkHaulCorpses));
+                    includeCorpses: CorpseSweepPolicy.CanSweepAsNeighbor(s.bulkHaul, s.bulkHaulCorpses,
+                        s.autoStripMode == AutoStripMode.DisposalOnly, playerOrdered: forced || forceSweep));
 
                 // Commit the primary's take to its group budget so swept extras (any def, not just the primary's)
                 // see the room it has already claimed. When the #114 clamp bound primaryTake to the group's space
@@ -1010,7 +1043,7 @@ namespace HaulersDream
                 {
                     if (t == null || t == primary || !t.Spawned || t.Map != map)
                         continue;
-                    if (!includeCorpses && t is Corpse)
+                    if (t is Corpse && (!includeCorpses || ReservedByWildAnimal(t)))
                         continue; // corpse hauling keeps its own vanilla flow (see the includeCorpses note above)
                     if (!t.def.EverHaulable)
                         continue;
@@ -1028,7 +1061,7 @@ namespace HaulersDream
             {
                 if (t == null || t == primary || !t.Spawned || t.Map != map)
                     continue;
-                if (!includeCorpses && t is Corpse)
+                if (t is Corpse && (!includeCorpses || ReservedByWildAnimal(t)))
                     continue; // corpse hauling keeps its own vanilla flow (see the includeCorpses note above)
                 if (!t.def.EverHaulable)
                     continue;
