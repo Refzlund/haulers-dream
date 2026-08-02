@@ -54,6 +54,46 @@ namespace HaulersDream
                 "this pawn's hauling job could not be built this scan.");
     }
 
+    /// <summary>
+    /// THE SAME HOOK, FOR CORPSES. Vanilla splits hauling across two scanners and HD only ever hooked one of
+    /// them: <c>WorkGiver_HaulGeneral.JobOnThing</c> opens with <c>if (t is Corpse) return null;</c> and corpse
+    /// hauls are routed instead through the sibling <c>WorkGiver_HaulCorpses.JobOnThing</c>
+    /// (<c>if (!(t is Corpse)) return null;</c> … then <c>base.JobOnThing</c>) — both decompile-verified. Since
+    /// BOTH the automatic scan and the float menu's "Prioritize hauling" call each scanner's OWN
+    /// <c>JobOnThing</c>, a corpse haul reached no HD code at all: it never swept the loose items around it, and
+    /// bodies were fetched strictly one per trip. This postfix is the structural mirror of
+    /// <see cref="Patch_WorkGiver_HaulGeneral_BulkHaul"/> — same call, same seam guard — so a corpse haul now
+    /// gets exactly the treatment every other haul gets.
+    ///
+    /// <para>Patched on the OVERRIDE, never on the shared base <c>WorkGiver_Haul.JobOnThing</c>: the base is what
+    /// BOTH scanners delegate to, so a patch there would re-enter for general hauls and double-apply the sweep.
+    /// (<c>[HarmonyPatch(Type, string)]</c> resolves through <c>AccessTools.DeclaredMethod</c>, so this binds the
+    /// declared override.)</para>
+    ///
+    /// <para>Gating lives entirely in <see cref="BulkHaul.TryBuildBulkJob"/> — with the corpse opt-in off it
+    /// returns null for a corpse anchor and vanilla's single-body haul stands untouched, so this patch is inert
+    /// rather than conditional.</para>
+    /// </summary>
+    [HarmonyPatch(typeof(WorkGiver_HaulCorpses), nameof(WorkGiver_HaulCorpses.JobOnThing))]
+    public static class Patch_WorkGiver_HaulCorpses_BulkHaul
+    {
+        static void Postfix(ref Job __result, Pawn pawn, Thing t, bool forced)
+        {
+            // A failure here is a real bug: it must stay a visible red error, never a silent downgrade — the
+            // Finalizer below logs with HD + pawn context and RETHROWS (see HDGuard), exactly as on the general
+            // haul seam.
+            var bulk = BulkHaul.TryBuildBulkJob(pawn, t, __result, forced);
+            if (bulk != null)
+                __result = bulk;
+        }
+
+        // Seam guard: the funnel for BOTH the automatic corpse-haul scan and forced "Prioritize hauling" on a
+        // body. A throw here would break this pawn's corpse hauling with no HD-attributable trace.
+        static System.Exception Finalizer(System.Exception __exception, Pawn pawn)
+            => HDGuard.SeamThrew(__exception, "WorkGiver_HaulCorpses.JobOnThing (HD bulk-haul)", pawn,
+                "this pawn's corpse-hauling job could not be built this scan.");
+    }
+
     public static class BulkHaul
     {
         // Per-hop search radius floor and the fraction of the haul distance used as the hop radius —
@@ -281,6 +321,45 @@ namespace HaulersDream
         }
 
         /// <summary>
+        /// Is the destination vanilla picked for this haul one a bulk sweep may take over? A plain stockpile cell
+        /// (<c>HaulToCell</c>) always is. A CONTAINER destination (a grave, a casket, container storage) is the
+        /// interesting case: the sweep pockets the anchor like anything else and the unload's container branch
+        /// delivers it, so accepting one is safe but changes which flow a haul takes — it is therefore admitted
+        /// only in the two situations where that is what the player gets by asking:
+        /// <list type="bullet">
+        /// <item><description><paramref name="forceSweep"/> — the explicit "Haul everything nearby" order. The
+        /// player asked for a sweep; degrading to a lone hand-haul at a container would be no sweep at all.</description></item>
+        /// <item><description>a CORPSE anchor with the corpse opt-in on — a body bound for a grave yields
+        /// <c>HaulToContainer</c>, and refusing it here would leave exactly the graveside hauls (where the loose
+        /// gear and the other bodies actually pile up) as the one corpse haul that still never sweeps.</description></item>
+        /// </list>
+        ///
+        /// <para>Anything else keeps its dedicated vanilla flow. <c>targetB.Cell</c> is the container's
+        /// <c>PositionHeld</c> for a container job — a fine search-radius anchor — and <c>ResolveGroupBudget</c>
+        /// finds no slot group there, so it returns null (unbounded) and the anchor's def simply gets no
+        /// plan-time storage budget; the unload re-clamps at delivery anyway.</para>
+        ///
+        /// <para>ONE definition, called by both the cheap potential-work gate and the real build, because the
+        /// invariant documented on <see cref="HasPotentialBulkWork"/> — the gate is a superset of the build's
+        /// accept set — has to survive future edits to either side.</para>
+        /// </summary>
+        /// <param name="vanillaJob">The haul job vanilla handed back; null is never acceptable.</param>
+        /// <param name="primary">The stack or body the haul is anchored on.</param>
+        /// <param name="s">Live settings — the bulk-haul master switch and the corpse opt-in.</param>
+        /// <param name="forceSweep">Whether this is an explicit sweep order rather than an ordinary haul.</param>
+        private static bool AcceptsHaulDestination(Job vanillaJob, Thing primary, HaulersDreamSettings s, bool forceSweep)
+        {
+            if (vanillaJob == null)
+                return false;
+            if (vanillaJob.def == JobDefOf.HaulToCell)
+                return true;
+            if (vanillaJob.def != JobDefOf.HaulToContainer)
+                return false;
+            return forceSweep
+                || (primary is Corpse && CorpseSweepPolicy.CanAnchorSweep(s.bulkHaul, s.bulkHaulCorpses));
+        }
+
+        /// <summary>
         /// Cheap "is a bulk sweep even possible here?" reject for the AUTOMATIC work-scan path — run BEFORE the
         /// expensive pool/claimed/storage scans so a candidate that can't sweep costs only this. Mirrors
         /// <see cref="TransportLoad.HasPotentialBulkWork"/>: feature on, the comp present, the pawn auto-eligible,
@@ -296,11 +375,19 @@ namespace HaulersDream
         /// </summary>
         private static bool HasPotentialBulkWork(Pawn pawn, Thing primary, Job vanillaJob)
         {
-            if (vanillaJob == null || vanillaJob.def != JobDefOf.HaulToCell)
-                return false; // container destinations (graves, pods) keep their dedicated vanilla flow
             var s = HaulersDreamMod.Settings;
             var map = pawn?.Map;
             if (s == null || !s.bulkHaul || map == null || primary == null || !primary.Spawned)
+                return false;
+            // The SAME destination test the build applies (one definition, so the superset invariant above holds
+            // by construction rather than by two edits staying in step). forceSweep: false is deliberate — it
+            // reproduces exactly today's narrowing for the automatic urgent-haul path, which reaches the build
+            // with forceSweep true but forced false and has never passed a container destination through this
+            // cheap gate. Widening it there would be an unrelated behaviour change.
+            if (!AcceptsHaulDestination(vanillaJob, primary, s, forceSweep: false))
+                return false;
+            // Corpse anchor, opt-in off: the build refuses it too, so reject before the pool walk.
+            if (primary is Corpse && !CorpseSweepPolicy.CanAnchorSweep(s.bulkHaul, s.bulkHaulCorpses))
                 return false;
             if (!MapGate.HdActiveOnMap(map))
                 return false;
@@ -332,18 +419,25 @@ namespace HaulersDream
             float poolRadiusSq = (searchRadius * PoolRadiusHops) * (searchRadius * PoolRadiusHops);
 
             // First nearby OTHER haulable wins — bounded by an early return, no pool list, no per-item storage
-            // scan. Matches BuildPool's cheap pre-filter (spawned item, same map, not the primary, not a corpse,
-            // EverHaulable, within pool radius). The deeper eligibility (forbidden / claimed / capacity / storage)
-            // is the build's job; here we only need to know the heavy scan is worth running at all.
+            // scan. Matches BuildPool's cheap pre-filter (spawned item, same map, not the primary, corpses only
+            // when they may be swept, EverHaulable, within pool radius). The deeper eligibility (forbidden /
+            // claimed / capacity / storage) is the build's job; here we only need to know the heavy scan is worth
+            // running at all.
             // Cast to the concrete HashSet<Thing> the lister returns (its ThingsPotentiallyNeedingHauling
             // return type is the ICollection<Thing> interface, decompile-verified) so the foreach binds the
             // struct enumerator and boxes nothing on this hot per-candidate gate.
             // RimIOT compat (#177 + #184): hoist the present latch once so the per-candidate RimIOT check below pays a
             // single field read (not a property call) per stack, and nothing at all when RimIOT is absent.
             bool rimIOTPresent = RimIOTCompat.IsPresent;
+            // Hoisted for the same reason: one settings read for the whole walk instead of one per candidate.
+            bool sweepCorpses = CorpseSweepPolicy.CanSweepAsNeighbor(s.bulkHaul, s.bulkHaulCorpses);
             foreach (var t in (HashSet<Thing>)map.listerHaulables.ThingsPotentiallyNeedingHauling())
             {
-                if (t == null || t == primary || !t.Spawned || t.Map != map || t is Corpse)
+                if (t == null || t == primary || !t.Spawned || t.Map != map)
+                    continue;
+                // Kept in lockstep with BuildPoolInto: with the corpse opt-in off, a body must not make this gate
+                // report "worth sweeping" for a pool the build would then find empty.
+                if (!sweepCorpses && t is Corpse)
                     continue;
                 if (t.def == null || !t.def.EverHaulable)
                     continue;
@@ -366,20 +460,19 @@ namespace HaulersDream
 
         private static Job BuildBulkJob(Pawn pawn, Thing primary, Job vanillaJob, bool forced, bool forceSweep = false)
         {
-            // A CONTAINER destination (a grave-destined corpse, container storage) is accepted ONLY for the
-            // explicit "Haul everything nearby" order (forceSweep): the anchor is pocketed like anything else and
-            // the unload's container branch delivers it. The AUTOMATIC scan and the forced single-order takeover
-            // stay cell-only (HasPotentialBulkWork gates the scan the same way), so ordinary container-storage
-            // hauls keep their dedicated vanilla flow. targetB.Cell below is the container's PositionHeld (a fine
-            // search-radius anchor), and ResolveGroupBudget finds no slot group at it -> null (unbounded) -> the
-            // primary's def simply gets no plan-time storage budget (the unload re-clamps at delivery anyway).
-            if (vanillaJob == null
-                || (vanillaJob.def != JobDefOf.HaulToCell
-                    && !(forceSweep && vanillaJob.def == JobDefOf.HaulToContainer)))
-                return null;
             var s = HaulersDreamMod.Settings;
             var map = pawn?.Map;
             if (s == null || !s.bulkHaul || map == null || primary == null || !primary.Spawned)
+                return null;
+            if (!AcceptsHaulDestination(vanillaJob, primary, s, forceSweep))
+                return null;
+            // A CORPSE anchor only converts with the corpse opt-in on; otherwise vanilla's single-body haul stands
+            // and the new WorkGiver_HaulCorpses postfix is inert. forceSweep is EXEMPT on purpose: "Haul
+            // everything nearby" has always anchored on a body (it just never swept other bodies), and switching
+            // a new setting off must not take away an order that already worked. "Pick up X" / "Keep X" reach
+            // their own builders and are likewise untouched.
+            if (primary is Corpse && !forceSweep
+                && !CorpseSweepPolicy.CanAnchorSweep(s.bulkHaul, s.bulkHaulCorpses))
                 return null;
             // Same map gate as YieldRouter.IsCandidate: with the mod disabled on non-home maps a sweep must
             // not fire there either — the driver's finish unload is forced:true and bypasses the checker's gate.
@@ -575,7 +668,11 @@ namespace HaulersDream
                 // Reuse the per-thread scratch list (filled fresh below); the work scan builds this for every
                 // distinct candidate it probes in a tick, so a fresh allocation per call was the hot-path GC cost.
                 var pool = scratchPool ?? (scratchPool = new List<Thing>());
-                BuildPoolInto(pool, pawn, primary, map, searchRadius * PoolRadiusHops);
+                // Bodies join the pool only with the corpse opt-in on — the neighbour half of the fix, and the
+                // only place in the mod where a corpse becomes a swept extra. Kept in lockstep with the identical
+                // hoisted check in HasPotentialBulkWork so the cheap gate stays a superset of this pool.
+                BuildPoolInto(pool, pawn, primary, map, searchRadius * PoolRadiusHops,
+                    includeCorpses: CorpseSweepPolicy.CanSweepAsNeighbor(s.bulkHaul, s.bulkHaulCorpses));
 
                 // Commit the primary's take to its group budget so swept extras (any def, not just the primary's)
                 // see the room it has already claimed. When the #114 clamp bound primaryTake to the group's space
@@ -861,6 +958,9 @@ namespace HaulersDream
         // Everything in the haul lister that could plausibly join this sweep, pre-filtered cheap.
         // internal: reused by PackAnimalLoad's bulk pack-animal sweep + TransportLoad (same pool, different
         // destination) — those callers OWN the returned list, so this allocates a fresh one for them.
+        // CORPSES ARE ALWAYS EXCLUDED HERE, whatever the corpse sweep setting says: loading a body into a pack
+        // animal's or a transporter's cargo is a different question from hauling it to storage, and both callers
+        // are built on the assumption that a manifest corpse is carried in hands by vanilla.
         internal static List<Thing> BuildPool(Pawn pawn, Thing primary, Map map, float poolRadius)
         {
             var pool = new List<Thing>();
@@ -870,7 +970,15 @@ namespace HaulersDream
 
         // Fill (Clearing first) the provided buffer with the candidate pool — lets the hot bulk-haul path reuse
         // a per-thread scratch list instead of allocating one per JobOnThing probe. Same filter as BuildPool.
-        private static void BuildPoolInto(List<Thing> pool, Pawn pawn, Thing primary, Map map, float poolRadius)
+        //
+        // includeCorpses is OFF for every caller but the bulk-haul sweep itself (and there only with the corpse
+        // opt-in on). The shared BuildPool entry point above must keep excluding bodies unconditionally, because
+        // its other consumers DEPEND on that: a transporter or portal manifest can list a corpse, and
+        // TransportLoad's stored-stack supplement mirrors this filter precisely so a manifest corpse is carried
+        // in hands by vanilla rather than scooped into a pocket. Making the exclusion a parameter rather than a
+        // settings read keeps that guarantee visible at each call site instead of buried here.
+        private static void BuildPoolInto(List<Thing> pool, Pawn pawn, Thing primary, Map map, float poolRadius,
+            bool includeCorpses = false)
         {
             pool.Clear();
             float radiusSq = poolRadius * poolRadius;
@@ -894,8 +1002,8 @@ namespace HaulersDream
                 {
                     if (t == null || t == primary || !t.Spawned || t.Map != map)
                         continue;
-                    if (t is Corpse)
-                        continue; // corpse hauling keeps its own vanilla flow (and corpses don't belong in pockets)
+                    if (!includeCorpses && t is Corpse)
+                        continue; // corpse hauling keeps its own vanilla flow (see the includeCorpses note above)
                     if (!t.def.EverHaulable)
                         continue;
                     if ((t.Position - primary.Position).LengthHorizontalSquared > radiusSq)
@@ -912,8 +1020,8 @@ namespace HaulersDream
             {
                 if (t == null || t == primary || !t.Spawned || t.Map != map)
                     continue;
-                if (t is Corpse)
-                    continue; // corpse hauling keeps its own vanilla flow (and corpses don't belong in pockets)
+                if (!includeCorpses && t is Corpse)
+                    continue; // corpse hauling keeps its own vanilla flow (see the includeCorpses note above)
                 if (!t.def.EverHaulable)
                     continue;
                 if ((t.Position - primary.Position).LengthHorizontalSquared > radiusSq)

@@ -48,6 +48,11 @@ namespace HaulersDream
         // Frame.IsCompleted(), so a 0-delivery arriving at an already-complete frame should still build it.
         private bool madeProgress;
 
+        // The two LOAD-phase toils a pathing failure needs: the leg that walks to one queued floor stack, and
+        // the loop head to resume at. Assigned once in MakeNewToils; see Notify_PatherFailed.
+        private Toil loadGotoToil;
+        private Toil loadDecideToil;
+
         public override void ExposeData()
         {
             base.ExposeData();
@@ -58,6 +63,33 @@ namespace HaulersDream
 
         private Thing Needer => job.GetTarget(NeederInd).Thing;
         private ThingOwner Inv => pawn.inventory?.GetDirectlyHeldThings();
+
+        /// <summary>
+        /// A mid-walk pathing failure to ONE queued floor stack must not cost the pawn the whole delivery
+        /// (issue #160, same fix as JobDriver_BulkHaul / JobDriver_SelfPickup): the resource queue is planned
+        /// up front, so by the time an older entry is walked to, another pawn or a freshly-placed stack can
+        /// have transiently blocked its only approach — a race no reachability check taken at plan time can
+        /// foresee. The vanilla default ends the job as ErroredPather, and Pawn_JobTracker.EndCurrentJob's
+        /// response to that condition is a hardcoded 250-tick JobDefOf.Wait (decompile-verified) that also
+        /// abandons the site the pawn was already carrying material for. Resuming at loadDecide is enough on
+        /// its own here — NextResourceStack POPS the queue (queue.RemoveAt(0)), so the failed stack is already
+        /// behind us and the next iteration picks a different one, exactly as when the stack despawns mid-walk.
+        ///
+        /// <para>Scoped to the LOAD leg on purpose. Phase 2 walks to the needer (and, in a cluster, to each
+        /// following needer); an unreachable needer is a different problem with its own recovery (nextNeeder
+        /// drops needers that fail its CanReach test), and resuming the fill loop after it would consume the
+        /// resource queue for a site the pawn may never reach. A deliver-leg failure therefore keeps vanilla's
+        /// behaviour untouched.</para>
+        /// </summary>
+        public override void Notify_PatherFailed()
+        {
+            if (CurToil != loadGotoToil)
+            {
+                base.Notify_PatherFailed();
+                return;
+            }
+            JumpToToil(loadDecideToil);
+        }
 
         public override string GetReport()
         {
@@ -206,6 +238,7 @@ namespace HaulersDream
             yield return loadEntry;
 
             Toil loadDecide = ToilMaker.MakeToil("HD_LoadDecide");
+            loadDecideToil = loadDecide;
             loadDecide.initAction = () =>
             {
                 if (resourceDef == null) { JumpToToil(deliverGoto); return; }
@@ -219,6 +252,7 @@ namespace HaulersDream
             yield return loadDecide;
 
             Toil loadGoto = ToilMaker.MakeToil("HD_LoadGoto");
+            loadGotoToil = loadGoto;
             loadGoto.initAction = () =>
             {
                 var t = job.GetTarget(ResourceInd).Thing;

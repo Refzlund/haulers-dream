@@ -146,7 +146,18 @@ namespace HaulersDream
                 return 0;
             }
 
-            int keep = KeepCountOf(pawn, def) + FoodKeepCountOf(pawn, thing);
+            // The third keep term (animal-interaction food) deliberately does NOT carry the `!hdSwept` guard the
+            // IsManagedKeepItem branch above uses, and that inversion is the whole fix. That guard exists because
+            // those keeps are UNCONDITIONAL — keeping an HD-swept stack forever would black-hole it. This keep is
+            // bounded by a JOB LIFETIME instead: it releases the moment no interaction job remains. And because
+            // CompHauledToInventory's tag self-heal re-tags by DEF, the kibble in the reported case IS swept — so
+            // a `!hdSwept` guard here would defeat the fix entirely rather than protect anything.
+            //
+            // Placement is the contract the sibling keeps follow: this sum sits BELOW the per-item-rule branch
+            // above, so an explicit player "Unload always" rule still returns the whole stack as surplus before any
+            // of these keeps is consulted.
+            int keep = KeepCountOf(pawn, def) + FoodKeepCountOf(pawn, thing)
+                       + AnimalInteractFoodKeepCountOf(pawn, thing);
             if (keep <= 0)
                 return thing.stackCount;
             int surplus = InventoryCountOfDef(pawn, def, invCountByDef) - keep;
@@ -466,6 +477,39 @@ namespace HaulersDream
             // two early-outs (perUnit <= 0; over cap even without the whole stack) and the ceil(over/perUnit)
             // keep-count are all folded in, behaviour-identical for every input.
             return FoodKeepMath.KeepCount(total, maxLevel, perUnit, thing.stackCount);
+        }
+
+        /// <summary>
+        /// The FOURTH keep source, which vanilla has and HD did not model: food the pawn is carrying to hand to an
+        /// animal it is taming or training. Reported twice ("the pawn always tries to drop the kibble used for
+        /// training if you manually try to tame an animal") — with no keep covering it, interaction food read as
+        /// 100% surplus and the unload shipped it to storage mid-job.
+        ///
+        /// <para>The gap was structural, not an oversight of degree: <see cref="FoodKeepCountOf"/> is gated on
+        /// <c>JobGiver_PackFood.IsGoodPackableFoodFor</c> (preferability &gt;= 7) while
+        /// <c>WorkGiver_InteractAnimal.HasFoodToInteractAnimal</c> only accepts preferability &lt;= 5, so the
+        /// packed-lunch keep could NEVER have protected it. See <see cref="AnimalInteractFoodKeepMath"/>.</para>
+        ///
+        /// <para>SELF-RELEASING and BOUNDED, the two properties that keep it from becoming a black hole: it is
+        /// keyed on a live current/queued interaction job (<see cref="AnimalInteractFood.ReserveNutritionFor"/>
+        /// returns 0 once none remains, and the ordinary unload then ships the whole stack), and it never pins more
+        /// than the ~2.4 nutrition vanilla itself fetches — so a pawn that swept a 200-unit kibble stack for
+        /// hauling keeps a handful of it for the animal and unloads the rest.</para>
+        /// </summary>
+        /// <param name="pawn">The carrying pawn — the source of the live-job signal.</param>
+        /// <param name="thing">The inventory stack being assessed.</param>
+        /// <returns>Units of this stack to keep, in <c>[0, stackCount]</c>; 0 for any stack that is not
+        /// interaction food, or for a pawn with no live interaction job.</returns>
+        public static int AnimalInteractFoodKeepCountOf(Pawn pawn, Thing thing)
+        {
+            // Def check first: it is a couple of field reads, so a non-food stack never pays for the job-queue walk.
+            if (!AnimalInteractFood.IsInteractFood(thing.def))
+                return 0;
+            float reserve = AnimalInteractFood.ReserveNutritionFor(pawn);
+            if (reserve <= 0f)
+                return 0;
+            float perUnit = thing.GetStatValue(StatDefOf.Nutrition);
+            return AnimalInteractFoodKeepMath.KeepCount(reserve, perUnit, thing.stackCount);
         }
     }
 }

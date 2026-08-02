@@ -36,10 +36,42 @@ namespace HaulersDream
         // (sequential on the main thread) before the next reuse.
         [System.ThreadStatic] private static List<Thing> scratchFuel;
 
+        // The two FILL-phase toils a pathing failure needs: the leg that walks to one queued fuel stack, and
+        // the loop head to resume at. Assigned once in MakeNewToils; see Notify_PatherFailed.
+        private Toil sweepGotoToil;
+        private Toil sweepDecideToil;
+
         public override void ExposeData()
         {
             base.ExposeData();
             Scribe_Values.Look(ref loadIndex, "hdBrefLoadIndex", 0);
+        }
+
+        /// <summary>
+        /// A mid-walk pathing failure to ONE queued fuel stack must not cost the pawn the whole refuel run
+        /// (issue #160, same fix as JobDriver_BulkHaul / JobDriver_SelfPickup): the fuel queue is planned up
+        /// front, so by the time an older entry is walked to, another pawn or a freshly-placed stack can have
+        /// transiently blocked its only approach — a race no reachability check taken at plan time can
+        /// foresee. The vanilla default ends the job as ErroredPather, and Pawn_JobTracker.EndCurrentJob's
+        /// response to that condition is a hardcoded 250-tick JobDefOf.Wait (decompile-verified) that also
+        /// throws away every stack already swept for the refuelable. Advancing loadIndex and resuming at
+        /// sweepDecide mirrors exactly what sweepDecide/sweepGoto/sweepTake already do for every other
+        /// invalid-stack case: skip this one step, sweep the rest, refuel with whatever loaded.
+        ///
+        /// <para>Scoped to the FILL leg on purpose. The walk to the REFUELABLE has no per-step index to
+        /// advance, so resuming the sweep after it would burn queue entries the run still needs and re-enter
+        /// the same unreachable target. A refuelable-leg failure therefore keeps vanilla's behaviour
+        /// untouched.</para>
+        /// </summary>
+        public override void Notify_PatherFailed()
+        {
+            if (CurToil != sweepGotoToil)
+            {
+                base.Notify_PatherFailed();
+                return;
+            }
+            loadIndex++;
+            JumpToToil(sweepDecideToil);
         }
 
         public override string GetReport() => "HaulersDream.BulkRefuel.Report".Translate();
@@ -72,6 +104,7 @@ namespace HaulersDream
 
             // ============ FILL: sweep each queued ground fuel stack into tagged inventory ============
             Toil sweepDecide = ToilMaker.MakeToil("HD_Bref_SweepDecide");
+            sweepDecideToil = sweepDecide;
             sweepDecide.initAction = delegate
             {
                 var queue = job.targetQueueB;
@@ -96,6 +129,7 @@ namespace HaulersDream
             yield return sweepDecide;
 
             Toil sweepGoto = ToilMaker.MakeToil("HD_Bref_SweepGoto");
+            sweepGotoToil = sweepGoto;
             sweepGoto.initAction = delegate
             {
                 var t = job.GetTarget(FuelInd).Thing;

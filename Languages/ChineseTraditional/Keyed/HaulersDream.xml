@@ -110,6 +110,8 @@
   <HaulersDream.Setting.PickupDelayOnDirectHarvestDesc>當角色當場收集單一收穫物時顯示拾取延遲（此指沒有其他農作物緊鄰的手動收穫指令，因此會被立即拾取而不是堆積成簇）。需要將上方的拾取延遲（位於搬運頁籤）設定大於零；「自動搬運亦套用延遲」設定不會影響此項目。預設為關閉，因此單次收穫指令不會有停頓。成簇農田的分區掃蕩不受影響 — 該行為遵循「自動搬運亦套用延遲」。</HaulersDream.Setting.PickupDelayOnDirectHarvestDesc>
   <HaulersDream.Setting.HaulOversized>單次行程搬運整個大型堆疊（不留殘餘）</HaulersDream.Setting.HaulOversized>
   <HaulersDream.Setting.HaulOversizedDesc>當單一堆疊太大而無法用雙手一次搬完時（例如 75 個鋼鐵的堆疊，而角色雙手只能拿 72 個），角色會將其放入背包並在一次行程中送達整個堆疊 — 而不是用雙手搬運部分數量並留下殘量。同時適用於手動指定與自動搬運；搬運量不會超過儲存區實際能容納的上限，因此絕不會有物品被遺棄。</HaulersDream.Setting.HaulOversizedDesc>
+  <HaulersDream.Setting.BulkHaulCorpses>屍體搬運也像其他搬運一樣順手清掃、成批帶走</HaulersDream.Setting.BulkHaulCorpses>
+  <HaulersDream.Setting.BulkHaulCorpsesDesc>RimWorld 以一個獨立的工作處理屍體搬運，而 Hauler's Dream 從未接手過它 — 因此對屍體下達搬運指令只會搬走屍體本身，而且屍體永遠一趟只取一具。開啟後，屍體搬運的行為與其他搬運完全相同：屍體周圍散落的物品會在同一趟中被掃進搬運者的背包，躺在另一次搬運旁邊的屍體也能順路帶走。實際能帶上多少仍由負重決定：類人屍體（約 60 公斤，而上限通常約 96 公斤）通常仍會獨佔一趟 — 受益的是小型動物，如今可以數隻一起帶回。自動剝除衣物不受影響：角色取走的每一具屍體，仍與用雙手搬運的屍體完全一樣被剝除衣物。</HaulersDream.Setting.BulkHaulCorpsesDesc>
   <HaulersDream.Setting.SweepNearbyWhileWorking>工作時順便清理 — 一併拾取附近的散落物品</HaulersDream.Setting.SweepNearbyWhileWorking>
   <HaulersDream.Setting.SweepNearbyWhileWorkingDesc>當角色在進行拆除、開採或收穫並拾取自身產物時，也會將工作點周圍其他散落的可搬運物品一併收入背包，從而在一次合併行程中清理整個區域，而不是留給後續獨立的搬運任務。僅會拿取需要搬運且有儲存區可存放的物品（絕不拿取其他搬運工的目標或已儲存的庫存），且上限不超過智慧超載門檻。</HaulersDream.Setting.SweepNearbyWhileWorkingDesc>
 
@@ -150,7 +152,7 @@
   <HaulersDream.Setting.TaintedSmeltable>死者衣物（可熔煉）：{0}</HaulersDream.Setting.TaintedSmeltable>
   <HaulersDream.Setting.TaintedNonSmeltable>死者衣物（不可熔煉）：{0}</HaulersDream.Setting.TaintedNonSmeltable>
   <HaulersDream.Setting.TaintedTake>拿取（出售、穿著或熔煉）</HaulersDream.Setting.TaintedTake>
-  <HaulersDream.Setting.TaintedLeave>留在屍體上（火化時隨屍體一同燒毀；屠宰時如同原版掉落於工作臺）</HaulersDream.Setting.TaintedLeave>
+  <HaulersDream.Setting.TaintedLeave>留在屍體上，任何剝取都不會把它脫下，手動下達的剝取命令也一樣（火化時隨屍體一同燒毀；屠宰時如同原版掉落於工作臺）</HaulersDream.Setting.TaintedLeave>
   <HaulersDream.Setting.TaintedForbid>丟棄並禁止互動</HaulersDream.Setting.TaintedForbid>
   <HaulersDream.Setting.TaintedDestroy>當場銷毀（任務物品與聖物會被拿取，絕不銷毀）</HaulersDream.Setting.TaintedDestroy>
 

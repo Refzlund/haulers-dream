@@ -628,16 +628,24 @@ namespace HaulersDream
             // storage settings changed). Without this guard, the workgiver instantly re-creates the
             // identical doomed HaulToCell, producing the reported rapid up-and-down pacing loop (issue #162).
 
-            // Tally this job's outcome per THING when it ends. A success clears the loop; an Incompletable finish
-            // (the goto/carry storage-invalid fails, and Layer 1's own bail) counts toward the per-thing backoff
-            // budget. Other end conditions (a drafted/interrupted pawn) are deliberately ignored: neither a loop
-            // signal nor proof the thing can be stored. The captured `thing` is read only for its thingIDNumber,
-            // so a destroyed/merged stack at finish time is harmless.
+            // Tally this job's outcome per THING when it ends. A success clears the loop; a FAILED finish counts
+            // toward the per-thing backoff budget. Two conditions count as failure, and both are hauls that ended
+            // with the thing undelivered:
+            //   • Incompletable — the goto/carry storage-invalid fails, and Layer 1's own bail.
+            //   • ErroredPather — the destination could not be PATHED to. This one was missed originally, and it
+            //     is the pathing variant of the very same loop: vanilla answers it with a hardcoded 250-tick
+            //     JobDefOf.Wait (Pawn_JobTracker.EndCurrentJob, decompile-verified) and drops the stack at the
+            //     pawn's feet, the work scan rebuilds the identical doomed job, and nothing counted the churn —
+            //     so a haul at a valid-but-unreachable cell fell straight through this budget. Vanilla treats
+            //     the two conditions identically at the end of a job, so this layer must too.
+            // Other end conditions (a drafted/interrupted pawn) are deliberately ignored: neither a loop signal
+            // nor proof the thing can be stored. The captured `thing` is read only for its thingIDNumber, so a
+            // destroyed/merged stack at finish time is harmless.
             __instance.AddFinishAction(condition =>
             {
                 if (condition == JobCondition.Succeeded)
                     HaulChurnGuard.NoteThingHaulSucceeded(thing);
-                else if (condition == JobCondition.Incompletable)
+                else if (condition == JobCondition.Incompletable || condition == JobCondition.ErroredPather)
                     HaulChurnGuard.NoteThingHaulFailed(thing);
             });
         }

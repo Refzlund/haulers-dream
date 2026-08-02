@@ -83,6 +83,16 @@ namespace HaulersDream
             // carry an en-route pickup, so a re-entrant StartJob(bulkJob) -> TryOpportunisticJob is a no-op here.
             if (!job.def.allowOpportunisticPrefix)
                 return;
+            // PLAYER-FORCED PARITY: vanilla's TryOpportunisticJob ends its own gate list with
+            // `if (job.playerForced) return null;` — it deliberately refuses to prefix an opportunistic haul onto
+            // anything the player explicitly ordered. This postfix mirrored only the allowOpportunisticPrefix gate,
+            // so on exactly the jobs vanilla excludes, vanilla returned null and HD injected a bulk haul in front of
+            // the player's order instead. Two reports: a shift-queued pair of Strip orders where the pawn stripped
+            // one corpse, went hauling, and came back for the second; and a manual "tame this animal" order that got
+            // a haul prepended (which is also what put the tame job in the QUEUE while the haul ran).
+            // Vanilla's own opportunistic haul is unaffected — this postfix only ever runs when it returned null.
+            if (job.playerForced)
+                return;
 
             // No try/catch: a failure here is a real bug we want surfaced as a red error (Harmony lets it
             // propagate to RimWorld's handler), never silently downgraded — same policy as the BulkHaul postfix.

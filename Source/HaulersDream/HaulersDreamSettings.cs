@@ -210,6 +210,13 @@ namespace HaulersDream
         // in the INVENTORY and deliver the whole stack in one trip, instead of hand-carrying a partial load and
         // leaving the rest behind. Applies to ordered and automatic single-stack hauls alike.
         public bool haulOversizedInInventory = true;
+        // Let a CORPSE haul behave like any other haul: it can sweep the loose items around it into the hauler's
+        // inventory, and a nearby corpse can ride along on someone else's sweep. Vanilla routes corpses through a
+        // SEPARATE work giver that HD never hooked, so corpse hauls were the one haul the bulk sweep never touched
+        // — a haul ordered on a meal picked up the corpse next to it, but a haul ordered on the corpse picked up
+        // nothing else. Default ON, for parity with item hauls. Carry weight still decides how much rides along,
+        // so a 60 kg humanlike body is normally still a trip of its own; small animals batch. Requires bulkHaul.
+        public bool bulkHaulCorpses = true;
 
         // "Haul Urgently" bulk pickup (Allow Tool / Keyz' Allow Utilities soft-dep). When a pawn is sent to
         // haul an item marked "Haul Urgently", also pocket the OTHER urgent-marked stacks within a small radius
@@ -754,6 +761,7 @@ namespace HaulersDream
             Scribe_Values.Look(ref pickupDelayOnLoading, "pickupDelayOnLoading", false);
             Scribe_Values.Look(ref pickupDelayOnDirectHarvest, "pickupDelayOnDirectHarvest", false);
             Scribe_Values.Look(ref haulOversizedInInventory, "haulOversizedInInventory", true);
+            Scribe_Values.Look(ref bulkHaulCorpses, "bulkHaulCorpses", true);
             Scribe_Values.Look(ref bulkHaulUrgent, "bulkHaulUrgent", true);
             Scribe_Values.Look(ref bulkHaulUrgentRadius, "bulkHaulUrgentRadius", 3);
             Scribe_Values.Look(ref bulkHaulUrgentIncludeNonUrgent, "bulkHaulUrgentIncludeNonUrgent", false);
@@ -962,6 +970,7 @@ namespace HaulersDream
             pickupDelayOnLoading = false;
             pickupDelayOnDirectHarvest = false;
             haulOversizedInInventory = true;
+            bulkHaulCorpses = true;
             bulkHaulUrgent = true;
             bulkHaulUrgentRadius = 3;
             bulkHaulUrgentIncludeNonUrgent = false;

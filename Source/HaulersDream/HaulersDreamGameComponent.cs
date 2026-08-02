@@ -16,7 +16,12 @@ namespace HaulersDream
     /// </summary>
     public partial class HaulersDreamGameComponent : GameComponent
     {
-        private const int IdleTickInterval = 250;  // idle-backstop scan ~4x per in-game minute
+        // Idle-backstop scan period, ~4x per in-game minute. Single-sourced from Core because the churn
+        // backoff has to be provably LONGER than it: a stack set aside for an unreachable destination is only
+        // protected while its backoff holds, so a backoff at or under this period would re-offer the same
+        // doomed delivery on the very cadence that produced the failure. Pinned by
+        // UnreachableDestinationPolicy.BreaksPhaseLock and its test.
+        private const int IdleTickInterval = UnreachableDestinationPolicy.IdleScanIntervalTicks;
 
         /// <summary>The component for the running game (null at the main menu / before a game loads).</summary>
         public static HaulersDreamGameComponent Instance => Current.Game?.GetComponent<HaulersDreamGameComponent>();

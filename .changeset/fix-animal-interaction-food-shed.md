@@ -1,0 +1,11 @@
+---
+"haulers-dream": patch
+---
+
+Fix colonists shedding the food they are carrying to tame or train an animal. Send someone to tame a creature and the kibble in their pack was treated as spare stock and shipped off to a stockpile, so the job stalled and they had to go and fetch more. Two players reported it, one as "the pawn always tries to drop the kibble used for training if you manually try to tame an animal".
+
+This one was ours, and the gap was structural rather than a near miss. Hauler's Dream already protects a colonist's packed lunch from being unloaded, but that protection only ever covered cooked meals, and RimWorld will only let a colonist hand an animal *raw* food. The two categories do not overlap anywhere, so nothing you can feed to an animal could ever have been covered by it. RimWorld itself does not need such a rule because it guards this food with a timer instead: a colonist who has recently fed an animal is left alone for a couple of days afterwards. Hauler's Dream's unload has no timer, so it saw the whole stack as spare and took it.
+
+Food is now held back while a colonist has a taming or training job in hand. That includes one still sitting in their queue behind something else, which is the case in the report, and the separate trip a colonist makes to fetch food before training, which is a job of its own and would otherwise have been missed. The amount held back is what RimWorld fetches for the job in the first place, so a colonist who happened to sweep two hundred kibble into their pack for hauling keeps a handful of it for the animal and still delivers the rest. And it releases itself: once the taming or training job is finished or gone, the food goes back to being ordinary cargo and the next unload takes it away as usual.
+
+Two smaller things come with it. Food a colonist is holding for an animal is no longer quietly claimed as hauling cargo to begin with — which mattered more than it sounds, because Hauler's Dream recognises its cargo by *what it is*, so once a colonist had ever swept up kibble, every later stack of kibble they picked up was claimed automatically, training food included. The "unload everything spare" sweep leaves it alone for the same reason. An explicit "Unload always" rule you have set on a food yourself still wins over all of this, exactly as it does everywhere else in the mod.

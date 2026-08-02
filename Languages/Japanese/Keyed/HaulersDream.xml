@@ -90,6 +90,8 @@
   <HaulersDream.Setting.PickupDelayOnDirectHarvestDesc>入植者がその場で単独の収穫物を回収するときに拾得ディレイを表示します（命令で収穫され、すぐ隣に他の収穫物がないため、近くの山にまとめられずに即座に拾われるもの）。拾得ディレイ（運搬タブ）をゼロより大きく設定する必要があります。「自動運搬と片付けにもディレイを付ける」設定はこれに影響しません。既定ではオフで、単発の命令収穫は一時停止なしで回収されます。密集した畑の区画ごとの一括回収は影響を受けません——代わりに「自動運搬と片付けにもディレイを付ける」に従います。</HaulersDream.Setting.PickupDelayOnDirectHarvestDesc>
 <HaulersDream.Setting.HaulOversized>規格外の山を所持品で運ぶ</HaulersDream.Setting.HaulOversized>
 <HaulersDream.Setting.HaulOversizedDesc>単一の山が一抱えで運ぶには大きすぎるとき（例：ポーンが72しか持てないのに鋼鉄の山が75）、ポーンは一部だけを手で運んで残りを置いていくのではなく、所持品でそれを抱え、山全体を1回の往復で届けます。指示・自動の両方の運搬に適用されます。実際に保管庫が受け入れられる分しか運ばないので、何も取り残されません。</HaulersDream.Setting.HaulOversizedDesc>
+<HaulersDream.Setting.BulkHaulCorpses>死体の運搬も他の運搬と同じようにまとめて運ぶ</HaulersDream.Setting.BulkHaulCorpses>
+<HaulersDream.Setting.BulkHaulCorpsesDesc>RimWorldは死体の運搬を専用の別ジョブで処理しており、Hauler's Dreamはそこに手を出していませんでした。そのため死体に運搬を指示しても死体だけを運び、死体は常に1体ずつしか回収されませんでした。これを有効にすると、死体の運搬も他の運搬と同じように振る舞います。死体の周りに落ちている物は同じ往復で運搬役の所持品にまとめられ、別の運搬のそばに転がっている死体は通りがかりに拾えます。実際に何が一緒に運ばれるかは引き続き積載量が決めます。人型の死体（約60kg、上限は通常96kg程度）は普通どおり1回の往復を占めるので、得をするのは小動物で、いまは複数をまとめて持ち帰れます。自動はぎ取りは変わりません。ポーンが手に取る死体はすべて、手で運ぶ死体とまったく同じようにはぎ取られます。</HaulersDream.Setting.BulkHaulCorpsesDesc>
 <HaulersDream.Setting.SweepNearbyWhileWorking>作業しながら片付ける — 近くの落ちたアイテムも回収する</HaulersDream.Setting.SweepNearbyWhileWorking>
 <HaulersDream.Setting.SweepNearbyWhileWorkingDesc>ポーンが解体・採掘・収穫をして自分の収穫物を回収している間、作業場所の周りに落ちている他の運搬可能アイテムも所持品に拾い上げます。そのため、別々の運搬に残されるのではなく、まとめた1回の往復でエリア全体が片付きます。運搬が必要で行き先のあるアイテムだけが対象で（他の運搬役の目標や備蓄済みの在庫は決して対象外）、賢い過積載の上限までしか取りません。</HaulersDream.Setting.SweepNearbyWhileWorkingDesc>
 <HaulersDream.Setting.HaulToStack>山に運搬する（既存の山に補充し、行き先のマスを共有する）</HaulersDream.Setting.HaulToStack>
@@ -126,7 +128,7 @@
 <HaulersDream.Setting.TaintedSmeltable>汚染衣服（精錬可能）：{0}</HaulersDream.Setting.TaintedSmeltable>
 <HaulersDream.Setting.TaintedNonSmeltable>汚染衣服（精錬不可）：{0}</HaulersDream.Setting.TaintedNonSmeltable>
 <HaulersDream.Setting.TaintedTake>持ち帰る（売却・着用・精錬）</HaulersDream.Setting.TaintedTake>
-<HaulersDream.Setting.TaintedLeave>死体に残す（火葬は死体ごと焼き、解体はバニラ同様に作業台に落とす）</HaulersDream.Setting.TaintedLeave>
+<HaulersDream.Setting.TaintedLeave>死体に残す。どのはぎ取りでも脱がされず、手動で出したはぎ取り命令でも同じ（火葬は死体ごと焼き、解体はバニラ同様に作業台に落とす）</HaulersDream.Setting.TaintedLeave>
 <HaulersDream.Setting.TaintedForbid>落として禁止する</HaulersDream.Setting.TaintedForbid>
 <HaulersDream.Setting.TaintedDestroy>その場で破壊する（クエストアイテムと聖遺物は代わりに持ち帰られ、決して破壊されません）</HaulersDream.Setting.TaintedDestroy>
 <HaulersDream.Setting.HaulTamedSlaughter>と畜した死骸を保管庫へ運搬する</HaulersDream.Setting.HaulTamedSlaughter>

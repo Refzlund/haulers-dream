@@ -46,10 +46,156 @@ namespace HaulersDream
         // FindTargetOrDrop (i.e. after the place toil looped back to `begin`). -1/null = nothing delivered yet.
         private ThingDef lastDeliveredDef;
 
+        // The loop-reentry toil (the per-item "pick the next tracked stack" wait at the head of the chain),
+        // kept so a delivery pathing failure can jump back to it instead of ending the whole trip — see
+        // Notify_PatherFailed. Assigned once in MakeNewToils, same convention as JobDriver_BulkHaul's
+        // loadDecideToil and JobDriver_SelfPickup's loop.
+        private Toil loopToil;
+
+        // Destinations that failed to path during THIS trip (see Notify_PatherFailed), the budget
+        // UnreachableDestinationPolicy bounds. In-flight only — not scribed, like skippedThisJob: a trip
+        // resumed after a save/load starts with a fresh budget, which is correct (the obstruction that
+        // caused the failures is very unlikely to have survived the reload unchanged).
+        private int pathFailuresThisJob;
+
         public override void ExposeData()
         {
             base.ExposeData();
             Scribe_Values.Look(ref countToDrop, "countToDrop", -1);
+        }
+
+        /// <summary>
+        /// A destination the pawn cannot REACH must not cost it the rest of the load — and, unlike the two
+        /// source-walking drivers that already override this (JobDriver_BulkHaul, JobDriver_SelfPickup), it
+        /// must not leave the stack on the floor either. Every pathing leg in this driver is a DELIVERY leg
+        /// (the load comes out of the pawn's own inventory), so the stack is in hand when the path fails.
+        ///
+        /// <para>The vanilla default (JobDriver.Notify_PatherFailed) ends the job as ErroredPather, and
+        /// Pawn_JobTracker.EndCurrentJob's response to that condition is a hardcoded 250-tick JobDefOf.Wait
+        /// (decompile-verified) — the "standing" a player reports. On its own that is a four-second hiccup;
+        /// what made it unbounded here is what ending the job does to the stack. CleanupCurrentJob runs the
+        /// finish action, which RE-TAGS the carried stack, and only afterwards drops it at the pawn's feet
+        /// (job.def.carryThingAfterJob is false, decompile-verified). That floor stack is then re-scooped,
+        /// re-tagged and routed at the same unreachable destination, and the idle backstop re-queues the
+        /// unload on the SAME 250-tick period as vanilla's error wait — so the retry is phase-locked to the
+        /// failure and the pawn stands there indefinitely.</para>
+        ///
+        /// <para>So: put the stack back in INVENTORY (nothing reaches the floor, so nothing is re-scooped, and
+        /// the Thing identity stays stable — a stack that hits the floor usually merges and changes id, which
+        /// is exactly why the id-keyed backoff leaks on the DropAtFeet branch, see the note there), add it to
+        /// the in-flight skippedThisJob set (which already means "step over it, keep the tag, retry on a later
+        /// trigger"), stamp the shared re-offer backoff so the automatic haul scan and HD's own intake paths
+        /// stand down, and carry on with the rest of the load. HaulChurnPolicy.BackoffTicks (600) is longer
+        /// than the 250-tick idle period — pinned by UnreachableDestinationPolicy.BreaksPhaseLock — which is
+        /// the specific property that stops the loop re-forming rather than merely slowing it down.</para>
+        ///
+        /// <para>A permanently sealed room was never affected and is not what this handles: a destination
+        /// inside one is rejected by PawnCanAutomaticallyHaulFast / IsGoodStoreCell / the unload fallback long
+        /// before a job is built. The case that stalls is a destination that PASSES the storage search and
+        /// then fails to path — transient blocking, a foreign mod relocating stacks, Touch-only geometry.</para>
+        /// </summary>
+        public override void Notify_PatherFailed()
+        {
+            var held = pawn.carryTracker?.CarriedThing;
+            if (held == null || loopToil == null)
+            {
+                // Nothing in hand (or the toil chain was never built): there is no stack to rescue and no
+                // re-scoop cycle to break, so keep vanilla's behaviour rather than invent a recovery.
+                base.Notify_PatherFailed();
+                return;
+            }
+
+            pathFailuresThisJob++;
+            int carriedCount = held.stackCount;
+
+            // Back into the pack, NOT onto the floor. canMergeWithExistingStacks:false is load-bearing twice
+            // over: vanilla's ThingOwner.TryTransferToContainer hands back the transferred Thing even when a
+            // merge DESTROYED it (decompile-verified — TryAdd absorbs it into the matching stack and the out
+            // param still points at the husk), so a merging transfer would give us a dead reference to tag and
+            // to set aside; and an unmerged add preserves this driver's tag isolation exactly as
+            // JobDriver_BulkHaul.DepositSwept does, so the returning surplus can never fold itself into the
+            // pawn's personal stock.
+            var inventory = pawn.inventory?.innerContainer;
+            Thing returned = null;
+            if (inventory != null)
+                pawn.carryTracker.innerContainer.TryTransferToContainer(held, inventory, carriedCount,
+                    out returned, canMergeWithExistingStacks: false);
+
+            if (returned == null)
+            {
+                // Effectively unreachable: a pawn's inventory has no stack cap. Stamp the backoff anyway so the
+                // stack vanilla is about to drop at the pawn's feet is not instantly re-scooped, then finish the
+                // trip. Succeeded, not Incompletable — the same "this trip is done, don't re-queue me on the
+                // spot" meaning the no-unloadable-remainder branch in FindTargetOrDrop already uses.
+                HaulChurnGuard.StampBackoff(held);
+                HDLog.Dbg($"unload {pawn.LabelShort}: could not reach the destination for {held.LabelShort} "
+                          + "and could not put it back in the pack; ending the trip and backing it off.");
+                EndJobWith(JobCondition.Succeeded);
+                return;
+            }
+
+            // Re-tag it: PullItemFromInventory dropped the tag when it pulled the stack into the hands, and an
+            // untagged surplus sitting in the pack is a silent black hole (gizmo hidden, never retried). The
+            // carried count is passed as the merge delta so Combat Extended's HoldTracker is re-notified for
+            // the units that moved back, matching what RegisterHauledItem does for a grown stack elsewhere.
+            pawn.TryGetComp<CompHauledToInventory>()?.RegisterHauledItem(returned, carriedCount);
+            job.SetTarget(TargetIndex.A, returned);
+
+            skippedThisJob.Add(returned);
+            HaulChurnGuard.StampBackoff(returned);
+
+            // Let go of the destination we can't reach. The job would release it at the end anyway, but holding
+            // a container reservation on a shelf THIS pawn can't get to would block a pawn that can.
+            ReleaseTargetBReservation();
+
+            int remaining = RemainingCandidateCount();
+            HDLog.Dbg($"unload {pawn.LabelShort}: could not reach the destination for {returned.LabelShort} "
+                      + $"x{carriedCount} (failure {pathFailuresThisJob} this trip, {remaining} stack(s) left "
+                      + "to try); putting it back in the pack, backing it off and moving on.");
+
+            if (UnreachableDestinationPolicy.Choose(pathFailuresThisJob, remaining)
+                == UnreachableDestinationAction.SetAsideAndContinue)
+                JumpToToil(loopToil);
+            else
+                EndJobWith(JobCondition.Succeeded);
+        }
+
+        /// <summary>
+        /// How many tracked stacks this trip could still deliver after the one just set aside — the
+        /// "remaining" term <see cref="UnreachableDestinationPolicy.Choose"/> weighs against the failure
+        /// budget.
+        ///
+        /// <para>Deliberately an UPPER bound: it counts every live tagged stack still in the pack that this
+        /// trip has not set aside, without re-running the surplus math or the reservation checks that
+        /// <see cref="FirstUnloadableThing"/> applies. Over-counting only costs one more pass through the loop
+        /// toil, whose own no-unloadable-remainder branch then ends the trip; under-counting would end a trip
+        /// that still had deliverable stacks, so the bias is deliberately in the safe direction.</para>
+        /// </summary>
+        private int RemainingCandidateCount()
+        {
+            var comp = pawn.TryGetComp<CompHauledToInventory>();
+            var inner = pawn.inventory?.innerContainer;
+            if (comp == null || inner == null)
+                return 0;
+
+            int count = 0;
+            // The healed view, not PeekHashSet: this feeds a DECISION, and a stale tag left by a merge would
+            // count a stack that no longer exists.
+            foreach (var thing in comp.GetHashSet())
+                if (thing != null && !thing.Destroyed && !skippedThisJob.Contains(thing) && inner.Contains(thing))
+                    count++;
+            return count;
+        }
+
+        /// <summary>Release this job's reservation on the delivery destination, if it holds one. Shared by the
+        /// normal end-of-delivery toil and the unreachable-destination recovery so the two can never
+        /// disagree; the ReservedBy guard is required because Release error-logs when no matching reservation
+        /// exists.</summary>
+        private void ReleaseTargetBReservation()
+        {
+            var reservations = pawn.Map?.reservationManager;
+            if (reservations != null && reservations.ReservedBy(job.targetB, pawn, pawn.CurJob))
+                reservations.Release(job.targetB, pawn, pawn.CurJob);
         }
 
         public override bool TryMakePreToilReservations(bool errorOnFailed) => true;
@@ -57,6 +203,7 @@ namespace HaulersDream
         public override IEnumerable<Toil> MakeNewToils()
         {
             var begin = Toils_General.Wait(3);
+            loopToil = begin; // the reentry point a failed delivery jumps back to (see Notify_PatherFailed)
             yield return begin;
 
             var comp = pawn.TryGetComp<CompHauledToInventory>();
@@ -107,11 +254,7 @@ namespace HaulersDream
         {
             return new Toil
             {
-                initAction = () =>
-                {
-                    if (pawn.Map.reservationManager.ReservedBy(job.targetB, pawn, pawn.CurJob))
-                        pawn.Map.reservationManager.Release(job.targetB, pawn, pawn.CurJob);
-                }
+                initAction = ReleaseTargetBReservation
             };
         }
 

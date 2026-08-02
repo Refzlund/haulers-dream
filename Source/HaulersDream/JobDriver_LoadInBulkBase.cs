@@ -52,9 +52,42 @@ namespace HaulersDream
         [System.NonSerialized] protected bool retainClaimOnEnd;
 #pragma warning restore CS0649
 
+        // The two FILL-phase toils a pathing failure needs: the leg that walks to one swept ground stack, and
+        // the loop head to resume at. Assigned once in MakeNewToils; see Notify_PatherFailed.
+        private Toil sweepGotoToil;
+        private Toil sweepDecideToil;
+
         protected ThingOwner Inv => pawn.inventory?.GetDirectlyHeldThings();
 
         protected static HaulersDreamSettings Settings => HaulersDreamMod.Settings;
+
+        /// <summary>
+        /// A mid-walk pathing failure to ONE swept ground stack must not cost the pawn the whole load (issue
+        /// #160, same fix as JobDriver_BulkHaul / JobDriver_SelfPickup): the sweep queue is planned up front,
+        /// so by the time an older entry is walked to, another pawn or a freshly-placed stack can have
+        /// transiently blocked its only approach — a race no reachability check taken at plan time can
+        /// foresee. The vanilla default ends the job as ErroredPather, and Pawn_JobTracker.EndCurrentJob's
+        /// response to that condition is a hardcoded 250-tick JobDefOf.Wait (decompile-verified) that also
+        /// throws away every stack already swept for this transporter / portal / vehicle. Advancing loadIndex
+        /// and resuming at sweepDecide mirrors exactly what sweepDecide/sweepGoto/sweepTake already do for
+        /// every other invalid-stack case (despawned, forbidden, claimed, reserved elsewhere): skip this one
+        /// step, sweep the rest, deposit whatever loaded.
+        ///
+        /// <para>Scoped to the FILL leg on purpose. This driver also walks to the DEPOSIT target, and that
+        /// walk has no per-step index to advance — resuming the sweep after it would burn queue entries the
+        /// load still needs and re-enter the same unreachable target. A deposit-leg failure therefore keeps
+        /// vanilla's behaviour untouched.</para>
+        /// </summary>
+        public override void Notify_PatherFailed()
+        {
+            if (CurToil != sweepGotoToil)
+            {
+                base.Notify_PatherFailed();
+                return;
+            }
+            loadIndex++;
+            JumpToToil(sweepDecideToil);
+        }
 
         public override void ExposeData()
         {
@@ -115,6 +148,7 @@ namespace HaulersDream
             yield return fillStart;
 
             Toil sweepDecide = ToilMaker.MakeToil(ToilPrefix + "_SweepDecide");
+            sweepDecideToil = sweepDecide;
             sweepDecide.initAction = delegate
             {
                 var queue = job.targetQueueB;
@@ -145,6 +179,7 @@ namespace HaulersDream
             yield return sweepDecide;
 
             Toil sweepGoto = ToilMaker.MakeToil(ToilPrefix + "_SweepGoto");
+            sweepGotoToil = sweepGoto;
             sweepGoto.initAction = delegate
             {
                 var t = job.GetTarget(StackInd).Thing;

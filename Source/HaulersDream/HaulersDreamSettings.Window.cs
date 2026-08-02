@@ -1159,6 +1159,10 @@ namespace HaulersDream
                 haulNearbyOption, "HaulersDream.Setting.HaulNearbyOptionDesc".Translate(), enabled: bulkHaul, indent: 24f);
             haulOversizedInInventory = HDSettingsUI.Checkbox(c, "HaulersDream.Setting.HaulOversized".Translate(),
                 haulOversizedInInventory, "HaulersDream.Setting.HaulOversizedDesc".Translate(), enabled: bulkHaul, indent: 24f);
+            // Steam feedback: corpse hauls went through a separate vanilla work giver the bulk sweep never hooked,
+            // so they neither swept nor batched. A sub-option of the sweep above, hence gated on bulkHaul.
+            bulkHaulCorpses = HDSettingsUI.Checkbox(c, "HaulersDream.Setting.BulkHaulCorpses".Translate(),
+                bulkHaulCorpses, "HaulersDream.Setting.BulkHaulCorpsesDesc".Translate(), enabled: bulkHaul, indent: 24f);
             // Steam feedback: bulk-pocket nearby "Haul Urgently" (Allow Tool / Keyz) items in one trip instead of
             // one at a time. Independent of the general bulkHaul sweep above, so it is NOT gated on bulkHaul.
             bulkHaulUrgent = HDSettingsUI.Checkbox(c, "HaulersDream.Setting.BulkHaulUrgent".Translate(),

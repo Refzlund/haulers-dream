@@ -90,6 +90,8 @@
   <HaulersDream.Setting.PickupDelayOnDirectHarvestDesc>当殖民者就地收取单个收获物时（一处被下令收割、旁边没有其他收获物的作物，因而会被立即拾取，而不是并入附近的一堆），显示拾取延迟。需要将（搬运标签页中的）拾取延迟设为大于零；"自动搬运与清扫也加延迟"设置不影响本项。默认关闭，使一次性的下令收割无需停顿即可收取。成片田地的分区清扫不受影响——它改为遵循"自动搬运与清扫也加延迟"。</HaulersDream.Setting.PickupDelayOnDirectHarvestDesc>
 <HaulersDream.Setting.HaulOversized>用货物栏携带超大物品堆</HaulersDream.Setting.HaulOversized>
 <HaulersDream.Setting.HaulOversizedDesc>当单堆物品太大、一抱拿不下时（例如一堆75的钢铁而小人只能拿72），小人会把它装进货物栏，一趟运完整堆——而不是手提一部分、把其余留下。对被命令和自动的搬运均适用；只承载储存区实际能接收的量，因此不会有物资被遗弃。</HaulersDream.Setting.HaulOversizedDesc>
+<HaulersDream.Setting.BulkHaulCorpses>尸体搬运也像其他搬运一样顺手清扫、成批带走</HaulersDream.Setting.BulkHaulCorpses>
+<HaulersDream.Setting.BulkHaulCorpsesDesc>RimWorld 用一个单独的工作来处理尸体搬运，而 Hauler's Dream 从未接管过它——所以对尸体下达搬运命令只会搬走尸体本身，而且尸体总是一趟只取一具。开启后，尸体搬运的行为与其他搬运完全一致：尸体周围散落的物品会在同一趟里被扫进搬运者的货物栏，躺在另一次搬运旁边的尸体也能顺路带走。真正能带上多少仍由承重决定：类人尸体（约 60 公斤，而上限通常约 96 公斤）通常仍会独占一趟——受益的是小型动物，现在可以几只一起带回。自动扒取不受影响：小人取走的每具尸体，仍与用手搬运的尸体完全一样被扒取。</HaulersDream.Setting.BulkHaulCorpsesDesc>
 <HaulersDream.Setting.SweepNearbyWhileWorking>边工作边整理——把附近的散落物品也一并收取</HaulersDream.Setting.SweepNearbyWhileWorking>
 <HaulersDream.Setting.SweepNearbyWhileWorkingDesc>当小人在拆除、采掘或收获并收取自己的产出时，也会把工作地点周围散落的其他可搬运物品拾进货物栏，从而在这一趟整合行程中清空整片区域，而不是留给单独的搬运。只取需要搬运且有处可去的物品（绝不取另一名搬运者的目标或已入库的存货），并且只取到智能超载的上限为止。</HaulersDream.Setting.SweepNearbyWhileWorkingDesc>
 <HaulersDream.Setting.HaulToStack>堆叠搬运（补充已有物品堆，共享目标格）</HaulersDream.Setting.HaulToStack>
@@ -126,7 +128,7 @@
 <HaulersDream.Setting.TaintedSmeltable>污损的服装（可熔炼）：{0}</HaulersDream.Setting.TaintedSmeltable>
 <HaulersDream.Setting.TaintedNonSmeltable>污损的服装（不可熔炼）：{0}</HaulersDream.Setting.TaintedNonSmeltable>
 <HaulersDream.Setting.TaintedTake>取走它（出售、穿着或熔炼）</HaulersDream.Setting.TaintedTake>
-<HaulersDream.Setting.TaintedLeave>留在尸体上（火化会随尸体一同烧掉；屠宰则像原版那样把它丢在工作台旁）</HaulersDream.Setting.TaintedLeave>
+<HaulersDream.Setting.TaintedLeave>留在尸体上，任何剥取都不会把它脱下，手动下达的剥取命令也一样（火化会随尸体一同烧掉；屠宰则像原版那样把它丢在工作台旁）</HaulersDream.Setting.TaintedLeave>
 <HaulersDream.Setting.TaintedForbid>丢下并禁用它</HaulersDream.Setting.TaintedForbid>
 <HaulersDream.Setting.TaintedDestroy>当场销毁它（任务物品和圣物会被取走，绝不销毁）</HaulersDream.Setting.TaintedDestroy>
 <HaulersDream.Setting.HaulTamedSlaughter>把屠宰的尸体搬到储存区</HaulersDream.Setting.HaulTamedSlaughter>

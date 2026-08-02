@@ -322,10 +322,20 @@ namespace HaulersDream
                 // silent no-op (a backward-incompatible change). KeepAtMost/KeepAll are NOT deferred: their excess
                 // still unloads via the already-tagged looted copy while the specific remembered sidearm stays kept.
                 // Both predicates are read-only and inert when SS/GYT are absent.
+                //
+                // Food held for a live tame/train job joins the same skip. This one is BELT-AND-BRACES rather than
+                // load-bearing — SurplusOf now subtracts the interaction reserve, so adoption of a stack that is
+                // entirely reserved is already a no-op via the HasUnloadDestination/SurplusOf gate below. It is
+                // added because adoption is the one path that tags a WHOLE Thing on a units-based decision: a pawn
+                // holding more kibble than the reserve would otherwise be tagged mid-interaction, and this file's
+                // discipline is not to claim a stack another system is actively using. It rides the same
+                // `forcedUnload` deferral, so an explicit "Unload always" rule still wins exactly as it does inside
+                // SurplusOf. Self-releasing: once no interaction job remains, the next pass adopts normally.
                 bool forcedUnload = settings != null && settings.TryGetItemRule(t.def, out var rule)
                                     && rule.mode == ItemUnloadMode.UnloadAlways;
                 if (!forcedUnload
-                    && (SimpleSidearmsCompat.IsRememberedSidearm(pawn, t) || GrabYourToolCompat.IsCarriedTool(pawn, t)))
+                    && (SimpleSidearmsCompat.IsRememberedSidearm(pawn, t) || GrabYourToolCompat.IsCarriedTool(pawn, t)
+                        || AnimalInteractFood.IsHeldForInteraction(pawn, t)))
                     continue;
                 // Only adopt surplus we can actually DELIVER. Adopting a stack with no storage destination would
                 // tag it, and the unload pass would then carry it off only to put it down again — since #231, on a

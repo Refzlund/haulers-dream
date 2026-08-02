@@ -205,8 +205,16 @@ namespace HaulersDream
                     // Never auto-tag a stack another system keeps for the pawn: a genuine SS remembered sidearm, or
                     // a Grab Your Tool carried tool. Tagging it would make HD ship it to storage while that mod
                     // re-fetches it (an unload<->pickup loop).
+                    //
+                    // The third exclusion is VANILLA's, and it is why this self-heal is load-bearing for the
+                    // "pawn drops the kibble it fetched for training" report: the heal re-tags by DEF, so once a
+                    // pawn has HD-swept any kibble, every later kibble stack it takes — including the one vanilla
+                    // just told it to fetch for a tame/train job — was auto-claimed as haul cargo. Excluding it
+                    // while an interaction job is live is temporary by construction: the moment the job ends the
+                    // next heal tags it as normal and it unloads, so nothing is stranded.
                     bool excludeFromTag = candidate && (SimpleSidearmsCompat.IsRememberedSidearm(pawn, thing)
-                                                        || GrabYourToolCompat.IsCarriedTool(pawn, thing));
+                                                        || GrabYourToolCompat.IsCarriedTool(pawn, thing)
+                                                        || AnimalInteractFood.IsHeldForInteraction(pawn, thing));
                     stacks.Add(new TagHealPolicy.Stack(def, alreadyTagged, excludeFromTag));
                 }
 
