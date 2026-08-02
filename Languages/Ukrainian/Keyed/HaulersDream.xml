@@ -505,7 +505,11 @@
 <HaulersDream.Report.SentPartial>Деякі знімки екрана не вдалося вивантажити ({0}).</HaulersDream.Report.SentPartial>
 <HaulersDream.Report.PickTitle>Додати знімки екрана</HaulersDream.Report.PickTitle>
 <HaulersDream.Report.PickSubtitle>Обрано {0} з {1}</HaulersDream.Report.PickSubtitle>
-<HaulersDream.Report.PickEmpty>Знімків екрана Steam для RimWorld не знайдено. Зробіть знімок через оверлей Steam (Shift+Tab, або гаряча клавіша F12), і він з'явиться тут.</HaulersDream.Report.PickEmpty>
+<HaulersDream.Report.PickEmpty>Знімків екрана поки не знайдено. Зробіть знімок у грі клавішею знімка екрана RimWorld (F10, якщо ви її не перепризначали) або через оверлей Steam, а потім натисніть «Оновити». Ви також можете покласти власні зображення PNG чи JPG до папки знімків екрана.</HaulersDream.Report.PickEmpty>
+<HaulersDream.Report.PickOpenFolder>Відкрити папку знімків екрана</HaulersDream.Report.PickOpenFolder>
+<HaulersDream.Report.PickOpenFolder.Help>Відкриває власну папку знімків екрана RimWorld у файловому менеджері:\n{0}\n\nЗображення PNG і JPG, покладені туди, з'являться в цьому списку після натискання «Оновити» — зокрема створені поза грою.</HaulersDream.Report.PickOpenFolder.Help>
+<HaulersDream.Report.PickRefresh>Оновити</HaulersDream.Report.PickRefresh>
+<HaulersDream.Report.PickOpenFolderFailed>Не вдалося відкрити папку знімків екрана. Ви можете перейти до неї самостійно:\n{0}</HaulersDream.Report.PickOpenFolderFailed>
 <HaulersDream.Report.PickConfirm>Додати ({0})</HaulersDream.Report.PickConfirm>
 <HaulersDream.Report.PickMax>Ви можете прикріпити щонайбільше {0} знімків екрана.</HaulersDream.Report.PickMax>
 <HaulersDream.FeatGroup.Core>Основне</HaulersDream.FeatGroup.Core>

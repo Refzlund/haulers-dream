@@ -505,7 +505,11 @@
 <HaulersDream.Report.SentPartial>Einige Screenshots konnten nicht hochgeladen werden ({0}).</HaulersDream.Report.SentPartial>
 <HaulersDream.Report.PickTitle>Screenshots hinzufügen</HaulersDream.Report.PickTitle>
 <HaulersDream.Report.PickSubtitle>{0} von {1} ausgewählt</HaulersDream.Report.PickSubtitle>
-<HaulersDream.Report.PickEmpty>Keine Steam-Screenshots für RimWorld gefunden. Mache einen mit dem Steam-Overlay (Shift+Tab oder der Tastenkombination F12), dann erscheint er hier.</HaulersDream.Report.PickEmpty>
+<HaulersDream.Report.PickEmpty>Noch keine Screenshots gefunden. Mache einen im Spiel mit RimWorlds Screenshot-Taste (F10, sofern du sie nicht neu belegt hast) oder über das Steam-Overlay und klicke dann auf Aktualisieren. Du kannst auch eigene PNG- oder JPG-Bilder in den Screenshot-Ordner legen.</HaulersDream.Report.PickEmpty>
+<HaulersDream.Report.PickOpenFolder>Screenshot-Ordner öffnen</HaulersDream.Report.PickOpenFolder>
+<HaulersDream.Report.PickOpenFolder.Help>Öffnet RimWorlds eigenen Screenshot-Ordner in deinem Dateimanager:\n{0}\n\nPNG- und JPG-Bilder, die du dort ablegst, erscheinen in dieser Liste, sobald du auf Aktualisieren klickst — auch Bilder, die außerhalb des Spiels entstanden sind.</HaulersDream.Report.PickOpenFolder.Help>
+<HaulersDream.Report.PickRefresh>Aktualisieren</HaulersDream.Report.PickRefresh>
+<HaulersDream.Report.PickOpenFolderFailed>Der Screenshot-Ordner konnte nicht geöffnet werden. Du findest ihn selbst hier:\n{0}</HaulersDream.Report.PickOpenFolderFailed>
 <HaulersDream.Report.PickConfirm>Hinzufügen ({0})</HaulersDream.Report.PickConfirm>
 <HaulersDream.Report.PickMax>Du kannst höchstens {0} Screenshots anhängen.</HaulersDream.Report.PickMax>
 <HaulersDream.FeatGroup.Core>Kern</HaulersDream.FeatGroup.Core>

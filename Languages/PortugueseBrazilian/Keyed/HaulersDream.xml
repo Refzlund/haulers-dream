@@ -505,7 +505,11 @@
 <HaulersDream.Report.SentPartial>Algumas capturas de tela não puderam ser enviadas ({0}).</HaulersDream.Report.SentPartial>
 <HaulersDream.Report.PickTitle>Adicionar capturas de tela</HaulersDream.Report.PickTitle>
 <HaulersDream.Report.PickSubtitle>{0} de {1} selecionadas</HaulersDream.Report.PickSubtitle>
-<HaulersDream.Report.PickEmpty>Nenhuma captura de tela da Steam encontrada para o RimWorld. Faça uma com a sobreposição da Steam (Shift+Tab, ou a tecla de atalho F12) e ela aparecerá aqui.</HaulersDream.Report.PickEmpty>
+<HaulersDream.Report.PickEmpty>Nenhuma captura de tela encontrada ainda. Faça uma no jogo com a tecla de captura do RimWorld (F10, a menos que você a tenha remapeado) ou pela sobreposição da Steam e clique em Atualizar. Você também pode colocar suas próprias imagens PNG ou JPG na pasta de capturas de tela.</HaulersDream.Report.PickEmpty>
+<HaulersDream.Report.PickOpenFolder>Abrir pasta de capturas</HaulersDream.Report.PickOpenFolder>
+<HaulersDream.Report.PickOpenFolder.Help>Abre a pasta de capturas de tela do próprio RimWorld no seu gerenciador de arquivos:\n{0}\n\nImagens PNG e JPG que você colocar ali aparecem nesta lista assim que você clicar em Atualizar — inclusive imagens feitas fora do jogo.</HaulersDream.Report.PickOpenFolder.Help>
+<HaulersDream.Report.PickRefresh>Atualizar</HaulersDream.Report.PickRefresh>
+<HaulersDream.Report.PickOpenFolderFailed>Não foi possível abrir a pasta de capturas de tela. Você pode chegar até ela por conta própria:\n{0}</HaulersDream.Report.PickOpenFolderFailed>
 <HaulersDream.Report.PickConfirm>Adicionar ({0})</HaulersDream.Report.PickConfirm>
 <HaulersDream.Report.PickMax>Você pode anexar no máximo {0} capturas de tela.</HaulersDream.Report.PickMax>
 <HaulersDream.FeatGroup.Core>Essencial</HaulersDream.FeatGroup.Core>

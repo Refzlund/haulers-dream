@@ -40,9 +40,11 @@ namespace HaulersDream
     /// </summary>
     public class JobDriver_InventoryDoBill : JobDriver_DoBill
     {
-        private const TargetIndex BillGiverInd = TargetIndex.A;   // the bench (== JobDriver_DoBill convention)
-        private const TargetIndex IngredientInd = TargetIndex.B;  // transient: the floor stack being pre-loaded
-        private const TargetIndex PlaceCellInd = TargetIndex.C;   // vanilla's ingredient place-cell
+        // The target indices below are vanilla's own public consts on JobDriver_DoBill (BillGiverInd = A the bench,
+        // IngredientInd = B, IngredientPlaceCellInd = C): inherited rather than re-declared, because a local copy
+        // could silently drift from the numbering the reused Toils_Recipe / CollectIngredientsToils chain reads.
+        // IngredientInd does double duty here — during the pre-load sweep it transiently points at the FLOOR stack
+        // being loaded, not at an entry of targetQueueB.
 
         private int loadIndex;       // cursor over targetQueueB during the pre-load sweep
         private ThingDef loadDef;    // def of the stack currently being loaded (so we can relink after the take)
@@ -177,7 +179,7 @@ namespace HaulersDream
 
             // --- PHASE 2: vanilla's own collection (now sourcing the relinked entries from inventory) ---
             yield return Toils_Jump.JumpIf(gotoBillGiver, () => job.GetTargetQueue(IngredientInd).NullOrEmpty());
-            foreach (Toil t in CollectIngredientsToils(IngredientInd, BillGiverInd, PlaceCellInd,
+            foreach (Toil t in CollectIngredientsToils(IngredientInd, BillGiverInd, IngredientPlaceCellInd,
                 subtractNumTakenFromJobCount: false, failIfStackCountLessThanJobCount: true,
                 BillGiver is Building_WorkTableAutonomous))
                 yield return t;

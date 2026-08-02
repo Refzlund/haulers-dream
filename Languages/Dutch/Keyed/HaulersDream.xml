@@ -505,7 +505,11 @@
 <HaulersDream.Report.SentPartial>Sommige schermafbeeldingen konden niet worden geüpload ({0}).</HaulersDream.Report.SentPartial>
 <HaulersDream.Report.PickTitle>Schermafbeeldingen toevoegen</HaulersDream.Report.PickTitle>
 <HaulersDream.Report.PickSubtitle>{0} van {1} geselecteerd</HaulersDream.Report.PickSubtitle>
-<HaulersDream.Report.PickEmpty>Geen Steam-schermafbeeldingen voor RimWorld gevonden. Maak er een met de Steam-overlay (Shift+Tab, of de F12-sneltoets) en hij verschijnt hier.</HaulersDream.Report.PickEmpty>
+<HaulersDream.Report.PickEmpty>Nog geen schermafbeeldingen gevonden. Maak er een in het spel met RimWorlds schermafbeeldingstoets (F10, tenzij je die hebt gewijzigd) of via de Steam-overlay, en klik daarna op Vernieuwen. Je kunt ook je eigen PNG- of JPG-afbeeldingen in de map met schermafbeeldingen zetten.</HaulersDream.Report.PickEmpty>
+<HaulersDream.Report.PickOpenFolder>Map met schermafbeeldingen openen</HaulersDream.Report.PickOpenFolder>
+<HaulersDream.Report.PickOpenFolder.Help>Opent RimWorlds eigen map met schermafbeeldingen in je bestandsbeheer:\n{0}\n\nPNG- en JPG-afbeeldingen die je daarin zet, verschijnen in deze lijst zodra je op Vernieuwen klikt — ook afbeeldingen die buiten het spel zijn gemaakt.</HaulersDream.Report.PickOpenFolder.Help>
+<HaulersDream.Report.PickRefresh>Vernieuwen</HaulersDream.Report.PickRefresh>
+<HaulersDream.Report.PickOpenFolderFailed>Kon de map met schermafbeeldingen niet openen. Je vindt hem zelf hier:\n{0}</HaulersDream.Report.PickOpenFolderFailed>
 <HaulersDream.Report.PickConfirm>Toevoegen ({0})</HaulersDream.Report.PickConfirm>
 <HaulersDream.Report.PickMax>Je kunt hoogstens {0} schermafbeeldingen meesturen.</HaulersDream.Report.PickMax>
 <HaulersDream.FeatGroup.Core>Kern</HaulersDream.FeatGroup.Core>

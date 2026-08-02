@@ -505,7 +505,11 @@
 <HaulersDream.Report.SentPartial>Certaines captures d'écran n'ont pas pu être téléversées ({0}).</HaulersDream.Report.SentPartial>
 <HaulersDream.Report.PickTitle>Ajouter des captures d'écran</HaulersDream.Report.PickTitle>
 <HaulersDream.Report.PickSubtitle>{0} sur {1} sélectionnée(s)</HaulersDream.Report.PickSubtitle>
-<HaulersDream.Report.PickEmpty>Aucune capture d'écran Steam trouvée pour RimWorld. Prenez-en une avec la surcouche Steam (Shift+Tab, ou la touche F12) et elle apparaîtra ici.</HaulersDream.Report.PickEmpty>
+<HaulersDream.Report.PickEmpty>Aucune capture d'écran trouvée pour l'instant. Prenez-en une dans le jeu avec la touche de capture de RimWorld (F10, sauf si vous l'avez réassignée) ou via la surcouche Steam, puis cliquez sur Actualiser. Vous pouvez aussi déposer vos propres images PNG ou JPG dans le dossier des captures d'écran.</HaulersDream.Report.PickEmpty>
+<HaulersDream.Report.PickOpenFolder>Ouvrir le dossier des captures</HaulersDream.Report.PickOpenFolder>
+<HaulersDream.Report.PickOpenFolder.Help>Ouvre le dossier de captures d'écran de RimWorld dans votre gestionnaire de fichiers :\n{0}\n\nLes images PNG et JPG que vous y placez apparaissent dans cette liste dès que vous cliquez sur Actualiser — y compris celles créées en dehors du jeu.</HaulersDream.Report.PickOpenFolder.Help>
+<HaulersDream.Report.PickRefresh>Actualiser</HaulersDream.Report.PickRefresh>
+<HaulersDream.Report.PickOpenFolderFailed>Impossible d'ouvrir le dossier des captures d'écran. Vous pouvez vous y rendre vous-même :\n{0}</HaulersDream.Report.PickOpenFolderFailed>
 <HaulersDream.Report.PickConfirm>Ajouter ({0})</HaulersDream.Report.PickConfirm>
 <HaulersDream.Report.PickMax>Vous pouvez joindre au maximum {0} captures d'écran.</HaulersDream.Report.PickMax>
 <HaulersDream.FeatGroup.Core>Cœur</HaulersDream.FeatGroup.Core>

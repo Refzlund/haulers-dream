@@ -505,7 +505,11 @@
 <HaulersDream.Report.SentPartial>Non è stato possibile caricare alcuni screenshot ({0}).</HaulersDream.Report.SentPartial>
 <HaulersDream.Report.PickTitle>Aggiungi screenshot</HaulersDream.Report.PickTitle>
 <HaulersDream.Report.PickSubtitle>{0} di {1} selezionati</HaulersDream.Report.PickSubtitle>
-<HaulersDream.Report.PickEmpty>Nessuno screenshot di Steam trovato per RimWorld. Scattane uno con l'overlay di Steam (Shift+Tab, oppure il tasto di scelta rapida F12) e comparirà qui.</HaulersDream.Report.PickEmpty>
+<HaulersDream.Report.PickEmpty>Nessuno screenshot trovato per ora. Scattane uno nel gioco con il tasto screenshot di RimWorld (F10, a meno che tu non l'abbia riassegnato) oppure con l'overlay di Steam, poi premi Aggiorna. Puoi anche mettere immagini PNG o JPG tue nella cartella degli screenshot.</HaulersDream.Report.PickEmpty>
+<HaulersDream.Report.PickOpenFolder>Apri cartella screenshot</HaulersDream.Report.PickOpenFolder>
+<HaulersDream.Report.PickOpenFolder.Help>Apre la cartella degli screenshot di RimWorld nel tuo gestore file:\n{0}\n\nLe immagini PNG e JPG che ci metti compaiono in questo elenco appena premi Aggiorna — comprese quelle create fuori dal gioco.</HaulersDream.Report.PickOpenFolder.Help>
+<HaulersDream.Report.PickRefresh>Aggiorna</HaulersDream.Report.PickRefresh>
+<HaulersDream.Report.PickOpenFolderFailed>Impossibile aprire la cartella degli screenshot. Puoi raggiungerla da solo qui:\n{0}</HaulersDream.Report.PickOpenFolderFailed>
 <HaulersDream.Report.PickConfirm>Aggiungi ({0})</HaulersDream.Report.PickConfirm>
 <HaulersDream.Report.PickMax>Puoi allegare al massimo {0} screenshot.</HaulersDream.Report.PickMax>
 <HaulersDream.FeatGroup.Core>Nucleo</HaulersDream.FeatGroup.Core>

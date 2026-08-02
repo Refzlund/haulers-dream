@@ -423,6 +423,11 @@ namespace HaulersDream
             // excluded from `claimable`). A lone loader is never clamped (ShareMassBudget returns its no-clamp
             // sentinel for a divisor of 1), and a player order means "this pawn loads, as much as it can", so it
             // keeps the full trip budget.
+            //
+            // The clamp is ONE-DIRECTIONAL — applied as a min against massLeft, so it can only ever make THIS trip
+            // smaller, never larger and never fewer trips (issue #167, reopened). That is why the asker's own trip
+            // budget goes IN as well: a remainder that already fits in one trip must not be divided, or the pawn
+            // comes back for the rest, re-divides the smaller remainder, and each trip carries less than the last.
             if (!playerOrder)
             {
                 int coLoaders = CountClaimlessCoLoaders(pawn, loadable, entry);
@@ -435,7 +440,10 @@ namespace HaulersDream
                     // min(distance, thingIDNumber) over the WHOLE pool each step, which is order-independent.
                     pool.Sort(ByThingId);
                     float claimableMass = ClaimablePoolMass(pawn, pool, claimable, claimedByOthers, out float heaviestUnit);
-                    float share = LoadFairShare.ShareMassBudget(claimableMass, heaviestUnit, 1 + coLoaders);
+                    // massLeft is still the untouched trip budget here (nothing has been committed yet), so it is
+                    // exactly "what this asker can move in one trip" — the term ShareMassBudget needs to decide
+                    // whether the pool is worth dividing at all.
+                    float share = LoadFairShare.ShareMassBudget(claimableMass, heaviestUnit, 1 + coLoaders, massLeft);
                     if (share < massLeft)
                         massLeft = share;
                 }
@@ -517,29 +525,37 @@ namespace HaulersDream
         /// <summary>
         /// How many OTHER ready co-loaders the fair-share split divides across: spawned boarding passengers of THIS
         /// loadable (their whole duty is "load this, then enter", so they are guaranteed idle until the manifest
-        /// empties) that could actually run a bulk-load job (not downed/drafted/mentally broken, manipulation
-        /// capable per vanilla's own load gate, carrier comp + inventory present) and hold NO live claim on this
-        /// task. Claim holders are excluded because their slice is already subtracted from the asker's claimable
-        /// map; counting them again would over-divide. Free haulers are deliberately NOT counted: they have a colony
-        /// of other work and no board gate holds them, so dividing for pawns that may never come would shrink every
-        /// share for nothing (a lone-hauler plan stays exactly as big as before). Deterministic: a plain count over
+        /// empties) that hold NO live claim on this task and pass <see cref="LoadFairShare.CountsAsCoLoader"/>.
+        /// Claim holders are rejected before the predicate is asked, because their slice is already subtracted from
+        /// the asker's claimable map; counting them again would over-divide. This method only GATHERS facts off the
+        /// live pawn — the decision itself lives in Core, where it is unit-tested. Deterministic: a plain count over
         /// the spawned-pawn list (Multiplayer runs this in sim on every client; order does not matter for a count).
+        ///
+        /// <para>FREE HAULERS ARE NEVER COUNTED, on any map. A non-home-map carve-out used to count them (issue
+        /// #167a: on a looted site everyone spawned there is arguably present to gather this and leave), and that is
+        /// what reopened #167. The clamp only ever REMOVES capacity from a trip, so a pawn that is not already
+        /// travelling to this target must never shrink someone else's load — and nothing is lost by leaving it out,
+        /// because if it does turn up it simply asks for its own share, which the ledger hands it out of what is
+        /// still unclaimed. And the "could this pawn have bulk work" gate that used to admit them is the wrong test
+        /// entirely: it routes through EligibilityPolicy, which keeps mechanoids regardless of hauling capability,
+        /// so a constructoid and a cleansweeper (vanilla gives neither a hauling job, ever) were counted as loaders
+        /// and divided a lone hauler mech's trips by three. If a future maintainer wants free haulers back, the
+        /// honest filter is the work-TYPE predicate every HD haul order uses (HaulOrderGate / WorkCapabilityProbe on
+        /// WorkTypeDefOf.Hauling, added for #229) — not the eligibility gate. The original #167 scenario is
+        /// unaffected either way: quest and shuttle pawns carry the LoadAndEnterTransporters / LoadAndEnterPortal
+        /// duties, so <see cref="IsBoardingPassengerFor"/> still counts them below.</para>
         /// </summary>
+        /// <param name="asker">The pawn planning this load; never counts itself.</param>
+        /// <param name="loadable">The transporter group / portal / vehicle being loaded.</param>
+        /// <param name="entry">The ledger entry for this task, read for its live per-pawn claims.</param>
+        /// <returns>The number of other pawns to divide the claimable pool across (0 when the asker is effectively
+        /// alone, which leaves its plan exactly as big as it was before fair share existed).</returns>
         private static int CountClaimlessCoLoaders(Pawn asker, IManagedLoadable loadable, LoadLedgerEntry entry)
         {
             var map = asker?.Map;
             if (map?.mapPawns == null || loadable == null)
                 return 0;
             var claims = entry?.pawnClaims;
-            // TEMP/QUEST MAP EXTENSION (issue #167a): on the home colony an ordinary free hauler is deliberately
-            // NOT counted below (see IsBoardingPassengerFor's cheapest-reject-first branch): it has a colony of
-            // other work and no board gate holds it here, so dividing for one that may never come would shrink
-            // every REAL co-loader's share for nothing. That reasoning does not hold on a non-home map (a raided/
-            // looted site, an event map): everyone spawned there is normally present specifically to gather this
-            // and leave, so a free hauler who could ALSO claim this exact task RIGHT NOW is a genuine co-loader,
-            // not a maybe, reusing the same live gate the asker itself passed (HasPotentialBulkWork) rather than
-            // guessing from "idle" alone.
-            bool countFreeHaulersToo = !map.IsPlayerHome;
             var spawned = map.mapPawns.AllPawnsSpawned;
             int count = 0;
             for (int i = 0; i < spawned.Count; i++)
@@ -549,31 +565,27 @@ namespace HaulersDream
                     continue;
                 if (claims != null && claims.ContainsKey(p))
                     continue; // already carries its slice (excluded from `claimable` too)
-                if (IsBoardingPassengerFor(p, loadable))
-                {
-                    if (p.Downed || p.Drafted || p.InMentalState)
-                        continue; // won't run its load duty right now
-                    if (p.health?.capacities == null || !p.health.capacities.CapableOf(PawnCapacityDefOf.Manipulation))
-                        continue; // vanilla's HasJobOnPortal/loading gate: no manipulation, no hauling
-                    if (p.GetComp<CompHauledToInventory>() == null || p.inventory == null)
-                        continue; // can't run the bulk driver at all
-                    count++;
+                // Cheapest structural reject first: only a pawn CONTRACTUALLY bound to THIS loadable can be a
+                // co-loader, so the fact-gathering below (including the ledger probe) is paid at most once per
+                // boarding passenger — a handful of pawns, and HasPotentialBulkWork is per-tick memoised anyway.
+                if (!IsBoardingPassengerFor(p, loadable))
                     continue;
-                }
-                if (countFreeHaulersToo && HasPotentialBulkWork(p, loadable))
-                {
-                    // Same health/comp gates the boarding branch applies above (review finding): a downed casualty
-                    // on a raiding-camp temp map passes HasPotentialBulkWork (it only checks Drafted, not Downed or
-                    // InMentalState), but it can never actually run the job. Counting it would inflate the divisor
-                    // and shrink every active hauler's fair-share slice for nothing.
-                    if (p.Downed || p.InMentalState)
-                        continue;
-                    if (p.health?.capacities == null || !p.health.capacities.CapableOf(PawnCapacityDefOf.Manipulation))
-                        continue;
-                    if (p.GetComp<CompHauledToInventory>() == null || p.inventory == null)
-                        continue;
+                if (LoadFairShare.CountsAsCoLoader(
+                        isBoardingPassengerOfThisLoadable: true,
+                        // The work TYPE, not the work tag (#229): for a colony mech this is exactly its
+                        // mechEnabledWorkTypes list, which is what keeps a constructoid or cleansweeper out.
+                        canDoHaulingWorkType: !WorkCapabilityProbe.IsDisabled(p, WorkTypeDefOf.Hauling),
+                        // The same live gate the asker itself passed. A passenger already aboard, or one that can
+                        // reach nothing claimable, is done loading — without this it would shrink every remaining
+                        // share forever while never asking again.
+                        hasClaimableWork: HasPotentialBulkWork(p, loadable),
+                        downed: p.Downed,
+                        drafted: p.Drafted,
+                        inMentalState: p.InMentalState,
+                        capableOfManipulation: p.health?.capacities != null
+                                               && p.health.capacities.CapableOf(PawnCapacityDefOf.Manipulation),
+                        hasCarrierComp: p.GetComp<CompHauledToInventory>() != null && p.inventory != null))
                     count++;
-                }
             }
             return count;
         }

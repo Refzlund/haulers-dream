@@ -505,7 +505,11 @@
 <HaulersDream.Report.SentPartial>Niektórych zrzutów ekranu nie udało się wysłać ({0}).</HaulersDream.Report.SentPartial>
 <HaulersDream.Report.PickTitle>Dodaj zrzuty ekranu</HaulersDream.Report.PickTitle>
 <HaulersDream.Report.PickSubtitle>wybrano {0} z {1}</HaulersDream.Report.PickSubtitle>
-<HaulersDream.Report.PickEmpty>Nie znaleziono żadnych zrzutów ekranu Steam dla RimWorld. Zrób jakiś przez nakładkę Steam (Shift+Tab lub skrótem F12), a pojawi się tutaj.</HaulersDream.Report.PickEmpty>
+<HaulersDream.Report.PickEmpty>Nie znaleziono jeszcze żadnych zrzutów ekranu. Zrób jeden w grze klawiszem zrzutu ekranu RimWorld (F10, o ile go nie zmieniłeś) lub przez nakładkę Steam, a potem kliknij Odśwież. Możesz też wrzucić własne obrazy PNG lub JPG do folderu zrzutów ekranu.</HaulersDream.Report.PickEmpty>
+<HaulersDream.Report.PickOpenFolder>Otwórz folder zrzutów ekranu</HaulersDream.Report.PickOpenFolder>
+<HaulersDream.Report.PickOpenFolder.Help>Otwiera własny folder zrzutów ekranu RimWorld w menedżerze plików:\n{0}\n\nObrazy PNG i JPG, które tam wrzucisz, pojawią się na tej liście po kliknięciu Odśwież — także te zrobione poza grą.</HaulersDream.Report.PickOpenFolder.Help>
+<HaulersDream.Report.PickRefresh>Odśwież</HaulersDream.Report.PickRefresh>
+<HaulersDream.Report.PickOpenFolderFailed>Nie udało się otworzyć folderu zrzutów ekranu. Możesz trafić do niego samodzielnie:\n{0}</HaulersDream.Report.PickOpenFolderFailed>
 <HaulersDream.Report.PickConfirm>Dodaj ({0})</HaulersDream.Report.PickConfirm>
 <HaulersDream.Report.PickMax>Możesz dołączyć najwyżej {0} zrzutów ekranu.</HaulersDream.Report.PickMax>
 <HaulersDream.FeatGroup.Core>Rdzeń</HaulersDream.FeatGroup.Core>

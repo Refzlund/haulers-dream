@@ -513,8 +513,8 @@ namespace HaulersDream
 
             // Destination space for the primary's def across the chosen storage GROUP (all its cells), read here
             // (before the swept extras) so the #114 clamp can use it before the pickup commits. int.MaxValue means
-            // "more than any plan can take" (a large deficit, a group over the scan cap, or no slot group at the
-            // cell); 0 means the group is filtered out for this pawn (a denied storage-building filter).
+            // "more than any plan can take" (a large deficit, or no slot group at the cell); 0 means the group is
+            // filtered out for this pawn (a denied storage-building filter).
             var primaryBudget = ResolveGroupBudget(pawn, primary, storeCell, map, budgets, out bool primaryDenied);
             int primarySpace = primaryDenied ? 0 : (primaryBudget?.AvailableFor(primary.def) ?? int.MaxValue);
 
@@ -529,9 +529,24 @@ namespace HaulersDream
             // destination genuinely has little room — exactly the over-haul case.
             if (primarySpace != int.MaxValue && primary.IsInValidStorage())
             {
+                // #114 (round 2) — the per-pawn clamp below is not enough on its own: NOTHING has landed at the
+                // destination yet while several pawns are being planned, so each of them reads the same free space
+                // and pockets a full stack for it. Take off what other pawns are already bringing here first.
+                //
+                // CONSUME rather than Math.Min on primarySpace alone, because the budget is SHARED across every def
+                // bound for this group: if the primary merely declined those units, TakeNearestEligible would hand
+                // the very same space to a swept extra through spaceLeft and the overshoot would return by the back
+                // door. Booking them on the budget closes both routes with the one already-tested arithmetic.
+                if (primaryBudget != null)
+                {
+                    var primaryGroup = BudgetGroupOf(map.haulDestinationManager.SlotGroupAt(storeCell));
+                    int enroute = StorageEnroute.UnitsEnrouteTo(pawn, primaryGroup, primary.def);
+                    primaryBudget.Consume(primary.def, enroute);
+                    primarySpace = DestinationEnroutePolicy.FreeAfterEnroute(primarySpace, enroute);
+                }
                 primaryTake = Math.Min(primaryTake, primarySpace);
                 if (primaryTake <= 0)
-                    return null;
+                    return null; // nothing genuinely free here — vanilla's own (space-clamped) haul still stands
             }
 
             running += primaryTake * primaryUnit;
@@ -989,8 +1004,26 @@ namespace HaulersDream
             }
         }
 
-        // Hard bound on the per-group cell scan when pricing storage space: groups are typically small, and a
-        // group larger than this holds more than any plan can take anyway — treat the cap as "enough".
+        /// <summary>
+        /// The BUDGET IDENTITY of a storage cell's slot group: its linked <c>StorageGroup</c> when it has one
+        /// (linked stockpiles/shelves pool their members' cells, exactly as vanilla treats them), else the slot
+        /// group itself. Null in, null out.
+        ///
+        /// <para>The single source of this normalisation, because two places must agree on it EXACTLY: the
+        /// per-plan budget dictionary keyed by it here, and <see cref="StorageEnroute"/>, which reports in-flight
+        /// loads against the same key. Reference-compared — if the two derived the group differently they would
+        /// never match and the cross-pawn accounting would silently report zero.</para>
+        /// </summary>
+        /// <param name="slotGroup">The slot group at a destination cell, from <c>SlotGroupAt</c>.</param>
+        internal static ISlotGroup BudgetGroupOf(SlotGroup slotGroup)
+            => slotGroup == null ? null : ((ISlotGroup)slotGroup.StorageGroup ?? slotGroup);
+
+        // How many cells ONE plan may LOOK at when pricing a group's storage space — a scan BUDGET, not a
+        // group-size cutoff. Groups are typically small, and a group that genuinely has room reaches `enough`
+        // (see ScanGroup) within a couple of dozen acceptable cells, so this only bites a large group that is
+        // nearly full — where the truncated total is a deliberate under-estimate. It used to be a pre-bail
+        // ("bigger than this ⇒ treat as unlimited"), which meant a 15×15 stockpile (225 cells) disabled the
+        // #114 clamp outright and every pawn hauled a whole stack into a nearly-full store again.
         private const int MaxSpaceScanCells = 200;
 
         // Resolve (and cache per plan) the shared budget for the storage GROUP at `cell`, pricing `thing`'s def
@@ -1021,8 +1054,7 @@ namespace HaulersDream
                 denied = true;
                 return null;
             }
-            // Like vanilla: a storage GROUP (linked stockpiles/shelves) pools its members' cells.
-            ISlotGroup group = (ISlotGroup)slotGroup.StorageGroup ?? slotGroup;
+            ISlotGroup group = BudgetGroupOf(slotGroup);
             if (budgets.TryGetValue(group, out var budget))
             {
                 // Group already scanned this plan (its shared empty-cell count is fixed); just price this def
@@ -1046,10 +1078,18 @@ namespace HaulersDream
         // Scan a storage GROUP once for `thing`'s def, splitting its remaining space into the SHARED empty-cell
         // pool (count + per-cell capacity) and this def's PER-DEF partial-stack room, vanilla-style, the same
         // IsGoodStoreCell + GetItemStackSpaceLeftFor pricing HaulAIUtility.HaulToCellStorageJob uses
-        // (decompile-verified). `unbounded` = "no binding limit": no cells / a group over the scan cap, or
-        // already more space than a whole plan could fill (MaxStacks full stacks). An empty cell (no item at it)
-        // joins the shared pool at its per-cell capacity; a cell already holding this def contributes its top-up
-        // room as partial; a cell full for this def (or holding another def) contributes nothing.
+        // (decompile-verified). `unbounded` = "no binding limit": no cell grid at all, or already more space than
+        // a whole plan could fill (MaxStacks full stacks). An empty cell (no item at it) joins the shared pool at
+        // its per-cell capacity; a cell already holding this def contributes its top-up room as partial; a cell
+        // full for this def (or holding another def) contributes nothing.
+        //
+        //  * THE SCAN IS BUDGETED, NOT ABANDONED (#114): at most MaxSpaceScanCells cells are looked at. Running
+        //    out of budget before reaching `enough` returns the accumulated totals as a REAL, bounded budget —
+        //    a conservative UNDER-estimate of the group's free space, never "unlimited". Under-estimating can
+        //    only make a pawn take less and decline the sweep, which is safe; OVER-estimating is precisely what
+        //    sends several pawns off with a full stack each for two or three slots of room. The old code bailed
+        //    to unbounded for any group over the cap, so in any base with a stockpile bigger than 200 cells the
+        //    clamp above simply never applied.
         //
         // STORAGE-MOD COMPATIBILITY BY CONSTRUCTION (no references, no reflection — verified against the
         // LWM Deep Storage / KanbanStockpile / SatisfiedStorage / Adaptive Storage Framework sources):
@@ -1086,17 +1126,21 @@ namespace HaulersDream
             perCellCapacity = stackLimit;
             unbounded = false;
             var cells = group.CellsList;
-            if (cells == null || cells.Count > MaxSpaceScanCells)
+            if (cells == null)
             {
-                unbounded = true;
+                unbounded = true; // no cell grid to price at all — genuinely unknown, so apply no clamp
                 return;
             }
             long enough = (long)MaxStacks * stackLimit; // no plan can place more than this
             long emptyUnits = 0;
             long partial = 0;
             int emptyCount = 0;
-            for (int i = 0; i < cells.Count; i++)
+            // Cells LOOKED AT (not accepted): IsGoodStoreCell is what this loop actually costs, so the budget
+            // has to count every cell it is called for, skipped ones included.
+            int scanned = 0;
+            for (int i = 0; i < cells.Count && scanned < MaxSpaceScanCells; i++)
             {
+                scanned++;
                 var c = cells[i];
                 if (!StoreUtility.IsGoodStoreCell(c, map, thing, pawn, pawn.Faction))
                     continue;
@@ -1117,6 +1161,11 @@ namespace HaulersDream
                 {
                     partial += space; // a partial stack of this def: top-up room reserved to this def
                 }
+                // Proven roomier than any plan could fill — stop walking (the post-loop test below reports it
+                // unbounded). On a big sparse stockpile that lands a couple of dozen cells in, so the common
+                // case now costs LESS than the old full-list scan, not more.
+                if (partial + emptyUnits >= enough)
+                    break;
             }
             // A group with more room than any single plan could fill needs no clamp (matches the old int.MaxValue).
             if (partial + emptyUnits >= enough)

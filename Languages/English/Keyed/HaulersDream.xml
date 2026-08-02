@@ -605,7 +605,11 @@
   <HaulersDream.Report.SentPartial>Some screenshots could not be uploaded ({0}).</HaulersDream.Report.SentPartial>
   <HaulersDream.Report.PickTitle>Add screenshots</HaulersDream.Report.PickTitle>
   <HaulersDream.Report.PickSubtitle>{0} of {1} selected</HaulersDream.Report.PickSubtitle>
-  <HaulersDream.Report.PickEmpty>No Steam screenshots found for RimWorld. Take one with the Steam overlay (Shift+Tab, or the F12 hotkey) and it will appear here.</HaulersDream.Report.PickEmpty>
+  <HaulersDream.Report.PickEmpty>No screenshots found yet. Take one in-game with RimWorld's screenshot key (F10 unless you have rebound it) or through the Steam overlay, then press Refresh. You can also drop your own PNG or JPG images into the screenshots folder.</HaulersDream.Report.PickEmpty>
+  <HaulersDream.Report.PickOpenFolder>Open screenshots folder</HaulersDream.Report.PickOpenFolder>
+  <HaulersDream.Report.PickOpenFolder.Help>Opens RimWorld's own screenshots folder in your file manager:\n{0}\n\nPNG and JPG images you put there appear in this list once you press Refresh — including pictures made outside the game.</HaulersDream.Report.PickOpenFolder.Help>
+  <HaulersDream.Report.PickRefresh>Refresh</HaulersDream.Report.PickRefresh>
+  <HaulersDream.Report.PickOpenFolderFailed>Couldn't open the screenshots folder. You can reach it yourself at:\n{0}</HaulersDream.Report.PickOpenFolderFailed>
   <HaulersDream.Report.PickConfirm>Add ({0})</HaulersDream.Report.PickConfirm>
   <HaulersDream.Report.PickMax>You can attach at most {0} screenshots.</HaulersDream.Report.PickMax>
   <HaulersDream.Report.Submit>Send report</HaulersDream.Report.Submit>

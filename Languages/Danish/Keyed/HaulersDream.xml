@@ -505,7 +505,11 @@
 <HaulersDream.Report.SentPartial>Nogle skærmbilleder kunne ikke uploades ({0}).</HaulersDream.Report.SentPartial>
 <HaulersDream.Report.PickTitle>Tilføj skærmbilleder</HaulersDream.Report.PickTitle>
 <HaulersDream.Report.PickSubtitle>{0} af {1} valgt</HaulersDream.Report.PickSubtitle>
-<HaulersDream.Report.PickEmpty>Ingen Steam-skærmbilleder fundet for RimWorld. Tag et med Steam-overlayet (Shift+Tab, eller F12-genvejen), så dukker det op her.</HaulersDream.Report.PickEmpty>
+<HaulersDream.Report.PickEmpty>Ingen skærmbilleder fundet endnu. Tag et i spillet med RimWorlds skærmbilledetast (F10, medmindre du har ændret den) eller via Steam-overlayet, og tryk så på Opdater. Du kan også lægge dine egne PNG- eller JPG-billeder i skærmbilledemappen.</HaulersDream.Report.PickEmpty>
+<HaulersDream.Report.PickOpenFolder>Åbn skærmbilledemappen</HaulersDream.Report.PickOpenFolder>
+<HaulersDream.Report.PickOpenFolder.Help>Åbner RimWorlds egen skærmbilledemappe i din filhåndtering:\n{0}\n\nPNG- og JPG-billeder, du lægger derind, dukker op på listen, når du trykker på Opdater — også billeder lavet uden for spillet.</HaulersDream.Report.PickOpenFolder.Help>
+<HaulersDream.Report.PickRefresh>Opdater</HaulersDream.Report.PickRefresh>
+<HaulersDream.Report.PickOpenFolderFailed>Kunne ikke åbne skærmbilledemappen. Du kan selv finde den her:\n{0}</HaulersDream.Report.PickOpenFolderFailed>
 <HaulersDream.Report.PickConfirm>Tilføj ({0})</HaulersDream.Report.PickConfirm>
 <HaulersDream.Report.PickMax>Du kan højst vedhæfte {0} skærmbilleder.</HaulersDream.Report.PickMax>
 <HaulersDream.FeatGroup.Core>Kerne</HaulersDream.FeatGroup.Core>

@@ -505,7 +505,11 @@
 <HaulersDream.Report.SentPartial>有些截图未能上传（{0}）。</HaulersDream.Report.SentPartial>
 <HaulersDream.Report.PickTitle>添加截图</HaulersDream.Report.PickTitle>
 <HaulersDream.Report.PickSubtitle>已选择 {0} / {1} 张</HaulersDream.Report.PickSubtitle>
-<HaulersDream.Report.PickEmpty>未找到 RimWorld 的 Steam 截图。用 Steam 覆盖层（Shift+Tab，或 F12 快捷键）截一张，它就会显示在这里。</HaulersDream.Report.PickEmpty>
+<HaulersDream.Report.PickEmpty>尚未找到截图。在游戏中用 RimWorld 的截图按键（默认 F10，除非你已重新绑定）或 Steam 覆盖层截一张，然后点击“刷新”。你也可以把自己的 PNG 或 JPG 图片放进截图文件夹。</HaulersDream.Report.PickEmpty>
+<HaulersDream.Report.PickOpenFolder>打开截图文件夹</HaulersDream.Report.PickOpenFolder>
+<HaulersDream.Report.PickOpenFolder.Help>在文件管理器中打开 RimWorld 自己的截图文件夹：\n{0}\n\n放进该文件夹的 PNG 和 JPG 图片，点击“刷新”后就会出现在此列表中——包括在游戏之外制作的图片。</HaulersDream.Report.PickOpenFolder.Help>
+<HaulersDream.Report.PickRefresh>刷新</HaulersDream.Report.PickRefresh>
+<HaulersDream.Report.PickOpenFolderFailed>无法打开截图文件夹。你可以自行前往：\n{0}</HaulersDream.Report.PickOpenFolderFailed>
 <HaulersDream.Report.PickConfirm>添加（{0}）</HaulersDream.Report.PickConfirm>
 <HaulersDream.Report.PickMax>你最多可附带 {0} 张截图。</HaulersDream.Report.PickMax>
 <HaulersDream.FeatGroup.Core>核心</HaulersDream.FeatGroup.Core>

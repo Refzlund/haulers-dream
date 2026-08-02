@@ -505,7 +505,11 @@
 <HaulersDream.Report.SentPartial>일부 스크린샷을 업로드하지 못했습니다 ({0}개).</HaulersDream.Report.SentPartial>
 <HaulersDream.Report.PickTitle>스크린샷 추가</HaulersDream.Report.PickTitle>
 <HaulersDream.Report.PickSubtitle>{1}개 중 {0}개 선택됨</HaulersDream.Report.PickSubtitle>
-<HaulersDream.Report.PickEmpty>RimWorld의 Steam 스크린샷을 찾을 수 없습니다. Steam 오버레이(Shift+Tab, 또는 F12 단축키)로 한 장 찍으면 여기에 나타납니다.</HaulersDream.Report.PickEmpty>
+<HaulersDream.Report.PickEmpty>아직 스크린샷을 찾지 못했습니다. 게임 안에서 RimWorld의 스크린샷 키(다시 지정하지 않았다면 F10)나 Steam 오버레이로 한 장 찍은 뒤 새로 고침을 누르세요. 직접 만든 PNG나 JPG 이미지를 스크린샷 폴더에 넣어도 됩니다.</HaulersDream.Report.PickEmpty>
+<HaulersDream.Report.PickOpenFolder>스크린샷 폴더 열기</HaulersDream.Report.PickOpenFolder>
+<HaulersDream.Report.PickOpenFolder.Help>RimWorld 자체 스크린샷 폴더를 파일 탐색기에서 엽니다:\n{0}\n\n그 폴더에 넣은 PNG와 JPG 이미지는 새로 고침을 누르면 이 목록에 나타납니다. 게임 밖에서 만든 이미지도 괜찮습니다.</HaulersDream.Report.PickOpenFolder.Help>
+<HaulersDream.Report.PickRefresh>새로 고침</HaulersDream.Report.PickRefresh>
+<HaulersDream.Report.PickOpenFolderFailed>스크린샷 폴더를 열 수 없습니다. 직접 찾아가려면 다음 위치입니다:\n{0}</HaulersDream.Report.PickOpenFolderFailed>
 <HaulersDream.Report.PickConfirm>추가 ({0}개)</HaulersDream.Report.PickConfirm>
 <HaulersDream.Report.PickMax>스크린샷은 최대 {0}개까지 첨부할 수 있습니다.</HaulersDream.Report.PickMax>
 <HaulersDream.FeatGroup.Core>핵심</HaulersDream.FeatGroup.Core>

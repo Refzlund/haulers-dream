@@ -505,7 +505,11 @@
 <HaulersDream.Report.SentPartial>มีภาพหน้าจอบางส่วนที่อัปโหลดไม่สำเร็จ ({0})</HaulersDream.Report.SentPartial>
 <HaulersDream.Report.PickTitle>เพิ่มภาพหน้าจอ</HaulersDream.Report.PickTitle>
 <HaulersDream.Report.PickSubtitle>เลือกแล้ว {0} จาก {1}</HaulersDream.Report.PickSubtitle>
-<HaulersDream.Report.PickEmpty>ไม่พบภาพหน้าจอ Steam สำหรับ RimWorld ถ่ายภาพหนึ่งด้วยโอเวอร์เลย์ของ Steam (Shift+Tab หรือปุ่มลัด F12) แล้วมันจะปรากฏที่นี่</HaulersDream.Report.PickEmpty>
+<HaulersDream.Report.PickEmpty>ยังไม่พบภาพหน้าจอ ถ่ายสักภาพในเกมด้วยปุ่มถ่ายภาพหน้าจอของ RimWorld (F10 หากคุณยังไม่ได้เปลี่ยนปุ่ม) หรือด้วยโอเวอร์เลย์ของ Steam แล้วกดรีเฟรช คุณยังสามารถนำภาพ PNG หรือ JPG ของคุณเองไปวางไว้ในโฟลเดอร์ภาพหน้าจอได้ด้วย</HaulersDream.Report.PickEmpty>
+<HaulersDream.Report.PickOpenFolder>เปิดโฟลเดอร์ภาพหน้าจอ</HaulersDream.Report.PickOpenFolder>
+<HaulersDream.Report.PickOpenFolder.Help>เปิดโฟลเดอร์ภาพหน้าจอของ RimWorld เองในตัวจัดการไฟล์ของคุณ:\n{0}\n\nภาพ PNG และ JPG ที่คุณนำไปวางไว้ที่นั่นจะปรากฏในรายการนี้เมื่อคุณกดรีเฟรช รวมถึงภาพที่สร้างขึ้นนอกเกมด้วย</HaulersDream.Report.PickOpenFolder.Help>
+<HaulersDream.Report.PickRefresh>รีเฟรช</HaulersDream.Report.PickRefresh>
+<HaulersDream.Report.PickOpenFolderFailed>ไม่สามารถเปิดโฟลเดอร์ภาพหน้าจอได้ คุณสามารถไปที่โฟลเดอร์นี้ด้วยตนเองได้ที่:\n{0}</HaulersDream.Report.PickOpenFolderFailed>
 <HaulersDream.Report.PickConfirm>เพิ่ม ({0})</HaulersDream.Report.PickConfirm>
 <HaulersDream.Report.PickMax>คุณแนบภาพหน้าจอได้มากที่สุด {0} ภาพ</HaulersDream.Report.PickMax>
 <HaulersDream.FeatGroup.Core>หลัก</HaulersDream.FeatGroup.Core>

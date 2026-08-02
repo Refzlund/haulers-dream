@@ -505,7 +505,11 @@
 <HaulersDream.Report.SentPartial>一部のスクリーンショットをアップロードできませんでした（{0}枚）。</HaulersDream.Report.SentPartial>
 <HaulersDream.Report.PickTitle>スクリーンショットを追加</HaulersDream.Report.PickTitle>
 <HaulersDream.Report.PickSubtitle>{1}枚中{0}枚を選択中</HaulersDream.Report.PickSubtitle>
-<HaulersDream.Report.PickEmpty>RimWorldのSteamスクリーンショットが見つかりません。Steamオーバーレイ（Shift+Tab、またはF12ホットキー）で撮影すると、ここに表示されます。</HaulersDream.Report.PickEmpty>
+<HaulersDream.Report.PickEmpty>スクリーンショットがまだ見つかりません。ゲーム内でRimWorldのスクリーンショットキー（変更していなければF10）またはSteamオーバーレイで撮影し、「更新」を押してください。自分で用意したPNGやJPGの画像をスクリーンショットフォルダーに入れることもできます。</HaulersDream.Report.PickEmpty>
+<HaulersDream.Report.PickOpenFolder>スクリーンショットフォルダーを開く</HaulersDream.Report.PickOpenFolder>
+<HaulersDream.Report.PickOpenFolder.Help>RimWorld自身のスクリーンショットフォルダーをファイルマネージャーで開きます：\n{0}\n\nそこに入れたPNGおよびJPGの画像は、「更新」を押すとこの一覧に表示されます。ゲーム外で作成した画像でもかまいません。</HaulersDream.Report.PickOpenFolder.Help>
+<HaulersDream.Report.PickRefresh>更新</HaulersDream.Report.PickRefresh>
+<HaulersDream.Report.PickOpenFolderFailed>スクリーンショットフォルダーを開けませんでした。次の場所から自分で開けます：\n{0}</HaulersDream.Report.PickOpenFolderFailed>
 <HaulersDream.Report.PickConfirm>追加（{0}）</HaulersDream.Report.PickConfirm>
 <HaulersDream.Report.PickMax>添付できるスクリーンショットは最大{0}枚です。</HaulersDream.Report.PickMax>
 <HaulersDream.FeatGroup.Core>コア</HaulersDream.FeatGroup.Core>

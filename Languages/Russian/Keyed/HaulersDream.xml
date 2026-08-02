@@ -505,7 +505,11 @@
 <HaulersDream.Report.SentPartial>Некоторые скриншоты не удалось загрузить ({0}).</HaulersDream.Report.SentPartial>
 <HaulersDream.Report.PickTitle>Добавить скриншоты</HaulersDream.Report.PickTitle>
 <HaulersDream.Report.PickSubtitle>выбрано {0} из {1}</HaulersDream.Report.PickSubtitle>
-<HaulersDream.Report.PickEmpty>Скриншоты Steam для RimWorld не найдены. Сделайте снимок через оверлей Steam (Shift+Tab или горячая клавиша F12), и он появится здесь.</HaulersDream.Report.PickEmpty>
+<HaulersDream.Report.PickEmpty>Скриншоты пока не найдены. Сделайте снимок в игре клавишей скриншота RimWorld (F10, если вы её не переназначали) или через оверлей Steam, затем нажмите «Обновить». Вы также можете положить свои изображения PNG или JPG в папку скриншотов.</HaulersDream.Report.PickEmpty>
+<HaulersDream.Report.PickOpenFolder>Открыть папку скриншотов</HaulersDream.Report.PickOpenFolder>
+<HaulersDream.Report.PickOpenFolder.Help>Открывает собственную папку скриншотов RimWorld в файловом менеджере:\n{0}\n\nИзображения PNG и JPG, положенные туда, появятся в этом списке после нажатия «Обновить» — в том числе созданные вне игры.</HaulersDream.Report.PickOpenFolder.Help>
+<HaulersDream.Report.PickRefresh>Обновить</HaulersDream.Report.PickRefresh>
+<HaulersDream.Report.PickOpenFolderFailed>Не удалось открыть папку скриншотов. Вы можете перейти к ней сами:\n{0}</HaulersDream.Report.PickOpenFolderFailed>
 <HaulersDream.Report.PickConfirm>Добавить ({0})</HaulersDream.Report.PickConfirm>
 <HaulersDream.Report.PickMax>Можно приложить не более {0} скриншотов.</HaulersDream.Report.PickMax>
 <HaulersDream.FeatGroup.Core>Основное</HaulersDream.FeatGroup.Core>
