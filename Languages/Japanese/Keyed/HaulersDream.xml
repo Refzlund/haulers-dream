@@ -92,6 +92,22 @@
 <HaulersDream.Setting.HaulOversizedDesc>単一の山が一抱えで運ぶには大きすぎるとき（例：ポーンが72しか持てないのに鋼鉄の山が75）、ポーンは一部だけを手で運んで残りを置いていくのではなく、所持品でそれを抱え、山全体を1回の往復で届けます。指示・自動の両方の運搬に適用されます。実際に保管庫が受け入れられる分しか運ばないので、何も取り残されません。</HaulersDream.Setting.HaulOversizedDesc>
 <HaulersDream.Setting.BulkHaulCorpses>死体の運搬も他の運搬と同じようにまとめて運ぶ</HaulersDream.Setting.BulkHaulCorpses>
 <HaulersDream.Setting.BulkHaulCorpsesDesc>RimWorldは死体の運搬を専用の別ジョブで処理しており、Hauler's Dreamはそこに手を出していませんでした。そのため死体に運搬を指示しても死体だけを運び、死体は常に1体ずつしか回収されませんでした。これを有効にすると、死体の運搬も他の運搬と同じように振る舞います。死体の周りに落ちている物は同じ往復で運搬役の所持品にまとめられ、別の運搬のそばに転がっている死体は通りがかりに拾えます。実際に何が一緒に運ばれるかは引き続き積載量が決めます。人型の死体（約60kg、上限は通常96kg程度）は普通どおり1回の往復を占めるので、得をするのは小動物で、いまは複数をまとめて持ち帰れます。自動はぎ取りは変わりません。ポーンが手に取る死体はすべて、手で運ぶ死体とまったく同じようにはぎ取られます。</HaulersDream.Setting.BulkHaulCorpsesDesc>
+<HaulersDream.Setting.CorpseCarryAllowance.Lab>死体の積載量割引</HaulersDream.Setting.CorpseCarryAllowance.Lab>
+<HaulersDream.Setting.CorpseCarryAllowance.Off>オフ（実際の重量）</HaulersDream.Setting.CorpseCarryAllowance.Off>
+<HaulersDream.Setting.CorpseCarryAllowance.Value>×{0}</HaulersDream.Setting.CorpseCarryAllowance.Value>
+<HaulersDream.Setting.CorpseCarryAllowanceDesc>1往復に何体積めるかを判断するとき、死体を実際より軽いものとして数えます。人型の死体は60kgあり、標準的な入植者の運搬上限は約96kgなので、2体は決して収まらず、死者は常に1体ずつ回収されます — これが「入植者が死体を1体しか運ばない」の答えです。×2.0はこの上限に対する死体1体分の重さを半分として扱うので、これまで1体しか運べなかった入植者が3体を持ち帰れるようになります。×3.0なら3分の1になり、4体です。もともと2体を運べる運搬メカは、さらに先まで伸びます。上げる前に取引の中身を知ってください。変わるのは帳簿だけで、荷物は少しも軽くなりません。入植者は実際の重量を1kgも欠かさず背負います — 死体3体はまぎれもない180kgで、それを自重35kgの体が運ぶのです — そのため入植者はこのMODの下限速度まで落ち、スマート過積載が割に合うと考える線をはるかに越えます。あなたは速い何往復かではなく遅い1往復を選んでいるわけで、だからこそ既定ではオフです。×1.0では何も変わりません。</HaulersDream.Setting.CorpseCarryAllowanceDesc>
+<HaulersDream.Setting.CorpseMaxHaulMass.Lab>一括運搬できる死体の最大重量</HaulersDream.Setting.CorpseMaxHaulMass.Lab>
+<HaulersDream.Setting.CorpseMaxHaulMass.Off>制限なし</HaulersDream.Setting.CorpseMaxHaulMass.Off>
+<HaulersDream.Setting.CorpseMaxHaulMass.Value>{0} kg</HaulersDream.Setting.CorpseMaxHaulMass.Value>
+<HaulersDream.Setting.CorpseMaxHaulMassDesc>この重量以下の死体だけが一括運搬にまとめられます。それより重いものはこれまでどおり単独で運ばれます。軽い動物の死体を何体かまとめて持ち帰りつつ、重いものは1体ずつ運ばせたいときに使ってください — 人型の死体は60kg、マッファローやサンブロはそれよりはるかに重くなります。0にすると制限なし（既定）です。</HaulersDream.Setting.CorpseMaxHaulMassDesc>
+<HaulersDream.Setting.CorpseHaulHumanlike>人の死体も一括運搬に含める</HaulersDream.Setting.CorpseHaulHumanlike>
+<HaulersDream.Setting.CorpseHaulHumanlikeDesc>既定でオン。人の死体 — 味方の死者、来訪者、襲撃者 — も他の死体と同じように一括運搬にまとめられます。オフにすると、人はまとめ運搬から完全に外れます。上の割引や重量上限をどう設定していても人は常に単独で運ばれ、動物やメカノイドの死体は引き続きまとめて持ち帰られます。自分たちの死者は1体ずつ扱いたいが、その日の狩りの成果は1往復で持ち帰りたい入植地向けです。</HaulersDream.Setting.CorpseHaulHumanlikeDesc>
+<HaulersDream.Setting.CorpseHaulByColonists>入植者が死体を一括運搬してもよい</HaulersDream.Setting.CorpseHaulByColonists>
+<HaulersDream.Setting.CorpseHaulByColonistsDesc>既定でオン。オフにすると、墓場への往復はメカノイドや動物に任せられます。入植者も死体を運びますが、バニラと同じく1往復1体で、道すがら他の死体をかき集めることはありません。変わるのはまとめ運搬だけで、誰の運搬も禁止されません。</HaulersDream.Setting.CorpseHaulByColonistsDesc>
+<HaulersDream.Setting.CorpseHaulByMechs>作業メカノイドが死体を一括運搬してもよい</HaulersDream.Setting.CorpseHaulByMechs>
+<HaulersDream.Setting.CorpseHaulByMechsDesc>既定でオン。死体の運搬は通常の運搬作業なので、専用の運搬メカはすでにこれを行っています。運搬容量が大きいぶん、入植者にはできない「人の死体2体を1往復で持ち帰る」ができます。オフにしてもメカノイドは死体を運びますが、バニラと同じく1往復1体で、道すがら他の死体をかき集めることはありません。変わるのはまとめ運搬だけで、誰の運搬も禁止されません。この設定は範囲を狭めることしかできません。「メカノイドが回収・運搬するのを許可する」がオフなら、メカノイドはいずれにせよ関与しません。</HaulersDream.Setting.CorpseHaulByMechsDesc>
+<HaulersDream.Setting.CorpseHaulByAnimals>運搬訓練を受けた動物が死体を一括運搬してもよい</HaulersDream.Setting.CorpseHaulByAnimals>
+<HaulersDream.Setting.CorpseHaulByAnimalsDesc>既定でオン。運搬を訓練された入植地の動物は、通常の戦利品を集めるのとまったく同じように死体を一括運搬にまとめます。ハスキーたちには死者をそっとしておいてほしい場合はオフにしてください。この設定は範囲を狭めることしかできません。「入植地の動物が回収・運搬するのを許可する」がオフなら、動物は死体を含め何ひとつ一括運搬しません。</HaulersDream.Setting.CorpseHaulByAnimalsDesc>
 <HaulersDream.Setting.SweepNearbyWhileWorking>作業しながら片付ける — 近くの落ちたアイテムも回収する</HaulersDream.Setting.SweepNearbyWhileWorking>
 <HaulersDream.Setting.SweepNearbyWhileWorkingDesc>ポーンが解体・採掘・収穫をして自分の収穫物を回収している間、作業場所の周りに落ちている他の運搬可能アイテムも所持品に拾い上げます。そのため、別々の運搬に残されるのではなく、まとめた1回の往復でエリア全体が片付きます。運搬が必要で行き先のあるアイテムだけが対象で（他の運搬役の目標や備蓄済みの在庫は決して対象外）、賢い過積載の上限までしか取りません。</HaulersDream.Setting.SweepNearbyWhileWorkingDesc>
 <HaulersDream.Setting.HaulToStack>山に運搬する（既存の山に補充し、行き先のマスを共有する）</HaulersDream.Setting.HaulToStack>
