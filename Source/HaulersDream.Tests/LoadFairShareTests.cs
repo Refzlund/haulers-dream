@@ -109,6 +109,56 @@ namespace HaulersDream.Tests
             Assert.That(LoadFairShare.ShareMassBudget(30f, 5f, 4, -12f), Is.EqualTo(7.5f));
         }
 
+        /// <summary>
+        /// The substitution the planner performs before asking for a share. A first version subtracted what the
+        /// pawn already carried, which is zero-or-negative for an ordinarily-geared colonist — carried mass counts
+        /// worn apparel and equipment, and a human's whole capacity is 35 kg, so plate armour plus a thump cannon
+        /// exhausts it. That produced a 0 budget, which skips the fit-in-one-trip rule exactly as the unbounded
+        /// sentinel did and reinstated the one-item-per-trip bug for every armoured pawn, permanently — gear is
+        /// never deposited, so nothing corrects it between trips.
+        /// </summary>
+        [Test]
+        public void AskerTripBudget_SubstitutesAFullPack_ForTheUnboundedSentinel()
+        {
+            // A real budget passes straight through, whatever the pack size.
+            Assert.That(LoadFairShare.AskerTripBudgetKg(12.5f, 35f), Is.EqualTo(12.5f));
+            Assert.That(LoadFairShare.AskerTripBudgetKg(0.25f, 35f), Is.EqualTo(0.25f));
+
+            // Both unbounded sentinels become one full pack — NOT the pack minus what is already carried.
+            Assert.That(LoadFairShare.AskerTripBudgetKg(float.MaxValue, 35f), Is.EqualTo(35f));
+            Assert.That(LoadFairShare.AskerTripBudgetKg(float.PositiveInfinity, 35f), Is.EqualTo(35f));
+
+            // The result must be usable by ShareMassBudget: positive, so the fit-in-one-trip rule is reachable.
+            float budget = LoadFairShare.AskerTripBudgetKg(float.MaxValue, 35f);
+            Assert.That(budget, Is.GreaterThan(0f), "a substituted budget must be a REAL bound, not another skip");
+            Assert.That(LoadFairShare.ShareMassBudget(5f, 0.025f, 4, budget), Is.EqualTo(float.PositiveInfinity),
+                "a heavily-geared pawn ordered out of a cave must still clear a 5 kg remainder in one trip");
+        }
+
+        /// <summary>
+        /// The planner feeds TWO different budgets: the substituted one to the share DECISION, and the raw
+        /// (possibly unbounded) one to the CLAMP. Every other oracle here passes a single value to both roles, so
+        /// a divergence between them is invisible to them — which is exactly where the armoured-pawn regression
+        /// lived (decision 0, clamp unbounded). Pin the divergence directly.
+        /// </summary>
+        [Test]
+        public void DecisionBudgetOfZero_WouldReinstateTheSplit_SoTheSubstitutionMustNotProduceOne()
+        {
+            const float PoolKg = 5f;      // 200 insect jelly at 0.025 kg
+            const float HeaviestKg = 0.025f;
+            const int Divisor = 4;        // a crew of four ordered out of the cave
+
+            // The shape the regression had: a zero decision budget alongside an unbounded clamp budget.
+            float bad = LoadFairShare.ShareMassBudget(PoolKg, HeaviestKg, Divisor, 0f);
+            Assert.That(bad, Is.EqualTo(PoolKg / Divisor),
+                "a zero decision budget still divides — which is why the substitution may never yield zero");
+
+            // What the planner actually produces for that pawn, however much gear it is wearing.
+            float good = LoadFairShare.ShareMassBudget(
+                PoolKg, HeaviestKg, Divisor, LoadFairShare.AskerTripBudgetKg(float.MaxValue, 35f));
+            Assert.That(good, Is.EqualTo(float.PositiveInfinity), "no clamp: the remainder fits one pack");
+        }
+
         // ============ CountsAsCoLoader (who may shrink someone else's trip) ============
 
         /// <summary>

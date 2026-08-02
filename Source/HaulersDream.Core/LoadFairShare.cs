@@ -34,6 +34,30 @@ namespace HaulersDream.Core
     public static class LoadFairShare
     {
         /// <summary>
+        /// The finite, honest "how much is one trip for this asker?" figure to hand <see cref="ShareMassBudget"/>,
+        /// derived from the runtime's own trip budget.
+        ///
+        /// <para>The runtime budget is normally a real number and passes straight through. It arrives as the
+        /// unbounded sentinel only when the pawn has NO carry ceiling (smart overload at "carry freely") AND the
+        /// destination imposes no mass cap — a cave exit or other map portal. A pawn with no ceiling still makes
+        /// TRIPS, and the size of one is a full pack.</para>
+        ///
+        /// <para>Deliberately does NOT subtract what the pawn is already carrying. That subtraction collapses to
+        /// zero for an ordinarily-geared colonist — carried mass counts worn apparel and equipment, and a human's
+        /// whole capacity is 35 kg — and a zero budget skips the fit-in-one-trip rule exactly as the sentinel did,
+        /// reinstating the one-item-per-trip bug for that pawn permanently, since gear is never deposited. What a
+        /// pawn already carries cannot shrink a trip it has no ceiling for.</para>
+        /// </summary>
+        /// <param name="runtimeTripBudgetKg">The planner's own per-trip mass budget; the unbounded sentinel
+        /// (<see cref="float.MaxValue"/> or infinity) when the pawn has no ceiling and the destination no cap.</param>
+        /// <param name="baseCapacityKg">One normal packful for this pawn, before any overload multiplier. Positive
+        /// whenever the sentinel can occur (a non-positive base capacity yields a zero ceiling, never an infinite
+        /// one), so the result is a usable bound rather than another zero.</param>
+        /// <returns>The runtime budget unchanged, or one full pack in place of the sentinel.</returns>
+        public static float AskerTripBudgetKg(float runtimeTripBudgetKg, float baseCapacityKg)
+            => runtimeTripBudgetKg >= float.MaxValue ? baseCapacityKg : runtimeTripBudgetKg;
+
+        /// <summary>
         /// The mass budget one asker's claim may cover: the claimable pool mass divided evenly across the loaders,
         /// floored to one HEAVIEST unit so every single claimable item always fits inside one share (no starvation
         /// while unclaimed goods remain, and no item orphaned because every share is smaller than it) — but NOT
@@ -88,8 +112,11 @@ namespace HaulersDream.Core
             // malformed is not unbounded. Such an asker clears ANY pool in one trip, which is the rule below taken
             // to its limit, so the answer is the same: don't divide. The caller now converts an unbounded ceiling
             // into an honest one-pack figure before asking, so a sentinel reaching here is a CALLER bug — and
-            // declining to clamp is the only safe way to fail it, because Hauler's Dream must never move less per
-            // trip than vanilla, and vanilla hand-carries a whole stack with no mass term at all.
+            // declining to clamp is the only safe way to fail it: for a lone or unbounded asker Hauler's Dream must
+            // never move less per trip than vanilla, and vanilla hand-carries a whole stack with no mass term at
+            // all. (For a genuine multi-pawn crew a single pawn's trip CAN be smaller than vanilla's — the crew
+            // clears the pool together in one round — so this is a bound on the lone/unbounded case, not on every
+            // trip.)
             //
             // This replaces the opposite rule, which excluded the unbounded case so that one pawn could not
             // "swallow the manifest and idle its peers". That reasoning was simply wrong: the caller applies this

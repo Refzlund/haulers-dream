@@ -451,17 +451,22 @@ namespace HaulersDream
                     // skipped it entirely: every ordered pawn re-divided the shrinking remainder trip after trip
                     // until the no-starvation floor bottomed out at a single unit, and a crew told to leave a cave
                     // with the loot carried insect jelly one piece at a time. A pawn with no CEILING still makes
-                    // TRIPS, and its honest one-trip size is one normal pack: baseCap less what it already carries —
-                    // the same subtraction the bounded branch makes at `ceiling - running`, so the stranded-cargo
-                    // exclusion applies here too (this is a planning decision, not a physical limit).
+                    // TRIPS, and its honest one-trip size is a FULL PACK.
+                    //
+                    // Do NOT subtract what the pawn already carries. A first attempt used `baseCap - running`, which
+                    // collapses to 0 for an ordinarily-geared colonist — `running` counts worn apparel and equipment,
+                    // and MassUtility.Capacity is BodySize * 35, so plate armour plus a thump cannon is already a
+                    // human's entire 35 kg. A 0 budget skips the fit-in-one-trip rule exactly as the unbounded
+                    // sentinel did, putting this very bug back for that pawn, permanently — gear is never deposited,
+                    // so it does not self-correct between trips. What a pawn is already carrying cannot shrink a trip
+                    // it has no ceiling for. (baseCap is provably > 0 whenever the sentinel fires: CeilingKg returns
+                    // 0, not +Infinity, for a non-positive base capacity.)
                     //
                     // Only the DECISION input is made finite. massLeft itself stays unbounded, so a pawn that is not
                     // clamped still carries as much as it likes — and any configuration whose trip budget is already
                     // a real number (any bounded ceiling; any mass-capped destination) passes exactly what it passed
                     // before, so nothing outside the uncapped case changes.
-                    float askerTripKg = massLeft;
-                    if (askerTripKg >= float.MaxValue)
-                        askerTripKg = Math.Max(0f, baseCap - running);
+                    float askerTripKg = LoadFairShare.AskerTripBudgetKg(massLeft, baseCap);
 
                     float share = LoadFairShare.ShareMassBudget(claimableMass, heaviestUnit, 1 + coLoaders, askerTripKg);
                     if (share < massLeft)
