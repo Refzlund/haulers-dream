@@ -300,9 +300,9 @@
   <HaulersDream.PlanRoute.PickStart>選擇必須包含的目標…</HaulersDream.PlanRoute.PickStart>
   <HaulersDream.PlanRoute.PickStop>完成選擇（點選地圖以新增）</HaulersDream.PlanRoute.PickStop>
   <HaulersDream.PlanRoute.PickHeader>必須包含：{0}</HaulersDream.PlanRoute.PickHeader>
-  <HaulersDream.PlanRoute.PickRoleHint>將目標標記為 S（起點）或 E（終點）以固定路線的開始或結束位置 — 否則各目標會放置於距離最短的位置。</HaulersDream.PlanRoute.PickRoleHint>
-  <HaulersDream.PlanRoute.PickStartBtn>S</HaulersDream.PlanRoute.PickStartBtn>
-  <HaulersDream.PlanRoute.PickEndBtn>E</HaulersDream.PlanRoute.PickEndBtn>
+  <HaulersDream.PlanRoute.PickRoleHint>將目標標記為「始」（起點）或「終」（終點）以固定路線的開始或結束位置 — 否則各目標會放置於距離最短的位置。</HaulersDream.PlanRoute.PickRoleHint>
+  <HaulersDream.PlanRoute.PickStartBtn>始</HaulersDream.PlanRoute.PickStartBtn>
+  <HaulersDream.PlanRoute.PickEndBtn>終</HaulersDream.PlanRoute.PickEndBtn>
   <HaulersDream.PlanRoute.PickStartBadge>(起點)</HaulersDream.PlanRoute.PickStartBadge>
   <HaulersDream.PlanRoute.PickEndBadge>(終點)</HaulersDream.PlanRoute.PickEndBadge>
   <HaulersDream.PlanRoute.PickStartTip>將此處設為路線的「起點」 — 角色造訪的第一個停靠點。再次點選可清除。</HaulersDream.PlanRoute.PickStartTip>
@@ -928,6 +928,6 @@
   <HaulersDream.Setting.StripBeforeCremationDesc>當屍體即將被火化（或在焚化爐中燒毀）時，先將其武器、衣物與攜帶物品剝取並卸除於火化爐方格上，以便將其搬運至儲存區，而非隨屍體一同毀滅。沾染血跡的衣物遵循下方的策略設定，而「亦剝取玩家派系屍體」仍決定是否剝取自家陣亡人員。預設為關閉；若您刻意透過火化來銷毀裝備，請保持關閉。</HaulersDream.Setting.StripBeforeCremationDesc>
   <HaulersDream.Setting.CarryMassCap.Lab>最大負重質量上限</HaulersDream.Setting.CarryMassCap.Lab>
   <HaulersDream.Setting.CarryMassCap.Off>無限制</HaulersDream.Setting.CarryMassCap.Off>
-  <HaulersDream.Setting.CarryMassCap.Value>{0} kg</HaulersDream.Setting.CarryMassCap.Value>
+  <HaulersDream.Setting.CarryMassCap.Value>{0} 公斤</HaulersDream.Setting.CarryMassCap.Value>
   <HaulersDream.Setting.CarryMassCapDesc>角色在單次搬運或收集行程中，載入背包的公斤數硬性上限。這是解決「角色搬太多東西」的直接方案：將其調低（例如 20 kg），角色就會收集少量貨物後卸載並返回，而非填滿其全部負重能力。此設定與上方的「負重上限」百分比及智慧超載協同運作，且一律以較低的限制為準，因此即使開啟超載亦絕不會超出此上限。與負重上限相同，它僅計算收納於背包中的物品，不包含手持的堆疊，且不會改變角色為特定建造或製作清單所取的材料數量。設定為 0 表示無限制（預設值）。</HaulersDream.Setting.CarryMassCapDesc>
 </LanguageData>
