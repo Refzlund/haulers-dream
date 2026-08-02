@@ -103,5 +103,16 @@ namespace HaulersDream.Tests
             // A finite ratio beyond int range must also clamp to the offer, not wrap negative.
             Assert.That(TransportLoadPlan.UnitsWithinMassBudget(3e9f, 1f, 400), Is.EqualTo(400));
         }
+
+        [Test]
+        public void Units_ABudgetOfOneUnitBuysExactlyOneUnit()
+        {
+            // What the fair-share no-starvation floor is worth once a share has decayed onto it, spelled out:
+            // a budget of exactly one heaviest unit takes one unit off a full stack of 75. That is the "one insect
+            // jelly per trip" of issue #243 — the floor is not the bug (it is what keeps a heavy item claimable at
+            // all), the bug was a share being allowed to decay onto it while one trip could still clear the lot.
+            // See LoadFairShare.ShareMassBudget.
+            Assert.That(TransportLoadPlan.UnitsWithinMassBudget(0.025f, 0.025f, 75), Is.EqualTo(1));
+        }
     }
 }
