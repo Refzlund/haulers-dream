@@ -16,6 +16,12 @@
 //      FoodLoopWouldRun) — the same members the oracle tests assert.
 //   4. HaulersDreamMod.VerifyDropProtection is present, invoked at startup, and lists the same three seams.
 //   5. The oracle test file exists.
+//   6. Every bulk-load deposit gate reads the healed tag view, so merged survivors reach their destination.
+//   7. CE's direct loadout-drop path is guarded by a reflection-only GetExcessThing postfix. A positive CE result
+//      is deferred while a caller-owned NON-HEALING snapshot contains any real HD surplus (CE work scans may be
+//      asynchronous), and HD never writes temporary cargo into CE's persistent HoldTracker.
+//   8. The runtime CE keep-count bridge still feeds CE's ordered storage, slots, and count modes through the
+//      unit-tested CeLoadoutKeepPolicy allocator; green Core tests alone cannot prove that reflection glue is wired.
 //
 // Run directly to self-check:  bun scripts/check-drop-protection.ts
 import { resolve } from 'node:path'
@@ -25,6 +31,11 @@ const PATCH_PATH = resolve(repoRoot, 'Source/HaulersDream/Patch_JobGiver_DropUnu
 const POLICY_PATH = resolve(repoRoot, 'Source/HaulersDream.Core/DropUnusedFoodPolicy.cs')
 const MOD_PATH = resolve(repoRoot, 'Source/HaulersDream/HaulersDreamMod.cs')
 const TESTS_PATH = resolve(repoRoot, 'Source/HaulersDream.Tests/DropUnusedFoodPolicyTests.cs')
+const CE_PATCH_PATH = resolve(repoRoot, 'Source/HaulersDream/Patch_CombatExtended_GetExcessThing.cs')
+const CE_COMPAT_PATH = resolve(repoRoot, 'Source/HaulersDream/CECompat.cs')
+const CARRY_COMP_PATH = resolve(repoRoot, 'Source/HaulersDream/CompHauledToInventory.cs')
+const CE_KEEP_TESTS_PATH = resolve(repoRoot, 'Source/HaulersDream.Tests/CeLoadoutKeepPolicyTests.cs')
+const CE_DROP_TESTS_PATH = resolve(repoRoot, 'Source/HaulersDream.Tests/CeCargoDropPolicyTests.cs')
 
 // The three vanilla seams HD must guard, expressed the way each source references them. A regression that drops
 // one of these (or renames it out of sync) trips the cross-file agreement check below — the same triple-source
@@ -91,6 +102,11 @@ async function main() {
 	const patch = await read(PATCH_PATH, 'Patch_JobGiver_DropUnusedInventory.cs')
 	const policy = await read(POLICY_PATH, 'DropUnusedFoodPolicy.cs')
 	const mod = await read(MOD_PATH, 'HaulersDreamMod.cs')
+	const cePatch = await read(CE_PATCH_PATH, 'Patch_CombatExtended_GetExcessThing.cs')
+	const ceCompat = await read(CE_COMPAT_PATH, 'CECompat.cs')
+	const carryComp = await read(CARRY_COMP_PATH, 'CompHauledToInventory.cs')
+	const ceKeepTests = await read(CE_KEEP_TESTS_PATH, 'CeLoadoutKeepPolicyTests.cs')
+	const ceDropTests = await read(CE_DROP_TESTS_PATH, 'CeCargoDropPolicyTests.cs')
 	await read(TESTS_PATH, 'DropUnusedFoodPolicyTests.cs') // existence is the assertion
 
 	// 1. Each vanilla seam is guarded by a [HarmonyPatch(typeof(JobGiver_DropUnusedInventory), <seam>)] in the
@@ -201,6 +217,145 @@ async function main() {
 		}
 	}
 
+	// 7. CE bypasses vanilla DropUnusedInventory and directly TryDrops the Thing returned by
+	//    Utility_HoldTracker.GetExcessThing. HD cargo must remain LOCAL transient state: never create CE forced-hold
+	//    records, and defer a positive CE result while the pawn has ANY genuinely unloadable HD cargo. The work scan
+	//    must copy the concurrent non-healing mirror into caller-owned storage, then ask the ordinary AnyUnloadable
+	//    oracle; it must never mutate-heal or enumerate a live tag view from this asynchronous seam. This is static
+	//    because the headless test project deliberately cannot reference Verse/CE; the in-game matrix covers runtime.
+	if (ceCompat) {
+		for (const forbidden of ['notifyHoldTracker', 'NotifyHeld(', 'Notify_HoldTrackerItem']) {
+			if (ceCompat.includes(forbidden)) {
+				errors.push(
+					`CECompat.cs contains "${forbidden}" — HD temporary cargo must not be registered in CE's persistent ` +
+						`HoldTracker. Keep ownership in CompHauledToInventory and protect it at GetExcessThing instead.`
+				)
+			}
+		}
+	}
+	if (carryComp && carryComp.includes('CECompat.NotifyHeld')) {
+		errors.push(
+			`CompHauledToInventory.cs calls CECompat.NotifyHeld — this recreates stale player-facing forced-carry ` +
+				`records whenever same-def policy stock remains after HD unloads its cargo.`
+		)
+	}
+	if (carryComp && !carryComp.includes('void CopyTrackedNoHeal(List<Thing> output)')) {
+		errors.push(
+			`CompHauledToInventory.cs no longer exposes CopyTrackedNoHeal(List<Thing>) — CE's asynchronous ` +
+				`excess scan needs a caller-owned, weakly-consistent snapshot rather than a live mutable tag view.`
+		)
+	}
+	if (cePatch) {
+		const prepare = sliceMethodBody(cePatch, 'Prepare')
+		if (prepare === null) {
+			errors.push(`CE cargo guard has no Prepare() — the optional CE reflection target cannot be gated safely.`)
+		} else {
+			const requiredPrepare = [
+				'AccessTools.TypeByName("CombatExtended.Utility_HoldTracker")',
+				'AccessTools.Method(holdTrackerType, "GetExcessThing"',
+				'typeof(Thing).MakeByRefType()',
+				'typeof(int).MakeByRefType()',
+			]
+			for (const token of requiredPrepare) {
+				if (!prepare.includes(token))
+					errors.push(`CE cargo guard Prepare() is missing "${token}" — its soft-dependency target can drift or bind the wrong overload.`)
+			}
+		}
+
+		const postfix = sliceMethodBody(cePatch, 'Postfix')
+		if (postfix === null) {
+			errors.push(`CE cargo guard has no Postfix() — CE's direct excess result is unprotected.`)
+		} else {
+			if (!/\[HarmonyPriority\(Priority\.Last\)\]\s*static void Postfix\(/.test(cePatch))
+				errors.push(`CE cargo guard Postfix() is not Priority.Last — a later foreign postfix could restore the excess drop result.`)
+			const requiredPostfix = [
+				'!__result',
+				'UnloadEverything',
+				'CopyTrackedNoHeal(',
+				'PawnUnloadChecker.AnyUnloadable(__0, tracked)',
+				'CeCargoDropPolicy.ShouldVetoExcessDrop(',
+				'__1 = null',
+				'__2 = 0',
+				'__result = false',
+			]
+			for (const token of requiredPostfix) {
+				if (!postfix.includes(token))
+					errors.push(`CE cargo guard Postfix() is missing "${token}" — transient cargo protection is incomplete or no longer self-releasing.`)
+			}
+			for (const forbidden of [
+				'GetHashSet',
+				'PeekHashSet',
+				'IsTrackedNoHeal',
+				'tracked.Contains(__1)',
+				'tracked.IndexOf(__1)',
+				'new[] { __1 }',
+				'new List<Thing> { __1 }',
+			]) {
+				if (postfix.includes(forbidden)) {
+					errors.push(
+						`CE cargo guard uses ${forbidden}. This asynchronous seam must copy the non-healing concurrent ` +
+							`mirror via CopyTrackedNoHeal and evaluate the caller-owned snapshot with AnyUnloadable.`
+					)
+				}
+			}
+		}
+	}
+
+	// 8. Pin the Verse/CE reflection glue to the unit-tested ordered allocator. Without this cross-layer check,
+	//    CeLoadoutKeepPolicyTests can stay green while LoadoutKeepCount silently goes back to treating one generic
+	//    category count as N units of EVERY matching ThingDef.
+	if (ceCompat) {
+		const loadoutKeep = sliceMethodBody(ceCompat, 'LoadoutKeepCount')
+		if (loadoutKeep === null) {
+			errors.push(`CECompat.cs has no LoadoutKeepCount() — HD cannot preserve CE refill stock count-wise.`)
+		} else if (!loadoutKeep.includes('FillLoadoutKeepCounts(')) {
+			errors.push(
+				`CECompat.LoadoutKeepCount() no longer delegates to FillLoadoutKeepCounts() — one-def queries may ` +
+					`drift away from the shared whole-map CE allocation used by inventory scans.`
+		)
+		}
+
+		const fillKeeps = sliceMethodBody(ceCompat, 'FillLoadoutKeepCounts')
+		if (fillKeeps === null) {
+			errors.push(`CECompat.cs has no FillLoadoutKeepCounts() — the ordered whole-map CE allocation is missing.`)
+		} else {
+			const requiredGlue = [
+				'getStorageByThingDef.Invoke',
+				'getSlotsFor.Invoke',
+				'slotCountTypeGetter.Invoke',
+				'slotGenericDefGetter.Invoke',
+				'lambdaGetter.Invoke',
+				'CeLoadoutKeepPolicy.SlotMode.DropExcess',
+				'CeLoadoutKeepPolicy.Slot.Generic',
+				'CeLoadoutKeepPolicy.Allocate',
+			]
+			for (const token of requiredGlue) {
+				if (!fillKeeps.includes(token))
+					errors.push(
+						`CECompat.FillLoadoutKeepCounts() is missing "${token}" — the runtime reflection bridge may have ` +
+							`drifted away from the tested ordered/shared CE allocation.`
+					)
+			}
+		}
+	}
+
+	if (ceKeepTests) {
+		for (const token of [
+			'DropExcessGenericAloneContributesNoHdKeep',
+			'PickupGeneric_UsesOneSharedBudgetAcrossDefs',
+			'PickupGeneric_RespectsCeStorageOrder',
+		]) {
+			if (!ceKeepTests.includes(token))
+				errors.push(`CeLoadoutKeepPolicyTests.cs is missing "${token}" — the GenericDrugs allocation contract is no longer pinned.`)
+		}
+	}
+	if (ceDropTests && !ceDropTests.includes('TaggedBeerDefersDifferentCeSelectedWakeUpStack')) {
+		errors.push(
+			`CeCargoDropPolicyTests.cs no longer pins the cross-def Beer-tagged/Wake-Up-selected case; ` +
+				`an exact selected-stack guard would reopen the CE drop loop.`
+		)
+	}
+
 	if (errors.length > 0) {
 		console.error(`\n[drop-protection] FAIL — ${errors.length} problem(s):\n`)
 		for (const e of errors) console.error(`  ✗ ${e}`)
@@ -214,7 +369,8 @@ async function main() {
 
 	console.log(
 		`[drop-protection] PASS — 3 vanilla drop seams + ${LOAD_GATES.length} bulk-load gates read the healed tag ` +
-			`set, Core policy + startup tripwire + oracle tests all present.`
+			`set, CE's transient excess-drop guard checks a caller-owned non-healing snapshot and owns no HoldTracker ` +
+			`state, its ordered keep-count glue is pinned, and Core policy + startup tripwire + oracle tests are present.`
 	)
 }
 
