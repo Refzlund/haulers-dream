@@ -1,4 +1,6 @@
 using System;
+using System.Collections;
+using System.Collections.Generic;
 using System.Reflection;
 using HarmonyLib;
 using HaulersDream.Core;
@@ -26,11 +28,11 @@ namespace HaulersDream
     /// CE's encumbrance simulation is the single source of slowdown truth.</item>
     /// <item><b>Loadout auto-drop</b>: CE's <c>JobGiver_UpdateLoadout</c> force-drops inventory items that a
     /// pawn's assigned loadout doesn't cover (<c>GetExcessThing</c>; default-loadout pawns are exempt).
-    /// Scooped/swept goods waiting for the unload trip would be dumped on the floor. <see cref="NotifyHeld"/>
-    /// registers them with CE's HoldTracker (<c>Utility_HoldTracker.Notify_HoldTrackerItem</c>) so CE leaves
-    /// them alone. Caveat: CE's cleanup loop iterates <c>i &gt; 0</c> and never prunes its FIRST record, so the
-    /// first-scooped def's record can outlive the goods and its count inflate on re-notify (a CE quirk;
-    /// mod-side mitigation is a documented follow-up, not implemented here).</item>
+    /// <see cref="Patch_CombatExtended_GetExcessThing"/> suppresses a positive result while the pawn still has any
+    /// genuinely unloadable HD-tagged cargo. Whole-load scope is required because a CE generic ceiling is shared
+    /// across defs: tagged Beer can make CE select an untagged Wake-Up stack. Cargo remains HD-owned transient
+    /// state — it is never written into CE's persistent, player-facing HoldTracker — and CE resumes ordinary
+    /// cleanup as soon as no tagged surplus remains.</item>
     /// <item><b>Inventory cache</b>: CE postfixes ThingOwner's NotifyAdded/NotifyRemoved/Take, so this mod's
     /// SplitOff+TryAdd/TryAddOrTransfer flows keep CE's CompInventory cache in sync automatically.</item>
     /// </list>
@@ -43,15 +45,31 @@ namespace HaulersDream
         private static Type compInventoryType;
         private static MethodInfo canFitInInventory;   // instance: (Thing, out int, bool, bool) -> bool
         private static MethodInfo getAvailableBulk;    // instance: (bool) -> float
-        private static MethodInfo notifyHoldTracker;   // static ext: (Pawn, Thing, int) -> void
         private static MethodInfo getLoadout;          // static ext: (Pawn) -> Loadout
-        private static MethodInfo loadoutSlotsGetter;  // instance prop get: Loadout.Slots -> List<LoadoutSlot>
+        private static MethodInfo getSlotsFor;          // instance: Loadout.GetSlotsFor(Pawn) -> IEnumerable<LoadoutSlot>
+        private static FieldInfo loadoutDefaultField;   // instance: Loadout.defaultLoadout -> bool
+        private static MethodInfo getStorageByThingDef; // static ext: (Pawn) -> Dictionary<ThingDef,Integer>
+        private static FieldInfo integerValueField;     // instance: Integer.value -> int
         private static MethodInfo slotThingDefGetter;  // instance prop get: LoadoutSlot.thingDef -> ThingDef (null for generic slots)
         private static MethodInfo slotCountGetter;     // instance prop get: LoadoutSlot.count -> int
         private static MethodInfo slotGenericDefGetter; // instance prop get: LoadoutSlot.genericDef -> LoadoutGenericDef (null for specific slots)
+        private static MethodInfo slotCountTypeGetter; // instance prop get: LoadoutSlot.countType -> LoadoutCountType
         private static MethodInfo lambdaGetter;         // instance prop get: LoadoutGenericDef.lambda -> Predicate<ThingDef>
+        private static object dropExcessCountType;      // boxed enum member, resolved by name (never numeric layout)
         private static StatDef bulkStat;               // CE's per-item "Bulk" stat (data, no assembly ref needed)
         private static Type ammoDefType;               // CombatExtended.AmmoDef (a ThingDef subclass)
+
+        // The loadout reader is reached from per-stack surplus probes, often several times in one work scan.
+        // Keep every mutable work buffer thread-local: threading mods can fan those probes to worker threads, while
+        // a shared scratch collection would race its Clear/Add calls. Each Fill clears before use and again on exit,
+        // retaining capacity but not Pawn/ThingDef/delegate references between calls.
+        [ThreadStatic] private static Dictionary<ThingDef, int> loadoutQueryCounts;
+        [ThreadStatic] private static Dictionary<ThingDef, int> loadoutInventoryCounts;
+        [ThreadStatic] private static List<CeLoadoutKeepPolicy.Stock> loadoutStocks;
+        [ThreadStatic] private static List<CeLoadoutKeepPolicy.Slot> loadoutSlots;
+        [ThreadStatic] private static List<CeLoadoutKeepPolicy.Keep> loadoutKeeps;
+        [ThreadStatic] private static object[] loadoutPawnArg;
+        [ThreadStatic] private static bool fillingLoadoutCounts;
 
         /// <summary>Whether Combat Extended is loaded (detected by its CompInventory type being resolvable —
         /// the assembly only loads when the mod is active). Cached after the first call.</summary>
@@ -83,22 +101,41 @@ namespace HaulersDream
             canFitInInventory = AccessTools.Method(compInventoryType, "CanFitInInventory",
                 new[] { typeof(Thing), typeof(int).MakeByRefType(), typeof(bool), typeof(bool) });
             getAvailableBulk = AccessTools.Method(compInventoryType, "GetAvailableBulk", new[] { typeof(bool) });
-            var holdTracker = AccessTools.TypeByName("CombatExtended.Utility_HoldTracker");
-            if (holdTracker != null)
-                notifyHoldTracker = AccessTools.Method(holdTracker, "Notify_HoldTrackerItem",
-                    new[] { typeof(Pawn), typeof(Thing), typeof(int) });
             var utilityLoadouts = AccessTools.TypeByName("CombatExtended.Utility_Loadouts");
             if (utilityLoadouts != null)
                 getLoadout = AccessTools.Method(utilityLoadouts, "GetLoadout", new[] { typeof(Pawn) });
             var loadoutType = AccessTools.TypeByName("CombatExtended.Loadout");
             if (loadoutType != null)
-                loadoutSlotsGetter = AccessTools.PropertyGetter(loadoutType, "Slots");
+            {
+                getSlotsFor = AccessTools.Method(loadoutType, "GetSlotsFor", new[] { typeof(Pawn) });
+                loadoutDefaultField = AccessTools.Field(loadoutType, "defaultLoadout");
+            }
+            var holdTrackerType = AccessTools.TypeByName("CombatExtended.Utility_HoldTracker");
+            if (holdTrackerType != null)
+                getStorageByThingDef = AccessTools.Method(holdTrackerType, "GetStorageByThingDef", new[] { typeof(Pawn) });
+            var integerType = AccessTools.TypeByName("CombatExtended.Integer");
+            if (integerType != null)
+                integerValueField = AccessTools.Field(integerType, "value");
             var slotType = AccessTools.TypeByName("CombatExtended.LoadoutSlot");
             if (slotType != null)
             {
                 slotThingDefGetter = AccessTools.PropertyGetter(slotType, "thingDef");
                 slotCountGetter = AccessTools.PropertyGetter(slotType, "count");
                 slotGenericDefGetter = AccessTools.PropertyGetter(slotType, "genericDef");
+                slotCountTypeGetter = AccessTools.PropertyGetter(slotType, "countType");
+            }
+            var countType = AccessTools.TypeByName("CombatExtended.LoadoutCountType");
+            // A fork may retain the enum type while renaming/removing this member. Treat that exactly like any
+            // other unresolved reflection seam: leave it null so the warning below reports a graceful capability
+            // loss. Enum.Parse without the IsDefined gate used to turn that ordinary API drift into an Init throw.
+            try
+            {
+                if (countType?.IsEnum == true && Enum.IsDefined(countType, "dropExcess"))
+                    dropExcessCountType = Enum.Parse(countType, "dropExcess");
+            }
+            catch (Exception)
+            {
+                dropExcessCountType = null;
             }
             var genericDefType = AccessTools.TypeByName("CombatExtended.LoadoutGenericDef");
             if (genericDefType != null)
@@ -110,20 +147,19 @@ namespace HaulersDream
             if (active)
             {
                 HDLog.Msg("Combat Extended detected — inventory loading defers to CE's "
-                            + "weight+bulk capacity, smart overload stands down, HoldTracker integration on.");
-                // Silent-degrade tripwire: `active` gates ONLY on the fit check, but the DROP-PREVENTION seams are
-                // separate members. If CE renamed Notify_HoldTrackerItem or the Loadout API, NotifyHeld no-ops and
-                // LoadoutKeepCount returns 0 with no other symptom — CE's loadout enforcement then floor-drops the
-                // cargo HD scooped (or ships CE-loadout ammo to storage and CE re-fetches it): the exact #62/#81/#84
-                // class on a seam the vanilla-only VerifyDropProtection tripwire does not watch. Surface the drift
-                // loudly (logging only — behaviour already degrades safely member-by-member).
-                if (notifyHoldTracker == null)
-                    HDLog.Warn("Combat Extended present but Utility_HoldTracker.Notify_HoldTrackerItem(Pawn, Thing, int) "
-                               + "did not resolve; HD cannot shield its scooped cargo from CE's loadout drop — a CE "
-                               + "rename likely. Please report it. HD continues; CE-loadout pawns may drop scooped goods.");
-                if (getLoadout == null || loadoutSlotsGetter == null || slotThingDefGetter == null || slotCountGetter == null)
-                    HDLog.Warn("Combat Extended present but its Loadout API (Utility_Loadouts.GetLoadout / Loadout.Slots / "
-                               + "LoadoutSlot.thingDef|count) did not fully resolve; HD cannot read CE loadouts to keep "
+                            + "weight+bulk capacity, smart overload stands down, shared refill-only loadout allocation on.");
+                // Silent-degrade tripwire: `active` gates ONLY on the fit check, while the loadout reader is a
+                // separate member. If CE renamed the Loadout API, LoadoutKeepCount returns 0 with no other symptom
+                // and HD may ship CE-loadout stock to storage only for CE to fetch it again. Surface that drift
+                // loudly (logging only — behaviour already degrades safely member-by-member). The independent
+                // GetExcessThing cargo guard owns and reports its own reflection seam in its Harmony Prepare().
+                if (getLoadout == null || getSlotsFor == null || loadoutDefaultField == null
+                    || getStorageByThingDef == null || integerValueField == null
+                    || slotThingDefGetter == null || slotCountGetter == null || slotCountTypeGetter == null
+                    || dropExcessCountType == null)
+                    HDLog.Warn("Combat Extended present but its loadout-allocation API (Utility_Loadouts.GetLoadout / "
+                               + "Loadout.GetSlotsFor / Utility_HoldTracker.GetStorageByThingDef / Integer.value / "
+                               + "LoadoutSlot.thingDef|count|countType) did not fully resolve; HD cannot read CE loadouts to keep "
                                + "loadout ammo with the pawn — a CE rename likely. Please report it. HD continues.");
                 if (slotGenericDefGetter == null || lambdaGetter == null)
                     HDLog.Warn("Combat Extended present but its generic-loadout API (LoadoutSlot.genericDef / "
@@ -288,91 +324,152 @@ namespace HaulersDream
         }
 
         /// <summary>
-        /// Tell CE's HoldTracker the pawn means to HOLD this item (a scooped/swept stack waiting for the
-        /// unload trip), so CE's loadout enforcement doesn't dump it on the floor. No-ops without CE, for
-        /// default-loadout pawns (CE checks internally — they're never drop-enforced anyway), and on any
-        /// reflection failure (worst case: CE drops the item near the pawn; it stays haulable — no loss).
-        /// </summary>
-        public static void NotifyHeld(Pawn pawn, Thing item, int count)
-        {
-            if (!IsActive || notifyHoldTracker == null || pawn == null || item == null || count <= 0)
-                return;
-            // No try/catch: CE present + notifyHoldTracker resolved (checked above) — surface a real fault rather
-            // than silently let CE drop the carried goods on the floor.
-            notifyHoldTracker.Invoke(null, new object[] { pawn, item, count });
-        }
-
-        /// <summary>
-        /// How many units of <paramref name="def"/> the pawn's assigned CE loadout wants it to CARRY —
-        /// the pawn's own ammo/sidearm/meal reserve. The unload pass must not ship it to storage: CE's
-        /// JobGiver_UpdateLoadout would just re-fetch it (one churn cycle per sweep, the pawn temporarily
-        /// disarmed of ammo / without meals in between). Matches BOTH exact-def slots (a specific ammo or
-        /// weapon) AND generic-def slots (GenericMeal, GenericDrugs, GenericMedicine, generic ammo) by
-        /// invoking the generic slot's <c>lambda</c> predicate on <paramref name="def"/>. 0 when CE is
-        /// absent or anything fails (fail-open, like the other bridge members — the mod then behaves as
-        /// without CE).
+        /// How many INVENTORY units of <paramref name="def"/> the pawn's assigned CE loadout would actively
+        /// re-fetch after HD unloaded them. This mirrors CE's pickup calculation, not merely its drop ceiling:
+        /// <c>dropExcess</c> slots contribute 0, while <c>pickupDrop</c> generic slots share one count across all
+        /// matching defs in CE's storage order. Equipment and loaded magazines satisfy slots too, but are
+        /// subtracted back out of the returned inventory keep, so they do not pin spare copies in the pack.
         /// </summary>
         public static int LoadoutKeepCount(Pawn pawn, ThingDef def)
         {
-            if (!IsActive || pawn == null || def == null
-                || getLoadout == null || loadoutSlotsGetter == null
-                || slotThingDefGetter == null || slotCountGetter == null)
+            if (def == null)
                 return 0;
-            // No try/catch: CE present + all loadout members resolved (checked above) — surface a real fault
-            // instead of silently shipping the pawn's loadout items to storage. The loadout == null
-            // value-check below still degrades cleanly (a pawn with no assigned loadout keeps nothing extra).
-            var loadout = getLoadout.Invoke(null, new object[] { pawn });
-            if (loadout == null)
-                return 0;
-            int keep = 0;
-            if (loadoutSlotsGetter.Invoke(loadout, null) is System.Collections.IEnumerable slots)
-                foreach (var slot in slots)
+
+            var counts = loadoutQueryCounts
+                         ?? (loadoutQueryCounts = new Dictionary<ThingDef, int>());
+            FillLoadoutKeepCounts(pawn, counts);
+            int keep = counts.TryGetValue(def, out int found) ? found : 0;
+            counts.Clear();
+            return keep;
+        }
+
+        /// <summary>
+        /// Fill every positive per-def inventory keep contributed by CE's refill loadout for one live pawn
+        /// snapshot. The caller owns <paramref name="output"/>; it is always cleared first and remains empty when
+        /// CE is absent, its reflected API is incomplete, the pawn uses the default loadout, or CE throws while
+        /// producing the snapshot. This whole-map form lets scan callers reuse one allocation across many defs.
+        /// </summary>
+        internal static void FillLoadoutKeepCounts(Pawn pawn, Dictionary<ThingDef, int> output)
+        {
+            if (output == null)
+                throw new ArgumentNullException(nameof(output));
+            output.Clear();
+            if (!IsActive || pawn == null
+                || getLoadout == null || getSlotsFor == null || loadoutDefaultField == null
+                || getStorageByThingDef == null || integerValueField == null
+                || slotThingDefGetter == null || slotCountGetter == null || slotCountTypeGetter == null
+                || dropExcessCountType == null || fillingLoadoutCounts)
+                return;
+
+            var inventoryCounts = loadoutInventoryCounts
+                                  ?? (loadoutInventoryCounts = new Dictionary<ThingDef, int>());
+            var stocks = loadoutStocks ?? (loadoutStocks = new List<CeLoadoutKeepPolicy.Stock>());
+            var slots = loadoutSlots ?? (loadoutSlots = new List<CeLoadoutKeepPolicy.Slot>());
+            var keeps = loadoutKeeps ?? (loadoutKeeps = new List<CeLoadoutKeepPolicy.Keep>());
+            var pawnArg = loadoutPawnArg ?? (loadoutPawnArg = new object[1]);
+            inventoryCounts.Clear();
+            stocks.Clear();
+            slots.Clear();
+            keeps.Clear();
+            pawnArg[0] = pawn;
+            fillingLoadoutCounts = true;
+
+            try
+            {
+                var loadout = getLoadout.Invoke(null, pawnArg);
+                if (loadout == null || (bool)loadoutDefaultField.GetValue(loadout))
+                    return;
+
+                // Preserve CE's dictionary enumeration order. Generic slots consume this exact order; sorting by
+                // defName (or reconstructing storage ourselves) can pick a different concrete def for the slot.
+                if (!(getStorageByThingDef.Invoke(null, pawnArg) is IDictionary storage))
+                    return;
+                var owner = pawn.inventory?.innerContainer;
+                if (owner != null)
+                    foreach (var outer in owner)
+                    {
+                        var thing = outer?.GetInnerIfMinified();
+                        if (thing?.def == null)
+                            continue;
+                        inventoryCounts.TryGetValue(thing.def, out int current);
+                        inventoryCounts[thing.def] = current + thing.stackCount;
+                    }
+
+                foreach (DictionaryEntry entry in storage)
+                {
+                    var stockDef = entry.Key as ThingDef;
+                    if (stockDef == null || entry.Value == null)
+                        continue;
+                    int total = (int)integerValueField.GetValue(entry.Value);
+                    inventoryCounts.TryGetValue(stockDef, out int inPack);
+                    stocks.Add(new CeLoadoutKeepPolicy.Stock(stockDef, total, inPack));
+                }
+
+                // GetSlotsFor includes parent and ad-hoc virtual weapon/ammo slots; Loadout.Slots alone does not.
+                if (!(getSlotsFor.Invoke(loadout, pawnArg) is IEnumerable reflectedSlots))
+                    return;
+                foreach (var slot in reflectedSlots)
                 {
                     if (slot == null)
                         continue;
-                    // Specific slot: exact ThingDef match (existing behaviour).
-                    if ((slotThingDefGetter.Invoke(slot, null) as ThingDef) == def)
+                    int count = (int)slotCountGetter.Invoke(slot, null);
+                    var mode = Equals(slotCountTypeGetter.Invoke(slot, null), dropExcessCountType)
+                        ? CeLoadoutKeepPolicy.SlotMode.DropExcess
+                        : CeLoadoutKeepPolicy.SlotMode.PickupDrop;
+                    var exactDef = slotThingDefGetter.Invoke(slot, null) as ThingDef;
+                    if (exactDef != null)
                     {
-                        keep += (int)slotCountGetter.Invoke(slot, null);
+                        slots.Add(CeLoadoutKeepPolicy.Slot.Exact(exactDef, count, mode));
                         continue;
                     }
-                    // Generic slot: invoke the slot's LoadoutGenericDef.lambda predicate on def. CE's basic
-                    // generics (GenericMeal, GenericDrugs, GenericMedicine) are added to EVERY loadout and
-                    // are the most common source of the unload↔refetch loop — the generic def's lambda is
-                    // the authoritative match test (e.g. GenericMeal's lambda checks preferability, rot,
-                    // nutrition). The lambda is CE-defined code; catch to never let a throw here break the
-                    // whole keep-count path (worst case: the generic slot is skipped, same as before this fix).
-                    //
-                    // Note: KeepCountOf calls this per-def, so a generic slot with count N that matches
-                    // multiple defs (e.g. MealFine + MealSimple both pass GenericMeal.lambda) contributes N
-                    // to EACH def's keep — i.e. the pawn may hold N of each matching def, not N total. This
-                    // over-keeps relative to CE's "N across the category" semantics, but errs safe (no loop;
-                    // CE itself drops the one-time excess). Capping at the slot level across defs would need
-                    // cross-call state not worth the complexity for a benign over-keep.
-                    if (slotGenericDefGetter != null && lambdaGetter != null)
-                    {
-                        var genericDef = slotGenericDefGetter.Invoke(slot, null);
-                        if (genericDef != null)
-                        {
-                            try
-                            {
-                                var lambda = lambdaGetter.Invoke(genericDef, null) as Delegate;
-                                if (lambda != null && (bool)lambda.DynamicInvoke(def))
-                                    keep += (int)slotCountGetter.Invoke(slot, null);
-                            }
-                            catch (Exception)
-                            {
-                                // A CE lambda throw is non-fatal — degrade to "slot doesn't match" for this def.
-                                // Log once so a future CE version whose lambda throws doesn't silently re-open
-                                // the unload↔refetch loop (#204) with no diagnostic breadcrumb.
-                                HDLog.ErrOnce("CE LoadoutGenericDef.lambda threw for def " + (def?.defName ?? "null")
-                                              + " — generic loadout slot skipped for keep-count (non-fatal).",
-                                              unchecked((int)0xCE7A0001));
-                            }
-                        }
-                    }
+                    if (slotGenericDefGetter == null || lambdaGetter == null)
+                        continue;
+                    var genericDef = slotGenericDefGetter.Invoke(slot, null);
+                    var matcher = genericDef == null ? null : lambdaGetter.Invoke(genericDef, null) as Delegate;
+                    if (matcher != null)
+                        slots.Add(CeLoadoutKeepPolicy.Slot.Generic(matcher, count, mode));
                 }
-            return keep;
+
+                CeLoadoutKeepPolicy.Allocate(stocks, slots, GenericSlotMatches, keeps);
+                for (int i = 0; i < keeps.Count; i++)
+                    if (keeps[i].Count > 0 && keeps[i].Def is ThingDef keptDef)
+                        output[keptDef] = keeps[i].Count;
+            }
+            catch (Exception ex)
+            {
+                output.Clear();
+                HDLog.ErrOnce("Combat Extended loadout allocation threw; HD is standing down its CE keep-count "
+                              + "bridge for this probe (items may be unloaded and re-fetched). Please report it.\n"
+                              + HDFault.Render(ex), unchecked((int)0xCE7A0002));
+            }
+            finally
+            {
+                // Clear reference-bearing scratch even on an early return/foreign exception; capacity remains
+                // available to the next probe on this thread without retaining pawn defs or CE delegates.
+                inventoryCounts.Clear();
+                stocks.Clear();
+                slots.Clear();
+                keeps.Clear();
+                pawnArg[0] = null;
+                fillingLoadoutCounts = false;
+            }
+        }
+
+        private static bool GenericSlotMatches(object matcher, object def)
+        {
+            try
+            {
+                if (matcher is Predicate<ThingDef> predicate && def is ThingDef thingDef)
+                    return predicate(thingDef);
+                if (matcher is Delegate fallback)
+                    return (bool)fallback.DynamicInvoke(def);
+            }
+            catch (Exception)
+            {
+                HDLog.ErrOnce("CE LoadoutGenericDef.lambda threw while allocating a shared generic loadout slot — "
+                              + "that match was skipped (non-fatal).", unchecked((int)0xCE7A0001));
+            }
+            return false;
         }
     }
 }

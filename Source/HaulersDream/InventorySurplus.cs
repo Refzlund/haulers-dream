@@ -17,9 +17,112 @@ namespace HaulersDream
     /// </summary>
     public static class InventorySurplus
     {
+        /// <summary>
+        /// One coherent, reusable surplus snapshot for a multi-stack pawn scan. Contexts come from a per-thread
+        /// depth-aware pool: a Harmony/compat callback that synchronously re-enters surplus logic gets a different
+        /// frame instead of clearing the outer scan's dictionaries. Dispose releases the frame and clears all live
+        /// references; every Begin rebuilds from the current inventory, so same-tick pickup/drop stays visible.
+        /// </summary>
+        internal sealed class ScanContext : System.IDisposable
+        {
+            internal readonly Dictionary<ThingDef, int> InventoryCountByDef
+                = new Dictionary<ThingDef, int>();
+            internal readonly Dictionary<ThingDef, int> CeKeepByDef
+                = new Dictionary<ThingDef, int>();
+            internal Pawn Pawn;
+            internal CompHauledToInventory Comp;
+            internal int FrameIndex = -1;
+            internal bool Active;
+
+            internal int SurplusOf(Thing thing, bool? hdSweptOverride = null)
+                => InventorySurplus.SurplusOf(Pawn, thing, Comp, InventoryCountByDef, CeKeepByDef,
+                    hdSweptOverride);
+
+            /// <summary>
+            /// Rebuild the hoisted counts after a caller mutates this pawn's inventory but continues the same scan.
+            /// Without this refresh, two stacks of the same def can each spend the pre-mutation surplus and strip
+            /// units that the pawn's keep policy reserved.
+            /// </summary>
+            internal void Refresh()
+            {
+                InventoryCountByDef.Clear();
+                CeKeepByDef.Clear();
+
+                var inner = Pawn?.inventory?.innerContainer;
+                if (inner != null)
+                    for (int i = 0; i < inner.Count; i++)
+                    {
+                        var held = inner[i];
+                        if (held?.def == null)
+                            continue;
+                        InventoryCountByDef.TryGetValue(held.def, out int current);
+                        InventoryCountByDef[held.def] = current + held.stackCount;
+                    }
+                CECompat.FillLoadoutKeepCounts(Pawn, CeKeepByDef);
+            }
+
+            public void Dispose() => ReleaseScan(this);
+
+            internal void Reset()
+            {
+                InventoryCountByDef.Clear();
+                CeKeepByDef.Clear();
+                Pawn = null;
+                Comp = null;
+                FrameIndex = -1;
+                Active = false;
+            }
+        }
+
+        [System.ThreadStatic] private static List<ScanContext> scanFrames;
+        [System.ThreadStatic] private static int scanDepth;
+
+        internal static ScanContext BeginScan(Pawn pawn)
+        {
+            var frames = scanFrames ?? (scanFrames = new List<ScanContext>());
+            int frameIndex = scanDepth;
+            ScanContext context = null;
+
+            try
+            {
+                if (frameIndex == frames.Count)
+                    frames.Add(new ScanContext());
+                context = frames[frameIndex];
+
+                // Publish the nested depth before any RimWorld/compat call can synchronously re-enter BeginScan.
+                // Every field assignment that can fail lives inside this try so the catch always removes the Pawn
+                // reference and restores the exact pre-call depth.
+                scanDepth = frameIndex + 1;
+                context.FrameIndex = frameIndex;
+                context.Active = true;
+                context.Pawn = pawn;
+                context.Comp = pawn?.GetComp<CompHauledToInventory>();
+                context.Refresh();
+                return context;
+            }
+            catch
+            {
+                context?.Reset();
+                scanDepth = frameIndex;
+                throw;
+            }
+        }
+
+        private static void ReleaseScan(ScanContext context)
+        {
+            if (context == null || !context.Active)
+                return;
+            // All internal callers use using/try-finally, hence releases are LIFO. Keep the recovery defensive so
+            // an accidental double/out-of-order dispose cannot make the next scan index outside the frame pool.
+            scanDepth = context.FrameIndex >= 0 && context.FrameIndex < scanDepth
+                ? context.FrameIndex
+                : System.Math.Max(0, scanDepth - 1);
+            context.Reset();
+        }
+
         /// <summary>Units of this stack that are genuinely surplus (above the pawn's keep for the def). 0 = all
         /// personal kit. Mirrors the old JobDriver_UnloadHauledInventory.UnloadableCountOf.</summary>
-        public static int SurplusOf(Pawn pawn, Thing thing) => SurplusOf(pawn, thing, null, null);
+        public static int SurplusOf(Pawn pawn, Thing thing) => SurplusOf(pawn, thing, null, null, null, null);
 
         /// <summary>
         /// Hoisted form of <see cref="SurplusOf(Pawn,Thing)"/> for a caller that scans every stack of one pawn in a
@@ -29,16 +132,28 @@ namespace HaulersDream
         /// Pass <paramref name="comp"/> = null to look the comp up here, and <paramref name="invCountByDef"/> = null
         /// to fall back to the per-call inventory walk — so the public 2-arg overload is behaviour-identical.
         /// </summary>
-        internal static int SurplusOf(Pawn pawn, Thing thing, CompHauledToInventory comp, Dictionary<ThingDef, int> invCountByDef)
+        internal static int SurplusOf(Pawn pawn, Thing thing, CompHauledToInventory comp,
+            Dictionary<ThingDef, int> invCountByDef)
+            => SurplusOf(pawn, thing, comp, invCountByDef, null, null);
+
+        /// <summary>
+        /// Fully-hoisted scan form. <paramref name="ceKeepByDef"/> is one CE refill allocation for the current
+        /// inventory snapshot; <paramref name="hdSweptOverride"/> lets callers enumerating a trusted tag snapshot
+        /// state that ownership directly, without touching the live tag HashSet again. Null values retain the
+        /// public overload's ordinary lookup behaviour.
+        /// </summary>
+        internal static int SurplusOf(Pawn pawn, Thing thing, CompHauledToInventory comp,
+            Dictionary<ThingDef, int> invCountByDef, Dictionary<ThingDef, int> ceKeepByDef,
+            bool? hdSweptOverride)
         {
             if (pawn?.inventory?.innerContainer == null || thing?.def == null)
                 return 0;
             var def = thing.def;
-            // comp may be passed in (hoisted) or looked up; either way PeekHashSet is read-only (no self-heal) so
-            // this stays safe on the render/alert path.
+            // A trusted snapshot caller passes hdSweptOverride, avoiding any read of the mutable live tag set.
+            // Ordinary callers retain the existing side-effect-free PeekHashSet membership lookup.
             if (comp == null)
                 comp = pawn.GetComp<CompHauledToInventory>();
-            bool hdSwept = comp?.PeekHashSet().Contains(thing) == true;
+            bool hdSwept = hdSweptOverride ?? (comp?.PeekHashSet().Contains(thing) == true);
 
             // Player "keep in inventory" (#197: the "Keep N in inventory" order slider + the Gear-tab keep button):
             // this pawn is pinned to hold up to N units of the def, so only what it holds ABOVE N is surplus. Checked
@@ -156,7 +271,7 @@ namespace HaulersDream
             // Placement is the contract the sibling keeps follow: this sum sits BELOW the per-item-rule branch
             // above, so an explicit player "Unload always" rule still returns the whole stack as surplus before any
             // of these keeps is consulted.
-            int keep = KeepCountOf(pawn, def) + FoodKeepCountOf(pawn, thing)
+            int keep = KeepCountOf(pawn, def, ceKeepByDef) + FoodKeepCountOf(pawn, thing)
                        + AnimalInteractFoodKeepCountOf(pawn, thing);
             if (keep <= 0)
                 return thing.stackCount;
@@ -182,14 +297,17 @@ namespace HaulersDream
             var comp = pawn?.GetComp<CompHauledToInventory>();
             if (inner == null || comp == null)
                 return result;
-            foreach (var t in comp.PeekHashSet())
+            using (var scan = BeginScan(pawn))
             {
-                if (t == null || t.Destroyed || t.def == null || !inner.Contains(t))
-                    continue;
-                int surplus = SurplusOf(pawn, t);
-                if (surplus <= 0)
-                    continue;
-                result[t.def] = (result.TryGetValue(t.def, out int cur) ? cur : 0) + surplus;
+                foreach (var t in comp.PeekHashSet())
+                {
+                    if (t == null || t.Destroyed || t.def == null || !inner.Contains(t))
+                        continue;
+                    int surplus = scan.SurplusOf(t, true);
+                    if (surplus <= 0)
+                        continue;
+                    result[t.def] = (result.TryGetValue(t.def, out int cur) ? cur : 0) + surplus;
+                }
             }
             return result;
         }
@@ -204,11 +322,6 @@ namespace HaulersDream
             return YieldRouter.InventoryCountOfDef(pawn.inventory.innerContainer, def);
         }
 
-        // Reused scratch for the per-def inventory-count precompute in the HasAny* scans, so the (per-frame, via
-        // the cache) pass allocates nothing. [ThreadStatic] to match this assembly's hook-reachable scratch
-        // convention (CompHauledToInventory's tmpScoopedDefs, PawnMassCache's per-thread memo).
-        [System.ThreadStatic] private static Dictionary<ThingDef, int> tmpInvCountByDef;
-
         /// <summary>True if the pawn holds ANY inventory stack with surplus above its keep-stock — i.e. the
         /// "unload all surplus" option would have something to put away (tag-independent: counts foreign stock
         /// HD never scooped). Read-only — safe on the render/gizmo path (no tagging, no Rand, no CE notify).
@@ -221,13 +334,14 @@ namespace HaulersDream
             var inner = pawn?.inventory?.innerContainer;
             if (inner == null)
                 return false;
-            var comp = pawn.GetComp<CompHauledToInventory>();
-            var counts = BuildInvCountByDef(inner);
-            for (int i = 0; i < inner.Count; i++)
+            using (var scan = BeginScan(pawn))
             {
-                var t = inner[i];
-                if (t != null && !t.Destroyed && SurplusOf(pawn, t, comp, counts) > 0)
-                    return true;
+                for (int i = 0; i < inner.Count; i++)
+                {
+                    var t = inner[i];
+                    if (t != null && !t.Destroyed && scan.SurplusOf(t) > 0)
+                        return true;
+                }
             }
             return false;
         }
@@ -244,33 +358,17 @@ namespace HaulersDream
             var settings = HaulersDreamMod.Settings;
             if (inner == null || settings == null)
                 return false;
-            var comp = pawn.GetComp<CompHauledToInventory>();
-            var counts = BuildInvCountByDef(inner);
-            for (int i = 0; i < inner.Count; i++)
+            using (var scan = BeginScan(pawn))
             {
-                var t = inner[i];
-                if (t != null && !t.Destroyed && settings.RuleProducesSurplus(t.def) && SurplusOf(pawn, t, comp, counts) > 0)
-                    return true;
+                for (int i = 0; i < inner.Count; i++)
+                {
+                    var t = inner[i];
+                    if (t != null && !t.Destroyed && settings.RuleProducesSurplus(t.def)
+                        && scan.SurplusOf(t) > 0)
+                        return true;
+                }
             }
             return false;
-        }
-
-        /// <summary>Fill (and return) the reused <see cref="tmpInvCountByDef"/> scratch with total units per def
-        /// across the owner's stacks — one O(n) pass, so the surplus scan can answer "how many of this def?" with
-        /// a dict lookup instead of re-walking the inventory per stack.</summary>
-        private static Dictionary<ThingDef, int> BuildInvCountByDef(ThingOwner inner)
-        {
-            var counts = tmpInvCountByDef ?? (tmpInvCountByDef = new Dictionary<ThingDef, int>());
-            counts.Clear();
-            for (int i = 0; i < inner.Count; i++)
-            {
-                var t = inner[i];
-                if (t?.def == null)
-                    continue;
-                counts.TryGetValue(t.def, out int c);
-                counts[t.def] = c + t.stackCount;
-            }
-            return counts;
         }
 
         /// <summary>Can the unload place this anywhere — a real stockpile/container, OR (failing that) a
@@ -433,7 +531,10 @@ namespace HaulersDream
         /// entries with takeToInventory &gt; 0 plus inventoryStock entries (two of the three tmpItemsToKeep
         /// sources in Pawn_InventoryTracker.FirstUnloadableThing; the third, packable food, is per-stack
         /// nutrition math — see <see cref="FoodKeepCountOf"/>), plus the CE loadout reserve.</summary>
-        public static int KeepCountOf(Pawn pawn, ThingDef def)
+        public static int KeepCountOf(Pawn pawn, ThingDef def) => KeepCountOf(pawn, def, null);
+
+        /// <summary>Hoisted form using a caller-supplied CE refill keep-map when scanning multiple stacks.</summary>
+        internal static int KeepCountOf(Pawn pawn, ThingDef def, Dictionary<ThingDef, int> ceKeepByDef)
         {
             int keep = 0;
             // Routed through the shared accessor (#232) rather than open-coded here — same integer-indexer walk,
@@ -447,7 +548,9 @@ namespace HaulersDream
                     if (entry != null && entry.thingDef == def)
                         keep += entry.count;
             // Under CE the pawn's assigned loadout (ammo/sidearm reserve) is personal stock too — keep it.
-            keep += CECompat.LoadoutKeepCount(pawn, def);
+            keep += ceKeepByDef != null
+                ? (ceKeepByDef.TryGetValue(def, out int ceKeep) ? ceKeep : 0)
+                : CECompat.LoadoutKeepCount(pawn, def);
             // Item Policy's per-pawn inventory-stock count: keep it too, or HD's unload fights its re-fetch loop.
             keep += ItemPolicyCompat.KeepCount(pawn, def);
             // Compositable Loadouts' per-pawn loadout desired count (#200): same re-fetch-loop family as Item Policy.

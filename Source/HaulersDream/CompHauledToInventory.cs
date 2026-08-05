@@ -1,4 +1,6 @@
+using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Threading;
 using HaulersDream.Core;
 using RimWorld;
 using Verse;
@@ -14,6 +16,31 @@ namespace HaulersDream
     public class CompHauledToInventory : ThingComp
     {
         private HashSet<Thing> takenToInventory = new HashSet<Thing>();
+        // Read-only hooks (notably CE's loadout work scan, which Yet Another Optimizer may run concurrently) must
+        // never enumerate the live HashSet or invoke GetHashSet's mutating self-heal. Keep a transient concurrent
+        // mirror of the exact tracked Thing references for those hooks. Every set mutation in this assembly routes
+        // through RegisterHauledItem/Deregister (including the unload driver's relink/removal paths), while the
+        // self-heal updates the mirror beside its own prune/add. Rebuilt once after loading; never scribed.
+        [System.NonSerialized] private ConcurrentDictionary<Thing, byte> trackedNoHeal
+            = new ConcurrentDictionary<Thing, byte>();
+        // GetHashSet performs a mutating self-heal. Work-giver optimizers may ask several worker threads to
+        // inspect the SAME pawn in parallel, so those heals must not concurrently mutate takenToInventory,
+        // taggedTick, or keptCounts. The CE postfix deliberately does not take this lock: it reads the
+        // ConcurrentDictionary mirror through CopyTrackedNoHeal instead, avoiding a game-state mutation or a
+        // worker/main-thread lock dependency in CE's periodic loadout scan.
+        [System.NonSerialized] private object trackedSync = new object();
+
+        private object TrackedSync
+        {
+            get
+            {
+                var current = trackedSync;
+                if (current != null)
+                    return current;
+                var created = new object();
+                return Interlocked.CompareExchange(ref trackedSync, created, null) ?? created;
+            }
+        }
         // Per-def amount the player pinned this pawn to KEEP in inventory (issue #197: "keep N of a def", set by the
         // "Keep X in inventory" order's slider or the Gear-tab keep button). keptCounts[def] = N means HD holds up to
         // N units of def: the unload never sheds the first N (InventorySurplus treats only held-above-N as surplus)
@@ -34,7 +61,7 @@ namespace HaulersDream
         public int lastYieldTick = -99999;
 
         /// <summary>Tick the <see cref="GetHashSet"/> self-heal last ran. The heal (an <c>owner.Count</c> inventory
-        /// walk + Simple Sidearms reflection + CE re-notify + tag-age sync) is idempotent WITHIN one tick — the
+        /// walk + Simple Sidearms reflection + tag-age sync) is idempotent WITHIN one tick — the
         /// inventory can't change mid-tick from the read-only share/probe callers that drive it — so once healed
         /// this tick, repeat calls short-circuit straight to <c>return takenToInventory</c>. Any path that MUTATES
         /// the set (scoop registration / deregister) resets this to force the next call to re-heal, so a same-tick
@@ -103,8 +130,15 @@ namespace HaulersDream
 
         public HashSet<Thing> GetHashSet()
         {
+            lock (TrackedSync)
+                return GetHashSetLocked();
+        }
+
+        /// <summary>Mutating self-heal. Caller must hold <see cref="TrackedSync"/>.</summary>
+        private HashSet<Thing> GetHashSetLocked()
+        {
             // HD-GETHASHSET: already self-healed this tick (and no mutation since — a scoop/deregister resets the
-            // stamp) -> skip the whole heal (owner.Count walk + SS reflection + CE re-notify + tag-age sync) and
+            // stamp) -> skip the whole heal (owner.Count walk + SS reflection + tag-age sync) and
             // hand back the live set. The read-only share/probe callers (bill ingredient search, load deposit
             // probes, GetRest/GetFood/GetJoy postfixes) hit this many times per scan; the inventory can't change
             // mid-tick from them, so the second-and-later calls are pure waste without this gate. (ShouldReheal:
@@ -124,8 +158,12 @@ namespace HaulersDream
             var carryOver = tmpCarryOverDefs ?? (tmpCarryOverDefs = new HashSet<ThingDef>());
             carryOver.Clear();
             foreach (var x in takenToInventory)
-                if ((x == null || x.Destroyed) && x?.def != null)
-                    carryOver.Add(x.def);
+                if (x == null || x.Destroyed)
+                {
+                    if (x?.def != null)
+                        carryOver.Add(x.def);
+                    MirrorRemove(x);
+                }
 
             takenToInventory.RemoveWhere(x => x == null || x.Destroyed);
 
@@ -223,12 +261,12 @@ namespace HaulersDream
                 for (int i = 0; i < toTag.Count; i++)
                 {
                     var thing = owner[toTag[i]];
-                    // Re-tagged (merged/split) stacks also re-register with CE's HoldTracker — a merge can grow a
-                    // stack past the originally-notified count, and CE drops the un-held excess otherwise.
+                    // Publish to the async-safe mirror FIRST. A worker observing the tiny gap may conservatively
+                    // defer one CE cleanup pass; publishing live-first could instead let CE drop newly-owned cargo.
+                    MirrorAdd(thing);
                     if (takenToInventory.Add(thing))
                     {
                         StampTick(thing);
-                        CECompat.NotifyHeld(pawn, thing, thing.stackCount);
                     }
                 }
             }
@@ -272,45 +310,113 @@ namespace HaulersDream
         /// Unknown stacks read as "now" (conservative: a tag with no recorded age never looks stale).</summary>
         public int FirstTaggedTick(Thing thing)
         {
-            if (thing != null && taggedTick != null && taggedTick.TryGetValue(thing, out int tick))
-                return tick;
-            return Find.TickManager?.TicksGame ?? 0;
+            lock (TrackedSync)
+            {
+                if (thing != null && taggedTick != null && taggedTick.TryGetValue(thing, out int tick))
+                    return tick;
+                return Find.TickManager?.TicksGame ?? 0;
+            }
         }
 
         public void RegisterHauledItem(Thing thing, int mergedCount = 0)
         {
-            // A NEW tag notifies CE's HoldTracker with the full stack, so loadout enforcement doesn't dump
-            // the scooped/swept goods on the floor before the unload trip runs. A RE-register of an
-            // already-tagged stack notifies only when a merge GREW it (mergedCount > 0) — CE's record
-            // otherwise still holds the originally-notified count and a custom-loadout pawn would drop the
-            // un-held growth mid-run. Over-counting is the safe direction (CE resets the record to
-            // live + count on re-notify). No-op without CE.
+            // Keep mergedCount in the public signature for binary/source compatibility with integrations built
+            // against older HD releases. It previously existed only to increment CE HoldTracker records; cargo is
+            // now protected from CE through a transient GetExcessThing guard, so the value is intentionally unused.
             if (thing == null)
                 return;
+            lock (TrackedSync)
+                RegisterHauledItemLocked(thing);
+        }
+
+        /// <summary>Register one live cargo tag. Caller must hold <see cref="TrackedSync"/>.</summary>
+        private void RegisterHauledItemLocked(Thing thing)
+        {
             // A new tag (or any registration) mutates the tracked set, so force the next GetHashSet to re-heal:
             // a same-tick scoop must be reflected in the share/probe view even though it was already healed
             // earlier this tick (HD-GETHASHSET). Cheap (an int write) vs the missed-scoop correctness it protects.
             lastHealTick = -1;
-            if (takenToInventory.Add(thing))
-            {
+            // Safe publication order for asynchronous CE scans: a transient mirror-only entry merely delays one
+            // cleanup probe, whereas a transient live-only tag can let CE floor-drop cargo HD already owns.
+            MirrorAdd(thing);
+            bool added = takenToInventory.Add(thing);
+            if (added)
                 StampTick(thing);
-                CECompat.NotifyHeld(parent as Pawn, thing, thing.stackCount);
-            }
-            else if (mergedCount > 0)
-                CECompat.NotifyHeld(parent as Pawn, thing, mergedCount);
         }
 
-        /// <summary>The tracked set WITHOUT the self-heal / CE-notify side effects — for read-only consumers
+        /// <summary>The tracked set WITHOUT the self-heal side effects — for read-only consumers
         /// on the UI/render path (the cannot-unload alert's staleness scan) that must not mutate game state.
         /// May contain destroyed or out-of-inventory tags; callers guard each entry.</summary>
         public HashSet<Thing> PeekHashSet() => takenToInventory;
+
+        /// <summary>
+        /// Copy a weakly-consistent, side-effect-free snapshot of the tracked Things into caller-owned storage.
+        /// ConcurrentDictionary enumeration is safe while another thread registers/deregisters; unlike
+        /// GetHashSet this performs no heal and unlike PeekHashSet it never exposes the live mutable collection.
+        /// Stale/destroyed/out-of-inventory entries are permitted and must be filtered by the caller.
+        /// </summary>
+        public void CopyTrackedNoHeal(List<Thing> output)
+        {
+            output.Clear();
+            var mirror = trackedNoHeal;
+            if (mirror == null)
+                return;
+            foreach (var entry in mirror)
+                output.Add(entry.Key);
+        }
+
+        /// <summary>
+        /// Run the normal self-heal once under the component lock, then copy a stable snapshot into caller-owned
+        /// storage before releasing the lock. This is the safe read API for worker-thread callers that require the
+        /// healed view; they never enumerate the live HashSet after another thread can mutate it.
+        /// </summary>
+        public void CopyTrackedHealed(List<Thing> output)
+        {
+            if (output == null)
+                return;
+            lock (TrackedSync)
+            {
+                output.Clear();
+                foreach (var thing in GetHashSetLocked())
+                    output.Add(thing);
+            }
+        }
+
+        private void MirrorAdd(Thing thing)
+        {
+            if (ReferenceEquals(thing, null))
+                return;
+            if (trackedNoHeal == null)
+                trackedNoHeal = new ConcurrentDictionary<Thing, byte>();
+            trackedNoHeal.TryAdd(thing, 0);
+        }
+
+        private void MirrorRemove(Thing thing)
+        {
+            if (ReferenceEquals(thing, null) || trackedNoHeal == null)
+                return;
+            trackedNoHeal.TryRemove(thing, out _);
+        }
+
+        private void RebuildNoHealMirror()
+        {
+            var rebuilt = new ConcurrentDictionary<Thing, byte>();
+            if (takenToInventory != null)
+                foreach (var thing in takenToInventory)
+                    if (!ReferenceEquals(thing, null))
+                        rebuilt.TryAdd(thing, 0);
+            trackedNoHeal = rebuilt;
+        }
 
         /// <summary>The units of <paramref name="def"/> this pawn is pinned to keep in inventory (issue #197), or 0
         /// if none. Side-effect-free — safe on the render/alert/surplus path. Read by <see cref="InventorySurplus"/>
         /// (keep the first N, unload the rest) and the drop-unused guards (never drop a kept def).</summary>
         /// <param name="def">The item def to query. Null yields 0.</param>
         public int KeptCountOf(ThingDef def)
-            => def != null && keptCounts.TryGetValue(def, out int n) && n > 0 ? n : 0;
+        {
+            lock (TrackedSync)
+                return def != null && keptCounts.TryGetValue(def, out int n) && n > 0 ? n : 0;
+        }
 
         /// <summary>True iff this pawn keeps any amount of <paramref name="def"/> (a fast, allocation-free gate for
         /// the drop-unused guards and the Gear-tab "is kept" display).</summary>
@@ -332,8 +438,11 @@ namespace HaulersDream
         {
             if (def == null || count <= 0)
                 return;
-            keptCounts.TryGetValue(def, out int cur);
-            keptCounts[def] = cur + count;
+            lock (TrackedSync)
+            {
+                keptCounts.TryGetValue(def, out int cur);
+                keptCounts[def] = cur + count;
+            }
         }
 
         /// <summary>SET the absolute keep-count for <paramref name="def"/> (the Gear-tab slider / toggle: the player
@@ -345,10 +454,13 @@ namespace HaulersDream
         {
             if (def == null)
                 return;
-            if (count <= 0)
-                keptCounts.Remove(def);
-            else
-                keptCounts[def] = count;
+            lock (TrackedSync)
+            {
+                if (count <= 0)
+                    keptCounts.Remove(def);
+                else
+                    keptCounts[def] = count;
+            }
         }
 
         /// <summary>Total units of <paramref name="def"/> across every stack in <paramref name="owner"/>. Small
@@ -421,11 +533,38 @@ namespace HaulersDream
 
         public void Deregister(Thing thing)
         {
+            lock (TrackedSync)
+                DeregisterLocked(thing);
+        }
+
+        /// <summary>Remove one cargo tag. Caller must hold <see cref="TrackedSync"/>.</summary>
+        private void DeregisterLocked(Thing thing)
+        {
             // Mutates the tracked set -> force a re-heal next GetHashSet (HD-GETHASHSET), so a same-tick share/
             // probe view doesn't keep handing out a just-removed tag from the short-circuited cache.
             lastHealTick = -1;
             takenToInventory.Remove(thing);
+            MirrorRemove(thing);
         }
+
+        /// <summary>Prune tags that no longer live in this pawn's inventory while keeping the async mirror in
+        /// lockstep. Used instead of mutating the live HashSet through a reference returned by GetHashSet.</summary>
+        public void PruneNotInInventory(ThingOwner owner)
+        {
+            lock (TrackedSync)
+            {
+                var stale = tmpPrunedTags ?? (tmpPrunedTags = new List<Thing>());
+                stale.Clear();
+                foreach (var thing in takenToInventory)
+                    if (thing == null || thing.Destroyed || owner == null || !owner.Contains(thing))
+                        stale.Add(thing);
+                for (int i = 0; i < stale.Count; i++)
+                    DeregisterLocked(stale[i]);
+                stale.Clear();
+            }
+        }
+
+        [System.ThreadStatic] private static List<Thing> tmpPrunedTags;
 
         /// <summary>The still-valid pending drop NEAREST to this pawn's current position, or null. Prunes invalid
         /// ones along the way: despawned/destroyed, on another map (a pawn that changed maps must not walk
@@ -534,6 +673,8 @@ namespace HaulersDream
                 takenToInventory = new HashSet<Thing>();
             if (keptCounts == null)
                 keptCounts = new Dictionary<ThingDef, int>();
+            if (Scribe.mode == LoadSaveMode.PostLoadInit)
+                RebuildNoHealMirror();
         }
     }
 }

@@ -185,7 +185,7 @@ namespace HaulersDream
                         // entries no longer in the inventory keeps valid tags; destroyed ones self-prune in GetHashSet.
                         HDLog.Dbg($"{pawn} tracker out of sync ({inventoryCount} < {carried.Count}); pruning stale tags.");
                         var inv = pawn.inventory?.innerContainer;
-                        carried.RemoveWhere(t => t == null || t.Destroyed || inv == null || !inv.Contains(t));
+                        comp.PruneNotInInventory(inv);
                         inventoryCount = pawn.inventory?.innerContainer?.Count ?? 0;
                         continue;
 
@@ -304,8 +304,9 @@ namespace HaulersDream
         /// explicit surplus-producing per-item rule (keep-at-most / always-unload) are adopted — a deliberate
         /// surgical opt-in that works with the global toggle off. Bounded to surplus (keep-stock has
         /// SurplusOf==0 → never tagged), so it can't strip food / drugs / inventoryStock / CE loadout.
-        /// RegisterHauledItem is idempotent (a HashSet add) and notifies CE's HoldTracker so a CE loadout doesn't
-        /// floor-drop the adopted stock before the unload trip runs. Callers gate on eligibility + !IsFormingCaravan.
+        /// RegisterHauledItem is idempotent (a HashSet add); the CE excess-drop guard reads the same tag and surplus
+        /// state so a CE loadout doesn't floor-drop adopted stock before the unload trip. Callers gate on
+        /// eligibility + !IsFormingCaravan.
         /// </summary>
         internal static void AdoptSurplusInventory(Pawn pawn, CompHauledToInventory comp, bool adoptAll)
         {
@@ -322,15 +323,17 @@ namespace HaulersDream
                 return;
             var settings = HaulersDreamMod.Settings;
             int adopted = 0;
-            for (int i = 0; i < inner.Count; i++)
+            using (var surplusScan = InventorySurplus.BeginScan(pawn))
             {
-                var t = inner[i];
-                if (t == null || t.Destroyed)
-                    continue;
+                for (int i = 0; i < inner.Count; i++)
+                {
+                    var t = inner[i];
+                    if (t == null || t.Destroyed)
+                        continue;
                 // With the global toggle off, adopt ONLY defs the player explicitly set to keep-at-most / always-
                 // unload (RuleProducesSurplus). KeepAll/Default defs are left to the normal (tagged-only) path.
-                if (!adoptAll && (settings == null || !settings.RuleProducesSurplus(t.def)))
-                    continue;
+                    if (!adoptAll && (settings == null || !settings.RuleProducesSurplus(t.def)))
+                        continue;
                 // #222: never ADOPT (tag) a Simple Sidearms remembered sidearm or a Grab Your Tool carried tool,
                 // UNLESS the player set an explicit per-def "Unload always" rule on it. The keep exclusion itself is
                 // the SAME one the scoop self-heal applies (CompHauledToInventory.cs:191-193, excludeFromTag) and
@@ -359,23 +362,24 @@ namespace HaulersDream
                 // discipline is not to claim a stack another system is actively using. It rides the same
                 // `forcedUnload` deferral, so an explicit "Unload always" rule still wins exactly as it does inside
                 // SurplusOf. Self-releasing: once no interaction job remains, the next pass adopts normally.
-                bool forcedUnload = settings != null && settings.TryGetItemRule(t.def, out var rule)
-                                    && rule.mode == ItemUnloadMode.UnloadAlways;
-                if (!forcedUnload
-                    && (SimpleSidearmsCompat.IsRememberedSidearm(pawn, t) || GrabYourToolCompat.IsCarriedTool(pawn, t)
-                        || AnimalInteractFood.IsHeldForInteraction(pawn, t)))
-                    continue;
+                    bool forcedUnload = settings != null && settings.TryGetItemRule(t.def, out var rule)
+                                        && rule.mode == ItemUnloadMode.UnloadAlways;
+                    if (!forcedUnload
+                        && (SimpleSidearmsCompat.IsRememberedSidearm(pawn, t) || GrabYourToolCompat.IsCarriedTool(pawn, t)
+                            || AnimalInteractFood.IsHeldForInteraction(pawn, t)))
+                        continue;
                 // Only adopt surplus we can actually DELIVER. Adopting a stack with no storage destination would
                 // tag it, and the unload pass would then carry it off only to put it down again — since #231, on a
                 // home-area cell or at the pawn's feet rather than anywhere far, but still moved for no gain.
                 // Leave a no-destination stack UNTAGGED instead — it stays where it is, and
                 // Alert_CannotUnloadInventory (Condition A, tag-independent) still surfaces it as a real black hole.
-                if (InventorySurplus.SurplusOf(pawn, t) > 0 && InventorySurplus.HasUnloadDestination(pawn, t))
-                {
-                    int before = comp.PeekHashSet().Count;
-                    comp.RegisterHauledItem(t);
-                    if (comp.PeekHashSet().Count > before)
-                        adopted++;
+                    if (surplusScan.SurplusOf(t) > 0 && InventorySurplus.HasUnloadDestination(pawn, t))
+                    {
+                        int before = comp.PeekHashSet().Count;
+                        comp.RegisterHauledItem(t);
+                        if (comp.PeekHashSet().Count > before)
+                            adopted++;
+                    }
                 }
             }
             if (adopted > 0)
@@ -394,14 +398,47 @@ namespace HaulersDream
         /// pawn's personal keep-stock — i.e. the unload pass would actually move something. Uses the SAME
         /// surplus math as the unload driver and the cannot-unload alert (<see cref="InventorySurplus"/>), so
         /// the three never disagree.</summary>
-        internal static bool AnyUnloadable(Pawn pawn, HashSet<Thing> carried)
+        internal static bool AnyUnloadable(Pawn pawn, IEnumerable<Thing> carried)
         {
             var inner = pawn.inventory?.innerContainer;
             if (inner == null || carried == null)
                 return false;
-            foreach (var t in carried)
-                if (t != null && inner.Contains(t) && InventorySurplus.SurplusOf(pawn, t) > 0)
-                    return true;
+            if (carried is ICollection<Thing> collection && collection.Count == 0)
+                return false;
+
+            // One coherent, depth-safe inventory/CE allocation per scan. Recomputed on every invocation rather
+            // than cached by tick because hauling can change the inventory several times inside one game tick.
+            using (var scan = InventorySurplus.BeginScan(pawn))
+            {
+                foreach (var t in carried)
+                {
+                    if (t == null)
+                        continue;
+                    // Normal exact-reference path. Every candidate came from tracked cargo, so pass ownership
+                    // explicitly and never perform a second live-HashSet membership read.
+                    if (!t.Destroyed && inner.Contains(t))
+                    {
+                        if (scan.SurplusOf(t, true) > 0)
+                            return true;
+                        continue;
+                    }
+
+                    // Merge-before-heal window: the tagged source Thing may already be destroyed while its
+                    // same-def survivor has not yet been relinked into either live tags or the mirror. Resolve that
+                    // survivor from the inventory just as GetHashSet's main-thread heal will. Conservatively
+                    // deferring CE for one scan is safe; missing it can recreate the pickup/drop loop.
+                    var def = t.def;
+                    if (def == null)
+                        continue;
+                    for (int i = 0; i < inner.Count; i++)
+                    {
+                        var survivor = inner[i];
+                        if (survivor != null && !survivor.Destroyed && survivor.def == def
+                            && scan.SurplusOf(survivor, true) > 0)
+                            return true;
+                    }
+                }
+            }
             return false;
         }
 
@@ -464,7 +501,7 @@ namespace HaulersDream
         }
 
         /// <summary>True iff <paramref name="job"/> is a vanilla DoBill whose bill matches a tagged stack still
-        /// in the pawn's inventory. Read-only (PeekHashSet — no GetHashSet self-heal/CE-notify on a decision
+        /// in the pawn's inventory. Read-only (PeekHashSet — no GetHashSet self-heal on a decision
         /// path); the inv.Contains guard excludes anything no longer held. HD's own gather drivers aren't
         /// JobDefOf.DoBill, so they're naturally excluded.</summary>
         private static bool MatchesActiveDoBill(Job job, CompHauledToInventory comp, ThingOwner<Thing> inv)

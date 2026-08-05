@@ -135,10 +135,8 @@ namespace HaulersDream
             }
 
             // Re-tag it: PullItemFromInventory dropped the tag when it pulled the stack into the hands, and an
-            // untagged surplus sitting in the pack is a silent black hole (gizmo hidden, never retried). The
-            // carried count is passed as the merge delta so Combat Extended's HoldTracker is re-notified for
-            // the units that moved back, matching what RegisterHauledItem does for a grown stack elsewhere.
-            pawn.TryGetComp<CompHauledToInventory>()?.RegisterHauledItem(returned, carriedCount);
+            // untagged surplus sitting in the pack is a silent black hole (gizmo hidden, never retried).
+            pawn.TryGetComp<CompHauledToInventory>()?.RegisterHauledItem(returned);
             job.SetTarget(TargetIndex.A, returned);
 
             skippedThisJob.Add(returned);
@@ -208,6 +206,9 @@ namespace HaulersDream
 
             var comp = pawn.TryGetComp<CompHauledToInventory>();
             var carried = comp?.GetHashSet() ?? new HashSet<Thing>();
+            // `carried` is the comp's live backing set when the comp exists. Route every mutation through the
+            // component API so its heal stamp and tag-age bookkeeping stay coherent; this local reference observes
+            // those Add/Remove operations immediately because the API mutates that same set.
 
             // If this job is interrupted mid-trip — a draft, a mod cancelling it, or CommonSense's
             // "put the carried thing back into inventory" transpiler — AFTER an item was pulled into the
@@ -225,8 +226,8 @@ namespace HaulersDream
                     comp.RegisterHauledItem(held);
             });
 
-            yield return FindTargetOrDrop(carried, begin);
-            yield return PullItemFromInventory(carried, begin);
+            yield return FindTargetOrDrop(comp, carried, begin);
+            yield return PullItemFromInventory(comp, begin);
 
             var releaseReservation = ReleaseReservation();
             var carryToCell = Toils_Haul.CarryHauledThingToCell(TargetIndex.B);
@@ -258,7 +259,7 @@ namespace HaulersDream
             };
         }
 
-        private Toil PullItemFromInventory(HashSet<Thing> carried, Toil wait)
+        private Toil PullItemFromInventory(CompHauledToInventory comp, Toil wait)
         {
             return new Toil
             {
@@ -267,7 +268,7 @@ namespace HaulersDream
                     var thing = job.GetTarget(TargetIndex.A).Thing;
                     if (thing == null || !pawn.inventory.innerContainer.Contains(thing))
                     {
-                        carried.Remove(thing);
+                        comp?.Deregister(thing);
                         pawn.jobs.curDriver.JumpToToil(wait);
                         return;
                     }
@@ -280,7 +281,7 @@ namespace HaulersDream
                         // strand it untracked (gizmo hidden, never retried).
                         var original = thing;
                         if (InventoryDrop.TryDropPreferHome(pawn, thing, countToDrop, "no-manipulation", out thing))
-                            carried.Remove(original);
+                            comp?.Deregister(original);
                         EndJobWith(JobCondition.Succeeded);
                         return;
                     }
@@ -296,13 +297,13 @@ namespace HaulersDream
                     }
                     job.count = countToDrop;
                     job.SetTarget(TargetIndex.A, thing);
-                    carried.Remove(thing);
+                    comp?.Deregister(thing);
                     thing.SetForbidden(false, false);
                 }
             };
         }
 
-        private Toil FindTargetOrDrop(HashSet<Thing> carried, Toil begin)
+        private Toil FindTargetOrDrop(CompHauledToInventory comp, HashSet<Thing> carried, Toil begin)
         {
             return new Toil
             {
@@ -317,7 +318,7 @@ namespace HaulersDream
                         lastDeliveredDef = null;
                     }
 
-                    var next = FirstUnloadableThing(carried);
+                    var next = FirstUnloadableThing(comp, carried);
                     if (next.Count == 0)
                     {
                         // No unloadable stack right now. End Succeeded when nothing remains, OR when the only
@@ -378,7 +379,7 @@ namespace HaulersDream
                             // Untag only when the drop actually happened — a failed drop leaves the thing in
                             // inventory, where a missing tag would strand it untracked (gizmo hidden, never retried).
                             if (InventoryDrop.TryDropPreferHome(pawn, next.Thing, next.Count, "reserve-failed-storage", out _))
-                                carried.Remove(next.Thing);
+                                comp?.Deregister(next.Thing);
                             EndJobWith(JobCondition.Incompletable);
                             return;
                         }
@@ -484,7 +485,7 @@ namespace HaulersDream
                         {
                             if (InventoryDrop.TryDropPreferHome(pawn, next.Thing, next.Count, "reserve-failed-fallback", out _))
                             {
-                                carried.Remove(next.Thing);
+                                comp?.Deregister(next.Thing);
                                 pawn.jobs.curDriver.JumpToToil(begin);
                                 return;
                             }
@@ -518,7 +519,7 @@ namespace HaulersDream
                                   + $"{next.Thing.LabelShort} x{next.Count}; dropping here and backing it off.");
                         if (InventoryDrop.TryDropPreferHome(pawn, next.Thing, next.Count, "nowhere", out _))
                         {
-                            carried.Remove(next.Thing);
+                            comp?.Deregister(next.Thing);
                             pawn.jobs.curDriver.JumpToToil(begin);
                             return;
                         }
@@ -530,9 +531,11 @@ namespace HaulersDream
             };
         }
 
-        private ThingCount FirstUnloadableThing(HashSet<Thing> carried)
+        private ThingCount FirstUnloadableThing(CompHauledToInventory comp, HashSet<Thing> carried)
         {
             var inner = pawn.inventory.innerContainer;
+            using (var surplusScan = InventorySurplus.BeginScan(pawn))
+            {
 
             // Snapshot the carried set into reused scratch, then pull elements smallest-first in
             // (FirstThingCategory.index asc, null last, then ordinal defName) order — the allocation-free equivalent
@@ -611,7 +614,7 @@ namespace HaulersDream
                 {
                     // A partially-picked-up stack merged in inventory gets a new ThingID; relink to it.
                     var def = thing.def;
-                    carried.Remove(thing);
+                    comp?.Deregister(thing);
                     for (var i = 0; i < inner.Count; i++)
                     {
                         if (inner[i].def == def)
@@ -620,10 +623,11 @@ namespace HaulersDream
                             // a surplus stack but left it untagged, the keep-stock remainder after the unload
                             // would lose tracking; and if it's entirely keep-stock right now, dropping the
                             // def's last tag would strand a later-resurfacing surplus untagged (a silent black
-                            // hole). Adding to the live tag set (== comp.GetHashSet()) keeps it tracked either
-                            // way. (Bounded to this scooped def, so a foreign mod's stash is never claimed.)
-                            carried.Add(inner[i]);
-                            int relinked = UnloadableCountOf(inner[i]);
+                            // hole). Registering through the comp updates the live set referenced by `carried` and
+                            // keeps its heal/timestamp bookkeeping coherent. (Bounded to this scooped def, so a
+                            // foreign mod's stash is never claimed.)
+                            comp?.RegisterHauledItem(inner[i]);
+                            int relinked = surplusScan.SurplusOf(inner[i], true);
                             if (relinked <= 0)
                                 break; // entirely keep-stock for now — keep the tag, move on (see below)
                             return new ThingCount(inner[i], relinked);
@@ -636,7 +640,7 @@ namespace HaulersDream
                 // CanReserve is false exactly when someone else holds the reservation; skip those.
                 if (!pawn.CanReserve(thing))
                     continue;
-                int count = UnloadableCountOf(thing);
+                int count = surplusScan.SurplusOf(thing, true);
                 if (count <= 0)
                     // Nothing above the pawn's keep count right now — personal stock, not surplus. KEEP the
                     // tag (we never dump keep-stock: UnloadableCountOf clamps the unload to the surplus, so
@@ -647,14 +651,13 @@ namespace HaulersDream
                 return new ThingCount(thing, count);
             }
             return default;
+            }
         }
 
         // The "surplus above the pawn's personal kit" math now lives in InventorySurplus, so the unload
         // driver and the cannot-unload alert agree EXACTLY on what is surplus and what is keep-stock.
         // (Vanilla parity: the three FirstUnloadableThing keep sources — drug policy, inventoryStock,
         // packable food — plus the CE loadout. See InventorySurplus.)
-        private int UnloadableCountOf(Thing thing) => InventorySurplus.SurplusOf(pawn, thing);
-
         // Pawn->best-storage-cell squared distance for the closest-destination-first ordering (C1b), or
         // UnloadDestinationOrder.NoDestination when no storage resolves (that candidate then sorts LAST and the
         // category->defName tiebreak applies, so an unreachable-destination stack never blocks the nearer ones).
