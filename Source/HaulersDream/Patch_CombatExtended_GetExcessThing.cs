@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Reflection;
 using HarmonyLib;
-using HaulersDream.Core;
 using Verse;
 
 namespace HaulersDream
@@ -75,12 +74,10 @@ namespace HaulersDream
 
                 tracked = trackedScratch ?? (trackedScratch = new List<Thing>());
                 comp.CopyTrackedNoHeal(tracked);
-                bool hasAnyUnloadableCargo = PawnUnloadChecker.AnyUnloadable(__0, tracked);
-                if (!CeCargoDropPolicy.ShouldVetoExcessDrop(
-                        __result,
-                        __0.inventory.UnloadEverything,
-                        owner.Contains(__1),
-                        hasAnyUnloadableCargo))
+                // The early-return gate above already established that CE selected a live inventory excess and
+                // this is not an explicit UnloadEverything pass. Whole-load scope is intentional: tagged Beer can
+                // consume a shared GenericDrugs ceiling and make CE select an untagged Wake-Up stack instead.
+                if (!PawnUnloadChecker.AnyUnloadable(__0, tracked))
                     return;
 
                 __1 = null;

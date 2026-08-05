@@ -35,7 +35,6 @@ const CE_PATCH_PATH = resolve(repoRoot, 'Source/HaulersDream/Patch_CombatExtende
 const CE_COMPAT_PATH = resolve(repoRoot, 'Source/HaulersDream/CECompat.cs')
 const CARRY_COMP_PATH = resolve(repoRoot, 'Source/HaulersDream/CompHauledToInventory.cs')
 const CE_KEEP_TESTS_PATH = resolve(repoRoot, 'Source/HaulersDream.Tests/CeLoadoutKeepPolicyTests.cs')
-const CE_DROP_TESTS_PATH = resolve(repoRoot, 'Source/HaulersDream.Tests/CeCargoDropPolicyTests.cs')
 
 // The three vanilla seams HD must guard, expressed the way each source references them. A regression that drops
 // one of these (or renames it out of sync) trips the cross-file agreement check below — the same triple-source
@@ -106,7 +105,6 @@ async function main() {
 	const ceCompat = await read(CE_COMPAT_PATH, 'CECompat.cs')
 	const carryComp = await read(CARRY_COMP_PATH, 'CompHauledToInventory.cs')
 	const ceKeepTests = await read(CE_KEEP_TESTS_PATH, 'CeLoadoutKeepPolicyTests.cs')
-	const ceDropTests = await read(CE_DROP_TESTS_PATH, 'CeCargoDropPolicyTests.cs')
 	await read(TESTS_PATH, 'DropUnusedFoodPolicyTests.cs') // existence is the assertion
 
 	// 1. Each vanilla seam is guarded by a [HarmonyPatch(typeof(JobGiver_DropUnusedInventory), <seam>)] in the
@@ -273,7 +271,6 @@ async function main() {
 				'UnloadEverything',
 				'CopyTrackedNoHeal(',
 				'PawnUnloadChecker.AnyUnloadable(__0, tracked)',
-				'CeCargoDropPolicy.ShouldVetoExcessDrop(',
 				'__1 = null',
 				'__2 = 0',
 				'__result = false',
@@ -349,13 +346,6 @@ async function main() {
 				errors.push(`CeLoadoutKeepPolicyTests.cs is missing "${token}" — the GenericDrugs allocation contract is no longer pinned.`)
 		}
 	}
-	if (ceDropTests && !ceDropTests.includes('TaggedBeerDefersDifferentCeSelectedWakeUpStack')) {
-		errors.push(
-			`CeCargoDropPolicyTests.cs no longer pins the cross-def Beer-tagged/Wake-Up-selected case; ` +
-				`an exact selected-stack guard would reopen the CE drop loop.`
-		)
-	}
-
 	if (errors.length > 0) {
 		console.error(`\n[drop-protection] FAIL — ${errors.length} problem(s):\n`)
 		for (const e of errors) console.error(`  ✗ ${e}`)
