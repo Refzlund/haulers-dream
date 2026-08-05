@@ -27,6 +27,8 @@ namespace HaulersDream
     [HarmonyPatch(typeof(WorkGiver_DoBill), nameof(WorkGiver_DoBill.JobOnThing))]
     public static class Patch_WorkGiver_DoBill_InventoryRoute
     {
+        [System.ThreadStatic] private static List<Thing> trackedSnapshot;
+
         static void Postfix(ref Job __result, Pawn pawn, Thing thing, bool forced)
         {
             // Cheap gates FIRST so the per-pawn-scan reflection in CommonSenseCompat.OwnsDoBillFlow only runs when
@@ -135,10 +137,22 @@ namespace HaulersDream
             var owner = pawn.inventory?.innerContainer;
             if (comp == null || owner == null || bill?.recipe == null)
                 return false;
-            foreach (var tagged in comp.GetHashSet())
-                if (tagged != null && owner.Contains(tagged) && InventoryShare.IsUsableForBill(tagged, bill))
-                    return true;
-            return false;
+            var tracked = trackedSnapshot ?? (trackedSnapshot = new List<Thing>());
+            comp.CopyTrackedHealed(tracked);
+            try
+            {
+                for (int i = 0; i < tracked.Count; i++)
+                {
+                    var tagged = tracked[i];
+                    if (tagged != null && owner.Contains(tagged) && InventoryShare.IsUsableForBill(tagged, bill))
+                        return true;
+                }
+                return false;
+            }
+            finally
+            {
+                tracked.Clear();
+            }
         }
     }
 }

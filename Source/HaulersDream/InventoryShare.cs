@@ -15,6 +15,13 @@ namespace HaulersDream
     /// </summary>
     public static class InventoryShare
     {
+        // WorkGiver_DoBill may be evaluated in parallel by optimizer mods. Never enumerate the component's live
+        // self-healing HashSet after its lock is released; each hot helper gets a separate per-thread snapshot so
+        // the normal Find -> Count -> Consider call chain cannot clobber a sibling helper's iteration.
+        [ThreadStatic] private static List<Thing> considerTrackedSnapshot;
+        [ThreadStatic] private static List<Thing> billTrackedSnapshot;
+        [ThreadStatic] private static List<Thing> countTrackedSnapshot;
+
         /// <summary>A reachable carrier's tagged inventory stack of <paramref name="def"/>, closest first, or null.
         /// The worker's OWN scooped stock is considered first (distance 0), so it's used before fetching from others.</summary>
         public static Thing FindSharableStack(Map map, Pawn worker, ThingDef def)
@@ -53,8 +60,11 @@ namespace HaulersDream
                 return;
             bool isSelf = carrier == worker;
             bool reachable = isSelf, reachChecked = isSelf;
-            foreach (var tagged in comp.GetHashSet())
+            var tracked = considerTrackedSnapshot ?? (considerTrackedSnapshot = new List<Thing>());
+            comp.CopyTrackedHealed(tracked);
+            for (int i = 0; i < tracked.Count; i++)
             {
+                var tagged = tracked[i];
                 if (tagged == null || tagged.def != def || !owner.Contains(tagged))
                     continue;
                 bool canReserve = worker.CanReserve(tagged);
@@ -77,6 +87,7 @@ namespace HaulersDream
                     best = tagged;
                 }
             }
+            tracked.Clear();
         }
 
         /// <summary>
@@ -146,8 +157,11 @@ namespace HaulersDream
                 return;
             bool isSelf = carrier == worker;
             bool reachable = isSelf, reachChecked = isSelf;
-            foreach (var tagged in comp.GetHashSet())
+            var tracked = billTrackedSnapshot ?? (billTrackedSnapshot = new List<Thing>());
+            comp.CopyTrackedHealed(tracked);
+            for (int i = 0; i < tracked.Count; i++)
             {
+                var tagged = tracked[i];
                 if (tagged == null || !owner.Contains(tagged) || !IsUsableForBill(tagged, bill))
                     continue;
                 bool canReserve = worker.CanReserve(tagged); // a stack reserved for the carrier's own job -> opt-out
@@ -162,6 +176,7 @@ namespace HaulersDream
                     && !outList.Contains(tagged))
                     outList.Add(tagged);
             }
+            tracked.Clear();
         }
 
         /// <summary>Mirror of vanilla <c>WorkGiver_DoBill.IsUsableIngredient</c>: allowed by the bill and by some recipe
@@ -254,9 +269,15 @@ namespace HaulersDream
             if (comp == null || owner == null)
                 return 0;
             int total = 0;
-            foreach (var tagged in comp.GetHashSet())
+            var tracked = countTrackedSnapshot ?? (countTrackedSnapshot = new List<Thing>());
+            comp.CopyTrackedHealed(tracked);
+            for (int i = 0; i < tracked.Count; i++)
+            {
+                var tagged = tracked[i];
                 if (tagged != null && tagged.def == def && owner.Contains(tagged))
                     total += tagged.stackCount;
+            }
+            tracked.Clear();
             return total;
         }
 

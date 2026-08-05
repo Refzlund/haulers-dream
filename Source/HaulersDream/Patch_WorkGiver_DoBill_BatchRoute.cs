@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using HarmonyLib;
 using HaulersDream.Core;
 using RimWorld;
@@ -20,6 +21,8 @@ namespace HaulersDream
     [HarmonyPatch(typeof(WorkGiver_DoBill), nameof(WorkGiver_DoBill.JobOnThing))]
     public static class Patch_WorkGiver_DoBill_BatchRoute
     {
+        [System.ThreadStatic] private static List<Thing> trackedSnapshot;
+
         [HarmonyPriority(Priority.First)]
         static void Postfix(ref Job __result, Pawn pawn, Thing thing, bool forced)
         {
@@ -124,28 +127,41 @@ namespace HaulersDream
             // Butchery/smelting yields are dynamic specialProducts (not in recipe.products), so their defs can't
             // be matched individually; for such recipes any genuinely-surplus tagged stock counts as pending.
             bool hasSpecialProducts = !bill.recipe.specialProducts.NullOrEmpty();
-            foreach (var tagged in comp.GetHashSet())
+            var tracked = trackedSnapshot ?? (trackedSnapshot = new List<Thing>());
+            comp.CopyTrackedHealed(tracked);
+            try
             {
-                if (tagged == null || !owner.Contains(tagged))
-                    continue;
-                // A leftover INGREDIENT still usable for the bill: don't re-gather a fresh batch on top of it (any mode).
-                if (InventoryShare.IsUsableForBill(tagged, bill))
-                    return true;
-                // A made PRODUCT only signals a "batch pending unload" if it is genuinely SURPLUS (will actually
-                // move out). A product the cook KEEPS — e.g. a lavish meal a "Lavish"-restricted cook holds as a
-                // packed lunch, whose SurplusOf is 0 — lingers in inventory forever and must NOT block re-batching,
-                // or the bill batches exactly once then drops to vanilla single-item crafting. (That was the
-                // "Batch only worked the first time" bug.) Gating on real surplus mirrors what the unload pass does:
-                // while genuinely-surplus products are still held the batch IS mid-unload, so deferring is correct;
-                // once they've unloaded, only the kept lunch remains and re-batching proceeds.
-                if (InventorySurplus.SurplusOf(pawn, tagged) <= 0)
-                    continue;
-                if (hasSpecialProducts)
-                    return true;
-                if (products != null)
-                    for (int i = 0; i < products.Count; i++)
-                        if (products[i]?.thingDef == tagged.def)
+                using (var surplusScan = InventorySurplus.BeginScan(pawn))
+                {
+                    for (int j = 0; j < tracked.Count; j++)
+                    {
+                        var tagged = tracked[j];
+                        if (tagged == null || !owner.Contains(tagged))
+                            continue;
+                        // A leftover INGREDIENT still usable for the bill: don't re-gather a fresh batch on top of it (any mode).
+                        if (InventoryShare.IsUsableForBill(tagged, bill))
                             return true;
+                    // A made PRODUCT only signals a "batch pending unload" if it is genuinely SURPLUS (will actually
+                    // move out). A product the cook KEEPS — e.g. a lavish meal a "Lavish"-restricted cook holds as a
+                    // packed lunch, whose SurplusOf is 0 — lingers in inventory forever and must NOT block re-batching,
+                    // or the bill batches exactly once then drops to vanilla single-item crafting. (That was the
+                    // "Batch only worked the first time" bug.) Gating on real surplus mirrors what the unload pass does:
+                    // while genuinely-surplus products are still held the batch IS mid-unload, so deferring is correct;
+                    // once they've unloaded, only the kept lunch remains and re-batching proceeds.
+                        if (surplusScan.SurplusOf(tagged, true) <= 0)
+                            continue;
+                        if (hasSpecialProducts)
+                            return true;
+                        if (products != null)
+                            for (int i = 0; i < products.Count; i++)
+                                if (products[i]?.thingDef == tagged.def)
+                                    return true;
+                    }
+                }
+            }
+            finally
+            {
+                tracked.Clear();
             }
             return false;
         }
