@@ -137,6 +137,10 @@ put away (see the in-game "Cannot unload inventory" alert).
   originating in its own FFI engine is attributable to it, not to HD, via HD's `HDGuard` error signatures.)
 
 ### Threading and performance mods (compatible; HD is thread-safe on its hot paths)
+- **Yet Another Optimizer** can evaluate `WorkGiver_DoBill` and region searches on parallel workers. HD therefore
+  serializes the mutating inventory-tag self-heal per pawn and gives those worker-side ingredient/share scans a
+  stable caller-owned snapshot. This specifically avoids concurrent writes to the tag-age dictionary and tracked
+  `HashSet`; the CE loadout hook uses the non-healing concurrent mirror described below.
 - **RimThreaded - Continued** (`LuniX`, 1.6) parallelizes only particle simulation and drawing,
   background-thread RNG, and off-thread sound, with **no shared patch targets** with HD's hauling/job code;
   **RimSmooth** (1.6) is 26 single-threaded perf tweaks (caching, tick throttling, dictionary lookups).
@@ -145,13 +149,15 @@ put away (see the in-game "Cannot unload inventory" alert).
   but it is 1.4-only; it is the reference threat model for the note below.)
 - **HD is already thread-safe where it counts,** by design: its hot scan-path scratch is `[ThreadStatic]`
   and its cross-pawn arbitration tables (the anti-churn guards, the cache registry) are `lock`-guarded,
-  because a threading mod does not auto-fix a non-whitelisted mod's own statics. As forward-insurance against
-  a future 1.6 AI-threading mod (for example RimMT, if it threads AI), two more per-tick memos were hardened
+  because a threading mod does not auto-fix a non-whitelisted mod's own statics. The inventory-tag self-heal is
+  serialized per pawn, and WorkGiver readers use caller-owned snapshots; the CE periodic loadout seam uses a
+  non-healing `ConcurrentDictionary` mirror, so it neither mutates game state nor enumerates a live `HashSet`
+  from an optimizer worker. As forward-insurance against a future 1.6 AI-threading mod (for example RimMT, if
+  it threads AI), two more per-tick memos were hardened
   to match their already-`[ThreadStatic]` siblings: `HaulToStack`'s stack-cell memo is now `[ThreadStatic]`
   (like `BulkHaul`'s plan cache) and the yield/haul job-def memo is a `ConcurrentDictionary`. Both are zero
-  behaviour change single-threaded. A few genuinely cross-pawn structures (self-pickup claims, the load
-  ledger, the inventory-tag re-heal) stay main-thread-scoped: latent only under a full pawn-AI-threading mod,
-  documented for that day rather than locked pre-emptively.
+  behaviour change single-threaded. A few genuinely cross-pawn structures (self-pickup claims and the load
+  ledger) remain main-thread-scoped; the per-pawn inventory tag state is not one of them.
 
 ### Smarter Construction (`dhultgren.smarterconstruction`) — a crash HD now contains (issue #235)
 **Symptom.** Every colonist wanders idle. Nobody tends wounds, nobody hauls, nobody cleans — but they
@@ -355,14 +361,29 @@ throws a `NullReferenceException` there. Recorded so nobody re-derives it.
 ### Loadout / inventory-stock mods vs. the "unload all surplus" option
 The **"Also put away surplus inventory a pawn is carrying that HD did NOT pick up itself"** option (on by
 default) makes a colonist at home unload *any* surplus it carries, not just HD-scooped loot. "Surplus"
-respects every keep source vanilla itself respects — drug-policy `takeToInventory`, `inventoryStock`,
-packable food, and the **Combat Extended** loadout — so those are never put away. The risk is a mod that
+respects every keep source vanilla itself respects — drug-policy `takeToInventory`, `inventoryStock`, and
+packable food — plus quantities a **Combat Extended** loadout actively refills. The risk is a mod that
 keeps items in a pawn's inventory through its **own** system rather than one of those:
 - **Smart Medicine** (stock-up) and **sidearm mods (e.g. Simple Sidearms)** stash items in inventory via
   their own tracking. HD's surplus math can't see that intent, so with the option on it may haul those
   stashed items to storage. If you use such a mod and want the stash kept, **turn the option off** in
   HD's settings (the gizmo, the every-work-run/interval triggers, and the red alert still handle
-  genuinely-stuck HD-scooped loot when it's off). CE loadouts are safe — HD reads the CE loadout as keep-stock.
+  genuinely-stuck HD-scooped loot when it's off). CE loadouts compose as follows: HD keeps only quantities CE
+  would actively refill (`pickupDrop`) and shares a generic refill quantity across its matching defs in CE's own
+  order. A `dropExcess` slot remains a CE category ceiling, but does not contribute to HD's personal-stock keep
+  count. When CE reports an excess item while the pawn still has any genuinely unloadable HD-tagged cargo, HD
+  defers that CE drop pass; ordinary CE cleanup resumes as soon as no real HD surplus remains. HD never registers
+  temporary cargo as a persistent CE forced-carry item.
+
+  The guard is intentionally whole-load rather than selected-stack-only: CE may select untagged Wake-Up because
+  tagged Beer consumed the shared `GenericDrugs` ceiling. Consequently, while any HD cargo is pending, CE may also
+  postpone cleanup of an unrelated excess stack for that pawn. Nothing is made permanent or lost: the deferred
+  cleanup runs again after HD stores its cargo; explicit `UnloadEverything` always bypasses the guard.
+
+  This bridge cannot make contradictory independent policies compatible. If the vanilla drug policy's combined
+  `takeToInventory` minimums for matching drugs already exceed a CE category ceiling, CE can drop what vanilla
+  immediately refills even with HD disabled. Reduce the vanilla preload total to at most the CE ceiling, or remove
+  one of the two rules.
 - **Item Policy** (`RunningBugs.ItemPolicy`) — **auto-respected, no setting change needed.** It keeps a
   per-pawn "N of these defs in inventory" stock (re-fetched by its own `JobGiver_TakeItemForInventoryStock`).
   HD reads that per-pawn keep count (a reflection-only `ItemPolicyCompat` feeding HD's **count-aware** keep),

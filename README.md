@@ -44,7 +44,10 @@ Compatibility is built deliberately, by studying each mod's architecture and add
 integration layer. Soft dependencies are reflection-only and **inert when the other mod is absent.**
 
 - **Combat Extended** — CE's weight / bulk / encumbrance rules take over the carry math entirely;
-  the overload curve defers to CE, and bulk pack-animal unloading is CE weight/bulk aware.
+  the overload curve defers to CE, bulk pack-animal unloading is CE weight/bulk aware, and CE's loadout
+  cleanup is temporarily deferred while that pawn still has any genuine HD cargo to unload, without adding
+  persistent forced-carry records. Generic refill counts are shared across matching items; drop-only ceilings
+  remain CE limits but do not contribute to HD's personal-stock keep count.
 - **Vehicle Framework** — a vehicle's designated cargo bulk-loads like any other manifest (aerial
   vehicles included), and colonists eat from and build from a parked vehicle's cargo (feature 19).
 - **Adaptive Storage Framework** / **LWM's Deep Storage** — haul-to-stack works into modded storage
