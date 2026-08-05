@@ -26,7 +26,7 @@ namespace HaulersDream.Core
     /// This class holds NO Verse types: defs are opaque <c>object</c> tokens (the live <c>ThingDef</c>
     /// references at runtime; reference identity is all the decision needs), stacks are a flat value-type
     /// list, and the output is a list of indices. The Verse mapper (<c>GetHashSet</c>) supplies the inputs
-    /// and applies the Thing-level side effects (set-add, tag-age stamp, CE hold-notify) for the returned
+    /// and applies the Thing-level side effects (set-add and tag-age stamp) for the returned
     /// indices, plus the mechanical tag-age bookkeeping (which stays Verse-side — it is a derived sync of a
     /// <c>Dictionary&lt;Thing,int&gt;</c> against the final set, not a decision).
     /// </summary>
@@ -42,7 +42,7 @@ namespace HaulersDream.Core
             public readonly object Def;
 
             /// <summary>True if this exact stack is ALREADY in the tracked set — it must not be re-tagged
-            /// (no duplicate stamp / CE re-notify; the runtime's set-add would no-op anyway).</summary>
+            /// (no duplicate timestamp; the runtime's set-add would no-op anyway).</summary>
             public readonly bool AlreadyTagged;
 
             /// <summary>True if this stack must be excluded from tagging because another system actively keeps it

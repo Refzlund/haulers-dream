@@ -311,9 +311,6 @@ namespace HaulersDream
         /// <c>canMergeWithExistingStacks:false</c> — the exact isolation the old unconditional false-add gave,
         /// now only for the part that didn't fold into the hauled set. Net result: one inventory stack per def
         /// for the whole sweep (bounded by the stack limit), with personal stock provably never merged into.
-        ///
-        /// CE: a merge that GREW a tagged absorber re-notifies CE's HoldTracker of the moved delta (so loadout
-        /// enforcement won't dump the growth); a brand-new tagged stack notifies the full count via RegisterHauledItem.
         /// </summary>
         /// <returns>true if any units landed in inventory (the caller marks the job as having loaded something).</returns>
         private bool DepositSwept(Thing split)
@@ -336,7 +333,7 @@ namespace HaulersDream
             //    entries, so guard each: live, in THIS inventory, same def, stackable with the split, has room).
             //    Direct iteration is allocation-free and safe: TryAbsorbStack only ever Destroys the SPLIT (the
             //    source, which is NOT in the set), absorbers only GROW, and RegisterHauledItem on an already-tagged
-            //    absorber is a no-op on the set (Add returns false → CE-notify only) — so the set never mutates
+            //    absorber is a no-op on the set — so the set never mutates
             //    during the loop. (The for-loop guard re-checks split each pass, so a fully-folded split exits.)
             //    MP determinism: this folds `split` into the pawn's OWN same-def tagged stacks. The per-def TOTAL is
             //    order-independent, BUT TryAbsorbStack fills greedily to the stack limit, so WHICH tagged stack holds
@@ -369,10 +366,8 @@ namespace HaulersDream
                     int moved = before - split.stackCount;
                     if (moved > 0)
                     {
-                        // Re-notify CE of the growth on the absorber (already tagged; RegisterHauledItem with a
-                        // positive mergedCount notifies only the delta — Add is a no-op so the set is unchanged).
                         // The pickup clock is refreshed once below.
-                        comp.RegisterHauledItem(target, moved);
+                        comp.RegisterHauledItem(target);
                         loaded = true;
                     }
                 }

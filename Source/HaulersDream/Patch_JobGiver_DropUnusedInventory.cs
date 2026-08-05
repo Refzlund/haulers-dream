@@ -139,8 +139,8 @@ namespace HaulersDream
             if (__result) return; // vanilla already keeps it — nothing to do
             if (pawn == null || drug == null)
                 return;
-            // UI-PATH GUARD: GetHashSet's self-heal MUTATES synced world state (re-tags the scribed set, re-notifies
-            // CE HoldTracker), so it must run ONLY on a synced path. Vanilla calls this predicate from TWO sites: the
+            // UI-PATH GUARD: GetHashSet's self-heal MUTATES synced world state (re-tags the scribed set and updates
+            // tag-age bookkeeping), so it must run ONLY on a synced path. Vanilla calls this predicate from TWO sites: the
             // in-tick drop loop (drug = an INVENTORY thing — synced think path) and FloatMenuOptionProvider_PickUpItem
             // .GetOptionsFor (drug = a GROUND stack the player right-clicked — float-menu generation on the clicking
             // client's UI thread, NOT a synced command). Healing on the UI caller desyncs MP. Gate on "drug is in THIS

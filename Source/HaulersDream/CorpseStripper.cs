@@ -724,7 +724,7 @@ namespace HaulersDream
 
         /// <summary>
         /// Load the stripped loot into the hauler's inventory (tagged — the unload pass, shared inventories, and
-        /// CE HoldTracker all pick it up from there). A piece is scooped only when it FITS the carry/CE limits
+        /// CE excess-drop guard all pick it up from there). A piece is scooped only when it FITS the carry/CE limits
         /// AND some storage would accept it; anything else simply stays on the ground as an ordinary haulable —
         /// spawned and UN-forbidden at the corpse's own cell, visible to <c>listerHaulables</c>, and collected
         /// automatically the moment a stockpile accepts it. Per-PIECE, not all-or-nothing: a raider yields a
