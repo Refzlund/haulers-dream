@@ -171,15 +171,18 @@ namespace HaulersDream
             var manifest = loadable.GetTransferables();
             if (manifest == null || manifest.Count == 0)
                 return false;
-            foreach (var t in comp.PeekHashSet())
+            using (var surplusScan = InventorySurplus.BeginScan(pawn))
             {
-                if (t == null || t.Destroyed || t.def == null || !inner.Contains(t))
-                    continue;
-                if (InventorySurplus.SurplusOf(pawn, t) <= 0)
-                    continue; // entirely within keep-stock → the deposit loop would move 0
-                var match = TransferableUtility.TransferableMatchingDesperate(t, manifest, TransferAsOneMode.PodsOrCaravanPacking);
-                if (match != null && match.CountToTransfer > 0)
-                    return true;
+                foreach (var t in comp.PeekHashSet())
+                {
+                    if (t == null || t.Destroyed || t.def == null || !inner.Contains(t))
+                        continue;
+                    if (surplusScan.SurplusOf(t, true) <= 0)
+                        continue; // entirely within keep-stock → the deposit loop would move 0
+                    var match = TransferableUtility.TransferableMatchingDesperate(t, manifest, TransferAsOneMode.PodsOrCaravanPacking);
+                    if (match != null && match.CountToTransfer > 0)
+                        return true;
+                }
             }
             return false;
         }
@@ -208,21 +211,24 @@ namespace HaulersDream
                 return 0f;
             float stranded = 0f;
             // PeekHashSet (read-only): this feeds a planning-only budget, not a real deposit decision. GetHashSet
-            // would mutate (CE re-notify / tag-age sync), which a speculative probe (this whole method is reachable
+            // would mutate (tag relink / tag-age sync), which a speculative probe (this whole method is reachable
             // from a menu-hover build) must never trigger.
-            foreach (var t in comp.PeekHashSet())
+            using (var surplusScan = InventorySurplus.BeginScan(pawn))
             {
-                if (t == null || t.Destroyed || t.def == null || !inner.Contains(t))
-                    continue;
-                int surplus = InventorySurplus.SurplusOf(pawn, t);
-                if (surplus <= 0)
-                    continue; // personal kit stays with the pawn either way
-                // Same 3-tier match the deposit path itself uses to decide "does ANY member want this at all":
-                // if nothing here wants it even loosely, this job's deposit loop will never touch it.
-                var match = TransferableUtility.TransferableMatchingDesperate(t, manifest, TransferAsOneMode.PodsOrCaravanPacking);
-                if (match != null && match.CountToTransfer > 0)
-                    continue; // wanted here → not stranded, counts toward the ceiling normally
-                stranded += surplus * t.GetStatValue(StatDefOf.Mass);
+                foreach (var t in comp.PeekHashSet())
+                {
+                    if (t == null || t.Destroyed || t.def == null || !inner.Contains(t))
+                        continue;
+                    int surplus = surplusScan.SurplusOf(t, true);
+                    if (surplus <= 0)
+                        continue; // personal kit stays with the pawn either way
+                    // Same 3-tier match the deposit path itself uses to decide "does ANY member want this at all":
+                    // if nothing here wants it even loosely, this job's deposit loop will never touch it.
+                    var match = TransferableUtility.TransferableMatchingDesperate(t, manifest, TransferAsOneMode.PodsOrCaravanPacking);
+                    if (match != null && match.CountToTransfer > 0)
+                        continue; // wanted here → not stranded, counts toward the ceiling normally
+                    stranded += surplus * t.GetStatValue(StatDefOf.Mass);
+                }
             }
             return stranded;
         }

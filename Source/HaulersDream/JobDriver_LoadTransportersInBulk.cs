@@ -59,7 +59,8 @@ namespace HaulersDream
             TransportLoadTargetRedirect.ValidateAndRedirectCurrentTarget(this, (LoadTransportersAdapter)adp);
         }
 
-        protected override void DepositOne(Thing thing, ThingOwner inner, CompHauledToInventory hcomp, IManagedLoadable adp, ref bool movedAny)
+        protected override void DepositOne(Thing thing, int surplus, ThingOwner inner,
+            CompHauledToInventory hcomp, IManagedLoadable adp, ref bool movedAny)
         {
             var adapter = (LoadTransportersAdapter)adp;
             // Deposit into ONE specific member, clamped to THAT member's remaining for the def — NOT the
@@ -73,7 +74,7 @@ namespace HaulersDream
             if (member == null)
                 return; // no member still wants this exact variant (another pawn filled it) — leave it tagged
             int memberRemaining = LoadTransportersAdapter.MemberRemainingFor(member, thing);
-            int count = System.Math.Min(InventorySurplus.SurplusOf(pawn, thing), memberRemaining);
+            int count = System.Math.Min(surplus, memberRemaining);
             if (count <= 0)
                 return;
             var destInner = member.innerContainer;
@@ -136,14 +137,17 @@ namespace HaulersDream
             // must too — else a scooped stack that MERGED into a same-def inventory stack after tagging is invisible
             // here, the gate says "nothing to deposit", the load ends early, and the merge-survivor cargo never loads
             // onto the transporter (it rides to storage instead). Same #62/#87 stale-view class on the load side.
-            foreach (var t in hcomp.GetHashSet())
+            using (var surplusScan = InventorySurplus.BeginScan(pawn))
             {
-                if (t == null || t.Destroyed || !inner.Contains(t))
-                    continue;
-                if (InventorySurplus.SurplusOf(pawn, t) <= 0)
-                    continue;
-                if (GroupRemainingFor(adp, t) > 0)
-                    return true;
+                foreach (var t in hcomp.GetHashSet())
+                {
+                    if (t == null || t.Destroyed || !inner.Contains(t))
+                        continue;
+                    if (surplusScan.SurplusOf(t, true) <= 0)
+                        continue;
+                    if (GroupRemainingFor(adp, t) > 0)
+                        return true;
+                }
             }
             return false;
         }

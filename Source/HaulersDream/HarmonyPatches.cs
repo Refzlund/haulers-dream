@@ -147,12 +147,16 @@ namespace HaulersDream
                 if (inner == null)
                     return;
                 bool anyUnloadable = false;
-                foreach (var t in carried)
+                using (var surplusScan = InventorySurplus.BeginScan(pawn))
                 {
-                    if (t != null && inner.Contains(t) && pawn.CanReserve(t) && InventorySurplus.SurplusOf(pawn, t) > 0)
+                    foreach (var t in carried)
                     {
-                        anyUnloadable = true;
-                        break;
+                        if (t != null && inner.Contains(t) && pawn.CanReserve(t)
+                            && surplusScan.SurplusOf(t, true) > 0)
+                        {
+                            anyUnloadable = true;
+                            break;
+                        }
                     }
                 }
                 if (!anyUnloadable)

@@ -221,6 +221,8 @@ namespace HaulersDream
                 var tagged = p.GetComp<CompHauledToInventory>()?.PeekHashSet();
                 if (tagged == null)
                     continue;
+                using (var surplusScan = InventorySurplus.BeginScan(p))
+                {
                 // INVENTORY only (ParentHolder is Pawn_InventoryTracker) — never the hands (GetCarriedCount handles
                 // those) — and only products passing the bill's validity, so a quality/HP/stuff-restricted "do until
                 // X" bill counts only the VALID in-flight products, exactly like vanilla counts the stored ones.
@@ -238,9 +240,10 @@ namespace HaulersDream
                     // surplus AMOUNT (not the whole stack) also matches vanilla's intent — only what will actually land
                     // in storage is counted — and self-heals: once the surplus unloads it's counted in storage instead
                     // (no double-count across the transition), and a fully-kept stack contributes 0 (inert).
-                    int surplus = InventorySurplus.SurplusOf(p, t);
+                    int surplus = surplusScan.SurplusOf(t, true);
                     if (surplus > 0)
                         n += surplus;
+                }
                 }
             }
             return n;

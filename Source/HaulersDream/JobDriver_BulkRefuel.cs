@@ -207,16 +207,19 @@ namespace HaulersDream
                 // count; a kept personal stash returns 0 and is skipped.
                 var fuelList = scratchFuel ?? (scratchFuel = new List<Thing>());
                 fuelList.Clear();
-                for (int i = 0; i < inner.Count; i++)
+                using (var surplusScan = InventorySurplus.BeginScan(pawn))
                 {
-                    var t = inner[i];
-                    if (t == null || t.Destroyed || t.def == null)
-                        continue;
-                    if (!filter.Allows(t))
-                        continue;
-                    if (InventorySurplus.SurplusOf(pawn, t) <= 0)
-                        continue;
-                    fuelList.Add(t);
+                    for (int i = 0; i < inner.Count; i++)
+                    {
+                        var t = inner[i];
+                        if (t == null || t.Destroyed || t.def == null)
+                            continue;
+                        if (!filter.Allows(t))
+                            continue;
+                        if (surplusScan.SurplusOf(t) <= 0)
+                            continue;
+                        fuelList.Add(t);
+                    }
                 }
                 if (fuelList.Count == 0)
                     return; // carried nothing usable -> leftover (if any) stays tagged

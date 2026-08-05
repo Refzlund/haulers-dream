@@ -202,6 +202,9 @@ namespace HaulersDream
             if (p.Drafted)
                 return UnloadFault.None;
 
+            using (var surplusScan = InventorySurplus.BeginScan(p))
+            {
+
             // Caravan / away map with no player storage: Condition A's storage-only destination probe would
             // mis-report EVERY surplus stack as a "no destination" black hole. Decide the fault by PACK-ANIMAL
             // availability instead. The opportunistic offload requires the auto-unload master (markForUnload) +
@@ -229,7 +232,7 @@ namespace HaulersDream
                 if (comp != null)
                     foreach (var t in comp.PeekHashSet())
                         if (t != null && !t.Destroyed && inner.Contains(t)
-                            && InventorySurplus.SurplusOf(p, t) > 0
+                            && surplusScan.SurplusOf(t, true) > 0
                             && now - comp.FirstTaggedTick(t) > stuckTicks)
                             return UnloadFault.Stranded;
                 return UnloadFault.None;
@@ -244,7 +247,7 @@ namespace HaulersDream
             for (int i = 0; i < inner.Count; i++)
             {
                 var t = inner[i];
-                if (t == null || InventorySurplus.SurplusOf(p, t) <= 0)
+                if (t == null || surplusScan.SurplusOf(t) <= 0)
                     continue; // personal kit (keep-stock) or nothing surplus -> not a black hole
                 if (!InventorySurplus.HasUnloadDestination(p, t))
                 {
@@ -266,7 +269,7 @@ namespace HaulersDream
                 {
                     if (t == null || t.Destroyed || !inner.Contains(t))
                         continue;
-                    if (InventorySurplus.SurplusOf(p, t) <= 0)
+                    if (surplusScan.SurplusOf(t, true) <= 0)
                         continue;
                     if (now - comp.FirstTaggedTick(t) > stuckTicks)
                     {
@@ -289,6 +292,7 @@ namespace HaulersDream
                 return UnloadFault.InFlight;
 
             return UnloadFault.Stranded;
+            }
         }
     }
 }

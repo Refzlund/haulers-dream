@@ -69,10 +69,11 @@ namespace HaulersDream
             var inner = pawn.inventory?.innerContainer;
             if (comp == null || inner == null)
                 return defs;
-            foreach (var t in comp.PeekHashSet())
-                if (t != null && !t.Destroyed && inner.Contains(t) && t.def != null
-                    && InventorySurplus.SurplusOf(pawn, t) > 0)
-                    defs.Add(t.def);
+            using (var surplusScan = InventorySurplus.BeginScan(pawn))
+                foreach (var t in comp.PeekHashSet())
+                    if (t != null && !t.Destroyed && inner.Contains(t) && t.def != null
+                        && surplusScan.SurplusOf(t, true) > 0)
+                        defs.Add(t.def);
             return defs;
         }
 

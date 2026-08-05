@@ -234,59 +234,70 @@ namespace HaulersDream
                 tagged.AddRange(comp.GetHashSet());
                 // MP determinism: process tagged stacks in thingIDNumber order so a capacity-bound loop deposits/drops the same subset on every client.
                 tagged.Sort((a, b) => a.thingIDNumber.CompareTo(b.thingIDNumber));
-                for (int i = 0; i < tagged.Count; i++)
+                using (var surplusScan = InventorySurplus.BeginScan(pawn))
                 {
-                    var thing = tagged[i];
-                    if (thing == null || thing.Destroyed || !inner.Contains(thing))
-                        continue;
-                    // Another pawn may hold a reservation on this stack (a bill worker fetching ingredients out of
-                    // this very inventory via HD's shared-inventory path) — don't move it out from under them.
-                    // Mirrors JobDriver_UnloadHauledInventory.FirstUnloadableThing's CanReserve skip.
-                    if (!pawn.CanReserve(thing))
-                        continue;
-                    int surplus = InventorySurplus.SurplusOf(pawn, thing);
-                    if (surplus <= 0)
-                        continue; // personal kit stays with the pawn
-                    int count = PackAnimalLoadPolicy.DepositCountWithinFreeSpace(
-                        MassUtility.FreeSpace(carrier), thing.GetStatValue(StatDefOf.Mass), surplus);
-                    if (count <= 0)
-                        continue; // this stack won't fit the room left — a lighter one still might
+                    for (int i = 0; i < tagged.Count; i++)
+                    {
+                        var thing = tagged[i];
+                        if (thing == null || thing.Destroyed || !inner.Contains(thing))
+                            continue;
+                        // Another pawn may hold a reservation on this stack (a bill worker fetching ingredients out of
+                        // this very inventory via HD's shared-inventory path) — don't move it out from under them.
+                        // Mirrors JobDriver_UnloadHauledInventory.FirstUnloadableThing's CanReserve skip.
+                        if (!pawn.CanReserve(thing))
+                            continue;
+                        int surplus = surplusScan.SurplusOf(thing, true);
+                        if (surplus <= 0)
+                            continue; // personal kit stays with the pawn
+                        int count = PackAnimalLoadPolicy.DepositCountWithinFreeSpace(
+                            MassUtility.FreeSpace(carrier), thing.GetStatValue(StatDefOf.Mass), surplus);
+                        if (count <= 0)
+                            continue; // this stack won't fit the room left — a lighter one still might
                     // [SF4] If the carrier is a VF VehiclePawn, deposit through VF's event-correct AddOrTransfer (fires
                     // CargoAdded + decrements the matching cargoToLoad manifest entry) instead of a raw container move.
                     // Feature gate: master enableVehicleFramework (when OFF the raw deposit below still works via VF's
                     // Pawn polymorphism — only the manifest stays cosmetically stale). NOTE (SF4): count here is
                     // mass/free-space-clamped, NOT demand-clamped, so AddOrTransfer may drive a matching cargoToLoad
                     // entry negative→removed — the INTENDED auto-pack behavior (distinct from MF1's over-load).
-                    int moved;
-                    if (HaulersDreamMod.Settings != null && HaulersDreamMod.Settings.enableVehicleFramework
-                        && VehicleFrameworkCompat.IsVehicle(carrier))
-                    {
-                        var split = inner.Take(thing, count);
-                        moved = VehicleFrameworkCompat.AddOrTransfer(carrier, split, count);
-                        if (moved <= 0)
+                        int moved;
+                        bool sourceMayHaveChanged = false;
+                        if (HaulersDreamMod.Settings != null && HaulersDreamMod.Settings.enableVehicleFramework
+                            && VehicleFrameworkCompat.IsVehicle(carrier))
                         {
+                            var split = inner.Take(thing, count);
+                            sourceMayHaveChanged = split != null;
+                            moved = VehicleFrameworkCompat.AddOrTransfer(carrier, split, count);
+                            if (moved <= 0)
+                            {
                             // VF absent/unbound (-1) or AddOrTransfer moved nothing: `split` is already DETACHED from
                             // `inner`, so deposit it STRAIGHT into the carrier (raw) — do NOT put it back and re-read a
                             // handle. A put-back with merge can destroy the handle (when count==stackCount, Take returns
                             // split===thing, which then merges into a same-def stack and is Destroyed), leaving the raw
                             // transfer to operate on a dead Thing. If the carrier rejects it (in practice never — vehicle
                             // cargo is uncapped), return it to the hauler, else drop it nearby so an item never vanishes.
-                            int want = split.stackCount;
-                            if (carrierInv.TryAdd(split, canMergeWithExistingStacks: true))
-                                moved = want;
-                            else if (!inner.TryAdd(split, canMergeWithExistingStacks: true))
-                                GenPlace.TryPlaceThing(split, pawn.Position, pawn.Map, ThingPlaceMode.Near);
+                                int want = split.stackCount;
+                                if (carrierInv.TryAdd(split, canMergeWithExistingStacks: true))
+                                    moved = want;
+                                else if (!inner.TryAdd(split, canMergeWithExistingStacks: true))
+                                    GenPlace.TryPlaceThing(split, pawn.Position, pawn.Map, ThingPlaceMode.Near);
+                            }
                         }
-                    }
-                    else
-                    {
-                        moved = inner.TryTransferToContainer(thing, carrierInv, count, out Thing _);
-                    }
-                    if (moved > 0)
-                    {
-                        movedAny = true;
-                        if (!inner.Contains(thing))
-                            comp.Deregister(thing); // fully moved -> drop the tag; a partial leaves the remainder tagged
+                        else
+                        {
+                            moved = inner.TryTransferToContainer(thing, carrierInv, count, out Thing _);
+                            sourceMayHaveChanged = moved > 0;
+                        }
+                        if (moved > 0)
+                        {
+                            movedAny = true;
+                            if (!inner.Contains(thing))
+                                comp.Deregister(thing); // fully moved -> drop the tag; a partial leaves the remainder tagged
+                        }
+                        // Keep the hoisted inventory/CE-keep counts coherent for the next tagged stack. In the VF
+                        // path Take mutates the source before AddOrTransfer; refresh even when its fallback restored
+                        // the split, since that restoration may merge or replace Thing identities.
+                        if (sourceMayHaveChanged)
+                            surplusScan.Refresh();
                     }
                 }
                 // No progress on the most-free animal => nothing fits anywhere; leave the rest tagged (rides home).

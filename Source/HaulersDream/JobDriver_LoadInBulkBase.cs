@@ -266,17 +266,32 @@ namespace HaulersDream
                 tagged.AddRange(hcomp.GetHashSet());
                 // MP determinism: process tagged stacks in thingIDNumber order so a capacity-bound loop deposits/drops the same subset on every client.
                 tagged.Sort((a, b) => a.thingIDNumber.CompareTo(b.thingIDNumber));
-                for (int i = 0; i < tagged.Count; i++)
+                using (var surplusScan = InventorySurplus.BeginScan(pawn))
                 {
-                    var thing = tagged[i];
-                    if (thing == null || thing.Destroyed || !inner.Contains(thing))
-                        continue;
-                    if (!pawn.CanReserve(thing))
-                        continue;
-                    int surplus = InventorySurplus.SurplusOf(pawn, thing);
-                    if (surplus <= 0)
-                        continue; // personal kit stays with the pawn
-                    DepositOne(thing, inner, hcomp, adp, ref movedAny);
+                    for (int i = 0; i < tagged.Count; i++)
+                    {
+                        var thing = tagged[i];
+                        if (thing == null || thing.Destroyed || !inner.Contains(thing))
+                            continue;
+                        if (!pawn.CanReserve(thing))
+                            continue;
+                        int surplus = surplusScan.SurplusOf(thing, true);
+                        if (surplus <= 0)
+                            continue; // personal kit stays with the pawn
+                        int stackCountBefore = thing.stackCount;
+                        bool movedThisStack = false;
+                        DepositOne(thing, surplus, inner, hcomp, adp, ref movedThisStack);
+                        if (movedThisStack)
+                            movedAny = true;
+                        // The scan hoists the pawn's per-def totals. A successful transfer must be reflected before
+                        // another stack of the same def is considered, otherwise both stacks can spend the same
+                        // pre-transfer surplus and consume the pawn's keep stock. The identity/count checks also
+                        // cover a target-specific Take fallback that removes or replaces the source without reporting
+                        // a successful target deposit.
+                        if (movedThisStack || thing.Destroyed || !inner.Contains(thing)
+                            || thing.stackCount != stackCountBefore)
+                            surplusScan.Refresh();
+                    }
                 }
                 if (!movedAny) { JumpToToil(loopCheck); return; }
                 JumpToToil(findTarget); // more to deposit or fall to loopCheck (drained)
@@ -348,7 +363,8 @@ namespace HaulersDream
         /// <summary>Deposit ONE surviving tagged surplus stack into the target — the conservation-critical per-family
         /// core copied VERBATIM from each original deposit toil. Sets <paramref name="movedAny"/> true when anything
         /// physically moved.</summary>
-        protected abstract void DepositOne(Thing thing, ThingOwner inner, CompHauledToInventory hcomp, IManagedLoadable adp, ref bool movedAny);
+        protected abstract void DepositOne(Thing thing, int surplus, ThingOwner inner,
+            CompHauledToInventory hcomp, IManagedLoadable adp, ref bool movedAny);
 
         /// <summary>Per-family pre-loop hook run once inside the deposit toil before the per-thing loop (transporter:
         /// mid-trip group redirect). No-op by default.</summary>

@@ -189,19 +189,22 @@ namespace HaulersDream
             units.Clear();
             sample.Clear();
             // PeekHashSet is the read-only view (no self-heal), so this stays safe on the scan path.
-            foreach (var t in tagged)
+            using (var surplusScan = InventorySurplus.BeginScan(p))
             {
-                if (t == null || t.Destroyed || t.def == null || !inner.Contains(t))
-                    continue; // a tag whose stack has left the inventory is not carrying anything anywhere
-                int surplus = InventorySurplus.SurplusOf(p, t, comp, null);
-                if (surplus <= 0)
-                    continue;
-                units[t.def] = units.TryGetValue(t.def, out int running) ? running + surplus : surplus;
-                // Only ONE stack per def is probed, so WHICH stack must not depend on HashSet iteration order
-                // (it differs between multiplayer clients, and two stacks of a def can differ in stuff/quality
-                // enough to resolve to different storage). Lowest thingIDNumber wins, as elsewhere in HD.
-                if (!sample.TryGetValue(t.def, out var best) || t.thingIDNumber < best.thingIDNumber)
-                    sample[t.def] = t;
+                foreach (var t in tagged)
+                {
+                    if (t == null || t.Destroyed || t.def == null || !inner.Contains(t))
+                        continue; // a tag whose stack has left the inventory is not carrying anything anywhere
+                    int surplus = surplusScan.SurplusOf(t, true);
+                    if (surplus <= 0)
+                        continue;
+                    units[t.def] = units.TryGetValue(t.def, out int running) ? running + surplus : surplus;
+                    // Only ONE stack per def is probed, so WHICH stack must not depend on HashSet iteration order
+                    // (it differs between multiplayer clients, and two stacks of a def can differ in stuff/quality
+                    // enough to resolve to different storage). Lowest thingIDNumber wins, as elsewhere in HD.
+                    if (!sample.TryGetValue(t.def, out var best) || t.thingIDNumber < best.thingIDNumber)
+                        sample[t.def] = t;
+                }
             }
 
             foreach (var pair in units)

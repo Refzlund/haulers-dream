@@ -84,14 +84,15 @@ namespace HaulersDream
             return vehicle != null && vehicle.Spawned;
         }
 
-        protected override void DepositOne(Thing thing, ThingOwner inner, CompHauledToInventory hcomp, IManagedLoadable adp, ref bool movedAny)
+        protected override void DepositOne(Thing thing, int surplus, ThingOwner inner,
+            CompHauledToInventory hcomp, IManagedLoadable adp, ref bool movedAny)
         {
             var vehicle = Vehicle;
             // MF1 clamp: the SINGLE matching transferable's remaining demand (NOT a def-sum) — exactly what
             // VehiclePawn.AddOrTransfer decrements. Over-clamping to a def-sum would drive a matching
             // cargoToLoad entry negative→removed and over-load the def.
             int remaining = VehicleFrameworkCompat.RemainingDemandForThing(vehicle, thing);
-            int count = VehicleLoadPlanPolicy.DepositUnits(InventorySurplus.SurplusOf(pawn, thing), remaining);
+            int count = VehicleLoadPlanPolicy.DepositUnits(surplus, remaining);
             if (count <= 0)
                 return; // vehicle no longer wants this def (filled by another pawn) — leave it tagged
 
@@ -174,14 +175,17 @@ namespace HaulersDream
             // HEALED view (not Peek): the deposit driver reads GetHashSet, so this gate must too — else a scooped
             // stack that MERGED into a same-def inventory stack after tagging is invisible here, the gate says
             // "nothing to deposit", and the merge-survivor cargo never loads onto the vehicle. Same #62/#87 class.
-            foreach (var t in hcomp.GetHashSet())
+            using (var surplusScan = InventorySurplus.BeginScan(pawn))
             {
-                if (t == null || t.Destroyed || !inner.Contains(t))
-                    continue;
-                if (InventorySurplus.SurplusOf(pawn, t) <= 0)
-                    continue;
-                if (VehicleRemainingForDef(vehicle, t.def) > 0)
-                    return true;
+                foreach (var t in hcomp.GetHashSet())
+                {
+                    if (t == null || t.Destroyed || !inner.Contains(t))
+                        continue;
+                    if (surplusScan.SurplusOf(t, true) <= 0)
+                        continue;
+                    if (VehicleRemainingForDef(vehicle, t.def) > 0)
+                        return true;
+                }
             }
             return false;
         }

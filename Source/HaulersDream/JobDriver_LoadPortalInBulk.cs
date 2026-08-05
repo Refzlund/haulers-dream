@@ -59,7 +59,8 @@ namespace HaulersDream
             return portal != null && portal.Spawned;
         }
 
-        protected override void DepositOne(Thing thing, ThingOwner inner, CompHauledToInventory hcomp, IManagedLoadable adp, ref bool movedAny)
+        protected override void DepositOne(Thing thing, int surplus, ThingOwner inner,
+            CompHauledToInventory hcomp, IManagedLoadable adp, ref bool movedAny)
         {
             var portal = Portal;
             if (portal == null || !portal.Spawned)
@@ -73,7 +74,7 @@ namespace HaulersDream
             // but the SubtractFromToLoadList intercept only decrements what the entry held, so leftover
             // surplus stays tagged for HD's normal unload).
             int portalRemaining = PortalRemainingFor(portal, thing);
-            int count = System.Math.Min(InventorySurplus.SurplusOf(pawn, thing), portalRemaining);
+            int count = System.Math.Min(surplus, portalRemaining);
             if (count <= 0)
                 return; // portal no longer needs this exact variant (filled by another pawn) — leave it tagged
 
@@ -143,14 +144,17 @@ namespace HaulersDream
             // HEALED view (not Peek): the deposit driver reads GetHashSet, so this gate must too — else a scooped
             // stack that MERGED into a same-def inventory stack after tagging is invisible here, the gate says
             // "nothing to deposit", and the merge-survivor cargo never loads into the portal. Same #62/#87 class.
-            foreach (var t in hcomp.GetHashSet())
+            using (var surplusScan = InventorySurplus.BeginScan(pawn))
             {
-                if (t == null || t.Destroyed || !inner.Contains(t))
-                    continue;
-                if (InventorySurplus.SurplusOf(pawn, t) <= 0)
-                    continue;
-                if (PortalRemainingFor(portal, t) > 0)
-                    return true;
+                foreach (var t in hcomp.GetHashSet())
+                {
+                    if (t == null || t.Destroyed || !inner.Contains(t))
+                        continue;
+                    if (surplusScan.SurplusOf(t, true) <= 0)
+                        continue;
+                    if (PortalRemainingFor(portal, t) > 0)
+                        return true;
+                }
             }
             return false;
         }

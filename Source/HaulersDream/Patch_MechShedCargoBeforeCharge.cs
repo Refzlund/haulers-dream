@@ -106,11 +106,12 @@ namespace HaulersDream
         // Uses the SAME surplus/destination math as the unload driver + the cannot-unload alert.
         private static bool HasDeliverableSurplus(Pawn pawn, CompHauledToInventory comp, Verse.ThingOwner<Thing> owner)
         {
-            foreach (var t in comp.PeekHashSet())
-                if (t != null && !t.Destroyed && owner.Contains(t)
-                    && InventorySurplus.SurplusOf(pawn, t) > 0
-                    && InventorySurplus.HasUnloadDestination(pawn, t))
-                    return true;
+            using (var surplusScan = InventorySurplus.BeginScan(pawn))
+                foreach (var t in comp.PeekHashSet())
+                    if (t != null && !t.Destroyed && owner.Contains(t)
+                        && surplusScan.SurplusOf(t, true) > 0
+                        && InventorySurplus.HasUnloadDestination(pawn, t))
+                        return true;
             return false;
         }
     }
