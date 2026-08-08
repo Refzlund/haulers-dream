@@ -76,7 +76,7 @@
   <HaulersDream.Setting.MealsOnWheels>找不到食物時，食用其他殖民者或馱獸攜帶的餐點</HaulersDream.Setting.MealsOnWheels>
   <HaulersDream.Setting.MealsOnWheelsDesc>當飢餓的殖民者在地圖上或自身（及馱獸）背包中找不到任何食物時，他們會走向攜帶合適食物的其他殖民者或馱獸，並從其背包中取用食物 — 這能減少往返次數並在攜帶的餐點腐敗前將其吃掉，避免挨餓或長途跋涉前往遠處的儲存區。僅在標準食物搜尋失敗時觸發，因此絕不會覆蓋距離更近的餐點。遵循進食者的飲食政策、理念與禁酒/禁毒特質；絕不會搶奪父母正在餵食嬰兒的食物；絕不從徵召中、倒地或發狂的攜帶者身上取用；取用時會鎖定餐點避免兩人爭搶；並優先選擇最快腐敗的食物。預設為開啟。</HaulersDream.Setting.MealsOnWheelsDesc>
   <HaulersDream.Setting.EatFromVehiclesAway>在外出時亦可食用載具貨倉內的食物</HaulersDream.Setting.EatFromVehiclesAway>
-  <HaulersDream.Setting.EatFromVehiclesAwayDesc>擴充「行動餐車」功能，讓飢餓的殖民者在外出時也能取用停放於 Vehicle Framework 載具貨倉內的食物，就像從馱獸身上取用一樣。此功能僅套用於非家園地圖（遠征隊或臨時地圖），因此絕不會動到基地內規劃好的載具物料。這適合遊牧玩法，讓帶出來的食物隨車輛運輸。預設為關閉；需要開啟「行動餐車」並安裝 Vehicle Framework。</HaulersDream.Setting.EatFromVehiclesAwayDesc>
+  <HaulersDream.Setting.EatFromVehiclesAwayDesc>擴充「行動餐車 (Meals on Wheels)」功能，讓飢餓的殖民者在外出時也能取用停放於 Vehicle Framework 載具貨倉內的食物，就像從馱獸身上取用一樣。此功能僅套用於非家園地圖（遠征隊或臨時地圖），因此絕不會動到基地內規劃好的載具物料。這適合遊牧玩法，讓帶出來的食物隨車輛運輸。預設為關閉；需要開啟「行動餐車」並安裝 Vehicle Framework。</HaulersDream.Setting.EatFromVehiclesAwayDesc>
   <HaulersDream.Setting.DrugsForWithdrawal>讓戒斷中的殖民者從其他殖民者身上取用被保留的藥物</HaulersDream.Setting.DrugsForWithdrawal>
   <HaulersDream.Setting.DrugsForWithdrawalDesc>當殖民者渴求或正在戒斷其成癮的藥物，而地圖上又找不到任何一份時，他會走向持有該藥物的另一名殖民者，並取走一劑。只有 Hauler's Dream 本身固定住的藥物才能以此方式取得 — 也就是「保留在背包中」的固定量，或正搬往儲存區的貨物。殖民者依自己用藥方案攜帶的藥物依然不可觸碰，與原版完全一致。若沒有這項功能，讓一名殖民者保留某種藥物就會將它對成癮者永久藏起，而原版從不允許這種情況：原版會讓殖民者放下任何沒有理由攜帶的藥物。絕不會從被徵召、倒地、死亡或精神失常的殖民者身上取走，也不會取自組建中的遠征隊或載具貨艙。若要徹底阻止成癮者用藥，請在其用藥方案中將該藥物設為成癮時「不允許」 — 那依然能完全阻止他。預設為開啟。</HaulersDream.Setting.DrugsForWithdrawalDesc>
   <HaulersDream.Setting.MedicineFromVehiclesAway>在外出時使用載具或背包內的藥物進行處置</HaulersDream.Setting.MedicineFromVehiclesAway>
@@ -719,7 +719,7 @@
   <HaulersDream.Feat.CraftFromInv.Blurb>製作清單可直接使用角色身上已攜帶的原料</HaulersDream.Feat.CraftFromInv.Blurb>
   <HaulersDream.Feat.ConstructDeliver.Name>攜帶大型建造所需的材料</HaulersDream.Feat.ConstructDeliver.Name>
   <HaulersDream.Feat.ConstructDeliver.Blurb>減少前往大型或集中建造地點的往返次數</HaulersDream.Feat.ConstructDeliver.Blurb>
-  <HaulersDream.Feat.Meals.Name>外送餐點 (Meals on Wheels)</HaulersDream.Feat.Meals.Name>
+  <HaulersDream.Feat.Meals.Name>行動餐車 (Meals on Wheels)</HaulersDream.Feat.Meals.Name>
   <HaulersDream.Feat.Meals.Blurb>飢餓的角色可食用其他角色身上攜帶的食物</HaulersDream.Feat.Meals.Blurb>
   <HaulersDream.Feat.PlanRoutes.Name>路線規劃器</HaulersDream.Feat.PlanRoutes.Name>
   <HaulersDream.Feat.PlanRoutes.Blurb>用於規劃搬運/工作路線的右鍵工具</HaulersDream.Feat.PlanRoutes.Blurb>
