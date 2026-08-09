@@ -113,12 +113,45 @@ namespace HaulersDream
                 forcedOrderDepth--;
         }
 
-        /// <summary>Whether the seam should arbitrate at all on this map: the mod's master switch and the
-        /// per-map gate, exactly as every other HD entry point reads them. With HD inert on a map, vanilla's
-        /// own arbitration is the only one in play and must not be second-guessed.</summary>
+        /*
+            ──────────────────────────────────────────────
+                       The bind tripwire's off switch
+            ──────────────────────────────────────────────
+            The strip and its replacement are SEPARATE Harmony patch classes, applied by a loop that catches
+            per-class failures (HaulersDreamMod.ApplyPatchesResilient). That resilience is right for an
+            optional feature and wrong here: if the two adapters fail to bind while the strip binds, HD
+            removes vanilla's destination reservation and puts nothing in its place — the exact bug this
+            phase exists to end, shipped inert and visible only in a log line nobody reads.
+
+            → KEY: so the strip does not get to run without its replacement. HaulersDreamMod.VerifyStorageSeam
+              checks all three targets at startup and calls Disable() the moment one is unaccounted for; the
+              whole seam then stands down and vanilla's own arbitration is back in force, unmodified.
+        */
+
+        // Latched at startup by the bind tripwire; never cleared, because a target that did not bind at
+        // startup will not bind later in the session. Plain static, not [ThreadStatic]: it is written once on
+        // the main thread during mod construction, long before any work scan can read it.
+        private static bool seamDisabled;
+
+        /// <summary>
+        /// Stand the whole seam down for this session — no commits, no janitor, no adapter narrowing, and
+        /// therefore no reservation strip either (<see cref="TryCommit"/> answers false, so
+        /// <c>Patch_JobDriver_HaulToCell_NoCellReservation</c> falls through to vanilla).
+        ///
+        /// <para>ONE switch rather than a check per entry point, because a partial stand-down is worse than
+        /// either extreme: a bound COUNTER with no GATE clamps counts at a destination nobody is being kept
+        /// away from, and vanilla answers a count of 0 with a red "Invalid count: 0, setting to 1".</para>
+        /// </summary>
+        internal static void Disable() => seamDisabled = true;
+
+        /// <summary>Whether the seam should arbitrate at all on this map: the bind tripwire, the mod's master
+        /// switch and the per-map gate, exactly as every other HD entry point reads the latter two. With HD
+        /// inert on a map, vanilla's own arbitration is the only one in play and must not be
+        /// second-guessed.</summary>
         /// <param name="map">The map in question; null reads as inert.</param>
         /// <returns>True when HD may arbitrate storage here.</returns>
-        internal static bool ActiveOn(Map map) => map != null && MasterEnable.Active && MapGate.HdActiveOnMap(map);
+        internal static bool ActiveOn(Map map)
+            => map != null && !seamDisabled && MasterEnable.Active && MapGate.HdActiveOnMap(map);
 
         /// <summary>
         /// Whether the two Harmony adapters may narrow VANILLA's own storage answers on this map.
@@ -317,8 +350,11 @@ namespace HaulersDream
                 return;
 
             // Ordered by thingIDNumber so every multiplayer client interrupts the same pawns in the same
-            // order — the one place ordering could otherwise leak into game state from an array whose
-            // layout depends on the order jobs happened to start.
+            // order. The rows array cannot be trusted for that: its layout follows the order claims were
+            // written, which is job-start order for most rows and the JANITOR's adoption order for the rest —
+            // and the janitor derives its own from a HashSet walk, which is why it has to sort too. Ending
+            // jobs is the loudest side effect in the seam, so it gets the same world-derived order the
+            // janitor now uses.
             var victims = InterruptBuffer;
             victims.Clear();
             for (int i = 0; i < rows.Length; i++)
@@ -373,6 +409,17 @@ namespace HaulersDream
         /// <summary>
         /// Reconcile the ledger against live pawn state on <paramref name="map"/>: drop rows whose pawn has
         /// nothing left or whose group has gone, and adopt a hauling pawn that holds cargo but has no row.
+        ///
+        /// <para>→ GOTCHA: MULTIPLAYER. This is the one adoption SEQUENCE in the seam, and every
+        /// <see cref="Commit"/> below changes what the next probe answers — a fresh row spends empty cells
+        /// through <see cref="SpendCrossDefClaims"/> and units through
+        /// <see cref="StorageClaimLedger.ClaimedByPawn"/>. So "which pawn, then which of its defs" is game
+        /// state, not presentation, and both loops must be walked in an order derived from the WORLD rather
+        /// than from anyone's collection layout: pawns by <c>thingIDNumber</c>, cargo by <c>defName</c>.
+        /// Neither source is safe as it comes — <c>SpawnedPawnsInFaction</c> is a registration-ordered list
+        /// and <see cref="StorageEvidence.Collect"/>'s output follows a <c>HashSet</c> walk, and a host and a
+        /// mid-game joiner arrive at both from different histories. The mass adoption after a save load is
+        /// precisely when this runs over a whole colony at once.</para>
         /// </summary>
         /// <param name="map">The map to sweep.</param>
         internal static void RunJanitor(Map map)
@@ -387,14 +434,25 @@ namespace HaulersDream
             if (!ReferenceEquals(rows, HaulersDreamGameComponent.storageClaims))
                 HaulersDreamGameComponent.SetStorageClaims(rows);
 
-            var pawns = map.mapPawns.SpawnedPawnsInFaction(player);
+            // Copied out before sorting: SpawnedPawnsInFaction hands back MapPawns' OWN live list, and
+            // reordering that would rewrite vanilla's registration order for every other reader on the map.
+            var pawns = janitorPawns ?? (janitorPawns = new List<Pawn>());
+            pawns.Clear();
+            var spawned = map.mapPawns.SpawnedPawnsInFaction(player);
+            for (int i = 0; i < spawned.Count; i++)
+                if (spawned[i] != null)
+                    pawns.Add(spawned[i]);
+            pawns.Sort(ByThingId);
+
             var cargo = janitorCargo ?? (janitorCargo = new List<StorageEvidence.PawnCargo>());
             for (int i = 0; i < pawns.Count; i++)
             {
                 var p = pawns[i];
-                if (p == null)
-                    continue;
                 StorageEvidence.Collect(p, cargo);
+                // Skipped for the single-def pawn that most colonists are: List.Sort wraps a Comparison in a
+                // freshly allocated comparer on net48, so this stays off the common path entirely.
+                if (cargo.Count > 1)
+                    cargo.Sort(StorageEvidence.ByDefName);
                 for (int c = 0; c < cargo.Count; c++)
                 {
                     var entry = cargo[c];
@@ -411,12 +469,24 @@ namespace HaulersDream
                 }
                 cargo.Clear();
             }
+            pawns.Clear(); // holds live Pawn references; nothing reads it between sweeps
         }
 
         // The janitor's OWN cargo buffer, deliberately separate from the evidence path's: the adoption probe
         // re-enters IsGoodStoreCell -> the gate -> evidence, and a single shared buffer would be cleared out
         // from under the loop that is still walking it.
         [ThreadStatic] private static List<StorageEvidence.PawnCargo> janitorCargo;
+
+        // The janitor's sorted copy of the map's player pawns. [ThreadStatic] to match janitorCargo beside it
+        // — the two are filled and walked together, so a threading mod that ever drove this off the main
+        // thread must not have one of them shared and the other not.
+        [ThreadStatic] private static List<Pawn> janitorPawns;
+
+        /// <summary>The pawn order the janitor adopts in: ascending <c>thingIDNumber</c>, the same
+        /// world-derived tiebreak <see cref="InterruptCommittersTo"/> uses. Cached rather than written as a
+        /// lambda at the call site, because each method-group or lambda conversion allocates.</summary>
+        private static readonly Comparison<Pawn> ByThingId =
+            (a, b) => a.thingIDNumber.CompareTo(b.thingIDNumber);
 
         /// <summary>Whether the ledger already holds a row for this pawn and def, whatever group it names.</summary>
         /// <param name="pawn">The pawn.</param>
@@ -621,6 +691,7 @@ namespace HaulersDream
             evidenceMemoTick = -1;
             evidenceCargo?.Clear();
             janitorCargo?.Clear();
+            janitorPawns?.Clear();
             HaulersDreamGameComponent.ClearStorageClaims();
         }
 
@@ -670,6 +741,14 @@ namespace HaulersDream
         /// <para>→ NOTE: the conservative direction is under-commit, and it self-clears — the foreign hauler
         /// deposits, its claim drops, and the cell is offered again on the next query. The opposite error is
         /// the reported bug.</para>
+        ///
+        /// <para>→ NOTE: this loop LOOKS like the janitor's order-sensitive one — it walks a collection
+        /// spending a shared budget as it goes — and is not. Each foreign def's charge is computed from its
+        /// own claim and stack limit alone, and the only shared quantity it touches is the empty-cell count,
+        /// which ends at <c>max(0, initial - SUM(charges))</c> whichever order the charges are applied in (the
+        /// clamp saturates at zero and stays there). The leftover it hands back is written to the FOREIGN
+        /// def's partial room, which the answer for <paramref name="skip"/> never reads. Verified before this
+        /// loop was left unsorted, not assumed.</para>
         /// </summary>
         /// <param name="budget">The budget to spend from; already priced for the asker's own def.</param>
         /// <param name="group">The destination's budget identity.</param>

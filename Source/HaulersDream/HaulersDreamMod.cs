@@ -44,6 +44,7 @@ namespace HaulersDream
             var harmony = new Harmony(HarmonyId);
             ApplyPatchesResilient(harmony, Assembly.GetExecutingAssembly());
             VerifyDropProtection(harmony);
+            VerifyStorageSeam();
             HaulersDreamSettings.VerifyProfileIntegrity();
             HDLog.Msg("initialised — carry limit defaults to each pawn's max carrying capacity.");
         }
@@ -131,6 +132,97 @@ namespace HaulersDream
                         + "mod may have replaced the method, or HD's guard patch is missing. Please report it with "
                         + "this log attached.");
             }
+        }
+
+        // The three vanilla seams the storage commitment ledger is made of (issues #114/#138/#162/#248). They are
+        // applied as SEPARATE patch classes, so the resilient loop above can bind some and not others — and one
+        // split in particular is a live bug rather than a degraded feature:
+        //
+        //   • JobDriver_HaulToCell.TryMakePreToilReservations is where HD STRIPS vanilla's destination cell
+        //     reservation, and that reservation is also what shrank every other hauler's job.count.
+        //   • HaulAIUtility.HaulToCellStorageJob (the COUNTER) and StoreUtility.IsGoodStoreCell (the GATE) are
+        //     what replaces it.
+        //
+        // Strip bound + replacement not bound = HD removes vanilla's arbitration and supplies none, which IS the
+        // reported bug. The set is duplicated, by design, in scripts/check-storage-commit-seam.ts so the build
+        // fails too — the same runtime-tripwire + build-tripwire net as DropProtectionTargets above.
+        //
+        // Each entry names the patch CLASS as well as the target, and that is the load-bearing part: "some HD
+        // patch is on this method" is not the question. Two other HD classes already patch JobDriver_HaulToCell
+        // (Notify_Starting), so a check that only asked whether HD touched the type could pass while the piece
+        // that matters was the one that failed to apply.
+        private static readonly (Type type, string method, string patchClass)[] StorageSeamTargets =
+        {
+            (typeof(Verse.AI.HaulAIUtility), nameof(Verse.AI.HaulAIUtility.HaulToCellStorageJob),
+                nameof(Patch_HaulToCellStorageJob_ClampToCommitments)),
+            (typeof(StoreUtility), nameof(StoreUtility.IsGoodStoreCell),
+                nameof(Patch_IsGoodStoreCell_HonourCommitments)),
+            (typeof(Verse.AI.JobDriver_HaulToCell),
+                nameof(Verse.AI.JobDriver_HaulToCell.TryMakePreToilReservations),
+                nameof(Patch_JobDriver_HaulToCell_NoCellReservation)),
+        };
+
+        /// <summary>
+        /// Startup tripwire for the storage commitment seam. Verifies that each of
+        /// <see cref="StorageSeamTargets"/> still EXISTS on this RimWorld build and actually carries an HD
+        /// patch, and — unlike <see cref="VerifyDropProtection"/>, which can only shout — DISABLES the seam
+        /// when one does not.
+        ///
+        /// <para>Disabling is the safe direction and the whole reason this exists. The pieces are separate
+        /// patch classes and the apply loop degrades each independently, so a point release or a foreign
+        /// transpiler could leave the reservation STRIP in place with its replacement missing; HD would then
+        /// take vanilla's arbitration away and put nothing back. With the seam disabled,
+        /// <c>StorageCommitments.TryCommit</c> answers false, the strip patch falls through to vanilla, and
+        /// the colony hauls exactly as the base game does — one feature off instead of a silent regression.
+        /// The error is still logged: a disabled seam is a code update HD needs, not a normal state.</para>
+        /// </summary>
+        private static void VerifyStorageSeam()
+        {
+            foreach (var (type, methodName, patchClass) in StorageSeamTargets)
+            {
+                // DeclaredMethod, not Method, because that is what HarmonyLib's own attribute resolution uses
+                // (PatchTools.GetOriginalMethod -> AccessTools.DeclaredMethod). Method also returns an
+                // INHERITED member, which Harmony refuses to patch — so asking a wider question than the
+                // patcher asked could find a method the patch never went near and disable a working feature.
+                var method = AccessTools.DeclaredMethod(type, methodName);
+                if (method == null)
+                {
+                    StorageCommitments.Disable();
+                    HDLog.Err($"STORAGE-SEAM TRIPWIRE: vanilla {type.Name}.{methodName} was not found on this "
+                        + "RimWorld build (renamed or removed). Hauler's Dream cannot arbitrate how much each "
+                        + "hauler may take to a stockpile without it, so the whole storage-sharing feature is "
+                        + "now OFF and hauling falls back to the base game's own behaviour — this needs a code "
+                        + "update. Please report it with this log attached.");
+                    continue;
+                }
+                var info = Harmony.GetPatchInfo(method);
+                if (DeclaredIn(info?.Prefixes, patchClass)
+                    || DeclaredIn(info?.Postfixes, patchClass)
+                    || DeclaredIn(info?.Transpilers, patchClass))
+                    continue;
+                StorageCommitments.Disable();
+                HDLog.Err($"STORAGE-SEAM TRIPWIRE: vanilla {type.Name}.{methodName} exists but Hauler's Dream's "
+                    + $"{patchClass} did not attach to it. Another mod may have replaced the method, or HD's "
+                    + "patch is missing. Leaving the rest of the seam running would let Hauler's Dream strip "
+                    + "the destination reservation with nothing in its place, so the whole storage-sharing "
+                    + "feature is now OFF and hauling falls back to the base game's own behaviour. Please "
+                    + "report it with this log attached.");
+            }
+        }
+
+        /// <summary>True when one of <paramref name="patches"/> is HD's and was declared in the patch class
+        /// named by <paramref name="patchClass"/> — "did THIS patch bind", not "did HD touch this method".</summary>
+        /// <param name="patches">One of a method's prefix / postfix / transpiler lists; null reads as none.</param>
+        /// <param name="patchClass">Simple name of the expected patch container class.</param>
+        /// <returns>True on a match.</returns>
+        private static bool DeclaredIn(IEnumerable<Patch> patches, string patchClass)
+        {
+            if (patches == null)
+                return false;
+            foreach (var p in patches)
+                if (p != null && p.owner == HarmonyId && p.PatchMethod?.DeclaringType?.Name == patchClass)
+                    return true;
+            return false;
         }
 
         // True if HD owns a prefix / postfix / transpiler on this method (the actual guards; the universal

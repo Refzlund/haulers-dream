@@ -17,7 +17,12 @@
 //   5. the claim ledger becomes a per-tick snapshot again — the exact regression that made the #114 fix
 //      correct and its answer still wrong;
 //   6. exclude-self turns back into a forgettable boolean flag instead of the possession test;
-//   7. any of the three files the seam is made of, or the members they must export, disappears.
+//   7. any of the three files the seam is made of, or the members they must export, disappears;
+//   8. the ledger field is written from outside its own file, or reached by a name rule 4 does not watch —
+//      a direct `storageClaims = …` skips the generation bump as well as the allowlist, and a bare
+//      `SetStorageClaims(…)` from another partial of the same component, or a `using static`, spells the
+//      same call without the qualified prefix rule 4 matches on;
+//   9. the startup bind tripwire loses a target, its consequence, or its call.
 //
 // Run directly to self-check:  bun scripts/check-storage-commit-seam.ts
 import { readdirSync, statSync } from 'node:fs'
@@ -32,6 +37,7 @@ const ADAPTERS = resolve(GAME_SRC, 'StorageCommitAdapters.cs')
 const CLAIMS = resolve(GAME_SRC, 'HaulersDreamGameComponent.StorageClaims.cs')
 const HAUL_TO_STACK = resolve(GAME_SRC, 'HaulToStack.cs')
 const UNLOAD_DRIVER = resolve(GAME_SRC, 'JobDriver_UnloadHauledInventory.cs')
+const MOD = resolve(GAME_SRC, 'HaulersDreamMod.cs')
 const LEDGER = resolve(CORE_SRC, 'StorageClaimLedger.cs')
 const POLICY = resolve(CORE_SRC, 'StorageCommitPolicy.cs')
 
@@ -75,6 +81,46 @@ const COMMIT_CALLS = [
 	'StorageCommitments.TryCommit(',
 	'HaulersDreamGameComponent.SetStorageClaims(',
 	'HaulersDreamGameComponent.ClearStorageClaims('
+]
+
+/**
+ * The ledger's two mutable fields. Both are `internal`, so every file in the assembly can assign them, and a
+ * direct `HaulersDreamGameComponent.storageClaims = …` is worse than an unreviewed commit site: it also skips
+ * `SetStorageClaims`'s generation bump, which is the ONLY thing invalidating the derived per-tick evidence memo.
+ * A write that forgets it reintroduces the same-tick staleness the counter exists to prevent — the fourth root
+ * cause of this whole bug family. So the fields may be assigned in exactly one file.
+ */
+const LEDGER_FIELDS = ['storageClaims', 'storageClaimGeneration']
+
+/**
+ * The two seam types whose members rule 4 pins by their QUALIFIED spelling. `using static` would let any file
+ * write `Commit(...)` or `SetStorageClaims(...)` unqualified and walk straight past that allowlist, so the
+ * import form is banned outright rather than the guard trying to resolve unqualified call sites. Nothing in
+ * Source/HaulersDream/ uses `using static` at all today; the whole idiom is confined to the test project.
+ */
+const NO_USING_STATIC = /\busing\s+static\s+[\w.]*\b(StorageCommitments|HaulersDreamGameComponent)\s*;/
+
+/**
+ * Members of `HaulersDreamGameComponent` that rule 4 watches qualified. The component is PARTIAL and spread
+ * across seven files, so any of its other partials can call these with no prefix at all — the same back door as
+ * `using static`, reachable without importing anything. Only the file that declares them may spell them bare.
+ */
+const BARE_LEDGER_CALLS = ['SetStorageClaims(', 'ClearStorageClaims(']
+
+/**
+ * The startup bind tripwire (HaulersDreamMod.VerifyStorageSeam), duplicated here on purpose — the same
+ * runtime-tripwire + build-tripwire pairing DropProtectionTargets gets in check-drop-protection.ts.
+ *
+ * A build guard cannot see a BIND failure: the reservation strip and its two replacement adapters are separate
+ * Harmony patch classes applied by a loop that catches per-class failures, so "strip bound, adapters not" is
+ * expressible on a future point release or under a foreign transpiler, and it is the original bug shipped
+ * inert. Only startup verification catches that, and only DISABLING the seam makes it safe — an error line
+ * nobody reads is what this whole phase exists to stop relying on.
+ */
+const SEAM_TRIPWIRE = [
+	{ method: 'HaulToCellStorageJob', patchClass: 'Patch_HaulToCellStorageJob_ClampToCommitments' },
+	{ method: 'IsGoodStoreCell', patchClass: 'Patch_IsGoodStoreCell_HonourCommitments' },
+	{ method: 'TryMakePreToilReservations', patchClass: 'Patch_JobDriver_HaulToCell_NoCellReservation' }
 ]
 
 /**
@@ -223,6 +269,33 @@ function countOf(haystack: string, needle: string): number {
 		n++
 		from = at + needle.length
 	}
+}
+
+/** The 1-based line a character offset falls on, so a whole-file regex can still report a location. */
+function lineOf(src: string, index: number): number {
+	let line = 1
+	for (let i = 0; i < index && i < src.length; i++) if (src[i] === '\n') line++
+	return line
+}
+
+/**
+ * Every ASSIGNMENT to `field` in `src`, as 1-based line numbers. Matched over the whole (comment- and
+ * string-stripped) text rather than line by line, so a write split across lines still counts.
+ *
+ * The operator set is what distinguishes a write from a read: plain `=` but never `==`, the compound forms,
+ * and `++`/`--`. `>=` / `<=` / `!=` are excluded by construction — their leading character is not in the
+ * compound set and is not `=`. `ref`/`out` count as writes: handing the field to a method that assigns it is
+ * the same back door with an extra step.
+ */
+function assignmentsTo(src: string, field: string): number[] {
+	const re = new RegExp(
+		`\\b${field}\\b\\s*(?:(?:[-+*/%&|^]|<<|>>)?=(?!=)|\\+\\+|--)` +
+			`|\\b(?:ref|out)\\s+(?:[A-Za-z_][\\w.]*\\.)?${field}\\b`,
+		'g'
+	)
+	const lines: number[] = []
+	for (let m = re.exec(src); m !== null; m = re.exec(src)) lines.push(lineOf(src, m.index))
+	return lines
 }
 
 /** Read a file and hand back only its real code. */
@@ -402,6 +475,92 @@ async function main(): Promise<void> {
 			if (!src.includes(member)) errors.push(`${label} no longer declares ${member.replace(/\($/, '')}.`)
 	}
 
+	// ── 8. the ledger field has no back door ──────────────────────────────────────────────────────────
+	// Rule 4 watches the polite front door by its QUALIFIED spelling. Three other spellings reach the same
+	// state: assigning the field directly (which ALSO skips the generation bump), calling the writers bare
+	// from another partial of the same component, and importing them with `using static`.
+	let fieldWrites = 0
+	for (const [file, src] of codeByFile) {
+		for (const field of LEDGER_FIELDS) {
+			const lines = assignmentsTo(src, field)
+			if (lines.length === 0) continue
+			if (file === CLAIMS) {
+				fieldWrites += lines.length
+				continue
+			}
+			errors.push(
+				`${rel(file)}:${lines[0]} assigns ${field} directly. Only ` +
+					'HaulersDreamGameComponent.StorageClaims.cs may write the ledger: every other write must go ' +
+					'through SetStorageClaims, which is the single place the generation counter is bumped. A ' +
+					'write that skips it leaves the per-tick evidence memo serving figures taken BEFORE the ' +
+					'claim — the same-tick blindness this whole seam exists to remove — and it walks past the ' +
+					'reviewed commit-site allowlist on the way.'
+			)
+		}
+		if (NO_USING_STATIC.test(src))
+			errors.push(
+				`${rel(file)} imports a seam type with 'using static'. That lets Commit / TryCommit / ` +
+					'SetStorageClaims be written UNQUALIFIED, and the commit-site allowlist above matches the ' +
+					'qualified spelling — so the allowlist would silently stop covering this file.'
+			)
+		if (file === CLAIMS) continue
+		for (const call of BARE_LEDGER_CALLS) {
+			const bare = countOf(src, call) - countOf(src, `HaulersDreamGameComponent.${call}`)
+			if (bare > 0)
+				errors.push(
+					`${rel(file)} calls ${call.replace(/\($/, '')} without naming ` +
+						'HaulersDreamGameComponent. The component is partial across seven files, so its other ' +
+						'partials can reach the ledger writers with no prefix at all — which the commit-site ' +
+						'allowlist, matching the qualified spelling, would never see.'
+				)
+		}
+	}
+	if (fieldWrites === 0)
+		errors.push(
+			'HaulersDreamGameComponent.StorageClaims.cs never assigns the ledger fields — SetStorageClaims has ' +
+				'stopped being the write path, so this rule is now watching a door that leads nowhere.'
+		)
+
+	// ── 9. the startup bind tripwire ──────────────────────────────────────────────────────────────────
+	const mod = codeByFile.get(MOD)
+	if (mod === undefined) {
+		errors.push('HaulersDreamMod.cs is missing — the storage-seam bind tripwire has no home.')
+	} else {
+		if (!mod.includes('StorageSeamTargets'))
+			errors.push(
+				'HaulersDreamMod.cs no longer declares StorageSeamTargets. Nothing then checks at startup that ' +
+					'the reservation strip and its two replacement adapters all actually bound — and they are ' +
+					'separate patch classes applied by a loop that degrades each on its own, so "strip bound, ' +
+					'adapters missing" is exactly the original bug with no symptom.'
+			)
+		if (!mod.includes('VerifyStorageSeam();'))
+			errors.push('HaulersDreamMod.cs declares the bind tripwire but never calls VerifyStorageSeam().')
+		if (!mod.includes('StorageCommitments.Disable()'))
+			errors.push(
+				'the bind tripwire no longer calls StorageCommitments.Disable(). Logging an error is not a ' +
+					'consequence: with the adapters unbound and the strip still live, HD removes the vanilla ' +
+					'destination reservation and supplies nothing in its place. The strip must not run without ' +
+					'its replacement.'
+			)
+		for (const { method, patchClass } of SEAM_TRIPWIRE) {
+			if (!mod.includes(method))
+				errors.push(`the bind tripwire no longer names vanilla's ${method} — that seam is unverified at startup.`)
+			if (!mod.includes(patchClass))
+				errors.push(
+					`the bind tripwire no longer names ${patchClass}. It must check the PATCH CLASS, not just ` +
+						'that some HD patch is on the method: two other HD classes patch JobDriver_HaulToCell, so a ' +
+						'weaker check could pass while the piece that matters is the one that failed.'
+				)
+		}
+	}
+	if (seam !== undefined && !/seamDisabled/.test(seam))
+		errors.push(
+			'StorageCommitments.cs no longer carries the off switch the bind tripwire throws. ActiveOn is what ' +
+				'makes Disable() reach every entry point at once — the commits, the janitor and both adapters — ' +
+				'and a partial stand-down is worse than either extreme (a bound counter with no gate hands out ' +
+				'a job.count of 0, which vanilla answers with a red "Invalid count: 0, setting to 1").'
+		)
+
 	// A guard whose passing state is emptiness cannot tell "clean" from "never looked", so say what was
 	// looked at and how much of the seam was actually found.
 	if (gameFiles.length === 0) errors.push('no source files were scanned at all — the guard is looking in the wrong place.')
@@ -424,7 +583,9 @@ async function main(): Promise<void> {
 		`[storage-commit-seam] PASS — ${gameFiles.length} source files scanned, ` +
 			`${CAPACITY_ORACLE} confined to 1 file (${oracleSites} call site(s)), ` +
 			`2 adapters pinned, ${commitCalls} allowlisted commit call(s) across ${seenIn.size}/${COMMIT_SITES.length} ` +
-			`reviewed file(s), ledger not a per-tick snapshot, possession test intact.`
+			`reviewed file(s), ${fieldWrites} ledger field write(s) confined to 1 file, ` +
+			`${SEAM_TRIPWIRE.length} startup bind target(s) verified + disabling, ` +
+			`ledger not a per-tick snapshot, possession test intact.`
 	)
 }
 

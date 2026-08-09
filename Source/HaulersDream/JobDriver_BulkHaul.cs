@@ -108,6 +108,18 @@ namespace HaulersDream
         /// <para>The claim SURVIVES this job. A bulk haul picks up in one job and deposits in a later
         /// <c>JobDriver_UnloadHauledInventory</c>, so nothing may release on job end — the ledger instead clamps
         /// every row to what the pawn is still visibly carrying, which releases it the moment the cargo lands.</para>
+        ///
+        /// <para>→ GOTCHA: MULTIPLAYER. The commit loop below is order-SENSITIVE — each <c>Commit</c> is
+        /// visible to the next entry's destination probe, so committing steel before wood can send the wood
+        /// somewhere else. What keeps that deterministic is not this method: it is that
+        /// <c>job.targetQueueB</c> is filled in an order two clients must agree on, because
+        /// <c>BulkHaul.TakeNearestEligible</c> takes the lexicographic minimum of
+        /// <c>(distSq, thingIDNumber)</c> over its candidate pool, which erases the pool's own
+        /// <c>HashSet</c>-derived order. The def order here is that queue's first-appearance order and is
+        /// deliberately left alone, so the anchor def — the one <c>BulkHaul</c> priced the plan against —
+        /// still commits first. If that min-pick ever loses its <c>thingIDNumber</c> tiebreak, this loop
+        /// becomes a desync and needs the same <c>defName</c> sort <c>StorageCommitments.RunJanitor</c>
+        /// uses.</para>
         /// </summary>
         private void CommitPlannedDestinations()
         {

@@ -30,8 +30,13 @@ namespace HaulersDream
           patch's own name in the trace, and wrapping the hottest method in the haul system in a try/catch
           to re-log what is already visible would cost more than it buys.
         → NOTE: parameters are taken POSITIONALLY (__0, __1, …). Harmony throws at patch time on a name that
-          does not exist, and this assembly's per-class patch loop turns that into a logged warning that
-          silently disables the feature — so a decompiler's parameter names must not be load-bearing.
+          does not exist, and this assembly's per-class patch loop turns that into a logged warning rather
+          than a fatal — so a decompiler's parameter names must not be load-bearing.
+        → KEY: these two classes and the reservation strip (Patch_JobDriver_HaulToCell_NoCellReservation) are
+          applied INDEPENDENTLY by that loop, so "adapters missing, strip present" is expressible — and it is
+          the original bug, shipped inert. HaulersDreamMod.VerifyStorageSeam checks all three at startup and
+          calls StorageCommitments.Disable() if any is unaccounted for, which stands the strip down with
+          them. Do not add a patch class to this seam without adding it to StorageSeamTargets.
     */
 
     /// <summary>

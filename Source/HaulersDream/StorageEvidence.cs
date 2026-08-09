@@ -29,12 +29,16 @@ namespace HaulersDream
     /// committed. Per-pawn evidence has no such freeze — it is measured on demand, from live state, and the
     /// authoritative "who promised what" now lives in the ledger rather than being re-derived each tick.</para>
     ///
-    /// <para><b>Multiplayer determinism.</b> Every figure is an integer sum, so the result does not depend on
+    /// <para><b>Multiplayer determinism.</b> Every figure is an integer sum, so the VALUES do not depend on
     /// the order contributions were collected in — which matters because the tagged-stack scan iterates a
-    /// <c>HashSet</c> whose order differs between clients. The one place order COULD leak in (which stack of
-    /// a def gets the destination probe) is pinned to the lowest <c>thingIDNumber</c>, the same tiebreak
-    /// <c>BulkHaul.TakeNearestEligible</c> uses. Probes run with <c>needAccurateResult:false</c>, which
-    /// consumes no <c>Rand</c>.</para>
+    /// <c>HashSet</c>. Which stack of a def gets the destination probe is pinned to the lowest
+    /// <c>thingIDNumber</c>, the same tiebreak <c>BulkHaul.TakeNearestEligible</c> uses, and probes run with
+    /// <c>needAccurateResult:false</c>, which consumes no <c>Rand</c>.</para>
+    ///
+    /// <para>→ GOTCHA: order-independent VALUES are not the same as an order-independent LIST, and the
+    /// difference is a desync. A consumer that walks <see cref="Collect"/>'s output performing a side effect
+    /// each step can see — the janitor's adoption pass — turns the enumeration order into game state, and this
+    /// class does not fix that order. <see cref="ByDefName"/> exists for exactly those consumers.</para>
     /// </summary>
     internal static class StorageEvidence
     {
@@ -60,6 +64,38 @@ namespace HaulersDream
             public ISlotGroup knownGroup;
         }
 
+        /// <summary>
+        /// Total order over <see cref="PawnCargo"/> entries by <c>defName</c>, for a consumer whose EARLIER
+        /// iterations change what its LATER ones see (the janitor's adoption pass: each commit is visible to
+        /// the next entry's storage probe). Such a consumer must sort first, because
+        /// <see cref="Collect"/>'s own output order is not something two multiplayer clients need to agree on.
+        ///
+        /// <para>→ GOTCHA: ORDINAL, never <c>string.Compare</c>. The default overload is CULTURE-sensitive, so
+        /// a Turkish-locale client and an English one would order the same two defNames differently — a desync
+        /// introduced by the very code meant to prevent one. <c>defName</c> is unique among ThingDefs, so this
+        /// is a total order with no ties left to break.</para>
+        ///
+        /// <para>Cached as a field rather than passed as a method group: every method-group conversion
+        /// allocates a fresh delegate, and this one is handed to <c>List.Sort</c> on a per-pawn path.</para>
+        /// </summary>
+        internal static readonly Comparison<PawnCargo> ByDefName = CompareByDefName;
+
+        /// <summary>Order two cargo entries by their def's <c>defName</c>, ordinally.</summary>
+        /// <param name="a">First entry.</param>
+        /// <param name="b">Second entry.</param>
+        /// <returns>Negative, zero or positive per <see cref="Comparison{T}"/>. An entry with no def sorts
+        /// last; every consumer skips such an entry anyway, so where it lands only has to be consistent.</returns>
+        private static int CompareByDefName(PawnCargo a, PawnCargo b)
+        {
+            string x = a.def?.defName;
+            string y = b.def?.defName;
+            if (x == null)
+                return y == null ? 0 : 1;
+            if (y == null)
+                return -1;
+            return string.CompareOrdinal(x, y);
+        }
+
         // Per-pawn scratch for the pocketed-surplus pass: units summed per def, and the representative stack
         // of each def. Reused instead of allocated per pawn (a collect runs per pawn per janitor sweep and on
         // every evidence miss). Cleared at the point of use, never trusted empty from a prior call.
@@ -83,6 +119,14 @@ namespace HaulersDream
 
         /// <summary>
         /// Everything <paramref name="p"/> is currently moving, one entry per def.
+        ///
+        /// <para>→ GOTCHA: the ORDER of the entries is not part of the contract. The pocketed pass below walks
+        /// a <c>HashSet</c> into a <c>Dictionary</c>, and a host and a mid-game joiner rebuild that set from
+        /// different insert/remove histories, so two multiplayer clients can enumerate the same cargo in
+        /// different orders. Summing the entries is safe (integer addition is commutative); WALKING them with
+        /// a side effect each step sees is not, and such a consumer must sort by
+        /// <see cref="ByDefName"/> first. Sorting here instead would put a delegate allocation and a sort on
+        /// the per-evidence-miss path to fix one cold caller.</para>
         /// </summary>
         /// <param name="p">The pawn to weigh. A null pawn, or one with no map, contributes nothing.</param>
         /// <param name="into">The caller's list, CLEARED first and then filled. The caller owns it, which is
