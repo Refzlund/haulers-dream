@@ -153,41 +153,40 @@ put away (see the in-game "Cannot unload inventory" alert).
   ledger, the inventory-tag re-heal) stay main-thread-scoped: latent only under a full pawn-AI-threading mod,
   documented for that day rather than locked pre-emptively.
 
-### Smarter Construction (`dhultgren.smarterconstruction`) — a crash HD now contains (issue #235)
+### A work giver throwing during the work scan — a crash HD now contains (issue #235)
 **Symptom.** Every colonist wanders idle. Nobody tends wounds, nobody hauls, nobody cleans — but they
 still eat and sleep normally, and a **forced** (right-click → prioritise) order still works. Mining a
 vein by force produces no steel because the yield is never hauled. It reads as mass laziness, not as an
-error, and the log fills with `NullReferenceException`s that name neither mod obviously.
+error, and the log fills with `NullReferenceException`s that name no mod at all.
 
-**Cause (two halves, neither of them HD's).** Smarter Construction postfixes
-`WorkGiver_ConstructFinishFrames.JobOnThing` and, for any wall-class frame it wasn't forced onto, calls
-`ClosedRegionDetector.WouldEncloseThings`, which dereferences two of its own `MapComponent`s without a
-null check (`EncloseThingsCache.GetCache(target.Map).GetIfAvailable(…)` and
-`ClosedRegionCreatedByAddingImpassable(target.Map.GetComponent<WalkabilityHandler>(), …)`). When either
-is absent, that throws. The second half is vanilla's: `JobGiver_Work.TryIssueJobPackage` wraps the
-per-work-giver **scan** in a try/catch, but the **tail call** that turns the winning target into a job
-(`scannerWhoProvidedTarget.JobOnCell/JobOnThing`) sits *after* that try/catch with no guard at all. So
-the throw escapes the whole work think-node, RimWorld's priority sorter catches it and skips that node
-on every scan, and the pawn is left with no work while food/rest (separate nodes) and forced orders (a
-separate path) keep working — exactly the symptom.
+**The half we can prove is vanilla's.** `JobGiver_Work.TryIssueJobPackage` wraps the per-work-giver
+**scan** in a try/catch, but the **tail call** that turns the winning target into a job
+(`scannerWhoProvidedTarget.JobOnCell/JobOnThing`) sits *after* that try/catch with no guard at all. So a
+throw from any work giver's `JobOnThing`/`JobOnCell` escapes the whole work think-node, RimWorld's
+priority sorter catches it and skips that node on every scan, and the pawn is left with no work while
+food/rest (separate nodes) and forced orders (a separate path) keep working — exactly the symptom.
 
-**What HD does now.** HD already had a guard on that method; it now (a) reports the fault with the
-offending mod named, (b) **contains** it, so the pawn merely finds no work that scan instead of losing
-work altogether, and (c) after three faults from the same work giver, **switches that one work giver
-off for the session** and raises a **"Work giver disabled by another mod's error"** alert naming
-it. Everything else keeps running. While Smarter Construction is the mod being switched off, **wall
-frames stop being finished on their own** until you update or remove it — but you can still order one by
-hand: a right-click **"Prioritize constructing"** issues a single job normally, because RimWorld builds
-that order directly (`FloatMenuOptionProvider_WorkGivers`) without consulting the check HD switched off,
-and Smarter Construction's own crash is skipped on a forced order anyway. The colonist just won't carry
-on with it afterwards. The list clears when you restart the game.
-HD never disables one of its own work givers this way — its own bugs stay loud. The fix is general: it
-covers any mod that throws from any work giver's `JobOnThing`/`JobOnCell`, not just this one.
+**The half we cannot place.** *What* threw in #235 was never established, and the mod named in the
+original write-up was named on evidence that could not distinguish it from Hauler's Dream. Harmony's
+stack-frame annotations list who **patches** a method, not who **threw**; several mods' code runs inside
+one patched method; and HD's own `Exception`-returning finalizer truncated the trace at the patched
+method, erasing the frames that would have answered it. HD held two postfixes and a finalizer on that
+very method, so the same logic would have named another mod even if HD's own code had thrown. The
+attribution has been retracted — see the correction in `CHANGELOG.md` — and the alert no longer names
+anyone unless the exception itself carries a resolvable mod-owned frame. Since v1.22.0 HD's own log
+captures the true frames before the reset, so the next report from an affected player settles it.
 
-The rest of the Smarter Construction overlap is unchanged and fine: its destructive/cancel paths are
-gated on `!playerForced`, and HD's construction tether + delivery jobs set `playerForced = true`, so
-they are immune to them. This failure is in its *autonomous* (`!forced`) branch, which is why it is
-listed here rather than under "composes".
+**What HD does now.** HD already had a guard on that method; it now (a) reports the fault, naming a mod
+only when the error itself identifies one and saying the source is unknown otherwise, (b) **contains**
+it, so the pawn merely finds no work that scan instead of losing work altogether, and (c) after three
+faults from the same work giver, **switches that one work giver off for the session** and raises a
+**"Work type switched off after repeated errors"** alert. Everything else keeps running. Whichever work
+type is switched off **stops happening on its own** until the cause is fixed or removed — but you can
+still order it by hand: a right-click **"Prioritize …"** issues a single job normally, because RimWorld
+builds that order directly (`FloatMenuOptionProvider_WorkGivers`) without consulting the check HD
+switched off. The colonist just won't carry on with it afterwards. The list clears when you restart the
+game. HD never disables one of its own work givers this way — its own bugs stay loud. The fix is
+general: it covers any mod that throws from any work giver's `JobOnThing`/`JobOnCell`.
 
 ### Modded drugs and the drug policy — an error HD now contains (issue #232)
 **Symptom.** Right-clicking a colonist onto a modded alcohol — reported for 「中性私酿」 from *Rimsenal
@@ -467,7 +466,7 @@ inventory, `GenPlace`, or `GenLeaving`.
    **"Work giver disabled by another mod's error"** alert: another mod threw from a part of RimWorld's
    work selection that RimWorld does not guard, so HD switched that one kind of work off to keep the
    rest of the colony running. The alert names the mod — report it there, with your log. Restarting the
-   game clears the list. (See the Smarter Construction section above for the worked example.)
+   game clears the list. (See "A work giver throwing during the work scan" above for the worked example.)
 4. **Right-clicking a colonist onto a drug gives "Value does not fall within the expected range" and
    no "Pick up" options?** RimWorld's own drug-policy lookup raises that (message-less) error when a
    colonist's drug policy holds no entry for that drug, before any HD code runs. HD now answers

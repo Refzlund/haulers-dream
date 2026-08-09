@@ -193,12 +193,28 @@ namespace HaulersDream
         }
 
         // The blame clause, built from FRAME OBJECTS (HDFault) rather than rendered trace text, and never
-        // categorical. Four cases, because "no mod could be named" and "no frames at all" are different answers
-        // and neither may be reported as "so it must be Hauler's Dream". This is the #236 contract applied to
-        // the seam guards.
+        // categorical. Five cases, because "Hauler's Dream is the mod in this stack", "another mod is", "no mod
+        // could be named" and "no frames at all" are different answers, and none of them may be reported as one
+        // of the others. This is the #236 contract applied to the seam guards.
+        //
+        // HAULER'S DREAM IS ASKED ABOUT FIRST, and by name (#235's attribution review). DescribeOrigin skips HD
+        // deliberately so it can answer "who ELSE is here?", but reporting only its answer meant an exception
+        // whose one mod-owned frame was HD's own printed "no frame in this stack belongs to a mod" — evasive
+        // about the single name that was actually present. Honesty about who threw has to cut both ways or it is
+        // not honesty, it is a defence.
         private static string OriginClause(Exception ex)
         {
+            string own = HDFault.DescribeOwnFrame(ex);
             string origin = HDFault.DescribeOrigin(ex);
+            if (own != null && origin != null)
+                return "Hauler's Dream's own code IS in this stack (" + own + "), and so is another mod's ("
+                    + origin + "). Which of the two threw cannot be settled from here, so treat neither as "
+                    + "established - reporting this to Hauler's Dream with the log attached is what lets it be "
+                    + "traced. The full stack is below.";
+            if (own != null)
+                return "The only mod-owned frame in this stack is Hauler's Dream's own (" + own
+                    + "), so treat this as a Hauler's Dream bug and report it to Hauler's Dream, with the log "
+                    + "attached. The full stack is below.";
             if (origin != null)
                 return "The innermost frame belonging to another mod is " + origin
                     + ", so that is the most likely source; please report it there. The full stack is below.";

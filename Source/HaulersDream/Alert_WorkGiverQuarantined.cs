@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using HaulersDream.Core;
 using RimWorld;
 using Verse;
 
@@ -6,10 +7,16 @@ namespace HaulersDream
 {
     /// <summary>
     /// The VISIBILITY half of the #235 fix. When <see cref="WorkGiverBlocklist"/> switches a work giver off
-    /// because another mod repeatedly threw from the work scan's unguarded tail, one kind of work simply stops
+    /// because something repeatedly threw from the work scan's unguarded tail, one kind of work simply stops
     /// happening for the rest of the session. That is exactly the invisible degradation which produces the NEXT
-    /// false bug report against Hauler's Dream, so the player is told: what was switched off, which mod caused
-    /// it, and that it comes back on restart.
+    /// false bug report against Hauler's Dream, so the player is told: what was switched off, where the error
+    /// pointed, and that it comes back on restart.
+    ///
+    /// <para><b>Each line says only what its own evidence supports.</b> A line names a mod when the error's own
+    /// stack put that mod's code on the path to the throw, and says the source could not be identified when it
+    /// did not — see <see cref="WorkGiverNamingPolicy"/> for why hook ownership is not allowed to fill that gap.
+    /// The two cases are separate translation keys rather than one key with an optional half, so a translator
+    /// cannot accidentally word the unknown case as an accusation.</para>
     ///
     /// <para>Priority <see cref="AlertPriority.High"/>, not Critical: nothing is dying and no cargo is stranded —
     /// the colony is running, one work type is not. Critical is the tier the black-hole alert uses; it adds the
@@ -33,20 +40,39 @@ namespace HaulersDream
         public override AlertReport GetReport()
             => WorkGiverBlocklist.AnyQuarantined ? AlertReport.Active : AlertReport.Inactive;
 
+        /// <summary>The collapsed label: how many work types are off, and nothing about whose fault it is. The
+        /// count alone, so the per-frame label path never formats a line.</summary>
         public override string GetLabel()
-            => "HaulersDream.Alert.WorkGiverQuarantined".Translate(Snapshot().Count);
+            => "HaulersDream.Alert.WorkGiverQuarantined".Translate(WorkGiverBlocklist.QuarantinedCount);
 
+        /// <summary>The expanded body: the consequence, the escape hatch, and one line per switched-off work
+        /// type. Built only while the alert is expanded on screen.</summary>
         public override TaggedString GetExplanation()
-            => "HaulersDream.Alert.WorkGiverQuarantinedDesc".Translate(Snapshot().ToLineList("  - "));
+            => "HaulersDream.Alert.WorkGiverQuarantinedDesc".Translate(Lines().ToLineList("  - "));
 
-        // A materialised copy: ConcurrentDictionary.Values is already a snapshot, but the label needs a Count and
-        // the explanation needs a line list, and both are called only while the alert is on screen.
-        private static List<string> Snapshot()
+        // A materialised copy: ConcurrentDictionary.Values is already a snapshot, but the explanation needs a
+        // line list, and it is only called while the alert is on screen.
+        private static List<string> Lines()
         {
-            var names = new List<string>();
-            foreach (var description in WorkGiverBlocklist.Quarantined)
-                names.Add(description);
-            return names;
+            var lines = new List<string>();
+            foreach (var work in WorkGiverBlocklist.Quarantined)
+                lines.Add(Line(work));
+            return lines;
+        }
+
+        /// <summary>
+        /// One line of the list, worded by what the error itself established.
+        /// </summary>
+        /// <param name="work">The switched-off work giver and the attribution captured at its fault.</param>
+        /// <returns>The translated line.</returns>
+        private static string Line(QuarantinedWork work)
+        {
+            // Both halves are checked, not just the verdict. They are set together at fault time, but a line
+            // that promises a source and then renders an empty one is the false-blame shape this alert exists
+            // to stop, so the unknown wording is what an inconsistent pair falls back to.
+            if (work.Naming == QuarantineNaming.NameTheMod && !work.Source.NullOrEmpty())
+                return "HaulersDream.Alert.QuarantineLine.KnownSource".Translate(work.Work, work.Source);
+            return "HaulersDream.Alert.QuarantineLine.UnknownSource".Translate(work.Work);
         }
     }
 }

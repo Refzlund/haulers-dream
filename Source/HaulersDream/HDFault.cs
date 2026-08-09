@@ -178,6 +178,33 @@ namespace HaulersDream
         }
 
         /// <summary>
+        /// The innermost frame belonging to HAULER'S DREAM ITSELF, rendered as <c>"Namespace.Type.Method"</c> —
+        /// the counterpart to <see cref="DescribeOrigin"/>, which skips HD by design so it can answer "who ELSE
+        /// is in this stack?".
+        ///
+        /// <para>It exists so a report can name HD when HD is the one standing in the stack. Without it, a fault
+        /// whose only mod-owned frame is HD's reads as "no frame in this stack belongs to a mod" — true of the
+        /// FOREIGN search that produced it, and read by anyone else as a denial of the one name that is actually
+        /// there. That is the false blame of issue #236 pointed the other way, and it is no more acceptable.</para>
+        /// </summary>
+        /// <param name="ex">The exception to inspect.</param>
+        /// <returns>The frame, or null when no Hauler's Dream frame resolves — which, per the class doc, means
+        /// "not seen", never "not involved".</returns>
+        public static string DescribeOwnFrame(Exception ex)
+        {
+            if (ex == null)
+                return null;
+            var methods = ResolvedMethods(ex);
+            for (int i = 0; i < methods.Count; i++)
+            {
+                var type = methods[i].DeclaringType;
+                if (type != null && IsHaulersDream(type.Assembly))
+                    return type.FullName + "." + methods[i].Name;
+            }
+            return null;
+        }
+
+        /// <summary>
         /// The innermost frame that resolves AT ALL, whoever owns it, rendered as
         /// <c>"Namespace.Type.Method"</c> — the honest thing to print when <see cref="DescribeOrigin"/> found no
         /// mod to name but the stack is not empty either. Without it a caller has to choose between claiming the

@@ -14,10 +14,14 @@ namespace HaulersDream.Tests
     ///
     /// <para><b>Both directions are failure, and both were caught in review.</b> Too permissive and HD switches
     /// off an innocent (usually vanilla) work giver, reproducing #235's symptom with HD as the cause. Too strict
-    /// and it refuses the reported bug itself — Smarter Construction patches a VANILLA giver type, so any rule
-    /// asking "does this giver belong to a mod?" locks out the case the feature exists for. The rule that
-    /// satisfies both asks whether a MOD is demonstrably implicated in this giver, on every attribution route
-    /// alike. Each test below is one wrong outcome, refused or admitted deliberately.</para>
+    /// and it refuses the reported shape itself — the mod hooked into that giver had patched a VANILLA giver
+    /// type, so any rule asking "does this giver belong to a mod?" locks out the case the feature exists for.
+    /// The rule that satisfies both asks whether a MOD is demonstrably implicated in this giver, on every
+    /// attribution route alike. Each test below is one wrong outcome, refused or admitted deliberately.</para>
+    ///
+    /// <para><b>These are the SWITCH-OFF rules only.</b> Whether the player is told a mod's NAME is a separate,
+    /// stricter question with its own tests — see <see cref="WorkGiverNamingPolicyTests"/>. Clearing the bar
+    /// here means a mod is demonstrably mixed into this giver; it never means that mod threw.</para>
     /// </summary>
     [TestFixture]
     public class WorkGiverQuarantinePolicyTests
@@ -35,13 +39,14 @@ namespace HaulersDream.Tests
         // --- the case the feature exists for ---------------------------------------------------------------
 
         [Test]
-        public void SmarterConstructionShape_ModPatchedVanillaGiver_NamedOnlyByScanContext_IsQuarantined()
+        public void ModPatchedVanillaGiver_NamedOnlyByScanContext_IsQuarantined()
         {
-            // THE REPORTED BUG. Smarter Construction postfixes RimWorld.WorkGiver_ConstructFinishFrames, so the
-            // giver type is VANILLA'S, and Harmony's replacement is a DynamicMethod whose GetMethod() returns
-            // null — the frame walk names nothing and the route is ScanContext. An earlier revision required the
-            // giver's own assembly to be a mod's, which refused this at every fault count forever: the fix was
-            // inert for the bug it exists to fix. What links the mod to the giver is the PATCH.
+            // THE REPORTED SHAPE. A mod postfixes RimWorld.WorkGiver_ConstructFinishFrames, so the giver type is
+            // VANILLA'S, and Harmony's replacement is a DynamicMethod whose GetMethod() returns null — the frame
+            // walk names nothing and the route is ScanContext. An earlier revision required the giver's own
+            // assembly to be a mod's, which refused this at every fault count forever: the fix was inert for the
+            // shape it exists for. What links the mod to the giver is the PATCH — which is enough to switch the
+            // work off and, on its own, never enough to name anyone.
             Assert.That(
                 Decide(attribution: GiverAttribution.ScanContext, giverIsPatchedByAMod: true, originIsModOwned: true),
                 Is.EqualTo(QuarantineVerdict.Quarantine));

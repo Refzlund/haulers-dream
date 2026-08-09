@@ -60,9 +60,10 @@ namespace HaulersDream.Core
     /// belong to a mod?".</b> That distinction is the whole rule, and the wrong question fails in both
     /// directions:
     /// <list type="bullet">
-    /// <item>Requiring the giver's own assembly to be a mod's locks out the reported bug itself. Smarter
-    /// Construction postfixes <c>RimWorld.WorkGiver_ConstructFinishFrames</c> — a VANILLA type — so the giver
-    /// that has to leave the rotation is vanilla's, owned by nobody.</item>
+    /// <item>Requiring the giver's own assembly to be a mod's locks out the reported shape itself. In #235 the
+    /// giver that had to leave the rotation was <c>RimWorld.WorkGiver_ConstructFinishFrames</c> — a VANILLA type,
+    /// owned by nobody — postfixed by a mod. A mod reaches a player through a vanilla giver far more often than
+    /// through one of its own.</item>
     /// <item>Accepting a giver purely because the exception's frames named it blames vanilla for modded DATA: a
     /// modded <c>ThingDef</c> that makes an UNPATCHED vanilla giver throw resolves a real
     /// <c>RimWorld.WorkGiver_*</c> frame, and switching that work type off would tell the player RimWorld itself

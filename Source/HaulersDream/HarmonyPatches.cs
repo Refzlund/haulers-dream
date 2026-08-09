@@ -323,9 +323,9 @@ namespace HaulersDream
         // CONTAINMENT (#235, "all colonists wandering idle, not tending wounds, but do eat"). Vanilla wraps only
         // the per-WorkGiver SCAN in a try/catch; the TAIL call that turns the winning target into a job —
         // `scannerWhoProvidedTarget.JobOnCell/JobOnThing(...)`, decompile-verified to sit AFTER the
-        // try/catch/finally — is completely unguarded. A mod that postfixes a WorkGiver's JobOnThing and throws
-        // there (in #235, Smarter Construction dereferencing two MapComponents unguarded for any wall-class
-        // frame) escapes the whole think node. RimWorld's ThinkNode_Priority / ThinkNode_PrioritySorter then
+        // try/catch/finally — is completely unguarded. Anything that throws there — a mod's postfix on the
+        // WorkGiver's JobOnThing, a mod's transpiled edit to the vanilla body, vanilla itself on poisoned data —
+        // escapes the whole think node. RimWorld's ThinkNode_Priority / ThinkNode_PrioritySorter then
         // catch it and SKIP the entire work node on every scan: the pawn does NO work at all, yet still eats and
         // sleeps (those are separate nodes) and still obeys forced orders (a different think path), so it reads
         // as laziness rather than an error. So:

@@ -214,8 +214,10 @@
 <HaulersDream.Alert.CannotUnload>无法卸载货物栏（{0}）</HaulersDream.Alert.CannotUnload>
 <HaulersDream.Alert.CannotUnloadDesc.NoStorage>这些小人携带着无处存放的收取物品——地图上没有储存区或倾倒区接收它们，也找不到可到达的地点。请添加一个储存区（倾倒储存区可接收岩石碎块和大多数废料），或在已有储存区上允许它们的物品类型：\n\n{0}\n\n在此之前，小人会把这些物品放在它们工作的地方——只要有空位就放在住宅区内——而不是一直随身携带。点击此警报可循环切换到这些小人；悬停可指出它们。</HaulersDream.Alert.CannotUnloadDesc.NoStorage>
 <HaulersDream.Alert.CannotUnloadDesc.Stuck>这些小人已经携带收集到的物品很久却没有卸下。通常的原因是，从他们所在的位置没有可到达且允许存放的仓库能接收这些物品，所以请先检查这一点：\n\n{0}\n\n如果仓库看起来没问题，可能是某个会打断工作的模组（例如不断发出新命令的自动施法或自动工作模组）在他们卸货完成前取消了卸货。注意：Hauler's Dream 官方支持的模组，例如 Simple Sidearms、Smart Medicine、Combat Extended、Grab Your Tool、Item Policy 和 Compositable Loadouts，都不是原因，不应将其禁用；它们要保留的物品已被排除在卸货之外。点击此警报可在这些小人之间切换；悬停可标示他们。</HaulersDream.Alert.CannotUnloadDesc.Stuck>
-<HaulersDream.Alert.WorkGiverQuarantined>因其他模组的错误而停用了某类工作（{0}）</HaulersDream.Alert.WorkGiverQuarantined>
-<HaulersDream.Alert.WorkGiverQuarantinedDesc>在 RimWorld 挑选工作时，另一个模组反复出错，而且出错的位置是 RimWorld 并未加以保护的地方。若置之不理，你的殖民者将完全不做任何工作——他们照常吃饭睡觉，所以看起来像是偷懒，而不像是出了错。\n\nHauler's Dream 只停用了受影响的那类工作，其余一切照常运行：\n\n{0}\n\n在相关模组更新或被移除之前，这类工作不会再自动进行。你仍然可以手动指派：右键点击优先安排它依旧能派出一次工作，因为 RimWorld 会直接生成那条命令，不经过 Hauler's Dream 停用的那道检查——只是殖民者做完之后不会自己继续做下去。这不是 Hauler's Dream 的问题——请附上你的日志向上面列出的模组反馈。重启游戏后该列表会清空。</HaulersDream.Alert.WorkGiverQuarantinedDesc>
+<HaulersDream.Alert.WorkGiverQuarantined>因反复出错而停用了某类工作（{0}）</HaulersDream.Alert.WorkGiverQuarantined>
+<HaulersDream.Alert.WorkGiverQuarantinedDesc>在 RimWorld 挑选工作时，有东西反复出错，而且出错的位置是 RimWorld 并未加以保护的地方。若置之不理，你的殖民者将完全不做任何工作——他们照常吃饭睡觉，所以看起来像是偷懒，而不像是出了错。\n\nHauler's Dream 只停用了受影响的那类工作，其余一切照常运行：\n\n{0}\n\n在起因被修复或移除之前，这类工作不会再自动进行。你仍然可以手动指派：右键点击优先安排它依旧能派出一次工作，因为 RimWorld 会直接生成那条命令，不经过 Hauler's Dream 使用的那道检查——只是殖民者做完之后不会自己继续做下去。\n\n如果上面某一行指出了某个模组，请附上你的日志向该模组反馈。如果某一行写着无法确定来源，那么完整的错误信息就在日志里——把日志附在报告中，才有可能查明来源。重启游戏后该列表会清空。</HaulersDream.Alert.WorkGiverQuarantinedDesc>
+<HaulersDream.Alert.QuarantineLine.KnownSource>{0} — 最可能的来源：{1}</HaulersDream.Alert.QuarantineLine.KnownSource>
+<HaulersDream.Alert.QuarantineLine.UnknownSource>{0} — 无法从错误信息中确定来源，请查看日志</HaulersDream.Alert.QuarantineLine.UnknownSource>
 <HaulersDream.PlanRoute.Option>规划优先{0}…</HaulersDream.PlanRoute.Option>
 <HaulersDream.PlanRoute.ConstructGerund>建造</HaulersDream.PlanRoute.ConstructGerund>
 <HaulersDream.PlanRoute.MiningGerundFallback>采掘</HaulersDream.PlanRoute.MiningGerundFallback>
