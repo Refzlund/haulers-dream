@@ -53,6 +53,21 @@ namespace HaulersDream.Core
         /// <summary>An unbounded destination applies no clamp and tracks nothing.</summary>
         public bool Unbounded => emptyCells == int.MaxValue;
 
+        /// <summary>
+        /// Re-seed this budget for a different group, discarding every def priced into it. Exists so a
+        /// caller on a hot path (the per-cell storage gate) can keep ONE instance instead of allocating a
+        /// budget per query, without a second copy of the "empty cells plus per-def partials" arithmetic
+        /// appearing anywhere.
+        /// </summary>
+        /// <param name="emptyCells">The group's count of empty, acceptable cells, or
+        /// <see cref="int.MaxValue"/> for an unbounded destination.</param>
+        public void Reset(int emptyCells)
+        {
+            this.emptyCells = emptyCells;
+            partialByDef.Clear();
+            perCellByDef.Clear();
+        }
+
         /// <summary>Whether <paramref name="def"/> has already had its partial room and per-cell capacity recorded.</summary>
         /// <param name="def">The item def key (reference-compared).</param>
         public bool IsPriced(object def) => perCellByDef.ContainsKey(def);

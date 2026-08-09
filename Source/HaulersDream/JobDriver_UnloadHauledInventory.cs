@@ -362,18 +362,24 @@ namespace HaulersDream
                         else
                             job.SetTarget(TargetIndex.B, cell);
 
-                        // Haul-to-stack: storage CELLS are deliberately not reserved (multiple pawns may
-                        // deliver to — and stack onto — the same tile; see HaulToStack). UNSTACKABLE items
-                        // (stackLimit <= 1 — organs, body parts, weapons) are excluded from this: they can
-                        // NEVER stack onto a shared cell, so leaving the cell unreserved gains them nothing,
-                        // but it lets another hauler fill the same cell mid-carry, invalidating it and looping
-                        // the pawn (issue #162 — endless pacing in hospital/prison). Mirrors the same guard on
-                        // the vanilla HaulToCell path (HaulToStack.cs NoCellReservation prefix). Containers keep
-                        // their reservation: their capacity coordination is the enroute/reservation system.
-                        bool reserveDest = cell == IntVec3.Invalid
-                                           || next.Thing.def.stackLimit <= 1
-                                           || HaulersDreamMod.Settings == null || !HaulersDreamMod.Settings.haulToStack;
-                        if (reserveDest && !pawn.Map.reservationManager.Reserve(pawn, job, job.targetB))
+                        // Haul-to-stack: storage CELLS are deliberately not reserved (several pawns may
+                        // deliver to — and stack onto — the same tile; see HaulToStack), but ONLY where the
+                        // storage commitment ledger has taken the destination on. TryCommit is that test: it
+                        // refuses a container (whose capacity vanilla's own enroute system coordinates), a
+                        // cell with no slot group, and a map HD is inert on, and vanilla's reservation then
+                        // stands exactly as it always did.
+                        //
+                        // This is where a hand-written "stackLimit <= 1" carve-out used to live, kept in
+                        // lockstep with three others by hand until they drifted apart (issue #162 — endless
+                        // pacing in a hospital, because an unreserved 1-capacity cell had no arbitration at
+                        // all). It is gone: one organ claims one unit of one cell, so the next hauler's gate
+                        // finds no room without anyone having to remember the special case.
+                        //
+                        // The pawn is DELIVERING here — it already holds this cargo — so the seam credits it
+                        // the space it reserved rather than making it compete with its own in-flight load.
+                        bool arbitrated = StorageCommitments.TryCommit(pawn, GroupAt(cell), next.Thing.def,
+                            UnitsBoundFor(next), "unload");
+                        if (!arbitrated && !pawn.Map.reservationManager.Reserve(pawn, job, job.targetB))
                         {
                             // Untag only when the drop actually happened — a failed drop leaves the thing in
                             // inventory, where a missing tag would strand it untracked (gizmo hidden, never retried).
@@ -473,14 +479,14 @@ namespace HaulersDream
                                   + $"home={InventoryDrop.IsInHome(pawn.Map, desperateCell)}).");
                         job.SetTarget(TargetIndex.A, next.Thing);
                         job.SetTarget(TargetIndex.B, desperateCell);
-                        // A desperate destination is always a plain cell (never a container). Match the storage
-                        // branch: don't reserve the cell when haul-to-stack is on (several pawns may stack onto it).
-                        // Unstackables (stackLimit <= 1) still reserve: they can't share a cell and leaving it
-                        // unreserved loops them (issue #162 — same guard as the storage branch above and the
-                        // vanilla HaulToCell prefix).
-                        bool reserveDest = next.Thing.def.stackLimit <= 1
-                                           || HaulersDreamMod.Settings == null || !HaulersDreamMod.Settings.haulToStack;
-                        if (reserveDest && !pawn.Map.reservationManager.Reserve(pawn, job, job.targetB))
+                        // Same rule as the storage branch above, and the same reason it needs no unstackable
+                        // carve-out any more: the cell is left unreserved only where the commitment ledger
+                        // arbitrates it. A home-area fallback cell usually sits in NO slot group, so TryCommit
+                        // normally refuses and vanilla's reservation stands — which is exactly right, since a
+                        // bare floor cell has no group capacity for a ledger to divide.
+                        bool arbitrated = StorageCommitments.TryCommit(pawn, GroupAt(desperateCell),
+                            next.Thing.def, UnitsBoundFor(next), "unload-fallback");
+                        if (!arbitrated && !pawn.Map.reservationManager.Reserve(pawn, job, job.targetB))
                         {
                             if (InventoryDrop.TryDropPreferHome(pawn, next.Thing, next.Count, "reserve-failed-fallback", out _))
                             {
@@ -647,6 +653,34 @@ namespace HaulersDream
                 return new ThingCount(thing, count);
             }
             return default;
+        }
+
+        /// <summary>
+        /// Units of this stack's def the pawn is bringing to the destination it is about to walk to — the
+        /// whole load, not just the stack in hand.
+        ///
+        /// <para>An unload places one stack at a time, but a pawn can hold several stacks of one def (200
+        /// steel is three), and it is taking ALL of them to the same place. Claiming only the stack being
+        /// placed would leave the rest of the load invisible and hand its room to another hauler, which is
+        /// the reported bug in miniature at the one moment the cargo is provably real. The floor of the
+        /// stack's own count keeps this honest if the surplus measurement ever comes back short.</para>
+        /// </summary>
+        /// <param name="next">The stack about to be delivered, with the units being placed.</param>
+        /// <returns>Units to claim for the destination.</returns>
+        private int UnitsBoundFor(ThingCount next)
+            => System.Math.Max(next.Count, StorageCommitments.UnitsMovingOf(pawn, next.Thing.def));
+
+        /// <summary>The budget identity of the storage at a destination cell, or null when the cell holds no
+        /// slot group (a bare home-area floor cell, or a container's invalid cell). Routed through
+        /// <see cref="BulkHaul.BudgetGroupOf"/> so the claim this driver records lands on the same key every
+        /// other reader looks it up by.</summary>
+        /// <param name="cell">The destination cell.</param>
+        /// <returns>The group, or null.</returns>
+        private ISlotGroup GroupAt(IntVec3 cell)
+        {
+            if (!cell.IsValid || pawn.Map == null)
+                return null;
+            return BulkHaul.BudgetGroupOf(pawn.Map.haulDestinationManager.SlotGroupAt(cell));
         }
 
         // The "surplus above the pawn's personal kit" math now lives in InventorySurplus, so the unload

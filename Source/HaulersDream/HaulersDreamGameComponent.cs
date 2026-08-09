@@ -152,6 +152,18 @@ namespace HaulersDream
                 PruneInertLoadTasks(); // drop fully-settled/released bulk-load ledger entries (cheap when empty)
             }
 
+            // Storage claim self-heal. Correctness never depends on it — every read of the ledger already
+            // clamps a claim to what its pawn is visibly carrying — but it keeps the array short (so the
+            // hot-path "is anything in flight" gate stays honest) and ADOPTS a load that entered the world
+            // without passing HD's seam: another mod's haul job, or a save made before this version. On a
+            // ticksGame boundary, so every multiplayer client reconciles on the same tick.
+            if (tick % StorageClaimJanitorTicks == 0)
+            {
+                var claimMaps = Find.Maps;
+                for (int m = 0; m < claimMaps.Count; m++)
+                    StorageCommitments.RunJanitor(claimMaps[m]);
+            }
+
             // A2 anti-softlock auto-drop: refill the queue every SoftlockCheckInterval ticks, then service one
             // pawn per tick. Gated on the setting (byte-inert when off — the queue is also drained so it never
             // holds stale refs while disabled). Mirrors BLFT's SoftlockCleaner cadence + time-slicing.

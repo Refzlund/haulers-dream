@@ -28,8 +28,12 @@ namespace HaulersDream.Core
         /// pathological huge count can't overflow to negative; negative inputs are floored at 0.</summary>
         public static int TotalAvailable(int ownUnits, int floorUnits, int otherUnits, int packUnits)
         {
-            long sum = (long)ownUnits + floorUnits + otherUnits + packUnits;
-            return sum > int.MaxValue ? int.MaxValue : (sum < 0 ? 0 : (int)sum);
+            // Routed through the ONE saturating sum in Core rather than re-spelling the long-math trick:
+            // two copies of "clamp instead of wrap" is exactly how one of them ends up not clamping.
+            int sum = DestinationEnroutePolicy.SaturatingAdd(
+                DestinationEnroutePolicy.SaturatingAdd(
+                    DestinationEnroutePolicy.SaturatingAdd(ownUnits, floorUnits), otherUnits), packUnits);
+            return sum < 0 ? 0 : sum;
         }
 
         /// <summary>Does enough material exist to OFFER a construction job for <paramref name="amountNeeded"/>?

@@ -46,5 +46,26 @@ namespace HaulersDream.Core
             // Both sides are known positive here, so the difference can neither overflow nor go negative.
             return unitsEnroute >= spaceLeft ? 0 : spaceLeft - unitsEnroute;
         }
+
+        /// <summary>
+        /// The codebase's ONE saturating integer sum, for the unit counts that flow through this file's
+        /// arithmetic: two in-flight totals, a stack count and a manifest remainder, four material sources.
+        ///
+        /// <para>It lives here because this is where the "unknown" sentinel (<see cref="int.MaxValue"/>) is
+        /// defined, and a sentinel meeting a plain <c>+</c> is precisely how an unbounded destination turns
+        /// into a negative one — a full stockpile the whole colony then hauls into. Adding is clamped at
+        /// both ends rather than floored at zero, so a caller that legitimately sums signed deltas keeps its
+        /// sign and applies its own floor.</para>
+        /// </summary>
+        /// <param name="a">First addend.</param>
+        /// <param name="b">Second addend.</param>
+        /// <returns>The sum, clamped into the <see cref="int"/> range instead of wrapping.</returns>
+        public static int SaturatingAdd(int a, int b)
+        {
+            long sum = (long)a + b;
+            if (sum > int.MaxValue)
+                return int.MaxValue;
+            return sum < int.MinValue ? int.MinValue : (int)sum;
+        }
     }
 }

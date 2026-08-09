@@ -56,8 +56,13 @@ namespace HaulersDream
                 return;
             if (carrier == null || map == null || t == null || faction != Faction.OfPlayerSilentFail)
                 return;
-            if (t.def.stackLimit <= 1)
-                return; // unstackables have nothing to top up
+            // Nothing to top up: a search for a partial stack of an unstackable can only ever come back
+            // empty, so this is a pure cost saving on the corpse/weapon/minified-building haul path. Routed
+            // through the Core policy rather than spelled out here, so the ONE definition of "can this def
+            // share a cell" lives beside the search it scopes — and so the reservation decision below, which
+            // used to carry a hand-written copy of the same test, can no longer drift away from it.
+            if (!HaulToStackPolicy.CanTopUp(t.def.stackLimit))
+                return;
             // No try/catch: a refinement failure is a real bug to surface as a red error, not a silent warning.
             var better = HaulToStack.FindStackCell(t, carrier, map, faction, foundCell);
             if (better.IsValid)
@@ -76,19 +81,45 @@ namespace HaulersDream
             var job = __instance.job;
             if (job == null || job.haulMode != HaulMode.ToCellStorage)
                 return true; // non-storage cell hauls keep their reservation semantics
-            // Unstackables (corpses, minified buildings, weapons — stackLimit 1) can NEVER stack onto a shared
-            // cell, so leaving the destination cell unreserved gains them nothing — but it removes vanilla's
-            // CanReserveNew(B) throttle. With B unreserved, the work scan keeps re-selecting the SAME cell every
-            // tick when a second hauler contends that 1-capacity cell, re-issuing the identical HaulToCell until
-            // "started 10 jobs in one tick" fires (the reported corpse HaulToCell loop). Mirror the cell-refine
-            // postfix's own stackLimit<=1 guard (Patch_TryFindBestBetterStoreCellFor_HaulToStack) and keep
-            // vanilla's cell reservation for them — byte-identical for stackables (the only things stacking helps).
+            var pawn = __instance.pawn;
             var hauled = job.GetTarget(TargetIndex.A).Thing;
-            if (hauled?.def == null || hauled.def.stackLimit <= 1)
-                return true; // vanilla reserves both cell + thing
-            // Storage haul of a STACKABLE: reserve only the THING being hauled. The destination cell stays
-            // unreserved so other haulers can pick (and stack onto) the same cell.
-            __result = __instance.pawn.Reserve(job.GetTarget(TargetIndex.A), job, 1, -1, null, errorOnFailed);
+            var map = pawn?.Map;
+            if (hauled?.def == null || map == null)
+                return true;
+
+            var group = BulkHaul.BudgetGroupOf(
+                map.haulDestinationManager.SlotGroupAt(job.GetTarget(TargetIndex.B).Cell));
+            // This job's own count OR everything of this def the pawn is already visibly moving, whichever is
+            // larger. The ledger keeps ONE row per (pawn, def), so a colonist carrying 200 tagged steel to a
+            // shelf that then picks up a 5-steel vanilla haul would otherwise REPLACE its 200-unit claim with
+            // a 5-unit one and make 195 units of in-flight steel invisible to every other hauler.
+            int units = Math.Max(
+                job.count > 0 ? Math.Min(job.count, hauled.stackCount) : hauled.stackCount,
+                StorageCommitments.UnitsMovingOf(pawn, hauled.def));
+
+            // A forced order takes the space back off whoever else claimed it — a direct port of what
+            // vanilla itself does for a container destination in JobDriver_HaulToContainer.UpdateTracker.
+            // The player clicked; the standing arbitration yields.
+            if (job.playerForced && group != null
+                && StorageCommitments.FreeUnitsFor(pawn, group, hauled.def, hauled) <= 0)
+                StorageCommitments.InterruptCommittersTo(group, hauled.def, pawn);
+
+            // THE conditional that makes "strip the reservation without arbitrating" inexpressible. Skipping
+            // vanilla's destination reservation is only safe because something else now stops two haulers
+            // over-filling one cell, so the skip is allowed ONLY where that something else took the job on.
+            // A container, a cell with no slot group, a map HD is inert on — TryCommit says no and vanilla
+            // reserves both targets exactly as it always did.
+            //
+            // This is also what retired the hand-written unstackable carve-out that used to sit here. One
+            // corpse claims one unit of one cell, so the second hauler's gate finds no room and never
+            // re-selects the same cell every tick (issue #162's "started 10 jobs in one tick" loop) — the
+            // special case is gone because the general rule now covers it.
+            if (!StorageCommitments.TryCommit(pawn, group, hauled.def, units, "haul-to-cell"))
+                return true; // no arbitration -> vanilla reserves cell + thing, unchanged
+
+            // Storage haul with the ledger arbitrating: reserve only the THING being hauled. The destination
+            // cell stays unreserved so other haulers can pick (and stack onto) the same cell.
+            __result = pawn.Reserve(job.GetTarget(TargetIndex.A), job, 1, -1, null, errorOnFailed);
             return false;
         }
     }

@@ -130,3 +130,18 @@ const sweepWalk = Bun.spawn(['bun', resolve(import.meta.dir, 'check-sweep-walk-g
 	cwd: repoRoot,
 })
 if ((await sweepWalk.exited) !== 0) throw new Error('Sweep-walk guard check failed (see output above).')
+
+// Guard the storage commitment seam (issues #114/#138/#162/#248 — several haulers each pocketing a full stack
+// for three units of room). HD strips vanilla's destination cell reservation, which also shrank every other
+// hauler's job.count; a single claim ledger behind StorageCommitments replaces it, reached through exactly two
+// Harmony adapters. A second capacity oracle, a lost adapter, an unreviewed commit site or a per-tick memo
+// behind the seam all compile clean and pass every unit test — HaulersDream.Tests references only
+// HaulersDream.Core, so it observes the decision rule and never the arguments the glue passes it.
+// See check-storage-commit-seam.ts.
+const storageCommitSeam = Bun.spawn(['bun', resolve(import.meta.dir, 'check-storage-commit-seam.ts')], {
+	stdout: 'inherit',
+	stderr: 'inherit',
+	cwd: repoRoot,
+})
+if ((await storageCommitSeam.exited) !== 0)
+	throw new Error('Storage-commit-seam check failed (see output above).')

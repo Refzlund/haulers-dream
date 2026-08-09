@@ -18,6 +18,20 @@ namespace HaulersDream.Core
         public const int MaxCellsScanned = 600;
 
         /// <summary>
+        /// Whether a def can ever share a cell with more of itself, and therefore whether topping up an
+        /// existing partial stack is a meaningful thing to search for.
+        ///
+        /// <para>The ONE definition of "unstackable" in the haul-to-stack feature. It used to be spelled out
+        /// by hand at four sites — the cell-refinement scope, the vanilla reservation strip, and both unload
+        /// branches — and those copies drifted apart once already (issue #162). The three reservation sites
+        /// are now decided by the storage commitment ledger instead, which needs no such test at all: one
+        /// corpse claims one unit of one cell and the next hauler's gate simply finds no room.</para>
+        /// </summary>
+        /// <param name="stackLimit">The def's stack limit.</param>
+        /// <returns>True when two of this def can occupy one cell.</returns>
+        public static bool CanTopUp(int stackLimit) => stackLimit > 1;
+
+        /// <summary>
         /// Whether a candidate cell beats the best-so-far: a cell with an existing partial stack always
         /// beats one without; among equals, nearer (squared distance) wins.
         /// </summary>
