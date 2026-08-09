@@ -251,15 +251,15 @@ namespace HaulersDream
             loadDecide.defaultCompleteMode = ToilCompleteMode.Instant;
             yield return loadDecide;
 
-            Toil loadGoto = ToilMaker.MakeToil("HD_LoadGoto");
+            // The load walk, with a per-tick forbidden re-check (#250) — see SweepWalk. No cursor to advance:
+            // NextResourceStack already POPPED this stack out of the queue (queue.RemoveAt(0)), so the
+            // abandoned stack is behind us and the next loadDecide pass picks a different one. No forced-anchor
+            // concept either — NextResourceStack refuses every forbidden stack outright.
+            Toil loadGoto = SweepWalk.MakeToil(this, ResourceInd, "HD_LoadGoto", loadDecide,
+                () => { }, () => false);
+            // The pather-failure recovery is scoped to THIS toil, so a DELIVER-leg failure keeps vanilla's
+            // behaviour (see Notify_PatherFailed).
             loadGotoToil = loadGoto;
-            loadGoto.initAction = () =>
-            {
-                var t = job.GetTarget(ResourceInd).Thing;
-                if (t == null || !t.Spawned) { JumpToToil(loadDecide); return; }
-                pawn.pather.StartPath(t, PathEndMode.ClosestTouch);
-            };
-            loadGoto.defaultCompleteMode = ToilCompleteMode.PatherArrival;
             yield return loadGoto;
 
             // No checkEncumbrance on the job, so TakeToInventory does NOT cap at over-encumbered (100%);
@@ -271,6 +271,16 @@ namespace HaulersDream
             {
                 var st = job.GetTarget(ResourceInd).Thing;
                 if (st == null || !st.Spawned) return 0;
+                // Arrival-time forbidden re-check (#250), the counterpart to loadGoto's per-tick walk gate.
+                // This getter is the ONLY gate vanilla's Toils_Haul.TakeToInventory consults — the toil never
+                // tests forbidding itself — so without it a stack forbidden in the last tick of the walk still
+                // lands in the pawn's pocket. Same policy call as the walk so the two cannot drift; a delivery
+                // anchors on the BUILD SITE, never on a resource stack, so nothing is ever exempt. Returning 0
+                // reaches vanilla's ReadyForNextToil and the jump back to loadDecide, which pops the next
+                // stack — the identical route to the not-spawned case above.
+                if (st.IsForbidden(pawn)
+                    && !SweepForbidPolicy.MayTakeWhileForbidden(job.playerForced, isOrderedAnchor: false))
+                    return 0;
                 int more = LoadTargetUnits() - InventoryCountOfDef();
                 if (more <= 0) return 0;
                 int head = OverloadGate.CountToPickUp(pawn, st, HaulersDreamMod.Settings);

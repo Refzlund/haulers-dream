@@ -65,20 +65,14 @@ namespace HaulersDream
             };
             yield return loop;
 
-            var gotoThing = new Toil
-            {
-                initAction = () =>
-                {
-                    var t = job.GetTarget(TargetIndex.A).Thing;
-                    if (t == null || !t.Spawned)
-                    {
-                        JumpToToil(loop);
-                        return;
-                    }
-                    pawn.pather.StartPath(t, PathEndMode.ClosestTouch);
-                },
-                defaultCompleteMode = ToilCompleteMode.PatherArrival
-            };
+            // The scoop walk, with a per-tick forbidden re-check (#250) — see SweepWalk. A player forbids a
+            // drop because walking to it is UNSAFE, so the producer must turn around immediately instead of
+            // finishing the trip. No cursor to advance: the loop head already POPPED this drop out of
+            // pendingSelfPickups (TakeNextValidPending), so an abandoned drop is behind us and the next pass
+            // picks a different one. No forced-anchor concept either — this job is always automatic, and the
+            // take below refuses every forbidden drop.
+            var gotoThing = SweepWalk.MakeToil(this, TargetIndex.A, "HD_SelfPickup_Goto", loop,
+                () => { }, () => false);
             yield return gotoThing;
 
             // Vanilla-like pickup pause (#121): scooping an own-work drop is still a pickup into inventory, so

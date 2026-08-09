@@ -130,9 +130,8 @@ namespace HaulersDream
                     var t = queue[loadIndex].Thing;
                     // The playerForced primary may be forbidden (that's what forcing means); swept extras are
                     // never taken while forbidden. Stacks in someone's inventory (claimed mid-walk) are gone.
-                    bool forbiddenOk = t != null && !t.IsForbidden(pawn);
-                    if (!forbiddenOk && loadIndex == 0 && job.playerForced)
-                        forbiddenOk = true;
+                    bool forbiddenOk = t != null && (!t.IsForbidden(pawn)
+                        || SweepForbidPolicy.MayTakeWhileForbidden(job.playerForced, loadIndex == 0));
                     bool valid = t != null && t.Spawned && forbiddenOk
                                  && !(t.ParentHolder is Pawn_InventoryTracker)
                                  && counts != null && loadIndex < counts.Count && counts[loadIndex] > 0
@@ -172,14 +171,14 @@ namespace HaulersDream
             loadDecide.defaultCompleteMode = ToilCompleteMode.Instant;
             yield return loadDecide;
 
-            Toil loadGoto = ToilMaker.MakeToil("HD_Bulk_LoadGoto");
-            loadGoto.initAction = delegate
-            {
-                var t = job.GetTarget(StackInd).Thing;
-                if (t == null || !t.Spawned) { loadIndex++; JumpToToil(loadDecide); return; }
-                pawn.pather.StartPath(t, PathEndMode.ClosestTouch);
-            };
-            loadGoto.defaultCompleteMode = ToilCompleteMode.PatherArrival;
+            // The walk, with a per-tick forbidden re-check (#250): before this, nothing at all ran between
+            // StartPath and the arrival, so forbidding an UNSAFE stack mid-walk bought the player nothing —
+            // the colonist finished the trip (plus the pickup pause) and only then changed its mind. The
+            // anchor carve-out is the same one loadDecide above and take below apply, expressed once in
+            // SweepForbidPolicy so the three checkpoints cannot drift: a playerForced order licenses only its
+            // own slot-0 anchor to be taken while forbidden, never a stack HD swept into the same trip.
+            Toil loadGoto = SweepWalk.MakeToil(this, StackInd, "HD_Bulk_LoadGoto", loadDecide,
+                () => loadIndex++, () => loadIndex == 0);
             yield return loadGoto;
 
             // Vanilla-like pickup pause (#121): the wait-with-progress-bar vanilla's JobDriver_TakeInventory
@@ -210,7 +209,8 @@ namespace HaulersDream
                 // Forbiddance re-check at pickup time: the player may have forbidden the stack mid-walk
                 // (and the unload pass would later erase the forbid flag). Same exemption as loadDecide:
                 // the playerForced primary may be forbidden — that's what forcing means.
-                if (t.IsForbidden(pawn) && !(loadIndex == 0 && job.playerForced)) { loadIndex++; JumpToToil(loadDecide); return; }
+                if (t.IsForbidden(pawn) && !SweepForbidPolicy.MayTakeWhileForbidden(job.playerForced, loadIndex == 0))
+                { loadIndex++; JumpToToil(loadDecide); return; }
                 // Same re-check as loadDecide: a swept extra stored (best) mid-walk stays in storage.
                 if (loadIndex != 0 && t.IsInValidBestStorage()) { loadIndex++; JumpToToil(loadDecide); return; }
 

@@ -178,15 +178,15 @@ namespace HaulersDream
             sweepDecide.defaultCompleteMode = ToilCompleteMode.Instant;
             yield return sweepDecide;
 
-            Toil sweepGoto = ToilMaker.MakeToil(ToilPrefix + "_SweepGoto");
+            // The walk, with a per-tick forbidden re-check (#250) — see SweepWalk; this covers the transporter,
+            // portal and vehicle bulk loads at once. A bulk load has no forced-anchor concept (sweepDecide and
+            // sweepTake refuse EVERY forbidden stack outright), so isOrderedAnchor is a constant false and the
+            // whole chain is treated as swept extras — exactly what the take already does.
+            Toil sweepGoto = SweepWalk.MakeToil(this, StackInd, ToilPrefix + "_SweepGoto", sweepDecide,
+                () => loadIndex++, () => false);
+            // The pather-failure recovery is scoped to THIS toil, so a DEPOSIT-leg failure keeps vanilla's
+            // behaviour (see Notify_PatherFailed).
             sweepGotoToil = sweepGoto;
-            sweepGoto.initAction = delegate
-            {
-                var t = job.GetTarget(StackInd).Thing;
-                if (t == null || !t.Spawned) { loadIndex++; JumpToToil(sweepDecide); return; }
-                pawn.pather.StartPath(t, PathEndMode.ClosestTouch);
-            };
-            sweepGoto.defaultCompleteMode = ToilCompleteMode.PatherArrival;
             yield return sweepGoto;
 
             // Vanilla-like pickup pause (#121): the ground-sweep half of a bulk load (transporter / portal /

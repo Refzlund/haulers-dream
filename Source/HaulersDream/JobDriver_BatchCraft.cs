@@ -474,14 +474,14 @@ namespace HaulersDream
             loadDecide.defaultCompleteMode = ToilCompleteMode.Instant;
             yield return loadDecide;
 
-            Toil loadGoto = ToilMaker.MakeToil("HD_BatchLoadGoto");
-            loadGoto.initAction = () =>
-            {
-                var t = job.GetTarget(LoadStackInd).Thing;
-                if (t == null || !t.Spawned) { JumpToToil(loadDecide); return; }
-                pawn.pather.StartPath(t, PathEndMode.ClosestTouch);
-            };
-            loadGoto.defaultCompleteMode = ToilCompleteMode.PatherArrival;
+            // The pre-load walk, with a per-tick forbidden re-check (#250) — see SweepWalk. This driver was
+            // WORSE than the sweep drivers before: its take is vanilla's Toils_Haul.TakeToInventory, which
+            // never tests forbidding at all, so FindNeededStack's filter was the ONLY check on the whole path
+            // and a stack forbidden after it was chosen got pocketed anyway. No cursor to advance —
+            // FindNeededStack re-scans from scratch each pass and filters forbidden, so the abandoned stack
+            // cannot be re-chosen. No anchor either: a batch order is placed on the BENCH, not on a stack.
+            Toil loadGoto = SweepWalk.MakeToil(this, LoadStackInd, "HD_BatchLoadGoto", loadDecide,
+                () => { }, () => false);
             yield return loadGoto;
 
             // No <checkEncumbrance> on the JobDef, so TakeToInventory does not cap at 100% — BatchGatherCount carries
@@ -852,6 +852,17 @@ namespace HaulersDream
         private int BatchGatherCount(Thing stack)
         {
             if (stack == null || !stack.Spawned) return 0;
+            // Arrival-time forbidden re-check (#250), the counterpart to loadGoto's per-tick walk gate. This
+            // method IS the count getter vanilla's Toils_Haul.TakeToInventory pockets by, and that toil never
+            // tests forbidding itself — so without this a stack forbidden in the last tick of the walk still
+            // lands in the pawn's pocket. Same policy call as the walk so the two gates cannot drift; a batch
+            // order anchors on the BENCH, never on a stack, so nothing is ever exempt. Returning 0 reaches
+            // vanilla's ReadyForNextToil and then the jump back to loadDecide, whose FindNeededStack filters
+            // forbidden — so the loop moves on instead of re-selecting this stack. The loadDecide caller is
+            // unaffected: it only ever passes a stack FindNeededStack just cleared.
+            if (stack.IsForbidden(pawn)
+                && !SweepForbidPolicy.MayTakeWhileForbidden(job.playerForced, isOrderedAnchor: false))
+                return 0;
             // Units still needed of this def. NON-mixing: the def's per-rep×reps demand minus inventory (NeededUnits).
             // MIXING: the def's SLOT still needs `SlotValueNeeded` value, which this def supplies at vpu per unit, so
             // need = CeilToInt(slotValueNeeded / vpu) — enough units of THIS def to cover the slot's remaining value.

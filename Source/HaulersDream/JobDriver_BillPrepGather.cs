@@ -108,14 +108,14 @@ namespace HaulersDream
             loadDecide.defaultCompleteMode = ToilCompleteMode.Instant;
             yield return loadDecide;
 
-            Toil loadGoto = ToilMaker.MakeToil("HD_Prep_LoadGoto");
-            loadGoto.initAction = delegate
-            {
-                var t = job.GetTarget(StackInd).Thing;
-                if (t == null || !t.Spawned) { loadIndex++; JumpToToil(loadDecide); return; }
-                pawn.pather.StartPath(t, PathEndMode.ClosestTouch);
-            };
-            loadGoto.defaultCompleteMode = ToilCompleteMode.PatherArrival;
+            // The gather walk, with a per-tick forbidden re-check (#250) — see SweepWalk. This driver was WORSE
+            // than the sweep drivers before: its take is vanilla's Toils_Haul.TakeToInventory, which never
+            // tests forbidding at all, so loadDecide's check above was the ONLY one on the whole path and a
+            // stack forbidden any time after it was chosen got pocketed anyway. An ingredient gather is never
+            // a player-forced pick-up-THIS-thing order (the anchor is the BENCH, not the stack), so
+            // isOrderedAnchor is a constant false and nothing is ever exempt.
+            Toil loadGoto = SweepWalk.MakeToil(this, StackInd, "HD_Prep_LoadGoto", loadDecide,
+                () => loadIndex++, () => false);
             yield return loadGoto;
 
             // No <checkEncumbrance> on the JobDef: by default the pawn loads the bill's full count for this stack
@@ -128,6 +128,16 @@ namespace HaulersDream
                 plannedTake = 0;
                 var st = job.GetTarget(StackInd).Thing;
                 if (st == null || !st.Spawned) return 0;
+                // Arrival-time forbidden re-check (#250), the counterpart to the walk gate above. Vanilla's
+                // TakeToInventory pockets whatever this getter returns without ever looking at forbidding, so
+                // this getter IS the arrival checkpoint — without it a stack forbidden in the last tick of the
+                // walk still ends up in the pawn's pocket. Same policy call as the walk, so the two gates
+                // cannot drift; no anchor here, so nothing is exempt. Returning 0 lands on vanilla's own
+                // ReadyForNextToil, which reaches tagAndAdvance (a no-op at plannedTake 0) and its
+                // loadIndex++/jump back to loadDecide — the identical route to the not-spawned case above.
+                if (st.IsForbidden(pawn)
+                    && !SweepForbidPolicy.MayTakeWhileForbidden(job.playerForced, isOrderedAnchor: false))
+                    return 0;
                 var counts = job.countQueue;
                 int need = (counts != null && loadIndex < counts.Count) ? counts[loadIndex] : 0;
                 if (need <= 0) return 0;

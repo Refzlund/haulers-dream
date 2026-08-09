@@ -128,15 +128,14 @@ namespace HaulersDream
             sweepDecide.defaultCompleteMode = ToilCompleteMode.Instant;
             yield return sweepDecide;
 
-            Toil sweepGoto = ToilMaker.MakeToil("HD_Bref_SweepGoto");
+            // The fuel-sweep walk, with a per-tick forbidden re-check (#250) — see SweepWalk. No forced-anchor
+            // concept here (sweepDecide and sweepTake refuse EVERY forbidden stack outright), so
+            // isOrderedAnchor is a constant false and the whole chain counts as swept extras.
+            Toil sweepGoto = SweepWalk.MakeToil(this, FuelInd, "HD_Bref_SweepGoto", sweepDecide,
+                () => loadIndex++, () => false);
+            // The pather-failure recovery is scoped to THIS toil, so a DEPOSIT-leg failure keeps vanilla's
+            // behaviour (see Notify_PatherFailed).
             sweepGotoToil = sweepGoto;
-            sweepGoto.initAction = delegate
-            {
-                var t = job.GetTarget(FuelInd).Thing;
-                if (t == null || !t.Spawned) { loadIndex++; JumpToToil(sweepDecide); return; }
-                pawn.pather.StartPath(t, PathEndMode.ClosestTouch);
-            };
-            sweepGoto.defaultCompleteMode = ToilCompleteMode.PatherArrival;
             yield return sweepGoto;
 
             // Vanilla-like pickup pause (#121): sweeping fuel stacks into inventory paces like the bulk-haul

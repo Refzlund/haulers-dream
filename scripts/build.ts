@@ -117,3 +117,16 @@ const drugPolicyAccess = Bun.spawn(['bun', resolve(import.meta.dir, 'check-drug-
 	cwd: repoRoot,
 })
 if ((await drugPolicyAccess.exited) !== 0) throw new Error('Drug-policy access check failed (see output above).')
+
+// Guard the forbid-mid-walk seam (issue #250 — a colonist kept walking all the way to an item the player had
+// just forbidden, and players forbid things that are UNSAFE). Eight drivers own a sweep walk; a hand-rolled
+// StartPath + PatherArrival toil runs NO code between departure and arrival, compiles clean, and passes every
+// unit test (the NUnit suite references only HaulersDream.Core and cannot reach a JobDriver). Fails the build
+// if a walk escapes SweepWalk.MakeToil, if that seam loses its per-tick AddPreTickAction / SweepForbidPolicy
+// routing, or if BulkHaul's decide+take checkpoints stop sharing the rule. See check-sweep-walk-guard.ts.
+const sweepWalk = Bun.spawn(['bun', resolve(import.meta.dir, 'check-sweep-walk-guard.ts')], {
+	stdout: 'inherit',
+	stderr: 'inherit',
+	cwd: repoRoot,
+})
+if ((await sweepWalk.exited) !== 0) throw new Error('Sweep-walk guard check failed (see output above).')
