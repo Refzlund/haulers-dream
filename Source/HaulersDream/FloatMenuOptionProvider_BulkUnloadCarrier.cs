@@ -59,7 +59,14 @@ namespace HaulersDream
                     continue;
                 if (carrier.GetComp<CompMechCarrier>() != null || carrier.IsFreeColonist)
                     continue;
-                if (carrier.Faction != pawn.Faction && carrier.HostFaction != pawn.Faction)
+                // PERMISSION, through the one shared seam (never a local copy of vanilla's job-time predicate).
+                // This line used to be that predicate verbatim — `carrier.Faction == pawn.Faction ||
+                // carrier.HostFaction == pawn.Faction` — which vanilla can afford because it only ever asks it
+                // about a carrier game flow has ALREADY flagged for unloading. As an OFFER predicate the flag gate
+                // is missing, and the host-faction arm alone offers "Prioritize bulk unloading" on every pawn the
+                // colony merely hosts: a Hospitality visitor, a rescued wanderer, a downed Bestower still carrying
+                // its psylink neuroformer. The prisoner case that arm really existed for is preserved by the rule.
+                if (!BulkUnloadGate.PlayerMayUnload(pawn, carrier))
                     continue;
                 if (!pawn.CanReach(carrier, PathEndMode.Touch, Danger.Deadly))
                     continue;

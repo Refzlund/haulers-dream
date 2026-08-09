@@ -82,14 +82,36 @@ namespace HaulersDream
             // thing MP syncs for the click; everything in the started job (including this flag write) then runs
             // deterministically in-tick on every client. Pure relocation: no MP API needed, single-player unchanged.
             var carrier = Carrier;
-            if (carrier?.inventory != null)
-                carrier.inventory.UnloadEverything = true;
+            if (carrier?.inventory == null)
+                return;
+            // PERMISSION, whatever queued this job. The flag write is a WIDER hole than the menu it normally comes
+            // from: UnloadEverything is SCRIBED, and raising it also opens vanilla's own faction-blind
+            // WorkGiver_UnloadCarriers on that pawn for EVERY hauler on the map, indefinitely, until its pack is
+            // empty. So the write is gated at the write, not only at the offer. The shared seam keeps this answer
+            // identical to the one the menu and the work-giver takeover already gave, and reads only synced world
+            // state — no Rand, no client-local input — so the MP reasoning above is untouched.
+            if (!BulkUnloadGate.PlayerMayUnload(pawn, carrier))
+                return;
+            carrier.inventory.UnloadEverything = true;
         }
 
         public override IEnumerable<Toil> MakeNewToils()
         {
             this.FailOnDespawnedOrNull(CarrierInd);
             this.FailOnForbidden(CarrierInd);
+            // PERMISSION as an END CONDITION, not just a gate on the flag write above: withholding the flag stops
+            // vanilla's haulers, but the transfer loop below would still empty a carrier this job should never
+            // have targeted. Global fail conditions are evaluated before any toil's initAction, so a job that
+            // reaches here on a guest — a foreign caller, or one queued in a save made before this rule existed —
+            // ends Incompletable without moving a single stack.
+            //
+            // → NOTE: decided ONCE per driver setup rather than per tick, and that is exactly enough. SetupToils
+            //   runs on job start AND again at PostLoadInit (decompiled JobDriver.ExposeData), so a resumed save
+            //   re-asks; and the answer is a permission — who the carrier IS — which no single visit changes.
+            //   Re-asking every tick would also re-walk the quest manager's extra-faction parts twice per tick
+            //   (IsQuestLodger tests both the home and the mini faction) for the whole length of the visit.
+            bool mayUnload = BulkUnloadGate.PlayerMayUnload(pawn, Carrier);
+            this.FailOn(() => !mayUnload);
             // Non-exclusive reserve: another pawn claiming this carrier (roping, caravan-form gather, a second
             // hauler) must pre-empt us. CanReserve can't be used — it returns false on the pawn's OWN reservation
             // when reserveCarrierOnUnload is on — so scan the live reservation list for a DIFFERENT live claimant.

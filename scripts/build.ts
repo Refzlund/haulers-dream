@@ -145,3 +145,20 @@ const storageCommitSeam = Bun.spawn(['bun', resolve(import.meta.dir, 'check-stor
 })
 if ((await storageCommitSeam.exited) !== 0)
 	throw new Error('Storage-commit-seam check failed (see output above).')
+
+// Guard "a pawn the colony does not own must not reach this" at the two seams where it matters. HD offered
+// "Prioritize bulk unloading" on any pawn whose HostFaction was the player — vanilla's job-time predicate reused
+// as an OFFER predicate, which admits every Hospitality guest, rescued wanderer and guest-status quest pawn — and
+// the job then raised vanilla's own scribed UnloadEverything flag on the victim, opening vanilla's faction-blind
+// unload work-giver on it for every hauler on the map. One shared permission rule now gates all three entry
+// points, and the bulk loaders state their faction refusal explicitly instead of borrowing it from a Lord check.
+// None of that is visible to a unit test: HaulersDream.Tests references only HaulersDream.Core and cannot see a
+// Pawn at all, so an entry point that stops consulting the rule compiles clean and stays green.
+// See check-non-colony-pawn-gates.ts.
+const nonColonyGates = Bun.spawn(['bun', resolve(import.meta.dir, 'check-non-colony-pawn-gates.ts')], {
+	stdout: 'inherit',
+	stderr: 'inherit',
+	cwd: repoRoot,
+})
+if ((await nonColonyGates.exited) !== 0)
+	throw new Error('Non-colony-pawn gate check failed (see output above).')

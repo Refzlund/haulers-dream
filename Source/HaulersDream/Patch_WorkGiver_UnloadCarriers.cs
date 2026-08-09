@@ -54,7 +54,48 @@ namespace HaulersDream
     /// <summary>Shared gate logic for the two <see cref="WorkGiver_UnloadCarriers"/> prefixes.</summary>
     internal static class BulkUnloadGate
     {
-        /// <summary>Is this a target the BULK path owns? Feature on, a real <see cref="Pawn"/> carrier, and NOT a
+        /// <summary>
+        /// THE PERMISSION SEAM — the one place the live pawns are read and handed to
+        /// <see cref="BulkUnloadPermissionPolicy.MayBulkUnload"/>. All three HD entry points that can empty a
+        /// carrier call THIS method and no other: the float-menu offer
+        /// (<see cref="FloatMenuOptionProvider_BulkUnloadCarrier"/>), the work-giver takeover
+        /// (<see cref="ShouldHandle"/> below), and the driver
+        /// (<see cref="JobDriver_UnloadCarrierInBulk"/>, which both refuses to raise vanilla's
+        /// <c>UnloadEverything</c> flag and fails the job outright). A per-site copy of this condition is what
+        /// produced the bug in the first place — vanilla's job-time predicate reused as an offer predicate —
+        /// so <c>scripts/check-non-colony-pawn-gates.ts</c> fails the build if any of the three stops calling it.
+        ///
+        /// <para>The rule and the reasoning behind each arm live in
+        /// <see cref="BulkUnloadPermissionPolicy"/>; this method only turns two live <see cref="Pawn"/>s into
+        /// the three facts it asks for. Every read is synced world state and no <c>Rand</c> is consumed, so the
+        /// answer is identical on every multiplayer client — which is what lets the driver's flag write stay
+        /// where <see cref="JobDriver_UnloadCarrierInBulk.Notify_Starting"/> put it.</para>
+        /// </summary>
+        /// <param name="hauler">The pawn that would do the unloading; its faction is what "ours" means here.</param>
+        /// <param name="carrier">The pawn whose inventory would be emptied.</param>
+        /// <returns>False for a null pair, a factionless hauler, and every pawn the colony merely hosts.</returns>
+        internal static bool PlayerMayUnload(Pawn hauler, Pawn carrier)
+        {
+            if (hauler == null || carrier == null)
+                return false;
+            var haulerFaction = hauler.Faction;
+            // A hauler with no faction has no colony to own or hold anything, and would otherwise make a
+            // factionless carrier read as "ours" through a null == null comparison.
+            if (haulerFaction == null)
+                return false;
+            // IsPrisoner is the guest-status test (GuestStatus.Prisoner), NOT "has a host faction" — a guest, a
+            // rescued wanderer and a quest pawn all carry a host faction too, and that is precisely the class
+            // this refuses. Written against the hauler's faction rather than vanilla's IsPrisonerOfColony so the
+            // predicate keeps meaning the same thing if a non-player faction ever runs it.
+            bool prisonerOfOurs = carrier.IsPrisoner && carrier.HostFaction == haulerFaction;
+            return BulkUnloadPermissionPolicy.MayBulkUnload(
+                sharesHaulerFaction: carrier.Faction == haulerFaction,
+                isPrisonerOfHaulerFaction: prisonerOfOurs,
+                questRelated: carrier.IsQuestLodger());
+        }
+
+        /// <summary>Is this a target the BULK path owns? Feature on, a real <see cref="Pawn"/> carrier, one the
+        /// player may empty at all (<see cref="PlayerMayUnload"/>), and NOT a
         /// <see cref="CompMechCarrier"/> (mech gestator unloads stay vanilla — HD has no PUAH AllowMechanoids path,
         /// so the ref mod's mech branch is intentionally dropped).</summary>
         internal static bool ShouldHandle(Pawn pawn, Thing t)
@@ -69,6 +110,11 @@ namespace HaulersDream
             // [UC1] defense-in-depth: never let HD's bulk unload claim a VF VehiclePawn (its cargo is VF's to manage).
             // Gated on IsVehicle ONLY (a safety fix, not a feature): IsVehicle returns false when VF is absent.
             if (VehicleFrameworkCompat.IsVehicle(carrier))
+                return false;
+            // → NOTE: refusing here hands the target back to vanilla (both prefixes read this as "not ours" and
+            //   return true), which is the right shape: HD declines to originate an unload on a pawn the colony
+            //   only hosts, and never suppresses one the game itself already authorised.
+            if (!PlayerMayUnload(pawn, carrier))
                 return false;
             return true;
         }

@@ -242,6 +242,21 @@ namespace HaulersDream
             // with the same carve-out in TryGiveBulkJob, or HasJob/JobOn diverge into the "10 jobs in one tick" loop.
             if (!IsBoardingPassengerFor(pawn, loadable) && !YieldRouter.IsEligible(pawn))
                 return false;
+            // WHOSE PAWN — explicit, not inherited. Every sibling autonomous entry states this outright
+            // (BulkHaul.cs, EnRoutePickup.cs, UrgentHaulBulk.cs, StorageRouting.cs); the loaders were the one
+            // family relying on IsEligible's Lord/duty stand-down to keep foreign pawns out, which happens to hold
+            // only because visitor mods keep their guests Lord-owned. EligibilityPolicy has no faction dimension
+            // by design, so a guest that ever lost its Lord would walk straight into HD's bulk loaders — comp and
+            // all, since CompHauledToInventory is injected on every humanlike def. This makes the invariant HD's
+            // own instead of borrowed. Unconditional, exactly like the siblings: HD's load orders are only ever
+            // issued to a player-selected colonist, and a quest pawn's cargo leaves with the quest either way.
+            //
+            // → GOTCHA: LOCKSTEP with the identical line in TryGiveBulkJob. This method is the HasJob half; a
+            //   refusal here that the JobOn half does not make (or the reverse) is the HasJob/JobOn divergence the
+            //   boarding carve-out above already warns about — the work scan re-asks within the tick and vanilla's
+            //   "started 10 jobs in one tick" detector fires. Change neither alone.
+            if (pawn.Faction != Faction.OfPlayerSilentFail || pawn.IsQuestLodger())
+                return false;
             var ledger = HaulersDreamGameComponent.Instance;
             if (ledger == null)
                 return false;
@@ -336,6 +351,15 @@ namespace HaulersDream
             // gate — loading the shuttle/portal it's about to board is its directed task. Lockstep with the identical
             // carve-out in HasPotentialBulkWork (a HasJob/JobOn divergence would loop). Player orders already bypass.
             if (!playerOrder && !IsBoardingPassengerFor(pawn, loadable) && !YieldRouter.IsEligible(pawn))
+                return null;
+            // WHOSE PAWN — the JobOn half of the pair. See the full reasoning at the identical line in
+            // HasPotentialBulkWork, and change the two together: this one sits AFTER the playerOrder carve-out but
+            // is itself unconditional, so a player order cannot route a foreign pawn past it either. That is the
+            // shape BulkHaul already has (BuildBulkJobForced funnels into the same unconditional refusal).
+            //
+            // → GOTCHA: LOCKSTEP with HasPotentialBulkWork. If that method says there is work here and this one
+            //   answers null, the work scan loops on the pair within a tick.
+            if (pawn.Faction != Faction.OfPlayerSilentFail || pawn.IsQuestLodger())
                 return null;
 
             var ledger = HaulersDreamGameComponent.Instance;
