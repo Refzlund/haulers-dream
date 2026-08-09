@@ -255,8 +255,12 @@ namespace HaulersDream
             //   refusal here that the JobOn half does not make (or the reverse) is the HasJob/JobOn divergence the
             //   boarding carve-out above already warns about — the work scan re-asks within the tick and vanilla's
             //   "started 10 jobs in one tick" detector fires. Change neither alone.
-            if (pawn.Faction != Faction.OfPlayerSilentFail || pawn.IsQuestLodger())
-                return false;
+            //
+            // → NOTE: the refusal itself lives BELOW the B2 memo read, not here, and the two facts are unrelated.
+            //   Lockstep is about both halves REFUSING the same pawns; where each pays for the answer is free.
+            //   TryGiveBulkJob's copy runs once per build and stays inline; this half is re-probed many times per
+            //   tick, and `||` does NOT short-circuit for a colonist (its faction test is false), so an inline
+            //   IsQuestLodger() would walk every active quest's parts twice on every probe — for the common case.
             var ledger = HaulersDreamGameComponent.Instance;
             if (ledger == null)
                 return false;
@@ -277,6 +281,17 @@ namespace HaulersDream
             long key = ((long)pawn.thingIDNumber << 32) | (uint)loadable.GetUniqueLoadID();
             if (tick != -1 && cache.TryGetValue(key, out bool cachedHasWork))
                 return cachedHasWork;
+
+            // FACTION REFUSAL — the lockstep partner of the identical line in TryGiveBulkJob (see the GOTCHA above
+            // for why neither may change alone). It sits behind the memo purely for cost: a refused pawn caches
+            // false like any other answer, so the quest-parts walk is paid once per (pawn, loadable, tick) instead
+            // of once per probe.
+            if (pawn.Faction != Faction.OfPlayerSilentFail || pawn.IsQuestLodger())
+            {
+                if (tick != -1)
+                    cache[key] = false;
+                return false;
+            }
 
             // LIVE reads (never cached): refresh the ledger task from the live manifest, then ask whether THIS pawn
             // can still claim something. Same calls as before — only their repeat within one tick is short-circuited.

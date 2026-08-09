@@ -53,6 +53,15 @@ const TESTS_PATH = resolve(repoRoot, 'Source/HaulersDream.Tests/BulkUnloadPermis
 
 /** The permission call every entry point must make, whatever receiver spelling it uses. */
 const PERMISSION_CALL = /\bPlayerMayUnload\s*\(/
+/**
+ * The permission call used as a GUARD — negated, inside an `if` — rather than merely evaluated.
+ *
+ * → GOTCHA: a presence check is not enough at the flag write. `PlayerMayUnload(pawn, carrier);` on its own line,
+ *   followed by an unconditional write, satisfies "the call precedes the write" and re-opens the wider half of the
+ *   bug: the flag is SCRIBED, so vanilla's faction-blind haulers finish the job even though HD's own driver dies
+ *   on its fail condition. A QA mutant in exactly that shape passed the presence-only version of this rule.
+ */
+const PERMISSION_GUARD = /if\s*\(\s*!\s*(?:[\w.]*\.)?PlayerMayUnload\s*\(/
 /** An ASSIGNMENT to vanilla's unload flag. `(?!=)` so a comparison (`== true`) is not mistaken for a write. */
 const FLAG_WRITE = /\bUnloadEverything\s*=(?!=)/
 /** Any read of the host-faction property — the copied-predicate tell. */
@@ -239,7 +248,8 @@ async function main(): Promise<void> {
 	if (driver) {
 		const starting = sliceMethodBody(driver, 'Notify_Starting')
 		if (starting !== null) {
-			const permitAt = starting.search(PERMISSION_CALL)
+			// The answer must GUARD the write, not merely be computed before it — see PERMISSION_GUARD.
+			const permitAt = starting.search(PERMISSION_GUARD)
 			const writeAt = starting.search(FLAG_WRITE)
 			if (writeAt < 0) {
 				errors.push(
@@ -249,10 +259,12 @@ async function main(): Promise<void> {
 				)
 			} else if (permitAt < 0 || permitAt > writeAt) {
 				errors.push(
-					`${FLAG_WRITER}.Notify_Starting raises UnloadEverything BEFORE (or without) consulting ` +
-						'PlayerMayUnload. That flag is SCRIBED and raising it also opens vanilla\'s own faction-blind ' +
-						'WorkGiver_UnloadCarriers on the victim for every hauler on the map, so an ungated write is a ' +
-						'wider hole than the float-menu option it usually comes from.'
+					`${FLAG_WRITER}.Notify_Starting raises UnloadEverything without an EARLY-RETURN guard of the form ` +
+						'`if (!…PlayerMayUnload(…)) return;` ahead of it. That flag is SCRIBED, and raising it also ' +
+						"opens vanilla's own faction-blind WorkGiver_UnloadCarriers on the victim for every hauler on " +
+						'the map, indefinitely — so an ungated write is a WIDER hole than the float-menu option it ' +
+						'normally comes from, and HD\'s own job-level fail condition does not close it. Computing the ' +
+						'permission and discarding it satisfies "the call came first" and still ships the bug.'
 				)
 			}
 		}
