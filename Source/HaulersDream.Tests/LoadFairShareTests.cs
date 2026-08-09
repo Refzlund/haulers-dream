@@ -30,6 +30,13 @@ namespace HaulersDream.Tests
     /// per trip shipped green a second time. The oracles now sweep both sentinels against real crews, and
     /// <see cref="OnceTheRestFitsOneTrip_ItGoesInOneTrip"/> states the rule underneath both reports in one
     /// sentence.</para>
+    ///
+    /// <para>CREW COVERAGE lives next door. Every multi-trip run in THIS file has one asker and a synthetic,
+    /// constant divisor, so what several pawns do to one shrinking pool across rounds — and the
+    /// <see cref="LoadLedger{TDef,TPawn}.Release"/> path an interrupted pawn takes — are not visible here.
+    /// <see cref="LoadFairShareMultiTripTests"/> owns those: N real askers that claim, deliver and come back with
+    /// the divisor recounted each time, stated as three swept properties (conservation, fullness-unless-a-crew-split,
+    /// trip-count bound) and calibrated against the v1.19.0 rule that shipped the bug.</para>
     /// </summary>
     [TestFixture]
     public class LoadFairShareTests
