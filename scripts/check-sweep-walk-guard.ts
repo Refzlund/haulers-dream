@@ -29,9 +29,8 @@
 // It also checks that the Core policy and its NUnit fixture still exist.
 //
 // Run directly to self-check:  bun scripts/check-sweep-walk-guard.ts
-import { readdirSync, statSync } from 'node:fs'
 import { basename, resolve } from 'node:path'
-import { repoRoot } from './lib'
+import { codeOnly, csFilesUnder, repoRoot } from './lib'
 
 const GAME_SRC = resolve(repoRoot, 'Source/HaulersDream')
 const SEAM_PATH = resolve(GAME_SRC, 'SweepWalk.cs')
@@ -91,70 +90,6 @@ const ROUTED_DRIVERS: { file: string; cursor: string }[] = [
 
 const errors: string[] = []
 const notes: string[] = []
-
-/** Every .cs file under `dir`, skipping build output (obj/ and bin/ hold generated + copied sources). */
-function csFilesUnder(dir: string): string[] {
-	const out: string[] = []
-	for (const entry of readdirSync(dir)) {
-		if (entry === 'obj' || entry === 'bin') continue
-		const full = resolve(dir, entry)
-		if (statSync(full).isDirectory()) out.push(...csFilesUnder(full))
-		else if (entry.endsWith('.cs')) out.push(full)
-	}
-	return out
-}
-
-/**
- * Strip C# comments and string/char literal CONTENT, preserving line structure so line numbers still line up.
- * Mandatory here: the #250 fix explains itself in prose that names StartPath, PatherArrival, tickAction and the
- * old hand-rolled carve-out, and a guard that tripped on its own explanation would be deleted within a week.
- * (Same routine as check-no-desperate-leg.ts, which exists for the same reason.)
- */
-function codeOnly(src: string): string {
-	let out = ''
-	let i = 0
-	const keepNewlines = (s: string) => s.replace(/[^\n]/g, ' ')
-	while (i < src.length) {
-		const two = src.slice(i, i + 2)
-		if (two === '//') {
-			const end = src.indexOf('\n', i)
-			const stop = end < 0 ? src.length : end
-			out += keepNewlines(src.slice(i, stop))
-			i = stop
-		} else if (two === '/*') {
-			const end = src.indexOf('*/', i + 2)
-			const stop = end < 0 ? src.length : end + 2
-			out += keepNewlines(src.slice(i, stop))
-			i = stop
-		} else if (src[i] === '@' && src[i + 1] === '"') {
-			// Verbatim string: ends at a lone `"` ("" is an escaped quote).
-			let j = i + 2
-			while (j < src.length) {
-				if (src[j] === '"') {
-					if (src[j + 1] === '"') j += 2
-					else { j++; break }
-				} else j++
-			}
-			out += keepNewlines(src.slice(i, j))
-			i = j
-		} else if (src[i] === '"' || src[i] === "'") {
-			const quote = src[i]
-			let j = i + 1
-			while (j < src.length) {
-				if (src[j] === '\\') j += 2
-				else if (src[j] === quote) { j++; break }
-				else if (src[j] === '\n') break // unterminated; don't run away
-				else j++
-			}
-			out += keepNewlines(src.slice(i, j))
-			i = j
-		} else {
-			out += src[i]
-			i++
-		}
-	}
-	return out
-}
 
 /** Brace-match a block: from the first `{` at/after `from`, return the content between the braces. */
 function braceSlice(src: string, from: number): string | null {

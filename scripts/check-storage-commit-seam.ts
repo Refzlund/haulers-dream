@@ -25,9 +25,8 @@
 //   9. the startup bind tripwire loses a target, its consequence, or its call.
 //
 // Run directly to self-check:  bun scripts/check-storage-commit-seam.ts
-import { readdirSync, statSync } from 'node:fs'
 import { resolve } from 'node:path'
-import { repoRoot } from './lib'
+import { codeOnly, csFilesUnder, repoRoot } from './lib'
 
 const GAME_SRC = resolve(repoRoot, 'Source/HaulersDream')
 const CORE_SRC = resolve(repoRoot, 'Source/HaulersDream.Core')
@@ -167,79 +166,6 @@ const REQUIRED_MEMBERS: { path: string; label: string; members: string[] }[] = [
 		members: ['int Commit(HaulSight sight, bool delivering)']
 	}
 ]
-
-/** Every .cs file under `dir`, skipping build output (obj/ and bin/ hold generated + copied sources). */
-function csFilesUnder(dir: string): string[] {
-	const out: string[] = []
-	for (const entry of readdirSync(dir)) {
-		if (entry === 'obj' || entry === 'bin') continue
-		const full = resolve(dir, entry)
-		if (statSync(full).isDirectory()) out.push(...csFilesUnder(full))
-		else if (entry.endsWith('.cs')) out.push(full)
-	}
-	return out
-}
-
-/**
- * Strip C# comments and string/char literal CONTENT, preserving line structure so reported line numbers still
- * point at the real source line. Removing comments is the whole point: this seam's own prose names every
- * banned symbol at length — the carve-out it retired, the oracle it centralises, the snapshot it replaced —
- * and a guard that tripped on its own explanation would be deleted within a week.
- *
- * → NOTE: the fourth verbatim copy of this helper in scripts/. It belongs in lib.ts alongside repoRoot; that
- *   is a separate change, because moving it means re-verifying three guards that are not what this one is
- *   about.
- */
-function codeOnly(src: string): string {
-	let out = ''
-	let i = 0
-	const keepNewlines = (s: string) => s.replace(/[^\n]/g, ' ')
-	while (i < src.length) {
-		const two = src.slice(i, i + 2)
-		if (two === '//') {
-			const end = src.indexOf('\n', i)
-			const stop = end < 0 ? src.length : end
-			out += keepNewlines(src.slice(i, stop))
-			i = stop
-		} else if (two === '/*') {
-			const end = src.indexOf('*/', i + 2)
-			const stop = end < 0 ? src.length : end + 2
-			out += keepNewlines(src.slice(i, stop))
-			i = stop
-		} else if (src[i] === '@' && src[i + 1] === '"') {
-			// Verbatim string: ends at a lone `"` ("" is an escaped quote).
-			let j = i + 2
-			while (j < src.length) {
-				if (src[j] === '"') {
-					if (src[j + 1] === '"') j += 2
-					else {
-						j++
-						break
-					}
-				} else j++
-			}
-			out += keepNewlines(src.slice(i, j))
-			i = j
-		} else if (src[i] === '"' || src[i] === "'") {
-			const quote = src[i]
-			let j = i + 1
-			while (j < src.length) {
-				if (src[j] === '\\') j += 2
-				else if (src[j] === quote) {
-					j++
-					break
-				} else if (src[j] === '\n') break // unterminated; don't run away
-				else j++
-			}
-			out += keepNewlines(src.slice(i, j))
-			i = j
-		} else {
-			out += src[i]
-			i++
-		}
-	}
-	return out
-}
 
 /**
  * The brace-balanced body of a C# type, so a rule can ask "does THIS class do X" instead of "does the file
