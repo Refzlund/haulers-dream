@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using HarmonyLib;
+using HaulersDream.Core;
 using RimWorld;
 using Verse;
 using Verse.AI;
@@ -29,14 +30,16 @@ namespace HaulersDream
     {
         static void Postfix(ref Job __result, Pawn pawn, Thing thing, bool forced)
         {
-            // Cheap gates FIRST so the per-pawn-scan reflection in CommonSenseCompat.OwnsDoBillFlow only runs when
-            // the feature is actually engaged (a real convertible DoBill job + the feature on). These checks are
-            // pure field reads / a ref compare and would short-circuit the postfix anyway, so reordering them ahead
-            // of the cede check is behaviour-identical — when any of them bails, OwnsDoBillFlow's value is moot.
+            // Cheap gates FIRST so the reflection in CommonSenseCompat.GathersIngredients only runs when the
+            // feature is actually engaged (a real convertible DoBill job + the feature on). These checks are pure
+            // field reads / a ref compare and would short-circuit the postfix anyway, so reordering them ahead of
+            // the cede check is behaviour-identical — when any of them bails, the cede's value is moot.
             var s = HaulersDreamMod.Settings;
-            // markForUnload is required too: the relay's "leftovers are never stranded" safety story depends on
-            // the unload backstop reclaiming tagged stock if the craft never happens.
-            if (s == null || !s.inventoryCraftDeliver || !s.shareForCrafting || !s.markForUnload)
+            // All three crafting checkboxes, through the SAME Core expression the per-bench notice reads
+            // (GatherOwnershipPolicy.PlainGatherEnabled) so the button can never claim a gather this route
+            // declines. markForUnload belongs in the AND: the relay's "leftovers are never stranded" safety story
+            // depends on the unload backstop reclaiming tagged stock if the craft never happens.
+            if (s == null || !GatherOwnershipPolicy.PlainGatherEnabled(s.inventoryCraftDeliver, s.shareForCrafting, s.markForUnload))
                 return;
             var job = __result;
             if (job == null || job.def != JobDefOf.DoBill || job.bill?.recipe == null)
@@ -58,10 +61,14 @@ namespace HaulersDream
                 return;
             if (forced || job.playerForced)
                 return; // a player-ordered craft must start crafting, not detour through a gather job
-            // Common Sense owns the vanilla DoBill driver (its MakeNewToils Prefix re-deposits ingredients to the
-            // bench floor) — cede the gather flow to it so HD doesn't double-gather and create a re-haul loop.
-            // (Moved below the cheap gates above: the reflective toggle read now happens only on a convertible job.)
-            if (CommonSenseCompat.OwnsDoBillFlow)
+            // Common Sense is gathering the ingredients itself (its haul-all option), and its toils re-deposit
+            // them onto the bench floor — cede so HD doesn't double-gather into a re-haul loop.
+            // → GOTCHA: this reads GathersIngredients, NOT OwnsDoBillDriver. Ceding on driver ownership is
+            // issue #243: Common Sense's CLEANING option alone takes the driver but hands the collecting back to
+            // vanilla's own CollectIngredientsToils, so ceding there left nobody gathering at all — the bench
+            // button correctly stopped the gather and could not start it again.
+            // (Kept below the cheap gates above: the reflective toggle read happens only on a convertible job.)
+            if (CommonSenseCompat.GathersIngredients)
                 return;
             // Workbenches only — never a Pawn bill giver (surgery) / other special giver, and never an autonomous
             // worktable (mech gestator family): those DEPOSIT ingredients into the building's own container from the

@@ -59,13 +59,16 @@ namespace HaulersDream
             var s = HaulersDreamMod.Settings;
 
             // (1) Existing carried-stock injection — UNCHANGED, runs first so injected inventory stacks
-            //     participate in the spoiling reorder below. P2 (craft-loop gap): cede to Common Sense
-            //     exactly like the BatchRoute/InventoryRoute conversions — when CS owns the DoBill flow it
-            //     re-deposits HD's in-inventory ingredients onto the bench floor, so injecting carried stock
-            //     back into CS's chooser reopens the gather->bench->unload loop. !OwnsDoBillFlow closes it.
+            //     participate in the spoiling reorder below. P2 (craft-loop gap): cede to Common Sense exactly
+            //     like the InventoryRoute conversion — when CS gathers, it re-deposits HD's in-inventory
+            //     ingredients onto the bench floor, so injecting carried stock back into its chooser reopens the
+            //     gather->bench->unload loop. !GathersIngredients closes it.
+            //     → GOTCHA: this MUST stay the same predicate the InventoryRoute cedes on (#243). The injection is
+            //     what lets the next work scan source the bill from what the sweep put in the pawn's inventory, so
+            //     a route that converts while the injection stands down is a gather that never gets consumed.
             if (!Patch_WorkGiver_DoBill_TryFindBestBillIngredients.AddedThisSearch
                 && s != null && s.shareForCrafting && availableThings != null
-                && !CommonSenseCompat.OwnsDoBillFlow)
+                && !CommonSenseCompat.GathersIngredients)
             {
                 var worker = Patch_WorkGiver_DoBill_TryFindBestBillIngredients.CurrentWorker;
                 // #4: never inject shared inventory candidates into a MECHANOID worker's bill search. A colony
@@ -118,8 +121,9 @@ namespace HaulersDream
         // CS's transpiler is always active (its Prepare is `!optimal_patching_in_use || prefer_spoiling_ingredients`,
         // and optimal_patching_in_use defaults false), so if HD ran first and replaced the SortBy, CS would log
         // "[Common Sense] TryFindBestBillIngredientsInSet_AllowMix patch 0 didn't work" and lose its default-on
-        // spoiling-ingredient sort. HD defers whenever CS is present, exactly as it already cedes the whole DoBill
-        // flow to CS (see CommonSenseCompat.OwnsDoBillFlow): CS owns THIS non-batch (vanilla-chooser) cook sort. HD's
+        // spoiling-ingredient sort. HD defers whenever CS is PRESENT — a wider test than the gather cede above,
+        // deliberately: two transpilers collide on load order regardless of any CS setting, whereas the gather cede
+        // turns on CS's haul-all option. CS owns THIS non-batch (vanilla-chooser) cook sort. HD's
         // cook keys (cookSpoilingFirst default on, cookMostStockFirst default off) still drive HD's own batch-cook
         // ingredient picker (JobDriver_BatchCraft via SpoilingFirst.CookBetterThan, CS-immune by design), so only
         // this vanilla-chooser path cedes. With CS absent, HD patches this path as normal too (SortAllowMix reads

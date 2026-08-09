@@ -11,7 +11,7 @@ namespace HaulersDream
     ///
     /// <para>WHY this exists (issue #243): the per-bench "Gather ingredients" button and the crafting-ingredient
     /// settings both described HD's gather as a thing they controlled. When Common Sense is installed with its
-    /// haul-all-ingredients option on, HD is not gathering at all — it cedes the whole DoBill flow — so a player
+    /// haul-all-ingredients option on, HD is not gathering at all — it cedes the ingredient gather — so a player
     /// switching those controls off watched their colonists keep pocketing everything and reasonably concluded the
     /// controls were broken. Nothing here CHANGES behaviour; it only stops the UI claiming credit for behaviour
     /// that belongs to another mod, and names the option that actually governs it.</para>
@@ -20,14 +20,18 @@ namespace HaulersDream
     /// Common Sense's feature; the player asked for it by installing it, and reaching in to disable it is not a
     /// hauling mod's business.</para>
     ///
-    /// <para>KNOWN GAP, stated rather than papered over: one configuration is still not covered — Common Sense
-    /// installed with its CLEANING option on and its haul-all-ingredients option OFF. CS owns the DoBill driver
-    /// there (so HD cedes and does not gather), but CS does not gather either — its toils run vanilla's
-    /// carry-in-hands collect — so NOBODY gathers into an inventory and the bench description still overclaims.
-    /// It is deliberately not folded into <see cref="BenchGatherNotice.ForeignModGathers"/> (nothing foreign is
-    /// gathering, so that sentence would be false) nor into <see cref="BenchGatherNotice.GlobalGatherOff"/> (that
-    /// sentence blames a checkbox the player has not touched). It wants its own wording, in 16 languages, for a
-    /// non-default combination; worth doing if it is ever reported, not worth guessing at now.</para>
+    /// <para>THE GAP THAT USED TO BE DOCUMENTED HERE IS CLOSED, and not by adding a fourth sentence. It was:
+    /// Common Sense installed with its CLEANING option on and its haul-all-ingredients option OFF — Common Sense
+    /// held the driver so HD ceded, Common Sense gathered nothing either, and the bench description overclaimed
+    /// about a gather nobody was doing (Lensrub, 2026-08-03: the button stops the gathering correctly but cannot
+    /// start it). It was fixed at the SOURCE rather than in the wording: HD now cedes only when Common Sense will
+    /// genuinely gather, so in that configuration HD gathers and the plain description is simply true. The three
+    /// existing sentences are now exhaustive, because the notice and the cede read ONE fact
+    /// (<see cref="CommonSenseCompat.GathersIngredients"/>): a foreign gatherer means HD stood down, no foreign
+    /// gatherer plus HD's gather on means HD is doing it, and no foreign gatherer plus HD's gather off is the only
+    /// way nobody gathers — which is exactly what <see cref="BenchGatherNotice.GlobalGatherOff"/> already says, and
+    /// it now names a checkbox the player really did touch. <c>GatherOwnershipPolicy.ResolveGatherer</c> pins that
+    /// correspondence as a test rather than as a claim in this comment.</para>
     /// </summary>
     public static class GatherNotice
     {
@@ -35,11 +39,12 @@ namespace HaulersDream
         /// Is HD's own one-sweep gather switched on? Reads the live settings; missing settings (very early init)
         /// read as ON, matching the fields' own defaults and every other early-init read in the mod.
         ///
-        /// <para>This must mirror the route's OWN entry condition in
-        /// <c>Patch_WorkGiver_DoBill_InventoryRoute</c> — all THREE of inventoryCraftDeliver, shareForCrafting and
-        /// markForUnload — not just the one checkbox the notice happens to name. Reading only the first let a
-        /// player switch the gather off via either of the other two and still be told, by the bench button, that
-        /// pawns gather here: the exact overclaim this whole change exists to remove.</para>
+        /// <para>The three-checkbox AND is no longer restated here: it is
+        /// <see cref="GatherOwnershipPolicy.PlainGatherEnabled"/>, which
+        /// <c>Patch_WorkGiver_DoBill_InventoryRoute</c> also calls, so the notice and the route it describes read
+        /// one expression. Restating it was how the overclaim got in the first time — the notice read
+        /// inventoryCraftDeliver alone, so switching the gather off via either of the other two left the bench
+        /// button still promising that pawns gather here.</para>
         /// </summary>
         private static bool PlainGatherEnabled
         {
@@ -48,7 +53,7 @@ namespace HaulersDream
                 var s = HaulersDreamMod.Settings;
                 if (s == null)
                     return true;
-                return s.inventoryCraftDeliver && s.shareForCrafting && s.markForUnload;
+                return GatherOwnershipPolicy.PlainGatherEnabled(s.inventoryCraftDeliver, s.shareForCrafting, s.markForUnload);
             }
         }
 

@@ -59,5 +59,48 @@ namespace HaulersDream.Tests
         public void GovernsIsExactlyTheNoNoticeCase(bool foreign, bool plainOn)
             => Assert.That(GatherOwnershipPolicy.BenchSwitchGovernsPlainGather(foreign, plainOn),
                 Is.EqualTo(GatherOwnershipPolicy.ResolveNotice(foreign, plainOn) == BenchGatherNotice.None));
+
+        // --- the three-checkbox gate the route and the notice now share ---
+
+        [Test] // All three, or the one-sweep gather does not run — which is why the notice must read all three too.
+        public void PlainGatherNeedsAllThreeCheckboxes()
+        {
+            Assert.That(GatherOwnershipPolicy.PlainGatherEnabled(true, true, true), Is.True);
+            Assert.That(GatherOwnershipPolicy.PlainGatherEnabled(false, true, true), Is.False, "carry-in-inventory off");
+            Assert.That(GatherOwnershipPolicy.PlainGatherEnabled(true, false, true), Is.False, "share-for-crafting off");
+            Assert.That(GatherOwnershipPolicy.PlainGatherEnabled(true, true, false), Is.False, "automatic unloading off");
+        }
+
+        // --- who gathers, and the notice as its honest description ---
+
+        [Test] // Common Sense with its haul-all option on: HD has stood down, so it is the foreign mod's doing
+               // whatever HD's own checkboxes say.
+        public void ForeignGathererWins_WhicheverWayHdIsConfigured()
+        {
+            Assert.That(GatherOwnershipPolicy.ResolveGatherer(foreignModGathersNow: true, plainGatherEnabled: true),
+                Is.EqualTo(BillGatherer.ForeignMod));
+            Assert.That(GatherOwnershipPolicy.ResolveGatherer(foreignModGathersNow: true, plainGatherEnabled: false),
+                Is.EqualTo(BillGatherer.ForeignMod));
+        }
+
+        [Test]
+        public void NoForeignGatherer_HdGathersWhenItsOwnGatherIsOn()
+            => Assert.That(GatherOwnershipPolicy.ResolveGatherer(foreignModGathersNow: false, plainGatherEnabled: true),
+                Is.EqualTo(BillGatherer.HaulersDream));
+
+        [Test] // The only way nobody sweeps: the player switched HD's gather off and nothing took over. It is a
+               // legitimate choice, not a fault — but the bench button has to admit it rather than describe a
+               // gather that is not happening (the #243 overclaim).
+        public void NoForeignGathererAndHdGatherOff_NobodyGathers()
+            => Assert.That(GatherOwnershipPolicy.ResolveGatherer(foreignModGathersNow: false, plainGatherEnabled: false),
+                Is.EqualTo(BillGatherer.Nobody));
+
+        [TestCase(false, false)]
+        [TestCase(false, true)]
+        [TestCase(true, false)]
+        [TestCase(true, true)]
+        public void NoNoticeMeansHaulersDreamIsTheGatherer(bool foreign, bool plainOn)
+            => Assert.That(GatherOwnershipPolicy.ResolveNotice(foreign, plainOn) == BenchGatherNotice.None,
+                Is.EqualTo(GatherOwnershipPolicy.ResolveGatherer(foreign, plainOn) == BillGatherer.HaulersDream));
     }
 }

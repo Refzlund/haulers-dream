@@ -23,9 +23,10 @@ namespace HaulersDream
         [HarmonyPriority(Priority.First)]
         static void Postfix(ref Job __result, Pawn pawn, Thing thing, bool forced)
         {
-            // Cheap gates FIRST (ref/type checks) so the per-pawn-scan reflection in OwnsDoBillFlow runs only on a
-            // real convertible DoBill-at-a-workbench job. Reordering ahead of the cede check is behaviour-identical:
-            // each gate below would short-circuit the postfix anyway, so OwnsDoBillFlow's value is moot when it bails.
+            // Cheap gates FIRST (ref/type checks) so the per-pawn-scan reflection in OwnsDoBillDriver runs only on
+            // a real convertible DoBill-at-a-workbench job. Reordering ahead of the suppression check is
+            // behaviour-identical: each gate below would short-circuit the postfix anyway, so the Common Sense
+            // read's value is moot when it bails.
             var job = __result;
             if (job == null || job.def != JobDefOf.DoBill || job.bill?.recipe == null)
                 return;
