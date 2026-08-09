@@ -41,6 +41,17 @@ put away (see the in-game "Cannot unload inventory" alert).
   HD-tagged, so HD re-issues. **Test:** mark an item via CS's gear tab while a pawn also carries
   HD-scooped stock (no deadlock); interrupt an HD haul mid-carry (item returns to inventory, HD
   re-unloads, nothing stranded). No load-order requirement.
+- **Crafting-ingredient gathering: HD stands down only when Common Sense actually gathers (issue
+  #243).** Common Sense's "pick up all ingredients before hauling them to the crafting place" option
+  has the crafter collect a bill's ingredients into its pack — the same job HD's gather does — so
+  while that option is on, HD's gather steps aside entirely and each workbench's "Gather ingredients"
+  button says another mod is doing the collecting. Common Sense's separate bill-cleaning option takes
+  over the same crafting routine but hands ingredient collecting straight back to RimWorld's own; HD
+  used to stand aside there too, which left *nobody* gathering — that was issue #243 — and HD now
+  keeps gathering in that configuration (the two compose cleanly). Batch crafting runs on HD's own
+  separate crafting job that Common Sense never touches, so batch bills still batch under Common
+  Sense; turn off HD's "Batch even with Common Sense active" setting to hand all cooking and crafting
+  over to Common Sense instead.
 - **Cook-ingredient sort: HD now cedes to CS.** Both mods transpile the *same* `SortBy` call in
   `WorkGiver_DoBill.TryFindBestBillIngredientsInSet_AllowMix` to reorder a cooking bill's ingredients (CS
   by spoilage; HD's optional `cookSpoilingFirst` (default on, itself spoilage-first) and `cookMostStockFirst` (default off)). Two
@@ -48,7 +59,8 @@ put away (see the in-game "Cannot unload inventory" alert).
   CS logged a one-time yellow `[Common Sense] ... patch 0 didn't work` and its default spoilage sort went
   silent. HD's transpiler now stands down whenever Common Sense is installed (a `Prepare()` gate), so CS's
   sort always applies cleanly on that non-batch cook path; HD's own batch-cook ingredient picker still honors
-  the cook keys (it is CS-immune by design). (Same cede philosophy as the DoBill flow above.)
+  the cook keys (it is CS-immune by design). (Same philosophy as the ingredient gathering above: stand
+  down where Common Sense is the one doing the work.)
 - **Red errors while running both are not HD-caused (verified by cloning CS).** Two independent code-level
   passes found no HD-caused uncaught exception in the interaction. The once-suspected "started 10 jobs in
   one tick" churn is impossible: HD's bulk-haul job leaves `targetB` at `IntVec3.Invalid` (-1000,-1000,-1000),
@@ -378,6 +390,15 @@ keeps items in a pawn's inventory through its **own** system rather than one of 
   spare in the pack — so keeping one would only strand it; and a weapon the colonist is **already holding**
   counts towards its own loadout entry, so a spare of that weapon in the pack is put away rather than pinned.
   Inert without Compositable Loadouts.
+- **Survival Tools Reborn** (`jellypowered.survivaltools`, and the older Survival Tools it continues) —
+  **auto-respected, no setting change needed.** Colonists carry their pickaxes, axes and sickles in their pack,
+  and the mod fetches replacements *out of storage* on its own schedule — so with the "unload all surplus"
+  option on, HD used to ship a pawn's toolkit to a shelf and the mod fetched it straight back, over and over.
+  HD now recognises a carried survival tool as personal kit and never puts it away. Tools lying loose on the
+  ground are still bulk-hauled to a stockpile as normal (which is exactly where the mod looks for them), and a
+  tool HD itself swept up mid-haul stays unloadable, so nothing gets stuck in a pack. Tools loaded onto a pack
+  animal are ordinary cargo and still unload. Inert without the mod, and a per-item "Unload always" rule still
+  wins if you want a specific tool shipped off anyway.
 
 ### Vehicle Framework (`SmashPhil.VehicleFramework`) — composes; a vehicle is a foreign carrier HD respects
 HD can bulk-load a vehicle's cargo in one trip (its own VF-aware load path) and otherwise treats a
@@ -463,10 +484,14 @@ inventory, `GenPlace`, or `GenLeaving`.
 2. **A mod keeps interrupting hauling/unloading?** Add `HaulersDream_UnloadInventory` to that mod's
    do-not-interrupt / excepted-jobs list. HD recovers either way, but it avoids wasted trips.
 3. **Everyone idle, but still eating and sleeping — and forced orders still work?** Look for the
-   **"Work giver disabled by another mod's error"** alert: another mod threw from a part of RimWorld's
+   **"Work type switched off after repeated errors"** alert: something threw from a part of RimWorld's
    work selection that RimWorld does not guard, so HD switched that one kind of work off to keep the
-   rest of the colony running. The alert names the mod — report it there, with your log. Restarting the
-   game clears the list. (See "A work giver throwing during the work scan" above for the worked example.)
+   rest of the colony running. The alert names a mod **only when the error itself identifies one** —
+   report it there, with your log. When it says the source is unknown, that is honest rather than
+   evasive: several mods' code can run inside one patched method and the error's own trace often cannot
+   tell them apart, so send the log to Hauler's Dream instead and it will be traced from there.
+   Restarting the game clears the list. (See "A work giver throwing during the work scan" above for the
+   worked example.)
 4. **Right-clicking a colonist onto a drug gives "Value does not fall within the expected range" and
    no "Pick up" options?** RimWorld's own drug-policy lookup raises that (message-less) error when a
    colonist's drug policy holds no entry for that drug, before any HD code runs. HD now answers
