@@ -1,5 +1,21 @@
 # haulers-dream
 
+## 1.24.0
+
+### Minor Changes
+
+- d4c6bc2: feat: colonists keep the tools they carry from Survival Tools Reborn instead of putting them in storage
+
+### Patch Changes
+
+- d4c6bc2: fix: colonists gather crafting ingredients again when Common Sense is installed but its own ingredient hauling is switched off
+- d4c6bc2: fix: haulers no longer each grab a full stack for a stockpile with room for only a few items and carry the rest back
+- d4c6bc2: fix: colonists stop walking to an item the moment you forbid it, instead of finishing the trip first
+- d4c6bc2: fix: guests and quest pawns keep their belongings instead of being unloadable like a pack animal
+- d4c6bc2: fix: visitors are never pulled into loading your shuttles, portals or vehicles
+- d4c6bc2: fix: a colonist carrying several kinds of item at once no longer desyncs a Multiplayer game
+- d4c6bc2: fix: the alert for a switched-off work type now names a mod only when the error itself identifies one, and says the source is unknown otherwise
+
 ## 1.23.0
 
 ### Minor Changes
