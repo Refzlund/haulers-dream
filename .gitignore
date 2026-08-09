@@ -34,3 +34,6 @@ Thumbs.db
 
 # Guidance for Claude agents — local only, not shipped
 CLAUDE.md
+
+# Working docs (plans, investigations) — local only, not shipped
+/docs/
