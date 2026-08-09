@@ -9,11 +9,11 @@
   <HaulersDream_SelfPickup.reportString>正在收集收穫物。</HaulersDream_SelfPickup.reportString>
   <HaulersDream_OverloadConstructDeliver.reportString>正在搬運建材。</HaulersDream_OverloadConstructDeliver.reportString>
   <HaulersDream_ConstructDeliverBuild.reportString>正在搬運建築材料。</HaulersDream_ConstructDeliverBuild.reportString>
-  <HaulersDream_ClaimFromHauler.reportString>正在從搬運者手中接管材料。</HaulersDream_ClaimFromHauler.reportString>
+  <HaulersDream_ClaimFromHauler.reportString>正在從搬運者手中接管物料。</HaulersDream_ClaimFromHauler.reportString>
   <HaulersDream_BatchCraft.reportString>正在批量製作。</HaulersDream_BatchCraft.reportString>
   <HaulersDream_InventoryDoBill.reportString>正在製作。</HaulersDream_InventoryDoBill.reportString>
   <HaulersDream_BillPrepGather.reportString>正在收集製作原料。</HaulersDream_BillPrepGather.reportString>
-  <HaulersDream_BulkHaul.reportString>正在批量搬運周圍物品。</HaulersDream_BulkHaul.reportString>
+  <HaulersDream_BulkHaul.reportString>正在搬運附近的所有物品。</HaulersDream_BulkHaul.reportString>
   <HaulersDream_LoadPackAnimal.reportString>正在將物品裝載至馱獸。</HaulersDream_LoadPackAnimal.reportString>
   <HaulersDream_UnloadCarrierInBulk.reportString>正在批量卸載馱獸物品。</HaulersDream_UnloadCarrierInBulk.reportString>
   <HaulersDream_LoadTransportersInBulk.reportString>正在批量裝載運輸艙。</HaulersDream_LoadTransportersInBulk.reportString>
