@@ -190,10 +190,10 @@ namespace HaulersDream
                 TagHealPolicy.BuildScoopedUnion(liveDefs, carryOver, union); // union = live-tag defs ∪ carry-over defs
 
                 // Flatten the inventory into the policy's per-stack view. The keep-exclusion (a Simple Sidearms
-                // reflection walk, and the Grab Your Tool carried-tool check) is resolved LAZILY — only for a
-                // union-member, not-already-tagged stack (the only stacks the exclusion can affect) — preserving
-                // the original's reflection short-circuit (and both checks short-circuit cheaply on a non-weapon
-                // stack, or when their mod is absent, regardless).
+                // reflection walk, plus the Grab Your Tool and Survival Tools carried-tool checks) is resolved
+                // LAZILY — only for a union-member, not-already-tagged stack (the only stacks the exclusion can
+                // affect) — preserving the original's reflection short-circuit (and every check short-circuits
+                // cheaply on a stack it cannot match, or when its mod is absent, regardless).
                 var stacks = tmpStacks ?? (tmpStacks = new List<TagHealPolicy.Stack>());
                 stacks.Clear();
                 for (int i = 0; i < owner.Count; i++)
@@ -202,9 +202,9 @@ namespace HaulersDream
                     var def = thing?.def;
                     bool alreadyTagged = thing != null && takenToInventory.Contains(thing);
                     bool candidate = def != null && !alreadyTagged && union.Contains(def);
-                    // Never auto-tag a stack another system keeps for the pawn: a genuine SS remembered sidearm, or
-                    // a Grab Your Tool carried tool. Tagging it would make HD ship it to storage while that mod
-                    // re-fetches it (an unload<->pickup loop).
+                    // Never auto-tag a stack another system keeps for the pawn: a genuine SS remembered sidearm, a
+                    // Grab Your Tool carried tool, or a Survival Tools tool. Tagging it would make HD ship it to
+                    // storage while that mod re-fetches it (an unload<->pickup loop).
                     //
                     // The third exclusion is VANILLA's, and it is why this self-heal is load-bearing for the
                     // "pawn drops the kibble it fetched for training" report: the heal re-tags by DEF, so once a
@@ -214,6 +214,7 @@ namespace HaulersDream
                     // next heal tags it as normal and it unloads, so nothing is stranded.
                     bool excludeFromTag = candidate && (SimpleSidearmsCompat.IsRememberedSidearm(pawn, thing)
                                                         || GrabYourToolCompat.IsCarriedTool(pawn, thing)
+                                                        || SurvivalToolsCompat.IsCarriedTool(pawn, thing)
                                                         || AnimalInteractFood.IsHeldForInteraction(pawn, thing));
                     stacks.Add(new TagHealPolicy.Stack(def, alreadyTagged, excludeFromTag));
                 }

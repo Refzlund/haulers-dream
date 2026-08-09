@@ -359,10 +359,17 @@ namespace HaulersDream
                 // discipline is not to claim a stack another system is actively using. It rides the same
                 // `forcedUnload` deferral, so an explicit "Unload always" rule still wins exactly as it does inside
                 // SurplusOf. Self-releasing: once no interaction job remains, the next pass adopts normally.
+                //
+                // A Survival Tools tool joins the same skip, and here it is LOAD-BEARING rather than belt-and-braces:
+                // adoption with the global toggle ON is the exact path that would tag a pawn's whole toolkit, ship it
+                // to storage, and let the mod's auto-pickup fetch it straight back on the next gated job. Untagged by
+                // construction (the mod fetches with a plain TakeInventory), so nothing but this guard stood between
+                // the toggle and that loop.
                 bool forcedUnload = settings != null && settings.TryGetItemRule(t.def, out var rule)
                                     && rule.mode == ItemUnloadMode.UnloadAlways;
                 if (!forcedUnload
                     && (SimpleSidearmsCompat.IsRememberedSidearm(pawn, t) || GrabYourToolCompat.IsCarriedTool(pawn, t)
+                        || SurvivalToolsCompat.IsCarriedTool(pawn, t)
                         || AnimalInteractFood.IsHeldForInteraction(pawn, t)))
                     continue;
                 // Only adopt surplus we can actually DELIVER. Adopting a stack with no storage destination would

@@ -103,6 +103,32 @@ namespace HaulersDream
                 // absent — IsRememberedSidearm is false then) is kept here, which is the whole point of the fix.
                 return 0;
             }
+            else if (!hdSwept && SurvivalToolsCompat.IsCarriedTool(pawn, thing))
+            {
+                // Survival Tools keeps this pickaxe/axe/sickle in the pawn's inventory for its gated work jobs and
+                // re-fetches it FROM STORAGE on its own schedule (its optimizer's acquisition policy accepts any
+                // tool.IsInAnyStorage()), so unloading it just starts an unload<->pickup loop. Keep the whole stack.
+                //
+                // ABOVE the Simple Sidearms branch for the same reason the Grab Your Tool branch is: the tool defs
+                // carry melee <tools>, so they read as IsMeleeWeapon and SS would otherwise intercept them first with
+                // a remembered count of 0 — i.e. FULL surplus. The GYT branch cannot cover them either, because it
+                // requires def.equippedStatOffsets and every survival-tool def leaves that empty (the work-stat
+                // factors flow through the mod's own StatPart, not vanilla equipped offsets).
+                //
+                // Deliberately does NOT defer to a matching SS remembered weapon the way the GYT branch above does. A
+                // survival tool CAN be equipped, so SS can remember one, and SS's count-aware keep would then treat
+                // every copy above the remembered count as surplus — but Survival Tools carries SEVERAL tools on
+                // purpose, up to the pawn's SurvivalToolCarryCapacity, and fetches each one back, so deferring would
+                // re-open precisely the loop this branch severs. The mod trims its own excess (an idle drop over the
+                // carry limit, plus the optimizer's dedup/downgrade drops), so nothing accumulates.
+                //
+                // The !hdSwept guard keeps a genuinely HD-swept loose tool unloadable, so this can never create a
+                // black hole (same discipline as the SS and GYT keeps) — that is what makes the keep-ALL contract
+                // safe here. Inert when the mod is absent (IsCarriedTool short-circuits on !IsActive), and an
+                // explicit per-def "Unload always" rule still wins — it is handled by the TryGetItemRule branch
+                // above, before this.
+                return 0;
+            }
             else if (SimpleSidearmsCompat.IsActive
                      && (def.IsRangedWeapon || def.IsMeleeWeapon)
                      && SimpleSidearmsCompat.MemoryApiOk)
