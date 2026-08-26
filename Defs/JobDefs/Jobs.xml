@@ -142,6 +142,25 @@
     <suspendable>false</suspendable>
   </JobDef>
 
+  <!-- Transporter/shuttle BULK UNLOAD, the inverse of the transporter load above, and the building-side sibling
+       of the pack-animal unload: walk to a landed transporter ONCE (any CompTransporter parent with cargo, an
+       Odyssey shuttle, a pod with leftover load, a modded shuttle-like thing) and pull many stacks out of its
+       innerContainer into the hauler's backpack (tagged -> normal storage unload), with the last/overflow stack
+       going to the hands (UNtagged -> hauled directly to storage). Pawns in the hold are never pulled, they
+       leave via their own boarding/exit mechanics. Player-ordered only (vanilla has no autonomous transporter
+       unload to take over). See JobDriver_UnloadTransporterInBulk. -->
+  <!-- suspendable false + casualInterruptible false (like the other HD sweep jobs): a clean end recovers correctly
+      , backpack stock is tagged and the finalize flushes it, and the hand-tail is already a queued HaulToStorage
+       job. DELIBERATELY no <checkEncumbrance>: the fallback one-to-hands path may exceed 100% capacity (mirrors
+       HaulersDream_UnloadCarrierInBulk). -->
+  <JobDef>
+    <defName>HaulersDream_UnloadTransporterInBulk</defName>
+    <driverClass>HaulersDream.JobDriver_UnloadTransporterInBulk</driverClass>
+    <reportString>unloading a transporter.</reportString>
+    <casualInterruptible>false</casualInterruptible>
+    <suspendable>false</suspendable>
+  </JobDef>
+
   <!-- Bulk-load a transporter/shuttle group: claim a slice of the group manifest, sweep nearby ground stacks of
        the claimed defs into inventory (tagged), walk to the transporter ONCE, and deposit every needed stack via
        innerContainer.TryTransferToContainer (the precise SubtractFromToLoadList intercept settles the manifest).

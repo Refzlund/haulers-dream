@@ -356,9 +356,23 @@
 <HaulersDream.LoadTransporter.Report>masowe ładowanie transportera.</HaulersDream.LoadTransporter.Report>
 <HaulersDream.LoadTransporter.Option>Priorytetyzuj masowe ładowanie {0}</HaulersDream.LoadTransporter.Option>
 <HaulersDream.LoadTransporter.CouldNotStart>Nic w pobliżu do masowego załadowania do tego transportera w tej chwili.</HaulersDream.LoadTransporter.CouldNotStart>
+
+<!-- Transporter / shuttle BULK UNLOAD -->
+<HaulersDream.UnloadTransporter.Report>rozładowuje {0}.</HaulersDream.UnloadTransporter.Report>
+<HaulersDream.UnloadTransporter.Option>Priorytetyzuj masowe rozładowanie {0}</HaulersDream.UnloadTransporter.Option>
+<HaulersDream.UnloadTransporter.CouldNotStart>Nie udało się teraz rozpocząć masowego rozładowania tego transportera.</HaulersDream.UnloadTransporter.CouldNotStart>
 <HaulersDream.Setting.EnableBulkLoadTransporters>Masowo ładuj transportery i promy w jednej wyprawie</HaulersDream.Setting.EnableBulkLoadTransporters>
 <HaulersDream.Setting.EnableBulkLoadTransportersDesc>Gdy kapsuła transportowa lub prom są ustawione na ładowanie, tragarz zajmuje wycinek ich manifestu, zgarnia kilka pobliskich stosów do swojego bagażu, podchodzi do transportera RAZ i deponuje je wszystkie — zamiast nosić jeden stos w rękach na podejście jak w podstawce. Kilku tragarzy dzieli duży manifest bez podwójnego znoszenia, a kapsuła nie wejdzie na pokład ani nie wystartuje, dopóki zajęty ładunek nie będzie w środku. Z tym wyłączonym używane jest ładowanie transportera pojedynczym stosem z podstawki bez zmian.</HaulersDream.Setting.EnableBulkLoadTransportersDesc>
 <HaulersDream.Setting.BulkLoadAiUpdateFrequency>Interwał ponownego sprawdzania ładowania: {0} tyknięć</HaulersDream.Setting.BulkLoadAiUpdateFrequency>
+
+<!-- Settings: transporter / shuttle bulk unload -->
+<HaulersDream.Setting.EnableBulkUnloadTransporters>Masowo rozładuj transportery w jednej wyprawie</HaulersDream.Setting.EnableBulkUnloadTransporters>
+<HaulersDream.Gizmo.BulkUnloadAll.Label>Masowo rozładuj wszystko</HaulersDream.Gizmo.BulkUnloadAll.Label>
+<HaulersDream.Gizmo.BulkUnloadAll.Desc>Przełącznik. Kolonści-nosiciele będą wielokrotnie podchodzić do {0}, napełniać plecaki prosto z ładowni i znosić wszystko do magazynu, dopóki nic nie zostanie. Pasażerowie nie są nigdy wyciągani. Gdy jest włączone, rozkaz „Priorytetyzuj masowe rozładowanie” z prawego przycisku wysyła jednego nosiciela, który wraca aż ładownia będzie pusta.</HaulersDream.Gizmo.BulkUnloadAll.Desc>
+<HaulersDream.Gizmo.BulkUnloadAll.Empty>Nie ma czego rozładowywać</HaulersDream.Gizmo.BulkUnloadAll.Empty>
+<HaulersDream.Gizmo.BulkUnloadAll.LoadBlocked>„Masowo rozładuj wszystko” jest włączone, wyłącz to przed ustawieniem nowego ładunku.</HaulersDream.Gizmo.BulkUnloadAll.LoadBlocked>
+<HaulersDream.Gizmo.BulkUnloadAll.UnloadBlocked>Do tego transportera właśnie zbierany jest ładunek.</HaulersDream.Gizmo.BulkUnloadAll.UnloadBlocked>
+<HaulersDream.Setting.EnableBulkUnloadTransportersDesc>Po włączeniu transportery i promy zyskują rozkaz z prawego przycisku myszy „Priorytetyzuj masowe rozładowanie” oraz powiązany przełącznik „Masowo rozładuj wszystko”. Wybranie rozkazu włącza przełącznik i natychmiast wysyła jednego nosiciela, aby zacząć przenosić stosy z ładowni do własnego plecaka; kolejne wyprawy następują automatycznie, tym nosicielem lub innym, dopóki nic nie zostanie, zamiast waniliowego wysypania wszystkiego na ziemię. Samo włączenie przełącznika działa tak samo, tylko bez natychmiastowego wysyłania kogokolwiek. Ostatni/przepełniony stos trafia do rąk i jest znoszony bezpośrednio. Pasażerowie nigdy nie są wyciągani z promu, a gdy ładunek jest jeszcze zbierany do transportera, HD się nie wtrąca.</HaulersDream.Setting.EnableBulkUnloadTransportersDesc>
 <HaulersDream.LoadPortal.Report>masowe ładowanie portalu.</HaulersDream.LoadPortal.Report>
 <HaulersDream.LoadPortal.Option>Priorytetyzuj masowe ładowanie {0}</HaulersDream.LoadPortal.Option>
 <HaulersDream.LoadPortal.CouldNotStart>Nic w pobliżu do masowego załadowania do tego portalu w tej chwili.</HaulersDream.LoadPortal.CouldNotStart>
@@ -551,6 +565,9 @@
 <HaulersDream.Feat.UnloadCarriers.Blurb>Opróżnij nosiciela do plecaka w jednej wizycie</HaulersDream.Feat.UnloadCarriers.Blurb>
 <HaulersDream.Feat.LoadTransporters.Name>Ładuj transportery i promy</HaulersDream.Feat.LoadTransporters.Name>
 <HaulersDream.Feat.LoadTransporters.Blurb>Napełnij kapsuły i promy w jednej wyprawie</HaulersDream.Feat.LoadTransporters.Blurb>
+
+<HaulersDream.Feat.UnloadTransporters.Name>Rozładuj transportery i promy</HaulersDream.Feat.UnloadTransporters.Name>
+<HaulersDream.Feat.UnloadTransporters.Blurb>Opróżnij ładownię wylądowanego transportera w jednej wizycie</HaulersDream.Feat.UnloadTransporters.Blurb>
 <HaulersDream.Feat.LoadPortal.Name>Ładuj portale mapy</HaulersDream.Feat.LoadPortal.Name>
 <HaulersDream.Feat.LoadPortal.Blurb>Masowo ładuj bramy otchłani i wyjścia z jaskiń</HaulersDream.Feat.LoadPortal.Blurb>
 <HaulersDream.Feat.Refuel.Name>Masowe tankowanie</HaulersDream.Feat.Refuel.Name>

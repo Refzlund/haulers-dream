@@ -34,9 +34,10 @@ What happens between picking things up and putting them away.
 [/list]
 
 [h2]Bulk loading[/h2]
-Anything with a manifest, loaded in bulk instead of one stack per walk.
+Anything with a manifest, loaded in bulk instead of one stack per walk, and emptied the same way.
 [list]
 [*] Transport pods and shuttles
+[*] Bulk unload shuttle and transporter holds, trip by trip, with a load/unload mutual exclusion
 [*] Map portals — loaded down [i]and[/i] hauled back up
 [*] Pack animals, refuelables, and Vehicle Framework cargo
 [*] Several haulers split one manifest without double-hauling

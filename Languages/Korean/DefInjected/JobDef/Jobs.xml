@@ -12,6 +12,7 @@
 <HaulersDream_BulkHaul.reportString>주변 전부를 운반하는 중.</HaulersDream_BulkHaul.reportString>
 <HaulersDream_LoadPackAnimal.reportString>짐 운반 동물에 물건을 싣는 중.</HaulersDream_LoadPackAnimal.reportString>
 <HaulersDream_UnloadCarrierInBulk.reportString>짐 운반 동물에서 내리는 중.</HaulersDream_UnloadCarrierInBulk.reportString>
+<HaulersDream_UnloadTransporterInBulk.reportString>수송선에서 하역하는 중.</HaulersDream_UnloadTransporterInBulk.reportString>
 <HaulersDream_LoadTransportersInBulk.reportString>수송 포드를 대량으로 싣는 중.</HaulersDream_LoadTransportersInBulk.reportString>
 <HaulersDream_LoadPortalInBulk.reportString>차원문을 대량으로 싣는 중.</HaulersDream_LoadPortalInBulk.reportString>
 <HaulersDream_LoadVehicleInBulk.reportString>차량을 대량으로 싣는 중.</HaulersDream_LoadVehicleInBulk.reportString>

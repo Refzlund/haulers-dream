@@ -356,9 +356,23 @@
 <HaulersDream.LoadTransporter.Report>chargement groupé d'un module de transport.</HaulersDream.LoadTransporter.Report>
 <HaulersDream.LoadTransporter.Option>Prioriser le chargement groupé de {0}</HaulersDream.LoadTransporter.Option>
 <HaulersDream.LoadTransporter.CouldNotStart>Rien à proximité à charger en groupe dans ce module de transport pour le moment.</HaulersDream.LoadTransporter.CouldNotStart>
+
+<!-- Transporter / shuttle BULK UNLOAD -->
+<HaulersDream.UnloadTransporter.Report>déchargement de {0}.</HaulersDream.UnloadTransporter.Report>
+<HaulersDream.UnloadTransporter.Option>Prioriser le déchargement groupé de {0}</HaulersDream.UnloadTransporter.Option>
+<HaulersDream.UnloadTransporter.CouldNotStart>Impossible de lancer le déchargement groupé de ce module de transport pour le moment.</HaulersDream.UnloadTransporter.CouldNotStart>
 <HaulersDream.Setting.EnableBulkLoadTransporters>Charger en groupe les modules de transport et navettes en un seul trajet</HaulersDream.Setting.EnableBulkLoadTransporters>
 <HaulersDream.Setting.EnableBulkLoadTransportersDesc>Quand un module de transport ou une navette est réglé pour charger, un transporteur réclame une part de son manifeste, balaye plusieurs piles proches dans son inventaire, marche jusqu'au module de transport UNE fois, et les y dépose toutes — au lieu d'une pile-dans-les-mains par déplacement comme en vanilla. Plusieurs transporteurs se partagent un grand manifeste sans double transport, et le module ne s'embarque ni ne décolle tant que la cargaison réclamée n'est pas à bord. Avec ceci désactivé, le chargement d'une seule pile vanilla est utilisé inchangé.</HaulersDream.Setting.EnableBulkLoadTransportersDesc>
 <HaulersDream.Setting.BulkLoadAiUpdateFrequency>Intervalle de revérification du chargement : {0} ticks</HaulersDream.Setting.BulkLoadAiUpdateFrequency>
+
+<!-- Settings: transporter / shuttle bulk unload -->
+<HaulersDream.Setting.EnableBulkUnloadTransporters>Décharger en groupe les modules de transport en un seul trajet</HaulersDream.Setting.EnableBulkUnloadTransporters>
+<HaulersDream.Gizmo.BulkUnloadAll.Label>Tout décharger en groupe</HaulersDream.Gizmo.BulkUnloadAll.Label>
+<HaulersDream.Gizmo.BulkUnloadAll.Desc>Interrupteur. Les colonistes porteurs iront à plusieurs reprises vers {0}, rempliront leur sac à dos directement depuis la soute et transporteront tout au stockage jusqu'à ce qu'il n'y ait plus rien. Les passagers ne sont jamais extraits. Tant que c'est activé, l'ordre « Prioriser le déchargement groupé » au clic droit envoie un porteur qui revient sans cesse jusqu'à ce que la soute soit vide.</HaulersDream.Gizmo.BulkUnloadAll.Desc>
+<HaulersDream.Gizmo.BulkUnloadAll.Empty>Rien à décharger</HaulersDream.Gizmo.BulkUnloadAll.Empty>
+<HaulersDream.Gizmo.BulkUnloadAll.LoadBlocked>« Décharger tout en groupe » est actif, désactivez-le avant de définir un nouveau chargement.</HaulersDream.Gizmo.BulkUnloadAll.LoadBlocked>
+<HaulersDream.Gizmo.BulkUnloadAll.UnloadBlocked>Un chargement est en cours de rassemblement vers ce transporteur.</HaulersDream.Gizmo.BulkUnloadAll.UnloadBlocked>
+<HaulersDream.Setting.EnableBulkUnloadTransportersDesc>Une fois activé, les modules de transport et navettes gagnent un ordre « Prioriser le déchargement groupé » au clic droit et un interrupteur « Tout décharger en groupe » associé. Choisir l'ordre active l'interrupteur et envoie immédiatement un porteur commencer à sortir les piles de la soute vers son sac à dos ; d'autres allers-retours suivent automatiquement, par ce porteur ou un autre, jusqu'à ce qu'il ne reste plus rien, au lieu du déchargement vanilla qui déverse tout au sol. Activer seulement l'interrupteur fait la même chose sans envoyer personne tout de suite. La dernière pile/en débordement part dans les mains du porteur et est transportée directement. Les passagers ne sont jamais extraits d'une navette, et tant qu'un chargement est rassemblé vers le transporteur, HD s'efface.</HaulersDream.Setting.EnableBulkUnloadTransportersDesc>
 <HaulersDream.LoadPortal.Report>chargement groupé d'un portail.</HaulersDream.LoadPortal.Report>
 <HaulersDream.LoadPortal.Option>Prioriser le chargement groupé de {0}</HaulersDream.LoadPortal.Option>
 <HaulersDream.LoadPortal.CouldNotStart>Rien à proximité à charger en groupe dans ce portail pour le moment.</HaulersDream.LoadPortal.CouldNotStart>
@@ -551,6 +565,9 @@
 <HaulersDream.Feat.UnloadCarriers.Blurb>Vider un porteur dans un sac à dos en une seule visite</HaulersDream.Feat.UnloadCarriers.Blurb>
 <HaulersDream.Feat.LoadTransporters.Name>Charger les modules de transport &amp; navettes</HaulersDream.Feat.LoadTransporters.Name>
 <HaulersDream.Feat.LoadTransporters.Blurb>Remplir les modules et navettes en un seul trajet</HaulersDream.Feat.LoadTransporters.Blurb>
+
+<HaulersDream.Feat.UnloadTransporters.Name>Décharger les modules de transport &amp; navettes</HaulersDream.Feat.UnloadTransporters.Name>
+<HaulersDream.Feat.UnloadTransporters.Blurb>Vider la soute d'un module posé en un seul passage</HaulersDream.Feat.UnloadTransporters.Blurb>
 <HaulersDream.Feat.LoadPortal.Name>Charger les portails de carte</HaulersDream.Feat.LoadPortal.Name>
 <HaulersDream.Feat.LoadPortal.Blurb>Charger en groupe les portes de gouffre et sorties de grotte</HaulersDream.Feat.LoadPortal.Blurb>
 <HaulersDream.Feat.Refuel.Name>Ravitaillement groupé</HaulersDream.Feat.Refuel.Name>

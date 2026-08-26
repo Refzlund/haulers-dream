@@ -356,9 +356,23 @@
 <HaulersDream.LoadTransporter.Report>cargando en lote un transportador.</HaulersDream.LoadTransporter.Report>
 <HaulersDream.LoadTransporter.Option>Priorizar la carga en lote de {0}</HaulersDream.LoadTransporter.Option>
 <HaulersDream.LoadTransporter.CouldNotStart>Nada cerca para cargar en lote en ese transportador ahora mismo.</HaulersDream.LoadTransporter.CouldNotStart>
+
+<!-- Transporter / shuttle BULK UNLOAD -->
+<HaulersDream.UnloadTransporter.Report>descargando {0}.</HaulersDream.UnloadTransporter.Report>
+<HaulersDream.UnloadTransporter.Option>Priorizar la descarga en lote de {0}</HaulersDream.UnloadTransporter.Option>
+<HaulersDream.UnloadTransporter.CouldNotStart>No se pudo iniciar la descarga en lote de ese transportador ahora mismo.</HaulersDream.UnloadTransporter.CouldNotStart>
 <HaulersDream.Setting.EnableBulkLoadTransporters>Cargar en lote transportadores y lanzaderas en un solo viaje</HaulersDream.Setting.EnableBulkLoadTransporters>
 <HaulersDream.Setting.EnableBulkLoadTransportersDesc>Cuando una cápsula de transporte o una lanzadera está puesta en cargar, un transportador reclama una porción de su manifiesto, barre varias pilas cercanas hacia su inventario, camina al transportador UNA vez y las deposita todas, en lugar del «una pila en las manos por caminata» del juego base. Varios transportadores reparten un manifiesto grande sin doble transporte, y la cápsula no embarca ni despega hasta que la carga reclamada esté dentro. Con esto desactivado, se usa sin cambios la carga de transportador de una sola pila del juego base.</HaulersDream.Setting.EnableBulkLoadTransportersDesc>
 <HaulersDream.Setting.BulkLoadAiUpdateFrequency>Intervalo de reverificación de carga: {0} tics</HaulersDream.Setting.BulkLoadAiUpdateFrequency>
+
+<!-- Settings: transporter / shuttle bulk unload -->
+<HaulersDream.Setting.EnableBulkUnloadTransporters>Descargar en lote transportadores en un solo viaje</HaulersDream.Setting.EnableBulkUnloadTransporters>
+<HaulersDream.Gizmo.BulkUnloadAll.Label>Descargar todo en lote</HaulersDream.Gizmo.BulkUnloadAll.Label>
+<HaulersDream.Gizmo.BulkUnloadAll.Desc>Interruptor. Los colonistas cargadores caminarán repetidamente hacia {0}, llenarán sus mochilas directamente de la bahía y llevarán todo al almacenamiento hasta que no quede nada. Los pasajeros nunca son sacados. Mientras esté activado, la orden con clic derecho "Priorizar la descarga en lote" envía un cargador que sigue volviendo hasta que la bahía quede vacía.</HaulersDream.Gizmo.BulkUnloadAll.Desc>
+<HaulersDream.Gizmo.BulkUnloadAll.Empty>Nada que descargar</HaulersDream.Gizmo.BulkUnloadAll.Empty>
+<HaulersDream.Gizmo.BulkUnloadAll.LoadBlocked>"Descargar todo en lote" está activado: apágalo antes de establecer una nueva carga.</HaulersDream.Gizmo.BulkUnloadAll.LoadBlocked>
+<HaulersDream.Gizmo.BulkUnloadAll.UnloadBlocked>Se está reuniendo una carga hacia este transportador.</HaulersDream.Gizmo.BulkUnloadAll.UnloadBlocked>
+<HaulersDream.Setting.EnableBulkUnloadTransportersDesc>Al activarlo, las cápsulas de transporte y lanzaderas ganan una orden con clic derecho "Priorizar la descarga en lote" y un interruptor correspondiente "Descargar todo en lote". Elegir la orden activa el interruptor y envía de inmediato a un cargador a empezar a sacar pilas de la bahía hacia su propia mochila; más viajes siguen automáticamente, de ese cargador o de otro, hasta que no quede nada, en lugar de la descarga estándar que vierte todo al suelo. Activar solo el interruptor hace lo mismo sin enviar a nadie de inmediato. La última pila/el desbordamiento va en las manos y se lleva directamente. Los pasajeros nunca son sacados de una lanzadera, y mientras la carga todavía se está reuniendo hacia el transportador, HD no interfiere.</HaulersDream.Setting.EnableBulkUnloadTransportersDesc>
 <HaulersDream.LoadPortal.Report>cargando en lote un portal.</HaulersDream.LoadPortal.Report>
 <HaulersDream.LoadPortal.Option>Priorizar la carga en lote de {0}</HaulersDream.LoadPortal.Option>
 <HaulersDream.LoadPortal.CouldNotStart>Nada cerca para cargar en lote en ese portal ahora mismo.</HaulersDream.LoadPortal.CouldNotStart>
@@ -551,6 +565,9 @@
 <HaulersDream.Feat.UnloadCarriers.Blurb>Vacía un porteador en una mochila en una sola visita</HaulersDream.Feat.UnloadCarriers.Blurb>
 <HaulersDream.Feat.LoadTransporters.Name>Cargar transportadores y lanzaderas</HaulersDream.Feat.LoadTransporters.Name>
 <HaulersDream.Feat.LoadTransporters.Blurb>Llena cápsulas y lanzaderas en un solo viaje</HaulersDream.Feat.LoadTransporters.Blurb>
+
+<HaulersDream.Feat.UnloadTransporters.Name>Descarga en lote de transportadores y lanzaderas</HaulersDream.Feat.UnloadTransporters.Name>
+<HaulersDream.Feat.UnloadTransporters.Blurb>Vacía la bahía de un transportador aterrizado en una visita</HaulersDream.Feat.UnloadTransporters.Blurb>
 <HaulersDream.Feat.LoadPortal.Name>Cargar portales del mapa</HaulersDream.Feat.LoadPortal.Name>
 <HaulersDream.Feat.LoadPortal.Blurb>Carga en lote puertas de foso y salidas de cueva</HaulersDream.Feat.LoadPortal.Blurb>
 <HaulersDream.Feat.Refuel.Name>Recarga de combustible en lote</HaulersDream.Feat.Refuel.Name>

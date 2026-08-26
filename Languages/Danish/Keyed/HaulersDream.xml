@@ -356,9 +356,23 @@
 <HaulersDream.LoadTransporter.Report>masselæsser en transporter.</HaulersDream.LoadTransporter.Report>
 <HaulersDream.LoadTransporter.Option>Prioritér masselæsning af {0}</HaulersDream.LoadTransporter.Option>
 <HaulersDream.LoadTransporter.CouldNotStart>Intet i nærheden at masselæsse i den transporter lige nu.</HaulersDream.LoadTransporter.CouldNotStart>
+
+<!-- Transporter / shuttle BULK UNLOAD -->
+<HaulersDream.UnloadTransporter.Report>aflæsser {0}.</HaulersDream.UnloadTransporter.Report>
+<HaulersDream.UnloadTransporter.Option>Prioritér masseaflæsning af {0}</HaulersDream.UnloadTransporter.Option>
+<HaulersDream.UnloadTransporter.CouldNotStart>Kunne ikke starte masseaflæsning af transporteren lige nu.</HaulersDream.UnloadTransporter.CouldNotStart>
 <HaulersDream.Setting.EnableBulkLoadTransporters>Masselæs transportere og færger på én tur</HaulersDream.Setting.EnableBulkLoadTransporters>
 <HaulersDream.Setting.EnableBulkLoadTransportersDesc>Når en transportkapsel eller færge er sat til at læsse, gør en transportør krav på en del af dens manifest, fejer flere nærliggende stakke ned i sit inventar, går til transporteren ÉN gang og afleverer dem alle — i stedet for vanillas én stak i hænderne pr. gåtur. Flere transportører deler et stort manifest uden dobbelttransport, og kapslen går ikke om bord eller letter, før den krævede last er inde. Med dette slået fra bruges vanillas transporterlæsning af én stak uændret.</HaulersDream.Setting.EnableBulkLoadTransportersDesc>
 <HaulersDream.Setting.BulkLoadAiUpdateFrequency>Genkontrolinterval for læsning: {0} tikker</HaulersDream.Setting.BulkLoadAiUpdateFrequency>
+
+<!-- Settings: transporter / shuttle bulk unload -->
+<HaulersDream.Setting.EnableBulkUnloadTransporters>Masseaflæs transportere på én tur</HaulersDream.Setting.EnableBulkUnloadTransporters>
+<HaulersDream.Gizmo.BulkUnloadAll.Label>Masseaflæs alt</HaulersDream.Gizmo.BulkUnloadAll.Label>
+<HaulersDream.Gizmo.BulkUnloadAll.Desc>Kontakt. Bærende kolonister går gentagne gange til {0}, fylder deres rygsække direkte fra lastrummet og kører alt til opbevaring, indtil der ikke er noget tilbage. Passagerer trækkes aldrig ud. Når denne er slået til, sender højreklikordren "Prioritér masseaflæsning" én bærer, der bliver ved med at vende tilbage, indtil lastrummet er tomt.</HaulersDream.Gizmo.BulkUnloadAll.Desc>
+<HaulersDream.Gizmo.BulkUnloadAll.Empty>Intet at aflæse</HaulersDream.Gizmo.BulkUnloadAll.Empty>
+<HaulersDream.Gizmo.BulkUnloadAll.LoadBlocked>"Masseaflæs alt" er slået til, slå det fra, før du sætter en ny last.</HaulersDream.Gizmo.BulkUnloadAll.LoadBlocked>
+<HaulersDream.Gizmo.BulkUnloadAll.UnloadBlocked>Der samles last til denne transporter.</HaulersDream.Gizmo.BulkUnloadAll.UnloadBlocked>
+<HaulersDream.Setting.EnableBulkUnloadTransportersDesc>Når den er aktiveret, får transportere og færger en højreklikordre "Prioritér masseaflæsning" og en tilhørende "Masseaflæs alt"-kontakt. At vælge ordren slår kontakten til og sender én bærer af sted for med det samme at begynde at flytte stakke ud af lastrummet og op i sin rygsæk; flere ture følger automatisk, af den bærer eller en anden, indtil der ikke er noget tilbage, i stedet for at alt dumpes på gulvet. At blot slå kontakten til gør det samme uden at sende nogen med det samme. Den sidste stak/stakken der flyder over, bæres i hånden og køres direkte. Passagerer trækkes aldrig ud af en færge, og mens last stadig samles til transporteren, træder HD sig til side.</HaulersDream.Setting.EnableBulkUnloadTransportersDesc>
 <HaulersDream.LoadPortal.Report>masselæsser en portal.</HaulersDream.LoadPortal.Report>
 <HaulersDream.LoadPortal.Option>Prioritér masselæsning af {0}</HaulersDream.LoadPortal.Option>
 <HaulersDream.LoadPortal.CouldNotStart>Intet i nærheden at masselæsse i den portal lige nu.</HaulersDream.LoadPortal.CouldNotStart>
@@ -551,6 +565,9 @@
 <HaulersDream.Feat.UnloadCarriers.Blurb>Tøm en bærer ned i en rygsæk på ét besøg</HaulersDream.Feat.UnloadCarriers.Blurb>
 <HaulersDream.Feat.LoadTransporters.Name>Læs transportere og færger</HaulersDream.Feat.LoadTransporters.Name>
 <HaulersDream.Feat.LoadTransporters.Blurb>Fyld kapsler og færger på én tur</HaulersDream.Feat.LoadTransporters.Blurb>
+
+<HaulersDream.Feat.UnloadTransporters.Name>Aflæs transportere og færger</HaulersDream.Feat.UnloadTransporters.Name>
+<HaulersDream.Feat.UnloadTransporters.Blurb>Tøm lastrummet på en landet transporter i ét besøg</HaulersDream.Feat.UnloadTransporters.Blurb>
 <HaulersDream.Feat.LoadPortal.Name>Læs kortportaler</HaulersDream.Feat.LoadPortal.Name>
 <HaulersDream.Feat.LoadPortal.Blurb>Masselæs faldgruber og huleudgange</HaulersDream.Feat.LoadPortal.Blurb>
 <HaulersDream.Feat.Refuel.Name>Masse-optankning</HaulersDream.Feat.Refuel.Name>

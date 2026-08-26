@@ -12,6 +12,7 @@
 <HaulersDream_BulkHaul.reportString>transportiert alles in der Nähe.</HaulersDream_BulkHaul.reportString>
 <HaulersDream_LoadPackAnimal.reportString>lädt Gegenstände auf ein Lasttier.</HaulersDream_LoadPackAnimal.reportString>
 <HaulersDream_UnloadCarrierInBulk.reportString>entlädt ein Lasttier.</HaulersDream_UnloadCarrierInBulk.reportString>
+<HaulersDream_UnloadTransporterInBulk.reportString>entlädt einen Transporter.</HaulersDream_UnloadTransporterInBulk.reportString>
 <HaulersDream_LoadTransportersInBulk.reportString>belädt einen Transporter im Stapel.</HaulersDream_LoadTransportersInBulk.reportString>
 <HaulersDream_LoadPortalInBulk.reportString>belädt ein Portal im Stapel.</HaulersDream_LoadPortalInBulk.reportString>
 <HaulersDream_LoadVehicleInBulk.reportString>belädt ein Fahrzeug im Stapel.</HaulersDream_LoadVehicleInBulk.reportString>

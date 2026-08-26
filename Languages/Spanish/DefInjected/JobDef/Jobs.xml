@@ -12,6 +12,7 @@
 <HaulersDream_BulkHaul.reportString>transportando todo lo cercano.</HaulersDream_BulkHaul.reportString>
 <HaulersDream_LoadPackAnimal.reportString>cargando objetos en un animal de carga.</HaulersDream_LoadPackAnimal.reportString>
 <HaulersDream_UnloadCarrierInBulk.reportString>descargando un animal de carga.</HaulersDream_UnloadCarrierInBulk.reportString>
+<HaulersDream_UnloadTransporterInBulk.reportString>descargando un transportador.</HaulersDream_UnloadTransporterInBulk.reportString>
 <HaulersDream_LoadTransportersInBulk.reportString>cargando en lote un transportador.</HaulersDream_LoadTransportersInBulk.reportString>
 <HaulersDream_LoadPortalInBulk.reportString>cargando en lote un portal.</HaulersDream_LoadPortalInBulk.reportString>
 <HaulersDream_LoadVehicleInBulk.reportString>cargando en lote un vehículo.</HaulersDream_LoadVehicleInBulk.reportString>

@@ -1088,6 +1088,7 @@ namespace HaulersDream
             HDSettingsUI.Header(c, "HaulersDream.FeatGroup.Loading".Translate());
             enableBulkUnloadCarriers = Card(c, SettingsCat.BulkLoading, "HaulersDream.Feat.UnloadCarriers", enableBulkUnloadCarriers, "HaulersDream.Setting.EnableBulkUnloadCarriersDesc");
             enableBulkLoadTransporters = Card(c, SettingsCat.BulkLoading, "HaulersDream.Feat.LoadTransporters", enableBulkLoadTransporters, "HaulersDream.Setting.EnableBulkLoadTransportersDesc");
+            enableBulkUnloadTransporters = Card(c, SettingsCat.BulkLoading, "HaulersDream.Feat.UnloadTransporters", enableBulkUnloadTransporters, "HaulersDream.Setting.EnableBulkUnloadTransportersDesc");
             enableBulkLoadPortal = Card(c, SettingsCat.BulkLoading, "HaulersDream.Feat.LoadPortal", enableBulkLoadPortal, "HaulersDream.Setting.EnableBulkLoadPortalDesc");
             enableBulkRefuel = Card(c, SettingsCat.BulkLoading, "HaulersDream.Feat.Refuel", enableBulkRefuel, "HaulersDream.Setting.EnableBulkRefuelDesc");
             if (VehicleFrameworkCompat.IsActive)
@@ -1382,9 +1383,13 @@ namespace HaulersDream
                 "HaulersDream.Setting.MinFreeSpaceToUnloadCarrier.Help".Translate(), enabled: enableBulkUnloadCarriers, indent: 24f) * 20f) / 20f;
             reserveCarrierOnUnload = HDSettingsUI.Checkbox(c, "HaulersDream.Setting.ReserveCarrierOnUnload".Translate(),
                 reserveCarrierOnUnload, "HaulersDream.Setting.ReserveCarrierOnUnloadDesc".Translate(), enabled: enableBulkUnloadCarriers, indent: 24f);
+            // SHARED knob: paces BOTH bulk unloads (pack animals below AND transporters/shuttles, see
+            // JobDriver_UnloadTransporterInBulk), so it stays live while either consumer is on. Greying it out
+            // under the carrier toggle alone would hide the pause transporter unloads still apply.
             visualUnloadDelay = Mathf.RoundToInt(HDSettingsUI.Slider(c, "HaulersDream.Setting.VisualUnloadDelay.Lab".Translate(),
                 visualUnloadDelay, 0f, 30f, string.Format("~{0:0.0}s", visualUnloadDelay / 60f),
-                "HaulersDream.Setting.VisualUnloadDelay.Help".Translate(), enabled: enableBulkUnloadCarriers, indent: 24f));
+                "HaulersDream.Setting.VisualUnloadDelay.Help".Translate(),
+                enabled: enableBulkUnloadCarriers || enableBulkUnloadTransporters, indent: 24f));
             loadPackAnimalBulk = HDSettingsUI.Checkbox(c, "HaulersDream.Setting.LoadPackAnimalBulk".Translate(),
                 loadPackAnimalBulk, "HaulersDream.Setting.LoadPackAnimalBulkDesc".Translate());
             autoDivertToPackAnimal = HDSettingsUI.Checkbox(c, "HaulersDream.Setting.AutoDivertToPackAnimal".Translate(),
@@ -1396,6 +1401,10 @@ namespace HaulersDream
             bulkLoadAiUpdateFrequency = Mathf.RoundToInt(HDSettingsUI.Slider(c, "HaulersDream.Setting.BulkLoadAiUpdateFrequency.Lab".Translate(),
                 bulkLoadAiUpdateFrequency, 10f, 240f, string.Format("~{0:0.0}s", bulkLoadAiUpdateFrequency / 60f),
                 "HaulersDream.Setting.BulkLoadAiUpdateFrequency.Help".Translate(), enabled: enableBulkLoadTransporters, indent: 24f) / 10f) * 10;
+            // The unload counterpart: shares the pack-animal unload's pacing knob above (visualUnloadDelay), 
+            // both are "per-stack unload pause" semantics.
+            enableBulkUnloadTransporters = HDSettingsUI.Checkbox(c, "HaulersDream.Setting.EnableBulkUnloadTransporters".Translate(),
+                enableBulkUnloadTransporters, "HaulersDream.Setting.EnableBulkUnloadTransportersDesc".Translate());
             enableBulkLoadPortal = HDSettingsUI.Checkbox(c, "HaulersDream.Setting.EnableBulkLoadPortal".Translate(),
                 enableBulkLoadPortal, "HaulersDream.Setting.EnableBulkLoadPortalDesc".Translate());
             enableBulkRefuel = HDSettingsUI.Checkbox(c, "HaulersDream.Setting.EnableBulkRefuel".Translate(),

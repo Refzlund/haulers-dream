@@ -19,6 +19,7 @@ namespace HaulersDream
         public static JobDef HaulersDream_KeepInInventory; // "Keep X in inventory": hold an item, never hauled/dropped
         public static JobDef HaulersDream_LoadPackAnimal; // load scooped loot onto a pack animal (caravan/away map)
         public static JobDef HaulersDream_UnloadCarrierInBulk; // bulk-empty a flagged pack animal into the hauler's backpack
+        public static JobDef HaulersDream_UnloadTransporterInBulk; // bulk-empty a landed transporter/shuttle's hold into the hauler's backpack
         public static JobDef HaulersDream_LoadTransportersInBulk; // bulk-load a transporter/shuttle group from swept inventory
         public static JobDef HaulersDream_LoadPortalInBulk; // bulk-load a map portal (pit gate / cave / vault exit) from swept inventory
         public static JobDef HaulersDream_LoadVehicleInBulk; // bulk-load a Vehicle Framework vehicle from swept inventory (VF soft-dep)
@@ -47,6 +48,7 @@ namespace HaulersDream
             HaulersDreamDefOf.HaulersDream_LoadVehicleInBulk,
             HaulersDreamDefOf.HaulersDream_LoadPackAnimal,
             HaulersDreamDefOf.HaulersDream_UnloadCarrierInBulk,
+            HaulersDreamDefOf.HaulersDream_UnloadTransporterInBulk,
             HaulersDreamDefOf.HaulersDream_OverloadConstructDeliver,
             HaulersDreamDefOf.HaulersDream_ConstructDeliverBuild,
             HaulersDreamDefOf.HaulersDream_ClaimFromHauler,
@@ -88,6 +90,8 @@ namespace HaulersDream
             HaulersDreamDefOf.HaulersDream_ConstructDeliverBuild,   // same, with the build tethered after
             HaulersDreamDefOf.HaulersDream_BulkHaul,                // a multi-stack sweep that ends in an unload
             HaulersDreamDefOf.HaulersDream_SelfPickup,              // a self-pickup that ends in an unload
+            HaulersDreamDefOf.HaulersDream_UnloadCarrierInBulk,     // emptying a pack animal into the backpack -> an unload follows
+            HaulersDreamDefOf.HaulersDream_UnloadTransporterInBulk, // emptying a transporter hold into the backpack -> an unload follows
         };
 
         /// <summary>

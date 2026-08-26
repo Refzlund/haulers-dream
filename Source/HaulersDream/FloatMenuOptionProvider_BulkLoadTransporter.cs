@@ -56,6 +56,11 @@ namespace HaulersDream
                 var comp = clicked?.TryGetComp<CompTransporter>();
                 if (comp == null || !comp.AnyInGroupHasAnythingLeftToLoad)
                     continue;
+                // MUTUAL EXCLUSION (unload side): don't even offer loading into a hold flagged "Bulk unload all", 
+                // the two flows must never run at once (TryGiveBulkJob refuses this too; this just keeps the menu
+                // honest instead of toasting).
+                if (BulkUnloadTransporterGate.UnloadFlagActive(comp))
+                    continue;
                 if (!pawn.CanReach(clicked, PathEndMode.Touch, Danger.Deadly) || !pawn.CanReserve(clicked))
                     continue;
                 // Don't double-order: skip if this pawn already runs HD's load for this group.

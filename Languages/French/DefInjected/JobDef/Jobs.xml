@@ -12,6 +12,7 @@
 <HaulersDream_BulkHaul.reportString>transport de tout ce qui se trouve à proximité.</HaulersDream_BulkHaul.reportString>
 <HaulersDream_LoadPackAnimal.reportString>chargement d'objets sur un animal de bât.</HaulersDream_LoadPackAnimal.reportString>
 <HaulersDream_UnloadCarrierInBulk.reportString>déchargement d'un animal de bât.</HaulersDream_UnloadCarrierInBulk.reportString>
+<HaulersDream_UnloadTransporterInBulk.reportString>déchargement d'un module de transport.</HaulersDream_UnloadTransporterInBulk.reportString>
 <HaulersDream_LoadTransportersInBulk.reportString>chargement groupé d'un module de transport.</HaulersDream_LoadTransportersInBulk.reportString>
 <HaulersDream_LoadPortalInBulk.reportString>chargement groupé d'un portail.</HaulersDream_LoadPortalInBulk.reportString>
 <HaulersDream_LoadVehicleInBulk.reportString>chargement groupé d'un véhicule.</HaulersDream_LoadVehicleInBulk.reportString>

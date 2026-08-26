@@ -129,5 +129,26 @@ namespace HaulersDream.Core
             var chosen = stacks[firstNonEmpty];
             return new PullPlan(chosen.Index, chosen.StackCount, toHands: true);
         }
+
+        /// <summary>
+        /// The HANDS-ONLY fallback for a caller that already KNOWS nothing more fits the backpack, e.g. Combat
+        /// Extended reports its weight/bulk dimension exhausted even though vanilla mass disagrees. Takes ONE
+        /// whole stack (the first non-empty) to the carry tracker, skipping the mass math entirely: the hands
+        /// rung is deliberately exempt from the soft carry ceiling, and a caller in this situation must NOT be
+        /// handed a backpack plan again, <see cref="PullCountWithinFreeSpace"/> admits massless stacks at any
+        /// free-space value, so a "zero room" re-plan could return a backpack pull that bypasses the very clamp
+        /// that triggered the fallback. Returns <see cref="PullPlan.None"/> when no non-empty stack exists.
+        /// </summary>
+        public static PullPlan PlanHandsFallback(IReadOnlyList<CarrierStack> stacks)
+        {
+            if (stacks == null)
+                return PullPlan.None;
+            for (int i = 0; i < stacks.Count; i++)
+            {
+                if (stacks[i].StackCount > 0)
+                    return new PullPlan(stacks[i].Index, stacks[i].StackCount, toHands: true);
+            }
+            return PullPlan.None;
+        }
     }
 }

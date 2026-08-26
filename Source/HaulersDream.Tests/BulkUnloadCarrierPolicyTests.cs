@@ -41,6 +41,7 @@ namespace HaulersDream.Tests
 
         // --- PullCountWithinFreeSpace (massless / heavy / partial pull) ---
 
+
         [Test]
         public void Pull_FitsWithinFreeSpace()
         {
@@ -86,6 +87,50 @@ namespace HaulersDream.Tests
         public void Pull_ZeroStack_TakesNone()
         {
             Assert.That(BulkUnloadCarrierPolicy.PullCountWithinFreeSpace(100f, 1f, 0), Is.EqualTo(0));
+        }
+
+        // --- PlanHandsFallback (the CE-exhausted hands rung: never a backpack plan) ---
+
+        [Test]
+        public void HandsFallback_TakesFirstNonEmptyWhole_ToHands()
+        {
+            var stacks = new List<BulkUnloadCarrierPolicy.CarrierStack> { Stack(0, 1f, 30), Stack(1, 1f, 40) };
+            var plan = BulkUnloadCarrierPolicy.PlanHandsFallback(stacks);
+            Assert.That(plan.ChosenIndex, Is.EqualTo(0));
+            Assert.That(plan.Count, Is.EqualTo(30));
+            Assert.That(plan.ToHands, Is.True);
+        }
+
+        [Test]
+        public void HandsFallback_SkipsEmptyStacks()
+        {
+            var stacks = new List<BulkUnloadCarrierPolicy.CarrierStack> { Stack(0, 1f, 0), Stack(2, 1f, 7) };
+            var plan = BulkUnloadCarrierPolicy.PlanHandsFallback(stacks);
+            Assert.That(plan.ChosenIndex, Is.EqualTo(2));
+            Assert.That(plan.Count, Is.EqualTo(7));
+            Assert.That(plan.ToHands, Is.True);
+        }
+
+        [Test]
+        public void HandsFallback_MasslessStack_GoesToHandsNotBackpack()
+        {
+            // THE regression this fallback exists for: at zero free space the ladder would still hand back a
+            // BACKPACK plan for a massless stack (PullCountWithinFreeSpace admits it); the hands fallback must
+            // route that same stack to HANDS so a caller that knows the backpack is exhausted (CE bulk) can
+            // never bypass its clamp.
+            var stacks = new List<BulkUnloadCarrierPolicy.CarrierStack> { Stack(0, 0f, 25) };
+            var plan = BulkUnloadCarrierPolicy.PlanHandsFallback(stacks);
+            Assert.That(plan.ChosenIndex, Is.EqualTo(0));
+            Assert.That(plan.Count, Is.EqualTo(25));
+            Assert.That(plan.ToHands, Is.True);
+        }
+
+        [Test]
+        public void HandsFallback_EmptyOrNull_ReturnsNone()
+        {
+            var plan = BulkUnloadCarrierPolicy.PlanHandsFallback(new List<BulkUnloadCarrierPolicy.CarrierStack>());
+            Assert.That(plan.ChosenIndex, Is.LessThan(0));
+            Assert.That(BulkUnloadCarrierPolicy.PlanHandsFallback(null).ChosenIndex, Is.LessThan(0));
         }
 
         // --- PlanNextPull (the selection ladder) ---

@@ -16,6 +16,7 @@
   <HaulersDream_BulkHaul.reportString>hauling everything nearby.</HaulersDream_BulkHaul.reportString>
   <HaulersDream_LoadPackAnimal.reportString>loading items onto a pack animal.</HaulersDream_LoadPackAnimal.reportString>
   <HaulersDream_UnloadCarrierInBulk.reportString>unloading a pack animal.</HaulersDream_UnloadCarrierInBulk.reportString>
+  <HaulersDream_UnloadTransporterInBulk.reportString>unloading a transporter.</HaulersDream_UnloadTransporterInBulk.reportString>
   <HaulersDream_LoadTransportersInBulk.reportString>bulk-loading a transporter.</HaulersDream_LoadTransportersInBulk.reportString>
   <HaulersDream_LoadPortalInBulk.reportString>bulk-loading a portal.</HaulersDream_LoadPortalInBulk.reportString>
   <HaulersDream_LoadVehicleInBulk.reportString>bulk-loading a vehicle.</HaulersDream_LoadVehicleInBulk.reportString>

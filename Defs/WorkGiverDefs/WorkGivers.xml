@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <!-- Hauler's Dream, autonomous transporter/shuttle unload. Vanilla has no transporter-unload workgiver
+       (its Unload button dumps the whole hold on the floor), so this ships net-new under the Hauling work type,
+       named after vanilla's own carrier unload ("unload carriers") since it IS that job for holds. While a
+       transporter is flagged by the "Bulk unload all" toggle, eligible haulers take one backpack-filling visit
+       each and ship to storage; the flag clears itself once nothing pullable remains. priorityInType 135 slots it
+       between vanilla's "unload carriers" (130) and "refuel buildings" (140): a flagged transporter is player
+       intent, so it outranks ordinary carrier unloading but not refuelling/rearming. See
+       WorkGiver_BulkUnloadTransporters / JobDriver_UnloadTransporterInBulk. -->
+  <WorkGiverDef>
+    <defName>HaulersDream_BulkUnloadTransporters</defName>
+    <label>unload transporters</label>
+    <giverClass>HaulersDream.WorkGiver_BulkUnloadTransporters</giverClass>
+    <workType>Hauling</workType>
+    <verb>unload</verb>
+    <gerund>unloading</gerund>
+    <priorityInType>135</priorityInType>
+    <scanThings>true</scanThings>
+    <scanCells>false</scanCells>
+    <requiredCapacities>
+      <li>Manipulation</li>
+    </requiredCapacities>
+  </WorkGiverDef>
+
+</Defs>

@@ -356,9 +356,23 @@
 <HaulersDream.LoadTransporter.Report>正在批量装载运输舱。</HaulersDream.LoadTransporter.Report>
 <HaulersDream.LoadTransporter.Option>优先批量装载 {0}</HaulersDream.LoadTransporter.Option>
 <HaulersDream.LoadTransporter.CouldNotStart>当前附近没有可批量装载进那个运输舱的东西。</HaulersDream.LoadTransporter.CouldNotStart>
+
+<!-- Transporter / shuttle BULK UNLOAD -->
+<HaulersDream.UnloadTransporter.Report>正在卸载 {0}。</HaulersDream.UnloadTransporter.Report>
+<HaulersDream.UnloadTransporter.Option>优先批量卸载 {0}</HaulersDream.UnloadTransporter.Option>
+<HaulersDream.UnloadTransporter.CouldNotStart>当前无法开始批量卸载该运输工具。</HaulersDream.UnloadTransporter.CouldNotStart>
 <HaulersDream.Setting.EnableBulkLoadTransporters>一趟批量装载运输舱和穿梭机</HaulersDream.Setting.EnableBulkLoadTransporters>
 <HaulersDream.Setting.EnableBulkLoadTransportersDesc>当一个运输舱或穿梭机被设为装载时，搬运者会认领其装载清单的一部分，把附近的若干堆清扫进货物栏，走到运输舱一次，并把它们全部存入——而不是原版那样一趟手提一堆。多名搬运者分担一个大清单且不会重复搬运，并且在所认领的货物到位前，舱体不会登舱或发射。关闭此项时，沿用原版的单堆运输舱装载，不作改变。</HaulersDream.Setting.EnableBulkLoadTransportersDesc>
 <HaulersDream.Setting.BulkLoadAiUpdateFrequency>装载重新检查间隔：{0} tick</HaulersDream.Setting.BulkLoadAiUpdateFrequency>
+
+<!-- Settings: transporter / shuttle bulk unload -->
+<HaulersDream.Setting.EnableBulkUnloadTransporters>一趟批量卸载运输器</HaulersDream.Setting.EnableBulkUnloadTransporters>
+<HaulersDream.Gizmo.BulkUnloadAll.Label>批量卸载全部货物</HaulersDream.Gizmo.BulkUnloadAll.Label>
+<HaulersDream.Gizmo.BulkUnloadAll.Desc>开关。搬运殖民者会反复走向{0}，直接从货舱把堆叠装进背包，并把所有东西运到仓库，直到清空为止。绝不会拉出乘客。开启时，右键“优先批量卸载”指令会派一名搬运者不断返回，直到货舱清空。</HaulersDream.Gizmo.BulkUnloadAll.Desc>
+<HaulersDream.Gizmo.BulkUnloadAll.Empty>没有可卸载的货物</HaulersDream.Gizmo.BulkUnloadAll.Empty>
+<HaulersDream.Gizmo.BulkUnloadAll.LoadBlocked>“全部批量卸载”已开启，请先将其关闭，再设置新的装载。</HaulersDream.Gizmo.BulkUnloadAll.LoadBlocked>
+<HaulersDream.Gizmo.BulkUnloadAll.UnloadBlocked>正在向该运输器集结装载货物。</HaulersDream.Gizmo.BulkUnloadAll.UnloadBlocked>
+<HaulersDream.Setting.EnableBulkUnloadTransportersDesc>启用后，运输舱和穿梭机将获得右键“优先批量卸载”指令和对应的“全部批量卸载”开关。选择指令会打开开关，并立即派一名搬运者开始把货舱中的堆叠取出装进背包；之后会自动继续运送，由该搬运者或其他搬运者进行，直到清空为止，而不是原版那样把所有东西倾倒在地上。仅打开开关效果相同，只是不会立即派人。最后/溢出的堆叠拿在搬运者手上直接搬运。绝不会把乘客从穿梭机中拉出来，且当货物仍在向运输器集结装载时，本模组不会插手。</HaulersDream.Setting.EnableBulkUnloadTransportersDesc>
 <HaulersDream.LoadPortal.Report>正在批量装载传送门。</HaulersDream.LoadPortal.Report>
 <HaulersDream.LoadPortal.Option>优先批量装载 {0}</HaulersDream.LoadPortal.Option>
 <HaulersDream.LoadPortal.CouldNotStart>当前附近没有可批量装载进那个传送门的东西。</HaulersDream.LoadPortal.CouldNotStart>
@@ -551,6 +565,9 @@
 <HaulersDream.Feat.UnloadCarriers.Blurb>一次造访把运载者清空进背包</HaulersDream.Feat.UnloadCarriers.Blurb>
 <HaulersDream.Feat.LoadTransporters.Name>装载运输舱与穿梭机</HaulersDream.Feat.LoadTransporters.Name>
 <HaulersDream.Feat.LoadTransporters.Blurb>一趟填满舱体和穿梭机</HaulersDream.Feat.LoadTransporters.Blurb>
+
+<HaulersDream.Feat.UnloadTransporters.Name>批量卸载运输舱与穿梭机</HaulersDream.Feat.UnloadTransporters.Name>
+<HaulersDream.Feat.UnloadTransporters.Blurb>一次造访清空已着陆运输舱的货舱</HaulersDream.Feat.UnloadTransporters.Blurb>
 <HaulersDream.Feat.LoadPortal.Name>装载地图传送门</HaulersDream.Feat.LoadPortal.Name>
 <HaulersDream.Feat.LoadPortal.Blurb>批量装载坑道门和洞穴出口</HaulersDream.Feat.LoadPortal.Blurb>
 <HaulersDream.Feat.Refuel.Name>批量添加燃料</HaulersDream.Feat.Refuel.Name>

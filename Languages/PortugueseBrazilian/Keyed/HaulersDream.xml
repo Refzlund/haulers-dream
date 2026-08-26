@@ -356,9 +356,23 @@
 <HaulersDream.LoadTransporter.Report>carregando um transportador em massa.</HaulersDream.LoadTransporter.Report>
 <HaulersDream.LoadTransporter.Option>Priorizar carregamento em massa de {0}</HaulersDream.LoadTransporter.Option>
 <HaulersDream.LoadTransporter.CouldNotStart>Nada por perto para carregar em massa naquele transportador agora.</HaulersDream.LoadTransporter.CouldNotStart>
+
+<!-- Transporter / shuttle BULK UNLOAD -->
+<HaulersDream.UnloadTransporter.Report>descarregando {0}.</HaulersDream.UnloadTransporter.Report>
+<HaulersDream.UnloadTransporter.Option>Priorizar descarregamento em massa de {0}</HaulersDream.UnloadTransporter.Option>
+<HaulersDream.UnloadTransporter.CouldNotStart>Não foi possível iniciar o descarregamento em massa desse transportador agora.</HaulersDream.UnloadTransporter.CouldNotStart>
 <HaulersDream.Setting.EnableBulkLoadTransporters>Carregar transportadores e naves em massa em uma viagem</HaulersDream.Setting.EnableBulkLoadTransporters>
 <HaulersDream.Setting.EnableBulkLoadTransportersDesc>Quando uma cápsula de transporte ou nave é marcada para carregar, um transportador reivindica uma fatia do manifesto dela, varre várias pilhas próximas para o inventário, caminha até o transportador UMA vez e as deposita todas — em vez da uma-pilha-nas-mãos por caminhada do jogo base. Vários transportadores dividem um manifesto grande sem transporte duplicado, e a cápsula não embarca nem decola até que a carga reivindicada esteja dentro. Com isto desligado, o carregamento de pilha única de transportador do jogo base é usado sem alteração.</HaulersDream.Setting.EnableBulkLoadTransportersDesc>
 <HaulersDream.Setting.BulkLoadAiUpdateFrequency>Intervalo de reverificação de carregamento: {0} ticks</HaulersDream.Setting.BulkLoadAiUpdateFrequency>
+
+<!-- Settings: transporter / shuttle bulk unload -->
+<HaulersDream.Setting.EnableBulkUnloadTransporters>Descarregar transportadores em massa em uma viagem</HaulersDream.Setting.EnableBulkUnloadTransporters>
+<HaulersDream.Gizmo.BulkUnloadAll.Label>Descarregar tudo em massa</HaulersDream.Gizmo.BulkUnloadAll.Label>
+<HaulersDream.Gizmo.BulkUnloadAll.Desc>Chave. Colonistas carregadores caminharão repetidamente até {0}, encherão as mochilas direto do porão e levarão tudo ao armazenamento até não sobrar nada. Passageiros nunca são arrancados. Enquanto estiver ativada, a ordem de clique direito "Priorizar descarregamento em massa" envia um carregador que continua voltando até o porão esvaziar.</HaulersDream.Gizmo.BulkUnloadAll.Desc>
+<HaulersDream.Gizmo.BulkUnloadAll.Empty>Nada para descarregar</HaulersDream.Gizmo.BulkUnloadAll.Empty>
+<HaulersDream.Gizmo.BulkUnloadAll.LoadBlocked>"Descarregar tudo em massa" está ativado, desative-o antes de definir uma nova carga.</HaulersDream.Gizmo.BulkUnloadAll.LoadBlocked>
+<HaulersDream.Gizmo.BulkUnloadAll.UnloadBlocked>Uma carga está sendo reunida para este transportador.</HaulersDream.Gizmo.BulkUnloadAll.UnloadBlocked>
+<HaulersDream.Setting.EnableBulkUnloadTransportersDesc>Quando ativado, cápsulas de transporte e naves ganham a ordem de clique direito "Priorizar descarregamento em massa" e uma chave correspondente "Descarregar tudo em massa". Escolher a ordem liga a chave e envia imediatamente um carregador para começar a mover pilhas do porão para a própria mochila; mais viagens seguem automaticamente, por esse carregador ou por outro, até não sobrar nada, em vez do descarregamento padrão que despeja tudo no chão. Ligar apenas a chave faz o mesmo sem enviar ninguém imediatamente. A última pilha/o excedente vai nas mãos e é levado diretamente. Passageiros nunca são arrancados de dentro de uma nave, e enquanto uma carga ainda está sendo reunida para o transportador, o HD fica de fora.</HaulersDream.Setting.EnableBulkUnloadTransportersDesc>
 <HaulersDream.LoadPortal.Report>carregando um portal em massa.</HaulersDream.LoadPortal.Report>
 <HaulersDream.LoadPortal.Option>Priorizar carregamento em massa de {0}</HaulersDream.LoadPortal.Option>
 <HaulersDream.LoadPortal.CouldNotStart>Nada por perto para carregar em massa naquele portal agora.</HaulersDream.LoadPortal.CouldNotStart>
@@ -551,6 +565,9 @@
 <HaulersDream.Feat.UnloadCarriers.Blurb>Esvazia um transportador para uma mochila em uma visita</HaulersDream.Feat.UnloadCarriers.Blurb>
 <HaulersDream.Feat.LoadTransporters.Name>Carregar transportadores e naves</HaulersDream.Feat.LoadTransporters.Name>
 <HaulersDream.Feat.LoadTransporters.Blurb>Enche cápsulas e naves em uma viagem</HaulersDream.Feat.LoadTransporters.Blurb>
+
+<HaulersDream.Feat.UnloadTransporters.Name>Descarregar naves em massa</HaulersDream.Feat.UnloadTransporters.Name>
+<HaulersDream.Feat.UnloadTransporters.Blurb>Esvazie o porão de uma nave pousada em uma visita</HaulersDream.Feat.UnloadTransporters.Blurb>
 <HaulersDream.Feat.LoadPortal.Name>Carregar portais de mapa</HaulersDream.Feat.LoadPortal.Name>
 <HaulersDream.Feat.LoadPortal.Blurb>Carrega em massa portões de poço e saídas de caverna</HaulersDream.Feat.LoadPortal.Blurb>
 <HaulersDream.Feat.Refuel.Name>Reabastecimento em massa</HaulersDream.Feat.Refuel.Name>

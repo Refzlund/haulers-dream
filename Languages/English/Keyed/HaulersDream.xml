@@ -464,10 +464,26 @@
   <HaulersDream.LoadTransporter.Option>Prioritize bulk loading {0}</HaulersDream.LoadTransporter.Option>
   <HaulersDream.LoadTransporter.CouldNotStart>Nothing nearby to bulk-load into that transporter right now.</HaulersDream.LoadTransporter.CouldNotStart>
 
+  <!-- Transporter / shuttle BULK UNLOAD (the inverse: empty a landed transporter's hold in one visit) -->
+  <HaulersDream.UnloadTransporter.Report>unloading {0}.</HaulersDream.UnloadTransporter.Report>
+  <HaulersDream.UnloadTransporter.Option>Prioritize bulk unloading {0}</HaulersDream.UnloadTransporter.Option>
+  <HaulersDream.UnloadTransporter.CouldNotStart>Could not start bulk unloading that transporter right now.</HaulersDream.UnloadTransporter.CouldNotStart>
+
   <!-- Settings: transporter / shuttle bulk loading -->
   <HaulersDream.Setting.EnableBulkLoadTransporters>Bulk-load transporters and shuttles in one trip</HaulersDream.Setting.EnableBulkLoadTransporters>
   <HaulersDream.Setting.EnableBulkLoadTransportersDesc>When a transport pod or shuttle is set to load, a hauler claims a slice of its manifest, sweeps several nearby stacks into its inventory, walks to the transporter ONCE, and deposits them all — instead of vanilla's one-stack-in-hands per walk. Several haulers split a large manifest with no double-hauling, and the pod won't board or launch until the claimed cargo is in. With this off, vanilla's single-stack transporter loading is used unchanged.</HaulersDream.Setting.EnableBulkLoadTransportersDesc>
   <HaulersDream.Setting.BulkLoadAiUpdateFrequency>Load re-check interval: {0}</HaulersDream.Setting.BulkLoadAiUpdateFrequency>
+
+  <!-- Settings: transporter / shuttle bulk unload -->
+  <HaulersDream.Setting.EnableBulkUnloadTransporters>Bulk unload transporters in one visit</HaulersDream.Setting.EnableBulkUnloadTransporters>
+  <HaulersDream.Setting.EnableBulkUnloadTransportersDesc>When enabled, transport pods and shuttles gain a "Bulk unload all" toggle: while it is on, hauling colonists walk to the transporter and fill their backpacks straight from its hold, one trip at a time until nothing is left, instead of vanilla's dump-everything-on-the-floor unload. It also enables a right-click "Prioritize bulk unloading" order on the flagged transporter: the ordered hauler keeps making trips, prioritizing the shuttle over other work, until nothing is left to pull. The last/overflow stack goes in the hauler's hands and is hauled directly. Passengers are never pulled out of a shuttle, and while cargo is still being gathered into the transporter HD stays out of the way.</HaulersDream.Setting.EnableBulkUnloadTransportersDesc>
+
+  <!-- Transporter / shuttle "Bulk unload all" gizmo (the autonomous multi-trip toggle) -->
+  <HaulersDream.Gizmo.BulkUnloadAll.Label>Bulk unload all</HaulersDream.Gizmo.BulkUnloadAll.Label>
+  <HaulersDream.Gizmo.BulkUnloadAll.Desc>Toggle. Hauling colonists will repeatedly walk to {0}, fill their backpacks straight from its hold, and ship everything to storage until nothing is left. Passengers are never pulled out. While this is on, the right-click "Prioritize bulk unloading" order sends one hauler that keeps returning until the hold is empty.</HaulersDream.Gizmo.BulkUnloadAll.Desc>
+  <HaulersDream.Gizmo.BulkUnloadAll.Empty>Nothing to unload</HaulersDream.Gizmo.BulkUnloadAll.Empty>
+  <HaulersDream.Gizmo.BulkUnloadAll.LoadBlocked>"Bulk unload all" is on, turn it off before setting a new load.</HaulersDream.Gizmo.BulkUnloadAll.LoadBlocked>
+  <HaulersDream.Gizmo.BulkUnloadAll.UnloadBlocked>A load is being gathered into this transporter.</HaulersDream.Gizmo.BulkUnloadAll.UnloadBlocked>
 
   <!-- Map-portal BULK LOADING (pit gates, cave / vault exits, "enter map" portals) -->
   <HaulersDream.LoadPortal.Report>bulk-loading a portal.</HaulersDream.LoadPortal.Report>
@@ -719,6 +735,8 @@
   <HaulersDream.Feat.UnloadCarriers.Blurb>Empty a carrier into a backpack in one visit</HaulersDream.Feat.UnloadCarriers.Blurb>
   <HaulersDream.Feat.LoadTransporters.Name>Load transporters &amp; shuttles</HaulersDream.Feat.LoadTransporters.Name>
   <HaulersDream.Feat.LoadTransporters.Blurb>Fill pods and shuttles in one trip</HaulersDream.Feat.LoadTransporters.Blurb>
+  <HaulersDream.Feat.UnloadTransporters.Name>Unload transporters &amp; shuttles</HaulersDream.Feat.UnloadTransporters.Name>
+  <HaulersDream.Feat.UnloadTransporters.Blurb>Empty a landed transporter's hold in one visit</HaulersDream.Feat.UnloadTransporters.Blurb>
   <HaulersDream.Feat.LoadPortal.Name>Load map portals</HaulersDream.Feat.LoadPortal.Name>
   <HaulersDream.Feat.LoadPortal.Blurb>Bulk-load pit gates and cave exits</HaulersDream.Feat.LoadPortal.Blurb>
   <HaulersDream.Feat.Refuel.Name>Bulk refuel</HaulersDream.Feat.Refuel.Name>

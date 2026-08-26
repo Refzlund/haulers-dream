@@ -356,9 +356,28 @@
 <HaulersDream.LoadTransporter.Report>масово завантажує транспорт.</HaulersDream.LoadTransporter.Report>
 <HaulersDream.LoadTransporter.Option>Пріоритезувати масове завантаження {0}</HaulersDream.LoadTransporter.Option>
 <HaulersDream.LoadTransporter.CouldNotStart>Зараз поблизу немає чого масово завантажити в той транспорт.</HaulersDream.LoadTransporter.CouldNotStart>
+
+<!-- Transporter / shuttle BULK UNLOAD -->
+<HaulersDream.UnloadTransporter.Report>розвантажує {0}.</HaulersDream.UnloadTransporter.Report>
+<HaulersDream.UnloadTransporter.Option>Пріоритезувати масове розвантаження {0}</HaulersDream.UnloadTransporter.Option>
+<HaulersDream.UnloadTransporter.CouldNotStart>Не вдалося почати масове розвантаження цього транспорту зараз.</HaulersDream.UnloadTransporter.CouldNotStart>
 <HaulersDream.Setting.EnableBulkLoadTransporters>Масово завантажувати транспорт і шатли за одну ходку</HaulersDream.Setting.EnableBulkLoadTransporters>
 <HaulersDream.Setting.EnableBulkLoadTransportersDesc>Коли транспортну капсулу чи шатл задано на завантаження, вантажник закріплює частину його маніфесту, підмітає кілька сусідніх стопок у свій інвентар, підходить до транспорту ОДИН раз і складає їх усі — замість ванільного однієї-стопки-в-руках за прохід. Кілька вантажників ділять великий маніфест без подвійного перенесення, а капсула не сяде й не запуститься, доки закріплений вантаж не всередині. З вимкненим цим використовується ванільне завантаження транспорту по одній стопці без змін.</HaulersDream.Setting.EnableBulkLoadTransportersDesc>
 <HaulersDream.Setting.BulkLoadAiUpdateFrequency>Інтервал переперевірки завантаження: {0} тіків</HaulersDream.Setting.BulkLoadAiUpdateFrequency>
+
+<!-- Settings: transporter / shuttle bulk unload -->
+<HaulersDream.Setting.EnableBulkUnloadTransporters>Масово розвантажувати транспорт за одну ходку</HaulersDream.Setting.EnableBulkUnloadTransporters>
+<HaulersDream.Gizmo.BulkUnloadAll.Label>Масово розвантажити все</HaulersDream.Gizmo.BulkUnloadAll.Label>
+<HaulersDream.Gizmo.BulkUnloadAll.Desc>Перемикач. Колоністи-носії знову і знову приходитимуть до об'єкта {0}, наповнюватимуть рюкзаки просто з вантажного відсіку та відноситимуть усе на склад, доки нічого не залишиться. Пасажирів не витягають. Поки це увімкнено, наказ «Пріоритезувати масове розвантаження» правою кнопкою надсилає носія, який повертається знову і знову, доки відсік не спорожніє.</HaulersDream.Gizmo.BulkUnloadAll.Desc>
+<HaulersDream.Gizmo.BulkUnloadAll.Empty>Нема що розвантажувати</HaulersDream.Gizmo.BulkUnloadAll.Empty>
+<HaulersDream.Gizmo.BulkUnloadAll.LoadBlocked>«Масово розвантажити все» увімкнено, вимкніть це, перш ніж задавати нове навантаження.</HaulersDream.Gizmo.BulkUnloadAll.LoadBlocked>
+<HaulersDream.Gizmo.BulkUnloadAll.UnloadBlocked>У цей транспорт зараз збирається вантаж.</HaulersDream.Gizmo.BulkUnloadAll.UnloadBlocked>
+<HaulersDream.Setting.EnableBulkUnloadTransportersDesc>Після увімкнення транспортні капсули та шатли отримують наказ правої кнопки «Пріоритезувати масове розвантаження» та відповідний перемикач «Масово розвантажити все». Вибір наказу вмикає перемикач і негайно надсилає носія почати перекладати стопки з вантажного відсіку у власний рюкзак; далі ходки слідують автоматично, ним чи іншим носієм, доки нічого не залишиться, замість вивалювання всього на підлогу. Саме ввімкнення перемикача робить те саме, без негайного відправлення когось. Остання/переповнююча стопка йде до рук і відноситься напряму. Пасажирів ніколи не витягають із шатла, а поки в транспорт триває навантаження, HD не втручається.</HaulersDream.Setting.EnableBulkUnloadTransportersDesc>
+
+<!-- Transporter / shuttle "Bulk unload all" gizmo (the autonomous multi-trip toggle) -->
+<HaulersDream.Gizmo.BulkUnloadAll.Label>Масово розвантажити все</HaulersDream.Gizmo.BulkUnloadAll.Label>
+<HaulersDream.Gizmo.BulkUnloadAll.Desc>Перемикач. Колоністи-носії знову і знову приходять до об'єкта {0}, наповнюють рюкзаки просто з вантажного відсіку та відносять усе на склад, поки нічого не залишиться. Заборонені предмети лишаються на місці, пасажирів не витягають. Наказ «Пріоритезувати масове розвантаження» правою кнопкою досі надсилає одного носія на один похід.</HaulersDream.Gizmo.BulkUnloadAll.Desc>
+<HaulersDream.Gizmo.BulkUnloadAll.Empty>нема чого розвантажувати</HaulersDream.Gizmo.BulkUnloadAll.Empty>
 <HaulersDream.LoadPortal.Report>масово завантажує портал.</HaulersDream.LoadPortal.Report>
 <HaulersDream.LoadPortal.Option>Пріоритезувати масове завантаження {0}</HaulersDream.LoadPortal.Option>
 <HaulersDream.LoadPortal.CouldNotStart>Зараз поблизу немає чого масово завантажити в той портал.</HaulersDream.LoadPortal.CouldNotStart>
@@ -551,6 +570,9 @@
 <HaulersDream.Feat.UnloadCarriers.Blurb>Випорожнити носія в рюкзак за один візит</HaulersDream.Feat.UnloadCarriers.Blurb>
 <HaulersDream.Feat.LoadTransporters.Name>Завантажувати транспорт і шатли</HaulersDream.Feat.LoadTransporters.Name>
 <HaulersDream.Feat.LoadTransporters.Blurb>Наповнювати капсули й шатли за одну ходку</HaulersDream.Feat.LoadTransporters.Blurb>
+
+<HaulersDream.Feat.UnloadTransporters.Name>Масово розвантажувати транспорт і шатли</HaulersDream.Feat.UnloadTransporters.Name>
+<HaulersDream.Feat.UnloadTransporters.Blurb>Спорожнити відсік приземленого транспорту за один підхід</HaulersDream.Feat.UnloadTransporters.Blurb>
 <HaulersDream.Feat.LoadPortal.Name>Завантажувати портали карти</HaulersDream.Feat.LoadPortal.Name>
 <HaulersDream.Feat.LoadPortal.Blurb>Масово завантажувати провалля та виходи з печер</HaulersDream.Feat.LoadPortal.Blurb>
 <HaulersDream.Feat.Refuel.Name>Масове заправлення</HaulersDream.Feat.Refuel.Name>

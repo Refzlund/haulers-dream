@@ -356,9 +356,23 @@
 <HaulersDream.LoadTransporter.Report>een transporter bulksgewijs laden.</HaulersDream.LoadTransporter.Report>
 <HaulersDream.LoadTransporter.Option>Bulksgewijs laden van {0} prioriteren</HaulersDream.LoadTransporter.Option>
 <HaulersDream.LoadTransporter.CouldNotStart>Op dit moment niets in de buurt om bulksgewijs in die transporter te laden.</HaulersDream.LoadTransporter.CouldNotStart>
+
+<!-- Transporter / shuttle BULK UNLOAD -->
+<HaulersDream.UnloadTransporter.Report>{0} uitladen.</HaulersDream.UnloadTransporter.Report>
+<HaulersDream.UnloadTransporter.Option>Bulksgewijs uitladen van {0} prioriteren</HaulersDream.UnloadTransporter.Option>
+<HaulersDream.UnloadTransporter.CouldNotStart>Kon de transporter op dit moment niet bulksgewijs uitladen.</HaulersDream.UnloadTransporter.CouldNotStart>
 <HaulersDream.Setting.EnableBulkLoadTransporters>Transporters en shuttles in één trip bulksgewijs laden</HaulersDream.Setting.EnableBulkLoadTransporters>
 <HaulersDream.Setting.EnableBulkLoadTransportersDesc>Wanneer een transportpod of shuttle op laden is gezet, eist een sjouwer een deel van zijn manifest op, veegt meerdere nabije stapels in zijn inventaris, loopt ÉÉN keer naar de transporter, en deponeert ze allemaal — in plaats van vanilla's één-stapel-in-de-handen per loop. Meerdere sjouwers splitsen een groot manifest zonder dubbel sjouwen, en de pod gaat pas aan boord of lanceert pas wanneer de opgeëiste vracht binnen is. Met dit uit wordt vanilla's enkel-stapel transporterladen ongewijzigd gebruikt.</HaulersDream.Setting.EnableBulkLoadTransportersDesc>
 <HaulersDream.Setting.BulkLoadAiUpdateFrequency>Interval voor laadhercontrole: {0} ticks</HaulersDream.Setting.BulkLoadAiUpdateFrequency>
+
+<!-- Settings: transporter / shuttle bulk unload -->
+<HaulersDream.Setting.EnableBulkUnloadTransporters>Transporters in één trip bulksgewijs uitladen</HaulersDream.Setting.EnableBulkUnloadTransporters>
+<HaulersDream.Gizmo.BulkUnloadAll.Label>Alles bulksgewijs uitladen</HaulersDream.Gizmo.BulkUnloadAll.Label>
+<HaulersDream.Gizmo.BulkUnloadAll.Desc>Schakelaar. Kolonisten-sjouwers lopen herhaaldelijk naar {0}, vullen hun rugzakken rechtstreeks vanuit de laadruimte en vervoeren alles naar opslag tot er niets meer over is. Passagiers worden nooit gehaald. Terwijl dit aanstaat stuurt de rechtermuisklik-opdracht "Bulksgewijs uitladen prioriteren" één sjouwer die blijft terugkeren tot de laadruimte leeg is.</HaulersDream.Gizmo.BulkUnloadAll.Desc>
+<HaulersDream.Gizmo.BulkUnloadAll.Empty>Niets om uit te laden</HaulersDream.Gizmo.BulkUnloadAll.Empty>
+<HaulersDream.Gizmo.BulkUnloadAll.LoadBlocked>"Alles bulksgewijs uitladen" staat aan, zet dat eerst uit voordat je een nieuwe lading instelt.</HaulersDream.Gizmo.BulkUnloadAll.LoadBlocked>
+<HaulersDream.Gizmo.BulkUnloadAll.UnloadBlocked>Er wordt lading naar deze transporter verzameld.</HaulersDream.Gizmo.BulkUnloadAll.UnloadBlocked>
+<HaulersDream.Setting.EnableBulkUnloadTransportersDesc>Wanneer ingeschakeld krijgen transportpods en shuttles een rechtermuisklik-opdracht "Bulksgewijs uitladen prioriteren" en een bijbehorende schakelaar "Alles bulksgewijs uitladen". De opdracht kiezen zet de schakelaar aan en stuurt direct één sjouwer om te beginnen met het uit de laadruimte halen van stapels naar zijn rugzak; meer trips volgen automatisch, door die sjouwer of een andere, tot er niets meer over is, in plaats van dat alles op de grond wordt gestort. Alleen de schakelaar omschakelen doet hetzelfde zonder direct iemand te sturen. De laatste/overlopende stapel draagt de sjouwer in de handen en wordt direct vervoerd. Passagiers worden nooit uit een shuttle gehaald, en terwijl er nog lading naar de transporter wordt gebracht houdt HD zich afzijdig.</HaulersDream.Setting.EnableBulkUnloadTransportersDesc>
 <HaulersDream.LoadPortal.Report>een portaal bulksgewijs laden.</HaulersDream.LoadPortal.Report>
 <HaulersDream.LoadPortal.Option>Bulksgewijs laden van {0} prioriteren</HaulersDream.LoadPortal.Option>
 <HaulersDream.LoadPortal.CouldNotStart>Op dit moment niets in de buurt om bulksgewijs in dat portaal te laden.</HaulersDream.LoadPortal.CouldNotStart>
@@ -551,6 +565,9 @@
 <HaulersDream.Feat.UnloadCarriers.Blurb>Leeg een drager in één bezoek in een rugzak</HaulersDream.Feat.UnloadCarriers.Blurb>
 <HaulersDream.Feat.LoadTransporters.Name>Transporters en shuttles laden</HaulersDream.Feat.LoadTransporters.Name>
 <HaulersDream.Feat.LoadTransporters.Blurb>Vul pods en shuttles in één trip</HaulersDream.Feat.LoadTransporters.Blurb>
+
+<HaulersDream.Feat.UnloadTransporters.Name>Transporters en shuttles uitladen</HaulersDream.Feat.UnloadTransporters.Name>
+<HaulersDream.Feat.UnloadTransporters.Blurb>Leeg de laadruimte van een gelande transporter in één bezoek</HaulersDream.Feat.UnloadTransporters.Blurb>
 <HaulersDream.Feat.LoadPortal.Name>Kaartportalen laden</HaulersDream.Feat.LoadPortal.Name>
 <HaulersDream.Feat.LoadPortal.Blurb>Putpoorten en grotuitgangen bulksgewijs laden</HaulersDream.Feat.LoadPortal.Blurb>
 <HaulersDream.Feat.Refuel.Name>Bulksgewijs bijtanken</HaulersDream.Feat.Refuel.Name>

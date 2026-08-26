@@ -193,6 +193,19 @@ namespace HaulersDream
         }
 
         /// <summary>
+        /// The transporter "Bulk unload all" gizmo toggle. Replaces the direct ledger write from the gizmo callback
+        /// (a mutation of the SCRIBED <c>bulkUnloadAllIds</c> set, synced world state that must run on every
+        /// client, not just the clicker). The desired value is read locally at click time and passed in, so the
+        /// command is idempotent across clients and two racing clicks cannot double-flip it. A plain
+        /// <see cref="Thing"/> parameter keeps the single unambiguous overload MP resolves by name; invoke ONCE on
+        /// the click, never per-frame.
+        /// </summary>
+        public static void SetBulkUnloadAll(Thing transporter, bool value)
+        {
+            HaulersDreamGameComponent.Instance?.BulkUnloadAllSet(transporter?.thingIDNumber ?? -1, value);
+        }
+
+        /// <summary>
         /// The single class that touches <c>Multiplayer.API</c> types in its method BODIES. Every member here is
         /// invoked ONLY from behind the <see cref="Active"/> gate, so in a non-MP game these methods are never
         /// called → never JIT'd → the unshipped API assembly is never resolved. Do NOT call any member of this
@@ -209,13 +222,14 @@ namespace HaulersDream
                 // leaves HD's metadata free of any Multiplayer.API attribute reference. Each method has a single,
                 // unambiguous overload, so RegisterSyncMethod resolves it by name without explicit arg types. Keep
                 // this list in sync with the synced entry points (the canonical inventory of HD's MP surface):
-                // MultiplayerCompat's six, plus the batch-craft and route synced commands in their own files.
+                // MultiplayerCompat's seven, plus the batch-craft and route synced commands in their own files.
                 MP.RegisterSyncMethod(typeof(MultiplayerCompat), nameof(SetAutoHaulYields));
                 MP.RegisterSyncMethod(typeof(MultiplayerCompat), nameof(SetBenchGather));
                 MP.RegisterSyncMethod(typeof(MultiplayerCompat), nameof(UnloadInventoryNow));
                 MP.RegisterSyncMethod(typeof(MultiplayerCompat), nameof(SetBillBatch));
                 MP.RegisterSyncMethod(typeof(MultiplayerCompat), nameof(SetBillBatchOvershoot));
                 MP.RegisterSyncMethod(typeof(MultiplayerCompat), nameof(SetKeptCount));
+                MP.RegisterSyncMethod(typeof(MultiplayerCompat), nameof(SetBulkUnloadAll));
                 MP.RegisterSyncMethod(typeof(JobDriver_BatchCraft), nameof(JobDriver_BatchCraft.StartBatchCraftSynced));
                 MP.RegisterSyncMethod(typeof(RouteExecutor), nameof(RouteExecutor.ExecuteRouteSynced));
                 MP.RegisterSyncMethod(typeof(SowRouteExecutor), nameof(SowRouteExecutor.ExecuteSowRouteSynced));

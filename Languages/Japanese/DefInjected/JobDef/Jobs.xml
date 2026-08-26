@@ -12,6 +12,7 @@
 <HaulersDream_BulkHaul.reportString>近くのものをすべて運搬している。</HaulersDream_BulkHaul.reportString>
 <HaulersDream_LoadPackAnimal.reportString>荷物運搬動物に積み込んでいる。</HaulersDream_LoadPackAnimal.reportString>
 <HaulersDream_UnloadCarrierInBulk.reportString>荷物運搬動物から降ろしている。</HaulersDream_UnloadCarrierInBulk.reportString>
+<HaulersDream_UnloadTransporterInBulk.reportString>輸送機から降ろしている。</HaulersDream_UnloadTransporterInBulk.reportString>
 <HaulersDream_LoadTransportersInBulk.reportString>輸送ポッドに一括積み込みしている。</HaulersDream_LoadTransportersInBulk.reportString>
 <HaulersDream_LoadPortalInBulk.reportString>ポータルに一括積み込みしている。</HaulersDream_LoadPortalInBulk.reportString>
 <HaulersDream_LoadVehicleInBulk.reportString>車両に一括積み込みしている。</HaulersDream_LoadVehicleInBulk.reportString>

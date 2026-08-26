@@ -12,6 +12,7 @@
 <HaulersDream_BulkHaul.reportString>переносит всё поблизости.</HaulersDream_BulkHaul.reportString>
 <HaulersDream_LoadPackAnimal.reportString>грузит вещи на вьючное животное.</HaulersDream_LoadPackAnimal.reportString>
 <HaulersDream_UnloadCarrierInBulk.reportString>разгружает вьючное животное.</HaulersDream_UnloadCarrierInBulk.reportString>
+<HaulersDream_UnloadTransporterInBulk.reportString>разгружает транспорт.</HaulersDream_UnloadTransporterInBulk.reportString>
 <HaulersDream_LoadTransportersInBulk.reportString>массово загружает транспорт.</HaulersDream_LoadTransportersInBulk.reportString>
 <HaulersDream_LoadPortalInBulk.reportString>массово загружает портал.</HaulersDream_LoadPortalInBulk.reportString>
 <HaulersDream_LoadVehicleInBulk.reportString>массово загружает транспортное средство.</HaulersDream_LoadVehicleInBulk.reportString>

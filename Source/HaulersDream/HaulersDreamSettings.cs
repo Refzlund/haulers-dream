@@ -362,6 +362,10 @@ namespace HaulersDream
         // --- pack-animal BULK UNLOAD (the inverse of loading: empty a flagged carrier into the hauler's backpack
         // in ONE visit, then HD's normal unload ships it to storage). Replaces vanilla's one-stack-per-walk unload.
         public bool enableBulkUnloadCarriers = true; // route WorkGiver_UnloadCarriers through the bulk-unload job
+        // BULK UNLOAD for landed transporters/shuttles (any CompTransporter parent with cargo): a right-click
+        // "Prioritize bulk unloading" that empties the hold into the hauler's backpack in ONE visit, instead of
+        // vanilla's dump-on-the-floor gizmo / one-thing-per-second ship-job drop. Player-ordered only.
+        public bool enableBulkUnloadTransporters = true;
         // The hauler must have at least this fraction of its carry capacity free to START a bulk unload (else the
         // backpack overflows to hands immediately and the visit barely helps). 0.5 = at most 50% encumbered.
         public float minFreeSpaceToUnloadCarrierPct = 0.5f;
@@ -826,6 +830,7 @@ namespace HaulersDream
             Scribe_Values.Look(ref enableStorageNetworkBulkLoad, "enableStorageNetworkBulkLoad", false);
             Scribe_Values.Look(ref enableBulkRefuel, "enableBulkRefuel", true);
             Scribe_Values.Look(ref enableBulkUnloadCarriers, "enableBulkUnloadCarriers", true);
+            Scribe_Values.Look(ref enableBulkUnloadTransporters, "enableBulkUnloadTransporters", true);
             Scribe_Values.Look(ref cleanupOnSave, "cleanupOnSave", true);
             Scribe_Values.Look(ref enableSoftlockDrop, "enableSoftlockDrop", true);
             Scribe_Values.Look(ref enableQuestPawnDrop, "enableQuestPawnDrop", true);
@@ -1041,6 +1046,7 @@ namespace HaulersDream
             enableStorageNetworkBulkLoad = false;
             enableBulkRefuel = true;
             enableBulkUnloadCarriers = true;
+            enableBulkUnloadTransporters = true;
             cleanupOnSave = true;
             enableSoftlockDrop = true;
             enableQuestPawnDrop = true;

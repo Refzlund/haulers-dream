@@ -12,6 +12,7 @@
 <HaulersDream_BulkHaul.reportString>กำลังขนของทุกอย่างที่อยู่ใกล้ๆ</HaulersDream_BulkHaul.reportString>
 <HaulersDream_LoadPackAnimal.reportString>กำลังบรรทุกของขึ้นสัตว์บรรทุก</HaulersDream_LoadPackAnimal.reportString>
 <HaulersDream_UnloadCarrierInBulk.reportString>กำลังขนของลงจากสัตว์บรรทุก</HaulersDream_UnloadCarrierInBulk.reportString>
+<HaulersDream_UnloadTransporterInBulk.reportString>กำลังขนลงจากยานขนส่ง</HaulersDream_UnloadTransporterInBulk.reportString>
 <HaulersDream_LoadTransportersInBulk.reportString>กำลังบรรทุกของขึ้นพ็อดขนส่งแบบรวมรอบ</HaulersDream_LoadTransportersInBulk.reportString>
 <HaulersDream_LoadPortalInBulk.reportString>กำลังบรรทุกของเข้าประตูมิติแบบรวมรอบ</HaulersDream_LoadPortalInBulk.reportString>
 <HaulersDream_LoadVehicleInBulk.reportString>กำลังบรรทุกของขึ้นยานพาหนะแบบรวมรอบ</HaulersDream_LoadVehicleInBulk.reportString>

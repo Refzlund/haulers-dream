@@ -150,6 +150,9 @@ namespace HaulersDream
             {
                 RunIdleBackstop();
                 PruneInertLoadTasks(); // drop fully-settled/released bulk-load ledger entries (cheap when empty)
+                PruneBulkUnloadAllIds(); // drop "bulk unload all" flags whose transporter is gone (no-op when empty)
+                ClearBulkUnloadFlagsUnderLoadFlow(); // drop flags on transporters a load flow has taken over
+                PruneLoadSessionGroupIds(); // drop load-session records whose transporters are all gone
             }
 
             // Storage claim self-heal. Correctness never depends on it — every read of the ledger already
@@ -283,11 +286,13 @@ namespace HaulersDream
         {
             base.ExposeData();
             // Subsystem scribe blocks, in the ORIGINAL order so the save format is byte-identical:
-            // veinTrackers -> batchBills -> loadTasks -> loadVehicleTasks -> questPawnSnapshots (append-only).
+            // veinTrackers -> batchBills -> loadTasks -> loadVehicleTasks -> questPawnSnapshots ->
+            // bulkUnloadAllIds (append-only).
             ExposeVein();
             ExposeBatchBills();
             ExposeLedger();
             ExposeQuestPawns();
+            ExposeTransporterUnloads();
         }
     }
 }

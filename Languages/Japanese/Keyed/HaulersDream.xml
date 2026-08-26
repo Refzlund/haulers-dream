@@ -356,9 +356,23 @@
 <HaulersDream.LoadTransporter.Report>輸送ポッドに一括積み込みしている。</HaulersDream.LoadTransporter.Report>
 <HaulersDream.LoadTransporter.Option>{0}の一括積み込みを優先</HaulersDream.LoadTransporter.Option>
 <HaulersDream.LoadTransporter.CouldNotStart>今、その輸送ポッドに一括積み込みする近くのものがありません。</HaulersDream.LoadTransporter.CouldNotStart>
+
+<!-- Transporter / shuttle BULK UNLOAD -->
+<HaulersDream.UnloadTransporter.Report>{0}から降ろしている。</HaulersDream.UnloadTransporter.Report>
+<HaulersDream.UnloadTransporter.Option>{0}の一括降ろしを優先</HaulersDream.UnloadTransporter.Option>
+<HaulersDream.UnloadTransporter.CouldNotStart>今はその輸送機からの一括降ろしを開始できません。</HaulersDream.UnloadTransporter.CouldNotStart>
 <HaulersDream.Setting.EnableBulkLoadTransporters>輸送ポッドとシャトルを1回の往復で一括積み込み</HaulersDream.Setting.EnableBulkLoadTransporters>
 <HaulersDream.Setting.EnableBulkLoadTransportersDesc>輸送ポッドやシャトルが積み込みに設定されているとき、運搬役はその積荷目録の一部を確保し、近くの複数の山を所持品にかき集め、輸送ポッドへ一度だけ歩き、それらをすべて預けます — バニラの1往復1山を手に持つ代わりです。複数の運搬役が大きな目録を二重運搬なしで分担し、確保された貨物が入るまでポッドは搭乗も発射もしません。これをオフにすると、バニラの1山ずつの輸送ポッド積み込みがそのまま使われます。</HaulersDream.Setting.EnableBulkLoadTransportersDesc>
 <HaulersDream.Setting.BulkLoadAiUpdateFrequency>積み込み再確認の間隔：{0}ティック</HaulersDream.Setting.BulkLoadAiUpdateFrequency>
+
+<!-- Settings: transporter / shuttle bulk unload -->
+<HaulersDream.Setting.EnableBulkUnloadTransporters>輸送機を1回の往復で一括降ろし</HaulersDream.Setting.EnableBulkUnloadTransporters>
+<HaulersDream.Gizmo.BulkUnloadAll.Label>一括で全て降ろす</HaulersDream.Gizmo.BulkUnloadAll.Label>
+<HaulersDream.Gizmo.BulkUnloadAll.Desc>トグル。輸送作業の殖民者が {0} に繰り返し歩いて行き、貨物室から直接バックパックを満たし、何も残らなくなるまですべてを保管場所へ運びます。乗客を引きずり出すことはありません。有効な間、右クリック「一括降ろしを優先」コマンドは、貨物室が空になるまで何度も戻ってくる運搬人を一人送ります。</HaulersDream.Gizmo.BulkUnloadAll.Desc>
+<HaulersDream.Gizmo.BulkUnloadAll.Empty>降ろせるものがありません</HaulersDream.Gizmo.BulkUnloadAll.Empty>
+<HaulersDream.Gizmo.BulkUnloadAll.LoadBlocked>「一括降ろし」が有効です。新しい積み込みを設定する前にオフにしてください。</HaulersDream.Gizmo.BulkUnloadAll.LoadBlocked>
+<HaulersDream.Gizmo.BulkUnloadAll.UnloadBlocked>この輸送機に向けて積み込みが進行中です。</HaulersDream.Gizmo.BulkUnloadAll.UnloadBlocked>
+<HaulersDream.Setting.EnableBulkUnloadTransportersDesc>有効にすると、輸送ポッドとシャトルに右クリック「一括降ろしを優先」コマンドと、対応する「すべて一括降ろし」トグルが追加されます。コマンドを選ぶとトグルが入り、運搬人がすぐに貨物室からスタックをバックパックへ移し始めます。その後は自動的に、その運搬人または他の運搬人によって、何も残らなくなるまで追加の往復が続きます。バニラのように全部地面にばら撒くことはありません。トグルだけを入れても同じ動作をしますが、すぐには誰も送られません。最後のあふれたスタックは手に持って直接運びます。シャトルから乗客を引きずり出すことはなく、輸送機への積み込みが進行中の間、HDは介入しません。</HaulersDream.Setting.EnableBulkUnloadTransportersDesc>
 <HaulersDream.LoadPortal.Report>ポータルに一括積み込みしている。</HaulersDream.LoadPortal.Report>
 <HaulersDream.LoadPortal.Option>{0}の一括積み込みを優先</HaulersDream.LoadPortal.Option>
 <HaulersDream.LoadPortal.CouldNotStart>今、そのポータルに一括積み込みする近くのものがありません。</HaulersDream.LoadPortal.CouldNotStart>
@@ -551,6 +565,9 @@
 <HaulersDream.Feat.UnloadCarriers.Blurb>1回の訪問で運搬者をバックパックへ空にする</HaulersDream.Feat.UnloadCarriers.Blurb>
 <HaulersDream.Feat.LoadTransporters.Name>輸送ポッド &amp; シャトルの積み込み</HaulersDream.Feat.LoadTransporters.Name>
 <HaulersDream.Feat.LoadTransporters.Blurb>ポッドとシャトルを1回の往復で満たす</HaulersDream.Feat.LoadTransporters.Blurb>
+
+<HaulersDream.Feat.UnloadTransporters.Name>輸送ポッド &amp; シャトルの降ろし</HaulersDream.Feat.UnloadTransporters.Name>
+<HaulersDream.Feat.UnloadTransporters.Blurb>着陸した輸送ポッドの貨物室を1回で空にする</HaulersDream.Feat.UnloadTransporters.Blurb>
 <HaulersDream.Feat.LoadPortal.Name>マップポータルの積み込み</HaulersDream.Feat.LoadPortal.Name>
 <HaulersDream.Feat.LoadPortal.Blurb>落とし穴の門や洞窟の出口を一括積み込み</HaulersDream.Feat.LoadPortal.Blurb>
 <HaulersDream.Feat.Refuel.Name>一括燃料補給</HaulersDream.Feat.Refuel.Name>

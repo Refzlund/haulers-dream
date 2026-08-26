@@ -231,6 +231,12 @@ namespace HaulersDream
         {
             if (!featureEnabled || loadable == null)
                 return false;
+            // MUTUAL EXCLUSION (unload side): a transporter flagged "Bulk unload all" offers no NEW load work, 
+            // ordering cargo INTO a hold haulers are emptying is the invisible load/unload fight. MUST stay in
+            // lockstep with the same check in TryGiveBulkJob (HasJob saying yes while JobOn builds nothing would
+            // loop the work scan within a tick). Transporters only, portals/vehicles have no unload flag.
+            if (loadable is LoadTransportersAdapter flagged && BulkUnloadTransporterGate.UnloadFlagActive(flagged.Primary))
+                return false;
             if (pawn?.Map == null || pawn.Drafted)
                 return false;
             if (pawn.GetComp<CompHauledToInventory>() == null || pawn.inventory == null)
@@ -359,6 +365,12 @@ namespace HaulersDream
             var s = HaulersDreamMod.Settings;
             var map = pawn?.Map;
             if (s == null || !featureEnabled || map == null || loadable == null)
+                return null;
+            // MUTUAL EXCLUSION (unload side), the JobOn half of the pair: a transporter flagged "Bulk unload all"
+            // builds no NEW load jobs, even for a player order or a boarding passenger (the flag means "this hold
+            // is being emptied"; starting a load under it is the invisible fight). Lockstep with the identical
+            // check at the top of HasPotentialBulkWork.
+            if (loadable is LoadTransportersAdapter flagged && BulkUnloadTransporterGate.UnloadFlagActive(flagged.Primary))
                 return null;
             if (pawn.GetComp<CompHauledToInventory>() == null || pawn.inventory == null)
                 return null;

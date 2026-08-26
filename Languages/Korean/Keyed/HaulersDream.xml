@@ -356,9 +356,23 @@
 <HaulersDream.LoadTransporter.Report>수송 포드를 대량으로 싣는 중.</HaulersDream.LoadTransporter.Report>
 <HaulersDream.LoadTransporter.Option>{0} 대량 적재 우선 지정</HaulersDream.LoadTransporter.Option>
 <HaulersDream.LoadTransporter.CouldNotStart>지금 그 수송 포드에 대량으로 실을 만한 것이 주변에 없습니다.</HaulersDream.LoadTransporter.CouldNotStart>
+
+<!-- Transporter / shuttle BULK UNLOAD -->
+<HaulersDream.UnloadTransporter.Report>{0} 하역 중.</HaulersDream.UnloadTransporter.Report>
+<HaulersDream.UnloadTransporter.Option>{0} 대량 하역 우선 지정</HaulersDream.UnloadTransporter.Option>
+<HaulersDream.UnloadTransporter.CouldNotStart>지금은 그 수송선의 대량 하역을 시작할 수 없습니다.</HaulersDream.UnloadTransporter.CouldNotStart>
 <HaulersDream.Setting.EnableBulkLoadTransporters>수송 포드와 셔틀을 한 번 이동으로 대량 적재</HaulersDream.Setting.EnableBulkLoadTransporters>
 <HaulersDream.Setting.EnableBulkLoadTransportersDesc>수송 포드나 셔틀이 적재로 설정되면, 운반자가 그 적재 목록의 일부를 점유하고 인근의 여러 더미를 소지품에 쓸어 담아 수송 포드로 한 번 걸어가서 전부 내려놓습니다 — 바닐라의 걸음당 손에 한 더미 대신. 여러 운반자가 큰 적재 목록을 이중 운반 없이 나누며, 점유한 화물이 들어올 때까지 포드는 탑승하거나 발사하지 않습니다. 이것이 꺼져 있으면 바닐라의 단일 더미 수송 포드 적재가 그대로 사용됩니다.</HaulersDream.Setting.EnableBulkLoadTransportersDesc>
 <HaulersDream.Setting.BulkLoadAiUpdateFrequency>적재 재확인 간격: {0}틱</HaulersDream.Setting.BulkLoadAiUpdateFrequency>
+
+<!-- Settings: transporter / shuttle bulk unload -->
+<HaulersDream.Setting.EnableBulkUnloadTransporters>수송선을 한 번 이동으로 대량 하역</HaulersDream.Setting.EnableBulkUnloadTransporters>
+<HaulersDream.Gizmo.BulkUnloadAll.Label>전체 대량 하역</HaulersDream.Gizmo.BulkUnloadAll.Label>
+<HaulersDream.Gizmo.BulkUnloadAll.Desc>토글. 수송 업무를 맡은 정착민이 {0}에 반복적으로 걸어가 화물창에서 곧바로 배낭을 채우고, 아무것도 남지 않을 때까지 모두 창고로 운반합니다. 승객은 절대 끄집어내지 않습니다. 켜져 있는 동안 우클릭 "대량 하역 우선 지정" 명령은 화물창이 빌 때까지 계속 돌아오는 운반인 한 명을 보냅니다.</HaulersDream.Gizmo.BulkUnloadAll.Desc>
+<HaulersDream.Gizmo.BulkUnloadAll.Empty>하역할 것이 없음</HaulersDream.Gizmo.BulkUnloadAll.Empty>
+<HaulersDream.Gizmo.BulkUnloadAll.LoadBlocked>"전체 대량 하역"이 켜져 있습니다. 새 적재를 설정하기 전에 끄십시오.</HaulersDream.Gizmo.BulkUnloadAll.LoadBlocked>
+<HaulersDream.Gizmo.BulkUnloadAll.UnloadBlocked>이 수송선으로 짐을 싣는 중입니다.</HaulersDream.Gizmo.BulkUnloadAll.UnloadBlocked>
+<HaulersDream.Setting.EnableBulkUnloadTransportersDesc>활성화하면 수송 포드와 셔틀에 우클릭 "대량 하역 우선 지정" 명령과 "전체 대량 하역" 토글이 추가됩니다. 명령을 선택하면 토글이 켜지고 운반인 한 명이 즉시 화물창에서 더미를 배낭으로 옮기기 시작합니다. 이후에는 그 운반인이나 다른 운반인이 자동으로 더 많은 왕복을 수행하여 아무것도 남지 않을 때까지 계속합니다. 바닐라처럼 전부 바닥에 쏟아내지 않습니다. 토글만 켜면 즉시 사람을 보내지 않는 것만 빼고 동일합니다. 마지막/넘친 더미는 손에 들고 바로 운반합니다. 셔틀에서 승객을 끄집어내지 않으며, 수송선으로 짐을 싣는 중일 때는 HD가 개입하지 않습니다.</HaulersDream.Setting.EnableBulkUnloadTransportersDesc>
 <HaulersDream.LoadPortal.Report>차원문을 대량으로 싣는 중.</HaulersDream.LoadPortal.Report>
 <HaulersDream.LoadPortal.Option>{0} 대량 적재 우선 지정</HaulersDream.LoadPortal.Option>
 <HaulersDream.LoadPortal.CouldNotStart>지금 그 차원문에 대량으로 실을 만한 것이 주변에 없습니다.</HaulersDream.LoadPortal.CouldNotStart>
@@ -551,6 +565,9 @@
 <HaulersDream.Feat.UnloadCarriers.Blurb>한 번 방문으로 운반체를 배낭에 비우기</HaulersDream.Feat.UnloadCarriers.Blurb>
 <HaulersDream.Feat.LoadTransporters.Name>수송 포드 및 셔틀 적재</HaulersDream.Feat.LoadTransporters.Name>
 <HaulersDream.Feat.LoadTransporters.Blurb>한 번 이동으로 포드와 셔틀 채우기</HaulersDream.Feat.LoadTransporters.Blurb>
+
+<HaulersDream.Feat.UnloadTransporters.Name>수송 포드 및 셔틀 하역</HaulersDream.Feat.UnloadTransporters.Name>
+<HaulersDream.Feat.UnloadTransporters.Blurb>착륙한 수송 포드의 화물창을 한 번에 비우기</HaulersDream.Feat.UnloadTransporters.Blurb>
 <HaulersDream.Feat.LoadPortal.Name>맵 차원문 적재</HaulersDream.Feat.LoadPortal.Name>
 <HaulersDream.Feat.LoadPortal.Blurb>구덩이 관문과 동굴 출구 대량 적재</HaulersDream.Feat.LoadPortal.Blurb>
 <HaulersDream.Feat.Refuel.Name>대량 연료 보급</HaulersDream.Feat.Refuel.Name>

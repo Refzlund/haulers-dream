@@ -4,6 +4,10 @@ Icons used (recoloured white, rasterized to PNG): sliders-horizontal, package,
 inbox, hammer, boxes, route, pickaxe, users, clipboard-list, settings-2,
 triangle-alert (the conditional "Migration" tab), bug (the "Report an issue" row).
 
+Interface/BulkUnloadAll.png is derived from RimWorld's own
+UI/Commands/LoadTransporter texture + hand-edited,
+© Ludeon Studios, used as permitted for RimWorld modding.
+
 ----------------------------------------------------------------------
 ISC License
 

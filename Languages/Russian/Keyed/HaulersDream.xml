@@ -356,9 +356,23 @@
 <HaulersDream.LoadTransporter.Report>массово загружает транспорт.</HaulersDream.LoadTransporter.Report>
 <HaulersDream.LoadTransporter.Option>Приоритизировать массовую загрузку {0}</HaulersDream.LoadTransporter.Option>
 <HaulersDream.LoadTransporter.CouldNotStart>Сейчас поблизости нечего массово грузить в этот транспорт.</HaulersDream.LoadTransporter.CouldNotStart>
+
+<!-- Transporter / shuttle BULK UNLOAD -->
+<HaulersDream.UnloadTransporter.Report>разгружает {0}.</HaulersDream.UnloadTransporter.Report>
+<HaulersDream.UnloadTransporter.Option>Приоритизировать массовую разгрузку {0}</HaulersDream.UnloadTransporter.Option>
+<HaulersDream.UnloadTransporter.CouldNotStart>Не удалось сейчас начать массовую разгрузку этого транспорта.</HaulersDream.UnloadTransporter.CouldNotStart>
 <HaulersDream.Setting.EnableBulkLoadTransporters>Массово загружать транспортные капсулы и шаттлы за одну ходку</HaulersDream.Setting.EnableBulkLoadTransporters>
 <HaulersDream.Setting.EnableBulkLoadTransportersDesc>Когда транспортная капсула или шаттл помечены на загрузку, переносчик берёт часть их манифеста, сметает несколько ближайших стопок в свой инвентарь, подходит к транспорту ОДИН раз и складывает их все — вместо ванильной одной стопки в руках за подход. Несколько переносчиков делят большой манифест без двойной переноски, и капсула не загрузится и не запустится, пока заявленный груз не будет внутри. Когда это выкл, используется ванильная загрузка транспорта по одной стопке без изменений.</HaulersDream.Setting.EnableBulkLoadTransportersDesc>
 <HaulersDream.Setting.BulkLoadAiUpdateFrequency>Интервал перепроверки загрузки: {0} тиков</HaulersDream.Setting.BulkLoadAiUpdateFrequency>
+
+<!-- Settings: transporter / shuttle bulk unload -->
+<HaulersDream.Setting.EnableBulkUnloadTransporters>Массово разгружать транспорт за одну ходку</HaulersDream.Setting.EnableBulkUnloadTransporters>
+<HaulersDream.Gizmo.BulkUnloadAll.Label>Массово разгрузить всё</HaulersDream.Gizmo.BulkUnloadAll.Label>
+<HaulersDream.Gizmo.BulkUnloadAll.Desc>Переключатель. Колонисты-носильщики будут снова и снова приходить к объекту {0}, наполнять рюкзаки прямо из грузового отсека и относить всё на склад, пока ничего не останется. Пассажиров не вытаскивают. Пока это включено, приказ «Приоритизировать массовую разгрузку» правой кнопкой отправляет носильщика, который возвращается снова и снова, пока отсек не опустеет.</HaulersDream.Gizmo.BulkUnloadAll.Desc>
+<HaulersDream.Gizmo.BulkUnloadAll.Empty>Разгружать нечего</HaulersDream.Gizmo.BulkUnloadAll.Empty>
+<HaulersDream.Gizmo.BulkUnloadAll.LoadBlocked>«Массово разгрузить всё» включено, выключите это, прежде чем задать новую загрузку.</HaulersDream.Gizmo.BulkUnloadAll.LoadBlocked>
+<HaulersDream.Gizmo.BulkUnloadAll.UnloadBlocked>В этот транспорт сейчас собирается груз.</HaulersDream.Gizmo.BulkUnloadAll.UnloadBlocked>
+<HaulersDream.Setting.EnableBulkUnloadTransportersDesc>После включения транспортные капсулы и шаттлы получают приказ правой кнопки «Приоритизировать массовую разгрузку» и соответствующий переключатель «Массово разгрузить всё». Выбор приказа включает переключатель и немедленно отправляет носильщика начать перекладывать стопки из грузового отсека в свой рюкзак; дальше ходки следуют автоматически, им или другим носильщиком, пока ничего не останется, вместо ванильного вываливания всего на пол. Одно включение переключателя делает то же самое, но без немедленной отправки кого-либо. Последняя/переливочная стопка идёт в руки и относится напрямую. Пассажиров никогда не вытаскивают из шаттла, а пока в транспорт идёт погрузка, HD не вмешивается.</HaulersDream.Setting.EnableBulkUnloadTransportersDesc>
 <HaulersDream.LoadPortal.Report>массово загружает портал.</HaulersDream.LoadPortal.Report>
 <HaulersDream.LoadPortal.Option>Приоритизировать массовую загрузку {0}</HaulersDream.LoadPortal.Option>
 <HaulersDream.LoadPortal.CouldNotStart>Сейчас поблизости нечего массово грузить в этот портал.</HaulersDream.LoadPortal.CouldNotStart>
@@ -551,6 +565,9 @@
 <HaulersDream.Feat.UnloadCarriers.Blurb>Опустошить носителя в рюкзак за один визит</HaulersDream.Feat.UnloadCarriers.Blurb>
 <HaulersDream.Feat.LoadTransporters.Name>Загрузка транспорта и шаттлов</HaulersDream.Feat.LoadTransporters.Name>
 <HaulersDream.Feat.LoadTransporters.Blurb>Заполнить капсулы и шаттлы за одну ходку</HaulersDream.Feat.LoadTransporters.Blurb>
+
+<HaulersDream.Feat.UnloadTransporters.Name>Массово разгружать транспорт и шаттлы</HaulersDream.Feat.UnloadTransporters.Name>
+<HaulersDream.Feat.UnloadTransporters.Blurb>Опустошить отсек приземлившегося транспорта за один подход</HaulersDream.Feat.UnloadTransporters.Blurb>
 <HaulersDream.Feat.LoadPortal.Name>Загрузка порталов карт</HaulersDream.Feat.LoadPortal.Name>
 <HaulersDream.Feat.LoadPortal.Blurb>Массово загружать врата ям и выходы из пещер</HaulersDream.Feat.LoadPortal.Blurb>
 <HaulersDream.Feat.Refuel.Name>Массовая заправка</HaulersDream.Feat.Refuel.Name>
