@@ -476,6 +476,19 @@ The remaining ~35 active mods are cosmetic / UI / render-only (Yayo's Animation,
 Bubbles, Quality Colors, Blood Animations, Bionic Icons, etc.) and never touch jobs, hauling, storage,
 inventory, `GenPlace`, or `GenLeaving`.
 
+## Custom Alerts — Continued: activity selection
+
+In the alert editor, add **current action**, open its dropdown, choose **ALL OPTIONS**, then
+select **gathering items into inventory**. Enable the alert and choose the map, count and delay
+you want. With the default available-only list, this entry can be hidden while no pawn is
+currently gathering; **ALL OPTIONS** exposes it without needing to start a haul first.
+
+This activity covers HD's inventory gathering, including its explicit single-stack pickup.
+It matches the pawn's current activity: an order waiting in the queue, the separate unloading
+job and ordinary hand-hauling do not match. It is not an exclusive filter for the
+**Haul everything nearby** command. In older HD versions, the activity was also named
+**hauling everything nearby**; existing saved selections retain the same job identity.
+
 ## If you hit a problem
 1. **Pawns carrying items forever?** You should see the red **"Cannot unload inventory"** alert — click
    it to jump to the pawn(s). It means there's no stockpile/dumping zone that accepts those items (add

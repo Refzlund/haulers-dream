@@ -58,6 +58,9 @@ integration layer. Soft dependencies are reflection-only and **inert when the ot
 - **Perfect Pathfinding** — the grab-it-on-the-way detour check uses its pathing accuracy when set
   to the Pathfinding mode.
 - **Autocast**, **While You Are Nearby**, and many others — compatible.
+- **Custom Alerts — Continued** — use **current action → ALL OPTIONS → gathering items into
+  inventory** to select HD's gathering activity. The default list can hide it when nobody is
+  gathering. See [activity alert setup](COMPATIBILITY.md#custom-alerts--continued-activity-selection).
 
 ---
 
