@@ -6,6 +6,8 @@ working. On top of that core idea it adds planning tools and a layer of quality-
 micro-management — all optional and tunable.
 
 - **Steam Workshop:** https://steamcommunity.com/sharedfiles/filedetails/?id=3742459652
+- **Reports and corrections:** [How to report, reply to an existing report, or use GitHub if Steam discussions are unavailable](docs/reporting-feedback.md).
+  In-game replies keep the original report; original-text editing is currently unsupported.
 - **Requires:** [Harmony](https://github.com/pardeike/HarmonyRimWorld) (`brrainz.harmony`)
 - **Safe to add to existing saves**, and safe to remove (carried goods are never stranded).
 - Everything is behind mod-settings toggles; defaults preserve or improve vanilla behaviour.
