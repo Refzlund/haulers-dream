@@ -167,6 +167,21 @@ namespace HaulersDream
         }
 
         /// <summary>
+        /// Complete an accepted plain repeat-mode selection. The original action may already be replaying as
+        /// an MP command; in that case the write belongs to that command, not a second nested sync command.
+        /// Otherwise retain the existing UI sync route. This does not register or synchronize foreign actions.
+        /// </summary>
+        internal static void CompletePlainBillSelection(Bill_Production bill)
+        {
+            if (bill == null)
+                return;
+            if (InMultiplayerGame && MpHooks.ExecutingCommand())
+                HaulersDreamGameComponent.Instance?.SetBatch(bill, false, 0);
+            else
+                SetBillBatch(bill, false, 0);
+        }
+
+        /// <summary>
         /// Set the per-save "overshoot by Y" amount for a bill (issue #3). Replaces the direct
         /// <c>GameComponent.SetBatchOvershoot</c> write from the overshoot dialog / bill float-menu (a write to the
         /// SCRIBED <c>batchOvershoots</c> dictionary — synced world state). Like <see cref="SetBillBatch"/>, callers
@@ -223,6 +238,7 @@ namespace HaulersDream
             }
 
             internal static bool InMpGame() => MP.IsInMultiplayer;
+            internal static bool ExecutingCommand() => MP.IsExecutingSyncCommand;
 
             internal static bool IssuedBySelf() => MP.IsExecutingSyncCommandIssuedBySelf;
         }
