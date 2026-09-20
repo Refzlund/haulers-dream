@@ -189,7 +189,10 @@ namespace HaulersDream
             }
 
             // 3. Queue the route — replace current work or append to the existing manual queue.
-            int queued = replace ? QueueReplace(pawn, kind, jobs) : QueueAppend(pawn, kind, jobs);
+            // A delivery-only construction route is a finite order. Sustaining its Construction giver
+            // would let vanilla append a forced FinishFrame even though the route declined "also build".
+            bool sustainPriority = alsoBuild || !(kind.scanner is WorkGiver_ConstructDeliverResources);
+            int queued = replace ? QueueReplace(pawn, kind, jobs, sustainPriority) : QueueAppend(pawn, kind, jobs);
 
             HDLog.Dbg($"{pawn} planned a {mode} route ({(replace ? "replace" : "append")}): {queued}/{selected} stop(s) " +
                       $"({kind.gerund}), smart={smart}, ~{RouteEstimateHours(plan)}h, cappedAmount={plan.cappedByAmount}, cappedDist={plan.cappedByDistance}.");
@@ -317,12 +320,14 @@ namespace HaulersDream
 
         // REPLACE: interrupt current work + clear any existing queue (the lead does this synchronously), then
         // append the rest of the route. Mirrors a manual prioritize followed by shift-queues.
-        private static int QueueReplace(Pawn pawn, RouteWorkKind kind, List<RouteJob> jobs)
+        private static int QueueReplace(Pawn pawn, RouteWorkKind kind, List<RouteJob> jobs, bool sustainPriority)
         {
             // Discard any existing manual queue up front. TryTakeOrderedJobPrioritizedWork normally clears it on
             // its interrupt path, but when the pawn's CURRENT job already equals the lead route job it early-
             // returns at JobIsSameAs BEFORE clearing — so do it explicitly here to guarantee a true replace.
             pawn.jobs.ClearQueuedJobs();
+            if (!sustainPriority)
+                pawn.mindState.priorityWork.Clear(); // Replace also retires the previous sustained order.
 
             int queued = 0;
             bool leadStarted = false;
@@ -332,7 +337,10 @@ namespace HaulersDream
                 rj.job.workGiverDef = kind.scanner.def;
                 if (!leadStarted)
                 {
-                    if (pawn.jobs.TryTakeOrderedJobPrioritizedWork(rj.job, kind.scanner, rj.cell))
+                    bool accepted = sustainPriority
+                        ? pawn.jobs.TryTakeOrderedJobPrioritizedWork(rj.job, kind.scanner, rj.cell)
+                        : pawn.jobs.TryTakeOrderedJob(rj.job, kind.scanner.def.tagToGive);
+                    if (accepted)
                     {
                         leadStarted = true;
                         queued++;

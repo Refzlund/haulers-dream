@@ -28,7 +28,7 @@ namespace HaulersDream
     [HarmonyPriority(Priority.Normal)] // run after F3b's floor-empty fetch, before Batch/Routing observe the result
     public static class Patch_ResourceDeliverJobFor_Inventory
     {
-        static void Postfix(ref Job __result, Pawn pawn, IConstructible c, bool forced)
+        static void Postfix(WorkGiver_ConstructDeliverResources __instance, ref Job __result, Pawn pawn, IConstructible c, bool forced)
         {
             var s = HaulersDreamMod.Settings;
             if (s == null || !s.inventoryConstructDeliver || __result == null || pawn?.Map == null)
@@ -44,14 +44,15 @@ namespace HaulersDream
             // Pass the RESOURCE stack vanilla picked (the nearest reservable stack of this material to the pawn —
             // i.e. the stockpile it would haul from), so the inventory load gathers around the STOCKPILE, wherever
             // it is, NOT around the build site. The build site is often far from the stockpile.
-            // A FORCED (player-ordered) delivery becomes the TETHERED haul+build job — "prioritize constructing"
-            // then hauls AND builds as one continuous task — unless a route explicitly asked for haul-only,
-            // or (for plain right-click orders) the tether is disabled in mod options. A route's haul+build
-            // is governed by its OWN dialog checkbox, so it always tethers regardless of the global setting.
+            // The same scanner classes serve both Construction and Hauling work givers. A forced Hauling
+            // order authorizes delivery only; forced does not itself mean "also build". Read the actual
+            // scanner here because vanilla assigns the returned job's workGiverDef later in its menu code.
+            // Explicit route intent wins: HaulBuild keeps its own checkbox, while HaulOnly never tethers.
             var intent = InventoryConstructDelivery.RouteIntent;
-            bool tether = forced && intent != ConstructRouteIntent.HaulOnly
-                          && (intent == ConstructRouteIntent.HaulBuild
-                              || HaulersDreamMod.Settings == null || HaulersDreamMod.Settings.orderedConstructTether);
+            bool tether = forced && (intent == ConstructRouteIntent.HaulBuild
+                || (intent == ConstructRouteIntent.None
+                    && __instance?.def?.workType == WorkTypeDefOf.Construction
+                    && s.orderedConstructTether));
             var job = InventoryConstructDelivery.TryBuild(pawn, c, carried, forced, tether, __result);
             if (job != null)
                 __result = job;
