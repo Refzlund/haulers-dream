@@ -35,6 +35,7 @@ namespace HaulersDream
         public string gerund;
         public ThingDef yieldDef;          // the product, for smart-routing storage anchor; may be null
         public RouteTargetScope scope = RouteTargetScope.SameDef;
+        public bool blightedOnly; // Cut intent captured from the clicked plant, independent of crop def.
     }
 
     /// <summary>
@@ -49,12 +50,19 @@ namespace HaulersDream
         // (all work types × their givers, each doing a validity/reach probe) for a clicked thing, and the route
         // planner's float-menu provider resolves this for every thing under the cursor when a menu is built. A
         // right-click that re-opens the menu on the same tick, or a second planner provider probing the same thing,
-        // otherwise re-runs the whole scanner walk. Memoize (result, keyed on TicksGame + pawn + thing) so a given
-        // (pawn, thing) is resolved at most once per tick. RouteWorkKind holds only Def singletons + strings (no Thing
-        // refs — verified), so a cached value is safe to reuse; the tick stamp self-clears each tick and the
+        // otherwise re-runs the whole scanner walk. Memoize per TicksGame + pawn + thing, re-probing a plant only
+        // if its blight/designation state changes within that tick. Entries retain no Thing references: the
+        // additional cache state is one bool and a designation Def. The tick stamp self-clears each tick and the
         // `tick != -1` populate guard is the cross-session safeguard (registered with CacheRegistry on load).
         [System.ThreadStatic] private static int resolveCacheTick;
-        [System.ThreadStatic] private static System.Collections.Generic.Dictionary<long, RouteWorkKind> resolveCache;
+        private struct ResolveCacheEntry
+        {
+            public RouteWorkKind kind;
+            public bool blighted;
+            public DesignationDef plantDesignation;
+        }
+
+        [System.ThreadStatic] private static System.Collections.Generic.Dictionary<long, ResolveCacheEntry> resolveCache;
 
         static WorkKindResolver() => CacheRegistry.Register(ClearResolveCache);
 
@@ -68,7 +76,7 @@ namespace HaulersDream
 
         /// <summary>Resolve a clicked Thing to its <see cref="RouteWorkKind"/>, memoized per (tick, pawn, thing) — see
         /// the class remarks. Behaviour-identical to <see cref="ResolveUncached"/>; only repeated same-tick resolves
-        /// of the same (pawn, thing) are short-circuited.</summary>
+        /// of the same (pawn, thing) with unchanged plant blight/designation state are short-circuited.</summary>
         public static RouteWorkKind Resolve(Pawn pawn, Thing clicked)
         {
             if (pawn == null || clicked == null)
@@ -76,17 +84,26 @@ namespace HaulersDream
             int tick = Find.TickManager?.TicksGame ?? -1;
             if (tick == -1)
                 return ResolveUncached(pawn, clicked);
-            var cache = resolveCache ?? (resolveCache = new System.Collections.Generic.Dictionary<long, RouteWorkKind>());
+            var cache = resolveCache ?? (resolveCache = new System.Collections.Generic.Dictionary<long, ResolveCacheEntry>());
             if (tick != resolveCacheTick)
             {
                 cache.Clear();
                 resolveCacheTick = tick;
             }
             long key = ((long)pawn.thingIDNumber << 32) | (uint)clicked.thingIDNumber;
-            if (cache.TryGetValue(key, out var cached))
-                return cached;
+            // Native CutAllBlight can add CutPlant orders while paused, and blight can spread to a
+            // previously healthy target. Reuse a plant's memo only while both facts still match.
+            bool blighted = clicked is Plant plant && plant.Blighted;
+            var plantDesignation = clicked is Plant && clicked.Spawned
+                ? DetermineDesignation(clicked.Map, clicked) : null;
+            if (cache.TryGetValue(key, out var cached) && cached.blighted == blighted
+                && cached.plantDesignation == plantDesignation)
+                return cached.kind;
             var result = ResolveUncached(pawn, clicked);
-            cache[key] = result;
+            cache[key] = new ResolveCacheEntry
+            {
+                kind = result, blighted = blighted, plantDesignation = plantDesignation,
+            };
             return result;
         }
 
@@ -171,6 +188,8 @@ namespace HaulersDream
                         gerund = gerund,
                         yieldDef = ResolveYield(clicked),
                         scope = ScopeFor(scanner, designation),
+                        blightedOnly = designation == DesignationDefOf.CutPlant
+                            && clicked is Plant plant && plant.Blighted,
                     };
                 }
             }
@@ -188,7 +207,8 @@ namespace HaulersDream
         // stable, identical token on every client (defs load in the same order from the same content), and the
         // scanner — plus the designation/scope/gerund/yield the kind also carries — is fully RE-DERIVABLE from the
         // pawn + clicked thing via Resolve(), whose every input (work priorities, designations, reachability) is
-        // synced game state. So we ship just the defName and reconstruct the whole kind per client. This mirrors
+        // synced game state. The defName reconstructs the kind per client; the separately transmitted blight
+        // condition must still match, so current state cannot broaden the captured intent. This mirrors
         // MiningKind(ThingDef), which already reconstructs the mining kind from a def alone for the (un-serializable)
         // vein tracker — same "rebuild the live kind from a portable key" pattern.
 
@@ -202,7 +222,7 @@ namespace HaulersDream
         /// <summary>
         /// Reconstructs the full <see cref="RouteWorkKind"/> for a previously-resolved work-giver id against the
         /// clicked thing's CURRENT state — the MP-replay counterpart of <see cref="WorkKindId"/>. We re-run the
-        /// normal <see cref="Resolve"/> (so the designation/scope/gerund/yield are derived by the exact same logic,
+        /// uncached resolver (so designation/scope/gerund/yield and blight intent use the same current-state logic,
         /// not a duplicated copy) and confirm it produced the SAME scanner the issuing client sent. The id check is
         /// a determinism guard: every client re-resolving the same synced state yields the same scanner, so a
         /// mismatch means the world diverged between plan and execute (e.g. the designation was cancelled), in which
@@ -213,7 +233,8 @@ namespace HaulersDream
         {
             if (string.IsNullOrEmpty(workGiverDefName))
                 return null;
-            var kind = Resolve(pawn, clicked);
+            // A commit must observe current designations and blight even within the same paused game tick.
+            var kind = ResolveUncached(pawn, clicked);
             // Re-resolve must reproduce the same scanner the planning client used; otherwise the world changed
             // under the command and we must not silently queue a different kind of route.
             return WorkKindId(kind) == workGiverDefName ? kind : null;
@@ -370,8 +391,8 @@ namespace HaulersDream
         // The route-target grouping for a resolved work kind. The work decides the grouping, not the thing:
         // cleaning covers ALL filth; deconstruct/uninstall cover ONLY already-marked things of any def (auto-
         // marking unmarked same-def buildings for deconstruction would be destructive); mining/cutting expand by
-        // def (designating more of the same is the feature) and also adopt already-designated things of OTHER
-        // defs; everything else (harvest) groups by def.
+        // def and also adopt already-designated things of OTHER defs. A captured blight-cut condition filters
+        // that group by live plant state separately; ordinary clearing keeps its expansion. Harvest groups by def.
         private static RouteTargetScope ScopeFor(WorkGiver_Scanner scanner, DesignationDef designation)
         {
             if (scanner is WorkGiver_CleanFilth)

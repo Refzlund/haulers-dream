@@ -27,7 +27,8 @@ namespace HaulersDream
         /// <see cref="Thing"/>, primitives/enums, and <c>List&lt;Thing&gt;</c>/<c>List&lt;IntVec3&gt;</c>. The live
         /// <see cref="RouteWorkKind"/> (which holds a WorkGiver_Scanner) can't cross the wire, so it travels as its
         /// stable <see cref="WorkKindResolver.WorkKindId"/> (the scanner's WorkGiverDef.defName) and is re-derived per
-        /// client via <see cref="WorkKindResolver.ResolveById"/>. The cached preview <see cref="RoutePlan"/> is NOT
+        /// client via <see cref="WorkKindResolver.ResolveById"/>. Captured blight intent travels as a bool and
+        /// must still agree with that fresh resolution. The cached preview <see cref="RoutePlan"/> is NOT
         /// shipped either (not serializable, and shipping a single client's plan would defeat lockstep); we pass
         /// <c>precomputed: null</c> so every client RECOMPUTES the plan deterministically from the same synced state
         /// (<see cref="RoutePlanner"/> reads only synced inputs — verified deterministic). When MP is absent the
@@ -42,15 +43,15 @@ namespace HaulersDream
             int amount, int radius, float maxDistance, bool smart, bool allowHarvest, int growthThreshold, bool replace,
             List<Thing> mustInclude, HaulersDream.Core.RouteSelectionMethod selectionMethod,
             HaulersDream.Core.RouteDistanceBasis distanceBasis, int exactMax, Thing startNode, Thing endNode,
-            bool alsoBuild, List<IntVec3> roomAnchors, List<ThingDef> extraDefs)
+            bool alsoBuild, List<IntVec3> roomAnchors, List<ThingDef> extraDefs, bool blightedOnly = false)
         {
             // Re-derive the live work kind from its portable id on THIS client (deterministic — same synced state →
             // same scanner). A null means the thing is no longer routable / the id didn't reproduce (the world
             // diverged between plan and execute): no-op rather than queue a mismatched route. Execute's own
             // null-guards would also catch this, but bailing here keeps the intent explicit.
             var kind = WorkKindResolver.ResolveById(pawn, clicked, workGiverDefName);
-            if (kind == null)
-                return;
+            if (kind == null || kind.blightedOnly != blightedOnly)
+                return; // Never reinterpret a captured blight plan as ordinary clearing after its anchor changes.
             // precomputed: null → recompute the plan on every client (recompute-on-all-clients is the correct MP
             // model; the dialog's cached plan isn't serializable and is one client's view anyway).
             Execute(pawn, clicked, kind, mode, amount, radius, maxDistance, smart, allowHarvest, growthThreshold,
@@ -68,12 +69,12 @@ namespace HaulersDream
             Thing startNode = null, Thing endNode = null, bool alsoBuild = false,
             IReadOnlyList<IntVec3> roomAnchors = null, IReadOnlyList<ThingDef> extraDefs = null)
         {
-            if (pawn?.Map == null || clicked == null || kind?.scanner == null)
+            if (pawn?.Map == null || clicked == null || kind?.scanner == null
+                || !RouteSelection.MeetsBlightRequirement(kind, clicked))
                 return;
 
-            // Prefer the dialog's already-computed plan so the queued route matches the previewed one exactly
-            // (the dialog runs unpaused, so recomputing here against a mutated world could diverge). Fall back
-            // to a fresh plan only if none was supplied.
+            // Dialog/remembered confirmation recomputes from current synced state. Other callers may supply
+            // a plan, but every target is still checked before designation and job construction below.
             var plan = (precomputed != null && precomputed.stops.Count > 0)
                 ? precomputed
                 : RoutePlanner.Plan(pawn, clicked, kind, mode, amount, radius, maxDistance, smart, allowHarvest, growthThreshold,
@@ -136,7 +137,7 @@ namespace HaulersDream
                 for (int i = 0; i < plan.stops.Count; i++)
                 {
                     var t = plan.stops[i];
-                    if (t == null || !t.Spawned || StopLostDesignation(pawn.Map, t, kind))
+                    if (t == null || !t.Spawned || StopNoLongerEligible(pawn.Map, t, kind))
                         continue;
                     var job = BuildJobForStop(pawn, t, kind);
                     if (job != null)
@@ -234,7 +235,8 @@ namespace HaulersDream
         /// </summary>
         public static Job BuildJobForStop(Pawn pawn, Thing t, RouteWorkKind kind)
         {
-            if (pawn?.Map == null || t == null || kind?.scanner == null)
+            if (pawn?.Map == null || t == null || kind?.scanner == null
+                || !RouteSelection.MeetsBlightRequirement(kind, t))
                 return null;
             // No try/catch: the resolved scanner throwing is a real bug to surface (once per route action), not hide.
             Job job = kind.scanner.JobOnThing(pawn, t, forced: true);
@@ -422,7 +424,7 @@ namespace HaulersDream
             for (int i = 0; i < stops.Count; i++)
             {
                 var t = stops[i];
-                if (t == null || !t.Spawned || StopLostDesignation(pawn.Map, t, kind))
+                if (t == null || !t.Spawned || StopNoLongerEligible(pawn.Map, t, kind))
                     continue;
                 // No try/catch: the resolved scanner throwing is a real bug to surface, not silently skip.
                 Job job = kind.scanner.JobOnThing(pawn, t, forced: true);
@@ -484,17 +486,17 @@ namespace HaulersDream
         private static string RouteEstimateHours(RoutePlan plan)
             => Core.RouteEstimate.HoursFromTicks(plan.totalTicks).ToString("0.0");
 
-        // DesignatedOnly kinds (deconstruct/uninstall) work ONLY what is still marked: a designation the
-        // player cancelled while the dialog was open must not be resurrected by the route. The scanner's
-        // JobOnThing (WorkGiver_RemoveBuilding) is unconditional, so the stop must be skipped outright.
-        private static bool StopLostDesignation(Map map, Thing t, RouteWorkKind kind)
-            => kind.scope == RouteTargetScope.DesignatedOnly
-               && kind.designation != null
-               && map.designationManager.DesignationOn(t, kind.designation) == null;
+        // Recheck blight intent and the existing designated-only consent rule at execution. Neither a
+        // recovered plant nor a cancelled deconstruct/uninstall order may be re-admitted by a stale plan.
+        private static bool StopNoLongerEligible(Map map, Thing t, RouteWorkKind kind)
+            => !RouteSelection.MeetsBlightRequirement(kind, t)
+               || (kind.scope == RouteTargetScope.DesignatedOnly
+                   && kind.designation != null
+                   && map.designationManager.DesignationOn(t, kind.designation) == null);
 
         private static void EnsureDesignated(Map map, Thing t, RouteWorkKind kind)
         {
-            if (kind.designation == null)
+            if (kind.designation == null || !RouteSelection.MeetsBlightRequirement(kind, t))
                 return;
             if (kind.scope == RouteTargetScope.DesignatedOnly)
                 return; // deconstruct/uninstall never (re-)mark — the live designation IS the player's consent

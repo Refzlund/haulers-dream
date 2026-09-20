@@ -58,8 +58,8 @@ namespace HaulersDream
     /// Plans a route in two stages: <see cref="ComputeLegs"/> (select + gather-order + pathfind every leg —
     /// expensive, depends only on mode/amount/smart) and <see cref="Truncate"/> (apply the max-travel budget,
     /// smart-reorder the kept stops, estimate time — cheap, depends on the budget). The dialog caches the legs
-    /// and truncates live as the slider drags; the executor uses the dialog's frozen plan so the queued route
-    /// matches the preview. The budget is decided on the stable gather order, then smart routing reorders only
+    /// and truncates live as the slider drags; dialog confirmation recomputes against current synced state.
+    /// The budget is decided on the stable gather order, then smart routing reorders only
     /// the kept stops to end near storage.
     /// </summary>
     public static class RoutePlanner
