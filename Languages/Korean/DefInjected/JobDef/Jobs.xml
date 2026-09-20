@@ -9,7 +9,7 @@
 <HaulersDream_BatchCraft.reportString>일괄 제작 중.</HaulersDream_BatchCraft.reportString>
 <HaulersDream_InventoryDoBill.reportString>제작 중.</HaulersDream_InventoryDoBill.reportString>
 <HaulersDream_BillPrepGather.reportString>제작 재료를 모으는 중.</HaulersDream_BillPrepGather.reportString>
-<HaulersDream_BulkHaul.reportString>주변 전부를 운반하는 중.</HaulersDream_BulkHaul.reportString>
+<HaulersDream_BulkHaul.reportString>물건을 모아 소지품에 넣는 중.</HaulersDream_BulkHaul.reportString>
 <HaulersDream_LoadPackAnimal.reportString>짐 운반 동물에 물건을 싣는 중.</HaulersDream_LoadPackAnimal.reportString>
 <HaulersDream_UnloadCarrierInBulk.reportString>짐 운반 동물에서 내리는 중.</HaulersDream_UnloadCarrierInBulk.reportString>
 <HaulersDream_LoadTransportersInBulk.reportString>수송 포드를 대량으로 싣는 중.</HaulersDream_LoadTransportersInBulk.reportString>

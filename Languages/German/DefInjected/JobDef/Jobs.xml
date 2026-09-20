@@ -9,7 +9,7 @@
 <HaulersDream_BatchCraft.reportString>fertigt einen Stapel.</HaulersDream_BatchCraft.reportString>
 <HaulersDream_InventoryDoBill.reportString>fertigt an.</HaulersDream_InventoryDoBill.reportString>
 <HaulersDream_BillPrepGather.reportString>sammelt Herstellungszutaten.</HaulersDream_BillPrepGather.reportString>
-<HaulersDream_BulkHaul.reportString>transportiert alles in der Nähe.</HaulersDream_BulkHaul.reportString>
+<HaulersDream_BulkHaul.reportString>nimmt Gegenstände ins Inventar auf.</HaulersDream_BulkHaul.reportString>
 <HaulersDream_LoadPackAnimal.reportString>lädt Gegenstände auf ein Lasttier.</HaulersDream_LoadPackAnimal.reportString>
 <HaulersDream_UnloadCarrierInBulk.reportString>entlädt ein Lasttier.</HaulersDream_UnloadCarrierInBulk.reportString>
 <HaulersDream_LoadTransportersInBulk.reportString>belädt einen Transporter im Stapel.</HaulersDream_LoadTransportersInBulk.reportString>

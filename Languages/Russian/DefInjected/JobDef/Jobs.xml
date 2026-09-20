@@ -9,7 +9,7 @@
 <HaulersDream_BatchCraft.reportString>изготавливает партию.</HaulersDream_BatchCraft.reportString>
 <HaulersDream_InventoryDoBill.reportString>изготавливает.</HaulersDream_InventoryDoBill.reportString>
 <HaulersDream_BillPrepGather.reportString>собирает ингредиенты для изготовления.</HaulersDream_BillPrepGather.reportString>
-<HaulersDream_BulkHaul.reportString>переносит всё поблизости.</HaulersDream_BulkHaul.reportString>
+<HaulersDream_BulkHaul.reportString>собирает предметы в инвентарь.</HaulersDream_BulkHaul.reportString>
 <HaulersDream_LoadPackAnimal.reportString>грузит вещи на вьючное животное.</HaulersDream_LoadPackAnimal.reportString>
 <HaulersDream_UnloadCarrierInBulk.reportString>разгружает вьючное животное.</HaulersDream_UnloadCarrierInBulk.reportString>
 <HaulersDream_LoadTransportersInBulk.reportString>массово загружает транспорт.</HaulersDream_LoadTransportersInBulk.reportString>

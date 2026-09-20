@@ -328,7 +328,7 @@
 <HaulersDream.Setting.ShowBenchGatherGizmo>Mostrar o botão "Reunir ingredientes" por bancada</HaulersDream.Setting.ShowBenchGatherGizmo>
 <HaulersDream.Setting.ShowBenchGatherGizmoDesc>Adiciona um interruptor "Reunir ingredientes" à barra de comandos de cada bancada, para você desligar a reunião de ingredientes em uma bancada específica e deixar rodar ali o comportamento próprio do RimWorld, uma pilha por vez. Útil para um fogão ou bancada que você mantém abastecido logo ao lado, onde reunir custa mais tempo do que economiza. Ligado por padrão. Isto controla apenas se o botão aparece — uma bancada que você já desligou continua desligada de qualquer forma. Desligar uma bancada sempre prevalece sobre as configurações acima, e funciona mesmo quando "Carregar ingredientes de fabricação no inventário (menos viagens)" está desligado, porque a fabricação em lote reúne independentemente dessa configuração.</HaulersDream.Setting.ShowBenchGatherGizmoDesc>
 <HaulersDream.PrepGather.Report>reunindo ingredientes de fabricação.</HaulersDream.PrepGather.Report>
-<HaulersDream.BulkHaul.Report>transportando tudo por perto.</HaulersDream.BulkHaul.Report>
+<HaulersDream.BulkHaul.Report>recolhendo itens para o inventário.</HaulersDream.BulkHaul.Report>
 <HaulersDream.JobReport.DefaultDestination>armazenamento</HaulersDream.JobReport.DefaultDestination>
 <HaulersDream.JobReport.EnRoute.Load>{ORIGINAL} (a caminho de {DESTINATION})</HaulersDream.JobReport.EnRoute.Load>
 <HaulersDream.JobReport.EnRoute.Unload>{ORIGINAL} (a caminho de {DESTINATION})</HaulersDream.JobReport.EnRoute.Unload>

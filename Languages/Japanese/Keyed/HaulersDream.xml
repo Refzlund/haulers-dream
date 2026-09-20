@@ -328,7 +328,7 @@
 <HaulersDream.Setting.ShowBenchGatherGizmo>作業台ごとの「材料を集める」ボタンを表示</HaulersDream.Setting.ShowBenchGatherGizmo>
 <HaulersDream.Setting.ShowBenchGatherGizmoDesc>各作業台のコマンドバーに「材料を集める」トグルを追加します。特定の作業台だけ材料のかき集めをオフにして、そこではRimWorld本来の一度に1山ずつの動作を使えます。すぐ隣から補充している調理台や作業台のように、集めるほうが節約できる時間より高くつく場所に便利です。既定でオンです。これはボタンを表示するかどうかだけを決めるもので、すでにオフにした作業台はどちらの場合でもオフのままです。作業台をオフにする指定は常に上の設定より優先され、「製作材料を所持品で運ぶ（往復削減）」がオフでも機能します。バッチ製作はその設定に関係なく材料を集めるからです。</HaulersDream.Setting.ShowBenchGatherGizmoDesc>
 <HaulersDream.PrepGather.Report>製作の材料を集めている。</HaulersDream.PrepGather.Report>
-<HaulersDream.BulkHaul.Report>近くのものをすべて運搬している。</HaulersDream.BulkHaul.Report>
+<HaulersDream.BulkHaul.Report>アイテムを集めて所持品に入れている。</HaulersDream.BulkHaul.Report>
 <HaulersDream.JobReport.DefaultDestination>保管庫</HaulersDream.JobReport.DefaultDestination>
 <HaulersDream.JobReport.EnRoute.Load>{ORIGINAL}（{DESTINATION}へ向かう道中）</HaulersDream.JobReport.EnRoute.Load>
 <HaulersDream.JobReport.EnRoute.Unload>{ORIGINAL}（{DESTINATION}へ向かう道中）</HaulersDream.JobReport.EnRoute.Unload>

@@ -328,7 +328,7 @@
 <HaulersDream.Setting.ShowBenchGatherGizmo>显示每个工作台的“收集原料”按钮</HaulersDream.Setting.ShowBenchGatherGizmo>
 <HaulersDream.Setting.ShowBenchGatherGizmoDesc>在每个工作台的命令栏上添加一个“收集原料”开关，这样你就可以只关闭某一个工作台的原料收集，让 RimWorld 自己的一次一堆行为在那里运行。适合那些你就在旁边补货的炉灶或工作台——在那里收集花的时间比省下的还多。默认开启。这只控制按钮是否显示——你已经关掉的工作台无论如何都保持关闭。关闭某个工作台始终优先于上面的设置，而且即使“用货物栏携带制作原料（更少往返）”已关闭它依然有效，因为批量制作无论该设置如何都会收集原料。</HaulersDream.Setting.ShowBenchGatherGizmoDesc>
 <HaulersDream.PrepGather.Report>正在收集制作原料。</HaulersDream.PrepGather.Report>
-<HaulersDream.BulkHaul.Report>正在搬运附近的一切。</HaulersDream.BulkHaul.Report>
+<HaulersDream.BulkHaul.Report>正在将物品收进货物栏。</HaulersDream.BulkHaul.Report>
 <HaulersDream.JobReport.DefaultDestination>储存区</HaulersDream.JobReport.DefaultDestination>
 <HaulersDream.JobReport.EnRoute.Load>{ORIGINAL}（前往 {DESTINATION} 的途中）</HaulersDream.JobReport.EnRoute.Load>
 <HaulersDream.JobReport.EnRoute.Unload>{ORIGINAL}（前往 {DESTINATION} 的途中）</HaulersDream.JobReport.EnRoute.Unload>

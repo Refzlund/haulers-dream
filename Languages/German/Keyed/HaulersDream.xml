@@ -328,7 +328,7 @@
 <HaulersDream.Setting.ShowBenchGatherGizmo>Knopf „Zutaten sammeln“ je Werkbank anzeigen</HaulersDream.Setting.ShowBenchGatherGizmo>
 <HaulersDream.Setting.ShowBenchGatherGizmoDesc>Fügt der Befehlsleiste jeder Werkbank einen Schalter „Zutaten sammeln“ hinzu, damit du das Sammeln von Zutaten an genau einer Werkbank abschalten und dort stattdessen RimWorlds eigenes Verhalten (ein Stapel nach dem anderen) laufen lassen kannst. Nützlich für einen Ofen oder eine Werkbank, die du von direkt nebenan bestückt hältst, wo das Sammeln mehr Zeit kostet, als es spart. Standardmäßig aktiviert. Dies steuert nur, ob der Schalter angezeigt wird — eine bereits abgeschaltete Werkbank bleibt so oder so abgeschaltet. Eine abgeschaltete Werkbank hat immer Vorrang vor den Einstellungen oben und wirkt auch dann, wenn „Herstellungszutaten im Inventar tragen (weniger Fahrten)“ aus ist, denn das Stapel-Fertigen sammelt unabhängig von dieser Einstellung.</HaulersDream.Setting.ShowBenchGatherGizmoDesc>
 <HaulersDream.PrepGather.Report>sammelt Herstellungszutaten.</HaulersDream.PrepGather.Report>
-<HaulersDream.BulkHaul.Report>transportiert alles in der Nähe.</HaulersDream.BulkHaul.Report>
+<HaulersDream.BulkHaul.Report>nimmt Gegenstände ins Inventar auf.</HaulersDream.BulkHaul.Report>
 <HaulersDream.JobReport.DefaultDestination>Vorrat</HaulersDream.JobReport.DefaultDestination>
 <HaulersDream.JobReport.EnRoute.Load>{ORIGINAL} (auf dem Weg nach {DESTINATION})</HaulersDream.JobReport.EnRoute.Load>
 <HaulersDream.JobReport.EnRoute.Unload>{ORIGINAL} (auf dem Weg nach {DESTINATION})</HaulersDream.JobReport.EnRoute.Unload>

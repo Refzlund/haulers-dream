@@ -328,7 +328,7 @@
 <HaulersDream.Setting.ShowBenchGatherGizmo>แสดงปุ่ม "รวบรวมวัตถุดิบ" ของแต่ละโต๊ะ</HaulersDream.Setting.ShowBenchGatherGizmo>
 <HaulersDream.Setting.ShowBenchGatherGizmoDesc>เพิ่มปุ่มสลับ "รวบรวมวัตถุดิบ" ลงในแถบคำสั่งของโต๊ะทำงานแต่ละตัว เพื่อให้คุณปิดการรวบรวมวัตถุดิบเฉพาะโต๊ะใดโต๊ะหนึ่ง แล้วปล่อยให้พฤติกรรมดั้งเดิมของ RimWorld แบบทีละกองทำงานที่นั่นแทน มีประโยชน์กับเตาหรือโต๊ะที่คุณเติมของไว้ข้างๆ อยู่แล้ว ซึ่งการรวบรวมเสียเวลามากกว่าที่ประหยัดได้ เปิดไว้เป็นค่าเริ่มต้น ตัวเลือกนี้ควบคุมแค่ว่าจะแสดงปุ่มหรือไม่ — โต๊ะที่คุณปิดไปแล้วจะยังคงปิดอยู่ไม่ว่าอย่างไร การปิดโต๊ะมีผลเหนือการตั้งค่าด้านบนเสมอ และทำงานได้แม้เมื่อ "ขนวัตถุดิบการผลิตในสัมภาระ (เดินน้อยลง)" ถูกปิดอยู่ เพราะการผลิตเป็นชุดจะรวบรวมวัตถุดิบไม่ว่าการตั้งค่านั้นจะเป็นอย่างไร</HaulersDream.Setting.ShowBenchGatherGizmoDesc>
 <HaulersDream.PrepGather.Report>กำลังรวบรวมวัตถุดิบสำหรับการผลิต</HaulersDream.PrepGather.Report>
-<HaulersDream.BulkHaul.Report>กำลังขนทุกอย่างที่อยู่ใกล้</HaulersDream.BulkHaul.Report>
+<HaulersDream.BulkHaul.Report>กำลังเก็บสิ่งของใส่กระเป๋า</HaulersDream.BulkHaul.Report>
 <HaulersDream.JobReport.DefaultDestination>คลัง</HaulersDream.JobReport.DefaultDestination>
 <HaulersDream.JobReport.EnRoute.Load>{ORIGINAL} (ระหว่างทางไปยัง {DESTINATION})</HaulersDream.JobReport.EnRoute.Load>
 <HaulersDream.JobReport.EnRoute.Unload>{ORIGINAL} (ระหว่างทางไปยัง {DESTINATION})</HaulersDream.JobReport.EnRoute.Unload>

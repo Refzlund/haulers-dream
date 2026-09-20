@@ -13,7 +13,7 @@
   <HaulersDream_BatchCraft.reportString>crafting a batch.</HaulersDream_BatchCraft.reportString>
   <HaulersDream_InventoryDoBill.reportString>crafting.</HaulersDream_InventoryDoBill.reportString>
   <HaulersDream_BillPrepGather.reportString>gathering crafting ingredients.</HaulersDream_BillPrepGather.reportString>
-  <HaulersDream_BulkHaul.reportString>hauling everything nearby.</HaulersDream_BulkHaul.reportString>
+  <HaulersDream_BulkHaul.reportString>gathering items into inventory.</HaulersDream_BulkHaul.reportString>
   <HaulersDream_LoadPackAnimal.reportString>loading items onto a pack animal.</HaulersDream_LoadPackAnimal.reportString>
   <HaulersDream_UnloadCarrierInBulk.reportString>unloading a pack animal.</HaulersDream_UnloadCarrierInBulk.reportString>
   <HaulersDream_LoadTransportersInBulk.reportString>bulk-loading a transporter.</HaulersDream_LoadTransportersInBulk.reportString>

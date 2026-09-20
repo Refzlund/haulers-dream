@@ -328,7 +328,7 @@
 <HaulersDream.Setting.ShowBenchGatherGizmo>Mostra il pulsante "Raccogli ingredienti" per ogni banco</HaulersDream.Setting.ShowBenchGatherGizmo>
 <HaulersDream.Setting.ShowBenchGatherGizmoDesc>Aggiunge un interruttore "Raccogli ingredienti" alla barra dei comandi di ogni banco da lavoro, così puoi disattivare la raccolta degli ingredienti su un banco preciso e lasciare che lì funzioni il comportamento nativo di RimWorld, una pila alla volta. Utile per un fornello o un banco che tieni rifornito da lì accanto, dove raccogliere costa più tempo di quanto ne faccia risparmiare. Attivo di default. Questo controlla solo se il pulsante viene mostrato — un banco che hai già disattivato resta disattivato in ogni caso. Disattivare un banco prevale sempre sulle impostazioni qui sopra, e funziona anche quando "Porta gli ingredienti di produzione nell'inventario (meno viaggi)" è disattivato, perché la produzione a lotti raccoglie a prescindere da quell'impostazione.</HaulersDream.Setting.ShowBenchGatherGizmoDesc>
 <HaulersDream.PrepGather.Report>raccoglie gli ingredienti per la produzione.</HaulersDream.PrepGather.Report>
-<HaulersDream.BulkHaul.Report>trasporta tutto ciò che è nelle vicinanze.</HaulersDream.BulkHaul.Report>
+<HaulersDream.BulkHaul.Report>raccoglie oggetti nell'inventario.</HaulersDream.BulkHaul.Report>
 <HaulersDream.JobReport.DefaultDestination>deposito</HaulersDream.JobReport.DefaultDestination>
 <HaulersDream.JobReport.EnRoute.Load>{ORIGINAL} (lungo il tragitto verso {DESTINATION})</HaulersDream.JobReport.EnRoute.Load>
 <HaulersDream.JobReport.EnRoute.Unload>{ORIGINAL} (lungo il tragitto verso {DESTINATION})</HaulersDream.JobReport.EnRoute.Unload>

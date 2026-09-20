@@ -9,7 +9,7 @@
 <HaulersDream_BatchCraft.reportString>fabricando un lote.</HaulersDream_BatchCraft.reportString>
 <HaulersDream_InventoryDoBill.reportString>fabricando.</HaulersDream_InventoryDoBill.reportString>
 <HaulersDream_BillPrepGather.reportString>reuniendo los ingredientes de fabricación.</HaulersDream_BillPrepGather.reportString>
-<HaulersDream_BulkHaul.reportString>transportando todo lo cercano.</HaulersDream_BulkHaul.reportString>
+<HaulersDream_BulkHaul.reportString>recogiendo objetos para el inventario.</HaulersDream_BulkHaul.reportString>
 <HaulersDream_LoadPackAnimal.reportString>cargando objetos en un animal de carga.</HaulersDream_LoadPackAnimal.reportString>
 <HaulersDream_UnloadCarrierInBulk.reportString>descargando un animal de carga.</HaulersDream_UnloadCarrierInBulk.reportString>
 <HaulersDream_LoadTransportersInBulk.reportString>cargando en lote un transportador.</HaulersDream_LoadTransportersInBulk.reportString>

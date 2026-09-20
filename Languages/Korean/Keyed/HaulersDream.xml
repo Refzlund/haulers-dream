@@ -328,7 +328,7 @@
 <HaulersDream.Setting.ShowBenchGatherGizmo>작업대별 "재료 모으기" 버튼 표시</HaulersDream.Setting.ShowBenchGatherGizmo>
 <HaulersDream.Setting.ShowBenchGatherGizmoDesc>각 작업대의 명령 막대에 "재료 모으기" 토글을 추가하여, 특정 작업대 하나만 재료 모으기를 끄고 거기서는 RimWorld 자체의 한 번에 한 더미 동작이 돌아가게 할 수 있습니다. 바로 옆에서 채워 두는 화덕이나 작업대처럼, 모으는 데 드는 시간이 아끼는 시간보다 큰 곳에 유용합니다. 기본값은 켜짐입니다. 이 설정은 버튼을 보여줄지만 정할 뿐이며, 이미 꺼 둔 작업대는 어느 쪽이든 꺼진 상태로 남습니다. 작업대를 끄는 것은 항상 위 설정보다 우선하며, "제작 재료를 소지품에 운반 (이동 감소)"이 꺼져 있어도 작동합니다. 일괄 제작은 그 설정과 무관하게 재료를 모으기 때문입니다.</HaulersDream.Setting.ShowBenchGatherGizmoDesc>
 <HaulersDream.PrepGather.Report>제작 재료를 모으는 중.</HaulersDream.PrepGather.Report>
-<HaulersDream.BulkHaul.Report>주변 전부를 운반하는 중.</HaulersDream.BulkHaul.Report>
+<HaulersDream.BulkHaul.Report>물건을 모아 소지품에 넣는 중.</HaulersDream.BulkHaul.Report>
 <HaulersDream.JobReport.DefaultDestination>저장고</HaulersDream.JobReport.DefaultDestination>
 <HaulersDream.JobReport.EnRoute.Load>{ORIGINAL} ({DESTINATION}로 가는 길)</HaulersDream.JobReport.EnRoute.Load>
 <HaulersDream.JobReport.EnRoute.Unload>{ORIGINAL} ({DESTINATION}로 가는 길)</HaulersDream.JobReport.EnRoute.Unload>

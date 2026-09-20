@@ -328,7 +328,7 @@
 <HaulersDream.Setting.ShowBenchGatherGizmo>Pokaż przycisk „Zbieraj składniki” przy każdym stole</HaulersDream.Setting.ShowBenchGatherGizmo>
 <HaulersDream.Setting.ShowBenchGatherGizmoDesc>Dodaje przełącznik „Zbieraj składniki” do paska poleceń każdego stołu roboczego, dzięki czemu możesz wyłączyć zbieranie składników przy jednym konkretnym stole i pozwolić, by działało tam własne zachowanie RimWorlda — po jednym stosie naraz. Przydatne przy kuchence lub stole, który uzupełniasz tuż z sąsiedztwa, gdzie zbieranie kosztuje więcej czasu, niż oszczędza. Domyślnie włączone. To steruje wyłącznie tym, czy przycisk jest pokazywany — stół, który już wyłączyłeś, pozostaje wyłączony tak czy owak. Wyłączenie stołu zawsze wygrywa z ustawieniami powyżej i działa nawet wtedy, gdy „Noś składniki do wytwarzania w bagażu (mniej wypraw)” jest wyłączone, ponieważ wytwarzanie partiami zbiera niezależnie od tego ustawienia.</HaulersDream.Setting.ShowBenchGatherGizmoDesc>
 <HaulersDream.PrepGather.Report>zbieranie składników do wytwarzania.</HaulersDream.PrepGather.Report>
-<HaulersDream.BulkHaul.Report>znoszenie wszystkiego w pobliżu.</HaulersDream.BulkHaul.Report>
+<HaulersDream.BulkHaul.Report>zbieranie przedmiotów do ekwipunku.</HaulersDream.BulkHaul.Report>
 <HaulersDream.JobReport.DefaultDestination>magazyn</HaulersDream.JobReport.DefaultDestination>
 <HaulersDream.JobReport.EnRoute.Load>{ORIGINAL} (po drodze do {DESTINATION})</HaulersDream.JobReport.EnRoute.Load>
 <HaulersDream.JobReport.EnRoute.Unload>{ORIGINAL} (po drodze do {DESTINATION})</HaulersDream.JobReport.EnRoute.Unload>

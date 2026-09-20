@@ -9,7 +9,7 @@
 <HaulersDream_BatchCraft.reportString>produce un lotto.</HaulersDream_BatchCraft.reportString>
 <HaulersDream_InventoryDoBill.reportString>produce.</HaulersDream_InventoryDoBill.reportString>
 <HaulersDream_BillPrepGather.reportString>raccoglie gli ingredienti per la produzione.</HaulersDream_BillPrepGather.reportString>
-<HaulersDream_BulkHaul.reportString>trasporta tutto ciò che è nelle vicinanze.</HaulersDream_BulkHaul.reportString>
+<HaulersDream_BulkHaul.reportString>raccoglie oggetti nell'inventario.</HaulersDream_BulkHaul.reportString>
 <HaulersDream_LoadPackAnimal.reportString>carica oggetti su un animale da soma.</HaulersDream_LoadPackAnimal.reportString>
 <HaulersDream_UnloadCarrierInBulk.reportString>scarica un animale da soma.</HaulersDream_UnloadCarrierInBulk.reportString>
 <HaulersDream_LoadTransportersInBulk.reportString>carica in blocco un trasportatore.</HaulersDream_LoadTransportersInBulk.reportString>

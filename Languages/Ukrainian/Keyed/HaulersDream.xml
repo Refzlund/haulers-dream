@@ -328,7 +328,7 @@
 <HaulersDream.Setting.ShowBenchGatherGizmo>Показувати кнопку «Збирати інгредієнти» біля кожного верстата</HaulersDream.Setting.ShowBenchGatherGizmo>
 <HaulersDream.Setting.ShowBenchGatherGizmoDesc>Додає перемикач «Збирати інгредієнти» на панель команд кожного верстата, щоб можна було вимкнути збирання інгредієнтів біля одного конкретного верстата й дати там працювати власній поведінці RimWorld — по одній стопці за раз. Корисно для печі чи верстата, який ви поповнюєте просто з-під боку, де збирання коштує більше часу, ніж заощаджує. Типово ввімкнено. Це керує лише тим, чи показувати кнопку — верстат, який ви вже вимкнули, залишається вимкненим у будь-якому разі. Вимкнення верстата завжди переважає над налаштуваннями вище й діє навіть тоді, коли «Нести інгредієнти для виготовлення в інвентарі (менше ходок)» вимкнено, бо виготовлення партіями збирає незалежно від цього налаштування.</HaulersDream.Setting.ShowBenchGatherGizmoDesc>
 <HaulersDream.PrepGather.Report>збирає інгредієнти для виготовлення.</HaulersDream.PrepGather.Report>
-<HaulersDream.BulkHaul.Report>переносить усе, що поруч.</HaulersDream.BulkHaul.Report>
+<HaulersDream.BulkHaul.Report>збирає предмети до інвентарю.</HaulersDream.BulkHaul.Report>
 <HaulersDream.JobReport.DefaultDestination>склад</HaulersDream.JobReport.DefaultDestination>
 <HaulersDream.JobReport.EnRoute.Load>{ORIGINAL} (дорогою до {DESTINATION})</HaulersDream.JobReport.EnRoute.Load>
 <HaulersDream.JobReport.EnRoute.Unload>{ORIGINAL} (дорогою до {DESTINATION})</HaulersDream.JobReport.EnRoute.Unload>

@@ -328,7 +328,7 @@
 <HaulersDream.Setting.ShowBenchGatherGizmo>Показывать кнопку «Собирать ингредиенты» у каждого верстака</HaulersDream.Setting.ShowBenchGatherGizmo>
 <HaulersDream.Setting.ShowBenchGatherGizmoDesc>Добавляет переключатель «Собирать ингредиенты» на панель команд каждого верстака, чтобы можно было отключить сбор ингредиентов у одного конкретного верстака и позволить там работать собственному поведению RimWorld — по одной стопке за раз. Полезно для плиты или верстака, который вы пополняете прямо из соседней комнаты, где сбор отнимает больше времени, чем экономит. По умолчанию включено. Это управляет только показом кнопки — верстак, который вы уже отключили, останется отключённым в любом случае. Отключение верстака всегда важнее настроек выше и работает даже тогда, когда «Нести ингредиенты для изготовления в инвентаре (меньше ходок)» выключено, потому что изготовление партиями собирает независимо от этой настройки.</HaulersDream.Setting.ShowBenchGatherGizmoDesc>
 <HaulersDream.PrepGather.Report>собирает ингредиенты для изготовления.</HaulersDream.PrepGather.Report>
-<HaulersDream.BulkHaul.Report>переносит всё поблизости.</HaulersDream.BulkHaul.Report>
+<HaulersDream.BulkHaul.Report>собирает предметы в инвентарь.</HaulersDream.BulkHaul.Report>
 <HaulersDream.JobReport.DefaultDestination>склад</HaulersDream.JobReport.DefaultDestination>
 <HaulersDream.JobReport.EnRoute.Load>{ORIGINAL} (по пути к {DESTINATION})</HaulersDream.JobReport.EnRoute.Load>
 <HaulersDream.JobReport.EnRoute.Unload>{ORIGINAL} (по пути к {DESTINATION})</HaulersDream.JobReport.EnRoute.Unload>

@@ -328,7 +328,7 @@
 <HaulersDream.Setting.ShowBenchGatherGizmo>Afficher le bouton « Rassembler les ingrédients » par établi</HaulersDream.Setting.ShowBenchGatherGizmo>
 <HaulersDream.Setting.ShowBenchGatherGizmoDesc>Ajoute un interrupteur « Rassembler les ingrédients » à la barre de commandes de chaque établi, pour désactiver le rassemblement des ingrédients sur un établi précis et y laisser tourner le comportement propre à RimWorld, une pile à la fois. Utile pour un fourneau ou un établi que vous gardez approvisionné juste à côté, où le rassemblement coûte plus de temps qu'il n'en fait gagner. Activé par défaut. Ceci ne contrôle que l'affichage du bouton — un établi que vous avez déjà désactivé le reste dans tous les cas. Désactiver un établi l'emporte toujours sur les réglages ci-dessus, et fonctionne même quand « Porter les ingrédients de fabrication dans l'inventaire (moins de trajets) » est désactivé, car la fabrication par lots rassemble indépendamment de ce réglage.</HaulersDream.Setting.ShowBenchGatherGizmoDesc>
 <HaulersDream.PrepGather.Report>rassemblement des ingrédients de fabrication.</HaulersDream.PrepGather.Report>
-<HaulersDream.BulkHaul.Report>transport de tout ce qui est à proximité.</HaulersDream.BulkHaul.Report>
+<HaulersDream.BulkHaul.Report>ramasse des objets pour son inventaire.</HaulersDream.BulkHaul.Report>
 <HaulersDream.JobReport.DefaultDestination>le stockage</HaulersDream.JobReport.DefaultDestination>
 <HaulersDream.JobReport.EnRoute.Load>{ORIGINAL} (en chemin vers {DESTINATION})</HaulersDream.JobReport.EnRoute.Load>
 <HaulersDream.JobReport.EnRoute.Unload>{ORIGINAL} (en chemin vers {DESTINATION})</HaulersDream.JobReport.EnRoute.Unload>

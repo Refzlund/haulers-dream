@@ -328,7 +328,7 @@
 <HaulersDream.Setting.ShowBenchGatherGizmo>Mostrar el botón «Reunir ingredientes» de cada mesa</HaulersDream.Setting.ShowBenchGatherGizmo>
 <HaulersDream.Setting.ShowBenchGatherGizmoDesc>Añade un interruptor «Reunir ingredientes» a la barra de órdenes de cada mesa de trabajo, para que puedas desactivar la reunión de ingredientes en una mesa concreta y dejar que allí funcione el comportamiento propio de RimWorld, una pila cada vez. Útil para una cocina o una mesa que mantienes surtida desde justo al lado, donde reunir cuesta más tiempo del que ahorra. Activado por defecto. Esto solo controla si se muestra el botón: una mesa que ya has desactivado sigue desactivada de todos modos. Desactivar una mesa siempre prevalece sobre los ajustes de arriba, y funciona incluso cuando «Llevar los ingredientes de fabricación en el inventario (menos viajes)» está desactivado, porque la fabricación por lotes reúne al margen de ese ajuste.</HaulersDream.Setting.ShowBenchGatherGizmoDesc>
 <HaulersDream.PrepGather.Report>reuniendo los ingredientes de fabricación.</HaulersDream.PrepGather.Report>
-<HaulersDream.BulkHaul.Report>transportando todo lo cercano.</HaulersDream.BulkHaul.Report>
+<HaulersDream.BulkHaul.Report>recogiendo objetos para el inventario.</HaulersDream.BulkHaul.Report>
 <HaulersDream.JobReport.DefaultDestination>almacén</HaulersDream.JobReport.DefaultDestination>
 <HaulersDream.JobReport.EnRoute.Load>{ORIGINAL} (de camino a {DESTINATION})</HaulersDream.JobReport.EnRoute.Load>
 <HaulersDream.JobReport.EnRoute.Unload>{ORIGINAL} (de camino a {DESTINATION})</HaulersDream.JobReport.EnRoute.Unload>

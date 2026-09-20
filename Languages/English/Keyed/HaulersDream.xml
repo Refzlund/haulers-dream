@@ -422,7 +422,7 @@
   <HaulersDream.PrepGather.Report>gathering crafting ingredients.</HaulersDream.PrepGather.Report>
 
   <!-- Bulk haul job -->
-  <HaulersDream.BulkHaul.Report>hauling everything nearby.</HaulersDream.BulkHaul.Report>
+  <HaulersDream.BulkHaul.Report>gathering items into inventory.</HaulersDream.BulkHaul.Report>
 
   <!-- Inspector job-report rewrite (routing intent — While You're Up parity). {ORIGINAL} = the trimmed vanilla
        report, {DESTINATION} = the job/consumer the haul is bound for. -->

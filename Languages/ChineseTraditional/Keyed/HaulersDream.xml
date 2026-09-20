@@ -411,7 +411,7 @@
   <HaulersDream.PrepGather.Report>正在收集製作原料。</HaulersDream.PrepGather.Report>
 
   <!-- Bulk haul job -->
-  <HaulersDream.BulkHaul.Report>正在運送附近的所有物品。</HaulersDream.BulkHaul.Report>
+  <HaulersDream.BulkHaul.Report>正在將物品收進背包。</HaulersDream.BulkHaul.Report>
 
   <!-- Inspector job-report rewrite (routing intent — While You're Up parity). {ORIGINAL} = the trimmed vanilla
         report, {DESTINATION} = the job/consumer the haul is bound for. -->

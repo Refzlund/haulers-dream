@@ -328,7 +328,7 @@
 <HaulersDream.Setting.ShowBenchGatherGizmo>Vis knappen "Saml ingredienser" pr. bænk</HaulersDream.Setting.ShowBenchGatherGizmo>
 <HaulersDream.Setting.ShowBenchGatherGizmoDesc>Tilføjer en "Saml ingredienser"-kontakt til hver arbejdsbænks kommandolinje, så du kan slå indsamling af ingredienser fra ved netop den bænk og lade RimWorlds egen én-stak-ad-gangen-opførsel køre der i stedet. Nyttigt til et komfur eller en bænk, du holder fyldt op fra lige ved siden af, hvor indsamlingen koster mere tid, end den sparer. Slået til som standard. Dette styrer kun, om knappen vises — en bænk, du allerede har slået fra, forbliver slået fra uanset hvad. At slå en bænk fra vinder altid over indstillingerne ovenfor og virker også, når "Bær fremstillingsingredienser i inventaret (færre ture)" er slået fra, fordi holdfremstilling samler ind uanset den indstilling.</HaulersDream.Setting.ShowBenchGatherGizmoDesc>
 <HaulersDream.PrepGather.Report>samler fremstillingsingredienser.</HaulersDream.PrepGather.Report>
-<HaulersDream.BulkHaul.Report>transporterer alt i nærheden.</HaulersDream.BulkHaul.Report>
+<HaulersDream.BulkHaul.Report>samler genstande i inventaret.</HaulersDream.BulkHaul.Report>
 <HaulersDream.JobReport.DefaultDestination>lager</HaulersDream.JobReport.DefaultDestination>
 <HaulersDream.JobReport.EnRoute.Load>{ORIGINAL} (på vej til {DESTINATION})</HaulersDream.JobReport.EnRoute.Load>
 <HaulersDream.JobReport.EnRoute.Unload>{ORIGINAL} (på vej til {DESTINATION})</HaulersDream.JobReport.EnRoute.Unload>

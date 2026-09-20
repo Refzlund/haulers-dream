@@ -328,7 +328,7 @@
 <HaulersDream.Setting.ShowBenchGatherGizmo>Toon de knop "Ingrediënten verzamelen" per werkbank</HaulersDream.Setting.ShowBenchGatherGizmo>
 <HaulersDream.Setting.ShowBenchGatherGizmoDesc>Voegt een schakelaar "Ingrediënten verzamelen" toe aan de commandobalk van elke werkbank, zodat je het verzamelen van ingrediënten bij één bepaalde werkbank kunt uitzetten en RimWorlds eigen gedrag van één stapel tegelijk daar laat draaien. Handig voor een fornuis of werkbank die je van vlak ernaast bevoorraad houdt, waar verzamelen meer tijd kost dan het bespaart. Standaard aan. Dit bepaalt alleen of de knop wordt getoond — een werkbank die je al hebt uitgezet, blijft hoe dan ook uit. Een werkbank uitzetten wint altijd van de instellingen hierboven, en werkt ook wanneer "Vervaardigingsingrediënten in inventaris dragen (minder trips)" uit staat, omdat het vervaardigen in reeksen ongeacht die instelling verzamelt.</HaulersDream.Setting.ShowBenchGatherGizmoDesc>
 <HaulersDream.PrepGather.Report>vervaardigingsingrediënten verzamelen.</HaulersDream.PrepGather.Report>
-<HaulersDream.BulkHaul.Report>alles in de buurt sjouwen.</HaulersDream.BulkHaul.Report>
+<HaulersDream.BulkHaul.Report>voorwerpen verzamelen voor de inventaris.</HaulersDream.BulkHaul.Report>
 <HaulersDream.JobReport.DefaultDestination>opslag</HaulersDream.JobReport.DefaultDestination>
 <HaulersDream.JobReport.EnRoute.Load>{ORIGINAL} (onderweg naar {DESTINATION})</HaulersDream.JobReport.EnRoute.Load>
 <HaulersDream.JobReport.EnRoute.Unload>{ORIGINAL} (onderweg naar {DESTINATION})</HaulersDream.JobReport.EnRoute.Unload>

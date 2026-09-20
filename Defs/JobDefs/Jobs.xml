@@ -98,7 +98,7 @@
   <JobDef>
     <defName>HaulersDream_BulkHaul</defName>
     <driverClass>HaulersDream.JobDriver_BulkHaul</driverClass>
-    <reportString>hauling everything nearby.</reportString>
+    <reportString>gathering items into inventory.</reportString>
     <suspendable>false</suspendable>
   </JobDef>
 
