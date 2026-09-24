@@ -30,6 +30,19 @@ put away (see the in-game "Cannot unload inventory" alert).
 
 ## Flagged mods in the investigated load order
 
+### Big & Small — sapient animals and mechanoids
+
+HD registers its inventory tracking component with Big & Small Framework's sapient-race
+component whitelist. Converted sapient animals and mechs can retain inventory hauling through
+conversion, saving, reloading and a full game restart. Existing hauling settings still apply.
+
+Native checks with the selected Big & Small Framework and Sapient Animals builds cover a
+converted monkey and lifter, an ordinary human, existing-save upgrade, tagged partial cargo,
+Keep amounts and the per-pawn automatic-pickup preference. They also cover startup without
+the provider. These checks do not certify every provider version or mod combination; the
+reporter's exact historical Workshop files were unavailable. Preferences or cargo tags already
+omitted from an older save cannot be recovered from that save.
+
 ### Real overlap — works, but worth testing
 - **Common Sense** (`avilmask.commonsense`) — the only genuine functional overlap. It runs its own
   parallel unload system on the **same** vanilla `JobGiver_UnloadYourInventory` node, cross-tags every
