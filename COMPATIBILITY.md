@@ -519,6 +519,18 @@ The remaining ~35 active mods are cosmetic / UI / render-only (Yayo's Animation,
 Bubbles, Quality Colors, Blood Animations, Bionic Icons, etc.) and never touch jobs, hauling, storage,
 inventory, `GenPlace`, or `GenLeaving`.
 
+## Build From Storage
+
+Keep **Build From Storage** if you want new building designations to reuse matching packed
+buildings automatically. It complements HD's collection and delivery of materials for new
+construction. HD's construction routes retain the normal installation job for a reused building
+and do not treat that building as a raw-material recipe.
+
+When no matching packed building is available, normal construction proceeds. Build From Storage
+does not retroactively convert an existing ordinary blueprint when a packed building becomes
+available later. This integration was checked against Build From Storage 1.0.4 for RimWorld 1.6;
+it is not a claim about every construction mod or storage container.
+
 ## Custom Alerts — Continued: activity selection
 
 In the alert editor, add **current action**, open its dropdown, choose **ALL OPTIONS**, then
