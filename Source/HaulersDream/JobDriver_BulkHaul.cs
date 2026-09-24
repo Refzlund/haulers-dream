@@ -86,16 +86,32 @@ namespace HaulersDream
         {
             if (NearbyHaulCommand.IsIdentifiedOrder(job) && !NearbyHaulCommand.CanContinue(pawn, job))
                 return false;
-            // The primary must be ours (it's what the work scan / order assigned); the rest of the sweep is
-            // best-effort — a stack another pawn reserved first is simply skipped by the per-step validity.
+            // Only the ORIGINAL anchor may force a reservation. A retired anchor stays in slot zero;
+            // promoting an extra would also grant it the anchor's forced/forbidden privilege.
             var queue = job.GetTargetQueue(StackInd);
-            if (queue == null || queue.Count == 0)
+            if (!SweepPickupPlan.IsAligned(queue, job.countQueue))
                 return false;
-            if (!pawn.Reserve(queue[0], job, 1, -1, null, errorOnFailed))
+            if (queue[0].IsValid && job.countQueue[0] > 0
+                && !pawn.Reserve(queue[0], job, 1, -1, null, errorOnFailed))
                 return false;
-            pawn.ReserveAsManyAsPossible(queue, job);
+            // Native ReserveAsManyAsPossible calls Reserve directly, so a playerForced sweep could
+            // previously take an incidental extra by cancelling another pawn's whole job (#266).
+            for (int i = 1; i < queue.Count; i++)
+                if (queue[i].IsValid && job.countQueue[i] > 0 && pawn.CanReserve(queue[i]))
+                    pawn.Map.reservationManager.Reserve(pawn, job, queue[i], errorOnFailed: false, canReserversStartJobs: false);
             CommitPlannedDestinations();
             return true;
+        }
+
+        private void SkipRelinquishedPickup()
+        {
+            var queue = job.targetQueueB;
+            if (queue == null || loadIndex < 0 || loadIndex >= queue.Count || queue[loadIndex].IsValid
+                || job.countQueue == null || loadIndex >= job.countQueue.Count || job.countQueue[loadIndex] != 0)
+                return;
+            pawn.pather.StopDead();
+            loadIndex++;
+            JumpToToil(loadDecideToil);
         }
 
         /// <summary>
@@ -285,7 +301,7 @@ namespace HaulersDream
                     // (pocketing it out of the network and force-unloading it back is the net-zero loop). See RegateRimIOT.
                     if (valid && ShouldSkipRimIOTRetarget(t, loadIndex))
                         valid = false;
-                    // RESERVE at the walk, not just at job start: start-time ReserveAsManyAsPossible may have
+                    // RESERVE at the walk, not just at job start: start-time best-effort reservation may have
                     // failed for this stack (and the conflict since cleared), and a bare CanReserve leaves it
                     // up for grabs — another pawn could reserve it mid-walk and we'd yank it anyway (vanilla
                     // never steals reserved stacks). CanReserve gates the Reserve call: on a playerForced
@@ -315,6 +331,7 @@ namespace HaulersDream
             // own slot-0 anchor to be taken while forbidden, never a stack HD swept into the same trip.
             Toil loadGoto = SweepWalk.MakeToil(this, StackInd, "HD_Bulk_LoadGoto", loadDecide,
                 () => loadIndex++, () => loadIndex == 0);
+            loadGoto.AddPreTickAction(SkipRelinquishedPickup);
             yield return loadGoto;
 
             // Vanilla-like pickup pause (#121): the wait-with-progress-bar vanilla's JobDriver_TakeInventory
@@ -332,8 +349,10 @@ namespace HaulersDream
             // exactly "this job takes something into inventory with a delay" (BuildPickUpJob is the only
             // builder that sets it, mirroring vanilla's own "Pick up" float-menu write), so it identifies ONLY
             // that order regardless of playerForced. Read once here; the field never changes for the job's life.
-            yield return PickupPause.MakeToil(StackInd,
+            Toil pause = PickupPause.MakeToil(StackInd,
                 job.takeInventoryDelay > 0 ? PickupDelayContext.ManualCarry : PickupDelayContext.AutoHaul);
+            pause.AddPreTickAction(SkipRelinquishedPickup);
+            yield return pause;
 
             Toil take = ToilMaker.MakeToil("HD_Bulk_Take");
             take.initAction = delegate

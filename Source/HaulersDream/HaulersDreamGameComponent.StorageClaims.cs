@@ -63,6 +63,9 @@ namespace HaulersDream
             storageClaimGeneration++;
         }
 
+        /// <summary>Pickup intent changed within the tick; retain rows protecting cargo already held.</summary>
+        internal static void InvalidateStorageClaimEvidence() => storageClaimGeneration++;
+
         /// <summary>Drop every claim — game load hygiene. The array holds live <c>Pawn</c> and
         /// <c>SlotGroup</c> references, so a quickload must not inherit the previous session's.</summary>
         internal static void ClearStorageClaims() => SetStorageClaims(StorageClaimLedger.Empty);

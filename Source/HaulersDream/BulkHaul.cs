@@ -322,8 +322,7 @@ namespace HaulersDream
         {
             // Clears the MAIN thread's instance (FinalizeInit runs there) — other threads' caches are
             // per-tick self-clearing anyway, so a stale entry there dies on its next use.
-            planCache?.Clear();
-            cacheTick = -1;
+            InvalidatePlanCache();
             // Drop any cross-session Thing references the scratch buffers still hold (they're Cleared again
             // at the next build before being read, so this is hygiene, not correctness).
             scratchPool?.Clear();
@@ -334,6 +333,13 @@ namespace HaulersDream
             // RouteSelection's per-(pawn,tick) claimed-set memo is now cleared DIRECTLY by the game-load hygiene
             // sweep (it self-registers its ClearClaimedCache with CacheRegistry), so the former transitive call
             // from here is gone — the registry is the single source of truth and the two caches are decoupled.
+        }
+
+        /// <summary>A source handoff invalidates plans, but must not erase an active planner's scratch.</summary>
+        internal static void InvalidatePlanCache()
+        {
+            planCache?.Clear();
+            cacheTick = -1;
         }
 
         /// <summary>
