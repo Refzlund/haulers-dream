@@ -271,6 +271,18 @@ pasting it recreates the profile (you pick the name, pre-filled from the code).
 
 ---
 
+## Hauling warnings
+
+The old "bulk-hauled without moving" warning could count repeated checks for work even when no
+items had moved. That check has been removed. It could also cause RimWorld's "CanGiveJob and
+JobOnX methods may not be synchronized" message: a workgiver reported available work but then
+returned no job. Here, "synchronized" describes those two checks, not a multiplayer connection.
+
+These messages alone do not identify an incompatible mod or justify removing one. If the
+job-consistency message persists, include its full line naming the workgiver, your mod versions,
+and the log when reporting it. If a pawn actually keeps moving the same items back and forth,
+also describe the source and destination; that needs its own investigation.
+
 ## How this mod is made
 
 This mod is largely implemented by **Fable 5** and **Opus 4.8** (Anthropic's Claude models), with

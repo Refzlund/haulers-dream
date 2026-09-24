@@ -1037,12 +1037,6 @@ namespace HaulersDream
                 job.targetQueueB.Add(things[i]);
             job.count = 1; // sentinel: Job.count defaults to -1, which reads as "broken" in several vanilla checks
             HDLog.Dbg($"BulkHaul: {pawn} sweeping {things.Count} stacks (~{running:0.#}kg / ceiling {(float.IsPositiveInfinity(ceiling) ? -1 : ceiling):0.#}kg, forced={forced}).");
-            // #214 general net-zero success-loop backstop: record this AUTOMATIC re-anchor on `primary`. If the
-            // same stack is re-built into a bulk haul repeatedly without shrinking (a foreign mod returning it),
-            // HaulChurnGuard backs it off the scan and surfaces it: the class-level net for any re-fetcher, beyond
-            // the RimIOT-specific gates. Forced one-shot orders can't infinite-loop, so they're excluded.
-            if (!forced)
-                HaulChurnGuard.NoteBulkAnchor(primary);
             return job;
         }
 
