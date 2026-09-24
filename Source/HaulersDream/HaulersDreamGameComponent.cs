@@ -250,8 +250,11 @@ namespace HaulersDream
             // case one is created mid-session. Treat a defless job as "not an unload checkpoint".
             if (def == null)
                 return false;
+            // Native EndCurrentJob inserts a one-tick Wait_MaintainPosture after successful work,
+            // before selecting its next job. That transition does not establish that the pawn is idle:
+            // queuing an unload here would beat the next normal work scan and split a productive run.
             if (def == JobDefOf.Wait || def == JobDefOf.Wait_Wander
-                || def == JobDefOf.GotoWander || def == JobDefOf.Wait_MaintainPosture)
+                || def == JobDefOf.GotoWander)
                 return true;
             // Eating and joy jobs: between work runs by definition. Sleep is deliberately NOT included —
             // a queued job fires before everything on wake (even urgent breakfast), and the morning work

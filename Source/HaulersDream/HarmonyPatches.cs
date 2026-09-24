@@ -301,6 +301,11 @@ namespace HaulersDream
                 return;
             }
 
+            // An empty emergency scan says nothing about ordinary work: the normal work node runs later.
+            // Let that node find the next harvest/cut/deconstruction job before declaring the run finished.
+            if (__instance.emergency)
+                return;
+
             // No work left for this pawn — end of its work run. (Fully gated inside, incl. a cooldown;
             // returns null for pawns with nothing tracked, so the common idle case is two cheap checks.)
             var unload = OpportunisticUnload.TryGetEndOfRunUnloadJob(pawn);
