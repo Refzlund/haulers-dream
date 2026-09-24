@@ -705,7 +705,7 @@ namespace HaulersDream
             // symmetric — whatever bulk-haul loads, the unload side can service. (Vanilla animals never reach
             // this postfix anyway — they have no workSettings and haul via JobGiver_Haul, not the work scan —
             // so for them this is defense-in-depth; the live risk is a non-mech robot-worker race.)
-            if (!YieldRouter.IsEligible(pawn))
+            if (!YieldRouter.IsEligible(pawn) && !WorkGiver_HaulNearby.AllowsDraftedSweep(pawn, primary))
                 return null;
             if (pawn.GetComp<CompHauledToInventory>() == null || pawn.inventory == null)
                 return null;

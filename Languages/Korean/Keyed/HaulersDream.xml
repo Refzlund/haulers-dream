@@ -828,4 +828,12 @@
   <HaulersDream.Setting.CarryMassCap.Off>제한 없음</HaulersDream.Setting.CarryMassCap.Off>
   <HaulersDream.Setting.CarryMassCap.Value>{0} kg</HaulersDream.Setting.CarryMassCap.Value>
   <HaulersDream.Setting.CarryMassCapDesc>폰이 한 번의 운반 또는 수집 이동에서 소지품에 싣는 양에 대한, 킬로그램 단위의 절대 상한입니다. 이것은 '우리 폰이 너무 많이 나른다'에 대한 직접적인 답입니다. 낮게(예: 20kg) 설정하면 폰이 최대 운반 무게까지 채우는 대신 조금만 모아 내려놓고 다시 돌아옵니다. 위의 '운반 한도' 백분율 및 스마트 과적과 함께 작동하며 항상 더 낮은 제한이 우선하므로, 과적이 켜져 있어도 이 상한을 넘지 않습니다. 운반 한도와 마찬가지로 손에 든 더미가 아니라 짐에 넣은 분량만 셈하며, 특정 건설이나 작업 지시를 위해 폰이 가져오는 자재 양은 바꾸지 않습니다. 0으로 두면 제한이 없습니다(기본값).</HaulersDream.Setting.CarryMassCapDesc>
+  <HD_NearbyHaulGizmoDesc>물건을 선택하면 해당 물건과 주변 물건을 보관 장소로 운반합니다. 선택할 때 명령 예약 키를 누르고 있으면 명령을 대기열에 추가합니다.</HD_NearbyHaulGizmoDesc>
+  <HD_NearbyHaulPawnUnavailable>이 폰은 현재 상태에서 운반 명령을 받을 수 없습니다.</HD_NearbyHaulPawnUnavailable>
+  <HD_NearbyHaulDrafted>운반을 명령하기 전에 이 폰의 징집을 해제하세요.</HD_NearbyHaulDrafted>
+  <HD_NearbyHaulMapDisabled>이 지도에서는 Hauler's Dream이 비활성화되어 있습니다.</HD_NearbyHaulMapDisabled>
+  <HD_NearbyHaulSyncUnavailable>멀티플레이 명령을 등록하지 못해 주변 물건 운반을 사용할 수 없습니다.</HD_NearbyHaulSyncUnavailable>
+  <HD_NearbyHaulInventoryUnavailable>이 폰은 소지품을 이용한 운반을 사용할 수 없습니다.</HD_NearbyHaulInventoryUnavailable>
+  <HD_NearbyHaulRobotUnsupported>현재 모드 구성에서 로봇의 운반 작업을 읽을 수 없습니다.</HD_NearbyHaulRobotUnsupported>
+  <HD_NearbyHaulSourceUnavailable>선택한 물건은 운반할 수 없습니다.</HD_NearbyHaulSourceUnavailable>
 </LanguageData>

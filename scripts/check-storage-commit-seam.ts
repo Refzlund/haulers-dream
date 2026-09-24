@@ -376,10 +376,11 @@ async function main(): Promise<void> {
 				'StorageCommitments.cs no longer tests carryTracker.CarriedThing. Whether a pawn is PLANNING a ' +
 					'pickup or DELIVERING cargo it already holds must be DERIVED from possession of the subject.'
 			)
-		if (!/ParentHolder/.test(seam))
+		if (!/ReferenceEquals\s*\(\s*subject\.holdingOwner\s*,\s*inventory\s*\)/.test(seam))
 			errors.push(
-				'StorageCommitments.cs no longer checks the inventory parent. A pawn holding cargo in its ' +
-					'INVENTORY (the bulk-haul case) is delivering just as much as one carrying it in its hands.'
+				'StorageCommitments.cs no longer compares actual inventory collection custody. ParentHolder is ' +
+					'the Pawn_InventoryTracker, not innerContainer: checking only that name let the v1.24 own-claim ' +
+					'rejection ship. Review the real-runtime L04-O1 custody controls before changing this seam.'
 			)
 		const flagged = /FreeUnitsFor\s*\([^)]*\bbool\s+(delivering|planning)\b/.exec(seam)
 		if (flagged)

@@ -828,4 +828,12 @@
   <HaulersDream.Setting.CarryMassCap.Off>Aucune limite</HaulersDream.Setting.CarryMassCap.Off>
   <HaulersDream.Setting.CarryMassCap.Value>{0} kg</HaulersDream.Setting.CarryMassCap.Value>
   <HaulersDream.Setting.CarryMassCapDesc>Un plafond strict, en kilogrammes, sur ce qu'un pion charge dans son inventaire lors d'un trajet de transport ou de collecte. C'est la réponse directe à « mes pions portent trop » : réglez-le bas (disons 20 kg) et les pions rassemblent une petite charge, la déchargent et reviennent, au lieu de se remplir jusqu'à leur poids de port maximal. Il fonctionne de pair avec le pourcentage « Limite de port » et la Surcharge intelligente ci-dessus, et la limite la plus basse l'emporte toujours, de sorte que ce plafond n'est jamais dépassé même avec la surcharge activée. Comme la Limite de port, il ne compte que ce qui est rangé dans le sac, pas une pile portée à la main, et il ne change pas la quantité de matériau qu'un pion va chercher pour une construction ou une tâche précise. Réglez sur 0 pour aucune limite (par défaut).</HaulersDream.Setting.CarryMassCapDesc>
+  <HD_NearbyHaulGizmoDesc>Sélectionnez un objet pour le transporter avec les objets proches vers le stockage. Maintenez la touche de mise en file lors de la sélection pour ajouter l'ordre à la file.</HD_NearbyHaulGizmoDesc>
+  <HD_NearbyHaulPawnUnavailable>Ce personnage ne peut pas recevoir d'ordre de transport dans son état actuel.</HD_NearbyHaulPawnUnavailable>
+  <HD_NearbyHaulDrafted>Démobilisez ce personnage avant de donner cet ordre de transport.</HD_NearbyHaulDrafted>
+  <HD_NearbyHaulMapDisabled>Hauler's Dream est désactivé sur cette carte.</HD_NearbyHaulMapDisabled>
+  <HD_NearbyHaulSyncUnavailable>Le transport des objets proches est indisponible, car sa commande multijoueur n'a pas pu être enregistrée.</HD_NearbyHaulSyncUnavailable>
+  <HD_NearbyHaulInventoryUnavailable>Le transport par inventaire est indisponible pour ce personnage.</HD_NearbyHaulInventoryUnavailable>
+  <HD_NearbyHaulRobotUnsupported>Les tâches de transport du robot n'ont pas pu être lues avec la configuration actuelle des mods.</HD_NearbyHaulRobotUnsupported>
+  <HD_NearbyHaulSourceUnavailable>L'objet sélectionné n'est pas disponible pour le transport.</HD_NearbyHaulSourceUnavailable>
 </LanguageData>

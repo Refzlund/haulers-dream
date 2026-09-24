@@ -828,4 +828,12 @@
   <HaulersDream.Setting.CarryMassCap.Off>Geen limiet</HaulersDream.Setting.CarryMassCap.Off>
   <HaulersDream.Setting.CarryMassCap.Value>{0} kg</HaulersDream.Setting.CarryMassCap.Value>
   <HaulersDream.Setting.CarryMassCapDesc>Een harde bovengrens, in kilogram, voor hoeveel een figuur in zijn inventaris laadt op één sjouw- of verzameltrip. Dit is het directe antwoord op „mijn figuren dragen te veel“: zet hem laag (zeg 20 kg) en figuren verzamelen een kleine lading, laden uit en komen terug, in plaats van tot hun volle draaggewicht te vullen. Hij werkt samen met het percentage „Draaglimiet“ en Slim overladen hierboven, en de laagste limiet wint altijd, dus deze bovengrens wordt zelfs met overladen aan nooit overschreden. Net als de Draaglimiet telt hij alleen wat in de rugzak is opgeborgen, niet een stapel die in de handen wordt gedragen, en hij verandert niet hoeveel materiaal een figuur haalt voor een specifieke bouw of taak. Zet op 0 voor geen limiet (de standaard).</HaulersDream.Setting.CarryMassCapDesc>
+  <HD_NearbyHaulGizmoDesc>Selecteer een voorwerp om het samen met nabije voorwerpen naar de opslag te brengen. Houd bij het selecteren de wachtrijtoets ingedrukt om de opdracht in de wachtrij te zetten.</HD_NearbyHaulGizmoDesc>
+  <HD_NearbyHaulPawnUnavailable>Deze pion kan in de huidige toestand geen transportopdracht ontvangen.</HD_NearbyHaulPawnUnavailable>
+  <HD_NearbyHaulDrafted>Haal deze pion uit de gevechtsmodus voordat je deze transportopdracht geeft.</HD_NearbyHaulDrafted>
+  <HD_NearbyHaulMapDisabled>Hauler's Dream is op deze kaart uitgeschakeld.</HD_NearbyHaulMapDisabled>
+  <HD_NearbyHaulSyncUnavailable>Nabije voorwerpen vervoeren is niet beschikbaar omdat de multiplayeropdracht niet kon worden geregistreerd.</HD_NearbyHaulSyncUnavailable>
+  <HD_NearbyHaulInventoryUnavailable>Vervoer via de inventaris is voor deze pion niet beschikbaar.</HD_NearbyHaulInventoryUnavailable>
+  <HD_NearbyHaulRobotUnsupported>De transporttaken van de robot konden met de huidige modconfiguratie niet worden gelezen.</HD_NearbyHaulRobotUnsupported>
+  <HD_NearbyHaulSourceUnavailable>Het geselecteerde voorwerp is niet beschikbaar voor vervoer.</HD_NearbyHaulSourceUnavailable>
 </LanguageData>

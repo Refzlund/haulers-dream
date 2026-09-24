@@ -237,9 +237,9 @@ namespace HaulersDream
         /// planning the same units twice.</para>
         ///
         /// <para>YES — the pawn is DELIVERING, so its own claim does not count against it: it is asking
-        /// where to put cargo it already reserved room for. This is also the anti-churn guarantee — a pawn
-        /// holding goods can always find a home, so the ledger can never strand a load or force a carry-back,
-        /// which is the exact failure the reports describe.</para>
+        /// where to put cargo it already reserved room for. This prevents its own same-def claim from
+        /// rejecting that delivery. Other pawns' claims and changed physical storage eligibility still
+        /// apply; possession alone cannot guarantee that a valid destination exists.</para>
         /// </summary>
         /// <param name="asker">The pawn asking.</param>
         /// <param name="subject">The stack in question.</param>
@@ -251,7 +251,9 @@ namespace HaulersDream
             if (asker.carryTracker?.CarriedThing == subject)
                 return true;
             var inventory = asker.inventory?.innerContainer;
-            return inventory != null && !subject.Spawned && subject.ParentHolder == inventory;
+            // ParentHolder is the inventory TRACKER (the container's Owner), not the ThingOwner itself.
+            // Compare actual collection custody; a spawned map item or another pawn's cargo is not ours.
+            return inventory != null && !subject.Spawned && ReferenceEquals(subject.holdingOwner, inventory);
         }
 
         /*

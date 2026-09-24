@@ -828,4 +828,12 @@
   <HaulersDream.Setting.CarryMassCap.Off>Без лимита</HaulersDream.Setting.CarryMassCap.Off>
   <HaulersDream.Setting.CarryMassCap.Value>{0} кг</HaulersDream.Setting.CarryMassCap.Value>
   <HaulersDream.Setting.CarryMassCapDesc>Жёсткий предел, в килограммах, на то, сколько пешка загружает в свой инвентарь за одну ходку по переноске или сбору. Это прямой ответ на «мои пешки несут слишком много»: задайте его низким (скажем, 20 кг), и пешки соберут небольшой груз, разгрузят его и вернутся, вместо того чтобы наполняться до полной грузоподъёмности. Он работает вместе с процентным «Пределом переноски» и Умной перегрузкой выше, и меньший предел всегда побеждает, поэтому этот потолок никогда не превышается, даже при включённой перегрузке. Как и Предел переноски, он учитывает только то, что уложено в сумку, а не стопку, несомую в руках, и не меняет, сколько материала пешка приносит для конкретной постройки или заказа. Установите 0, чтобы лимита не было (по умолчанию).</HaulersDream.Setting.CarryMassCapDesc>
+  <HD_NearbyHaulGizmoDesc>Выберите предмет, чтобы отнести его и соседние предметы на склад. При выборе удерживайте клавишу очереди приказов, чтобы добавить приказ в очередь.</HD_NearbyHaulGizmoDesc>
+  <HD_NearbyHaulPawnUnavailable>В текущем состоянии этот персонаж не может получить приказ о переноске.</HD_NearbyHaulPawnUnavailable>
+  <HD_NearbyHaulDrafted>Отмените призыв этого персонажа перед приказом о переноске.</HD_NearbyHaulDrafted>
+  <HD_NearbyHaulMapDisabled>Hauler's Dream отключён на этой карте.</HD_NearbyHaulMapDisabled>
+  <HD_NearbyHaulSyncUnavailable>Переноска соседних предметов недоступна: не удалось зарегистрировать команду для многопользовательской игры.</HD_NearbyHaulSyncUnavailable>
+  <HD_NearbyHaulInventoryUnavailable>Переноска через инвентарь недоступна для этого персонажа.</HD_NearbyHaulInventoryUnavailable>
+  <HD_NearbyHaulRobotUnsupported>Не удалось прочитать задания робота по переноске при текущем наборе модов.</HD_NearbyHaulRobotUnsupported>
+  <HD_NearbyHaulSourceUnavailable>Выбранный предмет недоступен для переноски.</HD_NearbyHaulSourceUnavailable>
 </LanguageData>

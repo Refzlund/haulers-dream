@@ -11,7 +11,7 @@ namespace HaulersDream
     /// the best storage for it, carry it there and place it. Mirrors the canonical RimWorld unload
     /// toil chain (find → reserve → pull → carry to cell/container → place → repeat).
     /// </summary>
-    public class JobDriver_UnloadHauledInventory : JobDriver
+    public partial class JobDriver_UnloadHauledInventory : JobDriver
     {
         private int countToDrop = -1;
 
@@ -60,6 +60,11 @@ namespace HaulersDream
 
         public override void ExposeData()
         {
+            // Native Pawn_JobTracker assigns driver.job only AFTER LoadingVars exposes the driver.
+            // Resolve this field without consulting job during load, and before base's PostLoadInit
+            // calls SetupToils. Ordinary saves still omit the scoped receipt completely.
+            if (Scribe.mode != LoadSaveMode.Saving || NearbyHaulDelivery.Applies(job))
+                Scribe_Deep.Look(ref nearbyTransit, "nearbyDeliveryTransit");
             base.ExposeData();
             Scribe_Values.Look(ref countToDrop, "countToDrop", -1);
         }
@@ -96,6 +101,11 @@ namespace HaulersDream
         /// </summary>
         public override void Notify_PatherFailed()
         {
+            if (NearbyHaulDelivery.Applies(job))
+            {
+                NearbyPatherFailed();
+                return;
+            }
             var held = pawn.carryTracker?.CarriedThing;
             if (held == null || loopToil == null)
             {
@@ -181,7 +191,9 @@ namespace HaulersDream
             int count = 0;
             // The healed view, not PeekHashSet: this feeds a DECISION, and a stale tag left by a merge would
             // count a stack that no longer exists.
-            foreach (var thing in comp.GetHashSet())
+            var candidates = NearbyHaulDelivery.Applies(job)
+                ? NearbyHaulDelivery.Candidates(pawn, job) : comp.GetHashSet();
+            foreach (var thing in candidates)
                 if (thing != null && !thing.Destroyed && !skippedThisJob.Contains(thing) && inner.Contains(thing))
                     count++;
             return count;
@@ -198,10 +210,16 @@ namespace HaulersDream
                 reservations.Release(job.targetB, pawn, pawn.CurJob);
         }
 
-        public override bool TryMakePreToilReservations(bool errorOnFailed) => true;
+        public override bool TryMakePreToilReservations(bool errorOnFailed)
+            => !NearbyHaulDelivery.Applies(job) || NearbyHaulCommand.CanContinue(pawn, job);
 
         public override IEnumerable<Toil> MakeNewToils()
         {
+            if (NearbyHaulDelivery.Applies(job))
+            {
+                foreach (var toil in MakeNearbyDeliveryToils()) yield return toil;
+                yield break;
+            }
             var begin = Toils_General.Wait(3);
             loopToil = begin; // the reentry point a failed delivery jumps back to (see Notify_PatherFailed)
             yield return begin;
@@ -327,8 +345,10 @@ namespace HaulersDream
                         // reserved by another pawn (a worker fetching from this inventory): end Incompletable so a
                         // freed reservation re-queues promptly. The tag is kept either way, so a genuinely stuck
                         // item is retried on the next trigger and still surfaces in the cannot-unload alert.
-                        EndJobWith(carried.Count == 0 || skippedThisJob.Count > 0
-                            ? JobCondition.Succeeded : JobCondition.Incompletable);
+                        EndJobWith(NearbyHaulDelivery.Applies(job)
+                            ? (carried.Count == 0 ? JobCondition.Succeeded : JobCondition.Incompletable)
+                            : (carried.Count == 0 || skippedThisJob.Count > 0
+                                ? JobCondition.Succeeded : JobCondition.Incompletable));
                         return;
                     }
 
@@ -338,6 +358,15 @@ namespace HaulersDream
                     // pawn.Map into vanilla), but note the one deliberate delta from the old if/else chain: it
                     // used to fall THROUGH to the home-area scan, which would have dereferenced the null map;
                     // treating "no map" as "not the home map" keeps the load tagged and ends the job cleanly.
+                    if (NearbyHaulDelivery.Applies(job) && !hasStorage)
+                    {
+                        // A withdrawn destination does not authorize dropping command cargo on a
+                        // different home-area tile. Keep it tagged and try the other finite manifest sources.
+                        skippedThisJob.Add(next.Thing);
+                        if (RemainingCandidateCount() > 0) JumpToToil(begin);
+                        else EndJobWith(JobCondition.Incompletable);
+                        return;
+                    }
                     bool onHomeMap = pawn.Map != null && pawn.Map.IsPlayerHome;
                     // The home-area radial scan runs ONLY when it can change the outcome — storage failed, on the
                     // player's map — which is exactly the precedence UnloadFallbackPolicy.Choose encodes. Keeping
@@ -383,7 +412,8 @@ namespace HaulersDream
                         {
                             // Untag only when the drop actually happened — a failed drop leaves the thing in
                             // inventory, where a missing tag would strand it untracked (gizmo hidden, never retried).
-                            if (InventoryDrop.TryDropPreferHome(pawn, next.Thing, next.Count, "reserve-failed-storage", out _))
+                            if (!NearbyHaulDelivery.Applies(job)
+                                && InventoryDrop.TryDropPreferHome(pawn, next.Thing, next.Count, "reserve-failed-storage", out _))
                                 carried.Remove(next.Thing);
                             EndJobWith(JobCondition.Incompletable);
                             return;
@@ -613,6 +643,12 @@ namespace HaulersDream
                 // each item is attempted at most once per job; skipped items keep their tag and retry next trigger.
                 if (skippedThisJob.Contains(thing))
                     continue;
+                if (NearbyHaulDelivery.Applies(job)
+                    && (NearbyHaulDelivery.Remaining(job, thing) <= 0 || !inner.Contains(thing)))
+                {
+                    carried.Remove(thing); // private manifest subset; never relink a same-def sibling
+                    continue;
+                }
                 if (!inner.Contains(thing))
                 {
                     // A partially-picked-up stack merged in inventory gets a new ThingID; relink to it.
@@ -668,7 +704,9 @@ namespace HaulersDream
         /// <param name="next">The stack about to be delivered, with the units being placed.</param>
         /// <returns>Units to claim for the destination.</returns>
         private int UnitsBoundFor(ThingCount next)
-            => System.Math.Max(next.Count, StorageCommitments.UnitsMovingOf(pawn, next.Thing.def));
+            => NearbyHaulDelivery.Applies(job)
+                ? System.Math.Max(next.Count, NearbyHaulDelivery.UnitsBoundFor(pawn, job, next.Thing.def))
+                : System.Math.Max(next.Count, StorageCommitments.UnitsMovingOf(pawn, next.Thing.def));
 
         /// <summary>The budget identity of the storage at a destination cell, or null when the cell holds no
         /// slot group (a bare home-area floor cell, or a container's invalid cell). Routed through
@@ -687,7 +725,9 @@ namespace HaulersDream
         // driver and the cannot-unload alert agree EXACTLY on what is surplus and what is keep-stock.
         // (Vanilla parity: the three FirstUnloadableThing keep sources — drug policy, inventoryStock,
         // packable food — plus the CE loadout. See InventorySurplus.)
-        private int UnloadableCountOf(Thing thing) => InventorySurplus.SurplusOf(pawn, thing);
+        private int UnloadableCountOf(Thing thing) => NearbyHaulDelivery.Applies(job)
+            ? System.Math.Min(NearbyHaulDelivery.Remaining(job, thing), InventorySurplus.SurplusOf(pawn, thing))
+            : InventorySurplus.SurplusOf(pawn, thing);
 
         // Pawn->best-storage-cell squared distance for the closest-destination-first ordering (C1b), or
         // UnloadDestinationOrder.NoDestination when no storage resolves (that candidate then sorts LAST and the

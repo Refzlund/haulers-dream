@@ -828,4 +828,12 @@
   <HaulersDream.Setting.CarryMassCap.Off>Kein Limit</HaulersDream.Setting.CarryMassCap.Off>
   <HaulersDream.Setting.CarryMassCap.Value>{0} kg</HaulersDream.Setting.CarryMassCap.Value>
   <HaulersDream.Setting.CarryMassCapDesc>Eine feste Obergrenze in Kilogramm dafür, wie viel eine Spielfigur auf einer Transport- oder Sammelfahrt in ihr Inventar lädt. Dies ist die direkte Antwort auf „meine Spielfiguren tragen zu viel“: Setze sie niedrig (etwa 20 kg), und die Spielfiguren sammeln eine kleine Ladung, entladen und kommen zurück, anstatt bis zu ihrem vollen Traggewicht aufzufüllen. Sie wirkt zusammen mit dem Prozentsatz „Traglimit“ und dem Cleveren Überladen oben, und das niedrigere Limit gewinnt immer, sodass diese Obergrenze selbst bei aktiviertem Überladen nie überschritten wird. Wie das Traglimit zählt sie nur, was im Rucksack verstaut ist, nicht einen in den Händen getragenen Stapel, und sie ändert nicht, wie viel Material eine Spielfigur für einen bestimmten Bau oder Auftrag holt. Setze sie auf 0 für kein Limit (Standard).</HaulersDream.Setting.CarryMassCapDesc>
+  <HD_NearbyHaulGizmoDesc>Wähle einen Gegenstand, um ihn und nahe Gegenstände ins Lager zu bringen. Halte beim Auswählen die Warteschlangentaste gedrückt, um den Auftrag einzureihen.</HD_NearbyHaulGizmoDesc>
+  <HD_NearbyHaulPawnUnavailable>Diese Figur kann in ihrem aktuellen Zustand keinen Transportauftrag erhalten.</HD_NearbyHaulPawnUnavailable>
+  <HD_NearbyHaulDrafted>Beende den Kampfmodus dieser Figur, bevor du diesen Transport anordnest.</HD_NearbyHaulDrafted>
+  <HD_NearbyHaulMapDisabled>Hauler's Dream ist auf dieser Karte deaktiviert.</HD_NearbyHaulMapDisabled>
+  <HD_NearbyHaulSyncUnavailable>Das Transportieren naher Gegenstände ist nicht verfügbar, da der Mehrspielerbefehl nicht registriert werden konnte.</HD_NearbyHaulSyncUnavailable>
+  <HD_NearbyHaulInventoryUnavailable>Inventartransport ist für diese Figur nicht verfügbar.</HD_NearbyHaulInventoryUnavailable>
+  <HD_NearbyHaulRobotUnsupported>Die Transportaufgaben des Roboters konnten mit der aktuellen Modkonfiguration nicht gelesen werden.</HD_NearbyHaulRobotUnsupported>
+  <HD_NearbyHaulSourceUnavailable>Der gewählte Gegenstand kann derzeit nicht transportiert werden.</HD_NearbyHaulSourceUnavailable>
 </LanguageData>

@@ -828,4 +828,12 @@
   <HaulersDream.Setting.CarryMassCap.Off>Sem limite</HaulersDream.Setting.CarryMassCap.Off>
   <HaulersDream.Setting.CarryMassCap.Value>{0} kg</HaulersDream.Setting.CarryMassCap.Value>
   <HaulersDream.Setting.CarryMassCapDesc>Um teto rígido, em quilogramas, de quanto um peão carrega no inventário em uma viagem de transporte ou coleta. É a resposta direta a «meus peões carregam demais»: defina baixo (digamos 20 kg) e os peões reúnem uma carga pequena, descarregam e voltam, em vez de encher até a carga máxima. Funciona em conjunto com a porcentagem «Limite de carga» e a Sobrecarga inteligente acima, e o limite mais baixo sempre vence, então este teto nunca é ultrapassado nem com a sobrecarga ligada. Como o Limite de carga, conta apenas o que está guardado na mochila, não uma pilha carregada nas mãos, e não muda quanto material um peão busca para uma construção ou tarefa específica. Defina como 0 para não ter limite (o padrão).</HaulersDream.Setting.CarryMassCapDesc>
+  <HD_NearbyHaulGizmoDesc>Selecione um item para levá-lo, junto com os itens próximos, ao armazenamento. Segure a tecla de enfileirar ordens ao selecionar para colocar a ordem na fila.</HD_NearbyHaulGizmoDesc>
+  <HD_NearbyHaulPawnUnavailable>Este personagem não pode receber uma ordem de transporte no estado atual.</HD_NearbyHaulPawnUnavailable>
+  <HD_NearbyHaulDrafted>Desmobilize este personagem antes de dar esta ordem de transporte.</HD_NearbyHaulDrafted>
+  <HD_NearbyHaulMapDisabled>Hauler's Dream está desativado neste mapa.</HD_NearbyHaulMapDisabled>
+  <HD_NearbyHaulSyncUnavailable>O transporte de itens próximos está indisponível porque não foi possível registrar seu comando multijogador.</HD_NearbyHaulSyncUnavailable>
+  <HD_NearbyHaulInventoryUnavailable>O transporte pelo inventário está indisponível para este personagem.</HD_NearbyHaulInventoryUnavailable>
+  <HD_NearbyHaulRobotUnsupported>Não foi possível ler as tarefas de transporte do robô com a configuração atual de mods.</HD_NearbyHaulRobotUnsupported>
+  <HD_NearbyHaulSourceUnavailable>O item selecionado não está disponível para transporte.</HD_NearbyHaulSourceUnavailable>
 </LanguageData>

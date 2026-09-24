@@ -828,4 +828,12 @@
   <HaulersDream.Setting.CarryMassCap.Off>Sin límite</HaulersDream.Setting.CarryMassCap.Off>
   <HaulersDream.Setting.CarryMassCap.Value>{0} kg</HaulersDream.Setting.CarryMassCap.Value>
   <HaulersDream.Setting.CarryMassCapDesc>Un tope rígido, en kilogramos, de cuánto carga un peón en su inventario en un viaje de transporte o recolección. Es la respuesta directa a «mis peones llevan demasiado»: ponlo bajo (digamos 20 kg) y los peones reúnen una carga pequeña, la descargan y vuelven, en lugar de llenarse hasta su carga máxima. Funciona junto con el porcentaje «Límite de carga» y la Sobrecarga inteligente de arriba, y siempre gana el límite más bajo, así que este tope nunca se supera ni con la sobrecarga activada. Como el Límite de carga, solo cuenta lo que va guardado en la mochila, no una pila que se lleve en las manos, y no cambia cuánto material trae un peón para una construcción o tarea concreta. Ponlo en 0 para no tener límite (por defecto).</HaulersDream.Setting.CarryMassCapDesc>
+  <HD_NearbyHaulGizmoDesc>Selecciona un objeto para llevarlo, junto con los objetos cercanos, al almacén. Mantén pulsada la tecla de encolar órdenes al seleccionarlo para poner la orden en cola.</HD_NearbyHaulGizmoDesc>
+  <HD_NearbyHaulPawnUnavailable>Este peón no puede recibir una orden de transporte en su estado actual.</HD_NearbyHaulPawnUnavailable>
+  <HD_NearbyHaulDrafted>Desmoviliza a este peón antes de dar esta orden de transporte.</HD_NearbyHaulDrafted>
+  <HD_NearbyHaulMapDisabled>Hauler's Dream está desactivado en este mapa.</HD_NearbyHaulMapDisabled>
+  <HD_NearbyHaulSyncUnavailable>El transporte de objetos cercanos no está disponible porque no se pudo registrar su comando multijugador.</HD_NearbyHaulSyncUnavailable>
+  <HD_NearbyHaulInventoryUnavailable>El transporte mediante inventario no está disponible para este peón.</HD_NearbyHaulInventoryUnavailable>
+  <HD_NearbyHaulRobotUnsupported>No se pudieron leer las tareas de transporte del robot con la configuración actual de mods.</HD_NearbyHaulRobotUnsupported>
+  <HD_NearbyHaulSourceUnavailable>El objeto seleccionado no está disponible para transportarlo.</HD_NearbyHaulSourceUnavailable>
 </LanguageData>

@@ -64,6 +64,8 @@ integration layer. Soft dependencies are reflection-only and **inert when the ot
 - **Custom Alerts — Continued** — use **current action → ALL OPTIONS → gathering items into
   inventory** to select HD's gathering activity. The default list can hide it when nobody is
   gathering. See [activity alert setup](COMPATIBILITY.md#custom-alerts--continued-activity-selection).
+- **RIMMSqol** — the **Haul everything nearby** Work Giver exposes direct-order and drafted
+  permissions. See [drafted hauling setup](COMPATIBILITY.md#rimmsqol-nearby-hauling-while-drafted).
 
 ---
 

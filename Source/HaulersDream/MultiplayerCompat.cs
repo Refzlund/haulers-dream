@@ -52,10 +52,25 @@ namespace HaulersDream
         public static readonly bool Active =
             ModLister.GetActiveModWithIdentifier("rwmt.multiplayer", ignorePostfix: true) != null;
 
+        private static bool nearbyHaulRegistered;
+        internal static bool NearbyHaulAvailable => !InMultiplayerGame || nearbyHaulRegistered;
+        internal static bool NearbyHaulLocalUi => !InMultiplayerGame || MpHooks.InInterface();
+        internal static bool NearbyHaulExecuting => !InMultiplayerGame
+            || (nearbyHaulRegistered && MpHooks.ExecutingCommand());
+
         static MultiplayerCompat()
         {
             if (!Active)
                 return;
+            try
+            {
+                nearbyHaulRegistered = MpHooks.RegisterNearbyHaul();
+            }
+            catch (Exception e)
+            {
+                Log.Warning("[Hauler's Dream] Nearby hauling sync registration failed; "
+                    + "this action is unavailable in multiplayer. " + e);
+            }
             // Only reached when MP is present, so the API assembly is loaded and MpHooks.Register can resolve its
             // Multiplayer.API references. Defensive try/catch: a registration fault must never break startup — it
             // degrades to "MP not wired" (single-player-style direct mutation), which at worst desyncs MP, never
@@ -215,6 +230,9 @@ namespace HaulersDream
         /// </summary>
         private static class MpHooks
         {
+            internal static bool RegisterNearbyHaul() =>
+                MP.RegisterSyncMethod(typeof(NearbyHaulCommand), nameof(NearbyHaulCommand.IssueSynced)) != null;
+
             internal static void Register()
             {
                 // Register each synced method BY NAME instead of via a [SyncMethod] attribute + MP.RegisterAll. The
@@ -238,6 +256,7 @@ namespace HaulersDream
             }
 
             internal static bool InMpGame() => MP.IsInMultiplayer;
+            internal static bool InInterface() => MP.InInterface;
             internal static bool ExecutingCommand() => MP.IsExecutingSyncCommand;
 
             internal static bool IssuedBySelf() => MP.IsExecutingSyncCommandIssuedBySelf;

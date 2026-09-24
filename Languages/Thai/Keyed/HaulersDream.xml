@@ -828,4 +828,12 @@
   <HaulersDream.Setting.CarryMassCap.Off>ไม่จำกัด</HaulersDream.Setting.CarryMassCap.Off>
   <HaulersDream.Setting.CarryMassCap.Value>{0} กก.</HaulersDream.Setting.CarryMassCap.Value>
   <HaulersDream.Setting.CarryMassCapDesc>เพดานตายตัวเป็นกิโลกรัม ว่าตัวละครจะบรรจุลงสัมภาระได้เท่าใดในการขนหรือเก็บของหนึ่งเที่ยว นี่คือคำตอบตรงๆ ต่อ 'ตัวละครของฉันขนของมากเกินไป': ตั้งให้ต่ำ (เช่น 20 กก.) แล้วตัวละครจะเก็บของทีละน้อย ขนออก แล้วกลับมา แทนที่จะบรรจุจนเต็มน้ำหนักการขนของมัน มันทำงานร่วมกับเปอร์เซ็นต์ 'ขีดจำกัดการขน' และการบรรทุกเกินอัจฉริยะด้านบน และขีดจำกัดที่ต่ำกว่าจะชนะเสมอ ดังนั้นเพดานนี้จะไม่ถูกเกินแม้เปิดการบรรทุกเกินไว้ เช่นเดียวกับขีดจำกัดการขน มันนับเฉพาะสิ่งที่เก็บไว้ในกระเป๋า ไม่ใช่กองที่ถือไว้ในมือ และไม่เปลี่ยนปริมาณวัสดุที่ตัวละครไปหยิบมาสำหรับการก่อสร้างหรือใบสั่งงานเฉพาะ ตั้งเป็น 0 เพื่อไม่จำกัด (ค่าเริ่มต้น)</HaulersDream.Setting.CarryMassCapDesc>
+  <HD_NearbyHaulGizmoDesc>เลือกสิ่งของเพื่อขนสิ่งนั้นและสิ่งของใกล้เคียงไปยังที่เก็บ กดปุ่มจัดคิวคำสั่งค้างไว้ขณะเลือกเพื่อเพิ่มคำสั่งเข้าคิว</HD_NearbyHaulGizmoDesc>
+  <HD_NearbyHaulPawnUnavailable>ตัวละครนี้ไม่สามารถรับคำสั่งขนของได้ในสถานะปัจจุบัน</HD_NearbyHaulPawnUnavailable>
+  <HD_NearbyHaulDrafted>ยกเลิกการเกณฑ์ตัวละครนี้ก่อนสั่งขนของ</HD_NearbyHaulDrafted>
+  <HD_NearbyHaulMapDisabled>Hauler's Dream ถูกปิดใช้งานบนแผนที่นี้</HD_NearbyHaulMapDisabled>
+  <HD_NearbyHaulSyncUnavailable>ไม่สามารถขนสิ่งของใกล้เคียงได้ เนื่องจากลงทะเบียนคำสั่งสำหรับโหมดผู้เล่นหลายคนไม่สำเร็จ</HD_NearbyHaulSyncUnavailable>
+  <HD_NearbyHaulInventoryUnavailable>ตัวละครนี้ไม่สามารถขนของผ่านช่องเก็บของได้</HD_NearbyHaulInventoryUnavailable>
+  <HD_NearbyHaulRobotUnsupported>ไม่สามารถอ่านงานขนของของหุ่นยนต์ได้ด้วยการตั้งค่าม็อดปัจจุบัน</HD_NearbyHaulRobotUnsupported>
+  <HD_NearbyHaulSourceUnavailable>ไม่สามารถขนสิ่งของที่เลือกได้</HD_NearbyHaulSourceUnavailable>
 </LanguageData>

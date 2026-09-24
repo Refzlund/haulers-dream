@@ -828,4 +828,12 @@
   <HaulersDream.Setting.CarryMassCap.Off>制限なし</HaulersDream.Setting.CarryMassCap.Off>
   <HaulersDream.Setting.CarryMassCap.Value>{0} kg</HaulersDream.Setting.CarryMassCap.Value>
   <HaulersDream.Setting.CarryMassCapDesc>ポーンが1回の運搬または採集で所持品に積み込む量に対する、キログラム単位の絶対的な上限です。これは「うちのポーンは運びすぎる」への直接の答えです。低く（たとえば20kg）設定すると、ポーンは最大携行重量まで積むのではなく、少しだけ集めて降ろし、また戻ってきます。上の「携行上限」の割合や賢い過積載と一緒に働き、常に低い方の制限が優先されるため、過積載がオンでもこの上限を超えることはありません。携行上限と同じく、手に持った山ではなく背嚢にしまった分だけを数え、特定の建築や作業指示のためにポーンが取ってくる資材の量は変えません。0にすると無制限になります（デフォルト）。</HaulersDream.Setting.CarryMassCapDesc>
+  <HD_NearbyHaulGizmoDesc>アイテムを選択すると、そのアイテムと周囲のアイテムを保管場所に運びます。選択時に指示を予約するキーを押していると、指示が予約されます。</HD_NearbyHaulGizmoDesc>
+  <HD_NearbyHaulPawnUnavailable>このポーンは現在の状態では運搬の指示を受けられません。</HD_NearbyHaulPawnUnavailable>
+  <HD_NearbyHaulDrafted>運搬を指示する前に、このポーンの徴兵を解除してください。</HD_NearbyHaulDrafted>
+  <HD_NearbyHaulMapDisabled>このマップでは Hauler's Dream が無効です。</HD_NearbyHaulMapDisabled>
+  <HD_NearbyHaulSyncUnavailable>マルチプレイ用コマンドを登録できなかったため、周囲のアイテムの運搬を利用できません。</HD_NearbyHaulSyncUnavailable>
+  <HD_NearbyHaulInventoryUnavailable>このポーンはインベントリを使った運搬を利用できません。</HD_NearbyHaulInventoryUnavailable>
+  <HD_NearbyHaulRobotUnsupported>現在のMOD構成では、ロボットの運搬作業を読み取れませんでした。</HD_NearbyHaulRobotUnsupported>
+  <HD_NearbyHaulSourceUnavailable>選択したアイテムは運搬できません。</HD_NearbyHaulSourceUnavailable>
 </LanguageData>

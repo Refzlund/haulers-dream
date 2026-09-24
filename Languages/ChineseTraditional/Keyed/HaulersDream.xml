@@ -950,4 +950,12 @@
   <HaulersDream.Setting.CarryMassCap.Off>無限制</HaulersDream.Setting.CarryMassCap.Off>
   <HaulersDream.Setting.CarryMassCap.Value>{0} 公斤</HaulersDream.Setting.CarryMassCap.Value>
   <HaulersDream.Setting.CarryMassCapDesc>角色在單次運送或收集行程中，載入背包的公斤數硬性上限。這是解決「角色搬太多東西」的直接方案：將其調低（例如 20 公斤），角色就會收集少量貨物後卸載並返回，而非填滿其全部負重能力。此設定與上方的「負重上限」百分比及智慧超載協同運作，且一律以較低的限制為準，因此即使開啟超載亦絕不會超出此上限。與負重上限相同，它僅計算收納於背包中的物品，不包含手持的堆疊，且不會改變角色為特定建造或製作清單所取的材料數量。設定為 0 表示無限制（預設值）。</HaulersDream.Setting.CarryMassCapDesc>
+  <HD_NearbyHaulGizmoDesc>選擇一件物品，將它及附近物品搬運至倉儲區。選擇時按住指令佇列鍵可將指令加入佇列。</HD_NearbyHaulGizmoDesc>
+  <HD_NearbyHaulPawnUnavailable>該角色目前無法接受搬運指令。</HD_NearbyHaulPawnUnavailable>
+  <HD_NearbyHaulDrafted>請先解除該角色的徵召，再下達搬運指令。</HD_NearbyHaulDrafted>
+  <HD_NearbyHaulMapDisabled>Hauler's Dream 已在此地圖上停用。</HD_NearbyHaulMapDisabled>
+  <HD_NearbyHaulSyncUnavailable>無法註冊多人遊戲指令，因此附近物品搬運無法使用。</HD_NearbyHaulSyncUnavailable>
+  <HD_NearbyHaulInventoryUnavailable>該角色無法使用物品欄搬運。</HD_NearbyHaulInventoryUnavailable>
+  <HD_NearbyHaulRobotUnsupported>無法在目前的模組設定下讀取機器人的搬運工作。</HD_NearbyHaulRobotUnsupported>
+  <HD_NearbyHaulSourceUnavailable>所選物品無法搬運。</HD_NearbyHaulSourceUnavailable>
 </LanguageData>

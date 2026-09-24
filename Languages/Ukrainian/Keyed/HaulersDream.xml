@@ -828,4 +828,12 @@
   <HaulersDream.Setting.CarryMassCap.Off>Без ліміту</HaulersDream.Setting.CarryMassCap.Off>
   <HaulersDream.Setting.CarryMassCap.Value>{0} кг</HaulersDream.Setting.CarryMassCap.Value>
   <HaulersDream.Setting.CarryMassCapDesc>Жорсткий ліміт, у кілограмах, на те, скільки пішак завантажує у свій інвентар за одну ходку з перенесення чи збирання. Це пряма відповідь на «мої пішаки несуть забагато»: задайте його низьким (скажімо, 20 кг), і пішаки зберуть невеликий вантаж, розвантажать його й повернуться, замість того щоб наповнюватися до повної вантажопідйомності. Він працює разом із відсотковим «Лімітом перенесення» та Розумним перевантаженням вище, і менший ліміт завжди перемагає, тож ця стеля ніколи не перевищується, навіть з увімкненим перевантаженням. Як і Ліміт перенесення, він враховує лише те, що вкладено в рюкзак, а не стопку, несену в руках, і не змінює, скільки матеріалу пішак приносить для конкретного будівництва чи завдання. Встановіть 0, щоб ліміту не було (за замовчуванням).</HaulersDream.Setting.CarryMassCapDesc>
+  <HD_NearbyHaulGizmoDesc>Виберіть предмет, щоб перенести його й сусідні предмети на склад. Під час вибору утримуйте клавішу черги наказів, щоб додати наказ до черги.</HD_NearbyHaulGizmoDesc>
+  <HD_NearbyHaulPawnUnavailable>У поточному стані цей персонаж не може отримати наказ про перенесення.</HD_NearbyHaulPawnUnavailable>
+  <HD_NearbyHaulDrafted>Скасуйте мобілізацію цього персонажа перед наказом про перенесення.</HD_NearbyHaulDrafted>
+  <HD_NearbyHaulMapDisabled>Hauler's Dream вимкнено на цій мапі.</HD_NearbyHaulMapDisabled>
+  <HD_NearbyHaulSyncUnavailable>Перенесення сусідніх предметів недоступне: не вдалося зареєструвати команду для багатокористувацької гри.</HD_NearbyHaulSyncUnavailable>
+  <HD_NearbyHaulInventoryUnavailable>Перенесення через інвентар недоступне для цього персонажа.</HD_NearbyHaulInventoryUnavailable>
+  <HD_NearbyHaulRobotUnsupported>Не вдалося прочитати завдання робота з перенесення за поточного набору модів.</HD_NearbyHaulRobotUnsupported>
+  <HD_NearbyHaulSourceUnavailable>Вибраний предмет недоступний для перенесення.</HD_NearbyHaulSourceUnavailable>
 </LanguageData>

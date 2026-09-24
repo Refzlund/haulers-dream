@@ -8,6 +8,7 @@ namespace HaulersDream
     public static class HaulersDreamDefOf
     {
         public static JobDef HaulersDream_UnloadInventory;
+        public static JobDef HaulersDream_NearbyDelivery;
         public static JobDef HaulersDream_SelfPickup;
         public static JobDef HaulersDream_OverloadConstructDeliver;
         public static JobDef HaulersDream_ConstructDeliverBuild; // same driver; this def also TETHERS the build
@@ -15,6 +16,7 @@ namespace HaulersDream
         public static JobDef HaulersDream_BatchCraft;
         public static JobDef HaulersDream_InventoryDoBill; // retired (dup risk); def kept for save-compat
         public static JobDef HaulersDream_BillPrepGather;
+        public static WorkGiverDef HaulersDream_HaulNearby;
         public static JobDef HaulersDream_BulkHaul;
         public static JobDef HaulersDream_KeepInInventory; // "Keep X in inventory": hold an item, never hauled/dropped
         public static JobDef HaulersDream_LoadPackAnimal; // load scooped loot onto a pack animal (caravan/away map)
@@ -55,6 +57,7 @@ namespace HaulersDream
             HaulersDreamDefOf.HaulersDream_BulkHaul,
             HaulersDreamDefOf.HaulersDream_SelfPickup,
             HaulersDreamDefOf.HaulersDream_UnloadInventory,
+            HaulersDreamDefOf.HaulersDream_NearbyDelivery,
         };
 
         // ---------------------------------------------------------------------------------------------------
@@ -81,7 +84,8 @@ namespace HaulersDream
         /// </summary>
         public static HashSet<JobDef> InTransitLoadJobs => _inTransitLoadJobs ??= new HashSet<JobDef>
         {
-            HaulersDreamDefOf.HaulersDream_UnloadInventory,         // the unload itself is running -> obviously in flight
+            HaulersDreamDefOf.HaulersDream_UnloadInventory,
+            HaulersDreamDefOf.HaulersDream_NearbyDelivery,         // the unload itself is running -> obviously in flight
             HaulersDreamDefOf.HaulersDream_BillPrepGather,          // gathering ingredients into inventory for a bill
             HaulersDreamDefOf.HaulersDream_BatchCraft,              // crafting from pre-loaded (held) ingredients
             HaulersDreamDefOf.HaulersDream_OverloadConstructDeliver,// delivering carried materials to a build

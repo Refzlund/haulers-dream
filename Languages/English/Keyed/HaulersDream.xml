@@ -960,4 +960,12 @@
   <HaulersDream.Setting.CarryMassCap.Off>No limit</HaulersDream.Setting.CarryMassCap.Off>
   <HaulersDream.Setting.CarryMassCap.Value>{0} kg</HaulersDream.Setting.CarryMassCap.Value>
   <HaulersDream.Setting.CarryMassCapDesc>A hard cap, in kilograms, on how much a pawn loads into its inventory on one hauling or gathering trip. This is the direct answer to 'my pawns carry too much': set it low (say 20 kg) and pawns gather a small load, unload, and come back, instead of filling to their full carry weight. It works together with the 'Carry limit' percentage and Smart overload above, and the lower limit always wins, so this cap is never exceeded even with overload on. Like the Carry limit, it counts only what is stowed in the pack, not a stack carried in the hands, and it does not change how much material a pawn fetches for a specific build or bill. Set to 0 for no limit (the default).</HaulersDream.Setting.CarryMassCapDesc>
+  <HD_NearbyHaulGizmoDesc>Select an item to haul it and nearby items to storage. Hold the queue-order key when selecting to queue the order.</HD_NearbyHaulGizmoDesc>
+  <HD_NearbyHaulPawnUnavailable>This pawn cannot receive a hauling order in its current state.</HD_NearbyHaulPawnUnavailable>
+  <HD_NearbyHaulDrafted>Undraft this pawn before ordering this haul.</HD_NearbyHaulDrafted>
+  <HD_NearbyHaulMapDisabled>Hauler's Dream is disabled on this map.</HD_NearbyHaulMapDisabled>
+  <HD_NearbyHaulSyncUnavailable>Nearby hauling is unavailable because its multiplayer command could not be registered.</HD_NearbyHaulSyncUnavailable>
+  <HD_NearbyHaulInventoryUnavailable>Inventory hauling is unavailable for this pawn.</HD_NearbyHaulInventoryUnavailable>
+  <HD_NearbyHaulRobotUnsupported>The robot's hauling work could not be read with the current mod setup.</HD_NearbyHaulRobotUnsupported>
+  <HD_NearbyHaulSourceUnavailable>The selected item is unavailable for hauling.</HD_NearbyHaulSourceUnavailable>
 </LanguageData>

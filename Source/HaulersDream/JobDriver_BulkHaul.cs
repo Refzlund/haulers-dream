@@ -34,6 +34,7 @@ namespace HaulersDream
 
         private int loadIndex;
         private bool loadedAnything;
+        private NearbyHaulCargo nearbyCargo;
 
         // The loop-reentry toil, kept so a pathing failure can jump back to it instead of ending the whole
         // job (see Notify_PatherFailed below). Assigned once in MakeNewToils, same convention as
@@ -76,12 +77,15 @@ namespace HaulersDream
             base.ExposeData();
             Scribe_Values.Look(ref loadIndex, "hdBulkLoadIndex", 0);
             Scribe_Values.Look(ref loadedAnything, "hdBulkLoadedAnything", false);
+            Scribe_Deep.Look(ref nearbyCargo, "hdNearbyCommandCargo");
         }
 
         public override string GetReport() => "HaulersDream.BulkHaul.Report".Translate();
 
         public override bool TryMakePreToilReservations(bool errorOnFailed)
         {
+            if (NearbyHaulCommand.IsIdentifiedOrder(job) && !NearbyHaulCommand.CanContinue(pawn, job))
+                return false;
             // The primary must be ours (it's what the work scan / order assigned); the rest of the sweep is
             // best-effort — a stack another pawn reserved first is simply skipped by the per-step validity.
             var queue = job.GetTargetQueue(StackInd);
@@ -217,12 +221,24 @@ namespace HaulersDream
         {
             // Whatever way the job ends — completed, interrupted, target gone — the swept stock is tagged, so
             // flush it to storage now ("when done THEN unload"). With nothing loaded this is a cheap no-op.
-            AddFinishAction(delegate
+            if (NearbyHaulCommand.IsIdentifiedOrder(job))
+                AddEndCondition(() => NearbyHaulCommand.CanContinue(pawn, job)
+                    ? JobCondition.Ongoing : JobCondition.Incompletable);
+            AddFinishAction(condition =>
             {
                 // behindQueuedWork: a player order interrupting this job (TryTakeOrderedJob EnqueueFirst's
                 // the order, then ends us) must not be preempted by the flush — the unload queues BEHIND it.
-                if (loadedAnything)
-                    PawnUnloadChecker.CheckIfShouldUnload(pawn, forced: true, behindQueuedWork: true);
+                if (!loadedAnything)
+                    return;
+                if (pawn.Drafted && NearbyHaulCommand.IsIdentifiedOrder(job))
+                {
+                    // Only actual successful command completion carries drafted delivery authority.
+                    // Drafting, interruptions, cancellation and failed sweeps never queue recovery here.
+                    if (condition == JobCondition.Succeeded)
+                        nearbyCargo?.QueueSuccessfulDraftedDelivery(pawn, job);
+                    return;
+                }
+                PawnUnloadChecker.CheckIfShouldUnload(pawn, forced: true, behindQueuedWork: true);
             });
 
             Toil end = Toils_General.Label();
@@ -419,6 +435,12 @@ namespace HaulersDream
             return true;
         }
 
+        private void RecordNearbyCargo(Thing thing, int moved)
+        {
+            if (NearbyHaulCommand.IsIdentifiedOrder(job))
+                (nearbyCargo ?? (nearbyCargo = new NearbyHaulCargo())).Record(thing, moved);
+        }
+
         /// <summary>
         /// Put a freshly-split swept stack into inventory, CONSOLIDATING it with the sweep's already-tagged
         /// same-def stock (#2B) while NEVER merging into the pawn's pre-existing personal/untagged stock.
@@ -493,6 +515,7 @@ namespace HaulersDream
                         // positive mergedCount notifies only the delta — Add is a no-op so the set is unchanged).
                         // The pickup clock is refreshed once below.
                         comp.RegisterHauledItem(target, moved);
+                        RecordNearbyCargo(target, moved);
                         loaded = true;
                     }
                 }
@@ -502,9 +525,11 @@ namespace HaulersDream
             // 2) Anything left becomes a NEW separate tagged stack — the exact isolation the old false-add gave.
             if (!split.Destroyed && split.stackCount > 0)
             {
+                int addedCount = split.stackCount;
                 if (inv.TryAdd(split, canMergeWithExistingStacks: false))
                 {
                     comp?.RegisterHauledItem(split);
+                    RecordNearbyCargo(split, addedCount);
                     // Unspawned splits carry a default (0,0,0) position; the shared-inventory chooser ranks
                     // carried stock by position, so stamp the pawn's cell (a plain field write when unspawned).
                     if (!split.Spawned)

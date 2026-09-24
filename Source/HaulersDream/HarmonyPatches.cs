@@ -771,6 +771,12 @@ namespace HaulersDream
             var pawn = PawnOf(__instance);
             if (pawn == null)
                 return true;
+            // A nearby command carries its own permission/map and drafted-delivery authority.
+            // Folding it into ordinary automatic work would discard that identity. Let native
+            // immediate/queued ordering retain the actual command; ordinary second-task orders
+            // keep the takeover behavior above.
+            if (NearbyHaulCommand.IsIdentifiedOrder(job))
+                return true;
             return !BulkHaul.TryTakeoverSecondOrder(pawn, job, tag, ref __result);
         }
     }

@@ -828,4 +828,12 @@
   <HaulersDream.Setting.CarryMassCap.Off>Nessun limite</HaulersDream.Setting.CarryMassCap.Off>
   <HaulersDream.Setting.CarryMassCap.Value>{0} kg</HaulersDream.Setting.CarryMassCap.Value>
   <HaulersDream.Setting.CarryMassCapDesc>Un tetto rigido, in chilogrammi, su quanto una pedina carica nel suo inventario in un singolo viaggio di trasporto o raccolta. È la risposta diretta a «le mie pedine trasportano troppo»: impostalo basso (diciamo 20 kg) e le pedine raccolgono un piccolo carico, lo scaricano e tornano, invece di riempirsi fino al loro peso di carico massimo. Funziona insieme alla percentuale «Limite di trasporto» e al Sovraccarico intelligente qui sopra, e vince sempre il limite più basso, così questo tetto non viene mai superato nemmeno con il sovraccarico attivo. Come il Limite di trasporto, conta solo ciò che è riposto nello zaino, non una pila portata in mano, e non cambia quanto materiale una pedina va a prendere per una specifica costruzione o ordine di lavoro. Imposta su 0 per nessun limite (impostazione predefinita).</HaulersDream.Setting.CarryMassCapDesc>
+  <HD_NearbyHaulGizmoDesc>Seleziona un oggetto per trasportarlo al deposito insieme agli oggetti vicini. Tieni premuto il tasto di accodamento durante la selezione per mettere l'ordine in coda.</HD_NearbyHaulGizmoDesc>
+  <HD_NearbyHaulPawnUnavailable>Questo personaggio non può ricevere un ordine di trasporto nel suo stato attuale.</HD_NearbyHaulPawnUnavailable>
+  <HD_NearbyHaulDrafted>Smobilita questo personaggio prima di impartire questo ordine di trasporto.</HD_NearbyHaulDrafted>
+  <HD_NearbyHaulMapDisabled>Hauler's Dream è disattivato su questa mappa.</HD_NearbyHaulMapDisabled>
+  <HD_NearbyHaulSyncUnavailable>Il trasporto degli oggetti vicini non è disponibile perché non è stato possibile registrare il comando multigiocatore.</HD_NearbyHaulSyncUnavailable>
+  <HD_NearbyHaulInventoryUnavailable>Il trasporto tramite inventario non è disponibile per questo personaggio.</HD_NearbyHaulInventoryUnavailable>
+  <HD_NearbyHaulRobotUnsupported>Non è stato possibile leggere i compiti di trasporto del robot con la configurazione attuale delle mod.</HD_NearbyHaulRobotUnsupported>
+  <HD_NearbyHaulSourceUnavailable>L'oggetto selezionato non è disponibile per il trasporto.</HD_NearbyHaulSourceUnavailable>
 </LanguageData>

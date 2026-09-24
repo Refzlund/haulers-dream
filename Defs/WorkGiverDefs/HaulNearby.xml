@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+  <WorkGiverDef>
+    <defName>HaulersDream_HaulNearby</defName>
+    <label>haul everything nearby</label>
+    <giverClass>HaulersDream.WorkGiver_HaulNearby</giverClass>
+    <workType>Hauling</workType>
+    <priorityInType>0</priorityInType>
+    <verb>haul everything nearby</verb>
+    <gerund>gathering items into inventory</gerund>
+    <workTags>Hauling</workTags>
+    <requiredCapacities>
+      <li>Manipulation</li>
+    </requiredCapacities>
+    <directOrderable>true</directOrderable>
+    <canBeDoneWhileDrafted>false</canBeDoneWhileDrafted>
+    <autoTakeablePriorityDrafted>-1</autoTakeablePriorityDrafted>
+    <canBeDoneByMechs>true</canBeDoneByMechs>
+  </WorkGiverDef>
+</Defs>

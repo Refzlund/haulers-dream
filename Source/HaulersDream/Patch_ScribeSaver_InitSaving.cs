@@ -12,10 +12,10 @@ namespace HaulersDream
     ///
     /// A save written while a pawn has QUEUED HD jobs otherwise embeds references to HD's custom <c>JobDriver</c>s
     /// that dangle if HD is later uninstalled. This PREFIX on <c>ScribeSaver.InitSaving</c> (which runs immediately
-    /// before the game writes a colony save) strips QUEUED HD jobs so the written save carries no dangling
-    /// queued HD-driver references. (It deliberately leaves the CURRENT job alone — see the torn-snapshot note
-    /// below — so a save taken mid-bulk-load still embeds that one running HD job; that deserializes fine while HD
-    /// is installed and is released on the job's next normal end.)
+    /// before the game writes a colony save) strips incidental QUEUED HD jobs. Identified nearby commands and
+    /// their scoped deliveries are preserved: saving must not cancel the player's explicit order. These queued
+    /// orders and the CURRENT job require HD to remain installed, and deserialize normally while it is installed.
+    /// The current job is never interrupted here — see the torn-snapshot note below.
     ///
     /// Safety guards (mirror SafeUnloadManager):
     ///   • Abort off the MAIN THREAD — <c>InitSaving</c> can be reached from RimWorld's background autosave thread,
@@ -25,11 +25,12 @@ namespace HaulersDream
     ///   • Abort if <see cref="HaulersDreamMod.Settings"/> is null (mod not fully initialized) or the
     ///     <c>cleanupOnSave</c> toggle is off → byte-inert.
     ///
-    /// Why we strip QUEUED HD jobs but DO NOT interrupt the CURRENT one (fix/mix — corrects a torn-snapshot bug):
+    /// Why cleanup excludes explicit nearby orders and the CURRENT job:
     ///   • Queued HD jobs are removed via <c>JobQueue.RemoveAll(pawn, predicate)</c>, which calls
     ///     <c>QueuedJob.Cleanup</c> per removed job (releases its pre-toil reservations) — the proper queue-removal
-    ///     path, not a raw list edit. A queued job has run NO toils, so removing it has no side effects beyond
-    ///     releasing those reservations: safe to do at save time.
+    ///     path, not a raw list edit. This cancels the removed work even though it has run no toils. Nearby orders
+    ///     retain their native serialized job fields and undergo live permission/map/manifest checks at admission;
+    ///     saving is not an additional permission check or cancellation action.
     ///   • We NO LONGER swap the CURRENT job via <c>TryTakeOrderedJob(Wait)</c>. That call ended the running job
     ///     with <c>JobCondition.InterruptForced</c> → <c>EndCurrentJob</c>, which fires the bulk-load drivers'
     ///     finish actions AND HD's claim-release (<c>Core.LoadLedger</c> mutations) — RIGHT IN THE MIDDLE of
@@ -63,8 +64,8 @@ namespace HaulersDream
         private static HashSet<JobDef> StripSet =>
             _stripSet ??= new HashSet<JobDef>(HdJobDefSets.CustomDriverJobDefs);
 
-        // No try/catch that swallows real errors: a genuine fault must surface. The two early-outs below
-        // (main-thread + settings) are correct guards, not error suppression.
+        // No try/catch that swallows real errors: a genuine fault must surface. Document, main-thread and
+        // settings guards restrict cleanup to its intended scope.
         static void Prefix(string documentElementName)
         {
             // Scribe also writes mod settings and exported objects. Those writes must never cancel
@@ -101,15 +102,17 @@ namespace HaulersDream
             if (pawn == null || pawn.Destroyed || pawn.jobs == null)
                 return;
 
-            // Strip QUEUED HD jobs only (RemoveAll runs QueuedJob.Cleanup → releases their pre-toil reservations).
-            // A queued job has run no toils, so this is a pure, side-effect-free queue edit — safe at save time.
+            // Strip incidental QUEUED HD jobs only (RemoveAll cancels them and releases pre-toil reservations).
+            // Preserve positively identified nearby orders, including generated scoped deliveries. Do not use
+            // playerForced alone or evaluate live permissions during saving; admission checks those later.
             // We deliberately do NOT touch the CURRENT job: interrupting it here ran HD's finish actions + ledger
             // releases mid-serialization and tore the saved ledger snapshot (see the class doc). The running HD job
             // is left intact; it serializes fine while HD is installed and releases its own claims on its next
             // normal end.
             var queue = pawn.jobs.jobQueue;
             if (queue != null && queue.Count > 0)
-                queue.RemoveAll(pawn, job => job != null && job.def != null && strip.Contains(job.def));
+                queue.RemoveAll(pawn, job => job != null && job.def != null && strip.Contains(job.def)
+                    && !NearbyHaulCommand.IsIdentifiedOrder(job));
         }
     }
 }

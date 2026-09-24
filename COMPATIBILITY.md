@@ -531,6 +531,30 @@ does not retroactively convert an existing ordinary blueprint when a packed buil
 available later. This integration was checked against Build From Storage 1.0.4 for RimWorld 1.6;
 it is not a claim about every construction mod or storage container.
 
+## RIMMSqol: nearby hauling while drafted
+
+In RIMMSqol's **Work Givers** editor, select **Haul everything nearby** and enable
+**Allow Drafted**. Leave **Can Be Ordered** enabled, apply the settings, then select a drafted
+pawn and right-click a haulable item to use **Haul everything nearby**. Drafted use is off by
+default. HD's bulk-hauling and nearby-command options must also be enabled.
+
+After a drafted sweep finishes gathering, it queues delivery of the gathered quantities to suitable
+storage while keeping the pawn drafted. Kept quantities and unrelated personal inventory are left
+alone. If storage becomes unavailable, some gathered items can remain carried for a later suitable
+unload. This explicit order works with HD's **Pause while drafted** setting; it does not enable
+automatic hauling for drafted pawns. Cancelling or interrupting the sweep while the pawn remains
+drafted does not create a new delivery order for it.
+
+Turning off **Can Be Ordered** invalidates a waiting command or an already opened menu action.
+Turning off **Allow Drafted** does the same while the pawn is still drafted.
+**Autopickable Priority While Drafted** controls the menu's default
+action; leave it at **-1** to keep nearby hauling as an explicit menu choice.
+
+Saving settings does not cancel queued colony work. Nearby commands and their generated
+delivery orders also survive a colony save and restart, including while waiting behind
+another job. Waiting orders recheck their permissions when they start. Keep HD installed
+while those orders are saved; let them finish or cancel them before removing the mod.
+
 ## Custom Alerts — Continued: activity selection
 
 In the alert editor, add **current action**, open its dropdown, choose **ALL OPTIONS**, then

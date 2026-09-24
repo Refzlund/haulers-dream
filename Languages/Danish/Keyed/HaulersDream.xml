@@ -828,4 +828,12 @@
   <HaulersDream.Setting.CarryMassCap.Off>Ingen grænse</HaulersDream.Setting.CarryMassCap.Off>
   <HaulersDream.Setting.CarryMassCap.Value>{0} kg</HaulersDream.Setting.CarryMassCap.Value>
   <HaulersDream.Setting.CarryMassCapDesc>En hård grænse, i kilogram, for hvor meget en figur læsser i sit inventar på én transport- eller indsamlingstur. Dette er det direkte svar på „mine figurer bærer for meget“: sæt den lavt (sig 20 kg), og figurerne samler et lille læs, aflæsser og kommer tilbage, i stedet for at fylde op til deres fulde bærevægt. Den virker sammen med procentdelen „Bæregrænse“ og Smart overlæsning ovenfor, og den laveste grænse vinder altid, så denne grænse overskrides aldrig, selv med overlæsning slået til. Ligesom Bæregrænsen tæller den kun det, der er pakket i rygsækken, ikke en stak båret i hænderne, og den ændrer ikke, hvor meget materiale en figur henter til et bestemt byggeri eller en bestemt opgave. Sæt til 0 for ingen grænse (standard).</HaulersDream.Setting.CarryMassCapDesc>
+  <HD_NearbyHaulGizmoDesc>Vælg en genstand for at transportere den og nærliggende genstande til lageret. Hold køtasten nede, når du vælger, for at sætte ordren i kø.</HD_NearbyHaulGizmoDesc>
+  <HD_NearbyHaulPawnUnavailable>Denne figur kan ikke modtage en transportordre i sin nuværende tilstand.</HD_NearbyHaulPawnUnavailable>
+  <HD_NearbyHaulDrafted>Ophæv indkaldelsen af denne figur, før du giver transportordren.</HD_NearbyHaulDrafted>
+  <HD_NearbyHaulMapDisabled>Hauler's Dream er slået fra på dette kort.</HD_NearbyHaulMapDisabled>
+  <HD_NearbyHaulSyncUnavailable>Transport af nærliggende genstande er utilgængelig, fordi multiplayerkommandoen ikke kunne registreres.</HD_NearbyHaulSyncUnavailable>
+  <HD_NearbyHaulInventoryUnavailable>Transport via inventaret er utilgængelig for denne figur.</HD_NearbyHaulInventoryUnavailable>
+  <HD_NearbyHaulRobotUnsupported>Robottens transportarbejde kunne ikke læses med den nuværende modopsætning.</HD_NearbyHaulRobotUnsupported>
+  <HD_NearbyHaulSourceUnavailable>Den valgte genstand er ikke tilgængelig til transport.</HD_NearbyHaulSourceUnavailable>
 </LanguageData>

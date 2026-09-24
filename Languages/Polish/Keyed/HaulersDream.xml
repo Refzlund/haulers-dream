@@ -828,4 +828,12 @@
   <HaulersDream.Setting.CarryMassCap.Off>Bez limitu</HaulersDream.Setting.CarryMassCap.Off>
   <HaulersDream.Setting.CarryMassCap.Value>{0} kg</HaulersDream.Setting.CarryMassCap.Value>
   <HaulersDream.Setting.CarryMassCapDesc>Twardy limit, w kilogramach, ile pionek ładuje do swojego bagażu w jednej wyprawie po znoszenie lub zbieranie. To bezpośrednia odpowiedź na „moje pionki niosą za dużo": ustaw go nisko (powiedzmy 20 kg), a pionki zbiorą mały ładunek, rozładują go i wrócą, zamiast napełniać się do pełnego udźwigu. Działa razem z procentowym „Limitem noszenia" i Inteligentnym przeciążeniem powyżej, a niższy limit zawsze wygrywa, więc ten pułap nigdy nie jest przekroczony, nawet przy włączonym przeciążeniu. Tak jak Limit noszenia, liczy tylko to, co schowane w plecaku, nie stos niesiony w rękach, i nie zmienia, ile materiału pionek przynosi na konkretną budowę czy zlecenie. Ustaw na 0, by nie było limitu (domyślnie).</HaulersDream.Setting.CarryMassCapDesc>
+  <HD_NearbyHaulGizmoDesc>Wybierz przedmiot, aby przenieść go wraz z pobliskimi przedmiotami do magazynu. Przytrzymaj klawisz kolejkowania podczas wybierania, aby dodać rozkaz do kolejki.</HD_NearbyHaulGizmoDesc>
+  <HD_NearbyHaulPawnUnavailable>Ta postać nie może otrzymać rozkazu transportu w obecnym stanie.</HD_NearbyHaulPawnUnavailable>
+  <HD_NearbyHaulDrafted>Zakończ mobilizację tej postaci przed wydaniem rozkazu transportu.</HD_NearbyHaulDrafted>
+  <HD_NearbyHaulMapDisabled>Hauler's Dream jest wyłączony na tej mapie.</HD_NearbyHaulMapDisabled>
+  <HD_NearbyHaulSyncUnavailable>Transport pobliskich przedmiotów jest niedostępny, ponieważ nie udało się zarejestrować polecenia gry wieloosobowej.</HD_NearbyHaulSyncUnavailable>
+  <HD_NearbyHaulInventoryUnavailable>Transport z użyciem ekwipunku jest niedostępny dla tej postaci.</HD_NearbyHaulInventoryUnavailable>
+  <HD_NearbyHaulRobotUnsupported>Nie udało się odczytać zadań transportowych robota przy obecnej konfiguracji modów.</HD_NearbyHaulRobotUnsupported>
+  <HD_NearbyHaulSourceUnavailable>Wybrany przedmiot nie jest dostępny do transportu.</HD_NearbyHaulSourceUnavailable>
 </LanguageData>
