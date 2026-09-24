@@ -1,0 +1,182 @@
+diff --git "a/C:\\Users\\Arthur\\Sync\\Projects\\RimWorld Mods\\HaulersDream\\docs\\plans\\evidence\\f04-rendered-20260920\\controller\\scripts\\runtime-test.ps1" "b/C:\\Users\\Arthur\\Sync\\Projects\\RimWorld Mods\\HaulersDream\\docs\\plans\\evidence\\f45-production-20260920\\controller\\scripts\\runtime-test.ps1"
+index b8639ba..0153852 100644
+--- "a/C:\\Users\\Arthur\\Sync\\Projects\\RimWorld Mods\\HaulersDream\\docs\\plans\\evidence\\f04-rendered-20260920\\controller\\scripts\\runtime-test.ps1"	
++++ "b/C:\\Users\\Arthur\\Sync\\Projects\\RimWorld Mods\\HaulersDream\\docs\\plans\\evidence\\f45-production-20260920\\controller\\scripts\\runtime-test.ps1"	
+@@ -16,7 +16,7 @@ param(
+     [string]$GameRoot = 'C:\Steam\steamapps\common\RimWorld',
+     [string]$WorkshopRoot = 'C:\Steam\steamapps\workshop\content\294100',
+     [string]$PlayerSaveDataRoot,
+-    [ValidateSet('bootstrap', 'BG01', 'BG02', 'BG03-P1', 'L04-O1', 'CAP01', 'CAP02', 'CAP03-B', 'CAP03-A', 'CAP03-C', 'L04-O1-DELIVERY', 'L04-B1', 'L04-B1-D2', 'L40-Q1', 'L40-UI-P0', 'ROBOTS-R0', 'ROBOTS-R1-AUTO', 'AF1-LIFECYCLE', 'AF1-SAVE', 'AF1-SAVE-MISSING', 'AF1-SAVE-VERSION', 'AF1-SAVE-NULLREF', 'REFUEL-G1', 'RIMMS-DLV1', 'F34-MIXED-CUT', 'F04-SETTINGS')]
++    [ValidateSet('bootstrap', 'BG01', 'BG02', 'BG03-P1', 'L04-O1', 'CAP01', 'CAP02', 'CAP03-B', 'CAP03-A', 'CAP03-C', 'L04-O1-DELIVERY', 'L04-B1', 'L04-B1-D2', 'L40-Q1', 'L40-UI-P0', 'ROBOTS-R0', 'ROBOTS-R1-AUTO', 'AF1-LIFECYCLE', 'AF1-SAVE', 'AF1-SAVE-MISSING', 'AF1-SAVE-VERSION', 'AF1-SAVE-NULLREF', 'REFUEL-G1', 'RIMMS-DLV1', 'F34-MIXED-CUT', 'F04-SETTINGS', 'F45-PB-PRODUCTION')]
+     [string]$CaseId = 'bootstrap',
+     [ValidateSet('bootstrap', 'baseline-gap', 'satisfied')]
+     [string]$ExpectedBehavior = 'bootstrap',
+@@ -32,6 +32,7 @@ param(
+     [string]$RefuelGroupProfile = (Join-Path (Split-Path -Parent $PSScriptRoot) 'evidence\refuel-g1-profile.json'),
+     [string]$NearbyDeliveryProfile = (Join-Path (Split-Path -Parent $PSScriptRoot) 'evidence\dlv1-profile.json'),
+     [string]$F34MixedProfile,
++    [string]$PeriodicBillsRoot = (Join-Path $env:TEMP 'haulersdream-periodic-bills-investigation-20260919/workshop-content/steamapps/workshop/content/294100/3685837355'),
+     [switch]$CommonSense
+ )
+ 
+@@ -212,7 +213,7 @@ function Read-RobotMetadataReceipt([string]$Path, $Expected) {
+ }
+ 
+ function Initialize-RobotAssemblyIdentities([string[]]$Paths, [string]$Runtime) {
+-    $taskRequiredCount=if ($CaseId -ceq 'F34-MIXED-CUT') { 11 } elseif ($CaseId -in $script:taskAf1Cases -or $CaseId -in @('REFUEL-G1','RIMMS-DLV1','F34-MIXED-CUT','F04-SETTINGS')) { 10 } else { 12 }
++    $taskRequiredCount=if ($CaseId -cin @('F34-MIXED-CUT','F45-PB-PRODUCTION')) { 11 } elseif ($CaseId -in $script:taskAf1Cases -or $CaseId -in @('REFUEL-G1','RIMMS-DLV1','F34-MIXED-CUT','F04-SETTINGS')) { 10 } else { 12 }
+     if ([IntPtr]::Size -ne 8 -or $Paths.Count -ne $taskRequiredCount) { throw 'Native metadata preparation requires x64 and its exact closed assembly count (AF1/G1 ten; robots twelve).' }
+     $taskMetadataRoot=Join-Path $script:taskRun 'prepared-assembly-metadata'
+     Assert-ChildPath $taskMetadataRoot $script:taskRun
+@@ -298,6 +299,7 @@ function Assert-RobotPreparedMetadata($Manifest) {
+     $taskExpectedNames=@('Assembly-CSharp','UnityEngine.CoreModule','0Harmony','HarmonyMod','HaulersDream','HaulersDream.Core','HaulersDream.RuntimeHarness','UnityEngine.IMGUIModule','UnityEngine.ScreenCaptureModule','UnityEngine.TextRenderingModule','AIRobot','MiscRobotsPlusPlus')
+     if ($Manifest.caseId -in $script:taskAf1Cases -or $Manifest.caseId -in @('REFUEL-G1','RIMMS-DLV1','F04-SETTINGS')) { $taskExpectedNames=$taskExpectedNames[0..9] }
+     if ($Manifest.caseId -ceq 'F34-MIXED-CUT') { $taskExpectedNames=@($taskExpectedNames[0..9])+@('HaulersDream.F34Native') }
++    if ($Manifest.caseId -ceq 'F45-PB-PRODUCTION') { $taskExpectedNames=@($taskExpectedNames[0..9])+@('PeriodicBills') }
+     if (@($Manifest.expectedAssemblies).Count -ne $taskExpectedNames.Count -or @($taskProof.receipts).Count -ne $taskExpectedNames.Count) { throw 'Native metadata assembly/receipt census differs.' }
+     for ($taskIndex=0; $taskIndex -lt $taskExpectedNames.Count; $taskIndex++) {
+         $taskExpected=$Manifest.expectedAssemblies[$taskIndex]
+@@ -509,7 +511,7 @@ function Read-PreparedRun {
+     # files as the system code page and corrupts non-ASCII protected/copy paths.
+     $taskManifest = Get-Content -LiteralPath $taskManifestPath -Encoding UTF8 -Raw | ConvertFrom-Json
+     $taskState = Get-Content -LiteralPath (Join-Path $script:taskRun 'controller-state.json') -Encoding UTF8 -Raw | ConvertFrom-Json
+-    if ($taskManifest.schemaVersion -ne 1 -or $taskManifest.runDirectory -ne $script:taskRun -or $taskManifest.caseId -notin @('bootstrap', 'BG01', 'BG02', 'BG03-P1', 'L04-O1', 'CAP01', 'CAP02', 'CAP03-B', 'CAP03-A', 'CAP03-C', 'L04-O1-DELIVERY', 'L04-B1', 'L04-B1-D2', 'L40-Q1', 'L40-UI-P0', 'ROBOTS-R0', 'ROBOTS-R1-AUTO', 'AF1-LIFECYCLE', 'AF1-SAVE', 'AF1-SAVE-MISSING', 'AF1-SAVE-VERSION', 'AF1-SAVE-NULLREF', 'REFUEL-G1', 'RIMMS-DLV1', 'F34-MIXED-CUT', 'F04-SETTINGS')) {
++    if ($taskManifest.schemaVersion -ne 1 -or $taskManifest.runDirectory -ne $script:taskRun -or $taskManifest.caseId -notin @('bootstrap', 'BG01', 'BG02', 'BG03-P1', 'L04-O1', 'CAP01', 'CAP02', 'CAP03-B', 'CAP03-A', 'CAP03-C', 'L04-O1-DELIVERY', 'L04-B1', 'L04-B1-D2', 'L40-Q1', 'L40-UI-P0', 'ROBOTS-R0', 'ROBOTS-R1-AUTO', 'AF1-LIFECYCLE', 'AF1-SAVE', 'AF1-SAVE-MISSING', 'AF1-SAVE-VERSION', 'AF1-SAVE-NULLREF', 'REFUEL-G1', 'RIMMS-DLV1', 'F34-MIXED-CUT', 'F04-SETTINGS', 'F45-PB-PRODUCTION')) {
+         throw 'Unsupported manifest or mismatched run directory.'
+     }
+     if ($taskState.manifestSha256 -ne (Get-Sha256 $taskManifestPath)) { throw 'Prepared manifest was modified; refuse to use it.' }
+@@ -528,7 +530,18 @@ function Read-PreparedRun {
+             throw "Unexpected manifest layout: $($taskExpected[0])"
+         }
+     }
+-    if ($taskManifest.caseId -in @('ROBOTS-R0','ROBOTS-R1-AUTO','F04-SETTINGS')) { Assert-RobotPreparedMetadata $taskManifest }
++    if ($taskManifest.caseId -in @('ROBOTS-R0','ROBOTS-R1-AUTO','F04-SETTINGS','F45-PB-PRODUCTION')) { Assert-RobotPreparedMetadata $taskManifest }
++    if ($taskManifest.caseId -ceq 'F45-PB-PRODUCTION') {
++        if ($taskManifest.expectedBehavior -cne 'satisfied' -or $taskManifest.negativeControl -cne 'None' -or $taskManifest.hdSource -cne 'Built' -or
++            (@($taskManifest.expectedMods | ForEach-Object packageId) -join '|') -cne 'brrainz.harmony|ludeon.rimworld|giwaffed.haulersdream|custom.periodicbills|giwaffed.haulersdream.runtimeharness' -or
++            $taskManifest.PSObject.Properties['f34MixedProfile']) { throw 'F45 production requires its exact five-package candidate context.' }
++        foreach ($taskProductionPin in @(
++            @('HaulersDream','32D57A64B3B35E1DF652BA66BE2BEECE923C60B42201955E31B4C587F7385C88'),
++            @('HaulersDream.Core','D623F164CEB112A8BB702F907CE0C6442488A19C074045047190AD36F09A6F3A'),
++            @('PeriodicBills','AAE78E0DDD7CE5BA70CB13481E5F71E0FC6D47700BE27054DD19358C7EA64D9A'))) {
++            if (@($taskManifest.expectedAssemblies | Where-Object { $_.name -ceq $taskProductionPin[0] -and $_.sha256 -ceq $taskProductionPin[1] }).Count -ne 1) { throw 'F45 production selected image differs.' }
++        }
++    }
+     if ($taskManifest.caseId -ceq 'F04-SETTINGS') {
+         if ($taskManifest.expectedBehavior -cne 'satisfied' -or $taskManifest.negativeControl -cne 'None' -or $taskManifest.hdSource -cne 'Built' -or
+             @($taskManifest.expectedMods).Count -ne 4 -or $taskManifest.PSObject.Properties['f34MixedProfile']) { throw 'F04-SETTINGS requires Built/satisfied/None, four packages and no companion profile.' }
+@@ -809,6 +822,15 @@ function Test-RequiredAssertion($Assertions, [string]$Id, [bool]$Expected) {
+ }
+ 
+ if ($Action -eq 'Prepare') {
++    if ($CaseId -ceq 'F45-PB-PRODUCTION') {
++        if ($RunDirectory -or $ExpectedBehavior -cne 'satisfied' -or $NegativeControl -cne 'None' -or $CommonSense -or $HdSource -cne 'Built' -or $F34MixedProfile) { throw 'F45 production requires Built/satisfied/None, no extra compatibility profile, and a fresh controller-generated ID.' }
++        $PeriodicBillsRoot=Get-CanonicalPath $PeriodicBillsRoot
++        Assert-NoReparsePath $PeriodicBillsRoot
++        if ((Get-Sha256 (Join-Path $PeriodicBillsRoot '1.6/Assemblies/PeriodicBills.dll')) -cne 'AAE78E0DDD7CE5BA70CB13481E5F71E0FC6D47700BE27054DD19358C7EA64D9A' -or
++            @(Get-ChildItem -LiteralPath $PeriodicBillsRoot -Recurse -File -Force).Count -ne 13) { throw 'Actual downloaded PB package differs.' }
++        if ((Get-Sha256 (Join-Path $BuiltModRoot '1.6/Assemblies/HaulersDream.dll')) -cne '32D57A64B3B35E1DF652BA66BE2BEECE923C60B42201955E31B4C587F7385C88' -or
++            (Get-Sha256 (Join-Path $BuiltModRoot '1.6/Assemblies/HaulersDream.Core.dll')) -cne 'D623F164CEB112A8BB702F907CE0C6442488A19C074045047190AD36F09A6F3A') { throw 'F45 production candidate pair differs.' }
++    }
+     if ($CaseId -ceq 'F04-SETTINGS') {
+         if ($RunDirectory -or $ExpectedBehavior -cne 'satisfied' -or $NegativeControl -cne 'None' -or $CommonSense -or $HdSource -cne 'Built' -or $F34MixedProfile) { throw 'F04-SETTINGS requires Built/satisfied/None, no CommonSense or companion profile, and a fresh controller-generated ID.' }
+     }
+@@ -932,6 +954,7 @@ if ($Action -eq 'Prepare') {
+         $taskProtectedRoots += @((Join-Path $WorkshopRoot '3033901359'), (Join-Path $WorkshopRoot '3416243474'))
+     }
+     if ($CaseId -in @('ROBOTS-R0','ROBOTS-R1-AUTO')) { $taskProtectedRoots += @($taskRobotPackages | ForEach-Object { $_.root }) }
++    if ($CaseId -ceq 'F45-PB-PRODUCTION') { $taskProtectedRoots += @($PeriodicBillsRoot,$taskHdRoot,$HarnessAssembly) }
+     if ($CaseId -eq 'ROBOTS-R1-AUTO') {
+         $taskProtectedRoots += @($taskR1Profile.content.root,$RobotAutomaticProfile,$taskR1Profile.harness.path,$taskR1Profile.harness.pdbPath,$taskR1Profile.harness.sourceManifestPath,$taskR1Profile.harness.reviewReceiptPath)
+     }
+@@ -974,6 +997,10 @@ if ($Action -eq 'Prepare') {
+     $taskNeatRoot = Join-Path $taskRuntime 'Mods\NeatStorage'
+     $taskHdDestination = Join-Path $taskRuntime 'Mods\HaulersDream'
+     $taskHarnessRoot = Join-Path $taskRuntime 'Mods\HaulersDreamRuntimeHarness'
++    if ($CaseId -ceq 'F45-PB-PRODUCTION') {
++        $taskPbRoot = Join-Path $taskRuntime 'Mods\PeriodicBills'
++        Copy-VerifiedTree $PeriodicBillsRoot $taskPbRoot 'periodic-bills'
++    }
+     Copy-VerifiedTree (Join-Path $WorkshopRoot '2009463077') $taskHarmonyRoot 'harmony'
+     if ($CommonSense) { Copy-VerifiedTree (Join-Path $WorkshopRoot '1561769193') $taskCsRoot 'common-sense' }
+     if ($CaseId -in @('CAP03-B','CAP03-A','CAP03-C')) {
+@@ -1033,6 +1060,7 @@ if ($Action -eq 'Prepare') {
+         }
+     }
+     $taskMods.Add([pscustomobject]@{ packageId = 'giwaffed.haulersdream'; rootPath = $taskHdDestination })
++    if ($CaseId -ceq 'F45-PB-PRODUCTION') { $taskMods.Add([pscustomobject]@{ packageId = 'custom.periodicbills'; rootPath = $taskPbRoot }) }
+     $taskMods.Add([pscustomobject]@{ packageId = 'giwaffed.haulersdream.runtimeharness'; rootPath = $taskHarnessRoot })
+     $taskKnownExpansions = @()
+     foreach ($taskDataDir in Get-ChildItem -LiteralPath (Join-Path $taskRuntime 'Data') -Directory) {
+@@ -1077,7 +1105,7 @@ $taskKnownXml
+         (Join-Path $taskHdDestination '1.6\Assemblies\HaulersDream.Core.dll'),
+         (Join-Path $taskHarnessRoot 'Assemblies\HaulersDream.RuntimeHarness.dll')
+     )
+-    if ($CaseId -in @('L40-Q1','L40-UI-P0','ROBOTS-R0','ROBOTS-R1-AUTO') -or $CaseId -in $script:taskAf1Cases -or $CaseId -in @('REFUEL-G1','RIMMS-DLV1','F34-MIXED-CUT','F04-SETTINGS')) {
++    if ($CaseId -in @('L40-Q1','L40-UI-P0','ROBOTS-R0','ROBOTS-R1-AUTO') -or $CaseId -in $script:taskAf1Cases -or $CaseId -in @('REFUEL-G1','RIMMS-DLV1','F34-MIXED-CUT','F04-SETTINGS','F45-PB-PRODUCTION')) {
+         $taskAssemblyPaths += @('UnityEngine.IMGUIModule.dll','UnityEngine.ScreenCaptureModule.dll','UnityEngine.TextRenderingModule.dll') | ForEach-Object {
+             Join-Path $taskRuntime ('RimWorldWin64_Data\Managed\' + $_)
+         }
+@@ -1096,6 +1124,7 @@ $taskKnownXml
+         }
+     }
+     if ($CaseId -ceq 'F34-MIXED-CUT') { $taskAssemblyPaths += Join-Path $taskHarnessRoot 'Assemblies\HaulersDream.F34Native.dll' }
++    if ($CaseId -ceq 'F45-PB-PRODUCTION') { $taskAssemblyPaths += Join-Path $taskPbRoot '1.6\Assemblies\PeriodicBills.dll' }
+     $taskConfigFiles = @(Get-ChildItem -LiteralPath $taskConfig -File | ForEach-Object { [pscustomobject]@{ path = $_.FullName; sha256 = Get-Sha256 $_.FullName } })
+     if ($CaseId -eq 'ROBOTS-R1-AUTO') {
+         $taskR1PreparedPath=Join-Path $script:taskRun 'robot-r1-profile.json'
+@@ -1143,7 +1172,7 @@ $taskKnownXml
+         knownExpansions = $taskKnownExpansions; configFiles = $taskConfigFiles; copiedFiles = @($taskCopiedFiles.ToArray())
+         protectedRoots = $taskProtectedRoots; protectedBefore = $taskProtectedBefore
+         startupDeadlineSeconds = 300
+-        semantics = if ($CaseId -ceq 'F04-SETTINGS') { 'Native settings rendering fixture compiled into the host; screenshots, geometry, cleanup and whole-log review are required. No automatic F04 acceptance.' } elseif ($CaseId -ceq 'F34-MIXED-CUT') { 'Paused mixed-plant boundary capture; baseline failures preserved; no full F34 acceptance.' } elseif ($CaseId -ceq 'RIMMS-DLV1') { $taskDlv1Read.profile.scope }
++        semantics = if ($CaseId -ceq 'F45-PB-PRODUCTION') { 'Native Periodic Bills recipe production, two cycles and controlled boundary probe; real save checkpoints, clone baseline characterized. Full logs and accounting require review; no actual reload/full F45 acceptance claim.' } elseif ($CaseId -ceq 'F04-SETTINGS') { 'Native settings rendering fixture compiled into the host; screenshots, geometry, cleanup and whole-log review are required. No automatic F04 acceptance.' } elseif ($CaseId -ceq 'F34-MIXED-CUT') { 'Paused mixed-plant boundary capture; baseline failures preserved; no full F34 acceptance.' } elseif ($CaseId -ceq 'RIMMS-DLV1') { $taskDlv1Read.profile.scope }
+             elseif ($CaseId -ceq 'REFUEL-G1') { $taskRefuelG1Read.profile.scope }
+             elseif ($CaseId -in $script:taskAf1Cases) { $taskAf1Read.profile.scope }
+             elseif ($CaseId -eq 'BG03-P1') { 'Partial initially tagged bill ingredients, two floor sources and native cooking/cleaning only; other BG03 controls and original-report convergence remain unfinished.' }
+@@ -1163,7 +1192,7 @@ $taskKnownXml
+             elseif ($CaseId -eq 'L04-O1-DELIVERY') { 'Actual first automatic bulk delivery and bounded follow-up; original report loops remain separate.' }
+             else { 'Bootstrap isolation only; optional intentional-error control is not a clean-runtime pass.' }
+     }
+-    if ($CaseId -in @('ROBOTS-R0','ROBOTS-R1-AUTO') -or $CaseId -in $script:taskAf1Cases -or $CaseId -in @('REFUEL-G1','RIMMS-DLV1','F34-MIXED-CUT','F04-SETTINGS')) {
++    if ($CaseId -in @('ROBOTS-R0','ROBOTS-R1-AUTO') -or $CaseId -in $script:taskAf1Cases -or $CaseId -in @('REFUEL-G1','RIMMS-DLV1','F34-MIXED-CUT','F04-SETTINGS','F45-PB-PRODUCTION')) {
+         $taskRobotIdentities=Initialize-RobotAssemblyIdentities $taskAssemblyPaths $taskRuntime
+         $taskManifest.expectedAssemblies=$taskRobotIdentities.assemblies
+         $taskManifest.robotMetadata=$taskRobotIdentities.provenance
+@@ -1287,7 +1316,7 @@ $taskResultPath = Join-Path $taskManifest.evidenceDirectory 'result.json'
+ $taskResult = $null
+ if (Test-Path -LiteralPath $taskResultPath) {
+     try {
+-        if ($taskCase -cin @('RIMMS-DLV1','F34-MIXED-CUT','F04-SETTINGS')) { $taskResult = Read-Dlv1CommonResult $taskResultPath }
++        if ($taskCase -cin @('RIMMS-DLV1','F34-MIXED-CUT','F04-SETTINGS','F45-PB-PRODUCTION')) { $taskResult = Read-Dlv1CommonResult $taskResultPath }
+         else { $taskResult = Get-Content -LiteralPath $taskResultPath -Encoding UTF8 -Raw | ConvertFrom-Json }
+     }
+     catch { $taskResult = [pscustomobject]@{ status = 'result-incomplete'; detail = $_.Exception.Message } }
+@@ -1305,6 +1334,9 @@ if ($Action -eq 'Status') {
+ }
+ 
+ $taskProblems = New-Object 'System.Collections.Generic.List[string]'
++if ($taskCase -ceq 'F45-PB-PRODUCTION') {
++    $taskProblems.Add('F45 production capture requires independent native work, payment/product, schedule, cleanup and whole-log review. Actual saved checkpoints do not establish reload; clone baseline is an explicitly characterized upstream defect, not a repaired pass.')
++}
+ if ($taskCase -ceq 'F04-SETTINGS') {
+     $taskProblems.Add('F04 settings rendering requires independent screenshot, geometry, actual-window, cleanup and whole-log review. Automatic semantic acceptance remains open.')
+ }
+@@ -1376,7 +1408,7 @@ if ($taskResult -and $taskResult.status -ne 'result-incomplete') {
+             if (-not (Test-RequiredAssertion $taskResult.assertions $taskRequired $true)) { $taskProblems.Add('Missing unique assembly assertion: ' + $taskRequired) }
+         }
+     }
+-    if ($taskCase -in @('ROBOTS-R0','ROBOTS-R1-AUTO') -or $taskCase -in $script:taskAf1Cases -or $taskCase -in @('REFUEL-G1','RIMMS-DLV1','F34-MIXED-CUT','F04-SETTINGS')) { Test-RobotResultMvids $taskResult $taskManifest $taskProblems }
++    if ($taskCase -in @('ROBOTS-R0','ROBOTS-R1-AUTO') -or $taskCase -in $script:taskAf1Cases -or $taskCase -in @('REFUEL-G1','RIMMS-DLV1','F34-MIXED-CUT','F04-SETTINGS','F45-PB-PRODUCTION')) { Test-RobotResultMvids $taskResult $taskManifest $taskProblems }
+     if ($taskCase -eq 'ROBOTS-R1-AUTO') {
+         foreach ($taskR1Assertion in @('robot-r1-context-intact','robot-r1-cleanup-complete','robot-r1-automatic-selection','robot-r1-two-material-inventory','robot-r1-native-transfer-delivery','robot-r1-native-reservation','robot-r1-native-job-success','robot-r1-stable-storage','robot-r1-fixture-complete')) {
+             if (-not (Test-RequiredAssertion $taskResult.assertions $taskR1Assertion $true)) { $taskProblems.Add('Missing unique R1 capture assertion: '+$taskR1Assertion) }
+@@ -1717,7 +1749,7 @@ else {
+     refuelGroupEvidence = $taskRefuelG1Evidence
+     nearbyDeliveryEvidence = $taskDlv1Evidence
+     f34MixedBoundaryEvidence = $taskF34Evidence
+-    scope = if ($taskCase -ceq 'F04-SETTINGS') { 'Native settings render only; inspect actual screenshots, text geometry, programmatic traversal, cleanup and logs. No automatic feedback completion.' } elseif ($taskCase -ceq 'F34-MIXED-CUT') { 'Eighteen paused native/product boundaries; full raw snapshots/assertions require independent review. Baseline stays failed. Productive cut/UI/poll/MP/full F34 remain open.' } elseif ($taskCase -ceq 'RIMMS-DLV1') { 'Three controlled native delivery scenes; independent complete transactions/physical owner/manifest/lineage/job/observer/Home/environment/process/log review remains mandatory. No automatic native, command/editor/MP/DLV2/save/feedback acceptance.' }
++    scope = if ($taskCase -ceq 'F45-PB-PRODUCTION') { 'Focused native periodic production only; actual checkpoint restart and clone defect disposition remain separate. No automatic feedback completion.' } elseif ($taskCase -ceq 'F04-SETTINGS') { 'Native settings render only; inspect actual screenshots, text geometry, programmatic traversal, cleanup and logs. No automatic feedback completion.' } elseif ($taskCase -ceq 'F34-MIXED-CUT') { 'Eighteen paused native/product boundaries; full raw snapshots/assertions require independent review. Baseline stays failed. Productive cut/UI/poll/MP/full F34 remain open.' } elseif ($taskCase -ceq 'RIMMS-DLV1') { 'Three controlled native delivery scenes; independent complete transactions/physical owner/manifest/lineage/job/observer/Home/environment/process/log review remains mandatory. No automatic native, command/editor/MP/DLV2/save/feedback acceptance.' }
+         elseif ($taskCase -ceq 'REFUEL-G1') { 'Six ordinary native refuel scenes only; independent complete scene/item graph, observers, publication, Home, cleanup, process and log review is mandatory. No automatic acceptance; fault/save/recovery/UI/CE/MP remain separate.' }
+         elseif ($taskCase -in $script:taskAf1Cases) { 'Finite AF1 native capture only; complete independent record/observer/serializer/save/log review remains mandatory. Same-process reload is not a full restart; automatic work, refuel and complete food behavior remain separate.' }
+         elseif ($taskCase -eq 'BG03-P1') { 'Only initially tagged milk plus two remaining floor ingredients, native bill/cleaning and bounded follow-up are measured. Other BG03 controls and original-report convergence remain unverified.' }

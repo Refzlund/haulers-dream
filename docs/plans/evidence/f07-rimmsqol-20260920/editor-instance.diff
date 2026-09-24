@@ -1,0 +1,20 @@
+--- build-v4/RimmsCommand.cs
++++ build-v5/RimmsCommand.cs
+@@ -329,10 +329,16 @@
+         private Flow Flow() => (Flow)AccessTools.Field(typeof(QOLMod), "flow").GetValue(qol);
+         private void Apply<T>(string field, T value)
+         {
++            // Native config saving removes inactive/reset entries from SettingsStorage.
++            // Reopening the real selection page regenerates those instances; use its public path.
++            ISettingsInstance previous = edit;
++            edit = SettingsStorage.generateListForSelection(properties).Single(x => x.getKey() == definition.defName);
++            Guard(SettingsStorage.GetInstances(properties).Count(x => ReferenceEquals(x, edit)) == 1,
++                "Mutation must target the actual registered RIMMS editor instance.");
+             edit.set(field, value); qol.WriteSettings();
+             object actual = typeof(WorkGiverDef).GetField(field).GetValue(definition);
+             Guard(Equals(actual, value), "Actual RIMMS live merger failed: " + field);
+-            emit("f07-editor-apply", field + "=" + actual + "; active=" + edit.getActive());
++            emit("f07-editor-apply", field + "=" + actual + "; active=" + edit.getActive() + "; reselected=" + !ReferenceEquals(previous, edit));
+         }
+         private List<FloatMenuOption> MenuOptions()
+         {

@@ -1,0 +1,76 @@
+--- v2/src/TransporterPersistence.cs
++++ diagnostic-v3/src/TransporterPersistence.cs
+@@ -77,7 +77,11 @@
+             if(stage=="warmup"){if(WarmReady())MakeActor();return;}if(gui!=null)return;
+             ObserveEnvironment();Guard(Fit(actor),"Native actor became medically unfit; no product inference.");Conservation();
+             if(stage=="stable"){
+-                Guard(Physical()==stablePhysical&&FaultProtected()==stableProtection,"Settled fault/provider custody and metadata changed.");
++                string physicalNow=Physical(),protectionNow=FaultProtected();
++                if(physicalNow!=stablePhysical||protectionNow!=stableProtection)
++                    emit("f11-stability-mismatch","beforePhysical="+stablePhysical+"; afterPhysical="+physicalNow
++                        +"; beforeProtection="+stableProtection+"; afterProtection="+protectionNow+"; actualState="+State());
++                Guard(physicalNow==stablePhysical&&protectionNow==stableProtection,"Settled fault/provider custody and metadata changed.");
+                 AssertCache("stable",false);if(ticks.TicksGame-stableStart>=300){Record("physical387-personal-metadata-stable300",faultCases==5&&expectedTotal==387,State());Record("fixture-complete",!failed,"commands="+commands+"; "+State());status=failed?"failed":"passed";Cleanup();}}
+         }
+         private void MakeActor()
+@@ -108,7 +112,7 @@
+             Guard(actor.inventory.innerContainer.TryDrop(missing,actor.Position,map,ThingPlaceMode.Near,out var actualMissing)&&actualMissing!=null&&actualMissing.Spawned,"Native unintentional removal failed.");
+             refresh.Invoke(null,new object[]{actor});Record("actual-previously-missing-input",MemoryCount(Grenade,null)==2&&Carried(Grenade,null).Count==1,"Native direct drop is explicit unintentional scene input; "+State());Guard(!failed,"Unintentional memory input differs.");
+             Drop("preserve-previously-missing",last,5,3,1,1,false,0);
+-            Guard(commands==5&&expectedTotal==35,"Exact ordinary provider smoke differs.");Conservation();RunFaults();Conservation();stablePhysical=Physical();stableStart=ticks.TicksGame;stage="stable";ticks.CurTimeSpeed=TimeSpeed.Superfast;
++            Guard(commands==5&&expectedTotal==35,"Exact ordinary provider smoke differs.");Conservation();RunFaults();Conservation();stablePhysical=Physical();stableStart=ticks.TicksGame;stage="stable";emit("f11-stability-before","physical="+stablePhysical+"; protection="+stableProtection+"; "+State());ticks.CurTimeSpeed=TimeSpeed.Superfast;
+         }
+         private void KeepInput(string name)
+         {
+@@ -137,9 +141,16 @@
+         private void Observe()
+         {
+             observer=new Harmony("haulersdream.tests.f11.providers."+Path.GetFileName(run));observer.Patch(AccessTools.Method(typeof(Root),"OnGUI"),postfix:new HarmonyMethod(typeof(TransporterPersistence),nameof(OnGui)));
++            observer.Patch(AccessTools.Method(typeof(Pawn_JobTracker),"StartJob"),prefix:new HarmonyMethod(typeof(TransporterPersistence),nameof(BeforeNativeStart)));
++            observer.Patch(AccessTools.Method(typeof(Pawn_JobTracker),"EndCurrentJob"),prefix:new HarmonyMethod(typeof(TransporterPersistence),nameof(BeforeNativeEnd)));
+             observer.Patch(refresh,prefix:new HarmonyMethod(typeof(TransporterPersistence),nameof(BeforeRefresh)));
+             observer.Patch(AccessTools.Method(memoryType,"InformOfDroppedSidearm",new[]{typeof(Thing),typeof(bool)}),prefix:new HarmonyMethod(typeof(TransporterPersistence),nameof(BeforeForget)));
+         }
++        // Immutable entry receipts only: no returned job, native arguments, fields or control flow are changed.
++        private static void BeforeNativeStart(Pawn ___pawn,Job newJob,JobCondition lastJobEndCondition,ThinkNode jobGiver,bool fromQueue)
++        {Watch(c=>{if(___pawn!=c.actor||c.stage!="stable")return;c.emit("f11-native-start-job-entry","new="+newJob?.loadID+":"+newJob?.def?.defName+"; lastEnd="+lastJobEndCondition+"; giver="+jobGiver?.GetType().FullName+"; fromQueue="+fromQueue+"; "+c.State()+"; protection="+c.FaultProtected());});}
++        private static void BeforeNativeEnd(Pawn ___pawn,JobCondition condition,bool startNewJob,bool canReturnToPool)
++        {Watch(c=>{if(___pawn!=c.actor||c.stage!="stable")return;c.emit("f11-native-end-job-entry","condition="+condition+"; startNew="+startNewJob+"; canPool="+canReturnToPool+"; "+c.State()+"; protection="+c.FaultProtected());});}
+         private static void OnGui(){Watch(c=>{if(c.gui==null||Event.current?.type!=EventType.Repaint)return;var a=c.gui;c.gui=null;a();});}
+         private static string Stack()=>string.Join(" > ",new System.Diagnostics.StackTrace().GetFrames().Select(f=>f.GetMethod()).Where(m=>m.DeclaringType!=null&&(m.DeclaringType.Assembly==Product||m.DeclaringType.Assembly.GetName().Name=="CombatExtended"||m.DeclaringType.Assembly.GetName().Name=="SimpleSidearms")).Select(m=>m.DeclaringType.FullName+"."+m.Name));
+         private static void BeforeRefresh(Pawn __0){Watch(c=>{if(!c.insideCommand||__0!=c.actor)return;string stack=Stack();Guard(stack.Contains("HaulersDream.InventoryDropCommand.DropInventoryCountSynced"),"CE callback outside actual product command.");c.ceCallbacks++;c.callbacks.Add("CE: "+stack);c.emit("f11-provider-ce-refresh",stack);});}
+--- v2/build.ps1
++++ diagnostic-v3/build.ps1
+@@ -2,7 +2,7 @@
+ $env:TEMP = 'C:/Users/Arthur/AppData/Local/HaulersDreamQA/runtime-temp'
+ $env:TMP = $env:TEMP
+ $f40Root = $PSScriptRoot
+-$f40Build = 'C:/Users/Arthur/AppData/Local/HaulersDreamQA/inputs/f11-fault-recovery-20260924/HarnessBuild-v2'
++$f40Build = 'C:/Users/Arthur/AppData/Local/HaulersDreamQA/inputs/f11-fault-recovery-20260924/HarnessBuild-v3-diagnostic'
+ $f40Product = 'C:/Users/Arthur/AppData/Local/HaulersDreamQA/inputs/f11-fault-recovery-20260924/runtime-v2'
+ $f40References = 'C:/Users/Arthur/AppData/Local/Temp/haulersdream-f34-host-root-build-20260920'
+ $f40Game = 'C:/Steam/steamapps/common/RimWorld/RimWorldWin64_Data/Managed'
+--- v2/read-host.ps1
++++ diagnostic-v3/read-host.ps1
+@@ -1,17 +1,17 @@
+ $ErrorActionPreference='Stop'
+ $env:TEMP='C:/Users/Arthur/AppData/Local/HaulersDreamQA/runtime-temp'
+ $env:TMP=$env:TEMP
+-$f11Host=[IO.Path]::GetFullPath('C:/Users/Arthur/AppData/Local/HaulersDreamQA/inputs/f11-fault-recovery-20260924/HarnessBuild-v2/Assemblies/HaulersDream.RuntimeHarness.dll')
++$f11Host=[IO.Path]::GetFullPath('C:/Users/Arthur/AppData/Local/HaulersDreamQA/inputs/f11-fault-recovery-20260924/HarnessBuild-v3-diagnostic/Assemblies/HaulersDream.RuntimeHarness.dll')
+ $f11Output=[IO.Path]::GetFullPath((Join-Path $PSScriptRoot 'host-metadata.json'))
+ if(Test-Path -LiteralPath $f11Output){throw 'Preserve prior metadata.'}
+ $f11Reader=Join-Path $PSScriptRoot 'controller/scripts/runtime-robot-pe-reader.ps1'
+ $f11I64=[Convert]::ToBase64String([Text.Encoding]::UTF8.GetBytes($f11Host))
+ $f11O64=[Convert]::ToBase64String([Text.Encoding]::UTF8.GetBytes($f11Output))
+ $f11Args=@('-NoProfile','-NonInteractive','-ExecutionPolicy','Bypass','-File',('"'+$f11Reader+'"'),'-InputBase64',$f11I64,'-OutputBase64',$f11O64)
+-$f11Process=Start-Process -FilePath 'C:/Windows/System32/WindowsPowerShell/v1.0/powershell.exe' -ArgumentList $f11Args -WindowStyle Hidden -PassThru -RedirectStandardError (Join-Path $PSScriptRoot 'metadata-v2.stderr.txt') -RedirectStandardOutput (Join-Path $PSScriptRoot 'metadata-v2.stdout.txt')
++$f11Process=Start-Process -FilePath 'C:/Windows/System32/WindowsPowerShell/v1.0/powershell.exe' -ArgumentList $f11Args -WindowStyle Hidden -PassThru -RedirectStandardError (Join-Path $PSScriptRoot 'metadata-v3.stderr.txt') -RedirectStandardOutput (Join-Path $PSScriptRoot 'metadata-v3.stdout.txt')
+ $f11Joined=$f11Process.WaitForExit(30000)
+ if(-not $f11Joined){$f11Process.Kill();$f11Process.WaitForExit();throw 'Owned metadata reader exceeded deadline.'}
+ $f11Process.Refresh()
+-[pscustomobject]@{pid=$f11Process.Id;joined=$f11Joined;exitCode=$f11Process.ExitCode;input=$f11Host;output=$f11Output}|ConvertTo-Json|Set-Content -LiteralPath (Join-Path $PSScriptRoot 'metadata-v2-process.json')
+-if($f11Process.ExitCode-ne0){Get-Content (Join-Path $PSScriptRoot 'metadata-v2.stderr.txt');throw 'Reader failed; retain receipt.'}
++[pscustomobject]@{pid=$f11Process.Id;joined=$f11Joined;exitCode=$f11Process.ExitCode;input=$f11Host;output=$f11Output}|ConvertTo-Json|Set-Content -LiteralPath (Join-Path $PSScriptRoot 'metadata-v3-process.json')
++if($f11Process.ExitCode-ne0){Get-Content (Join-Path $PSScriptRoot 'metadata-v3.stderr.txt');throw 'Reader failed; retain receipt.'}
+ Get-Content -LiteralPath $f11Output

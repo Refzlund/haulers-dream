@@ -96,7 +96,7 @@ namespace HaulersDream
         /// <summary>
         /// May HD apply its "share carried ingredients for crafting" machinery — the ingredient-share INJECTION
         /// (<see cref="Patch_WorkGiver_DoBill_TryFindBestBillIngredientsInSet"/> → <see cref="InventoryShare.AddSharableStacksForBill"/>),
-        /// the meet-in-the-middle carrier nudge (<see cref="Patch_WorkGiver_DoBill_JobOnThing"/>), and the
+        /// the meet-in-the-middle carrier nudge (<see cref="Patch_JobDriver_BillCarrierApproach"/>), and the
         /// gather-into-inventory conversions (BillPrepGather / BatchCraft) — to a bill worked by
         /// <paramref name="worker"/>? FALSE for a MECHANOID worker.
         ///

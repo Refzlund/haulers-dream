@@ -1,0 +1,157 @@
+--- v7/native-input.py
++++ v8/native-input.py
+@@ -1,10 +1,11 @@
+ """Bounded ordinary window messages to one test-owned inactive desktop game.
+ 
+ This does not activate windows, switch desktops, call SendInput, inject a DLL or
+-claim UI success. The native fixture must separately acknowledge real IMGUI.
++claim UI success. A single no-activate show request is allowed only for its exact
++hidden/iconic private window. Native observers must separately prove real IMGUI.
+ """
+ from pathlib import Path
+-import argparse, ctypes as C, ctypes.wintypes as W, datetime, json, math, os, time
++import argparse, ctypes as C, ctypes.wintypes as W, datetime, hashlib, json, math, os, re, time
+ 
+ def utc(): return datetime.datetime.now(datetime.timezone.utc).isoformat()
+ def read(p): return json.loads(p.read_text(encoding='utf-8-sig'))
+@@ -17,6 +18,16 @@
+ def bind(lib,name,result,*args):
+     fn=getattr(lib,name);fn.restype=result;fn.argtypes=args;return fn
+ 
++def start_filetime(stamp):
++    match=re.fullmatch(r'(\d{4}-\d\d-\d\dT\d\d:\d\d:\d\d)\.(\d{7})Z',stamp)
++    assert match,'Exact native controller UTC timestamp required.'
++    delta=datetime.datetime.strptime(match[1],'%Y-%m-%dT%H:%M:%S')-datetime.datetime(1601,1,1)
++    return (delta.days*86400+delta.seconds)*10_000_000+int(match[2])
++
++class Placement(C.Structure):
++    _fields_=[('length',W.UINT),('flags',W.UINT),('showCmd',W.UINT),
++              ('ptMinPosition',W.POINT),('ptMaxPosition',W.POINT),('rcNormalPosition',W.RECT)]
++
+ def main():
+     ap=argparse.ArgumentParser(description=__doc__)
+     ap.add_argument('--run',required=True,type=Path)
+@@ -27,6 +38,10 @@
+     assert m['caseId']=='F11-PRODUCER' and same(m['runDirectory'],run)
+     assert same(run.parent,Path(os.environ['TEMP'])/'haulersdream-runtime-tests')
+     assert len(run.name)==32 and int(run.name,16)>0
++    state=read(run/'controller-state.json')
++    assert state['runId']==run.name and state['status']=='launched' and state['processId']==args.pid
++    assert state['manifestSha256']==hashlib.sha256((run/'manifest.json').read_bytes()).hexdigest().upper()
++    expected_start=start_filetime(state['processStartedUtc'])
+     output=run/'evidence'/'f11-input';requests=output/'requests';receipts=output/'receipts'
+     requests.mkdir(parents=True,exist_ok=True);receipts.mkdir(exist_ok=False)
+     user=C.WinDLL('user32',use_last_error=True);kernel=C.WinDLL('kernel32',use_last_error=True)
+@@ -38,6 +53,10 @@
+     post=bind(user,'PostMessageW',W.BOOL,W.HWND,W.UINT,W.WPARAM,W.LPARAM)
+     get_pid=bind(user,'GetWindowThreadProcessId',W.DWORD,W.HWND,C.POINTER(W.DWORD))
+     is_window=bind(user,'IsWindow',W.BOOL,W.HWND)
++    visible=bind(user,'IsWindowVisible',W.BOOL,W.HWND)
++    iconic=bind(user,'IsIconic',W.BOOL,W.HWND)
++    placement=bind(user,'GetWindowPlacement',W.BOOL,W.HWND,C.POINTER(Placement))
++    show_noactivate=bind(user,'ShowWindowAsync',W.BOOL,W.HWND,C.c_int)
+     client_rect=bind(user,'GetClientRect',W.BOOL,W.HWND,C.POINTER(W.RECT))
+     class_name=bind(user,'GetClassNameW',C.c_int,W.HWND,W.LPWSTR,C.c_int)
+     callback=C.WINFUNCTYPE(W.BOOL,W.HWND,W.LPARAM)
+@@ -45,6 +64,7 @@
+     open_process=bind(kernel,'OpenProcess',W.HANDLE,W.DWORD,W.BOOL,W.DWORD)
+     image_path=bind(kernel,'QueryFullProcessImageNameW',W.BOOL,W.HANDLE,W.DWORD,W.LPWSTR,C.POINTER(W.DWORD))
+     close=bind(kernel,'CloseHandle',W.BOOL,W.HANDLE)
++    process_times=bind(kernel,'GetProcessTimes',W.BOOL,W.HANDLE,C.POINTER(W.FILETIME),C.POINTER(W.FILETIME),C.POINTER(W.FILETIME),C.POINTER(W.FILETIME))
+     def name(handle):
+         b=C.create_unicode_buffer(512);n=W.DWORD()
+         if not object_info(handle,2,b,C.sizeof(b),C.byref(n)): raise C.WinError(C.get_last_error())
+@@ -58,17 +78,74 @@
+         finally: close_desktop(h)
+         assert result!=private_name,'Test desktop became active; refuse input.'
+         return result
+-    process=open_process(0x1000,False,args.pid)
+-    if not process: raise C.WinError(C.get_last_error())
+-    try:
+-        b=C.create_unicode_buffer(32768);n=W.DWORD(len(b))
+-        if not image_path(process,0,b,C.byref(n)): raise C.WinError(C.get_last_error())
+-        assert same(b.value,run/'runtime'/'RimWorldWin64.exe'),b.value
+-    finally: close(process)
++    def process_identity():
++        process=open_process(0x1000,False,args.pid)
++        if not process: raise C.WinError(C.get_last_error())
++        try:
++            b=C.create_unicode_buffer(32768);n=W.DWORD(len(b))
++            if not image_path(process,0,b,C.byref(n)): raise C.WinError(C.get_last_error())
++            assert same(b.value,run/'runtime'/'RimWorldWin64.exe'),b.value
++            creation,end,kernel_time,user_time=W.FILETIME(),W.FILETIME(),W.FILETIME(),W.FILETIME()
++            if not process_times(process,C.byref(creation),C.byref(end),C.byref(kernel_time),C.byref(user_time)):raise C.WinError(C.get_last_error())
++            actual_start=(creation.dwHighDateTime<<32)|creation.dwLowDateTime
++            assert actual_start==expected_start,'Native PID creation time differs from controller.'
++            return dict(nativeExecutable=b.value,processStartedUtc=state['processStartedUtc'],creationFileTime=str(actual_start))
++        finally: close(process)
++    identity=process_identity()
+     initial_input=input_name();started=time.monotonic();seq=1;last_hwnd=None
+     emit(output/'worker-start.json',dict(pid=os.getpid(),nativePid=args.pid,runId=run.name,
+-         privateDesktop=private_name,inputDesktop=initial_input,nativeExecutable=b.value,startedUtc=utc(),
+-         route='PostMessageW to exact owned Unity window; native IMGUI acknowledgement required'))
++         privateDesktop=private_name,inputDesktop=initial_input,**identity,startedUtc=utc(),
++         route='One conditional private no-activate visibility request; PostMessageW to exact owned Unity window; native IMGUI acknowledgement required'))
++    def owned_window():
++        handles=[]
++        @callback
++        def visit(hwnd,lparam):
++            pid=W.DWORD();get_pid(hwnd,C.byref(pid));buf=C.create_unicode_buffer(128);class_name(hwnd,buf,len(buf))
++            if pid.value==args.pid and buf.value=='UnityWndClass':handles.append(hwnd)
++            return True
++        if not enum(private,visit,0):raise C.WinError(C.get_last_error())
++        assert len(handles)<=1,handles
++        return handles[0] if handles else None
++    def window_state(hwnd):
++        assert is_window(hwnd) and owned_window()==hwnd
++        pid=W.DWORD();thread=get_pid(hwnd,C.byref(pid));assert pid.value==args.pid and thread
++        assert name(get_desktop(thread))==private_name,'Owned window left the private desktop.'
++        assert process_identity()==identity
++        rect=W.RECT();assert client_rect(hwnd,C.byref(rect))
++        pos=Placement();pos.length=C.sizeof(pos);assert placement(hwnd,C.byref(pos))
++        return dict(hwnd=int(hwnd),nativePid=pid.value,threadId=thread,windowClass='UnityWndClass',privateDesktop=private_name,
++                    visible=bool(visible(hwnd)),iconic=bool(iconic(hwnd)),clientWidth=rect.right-rect.left,clientHeight=rect.bottom-rect.top,
++                    showCmd=pos.showCmd,placementFlags=pos.flags,normalRect=[pos.rcNormalPosition.left,pos.rcNormalPosition.top,pos.rcNormalPosition.right,pos.rcNormalPosition.bottom])
++    visibility=dict(runId=run.name,nativePid=args.pid,privateDesktop=private_name,**identity,
++                    inputDesktopBefore=None,inputDesktopAfter=None,before=None,after=None,operation=None,operationAccepted=None,status='failed',error=None)
++    try:
++        until=time.monotonic()+20
++        while last_hwnd is None and time.monotonic()<until:
++            assert input_name()==initial_input
++            last_hwnd=owned_window()
++            if last_hwnd is None:time.sleep(.025)
++        assert last_hwnd is not None,'No unique owned Unity HWND within20seconds.'
++        visibility['inputDesktopBefore']=input_name();assert visibility['inputDesktopBefore']==initial_input
++        visibility['before']=window_state(last_hwnd)
++        if not visibility['before']['visible'] or visibility['before']['iconic']:
++            assert input_name()==initial_input
++            visibility['operation']='ShowWindowAsync(SW_SHOWNOACTIVATE=4)'
++            visibility['operationAccepted']=bool(show_noactivate(last_hwnd,4))
++            assert visibility['operationAccepted'],'No-activate show operation was not accepted.'
++        until=time.monotonic()+5
++        while True:
++            visibility['after']=window_state(last_hwnd)
++            visibility['inputDesktopAfter']=input_name();assert visibility['inputDesktopAfter']==initial_input
++            after=visibility['after']
++            if after['visible'] and not after['iconic'] and after['clientWidth']==1024 and after['clientHeight']==768:break
++            assert time.monotonic()<until,'Native window did not reach visible/noniconic1024x768 state.'
++            time.sleep(.025)
++        visibility['status']='native-window-state-observed-not-render-proof'
++    except BaseException as error:
++        visibility['error']=repr(error)
++        raise
++    finally:
++        visibility['finishedUtc']=utc();emit(output/'window-visibility.json',visibility)
+     while time.monotonic()-started<260:
+         if (run/'evidence'/'result.json').is_file():
+             emit(output/'worker-finished.json',dict(status='native-terminal-observed',requests=seq-1,
+@@ -86,7 +163,8 @@
+         if not enum(private,visit,0): raise C.WinError(C.get_last_error())
+         assert len(handles)==1,handles
+         hwnd=handles[0];assert last_hwnd is None or hwnd==last_hwnd
+-        last_hwnd=hwnd;assert is_window(hwnd)
++        last_hwnd=hwnd;observed_window=window_state(hwnd)
++        assert observed_window['visible'] and not observed_window['iconic']
+         rect=W.RECT();assert client_rect(hwnd,C.byref(rect))
+         assert value['screenWidth']==rect.right and value['screenHeight']==rect.bottom
+         before=input_name();assert before==initial_input

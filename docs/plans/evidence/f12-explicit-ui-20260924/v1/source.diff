@@ -1,0 +1,1101 @@
+--- /dev/null
++++ Source/HaulersDream/ExplicitHaulUi.cs
+@@ -0,0 +1,123 @@
++using System;
++using System.Linq;
++using RimWorld;
++using UnityEngine;
++using Verse;
++
++namespace HaulersDream
++{
++    // UI selections own no world state. Only the existing synchronized command allocates an order.
++    internal static class ExplicitHaulUi
++    {
++        internal static bool Local(Pawn pawn, int mapId) => MultiplayerCompat.ExplicitHaulLocalUi
++            && pawn?.Map != null && pawn.Map.uniqueID == mapId && pawn.Map == Find.CurrentMap
++            && Find.Selector.SingleSelectedThing == pawn && pawn.Faction == Faction.OfPlayerSilentFail;
++
++        internal static bool SourceAvailable(Pawn pawn, Thing source) => ExplicitHaulCommand.ActorReason(pawn) == null
++            && NearbyHaulCommand.IsGroundTarget(pawn, source);
++
++        internal static void Reject(string key) => Messages.Message(key.Translate(), MessageTypeDefOf.RejectInput, false);
++
++        internal static void Open(Pawn pawn, Thing source, int mapId, bool queue)
++        {
++            if (!Local(pawn, mapId) || !SourceAvailable(pawn, source)) { Reject("HD_ExplicitChanged"); return; }
++            var selection = new ExplicitHaulSelection(pawn, source, queue);
++            if (selection.OpeningCount == 1) selection.Target(1, queue);
++            else Find.WindowStack.Add(new Dialog_ExplicitHaulAmount(selection));
++        }
++
++        internal static void SelectSource(Pawn pawn, int mapId, bool queue)
++        {
++            if (!Local(pawn, mapId) || ExplicitHaulCommand.ActorReason(pawn) != null) { Reject("HD_ExplicitActorUnavailable"); return; }
++            var parameters = new TargetingParameters
++            {
++                canTargetPawns = false, canTargetBuildings = false, canTargetPlants = false,
++                canTargetItems = true, canTargetLocations = false, canTargetCorpses = true,
++                mapObjectTargetsMustBeAutoAttackable = false,
++                validator = target => Local(pawn, mapId) && SourceAvailable(pawn, target.Thing)
++            };
++            Find.DesignatorManager.Deselect();
++            Find.Targeter.BeginTargeting(parameters,
++                target => Open(pawn, target.Thing, mapId, queue), null,
++                target => Local(pawn, mapId) && SourceAvailable(pawn, target.Thing), pawn,
++                onGuiAction: target => Widgets.MouseAttachedLabel("HD_ExplicitSelectSource".Translate()));
++        }
++
++        internal static string Reason(ExplicitHaulOrder order)
++        {
++            if (order.state != ExplicitHaulState.Blocked) return "HD_ExplicitState" + order.state;
++            switch (order.reason)
++            {
++                case "Selected source exhausted or replaced":
++                case "Selected source permission changed": return "HD_ExplicitSourceChanged";
++                case "Selected source is reserved": return "HD_ExplicitSourceReserved";
++                case "Selected bare location unavailable or reserved":
++                case "Selected location accepted only part of the parcel":
++                case "No current carry or destination capacity": return "HD_ExplicitDestinationBlocked";
++                case "Selected route is unavailable": return "HD_ExplicitRouteBlocked";
++                case "Hands already contain unrelated cargo": return "HD_ExplicitHandsBusy";
++                case "Order identity or pawn permission changed": return "HD_ExplicitActorUnavailable";
++                case "Order interrupted; resume explicitly":
++                case "Captured job was not restored": return "HD_ExplicitInterrupted";
++                case "Native job admission refused":
++                case "Native job admission failed": return "HD_ExplicitAdmissionFailed";
++                default: return "HD_ExplicitNeedsReview";
++            }
++        }
++
++        internal static bool HasLinkedJob(Pawn pawn, ExplicitHaulOrder order) =>
++            pawn.CurJob?.loadID == order.jobId || pawn.jobs.jobQueue.Any(q => q?.job?.loadID == order.jobId);
++    }
++
++    internal sealed class ExplicitHaulSelection
++    {
++        internal readonly Pawn Pawn;
++        internal readonly Thing Source;
++        internal readonly int MapId, OpeningCount;
++        internal readonly bool Queue;
++        private readonly IntVec3 sourceCell;
++        private readonly bool forbidden;
++        private bool dispatched;
++
++        internal ExplicitHaulSelection(Pawn pawn, Thing source, bool queue)
++        {
++            Pawn = pawn; Source = source; Queue = queue;
++            MapId = pawn.Map.uniqueID; OpeningCount = source.stackCount;
++            sourceCell = source.Position; forbidden = source.IsForbidden(pawn);
++        }
++
++        internal bool Live => !dispatched && ExplicitHaulUi.Local(Pawn, MapId)
++            && ExplicitHaulUi.SourceAvailable(Pawn, Source) && Source.Position == sourceCell
++            && Source.stackCount == OpeningCount && Source.IsForbidden(Pawn) == forbidden;
++
++        internal void Target(int total, bool queue)
++        {
++            if (!Live || total < 1 || total > OpeningCount) { ExplicitHaulUi.Reject("HD_ExplicitChanged"); return; }
++            // Bare-cell targeting is the first destination adapter. A later shelf adapter must retain
++            // the exact building identity and use its own authoritative admission, not a cell fallback.
++            var parameters = new TargetingParameters
++            {
++                canTargetLocations = true, canTargetPawns = false, canTargetBuildings = false,
++                canTargetPlants = false, canTargetItems = false, canTargetCorpses = false,
++                mapObjectTargetsMustBeAutoAttackable = false
++            };
++            Find.DesignatorManager.Deselect();
++            Find.Targeter.BeginTargeting(parameters,
++                target =>
++                {
++                    if (!Live || !ExplicitHaulCommand.CanIssue(Pawn, Source, target.Cell, total, MapId))
++                    { ExplicitHaulUi.Reject("HD_ExplicitChanged"); return; }
++                    dispatched = true;
++                    ExplicitHaulCommand.Dispatch(Pawn, Source, target.Cell, total, MapId, queue);
++                }, null,
++                target =>
++                {
++                    if (!Live) { ExplicitHaulUi.Reject("HD_ExplicitChanged"); Find.Targeter.StopTargeting(); return false; }
++                    if (target.IsValid && ExplicitHaulCommand.CanIssue(Pawn, Source, target.Cell, total, MapId)) return true;
++                    ExplicitHaulUi.Reject("HD_ExplicitDestinationBlocked"); return false;
++                }, Pawn, onGuiAction: target => Widgets.MouseAttachedLabel(
++                    "HD_ExplicitSelectDestination".Translate(total, Source.LabelNoCount,
++                        (queue ? "HD_ExplicitQueuedHint" : "HD_ExplicitReplaceHint").Translate())));
++        }
++    }
++}
+--- /dev/null
++++ Source/HaulersDream/FloatMenuOptionProvider_ExplicitHaul.cs
+@@ -0,0 +1,33 @@
++using System.Collections.Generic;
++using RimWorld;
++using Verse;
++
++namespace HaulersDream
++{
++    public sealed class FloatMenuOptionProvider_ExplicitHaul : FloatMenuOptionProvider
++    {
++        public override bool Drafted => false;
++        public override bool Undrafted => true;
++        public override bool Multiselect => false;
++        public override bool MechanoidCanDo => true;
++        public override bool CanSelfTarget => false;
++
++        public override IEnumerable<FloatMenuOption> GetOptions(FloatMenuContext context)
++        {
++            var pawn = context?.FirstSelectedPawn;
++            if (pawn?.Map == null || context.ClickedThings == null || !ExplicitHaulUi.Local(pawn, pawn.Map.uniqueID)) yield break;
++            int mapId = pawn.Map.uniqueID;
++            foreach (var source in context.ClickedThings)
++            {
++                if (!NearbyHaulCommand.IsGroundTarget(pawn, source)) continue;
++                var selected = source;
++                string label = "HD_ExplicitHaulTo".Translate(source.LabelNoCount);
++                if (!ExplicitHaulUi.SourceAvailable(pawn, source))
++                    yield return new FloatMenuOption(label + ": " + "HD_ExplicitActorUnavailable".Translate(), null);
++                else
++                    yield return new FloatMenuOption(label, () => ExplicitHaulUi.Open(pawn, selected, mapId,
++                        KeyBindingDefOf.QueueOrder.IsDownEvent)) { iconThing = selected };
++            }
++        }
++    }
++}
+--- /dev/null
++++ Source/HaulersDream/CompHauledToInventory.ExplicitHaulUi.cs
+@@ -0,0 +1,41 @@
++using System.Collections.Generic;
++using System.Linq;
++using RimWorld;
++using UnityEngine;
++using Verse;
++
++namespace HaulersDream
++{
++    public partial class CompHauledToInventory
++    {
++        public override IEnumerable<Gizmo> CompGetGizmosExtra()
++        {
++            foreach (var gizmo in base.CompGetGizmosExtra()) yield return gizmo;
++            var pawn = parent as Pawn;
++            if (pawn?.Map == null || !ExplicitHaulUi.Local(pawn, pawn.Map.uniqueID)) yield break;
++            int mapId = pawn.Map.uniqueID;
++            // The source targeter also admits supported robots without changing native CanTakeOrder.
++            var start = new Command_Action
++            {
++                defaultLabel = "HD_ExplicitStart".Translate(), defaultDesc = "HD_ExplicitStartDesc".Translate(),
++                icon = ExplicitHaulUiTextures.Icon, Order = float.MaxValue,
++                action = () => ExplicitHaulUi.SelectSource(pawn, mapId, KeyBindingDefOf.QueueOrder.IsDownEvent)
++            };
++            if (ExplicitHaulCommand.ActorReason(pawn) != null) start.Disable("HD_ExplicitActorUnavailable".Translate());
++            yield return start;
++            if (!ExplicitOrders.Any()) yield break;
++            yield return new Command_Action
++            {
++                defaultLabel = "HD_ExplicitOrders".Translate(), defaultDesc = "HD_ExplicitOrdersDesc".Translate(),
++                icon = ExplicitHaulUiTextures.Icon, Order = float.MaxValue,
++                action = () => { if (ExplicitHaulUi.Local(pawn, mapId)) Find.WindowStack.Add(new Dialog_ExplicitHaulOrders(pawn, mapId)); }
++            };
++        }
++    }
++
++    [StaticConstructorOnStartup]
++    internal static class ExplicitHaulUiTextures
++    {
++        internal static readonly Texture2D Icon = ContentFinder<Texture2D>.Get("UI/Buttons/Drop", false) ?? BaseContent.BadTex;
++    }
++}
+--- /dev/null
++++ Source/HaulersDream/Dialog_ExplicitHaulAmount.cs
+@@ -0,0 +1,86 @@
++using System;
++using System.Globalization;
++using UnityEngine;
++using Verse;
++
++namespace HaulersDream
++{
++    internal sealed class Dialog_ExplicitHaulAmount : Window
++    {
++        private readonly ExplicitHaulSelection selection;
++        private string buffer;
++        private int amount;
++        private bool queue, submitted;
++        private Vector2 scroll;
++        public override Vector2 InitialSize => new Vector2(600f, 470f);
++
++        internal Dialog_ExplicitHaulAmount(ExplicitHaulSelection selection)
++        {
++            this.selection = selection; amount = selection.OpeningCount; queue = selection.Queue;
++            buffer = amount.ToString(CultureInfo.InvariantCulture);
++            doCloseX = true; closeOnClickedOutside = true; absorbInputAroundWindow = true; closeOnAccept = false;
++        }
++
++        private bool Read(out int chosen) => int.TryParse(buffer, NumberStyles.None, CultureInfo.InvariantCulture, out chosen)
++            && chosen >= 1 && chosen <= selection.OpeningCount;
++
++        public override void DoWindowContents(Rect rect)
++        {
++            bool enter = Event.current.type == EventType.KeyDown && (Event.current.keyCode == KeyCode.Return || Event.current.keyCode == KeyCode.KeypadEnter);
++            if (enter) Event.current.Use();
++            var font = Text.Font; var anchor = Text.Anchor; bool wrap = Text.WordWrap, enabled = GUI.enabled;
++            try
++            {
++                Text.WordWrap = true; Text.Anchor = TextAnchor.UpperLeft; Text.Font = GameFont.Medium;
++                string title = "HD_ExplicitAmountTitle".Translate(); float titleHeight = Text.CalcHeight(title, rect.width - 24f);
++                Widgets.Label(new Rect(0, 0, rect.width - 24f, titleHeight), title); Text.Font = GameFont.Small;
++                string confirm = "HD_ExplicitChooseDestination".Translate(), cancel = "Cancel".Translate();
++                float buttonWidth = (rect.width - 12f) / 2f;
++                float buttonHeight = Math.Max(38f, Math.Max(Text.CalcHeight(confirm, buttonWidth - 16), Text.CalcHeight(cancel, buttonWidth - 16)) + 12f);
++                float buttonsY = rect.height - buttonHeight;
++                var viewport = new Rect(0, titleHeight + 12f, rect.width, buttonsY - titleHeight - 24f);
++                float width = viewport.width - 20f;
++                string context = "HD_ExplicitAmountContext".Translate(selection.Pawn.LabelShortCap, selection.Source.LabelNoCount, selection.OpeningCount);
++                string queueLabel = "HD_ExplicitQueue".Translate();
++                bool valid = Read(out int chosen); if (valid) amount = chosen;
++                string status = !selection.Live ? "HD_ExplicitChanged".Translate().ToString()
++                    : valid ? "HD_ExplicitAmountHint".Translate(chosen).ToString() : "HD_DropAmountInvalid".Translate(selection.OpeningCount).ToString();
++                float contextHeight = Text.CalcHeight(context, width), queueHeight = Math.Max(30f, Text.CalcHeight(queueLabel, width - 30f));
++                float body = contextHeight + queueHeight + Text.CalcHeight(status, width) + 128f;
++                Widgets.BeginScrollView(viewport, ref scroll, new Rect(0, 0, width, Math.Max(body, viewport.height)));
++                try
++                {
++                    Widgets.Label(new Rect(0, 0, width, contextHeight), context);
++                    float y = contextHeight + 16f;
++                    buffer = Widgets.TextField(new Rect(0, y, Math.Min(220f, width), 32f), buffer); y += 44f;
++                    float fraction = (float)((amount - 1d) / Math.Max(1d, selection.OpeningCount - 1d));
++                    float selected = Widgets.HorizontalSlider(new Rect(0, y, width, 24f), fraction, 0f, 1f);
++                    if (selected != fraction)
++                    {
++                        amount = (int)Math.Max(1d, Math.Min(selection.OpeningCount, 1d + Math.Round(selected * (selection.OpeningCount - 1d))));
++                        buffer = amount.ToString(CultureInfo.InvariantCulture);
++                    }
++                    y += 38f; Widgets.CheckboxLabeled(new Rect(0, y, width, queueHeight), queueLabel, ref queue); y += queueHeight + 12f;
++                    valid = Read(out chosen);
++                    status = !selection.Live ? "HD_ExplicitChanged".Translate().ToString()
++                        : valid ? "HD_ExplicitAmountHint".Translate(chosen).ToString() : "HD_DropAmountInvalid".Translate(selection.OpeningCount).ToString();
++                    Widgets.Label(new Rect(0, y, width, Text.CalcHeight(status, width)), status);
++                }
++                finally { Widgets.EndScrollView(); }
++                GUI.enabled = enabled && valid && selection.Live && !submitted;
++                if (Widgets.ButtonText(new Rect(0, buttonsY, buttonWidth, buttonHeight), confirm)) Confirm();
++                GUI.enabled = enabled;
++                if (Widgets.ButtonText(new Rect(buttonWidth + 12f, buttonsY, buttonWidth, buttonHeight), cancel)) Close();
++                if (enter && valid) Confirm();
++            }
++            finally { Text.Font = font; Text.Anchor = anchor; Text.WordWrap = wrap; GUI.enabled = enabled; }
++        }
++
++        private void Confirm()
++        {
++            if (submitted || !Read(out int chosen)) return;
++            if (!selection.Live) { ExplicitHaulUi.Reject("HD_ExplicitChanged"); Close(); return; }
++            submitted = true; Close(); selection.Target(chosen, queue);
++        }
++    }
++}
+--- /dev/null
++++ Source/HaulersDream/Dialog_ExplicitHaulOrders.cs
+@@ -0,0 +1,66 @@
++using System;
++using System.Linq;
++using UnityEngine;
++using Verse;
++
++namespace HaulersDream
++{
++    internal sealed class Dialog_ExplicitHaulOrders : Window
++    {
++        private readonly Pawn pawn;
++        private readonly int mapId;
++        private Vector2 scroll;
++        private bool queue;
++        public override Vector2 InitialSize => new Vector2(680f, 590f);
++
++        internal Dialog_ExplicitHaulOrders(Pawn pawn, int mapId)
++        {
++            this.pawn = pawn; this.mapId = mapId;
++            doCloseX = true; doCloseButton = true; absorbInputAroundWindow = true;
++        }
++
++        public override void DoWindowContents(Rect rect)
++        {
++            var font = Text.Font; var anchor = Text.Anchor; bool wrap = Text.WordWrap, enabled = GUI.enabled;
++            try
++            {
++                Text.Font = GameFont.Medium; Text.Anchor = TextAnchor.UpperLeft; Text.WordWrap = true;
++                string title = "HD_ExplicitOrders".Translate(); float titleHeight = Text.CalcHeight(title, rect.width - 24f);
++                Widgets.Label(new Rect(0, 0, rect.width - 24f, titleHeight), title); Text.Font = GameFont.Small;
++                if (!ExplicitHaulUi.Local(pawn, mapId))
++                { Widgets.Label(new Rect(0, titleHeight + 12f, rect.width, 100f), "HD_ExplicitChanged".Translate()); return; }
++                string queueLabel = "HD_ExplicitQueueResume".Translate();
++                float queueHeight = Math.Max(30f, Text.CalcHeight(queueLabel, rect.width - 30f));
++                Widgets.CheckboxLabeled(new Rect(0, titleHeight + 12f, rect.width, queueHeight), queueLabel, ref queue);
++                var viewport = new Rect(0, titleHeight + queueHeight + 24f, rect.width, rect.height - titleHeight - queueHeight - 90f);
++                float width = viewport.width - 20f, buttonWidth = (width - 12f) / 2f;
++                string resume = "HD_ExplicitResume".Translate(), cancel = "HD_ExplicitCancel".Translate();
++                float buttonHeight = Math.Max(36f, Math.Max(Text.CalcHeight(resume, buttonWidth - 16f), Text.CalcHeight(cancel, buttonWidth - 16f)) + 12f);
++                var orders = pawn.GetComp<CompHauledToInventory>().ExplicitOrders.Where(o => o != null).Reverse().ToArray();
++                var labels = orders.Select(o => "HD_ExplicitProgress".Translate(o.id, o.source?.LabelNoCount ?? "HD_ExplicitMissingItem".Translate().ToString(),
++                    o.delivered, o.requested, o.destination.x, o.destination.z).ToString() + "\n" + ExplicitHaulUi.Reason(o).Translate()).ToArray();
++                var heights = labels.Select(label => Text.CalcHeight(label, width) + buttonHeight + 30f).ToArray();
++                Widgets.BeginScrollView(viewport, ref scroll, new Rect(0, 0, width, Math.Max(viewport.height, heights.Sum())));
++                try
++                {
++                    float y = 0;
++                    for (int i = 0; i < orders.Length; i++)
++                    {
++                        var order = orders[i]; float labelHeight = heights[i] - buttonHeight - 30f;
++                        Widgets.Label(new Rect(0, y, width, labelHeight), labels[i]); y += labelHeight + 8f;
++                        GUI.enabled = enabled && order.state == ExplicitHaulState.Blocked && !ExplicitHaulUi.HasLinkedJob(pawn, order)
++                            && ExplicitHaulCommand.ActorReason(pawn) == null;
++                        if (Widgets.ButtonText(new Rect(0, y, buttonWidth, buttonHeight), resume))
++                            ExplicitHaulCommand.DispatchResume(pawn, order.id, mapId, queue);
++                        GUI.enabled = enabled && (order.state != ExplicitHaulState.Complete && (order.state != ExplicitHaulState.Cancelled || order.piece != null));
++                        if (Widgets.ButtonText(new Rect(buttonWidth + 12f, y, buttonWidth, buttonHeight), cancel))
++                            ExplicitHaulCommand.DispatchCancel(pawn, order.id, mapId);
++                        GUI.enabled = enabled; y += buttonHeight + 22f;
++                    }
++                }
++                finally { Widgets.EndScrollView(); }
++            }
++            finally { Text.Font = font; Text.Anchor = anchor; Text.WordWrap = wrap; GUI.enabled = enabled; }
++        }
++    }
++}
+--- /dev/null
++++ Languages/ChineseSimplified/Keyed/ExplicitHaul.xml
+@@ -0,0 +1,38 @@
++<?xml version='1.0' encoding='utf-8'?>
++<LanguageData>
++  <HD_ExplicitHaulTo>将{0}搬运至…</HD_ExplicitHaulTo>
++  <HD_ExplicitChanged>角色或所选物品堆已发生变化，请重新选择。</HD_ExplicitChanged>
++  <HD_ExplicitActorUnavailable>此角色现在无法执行该搬运命令。</HD_ExplicitActorUnavailable>
++  <HD_ExplicitSelectSource>选择要搬运的物品堆。右键或 Escape 取消。</HD_ExplicitSelectSource>
++  <HD_ExplicitSelectDestination>将 {0} 个{1}送到此处。{2}请选择可到达的非储存格。右键或 Escape 取消。</HD_ExplicitSelectDestination>
++  <HD_ExplicitQueuedHint>加入工作队列。</HD_ExplicitQueuedHint>
++  <HD_ExplicitReplaceHint>替换当前工作。</HD_ExplicitReplaceHint>
++  <HD_ExplicitStateQueued>排队中</HD_ExplicitStateQueued>
++  <HD_ExplicitStateActive>搬运中</HD_ExplicitStateActive>
++  <HD_ExplicitStateBlocked>受阻</HD_ExplicitStateBlocked>
++  <HD_ExplicitStateCancelled>已取消</HD_ExplicitStateCancelled>
++  <HD_ExplicitStateComplete>已完成</HD_ExplicitStateComplete>
++  <HD_ExplicitStateCaptured>暂时挂起</HD_ExplicitStateCaptured>
++  <HD_ExplicitSourceChanged>所选来源已消失、耗尽或不再允许搬运。</HD_ExplicitSourceChanged>
++  <HD_ExplicitSourceReserved>所选来源已被其他工作预留。</HD_ExplicitSourceReserved>
++  <HD_ExplicitDestinationBlocked>所选位置没有可用空间、已被预留或无法接收这些物品。</HD_ExplicitDestinationBlocked>
++  <HD_ExplicitRouteBlocked>所选路径不可用。</HD_ExplicitRouteBlocked>
++  <HD_ExplicitHandsBusy>角色手中正搬着其他货物。</HD_ExplicitHandsBusy>
++  <HD_ExplicitInterrupted>命令已中断，准备好后可继续。</HD_ExplicitInterrupted>
++  <HD_ExplicitAdmissionFailed>角色无法开始此命令，准备好后可继续。</HD_ExplicitAdmissionFailed>
++  <HD_ExplicitNeedsReview>已保存的命令或货物意外发生变化，请检查物品后再继续。</HD_ExplicitNeedsReview>
++  <HD_ExplicitStart>搬运至…</HD_ExplicitStart>
++  <HD_ExplicitStartDesc>选择一堆物品、总数量和一个确切的非储存目的地。只搬运该物品堆。按住队列命令键可追加命令。</HD_ExplicitStartDesc>
++  <HD_ExplicitOrders>搬运命令</HD_ExplicitOrders>
++  <HD_ExplicitOrdersDesc>查看已送达数量，继续或取消指定搬运命令。</HD_ExplicitOrdersDesc>
++  <HD_ExplicitAmountTitle>选择搬运数量</HD_ExplicitAmountTitle>
++  <HD_ExplicitChooseDestination>选择目的地</HD_ExplicitChooseDestination>
++  <HD_ExplicitAmountContext>{0}：{1}\n此堆可用数量：{2}</HD_ExplicitAmountContext>
++  <HD_ExplicitQueue>加入工作队列</HD_ExplicitQueue>
++  <HD_ExplicitAmountHint>共送达 {0} 个，必要时分多趟搬运。个人物品栏保持不变。</HD_ExplicitAmountHint>
++  <HD_ExplicitQueueResume>将继续的命令加入队列</HD_ExplicitQueueResume>
++  <HD_ExplicitResume>继续</HD_ExplicitResume>
++  <HD_ExplicitCancel>取消命令</HD_ExplicitCancel>
++  <HD_ExplicitProgress>命令 {0}：{1}\n已送达 {2} / {3} → ({4}, {5})</HD_ExplicitProgress>
++  <HD_ExplicitMissingItem>来源缺失</HD_ExplicitMissingItem>
++</LanguageData>--- /dev/null
++++ Languages/ChineseTraditional/Keyed/ExplicitHaul.xml
+@@ -0,0 +1,38 @@
++<?xml version='1.0' encoding='utf-8'?>
++<LanguageData>
++  <HD_ExplicitHaulTo>將{0}搬運至…</HD_ExplicitHaulTo>
++  <HD_ExplicitChanged>角色或所選物品堆已發生變化，請重新選擇。</HD_ExplicitChanged>
++  <HD_ExplicitActorUnavailable>此角色現在無法執行該搬運命令。</HD_ExplicitActorUnavailable>
++  <HD_ExplicitSelectSource>選擇要搬運的物品堆。右鍵或 Escape 取消。</HD_ExplicitSelectSource>
++  <HD_ExplicitSelectDestination>將 {0} 個{1}送到此處。{2}請選擇可到達的非儲存格。右鍵或 Escape 取消。</HD_ExplicitSelectDestination>
++  <HD_ExplicitQueuedHint>加入工作佇列。</HD_ExplicitQueuedHint>
++  <HD_ExplicitReplaceHint>取代目前工作。</HD_ExplicitReplaceHint>
++  <HD_ExplicitStateQueued>排隊中</HD_ExplicitStateQueued>
++  <HD_ExplicitStateActive>搬運中</HD_ExplicitStateActive>
++  <HD_ExplicitStateBlocked>受阻</HD_ExplicitStateBlocked>
++  <HD_ExplicitStateCancelled>已取消</HD_ExplicitStateCancelled>
++  <HD_ExplicitStateComplete>已完成</HD_ExplicitStateComplete>
++  <HD_ExplicitStateCaptured>暫時擱置</HD_ExplicitStateCaptured>
++  <HD_ExplicitSourceChanged>所選來源已消失、耗盡或不再允許搬運。</HD_ExplicitSourceChanged>
++  <HD_ExplicitSourceReserved>所選來源已被其他工作預留。</HD_ExplicitSourceReserved>
++  <HD_ExplicitDestinationBlocked>所選位置沒有可用空間、已被預留或無法接收這些物品。</HD_ExplicitDestinationBlocked>
++  <HD_ExplicitRouteBlocked>所選路徑無法使用。</HD_ExplicitRouteBlocked>
++  <HD_ExplicitHandsBusy>角色手中正搬著其他貨物。</HD_ExplicitHandsBusy>
++  <HD_ExplicitInterrupted>命令已中斷，準備好後可繼續。</HD_ExplicitInterrupted>
++  <HD_ExplicitAdmissionFailed>角色無法開始此命令，準備好後可繼續。</HD_ExplicitAdmissionFailed>
++  <HD_ExplicitNeedsReview>已儲存的命令或貨物意外發生變化，請檢查物品後再繼續。</HD_ExplicitNeedsReview>
++  <HD_ExplicitStart>搬運至…</HD_ExplicitStart>
++  <HD_ExplicitStartDesc>選擇一堆物品、總數量和一個確切的非儲存目的地。只搬運該物品堆。按住佇列命令鍵可追加命令。</HD_ExplicitStartDesc>
++  <HD_ExplicitOrders>搬運命令</HD_ExplicitOrders>
++  <HD_ExplicitOrdersDesc>查看已送達數量，繼續或取消指定搬運命令。</HD_ExplicitOrdersDesc>
++  <HD_ExplicitAmountTitle>選擇搬運數量</HD_ExplicitAmountTitle>
++  <HD_ExplicitChooseDestination>選擇目的地</HD_ExplicitChooseDestination>
++  <HD_ExplicitAmountContext>{0}：{1}\n此堆可用數量：{2}</HD_ExplicitAmountContext>
++  <HD_ExplicitQueue>加入工作佇列</HD_ExplicitQueue>
++  <HD_ExplicitAmountHint>共送達 {0} 個，必要時分多趟搬運。個人物品欄保持不變。</HD_ExplicitAmountHint>
++  <HD_ExplicitQueueResume>將繼續的命令加入佇列</HD_ExplicitQueueResume>
++  <HD_ExplicitResume>繼續</HD_ExplicitResume>
++  <HD_ExplicitCancel>取消命令</HD_ExplicitCancel>
++  <HD_ExplicitProgress>命令 {0}：{1}\n已送達 {2} / {3} → ({4}, {5})</HD_ExplicitProgress>
++  <HD_ExplicitMissingItem>來源缺失</HD_ExplicitMissingItem>
++</LanguageData>--- /dev/null
++++ Languages/Danish/Keyed/ExplicitHaul.xml
+@@ -0,0 +1,38 @@
++<?xml version='1.0' encoding='utf-8'?>
++<LanguageData>
++  <HD_ExplicitHaulTo>Flyt {0} til…</HD_ExplicitHaulTo>
++  <HD_ExplicitChanged>Figuren eller den valgte stak er ændret. Vælg dem igen.</HD_ExplicitChanged>
++  <HD_ExplicitActorUnavailable>Denne figur kan ikke udføre denne transportordre nu.</HD_ExplicitActorUnavailable>
++  <HD_ExplicitSelectSource>Vælg stakken, der skal flyttes. Højreklik eller Escape annullerer.</HD_ExplicitSelectSource>
++  <HD_ExplicitSelectDestination>Aflevér {0} × {1} her. {2} Vælg et tilgængeligt felt uden lager. Højreklik eller Escape annullerer.</HD_ExplicitSelectDestination>
++  <HD_ExplicitQueuedHint>Føj til arbejdskøen.</HD_ExplicitQueuedHint>
++  <HD_ExplicitReplaceHint>Erstat det aktuelle arbejde.</HD_ExplicitReplaceHint>
++  <HD_ExplicitStateQueued>I kø</HD_ExplicitStateQueued>
++  <HD_ExplicitStateActive>Transporterer</HD_ExplicitStateActive>
++  <HD_ExplicitStateBlocked>Blokeret</HD_ExplicitStateBlocked>
++  <HD_ExplicitStateCancelled>Annulleret</HD_ExplicitStateCancelled>
++  <HD_ExplicitStateComplete>Fuldført</HD_ExplicitStateComplete>
++  <HD_ExplicitStateCaptured>Midlertidigt sat på pause</HD_ExplicitStateCaptured>
++  <HD_ExplicitSourceChanged>Den valgte kilde mangler, er opbrugt eller er ikke længere tilladt.</HD_ExplicitSourceChanged>
++  <HD_ExplicitSourceReserved>Den valgte kilde er reserveret af en anden opgave.</HD_ExplicitSourceReserved>
++  <HD_ExplicitDestinationBlocked>Det valgte sted mangler plads, er reserveret eller kan ikke modtage tingene.</HD_ExplicitDestinationBlocked>
++  <HD_ExplicitRouteBlocked>Den valgte rute er ikke tilgængelig.</HD_ExplicitRouteBlocked>
++  <HD_ExplicitHandsBusy>Figuren bærer andre ting i hænderne.</HD_ExplicitHandsBusy>
++  <HD_ExplicitInterrupted>Ordren blev afbrudt. Genoptag den, når du er klar.</HD_ExplicitInterrupted>
++  <HD_ExplicitAdmissionFailed>Figuren kunne ikke starte ordren. Genoptag den, når du er klar.</HD_ExplicitAdmissionFailed>
++  <HD_ExplicitNeedsReview>Den gemte ordre eller dens last er ændret uventet. Undersøg tingene før genoptagelse.</HD_ExplicitNeedsReview>
++  <HD_ExplicitStart>Flyt til…</HD_ExplicitStart>
++  <HD_ExplicitStartDesc>Vælg én stak, en samlet mængde og et bestemt felt uden lager. Kun den valgte stak flyttes. Hold tasten til ordrekø nede for at tilføje ordren.</HD_ExplicitStartDesc>
++  <HD_ExplicitOrders>Transportordrer</HD_ExplicitOrders>
++  <HD_ExplicitOrdersDesc>Se afleverede mængder, og genoptag eller annullér transportordrer.</HD_ExplicitOrdersDesc>
++  <HD_ExplicitAmountTitle>Vælg transportmængde</HD_ExplicitAmountTitle>
++  <HD_ExplicitChooseDestination>Vælg destination</HD_ExplicitChooseDestination>
++  <HD_ExplicitAmountContext>{0}: {1}\nTilgængeligt i stakken: {2}</HD_ExplicitAmountContext>
++  <HD_ExplicitQueue>Føj til arbejdskøen</HD_ExplicitQueue>
++  <HD_ExplicitAmountHint>Aflevér i alt {0}, over flere ture om nødvendigt. Personligt inventar berøres ikke.</HD_ExplicitAmountHint>
++  <HD_ExplicitQueueResume>Sæt genoptagne ordrer i kø</HD_ExplicitQueueResume>
++  <HD_ExplicitResume>Genoptag</HD_ExplicitResume>
++  <HD_ExplicitCancel>Annullér ordre</HD_ExplicitCancel>
++  <HD_ExplicitProgress>Ordre {0}: {1}\nAfleveret {2} / {3} → ({4}, {5})</HD_ExplicitProgress>
++  <HD_ExplicitMissingItem>Kilde mangler</HD_ExplicitMissingItem>
++</LanguageData>--- /dev/null
++++ Languages/Dutch/Keyed/ExplicitHaul.xml
+@@ -0,0 +1,38 @@
++<?xml version='1.0' encoding='utf-8'?>
++<LanguageData>
++  <HD_ExplicitHaulTo>Vervoer {0} naar…</HD_ExplicitHaulTo>
++  <HD_ExplicitChanged>De pion of geselecteerde stapel is veranderd. Selecteer opnieuw.</HD_ExplicitChanged>
++  <HD_ExplicitActorUnavailable>Deze pion kan deze vervoeropdracht nu niet uitvoeren.</HD_ExplicitActorUnavailable>
++  <HD_ExplicitSelectSource>Selecteer de te vervoeren stapel. Rechtsklik of Escape annuleert.</HD_ExplicitSelectSource>
++  <HD_ExplicitSelectDestination>Lever hier {0} × {1} af. {2} Kies een bereikbare cel buiten opslag. Rechtsklik of Escape annuleert.</HD_ExplicitSelectDestination>
++  <HD_ExplicitQueuedHint>Voeg toe aan de werkwachtrij.</HD_ExplicitQueuedHint>
++  <HD_ExplicitReplaceHint>Vervang het huidige werk.</HD_ExplicitReplaceHint>
++  <HD_ExplicitStateQueued>In wachtrij</HD_ExplicitStateQueued>
++  <HD_ExplicitStateActive>Aan het vervoeren</HD_ExplicitStateActive>
++  <HD_ExplicitStateBlocked>Geblokkeerd</HD_ExplicitStateBlocked>
++  <HD_ExplicitStateCancelled>Geannuleerd</HD_ExplicitStateCancelled>
++  <HD_ExplicitStateComplete>Voltooid</HD_ExplicitStateComplete>
++  <HD_ExplicitStateCaptured>Tijdelijk onderbroken</HD_ExplicitStateCaptured>
++  <HD_ExplicitSourceChanged>De geselecteerde bron ontbreekt, is op of is niet meer toegestaan.</HD_ExplicitSourceChanged>
++  <HD_ExplicitSourceReserved>De geselecteerde bron is gereserveerd voor een andere taak.</HD_ExplicitSourceReserved>
++  <HD_ExplicitDestinationBlocked>De gekozen plek heeft geen bruikbare ruimte, is gereserveerd of kan deze voorwerpen niet ontvangen.</HD_ExplicitDestinationBlocked>
++  <HD_ExplicitRouteBlocked>De gekozen route is niet beschikbaar.</HD_ExplicitRouteBlocked>
++  <HD_ExplicitHandsBusy>De pion draagt andere goederen in de handen.</HD_ExplicitHandsBusy>
++  <HD_ExplicitInterrupted>De opdracht is onderbroken. Hervat wanneer mogelijk.</HD_ExplicitInterrupted>
++  <HD_ExplicitAdmissionFailed>De pion kon de opdracht niet starten. Hervat wanneer mogelijk.</HD_ExplicitAdmissionFailed>
++  <HD_ExplicitNeedsReview>De opgeslagen opdracht of lading is onverwacht veranderd. Controleer de voorwerpen vóór hervatten.</HD_ExplicitNeedsReview>
++  <HD_ExplicitStart>Vervoer naar…</HD_ExplicitStart>
++  <HD_ExplicitStartDesc>Kies één stapel, een totale hoeveelheid en een exacte bestemming buiten opslag. Alleen die stapel wordt vervoerd. Houd de wachtrijtoets ingedrukt om de opdracht toe te voegen.</HD_ExplicitStartDesc>
++  <HD_ExplicitOrders>Vervoeropdrachten</HD_ExplicitOrders>
++  <HD_ExplicitOrdersDesc>Bekijk afgeleverde hoeveelheden en hervat of annuleer expliciete vervoeropdrachten.</HD_ExplicitOrdersDesc>
++  <HD_ExplicitAmountTitle>Kies de hoeveelheid</HD_ExplicitAmountTitle>
++  <HD_ExplicitChooseDestination>Kies bestemming</HD_ExplicitChooseDestination>
++  <HD_ExplicitAmountContext>{0}: {1}\nBeschikbaar in deze stapel: {2}</HD_ExplicitAmountContext>
++  <HD_ExplicitQueue>Toevoegen aan de werkwachtrij</HD_ExplicitQueue>
++  <HD_ExplicitAmountHint>Lever in totaal {0} af, zo nodig in meerdere ritten. Persoonlijke inventaris blijft onaangeroerd.</HD_ExplicitAmountHint>
++  <HD_ExplicitQueueResume>Hervatte opdrachten in wachtrij</HD_ExplicitQueueResume>
++  <HD_ExplicitResume>Hervatten</HD_ExplicitResume>
++  <HD_ExplicitCancel>Opdracht annuleren</HD_ExplicitCancel>
++  <HD_ExplicitProgress>Opdracht {0}: {1}\nAfgeleverd {2} / {3} → ({4}, {5})</HD_ExplicitProgress>
++  <HD_ExplicitMissingItem>Bron ontbreekt</HD_ExplicitMissingItem>
++</LanguageData>--- /dev/null
++++ Languages/English/Keyed/ExplicitHaul.xml
+@@ -0,0 +1,38 @@
++<?xml version='1.0' encoding='utf-8'?>
++<LanguageData>
++  <HD_ExplicitHaulTo>Haul {0} to…</HD_ExplicitHaulTo>
++  <HD_ExplicitChanged>The pawn or selected stack changed. Select them again.</HD_ExplicitChanged>
++  <HD_ExplicitActorUnavailable>This pawn cannot take this hauling order now.</HD_ExplicitActorUnavailable>
++  <HD_ExplicitSelectSource>Select the item stack to haul. Right-click or Escape cancels.</HD_ExplicitSelectSource>
++  <HD_ExplicitSelectDestination>Deliver {0} × {1} here. {2} Choose a reachable non-storage cell. Right-click or Escape cancels.</HD_ExplicitSelectDestination>
++  <HD_ExplicitQueuedHint>Add to the work queue.</HD_ExplicitQueuedHint>
++  <HD_ExplicitReplaceHint>Replace current work.</HD_ExplicitReplaceHint>
++  <HD_ExplicitStateQueued>Queued</HD_ExplicitStateQueued>
++  <HD_ExplicitStateActive>Hauling</HD_ExplicitStateActive>
++  <HD_ExplicitStateBlocked>Blocked</HD_ExplicitStateBlocked>
++  <HD_ExplicitStateCancelled>Cancelled</HD_ExplicitStateCancelled>
++  <HD_ExplicitStateComplete>Complete</HD_ExplicitStateComplete>
++  <HD_ExplicitStateCaptured>Temporarily suspended</HD_ExplicitStateCaptured>
++  <HD_ExplicitSourceChanged>The selected source is missing, exhausted or no longer allowed.</HD_ExplicitSourceChanged>
++  <HD_ExplicitSourceReserved>The selected source is reserved by another job.</HD_ExplicitSourceReserved>
++  <HD_ExplicitDestinationBlocked>The selected location has no usable space, is reserved or cannot receive these items.</HD_ExplicitDestinationBlocked>
++  <HD_ExplicitRouteBlocked>The selected route is unavailable.</HD_ExplicitRouteBlocked>
++  <HD_ExplicitHandsBusy>The pawn's hands contain other cargo.</HD_ExplicitHandsBusy>
++  <HD_ExplicitInterrupted>The order was interrupted. Resume when ready.</HD_ExplicitInterrupted>
++  <HD_ExplicitAdmissionFailed>The pawn could not start this order. Resume when ready.</HD_ExplicitAdmissionFailed>
++  <HD_ExplicitNeedsReview>The saved order or its cargo changed unexpectedly. Inspect the items before resuming.</HD_ExplicitNeedsReview>
++  <HD_ExplicitStart>Haul to…</HD_ExplicitStart>
++  <HD_ExplicitStartDesc>Choose one item stack, a total quantity and an exact non-storage destination. Only that stack is hauled. Hold the Queue Order key to append the order.</HD_ExplicitStartDesc>
++  <HD_ExplicitOrders>Hauling orders</HD_ExplicitOrders>
++  <HD_ExplicitOrdersDesc>View delivered quantities and resume or cancel explicit hauling orders.</HD_ExplicitOrdersDesc>
++  <HD_ExplicitAmountTitle>Choose hauling quantity</HD_ExplicitAmountTitle>
++  <HD_ExplicitChooseDestination>Choose destination</HD_ExplicitChooseDestination>
++  <HD_ExplicitAmountContext>{0}: {1}\nAvailable in this stack: {2}</HD_ExplicitAmountContext>
++  <HD_ExplicitQueue>Add to the work queue</HD_ExplicitQueue>
++  <HD_ExplicitAmountHint>Deliver {0} in total, using multiple trips if needed. Personal inventory is left alone.</HD_ExplicitAmountHint>
++  <HD_ExplicitQueueResume>Queue resumed orders</HD_ExplicitQueueResume>
++  <HD_ExplicitResume>Resume</HD_ExplicitResume>
++  <HD_ExplicitCancel>Cancel order</HD_ExplicitCancel>
++  <HD_ExplicitProgress>Order {0}: {1}\nDelivered {2} / {3} → ({4}, {5})</HD_ExplicitProgress>
++  <HD_ExplicitMissingItem>Missing source</HD_ExplicitMissingItem>
++</LanguageData>--- /dev/null
++++ Languages/French/Keyed/ExplicitHaul.xml
+@@ -0,0 +1,38 @@
++<?xml version='1.0' encoding='utf-8'?>
++<LanguageData>
++  <HD_ExplicitHaulTo>Transporter {0} vers…</HD_ExplicitHaulTo>
++  <HD_ExplicitChanged>Le pion ou la pile sélectionnée a changé. Sélectionnez-les à nouveau.</HD_ExplicitChanged>
++  <HD_ExplicitActorUnavailable>Ce pion ne peut pas effectuer cet ordre de transport actuellement.</HD_ExplicitActorUnavailable>
++  <HD_ExplicitSelectSource>Sélectionnez la pile à transporter. Clic droit ou Échap pour annuler.</HD_ExplicitSelectSource>
++  <HD_ExplicitSelectDestination>Livrer ici {0} × {1}. {2} Choisissez une case accessible hors stockage. Clic droit ou Échap pour annuler.</HD_ExplicitSelectDestination>
++  <HD_ExplicitQueuedHint>Ajouter à la file de travail.</HD_ExplicitQueuedHint>
++  <HD_ExplicitReplaceHint>Remplacer le travail actuel.</HD_ExplicitReplaceHint>
++  <HD_ExplicitStateQueued>En attente</HD_ExplicitStateQueued>
++  <HD_ExplicitStateActive>Transport en cours</HD_ExplicitStateActive>
++  <HD_ExplicitStateBlocked>Bloqué</HD_ExplicitStateBlocked>
++  <HD_ExplicitStateCancelled>Annulé</HD_ExplicitStateCancelled>
++  <HD_ExplicitStateComplete>Terminé</HD_ExplicitStateComplete>
++  <HD_ExplicitStateCaptured>Suspendu temporairement</HD_ExplicitStateCaptured>
++  <HD_ExplicitSourceChanged>La source sélectionnée est absente, épuisée ou n'est plus autorisée.</HD_ExplicitSourceChanged>
++  <HD_ExplicitSourceReserved>La source sélectionnée est réservée par une autre tâche.</HD_ExplicitSourceReserved>
++  <HD_ExplicitDestinationBlocked>L'emplacement choisi manque de place, est réservé ou ne peut pas recevoir ces objets.</HD_ExplicitDestinationBlocked>
++  <HD_ExplicitRouteBlocked>Le trajet choisi est indisponible.</HD_ExplicitRouteBlocked>
++  <HD_ExplicitHandsBusy>Le pion porte une autre cargaison dans ses mains.</HD_ExplicitHandsBusy>
++  <HD_ExplicitInterrupted>L'ordre a été interrompu. Reprenez-le lorsque possible.</HD_ExplicitInterrupted>
++  <HD_ExplicitAdmissionFailed>Le pion n'a pas pu commencer cet ordre. Reprenez-le lorsque possible.</HD_ExplicitAdmissionFailed>
++  <HD_ExplicitNeedsReview>L'ordre sauvegardé ou sa cargaison a changé de façon inattendue. Vérifiez les objets avant de reprendre.</HD_ExplicitNeedsReview>
++  <HD_ExplicitStart>Transporter vers…</HD_ExplicitStart>
++  <HD_ExplicitStartDesc>Choisissez une pile, une quantité totale et une case précise hors stockage. Seule cette pile est transportée. Maintenez la touche de mise en file pour ajouter l'ordre.</HD_ExplicitStartDesc>
++  <HD_ExplicitOrders>Ordres de transport</HD_ExplicitOrders>
++  <HD_ExplicitOrdersDesc>Consultez les quantités livrées et reprenez ou annulez les ordres de transport explicites.</HD_ExplicitOrdersDesc>
++  <HD_ExplicitAmountTitle>Choisir la quantité à transporter</HD_ExplicitAmountTitle>
++  <HD_ExplicitChooseDestination>Choisir la destination</HD_ExplicitChooseDestination>
++  <HD_ExplicitAmountContext>{0} : {1}\nDisponible dans cette pile : {2}</HD_ExplicitAmountContext>
++  <HD_ExplicitQueue>Ajouter à la file de travail</HD_ExplicitQueue>
++  <HD_ExplicitAmountHint>Livrer {0} au total, en plusieurs trajets si nécessaire. L'inventaire personnel reste intact.</HD_ExplicitAmountHint>
++  <HD_ExplicitQueueResume>Mettre les reprises en file</HD_ExplicitQueueResume>
++  <HD_ExplicitResume>Reprendre</HD_ExplicitResume>
++  <HD_ExplicitCancel>Annuler l'ordre</HD_ExplicitCancel>
++  <HD_ExplicitProgress>Ordre {0} : {1}\nLivré {2} / {3} → ({4}, {5})</HD_ExplicitProgress>
++  <HD_ExplicitMissingItem>Source absente</HD_ExplicitMissingItem>
++</LanguageData>--- /dev/null
++++ Languages/German/Keyed/ExplicitHaul.xml
+@@ -0,0 +1,38 @@
++<?xml version='1.0' encoding='utf-8'?>
++<LanguageData>
++  <HD_ExplicitHaulTo>{0} transportieren nach…</HD_ExplicitHaulTo>
++  <HD_ExplicitChanged>Die Figur oder der gewählte Stapel hat sich geändert. Bitte erneut auswählen.</HD_ExplicitChanged>
++  <HD_ExplicitActorUnavailable>Diese Figur kann diesen Transportauftrag derzeit nicht ausführen.</HD_ExplicitActorUnavailable>
++  <HD_ExplicitSelectSource>Den zu transportierenden Stapel auswählen. Rechtsklick oder Escape bricht ab.</HD_ExplicitSelectSource>
++  <HD_ExplicitSelectDestination>Hier {0} × {1} abliefern. {2} Ein erreichbares Feld außerhalb von Lagern wählen. Rechtsklick oder Escape bricht ab.</HD_ExplicitSelectDestination>
++  <HD_ExplicitQueuedHint>Zur Arbeitswarteschlange hinzufügen.</HD_ExplicitQueuedHint>
++  <HD_ExplicitReplaceHint>Aktuelle Arbeit ersetzen.</HD_ExplicitReplaceHint>
++  <HD_ExplicitStateQueued>In Warteschlange</HD_ExplicitStateQueued>
++  <HD_ExplicitStateActive>Wird transportiert</HD_ExplicitStateActive>
++  <HD_ExplicitStateBlocked>Blockiert</HD_ExplicitStateBlocked>
++  <HD_ExplicitStateCancelled>Abgebrochen</HD_ExplicitStateCancelled>
++  <HD_ExplicitStateComplete>Abgeschlossen</HD_ExplicitStateComplete>
++  <HD_ExplicitStateCaptured>Vorübergehend ausgesetzt</HD_ExplicitStateCaptured>
++  <HD_ExplicitSourceChanged>Die gewählte Quelle fehlt, ist aufgebraucht oder nicht mehr erlaubt.</HD_ExplicitSourceChanged>
++  <HD_ExplicitSourceReserved>Die gewählte Quelle ist für eine andere Aufgabe reserviert.</HD_ExplicitSourceReserved>
++  <HD_ExplicitDestinationBlocked>Der gewählte Ort hat keinen nutzbaren Platz, ist reserviert oder kann diese Gegenstände nicht aufnehmen.</HD_ExplicitDestinationBlocked>
++  <HD_ExplicitRouteBlocked>Der gewählte Weg ist nicht verfügbar.</HD_ExplicitRouteBlocked>
++  <HD_ExplicitHandsBusy>Die Figur trägt andere Gegenstände in den Händen.</HD_ExplicitHandsBusy>
++  <HD_ExplicitInterrupted>Der Auftrag wurde unterbrochen. Bei Bedarf fortsetzen.</HD_ExplicitInterrupted>
++  <HD_ExplicitAdmissionFailed>Die Figur konnte diesen Auftrag nicht beginnen. Bei Bedarf fortsetzen.</HD_ExplicitAdmissionFailed>
++  <HD_ExplicitNeedsReview>Der gespeicherte Auftrag oder seine Fracht hat sich unerwartet geändert. Vor dem Fortsetzen die Gegenstände prüfen.</HD_ExplicitNeedsReview>
++  <HD_ExplicitStart>Transportieren nach…</HD_ExplicitStart>
++  <HD_ExplicitStartDesc>Einen Stapel, eine Gesamtmenge und ein genaues Ziel außerhalb von Lagern auswählen. Nur dieser Stapel wird transportiert. Mit der Warteschlangentaste den Auftrag anhängen.</HD_ExplicitStartDesc>
++  <HD_ExplicitOrders>Transportaufträge</HD_ExplicitOrders>
++  <HD_ExplicitOrdersDesc>Gelieferte Mengen ansehen und gezielte Transportaufträge fortsetzen oder abbrechen.</HD_ExplicitOrdersDesc>
++  <HD_ExplicitAmountTitle>Transportmenge wählen</HD_ExplicitAmountTitle>
++  <HD_ExplicitChooseDestination>Ziel wählen</HD_ExplicitChooseDestination>
++  <HD_ExplicitAmountContext>{0}: {1}\nIn diesem Stapel verfügbar: {2}</HD_ExplicitAmountContext>
++  <HD_ExplicitQueue>Zur Arbeitswarteschlange hinzufügen</HD_ExplicitQueue>
++  <HD_ExplicitAmountHint>Insgesamt {0} liefern, bei Bedarf in mehreren Wegen. Persönliches Inventar bleibt unberührt.</HD_ExplicitAmountHint>
++  <HD_ExplicitQueueResume>Fortgesetzte Aufträge einreihen</HD_ExplicitQueueResume>
++  <HD_ExplicitResume>Fortsetzen</HD_ExplicitResume>
++  <HD_ExplicitCancel>Auftrag abbrechen</HD_ExplicitCancel>
++  <HD_ExplicitProgress>Auftrag {0}: {1}\nGeliefert {2} / {3} → ({4}, {5})</HD_ExplicitProgress>
++  <HD_ExplicitMissingItem>Quelle fehlt</HD_ExplicitMissingItem>
++</LanguageData>--- /dev/null
++++ Languages/Italian/Keyed/ExplicitHaul.xml
+@@ -0,0 +1,38 @@
++<?xml version='1.0' encoding='utf-8'?>
++<LanguageData>
++  <HD_ExplicitHaulTo>Trasporta {0} a…</HD_ExplicitHaulTo>
++  <HD_ExplicitChanged>Il colono o la pila selezionata è cambiato. Seleziona nuovamente.</HD_ExplicitChanged>
++  <HD_ExplicitActorUnavailable>Questo personaggio non può eseguire ora questo ordine di trasporto.</HD_ExplicitActorUnavailable>
++  <HD_ExplicitSelectSource>Seleziona la pila da trasportare. Clic destro o Esc per annullare.</HD_ExplicitSelectSource>
++  <HD_ExplicitSelectDestination>Consegna qui {0} × {1}. {2} Scegli una casella raggiungibile fuori dai depositi. Clic destro o Esc per annullare.</HD_ExplicitSelectDestination>
++  <HD_ExplicitQueuedHint>Aggiungi alla coda di lavoro.</HD_ExplicitQueuedHint>
++  <HD_ExplicitReplaceHint>Sostituisci il lavoro attuale.</HD_ExplicitReplaceHint>
++  <HD_ExplicitStateQueued>In coda</HD_ExplicitStateQueued>
++  <HD_ExplicitStateActive>Trasporto in corso</HD_ExplicitStateActive>
++  <HD_ExplicitStateBlocked>Bloccato</HD_ExplicitStateBlocked>
++  <HD_ExplicitStateCancelled>Annullato</HD_ExplicitStateCancelled>
++  <HD_ExplicitStateComplete>Completato</HD_ExplicitStateComplete>
++  <HD_ExplicitStateCaptured>Temporaneamente sospeso</HD_ExplicitStateCaptured>
++  <HD_ExplicitSourceChanged>La fonte selezionata manca, è esaurita o non è più consentita.</HD_ExplicitSourceChanged>
++  <HD_ExplicitSourceReserved>La fonte selezionata è riservata a un altro lavoro.</HD_ExplicitSourceReserved>
++  <HD_ExplicitDestinationBlocked>Il luogo scelto non ha spazio utilizzabile, è riservato o non può ricevere questi oggetti.</HD_ExplicitDestinationBlocked>
++  <HD_ExplicitRouteBlocked>Il percorso scelto non è disponibile.</HD_ExplicitRouteBlocked>
++  <HD_ExplicitHandsBusy>Il personaggio ha altro carico nelle mani.</HD_ExplicitHandsBusy>
++  <HD_ExplicitInterrupted>L'ordine è stato interrotto. Riprendilo quando possibile.</HD_ExplicitInterrupted>
++  <HD_ExplicitAdmissionFailed>Il personaggio non ha potuto iniziare l'ordine. Riprendilo quando possibile.</HD_ExplicitAdmissionFailed>
++  <HD_ExplicitNeedsReview>L'ordine salvato o il suo carico è cambiato inaspettatamente. Controlla gli oggetti prima di riprendere.</HD_ExplicitNeedsReview>
++  <HD_ExplicitStart>Trasporta a…</HD_ExplicitStart>
++  <HD_ExplicitStartDesc>Scegli una pila, una quantità totale e una destinazione precisa fuori dai depositi. Verrà trasportata solo quella pila. Tieni premuto il tasto della coda per aggiungere l'ordine.</HD_ExplicitStartDesc>
++  <HD_ExplicitOrders>Ordini di trasporto</HD_ExplicitOrders>
++  <HD_ExplicitOrdersDesc>Visualizza le quantità consegnate e riprendi o annulla gli ordini di trasporto espliciti.</HD_ExplicitOrdersDesc>
++  <HD_ExplicitAmountTitle>Scegli la quantità da trasportare</HD_ExplicitAmountTitle>
++  <HD_ExplicitChooseDestination>Scegli la destinazione</HD_ExplicitChooseDestination>
++  <HD_ExplicitAmountContext>{0}: {1}\nDisponibili in questa pila: {2}</HD_ExplicitAmountContext>
++  <HD_ExplicitQueue>Aggiungi alla coda di lavoro</HD_ExplicitQueue>
++  <HD_ExplicitAmountHint>Consegna {0} in totale, in più viaggi se necessario. L'inventario personale resta invariato.</HD_ExplicitAmountHint>
++  <HD_ExplicitQueueResume>Accoda gli ordini ripresi</HD_ExplicitQueueResume>
++  <HD_ExplicitResume>Riprendi</HD_ExplicitResume>
++  <HD_ExplicitCancel>Annulla ordine</HD_ExplicitCancel>
++  <HD_ExplicitProgress>Ordine {0}: {1}\nConsegnati {2} / {3} → ({4}, {5})</HD_ExplicitProgress>
++  <HD_ExplicitMissingItem>Fonte mancante</HD_ExplicitMissingItem>
++</LanguageData>--- /dev/null
++++ Languages/Japanese/Keyed/ExplicitHaul.xml
+@@ -0,0 +1,38 @@
++<?xml version='1.0' encoding='utf-8'?>
++<LanguageData>
++  <HD_ExplicitHaulTo>{0}の運搬先を指定…</HD_ExplicitHaulTo>
++  <HD_ExplicitChanged>ポーンまたは選択したスタックが変わりました。選び直してください。</HD_ExplicitChanged>
++  <HD_ExplicitActorUnavailable>このポーンは現在、この運搬指示を実行できません。</HD_ExplicitActorUnavailable>
++  <HD_ExplicitSelectSource>運ぶスタックを選択してください。右クリックまたは Escape でキャンセル。</HD_ExplicitSelectSource>
++  <HD_ExplicitSelectDestination>ここへ {1} を {0} 個届けます。{2} 到達可能な保管場所ではないマスを選択。右クリックまたは Escape でキャンセル。</HD_ExplicitSelectDestination>
++  <HD_ExplicitQueuedHint>作業キューに追加します。</HD_ExplicitQueuedHint>
++  <HD_ExplicitReplaceHint>現在の作業を置き換えます。</HD_ExplicitReplaceHint>
++  <HD_ExplicitStateQueued>待機中</HD_ExplicitStateQueued>
++  <HD_ExplicitStateActive>運搬中</HD_ExplicitStateActive>
++  <HD_ExplicitStateBlocked>停止中</HD_ExplicitStateBlocked>
++  <HD_ExplicitStateCancelled>キャンセル済み</HD_ExplicitStateCancelled>
++  <HD_ExplicitStateComplete>完了</HD_ExplicitStateComplete>
++  <HD_ExplicitStateCaptured>一時保留中</HD_ExplicitStateCaptured>
++  <HD_ExplicitSourceChanged>選択した搬出元が存在しない、使い切られた、または許可されなくなりました。</HD_ExplicitSourceChanged>
++  <HD_ExplicitSourceReserved>選択した搬出元は別の作業に予約されています。</HD_ExplicitSourceReserved>
++  <HD_ExplicitDestinationBlocked>指定先に空きがない、予約されている、またはこのアイテムを置けません。</HD_ExplicitDestinationBlocked>
++  <HD_ExplicitRouteBlocked>指定した経路を通れません。</HD_ExplicitRouteBlocked>
++  <HD_ExplicitHandsBusy>ポーンは手に別の荷物を持っています。</HD_ExplicitHandsBusy>
++  <HD_ExplicitInterrupted>指示が中断されました。準備ができたら再開してください。</HD_ExplicitInterrupted>
++  <HD_ExplicitAdmissionFailed>この指示を開始できませんでした。準備ができたら再開してください。</HD_ExplicitAdmissionFailed>
++  <HD_ExplicitNeedsReview>保存された指示または荷物が予期せず変わりました。再開前にアイテムを確認してください。</HD_ExplicitNeedsReview>
++  <HD_ExplicitStart>運搬先を指定…</HD_ExplicitStart>
++  <HD_ExplicitStartDesc>スタック、合計数量、保管場所ではない正確な運搬先を選択します。そのスタックだけを運びます。キュー指示キーを押しながら選ぶと追加されます。</HD_ExplicitStartDesc>
++  <HD_ExplicitOrders>運搬指示</HD_ExplicitOrders>
++  <HD_ExplicitOrdersDesc>届けた数量を確認し、指定運搬を再開またはキャンセルします。</HD_ExplicitOrdersDesc>
++  <HD_ExplicitAmountTitle>運搬数量を選択</HD_ExplicitAmountTitle>
++  <HD_ExplicitChooseDestination>運搬先を選択</HD_ExplicitChooseDestination>
++  <HD_ExplicitAmountContext>{0}：{1}\nこのスタックの数量：{2}</HD_ExplicitAmountContext>
++  <HD_ExplicitQueue>作業キューに追加</HD_ExplicitQueue>
++  <HD_ExplicitAmountHint>合計 {0} 個を、必要なら複数回に分けて届けます。個人インベントリは変更しません。</HD_ExplicitAmountHint>
++  <HD_ExplicitQueueResume>再開する指示をキューに追加</HD_ExplicitQueueResume>
++  <HD_ExplicitResume>再開</HD_ExplicitResume>
++  <HD_ExplicitCancel>指示をキャンセル</HD_ExplicitCancel>
++  <HD_ExplicitProgress>指示 {0}：{1}\n搬入済み {2} / {3} → ({4}, {5})</HD_ExplicitProgress>
++  <HD_ExplicitMissingItem>搬出元なし</HD_ExplicitMissingItem>
++</LanguageData>--- /dev/null
++++ Languages/Korean/Keyed/ExplicitHaul.xml
+@@ -0,0 +1,38 @@
++<?xml version='1.0' encoding='utf-8'?>
++<LanguageData>
++  <HD_ExplicitHaulTo>{0} 운반 목적지 지정…</HD_ExplicitHaulTo>
++  <HD_ExplicitChanged>정착민 또는 선택한 더미가 바뀌었습니다. 다시 선택하세요.</HD_ExplicitChanged>
++  <HD_ExplicitActorUnavailable>이 정착민은 지금 이 운반 명령을 수행할 수 없습니다.</HD_ExplicitActorUnavailable>
++  <HD_ExplicitSelectSource>운반할 더미를 선택하세요. 우클릭 또는 Escape로 취소합니다.</HD_ExplicitSelectSource>
++  <HD_ExplicitSelectDestination>{1} {0}개를 여기에 배달합니다. {2} 도달 가능한 비저장 칸을 선택하세요. 우클릭 또는 Escape로 취소합니다.</HD_ExplicitSelectDestination>
++  <HD_ExplicitQueuedHint>작업 대기열에 추가합니다.</HD_ExplicitQueuedHint>
++  <HD_ExplicitReplaceHint>현재 작업을 대체합니다.</HD_ExplicitReplaceHint>
++  <HD_ExplicitStateQueued>대기 중</HD_ExplicitStateQueued>
++  <HD_ExplicitStateActive>운반 중</HD_ExplicitStateActive>
++  <HD_ExplicitStateBlocked>막힘</HD_ExplicitStateBlocked>
++  <HD_ExplicitStateCancelled>취소됨</HD_ExplicitStateCancelled>
++  <HD_ExplicitStateComplete>완료</HD_ExplicitStateComplete>
++  <HD_ExplicitStateCaptured>일시 중단됨</HD_ExplicitStateCaptured>
++  <HD_ExplicitSourceChanged>선택한 출발 물품이 없거나 소진되었거나 더 이상 허용되지 않습니다.</HD_ExplicitSourceChanged>
++  <HD_ExplicitSourceReserved>선택한 출발 물품을 다른 작업이 예약했습니다.</HD_ExplicitSourceReserved>
++  <HD_ExplicitDestinationBlocked>선택한 장소에 공간이 없거나 예약되어 있거나 이 물품을 받을 수 없습니다.</HD_ExplicitDestinationBlocked>
++  <HD_ExplicitRouteBlocked>선택한 경로를 사용할 수 없습니다.</HD_ExplicitRouteBlocked>
++  <HD_ExplicitHandsBusy>정착민이 손에 다른 화물을 들고 있습니다.</HD_ExplicitHandsBusy>
++  <HD_ExplicitInterrupted>명령이 중단되었습니다. 준비되면 재개하세요.</HD_ExplicitInterrupted>
++  <HD_ExplicitAdmissionFailed>정착민이 이 명령을 시작하지 못했습니다. 준비되면 재개하세요.</HD_ExplicitAdmissionFailed>
++  <HD_ExplicitNeedsReview>저장된 명령이나 화물이 예기치 않게 바뀌었습니다. 재개하기 전에 물품을 확인하세요.</HD_ExplicitNeedsReview>
++  <HD_ExplicitStart>운반 목적지 지정…</HD_ExplicitStart>
++  <HD_ExplicitStartDesc>더미 하나, 총수량, 정확한 비저장 목적지를 선택합니다. 선택한 더미만 운반합니다. 명령 대기열 키를 누른 채 선택하면 대기열에 추가됩니다.</HD_ExplicitStartDesc>
++  <HD_ExplicitOrders>운반 명령</HD_ExplicitOrders>
++  <HD_ExplicitOrdersDesc>배달된 수량을 확인하고 지정 운반 명령을 재개하거나 취소합니다.</HD_ExplicitOrdersDesc>
++  <HD_ExplicitAmountTitle>운반 수량 선택</HD_ExplicitAmountTitle>
++  <HD_ExplicitChooseDestination>목적지 선택</HD_ExplicitChooseDestination>
++  <HD_ExplicitAmountContext>{0}: {1}\n이 더미의 수량: {2}</HD_ExplicitAmountContext>
++  <HD_ExplicitQueue>작업 대기열에 추가</HD_ExplicitQueue>
++  <HD_ExplicitAmountHint>총 {0}개를 필요하면 여러 번에 걸쳐 배달합니다. 개인 소지품은 그대로 둡니다.</HD_ExplicitAmountHint>
++  <HD_ExplicitQueueResume>재개할 명령을 대기열에 추가</HD_ExplicitQueueResume>
++  <HD_ExplicitResume>재개</HD_ExplicitResume>
++  <HD_ExplicitCancel>명령 취소</HD_ExplicitCancel>
++  <HD_ExplicitProgress>명령 {0}: {1}\n배달됨 {2} / {3} → ({4}, {5})</HD_ExplicitProgress>
++  <HD_ExplicitMissingItem>출발 물품 없음</HD_ExplicitMissingItem>
++</LanguageData>--- /dev/null
++++ Languages/Polish/Keyed/ExplicitHaul.xml
+@@ -0,0 +1,38 @@
++<?xml version='1.0' encoding='utf-8'?>
++<LanguageData>
++  <HD_ExplicitHaulTo>Przenieś {0} do…</HD_ExplicitHaulTo>
++  <HD_ExplicitChanged>Postać lub wybrany stos uległy zmianie. Wybierz je ponownie.</HD_ExplicitChanged>
++  <HD_ExplicitActorUnavailable>Ta postać nie może teraz wykonać tego rozkazu transportu.</HD_ExplicitActorUnavailable>
++  <HD_ExplicitSelectSource>Wybierz stos do przeniesienia. Prawy przycisk myszy lub Escape anuluje.</HD_ExplicitSelectSource>
++  <HD_ExplicitSelectDestination>Dostarcz tutaj {0} × {1}. {2} Wybierz dostępne pole poza magazynem. Prawy przycisk myszy lub Escape anuluje.</HD_ExplicitSelectDestination>
++  <HD_ExplicitQueuedHint>Dodaj do kolejki pracy.</HD_ExplicitQueuedHint>
++  <HD_ExplicitReplaceHint>Zastąp bieżącą pracę.</HD_ExplicitReplaceHint>
++  <HD_ExplicitStateQueued>W kolejce</HD_ExplicitStateQueued>
++  <HD_ExplicitStateActive>Transportowanie</HD_ExplicitStateActive>
++  <HD_ExplicitStateBlocked>Zablokowane</HD_ExplicitStateBlocked>
++  <HD_ExplicitStateCancelled>Anulowane</HD_ExplicitStateCancelled>
++  <HD_ExplicitStateComplete>Ukończone</HD_ExplicitStateComplete>
++  <HD_ExplicitStateCaptured>Tymczasowo zawieszone</HD_ExplicitStateCaptured>
++  <HD_ExplicitSourceChanged>Wybrane źródło zniknęło, wyczerpało się lub jest już niedozwolone.</HD_ExplicitSourceChanged>
++  <HD_ExplicitSourceReserved>Wybrane źródło jest zarezerwowane przez inne zadanie.</HD_ExplicitSourceReserved>
++  <HD_ExplicitDestinationBlocked>Wybrane miejsce nie ma wolnej przestrzeni, jest zarezerwowane lub nie przyjmuje tych przedmiotów.</HD_ExplicitDestinationBlocked>
++  <HD_ExplicitRouteBlocked>Wybrana trasa jest niedostępna.</HD_ExplicitRouteBlocked>
++  <HD_ExplicitHandsBusy>Postać trzyma w rękach inny ładunek.</HD_ExplicitHandsBusy>
++  <HD_ExplicitInterrupted>Rozkaz został przerwany. Wznów go, gdy będzie to możliwe.</HD_ExplicitInterrupted>
++  <HD_ExplicitAdmissionFailed>Postać nie mogła rozpocząć tego rozkazu. Wznów go, gdy będzie to możliwe.</HD_ExplicitAdmissionFailed>
++  <HD_ExplicitNeedsReview>Zapisany rozkaz lub jego ładunek nieoczekiwanie się zmienił. Sprawdź przedmioty przed wznowieniem.</HD_ExplicitNeedsReview>
++  <HD_ExplicitStart>Przenieś do…</HD_ExplicitStart>
++  <HD_ExplicitStartDesc>Wybierz jeden stos, łączną ilość i dokładne pole poza magazynem. Tylko ten stos zostanie przeniesiony. Przytrzymaj klawisz kolejki, aby dodać rozkaz.</HD_ExplicitStartDesc>
++  <HD_ExplicitOrders>Rozkazy transportu</HD_ExplicitOrders>
++  <HD_ExplicitOrdersDesc>Sprawdź dostarczone ilości oraz wznów lub anuluj konkretne rozkazy transportu.</HD_ExplicitOrdersDesc>
++  <HD_ExplicitAmountTitle>Wybierz ilość do transportu</HD_ExplicitAmountTitle>
++  <HD_ExplicitChooseDestination>Wybierz cel</HD_ExplicitChooseDestination>
++  <HD_ExplicitAmountContext>{0}: {1}\nDostępne w tym stosie: {2}</HD_ExplicitAmountContext>
++  <HD_ExplicitQueue>Dodaj do kolejki pracy</HD_ExplicitQueue>
++  <HD_ExplicitAmountHint>Dostarcz łącznie {0}, w kilku kursach w razie potrzeby. Osobisty ekwipunek pozostanie bez zmian.</HD_ExplicitAmountHint>
++  <HD_ExplicitQueueResume>Kolejkuj wznawiane rozkazy</HD_ExplicitQueueResume>
++  <HD_ExplicitResume>Wznów</HD_ExplicitResume>
++  <HD_ExplicitCancel>Anuluj rozkaz</HD_ExplicitCancel>
++  <HD_ExplicitProgress>Rozkaz {0}: {1}\nDostarczono {2} / {3} → ({4}, {5})</HD_ExplicitProgress>
++  <HD_ExplicitMissingItem>Brak źródła</HD_ExplicitMissingItem>
++</LanguageData>--- /dev/null
++++ Languages/PortugueseBrazilian/Keyed/ExplicitHaul.xml
+@@ -0,0 +1,38 @@
++<?xml version='1.0' encoding='utf-8'?>
++<LanguageData>
++  <HD_ExplicitHaulTo>Transportar {0} para…</HD_ExplicitHaulTo>
++  <HD_ExplicitChanged>O personagem ou a pilha selecionada mudou. Selecione novamente.</HD_ExplicitChanged>
++  <HD_ExplicitActorUnavailable>Este personagem não pode executar esta ordem de transporte agora.</HD_ExplicitActorUnavailable>
++  <HD_ExplicitSelectSource>Selecione a pilha a transportar. Clique direito ou Esc para cancelar.</HD_ExplicitSelectSource>
++  <HD_ExplicitSelectDestination>Entregue {0} × {1} aqui. {2} Escolha uma célula acessível fora de armazenamento. Clique direito ou Esc para cancelar.</HD_ExplicitSelectDestination>
++  <HD_ExplicitQueuedHint>Adicionar à fila de trabalho.</HD_ExplicitQueuedHint>
++  <HD_ExplicitReplaceHint>Substituir o trabalho atual.</HD_ExplicitReplaceHint>
++  <HD_ExplicitStateQueued>Na fila</HD_ExplicitStateQueued>
++  <HD_ExplicitStateActive>Transportando</HD_ExplicitStateActive>
++  <HD_ExplicitStateBlocked>Bloqueado</HD_ExplicitStateBlocked>
++  <HD_ExplicitStateCancelled>Cancelado</HD_ExplicitStateCancelled>
++  <HD_ExplicitStateComplete>Concluído</HD_ExplicitStateComplete>
++  <HD_ExplicitStateCaptured>Temporariamente suspenso</HD_ExplicitStateCaptured>
++  <HD_ExplicitSourceChanged>A origem selecionada está ausente, esgotada ou não é mais permitida.</HD_ExplicitSourceChanged>
++  <HD_ExplicitSourceReserved>A origem selecionada está reservada para outro trabalho.</HD_ExplicitSourceReserved>
++  <HD_ExplicitDestinationBlocked>O local escolhido não tem espaço utilizável, está reservado ou não pode receber estes itens.</HD_ExplicitDestinationBlocked>
++  <HD_ExplicitRouteBlocked>A rota escolhida está indisponível.</HD_ExplicitRouteBlocked>
++  <HD_ExplicitHandsBusy>O personagem tem outra carga nas mãos.</HD_ExplicitHandsBusy>
++  <HD_ExplicitInterrupted>A ordem foi interrompida. Retome quando possível.</HD_ExplicitInterrupted>
++  <HD_ExplicitAdmissionFailed>O personagem não conseguiu iniciar esta ordem. Retome quando possível.</HD_ExplicitAdmissionFailed>
++  <HD_ExplicitNeedsReview>A ordem salva ou sua carga mudou inesperadamente. Confira os itens antes de retomar.</HD_ExplicitNeedsReview>
++  <HD_ExplicitStart>Transportar para…</HD_ExplicitStart>
++  <HD_ExplicitStartDesc>Escolha uma pilha, uma quantidade total e um destino exato fora de armazenamento. Somente essa pilha será transportada. Segure a tecla de fila para adicionar a ordem.</HD_ExplicitStartDesc>
++  <HD_ExplicitOrders>Ordens de transporte</HD_ExplicitOrders>
++  <HD_ExplicitOrdersDesc>Veja as quantidades entregues e retome ou cancele ordens de transporte explícitas.</HD_ExplicitOrdersDesc>
++  <HD_ExplicitAmountTitle>Escolher quantidade a transportar</HD_ExplicitAmountTitle>
++  <HD_ExplicitChooseDestination>Escolher destino</HD_ExplicitChooseDestination>
++  <HD_ExplicitAmountContext>{0}: {1}\nDisponível nesta pilha: {2}</HD_ExplicitAmountContext>
++  <HD_ExplicitQueue>Adicionar à fila de trabalho</HD_ExplicitQueue>
++  <HD_ExplicitAmountHint>Entregue {0} no total, em várias viagens se necessário. O inventário pessoal fica intacto.</HD_ExplicitAmountHint>
++  <HD_ExplicitQueueResume>Enfileirar ordens retomadas</HD_ExplicitQueueResume>
++  <HD_ExplicitResume>Retomar</HD_ExplicitResume>
++  <HD_ExplicitCancel>Cancelar ordem</HD_ExplicitCancel>
++  <HD_ExplicitProgress>Ordem {0}: {1}\nEntregue {2} / {3} → ({4}, {5})</HD_ExplicitProgress>
++  <HD_ExplicitMissingItem>Origem ausente</HD_ExplicitMissingItem>
++</LanguageData>--- /dev/null
++++ Languages/Russian/Keyed/ExplicitHaul.xml
+@@ -0,0 +1,38 @@
++<?xml version='1.0' encoding='utf-8'?>
++<LanguageData>
++  <HD_ExplicitHaulTo>Перенести {0} в…</HD_ExplicitHaulTo>
++  <HD_ExplicitChanged>Персонаж или выбранная стопка изменились. Выберите их снова.</HD_ExplicitChanged>
++  <HD_ExplicitActorUnavailable>Этот персонаж сейчас не может выполнить приказ о переноске.</HD_ExplicitActorUnavailable>
++  <HD_ExplicitSelectSource>Выберите стопку для переноски. Правая кнопка мыши или Escape — отмена.</HD_ExplicitSelectSource>
++  <HD_ExplicitSelectDestination>Доставить сюда {0} × {1}. {2} Выберите доступную клетку вне склада. Правая кнопка мыши или Escape — отмена.</HD_ExplicitSelectDestination>
++  <HD_ExplicitQueuedHint>Добавить в очередь работ.</HD_ExplicitQueuedHint>
++  <HD_ExplicitReplaceHint>Заменить текущую работу.</HD_ExplicitReplaceHint>
++  <HD_ExplicitStateQueued>В очереди</HD_ExplicitStateQueued>
++  <HD_ExplicitStateActive>Переноска</HD_ExplicitStateActive>
++  <HD_ExplicitStateBlocked>Заблокирован</HD_ExplicitStateBlocked>
++  <HD_ExplicitStateCancelled>Отменён</HD_ExplicitStateCancelled>
++  <HD_ExplicitStateComplete>Выполнен</HD_ExplicitStateComplete>
++  <HD_ExplicitStateCaptured>Временно приостановлен</HD_ExplicitStateCaptured>
++  <HD_ExplicitSourceChanged>Выбранный источник исчез, исчерпан или больше не разрешён.</HD_ExplicitSourceChanged>
++  <HD_ExplicitSourceReserved>Выбранный источник зарезервирован другой задачей.</HD_ExplicitSourceReserved>
++  <HD_ExplicitDestinationBlocked>В выбранном месте нет свободного пространства, оно зарезервировано или не принимает эти предметы.</HD_ExplicitDestinationBlocked>
++  <HD_ExplicitRouteBlocked>Выбранный путь недоступен.</HD_ExplicitRouteBlocked>
++  <HD_ExplicitHandsBusy>Персонаж держит в руках другой груз.</HD_ExplicitHandsBusy>
++  <HD_ExplicitInterrupted>Приказ прерван. Возобновите его, когда будете готовы.</HD_ExplicitInterrupted>
++  <HD_ExplicitAdmissionFailed>Персонаж не смог начать этот приказ. Возобновите его, когда будете готовы.</HD_ExplicitAdmissionFailed>
++  <HD_ExplicitNeedsReview>Сохранённый приказ или его груз неожиданно изменились. Проверьте предметы перед возобновлением.</HD_ExplicitNeedsReview>
++  <HD_ExplicitStart>Перенести в…</HD_ExplicitStart>
++  <HD_ExplicitStartDesc>Выберите одну стопку, общее количество и точную клетку вне склада. Будет перенесена только эта стопка. Удерживайте клавишу очереди, чтобы добавить приказ.</HD_ExplicitStartDesc>
++  <HD_ExplicitOrders>Приказы о переноске</HD_ExplicitOrders>
++  <HD_ExplicitOrdersDesc>Просматривайте доставленные количества, возобновляйте или отменяйте приказы о переноске.</HD_ExplicitOrdersDesc>
++  <HD_ExplicitAmountTitle>Выбрать количество</HD_ExplicitAmountTitle>
++  <HD_ExplicitChooseDestination>Выбрать место</HD_ExplicitChooseDestination>
++  <HD_ExplicitAmountContext>{0}: {1}\nВ этой стопке доступно: {2}</HD_ExplicitAmountContext>
++  <HD_ExplicitQueue>Добавить в очередь работ</HD_ExplicitQueue>
++  <HD_ExplicitAmountHint>Доставить всего {0}, при необходимости за несколько ходок. Личный инвентарь не затрагивается.</HD_ExplicitAmountHint>
++  <HD_ExplicitQueueResume>Ставить возобновляемые приказы в очередь</HD_ExplicitQueueResume>
++  <HD_ExplicitResume>Возобновить</HD_ExplicitResume>
++  <HD_ExplicitCancel>Отменить приказ</HD_ExplicitCancel>
++  <HD_ExplicitProgress>Приказ {0}: {1}\nДоставлено {2} / {3} → ({4}, {5})</HD_ExplicitProgress>
++  <HD_ExplicitMissingItem>Источник отсутствует</HD_ExplicitMissingItem>
++</LanguageData>--- /dev/null
++++ Languages/Spanish/Keyed/ExplicitHaul.xml
+@@ -0,0 +1,38 @@
++<?xml version='1.0' encoding='utf-8'?>
++<LanguageData>
++  <HD_ExplicitHaulTo>Transportar {0} a…</HD_ExplicitHaulTo>
++  <HD_ExplicitChanged>El personaje o la pila seleccionada ha cambiado. Selecciónalos de nuevo.</HD_ExplicitChanged>
++  <HD_ExplicitActorUnavailable>Este personaje no puede ejecutar esta orden de transporte ahora.</HD_ExplicitActorUnavailable>
++  <HD_ExplicitSelectSource>Selecciona la pila que quieres transportar. Clic derecho o Escape para cancelar.</HD_ExplicitSelectSource>
++  <HD_ExplicitSelectDestination>Entrega aquí {0} × {1}. {2} Elige una casilla accesible fuera del almacenamiento. Clic derecho o Escape para cancelar.</HD_ExplicitSelectDestination>
++  <HD_ExplicitQueuedHint>Añadir a la cola de trabajo.</HD_ExplicitQueuedHint>
++  <HD_ExplicitReplaceHint>Reemplazar el trabajo actual.</HD_ExplicitReplaceHint>
++  <HD_ExplicitStateQueued>En cola</HD_ExplicitStateQueued>
++  <HD_ExplicitStateActive>Transportando</HD_ExplicitStateActive>
++  <HD_ExplicitStateBlocked>Bloqueado</HD_ExplicitStateBlocked>
++  <HD_ExplicitStateCancelled>Cancelado</HD_ExplicitStateCancelled>
++  <HD_ExplicitStateComplete>Completado</HD_ExplicitStateComplete>
++  <HD_ExplicitStateCaptured>Suspendido temporalmente</HD_ExplicitStateCaptured>
++  <HD_ExplicitSourceChanged>La fuente seleccionada falta, se ha agotado o ya no está permitida.</HD_ExplicitSourceChanged>
++  <HD_ExplicitSourceReserved>La fuente seleccionada está reservada para otro trabajo.</HD_ExplicitSourceReserved>
++  <HD_ExplicitDestinationBlocked>El lugar elegido no tiene espacio utilizable, está reservado o no puede recibir estos objetos.</HD_ExplicitDestinationBlocked>
++  <HD_ExplicitRouteBlocked>La ruta elegida no está disponible.</HD_ExplicitRouteBlocked>
++  <HD_ExplicitHandsBusy>El personaje lleva otra carga en las manos.</HD_ExplicitHandsBusy>
++  <HD_ExplicitInterrupted>La orden se interrumpió. Reanúdala cuando sea posible.</HD_ExplicitInterrupted>
++  <HD_ExplicitAdmissionFailed>El personaje no pudo iniciar esta orden. Reanúdala cuando sea posible.</HD_ExplicitAdmissionFailed>
++  <HD_ExplicitNeedsReview>La orden guardada o su carga ha cambiado inesperadamente. Revisa los objetos antes de reanudar.</HD_ExplicitNeedsReview>
++  <HD_ExplicitStart>Transportar a…</HD_ExplicitStart>
++  <HD_ExplicitStartDesc>Elige una pila, una cantidad total y un destino exacto fuera del almacenamiento. Solo se transportará esa pila. Mantén la tecla de cola para añadir la orden.</HD_ExplicitStartDesc>
++  <HD_ExplicitOrders>Órdenes de transporte</HD_ExplicitOrders>
++  <HD_ExplicitOrdersDesc>Consulta las cantidades entregadas y reanuda o cancela órdenes de transporte explícitas.</HD_ExplicitOrdersDesc>
++  <HD_ExplicitAmountTitle>Elegir cantidad a transportar</HD_ExplicitAmountTitle>
++  <HD_ExplicitChooseDestination>Elegir destino</HD_ExplicitChooseDestination>
++  <HD_ExplicitAmountContext>{0}: {1}\nDisponible en esta pila: {2}</HD_ExplicitAmountContext>
++  <HD_ExplicitQueue>Añadir a la cola de trabajo</HD_ExplicitQueue>
++  <HD_ExplicitAmountHint>Entrega {0} en total, en varios viajes si hace falta. El inventario personal queda intacto.</HD_ExplicitAmountHint>
++  <HD_ExplicitQueueResume>Encolar órdenes reanudadas</HD_ExplicitQueueResume>
++  <HD_ExplicitResume>Reanudar</HD_ExplicitResume>
++  <HD_ExplicitCancel>Cancelar orden</HD_ExplicitCancel>
++  <HD_ExplicitProgress>Orden {0}: {1}\nEntregado {2} / {3} → ({4}, {5})</HD_ExplicitProgress>
++  <HD_ExplicitMissingItem>Fuente ausente</HD_ExplicitMissingItem>
++</LanguageData>--- /dev/null
++++ Languages/Thai/Keyed/ExplicitHaul.xml
+@@ -0,0 +1,38 @@
++<?xml version='1.0' encoding='utf-8'?>
++<LanguageData>
++  <HD_ExplicitHaulTo>ขน {0} ไปยัง…</HD_ExplicitHaulTo>
++  <HD_ExplicitChanged>ตัวละครหรือกองสิ่งของที่เลือกเปลี่ยนไปแล้ว กรุณาเลือกใหม่</HD_ExplicitChanged>
++  <HD_ExplicitActorUnavailable>ตัวละครนี้ยังทำคำสั่งขนของนี้ไม่ได้</HD_ExplicitActorUnavailable>
++  <HD_ExplicitSelectSource>เลือกกองสิ่งของที่จะขน คลิกขวาหรือกด Escape เพื่อยกเลิก</HD_ExplicitSelectSource>
++  <HD_ExplicitSelectDestination>ส่ง {1} จำนวน {0} ชิ้นที่นี่ {2} เลือกช่องที่เข้าถึงได้และไม่ใช่ที่เก็บของ คลิกขวาหรือกด Escape เพื่อยกเลิก</HD_ExplicitSelectDestination>
++  <HD_ExplicitQueuedHint>เพิ่มในคิวงาน</HD_ExplicitQueuedHint>
++  <HD_ExplicitReplaceHint>แทนที่งานปัจจุบัน</HD_ExplicitReplaceHint>
++  <HD_ExplicitStateQueued>อยู่ในคิว</HD_ExplicitStateQueued>
++  <HD_ExplicitStateActive>กำลังขน</HD_ExplicitStateActive>
++  <HD_ExplicitStateBlocked>ติดขัด</HD_ExplicitStateBlocked>
++  <HD_ExplicitStateCancelled>ยกเลิกแล้ว</HD_ExplicitStateCancelled>
++  <HD_ExplicitStateComplete>เสร็จแล้ว</HD_ExplicitStateComplete>
++  <HD_ExplicitStateCaptured>พักชั่วคราว</HD_ExplicitStateCaptured>
++  <HD_ExplicitSourceChanged>แหล่งที่เลือกหายไป หมดแล้ว หรือไม่ได้รับอนุญาตอีกต่อไป</HD_ExplicitSourceChanged>
++  <HD_ExplicitSourceReserved>แหล่งที่เลือกถูกจองโดยงานอื่น</HD_ExplicitSourceReserved>
++  <HD_ExplicitDestinationBlocked>จุดหมายไม่มีที่ว่าง ถูกจอง หรือรับสิ่งของเหล่านี้ไม่ได้</HD_ExplicitDestinationBlocked>
++  <HD_ExplicitRouteBlocked>เส้นทางที่เลือกใช้ไม่ได้</HD_ExplicitRouteBlocked>
++  <HD_ExplicitHandsBusy>ตัวละครกำลังถือสิ่งของอื่นอยู่</HD_ExplicitHandsBusy>
++  <HD_ExplicitInterrupted>คำสั่งถูกขัดจังหวะ กดทำต่อเมื่อพร้อม</HD_ExplicitInterrupted>
++  <HD_ExplicitAdmissionFailed>ตัวละครเริ่มคำสั่งนี้ไม่ได้ กดทำต่อเมื่อพร้อม</HD_ExplicitAdmissionFailed>
++  <HD_ExplicitNeedsReview>คำสั่งที่บันทึกไว้หรือสิ่งของเปลี่ยนไปโดยไม่คาดคิด ตรวจสอบสิ่งของก่อนทำต่อ</HD_ExplicitNeedsReview>
++  <HD_ExplicitStart>ขนไปยัง…</HD_ExplicitStart>
++  <HD_ExplicitStartDesc>เลือกสิ่งของหนึ่งกอง จำนวนรวม และช่องปลายทางที่ไม่ใช่ที่เก็บของ จะขนเฉพาะกองนี้ กดปุ่มจัดคิวคำสั่งค้างไว้เพื่อเพิ่มคำสั่งในคิว</HD_ExplicitStartDesc>
++  <HD_ExplicitOrders>คำสั่งขนของ</HD_ExplicitOrders>
++  <HD_ExplicitOrdersDesc>ดูจำนวนที่ส่งแล้ว และทำต่อหรือยกเลิกคำสั่งขนของที่ระบุ</HD_ExplicitOrdersDesc>
++  <HD_ExplicitAmountTitle>เลือกจำนวนที่จะขน</HD_ExplicitAmountTitle>
++  <HD_ExplicitChooseDestination>เลือกปลายทาง</HD_ExplicitChooseDestination>
++  <HD_ExplicitAmountContext>{0}: {1}\nจำนวนในกองนี้: {2}</HD_ExplicitAmountContext>
++  <HD_ExplicitQueue>เพิ่มในคิวงาน</HD_ExplicitQueue>
++  <HD_ExplicitAmountHint>ส่งทั้งหมด {0} ชิ้น โดยขนหลายเที่ยวหากจำเป็น ไม่แตะต้องสิ่งของส่วนตัว</HD_ExplicitAmountHint>
++  <HD_ExplicitQueueResume>ใส่คำสั่งที่ทำต่อในคิว</HD_ExplicitQueueResume>
++  <HD_ExplicitResume>ทำต่อ</HD_ExplicitResume>
++  <HD_ExplicitCancel>ยกเลิกคำสั่ง</HD_ExplicitCancel>
++  <HD_ExplicitProgress>คำสั่ง {0}: {1}\nส่งแล้ว {2} / {3} → ({4}, {5})</HD_ExplicitProgress>
++  <HD_ExplicitMissingItem>ไม่พบแหล่งสิ่งของ</HD_ExplicitMissingItem>
++</LanguageData>--- /dev/null
++++ Languages/Ukrainian/Keyed/ExplicitHaul.xml
+@@ -0,0 +1,38 @@
++<?xml version='1.0' encoding='utf-8'?>
++<LanguageData>
++  <HD_ExplicitHaulTo>Перенести {0} до…</HD_ExplicitHaulTo>
++  <HD_ExplicitChanged>Персонаж або вибрана купа змінилися. Виберіть їх знову.</HD_ExplicitChanged>
++  <HD_ExplicitActorUnavailable>Цей персонаж зараз не може виконати наказ про перенесення.</HD_ExplicitActorUnavailable>
++  <HD_ExplicitSelectSource>Виберіть купу для перенесення. Права кнопка миші або Escape — скасування.</HD_ExplicitSelectSource>
++  <HD_ExplicitSelectDestination>Доставити сюди {0} × {1}. {2} Виберіть доступну клітинку поза складом. Права кнопка миші або Escape — скасування.</HD_ExplicitSelectDestination>
++  <HD_ExplicitQueuedHint>Додати до черги робіт.</HD_ExplicitQueuedHint>
++  <HD_ExplicitReplaceHint>Замінити поточну роботу.</HD_ExplicitReplaceHint>
++  <HD_ExplicitStateQueued>У черзі</HD_ExplicitStateQueued>
++  <HD_ExplicitStateActive>Перенесення</HD_ExplicitStateActive>
++  <HD_ExplicitStateBlocked>Заблоковано</HD_ExplicitStateBlocked>
++  <HD_ExplicitStateCancelled>Скасовано</HD_ExplicitStateCancelled>
++  <HD_ExplicitStateComplete>Завершено</HD_ExplicitStateComplete>
++  <HD_ExplicitStateCaptured>Тимчасово призупинено</HD_ExplicitStateCaptured>
++  <HD_ExplicitSourceChanged>Вибране джерело зникло, вичерпалося або більше не дозволене.</HD_ExplicitSourceChanged>
++  <HD_ExplicitSourceReserved>Вибране джерело зарезервоване іншим завданням.</HD_ExplicitSourceReserved>
++  <HD_ExplicitDestinationBlocked>У вибраному місці немає вільного простору, воно зарезервоване або не приймає ці предмети.</HD_ExplicitDestinationBlocked>
++  <HD_ExplicitRouteBlocked>Вибраний шлях недоступний.</HD_ExplicitRouteBlocked>
++  <HD_ExplicitHandsBusy>Персонаж тримає в руках інший вантаж.</HD_ExplicitHandsBusy>
++  <HD_ExplicitInterrupted>Наказ перервано. Поновіть його, коли будете готові.</HD_ExplicitInterrupted>
++  <HD_ExplicitAdmissionFailed>Персонаж не зміг розпочати цей наказ. Поновіть його, коли будете готові.</HD_ExplicitAdmissionFailed>
++  <HD_ExplicitNeedsReview>Збережений наказ або його вантаж несподівано змінилися. Перевірте предмети перед поновленням.</HD_ExplicitNeedsReview>
++  <HD_ExplicitStart>Перенести до…</HD_ExplicitStart>
++  <HD_ExplicitStartDesc>Виберіть одну купу, загальну кількість і точну клітинку поза складом. Буде перенесено лише цю купу. Утримуйте клавішу черги, щоб додати наказ.</HD_ExplicitStartDesc>
++  <HD_ExplicitOrders>Накази про перенесення</HD_ExplicitOrders>
++  <HD_ExplicitOrdersDesc>Переглядайте доставлені кількості, поновлюйте або скасовуйте накази про перенесення.</HD_ExplicitOrdersDesc>
++  <HD_ExplicitAmountTitle>Вибрати кількість</HD_ExplicitAmountTitle>
++  <HD_ExplicitChooseDestination>Вибрати місце</HD_ExplicitChooseDestination>
++  <HD_ExplicitAmountContext>{0}: {1}\nДоступно в цій купі: {2}</HD_ExplicitAmountContext>
++  <HD_ExplicitQueue>Додати до черги робіт</HD_ExplicitQueue>
++  <HD_ExplicitAmountHint>Доставити загалом {0}, за потреби за кілька ходок. Особистий інвентар не змінюється.</HD_ExplicitAmountHint>
++  <HD_ExplicitQueueResume>Ставити поновлені накази в чергу</HD_ExplicitQueueResume>
++  <HD_ExplicitResume>Поновити</HD_ExplicitResume>
++  <HD_ExplicitCancel>Скасувати наказ</HD_ExplicitCancel>
++  <HD_ExplicitProgress>Наказ {0}: {1}\nДоставлено {2} / {3} → ({4}, {5})</HD_ExplicitProgress>
++  <HD_ExplicitMissingItem>Джерело відсутнє</HD_ExplicitMissingItem>
++</LanguageData>--- /dev/null
++++ Languages/ChineseSimplified/DefInjected/JobDef/ExplicitHaul.xml
+@@ -0,0 +1,4 @@
++<?xml version='1.0' encoding='utf-8'?>
++<LanguageData>
++  <HaulersDream_ExplicitHaul.reportString>正在将所选物品搬运到指定位置。</HaulersDream_ExplicitHaul.reportString>
++</LanguageData>--- /dev/null
++++ Languages/ChineseTraditional/DefInjected/JobDef/ExplicitHaul.xml
+@@ -0,0 +1,4 @@
++<?xml version='1.0' encoding='utf-8'?>
++<LanguageData>
++  <HaulersDream_ExplicitHaul.reportString>正在將所選物品搬運到指定位置。</HaulersDream_ExplicitHaul.reportString>
++</LanguageData>--- /dev/null
++++ Languages/Danish/DefInjected/JobDef/ExplicitHaul.xml
+@@ -0,0 +1,4 @@
++<?xml version='1.0' encoding='utf-8'?>
++<LanguageData>
++  <HaulersDream_ExplicitHaul.reportString>Transporterer de valgte ting til det valgte sted.</HaulersDream_ExplicitHaul.reportString>
++</LanguageData>--- /dev/null
++++ Languages/Dutch/DefInjected/JobDef/ExplicitHaul.xml
+@@ -0,0 +1,4 @@
++<?xml version='1.0' encoding='utf-8'?>
++<LanguageData>
++  <HaulersDream_ExplicitHaul.reportString>Vervoert de gekozen voorwerpen naar de gekozen plek.</HaulersDream_ExplicitHaul.reportString>
++</LanguageData>--- /dev/null
++++ Languages/English/DefInjected/JobDef/ExplicitHaul.xml
+@@ -0,0 +1,4 @@
++<?xml version='1.0' encoding='utf-8'?>
++<LanguageData>
++  <HaulersDream_ExplicitHaul.reportString>Hauling the selected items to the selected location.</HaulersDream_ExplicitHaul.reportString>
++</LanguageData>--- /dev/null
++++ Languages/French/DefInjected/JobDef/ExplicitHaul.xml
+@@ -0,0 +1,4 @@
++<?xml version='1.0' encoding='utf-8'?>
++<LanguageData>
++  <HaulersDream_ExplicitHaul.reportString>Transporte les objets sélectionnés vers l'emplacement choisi.</HaulersDream_ExplicitHaul.reportString>
++</LanguageData>--- /dev/null
++++ Languages/German/DefInjected/JobDef/ExplicitHaul.xml
+@@ -0,0 +1,4 @@
++<?xml version='1.0' encoding='utf-8'?>
++<LanguageData>
++  <HaulersDream_ExplicitHaul.reportString>Transportiert die gewählten Gegenstände zum gewählten Ort.</HaulersDream_ExplicitHaul.reportString>
++</LanguageData>--- /dev/null
++++ Languages/Italian/DefInjected/JobDef/ExplicitHaul.xml
+@@ -0,0 +1,4 @@
++<?xml version='1.0' encoding='utf-8'?>
++<LanguageData>
++  <HaulersDream_ExplicitHaul.reportString>Trasporta gli oggetti selezionati al luogo scelto.</HaulersDream_ExplicitHaul.reportString>
++</LanguageData>--- /dev/null
++++ Languages/Japanese/DefInjected/JobDef/ExplicitHaul.xml
+@@ -0,0 +1,4 @@
++<?xml version='1.0' encoding='utf-8'?>
++<LanguageData>
++  <HaulersDream_ExplicitHaul.reportString>選択したアイテムを指定した場所へ運搬中。</HaulersDream_ExplicitHaul.reportString>
++</LanguageData>--- /dev/null
++++ Languages/Korean/DefInjected/JobDef/ExplicitHaul.xml
+@@ -0,0 +1,4 @@
++<?xml version='1.0' encoding='utf-8'?>
++<LanguageData>
++  <HaulersDream_ExplicitHaul.reportString>선택한 물품을 지정한 장소로 운반 중.</HaulersDream_ExplicitHaul.reportString>
++</LanguageData>--- /dev/null
++++ Languages/Polish/DefInjected/JobDef/ExplicitHaul.xml
+@@ -0,0 +1,4 @@
++<?xml version='1.0' encoding='utf-8'?>
++<LanguageData>
++  <HaulersDream_ExplicitHaul.reportString>Przenosi wybrane przedmioty do wybranego miejsca.</HaulersDream_ExplicitHaul.reportString>
++</LanguageData>--- /dev/null
++++ Languages/PortugueseBrazilian/DefInjected/JobDef/ExplicitHaul.xml
+@@ -0,0 +1,4 @@
++<?xml version='1.0' encoding='utf-8'?>
++<LanguageData>
++  <HaulersDream_ExplicitHaul.reportString>Transportando os itens selecionados para o local escolhido.</HaulersDream_ExplicitHaul.reportString>
++</LanguageData>--- /dev/null
++++ Languages/Russian/DefInjected/JobDef/ExplicitHaul.xml
+@@ -0,0 +1,4 @@
++<?xml version='1.0' encoding='utf-8'?>
++<LanguageData>
++  <HaulersDream_ExplicitHaul.reportString>Переносит выбранные предметы в выбранное место.</HaulersDream_ExplicitHaul.reportString>
++</LanguageData>--- /dev/null
++++ Languages/Spanish/DefInjected/JobDef/ExplicitHaul.xml
+@@ -0,0 +1,4 @@
++<?xml version='1.0' encoding='utf-8'?>
++<LanguageData>
++  <HaulersDream_ExplicitHaul.reportString>Transportando los objetos seleccionados al lugar elegido.</HaulersDream_ExplicitHaul.reportString>
++</LanguageData>--- /dev/null
++++ Languages/Thai/DefInjected/JobDef/ExplicitHaul.xml
+@@ -0,0 +1,4 @@
++<?xml version='1.0' encoding='utf-8'?>
++<LanguageData>
++  <HaulersDream_ExplicitHaul.reportString>กำลังขนสิ่งของที่เลือกไปยังจุดหมายที่เลือก</HaulersDream_ExplicitHaul.reportString>
++</LanguageData>--- /dev/null
++++ Languages/Ukrainian/DefInjected/JobDef/ExplicitHaul.xml
+@@ -0,0 +1,4 @@
++<?xml version='1.0' encoding='utf-8'?>
++<LanguageData>
++  <HaulersDream_ExplicitHaul.reportString>Переносить вибрані предмети до вибраного місця.</HaulersDream_ExplicitHaul.reportString>
++</LanguageData>

@@ -1,0 +1,40 @@
+<?xml version='1.0' encoding='utf-8'?>
+<LanguageData>
+  <HD_ExplicitHaulTo>Haul {0} to…</HD_ExplicitHaulTo>
+  <HD_ExplicitChanged>The pawn or selected stack changed. Select them again.</HD_ExplicitChanged>
+  <HD_ExplicitActorUnavailable>This pawn cannot take this hauling order now.</HD_ExplicitActorUnavailable>
+  <HD_ExplicitSelectSource>Select the item stack to haul. Right-click or Escape cancels.</HD_ExplicitSelectSource>
+  <HD_ExplicitSelectDestination>Deliver {0} × {1} here. {2} Choose a reachable ground cell or shelf. Right-click or Escape cancels.</HD_ExplicitSelectDestination>
+  <HD_ExplicitQueuedHint>Add to the work queue.</HD_ExplicitQueuedHint>
+  <HD_ExplicitReplaceHint>Replace current work.</HD_ExplicitReplaceHint>
+  <HD_ExplicitStateQueued>Queued</HD_ExplicitStateQueued>
+  <HD_ExplicitStateActive>Hauling</HD_ExplicitStateActive>
+  <HD_ExplicitStateBlocked>Blocked</HD_ExplicitStateBlocked>
+  <HD_ExplicitStateCancelled>Cancelled</HD_ExplicitStateCancelled>
+  <HD_ExplicitStateComplete>Complete</HD_ExplicitStateComplete>
+  <HD_ExplicitStateCaptured>Temporarily suspended</HD_ExplicitStateCaptured>
+  <HD_ExplicitSourceChanged>The selected source is missing, exhausted or no longer allowed.</HD_ExplicitSourceChanged>
+  <HD_ExplicitSourceReserved>The selected source is reserved by another job.</HD_ExplicitSourceReserved>
+  <HD_ExplicitDestinationBlocked>The selected location has no usable space, is reserved or cannot receive these items.</HD_ExplicitDestinationBlocked>
+  <HD_ExplicitRouteBlocked>The selected route is unavailable.</HD_ExplicitRouteBlocked>
+  <HD_ExplicitHandsBusy>The pawn's hands contain other cargo.</HD_ExplicitHandsBusy>
+  <HD_ExplicitInterrupted>The order was interrupted. Resume when ready.</HD_ExplicitInterrupted>
+  <HD_ExplicitAdmissionFailed>The pawn could not start this order. Resume when ready.</HD_ExplicitAdmissionFailed>
+  <HD_ExplicitNeedsReview>The saved order or its cargo changed unexpectedly. Inspect the items before resuming.</HD_ExplicitNeedsReview>
+  <HD_ExplicitStart>Haul to…</HD_ExplicitStart>
+  <HD_ExplicitStartDesc>Choose one item stack, a total quantity and an exact ground cell or shelf. Only that stack is hauled. Hold the Queue Order key to append the order.</HD_ExplicitStartDesc>
+  <HD_ExplicitOrders>Hauling orders</HD_ExplicitOrders>
+  <HD_ExplicitOrdersDesc>View delivered quantities and resume or cancel explicit hauling orders.</HD_ExplicitOrdersDesc>
+  <HD_ExplicitAmountTitle>Choose hauling quantity</HD_ExplicitAmountTitle>
+  <HD_ExplicitChooseDestination>Choose destination</HD_ExplicitChooseDestination>
+  <HD_ExplicitAmountContext>{0}: {1}\nAvailable in this stack: {2}</HD_ExplicitAmountContext>
+  <HD_ExplicitQueue>Add to the work queue</HD_ExplicitQueue>
+  <HD_ExplicitAmountHint>Deliver {0} in total, using multiple trips if needed. Personal inventory is left alone.</HD_ExplicitAmountHint>
+  <HD_ExplicitQueueResume>Queue resumed orders</HD_ExplicitQueueResume>
+  <HD_ExplicitResume>Resume</HD_ExplicitResume>
+  <HD_ExplicitCancel>Cancel order</HD_ExplicitCancel>
+  <HD_ExplicitProgress>Order {0}: {1}\nDelivered {2} / {3} → ({4}, {5})</HD_ExplicitProgress>
+  <HD_ExplicitMissingItem>Missing source</HD_ExplicitMissingItem>
+  <HD_ExplicitShelf>Selected shelf: {0}</HD_ExplicitShelf>
+  <HD_ExplicitMissingShelf>Missing shelf</HD_ExplicitMissingShelf>
+</LanguageData>

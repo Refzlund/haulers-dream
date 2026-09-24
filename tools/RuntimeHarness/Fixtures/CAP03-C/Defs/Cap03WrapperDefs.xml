@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+  <!-- Disposable native wrapper-boundary witness; not a supported cargo class. -->
+  <ThingDef ParentName="FurnitureBase">
+    <defName>HDHarness_CAP03C_Inner</defName>
+    <label>CAP03-C inner counter control</label>
+    <description>Test-only minifiable building with base-preserving predicate counters.</description>
+    <thingClass>HaulersDream.RuntimeHarness.Cap03WrapperInner</thingClass>
+    <category>Building</category>
+    <size>(1,1)</size>
+    <minifiedDef>MinifiedThing</minifiedDef>
+    <useHitPoints>true</useHitPoints>
+    <rotatable>false</rotatable>
+    <passability>PassThroughOnly</passability>
+    <fillPercent>0.3</fillPercent>
+    <graphicData>
+      <texPath>Things/Building/Furniture/Stool</texPath>
+      <graphicClass>Graphic_Multi</graphicClass>
+      <drawSize>(1,1)</drawSize>
+    </graphicData>
+    <statBases><MaxHitPoints>100</MaxHitPoints><Mass>5</Mass><WorkToBuild>100</WorkToBuild><Flammability>1</Flammability></statBases>
+    <costList><WoodLog>5</WoodLog></costList>
+  </ThingDef>
+</Defs>

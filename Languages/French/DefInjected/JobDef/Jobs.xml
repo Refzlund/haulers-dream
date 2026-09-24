@@ -16,4 +16,5 @@
 <HaulersDream_LoadPortalInBulk.reportString>chargement groupé d'un portail.</HaulersDream_LoadPortalInBulk.reportString>
 <HaulersDream_LoadVehicleInBulk.reportString>chargement groupé d'un véhicule.</HaulersDream_LoadVehicleInBulk.reportString>
 <HaulersDream_BulkRefuel.reportString>ravitaillement groupé.</HaulersDream_BulkRefuel.reportString>
+  <HaulersDream_UnloadTransporterInBulk.reportString>déchargement d'un module de transport.</HaulersDream_UnloadTransporterInBulk.reportString>
 </LanguageData>

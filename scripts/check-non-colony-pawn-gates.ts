@@ -28,8 +28,8 @@
 //      driver stops turning the same answer into a job-level FailOn — withholding the flag alone still lets the
 //      transfer loop empty a carrier the job should never have targeted.
 //   5. Any other file in the mod assigns UnloadEverything. There is exactly one legitimate writer.
-//   6. Pawn.HostFaction is read anywhere outside the permission seam — that read IS the bug, and it looks
-//      perfectly reasonable at every call site that wants it.
+//   6. Pawn.HostFaction is read outside the permission seam or the two exact robot-command refusals.
+//      Those refusals exclude hosted robots; they never turn hosting into ownership or unload permission.
 //   7. TransportLoad's HasJob/JobOn pair falls out of lockstep on its explicit "player faction, not a quest
 //      lodger" refusal — the hardening that stops a guest entering HD's bulk loaders whatever any other mod
 //      does with its Lords.
@@ -107,6 +107,18 @@ const GATED_METHODS: { file: string; method: string; why: string }[] = [
  */
 const FLAG_WRITER = 'JobDriver_UnloadCarrierInBulk.cs'
 const HOST_FACTION_READER = 'Patch_WorkGiver_UnloadCarriers.cs'
+// These command-only robot exceptions use HostFaction solely to REFUSE a hosted pawn.
+// Pin the exact negative predicate and its enclosing admission method, not the entire file.
+const ROBOT_HOST_REFUSALS: Record<string, { method: string; predicate: RegExp }> = {
+	'NearbyHaulCommand.cs': {
+		method: 'PawnBlockReason',
+		predicate: /\(!pawn\.CanTakeOrder && \(!miscRobot \|\| pawn\.HostFaction != null\)\)/,
+	},
+	'ExplicitHaulCommand.cs': {
+		method: 'ActorReason',
+		predicate: /\(!p\.CanTakeOrder && \(!robot \|\| p\.HostFaction != null\)\)/,
+	},
+}
 
 const errors: string[] = []
 
@@ -292,6 +304,7 @@ async function main(): Promise<void> {
 	// ---- 6 + 7. Repo-wide: one flag writer, one host-faction reader. ----
 	let flagWriters = 0
 	let hostFactionReaders = 0
+	let prisonerHostReader = false
 	let proseMentions = 0
 	for (const path of files) {
 		const name = basename(path)
@@ -319,7 +332,15 @@ async function main(): Promise<void> {
 		}
 		if (HOST_FACTION.test(code)) {
 			hostFactionReaders++
-			if (name !== HOST_FACTION_READER) {
+			if (name === HOST_FACTION_READER) prisonerHostReader = true
+			const robotRule = ROBOT_HOST_REFUSALS[name]
+			const robotBody = robotRule ? sliceMethodBody(code, robotRule.method) : null
+			const isNegativeRobotGuard = robotRule && robotBody !== null
+				&& robotRule.predicate.test(robotBody)
+				&& (code.match(/\bHostFaction\b/g) ?? []).length === 1
+				&& /\.Faction != Faction\.OfPlayerSilentFail/.test(robotBody)
+				&& /\.IsQuestLodger\(\)/.test(robotBody)
+			if (name !== HOST_FACTION_READER && !isNegativeRobotGuard) {
 				errors.push(
 					`${name} reads Pawn.HostFaction. A host faction says the colony HOSTS this pawn, never that it owns ` +
 						`it: guests, rescued wanderers and quest pawns all carry the player as host, and treating that as ` +
@@ -335,9 +356,9 @@ async function main(): Promise<void> {
 				'retire this guard deliberately) or the write moved somewhere this guard cannot see it.'
 		)
 	}
-	if (hostFactionReaders === 0) {
+	if (!prisonerHostReader) {
 		errors.push(
-			`No file reads HostFaction any more, so ${HOST_FACTION_READER}'s prisoner arm is gone. That arm is the ` +
+			`${HOST_FACTION_READER}'s HostFaction prisoner arm is gone. That arm is the ` +
 				'LEGITIMATE half of the predicate this fix narrowed: a prisoner\'s Faction stays its original faction, ' +
 				'so only the host-faction test can recognise one, and vanilla lets the colony unload its own prisoners ' +
 				'(ITab_Pawn_Gear.CanControl and CanBeStrippedByColony both admit them). Deleting it is a feature loss, ' +
@@ -356,7 +377,7 @@ async function main(): Promise<void> {
 			},
 			{
 				label: 'TryGiveBulkJob (the JobOn half)',
-				signature: /\bTryGiveBulkJob\s*\(\s*Pawn[^)]*\bbool\s+playerOrder\s*\)[\s\S]{0,200}?\{/,
+				signature: /\bTryGiveBulkJob\s*\(\s*Pawn[^)]*\bbool\s+playerOrder\s*,\s*bool\s+menuProbe\s*,\s*out\s+bool\s+wouldGive\s*\)\s*\{/,
 			},
 		]
 		for (const half of halves) {
@@ -411,8 +432,8 @@ async function main(): Promise<void> {
 	console.log(
 		`[non-colony-pawn-gates] PASS, ${files.length} source files scanned, ${gated}/${GATED_METHODS.length} carrier-unload ` +
 			`entry points consult BulkUnloadGate.PlayerMayUnload (routed to Core), UnloadEverything written in ` +
-			`${flagWriters} file (gated, + job-level FailOn), HostFaction read in ${hostFactionReaders} file ` +
-			`(the prisoner arm), ${lockstep.filter((h) => h.guarded).length}/2 TransportLoad halves carry the explicit ` +
+			`${flagWriters} file (gated, + job-level FailOn), HostFaction read in ${hostFactionReaders} files ` +
+			`(prisoner permission or pinned robot refusals), ${lockstep.filter((h) => h.guarded).length}/2 TransportLoad halves carry the explicit ` +
 			`faction + quest-lodger refusal.`
 	)
 	console.log(

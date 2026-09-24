@@ -1,0 +1,77 @@
+--- F03/host/Bootstrap.cs
++++ F05-F06/host/Bootstrap.cs
+@@ -67,7 +67,7 @@
+         private static RefuelGroupScenario refuelGroup;
+         private static Dlv1Scenario dlv1;
+         private static bool f34Attempted;
+-        private static bool f03ConstructionStarted;
++        private static bool robotCommandsStarted;
+         private static bool scenarioAttempted;
+         private static bool controlStarted;
+         private static int controlDone;
+@@ -118,7 +118,7 @@
+                 Check("private-mod-directory", SamePath(GenFilePaths.ModsFolderPath, Path.Combine(manifest.runtimeDirectory, "Mods")),
+                     GenFilePaths.ModsFolderPath);
+                 Check("private-player-log", SamePath(Application.consoleLogPath, manifest.logPath), Application.consoleLogPath);
+-                Check("case-supported", new[] { "bootstrap", "BG01", "BG02", "BG03-P1", "L04-O1", "CAP01", "CAP02", "CAP03-B", "CAP03-A", "CAP03-C", "L04-O1-DELIVERY", "L04-B1", "L04-B1-D2", "L40-Q1", "L40-UI-P0", "ROBOTS-R0", "ROBOTS-R1-AUTO", "REFUEL-G1", "RIMMS-DLV1", "F34-MIXED-CUT", "F03-CONSTRUCTION" }.Contains(manifest.caseId), manifest.caseId);
++                Check("case-supported", new[] { "bootstrap", "BG01", "BG02", "BG03-P1", "L04-O1", "CAP01", "CAP02", "CAP03-B", "CAP03-A", "CAP03-C", "L04-O1-DELIVERY", "L04-B1", "L04-B1-D2", "L40-Q1", "L40-UI-P0", "ROBOTS-R0", "ROBOTS-R1-AUTO", "REFUEL-G1", "RIMMS-DLV1", "F34-MIXED-CUT", "F05-F06-ROBOTS" }.Contains(manifest.caseId), manifest.caseId);
+                 Check("negative-control-supported", string.IsNullOrEmpty(manifest.negativeControl) || manifest.negativeControl == "None"
+                     || (manifest.caseId == "bootstrap" && new[] { "WorkerUnityError", "WorkerVerseError", "LateWorkerError", "TerminalRace" }.Contains(manifest.negativeControl)),
+                     manifest.negativeControl ?? "None");
+@@ -216,29 +216,29 @@
+                 if (elapsedTicks < 5) return;
+                 if (!result.assertions.Any(x => x.id == "real-game-ticks-advanced"))
+                     Check("real-game-ticks-advanced", true, "elapsedTicks=" + elapsedTicks);
+-                if (manifest.caseId == "F03-CONSTRUCTION")
++                if (manifest.caseId == "F05-F06-ROBOTS")
+                 {
+                     if (Current.Game == null || !Current.Game.PlayerHasControl) return;
+-                    if (!f03ConstructionStarted)
+-                    {
+-                        Check("f03-construction-host-admission", canQuitOwnRuntime && UnityData.IsInMainThread
++                    if (!robotCommandsStarted)
++                    {
++                        Check("robot-commands-host-admission", canQuitOwnRuntime && UnityData.IsInMainThread
+                             && manifest.negativeControl == "None" && manifest.expectedBehavior == "satisfied"
+                             && manifest.expectedMods.Select(x => x.packageId).SequenceEqual(new[] {
+                                 "brrainz.harmony", "ludeon.rimworld", "Haplo.Miscellaneous.Robots", "Alaestor.MiscRobots.PlusPlus", "giwaffed.haulersdream", "giwaffed.haulersdream.runtimeharness" })
+                             && manifest.expectedAssemblies.Count == 12
+                             && manifest.expectedAssemblies.All(x => result.assemblies.Count(a => a.name == x.name
+                                 && a.moduleVersionId == x.moduleVersionId) == 1),
+-                            "Private six-mod/twelve-image environment; automatic human on/off and native Builder III.");
+-                        if (result.assertions.Any(x => !x.passed)) { Finish("failed", "F03 construction admission failed."); return; }
+-                        f03ConstructionStarted = true; // Cleanup also covers partial Begin failure.
+-                        HaulersDream.F03Native.ConstructionGather.Begin(map, Check, Event, manifest.expectedBehavior);
+-                    }
+-                    string liveStatus = HaulersDream.F03Native.ConstructionGather.Update();
++                            "Private six-mod/twelve-image environment; native Omni automatic/command and Builder III unsupported-hauling guard.");
++                        if (result.assertions.Any(x => !x.passed)) { Finish("failed", "Robot command admission failed."); return; }
++                        robotCommandsStarted = true; // Cleanup also covers partial Begin failure.
++                        HaulersDream.F05Native.RobotCommands.Begin(map, Check, Event, manifest.expectedBehavior);
++                    }
++                    string liveStatus = HaulersDream.F05Native.RobotCommands.Update();
+                     if (liveStatus == "running") return;
+-                    Check("f03-construction-host-returned", liveStatus == "passed", "Live scenario returned " + liveStatus);
++                    Check("robot-commands-host-returned", liveStatus == "passed", "Live scenario returned " + liveStatus);
+                     Check("no-unity-errors-after-harness-start", unityErrors == 0, "observedErrors=" + unityErrors);
+                     Finish(liveStatus == "passed" && !result.assertions.Any(x => !x.passed) ? "passed" : "failed",
+-                        "F03 automatic construction gathering and real FinishFrame; no forced productive jobs.");
++                        "Native robot automatic, actual gizmo/Targeter callbacks, queued command and interrupted-cargo recovery.");
+                     return;
+                 }
+                 if (manifest.caseId == "F34-MIXED-CUT")
+@@ -769,10 +769,10 @@
+             if (terminal) return;
+             terminal = true;
+             // Remove only this test's observers while error capture is still open.
+-            if (f03ConstructionStarted)
+-            {
+-                try { HaulersDream.F03Native.ConstructionGather.Dispose(); }
+-                catch (Exception error) { Check("f03-construction-terminal-cleanup", false, error.ToString()); status = "failed"; }
++            if (robotCommandsStarted)
++            {
++                try { HaulersDream.F05Native.RobotCommands.Dispose(); }
++                catch (Exception error) { Check("robot-commands-terminal-cleanup", false, error.ToString()); status = "failed"; }
+                 if (result.assertions.Any(x => !x.passed)) status = "failed";
+             }
+             try { dlv1?.Dispose(); }

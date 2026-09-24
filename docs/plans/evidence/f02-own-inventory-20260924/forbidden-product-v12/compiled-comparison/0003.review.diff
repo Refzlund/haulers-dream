@@ -1,0 +1,19 @@
+--- 
+
++++ 
+
+@@ -10,7 +10,11 @@
+
+ Ret 
+ Ldarg_0 
++Ldc_I4_1 
++Newarr type:System.Char
++Dup 
++Ldc_I4_0 
+ Ldc_I4_S System.SByte:124
+-Ldc_I4_0 
+-Callvirt method:System.String[] System.String::Split(System.Char,System.StringSplitOptions) | hasThis=True; explicitThis=False; convention=Default; arity=0
++Stelem_I2 
++Callvirt method:System.String[] System.String::Split(System.Char[]) | hasThis=True; explicitThis=False; convention=Default; arity=0
+ Stloc_0 
+ Ldloc_0 

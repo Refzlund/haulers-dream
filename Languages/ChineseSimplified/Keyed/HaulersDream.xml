@@ -357,7 +357,7 @@
 <HaulersDream.LoadTransporter.Option>优先批量装载 {0}</HaulersDream.LoadTransporter.Option>
 <HaulersDream.LoadTransporter.CouldNotStart>当前附近没有可批量装载进那个运输舱的东西。</HaulersDream.LoadTransporter.CouldNotStart>
 <HaulersDream.Setting.EnableBulkLoadTransporters>一趟批量装载运输舱和穿梭机</HaulersDream.Setting.EnableBulkLoadTransporters>
-<HaulersDream.Setting.EnableBulkLoadTransportersDesc>当一个运输舱或穿梭机被设为装载时，搬运者会认领其装载清单的一部分，把附近的若干堆清扫进货物栏，走到运输舱一次，并把它们全部存入——而不是原版那样一趟手提一堆。多名搬运者分担一个大清单且不会重复搬运，并且在所认领的货物到位前，舱体不会登舱或发射。关闭此项时，沿用原版的单堆运输舱装载，不作改变。</HaulersDream.Setting.EnableBulkLoadTransportersDesc>
+<HaulersDream.Setting.EnableBulkLoadTransportersDesc>当一个运输舱或穿梭机被设为装载时，搬运者会认领其装载清单的一部分，把附近的若干堆清扫进货物栏，走到运输舱一次，并把它们全部存入——而不是原版那样一趟手提一堆。多名搬运者分担一个大清单且不会重复搬运，并且在所认领的货物到位前，舱体不会登舱或发射。关闭此项时，沿用原版的单堆运输舱装载，不作改变。 优先命令会在成功交货后继续完成本清单，前提是搬运者未被征召且没有新的排队命令。已征召的搬运者可以执行一趟装货。</HaulersDream.Setting.EnableBulkLoadTransportersDesc>
 <HaulersDream.Setting.BulkLoadAiUpdateFrequency>装载重新检查间隔：{0} tick</HaulersDream.Setting.BulkLoadAiUpdateFrequency>
 <HaulersDream.LoadPortal.Report>正在批量装载传送门。</HaulersDream.LoadPortal.Report>
 <HaulersDream.LoadPortal.Option>优先批量装载 {0}</HaulersDream.LoadPortal.Option>
@@ -420,7 +420,7 @@
 <HaulersDream.Setting.OpportunisticLoadDesc>一个已经携带着附近某个运输舱、穿梭机、地图传送门或载具正等待的物品的小人，会绕道把它们卸下，而不是另起一趟全新的取货行程。减少无谓的奔走。默认关闭（它改变小人接下来选取哪项任务）。</HaulersDream.Setting.OpportunisticLoadDesc>
 <HaulersDream.Setting.LoadOpportunityRadius>途中存货搜索半径：{0} 格</HaulersDream.Setting.LoadOpportunityRadius>
 <HaulersDream.Setting.ContinuousLoading>“装载至完成”右键命令</HaulersDream.Setting.ContinuousLoading>
-<HaulersDream.Setting.ContinuousLoadingDesc>添加一个右键命令，派出一名信使（即便被征召）穿行附近每个仍需装载的运输组，把这些任务连成一串直到它们全部装满——便于一条命令装满一支大商队。默认关闭（可选的便利功能）。</HaulersDream.Setting.ContinuousLoadingDesc>
+<HaulersDream.Setting.ContinuousLoadingDesc>添加右键命令：完成所选装货清单后，继续处理附近的装货目标。后续往返要求搬运者未被征召、已成功交货且没有新的排队命令。默认关闭。</HaulersDream.Setting.ContinuousLoadingDesc>
 <HaulersDream.ContinuousLoad.Option>装载至完成（连续）——{0}</HaulersDream.ContinuousLoad.Option>
 <HaulersDream.ContinuousLoad.CouldNotStart>当前附近没有可批量装载进去的东西。</HaulersDream.ContinuousLoad.CouldNotStart>
 <HaulersDream.Setting.LoadHybridPathing>用真实寻路排列批量装载站点的顺序</HaulersDream.Setting.LoadHybridPathing>
@@ -626,7 +626,7 @@
 <HaulersDream.Setting.BulkHaulTrigger.Lab>批量搬运触发</HaulersDream.Setting.BulkHaulTrigger.Lab>
 <HaulersDream.Setting.KeepWorkingMargin.Lab>较长转移前先卸载</HaulersDream.Setting.KeepWorkingMargin.Lab>
 <HaulersDream.Setting.MinFreeSpaceToUnloadCarrier.Lab>开始所需的最小背包空闲空间</HaulersDream.Setting.MinFreeSpaceToUnloadCarrier.Lab>
-<HaulersDream.Setting.MinFreeSpaceToUnloadCarrier.Help>搬运者在开始清空一只驮兽之前，需要至少有这么多的携带容量空闲，以免它自己的背包立刻溢出。</HaulersDream.Setting.MinFreeSpaceToUnloadCarrier.Help>
+<HaulersDream.Setting.MinFreeSpaceToUnloadCarrier.Help>搬运者在开始清空一只驮兽之前，需要至少有这么多的携带容量空闲，以免它自己的背包立刻溢出。 此阈值也适用于自动卸载运输器。</HaulersDream.Setting.MinFreeSpaceToUnloadCarrier.Help>
 <HaulersDream.Setting.VisualUnloadDelay.Lab>每堆卸载延迟</HaulersDream.Setting.VisualUnloadDelay.Lab>
 <HaulersDream.Setting.VisualUnloadDelay.Help>批量卸载时每堆之间的一个小小装饰性停顿，让它看起来像一个有意的动作。0＝瞬间。</HaulersDream.Setting.VisualUnloadDelay.Help>
 <HaulersDream.Setting.BulkLoadAiUpdateFrequency.Lab>装载重新检查间隔</HaulersDream.Setting.BulkLoadAiUpdateFrequency.Lab>
@@ -828,6 +828,17 @@
   <HaulersDream.Setting.CarryMassCap.Off>无限制</HaulersDream.Setting.CarryMassCap.Off>
   <HaulersDream.Setting.CarryMassCap.Value>{0} 千克</HaulersDream.Setting.CarryMassCap.Value>
   <HaulersDream.Setting.CarryMassCapDesc>以千克为单位的硬性上限，限制小人在一趟搬运或收集中往货物栏里装多少。这是“我的小人携带太多”的直接答案：把它设低（比如 20 千克），小人就会收一小批、卸载、再回来，而不是装满到其全部携带质量。它与上方的“携带上限”百分比和智能超载协同工作，且始终以较低的限制为准，因此即使开启超载也绝不会超过此上限。与携带上限一样，它只计入装在背包里的东西，不算手上携带的那一堆，并且不改变小人为某个特定建造或工单取用多少材料。设为 0 表示无限制（默认）。</HaulersDream.Setting.CarryMassCapDesc>
+  <HD_DropAmountTitle>丢下指定数量</HD_DropAmountTitle>
+  <HD_DropAmountConfirm>丢下</HD_DropAmountConfirm>
+  <HD_DropAmountContext>{0}\n{1}\n可用数量：{2}</HD_DropAmountContext>
+  <HD_DropAmountQuantity>丢下数量</HD_DropAmountQuantity>
+  <HD_DropAmountRemaining>物品栏剩余：{0}</HD_DropAmountRemaining>
+  <HD_DropAmountInvalid>请输入 1 到 {0} 之间的整数。</HD_DropAmountInvalid>
+  <HD_DropAmountChanged>角色状态或物品栏中的堆叠已发生变化。请重新打开此窗口。</HD_DropAmountChanged>
+  <HD_DropAmountUnavailable>当前模组配置不支持选择丢下的数量。</HD_DropAmountUnavailable>
+  <HD_DropAmountUnconfirmed>无法确认丢下结果。请检查角色的物品栏。</HD_DropAmountUnconfirmed>
+  <HD_DropAmountBlocked>附近没有空间放下这些物品。</HD_DropAmountBlocked>
+  <HD_DropAmountPartial>已丢下 {0}/{1}，附近没有足够空间。</HD_DropAmountPartial>
   <HD_NearbyHaulGizmoDesc>选择一件物品，将它及附近物品搬运至仓储区。选择时按住指令队列键可将指令加入队列。</HD_NearbyHaulGizmoDesc>
   <HD_NearbyHaulPawnUnavailable>该角色当前无法接受搬运指令。</HD_NearbyHaulPawnUnavailable>
   <HD_NearbyHaulDrafted>请先解除该角色的征召，再下达搬运指令。</HD_NearbyHaulDrafted>
@@ -836,4 +847,18 @@
   <HD_NearbyHaulInventoryUnavailable>该角色无法使用物品栏搬运。</HD_NearbyHaulInventoryUnavailable>
   <HD_NearbyHaulRobotUnsupported>无法在当前模组配置下读取机器人的搬运工作。</HD_NearbyHaulRobotUnsupported>
   <HD_NearbyHaulSourceUnavailable>所选物品无法搬运。</HD_NearbyHaulSourceUnavailable>
+  <HaulersDream.UnloadTransporter.Option>优先批量卸载 {0}</HaulersDream.UnloadTransporter.Option>
+  <HaulersDream.UnloadTransporter.CouldNotStart>当前无法开始批量卸载该运输工具。</HaulersDream.UnloadTransporter.CouldNotStart>
+  <HaulersDream.Gizmo.BulkUnloadAll.Label>批量卸载全部货物</HaulersDream.Gizmo.BulkUnloadAll.Label>
+  <HaulersDream.Gizmo.BulkUnloadAll.Empty>没有可卸载的货物</HaulersDream.Gizmo.BulkUnloadAll.Empty>
+  <HaulersDream.Gizmo.BulkUnloadAll.LoadBlocked>“全部批量卸载”已开启，请先将其关闭，再设置新的装载。</HaulersDream.Gizmo.BulkUnloadAll.LoadBlocked>
+  <HaulersDream.Gizmo.BulkUnloadAll.UnloadBlocked>正在向该运输器集结装载货物。</HaulersDream.Gizmo.BulkUnloadAll.UnloadBlocked>
+  <HaulersDream.Feat.UnloadTransporters.Name>批量卸载运输舱与穿梭机</HaulersDream.Feat.UnloadTransporters.Name>
+  <HaulersDream.Setting.EnableBulkUnloadTransporters>批量卸载运输器</HaulersDream.Setting.EnableBulkUnloadTransporters>
+  <HaulersDream.Setting.EnableBulkUnloadTransportersDesc>为运输舱和穿梭机添加批量卸货开关。未征召的搬运者会将货物直接送入仓库，每个工作任务搬运一趟。对已标记的运输器下达优先卸货命令后，只有完成本趟入库才会继续下一趟。乘客留在舱内。装货、仓库已满、征召或新命令排队都会停止后续往返。</HaulersDream.Setting.EnableBulkUnloadTransportersDesc>
+  <HaulersDream.Gizmo.BulkUnloadAll.Desc>将{0}内的货物送入仓库。乘客留在舱内。优先卸货命令会在每趟入库完成后继续，前提是搬运者未被征召且没有新的排队命令。装货前请关闭此开关。</HaulersDream.Gizmo.BulkUnloadAll.Desc>
+  <HaulersDream.Feat.UnloadTransporters.Blurb>将已着陆运输器中的货物直接搬入仓库</HaulersDream.Feat.UnloadTransporters.Blurb>
+  <HaulersDream.UnloadTransporter.Drafted>请先解除此角色的征召，再下达此命令。</HaulersDream.UnloadTransporter.Drafted>
+  <HaulersDream.UnloadTransporter.NoStorage>没有适合剩余货物的存储位置。</HaulersDream.UnloadTransporter.NoStorage>
+  <HaulersDream.Transporter.SyncUnavailable>多人同步注册失败，运输器命令不可用。</HaulersDream.Transporter.SyncUnavailable>
 </LanguageData>

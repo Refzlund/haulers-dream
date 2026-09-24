@@ -1,0 +1,11 @@
+--- accepted-v7/host/HaulersDream.RuntimeHarness.csproj
++++ capacity-replay/host/HaulersDream.RuntimeHarness.csproj
+@@ -14,7 +14,7 @@
+     <RuntimeHarmonyAssembly Condition="'$(RuntimeHarmonyAssembly)' == ''">C:\Steam\steamapps\workshop\content\294100\2009463077\Current\Assemblies\0Harmony.dll</RuntimeHarmonyAssembly>
+   </PropertyGroup>
+   <ItemGroup>
+-    <Compile Include="../src/SweepHandoff.cs" />
++    <Compile Include="../src/CapacityReplay.cs" />
+     <Reference Include="HaulersDream">
+       <HintPath>$(F38ProductDirectory)/1.6/Assemblies/HaulersDream.dll</HintPath><Private>false</Private>
+     </Reference>

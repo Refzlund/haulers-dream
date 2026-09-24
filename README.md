@@ -227,6 +227,20 @@ Better micro-management via planning: right-click → "Plan prioritized [task]�
     sites so several pawns build in parallel, or as haul+build, site by site. A separate order,
     "Prioritize hauling materials to…", stocks a site before it's even buildable.
 
+**Haul a chosen stack to a place or shelf:** select an undrafted hauler and right-click the
+source stack → **Haul … to…**, or use the pawn's **Haul to…** button and select the stack.
+Choose an amount with the number field or slider, then **Choose destination** and click a
+reachable ground cell outside storage or a native shelf that accepts the item. A single item
+goes straight to destination selection. Enable **Add to the work queue**, or hold your Queue
+Order key when opening the order, to append it; otherwise it replaces current work.
+
+Only the selected stack supplies the order, with multiple trips if needed. A shelf order stays
+on that selected shelf, including when its settings are linked to other shelves; modded storage
+providers are not covered by this command yet. Open **Hauling orders** to see delivered/total
+quantities and any blocking reason. After resolving a blockage, use **Resume** (optionally
+**Queue resumed orders**), or **Cancel order** to stop the remaining work. Right-click or Escape
+cancels destination selection before an order is placed.
+
 ### Quality of life
 
 25. **Per-pawn controls** — every eligible colonist and work-mech has an "Auto-haul yields" gizmo to
@@ -253,6 +267,12 @@ Better micro-management via planning: right-click → "Plan prioritized [task]�
     its automatic hauling behaviours — handy for troubleshooting — without stranding carried goods or
     hiding the "Unload inventory" button. A pawn diverting to grab something en route shows
     "… (on the way to …)" in its job text.
+
+**Drop a chosen amount:** use an inventory stack's ordinary **Drop** action in the pawn's Gear
+tab, then type an amount or use the slider. The dialog shows what will remain in inventory;
+confirm with **Drop**, or cancel without moving anything. If the pawn or stack changes while
+the dialog is open, open it again. Items left in the stack retain their hauling and Keep state.
+As with a whole-stack drop, a Keep setting ends when the pawn no longer carries any of that item.
 
 ## Settings & profiles
 

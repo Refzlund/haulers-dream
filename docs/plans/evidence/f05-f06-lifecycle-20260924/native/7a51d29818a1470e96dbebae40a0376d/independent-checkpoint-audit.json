@@ -1,0 +1,3175 @@
+{
+  "status": "checkpoint-accepted-with-preserved-warnings",
+  "assertions": 49,
+  "passed": 49,
+  "events": 62,
+  "unityErrorsObserved": 0,
+  "cleanWholeLog": false,
+  "imagesHashBound": 12,
+  "checkpoint": {
+    "record": {
+      "phase": "F05-OLD-SAVE",
+      "map": "0",
+      "tick": "228",
+      "station": "38287",
+      "pawn": "38293",
+      "zone": "0",
+      "total": "7",
+      "keep": "0",
+      "inventory": "38294:Plasteel:7",
+      "tracker": "",
+      "roles": "Hauling:2,Cleaning:3,Cooking:2,PlantCutting:2,Growing:2,Doctor:1,Firefighter:1,Smithing:2,Tailoring:2,Crafting:2,Construction:2,Mining:2,Research:0",
+      "owned": "38175,38176,38177,38178,38179,38180,38181,38182,38183,38184,38185,38186,38187,38188,38189,38190,38191,38192,38193,38194,38195,38196,38197,38198,38199,38200,38201,38202,38203,38204,38205,38206,38207,38208,38209,38210,38211,38212,38213,38214,38215,38216,38217,38218,38219,38220,38221,38222,38223,38224,38225,38226,38227,38228,38229,38230,38231,38232,38233,38234,38235,38236,38237,38238,38239,38240,38241,38242,38243,38244,38245,38246,38247,38248,38249,38250,38251,38252,38253,38254,38255,38256,38257,38258,38259,38260,38261,38262,38263,38264,38265,38266,38267,38268,38269,38270,38271,38272,38273,38274,38275,38276,38277,38278,38279,38280,38281,38282,38283,38284,38285,38286,38287,38288,38289,38290,38291,38292,38293,38294",
+      "parked": "1018,113,117,2|1021,111,115,2|4599,111,115,2|1024,108,118,2|38126,27,164,0|38127,28,162,0|38128,30,162,0|38129,29,165,0|38130,28,163,0|38131,29,165,0|38132,28,163,0|38133,28,162,0|38134,25,164,0|38135,9,221,0|38136,132,139,0|38137,130,140,0|38138,86,29,0|38139,173,47,0|38140,59,96,0|38141,159,155,0|38142,240,210,0|38143,114,208,0|38144,105,161,0|38145,102,164,0|38146,101,164,0|38147,102,161,0|38148,101,161,0|38149,104,161,0|38150,101,164,0|38151,102,161,0|38152,77,99,0|38153,109,192,0|38154,105,192,0|38155,108,192,0|38156,108,192,0|38157,217,43,0|38158,181,148,0|38159,227,189,0|38160,127,208,0|38161,236,131,0|38162,85,33,0|38163,241,244,0|38164,70,235,0|38165,96,4,0|38166,208,11,0|38167,197,241,0|38168,157,208,0|38169,40,229,0|38170,44,225,0|38171,41,227,0|38172,42,230,0|38173,41,228,0|38174,40,228,0"
+    },
+    "retainedSave": {
+      "path": "C:\\Users\\Arthur\\Sync\\Projects\\RimWorld Mods\\HaulersDream\\docs\\plans\\evidence\\f05-f06-lifecycle-20260924\\native\\7a51d29818a1470e96dbebae40a0376d\\raw\\F05RobotCheckpoint.rws",
+      "bytes": 13940554,
+      "sha256": "31B53E55A1C2B628937F8E1ACED555D4E3910E8CD51A210D257CDB9AC493394E"
+    },
+    "originalSave": {
+      "path": "C:\\Users\\Arthur\\AppData\\Local\\HaulersDreamQA\\runtime-temp\\haulersdream-runtime-tests\\7a51d29818a1470e96dbebae40a0376d\\SaveData\\Saves\\F05RobotCheckpoint.rws",
+      "bytes": 13940554,
+      "sha256": "31B53E55A1C2B628937F8E1ACED555D4E3910E8CD51A210D257CDB9AC493394E"
+    },
+    "recordFile": {
+      "path": "C:\\Users\\Arthur\\Sync\\Projects\\RimWorld Mods\\HaulersDream\\docs\\plans\\evidence\\f05-f06-lifecycle-20260924\\native\\7a51d29818a1470e96dbebae40a0376d\\raw\\checkpoint.txt",
+      "bytes": 1815,
+      "sha256": "B1727086D7FAC7552B2BBA89BD7FFB44EB624F8D551E84385542C45C2125E014"
+    },
+    "stationId": "RPP_RechargeStation_Omni_I38287",
+    "pawnId": "RPP_Bot_Omni_I38293",
+    "cargoId": "Plasteel38294",
+    "cargoQuantity": 7,
+    "hdFields": [],
+    "jobs": "<jobs>\n\t\t\t\t\t\t\t\t\t<curJob IsNull=\"True\" />\n\t\t\t\t\t\t\t\t\t<curDriver IsNull=\"True\" />\n\t\t\t\t\t\t\t\t\t<jobQueue>\n\t\t\t\t\t\t\t\t\t\t<jobs />\n\t\t\t\t\t\t\t\t\t</jobQueue>\n\t\t\t\t\t\t\t\t\t<formingCaravanTick>-1</formingCaravanTick>\n\t\t\t\t\t\t\t\t</jobs>\n\t\t\t\t\t\t\t\t",
+    "powerOverlap": [
+      {
+        "id": "Battery38288",
+        "def": "Battery",
+        "pos": "(112, 0, 119)"
+      },
+      {
+        "id": "PowerConduit38289",
+        "def": "PowerConduit",
+        "pos": "(112, 0, 119)"
+      }
+    ]
+  },
+  "rawCopiesEqualOriginal": [
+    {
+      "path": "C:\\Users\\Arthur\\Sync\\Projects\\RimWorld Mods\\HaulersDream\\docs\\plans\\evidence\\f05-f06-lifecycle-20260924\\native\\7a51d29818a1470e96dbebae40a0376d\\raw\\checkpoint.txt",
+      "bytes": 1815,
+      "sha256": "B1727086D7FAC7552B2BBA89BD7FFB44EB624F8D551E84385542C45C2125E014"
+    },
+    {
+      "path": "C:\\Users\\Arthur\\Sync\\Projects\\RimWorld Mods\\HaulersDream\\docs\\plans\\evidence\\f05-f06-lifecycle-20260924\\native\\7a51d29818a1470e96dbebae40a0376d\\raw\\events.jsonl",
+      "bytes": 23047,
+      "sha256": "4C3C0FB6D468461273FA0CC487C2459B95C6E058EC22C81F736A11B550FF05DE"
+    },
+    {
+      "path": "C:\\Users\\Arthur\\Sync\\Projects\\RimWorld Mods\\HaulersDream\\docs\\plans\\evidence\\f05-f06-lifecycle-20260924\\native\\7a51d29818a1470e96dbebae40a0376d\\raw\\F05RobotCheckpoint.rws",
+      "bytes": 13940554,
+      "sha256": "31B53E55A1C2B628937F8E1ACED555D4E3910E8CD51A210D257CDB9AC493394E"
+    },
+    {
+      "path": "C:\\Users\\Arthur\\Sync\\Projects\\RimWorld Mods\\HaulersDream\\docs\\plans\\evidence\\f05-f06-lifecycle-20260924\\native\\7a51d29818a1470e96dbebae40a0376d\\raw\\HaulersDream-debug.log",
+      "bytes": 170,
+      "sha256": "B33300E6FB61D52363F9F8A661B549A27A26FA66854B15AE62BDACE76B9E0103"
+    },
+    {
+      "path": "C:\\Users\\Arthur\\Sync\\Projects\\RimWorld Mods\\HaulersDream\\docs\\plans\\evidence\\f05-f06-lifecycle-20260924\\native\\7a51d29818a1470e96dbebae40a0376d\\raw\\Player.log",
+      "bytes": 150675,
+      "sha256": "A4FCE7B405286D4FEABE2ADD701F181F99C9EE88E332A95920A0EB260630B43B"
+    },
+    {
+      "path": "C:\\Users\\Arthur\\Sync\\Projects\\RimWorld Mods\\HaulersDream\\docs\\plans\\evidence\\f05-f06-lifecycle-20260924\\native\\7a51d29818a1470e96dbebae40a0376d\\raw\\result.json",
+      "bytes": 18178,
+      "sha256": "08282BDD44E5C829DA60AE565D59654655A9C2B7CE83931C9C8D13D27440003D"
+    }
+  ],
+  "wholeLogLines": 1916,
+  "wholeLogFlags": [
+    {
+      "line": 109,
+      "text": "Fallback handler could not load library C:/Users/Arthur/AppData/Local/HaulersDreamQA/runtime-temp/haulersdream-runtime-tests/7a51d29818a1470e96dbebae40a0376d/runtime/RimWorldWin64_Data/MonoBleedingEdge/data-000001EA36117030.dll"
+    },
+    {
+      "line": 110,
+      "text": "Fallback handler could not load library C:/Users/Arthur/AppData/Local/HaulersDreamQA/runtime-temp/haulersdream-runtime-tests/7a51d29818a1470e96dbebae40a0376d/runtime/RimWorldWin64_Data/MonoBleedingEdge/data-000001EA5A5A9120.dll"
+    },
+    {
+      "line": 331,
+      "text": " - - - - 3.790ms (0.23%) (self: 3.790 ms) 12x ParseValueAndReturnDef (for RimWorld.SketchResolverDef)"
+    },
+    {
+      "line": 549,
+      "text": " - - - 326.707ms (16%) (self: 160.484 ms) XmlInheritance.Resolve()"
+    },
+    {
+      "line": 568,
+      "text": " - - - 0.033ms (0%) (self: 0.033 ms) 2x ResolveAllWantedCrossReferences"
+    },
+    {
+      "line": 608,
+      "text": " - - 58.520ms (0.51%) (self: 3.794 ms) ErrorCheckPatches()"
+    },
+    {
+      "line": 616,
+      "text": " - 206.931ms (1.6%) (self: 0.012 ms) Resolve references."
+    },
+    {
+      "line": 617,
+      "text": " - - 172.445ms (83%) (self: 21.650 ms) Static resolver calls"
+    },
+    {
+      "line": 618,
+      "text": " - - - 92.229ms (53%) (self: 0.065 ms) ResolveAllReferences Verse.ThinkTreeDef"
+    },
+    {
+      "line": 619,
+      "text": " - - - - 92.164ms (100%) (self: 92.164 ms) 31x Resolver call"
+    },
+    {
+      "line": 620,
+      "text": " - - - 8.632ms (5%) (self: 8.576 ms) ResolveAllReferences RimWorld.PawnColumnDef"
+    },
+    {
+      "line": 621,
+      "text": " - - - - 0.056ms (0.65%) (self: 0.056 ms) 71x Resolver call"
+    },
+    {
+      "line": 622,
+      "text": " - - - 4.483ms (2.6%) (self: 0.060 ms) ResolveAllReferences RimWorld.ThingSetMakerDef"
+    },
+    {
+      "line": 623,
+      "text": " - - - - 4.422ms (99%) (self: 4.422 ms) 17x Resolver call"
+    },
+    {
+      "line": 624,
+      "text": " - - - 4.189ms (2.4%) (self: 4.123 ms) ResolveAllReferences RimWorld.InstructionDef"
+    },
+    {
+      "line": 625,
+      "text": " - - - - 0.066ms (1.6%) (self: 0.066 ms) 37x Resolver call"
+    },
+    {
+      "line": 626,
+      "text": " - - - 3.932ms (2.3%) (self: 3.534 ms) ResolveAllReferences RimWorld.TraitDef"
+    },
+    {
+      "line": 627,
+      "text": " - - - - 0.399ms (10%) (self: 0.399 ms) 44x Resolver call"
+    },
+    {
+      "line": 629,
+      "text": " - - - 3.283ms (1.9%) (self: 0.046 ms) ResolveAllReferences Verse.WorkTypeDef"
+    },
+    {
+      "line": 630,
+      "text": " - - - - 3.236ms (99%) (self: 3.236 ms) 20x Resolver call"
+    },
+    {
+      "line": 631,
+      "text": " - - - 1.576ms (0.91%) (self: 0.069 ms) ResolveAllReferences AIRobot.X2_ThingDef_AIRobot_Building_RechargeStation"
+    },
+    {
+      "line": 632,
+      "text": " - - - - 1.507ms (96%) (self: 1.507 ms) 35x Resolver call"
+    },
+    {
+      "line": 633,
+      "text": " - - - 1.356ms (0.79%) (self: 1.056 ms) ResolveAllReferences RimWorld.BackstoryDef"
+    },
+    {
+      "line": 634,
+      "text": " - - - - 0.300ms (22%) (self: 0.300 ms) 784x Resolver call"
+    },
+    {
+      "line": 635,
+      "text": " - - - 1.193ms (0.69%) (self: 1.193 ms) ResolveAllReferences RimWorld.RitualAttachableOutcomeEffectDef"
+    },
+    {
+      "line": 636,
+      "text": " - - - 1.001ms (0.58%) (self: 1.001 ms) ResolveAllReferences RimWorld.RitualObligationTargetFilterDef"
+    },
+    {
+      "line": 637,
+      "text": " - - - 0.845ms (0.49%) (self: 0.193 ms) ResolveAllReferences Verse.SoundDef"
+    },
+    {
+      "line": 638,
+      "text": " - - - - 0.652ms (77%) (self: 0.652 ms) 596x Resolver call"
+    },
+    {
+      "line": 639,
+      "text": " - - - 0.768ms (0.45%) (self: 0.704 ms) ResolveAllReferences RimWorld.RuleDef"
+    },
+    {
+      "line": 640,
+      "text": " - - - - 0.064ms (8.3%) (self: 0.064 ms) 87x Resolver call"
+    },
+    {
+      "line": 641,
+      "text": " - - - 0.716ms (0.42%) (self: 0.692 ms) ResolveAllReferences RimWorld.PlanetLayerSettingsDef"
+    },
+    {
+      "line": 642,
+      "text": " - - - - 0.024ms (3.4%) (self: 0.024 ms) Resolver call"
+    },
+    {
+      "line": 643,
+      "text": " - - - 0.686ms (0.4%) (self: 0.060 ms) ResolveAllReferences AIRobot.X2_ThingDef_AIRobot"
+    },
+    {
+      "line": 644,
+      "text": " - - - - 0.626ms (91%) (self: 0.626 ms) 35x Resolver call"
+    },
+    {
+      "line": 645,
+      "text": " - - - 0.671ms (0.39%) (self: 0.642 ms) ResolveAllReferences RimWorld.PawnsArrivalModeDef"
+    },
+    {
+      "line": 646,
+      "text": " - - - - 0.029ms (4.3%) (self: 0.029 ms) 10x Resolver call"
+    },
+    {
+      "line": 647,
+      "text": " - - - 0.597ms (0.35%) (self: 0.027 ms) ResolveAllReferences Verse.BodyDef"
+    },
+    {
+      "line": 648,
+      "text": " - - - - 0.570ms (96%) (self: 0.570 ms) 21x Resolver call"
+    },
+    {
+      "line": 649,
+      "text": " - - - 0.581ms (0.34%) (self: 0.581 ms) ResolveAllReferences RimWorld.AbilityCategoryDef"
+    },
+    {
+      "line": 650,
+      "text": " - - - 0.569ms (0.33%) (self: 0.052 ms) ResolveAllReferences RimWorld.TileMutatorDef"
+    },
+    {
+      "line": 651,
+      "text": " - - - - 0.518ms (91%) (self: 0.518 ms) 5x Resolver call"
+    },
+    {
+      "line": 652,
+      "text": " - - - 0.552ms (0.32%) (self: 0.552 ms) ResolveAllReferences RimWorld.StructureLayoutDef"
+    },
+    {
+      "line": 653,
+      "text": " - - - 0.447ms (0.26%) (self: 0.038 ms) ResolveAllReferences RimWorld.TraderKindDef"
+    },
+    {
+      "line": 654,
+      "text": " - - - - 0.409ms (91%) (self: 0.409 ms) 17x Resolver call"
+    },
+    {
+      "line": 655,
+      "text": " - - - 0.420ms (0.24%) (self: 0.047 ms) ResolveAllReferences Verse.PawnRenderTreeDef"
+    },
+    {
+      "line": 656,
+      "text": " - - - - 0.373ms (89%) (self: 0.373 ms) 3x Resolver call"
+    },
+    {
+      "line": 657,
+      "text": " - - - 0.413ms (0.24%) (self: 0.413 ms) ResolveAllReferences RimWorld.TransportShipDef"
+    },
+    {
+      "line": 658,
+      "text": " - - - 0.411ms (0.24%) (self: 0.092 ms) ResolveAllReferences Verse.HediffDef"
+    },
+    {
+      "line": 659,
+      "text": " - - - - 0.319ms (78%) (self: 0.319 ms) 126x Resolver call"
+    },
+    {
+      "line": 660,
+      "text": " - - - 0.387ms (0.22%) (self: 0.266 ms) ResolveAllReferences RimWorld.ThoughtDef"
+    },
+    {
+      "line": 661,
+      "text": " - - - - 0.121ms (31%) (self: 0.121 ms) 282x Resolver call"
+    },
+    {
+      "line": 662,
+      "text": " - - - 0.381ms (0.22%) (self: 0.040 ms) ResolveAllReferences RimWorld.WorldObjectDef"
+    },
+    {
+      "line": 663,
+      "text": " - - - - 0.341ms (90%) (self: 0.341 ms) 15x Resolver call"
+    },
+    {
+      "line": 664,
+      "text": " - - - 0.380ms (0.22%) (self: 0.058 ms) ResolveAllReferences Verse.PawnKindDef"
+    },
+    {
+      "line": 665,
+      "text": " - - - - 0.323ms (85%) (self: 0.323 ms) 142x Resolver call"
+    },
+    {
+      "line": 666,
+      "text": " - - - 0.376ms (0.22%) (self: 0.032 ms) ResolveAllReferences RimWorld.StorytellerDef"
+    },
+    {
+      "line": 667,
+      "text": " - - - - 0.343ms (91%) (self: 0.343 ms) 4x Resolver call"
+    },
+    {
+      "line": 668,
+      "text": " - - - 0.353ms (0.2%) (self: 0.339 ms) ResolveAllReferences Verse.MapGeneratorDef"
+    },
+    {
+      "line": 669,
+      "text": " - - - - 0.015ms (4.1%) (self: 0.015 ms) 4x Resolver call"
+    },
+    {
+      "line": 670,
+      "text": " - - - 0.306ms (0.18%) (self: 0.262 ms) ResolveAllReferences Verse.EffecterDef"
+    },
+    {
+      "line": 671,
+      "text": " - - - - 0.045ms (15%) (self: 0.045 ms) 90x Resolver call"
+    },
+    {
+      "line": 672,
+      "text": " - - - 0.289ms (0.17%) (self: 0.289 ms) ResolveAllReferences RimWorld.FurDef"
+    },
+    {
+      "line": 673,
+      "text": " - - - 0.279ms (0.16%) (self: 0.279 ms) ResolveAllReferences RimWorld.XenotypeDef"
+    },
+    {
+      "line": 674,
+      "text": " - - - 0.276ms (0.16%) (self: 0.168 ms) ResolveAllReferences Verse.DesignationDef"
+    },
+    {
+      "line": 675,
+      "text": " - - - - 0.108ms (39%) (self: 0.108 ms) 27x Resolver call"
+    },
+    {
+      "line": 676,
+      "text": " - - - 0.268ms (0.16%) (self: 0.235 ms) ResolveAllReferences RimWorld.ExpectationDef"
+    },
+    {
+      "line": 677,
+      "text": " - - - - 0.033ms (12%) (self: 0.033 ms) 8x Resolver call"
+    },
+    {
+      "line": 678,
+      "text": " - - - 0.268ms (0.16%) (self: 0.255 ms) ResolveAllReferences Verse.DrawStyleDef"
+    },
+    {
+      "line": 679,
+      "text": " - - - - 0.013ms (4.9%) (self: 0.013 ms) 6x Resolver call"
+    },
+    {
+      "line": 680,
+      "text": " - - - 0.252ms (0.15%) (self: 0.167 ms) ResolveAllReferences Verse.JobDef"
+    },
+    {
+      "line": 681,
+      "text": " - - - - 0.086ms (34%) (self: 0.086 ms) 218x Resolver call"
+    },
+    {
+      "line": 682,
+      "text": " - - - 0.250ms (0.14%) (self: 0.237 ms) ResolveAllReferences Verse.BodyPartGroupDef"
+    },
+    {
+      "line": 683,
+      "text": " - - - - 0.013ms (5.2%) (self: 0.013 ms) 30x Resolver call"
+    },
+    {
+      "line": 684,
+      "text": " - - - 0.249ms (0.14%) (self: 0.228 ms) ResolveAllReferences RimWorld.CultureDef"
+    },
+    {
+      "line": 685,
+      "text": " - - - - 0.021ms (8.4%) (self: 0.021 ms) 4x Resolver call"
+    },
+    {
+      "line": 686,
+      "text": " - - - 0.237ms (0.14%) (self: 0.219 ms) ResolveAllReferences Verse.TipSetDef"
+    },
+    {
+      "line": 687,
+      "text": " - - - - 0.018ms (7.6%) (self: 0.018 ms) Resolver call"
+    },
+    {
+      "line": 688,
+      "text": " - - - 0.233ms (0.14%) (self: 0.076 ms) ResolveAllReferences RimWorld.SkillDef"
+    },
+    {
+      "line": 689,
+      "text": " - - - - 0.157ms (67%) (self: 0.157 ms) 12x Resolver call"
+    },
+    {
+      "line": 690,
+      "text": " - - - 0.233ms (0.14%) (self: 0.053 ms) ResolveAllReferences RimWorld.LifeStageDef"
+    },
+    {
+      "line": 691,
+      "text": " - - - - 0.180ms (77%) (self: 0.180 ms) 12x Resolver call"
+    },
+    {
+      "line": 692,
+      "text": " - - - 0.215ms (0.12%) (self: 0.215 ms) ResolveAllReferences RimWorld.RoomPart_ThingDef"
+    },
+    {
+      "line": 693,
+      "text": " - - - 0.214ms (0.12%) (self: 0.164 ms) ResolveAllReferences RimWorld.ScenPartDef"
+    },
+    {
+      "line": 694,
+      "text": " - - - - 0.050ms (24%) (self: 0.050 ms) 32x Resolver call"
+    },
+    {
+      "line": 695,
+      "text": " - - - 0.196ms (0.11%) (self: 0.047 ms) ResolveAllReferences Verse.GeneDef"
+    },
+    {
+      "line": 696,
+      "text": " - - - - 0.149ms (76%) (self: 0.149 ms) 27x Resolver call"
+    },
+    {
+      "line": 697,
+      "text": " - - - 0.189ms (0.11%) (self: 0.173 ms) ResolveAllReferences RimWorld.DrugPolicyDef"
+    },
+    {
+      "line": 698,
+      "text": " - - - - 0.016ms (8.2%) (self: 0.016 ms) 4x Resolver call"
+    },
+    {
+      "line": 699,
+      "text": " - - - 0.180ms (0.1%) (self: 0.045 ms) ResolveAllReferences RimWorld.FactionDef"
+    },
+    {
+      "line": 700,
+      "text": " - - - - 0.134ms (75%) (self: 0.134 ms) 12x Resolver call"
+    },
+    {
+      "line": 701,
+      "text": " - - - 0.176ms (0.1%) (self: 0.026 ms) ResolveAllReferences Verse.DesignationCategoryDef"
+    },
+    {
+      "line": 702,
+      "text": " - - - - 0.150ms (85%) (self: 0.150 ms) 12x Resolver call"
+    },
+    {
+      "line": 703,
+      "text": " - - - 0.173ms (0.1%) (self: 0.173 ms) ResolveAllReferences RimWorld.PsychicRitualDef_SummonFleshbeasts"
+    },
+    {
+      "line": 704,
+      "text": " - - - 0.172ms (0.1%) (self: 0.154 ms) ResolveAllReferences Verse.GenStepDef"
+    },
+    {
+      "line": 705,
+      "text": " - - - - 0.018ms (11%) (self: 0.018 ms) 42x Resolver call"
+    },
+    {
+      "line": 706,
+      "text": " - - - 0.171ms (0.1%) (self: 0.171 ms) ResolveAllReferences RimWorld.WeaponCategoryDef"
+    },
+    {
+      "line": 707,
+      "text": " - - - 0.170ms (0.1%) (self: 0.111 ms) ResolveAllReferences RimWorld.StatDef"
+    },
+    {
+      "line": 708,
+      "text": " - - - - 0.060ms (35%) (self: 0.060 ms) 169x Resolver call"
+    },
+    {
+      "line": 709,
+      "text": " - - - 0.163ms (0.09%) (self: 0.118 ms) ResolveAllReferences RimWorld.ColorDef"
+    },
+    {
+      "line": 710,
+      "text": " - - - - 0.045ms (28%) (self: 0.045 ms) 81x Resolver call"
+    },
+    {
+      "line": 711,
+      "text": " - - - 0.157ms (0.09%) (self: 0.144 ms) ResolveAllReferences RimWorld.RoadDef"
+    },
+    {
+      "line": 712,
+      "text": " - - - - 0.013ms (8.5%) (self: 0.013 ms) 5x Resolver call"
+    },
+    {
+      "line": 713,
+      "text": " - - - 0.153ms (0.09%) (self: 0.038 ms) ResolveAllReferences RimWorld.InteractionDef"
+    },
+    {
+      "line": 714,
+      "text": " - - - - 0.115ms (75%) (self: 0.115 ms) 16x Resolver call"
+    },
+    {
+      "line": 715,
+      "text": " - - - 0.152ms (0.09%) (self: 0.107 ms) ResolveAllReferences RimWorld.WorkGiverDef"
+    },
+    {
+      "line": 716,
+      "text": " - - - - 0.045ms (30%) (self: 0.045 ms) 107x Resolver call"
+    },
+    {
+      "line": 717,
+      "text": " - - - 0.147ms (0.09%) (self: 0.138 ms) ResolveAllReferences RimWorld.TrainableDef"
+    },
+    {
+      "line": 718,
+      "text": " - - - - 0.009ms (6.3%) (self: 0.009 ms) 5x Resolver call"
+    },
+    {
+      "line": 719,
+      "text": " - - - 0.141ms (0.08%) (self: 0.126 ms) ResolveAllReferences Verse.WorldGenStepDef"
+    },
+    {
+      "line": 720,
+      "text": " - - - - 0.014ms (10%) (self: 0.014 ms) 10x Resolver call"
+    },
+    {
+      "line": 721,
+      "text": " - - - 0.131ms (0.08%) (self: 0.131 ms) ResolveAllReferences Verse.OrbitalDebrisDef"
+    },
+    {
+      "line": 722,
+      "text": " - - - 0.129ms (0.07%) (self: 0.118 ms) ResolveAllReferences RimWorld.SitePartDef"
+    },
+    {
+      "line": 723,
+      "text": " - - - - 0.012ms (9%) (self: 0.012 ms) 12x Resolver call"
+    },
+    {
+      "line": 724,
+      "text": " - - - 0.126ms (0.07%) (self: 0.126 ms) ResolveAllReferences RimWorld.LandmarkDef"
+    },
+    {
+      "line": 725,
+      "text": " - - - 0.125ms (0.07%) (self: 0.086 ms) ResolveAllReferences Verse.GraphicStateDef"
+    },
+    {
+      "line": 726,
+      "text": " - - - - 0.039ms (31%) (self: 0.039 ms) 146x Resolver call"
+    },
+    {
+      "line": 727,
+      "text": " - - - 0.124ms (0.07%) (self: 0.092 ms) ResolveAllReferences RimWorld.RecordDef"
+    },
+    {
+      "line": 728,
+      "text": " - - - - 0.032ms (26%) (self: 0.032 ms) 67x Resolver call"
+    },
+    {
+      "line": 729,
+      "text": " - - - 0.123ms (0.07%) (self: 0.044 ms) ResolveAllReferences Verse.SongDef"
+    },
+    {
+      "line": 730,
+      "text": " - - - - 0.079ms (64%) (self: 0.079 ms) 42x Resolver call"
+    },
+    {
+      "line": 731,
+      "text": " - - - 0.119ms (0.07%) (self: 0.108 ms) ResolveAllReferences RimWorld.TransferableSorterDef"
+    },
+    {
+      "line": 732,
+      "text": " - - - - 0.011ms (9.5%) (self: 0.011 ms) 7x Resolver call"
+    },
+    {
+      "line": 733,
+      "text": " - - - 0.119ms (0.07%) (self: 0.089 ms) ResolveAllReferences RimWorld.ConceptDef"
+    },
+    {
+      "line": 734,
+      "text": " - - - - 0.030ms (25%) (self: 0.030 ms) 63x Resolver call"
+    },
+    {
+      "line": 735,
+      "text": " - - - 0.118ms (0.07%) (self: 0.089 ms) ResolveAllReferences RimWorld.HairDef"
+    },
+    {
+      "line": 736,
+      "text": " - - - - 0.029ms (24%) (self: 0.029 ms) 51x Resolver call"
+    },
+    {
+      "line": 737,
+      "text": " - - - 0.116ms (0.07%) (self: 0.083 ms) ResolveAllReferences RimWorld.HistoryEventDef"
+    },
+    {
+      "line": 738,
+      "text": " - - - - 0.033ms (29%) (self: 0.033 ms) 95x Resolver call"
+    },
+    {
+      "line": 739,
+      "text": " - - - 0.115ms (0.07%) (self: 0.115 ms) ResolveAllReferences Verse.BuildableDef"
+    },
+    {
+      "line": 740,
+      "text": " - - - 0.112ms (0.07%) (self: 0.043 ms) ResolveAllReferences Verse.ResearchProjectDef"
+    },
+    {
+      "line": 741,
+      "text": " - - - - 0.070ms (62%) (self: 0.070 ms) 90x Resolver call"
+    },
+    {
+      "line": 742,
+      "text": " - - - 0.112ms (0.07%) (self: 0.080 ms) ResolveAllReferences RimWorld.TaleDef"
+    },
+    {
+      "line": 743,
+      "text": " - - - - 0.032ms (28%) (self: 0.032 ms) 87x Resolver call"
+    },
+    {
+      "line": 744,
+      "text": " - - - 0.109ms (0.06%) (self: 0.077 ms) ResolveAllReferences Verse.AI.DutyDef"
+    },
+    {
+      "line": 745,
+      "text": " - - - - 0.032ms (29%) (self: 0.032 ms) 54x Resolver call"
+    },
+    {
+      "line": 746,
+      "text": " - - - 0.108ms (0.06%) (self: 0.034 ms) ResolveAllReferences Verse.MentalStateDef"
+    },
+    {
+      "line": 747,
+      "text": " - - - - 0.074ms (68%) (self: 0.074 ms) 29x Resolver call"
+    },
+    {
+      "line": 748,
+      "text": " - - - 0.107ms (0.06%) (self: 0.088 ms) ResolveAllReferences RimWorld.QuestScriptDef"
+    },
+    {
+      "line": 749,
+      "text": " - - - - 0.020ms (18%) (self: 0.020 ms) 23x Resolver call"
+    },
+    {
+      "line": 750,
+      "text": " - - - 0.106ms (0.06%) (self: 0.076 ms) ResolveAllReferences Verse.FleckDef"
+    },
+    {
+      "line": 751,
+      "text": " - - - - 0.030ms (28%) (self: 0.030 ms) 101x Resolver call"
+    },
+    {
+      "line": 752,
+      "text": " - - - 0.106ms (0.06%) (self: 0.097 ms) ResolveAllReferences RimWorld.InfectionPathwayDef"
+    },
+    {
+      "line": 753,
+      "text": " - - - - 0.009ms (8.6%) (self: 0.009 ms) Resolver call"
+    },
+    {
+      "line": 754,
+      "text": " - - - 0.106ms (0.06%) (self: 0.106 ms) ResolveAllReferences RimWorld.PsychicRitualDef_SkipAbductionPlayer"
+    },
+    {
+      "line": 755,
+      "text": " - - - 0.105ms (0.06%) (self: 0.075 ms) ResolveAllReferences RimWorld.IncidentDef"
+    },
+    {
+      "line": 756,
+      "text": " - - - - 0.030ms (29%) (self: 0.030 ms) 57x Resolver call"
+    },
+    {
+      "line": 757,
+      "text": " - - - 0.104ms (0.06%) (self: 0.059 ms) ResolveAllReferences RimWorld.BeardDef"
+    },
+    {
+      "line": 758,
+      "text": " - - - - 0.045ms (43%) (self: 0.045 ms) 31x Resolver call"
+    },
+    {
+      "line": 759,
+      "text": " - - - 0.103ms (0.06%) (self: 0.070 ms) ResolveAllReferences Verse.TerrainDef"
+    },
+    {
+      "line": 760,
+      "text": " - - - - 0.033ms (32%) (self: 0.033 ms) 124x Resolver call"
+    },
+    {
+      "line": 761,
+      "text": " - - - 0.099ms (0.06%) (self: 0.071 ms) ResolveAllReferences Verse.SpecialThingFilterDef"
+    },
+    {
+      "line": 762,
+      "text": " - - - - 0.028ms (28%) (self: 0.028 ms) 38x Resolver call"
+    },
+    {
+      "line": 763,
+      "text": " - - - 0.097ms (0.06%) (self: 0.097 ms) ResolveAllReferences RimWorld.XenotypeIconDef"
+    },
+    {
+      "line": 764,
+      "text": " - - - 0.094ms (0.05%) (self: 0.067 ms) ResolveAllReferences Verse.RulePackDef"
+    },
+    {
+      "line": 765,
+      "text": " - - - - 0.028ms (29%) (self: 0.028 ms) 151x Resolver call"
+    },
+    {
+      "line": 766,
+      "text": " - - - 0.094ms (0.05%) (self: 0.080 ms) ResolveAllReferences Verse.DrawStyleCategoryDef"
+    },
+    {
+      "line": 767,
+      "text": " - - - - 0.014ms (15%) (self: 0.014 ms) 19x Resolver call"
+    },
+    {
+      "line": 768,
+      "text": " - - - 0.094ms (0.05%) (self: 0.077 ms) ResolveAllReferences RimWorld.SketchResolverDef"
+    },
+    {
+      "line": 769,
+      "text": " - - - - 0.017ms (18%) (self: 0.017 ms) 12x Resolver call"
+    },
+    {
+      "line": 770,
+      "text": " - - - 0.092ms (0.05%) (self: 0.068 ms) ResolveAllReferences RimWorld.RitualVisualEffectDef"
+    },
+    {
+      "line": 771,
+      "text": " - - - - 0.024ms (26%) (self: 0.024 ms) Resolver call"
+    },
+    {
+      "line": 772,
+      "text": " - - - 0.090ms (0.05%) (self: 0.090 ms) ResolveAllReferences RimWorld.RitualPatternDef"
+    },
+    {
+      "line": 773,
+      "text": " - - - 0.087ms (0.05%) (self: 0.021 ms) ResolveAllReferences Verse.LetterDef"
+    },
+    {
+      "line": 774,
+      "text": " - - - - 0.066ms (76%) (self: 0.066 ms) 17x Resolver call"
+    },
+    {
+      "line": 775,
+      "text": " - - - 0.082ms (0.05%) (self: 0.071 ms) ResolveAllReferences RimWorld.PlanetLayerDef"
+    },
+    {
+      "line": 776,
+      "text": " - - - - 0.011ms (14%) (self: 0.011 ms) Resolver call"
+    },
+    {
+      "line": 777,
+      "text": " - - - 0.080ms (0.05%) (self: 0.053 ms) ResolveAllReferences RimWorld.MapMeshFlagDef"
+    },
+    {
+      "line": 778,
+      "text": " - - - - 0.028ms (34%) (self: 0.028 ms) 13x Resolver call"
+    },
+    {
+      "line": 779,
+      "text": " - - - 0.080ms (0.05%) (self: 0.080 ms) ResolveAllReferences RimWorld.GeneratedLocationDef"
+    },
+    {
+      "line": 780,
+      "text": " - - - 0.080ms (0.05%) (self: 0.064 ms) ResolveAllReferences RimWorld.InspirationDef"
+    },
+    {
+      "line": 781,
+      "text": " - - - - 0.016ms (20%) (self: 0.016 ms) 8x Resolver call"
+    },
+    {
+      "line": 782,
+      "text": " - - - 0.076ms (0.04%) (self: 0.060 ms) ResolveAllReferences RimWorld.StatCategoryDef"
+    },
+    {
+      "line": 783,
+      "text": " - - - - 0.016ms (21%) (self: 0.016 ms) 36x Resolver call"
+    },
+    {
+      "line": 784,
+      "text": " - - - 0.076ms (0.04%) (self: 0.053 ms) ResolveAllReferences RimWorld.RitualOutcomeEffectDef"
+    },
+    {
+      "line": 785,
+      "text": " - - - - 0.023ms (30%) (self: 0.023 ms) Resolver call"
+    },
+    {
+      "line": 786,
+      "text": " - - - 0.075ms (0.04%) (self: 0.075 ms) ResolveAllReferences Verse.StyleCategoryDef"
+    },
+    {
+      "line": 787,
+      "text": " - - - 0.074ms (0.04%) (self: 0.066 ms) ResolveAllReferences RimWorld.PawnGroupKindDef"
+    },
+    {
+      "line": 788,
+      "text": " - - - - 0.008ms (11%) (self: 0.008 ms) 5x Resolver call"
+    },
+    {
+      "line": 789,
+      "text": " - - - 0.074ms (0.04%) (self: 0.051 ms) ResolveAllReferences RimWorld.BiomeDef"
+    },
+    {
+      "line": 790,
+      "text": " - - - - 0.023ms (30%) (self: 0.023 ms) 15x Resolver call"
+    },
+    {
+      "line": 791,
+      "text": " - - - 0.072ms (0.04%) (self: 0.072 ms) ResolveAllReferences RimWorld.PsychicRitualDef_Chronophagy"
+    },
+    {
+      "line": 792,
+      "text": " - - - 0.072ms (0.04%) (self: 0.065 ms) ResolveAllReferences Verse.SubcameraDef"
+    },
+    {
+      "line": 793,
+      "text": " - - - - 0.007ms (9.6%) (self: 0.007 ms) Resolver call"
+    },
+    {
+      "line": 794,
+      "text": " - - - 0.072ms (0.04%) (self: 0.047 ms) ResolveAllReferences RimWorld.NeedDef"
+    },
+    {
+      "line": 795,
+      "text": " - - - - 0.025ms (35%) (self: 0.025 ms) 17x Resolver call"
+    },
+    {
+      "line": 796,
+      "text": " - - - 0.071ms (0.04%) (self: 0.053 ms) ResolveAllReferences RimWorld.PawnRelationDef"
+    },
+    {
+      "line": 797,
+      "text": " - - - - 0.019ms (26%) (self: 0.019 ms) 26x Resolver call"
+    },
+    {
+      "line": 798,
+      "text": " - - - 0.070ms (0.04%) (self: 0.061 ms) ResolveAllReferences RimWorld.ShipJobDef"
+    },
+    {
+      "line": 799,
+      "text": " - - - - 0.009ms (13%) (self: 0.009 ms) 7x Resolver call"
+    },
+    {
+      "line": 800,
+      "text": " - - - 0.070ms (0.04%) (self: 0.035 ms) ResolveAllReferences RimWorld.DifficultyDef"
+    },
+    {
+      "line": 801,
+      "text": " - - - - 0.035ms (50%) (self: 0.035 ms) 7x Resolver call"
+    },
+    {
+      "line": 802,
+      "text": " - - - 0.067ms (0.04%) (self: 0.060 ms) ResolveAllReferences Verse.ScatterableDef"
+    },
+    {
+      "line": 803,
+      "text": " - - - - 0.007ms (10%) (self: 0.007 ms) 6x Resolver call"
+    },
+    {
+      "line": 804,
+      "text": " - - - 0.064ms (0.04%) (self: 0.051 ms) ResolveAllReferences RimWorld.IncidentCategoryDef"
+    },
+    {
+      "line": 805,
+      "text": " - - - - 0.013ms (20%) (self: 0.013 ms) 13x Resolver call"
+    },
+    {
+      "line": 806,
+      "text": " - - - 0.064ms (0.04%) (self: 0.051 ms) ResolveAllReferences RimWorld.SurgeryOutcomeEffectDef"
+    },
+    {
+      "line": 807,
+      "text": " - - - - 0.012ms (19%) (self: 0.012 ms) 2x Resolver call"
+    },
+    {
+      "line": 808,
+      "text": " - - - 0.062ms (0.04%) (self: 0.051 ms) ResolveAllReferences RimWorld.StyleItemCategoryDef"
+    },
+    {
+      "line": 809,
+      "text": " - - - - 0.011ms (17%) (self: 0.011 ms) 10x Resolver call"
+    },
+    {
+      "line": 810,
+      "text": " - - - 0.061ms (0.04%) (self: 0.046 ms) ResolveAllReferences RimWorld.ExpansionDef"
+    },
+    {
+      "line": 811,
+      "text": " - - - - 0.015ms (25%) (self: 0.015 ms) 6x Resolver call"
+    },
+    {
+      "line": 812,
+      "text": " - - - 0.060ms (0.04%) (self: 0.034 ms) ResolveAllReferences RimWorld.GatheringDef"
+    },
+    {
+      "line": 813,
+      "text": " - - - - 0.027ms (44%) (self: 0.027 ms) 2x Resolver call"
+    },
+    {
+      "line": 814,
+      "text": " - - - 0.059ms (0.03%) (self: 0.042 ms) ResolveAllReferences Verse.BodyPartDef"
+    },
+    {
+      "line": 815,
+      "text": " - - - - 0.017ms (29%) (self: 0.017 ms) 96x Resolver call"
+    },
+    {
+      "line": 816,
+      "text": " - - - 0.057ms (0.03%) (self: 0.045 ms) ResolveAllReferences RimWorld.FeatureDef"
+    },
+    {
+      "line": 817,
+      "text": " - - - - 0.013ms (22%) (self: 0.013 ms) 20x Resolver call"
+    },
+    {
+      "line": 818,
+      "text": " - - - 0.057ms (0.03%) (self: 0.046 ms) ResolveAllReferences RimWorld.IssueDef"
+    },
+    {
+      "line": 819,
+      "text": " - - - - 0.012ms (20%) (self: 0.012 ms) 12x Resolver call"
+    },
+    {
+      "line": 820,
+      "text": " - - - 0.057ms (0.03%) (self: 0.024 ms) ResolveAllReferences RimWorld.HistoryAutoRecorderGroupDef"
+    },
+    {
+      "line": 821,
+      "text": " - - - - 0.033ms (57%) (self: 0.033 ms) 4x Resolver call"
+    },
+    {
+      "line": 822,
+      "text": " - - - 0.056ms (0.03%) (self: 0.046 ms) ResolveAllReferences Verse.AnimationDef"
+    },
+    {
+      "line": 823,
+      "text": " - - - - 0.010ms (18%) (self: 0.010 ms) 18x Resolver call"
+    },
+    {
+      "line": 824,
+      "text": " - - - 0.056ms (0.03%) (self: 0.040 ms) ResolveAllReferences RimWorld.TattooDef"
+    },
+    {
+      "line": 825,
+      "text": " - - - - 0.017ms (30%) (self: 0.017 ms) 2x Resolver call"
+    },
+    {
+      "line": 826,
+      "text": " - - - 0.056ms (0.03%) (self: 0.056 ms) ResolveAllReferences RimWorld.RitualTargetFilterDef"
+    },
+    {
+      "line": 827,
+      "text": " - - - 0.055ms (0.03%) (self: 0.039 ms) ResolveAllReferences RimWorld.PrefabDef"
+    },
+    {
+      "line": 828,
+      "text": " - - - - 0.016ms (30%) (self: 0.016 ms) 12x Resolver call"
+    },
+    {
+      "line": 829,
+      "text": " - - - 0.055ms (0.03%) (self: 0.043 ms) ResolveAllReferences RimWorld.MainButtonDef"
+    },
+    {
+      "line": 830,
+      "text": " - - - - 0.011ms (21%) (self: 0.011 ms) 14x Resolver call"
+    },
+    {
+      "line": 831,
+      "text": " - - - 0.054ms (0.03%) (self: 0.048 ms) ResolveAllReferences RimWorld.HibernatableStateDef"
+    },
+    {
+      "line": 832,
+      "text": " - - - - 0.006ms (11%) (self: 0.006 ms) 3x Resolver call"
+    },
+    {
+      "line": 833,
+      "text": " - - - 0.053ms (0.03%) (self: 0.040 ms) ResolveAllReferences Verse.DamageDef"
+    },
+    {
+      "line": 834,
+      "text": " - - - - 0.013ms (25%) (self: 0.013 ms) 36x Resolver call"
+    },
+    {
+      "line": 835,
+      "text": " - - - 0.053ms (0.03%) (self: 0.042 ms) ResolveAllReferences RimWorld.PreceptDef"
+    },
+    {
+      "line": 836,
+      "text": " - - - - 0.011ms (21%) (self: 0.011 ms) 11x Resolver call"
+    },
+    {
+      "line": 837,
+      "text": " - - - 0.051ms (0.03%) (self: 0.043 ms) ResolveAllReferences Verse.ToolCapacityDef"
+    },
+    {
+      "line": 838,
+      "text": " - - - - 0.008ms (16%) (self: 0.008 ms) 10x Resolver call"
+    },
+    {
+      "line": 839,
+      "text": " - - - 0.051ms (0.03%) (self: 0.051 ms) ResolveAllReferences RimWorld.GeneTemplateDef"
+    },
+    {
+      "line": 840,
+      "text": " - - - 0.051ms (0.03%) (self: 0.051 ms) ResolveAllReferences RimWorld.RoyalTitlePermitDef"
+    },
+    {
+      "line": 841,
+      "text": " - - - 0.050ms (0.03%) (self: 0.039 ms) ResolveAllReferences RimWorld.BillRepeatModeDef"
+    },
+    {
+      "line": 842,
+      "text": " - - - - 0.011ms (22%) (self: 0.011 ms) 3x Resolver call"
+    },
+    {
+      "line": 843,
+      "text": " - - - 0.050ms (0.03%) (self: 0.040 ms) ResolveAllReferences RimWorld.ChemicalDef"
+    },
+    {
+      "line": 844,
+      "text": " - - - - 0.010ms (20%) (self: 0.010 ms) 7x Resolver call"
+    },
+    {
+      "line": 845,
+      "text": " - - - 0.050ms (0.03%) (self: 0.038 ms) ResolveAllReferences RimWorld.JoyGiverDef"
+    },
+    {
+      "line": 846,
+      "text": " - - - - 0.011ms (23%) (self: 0.011 ms) 20x Resolver call"
+    },
+    {
+      "line": 847,
+      "text": " - - - 0.050ms (0.03%) (self: 0.040 ms) ResolveAllReferences RimWorld.ScenarioDef"
+    },
+    {
+      "line": 848,
+      "text": " - - - - 0.010ms (20%) (self: 0.010 ms) 5x Resolver call"
+    },
+    {
+      "line": 849,
+      "text": " - - - 0.050ms (0.03%) (self: 0.039 ms) ResolveAllReferences RimWorld.RaidStrategyDef"
+    },
+    {
+      "line": 850,
+      "text": " - - - - 0.010ms (20%) (self: 0.010 ms) 9x Resolver call"
+    },
+    {
+      "line": 851,
+      "text": " - - - 0.049ms (0.03%) (self: 0.040 ms) ResolveAllReferences RimWorld.MeditationFocusDef"
+    },
+    {
+      "line": 852,
+      "text": " - - - - 0.009ms (18%) (self: 0.009 ms) 6x Resolver call"
+    },
+    {
+      "line": 853,
+      "text": " - - - 0.047ms (0.03%) (self: 0.039 ms) ResolveAllReferences RimWorld.PawnTableDef"
+    },
+    {
+      "line": 854,
+      "text": " - - - - 0.008ms (17%) (self: 0.008 ms) 7x Resolver call"
+    },
+    {
+      "line": 855,
+      "text": " - - - 0.046ms (0.03%) (self: 0.034 ms) ResolveAllReferences RimWorld.TimeAssignmentDef"
+    },
+    {
+      "line": 856,
+      "text": " - - - - 0.012ms (26%) (self: 0.012 ms) 4x Resolver call"
+    },
+    {
+      "line": 857,
+      "text": " - - - 0.046ms (0.03%) (self: 0.046 ms) ResolveAllReferences RimWorld.PsychicRitualDef_InvocationCircle"
+    },
+    {
+      "line": 858,
+      "text": " - - - 0.045ms (0.03%) (self: 0.038 ms) ResolveAllReferences RimWorld.PrisonerInteractionModeDef"
+    },
+    {
+      "line": 859,
+      "text": " - - - - 0.008ms (17%) (self: 0.008 ms) 5x Resolver call"
+    },
+    {
+      "line": 860,
+      "text": " - - - 0.045ms (0.03%) (self: 0.038 ms) ResolveAllReferences RimWorld.StuffCategoryDef"
+    },
+    {
+      "line": 861,
+      "text": " - - - - 0.008ms (17%) (self: 0.008 ms) 5x Resolver call"
+    },
+    {
+      "line": 862,
+      "text": " - - - 0.045ms (0.03%) (self: 0.045 ms) ResolveAllReferences RimWorld.PsychicRitualDef_BloodRain"
+    },
+    {
+      "line": 863,
+      "text": " - - - 0.045ms (0.03%) (self: 0.033 ms) ResolveAllReferences Verse.ShaderTypeDef"
+    },
+    {
+      "line": 864,
+      "text": " - - - - 0.012ms (26%) (self: 0.012 ms) 71x Resolver call"
+    },
+    {
+      "line": 865,
+      "text": " - - - 0.045ms (0.03%) (self: 0.037 ms) ResolveAllReferences RimWorld.RiverDef"
+    },
+    {
+      "line": 866,
+      "text": " - - - - 0.007ms (17%) (self: 0.007 ms) 4x Resolver call"
+    },
+    {
+      "line": 867,
+      "text": " - - - 0.044ms (0.03%) (self: 0.036 ms) ResolveAllReferences Verse.OptionCategoryDef"
+    },
+    {
+      "line": 868,
+      "text": " - - - - 0.008ms (19%) (self: 0.008 ms) 8x Resolver call"
+    },
+    {
+      "line": 869,
+      "text": " - - - 0.044ms (0.03%) (self: 0.037 ms) ResolveAllReferences RimWorld.BodyTypeDef"
+    },
+    {
+      "line": 870,
+      "text": " - - - - 0.007ms (16%) (self: 0.007 ms) 5x Resolver call"
+    },
+    {
+      "line": 871,
+      "text": " - - - 0.044ms (0.03%) (self: 0.034 ms) ResolveAllReferences RimWorld.RenderSkipFlagDef"
+    },
+    {
+      "line": 872,
+      "text": " - - - - 0.010ms (23%) (self: 0.010 ms) 6x Resolver call"
+    },
+    {
+      "line": 873,
+      "text": " - - - 0.044ms (0.03%) (self: 0.044 ms) ResolveAllReferences RimWorld.StyleItemDef"
+    },
+    {
+      "line": 874,
+      "text": " - - - 0.043ms (0.03%) (self: 0.036 ms) ResolveAllReferences Verse.DesignatorDropdownGroupDef"
+    },
+    {
+      "line": 875,
+      "text": " - - - - 0.008ms (18%) (self: 0.008 ms) 7x Resolver call"
+    },
+    {
+      "line": 876,
+      "text": " - - - 0.043ms (0.03%) (self: 0.036 ms) ResolveAllReferences RimWorld.RoadWorldLayerDef"
+    },
+    {
+      "line": 877,
+      "text": " - - - - 0.008ms (18%) (self: 0.008 ms) 5x Resolver call"
+    },
+    {
+      "line": 878,
+      "text": " - - - 0.043ms (0.02%) (self: 0.035 ms) ResolveAllReferences Verse.Sound.ImpactSoundTypeDef"
+    },
+    {
+      "line": 879,
+      "text": " - - - - 0.008ms (18%) (self: 0.008 ms) 6x Resolver call"
+    },
+    {
+      "line": 880,
+      "text": " - - - 0.043ms (0.02%) (self: 0.038 ms) ResolveAllReferences WeaponClassDef"
+    },
+    {
+      "line": 881,
+      "text": " - - - - 0.005ms (11%) (self: 0.005 ms) 10x Resolver call"
+    },
+    {
+      "line": 882,
+      "text": " - - - 0.043ms (0.02%) (self: 0.043 ms) ResolveAllReferences RimWorld.PsychicRitualDef"
+    },
+    {
+      "line": 883,
+      "text": " - - - 0.042ms (0.02%) (self: 0.035 ms) ResolveAllReferences RimWorld.HistoryAutoRecorderDef"
+    },
+    {
+      "line": 884,
+      "text": " - - - - 0.008ms (18%) (self: 0.008 ms) 11x Resolver call"
+    },
+    {
+      "line": 885,
+      "text": " - - - 0.042ms (0.02%) (self: 0.034 ms) ResolveAllReferences Verse.ApparelLayerDef"
+    },
+    {
+      "line": 886,
+      "text": " - - - - 0.008ms (18%) (self: 0.008 ms) 6x Resolver call"
+    },
+    {
+      "line": 887,
+      "text": " - - - 0.041ms (0.02%) (self: 0.035 ms) ResolveAllReferences Verse.PawnRenderNodeTagDef"
+    },
+    {
+      "line": 888,
+      "text": " - - - - 0.007ms (16%) (self: 0.007 ms) 5x Resolver call"
+    },
+    {
+      "line": 889,
+      "text": " - - - 0.041ms (0.02%) (self: 0.034 ms) ResolveAllReferences RimWorld.GoodwillSituationDef"
+    },
+    {
+      "line": 890,
+      "text": " - - - - 0.007ms (17%) (self: 0.007 ms) 3x Resolver call"
+    },
+    {
+      "line": 891,
+      "text": " - - - 0.041ms (0.02%) (self: 0.035 ms) ResolveAllReferences RimWorld.WorkGiverEquivalenceGroupDef"
+    },
+    {
+      "line": 892,
+      "text": " - - - - 0.006ms (14%) (self: 0.006 ms) 3x Resolver call"
+    },
+    {
+      "line": 893,
+      "text": " - - - 0.040ms (0.02%) (self: 0.034 ms) ResolveAllReferences RimWorld.IncidentTargetTagDef"
+    },
+    {
+      "line": 894,
+      "text": " - - - - 0.007ms (16%) (self: 0.007 ms) 6x Resolver call"
+    },
+    {
+      "line": 895,
+      "text": " - - - 0.040ms (0.02%) (self: 0.032 ms) ResolveAllReferences Verse.MechWeightClassDef"
+    },
+    {
+      "line": 896,
+      "text": " - - - - 0.008ms (20%) (self: 0.008 ms) 4x Resolver call"
+    },
+    {
+      "line": 897,
+      "text": " - - - 0.040ms (0.02%) (self: 0.040 ms) ResolveAllReferences RimWorld.KnowledgeCategoryDef"
+    },
+    {
+      "line": 898,
+      "text": " - - - 0.040ms (0.02%) (self: 0.032 ms) ResolveAllReferences RimWorld.JoyKindDef"
+    },
+    {
+      "line": 899,
+      "text": " - - - - 0.008ms (20%) (self: 0.008 ms) 10x Resolver call"
+    },
+    {
+      "line": 900,
+      "text": " - - - 0.040ms (0.02%) (self: 0.033 ms) ResolveAllReferences Verse.DamageArmorCategoryDef"
+    },
+    {
+      "line": 901,
+      "text": " - - - - 0.007ms (16%) (self: 0.007 ms) 3x Resolver call"
+    },
+    {
+      "line": 902,
+      "text": " - - - 0.039ms (0.02%) (self: 0.029 ms) ResolveAllReferences Verse.BodyPartTagDef"
+    },
+    {
+      "line": 903,
+      "text": " - - - - 0.011ms (27%) (self: 0.011 ms) 25x Resolver call"
+    },
+    {
+      "line": 904,
+      "text": " - - - 0.039ms (0.02%) (self: 0.032 ms) ResolveAllReferences RimWorld.DebugTabMenuDef"
+    },
+    {
+      "line": 905,
+      "text": " - - - - 0.008ms (19%) (self: 0.008 ms) 3x Resolver call"
+    },
+    {
+      "line": 906,
+      "text": " - - - 0.039ms (0.02%) (self: 0.031 ms) ResolveAllReferences RimWorld.TerrainTemplateDef"
+    },
+    {
+      "line": 907,
+      "text": " - - - - 0.008ms (19%) (self: 0.008 ms) Resolver call"
+    },
+    {
+      "line": 908,
+      "text": " - - - 0.038ms (0.02%) (self: 0.028 ms) ResolveAllReferences Verse.KeyBindingDef"
+    },
+    {
+      "line": 909,
+      "text": " - - - - 0.011ms (28%) (self: 0.011 ms) 59x Resolver call"
+    },
+    {
+      "line": 910,
+      "text": " - - - 0.038ms (0.02%) (self: 0.031 ms) ResolveAllReferences RimWorld.RoadPathingDef"
+    },
+    {
+      "line": 911,
+      "text": " - - - - 0.007ms (18%) (self: 0.007 ms) 2x Resolver call"
+    },
+    {
+      "line": 912,
+      "text": " - - - 0.037ms (0.02%) (self: 0.037 ms) ResolveAllReferences RimWorld.PsychicRitualDef_SummonAnimals"
+    },
+    {
+      "line": 913,
+      "text": " - - - 0.037ms (0.02%) (self: 0.031 ms) ResolveAllReferences Verse.PawnCapacityDef"
+    },
+    {
+      "line": 914,
+      "text": " - - - - 0.006ms (17%) (self: 0.006 ms) 11x Resolver call"
+    },
+    {
+      "line": 915,
+      "text": " - - - 0.036ms (0.02%) (self: 0.030 ms) ResolveAllReferences Verse.StuffAppearanceDef"
+    },
+    {
+      "line": 916,
+      "text": " - - - - 0.006ms (18%) (self: 0.006 ms) 4x Resolver call"
+    },
+    {
+      "line": 917,
+      "text": " - - - 0.036ms (0.02%) (self: 0.030 ms) ResolveAllReferences RimWorld.FleshTypeDef"
+    },
+    {
+      "line": 918,
+      "text": " - - - - 0.007ms (18%) (self: 0.007 ms) 3x Resolver call"
+    },
+    {
+      "line": 919,
+      "text": " - - - 0.036ms (0.02%) (self: 0.036 ms) ResolveAllReferences RimWorld.PsychicRitualDef_SummonFleshbeastsPlayer"
+    },
+    {
+      "line": 920,
+      "text": " - - - 0.036ms (0.02%) (self: 0.030 ms) ResolveAllReferences Verse.InventoryStockGroupDef"
+    },
+    {
+      "line": 921,
+      "text": " - - - - 0.005ms (15%) (self: 0.005 ms) Resolver call"
+    },
+    {
+      "line": 922,
+      "text": " - - - 0.035ms (0.02%) (self: 0.029 ms) ResolveAllReferences Verse.GameConditionDef"
+    },
+    {
+      "line": 923,
+      "text": " - - - - 0.007ms (18%) (self: 0.007 ms) 13x Resolver call"
+    },
+    {
+      "line": 924,
+      "text": " - - - 0.035ms (0.02%) (self: 0.028 ms) ResolveAllReferences Verse.WeatherDef"
+    },
+    {
+      "line": 925,
+      "text": " - - - - 0.007ms (21%) (self: 0.007 ms) 9x Resolver call"
+    },
+    {
+      "line": 926,
+      "text": " - - - 0.035ms (0.02%) (self: 0.029 ms) ResolveAllReferences RimWorld.BillStoreModeDef"
+    },
+    {
+      "line": 927,
+      "text": " - - - - 0.006ms (16%) (self: 0.006 ms) 3x Resolver call"
+    },
+    {
+      "line": 928,
+      "text": " - - - 0.035ms (0.02%) (self: 0.028 ms) ResolveAllReferences RimWorld.GlobalWorldDrawLayerDef"
+    },
+    {
+      "line": 929,
+      "text": " - - - - 0.007ms (20%) (self: 0.007 ms) 2x Resolver call"
+    },
+    {
+      "line": 930,
+      "text": " - - - 0.035ms (0.02%) (self: 0.035 ms) ResolveAllReferences RimWorld.MutantDef"
+    },
+    {
+      "line": 931,
+      "text": " - - - 0.034ms (0.02%) (self: 0.034 ms) ResolveAllReferences RimWorld.PsychicRitualDef_SummonPitGate"
+    },
+    {
+      "line": 932,
+      "text": " - - - 0.034ms (0.02%) (self: 0.027 ms) ResolveAllReferences RimWorld.ComplexThreatDef"
+    },
+    {
+      "line": 933,
+      "text": " - - - - 0.007ms (21%) (self: 0.007 ms) 2x Resolver call"
+    },
+    {
+      "line": 934,
+      "text": " - - - 0.034ms (0.02%) (self: 0.034 ms) ResolveAllReferences RimWorld.PsychicRitualDef_Psychophagy"
+    },
+    {
+      "line": 935,
+      "text": " - - - 0.034ms (0.02%) (self: 0.029 ms) ResolveAllReferences Verse.TrainabilityDef"
+    },
+    {
+      "line": 936,
+      "text": " - - - - 0.005ms (13%) (self: 0.005 ms) 3x Resolver call"
+    },
+    {
+      "line": 937,
+      "text": " - - - 0.033ms (0.02%) (self: 0.028 ms) ResolveAllReferences RimWorld.HediffGiverSetDef"
+    },
+    {
+      "line": 938,
+      "text": " - - - - 0.005ms (15%) (self: 0.005 ms) 2x Resolver call"
+    },
+    {
+      "line": 939,
+      "text": " - - - 0.033ms (0.02%) (self: 0.033 ms) ResolveAllReferences Verse.IdeoStoryPatternDef"
+    },
+    {
+      "line": 940,
+      "text": " - - - 0.033ms (0.02%) (self: 0.033 ms) ResolveAllReferences RimWorld.EntityCodexEntryDef"
+    },
+    {
+      "line": 941,
+      "text": " - - - 0.032ms (0.02%) (self: 0.027 ms) ResolveAllReferences Verse.KeyBindingCategoryDef"
+    },
+    {
+      "line": 942,
+      "text": " - - - - 0.005ms (15%) (self: 0.005 ms) 9x Resolver call"
+    },
+    {
+      "line": 943,
+      "text": " - - - 0.032ms (0.02%) (self: 0.032 ms) ResolveAllReferences RimWorld.MemeDef"
+    },
+    {
+      "line": 944,
+      "text": " - - - 0.032ms (0.02%) (self: 0.032 ms) ResolveAllReferences RimWorld.AnomalyPlaystyleDef"
+    },
+    {
+      "line": 945,
+      "text": " - - - 0.032ms (0.02%) (self: 0.025 ms) ResolveAllReferences RimWorld.ResearchTabDef"
+    },
+    {
+      "line": 946,
+      "text": " - - - - 0.007ms (21%) (self: 0.007 ms) 2x Resolver call"
+    },
+    {
+      "line": 947,
+      "text": " - - - 0.032ms (0.02%) (self: 0.032 ms) ResolveAllReferences RimWorld.RitualBehaviorDef"
+    },
+    {
+      "line": 948,
+      "text": " - - - 0.031ms (0.02%) (self: 0.031 ms) ResolveAllReferences RimWorld.GravshipComponentTypeDef"
+    },
+    {
+      "line": 949,
+      "text": " - - - 0.031ms (0.02%) (self: 0.025 ms) ResolveAllReferences RimWorld.LayoutRoomDef"
+    },
+    {
+      "line": 950,
+      "text": " - - - - 0.006ms (18%) (self: 0.006 ms) Resolver call"
+    },
+    {
+      "line": 951,
+      "text": " - - - 0.031ms (0.02%) (self: 0.022 ms) ResolveAllReferences Verse.GeneCategoryDef"
+    },
+    {
+      "line": 952,
+      "text": " - - - - 0.008ms (27%) (self: 0.008 ms) 4x Resolver call"
+    },
+    {
+      "line": 953,
+      "text": " - - - 0.030ms (0.02%) (self: 0.030 ms) ResolveAllReferences RimWorld.RoomPartDef"
+    },
+    {
+      "line": 954,
+      "text": " - - - 0.029ms (0.02%) (self: 0.023 ms) ResolveAllReferences Verse.HeadTypeDef"
+    },
+    {
+      "line": 955,
+      "text": " - - - - 0.006ms (21%) (self: 0.006 ms) 14x Resolver call"
+    },
+    {
+      "line": 956,
+      "text": " - - - 0.029ms (0.02%) (self: 0.029 ms) ResolveAllReferences RimWorld.GauranlenTreeModeDef"
+    },
+    {
+      "line": 957,
+      "text": " - - - 0.029ms (0.02%) (self: 0.029 ms) ResolveAllReferences RimWorld.PsychicRitualDef_Brainwipe"
+    },
+    {
+      "line": 958,
+      "text": " - - - 0.029ms (0.02%) (self: 0.023 ms) ResolveAllReferences Verse.MentalBreakDef"
+    },
+    {
+      "line": 959,
+      "text": " - - - - 0.006ms (22%) (self: 0.006 ms) 21x Resolver call"
+    },
+    {
+      "line": 960,
+      "text": " - - - 0.029ms (0.02%) (self: 0.029 ms) ResolveAllReferences RimWorld.RoyalTitleDef"
+    },
+    {
+      "line": 961,
+      "text": " - - - 0.029ms (0.02%) (self: 0.029 ms) ResolveAllReferences RimWorld.PsychicRitualDef_ImbueDeathRefusal"
+    },
+    {
+      "line": 962,
+      "text": " - - - 0.028ms (0.02%) (self: 0.028 ms) ResolveAllReferences RimWorld.IdeoColorDef"
+    },
+    {
+      "line": 963,
+      "text": " - - - 0.028ms (0.02%) (self: 0.028 ms) ResolveAllReferences RimWorld.AbilityGroupDef"
+    },
+    {
+      "line": 964,
+      "text": " - - - 0.028ms (0.02%) (self: 0.028 ms) ResolveAllReferences RimWorld.EntityCategoryDef"
+    },
+    {
+      "line": 965,
+      "text": " - - - 0.028ms (0.02%) (self: 0.028 ms) ResolveAllReferences RimWorld.BossgroupDef"
+    },
+    {
+      "line": 966,
+      "text": " - - - 0.027ms (0.02%) (self: 0.027 ms) ResolveAllReferences RimWorld.SlaveInteractionModeDef"
+    },
+    {
+      "line": 967,
+      "text": " - - - 0.027ms (0.02%) (self: 0.022 ms) ResolveAllReferences Verse.ResearchProjectTagDef"
+    },
+    {
+      "line": 968,
+      "text": " - - - - 0.005ms (19%) (self: 0.005 ms) 5x Resolver call"
+    },
+    {
+      "line": 969,
+      "text": " - - - 0.027ms (0.02%) (self: 0.027 ms) ResolveAllReferences RimWorld.BabyPlayDef"
+    },
+    {
+      "line": 970,
+      "text": " - - - 0.027ms (0.02%) (self: 0.027 ms) ResolveAllReferences RimWorld.NegativeFishingOutcomeDef"
+    },
+    {
+      "line": 971,
+      "text": " - - - 0.027ms (0.02%) (self: 0.027 ms) ResolveAllReferences Verse.CreepJoinerDownsideDef"
+    },
+    {
+      "line": 972,
+      "text": " - - - 0.027ms (0.02%) (self: 0.027 ms) ResolveAllReferences RimWorld.PsychicRitualDef_Philophagy"
+    },
+    {
+      "line": 973,
+      "text": " - - - 0.027ms (0.02%) (self: 0.027 ms) ResolveAllReferences RimWorld.MemeGroupDef"
+    },
+    {
+      "line": 974,
+      "text": " - - - 0.026ms (0.01%) (self: 0.026 ms) ResolveAllReferences RimWorld.MonolithLevelDef"
+    },
+    {
+      "line": 975,
+      "text": " - - - 0.026ms (0.01%) (self: 0.026 ms) ResolveAllReferences RimWorld.PsychicRitualRoleDef_DeathRefusalTarget"
+    },
+    {
+      "line": 976,
+      "text": " - - - 0.026ms (0.01%) (self: 0.026 ms) ResolveAllReferences RimWorld.RoomPart_GestationTankDef"
+    },
+    {
+      "line": 977,
+      "text": " - - - 0.025ms (0.01%) (self: 0.021 ms) ResolveAllReferences Verse.RoomStatDef"
+    },
+    {
+      "line": 978,
+      "text": " - - - - 0.005ms (19%) (self: 0.005 ms) 11x Resolver call"
+    },
+    {
+      "line": 979,
+      "text": " - - - 0.025ms (0.01%) (self: 0.021 ms) ResolveAllReferences Verse.MessageTypeDef"
+    },
+    {
+      "line": 980,
+      "text": " - - - - 0.004ms (16%) (self: 0.004 ms) 12x Resolver call"
+    },
+    {
+      "line": 981,
+      "text": " - - - 0.025ms (0.01%) (self: 0.025 ms) ResolveAllReferences RimWorld.RaidAgeRestrictionDef"
+    },
+    {
+      "line": 982,
+      "text": " - - - 0.025ms (0.01%) (self: 0.025 ms) ResolveAllReferences Verse.ThingStyleDef"
+    },
+    {
+      "line": 983,
+      "text": " - - - 0.025ms (0.01%) (self: 0.025 ms) ResolveAllReferences RimWorld.PsychicRitualDef_SkipAbduction"
+    },
+    {
+      "line": 984,
+      "text": " - - - 0.025ms (0.01%) (self: 0.021 ms) ResolveAllReferences Verse.PathGridDef"
+    },
+    {
+      "line": 985,
+      "text": " - - - - 0.004ms (16%) (self: 0.004 ms) 3x Resolver call"
+    },
+    {
+      "line": 986,
+      "text": " - - - 0.025ms (0.01%) (self: 0.025 ms) ResolveAllReferences RimWorld.IdeoFoundationDef"
+    },
+    {
+      "line": 987,
+      "text": " - - - 0.024ms (0.01%) (self: 0.024 ms) ResolveAllReferences RimWorld.MusicSequenceDef"
+    },
+    {
+      "line": 988,
+      "text": " - - - 0.024ms (0.01%) (self: 0.024 ms) ResolveAllReferences RimWorld.IdeoPresetCategoryDef"
+    },
+    {
+      "line": 989,
+      "text": " - - - 0.024ms (0.01%) (self: 0.020 ms) ResolveAllReferences Verse.ClamorDef"
+    },
+    {
+      "line": 990,
+      "text": " - - - - 0.004ms (16%) (self: 0.004 ms) 5x Resolver call"
+    },
+    {
+      "line": 991,
+      "text": " - - - 0.024ms (0.01%) (self: 0.018 ms) ResolveAllReferences Verse.RoomRoleDef"
+    },
+    {
+      "line": 992,
+      "text": " - - - - 0.005ms (23%) (self: 0.005 ms) 15x Resolver call"
+    },
+    {
+      "line": 993,
+      "text": " - - - 0.023ms (0.01%) (self: 0.020 ms) ResolveAllReferences Verse.ReservationLayerDef"
+    },
+    {
+      "line": 994,
+      "text": " - - - - 0.003ms (14%) (self: 0.003 ms) 3x Resolver call"
+    },
+    {
+      "line": 995,
+      "text": " - - - 0.023ms (0.01%) (self: 0.023 ms) ResolveAllReferences RimWorld.AbilityDef"
+    },
+    {
+      "line": 996,
+      "text": " - - - 0.023ms (0.01%) (self: 0.023 ms) ResolveAllReferences RimWorld.PsychicRitualDef_PleasurePulse"
+    },
+    {
+      "line": 997,
+      "text": " - - - 0.023ms (0.01%) (self: 0.019 ms) ResolveAllReferences Verse.RoofDef"
+    },
+    {
+      "line": 998,
+      "text": " - - - - 0.004ms (15%) (self: 0.004 ms) 3x Resolver call"
+    },
+    {
+      "line": 999,
+      "text": " - - - 0.023ms (0.01%) (self: 0.023 ms) ResolveAllReferences RimWorld.PitGateIncidentDef"
+    },
+    {
+      "line": 1000,
+      "text": " - - - 0.023ms (0.01%) (self: 0.023 ms) ResolveAllReferences RimWorld.IdeoSymbolPartDef"
+    },
+    {
+      "line": 1001,
+      "text": " - - - 0.023ms (0.01%) (self: 0.023 ms) ResolveAllReferences RimWorld.PsychicRitualDef_SummonShamblers"
+    },
+    {
+      "line": 1002,
+      "text": " - - - 0.023ms (0.01%) (self: 0.023 ms) ResolveAllReferences RimWorld.BossDef"
+    },
+    {
+      "line": 1003,
+      "text": " - - - 0.022ms (0.01%) (self: 0.022 ms) ResolveAllReferences RimWorld.MusicTransitionDef"
+    },
+    {
+      "line": 1004,
+      "text": " - - - 0.022ms (0.01%) (self: 0.018 ms) ResolveAllReferences Verse.ManeuverDef"
+    },
+    {
+      "line": 1005,
+      "text": " - - - - 0.005ms (21%) (self: 0.005 ms) 10x Resolver call"
+    },
+    {
+      "line": 1006,
+      "text": " - - - 0.022ms (0.01%) (self: 0.018 ms) ResolveAllReferences Verse.TerrainAffordanceDef"
+    },
+    {
+      "line": 1007,
+      "text": " - - - - 0.004ms (19%) (self: 0.004 ms) 11x Resolver call"
+    },
+    {
+      "line": 1008,
+      "text": " - - - 0.022ms (0.01%) (self: 0.022 ms) ResolveAllReferences RimWorld.PsychicRitualRoleDef"
+    },
+    {
+      "line": 1009,
+      "text": " - - - 0.022ms (0.01%) (self: 0.022 ms) ResolveAllReferences RimWorld.WeaponTraitDef"
+    },
+    {
+      "line": 1010,
+      "text": " - - - 0.021ms (0.01%) (self: 0.018 ms) ResolveAllReferences Verse.GameSetupStepDef"
+    },
+    {
+      "line": 1011,
+      "text": " - - - - 0.003ms (14%) (self: 0.003 ms) 3x Resolver call"
+    },
+    {
+      "line": 1012,
+      "text": " - - - 0.021ms (0.01%) (self: 0.021 ms) ResolveAllReferences RimWorld.LearningDesireDef"
+    },
+    {
+      "line": 1013,
+      "text": " - - - 0.021ms (0.01%) (self: 0.018 ms) ResolveAllReferences Verse.ImplementOwnerTypeDef"
+    },
+    {
+      "line": 1014,
+      "text": " - - - - 0.003ms (15%) (self: 0.003 ms) 5x Resolver call"
+    },
+    {
+      "line": 1015,
+      "text": " - - - 0.021ms (0.01%) (self: 0.021 ms) ResolveAllReferences RimWorld.PsychicRitualDef_VoidProvocation"
+    },
+    {
+      "line": 1016,
+      "text": " - - - 0.021ms (0.01%) (self: 0.021 ms) ResolveAllReferences RimWorld.IdeoPresetDef"
+    },
+    {
+      "line": 1017,
+      "text": " - - - 0.021ms (0.01%) (self: 0.021 ms) ResolveAllReferences RimWorld.IdeoIconDef"
+    },
+    {
+      "line": 1018,
+      "text": " - - - 0.020ms (0.01%) (self: 0.020 ms) ResolveAllReferences RimWorld.RoomPart_BarricadeDef"
+    },
+    {
+      "line": 1019,
+      "text": " - - - 0.020ms (0.01%) (self: 0.020 ms) ResolveAllReferences RimWorld.ComplexLayoutDef"
+    },
+    {
+      "line": 1020,
+      "text": " - - - 0.018ms (0.01%) (self: 0.018 ms) ResolveAllReferences RimWorld.LandingOutcomeDef"
+    },
+    {
+      "line": 1021,
+      "text": " - - - 0.018ms (0.01%) (self: 0.018 ms) ResolveAllReferences RimWorld.PsychicRitualDef_NeurosisPulse"
+    },
+    {
+      "line": 1022,
+      "text": " - - - 0.018ms (0.01%) (self: 0.015 ms) ResolveAllReferences Verse.LogEntryDef"
+    },
+    {
+      "line": 1023,
+      "text": " - - - - 0.003ms (16%) (self: 0.003 ms) 2x Resolver call"
+    },
+    {
+      "line": 1024,
+      "text": " - - - 0.018ms (0.01%) (self: 0.018 ms) ResolveAllReferences RimWorld.RoomPart_CrateDef"
+    },
+    {
+      "line": 1025,
+      "text": " - - - 0.017ms (0.01%) (self: 0.017 ms) ResolveAllReferences RimWorld.LayoutDef"
+    },
+    {
+      "line": 1026,
+      "text": " - - - 0.017ms (0.01%) (self: 0.014 ms) ResolveAllReferences Verse.OrderedTakeGroupDef"
+    },
+    {
+      "line": 1027,
+      "text": " - - - - 0.003ms (17%) (self: 0.003 ms) 2x Resolver call"
+    },
+    {
+      "line": 1028,
+      "text": " - - - 0.014ms (0.01%) (self: 0.014 ms) ResolveAllReferences Verse.PlaceDef"
+    },
+    {
+      "line": 1029,
+      "text": " - - - 0.013ms (0.01%) (self: 0.013 ms) ResolveAllReferences Verse.MentalFitDef"
+    },
+    {
+      "line": 1030,
+      "text": " - - - 0.012ms (0.01%) (self: 0.012 ms) ResolveAllReferences Verse.CreepJoinerAggressiveDef"
+    },
+    {
+      "line": 1031,
+      "text": " - - - 0.012ms (0.01%) (self: 0.012 ms) ResolveAllReferences Verse.MechWorkModeDef"
+    },
+    {
+      "line": 1032,
+      "text": " - - - 0.012ms (0.01%) (self: 0.012 ms) ResolveAllReferences WeaponClassPairDef"
+    },
+    {
+      "line": 1033,
+      "text": " - - - 0.012ms (0.01%) (self: 0.012 ms) ResolveAllReferences Verse.CreepJoinerBaseDef"
+    },
+    {
+      "line": 1034,
+      "text": " - - - 0.011ms (0.01%) (self: 0.011 ms) ResolveAllReferences Verse.CreepJoinerRejectionDef"
+    },
+    {
+      "line": 1035,
+      "text": " - - - 0.011ms (0.01%) (self: 0.011 ms) ResolveAllReferences Verse.CreepJoinerFormKindDef"
+    },
+    {
+      "line": 1036,
+      "text": " - - - 0.010ms (0.01%) (self: 0.010 ms) ResolveAllReferences Verse.CreepJoinerBenefitDef"
+    },
+    {
+      "line": 1037,
+      "text": " - - 20.088ms (9.7%) (self: 0.039 ms) ThingDef resolver"
+    },
+    {
+      "line": 1038,
+      "text": " - - - 19.672ms (98%) (self: 1.235 ms) ResolveAllReferences Verse.ThingDef"
+    },
+    {
+      "line": 1039,
+      "text": " - - - - 18.437ms (94%) (self: 18.437 ms) 1534x Resolver call"
+    },
+    {
+      "line": 1041,
+      "text": " - - 11.200ms (5.4%) (self: 11.200 ms) RecipeDef resolver"
+    },
+    {
+      "line": 1042,
+      "text": " - - 3.186ms (1.5%) (self: 3.186 ms) ThingCategoryDef resolver"
+    },
+    {
+      "line": 1043,
+      "text": " - 155.000ms (1.2%) (self: 155.000 ms) Error check all defs."
+    },
+    {
+      "line": 1044,
+      "text": " - 132.117ms (1%) (self: 127.825 ms) Generate implied Defs (pre-resolve)."
+    },
+    {
+      "line": 1045,
+      "text": " - - 2.752ms (2.1%) (self: 2.752 ms) ResolveAllWantedCrossReferences"
+    },
+    {
+      "line": 1049,
+      "text": " - 69.227ms (0.54%) (self: 69.227 ms) Other def binding, resetting and global operations (pre-resolve)."
+    },
+    {
+      "line": 1050,
+      "text": " - 34.384ms (0.27%) (self: 0.007 ms) Resolve cross-references between non-implied Defs."
+    },
+    {
+      "line": 1051,
+      "text": " - - 34.377ms (100%) (self: 34.377 ms) ResolveAllWantedCrossReferences"
+    },
+    {
+      "line": 1056,
+      "text": " - 21.909ms (0.17%) (self: 21.909 ms) Other def binding, resetting and global operations (post-resolve)."
+    },
+    {
+      "line": 1059,
+      "text": " - 8.387ms (0.07%) (self: 8.387 ms) Generate implied Defs (post-resolve)."
+    },
+    {
+      "line": 1061,
+      "text": " - 3.572ms (0.03%) (self: 0.011 ms) Resolve cross-references between Defs made by the implied defs."
+    },
+    {
+      "line": 1062,
+      "text": " - - 3.554ms (99%) (self: 3.554 ms) ResolveAllWantedCrossReferences"
+    },
+    {
+      "line": 1081,
+      "text": "1x XmlInheritance.Resolve() -> 160.484 ms (total (w/children): 326.707 ms)"
+    },
+    {
+      "line": 1082,
+      "text": "1x Error check all defs. -> 155.000 ms (total (w/children): 155.000 ms)"
+    },
+    {
+      "line": 1083,
+      "text": "7111x Resolver call -> 128.526 ms (total (w/children): 128.526 ms)"
+    },
+    {
+      "line": 1084,
+      "text": "1x Generate implied Defs (pre-resolve). -> 127.825 ms (total (w/children): 132.117 ms)"
+    },
+    {
+      "line": 1088,
+      "text": "1x Other def binding, resetting and global operations (pre-resolve). -> 69.227 ms (total (w/children): 69.227 ms)"
+    },
+    {
+      "line": 1095,
+      "text": "5x ResolveAllWantedCrossReferences -> 40.717 ms (total (w/children): 40.717 ms)"
+    },
+    {
+      "line": 1113,
+      "text": "1x Other def binding, resetting and global operations (post-resolve). -> 21.909 ms (total (w/children): 21.909 ms)"
+    },
+    {
+      "line": 1114,
+      "text": "1x Static resolver calls -> 21.650 ms (total (w/children): 172.445 ms)"
+    },
+    {
+      "line": 1132,
+      "text": "1x RecipeDef resolver -> 11.200 ms (total (w/children): 11.200 ms)"
+    },
+    {
+      "line": 1139,
+      "text": "1x ResolveAllReferences RimWorld.PawnColumnDef -> 8.576 ms (total (w/children): 8.632 ms)"
+    },
+    {
+      "line": 1142,
+      "text": "1x Generate implied Defs (post-resolve). -> 8.387 ms (total (w/children): 8.387 ms)"
+    },
+    {
+      "line": 1162,
+      "text": "1x ResolveAllReferences RimWorld.InstructionDef -> 4.123 ms (total (w/children): 4.189 ms)"
+    },
+    {
+      "line": 1165,
+      "text": "1x ErrorCheckPatches() -> 3.794 ms (total (w/children): 58.520 ms)"
+    },
+    {
+      "line": 1166,
+      "text": "12x ParseValueAndReturnDef (for RimWorld.SketchResolverDef) -> 3.790 ms (total (w/children): 3.790 ms)"
+    },
+    {
+      "line": 1170,
+      "text": "1x ResolveAllReferences RimWorld.TraitDef -> 3.534 ms (total (w/children): 3.932 ms)"
+    },
+    {
+      "line": 1174,
+      "text": "1x ThingCategoryDef resolver -> 3.186 ms (total (w/children): 3.186 ms)"
+    },
+    {
+      "line": 1211,
+      "text": "1x ResolveAllReferences Verse.ThingDef -> 1.235 ms (total (w/children): 19.672 ms)"
+    },
+    {
+      "line": 1215,
+      "text": "1x ResolveAllReferences RimWorld.RitualAttachableOutcomeEffectDef -> 1.193 ms (total (w/children): 1.193 ms)"
+    },
+    {
+      "line": 1224,
+      "text": "1x ResolveAllReferences RimWorld.BackstoryDef -> 1.056 ms (total (w/children): 1.356 ms)"
+    },
+    {
+      "line": 1226,
+      "text": "1x ResolveAllReferences RimWorld.RitualObligationTargetFilterDef -> 1.001 ms (total (w/children): 1.001 ms)"
+    },
+    {
+      "line": 1239,
+      "text": "1x ResolveAllReferences RimWorld.RuleDef -> 0.704 ms (total (w/children): 0.768 ms)"
+    },
+    {
+      "line": 1240,
+      "text": "1x ResolveAllReferences RimWorld.PlanetLayerSettingsDef -> 0.692 ms (total (w/children): 0.716 ms)"
+    },
+    {
+      "line": 1244,
+      "text": "1x ResolveAllReferences RimWorld.PawnsArrivalModeDef -> 0.642 ms (total (w/children): 0.671 ms)"
+    },
+    {
+      "line": 1248,
+      "text": "1x ResolveAllReferences RimWorld.AbilityCategoryDef -> 0.581 ms (total (w/children): 0.581 ms)"
+    },
+    {
+      "line": 1252,
+      "text": "1x ResolveAllReferences RimWorld.StructureLayoutDef -> 0.552 ms (total (w/children): 0.552 ms)"
+    },
+    {
+      "line": 1266,
+      "text": "1x ResolveAllReferences RimWorld.TransportShipDef -> 0.413 ms (total (w/children): 0.413 ms)"
+    },
+    {
+      "line": 1271,
+      "text": "1x ResolveAllReferences Verse.MapGeneratorDef -> 0.339 ms (total (w/children): 0.353 ms)"
+    },
+    {
+      "line": 1278,
+      "text": "1x ResolveAllReferences RimWorld.FurDef -> 0.289 ms (total (w/children): 0.289 ms)"
+    },
+    {
+      "line": 1281,
+      "text": "1x ResolveAllReferences RimWorld.XenotypeDef -> 0.279 ms (total (w/children): 0.279 ms)"
+    },
+    {
+      "line": 1282,
+      "text": "1x ResolveAllReferences RimWorld.ThoughtDef -> 0.266 ms (total (w/children): 0.387 ms)"
+    },
+    {
+      "line": 1287,
+      "text": "1x ResolveAllReferences Verse.EffecterDef -> 0.262 ms (total (w/children): 0.306 ms)"
+    },
+    {
+      "line": 1289,
+      "text": "1x ResolveAllReferences Verse.DrawStyleDef -> 0.255 ms (total (w/children): 0.268 ms)"
+    },
+    {
+      "line": 1294,
+      "text": "1x ResolveAllReferences Verse.BodyPartGroupDef -> 0.237 ms (total (w/children): 0.250 ms)"
+    },
+    {
+      "line": 1295,
+      "text": "1x ResolveAllReferences RimWorld.ExpectationDef -> 0.235 ms (total (w/children): 0.268 ms)"
+    },
+    {
+      "line": 1296,
+      "text": "1x ResolveAllReferences RimWorld.CultureDef -> 0.228 ms (total (w/children): 0.249 ms)"
+    },
+    {
+      "line": 1297,
+      "text": "1x ResolveAllReferences Verse.TipSetDef -> 0.219 ms (total (w/children): 0.237 ms)"
+    },
+    {
+      "line": 1298,
+      "text": "1x ResolveAllReferences RimWorld.RoomPart_ThingDef -> 0.215 ms (total (w/children): 0.215 ms)"
+    },
+    {
+      "line": 1306,
+      "text": "1x ResolveAllReferences Verse.SoundDef -> 0.193 ms (total (w/children): 0.845 ms)"
+    },
+    {
+      "line": 1311,
+      "text": "1x ResolveAllReferences RimWorld.PsychicRitualDef_SummonFleshbeasts -> 0.173 ms (total (w/children): 0.173 ms)"
+    },
+    {
+      "line": 1312,
+      "text": "1x ResolveAllReferences RimWorld.DrugPolicyDef -> 0.173 ms (total (w/children): 0.189 ms)"
+    },
+    {
+      "line": 1314,
+      "text": "1x ResolveAllReferences RimWorld.WeaponCategoryDef -> 0.171 ms (total (w/children): 0.171 ms)"
+    },
+    {
+      "line": 1318,
+      "text": "1x ResolveAllReferences Verse.DesignationDef -> 0.168 ms (total (w/children): 0.276 ms)"
+    },
+    {
+      "line": 1319,
+      "text": "1x ResolveAllReferences Verse.JobDef -> 0.167 ms (total (w/children): 0.252 ms)"
+    },
+    {
+      "line": 1320,
+      "text": "1x ResolveAllReferences RimWorld.ScenPartDef -> 0.164 ms (total (w/children): 0.214 ms)"
+    },
+    {
+      "line": 1324,
+      "text": "1x ResolveAllReferences Verse.GenStepDef -> 0.154 ms (total (w/children): 0.172 ms)"
+    },
+    {
+      "line": 1327,
+      "text": "1x ResolveAllReferences RimWorld.RoadDef -> 0.144 ms (total (w/children): 0.157 ms)"
+    },
+    {
+      "line": 1329,
+      "text": "1x ResolveAllReferences RimWorld.TrainableDef -> 0.138 ms (total (w/children): 0.147 ms)"
+    },
+    {
+      "line": 1332,
+      "text": "1x ResolveAllReferences Verse.OrbitalDebrisDef -> 0.131 ms (total (w/children): 0.131 ms)"
+    },
+    {
+      "line": 1334,
+      "text": "1x ResolveAllReferences Verse.WorldGenStepDef -> 0.126 ms (total (w/children): 0.141 ms)"
+    },
+    {
+      "line": 1335,
+      "text": "1x ResolveAllReferences RimWorld.LandmarkDef -> 0.126 ms (total (w/children): 0.126 ms)"
+    },
+    {
+      "line": 1340,
+      "text": "1x ResolveAllReferences RimWorld.ColorDef -> 0.118 ms (total (w/children): 0.163 ms)"
+    },
+    {
+      "line": 1341,
+      "text": "1x ResolveAllReferences RimWorld.SitePartDef -> 0.118 ms (total (w/children): 0.129 ms)"
+    },
+    {
+      "line": 1344,
+      "text": "1x ResolveAllReferences Verse.BuildableDef -> 0.115 ms (total (w/children): 0.115 ms)"
+    },
+    {
+      "line": 1345,
+      "text": "1x ResolveAllReferences RimWorld.StatDef -> 0.111 ms (total (w/children): 0.170 ms)"
+    },
+    {
+      "line": 1347,
+      "text": "1x ResolveAllReferences RimWorld.TransferableSorterDef -> 0.108 ms (total (w/children): 0.119 ms)"
+    },
+    {
+      "line": 1349,
+      "text": "1x ResolveAllReferences RimWorld.WorkGiverDef -> 0.107 ms (total (w/children): 0.152 ms)"
+    },
+    {
+      "line": 1350,
+      "text": "1x ResolveAllReferences RimWorld.PsychicRitualDef_SkipAbductionPlayer -> 0.106 ms (total (w/children): 0.106 ms)"
+    },
+    {
+      "line": 1355,
+      "text": "1x ResolveAllReferences RimWorld.XenotypeIconDef -> 0.097 ms (total (w/children): 0.097 ms)"
+    },
+    {
+      "line": 1356,
+      "text": "1x ResolveAllReferences RimWorld.InfectionPathwayDef -> 0.097 ms (total (w/children): 0.106 ms)"
+    },
+    {
+      "line": 1357,
+      "text": "1x ResolveAllReferences Verse.HediffDef -> 0.092 ms (total (w/children): 0.411 ms)"
+    },
+    {
+      "line": 1358,
+      "text": "1x ResolveAllReferences RimWorld.RecordDef -> 0.092 ms (total (w/children): 0.124 ms)"
+    },
+    {
+      "line": 1359,
+      "text": "1x ResolveAllReferences RimWorld.RitualPatternDef -> 0.090 ms (total (w/children): 0.090 ms)"
+    },
+    {
+      "line": 1360,
+      "text": "1x ResolveAllReferences RimWorld.ConceptDef -> 0.089 ms (total (w/children): 0.119 ms)"
+    },
+    {
+      "line": 1361,
+      "text": "1x ResolveAllReferences RimWorld.HairDef -> 0.089 ms (total (w/children): 0.118 ms)"
+    },
+    {
+      "line": 1362,
+      "text": "1x ResolveAllReferences RimWorld.QuestScriptDef -> 0.088 ms (total (w/children): 0.107 ms)"
+    },
+    {
+      "line": 1363,
+      "text": "1x ResolveAllReferences Verse.GraphicStateDef -> 0.086 ms (total (w/children): 0.125 ms)"
+    },
+    {
+      "line": 1365,
+      "text": "1x ResolveAllReferences RimWorld.HistoryEventDef -> 0.083 ms (total (w/children): 0.116 ms)"
+    },
+    {
+      "line": 1366,
+      "text": "1x ResolveAllReferences RimWorld.TaleDef -> 0.080 ms (total (w/children): 0.112 ms)"
+    },
+    {
+      "line": 1367,
+      "text": "1x ResolveAllReferences RimWorld.GeneratedLocationDef -> 0.080 ms (total (w/children): 0.080 ms)"
+    },
+    {
+      "line": 1368,
+      "text": "1x ResolveAllReferences Verse.DrawStyleCategoryDef -> 0.080 ms (total (w/children): 0.094 ms)"
+    },
+    {
+      "line": 1369,
+      "text": "1x ResolveAllReferences Verse.AI.DutyDef -> 0.077 ms (total (w/children): 0.109 ms)"
+    },
+    {
+      "line": 1370,
+      "text": "1x ResolveAllReferences RimWorld.SketchResolverDef -> 0.077 ms (total (w/children): 0.094 ms)"
+    },
+    {
+      "line": 1371,
+      "text": "1x ResolveAllReferences RimWorld.SkillDef -> 0.076 ms (total (w/children): 0.233 ms)"
+    },
+    {
+      "line": 1372,
+      "text": "1x ResolveAllReferences Verse.FleckDef -> 0.076 ms (total (w/children): 0.106 ms)"
+    },
+    {
+      "line": 1373,
+      "text": "1x ResolveAllReferences Verse.StyleCategoryDef -> 0.075 ms (total (w/children): 0.075 ms)"
+    },
+    {
+      "line": 1374,
+      "text": "1x ResolveAllReferences RimWorld.IncidentDef -> 0.075 ms (total (w/children): 0.105 ms)"
+    },
+    {
+      "line": 1375,
+      "text": "1x ResolveAllReferences RimWorld.PsychicRitualDef_Chronophagy -> 0.072 ms (total (w/children): 0.072 ms)"
+    },
+    {
+      "line": 1376,
+      "text": "1x ResolveAllReferences RimWorld.PlanetLayerDef -> 0.071 ms (total (w/children): 0.082 ms)"
+    },
+    {
+      "line": 1377,
+      "text": "1x ResolveAllReferences Verse.TerrainDef -> 0.071 ms (total (w/children): 0.103 ms)"
+    },
+    {
+      "line": 1378,
+      "text": "1x ResolveAllReferences Verse.SpecialThingFilterDef -> 0.071 ms (total (w/children): 0.099 ms)"
+    },
+    {
+      "line": 1379,
+      "text": "1x ResolveAllReferences AIRobot.X2_ThingDef_AIRobot_Building_RechargeStation -> 0.069 ms (total (w/children): 1.576 ms)"
+    },
+    {
+      "line": 1380,
+      "text": "1x ResolveAllReferences RimWorld.RitualVisualEffectDef -> 0.068 ms (total (w/children): 0.092 ms)"
+    },
+    {
+      "line": 1381,
+      "text": "1x ResolveAllReferences Verse.RulePackDef -> 0.067 ms (total (w/children): 0.094 ms)"
+    },
+    {
+      "line": 1382,
+      "text": "1x ResolveAllReferences RimWorld.PawnGroupKindDef -> 0.066 ms (total (w/children): 0.074 ms)"
+    },
+    {
+      "line": 1383,
+      "text": "1x ResolveAllReferences Verse.ThinkTreeDef -> 0.065 ms (total (w/children): 92.229 ms)"
+    },
+    {
+      "line": 1385,
+      "text": "1x ResolveAllReferences Verse.SubcameraDef -> 0.065 ms (total (w/children): 0.072 ms)"
+    },
+    {
+      "line": 1386,
+      "text": "1x ResolveAllReferences RimWorld.InspirationDef -> 0.064 ms (total (w/children): 0.080 ms)"
+    },
+    {
+      "line": 1387,
+      "text": "1x ResolveAllReferences RimWorld.ShipJobDef -> 0.061 ms (total (w/children): 0.070 ms)"
+    },
+    {
+      "line": 1388,
+      "text": "1x ResolveAllReferences RimWorld.ThingSetMakerDef -> 0.060 ms (total (w/children): 4.483 ms)"
+    },
+    {
+      "line": 1389,
+      "text": "1x ResolveAllReferences AIRobot.X2_ThingDef_AIRobot -> 0.060 ms (total (w/children): 0.686 ms)"
+    },
+    {
+      "line": 1390,
+      "text": "1x ResolveAllReferences RimWorld.StatCategoryDef -> 0.060 ms (total (w/children): 0.076 ms)"
+    },
+    {
+      "line": 1391,
+      "text": "1x ResolveAllReferences Verse.ScatterableDef -> 0.060 ms (total (w/children): 0.067 ms)"
+    },
+    {
+      "line": 1392,
+      "text": "1x ResolveAllReferences RimWorld.BeardDef -> 0.059 ms (total (w/children): 0.104 ms)"
+    },
+    {
+      "line": 1393,
+      "text": "1x ResolveAllReferences Verse.PawnKindDef -> 0.058 ms (total (w/children): 0.380 ms)"
+    },
+    {
+      "line": 1395,
+      "text": "1x ResolveAllReferences RimWorld.RitualTargetFilterDef -> 0.056 ms (total (w/children): 0.056 ms)"
+    },
+    {
+      "line": 1396,
+      "text": "1x ResolveAllReferences RimWorld.RitualOutcomeEffectDef -> 0.053 ms (total (w/children): 0.076 ms)"
+    },
+    {
+      "line": 1397,
+      "text": "1x ResolveAllReferences RimWorld.MapMeshFlagDef -> 0.053 ms (total (w/children): 0.080 ms)"
+    },
+    {
+      "line": 1398,
+      "text": "1x ResolveAllReferences RimWorld.LifeStageDef -> 0.053 ms (total (w/children): 0.233 ms)"
+    },
+    {
+      "line": 1399,
+      "text": "1x ResolveAllReferences RimWorld.PawnRelationDef -> 0.053 ms (total (w/children): 0.071 ms)"
+    },
+    {
+      "line": 1400,
+      "text": "1x ResolveAllReferences RimWorld.TileMutatorDef -> 0.052 ms (total (w/children): 0.569 ms)"
+    },
+    {
+      "line": 1401,
+      "text": "1x ResolveAllReferences RimWorld.BiomeDef -> 0.051 ms (total (w/children): 0.074 ms)"
+    },
+    {
+      "line": 1403,
+      "text": "1x ResolveAllReferences RimWorld.StyleItemCategoryDef -> 0.051 ms (total (w/children): 0.062 ms)"
+    },
+    {
+      "line": 1404,
+      "text": "1x ResolveAllReferences RimWorld.SurgeryOutcomeEffectDef -> 0.051 ms (total (w/children): 0.064 ms)"
+    },
+    {
+      "line": 1405,
+      "text": "1x ResolveAllReferences RimWorld.GeneTemplateDef -> 0.051 ms (total (w/children): 0.051 ms)"
+    },
+    {
+      "line": 1406,
+      "text": "1x ResolveAllReferences RimWorld.IncidentCategoryDef -> 0.051 ms (total (w/children): 0.064 ms)"
+    },
+    {
+      "line": 1407,
+      "text": "1x ResolveAllReferences RimWorld.RoyalTitlePermitDef -> 0.051 ms (total (w/children): 0.051 ms)"
+    },
+    {
+      "line": 1408,
+      "text": "1x ResolveAllReferences RimWorld.HibernatableStateDef -> 0.048 ms (total (w/children): 0.054 ms)"
+    },
+    {
+      "line": 1409,
+      "text": "1x ResolveAllReferences Verse.GeneDef -> 0.047 ms (total (w/children): 0.196 ms)"
+    },
+    {
+      "line": 1410,
+      "text": "1x ResolveAllReferences RimWorld.NeedDef -> 0.047 ms (total (w/children): 0.072 ms)"
+    },
+    {
+      "line": 1411,
+      "text": "1x ResolveAllReferences Verse.PawnRenderTreeDef -> 0.046 ms (total (w/children): 0.420 ms)"
+    },
+    {
+      "line": 1412,
+      "text": "1x ResolveAllReferences Verse.AnimationDef -> 0.046 ms (total (w/children): 0.056 ms)"
+    },
+    {
+      "line": 1413,
+      "text": "1x ResolveAllReferences Verse.WorkTypeDef -> 0.046 ms (total (w/children): 3.283 ms)"
+    },
+    {
+      "line": 1414,
+      "text": "1x ResolveAllReferences RimWorld.ExpansionDef -> 0.046 ms (total (w/children): 0.061 ms)"
+    },
+    {
+      "line": 1415,
+      "text": "1x ResolveAllReferences RimWorld.IssueDef -> 0.046 ms (total (w/children): 0.057 ms)"
+    },
+    {
+      "line": 1416,
+      "text": "1x ResolveAllReferences RimWorld.PsychicRitualDef_InvocationCircle -> 0.046 ms (total (w/children): 0.046 ms)"
+    },
+    {
+      "line": 1417,
+      "text": "1x ResolveAllReferences RimWorld.FactionDef -> 0.045 ms (total (w/children): 0.180 ms)"
+    },
+    {
+      "line": 1418,
+      "text": "1x ResolveAllReferences RimWorld.PsychicRitualDef_BloodRain -> 0.045 ms (total (w/children): 0.045 ms)"
+    },
+    {
+      "line": 1419,
+      "text": "1x ResolveAllReferences RimWorld.FeatureDef -> 0.045 ms (total (w/children): 0.057 ms)"
+    },
+    {
+      "line": 1420,
+      "text": "1x ResolveAllReferences Verse.SongDef -> 0.044 ms (total (w/children): 0.123 ms)"
+    },
+    {
+      "line": 1421,
+      "text": "1x ResolveAllReferences RimWorld.StyleItemDef -> 0.044 ms (total (w/children): 0.044 ms)"
+    },
+    {
+      "line": 1422,
+      "text": "1x ResolveAllReferences Verse.ToolCapacityDef -> 0.043 ms (total (w/children): 0.051 ms)"
+    },
+    {
+      "line": 1423,
+      "text": "1x ResolveAllReferences RimWorld.MainButtonDef -> 0.043 ms (total (w/children): 0.055 ms)"
+    },
+    {
+      "line": 1424,
+      "text": "1x ResolveAllReferences RimWorld.PsychicRitualDef -> 0.043 ms (total (w/children): 0.043 ms)"
+    },
+    {
+      "line": 1425,
+      "text": "1x ResolveAllReferences Verse.ResearchProjectDef -> 0.042 ms (total (w/children): 0.112 ms)"
+    },
+    {
+      "line": 1426,
+      "text": "1x ResolveAllReferences RimWorld.PreceptDef -> 0.042 ms (total (w/children): 0.053 ms)"
+    },
+    {
+      "line": 1427,
+      "text": "1x ResolveAllReferences Verse.BodyPartDef -> 0.042 ms (total (w/children): 0.059 ms)"
+    },
+    {
+      "line": 1428,
+      "text": "1x ResolveAllReferences RimWorld.ChemicalDef -> 0.040 ms (total (w/children): 0.050 ms)"
+    },
+    {
+      "line": 1429,
+      "text": "1x ResolveAllReferences RimWorld.MeditationFocusDef -> 0.040 ms (total (w/children): 0.049 ms)"
+    },
+    {
+      "line": 1430,
+      "text": "1x ResolveAllReferences RimWorld.KnowledgeCategoryDef -> 0.040 ms (total (w/children): 0.040 ms)"
+    },
+    {
+      "line": 1431,
+      "text": "1x ResolveAllReferences RimWorld.WorldObjectDef -> 0.040 ms (total (w/children): 0.381 ms)"
+    },
+    {
+      "line": 1432,
+      "text": "1x ResolveAllReferences RimWorld.TattooDef -> 0.040 ms (total (w/children): 0.056 ms)"
+    },
+    {
+      "line": 1433,
+      "text": "1x ResolveAllReferences RimWorld.ScenarioDef -> 0.040 ms (total (w/children): 0.050 ms)"
+    },
+    {
+      "line": 1434,
+      "text": "1x ResolveAllReferences Verse.DamageDef -> 0.040 ms (total (w/children): 0.053 ms)"
+    },
+    {
+      "line": 1435,
+      "text": "1x ResolveAllReferences RimWorld.RaidStrategyDef -> 0.039 ms (total (w/children): 0.050 ms)"
+    },
+    {
+      "line": 1436,
+      "text": "1x ThingDef resolver -> 0.039 ms (total (w/children): 20.088 ms)"
+    },
+    {
+      "line": 1437,
+      "text": "1x ResolveAllReferences RimWorld.BillRepeatModeDef -> 0.039 ms (total (w/children): 0.050 ms)"
+    },
+    {
+      "line": 1438,
+      "text": "1x ResolveAllReferences RimWorld.PawnTableDef -> 0.039 ms (total (w/children): 0.047 ms)"
+    },
+    {
+      "line": 1439,
+      "text": "1x ResolveAllReferences RimWorld.PrefabDef -> 0.039 ms (total (w/children): 0.055 ms)"
+    },
+    {
+      "line": 1440,
+      "text": "1x ResolveAllReferences RimWorld.JoyGiverDef -> 0.038 ms (total (w/children): 0.050 ms)"
+    },
+    {
+      "line": 1441,
+      "text": "1x ResolveAllReferences RimWorld.TraderKindDef -> 0.038 ms (total (w/children): 0.447 ms)"
+    },
+    {
+      "line": 1442,
+      "text": "1x ResolveAllReferences WeaponClassDef -> 0.038 ms (total (w/children): 0.043 ms)"
+    },
+    {
+      "line": 1443,
+      "text": "1x ResolveAllReferences RimWorld.InteractionDef -> 0.038 ms (total (w/children): 0.153 ms)"
+    },
+    {
+      "line": 1444,
+      "text": "1x ResolveAllReferences RimWorld.PrisonerInteractionModeDef -> 0.038 ms (total (w/children): 0.045 ms)"
+    },
+    {
+      "line": 1445,
+      "text": "1x ResolveAllReferences RimWorld.StuffCategoryDef -> 0.038 ms (total (w/children): 0.045 ms)"
+    },
+    {
+      "line": 1446,
+      "text": "1x ResolveAllReferences RimWorld.RiverDef -> 0.037 ms (total (w/children): 0.045 ms)"
+    },
+    {
+      "line": 1447,
+      "text": "1x ResolveAllReferences RimWorld.PsychicRitualDef_SummonAnimals -> 0.037 ms (total (w/children): 0.037 ms)"
+    },
+    {
+      "line": 1448,
+      "text": "1x ResolveAllReferences RimWorld.BodyTypeDef -> 0.037 ms (total (w/children): 0.044 ms)"
+    },
+    {
+      "line": 1449,
+      "text": "1x ResolveAllReferences RimWorld.PsychicRitualDef_SummonFleshbeastsPlayer -> 0.036 ms (total (w/children): 0.036 ms)"
+    },
+    {
+      "line": 1450,
+      "text": "1x ResolveAllReferences Verse.DesignatorDropdownGroupDef -> 0.036 ms (total (w/children): 0.043 ms)"
+    },
+    {
+      "line": 1451,
+      "text": "1x ResolveAllReferences Verse.OptionCategoryDef -> 0.036 ms (total (w/children): 0.044 ms)"
+    },
+    {
+      "line": 1452,
+      "text": "1x ResolveAllReferences RimWorld.RoadWorldLayerDef -> 0.036 ms (total (w/children): 0.043 ms)"
+    },
+    {
+      "line": 1453,
+      "text": "1x ResolveAllReferences Verse.Sound.ImpactSoundTypeDef -> 0.035 ms (total (w/children): 0.043 ms)"
+    },
+    {
+      "line": 1454,
+      "text": "1x ResolveAllReferences RimWorld.WorkGiverEquivalenceGroupDef -> 0.035 ms (total (w/children): 0.041 ms)"
+    },
+    {
+      "line": 1455,
+      "text": "1x ResolveAllReferences RimWorld.MutantDef -> 0.035 ms (total (w/children): 0.035 ms)"
+    },
+    {
+      "line": 1456,
+      "text": "1x ResolveAllReferences Verse.PawnRenderNodeTagDef -> 0.035 ms (total (w/children): 0.041 ms)"
+    },
+    {
+      "line": 1457,
+      "text": "1x ResolveAllReferences RimWorld.DifficultyDef -> 0.035 ms (total (w/children): 0.070 ms)"
+    },
+    {
+      "line": 1458,
+      "text": "1x ResolveAllReferences RimWorld.HistoryAutoRecorderDef -> 0.035 ms (total (w/children): 0.042 ms)"
+    },
+    {
+      "line": 1459,
+      "text": "1x ResolveAllReferences Verse.ApparelLayerDef -> 0.034 ms (total (w/children): 0.042 ms)"
+    },
+    {
+      "line": 1460,
+      "text": "1x ResolveAllReferences RimWorld.PsychicRitualDef_SummonPitGate -> 0.034 ms (total (w/children): 0.034 ms)"
+    },
+    {
+      "line": 1461,
+      "text": "1x ResolveAllReferences Verse.MentalStateDef -> 0.034 ms (total (w/children): 0.108 ms)"
+    },
+    {
+      "line": 1462,
+      "text": "1x ResolveAllReferences RimWorld.PsychicRitualDef_Psychophagy -> 0.034 ms (total (w/children): 0.034 ms)"
+    },
+    {
+      "line": 1463,
+      "text": "1x ResolveAllReferences RimWorld.GoodwillSituationDef -> 0.034 ms (total (w/children): 0.041 ms)"
+    },
+    {
+      "line": 1464,
+      "text": "1x ResolveAllReferences RimWorld.GatheringDef -> 0.034 ms (total (w/children): 0.060 ms)"
+    },
+    {
+      "line": 1465,
+      "text": "1x ResolveAllReferences RimWorld.TimeAssignmentDef -> 0.034 ms (total (w/children): 0.046 ms)"
+    },
+    {
+      "line": 1466,
+      "text": "1x ResolveAllReferences RimWorld.IncidentTargetTagDef -> 0.034 ms (total (w/children): 0.040 ms)"
+    },
+    {
+      "line": 1467,
+      "text": "1x ResolveAllReferences RimWorld.RenderSkipFlagDef -> 0.034 ms (total (w/children): 0.044 ms)"
+    },
+    {
+      "line": 1468,
+      "text": "1x ResolveAllReferences Verse.DamageArmorCategoryDef -> 0.033 ms (total (w/children): 0.040 ms)"
+    },
+    {
+      "line": 1469,
+      "text": "1x ResolveAllReferences Verse.ShaderTypeDef -> 0.033 ms (total (w/children): 0.045 ms)"
+    },
+    {
+      "line": 1470,
+      "text": "1x ResolveAllReferences Verse.IdeoStoryPatternDef -> 0.033 ms (total (w/children): 0.033 ms)"
+    },
+    {
+      "line": 1471,
+      "text": "1x ResolveAllReferences RimWorld.EntityCodexEntryDef -> 0.033 ms (total (w/children): 0.033 ms)"
+    },
+    {
+      "line": 1472,
+      "text": "1x ResolveAllReferences RimWorld.StorytellerDef -> 0.032 ms (total (w/children): 0.376 ms)"
+    },
+    {
+      "line": 1473,
+      "text": "1x ResolveAllReferences RimWorld.MemeDef -> 0.032 ms (total (w/children): 0.032 ms)"
+    },
+    {
+      "line": 1474,
+      "text": "1x ResolveAllReferences Verse.MechWeightClassDef -> 0.032 ms (total (w/children): 0.040 ms)"
+    },
+    {
+      "line": 1475,
+      "text": "1x ResolveAllReferences RimWorld.AnomalyPlaystyleDef -> 0.032 ms (total (w/children): 0.032 ms)"
+    },
+    {
+      "line": 1476,
+      "text": "1x ResolveAllReferences RimWorld.RitualBehaviorDef -> 0.032 ms (total (w/children): 0.032 ms)"
+    },
+    {
+      "line": 1477,
+      "text": "1x ResolveAllReferences RimWorld.JoyKindDef -> 0.032 ms (total (w/children): 0.040 ms)"
+    },
+    {
+      "line": 1478,
+      "text": "1x ResolveAllReferences RimWorld.DebugTabMenuDef -> 0.032 ms (total (w/children): 0.039 ms)"
+    },
+    {
+      "line": 1479,
+      "text": "1x ResolveAllReferences RimWorld.GravshipComponentTypeDef -> 0.031 ms (total (w/children): 0.031 ms)"
+    },
+    {
+      "line": 1480,
+      "text": "1x ResolveAllReferences RimWorld.TerrainTemplateDef -> 0.031 ms (total (w/children): 0.039 ms)"
+    },
+    {
+      "line": 1481,
+      "text": "1x ResolveAllReferences Verse.PawnCapacityDef -> 0.031 ms (total (w/children): 0.037 ms)"
+    },
+    {
+      "line": 1482,
+      "text": "1x ResolveAllReferences RimWorld.RoadPathingDef -> 0.031 ms (total (w/children): 0.038 ms)"
+    },
+    {
+      "line": 1483,
+      "text": "1x ResolveAllReferences Verse.InventoryStockGroupDef -> 0.030 ms (total (w/children): 0.036 ms)"
+    },
+    {
+      "line": 1484,
+      "text": "1x ResolveAllReferences Verse.StuffAppearanceDef -> 0.030 ms (total (w/children): 0.036 ms)"
+    },
+    {
+      "line": 1485,
+      "text": "1x ResolveAllReferences RimWorld.FleshTypeDef -> 0.030 ms (total (w/children): 0.036 ms)"
+    },
+    {
+      "line": 1486,
+      "text": "1x ResolveAllReferences RimWorld.RoomPartDef -> 0.030 ms (total (w/children): 0.030 ms)"
+    },
+    {
+      "line": 1487,
+      "text": "1x ResolveAllReferences RimWorld.GauranlenTreeModeDef -> 0.029 ms (total (w/children): 0.029 ms)"
+    },
+    {
+      "line": 1488,
+      "text": "1x ResolveAllReferences RimWorld.BillStoreModeDef -> 0.029 ms (total (w/children): 0.035 ms)"
+    },
+    {
+      "line": 1489,
+      "text": "1x ResolveAllReferences RimWorld.PsychicRitualDef_Brainwipe -> 0.029 ms (total (w/children): 0.029 ms)"
+    },
+    {
+      "line": 1490,
+      "text": "1x ResolveAllReferences Verse.TrainabilityDef -> 0.029 ms (total (w/children): 0.034 ms)"
+    },
+    {
+      "line": 1491,
+      "text": "1x ResolveAllReferences Verse.GameConditionDef -> 0.029 ms (total (w/children): 0.035 ms)"
+    },
+    {
+      "line": 1492,
+      "text": "1x ResolveAllReferences RimWorld.RoyalTitleDef -> 0.029 ms (total (w/children): 0.029 ms)"
+    },
+    {
+      "line": 1493,
+      "text": "1x ResolveAllReferences Verse.BodyPartTagDef -> 0.029 ms (total (w/children): 0.039 ms)"
+    },
+    {
+      "line": 1494,
+      "text": "1x ResolveAllReferences RimWorld.PsychicRitualDef_ImbueDeathRefusal -> 0.029 ms (total (w/children): 0.029 ms)"
+    },
+    {
+      "line": 1495,
+      "text": "1x ResolveAllReferences RimWorld.IdeoColorDef -> 0.028 ms (total (w/children): 0.028 ms)"
+    },
+    {
+      "line": 1496,
+      "text": "1x ResolveAllReferences Verse.WeatherDef -> 0.028 ms (total (w/children): 0.035 ms)"
+    },
+    {
+      "line": 1497,
+      "text": "1x ResolveAllReferences RimWorld.AbilityGroupDef -> 0.028 ms (total (w/children): 0.028 ms)"
+    },
+    {
+      "line": 1498,
+      "text": "1x ResolveAllReferences RimWorld.EntityCategoryDef -> 0.028 ms (total (w/children): 0.028 ms)"
+    },
+    {
+      "line": 1499,
+      "text": "1x ResolveAllReferences RimWorld.HediffGiverSetDef -> 0.028 ms (total (w/children): 0.033 ms)"
+    },
+    {
+      "line": 1500,
+      "text": "1x ResolveAllReferences Verse.KeyBindingDef -> 0.028 ms (total (w/children): 0.038 ms)"
+    },
+    {
+      "line": 1501,
+      "text": "1x ResolveAllReferences RimWorld.GlobalWorldDrawLayerDef -> 0.028 ms (total (w/children): 0.035 ms)"
+    },
+    {
+      "line": 1502,
+      "text": "1x ResolveAllReferences RimWorld.BossgroupDef -> 0.028 ms (total (w/children): 0.028 ms)"
+    },
+    {
+      "line": 1503,
+      "text": "1x ResolveAllReferences Verse.KeyBindingCategoryDef -> 0.027 ms (total (w/children): 0.032 ms)"
+    },
+    {
+      "line": 1504,
+      "text": "1x ResolveAllReferences RimWorld.SlaveInteractionModeDef -> 0.027 ms (total (w/children): 0.027 ms)"
+    },
+    {
+      "line": 1505,
+      "text": "1x ResolveAllReferences RimWorld.ComplexThreatDef -> 0.027 ms (total (w/children): 0.034 ms)"
+    },
+    {
+      "line": 1506,
+      "text": "1x ResolveAllReferences RimWorld.BabyPlayDef -> 0.027 ms (total (w/children): 0.027 ms)"
+    },
+    {
+      "line": 1507,
+      "text": "1x ResolveAllReferences RimWorld.NegativeFishingOutcomeDef -> 0.027 ms (total (w/children): 0.027 ms)"
+    },
+    {
+      "line": 1508,
+      "text": "1x ResolveAllReferences Verse.CreepJoinerDownsideDef -> 0.027 ms (total (w/children): 0.027 ms)"
+    },
+    {
+      "line": 1509,
+      "text": "1x ResolveAllReferences RimWorld.PsychicRitualDef_Philophagy -> 0.027 ms (total (w/children): 0.027 ms)"
+    },
+    {
+      "line": 1510,
+      "text": "1x ResolveAllReferences RimWorld.MemeGroupDef -> 0.027 ms (total (w/children): 0.027 ms)"
+    },
+    {
+      "line": 1511,
+      "text": "1x ResolveAllReferences Verse.BodyDef -> 0.026 ms (total (w/children): 0.597 ms)"
+    },
+    {
+      "line": 1512,
+      "text": "1x ResolveAllReferences Verse.DesignationCategoryDef -> 0.026 ms (total (w/children): 0.176 ms)"
+    },
+    {
+      "line": 1513,
+      "text": "1x ResolveAllReferences RimWorld.MonolithLevelDef -> 0.026 ms (total (w/children): 0.026 ms)"
+    },
+    {
+      "line": 1514,
+      "text": "1x ResolveAllReferences RimWorld.PsychicRitualRoleDef_DeathRefusalTarget -> 0.026 ms (total (w/children): 0.026 ms)"
+    },
+    {
+      "line": 1515,
+      "text": "1x ResolveAllReferences RimWorld.RoomPart_GestationTankDef -> 0.026 ms (total (w/children): 0.026 ms)"
+    },
+    {
+      "line": 1516,
+      "text": "1x ResolveAllReferences RimWorld.ResearchTabDef -> 0.025 ms (total (w/children): 0.032 ms)"
+    },
+    {
+      "line": 1517,
+      "text": "1x ResolveAllReferences RimWorld.LayoutRoomDef -> 0.025 ms (total (w/children): 0.031 ms)"
+    },
+    {
+      "line": 1518,
+      "text": "1x ResolveAllReferences RimWorld.RaidAgeRestrictionDef -> 0.025 ms (total (w/children): 0.025 ms)"
+    },
+    {
+      "line": 1519,
+      "text": "1x ResolveAllReferences Verse.ThingStyleDef -> 0.025 ms (total (w/children): 0.025 ms)"
+    },
+    {
+      "line": 1520,
+      "text": "1x ResolveAllReferences RimWorld.PsychicRitualDef_SkipAbduction -> 0.025 ms (total (w/children): 0.025 ms)"
+    },
+    {
+      "line": 1521,
+      "text": "1x ResolveAllReferences RimWorld.IdeoFoundationDef -> 0.025 ms (total (w/children): 0.025 ms)"
+    },
+    {
+      "line": 1522,
+      "text": "1x ResolveAllReferences RimWorld.HistoryAutoRecorderGroupDef -> 0.024 ms (total (w/children): 0.057 ms)"
+    },
+    {
+      "line": 1523,
+      "text": "1x ResolveAllReferences RimWorld.MusicSequenceDef -> 0.024 ms (total (w/children): 0.024 ms)"
+    },
+    {
+      "line": 1524,
+      "text": "1x ResolveAllReferences RimWorld.IdeoPresetCategoryDef -> 0.024 ms (total (w/children): 0.024 ms)"
+    },
+    {
+      "line": 1525,
+      "text": "1x ResolveAllReferences Verse.HeadTypeDef -> 0.023 ms (total (w/children): 0.029 ms)"
+    },
+    {
+      "line": 1526,
+      "text": "1x ResolveAllReferences RimWorld.AbilityDef -> 0.023 ms (total (w/children): 0.023 ms)"
+    },
+    {
+      "line": 1527,
+      "text": "1x ResolveAllReferences RimWorld.PsychicRitualDef_PleasurePulse -> 0.023 ms (total (w/children): 0.023 ms)"
+    },
+    {
+      "line": 1528,
+      "text": "1x ResolveAllReferences RimWorld.PitGateIncidentDef -> 0.023 ms (total (w/children): 0.023 ms)"
+    },
+    {
+      "line": 1529,
+      "text": "1x ResolveAllReferences RimWorld.IdeoSymbolPartDef -> 0.023 ms (total (w/children): 0.023 ms)"
+    },
+    {
+      "line": 1530,
+      "text": "1x ResolveAllReferences RimWorld.PsychicRitualDef_SummonShamblers -> 0.023 ms (total (w/children): 0.023 ms)"
+    },
+    {
+      "line": 1531,
+      "text": "1x ResolveAllReferences Verse.MentalBreakDef -> 0.023 ms (total (w/children): 0.029 ms)"
+    },
+    {
+      "line": 1532,
+      "text": "1x ResolveAllReferences RimWorld.BossDef -> 0.023 ms (total (w/children): 0.023 ms)"
+    },
+    {
+      "line": 1533,
+      "text": "1x ResolveAllReferences Verse.GeneCategoryDef -> 0.022 ms (total (w/children): 0.031 ms)"
+    },
+    {
+      "line": 1534,
+      "text": "1x ResolveAllReferences RimWorld.MusicTransitionDef -> 0.022 ms (total (w/children): 0.022 ms)"
+    },
+    {
+      "line": 1535,
+      "text": "1x ResolveAllReferences Verse.ResearchProjectTagDef -> 0.022 ms (total (w/children): 0.027 ms)"
+    },
+    {
+      "line": 1536,
+      "text": "1x ResolveAllReferences RimWorld.PsychicRitualRoleDef -> 0.022 ms (total (w/children): 0.022 ms)"
+    },
+    {
+      "line": 1537,
+      "text": "1x ResolveAllReferences RimWorld.WeaponTraitDef -> 0.022 ms (total (w/children): 0.022 ms)"
+    },
+    {
+      "line": 1538,
+      "text": "1x ResolveAllReferences RimWorld.LearningDesireDef -> 0.021 ms (total (w/children): 0.021 ms)"
+    },
+    {
+      "line": 1539,
+      "text": "1x ResolveAllReferences Verse.MessageTypeDef -> 0.021 ms (total (w/children): 0.025 ms)"
+    },
+    {
+      "line": 1540,
+      "text": "1x ResolveAllReferences Verse.PathGridDef -> 0.021 ms (total (w/children): 0.025 ms)"
+    },
+    {
+      "line": 1541,
+      "text": "1x ResolveAllReferences Verse.RoomStatDef -> 0.021 ms (total (w/children): 0.025 ms)"
+    },
+    {
+      "line": 1542,
+      "text": "1x ResolveAllReferences Verse.LetterDef -> 0.021 ms (total (w/children): 0.087 ms)"
+    },
+    {
+      "line": 1543,
+      "text": "1x ResolveAllReferences RimWorld.PsychicRitualDef_VoidProvocation -> 0.021 ms (total (w/children): 0.021 ms)"
+    },
+    {
+      "line": 1544,
+      "text": "1x ResolveAllReferences RimWorld.IdeoPresetDef -> 0.021 ms (total (w/children): 0.021 ms)"
+    },
+    {
+      "line": 1545,
+      "text": "1x ResolveAllReferences RimWorld.IdeoIconDef -> 0.021 ms (total (w/children): 0.021 ms)"
+    },
+    {
+      "line": 1546,
+      "text": "1x ResolveAllReferences Verse.ReservationLayerDef -> 0.020 ms (total (w/children): 0.023 ms)"
+    },
+    {
+      "line": 1547,
+      "text": "1x ResolveAllReferences Verse.ClamorDef -> 0.020 ms (total (w/children): 0.024 ms)"
+    },
+    {
+      "line": 1548,
+      "text": "1x ResolveAllReferences RimWorld.RoomPart_BarricadeDef -> 0.020 ms (total (w/children): 0.020 ms)"
+    },
+    {
+      "line": 1549,
+      "text": "1x ResolveAllReferences RimWorld.ComplexLayoutDef -> 0.020 ms (total (w/children): 0.020 ms)"
+    },
+    {
+      "line": 1550,
+      "text": "1x ResolveAllReferences Verse.RoofDef -> 0.019 ms (total (w/children): 0.023 ms)"
+    },
+    {
+      "line": 1551,
+      "text": "1x ResolveAllReferences RimWorld.LandingOutcomeDef -> 0.018 ms (total (w/children): 0.018 ms)"
+    },
+    {
+      "line": 1552,
+      "text": "1x ResolveAllReferences Verse.GameSetupStepDef -> 0.018 ms (total (w/children): 0.021 ms)"
+    },
+    {
+      "line": 1553,
+      "text": "1x ResolveAllReferences Verse.ImplementOwnerTypeDef -> 0.018 ms (total (w/children): 0.021 ms)"
+    },
+    {
+      "line": 1554,
+      "text": "1x ResolveAllReferences Verse.RoomRoleDef -> 0.018 ms (total (w/children): 0.024 ms)"
+    },
+    {
+      "line": 1555,
+      "text": "1x ResolveAllReferences RimWorld.PsychicRitualDef_NeurosisPulse -> 0.018 ms (total (w/children): 0.018 ms)"
+    },
+    {
+      "line": 1556,
+      "text": "1x ResolveAllReferences Verse.TerrainAffordanceDef -> 0.018 ms (total (w/children): 0.022 ms)"
+    },
+    {
+      "line": 1557,
+      "text": "1x ResolveAllReferences Verse.ManeuverDef -> 0.018 ms (total (w/children): 0.022 ms)"
+    },
+    {
+      "line": 1558,
+      "text": "1x ResolveAllReferences RimWorld.RoomPart_CrateDef -> 0.018 ms (total (w/children): 0.018 ms)"
+    },
+    {
+      "line": 1559,
+      "text": "1x ResolveAllReferences RimWorld.LayoutDef -> 0.017 ms (total (w/children): 0.017 ms)"
+    },
+    {
+      "line": 1560,
+      "text": "1x ResolveAllReferences Verse.LogEntryDef -> 0.015 ms (total (w/children): 0.018 ms)"
+    },
+    {
+      "line": 1561,
+      "text": "1x ResolveAllReferences Verse.PlaceDef -> 0.014 ms (total (w/children): 0.014 ms)"
+    },
+    {
+      "line": 1562,
+      "text": "1x ResolveAllReferences Verse.OrderedTakeGroupDef -> 0.014 ms (total (w/children): 0.017 ms)"
+    },
+    {
+      "line": 1563,
+      "text": "1x ResolveAllReferences Verse.MentalFitDef -> 0.013 ms (total (w/children): 0.013 ms)"
+    },
+    {
+      "line": 1564,
+      "text": "1x ResolveAllReferences Verse.CreepJoinerAggressiveDef -> 0.012 ms (total (w/children): 0.012 ms)"
+    },
+    {
+      "line": 1565,
+      "text": "1x Resolve references. -> 0.012 ms (total (w/children): 206.931 ms)"
+    },
+    {
+      "line": 1566,
+      "text": "1x ResolveAllReferences Verse.MechWorkModeDef -> 0.012 ms (total (w/children): 0.012 ms)"
+    },
+    {
+      "line": 1567,
+      "text": "1x ResolveAllReferences WeaponClassPairDef -> 0.012 ms (total (w/children): 0.012 ms)"
+    },
+    {
+      "line": 1568,
+      "text": "1x ResolveAllReferences Verse.CreepJoinerBaseDef -> 0.012 ms (total (w/children): 0.012 ms)"
+    },
+    {
+      "line": 1569,
+      "text": "1x ResolveAllReferences Verse.CreepJoinerRejectionDef -> 0.011 ms (total (w/children): 0.011 ms)"
+    },
+    {
+      "line": 1570,
+      "text": "1x ResolveAllReferences Verse.CreepJoinerFormKindDef -> 0.011 ms (total (w/children): 0.011 ms)"
+    },
+    {
+      "line": 1571,
+      "text": "1x Resolve cross-references between Defs made by the implied defs. -> 0.011 ms (total (w/children): 3.572 ms)"
+    },
+    {
+      "line": 1572,
+      "text": "1x ResolveAllReferences Verse.CreepJoinerBenefitDef -> 0.010 ms (total (w/children): 0.010 ms)"
+    },
+    {
+      "line": 1574,
+      "text": "1x Resolve cross-references between non-implied Defs. -> 0.007 ms (total (w/children): 34.384 ms)"
+    },
+    {
+      "line": 1585,
+      "text": "Translation data for language English has 4 errors. Generate translation report for more info."
+    },
+    {
+      "line": 1609,
+      "text": "Two power nets on the same cell (112, 119). First transmitters: Battery and Battery."
+    },
+    {
+      "line": 1610,
+      "text": "Tried to spawn robot resources without an active map. Nothing spawned!"
+    },
+    {
+      "line": 1611,
+      "text": "Couldn't destroy corpses."
+    },
+    {
+      "line": 1614,
+      "text": "[HD Runtime Harness] run=7a51d29818a1470e96dbebae40a0376d case=F05-OLD-SAVE terminal=passed; captured-errors=0"
+    },
+    {
+      "line": 1795,
+      "text": "      Failed Allocations. Bucket layout:"
+    },
+    {
+      "line": 1796,
+      "text": "        16B: 5 Subsections = 5120 buckets. Failed count: 13873"
+    },
+    {
+      "line": 1797,
+      "text": "        32B: 34 Subsections = 17408 buckets. Failed count: 31127"
+    },
+    {
+      "line": 1798,
+      "text": "        48B: 62 Subsections = 21162 buckets. Failed count: 30408"
+    },
+    {
+      "line": 1799,
+      "text": "        64B: 46 Subsections = 11776 buckets. Failed count: 12293"
+    },
+    {
+      "line": 1800,
+      "text": "        80B: 87 Subsections = 17817 buckets. Failed count: 2067"
+    },
+    {
+      "line": 1801,
+      "text": "        96B: 8 Subsections = 1365 buckets. Failed count: 65"
+    },
+    {
+      "line": 1802,
+      "text": "        112B: 8 Subsections = 1170 buckets. Failed count: 3188"
+    },
+    {
+      "line": 1803,
+      "text": "        128B: 6 Subsections = 768 buckets. Failed count: 2901"
+    },
+    {
+      "line": 1842,
+      "text": "      Failed Allocations. Bucket layout:"
+    },
+    {
+      "line": 1843,
+      "text": "        16B: 5 Subsections = 5120 buckets. Failed count: 13873"
+    },
+    {
+      "line": 1844,
+      "text": "        32B: 34 Subsections = 17408 buckets. Failed count: 31127"
+    },
+    {
+      "line": 1845,
+      "text": "        48B: 62 Subsections = 21162 buckets. Failed count: 30408"
+    },
+    {
+      "line": 1846,
+      "text": "        64B: 46 Subsections = 11776 buckets. Failed count: 12293"
+    },
+    {
+      "line": 1847,
+      "text": "        80B: 87 Subsections = 17817 buckets. Failed count: 2067"
+    },
+    {
+      "line": 1848,
+      "text": "        96B: 8 Subsections = 1365 buckets. Failed count: 65"
+    },
+    {
+      "line": 1849,
+      "text": "        112B: 8 Subsections = 1170 buckets. Failed count: 3188"
+    },
+    {
+      "line": 1850,
+      "text": "        128B: 6 Subsections = 768 buckets. Failed count: 2901"
+    },
+    {
+      "line": 1869,
+      "text": "      Failed Allocations. Bucket layout:"
+    },
+    {
+      "line": 1870,
+      "text": "        16B: 5 Subsections = 5120 buckets. Failed count: 13873"
+    },
+    {
+      "line": 1871,
+      "text": "        32B: 34 Subsections = 17408 buckets. Failed count: 31127"
+    },
+    {
+      "line": 1872,
+      "text": "        48B: 62 Subsections = 21162 buckets. Failed count: 30408"
+    },
+    {
+      "line": 1873,
+      "text": "        64B: 46 Subsections = 11776 buckets. Failed count: 12293"
+    },
+    {
+      "line": 1874,
+      "text": "        80B: 87 Subsections = 17817 buckets. Failed count: 2067"
+    },
+    {
+      "line": 1875,
+      "text": "        96B: 8 Subsections = 1365 buckets. Failed count: 65"
+    },
+    {
+      "line": 1876,
+      "text": "        112B: 8 Subsections = 1170 buckets. Failed count: 3188"
+    },
+    {
+      "line": 1877,
+      "text": "        128B: 6 Subsections = 768 buckets. Failed count: 2901"
+    },
+    {
+      "line": 1896,
+      "text": "      Failed Allocations. Bucket layout:"
+    },
+    {
+      "line": 1897,
+      "text": "        16B: 5 Subsections = 5120 buckets. Failed count: 13873"
+    },
+    {
+      "line": 1898,
+      "text": "        32B: 34 Subsections = 17408 buckets. Failed count: 31127"
+    },
+    {
+      "line": 1899,
+      "text": "        48B: 62 Subsections = 21162 buckets. Failed count: 30408"
+    },
+    {
+      "line": 1900,
+      "text": "        64B: 46 Subsections = 11776 buckets. Failed count: 12293"
+    },
+    {
+      "line": 1901,
+      "text": "        80B: 87 Subsections = 17817 buckets. Failed count: 2067"
+    },
+    {
+      "line": 1902,
+      "text": "        96B: 8 Subsections = 1365 buckets. Failed count: 65"
+    },
+    {
+      "line": 1903,
+      "text": "        112B: 8 Subsections = 1170 buckets. Failed count: 3188"
+    },
+    {
+      "line": 1904,
+      "text": "        128B: 6 Subsections = 768 buckets. Failed count: 2901"
+    }
+  ],
+  "specificWarnings": [
+    {
+      "line": 1585,
+      "text": "Translation data for language English has 4 errors. Generate translation report for more info."
+    },
+    {
+      "line": 1609,
+      "text": "Two power nets on the same cell (112, 119). First transmitters: Battery and Battery."
+    },
+    {
+      "line": 1610,
+      "text": "Tried to spawn robot resources without an active map. Nothing spawned!"
+    },
+    {
+      "line": 1611,
+      "text": "Couldn't destroy corpses."
+    }
+  ],
+  "native": {
+    "startedUtc": "2026-09-24T08:01:30.9895118Z",
+    "runDirectory": "C:/Users/Arthur/AppData/Local/HaulersDreamQA/runtime-temp/haulersdream-runtime-tests/7a51d29818a1470e96dbebae40a0376d",
+    "processId": 22624,
+    "joined": true,
+    "exitCode": 0,
+    "deadlineExceeded": false,
+    "error": null,
+    "processStartedUtc": "2026-09-24T08:02:02.5401840Z",
+    "executable": "C:\\Users\\Arthur\\AppData\\Local\\HaulersDreamQA\\runtime-temp\\haulersdream-runtime-tests\\7a51d29818a1470e96dbebae40a0376d\\runtime\\RimWorldWin64.exe",
+    "finishedUtc": "2026-09-24T08:03:07.0398528Z"
+  },
+  "desktop": {
+    "desktop": "HaulersDreamTests-acc64a87fe764aa8b1efcf64bfb5ed8b",
+    "command": [
+      "C:/Users/Arthur/.cache/codex-runtimes/codex-primary-runtime/dependencies/native/powershell/pwsh.exe",
+      "-NoProfile",
+      "-File",
+      "C:/Users/Arthur/Sync/Projects/RimWorld Mods/HaulersDream/docs/plans/evidence/f05-f06-lifecycle-20260924/launch.ps1",
+      "-RunDirectory",
+      "C:/Users/Arthur/AppData/Local/HaulersDreamQA/runtime-temp/haulersdream-runtime-tests/7a51d29818a1470e96dbebae40a0376d",
+      "-OutputDirectory",
+      "C:/Users/Arthur/Sync/Projects/RimWorld Mods/HaulersDream/docs/plans/evidence/f05-f06-lifecycle-20260924/native/7a51d29818a1470e96dbebae40a0376d"
+    ],
+    "cwd": "C:\\Users\\Arthur\\Sync\\Projects\\RimWorld Mods\\HaulersDream",
+    "pid": 26636,
+    "exitCode": 0,
+    "startedUtc": "2026-09-24T08:01:28.034027+00:00",
+    "switchedDesktop": false,
+    "inputDesktopSamples": [
+      "Default"
+    ],
+    "privateWindowPids": [
+      22624
+    ],
+    "timedOut": false,
+    "error": null,
+    "cleanupErrors": [],
+    "activeProcessesBeforeClose": 0,
+    "joined": true,
+    "finishedUtc": "2026-09-24T08:03:07.100404+00:00"
+  },
+  "verifyProblems": [
+    "Robot command capture requires independent complete assertions/events, actual native automatic scheduler and command callback, queue handoff, interruption recovery, exact cargo/Keep7, cleanup and whole-log review. Setup refusals are not product failure diagnoses.",
+    "Player.log contains candidates requiring independent review; bootstrap is not automatically verified."
+  ],
+  "protectedChanges": []
+}

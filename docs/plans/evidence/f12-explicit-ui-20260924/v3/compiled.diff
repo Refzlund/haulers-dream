@@ -1,0 +1,35 @@
+--- UIv2/ExplicitHaulUi.compiled
++++ UIv3/ExplicitHaulUi.compiled
+@@ -48,6 +48,32 @@
+ 			float num2 = Text.CalcHeight(text, num - 16f) + 16f;
+ 			Vector2 mousePosition = Event.current.mousePosition;
+ 			Rect rect = new Rect(Mathf.Clamp(mousePosition.x + 24f, 8f, (float)UI.screenWidth - num - 8f), Mathf.Clamp(mousePosition.y + 24f, 8f, Math.Max(8f, (float)UI.screenHeight - num2 - 8f)), num, num2);
++			Find.WindowStack.ImmediateWindow(782196441, rect, WindowLayer.Super, delegate
++			{
++				DrawPromptWindow(rect.AtZero(), text);
++			}, doBackground: false, absorbInputAroundWindow: false, 0f);
++		}
++		finally
++		{
++			Text.Font = font;
++			Text.Anchor = anchor;
++			Text.WordWrap = wordWrap;
++			GUI.color = color;
++		}
++	}
++
++	private static void DrawPromptWindow(Rect rect, string text)
++	{
++		GameFont font = Text.Font;
++		TextAnchor anchor = Text.Anchor;
++		bool wordWrap = Text.WordWrap;
++		Color color = GUI.color;
++		try
++		{
++			Text.Font = GameFont.Small;
++			Text.Anchor = TextAnchor.UpperLeft;
++			Text.WordWrap = true;
++			GUI.color = Color.white;
+ 			GUI.DrawTexture(rect, TexUI.GrayTextBG);
+ 			Widgets.Label(rect.ContractedBy(8f), text);
+ 		}

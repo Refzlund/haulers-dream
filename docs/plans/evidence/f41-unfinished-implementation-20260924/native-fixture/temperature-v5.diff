@@ -1,0 +1,125 @@
+--- v4/OrphanRecipeScene.cs
++++ v5b/OrphanRecipeScene.cs
+@@ -47,6 +47,10 @@
+         private float initialObservedWork;
+         private bool partialCaptured, loadedCaptured, begun, failed, cleaned, pendingSave;
+         private TimeSpeed oldSpeed;
++        private float? originalTileTemperature;
++        private string environmentOriginalMean;
++        private int environmentEndAbs;
++        private float observedAmbientMin = float.MaxValue, observedAmbientMax = float.MinValue;
+         private OrphanRecipeState State => Current.Game.GetComponent<OrphanRecipeState>();
+ 
+         private OrphanRecipeScene(Map map, Action<string, bool, string> check, Action<string, string> emit,
+@@ -135,8 +139,7 @@
+         {
+             Guard(role == "F41-PRODUCER" && GenCommandLine.CommandLineArgPassed("quicktest") && Current.Game.PlayerHasControl, "New native producer required.");
+             ticks.CurTimeSpeed = TimeSpeed.Paused; Configure();
+-            Guard(map.mapTemperature.OutdoorTemp >= 8f && map.mapTemperature.OutdoorTemp <= 30f, "Setup requires temperate native scene; actual outdoor temperature=" + F(map.mapTemperature.OutdoorTemp));
+-            emit("f41-native-environment", "outdoorTemperature=" + F(map.mapTemperature.OutdoorTemp) + "; medical guards remain active.");
++            ControlEnvironment();
+             foreach (var pawn in map.mapPawns.AllPawnsSpawned.ToArray())
+             {
+                 parked.Add(Tuple.Create(pawn, pawn.Position, pawn.Rotation));
+@@ -186,6 +189,51 @@
+             Require("native-three-creators", actors.Distinct().Count() == 3 && TotalCloth() == 60, "Three existing on-stack bills, distinct native creators, exactly60 Cloth.");
+             workingIndex = 0; StartPartial();
+         }
++        private void ControlEnvironment()
++        {
++            Guard(!map.IsPocketMap && map.Tile.Layer is SurfaceLayer && !map.Biome.constantOutdoorTemperature.HasValue
++                && NoTemperatureConditions(), "Ordinary private tile without temperature-offset conditions required.");
++            var temperatures = Find.World.tileTemperatures;
++            temperatures.ClearCaches();
++            float before = map.mapTemperature.OutdoorTemp, minimum = float.MaxValue, maximum = float.MinValue;
++            environmentEndAbs = checked(ticks.TicksAbs + 80000);
++            // All integer ticks across the three bounded processes, rather than selecting a lucky Quicktest world.
++            for (int tick = ticks.TicksAbs; tick <= environmentEndAbs; tick++)
++            {
++                float value = temperatures.OutdoorTemperatureAt(map.Tile, tick);
++                Guard(!float.IsNaN(value) && !float.IsInfinity(value), "Native temperature forecast is not finite.");
++                minimum = Math.Min(minimum, value); maximum = Math.Max(maximum, value);
++            }
++            float offset = 20f - (minimum + maximum) / 2f;
++            // SurfaceLayer serializes temperature to tenths with a 300-degree offset. Select its exact reload value now.
++            int packedMean = Mathf.Clamp(Mathf.RoundToInt((map.TileInfo.temperature + offset + 300f) * 10f), 0, 65535);
++            float selectedMean = packedMean / 10f - 300f; offset = selectedMean - map.TileInfo.temperature;
++            Guard(minimum + offset >= 8.5f && maximum + offset <= 29.5f, "Native forecast range cannot fit the controlled temperature envelope.");
++            originalTileTemperature = map.TileInfo.temperature; environmentOriginalMean = F(originalTileTemperature.Value);
++            map.TileInfo.temperature = selectedMean; temperatures.ClearCaches();
++            ObserveEnvironment();
++            Require("controlled-native-temperature", Math.Abs(map.mapTemperature.OutdoorTemp - (before + offset)) < 0.001f,
++                "Explicit fixture world input: originalTileMean=" + environmentOriginalMean + "; controlledTileMean=" + F(map.TileInfo.temperature)
++                + "; beforeOutdoor=" + F(before) + "; actualOutdoor=" + F(map.mapTemperature.OutdoorTemp)
++                + "; forecastMin=" + F(minimum + offset) + "; forecastMax=" + F(maximum + offset)
++                + "; forecastEndAbs=" + environmentEndAbs + "; samples=80001; nativePackedTileMean=" + packedMean + "; native medical guards remain active.");
++        }
++        private void ObserveEnvironment()
++        {
++            Guard(ticks.TicksAbs <= environmentEndAbs && NoTemperatureConditions(),
++                "Native scene exceeded its temperature forecast or acquired a temperature-offset condition.");
++            float outdoor = map.mapTemperature.OutdoorTemp;
++            Guard(outdoor >= 8f && outdoor <= 30f, "Native outdoor scene left controlled range: " + F(outdoor));
++            observedAmbientMin = Math.Min(observedAmbientMin, outdoor); observedAmbientMax = Math.Max(observedAmbientMax, outdoor);
++            foreach (var actor in actors.Where(p => p != null && p.Spawned))
++            {
++                float ambient = actor.AmbientTemperature;
++                Guard(ambient >= 8f && ambient <= 30f, "Native worker ambient temperature left controlled range: " + actor.ThingID + ":" + F(ambient));
++                observedAmbientMin = Math.Min(observedAmbientMin, ambient); observedAmbientMax = Math.Max(observedAmbientMax, ambient);
++            }
++        }
++        private bool NoTemperatureConditions() => map.gameConditionManager.ActiveConditions
++            .Concat(Find.World.gameConditionManager.ActiveConditions).All(condition => condition.TemperatureOffset() == 0f);
+         private Job NativeRecipeJob(int index)
+         {
+             Job job = giver.JobOnThing(actors[index], benches[index], true);
+@@ -204,6 +252,7 @@
+             Observe(() =>
+             {
+                 var c = current;
++                if (c != null && c.status == "running" && c.begun && c.actors.Contains(__instance)) c.ObserveEnvironment();
+                 if (c == null || c.status != "running" || c.stage != "native-partial" || c.partialCaptured || __instance != c.actors[c.workingIndex]) return;
+                 var item = __instance.CurJob?.targetB.Thing as UnfinishedThing;
+                 var driver = __instance.jobs.curDriver as JobDriver_DoBill;
+@@ -221,6 +270,7 @@
+             Guard(observerFailure == null, "Observer failed: " + observerFailure);
+             Guard(watch.Elapsed.TotalSeconds < 245 && ticks.TicksGame - startTick < 26000, "Finite native fixture deadline.");
+             if (!begun || pendingSave) return;
++            ObserveEnvironment();
+             Guard(actors.All(Fit), "Owned native worker became medically unfit; this is a setup/environment failure, not an orphan-repair result.");
+             if (stage == "native-partial" && partialCaptured)
+             {
+@@ -313,6 +363,8 @@
+         private Dictionary<string, string> BaseRecord()
+         {
+             var data = new Dictionary<string, string> { { "phase", role }, { "tick", ticks.TicksGame.ToString() }, { "map", map.uniqueID.ToString() } };
++            data["originalTileMean"] = environmentOriginalMean; data["controlledTileMean"] = F(map.TileInfo.temperature);
++            data["environmentEndAbs"] = environmentEndAbs.ToString(CultureInfo.InvariantCulture);
+             for (int i = 0; i < 3; i++)
+             {
+                 data["actor" + i] = actors[i].thingIDNumber.ToString(); data["bench" + i] = benches[i].thingIDNumber.ToString();
+@@ -341,6 +393,11 @@
+             Guard(role != "F41-PRODUCER" && !GenCommandLine.CommandLineArgPassed("quicktest"), "Native Autostart load required.");
+             record = File.ReadAllText(Path.Combine(run, "input", "checkpoint.txt")).Split(';').Select(v => v.Trim().Split(new[] { '=' }, 2)).ToDictionary(v => v[0], v => v[1]);
+             Guard(map.uniqueID == Number("map") && ticks.TicksGame == Number("tick"), "LoadedGame must precede the first productive tick.");
++            environmentOriginalMean = record["originalTileMean"]; environmentEndAbs = Number("environmentEndAbs");
++            Require("loaded-native-temperature", Math.Abs(map.TileInfo.temperature - float.Parse(record["controlledTileMean"], CultureInfo.InvariantCulture)) < 0.0001f,
++                "No load-time environment reconstruction: originalTileMean=" + environmentOriginalMean + "; recordedTileMean=" + record["controlledTileMean"]
++                + "; actualTileMean=" + F(map.TileInfo.temperature) + "; actualOutdoor=" + F(map.mapTemperature.OutdoorTemp));
++            ObserveEnvironment();
+             for (int i = 0; i < 3; i++)
+             {
+                 actors[i] = map.mapPawns.AllPawnsSpawned.Single(p => p.thingIDNumber == Number("actor" + i));
+@@ -455,6 +512,12 @@
+         private void Cleanup()
+         {
+             cleaned = true;
++            if (observedAmbientMin != float.MaxValue) emit("f41-native-environment", "Observed native ambient range=" + F(observedAmbientMin) + ".." + F(observedAmbientMax) + "; environmentEndAbs=" + environmentEndAbs);
++            if (originalTileTemperature.HasValue)
++            {
++                map.TileInfo.temperature = originalTileTemperature.Value; Find.World.tileTemperatures.ClearCaches();
++                emit("f41-native-environment-restored", "Private producer tile mean restored to=" + F(map.TileInfo.temperature) + "; retained checkpoint intentionally keeps the controlled value.");
++            }
+             foreach (var pair in settingsBefore) typeof(HaulersDreamSettings).GetField(pair.Key).SetValue(HaulersDreamMod.Settings, pair.Value);
+             foreach (var entry in parked) if (!entry.Item1.Spawned && !entry.Item1.Destroyed) { Find.WorldPawns.RemovePawn(entry.Item1); GenSpawn.Spawn(entry.Item1, entry.Item2, map, entry.Item3); }
+             if (ticks != null) ticks.CurTimeSpeed = oldSpeed;

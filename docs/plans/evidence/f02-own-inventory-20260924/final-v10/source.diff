@@ -1,0 +1,95 @@
+--- v9/src/OwnInventoryScene.cs
++++ v10/src/OwnInventoryScene.cs
+@@ -51,7 +51,7 @@
+         private int warmupTick, lastWarmupObservation = -1;
+         private double warmupWall;
+         private OwnInventoryObservers observers;
+-        private Bg03Accounting accounting;
++        private Bg03Accounting accounting, outputAccounting;
+         private Spec spec;
+         private Building_WorkTable stove;
+         private Bill_Production bill;
+@@ -69,6 +69,7 @@
+         internal bool Active => active && status == "running";
+         internal string Phase => spec?.name ?? "setup";
+         internal bool Relevant(Thing thing) => thing != null && cargo.Contains(thing);
++        internal bool TraceThing(Thing thing) => Relevant(thing) || (thing != null && products.Contains(thing));
+         internal bool RecipeOwned => Cook?.CurJob?.bill == bill && (Cook.CurJobDef == JobDefOf.DoBill || Cook.CurJobDef == HaulersDreamDefOf.HaulersDream_BatchCraft);
+ 
+         internal OwnInventoryScene(Map map, string role, string expectation, Action<string, bool, string> check, Action<string, string> emit)
+@@ -209,6 +210,7 @@
+             phase++;
+             spec=specs[phase];phaseTick=Find.TickManager.TicksGame;stableStart=-1;stableObserved=0;lastStableTick=-1;productCalls=0;tickChecks=0;nativeStartsWithFullStock=0;
+             accounting=new Bg03Accounting(message=>Fault(new InvalidOperationException(message)));
++            outputAccounting=new Bg03Accounting(message=>Fault(new InvalidOperationException("Product ancestry: "+message)));
+             Set(HaulersDreamMod.Settings.GetType(),HaulersDreamMod.Settings,"shareForCrafting",spec.sharing);
+             if(spec.batch)Set(HaulersDreamMod.Settings.GetType(),HaulersDreamMod.Settings,"allowBatchUnderCommonSense",true);
+             if(Cook.needs.food!=null)Cook.needs.food.CurLevelPercentage=1;if(Cook.needs.rest!=null)Cook.needs.rest.CurLevelPercentage=1;if(Cook.needs.joy!=null)Cook.needs.joy.CurLevelPercentage=1;
+@@ -316,6 +318,10 @@
+             if(!Active)return;var state=Snapshot(reason);Guard(accounting.ValidateSettled(state),"Physical unit conservation failed.");
+             var held=accounting.Held(state);accounting.Transfer(lastHeld,held,out var fresh,out var repeats,out var left);lastHeld=held;
+             if(publish||fresh.Length!=0||repeats.Length!=0)emit("f02-physical-receipt",F02Json.Stringify(new{phase=Phase,reason,fresh,repeats,left,state}));
++            var output=new Bg03State{tick=Find.TickManager.TicksGame,reason=reason,things=products.Where(t=>!t.Destroyed).OrderBy(t=>t.thingIDNumber).Select(ThingState).ToList()};
++            Guard(outputAccounting.ValidateSettled(output),"Product unit conservation failed.");
++            if(reason=="native-pawn-tick"||reason=="final")Guard(products.Where(t=>!t.Destroyed).All(PhysicallyOwned),"Product is not in actual map/inventory/hands custody.");
++            if(publish)emit("f02-product-custody",F02Json.Stringify(new{phase=Phase,reason,productCalls,total=ProductCount(),state=output}));
+         }
+         internal Bg03ThingState ThingState(Thing t) => t==null?null:new Bg03ThingState{id=t.thingIDNumber,def=t.def.defName,count=t.stackCount,destroyed=t.Destroyed,spawned=t.Spawned,
+             custody=t.Destroyed?"destroyed":ReferenceEquals(t.ParentHolder,Cook.inventory)?"inventory":ReferenceEquals(t.ParentHolder,Cook.carryTracker)?"hands":t.Spawned?"floor":"detached",
+@@ -363,12 +369,24 @@
+         {emit("f02-job-end",F02Json.Stringify(new{phase=Phase,job=JobState(job),condition=condition.ToString()}));}
+         internal void Split(Bg03ThingState before,Thing source,Thing result,int requested,Exception exception)
+         {
+-            Guard(exception==null,"Native split threw: "+exception);Guard(result!=null,"Native tracked split returned null.");cargo.Add(result);
++            Guard(exception==null,"Native split threw: "+exception);Guard(result!=null,"Native tracked split returned null.");
++            if(products.Contains(source))
++            {
++                Guard(!cargo.Contains(source)&&!cargo.Contains(result),"Product split crossed ingredient ancestry.");products.Add(result);
++                var moved=outputAccounting.Split(before,source,result);emit("f02-product-split",F02Json.Stringify(new{phase=Phase,before,requested,source=ThingState(source),result=ThingState(result),units=moved}));return;
++            }
++            cargo.Add(result);
+             var units=accounting.Split(before,source,result);emit("f02-split",F02Json.Stringify(new{phase=Phase,before,requested,source=ThingState(source),result=ThingState(result),units}));
+         }
+         internal void Merge(Bg03ThingState targetBefore,Bg03ThingState sourceBefore,Thing target,Thing source,Exception exception)
+         {
+-            Guard(exception==null,"Native merge threw: "+exception);Guard(cargo.Contains(target)&&cargo.Contains(source),"Tracked ingredients merged with untracked scene stock.");
++            Guard(exception==null,"Native merge threw: "+exception);
++            if(products.Contains(target)||products.Contains(source))
++            {
++                Guard(products.Contains(target)&&products.Contains(source)&&!cargo.Contains(target)&&!cargo.Contains(source),"Tracked products merged with untracked scene stock.");
++                var moved=outputAccounting.Merge(targetBefore,sourceBefore,target,source);emit("f02-product-merge",F02Json.Stringify(new{phase=Phase,targetBefore,sourceBefore,target=ThingState(target),source=ThingState(source),units=moved}));return;
++            }
++            Guard(cargo.Contains(target)&&cargo.Contains(source),"Tracked ingredients merged with untracked scene stock.");
+             var units=accounting.Merge(targetBefore,sourceBefore,target,source);emit("f02-merge",F02Json.Stringify(new{phase=Phase,targetBefore,sourceBefore,target=ThingState(target),source=ThingState(source),units}));
+         }
+         internal Bg03ThingState BeforeConsumption(Thing ingredient,RecipeDef actualRecipe,Map actualMap)
+@@ -378,7 +396,8 @@
+         internal void Product(Thing result,RecipeDef actualRecipe,Pawn worker)
+         {
+             if(worker!=Cook)return;Guard(actualRecipe==recipe&&RecipeOwned&&result!=null&&result.def==meal&&result.stackCount==4,"Actual native product shape/job differs.");
+-            products.Add(result);productCalls++;emit("f02-product",F02Json.Stringify(new{phase=Phase,job=Cook.CurJob.loadID,id=result.ThingID,count=result.stackCount,sequence=productCalls}));
++            Guard(!cargo.Contains(result)&&products.Add(result),"Duplicate or ingredient identity used as product.");outputAccounting.Seed(result,false);
++            productCalls++;emit("f02-product",F02Json.Stringify(new{phase=Phase,job=Cook.CurJob.loadID,id=result.ThingID,count=result.stackCount,sequence=productCalls,origin=outputAccounting.Origins.Last()}));
+         }
+         internal void FilthRemoved(Filth dirt,int before)
+         {if(!filth.Contains(dirt))return;Guard(before==1&&dirt.Destroyed&&Cook.CurJob?.bill==bill&&Cook.CurJobDef==JobDefOf.DoBill,"Seeded cleaning not within actual ordinary recipe job.");cleanedFilth.Add(dirt.thingIDNumber);emit("f02-cleaning","phase="+Phase+"; filth="+dirt.ThingID+"; job="+Cook.CurJob.loadID);}
+--- v9/src/OwnInventoryObservers.cs
++++ v10/src/OwnInventoryObservers.cs
+@@ -105,7 +105,7 @@
+         private sealed class SplitFrame {internal bool tracked,outer;internal Thing source,result;internal int requested;internal Bg03ThingState before;}
+         private static void SplitBefore(Thing __instance,int count,out SplitFrame __state)
+         {
+-            var frame=new SplitFrame();Safe(o=>{if(!o.scene.Relevant(__instance))return;frame.tracked=true;frame.outer=o.splitDepth++==0;
++            var frame=new SplitFrame();Safe(o=>{if(!o.scene.TraceThing(__instance))return;frame.tracked=true;frame.outer=o.splitDepth++==0;
+                 frame.source=__instance;frame.requested=count;frame.before=o.scene.ThingState(__instance);});__state=frame;
+         }
+         private static void SplitAfter(Thing __result,SplitFrame __state){if(__state!=null)__state.result=__result;}
+@@ -115,7 +115,7 @@
+         private static void MergeBefore(Thing __instance,Thing other,out MergeFrame __state)
+         {
+             var frame=new MergeFrame();Safe(o=>{
+-                if(!o.scene.Relevant(__instance)&&!o.scene.Relevant(other))return;
++                if(!o.scene.TraceThing(__instance)&&!o.scene.TraceThing(other))return;
+                 frame.tracked=true;frame.outer=o.mergeDepth++==0;frame.target=__instance;frame.source=other;
+                 frame.targetBefore=o.scene.ThingState(__instance);frame.sourceBefore=o.scene.ThingState(other);
+                 if(frame.outer&&(ReferenceEquals(__instance.ParentHolder,o.scene.Cook.inventory)||ReferenceEquals(other?.ParentHolder,o.scene.Cook.inventory)

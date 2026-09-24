@@ -1,0 +1,23 @@
+# F11 original-checkpoint consumer fixture correction
+
+The original v13 producer `13680dad781a4d09811ef322de7ce350` passed 63 assertions and wrote the genuine post-UI checkpoint. The failed v14 consumer `e02d568a93064194829b6412adcbaf65` has one failed assertion, `f11/setup/failure`, from `Custody(load)` before raw physical state was read. Its LoadedGame event is at saved tick 184; later map initialization is at 185. The actual native process 29424 joined with exit 0, and Verify records no protected changes. This failure is not evidence of lost saved cargo or a product regression.
+
+## Native loading context
+
+Retained installed source `Verse.Root_Play.cs.txt` queues `SavedGameLoaderNow.LoadGameFromSaveFileNow` with `doAsynchronously: true`. `LongEventHandler.native.cs:364` starts an actual worker Thread and runs that queued action. `Verse.Game.cs.txt:638` schedules PauseOnLoad's `DoSingleTick` through `ExecuteWhenFinished`, then calls `GameComponentUtility.LoadedGame` at line 646 before the queued tick runs. These files bind to the installed Assembly-CSharp SHA `5CF1B5BE399D5B1C9C56CA72C9D35B4ECF307FEACF5859D04AC5A1AA5926356A`, MVID `61e41735-6189-4da4-9d21-0260257b5097`.
+
+The original fixture unconditionally required `UnityData.IsInMainThread` inside that load callback. Its later continuation also demanded saved tick 184, even though native PauseOnLoad legitimately produces tick 185 before normal main-thread updates. V15 permits the real load callback for custody/raw read, preserves every private run/map/home/role/no-quicktest check, records the actual managed thread and context, and no longer writes time speed during that read. `ReadLoaded` still requires **exact saved tick**, original IDs, inventory counts, tags, Keep, lastYieldTick, drafted/current/queued jobs and saved environment. Nothing is reconstructed.
+
+Continuation requires main thread, native paused state and **exactly saved tick +1**. Before undrafting it repeats the exact cargo, original identities, tag/Keep, preference and current/queued job checks. This follows the already accepted F12 raw-load/one-native-tick pattern without accepting arbitrary drift or resetting counters/ticks.
+
+## Exact retained-Keep unload terminal
+
+The selected unchanged product's `JobDriver_UnloadHauledInventory.cs` is copied and hashed under `native-source`. `PullItemFromInventory` transfers only the computed surplus (8−3=5), so the original inventory stack survives at 3 while the split is delivered. `FirstUnloadableThing` skips a stack whose surplus is zero **without removing its tag** (lines 681–689). `FindTargetOrDrop` then sees no candidate, a nonempty carried/tag set and no skipped transfer, and ends **Incompletable** (lines 338–351). The initial Succeeded-only fixture condition therefore contradicted this normal selected-driver path; the same terminal has appeared in accepted F25/F38 Keep-stock evidence.
+
+V15 does not accept arbitrary failure as delivery. It requires the actual selected unload driver and original active job identity, exactly one unload start, exactly one end, native `Incompletable`, `skippedThisJob.Count==0`, original source held at 3 and still the sole original tag, actual destination total 5, original forbidden dropped stack 7, original personal Wood sentinel 5, unchanged Keep 3, empty hands and the other pawn's empty holders. Stability retains the existing 180 ticks and at least 20 observed frames, rejects a second unload, requires no active/queued unload and release of that exact job's reservations. All 15 Steel must remain accounted throughout. There is no catch-all permitted end-condition list and no product change.
+
+## Scope and retained failures
+
+Only two consumer scene sources and a separate v14-derived controller change. Original v13/v14 sources, successful producer, failed consumer, product and save remain unchanged. The v15 controller binds only that exact producer run, six original file hashes, old v13 host hash/MVID and unchanged HD/Core. The new host has its own exact identity; this is not a general hash-drift exception. No producer rerun, new UI mechanism, optional-provider expansion or native launch is included.
+
+The first build attempt stopped before compilation because a copied recipe expected an optional NuGet.Config absent from the original fixture. Its separate build tree and recipe remain; v15b makes those config copies conditional and compiles successfully. A first reflection reader rejected a forward-slash input before metadata load because its contract requires canonical Windows paths; that joined exit-1 receipt remains. The canonical-path retry passed in a fresh reflection-only process. Neither event ran the game or changed a protected file.

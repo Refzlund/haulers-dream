@@ -1,0 +1,27 @@
+--- v6b/SweepHandoff.cs
++++ v7/SweepHandoff.cs
+@@ -252,7 +252,7 @@
+             }
+         }
+         private void Observe()
+-        {observer=new Harmony("haulersdream.tests.f38."+Path.GetFileName(run));Patch(typeof(Root),"OnGUI",nameof(OnGui),false);Patch(typeof(Pawn),"Tick",nameof(PawnTick),false);Patch(typeof(Pawn_JobTracker),"StartJob",nameof(Started),false);Patch(typeof(Pawn_JobTracker),"CleanupCurrentJob",nameof(Ending),true);}
++        {observer=new Harmony("haulersdream.tests.f38."+Path.GetFileName(run));Patch(typeof(Root),"OnGUI",nameof(OnGui),false);Patch(typeof(Pawn),"Tick",nameof(PawnTick),false);Patch(typeof(JobDriver),"Notify_Starting",nameof(Started),true);Patch(typeof(Pawn_JobTracker),"CleanupCurrentJob",nameof(Ending),true);}
+         private static void OnGui(){Watch(c=>{if(c.gui==null||Event.current?.type!=EventType.Repaint)return;var action=c.gui;c.gui=null;Guard(c.ticks.CurTimeSpeed==TimeSpeed.Paused,"GUI action must occur at paused native boundary.");action();});}
+         private static void PawnTick(Pawn __instance){Watch(c=>{
+             if(!c.actors.Contains(__instance))return;c.PhysicalCheck();
+@@ -268,7 +268,14 @@
+                 c.stage="handoff";c.Gui(c.Handoff);
+             }
+         });}
+-        private static void Started(Pawn_JobTracker __instance,Job newJob,bool fromQueue){Watch(c=>{var p=c.actors.FirstOrDefault(x=>x.jobs==__instance);if(p==null)return;c.started.Add(newJob.loadID);c.emit("f38-native-start","tick="+c.ticks.TicksGame+"; pawn="+p.ThingID+"; fromQueue="+fromQueue+"; "+JobState(newJob));});}
++        private static void Started(JobDriver __instance){Watch(c=>{
++            var p=__instance.pawn;if(!c.actors.Contains(p))return;
++            Guard(p.jobs.curDriver==__instance&&p.CurJob==__instance.job&&__instance.job?.def!=null,"Native driver start must have its admitted current job.");
++            // StartJob can execute and pool an instant job before its postfix. Capture values here,
++            // after native reservations/admission, before SetupToils/ReadyForNextToil can consume it.
++            int id=__instance.job.loadID;string state=JobState(__instance.job);string driver=__instance.GetType().FullName;
++            c.started.Add(id);c.emit("f38-native-start","tick="+c.ticks.TicksGame+"; pawn="+p.ThingID+"; boundary=Notify_Starting-prefix; driver="+driver+"; "+state);
++        });}
+         private static void Ending(Pawn_JobTracker __instance,JobCondition __0){Watch(c=>{var p=c.actors.FirstOrDefault(x=>x.jobs==__instance);if(p?.CurJob==null)return;if(c.restart&&p==c.A&&p.CurJob.loadID==c.activeId&&__0==JobCondition.Succeeded)c.sawACompleteCargo=c.Inventory(p,c.MainDef)==58&&c.Surplus(p)==51;c.ended[p.CurJob.loadID]=__0.ToString();c.emit("f38-native-end","tick="+c.ticks.TicksGame+"; pawn="+p.ThingID+"; condition="+__0+"; inventoryMain="+c.Inventory(p,c.MainDef)+"; "+JobState(p.CurJob));});}
+         private static void Watch(Action<SweepHandoff> action){var c=current;if(c==null||c.cleaned||c.status!="running"||c.observerError!=null)return;try{action(c);}catch(Exception e){c.observerError=e.ToString();c.ticks.CurTimeSpeed=TimeSpeed.Paused;}}
+         private void Gui(Action action){Guard(gui==null,"Duplicate pending GUI action.");ticks.CurTimeSpeed=TimeSpeed.Paused;gui=action;}

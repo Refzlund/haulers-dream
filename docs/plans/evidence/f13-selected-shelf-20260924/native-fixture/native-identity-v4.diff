@@ -1,0 +1,12 @@
+--- frozen basic host v3
++++ basic host v4 native identity oracle
+@@ -117,7 +117,8 @@
+             }
+             if(stage=="native-first"&&actors[0].CurJob?.loadID!=nativeJobId&&ShelfUnits(nativeShelf,ThingDefOf.Uranium)==7)
+             {
+-                Require("native-incoming-first-physical",nativeSource.Destroyed&&actors[0].carryTracker.CarriedThing==null,"Real native-generated haul delivered all original Uranium7");
++                Require("native-incoming-first-physical",(nativeSource.Destroyed||(nativeSource.Spawned&&nativeSource.Map==map&&nativeShelf.AllSlotCells().Contains(nativeSource.Position)&&nativeSource.stackCount==7))
++                    &&actors[0].carryTracker.CarriedThing==null,"Real native-generated haul delivered all original Uranium7: merged/destroyed or exact original object at selected native shelf; source="+ItemText(nativeSource));
+                 Hold(actors[0]);nativeExplicitOrder=IssueShelf(actors[1],explicitNativeSource,nativeShelf,7,false);stage="after-native-first";return;
+             }
+             if(stage=="after-native-first"&&Finished(actors[1],nativeExplicitOrder))

@@ -75,6 +75,10 @@ namespace HaulersDream
     {
         static bool Prefix(JobDriver_HaulToCell __instance, bool errorOnFailed, ref bool __result)
         {
+            // A queued/preselected native haul must not skip another current explicit trip's real
+            // destination reservation, including through the forced-order arbitration bypass.
+            if (StorageCommitments.ExplicitShelfCellHeldByOther(__instance.pawn, __instance.job?.targetB.Cell ?? IntVec3.Invalid))
+            { __result = false; return false; }
             var s = HaulersDreamMod.Settings;
             if (s == null || !s.haulToStack)
                 return true; // feature off -> vanilla (reserve cell + thing)

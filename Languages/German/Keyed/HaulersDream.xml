@@ -357,7 +357,7 @@
 <HaulersDream.LoadTransporter.Option>Stapel-Beladen von {0} priorisieren</HaulersDream.LoadTransporter.Option>
 <HaulersDream.LoadTransporter.CouldNotStart>Im Moment ist nichts in der Nähe, um es im Stapel in diesen Transporter zu laden.</HaulersDream.LoadTransporter.CouldNotStart>
 <HaulersDream.Setting.EnableBulkLoadTransporters>Transporter und Shuttles in einer Fahrt im Stapel beladen</HaulersDream.Setting.EnableBulkLoadTransporters>
-<HaulersDream.Setting.EnableBulkLoadTransportersDesc>Wenn eine Transportkapsel oder ein Shuttle auf Beladen gestellt ist, beansprucht ein Träger einen Teil ihrer Frachtliste, fegt mehrere Stapel aus der Nähe in sein Inventar, geht EINMAL zum Transporter und legt sie alle ab — anstatt wie im Grundspiel einen Stapel pro Gang in den Händen. Mehrere Träger teilen sich eine große Frachtliste ohne Doppeltransport, und die Kapsel steigt nicht ein und startet nicht, bis die beanspruchte Fracht drin ist. Wenn dies deaktiviert ist, wird das einteilige Beladen von Transportern aus dem Grundspiel unverändert verwendet.</HaulersDream.Setting.EnableBulkLoadTransportersDesc>
+<HaulersDream.Setting.EnableBulkLoadTransportersDesc>Wenn eine Transportkapsel oder ein Shuttle auf Beladen gestellt ist, beansprucht ein Träger einen Teil ihrer Frachtliste, fegt mehrere Stapel aus der Nähe in sein Inventar, geht EINMAL zum Transporter und legt sie alle ab — anstatt wie im Grundspiel einen Stapel pro Gang in den Händen. Mehrere Träger teilen sich eine große Frachtliste ohne Doppeltransport, und die Kapsel steigt nicht ein und startet nicht, bis die beanspruchte Fracht drin ist. Wenn dies deaktiviert ist, wird das einteilige Beladen von Transportern aus dem Grundspiel unverändert verwendet. Ein priorisierter Auftrag wiederholt Touren für diese Ladeliste nach erfolgreichen Ablieferungen, solange der Träger nicht eingezogen ist und keine neuen Aufträge eingereiht sind. Ein eingezogener Träger kann eine Ladetour durchführen.</HaulersDream.Setting.EnableBulkLoadTransportersDesc>
 <HaulersDream.Setting.BulkLoadAiUpdateFrequency>Intervall der Lade-Überprüfung: {0} Ticks</HaulersDream.Setting.BulkLoadAiUpdateFrequency>
 <HaulersDream.LoadPortal.Report>belädt ein Portal im Stapel.</HaulersDream.LoadPortal.Report>
 <HaulersDream.LoadPortal.Option>Stapel-Beladen von {0} priorisieren</HaulersDream.LoadPortal.Option>
@@ -420,7 +420,7 @@
 <HaulersDream.Setting.OpportunisticLoadDesc>Eine Spielfigur, die bereits Gegenstände trägt, auf die eine Transportkapsel, ein Shuttle, ein Kartenportal oder ein Fahrzeug in der Nähe wartet, weicht ab, um sie abzuladen, anstatt einen brandneuen Aufsammeldurchlauf zu beginnen. Weniger verschwendete Gänge. Standardmäßig deaktiviert (es ändert, welche Aufgabe eine Spielfigur als Nächstes aufnimmt).</HaulersDream.Setting.OpportunisticLoadDesc>
 <HaulersDream.Setting.LoadOpportunityRadius>Suchradius für Abladen-unterwegs: {0} Felder</HaulersDream.Setting.LoadOpportunityRadius>
 <HaulersDream.Setting.ContinuousLoading>Rechtsklick-Auftrag „Bis vollständig beladen“</HaulersDream.Setting.ContinuousLoading>
-<HaulersDream.Setting.ContinuousLoadingDesc>Fügt einen Rechtsklick-Auftrag hinzu, der einen Kurier (auch im Wehrdienst) durch jede Transportgruppe in der Nähe schickt, die noch Beladen braucht, und die Aufträge verkettet, bis sie alle voll sind — praktisch, um eine große Karawane mit einem Befehl zu beladen. Standardmäßig deaktiviert (Opt-in-Komfort).</HaulersDream.Setting.ContinuousLoadingDesc>
+<HaulersDream.Setting.ContinuousLoadingDesc>Fügt einen Rechtsklickauftrag hinzu, der nach Abschluss der gewählten Ladeliste bei nahen Ladezielen fortfährt. Weitere Touren erfordern einen nicht eingezogenen Träger, eine erfolgreiche Ablieferung und keine neuen eingereihten Aufträge. Standardmäßig aus.</HaulersDream.Setting.ContinuousLoadingDesc>
 <HaulersDream.ContinuousLoad.Option>Bis vollständig beladen (durchgehend) — {0}</HaulersDream.ContinuousLoad.Option>
 <HaulersDream.ContinuousLoad.CouldNotStart>Im Moment ist nichts in der Nähe, um es da im Stapel hineinzuladen.</HaulersDream.ContinuousLoad.CouldNotStart>
 <HaulersDream.Setting.LoadHybridPathing>Stapel-Lade-Halte nach echter Wegfindung ordnen</HaulersDream.Setting.LoadHybridPathing>
@@ -626,7 +626,7 @@
 <HaulersDream.Setting.BulkHaulTrigger.Lab>Auslöser für Stapel-Transport</HaulersDream.Setting.BulkHaulTrigger.Lab>
 <HaulersDream.Setting.KeepWorkingMargin.Lab>Vor einer längeren Verlagerung entladen</HaulersDream.Setting.KeepWorkingMargin.Lab>
 <HaulersDream.Setting.MinFreeSpaceToUnloadCarrier.Lab>Mindestens freier Rucksackplatz zum Starten</HaulersDream.Setting.MinFreeSpaceToUnloadCarrier.Lab>
-<HaulersDream.Setting.MinFreeSpaceToUnloadCarrier.Help>Ein Träger braucht mindestens so viel von seiner Tragkapazität frei, bevor er beginnt, ein Lasttier zu entleeren, damit sein eigener Rucksack nicht sofort überläuft.</HaulersDream.Setting.MinFreeSpaceToUnloadCarrier.Help>
+<HaulersDream.Setting.MinFreeSpaceToUnloadCarrier.Help>Ein Träger braucht mindestens so viel von seiner Tragkapazität frei, bevor er beginnt, ein Lasttier zu entleeren, damit sein eigener Rucksack nicht sofort überläuft. Dieser Grenzwert gilt auch für das automatische Entladen von Transportern.</HaulersDream.Setting.MinFreeSpaceToUnloadCarrier.Help>
 <HaulersDream.Setting.VisualUnloadDelay.Lab>Entladeverzögerung pro Stapel</HaulersDream.Setting.VisualUnloadDelay.Lab>
 <HaulersDream.Setting.VisualUnloadDelay.Help>Eine kleine kosmetische Pause zwischen jedem Stapel während eines Stapel-Entladens, damit es als bewusste Handlung wirkt. 0 = sofort.</HaulersDream.Setting.VisualUnloadDelay.Help>
 <HaulersDream.Setting.BulkLoadAiUpdateFrequency.Lab>Intervall der Lade-Überprüfung</HaulersDream.Setting.BulkLoadAiUpdateFrequency.Lab>
@@ -828,6 +828,17 @@
   <HaulersDream.Setting.CarryMassCap.Off>Kein Limit</HaulersDream.Setting.CarryMassCap.Off>
   <HaulersDream.Setting.CarryMassCap.Value>{0} kg</HaulersDream.Setting.CarryMassCap.Value>
   <HaulersDream.Setting.CarryMassCapDesc>Eine feste Obergrenze in Kilogramm dafür, wie viel eine Spielfigur auf einer Transport- oder Sammelfahrt in ihr Inventar lädt. Dies ist die direkte Antwort auf „meine Spielfiguren tragen zu viel“: Setze sie niedrig (etwa 20 kg), und die Spielfiguren sammeln eine kleine Ladung, entladen und kommen zurück, anstatt bis zu ihrem vollen Traggewicht aufzufüllen. Sie wirkt zusammen mit dem Prozentsatz „Traglimit“ und dem Cleveren Überladen oben, und das niedrigere Limit gewinnt immer, sodass diese Obergrenze selbst bei aktiviertem Überladen nie überschritten wird. Wie das Traglimit zählt sie nur, was im Rucksack verstaut ist, nicht einen in den Händen getragenen Stapel, und sie ändert nicht, wie viel Material eine Spielfigur für einen bestimmten Bau oder Auftrag holt. Setze sie auf 0 für kein Limit (Standard).</HaulersDream.Setting.CarryMassCapDesc>
+  <HD_DropAmountTitle>Eine Menge ablegen</HD_DropAmountTitle>
+  <HD_DropAmountConfirm>Ablegen</HD_DropAmountConfirm>
+  <HD_DropAmountContext>{0}\n{1}\nVerfügbar: {2}</HD_DropAmountContext>
+  <HD_DropAmountQuantity>Abzulegende Anzahl</HD_DropAmountQuantity>
+  <HD_DropAmountRemaining>Im Inventar verbleibend: {0}</HD_DropAmountRemaining>
+  <HD_DropAmountInvalid>Gib eine ganze Zahl von 1 bis {0} ein.</HD_DropAmountInvalid>
+  <HD_DropAmountChanged>Die Figur oder der Inventarstapel hat sich geändert. Öffne dieses Fenster erneut.</HD_DropAmountChanged>
+  <HD_DropAmountUnavailable>Das Ablegen einer Teilmenge ist mit der aktuellen Mod-Konfiguration nicht verfügbar.</HD_DropAmountUnavailable>
+  <HD_DropAmountUnconfirmed>Das Ablegen konnte nicht bestätigt werden. Prüfe das Inventar der Figur.</HD_DropAmountUnconfirmed>
+  <HD_DropAmountBlocked>In der Nähe ist kein Platz, um diese Gegenstände abzulegen.</HD_DropAmountBlocked>
+  <HD_DropAmountPartial>{0} von {1} abgelegt; in der Nähe war nicht genug Platz.</HD_DropAmountPartial>
   <HD_NearbyHaulGizmoDesc>Wähle einen Gegenstand, um ihn und nahe Gegenstände ins Lager zu bringen. Halte beim Auswählen die Warteschlangentaste gedrückt, um den Auftrag einzureihen.</HD_NearbyHaulGizmoDesc>
   <HD_NearbyHaulPawnUnavailable>Diese Figur kann in ihrem aktuellen Zustand keinen Transportauftrag erhalten.</HD_NearbyHaulPawnUnavailable>
   <HD_NearbyHaulDrafted>Beende den Kampfmodus dieser Figur, bevor du diesen Transport anordnest.</HD_NearbyHaulDrafted>
@@ -836,4 +847,18 @@
   <HD_NearbyHaulInventoryUnavailable>Inventartransport ist für diese Figur nicht verfügbar.</HD_NearbyHaulInventoryUnavailable>
   <HD_NearbyHaulRobotUnsupported>Die Transportaufgaben des Roboters konnten mit der aktuellen Modkonfiguration nicht gelesen werden.</HD_NearbyHaulRobotUnsupported>
   <HD_NearbyHaulSourceUnavailable>Der gewählte Gegenstand kann derzeit nicht transportiert werden.</HD_NearbyHaulSourceUnavailable>
+  <HaulersDream.UnloadTransporter.Option>Stapel-Entladen von {0} priorisieren</HaulersDream.UnloadTransporter.Option>
+  <HaulersDream.UnloadTransporter.CouldNotStart>Das Stapel-Entladen dieses Transporters konnte gerade nicht gestartet werden.</HaulersDream.UnloadTransporter.CouldNotStart>
+  <HaulersDream.Gizmo.BulkUnloadAll.Label>Alles im Stapel entladen</HaulersDream.Gizmo.BulkUnloadAll.Label>
+  <HaulersDream.Gizmo.BulkUnloadAll.Empty>Nichts zu entladen</HaulersDream.Gizmo.BulkUnloadAll.Empty>
+  <HaulersDream.Gizmo.BulkUnloadAll.LoadBlocked>„Alles im Stapel entladen“ ist aktiv – erst ausschalten, bevor du eine neue Ladung festlegst.</HaulersDream.Gizmo.BulkUnloadAll.LoadBlocked>
+  <HaulersDream.Gizmo.BulkUnloadAll.UnloadBlocked>In diesen Transporter wird gerade eine Ladung zusammengetragen.</HaulersDream.Gizmo.BulkUnloadAll.UnloadBlocked>
+  <HaulersDream.Feat.UnloadTransporters.Name>Transporter &amp; Shuttles entladen</HaulersDream.Feat.UnloadTransporters.Name>
+  <HaulersDream.Setting.EnableBulkUnloadTransporters>Transporter in großen Mengen entladen</HaulersDream.Setting.EnableBulkUnloadTransporters>
+  <HaulersDream.Setting.EnableBulkUnloadTransportersDesc>Fügt Transportern und Shuttles einen Entladeschalter hinzu. Nicht eingezogene Träger bringen Fracht direkt ins Lager, eine Tour pro Arbeitsauftrag. Ein priorisierter Auftrag an einem markierten Transporter wird erst nach der Ablieferung wiederholt. Passagiere bleiben an Bord. Beladung, volle Lager, Einberufung oder neue eingereihte Aufträge beenden weitere Touren.</HaulersDream.Setting.EnableBulkUnloadTransportersDesc>
+  <HaulersDream.Gizmo.BulkUnloadAll.Desc>Fracht aus {0} ins Lager bringen. Passagiere bleiben an Bord. Ein priorisierter Entladeauftrag wird nach jeder Ablieferung wiederholt, solange der Träger nicht eingezogen ist und keine neuen Aufträge eingereiht sind. Vor dem Beladen ausschalten.</HaulersDream.Gizmo.BulkUnloadAll.Desc>
+  <HaulersDream.Feat.UnloadTransporters.Blurb>Fracht aus einem gelandeten Transporter direkt ins Lager bringen</HaulersDream.Feat.UnloadTransporters.Blurb>
+  <HaulersDream.UnloadTransporter.Drafted>Den Kampfeinsatz dieser Figur beenden, um diesen Auftrag zu starten.</HaulersDream.UnloadTransporter.Drafted>
+  <HaulersDream.UnloadTransporter.NoStorage>Kein geeignetes Lager für die verbleibende Fracht.</HaulersDream.UnloadTransporter.NoStorage>
+  <HaulersDream.Transporter.SyncUnavailable>Transporterbefehle sind nicht verfügbar, da ihre Mehrspieler-Synchronisierung nicht registriert werden konnte.</HaulersDream.Transporter.SyncUnavailable>
 </LanguageData>

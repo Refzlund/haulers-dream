@@ -16,4 +16,5 @@
 <HaulersDream_LoadPortalInBulk.reportString>masowe ładowanie portalu.</HaulersDream_LoadPortalInBulk.reportString>
 <HaulersDream_LoadVehicleInBulk.reportString>masowe ładowanie pojazdu.</HaulersDream_LoadVehicleInBulk.reportString>
 <HaulersDream_BulkRefuel.reportString>masowe tankowanie.</HaulersDream_BulkRefuel.reportString>
+  <HaulersDream_UnloadTransporterInBulk.reportString>rozładowuje transporter.</HaulersDream_UnloadTransporterInBulk.reportString>
 </LanguageData>

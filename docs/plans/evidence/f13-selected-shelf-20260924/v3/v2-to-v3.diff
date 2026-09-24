@@ -1,0 +1,152 @@
+--- v2/Source/HaulersDream/StorageCommitments.ExplicitShelf.cs
++++ v3/Source/HaulersDream/StorageCommitments.ExplicitShelf.cs
+@@ -67,8 +67,12 @@
+ 
+         private static bool ShelfCellSpace(Pawn pawn, Thing subject, Building_Storage shelf, IntVec3 cell,
+             Job ownJob, out int capacity)
+-        {
+-            capacity = 0;
++            => ShelfCellSpace(pawn, subject, shelf, cell, ownJob, out capacity, out _, out _);
++
++        private static bool ShelfCellSpace(Pawn pawn, Thing subject, Building_Storage shelf, IntVec3 cell,
++            Job ownJob, out int capacity, out int vacantSlots, out int compatibleDeficits)
++        {
++            capacity = 0; vacantSlots = 0; compatibleDeficits = 0;
+             var map = pawn.Map;
+             if (!ShelfAccepts(pawn, subject, shelf) || !cell.InBounds(map) || !cell.Standable(map)
+                 || cell.IsForbidden(pawn) || (subject.Spawned && subject.Position == cell)
+@@ -91,9 +95,27 @@
+                 items++;
+                 if (resident.CanStackWith(subject)) space += Math.Max(0L, (long)resident.def.stackLimit - resident.stackCount);
+             }
+-            space += Math.Max(0, maximum - items) * (long)subject.def.stackLimit;
++            compatibleDeficits = (int)Math.Min(int.MaxValue, space);
++            vacantSlots = Math.Max(0, maximum - items);
++            space += vacantSlots * (long)subject.def.stackLimit;
+             capacity = (int)Math.Min(int.MaxValue, space);
+             return capacity > 0;
++        }
++
++        private static int ExplicitShelfFreeUnits(Pawn pawn, Thing subject, Building_Storage shelf, ISlotGroup group)
++        {
++            int shared = FreeUnitsFor(pawn, group, subject.def, subject, out bool truncated);
++            if (!truncated || shared > 0) return shared;
++            // The selected shelf can lie after 200 blocked cells in a linked group's member order.
++            // Measure only its eligible cells as a second lower bound, never add it to the overlapping
++            // truncated pool. Native shelves have one or two cells; keep even this fallback bounded.
++            int slots = 0; long deficits = 0;
++            foreach (var cell in shelf.AllSlotCells().Take(MaxSpaceScanCells))
++                if (ShelfCellSpace(pawn, subject, shelf, cell, null, out _, out int empty, out int partial))
++                { slots += empty; deficits += partial; }
++            return SelectedShelfCapacity.Available((int)Math.Min(int.MaxValue, deficits), slots, subject.def.stackLimit,
++                HaulersDreamGameComponent.storageClaims, group, subject.def, pawn, IsDelivering(pawn, subject),
++                Evidence, def => def is ThingDef thingDef ? thingDef.stackLimit : 0);
+         }
+ 
+         internal static bool ObserveExplicitShelf(Pawn pawn, Thing subject, Building_Storage shelf,
+@@ -102,7 +124,7 @@
+             cell = IntVec3.Invalid; capacity = 0;
+             if (!ActiveOn(pawn?.Map) || !ShelfAccepts(pawn, subject, shelf)) return false;
+             var group = BulkHaul.BudgetGroupOf(shelf.GetSlotGroup());
+-            int shared = FreeUnitsFor(pawn, group, subject.def, subject, out _);
++            int shared = ExplicitShelfFreeUnits(pawn, subject, shelf, group);
+             if (shared <= 0 || shared == int.MaxValue) return false;
+             foreach (var candidate in shelf.AllSlotCells().OrderBy(c => c.DistanceToSquared(pawn.Position)).ThenBy(c => c.x).ThenBy(c => c.z))
+                 if (ShelfCellSpace(pawn, subject, shelf, candidate, null, out int physical))
+@@ -128,7 +150,7 @@
+             {
+                 if (!ShelfCellSpace(pawn, subject, shelf, candidate, job, out int physical)) continue;
+                 var group = BulkHaul.BudgetGroupOf(shelf.GetSlotGroup());
+-                int shared = FreeUnitsFor(pawn, group, subject.def, subject, out _);
++                int shared = ExplicitShelfFreeUnits(pawn, subject, shelf, group);
+                 if (shared == int.MaxValue) continue;
+                 int wanted = order.piece != null ? order.tripUnits : Math.Min(order.Remaining, pawn.carryTracker.MaxStackSpaceEver(subject.def));
+                 int units = Math.Min(wanted, Math.Min(physical, shared));
+--- v2/Source/HaulersDream.Core/SelectedShelfCapacity.cs
++++ v3/Source/HaulersDream.Core/SelectedShelfCapacity.cs
+@@ -0,0 +1,35 @@
++using System;
++
++namespace HaulersDream.Core
++{
++    /// <summary>A lower bound from measured cells of one selected shelf, using the existing group claims.</summary>
++    public static class SelectedShelfCapacity
++    {
++        /// <summary>
++        /// Price compatible resident deficits and vacant native slots without adding overlapping group
++        /// observations. All ordinary group commitments still apply; physically exclusive cells were
++        /// excluded by the caller and their metadata rows must not be subtracted a second time.
++        /// </summary>
++        public static int Available(int compatibleDeficits, int vacantSlots, int stackLimit,
++            StorageClaimRow[] rows, object group, object def, object asker, bool delivering,
++            StorageClaimEvidence evidence, Func<object, int> stackLimitFor)
++        {
++            if (group == null || def == null || stackLimit <= 0 || stackLimitFor == null) return 0;
++            var budget = new StorageGroupBudget(Math.Max(0, vacantSlots));
++            budget.PriceDef(def, Math.Max(0, compatibleDeficits), stackLimit);
++            foreach (var row in rows ?? StorageClaimLedger.Empty)
++            {
++                if (!ReferenceEquals(row.Group, group) || ReferenceEquals(row.Def, def) || budget.IsPriced(row.Def)) continue;
++                int claimed = StorageClaimLedger.ClaimedTotal(rows, group, row.Def, evidence);
++                if (claimed <= 0) continue;
++                int limit = stackLimitFor(row.Def);
++                if (limit <= 0) return 0; // An unpriceable competing definition cannot grant room.
++                budget.PriceDef(row.Def, 0, limit);
++                budget.Consume(row.Def, claimed);
++            }
++            int others = StorageClaimLedger.ClaimedByOthers(rows, group, def, asker, evidence);
++            int mine = delivering ? 0 : StorageClaimLedger.ClaimedByPawn(rows, group, def, asker, evidence);
++            return StorageCommitPolicy.Commit(new HaulSight(0, 0, budget.AvailableFor(def), others, mine, int.MaxValue), delivering);
++        }
++    }
++}
+--- v2/Source/HaulersDream.Tests/StorageExclusiveCellClaimTests.cs
++++ v3/Source/HaulersDream.Tests/StorageExclusiveCellClaimTests.cs
+@@ -48,5 +48,47 @@
+             Assert.That(StorageClaimLedger.ClaimedTotal(rows, group, steel, (p,d) => 100), Is.Zero);
+             Assert.That(StorageClaimLedger.ClaimedTotal(rows, group, wood, (p,d) => 100), Is.EqualTo(20));
+         }
++
++        [Test]
++        public void SelectedShelfLowerBoundKeepsOrdinarySameDefAndOwnPickupClaims()
++        {
++            var group=new object();var steel=new object();var asker=new object();var other=new object();
++            var rows=StorageClaimLedger.Add(null,other,group,steel,20);
++            rows=StorageClaimLedger.Add(rows,asker,group,steel,5);
++            Assert.That(SelectedShelfCapacity.Available(3,1,75,rows,group,steel,asker,false,(p,d)=>100,d=>75),Is.EqualTo(53));
++            Assert.That(SelectedShelfCapacity.Available(3,1,75,rows,group,steel,asker,true,(p,d)=>100,d=>75),Is.EqualTo(58));
++        }
++
++        [Test]
++        public void SelectedShelfLowerBoundChargesForeignDefsOnceInVacantSlotsOnly()
++        {
++            var group=new object();var steel=new object();var wood=new object();
++            var rows=StorageClaimLedger.Add(null,new object(),group,wood,50);
++            rows=StorageClaimLedger.Add(rows,new object(),group,wood,25);
++            // Two rows total one native stack/slot, leaving the other slot and Steel-only deficits.
++            Assert.That(SelectedShelfCapacity.Available(3,2,75,rows,group,steel,new object(),false,(p,d)=>100,d=>75),Is.EqualTo(78));
++            Assert.That(SelectedShelfCapacity.Available(3,0,75,rows,group,steel,new object(),false,(p,d)=>100,d=>75),Is.EqualTo(3));
++        }
++
++        [Test]
++        public void SelectedShelfLowerBoundDoesNotDoubleSubtractExclusiveOrStaleClaims()
++        {
++            var group=new object();var steel=new object();var wood=new object();var stale=new object();
++            var rows=StorageClaimLedger.Add(null,new object(),group,wood,75,new object());
++            rows=StorageClaimLedger.Add(rows,stale,group,steel,75);
++            Assert.That(SelectedShelfCapacity.Available(0,1,75,rows,group,steel,new object(),false,(p,d)=>ReferenceEquals(p,stale)?0:100,d=>75),Is.EqualTo(75));
++            Assert.That(SelectedShelfCapacity.Available(0,0,75,rows,group,steel,new object(),false,(p,d)=>100,d=>75),Is.Zero);
++        }
++
++        [Test]
++        public void SelectedShelfLowerBoundRefusesFullyCommittedOrUnpriceableCapacity()
++        {
++            var group=new object();var steel=new object();var wood=new object();
++            var same=StorageClaimLedger.Add(null,new object(),group,steel,75);
++            var foreign=StorageClaimLedger.Add(null,new object(),group,wood,1);
++            Assert.That(SelectedShelfCapacity.Available(0,1,75,same,group,steel,new object(),false,(p,d)=>100,d=>75),Is.Zero);
++            Assert.That(SelectedShelfCapacity.Available(0,1,75,foreign,group,steel,new object(),false,(p,d)=>100,d=>75),Is.Zero);
++            Assert.That(SelectedShelfCapacity.Available(0,1,75,foreign,group,steel,new object(),false,(p,d)=>100,d=>0),Is.Zero);
++        }
+     }
+ }

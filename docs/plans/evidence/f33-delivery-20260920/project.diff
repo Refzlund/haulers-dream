@@ -1,0 +1,20 @@
+diff --git a/docs/plans/evidence/f34-live-20260920/host/HaulersDream.RuntimeHarness.csproj "b/C:\\Users\\Arthur\\Sync\\Projects\\RimWorld Mods\\HaulersDream\\docs\\plans\\evidence\\f33-delivery-20260920\\host\\HaulersDream.RuntimeHarness.csproj"
+index 6c82960..2dbb08c 100644
+--- a/docs/plans/evidence/f34-live-20260920/host/HaulersDream.RuntimeHarness.csproj
++++ "b/C:\\Users\\Arthur\\Sync\\Projects\\RimWorld Mods\\HaulersDream\\docs\\plans\\evidence\\f33-delivery-20260920\\host\\HaulersDream.RuntimeHarness.csproj"	
+@@ -14,12 +14,12 @@
+     <RuntimeHarmonyAssembly Condition="'$(RuntimeHarmonyAssembly)' == ''">C:\Steam\steamapps\workshop\content\294100\2009463077\Current\Assemblies\0Harmony.dll</RuntimeHarmonyAssembly>
+   </PropertyGroup>
+   <ItemGroup>
+-    <Compile Include="../src/LiveCutting.cs" />
++    <Compile Include="../src/DeliveryIntent.cs" />
+     <Reference Include="HaulersDream">
+-      <HintPath>$(F34ProductDirectory)/1.6/Assemblies/HaulersDream.dll</HintPath><Private>false</Private>
++      <HintPath>$(F33ProductDirectory)/1.6/Assemblies/HaulersDream.dll</HintPath><Private>false</Private>
+     </Reference>
+     <Reference Include="HaulersDream.Core">
+-      <HintPath>$(F34ProductDirectory)/1.6/Assemblies/HaulersDream.Core.dll</HintPath><Private>false</Private>
++      <HintPath>$(F33ProductDirectory)/1.6/Assemblies/HaulersDream.Core.dll</HintPath><Private>false</Private>
+     </Reference>
+   </ItemGroup>
+   <ItemGroup>

@@ -1,0 +1,55 @@
+--- build-v3/RimmsCommand.cs
++++ build-v4/RimmsCommand.cs
+@@ -50,6 +50,7 @@
+         private ISettingsInstance edit;
+         private Harmony observer;
+         private Window settingsWindow;
++        private PageRenderer pendingEditPage;
+         private FloatMenu menu;
+         private Window[] windowsBefore;
+         private object[] selectionBefore;
+@@ -122,6 +123,7 @@
+             Patch(typeof(Pawn_JobTracker), "StartJob", nameof(Started), false);
+             Patch(typeof(Pawn_JobTracker), "EndCurrentJob", nameof(Ending), true);
+             Patch(typeof(Job), "CanBeginNow", nameof(Admission), false);
++            Patch(typeof(PageRenderer), "DoPageContents", nameof(PageRendered), false);
+             if (restart) { SetStage("reload-delivery"); ticks.CurTimeSpeed = TimeSpeed.Normal; }
+             else SetStage("gui");
+         }
+@@ -250,11 +252,15 @@
+             if (guiStep == 3)
+             {
+                 if (!Captured("rimms-workgivers.png")) return;
+-                Flow flow = Flow(); SettingsPropertyEditPage.transition(flow, flow.CurrentPage, edit); guiStep++; return;
++                // Native button transitions run inside DoFlowContents, before its post-render callbacks.
++                // Queue the same transition for that boundary, not after Flow has already returned.
++                pendingEditPage = Flow().CurrentPage; guiStep++; return;
+             }
+             if (guiStep == 4)
+             {
+-                Flow flow = Flow(); Guard(ReferenceEquals(flow.flowScope["edit"], edit), "Native edit transition selected another instance.");
++                Flow flow = Flow();
++                if (pendingEditPage != null || !(flow.CurrentPage is SettingsPropertyEditPage)) return;
++                Guard(ReferenceEquals(flow.flowScope["edit"], edit), "Native edit transition selected another instance.");
+                 var scroll = flow.CurrentPage.components.OfType<VerticalScrollViewRenderer>().Single();
+                 AccessTools.Field(typeof(VerticalScrollViewRenderer), "scrollPosition").SetValue(scroll, new Vector2(0, 250));
+                 edit.set("canBeDoneWhileDrafted", true); guiStep++; return;
+@@ -307,6 +313,18 @@
+             public ObservedSettings(Mod mod) : base(mod) { }
+             public override void DoWindowContents(Rect rect)
+             { try { base.DoWindowContents(rect); } catch (Exception e) { if (current != null) current.failure = e.ToString(); throw; } }
++        }
++        private static void PageRendered(PageRenderer __instance, Flow __1)
++        {
++            Observe(c =>
++            {
++                if (Event.current?.type != EventType.Repaint || c.pendingEditPage == null
++                    || !ReferenceEquals(__instance, c.pendingEditPage) || !ReferenceEquals(__1, c.Flow())) return;
++                c.Paused(); c.pendingEditPage = null;
++                // Flow now completes its native post-render edit assignment before the next page activates.
++                SettingsPropertyEditPage.transition(__1, __instance, c.edit);
++                c.emit("f07-native-editor-transition", "Actual selection page rendered; native transition queued inside Flow.DoFlowContents.");
++            });
+         }
+         private Flow Flow() => (Flow)AccessTools.Field(typeof(QOLMod), "flow").GetValue(qol);
+         private void Apply<T>(string field, T value)

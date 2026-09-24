@@ -455,7 +455,7 @@
 
   <!-- Settings: transporter / shuttle bulk loading -->
   <HaulersDream.Setting.EnableBulkLoadTransporters>一次行程內批量裝載運輸艙與太空梭</HaulersDream.Setting.EnableBulkLoadTransporters>
-  <HaulersDream.Setting.EnableBulkLoadTransportersDesc>當運輸艙或太空梭被設定為裝載時，運送員會承包一部分清單，將附近的數個堆疊收集至背包中，走向運輸艙「一次」並全部存入 — 取代原版每次往返手拿一個堆疊的做法。多位運送員可分攤大型裝載清單且不會重複運送，在承包的貨物存入前運輸艙不會登機或發射。關閉時，將繼續使用原版的單一堆疊裝載方式。</HaulersDream.Setting.EnableBulkLoadTransportersDesc>
+  <HaulersDream.Setting.EnableBulkLoadTransportersDesc>當運輸艙或太空梭被設定為裝載時，運送員會承包一部分清單，將附近的數個堆疊收集至背包中，走向運輸艙「一次」並全部存入 — 取代原版每次往返手拿一個堆疊的做法。多位運送員可分攤大型裝載清單且不會重複運送，在承包的貨物存入前運輸艙不會登機或發射。關閉時，將繼續使用原版的單一堆疊裝載方式。 優先命令會在成功交貨後繼續完成本清單，前提是搬運者未被徵召且沒有新的排隊命令。已徵召的搬運者可以執行一趟裝貨。</HaulersDream.Setting.EnableBulkLoadTransportersDesc>
   <HaulersDream.Setting.BulkLoadAiUpdateFrequency>裝載重新檢查間隔：{0}</HaulersDream.Setting.BulkLoadAiUpdateFrequency>
 
   <!-- Map-portal BULK LOADING (pit gates, cave / vault exits, "enter map" portals) -->
@@ -541,7 +541,7 @@
   <HaulersDream.Setting.OpportunisticLoadDesc>若角色已經攜帶附近運輸艙、太空梭、地圖傳送門或載具正在等待的物品，將會順路改道將其存入，而非開啟全新的拾取行程。減少不必要的往返。預設為關閉（這會改變角色接下來選擇的工作）。</HaulersDream.Setting.OpportunisticLoadDesc>
   <HaulersDream.Setting.LoadOpportunityRadius>順路存入搜尋半徑：{0} 格</HaulersDream.Setting.LoadOpportunityRadius>
   <HaulersDream.Setting.ContinuousLoading>「持續裝載至完成」右鍵指令</HaulersDream.Setting.ContinuousLoading>
-  <HaulersDream.Setting.ContinuousLoadingDesc>新增右鍵指令，派遣一名運輸員（即使處於徵召狀態）依序前往附近每個仍需裝載的運輸組，連續執行工作直到全部裝滿 — 非常適合單一指令裝載大型旅隊。預設為關閉（選擇性便捷功能）。</HaulersDream.Setting.ContinuousLoadingDesc>
+  <HaulersDream.Setting.ContinuousLoadingDesc>新增右鍵命令：完成所選裝貨清單後，繼續處理附近的裝貨目標。後續往返要求搬運者未被徵召、已成功交貨且沒有新的排隊命令。預設關閉。</HaulersDream.Setting.ContinuousLoadingDesc>
   
   <!-- Continuous-loading float-menu order (B4) -->
   <HaulersDream.ContinuousLoad.Option>持續裝載至完成 — {0}</HaulersDream.ContinuousLoad.Option>
@@ -792,7 +792,7 @@
   <HaulersDream.Setting.BulkHaulTrigger.Lab>觸發批量運送門檻</HaulersDream.Setting.BulkHaulTrigger.Lab>
   <HaulersDream.Setting.KeepWorkingMargin.Lab>前往較遠的下個工作點前先卸載</HaulersDream.Setting.KeepWorkingMargin.Lab>
   <HaulersDream.Setting.MinFreeSpaceToUnloadCarrier.Lab>開始卸載貨運動物所需的最小背包剩餘空間</HaulersDream.Setting.MinFreeSpaceToUnloadCarrier.Lab>
-  <HaulersDream.Setting.MinFreeSpaceToUnloadCarrier.Help>運送員在開始清空貨運動物前，自身的負重能力需至少保有此比例的剩餘空間，以防止其背包立即溢滿。</HaulersDream.Setting.MinFreeSpaceToUnloadCarrier.Help>
+  <HaulersDream.Setting.MinFreeSpaceToUnloadCarrier.Help>運送員在開始清空貨運動物前，自身的負重能力需至少保有此比例的剩餘空間，以防止其背包立即溢滿。 此門檻也適用於自動卸載運輸器。</HaulersDream.Setting.MinFreeSpaceToUnloadCarrier.Help>
   <HaulersDream.Setting.VisualUnloadDelay.Lab>每堆疊卸載延遲時間</HaulersDream.Setting.VisualUnloadDelay.Lab>
   <HaulersDream.Setting.VisualUnloadDelay.Help>在批量卸載期間，每堆疊物品放置之間微小的視覺停頓，使其看起來像是刻意進行的動作。0 = 瞬間完成。</HaulersDream.Setting.VisualUnloadDelay.Help>
   <HaulersDream.Setting.BulkLoadAiUpdateFrequency.Lab>裝載重新檢查間隔</HaulersDream.Setting.BulkLoadAiUpdateFrequency.Lab>
@@ -950,6 +950,17 @@
   <HaulersDream.Setting.CarryMassCap.Off>無限制</HaulersDream.Setting.CarryMassCap.Off>
   <HaulersDream.Setting.CarryMassCap.Value>{0} 公斤</HaulersDream.Setting.CarryMassCap.Value>
   <HaulersDream.Setting.CarryMassCapDesc>角色在單次運送或收集行程中，載入背包的公斤數硬性上限。這是解決「角色搬太多東西」的直接方案：將其調低（例如 20 公斤），角色就會收集少量貨物後卸載並返回，而非填滿其全部負重能力。此設定與上方的「負重上限」百分比及智慧超載協同運作，且一律以較低的限制為準，因此即使開啟超載亦絕不會超出此上限。與負重上限相同，它僅計算收納於背包中的物品，不包含手持的堆疊，且不會改變角色為特定建造或製作清單所取的材料數量。設定為 0 表示無限制（預設值）。</HaulersDream.Setting.CarryMassCapDesc>
+  <HD_DropAmountTitle>丟下指定數量</HD_DropAmountTitle>
+  <HD_DropAmountConfirm>丟下</HD_DropAmountConfirm>
+  <HD_DropAmountContext>{0}\n{1}\n可用數量：{2}</HD_DropAmountContext>
+  <HD_DropAmountQuantity>丟下數量</HD_DropAmountQuantity>
+  <HD_DropAmountRemaining>物品欄剩餘：{0}</HD_DropAmountRemaining>
+  <HD_DropAmountInvalid>請輸入 1 到 {0} 之間的整數。</HD_DropAmountInvalid>
+  <HD_DropAmountChanged>角色狀態或物品欄中的堆疊已發生變化。請重新開啟此視窗。</HD_DropAmountChanged>
+  <HD_DropAmountUnavailable>目前的模組設定不支援選擇丟下的數量。</HD_DropAmountUnavailable>
+  <HD_DropAmountUnconfirmed>無法確認丟下結果。請檢查角色的物品欄。</HD_DropAmountUnconfirmed>
+  <HD_DropAmountBlocked>附近沒有空間放下這些物品。</HD_DropAmountBlocked>
+  <HD_DropAmountPartial>已丟下 {0}/{1}，附近沒有足夠空間。</HD_DropAmountPartial>
   <HD_NearbyHaulGizmoDesc>選擇一件物品，將它及附近物品搬運至倉儲區。選擇時按住指令佇列鍵可將指令加入佇列。</HD_NearbyHaulGizmoDesc>
   <HD_NearbyHaulPawnUnavailable>該角色目前無法接受搬運指令。</HD_NearbyHaulPawnUnavailable>
   <HD_NearbyHaulDrafted>請先解除該角色的徵召，再下達搬運指令。</HD_NearbyHaulDrafted>
@@ -958,4 +969,18 @@
   <HD_NearbyHaulInventoryUnavailable>該角色無法使用物品欄搬運。</HD_NearbyHaulInventoryUnavailable>
   <HD_NearbyHaulRobotUnsupported>無法在目前的模組設定下讀取機器人的搬運工作。</HD_NearbyHaulRobotUnsupported>
   <HD_NearbyHaulSourceUnavailable>所選物品無法搬運。</HD_NearbyHaulSourceUnavailable>
+  <HaulersDream.UnloadTransporter.Option>優先批量卸載 {0}</HaulersDream.UnloadTransporter.Option>
+  <HaulersDream.UnloadTransporter.CouldNotStart>目前無法開始批量卸載該運輸工具。</HaulersDream.UnloadTransporter.CouldNotStart>
+  <HaulersDream.Gizmo.BulkUnloadAll.Label>批量卸載全部貨物</HaulersDream.Gizmo.BulkUnloadAll.Label>
+  <HaulersDream.Gizmo.BulkUnloadAll.Empty>沒有可卸載的貨物</HaulersDream.Gizmo.BulkUnloadAll.Empty>
+  <HaulersDream.Gizmo.BulkUnloadAll.LoadBlocked>「全部批量卸載」已開啟，請先將其關閉，再設定新的裝載。</HaulersDream.Gizmo.BulkUnloadAll.LoadBlocked>
+  <HaulersDream.Gizmo.BulkUnloadAll.UnloadBlocked>正在向該運輸器集結裝載貨物。</HaulersDream.Gizmo.BulkUnloadAll.UnloadBlocked>
+  <HaulersDream.Feat.UnloadTransporters.Name>批量卸載運輸艙與太空梭</HaulersDream.Feat.UnloadTransporters.Name>
+  <HaulersDream.Setting.EnableBulkUnloadTransporters>批量卸載運輸器</HaulersDream.Setting.EnableBulkUnloadTransporters>
+  <HaulersDream.Setting.EnableBulkUnloadTransportersDesc>為運輸艙和穿梭機新增批量卸貨開關。未徵召的搬運者會將貨物直接送入倉庫，每個工作任務搬運一趟。對已標記的運輸器下達優先卸貨命令後，只有完成本趟入庫才會繼續下一趟。乘客留在艙內。裝貨、倉庫已滿、徵召或新命令排隊都會停止後續往返。</HaulersDream.Setting.EnableBulkUnloadTransportersDesc>
+  <HaulersDream.Gizmo.BulkUnloadAll.Desc>將{0}內的貨物送入倉庫。乘客留在艙內。優先卸貨命令會在每趟入庫完成後繼續，前提是搬運者未被徵召且沒有新的排隊命令。裝貨前請關閉此開關。</HaulersDream.Gizmo.BulkUnloadAll.Desc>
+  <HaulersDream.Feat.UnloadTransporters.Blurb>將已著陸運輸器中的貨物直接搬入倉庫</HaulersDream.Feat.UnloadTransporters.Blurb>
+  <HaulersDream.UnloadTransporter.Drafted>請先解除此角色的徵召，再下達此命令。</HaulersDream.UnloadTransporter.Drafted>
+  <HaulersDream.UnloadTransporter.NoStorage>沒有適合剩餘貨物的儲存位置。</HaulersDream.UnloadTransporter.NoStorage>
+  <HaulersDream.Transporter.SyncUnavailable>多人同步註冊失敗，運輸器命令無法使用。</HaulersDream.Transporter.SyncUnavailable>
 </LanguageData>

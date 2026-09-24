@@ -357,7 +357,7 @@
 <HaulersDream.LoadTransporter.Option>Bulksgewijs laden van {0} prioriteren</HaulersDream.LoadTransporter.Option>
 <HaulersDream.LoadTransporter.CouldNotStart>Op dit moment niets in de buurt om bulksgewijs in die transporter te laden.</HaulersDream.LoadTransporter.CouldNotStart>
 <HaulersDream.Setting.EnableBulkLoadTransporters>Transporters en shuttles in één trip bulksgewijs laden</HaulersDream.Setting.EnableBulkLoadTransporters>
-<HaulersDream.Setting.EnableBulkLoadTransportersDesc>Wanneer een transportpod of shuttle op laden is gezet, eist een sjouwer een deel van zijn manifest op, veegt meerdere nabije stapels in zijn inventaris, loopt ÉÉN keer naar de transporter, en deponeert ze allemaal — in plaats van vanilla's één-stapel-in-de-handen per loop. Meerdere sjouwers splitsen een groot manifest zonder dubbel sjouwen, en de pod gaat pas aan boord of lanceert pas wanneer de opgeëiste vracht binnen is. Met dit uit wordt vanilla's enkel-stapel transporterladen ongewijzigd gebruikt.</HaulersDream.Setting.EnableBulkLoadTransportersDesc>
+<HaulersDream.Setting.EnableBulkLoadTransportersDesc>Wanneer een transportpod of shuttle op laden is gezet, eist een sjouwer een deel van zijn manifest op, veegt meerdere nabije stapels in zijn inventaris, loopt ÉÉN keer naar de transporter, en deponeert ze allemaal — in plaats van vanilla's één-stapel-in-de-handen per loop. Meerdere sjouwers splitsen een groot manifest zonder dubbel sjouwen, en de pod gaat pas aan boord of lanceert pas wanneer de opgeëiste vracht binnen is. Met dit uit wordt vanilla's enkel-stapel transporterladen ongewijzigd gebruikt. Een voorrangsopdracht herhaalt ritten voor deze laadlijst na geslaagde afleveringen zolang de drager niet opgeroepen is en geen nieuwe opdrachten in de wachtrij heeft. Een opgeroepen drager kan één laadrit maken.</HaulersDream.Setting.EnableBulkLoadTransportersDesc>
 <HaulersDream.Setting.BulkLoadAiUpdateFrequency>Interval voor laadhercontrole: {0} ticks</HaulersDream.Setting.BulkLoadAiUpdateFrequency>
 <HaulersDream.LoadPortal.Report>een portaal bulksgewijs laden.</HaulersDream.LoadPortal.Report>
 <HaulersDream.LoadPortal.Option>Bulksgewijs laden van {0} prioriteren</HaulersDream.LoadPortal.Option>
@@ -420,7 +420,7 @@
 <HaulersDream.Setting.OpportunisticLoadDesc>Een figuur dat al spullen draagt waar een nabije transportpod, shuttle, kaartportaal of voertuig op wacht, zal een omweg maken om ze af te leveren, in plaats van een gloednieuwe oppakronde te starten. Minder verspilde loopjes. Standaard uit (het wijzigt welke taak een figuur als volgende oppakt).</HaulersDream.Setting.OpportunisticLoadDesc>
 <HaulersDream.Setting.LoadOpportunityRadius>Deponeren-onderweg zoekstraal: {0} tegels</HaulersDream.Setting.LoadOpportunityRadius>
 <HaulersDream.Setting.ContinuousLoading>Rechtsklikorder "Laden tot voltooid"</HaulersDream.Setting.ContinuousLoading>
-<HaulersDream.Setting.ContinuousLoadingDesc>Voegt een rechtsklikorder toe die één koerier (zelfs opgeroepen) door elke nabije transportgroep stuurt die nog laden nodig heeft, en ketent de taken tot ze allemaal vol zijn — handig voor het laden van een grote karavaan met één commando. Standaard uit (opt-in gemak).</HaulersDream.Setting.ContinuousLoadingDesc>
+<HaulersDream.Setting.ContinuousLoadingDesc>Voegt een rechtsklikopdracht toe die na voltooiing van de gekozen laadlijst doorgaat met nabije laaddoelen. Verdere ritten vereisen een niet-opgeroepen drager, een geslaagde aflevering en geen nieuwe opdrachten in de wachtrij. Standaard uit.</HaulersDream.Setting.ContinuousLoadingDesc>
 <HaulersDream.ContinuousLoad.Option>Laden tot voltooid (continu) — {0}</HaulersDream.ContinuousLoad.Option>
 <HaulersDream.ContinuousLoad.CouldNotStart>Op dit moment niets in de buurt om daar bulksgewijs in te laden.</HaulersDream.ContinuousLoad.CouldNotStart>
 <HaulersDream.Setting.LoadHybridPathing>Bulklaadstops ordenen op echt padzoeken</HaulersDream.Setting.LoadHybridPathing>
@@ -626,7 +626,7 @@
 <HaulersDream.Setting.BulkHaulTrigger.Lab>Bulksjouw-trigger</HaulersDream.Setting.BulkHaulTrigger.Lab>
 <HaulersDream.Setting.KeepWorkingMargin.Lab>Uitladen voor een langere verplaatsing</HaulersDream.Setting.KeepWorkingMargin.Lab>
 <HaulersDream.Setting.MinFreeSpaceToUnloadCarrier.Lab>Minimale vrije rugzakruimte om te starten</HaulersDream.Setting.MinFreeSpaceToUnloadCarrier.Lab>
-<HaulersDream.Setting.MinFreeSpaceToUnloadCarrier.Help>Een sjouwer heeft minstens zoveel van zijn draagcapaciteit vrij nodig voordat het begint een lastdier te legen, zodat zijn eigen rugzak niet meteen overloopt.</HaulersDream.Setting.MinFreeSpaceToUnloadCarrier.Help>
+<HaulersDream.Setting.MinFreeSpaceToUnloadCarrier.Help>Een sjouwer heeft minstens zoveel van zijn draagcapaciteit vrij nodig voordat het begint een lastdier te legen, zodat zijn eigen rugzak niet meteen overloopt. Deze grens geldt ook voor automatisch uitladen van transporters.</HaulersDream.Setting.MinFreeSpaceToUnloadCarrier.Help>
 <HaulersDream.Setting.VisualUnloadDelay.Lab>Uitlaadvertraging per stapel</HaulersDream.Setting.VisualUnloadDelay.Lab>
 <HaulersDream.Setting.VisualUnloadDelay.Help>Een kleine cosmetische pauze tussen elke stapel tijdens een bulkuitlading, zodat het overkomt als een doelbewuste actie. 0 = onmiddellijk.</HaulersDream.Setting.VisualUnloadDelay.Help>
 <HaulersDream.Setting.BulkLoadAiUpdateFrequency.Lab>Interval voor laadhercontrole</HaulersDream.Setting.BulkLoadAiUpdateFrequency.Lab>
@@ -828,6 +828,17 @@
   <HaulersDream.Setting.CarryMassCap.Off>Geen limiet</HaulersDream.Setting.CarryMassCap.Off>
   <HaulersDream.Setting.CarryMassCap.Value>{0} kg</HaulersDream.Setting.CarryMassCap.Value>
   <HaulersDream.Setting.CarryMassCapDesc>Een harde bovengrens, in kilogram, voor hoeveel een figuur in zijn inventaris laadt op één sjouw- of verzameltrip. Dit is het directe antwoord op „mijn figuren dragen te veel“: zet hem laag (zeg 20 kg) en figuren verzamelen een kleine lading, laden uit en komen terug, in plaats van tot hun volle draaggewicht te vullen. Hij werkt samen met het percentage „Draaglimiet“ en Slim overladen hierboven, en de laagste limiet wint altijd, dus deze bovengrens wordt zelfs met overladen aan nooit overschreden. Net als de Draaglimiet telt hij alleen wat in de rugzak is opgeborgen, niet een stapel die in de handen wordt gedragen, en hij verandert niet hoeveel materiaal een figuur haalt voor een specifieke bouw of taak. Zet op 0 voor geen limiet (de standaard).</HaulersDream.Setting.CarryMassCapDesc>
+  <HD_DropAmountTitle>Een hoeveelheid neerleggen</HD_DropAmountTitle>
+  <HD_DropAmountConfirm>Neerleggen</HD_DropAmountConfirm>
+  <HD_DropAmountContext>{0}\n{1}\nBeschikbaar: {2}</HD_DropAmountContext>
+  <HD_DropAmountQuantity>Aantal om neer te leggen</HD_DropAmountQuantity>
+  <HD_DropAmountRemaining>Over in inventaris: {0}</HD_DropAmountRemaining>
+  <HD_DropAmountInvalid>Voer een geheel getal van 1 tot {0} in.</HD_DropAmountInvalid>
+  <HD_DropAmountChanged>Het personage of de inventarisstapel is veranderd. Open dit venster opnieuw.</HD_DropAmountChanged>
+  <HD_DropAmountUnavailable>Een hoeveelheid neerleggen is niet beschikbaar met de huidige modconfiguratie.</HD_DropAmountUnavailable>
+  <HD_DropAmountUnconfirmed>Het neerleggen kon niet worden bevestigd. Controleer de inventaris van het personage.</HD_DropAmountUnconfirmed>
+  <HD_DropAmountBlocked>Er is in de buurt geen ruimte om deze voorwerpen neer te leggen.</HD_DropAmountBlocked>
+  <HD_DropAmountPartial>{0} van {1} neergelegd; er was in de buurt niet genoeg ruimte.</HD_DropAmountPartial>
   <HD_NearbyHaulGizmoDesc>Selecteer een voorwerp om het samen met nabije voorwerpen naar de opslag te brengen. Houd bij het selecteren de wachtrijtoets ingedrukt om de opdracht in de wachtrij te zetten.</HD_NearbyHaulGizmoDesc>
   <HD_NearbyHaulPawnUnavailable>Deze pion kan in de huidige toestand geen transportopdracht ontvangen.</HD_NearbyHaulPawnUnavailable>
   <HD_NearbyHaulDrafted>Haal deze pion uit de gevechtsmodus voordat je deze transportopdracht geeft.</HD_NearbyHaulDrafted>
@@ -836,4 +847,18 @@
   <HD_NearbyHaulInventoryUnavailable>Vervoer via de inventaris is voor deze pion niet beschikbaar.</HD_NearbyHaulInventoryUnavailable>
   <HD_NearbyHaulRobotUnsupported>De transporttaken van de robot konden met de huidige modconfiguratie niet worden gelezen.</HD_NearbyHaulRobotUnsupported>
   <HD_NearbyHaulSourceUnavailable>Het geselecteerde voorwerp is niet beschikbaar voor vervoer.</HD_NearbyHaulSourceUnavailable>
+  <HaulersDream.UnloadTransporter.Option>Bulksgewijs uitladen van {0} prioriteren</HaulersDream.UnloadTransporter.Option>
+  <HaulersDream.UnloadTransporter.CouldNotStart>Kon de transporter op dit moment niet bulksgewijs uitladen.</HaulersDream.UnloadTransporter.CouldNotStart>
+  <HaulersDream.Gizmo.BulkUnloadAll.Label>Alles bulksgewijs uitladen</HaulersDream.Gizmo.BulkUnloadAll.Label>
+  <HaulersDream.Gizmo.BulkUnloadAll.Empty>Niets om uit te laden</HaulersDream.Gizmo.BulkUnloadAll.Empty>
+  <HaulersDream.Gizmo.BulkUnloadAll.LoadBlocked>"Alles bulksgewijs uitladen" staat aan, zet dat eerst uit voordat je een nieuwe lading instelt.</HaulersDream.Gizmo.BulkUnloadAll.LoadBlocked>
+  <HaulersDream.Gizmo.BulkUnloadAll.UnloadBlocked>Er wordt lading naar deze transporter verzameld.</HaulersDream.Gizmo.BulkUnloadAll.UnloadBlocked>
+  <HaulersDream.Feat.UnloadTransporters.Name>Transporters en shuttles uitladen</HaulersDream.Feat.UnloadTransporters.Name>
+  <HaulersDream.Setting.EnableBulkUnloadTransporters>Transporters in bulk uitladen</HaulersDream.Setting.EnableBulkUnloadTransporters>
+  <HaulersDream.Setting.EnableBulkUnloadTransportersDesc>Voegt een schakelaar toe om transporters en shuttles in bulk uit te laden. Niet-opgeroepen dragers brengen vracht rechtstreeks naar opslag, één rit per werktaak. Een voorrangsopdracht bij een gemarkeerde transporter herhaalt pas na aflevering. Passagiers blijven aan boord. Laden, volle opslag, oproepen of nieuwe opdrachten in de wachtrij stoppen verdere ritten.</HaulersDream.Setting.EnableBulkUnloadTransportersDesc>
+  <HaulersDream.Gizmo.BulkUnloadAll.Desc>Breng vracht uit {0} naar opslag. Passagiers blijven aan boord. Een uitlaadopdracht met voorrang herhaalt na elke aflevering zolang de drager niet opgeroepen is en geen nieuwe opdrachten in de wachtrij heeft. Schakel dit uit voordat je gaat laden.</HaulersDream.Gizmo.BulkUnloadAll.Desc>
+  <HaulersDream.Feat.UnloadTransporters.Blurb>Breng vracht rechtstreeks uit een gelande transporter naar opslag</HaulersDream.Feat.UnloadTransporters.Blurb>
+  <HaulersDream.UnloadTransporter.Drafted>Hef de oproep van deze kolonist op om deze opdracht te starten.</HaulersDream.UnloadTransporter.Drafted>
+  <HaulersDream.UnloadTransporter.NoStorage>Geen geschikte opslag voor de resterende vracht.</HaulersDream.UnloadTransporter.NoStorage>
+  <HaulersDream.Transporter.SyncUnavailable>Transporteropdrachten zijn niet beschikbaar omdat multiplayer-synchronisatie niet kon worden geregistreerd.</HaulersDream.Transporter.SyncUnavailable>
 </LanguageData>

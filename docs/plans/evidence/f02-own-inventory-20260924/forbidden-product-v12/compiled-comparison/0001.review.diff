@@ -1,0 +1,14 @@
+--- 
+
++++ 
+
+@@ -378,5 +378,7 @@
+
+ Ldc_I4_2 
+ Ldarg_0 
+-Ldflda field:System.Int32 HaulersDream.StorageProjectionScope::mapId
++Ldfld field:System.Int32 HaulersDream.StorageProjectionScope::mapId
++Stloc_S local:System.Int32
++Ldloca_S local:System.Int32
+ Call method:System.String System.Int32::ToString() | hasThis=True; explicitThis=False; convention=Default; arity=0
+ Stelem_Ref 

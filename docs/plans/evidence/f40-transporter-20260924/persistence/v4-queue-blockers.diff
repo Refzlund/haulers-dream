@@ -1,0 +1,95 @@
+--- v3/TransporterPersistence.cs
++++ v4/TransporterPersistence.cs
+@@ -31,6 +31,7 @@
+         private Action gui;
+         private string run, role, stage = "setup", status = "running", observerError, lastPhysical;
+         private Dictionary<string, string> record;
++        private int queueBlocker, custodyBlocker;
+         private int startTick, phaseAt, stableAt = -1, inventoryJob, handsJob, loaderJob, queueLoad, queueUnload, custodyJob, replacementId, policyJob;
+         private int inventoryRemainder, inventoryDelivered, ballast;
+         private bool loading, disabled, cleaned, failed, recoveryStarted, custodyDone;
+@@ -152,8 +153,8 @@
+             && Inventory(I, "Plasteel") > 7 && PullProgress(I, "Pulled") > 0 && Held(UI) > 0
+             && H.carryTracker.CarriedThing?.def == Def("WoodLog") && PullProgress(H, "Pulled") > 0 && Held(UH) > 0
+             && ReferenceEquals(Read(H.jobs.curDriver, "handTail"), H.carryTracker.CarriedThing)
+-            && Q.CurJobDef == JobDefOf.Wait && Q.jobs.jobQueue.Select(q => q.job.loadID).SequenceEqual(new[] { queueLoad, queueUnload })
+-            && Z.CurJobDef == JobDefOf.Wait && HasJob(Z, custodyJob) && Flagged(UI) && Flagged(UH);
++            && Q.CurJobDef == JobDefOf.Wait_MaintainPosture && Q.CurJob.loadID == queueBlocker && Q.jobs.jobQueue.Select(q => q.job.loadID).SequenceEqual(new[] { queueLoad, queueUnload })
++            && Z.CurJobDef == JobDefOf.Wait_MaintainPosture && Z.CurJob.loadID == custodyBlocker && HasJob(Z, custodyJob) && Flagged(UI) && Flagged(UH);
+         private void BeginRestart()
+         {
+             inventoryRemainder = Held(UI); inventoryDelivered = 180 - inventoryRemainder;
+@@ -166,7 +167,8 @@
+         private void ZeroDemandCustody()
+         {
+             if (custodyDone || Remaining(LL) != 0 || Held(LL) != 140) return;
+-            Guard(HasJob(Z, custodyJob), "Queued native loader did not survive until zero demand.");
++            Guard(Z.CurJobDef == JobDefOf.Wait_MaintainPosture && Z.CurJob.loadID == custodyBlocker
++                && Z.jobs.jobQueue.Any(q => q.job.loadID == custodyJob), "Original non-idle blocker and queued native loader did not survive until zero demand.");
+             Record("zero-manifest-real-queued-custody", Conflict(LL) && Sessions().Contains(LL.groupID), State());
+             bool enabled = HaulersDreamMod.Settings.enableBulkUnloadTransporters;
+             HaulersDreamMod.Settings.enableBulkUnloadTransporters = true;
+--- v3/TransporterPersistence.Evidence.cs
++++ v4/TransporterPersistence.Evidence.cs
+@@ -101,7 +101,7 @@
+         private static int PullProgress(Pawn p, string name) { if (!(p.jobs.curDriver is JobDriver_UnloadTransporterInBulk)) return 0; var progress = Read(p.jobs.curDriver, "progress"); return progress == null ? 0 : (int)AccessTools.Property(progress.GetType(), name).GetValue(progress, null); }
+         private static string Target(LocalTargetInfo target) => !target.IsValid ? "invalid" : target.HasThing ? target.Thing.ThingID : "cell" + target.Cell;
+         private static string JobState(Job j) => j == null ? "none" : j.loadID + ":" + j.def.defName + ":forced=" + j.playerForced + ":count=" + j.count
+-            + ":A=" + Target(j.targetA) + ":B=" + Target(j.targetB) + ":C=" + Target(j.targetC)
++            + ":start=" + j.startTick + ":expiry=" + j.expiryInterval + ":A=" + Target(j.targetA) + ":B=" + Target(j.targetB) + ":C=" + Target(j.targetC)
+             + ":QB=" + (j.targetQueueB == null ? "null" : string.Join(",", j.targetQueueB.Select(Target))) + ":counts=" + (j.countQueue == null ? "null" : string.Join(",", j.countQueue));
+         private string Driver(Pawn p)
+         {
+@@ -164,6 +164,7 @@
+                 { "save", path }, { "sha", Hash(path) }, { "tick", tick.ToString() }, { "map", map.uniqueID.ToString() }, { "producerProcess", System.Diagnostics.Process.GetCurrentProcess().Id.ToString() },
+                 { "actors", string.Join(",", actors.Select(p => p.thingIDNumber)) }, { "holds", string.Join(",", holds.Select(h => h.parent.thingIDNumber)) },
+                 { "jobs", string.Join(",", new[] { inventoryJob, handsJob, loaderJob, queueLoad, queueUnload, custodyJob }) }, { "ballast", ballast.ToString() },
++                { "blockers", queueBlocker + "," + custodyBlocker },
+                 { "state", state }, { "physical", physical }, { "totals", string.Join(",", totals.OrderBy(k => k.Key).Select(k => k.Key + ":" + k.Value)) },
+                 { "background", backgroundId.ToString() }, { "backgroundState", backgroundState }, { "originalMean", F(originalMean) }, { "mean", F(map.TileInfo.temperature) }, { "environmentEnd", environmentEnd.ToString() }
+             };
+@@ -178,6 +179,7 @@
+             foreach (var id in record["holds"].Split(',').Select(int.Parse)) holds.Add(map.listerThings.AllThings.Single(t => t.thingIDNumber == id).TryGetComp<CompTransporter>());
+             zones.AddRange(map.zoneManager.AllZones.OfType<Zone_Stockpile>());
+             var jobs = record["jobs"].Split(',').Select(int.Parse).ToArray(); inventoryJob = jobs[0]; handsJob = jobs[1]; loaderJob = jobs[2]; queueLoad = jobs[3]; queueUnload = jobs[4]; custodyJob = jobs[5];
++            var blockers = record["blockers"].Split(',').Select(int.Parse).ToArray(); queueBlocker = blockers[0]; custodyBlocker = blockers[1];
+             ballast = Number("ballast"); backgroundId = Number("background"); backgroundState = record["backgroundState"];
+             foreach (var part in record["totals"].Split(',')) { var pair = part.Split(':'); totals.Add(pair[0], int.Parse(pair[1])); }
+             originalMean = float.Parse(record["originalMean"], CultureInfo.InvariantCulture); environmentEnd = Number("environmentEnd"); climateCaptured = true;
+--- v3/TransporterPersistence.Scene.cs
++++ v4/TransporterPersistence.Scene.cs
+@@ -56,7 +56,7 @@
+             Ground("Jade", 10, Cell(-14, 2)); Ground("Gold", 10, Cell(5, 7));
+             Manifest(LL, "Uranium", 140); Manifest(QL, "Jade", 10); Manifest(Other, "Gold", 10);
+             Flag(UI, true); Flag(UH, true); Flag(QU, true);
+-            Wait(I, 25000); Wait(H, 25000); Wait(Q, 2200); Order(Q, QL, false, true); Order(Q, QU, true, true);
++            Wait(I, 25000); Wait(H, 25000); queueBlocker = QueueBlocker(Q, 2200); Order(Q, QL, false, true); Order(Q, QU, true, true);
+             var q = Q.jobs.jobQueue.Select(x => x.job).ToArray(); Guard(q.Length == 2 && q[0].def == Load && q[1].def == Unload, "Actual explicit load/unload queue was not admitted.");
+             queueLoad = q[0].loadID; queueUnload = q[1].loadID;
+             HaulersDreamMod.Settings.carryLimitFraction = 1f; Order(L, LL, false); loaderJob = L.CurJob.loadID;
+@@ -64,7 +64,7 @@
+             int keptZ = (int)Math.Floor((MassUtility.Capacity(Z) * 0.05f - Def("Uranium").GetStatValueAbstract(StatDefOf.Mass)) / mass);
+             Guard(keptZ > 0 && Z.inventory.innerContainer.TryAdd(NewThing("Steel", keptZ), false), "Actual custody courier ballast insertion failed.");
+             Z.GetComp<CompHauledToInventory>().SetKeptCount(Def("Steel"), keptZ);
+-            HaulersDreamMod.Settings.carryLimitFraction = 0.05f; Wait(Z, 25000); Order(Z, LL, false, true);
++            HaulersDreamMod.Settings.carryLimitFraction = 0.05f; custodyBlocker = QueueBlocker(Z, 25000); Order(Z, LL, false, true);
+             Guard(Z.jobs.jobQueue.Count == 1 && Z.jobs.jobQueue[0].job.def == Load, "Actual custody loader queue was not admitted.");
+             custodyJob = Z.jobs.jobQueue[0].job.loadID;
+             Guard(Z.jobs.jobQueue[0].job.countQueue.Sum() == 1, "Custody control must reserve only its genuine one-unit source.");
+@@ -117,6 +117,16 @@
+         }
+         private void Wait(Pawn p, int duration)
+         { var job = JobMaker.MakeJob(JobDefOf.Wait, duration); job.playerForced = true; p.jobs.TryTakeOrderedJob(job, JobTag.Misc); Guard(p.CurJob?.loadID == job.loadID && p.CurJobDef == JobDefOf.Wait, "Explicit native wait refused."); }
++        private int QueueBlocker(Pawn p, int duration)
++        {
++            var job = JobMaker.MakeJob(JobDefOf.Wait_MaintainPosture, duration); job.playerForced = true;
++            Guard(p.jobs.TryTakeOrderedJob(job, JobTag.Misc), "Native non-idle posture wait refused.");
++            Guard(p.CurJob == job && !job.def.isIdle && !p.mindState.IsIdle && p.mindState.lastJobTag == JobTag.Misc
++                && job.expiryInterval == duration && job.startTick == ticks.TicksGame, "Native queue blocker differs.");
++            Record("native-nonidle-blocker-" + p.ThingID, true, PawnState(p) + "; defIdle=" + job.def.isIdle
++                + "; mindIdle=" + p.mindState.IsIdle + "; lastTag=" + p.mindState.lastJobTag);
++            return job.loadID;
++        }
+         private void Order(Pawn p, CompTransporter c, bool unload, bool queue = false)
+         {
+             Call("TransporterCommand", "IssueSynced", p, c.parent, map.uniqueID, unload, queue, false);

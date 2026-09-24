@@ -1,0 +1,58 @@
+--- a/src/RimmsCommand.v6.cs.txt
++++ b/src/RimmsCommand.cs
+@@ -300,8 +300,24 @@
+                 PureQuery();
+                 Apply("directOrderable", false); Require("direct-order-disabled", Hd(MenuOptions()).Length == 0, "Actual live directOrderable=false hides the command.");
+                 Apply("directOrderable", true);
+-                string before = QueryState(); Apply("canBeDoneWhileDrafted", false); before = QueryState(); option.action();
+-                Require("stale-click-rejected", before == QueryState(), "Retained offered action cannot allocate/start/reserve/move after permission revocation.");
++                Apply("canBeDoneWhileDrafted", false);
++                string beforeGameplay, afterGameplay;
++                string before = QueryState(out beforeGameplay);
++                Message[] messagesBefore = LiveMessages();
++                emit("f07-stale-before", before + ";messages=" + MessageText(messagesBefore));
++                option.action();
++                string after = QueryState(out afterGameplay);
++                Message[] messagesAfter = LiveMessages();
++                emit("f07-stale-after", after + ";messages=" + MessageText(messagesAfter));
++                // Dispatch rejection is an action: native Messages can play sound and consume RNG.
++                // Only this action comparison excludes RNG; PureQuery still compares the full state.
++                Require("stale-click-rejected", beforeGameplay == afterGameplay,
++                    "Retained action preserves nextJobID, actor/current/queued jobs, full reservations and physical goods; full state differed=" + (before != after));
++                Message[] added = messagesAfter.Except(messagesBefore).ToArray();
++                Require("stale-native-rejection", added.Length == 1 && added[0].def == MessageTypeDefOf.RejectInput
++                    && added[0].text == "HD_NearbyHaulDrafted".Translate().ToString().CapitalizeFirst()
++                    && added[0].startingTick == ticks.TicksGame && added[0].startingFrame == RealTime.frameCount,
++                    "Actual newly published native message: " + MessageText(added));
+                 Apply("canBeDoneWhileDrafted", true); Apply("autoTakeablePriorityDrafted", 10000);
+                 var priorityOptions = MenuOptions(); var priorityOption = Hd(priorityOptions).Single();
+                 var chosen = FloatMenuMakerMap.GetAutoTakeOption(priorityOptions);
+@@ -378,15 +394,25 @@
+                 + string.Join(" | ", context.ClickedThings.Select(t => t.thingIDNumber + ":" + t.def.defName + "@" + t.Position)));
+         }
+         private string QueryState()
++        { string gameplay; return QueryState(out gameplay); }
++        private string QueryState(out string gameplay)
+         {
+             object nextId = AccessTools.Field(typeof(UniqueIDsManager), "nextJobID").GetValue(Find.UniqueIDsManager);
+             object random = AccessTools.Property(typeof(Rand), "StateCompressed").GetValue(null, null);
+-            return "next=" + nextId + ";rand=" + random + ";jobs=" + string.Join(",", Jobs().Select(JobText))
++            gameplay = "next=" + nextId + ";actor=" + actor.thingIDNumber + "@" + actor.Position + ":map=" + actor.Map.uniqueID
++                + ";current=" + JobText(actor.CurJob) + ";queue=" + string.Join(",", actor.jobs.jobQueue.Select(q => JobText(q.job)))
+                 + ";reservations=" + string.Join("|", map.reservationManager.ReservationsReadOnly.Select(r => (r.Claimant?.thingIDNumber ?? -1)
+                     + ":" + (r.Job?.loadID ?? -1) + ":thing=" + (r.Target.Thing?.thingIDNumber ?? -1) + ":cell=" + r.Target.Cell
+                     + ":layer=" + r.Layer?.defName + ":pawns=" + r.MaxPawns + ":count=" + r.StackCount))
+-                + ";goods=" + string.Join(",", Goods().OrderBy(t => t.thingIDNumber).Select(t => t.thingIDNumber + ":" + t.stackCount + ":" + t.Spawned + ":" + t.holdingOwner?.GetType().FullName));
+-        }
++                + ";goods=" + string.Join(",", Goods().Concat(owned.Where(t => t.def.category == ThingCategory.Item)).Distinct()
++                    .OrderBy(t => t.thingIDNumber).Select(t => t.thingIDNumber + ":" + t.def.defName + ":" + t.stackCount + ":spawned=" + t.Spawned
++                    + ":destroyed=" + t.Destroyed + ":position=" + t.Position + ":map=" + (t.Map?.uniqueID ?? -1)
++                    + ":holder=" + t.ParentHolder?.GetType().FullName + ":container=" + (t.holdingOwner == null ? 0 : System.Runtime.CompilerServices.RuntimeHelpers.GetHashCode(t.holdingOwner))));
++            return gameplay + ";rand=" + random;
++        }
++        private static Message[] LiveMessages() => ((IEnumerable<Message>)AccessTools.Field(typeof(Messages), "liveMessages").GetValue(null)).ToArray();
++        private static string MessageText(IEnumerable<Message> messages) => string.Join(" | ", messages.Select(m => m.GetUniqueLoadID()
++            + ":def=" + m.def?.defName + ":text=" + m.text + ":tick=" + m.startingTick + ":frame=" + m.startingFrame + ":sound=" + m.def?.sound?.defName));
+         private void IssueOffered()
+         {
+             var option = Hd(MenuOptions()).Single(); Guard(!option.Disabled && option.action != null, "Native command unavailable.");

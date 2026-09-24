@@ -1,0 +1,47 @@
+--- v15/src/F11Scene.Save.cs
++++ v16/src/F11Scene.Save.cs
+@@ -60,9 +60,9 @@
+             dropped=map.listerThings.AllThings.Single(t=>t.ThingID==record["dropped"]);storage=map.zoneManager.AllZones.OfType<Zone_Stockpile>().Single(z=>string.Join("|",z.Cells.OrderBy(c=>c.x).ThenBy(c=>c.z).Select(c=>c.x+","+c.z))==record["storage"]);
+             var ages=(Dictionary<Thing,int>)AccessTools.Field(typeof(CompHauledToInventory),"taggedTick").GetValue(Comp);
+             emit("f11-pre-tick-raw-state",Snapshot()+"; transientTagAges="+string.Join("|",ages.Select(p=>p.Key.ThingID+":"+p.Value))+"; recordedOriginalAge="+record["originalTagAge"]);
+-            Require("loaded-exact-remainder",Held(source,actor)&&source.stackCount==8&&dropped.Spawned&&dropped.stackCount==7&&dropped.IsForbidden(actor)
++            Require("loaded-exact-remainder",Held(source,actor)&&source.stackCount==8&&dropped.Spawned&&dropped.stackCount==7&&(dropped.TryGetComp<CompForbiddable>()?.Forbidden==true)
+                 &&Held(sentinel,actor)&&sentinel.stackCount==5&&actor.inventory.innerContainer.Count==2&&other.inventory.innerContainer.Count==0
+-                &&actor.carryTracker.CarriedThing==null&&other.carryTracker.CarriedThing==null,Snapshot());
++                &&actor.carryTracker.CarriedThing==null&&other.carryTracker.CarriedThing==null,RemainderReceipt());
+             Require("loaded-saved-comp",Tags()==record["tags"]&&Comp.KeptCountOf(ThingDefOf.Steel)==3&&Comp.lastYieldTick==Number("lastYieldTick")&&!Comp.autoHaulYields,
+                 "Raw membership/Keep/lastYieldTick preserved; per-item age intentionally unsaved; "+Snapshot());
+             Require("loaded-jobs-before-undraft",actor.Drafted&&other.Drafted&&JobText(actor.CurJob)==record["job"]&&Queue(actor)==record["queue"]
+@@ -77,11 +77,11 @@
+             Require("pre-continuation-tick",loaded&&UnityData.IsInMainThread&&Find.TickManager.CurTimeSpeed==TimeSpeed.Paused
+                 &&Find.TickManager.TicksGame==Number("tick")+1,
+                 "Exact saved-tick raw read preceded native PauseOnLoad DoSingleTick; saved="+Number("tick")+"; current="+Find.TickManager.TicksGame);
+-            Require("pre-undraft-remainder",Held(source,actor)&&source.stackCount==8&&dropped.Spawned&&dropped.stackCount==7&&dropped.IsForbidden(actor)
++            Require("pre-undraft-remainder",Held(source,actor)&&source.stackCount==8&&dropped.Spawned&&dropped.stackCount==7&&(dropped.TryGetComp<CompForbiddable>()?.Forbidden==true)
+                 &&Held(sentinel,actor)&&sentinel.stackCount==5&&actor.inventory.innerContainer.Count==2&&other.inventory.innerContainer.Count==0
+                 &&actor.carryTracker.CarriedThing==null&&other.carryTracker.CarriedThing==null&&Tags()==record["tags"]&&Comp.KeptCountOf(ThingDefOf.Steel)==3
+                 &&Comp.lastYieldTick==Number("lastYieldTick")&&!Comp.autoHaulYields&&actor.Drafted&&other.Drafted
+-                &&JobText(actor.CurJob)==record["job"]&&Queue(actor)==record["queue"]&&JobText(other.CurJob)==record["otherJob"]&&Queue(other)==record["otherQueue"]&&!HasUnload(actor),Snapshot());
++                &&JobText(actor.CurJob)==record["job"]&&Queue(actor)==record["queue"]&&JobText(other.CurJob)==record["otherJob"]&&Queue(other)==record["otherQueue"]&&!HasUnload(actor),RemainderReceipt());
+             actor.drafter.Drafted=false;startTick=Find.TickManager.TicksGame;stage="unloading";
+             emit("f11-native-undraft","Actual drafter.Drafted=false only after LoadedGame equality; ordinary native think/interval scheduling resumes; no unload command or synthetic transfer.");
+             Find.TickManager.CurTimeSpeed=TimeSpeed.Superfast;
+@@ -109,6 +109,18 @@
+             }
+             else Guard(stableStart<0,"Previously settled remainder became unstable.");
+         }
++        private string RemainderReceipt()=>F02Json.Stringify(new{
++            state=Snapshot(), sourceHeld=Held(source,actor), sourceCount=source.stackCount,
++            droppedId=dropped.ThingID, droppedSpawned=dropped.Spawned, droppedCount=dropped.stackCount,
++            droppedRawForbidden=dropped.TryGetComp<CompForbiddable>()?.Forbidden,
++            droppedPawnForbidden=dropped.IsForbidden(actor), actorCaresAboutForbidden=ForbidUtility.CaresAboutForbidden(actor,false),
++            sentinelId=sentinel.ThingID, sentinelHeld=Held(sentinel,actor), sentinelCount=sentinel.stackCount,
++            actorInventoryCount=actor.inventory.innerContainer.Count, otherInventoryCount=other.inventory.innerContainer.Count,
++            otherInventory=other.inventory.innerContainer.Select(t=>t.ThingID+":"+t.stackCount).ToArray(),
++            actorHands=actor.carryTracker.CarriedThing?.ThingID, otherHands=other.carryTracker.CarriedThing?.ThingID,
++            actorDrafted=actor.Drafted, otherDrafted=other.Drafted, actorJob=JobText(actor.CurJob), actorQueue=Queue(actor),
++            otherJob=JobText(other.CurJob), otherQueue=Queue(other), tags=Tags(), keep=Comp.KeptCountOf(ThingDefOf.Steel),
++            lastYieldTick=Comp.lastYieldTick, autoHaulYields=Comp.autoHaulYields, hasUnload=HasUnload(actor)});
+         private bool SettledRemainder()=>Held(source,actor)&&source.stackCount==3&&Held(sentinel,actor)&&sentinel.stackCount==5
+             &&actor.inventory.innerContainer.Count==2&&actor.carryTracker.CarriedThing==null&&other.inventory.innerContainer.Count==0&&other.carryTracker.CarriedThing==null
+             &&dropped.Spawned&&dropped.stackCount==7&&dropped.IsForbidden(actor)&&Comp.KeptCountOf(ThingDefOf.Steel)==3

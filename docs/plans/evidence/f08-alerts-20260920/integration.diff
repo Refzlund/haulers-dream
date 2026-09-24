@@ -1,0 +1,507 @@
+--- basis/host/Bootstrap.cs
++++ f08/host/Bootstrap.cs
+@@ -67,7 +67,7 @@
+         private static RefuelGroupScenario refuelGroup;
+         private static Dlv1Scenario dlv1;
+         private static bool f34Attempted;
+-        private static bool f33DeliveryStarted;
++        private static bool f08Started;
+         private static bool scenarioAttempted;
+         private static bool controlStarted;
+         private static int controlDone;
+@@ -118,7 +118,7 @@
+                 Check("private-mod-directory", SamePath(GenFilePaths.ModsFolderPath, Path.Combine(manifest.runtimeDirectory, "Mods")),
+                     GenFilePaths.ModsFolderPath);
+                 Check("private-player-log", SamePath(Application.consoleLogPath, manifest.logPath), Application.consoleLogPath);
+-                Check("case-supported", new[] { "bootstrap", "BG01", "BG02", "BG03-P1", "L04-O1", "CAP01", "CAP02", "CAP03-B", "CAP03-A", "CAP03-C", "L04-O1-DELIVERY", "L04-B1", "L04-B1-D2", "L40-Q1", "L40-UI-P0", "ROBOTS-R0", "ROBOTS-R1-AUTO", "REFUEL-G1", "RIMMS-DLV1", "F34-MIXED-CUT", "F33-DELIVERY" }.Contains(manifest.caseId), manifest.caseId);
++                Check("case-supported", new[] { "bootstrap", "BG01", "BG02", "BG03-P1", "L04-O1", "CAP01", "CAP02", "CAP03-B", "CAP03-A", "CAP03-C", "L04-O1-DELIVERY", "L04-B1", "L04-B1-D2", "L40-Q1", "L40-UI-P0", "ROBOTS-R0", "ROBOTS-R1-AUTO", "REFUEL-G1", "RIMMS-DLV1", "F34-MIXED-CUT", "F08-ALERTS", "F08-RESTART" }.Contains(manifest.caseId), manifest.caseId);
+                 Check("negative-control-supported", string.IsNullOrEmpty(manifest.negativeControl) || manifest.negativeControl == "None"
+                     || (manifest.caseId == "bootstrap" && new[] { "WorkerUnityError", "WorkerVerseError", "LateWorkerError", "TerminalRace" }.Contains(manifest.negativeControl)),
+                     manifest.negativeControl ?? "None");
+@@ -146,6 +146,9 @@
+         internal static void GameStarted(string kind)
+         {
+             if (!optedIn || terminal || manifest == null) return;
++            if (manifest.caseId == "F08-RESTART")
++                Check("actual-saved-game-loaded", kind == "loaded-game" && !gameStarted,
++                    "Fresh process requires its first lifecycle event to be native LoadedGame: " + kind);
+             gameStarted = true;
+             Event(kind, "GameComponent lifecycle callback received.");
+         }
+@@ -209,38 +212,40 @@
+                         Finish("failed", "Runtime environment differed from the prepared manifest.");
+                         return;
+                     }
+-                    Find.TickManager.CurTimeSpeed = TimeSpeed.Normal;
++                    if (manifest.caseId != "F08-RESTART") Find.TickManager.CurTimeSpeed = TimeSpeed.Normal;
+                     if (manifest.negativeControl == "WorkerUnityError" || manifest.negativeControl == "WorkerVerseError") StartErrorControl();
++                }
++                if (manifest.caseId == "F08-ALERTS" || manifest.caseId == "F08-RESTART")
++                {
++                    if (!f08Started && (Current.Game == null || !Current.Game.PlayerHasControl)) return;
++                    if (!f08Started)
++                    {
++                        Check("f08-activity-host-admission", canQuitOwnRuntime && UnityData.IsInMainThread
++                            && manifest.negativeControl == "None" && manifest.expectedBehavior == "satisfied"
++                            && manifest.expectedMods.Select(x => x.packageId).SequenceEqual(new[] {
++                                "brrainz.harmony", "ludeon.rimworld", "giwaffed.haulersdream", "memegoddess.tdsbugfixes", "memegoddess.tdfindlib", "memegoddess.customalerts", "giwaffed.haulersdream.runtimeharness" })
++                            && manifest.expectedAssemblies.Count == 17
++                            && manifest.expectedAssemblies.All(x => result.assemblies.Count(a => a.name == x.name
++                                && a.moduleVersionId == x.moduleVersionId) == 1),
++                            "Private seven-mod/seventeen-image current Custom Alerts environment.");
++                        if (result.assertions.Any(x => !x.passed)) { Finish("failed", "F08 activity admission failed."); return; }
++                        f08Started = true; // Cleanup also covers partial Begin failure.
++                        HaulersDream.F08Native.ActivityAlerts.Begin(map, Check, Event, manifest.evidenceDirectory);
++                    }
++                    string liveStatus = HaulersDream.F08Native.ActivityAlerts.Update();
++                    if (Find.TickManager.TicksGame > firstTick && !result.assertions.Any(x => x.id == "real-game-ticks-advanced"))
++                        Check("real-game-ticks-advanced", true, "Native ticks after initial F08 observation=" + (Find.TickManager.TicksGame - firstTick));
++                    if (liveStatus == "running") return;
++                    Check("f08-activity-host-returned", liveStatus == "passed", "Live scenario returned " + liveStatus);
++                    Check("no-unity-errors-after-harness-start", unityErrors == 0, "observedErrors=" + unityErrors);
++                    Finish(liveStatus == "passed" && !result.assertions.Any(x => !x.passed) ? "passed" : "failed",
++                        "F08 actual dropdown, scheduled alert activity and saved configuration; no physical input.");
++                    return;
+                 }
+                 int elapsedTicks = Find.TickManager.TicksGame - firstTick;
+                 if (elapsedTicks < 5) return;
+                 if (!result.assertions.Any(x => x.id == "real-game-ticks-advanced"))
+                     Check("real-game-ticks-advanced", true, "elapsedTicks=" + elapsedTicks);
+-                if (manifest.caseId == "F33-DELIVERY")
+-                {
+-                    if (Current.Game == null || !Current.Game.PlayerHasControl) return;
+-                    if (!f33DeliveryStarted)
+-                    {
+-                        Check("f33-delivery-host-admission", canQuitOwnRuntime && UnityData.IsInMainThread
+-                            && manifest.negativeControl == "None" && (manifest.expectedBehavior == "baseline-gap" || manifest.expectedBehavior == "satisfied")
+-                            && manifest.expectedMods.Select(x => x.packageId).SequenceEqual(new[] {
+-                                "brrainz.harmony", "ludeon.rimworld", "giwaffed.haulersdream", "giwaffed.haulersdream.runtimeharness" })
+-                            && manifest.expectedAssemblies.Count == 10
+-                            && manifest.expectedAssemblies.All(x => result.assemblies.Count(a => a.name == x.name
+-                                && a.moduleVersionId == x.moduleVersionId) == 1),
+-                            "Private four-mod/ten-image environment; four actual delivery/construction orders.");
+-                        if (result.assertions.Any(x => !x.passed)) { Finish("failed", "F33 delivery admission failed."); return; }
+-                        f33DeliveryStarted = true; // Cleanup also covers partial Begin failure.
+-                        HaulersDream.F33Native.DeliveryIntent.Begin(map, Check, Event, manifest.expectedBehavior);
+-                    }
+-                    string liveStatus = HaulersDream.F33Native.DeliveryIntent.Update();
+-                    if (liveStatus == "running") return;
+-                    Check("f33-delivery-host-returned", liveStatus == "passed", "Live scenario returned " + liveStatus);
+-                    Check("no-unity-errors-after-harness-start", unityErrors == 0, "observedErrors=" + unityErrors);
+-                    Finish(liveStatus == "passed" && !result.assertions.Any(x => !x.passed) ? "passed" : "failed",
+-                        "F33 actual native delivery/construction and route intent; programmatic offered actions, no physical input.");
+-                    return;
+-                }
+                 if (manifest.caseId == "F34-MIXED-CUT")
+                 {
+                     // Map initialization/five ticks do not imply player control during native fade-in.
+@@ -769,10 +774,10 @@
+             if (terminal) return;
+             terminal = true;
+             // Remove only this test's observers while error capture is still open.
+-            if (f33DeliveryStarted)
+-            {
+-                try { HaulersDream.F33Native.DeliveryIntent.Dispose(); }
+-                catch (Exception error) { Check("f33-delivery-terminal-cleanup", false, error.ToString()); status = "failed"; }
++            if (f08Started)
++            {
++                try { HaulersDream.F08Native.ActivityAlerts.Dispose(); }
++                catch (Exception error) { Check("f08-activity-terminal-cleanup", false, error.ToString()); status = "failed"; }
+                 if (result.assertions.Any(x => !x.passed)) status = "failed";
+             }
+             try { dlv1?.Dispose(); }
+
+--- basis/host/HaulersDream.RuntimeHarness.csproj
++++ f08/host/HaulersDream.RuntimeHarness.csproj
+@@ -14,12 +14,14 @@
+     <RuntimeHarmonyAssembly Condition="'$(RuntimeHarmonyAssembly)' == ''">C:\Steam\steamapps\workshop\content\294100\2009463077\Current\Assemblies\0Harmony.dll</RuntimeHarmonyAssembly>
+   </PropertyGroup>
+   <ItemGroup>
+-    <Compile Include="../src/DeliveryIntent.cs" />
++    <Compile Include="../src/ActivityAlerts.cs" />
++    <Reference Include="Custom_Alerts"><HintPath>$(F08Packages)/Alerts/1.6/Assemblies/Custom_Alerts.dll</HintPath><Private>false</Private></Reference>
++    <Reference Include="TD_Find_Lib"><HintPath>$(F08Packages)/TD/1.6/Assemblies/TD_Find_Lib.dll</HintPath><Private>false</Private></Reference>
+     <Reference Include="HaulersDream">
+-      <HintPath>$(F33ProductDirectory)/1.6/Assemblies/HaulersDream.dll</HintPath><Private>false</Private>
++      <HintPath>$(F08ProductDirectory)/1.6/Assemblies/HaulersDream.dll</HintPath><Private>false</Private>
+     </Reference>
+     <Reference Include="HaulersDream.Core">
+-      <HintPath>$(F33ProductDirectory)/1.6/Assemblies/HaulersDream.Core.dll</HintPath><Private>false</Private>
++      <HintPath>$(F08ProductDirectory)/1.6/Assemblies/HaulersDream.Core.dll</HintPath><Private>false</Private>
+     </Reference>
+   </ItemGroup>
+   <ItemGroup>
+
+--- basis/controller/scripts/runtime-test.ps1
++++ f08/controller/scripts/runtime-test.ps1
+@@ -16,7 +16,7 @@
+     [string]$GameRoot = 'C:\Steam\steamapps\common\RimWorld',
+     [string]$WorkshopRoot = 'C:\Steam\steamapps\workshop\content\294100',
+     [string]$PlayerSaveDataRoot,
+-    [ValidateSet('bootstrap', 'BG01', 'BG02', 'BG03-P1', 'L04-O1', 'CAP01', 'CAP02', 'CAP03-B', 'CAP03-A', 'CAP03-C', 'L04-O1-DELIVERY', 'L04-B1', 'L04-B1-D2', 'L40-Q1', 'L40-UI-P0', 'ROBOTS-R0', 'ROBOTS-R1-AUTO', 'AF1-LIFECYCLE', 'AF1-SAVE', 'AF1-SAVE-MISSING', 'AF1-SAVE-VERSION', 'AF1-SAVE-NULLREF', 'REFUEL-G1', 'RIMMS-DLV1', 'F34-MIXED-CUT', 'F04-SETTINGS', 'F45-PB-RESTART')]
++    [ValidateSet('bootstrap', 'BG01', 'BG02', 'BG03-P1', 'L04-O1', 'CAP01', 'CAP02', 'CAP03-B', 'CAP03-A', 'CAP03-C', 'L04-O1-DELIVERY', 'L04-B1', 'L04-B1-D2', 'L40-Q1', 'L40-UI-P0', 'ROBOTS-R0', 'ROBOTS-R1-AUTO', 'AF1-LIFECYCLE', 'AF1-SAVE', 'AF1-SAVE-MISSING', 'AF1-SAVE-VERSION', 'AF1-SAVE-NULLREF', 'REFUEL-G1', 'RIMMS-DLV1', 'F34-MIXED-CUT', 'F04-SETTINGS', 'F08-ALERTS', 'F08-RESTART')]
+     [string]$CaseId = 'bootstrap',
+     [ValidateSet('bootstrap', 'baseline-gap', 'satisfied')]
+     [string]$ExpectedBehavior = 'bootstrap',
+@@ -32,7 +32,9 @@
+     [string]$RefuelGroupProfile = (Join-Path (Split-Path -Parent $PSScriptRoot) 'evidence\refuel-g1-profile.json'),
+     [string]$NearbyDeliveryProfile = (Join-Path (Split-Path -Parent $PSScriptRoot) 'evidence\dlv1-profile.json'),
+     [string]$F34MixedProfile,
+-    [string]$PeriodicBillsRoot = (Join-Path $env:TEMP 'haulersdream-periodic-bills-investigation-20260919/workshop-content/steamapps/workshop/content/294100/3685837355'),
++    [string]$CustomAlertsRoot = (Join-Path $env:TEMP 'hd-f08-20260920/Alerts'),
++    [string]$TdFindRoot = (Join-Path $env:TEMP 'hd-f08-20260920/TD'),
++    [string]$TdsRoot = (Join-Path $env:TEMP 'hd-f08-20260920/TDS'),
+     [string]$CheckpointSave,
+     [string]$CheckpointRecord,
+     [switch]$CommonSense
+@@ -215,7 +217,7 @@
+ }
+ 
+ function Initialize-RobotAssemblyIdentities([string[]]$Paths, [string]$Runtime) {
+-    $taskRequiredCount=if ($CaseId -cin @('F34-MIXED-CUT','F45-PB-RESTART')) { 11 } elseif ($CaseId -in $script:taskAf1Cases -or $CaseId -in @('REFUEL-G1','RIMMS-DLV1','F34-MIXED-CUT','F04-SETTINGS')) { 10 } else { 12 }
++    $taskRequiredCount=if ($CaseId -cin @('F08-ALERTS','F08-RESTART')) { 17 } elseif ($CaseId -ceq 'F34-MIXED-CUT') { 11 } elseif ($CaseId -in $script:taskAf1Cases -or $CaseId -in @('REFUEL-G1','RIMMS-DLV1','F34-MIXED-CUT','F04-SETTINGS')) { 10 } else { 12 }
+     if ([IntPtr]::Size -ne 8 -or $Paths.Count -ne $taskRequiredCount) { throw 'Native metadata preparation requires x64 and its exact closed assembly count (AF1/G1 ten; robots twelve).' }
+     $taskMetadataRoot=Join-Path $script:taskRun 'prepared-assembly-metadata'
+     Assert-ChildPath $taskMetadataRoot $script:taskRun
+@@ -301,7 +303,7 @@
+     $taskExpectedNames=@('Assembly-CSharp','UnityEngine.CoreModule','0Harmony','HarmonyMod','HaulersDream','HaulersDream.Core','HaulersDream.RuntimeHarness','UnityEngine.IMGUIModule','UnityEngine.ScreenCaptureModule','UnityEngine.TextRenderingModule','AIRobot','MiscRobotsPlusPlus')
+     if ($Manifest.caseId -in $script:taskAf1Cases -or $Manifest.caseId -in @('REFUEL-G1','RIMMS-DLV1','F04-SETTINGS')) { $taskExpectedNames=$taskExpectedNames[0..9] }
+     if ($Manifest.caseId -ceq 'F34-MIXED-CUT') { $taskExpectedNames=@($taskExpectedNames[0..9])+@('HaulersDream.F34Native') }
+-    if ($Manifest.caseId -ceq 'F45-PB-RESTART') { $taskExpectedNames=@($taskExpectedNames[0..9])+@('PeriodicBills') }
++    if ($Manifest.caseId -cin @('F08-ALERTS','F08-RESTART')) { $taskExpectedNames=@($taskExpectedNames[0..9])+@('TDS_Bug_Fixes','TD_Find_Lib','Custom_Alerts','TDFindLib_Royalty','TDFindLib_Ideology','TDFindLib_Biotech','TDFindLib_Odyssey') }
+     if (@($Manifest.expectedAssemblies).Count -ne $taskExpectedNames.Count -or @($taskProof.receipts).Count -ne $taskExpectedNames.Count) { throw 'Native metadata assembly/receipt census differs.' }
+     for ($taskIndex=0; $taskIndex -lt $taskExpectedNames.Count; $taskIndex++) {
+         $taskExpected=$Manifest.expectedAssemblies[$taskIndex]
+@@ -513,7 +515,7 @@
+     # files as the system code page and corrupts non-ASCII protected/copy paths.
+     $taskManifest = Get-Content -LiteralPath $taskManifestPath -Encoding UTF8 -Raw | ConvertFrom-Json
+     $taskState = Get-Content -LiteralPath (Join-Path $script:taskRun 'controller-state.json') -Encoding UTF8 -Raw | ConvertFrom-Json
+-    if ($taskManifest.schemaVersion -ne 1 -or $taskManifest.runDirectory -ne $script:taskRun -or $taskManifest.caseId -notin @('bootstrap', 'BG01', 'BG02', 'BG03-P1', 'L04-O1', 'CAP01', 'CAP02', 'CAP03-B', 'CAP03-A', 'CAP03-C', 'L04-O1-DELIVERY', 'L04-B1', 'L04-B1-D2', 'L40-Q1', 'L40-UI-P0', 'ROBOTS-R0', 'ROBOTS-R1-AUTO', 'AF1-LIFECYCLE', 'AF1-SAVE', 'AF1-SAVE-MISSING', 'AF1-SAVE-VERSION', 'AF1-SAVE-NULLREF', 'REFUEL-G1', 'RIMMS-DLV1', 'F34-MIXED-CUT', 'F04-SETTINGS', 'F45-PB-RESTART')) {
++    if ($taskManifest.schemaVersion -ne 1 -or $taskManifest.runDirectory -ne $script:taskRun -or $taskManifest.caseId -notin @('bootstrap', 'BG01', 'BG02', 'BG03-P1', 'L04-O1', 'CAP01', 'CAP02', 'CAP03-B', 'CAP03-A', 'CAP03-C', 'L04-O1-DELIVERY', 'L04-B1', 'L04-B1-D2', 'L40-Q1', 'L40-UI-P0', 'ROBOTS-R0', 'ROBOTS-R1-AUTO', 'AF1-LIFECYCLE', 'AF1-SAVE', 'AF1-SAVE-MISSING', 'AF1-SAVE-VERSION', 'AF1-SAVE-NULLREF', 'REFUEL-G1', 'RIMMS-DLV1', 'F34-MIXED-CUT', 'F04-SETTINGS', 'F08-ALERTS', 'F08-RESTART')) {
+         throw 'Unsupported manifest or mismatched run directory.'
+     }
+     if ($taskState.manifestSha256 -ne (Get-Sha256 $taskManifestPath)) { throw 'Prepared manifest was modified; refuse to use it.' }
+@@ -532,22 +534,26 @@
+             throw "Unexpected manifest layout: $($taskExpected[0])"
+         }
+     }
+-    if ($taskManifest.caseId -in @('ROBOTS-R0','ROBOTS-R1-AUTO','F04-SETTINGS','F45-PB-RESTART')) { Assert-RobotPreparedMetadata $taskManifest }
+-    if ($taskManifest.caseId -ceq 'F45-PB-RESTART') {
++    if ($taskManifest.caseId -in @('ROBOTS-R0','ROBOTS-R1-AUTO','F04-SETTINGS','F08-ALERTS','F08-RESTART')) { Assert-RobotPreparedMetadata $taskManifest }
++    if ($taskManifest.caseId -ceq 'F08-RESTART') {
+         if (-not $taskManifest.PSObject.Properties['restartCheckpoint']) { throw 'Missing actual restart checkpoint binding.' }
+         $taskCheckpoint = $taskManifest.restartCheckpoint
+         if ($taskCheckpoint.savePath -cne (Join-Path $taskManifest.saveDataDirectory 'Saves\Autostart.rws') -or
+             $taskCheckpoint.recordPath -cne (Join-Path $script:taskRun 'input\checkpoint.txt') -or
+             (Get-Sha256 $taskCheckpoint.savePath) -cne $taskCheckpoint.saveSha256 -or
+             (Get-Sha256 $taskCheckpoint.recordPath) -cne $taskCheckpoint.recordSha256) { throw 'Actual copied restart checkpoint differs.' }
++    }
++    if ($taskManifest.caseId -cin @('F08-ALERTS','F08-RESTART')) {
+         if ($taskManifest.expectedBehavior -cne 'satisfied' -or $taskManifest.negativeControl -cne 'None' -or $taskManifest.hdSource -cne 'Built' -or
+-            (@($taskManifest.expectedMods | ForEach-Object packageId) -join '|') -cne 'brrainz.harmony|ludeon.rimworld|giwaffed.haulersdream|custom.periodicbills|giwaffed.haulersdream.runtimeharness' -or
+-            $taskManifest.PSObject.Properties['f34MixedProfile']) { throw 'F45 restart requires its exact five-package candidate context.' }
++            (@($taskManifest.expectedMods | ForEach-Object packageId) -join '|') -cne 'brrainz.harmony|ludeon.rimworld|giwaffed.haulersdream|memegoddess.tdsbugfixes|memegoddess.tdfindlib|memegoddess.customalerts|giwaffed.haulersdream.runtimeharness' -or
++            $taskManifest.PSObject.Properties['f34MixedProfile']) { throw 'F08 requires its exact seven-package candidate context.' }
+         foreach ($taskProductionPin in @(
+             @('HaulersDream','32D57A64B3B35E1DF652BA66BE2BEECE923C60B42201955E31B4C587F7385C88'),
+             @('HaulersDream.Core','D623F164CEB112A8BB702F907CE0C6442488A19C074045047190AD36F09A6F3A'),
+-            @('PeriodicBills','AAE78E0DDD7CE5BA70CB13481E5F71E0FC6D47700BE27054DD19358C7EA64D9A'))) {
+-            if (@($taskManifest.expectedAssemblies | Where-Object { $_.name -ceq $taskProductionPin[0] -and $_.sha256 -ceq $taskProductionPin[1] }).Count -ne 1) { throw 'F45 restart selected image differs.' }
++            @('Custom_Alerts','A97673FEA3614701C4E4213B1FE98BE934F38D694AD20F49DE977CD459EC9F5C'),
++            @('TD_Find_Lib','A37691504D7EC62FE7C2ADD34F64512B07ED2FA3B8D5F8A203FD72E59A758D76'),
++            @('TDS_Bug_Fixes','54D8A62EA025CDE9D35140AD5D22B88E3A623D1816F7BAD3CC74D8BBC0E76B6B'))) {
++            if (@($taskManifest.expectedAssemblies | Where-Object { $_.name -ceq $taskProductionPin[0] -and $_.sha256 -ceq $taskProductionPin[1] }).Count -ne 1) { throw 'F08 restart selected image differs.' }
+         }
+     }
+     if ($taskManifest.caseId -ceq 'F04-SETTINGS') {
+@@ -830,7 +836,7 @@
+ }
+ 
+ if ($Action -eq 'Prepare') {
+-    if ($CaseId -ceq 'F45-PB-RESTART') {
++    if ($CaseId -ceq 'F08-RESTART') {
+         $CheckpointSave = Get-CanonicalPath $CheckpointSave
+         $CheckpointRecord = Get-CanonicalPath $CheckpointRecord
+         Assert-NoReparsePath $CheckpointSave
+@@ -840,15 +846,15 @@
+         $taskSourceId = [Guid]::Empty
+         if ((Split-Path -Parent $taskSourceRun) -cne $taskBase -or -not [Guid]::TryParseExact((Split-Path -Leaf $taskSourceRun),'N',[ref]$taskSourceId)) { throw 'Checkpoint must belong to one actual private runtime run.' }
+         $taskCheckpointName = [IO.Path]::GetFileNameWithoutExtension($CheckpointSave)
+-        if ($taskCheckpointName -cnotin @('F45-PB-0-partial','F45-PB-0-cooldown','F45-PB-1-partial','F45-PB-1-cooldown') -or
++        if ($taskCheckpointName -cne 'F08-ActivityAlert' -or
+             $CheckpointSave -ine (Join-Path $taskSourceRun ('SaveData\Saves\' + $taskCheckpointName + '.rws')) -or
+-            $CheckpointRecord -ine (Join-Path $taskSourceRun ('evidence\' + $taskCheckpointName + '.txt'))) { throw 'Checkpoint save/record do not join one actual production checkpoint.' }
++            $CheckpointRecord -ine (Join-Path $taskSourceRun 'evidence\checkpoint.txt')) { throw 'Checkpoint save/record do not join one actual production checkpoint.' }
+         $taskSourceManifestPath = Join-Path $taskSourceRun 'manifest.json'
+         $taskSourceResultPath = Join-Path $taskSourceRun 'evidence\result.json'
+         $taskSourceLogPath = Join-Path $taskSourceRun 'evidence\Player.log'
+         $taskSourceManifest = Get-Content -LiteralPath $taskSourceManifestPath -Raw | ConvertFrom-Json
+         $taskSourceResult = Read-Dlv1CommonResult $taskSourceResultPath
+-        if ($taskSourceManifest.caseId -cne 'F45-PB-PRODUCTION' -or $taskSourceResult.caseId -cne 'F45-PB-PRODUCTION' -or
++        if ($taskSourceManifest.caseId -cne 'F08-ALERTS' -or $taskSourceResult.caseId -cne 'F08-ALERTS' -or
+             $taskSourceManifest.runId -cne $taskSourceResult.runId -or $taskSourceResult.status -cne 'passed' -or
+             @($taskSourceResult.assertions | Where-Object { -not $_.passed }).Count -ne 0) { throw 'Checkpoint producer did not pass.' }
+         if (@(Select-String -LiteralPath $taskSourceLogPath -Pattern 'not deep-saved|cause errors during loading|Could not resolve reference').Count -ne 0) { throw 'Checkpoint producer has known unresolved save ownership warnings; retain it but do not use as clean restart input.' }
+@@ -856,13 +862,23 @@
+         if (-not $taskCheckpointText.StartsWith(('save=' + $CheckpointSave + '; '),[StringComparison]::OrdinalIgnoreCase)) { throw 'Checkpoint record source path differs.' }
+         [xml]$taskCheckpointXml = Get-Content -LiteralPath $CheckpointSave -Raw
+         if ($taskCheckpointXml.DocumentElement.Name -cne 'savegame') { throw 'Actual checkpoint is not a native savegame.' }
+-        if ($RunDirectory -or $ExpectedBehavior -cne 'satisfied' -or $NegativeControl -cne 'None' -or $CommonSense -or $HdSource -cne 'Built' -or $F34MixedProfile) { throw 'F45 restart requires Built/satisfied/None, no extra compatibility profile, and a fresh controller-generated ID.' }
+-        $PeriodicBillsRoot=Get-CanonicalPath $PeriodicBillsRoot
+-        Assert-NoReparsePath $PeriodicBillsRoot
+-        if ((Get-Sha256 (Join-Path $PeriodicBillsRoot '1.6/Assemblies/PeriodicBills.dll')) -cne 'AAE78E0DDD7CE5BA70CB13481E5F71E0FC6D47700BE27054DD19358C7EA64D9A' -or
+-            @(Get-ChildItem -LiteralPath $PeriodicBillsRoot -Recurse -File -Force).Count -ne 13) { throw 'Actual downloaded PB package differs.' }
++        if ($RunDirectory -or $ExpectedBehavior -cne 'satisfied' -or $NegativeControl -cne 'None' -or $CommonSense -or $HdSource -cne 'Built' -or $F34MixedProfile) { throw 'F08 restart requires Built/satisfied/None, no extra compatibility profile, and a fresh controller-generated ID.' }
++    }
++    if ($CaseId -cin @('F08-ALERTS','F08-RESTART')) {
++        if ($RunDirectory -or $ExpectedBehavior -cne 'satisfied' -or $NegativeControl -cne 'None' -or $CommonSense -or $HdSource -cne 'Built' -or $F34MixedProfile) { throw 'F08 requires Built/satisfied/None, no extra compatibility profile and fresh actual ID.' }
++        $CustomAlertsRoot=Get-CanonicalPath $CustomAlertsRoot
++        $TdFindRoot=Get-CanonicalPath $TdFindRoot
++        $TdsRoot=Get-CanonicalPath $TdsRoot
++        foreach ($taskPackage in @(
++            @($CustomAlertsRoot,'1.6/Assemblies/Custom_Alerts.dll','A97673FEA3614701C4E4213B1FE98BE934F38D694AD20F49DE977CD459EC9F5C',33),
++            @($TdFindRoot,'1.6/Assemblies/TD_Find_Lib.dll','A37691504D7EC62FE7C2ADD34F64512B07ED2FA3B8D5F8A203FD72E59A758D76',163),
++            @($TdsRoot,'1.6/Assemblies/TDS_Bug_Fixes.dll','54D8A62EA025CDE9D35140AD5D22B88E3A623D1816F7BAD3CC74D8BBC0E76B6B',22))) {
++            Assert-NoReparsePath $taskPackage[0]
++            if ((Get-Sha256 (Join-Path $taskPackage[0] $taskPackage[1])) -cne $taskPackage[2] -or
++                @(Get-ChildItem -LiteralPath $taskPackage[0] -Recurse -File -Force).Count -ne $taskPackage[3]) { throw 'Actual acquired F08 package differs.' }
++        }
+         if ((Get-Sha256 (Join-Path $BuiltModRoot '1.6/Assemblies/HaulersDream.dll')) -cne '32D57A64B3B35E1DF652BA66BE2BEECE923C60B42201955E31B4C587F7385C88' -or
+-            (Get-Sha256 (Join-Path $BuiltModRoot '1.6/Assemblies/HaulersDream.Core.dll')) -cne 'D623F164CEB112A8BB702F907CE0C6442488A19C074045047190AD36F09A6F3A') { throw 'F45 restart candidate pair differs.' }
++            (Get-Sha256 (Join-Path $BuiltModRoot '1.6/Assemblies/HaulersDream.Core.dll')) -cne 'D623F164CEB112A8BB702F907CE0C6442488A19C074045047190AD36F09A6F3A') { throw 'F08 restart candidate pair differs.' }
+     }
+     if ($CaseId -ceq 'F04-SETTINGS') {
+         if ($RunDirectory -or $ExpectedBehavior -cne 'satisfied' -or $NegativeControl -cne 'None' -or $CommonSense -or $HdSource -cne 'Built' -or $F34MixedProfile) { throw 'F04-SETTINGS requires Built/satisfied/None, no CommonSense or companion profile, and a fresh controller-generated ID.' }
+@@ -987,7 +1003,8 @@
+         $taskProtectedRoots += @((Join-Path $WorkshopRoot '3033901359'), (Join-Path $WorkshopRoot '3416243474'))
+     }
+     if ($CaseId -in @('ROBOTS-R0','ROBOTS-R1-AUTO')) { $taskProtectedRoots += @($taskRobotPackages | ForEach-Object { $_.root }) }
+-    if ($CaseId -ceq 'F45-PB-RESTART') { $taskProtectedRoots += @($PeriodicBillsRoot,$taskHdRoot,$HarnessAssembly,$CheckpointSave,$CheckpointRecord,$taskSourceManifestPath,$taskSourceResultPath,$taskSourceLogPath) }
++    if ($CaseId -cin @('F08-ALERTS','F08-RESTART')) { $taskProtectedRoots += @($CustomAlertsRoot,$TdFindRoot,$TdsRoot,$taskHdRoot,$HarnessAssembly) }
++    if ($CaseId -ceq 'F08-RESTART') { $taskProtectedRoots += @($CheckpointSave,$CheckpointRecord,$taskSourceManifestPath,$taskSourceResultPath,$taskSourceLogPath) }
+     if ($CaseId -eq 'ROBOTS-R1-AUTO') {
+         $taskProtectedRoots += @($taskR1Profile.content.root,$RobotAutomaticProfile,$taskR1Profile.harness.path,$taskR1Profile.harness.pdbPath,$taskR1Profile.harness.sourceManifestPath,$taskR1Profile.harness.reviewReceiptPath)
+     }
+@@ -1016,7 +1033,7 @@
+     Write-NewJson (Join-Path $script:taskRun 'preparation-start.json') ([ordered]@{
+         runId = $taskRunId; createdUtc = [DateTime]::UtcNow.ToString('O'); status = 'preparing'; hdSource = $HdSource
+     })
+-    if ($CaseId -ceq 'F45-PB-RESTART') {
++    if ($CaseId -ceq 'F08-RESTART') {
+         [IO.Directory]::CreateDirectory((Join-Path $script:taskRun 'input')) | Out-Null
+         Copy-VerifiedFile $CheckpointSave (Join-Path $taskSavedata 'Saves\Autostart.rws') 'actual-restart-save'
+         Copy-VerifiedFile $CheckpointRecord (Join-Path $script:taskRun 'input\checkpoint.txt') 'actual-restart-record'
+@@ -1035,9 +1052,13 @@
+     $taskNeatRoot = Join-Path $taskRuntime 'Mods\NeatStorage'
+     $taskHdDestination = Join-Path $taskRuntime 'Mods\HaulersDream'
+     $taskHarnessRoot = Join-Path $taskRuntime 'Mods\HaulersDreamRuntimeHarness'
+-    if ($CaseId -ceq 'F45-PB-RESTART') {
+-        $taskPbRoot = Join-Path $taskRuntime 'Mods\PeriodicBills'
+-        Copy-VerifiedTree $PeriodicBillsRoot $taskPbRoot 'periodic-bills'
++    if ($CaseId -cin @('F08-ALERTS','F08-RESTART')) {
++        $taskAlertsRoot = Join-Path $taskRuntime 'Mods\CustomAlerts'
++        $taskTdRoot = Join-Path $taskRuntime 'Mods\TDFindLib'
++        $taskTdsRoot = Join-Path $taskRuntime 'Mods\TDSBugFixes'
++        Copy-VerifiedTree $CustomAlertsRoot $taskAlertsRoot 'custom-alerts'
++        Copy-VerifiedTree $TdFindRoot $taskTdRoot 'td-find-lib'
++        Copy-VerifiedTree $TdsRoot $taskTdsRoot 'tds-bug-fixes'
+     }
+     Copy-VerifiedTree (Join-Path $WorkshopRoot '2009463077') $taskHarmonyRoot 'harmony'
+     if ($CommonSense) { Copy-VerifiedTree (Join-Path $WorkshopRoot '1561769193') $taskCsRoot 'common-sense' }
+@@ -1098,7 +1119,11 @@
+         }
+     }
+     $taskMods.Add([pscustomobject]@{ packageId = 'giwaffed.haulersdream'; rootPath = $taskHdDestination })
+-    if ($CaseId -ceq 'F45-PB-RESTART') { $taskMods.Add([pscustomobject]@{ packageId = 'custom.periodicbills'; rootPath = $taskPbRoot }) }
++    if ($CaseId -cin @('F08-ALERTS','F08-RESTART')) {
++        $taskMods.Add([pscustomobject]@{ packageId = 'memegoddess.tdsbugfixes'; rootPath = $taskTdsRoot })
++        $taskMods.Add([pscustomobject]@{ packageId = 'memegoddess.tdfindlib'; rootPath = $taskTdRoot })
++        $taskMods.Add([pscustomobject]@{ packageId = 'memegoddess.customalerts'; rootPath = $taskAlertsRoot })
++    }
+     $taskMods.Add([pscustomobject]@{ packageId = 'giwaffed.haulersdream.runtimeharness'; rootPath = $taskHarnessRoot })
+     $taskKnownExpansions = @()
+     foreach ($taskDataDir in Get-ChildItem -LiteralPath (Join-Path $taskRuntime 'Data') -Directory) {
+@@ -1122,7 +1147,7 @@
+ </ModsConfigData>
+ "@
+     Write-NewText (Join-Path $taskConfig 'ModsConfig.xml') $taskModsXml
+-    $taskPauseOnLoad = if ($CaseId -ceq 'F45-PB-RESTART') { 'True' } else { 'False' }
++    $taskPauseOnLoad = if ($CaseId -ceq 'F08-RESTART') { 'True' } else { 'False' }
+     Write-NewText (Join-Path $taskConfig 'Prefs.xml') @"
+ <?xml version="1.0" encoding="utf-8"?>
+ <PrefsData>
+@@ -1144,7 +1169,7 @@
+         (Join-Path $taskHdDestination '1.6\Assemblies\HaulersDream.Core.dll'),
+         (Join-Path $taskHarnessRoot 'Assemblies\HaulersDream.RuntimeHarness.dll')
+     )
+-    if ($CaseId -in @('L40-Q1','L40-UI-P0','ROBOTS-R0','ROBOTS-R1-AUTO') -or $CaseId -in $script:taskAf1Cases -or $CaseId -in @('REFUEL-G1','RIMMS-DLV1','F34-MIXED-CUT','F04-SETTINGS','F45-PB-RESTART')) {
++    if ($CaseId -in @('L40-Q1','L40-UI-P0','ROBOTS-R0','ROBOTS-R1-AUTO') -or $CaseId -in $script:taskAf1Cases -or $CaseId -in @('REFUEL-G1','RIMMS-DLV1','F34-MIXED-CUT','F04-SETTINGS','F08-ALERTS','F08-RESTART')) {
+         $taskAssemblyPaths += @('UnityEngine.IMGUIModule.dll','UnityEngine.ScreenCaptureModule.dll','UnityEngine.TextRenderingModule.dll') | ForEach-Object {
+             Join-Path $taskRuntime ('RimWorldWin64_Data\Managed\' + $_)
+         }
+@@ -1163,7 +1188,10 @@
+         }
+     }
+     if ($CaseId -ceq 'F34-MIXED-CUT') { $taskAssemblyPaths += Join-Path $taskHarnessRoot 'Assemblies\HaulersDream.F34Native.dll' }
+-    if ($CaseId -ceq 'F45-PB-RESTART') { $taskAssemblyPaths += Join-Path $taskPbRoot '1.6\Assemblies\PeriodicBills.dll' }
++    if ($CaseId -cin @('F08-ALERTS','F08-RESTART')) {
++        $taskAssemblyPaths += @((Join-Path $taskTdsRoot '1.6/Assemblies/TDS_Bug_Fixes.dll'),(Join-Path $taskTdRoot '1.6/Assemblies/TD_Find_Lib.dll'),(Join-Path $taskAlertsRoot '1.6/Assemblies/Custom_Alerts.dll'))
++        $taskAssemblyPaths += @('Royalty','Ideology','Biotech','Odyssey') | ForEach-Object { Join-Path $taskTdRoot ('1.6/ModSupport/' + $_ + '/Assemblies/TDFindLib_' + $_ + '.dll') }
++    }
+     $taskConfigFiles = @(Get-ChildItem -LiteralPath $taskConfig -File | ForEach-Object { [pscustomobject]@{ path = $_.FullName; sha256 = Get-Sha256 $_.FullName } })
+     if ($CaseId -eq 'ROBOTS-R1-AUTO') {
+         $taskR1PreparedPath=Join-Path $script:taskRun 'robot-r1-profile.json'
+@@ -1211,7 +1239,7 @@
+         knownExpansions = $taskKnownExpansions; configFiles = $taskConfigFiles; copiedFiles = @($taskCopiedFiles.ToArray())
+         protectedRoots = $taskProtectedRoots; protectedBefore = $taskProtectedBefore
+         startupDeadlineSeconds = 300
+-        semantics = if ($CaseId -ceq 'F45-PB-RESTART') { 'Actual native checkpoint reload in a fresh process, persisted fields/nonbatch state, native productive continuation and controlled cooldown boundary probe. Full logs and accounting require review; no automatic F45 acceptance.' } elseif ($CaseId -ceq 'F04-SETTINGS') { 'Native settings rendering fixture compiled into the host; screenshots, geometry, cleanup and whole-log review are required. No automatic F04 acceptance.' } elseif ($CaseId -ceq 'F34-MIXED-CUT') { 'Paused mixed-plant boundary capture; baseline failures preserved; no full F34 acceptance.' } elseif ($CaseId -ceq 'RIMMS-DLV1') { $taskDlv1Read.profile.scope }
++        semantics = if ($CaseId -cin @('F08-ALERTS','F08-RESTART')) { 'Current Custom Alerts dropdown, scheduled job-family matches and one actual saved-alert restart. Full GUI/job/evaluation/physical/accounting/log review; no automatic feedback acceptance.' } elseif ($CaseId -ceq 'F04-SETTINGS') { 'Native settings rendering fixture compiled into the host; screenshots, geometry, cleanup and whole-log review are required. No automatic F04 acceptance.' } elseif ($CaseId -ceq 'F34-MIXED-CUT') { 'Paused mixed-plant boundary capture; baseline failures preserved; no full F34 acceptance.' } elseif ($CaseId -ceq 'RIMMS-DLV1') { $taskDlv1Read.profile.scope }
+             elseif ($CaseId -ceq 'REFUEL-G1') { $taskRefuelG1Read.profile.scope }
+             elseif ($CaseId -in $script:taskAf1Cases) { $taskAf1Read.profile.scope }
+             elseif ($CaseId -eq 'BG03-P1') { 'Partial initially tagged bill ingredients, two floor sources and native cooking/cleaning only; other BG03 controls and original-report convergence remain unfinished.' }
+@@ -1231,7 +1259,7 @@
+             elseif ($CaseId -eq 'L04-O1-DELIVERY') { 'Actual first automatic bulk delivery and bounded follow-up; original report loops remain separate.' }
+             else { 'Bootstrap isolation only; optional intentional-error control is not a clean-runtime pass.' }
+     }
+-    if ($CaseId -in @('ROBOTS-R0','ROBOTS-R1-AUTO') -or $CaseId -in $script:taskAf1Cases -or $CaseId -in @('REFUEL-G1','RIMMS-DLV1','F34-MIXED-CUT','F04-SETTINGS','F45-PB-RESTART')) {
++    if ($CaseId -in @('ROBOTS-R0','ROBOTS-R1-AUTO') -or $CaseId -in $script:taskAf1Cases -or $CaseId -in @('REFUEL-G1','RIMMS-DLV1','F34-MIXED-CUT','F04-SETTINGS','F08-ALERTS','F08-RESTART')) {
+         $taskRobotIdentities=Initialize-RobotAssemblyIdentities $taskAssemblyPaths $taskRuntime
+         $taskManifest.expectedAssemblies=$taskRobotIdentities.assemblies
+         $taskManifest.robotMetadata=$taskRobotIdentities.provenance
+@@ -1257,7 +1285,7 @@
+         $taskManifest.nearbyDeliveryProfile=[pscustomobject]@{sourcePath=$NearbyDeliveryProfile;preparedPath=$taskDlv1PreparedPath;sha256=$taskDlv1Read.admission.sha256;bytes=$taskDlv1Read.admission.bytes;controllerPins=@($taskDlv1Inputs.controllerPins);requiredProtectedRoots=@($taskDlv1Inputs.protectedRoots)}
+         Assert-Dlv1Prepared ([pscustomobject]$taskManifest)
+     }
+-    if ($CaseId -ceq 'F45-PB-RESTART') {
++    if ($CaseId -ceq 'F08-RESTART') {
+         $taskManifest.restartCheckpoint = [pscustomobject]@{
+             sourceSave=$CheckpointSave; sourceRecord=$CheckpointRecord; sourceRun=$taskSourceRun
+             savePath=(Join-Path $taskSavedata 'Saves\Autostart.rws'); saveSha256=(Get-Sha256 $CheckpointSave)
+@@ -1319,7 +1347,7 @@
+         '-quicktest', ('-hd-test=' + $taskCase),
+         ('"-hd-harnessmanifest={0}"' -f (Join-Path $script:taskRun 'manifest.json'))
+     )
+-    if ($taskCase -ceq 'F45-PB-RESTART') {
++    if ($taskCase -ceq 'F08-RESTART') {
+         $taskArguments = @($taskArguments | Where-Object { $_ -cne '-quicktest' })
+         $taskRestartSaves = @(Get-ChildItem -LiteralPath (Join-Path $taskManifest.saveDataDirectory 'Saves') -File -Force)
+         if ($taskRestartSaves.Count -ne 1 -or $taskRestartSaves[0].Name -cne 'Autostart.rws') { throw 'Restart requires exactly its copied native Autostart save.' }
+@@ -1367,7 +1395,7 @@
+ $taskResult = $null
+ if (Test-Path -LiteralPath $taskResultPath) {
+     try {
+-        if ($taskCase -cin @('RIMMS-DLV1','F34-MIXED-CUT','F04-SETTINGS','F45-PB-RESTART')) { $taskResult = Read-Dlv1CommonResult $taskResultPath }
++        if ($taskCase -cin @('RIMMS-DLV1','F34-MIXED-CUT','F04-SETTINGS','F08-ALERTS','F08-RESTART')) { $taskResult = Read-Dlv1CommonResult $taskResultPath }
+         else { $taskResult = Get-Content -LiteralPath $taskResultPath -Encoding UTF8 -Raw | ConvertFrom-Json }
+     }
+     catch { $taskResult = [pscustomobject]@{ status = 'result-incomplete'; detail = $_.Exception.Message } }
+@@ -1385,8 +1413,8 @@
+ }
+ 
+ $taskProblems = New-Object 'System.Collections.Generic.List[string]'
+-if ($taskCase -ceq 'F45-PB-RESTART') {
+-    $taskProblems.Add('F45 restart requires independent actual saved-game load, four-field/nonbatch persistence, native work, payment/product, schedule, cleanup and whole-log review. No automatic feedback completion.')
++if ($taskCase -cin @('F08-ALERTS','F08-RESTART')) {
++    $taskProblems.Add('F08 requires independent actual dropdown/scheduled activity/material/cleanup/whole-log review, plus saved alert configuration and one registration after its actual fresh restart. No automatic feedback completion.')
+ }
+ if ($taskCase -ceq 'F04-SETTINGS') {
+     $taskProblems.Add('F04 settings rendering requires independent screenshot, geometry, actual-window, cleanup and whole-log review. Automatic semantic acceptance remains open.')
+@@ -1459,7 +1487,7 @@
+             if (-not (Test-RequiredAssertion $taskResult.assertions $taskRequired $true)) { $taskProblems.Add('Missing unique assembly assertion: ' + $taskRequired) }
+         }
+     }
+-    if ($taskCase -in @('ROBOTS-R0','ROBOTS-R1-AUTO') -or $taskCase -in $script:taskAf1Cases -or $taskCase -in @('REFUEL-G1','RIMMS-DLV1','F34-MIXED-CUT','F04-SETTINGS','F45-PB-RESTART')) { Test-RobotResultMvids $taskResult $taskManifest $taskProblems }
++    if ($taskCase -in @('ROBOTS-R0','ROBOTS-R1-AUTO') -or $taskCase -in $script:taskAf1Cases -or $taskCase -in @('REFUEL-G1','RIMMS-DLV1','F34-MIXED-CUT','F04-SETTINGS','F08-ALERTS','F08-RESTART')) { Test-RobotResultMvids $taskResult $taskManifest $taskProblems }
+     if ($taskCase -eq 'ROBOTS-R1-AUTO') {
+         foreach ($taskR1Assertion in @('robot-r1-context-intact','robot-r1-cleanup-complete','robot-r1-automatic-selection','robot-r1-two-material-inventory','robot-r1-native-transfer-delivery','robot-r1-native-reservation','robot-r1-native-job-success','robot-r1-stable-storage','robot-r1-fixture-complete')) {
+             if (-not (Test-RequiredAssertion $taskResult.assertions $taskR1Assertion $true)) { $taskProblems.Add('Missing unique R1 capture assertion: '+$taskR1Assertion) }
+@@ -1800,7 +1828,7 @@
+     refuelGroupEvidence = $taskRefuelG1Evidence
+     nearbyDeliveryEvidence = $taskDlv1Evidence
+     f34MixedBoundaryEvidence = $taskF34Evidence
+-    scope = if ($taskCase -ceq 'F45-PB-RESTART') { 'Actual native checkpoint restart and productive continuation only; full F45 acceptance remains separate.' } elseif ($taskCase -ceq 'F04-SETTINGS') { 'Native settings render only; inspect actual screenshots, text geometry, programmatic traversal, cleanup and logs. No automatic feedback completion.' } elseif ($taskCase -ceq 'F34-MIXED-CUT') { 'Eighteen paused native/product boundaries; full raw snapshots/assertions require independent review. Baseline stays failed. Productive cut/UI/poll/MP/full F34 remain open.' } elseif ($taskCase -ceq 'RIMMS-DLV1') { 'Three controlled native delivery scenes; independent complete transactions/physical owner/manifest/lineage/job/observer/Home/environment/process/log review remains mandatory. No automatic native, command/editor/MP/DLV2/save/feedback acceptance.' }
++    scope = if ($taskCase -cin @('F08-ALERTS','F08-RESTART')) { 'Focused current activity-family integration; actual source and restart outcomes require independent review.' } elseif ($taskCase -ceq 'F04-SETTINGS') { 'Native settings render only; inspect actual screenshots, text geometry, programmatic traversal, cleanup and logs. No automatic feedback completion.' } elseif ($taskCase -ceq 'F34-MIXED-CUT') { 'Eighteen paused native/product boundaries; full raw snapshots/assertions require independent review. Baseline stays failed. Productive cut/UI/poll/MP/full F34 remain open.' } elseif ($taskCase -ceq 'RIMMS-DLV1') { 'Three controlled native delivery scenes; independent complete transactions/physical owner/manifest/lineage/job/observer/Home/environment/process/log review remains mandatory. No automatic native, command/editor/MP/DLV2/save/feedback acceptance.' }
+         elseif ($taskCase -ceq 'REFUEL-G1') { 'Six ordinary native refuel scenes only; independent complete scene/item graph, observers, publication, Home, cleanup, process and log review is mandatory. No automatic acceptance; fault/save/recovery/UI/CE/MP remain separate.' }
+         elseif ($taskCase -in $script:taskAf1Cases) { 'Finite AF1 native capture only; complete independent record/observer/serializer/save/log review remains mandatory. Same-process reload is not a full restart; automatic work, refuel and complete food behavior remain separate.' }
+         elseif ($taskCase -eq 'BG03-P1') { 'Only initially tagged milk plus two remaining floor ingredients, native bill/cleaning and bounded follow-up are measured. Other BG03 controls and original-report convergence remain unverified.' }
+
+--- basis/launch.ps1
++++ f08/launch.ps1
+@@ -4,44 +4,44 @@
+ )
+ [IO.Directory]::CreateDirectory($OutputDirectory) | Out-Null
+ $ErrorActionPreference = 'Stop'
+-$f33Root = $PSScriptRoot
+-$f33Run = $RunDirectory
+-$f33Controller = Join-Path $f33Root 'controller/scripts/runtime-test.ps1'
+-$f33OutcomePath = Join-Path $OutputDirectory 'native-outcome.json'
+-if (Test-Path -LiteralPath $f33OutcomePath) { throw 'Inspect the existing outcome instead of relaunching.' }
+-$f33Process = $null
+-$f33Outcome = [ordered]@{startedUtc=[DateTime]::UtcNow.ToString('o');runDirectory=$f33Run;processId=$null;joined=$false;exitCode=$null;deadlineExceeded=$false;error=$null}
++$f08Root = $PSScriptRoot
++$f08Run = $RunDirectory
++$f08Controller = Join-Path $f08Root 'controller/scripts/runtime-test.ps1'
++$f08OutcomePath = Join-Path $OutputDirectory 'native-outcome.json'
++if (Test-Path -LiteralPath $f08OutcomePath) { throw 'Inspect the existing outcome instead of relaunching.' }
++$f08Process = $null
++$f08Outcome = [ordered]@{startedUtc=[DateTime]::UtcNow.ToString('o');runDirectory=$f08Run;processId=$null;joined=$false;exitCode=$null;deadlineExceeded=$false;error=$null}
+ try {
+-    $f33Launch = & $f33Controller -Action Launch -RunDirectory $f33Run
+-    $f33Process = $f33Launch.process
+-    if ($null -eq $f33Process) { throw 'Controller did not return its owned process.' }
+-    $f33Outcome.processId = $f33Process.Id
+-    $f33Outcome.processStartedUtc = $f33Process.StartTime.ToUniversalTime().ToString('o')
+-    $f33Outcome.executable = $f33Process.MainModule.FileName
+-    $f33Outcome | ConvertTo-Json | Set-Content -LiteralPath (Join-Path $OutputDirectory 'native-started.json') -Encoding UTF8
+-    Write-Output ('Native delivery test started: PID ' + $f33Process.Id)
+-    $f33Watch = [Diagnostics.Stopwatch]::StartNew()
+-    while (-not $f33Process.WaitForExit(30000)) {
+-        if ($f33Watch.Elapsed.TotalSeconds -ge 360) {
+-            $f33Outcome.deadlineExceeded = $true
+-            $f33Process.Kill()
+-            if (-not $f33Process.WaitForExit(30000)) { throw 'Owned process termination unconfirmed.' }
++    $f08Launch = & $f08Controller -Action Launch -RunDirectory $f08Run
++    $f08Process = $f08Launch.process
++    if ($null -eq $f08Process) { throw 'Controller did not return its owned process.' }
++    $f08Outcome.processId = $f08Process.Id
++    $f08Outcome.processStartedUtc = $f08Process.StartTime.ToUniversalTime().ToString('o')
++    $f08Outcome.executable = $f08Process.MainModule.FileName
++    $f08Outcome | ConvertTo-Json | Set-Content -LiteralPath (Join-Path $OutputDirectory 'native-started.json') -Encoding UTF8
++    Write-Output ('Native activity alert test started: PID ' + $f08Process.Id)
++    $f08Watch = [Diagnostics.Stopwatch]::StartNew()
++    while (-not $f08Process.WaitForExit(30000)) {
++        if ($f08Watch.Elapsed.TotalSeconds -ge 360) {
++            $f08Outcome.deadlineExceeded = $true
++            $f08Process.Kill()
++            if (-not $f08Process.WaitForExit(30000)) { throw 'Owned process termination unconfirmed.' }
+             break
+         }
+     }
+-    $f33Outcome.joined = $true
+-    $f33Outcome.exitCode = $f33Process.ExitCode
++    $f08Outcome.joined = $true
++    $f08Outcome.exitCode = $f08Process.ExitCode
+ } catch {
+-    $f33Outcome.error = $_.ToString()
+-    if ($null -ne $f33Process -and -not $f33Outcome.joined) {
++    $f08Outcome.error = $_.ToString()
++    if ($null -ne $f08Process -and -not $f08Outcome.joined) {
+         try {
+-            if (-not $f33Process.HasExited) { $f33Process.Kill() }
+-            if ($f33Process.WaitForExit(30000)) { $f33Outcome.joined=$true; $f33Outcome.exitCode=$f33Process.ExitCode }
+-        } catch { $f33Outcome.error += '; owned cleanup: ' + $_.ToString() }
++            if (-not $f08Process.HasExited) { $f08Process.Kill() }
++            if ($f08Process.WaitForExit(30000)) { $f08Outcome.joined=$true; $f08Outcome.exitCode=$f08Process.ExitCode }
++        } catch { $f08Outcome.error += '; owned cleanup: ' + $_.ToString() }
+     }
+ } finally {
+-    $f33Outcome.finishedUtc = [DateTime]::UtcNow.ToString('o')
+-    $f33Outcome | ConvertTo-Json | Set-Content -LiteralPath $f33OutcomePath -Encoding UTF8
++    $f08Outcome.finishedUtc = [DateTime]::UtcNow.ToString('o')
++    $f08Outcome | ConvertTo-Json | Set-Content -LiteralPath $f08OutcomePath -Encoding UTF8
+ }
+-$f33Outcome | ConvertTo-Json
+-if ($f33Outcome.error -or -not $f33Outcome.joined -or $f33Outcome.deadlineExceeded -or $f33Outcome.exitCode -ne 0) { exit 1 }
++$f08Outcome | ConvertTo-Json
++if ($f08Outcome.error -or -not $f08Outcome.joined -or $f08Outcome.deadlineExceeded -or $f08Outcome.exitCode -ne 0) { exit 1 }

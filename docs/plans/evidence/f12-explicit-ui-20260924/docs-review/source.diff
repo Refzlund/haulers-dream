@@ -1,0 +1,23 @@
+--- README.before.md
++++ README.md
+@@ -227,6 +227,20 @@
+     sites so several pawns build in parallel, or as haul+build, site by site. A separate order,
+     "Prioritize hauling materials to…", stocks a site before it's even buildable.
+ 
++**Haul a chosen stack to a place or shelf:** select an undrafted hauler and right-click the
++source stack → **Haul … to…**, or use the pawn's **Haul to…** button and select the stack.
++Choose an amount with the number field or slider, then **Choose destination** and click a
++reachable ground cell outside storage or a native shelf that accepts the item. A single item
++goes straight to destination selection. Enable **Add to the work queue**, or hold your Queue
++Order key when opening the order, to append it; otherwise it replaces current work.
++
++Only the selected stack supplies the order, with multiple trips if needed. A shelf order stays
++on that selected shelf, including when its settings are linked to other shelves; modded storage
++providers are not covered by this command yet. Open **Hauling orders** to see delivered/total
++quantities and any blocking reason. After resolving a blockage, use **Resume** (optionally
++**Queue resumed orders**), or **Cancel order** to stop the remaining work. Right-click or Escape
++cancels destination selection before an order is placed.
++
+ ### Quality of life
+ 
+ 25. **Per-pawn controls** — every eligible colonist and work-mech has an "Auto-haul yields" gizmo to

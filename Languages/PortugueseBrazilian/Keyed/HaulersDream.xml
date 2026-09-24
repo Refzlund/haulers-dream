@@ -357,7 +357,7 @@
 <HaulersDream.LoadTransporter.Option>Priorizar carregamento em massa de {0}</HaulersDream.LoadTransporter.Option>
 <HaulersDream.LoadTransporter.CouldNotStart>Nada por perto para carregar em massa naquele transportador agora.</HaulersDream.LoadTransporter.CouldNotStart>
 <HaulersDream.Setting.EnableBulkLoadTransporters>Carregar transportadores e naves em massa em uma viagem</HaulersDream.Setting.EnableBulkLoadTransporters>
-<HaulersDream.Setting.EnableBulkLoadTransportersDesc>Quando uma cápsula de transporte ou nave é marcada para carregar, um transportador reivindica uma fatia do manifesto dela, varre várias pilhas próximas para o inventário, caminha até o transportador UMA vez e as deposita todas — em vez da uma-pilha-nas-mãos por caminhada do jogo base. Vários transportadores dividem um manifesto grande sem transporte duplicado, e a cápsula não embarca nem decola até que a carga reivindicada esteja dentro. Com isto desligado, o carregamento de pilha única de transportador do jogo base é usado sem alteração.</HaulersDream.Setting.EnableBulkLoadTransportersDesc>
+<HaulersDream.Setting.EnableBulkLoadTransportersDesc>Quando uma cápsula de transporte ou nave é marcada para carregar, um transportador reivindica uma fatia do manifesto dela, varre várias pilhas próximas para o inventário, caminha até o transportador UMA vez e as deposita todas — em vez da uma-pilha-nas-mãos por caminhada do jogo base. Vários transportadores dividem um manifesto grande sem transporte duplicado, e a cápsula não embarca nem decola até que a carga reivindicada esteja dentro. Com isto desligado, o carregamento de pilha única de transportador do jogo base é usado sem alteração. Uma ordem prioritária repete viagens para esta lista após entregas bem-sucedidas enquanto o peão não estiver recrutado nem tiver novas ordens na fila. Um peão recrutado pode fazer uma viagem de carregamento.</HaulersDream.Setting.EnableBulkLoadTransportersDesc>
 <HaulersDream.Setting.BulkLoadAiUpdateFrequency>Intervalo de reverificação de carregamento: {0} ticks</HaulersDream.Setting.BulkLoadAiUpdateFrequency>
 <HaulersDream.LoadPortal.Report>carregando um portal em massa.</HaulersDream.LoadPortal.Report>
 <HaulersDream.LoadPortal.Option>Priorizar carregamento em massa de {0}</HaulersDream.LoadPortal.Option>
@@ -420,7 +420,7 @@
 <HaulersDream.Setting.OpportunisticLoadDesc>Um peão que já carrega itens que uma cápsula de transporte, nave, portal de mapa ou veículo próximo está esperando vai se desviar para entregá-los, em vez de começar uma viagem de coleta totalmente nova. Menos caminhadas desperdiçadas. Desligado por padrão (muda qual tarefa um peão pega em seguida).</HaulersDream.Setting.OpportunisticLoadDesc>
 <HaulersDream.Setting.LoadOpportunityRadius>Raio de busca de depósito pelo caminho: {0} células</HaulersDream.Setting.LoadOpportunityRadius>
 <HaulersDream.Setting.ContinuousLoading>Ordem de clique direito "Carregar até completar"</HaulersDream.Setting.ContinuousLoading>
-<HaulersDream.Setting.ContinuousLoadingDesc>Adiciona uma ordem de clique direito que envia um único entregador (mesmo recrutado) por todo grupo de transporte próximo que ainda precisa de carregamento, encadeando os trabalhos até que estejam todos cheios — útil para carregar uma caravana grande em um só comando. Desligado por padrão (conveniência opcional).</HaulersDream.Setting.ContinuousLoadingDesc>
+<HaulersDream.Setting.ContinuousLoadingDesc>Adiciona uma ordem com o botão direito que continua nos alvos de carregamento próximos após concluir a lista selecionada. Outras viagens exigem um peão não recrutado, uma entrega bem-sucedida e nenhuma nova ordem na fila. Desativado por padrão.</HaulersDream.Setting.ContinuousLoadingDesc>
 <HaulersDream.ContinuousLoad.Option>Carregar até completar (contínuo) — {0}</HaulersDream.ContinuousLoad.Option>
 <HaulersDream.ContinuousLoad.CouldNotStart>Nada por perto para carregar em massa naquilo agora.</HaulersDream.ContinuousLoad.CouldNotStart>
 <HaulersDream.Setting.LoadHybridPathing>Ordenar paradas de carregamento em massa por busca de caminho real</HaulersDream.Setting.LoadHybridPathing>
@@ -626,7 +626,7 @@
 <HaulersDream.Setting.BulkHaulTrigger.Lab>Gatilho de transporte em massa</HaulersDream.Setting.BulkHaulTrigger.Lab>
 <HaulersDream.Setting.KeepWorkingMargin.Lab>Descarregar antes de uma realocação mais longa</HaulersDream.Setting.KeepWorkingMargin.Lab>
 <HaulersDream.Setting.MinFreeSpaceToUnloadCarrier.Lab>Espaço livre mínimo na mochila para começar</HaulersDream.Setting.MinFreeSpaceToUnloadCarrier.Lab>
-<HaulersDream.Setting.MinFreeSpaceToUnloadCarrier.Help>Um transportador precisa de pelo menos esta fração da sua capacidade de carga livre antes de começar a esvaziar um animal de carga, para que sua própria mochila não transborde imediatamente.</HaulersDream.Setting.MinFreeSpaceToUnloadCarrier.Help>
+<HaulersDream.Setting.MinFreeSpaceToUnloadCarrier.Help>Um transportador precisa de pelo menos esta fração da sua capacidade de carga livre antes de começar a esvaziar um animal de carga, para que sua própria mochila não transborde imediatamente. Este limite também se aplica à descarga automática de transportadores.</HaulersDream.Setting.MinFreeSpaceToUnloadCarrier.Help>
 <HaulersDream.Setting.VisualUnloadDelay.Lab>Atraso de descarregamento por pilha</HaulersDream.Setting.VisualUnloadDelay.Lab>
 <HaulersDream.Setting.VisualUnloadDelay.Help>Uma pequena pausa cosmética entre cada pilha durante um descarregamento em massa, para que pareça uma ação deliberada. 0 = instantâneo.</HaulersDream.Setting.VisualUnloadDelay.Help>
 <HaulersDream.Setting.BulkLoadAiUpdateFrequency.Lab>Intervalo de reverificação de carregamento</HaulersDream.Setting.BulkLoadAiUpdateFrequency.Lab>
@@ -828,6 +828,17 @@
   <HaulersDream.Setting.CarryMassCap.Off>Sem limite</HaulersDream.Setting.CarryMassCap.Off>
   <HaulersDream.Setting.CarryMassCap.Value>{0} kg</HaulersDream.Setting.CarryMassCap.Value>
   <HaulersDream.Setting.CarryMassCapDesc>Um teto rígido, em quilogramas, de quanto um peão carrega no inventário em uma viagem de transporte ou coleta. É a resposta direta a «meus peões carregam demais»: defina baixo (digamos 20 kg) e os peões reúnem uma carga pequena, descarregam e voltam, em vez de encher até a carga máxima. Funciona em conjunto com a porcentagem «Limite de carga» e a Sobrecarga inteligente acima, e o limite mais baixo sempre vence, então este teto nunca é ultrapassado nem com a sobrecarga ligada. Como o Limite de carga, conta apenas o que está guardado na mochila, não uma pilha carregada nas mãos, e não muda quanto material um peão busca para uma construção ou tarefa específica. Defina como 0 para não ter limite (o padrão).</HaulersDream.Setting.CarryMassCapDesc>
+  <HD_DropAmountTitle>Largar uma quantidade</HD_DropAmountTitle>
+  <HD_DropAmountConfirm>Largar</HD_DropAmountConfirm>
+  <HD_DropAmountContext>{0}\n{1}\nDisponíveis: {2}</HD_DropAmountContext>
+  <HD_DropAmountQuantity>Quantidade a largar</HD_DropAmountQuantity>
+  <HD_DropAmountRemaining>Restantes no inventário: {0}</HD_DropAmountRemaining>
+  <HD_DropAmountInvalid>Digite um número inteiro de 1 a {0}.</HD_DropAmountInvalid>
+  <HD_DropAmountChanged>O personagem ou a pilha no inventário mudou. Abra esta janela novamente.</HD_DropAmountChanged>
+  <HD_DropAmountUnavailable>Não é possível escolher a quantidade a largar com a configuração atual de mods.</HD_DropAmountUnavailable>
+  <HD_DropAmountUnconfirmed>Não foi possível confirmar que os itens foram largados. Verifique o inventário do personagem.</HD_DropAmountUnconfirmed>
+  <HD_DropAmountBlocked>Não há espaço por perto para largar estes itens.</HD_DropAmountBlocked>
+  <HD_DropAmountPartial>Foram largados {0} de {1}; não havia espaço suficiente por perto.</HD_DropAmountPartial>
   <HD_NearbyHaulGizmoDesc>Selecione um item para levá-lo, junto com os itens próximos, ao armazenamento. Segure a tecla de enfileirar ordens ao selecionar para colocar a ordem na fila.</HD_NearbyHaulGizmoDesc>
   <HD_NearbyHaulPawnUnavailable>Este personagem não pode receber uma ordem de transporte no estado atual.</HD_NearbyHaulPawnUnavailable>
   <HD_NearbyHaulDrafted>Desmobilize este personagem antes de dar esta ordem de transporte.</HD_NearbyHaulDrafted>
@@ -836,4 +847,18 @@
   <HD_NearbyHaulInventoryUnavailable>O transporte pelo inventário está indisponível para este personagem.</HD_NearbyHaulInventoryUnavailable>
   <HD_NearbyHaulRobotUnsupported>Não foi possível ler as tarefas de transporte do robô com a configuração atual de mods.</HD_NearbyHaulRobotUnsupported>
   <HD_NearbyHaulSourceUnavailable>O item selecionado não está disponível para transporte.</HD_NearbyHaulSourceUnavailable>
+  <HaulersDream.UnloadTransporter.Option>Priorizar descarregamento em massa de {0}</HaulersDream.UnloadTransporter.Option>
+  <HaulersDream.UnloadTransporter.CouldNotStart>Não foi possível iniciar o descarregamento em massa desse transportador agora.</HaulersDream.UnloadTransporter.CouldNotStart>
+  <HaulersDream.Gizmo.BulkUnloadAll.Label>Descarregar tudo em massa</HaulersDream.Gizmo.BulkUnloadAll.Label>
+  <HaulersDream.Gizmo.BulkUnloadAll.Empty>Nada para descarregar</HaulersDream.Gizmo.BulkUnloadAll.Empty>
+  <HaulersDream.Gizmo.BulkUnloadAll.LoadBlocked>"Descarregar tudo em massa" está ativado, desative-o antes de definir uma nova carga.</HaulersDream.Gizmo.BulkUnloadAll.LoadBlocked>
+  <HaulersDream.Gizmo.BulkUnloadAll.UnloadBlocked>Uma carga está sendo reunida para este transportador.</HaulersDream.Gizmo.BulkUnloadAll.UnloadBlocked>
+  <HaulersDream.Feat.UnloadTransporters.Name>Descarregar naves em massa</HaulersDream.Feat.UnloadTransporters.Name>
+  <HaulersDream.Setting.EnableBulkUnloadTransporters>Descarregar transportadores em lote</HaulersDream.Setting.EnableBulkUnloadTransporters>
+  <HaulersDream.Setting.EnableBulkUnloadTransportersDesc>Adiciona um botão de descarga a transportadores e naves. Peões não recrutados levam a carga diretamente ao armazenamento, uma viagem por tarefa. Em um transportador marcado, uma ordem prioritária só se repete após a entrega. Passageiros ficam a bordo. Carregamento em andamento, armazenamento cheio, recrutamento ou novas ordens na fila interrompem as próximas viagens.</HaulersDream.Setting.EnableBulkUnloadTransportersDesc>
+  <HaulersDream.Gizmo.BulkUnloadAll.Desc>Levar a carga de {0} ao armazenamento. Passageiros ficam a bordo. Uma ordem prioritária de descarga se repete após cada entrega enquanto o peão não estiver recrutado nem tiver novas ordens na fila. Desative antes de carregar.</HaulersDream.Gizmo.BulkUnloadAll.Desc>
+  <HaulersDream.Feat.UnloadTransporters.Blurb>Levar a carga de um transportador pousado diretamente ao armazenamento</HaulersDream.Feat.UnloadTransporters.Blurb>
+  <HaulersDream.UnloadTransporter.Drafted>Dispense este peão do combate para iniciar esta ordem.</HaulersDream.UnloadTransporter.Drafted>
+  <HaulersDream.UnloadTransporter.NoStorage>Não há armazenamento adequado para a carga restante.</HaulersDream.UnloadTransporter.NoStorage>
+  <HaulersDream.Transporter.SyncUnavailable>Os comandos de transportadores estão indisponíveis porque a sincronização multijogador não pôde ser registrada.</HaulersDream.Transporter.SyncUnavailable>
 </LanguageData>

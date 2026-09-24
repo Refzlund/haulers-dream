@@ -1,0 +1,17 @@
+{
+  "status": "passed",
+  "checkedPins": 358,
+  "changedSource": [
+    "OwnInventoryObservers.cs",
+    "OwnInventoryScene.cs"
+  ],
+  "unchangedAcceptanceBodies": {
+    "internal void NativeTick": true,
+    "private bool SelectionHeld": true,
+    "private void ValidateFinal": true
+  },
+  "ingredientLedgerUnchanged": true,
+  "selectionSha256": "37B62C4EB9DDDFD7D8E98265EB2F5223191E474D3B20566D1B163B6C19731539",
+  "hostSha256": "D85DF6B07D72B0145F88A4BF9136D1C1CD4FFF6B2FBA74A475FF66BA794428F5",
+  "scope": "Independent source/readiness only; fresh native batch physical acceptance remains required."
+}

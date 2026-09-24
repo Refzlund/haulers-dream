@@ -1,0 +1,62 @@
+--- v3/RobotCommands.cs
++++ v4/RobotCommands.cs
+@@ -40,7 +40,7 @@
+         private object[] selectionBefore;
+         private int startTick, stageTick, total, batch, bulkId, gotoId, queuedId, automaticId, peakInventory, stableTick;
+         private int recoveryUnloadId, recoveryUnloadStarts;
+-        private bool recoveryUnloadAfterGoto;
++        private bool recoveryUnloadAfterGoto, recoveryUnloadDelivered;
+         private float startedAt;
+         private bool cleaned, speedCaptured, seeded, interruptCaught;
+         private ThingDef Material => ThingDefOf.Plasteel;
+@@ -271,8 +271,8 @@
+                     if (!Settled()) return;
+                     Require("robot-interrupted-cargo-recovered", ended.TryGetValue(gotoId, out var replacementEnd) && replacementEnd == JobCondition.Succeeded.ToString()
+                         && recoveryUnloadStarts == 1 && recoveryUnloadAfterGoto && fromQueue.Contains(recoveryUnloadId)
+-                        && ended.TryGetValue(recoveryUnloadId, out var recoveryEnd) && recoveryEnd == JobCondition.Succeeded.ToString(),
+-                        "Identified ordinary unload " + recoveryUnloadId + " starts once from native queue after successful replacement Goto and itself succeeds; actual robot scheduler recovers remaining floor stock. " + State());
++                        && recoveryUnloadDelivered && ended.ContainsKey(recoveryUnloadId),
++                        "Identified ordinary unload " + recoveryUnloadId + " starts once after successful replacement Goto and physically delivers picked10, leaving only Keep7; actual robot scheduler recovers remaining floor stock. " + State());
+                     stableTick = ticks.TicksGame; SetStage("stable"); break;
+                 case "stable":
+                     Guard(Settled(), "Settled robot scene regressed: " + State());
+@@ -291,6 +291,13 @@
+             if (c.stage == "recovery" || c.stage == "stable")
+                 Guard(!newJob.playerForced && newJob.workGiverDef != c.Definition && newJob.def != HaulersDreamDefOf.HaulersDream_NearbyDelivery,
+                     "No new explicit work or NearbyDelivery may replace ordinary robot recovery.");
++            if (c.stage == "recovery" && newJob.def.driverClass == typeof(JobDriver_UnloadHauledInventory))
++                Guard(newJob.loadID == c.recoveryUnloadId && c.recoveryUnloadStarts == 0,
++                    "Only the one identified ordinary unload may run during recovery; no requeue loop.");
++            if (c.stage == "stable")
++                Guard(newJob.def != c.Bulk && newJob.def.driverClass != typeof(JobDriver_UnloadHauledInventory)
++                    && newJob.def != JobDefOf.HaulToCell && newJob.def != JobDefOf.HaulToContainer,
++                    "No cargo work may restart during 300 stable ticks with only Keep7 remaining.");
+             if (newJob.loadID == c.recoveryUnloadId) {
+                 c.recoveryUnloadStarts++;
+                 c.recoveryUnloadAfterGoto = c.ended.TryGetValue(c.gotoId, out var end) && end == JobCondition.Succeeded.ToString();
+@@ -299,7 +306,24 @@
+             }
+         }); }
+         private static void Ending(Pawn_JobTracker __instance, JobCondition condition)
+-        { Observe(c => { if (__instance != c.actor?.jobs || __instance.curJob == null) return; c.ended[__instance.curJob.loadID] = condition.ToString(); c.emit("robot-native-end", "stage=" + c.stage + "; condition=" + condition + "; " + JobText(__instance.curJob) + "; " + c.State()); }); }
++        { Observe(c => {
++            if (__instance != c.actor?.jobs || __instance.curJob == null) return;
++            c.ended[__instance.curJob.loadID] = condition.ToString();
++            c.emit("robot-native-end", "stage=" + c.stage + "; condition=" + condition + "; " + JobText(__instance.curJob) + "; " + c.State());
++            if (__instance.curJob.loadID != c.recoveryUnloadId) return;
++            // Ordinary unload retains the keep-only tag, so its no-surplus branch may end
++            // Incompletable. Accept that only at this exact physically completed boundary.
++            Thing[] floor = c.map.listerThings.ThingsOfDef(c.Material).ToArray();
++            c.Require("robot-ordinary-unload-physical-completion", !c.recoveryUnloadDelivered
++                && (condition == JobCondition.Succeeded || condition == JobCondition.Incompletable)
++                && c.recoveryUnloadStarts == 1 && c.recoveryUnloadAfterGoto
++                && c.InventoryCount() == 7 && c.actor.inventory.innerContainer.All(t => t.def == c.Material)
++                && c.actor.carryTracker.CarriedThing == null && c.Cargo.KeptCountOf(c.Material) == 7 && c.Count() == 87
++                && floor.Where(t => c.storage.ContainsCell(t.Position) && t.IsInValidBestStorage()).Sum(t => t.stackCount) == 70
++                && floor.Where(t => !c.storage.ContainsCell(t.Position)).Sum(t => t.stackCount) == 10,
++                "Exact native unload end: picked10 delivered, stored70, unpicked floor10, inventory7, hands0, Keep7, total87; condition=" + condition + "; " + c.State());
++            c.recoveryUnloadDelivered = true;
++        }); }
+         private static void PawnTick(Pawn __instance)
+         {
+             Observe(c => {

@@ -1,0 +1,212 @@
+{
+  "status": "accepted-scoped",
+  "runId": "a966470b31f54adbb54a312b166a655b",
+  "assertions": 42,
+  "events": 75,
+  "actualImages": 10,
+  "physicalStates": [
+    {
+      "event": 62,
+      "tick": 26,
+      "phase": "f25-state",
+      "totals": {
+        "Cloth": 5,
+        "Gold": 0,
+        "Steel": 0
+      },
+      "items": [
+        {
+          "id": "Cloth37545",
+          "material": "Cloth",
+          "count": 2,
+          "custody": "(105, 0, 115)"
+        },
+        {
+          "id": "Cloth37546",
+          "material": "Cloth",
+          "count": 3,
+          "custody": "(111, 0, 115)"
+        }
+      ]
+    },
+    {
+      "event": 63,
+      "tick": 155,
+      "phase": "f25-state",
+      "totals": {
+        "Cloth": 5,
+        "Gold": 0,
+        "Steel": 0
+      },
+      "items": [
+        {
+          "id": "Cloth37545",
+          "material": "Cloth",
+          "count": 2,
+          "custody": "Human37541"
+        },
+        {
+          "id": "Cloth37546",
+          "material": "Cloth",
+          "count": 3,
+          "custody": "(111, 0, 115)"
+        }
+      ]
+    },
+    {
+      "event": 64,
+      "tick": 261,
+      "phase": "f25-job-end",
+      "totals": {
+        "Cloth": 5,
+        "Gold": 0,
+        "Steel": 0
+      },
+      "items": [
+        {
+          "id": "Cloth37545",
+          "material": "Cloth",
+          "count": 5,
+          "custody": "Human37541"
+        }
+      ]
+    },
+    {
+      "event": 65,
+      "tick": 261,
+      "phase": "f25-state",
+      "totals": {
+        "Cloth": 5,
+        "Gold": 0,
+        "Steel": 0
+      },
+      "items": [
+        {
+          "id": "Cloth37545",
+          "material": "Cloth",
+          "count": 5,
+          "custody": "Human37541"
+        }
+      ]
+    },
+    {
+      "event": 66,
+      "tick": 264,
+      "phase": "f25-job-end",
+      "totals": {
+        "Cloth": 5,
+        "Gold": 0,
+        "Steel": 0
+      },
+      "items": [
+        {
+          "id": "Cloth37545",
+          "material": "Cloth",
+          "count": 5,
+          "custody": "Human37541"
+        }
+      ]
+    },
+    {
+      "event": 67,
+      "tick": 267,
+      "phase": "f25-state",
+      "totals": {
+        "Cloth": 5,
+        "Gold": 0,
+        "Steel": 0
+      },
+      "items": [
+        {
+          "id": "Cloth37545",
+          "material": "Cloth",
+          "count": 5,
+          "custody": "carry"
+        }
+      ]
+    },
+    {
+      "event": 68,
+      "tick": 868,
+      "phase": "f25-state",
+      "totals": {
+        "Cloth": 5,
+        "Gold": 0,
+        "Steel": 0
+      },
+      "items": [
+        {
+          "id": "Cloth37545",
+          "material": "Cloth",
+          "count": 5,
+          "custody": "(148, 0, 112)"
+        }
+      ]
+    }
+  ],
+  "copiedFiles": {
+    "game": 1373,
+    "harmony": 14,
+    "hd": 98,
+    "harness": 2
+  },
+  "providerAbsent": true,
+  "xmlCompatibility": {
+    "path": "C:\\HDQA\\runtime-temp\\haulersdream-runtime-tests\\a966470b31f54adbb54a312b166a655b\\runtime\\Mods\\HaulersDream\\Defs\\Compatibility\\BigAndSmall.xml",
+    "sha256": "48D55D64A5E77E83D668EBDFC28486ABB2A1E15CBA904CF70548AF21DA57912C",
+    "bytes": 498
+  },
+  "checkpoint": null,
+  "protectedChanges": [],
+  "nativePid": 22348,
+  "controllerPid": 30584,
+  "inputDesktopUnchanged": true,
+  "logLines": 1977,
+  "verifyManualFlagsRetained": [
+    "F25 capture requires independent provider-conversion IDs, generated/live component membership, original save and before-first-tick state, keep/opt-out/tags and physical cargo, same-process and full restart, environment and whole-log review. Baseline producer passing is only provenance; baseline LOAD must fail on missing components, not setup.",
+    "Missing unique event: scenario-observed",
+    "Player.log contains candidates requiring independent review; bootstrap is not automatically verified."
+  ],
+  "evidence": {
+    "manifest.json": {
+      "path": "C:\\Users\\Arthur\\Sync\\Projects\\RimWorld Mods\\HaulersDream\\docs\\plans\\evidence\\f25-sapient-persistence-20260924\\native\\a966470b31f54adbb54a312b166a655b\\manifest.json",
+      "sha256": "EDD3A2CC09603607DD62C84E918CF6BEEFA0879C9FC87008005A1A4C5E454E9B",
+      "bytes": 820890
+    },
+    "raw/result.json": {
+      "path": "C:\\Users\\Arthur\\Sync\\Projects\\RimWorld Mods\\HaulersDream\\docs\\plans\\evidence\\f25-sapient-persistence-20260924\\native\\a966470b31f54adbb54a312b166a655b\\raw\\result.json",
+      "sha256": "F9CFFC3B01F06CCD79C233A35E451C8B5E099F3C6E9484C35A62F4E6EE294E11",
+      "bytes": 12654
+    },
+    "raw/events.jsonl": {
+      "path": "C:\\Users\\Arthur\\Sync\\Projects\\RimWorld Mods\\HaulersDream\\docs\\plans\\evidence\\f25-sapient-persistence-20260924\\native\\a966470b31f54adbb54a312b166a655b\\raw\\events.jsonl",
+      "sha256": "C5341946C882BA69A351B3ADAC573A65991D36F690F1517ACC7457D2B2B51A4C",
+      "bytes": 21908
+    },
+    "raw/Player.log": {
+      "path": "C:\\Users\\Arthur\\Sync\\Projects\\RimWorld Mods\\HaulersDream\\docs\\plans\\evidence\\f25-sapient-persistence-20260924\\native\\a966470b31f54adbb54a312b166a655b\\raw\\Player.log",
+      "sha256": "0DC392656890B2E3AD9D3C77C32FCC837EC72FAB83760799944B5F2A921446EF",
+      "bytes": 154585
+    },
+    "raw/HaulersDream-debug.log": {
+      "path": "C:\\Users\\Arthur\\Sync\\Projects\\RimWorld Mods\\HaulersDream\\docs\\plans\\evidence\\f25-sapient-persistence-20260924\\native\\a966470b31f54adbb54a312b166a655b\\raw\\HaulersDream-debug.log",
+      "sha256": "0A4C399BFFE2CD2E2C46AA3638B22A0D7BBF06546790E646A73E2119E33277F9",
+      "bytes": 700
+    },
+    "native-outcome.json": {
+      "path": "C:\\Users\\Arthur\\Sync\\Projects\\RimWorld Mods\\HaulersDream\\docs\\plans\\evidence\\f25-sapient-persistence-20260924\\native\\a966470b31f54adbb54a312b166a655b\\native-outcome.json",
+      "sha256": "9968BF93C4838213FFFB51B746630A93110D39524EA81D1930E5514844261F8F",
+      "bytes": 504
+    },
+    "private-desktop/desktop-launch.json": {
+      "path": "C:\\Users\\Arthur\\Sync\\Projects\\RimWorld Mods\\HaulersDream\\docs\\plans\\evidence\\f25-sapient-persistence-20260924\\native\\a966470b31f54adbb54a312b166a655b\\private-desktop\\desktop-launch.json",
+      "sha256": "0B60F09D87B552B12C8D01A2E2FCFB8091F70820BDF87FA3952CE0A44E367DD5",
+      "bytes": 1086
+    },
+    "verify.json": {
+      "path": "C:\\Users\\Arthur\\Sync\\Projects\\RimWorld Mods\\HaulersDream\\docs\\plans\\evidence\\f25-sapient-persistence-20260924\\native\\a966470b31f54adbb54a312b166a655b\\verify.json",
+      "sha256": "7BCCE8C934D9C42163CC7D88CAD86C3DADDA0442B6C59E4090E075ECE2F886E5",
+      "bytes": 18300
+    }
+  }
+}

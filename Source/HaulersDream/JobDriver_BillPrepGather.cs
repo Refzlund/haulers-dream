@@ -65,7 +65,7 @@ namespace HaulersDream
         public override IEnumerable<Toil> MakeNewToils()
         {
             this.FailOnDespawnedNullOrForbidden(BenchInd);
-            this.FailOn(() => job.bill == null || job.bill.DeletedOrDereferenced || job.bill.suspended);
+            this.FailOn(() => job.bill == null || job.bill.billStack == null || job.bill.DeletedOrDereferenced || job.bill.suspended);
 
             // Loop guard: a sweep that loaded NOTHING must not convert again immediately (it would ping-pong
             // prep→DoBill→prep forever); the cooldown lets the bill run vanilla multi-trip instead. Fail-open.

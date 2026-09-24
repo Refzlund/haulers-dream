@@ -1,0 +1,114 @@
+{
+  "status": "passed",
+  "assertions": 61,
+  "passed": 61,
+  "uniqueAssertionIds": 61,
+  "events": 167,
+  "sequentialEvents": true,
+  "unityErrors": 0,
+  "lastTick": 4823,
+  "assemblyChecks": [
+    {
+      "name": "Assembly-CSharp",
+      "matchingCount": 1,
+      "matching": true
+    },
+    {
+      "name": "UnityEngine.CoreModule",
+      "matchingCount": 1,
+      "matching": true
+    },
+    {
+      "name": "0Harmony",
+      "matchingCount": 1,
+      "matching": true
+    },
+    {
+      "name": "HarmonyMod",
+      "matchingCount": 1,
+      "matching": true
+    },
+    {
+      "name": "HaulersDream",
+      "matchingCount": 1,
+      "matching": true
+    },
+    {
+      "name": "HaulersDream.Core",
+      "matchingCount": 1,
+      "matching": true
+    },
+    {
+      "name": "HaulersDream.RuntimeHarness",
+      "matchingCount": 1,
+      "matching": true
+    },
+    {
+      "name": "UnityEngine.IMGUIModule",
+      "matchingCount": 1,
+      "matching": true
+    },
+    {
+      "name": "UnityEngine.ScreenCaptureModule",
+      "matchingCount": 1,
+      "matching": true
+    },
+    {
+      "name": "UnityEngine.TextRenderingModule",
+      "matchingCount": 1,
+      "matching": true
+    },
+    {
+      "name": "AIRobot",
+      "matchingCount": 1,
+      "matching": true
+    },
+    {
+      "name": "MiscRobotsPlusPlus",
+      "matchingCount": 1,
+      "matching": true
+    }
+  ],
+  "sourceChecks": [
+    {
+      "path": "C:\\Users\\Arthur\\Sync\\Projects\\RimWorld Mods\\HaulersDream\\docs\\plans\\evidence\\f05-f06-robots-20260924\\host\\Bootstrap.cs",
+      "sha256": "DEF1C4266B847AA3B5B2E4ACF09D23DE7D95E5C0F2C04188E1E10869B3AF5117",
+      "matched": true
+    },
+    {
+      "path": "C:\\Users\\Arthur\\Sync\\Projects\\RimWorld Mods\\HaulersDream\\docs\\plans\\evidence\\f05-f06-robots-20260924\\host\\HaulersDream.RuntimeHarness.csproj",
+      "sha256": "13E212C0E63074ACF3DB9711059FABA3C5C69B3755D384A75922701E9065FCFE",
+      "matched": true
+    },
+    {
+      "path": "C:\\Users\\Arthur\\Sync\\Projects\\RimWorld Mods\\HaulersDream\\docs\\plans\\evidence\\f05-f06-robots-20260924\\src\\RobotCommands.cs",
+      "sha256": "F6737B8AD0E69C3BB8125431B3571E87487A414DE84A7C1D3DCD9FF3750A1F5D",
+      "matched": true
+    }
+  ],
+  "rawHashes": [
+    {
+      "path": "events.jsonl",
+      "bytes": 63709,
+      "sha256": "19E7C01ABF377077C732895D862AC2F47D2A17DE0CA2F1290EA98F35A937467B"
+    },
+    {
+      "path": "HaulersDream-debug.log",
+      "bytes": 2506,
+      "sha256": "5F567DC4198049E97243CF81654E2030B17E66BA92BA9B7203778184F0287898"
+    },
+    {
+      "path": "Player.log",
+      "bytes": 150421,
+      "sha256": "43B171DB4FF92BC1EB46824D430E5F1C5D106931ECA63B768A30D5D1BF2DF0D3"
+    },
+    {
+      "path": "result.json",
+      "bytes": 20405,
+      "sha256": "7EE60D8FB8902D42D62EC76A87F9BFEFE8023796E85348C33453F0B0ED82A38E"
+    }
+  ],
+  "playerLogLines": 1911,
+  "reviewer": "/root/work_cadence_finish",
+  "runtimeRerun": false
+}

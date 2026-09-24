@@ -1,0 +1,11 @@
+--- UIv3/ExplicitHaulUi.compiled
++++ UIv4/ExplicitHaulUi.compiled
+@@ -74,7 +74,7 @@
+ 			Text.Anchor = TextAnchor.UpperLeft;
+ 			Text.WordWrap = true;
+ 			GUI.color = Color.white;
+-			GUI.DrawTexture(rect, TexUI.GrayTextBG);
++			Widgets.DrawBoxSolid(rect, new Color(0.12f, 0.12f, 0.12f, 1f));
+ 			Widgets.Label(rect.ContractedBy(8f), text);
+ 		}
+ 		finally

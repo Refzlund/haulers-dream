@@ -1,0 +1,508 @@
+{
+  "status": "accepted",
+  "head": "c785e6692aff27d42efd15500b2e8ad1a966bcf8",
+  "indexEntrySnapshotSha256": "756A725164942A5FB7E7556680D7F655005AB8F10A6154A562D7819BA96E25AA",
+  "selectedFileCount": 70,
+  "exactIndexSelectedIsolatedByteEquality": true,
+  "indexMutatedByAudit": false,
+  "workingFilesMutatedByAudit": false,
+  "stagedXmlFilesParsed": 50,
+  "stagedLanguages": 16,
+  "stagedKeyCountPerLanguage": 833,
+  "gitWhitespaceCheck": "passed",
+  "canonicalPatchSha256": "F91BD5A48F76E37120691F24F3422B3DEC7DF23B9711C9E3C931476CF57DE61F",
+  "canonicalPatch": "f07-index-reviewed.patch",
+  "supersededMalformedPatchSha256": "9AB6ACB895475EED874D5BF79DC5910A9EFBD011D65C2B9BA0BD506AF8518FCE",
+  "allFiles": [
+    {
+      "path": ".changeset/preserve-nearby-orders-in-colony-saves.md",
+      "sha256": "D48C1B2CD3B5AEB9E1C67028C5462EA9D3A894CB3F30D36EC1A4CC9162017C03",
+      "bytes": 285,
+      "terminalNewline": true,
+      "stageEntry": "100644 e5786b14cbed210bb72cf5ccae487c8244ccee73 0\t.changeset/preserve-nearby-orders-in-colony-saves.md"
+    },
+    {
+      "path": ".changeset/rimmsqol-drafted-nearby-hauling.md",
+      "sha256": "DD4968830BC1AE3B9B759EA4C4E88A5725930551C276722F16AB298E54ABA25A",
+      "bytes": 679,
+      "terminalNewline": true,
+      "stageEntry": "100644 22a01745fa29b565adef619e66d7de4927173369 0\t.changeset/rimmsqol-drafted-nearby-hauling.md"
+    },
+    {
+      "path": "COMPATIBILITY.md",
+      "sha256": "95305F1E57134CA7248FA4390441F4E41FEB8380C1BA71D277D1887BF365BE18",
+      "bytes": 50914,
+      "terminalNewline": true,
+      "stageEntry": "100644 47cc7f0c70ef77c448a46024eb1fe9feae71dcee 0\tCOMPATIBILITY.md"
+    },
+    {
+      "path": "Defs/JobDefs/NearbyDelivery.xml",
+      "sha256": "8A2B75BB395C2A0BAEBAEBB1943F243E5C0790DCACC52FA9011C37C8F8F7BD6A",
+      "bytes": 718,
+      "terminalNewline": true,
+      "stageEntry": "100644 12160dd841b5a1ed45616d7de693ea15c578a145 0\tDefs/JobDefs/NearbyDelivery.xml"
+    },
+    {
+      "path": "Defs/WorkGiverDefs/HaulNearby.xml",
+      "sha256": "C6493AD20749444DA590D640FFB5D8F4146CD6F4F3E712C84AC71D178368FA4F",
+      "bytes": 730,
+      "terminalNewline": true,
+      "stageEntry": "100644 8deaf792ab86df71a47a10d9f62fab4664d2e1d5 0\tDefs/WorkGiverDefs/HaulNearby.xml"
+    },
+    {
+      "path": "Languages/ChineseSimplified/DefInjected/JobDef/NearbyDelivery.xml",
+      "sha256": "5F622CABAC1E565DE5DDB62F0EAD2438543CBAC49FC10846464331F629E3E58B",
+      "bytes": 181,
+      "terminalNewline": false,
+      "stageEntry": "100644 a26d8d8e819be8a7d538d0a1d403d04e05172c36 0\tLanguages/ChineseSimplified/DefInjected/JobDef/NearbyDelivery.xml"
+    },
+    {
+      "path": "Languages/ChineseSimplified/DefInjected/WorkGiverDef/HaulNearby.xml",
+      "sha256": "F7EA06614E0AE9E3A441D85B7E21367CA9623317758D67BFFB6F539B73D3858B",
+      "bytes": 342,
+      "terminalNewline": false,
+      "stageEntry": "100644 835db223d571270fa32611a476baadddf6eda288 0\tLanguages/ChineseSimplified/DefInjected/WorkGiverDef/HaulNearby.xml"
+    },
+    {
+      "path": "Languages/ChineseSimplified/Keyed/HaulersDream.xml",
+      "sha256": "5E187F32871A60CF0627B4EB48F2A7B5CB9273F63D092A81C46636A233059355",
+      "bytes": 146926,
+      "terminalNewline": true,
+      "stageEntry": "100644 fe1c999b43d8ccd1a928ddd8f8cb6ff416dd7129 0\tLanguages/ChineseSimplified/Keyed/HaulersDream.xml"
+    },
+    {
+      "path": "Languages/ChineseTraditional/DefInjected/JobDef/NearbyDelivery.xml",
+      "sha256": "23C3DA91B944631BA0DEBE154AB19094DB22ABDEFA26D50126CD0F1E40688E96",
+      "bytes": 184,
+      "terminalNewline": false,
+      "stageEntry": "100644 725cd79ecd365287fd214ae762dbdd8ce7b2a526 0\tLanguages/ChineseTraditional/DefInjected/JobDef/NearbyDelivery.xml"
+    },
+    {
+      "path": "Languages/ChineseTraditional/DefInjected/WorkGiverDef/HaulNearby.xml",
+      "sha256": "91EB2BA0D244EC89851B1689B13CC0A6351BD3A94DAC8CAD96ABAD13F16FE9FC",
+      "bytes": 351,
+      "terminalNewline": false,
+      "stageEntry": "100644 9f5dc79b2d04fd71d829781e95d9fb5c8cc4e5e7 0\tLanguages/ChineseTraditional/DefInjected/WorkGiverDef/HaulNearby.xml"
+    },
+    {
+      "path": "Languages/ChineseTraditional/Keyed/HaulersDream.xml",
+      "sha256": "C754A5C63F23BA3EF8AF3AEBFCF2CC891AB052A0148D89ED5C0DD87FDDFE9706",
+      "bytes": 158220,
+      "terminalNewline": true,
+      "stageEntry": "100644 f9c467b9b2c67bef36dce518c70fe87889d5c535 0\tLanguages/ChineseTraditional/Keyed/HaulersDream.xml"
+    },
+    {
+      "path": "Languages/Danish/DefInjected/JobDef/NearbyDelivery.xml",
+      "sha256": "9FE84C06D5D8A9F0F25570223BBCA0645B92C2581AE06F620E60AD3AC896B4B4",
+      "bytes": 176,
+      "terminalNewline": false,
+      "stageEntry": "100644 67e7687515e02f42a10e01f8e245ef0ddce0d5e2 0\tLanguages/Danish/DefInjected/JobDef/NearbyDelivery.xml"
+    },
+    {
+      "path": "Languages/Danish/DefInjected/WorkGiverDef/HaulNearby.xml",
+      "sha256": "03650D4B3791313A2153A4741A18D67EAEEE0134E2F70956D9E5D0B45F50B416",
+      "bytes": 351,
+      "terminalNewline": false,
+      "stageEntry": "100644 b3a4db8c12125cd2b838f3a0e3bb2c4a83bc89b0 0\tLanguages/Danish/DefInjected/WorkGiverDef/HaulNearby.xml"
+    },
+    {
+      "path": "Languages/Danish/Keyed/HaulersDream.xml",
+      "sha256": "DB863BEB77FB81D5FE35A5ED051F5E64E272801580DCA9503E4D11AD33DDEF76",
+      "bytes": 158676,
+      "terminalNewline": true,
+      "stageEntry": "100644 e3ec1f9ef569e0ee66ea39d717a1322cb2fbfac4 0\tLanguages/Danish/Keyed/HaulersDream.xml"
+    },
+    {
+      "path": "Languages/Dutch/DefInjected/JobDef/NearbyDelivery.xml",
+      "sha256": "07953C922043146C478B6291D383BC2D9DC2FA26137D4F7BB5A93EC73FFE8BBB",
+      "bytes": 177,
+      "terminalNewline": false,
+      "stageEntry": "100644 179a9c3ec93d5c545cf985ba32a8d2004ec28ea6 0\tLanguages/Dutch/DefInjected/JobDef/NearbyDelivery.xml"
+    },
+    {
+      "path": "Languages/Dutch/DefInjected/WorkGiverDef/HaulNearby.xml",
+      "sha256": "D7F7CA1B31BFE83AF925614F0180AE746A921824A92B92170A29A38F6F68C637",
+      "bytes": 354,
+      "terminalNewline": false,
+      "stageEntry": "100644 35f208781ed79b4c29f3f18f0f6bb10908359b96 0\tLanguages/Dutch/DefInjected/WorkGiverDef/HaulNearby.xml"
+    },
+    {
+      "path": "Languages/Dutch/Keyed/HaulersDream.xml",
+      "sha256": "29D51613089D440A00A509BC5C2B537A155217CC1659C6E2A78F7B6D16339BEB",
+      "bytes": 161734,
+      "terminalNewline": true,
+      "stageEntry": "100644 e92092724f65b6236e3de6d6e19f61aad8c2e73d 0\tLanguages/Dutch/Keyed/HaulersDream.xml"
+    },
+    {
+      "path": "Languages/English/DefInjected/JobDef/NearbyDelivery.xml",
+      "sha256": "0E88CDE5AB800C277DD37307CA8C9905FDDF24D7D53A03168C9252439FEC9D57",
+      "bytes": 177,
+      "terminalNewline": false,
+      "stageEntry": "100644 e6c1799bfe1b97639214f751f2d9155897e095ba 0\tLanguages/English/DefInjected/JobDef/NearbyDelivery.xml"
+    },
+    {
+      "path": "Languages/English/DefInjected/WorkGiverDef/HaulNearby.xml",
+      "sha256": "6DC543FF1A8A2262FFCF6AE224D3B541EE62CD2A8B8B32D7349BFA2CC11574BB",
+      "bytes": 342,
+      "terminalNewline": false,
+      "stageEntry": "100644 d9f5b3b779df437137eb09bfa1cd2466f5aef450 0\tLanguages/English/DefInjected/WorkGiverDef/HaulNearby.xml"
+    },
+    {
+      "path": "Languages/English/Keyed/HaulersDream.xml",
+      "sha256": "2ED3487C6817D824201673A0032CF49E9D7611BB5F7EDF51D22631E6742BDDBB",
+      "bytes": 157500,
+      "terminalNewline": true,
+      "stageEntry": "100644 ed074fe5a735a2e0784345bb8215dc1da6a226ca 0\tLanguages/English/Keyed/HaulersDream.xml"
+    },
+    {
+      "path": "Languages/French/DefInjected/JobDef/NearbyDelivery.xml",
+      "sha256": "0A49852AEB6288F55F3C8DDFFE2840BFE0CFC32881C7DC0444A89E2BE2EA8D2A",
+      "bytes": 187,
+      "terminalNewline": false,
+      "stageEntry": "100644 7a87290d2f77979048032d9c5620012749b96c12 0\tLanguages/French/DefInjected/JobDef/NearbyDelivery.xml"
+    },
+    {
+      "path": "Languages/French/DefInjected/WorkGiverDef/HaulNearby.xml",
+      "sha256": "669D6245FC9D7C598F91FF417072DB2191D2937E26301E0F72F8B6E8EFE59CB2",
+      "bytes": 388,
+      "terminalNewline": false,
+      "stageEntry": "100644 3c47093b4760285f63a3e0821b4deff05b139e58 0\tLanguages/French/DefInjected/WorkGiverDef/HaulNearby.xml"
+    },
+    {
+      "path": "Languages/French/Keyed/HaulersDream.xml",
+      "sha256": "0A7B476CAF6A48C1839331B51E0D866C6D9D4DD0FEF9162EC83D9EA68FC0E7CB",
+      "bytes": 173811,
+      "terminalNewline": true,
+      "stageEntry": "100644 450b31fb5d7c67fdb6ac948f5d0a56a6fca8566d 0\tLanguages/French/Keyed/HaulersDream.xml"
+    },
+    {
+      "path": "Languages/German/DefInjected/JobDef/NearbyDelivery.xml",
+      "sha256": "DEA7D3D827C7D8694BFAB2DEC65AE56236F3548280EB20E361FA3CA3E7989648",
+      "bytes": 175,
+      "terminalNewline": false,
+      "stageEntry": "100644 fdf0d270ace69d7592c25a6ead92356ffb837dc5 0\tLanguages/German/DefInjected/JobDef/NearbyDelivery.xml"
+    },
+    {
+      "path": "Languages/German/DefInjected/WorkGiverDef/HaulNearby.xml",
+      "sha256": "FC0241B935087B964D08073DFA5E57F92981056A2A7F80C31BF31AB27DC4AD5C",
+      "bytes": 369,
+      "terminalNewline": false,
+      "stageEntry": "100644 7a5bb68feeb948ef4b20aca7a13313b69229ee30 0\tLanguages/German/DefInjected/WorkGiverDef/HaulNearby.xml"
+    },
+    {
+      "path": "Languages/German/Keyed/HaulersDream.xml",
+      "sha256": "33D1936EB6BF05AE27A4BCDB685A3712A4E821F546341885B391C3414DF11C1F",
+      "bytes": 170017,
+      "terminalNewline": true,
+      "stageEntry": "100644 ee27ee270ac7cb536ae8d2e20b1858f750feebb7 0\tLanguages/German/Keyed/HaulersDream.xml"
+    },
+    {
+      "path": "Languages/Italian/DefInjected/JobDef/NearbyDelivery.xml",
+      "sha256": "5836D84862222FFA46B0B8E49961C0BCC2D8DA358BCA486F67CC198B011D092C",
+      "bytes": 177,
+      "terminalNewline": false,
+      "stageEntry": "100644 c721d33cd3765fb1904c727225e9e2db50d48439 0\tLanguages/Italian/DefInjected/JobDef/NearbyDelivery.xml"
+    },
+    {
+      "path": "Languages/Italian/DefInjected/WorkGiverDef/HaulNearby.xml",
+      "sha256": "89F4FCADC5DB5F8BF625DEF462D6774231F719246FAF51C294D58244F4762952",
+      "bytes": 363,
+      "terminalNewline": false,
+      "stageEntry": "100644 2bf9e8d558e9a1e9e8d14f1fa139ccb6178fa843 0\tLanguages/Italian/DefInjected/WorkGiverDef/HaulNearby.xml"
+    },
+    {
+      "path": "Languages/Italian/Keyed/HaulersDream.xml",
+      "sha256": "EB750A957709BED35C7EEBD2008ADBB5318034EA9206174FB8FB8EB6EB57ECBE",
+      "bytes": 170407,
+      "terminalNewline": true,
+      "stageEntry": "100644 207da6a413b28115fe833b2a4c37b0ba20ce82fe 0\tLanguages/Italian/Keyed/HaulersDream.xml"
+    },
+    {
+      "path": "Languages/Japanese/DefInjected/JobDef/NearbyDelivery.xml",
+      "sha256": "1FB1FB521DDD0F7F118322C3699C3F3F8FEA4BC3874F0C20C71C01989D382AC4",
+      "bytes": 190,
+      "terminalNewline": false,
+      "stageEntry": "100644 7527209e64da9a876fd301a17e3820692f5fb38e 0\tLanguages/Japanese/DefInjected/JobDef/NearbyDelivery.xml"
+    },
+    {
+      "path": "Languages/Japanese/DefInjected/WorkGiverDef/HaulNearby.xml",
+      "sha256": "B6A69E358616A9AC2A0BFDEA63FB85B4897735B0F7118FEC18C65B84D1CB008C",
+      "bytes": 387,
+      "terminalNewline": false,
+      "stageEntry": "100644 994b6f67e45c109a9b8f782b19bb5b4231bb5da9 0\tLanguages/Japanese/DefInjected/WorkGiverDef/HaulNearby.xml"
+    },
+    {
+      "path": "Languages/Japanese/Keyed/HaulersDream.xml",
+      "sha256": "BAD4046B1ED3796A25C260866F8B9D1DBA13962521312ACE6BF311C1A9048115",
+      "bytes": 178482,
+      "terminalNewline": true,
+      "stageEntry": "100644 1f41c0d10ad84ba74bbf6e4957beb322da7b077e 0\tLanguages/Japanese/Keyed/HaulersDream.xml"
+    },
+    {
+      "path": "Languages/Korean/DefInjected/JobDef/NearbyDelivery.xml",
+      "sha256": "B646D50F08C497DFB37E89E1FF876EA1E461491AA99A1F3A8F4922122926576B",
+      "bytes": 187,
+      "terminalNewline": false,
+      "stageEntry": "100644 3acc5d9b613a8a69c2f9e22725154e73e46e1217 0\tLanguages/Korean/DefInjected/JobDef/NearbyDelivery.xml"
+    },
+    {
+      "path": "Languages/Korean/DefInjected/WorkGiverDef/HaulNearby.xml",
+      "sha256": "2A290D93C25927265753BC6F1C6C10FEB0E17BE975FF3BB645FF4AF2EAECB989",
+      "bytes": 348,
+      "terminalNewline": false,
+      "stageEntry": "100644 ad095259e25edd820cc50dc7fa643df51038d532 0\tLanguages/Korean/DefInjected/WorkGiverDef/HaulNearby.xml"
+    },
+    {
+      "path": "Languages/Korean/Keyed/HaulersDream.xml",
+      "sha256": "09043EE6917937F30F603715FEC1D4892F04C3F6C4B1513E0B52EC71ED3FF696",
+      "bytes": 168532,
+      "terminalNewline": true,
+      "stageEntry": "100644 d826d1349c4c57b682dab73b6fa469cc11abdea2 0\tLanguages/Korean/Keyed/HaulersDream.xml"
+    },
+    {
+      "path": "Languages/Polish/DefInjected/JobDef/NearbyDelivery.xml",
+      "sha256": "6798D7139D9A6CB658FEE1170CBCDD38724E9CAA7031A529C03C1B566CB812B9",
+      "bytes": 183,
+      "terminalNewline": false,
+      "stageEntry": "100644 906a777f4c88745f01f7b1bf6975fe5bdcd12316 0\tLanguages/Polish/DefInjected/JobDef/NearbyDelivery.xml"
+    },
+    {
+      "path": "Languages/Polish/DefInjected/WorkGiverDef/HaulNearby.xml",
+      "sha256": "C6804DBF82124C0E6FA11B581BF44A99EBC79F448DA8636BAFAAF1456C761C33",
+      "bytes": 355,
+      "terminalNewline": false,
+      "stageEntry": "100644 a17fe154ccab8bf841f86598f4fb3084ebfe4b76 0\tLanguages/Polish/DefInjected/WorkGiverDef/HaulNearby.xml"
+    },
+    {
+      "path": "Languages/Polish/Keyed/HaulersDream.xml",
+      "sha256": "F97B7526E36806F3DA27DEBB1E0D83F95181484F19B5B4BAD867E0CBCC917E34",
+      "bytes": 164271,
+      "terminalNewline": true,
+      "stageEntry": "100644 c0e1e96c943466024d3a56b489e502fb05fa0087 0\tLanguages/Polish/Keyed/HaulersDream.xml"
+    },
+    {
+      "path": "Languages/PortugueseBrazilian/DefInjected/JobDef/NearbyDelivery.xml",
+      "sha256": "29F16A95340DA930C6F007CBA312173A7460AB0331865C5068FBE0AD5E4402DC",
+      "bytes": 185,
+      "terminalNewline": false,
+      "stageEntry": "100644 152e389ec5ffa460f17233dfcffa71a30bc60796 0\tLanguages/PortugueseBrazilian/DefInjected/JobDef/NearbyDelivery.xml"
+    },
+    {
+      "path": "Languages/PortugueseBrazilian/DefInjected/WorkGiverDef/HaulNearby.xml",
+      "sha256": "D7D8A8C50422EF2B0A023306130FBE6DA1D1C00BEE0B6260AD510E26EE4D086F",
+      "bytes": 355,
+      "terminalNewline": false,
+      "stageEntry": "100644 ab07108df4076fd1d42aa86a9333f2264626a583 0\tLanguages/PortugueseBrazilian/DefInjected/WorkGiverDef/HaulNearby.xml"
+    },
+    {
+      "path": "Languages/PortugueseBrazilian/Keyed/HaulersDream.xml",
+      "sha256": "AB408422C20D87ED8ECD7CD6EB99628B8853B42C1CB7C6F97EDBBB02CB94B963",
+      "bytes": 166326,
+      "terminalNewline": true,
+      "stageEntry": "100644 f1af763344bc906c6f394462024c393cf4676829 0\tLanguages/PortugueseBrazilian/Keyed/HaulersDream.xml"
+    },
+    {
+      "path": "Languages/Russian/DefInjected/JobDef/NearbyDelivery.xml",
+      "sha256": "02A27347BCE2B1A5D1E1AB2634A5D484F86232B059F3D1B53C878EA92A00F37D",
+      "bytes": 197,
+      "terminalNewline": false,
+      "stageEntry": "100644 c2893f04d36e02914197435fb192a730eaa646e3 0\tLanguages/Russian/DefInjected/JobDef/NearbyDelivery.xml"
+    },
+    {
+      "path": "Languages/Russian/DefInjected/WorkGiverDef/HaulNearby.xml",
+      "sha256": "FC9845A5C78CCEFCE22CBE9010865C96D86A5F26D1F2D0B19A1D15210EB2A997",
+      "bytes": 415,
+      "terminalNewline": false,
+      "stageEntry": "100644 f075861deee98211b087deb051690bd9ebc1284d 0\tLanguages/Russian/DefInjected/WorkGiverDef/HaulNearby.xml"
+    },
+    {
+      "path": "Languages/Russian/Keyed/HaulersDream.xml",
+      "sha256": "24E7AB2E572328345328297A17DE7ABC817E278CDCA80F0E0B675A7F02C98E80",
+      "bytes": 236517,
+      "terminalNewline": true,
+      "stageEntry": "100644 adb0fa56f8f35267b403bef8a13554da648b18dd 0\tLanguages/Russian/Keyed/HaulersDream.xml"
+    },
+    {
+      "path": "Languages/Spanish/DefInjected/JobDef/NearbyDelivery.xml",
+      "sha256": "053580992807CCD84639F3654B1973758977BD5BD8A12734EB8FD92CDB4DBB5D",
+      "bytes": 180,
+      "terminalNewline": false,
+      "stageEntry": "100644 3ff030b93a48c57f45cb6b3cdb8c133aee0496d5 0\tLanguages/Spanish/DefInjected/JobDef/NearbyDelivery.xml"
+    },
+    {
+      "path": "Languages/Spanish/DefInjected/WorkGiverDef/HaulNearby.xml",
+      "sha256": "7445D560AA371EFC98087C8F7060883DEB148FBBF8F9221F44AFA80C0CD45E90",
+      "bytes": 359,
+      "terminalNewline": false,
+      "stageEntry": "100644 227b3789f2a3b78fac25a6dd647f6101755ea77f 0\tLanguages/Spanish/DefInjected/WorkGiverDef/HaulNearby.xml"
+    },
+    {
+      "path": "Languages/Spanish/Keyed/HaulersDream.xml",
+      "sha256": "8EBD3C469938B633046AC88F432391D8184557248A5D148F060D6BB34A1773A2",
+      "bytes": 167240,
+      "terminalNewline": true,
+      "stageEntry": "100644 1d35287f588dd55580a1e774e8f479e49a47d4c2 0\tLanguages/Spanish/Keyed/HaulersDream.xml"
+    },
+    {
+      "path": "Languages/Thai/DefInjected/JobDef/NearbyDelivery.xml",
+      "sha256": "FAE39CB2A3B425FEDA93D31B78BA58A754CA00C5AD3250DB4D3110F63BEA7D3C",
+      "bytes": 226,
+      "terminalNewline": false,
+      "stageEntry": "100644 7ece7fa5dd3fd4d748ab4435ce8df8ee35ac5f38 0\tLanguages/Thai/DefInjected/JobDef/NearbyDelivery.xml"
+    },
+    {
+      "path": "Languages/Thai/DefInjected/WorkGiverDef/HaulNearby.xml",
+      "sha256": "0AFB9C3C30BF4ACF4674D751108A1387710578999F2AC13F758339B7D38E5AE6",
+      "bytes": 471,
+      "terminalNewline": false,
+      "stageEntry": "100644 85e022a1b7b912d94e9bbeafcdafc6266a9c8e9e 0\tLanguages/Thai/DefInjected/WorkGiverDef/HaulNearby.xml"
+    },
+    {
+      "path": "Languages/Thai/Keyed/HaulersDream.xml",
+      "sha256": "3D3B7F6086EA4825E0B28E971732B9094162F1E314AE040DF00E8220F29A8AAE",
+      "bytes": 282512,
+      "terminalNewline": true,
+      "stageEntry": "100644 cacf5397394effa0c59145ca8f7b0f578011e830 0\tLanguages/Thai/Keyed/HaulersDream.xml"
+    },
+    {
+      "path": "Languages/Ukrainian/DefInjected/JobDef/NearbyDelivery.xml",
+      "sha256": "220C436744F07AE640CAFE483B66C9603FD0E90CF7F64DC4DDE87D127B16FAB7",
+      "bytes": 197,
+      "terminalNewline": false,
+      "stageEntry": "100644 19610b3c89b6399618e555708e5d189a8b00b66e 0\tLanguages/Ukrainian/DefInjected/JobDef/NearbyDelivery.xml"
+    },
+    {
+      "path": "Languages/Ukrainian/DefInjected/WorkGiverDef/HaulNearby.xml",
+      "sha256": "2E1516725AA3DBEB0D1A5E1AD59E685DF5D7C447C160988051E35DC97904AB67",
+      "bytes": 401,
+      "terminalNewline": false,
+      "stageEntry": "100644 4a951cfd7dcbbe7058d795646e1c7b8498f3273c 0\tLanguages/Ukrainian/DefInjected/WorkGiverDef/HaulNearby.xml"
+    },
+    {
+      "path": "Languages/Ukrainian/Keyed/HaulersDream.xml",
+      "sha256": "068C9DFC04015C1C68BB5489F0D15E383ECD7D654C29B2504AB8C9DF95BAAD47",
+      "bytes": 235075,
+      "terminalNewline": true,
+      "stageEntry": "100644 3724ae8f76bdf14f10f4e1a3a780fc5f0664f543 0\tLanguages/Ukrainian/Keyed/HaulersDream.xml"
+    },
+    {
+      "path": "README.md",
+      "sha256": "DCB1C2E8EBC4ED7742CE93D8443DC295F1D67A35D22A56C42A60360530C9A6FD",
+      "bytes": 24939,
+      "terminalNewline": true,
+      "stageEntry": "100644 6af607cb710c3de47806bb18bfae6f20efa3d4a3 0\tREADME.md"
+    },
+    {
+      "path": "Source/HaulersDream/BulkHaul.cs",
+      "sha256": "2BC5CB765A8381B6527D6DD5B746A33EC0FC7312B8A6D592AE1D02BB4A2D5BC0",
+      "bytes": 131686,
+      "terminalNewline": true,
+      "stageEntry": "100644 2946885bb2497dccfb1f73cf5e22dc22a0784807 0\tSource/HaulersDream/BulkHaul.cs"
+    },
+    {
+      "path": "Source/HaulersDream/FloatMenuOptionProvider_HaulNearby.cs",
+      "sha256": "F000D7C2BB58D0714EE47C46C8F80B495AEEB21C31DB919B907D9BBB61B7FC50",
+      "bytes": 3680,
+      "terminalNewline": true,
+      "stageEntry": "100644 c0896bb887a8df8ed7d1d4bde22897556345db9e 0\tSource/HaulersDream/FloatMenuOptionProvider_HaulNearby.cs"
+    },
+    {
+      "path": "Source/HaulersDream/HarmonyPatches.cs",
+      "sha256": "9970A99B2F3A6C73BAAC294513163E08D215343BEF109FA1DBDC5ADD91827352",
+      "bytes": 56172,
+      "terminalNewline": true,
+      "stageEntry": "100644 3ab4296033ab821f0455bcb7bd6f9e9cabb84285 0\tSource/HaulersDream/HarmonyPatches.cs"
+    },
+    {
+      "path": "Source/HaulersDream/HaulersDreamDefOf.cs",
+      "sha256": "D74602AB8304501694869D7216DEDA3ECE14BC7DC51F2237C21E2B4E81D92516",
+      "bytes": 10091,
+      "terminalNewline": true,
+      "stageEntry": "100644 afb6f4c1b6bd5326dff9be8b824428422baace7c 0\tSource/HaulersDream/HaulersDreamDefOf.cs"
+    },
+    {
+      "path": "Source/HaulersDream/JobDriver_BulkHaul.cs",
+      "sha256": "3433A3730B8FD4675089853BFABF489C19C94935F171B29A86C3EED031FC34E8",
+      "bytes": 38665,
+      "terminalNewline": true,
+      "stageEntry": "100644 4d091a1150b8dd94d8ad7f1ca46ee02a0ea8716e 0\tSource/HaulersDream/JobDriver_BulkHaul.cs"
+    },
+    {
+      "path": "Source/HaulersDream/JobDriver_UnloadHauledInventory.Nearby.cs",
+      "sha256": "5B5720927D1605DF601751727554A143DCCF778E602936F30FE31BC047871699",
+      "bytes": 15179,
+      "terminalNewline": true,
+      "stageEntry": "100644 2af4e8ae7998c10ea50f6dd84df2c8743d540f7b 0\tSource/HaulersDream/JobDriver_UnloadHauledInventory.Nearby.cs"
+    },
+    {
+      "path": "Source/HaulersDream/JobDriver_UnloadHauledInventory.cs",
+      "sha256": "42B04598E23290DB2E9BD7E9E986237885C859A7E6A938D5B1B291901BE9170B",
+      "bytes": 52665,
+      "terminalNewline": true,
+      "stageEntry": "100644 2f67b5a604a313fbbf5ff711e49ab072d9061737 0\tSource/HaulersDream/JobDriver_UnloadHauledInventory.cs"
+    },
+    {
+      "path": "Source/HaulersDream/MiscRobotsStorageRole.cs",
+      "sha256": "E8D32B41531AD7B4F10857510967893C71ECD8744FFB78CF74159AAD13634134",
+      "bytes": 9955,
+      "terminalNewline": true,
+      "stageEntry": "100644 e5ca5b6ee0c899267dd7c00d893d1eea0525fb02 0\tSource/HaulersDream/MiscRobotsStorageRole.cs"
+    },
+    {
+      "path": "Source/HaulersDream/MultiplayerCompat.cs",
+      "sha256": "7E49CBA5C89DE7A2E961B74BC3A97C47217817ECDAC49AB48E3953D1DFF8D4DD",
+      "bytes": 17719,
+      "terminalNewline": true,
+      "stageEntry": "100644 2031c289a38baa2e30be94568ff91cb8ca03ca83 0\tSource/HaulersDream/MultiplayerCompat.cs"
+    },
+    {
+      "path": "Source/HaulersDream/NearbyDeliveryTransit.cs",
+      "sha256": "3EFBE1CFAD2074402BCE1D9F0482A18A11FF5FB4230E3F131315F474B88655B1",
+      "bytes": 9535,
+      "terminalNewline": true,
+      "stageEntry": "100644 51af35e3cd7590161e3c4d7420903f5db3b1a4a8 0\tSource/HaulersDream/NearbyDeliveryTransit.cs"
+    },
+    {
+      "path": "Source/HaulersDream/NearbyHaulCommand.cs",
+      "sha256": "B9DFE86FF14BA5D67D65FC59A45308FAE2A079D1683D40F2DA774B62ECFFBB1B",
+      "bytes": 12634,
+      "terminalNewline": true,
+      "stageEntry": "100644 745df0bda860831cd45f15e3fd7a806b4a484158 0\tSource/HaulersDream/NearbyHaulCommand.cs"
+    },
+    {
+      "path": "Source/HaulersDream/NearbyHaulDelivery.cs",
+      "sha256": "02AB574EB90ED4D3FEDDAC4DB6B3DBCE1F5DE116E49F441F306A3F47EB2ABB5A",
+      "bytes": 7381,
+      "terminalNewline": true,
+      "stageEntry": "100644 8dfda2b6897a8e8488afa171da9d2814a700f6fe 0\tSource/HaulersDream/NearbyHaulDelivery.cs"
+    },
+    {
+      "path": "Source/HaulersDream/Patch_ScribeSaver_InitSaving.cs",
+      "sha256": "0741FE20CCCA81F88A436FA3918465D48C37CE0D3E4585927ADED612A0DF0AA9",
+      "bytes": 7675,
+      "terminalNewline": true,
+      "stageEntry": "100644 d1345c87e55fde58c6d9679182945aa96a23e8a9 0\tSource/HaulersDream/Patch_ScribeSaver_InitSaving.cs"
+    },
+    {
+      "path": "Source/HaulersDream/StorageCommitments.cs",
+      "sha256": "DCD372586604018215E4AA1A2BA4D1A1F4FB447C201134E36FEBEC807F698C8A",
+      "bytes": 60850,
+      "terminalNewline": true,
+      "stageEntry": "100644 e60ff2205e55f19a0ccbcc395f714c878a75c249 0\tSource/HaulersDream/StorageCommitments.cs"
+    },
+    {
+      "path": "Source/HaulersDream/WorkGiver_HaulNearby.cs",
+      "sha256": "5F992630AAFDCED52CB76DAD0B017800DB1C1FC63336749AA20C88B1FF0DDA1C",
+      "bytes": 5318,
+      "terminalNewline": true,
+      "stageEntry": "100644 8c48a5a12083edbd507496f9264b8840e05b6edb 0\tSource/HaulersDream/WorkGiver_HaulNearby.cs"
+    },
+    {
+      "path": "scripts/check-storage-commit-seam.ts",
+      "sha256": "9F4BA5B1B41762F8153CFD5A530DB2B3BFBEB5E345C5CC75DF4CFA568636AEEB",
+      "bytes": 26444,
+      "terminalNewline": true,
+      "stageEntry": "100644 c6774630c26b23d8a9ada9e0b1c673a0ca3bea62 0\tscripts/check-storage-commit-seam.ts"
+    }
+  ]
+}

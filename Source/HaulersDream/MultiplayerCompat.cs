@@ -52,16 +52,42 @@ namespace HaulersDream
         public static readonly bool Active =
             ModLister.GetActiveModWithIdentifier("rwmt.multiplayer", ignorePostfix: true) != null;
 
+        private static bool inventoryQuantityDropRegistered;
         private static bool nearbyHaulRegistered;
+        private static bool transporterRegistered;
+        private static bool explicitHaulRegistered;
+        internal static bool ExplicitHaulAvailable => !InMultiplayerGame || explicitHaulRegistered;
+        internal static bool ExplicitHaulLocalUi => !InMultiplayerGame || MpHooks.InInterface();
+        internal static bool ExplicitHaulExecuting => !InMultiplayerGame
+            || (explicitHaulRegistered && MpHooks.ExecutingCommand());
+        internal static bool TransporterAvailable => !InMultiplayerGame || transporterRegistered;
+        internal static bool TransporterLocalUi => !InMultiplayerGame || MpHooks.InInterface();
+        internal static bool TransporterExecuting => !InMultiplayerGame
+            || (transporterRegistered && MpHooks.ExecutingCommand());
         internal static bool NearbyHaulAvailable => !InMultiplayerGame || nearbyHaulRegistered;
         internal static bool NearbyHaulLocalUi => !InMultiplayerGame || MpHooks.InInterface();
         internal static bool NearbyHaulExecuting => !InMultiplayerGame
             || (nearbyHaulRegistered && MpHooks.ExecutingCommand());
+        internal static bool InventoryQuantityDropAvailable => !InMultiplayerGame || inventoryQuantityDropRegistered;
+        internal static bool InventoryQuantityDropLocalUi => !InMultiplayerGame || MpHooks.InInterface();
+        internal static bool InventoryQuantityDropExecuting => !InMultiplayerGame
+            || (inventoryQuantityDropRegistered && MpHooks.ExecutingCommand());
 
         static MultiplayerCompat()
         {
             if (!Active)
                 return;
+            try { explicitHaulRegistered = MpHooks.RegisterExplicitHaul(); }
+            catch (Exception e) { Log.Warning("[Hauler's Dream] Explicit hauling sync unavailable: " + e); }
+            try
+            {
+                transporterRegistered = MpHooks.RegisterTransporter();
+            }
+            catch (Exception e)
+            {
+                Log.Warning("[Hauler's Dream] Transporter command sync registration failed; "
+                    + "these actions are unavailable in multiplayer. " + e);
+            }
             try
             {
                 nearbyHaulRegistered = MpHooks.RegisterNearbyHaul();
@@ -69,6 +95,16 @@ namespace HaulersDream
             catch (Exception e)
             {
                 Log.Warning("[Hauler's Dream] Nearby hauling sync registration failed; "
+                    + "this action is unavailable in multiplayer. " + e);
+            }
+            // Keep this command's readiness independent of registration failures in other features.
+            try
+            {
+                inventoryQuantityDropRegistered = MpHooks.RegisterInventoryQuantityDrop();
+            }
+            catch (Exception e)
+            {
+                Log.Warning("[Hauler's Dream] Inventory quantity drop sync registration failed; "
                     + "this action is unavailable in multiplayer. " + e);
             }
             // Only reached when MP is present, so the API assembly is loaded and MpHooks.Register can resolve its
@@ -230,8 +266,26 @@ namespace HaulersDream
         /// </summary>
         private static class MpHooks
         {
+            internal static bool RegisterExplicitHaul()
+            {
+                bool issue = MP.RegisterSyncMethod(typeof(ExplicitHaulCommand), nameof(ExplicitHaulCommand.IssueSynced)) != null;
+                bool shelf = MP.RegisterSyncMethod(typeof(ExplicitHaulCommand), nameof(ExplicitHaulCommand.IssueShelfSynced)) != null;
+                bool resume = MP.RegisterSyncMethod(typeof(ExplicitHaulCommand), nameof(ExplicitHaulCommand.ResumeSynced)) != null;
+                bool cancel = MP.RegisterSyncMethod(typeof(ExplicitHaulCommand), nameof(ExplicitHaulCommand.CancelSynced)) != null;
+                return issue && shelf && resume && cancel;
+            }
+            internal static bool RegisterTransporter()
+            {
+                bool order = MP.RegisterSyncMethod(typeof(TransporterCommand), nameof(TransporterCommand.IssueSynced)) != null;
+                bool toggle = MP.RegisterSyncMethod(typeof(TransporterCommand), nameof(TransporterCommand.SetUnloadSynced)) != null;
+                return order && toggle;
+            }
             internal static bool RegisterNearbyHaul() =>
                 MP.RegisterSyncMethod(typeof(NearbyHaulCommand), nameof(NearbyHaulCommand.IssueSynced)) != null;
+
+            internal static bool RegisterInventoryQuantityDrop() =>
+                MP.RegisterSyncMethod(typeof(InventoryDropCommand),
+                    nameof(InventoryDropCommand.DropInventoryCountSynced)) != null;
 
             internal static void Register()
             {

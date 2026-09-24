@@ -16,11 +16,9 @@ namespace HaulersDream
     /// <see cref="JobDriver_LoadVehicleInBulk"/>) so the success-detection + scan + dedup + enqueue live in ONE place.
     ///
     /// PLAYER-FORCED ONLY: the chain reuses <see cref="TransportLoad.TryGiveBulkJob"/> with <c>playerOrder: true</c>,
-    /// which is the SAME path the bulk-load float menus use — it skips the auto eligibility gate (so the chain works
-    /// even for a drafted courier, exactly as the setting description promises) and returns null when nothing is
-    /// claimable / reachable to sweep, which doubles as the authoritative "this target still has work" test (a stronger
-    /// signal than <see cref="TransportLoad.HasPotentialBulkWork"/>, which additionally requires auto eligibility and so
-    /// would wrongly refuse a drafted/forced chain). An autonomous (non-playerForced) bulk-load NEVER chains.
+    /// which is the same planner the bulk-load float menus use. It returns null when nothing is claimable or
+    /// reachable. Continuations require an undrafted pawn and an empty queue; newer work always wins.
+    /// An autonomous (non-playerForced) bulk-load never chains.
     ///
     /// TERMINATION: the just-finished target is excluded (dedup by <see cref="IManagedLoadable.GetUniqueLoadID"/>) and
     /// each candidate is visited at most once per call, so a chain hop happens only when a DIFFERENT target with real
@@ -50,7 +48,7 @@ namespace HaulersDream
 
         /// <summary>
         /// Find the nearest OTHER load target (same family as <paramref name="finished"/>) that still has work, build a
-        /// player-forced bulk-load job for it, and <c>EnqueueFirst</c> it onto the pawn's job queue so the courier
+        /// player-forced bulk-load job for it, and append it to the pawn's empty job queue so the courier
         /// chains straight into it. Returns true if a follow-up was enqueued. No-op (returns false) when the feature is
         /// off, the pawn can't haul/move, or no other target with work is in range — the chain then simply ends.
         ///
@@ -63,10 +61,11 @@ namespace HaulersDream
             if (pawn?.Map == null || pawn.jobs == null || finished == null)
                 return false;
             // A downed/dead courier (e.g. the job ended Succeeded on the same tick it was incapacitated) cannot chain.
-            if (pawn.Dead || pawn.Downed || !pawn.Spawned)
+            if (pawn.Dead || pawn.Downed || !pawn.Spawned || pawn.Drafted || pawn.jobs.jobQueue.Count != 0)
                 return false;
+            if (finished.AnythingToLoad()) return false;
             var s = HaulersDreamMod.Settings;
-            if (s == null || !s.enableContinuousLoading)
+            if (s == null || !s.masterEnabled || !s.enableContinuousLoading)
                 return false;
             if (pawn.GetComp<CompHauledToInventory>() == null || pawn.inventory == null)
                 return false;
@@ -104,8 +103,7 @@ namespace HaulersDream
                 if (job == null)
                     continue;
                 job.playerForced = true;
-                // EnqueueFirst so the chain runs immediately after this finish action (ahead of any idle backstop).
-                pawn.jobs.jobQueue.EnqueueFirst(job, JobTag.Misc);
+                pawn.jobs.jobQueue.EnqueueLast(job, JobTag.Misc);
                 HDLog.Dbg($"ContinuousLoad: {pawn} chaining to {adapter.GetParentThing()?.LabelShort} " +
                           $"(group {adapter.GetUniqueLoadID()}) after finishing group {finishedKey}.");
                 return true;

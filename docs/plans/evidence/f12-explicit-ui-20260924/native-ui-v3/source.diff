@@ -1,0 +1,105 @@
+--- native-ui-v2/CONTRACT.md
++++ native-ui-v3/CONTRACT.md
+@@ -11,3 +11,14 @@
+ Map/source mutations are explicit test inputs before submission. Ordinary simulation runs only for the real delivery and blocking/resume phases. Climate is controlled before actor creation and allowed to warm the actual room cache; no health manipulation. Native job observations use immutable IDs at Notify_Starting prefix and before cleanup because pooled Job objects are not durable identities.
+ 
+ The supported-robot source targeter is a separate, bounded provider profile after the human UI fixture. Exact shelf F13 and Multiplayer remain separate. This contract is source work, not a claim that any native UI run has passed.
++
++
++## V3 explicit stale-dialog keyboard setup
++
++Original human run9508d293b4574c969d97a198f1d39b55 remains failed61/63,U0.
++It did not capture where its unfocused Return was lost; the product does not
++auto-close on stale redraw. V3 requires actual stale text/disabled confirmation,
++then an ordinary native text-field click before each of the six stale Return
++controls. The actual Return, close and zero-command/state-change requirements
++remain unchanged. Read-only root/window/close receipts cannot acknowledge input.
++No product, controller or input-worker behavior changes. Native acceptance pending.
+--- native-ui-v2/build.ps1
++++ native-ui-v3/build.ps1
+@@ -2,7 +2,7 @@
+ $env:TEMP='C:/HDQA/runtime-temp'
+ $env:TMP=$env:TEMP
+ $f12Root=$PSScriptRoot
+-$f12Build='C:/Users/Arthur/AppData/Local/HaulersDreamQA/inputs/f12-ui-native-20260924/host-v2'
++$f12Build='C:/Users/Arthur/AppData/Local/HaulersDreamQA/inputs/f12-ui-native-20260924/host-v3'
+ $f12Product='C:/Users/Arthur/AppData/Local/HaulersDreamQA/inputs/f12-explicit-ui-v2-20260924/Product'
+ $f12Refs='C:/Users/Arthur/AppData/Local/Temp/haulersdream-f34-host-root-build-20260920'
+ $f12Game='C:/Steam/steamapps/common/RimWorld/RimWorldWin64_Data/Managed'
+--- native-ui-v2/src/F12Scene.Steps.cs
++++ native-ui-v3/src/F12Scene.Steps.cs
+@@ -93,6 +93,11 @@
+                     }
+                     CaptureBoundary();emit("f12-declared-stale-input",change+"; "+Snapshot());
+                 });
++                Add(label+"/stale-redraw",()=>Guard(AmountOpen,"Stale amount dialog closed before native input."),()=>StaleRendered);
++                Add(label+"/stale-state",()=>Require(label+"/rendered-stale",StaleRendered,"Actual dialog remains open with Live=false, changed-selection reason and disabled confirmation; "+Snapshot()));
++                // Establish native keyboard focus by an ordinary click, as the earlier invalid-amount
++                // controls do. Do not call GUI.FocusControl, product Confirm or a window close method.
++                Click(label+"/focus-actual-text","text",()=>AmountOpen&&Buffer=="15");
+                 Key(label+"/native-return","return",()=>!DialogOpen);Add(label+"/no-command",()=>Unchanged(label));
+                 Add(label+"/restore-owner",()=>{if(change=="pawn-map")GenSpawn.Spawn(actor,savedPawn,map);Find.Selector.ClearSelection();Find.Selector.Select(actor);});
+             }
+--- native-ui-v2/src/F12Scene.Ui.cs
++++ native-ui-v3/src/F12Scene.Ui.cs
+@@ -51,6 +51,27 @@
+         private bool OrdersOpen=>DialogOpen&&dialog.GetType().Name=="Dialog_ExplicitHaulOrders";
+         private string Buffer=>AmountOpen?(string)Field(dialog,"buffer"):null;
+         private bool QueueChecked=>AmountOpen&&(bool)Field(dialog,"queue");
++        private bool StaleRendered=>AmountOpen
++            &&!(bool)AccessTools.Property(Field(dialog,"selection").GetType(),"Live").GetValue(Field(dialog,"selection"),null)
++            &&geometry.TryGetValue("confirm",out var g)&&Time.frameCount-g.frame<=3&&!g.enabled
++            &&renderedLabels.Contains("HD_ExplicitChanged".Translate().ToString());
++        // These receipts locate native routing/removal only. They never increment matchedInputs
++        // and cannot satisfy the real control-local acknowledgement or its postcondition.
++        internal void RouteObserved(string boundary,Window window=null,bool closing=false)
++        {
++            var e=Event.current;
++            bool key=pending!=null&&(pending.action=="key"||pending.action=="character");
++            if(!closing&&(!key||e==null||(e.type!=EventType.KeyDown&&e.rawType!=EventType.KeyDown)))return;
++            if(closing&&!OwnedWindow(window))return;
++            emit("f12-native-route",F02Json.Stringify(new{boundary,sequence=pending?.sequence,step=steps.Count==0?null:steps.Peek().name,
++                type=e?.type.ToString(),raw=e?.rawType.ToString(),key=e?.keyCode.ToString(),character=e==null?-1:(int)e.character,
++                frame=Time.frameCount,keyboardControl=GUIUtility.keyboardControl,hotControl=GUIUtility.hotControl,
++                dialogOpen=DialogOpen,dialogId=dialog?.ID,window=window?.GetType().FullName,windowId=window?.ID,
++                getsInput=window==null?(bool?)null:Find.WindowStack.GetsInput(window),
++                focused=(Field(Find.WindowStack,"focusedWindow") as Window)?.ID,
++                selected=(Find.Selector.SingleSelectedThing as Thing)?.ThingID,
++                windows=Find.WindowStack.Windows.Select(w=>new{id=w.ID,type=w.GetType().FullName,w.absorbInputAroundWindow,w.closeOnAccept}).ToArray()}));
++        }
+         private void Add(string name,Action action,Func<bool> ready=null,bool simulation=false)=>steps.Enqueue(new Step{name=name,action=action,ready=ready??(()=>true),simulation=simulation});
+         private void Click(string label,string control,Func<bool> ready,string action="click")=>Add(label,()=>Post(action,control,null,null),ready);
+         private void Key(string label,string key,Func<bool> ready)=>Add(label,()=>Post("key",key=="escape"&&Find.Targeter.IsTargeting?"target":"dialog",key,null),ready);
+@@ -119,6 +140,7 @@
+         }
+         internal void RootGui()
+         {
++            RouteObserved("Root.OnGUI");
+             if(actor==null||Event.current?.type!=EventType.Repaint)return;
+             MapGeometry("source",source?.Position??origin);MapGeometry("destination",destination);MapGeometry("storage",storage.Cells.Single());MapGeometry("shelf",invalidShelf);MapGeometry("wall",invalidWall);MapGeometry("resident",invalidResident);MapGeometry("reserved",invalidReserved);MapGeometry("unreachable",invalidUnreachable);
+             geometry["edge"]=new Geometry{min=new Vector2(1000,740),max=new Vector2(1002,742),frame=Time.frameCount,enabled=true};
+--- native-ui-v2/src/F12UiObservers.cs
++++ native-ui-v3/src/F12UiObservers.cs
+@@ -38,6 +38,9 @@
+                 Patch(AccessTools.Method(typeof(Widgets),"Label",new[]{typeof(Rect),typeof(string)}),nameof(LabelBefore));
+                 Patch(AccessTools.Method(typeof(Widgets),"BeginScrollView",new[]{typeof(Rect),typeof(Vector2).MakeByRefType(),typeof(Rect),typeof(bool)}),nameof(ScrollBefore));
+                 Patch(AccessTools.Method(typeof(Window),"OnCancelKeyPressed"),nameof(CancelBefore));
++                Patch(AccessTools.Method(typeof(WindowStack),"HandleEventsHighPriority"),nameof(RoutingBefore),nameof(RoutingAfter));
++                Patch(AccessTools.Method(typeof(Window),"WindowOnGUI"),nameof(WindowBefore));
++                Patch(AccessTools.Method(typeof(Window),"Close"),nameof(WindowClosing));
+                 Patch(AccessTools.Method(AccessTools.TypeByName("HaulersDream.ExplicitHaulUi"),"DrawPrompt"),nameof(PromptBefore),null,nameof(PromptFinally));
+                 var commands=AccessTools.TypeByName("HaulersDream.ExplicitHaulCommand");
+                 Patch(AccessTools.Method(commands,"IssueSynced"),nameof(CommandBefore),nameof(CommandAfter));
+@@ -83,6 +86,12 @@
+         {if(drawing!=null||promptDepth>0)Observe(()=>scene.LabelObserved(rect,label,promptDepth>0));}
+         private static void ScrollBefore([HarmonyArgument(0)]Rect viewport,[HarmonyArgument(2)]Rect content,[HarmonyArgument(3)]bool bars)
+         {if(drawing!=null)Observe(()=>scene.ScrollObserved(viewport,content,bars));}
++        private static void RoutingBefore()=>Observe(()=>scene.RouteObserved("WindowStack.HandleEventsHighPriority/entry"));
++        private static void RoutingAfter()=>Observe(()=>scene.RouteObserved("WindowStack.HandleEventsHighPriority/return"));
++        private static void WindowBefore(Window __instance)
++        {if(scene?.OwnedWindow(__instance)==true)Observe(()=>scene.RouteObserved("Window.WindowOnGUI",__instance));}
++        private static void WindowClosing(Window __instance)
++        {if(scene?.OwnedWindow(__instance)==true)Observe(()=>scene.RouteObserved("Window.Close/entry",__instance,true));}
+         private static void CancelBefore(Window __instance)
+         {if(scene?.OwnedWindow(__instance)==true)Observe(()=>scene.Entry("escape","Window.OnCancelKeyPressed"));}
+         private static void PromptBefore(out int __state)

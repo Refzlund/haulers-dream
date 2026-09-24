@@ -291,6 +291,7 @@ namespace HaulersDream
         // splits a manifest across multiple haulers without double-haul; anti-conflict patches stop premature
         // board/launch + the false "loading stalled" alert + shuttle autoload churn while claims are live.
         public bool enableBulkLoadTransporters = true;
+        public bool enableBulkUnloadTransporters = true;
         // How often (ticks) the running load job re-validates that its carried stock is still wanted by the group
         // (mid-trip redirect within the group). 10..240; lower = more responsive redirect, higher = cheaper.
         public int bulkLoadAiUpdateFrequency = 60;
@@ -819,6 +820,7 @@ namespace HaulersDream
             Scribe_Values.Look(ref loadPackAnimalBulk, "loadPackAnimalBulk", true);
             Scribe_Values.Look(ref autoDivertToPackAnimal, "autoDivertToPackAnimal", true);
             Scribe_Values.Look(ref enableBulkLoadTransporters, "enableBulkLoadTransporters", true);
+            Scribe_Values.Look(ref enableBulkUnloadTransporters, "enableBulkUnloadTransporters", true);
             Scribe_Values.Look(ref bulkLoadAiUpdateFrequency, "bulkLoadAiUpdateFrequency", 60);
             Scribe_Values.Look(ref enableBulkLoadPortal, "enableBulkLoadPortal", true);
             Scribe_Values.Look(ref enableVehicleFramework, "enableVehicleFramework", true);
@@ -1034,6 +1036,7 @@ namespace HaulersDream
             loadPackAnimalBulk = true;
             autoDivertToPackAnimal = true;
             enableBulkLoadTransporters = true;
+            enableBulkUnloadTransporters = true;
             bulkLoadAiUpdateFrequency = 60;
             enableBulkLoadPortal = true;
             enableVehicleFramework = true;

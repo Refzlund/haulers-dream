@@ -1,0 +1,7 @@
+# F40 native fixture v4
+
+Current selected host: `59C5BAC65C4385CADAE02E5FDC9648EC8499472164ECAD1C2E45A50915AFB2CA`, MVID `4afe2504-2174-4fee-a706-822deb5b1452`. Evidence-root selected-inputs SHA256 `A7D8B90F10295B0D8BAF42F9A3165A06EBDA5D4BB6EC1A2BA127DD6069F3435A`. Product and controller are unchanged from v3.
+
+The retained first native run `02bde5eeb2624a948d0f752e368b7ce2` stopped before phase0 because the fixture required `drafter` while its generated pawn was still unspawned. The actual native `RimWorld.PawnComponentsUtility` creates that component only when spawned or explicitly acting as spawned. The narrow source.diff removes the premature guard and asserts the component after actual `GenSpawn.Spawn`; a native-courier event records the resulting state. No medical, hauling, drafting or product behavior is replaced.
+
+Independent review by queued_save_finish accepted this exact diff and native lifecycle contract. Root retained the old source/selection, compiled v4 against the same actual game reference (5.00seconds, zero warnings/errors), joined the hidden metadata reader and verified all239 selected pins. See verification.json, build-inputs.json and the external HarnessBuild-v4 logs. The original v3 Handoff remains historical. All ten gameplay phases, conservation, cleanup and optional acceptance boundaries remain unchanged. Fresh preparation uses the revised selection; no existing run or result is overwritten.

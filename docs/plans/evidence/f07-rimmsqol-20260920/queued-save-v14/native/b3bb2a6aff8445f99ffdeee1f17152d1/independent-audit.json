@@ -1,0 +1,1131 @@
+{
+  "result": {
+    "status": "passed",
+    "passed": 57,
+    "assertions": 57,
+    "failed": [],
+    "unityErrors": 0
+  },
+  "allEventSequenceChecked": 92,
+  "assembliesHashBound": 12,
+  "events": [
+    {
+      "caseId": "F07-RESTART",
+      "detail": "case=F07-RESTART; expectedBehavior=satisfied",
+      "phase": "harness-start",
+      "runId": "b3bb2a6aff8445f99ffdeee1f17152d1",
+      "sequence": 1,
+      "tick": -1,
+      "utc": "2026-09-24T07:40:22.8866611Z"
+    },
+    {
+      "caseId": "F07-RESTART",
+      "detail": "Version.txt=1.6.4871 rev590; executing assembly reports=1.6.4871 rev591",
+      "phase": "game-version-provenance",
+      "runId": "b3bb2a6aff8445f99ffdeee1f17152d1",
+      "sequence": 8,
+      "tick": -1,
+      "utc": "2026-09-24T07:40:22.9139133Z"
+    },
+    {
+      "caseId": "F07-RESTART",
+      "detail": "GameComponent lifecycle callback received.",
+      "phase": "loaded-game",
+      "runId": "b3bb2a6aff8445f99ffdeee1f17152d1",
+      "sequence": 12,
+      "tick": 303,
+      "utc": "2026-09-24T07:40:46.1443376Z"
+    },
+    {
+      "caseId": "F07-RESTART",
+      "detail": "restart=True; tick=303; cleanupOnSave=True; thread=52",
+      "phase": "queued-save-context",
+      "runId": "b3bb2a6aff8445f99ffdeee1f17152d1",
+      "sequence": 13,
+      "tick": 303,
+      "utc": "2026-09-24T07:40:46.1483718Z"
+    },
+    {
+      "caseId": "F07-RESTART",
+      "detail": "0Harmony, Version=2.4.1.0, Culture=neutral, PublicKeyToken=null; mvid=e5339928-9d9b-419d-83f9-f5b02c5cf609; path=C:\\Users\\Arthur\\AppData\\Local\\HaulersDreamQA\\runtime-temp\\haulersdream-runtime-tests\\b3bb2a6aff8445f99ffdeee1f17152d1\\runtime\\Mods\\Harmony\\Current\\Assemblies\\0Harmony.dll; sha256=353DAAFEC180BB8E7BBE4DA78F2A7CDC78067392E3A4E79DC8E7AF295F2371E6",
+      "phase": "f07-rimms-loaded-binding",
+      "runId": "b3bb2a6aff8445f99ffdeee1f17152d1",
+      "sequence": 51,
+      "tick": 304,
+      "utc": "2026-09-24T07:40:51.9799165Z"
+    },
+    {
+      "caseId": "F07-RESTART",
+      "detail": "Priority Queue, Version=4.1.1.0, Culture=neutral, PublicKeyToken=null; mvid=ec9b68e4-40ae-4fa2-93c0-57dee8f84c62; path=C:\\Users\\Arthur\\AppData\\Local\\HaulersDreamQA\\runtime-temp\\haulersdream-runtime-tests\\b3bb2a6aff8445f99ffdeee1f17152d1\\runtime\\Mods\\RIMMSqol\\1.6\\Assemblies\\Priority Queue.dll; sha256=3B9ACE1D057470EE950B5662484FB0AF843FFBEC907CB5FA5B2A73DE767BC1AA",
+      "phase": "f07-rimms-loaded-binding",
+      "runId": "b3bb2a6aff8445f99ffdeee1f17152d1",
+      "sequence": 52,
+      "tick": 304,
+      "utc": "2026-09-24T07:40:51.9809163Z"
+    },
+    {
+      "caseId": "F07-RESTART",
+      "detail": "RIMMSqol, Version=1.0.9591.34971, Culture=neutral, PublicKeyToken=null; mvid=05d66edb-d146-4021-9c0b-f45f1303b323; path=C:\\Users\\Arthur\\AppData\\Local\\HaulersDreamQA\\runtime-temp\\haulersdream-runtime-tests\\b3bb2a6aff8445f99ffdeee1f17152d1\\runtime\\Mods\\RIMMSqol\\1.6\\Assemblies\\RIMMSqol.dll; sha256=1152B0C198D34D4BB346FC74A4C4B72856F21ADA71FF376C5E4FF5F00FC81BD1",
+      "phase": "f07-rimms-loaded-binding",
+      "runId": "b3bb2a6aff8445f99ffdeee1f17152d1",
+      "sequence": 53,
+      "tick": 304,
+      "utc": "2026-09-24T07:40:52.0950992Z"
+    },
+    {
+      "caseId": "F07-RESTART",
+      "detail": "tick=304; size=(250, 1, 250)",
+      "phase": "map-initialized",
+      "runId": "b3bb2a6aff8445f99ffdeee1f17152d1",
+      "sequence": 55,
+      "tick": 304,
+      "utc": "2026-09-24T07:40:52.2822874Z"
+    },
+    {
+      "caseId": "F07-RESTART",
+      "detail": "tick=306; 12:Wait_MaintainPosture:forced=False:giver=:map=0:A=cell:(-1000, -1000, -1000):B=cell:(-1000, -1000, -1000):C=cell:(-1000, -1000, -1000):qa=null:qb=null:count=-1:counts=null; condition=Succeeded",
+      "phase": "queued-save-job-end",
+      "runId": "b3bb2a6aff8445f99ffdeee1f17152d1",
+      "sequence": 58,
+      "tick": 306,
+      "utc": "2026-09-24T07:40:52.5551770Z"
+    },
+    {
+      "caseId": "F07-RESTART",
+      "detail": "tick=306; admitted=True; 11:HaulersDream_NearbyDelivery:forced=True:giver=HaulersDream_HaulNearby:map=0:A=cell:(-1000, -1000, -1000):B=cell:(-1000, -1000, -1000):C=cell:(-1000, -1000, -1000):qa=thing:38402:qb=null:count=-1:counts=10",
+      "phase": "queued-save-admission",
+      "runId": "b3bb2a6aff8445f99ffdeee1f17152d1",
+      "sequence": 59,
+      "tick": 306,
+      "utc": "2026-09-24T07:40:52.6031758Z"
+    },
+    {
+      "caseId": "F07-RESTART",
+      "detail": "tick=306; admitted=True; 11:HaulersDream_NearbyDelivery:forced=True:giver=HaulersDream_HaulNearby:map=0:A=cell:(-1000, -1000, -1000):B=cell:(-1000, -1000, -1000):C=cell:(-1000, -1000, -1000):qa=thing:38402:qb=null:count=-1:counts=10",
+      "phase": "queued-save-admission",
+      "runId": "b3bb2a6aff8445f99ffdeee1f17152d1",
+      "sequence": 60,
+      "tick": 306,
+      "utc": "2026-09-24T07:40:52.6031758Z"
+    },
+    {
+      "caseId": "F07-RESTART",
+      "detail": "tick=306; admitted=True; 11:HaulersDream_NearbyDelivery:forced=True:giver=HaulersDream_HaulNearby:map=0:A=cell:(-1000, -1000, -1000):B=cell:(-1000, -1000, -1000):C=cell:(-1000, -1000, -1000):qa=thing:38402:qb=null:count=-1:counts=10",
+      "phase": "queued-save-admission",
+      "runId": "b3bb2a6aff8445f99ffdeee1f17152d1",
+      "sequence": 61,
+      "tick": 306,
+      "utc": "2026-09-24T07:40:52.6031758Z"
+    },
+    {
+      "caseId": "F07-RESTART",
+      "detail": "tick=306; actor=B; fromQueue=True; 11:HaulersDream_NearbyDelivery:forced=True:giver=HaulersDream_HaulNearby:map=0:A=cell:(-1000, -1000, -1000):B=cell:(-1000, -1000, -1000):C=cell:(-1000, -1000, -1000):qa=thing:38402:qb=null:count=-1:counts=10",
+      "phase": "queued-save-job-start",
+      "runId": "b3bb2a6aff8445f99ffdeee1f17152d1",
+      "sequence": 62,
+      "tick": 306,
+      "utc": "2026-09-24T07:40:52.6208610Z"
+    },
+    {
+      "caseId": "F07-RESTART",
+      "detail": "tick=504; 11:HaulersDream_NearbyDelivery:forced=True:giver=HaulersDream_HaulNearby:map=0:A=thing:38402:B=cell:(149, 0, 121):C=cell:(-1000, -1000, -1000):qa=thing:38402:qb=null:count=10:counts=0; condition=Succeeded",
+      "phase": "queued-save-job-end",
+      "runId": "b3bb2a6aff8445f99ffdeee1f17152d1",
+      "sequence": 64,
+      "tick": 504,
+      "utc": "2026-09-24T07:40:53.6134339Z"
+    },
+    {
+      "caseId": "F07-RESTART",
+      "detail": "tick=504; actor=B; fromQueue=False; 17:Wait_MaintainPosture:forced=False:giver=:map=0:A=cell:(-1000, -1000, -1000):B=cell:(-1000, -1000, -1000):C=cell:(-1000, -1000, -1000):qa=null:qb=null:count=-1:counts=null",
+      "phase": "queued-save-job-start",
+      "runId": "b3bb2a6aff8445f99ffdeee1f17152d1",
+      "sequence": 65,
+      "tick": 504,
+      "utc": "2026-09-24T07:40:53.6164622Z"
+    },
+    {
+      "caseId": "F07-RESTART",
+      "detail": "tick=507; 17:Wait_MaintainPosture:forced=False:giver=:map=0:A=cell:(-1000, -1000, -1000):B=cell:(-1000, -1000, -1000):C=cell:(-1000, -1000, -1000):qa=null:qb=null:count=-1:counts=null; condition=Succeeded",
+      "phase": "queued-save-job-end",
+      "runId": "b3bb2a6aff8445f99ffdeee1f17152d1",
+      "sequence": 66,
+      "tick": 507,
+      "utc": "2026-09-24T07:40:53.6194911Z"
+    },
+    {
+      "caseId": "F07-RESTART",
+      "detail": "tick=507; actor=B; fromQueue=False; 18:Wait_Combat:forced=False:giver=:map=0:A=cell:(149, 0, 121):B=cell:(-1000, -1000, -1000):C=cell:(-1000, -1000, -1000):qa=null:qb=null:count=-1:counts=null",
+      "phase": "queued-save-job-start",
+      "runId": "b3bb2a6aff8445f99ffdeee1f17152d1",
+      "sequence": 67,
+      "tick": 507,
+      "utc": "2026-09-24T07:40:53.6316009Z"
+    },
+    {
+      "caseId": "F07-RESTART",
+      "detail": "tick=1354; 13:Goto:forced=True:giver=:map=-1:A=cell:(98, 0, 136):B=cell:(-1000, -1000, -1000):C=cell:(-1000, -1000, -1000):qa=null:qb=null:count=-1:counts=null; condition=Succeeded",
+      "phase": "queued-save-job-end",
+      "runId": "b3bb2a6aff8445f99ffdeee1f17152d1",
+      "sequence": 68,
+      "tick": 1354,
+      "utc": "2026-09-24T07:40:56.3183691Z"
+    },
+    {
+      "caseId": "F07-RESTART",
+      "detail": "tick=1354; admitted=True; 15:HaulersDream_BulkHaul:forced=True:giver=HaulersDream_HaulNearby:map=0:A=thing:38404:B=cell:(-1000, -1000, -1000):C=cell:(-1000, -1000, -1000):qa=null:qb=thing:38404,thing:38405:count=1:counts=5,5",
+      "phase": "queued-save-admission",
+      "runId": "b3bb2a6aff8445f99ffdeee1f17152d1",
+      "sequence": 69,
+      "tick": 1354,
+      "utc": "2026-09-24T07:40:56.3183691Z"
+    },
+    {
+      "caseId": "F07-RESTART",
+      "detail": "tick=1354; admitted=True; 15:HaulersDream_BulkHaul:forced=True:giver=HaulersDream_HaulNearby:map=0:A=thing:38404:B=cell:(-1000, -1000, -1000):C=cell:(-1000, -1000, -1000):qa=null:qb=thing:38404,thing:38405:count=1:counts=5,5",
+      "phase": "queued-save-admission",
+      "runId": "b3bb2a6aff8445f99ffdeee1f17152d1",
+      "sequence": 70,
+      "tick": 1354,
+      "utc": "2026-09-24T07:40:56.3193766Z"
+    },
+    {
+      "caseId": "F07-RESTART",
+      "detail": "tick=1354; admitted=True; 15:HaulersDream_BulkHaul:forced=True:giver=HaulersDream_HaulNearby:map=0:A=thing:38404:B=cell:(-1000, -1000, -1000):C=cell:(-1000, -1000, -1000):qa=null:qb=thing:38404,thing:38405:count=1:counts=5,5",
+      "phase": "queued-save-admission",
+      "runId": "b3bb2a6aff8445f99ffdeee1f17152d1",
+      "sequence": 71,
+      "tick": 1354,
+      "utc": "2026-09-24T07:40:56.3193766Z"
+    },
+    {
+      "caseId": "F07-RESTART",
+      "detail": "tick=1354; actor=A; fromQueue=True; 15:HaulersDream_BulkHaul:forced=True:giver=HaulersDream_HaulNearby:map=0:A=thing:38404:B=thing:38404:C=cell:(-1000, -1000, -1000):qa=null:qb=thing:38404,thing:38405:count=1:counts=5,5",
+      "phase": "queued-save-job-start",
+      "runId": "b3bb2a6aff8445f99ffdeee1f17152d1",
+      "sequence": 72,
+      "tick": 1354,
+      "utc": "2026-09-24T07:40:56.3502412Z"
+    },
+    {
+      "caseId": "F07-RESTART",
+      "detail": "tick=1707; 15:HaulersDream_BulkHaul:forced=True:giver=HaulersDream_HaulNearby:map=0:A=thing:38404:B=thing:38405:C=cell:(-1000, -1000, -1000):qa=null:qb=thing:38404,thing:38405:count=1:counts=5,5; condition=Succeeded",
+      "phase": "queued-save-job-end",
+      "runId": "b3bb2a6aff8445f99ffdeee1f17152d1",
+      "sequence": 73,
+      "tick": 1707,
+      "utc": "2026-09-24T07:40:57.3511660Z"
+    },
+    {
+      "caseId": "F07-RESTART",
+      "detail": "tick=1707; actor=A; fromQueue=False; 28:Wait_MaintainPosture:forced=False:giver=:map=0:A=cell:(-1000, -1000, -1000):B=cell:(-1000, -1000, -1000):C=cell:(-1000, -1000, -1000):qa=null:qb=null:count=-1:counts=null",
+      "phase": "queued-save-job-start",
+      "runId": "b3bb2a6aff8445f99ffdeee1f17152d1",
+      "sequence": 74,
+      "tick": 1707,
+      "utc": "2026-09-24T07:40:57.3542072Z"
+    },
+    {
+      "caseId": "F07-RESTART",
+      "detail": "tick=1709; 28:Wait_MaintainPosture:forced=False:giver=:map=0:A=cell:(-1000, -1000, -1000):B=cell:(-1000, -1000, -1000):C=cell:(-1000, -1000, -1000):qa=null:qb=null:count=-1:counts=null; condition=Succeeded",
+      "phase": "queued-save-job-end",
+      "runId": "b3bb2a6aff8445f99ffdeee1f17152d1",
+      "sequence": 75,
+      "tick": 1709,
+      "utc": "2026-09-24T07:40:57.3572372Z"
+    },
+    {
+      "caseId": "F07-RESTART",
+      "detail": "tick=1709; admitted=True; 27:HaulersDream_NearbyDelivery:forced=True:giver=HaulersDream_HaulNearby:map=0:A=cell:(-1000, -1000, -1000):B=cell:(-1000, -1000, -1000):C=cell:(-1000, -1000, -1000):qa=thing:38404:qb=null:count=-1:counts=10",
+      "phase": "queued-save-admission",
+      "runId": "b3bb2a6aff8445f99ffdeee1f17152d1",
+      "sequence": 76,
+      "tick": 1709,
+      "utc": "2026-09-24T07:40:57.3582580Z"
+    },
+    {
+      "caseId": "F07-RESTART",
+      "detail": "tick=1709; admitted=True; 27:HaulersDream_NearbyDelivery:forced=True:giver=HaulersDream_HaulNearby:map=0:A=cell:(-1000, -1000, -1000):B=cell:(-1000, -1000, -1000):C=cell:(-1000, -1000, -1000):qa=thing:38404:qb=null:count=-1:counts=10",
+      "phase": "queued-save-admission",
+      "runId": "b3bb2a6aff8445f99ffdeee1f17152d1",
+      "sequence": 77,
+      "tick": 1709,
+      "utc": "2026-09-24T07:40:57.3587653Z"
+    },
+    {
+      "caseId": "F07-RESTART",
+      "detail": "tick=1709; admitted=True; 27:HaulersDream_NearbyDelivery:forced=True:giver=HaulersDream_HaulNearby:map=0:A=cell:(-1000, -1000, -1000):B=cell:(-1000, -1000, -1000):C=cell:(-1000, -1000, -1000):qa=thing:38404:qb=null:count=-1:counts=10",
+      "phase": "queued-save-admission",
+      "runId": "b3bb2a6aff8445f99ffdeee1f17152d1",
+      "sequence": 78,
+      "tick": 1709,
+      "utc": "2026-09-24T07:40:57.3587653Z"
+    },
+    {
+      "caseId": "F07-RESTART",
+      "detail": "tick=1709; actor=A; fromQueue=True; 27:HaulersDream_NearbyDelivery:forced=True:giver=HaulersDream_HaulNearby:map=0:A=cell:(-1000, -1000, -1000):B=cell:(-1000, -1000, -1000):C=cell:(-1000, -1000, -1000):qa=thing:38404:qb=null:count=-1:counts=10",
+      "phase": "queued-save-job-start",
+      "runId": "b3bb2a6aff8445f99ffdeee1f17152d1",
+      "sequence": 79,
+      "tick": 1709,
+      "utc": "2026-09-24T07:40:57.3587653Z"
+    },
+    {
+      "caseId": "F07-RESTART",
+      "detail": "tick=1789; 27:HaulersDream_NearbyDelivery:forced=True:giver=HaulersDream_HaulNearby:map=0:A=thing:38404:B=cell:(117, 0, 121):C=cell:(-1000, -1000, -1000):qa=thing:38404:qb=null:count=10:counts=0; condition=Succeeded",
+      "phase": "queued-save-job-end",
+      "runId": "b3bb2a6aff8445f99ffdeee1f17152d1",
+      "sequence": 80,
+      "tick": 1789,
+      "utc": "2026-09-24T07:40:57.5498119Z"
+    },
+    {
+      "caseId": "F07-RESTART",
+      "detail": "tick=1789; actor=A; fromQueue=False; 30:Wait_MaintainPosture:forced=False:giver=:map=0:A=cell:(-1000, -1000, -1000):B=cell:(-1000, -1000, -1000):C=cell:(-1000, -1000, -1000):qa=null:qb=null:count=-1:counts=null",
+      "phase": "queued-save-job-start",
+      "runId": "b3bb2a6aff8445f99ffdeee1f17152d1",
+      "sequence": 81,
+      "tick": 1789,
+      "utc": "2026-09-24T07:40:57.5498119Z"
+    },
+    {
+      "caseId": "F07-RESTART",
+      "detail": "status=passed; restart=True; owned observers/jobs cleaned; disposable terrain/Home/Lord duties not restored; no input claim.",
+      "phase": "queued-save-terminal",
+      "runId": "b3bb2a6aff8445f99ffdeee1f17152d1",
+      "sequence": 87,
+      "tick": 1789,
+      "utc": "2026-09-24T07:40:57.7235023Z"
+    },
+    {
+      "caseId": "F07-RESTART",
+      "detail": "F07 editor/command/transit scenario returned passed",
+      "phase": "scenario-observed",
+      "runId": "b3bb2a6aff8445f99ffdeee1f17152d1",
+      "sequence": 88,
+      "tick": 1789,
+      "utc": "2026-09-24T07:40:57.7235023Z"
+    },
+    {
+      "caseId": "F07-RESTART",
+      "detail": "Threaded capture closed before terminal result; earlier startup and shutdown require whole Player.log review.",
+      "phase": "error-capture-boundary",
+      "runId": "b3bb2a6aff8445f99ffdeee1f17152d1",
+      "sequence": 91,
+      "tick": 1789,
+      "utc": "2026-09-24T07:40:57.7285761Z"
+    },
+    {
+      "caseId": "F07-RESTART",
+      "detail": "passed: Queued nearby Bulk and generatedDelivery: actual command, real save and fresh native continuation; no physical input.",
+      "phase": "terminal-result",
+      "runId": "b3bb2a6aff8445f99ffdeee1f17152d1",
+      "sequence": 92,
+      "tick": 1789,
+      "utc": "2026-09-24T07:40:57.7290839Z"
+    }
+  ],
+  "native": {
+    "startedUtc": "2026-09-24T07:39:48.9415978Z",
+    "runDirectory": "C:/Users/Arthur/AppData/Local/HaulersDreamQA/runtime-temp/haulersdream-runtime-tests/b3bb2a6aff8445f99ffdeee1f17152d1",
+    "processId": 26252,
+    "joined": true,
+    "exitCode": 0,
+    "deadlineExceeded": false,
+    "error": null,
+    "processStartedUtc": "2026-09-24T07:40:10.5788315Z",
+    "executable": "C:\\Users\\Arthur\\AppData\\Local\\HaulersDreamQA\\runtime-temp\\haulersdream-runtime-tests\\b3bb2a6aff8445f99ffdeee1f17152d1\\runtime\\RimWorldWin64.exe",
+    "finishedUtc": "2026-09-24T07:41:02.0206098Z"
+  },
+  "desktop": {
+    "desktop": "HaulersDreamTests-1c897d050d6241af82320141d7209caf",
+    "command": [
+      "C:/Users/Arthur/.cache/codex-runtimes/codex-primary-runtime/dependencies/native/powershell/pwsh.exe",
+      "-NoProfile",
+      "-File",
+      "C:/Users/Arthur/Sync/Projects/RimWorld Mods/HaulersDream/docs/plans/evidence/f07-rimmsqol-20260920/queued-save-v14/fixture/launch.ps1",
+      "-RunDirectory",
+      "C:/Users/Arthur/AppData/Local/HaulersDreamQA/runtime-temp/haulersdream-runtime-tests/b3bb2a6aff8445f99ffdeee1f17152d1",
+      "-OutputDirectory",
+      "C:/Users/Arthur/Sync/Projects/RimWorld Mods/HaulersDream/docs/plans/evidence/f07-rimmsqol-20260920/queued-save-v14/native/b3bb2a6aff8445f99ffdeee1f17152d1"
+    ],
+    "cwd": "C:\\Users\\Arthur\\Sync\\Projects\\RimWorld Mods\\HaulersDream",
+    "pid": 24724,
+    "exitCode": 0,
+    "startedUtc": "2026-09-24T07:39:46.616384+00:00",
+    "switchedDesktop": false,
+    "inputDesktopSamples": [
+      "Default"
+    ],
+    "privateWindowPids": [
+      26252
+    ],
+    "timedOut": false,
+    "error": null,
+    "cleanupErrors": [],
+    "activeProcessesBeforeClose": 0,
+    "joined": true,
+    "finishedUtc": "2026-09-24T07:41:03.834614+00:00"
+  },
+  "wholeLogBytes": 168139,
+  "wholeLogLines": 2126,
+  "wholeLogAlerts": [
+    {
+      "line": 108,
+      "text": "Fallback handler could not load library C:/Users/Arthur/AppData/Local/HaulersDreamQA/runtime-temp/haulersdream-runtime-tests/b3bb2a6aff8445f99ffdeee1f17152d1/runtime/RimWorldWin64_Data/MonoBleedingEdge/data-0000013B4A231050.dll"
+    },
+    {
+      "line": 109,
+      "text": "Fallback handler could not load library C:/Users/Arthur/AppData/Local/HaulersDreamQA/runtime-temp/haulersdream-runtime-tests/b3bb2a6aff8445f99ffdeee1f17152d1/runtime/RimWorldWin64_Data/MonoBleedingEdge/data-0000013B4A596140.dll"
+    },
+    {
+      "line": 638,
+      "text": " - - 20.948ms (0.17%) (self: 2.047 ms) ErrorCheckPatches()"
+    },
+    {
+      "line": 646,
+      "text": " - 304.657ms (2.1%) (self: 304.657 ms) Error check all defs."
+    },
+    {
+      "line": 1145,
+      "text": "1x Error check all defs. -> 304.657 ms (total (w/children): 304.657 ms)"
+    },
+    {
+      "line": 1260,
+      "text": "1x ErrorCheckPatches() -> 2.047 ms (total (w/children): 20.948 ms)"
+    },
+    {
+      "line": 1824,
+      "text": "[HD Runtime Harness] run=b3bb2a6aff8445f99ffdeee1f17152d1 case=F07-RESTART terminal=passed; captured-errors=0"
+    },
+    {
+      "line": 2005,
+      "text": "      Failed Allocations. Bucket layout:"
+    },
+    {
+      "line": 2006,
+      "text": "        16B: 5 Subsections = 5120 buckets. Failed count: 5630"
+    },
+    {
+      "line": 2007,
+      "text": "        32B: 34 Subsections = 17408 buckets. Failed count: 16479"
+    },
+    {
+      "line": 2008,
+      "text": "        48B: 62 Subsections = 21162 buckets. Failed count: 26872"
+    },
+    {
+      "line": 2009,
+      "text": "        64B: 46 Subsections = 11776 buckets. Failed count: 10415"
+    },
+    {
+      "line": 2010,
+      "text": "        80B: 87 Subsections = 17817 buckets. Failed count: 1273"
+    },
+    {
+      "line": 2011,
+      "text": "        96B: 8 Subsections = 1365 buckets. Failed count: 70"
+    },
+    {
+      "line": 2012,
+      "text": "        112B: 8 Subsections = 1170 buckets. Failed count: 1603"
+    },
+    {
+      "line": 2013,
+      "text": "        128B: 6 Subsections = 768 buckets. Failed count: 2903"
+    },
+    {
+      "line": 2052,
+      "text": "      Failed Allocations. Bucket layout:"
+    },
+    {
+      "line": 2053,
+      "text": "        16B: 5 Subsections = 5120 buckets. Failed count: 5630"
+    },
+    {
+      "line": 2054,
+      "text": "        32B: 34 Subsections = 17408 buckets. Failed count: 16479"
+    },
+    {
+      "line": 2055,
+      "text": "        48B: 62 Subsections = 21162 buckets. Failed count: 26872"
+    },
+    {
+      "line": 2056,
+      "text": "        64B: 46 Subsections = 11776 buckets. Failed count: 10415"
+    },
+    {
+      "line": 2057,
+      "text": "        80B: 87 Subsections = 17817 buckets. Failed count: 1273"
+    },
+    {
+      "line": 2058,
+      "text": "        96B: 8 Subsections = 1365 buckets. Failed count: 70"
+    },
+    {
+      "line": 2059,
+      "text": "        112B: 8 Subsections = 1170 buckets. Failed count: 1603"
+    },
+    {
+      "line": 2060,
+      "text": "        128B: 6 Subsections = 768 buckets. Failed count: 2903"
+    },
+    {
+      "line": 2079,
+      "text": "      Failed Allocations. Bucket layout:"
+    },
+    {
+      "line": 2080,
+      "text": "        16B: 5 Subsections = 5120 buckets. Failed count: 5630"
+    },
+    {
+      "line": 2081,
+      "text": "        32B: 34 Subsections = 17408 buckets. Failed count: 16479"
+    },
+    {
+      "line": 2082,
+      "text": "        48B: 62 Subsections = 21162 buckets. Failed count: 26872"
+    },
+    {
+      "line": 2083,
+      "text": "        64B: 46 Subsections = 11776 buckets. Failed count: 10415"
+    },
+    {
+      "line": 2084,
+      "text": "        80B: 87 Subsections = 17817 buckets. Failed count: 1273"
+    },
+    {
+      "line": 2085,
+      "text": "        96B: 8 Subsections = 1365 buckets. Failed count: 70"
+    },
+    {
+      "line": 2086,
+      "text": "        112B: 8 Subsections = 1170 buckets. Failed count: 1603"
+    },
+    {
+      "line": 2087,
+      "text": "        128B: 6 Subsections = 768 buckets. Failed count: 2903"
+    },
+    {
+      "line": 2106,
+      "text": "      Failed Allocations. Bucket layout:"
+    },
+    {
+      "line": 2107,
+      "text": "        16B: 5 Subsections = 5120 buckets. Failed count: 5630"
+    },
+    {
+      "line": 2108,
+      "text": "        32B: 34 Subsections = 17408 buckets. Failed count: 16479"
+    },
+    {
+      "line": 2109,
+      "text": "        48B: 62 Subsections = 21162 buckets. Failed count: 26872"
+    },
+    {
+      "line": 2110,
+      "text": "        64B: 46 Subsections = 11776 buckets. Failed count: 10415"
+    },
+    {
+      "line": 2111,
+      "text": "        80B: 87 Subsections = 17817 buckets. Failed count: 1273"
+    },
+    {
+      "line": 2112,
+      "text": "        96B: 8 Subsections = 1365 buckets. Failed count: 70"
+    },
+    {
+      "line": 2113,
+      "text": "        112B: 8 Subsections = 1170 buckets. Failed count: 1603"
+    },
+    {
+      "line": 2114,
+      "text": "        128B: 6 Subsections = 768 buckets. Failed count: 2903"
+    }
+  ],
+  "manifestInput": {
+    "path": "C:\\Users\\Arthur\\Sync\\Projects\\RimWorld Mods\\HaulersDream\\docs\\plans\\evidence\\f07-rimmsqol-20260920\\queued-save-v14\\native\\b3bb2a6aff8445f99ffdeee1f17152d1\\manifest.json",
+    "bytes": 1097925,
+    "sha256": "DDACBDF031349E740023E4206CE0447A672F0E1C07262A58C8F99D3E6CA1DB32"
+  },
+  "rawInputs": [
+    {
+      "path": "C:\\Users\\Arthur\\Sync\\Projects\\RimWorld Mods\\HaulersDream\\docs\\plans\\evidence\\f07-rimmsqol-20260920\\queued-save-v14\\native\\b3bb2a6aff8445f99ffdeee1f17152d1\\raw\\events.jsonl",
+      "bytes": 36415,
+      "sha256": "1EDE13EA43996D5196826F9573FC00D193F6F2881F440CB1E278EC04BCDABDBF"
+    },
+    {
+      "path": "C:\\Users\\Arthur\\Sync\\Projects\\RimWorld Mods\\HaulersDream\\docs\\plans\\evidence\\f07-rimmsqol-20260920\\queued-save-v14\\native\\b3bb2a6aff8445f99ffdeee1f17152d1\\raw\\HaulersDream-debug.log",
+      "bytes": 533,
+      "sha256": "B3D994DEF2047F1292E832F5FCA61D53449F3A897A9B2095988A70A4A8C7EFB6"
+    },
+    {
+      "path": "C:\\Users\\Arthur\\Sync\\Projects\\RimWorld Mods\\HaulersDream\\docs\\plans\\evidence\\f07-rimmsqol-20260920\\queued-save-v14\\native\\b3bb2a6aff8445f99ffdeee1f17152d1\\raw\\Player.log",
+      "bytes": 170262,
+      "sha256": "45AF3C38C2A29E46921F61D82A30EF776C74140BFB1601169B327B9310D385BB"
+    },
+    {
+      "path": "C:\\Users\\Arthur\\Sync\\Projects\\RimWorld Mods\\HaulersDream\\docs\\plans\\evidence\\f07-rimmsqol-20260920\\queued-save-v14\\native\\b3bb2a6aff8445f99ffdeee1f17152d1\\raw\\result.json",
+      "bytes": 22428,
+      "sha256": "364FDB8587CFF9CBE65CA9C75A771D94A8A297EA59E4E7A900C9EC4641FBB27A"
+    }
+  ],
+  "files": [
+    {
+      "path": "C:\\Users\\Arthur\\Sync\\Projects\\RimWorld Mods\\HaulersDream\\docs\\plans\\evidence\\f07-rimmsqol-20260920\\queued-save-v14\\native\\b3bb2a6aff8445f99ffdeee1f17152d1\\manifest.json",
+      "bytes": 1097925,
+      "sha256": "DDACBDF031349E740023E4206CE0447A672F0E1C07262A58C8F99D3E6CA1DB32"
+    },
+    {
+      "path": "C:\\Users\\Arthur\\Sync\\Projects\\RimWorld Mods\\HaulersDream\\docs\\plans\\evidence\\f07-rimmsqol-20260920\\queued-save-v14\\native\\b3bb2a6aff8445f99ffdeee1f17152d1\\native-outcome.json",
+      "bytes": 582,
+      "sha256": "3A1217110B3548D9129A87521DD270DCF2445B1608EDBF2DDC67C57228710DE1"
+    },
+    {
+      "path": "C:\\Users\\Arthur\\Sync\\Projects\\RimWorld Mods\\HaulersDream\\docs\\plans\\evidence\\f07-rimmsqol-20260920\\queued-save-v14\\native\\b3bb2a6aff8445f99ffdeee1f17152d1\\native-started.json",
+      "bytes": 536,
+      "sha256": "EA738BCC38329A95CCC6A5E6556E08FD4B41EDF84E5A30B34B6D30C147E6F551"
+    },
+    {
+      "path": "C:\\Users\\Arthur\\Sync\\Projects\\RimWorld Mods\\HaulersDream\\docs\\plans\\evidence\\f07-rimmsqol-20260920\\queued-save-v14\\native\\b3bb2a6aff8445f99ffdeee1f17152d1\\verify.json",
+      "bytes": 28674,
+      "sha256": "143AC2D5584A16C8B2D4CB9BC9A8B4E4B774F295C655190DD861DE74C3605D5B"
+    },
+    {
+      "path": "C:\\Users\\Arthur\\Sync\\Projects\\RimWorld Mods\\HaulersDream\\docs\\plans\\evidence\\f07-rimmsqol-20260920\\queued-save-v14\\native\\b3bb2a6aff8445f99ffdeee1f17152d1\\private-desktop\\desktop-launch.json",
+      "bytes": 1171,
+      "sha256": "38396BD54B474FC8033FED97E9AC7DDD982B2837D91C3F281F992DC799A5150E"
+    },
+    {
+      "path": "C:\\Users\\Arthur\\Sync\\Projects\\RimWorld Mods\\HaulersDream\\docs\\plans\\evidence\\f07-rimmsqol-20260920\\queued-save-v14\\native\\b3bb2a6aff8445f99ffdeee1f17152d1\\private-desktop\\stderr.txt",
+      "bytes": 0,
+      "sha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+    },
+    {
+      "path": "C:\\Users\\Arthur\\Sync\\Projects\\RimWorld Mods\\HaulersDream\\docs\\plans\\evidence\\f07-rimmsqol-20260920\\queued-save-v14\\native\\b3bb2a6aff8445f99ffdeee1f17152d1\\private-desktop\\stdout.txt",
+      "bytes": 635,
+      "sha256": "22D13E9B12925BA4D96D84875F67D247E6209390EF69EF656EBEEBF7C32A6790"
+    },
+    {
+      "path": "C:\\Users\\Arthur\\Sync\\Projects\\RimWorld Mods\\HaulersDream\\docs\\plans\\evidence\\f07-rimmsqol-20260920\\queued-save-v14\\native\\b3bb2a6aff8445f99ffdeee1f17152d1\\raw\\events.jsonl",
+      "bytes": 36415,
+      "sha256": "1EDE13EA43996D5196826F9573FC00D193F6F2881F440CB1E278EC04BCDABDBF"
+    },
+    {
+      "path": "C:\\Users\\Arthur\\Sync\\Projects\\RimWorld Mods\\HaulersDream\\docs\\plans\\evidence\\f07-rimmsqol-20260920\\queued-save-v14\\native\\b3bb2a6aff8445f99ffdeee1f17152d1\\raw\\HaulersDream-debug.log",
+      "bytes": 533,
+      "sha256": "B3D994DEF2047F1292E832F5FCA61D53449F3A897A9B2095988A70A4A8C7EFB6"
+    },
+    {
+      "path": "C:\\Users\\Arthur\\Sync\\Projects\\RimWorld Mods\\HaulersDream\\docs\\plans\\evidence\\f07-rimmsqol-20260920\\queued-save-v14\\native\\b3bb2a6aff8445f99ffdeee1f17152d1\\raw\\Player.log",
+      "bytes": 170262,
+      "sha256": "45AF3C38C2A29E46921F61D82A30EF776C74140BFB1601169B327B9310D385BB"
+    },
+    {
+      "path": "C:\\Users\\Arthur\\Sync\\Projects\\RimWorld Mods\\HaulersDream\\docs\\plans\\evidence\\f07-rimmsqol-20260920\\queued-save-v14\\native\\b3bb2a6aff8445f99ffdeee1f17152d1\\raw\\result.json",
+      "bytes": 22428,
+      "sha256": "364FDB8587CFF9CBE65CA9C75A771D94A8A297EA59E4E7A900C9EC4641FBB27A"
+    }
+  ],
+  "verify": {
+    "status": "not-verified",
+    "runDirectory": "C:\\Users\\Arthur\\AppData\\Local\\HaulersDreamQA\\runtime-temp\\haulersdream-runtime-tests\\b3bb2a6aff8445f99ffdeee1f17152d1",
+    "processStatus": "exited",
+    "processLookupErrors": [
+      {
+        "operation": "owned-process-lookup",
+        "message": "Microsoft.PowerShell.Commands.ProcessCommandException: Cannot find a process with the process identifier 26252.",
+        "errorId": "NoProcessFoundForGivenId,Microsoft.PowerShell.Commands.GetProcessCommand",
+        "category": "ObjectNotFound"
+      }
+    ],
+    "launchProcessObservation": {
+      "policy": "ordinary-process-observation-v1",
+      "initialDiscovery": {
+        "status": "absent",
+        "processIds": [],
+        "errors": []
+      },
+      "initialDiscoveryUtc": "2026-09-24T07:39:51.1154046Z",
+      "preStartDiscovery": {
+        "status": "absent",
+        "processIds": [],
+        "errors": []
+      },
+      "preStartDiscoveryUtc": "2026-09-24T07:40:10.2982036Z",
+      "failure": null
+    },
+    "problems": [
+      "Queued-save witness requires independent command/cargo/native-save/XML/load-callback/continuation and whole-log review. Baseline stays failed; no automatic feedback completion.",
+      "Player.log contains candidates requiring independent review; bootstrap is not automatically verified."
+    ],
+    "protectedChanges": [],
+    "logReviewCandidates": [
+      {
+        "LineNumber": 108,
+        "Line": "Fallback handler could not load library C:/Users/Arthur/AppData/Local/HaulersDreamQA/runtime-temp/haulersdream-runtime-tests/b3bb2a6aff8445f99ffdeee1f17152d1/runtime/RimWorldWin64_Data/MonoBleedingEdge/data-0000013B4A231050.dll"
+      },
+      {
+        "LineNumber": 109,
+        "Line": "Fallback handler could not load library C:/Users/Arthur/AppData/Local/HaulersDreamQA/runtime-temp/haulersdream-runtime-tests/b3bb2a6aff8445f99ffdeee1f17152d1/runtime/RimWorldWin64_Data/MonoBleedingEdge/data-0000013B4A596140.dll"
+      }
+    ],
+    "result": {
+      "assemblies": [
+        {
+          "assemblyVersion": "1.6.9676.17735",
+          "moduleVersionId": "61e41735-6189-4da4-9d21-0260257b5097",
+          "name": "Assembly-CSharp",
+          "path": "C:\\Users\\Arthur\\AppData\\Local\\HaulersDreamQA\\runtime-temp\\haulersdream-runtime-tests\\b3bb2a6aff8445f99ffdeee1f17152d1\\runtime\\RimWorldWin64_Data\\Managed\\Assembly-CSharp.dll",
+          "sha256": "5CF1B5BE399D5B1C9C56CA72C9D35B4ECF307FEACF5859D04AC5A1AA5926356A"
+        },
+        {
+          "assemblyVersion": "0.0.0.0",
+          "moduleVersionId": "e422ced3-d0f6-4bb2-9423-e8338d57bc04",
+          "name": "UnityEngine.CoreModule",
+          "path": "C:\\Users\\Arthur\\AppData\\Local\\HaulersDreamQA\\runtime-temp\\haulersdream-runtime-tests\\b3bb2a6aff8445f99ffdeee1f17152d1\\runtime\\RimWorldWin64_Data\\Managed\\UnityEngine.CoreModule.dll",
+          "sha256": "C5C58EA254834291780A1D6C388C241443D07167B4A4B890A23C9494F626DDBA"
+        },
+        {
+          "assemblyVersion": "2.4.1.0",
+          "moduleVersionId": "e5339928-9d9b-419d-83f9-f5b02c5cf609",
+          "name": "0Harmony",
+          "path": "C:\\Users\\Arthur\\AppData\\Local\\HaulersDreamQA\\runtime-temp\\haulersdream-runtime-tests\\b3bb2a6aff8445f99ffdeee1f17152d1\\runtime\\Mods\\Harmony\\Current\\Assemblies\\0Harmony.dll",
+          "sha256": "353DAAFEC180BB8E7BBE4DA78F2A7CDC78067392E3A4E79DC8E7AF295F2371E6"
+        },
+        {
+          "assemblyVersion": "2.4.2.0",
+          "moduleVersionId": "dc156e18-c1bf-4ec8-acd4-7176558400e1",
+          "name": "HarmonyMod",
+          "path": "C:\\Users\\Arthur\\AppData\\Local\\HaulersDreamQA\\runtime-temp\\haulersdream-runtime-tests\\b3bb2a6aff8445f99ffdeee1f17152d1\\runtime\\Mods\\Harmony\\Current\\Assemblies\\HarmonyMod.dll",
+          "sha256": "408C2CD72B45DA8C70C0C538B2B346C8DCBB5BDED066373F6A3EB8B26615A2E7"
+        },
+        {
+          "assemblyVersion": "1.24.0.0",
+          "moduleVersionId": "7f10b8fa-9a6a-4ded-b800-105cb10d3ec7",
+          "name": "HaulersDream",
+          "path": "C:\\Users\\Arthur\\AppData\\Local\\HaulersDreamQA\\runtime-temp\\haulersdream-runtime-tests\\b3bb2a6aff8445f99ffdeee1f17152d1\\runtime\\Mods\\HaulersDream\\1.6\\Assemblies\\HaulersDream.dll",
+          "sha256": "A916DA8B6865BFBC16A0842EF4952834504E7EE5CBBC695145964ABDF17A7327"
+        },
+        {
+          "assemblyVersion": "1.24.0.0",
+          "moduleVersionId": "a2ead30e-d697-4e57-b7f4-44967a4e128b",
+          "name": "HaulersDream.Core",
+          "path": "C:\\Users\\Arthur\\AppData\\Local\\HaulersDreamQA\\runtime-temp\\haulersdream-runtime-tests\\b3bb2a6aff8445f99ffdeee1f17152d1\\runtime\\Mods\\HaulersDream\\1.6\\Assemblies\\HaulersDream.Core.dll",
+          "sha256": "F2F5F00B32EE4325931C612ECA4AB7AA68130C0C6D1C7767B7A6A37E75F2771A"
+        },
+        {
+          "assemblyVersion": "0.1.0.0",
+          "moduleVersionId": "b2769aa9-ee16-45fa-8fd1-d9e015d0eaef",
+          "name": "HaulersDream.RuntimeHarness",
+          "path": "C:\\Users\\Arthur\\AppData\\Local\\HaulersDreamQA\\runtime-temp\\haulersdream-runtime-tests\\b3bb2a6aff8445f99ffdeee1f17152d1\\runtime\\Mods\\HaulersDreamRuntimeHarness\\Assemblies\\HaulersDream.RuntimeHarness.dll",
+          "sha256": "F7BBBED9D1C08BF4424201B49531E08CA64A0706AFAB85C8D9CA5FBA71EC0694"
+        },
+        {
+          "assemblyVersion": "0.0.0.0",
+          "moduleVersionId": "69e8f115-9fb5-4cb4-9dbe-76d334eaed32",
+          "name": "UnityEngine.IMGUIModule",
+          "path": "C:\\Users\\Arthur\\AppData\\Local\\HaulersDreamQA\\runtime-temp\\haulersdream-runtime-tests\\b3bb2a6aff8445f99ffdeee1f17152d1\\runtime\\RimWorldWin64_Data\\Managed\\UnityEngine.IMGUIModule.dll",
+          "sha256": "C6C39327211BE8299E2E9FFDEE7A979F228736C99B84FD54BC73F563456865D9"
+        },
+        {
+          "assemblyVersion": "0.0.0.0",
+          "moduleVersionId": "768b1ad7-5506-4711-ba28-6142e4f37147",
+          "name": "UnityEngine.ScreenCaptureModule",
+          "path": "C:\\Users\\Arthur\\AppData\\Local\\HaulersDreamQA\\runtime-temp\\haulersdream-runtime-tests\\b3bb2a6aff8445f99ffdeee1f17152d1\\runtime\\RimWorldWin64_Data\\Managed\\UnityEngine.ScreenCaptureModule.dll",
+          "sha256": "D03D9881419CEBCED07E8AC45E3AADBB866948670071FE95BED404B758274FF3"
+        },
+        {
+          "assemblyVersion": "0.0.0.0",
+          "moduleVersionId": "cbfa93f3-6818-4ee1-8c93-86e4fe595e71",
+          "name": "UnityEngine.TextRenderingModule",
+          "path": "C:\\Users\\Arthur\\AppData\\Local\\HaulersDreamQA\\runtime-temp\\haulersdream-runtime-tests\\b3bb2a6aff8445f99ffdeee1f17152d1\\runtime\\RimWorldWin64_Data\\Managed\\UnityEngine.TextRenderingModule.dll",
+          "sha256": "B63769AD71C7FC79034CF6C3A1EBFCF79D4591F0B1F5CD4A9823E6ED7B5816F8"
+        },
+        {
+          "assemblyVersion": "1.0.9591.34971",
+          "moduleVersionId": "05d66edb-d146-4021-9c0b-f45f1303b323",
+          "name": "RIMMSqol",
+          "path": "C:\\Users\\Arthur\\AppData\\Local\\HaulersDreamQA\\runtime-temp\\haulersdream-runtime-tests\\b3bb2a6aff8445f99ffdeee1f17152d1\\runtime\\Mods\\RIMMSqol\\1.6\\Assemblies\\RIMMSqol.dll",
+          "sha256": "1152B0C198D34D4BB346FC74A4C4B72856F21ADA71FF376C5E4FF5F00FC81BD1"
+        },
+        {
+          "assemblyVersion": "4.1.1.0",
+          "moduleVersionId": "ec9b68e4-40ae-4fa2-93c0-57dee8f84c62",
+          "name": "Priority Queue",
+          "path": "C:\\Users\\Arthur\\AppData\\Local\\HaulersDreamQA\\runtime-temp\\haulersdream-runtime-tests\\b3bb2a6aff8445f99ffdeee1f17152d1\\runtime\\Mods\\RIMMSqol\\1.6\\Assemblies\\Priority Queue.dll",
+          "sha256": "3B9ACE1D057470EE950B5662484FB0AF843FFBEC907CB5FA5B2A73DE767BC1AA"
+        }
+      ],
+      "assertions": [
+        {
+          "id": "private-runtime-data-path",
+          "observed": "C:/Users/Arthur/AppData/Local/HaulersDreamQA/runtime-temp/haulersdream-runtime-tests/b3bb2a6aff8445f99ffdeee1f17152d1/runtime/RimWorldWin64_Data",
+          "passed": true
+        },
+        {
+          "id": "private-save-data-path",
+          "observed": "C:\\Users\\Arthur\\AppData\\Local\\HaulersDreamQA\\runtime-temp\\haulersdream-runtime-tests\\b3bb2a6aff8445f99ffdeee1f17152d1\\SaveData",
+          "passed": true
+        },
+        {
+          "id": "private-mod-directory",
+          "observed": "C:\\Users\\Arthur\\AppData\\Local\\HaulersDreamQA\\runtime-temp\\haulersdream-runtime-tests\\b3bb2a6aff8445f99ffdeee1f17152d1\\runtime\\Mods",
+          "passed": true
+        },
+        {
+          "id": "private-player-log",
+          "observed": "C:/Users/Arthur/AppData/Local/HaulersDreamQA/runtime-temp/haulersdream-runtime-tests/b3bb2a6aff8445f99ffdeee1f17152d1/evidence/Player.log",
+          "passed": true
+        },
+        {
+          "id": "case-supported",
+          "observed": "F07-RESTART",
+          "passed": true
+        },
+        {
+          "id": "negative-control-supported",
+          "observed": "None",
+          "passed": true
+        },
+        {
+          "id": "installed-version-file-matches-manifest",
+          "observed": "1.6.4871 rev590",
+          "passed": true
+        },
+        {
+          "id": "harness-compiled-against-running-game",
+          "observed": "5CF1B5BE399D5B1C9C56CA72C9D35B4ECF307FEACF5859D04AC5A1AA5926356A",
+          "passed": true
+        },
+        {
+          "id": "actual-saved-game-loaded",
+          "observed": "Fresh process requires its first lifecycle event to be native LoadedGame: loaded-game",
+          "passed": true
+        },
+        {
+          "id": "queued-save/loaded-native-config",
+          "observed": "Actual initialized RIMMS and HD configuration; no restoration.",
+          "passed": true
+        },
+        {
+          "id": "queued-save/loaded-current-jobs",
+          "observed": "tick=303; A=13:Goto:forced=True:giver=:map=-1:A=cell:(98, 0, 136):B=cell:(-1000, -1000, -1000):C=cell:(-1000, -1000, -1000):qa=null:qb=null:count=-1:counts=null; B=12:Wait_MaintainPosture:forced=False:giver=:map=0:A=cell:(-1000, -1000, -1000):B=cell:(-1000, -1000, -1000):C=cell:(-1000, -1000, -1000):qa=null:qb=null:count=-1:counts=null; queueA=15:HaulersDream_BulkHaul:forced=True:giver=HaulersDream_HaulNearby:map=0:A=thing:38404:B=cell:(-1000, -1000, -1000):C=cell:(-1000, -1000, -1000):qa=null:qb=thing:38404,thing:38405:count=1:counts=5,5:tag=Misc; queueB=11:HaulersDream_NearbyDelivery:forced=True:giver=HaulersDream_HaulNearby:map=0:A=cell:(-1000, -1000, -1000):B=cell:(-1000, -1000, -1000):C=cell:(-1000, -1000, -1000):qa=thing:38402:qb=null:count=-1:counts=10:tag=Misc",
+          "passed": true
+        },
+        {
+          "id": "queued-save/loaded-queued-bulk",
+          "observed": "15:HaulersDream_BulkHaul:forced=True:giver=HaulersDream_HaulNearby:map=0:A=thing:38404:B=cell:(-1000, -1000, -1000):C=cell:(-1000, -1000, -1000):qa=null:qb=thing:38404,thing:38405:count=1:counts=5,5:tag=Misc",
+          "passed": true
+        },
+        {
+          "id": "queued-save/loaded-generated-delivery",
+          "observed": "11:HaulersDream_NearbyDelivery:forced=True:giver=HaulersDream_HaulNearby:map=0:A=cell:(-1000, -1000, -1000):B=cell:(-1000, -1000, -1000):C=cell:(-1000, -1000, -1000):qa=thing:38402:qb=null:count=-1:counts=10:tag=Misc",
+          "passed": true
+        },
+        {
+          "id": "queued-save/loaded-physical-stock",
+          "observed": "tick=303; A=13:Goto:forced=True:giver=:map=-1:A=cell:(98, 0, 136):B=cell:(-1000, -1000, -1000):C=cell:(-1000, -1000, -1000):qa=null:qb=null:count=-1:counts=null; B=12:Wait_MaintainPosture:forced=False:giver=:map=0:A=cell:(-1000, -1000, -1000):B=cell:(-1000, -1000, -1000):C=cell:(-1000, -1000, -1000):qa=null:qb=null:count=-1:counts=null; queueA=15:HaulersDream_BulkHaul:forced=True:giver=HaulersDream_HaulNearby:map=0:A=thing:38404:B=cell:(-1000, -1000, -1000):C=cell:(-1000, -1000, -1000):qa=null:qb=thing:38404,thing:38405:count=1:counts=5,5:tag=Misc; queueB=11:HaulersDream_NearbyDelivery:forced=True:giver=HaulersDream_HaulNearby:map=0:A=cell:(-1000, -1000, -1000):B=cell:(-1000, -1000, -1000):C=cell:(-1000, -1000, -1000):qa=thing:38402:qb=null:count=-1:counts=10:tag=Misc",
+          "passed": true
+        },
+        {
+          "id": "real-map-initialized",
+          "observed": "size=(250, 1, 250); maps=1",
+          "passed": true
+        },
+        {
+          "id": "exact-active-mod-count",
+          "observed": "actual=5; expected=5",
+          "passed": true
+        },
+        {
+          "id": "mod-order-root-0",
+          "observed": "brrainz.harmony @ C:\\Users\\Arthur\\AppData\\Local\\HaulersDreamQA\\runtime-temp\\haulersdream-runtime-tests\\b3bb2a6aff8445f99ffdeee1f17152d1\\runtime\\Mods\\Harmony",
+          "passed": true
+        },
+        {
+          "id": "mod-order-root-1",
+          "observed": "ludeon.rimworld @ C:\\Users\\Arthur\\AppData\\Local\\HaulersDreamQA\\runtime-temp\\haulersdream-runtime-tests\\b3bb2a6aff8445f99ffdeee1f17152d1\\runtime\\Data\\Core",
+          "passed": true
+        },
+        {
+          "id": "mod-order-root-2",
+          "observed": "giwaffed.haulersdream @ C:\\Users\\Arthur\\AppData\\Local\\HaulersDreamQA\\runtime-temp\\haulersdream-runtime-tests\\b3bb2a6aff8445f99ffdeee1f17152d1\\runtime\\Mods\\HaulersDream",
+          "passed": true
+        },
+        {
+          "id": "mod-order-root-3",
+          "observed": "malteschulze.rimmsqol @ C:\\Users\\Arthur\\AppData\\Local\\HaulersDreamQA\\runtime-temp\\haulersdream-runtime-tests\\b3bb2a6aff8445f99ffdeee1f17152d1\\runtime\\Mods\\RIMMSqol",
+          "passed": true
+        },
+        {
+          "id": "mod-order-root-4",
+          "observed": "giwaffed.haulersdream.runtimeharness @ C:\\Users\\Arthur\\AppData\\Local\\HaulersDreamQA\\runtime-temp\\haulersdream-runtime-tests\\b3bb2a6aff8445f99ffdeee1f17152d1\\runtime\\Mods\\HaulersDreamRuntimeHarness",
+          "passed": true
+        },
+        {
+          "id": "single-assembly-Assembly-CSharp-61e41735-6189-4da4-9d21-0260257b5097",
+          "observed": "count=1",
+          "passed": true
+        },
+        {
+          "id": "assembly-identity-Assembly-CSharp-61e41735-6189-4da4-9d21-0260257b5097",
+          "observed": "C:\\Users\\Arthur\\AppData\\Local\\HaulersDreamQA\\runtime-temp\\haulersdream-runtime-tests\\b3bb2a6aff8445f99ffdeee1f17152d1\\runtime\\RimWorldWin64_Data\\Managed\\Assembly-CSharp.dll; version=1.6.9676.17735; sha256=5CF1B5BE399D5B1C9C56CA72C9D35B4ECF307FEACF5859D04AC5A1AA5926356A",
+          "passed": true
+        },
+        {
+          "id": "single-assembly-UnityEngine.CoreModule-e422ced3-d0f6-4bb2-9423-e8338d57bc04",
+          "observed": "count=1",
+          "passed": true
+        },
+        {
+          "id": "assembly-identity-UnityEngine.CoreModule-e422ced3-d0f6-4bb2-9423-e8338d57bc04",
+          "observed": "C:\\Users\\Arthur\\AppData\\Local\\HaulersDreamQA\\runtime-temp\\haulersdream-runtime-tests\\b3bb2a6aff8445f99ffdeee1f17152d1\\runtime\\RimWorldWin64_Data\\Managed\\UnityEngine.CoreModule.dll; version=0.0.0.0; sha256=C5C58EA254834291780A1D6C388C241443D07167B4A4B890A23C9494F626DDBA",
+          "passed": true
+        },
+        {
+          "id": "single-assembly-0Harmony-e5339928-9d9b-419d-83f9-f5b02c5cf609",
+          "observed": "count=1",
+          "passed": true
+        },
+        {
+          "id": "assembly-identity-0Harmony-e5339928-9d9b-419d-83f9-f5b02c5cf609",
+          "observed": "C:\\Users\\Arthur\\AppData\\Local\\HaulersDreamQA\\runtime-temp\\haulersdream-runtime-tests\\b3bb2a6aff8445f99ffdeee1f17152d1\\runtime\\Mods\\Harmony\\Current\\Assemblies\\0Harmony.dll; version=2.4.1.0; sha256=353DAAFEC180BB8E7BBE4DA78F2A7CDC78067392E3A4E79DC8E7AF295F2371E6",
+          "passed": true
+        },
+        {
+          "id": "single-assembly-HarmonyMod-dc156e18-c1bf-4ec8-acd4-7176558400e1",
+          "observed": "count=1",
+          "passed": true
+        },
+        {
+          "id": "assembly-identity-HarmonyMod-dc156e18-c1bf-4ec8-acd4-7176558400e1",
+          "observed": "C:\\Users\\Arthur\\AppData\\Local\\HaulersDreamQA\\runtime-temp\\haulersdream-runtime-tests\\b3bb2a6aff8445f99ffdeee1f17152d1\\runtime\\Mods\\Harmony\\Current\\Assemblies\\HarmonyMod.dll; version=2.4.2.0; sha256=408C2CD72B45DA8C70C0C538B2B346C8DCBB5BDED066373F6A3EB8B26615A2E7",
+          "passed": true
+        },
+        {
+          "id": "single-assembly-HaulersDream-7f10b8fa-9a6a-4ded-b800-105cb10d3ec7",
+          "observed": "count=1",
+          "passed": true
+        },
+        {
+          "id": "assembly-identity-HaulersDream-7f10b8fa-9a6a-4ded-b800-105cb10d3ec7",
+          "observed": "C:\\Users\\Arthur\\AppData\\Local\\HaulersDreamQA\\runtime-temp\\haulersdream-runtime-tests\\b3bb2a6aff8445f99ffdeee1f17152d1\\runtime\\Mods\\HaulersDream\\1.6\\Assemblies\\HaulersDream.dll; version=1.24.0.0; sha256=A916DA8B6865BFBC16A0842EF4952834504E7EE5CBBC695145964ABDF17A7327",
+          "passed": true
+        },
+        {
+          "id": "single-assembly-HaulersDream.Core-a2ead30e-d697-4e57-b7f4-44967a4e128b",
+          "observed": "count=1",
+          "passed": true
+        },
+        {
+          "id": "assembly-identity-HaulersDream.Core-a2ead30e-d697-4e57-b7f4-44967a4e128b",
+          "observed": "C:\\Users\\Arthur\\AppData\\Local\\HaulersDreamQA\\runtime-temp\\haulersdream-runtime-tests\\b3bb2a6aff8445f99ffdeee1f17152d1\\runtime\\Mods\\HaulersDream\\1.6\\Assemblies\\HaulersDream.Core.dll; version=1.24.0.0; sha256=F2F5F00B32EE4325931C612ECA4AB7AA68130C0C6D1C7767B7A6A37E75F2771A",
+          "passed": true
+        },
+        {
+          "id": "single-assembly-HaulersDream.RuntimeHarness-b2769aa9-ee16-45fa-8fd1-d9e015d0eaef",
+          "observed": "count=1",
+          "passed": true
+        },
+        {
+          "id": "assembly-identity-HaulersDream.RuntimeHarness-b2769aa9-ee16-45fa-8fd1-d9e015d0eaef",
+          "observed": "C:\\Users\\Arthur\\AppData\\Local\\HaulersDreamQA\\runtime-temp\\haulersdream-runtime-tests\\b3bb2a6aff8445f99ffdeee1f17152d1\\runtime\\Mods\\HaulersDreamRuntimeHarness\\Assemblies\\HaulersDream.RuntimeHarness.dll; version=0.1.0.0; sha256=F7BBBED9D1C08BF4424201B49531E08CA64A0706AFAB85C8D9CA5FBA71EC0694",
+          "passed": true
+        },
+        {
+          "id": "single-assembly-UnityEngine.IMGUIModule-69e8f115-9fb5-4cb4-9dbe-76d334eaed32",
+          "observed": "count=1",
+          "passed": true
+        },
+        {
+          "id": "assembly-identity-UnityEngine.IMGUIModule-69e8f115-9fb5-4cb4-9dbe-76d334eaed32",
+          "observed": "C:\\Users\\Arthur\\AppData\\Local\\HaulersDreamQA\\runtime-temp\\haulersdream-runtime-tests\\b3bb2a6aff8445f99ffdeee1f17152d1\\runtime\\RimWorldWin64_Data\\Managed\\UnityEngine.IMGUIModule.dll; version=0.0.0.0; sha256=C6C39327211BE8299E2E9FFDEE7A979F228736C99B84FD54BC73F563456865D9",
+          "passed": true
+        },
+        {
+          "id": "single-assembly-UnityEngine.ScreenCaptureModule-768b1ad7-5506-4711-ba28-6142e4f37147",
+          "observed": "count=1",
+          "passed": true
+        },
+        {
+          "id": "assembly-identity-UnityEngine.ScreenCaptureModule-768b1ad7-5506-4711-ba28-6142e4f37147",
+          "observed": "C:\\Users\\Arthur\\AppData\\Local\\HaulersDreamQA\\runtime-temp\\haulersdream-runtime-tests\\b3bb2a6aff8445f99ffdeee1f17152d1\\runtime\\RimWorldWin64_Data\\Managed\\UnityEngine.ScreenCaptureModule.dll; version=0.0.0.0; sha256=D03D9881419CEBCED07E8AC45E3AADBB866948670071FE95BED404B758274FF3",
+          "passed": true
+        },
+        {
+          "id": "single-assembly-UnityEngine.TextRenderingModule-cbfa93f3-6818-4ee1-8c93-86e4fe595e71",
+          "observed": "count=1",
+          "passed": true
+        },
+        {
+          "id": "assembly-identity-UnityEngine.TextRenderingModule-cbfa93f3-6818-4ee1-8c93-86e4fe595e71",
+          "observed": "C:\\Users\\Arthur\\AppData\\Local\\HaulersDreamQA\\runtime-temp\\haulersdream-runtime-tests\\b3bb2a6aff8445f99ffdeee1f17152d1\\runtime\\RimWorldWin64_Data\\Managed\\UnityEngine.TextRenderingModule.dll; version=0.0.0.0; sha256=B63769AD71C7FC79034CF6C3A1EBFCF79D4591F0B1F5CD4A9823E6ED7B5816F8",
+          "passed": true
+        },
+        {
+          "id": "single-assembly-RIMMSqol-05d66edb-d146-4021-9c0b-f45f1303b323",
+          "observed": "count=1",
+          "passed": true
+        },
+        {
+          "id": "assembly-identity-RIMMSqol-05d66edb-d146-4021-9c0b-f45f1303b323",
+          "observed": "C:\\Users\\Arthur\\AppData\\Local\\HaulersDreamQA\\runtime-temp\\haulersdream-runtime-tests\\b3bb2a6aff8445f99ffdeee1f17152d1\\runtime\\Mods\\RIMMSqol\\1.6\\Assemblies\\RIMMSqol.dll; version=1.0.9591.34971; sha256=1152B0C198D34D4BB346FC74A4C4B72856F21ADA71FF376C5E4FF5F00FC81BD1",
+          "passed": true
+        },
+        {
+          "id": "single-assembly-Priority Queue-ec9b68e4-40ae-4fa2-93c0-57dee8f84c62",
+          "observed": "count=1",
+          "passed": true
+        },
+        {
+          "id": "assembly-identity-Priority Queue-ec9b68e4-40ae-4fa2-93c0-57dee8f84c62",
+          "observed": "C:\\Users\\Arthur\\AppData\\Local\\HaulersDreamQA\\runtime-temp\\haulersdream-runtime-tests\\b3bb2a6aff8445f99ffdeee1f17152d1\\runtime\\Mods\\RIMMSqol\\1.6\\Assemblies\\Priority Queue.dll; version=4.1.1.0; sha256=3B9ACE1D057470EE950B5662484FB0AF843FFBEC907CB5FA5B2A73DE767BC1AA",
+          "passed": true
+        },
+        {
+          "id": "f07-native-selected-candidates",
+          "observed": "C:\\Users\\Arthur\\AppData\\Local\\HaulersDreamQA\\runtime-temp\\haulersdream-runtime-tests\\b3bb2a6aff8445f99ffdeee1f17152d1\\runtime\\Mods\\RIMMSqol\\1.6\\Assemblies\\Priority Queue.dll; sha256=3B9ACE1D057470EE950B5662484FB0AF843FFBEC907CB5FA5B2A73DE767BC1AA | C:\\Users\\Arthur\\AppData\\Local\\HaulersDreamQA\\runtime-temp\\haulersdream-runtime-tests\\b3bb2a6aff8445f99ffdeee1f17152d1\\runtime\\Mods\\RIMMSqol\\1.6\\Assemblies\\RIMMSqol.dll; sha256=1152B0C198D34D4BB346FC74A4C4B72856F21ADA71FF376C5E4FF5F00FC81BD1 | C:\\Users\\Arthur\\AppData\\Local\\HaulersDreamQA\\runtime-temp\\haulersdream-runtime-tests\\b3bb2a6aff8445f99ffdeee1f17152d1\\runtime\\Mods\\RIMMSqol\\Assemblies\\0Harmony.dll; sha256=E271D22A7C32BFCA105D0E471C04EEE14EEC6142D37A30CD73CB7D32C7D1DD0F",
+          "passed": true
+        },
+        {
+          "id": "f07-native-rimms-bindings",
+          "observed": "Actual native package bindings must be each selected image or the already admitted modern Harmony identity. No forced assembly load.",
+          "passed": true
+        },
+        {
+          "id": "f07-activity-host-admission",
+          "observed": "Private five-mod/twelve-required-image RIMMSqol environment; selected legacy DLL checked separately.",
+          "passed": true
+        },
+        {
+          "id": "queued-save/native-one-tick-load",
+          "observed": "tick=304; A=13:Goto:forced=True:giver=:map=-1:A=cell:(98, 0, 136):B=cell:(-1000, -1000, -1000):C=cell:(-1000, -1000, -1000):qa=null:qb=null:count=-1:counts=null; B=12:Wait_MaintainPosture:forced=False:giver=:map=0:A=cell:(-1000, -1000, -1000):B=cell:(-1000, -1000, -1000):C=cell:(-1000, -1000, -1000):qa=null:qb=null:count=-1:counts=null; queueA=15:HaulersDream_BulkHaul:forced=True:giver=HaulersDream_HaulNearby:map=0:A=thing:38404:B=cell:(-1000, -1000, -1000):C=cell:(-1000, -1000, -1000):qa=null:qb=thing:38404,thing:38405:count=1:counts=5,5:tag=Misc; queueB=11:HaulersDream_NearbyDelivery:forced=True:giver=HaulersDream_HaulNearby:map=0:A=cell:(-1000, -1000, -1000):B=cell:(-1000, -1000, -1000):C=cell:(-1000, -1000, -1000):qa=thing:38402:qb=null:count=-1:counts=10:tag=Misc",
+          "passed": true
+        },
+        {
+          "id": "real-game-ticks-advanced",
+          "observed": "Native ticks after initial F07 observation=2",
+          "passed": true
+        },
+        {
+          "id": "queued-save/loaded-goto-completed-naturally",
+          "observed": "tick=1789; A=30:Wait_MaintainPosture:forced=False:giver=:map=0:A=cell:(-1000, -1000, -1000):B=cell:(-1000, -1000, -1000):C=cell:(-1000, -1000, -1000):qa=null:qb=null:count=-1:counts=null; B=18:Wait_Combat:forced=False:giver=:map=0:A=cell:(149, 0, 121):B=cell:(-1000, -1000, -1000):C=cell:(-1000, -1000, -1000):qa=null:qb=null:count=-1:counts=null; queueA=; queueB=",
+          "passed": true
+        },
+        {
+          "id": "queued-save/loaded-bulk-admitted-and-completed",
+          "observed": "tick=1789; A=30:Wait_MaintainPosture:forced=False:giver=:map=0:A=cell:(-1000, -1000, -1000):B=cell:(-1000, -1000, -1000):C=cell:(-1000, -1000, -1000):qa=null:qb=null:count=-1:counts=null; B=18:Wait_Combat:forced=False:giver=:map=0:A=cell:(149, 0, 121):B=cell:(-1000, -1000, -1000):C=cell:(-1000, -1000, -1000):qa=null:qb=null:count=-1:counts=null; queueA=; queueB=",
+          "passed": true
+        },
+        {
+          "id": "queued-save/loaded-generated-delivery-completed",
+          "observed": "tick=1789; A=30:Wait_MaintainPosture:forced=False:giver=:map=0:A=cell:(-1000, -1000, -1000):B=cell:(-1000, -1000, -1000):C=cell:(-1000, -1000, -1000):qa=null:qb=null:count=-1:counts=null; B=18:Wait_Combat:forced=False:giver=:map=0:A=cell:(149, 0, 121):B=cell:(-1000, -1000, -1000):C=cell:(-1000, -1000, -1000):qa=null:qb=null:count=-1:counts=null; queueA=; queueB=",
+          "passed": true
+        },
+        {
+          "id": "queued-save/loaded-bulk-generated-own-delivery",
+          "observed": "tick=1789; A=30:Wait_MaintainPosture:forced=False:giver=:map=0:A=cell:(-1000, -1000, -1000):B=cell:(-1000, -1000, -1000):C=cell:(-1000, -1000, -1000):qa=null:qb=null:count=-1:counts=null; B=18:Wait_Combat:forced=False:giver=:map=0:A=cell:(149, 0, 121):B=cell:(-1000, -1000, -1000):C=cell:(-1000, -1000, -1000):qa=null:qb=null:count=-1:counts=null; queueA=; queueB=",
+          "passed": true
+        },
+        {
+          "id": "queued-save/loaded-fully-settled",
+          "observed": "Both actors keep exactly7; each source10 is stored; no pending HD command or held cargo. tick=1789; A=30:Wait_MaintainPosture:forced=False:giver=:map=0:A=cell:(-1000, -1000, -1000):B=cell:(-1000, -1000, -1000):C=cell:(-1000, -1000, -1000):qa=null:qb=null:count=-1:counts=null; B=18:Wait_Combat:forced=False:giver=:map=0:A=cell:(149, 0, 121):B=cell:(-1000, -1000, -1000):C=cell:(-1000, -1000, -1000):qa=null:qb=null:count=-1:counts=null; queueA=; queueB=",
+          "passed": true
+        },
+        {
+          "id": "f07-activity-host-returned",
+          "observed": "Live scenario returned passed",
+          "passed": true
+        },
+        {
+          "id": "no-unity-errors-after-harness-start",
+          "observed": "observedErrors=0; threaded capture through terminal-result boundary",
+          "passed": true
+        }
+      ],
+      "candidateRecurrence": null,
+      "caseId": "F07-RESTART",
+      "detail": "Queued nearby Bulk and generatedDelivery: actual command, real save and fresh native continuation; no physical input.",
+      "executingGameVersion": "1.6.4871 rev591",
+      "finishedUtc": "2026-09-24T07:40:57.7285761Z",
+      "inFlightRecurrence": null,
+      "installedVersionFile": "1.6.4871 rev590",
+      "mods": [
+        {
+          "packageId": "brrainz.harmony",
+          "rootPath": "C:\\Users\\Arthur\\AppData\\Local\\HaulersDreamQA\\runtime-temp\\haulersdream-runtime-tests\\b3bb2a6aff8445f99ffdeee1f17152d1\\runtime\\Mods\\Harmony"
+        },
+        {
+          "packageId": "ludeon.rimworld",
+          "rootPath": "C:\\Users\\Arthur\\AppData\\Local\\HaulersDreamQA\\runtime-temp\\haulersdream-runtime-tests\\b3bb2a6aff8445f99ffdeee1f17152d1\\runtime\\Data\\Core"
+        },
+        {
+          "packageId": "giwaffed.haulersdream",
+          "rootPath": "C:\\Users\\Arthur\\AppData\\Local\\HaulersDreamQA\\runtime-temp\\haulersdream-runtime-tests\\b3bb2a6aff8445f99ffdeee1f17152d1\\runtime\\Mods\\HaulersDream"
+        },
+        {
+          "packageId": "malteschulze.rimmsqol",
+          "rootPath": "C:\\Users\\Arthur\\AppData\\Local\\HaulersDreamQA\\runtime-temp\\haulersdream-runtime-tests\\b3bb2a6aff8445f99ffdeee1f17152d1\\runtime\\Mods\\RIMMSqol"
+        },
+        {
+          "packageId": "giwaffed.haulersdream.runtimeharness",
+          "rootPath": "C:\\Users\\Arthur\\AppData\\Local\\HaulersDreamQA\\runtime-temp\\haulersdream-runtime-tests\\b3bb2a6aff8445f99ffdeee1f17152d1\\runtime\\Mods\\HaulersDreamRuntimeHarness"
+        }
+      ],
+      "negativeControl": null,
+      "partialInventoryBill": null,
+      "processId": 26252,
+      "runId": "b3bb2a6aff8445f99ffdeee1f17152d1",
+      "scenario": null,
+      "schemaVersion": 1,
+      "startedUtc": "2026-09-24T07:40:22.8821056Z",
+      "status": "passed",
+      "storageDelivery": null,
+      "storageOwnership": null,
+      "storageProjection": null,
+      "storageProjectionBudget": null,
+      "storageProjectionFilters": null,
+      "storageProjectionWrappers": null,
+      "storageSlots": null,
+      "unityErrorsObserved": 0
+    },
+    "animalFetchEvidence": null,
+    "refuelGroupEvidence": null,
+    "nearbyDeliveryEvidence": null,
+    "f34MixedBoundaryEvidence": null,
+    "scope": "Focused RIMMS editor/nearby-command integration and saved transit; actual outcomes require independent review."
+  },
+  "restartInputs": [
+    {
+      "path": "C:\\Users\\Arthur\\AppData\\Local\\HaulersDreamQA\\runtime-temp\\haulersdream-runtime-tests\\2509cd32b0ad4cf78e9f5172dc810239\\SaveData\\Saves\\F07-NearbyTransit.rws",
+      "bytes": 14114653,
+      "sha256": "0FE483680E266231E4908B4CE05D1DDD4D90A4328376E42F6840880DEA4C972D"
+    },
+    {
+      "path": "C:\\Users\\Arthur\\AppData\\Local\\HaulersDreamQA\\runtime-temp\\haulersdream-runtime-tests\\b3bb2a6aff8445f99ffdeee1f17152d1\\SaveData\\Saves\\Autostart.rws",
+      "bytes": 14114653,
+      "sha256": "0FE483680E266231E4908B4CE05D1DDD4D90A4328376E42F6840880DEA4C972D"
+    },
+    {
+      "path": "C:\\Users\\Arthur\\AppData\\Local\\HaulersDreamQA\\runtime-temp\\haulersdream-runtime-tests\\2509cd32b0ad4cf78e9f5172dc810239\\evidence\\checkpoint.txt",
+      "bytes": 1701,
+      "sha256": "48B876624B9F604507872C1C8FB1539918C85987B6DD487C1514A73E717D3372"
+    },
+    {
+      "path": "C:\\Users\\Arthur\\AppData\\Local\\HaulersDreamQA\\runtime-temp\\haulersdream-runtime-tests\\b3bb2a6aff8445f99ffdeee1f17152d1\\input\\checkpoint.txt",
+      "bytes": 1701,
+      "sha256": "48B876624B9F604507872C1C8FB1539918C85987B6DD487C1514A73E717D3372"
+    },
+    {
+      "path": "C:\\Users\\Arthur\\AppData\\Local\\HaulersDreamQA\\runtime-temp\\haulersdream-runtime-tests\\2509cd32b0ad4cf78e9f5172dc810239\\evidence\\rimms-settings.xml",
+      "bytes": 1525,
+      "sha256": "3432DEBE9EF24604F0D627CEFBB2D74B370333BC685E8B42A3A12FEB48D27546"
+    },
+    {
+      "path": "C:\\Users\\Arthur\\AppData\\Local\\HaulersDreamQA\\runtime-temp\\haulersdream-runtime-tests\\b3bb2a6aff8445f99ffdeee1f17152d1\\SaveData\\Config\\Mod_RIMMSqol_QOLMod.xml",
+      "bytes": 1525,
+      "sha256": "3432DEBE9EF24604F0D627CEFBB2D74B370333BC685E8B42A3A12FEB48D27546"
+    }
+  ]
+}

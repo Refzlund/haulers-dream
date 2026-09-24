@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+  <!-- Disposable CAP03-A assets only. Do not copy into any other fixture case. -->
+  <SpecialThingFilterDef>
+    <defName>HDHarness_CAP03A_Unknown</defName>
+    <label>CAP03-A unreviewed counter control</label>
+    <description>Test-only containment witness, not a supported storage worker.</description>
+    <parentCategory>Root</parentCategory>
+    <saveKey>hdHarnessCap03AUnknown</saveKey>
+    <allowedByDefault>true</allowedByDefault>
+    <configurable>true</configurable>
+    <workerClass>HaulersDream.RuntimeHarness.Cap03FilterUnknownWorker</workerClass>
+  </SpecialThingFilterDef>
+  <ThingDef Name="HDHarness_CAP03A_Base" ParentName="AdaptiveStorageBase" Abstract="True">
+    <label>CAP03-A test crate</label>
+    <description>Disposable stuff-locked filter-dispatch control, not a Neat Storage configuration.</description>
+    <rotatable>false</rotatable>
+    <size>(1,1)</size>
+    <stuffCategories><li>Woody</li></stuffCategories>
+    <costStuffCount>20</costStuffCount>
+    <graphicData>
+      <texPath>Things/Building/Storage/Crate/sbz_SmallCrate</texPath>
+      <graphicClass>Graphic_Single</graphicClass>
+      <drawSize>(1,1)</drawSize>
+      <drawRotated>false</drawRotated>
+    </graphicData>
+    <statBases><MaxHitPoints>100</MaxHitPoints><Mass>10</Mass><WorkToBuild>1250</WorkToBuild><Flammability>1</Flammability></statBases>
+    <modExtensions><li Class="AdaptiveStorage.Extension"><lockStorageSettingsToStuff>true</lockStorageSettingsToStuff></li></modExtensions>
+    <building>
+      <maxItemsInCell>6</maxItemsInCell>
+      <defaultStorageSettings Inherit="False">
+        <priority>Critical</priority>
+        <filter><thingDefs><li>RawRice</li><li>WoodLog</li><li>Steel</li></thingDefs></filter>
+      </defaultStorageSettings>
+    </building>
+  </ThingDef>
+  <ThingDef ParentName="HDHarness_CAP03A_Base">
+    <defName>HDHarness_CAP03A_Fresh</defName>
+    <building><fixedStorageSettings Inherit="False"><filter>
+      <thingDefs><li>RawRice</li><li>WoodLog</li><li>Steel</li></thingDefs>
+      <!-- ResolveReferences otherwise adds these two native default-disabled filters. -->
+      <specialFiltersToAllow><li>AllowCorpsesColonist</li><li>AllowCorpsesStranger</li></specialFiltersToAllow>
+      <specialFiltersToDisallow><li>AllowFresh</li></specialFiltersToDisallow>
+    </filter></fixedStorageSettings></building>
+  </ThingDef>
+  <ThingDef ParentName="HDHarness_CAP03A_Base">
+    <defName>HDHarness_CAP03A_Unreviewed</defName>
+    <building><fixedStorageSettings Inherit="False"><filter>
+      <thingDefs><li>RawRice</li><li>WoodLog</li><li>Steel</li></thingDefs>
+      <specialFiltersToAllow><li>AllowCorpsesColonist</li><li>AllowCorpsesStranger</li></specialFiltersToAllow>
+      <specialFiltersToDisallow><li>HDHarness_CAP03A_Unknown</li></specialFiltersToDisallow>
+    </filter></fixedStorageSettings></building>
+  </ThingDef>
+</Defs>

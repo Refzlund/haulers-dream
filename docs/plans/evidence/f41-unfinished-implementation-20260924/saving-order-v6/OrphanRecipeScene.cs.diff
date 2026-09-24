@@ -1,0 +1,86 @@
+--- before/OrphanRecipeScene.cs
++++ v6/OrphanRecipeScene.cs
+@@ -450,7 +450,7 @@
+         {
+             Guard(stage == "recovery-save" && items[0].Destroyed && items[2].Destroyed, "Productive recovery required before clean resave.");
+             record = BaseRecord(); record["products"] = ProductText();
+-            SaveNative(); Require("clean-resave-no-repeat", repairs.Count == 3 && cleanedCurrent.Count == 1 && cleanedQueued.Count == 1, RepairText());
++            SaveNative(); Require("clean-resave-no-repeat", repairs.Count == 4 && cleanedCurrent.Count == 1 && cleanedQueued.Count == 1, RepairText());
+             status = failed ? "failed" : "passed";
+         }
+         private void SaveGuardAndResume()
+@@ -467,7 +467,74 @@
+                 && items[0].BoundBill == null && State.orphanBills[0].BoundUft == null
+                 && ItemText(items[0]) == before && Physical(items[0]) == physical, "Actual native Saving branch preserved original recipe/work/ingredient identities. " + before);
+             File.Copy(save, Path.Combine(evidence, "F41SavingGuard.rws"));
++            var xml = new XmlDocument(); xml.Load(save);
++            var savedBills = xml.SelectNodes("//f41ControlledOrphanBills/li").Cast<XmlNode>().ToArray();
++            Guard(savedBills.Length == 2, "Actual saving guard must retain both deep bill nodes.");
++            var nodes = xml.SelectNodes("//*").Cast<XmlNode>().ToList();
++            for (int i = 0; i < 2; i++)
++            {
++                int itemIndex = i == 0 ? 0 : 2;
++                var savedItems = xml.SelectNodes("//thing[id='" + items[itemIndex].ThingID + "']");
++                Guard(savedItems.Count == 1, "Actual saving guard item identity is not unique.");
++                var savedItem = savedItems[0]; var savedBill = savedBills[i];
++                Require("saving-file-bill-first-links-" + i,
++                    "Bill_" + savedBill["recipe"]?.InnerText + "_" + savedBill["loadID"]?.InnerText == State.orphanBills[i].GetUniqueLoadID()
++                    && nodes.IndexOf(savedBill) < nodes.IndexOf(savedItem)
++                    && savedBill["boundUft"]?.InnerText == "null" && savedItem["bill"]?.InnerText == "null",
++                    "Actual full game XML: bill=" + savedBill["loadID"]?.InnerText + "; item=" + items[itemIndex].ThingID
++                    + "; billNode=" + nodes.IndexOf(savedBill) + "; itemNode=" + nodes.IndexOf(savedItem)
++                    + "; boundUft=" + savedBill["boundUft"]?.InnerText + "; bill=" + savedItem["bill"]?.InnerText);
++            }
++            Guard(!failed, "Actual full-save link oracle failed; no additional probe or continuation permitted.");
++            SaveUftFirstDiagnostic();
+             bills[0].suspended = false; Issue(0); stage = "resume"; ticks.CurTimeSpeed = TimeSpeed.Superfast;
++        }
++        // Native DebugOutputFor is the supported partial-serialization path. This output is deliberately
++        // not a savegame or restart input: creator/map references live in the existing colony.
++        private sealed class UftFirstDiagnostic : IExposable
++        {
++            internal UnfinishedThing item;
++            internal Bill_ProductionWithUft bill;
++            public void ExposeData()
++            {
++                Scribe.EnterNode("f41UftFirstDiagnostic");
++                try { Scribe_Deep.Look(ref item, "item"); Scribe_Deep.Look(ref bill, "orphanBill"); }
++                finally { Scribe.ExitNode(); }
++            }
++        }
++        private string JobsAndClaims() => string.Join("|", actors.Select(p => p.ThingID + ":" + JobText(p.CurJob)
++            + ":toil=" + p.jobs.curDriver?.CurToilIndex + ":work=" + (p.jobs.curDriver is JobDriver_DoBill d ? F(d.workLeft) : "none")
++            + ":queue=" + QueueText(p))) + "; claims=" + string.Join("|", map.reservationManager.ReservationsReadOnly
++                .Select(r => r.Claimant.ThingID + ":" + r.Job?.loadID + ":" + r.Target + ":" + r.StackCount).OrderBy(s => s, StringComparer.Ordinal));
++        private void SaveUftFirstDiagnostic()
++        {
++            Guard(Scribe.mode == LoadSaveMode.Inactive && repairs.Count == 3 && items[0].BoundBill == null
++                && State.orphanBills[0].BoundUft == null, "Reverse-order native diagnostic requires the repaired pair.");
++            string before = ItemText(items[0]), physical = Physical(items[0]), jobs = JobsAndClaims();
++            var actualJobs = actors.Select(p => p.CurJob).ToArray();
++            var actualDrivers = actors.Select(p => p.jobs.curDriver).ToArray();
++            var actualQueues = actors.Select(p => p.jobs.jobQueue.Select(q => q.job).ToArray()).ToArray();
++            string output = Path.Combine(evidence, "F41UftFirstDiagnostic.xml");
++            Guard(Child(output, run) && !File.Exists(output), "Fresh private native diagnostic required.");
++            items[0].BoundBill = State.orphanBills[0];
++            var pair = new UftFirstDiagnostic { item = items[0], bill = State.orphanBills[0] };
++            string nativeXml = Scribe.saver.DebugOutputFor(pair);
++            File.WriteAllText(output, nativeXml);
++            var xml = new XmlDocument(); xml.Load(output);
++            var scope = xml.SelectSingleNode("/saveable/f41UftFirstDiagnostic");
++            Guard(scope != null && scope.ChildNodes.Count == 2, "Actual native diagnostic structure differs.");
++            Require("saving-file-uft-first-links", scope.ChildNodes[0].Name == "item" && scope.ChildNodes[1].Name == "orphanBill"
++                && scope["item"]?["id"]?.InnerText == items[0].ThingID
++                && "Bill_" + scope["orphanBill"]?["recipe"]?.InnerText + "_" + scope["orphanBill"]?["loadID"]?.InnerText == State.orphanBills[0].GetUniqueLoadID()
++                && scope["item"]?["bill"]?.InnerText == "null" && scope["orphanBill"]?["boundUft"]?.InnerText == "null",
++                "Native DebugOutputFor serializes the same real UFT before the same orphan bill; both serialized links null. Diagnostic only; never restart input.");
++            Require("saving-uft-first-live-preserved", Scribe.mode == LoadSaveMode.Inactive && repairs.Count == 4
++                && items[0].BoundBill == null && State.orphanBills[0].BoundUft == null && ItemText(items[0]) == before && Physical(items[0]) == physical
++                && ReferenceEquals(pair.item, items[0]) && ReferenceEquals(pair.bill, State.orphanBills[0]) && JobsAndClaims() == jobs
++                && actors.Select((p, i) => ReferenceEquals(p.CurJob, actualJobs[i]) && ReferenceEquals(p.jobs.curDriver, actualDrivers[i])
++                    && p.jobs.jobQueue.Select(q => q.job).SequenceEqual(actualQueues[i])).All(v => v),
++                "Exact original contents/physical ownership, current job/driver identities, queues, toil/work and reservations preserved; normal native diagnostic resets Scribe. " + before);
++            Guard(!failed, "Reverse-order serialization or preservation failed; no productive continuation permitted.");
+         }
+         private static void RepairBefore(UnfinishedThing uft, out string __state)
+         { __state = rawBill.GetValue(uft) is Bill_ProductionWithUft b && b.billStack == null ? ItemText(uft) : null; }

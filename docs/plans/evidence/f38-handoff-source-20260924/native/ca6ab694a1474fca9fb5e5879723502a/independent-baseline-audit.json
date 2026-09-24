@@ -1,0 +1,19 @@
+{
+  "status": "accepted retained native whole-job cancellation reproduction; remains failed",
+  "assertionsPassed": 47,
+  "assertionsTotal": 49,
+  "events": 85,
+  "unityErrors": 0,
+  "originalJob": 10,
+  "originalPawn": "Human19178",
+  "cancelTick": 191,
+  "heldBeforeCancellation": 17,
+  "claimantPawn": "Human19181",
+  "claimantJob": 8,
+  "nativePid": 11876,
+  "controllerPid": 21632,
+  "logLines": 1858,
+  "unexpectedLogCandidates": [],
+  "images": 10,
+  "protectedChanges": []
+}

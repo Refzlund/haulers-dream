@@ -1,0 +1,354 @@
+--- accepted F12 scene
++++ F13 current base scene
+@@ -13,13 +13,13 @@
+ using Verse;
+ using Verse.AI;
+ 
+-namespace HaulersDream.F12Native
++namespace HaulersDream.F13Native
+ {
+     // Native entry-point lifecycle fixture. No product state/job/queue reconstruction.
+-    public sealed class ExplicitPointScene
++    public sealed partial class ExplicitShelfScene
+     {
+-        public const string SaveName = "F12ExplicitCheckpoint";
+-        private static ExplicitPointScene current;
++        public const string SaveName = "F13ShelfCheckpoint";
++        private static ExplicitShelfScene current;
+         private static Harmony observers;
+         private static Action<string, string> earlyEmit;
+         private static string observerFailure;
+@@ -49,7 +49,7 @@
+         private int environmentEndAbs;
+         private float observedAmbientMin = float.MaxValue, observedAmbientMax = float.MinValue;
+         private readonly List<int> expectedJobs = new List<int>();
+-        private ExplicitPointScene(Map map, Action<string,bool,string> check, Action<string,string> emit, string role, string behavior, string evidence)
++        private ExplicitShelfScene(Map map, Action<string,bool,string> check, Action<string,string> emit, string role, string behavior, string evidence)
+         { this.map=map;this.check=check;this.emit=emit;this.role=role;this.behavior=behavior;this.evidence=evidence; }
+         private static Type Command => typeof(HaulersDreamMod).Assembly.GetType("HaulersDream.ExplicitHaulCommand", true);
+         private static Type Transfer => typeof(HaulersDreamMod).Assembly.GetType("HaulersDream.ExplicitHaulTransfer", true);
+@@ -62,28 +62,30 @@
+         public static void InstallObservers(Action<string,string> emit)
+         {
+             Guard(observers==null,"Duplicate fixture observers");earlyEmit=emit;
+-            observers=new Harmony("haulersdream.tests.f12.explicit-point");
++            observers=new Harmony("haulersdream.tests.f13.explicit-point");
+             Patch(typeof(JobDriver),"Notify_Starting",nameof(Started),true);
+             Patch(typeof(Pawn_JobTracker),"EndCurrentJob",nameof(Ended),true);
+             Patch(typeof(Pawn),"Tick",nameof(PawnTick),false);
+             Patch(typeof(Root),"OnGUI",nameof(OnGui),false);
+-            observers.Patch(AccessTools.Method(Transfer,"Pickup"),prefix:new HarmonyMethod(typeof(ExplicitPointScene),nameof(PickupBefore)),finalizer:new HarmonyMethod(typeof(ExplicitPointScene),nameof(Picked)));
+-            observers.Patch(AccessTools.Method(Transfer,"Place"),prefix:new HarmonyMethod(typeof(ExplicitPointScene),nameof(PlaceBefore)),finalizer:new HarmonyMethod(typeof(ExplicitPointScene),nameof(PlaceAfter)));
++            observers.Patch(AccessTools.Method(Transfer,"Pickup"),prefix:new HarmonyMethod(typeof(ExplicitShelfScene),nameof(PickupBefore)),finalizer:new HarmonyMethod(typeof(ExplicitShelfScene),nameof(Picked)));
++            observers.Patch(AccessTools.Method(Transfer,"Place"),prefix:new HarmonyMethod(typeof(ExplicitShelfScene),nameof(PlaceBefore)),finalizer:new HarmonyMethod(typeof(ExplicitShelfScene),nameof(PlaceAfter)));
++            observers.Patch(AccessTools.Method(typeof(JobDriver_HaulToCell),nameof(JobDriver_HaulToCell.TryMakePreToilReservations)),
++                prefix:new HarmonyMethod(typeof(ExplicitShelfScene),nameof(NativeReserveBefore)){priority=Priority.First},postfix:new HarmonyMethod(typeof(ExplicitShelfScene),nameof(NativeReserveAfter)));
+         }
+         private static void Patch(Type type,string method,string callback,bool prefix)
+         {
+-            var hook=new HarmonyMethod(typeof(ExplicitPointScene),callback);
++            var hook=new HarmonyMethod(typeof(ExplicitShelfScene),callback);
+             observers.Patch(AccessTools.Method(type,method),prefix:prefix?hook:null,postfix:prefix?null:hook);
+         }
+         public static void CaptureLoaded(Map map, Action<string,bool,string> check, Action<string,string> emit,string role,string behavior,string evidence)
+         {
+-            Guard(current==null,"Duplicate LoadedGame");current=new ExplicitPointScene(map,check,emit,role,behavior,evidence);
++            Guard(current==null,"Duplicate LoadedGame");current=new ExplicitShelfScene(map,check,emit,role,behavior,evidence);
+             try {current.Context(true);current.ReadLoaded();current.loadedCaptured=true;}catch(Exception ex){current.Fail(ex);}
+         }
+         public static void Begin(Map map, Action<string,bool,string> check, Action<string,string> emit,string role,string behavior,string evidence)
+         {
+             if(current!=null){if(current.status=="running")try{current.ContinueLoaded();}catch(Exception ex){current.Fail(ex);}return;}
+-            current=new ExplicitPointScene(map,check,emit,role,behavior,evidence);
++            current=new ExplicitShelfScene(map,check,emit,role,behavior,evidence);
+             try{current.Context(false);current.Setup();current.begun=true;}catch(Exception ex){current.Fail(ex);}
+         }
+         public static string Update()
+@@ -100,19 +102,20 @@
+             Guard(Guid.TryParseExact(Path.GetFileName(run),"N",out Guid guid)&&guid!=Guid.Empty
+                 &&Same(Path.GetDirectoryName(run),Path.Combine(Path.GetTempPath(),"haulersdream-runtime-tests"))
+                 &&Same(evidence,Path.Combine(run,"evidence"))&&Child(GenFilePaths.SaveDataFolderPath,run)
+-                &&Child(typeof(ExplicitPointScene).Assembly.Location,Path.Combine(run,"runtime"))
++                &&Child(typeof(ExplicitShelfScene).Assembly.Location,Path.Combine(run,"runtime"))
+                 &&(loading||(Same(Application.dataPath,Path.Combine(run,"runtime","RimWorldWin64_Data"))&&Child(Application.consoleLogPath,run))),"Private save/runtime custody differs");
+             ticks=Find.TickManager;oldSpeed=ticks.CurTimeSpeed;startTick=ticks.TicksGame;
+-            emit("f12-scope","Native synchronized command entry, exact bare-cell hand carry, queued/current original-save chain. No menu, shelf, provider or network acceptance claim.");
++            emit("f13-scope","Native synchronized shelf command entry, exact selected building and cell admission, physical competition, queued/current original-save chain. No rendered UI/provider/network acceptance claim.");
+         }
+         private void Configure()
+         {
+             foreach(string key in new[]{"markForUnload","unloadAllSurplus","enRoutePickup","opportunisticUnload"})
+             {var f=typeof(HaulersDreamSettings).GetField(key);Guard(f!=null&&f.FieldType==typeof(bool),"Settings field differs:"+key);settingsBefore[key]=f.GetValue(HaulersDreamMod.Settings);f.SetValue(HaulersDreamMod.Settings,false);}
++            var setting=typeof(HaulersDreamSettings).GetField("haulToStack");settingsBefore["haulToStack"]=setting.GetValue(HaulersDreamMod.Settings);setting.SetValue(HaulersDreamMod.Settings,true);
+         }
+         private void Setup()
+         {
+-            Guard(role=="F12-PRODUCER"&&GenCommandLine.CommandLineArgPassed("quicktest")&&Current.Game.PlayerHasControl,"Fresh native producer required");
++            Guard(role=="F13-PRODUCER"&&GenCommandLine.CommandLineArgPassed("quicktest")&&Current.Game.PlayerHasControl,"Fresh native producer required");
+             ticks.CurTimeSpeed=TimeSpeed.Paused;Configure();ControlEnvironment();
+             foreach(var pawn in map.mapPawns.AllPawnsSpawned.ToArray())
+             {parked.Add(Tuple.Create(pawn,pawn.Position,pawn.Rotation));if(pawn.lord!=null)pawn.lord.RemovePawn(pawn);pawn.DeSpawn();Find.WorldPawns.PassToWorld(pawn,PawnDiscardDecideMode.KeepForever);}
+@@ -142,33 +145,19 @@
+                     Id(actor)+"; ambient="+F(actor.AmbientTemperature)+"; manipulation="+F(actor.health.capacities.GetLevel(PawnCapacityDefOf.Manipulation))+"; movement="+F(actor.health.capacities.GetLevel(PawnCapacityDefOf.Moving)));
+                 Hold(actor);
+             }
+-            ThingDef fuel=ThingDef.Named("Chemfuel");Guard(!map.listerThings.ThingsOfDef(fuel).Any(),"Unexpected existing native Chemfuel confound");handsBound=actors[0].carryTracker.MaxStackSpaceEver(fuel);
+-            Require("actual-native-multiple-trip-bound",fuel.stackLimit==150&&!fuel.smallVolume&&fuel.VolumePerUnit==1f&&handsBound>0&&handsBound<100,
+-                "Chemfuel actual stackLimit="+fuel.stackLimit+"; volume="+F(fuel.VolumePerUnit)+"; CarryingCapacity="+F(actors[0].GetStatValue(StatDefOf.CarryingCapacity))+"; hands="+handsBound+"; requested100; no capacity/def mutation");
+-            sources[0]=Spawn(fuel,150,map.Center+new IntVec3(-15,0,2));sources[1]=Spawn(ThingDefOf.Steel,15,map.Center+new IntVec3(0,0,-5));
+-            destinations[0]=map.Center+new IntVec3(15,0,2);destinations[1]=map.Center+new IntVec3(14,0,-5);
+-            Thing personal=ThingMaker.MakeThing(fuel);personal.stackCount=9;Guard(actors[0].inventory.innerContainer.TryAdd(personal,false),"Personal stock setup failed");actors[0].GetComp<CompHauledToInventory>().SetKeptCount(fuel,3);
+-            var stockpile=new Zone_Stockpile(StorageSettingsPreset.DefaultStockpile,map.zoneManager);map.zoneManager.RegisterZone(stockpile);stockpile.AddCell(map.Center+new IntVec3(-1,0,-5));stockpile.settings.filter.SetDisallowAll();stockpile.settings.filter.SetAllow(ThingDefOf.Steel,true);stockpile.settings.Priority=StoragePriority.Critical;
+-            Guard(destinations.All(c=>map.haulDestinationManager.SlotGroupAt(c)==null),"Destinations must be bare native cells");
+-            Require("native-nearer-storage-control",stockpile.Cells.Single().DistanceTo(sources[1].Position)<destinations[1].DistanceTo(sources[1].Position),"Actual nearer accepting native stockpile; selected bare point remains farther");
+-            Issue(1,7,false);stage="seven-of-fifteen";ticks.CurTimeSpeed=TimeSpeed.Superfast;
+-        }
++            StartCases();
++        }
++
+         private Thing Spawn(ThingDef def,int count,IntVec3 cell)
+         {Guard(count>0&&count<=def.stackLimit,"No overstacked source");var t=ThingMaker.MakeThing(def);t.stackCount=count;GenSpawn.Spawn(t,cell,map);t.SetForbidden(false,false);return t;}
+         private void Issue(int index,int quantity,bool queue)
+-        {
+-            var actor=actors[index];int before=Orders(actor).Length;
+-            AccessTools.Method(Command,"IssueSynced").Invoke(null,new object[]{actor,sources[index],destinations[index],quantity,map.uniqueID,queue});
+-            var orders=Orders(actor);Guard(orders.Length==before+1,"Real synced command did not allocate exactly one intent");
+-            var order=orders.Last();int job=Field<int>(order,"jobId");Guard(job>0&&Field<int>(order,"requested")==quantity,"Real order identity/quantity differs");
+-            if(index==0)expectedJobs.Add(job);
+-            emit("f12-real-issued","actor="+index+"; queue="+queue+"; "+OrderText(order)+"; native="+JobText(actor.CurJob)+"; queueJobs="+QueueText(actor));
+-        }
++        { IssueShelf(actors[index],sources[index],index==0?chainShelf:selectedShelf,quantity,queue); }
++
+         private static void Hold(Pawn pawn){Guard(pawn.jobs.TryTakeOrderedJob(JobMaker.MakeJob(JobDefOf.Wait,60000)),"Native Wait admission refused");}
+         private void Advance()
+         {
+             Guard(observerFailure==null,"Observer failed:"+observerFailure);
+-            Guard(watch.Elapsed.TotalSeconds<245&&ticks.TicksGame-startTick<24000,"Finite native fixture deadline");
++            Guard(watch.Elapsed.TotalSeconds<275&&ticks.TicksGame-startTick<32000,"Finite native fixture deadline");
+             if(!begun||pendingSave)return;ObserveEnvironment();
+             if(stage=="natural-warmup")
+             {
+@@ -179,23 +168,16 @@
+                 return;
+             }
+             Guard(actors.All(Fit),"Owned worker became medically unfit");
+-            if(stage=="seven-of-fifteen"&&Orders(actors[1]).Length==1&&State(Orders(actors[1])[0])=="Complete"&&!Explicit(actors[1].CurJob))
+-            {
+-                Require("actual-seven-of-fifteen",sources[1].Spawned&&sources[1].stackCount==8&&At(1)==7&&Field<int>(Orders(actors[1])[0],"delivered")==7,
+-                    "source="+ItemText(sources[1])+"; selected destination="+CellText(destinations[1])+"; "+OrderText(Orders(actors[1])[0]));
+-                Hold(actors[1]);Issue(0,100,false);Guard(Explicit(actors[0].CurJob),"A must have genuine non-idle explicit current work");Issue(0,7,true);Issue(0,9,true);
+-                Require("distinct-seven-nine-native-queue",expectedJobs.Count==3&&expectedJobs.Distinct().Count()==3&&actors[0].jobs.jobQueue.Select(q=>q.job.loadID).SequenceEqual(expectedJobs.Skip(1))&&Orders(actors[0]).Select(o=>Field<long>(o,"id")).Distinct().Count()==3,
+-                    "current="+JobText(actors[0].CurJob)+"; queue="+QueueText(actors[0])+"; orders="+string.Join("|",Orders(actors[0]).Select(OrderText)));
+-                stage="capture-first-hands";ticks.CurTimeSpeed=TimeSpeed.Superfast;
+-            }
++            if(stage!="resume"&&stage!="completion-stability"&&stage!="resaved-stability") { AdvanceCases(); return; }
+             if(stage=="producer-save")pendingSave=true;
+-            if(stage=="resume"&&Orders(actors[0]).All(o=>State(o)=="Complete")&&!Explicit(actors[0].CurJob)&&actors[0].jobs.jobQueue.Count==0)
+-            {
+-                Require("native-100-seven-nine-complete",Orders(actors[0]).Select(o=>Field<int>(o,"delivered")).SequenceEqual(new[]{100,7,9})&&sources[0].Spawned&&sources[0].stackCount==34&&At(0)==116,
++            if(stage=="resume"&&ChainOrders().All(o=>State(o)=="Complete")&&!Explicit(actors[0].CurJob)&&actors[0].jobs.jobQueue.Count==0)
++            {
++                Require("native-100-seven-nine-complete",ChainOrders().Select(o=>Field<int>(o,"delivered")).SequenceEqual(new[]{100,7,9})&&sources[0].Spawned&&sources[0].stackCount==34&&At(0)==116,
+                     string.Join("|",Orders(actors[0]).Select(OrderText))+"; source="+ItemText(sources[0])+"; dest="+CellText(destinations[0]));
+-                Require("native-each-job-succeeded-once",endedSequence.SequenceEqual(expectedJobs)&&expectedJobs.All(j=>(started.Contains(j)||(loadedCaptured&&j==expectedJobs[0]))&&ended.TryGetValue(j,out string end)&&end=="Succeeded"),string.Join("|",expectedJobs.Select(j=>j+":"+(ended.TryGetValue(j,out string end)?end:"missing"))));
++                Require("native-each-job-succeeded-once",endedSequence.Where(expectedJobs.Contains).SequenceEqual(expectedJobs)&&expectedJobs.All(j=>(started.Contains(j)||(loadedCaptured&&j==expectedJobs[0]))&&ended.TryGetValue(j,out string end)&&end=="Succeeded"),string.Join("|",expectedJobs.Select(j=>j+":"+(ended.TryGetValue(j,out string end)?end:"missing"))));
+                 Require("native-multiple-trip-continuation",placements.Count(s=>s.StartsWith("job="+expectedJobs[0]+","))>=2&&pickups.Count(s=>s.StartsWith("job="+expectedJobs[0]+","))>=1,
+                     "First pickup is in original producer; continuation pickups="+string.Join("|",pickups)+"; placements="+string.Join("|",placements));
++                VerifyAllPriorControls();
+                 Require("native-no-escaped-or-retained-cargo",EmptyOwnedHolders()&&UnitsFor(ThingDef.Named("Chemfuel"))==159&&FuelOnlyAtSelectedPoints(),FuelCustody());
+                 Require("native-personal-keep-and-B-unchanged",InventoryText(actors[0])==record["inventory0"]&&Personal()==9&&actors[0].GetComp<CompHauledToInventory>().KeptCountOf(ThingDef.Named("Chemfuel"))==3&&At(1)==7&&sources[1].stackCount==8,Physical()+"; originalInventory="+record["inventory0"]+"; currentInventory="+InventoryText(actors[0]));
+                 Require("completed-orders-release-reservations",!map.reservationManager.ReservationsReadOnly.Any(r=>r.Job!=null&&expectedJobs.Contains(r.Job.loadID)),"No native reservation remains for completed original job IDs");
+@@ -203,7 +185,8 @@
+             }
+             if((stage=="completion-stability"||stage=="resaved-stability")&&ticks.TicksGame-stableTick>=300)
+             {
+-                Require("stable-physical-conservation",InventoryText(actors[0])==record["inventory0"]&&EmptyOwnedHolders()&&UnitsFor(ThingDef.Named("Chemfuel"))==159&&FuelOnlyAtSelectedPoints()&&sources[0].stackCount==34&&At(0)==116&&Personal()==9&&sources[1].stackCount==8&&At(1)==7&&Orders(actors[0]).All(o=>State(o)=="Complete")&&!actors.Any(p=>Explicit(p.CurJob)||p.jobs.jobQueue.Any(q=>Explicit(q.job))),Physical()+"; originalInventory="+record["inventory0"]+"; currentInventory="+InventoryText(actors[0]));
++                VerifyAllPriorControls();
++                Require("stable-physical-conservation",InventoryText(actors[0])==record["inventory0"]&&EmptyOwnedHolders()&&UnitsFor(ThingDef.Named("Chemfuel"))==159&&FuelOnlyAtSelectedPoints()&&sources[0].stackCount==34&&At(0)==116&&Personal()==9&&sources[1].stackCount==8&&At(1)==7&&ChainOrders().All(o=>State(o)=="Complete")&&!actors.Any(p=>Explicit(p.CurJob)||p.jobs.jobQueue.Any(q=>Explicit(q.job))),Physical()+"; originalInventory="+record["inventory0"]+"; currentInventory="+InventoryText(actors[0]));
+                 if(stage=="resaved-stability"){Require("no-replayed-explicit-jobs",started.Count==0&&pickups.Count==0&&placements.Count==0,"Fresh terminal save ran300 native ticks without new explicit work");status="passed";}
+                 else {ticks.CurTimeSpeed=TimeSpeed.Paused;stage="continuation-save";pendingSave=true;}
+             }
+@@ -212,11 +195,11 @@
+         {
+             Observe(()=>{
+                 var c=current;if(c==null||c.status!="running"||!c.begun||!c.actors.Contains(__instance))return;c.ObserveEnvironment();
+-                if(c.stage!="capture-first-hands"||__instance!=c.actors[0]||__instance.carryTracker.CarriedThing==null)return;
+-                var order=Orders(__instance)[0];var piece=Field<Thing>(order,"piece");
++                c.OnOwnedTick(__instance);if(c.stage!="capture-first-hands"||__instance!=c.actors[0]||__instance.carryTracker.CarriedThing==null)return;
++                var order=c.ChainOrders()[0];var piece=Field<Thing>(order,"piece");
+                 Guard(ReferenceEquals(piece,__instance.carryTracker.CarriedThing)&&piece.stackCount==c.handsBound&&Field<int>(order,"delivered")==0&&c.At(0)==0,"First actual hands checkpoint differs");
+                 c.ticks.CurTimeSpeed=TimeSpeed.Paused;c.stage="producer-save";c.pendingSave=true;
+-                c.emit("f12-real-carry-checkpoint",JobText(__instance.CurJob)+"; toil="+__instance.jobs.curDriver.CurToilIndex+"; "+ItemText(piece)+"; queue="+QueueText(__instance));
++                c.emit("f13-real-carry-checkpoint",JobText(__instance.CurJob)+"; toil="+__instance.jobs.curDriver.CurToilIndex+"; "+ItemText(piece)+"; queue="+QueueText(__instance));
+             });
+         }
+         private static void OnGui(){Observe(()=>{var c=current;if(c==null||!c.pendingSave||c.status!="running"||Event.current?.type!=EventType.Repaint)return;c.pendingSave=false;c.SaveNative();});}
+@@ -225,19 +208,19 @@
+             Guard(ticks.CurTimeSpeed==TimeSpeed.Paused&&Scribe.mode==LoadSaveMode.Inactive,"Paused native save boundary required");
+             string path=GenFilePaths.FilePathForSavedGame(SaveName);Guard(Child(path,run)&&!File.Exists(path),"Fresh private checkpoint required");
+             record=new Dictionary<string,string>{{"phase",role}};foreach(var kv in Snapshot())record.Add(kv.Key,kv.Value);record["expectedJobs"]=string.Join(",",expectedJobs);record["originalTileMean"]=environmentOriginalMean;record["controlledTileMean"]=F(map.TileInfo.temperature);record["environmentEndAbs"]=environmentEndAbs.ToString();record["handsBound"]=handsBound.ToString();
+-            emit("f12-before-save",string.Join("; ",record.Select(kv=>kv.Key+"="+kv.Value)));
++            emit("f13-before-save",string.Join("; ",record.Select(kv=>kv.Key+"="+kv.Value)));
+             GameDataSaveLoader.SaveGame(SaveName);Guard(File.Exists(path)&&Scribe.mode==LoadSaveMode.Inactive,"Native save incomplete");
+             foreach(var kv in Snapshot())Require("save-preserved-"+kv.Key,record[kv.Key]==kv.Value,"before="+record[kv.Key]+"; after="+kv.Value);
+             var xml=new XmlDocument();xml.Load(path);
+             for(int i=0;i<2;i++)
+             {
+                 var node=xml.SelectSingleNode("//thing[id='"+actors[i].ThingID+"']");
+-                Require("native-xml-order-ownership-"+i,node!=null&&node.SelectNodes("hdExplicitHaulOrders/li").Count==(i==0?3:1),"Exact actual pawn ThingID deep-saved order list");
+-            }
+-            if(role=="F12-PRODUCER")
++                Require("native-xml-order-ownership-"+i,node!=null&&node.SelectNodes("hdExplicitHaulOrders/li").Count==Orders(actors[i]).Length,"Exact actual pawn ThingID deep-saved order list");
++            }
++            if(role=="F13-PRODUCER")
+                 Require("native-xml-current-and-queued-jobs",expectedJobs.All(id=>xml.SelectNodes("//loadID[text()='"+id+"']").Count>=1),"All three originally admitted job loadIDs exist in native XML");
+             File.Copy(path,Path.Combine(evidence,SaveName+".rws"));File.WriteAllText(Path.Combine(evidence,"checkpoint.txt"),string.Join("; ",record.Select(kv=>kv.Key+"="+kv.Value)));
+-            emit("f12-native-checkpoint","save="+path+"; phase="+role+"; exact original physical state retained");status=failed?"failed":"passed";
++            emit("f13-native-checkpoint","save="+path+"; phase="+role+"; exact original physical state retained");status=failed?"failed":"passed";
+         }
+         private Dictionary<string,string> Snapshot()
+         {
+@@ -253,46 +236,56 @@
+                 d["tagged"+i]=string.Join(",",Field<HashSet<Thing>>(actors[i].GetComp<CompHauledToInventory>(),"takenToInventory").OrderBy(t=>t.thingIDNumber).Select(Id));
+                 d["keep"+i]=actors[i].GetComp<CompHauledToInventory>().KeptCountOf(ThingDef.Named("Chemfuel")).ToString();
+             }
++            d["shelves"]=ShelfSnapshot(); d["allPhysical"]=AllPhysical();
++            d["chainShelf"]=chainShelf.thingIDNumber.ToString(); d["selectedShelf"]=selectedShelf.thingIDNumber.ToString();
++            d["ownedShelfIds"]=string.Join(",",shelves.OrderBy(b=>b.thingIDNumber).Select(b=>b.thingIDNumber));
++            d["exactReservations"]=ExactReservations();
++            d["priorPhysical"]=priorPhysical; d["originalPersonal"]=originalPersonal;
+             return d;
+         }
+         private void ReadLoaded()
+         {
+-            Guard(role!="F12-PRODUCER"&&!GenCommandLine.CommandLineArgPassed("quicktest"),"Native Autostart checkpoint required");
++            Guard(role!="F13-PRODUCER"&&!GenCommandLine.CommandLineArgPassed("quicktest"),"Native Autostart checkpoint required");
+             record=File.ReadAllText(Path.Combine(run,"input","checkpoint.txt")).Split(';').Select(s=>s.Trim().Split(new[]{'='},2)).ToDictionary(a=>a[0],a=>a[1]);
+-            Guard(record["phase"]==(role=="F12-RESUME"?"F12-PRODUCER":"F12-RESUME"),"Wrong source phase");
++            Guard(record["phase"]==(role=="F13-RESUME"?"F13-PRODUCER":"F13-RESUME"),"Wrong source phase");
+             Guard(map.uniqueID==Number("map")&&ticks.TicksGame==Number("tick"),"LoadedGame must precede the first tick");
+             for(int i=0;i<2;i++)
+             {
+                 actors[i]=map.mapPawns.AllPawnsSpawned.Single(p=>p.thingIDNumber==Number("actor"+i));sources[i]=map.listerThings.AllThings.Single(t=>t.thingIDNumber==Number("source"+i));
+                 var xy=record["dest"+i].Split(',');destinations[i]=new IntVec3(int.Parse(xy[0]),0,int.Parse(xy[1]));
+             }
++            shelves.AddRange(record["ownedShelfIds"].Split(',').Select(id=>map.listerThings.AllThings.OfType<Building_Storage>().Single(b=>b.thingIDNumber==int.Parse(id))));
++            chainShelf=shelves.Single(b=>b.thingIDNumber==Number("chainShelf"));selectedShelf=shelves.Single(b=>b.thingIDNumber==Number("selectedShelf"));
++            priorPhysical=record["priorPhysical"];originalPersonal=record["originalPersonal"];
+             expectedJobs.AddRange(record["expectedJobs"].Split(',').Select(int.Parse));handsBound=Number("handsBound");environmentOriginalMean=record["originalTileMean"];environmentEndAbs=Number("environmentEndAbs");
+             Require("saved-native-environment",Math.Abs(map.TileInfo.temperature-float.Parse(record["controlledTileMean"],CultureInfo.InvariantCulture))<0.0001f,"Saved tile mean loaded unchanged; no reconstruction");
+             foreach(var kv in Snapshot())Require("pre-tick-loaded-"+kv.Key,record[kv.Key]==kv.Value,"original="+record[kv.Key]+"; loaded="+kv.Value);
+-            emit("f12-loaded-original-checkpoint","phase="+role+"; pre-tick="+ticks.TicksGame+"; no job, order, cargo, quantity or environment restoration");
++            Require("loaded-capacity-not-serialized",actors.SelectMany(Orders).All(o=>Field<object>(o,"shelfAllocation")==null),"All runtime allocation fields null before first tick; native exact reservations independently compared");
++            if(role=="F13-RESUME")Require("loaded-current-cell-reservation",map.reservationManager.ReservedBy(actors[0].CurJob.targetB,actors[0],actors[0].CurJob),"Actual native current job retains its exact selected cell before unscribed allocation is rebuilt");
++            emit("f13-loaded-original-checkpoint","phase="+role+"; pre-tick="+ticks.TicksGame+"; no job, order, cargo, quantity or environment restoration");
+         }
+         private void ContinueLoaded()
+         {
+             Guard(loadedCaptured&&!begun&&ticks.TicksGame==startTick+1,"Expected native PauseOnLoad single tick before continuation");
+-            Configure();ObserveEnvironment();begun=true;stage=role=="F12-RESUME"?"resume":"resaved-stability";stableTick=ticks.TicksGame;ticks.CurTimeSpeed=TimeSpeed.Superfast;
++            Configure();ObserveEnvironment();begun=true;stage=role=="F13-RESUME"?"resume":"resaved-stability";stableTick=ticks.TicksGame;ticks.CurTimeSpeed=TimeSpeed.Superfast;
+         }
+         private int Number(string key)=>int.Parse(record[key],CultureInfo.InvariantCulture);
+-        private int At(int i)=>destinations[i].GetThingList(map).Where(t=>t.def==sources[i].def).Sum(t=>t.stackCount);
++        private int At(int i)=>i==0?ShelfUnits(chainShelf,sources[i].def):destinations[i].GetThingList(map).Where(t=>t.def==sources[i].def).Sum(t=>t.stackCount);
+         private int Personal()=>actors[0].inventory.innerContainer.Where(t=>t.def==ThingDef.Named("Chemfuel")).Sum(t=>t.stackCount);
+         private static string InventoryText(Pawn pawn)=>string.Join("|",pawn.inventory.innerContainer.OrderBy(t=>t.thingIDNumber).Select(ItemText));
+         private string Physical()=>"A="+ItemText(sources[0])+","+CellText(destinations[0])+",personal"+Personal()+"|B="+ItemText(sources[1])+","+CellText(destinations[1]);
+         private string CellText(IntVec3 c)=>c.x+":"+c.z+":"+string.Join("/",c.GetThingList(map).Where(t=>t.def.category==ThingCategory.Item).OrderBy(t=>t.thingIDNumber).Select(ItemText));
+         private static string ItemText(Thing t)=>t==null?"null":Id(t)+":"+t.stackCount+":"+t.Destroyed+":"+t.Spawned+":"+(t.Spawned?t.Position.x+","+t.Position.z:t.ParentHolder?.GetType().FullName??"detached");
+-        private static string JobText(Job j)=>j==null?"null":j.loadID+":"+j.def?.defName+":"+j.count+":"+j.playerForced+":"+Id(j.targetA.Thing)+":"+j.targetB.Cell.x+","+j.targetB.Cell.z+":"+j.globalTarget.Map?.uniqueID;
++        private static string JobText(Job j)=>j==null?"null":j.loadID+":"+j.def?.defName+":"+j.count+":"+j.playerForced+":"+Id(j.targetA.Thing)+":"+j.targetB.Cell.x+","+j.targetB.Cell.z+":"+j.globalTarget.Map?.uniqueID+":shelf:"+Id(j.targetC.Thing);
+         private static string QueueText(Pawn p)=>string.Join("|",p.jobs.jobQueue.Select(q=>JobText(q.job)));
+         private static string OrderText(object order)
+         {
+-            string[] scalars={"id","mapId","sourceId","requested","delivered","jobId","tripUnits","pathStarted","destination","state","sourceForbiddenAtIssue"};
++            string[] scalars={"id","mapId","sourceId","requested","delivered","jobId","tripUnits","pathStarted","destination","destinationKind","shelfId","shelfPosition","shelfRotation","tripDestination","state","sourceForbiddenAtIssue"};
+             string values=string.Join(",",scalars.Select(key=>key+":"+Field<object>(order,key)));
+             string tails=string.Join("/",((IEnumerable)Field<object>(order,"remainders")).Cast<object>().Select(tail=>
+                 "thing:"+ItemText(Field<Thing>(tail,"thing"))+",units:"+Field<int>(tail,"units")+",observedCount:"+Field<int>(tail,"observedCount")+",cell:"+Field<IntVec3>(tail,"cell")));
+             return values+",sourceRef:"+ItemText(Field<Thing>(order,"source"))+",pieceRef:"+ItemText(Field<Thing>(order,"piece"))
+-                +",reason:"+(Field<string>(order,"reason")??"<null>")+",remainders:["+tails+"]";
++                +",shelfRef:"+Id(Field<Thing>(order,"shelf"))+",reason:"+(Field<string>(order,"reason")??"<null>")+",remainders:["+tails+"]";
+         }
+         private static ThingOwner<Thing> Recovery(Pawn pawn)=>Field<ThingOwner<Thing>>(pawn.GetComp<CompHauledToInventory>(),"explicitRecovery");
+         private static string RecoveryText(Pawn pawn)=>Recovery(pawn)==null?"empty":string.Join("|",Recovery(pawn).OrderBy(t=>t.thingIDNumber).Select(ItemText).DefaultIfEmpty("empty"));
+@@ -307,7 +300,7 @@
+             }
+             return total;
+         }
+-        private bool FuelOnlyAtSelectedPoints()=>map.listerThings.ThingsOfDef(ThingDef.Named("Chemfuel")).All(t=>ReferenceEquals(t,sources[0])||t.Position==destinations[0]);
++        private bool FuelOnlyAtSelectedPoints()=>map.listerThings.ThingsOfDef(ThingDef.Named("Chemfuel")).All(t=>ReferenceEquals(t,sources[0])||chainShelf.AllSlotCells().Contains(t.Position));
+         private string FuelCustody()=>"total:"+UnitsFor(ThingDef.Named("Chemfuel"))+",ground:["+string.Join("|",map.listerThings.ThingsOfDef(ThingDef.Named("Chemfuel")).OrderBy(t=>t.thingIDNumber).Select(ItemText))+"]"
+             +string.Join("",actors.Where(p=>p!=null).Select(p=>",actor:"+Id(p)+",hands:["+string.Join("|",p.carryTracker.innerContainer.Select(ItemText))+"]private:["+RecoveryText(p)+"]"));
+         private sealed class TransferReceipt
+@@ -321,8 +314,9 @@
+         private TransferReceipt Before(Pawn pawn,ExplicitHaulOrder order,Thing source,int requested)
+         {
+             Guard(actors.Contains(pawn)&&Explicit(pawn.CurJob)&&pawn.jobs.curDriver.GetType()==typeof(JobDriver_ExplicitHaul),"Receipt needs actual current explicit driver");
++            ObserveAllocation(pawn,order);
+             Thing subject=source??Field<Thing>(order,"piece");Guard(subject!=null,"Actual physical subject missing");
+-            var cell=Field<IntVec3>(order,"destination");
++            var cell=Field<IntVec3>(order,"tripDestination");
+             return new TransferReceipt { source=source??Field<Thing>(order,"source"),piece=pawn.carryTracker.CarriedThing,
+                 sourceCount=(source??Field<Thing>(order,"source"))?.stackCount??0,handsCount=pawn.carryTracker.CarriedThing?.stackCount??0,
+                 requested=requested,delivered=Field<int>(order,"delivered"),worldUnits=UnitsFor(subject.def),
+@@ -330,8 +324,8 @@
+                 jobId=pawn.CurJob.loadID,orderId=Field<long>(order,"id"),
+                 before="source="+ItemText(source??Field<Thing>(order,"source"))+",hands="+ItemText(pawn.carryTracker.CarriedThing)+",destination="+CellText(cell)+",private="+RecoveryText(pawn) };
+         }
+-        private static void Started(JobDriver __instance){Observe(()=>{if(!Explicit(__instance.job))return;int id=__instance.job.loadID;started.Add(id);earlyEmit("f12-native-job-start",JobText(__instance.job)+"; actor="+Id(__instance.pawn));});}
+-        private static void Ended(Pawn ___pawn,JobCondition condition){Observe(()=>{if(!Explicit(___pawn?.CurJob))return;int id=___pawn.CurJob.loadID;Guard(!ended.ContainsKey(id),"Explicit job ended twice:"+id);ended[id]=condition.ToString();endedSequence.Add(id);earlyEmit("f12-native-job-end",JobText(___pawn.CurJob)+"; condition="+condition+"; actor="+Id(___pawn));});}
++        private static void Started(JobDriver __instance){Observe(()=>{if(!Explicit(__instance.job))return;int id=__instance.job.loadID;started.Add(id);earlyEmit("f13-native-job-start",JobText(__instance.job)+"; actor="+Id(__instance.pawn));});}
++        private static void Ended(Pawn ___pawn,JobCondition condition){Observe(()=>{if(!Explicit(___pawn?.CurJob))return;int id=___pawn.CurJob.loadID;Guard(!ended.ContainsKey(id),"Explicit job ended twice:"+id);ended[id]=condition.ToString();endedSequence.Add(id);earlyEmit("f13-native-job-end",JobText(___pawn.CurJob)+"; condition="+condition+"; actor="+Id(___pawn));});}
+         private static void PickupBefore(Pawn pawn,ExplicitHaulOrder order,Thing source,int count,out TransferReceipt __state)
+         {
+             __state=null;try{__state=current.Before(pawn,order,source,count);}catch(Exception ex){observerFailure=ex.ToString();current?.Fail(ex);}
+@@ -341,10 +335,10 @@
+             Observe(()=>
+             {
+                 if(__state==null)return;
+-                var piece=pawn.carryTracker.CarriedThing;var cell=Field<IntVec3>(order,"destination");
++                var piece=pawn.carryTracker.CarriedThing;var cell=Field<IntVec3>(order,"tripDestination");
+                 string after="source="+ItemText(source)+",hands="+ItemText(piece)+",destination="+current.CellText(cell)+",private="+RecoveryText(pawn);
+                 string receipt="job="+__state.jobId+",order="+__state.orderId+",requestedPickup="+count+",before:["+__state.before+"],after:["+after+"],exception="+(__exception?.GetType().Name??"none");
+-                pickups.Add(receipt);earlyEmit("f12-actual-pickup",receipt);
++                pickups.Add(receipt);earlyEmit("f13-actual-pickup",receipt);
+                 Guard(__exception==null&&source.thingIDNumber==Field<int>(order,"sourceId")&&ReferenceEquals(source,__state.source)&&__state.handsCount==0
+                     &&piece!=null&&piece.stackCount==count&&piece.holdingOwner==pawn.carryTracker.innerContainer&&pawn.carryTracker.innerContainer.Contains(piece)
+                     &&ReferenceEquals(piece,Field<Thing>(order,"piece"))&&__state.sourceCount-source.stackCount==count
+@@ -362,26 +356,26 @@
+             Observe(()=>
+             {
+                 if(__state==null)return;
+-                var cell=Field<IntVec3>(order,"destination");int accepted=cell.GetThingList(current.map).Where(t=>t.def==__state.piece.def).Sum(t=>t.stackCount)-__state.destinationCount;
++                var cell=Field<IntVec3>(order,"tripDestination");int accepted=cell.GetThingList(current.map).Where(t=>t.def==__state.piece.def).Sum(t=>t.stackCount)-__state.destinationCount;
+                 string receipt="job="+__state.jobId+",order="+__state.orderId+",before:["+__state.before+"],after:[source="+ItemText(__state.source)+",hands="+ItemText(pawn.carryTracker.CarriedThing)+",destination="+current.CellText(cell)+",private="+RecoveryText(pawn)+"],actualAccepted="+accepted+",creditBefore="+__state.delivered+",creditAfter="+Field<int>(order,"delivered")+",exception="+(__exception?.GetType().Name??"none");
+-                placements.Add(receipt);earlyEmit("f12-actual-placement",receipt);
+-                Guard(__exception==null&&__state.piece!=null&&__state.handsCount>0&&accepted==__state.handsCount
+-                    &&pawn.carryTracker.innerContainer.Count==0&&(Recovery(pawn)?.Count??0)==0&&Field<Thing>(order,"piece")==null
++                placements.Add(receipt);earlyEmit("f13-actual-placement",receipt);
++                Guard(__exception==null&&__state.piece!=null&&__state.handsCount>0&&accepted>0&&accepted<=__state.handsCount
++                    &&current.RetainedUnits(pawn,order)==__state.handsCount-accepted
+                     &&Field<int>(order,"delivered")==__state.delivered+accepted&&__state.source.stackCount==__state.sourceCount
+-                    &&current.UnitsFor(__state.piece.def)==__state.worldUnits,"Actual placement did not conserve source, exact selected-cell delivery and emptied owned holders");
++                    &&current.UnitsFor(__state.piece.def)==__state.worldUnits,"Actual placement did not conserve source, exact selected-cell delivery and exact retained owned holders");
+             });
+             return __exception;
+         }
+         private static void Observe(Action action){try{action();}catch(Exception ex){observerFailure=ex.ToString();current?.Fail(ex);}}
+-        private void Require(string id,bool ok,string detail){check("f12-"+id,ok,detail);if(!ok){failed=true;throw new InvalidOperationException(id+": "+detail);}}
+-        private void Fail(Exception ex){failed=true;status="failed";check("f12-scene-"+stage,false,ex.ToString());if(ticks!=null)ticks.CurTimeSpeed=TimeSpeed.Paused;}
++        private void Require(string id,bool ok,string detail){check("f13-"+id,ok,detail);if(!ok){failed=true;throw new InvalidOperationException(id+": "+detail);}}
++        private void Fail(Exception ex){failed=true;status="failed";check("f13-scene-"+stage,false,ex.ToString());if(ticks!=null)ticks.CurTimeSpeed=TimeSpeed.Paused;}
+         private void Cleanup()
+         {
+             cleaned=true;if(originalTileTemperature.HasValue){map.TileInfo.temperature=originalTileTemperature.Value;Find.World.tileTemperatures.ClearCaches();}
+             foreach(var kv in settingsBefore)typeof(HaulersDreamSettings).GetField(kv.Key).SetValue(HaulersDreamMod.Settings,kv.Value);
+             foreach(var entry in parked)if(!entry.Item1.Spawned&&!entry.Item1.Destroyed){Find.WorldPawns.RemovePawn(entry.Item1);GenSpawn.Spawn(entry.Item1,entry.Item2,map,entry.Item3);}
+             if(ticks!=null)ticks.CurTimeSpeed=oldSpeed;
+-            emit("f12-fixture-cleanup","Owned observers removed; settings/original tile mean/parked pawn ownership restored after save. Private disposable scene only; no productive post-result ticks.");
++            emit("f13-fixture-cleanup","Owned observers removed; settings/original tile mean/parked pawn ownership restored after save. Private disposable scene only; no productive post-result ticks.");
+         }
+         private static bool Same(string a,string b)=>string.Equals(Path.GetFullPath(a).TrimEnd('\\','/'),Path.GetFullPath(b).TrimEnd('\\','/'),StringComparison.OrdinalIgnoreCase);
+         private static bool Child(string c,string p)=>Path.GetFullPath(c).StartsWith(Path.GetFullPath(p).TrimEnd('\\','/')+Path.DirectorySeparatorChar,StringComparison.OrdinalIgnoreCase);

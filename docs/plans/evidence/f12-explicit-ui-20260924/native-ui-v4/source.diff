@@ -1,0 +1,50 @@
+--- native-ui-v3/CONTRACT.md
++++ native-ui-v4/CONTRACT.md
+@@ -22,3 +22,14 @@
+ controls. The actual Return, close and zero-command/state-change requirements
+ remain unchanged. Read-only root/window/close receipts cannot acknowledge input.
+ No product, controller or input-worker behavior changes. Native acceptance pending.
++
++
++## V4 map-valid forbidden observation
++
++Original v3 run8ce2c13f9fe1460cafe108f958b7e1b9 failed in the fixture's
++Boundary after the declared pawn.DeSpawn input. Native pawn-forbidden queries
++require the pawn's current map. V4 always records each physical floor item's
++ID/count/cell/raw CompForbiddable value; it records the actual pawn query only
++while the pawn is spawned on that item's map, otherwise explicit nullable
++not-applicable with the actual pawn map ID. All command/job/queue/reservation/
++tag/Keep/physical comparisons, real input controls and product remain unchanged.
+--- native-ui-v3/build.ps1
++++ native-ui-v4/build.ps1
+@@ -2,7 +2,7 @@
+ $env:TEMP='C:/HDQA/runtime-temp'
+ $env:TMP=$env:TEMP
+ $f12Root=$PSScriptRoot
+-$f12Build='C:/Users/Arthur/AppData/Local/HaulersDreamQA/inputs/f12-ui-native-20260924/host-v3'
++$f12Build='C:/Users/Arthur/AppData/Local/HaulersDreamQA/inputs/f12-ui-native-20260924/host-v4'
+ $f12Product='C:/Users/Arthur/AppData/Local/HaulersDreamQA/inputs/f12-explicit-ui-v2-20260924/Product'
+ $f12Refs='C:/Users/Arthur/AppData/Local/Temp/haulersdream-f34-host-root-build-20260920'
+ $f12Game='C:/Steam/steamapps/common/RimWorld/RimWorldWin64_Data/Managed'
+--- native-ui-v3/src/F12Scene.cs
++++ native-ui-v4/src/F12Scene.cs
+@@ -163,9 +163,18 @@
+         private static string State(object o)=>Field(o,"state").ToString();
+         private static long Id(object o)=>O<long>(o,"id");
+         private string OrderText(object o)=>o==null?"null":F02Json.Stringify(new{id=Id(o),state=State(o),requested=O<int>(o,"requested"),delivered=O<int>(o,"delivered"),job=O<int>(o,"jobId"),reason=O<string>(o,"reason"),source=O<int>(o,"sourceId"),destination=O<IntVec3>(o,"destination").ToString()});
++        private string FloorState(Thing t)
++        {
++            // Native pawn-forbidden reads the pawn's current-map area dictionary and lord manager.
++            // Deliberate pawn removal makes that query inapplicable, not a false forbidden result.
++            bool query=actor?.Spawned==true&&actor.Map==t.Map;
++            return F02Json.Stringify(new{id=t.ThingID,count=t.stackCount,cell=t.Position.ToString(),
++                rawForbidden=t.TryGetComp<CompForbiddable>()?.Forbidden,pawnMap=actor?.Map?.uniqueID,
++                pawnQueryApplicable=query,pawnForbidden=query?(bool?)t.IsForbidden(actor):null});
++        }
+         private string Boundary()=>F02Json.Stringify(new{next=Field(Comp,"nextExplicitHaulId"),orders=Orders.Select(OrderText).ToArray(),current=JobText(actor.CurJob),queue=Queue(actor),
+             hands=actor.carryTracker.CarriedThing?.ThingID,inventory=actor.inventory.innerContainer.Select(t=>t.ThingID+":"+t.stackCount).OrderBy(x=>x).ToArray(),
+-            floor=map.listerThings.AllThings.Where(t=>t.def.category==ThingCategory.Item&&arena.Contains(t.Position)).Select(t=>t.ThingID+":"+t.stackCount+":"+t.Position+":"+t.IsForbidden(actor)).OrderBy(x=>x).ToArray(),
++            floor=map.listerThings.AllThings.Where(t=>t.def.category==ThingCategory.Item&&arena.Contains(t.Position)).Select(FloorState).OrderBy(x=>x).ToArray(),
+             reservations=map.reservationManager.ReservationsReadOnly.Select(x=>x.Claimant.ThingID+":"+x.Job.loadID+":"+x.Target).OrderBy(x=>x).ToArray(),tags=Comp.PeekHashSet().Select(t=>t.ThingID).OrderBy(x=>x).ToArray(),keep=Comp.KeptCountOf(ThingDefOf.Steel)});
+         private string Snapshot()=>F02Json.Stringify(new{tick=Find.TickManager.TicksGame,stage,actor=actor?.ThingID,source=source?.ThingID,sourceCount=source?.stackCount,job=JobText(actor?.CurJob),queue=actor==null?null:Queue(actor),orders=actor==null?null:Orders.Select(OrderText).ToArray()});
+         private static string JobText(Job j)=>j==null?"null":j.loadID+":"+j.def.defName+":"+j.targetA+":"+j.targetB+":"+j.count;

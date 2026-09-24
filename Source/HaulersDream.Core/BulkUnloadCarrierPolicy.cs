@@ -109,25 +109,28 @@ namespace HaulersDream.Core
                     return new PullPlan(s.Index, fit, toHands: false);
             }
 
-            // Nothing fits the backpack. Find non-empty stacks for the to-hands ladder.
-            int firstNonEmpty = -1;
-            int nonEmptyCount = 0;
+            return PlanHandsFallback(stacks);
+        }
+
+        /// <summary>Explicit hands-only fallback when another capacity dimension (CE bulk) rejects inventory.
+        /// Unlike a zero-mass-budget replan, this cannot put massless cargo back into the backpack.</summary>
+        public static PullPlan PlanHandsFallback(IReadOnlyList<CarrierStack> stacks)
+        {
+            if (stacks == null) return PullPlan.None;
             for (int i = 0; i < stacks.Count; i++)
             {
                 if (stacks[i].StackCount > 0)
-                {
-                    nonEmptyCount++;
-                    if (firstNonEmpty < 0)
-                        firstNonEmpty = i;
-                }
+                    return new PullPlan(stacks[i].Index, stacks[i].StackCount, toHands: true);
             }
-            if (firstNonEmpty < 0)
-                return PullPlan.None; // no non-empty stack -> done
+            return PullPlan.None;
+        }
 
-            // 2. Last-stack-to-hands, or 3. fallback-one-to-hands — both take ONE whole stack to the carry tracker;
-            // the distinction is purely informational (the carrier is emptied either way, the count is the same).
-            var chosen = stacks[firstNonEmpty];
-            return new PullPlan(chosen.Index, chosen.StackCount, toHands: true);
+        /// <summary>Apply a second inventory capacity dimension without ever retrying rejected massless cargo.</summary>
+        public static PullPlan ApplyInventoryFit(PullPlan plan, IReadOnlyList<CarrierStack> stacks, int inventoryFit)
+        {
+            if (plan.ChosenIndex < 0 || plan.Count <= 0 || plan.ToHands) return plan;
+            return inventoryFit <= 0 ? PlanHandsFallback(stacks)
+                : new PullPlan(plan.ChosenIndex, Math.Min(plan.Count, inventoryFit), toHands: false);
         }
     }
 }

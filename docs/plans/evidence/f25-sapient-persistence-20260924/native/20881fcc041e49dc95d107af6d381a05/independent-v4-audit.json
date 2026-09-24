@@ -1,0 +1,2025 @@
+{
+  "status": "accepted-scoped",
+  "runId": "20881fcc041e49dc95d107af6d381a05",
+  "assertions": 83,
+  "events": 191,
+  "actualImages": 15,
+  "physicalStates": [
+    {
+      "event": 70,
+      "tick": 967,
+      "phase": "f25-job-end",
+      "totals": {
+        "Cloth": 5,
+        "Gold": 0,
+        "Steel": 0
+      },
+      "items": [
+        {
+          "id": "Cloth40093",
+          "material": "Cloth",
+          "count": 2,
+          "custody": "(105, 0, 115)"
+        },
+        {
+          "id": "Cloth40094",
+          "material": "Cloth",
+          "count": 3,
+          "custody": "(111, 0, 115)"
+        }
+      ]
+    },
+    {
+      "event": 71,
+      "tick": 979,
+      "phase": "f25-state",
+      "totals": {
+        "Cloth": 5,
+        "Gold": 0,
+        "Steel": 0
+      },
+      "items": [
+        {
+          "id": "Cloth40093",
+          "material": "Cloth",
+          "count": 2,
+          "custody": "(105, 0, 115)"
+        },
+        {
+          "id": "Cloth40094",
+          "material": "Cloth",
+          "count": 3,
+          "custody": "(111, 0, 115)"
+        }
+      ]
+    },
+    {
+      "event": 72,
+      "tick": 1124,
+      "phase": "f25-job-end",
+      "totals": {
+        "Cloth": 5,
+        "Gold": 0,
+        "Steel": 0
+      },
+      "items": [
+        {
+          "id": "Cloth40093",
+          "material": "Cloth",
+          "count": 2,
+          "custody": "(105, 0, 115)"
+        },
+        {
+          "id": "Cloth40094",
+          "material": "Cloth",
+          "count": 3,
+          "custody": "(111, 0, 115)"
+        }
+      ]
+    },
+    {
+      "event": 73,
+      "tick": 1127,
+      "phase": "f25-job-end",
+      "totals": {
+        "Cloth": 5,
+        "Gold": 0,
+        "Steel": 0
+      },
+      "items": [
+        {
+          "id": "Cloth40093",
+          "material": "Cloth",
+          "count": 2,
+          "custody": "(105, 0, 115)"
+        },
+        {
+          "id": "Cloth40094",
+          "material": "Cloth",
+          "count": 3,
+          "custody": "(111, 0, 115)"
+        }
+      ]
+    },
+    {
+      "event": 74,
+      "tick": 1228,
+      "phase": "f25-job-end",
+      "totals": {
+        "Cloth": 5,
+        "Gold": 0,
+        "Steel": 0
+      },
+      "items": [
+        {
+          "id": "Cloth40093",
+          "material": "Cloth",
+          "count": 2,
+          "custody": "(105, 0, 115)"
+        },
+        {
+          "id": "Cloth40094",
+          "material": "Cloth",
+          "count": 3,
+          "custody": "(111, 0, 115)"
+        }
+      ]
+    },
+    {
+      "event": 75,
+      "tick": 1229,
+      "phase": "f25-job-end",
+      "totals": {
+        "Cloth": 5,
+        "Gold": 0,
+        "Steel": 0
+      },
+      "items": [
+        {
+          "id": "Cloth40093",
+          "material": "Cloth",
+          "count": 2,
+          "custody": "(105, 0, 115)"
+        },
+        {
+          "id": "Cloth40094",
+          "material": "Cloth",
+          "count": 3,
+          "custody": "(111, 0, 115)"
+        }
+      ]
+    },
+    {
+      "event": 76,
+      "tick": 1307,
+      "phase": "f25-state",
+      "totals": {
+        "Cloth": 5,
+        "Gold": 0,
+        "Steel": 0
+      },
+      "items": [
+        {
+          "id": "Cloth40093",
+          "material": "Cloth",
+          "count": 2,
+          "custody": "HL_Mech_Lifter36147"
+        },
+        {
+          "id": "Cloth40094",
+          "material": "Cloth",
+          "count": 3,
+          "custody": "(111, 0, 115)"
+        }
+      ]
+    },
+    {
+      "event": 77,
+      "tick": 1471,
+      "phase": "f25-job-end",
+      "totals": {
+        "Cloth": 5,
+        "Gold": 0,
+        "Steel": 0
+      },
+      "items": [
+        {
+          "id": "Cloth40093",
+          "material": "Cloth",
+          "count": 5,
+          "custody": "HL_Mech_Lifter36147"
+        }
+      ]
+    },
+    {
+      "event": 78,
+      "tick": 1471,
+      "phase": "f25-state",
+      "totals": {
+        "Cloth": 5,
+        "Gold": 0,
+        "Steel": 0
+      },
+      "items": [
+        {
+          "id": "Cloth40093",
+          "material": "Cloth",
+          "count": 5,
+          "custody": "HL_Mech_Lifter36147"
+        }
+      ]
+    },
+    {
+      "event": 79,
+      "tick": 1473,
+      "phase": "f25-job-end",
+      "totals": {
+        "Cloth": 5,
+        "Gold": 0,
+        "Steel": 0
+      },
+      "items": [
+        {
+          "id": "Cloth40093",
+          "material": "Cloth",
+          "count": 5,
+          "custody": "HL_Mech_Lifter36147"
+        }
+      ]
+    },
+    {
+      "event": 80,
+      "tick": 1481,
+      "phase": "f25-state",
+      "totals": {
+        "Cloth": 5,
+        "Gold": 0,
+        "Steel": 0
+      },
+      "items": [
+        {
+          "id": "Cloth40093",
+          "material": "Cloth",
+          "count": 5,
+          "custody": "carry"
+        }
+      ]
+    },
+    {
+      "event": 81,
+      "tick": 1532,
+      "phase": "f25-job-end",
+      "totals": {
+        "Cloth": 5,
+        "Gold": 0,
+        "Steel": 0
+      },
+      "items": [
+        {
+          "id": "Cloth40093",
+          "material": "Cloth",
+          "count": 5,
+          "custody": "carry"
+        }
+      ]
+    },
+    {
+      "event": 82,
+      "tick": 1535,
+      "phase": "f25-job-end",
+      "totals": {
+        "Cloth": 5,
+        "Gold": 0,
+        "Steel": 0
+      },
+      "items": [
+        {
+          "id": "Cloth40093",
+          "material": "Cloth",
+          "count": 5,
+          "custody": "carry"
+        }
+      ]
+    },
+    {
+      "event": 83,
+      "tick": 2386,
+      "phase": "f25-job-end",
+      "totals": {
+        "Cloth": 5,
+        "Gold": 0,
+        "Steel": 0
+      },
+      "items": [
+        {
+          "id": "Cloth40093",
+          "material": "Cloth",
+          "count": 5,
+          "custody": "carry"
+        }
+      ]
+    },
+    {
+      "event": 84,
+      "tick": 2387,
+      "phase": "f25-job-end",
+      "totals": {
+        "Cloth": 5,
+        "Gold": 0,
+        "Steel": 0
+      },
+      "items": [
+        {
+          "id": "Cloth40093",
+          "material": "Cloth",
+          "count": 5,
+          "custody": "carry"
+        }
+      ]
+    },
+    {
+      "event": 85,
+      "tick": 2436,
+      "phase": "f25-job-end",
+      "totals": {
+        "Cloth": 5,
+        "Gold": 0,
+        "Steel": 0
+      },
+      "items": [
+        {
+          "id": "Cloth40093",
+          "material": "Cloth",
+          "count": 5,
+          "custody": "(148, 0, 112)"
+        }
+      ]
+    },
+    {
+      "event": 86,
+      "tick": 2436,
+      "phase": "f25-state",
+      "totals": {
+        "Cloth": 5,
+        "Gold": 0,
+        "Steel": 0
+      },
+      "items": [
+        {
+          "id": "Cloth40093",
+          "material": "Cloth",
+          "count": 5,
+          "custody": "(148, 0, 112)"
+        }
+      ]
+    },
+    {
+      "event": 89,
+      "tick": 2436,
+      "phase": "f25-job-end",
+      "totals": {
+        "Cloth": 5,
+        "Gold": 5,
+        "Steel": 0
+      },
+      "items": [
+        {
+          "id": "Cloth40093",
+          "material": "Cloth",
+          "count": 5,
+          "custody": "(148, 0, 112)"
+        },
+        {
+          "id": "Gold40098",
+          "material": "Gold",
+          "count": 2,
+          "custody": "(105, 0, 124)"
+        },
+        {
+          "id": "Gold40099",
+          "material": "Gold",
+          "count": 3,
+          "custody": "(111, 0, 124)"
+        }
+      ]
+    },
+    {
+      "event": 90,
+      "tick": 2439,
+      "phase": "f25-job-end",
+      "totals": {
+        "Cloth": 5,
+        "Gold": 5,
+        "Steel": 0
+      },
+      "items": [
+        {
+          "id": "Cloth40093",
+          "material": "Cloth",
+          "count": 5,
+          "custody": "(148, 0, 112)"
+        },
+        {
+          "id": "Gold40098",
+          "material": "Gold",
+          "count": 2,
+          "custody": "(105, 0, 124)"
+        },
+        {
+          "id": "Gold40099",
+          "material": "Gold",
+          "count": 3,
+          "custody": "(111, 0, 124)"
+        }
+      ]
+    },
+    {
+      "event": 91,
+      "tick": 2443,
+      "phase": "f25-state",
+      "totals": {
+        "Cloth": 5,
+        "Gold": 5,
+        "Steel": 0
+      },
+      "items": [
+        {
+          "id": "Cloth40093",
+          "material": "Cloth",
+          "count": 5,
+          "custody": "(148, 0, 112)"
+        },
+        {
+          "id": "Gold40098",
+          "material": "Gold",
+          "count": 2,
+          "custody": "(105, 0, 124)"
+        },
+        {
+          "id": "Gold40099",
+          "material": "Gold",
+          "count": 3,
+          "custody": "(111, 0, 124)"
+        }
+      ]
+    },
+    {
+      "event": 92,
+      "tick": 2580,
+      "phase": "f25-job-end",
+      "totals": {
+        "Cloth": 5,
+        "Gold": 5,
+        "Steel": 0
+      },
+      "items": [
+        {
+          "id": "Cloth40093",
+          "material": "Cloth",
+          "count": 5,
+          "custody": "(148, 0, 112)"
+        },
+        {
+          "id": "Gold40098",
+          "material": "Gold",
+          "count": 2,
+          "custody": "(105, 0, 124)"
+        },
+        {
+          "id": "Gold40099",
+          "material": "Gold",
+          "count": 3,
+          "custody": "(111, 0, 124)"
+        }
+      ]
+    },
+    {
+      "event": 93,
+      "tick": 2583,
+      "phase": "f25-job-end",
+      "totals": {
+        "Cloth": 5,
+        "Gold": 5,
+        "Steel": 0
+      },
+      "items": [
+        {
+          "id": "Cloth40093",
+          "material": "Cloth",
+          "count": 5,
+          "custody": "(148, 0, 112)"
+        },
+        {
+          "id": "Gold40098",
+          "material": "Gold",
+          "count": 2,
+          "custody": "(105, 0, 124)"
+        },
+        {
+          "id": "Gold40099",
+          "material": "Gold",
+          "count": 3,
+          "custody": "(111, 0, 124)"
+        }
+      ]
+    },
+    {
+      "event": 94,
+      "tick": 2744,
+      "phase": "f25-state",
+      "totals": {
+        "Cloth": 5,
+        "Gold": 5,
+        "Steel": 0
+      },
+      "items": [
+        {
+          "id": "Cloth40093",
+          "material": "Cloth",
+          "count": 5,
+          "custody": "(148, 0, 112)"
+        },
+        {
+          "id": "Gold40098",
+          "material": "Gold",
+          "count": 2,
+          "custody": "HL_Monkey36152"
+        },
+        {
+          "id": "Gold40099",
+          "material": "Gold",
+          "count": 3,
+          "custody": "(111, 0, 124)"
+        }
+      ]
+    },
+    {
+      "event": 95,
+      "tick": 2858,
+      "phase": "f25-job-end",
+      "totals": {
+        "Cloth": 5,
+        "Gold": 5,
+        "Steel": 0
+      },
+      "items": [
+        {
+          "id": "Cloth40093",
+          "material": "Cloth",
+          "count": 5,
+          "custody": "(148, 0, 112)"
+        },
+        {
+          "id": "Gold40098",
+          "material": "Gold",
+          "count": 5,
+          "custody": "HL_Monkey36152"
+        }
+      ]
+    },
+    {
+      "event": 96,
+      "tick": 2859,
+      "phase": "f25-state",
+      "totals": {
+        "Cloth": 5,
+        "Gold": 5,
+        "Steel": 0
+      },
+      "items": [
+        {
+          "id": "Cloth40093",
+          "material": "Cloth",
+          "count": 5,
+          "custody": "(148, 0, 112)"
+        },
+        {
+          "id": "Gold40098",
+          "material": "Gold",
+          "count": 5,
+          "custody": "HL_Monkey36152"
+        }
+      ]
+    },
+    {
+      "event": 97,
+      "tick": 2861,
+      "phase": "f25-job-end",
+      "totals": {
+        "Cloth": 5,
+        "Gold": 5,
+        "Steel": 0
+      },
+      "items": [
+        {
+          "id": "Cloth40093",
+          "material": "Cloth",
+          "count": 5,
+          "custody": "(148, 0, 112)"
+        },
+        {
+          "id": "Gold40098",
+          "material": "Gold",
+          "count": 5,
+          "custody": "HL_Monkey36152"
+        }
+      ]
+    },
+    {
+      "event": 98,
+      "tick": 2865,
+      "phase": "f25-state",
+      "totals": {
+        "Cloth": 5,
+        "Gold": 5,
+        "Steel": 0
+      },
+      "items": [
+        {
+          "id": "Cloth40093",
+          "material": "Cloth",
+          "count": 5,
+          "custody": "(148, 0, 112)"
+        },
+        {
+          "id": "Gold40098",
+          "material": "Gold",
+          "count": 5,
+          "custody": "carry"
+        }
+      ]
+    },
+    {
+      "event": 99,
+      "tick": 3066,
+      "phase": "f25-job-end",
+      "totals": {
+        "Cloth": 5,
+        "Gold": 5,
+        "Steel": 0
+      },
+      "items": [
+        {
+          "id": "Cloth40093",
+          "material": "Cloth",
+          "count": 5,
+          "custody": "(148, 0, 112)"
+        },
+        {
+          "id": "Gold40098",
+          "material": "Gold",
+          "count": 5,
+          "custody": "carry"
+        }
+      ]
+    },
+    {
+      "event": 100,
+      "tick": 3067,
+      "phase": "f25-job-end",
+      "totals": {
+        "Cloth": 5,
+        "Gold": 5,
+        "Steel": 0
+      },
+      "items": [
+        {
+          "id": "Cloth40093",
+          "material": "Cloth",
+          "count": 5,
+          "custody": "(148, 0, 112)"
+        },
+        {
+          "id": "Gold40098",
+          "material": "Gold",
+          "count": 5,
+          "custody": "carry"
+        }
+      ]
+    },
+    {
+      "event": 101,
+      "tick": 3274,
+      "phase": "f25-job-end",
+      "totals": {
+        "Cloth": 5,
+        "Gold": 5,
+        "Steel": 0
+      },
+      "items": [
+        {
+          "id": "Cloth40093",
+          "material": "Cloth",
+          "count": 5,
+          "custody": "(148, 0, 112)"
+        },
+        {
+          "id": "Gold40098",
+          "material": "Gold",
+          "count": 5,
+          "custody": "carry"
+        }
+      ]
+    },
+    {
+      "event": 102,
+      "tick": 3277,
+      "phase": "f25-job-end",
+      "totals": {
+        "Cloth": 5,
+        "Gold": 5,
+        "Steel": 0
+      },
+      "items": [
+        {
+          "id": "Cloth40093",
+          "material": "Cloth",
+          "count": 5,
+          "custody": "(148, 0, 112)"
+        },
+        {
+          "id": "Gold40098",
+          "material": "Gold",
+          "count": 5,
+          "custody": "carry"
+        }
+      ]
+    },
+    {
+      "event": 103,
+      "tick": 3503,
+      "phase": "f25-job-end",
+      "totals": {
+        "Cloth": 5,
+        "Gold": 5,
+        "Steel": 0
+      },
+      "items": [
+        {
+          "id": "Cloth40093",
+          "material": "Cloth",
+          "count": 5,
+          "custody": "(148, 0, 112)"
+        },
+        {
+          "id": "Gold40098",
+          "material": "Gold",
+          "count": 5,
+          "custody": "(148, 0, 121)"
+        }
+      ]
+    },
+    {
+      "event": 104,
+      "tick": 3503,
+      "phase": "f25-state",
+      "totals": {
+        "Cloth": 5,
+        "Gold": 5,
+        "Steel": 0
+      },
+      "items": [
+        {
+          "id": "Cloth40093",
+          "material": "Cloth",
+          "count": 5,
+          "custody": "(148, 0, 112)"
+        },
+        {
+          "id": "Gold40098",
+          "material": "Gold",
+          "count": 5,
+          "custody": "(148, 0, 121)"
+        }
+      ]
+    },
+    {
+      "event": 107,
+      "tick": 3503,
+      "phase": "f25-job-end",
+      "totals": {
+        "Cloth": 5,
+        "Gold": 5,
+        "Steel": 5
+      },
+      "items": [
+        {
+          "id": "Cloth40093",
+          "material": "Cloth",
+          "count": 5,
+          "custody": "(148, 0, 112)"
+        },
+        {
+          "id": "Gold40098",
+          "material": "Gold",
+          "count": 5,
+          "custody": "(148, 0, 121)"
+        },
+        {
+          "id": "Steel40101",
+          "material": "Steel",
+          "count": 2,
+          "custody": "(105, 0, 133)"
+        },
+        {
+          "id": "Steel40102",
+          "material": "Steel",
+          "count": 3,
+          "custody": "(111, 0, 133)"
+        }
+      ]
+    },
+    {
+      "event": 108,
+      "tick": 3506,
+      "phase": "f25-job-end",
+      "totals": {
+        "Cloth": 5,
+        "Gold": 5,
+        "Steel": 5
+      },
+      "items": [
+        {
+          "id": "Cloth40093",
+          "material": "Cloth",
+          "count": 5,
+          "custody": "(148, 0, 112)"
+        },
+        {
+          "id": "Gold40098",
+          "material": "Gold",
+          "count": 5,
+          "custody": "(148, 0, 121)"
+        },
+        {
+          "id": "Steel40101",
+          "material": "Steel",
+          "count": 2,
+          "custody": "(105, 0, 133)"
+        },
+        {
+          "id": "Steel40102",
+          "material": "Steel",
+          "count": 3,
+          "custody": "(111, 0, 133)"
+        }
+      ]
+    },
+    {
+      "event": 109,
+      "tick": 3508,
+      "phase": "f25-state",
+      "totals": {
+        "Cloth": 5,
+        "Gold": 5,
+        "Steel": 5
+      },
+      "items": [
+        {
+          "id": "Cloth40093",
+          "material": "Cloth",
+          "count": 5,
+          "custody": "(148, 0, 112)"
+        },
+        {
+          "id": "Gold40098",
+          "material": "Gold",
+          "count": 5,
+          "custody": "(148, 0, 121)"
+        },
+        {
+          "id": "Steel40101",
+          "material": "Steel",
+          "count": 2,
+          "custody": "(105, 0, 133)"
+        },
+        {
+          "id": "Steel40102",
+          "material": "Steel",
+          "count": 3,
+          "custody": "(111, 0, 133)"
+        }
+      ]
+    },
+    {
+      "event": 110,
+      "tick": 3799,
+      "phase": "f25-state",
+      "totals": {
+        "Cloth": 5,
+        "Gold": 5,
+        "Steel": 5
+      },
+      "items": [
+        {
+          "id": "Cloth40093",
+          "material": "Cloth",
+          "count": 5,
+          "custody": "(148, 0, 112)"
+        },
+        {
+          "id": "Gold40098",
+          "material": "Gold",
+          "count": 5,
+          "custody": "(148, 0, 121)"
+        },
+        {
+          "id": "Steel40101",
+          "material": "Steel",
+          "count": 2,
+          "custody": "Human36162"
+        },
+        {
+          "id": "Steel40102",
+          "material": "Steel",
+          "count": 3,
+          "custody": "(111, 0, 133)"
+        }
+      ]
+    },
+    {
+      "event": 111,
+      "tick": 3907,
+      "phase": "f25-job-end",
+      "totals": {
+        "Cloth": 5,
+        "Gold": 5,
+        "Steel": 5
+      },
+      "items": [
+        {
+          "id": "Cloth40093",
+          "material": "Cloth",
+          "count": 5,
+          "custody": "(148, 0, 112)"
+        },
+        {
+          "id": "Gold40098",
+          "material": "Gold",
+          "count": 5,
+          "custody": "(148, 0, 121)"
+        },
+        {
+          "id": "Steel40101",
+          "material": "Steel",
+          "count": 5,
+          "custody": "Human36162"
+        }
+      ]
+    },
+    {
+      "event": 112,
+      "tick": 3907,
+      "phase": "f25-state",
+      "totals": {
+        "Cloth": 5,
+        "Gold": 5,
+        "Steel": 5
+      },
+      "items": [
+        {
+          "id": "Cloth40093",
+          "material": "Cloth",
+          "count": 5,
+          "custody": "(148, 0, 112)"
+        },
+        {
+          "id": "Gold40098",
+          "material": "Gold",
+          "count": 5,
+          "custody": "(148, 0, 121)"
+        },
+        {
+          "id": "Steel40101",
+          "material": "Steel",
+          "count": 5,
+          "custody": "Human36162"
+        }
+      ]
+    },
+    {
+      "event": 113,
+      "tick": 3910,
+      "phase": "f25-job-end",
+      "totals": {
+        "Cloth": 5,
+        "Gold": 5,
+        "Steel": 5
+      },
+      "items": [
+        {
+          "id": "Cloth40093",
+          "material": "Cloth",
+          "count": 5,
+          "custody": "(148, 0, 112)"
+        },
+        {
+          "id": "Gold40098",
+          "material": "Gold",
+          "count": 5,
+          "custody": "(148, 0, 121)"
+        },
+        {
+          "id": "Steel40101",
+          "material": "Steel",
+          "count": 5,
+          "custody": "Human36162"
+        }
+      ]
+    },
+    {
+      "event": 114,
+      "tick": 3920,
+      "phase": "f25-state",
+      "totals": {
+        "Cloth": 5,
+        "Gold": 5,
+        "Steel": 5
+      },
+      "items": [
+        {
+          "id": "Cloth40093",
+          "material": "Cloth",
+          "count": 5,
+          "custody": "(148, 0, 112)"
+        },
+        {
+          "id": "Gold40098",
+          "material": "Gold",
+          "count": 5,
+          "custody": "(148, 0, 121)"
+        },
+        {
+          "id": "Steel40101",
+          "material": "Steel",
+          "count": 5,
+          "custody": "carry"
+        }
+      ]
+    },
+    {
+      "event": 115,
+      "tick": 4307,
+      "phase": "f25-job-end",
+      "totals": {
+        "Cloth": 5,
+        "Gold": 5,
+        "Steel": 5
+      },
+      "items": [
+        {
+          "id": "Cloth40093",
+          "material": "Cloth",
+          "count": 5,
+          "custody": "(148, 0, 112)"
+        },
+        {
+          "id": "Gold40098",
+          "material": "Gold",
+          "count": 5,
+          "custody": "(148, 0, 121)"
+        },
+        {
+          "id": "Steel40101",
+          "material": "Steel",
+          "count": 5,
+          "custody": "carry"
+        }
+      ]
+    },
+    {
+      "event": 116,
+      "tick": 4310,
+      "phase": "f25-job-end",
+      "totals": {
+        "Cloth": 5,
+        "Gold": 5,
+        "Steel": 5
+      },
+      "items": [
+        {
+          "id": "Cloth40093",
+          "material": "Cloth",
+          "count": 5,
+          "custody": "(148, 0, 112)"
+        },
+        {
+          "id": "Gold40098",
+          "material": "Gold",
+          "count": 5,
+          "custody": "(148, 0, 121)"
+        },
+        {
+          "id": "Steel40101",
+          "material": "Steel",
+          "count": 5,
+          "custody": "carry"
+        }
+      ]
+    },
+    {
+      "event": 117,
+      "tick": 4515,
+      "phase": "f25-state",
+      "totals": {
+        "Cloth": 5,
+        "Gold": 5,
+        "Steel": 5
+      },
+      "items": [
+        {
+          "id": "Cloth40093",
+          "material": "Cloth",
+          "count": 5,
+          "custody": "(148, 0, 112)"
+        },
+        {
+          "id": "Gold40098",
+          "material": "Gold",
+          "count": 5,
+          "custody": "(148, 0, 121)"
+        },
+        {
+          "id": "Steel40101",
+          "material": "Steel",
+          "count": 5,
+          "custody": "(148, 0, 130)"
+        }
+      ]
+    },
+    {
+      "event": 120,
+      "tick": 4515,
+      "phase": "f25-job-end",
+      "totals": {
+        "Cloth": 23,
+        "Gold": 5,
+        "Steel": 5
+      },
+      "items": [
+        {
+          "id": "Cloth40093",
+          "material": "Cloth",
+          "count": 5,
+          "custody": "(148, 0, 112)"
+        },
+        {
+          "id": "Gold40098",
+          "material": "Gold",
+          "count": 5,
+          "custody": "(148, 0, 121)"
+        },
+        {
+          "id": "Steel40101",
+          "material": "Steel",
+          "count": 5,
+          "custody": "(148, 0, 130)"
+        },
+        {
+          "id": "Cloth40105",
+          "material": "Cloth",
+          "count": 7,
+          "custody": "(105, 0, 115)"
+        },
+        {
+          "id": "Cloth40106",
+          "material": "Cloth",
+          "count": 11,
+          "custody": "(118, 0, 115)"
+        }
+      ]
+    },
+    {
+      "event": 122,
+      "tick": 4516,
+      "phase": "f25-job-end",
+      "totals": {
+        "Cloth": 23,
+        "Gold": 5,
+        "Steel": 5
+      },
+      "items": [
+        {
+          "id": "Cloth40093",
+          "material": "Cloth",
+          "count": 5,
+          "custody": "(148, 0, 112)"
+        },
+        {
+          "id": "Gold40098",
+          "material": "Gold",
+          "count": 5,
+          "custody": "(148, 0, 121)"
+        },
+        {
+          "id": "Steel40101",
+          "material": "Steel",
+          "count": 5,
+          "custody": "(148, 0, 130)"
+        },
+        {
+          "id": "Cloth40105",
+          "material": "Cloth",
+          "count": 7,
+          "custody": "(105, 0, 115)"
+        },
+        {
+          "id": "Cloth40106",
+          "material": "Cloth",
+          "count": 11,
+          "custody": "(118, 0, 115)"
+        }
+      ]
+    },
+    {
+      "event": 123,
+      "tick": 4519,
+      "phase": "f25-job-end",
+      "totals": {
+        "Cloth": 23,
+        "Gold": 5,
+        "Steel": 5
+      },
+      "items": [
+        {
+          "id": "Cloth40093",
+          "material": "Cloth",
+          "count": 5,
+          "custody": "(148, 0, 112)"
+        },
+        {
+          "id": "Gold40098",
+          "material": "Gold",
+          "count": 5,
+          "custody": "(148, 0, 121)"
+        },
+        {
+          "id": "Steel40101",
+          "material": "Steel",
+          "count": 5,
+          "custody": "(148, 0, 130)"
+        },
+        {
+          "id": "Cloth40105",
+          "material": "Cloth",
+          "count": 7,
+          "custody": "(105, 0, 115)"
+        },
+        {
+          "id": "Cloth40106",
+          "material": "Cloth",
+          "count": 11,
+          "custody": "(118, 0, 115)"
+        }
+      ]
+    },
+    {
+      "event": 124,
+      "tick": 4524,
+      "phase": "f25-state",
+      "totals": {
+        "Cloth": 23,
+        "Gold": 5,
+        "Steel": 5
+      },
+      "items": [
+        {
+          "id": "Cloth40093",
+          "material": "Cloth",
+          "count": 5,
+          "custody": "(148, 0, 112)"
+        },
+        {
+          "id": "Gold40098",
+          "material": "Gold",
+          "count": 5,
+          "custody": "(148, 0, 121)"
+        },
+        {
+          "id": "Steel40101",
+          "material": "Steel",
+          "count": 5,
+          "custody": "(148, 0, 130)"
+        },
+        {
+          "id": "Cloth40105",
+          "material": "Cloth",
+          "count": 7,
+          "custody": "(105, 0, 115)"
+        },
+        {
+          "id": "Cloth40106",
+          "material": "Cloth",
+          "count": 11,
+          "custody": "(118, 0, 115)"
+        }
+      ]
+    },
+    {
+      "event": 125,
+      "tick": 4562,
+      "phase": "f25-job-end",
+      "totals": {
+        "Cloth": 23,
+        "Gold": 5,
+        "Steel": 5
+      },
+      "items": [
+        {
+          "id": "Cloth40093",
+          "material": "Cloth",
+          "count": 5,
+          "custody": "(148, 0, 112)"
+        },
+        {
+          "id": "Gold40098",
+          "material": "Gold",
+          "count": 5,
+          "custody": "(148, 0, 121)"
+        },
+        {
+          "id": "Steel40101",
+          "material": "Steel",
+          "count": 5,
+          "custody": "(148, 0, 130)"
+        },
+        {
+          "id": "Cloth40105",
+          "material": "Cloth",
+          "count": 7,
+          "custody": "(105, 0, 115)"
+        },
+        {
+          "id": "Cloth40106",
+          "material": "Cloth",
+          "count": 11,
+          "custody": "(118, 0, 115)"
+        }
+      ]
+    },
+    {
+      "event": 126,
+      "tick": 4565,
+      "phase": "f25-job-end",
+      "totals": {
+        "Cloth": 23,
+        "Gold": 5,
+        "Steel": 5
+      },
+      "items": [
+        {
+          "id": "Cloth40093",
+          "material": "Cloth",
+          "count": 5,
+          "custody": "(148, 0, 112)"
+        },
+        {
+          "id": "Gold40098",
+          "material": "Gold",
+          "count": 5,
+          "custody": "(148, 0, 121)"
+        },
+        {
+          "id": "Steel40101",
+          "material": "Steel",
+          "count": 5,
+          "custody": "(148, 0, 130)"
+        },
+        {
+          "id": "Cloth40105",
+          "material": "Cloth",
+          "count": 7,
+          "custody": "(105, 0, 115)"
+        },
+        {
+          "id": "Cloth40106",
+          "material": "Cloth",
+          "count": 11,
+          "custody": "(118, 0, 115)"
+        }
+      ]
+    },
+    {
+      "event": 127,
+      "tick": 4676,
+      "phase": "f25-job-end",
+      "totals": {
+        "Cloth": 23,
+        "Gold": 5,
+        "Steel": 5
+      },
+      "items": [
+        {
+          "id": "Cloth40093",
+          "material": "Cloth",
+          "count": 5,
+          "custody": "(148, 0, 112)"
+        },
+        {
+          "id": "Gold40098",
+          "material": "Gold",
+          "count": 5,
+          "custody": "(148, 0, 121)"
+        },
+        {
+          "id": "Steel40101",
+          "material": "Steel",
+          "count": 5,
+          "custody": "(148, 0, 130)"
+        },
+        {
+          "id": "Cloth40105",
+          "material": "Cloth",
+          "count": 7,
+          "custody": "HL_Mech_Lifter36147"
+        },
+        {
+          "id": "Cloth40106",
+          "material": "Cloth",
+          "count": 11,
+          "custody": "(118, 0, 115)"
+        }
+      ]
+    },
+    {
+      "event": 132,
+      "tick": 4676,
+      "phase": "f25-job-end",
+      "totals": {
+        "Cloth": 23,
+        "Gold": 23,
+        "Steel": 5
+      },
+      "items": [
+        {
+          "id": "Cloth40093",
+          "material": "Cloth",
+          "count": 5,
+          "custody": "(148, 0, 112)"
+        },
+        {
+          "id": "Gold40098",
+          "material": "Gold",
+          "count": 5,
+          "custody": "(148, 0, 121)"
+        },
+        {
+          "id": "Steel40101",
+          "material": "Steel",
+          "count": 5,
+          "custody": "(148, 0, 130)"
+        },
+        {
+          "id": "Cloth40105",
+          "material": "Cloth",
+          "count": 7,
+          "custody": "HL_Mech_Lifter36147"
+        },
+        {
+          "id": "Cloth40106",
+          "material": "Cloth",
+          "count": 11,
+          "custody": "(118, 0, 115)"
+        },
+        {
+          "id": "Gold40109",
+          "material": "Gold",
+          "count": 7,
+          "custody": "(105, 0, 124)"
+        },
+        {
+          "id": "Gold40110",
+          "material": "Gold",
+          "count": 11,
+          "custody": "(118, 0, 124)"
+        }
+      ]
+    },
+    {
+      "event": 134,
+      "tick": 4685,
+      "phase": "f25-state",
+      "totals": {
+        "Cloth": 23,
+        "Gold": 23,
+        "Steel": 5
+      },
+      "items": [
+        {
+          "id": "Cloth40093",
+          "material": "Cloth",
+          "count": 5,
+          "custody": "(148, 0, 112)"
+        },
+        {
+          "id": "Gold40098",
+          "material": "Gold",
+          "count": 5,
+          "custody": "(148, 0, 121)"
+        },
+        {
+          "id": "Steel40101",
+          "material": "Steel",
+          "count": 5,
+          "custody": "(148, 0, 130)"
+        },
+        {
+          "id": "Cloth40105",
+          "material": "Cloth",
+          "count": 7,
+          "custody": "HL_Mech_Lifter36147"
+        },
+        {
+          "id": "Cloth40106",
+          "material": "Cloth",
+          "count": 11,
+          "custody": "(118, 0, 115)"
+        },
+        {
+          "id": "Gold40109",
+          "material": "Gold",
+          "count": 7,
+          "custody": "(105, 0, 124)"
+        },
+        {
+          "id": "Gold40110",
+          "material": "Gold",
+          "count": 11,
+          "custody": "(118, 0, 124)"
+        }
+      ]
+    },
+    {
+      "event": 135,
+      "tick": 4843,
+      "phase": "f25-job-end",
+      "totals": {
+        "Cloth": 23,
+        "Gold": 23,
+        "Steel": 5
+      },
+      "items": [
+        {
+          "id": "Cloth40093",
+          "material": "Cloth",
+          "count": 5,
+          "custody": "(148, 0, 112)"
+        },
+        {
+          "id": "Gold40098",
+          "material": "Gold",
+          "count": 5,
+          "custody": "(148, 0, 121)"
+        },
+        {
+          "id": "Steel40101",
+          "material": "Steel",
+          "count": 5,
+          "custody": "(148, 0, 130)"
+        },
+        {
+          "id": "Cloth40105",
+          "material": "Cloth",
+          "count": 7,
+          "custody": "HL_Mech_Lifter36147"
+        },
+        {
+          "id": "Cloth40106",
+          "material": "Cloth",
+          "count": 11,
+          "custody": "(118, 0, 115)"
+        },
+        {
+          "id": "Gold40109",
+          "material": "Gold",
+          "count": 7,
+          "custody": "(105, 0, 124)"
+        },
+        {
+          "id": "Gold40110",
+          "material": "Gold",
+          "count": 11,
+          "custody": "(118, 0, 124)"
+        }
+      ]
+    },
+    {
+      "event": 136,
+      "tick": 4846,
+      "phase": "f25-job-end",
+      "totals": {
+        "Cloth": 23,
+        "Gold": 23,
+        "Steel": 5
+      },
+      "items": [
+        {
+          "id": "Cloth40093",
+          "material": "Cloth",
+          "count": 5,
+          "custody": "(148, 0, 112)"
+        },
+        {
+          "id": "Gold40098",
+          "material": "Gold",
+          "count": 5,
+          "custody": "(148, 0, 121)"
+        },
+        {
+          "id": "Steel40101",
+          "material": "Steel",
+          "count": 5,
+          "custody": "(148, 0, 130)"
+        },
+        {
+          "id": "Cloth40105",
+          "material": "Cloth",
+          "count": 7,
+          "custody": "HL_Mech_Lifter36147"
+        },
+        {
+          "id": "Cloth40106",
+          "material": "Cloth",
+          "count": 11,
+          "custody": "(118, 0, 115)"
+        },
+        {
+          "id": "Gold40109",
+          "material": "Gold",
+          "count": 7,
+          "custody": "(105, 0, 124)"
+        },
+        {
+          "id": "Gold40110",
+          "material": "Gold",
+          "count": 11,
+          "custody": "(118, 0, 124)"
+        }
+      ]
+    },
+    {
+      "event": 137,
+      "tick": 5178,
+      "phase": "f25-job-end",
+      "totals": {
+        "Cloth": 23,
+        "Gold": 23,
+        "Steel": 5
+      },
+      "items": [
+        {
+          "id": "Cloth40093",
+          "material": "Cloth",
+          "count": 5,
+          "custody": "(148, 0, 112)"
+        },
+        {
+          "id": "Gold40098",
+          "material": "Gold",
+          "count": 5,
+          "custody": "(148, 0, 121)"
+        },
+        {
+          "id": "Steel40101",
+          "material": "Steel",
+          "count": 5,
+          "custody": "(148, 0, 130)"
+        },
+        {
+          "id": "Cloth40105",
+          "material": "Cloth",
+          "count": 7,
+          "custody": "HL_Mech_Lifter36147"
+        },
+        {
+          "id": "Cloth40106",
+          "material": "Cloth",
+          "count": 11,
+          "custody": "(118, 0, 115)"
+        },
+        {
+          "id": "Gold40109",
+          "material": "Gold",
+          "count": 7,
+          "custody": "HL_Monkey36152"
+        },
+        {
+          "id": "Gold40110",
+          "material": "Gold",
+          "count": 11,
+          "custody": "(118, 0, 124)"
+        }
+      ]
+    },
+    {
+      "event": 142,
+      "tick": 5178,
+      "phase": "f25-job-end",
+      "totals": {
+        "Cloth": 23,
+        "Gold": 23,
+        "Steel": 23
+      },
+      "items": [
+        {
+          "id": "Cloth40093",
+          "material": "Cloth",
+          "count": 5,
+          "custody": "(148, 0, 112)"
+        },
+        {
+          "id": "Gold40098",
+          "material": "Gold",
+          "count": 5,
+          "custody": "(148, 0, 121)"
+        },
+        {
+          "id": "Steel40101",
+          "material": "Steel",
+          "count": 5,
+          "custody": "(148, 0, 130)"
+        },
+        {
+          "id": "Cloth40105",
+          "material": "Cloth",
+          "count": 7,
+          "custody": "HL_Mech_Lifter36147"
+        },
+        {
+          "id": "Cloth40106",
+          "material": "Cloth",
+          "count": 11,
+          "custody": "(118, 0, 115)"
+        },
+        {
+          "id": "Gold40109",
+          "material": "Gold",
+          "count": 7,
+          "custody": "HL_Monkey36152"
+        },
+        {
+          "id": "Gold40110",
+          "material": "Gold",
+          "count": 11,
+          "custody": "(118, 0, 124)"
+        },
+        {
+          "id": "Steel40123",
+          "material": "Steel",
+          "count": 7,
+          "custody": "(105, 0, 133)"
+        },
+        {
+          "id": "Steel40124",
+          "material": "Steel",
+          "count": 11,
+          "custody": "(118, 0, 133)"
+        }
+      ]
+    },
+    {
+      "event": 144,
+      "tick": 5182,
+      "phase": "f25-state",
+      "totals": {
+        "Cloth": 23,
+        "Gold": 23,
+        "Steel": 23
+      },
+      "items": [
+        {
+          "id": "Cloth40093",
+          "material": "Cloth",
+          "count": 5,
+          "custody": "(148, 0, 112)"
+        },
+        {
+          "id": "Gold40098",
+          "material": "Gold",
+          "count": 5,
+          "custody": "(148, 0, 121)"
+        },
+        {
+          "id": "Steel40101",
+          "material": "Steel",
+          "count": 5,
+          "custody": "(148, 0, 130)"
+        },
+        {
+          "id": "Cloth40105",
+          "material": "Cloth",
+          "count": 7,
+          "custody": "HL_Mech_Lifter36147"
+        },
+        {
+          "id": "Cloth40106",
+          "material": "Cloth",
+          "count": 11,
+          "custody": "(118, 0, 115)"
+        },
+        {
+          "id": "Gold40109",
+          "material": "Gold",
+          "count": 7,
+          "custody": "HL_Monkey36152"
+        },
+        {
+          "id": "Gold40110",
+          "material": "Gold",
+          "count": 11,
+          "custody": "(118, 0, 124)"
+        },
+        {
+          "id": "Steel40123",
+          "material": "Steel",
+          "count": 7,
+          "custody": "(105, 0, 133)"
+        },
+        {
+          "id": "Steel40124",
+          "material": "Steel",
+          "count": 11,
+          "custody": "(118, 0, 133)"
+        }
+      ]
+    },
+    {
+      "event": 145,
+      "tick": 5833,
+      "phase": "f25-job-end",
+      "totals": {
+        "Cloth": 23,
+        "Gold": 23,
+        "Steel": 23
+      },
+      "items": [
+        {
+          "id": "Cloth40093",
+          "material": "Cloth",
+          "count": 5,
+          "custody": "(148, 0, 112)"
+        },
+        {
+          "id": "Gold40098",
+          "material": "Gold",
+          "count": 5,
+          "custody": "(148, 0, 121)"
+        },
+        {
+          "id": "Steel40101",
+          "material": "Steel",
+          "count": 5,
+          "custody": "(148, 0, 130)"
+        },
+        {
+          "id": "Cloth40105",
+          "material": "Cloth",
+          "count": 7,
+          "custody": "HL_Mech_Lifter36147"
+        },
+        {
+          "id": "Cloth40106",
+          "material": "Cloth",
+          "count": 11,
+          "custody": "(118, 0, 115)"
+        },
+        {
+          "id": "Gold40109",
+          "material": "Gold",
+          "count": 7,
+          "custody": "HL_Monkey36152"
+        },
+        {
+          "id": "Gold40110",
+          "material": "Gold",
+          "count": 11,
+          "custody": "(118, 0, 124)"
+        },
+        {
+          "id": "Steel40123",
+          "material": "Steel",
+          "count": 7,
+          "custody": "Human36162"
+        },
+        {
+          "id": "Steel40124",
+          "material": "Steel",
+          "count": 11,
+          "custody": "(118, 0, 133)"
+        }
+      ]
+    }
+  ],
+  "copiedFiles": {
+    "actual-f25-save": 1,
+    "actual-f25-record": 1,
+    "game": 1373,
+    "harmony": 14,
+    "f25-provider-redmattis.betterprerequisites": 468,
+    "f25-provider-redmattis.sapientanimals": 12,
+    "hd": 98,
+    "harness": 2
+  },
+  "providerAbsent": false,
+  "xmlCompatibility": {
+    "path": "C:\\HDQA\\runtime-temp\\haulersdream-runtime-tests\\20881fcc041e49dc95d107af6d381a05\\runtime\\Mods\\HaulersDream\\Defs\\Compatibility\\BigAndSmall.xml",
+    "sha256": "48D55D64A5E77E83D668EBDFC28486ABB2A1E15CBA904CF70548AF21DA57912C",
+    "bytes": 498
+  },
+  "checkpoint": {
+    "originalLegacy": {
+      "path": "C:\\HDQA\\runtime-temp\\haulersdream-runtime-tests\\12a8dbd2352442629bbcb7d05a0154a4\\SaveData\\Saves\\F25-SapientCheckpoint.rws",
+      "sha256": "987F4F711B86B437701B412BB9BEABA4A117059A714C75F65E664CA35BCA12A6",
+      "bytes": 13478790
+    },
+    "originalPartial": {
+      "path": "C:\\HDQA\\runtime-temp\\haulersdream-runtime-tests\\20881fcc041e49dc95d107af6d381a05\\SaveData\\Saves\\F25-SapientCheckpoint.rws",
+      "sha256": "AFBE964F9E9D18183289CBA6244B06541E4E5CC3D781E4769E77CD354BB69C25",
+      "bytes": 13210240
+    },
+    "record": {
+      "path": "C:\\HDQA\\runtime-temp\\haulersdream-runtime-tests\\20881fcc041e49dc95d107af6d381a05\\evidence\\checkpoint.txt",
+      "sha256": "31DBAA3D266CBA646BB063014BD77A4C5C67A585621E2C65E697D752EDF24416",
+      "bytes": 1680
+    },
+    "xmlRows": [
+      {
+        "pawn": "HL_Mech_Lifter36147",
+        "held": "Cloth40105",
+        "heldCount": 7,
+        "stored": "Cloth40093",
+        "storedCount": 5,
+        "remainder": "Cloth40106",
+        "remainderCount": 11,
+        "forbidden": true,
+        "keep": 2,
+        "auto": false,
+        "tag": "Thing_Cloth40105",
+        "lastYieldTick": "4676"
+      },
+      {
+        "pawn": "HL_Monkey36152",
+        "held": "Gold40109",
+        "heldCount": 7,
+        "stored": "Gold40098",
+        "storedCount": 5,
+        "remainder": "Gold40110",
+        "remainderCount": 11,
+        "forbidden": true,
+        "keep": 2,
+        "auto": false,
+        "tag": "Thing_Gold40109",
+        "lastYieldTick": "5178"
+      },
+      {
+        "pawn": "Human36162",
+        "held": "Steel40123",
+        "heldCount": 7,
+        "stored": "Steel40101",
+        "storedCount": 5,
+        "remainder": "Steel40124",
+        "remainderCount": 11,
+        "forbidden": true,
+        "keep": 2,
+        "auto": false,
+        "tag": "Thing_Steel40123",
+        "lastYieldTick": "5833"
+      }
+    ],
+    "sameProcessFirstTick": 5833,
+    "pausedTick": 5834,
+    "originalActors": "36147,36152,36162"
+  },
+  "protectedChanges": [],
+  "nativePid": 25772,
+  "controllerPid": 22832,
+  "inputDesktopUnchanged": true,
+  "logLines": 2322,
+  "verifyManualFlagsRetained": [
+    "F25 capture requires independent provider-conversion IDs, generated/live component membership, original save and before-first-tick state, keep/opt-out/tags and physical cargo, same-process and full restart, environment and whole-log review. Baseline producer passing is only provenance; baseline LOAD must fail on missing components, not setup.",
+    "Missing unique event: scenario-observed",
+    "Player.log contains candidates requiring independent review; bootstrap is not automatically verified."
+  ],
+  "evidence": {
+    "manifest.json": {
+      "path": "C:\\Users\\Arthur\\Sync\\Projects\\RimWorld Mods\\HaulersDream\\docs\\plans\\evidence\\f25-sapient-persistence-20260924\\native\\20881fcc041e49dc95d107af6d381a05\\manifest.json",
+      "sha256": "096A11F18BF4AAD2833EB415090B839EEC88D9E73AC9D860751431DDCCE0BB69",
+      "bytes": 1109980
+    },
+    "raw/result.json": {
+      "path": "C:\\Users\\Arthur\\Sync\\Projects\\RimWorld Mods\\HaulersDream\\docs\\plans\\evidence\\f25-sapient-persistence-20260924\\native\\20881fcc041e49dc95d107af6d381a05\\raw\\result.json",
+      "sha256": "422D5A332CEDD52B1A664E34F12D7921EB46F4FB6C2B39F5ECB45A4CE20DC4C6",
+      "bytes": 29689
+    },
+    "raw/events.jsonl": {
+      "path": "C:\\Users\\Arthur\\Sync\\Projects\\RimWorld Mods\\HaulersDream\\docs\\plans\\evidence\\f25-sapient-persistence-20260924\\native\\20881fcc041e49dc95d107af6d381a05\\raw\\events.jsonl",
+      "sha256": "EDECC89D4EA76DAFC467F06E813E44E267DA1A91C0B7A00A93C250D779B50BB6",
+      "bytes": 89797
+    },
+    "raw/Player.log": {
+      "path": "C:\\Users\\Arthur\\Sync\\Projects\\RimWorld Mods\\HaulersDream\\docs\\plans\\evidence\\f25-sapient-persistence-20260924\\native\\20881fcc041e49dc95d107af6d381a05\\raw\\Player.log",
+      "sha256": "B92988DD387DB92D0D606B3C9526E6F6D50837498C63E49FA2AA0A1BF9272808",
+      "bytes": 190223
+    },
+    "raw/HaulersDream-debug.log": {
+      "path": "C:\\Users\\Arthur\\Sync\\Projects\\RimWorld Mods\\HaulersDream\\docs\\plans\\evidence\\f25-sapient-persistence-20260924\\native\\20881fcc041e49dc95d107af6d381a05\\raw\\HaulersDream-debug.log",
+      "sha256": "C48D21F7BED4A3D15068C0F24C6A7F9C83BFF63188637A15F914BA1D186A0B19",
+      "bytes": 2766
+    },
+    "native-outcome.json": {
+      "path": "C:\\Users\\Arthur\\Sync\\Projects\\RimWorld Mods\\HaulersDream\\docs\\plans\\evidence\\f25-sapient-persistence-20260924\\native\\20881fcc041e49dc95d107af6d381a05\\native-outcome.json",
+      "sha256": "4DA2234AE10B0A3B3C1CE30E24CA0CC3F3113EBF732C20137199B8BCDD82110C",
+      "bytes": 508
+    },
+    "private-desktop/desktop-launch.json": {
+      "path": "C:\\Users\\Arthur\\Sync\\Projects\\RimWorld Mods\\HaulersDream\\docs\\plans\\evidence\\f25-sapient-persistence-20260924\\native\\20881fcc041e49dc95d107af6d381a05\\private-desktop\\desktop-launch.json",
+      "sha256": "A8766140721048328881F50C22963A6A39051F01C2B3C029B6299583FFA0F094",
+      "bytes": 1090
+    },
+    "verify.json": {
+      "path": "C:\\Users\\Arthur\\Sync\\Projects\\RimWorld Mods\\HaulersDream\\docs\\plans\\evidence\\f25-sapient-persistence-20260924\\native\\20881fcc041e49dc95d107af6d381a05\\verify.json",
+      "sha256": "194D2A256DAB4522677A2F9BA0215341ADA2E58BE7C8C5F23AC5CD55CA1DAEB3",
+      "bytes": 37714
+    }
+  }
+}

@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using RimWorld;
 using Verse;
 
@@ -16,11 +16,13 @@ namespace HaulersDream
         public static JobDef HaulersDream_BatchCraft;
         public static JobDef HaulersDream_InventoryDoBill; // retired (dup risk); def kept for save-compat
         public static JobDef HaulersDream_BillPrepGather;
+        public static JobDef HaulersDream_GatherBillIngredients;
         public static WorkGiverDef HaulersDream_HaulNearby;
         public static JobDef HaulersDream_BulkHaul;
         public static JobDef HaulersDream_KeepInInventory; // "Keep X in inventory": hold an item, never hauled/dropped
         public static JobDef HaulersDream_LoadPackAnimal; // load scooped loot onto a pack animal (caravan/away map)
         public static JobDef HaulersDream_UnloadCarrierInBulk; // bulk-empty a flagged pack animal into the hauler's backpack
+        public static JobDef HaulersDream_UnloadTransporterInBulk; // one owned cargo trip; forced orders repeat after storage
         public static JobDef HaulersDream_LoadTransportersInBulk; // bulk-load a transporter/shuttle group from swept inventory
         public static JobDef HaulersDream_LoadPortalInBulk; // bulk-load a map portal (pit gate / cave / vault exit) from swept inventory
         public static JobDef HaulersDream_LoadVehicleInBulk; // bulk-load a Vehicle Framework vehicle from swept inventory (VF soft-dep)
@@ -40,20 +42,27 @@ namespace HaulersDream
     /// </summary>
     public static class HdJobDefSets
     {
+        public static bool IsBillGather(JobDef def) => def != null
+            && (def == HaulersDreamDefOf.HaulersDream_BillPrepGather
+                || def == HaulersDreamDefOf.HaulersDream_GatherBillIngredients);
+
         private static JobDef[] _customDriverJobDefs;
 
         public static JobDef[] CustomDriverJobDefs => _customDriverJobDefs ??= new[]
         {
+            ExplicitHaulDefOf.HaulersDream_ExplicitHaul,
             HaulersDreamDefOf.HaulersDream_LoadTransportersInBulk,
             HaulersDreamDefOf.HaulersDream_LoadPortalInBulk,
             HaulersDreamDefOf.HaulersDream_LoadVehicleInBulk,
             HaulersDreamDefOf.HaulersDream_LoadPackAnimal,
             HaulersDreamDefOf.HaulersDream_UnloadCarrierInBulk,
+            HaulersDreamDefOf.HaulersDream_UnloadTransporterInBulk,
             HaulersDreamDefOf.HaulersDream_OverloadConstructDeliver,
             HaulersDreamDefOf.HaulersDream_ConstructDeliverBuild,
             HaulersDreamDefOf.HaulersDream_ClaimFromHauler,
             HaulersDreamDefOf.HaulersDream_BatchCraft,
             HaulersDreamDefOf.HaulersDream_BillPrepGather,
+            HaulersDreamDefOf.HaulersDream_GatherBillIngredients,
             HaulersDreamDefOf.HaulersDream_BulkHaul,
             HaulersDreamDefOf.HaulersDream_SelfPickup,
             HaulersDreamDefOf.HaulersDream_UnloadInventory,
@@ -84,9 +93,11 @@ namespace HaulersDream
         /// </summary>
         public static HashSet<JobDef> InTransitLoadJobs => _inTransitLoadJobs ??= new HashSet<JobDef>
         {
+            HaulersDreamDefOf.HaulersDream_UnloadTransporterInBulk,
             HaulersDreamDefOf.HaulersDream_UnloadInventory,
             HaulersDreamDefOf.HaulersDream_NearbyDelivery,         // the unload itself is running -> obviously in flight
             HaulersDreamDefOf.HaulersDream_BillPrepGather,          // gathering ingredients into inventory for a bill
+            HaulersDreamDefOf.HaulersDream_GatherBillIngredients,  // retained ordinary bill selection
             HaulersDreamDefOf.HaulersDream_BatchCraft,              // crafting from pre-loaded (held) ingredients
             HaulersDreamDefOf.HaulersDream_OverloadConstructDeliver,// delivering carried materials to a build
             HaulersDreamDefOf.HaulersDream_ConstructDeliverBuild,   // same, with the build tethered after
@@ -108,6 +119,7 @@ namespace HaulersDream
             HaulersDreamDefOf.HaulersDream_BatchCraft,              // holding pre-loaded ingredients for its own batch runs
             HaulersDreamDefOf.HaulersDream_InventoryDoBill,         // retired def (save-compat); kept to preserve exact prior membership
             HaulersDreamDefOf.HaulersDream_BillPrepGather,          // mid-gather of its own bill ingredients
+            HaulersDreamDefOf.HaulersDream_GatherBillIngredients,  // holds its original recipe selection
             HaulersDreamDefOf.HaulersDream_OverloadConstructDeliver,// carrying materials earmarked for a specific build
             HaulersDreamDefOf.HaulersDream_ConstructDeliverBuild,   // same, with the build tethered after
         };
@@ -121,6 +133,8 @@ namespace HaulersDream
         /// </summary>
         public static HashSet<JobDef> NoRecursionHaulJobs => _noRecursionHaulJobs ??= new HashSet<JobDef>
         {
+            ExplicitHaulDefOf.HaulersDream_ExplicitHaul,
+            HaulersDreamDefOf.HaulersDream_UnloadTransporterInBulk,
             HaulersDreamDefOf.HaulersDream_BulkHaul,   // a multi-stack sweep into inventory
             HaulersDreamDefOf.HaulersDream_SelfPickup, // a single-stack pickup into inventory
         };

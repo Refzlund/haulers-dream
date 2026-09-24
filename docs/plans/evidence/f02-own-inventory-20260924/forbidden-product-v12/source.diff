@@ -1,0 +1,11 @@
+--- before/Source/HaulersDream/InventoryShare.cs
++++ after/Source/HaulersDream/InventoryShare.cs
+@@ -148,7 +148,7 @@
+             bool reachable = isSelf, reachChecked = isSelf;
+             foreach (var tagged in comp.GetHashSet())
+             {
+-                if (tagged == null || !owner.Contains(tagged) || !IsUsableForBill(tagged, bill))
++                if (tagged == null || !owner.Contains(tagged) || tagged.IsForbidden(worker) || !IsUsableForBill(tagged, bill))
+                     continue;
+                 bool canReserve = worker.CanReserve(tagged); // a stack reserved for the carrier's own job -> opt-out
+                 if (!isSelf && canReserve && !reachChecked)

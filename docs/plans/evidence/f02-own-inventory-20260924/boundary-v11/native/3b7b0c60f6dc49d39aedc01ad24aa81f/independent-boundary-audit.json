@@ -1,0 +1,281 @@
+{
+  "status": "Partial-held explicit batch accepted; genuine forbidden candidate failure; aggregate remains failed",
+  "events": 144,
+  "assertions": 49,
+  "unityErrors": 1,
+  "copiedFiles": 1574,
+  "selectedPins": 358,
+  "counts": {
+    "ingredientSplits": 5,
+    "ingredientCustody": 10,
+    "outputCustody": 10,
+    "consumptions": 2,
+    "outputSplits": 2,
+    "outputMerges": 1
+  },
+  "consumed": {
+    "Milk": 40,
+    "RawRice": 40
+  },
+  "productCalls": 2,
+  "finalOutput": {
+    "phase": "partial-held-batch",
+    "reason": "final",
+    "productCalls": 2,
+    "total": 8,
+    "state": {
+      "sequence": 0,
+      "tick": 2887,
+      "reason": "final",
+      "jobId": null,
+      "jobDef": null,
+      "driver": null,
+      "x": 0,
+      "z": 0,
+      "benchDistance": 0,
+      "cleanedTotal": 0,
+      "meals": 0,
+      "billRemaining": 0,
+      "things": [
+        {
+          "id": 40440,
+          "def": "MealSimple",
+          "count": 1,
+          "custody": "inventory",
+          "holderType": "Verse.Pawn_InventoryTracker",
+          "spawned": false,
+          "destroyed": false,
+          "x": 112,
+          "z": 127,
+          "mapId": 0
+        },
+        {
+          "id": 40442,
+          "def": "MealSimple",
+          "count": 7,
+          "custody": "floor",
+          "holderType": "Verse.Map",
+          "spawned": true,
+          "destroyed": false,
+          "x": 109,
+          "z": 124,
+          "mapId": 0
+        }
+      ],
+      "quantities": null
+    }
+  },
+  "stableCallbacks": 305,
+  "stableElapsedTicks": 304,
+  "batchEnd": "Succeeded",
+  "unloadEnd": "Incompletable after observed complete physical unloading; no branch-cause claim",
+  "forbidden": {
+    "phase": "forbidden-held",
+    "reason": "admission",
+    "thing": {
+      "id": 40447,
+      "def": "Milk",
+      "count": 40,
+      "custody": "inventory",
+      "holderType": "Verse.Pawn_InventoryTracker",
+      "spawned": false,
+      "destroyed": false,
+      "x": 110,
+      "z": 124,
+      "mapId": 0
+    },
+    "actualFlag": true,
+    "forbidden": true,
+    "tracked": true,
+    "billAllowed": true,
+    "cares": true,
+    "drafted": false,
+    "keep": 40
+  },
+  "illegalCandidate": {
+    "phase": "forbidden-held",
+    "forced": false,
+    "job": {
+      "id": 9,
+      "def": "DoBill",
+      "bill": "Bill_CookMealSimpleBulk_1",
+      "forced": false,
+      "workgiver": null,
+      "targetA": "FueledStove40430",
+      "selection": [
+        {
+          "thing": {
+            "id": 40447,
+            "def": "Milk",
+            "count": 40,
+            "custody": "inventory",
+            "holderType": "Verse.Pawn_InventoryTracker",
+            "spawned": false,
+            "destroyed": false,
+            "x": 110,
+            "z": 124,
+            "mapId": 0
+          },
+          "count": 40
+        }
+      ]
+    }
+  },
+  "nativeError": {
+    "callbackThread": 1,
+    "captureSequence": 1,
+    "kind": "Error",
+    "message": "Cy started 10 jobs in one tick. newJob=DoBill (Job_30) A = Thing_FueledStove40430 jobGiver=RimWorld.JobGiver_Work jobList=(DoBill (Job_10) A = Thing_FueledStove40430) (DoBill (Job_12) A = Thing_FueledStove40430) (DoBill (Job_14) A = Thing_FueledStove40430) (DoBill (Job_16) A = Thing_FueledStove40430) (DoBill (Job_18) A = Thing_FueledStove40430) (DoBill (Job_20) A = Thing_FueledStove40430) (DoBill (Job_22) A = Thing_FueledStove40430) (DoBill (Job_24) A = Thing_FueledStove40430) (DoBill (Job_26) A = Thing_FueledStove40430) (DoBill (Job_28) A = Thing_FueledStove40430) (DoBill (Job_30) A = Thing_FueledStove40430) ",
+    "stackTrace": ""
+  },
+  "actualModules": [
+    {
+      "assemblyVersion": "1.6.9676.17735",
+      "moduleVersionId": "61e41735-6189-4da4-9d21-0260257b5097",
+      "name": "Assembly-CSharp",
+      "path": "C:\\HDQA\\runtime-temp\\haulersdream-runtime-tests\\3b7b0c60f6dc49d39aedc01ad24aa81f\\runtime\\RimWorldWin64_Data\\Managed\\Assembly-CSharp.dll",
+      "sha256": "5CF1B5BE399D5B1C9C56CA72C9D35B4ECF307FEACF5859D04AC5A1AA5926356A"
+    },
+    {
+      "assemblyVersion": "0.0.0.0",
+      "moduleVersionId": "e422ced3-d0f6-4bb2-9423-e8338d57bc04",
+      "name": "UnityEngine.CoreModule",
+      "path": "C:\\HDQA\\runtime-temp\\haulersdream-runtime-tests\\3b7b0c60f6dc49d39aedc01ad24aa81f\\runtime\\RimWorldWin64_Data\\Managed\\UnityEngine.CoreModule.dll",
+      "sha256": "C5C58EA254834291780A1D6C388C241443D07167B4A4B890A23C9494F626DDBA"
+    },
+    {
+      "assemblyVersion": "2.4.1.0",
+      "moduleVersionId": "e5339928-9d9b-419d-83f9-f5b02c5cf609",
+      "name": "0Harmony",
+      "path": "C:\\HDQA\\runtime-temp\\haulersdream-runtime-tests\\3b7b0c60f6dc49d39aedc01ad24aa81f\\runtime\\Mods\\Harmony\\Current\\Assemblies\\0Harmony.dll",
+      "sha256": "353DAAFEC180BB8E7BBE4DA78F2A7CDC78067392E3A4E79DC8E7AF295F2371E6"
+    },
+    {
+      "assemblyVersion": "2.4.2.0",
+      "moduleVersionId": "dc156e18-c1bf-4ec8-acd4-7176558400e1",
+      "name": "HarmonyMod",
+      "path": "C:\\HDQA\\runtime-temp\\haulersdream-runtime-tests\\3b7b0c60f6dc49d39aedc01ad24aa81f\\runtime\\Mods\\Harmony\\Current\\Assemblies\\HarmonyMod.dll",
+      "sha256": "408C2CD72B45DA8C70C0C538B2B346C8DCBB5BDED066373F6A3EB8B26615A2E7"
+    },
+    {
+      "assemblyVersion": "1.24.0.0",
+      "moduleVersionId": "faa80762-511c-42f0-9623-e5388b4fda7a",
+      "name": "HaulersDream",
+      "path": "C:\\HDQA\\runtime-temp\\haulersdream-runtime-tests\\3b7b0c60f6dc49d39aedc01ad24aa81f\\runtime\\Mods\\HaulersDream\\1.6\\Assemblies\\HaulersDream.dll",
+      "sha256": "E8FE762B4C6D116AA623EB9F5F74BCEF8C8244389150407A357FD670DDDCDE60"
+    },
+    {
+      "assemblyVersion": "1.24.0.0",
+      "moduleVersionId": "6df77354-ff01-421b-9171-6f79a3dfca95",
+      "name": "HaulersDream.Core",
+      "path": "C:\\HDQA\\runtime-temp\\haulersdream-runtime-tests\\3b7b0c60f6dc49d39aedc01ad24aa81f\\runtime\\Mods\\HaulersDream\\1.6\\Assemblies\\HaulersDream.Core.dll",
+      "sha256": "26E57034D4BAB8B838FD88F506CDCCEB3E264D90911BDED561ED837C60ED08E0"
+    },
+    {
+      "assemblyVersion": "0.1.0.0",
+      "moduleVersionId": "8731209a-0f31-4733-a4e9-492d9d855e41",
+      "name": "HaulersDream.RuntimeHarness",
+      "path": "C:\\HDQA\\runtime-temp\\haulersdream-runtime-tests\\3b7b0c60f6dc49d39aedc01ad24aa81f\\runtime\\Mods\\HaulersDreamRuntimeHarness\\Assemblies\\HaulersDream.RuntimeHarness.dll",
+      "sha256": "0774B36A3144A11375397CBCB6B4EC8FD17781830D0F40EB4067BEF5E22ECB39"
+    },
+    {
+      "assemblyVersion": "0.0.0.0",
+      "moduleVersionId": "69e8f115-9fb5-4cb4-9dbe-76d334eaed32",
+      "name": "UnityEngine.IMGUIModule",
+      "path": "C:\\HDQA\\runtime-temp\\haulersdream-runtime-tests\\3b7b0c60f6dc49d39aedc01ad24aa81f\\runtime\\RimWorldWin64_Data\\Managed\\UnityEngine.IMGUIModule.dll",
+      "sha256": "C6C39327211BE8299E2E9FFDEE7A979F228736C99B84FD54BC73F563456865D9"
+    },
+    {
+      "assemblyVersion": "0.0.0.0",
+      "moduleVersionId": "768b1ad7-5506-4711-ba28-6142e4f37147",
+      "name": "UnityEngine.ScreenCaptureModule",
+      "path": "C:\\HDQA\\runtime-temp\\haulersdream-runtime-tests\\3b7b0c60f6dc49d39aedc01ad24aa81f\\runtime\\RimWorldWin64_Data\\Managed\\UnityEngine.ScreenCaptureModule.dll",
+      "sha256": "D03D9881419CEBCED07E8AC45E3AADBB866948670071FE95BED404B758274FF3"
+    },
+    {
+      "assemblyVersion": "0.0.0.0",
+      "moduleVersionId": "cbfa93f3-6818-4ee1-8c93-86e4fe595e71",
+      "name": "UnityEngine.TextRenderingModule",
+      "path": "C:\\HDQA\\runtime-temp\\haulersdream-runtime-tests\\3b7b0c60f6dc49d39aedc01ad24aa81f\\runtime\\RimWorldWin64_Data\\Managed\\UnityEngine.TextRenderingModule.dll",
+      "sha256": "B63769AD71C7FC79034CF6C3A1EBFCF79D4591F0B1F5CD4A9823E6ED7B5816F8"
+    },
+    {
+      "assemblyVersion": "1.0.9416.33549",
+      "moduleVersionId": "c08ea063-2ba4-4dd1-8c41-0e20e9470cb1",
+      "name": "CommonSense",
+      "path": "C:\\HDQA\\runtime-temp\\haulersdream-runtime-tests\\3b7b0c60f6dc49d39aedc01ad24aa81f\\runtime\\Mods\\CommonSense\\1.6\\Assemblies\\CommonSense.dll",
+      "sha256": "8FD51F969912CEDBC11CD72E89D40EC713448AFD86CE0BEEF8CE2BDF03A0E2CA"
+    }
+  ],
+  "logLines": 1878,
+  "nonprofileLines": 59,
+  "protectedChanges": [],
+  "verifyProblems": [
+    "F02 requires independent full native phase/ingredient ancestry, settings, actual selected jobs, product/kept custody, physical stability, logs and process review. No automatic full feedback closure.",
+    "No complete result with the explicitly expected status: passed",
+    "A non-control run recorded one or more Unity errors.",
+    "One or more unexpected runtime assertions failed.",
+    "Missing unique required assertion with expected outcome: no-unity-errors-after-harness-start",
+    "Player.log contains candidates requiring independent review; bootstrap is not automatically verified."
+  ],
+  "native": {
+    "startedUtc": "2026-09-24T12:05:49.0700026Z",
+    "runDirectory": "C:/HDQA/runtime-temp/haulersdream-runtime-tests/3b7b0c60f6dc49d39aedc01ad24aa81f",
+    "processId": 23424,
+    "joined": true,
+    "exitCode": 0,
+    "deadlineExceeded": false,
+    "error": null,
+    "processStartedUtc": "2026-09-24T12:05:58.1709721Z",
+    "executable": "C:\\HDQA\\runtime-temp\\haulersdream-runtime-tests\\3b7b0c60f6dc49d39aedc01ad24aa81f\\runtime\\RimWorldWin64.exe",
+    "finishedUtc": "2026-09-24T12:07:05.3883222Z"
+  },
+  "desktop": {
+    "desktop": "HaulersDreamTests-0a291830aec34803b3d3670fa3f1c9e3",
+    "command": [
+      "C:/Users/Arthur/.cache/codex-runtimes/codex-primary-runtime/dependencies/native/powershell/pwsh.exe",
+      "-NoProfile",
+      "-File",
+      "docs/plans/evidence/f02-own-inventory-20260924/boundary-v11/launch.ps1",
+      "-RunDirectory",
+      "C:/HDQA/runtime-temp/haulersdream-runtime-tests/3b7b0c60f6dc49d39aedc01ad24aa81f",
+      "-OutputDirectory",
+      "C:\\Users\\Arthur\\Sync\\Projects\\RimWorld Mods\\HaulersDream\\docs\\plans\\evidence\\f02-own-inventory-20260924\\boundary-v11\\native\\3b7b0c60f6dc49d39aedc01ad24aa81f"
+    ],
+    "cwd": "C:\\Users\\Arthur\\Sync\\Projects\\RimWorld Mods\\HaulersDream",
+    "pid": 28000,
+    "exitCode": 0,
+    "startedUtc": "2026-09-24T12:05:47.099450+00:00",
+    "switchedDesktop": false,
+    "inputDesktopSamples": [
+      "Default"
+    ],
+    "privateWindowPids": [
+      23424
+    ],
+    "timedOut": false,
+    "error": null,
+    "cleanupErrors": [],
+    "activeProcessesBeforeClose": 0,
+    "joined": true,
+    "finishedUtc": "2026-09-24T12:07:05.501568+00:00"
+  },
+  "rawPins": [
+    {
+      "path": "C:\\Users\\Arthur\\Sync\\Projects\\RimWorld Mods\\HaulersDream\\docs\\plans\\evidence\\f02-own-inventory-20260924\\boundary-v11\\native\\3b7b0c60f6dc49d39aedc01ad24aa81f\\raw\\events.jsonl",
+      "sha256": "420BA6FF2B3B330400604777BA4FB85FCA1D30AE8A76AFC858327F2381FC79FF"
+    },
+    {
+      "path": "C:\\Users\\Arthur\\Sync\\Projects\\RimWorld Mods\\HaulersDream\\docs\\plans\\evidence\\f02-own-inventory-20260924\\boundary-v11\\native\\3b7b0c60f6dc49d39aedc01ad24aa81f\\raw\\HaulersDream-debug.log",
+      "sha256": "8A40D8923D9116264A890E525F0A054390B9CF7D70F95922D2335514601F5A7D"
+    },
+    {
+      "path": "C:\\Users\\Arthur\\Sync\\Projects\\RimWorld Mods\\HaulersDream\\docs\\plans\\evidence\\f02-own-inventory-20260924\\boundary-v11\\native\\3b7b0c60f6dc49d39aedc01ad24aa81f\\raw\\Player.log",
+      "sha256": "11A88B456DD9889EDFD57C2AF298E19E338AC763B7AF2C43013B1D74320BB6D4"
+    },
+    {
+      "path": "C:\\Users\\Arthur\\Sync\\Projects\\RimWorld Mods\\HaulersDream\\docs\\plans\\evidence\\f02-own-inventory-20260924\\boundary-v11\\native\\3b7b0c60f6dc49d39aedc01ad24aa81f\\raw\\result.json",
+      "sha256": "73B5635E9FDCA043777DF533FD2126347545B2F00ED770C45343FE25ADCA4779"
+    }
+  ]
+}

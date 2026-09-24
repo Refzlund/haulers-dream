@@ -1,0 +1,40 @@
+<?xml version='1.0' encoding='utf-8'?>
+<LanguageData>
+  <HD_ExplicitHaulTo>{0} 운반 목적지 지정…</HD_ExplicitHaulTo>
+  <HD_ExplicitChanged>정착민 또는 선택한 더미가 바뀌었습니다. 다시 선택하세요.</HD_ExplicitChanged>
+  <HD_ExplicitActorUnavailable>이 정착민은 지금 이 운반 명령을 수행할 수 없습니다.</HD_ExplicitActorUnavailable>
+  <HD_ExplicitSelectSource>운반할 더미를 선택하세요. 우클릭 또는 Escape로 취소합니다.</HD_ExplicitSelectSource>
+  <HD_ExplicitSelectDestination>여기로 {0} × {1} 운반. {2} 도달할 수 있는 지면 칸이나 선반을 선택하세요. 우클릭 또는 Escape로 취소합니다.</HD_ExplicitSelectDestination>
+  <HD_ExplicitQueuedHint>작업 대기열에 추가합니다.</HD_ExplicitQueuedHint>
+  <HD_ExplicitReplaceHint>현재 작업을 대체합니다.</HD_ExplicitReplaceHint>
+  <HD_ExplicitStateQueued>대기 중</HD_ExplicitStateQueued>
+  <HD_ExplicitStateActive>운반 중</HD_ExplicitStateActive>
+  <HD_ExplicitStateBlocked>막힘</HD_ExplicitStateBlocked>
+  <HD_ExplicitStateCancelled>취소됨</HD_ExplicitStateCancelled>
+  <HD_ExplicitStateComplete>완료</HD_ExplicitStateComplete>
+  <HD_ExplicitStateCaptured>일시 중단됨</HD_ExplicitStateCaptured>
+  <HD_ExplicitSourceChanged>선택한 출발 물품이 없거나 소진되었거나 더 이상 허용되지 않습니다.</HD_ExplicitSourceChanged>
+  <HD_ExplicitSourceReserved>선택한 출발 물품을 다른 작업이 예약했습니다.</HD_ExplicitSourceReserved>
+  <HD_ExplicitDestinationBlocked>선택한 장소에 공간이 없거나 예약되어 있거나 이 물품을 받을 수 없습니다.</HD_ExplicitDestinationBlocked>
+  <HD_ExplicitRouteBlocked>선택한 경로를 사용할 수 없습니다.</HD_ExplicitRouteBlocked>
+  <HD_ExplicitHandsBusy>정착민이 손에 다른 화물을 들고 있습니다.</HD_ExplicitHandsBusy>
+  <HD_ExplicitInterrupted>명령이 중단되었습니다. 준비되면 재개하세요.</HD_ExplicitInterrupted>
+  <HD_ExplicitAdmissionFailed>정착민이 이 명령을 시작하지 못했습니다. 준비되면 재개하세요.</HD_ExplicitAdmissionFailed>
+  <HD_ExplicitNeedsReview>저장된 명령이나 화물이 예기치 않게 바뀌었습니다. 재개하기 전에 물품을 확인하세요.</HD_ExplicitNeedsReview>
+  <HD_ExplicitStart>운반 목적지 지정…</HD_ExplicitStart>
+  <HD_ExplicitStartDesc>물품 더미 하나, 총수량, 정확한 지면 칸 또는 선반을 선택합니다. 선택한 더미만 운반합니다. 명령 대기열 키를 누른 채 선택하면 명령을 추가합니다.</HD_ExplicitStartDesc>
+  <HD_ExplicitOrders>운반 명령</HD_ExplicitOrders>
+  <HD_ExplicitOrdersDesc>배달된 수량을 확인하고 지정 운반 명령을 재개하거나 취소합니다.</HD_ExplicitOrdersDesc>
+  <HD_ExplicitAmountTitle>운반 수량 선택</HD_ExplicitAmountTitle>
+  <HD_ExplicitChooseDestination>목적지 선택</HD_ExplicitChooseDestination>
+  <HD_ExplicitAmountContext>{0}: {1}\n이 더미의 수량: {2}</HD_ExplicitAmountContext>
+  <HD_ExplicitQueue>작업 대기열에 추가</HD_ExplicitQueue>
+  <HD_ExplicitAmountHint>총 {0}개를 필요하면 여러 번에 걸쳐 배달합니다. 개인 소지품은 그대로 둡니다.</HD_ExplicitAmountHint>
+  <HD_ExplicitQueueResume>재개할 명령을 대기열에 추가</HD_ExplicitQueueResume>
+  <HD_ExplicitResume>재개</HD_ExplicitResume>
+  <HD_ExplicitCancel>명령 취소</HD_ExplicitCancel>
+  <HD_ExplicitProgress>명령 {0}: {1}\n배달됨 {2} / {3} → ({4}, {5})</HD_ExplicitProgress>
+  <HD_ExplicitMissingItem>출발 물품 없음</HD_ExplicitMissingItem>
+  <HD_ExplicitShelf>선택한 선반: {0}</HD_ExplicitShelf>
+  <HD_ExplicitMissingShelf>선반 없음</HD_ExplicitMissingShelf>
+</LanguageData>

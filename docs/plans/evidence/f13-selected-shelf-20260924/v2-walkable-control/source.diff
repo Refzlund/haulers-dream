@@ -1,0 +1,13 @@
+--- v2/Source/HaulersDream/StorageCommitments.ExplicitShelf.cs
++++ v2-walkable-control/Source/HaulersDream/StorageCommitments.ExplicitShelf.cs
+@@ -70,7 +70,9 @@
+         {
+             capacity = 0;
+             var map = pawn.Map;
+-            if (!ShelfAccepts(pawn, subject, shelf) || !cell.InBounds(map) || !cell.Standable(map)
++            // Native shelves are PassThroughOnly furniture: valid haul destinations are walkable,
++            // but Standable deliberately rejects their occupied cells.
++            if (!ShelfAccepts(pawn, subject, shelf) || !cell.InBounds(map) || !cell.WalkableBy(map, pawn)
+                 || cell.IsForbidden(pawn) || (subject.Spawned && subject.Position == cell)
+                 || !ReferenceEquals(map.haulDestinationManager.SlotGroupAt(cell)?.parent, shelf)
+                 || !pawn.CanReach(cell, PathEndMode.OnCell, Danger.Some) || IncomingAt(pawn, cell)) return false;

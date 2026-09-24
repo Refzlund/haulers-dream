@@ -1,0 +1,40 @@
+<?xml version='1.0' encoding='utf-8'?>
+<LanguageData>
+  <HD_ExplicitHaulTo>Trasporta {0} a…</HD_ExplicitHaulTo>
+  <HD_ExplicitChanged>Il colono o la pila selezionata è cambiato. Seleziona nuovamente.</HD_ExplicitChanged>
+  <HD_ExplicitActorUnavailable>Questo personaggio non può eseguire ora questo ordine di trasporto.</HD_ExplicitActorUnavailable>
+  <HD_ExplicitSelectSource>Seleziona la pila da trasportare. Clic destro o Esc per annullare.</HD_ExplicitSelectSource>
+  <HD_ExplicitSelectDestination>Consegna {0} × {1} qui. {2} Scegli una casella a terra raggiungibile o uno scaffale. Clic destro o Esc annulla.</HD_ExplicitSelectDestination>
+  <HD_ExplicitQueuedHint>Aggiungi alla coda di lavoro.</HD_ExplicitQueuedHint>
+  <HD_ExplicitReplaceHint>Sostituisci il lavoro attuale.</HD_ExplicitReplaceHint>
+  <HD_ExplicitStateQueued>In coda</HD_ExplicitStateQueued>
+  <HD_ExplicitStateActive>Trasporto in corso</HD_ExplicitStateActive>
+  <HD_ExplicitStateBlocked>Bloccato</HD_ExplicitStateBlocked>
+  <HD_ExplicitStateCancelled>Annullato</HD_ExplicitStateCancelled>
+  <HD_ExplicitStateComplete>Completato</HD_ExplicitStateComplete>
+  <HD_ExplicitStateCaptured>Temporaneamente sospeso</HD_ExplicitStateCaptured>
+  <HD_ExplicitSourceChanged>La fonte selezionata manca, è esaurita o non è più consentita.</HD_ExplicitSourceChanged>
+  <HD_ExplicitSourceReserved>La fonte selezionata è riservata a un altro lavoro.</HD_ExplicitSourceReserved>
+  <HD_ExplicitDestinationBlocked>Il luogo scelto non ha spazio utilizzabile, è riservato o non può ricevere questi oggetti.</HD_ExplicitDestinationBlocked>
+  <HD_ExplicitRouteBlocked>Il percorso scelto non è disponibile.</HD_ExplicitRouteBlocked>
+  <HD_ExplicitHandsBusy>Il personaggio ha altro carico nelle mani.</HD_ExplicitHandsBusy>
+  <HD_ExplicitInterrupted>L'ordine è stato interrotto. Riprendilo quando possibile.</HD_ExplicitInterrupted>
+  <HD_ExplicitAdmissionFailed>Il personaggio non ha potuto iniziare l'ordine. Riprendilo quando possibile.</HD_ExplicitAdmissionFailed>
+  <HD_ExplicitNeedsReview>L'ordine salvato o il suo carico è cambiato inaspettatamente. Controlla gli oggetti prima di riprendere.</HD_ExplicitNeedsReview>
+  <HD_ExplicitStart>Trasporta a…</HD_ExplicitStart>
+  <HD_ExplicitStartDesc>Scegli una pila, una quantità totale e una casella a terra precisa o uno scaffale. Verrà trasportata solo quella pila. Tieni premuto il tasto per accodare gli ordini per aggiungere questo ordine.</HD_ExplicitStartDesc>
+  <HD_ExplicitOrders>Ordini di trasporto</HD_ExplicitOrders>
+  <HD_ExplicitOrdersDesc>Visualizza le quantità consegnate e riprendi o annulla gli ordini di trasporto espliciti.</HD_ExplicitOrdersDesc>
+  <HD_ExplicitAmountTitle>Scegli la quantità da trasportare</HD_ExplicitAmountTitle>
+  <HD_ExplicitChooseDestination>Scegli la destinazione</HD_ExplicitChooseDestination>
+  <HD_ExplicitAmountContext>{0}: {1}\nDisponibili in questa pila: {2}</HD_ExplicitAmountContext>
+  <HD_ExplicitQueue>Aggiungi alla coda di lavoro</HD_ExplicitQueue>
+  <HD_ExplicitAmountHint>Consegna {0} in totale, in più viaggi se necessario. L'inventario personale resta invariato.</HD_ExplicitAmountHint>
+  <HD_ExplicitQueueResume>Accoda gli ordini ripresi</HD_ExplicitQueueResume>
+  <HD_ExplicitResume>Riprendi</HD_ExplicitResume>
+  <HD_ExplicitCancel>Annulla ordine</HD_ExplicitCancel>
+  <HD_ExplicitProgress>Ordine {0}: {1}\nConsegnati {2} / {3} → ({4}, {5})</HD_ExplicitProgress>
+  <HD_ExplicitMissingItem>Fonte mancante</HD_ExplicitMissingItem>
+  <HD_ExplicitShelf>Scaffale selezionato: {0}</HD_ExplicitShelf>
+  <HD_ExplicitMissingShelf>Scaffale mancante</HD_ExplicitMissingShelf>
+</LanguageData>

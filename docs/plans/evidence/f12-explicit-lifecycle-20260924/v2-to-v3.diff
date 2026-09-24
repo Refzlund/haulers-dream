@@ -1,0 +1,26 @@
+--- v2/ExplicitLifecycleScene.Phases.cs
++++ v3/ExplicitLifecycleScene.Phases.cs
+@@ -14,10 +14,11 @@
+         {
+             source=Spawn("queue",ThingDefOf.Steel,30,map.Center+new IntVec3(-15,0,-6));destination=map.Center+new IntVec3(15,0,-6);
+             active=Issue(source,destination,1,false);Issue(source,destination,7,true);Issue(source,destination,9,true);
+-            var before=actors[0].jobs.jobQueue.Select(q=>q.job).ToArray();var currentJob=actors[0].CurJob;
++            var wrappers=actors[0].jobs.jobQueue.ToArray();var before=wrappers.Select(q=>q.job).ToArray();var currentJob=actors[0].CurJob;
+             Require("queue-real-identities",before.Length==2&&before[0].loadID!=before[1].loadID&&before.All(j=>Explicit(j)&&j!=currentJob),QueueText(actors[0]));
+             var captured=actors[0].jobs.CaptureAndClearJobQueue();
+             Require("native-capture-retains-jobs",actors[0].CurJob==currentJob&&actors[0].jobs.jobQueue.Count==0&&captured.Select(q=>q.job).SequenceEqual(before)
++                &&captured.Select((q,i)=>!ReferenceEquals(q,wrappers[i])).All(v=>v)
+                 &&Orders(actors[0]).Skip(1).All(o=>State(o)=="Captured"),string.Join("|",Orders(actors[0]).Select(OrderText)));
+             actors[0].jobs.RestoreCapturedJobs(captured);
+             Require("native-restore-exact-jobs",captured.Count==0&&actors[0].CurJob==currentJob&&actors[0].jobs.jobQueue.Select(q=>q.job).SequenceEqual(before)
+--- v2/ExplicitLifecycleScene.Save.cs
++++ v3/ExplicitLifecycleScene.Save.cs
+@@ -68,6 +68,8 @@
+         private void ContinueLoaded()
+         {
+             Guard(loadedCaptured&&!begun&&ticks.TicksGame==startTick+1,"Expected single native PauseOnLoad tick");Configure();ObserveEnvironment();begun=true;
++            string actorReason=(string)AccessTools.Method(Command,"ActorReason").Invoke(null,new object[]{actors[0]});
++            Require("cancel-resume-eligible-actor",actorReason==null,"Actual authoritative actor admission="+(actorReason??"eligible"));
+             var before=Snapshot();foreach(var o in Orders(actors[0]).Where(o=>State(o)=="Cancelled"))Resume(o);
+             foreach(var kv in Snapshot())Require("cancel-resume-noop-"+kv.Key,before[kv.Key]==kv.Value,"before="+before[kv.Key]+"; after="+kv.Value);
+             stableTick=ticks.TicksGame;Phase("restart-stability");ticks.CurTimeSpeed=TimeSpeed.Superfast;

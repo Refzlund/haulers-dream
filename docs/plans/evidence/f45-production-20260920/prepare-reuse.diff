@@ -1,0 +1,24 @@
+diff --git "a/C:\\Users\\Arthur\\Sync\\Projects\\RimWorld Mods\\HaulersDream\\docs\\plans\\evidence\\f04-rendered-20260920\\prepare.ps1" "b/C:\\Users\\Arthur\\Sync\\Projects\\RimWorld Mods\\HaulersDream\\docs\\plans\\evidence\\f45-production-20260920\\prepare.ps1"
+index 04db989..c849590 100644
+--- "a/C:\\Users\\Arthur\\Sync\\Projects\\RimWorld Mods\\HaulersDream\\docs\\plans\\evidence\\f04-rendered-20260920\\prepare.ps1"	
++++ "b/C:\\Users\\Arthur\\Sync\\Projects\\RimWorld Mods\\HaulersDream\\docs\\plans\\evidence\\f45-production-20260920\\prepare.ps1"	
+@@ -1,11 +1,11 @@
+ $ErrorActionPreference = 'Stop'
+-$f04Root = $PSScriptRoot
+-$f04Receipt = Join-Path $f04Root 'prepared.json'
+-if (Test-Path -LiteralPath $f04Receipt) { throw 'Inspect existing preparation rather than preparing twice.' }
+-$f04Prepared = & (Join-Path $f04Root 'controller/scripts/runtime-test.ps1') `
+-    -Action Prepare -CaseId F04-SETTINGS -ExpectedBehavior satisfied -NegativeControl None -HdSource Built `
++$f45Root = $PSScriptRoot
++$f45Receipt = Join-Path $f45Root 'prepared.json'
++if (Test-Path -LiteralPath $f45Receipt) { throw 'Inspect existing preparation rather than preparing twice.' }
++$f45Prepared = & (Join-Path $f45Root 'controller/scripts/runtime-test.ps1') `
++    -Action Prepare -CaseId F45-PB-PRODUCTION -ExpectedBehavior satisfied -NegativeControl None -HdSource Built `
+     -BuiltModRoot (Join-Path $env:TEMP 'haulersdream-f34-matched-role-binding-author-20260920/content-candidate') `
+-    -HarnessAssembly (Join-Path $f04Root 'Assemblies/HaulersDream.RuntimeHarness.dll') `
++    -HarnessAssembly (Join-Path $f45Root 'Assemblies/HaulersDream.RuntimeHarness.dll') `
+     -PlayerSaveDataRoot 'C:/Users/Arthur/AppData/LocalLow/Ludeon Studios/RimWorld by Ludeon Studios'
+-$f04Prepared | ConvertTo-Json -Depth 5 | Set-Content -LiteralPath $f04Receipt -Encoding UTF8
+-$f04Prepared | Select-Object status,runDirectory,copiedFiles,caseId | ConvertTo-Json
++$f45Prepared | ConvertTo-Json -Depth 5 | Set-Content -LiteralPath $f45Receipt -Encoding UTF8
++$f45Prepared | Select-Object status,runDirectory,copiedFiles,caseId | ConvertTo-Json

@@ -357,7 +357,7 @@
 <HaulersDream.LoadTransporter.Option>Priorytetyzuj masowe ładowanie {0}</HaulersDream.LoadTransporter.Option>
 <HaulersDream.LoadTransporter.CouldNotStart>Nic w pobliżu do masowego załadowania do tego transportera w tej chwili.</HaulersDream.LoadTransporter.CouldNotStart>
 <HaulersDream.Setting.EnableBulkLoadTransporters>Masowo ładuj transportery i promy w jednej wyprawie</HaulersDream.Setting.EnableBulkLoadTransporters>
-<HaulersDream.Setting.EnableBulkLoadTransportersDesc>Gdy kapsuła transportowa lub prom są ustawione na ładowanie, tragarz zajmuje wycinek ich manifestu, zgarnia kilka pobliskich stosów do swojego bagażu, podchodzi do transportera RAZ i deponuje je wszystkie — zamiast nosić jeden stos w rękach na podejście jak w podstawce. Kilku tragarzy dzieli duży manifest bez podwójnego znoszenia, a kapsuła nie wejdzie na pokład ani nie wystartuje, dopóki zajęty ładunek nie będzie w środku. Z tym wyłączonym używane jest ładowanie transportera pojedynczym stosem z podstawki bez zmian.</HaulersDream.Setting.EnableBulkLoadTransportersDesc>
+<HaulersDream.Setting.EnableBulkLoadTransportersDesc>Gdy kapsuła transportowa lub prom są ustawione na ładowanie, tragarz zajmuje wycinek ich manifestu, zgarnia kilka pobliskich stosów do swojego bagażu, podchodzi do transportera RAZ i deponuje je wszystkie — zamiast nosić jeden stos w rękach na podejście jak w podstawce. Kilku tragarzy dzieli duży manifest bez podwójnego znoszenia, a kapsuła nie wejdzie na pokład ani nie wystartuje, dopóki zajęty ładunek nie będzie w środku. Z tym wyłączonym używane jest ładowanie transportera pojedynczym stosem z podstawki bez zmian. Priorytetowe polecenie powtarza kursy dla tej listy po udanych dostawach, jeśli tragarz nie jest zmobilizowany i nie ma nowych poleceń w kolejce. Zmobilizowany tragarz może wykonać jeden kurs załadunku.</HaulersDream.Setting.EnableBulkLoadTransportersDesc>
 <HaulersDream.Setting.BulkLoadAiUpdateFrequency>Interwał ponownego sprawdzania ładowania: {0} tyknięć</HaulersDream.Setting.BulkLoadAiUpdateFrequency>
 <HaulersDream.LoadPortal.Report>masowe ładowanie portalu.</HaulersDream.LoadPortal.Report>
 <HaulersDream.LoadPortal.Option>Priorytetyzuj masowe ładowanie {0}</HaulersDream.LoadPortal.Option>
@@ -420,7 +420,7 @@
 <HaulersDream.Setting.OpportunisticLoadDesc>Pionek już niosący przedmioty, na które czeka pobliska kapsuła transportowa, prom, portal mapy lub pojazd, zboczy, by je zrzucić, zamiast zaczynać zupełnie nowy przebieg po odbiór. Mniej zmarnowanych podejść. Domyślnie wyłączone (zmienia, które zadanie pionek podejmuje następne).</HaulersDream.Setting.OpportunisticLoadDesc>
 <HaulersDream.Setting.LoadOpportunityRadius>Promień poszukiwania zrzutu po drodze: {0} kafelków</HaulersDream.Setting.LoadOpportunityRadius>
 <HaulersDream.Setting.ContinuousLoading>Rozkaz z prawego przycisku „Ładuj do skutku”</HaulersDream.Setting.ContinuousLoading>
-<HaulersDream.Setting.ContinuousLoadingDesc>Dodaje rozkaz z prawego przycisku, który posyła jednego kuriera (nawet wcielonego) przez każdą pobliską grupę transportową, która wciąż wymaga ładowania, łącząc zadania, aż wszystkie będą pełne — przydatne do załadowania dużej karawany jednym poleceniem. Domyślnie wyłączone (opcjonalna wygoda).</HaulersDream.Setting.ContinuousLoadingDesc>
+<HaulersDream.Setting.ContinuousLoadingDesc>Dodaje polecenie prawego przycisku myszy, które po ukończeniu wybranej listy załadunku przechodzi do pobliskich celów. Dalsze kursy wymagają niezmobilizowanego tragarza, udanej dostawy i braku nowych poleceń w kolejce. Domyślnie wyłączone.</HaulersDream.Setting.ContinuousLoadingDesc>
 <HaulersDream.ContinuousLoad.Option>Ładuj do skutku (ciągle) — {0}</HaulersDream.ContinuousLoad.Option>
 <HaulersDream.ContinuousLoad.CouldNotStart>Nic w pobliżu do masowego załadowania do tego w tej chwili.</HaulersDream.ContinuousLoad.CouldNotStart>
 <HaulersDream.Setting.LoadHybridPathing>Porządkuj przystanki masowego ładowania według rzeczywistego wyznaczania ścieżki</HaulersDream.Setting.LoadHybridPathing>
@@ -626,7 +626,7 @@
 <HaulersDream.Setting.BulkHaulTrigger.Lab>Wyzwalacz masowego znoszenia</HaulersDream.Setting.BulkHaulTrigger.Lab>
 <HaulersDream.Setting.KeepWorkingMargin.Lab>Rozładuj przed dłuższym przemieszczeniem</HaulersDream.Setting.KeepWorkingMargin.Lab>
 <HaulersDream.Setting.MinFreeSpaceToUnloadCarrier.Lab>Minimalne wolne miejsce w plecaku, by zacząć</HaulersDream.Setting.MinFreeSpaceToUnloadCarrier.Lab>
-<HaulersDream.Setting.MinFreeSpaceToUnloadCarrier.Help>Tragarz potrzebuje co najmniej tyle wolnego udźwigu, zanim zacznie opróżniać zwierzę juczne, aby jego własny plecak nie przepełnił się natychmiast.</HaulersDream.Setting.MinFreeSpaceToUnloadCarrier.Help>
+<HaulersDream.Setting.MinFreeSpaceToUnloadCarrier.Help>Tragarz potrzebuje co najmniej tyle wolnego udźwigu, zanim zacznie opróżniać zwierzę juczne, aby jego własny plecak nie przepełnił się natychmiast. Ten próg dotyczy także automatycznego rozładunku transporterów.</HaulersDream.Setting.MinFreeSpaceToUnloadCarrier.Help>
 <HaulersDream.Setting.VisualUnloadDelay.Lab>Opóźnienie rozładunku na stos</HaulersDream.Setting.VisualUnloadDelay.Lab>
 <HaulersDream.Setting.VisualUnloadDelay.Help>Mała kosmetyczna pauza między każdym stosem podczas masowego rozładunku, aby czytało się to jako celowe działanie. 0 = natychmiast.</HaulersDream.Setting.VisualUnloadDelay.Help>
 <HaulersDream.Setting.BulkLoadAiUpdateFrequency.Lab>Interwał ponownego sprawdzania ładowania</HaulersDream.Setting.BulkLoadAiUpdateFrequency.Lab>
@@ -828,6 +828,17 @@
   <HaulersDream.Setting.CarryMassCap.Off>Bez limitu</HaulersDream.Setting.CarryMassCap.Off>
   <HaulersDream.Setting.CarryMassCap.Value>{0} kg</HaulersDream.Setting.CarryMassCap.Value>
   <HaulersDream.Setting.CarryMassCapDesc>Twardy limit, w kilogramach, ile pionek ładuje do swojego bagażu w jednej wyprawie po znoszenie lub zbieranie. To bezpośrednia odpowiedź na „moje pionki niosą za dużo": ustaw go nisko (powiedzmy 20 kg), a pionki zbiorą mały ładunek, rozładują go i wrócą, zamiast napełniać się do pełnego udźwigu. Działa razem z procentowym „Limitem noszenia" i Inteligentnym przeciążeniem powyżej, a niższy limit zawsze wygrywa, więc ten pułap nigdy nie jest przekroczony, nawet przy włączonym przeciążeniu. Tak jak Limit noszenia, liczy tylko to, co schowane w plecaku, nie stos niesiony w rękach, i nie zmienia, ile materiału pionek przynosi na konkretną budowę czy zlecenie. Ustaw na 0, by nie było limitu (domyślnie).</HaulersDream.Setting.CarryMassCapDesc>
+  <HD_DropAmountTitle>Upuść wybraną liczbę</HD_DropAmountTitle>
+  <HD_DropAmountConfirm>Upuść</HD_DropAmountConfirm>
+  <HD_DropAmountContext>{0}\n{1}\nDostępne: {2}</HD_DropAmountContext>
+  <HD_DropAmountQuantity>Liczba do upuszczenia</HD_DropAmountQuantity>
+  <HD_DropAmountRemaining>Pozostanie w ekwipunku: {0}</HD_DropAmountRemaining>
+  <HD_DropAmountInvalid>Wpisz liczbę całkowitą od 1 do {0}.</HD_DropAmountInvalid>
+  <HD_DropAmountChanged>Stan postaci lub stosu w ekwipunku uległ zmianie. Otwórz to okno ponownie.</HD_DropAmountChanged>
+  <HD_DropAmountUnavailable>Wybór liczby upuszczanych przedmiotów jest niedostępny przy obecnej konfiguracji modów.</HD_DropAmountUnavailable>
+  <HD_DropAmountUnconfirmed>Nie udało się potwierdzić upuszczenia. Sprawdź ekwipunek postaci.</HD_DropAmountUnconfirmed>
+  <HD_DropAmountBlocked>W pobliżu nie ma miejsca na upuszczenie tych przedmiotów.</HD_DropAmountBlocked>
+  <HD_DropAmountPartial>Upuszczono {0} z {1}; w pobliżu zabrakło miejsca.</HD_DropAmountPartial>
   <HD_NearbyHaulGizmoDesc>Wybierz przedmiot, aby przenieść go wraz z pobliskimi przedmiotami do magazynu. Przytrzymaj klawisz kolejkowania podczas wybierania, aby dodać rozkaz do kolejki.</HD_NearbyHaulGizmoDesc>
   <HD_NearbyHaulPawnUnavailable>Ta postać nie może otrzymać rozkazu transportu w obecnym stanie.</HD_NearbyHaulPawnUnavailable>
   <HD_NearbyHaulDrafted>Zakończ mobilizację tej postaci przed wydaniem rozkazu transportu.</HD_NearbyHaulDrafted>
@@ -836,4 +847,18 @@
   <HD_NearbyHaulInventoryUnavailable>Transport z użyciem ekwipunku jest niedostępny dla tej postaci.</HD_NearbyHaulInventoryUnavailable>
   <HD_NearbyHaulRobotUnsupported>Nie udało się odczytać zadań transportowych robota przy obecnej konfiguracji modów.</HD_NearbyHaulRobotUnsupported>
   <HD_NearbyHaulSourceUnavailable>Wybrany przedmiot nie jest dostępny do transportu.</HD_NearbyHaulSourceUnavailable>
+  <HaulersDream.UnloadTransporter.Option>Priorytetyzuj masowe rozładowanie {0}</HaulersDream.UnloadTransporter.Option>
+  <HaulersDream.UnloadTransporter.CouldNotStart>Nie udało się teraz rozpocząć masowego rozładowania tego transportera.</HaulersDream.UnloadTransporter.CouldNotStart>
+  <HaulersDream.Gizmo.BulkUnloadAll.Label>Masowo rozładuj wszystko</HaulersDream.Gizmo.BulkUnloadAll.Label>
+  <HaulersDream.Gizmo.BulkUnloadAll.Empty>Nie ma czego rozładowywać</HaulersDream.Gizmo.BulkUnloadAll.Empty>
+  <HaulersDream.Gizmo.BulkUnloadAll.LoadBlocked>„Masowo rozładuj wszystko” jest włączone, wyłącz to przed ustawieniem nowego ładunku.</HaulersDream.Gizmo.BulkUnloadAll.LoadBlocked>
+  <HaulersDream.Gizmo.BulkUnloadAll.UnloadBlocked>Do tego transportera właśnie zbierany jest ładunek.</HaulersDream.Gizmo.BulkUnloadAll.UnloadBlocked>
+  <HaulersDream.Feat.UnloadTransporters.Name>Rozładuj transportery i promy</HaulersDream.Feat.UnloadTransporters.Name>
+  <HaulersDream.Setting.EnableBulkUnloadTransporters>Rozładowuj transportery zbiorczo</HaulersDream.Setting.EnableBulkUnloadTransporters>
+  <HaulersDream.Setting.EnableBulkUnloadTransportersDesc>Dodaje przełącznik rozładunku transporterów i wahadłowców. Niezmobilizowani tragarze przenoszą ładunek bezpośrednio do magazynu, jeden kurs na zadanie. Priorytetowe polecenie dla oznaczonego transportera ponawia kurs dopiero po dostawie. Pasażerowie pozostają na pokładzie. Załadunek, pełny magazyn, mobilizacja lub nowe polecenia w kolejce zatrzymują dalsze kursy.</HaulersDream.Setting.EnableBulkUnloadTransportersDesc>
+  <HaulersDream.Gizmo.BulkUnloadAll.Desc>Przenieś ładunek z {0} do magazynu. Pasażerowie pozostają na pokładzie. Priorytetowy rozładunek powtarza się po każdej dostawie, jeśli tragarz nie jest zmobilizowany i nie ma nowych poleceń w kolejce. Wyłącz przed załadunkiem.</HaulersDream.Gizmo.BulkUnloadAll.Desc>
+  <HaulersDream.Feat.UnloadTransporters.Blurb>Przenoś ładunek z wylądowanego transportera prosto do magazynu</HaulersDream.Feat.UnloadTransporters.Blurb>
+  <HaulersDream.UnloadTransporter.Drafted>Zdemobilizuj tę postać, aby rozpocząć polecenie.</HaulersDream.UnloadTransporter.Drafted>
+  <HaulersDream.UnloadTransporter.NoStorage>Brak odpowiedniego magazynu na pozostały ładunek.</HaulersDream.UnloadTransporter.NoStorage>
+  <HaulersDream.Transporter.SyncUnavailable>Polecenia transporterów są niedostępne, ponieważ nie udało się zarejestrować synchronizacji wieloosobowej.</HaulersDream.Transporter.SyncUnavailable>
 </LanguageData>

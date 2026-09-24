@@ -1,0 +1,15 @@
+# Independent F25 baseline LOAD review
+
+**Accept this as a genuine observed baseline missing-component gap. Keep the raw result failed.** Independent count: 54 passed / 57 total assertions, with exactly the two missing-component preservation failures and the resulting host-return failure. Both actual-command causal probes pass. All71 events are contiguous and bound to this run; `independent-audit.json` records 47 independent custody/result checks.
+
+The consumer copies the accepted producer12a8 original save and record without modification. Producer original, retained original copy and loaded `Autostart.rws` share SHA-256 `987F4F711B86B437701B412BB9BEABA4A117059A714C75F65E664CA35BCA12A6`; the record hash is `06E8D8F3930C173CADA6EFB9301576934C8C3EF097C4E03EDD547622C4B1D704`. Native XML and the loaded-game callback both show saved tick863. Exact pawn IDs/physical state/climate pass before the first native tick, followed by the actual paused boundary at864.
+
+Loaded `HL_Mech_Lifter36147` and `HL_Monkey36152` have zero HD entries in both generated definition and live component list; their native lookup is null. The fixture invokes the real `NearbyHaulCommand.IssueSynced` against actual two-stack inputs for each and neither admits bulk hauling. The ordinary `Human36162` control retains exactly one defined/live HD component and native lookup. All active images and packages match the prepared baseline: 15 SHA/version/MVID/path bindings, seven exact mod roots, unchanged original baseline product DLLs and actual provider packages.
+
+The lifter receives its provider's `BS_PoorHands:0.5` hediff after the first native tick. This is retained explicitly, not removed or treated as a fixture error. Both causal observations still record hauling enabled, not drafted, not seeking medical rest and ambient10.3125°C. The directly observed generated/live component omission is independent of that provider hediff. The candidate must still demonstrate real productive hauling under these same native conditions.
+
+The complete2,255-line Player.log and HD debug log show no exception, XML/reference ownership, save-load or cleanup failure. Retain the same two dynamic Mono fallback lines,50 texture mipmap advisories, four Direct3D timing advisories and normal shutdown allocator fallback statistics seen in the producer; do not call the log warning-free. Captured Unity errors are0.
+
+Native26840 and controller4744 both joined exit0, no timeout/error, inactive desktop only, Default input desktop throughout, no switch or remaining process. Retained raw/manifest bytes equal the actual original run. Verify reports unchanged protected inputs; its manual/full-log/generic-event requirements are reviewed here rather than rewriting the native result to passed.
+
+This establishes failure after loading the real old save. As the producer already established, this particular provider build also lacked the component immediately after fresh conversion; it does not reproduce a claim that fresh conversion first succeeded and only saving introduced the loss. Candidate upgrade and full persistence recovery remain separate required evidence.

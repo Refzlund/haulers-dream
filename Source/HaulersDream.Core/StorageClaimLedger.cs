@@ -53,18 +53,23 @@ namespace HaulersDream.Core
         /// (see <see cref="StorageClaimLedger.EffectiveClaim"/>).</summary>
         public readonly int Units;
 
+        // A concrete native cell reservation already removes its physical resources from capacity
+        // measurement. Keep its identity in this same ledger, but never subtract its units again.
+        public readonly object ExclusiveCellAllocation;
+
         /// <summary>Record one commitment.</summary>
         /// <param name="pawn">The committing pawn.</param>
         /// <param name="group">The destination's budget identity.</param>
         /// <param name="def">The item def being delivered.</param>
         /// <param name="units">Units intended. A caller should not pass a negative; every reader clamps
         /// anyway rather than trusting it.</param>
-        public StorageClaimRow(object pawn, object group, object def, int units)
+        public StorageClaimRow(object pawn, object group, object def, int units, object exclusiveCellAllocation = null)
         {
             Pawn = pawn;
             Group = group;
             Def = def;
             Units = units;
+            ExclusiveCellAllocation = exclusiveCellAllocation;
         }
     }
 
@@ -109,7 +114,7 @@ namespace HaulersDream.Core
         /// row, so it would leak.</param>
         /// <param name="units">Units intended.</param>
         /// <returns>A new array, or the same reference when nothing changed.</returns>
-        public static StorageClaimRow[] Add(StorageClaimRow[] rows, object pawn, object group, object def, int units)
+        public static StorageClaimRow[] Add(StorageClaimRow[] rows, object pawn, object group, object def, int units, object exclusiveCellAllocation = null)
         {
             var current = rows ?? Empty;
             if (pawn == null || def == null)
@@ -133,7 +138,7 @@ namespace HaulersDream.Core
                 if (!IsRowOf(current[i], pawn, def))
                     next[w++] = current[i];
             if (keeping)
-                next[w] = new StorageClaimRow(pawn, group, def, units);
+                next[w] = new StorageClaimRow(pawn, group, def, units, exclusiveCellAllocation);
             return next;
         }
 
@@ -210,6 +215,7 @@ namespace HaulersDream.Core
         /// <returns>Units this row currently withholds from other pawns.</returns>
         public static int EffectiveClaim(StorageClaimRow row, StorageClaimEvidence evidence)
         {
+            if (row.ExclusiveCellAllocation != null) return 0;
             int recorded = row.Units;
             if (recorded <= 0)
                 return 0;

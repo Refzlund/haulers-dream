@@ -1,0 +1,350 @@
+--- before/Source/HaulersDream/BulkHaul.cs
++++ after/Source/HaulersDream/BulkHaul.cs
+@@ -1037,12 +1037,6 @@
+                 job.targetQueueB.Add(things[i]);
+             job.count = 1; // sentinel: Job.count defaults to -1, which reads as "broken" in several vanilla checks
+             HDLog.Dbg($"BulkHaul: {pawn} sweeping {things.Count} stacks (~{running:0.#}kg / ceiling {(float.IsPositiveInfinity(ceiling) ? -1 : ceiling):0.#}kg, forced={forced}).");
+-            // #214 general net-zero success-loop backstop: record this AUTOMATIC re-anchor on `primary`. If the
+-            // same stack is re-built into a bulk haul repeatedly without shrinking (a foreign mod returning it),
+-            // HaulChurnGuard backs it off the scan and surfaces it: the class-level net for any re-fetcher, beyond
+-            // the RimIOT-specific gates. Forced one-shot orders can't infinite-loop, so they're excluded.
+-            if (!forced)
+-                HaulChurnGuard.NoteBulkAnchor(primary);
+             return job;
+         }
+ 
+--- before/Source/HaulersDream/HaulChurnGuard.cs
++++ after/Source/HaulersDream/HaulChurnGuard.cs
+@@ -90,15 +90,7 @@
+         // Reused prune scratch (only ever touched under the lock).
+         private static readonly List<int> expiredScratch = new List<int>();
+ 
+-        // #214 net-zero SUCCESS-loop tally: thingIDNumber -> (tick of the last AUTOMATIC bulk re-anchor, how many
+-        // in a row, the stack's size at that re-anchor). A stack re-hauled repeatedly WITHOUT shrinking (a foreign
+-        // mod returning it) is stamped into the SAME `backoffUntil` (with the longer NetZeroBackoffTicks window)
+-        // once its count reaches HaulChurnPolicy.MaxNetZeroReanchorsPerThing. Guarded by `sync`; pruned
+-        // opportunistically (a legitimate haul's delivered anchor never revisits its entry) and cleared on load.
+-        private static readonly Dictionary<int, (int lastTick, int count, int lastStackCount)> bulkAnchors
+-            = new Dictionary<int, (int lastTick, int count, int lastStackCount)>();
+-
+-        // #214 warn-once-per-session keys (thingIDNumber): a PERSISTENT loop surfaces ONE actionable line, never a
++        // #214 warn-once-per-session keys (thingIDNumber): an observed foreign retarget surfaces ONE line, never a
+         // per-tick flood. Guarded by `sync`; cleared on game load (thingIDNumbers collide across saves).
+         private static readonly HashSet<int> loopWarned = new HashSet<int>();
+ 
+@@ -119,7 +111,6 @@
+             {
+                 backoffUntil.Clear();
+                 thingFails.Clear();
+-                bulkAnchors.Clear();
+                 loopWarned.Clear();
+             }
+             // Loads never interleave with the running sim, so a plain reference swap is race-free here.
+@@ -301,57 +292,6 @@
+         }
+ 
+         /// <summary>
+-        /// #214 GENERAL net-zero success-loop backstop. Record one AUTOMATIC bulk re-anchor on
+-        /// <paramref name="thing"/> (called at BUILD time from <see cref="BulkHaul"/>, automatic path only). When
+-        /// the SAME physical stack is re-hauled <see cref="HaulChurnPolicy.MaxNetZeroReanchorsPerThing"/> times in
+-        /// quick succession without its stackCount dropping (net-zero: a foreign mod keeps returning it where HD
+-        /// re-hauls it), stamp it into the re-offer backoff for the long
+-        /// <see cref="HaulChurnPolicy.NetZeroBackoffTicks"/> window (the automatic scan then stops rebuilding the
+-        /// doomed sweep, via the existing <see cref="Patch_WorkGiver_HaulGeneral_ChurnBackoff"/> gate) and surface
+-        /// it once. A LEGITIMATE haul shrinks the stack each armful (resetting the tally) and a delivered stack
+-        /// despawns (never recurs), so this fires only on a real loop. Forced one-shot orders can't loop and never
+-        /// call in. Multiplayer: mutates only on the synced work-scan build path, keyed on thingIDNumber +
+-        /// TicksGame, so every client tallies identically.
+-        ///
+-        /// <para>Deliberately GENERAL (not RimIOT-gated), like the failure-churn layers above: it is a general
+-        /// anti-loop guard already scoped by its only call site (BulkHaul's automatic build, so it runs only when
+-        /// the <c>bulkHaul</c> feature is on, exactly as Layer 3 is scoped by <c>haulToStack</c>). Options 1-2
+-        /// cover ACTIVE RimIOT; this additionally catches the degraded-reflection RimIOT case AND any future
+-        /// non-RimIOT bulk re-fetcher, so a new loop is SURFACED rather than silently recurring. It is observably
+-        /// inert until a genuine net-zero loop (the tight discriminator never trips on healthy hauling), so a game
+-        /// without any re-fetcher behaves as before.</para>
+-        /// </summary>
+-        internal static void NoteBulkAnchor(Thing thing)
+-        {
+-            if (thing?.def == null)
+-                return;
+-            int now = Find.TickManager?.TicksGame ?? 0;
+-            string warn = null;
+-            lock (sync)
+-            {
+-                PruneBulkAnchorsLocked(now);
+-                bulkAnchors.TryGetValue(thing.thingIDNumber, out var state);
+-                HaulChurnPolicy.RecordNetZeroReanchor(now, state.lastTick, state.count, state.lastStackCount,
+-                    thing.stackCount, out int newTick, out int newCount);
+-                if (HaulChurnPolicy.ShouldBackOffReanchored(newCount))
+-                {
+-                    bulkAnchors.Remove(thing.thingIDNumber);
+-                    StampBackoffLocked(thing, now, HaulChurnPolicy.NetZeroBackoffTicks);
+-                    if (loopWarned.Add(thing.thingIDNumber))
+-                        warn = $"{thing.LabelShort} was bulk-hauled {newCount} times in quick succession without "
+-                             + "moving (net-zero). Another mod is very likely returning it to where HD keeps "
+-                             + "re-hauling it (a logistics or loadout mod, e.g. RimIOT). HD is backing it off its "
+-                             + "automatic haul scan so pawns stop looping; a forced player order still hauls it. "
+-                             + "Please report the mod combination (issue #214) if this is unexpected.";
+-                }
+-                else
+-                    bulkAnchors[thing.thingIDNumber] = (newTick, newCount, thing.stackCount);
+-            }
+-            if (warn != null)
+-                HDLog.Warn(warn); // log OUTSIDE the lock
+-        }
+-
+-        /// <summary>
+         /// #214 defense-in-depth surfacing. A foreign patch (RimIOT's <c>Patch_StartPath_NetworkItemRedirect</c>)
+         /// swapped <paramref name="anchor"/> (HD's assigned bulk anchor) out for a network-internal stack
+         /// <paramref name="swappedTo"/> after the plan ran, and the driver declined to pocket the substitute (see
+@@ -373,24 +313,6 @@
+                     + "HD declined to pocket the substitute and is backing the original off its automatic scan so "
+                     + "the terminal haul/unload loop can't form; a forced player order still hauls it. If "
+                     + "unexpected, please report the mod combination (issue #214).");
+-        }
+-
+-        /// <summary>Keep <see cref="bulkAnchors"/> tiny. A LEGITIMATE haul's delivered anchor never revisits its
+-        /// entry, so without a prune the table would grow with every distinct thing ever auto-bulk-hauled. An entry
+-        /// older than <see cref="HaulChurnPolicy.ReanchorGapTicks"/> is dead (the next re-anchor of that thing
+-        /// resets to one anyway), so drop those once the table grows past a small cap. Under <c>sync</c>; reuses
+-        /// <see cref="expiredScratch"/>.</summary>
+-        private static void PruneBulkAnchorsLocked(int now)
+-        {
+-            if (bulkAnchors.Count <= 64)
+-                return;
+-            expiredScratch.Clear();
+-            foreach (var pair in bulkAnchors)
+-                if (now - pair.Value.lastTick > HaulChurnPolicy.ReanchorGapTicks)
+-                    expiredScratch.Add(pair.Key);
+-            for (int i = 0; i < expiredScratch.Count; i++)
+-                bulkAnchors.Remove(expiredScratch[i]);
+-            expiredScratch.Clear();
+         }
+ 
+         /// <summary>Whether <paramref name="thing"/> is inside its churn backoff window (suppressed from the
+--- before/Source/HaulersDream.Core/HaulChurnPolicy.cs
++++ after/Source/HaulersDream.Core/HaulChurnPolicy.cs
+@@ -201,85 +201,8 @@
+         public static int AsideSuppressUntil(int nowTick)
+             => nowTick + AsideBackoffTicks;
+ 
+-        // --- Per-THING net-zero re-anchor SUCCESS-loop bound (issue #214) ------------------------------------
+-        //  A THIRD kind of loop, and the reason #177/#184/#192 kept "occasionally" recurring: here every job
+-        //  SUCCEEDS, so no failure signal exists for the layers above to see. When a foreign logistics mod keeps
+-        //  returning a def to where HD re-hauls it (RimIOT's over-broad StartPath retarget rewrites HD's bulk
+-        //  pickup into a network-internal stack that its own deposit then bounces straight back), HD re-anchors an
+-        //  AUTOMATIC bulk haul on the SAME physical floor stack over and over while that stack never shrinks:
+-        //  net-zero, forever, the pawn pinned at the terminal. This is the GENERAL backstop for that shape (any
+-        //  re-fetcher, not just RimIOT), complementing the RimIOT-specific gates.
+-        //
+-        //  The net-zero test is what makes it FALSE-POSITIVE-FREE. A legitimate oversized haul re-anchors the same
+-        //  stack too (armful by armful) but SHRINKS it every trip, and a delivered stack despawns and never
+-        //  recurs, so only a stack that is re-hauled repeatedly WITHOUT shrinking is a loop. Reuses the same
+-        //  re-offer backoff + scan gate the failure layers use; forced player orders bypass it.
+-
+-        /// <summary>
+-        /// How many times HD may re-anchor an AUTOMATIC bulk haul on the SAME stack, in quick succession and
+-        /// WITHOUT the stack shrinking (net-zero), before the stack is backed off from the automatic scan. A
+-        /// legitimate multi-armful haul shrinks the stack every trip (resetting this), and a delivered stack
+-        /// despawns, so six net-zero re-anchors is already the loop, not real work.
+-        /// </summary>
+-        public const int MaxNetZeroReanchorsPerThing = 6;
+-
+-        /// <summary>
+-        /// The maximum gap (game ticks) between two net-zero re-anchors of one stack for them to count as the SAME
+-        /// loop. 180 ticks (~3 s at normal speed) comfortably spans the terminal loop's ~1-2 s cadence, while a
+-        /// re-anchor more than this apart resets the tally to one (not a loop). Gap-based (not a fixed window from
+-        /// the first) so a slightly slower loop still accumulates without ever folding in well-spaced, unrelated
+-        /// re-anchors.
+-        /// </summary>
+-        public const int ReanchorGapTicks = 180;
+-
+-        /// <summary>
+-        /// How long (game ticks) a net-zero-looping stack stays backed off from the automatic haul scan. Longer
+-        /// than <see cref="BackoffTicks"/> because the trigger is a PERSISTENT foreign condition (the other mod
+-        /// keeps returning the item), so a short retry would just re-loop: 2500 ticks (~40 s) lets the pawn do
+-        /// other work for a good while, and a still-present loop simply re-arms the window. Forced player orders
+-        /// ignore the backoff entirely.
+-        /// </summary>
++        /// <summary>Backoff after an observed foreign path retarget. The actual runtime retarget
++        /// guard uses this longer window; candidate work scans do not count as completed hauling.</summary>
+         public const int NetZeroBackoffTicks = 2500;
+-
+-        /// <summary>
+-        /// Fold one more AUTOMATIC bulk re-anchor of a stack into its net-zero tally. Resets the count to one when
+-        /// this is the first re-anchor seen (<paramref name="priorCount"/> &lt;= 0), when it came more than
+-        /// <see cref="ReanchorGapTicks"/> after the previous one, OR when the stack SHRANK since the last
+-        /// re-anchor (real delivery progress, never a loop); otherwise increments. The last-anchor tick is always
+-        /// advanced to now so the next call measures its gap and progress from THIS re-anchor.
+-        /// </summary>
+-        /// <param name="nowTick">The tick this re-anchor occurred.</param>
+-        /// <param name="lastTick">The tick of the stack's previous counted re-anchor (ignored when
+-        /// <paramref name="priorCount"/> is 0).</param>
+-        /// <param name="priorCount">The stack's re-anchor count before this one (0 if none tracked).</param>
+-        /// <param name="lastStackCount">The stack's stackCount at its previous re-anchor (ignored when
+-        /// <paramref name="priorCount"/> is 0).</param>
+-        /// <param name="currentStackCount">The stack's stackCount now.</param>
+-        /// <param name="newLastTick">Out: the tick to store as the stack's latest re-anchor (always
+-        /// <paramref name="nowTick"/>).</param>
+-        /// <param name="newCount">Out: the stack's re-anchor count after folding this one in.</param>
+-        public static void RecordNetZeroReanchor(int nowTick, int lastTick, int priorCount, int lastStackCount,
+-            int currentStackCount, out int newLastTick, out int newCount)
+-        {
+-            newLastTick = nowTick;
+-            bool shrank = priorCount > 0 && currentStackCount < lastStackCount;
+-            newCount = (priorCount <= 0 || nowTick - lastTick > ReanchorGapTicks || shrank) ? 1 : priorCount + 1;
+-        }
+-
+-        /// <summary>
+-        /// Whether a stack that has now net-zero-re-anchored <paramref name="count"/> times in quick succession
+-        /// must be backed off. Reaching (not merely exceeding) the budget bails: the sixth net-zero re-anchor is
+-        /// the one that stops the loop.
+-        /// </summary>
+-        /// <param name="count">The stack's current net-zero re-anchor count (from
+-        /// <see cref="RecordNetZeroReanchor"/>).</param>
+-        public static bool ShouldBackOffReanchored(int count)
+-            => count >= MaxNetZeroReanchorsPerThing;
+-
+-        /// <summary>The tick until which a net-zero-looping stack stays suppressed from the automatic haul
+-        /// scan.</summary>
+-        /// <param name="nowTick">The current game tick (the moment the loop was detected).</param>
+-        public static int NetZeroSuppressUntil(int nowTick)
+-            => nowTick + NetZeroBackoffTicks;
+     }
+ }
+--- before/Source/HaulersDream.Tests/HaulChurnPolicyTests.cs
++++ after/Source/HaulersDream.Tests/HaulChurnPolicyTests.cs
+@@ -398,129 +398,9 @@
+                 "the window end is exclusive, so after the requests stop the item is offered to the aside path again");
+         }
+ 
+-        // --- per-THING net-zero re-anchor SUCCESS-loop bound (#214: every job Succeeds) ---------------------
+-        //  The discriminator is net-zero: a stack re-hauled repeatedly WITHOUT shrinking is a loop, while a
+-        //  legitimate oversized haul re-anchors the same stack too but SHRINKS it each armful. These pin that the
+-        //  tally counts only non-shrinking re-anchors, resets on delivery progress or a spaced re-anchor, and trips
+-        //  the backoff on exactly the budget-th net-zero re-anchor.
+-
+-        [Test]
+-        public void FirstReanchor_StartsTallyAtOne()
+-        {
+-            HaulChurnPolicy.RecordNetZeroReanchor(nowTick: 1000, lastTick: 0, priorCount: 0,
+-                lastStackCount: 0, currentStackCount: 873, out int newLast, out int newCount);
+-            Assert.That(newCount, Is.EqualTo(1));
+-            Assert.That(newLast, Is.EqualTo(1000), "the last-anchor tick advances to now");
+-        }
+-
+-        [Test]
+-        public void NetZeroReanchor_ExactlyAtTheGap_StillCounts()
+-        {
+-            // A re-anchor exactly ReanchorGapTicks after the previous, with the stack unchanged, is the same loop.
+-            HaulChurnPolicy.RecordNetZeroReanchor(nowTick: 1000 + HaulChurnPolicy.ReanchorGapTicks, lastTick: 1000,
+-                priorCount: 1, lastStackCount: 873, currentStackCount: 873, out int _, out int newCount);
+-            Assert.That(newCount, Is.EqualTo(2));
+-        }
+-
+-        [Test]
+-        public void ShrunkStack_ResetsToOne()
+-        {
+-            // The stack got smaller since the last re-anchor: real delivery progress (an armful left), never a loop.
+-            HaulChurnPolicy.RecordNetZeroReanchor(nowTick: 1100, lastTick: 1000, priorCount: 4,
+-                lastStackCount: 873, currentStackCount: 800, out int _, out int newCount);
+-            Assert.That(newCount, Is.EqualTo(1), "a shrinking stack is progress and must reset the loop tally");
+-        }
+-
+-        [Test]
+-        public void SpacedReanchor_PastGap_ResetsToOne()
+-        {
+-            // The next re-anchor lands more than a gap after the previous -> not the same loop, start fresh.
+-            HaulChurnPolicy.RecordNetZeroReanchor(nowTick: 1000 + HaulChurnPolicy.ReanchorGapTicks + 1,
+-                lastTick: 1000, priorCount: 3, lastStackCount: 873, currentStackCount: 873, out int _, out int newCount);
+-            Assert.That(newCount, Is.EqualTo(1));
+-        }
+-
+-        [Test]
+-        public void NonShrinkingGrowth_StillCounts()
+-        {
+-            // A stack that did NOT shrink (here it even grew, e.g. a foreign mod merged more in) is not delivery
+-            // progress, so a rapid re-anchor still counts toward the loop.
+-            HaulChurnPolicy.RecordNetZeroReanchor(nowTick: 1100, lastTick: 1000, priorCount: 3,
+-                lastStackCount: 800, currentStackCount: 873, out int _, out int newCount);
+-            Assert.That(newCount, Is.EqualTo(4));
+-        }
+-
+-        [Test]
+-        public void ShouldBackOffReanchored_OnlyAtOrPastTheBudget()
+-        {
+-            Assert.That(HaulChurnPolicy.ShouldBackOffReanchored(HaulChurnPolicy.MaxNetZeroReanchorsPerThing - 1), Is.False);
+-            Assert.That(HaulChurnPolicy.ShouldBackOffReanchored(HaulChurnPolicy.MaxNetZeroReanchorsPerThing), Is.True);
+-            Assert.That(HaulChurnPolicy.ShouldBackOffReanchored(HaulChurnPolicy.MaxNetZeroReanchorsPerThing + 1), Is.True);
+-        }
+-
+-        [Test]
+-        public void NetZeroSuppressUntil_AddsTheLongWindow()
+-        {
+-            Assert.That(HaulChurnPolicy.NetZeroSuppressUntil(1000),
+-                Is.EqualTo(1000 + HaulChurnPolicy.NetZeroBackoffTicks));
+-        }
+-
+-        /// <summary>
+-        /// ORACLE: the #214 terminal loop. The pawn re-anchors an automatic bulk haul on the SAME 873-leather
+-        /// stack every ~90 ticks (~1.5 s, the logged cadence) and the stack never shrinks (RimIOT pockets a
+-        /// substitute and bounces it back), so driving the pure policy the way the Verse glue does, the thing must
+-        /// be backed off on exactly the budget-th net-zero re-anchor, and no sooner.
+-        /// </summary>
+-        [Test]
+-        public void Oracle_NetZeroTerminalLoop_TripsBackoffExactlyAtTheBudget()
+-        {
+-            const int cadence = 90; // ticks between re-anchors, comfortably under ReanchorGapTicks
+-            Assert.That(cadence, Is.LessThanOrEqualTo(HaulChurnPolicy.ReanchorGapTicks));
+-            const int stack = 873; // never shrinks: net-zero
+-            int last = 0, count = 0, tick = 10_000, lastStack = 0;
+-            int backedOffAt = -1;
+-            for (int anchor = 1; anchor <= 50 && backedOffAt < 0; anchor++)
+-            {
+-                HaulChurnPolicy.RecordNetZeroReanchor(tick, last, count, lastStack, stack, out last, out count);
+-                lastStack = stack;
+-                if (HaulChurnPolicy.ShouldBackOffReanchored(count))
+-                    backedOffAt = anchor;
+-                tick += cadence;
+-            }
+-            Assert.That(backedOffAt, Is.EqualTo(HaulChurnPolicy.MaxNetZeroReanchorsPerThing),
+-                "the net-zero loop must be bounded on exactly the budget-th re-anchor");
+-        }
+-
+-        /// <summary>
+-        /// ORACLE: a legitimate oversized haul must NEVER trip. A pawn hauls a huge stack in armfuls; each rapid
+-        /// re-anchor is within the gap (the stacks are near storage), but every trip SHRINKS the stack, so the
+-        /// net-zero tally resets every time and the backoff never fires however many trips it takes.
+-        /// </summary>
+-        [Test]
+-        public void Oracle_LegitimateOversizedArmfulHaul_NeverTrips()
+-        {
+-            int last = 0, count = 0, tick = 10_000, lastStack = 0, stack = 900;
+-            for (int trip = 1; trip <= 30 && stack > 0; trip++)
+-            {
+-                HaulChurnPolicy.RecordNetZeroReanchor(tick, last, count, lastStack, stack, out last, out count);
+-                Assert.That(HaulChurnPolicy.ShouldBackOffReanchored(count), Is.False,
+-                    $"armful trip {trip} delivered part of the stack and must never trip the loop backoff");
+-                lastStack = stack;
+-                stack -= 75;         // an armful left the floor this trip: real progress
+-                tick += 40;          // rapid, well within the gap
+-            }
+-        }
+-
+-        [Test]
+-        public void NetZeroBudget_IsTightButAboveTransients_AndPersistsLongerThanFailureBackoff()
+-        {
+-            // A handful of net-zero re-anchors is unambiguously the loop; keep the budget low enough to stop the
+-            // pinning quickly but above any legitimate one-or-two-rebuild transient.
+-            Assert.That(HaulChurnPolicy.MaxNetZeroReanchorsPerThing, Is.GreaterThanOrEqualTo(3));
+-            Assert.That(HaulChurnPolicy.MaxNetZeroReanchorsPerThing, Is.LessThanOrEqualTo(10));
+-            // The gap must span at least one loop cadence so a real loop keeps accumulating.
+-            Assert.That(HaulChurnPolicy.ReanchorGapTicks, Is.GreaterThanOrEqualTo(120));
+-            // The foreign re-fetcher is persistent, so its backoff is deliberately longer than the failure-churn one.
++        [Test]
++        public void ForeignRetargetBackoff_PersistsLongerThanFailureBackoff()
++        {
+             Assert.That(HaulChurnPolicy.NetZeroBackoffTicks, Is.GreaterThan(HaulChurnPolicy.BackoffTicks));
+         }
+     }

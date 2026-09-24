@@ -1,0 +1,40 @@
+<?xml version='1.0' encoding='utf-8'?>
+<LanguageData>
+  <HD_ExplicitHaulTo>Перенести {0} в…</HD_ExplicitHaulTo>
+  <HD_ExplicitChanged>Персонаж или выбранная стопка изменились. Выберите их снова.</HD_ExplicitChanged>
+  <HD_ExplicitActorUnavailable>Этот персонаж сейчас не может выполнить приказ о переноске.</HD_ExplicitActorUnavailable>
+  <HD_ExplicitSelectSource>Выберите стопку для переноски. Правая кнопка мыши или Escape — отмена.</HD_ExplicitSelectSource>
+  <HD_ExplicitSelectDestination>Доставить сюда {0} × {1}. {2} Выберите доступную клетку на земле или полку. Правая кнопка мыши или Escape отменяет действие.</HD_ExplicitSelectDestination>
+  <HD_ExplicitQueuedHint>Добавить в очередь работ.</HD_ExplicitQueuedHint>
+  <HD_ExplicitReplaceHint>Заменить текущую работу.</HD_ExplicitReplaceHint>
+  <HD_ExplicitStateQueued>В очереди</HD_ExplicitStateQueued>
+  <HD_ExplicitStateActive>Переноска</HD_ExplicitStateActive>
+  <HD_ExplicitStateBlocked>Заблокирован</HD_ExplicitStateBlocked>
+  <HD_ExplicitStateCancelled>Отменён</HD_ExplicitStateCancelled>
+  <HD_ExplicitStateComplete>Выполнен</HD_ExplicitStateComplete>
+  <HD_ExplicitStateCaptured>Временно приостановлен</HD_ExplicitStateCaptured>
+  <HD_ExplicitSourceChanged>Выбранный источник исчез, исчерпан или больше не разрешён.</HD_ExplicitSourceChanged>
+  <HD_ExplicitSourceReserved>Выбранный источник зарезервирован другой задачей.</HD_ExplicitSourceReserved>
+  <HD_ExplicitDestinationBlocked>В выбранном месте нет свободного пространства, оно зарезервировано или не принимает эти предметы.</HD_ExplicitDestinationBlocked>
+  <HD_ExplicitRouteBlocked>Выбранный путь недоступен.</HD_ExplicitRouteBlocked>
+  <HD_ExplicitHandsBusy>Персонаж держит в руках другой груз.</HD_ExplicitHandsBusy>
+  <HD_ExplicitInterrupted>Приказ прерван. Возобновите его, когда будете готовы.</HD_ExplicitInterrupted>
+  <HD_ExplicitAdmissionFailed>Персонаж не смог начать этот приказ. Возобновите его, когда будете готовы.</HD_ExplicitAdmissionFailed>
+  <HD_ExplicitNeedsReview>Сохранённый приказ или его груз неожиданно изменились. Проверьте предметы перед возобновлением.</HD_ExplicitNeedsReview>
+  <HD_ExplicitStart>Перенести в…</HD_ExplicitStart>
+  <HD_ExplicitStartDesc>Выберите одну стопку, общее количество и точную клетку на земле или полку. Переносится только выбранная стопка. Удерживайте клавишу очереди приказов, чтобы добавить приказ в очередь.</HD_ExplicitStartDesc>
+  <HD_ExplicitOrders>Приказы о переноске</HD_ExplicitOrders>
+  <HD_ExplicitOrdersDesc>Просматривайте доставленные количества, возобновляйте или отменяйте приказы о переноске.</HD_ExplicitOrdersDesc>
+  <HD_ExplicitAmountTitle>Выбрать количество</HD_ExplicitAmountTitle>
+  <HD_ExplicitChooseDestination>Выбрать место</HD_ExplicitChooseDestination>
+  <HD_ExplicitAmountContext>{0}: {1}\nВ этой стопке доступно: {2}</HD_ExplicitAmountContext>
+  <HD_ExplicitQueue>Добавить в очередь работ</HD_ExplicitQueue>
+  <HD_ExplicitAmountHint>Доставить всего {0}, при необходимости за несколько ходок. Личный инвентарь не затрагивается.</HD_ExplicitAmountHint>
+  <HD_ExplicitQueueResume>Ставить возобновляемые приказы в очередь</HD_ExplicitQueueResume>
+  <HD_ExplicitResume>Возобновить</HD_ExplicitResume>
+  <HD_ExplicitCancel>Отменить приказ</HD_ExplicitCancel>
+  <HD_ExplicitProgress>Приказ {0}: {1}\nДоставлено {2} / {3} → ({4}, {5})</HD_ExplicitProgress>
+  <HD_ExplicitMissingItem>Источник отсутствует</HD_ExplicitMissingItem>
+  <HD_ExplicitShelf>Выбранная полка: {0}</HD_ExplicitShelf>
+  <HD_ExplicitMissingShelf>Полка отсутствует</HD_ExplicitMissingShelf>
+</LanguageData>

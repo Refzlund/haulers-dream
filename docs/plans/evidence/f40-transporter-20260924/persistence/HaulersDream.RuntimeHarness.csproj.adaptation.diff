@@ -1,0 +1,18 @@
+--- C:\Users\Arthur\Sync\Projects\RimWorld Mods\HaulersDream\docs\plans\evidence\f38-handoff-source-20260924\native-fixture\host\HaulersDream.RuntimeHarness.csproj
++++ C:\Users\Arthur\Sync\Projects\RimWorld Mods\HaulersDream\docs\plans\evidence\f40-transporter-20260924\persistence\host\HaulersDream.RuntimeHarness.csproj
+@@ -14,12 +14,12 @@
+     <RuntimeHarmonyAssembly Condition="'$(RuntimeHarmonyAssembly)' == ''">C:\Steam\steamapps\workshop\content\294100\2009463077\Current\Assemblies\0Harmony.dll</RuntimeHarmonyAssembly>
+   </PropertyGroup>
+   <ItemGroup>
+-    <Compile Include="../src/SweepHandoff.cs" />
++    <Compile Include="../src/TransporterPersistence*.cs" />
+     <Reference Include="HaulersDream">
+-      <HintPath>$(F38ProductDirectory)/1.6/Assemblies/HaulersDream.dll</HintPath><Private>false</Private>
++      <HintPath>$(F40ProductDirectory)/1.6/Assemblies/HaulersDream.dll</HintPath><Private>false</Private>
+     </Reference>
+     <Reference Include="HaulersDream.Core">
+-      <HintPath>$(F38ProductDirectory)/1.6/Assemblies/HaulersDream.Core.dll</HintPath><Private>false</Private>
++      <HintPath>$(F40ProductDirectory)/1.6/Assemblies/HaulersDream.Core.dll</HintPath><Private>false</Private>
+     </Reference>
+   </ItemGroup>
+   <ItemGroup>

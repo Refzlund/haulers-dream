@@ -1,0 +1,82 @@
+--- v1/src/TransporterPersistence.cs
++++ v2/src/TransporterPersistence.cs
+@@ -77,7 +77,7 @@
+             if(stage=="warmup"){if(WarmReady())MakeActor();return;}if(gui!=null)return;
+             ObserveEnvironment();Guard(Fit(actor),"Native actor became medically unfit; no product inference.");Conservation();
+             if(stage=="stable"){
+-                Guard(Physical()==stablePhysical&&MemoryCount(Grenade,null)==1&&MemoryCount(primary.def,primary.Stuff)==1&&Cargo.KeptCountOf(Grenade)==3&&Cargo.PeekHashSet().Count==0,"Settled provider custody/memory changed.");
++                Guard(Physical()==stablePhysical&&MemoryCount(Grenade,null)==1&&MemoryCount(primary.def,primary.Stuff)==1&&Cargo.KeptCountOf(Grenade)==0&&OtherKeeps()=="WoodLog:5"&&Cargo.PeekHashSet().Count==0,"Settled provider custody/memory changed.");
+                 AssertCache("stable",false);if(ticks.TicksGame-stableStart>=300){Record("physical35-personal-memory-stable300",true,State());Record("fixture-complete",!failed,"commands="+commands+"; "+State());status=failed?"failed":"passed";Cleanup();}}
+         }
+         private void MakeActor()
+@@ -87,35 +87,49 @@
+             Guard(actor!=null,"Actual healthy capable colonist required.");actor.workSettings.EnableAndInitializeIfNotAlreadyInitialized();actor.workSettings.DisableAll();GenSpawn.Spawn(actor,map.Center,map);actor.drafter.Drafted=true;
+             ce=actor.AllComps.Single(c=>ceType.IsInstanceOfType(c));memory=actor.AllComps.Single(c=>memoryType.IsInstanceOfType(c));
+             sentinel=ThingMaker.MakeThing(ThingDefOf.WoodLog);sentinel.stackCount=5;Guard(actor.inventory.innerContainer.TryAdd(sentinel,false),"Personal wood setup refused.");
++            Cargo.SetKeptCount(ThingDefOf.WoodLog,5); // Unrelated Keep preference must survive every target-def departure.
+             primary=ThingMaker.MakeThing(DefDatabase<ThingDef>.GetNamed("MeleeWeapon_Knife"),ThingDefOf.Steel);actor.equipment.AddEquipment((ThingWithComps)primary);
+             var source=AddGrenades(15);memoryGenerate.Invoke(memory,null);Cargo.SetKeptCount(Grenade,3);refresh.Invoke(null,new object[]{actor});
+             Record("real-stackable-provider-weapon",source.GetType().FullName=="CombatExtended.AmmoThing"&&source.def.IsWeapon&&source.def.stackLimit==75&&source.TryGetComp<CompEquippable>()!=null&&Carried(Grenade,null).Count==1&&MemoryCount(Grenade,null)==1&&MemoryCount(primary.def,primary.Stuff)==1,State());
+-            Guard(!failed,"Actual provider grenade/memory setup differs.");Observe();stage="commands";Gui(()=>RunCommands(source));
++            Guard(!failed&&Cargo.KeptCountOf(Grenade)==3&&OtherKeeps()=="WoodLog:5","Actual provider grenade/memory/Keep setup differs.");Observe();stage="commands";Gui(()=>RunCommands(source));
+         }
+         private void RunCommands(Thing source)
+         {
+-            Drop("partial",source,6,2,1,0,true);
+-            Drop("full-remaining",source,9,3,0,1,false);
++            Drop("partial",source,6,2,1,0,true,3);
++            Drop("full-remaining",source,9,3,0,1,false,0);
+             var duplicate=AddGrenades(5);var retained=AddGrenades(5);memoryAdded.Invoke(memory,new object[]{retained});refresh.Invoke(null,new object[]{actor});
++            KeepInput("surplus-reference");
+             Record("actual-surplus-reference-input",Carried(Grenade,null).Count==2&&MemoryCount(Grenade,null)==1,State());Guard(!failed,"Surplus input differs.");
+-            Drop("surplus-reference",duplicate,5,1,1,0,false);
+-            Drop("final-reference",retained,5,2,0,1,false);
++            Drop("surplus-reference",duplicate,5,1,1,0,false,3);
++            Drop("final-reference",retained,5,2,0,1,false,0);
+             var missing=AddGrenades(5);var last=AddGrenades(5);memoryGenerate.Invoke(memory,null);
++            KeepInput("previously-missing");
+             Guard(MemoryCount(Grenade,null)==2&&Carried(Grenade,null).Count==2,"Actual two remembered weapon input required.");
+             Guard(actor.inventory.innerContainer.TryDrop(missing,actor.Position,map,ThingPlaceMode.Near,out var actualMissing)&&actualMissing!=null&&actualMissing.Spawned,"Native unintentional removal failed.");
+             refresh.Invoke(null,new object[]{actor});Record("actual-previously-missing-input",MemoryCount(Grenade,null)==2&&Carried(Grenade,null).Count==1,"Native direct drop is explicit unintentional scene input; "+State());Guard(!failed,"Unintentional memory input differs.");
+-            Drop("preserve-previously-missing",last,5,3,1,1,false);
++            Drop("preserve-previously-missing",last,5,3,1,1,false,0);
+             Guard(commands==5&&expectedTotal==35,"Exact bounded campaign differs.");Conservation();stablePhysical=Physical();stableStart=ticks.TicksGame;stage="stable";ticks.CurTimeSpeed=TimeSpeed.Superfast;
+         }
+-        private void Drop(string name,Thing source,int count,int policy,int rememberedAfter,int forgetCalls,bool retained)
++        private void KeepInput(string name)
++        {
++            Guard(actor.inventory.innerContainer.Where(t=>t.def==Grenade).Sum(t=>t.stackCount)==10&&Cargo.KeptCountOf(Grenade)==0&&OtherKeeps()=="WoodLog:5","Declared next-case Keep input differs.");
++            Cargo.SetKeptCount(Grenade,3);emit("f11-provider-keep-input","case="+name+"; real SetKeptCount(3) before measurement; "+State());
++        }
++        private void Drop(string name,Thing source,int count,int policy,int rememberedAfter,int forgetCalls,bool retained,int keepAfter)
+         {
+             Guard(ticks.CurTimeSpeed==TimeSpeed.Paused&&!insideCommand&&Fit(actor)&&source.holdingOwner==actor.inventory.innerContainer,"Exact paused owned command input required.");
++            Guard(Cargo.KeptCountOf(Grenade)==3&&OtherKeeps()=="WoodLog:5","Exact target/unrelated Keep precondition differs.");
+             AssertCache(name+"-before",true);int initial=source.stackCount;string protect=Protected();float weight=Cache("currentWeight"),bulk=Cache("currentBulk");int floor=GroundCount();int tick=ticks.TicksGame;
++            float unitMass=source.GetStatValue(StatDefOf.Mass),unitBulk=source.GetStatValue(Bulk);
+             ceCallbacks=ssCallbacks=0;callbacks.Clear();emit("f11-provider-command-before","case="+name+"; source="+source.ThingID+"; requested="+count+"; policy="+policy+"; "+State());
+             insideCommand=true;try{command.Invoke(null,new object[]{actor,source.thingIDNumber,count,initial,map.uniqueID,policy});}finally{insideCommand=false;}commands++;
+             Guard(observerError==null,observerError);bool held=ReferenceEquals(source.holdingOwner,actor.inventory.innerContainer)&&!source.Destroyed&&!source.Spawned;
+-            Record(name+"-physical",held==retained&&(held?source.stackCount:0)==initial-count&&GroundCount()-floor==count&&Protected()==protect&&ticks.TicksGame==tick,"source="+source.ThingID+"; initial="+initial+"; requested="+count+"; "+State());
+-            Record(name+"-immediate-cache-delta",Near(Cache("currentWeight"),weight-count*source.GetStatValue(StatDefOf.Mass))&&Near(Cache("currentBulk"),bulk-count*source.GetStatValue(Bulk)),"before="+F(weight)+","+F(bulk)+"; after="+F(Cache("currentWeight"))+","+F(Cache("currentBulk"))+"; no fixture refresh/tick after command");
++            bool custody=held==retained,quantity=(held?source.stackCount:0)==initial-count,placed=GroundCount()-floor==count,protectedSame=Protected()==protect,sameTick=ticks.TicksGame==tick;
++            Record(name+"-physical",custody&&quantity&&placed&&protectedSame&&sameTick,"source="+source.ThingID+"; initial="+initial+"; requested="+count+"; destroyed="+source.Destroyed+"; held="+held
++                +"; custody="+custody+"; quantity="+quantity+"; placed="+placed+"; protected="+protectedSame+"; sameTick="+sameTick+"; "+State());
++            Record(name+"-target-keep-lifetime",Cargo.KeptCountOf(Grenade)==keepAfter&&OtherKeeps()=="WoodLog:5",
++                "Expected target Keep="+keepAfter+"; preserve while same-def inventory remains, clear after last departure; unrelated="+OtherKeeps()+"; "+State());
++            Record(name+"-immediate-cache-delta",Near(Cache("currentWeight"),weight-count*unitMass)&&Near(Cache("currentBulk"),bulk-count*unitBulk),"before="+F(weight)+","+F(bulk)+"; after="+F(Cache("currentWeight"))+","+F(Cache("currentBulk"))+"; no fixture refresh/tick after command");
+             AssertCache(name+"-after",true);
+             Record(name+"-actual-memory-callbacks",MemoryCount(Grenade,null)==rememberedAfter&&ssCallbacks==forgetCalls&&ceCallbacks>=1,"SS="+ssCallbacks+"; CE="+ceCallbacks+"; memory="+MemoryCount(Grenade,null)+"; callbacks="+string.Join(" || ",callbacks));
+             Conservation();Guard(!failed,"Actual provider outcome failed: "+name);emit("f11-provider-command-after","case="+name+"; "+State());
+@@ -144,8 +158,9 @@
+         private int GroundCount()=>map.listerThings.ThingsOfDef(Grenade).Sum(t=>t.stackCount);
+         private void Conservation(){Guard(GroundCount()+actor.inventory.innerContainer.Where(t=>t.def==Grenade).Sum(t=>t.stackCount)==expectedTotal&&actor.carryTracker.CarriedThing==null,"Actual grenade conservation failed.");}
+         private string Physical()=>string.Join("|",map.listerThings.ThingsOfDef(Grenade).Concat(actor.inventory.innerContainer).OrderBy(t=>t.thingIDNumber).Select(t=>t.ThingID+":"+t.stackCount+":"+(t.Spawned?"ground"+t.Position:"inventory")));
+-        private string Protected()=>"personal="+string.Join("|",actor.inventory.innerContainer.Where(t=>t.def!=Grenade).Select(t=>t.ThingID+":"+t.stackCount))+"; primary="+actor.equipment.Primary?.ThingID+"; memoryPrimary="+MemoryCount(primary.def,primary.Stuff)+"; tags="+string.Join(",",Cargo.PeekHashSet().Select(t=>t.ThingID).OrderBy(s=>s))+"; keep="+Cargo.KeptCountOf(Grenade)+"; age="+Cargo.lastYieldTick+"; drafted="+actor.Drafted+"; job="+actor.CurJob?.loadID+":"+actor.CurJobDef?.defName+"; queue="+string.Join(",",actor.jobs.jobQueue.Select(q=>q.job.loadID+":"+q.job.def.defName))+"; hands="+actor.carryTracker.CarriedThing?.ThingID;
+-        private string State()=>"tick="+ticks.TicksGame+"; total="+expectedTotal+"; CE="+F(Cache("currentWeight"))+","+F(Cache("currentBulk"))+"; remembered="+MemoryCount(Grenade,null)+"; carriedReferences="+Carried(Grenade,null).Count+"; "+Protected()+"; physical="+Physical();
++        private string OtherKeeps()=>string.Join("|",Cargo.PeekKeptCounts().Where(p=>p.Key!=Grenade).OrderBy(p=>p.Key.defName,StringComparer.Ordinal).Select(p=>p.Key.defName+":"+p.Value));
++        private string Protected()=>"personal="+string.Join("|",actor.inventory.innerContainer.Where(t=>t.def!=Grenade).Select(t=>t.ThingID+":"+t.stackCount))+"; primary="+actor.equipment.Primary?.ThingID+"; memoryPrimary="+MemoryCount(primary.def,primary.Stuff)+"; tags="+string.Join(",",Cargo.PeekHashSet().Select(t=>t.ThingID).OrderBy(s=>s))+"; otherKeeps="+OtherKeeps()+"; age="+Cargo.lastYieldTick+"; drafted="+actor.Drafted+"; job="+actor.CurJob?.loadID+":"+actor.CurJobDef?.defName+"; queue="+string.Join(",",actor.jobs.jobQueue.Select(q=>q.job.loadID+":"+q.job.def.defName))+"; hands="+actor.carryTracker.CarriedThing?.ThingID;
++        private string State()=>"tick="+ticks.TicksGame+"; total="+expectedTotal+"; CE="+F(Cache("currentWeight"))+","+F(Cache("currentBulk"))+"; remembered="+MemoryCount(Grenade,null)+"; carriedReferences="+Carried(Grenade,null).Count+"; keep="+Cargo.KeptCountOf(Grenade)+"; "+Protected()+"; physical="+Physical();
+         private static bool Fit(Pawn p)=>p!=null&&!p.Dead&&!p.Downed&&!p.InMentalState&&p.health.hediffSet.hediffs.Count==0&&p.health.capacities.GetLevel(PawnCapacityDefOf.Manipulation)>=.99f&&p.health.capacities.GetLevel(PawnCapacityDefOf.Moving)>=.99f;
+         private static bool Near(float a,float b)=>Math.Abs(a-b)<.0002f;
+         private static string F(float f)=>f.ToString("R",CultureInfo.InvariantCulture);

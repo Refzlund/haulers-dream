@@ -1,0 +1,84 @@
+diff --git a/docs/plans/evidence/f34-live-20260920/host/Bootstrap.cs "b/C:\\Users\\Arthur\\Sync\\Projects\\RimWorld Mods\\HaulersDream\\docs\\plans\\evidence\\f33-delivery-20260920\\host\\Bootstrap.cs"
+index 4e3720a..ceac9c9 100644
+--- a/docs/plans/evidence/f34-live-20260920/host/Bootstrap.cs
++++ "b/C:\\Users\\Arthur\\Sync\\Projects\\RimWorld Mods\\HaulersDream\\docs\\plans\\evidence\\f33-delivery-20260920\\host\\Bootstrap.cs"	
+@@ -67,8 +67,7 @@ namespace HaulersDream.RuntimeHarness
+         private static RefuelGroupScenario refuelGroup;
+         private static Dlv1Scenario dlv1;
+         private static bool f34Attempted;
+-        private static bool f34LiveStarted;
+-        private static bool f34PreviewCaptureRequested;
++        private static bool f33DeliveryStarted;
+         private static bool scenarioAttempted;
+         private static bool controlStarted;
+         private static int controlDone;
+@@ -119,7 +118,7 @@ namespace HaulersDream.RuntimeHarness
+                 Check("private-mod-directory", SamePath(GenFilePaths.ModsFolderPath, Path.Combine(manifest.runtimeDirectory, "Mods")),
+                     GenFilePaths.ModsFolderPath);
+                 Check("private-player-log", SamePath(Application.consoleLogPath, manifest.logPath), Application.consoleLogPath);
+-                Check("case-supported", new[] { "bootstrap", "BG01", "BG02", "BG03-P1", "L04-O1", "CAP01", "CAP02", "CAP03-B", "CAP03-A", "CAP03-C", "L04-O1-DELIVERY", "L04-B1", "L04-B1-D2", "L40-Q1", "L40-UI-P0", "ROBOTS-R0", "ROBOTS-R1-AUTO", "REFUEL-G1", "RIMMS-DLV1", "F34-MIXED-CUT", "F34-LIVE-CUT" }.Contains(manifest.caseId), manifest.caseId);
++                Check("case-supported", new[] { "bootstrap", "BG01", "BG02", "BG03-P1", "L04-O1", "CAP01", "CAP02", "CAP03-B", "CAP03-A", "CAP03-C", "L04-O1-DELIVERY", "L04-B1", "L04-B1-D2", "L40-Q1", "L40-UI-P0", "ROBOTS-R0", "ROBOTS-R1-AUTO", "REFUEL-G1", "RIMMS-DLV1", "F34-MIXED-CUT", "F33-DELIVERY" }.Contains(manifest.caseId), manifest.caseId);
+                 Check("negative-control-supported", string.IsNullOrEmpty(manifest.negativeControl) || manifest.negativeControl == "None"
+                     || (manifest.caseId == "bootstrap" && new[] { "WorkerUnityError", "WorkerVerseError", "LateWorkerError", "TerminalRace" }.Contains(manifest.negativeControl)),
+                     manifest.negativeControl ?? "None");
+@@ -217,35 +216,29 @@ namespace HaulersDream.RuntimeHarness
+                 if (elapsedTicks < 5) return;
+                 if (!result.assertions.Any(x => x.id == "real-game-ticks-advanced"))
+                     Check("real-game-ticks-advanced", true, "elapsedTicks=" + elapsedTicks);
+-                if (manifest.caseId == "F34-LIVE-CUT")
++                if (manifest.caseId == "F33-DELIVERY")
+                 {
+                     if (Current.Game == null || !Current.Game.PlayerHasControl) return;
+-                    if (!f34LiveStarted)
++                    if (!f33DeliveryStarted)
+                     {
+-                        Check("f34-live-host-admission", canQuitOwnRuntime && UnityData.IsInMainThread
+-                            && manifest.negativeControl == "None" && manifest.expectedBehavior == "satisfied"
++                        Check("f33-delivery-host-admission", canQuitOwnRuntime && UnityData.IsInMainThread
++                            && manifest.negativeControl == "None" && (manifest.expectedBehavior == "baseline-gap" || manifest.expectedBehavior == "satisfied")
+                             && manifest.expectedMods.Select(x => x.packageId).SequenceEqual(new[] {
+                                 "brrainz.harmony", "ludeon.rimworld", "giwaffed.haulersdream", "giwaffed.haulersdream.runtimeharness" })
+                             && manifest.expectedAssemblies.Count == 10
+                             && manifest.expectedAssemblies.All(x => result.assemblies.Count(a => a.name == x.name
+                                 && a.moduleVersionId == x.moduleVersionId) == 1),
+-                            "Private four-mod/ten-image environment; programmatic confirmation and native productive cutting.");
+-                        if (result.assertions.Any(x => !x.passed)) { Finish("failed", "F34 live admission failed."); return; }
+-                        f34LiveStarted = true; // Cleanup also covers partial Begin failure.
+-                        HaulersDream.F34Native.LiveCutting.Begin(map, Check, Event);
++                            "Private four-mod/ten-image environment; four actual delivery/construction orders.");
++                        if (result.assertions.Any(x => !x.passed)) { Finish("failed", "F33 delivery admission failed."); return; }
++                        f33DeliveryStarted = true; // Cleanup also covers partial Begin failure.
++                        HaulersDream.F33Native.DeliveryIntent.Begin(map, Check, Event, manifest.expectedBehavior);
+                     }
+-                    if (!f34PreviewCaptureRequested && HaulersDream.F34Native.LiveCutting.ActiveDialog != null)
+-                    {
+-                        f34PreviewCaptureRequested = true;
+-                        ScreenCapture.CaptureScreenshot(Path.Combine(manifest.evidenceDirectory, "preview.png"));
+-                        Event("f34-live-preview-capture-requested", "Native rendered screenshot requested; inspect actual PNG after the run.");
+-                    }
+-                    string liveStatus = HaulersDream.F34Native.LiveCutting.Update();
++                    string liveStatus = HaulersDream.F33Native.DeliveryIntent.Update();
+                     if (liveStatus == "running") return;
+-                    Check("f34-live-host-returned", liveStatus == "passed", "Live scenario returned " + liveStatus);
++                    Check("f33-delivery-host-returned", liveStatus == "passed", "Live scenario returned " + liveStatus);
+                     Check("no-unity-errors-after-harness-start", unityErrors == 0, "observedErrors=" + unityErrors);
+                     Finish(liveStatus == "passed" && !result.assertions.Any(x => !x.passed) ? "passed" : "failed",
+-                        "F34 native productive cutting after owned dialog and programmatic confirmation; no OS or button-input verification.");
++                        "F33 actual native delivery/construction and route intent; programmatic offered actions, no physical input.");
+                     return;
+                 }
+                 if (manifest.caseId == "F34-MIXED-CUT")
+@@ -776,10 +769,10 @@ namespace HaulersDream.RuntimeHarness
+             if (terminal) return;
+             terminal = true;
+             // Remove only this test's observers while error capture is still open.
+-            if (f34LiveStarted)
++            if (f33DeliveryStarted)
+             {
+-                try { HaulersDream.F34Native.LiveCutting.Dispose(); }
+-                catch (Exception error) { Check("f34-live-terminal-cleanup", false, error.ToString()); status = "failed"; }
++                try { HaulersDream.F33Native.DeliveryIntent.Dispose(); }
++                catch (Exception error) { Check("f33-delivery-terminal-cleanup", false, error.ToString()); status = "failed"; }
+                 if (result.assertions.Any(x => !x.passed)) status = "failed";
+             }
+             try { dlv1?.Dispose(); }

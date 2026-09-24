@@ -1,0 +1,11 @@
+--- v4/src/ExplicitShelfScene.Cases.cs
++++ v5/src/ExplicitShelfScene.Cases.cs
+@@ -66,6 +66,8 @@
+             Guard(selectedShelf.storageGroup==group&&linkedShelf.storageGroup==group&&group.MemberCount==2,"Native linked shelf setup failed");
+             var cells=selectedShelf.AllSlotCells().OrderBy(c=>c.DistanceToSquared(actors[1].Position)).ThenBy(c=>c.x).ThenBy(c=>c.z).ToArray();
+             Guard(cells.Length==2,"Actual two-cell native shelf required");fullCell=cells[0];alternateCell=cells[1];
++            Require("native-shelf-pass-through-cell",selectedShelf.def.passability==Traversability.PassThroughOnly&&cells.All(c=>!c.Standable(map)&&c.WalkableBy(map,actors[1])&&actors[1].CanReach(c,PathEndMode.OnCell,Danger.Some)),
++                "Actual native two-cell shelf is PassThroughOnly and walkable by the real carrier; Standable would reject both");
+             sources[1]=Spawn(ThingDefOf.Steel,15,map.Center+new IntVec3(0,0,-5));destinations[1]=alternateCell;
+             var near=new Zone_Stockpile(StorageSettingsPreset.DefaultStockpile,map.zoneManager);map.zoneManager.RegisterZone(near);near.AddCell(map.Center+new IntVec3(-1,0,-5));near.settings.filter.SetDisallowAll();near.settings.filter.SetAllow(ThingDefOf.Steel,true);near.settings.Priority=StoragePriority.Critical;
+             Require("real-linked-and-nearer-controls",linkedShelf.Position.DistanceTo(sources[1].Position)<selectedShelf.Position.DistanceTo(sources[1].Position)

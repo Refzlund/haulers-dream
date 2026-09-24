@@ -1,0 +1,58 @@
+--- v5/src/ExplicitShelfScene.Cases.cs
++++ v6/src/ExplicitShelfScene.Cases.cs
+@@ -27,7 +27,30 @@
+         private static Type Storage=>typeof(HaulersDreamMod).Assembly.GetType("HaulersDream.StorageCommitments",true);
+         private static int ShelfUnits(Building_Storage shelf,ThingDef def)=>shelf.AllSlotCells().SelectMany(c=>c.GetThingList(shelf.Map)).Where(t=>t.def==def).Sum(t=>t.stackCount);
+         private static object LastOrder(Pawn pawn)=>Orders(pawn).Last();
+-        private static bool Finished(Pawn pawn,object order)=>new[]{"Complete","Blocked","Cancelled"}.Contains(State(order))&&!Explicit(pawn.CurJob);
++        private readonly Dictionary<Pawn,int> controlWaits=new Dictionary<Pawn,int>();
++        private readonly HashSet<int> observedControlWaits=new HashSet<int>();
++        private void QueueControlWait(Pawn pawn)
++        {
++            var actual=pawn.CurJob;
++            Guard(actual!=null&&!actual.def.isIdle&&pawn.jobs.jobQueue.Count==0,"Standalone control must have one current real job and an empty queue");
++            var wait=JobMaker.MakeJob(JobDefOf.Wait,60000);
++            Guard(!wait.targetA.IsValid&&wait.def.carryThingAfterJob&&!wait.def.dropThingBeforeJob,"Native targetless Wait must preserve hands rather than conceal retained cargo");
++            Guard(pawn.jobs.TryTakeOrderedJob(wait,requestQueueing:true)&&pawn.CurJob==actual&&pawn.jobs.jobQueue.Count==1&&pawn.jobs.jobQueue[0].job==wait,
++                "Native ordered successor changed the active control or did not queue the exact Wait");
++            controlWaits[pawn]=wait.loadID;
++            emit("f13-controlled-wait-queued","actor="+Id(pawn)+"; current="+JobText(actual)+"; actualSuccessor="+JobText(wait)+"; no order/cargo mutation");
++        }
++        private bool ControlWaitReached(Pawn pawn)
++        {
++            // Native success can use its one-tick posture transition before consuming the queue.
++            if(pawn.CurJob?.def==JobDefOf.Wait_MaintainPosture)return false;
++            Guard(controlWaits.TryGetValue(pawn,out int expected)&&pawn.CurJob?.loadID==expected&&pawn.CurJob.def==JobDefOf.Wait&&pawn.jobs.jobQueue.Count==0,
++                "Expected exact native queued Wait before control sampling; actual="+JobText(pawn.CurJob)+"; queued="+QueueText(pawn));
++            if(observedControlWaits.Add(expected))Require("controlled-native-wait-"+expected,true,
++                "actor="+Id(pawn)+"; actual="+JobText(pawn.CurJob)+"; hands="+ItemText(pawn.carryTracker.CarriedThing)+"; recovery="+RecoveryText(pawn));
++            return true;
++        }
++        private bool Finished(Pawn pawn,object order)=>new[]{"Complete","Blocked","Cancelled"}.Contains(State(order))&&!Explicit(pawn.CurJob)&&ControlWaitReached(pawn);
+         private void Cancel(Pawn pawn,object order)
+         { AccessTools.Method(Command,"CancelSynced").Invoke(null,new object[]{pawn,Field<long>(order,"id"),map.uniqueID}); }
+         private bool CanShelf(Pawn pawn,Thing source,Building_Storage shelf,int count)
+@@ -40,6 +63,7 @@
+             var order=LastOrder(pawn);
+             Guard(Field<int>(order,"requested")==count&&Field<Thing>(order,"shelf")==shelf&&Field<int>(order,"shelfId")==shelf.thingIDNumber,"Issued shelf identity differs");
+             if(shelf==chainShelf)expectedJobs.Add(Field<int>(order,"jobId"));
++            else QueueControlWait(pawn);
+             emit("f13-real-issued","actor="+Id(pawn)+",queue="+queue+","+OrderText(order)+",native="+JobText(pawn.CurJob)+",queued="+QueueText(pawn));
+             return order;
+         }
+@@ -119,6 +143,7 @@
+             }
+             if(stage=="native-first"&&actors[0].CurJob?.loadID!=nativeJobId&&ShelfUnits(nativeShelf,ThingDefOf.Uranium)==7)
+             {
++                if(!ControlWaitReached(actors[0]))return;
+                 Require("native-incoming-first-physical",(nativeSource.Destroyed||(nativeSource.Spawned&&nativeSource.Map==map&&nativeShelf.AllSlotCells().Contains(nativeSource.Position)&&nativeSource.stackCount==7))
+                     &&actors[0].carryTracker.CarriedThing==null,"Real native-generated haul delivered all original Uranium7: merged/destroyed or exact original object at selected native shelf; source="+ItemText(nativeSource));
+                 Hold(actors[0]);nativeExplicitOrder=IssueShelf(actors[1],explicitNativeSource,nativeShelf,7,false);stage="after-native-first";return;
+@@ -172,6 +197,7 @@
+             Require("native-incoming-first-without-cell-reservation",actors[0].CurJob==job&&actors[0].jobs.curDriver is JobDriver_HaulToCell
+                 &&!map.reservationManager.ReservedBy(job.targetB,actors[0],job)&&!CanShelf(actors[1],explicitNativeSource,nativeShelf,7),
+                 "Actual native current="+JobText(job)+"; generatedCount="+job.count+"; explicit live admission refused; no job field edits");
++            QueueControlWait(actors[0]);
+             emit("f13-native-first",JobText(job));stage="native-first";
+         }
+         private void StartExplicitFirst()

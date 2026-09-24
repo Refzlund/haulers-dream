@@ -1,0 +1,121 @@
+{
+  "status": "accepted exact checkpoint for bound restart; producer only",
+  "assertions": 59,
+  "events": 92,
+  "unityErrors": 0,
+  "save": "C:\\Users\\Arthur\\AppData\\Local\\HaulersDreamQA\\runtime-temp\\haulersdream-runtime-tests\\c19dba9d9f0b4b79a1710bec0b73f725\\SaveData\\Saves\\F38-SweepHandoff.rws",
+  "saveSha256": "B65EFC6ECE626502785893516A13969395D1345FB23539AB7131A0D762466A2F",
+  "saveBytes": 6277740,
+  "recordSha256": "406E693B5BC4B02136A2DF0FA68A33A348D35C8098D40C0550D5779F853D2CA3",
+  "tick": 196,
+  "actorA": {
+    "id": 12,
+    "defName": "HaulersDream_BulkHaul",
+    "a": "Thing_Cloth19515",
+    "b": null,
+    "targets": [
+      "Thing_Cloth19515",
+      "null",
+      "null",
+      "Thing_Cloth19518"
+    ],
+    "counts": [
+      17,
+      0,
+      0,
+      41
+    ]
+  },
+  "actorCQueue": [
+    {
+      "id": 15,
+      "defName": "HaulersDream_BulkHaul",
+      "a": null,
+      "b": null,
+      "targets": [
+        "null",
+        "Thing_Uranium19520"
+      ],
+      "counts": [
+        0,
+        7
+      ]
+    },
+    {
+      "id": 17,
+      "defName": "HaulersDream_BulkHaul",
+      "a": null,
+      "b": null,
+      "targets": [
+        "null",
+        "null"
+      ],
+      "counts": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": 18,
+      "defName": "Goto",
+      "a": "(149, 0, 107)",
+      "b": null,
+      "targets": [],
+      "counts": []
+    }
+  ],
+  "stock": {
+    "Cloth19515": {
+      "count": 17,
+      "owner": "Human19498",
+      "position": "(98, 0, 117)"
+    },
+    "Cloth19516": {
+      "count": 25,
+      "owner": "Map_0",
+      "position": "(103, 0, 117)"
+    },
+    "Cloth19517": {
+      "count": 31,
+      "owner": "Map_0",
+      "position": "(108, 0, 117)"
+    },
+    "Cloth19518": {
+      "count": 41,
+      "owner": "Map_0",
+      "position": "(113, 0, 117)"
+    },
+    "Uranium19519": {
+      "count": 5,
+      "owner": "Map_0",
+      "position": "(96, 0, 138)"
+    },
+    "Uranium19520": {
+      "count": 7,
+      "owner": "Map_0",
+      "position": "(101, 0, 138)"
+    },
+    "Uranium19521": {
+      "count": 11,
+      "owner": "Map_0",
+      "position": "(129, 0, 138)"
+    },
+    "Uranium19522": {
+      "count": 13,
+      "owner": "Map_0",
+      "position": "(134, 0, 138)"
+    }
+  },
+  "images": 10,
+  "logLines": 1858,
+  "unexpectedLogCandidates": [],
+  "nativePid": 19712,
+  "controllerPid": 25012,
+  "inputDesktop": "Default",
+  "protectedChanges": [],
+  "verifyWarningsRetained": [
+    "F38 capture requires independent assertions/events, actual reservations, unchanged job/queue identity, retired source targets/counts, held-cargo evidence, original save/restart, exact physical delivery, cleanup and whole-log review. Baseline failure is retained; setup refusal is not reproduction.",
+    "Missing unique event: scenario-observed",
+    "Player.log contains candidates requiring independent review; bootstrap is not automatically verified."
+  ]
+}

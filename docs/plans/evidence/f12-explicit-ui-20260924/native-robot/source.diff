@@ -1,0 +1,421 @@
+--- frozen-human-UI/src/F12Scene.cs
++++ bounded-robot-UI/src/F12Scene.cs
+@@ -62,7 +62,7 @@
+         }
+         private void Setup()
+         {
+-            Guard(role=="F12-UI","Producer role required.");
++            Guard(role=="F12-ROBOT","Producer role required.");
+             Set("masterEnabled",true);Set("markForUnload",false);Set("unloadAllSurplus",false);
+             ControlTemperature();
+             foreach(var p in map.mapPawns.AllPawnsSpawned.ToArray())
+@@ -120,7 +120,7 @@
+             // The open-air UI yard uses the controlled native outdoor climate. No unsupported
+             // roof span, room-temperature override or health mutation is introduced.
+             Guard(Temperatures("open-yard-ready",true),"Actual open-air arena is outside the controlled range.");
+-            actor=SpawnWorker(map.Center+new IntVec3(-12,0,0));other=SpawnWorker(map.Center+new IntVec3(-12,0,4));
++            Set("allowMechanoids",true);actor=SpawnRobot("RPP_Bot_Omni_I",map.Center+new IntVec3(-12,0,0));other=SpawnWorker(map.Center+new IntVec3(-12,0,4));
+             var wait=JobMaker.MakeJob(JobDefOf.Wait,60000);actor.jobs.StartJob(wait,JobCondition.InterruptForced);
+             other.jobs.StartJob(JobMaker.MakeJob(JobDefOf.Wait,60000),JobCondition.InterruptForced);
+             sentinel=ThingMaker.MakeThing(ThingDefOf.WoodLog);sentinel.stackCount=5;Guard(actor.inventory.innerContainer.TryAdd(sentinel,false),"Personal inventory setup failed.");
+@@ -137,7 +137,7 @@
+             invalidUnreachable=map.Center+new IntVec3(13,0,5);
+             foreach(var c in GenAdj.CellsAdjacent8Way(invalidUnreachable,Rot4.North,IntVec2.One))GenSpawn.Spawn(ThingMaker.MakeThing(ThingDefOf.Wall,ThingDefOf.Steel),c,map);
+             Find.Selector.ClearSelection();Find.Selector.Select(actor);Find.CameraDriver.SetRootPosAndSize(map.Center.ToVector3Shifted(),18f);
+-            BuildSteps();stage="ui";
++            BuildRobotSteps();stage="ui";
+         }
+         internal string Update()
+         {
+--- frozen-human-UI/src/F12UiObservers.cs
++++ bounded-robot-UI/src/F12UiObservers.cs
+@@ -62,7 +62,7 @@
+         {if(scene?.IsOption(__instance)==true)Observe(()=>{scene.Entry("option","FloatMenuOption.DoGUI");scene.GeometryObserved("option",rect,__instance.Label);});}
+         private static void OptionChosen(FloatMenuOption __instance)=>Observe(()=>scene.MenuChosen(__instance));
+         private static void GizmoBefore(Command __instance,[HarmonyArgument(0)]Rect rect)
+-        {if(scene==null)return;string name=scene.GizmoName(__instance);if(name!=null)Observe(()=>{scene.Entry(name,"Command.GizmoOnGUIInt");scene.GeometryObserved(name,rect,__instance.defaultLabel);});}
++        {if(scene==null)return;string name=scene.GizmoName(__instance);if(name!=null)Observe(()=>{scene.RobotGizmoObserved(__instance);scene.Entry(name,"Command.GizmoOnGUIInt");scene.GeometryObserved(name,rect,__instance.defaultLabel);});}
+         private static void JobStarted(JobDriver __instance)=>Observe(()=>scene.Starting(__instance));
+         private static void JobEnding(Pawn_JobTracker __instance,JobCondition condition)
+         {if(scene?.Actor!=null&&ReferenceEquals(__instance,scene.Actor.jobs))Observe(()=>scene.Ending(scene.Actor.CurJob,condition));}
+--- frozen-human-UI/host/Bootstrap.cs
++++ bounded-robot-UI/host/Bootstrap.cs
+@@ -120,7 +120,7 @@
+                 Check("private-mod-directory", SamePath(GenFilePaths.ModsFolderPath, Path.Combine(manifest.runtimeDirectory, "Mods")),
+                     GenFilePaths.ModsFolderPath);
+                 Check("private-player-log", SamePath(Application.consoleLogPath, manifest.logPath), Application.consoleLogPath);
+-                Check("case-supported", new[] { "bootstrap", "BG01", "BG02", "BG03-P1", "L04-O1", "CAP01", "CAP02", "CAP03-B", "CAP03-A", "CAP03-C", "L04-O1-DELIVERY", "L04-B1", "L04-B1-D2", "L40-Q1", "L40-UI-P0", "ROBOTS-R0", "ROBOTS-R1-AUTO", "REFUEL-G1", "RIMMS-DLV1", "F34-MIXED-CUT", "F41-PRODUCER", "F41-RECOVER", "F41-RESAVED", "F02-P1", "F02-INVENTORY", "F12-UI", "F12-UNSUPPORTED-LOAD" }.Contains(manifest.caseId), manifest.caseId);
++                Check("case-supported", new[] { "bootstrap", "BG01", "BG02", "BG03-P1", "L04-O1", "CAP01", "CAP02", "CAP03-B", "CAP03-A", "CAP03-C", "L04-O1-DELIVERY", "L04-B1", "L04-B1-D2", "L40-Q1", "L40-UI-P0", "ROBOTS-R0", "ROBOTS-R1-AUTO", "REFUEL-G1", "RIMMS-DLV1", "F34-MIXED-CUT", "F41-PRODUCER", "F41-RECOVER", "F41-RESAVED", "F02-P1", "F02-INVENTORY", "F12-ROBOT", "F12-UNSUPPORTED-LOAD" }.Contains(manifest.caseId), manifest.caseId);
+                 Check("negative-control-supported", string.IsNullOrEmpty(manifest.negativeControl) || manifest.negativeControl == "None"
+                     || (manifest.caseId == "bootstrap" && new[] { "WorkerUnityError", "WorkerVerseError", "LateWorkerError", "TerminalRace" }.Contains(manifest.negativeControl)),
+                     manifest.negativeControl ?? "None");
+@@ -248,15 +248,15 @@
+                         "Controlled orphan UFT/native recipe-job repair; baseline failure is preserved and the complete save chain requires independent review.");
+                     return;
+                 }
+-                if(manifest.caseId == "F12-UI" || manifest.caseId == "F12-UNSUPPORTED-LOAD")
++                if(manifest.caseId == "F12-ROBOT" || manifest.caseId == "F12-UNSUPPORTED-LOAD")
+                 {
+                     if(Current.Game == null || !Current.Game.PlayerHasControl)return;
+                     if(!result.assertions.Any(x=>x.id=="f12-host-admission"))
+                     {
+                         Check("f12-host-admission",canQuitOwnRuntime && UnityData.IsInMainThread && manifest.negativeControl=="None" && manifest.expectedBehavior=="satisfied"
+-                            && manifest.expectedMods.Select(x=>x.packageId).SequenceEqual(new[]{"brrainz.harmony","ludeon.rimworld","giwaffed.haulersdream","giwaffed.haulersdream.runtimeharness"})
+-                            && manifest.expectedAssemblies.Count==10 && manifest.expectedAssemblies.All(x=>result.assemblies.Count(a=>a.name==x.name&&a.moduleVersionId==x.moduleVersionId)==1),
+-                            "Exact private four-mod/ten-image real explicit hauling UI.");
++                            && manifest.expectedMods.Select(x=>x.packageId).SequenceEqual(new[]{"brrainz.harmony","ludeon.rimworld","haplo.miscellaneous.robots","alaestor.miscrobots.plusplus","giwaffed.haulersdream","giwaffed.haulersdream.runtimeharness"})
++                            && manifest.expectedAssemblies.Count==12 && manifest.expectedAssemblies.All(x=>result.assemblies.Count(a=>a.name==x.name&&a.moduleVersionId==x.moduleVersionId)==1),
++                            "Exact private six-mod/twelve-image supported-robot source-targeter UI.");
+                         if(result.assertions.Any(x=>!x.passed)){Finish("failed","F11 admission failed.");return;}
+                     }
+                     if(f12==null){if(manifest.caseId=="F12-UNSUPPORTED-LOAD")throw new InvalidOperationException("Pre-tick native LoadedGame capture missing.");f12=new F12Scene(map,manifest.caseId,manifest.evidenceDirectory,Check,Event);}
+--- frozen-human-UI/host/HaulersDream.RuntimeHarness.csproj
++++ bounded-robot-UI/host/HaulersDream.RuntimeHarness.csproj
+@@ -17,6 +17,7 @@
+     <Compile Include="../src/F12Scene.cs" />
+     <Compile Include="../src/F12Scene.Ui.cs" />
+     <Compile Include="../src/F12Scene.Steps.cs" />
++    <Compile Include="../src/F12Scene.Robot.cs" />
+     <Compile Include="../src/F12UiObservers.cs" />
+     <Compile Include="../src/OwnInventoryScene.cs" />
+     <Compile Include="../src/OwnInventoryObservers.cs" />
+--- frozen-human-UI/controller/scripts/runtime-test.ps1
++++ bounded-robot-UI/controller/scripts/runtime-test.ps1
+@@ -16,8 +16,8 @@
+     [string]$GameRoot = 'C:\Steam\steamapps\common\RimWorld',
+     [string]$WorkshopRoot = 'C:\Steam\steamapps\workshop\content\294100',
+     [string]$PlayerSaveDataRoot,
+-    [ValidateSet('F12-UI')]
+-    [string]$CaseId = 'F12-UI',
++    [ValidateSet('F12-ROBOT')]
++    [string]$CaseId = 'F12-ROBOT',
+     [ValidateSet('bootstrap', 'baseline-gap', 'satisfied')]
+     [string]$ExpectedBehavior = 'bootstrap',
+     [ValidateSet('None', 'WorkerUnityError', 'WorkerVerseError', 'LateWorkerError', 'TerminalRace')]
+@@ -214,7 +214,7 @@
+ }
+ 
+ function Initialize-RobotAssemblyIdentities([string[]]$Paths, [string]$Runtime) {
+-    $taskRequiredCount=if ($CaseId -in @('F02-P1','F02-INVENTORY')) { 11 } elseif ($CaseId -ceq 'F34-MIXED-CUT') { 11 } elseif ($CaseId -in $script:taskAf1Cases -or $CaseId -in @('REFUEL-G1','RIMMS-DLV1','F34-MIXED-CUT','F12-UI','F12-UNSUPPORTED-LOAD')) { 10 } else { 12 }
++    $taskRequiredCount=if ($CaseId -ceq 'F12-ROBOT') { 12 } elseif ($CaseId -in @('F02-P1','F02-INVENTORY')) { 11 } elseif ($CaseId -ceq 'F34-MIXED-CUT') { 11 } elseif ($CaseId -in $script:taskAf1Cases -or $CaseId -in @('REFUEL-G1','RIMMS-DLV1','F34-MIXED-CUT','F12-ROBOT','F12-UNSUPPORTED-LOAD')) { 10 } else { 12 }
+     if ([IntPtr]::Size -ne 8 -or $Paths.Count -ne $taskRequiredCount) { throw 'Native metadata preparation requires x64 and its exact closed assembly count (AF1/G1 ten; robots twelve).' }
+     $taskMetadataRoot=Join-Path $script:taskRun 'prepared-assembly-metadata'
+     Assert-ChildPath $taskMetadataRoot $script:taskRun
+@@ -298,7 +298,7 @@
+     $taskInterpreter=Join-Path ([Environment]::GetFolderPath([Environment+SpecialFolder]::System)) 'WindowsPowerShell\v1.0\powershell.exe'
+     if ($taskProof.interpreter.path -cne $taskInterpreter -or (Get-Sha256 $taskInterpreter) -cne $taskProof.interpreter.sha256) { throw 'R0 metadata interpreter proof differs.' }
+     $taskExpectedNames=@('Assembly-CSharp','UnityEngine.CoreModule','0Harmony','HarmonyMod','HaulersDream','HaulersDream.Core','HaulersDream.RuntimeHarness','UnityEngine.IMGUIModule','UnityEngine.ScreenCaptureModule','UnityEngine.TextRenderingModule','AIRobot','MiscRobotsPlusPlus')
+-    if ($Manifest.caseId -in $script:taskAf1Cases -or $Manifest.caseId -in @('REFUEL-G1','RIMMS-DLV1','F12-UI','F12-UNSUPPORTED-LOAD')) { $taskExpectedNames=$taskExpectedNames[0..9] }
++    if ($Manifest.caseId -in $script:taskAf1Cases -or $Manifest.caseId -in @('REFUEL-G1','RIMMS-DLV1','F12-UNSUPPORTED-LOAD')) { $taskExpectedNames=$taskExpectedNames[0..9] }
+     if ($Manifest.caseId -in @('F02-P1','F02-INVENTORY')) { $taskExpectedNames=@($taskExpectedNames[0..9])+@('CommonSense') }
+     if ($Manifest.caseId -ceq 'F34-MIXED-CUT') { $taskExpectedNames=@($taskExpectedNames[0..9])+@('HaulersDream.F34Native') }
+     if (@($Manifest.expectedAssemblies).Count -ne $taskExpectedNames.Count -or @($taskProof.receipts).Count -ne $taskExpectedNames.Count) { throw 'Native metadata assembly/receipt census differs.' }
+@@ -512,8 +512,8 @@
+     # files as the system code page and corrupts non-ASCII protected/copy paths.
+     $taskManifest = Get-Content -LiteralPath $taskManifestPath -Encoding UTF8 -Raw | ConvertFrom-Json
+     $taskState = Get-Content -LiteralPath (Join-Path $script:taskRun 'controller-state.json') -Encoding UTF8 -Raw | ConvertFrom-Json
+-    if ($taskManifest.caseId -cne 'F12-UI') { throw 'This frozen controller admits only F12-UI.' }
+-    if ($taskManifest.schemaVersion -ne 1 -or $taskManifest.runDirectory -ne $script:taskRun -or $taskManifest.caseId -notin @('bootstrap', 'BG01', 'BG02', 'BG03-P1', 'L04-O1', 'CAP01', 'CAP02', 'CAP03-B', 'CAP03-A', 'CAP03-C', 'L04-O1-DELIVERY', 'L04-B1', 'L04-B1-D2', 'L40-Q1', 'L40-UI-P0', 'ROBOTS-R0', 'ROBOTS-R1-AUTO', 'AF1-LIFECYCLE', 'AF1-SAVE', 'AF1-SAVE-MISSING', 'AF1-SAVE-VERSION', 'AF1-SAVE-NULLREF', 'REFUEL-G1', 'RIMMS-DLV1', 'F34-MIXED-CUT', 'F12-UI','F12-UNSUPPORTED-LOAD','F02-P1','F02-INVENTORY')) {
++    if ($taskManifest.caseId -cne 'F12-ROBOT') { throw 'This frozen controller admits only F12-ROBOT.' }
++    if ($taskManifest.schemaVersion -ne 1 -or $taskManifest.runDirectory -ne $script:taskRun -or $taskManifest.caseId -notin @('bootstrap', 'BG01', 'BG02', 'BG03-P1', 'L04-O1', 'CAP01', 'CAP02', 'CAP03-B', 'CAP03-A', 'CAP03-C', 'L04-O1-DELIVERY', 'L04-B1', 'L04-B1-D2', 'L40-Q1', 'L40-UI-P0', 'ROBOTS-R0', 'ROBOTS-R1-AUTO', 'AF1-LIFECYCLE', 'AF1-SAVE', 'AF1-SAVE-MISSING', 'AF1-SAVE-VERSION', 'AF1-SAVE-NULLREF', 'REFUEL-G1', 'RIMMS-DLV1', 'F34-MIXED-CUT', 'F12-ROBOT','F12-UNSUPPORTED-LOAD','F02-P1','F02-INVENTORY')) {
+         throw 'Unsupported manifest or mismatched run directory.'
+     }
+     if ($taskState.manifestSha256 -ne (Get-Sha256 $taskManifestPath)) { throw 'Prepared manifest was modified; refuse to use it.' }
+@@ -532,14 +532,14 @@
+             throw "Unexpected manifest layout: $($taskExpected[0])"
+         }
+     }
+-    if ($taskManifest.caseId -in @('ROBOTS-R0','ROBOTS-R1-AUTO','F12-UI','F12-UNSUPPORTED-LOAD','F02-P1','F02-INVENTORY')) { Assert-RobotPreparedMetadata $taskManifest }
++    if ($taskManifest.caseId -in @('ROBOTS-R0','ROBOTS-R1-AUTO','F12-ROBOT','F12-UNSUPPORTED-LOAD','F02-P1','F02-INVENTORY')) { Assert-RobotPreparedMetadata $taskManifest }
+     if ($taskManifest.caseId -in @('F02-P1','F02-INVENTORY')) {
+         if ($taskManifest.hdSource -cne 'Built' -or $taskManifest.expectedBehavior -cnotin @('satisfied','baseline-gap') -or $taskManifest.negativeControl -cne 'None' -or @($taskManifest.expectedMods).Count -ne 5 -or @($taskManifest.expectedAssemblies).Count -ne 11) { throw 'F02 prepared role or closed input census differs.' }
+     }
+-    if ($taskManifest.caseId -in @('F12-UI','F12-UNSUPPORTED-LOAD')) {
+-        if ($taskManifest.expectedBehavior -cne 'satisfied' -or @($taskManifest.expectedAssemblies).Count -ne 10) { throw 'F11 prepared role or closed ten-image census differs.' }
++    if ($taskManifest.caseId -in @('F12-ROBOT','F12-UNSUPPORTED-LOAD')) {
++        if ($taskManifest.expectedBehavior -cne 'satisfied' -or @($taskManifest.expectedAssemblies).Count -ne 12) { throw 'F11 prepared role or closed ten-image census differs.' }
+         if ($taskManifest.expectedBehavior -cnotin @('satisfied','baseline-gap') -or $taskManifest.negativeControl -cne 'None' -or $taskManifest.hdSource -cne 'Built' -or
+-            @($taskManifest.expectedMods).Count -ne 4 -or $taskManifest.PSObject.Properties['f34MixedProfile']) { throw 'F41 orphan-save requires Built, baseline-gap/satisfied, None, four packages and no companion profile.' }
++            @($taskManifest.expectedMods).Count -ne 6 -or $taskManifest.PSObject.Properties['f34MixedProfile']) { throw 'F41 orphan-save requires Built, baseline-gap/satisfied, None, four packages and no companion profile.' }
+     }
+     if ($taskManifest.caseId -in @('F12-UNSUPPORTED-LOAD')) {
+         if (-not $taskManifest.PSObject.Properties['restartCheckpoint']) { throw 'Missing controlled-orphan checkpoint binding.' }
+@@ -836,7 +836,7 @@
+             if ((Get-Sha256 $f02File.path) -cne $f02File.sha256) { throw ('F02 selected input differs: '+$f02File.path) }
+         }
+     }
+-    if ($CaseId -in @('F12-UI','F12-UNSUPPORTED-LOAD')) {
++    if ($CaseId -in @('F12-ROBOT','F12-UNSUPPORTED-LOAD')) {
+         if ($ExpectedBehavior -cne 'satisfied') { throw 'F11 admits only the selected current product and satisfied expectation.' }
+         if ($RunDirectory -or $ExpectedBehavior -cnotin @('satisfied','baseline-gap') -or $NegativeControl -cne 'None' -or $CommonSense -or $HdSource -cne 'Built' -or $F34MixedProfile) { throw 'F41 orphan-save requires Built, baseline-gap/satisfied, None, no CommonSense or companion profile, and a fresh controller-generated ID.' }
+         $f41Selection = Get-Content -LiteralPath (Join-Path $PSScriptRoot '../../selection.json') -Raw | ConvertFrom-Json
+@@ -844,6 +844,10 @@
+         $f41Role = if ($ExpectedBehavior -ceq 'satisfied') { 'candidate' } else { 'baseline' }
+         $f41Selected = $f41Selection.$f41Role
+         if ((Get-CanonicalPath $BuiltModRoot) -cne (Get-CanonicalPath $f41Selected.root) -or (Get-CanonicalPath $HarnessAssembly) -cne (Get-CanonicalPath $f41Selection.harness.path)) { throw 'F41 selected product role or harness path differs.' }
++        foreach ($f12Package in $f41Selection.robotPackages) {
++            if (@(Get-ChildItem -LiteralPath $f12Package.root -Recurse -File).Count -ne @($f12Package.files).Count) { throw 'Actual pinned robot package file census changed.' }
++            foreach($f12File in $f12Package.files) { if((Get-Sha256 $f12File.path) -cne $f12File.sha256) { throw 'Actual robot package file pin changed.' } }
++        }
+         foreach ($f41File in @($f41Selected.files) + @($f41Selection.harness) + @($f41Selection.controller.files) + @($f41Selection.fixture.files) + @($f41Selection.inputWorker)) {
+             if ((Get-FileHash -LiteralPath $f41File.path -Algorithm SHA256).Hash -cne $f41File.sha256) { throw ('F41 selected image hash differs: ' + $f41File.path) }
+         }
+@@ -864,7 +868,7 @@
+         foreach ($taskSourceFile in @($taskSourceManifestPath,$taskSourceResultPath,$taskSourceLogPath)) { Assert-NoReparsePath $taskSourceFile }
+         $taskSourceManifest = Get-Content -LiteralPath $taskSourceManifestPath -Raw | ConvertFrom-Json
+         $taskSourceResult = Get-Content -LiteralPath $taskSourceResultPath -Raw | ConvertFrom-Json
+-        $taskProducerCase = 'F12-UI'
++        $taskProducerCase = 'F12-ROBOT'
+         if ($taskSourceManifest.runId -cne $taskSourceId.ToString('N') -or $taskSourceManifest.caseId -cne $taskProducerCase -or
+             $taskSourceResult.runId -cne $taskSourceManifest.runId -or $taskSourceResult.caseId -cne $taskProducerCase -or
+             $taskSourceResult.status -cne 'passed' -or @($taskSourceResult.assertions).Count -eq 0 -or
+@@ -881,7 +885,7 @@
+         if ($taskCheckpointXml.DocumentElement.Name -cne 'savegame') { throw 'Checkpoint is not a native savegame.' }
+         $f11Record=@{}
+         foreach($f11Part in $taskCheckpointText.Split(';')) { $f11Pair=$f11Part.Trim().Split(@('='),2); if($f11Pair.Count -ne 2 -or $f11Record.ContainsKey($f11Pair[0])) { throw 'F11 record shape differs.' }; $f11Record[$f11Pair[0]]=$f11Pair[1] }
+-        if($f11Record.phase -cne 'F12-UI' -or $f11Record.held -cne '8' -or $f11Record.placed -cne '7' -or $f11Record.keep -cne '3' -or $f11Record.drafted -cne 'True') { throw 'F11 native checkpoint shape differs.' }
++        if($f11Record.phase -cne 'F12-ROBOT' -or $f11Record.held -cne '8' -or $f11Record.placed -cne '7' -or $f11Record.keep -cne '3' -or $f11Record.drafted -cne 'True') { throw 'F11 native checkpoint shape differs.' }
+         if($f11Record.actor -notmatch '^Human[0-9]+$' -or $f11Record.source -notmatch '^Steel[0-9]+$' -or $f11Record.dropped -notmatch '^Steel[0-9]+$') { throw 'F11 native checkpoint IDs differ.' }
+         $f11Pawn=$taskCheckpointXml.SelectSingleNode("//thing[id='$($f11Record.actor)']")
+         $f11Held=$f11Pawn.SelectSingleNode("inventory/innerContainer/innerList/li[id='$($f11Record.source)']/stackCount")
+@@ -1033,7 +1037,8 @@
+         Assert-RobotAutomaticProfileReceipt $NearbyDeliveryProfile $taskDlv1Read.admission 'RIMMS-DLV1 before protected snapshot'
+     }
+     if ($CaseId -in @('F12-UNSUPPORTED-LOAD')) { $taskProtectedRoots += @($CheckpointSave,$CheckpointRecord,$taskSourceManifestPath,$taskSourceResultPath,$taskSourceLogPath,$taskRetainedSave) }
+-    if ($CaseId -in @('F12-UI','F12-UNSUPPORTED-LOAD')) { $taskProtectedRoots += @($f41Selection.candidate.root,$f41Selection.harness.path,$f41Selection.inputWorker.path,(Join-Path $PSScriptRoot '../../selection.json')) }
++    if ($CaseId -ceq 'F12-ROBOT') { $taskProtectedRoots += @($f41Selection.robotPackages | ForEach-Object { $_.root }) }
++    if ($CaseId -in @('F12-ROBOT','F12-UNSUPPORTED-LOAD')) { $taskProtectedRoots += @($f41Selection.candidate.root,$f41Selection.harness.path,$f41Selection.inputWorker.path,(Join-Path $PSScriptRoot '../../selection.json')) }
+     $taskProtectedBefore = @(Get-ProtectedSnapshot $taskProtectedRoots)
+     [IO.Directory]::CreateDirectory($script:taskRun) | Out-Null
+     foreach ($taskFolder in @($taskRuntime, $taskConfig, $taskEvidence, (Join-Path $taskSavedata 'Saves'), (Join-Path $taskRuntime 'Mods'))) {
+@@ -1083,6 +1088,8 @@
+     Copy-HdContent $taskHdRoot $taskHdDestination
+     Copy-VerifiedTree $taskHarnessAbout (Join-Path $taskHarnessRoot 'About') 'harness'
+     Copy-VerifiedFile $HarnessAssembly (Join-Path $taskHarnessRoot 'Assemblies\HaulersDream.RuntimeHarness.dll') 'harness'
++    foreach ($f12Package in $f41Selection.robotPackages) { Copy-VerifiedTree $f12Package.root (Join-Path $taskRuntime ('Mods\'+$f12Package.destinationFolder)) 'f12-actual-robot-provider' }
++
+     if ($CaseId -ceq 'F34-MIXED-CUT') {
+         Copy-VerifiedFile $taskF34Read.profile.companion.path (Join-Path $taskHarnessRoot 'Assemblies\HaulersDream.F34Native.dll') 'f34-companion'
+         Copy-VerifiedFile $taskF34Read.profile.companionPdb.path (Join-Path $taskHarnessRoot 'Assemblies\HaulersDream.F34Native.pdb') 'f34-companion-pdb'
+@@ -1121,6 +1128,7 @@
+             $taskMods.Add([pscustomobject]@{ packageId = $taskRobotPackage.packageId; rootPath = (Join-Path $taskRuntime ('Mods\' + $taskRobotPackage.destinationFolder)) })
+         }
+     }
++    foreach ($f12Package in $f41Selection.robotPackages) { $taskMods.Add([pscustomobject]@{ packageId=$f12Package.packageId.ToLowerInvariant(); rootPath=(Join-Path $taskRuntime ('Mods\'+$f12Package.destinationFolder)) }) }
+     $taskMods.Add([pscustomobject]@{ packageId = 'giwaffed.haulersdream'; rootPath = $taskHdDestination })
+     $taskMods.Add([pscustomobject]@{ packageId = 'giwaffed.haulersdream.runtimeharness'; rootPath = $taskHarnessRoot })
+     $taskKnownExpansions = @()
+@@ -1170,7 +1178,7 @@
+         (Join-Path $taskHdDestination '1.6\Assemblies\HaulersDream.Core.dll'),
+         (Join-Path $taskHarnessRoot 'Assemblies\HaulersDream.RuntimeHarness.dll')
+     )
+-    if ($CaseId -in @('L40-Q1','L40-UI-P0','ROBOTS-R0','ROBOTS-R1-AUTO') -or $CaseId -in $script:taskAf1Cases -or $CaseId -in @('REFUEL-G1','RIMMS-DLV1','F34-MIXED-CUT','F12-UI','F12-UNSUPPORTED-LOAD','F02-P1','F02-INVENTORY')) {
++    if ($CaseId -in @('L40-Q1','L40-UI-P0','ROBOTS-R0','ROBOTS-R1-AUTO') -or $CaseId -in $script:taskAf1Cases -or $CaseId -in @('REFUEL-G1','RIMMS-DLV1','F34-MIXED-CUT','F12-ROBOT','F12-UNSUPPORTED-LOAD','F02-P1','F02-INVENTORY')) {
+         $taskAssemblyPaths += @('UnityEngine.IMGUIModule.dll','UnityEngine.ScreenCaptureModule.dll','UnityEngine.TextRenderingModule.dll') | ForEach-Object {
+             Join-Path $taskRuntime ('RimWorldWin64_Data\Managed\' + $_)
+         }
+@@ -1178,6 +1186,7 @@
+     if ($CaseId -in @('ROBOTS-R0','ROBOTS-R1-AUTO')) {
+         $taskAssemblyPaths += @((Join-Path $taskRuntime 'Mods\MiscRobots\1.6\Assemblies\AIRobot.dll'), (Join-Path $taskRuntime 'Mods\MiscRobotsPlusPlus\1.6\Assemblies\MiscRobotsPlusPlus.dll'))
+     }
++    $taskAssemblyPaths += @((Join-Path $taskRuntime 'Mods\MiscRobots\1.6\Assemblies\AIRobot.dll'),(Join-Path $taskRuntime 'Mods\MiscRobotsPlusPlus\1.6\Assemblies\MiscRobotsPlusPlus.dll'))
+     if ($CommonSense) { $taskAssemblyPaths += Join-Path $taskCsRoot '1.6\Assemblies\CommonSense.dll' }
+     if ($CaseId -in @('CAP03-B','CAP03-A','CAP03-C')) {
+         # The installed framework ships eleven runtime assemblies, including
+@@ -1236,7 +1245,7 @@
+         knownExpansions = $taskKnownExpansions; configFiles = $taskConfigFiles; copiedFiles = @($taskCopiedFiles.ToArray())
+         protectedRoots = $taskProtectedRoots; protectedBefore = $taskProtectedBefore
+         startupDeadlineSeconds = 300
+-        semantics = if ($CaseId -in @('F02-P1','F02-INVENTORY')) { 'F02 bounded own-inventory controls with actual Common Sense cleaning; fresh P1 comparison preserves original oracle; full native independent review required.' } elseif ($CaseId -in @('F12-UI','F12-UNSUPPORTED-LOAD')) { 'F12 actual local explicit-haul float menu, quantity, queue, targeter and progress controls. No backend-repeat/shelf/provider/MP claim.' } elseif ($CaseId -ceq 'F34-MIXED-CUT') { 'Paused mixed-plant boundary capture; baseline failures preserved; no full F34 acceptance.' } elseif ($CaseId -ceq 'RIMMS-DLV1') { $taskDlv1Read.profile.scope }
++        semantics = if ($CaseId -in @('F02-P1','F02-INVENTORY')) { 'F02 bounded own-inventory controls with actual Common Sense cleaning; fresh P1 comparison preserves original oracle; full native independent review required.' } elseif ($CaseId -in @('F12-ROBOT','F12-UNSUPPORTED-LOAD')) { 'F12 actual local explicit-haul float menu, quantity, queue, targeter and progress controls. No backend-repeat/shelf/provider/MP claim.' } elseif ($CaseId -ceq 'F34-MIXED-CUT') { 'Paused mixed-plant boundary capture; baseline failures preserved; no full F34 acceptance.' } elseif ($CaseId -ceq 'RIMMS-DLV1') { $taskDlv1Read.profile.scope }
+             elseif ($CaseId -ceq 'REFUEL-G1') { $taskRefuelG1Read.profile.scope }
+             elseif ($CaseId -in $script:taskAf1Cases) { $taskAf1Read.profile.scope }
+             elseif ($CaseId -eq 'BG03-P1') { 'Partial initially tagged bill ingredients, two floor sources and native cooking/cleaning only; other BG03 controls and original-report convergence remain unfinished.' }
+@@ -1263,7 +1272,7 @@
+             recordPath=(Join-Path $script:taskRun 'input\checkpoint.txt'); recordSha256=(Get-Sha256 $CheckpointRecord)
+         }
+     }
+-    if ($CaseId -in @('ROBOTS-R0','ROBOTS-R1-AUTO') -or $CaseId -in $script:taskAf1Cases -or $CaseId -in @('REFUEL-G1','RIMMS-DLV1','F34-MIXED-CUT','F12-UI','F12-UNSUPPORTED-LOAD','F02-P1','F02-INVENTORY')) {
++    if ($CaseId -in @('ROBOTS-R0','ROBOTS-R1-AUTO') -or $CaseId -in $script:taskAf1Cases -or $CaseId -in @('REFUEL-G1','RIMMS-DLV1','F34-MIXED-CUT','F12-ROBOT','F12-UNSUPPORTED-LOAD','F02-P1','F02-INVENTORY')) {
+         $taskRobotIdentities=Initialize-RobotAssemblyIdentities $taskAssemblyPaths $taskRuntime
+         $taskManifest.expectedAssemblies=$taskRobotIdentities.assemblies
+         $taskManifest.robotMetadata=$taskRobotIdentities.provenance
+@@ -1344,7 +1353,7 @@
+         '-quicktest', ('-hd-test=' + $taskCase),
+         ('"-hd-harnessmanifest={0}"' -f (Join-Path $script:taskRun 'manifest.json'))
+     )
+-    if ($taskCase -ceq 'F12-UI') { $taskArguments += '-force-d3d11-bitblt-model' }
++    if ($taskCase -ceq 'F12-ROBOT') { $taskArguments += '-force-d3d11-bitblt-model' }
+     if ($taskCase -in @('F12-UNSUPPORTED-LOAD')) {
+         $taskArguments = @($taskArguments | Where-Object { $_ -cne '-quicktest' })
+         $taskRestartSaves = @(Get-ChildItem -LiteralPath (Join-Path $taskManifest.saveDataDirectory 'Saves') -File -Force)
+@@ -1393,7 +1402,7 @@
+ $taskResult = $null
+ if (Test-Path -LiteralPath $taskResultPath) {
+     try {
+-        if ($taskCase -cin @('RIMMS-DLV1','F34-MIXED-CUT','F12-UI','F12-UNSUPPORTED-LOAD','F02-P1','F02-INVENTORY')) { $taskResult = Read-Dlv1CommonResult $taskResultPath }
++        if ($taskCase -cin @('RIMMS-DLV1','F34-MIXED-CUT','F12-ROBOT','F12-UNSUPPORTED-LOAD','F02-P1','F02-INVENTORY')) { $taskResult = Read-Dlv1CommonResult $taskResultPath }
+         else { $taskResult = Get-Content -LiteralPath $taskResultPath -Encoding UTF8 -Raw | ConvertFrom-Json }
+     }
+     catch { $taskResult = [pscustomobject]@{ status = 'result-incomplete'; detail = $_.Exception.Message } }
+@@ -1414,7 +1423,7 @@
+ if ($taskCase -in @('F02-P1','F02-INVENTORY')) {
+     $taskProblems.Add('F02 requires independent full native phase/ingredient ancestry, settings, actual selected jobs, product/kept custody, physical stability, logs and process review. No automatic full feedback closure.')
+ }
+-if ($taskCase -in @('F12-UI','F12-UNSUPPORTED-LOAD')) {
++if ($taskCase -in @('F12-ROBOT','F12-UNSUPPORTED-LOAD')) {
+     $taskProblems.Add('F12 requires independent full actual input/control/command receipts, quantity/queue/cancellation/staleness/targeting/progress, physical conservation, screenshots, logs and process review. No automatic feedback closure or shelf/provider/MP acceptance.')
+ }
+ if ($taskCase -eq 'ROBOTS-R1-AUTO') {
+@@ -1444,7 +1453,7 @@
+ }
+ $taskControlMarker = '[HD Runtime Harness NegativeControl] run=' + $taskManifest.runId + ' control=' + $taskNegativeControl + ' intentional worker error'
+ if ($taskProcessState.status -ne 'exited') { $taskProblems.Add('Process is not authoritatively exited: ' + $taskProcessState.status) }
+-$taskExpectedStatus = if ($taskCase -cin @('F34-MIXED-CUT','F12-UI','F12-UNSUPPORTED-LOAD') -and $taskExpectedBehavior -ceq 'baseline-gap') { 'failed' } elseif ($taskNegativeControl -ne 'None') { 'failed' } elseif ($taskExpectedBehavior -eq 'baseline-gap') { 'behavior-gap-observed' } else { 'passed' }
++$taskExpectedStatus = if ($taskCase -cin @('F34-MIXED-CUT','F12-ROBOT','F12-UNSUPPORTED-LOAD') -and $taskExpectedBehavior -ceq 'baseline-gap') { 'failed' } elseif ($taskNegativeControl -ne 'None') { 'failed' } elseif ($taskExpectedBehavior -eq 'baseline-gap') { 'behavior-gap-observed' } else { 'passed' }
+ if ($null -eq $taskResult -or $taskResult.status -ne $taskExpectedStatus) { $taskProblems.Add('No complete result with the explicitly expected status: ' + $taskExpectedStatus) }
+ if ($taskResult -and $taskResult.status -ne 'result-incomplete') {
+     if ($taskNegativeControl -eq 'None' -and $taskResult.unityErrorsObserved -ne 0) {
+@@ -1485,7 +1494,7 @@
+             if (-not (Test-RequiredAssertion $taskResult.assertions $taskRequired $true)) { $taskProblems.Add('Missing unique assembly assertion: ' + $taskRequired) }
+         }
+     }
+-    if ($taskCase -in @('ROBOTS-R0','ROBOTS-R1-AUTO') -or $taskCase -in $script:taskAf1Cases -or $taskCase -in @('REFUEL-G1','RIMMS-DLV1','F34-MIXED-CUT','F12-UI','F12-UNSUPPORTED-LOAD','F02-P1','F02-INVENTORY')) { Test-RobotResultMvids $taskResult $taskManifest $taskProblems }
++    if ($taskCase -in @('ROBOTS-R0','ROBOTS-R1-AUTO') -or $taskCase -in $script:taskAf1Cases -or $taskCase -in @('REFUEL-G1','RIMMS-DLV1','F34-MIXED-CUT','F12-ROBOT','F12-UNSUPPORTED-LOAD','F02-P1','F02-INVENTORY')) { Test-RobotResultMvids $taskResult $taskManifest $taskProblems }
+     if ($taskCase -eq 'ROBOTS-R1-AUTO') {
+         foreach ($taskR1Assertion in @('robot-r1-context-intact','robot-r1-cleanup-complete','robot-r1-automatic-selection','robot-r1-two-material-inventory','robot-r1-native-transfer-delivery','robot-r1-native-reservation','robot-r1-native-job-success','robot-r1-stable-storage','robot-r1-fixture-complete')) {
+             if (-not (Test-RequiredAssertion $taskResult.assertions $taskR1Assertion $true)) { $taskProblems.Add('Missing unique R1 capture assertion: '+$taskR1Assertion) }
+@@ -1826,7 +1835,7 @@
+     refuelGroupEvidence = $taskRefuelG1Evidence
+     nearbyDeliveryEvidence = $taskDlv1Evidence
+     f34MixedBoundaryEvidence = $taskF34Evidence
+-    scope = if ($taskCase -in @('F02-P1','F02-INVENTORY')) { 'Bounded own-inventory native controls only; independent whole phase/log/process review required; not F01 or full feedback acceptance.' } elseif ($taskCase -in @('F12-UI','F12-UNSUPPORTED-LOAD')) { 'F12 actual local explicit-haul UI only. Independent native input, physical lifecycle, save/XML, image, log and process review required; provider/MP coverage remains separate.' } elseif ($taskCase -ceq 'F34-MIXED-CUT') { 'Eighteen paused native/product boundaries; full raw snapshots/assertions require independent review. Baseline stays failed. Productive cut/UI/poll/MP/full F34 remain open.' } elseif ($taskCase -ceq 'RIMMS-DLV1') { 'Three controlled native delivery scenes; independent complete transactions/physical owner/manifest/lineage/job/observer/Home/environment/process/log review remains mandatory. No automatic native, command/editor/MP/DLV2/save/feedback acceptance.' }
++    scope = if ($taskCase -in @('F02-P1','F02-INVENTORY')) { 'Bounded own-inventory native controls only; independent whole phase/log/process review required; not F01 or full feedback acceptance.' } elseif ($taskCase -in @('F12-ROBOT','F12-UNSUPPORTED-LOAD')) { 'F12 actual local explicit-haul UI only. Independent native input, physical lifecycle, save/XML, image, log and process review required; provider/MP coverage remains separate.' } elseif ($taskCase -ceq 'F34-MIXED-CUT') { 'Eighteen paused native/product boundaries; full raw snapshots/assertions require independent review. Baseline stays failed. Productive cut/UI/poll/MP/full F34 remain open.' } elseif ($taskCase -ceq 'RIMMS-DLV1') { 'Three controlled native delivery scenes; independent complete transactions/physical owner/manifest/lineage/job/observer/Home/environment/process/log review remains mandatory. No automatic native, command/editor/MP/DLV2/save/feedback acceptance.' }
+         elseif ($taskCase -ceq 'REFUEL-G1') { 'Six ordinary native refuel scenes only; independent complete scene/item graph, observers, publication, Home, cleanup, process and log review is mandatory. No automatic acceptance; fault/save/recovery/UI/CE/MP remain separate.' }
+         elseif ($taskCase -in $script:taskAf1Cases) { 'Finite AF1 native capture only; complete independent record/observer/serializer/save/log review remains mandatory. Same-process reload is not a full restart; automatic work, refuel and complete food behavior remain separate.' }
+         elseif ($taskCase -eq 'BG03-P1') { 'Only initially tagged milk plus two remaining floor ingredients, native bill/cleaning and bounded follow-up are measured. Other BG03 controls and original-report convergence remain unverified.' }
+--- frozen-human-UI/native-input.py
++++ bounded-robot-UI/native-input.py
+@@ -62,7 +62,7 @@
+     args=ap.parse_args()
+     assert os.name=='nt' and args.pid>0
+     run=args.run.absolute();m=read(run/'manifest.json')
+-    assert m['caseId']=='F12-UI' and same(m['runDirectory'],run)
++    assert m['caseId']=='F12-ROBOT' and same(m['runDirectory'],run)
+     assert same(run.parent,Path(os.environ['TEMP'])/'haulersdream-runtime-tests')
+     assert len(run.name)==32 and int(run.name,16)>0
+     state=read(run/'controller-state.json')
+@@ -175,7 +175,7 @@
+         nonlocal event_offset,phase,render_phase,last_sample,sample_count
+         events,event_offset=complete_events(run/'evidence/events.jsonl',event_offset)
+         for event in events:
+-            assert event['runId']==run.name and event['caseId']=='F12-UI'
++            assert event['runId']==run.name and event['caseId']=='F12-ROBOT'
+             if event['phase']=='f12-ui-step':
+                 phase={key:event[key] for key in ('sequence','utc','detail')}
+                 if phase['detail']=='render/open-map' and render_phase is None:render_phase=phase
+--- frozen-human-UI/launch.ps1
++++ bounded-robot-UI/launch.ps1
+@@ -21,7 +21,7 @@
+     $robotOutcome.processStartedUtc = $robotProcess.StartTime.ToUniversalTime().ToString('o')
+     $robotOutcome.executable = $robotProcess.MainModule.FileName
+     $f11Manifest=Get-Content -LiteralPath (Join-Path $robotRun 'manifest.json') -Raw|ConvertFrom-Json
+-    if($f11Manifest.caseId -ceq 'F12-UI') {
++    if($f11Manifest.caseId -ceq 'F12-ROBOT') {
+         $f11Python='C:/Users/Arthur/.cache/codex-runtimes/codex-primary-runtime/dependencies/python/python.exe'
+         $f11Worker=Join-Path $robotRoot 'native-input.py'
+         $f11InputProcess=Start-Process -FilePath $f11Python -ArgumentList @(('"'+$f11Worker+'"'),'--run',('"'+$robotRun+'"'),'--pid',$robotProcess.Id) -WindowStyle Hidden -PassThru -RedirectStandardOutput (Join-Path $OutputDirectory 'input.stdout.log') -RedirectStandardError (Join-Path $OutputDirectory 'input.stderr.log')
+--- frozen-human-UI/build.ps1
++++ bounded-robot-UI/build.ps1
+@@ -2,7 +2,7 @@
+ $env:TEMP='C:/HDQA/runtime-temp'
+ $env:TMP=$env:TEMP
+ $f12Root=$PSScriptRoot
+-$f12Build='C:/Users/Arthur/AppData/Local/HaulersDreamQA/inputs/f12-ui-native-20260924/host-v2'
++$f12Build='C:/Users/Arthur/AppData/Local/HaulersDreamQA/inputs/f12-robot-ui-native-20260924/host-v1'
+ $f12Product='C:/Users/Arthur/AppData/Local/HaulersDreamQA/inputs/f12-explicit-ui-v2-20260924/Product'
+ $f12Refs='C:/Users/Arthur/AppData/Local/Temp/haulersdream-f34-host-root-build-20260920'
+ $f12Game='C:/Steam/steamapps/common/RimWorld/RimWorldWin64_Data/Managed'
+--- /dev/null
++++ bounded-robot-UI/src/F12Scene.Robot.cs
+@@ -0,0 +1,68 @@
++using System;
++using System.Collections;
++using System.Linq;
++using System.Reflection;
++using HarmonyLib;
++using RimWorld;
++using UnityEngine;
++using Verse;
++using Verse.AI;
++
++namespace HaulersDream.RuntimeHarness
++{
++    internal sealed partial class F12Scene
++    {
++        private Pawn specialist;
++        private string robotRoles,specialistRoles;
++        private bool observedSourceDisabled;
++        private int observedGizmoOwner;
++        private Pawn SpawnRobot(string def,IntVec3 cell)
++        {
++            Guard(!ModsConfig.BiotechActive,"This supported-robot source-targeter profile intentionally has no Biotech.");
++            var assembly=AppDomain.CurrentDomain.GetAssemblies().Single(a=>a.GetName().Name=="AIRobot");
++            var creator=assembly.GetType("AIRobot.X2_Building_AIRobotCreator",true).GetMethod("CreateRobot",BindingFlags.Public|BindingFlags.Static,null,new[]{typeof(string),typeof(IntVec3),typeof(Map),typeof(Faction)},null);
++            Guard(creator!=null,"Actual public robot factory missing.");Pawn p;Rand.PushState(120024+cell.x+cell.z);
++            try{p=(Pawn)creator.Invoke(null,new object[]{def,cell,map,Faction.OfPlayer});}finally{Rand.PopState();}
++            Guard(p!=null&&p.GetType().FullName=="AIRobot.X2_AIRobot"&&p.def.defName==def&&p.Spawned&&p.Map==map&&p.Faction==Faction.OfPlayer
++                &&p.AllComps.OfType<CompHauledToInventory>().Count()==1&&p.inventory!=null&&p.carryTracker!=null&&p.jobs!=null&&Fit(p),"Actual generated robot/component/health identity differs.");
++            Guard(p.inventory.innerContainer.Count==0&&p.carryTracker.CarriedThing==null,"Native robot must start without cargo.");
++            emit("f12-real-provider-robot",F02Json.Stringify(new{id=p.ThingID,def=p.def.defName,type=p.GetType().AssemblyQualifiedName,nativeCanTakeOrder=p.CanTakeOrder,roles=RobotRoles(p),hediffs=p.health.hediffSet.hediffs.Count,rest=p.needs.rest.CurLevel,comps=p.AllComps.Select(c=>c.GetType().FullName).ToArray()}));return p;
++        }
++        private static string RobotRoles(Pawn p)
++        {
++            object def=Field(p,"def2")??p.def;
++            return string.Join(",",((IList)Field(def,"robotWorkTypes")).Cast<object>().Select(w=>((WorkTypeDef)Field(w,"workTypeDef")).defName+":"+Field(w,"priority")));
++        }
++        internal void RobotGizmoObserved(Command c)
++        {
++            if(Event.current.type!=EventType.Repaint||GizmoName(c)!="source-gizmo")return;
++            observedSourceDisabled=c.Disabled;observedGizmoOwner=(Find.Selector.SingleSelectedThing as Pawn)?.thingIDNumber??-1;
++        }
++        private void BuildRobotSteps()
++        {
++            robotRoles=RobotRoles(actor);Guard(robotRoles.Split(',').Contains("Hauling:2")&&!actor.CanTakeOrder,"Expected real Omni hauling role and native no-DLC order gate.");
++            specialist=SpawnRobot("RPP_Bot_Builder_III",map.Center+new IntVec3(-14,0,5));specialistRoles=RobotRoles(specialist);
++            Guard(!specialistRoles.Split(',').Any(s=>s.StartsWith("Hauling:",StringComparison.Ordinal)),"Native specialist unexpectedly includes hauling.");
++            specialist.jobs.StartJob(JobMaker.MakeJob(JobDefOf.Wait,60000),JobCondition.InterruptForced);
++            Add("prepared-viewport",()=>Require("robot-prepared-viewport",Screen.width==1024&&Screen.height==768&&!Screen.fullScreen&&Prefs.UIScale==1f,"Native1024x768 windowed scale1."));
++            Add("english",()=>SelectLanguage("English"));
++            Add("render/open-map",()=>{NewSource();source.SetForbidden(true,false);CaptureBoundary();},()=>geometry.ContainsKey("source-gizmo")&&observedGizmoOwner==actor.thingIDNumber&&!observedSourceDisabled);
++            Capture("f12-robot-actual-gizmo");
++            Add("robot-setting/disable",()=>{Set("allowMechanoids",false);CaptureBoundary();},()=>observedSourceDisabled&&observedGizmoOwner==actor.thingIDNumber);
++            Click("robot-setting/actual-disabled-click","source-gizmo",()=>!Find.Targeter.IsTargeting&&!DialogOpen);
++            Add("robot-setting/unchanged",()=>Unchanged("robot-setting-disabled-actual-control"));
++            Add("robot-specialist/select",()=>{Set("allowMechanoids",true);Find.Selector.ClearSelection();Find.Selector.Select(specialist);CaptureBoundary();},()=>observedSourceDisabled&&observedGizmoOwner==specialist.thingIDNumber);
++            Click("robot-specialist/actual-disabled-click","source-gizmo",()=>!Find.Targeter.IsTargeting&&!DialogOpen);
++            Add("robot-specialist/unchanged",()=>{Unchanged("robot-specialist-disabled-actual-control");Require("specialist-native-role-unchanged",RobotRoles(specialist)==specialistRoles&&specialist.jobs.jobQueue.Count==0&&specialist.inventory.innerContainer.Count==0&&specialist.carryTracker.CarriedThing==null,"Actual BuilderIII roles="+specialistRoles);});
++            Add("robot-positive/select",()=>{Find.Selector.ClearSelection();Find.Selector.Select(actor);CaptureBoundary();},()=>!observedSourceDisabled&&observedGizmoOwner==actor.thingIDNumber);
++            Click("robot-positive/actual-source-gizmo","source-gizmo",()=>Find.Targeter.IsTargeting&&!DialogOpen);Capture("f12-robot-source-target-prompt");
++            Click("robot-positive/actual-source-click","source",()=>AmountOpen&&Buffer=="15");
++            Add("robot-positive/quantity-owner",()=>Require("robot-targeter-quantity-owner",ReferenceEquals(Field(Field(dialog,"selection"),"Pawn"),actor)&&ReferenceEquals(Field(Field(dialog,"selection"),"Source"),source)&&!QueueChecked,"Actual source targeter opened its actual pawn/source-bound quantity dialog."));
++            TargetSteps("robot-positive","7");Click("robot-positive/destination","destination",()=>!Find.Targeter.IsTargeting&&commands==boundaryCommands+1);
++            Add("robot-positive/admitted",()=>{RememberAdmission(7,false);Require("robot-native-role-and-forced-source",O<bool>(witnessed,"sourceForbiddenAtIssue")&&!actor.CanTakeOrder&&RobotRoles(actor)==robotRoles,OrderText(witnessed)+"; originalRoles="+robotRoles);});
++            RunUntil("robot-positive/physical",()=>State(witnessed)=="Complete");Add("robot-positive/actual7-of15",()=>{CheckDelivery("robot-physical7-source8",7,8);Require("robot-final-role",RobotRoles(actor)==robotRoles&&actor.AllComps.OfType<CompHauledToInventory>().Count()==1,"Native role preserved; no component/permission override.");});
++            OpenOrders("robot-progress");Add("robot-progress/label",()=>RequireProgress("robot-progress-complete","Complete",7,7));Capture("f12-robot-completed-progress");Key("robot-progress/close","escape",()=>!DialogOpen);
++            Add("robot-final",()=>{Require("robot-input-receipts",pending==null&&commands==1&&returns==1&&resumes==0&&cancels==0&&sequence>=9&&matchedInputs>=sequence,"Actual source-gizmo/source-map/amount/destination controls and authoritative one-command physical result; requests="+sequence);status="passed";});
++        }
++    }
++}
+--- /dev/null
++++ bounded-robot-UI/CONTRACT.md
+@@ -0,0 +1,9 @@
++# F12 supported robot source-targeter UI
++
++Use the unchanged UIv2 product and the two exact packages already accepted in F05/F06. No DLC is enabled. Use the real provider's public CreateRobot factory to create Omni I and Builder III with their native components, work settings and unchanged roles. The fixture does not assign robot roles, inject HD comps, replace native order permission or patch health.
++
++The positive actor must be an actual player Omni I with exactly one HD comp, native Hauling priority2 and native CanTakeOrder=false in this profile. Actual window input selects the comp's **Haul to…** source gizmo, chooses the real15-item source, enters7 in the real quantity dialog, confirms and selects the real farther bare destination. Require the existing synchronized command's actual false queue flag, original job success, source8/destination7, personalWood5 and unchanged unrelated ground stock and native robot roles. The source starts forbidden so autonomous provider hauling cannot claim its remainder after the forced order. This deliberate initial permission is a supported explicit-order input.
++
++Before that delivery, actual clicks on the rendered disabled gizmo with allowMechanoids=false and for real Builder III without Hauling must leave all order/job/queue/reservation/cargo state unchanged and create no targeter. Then restore the original setting and select Omni I. No role mutation or artificial blocked state is used.
++
++Reuse the frozen human UI private-window worker, control events, prompts, dialog and command receipts. Render the actual robot gizmo/source target prompt and final progress. This profile does not repeat the human invalid-input matrix, native save/lifecycle chain, station control UI or Biotech float-menu case. No Prepare/native acceptance is claimed by source/build handoff.

@@ -31,17 +31,11 @@ namespace HaulersDream
         private const int MaxPullLoops = 256; // backstop: bounds the select->transfer cycle
         private const int AiUpdateInterval = 60; // how often the other-claimant FailOn re-scans (ticks)
 
-        // The single item taken into HANDS this visit (UNtagged). Captured so the finalize can ship it directly
-        // via a HaulToStorage job. In-flight only — not scribed (a save mid-visit re-derives it: a handheld item
-        // already in the carry tracker is picked up by the next unload trigger / vanilla haul anyway).
-        [System.NonSerialized] private Thing handTail;
-
-        // Reused per-pull scratch for the carrier-stack view fed to the pure planner, replacing a fresh
-        // List<CarrierStack> per select cycle (each select toil re-snapshots the carrier's inventory). [ThreadStatic]
-        // + lazy-init matches the repo's hook-reachable scratch convention; Cleared at the point of use, never trusted
-        // empty. SAFETY: the select initAction builds + consumes this within one JumpToToil cycle (sequential within
-        // a tick, no re-entrant job re-enters this scratch) before the next reuse.
-        [System.ThreadStatic] private static List<BulkUnloadCarrierPolicy.CarrierStack> scratchStacks;
+        // Actual no-merge visit cargo survives a save between transfer and cleanup. All-ending recovery
+        // uses these identities, never a newly unrelated object found in the pawn's hands.
+        private Thing handTail;
+        private int handTailCount;
+        private List<Thing> visitCargo = new List<Thing>();
 
         private Pawn Carrier => job.GetTarget(CarrierInd).Thing as Pawn;
 
@@ -51,6 +45,11 @@ namespace HaulersDream
         {
             base.ExposeData();
             Scribe_Values.Look(ref pullLoops, "hdUcibPullLoops", 0);
+            Scribe_References.Look(ref handTail, "hdUcibHandTail");
+            Scribe_Values.Look(ref handTailCount, "hdUcibHandTailCount");
+            Scribe_Collections.Look(ref visitCargo, "hdUcibVisitCargo", LookMode.Reference);
+            Scribe_Values.Look(ref pendingToHands, "hdUcibPendingToHands");
+            if (Scribe.mode == LoadSaveMode.LoadingVars) visitCargo ??= new List<Thing>();
         }
 
         public override string GetReport()
@@ -97,6 +96,12 @@ namespace HaulersDream
 
         public override IEnumerable<Toil> MakeNewToils()
         {
+            // A pre-feature save can prove ownership only if its scratch target is the actual hand stack.
+            // Do not adopt arbitrary hands when the old unscribed reference cannot be reconstructed.
+            if (handTail == null && job.targetC.Thing != null
+                && pawn.carryTracker?.innerContainer.Contains(job.targetC.Thing) == true)
+            { handTail = job.targetC.Thing; handTailCount = handTail.stackCount; }
+            AddFinishAction(_ => BulkUnloadRecovery.Queue(pawn, visitCargo, handTail, handTailCount, job.playerForced));
             this.FailOnDespawnedOrNull(CarrierInd);
             this.FailOnForbidden(CarrierInd);
             // PERMISSION as an END CONDITION, not just a gate on the flag write above: withholding the flag stops
@@ -136,58 +141,9 @@ namespace HaulersDream
                 var carrierInner = carrier.inventory.innerContainer;
                 if (carrierInner == null || carrierInner.Count == 0) { JumpToToil(finalize); return; }
 
-                // Build the pure planner's view of the carrier's stacks (index, per-unit mass, count), then ask
-                // for the next pull. Free carry mass is the hauler's live headroom (negative when overloaded -> 0
-                // backpack room -> the ladder routes to hands).
-                var stacks = scratchStacks ?? (scratchStacks = new List<BulkUnloadCarrierPolicy.CarrierStack>());
-                stacks.Clear();
-                for (int i = 0; i < carrierInner.Count; i++)
-                {
-                    var t = carrierInner[i];
-                    if (t == null || t.Destroyed) continue;
-                    stacks.Add(new BulkUnloadCarrierPolicy.CarrierStack(
-                        i, t.GetStatValue(StatDefOf.Mass), t.stackCount));
-                }
-                float freeSpace = MassUtility.FreeSpace(pawn);
-                var plan = BulkUnloadCarrierPolicy.PlanNextPull(stacks, freeSpace);
-                if (plan.ChosenIndex < 0 || plan.ChosenIndex >= carrierInner.Count || plan.Count <= 0)
+                if (!BulkUnloadPull.TrySelect(pawn, carrierInner, respectForbidden: false, job.playerForced,
+                    out Thing thing, out int count, out bool toHands))
                 { JumpToToil(finalize); return; }
-
-                var thing = carrierInner[plan.ChosenIndex];
-                if (thing == null || thing.Destroyed) { JumpToToil(selectNext); return; }
-
-                // Combat Extended adds a BULK dimension the pure (vanilla-mass) planner can't see — so the BACKPACK
-                // pull defers to CE's own weight+bulk fit, EXACTLY as the LOAD sibling does (JobDriver_LoadPackAnimal
-                // sweepTake / PackAnimalLoad: count = Min(count, CECompat.MaxFitCount(pawn, t))). MaxFitCount returns
-                // int.MaxValue without CE, so this Min is a no-op then — CE-absent behaviour is byte-identical.
-                // The to-hands rung is NEVER CE-clamped: the carry tracker is exempt from the soft ceiling (that's
-                // why the JobDef has no checkEncumbrance), and the LOAD side likewise only clamps inventory pulls.
-                int count = plan.Count;
-                bool toHands = plan.ToHands;
-                if (!toHands)
-                {
-                    int ceFit = CECompat.MaxFitCount(pawn, thing);
-                    if (ceFit <= 0)
-                    {
-                        // CE weight/bulk is exhausted even though vanilla mass thought there was backpack room (CE's
-                        // bulk dimension the planner can't see). Treat the backpack as full and re-plan with zero free
-                        // space so the Core ladder routes this stack to HANDS — mirroring the LOAD side's sweepDecide,
-                        // which flips roomLeft=false when CECompat.AvailableBulk(pawn) <= 0 and falls through to the
-                        // overflow path. (CE-absent: ceFit is int.MaxValue, never <= 0, so this branch never runs.)
-                        plan = BulkUnloadCarrierPolicy.PlanNextPull(stacks, 0f);
-                        if (plan.ChosenIndex < 0 || plan.ChosenIndex >= carrierInner.Count || plan.Count <= 0)
-                        { JumpToToil(finalize); return; }
-                        thing = carrierInner[plan.ChosenIndex];
-                        if (thing == null || thing.Destroyed) { JumpToToil(selectNext); return; }
-                        count = plan.Count;
-                        toHands = plan.ToHands;
-                    }
-                    else
-                    {
-                        count = System.Math.Min(count, ceFit);
-                    }
-                }
-                // Stash the selection + the plan's destination on the job for the transfer toil.
                 job.SetTarget(ItemInd, thing);
                 job.count = count;
                 pendingToHands = toHands;
@@ -217,46 +173,16 @@ namespace HaulersDream
                 var carrierInner = carrier.inventory.innerContainer;
                 if (carrierInner == null || !carrierInner.Contains(thing)) { JumpToToil(selectNext); return; }
 
-                int count = job.count > 0 ? job.count : thing.stackCount;
-                count = System.Math.Min(count, thing.stackCount);
-                if (count <= 0) { JumpToToil(finalize); return; }
-
-                if (pendingToHands)
-                {
-                    // Overflow / last stack -> the carry tracker, UNtagged. It ships directly via the finalize's
-                    // HaulToStorage job (tagging it would double-ship it through HD's inventory unload pass too).
-                    int moved = carrierInner.TryTransferToContainer(thing, pawn.carryTracker.innerContainer, count, out Thing movedThing);
-                    if (moved > 0 && movedThing != null)
-                        handTail = movedThing;
-                    // One item to hands is enough for this visit (the carry tracker holds one stack); finalize.
-                    AfterTransferRefresh(carrier);
-                    JumpToToil(finalize);
-                    return;
-                }
-
-                // Backpack: into the hauler's inventory, tagged in HD's comp so the normal unload ships it.
-                // canMergeWithExistingStacks:false (matching the LOAD sibling's inv.TryAdd) — a task item must NOT
-                // merge into the pawn's personal kit. If it merged, movedBpThing would be the MERGED personal-kit
-                // stack, RegisterHauledItem would tag it, and the comp's same-def self-heal would re-tag every
-                // matching personal stack -> non-keep-stock the pawn legitimately carries gets shipped to storage.
-                var pawnInner = pawn.inventory?.innerContainer;
-                if (pawnInner == null) { JumpToToil(finalize); return; }
-                int movedBp = carrierInner.TryTransferToContainer(thing, pawnInner, count, out Thing movedBpThing, canMergeWithExistingStacks: false);
-                if (movedBp > 0 && movedBpThing != null)
-                {
-                    var comp = pawn.GetComp<CompHauledToInventory>();
-                    comp?.RegisterHauledItem(movedBpThing);
-                }
-                else
-                {
-                    // Nothing moved (a non-mergeable passenger, or another mod holding the stack) -> end the visit
-                    // rather than spin (the backstop loop count also bounds this). The carrier keeps the stack;
-                    // vanilla / a later trigger retries.
-                    JumpToToil(finalize);
-                    return;
-                }
-                AfterTransferRefresh(carrier);
-                JumpToToil(selectNext); // more stacks -> keep pulling in this same visit
+                // Recheck permission after the visual delay; the shared transfer rechecks actual custody,
+                // remaining quantity and both vanilla/CE capacity before moving anything.
+                if (!BulkUnloadGate.ShouldHandle(pawn, carrier) || !BulkUnloadGate.PlayerMayUnload(pawn, carrier))
+                { EndJobWith(JobCondition.Incompletable); return; }
+                int moved = BulkUnloadPull.Transfer(pawn, carrierInner, thing, job.count, pendingToHands,
+                    respectForbidden: false, job.playerForced, out Thing movedThing, out bool toHands);
+                if (moved > 0) { visitCargo.Add(movedThing); AfterTransferRefresh(carrier); }
+                if (toHands && moved > 0) { handTail = movedThing; handTailCount = moved; }
+                if (moved <= 0 || toHands) { JumpToToil(finalize); return; }
+                JumpToToil(selectNext);
             };
             transfer.defaultCompleteMode = ToilCompleteMode.Instant;
             yield return transfer;
@@ -264,28 +190,13 @@ namespace HaulersDream
             // ============ FINALIZE: ship the backpack stock + the hand-tail to storage ============
             finalize.initAction = delegate
             {
-                // Hand-tail (UNtagged, in the carry tracker) ships DIRECTLY: enqueue a HaulToStorage job FIRST so
-                // it goes out ahead of the inventory unload. forced:true so it isn't gated away.
-                if (handTail != null && !handTail.Destroyed
-                    && pawn.carryTracker?.innerContainer?.Contains(handTail) == true)
-                {
-                    var haulJob = HaulAIUtility.HaulToStorageJob(pawn, handTail, forced: true);
-                    if (haulJob != null && pawn.jobs != null)
-                    {
-                        haulJob.playerForced = job.playerForced;
-                        pawn.jobs.jobQueue.EnqueueFirst(haulJob, JobTag.Misc);
-                    }
-                }
-                // Backpack stock is tagged -> HD's normal storage unload pass ships it (forced recovery).
-                PawnUnloadChecker.CheckIfShouldUnload(pawn, forced: true, behindQueuedWork: true);
                 EndJobWith(JobCondition.Succeeded);
             };
             finalize.defaultCompleteMode = ToilCompleteMode.Instant;
             yield return finalize;
         }
 
-        // Carried between the select and transfer toils (which stack goes to hands vs backpack). In-flight only.
-        [System.NonSerialized] private bool pendingToHands;
+        private bool pendingToHands;
 
         /// <summary>True if a pawn OTHER than this hauler holds a live reservation on the carrier — the
         /// non-exclusive-reserve pre-empt check (roping, caravan-form gather, a second hauler). Scans

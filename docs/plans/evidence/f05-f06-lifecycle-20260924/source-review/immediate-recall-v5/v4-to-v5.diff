@@ -1,0 +1,66 @@
+--- v4/src/RobotLifecycle.cs
++++ v5/src/RobotLifecycle.cs
+@@ -86,7 +86,7 @@
+             Patch(typeof(Root), "OnGUI", nameof(OnGui), false);
+             Patch(typeof(Pawn), "Tick", nameof(PawnTick), false);
+             Patch(typeof(Pawn_JobTracker), "StartJob", nameof(Started), false);
+-            Patch(typeof(Pawn_JobTracker), "EndCurrentJob", nameof(Ending), true);
++            Patch(typeof(Pawn_JobTracker), "CleanupCurrentJob", nameof(Ending), true);
+             if (role == "F05-UPGRADE" || role == "F05-RESTART")
+             {
+                 LoadCheckpoint(); // Read exact deserialized state before changing settings, keep values or jobs.
+@@ -223,13 +223,19 @@
+         private void Recall()
+         {
+             int held = Inventory(); Select(station); Command_Action action = StationCommand("AIRobot_Label_SendOwnerToRecharge");
++            string inventoryBefore = InventoryRoster(); bool atStation = actor.Position == station.Position;
+             Guard(!action.Disabled && held == (role == "F05-OLD-SAVE" ? 7 : 17), "Native recall boundary differs.");
+             if (role != "F05-OLD-SAVE") Require("partial-tagged-cargo", Cargo.KeptCountOf(Material) == 7 && Cargo.PeekHashSet().Any(t => t.def == Material && actor.inventory.innerContainer.Contains(t))
+                 && Total() == 27 && Stored() == 0 && actor.carryTracker.CarriedThing == null, "Native pickup produced tagged cargo above Keep7 before actual recall. " + State());
+             action.action();
+-            Require("native-station-recall", actor.CurJob != null && actor.CurJob.def.defName == "AIRobot_Return2BaseDespawn" && Inventory() == held,
+-                "Actual station callback selected native return/despawn job; no artificial despawn or inventory move. " + State());
+-            recallId = actor.CurJob.loadID;
++            bool returning = actor.CurJobDef?.defName == "AIRobot_GoDespawn" && actor.CurJob.targetA.Thing == station
++                && started.Contains(actor.CurJob.loadID);
++            bool immediate = role == "F05-OLD-SAVE" && atStation && Contained && actor.CurJob == null
++                && actor.jobs.jobQueue.Count == 0 && actor.carryTracker.CarriedThing == null;
++            Require("native-station-recall", (returning || immediate) && Inventory() == held && InventoryRoster() == inventoryBefore,
++                "Actual station callback; path=" + (immediate ? "synchronous-contained-at-station" : "active-AIRobot_GoDespawn")
++                + "; no artificial job, movement, despawn or inventory move. " + State());
++            recallId = returning ? actor.CurJob.loadID : 0;
+             if (role != "F05-OLD-SAVE") Require("partial-command-interrupted", ended.TryGetValue(bulkId, out string end) && end == JobCondition.InterruptForced.ToString(), "Native station StopAll interrupts the picked command: " + end);
+             SetStage("recall");
+         }
+--- v4/build.ps1
++++ v5/build.ps1
+@@ -2,7 +2,8 @@
+ $robotRoot = $PSScriptRoot
+ $robotReferences = Join-Path $env:LOCALAPPDATA 'Temp/haulersdream-f34-host-root-build-20260920'
+ $robotProduct = Join-Path $env:LOCALAPPDATA 'HaulersDreamQA/inputs/f07-authority-20260924/Product'
+-$robotBuild = Join-Path $env:LOCALAPPDATA 'HaulersDreamQA/builds/f05-f06-lifecycle-20260924/build-v4'
++$robotBuild = Join-Path $env:LOCALAPPDATA 'HaulersDreamQA/builds/f05-f06-lifecycle-20260924/build-v5'
++if (Test-Path -LiteralPath $robotBuild) { throw 'Preserve existing v5 build evidence.' }
+ [IO.Directory]::CreateDirectory($robotBuild) | Out-Null
+ & 'C:/Users/Arthur/.dotnet/dotnet.exe' build (Join-Path $robotRoot 'host/HaulersDream.RuntimeHarness.csproj') --nologo -c Release `
+     -p:ImportDirectoryBuildProps=false -p:ImportDirectoryBuildTargets=false -p:ImportDirectoryPackagesProps=false `
+--- v4/controller/scripts/runtime-test.ps1
++++ v5/controller/scripts/runtime-test.ps1
+@@ -532,7 +532,7 @@
+     }
+     if ($taskManifest.caseId -in @('ROBOTS-R0','ROBOTS-R1-AUTO','F05-OLD-SAVE','F05-UPGRADE','F05-RESTART','F06-BIOTECH')) { Assert-RobotPreparedMetadata $taskManifest }
+     if ($taskManifest.caseId -in @('F05-OLD-SAVE','F05-UPGRADE','F05-RESTART','F06-BIOTECH')) {
+-        if (@($taskManifest.expectedAssemblies | Where-Object { $_.name -ceq 'HaulersDream.RuntimeHarness' -and $_.sha256 -ceq '4BEC754436262543B9AA4B8EC248A1567C08CAE01BCCD08DCAE8C14DC2DB4647' }).Count -ne 1) { throw 'Reviewed lifecycle host differs.' }
++        if (@($taskManifest.expectedAssemblies | Where-Object { $_.name -ceq 'HaulersDream.RuntimeHarness' -and $_.sha256 -ceq '4668E81EF8164C321A3AAEDF94B34251B71F33DD5EF52D84B75B9C0253E301D4' }).Count -ne 1) { throw 'Reviewed lifecycle host differs.' }
+         $taskExpectedModCount = if ($taskManifest.caseId -ceq 'F06-BIOTECH') { 7 } else { 6 }
+         if ($taskManifest.expectedBehavior -cne 'satisfied' -or $taskManifest.negativeControl -cne 'None' -or $taskManifest.hdSource -cne 'Built' -or
+             @($taskManifest.expectedMods).Count -ne $taskExpectedModCount -or $taskManifest.PSObject.Properties['f34MixedProfile']) { throw 'Lifecycle requires Built, satisfied, None, the exact six/seven packages and no companion profile.' }
+@@ -969,7 +969,7 @@
+         $taskExpectedCore = if ($CaseId -ceq 'F05-OLD-SAVE') { 'D835EF8E730BDD721B4A6978F85C4E0B61BEBFE8109247CC67CFDF190652F299' } else { '1A30CF3CBFC96C7BD0980CBE46482C07A58519F4D31FBD9D269A830A6AE9E332' }
+         if ((Get-Sha256 (Join-Path $taskHdRoot '1.6/Assemblies/HaulersDream.dll')) -cne $taskExpectedHd -or
+             (Get-Sha256 (Join-Path $taskHdRoot '1.6/Assemblies/HaulersDream.Core.dll')) -cne $taskExpectedCore) { throw 'Lifecycle requires actual frozen published or F07 v10 product.' }
+-        if ((Get-Sha256 $HarnessAssembly) -cne '4BEC754436262543B9AA4B8EC248A1567C08CAE01BCCD08DCAE8C14DC2DB4647') { throw 'Reviewed lifecycle host differs.' }
++        if ((Get-Sha256 $HarnessAssembly) -cne '4668E81EF8164C321A3AAEDF94B34251B71F33DD5EF52D84B75B9C0253E301D4') { throw 'Reviewed lifecycle host differs.' }
+         if ($CaseId -ceq 'F06-BIOTECH' -and -not (Test-Path -LiteralPath (Join-Path $GameRoot 'Data\Biotech\About\About.xml') -PathType Leaf)) { throw 'Actual installed Biotech content required.' }
+     }
+     foreach ($taskInput in @($GameRoot, $WorkshopRoot, $taskHdRoot, $HarnessAssembly)) { Assert-NoReparsePath $taskInput }

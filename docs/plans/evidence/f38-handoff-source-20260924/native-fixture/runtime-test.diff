@@ -1,0 +1,253 @@
+--- accepted-f24/controller/scripts/runtime-test.ps1
++++ f38/controller/scripts/runtime-test.ps1
+@@ -16,7 +16,7 @@
+     [string]$GameRoot = 'C:\Steam\steamapps\common\RimWorld',
+     [string]$WorkshopRoot = 'C:\Steam\steamapps\workshop\content\294100',
+     [string]$PlayerSaveDataRoot,
+-    [ValidateSet('bootstrap', 'BG01', 'BG02', 'BG03-P1', 'L04-O1', 'CAP01', 'CAP02', 'CAP03-B', 'CAP03-A', 'CAP03-C', 'L04-O1-DELIVERY', 'L04-B1', 'L04-B1-D2', 'L40-Q1', 'L40-UI-P0', 'ROBOTS-R0', 'ROBOTS-R1-AUTO', 'AF1-LIFECYCLE', 'AF1-SAVE', 'AF1-SAVE-MISSING', 'AF1-SAVE-VERSION', 'AF1-SAVE-NULLREF', 'REFUEL-G1', 'RIMMS-DLV1', 'F34-MIXED-CUT', 'F24-WORK-CADENCE')]
++    [ValidateSet('bootstrap', 'BG01', 'BG02', 'BG03-P1', 'L04-O1', 'CAP01', 'CAP02', 'CAP03-B', 'CAP03-A', 'CAP03-C', 'L04-O1-DELIVERY', 'L04-B1', 'L04-B1-D2', 'L40-Q1', 'L40-UI-P0', 'ROBOTS-R0', 'ROBOTS-R1-AUTO', 'AF1-LIFECYCLE', 'AF1-SAVE', 'AF1-SAVE-MISSING', 'AF1-SAVE-VERSION', 'AF1-SAVE-NULLREF', 'REFUEL-G1', 'RIMMS-DLV1', 'F34-MIXED-CUT', 'F38-HANDOFF','F38-RESTART')]
+     [string]$CaseId = 'bootstrap',
+     [ValidateSet('bootstrap', 'baseline-gap', 'satisfied')]
+     [string]$ExpectedBehavior = 'bootstrap',
+@@ -32,6 +32,8 @@
+     [string]$RefuelGroupProfile = (Join-Path (Split-Path -Parent $PSScriptRoot) 'evidence\refuel-g1-profile.json'),
+     [string]$NearbyDeliveryProfile = (Join-Path (Split-Path -Parent $PSScriptRoot) 'evidence\dlv1-profile.json'),
+     [string]$F34MixedProfile,
++    [string]$CheckpointSave,
++    [string]$CheckpointRecord,
+     [switch]$CommonSense
+ )
+ 
+@@ -212,7 +214,7 @@
+ }
+ 
+ function Initialize-RobotAssemblyIdentities([string[]]$Paths, [string]$Runtime) {
+-    $taskRequiredCount=if ($CaseId -ceq 'F34-MIXED-CUT') { 11 } elseif ($CaseId -in $script:taskAf1Cases -or $CaseId -in @('REFUEL-G1','RIMMS-DLV1','F34-MIXED-CUT','F24-WORK-CADENCE')) { 10 } else { 12 }
++    $taskRequiredCount=if ($CaseId -ceq 'F34-MIXED-CUT') { 11 } elseif ($CaseId -in $script:taskAf1Cases -or $CaseId -in @('REFUEL-G1','RIMMS-DLV1','F34-MIXED-CUT','F38-HANDOFF','F38-RESTART')) { 10 } else { 12 }
+     if ([IntPtr]::Size -ne 8 -or $Paths.Count -ne $taskRequiredCount) { throw 'Native metadata preparation requires x64 and its exact closed assembly count (AF1/G1 ten; robots twelve).' }
+     $taskMetadataRoot=Join-Path $script:taskRun 'prepared-assembly-metadata'
+     Assert-ChildPath $taskMetadataRoot $script:taskRun
+@@ -296,7 +298,7 @@
+     $taskInterpreter=Join-Path ([Environment]::GetFolderPath([Environment+SpecialFolder]::System)) 'WindowsPowerShell\v1.0\powershell.exe'
+     if ($taskProof.interpreter.path -cne $taskInterpreter -or (Get-Sha256 $taskInterpreter) -cne $taskProof.interpreter.sha256) { throw 'R0 metadata interpreter proof differs.' }
+     $taskExpectedNames=@('Assembly-CSharp','UnityEngine.CoreModule','0Harmony','HarmonyMod','HaulersDream','HaulersDream.Core','HaulersDream.RuntimeHarness','UnityEngine.IMGUIModule','UnityEngine.ScreenCaptureModule','UnityEngine.TextRenderingModule','AIRobot','MiscRobotsPlusPlus')
+-    if ($Manifest.caseId -in $script:taskAf1Cases -or $Manifest.caseId -in @('REFUEL-G1','RIMMS-DLV1','F24-WORK-CADENCE')) { $taskExpectedNames=$taskExpectedNames[0..9] }
++    if ($Manifest.caseId -in $script:taskAf1Cases -or $Manifest.caseId -in @('REFUEL-G1','RIMMS-DLV1','F38-HANDOFF','F38-RESTART')) { $taskExpectedNames=$taskExpectedNames[0..9] }
+     if ($Manifest.caseId -ceq 'F34-MIXED-CUT') { $taskExpectedNames=@($taskExpectedNames[0..9])+@('HaulersDream.F34Native') }
+     if (@($Manifest.expectedAssemblies).Count -ne $taskExpectedNames.Count -or @($taskProof.receipts).Count -ne $taskExpectedNames.Count) { throw 'Native metadata assembly/receipt census differs.' }
+     for ($taskIndex=0; $taskIndex -lt $taskExpectedNames.Count; $taskIndex++) {
+@@ -509,7 +511,7 @@
+     # files as the system code page and corrupts non-ASCII protected/copy paths.
+     $taskManifest = Get-Content -LiteralPath $taskManifestPath -Encoding UTF8 -Raw | ConvertFrom-Json
+     $taskState = Get-Content -LiteralPath (Join-Path $script:taskRun 'controller-state.json') -Encoding UTF8 -Raw | ConvertFrom-Json
+-    if ($taskManifest.schemaVersion -ne 1 -or $taskManifest.runDirectory -ne $script:taskRun -or $taskManifest.caseId -notin @('bootstrap', 'BG01', 'BG02', 'BG03-P1', 'L04-O1', 'CAP01', 'CAP02', 'CAP03-B', 'CAP03-A', 'CAP03-C', 'L04-O1-DELIVERY', 'L04-B1', 'L04-B1-D2', 'L40-Q1', 'L40-UI-P0', 'ROBOTS-R0', 'ROBOTS-R1-AUTO', 'AF1-LIFECYCLE', 'AF1-SAVE', 'AF1-SAVE-MISSING', 'AF1-SAVE-VERSION', 'AF1-SAVE-NULLREF', 'REFUEL-G1', 'RIMMS-DLV1', 'F34-MIXED-CUT', 'F24-WORK-CADENCE')) {
++    if ($taskManifest.schemaVersion -ne 1 -or $taskManifest.runDirectory -ne $script:taskRun -or $taskManifest.caseId -notin @('bootstrap', 'BG01', 'BG02', 'BG03-P1', 'L04-O1', 'CAP01', 'CAP02', 'CAP03-B', 'CAP03-A', 'CAP03-C', 'L04-O1-DELIVERY', 'L04-B1', 'L04-B1-D2', 'L40-Q1', 'L40-UI-P0', 'ROBOTS-R0', 'ROBOTS-R1-AUTO', 'AF1-LIFECYCLE', 'AF1-SAVE', 'AF1-SAVE-MISSING', 'AF1-SAVE-VERSION', 'AF1-SAVE-NULLREF', 'REFUEL-G1', 'RIMMS-DLV1', 'F34-MIXED-CUT', 'F38-HANDOFF','F38-RESTART')) {
+         throw 'Unsupported manifest or mismatched run directory.'
+     }
+     if ($taskState.manifestSha256 -ne (Get-Sha256 $taskManifestPath)) { throw 'Prepared manifest was modified; refuse to use it.' }
+@@ -528,10 +530,19 @@
+             throw "Unexpected manifest layout: $($taskExpected[0])"
+         }
+     }
+-    if ($taskManifest.caseId -in @('ROBOTS-R0','ROBOTS-R1-AUTO','F24-WORK-CADENCE')) { Assert-RobotPreparedMetadata $taskManifest }
+-    if ($taskManifest.caseId -ceq 'F24-WORK-CADENCE') {
++    if ($taskManifest.caseId -in @('ROBOTS-R0','ROBOTS-R1-AUTO','F38-HANDOFF','F38-RESTART')) { Assert-RobotPreparedMetadata $taskManifest }
++    if ($taskManifest.caseId -cin @('F38-HANDOFF','F38-RESTART')) {
+         if ($taskManifest.expectedBehavior -cnotin @('satisfied','baseline-gap') -or $taskManifest.negativeControl -cne 'None' -or $taskManifest.hdSource -cne 'Built' -or
+-            @($taskManifest.expectedMods).Count -ne 4 -or $taskManifest.PSObject.Properties['f34MixedProfile']) { throw 'F24-WORK-CADENCE requires Built, baseline-gap/satisfied, None, four packages and no companion profile.' }
++            @($taskManifest.expectedMods).Count -ne 4 -or $taskManifest.PSObject.Properties['f34MixedProfile']) { throw 'F38 handoff requires Built, baseline-gap/satisfied, None, four packages and no companion profile.' }
++    }
++
++    if ($taskManifest.caseId -ceq 'F38-RESTART') {
++        if (-not $taskManifest.PSObject.Properties['restartCheckpoint']) { throw 'Missing F38 checkpoint binding.' }
++        $taskCheckpoint=$taskManifest.restartCheckpoint
++        if ($taskCheckpoint.savePath -cne (Join-Path $taskManifest.saveDataDirectory 'Saves\Autostart.rws') -or
++            $taskCheckpoint.recordPath -cne (Join-Path $script:taskRun 'input\checkpoint.txt') -or
++            (Get-Sha256 $taskCheckpoint.savePath) -cne $taskCheckpoint.saveSha256 -or
++            (Get-Sha256 $taskCheckpoint.recordPath) -cne $taskCheckpoint.recordSha256) { throw 'Original F38 copied checkpoint differs.' }
+     }
+     if ($taskManifest.caseId -eq 'ROBOTS-R1-AUTO') { Assert-RobotAutomaticPreparedProfile $taskManifest }
+     if ($taskManifest.caseId -in $script:taskAf1Cases) { Assert-Af1Prepared $taskManifest }
+@@ -809,14 +820,41 @@
+ }
+ 
+ if ($Action -eq 'Prepare') {
+-    if ($CaseId -ceq 'F24-WORK-CADENCE') {
+-        if ($RunDirectory -or $ExpectedBehavior -cnotin @('satisfied','baseline-gap') -or $NegativeControl -cne 'None' -or $CommonSense -or $HdSource -cne 'Built' -or $F34MixedProfile) { throw 'F24-WORK-CADENCE requires Built, baseline-gap/satisfied, None, no CommonSense or companion profile, and a fresh controller-generated ID.' }
+-        $f24Selection = Get-Content -LiteralPath (Join-Path $PSScriptRoot '../../../selected-inputs.json') -Raw | ConvertFrom-Json
+-        $f24Role = if ($ExpectedBehavior -ceq 'satisfied') { 'candidate' } else { 'baseline' }
+-        $f24Selected = $f24Selection.$f24Role
+-        if ((Get-CanonicalPath $BuiltModRoot) -cne (Get-CanonicalPath $f24Selected.root) -or (Get-CanonicalPath $HarnessAssembly) -cne (Get-CanonicalPath $f24Selection.harness.path)) { throw 'F24 selected product role or harness path differs.' }
+-        foreach ($f24File in @($f24Selected.files) + @($f24Selection.harness)) {
+-            if ((Get-FileHash -LiteralPath $f24File.path -Algorithm SHA256).Hash -cne $f24File.sha256) { throw ('F24 selected image hash differs: ' + $f24File.path) }
++    if ($CaseId -ceq 'F38-RESTART') {
++        $CheckpointSave=Get-CanonicalPath $CheckpointSave; $CheckpointRecord=Get-CanonicalPath $CheckpointRecord
++        Assert-NoReparsePath $CheckpointSave; Assert-NoReparsePath $CheckpointRecord
++        $taskSourceRun=Split-Path -Parent (Split-Path -Parent (Split-Path -Parent $CheckpointSave))
++        Assert-ChildPath $taskSourceRun $taskBase
++        $taskSourceId=[Guid]::Empty
++        if ((Split-Path -Parent $taskSourceRun) -cne $taskBase -or -not [Guid]::TryParseExact((Split-Path -Leaf $taskSourceRun),'N',[ref]$taskSourceId) -or
++            $CheckpointSave -ine (Join-Path $taskSourceRun 'SaveData\Saves\F38-SweepHandoff.rws') -or
++            $CheckpointRecord -ine (Join-Path $taskSourceRun 'evidence\checkpoint.txt')) { throw 'F38 save/record must join one native producer.' }
++        $taskSourceManifestPath=Join-Path $taskSourceRun 'manifest.json'
++        $taskSourceResultPath=Join-Path $taskSourceRun 'evidence\result.json'
++        $taskSourceLogPath=Join-Path $taskSourceRun 'evidence\Player.log'
++        $taskSourceManifest=Get-Content -LiteralPath $taskSourceManifestPath -Raw | ConvertFrom-Json
++        $taskSourceResult=Read-Dlv1CommonResult $taskSourceResultPath
++        if ($taskSourceManifest.caseId -cne 'F38-HANDOFF' -or $taskSourceManifest.expectedBehavior -cne 'satisfied' -or
++            $taskSourceResult.caseId -cne 'F38-HANDOFF' -or $taskSourceResult.runId -cne $taskSourceManifest.runId -or
++            $taskSourceResult.status -cne 'passed' -or @($taskSourceResult.assertions | Where-Object { -not $_.passed }).Count -ne 0) { throw 'Actual F38 checkpoint producer must pass.' }
++        $taskFields=@{}
++        foreach ($taskLine in [IO.File]::ReadAllLines($CheckpointRecord)) { $taskPair=$taskLine.Split(@('='),2); if ($taskPair.Count -ne 2) { throw 'Malformed checkpoint field.' }; $taskFields.Add($taskPair[0],$taskPair[1]) }
++        if ($taskFields['save'] -ine $CheckpointSave -or $taskFields['sha'] -cne (Get-Sha256 $CheckpointSave)) { throw 'Original checkpoint record/hash differs.' }
++        [xml]$taskSaveXml=Get-Content -LiteralPath $CheckpointSave -Raw
++        if ($taskSaveXml.DocumentElement.Name -cne 'savegame') { throw 'Native savegame XML required.' }
++        if (@(Select-String -LiteralPath $taskSourceLogPath -Pattern 'not deep-saved|cause errors during loading|Could not resolve reference').Count -ne 0) { throw 'Producer has unresolved save ownership warnings.' }
++        if ($ExpectedBehavior -cne 'satisfied') { throw 'Restart accepts candidate only.' }
++    }
++
++    if ($CaseId -cin @('F38-HANDOFF','F38-RESTART')) {
++        if ($RunDirectory -or $ExpectedBehavior -cnotin @('satisfied','baseline-gap') -or $NegativeControl -cne 'None' -or $CommonSense -or $HdSource -cne 'Built' -or $F34MixedProfile) { throw 'F38 handoff requires Built, baseline-gap/satisfied, None, no CommonSense or companion profile, and a fresh controller-generated ID.' }
++        $f38Selection = Get-Content -LiteralPath (Join-Path $PSScriptRoot '../../selection.json') -Raw | ConvertFrom-Json
++        if ((Get-CanonicalPath $GameRoot) -cne (Get-CanonicalPath $f38Selection.gameRoot) -or (Get-CanonicalPath $WorkshopRoot) -cne (Get-CanonicalPath $f38Selection.workshopRoot)) { throw 'F38 provider root differs from frozen selection.' }
++        $f38Role = if ($ExpectedBehavior -ceq 'satisfied') { 'candidate' } else { 'baseline' }
++        $f38Selected = $f38Selection.$f38Role
++        if ((Get-CanonicalPath $BuiltModRoot) -cne (Get-CanonicalPath $f38Selected.root) -or (Get-CanonicalPath $HarnessAssembly) -cne (Get-CanonicalPath $f38Selection.harness.path)) { throw 'F38 selected product role or harness path differs.' }
++        foreach ($f38File in @($f38Selected.files) + @($f38Selection.harness) + @($f38Selection.providers)) {
++            if ((Get-FileHash -LiteralPath $f38File.path -Algorithm SHA256).Hash -cne $f38File.sha256) { throw ('F38 selected image hash differs: ' + $f38File.path) }
+         }
+     }
+     if ($CaseId -in $script:taskAf1Cases) {
+@@ -960,14 +998,22 @@
+         $taskProtectedRoots+=@($taskDlv1Inputs.protectedRoots)
+         Assert-RobotAutomaticProfileReceipt $NearbyDeliveryProfile $taskDlv1Read.admission 'RIMMS-DLV1 before protected snapshot'
+     }
++    if ($CaseId -ceq 'F38-RESTART') { $taskProtectedRoots += @($CheckpointSave,$CheckpointRecord,$taskSourceManifestPath,$taskSourceResultPath,$taskSourceLogPath) }
+     $taskProtectedBefore = @(Get-ProtectedSnapshot $taskProtectedRoots)
+     [IO.Directory]::CreateDirectory($script:taskRun) | Out-Null
+     foreach ($taskFolder in @($taskRuntime, $taskConfig, $taskEvidence, (Join-Path $taskSavedata 'Saves'), (Join-Path $taskRuntime 'Mods'))) {
+         [IO.Directory]::CreateDirectory($taskFolder) | Out-Null
+     }
++
+     Write-NewJson (Join-Path $script:taskRun 'preparation-start.json') ([ordered]@{
+         runId = $taskRunId; createdUtc = [DateTime]::UtcNow.ToString('O'); status = 'preparing'; hdSource = $HdSource
+     })
++
++    if ($CaseId -ceq 'F38-RESTART') {
++        [IO.Directory]::CreateDirectory((Join-Path $script:taskRun 'input')) | Out-Null
++        Copy-VerifiedFile $CheckpointSave (Join-Path $taskSavedata 'Saves\Autostart.rws') 'actual-f38-save'
++        Copy-VerifiedFile $CheckpointRecord (Join-Path $script:taskRun 'input\checkpoint.txt') 'actual-f38-record'
++    }
+     foreach ($taskTree in @('Data', 'MonoBleedingEdge', 'RimWorldWin64_Data')) {
+         Copy-VerifiedTree (Join-Path $GameRoot $taskTree) (Join-Path $taskRuntime $taskTree) 'game'
+     }
+@@ -1068,7 +1114,7 @@
+ <?xml version="1.0" encoding="utf-8"?>
+ <PrefsData>
+   <devMode>True</devMode>
+-  <pauseOnLoad>False</pauseOnLoad>
++  <pauseOnLoad>True</pauseOnLoad>
+   <runInBackground>True</runInBackground>
+   <logVerbose>True</logVerbose>
+   <volumeGame>0</volumeGame>
+@@ -1085,7 +1131,7 @@
+         (Join-Path $taskHdDestination '1.6\Assemblies\HaulersDream.Core.dll'),
+         (Join-Path $taskHarnessRoot 'Assemblies\HaulersDream.RuntimeHarness.dll')
+     )
+-    if ($CaseId -in @('L40-Q1','L40-UI-P0','ROBOTS-R0','ROBOTS-R1-AUTO') -or $CaseId -in $script:taskAf1Cases -or $CaseId -in @('REFUEL-G1','RIMMS-DLV1','F34-MIXED-CUT','F24-WORK-CADENCE')) {
++    if ($CaseId -in @('L40-Q1','L40-UI-P0','ROBOTS-R0','ROBOTS-R1-AUTO') -or $CaseId -in $script:taskAf1Cases -or $CaseId -in @('REFUEL-G1','RIMMS-DLV1','F34-MIXED-CUT','F38-HANDOFF','F38-RESTART')) {
+         $taskAssemblyPaths += @('UnityEngine.IMGUIModule.dll','UnityEngine.ScreenCaptureModule.dll','UnityEngine.TextRenderingModule.dll') | ForEach-Object {
+             Join-Path $taskRuntime ('RimWorldWin64_Data\Managed\' + $_)
+         }
+@@ -1151,7 +1197,7 @@
+         knownExpansions = $taskKnownExpansions; configFiles = $taskConfigFiles; copiedFiles = @($taskCopiedFiles.ToArray())
+         protectedRoots = $taskProtectedRoots; protectedBefore = $taskProtectedBefore
+         startupDeadlineSeconds = 300
+-        semantics = if ($CaseId -ceq 'F24-WORK-CADENCE') { 'F24 native work cadence: section continuation, grow-zone clearing and deconstruction; matched baseline/candidate, exact yield conservation and whole-log review required.' } elseif ($CaseId -ceq 'F34-MIXED-CUT') { 'Paused mixed-plant boundary capture; baseline failures preserved; no full F34 acceptance.' } elseif ($CaseId -ceq 'RIMMS-DLV1') { $taskDlv1Read.profile.scope }
++        semantics = if ($CaseId -cin @('F38-HANDOFF','F38-RESTART')) { 'F38 native source reservation handoff: actual current/future/queued jobs, original save tombstones, physical delivery; independent complete evidence review required.' } elseif ($CaseId -ceq 'F34-MIXED-CUT') { 'Paused mixed-plant boundary capture; baseline failures preserved; no full F34 acceptance.' } elseif ($CaseId -ceq 'RIMMS-DLV1') { $taskDlv1Read.profile.scope }
+             elseif ($CaseId -ceq 'REFUEL-G1') { $taskRefuelG1Read.profile.scope }
+             elseif ($CaseId -in $script:taskAf1Cases) { $taskAf1Read.profile.scope }
+             elseif ($CaseId -eq 'BG03-P1') { 'Partial initially tagged bill ingredients, two floor sources and native cooking/cleaning only; other BG03 controls and original-report convergence remain unfinished.' }
+@@ -1171,7 +1217,7 @@
+             elseif ($CaseId -eq 'L04-O1-DELIVERY') { 'Actual first automatic bulk delivery and bounded follow-up; original report loops remain separate.' }
+             else { 'Bootstrap isolation only; optional intentional-error control is not a clean-runtime pass.' }
+     }
+-    if ($CaseId -in @('ROBOTS-R0','ROBOTS-R1-AUTO') -or $CaseId -in $script:taskAf1Cases -or $CaseId -in @('REFUEL-G1','RIMMS-DLV1','F34-MIXED-CUT','F24-WORK-CADENCE')) {
++    if ($CaseId -in @('ROBOTS-R0','ROBOTS-R1-AUTO') -or $CaseId -in $script:taskAf1Cases -or $CaseId -in @('REFUEL-G1','RIMMS-DLV1','F34-MIXED-CUT','F38-HANDOFF','F38-RESTART')) {
+         $taskRobotIdentities=Initialize-RobotAssemblyIdentities $taskAssemblyPaths $taskRuntime
+         $taskManifest.expectedAssemblies=$taskRobotIdentities.assemblies
+         $taskManifest.robotMetadata=$taskRobotIdentities.provenance
+@@ -1196,6 +1242,13 @@
+     if ($CaseId -in $script:taskDlv1Cases) {
+         $taskManifest.nearbyDeliveryProfile=[pscustomobject]@{sourcePath=$NearbyDeliveryProfile;preparedPath=$taskDlv1PreparedPath;sha256=$taskDlv1Read.admission.sha256;bytes=$taskDlv1Read.admission.bytes;controllerPins=@($taskDlv1Inputs.controllerPins);requiredProtectedRoots=@($taskDlv1Inputs.protectedRoots)}
+         Assert-Dlv1Prepared ([pscustomobject]$taskManifest)
++    }
++    if ($CaseId -ceq 'F38-RESTART') {
++        $taskManifest.restartCheckpoint=[pscustomobject]@{
++            sourceSave=$CheckpointSave; sourceRecord=$CheckpointRecord; sourceRun=$taskSourceRun
++            savePath=(Join-Path $taskSavedata 'Saves\Autostart.rws'); saveSha256=(Get-Sha256 $CheckpointSave)
++            recordPath=(Join-Path $script:taskRun 'input\checkpoint.txt'); recordSha256=(Get-Sha256 $CheckpointRecord)
++        }
+     }
+     $taskManifestPath = Join-Path $script:taskRun 'manifest.json'
+     Write-NewJson $taskManifestPath $taskManifest
+@@ -1252,6 +1305,12 @@
+         '-quicktest', ('-hd-test=' + $taskCase),
+         ('"-hd-harnessmanifest={0}"' -f (Join-Path $script:taskRun 'manifest.json'))
+     )
++
++    if ($taskCase -ceq 'F38-RESTART') {
++        $taskArguments=@($taskArguments | Where-Object { $_ -cne '-quicktest' })
++        $taskRestartSaves=@(Get-ChildItem -LiteralPath (Join-Path $taskManifest.saveDataDirectory 'Saves') -File -Force)
++        if ($taskRestartSaves.Count -ne 1 -or $taskRestartSaves[0].Name -cne 'Autostart.rws') { throw 'Restart requires exactly its original copied native save.' }
++    }
+     $taskState.status = 'launch-requested'
+     $taskState.launchRequestedUtc = [DateTime]::UtcNow.ToString('O')
+     $taskLaunchObservation = [ordered]@{
+@@ -1295,7 +1354,7 @@
+ $taskResult = $null
+ if (Test-Path -LiteralPath $taskResultPath) {
+     try {
+-        if ($taskCase -cin @('RIMMS-DLV1','F34-MIXED-CUT','F24-WORK-CADENCE')) { $taskResult = Read-Dlv1CommonResult $taskResultPath }
++        if ($taskCase -cin @('RIMMS-DLV1','F34-MIXED-CUT','F38-HANDOFF','F38-RESTART')) { $taskResult = Read-Dlv1CommonResult $taskResultPath }
+         else { $taskResult = Get-Content -LiteralPath $taskResultPath -Encoding UTF8 -Raw | ConvertFrom-Json }
+     }
+     catch { $taskResult = [pscustomobject]@{ status = 'result-incomplete'; detail = $_.Exception.Message } }
+@@ -1313,8 +1372,8 @@
+ }
+ 
+ $taskProblems = New-Object 'System.Collections.Generic.List[string]'
+-if ($taskCase -ceq 'F24-WORK-CADENCE') {
+-    $taskProblems.Add('F24 capture requires independent complete assertions/events, native work continuation, exact transitional-idle queued-job or empty-emergency returned-job trigger, productive yield/collection/storage conservation, phase cleanup and whole-log review. A baseline is a failed behavior record; setup refusal does not establish the defect.')
++if ($taskCase -cin @('F38-HANDOFF','F38-RESTART')) {
++    $taskProblems.Add('F38 capture requires independent assertions/events, actual reservations, unchanged job/queue identity, retired source targets/counts, held-cargo evidence, original save/restart, exact physical delivery, cleanup and whole-log review. Baseline failure is retained; setup refusal is not reproduction.')
+ }
+ if ($taskCase -eq 'ROBOTS-R1-AUTO') {
+     $taskProblems.Add('R1 capture requires independent complete native selector/Job/ThinkNode, transfer/drop/custody/reservation/claim/cleanup and whole-log review. Automatic semantic acceptance and wider robot compatibility are unfinished.')
+@@ -1343,7 +1402,7 @@
+ }
+ $taskControlMarker = '[HD Runtime Harness NegativeControl] run=' + $taskManifest.runId + ' control=' + $taskNegativeControl + ' intentional worker error'
+ if ($taskProcessState.status -ne 'exited') { $taskProblems.Add('Process is not authoritatively exited: ' + $taskProcessState.status) }
+-$taskExpectedStatus = if ($taskCase -cin @('F34-MIXED-CUT','F24-WORK-CADENCE') -and $taskExpectedBehavior -ceq 'baseline-gap') { 'failed' } elseif ($taskNegativeControl -ne 'None') { 'failed' } elseif ($taskExpectedBehavior -eq 'baseline-gap') { 'behavior-gap-observed' } else { 'passed' }
++$taskExpectedStatus = if ($taskCase -cin @('F34-MIXED-CUT','F38-HANDOFF','F38-RESTART') -and $taskExpectedBehavior -ceq 'baseline-gap') { 'failed' } elseif ($taskNegativeControl -ne 'None') { 'failed' } elseif ($taskExpectedBehavior -eq 'baseline-gap') { 'behavior-gap-observed' } else { 'passed' }
+ if ($null -eq $taskResult -or $taskResult.status -ne $taskExpectedStatus) { $taskProblems.Add('No complete result with the explicitly expected status: ' + $taskExpectedStatus) }
+ if ($taskResult -and $taskResult.status -ne 'result-incomplete') {
+     if ($taskNegativeControl -eq 'None' -and $taskResult.unityErrorsObserved -ne 0) {
+@@ -1384,7 +1443,7 @@
+             if (-not (Test-RequiredAssertion $taskResult.assertions $taskRequired $true)) { $taskProblems.Add('Missing unique assembly assertion: ' + $taskRequired) }
+         }
+     }
+-    if ($taskCase -in @('ROBOTS-R0','ROBOTS-R1-AUTO') -or $taskCase -in $script:taskAf1Cases -or $taskCase -in @('REFUEL-G1','RIMMS-DLV1','F34-MIXED-CUT','F24-WORK-CADENCE')) { Test-RobotResultMvids $taskResult $taskManifest $taskProblems }
++    if ($taskCase -in @('ROBOTS-R0','ROBOTS-R1-AUTO') -or $taskCase -in $script:taskAf1Cases -or $taskCase -in @('REFUEL-G1','RIMMS-DLV1','F34-MIXED-CUT','F38-HANDOFF','F38-RESTART')) { Test-RobotResultMvids $taskResult $taskManifest $taskProblems }
+     if ($taskCase -eq 'ROBOTS-R1-AUTO') {
+         foreach ($taskR1Assertion in @('robot-r1-context-intact','robot-r1-cleanup-complete','robot-r1-automatic-selection','robot-r1-two-material-inventory','robot-r1-native-transfer-delivery','robot-r1-native-reservation','robot-r1-native-job-success','robot-r1-stable-storage','robot-r1-fixture-complete')) {
+             if (-not (Test-RequiredAssertion $taskResult.assertions $taskR1Assertion $true)) { $taskProblems.Add('Missing unique R1 capture assertion: '+$taskR1Assertion) }
+@@ -1725,7 +1784,7 @@
+     refuelGroupEvidence = $taskRefuelG1Evidence
+     nearbyDeliveryEvidence = $taskDlv1Evidence
+     f34MixedBoundaryEvidence = $taskF34Evidence
+-    scope = if ($taskCase -ceq 'F24-WORK-CADENCE') { 'F24 bounded native work cadence only; independent complete scheduler/yield/physical/cleanup/log review required. No claim of reporter-save reproduction.' } elseif ($taskCase -ceq 'F34-MIXED-CUT') { 'Eighteen paused native/product boundaries; full raw snapshots/assertions require independent review. Baseline stays failed. Productive cut/UI/poll/MP/full F34 remain open.' } elseif ($taskCase -ceq 'RIMMS-DLV1') { 'Three controlled native delivery scenes; independent complete transactions/physical owner/manifest/lineage/job/observer/Home/environment/process/log review remains mandatory. No automatic native, command/editor/MP/DLV2/save/feedback acceptance.' }
++    scope = if ($taskCase -cin @('F38-HANDOFF','F38-RESTART')) { 'F38 current/future/queued native source handoff and bound checkpoint/restart only; independent reservations, physical delivery, cleanup and whole-log review required. Constrained destination and repeated command replay remain separate.' } elseif ($taskCase -ceq 'F34-MIXED-CUT') { 'Eighteen paused native/product boundaries; full raw snapshots/assertions require independent review. Baseline stays failed. Productive cut/UI/poll/MP/full F34 remain open.' } elseif ($taskCase -ceq 'RIMMS-DLV1') { 'Three controlled native delivery scenes; independent complete transactions/physical owner/manifest/lineage/job/observer/Home/environment/process/log review remains mandatory. No automatic native, command/editor/MP/DLV2/save/feedback acceptance.' }
+         elseif ($taskCase -ceq 'REFUEL-G1') { 'Six ordinary native refuel scenes only; independent complete scene/item graph, observers, publication, Home, cleanup, process and log review is mandatory. No automatic acceptance; fault/save/recovery/UI/CE/MP remain separate.' }
+         elseif ($taskCase -in $script:taskAf1Cases) { 'Finite AF1 native capture only; complete independent record/observer/serializer/save/log review remains mandatory. Same-process reload is not a full restart; automatic work, refuel and complete food behavior remain separate.' }
+         elseif ($taskCase -eq 'BG03-P1') { 'Only initially tagged milk plus two remaining floor ingredients, native bill/cleaning and bounded follow-up are measured. Other BG03 controls and original-report convergence remain unverified.' }

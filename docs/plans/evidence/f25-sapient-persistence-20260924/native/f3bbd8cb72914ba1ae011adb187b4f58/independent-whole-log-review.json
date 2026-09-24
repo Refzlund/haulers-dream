@@ -1,0 +1,420 @@
+{
+  "totalLines": 2255,
+  "categories": {
+    "remaining": 58,
+    "blank": 12,
+    "profiling": 1764,
+    "mod-discovery": 71,
+    "texture-mipmap-warning": 50,
+    "allocator-statistics": 300
+  },
+  "candidates": [
+    {
+      "line": 109,
+      "text": "Fallback handler could not load library C:/HDQA/runtime-temp/haulersdream-runtime-tests/f3bbd8cb72914ba1ae011adb187b4f58/runtime/RimWorldWin64_Data/MonoBleedingEdge/data-0000023C09DCE3F0.dll"
+    },
+    {
+      "line": 110,
+      "text": "Fallback handler could not load library C:/HDQA/runtime-temp/haulersdream-runtime-tests/f3bbd8cb72914ba1ae011adb187b4f58/runtime/RimWorldWin64_Data/MonoBleedingEdge/data-0000023C3B061CB0.dll"
+    },
+    {
+      "line": 731,
+      "text": " - - 18.172ms (0.18%) (self: 2.063 ms) ErrorCheckPatches()"
+    },
+    {
+      "line": 1231,
+      "text": " - 228.381ms (1.4%) (self: 228.381 ms) Error check all defs."
+    },
+    {
+      "line": 1264,
+      "text": "1x Error check all defs. -> 228.381 ms (total (w/children): 228.381 ms)"
+    },
+    {
+      "line": 1380,
+      "text": "1x ErrorCheckPatches() -> 2.063 ms (total (w/children): 18.172 ms)"
+    },
+    {
+      "line": 1953,
+      "text": "[HD Runtime Harness] run=f3bbd8cb72914ba1ae011adb187b4f58 case=F25-RESTART terminal=passed; captured-errors=0"
+    },
+    {
+      "line": 2134,
+      "text": "      Failed Allocations. Bucket layout:"
+    },
+    {
+      "line": 2135,
+      "text": "        16B: 4 Subsections = 4096 buckets. Failed count: 16945"
+    },
+    {
+      "line": 2136,
+      "text": "        32B: 33 Subsections = 16896 buckets. Failed count: 32275"
+    },
+    {
+      "line": 2137,
+      "text": "        48B: 48 Subsections = 16384 buckets. Failed count: 49635"
+    },
+    {
+      "line": 2138,
+      "text": "        64B: 40 Subsections = 10240 buckets. Failed count: 18150"
+    },
+    {
+      "line": 2139,
+      "text": "        80B: 87 Subsections = 17817 buckets. Failed count: 7723"
+    },
+    {
+      "line": 2140,
+      "text": "        96B: 30 Subsections = 5120 buckets. Failed count: 8372"
+    },
+    {
+      "line": 2141,
+      "text": "        112B: 9 Subsections = 1316 buckets. Failed count: 4347"
+    },
+    {
+      "line": 2142,
+      "text": "        128B: 5 Subsections = 640 buckets. Failed count: 4979"
+    },
+    {
+      "line": 2181,
+      "text": "      Failed Allocations. Bucket layout:"
+    },
+    {
+      "line": 2182,
+      "text": "        16B: 4 Subsections = 4096 buckets. Failed count: 16945"
+    },
+    {
+      "line": 2183,
+      "text": "        32B: 33 Subsections = 16896 buckets. Failed count: 32275"
+    },
+    {
+      "line": 2184,
+      "text": "        48B: 48 Subsections = 16384 buckets. Failed count: 49635"
+    },
+    {
+      "line": 2185,
+      "text": "        64B: 40 Subsections = 10240 buckets. Failed count: 18150"
+    },
+    {
+      "line": 2186,
+      "text": "        80B: 87 Subsections = 17817 buckets. Failed count: 7723"
+    },
+    {
+      "line": 2187,
+      "text": "        96B: 30 Subsections = 5120 buckets. Failed count: 8372"
+    },
+    {
+      "line": 2188,
+      "text": "        112B: 9 Subsections = 1316 buckets. Failed count: 4347"
+    },
+    {
+      "line": 2189,
+      "text": "        128B: 5 Subsections = 640 buckets. Failed count: 4979"
+    },
+    {
+      "line": 2208,
+      "text": "      Failed Allocations. Bucket layout:"
+    },
+    {
+      "line": 2209,
+      "text": "        16B: 4 Subsections = 4096 buckets. Failed count: 16945"
+    },
+    {
+      "line": 2210,
+      "text": "        32B: 33 Subsections = 16896 buckets. Failed count: 32275"
+    },
+    {
+      "line": 2211,
+      "text": "        48B: 48 Subsections = 16384 buckets. Failed count: 49635"
+    },
+    {
+      "line": 2212,
+      "text": "        64B: 40 Subsections = 10240 buckets. Failed count: 18150"
+    },
+    {
+      "line": 2213,
+      "text": "        80B: 87 Subsections = 17817 buckets. Failed count: 7723"
+    },
+    {
+      "line": 2214,
+      "text": "        96B: 30 Subsections = 5120 buckets. Failed count: 8372"
+    },
+    {
+      "line": 2215,
+      "text": "        112B: 9 Subsections = 1316 buckets. Failed count: 4347"
+    },
+    {
+      "line": 2216,
+      "text": "        128B: 5 Subsections = 640 buckets. Failed count: 4979"
+    },
+    {
+      "line": 2235,
+      "text": "      Failed Allocations. Bucket layout:"
+    },
+    {
+      "line": 2236,
+      "text": "        16B: 4 Subsections = 4096 buckets. Failed count: 16945"
+    },
+    {
+      "line": 2237,
+      "text": "        32B: 33 Subsections = 16896 buckets. Failed count: 32275"
+    },
+    {
+      "line": 2238,
+      "text": "        48B: 48 Subsections = 16384 buckets. Failed count: 49635"
+    },
+    {
+      "line": 2239,
+      "text": "        64B: 40 Subsections = 10240 buckets. Failed count: 18150"
+    },
+    {
+      "line": 2240,
+      "text": "        80B: 87 Subsections = 17817 buckets. Failed count: 7723"
+    },
+    {
+      "line": 2241,
+      "text": "        96B: 30 Subsections = 5120 buckets. Failed count: 8372"
+    },
+    {
+      "line": 2242,
+      "text": "        112B: 9 Subsections = 1316 buckets. Failed count: 4347"
+    },
+    {
+      "line": 2243,
+      "text": "        128B: 5 Subsections = 640 buckets. Failed count: 4979"
+    }
+  ],
+  "remainingLines": [
+    {
+      "line": 1,
+      "text": "Mono path[0] = 'C:/HDQA/runtime-temp/haulersdream-runtime-tests/f3bbd8cb72914ba1ae011adb187b4f58/runtime/RimWorldWin64_Data/Managed'"
+    },
+    {
+      "line": 2,
+      "text": "Mono config path = 'C:/HDQA/runtime-temp/haulersdream-runtime-tests/f3bbd8cb72914ba1ae011adb187b4f58/runtime/MonoBleedingEdge/etc'"
+    },
+    {
+      "line": 3,
+      "text": "[PhysX] Initialized MultithreadedTaskDispatcher with 12 workers."
+    },
+    {
+      "line": 4,
+      "text": "Initialize engine version: 2022.3.35f1 (011206c7a712)"
+    },
+    {
+      "line": 5,
+      "text": "[Subsystems] Discovering subsystems at path C:/HDQA/runtime-temp/haulersdream-runtime-tests/f3bbd8cb72914ba1ae011adb187b4f58/runtime/RimWorldWin64_Data/UnitySubsystems"
+    },
+    {
+      "line": 6,
+      "text": "GfxDevice: creating device client; threaded=1; jobified=0"
+    },
+    {
+      "line": 7,
+      "text": "Direct3D:"
+    },
+    {
+      "line": 8,
+      "text": "    Version:  Direct3D 11.0 [level 11.1]"
+    },
+    {
+      "line": 9,
+      "text": "    Renderer: NVIDIA GeForce GTX 1080 Ti (ID=0x1b06)"
+    },
+    {
+      "line": 10,
+      "text": "    Vendor:   NVIDIA"
+    },
+    {
+      "line": 11,
+      "text": "    VRAM:     11106 MB"
+    },
+    {
+      "line": 12,
+      "text": "    Driver:   32.0.15.8266"
+    },
+    {
+      "line": 13,
+      "text": "Begin MonoManager ReloadAssembly"
+    },
+    {
+      "line": 14,
+      "text": "- Loaded All Assemblies, in  0.236 seconds"
+    },
+    {
+      "line": 15,
+      "text": "- Finished resetting the current domain, in  0.002 seconds"
+    },
+    {
+      "line": 16,
+      "text": "<RI> Initializing input."
+    },
+    {
+      "line": 18,
+      "text": "<RI> Input initialized."
+    },
+    {
+      "line": 20,
+      "text": "<RI> Initialized touch support."
+    },
+    {
+      "line": 22,
+      "text": "[PhysX] Initialized MultithreadedTaskDispatcher with 12 workers."
+    },
+    {
+      "line": 23,
+      "text": "UnloadTime: 8.171400 ms"
+    },
+    {
+      "line": 24,
+      "text": "Command line arguments: -savedatafolder=C:\\HDQA\\runtime-temp\\haulersdream-runtime-tests\\f3bbd8cb72914ba1ae011adb187b4f58\\SaveData -logFile C:\\HDQA\\runtime-temp\\haulersdream-runtime-tests\\f3bbd8cb72914ba1ae011adb187b4f58\\evidence\\Player.log -screen-fullscreen 0 -screen-width 1024 -screen-height 768 -hd-test=F25-RESTART -hd-harnessmanifest=C:\\HDQA\\runtime-temp\\haulersdream-runtime-tests\\f3bbd8cb72914ba1ae011adb187b4f58\\manifest.json"
+    },
+    {
+      "line": 25,
+      "text": "RimWorld 1.6.4871 rev591"
+    },
+    {
+      "line": 26,
+      "text": "Save data folder overridden to C:\\HDQA\\runtime-temp\\haulersdream-runtime-tests\\f3bbd8cb72914ba1ae011adb187b4f58\\SaveData"
+    },
+    {
+      "line": 34,
+      "text": "Direct3D: detected that using refresh rate causes time drift. Will stop trusting refresh rate until the game window is moved."
+    },
+    {
+      "line": 35,
+      "text": "Direct3D: detected that vsync is broken (it does not limit frame rate properly). Delta time will now be calculated using cpu-side time stampling until the game window is moved."
+    },
+    {
+      "line": 36,
+      "text": "Rebuilding mods list"
+    },
+    {
+      "line": 108,
+      "text": "Deactivating not-installed mods:"
+    },
+    {
+      "line": 109,
+      "text": "Fallback handler could not load library C:/HDQA/runtime-temp/haulersdream-runtime-tests/f3bbd8cb72914ba1ae011adb187b4f58/runtime/RimWorldWin64_Data/MonoBleedingEdge/data-0000023C09DCE3F0.dll"
+    },
+    {
+      "line": 110,
+      "text": "Fallback handler could not load library C:/HDQA/runtime-temp/haulersdream-runtime-tests/f3bbd8cb72914ba1ae011adb187b4f58/runtime/RimWorldWin64_Data/MonoBleedingEdge/data-0000023C3B061CB0.dll"
+    },
+    {
+      "line": 111,
+      "text": "[Hauler's Dream] initialised \u2014 carry limit defaults to each pawn's max carrying capacity."
+    },
+    {
+      "line": 112,
+      "text": "[HD Runtime Harness] run=f3bbd8cb72914ba1ae011adb187b4f58 case=F25-RESTART startup"
+    },
+    {
+      "line": 113,
+      "text": "Found 23 mechanoid pawn kinds to generate humanlike animals from."
+    },
+    {
+      "line": 114,
+      "text": "[Big & Small] Patched 0 PawnRenderNodeProperties to use PawnRenderingProps_Lite for recolorable graphics."
+    },
+    {
+      "line": 115,
+      "text": "Remember that you can always disable this again in the mod options."
+    },
+    {
+      "line": 1886,
+      "text": "Unloading 5 Unused Serialized files (Serialized files now loaded: 2)"
+    },
+    {
+      "line": 1887,
+      "text": "Unloading 89 unused Assets to reduce memory usage. Loaded Objects now: 18462."
+    },
+    {
+      "line": 1888,
+      "text": "Total: 223.832400 ms (FindLiveObjects: 0.877700 ms CreateObjectMapping: 1.025500 ms MarkObjects: 221.651800 ms  DeleteObjects: 0.277200 ms)"
+    },
+    {
+      "line": 1890,
+      "text": "Unloading 3 Unused Serialized files (Serialized files now loaded: 2)"
+    },
+    {
+      "line": 1891,
+      "text": "[PhysX] Initialized MultithreadedTaskDispatcher with 12 workers."
+    },
+    {
+      "line": 1892,
+      "text": "UnloadTime: 0.752400 ms"
+    },
+    {
+      "line": 1893,
+      "text": "Unloading 2 unused Assets to reduce memory usage. Loaded Objects now: 18651."
+    },
+    {
+      "line": 1894,
+      "text": "Total: 106.510600 ms (FindLiveObjects: 0.625000 ms CreateObjectMapping: 0.881400 ms MarkObjects: 104.963200 ms  DeleteObjects: 0.040800 ms)"
+    },
+    {
+      "line": 1896,
+      "text": "Loading game from file Autostart with mods:"
+    },
+    {
+      "line": 1897,
+      "text": "  - brrainz.harmony"
+    },
+    {
+      "line": 1898,
+      "text": "  - Ludeon.RimWorld"
+    },
+    {
+      "line": 1899,
+      "text": "  - Ludeon.RimWorld.Biotech"
+    },
+    {
+      "line": 1900,
+      "text": "  - RedMattis.BetterPrerequisites"
+    },
+    {
+      "line": 1901,
+      "text": "  - RedMattis.SapientAnimals"
+    },
+    {
+      "line": 1902,
+      "text": "  - giwaffed.HaulersDream"
+    },
+    {
+      "line": 1903,
+      "text": "  - giwaffed.HaulersDream.RuntimeHarness"
+    },
+    {
+      "line": 1904,
+      "text": "Direct3D: detected that using refresh rate causes time drift. Will stop trusting refresh rate until the game window is moved."
+    },
+    {
+      "line": 1905,
+      "text": "Direct3D: detected that vsync is broken (it does not limit frame rate properly). Delta time will now be calculated using cpu-side time stampling until the game window is moved."
+    },
+    {
+      "line": 1949,
+      "text": "Unloading 0 Unused Serialized files (Serialized files now loaded: 2)"
+    },
+    {
+      "line": 1950,
+      "text": "Unloading 1 unused Assets to reduce memory usage. Loaded Objects now: 24513."
+    },
+    {
+      "line": 1951,
+      "text": "Total: 198.804400 ms (FindLiveObjects: 0.998800 ms CreateObjectMapping: 1.646300 ms MarkObjects: 196.081100 ms  DeleteObjects: 0.077900 ms)"
+    },
+    {
+      "line": 1953,
+      "text": "[HD Runtime Harness] run=f3bbd8cb72914ba1ae011adb187b4f58 case=F25-RESTART terminal=passed; captured-errors=0"
+    },
+    {
+      "line": 1954,
+      "text": "Memory Statistics:"
+    },
+    {
+      "line": 1956,
+      "text": "  StackAllocators : "
+    }
+  ],
+  "interpretation": "Dynamic Mono fallback probes, provider texture mipmap warnings, private-desktop Direct3D timing notices, discovery/profiling and shutdown allocator diagnostics only. No gameplay/loading/serialization error. Loaded package list is the seven measured private mods; discovery of installed Steam entries does not mean activation."
+}

@@ -21,4 +21,5 @@
   <HaulersDream_LoadVehicleInBulk.reportString>bulk-loading a vehicle.</HaulersDream_LoadVehicleInBulk.reportString>
   <HaulersDream_BulkRefuel.reportString>bulk-refuelling.</HaulersDream_BulkRefuel.reportString>
 
+  <HaulersDream_UnloadTransporterInBulk.reportString>unloading a transporter.</HaulersDream_UnloadTransporterInBulk.reportString>
 </LanguageData>

@@ -59,9 +59,8 @@ namespace HaulersDream
             if (pawn == null)
                 return default;
 
-            // TicksGame FREEZES while paused. That's fine here: mass cannot change while paused (no toils run),
-            // so a frozen-tick memo serves the correct value, and the per-cell MoveSpeed read isn't exercised
-            // while paused anyway. A new game / cross-session load resets the stamp via Clear (FinalizeInit).
+            // TicksGame freezes while paused. Explicit inventory quantity drops clear this memo after mutation;
+            // they can change mass without running a toil. A new game/load also clears it in FinalizeInit.
             int tick = Find.TickManager?.TicksGame ?? -1;
             int key = pawn.thingIDNumber;
             if (memo.TryGet(tick, key, out var cached))

@@ -357,7 +357,7 @@
 <HaulersDream.LoadTransporter.Option>Prioritér masselæsning af {0}</HaulersDream.LoadTransporter.Option>
 <HaulersDream.LoadTransporter.CouldNotStart>Intet i nærheden at masselæsse i den transporter lige nu.</HaulersDream.LoadTransporter.CouldNotStart>
 <HaulersDream.Setting.EnableBulkLoadTransporters>Masselæs transportere og færger på én tur</HaulersDream.Setting.EnableBulkLoadTransporters>
-<HaulersDream.Setting.EnableBulkLoadTransportersDesc>Når en transportkapsel eller færge er sat til at læsse, gør en transportør krav på en del af dens manifest, fejer flere nærliggende stakke ned i sit inventar, går til transporteren ÉN gang og afleverer dem alle — i stedet for vanillas én stak i hænderne pr. gåtur. Flere transportører deler et stort manifest uden dobbelttransport, og kapslen går ikke om bord eller letter, før den krævede last er inde. Med dette slået fra bruges vanillas transporterlæsning af én stak uændret.</HaulersDream.Setting.EnableBulkLoadTransportersDesc>
+<HaulersDream.Setting.EnableBulkLoadTransportersDesc>Når en transportkapsel eller færge er sat til at læsse, gør en transportør krav på en del af dens manifest, fejer flere nærliggende stakke ned i sit inventar, går til transporteren ÉN gang og afleverer dem alle — i stedet for vanillas én stak i hænderne pr. gåtur. Flere transportører deler et stort manifest uden dobbelttransport, og kapslen går ikke om bord eller letter, før den krævede last er inde. Med dette slået fra bruges vanillas transporterlæsning af én stak uændret. En prioriteret ordre gentager ture for denne lastliste efter vellykkede afleveringer, mens bæreren ikke er indkaldt og ikke har nye ordrer i kø. En indkaldt bærer kan foretage én lasttur.</HaulersDream.Setting.EnableBulkLoadTransportersDesc>
 <HaulersDream.Setting.BulkLoadAiUpdateFrequency>Genkontrolinterval for læsning: {0} tikker</HaulersDream.Setting.BulkLoadAiUpdateFrequency>
 <HaulersDream.LoadPortal.Report>masselæsser en portal.</HaulersDream.LoadPortal.Report>
 <HaulersDream.LoadPortal.Option>Prioritér masselæsning af {0}</HaulersDream.LoadPortal.Option>
@@ -420,7 +420,7 @@
 <HaulersDream.Setting.OpportunisticLoadDesc>En figur, der allerede bærer varer, som en nærliggende transportkapsel, færge, kortportal eller et køretøj venter på, laver en afstikker for at aflevere dem, i stedet for at starte en helt ny opsamlingstur. Færre spildte gåture. Slået fra som standard (den ændrer, hvilken opgave en figur vælger derefter).</HaulersDream.Setting.OpportunisticLoadDesc>
 <HaulersDream.Setting.LoadOpportunityRadius>Søgeradius for aflæsning-på-vejen: {0} felter</HaulersDream.Setting.LoadOpportunityRadius>
 <HaulersDream.Setting.ContinuousLoading>"Læs til færdig"-højreklikordre</HaulersDream.Setting.ContinuousLoading>
-<HaulersDream.Setting.ContinuousLoadingDesc>Tilføjer en højreklikordre, der sender én kurer (selv indkaldt) gennem hver nærliggende transportgruppe, der stadig mangler at blive læsset, og kæder opgaverne, indtil de alle er fulde — praktisk til at læsse en stor karavane med én kommando. Slået fra som standard (en bekvemmelighed, man vælger til).</HaulersDream.Setting.ContinuousLoadingDesc>
+<HaulersDream.Setting.ContinuousLoadingDesc>Tilføjer en højreklikordre, der fortsætter til nærliggende lastmål, når den valgte lastliste er fuldført. Flere ture kræver en ikke-indkaldt bærer, en vellykket aflevering og ingen nye ordrer i kø. Fra som standard.</HaulersDream.Setting.ContinuousLoadingDesc>
 <HaulersDream.ContinuousLoad.Option>Læs til færdig (kontinuerligt) — {0}</HaulersDream.ContinuousLoad.Option>
 <HaulersDream.ContinuousLoad.CouldNotStart>Intet i nærheden at masselæsse i det lige nu.</HaulersDream.ContinuousLoad.CouldNotStart>
 <HaulersDream.Setting.LoadHybridPathing>Ordn masse-læssestop efter reel stifindning</HaulersDream.Setting.LoadHybridPathing>
@@ -626,7 +626,7 @@
 <HaulersDream.Setting.BulkHaulTrigger.Lab>Massetransport-udløser</HaulersDream.Setting.BulkHaulTrigger.Lab>
 <HaulersDream.Setting.KeepWorkingMargin.Lab>Aflæs før en længere flytning</HaulersDream.Setting.KeepWorkingMargin.Lab>
 <HaulersDream.Setting.MinFreeSpaceToUnloadCarrier.Lab>Minimum ledig rygsækplads for at starte</HaulersDream.Setting.MinFreeSpaceToUnloadCarrier.Lab>
-<HaulersDream.Setting.MinFreeSpaceToUnloadCarrier.Help>En transportør har brug for mindst så meget af sin bærekapacitet ledig, før den begynder at tømme et pakdyr, så dens egen rygsæk ikke straks løber over.</HaulersDream.Setting.MinFreeSpaceToUnloadCarrier.Help>
+<HaulersDream.Setting.MinFreeSpaceToUnloadCarrier.Help>En transportør har brug for mindst så meget af sin bærekapacitet ledig, før den begynder at tømme et pakdyr, så dens egen rygsæk ikke straks løber over. Denne grænse gælder også ved automatisk aflæsning af transportere.</HaulersDream.Setting.MinFreeSpaceToUnloadCarrier.Help>
 <HaulersDream.Setting.VisualUnloadDelay.Lab>Aflæsningsforsinkelse pr. stak</HaulersDream.Setting.VisualUnloadDelay.Lab>
 <HaulersDream.Setting.VisualUnloadDelay.Help>En lille kosmetisk pause mellem hver stak under en masseaflæsning, så det læses som en bevidst handling. 0 = øjeblikkeligt.</HaulersDream.Setting.VisualUnloadDelay.Help>
 <HaulersDream.Setting.BulkLoadAiUpdateFrequency.Lab>Genkontrolinterval for læsning</HaulersDream.Setting.BulkLoadAiUpdateFrequency.Lab>
@@ -828,6 +828,17 @@
   <HaulersDream.Setting.CarryMassCap.Off>Ingen grænse</HaulersDream.Setting.CarryMassCap.Off>
   <HaulersDream.Setting.CarryMassCap.Value>{0} kg</HaulersDream.Setting.CarryMassCap.Value>
   <HaulersDream.Setting.CarryMassCapDesc>En hård grænse, i kilogram, for hvor meget en figur læsser i sit inventar på én transport- eller indsamlingstur. Dette er det direkte svar på „mine figurer bærer for meget“: sæt den lavt (sig 20 kg), og figurerne samler et lille læs, aflæsser og kommer tilbage, i stedet for at fylde op til deres fulde bærevægt. Den virker sammen med procentdelen „Bæregrænse“ og Smart overlæsning ovenfor, og den laveste grænse vinder altid, så denne grænse overskrides aldrig, selv med overlæsning slået til. Ligesom Bæregrænsen tæller den kun det, der er pakket i rygsækken, ikke en stak båret i hænderne, og den ændrer ikke, hvor meget materiale en figur henter til et bestemt byggeri eller en bestemt opgave. Sæt til 0 for ingen grænse (standard).</HaulersDream.Setting.CarryMassCapDesc>
+  <HD_DropAmountTitle>Læg en mængde fra dig</HD_DropAmountTitle>
+  <HD_DropAmountConfirm>Læg fra dig</HD_DropAmountConfirm>
+  <HD_DropAmountContext>{0}\n{1}\nTilgængeligt: {2}</HD_DropAmountContext>
+  <HD_DropAmountQuantity>Antal, der skal lægges fra</HD_DropAmountQuantity>
+  <HD_DropAmountRemaining>Tilbage i inventaret: {0}</HD_DropAmountRemaining>
+  <HD_DropAmountInvalid>Indtast et helt tal fra 1 til {0}.</HD_DropAmountInvalid>
+  <HD_DropAmountChanged>Figuren eller stakken i inventaret har ændret sig. Åbn dialogen igen.</HD_DropAmountChanged>
+  <HD_DropAmountUnavailable>Valg af antal er ikke tilgængeligt med den nuværende modopsætning.</HD_DropAmountUnavailable>
+  <HD_DropAmountUnconfirmed>Det kunne ikke bekræftes, at genstandene blev lagt fra. Kontrollér figurens inventar.</HD_DropAmountUnconfirmed>
+  <HD_DropAmountBlocked>Der er ikke plads i nærheden til at lægge genstandene fra.</HD_DropAmountBlocked>
+  <HD_DropAmountPartial>{0} af {1} blev lagt fra; der var ikke plads nok i nærheden.</HD_DropAmountPartial>
   <HD_NearbyHaulGizmoDesc>Vælg en genstand for at transportere den og nærliggende genstande til lageret. Hold køtasten nede, når du vælger, for at sætte ordren i kø.</HD_NearbyHaulGizmoDesc>
   <HD_NearbyHaulPawnUnavailable>Denne figur kan ikke modtage en transportordre i sin nuværende tilstand.</HD_NearbyHaulPawnUnavailable>
   <HD_NearbyHaulDrafted>Ophæv indkaldelsen af denne figur, før du giver transportordren.</HD_NearbyHaulDrafted>
@@ -836,4 +847,18 @@
   <HD_NearbyHaulInventoryUnavailable>Transport via inventaret er utilgængelig for denne figur.</HD_NearbyHaulInventoryUnavailable>
   <HD_NearbyHaulRobotUnsupported>Robottens transportarbejde kunne ikke læses med den nuværende modopsætning.</HD_NearbyHaulRobotUnsupported>
   <HD_NearbyHaulSourceUnavailable>Den valgte genstand er ikke tilgængelig til transport.</HD_NearbyHaulSourceUnavailable>
+  <HaulersDream.UnloadTransporter.Option>Prioritér masseaflæsning af {0}</HaulersDream.UnloadTransporter.Option>
+  <HaulersDream.UnloadTransporter.CouldNotStart>Kunne ikke starte masseaflæsning af transporteren lige nu.</HaulersDream.UnloadTransporter.CouldNotStart>
+  <HaulersDream.Gizmo.BulkUnloadAll.Label>Masseaflæs alt</HaulersDream.Gizmo.BulkUnloadAll.Label>
+  <HaulersDream.Gizmo.BulkUnloadAll.Empty>Intet at aflæse</HaulersDream.Gizmo.BulkUnloadAll.Empty>
+  <HaulersDream.Gizmo.BulkUnloadAll.LoadBlocked>"Masseaflæs alt" er slået til, slå det fra, før du sætter en ny last.</HaulersDream.Gizmo.BulkUnloadAll.LoadBlocked>
+  <HaulersDream.Gizmo.BulkUnloadAll.UnloadBlocked>Der samles last til denne transporter.</HaulersDream.Gizmo.BulkUnloadAll.UnloadBlocked>
+  <HaulersDream.Feat.UnloadTransporters.Name>Aflæs transportere og færger</HaulersDream.Feat.UnloadTransporters.Name>
+  <HaulersDream.Setting.EnableBulkUnloadTransporters>Masseaflæs transportere</HaulersDream.Setting.EnableBulkUnloadTransporters>
+  <HaulersDream.Setting.EnableBulkUnloadTransportersDesc>Tilføjer en kontakt til masseaflæsning af transportere og færger. Ikke-indkaldte bærere flytter lasten direkte til lager, én tur pr. arbejdsopgave. En prioriteret ordre på en markeret transporter gentager først turen, når den foregående last er afleveret. Passagerer bliver ombord. Lastning, fyldt lager, indkaldelse eller nye ordrer i kø stopper flere ture.</HaulersDream.Setting.EnableBulkUnloadTransportersDesc>
+  <HaulersDream.Gizmo.BulkUnloadAll.Desc>Flyt lasten fra {0} til lager. Passagerer bliver ombord. En prioriteret aflæsningsordre gentages efter hver afsluttet aflevering, så længe bæreren ikke er indkaldt og ikke har nye ordrer i kø. Slå dette fra før lastning.</HaulersDream.Gizmo.BulkUnloadAll.Desc>
+  <HaulersDream.Feat.UnloadTransporters.Blurb>Flyt last direkte fra en landet transporter til lager</HaulersDream.Feat.UnloadTransporters.Blurb>
+  <HaulersDream.UnloadTransporter.Drafted>Ophæv indkaldelsen for at starte denne ordre.</HaulersDream.UnloadTransporter.Drafted>
+  <HaulersDream.UnloadTransporter.NoStorage>Intet egnet lager til den resterende last.</HaulersDream.UnloadTransporter.NoStorage>
+  <HaulersDream.Transporter.SyncUnavailable>Transporterordrer er utilgængelige, fordi multiplayer-synkroniseringen ikke kunne registreres.</HaulersDream.Transporter.SyncUnavailable>
 </LanguageData>

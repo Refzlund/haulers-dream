@@ -1,0 +1,7 @@
+# Independent release guard review
+
+Accepted for native rerun. Reviewed the one-method diff, both call sites and PlanDelivery, and the actual installed ReservationManager decompile retained in `f41-unfinished-implementation-20260924/native-fixture/ReservationManager.cs.txt` (Release at 375; ReservedBy at 552).
+
+PlanDelivery only calls pawn.Reserve when the storage decision is not arbitrated. Release previously called native Release even for an arbitrated commitment with no native reservation. Native Release searches exact target/claimant/job and error-logs when no match exists. The added ReservedBy call uses the same three identities and, because the driver supplies its non-null job, cannot match another job's claim. It neither releases a foreign pawn's reservation nor invents one. A present native claim is still removed and generates native removal notification; absent/already-cleaned claims now skip the erroneous release. TargetB is invalidated in either case as before. Normal deposited and finish cleanup both use this method.
+
+The existing inventory-unload ReleaseTargetBReservation follows the same native guard pattern. Using this driver's `job` is precise even at cleanup, rather than depending on a mutable current-job reader. No ordering, cargo credit, destination arbitration or storage behavior changed. The retained v6 native errors remain real baseline failures; this source review does not substitute for a corrected native run.

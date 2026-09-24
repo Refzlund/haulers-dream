@@ -1,0 +1,306 @@
+--- C:\Users\Arthur\Sync\Projects\RimWorld Mods\HaulersDream\docs\plans\evidence\f03-harvest-20260920\host\Bootstrap.cs
++++ C:\Users\Arthur\Sync\Projects\RimWorld Mods\HaulersDream\docs\plans\evidence\f20-refill-20260920\fixture\host\Bootstrap.cs
+@@ -67,7 +67,7 @@
+         private static RefuelGroupScenario refuelGroup;
+         private static Dlv1Scenario dlv1;
+         private static bool f34Attempted;
+-        private static bool f03HarvestStarted;
++        private static bool f20RefillStarted;
+         private static bool scenarioAttempted;
+         private static bool controlStarted;
+         private static int controlDone;
+@@ -118,7 +118,7 @@
+                 Check("private-mod-directory", SamePath(GenFilePaths.ModsFolderPath, Path.Combine(manifest.runtimeDirectory, "Mods")),
+                     GenFilePaths.ModsFolderPath);
+                 Check("private-player-log", SamePath(Application.consoleLogPath, manifest.logPath), Application.consoleLogPath);
+-                Check("case-supported", new[] { "bootstrap", "BG01", "BG02", "BG03-P1", "L04-O1", "CAP01", "CAP02", "CAP03-B", "CAP03-A", "CAP03-C", "L04-O1-DELIVERY", "L04-B1", "L04-B1-D2", "L40-Q1", "L40-UI-P0", "ROBOTS-R0", "ROBOTS-R1-AUTO", "REFUEL-G1", "RIMMS-DLV1", "F34-MIXED-CUT", "F03-HARVEST" }.Contains(manifest.caseId), manifest.caseId);
++                Check("case-supported", new[] { "bootstrap", "BG01", "BG02", "BG03-P1", "L04-O1", "CAP01", "CAP02", "CAP03-B", "CAP03-A", "CAP03-C", "L04-O1-DELIVERY", "L04-B1", "L04-B1-D2", "L40-Q1", "L40-UI-P0", "ROBOTS-R0", "ROBOTS-R1-AUTO", "REFUEL-G1", "RIMMS-DLV1", "F34-MIXED-CUT", "F20-REFILL" }.Contains(manifest.caseId), manifest.caseId);
+                 Check("negative-control-supported", string.IsNullOrEmpty(manifest.negativeControl) || manifest.negativeControl == "None"
+                     || (manifest.caseId == "bootstrap" && new[] { "WorkerUnityError", "WorkerVerseError", "LateWorkerError", "TerminalRace" }.Contains(manifest.negativeControl)),
+                     manifest.negativeControl ?? "None");
+@@ -216,29 +216,29 @@
+                 if (elapsedTicks < 5) return;
+                 if (!result.assertions.Any(x => x.id == "real-game-ticks-advanced"))
+                     Check("real-game-ticks-advanced", true, "elapsedTicks=" + elapsedTicks);
+-                if (manifest.caseId == "F03-HARVEST")
++                if (manifest.caseId == "F20-REFILL")
+                 {
+                     if (Current.Game == null || !Current.Game.PlayerHasControl) return;
+-                    if (!f03HarvestStarted)
+-                    {
+-                        Check("f03-harvest-host-admission", canQuitOwnRuntime && UnityData.IsInMainThread
+-                            && manifest.negativeControl == "None" && manifest.expectedBehavior == "satisfied"
++                    if (!f20RefillStarted)
++                    {
++                        Check("f20-refill-host-admission", canQuitOwnRuntime && UnityData.IsInMainThread
++                            && manifest.negativeControl == "None" && (manifest.expectedBehavior == "satisfied" || manifest.expectedBehavior == "baseline-gap")
+                             && manifest.expectedMods.Select(x => x.packageId).SequenceEqual(new[] {
+-                                "brrainz.harmony", "ludeon.rimworld", "giwaffed.haulersdream", "giwaffed.haulersdream.runtimeharness" })
+-                            && manifest.expectedAssemblies.Count == 10
++                                "brrainz.harmony", "ludeon.rimworld", "puremj.mjrimmods.storagerefillhysteresis", "giwaffed.haulersdream", "giwaffed.haulersdream.runtimeharness" })
++                            && manifest.expectedAssemblies.Count == 11
+                             && manifest.expectedAssemblies.All(x => result.assemblies.Count(a => a.name == x.name
+                                 && a.moduleVersionId == x.moduleVersionId) == 1),
+-                            "Private four-mod/ten-image environment; one native cotton harvest, self-pickup and storage.");
+-                        if (result.assertions.Any(x => !x.passed)) { Finish("failed", "F03 harvest admission failed."); return; }
+-                        f03HarvestStarted = true; // Cleanup also covers partial Begin failure.
+-                        HaulersDream.F03Native.HarvestGather.Begin(map, Check, Event, manifest.expectedBehavior);
+-                    }
+-                    string liveStatus = HaulersDream.F03Native.HarvestGather.Update();
++                            "Private five-mod/eleven-image environment; actual SRH gate, native selection, haul and refill cycle.");
++                        if (result.assertions.Any(x => !x.passed)) { Finish("failed", "F20 refill admission failed."); return; }
++                        f20RefillStarted = true; // Cleanup also covers partial Begin failure.
++                        HaulersDream.F20Native.RefillGate.Begin(map, Check, Event, manifest.expectedBehavior);
++                    }
++                    string liveStatus = HaulersDream.F20Native.RefillGate.Update();
+                     if (liveStatus == "running") return;
+-                    Check("f03-harvest-host-returned", liveStatus == "passed", "Live scenario returned " + liveStatus);
++                    Check("f20-refill-host-returned", liveStatus == "passed", "Live scenario returned " + liveStatus);
+                     Check("no-unity-errors-after-harness-start", unityErrors == 0, "observedErrors=" + unityErrors);
+                     Finish(liveStatus == "passed" && !result.assertions.Any(x => !x.passed) ? "passed" : "failed",
+-                        "F03 automatic native harvest, fresh output, SelfPickup and storage; no assigned productive jobs.");
++                        "F20 actual SRH selection, matched gate/cache queries, native assigned and automatic hauling; independent full review required.");
+                     return;
+                 }
+                 if (manifest.caseId == "F34-MIXED-CUT")
+@@ -253,7 +253,7 @@
+                         && manifest.negativeControl == "None"
+                         && (manifest.expectedBehavior == "baseline-gap" || manifest.expectedBehavior == "satisfied")
+                         && manifest.expectedMods.Select(x => x.packageId).SequenceEqual(new[] {
+-                            "brrainz.harmony", "ludeon.rimworld", "giwaffed.haulersdream", "giwaffed.haulersdream.runtimeharness" })
++                            "brrainz.harmony", "ludeon.rimworld", "puremj.mjrimmods.storagerefillhysteresis", "giwaffed.haulersdream", "giwaffed.haulersdream.runtimeharness" })
+                         && manifest.expectedAssemblies.Count == 11
+                         && manifest.expectedAssemblies.All(x => result.assemblies.Count(a => a.name == x.name
+                             && a.moduleVersionId == x.moduleVersionId) == 1), "Exact private four-mod/eleven-image manifest and recorded native MVIDs.");
+@@ -769,10 +769,10 @@
+             if (terminal) return;
+             terminal = true;
+             // Remove only this test's observers while error capture is still open.
+-            if (f03HarvestStarted)
+-            {
+-                try { HaulersDream.F03Native.HarvestGather.Dispose(); }
+-                catch (Exception error) { Check("f03-harvest-terminal-cleanup", false, error.ToString()); status = "failed"; }
++            if (f20RefillStarted)
++            {
++                try { HaulersDream.F20Native.RefillGate.Dispose(); }
++                catch (Exception error) { Check("f20-refill-terminal-cleanup", false, error.ToString()); status = "failed"; }
+                 if (result.assertions.Any(x => !x.passed)) status = "failed";
+             }
+             try { dlv1?.Dispose(); }
+--- C:\Users\Arthur\Sync\Projects\RimWorld Mods\HaulersDream\docs\plans\evidence\f03-harvest-20260920\host\HaulersDream.RuntimeHarness.csproj
++++ C:\Users\Arthur\Sync\Projects\RimWorld Mods\HaulersDream\docs\plans\evidence\f20-refill-20260920\fixture\host\HaulersDream.RuntimeHarness.csproj
+@@ -14,12 +14,12 @@
+     <RuntimeHarmonyAssembly Condition="'$(RuntimeHarmonyAssembly)' == ''">C:\Steam\steamapps\workshop\content\294100\2009463077\Current\Assemblies\0Harmony.dll</RuntimeHarmonyAssembly>
+   </PropertyGroup>
+   <ItemGroup>
+-    <Compile Include="../src/HarvestGather.cs" />
++    <Compile Include="../src/RefillGate.cs" />
+     <Reference Include="HaulersDream">
+-      <HintPath>$(F03ProductDirectory)/1.6/Assemblies/HaulersDream.dll</HintPath><Private>false</Private>
++      <HintPath>$(F20ProductDirectory)/1.6/Assemblies/HaulersDream.dll</HintPath><Private>false</Private>
+     </Reference>
+     <Reference Include="HaulersDream.Core">
+-      <HintPath>$(F03ProductDirectory)/1.6/Assemblies/HaulersDream.Core.dll</HintPath><Private>false</Private>
++      <HintPath>$(F20ProductDirectory)/1.6/Assemblies/HaulersDream.Core.dll</HintPath><Private>false</Private>
+     </Reference>
+   </ItemGroup>
+   <ItemGroup>
+--- C:\Users\Arthur\Sync\Projects\RimWorld Mods\HaulersDream\docs\plans\evidence\f35-finish-wild-20260920\fixture\controller\scripts\runtime-test.ps1
++++ C:\Users\Arthur\Sync\Projects\RimWorld Mods\HaulersDream\docs\plans\evidence\f20-refill-20260920\fixture\controller\scripts\runtime-test.ps1
+@@ -16,7 +16,7 @@
+     [string]$GameRoot = 'C:\Steam\steamapps\common\RimWorld',
+     [string]$WorkshopRoot = 'C:\Steam\steamapps\workshop\content\294100',
+     [string]$PlayerSaveDataRoot,
+-    [ValidateSet('bootstrap', 'BG01', 'BG02', 'BG03-P1', 'L04-O1', 'CAP01', 'CAP02', 'CAP03-B', 'CAP03-A', 'CAP03-C', 'L04-O1-DELIVERY', 'L04-B1', 'L04-B1-D2', 'L40-Q1', 'L40-UI-P0', 'ROBOTS-R0', 'ROBOTS-R1-AUTO', 'AF1-LIFECYCLE', 'AF1-SAVE', 'AF1-SAVE-MISSING', 'AF1-SAVE-VERSION', 'AF1-SAVE-NULLREF', 'REFUEL-G1', 'RIMMS-DLV1', 'F34-MIXED-CUT', 'F35-FINISH')]
++    [ValidateSet('bootstrap', 'BG01', 'BG02', 'BG03-P1', 'L04-O1', 'CAP01', 'CAP02', 'CAP03-B', 'CAP03-A', 'CAP03-C', 'L04-O1-DELIVERY', 'L04-B1', 'L04-B1-D2', 'L40-Q1', 'L40-UI-P0', 'ROBOTS-R0', 'ROBOTS-R1-AUTO', 'AF1-LIFECYCLE', 'AF1-SAVE', 'AF1-SAVE-MISSING', 'AF1-SAVE-VERSION', 'AF1-SAVE-NULLREF', 'REFUEL-G1', 'RIMMS-DLV1', 'F34-MIXED-CUT', 'F20-REFILL')]
+     [string]$CaseId = 'bootstrap',
+     [ValidateSet('bootstrap', 'baseline-gap', 'satisfied')]
+     [string]$ExpectedBehavior = 'bootstrap',
+@@ -212,7 +212,7 @@
+ }
+ 
+ function Initialize-RobotAssemblyIdentities([string[]]$Paths, [string]$Runtime) {
+-    $taskRequiredCount=if ($CaseId -ceq 'F35-FINISH') { if ($taskF35Provider -ceq 'AllowTool') { 12 } else { 11 } } elseif ($CaseId -ceq 'F34-MIXED-CUT') { 11 } elseif ($CaseId -in $script:taskAf1Cases -or $CaseId -in @('REFUEL-G1','RIMMS-DLV1','F34-MIXED-CUT')) { 10 } else { 12 }
++    $taskRequiredCount=if ($CaseId -ceq 'F20-REFILL') { 11 } elseif ($CaseId -ceq 'F34-MIXED-CUT') { 11 } elseif ($CaseId -in $script:taskAf1Cases -or $CaseId -in @('REFUEL-G1','RIMMS-DLV1','F34-MIXED-CUT')) { 10 } else { 12 }
+     if ([IntPtr]::Size -ne 8 -or $Paths.Count -ne $taskRequiredCount) { throw 'Native metadata preparation requires x64 and its exact closed assembly count (AF1/G1 ten; robots twelve).' }
+     $taskMetadataRoot=Join-Path $script:taskRun 'prepared-assembly-metadata'
+     Assert-ChildPath $taskMetadataRoot $script:taskRun
+@@ -296,13 +296,10 @@
+     $taskInterpreter=Join-Path ([Environment]::GetFolderPath([Environment+SpecialFolder]::System)) 'WindowsPowerShell\v1.0\powershell.exe'
+     if ($taskProof.interpreter.path -cne $taskInterpreter -or (Get-Sha256 $taskInterpreter) -cne $taskProof.interpreter.sha256) { throw 'R0 metadata interpreter proof differs.' }
+     $taskExpectedNames=@('Assembly-CSharp','UnityEngine.CoreModule','0Harmony','HarmonyMod','HaulersDream','HaulersDream.Core','HaulersDream.RuntimeHarness','UnityEngine.IMGUIModule','UnityEngine.ScreenCaptureModule','UnityEngine.TextRenderingModule','AIRobot','MiscRobotsPlusPlus')
+-    if ($Manifest.caseId -ceq 'F35-FINISH') {
+-        $taskAllowMods=@('brrainz.harmony','ludeon.rimworld','unlimitedhugs.hugslib','unlimitedhugs.allowtool','giwaffed.haulersdream','giwaffed.haulersdream.runtimeharness')
+-        $taskKeyzMods=@('brrainz.harmony','ludeon.rimworld','keyz182.keyzallowutilities','giwaffed.haulersdream','giwaffed.haulersdream.runtimeharness')
+-        $taskActualMods=@($Manifest.expectedMods | ForEach-Object { $_.packageId }) -join '|'
+-        if ($taskActualMods -ceq ($taskAllowMods -join '|')) { $taskExpectedNames=@($taskExpectedNames[0..9])+@('HugsLib','AllowTool') }
+-        elseif ($taskActualMods -ceq ($taskKeyzMods -join '|')) { $taskExpectedNames=@($taskExpectedNames[0..9])+@('KeyzAllowUtilities') }
+-        else { throw 'F35 exact provider/dependency package order differs.' }
++    if ($Manifest.caseId -ceq 'F20-REFILL') {
++        $taskSrhMods=@('brrainz.harmony','ludeon.rimworld','puremj.mjrimmods.storagerefillhysteresis','giwaffed.haulersdream','giwaffed.haulersdream.runtimeharness')
++        if ((@($Manifest.expectedMods | ForEach-Object { $_.packageId }) -join '|') -cne ($taskSrhMods -join '|')) { throw 'F20 exact provider package order differs.' }
++        $taskExpectedNames=@($taskExpectedNames[0..9])+@('StorageRefillHysteresis')
+     }
+     if ($Manifest.caseId -in $script:taskAf1Cases -or $Manifest.caseId -in @('REFUEL-G1','RIMMS-DLV1')) { $taskExpectedNames=$taskExpectedNames[0..9] }
+     if ($Manifest.caseId -ceq 'F34-MIXED-CUT') { $taskExpectedNames=@($taskExpectedNames[0..9])+@('HaulersDream.F34Native') }
+@@ -517,7 +514,7 @@
+     # files as the system code page and corrupts non-ASCII protected/copy paths.
+     $taskManifest = Get-Content -LiteralPath $taskManifestPath -Encoding UTF8 -Raw | ConvertFrom-Json
+     $taskState = Get-Content -LiteralPath (Join-Path $script:taskRun 'controller-state.json') -Encoding UTF8 -Raw | ConvertFrom-Json
+-    if ($taskManifest.schemaVersion -ne 1 -or $taskManifest.runDirectory -ne $script:taskRun -or $taskManifest.caseId -notin @('bootstrap', 'BG01', 'BG02', 'BG03-P1', 'L04-O1', 'CAP01', 'CAP02', 'CAP03-B', 'CAP03-A', 'CAP03-C', 'L04-O1-DELIVERY', 'L04-B1', 'L04-B1-D2', 'L40-Q1', 'L40-UI-P0', 'ROBOTS-R0', 'ROBOTS-R1-AUTO', 'AF1-LIFECYCLE', 'AF1-SAVE', 'AF1-SAVE-MISSING', 'AF1-SAVE-VERSION', 'AF1-SAVE-NULLREF', 'REFUEL-G1', 'RIMMS-DLV1', 'F34-MIXED-CUT', 'F35-FINISH')) {
++    if ($taskManifest.schemaVersion -ne 1 -or $taskManifest.runDirectory -ne $script:taskRun -or $taskManifest.caseId -notin @('bootstrap', 'BG01', 'BG02', 'BG03-P1', 'L04-O1', 'CAP01', 'CAP02', 'CAP03-B', 'CAP03-A', 'CAP03-C', 'L04-O1-DELIVERY', 'L04-B1', 'L04-B1-D2', 'L40-Q1', 'L40-UI-P0', 'ROBOTS-R0', 'ROBOTS-R1-AUTO', 'AF1-LIFECYCLE', 'AF1-SAVE', 'AF1-SAVE-MISSING', 'AF1-SAVE-VERSION', 'AF1-SAVE-NULLREF', 'REFUEL-G1', 'RIMMS-DLV1', 'F34-MIXED-CUT', 'F20-REFILL')) {
+         throw 'Unsupported manifest or mismatched run directory.'
+     }
+     if ($taskState.manifestSha256 -ne (Get-Sha256 $taskManifestPath)) { throw 'Prepared manifest was modified; refuse to use it.' }
+@@ -536,10 +533,10 @@
+             throw "Unexpected manifest layout: $($taskExpected[0])"
+         }
+     }
+-    if ($taskManifest.caseId -in @('ROBOTS-R0','ROBOTS-R1-AUTO','F35-FINISH')) { Assert-RobotPreparedMetadata $taskManifest }
+-    if ($taskManifest.caseId -ceq 'F35-FINISH') {
++    if ($taskManifest.caseId -in @('ROBOTS-R0','ROBOTS-R1-AUTO','F20-REFILL')) { Assert-RobotPreparedMetadata $taskManifest }
++    if ($taskManifest.caseId -ceq 'F20-REFILL') {
+         if ($taskManifest.expectedBehavior -cnotin @('baseline-gap','satisfied') -or $taskManifest.negativeControl -cne 'None' -or $taskManifest.hdSource -cne 'Built' -or
+-            $taskManifest.PSObject.Properties['f34MixedProfile']) { throw 'F35-FINISH requires Built, baseline-gap/satisfied, None, the exact provider packages and no companion profile.' }
++            $taskManifest.PSObject.Properties['f34MixedProfile']) { throw 'F20-REFILL requires Built, baseline-gap/satisfied, None, the exact provider packages and no companion profile.' }
+     }
+     if ($taskManifest.caseId -eq 'ROBOTS-R1-AUTO') { Assert-RobotAutomaticPreparedProfile $taskManifest }
+     if ($taskManifest.caseId -in $script:taskAf1Cases) { Assert-Af1Prepared $taskManifest }
+@@ -817,8 +814,8 @@
+ }
+ 
+ if ($Action -eq 'Prepare') {
+-    if ($CaseId -ceq 'F35-FINISH') {
+-        if ($RunDirectory -or $ExpectedBehavior -cnotin @('baseline-gap','satisfied') -or $NegativeControl -cne 'None' -or $CommonSense -or $HdSource -cne 'Built' -or $F34MixedProfile) { throw 'F35-FINISH requires Built, baseline-gap/satisfied, None, no CommonSense or companion profile, and a fresh controller-generated ID.' }
++    if ($CaseId -ceq 'F20-REFILL') {
++        if ($RunDirectory -or $ExpectedBehavior -cnotin @('baseline-gap','satisfied') -or $NegativeControl -cne 'None' -or $CommonSense -or $HdSource -cne 'Built' -or $F34MixedProfile) { throw 'F20-REFILL requires Built, baseline-gap/satisfied, None, no CommonSense or companion profile, and a fresh controller-generated ID.' }
+     }
+     if ($CaseId -in $script:taskAf1Cases) {
+         if ($CaseId -cnotin $script:taskAf1Cases -or $RunDirectory -or $ExpectedBehavior -cne 'satisfied' -or $NegativeControl -cne 'None' -or $CommonSense -or $HdSource -cne 'Built') { throw 'AF1 requires Built/satisfied/None, no CommonSense, and omitted RunDirectory so the controller generates the unique matching folder/ID.' }
+@@ -852,17 +849,17 @@
+         $taskR1Profile=$taskR1Read.profile
+         $taskR1Admission=$taskR1Read.admission
+     }
+-    if ($CaseId -in @('ROBOTS-R0','ROBOTS-R1-AUTO','F35-FINISH')) {
+-        if (($ExpectedBehavior -ne 'satisfied' -and -not ($CaseId -ceq 'F35-FINISH' -and $ExpectedBehavior -ceq 'baseline-gap')) -or $NegativeControl -ne 'None' -or $CommonSense -or $HdSource -ne 'Built') {
++    if ($CaseId -in @('ROBOTS-R0','ROBOTS-R1-AUTO','F20-REFILL')) {
++        if (($ExpectedBehavior -ne 'satisfied' -and -not ($CaseId -ceq 'F20-REFILL' -and $ExpectedBehavior -ceq 'baseline-gap')) -or $NegativeControl -ne 'None' -or $CommonSense -or $HdSource -ne 'Built') {
+             throw 'ROBOTS-R0 requires Built HD, satisfied census expectation, exact reviewed robot packages, no DLC/CommonSense or bootstrap negative control.'
+         }
+         $RobotPackageManifest = Get-CanonicalPath $RobotPackageManifest
+         Assert-NoReparsePath $RobotPackageManifest
+-        $taskPackagePins = if ($CaseId -ceq 'F35-FINISH') { @('B8120E7691DE9657EE20FEFD149A59A0A5D5A2E207438E586AA662A537243359','F04763A6123159972BAB5F256A7892712A1893BF04AECA1D5580F034AA785055') } else { @('BE264306FCF00911105063332136456F42404C941748B35000698F461AED1D69') }
++        $taskPackagePins = if ($CaseId -ceq 'F20-REFILL') { @('F850F448168722BF569A4906DFACC3BCACE40C78DFAEFE2024D2DDC92F19EAA1') } else { @('BE264306FCF00911105063332136456F42404C941748B35000698F461AED1D69') }
+         if ((Get-Sha256 $RobotPackageManifest) -cnotin $taskPackagePins) { throw 'Exact reviewed package inventory differs.' }
+         $taskPackageInventory = Get-Content -LiteralPath $RobotPackageManifest -Encoding UTF8 -Raw | ConvertFrom-Json
+         $taskRobotPackages = $taskPackageInventory.packages
+-        if ($CaseId -ceq 'F35-FINISH') { $taskF35Provider=$taskPackageInventory.provider }
++        if ($CaseId -ceq 'F20-REFILL') { $taskF20Provider=$taskPackageInventory.provider }
+         foreach ($taskRobotPackage in $taskRobotPackages) {
+             $taskRobotRoot = Get-CanonicalPath $taskRobotPackage.root
+             Assert-NoReparsePath $taskRobotRoot
+@@ -942,7 +939,7 @@
+     if ($CaseId -in @('CAP03-B','CAP03-A','CAP03-C')) {
+         $taskProtectedRoots += @((Join-Path $WorkshopRoot '3033901359'), (Join-Path $WorkshopRoot '3416243474'))
+     }
+-    if ($CaseId -in @('ROBOTS-R0','ROBOTS-R1-AUTO','F35-FINISH')) { $taskProtectedRoots += @($taskRobotPackages | ForEach-Object { $_.root }) }
++    if ($CaseId -in @('ROBOTS-R0','ROBOTS-R1-AUTO','F20-REFILL')) { $taskProtectedRoots += @($taskRobotPackages | ForEach-Object { $_.root }) }
+     if ($CaseId -eq 'ROBOTS-R1-AUTO') {
+         $taskProtectedRoots += @($taskR1Profile.content.root,$RobotAutomaticProfile,$taskR1Profile.harness.path,$taskR1Profile.harness.pdbPath,$taskR1Profile.harness.sourceManifestPath,$taskR1Profile.harness.reviewReceiptPath)
+     }
+@@ -991,7 +988,7 @@
+         Copy-VerifiedTree (Join-Path $WorkshopRoot '3033901359') $taskAsfRoot 'adaptive-storage-framework'
+         Copy-VerifiedTree (Join-Path $WorkshopRoot '3416243474') $taskNeatRoot 'neat-storage'
+     }
+-    if ($CaseId -in @('ROBOTS-R0','ROBOTS-R1-AUTO','F35-FINISH')) {
++    if ($CaseId -in @('ROBOTS-R0','ROBOTS-R1-AUTO','F20-REFILL')) {
+         foreach ($taskRobotPackage in $taskRobotPackages) {
+             $taskRobotDestination = Join-Path $taskRuntime ('Mods\' + $taskRobotPackage.destinationFolder)
+             Copy-VerifiedTree $taskRobotPackage.root $taskRobotDestination $taskRobotPackage.label
+@@ -1038,7 +1035,7 @@
+         $taskMods.Add([pscustomobject]@{ packageId = 'adaptive.storage.framework'; rootPath = $taskAsfRoot })
+         $taskMods.Add([pscustomobject]@{ packageId = 'sbz.neatstorage'; rootPath = $taskNeatRoot })
+     }
+-    if ($CaseId -in @('ROBOTS-R0','ROBOTS-R1-AUTO','F35-FINISH')) {
++    if ($CaseId -in @('ROBOTS-R0','ROBOTS-R1-AUTO','F20-REFILL')) {
+         foreach ($taskRobotPackage in $taskRobotPackages) {
+             $taskMods.Add([pscustomobject]@{ packageId = $taskRobotPackage.packageId; rootPath = (Join-Path $taskRuntime ('Mods\' + $taskRobotPackage.destinationFolder)) })
+         }
+@@ -1088,7 +1085,7 @@
+         (Join-Path $taskHdDestination '1.6\Assemblies\HaulersDream.Core.dll'),
+         (Join-Path $taskHarnessRoot 'Assemblies\HaulersDream.RuntimeHarness.dll')
+     )
+-    if ($CaseId -in @('L40-Q1','L40-UI-P0','ROBOTS-R0','ROBOTS-R1-AUTO') -or $CaseId -in $script:taskAf1Cases -or $CaseId -in @('REFUEL-G1','RIMMS-DLV1','F34-MIXED-CUT','F35-FINISH')) {
++    if ($CaseId -in @('L40-Q1','L40-UI-P0','ROBOTS-R0','ROBOTS-R1-AUTO') -or $CaseId -in $script:taskAf1Cases -or $CaseId -in @('REFUEL-G1','RIMMS-DLV1','F34-MIXED-CUT','F20-REFILL')) {
+         $taskAssemblyPaths += @('UnityEngine.IMGUIModule.dll','UnityEngine.ScreenCaptureModule.dll','UnityEngine.TextRenderingModule.dll') | ForEach-Object {
+             Join-Path $taskRuntime ('RimWorldWin64_Data\Managed\' + $_)
+         }
+@@ -1096,10 +1093,8 @@
+     if ($CaseId -in @('ROBOTS-R0','ROBOTS-R1-AUTO')) {
+         $taskAssemblyPaths += @((Join-Path $taskRuntime 'Mods\MiscRobots\1.6\Assemblies\AIRobot.dll'), (Join-Path $taskRuntime 'Mods\MiscRobotsPlusPlus\1.6\Assemblies\MiscRobotsPlusPlus.dll'))
+     }
+-    if ($CaseId -ceq 'F35-FINISH') {
+-        if ($taskF35Provider -ceq 'AllowTool') {
+-            $taskAssemblyPaths += @((Join-Path $taskRuntime 'Mods\HugsLib\v1.6\Assemblies\HugsLib.dll'), (Join-Path $taskRuntime 'Mods\AllowTool\v1.6\Assemblies\AllowTool.dll'))
+-        } else { $taskAssemblyPaths += Join-Path $taskRuntime 'Mods\KeyzAllowUtilities\1.6\Assemblies\KeyzAllowUtilities.dll' }
++    if ($CaseId -ceq 'F20-REFILL') {
++        $taskAssemblyPaths += Join-Path $taskRuntime 'Mods\StorageRefillHysteresis\1.6\Assemblies\StorageRefillHysteresis.dll'
+     }
+     if ($CommonSense) { $taskAssemblyPaths += Join-Path $taskCsRoot '1.6\Assemblies\CommonSense.dll' }
+     if ($CaseId -in @('CAP03-B','CAP03-A','CAP03-C')) {
+@@ -1159,7 +1154,7 @@
+         knownExpansions = $taskKnownExpansions; configFiles = $taskConfigFiles; copiedFiles = @($taskCopiedFiles.ToArray())
+         protectedRoots = $taskProtectedRoots; protectedBefore = $taskProtectedBefore
+         startupDeadlineSeconds = 300
+-        semantics = if ($CaseId -ceq 'F35-FINISH') { 'Four finish-off scenes with the selected real provider: queued-order/native corpse haul, wild toggle off, forbidden corpse and pre-kill cancellation. Baseline failures stay failed; independent complete event/log/cleanup review required.' } elseif ($CaseId -ceq 'F34-MIXED-CUT') { 'Paused mixed-plant boundary capture; baseline failures preserved; no full F34 acceptance.' } elseif ($CaseId -ceq 'RIMMS-DLV1') { $taskDlv1Read.profile.scope }
++        semantics = if ($CaseId -ceq 'F20-REFILL') { 'Actual SRH paused selection, same-tick latch queries, assigned delivery and resumed refill. Baseline failures stay failed; independent complete event/log/cleanup review required.' } elseif ($CaseId -ceq 'F34-MIXED-CUT') { 'Paused mixed-plant boundary capture; baseline failures preserved; no full F34 acceptance.' } elseif ($CaseId -ceq 'RIMMS-DLV1') { $taskDlv1Read.profile.scope }
+             elseif ($CaseId -ceq 'REFUEL-G1') { $taskRefuelG1Read.profile.scope }
+             elseif ($CaseId -in $script:taskAf1Cases) { $taskAf1Read.profile.scope }
+             elseif ($CaseId -eq 'BG03-P1') { 'Partial initially tagged bill ingredients, two floor sources and native cooking/cleaning only; other BG03 controls and original-report convergence remain unfinished.' }
+@@ -1179,7 +1174,7 @@
+             elseif ($CaseId -eq 'L04-O1-DELIVERY') { 'Actual first automatic bulk delivery and bounded follow-up; original report loops remain separate.' }
+             else { 'Bootstrap isolation only; optional intentional-error control is not a clean-runtime pass.' }
+     }
+-    if ($CaseId -in @('ROBOTS-R0','ROBOTS-R1-AUTO','F35-FINISH') -or $CaseId -in $script:taskAf1Cases -or $CaseId -in @('REFUEL-G1','RIMMS-DLV1','F34-MIXED-CUT','F35-FINISH')) {
++    if ($CaseId -in @('ROBOTS-R0','ROBOTS-R1-AUTO','F20-REFILL') -or $CaseId -in $script:taskAf1Cases -or $CaseId -in @('REFUEL-G1','RIMMS-DLV1','F34-MIXED-CUT','F20-REFILL')) {
+         $taskRobotIdentities=Initialize-RobotAssemblyIdentities $taskAssemblyPaths $taskRuntime
+         $taskManifest.expectedAssemblies=$taskRobotIdentities.assemblies
+         $taskManifest.robotMetadata=$taskRobotIdentities.provenance
+@@ -1303,7 +1298,7 @@
+ $taskResult = $null
+ if (Test-Path -LiteralPath $taskResultPath) {
+     try {
+-        if ($taskCase -cin @('RIMMS-DLV1','F34-MIXED-CUT','F35-FINISH')) { $taskResult = Read-Dlv1CommonResult $taskResultPath }
++        if ($taskCase -cin @('RIMMS-DLV1','F34-MIXED-CUT','F20-REFILL')) { $taskResult = Read-Dlv1CommonResult $taskResultPath }
+         else { $taskResult = Get-Content -LiteralPath $taskResultPath -Encoding UTF8 -Raw | ConvertFrom-Json }
+     }
+     catch { $taskResult = [pscustomobject]@{ status = 'result-incomplete'; detail = $_.Exception.Message } }
+@@ -1321,8 +1316,8 @@
+ }
+ 
+ $taskProblems = New-Object 'System.Collections.Generic.List[string]'
+-if ($taskCase -ceq 'F35-FINISH') {
+-    $taskProblems.Add('F35 capture requires independent complete assertions/events, actual provider execution, exact queued Goto then one native corpse haul, negative cases, cleanup and whole-log review. Setup refusals are not product failure diagnoses; baseline failures remain failed.')
++if ($taskCase -ceq 'F20-REFILL') {
++    $taskProblems.Add('F20 capture requires independent full assertions/events/log review of SRH latch, native selection, assigned and automatic delivery, conservation and cleanup. Baseline failures remain failed.')
+ }
+ if ($taskCase -eq 'ROBOTS-R1-AUTO') {
+     $taskProblems.Add('R1 capture requires independent complete native selector/Job/ThinkNode, transfer/drop/custody/reservation/claim/cleanup and whole-log review. Automatic semantic acceptance and wider robot compatibility are unfinished.')
+@@ -1392,7 +1387,7 @@
+             if (-not (Test-RequiredAssertion $taskResult.assertions $taskRequired $true)) { $taskProblems.Add('Missing unique assembly assertion: ' + $taskRequired) }
+         }
+     }
+-    if ($taskCase -in @('ROBOTS-R0','ROBOTS-R1-AUTO','F35-FINISH') -or $taskCase -in $script:taskAf1Cases -or $taskCase -in @('REFUEL-G1','RIMMS-DLV1','F34-MIXED-CUT','F35-FINISH')) { Test-RobotResultMvids $taskResult $taskManifest $taskProblems }
++    if ($taskCase -in @('ROBOTS-R0','ROBOTS-R1-AUTO','F20-REFILL') -or $taskCase -in $script:taskAf1Cases -or $taskCase -in @('REFUEL-G1','RIMMS-DLV1','F34-MIXED-CUT','F20-REFILL')) { Test-RobotResultMvids $taskResult $taskManifest $taskProblems }
+     if ($taskCase -eq 'ROBOTS-R1-AUTO') {
+         foreach ($taskR1Assertion in @('robot-r1-context-intact','robot-r1-cleanup-complete','robot-r1-automatic-selection','robot-r1-two-material-inventory','robot-r1-native-transfer-delivery','robot-r1-native-reservation','robot-r1-native-job-success','robot-r1-stable-storage','robot-r1-fixture-complete')) {
+             if (-not (Test-RequiredAssertion $taskResult.assertions $taskR1Assertion $true)) { $taskProblems.Add('Missing unique R1 capture assertion: '+$taskR1Assertion) }
+@@ -1733,7 +1728,7 @@
+     refuelGroupEvidence = $taskRefuelG1Evidence
+     nearbyDeliveryEvidence = $taskDlv1Evidence
+     f34MixedBoundaryEvidence = $taskF34Evidence
+-    scope = if ($taskCase -ceq 'F35-FINISH') { 'Four actual provider finish-off scenes only; programmatic real scanner orders and native killing/hauling, no physical input or manufactured colony-animal order. Independent semantic and log review required.' } elseif ($taskCase -ceq 'F34-MIXED-CUT') { 'Eighteen paused native/product boundaries; full raw snapshots/assertions require independent review. Baseline stays failed. Productive cut/UI/poll/MP/full F34 remain open.' } elseif ($taskCase -ceq 'RIMMS-DLV1') { 'Three controlled native delivery scenes; independent complete transactions/physical owner/manifest/lineage/job/observer/Home/environment/process/log review remains mandatory. No automatic native, command/editor/MP/DLV2/save/feedback acceptance.' }
++    scope = if ($taskCase -ceq 'F20-REFILL') { 'Actual SRH gate queries, native scanner orders and automatic hauling/refill; no physical input. Independent semantic and log review required.' } elseif ($taskCase -ceq 'F34-MIXED-CUT') { 'Eighteen paused native/product boundaries; full raw snapshots/assertions require independent review. Baseline stays failed. Productive cut/UI/poll/MP/full F34 remain open.' } elseif ($taskCase -ceq 'RIMMS-DLV1') { 'Three controlled native delivery scenes; independent complete transactions/physical owner/manifest/lineage/job/observer/Home/environment/process/log review remains mandatory. No automatic native, command/editor/MP/DLV2/save/feedback acceptance.' }
+         elseif ($taskCase -ceq 'REFUEL-G1') { 'Six ordinary native refuel scenes only; independent complete scene/item graph, observers, publication, Home, cleanup, process and log review is mandatory. No automatic acceptance; fault/save/recovery/UI/CE/MP remain separate.' }
+         elseif ($taskCase -in $script:taskAf1Cases) { 'Finite AF1 native capture only; complete independent record/observer/serializer/save/log review remains mandatory. Same-process reload is not a full restart; automatic work, refuel and complete food behavior remain separate.' }
+         elseif ($taskCase -eq 'BG03-P1') { 'Only initially tagged milk plus two remaining floor ingredients, native bill/cleaning and bounded follow-up are measured. Other BG03 controls and original-report convergence remain unverified.' }

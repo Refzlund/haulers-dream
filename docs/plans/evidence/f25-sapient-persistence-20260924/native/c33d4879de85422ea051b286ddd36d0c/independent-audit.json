@@ -1,0 +1,554 @@
+{
+  "status": "accepted as genuine observed baseline missing-component gap; raw result remains failed",
+  "createdUtc": "2026-09-24T11:54:26.241923+00:00",
+  "checks": 47,
+  "failed": 0,
+  "nativeAssertions": 57,
+  "nativePassed": 54,
+  "nativeFailed": 3,
+  "events": 71,
+  "expectedFailures": [
+    "f25/legacy-loaded-component-preserved-0",
+    "f25/legacy-loaded-component-preserved-1",
+    "f25-lifecycle-host-returned"
+  ],
+  "checkpoint": {
+    "sourceSave": "C:\\HDQA\\runtime-temp\\haulersdream-runtime-tests\\12a8dbd2352442629bbcb7d05a0154a4\\SaveData\\Saves\\F25-SapientCheckpoint.rws",
+    "sourceRecord": "C:\\HDQA\\runtime-temp\\haulersdream-runtime-tests\\12a8dbd2352442629bbcb7d05a0154a4\\evidence\\checkpoint.txt",
+    "sourceRun": "C:\\HDQA\\runtime-temp\\haulersdream-runtime-tests\\12a8dbd2352442629bbcb7d05a0154a4",
+    "savePath": "C:\\HDQA\\runtime-temp\\haulersdream-runtime-tests\\c33d4879de85422ea051b286ddd36d0c\\SaveData\\Saves\\Autostart.rws",
+    "saveSha256": "987F4F711B86B437701B412BB9BEABA4A117059A714C75F65E664CA35BCA12A6",
+    "recordPath": "C:\\HDQA\\runtime-temp\\haulersdream-runtime-tests\\c33d4879de85422ea051b286ddd36d0c\\input\\checkpoint.txt",
+    "recordSha256": "06E8D8F3930C173CADA6EFB9301576934C8C3EF097C4E03EDD547622C4B1D704"
+  },
+  "wholeLog": {
+    "lines": 2255,
+    "dynamicMonoFallbacks": [
+      {
+        "line": 109,
+        "text": "Fallback handler could not load library C:/HDQA/runtime-temp/haulersdream-runtime-tests/c33d4879de85422ea051b286ddd36d0c/runtime/RimWorldWin64_Data/MonoBleedingEdge/data-0000024BFE5D4E00.dll"
+      },
+      {
+        "line": 110,
+        "text": "Fallback handler could not load library C:/HDQA/runtime-temp/haulersdream-runtime-tests/c33d4879de85422ea051b286ddd36d0c/runtime/RimWorldWin64_Data/MonoBleedingEdge/data-0000024BFE7D1A80.dll"
+      }
+    ],
+    "textureAdvisories": [
+      {
+        "line": 1836,
+        "text": "Texture ModIcon - Copy (2).png is being reloaded with reduced mipmap count (clamped to 1) due to non-power-of-two dimensions: (50x50). This will be slower to load, and will look worse when zoomed out. Consider using a power-of-two texture size instead."
+      },
+      {
+        "line": 1837,
+        "text": "Texture FuelBench_east.png is being reloaded with reduced mipmap count (clamped to 7) due to non-power-of-two dimensions: (768x1024). This will be slower to load, and will look worse when zoomed out. Consider using a power-of-two texture size instead."
+      },
+      {
+        "line": 1838,
+        "text": "Texture FuelBench_north.png is being reloaded with reduced mipmap count (clamped to 7) due to non-power-of-two dimensions: (1024x768). This will be slower to load, and will look worse when zoomed out. Consider using a power-of-two texture size instead."
+      },
+      {
+        "line": 1839,
+        "text": "Texture FuelBench_south.png is being reloaded with reduced mipmap count (clamped to 7) due to non-power-of-two dimensions: (1024x768). This will be slower to load, and will look worse when zoomed out. Consider using a power-of-two texture size instead."
+      },
+      {
+        "line": 1840,
+        "text": "Texture FuelBench_west.png is being reloaded with reduced mipmap count (clamped to 7) due to non-power-of-two dimensions: (768x1024). This will be slower to load, and will look worse when zoomed out. Consider using a power-of-two texture size instead."
+      },
+      {
+        "line": 1841,
+        "text": "Texture Auto_Tiny.png is being reloaded with reduced mipmap count (clamped to 2) due to non-power-of-two dimensions: (24x24). This will be slower to load, and will look worse when zoomed out. Consider using a power-of-two texture size instead."
+      },
+      {
+        "line": 1842,
+        "text": "Texture ColorPawn - Copy.png is being reloaded with reduced mipmap count (clamped to 1) due to non-power-of-two dimensions: (50x50). This will be slower to load, and will look worse when zoomed out. Consider using a power-of-two texture size instead."
+      },
+      {
+        "line": 1843,
+        "text": "Texture snek_back_south.png is being reloaded with reduced mipmap count (clamped to 7) due to non-power-of-two dimensions: (768x768). This will be slower to load, and will look worse when zoomed out. Consider using a power-of-two texture size instead."
+      },
+      {
+        "line": 1844,
+        "text": "Texture snek_back_southm.png is being reloaded with reduced mipmap count (clamped to 7) due to non-power-of-two dimensions: (768x768). This will be slower to load, and will look worse when zoomed out. Consider using a power-of-two texture size instead."
+      },
+      {
+        "line": 1845,
+        "text": "Texture snek_north - Copy.png is being reloaded with reduced mipmap count (clamped to 7) due to non-power-of-two dimensions: (768x768). This will be slower to load, and will look worse when zoomed out. Consider using a power-of-two texture size instead."
+      },
+      {
+        "line": 1846,
+        "text": "Texture snek_north.png is being reloaded with reduced mipmap count (clamped to 7) due to non-power-of-two dimensions: (768x768). This will be slower to load, and will look worse when zoomed out. Consider using a power-of-two texture size instead."
+      },
+      {
+        "line": 1847,
+        "text": "Texture snek_northm.png is being reloaded with reduced mipmap count (clamped to 7) due to non-power-of-two dimensions: (768x768). This will be slower to load, and will look worse when zoomed out. Consider using a power-of-two texture size instead."
+      },
+      {
+        "line": 1848,
+        "text": "Texture snek_south.png is being reloaded with reduced mipmap count (clamped to 7) due to non-power-of-two dimensions: (768x768). This will be slower to load, and will look worse when zoomed out. Consider using a power-of-two texture size instead."
+      },
+      {
+        "line": 1849,
+        "text": "Texture snek_southm.png is being reloaded with reduced mipmap count (clamped to 7) due to non-power-of-two dimensions: (768x768). This will be slower to load, and will look worse when zoomed out. Consider using a power-of-two texture size instead."
+      },
+      {
+        "line": 1850,
+        "text": "Texture bp_default_east.png is being reloaded with reduced mipmap count (clamped to 1) due to non-power-of-two dimensions: (729x729). This will be slower to load, and will look worse when zoomed out. Consider using a power-of-two texture size instead."
+      },
+      {
+        "line": 1851,
+        "text": "Texture bp_default_north.png is being reloaded with reduced mipmap count (clamped to 1) due to non-power-of-two dimensions: (769x768). This will be slower to load, and will look worse when zoomed out. Consider using a power-of-two texture size instead."
+      },
+      {
+        "line": 1852,
+        "text": "Texture bp_default_south.png is being reloaded with reduced mipmap count (clamped to 2) due to non-power-of-two dimensions: (768x728). This will be slower to load, and will look worse when zoomed out. Consider using a power-of-two texture size instead."
+      },
+      {
+        "line": 1853,
+        "text": "Texture bp_fat_east.png is being reloaded with reduced mipmap count (clamped to 7) due to non-power-of-two dimensions: (768x768). This will be slower to load, and will look worse when zoomed out. Consider using a power-of-two texture size instead."
+      },
+      {
+        "line": 1854,
+        "text": "Texture bp_fat_north.png is being reloaded with reduced mipmap count (clamped to 1) due to non-power-of-two dimensions: (769x769). This will be slower to load, and will look worse when zoomed out. Consider using a power-of-two texture size instead."
+      },
+      {
+        "line": 1855,
+        "text": "Texture bp_fat_south.png is being reloaded with reduced mipmap count (clamped to 1) due to non-power-of-two dimensions: (769x769). This will be slower to load, and will look worse when zoomed out. Consider using a power-of-two texture size instead."
+      },
+      {
+        "line": 1856,
+        "text": "Texture bp_female_east.png is being reloaded with reduced mipmap count (clamped to 1) due to non-power-of-two dimensions: (769x769). This will be slower to load, and will look worse when zoomed out. Consider using a power-of-two texture size instead."
+      },
+      {
+        "line": 1857,
+        "text": "Texture bp_female_north.png is being reloaded with reduced mipmap count (clamped to 1) due to non-power-of-two dimensions: (769x769). This will be slower to load, and will look worse when zoomed out. Consider using a power-of-two texture size instead."
+      },
+      {
+        "line": 1858,
+        "text": "Texture bp_female_south.png is being reloaded with reduced mipmap count (clamped to 1) due to non-power-of-two dimensions: (769x769). This will be slower to load, and will look worse when zoomed out. Consider using a power-of-two texture size instead."
+      },
+      {
+        "line": 1859,
+        "text": "Texture bp_hulk_east.png is being reloaded with reduced mipmap count (clamped to 1) due to non-power-of-two dimensions: (769x769). This will be slower to load, and will look worse when zoomed out. Consider using a power-of-two texture size instead."
+      },
+      {
+        "line": 1860,
+        "text": "Texture bp_hulk_north.png is being reloaded with reduced mipmap count (clamped to 1) due to non-power-of-two dimensions: (769x769). This will be slower to load, and will look worse when zoomed out. Consider using a power-of-two texture size instead."
+      },
+      {
+        "line": 1861,
+        "text": "Texture bp_hulk_south.png is being reloaded with reduced mipmap count (clamped to 1) due to non-power-of-two dimensions: (769x769). This will be slower to load, and will look worse when zoomed out. Consider using a power-of-two texture size instead."
+      },
+      {
+        "line": 1862,
+        "text": "Texture bp_male_east.png is being reloaded with reduced mipmap count (clamped to 1) due to non-power-of-two dimensions: (769x769). This will be slower to load, and will look worse when zoomed out. Consider using a power-of-two texture size instead."
+      },
+      {
+        "line": 1863,
+        "text": "Texture bp_male_north.png is being reloaded with reduced mipmap count (clamped to 1) due to non-power-of-two dimensions: (769x769). This will be slower to load, and will look worse when zoomed out. Consider using a power-of-two texture size instead."
+      },
+      {
+        "line": 1864,
+        "text": "Texture bp_male_south.png is being reloaded with reduced mipmap count (clamped to 7) due to non-power-of-two dimensions: (768x768). This will be slower to load, and will look worse when zoomed out. Consider using a power-of-two texture size instead."
+      },
+      {
+        "line": 1865,
+        "text": "Texture bp_child_east.png is being reloaded with reduced mipmap count (clamped to 7) due to non-power-of-two dimensions: (768x768). This will be slower to load, and will look worse when zoomed out. Consider using a power-of-two texture size instead."
+      },
+      {
+        "line": 1866,
+        "text": "Texture bp_child_north.png is being reloaded with reduced mipmap count (clamped to 7) due to non-power-of-two dimensions: (768x768). This will be slower to load, and will look worse when zoomed out. Consider using a power-of-two texture size instead."
+      },
+      {
+        "line": 1867,
+        "text": "Texture bp_child_south.png is being reloaded with reduced mipmap count (clamped to 1) due to non-power-of-two dimensions: (768x769). This will be slower to load, and will look worse when zoomed out. Consider using a power-of-two texture size instead."
+      },
+      {
+        "line": 1868,
+        "text": "Texture bp_default_east.png is being reloaded with reduced mipmap count (clamped to 7) due to non-power-of-two dimensions: (768x768). This will be slower to load, and will look worse when zoomed out. Consider using a power-of-two texture size instead."
+      },
+      {
+        "line": 1869,
+        "text": "Texture bp_default_north.png is being reloaded with reduced mipmap count (clamped to 7) due to non-power-of-two dimensions: (768x768). This will be slower to load, and will look worse when zoomed out. Consider using a power-of-two texture size instead."
+      },
+      {
+        "line": 1870,
+        "text": "Texture bp_default_south.png is being reloaded with reduced mipmap count (clamped to 1) due to non-power-of-two dimensions: (769x769). This will be slower to load, and will look worse when zoomed out. Consider using a power-of-two texture size instead."
+      },
+      {
+        "line": 1871,
+        "text": "Texture bp_fat_east.png is being reloaded with reduced mipmap count (clamped to 7) due to non-power-of-two dimensions: (768x768). This will be slower to load, and will look worse when zoomed out. Consider using a power-of-two texture size instead."
+      },
+      {
+        "line": 1872,
+        "text": "Texture bp_fat_north.png is being reloaded with reduced mipmap count (clamped to 7) due to non-power-of-two dimensions: (768x768). This will be slower to load, and will look worse when zoomed out. Consider using a power-of-two texture size instead."
+      },
+      {
+        "line": 1873,
+        "text": "Texture bp_fat_south.png is being reloaded with reduced mipmap count (clamped to 1) due to non-power-of-two dimensions: (769x769). This will be slower to load, and will look worse when zoomed out. Consider using a power-of-two texture size instead."
+      },
+      {
+        "line": 1874,
+        "text": "Texture bp_female_east.png is being reloaded with reduced mipmap count (clamped to 7) due to non-power-of-two dimensions: (768x768). This will be slower to load, and will look worse when zoomed out. Consider using a power-of-two texture size instead."
+      },
+      {
+        "line": 1875,
+        "text": "Texture bp_female_north.png is being reloaded with reduced mipmap count (clamped to 7) due to non-power-of-two dimensions: (768x768). This will be slower to load, and will look worse when zoomed out. Consider using a power-of-two texture size instead."
+      },
+      {
+        "line": 1876,
+        "text": "Texture bp_female_south.png is being reloaded with reduced mipmap count (clamped to 1) due to non-power-of-two dimensions: (769x769). This will be slower to load, and will look worse when zoomed out. Consider using a power-of-two texture size instead."
+      },
+      {
+        "line": 1877,
+        "text": "Texture bp_hulk_east.png is being reloaded with reduced mipmap count (clamped to 7) due to non-power-of-two dimensions: (768x768). This will be slower to load, and will look worse when zoomed out. Consider using a power-of-two texture size instead."
+      },
+      {
+        "line": 1878,
+        "text": "Texture bp_hulk_north.png is being reloaded with reduced mipmap count (clamped to 7) due to non-power-of-two dimensions: (768x768). This will be slower to load, and will look worse when zoomed out. Consider using a power-of-two texture size instead."
+      },
+      {
+        "line": 1879,
+        "text": "Texture bp_hulk_south.png is being reloaded with reduced mipmap count (clamped to 1) due to non-power-of-two dimensions: (769x769). This will be slower to load, and will look worse when zoomed out. Consider using a power-of-two texture size instead."
+      },
+      {
+        "line": 1880,
+        "text": "Texture bp_male_east.png is being reloaded with reduced mipmap count (clamped to 7) due to non-power-of-two dimensions: (768x768). This will be slower to load, and will look worse when zoomed out. Consider using a power-of-two texture size instead."
+      },
+      {
+        "line": 1881,
+        "text": "Texture bp_male_north.png is being reloaded with reduced mipmap count (clamped to 7) due to non-power-of-two dimensions: (768x768). This will be slower to load, and will look worse when zoomed out. Consider using a power-of-two texture size instead."
+      },
+      {
+        "line": 1882,
+        "text": "Texture bp_male_south.png is being reloaded with reduced mipmap count (clamped to 1) due to non-power-of-two dimensions: (769x769). This will be slower to load, and will look worse when zoomed out. Consider using a power-of-two texture size instead."
+      },
+      {
+        "line": 1883,
+        "text": "Texture bp_thin_east.png is being reloaded with reduced mipmap count (clamped to 7) due to non-power-of-two dimensions: (768x768). This will be slower to load, and will look worse when zoomed out. Consider using a power-of-two texture size instead."
+      },
+      {
+        "line": 1884,
+        "text": "Texture bp_thin_north.png is being reloaded with reduced mipmap count (clamped to 7) due to non-power-of-two dimensions: (768x768). This will be slower to load, and will look worse when zoomed out. Consider using a power-of-two texture size instead."
+      },
+      {
+        "line": 1885,
+        "text": "Texture Header.png is being reloaded with reduced mipmap count (clamped to 1) due to non-power-of-two dimensions: (1499x221). This will be slower to load, and will look worse when zoomed out. Consider using a power-of-two texture size instead."
+      }
+    ],
+    "direct3dAdvisories": [
+      {
+        "line": 34,
+        "text": "Direct3D: detected that using refresh rate causes time drift. Will stop trusting refresh rate until the game window is moved."
+      },
+      {
+        "line": 35,
+        "text": "Direct3D: detected that vsync is broken (it does not limit frame rate properly). Delta time will now be calculated using cpu-side time stampling until the game window is moved."
+      },
+      {
+        "line": 1904,
+        "text": "Direct3D: detected that using refresh rate causes time drift. Will stop trusting refresh rate until the game window is moved."
+      },
+      {
+        "line": 1905,
+        "text": "Direct3D: detected that vsync is broken (it does not limit frame rate properly). Delta time will now be calculated using cpu-side time stampling until the game window is moved."
+      }
+    ],
+    "allocatorDiagnosticLines": [
+      2134,
+      2135,
+      2136,
+      2137,
+      2138,
+      2139,
+      2140,
+      2141,
+      2142,
+      2181,
+      2182,
+      2183,
+      2184,
+      2185,
+      2186,
+      2187,
+      2188,
+      2189,
+      2208,
+      2209,
+      2210,
+      2211,
+      2212,
+      2213,
+      2214,
+      2215,
+      2216,
+      2235,
+      2236,
+      2237,
+      2238,
+      2239,
+      2240,
+      2241,
+      2242,
+      2243
+    ]
+  },
+  "raw": [
+    {
+      "path": "C:\\Users\\Arthur\\Sync\\Projects\\RimWorld Mods\\HaulersDream\\docs\\plans\\evidence\\f25-sapient-persistence-20260924\\native\\c33d4879de85422ea051b286ddd36d0c\\raw\\events.jsonl",
+      "sha256": "31224D8545FA59BA6C52AEB359CE366B03E0DB9FB9A39DAB259B2852FF677933",
+      "bytes": 23233
+    },
+    {
+      "path": "C:\\Users\\Arthur\\Sync\\Projects\\RimWorld Mods\\HaulersDream\\docs\\plans\\evidence\\f25-sapient-persistence-20260924\\native\\c33d4879de85422ea051b286ddd36d0c\\raw\\HaulersDream-debug.log",
+      "sha256": "2ED4BDBE406066EC4892819166026F53E931BD75FC31C22B348619BAB9984A3A",
+      "bytes": 170
+    },
+    {
+      "path": "C:\\Users\\Arthur\\Sync\\Projects\\RimWorld Mods\\HaulersDream\\docs\\plans\\evidence\\f25-sapient-persistence-20260924\\native\\c33d4879de85422ea051b286ddd36d0c\\raw\\Player.log",
+      "sha256": "A6A871031C6EF2DF11CDCF32198552B7A2FFBE4C8700D8D4C92FAD50785C7300",
+      "bytes": 185881
+    },
+    {
+      "path": "C:\\Users\\Arthur\\Sync\\Projects\\RimWorld Mods\\HaulersDream\\docs\\plans\\evidence\\f25-sapient-persistence-20260924\\native\\c33d4879de85422ea051b286ddd36d0c\\raw\\result.json",
+      "sha256": "94199D80CC34FDDC95A23156B205DC0767E1560CEE44ADB0A809DDE110291CF6",
+      "bytes": 18388
+    }
+  ],
+  "results": [
+    {
+      "check": "exact baseline role/run",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "check": "only the expected missing components and host result failed",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "check": "all71 events bound and complete",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "check": "zero captured Unity errors",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "check": "joins and no focus change",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "check": "no protected changes",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "check": "same originally accepted producer",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "check": "exact original save C:\\HDQA\\runtime-temp\\haulersdream-runtime-tests\\12a8dbd2352442629bbcb7d05a0154a4\\SaveData\\Saves\\F25-SapientCheckpoint.rws",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "check": "exact original save C:\\HDQA\\runtime-temp\\haulersdream-runtime-tests\\c33d4879de85422ea051b286ddd36d0c\\SaveData\\Saves\\Autostart.rws",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "check": "exact original save C:\\Users\\Arthur\\Sync\\Projects\\RimWorld Mods\\HaulersDream\\docs\\plans\\evidence\\f25-sapient-persistence-20260924\\native\\12a8dbd2352442629bbcb7d05a0154a4\\raw\\checkpoint.original.rws",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "check": "exact original record C:\\HDQA\\runtime-temp\\haulersdream-runtime-tests\\12a8dbd2352442629bbcb7d05a0154a4\\evidence\\checkpoint.txt",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "check": "exact original record C:\\HDQA\\runtime-temp\\haulersdream-runtime-tests\\c33d4879de85422ea051b286ddd36d0c\\input\\checkpoint.txt",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "check": "exact original record C:\\Users\\Arthur\\Sync\\Projects\\RimWorld Mods\\HaulersDream\\docs\\plans\\evidence\\f25-sapient-persistence-20260924\\native\\12a8dbd2352442629bbcb7d05a0154a4\\raw\\checkpoint.txt",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "check": "retained raw equals source events.jsonl",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "check": "retained raw equals source HaulersDream-debug.log",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "check": "retained raw equals source Player.log",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "check": "retained raw equals source result.json",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "check": "manifest copy equality",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "check": "same15 actual images",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "check": "actual image Assembly-CSharp",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "check": "actual image UnityEngine.CoreModule",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "check": "actual image 0Harmony",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "check": "actual image HarmonyMod",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "check": "actual image HaulersDream",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "check": "actual image HaulersDream.Core",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "check": "actual image HaulersDream.RuntimeHarness",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "check": "actual image UnityEngine.IMGUIModule",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "check": "actual image UnityEngine.ScreenCaptureModule",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "check": "actual image UnityEngine.TextRenderingModule",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "check": "actual image 0MultiplayerAPI",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "check": "actual image 0PrepatcherAPI",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "check": "actual image BigAndSmall",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "check": "actual image BSXeno",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "check": "actual image RedHealth",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "check": "seven exact active package roots",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "check": "native private config Mod_BigSmallFramework_BigSmallMod.xml",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "check": "native private config ModsConfig.xml",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "check": "native private config Prefs.xml",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "check": "actual missing generated/live comp HL_Mech_Lifter36147",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "check": "real command causal probe HL_Mech_Lifter36147",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "check": "actual missing generated/live comp HL_Monkey36152",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "check": "real command causal probe HL_Monkey36152",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "check": "native saved tick before first tick",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "check": "native pause one tick later",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "check": "same human still has one real HD component",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "check": "native save tick actually863",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "check": "whole log lacks exception/save ownership/cleanup failure",
+      "passed": true,
+      "detail": []
+    }
+  ]
+}

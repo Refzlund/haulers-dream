@@ -1,0 +1,9 @@
+# First Prepare admission failure — retained
+
+Root's first F08 Prepare did not launch the game. Selecting the complete F34 build workspace as BuiltModRoot reached its existing `Source/HaulersDream/obj/Release/.NETFramework,Version=v4.8.AssemblyAttributes.cs`; the strict canonical-path guard rejects `=`. This is a preparation/input-packaging failure, not a native result.
+
+The F08 host contains DLL references only, no product ProjectReference. Its build explicitly directs intermediate/output files to `%TEMP%/hd-f08-20260920/build`. The rejected file's creation and last-write timestamps are 2026-09-20 03:14:00 UTC, matching the original F34 product build that started at 03:13:39 UTC, hours before F08. No evidence shows the F08 build created or modified these product intermediates.
+
+The narrow remedy is a fresh content-only package at `C:/Users/Arthur/AppData/Local/Temp/hd-f08-20260920/Product`. It contains all original About/Defs/Languages/Patches/Textures files, LoadFolders.xml and the actual reviewed HD/Core DLLs and PDBs. All 61 nonbinary content inputs match the F34 source-manifest pins; all four binary outputs match its actual build review. Thus 65 files are copied with exact bytes, including the 63 runtime-content files and two PDBs. Full copy hashes are in `product-content-copy.json` (SHA256 `294E352225AE2C3C9087317E02B7FB56E3FF66CFB773630BE8882AE37337923D`). Original sources/intermediates and the failed attempt remain intact.
+
+HD remains `32D57A64B3B35E1DF652BA66BE2BEECE923C60B42201955E31B4C587F7385C88`; Core remains `D623F164CEB112A8BB702F907CE0C6442488A19C074045047190AD36F09A6F3A`. The host/controller/source/build approvals are unchanged. No controller guard change, rebuild, Prepare or native execution was needed for this authoring correction. README now also supplies the explicit actual PlayerSaveDataRoot used by earlier accepted preparations.

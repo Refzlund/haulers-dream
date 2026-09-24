@@ -1,0 +1,13 @@
+--- 
+
++++ 
+
+@@ -32,5 +32,6 @@
+
+ Brtrue_S instruction:TARGET
+ Ldloc_0 
+-Callvirt method:System.String System.String::TrimStart() | hasThis=True; explicitThis=False; convention=Default; arity=0
++Call method:!!0[] System.Array::Empty<System.Char>() | hasThis=False; explicitThis=False; convention=Generic; arity=0
++Callvirt method:System.String System.String::TrimStart(System.Char[]) | hasThis=True; explicitThis=False; convention=Default; arity=0
+ Ldstr "HDP"
+ Callvirt method:System.Boolean System.String::StartsWith(System.String) | hasThis=True; explicitThis=False; convention=Default; arity=0

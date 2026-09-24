@@ -1,0 +1,56 @@
+--- v5/SweepHandoff.cs
++++ v6/SweepHandoff.cs
+@@ -185,17 +185,23 @@
+             var wait=JobMaker.MakeJob(JobDefOf.Wait,one);wait.playerForced=true;wait.expiryInterval=3000;
+             Guard(B.jobs.TryTakeOrderedJob(wait)&&B.CurJob==wait,"Actual foreign/non-haul current job refused.");
+             bool taken=map.reservationManager.Reserve(B,wait,one,errorOnFailed:false);
+-            Record("native-non-haul-displacement",taken&&D.CurJob!=old&&ended.TryGetValue(oldId,out var reason)&&reason==JobCondition.InterruptForced.ToString(),"Wait forced reservation retains native whole-job cancellation; original="+oldId+"; result="+taken);
++            // Native cancellation returns Job to its pool before selecting the replacement. The same
++            // object can already be a new GotoWander here; the captured loadID is the order identity.
++            Record("native-non-haul-displacement",taken&&!HasJobId(D,oldId)&&ended.TryGetValue(oldId,out var reason)&&reason==JobCondition.InterruptForced.ToString()
++                &&map.reservationManager.ReservedBy(one,B,wait)&&!map.reservationManager.ReservationsReadOnly.Any(r=>r.Claimant==D&&r.Target.Thing==one),
++                "Wait forced reservation retains native whole-job cancellation; original="+oldId+"; result="+taken+"; retainedObjectNow="+old.loadID+"; reusedAsCurrent="+ReferenceEquals(D.CurJob,old)+"; current="+JobState(D.CurJob)+"; reservations="+Reservations());
+             Issue(A,one,false);old=A.CurJob;oldId=old.loadID;Guard(old.def==Bulk,"Direct-cancel control sweep missing.");
+             A.jobs.EndCurrentOrQueuedJob(old,JobCondition.InterruptForced,false,false);
+-            Record("native-direct-cancellation",A.CurJob!=old&&ended.TryGetValue(oldId,out reason)&&reason==JobCondition.InterruptForced.ToString(),"Direct cancellation outside Reserve remains native.");
++            Record("native-direct-cancellation",!HasJobId(A,oldId)&&ended.TryGetValue(oldId,out reason)&&reason==JobCondition.InterruptForced.ToString()
++                &&!map.reservationManager.ReservationsReadOnly.Any(r=>r.Claimant==A&&r.Target.Thing==one),
++                "Direct cancellation outside Reserve remains native; original="+oldId+"; current="+JobState(A.CurJob)+"; reservations="+Reservations());
+             foreach(var p in new[]{A,B,D}){p.jobs.ClearQueuedJobs();if(p.CurJob!=null)p.jobs.EndCurrentJob(JobCondition.InterruptForced,false,false);}
+             one.Destroy(DestroyMode.Vanish);two.Destroy(DestroyMode.Vanish);steelZone.Delete();zones.Remove(steelZone);
+             Guard(!failed,"Native cancellation control failed.");
+         }
+         private void Handoff()
+         {
+-            Guard(A.CurJob==active&&Inventory(A,MainDef)==17&&active.targetB.Thing==main[1]&&Cursor(A)==1,"Original A job must walk its second source after actual first pickup.");
++            Guard(A.CurJob==active&&active.loadID==activeId&&Inventory(A,MainDef)==17&&active.targetB.Thing==main[1]&&Cursor(A)==1,"Original A job must walk its second source after actual first pickup.");
+             Record("held-keep-before-handoff",A.GetComp<CompHauledToInventory>().KeptCountOf(MainDef)==7&&Surplus(A)==10,Physical());
+             var before=Snapshot();var reservationsBefore=Reservations();
+             map.reservationManager.CanReserve(B,main[1]);Build(B,main[1]);
+@@ -205,13 +211,15 @@
+             Guard(!ClaimedBy(A).Contains(main[1])&&!ClaimedBy(A).Contains(main[2]),"Before handoff only A may claim its current/future sources.");
+             Guard(B.jobs.TryTakeOrderedJob(staleB),"Actual stale explicit command refused.");
+             Record("current-source-job-preserved",A.CurJob==active&&active.loadID==activeId,"before="+before+"; after="+Snapshot());
+-            if(baseline){Record("baseline-native-whole-job-loss",A.CurJob!=active,"Expected old native cancellation observed="+(A.CurJob!=active));status="failed";Cleanup();return;}
+-            Guard(A.CurJob==active,"Current handoff cancelled the entire old job.");
++            if(baseline){Record("baseline-native-whole-job-loss",!HasJobId(A,activeId)&&ended.TryGetValue(activeId,out var reason)&&reason==JobCondition.InterruptForced.ToString()
++                &&map.reservationManager.ReservedBy(main[1],B,staleB)&&!map.reservationManager.ReservationsReadOnly.Any(r=>r.Claimant==A&&r.Target.Thing==main[1]),
++                "Original="+activeId+"; retainedObjectNow="+active.loadID+"; reusedAsCurrent="+ReferenceEquals(A.CurJob,active)+"; current="+JobState(A.CurJob)+"; reservations="+Reservations());status="failed";Cleanup();return;}
++            Guard(A.CurJob==active&&active.loadID==activeId,"Current handoff cancelled the entire old job.");
+             Record("current-tombstone-and-extra-no-steal",!active.targetQueueB[1].IsValid&&active.countQueue[1]==0&&!active.targetB.IsValid
+                 &&Cursor(A)==1&&map.reservationManager.ReservedBy(main[1],B,staleB)&&map.reservationManager.ReservedBy(main[3],A,active)
+                 &&!map.reservationManager.ReservedBy(main[3],B,staleB),JobState(active)+"; B="+JobState(staleB));
+             Issue(D,main[2],false);
+-            Record("future-source-job-preserved",A.CurJob==active&&!active.targetQueueB[2].IsValid&&active.countQueue[2]==0
++            Record("future-source-job-preserved",A.CurJob==active&&active.loadID==activeId&&!active.targetQueueB[2].IsValid&&active.countQueue[2]==0
+                 &&active.targetQueueB[3].Thing==main[3]&&active.countQueue[3]==41&&Cursor(A)==1,Snapshot());
+             int afterUnits=Units(A,MainDef);
+             Record("same-tick-held-cargo-evidence",beforeUnits==107&&afterUnits==51&&Surplus(A)==10&&Claims().Contains(A.ThingID)
+@@ -295,6 +303,7 @@
+         private static string Target(LocalTargetInfo t)=>!t.IsValid?"invalid":t.HasThing?t.Thing.ThingID:"cell"+t.Cell;
+         private static string JobState(Job j)=>j==null?"null":j.loadID+":"+j.def.defName+":A="+Target(j.targetA)+":B="+Target(j.targetB)+":C="+Target(j.targetC)+":qb="+(j.targetQueueB==null?"null":string.Join(",",j.targetQueueB.Select(Target)))+":counts="+(j.countQueue==null?"null":string.Join(",",j.countQueue))+":forced="+j.playerForced+":giver="+j.workGiverDef?.defName;
+         private static string Queue(Pawn p)=>string.Join("/",p.jobs.jobQueue.Select(q=>JobState(q.job)));
++        private static bool HasJobId(Pawn p,int id)=>p.jobs.AllJobs().Any(j=>j.loadID==id);
+         private string Snapshot()=>string.Join("~",actors.Select(p=>p.ThingID+"["+JobState(p.CurJob)+";cursor="+Cursor(p)+";toil="+(p.jobs.curDriver==null?-1:(int)AccessTools.Field(typeof(JobDriver),"curToilIndex").GetValue(p.jobs.curDriver))+";queue="+Queue(p)+"]"));
+         private static string F(float f)=>f.ToString("R",CultureInfo.InvariantCulture);
+         private int Number(string key)=>int.Parse(checkpoint[key],CultureInfo.InvariantCulture);

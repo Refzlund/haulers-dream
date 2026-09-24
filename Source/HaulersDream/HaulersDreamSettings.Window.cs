@@ -1173,6 +1173,7 @@ namespace HaulersDream
             HDSettingsUI.Header(c, "HaulersDream.FeatGroup.Loading".Translate());
             enableBulkUnloadCarriers = Card(c, SettingsCat.BulkLoading, "HaulersDream.Feat.UnloadCarriers", enableBulkUnloadCarriers, "HaulersDream.Setting.EnableBulkUnloadCarriersDesc");
             enableBulkLoadTransporters = Card(c, SettingsCat.BulkLoading, "HaulersDream.Feat.LoadTransporters", enableBulkLoadTransporters, "HaulersDream.Setting.EnableBulkLoadTransportersDesc");
+            enableBulkUnloadTransporters = Card(c, SettingsCat.BulkLoading, "HaulersDream.Feat.UnloadTransporters", enableBulkUnloadTransporters, "HaulersDream.Setting.EnableBulkUnloadTransportersDesc");
             enableBulkLoadPortal = Card(c, SettingsCat.BulkLoading, "HaulersDream.Feat.LoadPortal", enableBulkLoadPortal, "HaulersDream.Setting.EnableBulkLoadPortalDesc");
             enableBulkRefuel = Card(c, SettingsCat.BulkLoading, "HaulersDream.Feat.Refuel", enableBulkRefuel, "HaulersDream.Setting.EnableBulkRefuelDesc");
             if (VehicleFrameworkCompat.IsActive)
@@ -1464,18 +1465,20 @@ namespace HaulersDream
                 enableBulkUnloadCarriers, "HaulersDream.Setting.EnableBulkUnloadCarriersDesc".Translate());
             minFreeSpaceToUnloadCarrierPct = Mathf.Round(HDSettingsUI.Slider(c, "HaulersDream.Setting.MinFreeSpaceToUnloadCarrier.Lab".Translate(),
                 minFreeSpaceToUnloadCarrierPct, 0.1f, 0.9f, minFreeSpaceToUnloadCarrierPct.ToStringPercent(),
-                "HaulersDream.Setting.MinFreeSpaceToUnloadCarrier.Help".Translate(), enabled: enableBulkUnloadCarriers, indent: 24f) * 20f) / 20f;
+                "HaulersDream.Setting.MinFreeSpaceToUnloadCarrier.Help".Translate(), enabled: enableBulkUnloadCarriers || enableBulkUnloadTransporters, indent: 24f) * 20f) / 20f;
             reserveCarrierOnUnload = HDSettingsUI.Checkbox(c, "HaulersDream.Setting.ReserveCarrierOnUnload".Translate(),
                 reserveCarrierOnUnload, "HaulersDream.Setting.ReserveCarrierOnUnloadDesc".Translate(), enabled: enableBulkUnloadCarriers, indent: 24f);
             visualUnloadDelay = Mathf.RoundToInt(HDSettingsUI.Slider(c, "HaulersDream.Setting.VisualUnloadDelay.Lab".Translate(),
                 visualUnloadDelay, 0f, 30f, string.Format("~{0:0.0}s", visualUnloadDelay / 60f),
-                "HaulersDream.Setting.VisualUnloadDelay.Help".Translate(), enabled: enableBulkUnloadCarriers, indent: 24f));
+                "HaulersDream.Setting.VisualUnloadDelay.Help".Translate(), enabled: enableBulkUnloadCarriers || enableBulkUnloadTransporters, indent: 24f));
             loadPackAnimalBulk = HDSettingsUI.Checkbox(c, "HaulersDream.Setting.LoadPackAnimalBulk".Translate(),
                 loadPackAnimalBulk, "HaulersDream.Setting.LoadPackAnimalBulkDesc".Translate());
             autoDivertToPackAnimal = HDSettingsUI.Checkbox(c, "HaulersDream.Setting.AutoDivertToPackAnimal".Translate(),
                 autoDivertToPackAnimal, "HaulersDream.Setting.AutoDivertToPackAnimalDesc".Translate());
 
             HDSettingsUI.Header(c, "HaulersDream.Head.Transporters".Translate());
+            enableBulkUnloadTransporters = HDSettingsUI.Checkbox(c, "HaulersDream.Setting.EnableBulkUnloadTransporters".Translate(),
+                enableBulkUnloadTransporters, "HaulersDream.Setting.EnableBulkUnloadTransportersDesc".Translate());
             enableBulkLoadTransporters = HDSettingsUI.Checkbox(c, "HaulersDream.Setting.EnableBulkLoadTransporters".Translate(),
                 enableBulkLoadTransporters, "HaulersDream.Setting.EnableBulkLoadTransportersDesc".Translate());
             bulkLoadAiUpdateFrequency = Mathf.RoundToInt(HDSettingsUI.Slider(c, "HaulersDream.Setting.BulkLoadAiUpdateFrequency.Lab".Translate(),

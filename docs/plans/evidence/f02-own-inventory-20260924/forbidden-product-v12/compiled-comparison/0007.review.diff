@@ -1,0 +1,19 @@
+--- 
+
++++ 
+
+@@ -3,7 +3,11 @@
+
+ Brtrue_S instruction:TARGET
+ Ldarg_0 
++Ldc_I4_1 
++Newarr type:System.Char
++Dup 
++Ldc_I4_0 
+ Ldc_I4_S System.SByte:31
+-Ldc_I4_0 
+-Callvirt method:System.String[] System.String::Split(System.Char,System.StringSplitOptions) | hasThis=True; explicitThis=False; convention=Default; arity=0
++Stelem_I2 
++Callvirt method:System.String[] System.String::Split(System.Char[]) | hasThis=True; explicitThis=False; convention=Default; arity=0
+ Ldsfld field:System.Func`2<System.String,System.Boolean> HaulersDream.HaulersDreamSettings/<>c::<>9__339_0
+ Dup 

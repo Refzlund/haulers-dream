@@ -1,0 +1,7 @@
+# Independent F25 runtime-path review
+
+Accepted for the fresh native retry. Parsed both selections and verified their identical key sets: **runtimeTemp is the only changed value**. The source/provider/host/controller selections remain identical, and all365 path/hash pins traversed from the selection still match their files. The new real directory is `C:/HDQA/runtime-temp`, has no symlink/junction in its parent chain, and the recalculated maximum provider runtime path is201 characters. The copied controller continues to derive its exact GUID run parent from task TEMP; the correction does not widen player-path or native custody admission.
+
+Original `fb00e51da2244f48a62fffa684422589` remains a failed startup, not product evidence. Read its retained native Mono MemoryMapImpl.OpenFile/IOException trace, ten events with no map admission, owned early-stop/native outcome, and Verify. Native PID24108 joined with exit−1; protectedChanges is empty. The five retained long-path file/hash witnesses still match (262–275 characters). These facts support shortening the private runtime path; only the fresh run can establish whether it resolves native startup.
+
+No source changes, native retest or Prepare were performed by this review. `independent-review.py` and `independent-audit.json` retain the exact checks and selection hashes. Historical failed evidence and the prior unlaunched preparation remain unchanged.

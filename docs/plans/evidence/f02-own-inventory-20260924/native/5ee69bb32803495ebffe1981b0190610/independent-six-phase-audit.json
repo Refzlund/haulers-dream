@@ -1,0 +1,335 @@
+{
+  "status": "Six ordinary phases accepted; aggregate remains failed; explicit-batch did not start",
+  "events": 317,
+  "assertions": 87,
+  "passedAssertions": 85,
+  "rawPins": [
+    {
+      "path": "C:\\Users\\Arthur\\Sync\\Projects\\RimWorld Mods\\HaulersDream\\docs\\plans\\evidence\\f02-own-inventory-20260924\\native\\5ee69bb32803495ebffe1981b0190610\\raw\\events.jsonl",
+      "bytes": 189358,
+      "sha256": "0001DADD0ED98A22E6C9A85D5D139FF7DD6C351A1712D003A50AE883DF36F943"
+    },
+    {
+      "path": "C:\\Users\\Arthur\\Sync\\Projects\\RimWorld Mods\\HaulersDream\\docs\\plans\\evidence\\f02-own-inventory-20260924\\native\\5ee69bb32803495ebffe1981b0190610\\raw\\HaulersDream-debug.log",
+      "bytes": 1962,
+      "sha256": "9AB5CFF108789C598CEEF66CA005FF809AFF51C01DDEA980D6624C8BF7092315"
+    },
+    {
+      "path": "C:\\Users\\Arthur\\Sync\\Projects\\RimWorld Mods\\HaulersDream\\docs\\plans\\evidence\\f02-own-inventory-20260924\\native\\5ee69bb32803495ebffe1981b0190610\\raw\\Player.log",
+      "bytes": 146778,
+      "sha256": "EE0D50F9049150FEE12DE2DCEB2E47E48CA93371D44B6A9E8C60AB5077AA9D14"
+    },
+    {
+      "path": "C:\\Users\\Arthur\\Sync\\Projects\\RimWorld Mods\\HaulersDream\\docs\\plans\\evidence\\f02-own-inventory-20260924\\native\\5ee69bb32803495ebffe1981b0190610\\raw\\result.json",
+      "bytes": 19702,
+      "sha256": "9A613B9EE921FD74FB1984A9781B7BA2708C6E3D6B6AC76D8BEEDF7A510D9D63"
+    }
+  ],
+  "phases": [
+    {
+      "phase": "P2-irrelevant",
+      "recipe": 20,
+      "end": "Succeeded",
+      "consumed": {
+        "Milk": 12,
+        "RawRice": 14,
+        "RawPotatoes": 14
+      },
+      "remaining": {
+        "WoodLog": 7
+      },
+      "held": {
+        "WoodLog": 7
+      },
+      "gathers": [
+        13
+      ],
+      "splits": 8,
+      "partialSplits": 0,
+      "merges": 0,
+      "physicalReceipts": 9,
+      "stableCallbacks": 300,
+      "stableElapsed": 299,
+      "product": {
+        "phase": "P2-irrelevant",
+        "job": 20,
+        "id": "MealSimple40013",
+        "count": 4,
+        "sequence": 1
+      }
+    },
+    {
+      "phase": "P3-all-held",
+      "recipe": 35,
+      "end": "Succeeded",
+      "consumed": {
+        "Milk": 40
+      },
+      "remaining": {
+        "RawRice": 20,
+        "RawPotatoes": 20
+      },
+      "held": {},
+      "gathers": [],
+      "splits": 2,
+      "partialSplits": 0,
+      "merges": 0,
+      "physicalReceipts": 3,
+      "stableCallbacks": 300,
+      "stableElapsed": 299,
+      "product": {
+        "phase": "P3-all-held",
+        "job": 35,
+        "id": "MealSimple40020",
+        "count": 4,
+        "sequence": 1
+      }
+    },
+    {
+      "phase": "P4-personal",
+      "recipe": 59,
+      "end": "Succeeded",
+      "consumed": {
+        "RawRice": 20,
+        "RawPotatoes": 20
+      },
+      "remaining": {
+        "Milk": 12
+      },
+      "held": {
+        "Milk": 12
+      },
+      "gathers": [
+        53
+      ],
+      "splits": 6,
+      "partialSplits": 0,
+      "merges": 0,
+      "physicalReceipts": 7,
+      "stableCallbacks": 300,
+      "stableElapsed": 299,
+      "product": {
+        "phase": "P4-personal",
+        "job": 59,
+        "id": "MealSimple40039",
+        "count": 4,
+        "sequence": 1
+      }
+    },
+    {
+      "phase": "P5-one-shortfall",
+      "recipe": 75,
+      "end": "Succeeded",
+      "consumed": {
+        "Milk": 12,
+        "RawRice": 28
+      },
+      "remaining": {},
+      "held": {},
+      "gathers": [],
+      "splits": 4,
+      "partialSplits": 0,
+      "merges": 0,
+      "physicalReceipts": 5,
+      "stableCallbacks": 300,
+      "stableElapsed": 299,
+      "product": {
+        "phase": "P5-one-shortfall",
+        "job": 75,
+        "id": "MealSimple40052",
+        "count": 4,
+        "sequence": 1
+      }
+    },
+    {
+      "phase": "sharing-off",
+      "recipe": 95,
+      "end": "Succeeded",
+      "consumed": {
+        "RawRice": 20,
+        "RawPotatoes": 20
+      },
+      "remaining": {
+        "Milk": 40
+      },
+      "held": {
+        "Milk": 40
+      },
+      "gathers": [],
+      "splits": 4,
+      "partialSplits": 0,
+      "merges": 0,
+      "physicalReceipts": 5,
+      "stableCallbacks": 300,
+      "stableElapsed": 299,
+      "product": {
+        "phase": "sharing-off",
+        "job": 95,
+        "id": "MealSimple40062",
+        "count": 4,
+        "sequence": 1
+      }
+    },
+    {
+      "phase": "keep-remainder",
+      "recipe": 119,
+      "end": "Succeeded",
+      "consumed": {
+        "Milk": 40
+      },
+      "remaining": {
+        "Milk": 7,
+        "RawRice": 20,
+        "RawPotatoes": 20
+      },
+      "held": {
+        "Milk": 7
+      },
+      "gathers": [],
+      "splits": 2,
+      "partialSplits": 1,
+      "merges": 0,
+      "physicalReceipts": 3,
+      "stableCallbacks": 300,
+      "stableElapsed": 299,
+      "product": {
+        "phase": "keep-remainder",
+        "job": 119,
+        "id": "MealSimple40079",
+        "count": 4,
+        "sequence": 1
+      }
+    }
+  ],
+  "modules": [
+    {
+      "assemblyVersion": "1.6.9676.17735",
+      "moduleVersionId": "61e41735-6189-4da4-9d21-0260257b5097",
+      "name": "Assembly-CSharp",
+      "path": "C:\\Users\\Arthur\\AppData\\Local\\HaulersDreamQA\\runtime-temp\\haulersdream-runtime-tests\\5ee69bb32803495ebffe1981b0190610\\runtime\\RimWorldWin64_Data\\Managed\\Assembly-CSharp.dll",
+      "sha256": "5CF1B5BE399D5B1C9C56CA72C9D35B4ECF307FEACF5859D04AC5A1AA5926356A"
+    },
+    {
+      "assemblyVersion": "0.0.0.0",
+      "moduleVersionId": "e422ced3-d0f6-4bb2-9423-e8338d57bc04",
+      "name": "UnityEngine.CoreModule",
+      "path": "C:\\Users\\Arthur\\AppData\\Local\\HaulersDreamQA\\runtime-temp\\haulersdream-runtime-tests\\5ee69bb32803495ebffe1981b0190610\\runtime\\RimWorldWin64_Data\\Managed\\UnityEngine.CoreModule.dll",
+      "sha256": "C5C58EA254834291780A1D6C388C241443D07167B4A4B890A23C9494F626DDBA"
+    },
+    {
+      "assemblyVersion": "2.4.1.0",
+      "moduleVersionId": "e5339928-9d9b-419d-83f9-f5b02c5cf609",
+      "name": "0Harmony",
+      "path": "C:\\Users\\Arthur\\AppData\\Local\\HaulersDreamQA\\runtime-temp\\haulersdream-runtime-tests\\5ee69bb32803495ebffe1981b0190610\\runtime\\Mods\\Harmony\\Current\\Assemblies\\0Harmony.dll",
+      "sha256": "353DAAFEC180BB8E7BBE4DA78F2A7CDC78067392E3A4E79DC8E7AF295F2371E6"
+    },
+    {
+      "assemblyVersion": "2.4.2.0",
+      "moduleVersionId": "dc156e18-c1bf-4ec8-acd4-7176558400e1",
+      "name": "HarmonyMod",
+      "path": "C:\\Users\\Arthur\\AppData\\Local\\HaulersDreamQA\\runtime-temp\\haulersdream-runtime-tests\\5ee69bb32803495ebffe1981b0190610\\runtime\\Mods\\Harmony\\Current\\Assemblies\\HarmonyMod.dll",
+      "sha256": "408C2CD72B45DA8C70C0C538B2B346C8DCBB5BDED066373F6A3EB8B26615A2E7"
+    },
+    {
+      "assemblyVersion": "1.24.0.0",
+      "moduleVersionId": "faa80762-511c-42f0-9623-e5388b4fda7a",
+      "name": "HaulersDream",
+      "path": "C:\\Users\\Arthur\\AppData\\Local\\HaulersDreamQA\\runtime-temp\\haulersdream-runtime-tests\\5ee69bb32803495ebffe1981b0190610\\runtime\\Mods\\HaulersDream\\1.6\\Assemblies\\HaulersDream.dll",
+      "sha256": "E8FE762B4C6D116AA623EB9F5F74BCEF8C8244389150407A357FD670DDDCDE60"
+    },
+    {
+      "assemblyVersion": "1.24.0.0",
+      "moduleVersionId": "6df77354-ff01-421b-9171-6f79a3dfca95",
+      "name": "HaulersDream.Core",
+      "path": "C:\\Users\\Arthur\\AppData\\Local\\HaulersDreamQA\\runtime-temp\\haulersdream-runtime-tests\\5ee69bb32803495ebffe1981b0190610\\runtime\\Mods\\HaulersDream\\1.6\\Assemblies\\HaulersDream.Core.dll",
+      "sha256": "26E57034D4BAB8B838FD88F506CDCCEB3E264D90911BDED561ED837C60ED08E0"
+    },
+    {
+      "assemblyVersion": "0.1.0.0",
+      "moduleVersionId": "bb1f7fe8-719e-442c-b04e-f1b5c7de8794",
+      "name": "HaulersDream.RuntimeHarness",
+      "path": "C:\\Users\\Arthur\\AppData\\Local\\HaulersDreamQA\\runtime-temp\\haulersdream-runtime-tests\\5ee69bb32803495ebffe1981b0190610\\runtime\\Mods\\HaulersDreamRuntimeHarness\\Assemblies\\HaulersDream.RuntimeHarness.dll",
+      "sha256": "59081747D9EA10F91FDDF04BEC5DF316F0E0EB0143ECA55B7A425CC4F12B58C8"
+    },
+    {
+      "assemblyVersion": "0.0.0.0",
+      "moduleVersionId": "69e8f115-9fb5-4cb4-9dbe-76d334eaed32",
+      "name": "UnityEngine.IMGUIModule",
+      "path": "C:\\Users\\Arthur\\AppData\\Local\\HaulersDreamQA\\runtime-temp\\haulersdream-runtime-tests\\5ee69bb32803495ebffe1981b0190610\\runtime\\RimWorldWin64_Data\\Managed\\UnityEngine.IMGUIModule.dll",
+      "sha256": "C6C39327211BE8299E2E9FFDEE7A979F228736C99B84FD54BC73F563456865D9"
+    },
+    {
+      "assemblyVersion": "0.0.0.0",
+      "moduleVersionId": "768b1ad7-5506-4711-ba28-6142e4f37147",
+      "name": "UnityEngine.ScreenCaptureModule",
+      "path": "C:\\Users\\Arthur\\AppData\\Local\\HaulersDreamQA\\runtime-temp\\haulersdream-runtime-tests\\5ee69bb32803495ebffe1981b0190610\\runtime\\RimWorldWin64_Data\\Managed\\UnityEngine.ScreenCaptureModule.dll",
+      "sha256": "D03D9881419CEBCED07E8AC45E3AADBB866948670071FE95BED404B758274FF3"
+    },
+    {
+      "assemblyVersion": "0.0.0.0",
+      "moduleVersionId": "cbfa93f3-6818-4ee1-8c93-86e4fe595e71",
+      "name": "UnityEngine.TextRenderingModule",
+      "path": "C:\\Users\\Arthur\\AppData\\Local\\HaulersDreamQA\\runtime-temp\\haulersdream-runtime-tests\\5ee69bb32803495ebffe1981b0190610\\runtime\\RimWorldWin64_Data\\Managed\\UnityEngine.TextRenderingModule.dll",
+      "sha256": "B63769AD71C7FC79034CF6C3A1EBFCF79D4591F0B1F5CD4A9823E6ED7B5816F8"
+    },
+    {
+      "assemblyVersion": "1.0.9416.33549",
+      "moduleVersionId": "c08ea063-2ba4-4dd1-8c41-0e20e9470cb1",
+      "name": "CommonSense",
+      "path": "C:\\Users\\Arthur\\AppData\\Local\\HaulersDreamQA\\runtime-temp\\haulersdream-runtime-tests\\5ee69bb32803495ebffe1981b0190610\\runtime\\Mods\\CommonSense\\1.6\\Assemblies\\CommonSense.dll",
+      "sha256": "8FD51F969912CEDBC11CD72E89D40EC713448AFD86CE0BEEF8CE2BDF03A0E2CA"
+    }
+  ],
+  "copiedFileChecks": 1574,
+  "logLines": 1877,
+  "nonprofileLines": 58,
+  "verifyProblems": [
+    "F02 requires independent full native phase/ingredient ancestry, settings, actual selected jobs, product/kept custody, physical stability, logs and process review. No automatic full feedback closure.",
+    "No complete result with the explicitly expected status: passed",
+    "One or more unexpected runtime assertions failed.",
+    "Player.log contains candidates requiring independent review; bootstrap is not automatically verified."
+  ],
+  "protectedChanges": [],
+  "native": {
+    "startedUtc": "2026-09-24T11:18:19.5946836Z",
+    "runDirectory": "C:/Users/Arthur/AppData/Local/HaulersDreamQA/runtime-temp/haulersdream-runtime-tests/5ee69bb32803495ebffe1981b0190610",
+    "processId": 5592,
+    "joined": true,
+    "exitCode": 0,
+    "deadlineExceeded": false,
+    "error": null,
+    "processStartedUtc": "2026-09-24T11:18:26.9351556Z",
+    "executable": "C:\\Users\\Arthur\\AppData\\Local\\HaulersDreamQA\\runtime-temp\\haulersdream-runtime-tests\\5ee69bb32803495ebffe1981b0190610\\runtime\\RimWorldWin64.exe",
+    "finishedUtc": "2026-09-24T11:19:49.4944907Z"
+  },
+  "desktop": {
+    "desktop": "HaulersDreamTests-c9bdc84281fb4a15a88fb52326879259",
+    "command": [
+      "C:/Users/Arthur/.cache/codex-runtimes/codex-primary-runtime/dependencies/native/powershell/pwsh.exe",
+      "-NoProfile",
+      "-File",
+      "docs/plans/evidence/f02-own-inventory-20260924/launch.ps1",
+      "-RunDirectory",
+      "C:/Users/Arthur/AppData/Local/HaulersDreamQA/runtime-temp/haulersdream-runtime-tests/5ee69bb32803495ebffe1981b0190610",
+      "-OutputDirectory",
+      "C:/Users/Arthur/Sync/Projects/RimWorld Mods/HaulersDream/docs/plans/evidence/f02-own-inventory-20260924/native/5ee69bb32803495ebffe1981b0190610"
+    ],
+    "cwd": "C:\\Users\\Arthur\\Sync\\Projects\\RimWorld Mods\\HaulersDream",
+    "pid": 28892,
+    "exitCode": 0,
+    "startedUtc": "2026-09-24T11:18:17.872202+00:00",
+    "switchedDesktop": false,
+    "inputDesktopSamples": [
+      "Default"
+    ],
+    "privateWindowPids": [
+      5592
+    ],
+    "timedOut": false,
+    "error": null,
+    "cleanupErrors": [],
+    "activeProcessesBeforeClose": 0,
+    "joined": true,
+    "finishedUtc": "2026-09-24T11:19:49.523606+00:00"
+  }
+}

@@ -1,0 +1,27 @@
+diff --git a/docs/plans/evidence/f07-rimmsqol-20260920/authority-v10/before/WorkGiver_HaulNearby.cs.txt b/Source/HaulersDream/WorkGiver_HaulNearby.cs
+index 4fb7ead..8c48a5a 100644
+--- a/docs/plans/evidence/f07-rimmsqol-20260920/authority-v10/before/WorkGiver_HaulNearby.cs.txt
++++ b/Source/HaulersDream/WorkGiver_HaulNearby.cs
+@@ -72,6 +72,22 @@ namespace HaulersDream
+         }
+     }
+ 
++    // Native ordered-job deduplication compares targets, not command authority. An ordinary
++    // automatic/single-haul job cannot stand in for a newly authorized nearby command, even when
++    // their target fields match. Same-authority orders retain native equality and queue behavior.
++    [HarmonyPatch(typeof(Job), nameof(Job.JobIsSameAs), new Type[] { typeof(Pawn), typeof(Job) })]
++    internal static class Patch_NearbyWorkGiverIdentity
++    {
++        private static bool Prefix(Job __instance, Job other, ref bool __result)
++        {
++            if (!NearbyHaulCommand.IsIdentifiedOrder(other)
++                || NearbyHaulCommand.IsIdentifiedOrder(__instance))
++                return true;
++            __result = false;
++            return false;
++        }
++    }
++
+     // Click-time native reservation entry. StartJob itself calls its driver's reservation method;
+     // queued admission is separately guarded at CanBeginNow below, not inferred from this wrapper.
+     [HarmonyPatch(typeof(Job), nameof(Job.TryMakePreToilReservations),

@@ -1,0 +1,291 @@
+{
+  "status": "accepted-focused-biotech-menu-and-command",
+  "assertions": 52,
+  "passed": 52,
+  "events": 80,
+  "unityErrorsObserved": 0,
+  "imagesHashBound": 12,
+  "mods": [
+    {
+      "packageId": "brrainz.harmony",
+      "rootPath": "C:\\Users\\Arthur\\AppData\\Local\\HaulersDreamQA\\runtime-temp\\haulersdream-runtime-tests\\6147ce76c69e426db0660a6f038acff7\\runtime\\Mods\\Harmony"
+    },
+    {
+      "packageId": "ludeon.rimworld",
+      "rootPath": "C:\\Users\\Arthur\\AppData\\Local\\HaulersDreamQA\\runtime-temp\\haulersdream-runtime-tests\\6147ce76c69e426db0660a6f038acff7\\runtime\\Data\\Core"
+    },
+    {
+      "packageId": "ludeon.rimworld.biotech",
+      "rootPath": "C:\\Users\\Arthur\\AppData\\Local\\HaulersDreamQA\\runtime-temp\\haulersdream-runtime-tests\\6147ce76c69e426db0660a6f038acff7\\runtime\\Data\\Biotech"
+    },
+    {
+      "packageId": "haplo.miscellaneous.robots",
+      "rootPath": "C:\\Users\\Arthur\\AppData\\Local\\HaulersDreamQA\\runtime-temp\\haulersdream-runtime-tests\\6147ce76c69e426db0660a6f038acff7\\runtime\\Mods\\MiscRobots"
+    },
+    {
+      "packageId": "alaestor.miscrobots.plusplus",
+      "rootPath": "C:\\Users\\Arthur\\AppData\\Local\\HaulersDreamQA\\runtime-temp\\haulersdream-runtime-tests\\6147ce76c69e426db0660a6f038acff7\\runtime\\Mods\\MiscRobotsPlusPlus"
+    },
+    {
+      "packageId": "giwaffed.haulersdream",
+      "rootPath": "C:\\Users\\Arthur\\AppData\\Local\\HaulersDreamQA\\runtime-temp\\haulersdream-runtime-tests\\6147ce76c69e426db0660a6f038acff7\\runtime\\Mods\\HaulersDream"
+    },
+    {
+      "packageId": "giwaffed.haulersdream.runtimeharness",
+      "rootPath": "C:\\Users\\Arthur\\AppData\\Local\\HaulersDreamQA\\runtime-temp\\haulersdream-runtime-tests\\6147ce76c69e426db0660a6f038acff7\\runtime\\Mods\\HaulersDreamRuntimeHarness"
+    }
+  ],
+  "assemblies": [
+    {
+      "assemblyVersion": "1.6.9676.17735",
+      "moduleVersionId": "61e41735-6189-4da4-9d21-0260257b5097",
+      "name": "Assembly-CSharp",
+      "path": "C:\\Users\\Arthur\\AppData\\Local\\HaulersDreamQA\\runtime-temp\\haulersdream-runtime-tests\\6147ce76c69e426db0660a6f038acff7\\runtime\\RimWorldWin64_Data\\Managed\\Assembly-CSharp.dll",
+      "sha256": "5CF1B5BE399D5B1C9C56CA72C9D35B4ECF307FEACF5859D04AC5A1AA5926356A"
+    },
+    {
+      "assemblyVersion": "0.0.0.0",
+      "moduleVersionId": "e422ced3-d0f6-4bb2-9423-e8338d57bc04",
+      "name": "UnityEngine.CoreModule",
+      "path": "C:\\Users\\Arthur\\AppData\\Local\\HaulersDreamQA\\runtime-temp\\haulersdream-runtime-tests\\6147ce76c69e426db0660a6f038acff7\\runtime\\RimWorldWin64_Data\\Managed\\UnityEngine.CoreModule.dll",
+      "sha256": "C5C58EA254834291780A1D6C388C241443D07167B4A4B890A23C9494F626DDBA"
+    },
+    {
+      "assemblyVersion": "2.4.1.0",
+      "moduleVersionId": "e5339928-9d9b-419d-83f9-f5b02c5cf609",
+      "name": "0Harmony",
+      "path": "C:\\Users\\Arthur\\AppData\\Local\\HaulersDreamQA\\runtime-temp\\haulersdream-runtime-tests\\6147ce76c69e426db0660a6f038acff7\\runtime\\Mods\\Harmony\\Current\\Assemblies\\0Harmony.dll",
+      "sha256": "353DAAFEC180BB8E7BBE4DA78F2A7CDC78067392E3A4E79DC8E7AF295F2371E6"
+    },
+    {
+      "assemblyVersion": "2.4.2.0",
+      "moduleVersionId": "dc156e18-c1bf-4ec8-acd4-7176558400e1",
+      "name": "HarmonyMod",
+      "path": "C:\\Users\\Arthur\\AppData\\Local\\HaulersDreamQA\\runtime-temp\\haulersdream-runtime-tests\\6147ce76c69e426db0660a6f038acff7\\runtime\\Mods\\Harmony\\Current\\Assemblies\\HarmonyMod.dll",
+      "sha256": "408C2CD72B45DA8C70C0C538B2B346C8DCBB5BDED066373F6A3EB8B26615A2E7"
+    },
+    {
+      "assemblyVersion": "1.24.0.0",
+      "moduleVersionId": "f30c55c6-9106-4cb9-99e9-616c22677778",
+      "name": "HaulersDream",
+      "path": "C:\\Users\\Arthur\\AppData\\Local\\HaulersDreamQA\\runtime-temp\\haulersdream-runtime-tests\\6147ce76c69e426db0660a6f038acff7\\runtime\\Mods\\HaulersDream\\1.6\\Assemblies\\HaulersDream.dll",
+      "sha256": "A20FBD9FB139668D0BD50DBE9496B75C728AB7023CC7277BA24388FE148E8C0F"
+    },
+    {
+      "assemblyVersion": "1.24.0.0",
+      "moduleVersionId": "36bbf3f3-9ff2-4186-857a-166bf81f74f9",
+      "name": "HaulersDream.Core",
+      "path": "C:\\Users\\Arthur\\AppData\\Local\\HaulersDreamQA\\runtime-temp\\haulersdream-runtime-tests\\6147ce76c69e426db0660a6f038acff7\\runtime\\Mods\\HaulersDream\\1.6\\Assemblies\\HaulersDream.Core.dll",
+      "sha256": "1A30CF3CBFC96C7BD0980CBE46482C07A58519F4D31FBD9D269A830A6AE9E332"
+    },
+    {
+      "assemblyVersion": "0.1.0.0",
+      "moduleVersionId": "4e49276f-63db-455d-ab6b-0a9d7ff89bfe",
+      "name": "HaulersDream.RuntimeHarness",
+      "path": "C:\\Users\\Arthur\\AppData\\Local\\HaulersDreamQA\\runtime-temp\\haulersdream-runtime-tests\\6147ce76c69e426db0660a6f038acff7\\runtime\\Mods\\HaulersDreamRuntimeHarness\\Assemblies\\HaulersDream.RuntimeHarness.dll",
+      "sha256": "4668E81EF8164C321A3AAEDF94B34251B71F33DD5EF52D84B75B9C0253E301D4"
+    },
+    {
+      "assemblyVersion": "0.0.0.0",
+      "moduleVersionId": "69e8f115-9fb5-4cb4-9dbe-76d334eaed32",
+      "name": "UnityEngine.IMGUIModule",
+      "path": "C:\\Users\\Arthur\\AppData\\Local\\HaulersDreamQA\\runtime-temp\\haulersdream-runtime-tests\\6147ce76c69e426db0660a6f038acff7\\runtime\\RimWorldWin64_Data\\Managed\\UnityEngine.IMGUIModule.dll",
+      "sha256": "C6C39327211BE8299E2E9FFDEE7A979F228736C99B84FD54BC73F563456865D9"
+    },
+    {
+      "assemblyVersion": "0.0.0.0",
+      "moduleVersionId": "768b1ad7-5506-4711-ba28-6142e4f37147",
+      "name": "UnityEngine.ScreenCaptureModule",
+      "path": "C:\\Users\\Arthur\\AppData\\Local\\HaulersDreamQA\\runtime-temp\\haulersdream-runtime-tests\\6147ce76c69e426db0660a6f038acff7\\runtime\\RimWorldWin64_Data\\Managed\\UnityEngine.ScreenCaptureModule.dll",
+      "sha256": "D03D9881419CEBCED07E8AC45E3AADBB866948670071FE95BED404B758274FF3"
+    },
+    {
+      "assemblyVersion": "0.0.0.0",
+      "moduleVersionId": "cbfa93f3-6818-4ee1-8c93-86e4fe595e71",
+      "name": "UnityEngine.TextRenderingModule",
+      "path": "C:\\Users\\Arthur\\AppData\\Local\\HaulersDreamQA\\runtime-temp\\haulersdream-runtime-tests\\6147ce76c69e426db0660a6f038acff7\\runtime\\RimWorldWin64_Data\\Managed\\UnityEngine.TextRenderingModule.dll",
+      "sha256": "B63769AD71C7FC79034CF6C3A1EBFCF79D4591F0B1F5CD4A9823E6ED7B5816F8"
+    },
+    {
+      "assemblyVersion": "1.6.3.0",
+      "moduleVersionId": "339946c0-1b12-4d8d-a357-92882b2c7612",
+      "name": "AIRobot",
+      "path": "C:\\Users\\Arthur\\AppData\\Local\\HaulersDreamQA\\runtime-temp\\haulersdream-runtime-tests\\6147ce76c69e426db0660a6f038acff7\\runtime\\Mods\\MiscRobots\\1.6\\Assemblies\\AIRobot.dll",
+      "sha256": "6EAD86A97FB9F9438000AB4A6DACBD52A478EE41C460D1298AAF47C27526CE46"
+    },
+    {
+      "assemblyVersion": "1.0.0.0",
+      "moduleVersionId": "36987912-28db-40b6-a03d-d86cffb5a871",
+      "name": "MiscRobotsPlusPlus",
+      "path": "C:\\Users\\Arthur\\AppData\\Local\\HaulersDreamQA\\runtime-temp\\haulersdream-runtime-tests\\6147ce76c69e426db0660a6f038acff7\\runtime\\Mods\\MiscRobotsPlusPlus\\1.6\\Assemblies\\MiscRobotsPlusPlus.dll",
+      "sha256": "7A09CEB35FB2FD9BD29E48708EAF00EF0EA2435A994A0EE112F92A669DFDE1F8"
+    }
+  ],
+  "hostBinding": {
+    "status": "passed",
+    "hostSourcesUnchanged": 80,
+    "controllerSources": 21,
+    "controllerOnlyChange": "two exact host SHA pins",
+    "host": {
+      "path": "C:\\Users\\Arthur\\AppData\\Local\\HaulersDreamQA\\builds\\f05-f06-lifecycle-20260924\\build-v5\\Assemblies\\HaulersDream.RuntimeHarness.dll",
+      "bytes": 1195008,
+      "sha256": "4668E81EF8164C321A3AAEDF94B34251B71F33DD5EF52D84B75B9C0253E301D4"
+    },
+    "mvid": "4e49276f-63db-455d-ab6b-0a9d7ff89bfe",
+    "scene": {
+      "path": "C:\\Users\\Arthur\\Sync\\Projects\\RimWorld Mods\\HaulersDream\\docs\\plans\\evidence\\f05-f06-lifecycle-20260924\\src\\RobotLifecycle.cs",
+      "bytes": 36222,
+      "sha256": "6091DB62C974B39F2529B154855C9F76615BD5B217831A06F4F7564C64AA8BC7"
+    },
+    "controller": {
+      "path": "C:\\Users\\Arthur\\Sync\\Projects\\RimWorld Mods\\HaulersDream\\docs\\plans\\evidence\\f05-f06-lifecycle-20260924\\controller\\scripts\\runtime-test.ps1",
+      "bytes": 147435,
+      "sha256": "FF21BA908B4D496E9DBE76A87F408B0416234A5FBE36B9E88B6160F94DD875CE"
+    },
+    "selection": {
+      "path": "C:\\Users\\Arthur\\Sync\\Projects\\RimWorld Mods\\HaulersDream\\docs\\plans\\evidence\\f05-f06-lifecycle-20260924\\source-review\\selected-inputs.json",
+      "bytes": 96315,
+      "sha256": "FFF2422AE75DE15D7005D796983446CDF6F35D384601E58F3360EDA41A22E194"
+    },
+    "productProviderGamePins": "inherited unchanged from independently audited v4 selection; no product/provider inputs edited"
+  },
+  "rawCopiesEqualOriginal": [
+    {
+      "path": "C:\\Users\\Arthur\\Sync\\Projects\\RimWorld Mods\\HaulersDream\\docs\\plans\\evidence\\f05-f06-lifecycle-20260924\\native\\6147ce76c69e426db0660a6f038acff7\\raw\\events.jsonl",
+      "bytes": 26347,
+      "sha256": "CC8EEA70E6B33808D5058B189B4CD59EE4D84CE6AB8686D762A440FCC90DF607"
+    },
+    {
+      "path": "C:\\Users\\Arthur\\Sync\\Projects\\RimWorld Mods\\HaulersDream\\docs\\plans\\evidence\\f05-f06-lifecycle-20260924\\native\\6147ce76c69e426db0660a6f038acff7\\raw\\HaulersDream-debug.log",
+      "bytes": 905,
+      "sha256": "76FE0C4D34B7124C71AE335C0E2C774CCA7DF33560C92B9D67AE45EA54293052"
+    },
+    {
+      "path": "C:\\Users\\Arthur\\Sync\\Projects\\RimWorld Mods\\HaulersDream\\docs\\plans\\evidence\\f05-f06-lifecycle-20260924\\native\\6147ce76c69e426db0660a6f038acff7\\raw\\Player.log",
+      "bytes": 160536,
+      "sha256": "4E89BB38AF6B1533637C42EB76F24265F26CF8F741B96160809381B3773F2BD2"
+    },
+    {
+      "path": "C:\\Users\\Arthur\\Sync\\Projects\\RimWorld Mods\\HaulersDream\\docs\\plans\\evidence\\f05-f06-lifecycle-20260924\\native\\6147ce76c69e426db0660a6f038acff7\\raw\\result.json",
+      "bytes": 17314,
+      "sha256": "74D2FD917F832EC53D9CE1F0F05CE3C9B44546EB00F1E3A1EF5FD4AE5A3D1EAB"
+    }
+  ],
+  "physicalEventsChecked": 9,
+  "stableTicks": 301,
+  "quantityIdentityCaveat": "Keep is quantity-based: initial personal17964 is deposited; retained7 belong to17965; native original17966 merges into17965. No original personal stack identity preservation claimed.",
+  "unloadTerminal": "Identified ordinary unload59 ends Incompletable at718 with20stored7kept, no hands/queue. Keep-only tracked remainder; no subsequent cargo work.",
+  "wholeLogLines": 2029,
+  "wholeLogNonProfilerFlags": [
+    {
+      "line": 7,
+      "text": "Direct3D:"
+    },
+    {
+      "line": 34,
+      "text": "Direct3D: detected that using refresh rate causes time drift. Will stop trusting refresh rate until the game window is moved."
+    },
+    {
+      "line": 35,
+      "text": "Direct3D: detected that vsync is broken (it does not limit frame rate properly). Delta time will now be calculated using cpu-side time stampling until the game window is moved."
+    },
+    {
+      "line": 109,
+      "text": "Fallback handler could not load library C:/Users/Arthur/AppData/Local/HaulersDreamQA/runtime-temp/haulersdream-runtime-tests/6147ce76c69e426db0660a6f038acff7/runtime/RimWorldWin64_Data/MonoBleedingEdge/data-0000020AD1DBB0C0.dll"
+    },
+    {
+      "line": 110,
+      "text": "Fallback handler could not load library C:/Users/Arthur/AppData/Local/HaulersDreamQA/runtime-temp/haulersdream-runtime-tests/6147ce76c69e426db0660a6f038acff7/runtime/RimWorldWin64_Data/MonoBleedingEdge/data-0000020AD225A1B0.dll"
+    },
+    {
+      "line": 1696,
+      "text": "Texture RPP_TableRobotics.png is being reloaded with reduced mipmap count (clamped to 5) due to non-power-of-two dimensions: (192x64). This will be slower to load, and will look worse when zoomed out. Consider using a power-of-two texture size instead."
+    },
+    {
+      "line": 1697,
+      "text": "Texture RPP_TableRobotics_east.png is being reloaded with reduced mipmap count (clamped to 4) due to non-power-of-two dimensions: (96x224). This will be slower to load, and will look worse when zoomed out. Consider using a power-of-two texture size instead."
+    },
+    {
+      "line": 1698,
+      "text": "Texture RPP_TableRobotics_north.png is being reloaded with reduced mipmap count (clamped to 4) due to non-power-of-two dimensions: (224x96). This will be slower to load, and will look worse when zoomed out. Consider using a power-of-two texture size instead."
+    },
+    {
+      "line": 1699,
+      "text": "Texture RPP_TableRobotics_south.png is being reloaded with reduced mipmap count (clamped to 4) due to non-power-of-two dimensions: (224x96). This will be slower to load, and will look worse when zoomed out. Consider using a power-of-two texture size instead."
+    },
+    {
+      "line": 1700,
+      "text": "Texture Header.png is being reloaded with reduced mipmap count (clamped to 1) due to non-power-of-two dimensions: (1499x221). This will be slower to load, and will look worse when zoomed out. Consider using a power-of-two texture size instead."
+    },
+    {
+      "line": 1701,
+      "text": "Translation data for language English has 4 errors. Generate translation report for more info."
+    },
+    {
+      "line": 1712,
+      "text": "Direct3D: detected that using refresh rate causes time drift. Will stop trusting refresh rate until the game window is moved."
+    },
+    {
+      "line": 1713,
+      "text": "Direct3D: detected that vsync is broken (it does not limit frame rate properly). Delta time will now be calculated using cpu-side time stampling until the game window is moved."
+    },
+    {
+      "line": 1726,
+      "text": "Two power nets on the same cell (112, 119). First transmitters: Battery and Battery."
+    },
+    {
+      "line": 1727,
+      "text": "[HD Runtime Harness] run=6147ce76c69e426db0660a6f038acff7 case=F06-BIOTECH terminal=passed; captured-errors=0"
+    }
+  ],
+  "profilerMatches": 4,
+  "allocatorMatches": 36,
+  "cleanWholeLog": false,
+  "native": {
+    "startedUtc": "2026-09-24T08:06:24.8324940Z",
+    "runDirectory": "C:/Users/Arthur/AppData/Local/HaulersDreamQA/runtime-temp/haulersdream-runtime-tests/6147ce76c69e426db0660a6f038acff7",
+    "processId": 27048,
+    "joined": true,
+    "exitCode": 0,
+    "deadlineExceeded": false,
+    "error": null,
+    "processStartedUtc": "2026-09-24T08:06:48.1562308Z",
+    "executable": "C:\\Users\\Arthur\\AppData\\Local\\HaulersDreamQA\\runtime-temp\\haulersdream-runtime-tests\\6147ce76c69e426db0660a6f038acff7\\runtime\\RimWorldWin64.exe",
+    "finishedUtc": "2026-09-24T08:07:35.5784796Z"
+  },
+  "desktop": {
+    "desktop": "HaulersDreamTests-c9436344291346948d1ec6fe330a7a1d",
+    "command": [
+      "C:/Users/Arthur/.cache/codex-runtimes/codex-primary-runtime/dependencies/native/powershell/pwsh.exe",
+      "-NoProfile",
+      "-File",
+      "C:/Users/Arthur/Sync/Projects/RimWorld Mods/HaulersDream/docs/plans/evidence/f05-f06-lifecycle-20260924/launch.ps1",
+      "-RunDirectory",
+      "C:/Users/Arthur/AppData/Local/HaulersDreamQA/runtime-temp/haulersdream-runtime-tests/6147ce76c69e426db0660a6f038acff7",
+      "-OutputDirectory",
+      "C:/Users/Arthur/Sync/Projects/RimWorld Mods/HaulersDream/docs/plans/evidence/f05-f06-lifecycle-20260924/native/6147ce76c69e426db0660a6f038acff7"
+    ],
+    "cwd": "C:\\Users\\Arthur\\Sync\\Projects\\RimWorld Mods\\HaulersDream",
+    "pid": 9932,
+    "exitCode": 0,
+    "startedUtc": "2026-09-24T08:06:22.673736+00:00",
+    "switchedDesktop": false,
+    "inputDesktopSamples": [
+      "Default"
+    ],
+    "privateWindowPids": [
+      27048
+    ],
+    "timedOut": false,
+    "error": null,
+    "cleanupErrors": [],
+    "activeProcessesBeforeClose": 0,
+    "joined": true,
+    "finishedUtc": "2026-09-24T08:07:35.631356+00:00"
+  },
+  "verifyProblems": [
+    "Robot command capture requires independent complete assertions/events, actual native automatic scheduler and command callback, queue handoff, interruption recovery, exact cargo/Keep7, cleanup and whole-log review. Setup refusals are not product failure diagnoses.",
+    "Player.log contains candidates requiring independent review; bootstrap is not automatically verified."
+  ],
+  "protectedChanges": []
+}

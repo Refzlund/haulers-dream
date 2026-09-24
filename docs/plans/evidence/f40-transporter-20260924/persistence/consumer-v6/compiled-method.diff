@@ -1,0 +1,32 @@
+--- v5/compiled-fixture
++++ v6/compiled-fixture
+@@ -105,6 +105,8 @@
+ 
+ 	private int ballast;
+ 
++	private int disabledGoldStoredBefore;
++
+ 	private bool loading;
+ 
+ 	private bool disabled;
+@@ -362,7 +364,7 @@
+ 				stage = "disabled-action";
+ 			}
+ 		}
+-		else if (stage == "disabled-enabled-unload" && Held(Other) == 0 && Stored("Gold") == 6 && Stable(300))
++		else if (stage == "disabled-enabled-unload" && Held(Other) == 0 && Stored("Gold") - disabledGoldStoredBefore == 6 && Stable(300))
+ 		{
+ 			Record("enable-after-disabled-start-physical", EndedSuccess(policyJob), State());
+ 			Complete();
+@@ -509,7 +511,11 @@
+ 			}
+ 		}
+ 		Other.CleanUpLoadingVars(map);
++		disabledGoldStoredBefore = Stored("Gold");
++		Guard(Held(Other) == 0 && Goods("Gold").Sum((Thing t) => t.stackCount) == disabledGoldStoredBefore, "Disabled-enable witness requires prior Gold entirely in storage before adding its new cargo.");
++		emit("f40-persistence-disabled-gold-baseline", "storedBefore=" + disabledGoldStoredBefore + "; " + Physical());
+ 		Put(Other, "Gold", 6, 6);
++		emit("f40-persistence-disabled-gold-added", "actualHold=" + Contents(Other) + "; total=" + totals["Gold"]);
+ 		string text = PatchOwners();
+ 		HaulersDreamMod.Settings.enableBulkUnloadTransporters = true;
+ 		Flag(Other, on: true);

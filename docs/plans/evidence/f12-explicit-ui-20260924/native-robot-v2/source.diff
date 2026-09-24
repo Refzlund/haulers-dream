@@ -1,0 +1,44 @@
+--- native-robot/CONTRACT.md
++++ native-robot-v2/CONTRACT.md
+@@ -7,3 +7,8 @@
+ Before that delivery, actual clicks on the rendered disabled gizmo with allowMechanoids=false and for real Builder III without Hauling must leave all order/job/queue/reservation/cargo state unchanged and create no targeter. Then restore the original setting and select Omni I. No role mutation or artificial blocked state is used.
+ 
+ Reuse the frozen human UI private-window worker, control events, prompts, dialog and command receipts. Render the actual robot gizmo/source target prompt and final progress. This profile does not repeat the human invalid-input matrix, native save/lifecycle chain, station control UI or Biotech float-menu case. No Prepare/native acceptance is claimed by source/build handoff.
++
++
++## Native prompt overlay successor
++
++This successor uses only the frozen UIv3 prompt overlay product. The observer follows the actual delayed DrawPromptWindow callback and retains every prior real input/command/physical assertion. Review actual screenshots: the human Italian edge prompt and robot source-selection cancellation line must remain readable over lower native HUD/gizmo rows. Viewport geometry alone does not establish rendering acceptance. No new backend or provider scope.
+--- native-robot/build.ps1
++++ native-robot-v2/build.ps1
+@@ -2,8 +2,8 @@
+ $env:TEMP='C:/HDQA/runtime-temp'
+ $env:TMP=$env:TEMP
+ $f12Root=$PSScriptRoot
+-$f12Build='C:/Users/Arthur/AppData/Local/HaulersDreamQA/inputs/f12-robot-ui-native-20260924/host-v1'
+-$f12Product='C:/Users/Arthur/AppData/Local/HaulersDreamQA/inputs/f12-explicit-ui-v2-20260924/Product'
++$f12Build='C:/Users/Arthur/AppData/Local/HaulersDreamQA/inputs/f12-robot-ui-native-20260924/host-v2'
++$f12Product='C:/Users/Arthur/AppData/Local/HaulersDreamQA/inputs/f12-explicit-ui-v3-20260924/Product'
+ $f12Refs='C:/Users/Arthur/AppData/Local/Temp/haulersdream-f34-host-root-build-20260920'
+ $f12Game='C:/Steam/steamapps/common/RimWorld/RimWorldWin64_Data/Managed'
+ if((Get-FileHash -LiteralPath "$f12Game/Assembly-CSharp.dll").Hash -cne '5CF1B5BE399D5B1C9C56CA72C9D35B4ECF307FEACF5859D04AC5A1AA5926356A'){throw 'Installed actual game pin changed.'}
+--- native-robot/src/F12UiObservers.cs
++++ native-robot-v2/src/F12UiObservers.cs
+@@ -38,7 +38,7 @@
+                 Patch(AccessTools.Method(typeof(Widgets),"Label",new[]{typeof(Rect),typeof(string)}),nameof(LabelBefore));
+                 Patch(AccessTools.Method(typeof(Widgets),"BeginScrollView",new[]{typeof(Rect),typeof(Vector2).MakeByRefType(),typeof(Rect),typeof(bool)}),nameof(ScrollBefore));
+                 Patch(AccessTools.Method(typeof(Window),"OnCancelKeyPressed"),nameof(CancelBefore));
+-                Patch(AccessTools.Method(AccessTools.TypeByName("HaulersDream.ExplicitHaulUi"),"DrawPrompt"),nameof(PromptBefore),null,nameof(PromptFinally));
++                Patch(AccessTools.Method(AccessTools.TypeByName("HaulersDream.ExplicitHaulUi"),"DrawPromptWindow"),nameof(PromptBefore),null,nameof(PromptFinally));
+                 var commands=AccessTools.TypeByName("HaulersDream.ExplicitHaulCommand");
+                 Patch(AccessTools.Method(commands,"IssueSynced"),nameof(CommandBefore),nameof(CommandAfter));
+                 Patch(AccessTools.Method(commands,"ResumeSynced"),nameof(ResumeBefore));
+@@ -86,7 +86,7 @@
+         private static void CancelBefore(Window __instance)
+         {if(scene?.OwnedWindow(__instance)==true)Observe(()=>scene.Entry("escape","Window.OnCancelKeyPressed"));}
+         private static void PromptBefore(out int __state)
+-        {__state=promptDepth;promptDepth++;Observe(()=>scene.Entry("prompt","ExplicitHaulUi.DrawPrompt"));}
++        {__state=promptDepth;promptDepth++;Observe(()=>scene.Entry("prompt","ExplicitHaulUi.DrawPromptWindow"));}
+         private static void PromptFinally(int __state,Exception __exception)
+         {promptDepth=__state;if(__exception!=null)Observe(()=>scene.Fault(__exception));}
+         private static void CommandBefore(Pawn pawn,Thing source,IntVec3 cell,int total,int mapId,bool queue)=>Observe(()=>scene.CommandObserved("entry",pawn,source,cell,total,mapId,queue));

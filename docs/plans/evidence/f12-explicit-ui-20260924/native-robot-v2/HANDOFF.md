@@ -1,0 +1,3 @@
+# F12 robot final overlay successor
+
+See `../v3/HANDOFF.md` for the reviewed native rationale, product/host pins and exact private-desktop runtime procedure. `source.diff` is the entire original-robot→v2 fixture delta: bind the read-only prompt observer to actual delayed `DrawPromptWindow`; update build/product paths. The already-passing robot role/setting/real input/physical assertions are unchanged. Selection `00438841F7665E92F143B5FB1CEFC65E1588A49CF001E12AE56B30CB066F0C34`; host `71740B305F96B274F87456FF3726AF4AB8E4CA4FB63FFDC367D4E6377B266C36`. Build2.95s, zero warnings/errors;2,121 exact-input/provider checks. Original56 physical checks were separately accepted by root; actual corrected source-target prompt rendering is pending.

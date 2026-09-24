@@ -12,8 +12,8 @@ namespace HaulersDream
     ///
     /// A save written while a pawn has QUEUED HD jobs otherwise embeds references to HD's custom <c>JobDriver</c>s
     /// that dangle if HD is later uninstalled. This PREFIX on <c>ScribeSaver.InitSaving</c> (which runs immediately
-    /// before the game writes a colony save) strips incidental QUEUED HD jobs. Identified nearby commands and
-    /// their scoped deliveries are preserved: saving must not cancel the player's explicit order. These queued
+    /// before the game writes a colony save) strips incidental QUEUED HD jobs. Identified nearby commands,
+    /// their scoped deliveries and explicit transporter orders are preserved: saving must not cancel the player's order. These queued
     /// orders and the CURRENT job require HD to remain installed, and deserialize normally while it is installed.
     /// The current job is never interrupted here — see the torn-snapshot note below.
     ///
@@ -103,8 +103,8 @@ namespace HaulersDream
                 return;
 
             // Strip incidental QUEUED HD jobs only (RemoveAll cancels them and releases pre-toil reservations).
-            // Preserve positively identified nearby orders, including generated scoped deliveries. Do not use
-            // playerForced alone or evaluate live permissions during saving; admission checks those later.
+            // Preserve positively identified nearby orders (including scoped deliveries) and transporter orders.
+            // Do not use playerForced alone or evaluate live permissions during saving; admission checks those later.
             // We deliberately do NOT touch the CURRENT job: interrupting it here ran HD's finish actions + ledger
             // releases mid-serialization and tore the saved ledger snapshot (see the class doc). The running HD job
             // is left intact; it serializes fine while HD is installed and releases its own claims on its next
@@ -112,7 +112,9 @@ namespace HaulersDream
             var queue = pawn.jobs.jobQueue;
             if (queue != null && queue.Count > 0)
                 queue.RemoveAll(pawn, job => job != null && job.def != null && strip.Contains(job.def)
-                    && !NearbyHaulCommand.IsIdentifiedOrder(job));
+                    && !NearbyHaulCommand.IsIdentifiedOrder(job)
+                    && !TransporterOperation.IsExplicitOrder(job)
+                    && !ExplicitHaulCommand.Identified(pawn, job));
         }
     }
 }

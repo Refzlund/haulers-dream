@@ -1,0 +1,9 @@
+# F14: robot construction behavior preserved
+
+Root adopted the [independent native review](f03-construction-20260920/candidate-runtime-review.md), including the actual physical/job observations, completed frame, material consumption, process outcomes and warning limitations. F14 is resolved as a verified positive regression report; no new defect repair is claimed.
+
+In run `906e7cfe4b354851b0f2d15466bf7cc7`, the actual Misc. Robots++ Builder III retained Construction priority 1, Mining priority 3, skill 13 and no Hauling role. Its own `AIRobot.X2_JobGiver_Work` selected a nonforced HD construction-delivery job. It collected two real 50-unit floor stacks into inventory, exceeding its 75-unit hand limit, delivered all 100 wood, then completed the native wooden table. Exactly 100 wood was consumed, with the original map's 205 wood unchanged before cleanup.
+
+The same run's human comparison gathered 100 with the feature enabled and delivered 74+26 through ordinary hands with it disabled. All three native constructions completed; all 56 assertions passed, with no captured Unity error, protected-file change or cleanup failure. The human's controlled Construction skill20 is disclosed; the robot's skills and work roles were not edited. Native/controller exited0 on the inactive desktop. The first setup-refusal run remains failed.
+
+This is a representative Builder III check. The reporter did not identify a model, and their hidden-job explanation remains unproven. Other robot hauling/command requirements remain F05/F06; fresh harvest/H&H and the unknown earlier failure remain F03. The native log's texture/translation/startup notices remain recorded and are not called repaired. Later shared changes that invalidate this evidence must reopen the report or receive the relevant final integration check.

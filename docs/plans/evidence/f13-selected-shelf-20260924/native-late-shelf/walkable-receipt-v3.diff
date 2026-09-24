@@ -1,0 +1,12 @@
+--- v2/src/ExplicitShelfLateScene.Regression.cs
++++ v3/src/ExplicitShelfLateScene.Regression.cs
+@@ -32,6 +32,9 @@
+             Require("real-late-selected-cell",cells.Length==202&&group.MemberCount==102&&cells[200]==selectedShelf.AllSlotCells().Single()
+                 &&lateBlockedCells.All(c=>c.GetThingList(map).Count(t=>t.def.category==ThingCategory.Item)==3&&c.GetThingList(map).Where(t=>t.def.category==ThingCategory.Item).All(t=>t.stackCount==t.def.stackLimit)),
+                 "Native member order:100 two-cell shelves,200 physically full cells,selected small shelf index200,native companion cell201; no pooled cell list edits");
++            var selectedCell=selectedShelf.AllSlotCells().Single();
++            Require("native-shelf-pass-through-cell",selectedShelf.def.passability==Traversability.PassThroughOnly&&!selectedCell.Standable(map)&&selectedCell.WalkableBy(map,actors[0])&&actors[0].CanReach(selectedCell,PathEndMode.OnCell,Danger.Some),
++                "Actual native shelf="+selectedShelf.def.passability+",Standable="+selectedCell.Standable(map)+",WalkableBy="+selectedCell.WalkableBy(map,actors[0])+"; original permission/reach/blocker/capacity oracles unchanged");
+             sources[0]=Spawn(ThingDefOf.Steel,15,map.Center+new IntVec3(4,0,-4));nativeSource=Spawn(ThingDefOf.Gold,7,map.Center+new IntVec3(4,0,-2));
+             lateSteelTotal=UnitsFor(ThingDefOf.Steel);lateGoldTotal=UnitsFor(ThingDefOf.Gold);
+             int raw=SharedTruncated(group,sources[0],out bool truncated);

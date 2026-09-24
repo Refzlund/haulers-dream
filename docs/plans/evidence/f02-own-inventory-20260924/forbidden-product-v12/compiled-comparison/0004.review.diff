@@ -1,0 +1,34 @@
+--- 
+
++++ 
+
+@@ -7,7 +7,11 @@
+
+ Ret 
+ Ldarg_0 
++Ldc_I4_1 
++Newarr type:System.Char
++Dup 
++Ldc_I4_0 
+ Ldc_I4_S System.SByte:30
+-Ldc_I4_0 
+-Callvirt method:System.String[] System.String::Split(System.Char,System.StringSplitOptions) | hasThis=True; explicitThis=False; convention=Default; arity=0
++Stelem_I2 
++Callvirt method:System.String[] System.String::Split(System.Char[]) | hasThis=True; explicitThis=False; convention=Default; arity=0
+ Stloc_1 
+ Ldc_I4_0 
+@@ -17,7 +21,11 @@
+
+ Ldloc_2 
+ Ldelem_Ref 
++Ldc_I4_1 
++Newarr type:System.Char
++Dup 
++Ldc_I4_0 
+ Ldc_I4_S System.SByte:31
+-Ldc_I4_0 
+-Callvirt method:System.String[] System.String::Split(System.Char,System.StringSplitOptions) | hasThis=True; explicitThis=False; convention=Default; arity=0
++Stelem_I2 
++Callvirt method:System.String[] System.String::Split(System.Char[]) | hasThis=True; explicitThis=False; convention=Default; arity=0
+ Stloc_3 
+ Ldloc_3 

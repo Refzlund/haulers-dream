@@ -1,0 +1,86 @@
+--- F40 host/Bootstrap.cs
++++ F43 host/Bootstrap.cs
+@@ -67,7 +67,7 @@
+         private static RefuelGroupScenario refuelGroup;
+         private static Dlv1Scenario dlv1;
+         private static bool f34Attempted;
+-        private static bool f40TransporterStarted;
++        private static bool f43WarningStarted;
+         private static bool scenarioAttempted;
+         private static bool controlStarted;
+         private static int controlDone;
+@@ -118,7 +118,7 @@
+                 Check("private-mod-directory", SamePath(GenFilePaths.ModsFolderPath, Path.Combine(manifest.runtimeDirectory, "Mods")),
+                     GenFilePaths.ModsFolderPath);
+                 Check("private-player-log", SamePath(Application.consoleLogPath, manifest.logPath), Application.consoleLogPath);
+-                Check("case-supported", new[] { "bootstrap", "BG01", "BG02", "BG03-P1", "L04-O1", "CAP01", "CAP02", "CAP03-B", "CAP03-A", "CAP03-C", "L04-O1-DELIVERY", "L04-B1", "L04-B1-D2", "L40-Q1", "L40-UI-P0", "ROBOTS-R0", "ROBOTS-R1-AUTO", "REFUEL-G1", "RIMMS-DLV1", "F34-MIXED-CUT", "F40-TRANSPORTER-CORE" }.Contains(manifest.caseId), manifest.caseId);
++                Check("case-supported", new[] { "bootstrap", "BG01", "BG02", "BG03-P1", "L04-O1", "CAP01", "CAP02", "CAP03-B", "CAP03-A", "CAP03-C", "L04-O1-DELIVERY", "L04-B1", "L04-B1-D2", "L40-Q1", "L40-UI-P0", "ROBOTS-R0", "ROBOTS-R1-AUTO", "REFUEL-G1", "RIMMS-DLV1", "F34-MIXED-CUT", "F43-WORKSCAN" }.Contains(manifest.caseId), manifest.caseId);
+                 Check("negative-control-supported", string.IsNullOrEmpty(manifest.negativeControl) || manifest.negativeControl == "None"
+                     || (manifest.caseId == "bootstrap" && new[] { "WorkerUnityError", "WorkerVerseError", "LateWorkerError", "TerminalRace" }.Contains(manifest.negativeControl)),
+                     manifest.negativeControl ?? "None");
+@@ -169,6 +169,7 @@
+                 robotAutomaticHaul?.Tick();
+                 refuelGroup?.Tick();
+                 dlv1?.Tick();
++                if (manifest.caseId == "F43-WORKSCAN") HaulersDream.F43Native.WarningScene.Tick();
+             }
+             catch (Exception error) { Fail("scenario-observation-exception", error.ToString()); }
+         }
+@@ -216,29 +217,29 @@
+                 if (elapsedTicks < 5) return;
+                 if (!result.assertions.Any(x => x.id == "real-game-ticks-advanced"))
+                     Check("real-game-ticks-advanced", true, "elapsedTicks=" + elapsedTicks);
+-                if (manifest.caseId == "F40-TRANSPORTER-CORE")
++                if (manifest.caseId == "F43-WORKSCAN")
+                 {
+                     if (Current.Game == null || !Current.Game.PlayerHasControl) return;
+-                    if (!f40TransporterStarted)
+-                    {
+-                        Check("f40-transporter-host-admission", canQuitOwnRuntime && UnityData.IsInMainThread
+-                            && manifest.negativeControl == "None" && manifest.expectedBehavior == "satisfied"
++                    if (!f43WarningStarted)
++                    {
++                        Check("f43-warning-host-admission", canQuitOwnRuntime && UnityData.IsInMainThread
++                            && manifest.negativeControl == "None" && (manifest.expectedBehavior == "satisfied" || manifest.expectedBehavior == "baseline-gap")
+                             && manifest.expectedMods.Select(x => x.packageId).SequenceEqual(new[] {
+                                 "brrainz.harmony", "ludeon.rimworld", "giwaffed.haulersdream", "giwaffed.haulersdream.runtimeharness" })
+                             && manifest.expectedAssemblies.Count == 10
+                             && manifest.expectedAssemblies.All(x => result.assemblies.Count(a => a.name == x.name
+                                 && a.moduleVersionId == x.moduleVersionId) == 1),
+-                            "Private four-mod/ten-image environment; native transporter cargo, menu purity, loading lifetime and recovery.");
+-                        if (result.assertions.Any(x => !x.passed)) { Finish("failed", "F40 transporter admission failed."); return; }
+-                        f40TransporterStarted = true; // Cleanup also covers partial Begin failure.
+-                        HaulersDream.F40Native.TransporterCore.Begin(map, Check, Event, manifest.expectedBehavior);
+-                    }
+-                    string liveStatus = HaulersDream.F40Native.TransporterCore.Update();
++                            "Private four-mod/ten-image environment; actual native workgiver consistency and separate candidate recurrence.");
++                        if (result.assertions.Any(x => !x.passed)) { Finish("failed", "F43 native workgiver admission failed."); return; }
++                        f43WarningStarted = true; // Cleanup also covers partial Begin failure.
++                        HaulersDream.F43Native.WarningScene.Begin(map, Check, Event, manifest.expectedBehavior);
++                    }
++                    string liveStatus = HaulersDream.F43Native.WarningScene.Update();
+                     if (liveStatus == "running") return;
+-                    Check("f40-transporter-host-returned", liveStatus == "passed", "Live scenario returned " + liveStatus);
++                    Check("f43-warning-host-returned", liveStatus == "passed", "Live scenario returned " + liveStatus);
+                     Check("no-unity-errors-after-harness-start", unityErrors == 0, "observedErrors=" + unityErrors);
+                     Finish(liveStatus == "passed" && !result.assertions.Any(x => !x.passed) ? "passed" : "failed",
+-                        "F40 native transporter Core phases; actual save/restart, optional providers and MP remain separate.");
++                        "F43 bounded workgiver chain only. A baseline native ErrorOnce remains captured and fails the generic clean-log assertion; independent baseline-gap review required.");
+                     return;
+                 }
+                 if (manifest.caseId == "F34-MIXED-CUT")
+@@ -769,10 +770,10 @@
+             if (terminal) return;
+             terminal = true;
+             // Remove only this test's observers while error capture is still open.
+-            if (f40TransporterStarted)
+-            {
+-                try { HaulersDream.F40Native.TransporterCore.Dispose(); }
+-                catch (Exception error) { Check("f40-transporter-terminal-cleanup", false, error.ToString()); status = "failed"; }
++            if (f43WarningStarted)
++            {
++                try { HaulersDream.F43Native.WarningScene.Dispose(); }
++                catch (Exception error) { Check("f43-warning-terminal-cleanup", false, error.ToString()); status = "failed"; }
+                 if (result.assertions.Any(x => !x.passed)) status = "failed";
+             }
+             try { dlv1?.Dispose(); }

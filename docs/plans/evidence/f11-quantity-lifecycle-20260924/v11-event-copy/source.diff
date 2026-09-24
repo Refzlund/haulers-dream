@@ -1,0 +1,89 @@
+--- v10/src/F11Scene.Ui.cs
++++ v11/src/F11Scene.Ui.cs
+@@ -209,9 +209,16 @@
+                 NativeInput(boundary,type,rawType,key,character,mouse,button,modifiers);
+         }
+         private static bool ActionType(string type)=>type=="MouseDown"||type=="MouseUp"||type=="KeyDown"||type=="KeyUp";
+-        private void NativeInput(string boundary,string type,string rawType,string key,char character,Vector2 mouse,int button,string modifiers)
+-        {
+-            var actual=GUIUtility.GUIToScreenPoint(mouse);bool match=false;
++        internal void NativeUnityEvent(EventType type,EventType rawType,KeyCode key,char character,Vector2 mouse,int button,EventModifiers modifiers)
++        {
++            if(type==EventType.MouseDown||type==EventType.MouseUp||type==EventType.KeyDown||type==EventType.KeyUp)
++                NativeInput("GUIUtility.beforeEventProcessed",InputTypeName(type),InputTypeName(rawType),key.ToString(),character,mouse,button,modifiers.ToString(),true);
++        }
++        // Unity retains obsolete lowercase enum aliases; Enum.ToString may choose either spelling.
++        private static string InputTypeName(EventType type)=>type==EventType.MouseDown?"MouseDown":type==EventType.MouseUp?"MouseUp":type==EventType.KeyDown?"KeyDown":type==EventType.KeyUp?"KeyUp":type.ToString();
++        private void NativeInput(string boundary,string type,string rawType,string key,char character,Vector2 mouse,int button,string modifiers,bool windowCoordinates=false)
++        {
++            var actual=windowCoordinates?mouse:GUIUtility.GUIToScreenPoint(mouse);bool match=false;
+             if(pending!=null)
+             {
+                 if(pending.action=="click")match=type=="MouseUp"&&button==0&&Math.Abs(actual.x-pending.x)<=2&&Math.Abs(actual.y-pending.y)<=2;
+--- v10/src/F11UiObservers.cs
++++ v11/src/F11UiObservers.cs
+@@ -16,6 +16,10 @@
+         private static Thing row;
+         private static object dialog;
+         private readonly Harmony harmony;
++        private static readonly FieldInfo BeforeEventField=AccessTools.Field(typeof(GUIUtility),"beforeEventProcessed");
++        private static readonly FieldInfo EventCopyField=AccessTools.Field(typeof(GUIUtility),"m_Event");
++        private readonly Action<EventType,KeyCode> beforeEvent=BeforeUnityEvent;
++        private bool eventSubscribed;
+         private readonly string owner="HaulersDream.F11.Ui."+Guid.NewGuid().ToString("N");
+         internal F11UiObservers(F11Scene value)
+         {
+@@ -23,7 +27,14 @@
+             scene=value;harmony=new Harmony(owner);
+             try
+             {
+-                // Keep the Unity callback hook as diagnostic evidence; acknowledgement belongs to the managed play UI entry.
++                // Unity fills its own event copy before this native dispatch callback. Read it without
++                // replacing Event.current, the event pointer, native result, or existing subscribers.
++                if(BeforeEventField?.FieldType!=typeof(Action<EventType,KeyCode>)||EventCopyField?.FieldType!=typeof(Event))
++                    throw new MissingFieldException("Exact Unity event-copy observation seam missing.");
++                BeforeEventField.SetValue(null,Delegate.Combine((Delegate)BeforeEventField.GetValue(null),beforeEvent));
++                eventSubscribed=true;
++                scene.Emit("f11-unity-event-binding","GUIUtility.beforeEventProcessed/m_Event; MVID="+typeof(GUIUtility).Module.ModuleVersionId);
++                // Root/play observations remain diagnostic and preserve their original input checks.
+                 Patch(AccessTools.Method(typeof(Root),"OnGUI"),nameof(RootBefore));
+                 Patch(AccessTools.Method(typeof(UIRoot_Play),"UIRootOnGUI"),nameof(PlayBefore));
+                 Patch(AccessTools.Method(typeof(JobDriver),"Notify_Starting"),null,nameof(JobStarted));
+@@ -56,6 +67,19 @@
+         }
+         private static void Observe(Action action)
+         {if(scene==null)return;try{action();}catch(Exception e){scene.Fault(e);}}
++        private static void BeforeUnityEvent(EventType type,KeyCode key)
++        {
++            if(scene==null)return;
++            Observe(()=>{
++                var copy=EventCopyField.GetValue(null) as Event;
++                if(copy==null||copy.type!=type||copy.keyCode!=key)
++                    throw new InvalidOperationException("Unity native event-copy arguments differ.");
++                // This is the native window event before an OnGUI matrix/control consumes it.
++                // The bounded scene requires scale1, so no GUI conversion outside OnGUI is needed.
++                if(Prefs.UIScale!=1f)throw new InvalidOperationException("Native event-copy observation requires scale1.");
++                scene.NativeUnityEvent(type,copy.rawType,key,copy.character,copy.mousePosition,copy.button,copy.modifiers);
++            });
++        }
+         private static void RootBefore()=>GuiBefore("Root.OnGUI");
+         private static void PlayBefore()=>GuiBefore("UIRoot_Play.UIRootOnGUI");
+         private static void GuiBefore(string boundary)
+@@ -103,6 +127,17 @@
+         public void Dispose()
+         {
+             scene?.EmitGuiDiagnostics("dispose");
++            if(eventSubscribed)
++            {
++                var callbacks=(Delegate)BeforeEventField.GetValue(null);
++                if(callbacks==null||!callbacks.GetInvocationList().Contains(beforeEvent))
++                    throw new InvalidOperationException("Owned native event observer disappeared before cleanup.");
++                var remaining=Delegate.Remove(callbacks,beforeEvent);
++                BeforeEventField.SetValue(null,remaining);eventSubscribed=false;
++                if(remaining?.GetInvocationList().Contains(beforeEvent)==true)
++                    throw new InvalidOperationException("Owned native event observer remains after cleanup.");
++                scene?.Emit("f11-unity-event-unbound","Owned delegate removed; other subscribers retained.");
++            }
+             harmony.UnpatchAll(owner);
+             if(Harmony.GetAllPatchedMethods().Any(m=>Harmony.GetPatchInfo(m)?.Owners.Contains(owner)==true))
+                 throw new InvalidOperationException("F11 observer patches remain after owned cleanup.");

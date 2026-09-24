@@ -1,0 +1,239 @@
+{
+  "case": "F10",
+  "reviewed_utc": "2026-09-20T05:44:35.439961+00:00",
+  "scope": "Current source and all language bindings for the reported activity wording only. No gameplay, rendered UI, Custom Alerts or drafted-command acceptance is claimed.",
+  "source": {
+    "id": "C425",
+    "url": "https://steamcommunity.com/sharedfiles/filedetails/?id=3742459652#c592940620292756958",
+    "observation": "when a pawn is picking up an item/stack, their activity shows \"Haul everything nearby\""
+  },
+  "root_inspected_single_pickup": "BulkHaul.cs constructs HaulersDream_BulkHaul with one targetQueueB entry and one countQueue entry for explicit single-stack pickup.",
+  "actual_report_route": "JobDef HaulersDream_BulkHaul -> HaulersDream.JobDriver_BulkHaul.GetReport -> HaulersDream.BulkHaul.Report.Translate()",
+  "job_identity_preserved": "Existing defName and driver remain; wording introduces no new scheduler, job identity or saved selector.",
+  "source_files": [
+    {
+      "path": "Source\\HaulersDream\\JobDriver_BulkHaul.cs",
+      "sha256": "d01807346fb1dee50d19e0b2f69b8ab25a3d0a7d46c5c3235cd7207732c35ad6"
+    },
+    {
+      "path": "Source\\HaulersDream\\BulkHaul.cs",
+      "sha256": "8356afa0026e062615a8c74e8b9120656a167b162a41c41f06ed4f55ad22236d"
+    },
+    {
+      "path": "Defs\\JobDefs\\Jobs.xml",
+      "sha256": "ad92cab660fa7cbc34c5f145d2dda2977d8f8055f61d35494474d6549dcac857"
+    }
+  ],
+  "languages": [
+    {
+      "language": "ChineseSimplified",
+      "activity_text": "正在将物品收进货物栏。",
+      "keyed_and_jobdef_agree": true,
+      "keyed_file": {
+        "path": "Languages\\ChineseSimplified\\Keyed\\HaulersDream.xml",
+        "sha256": "9da82c86e722850235ad91eb65cf26b20deb7965af32eb748c3e3d58ff0ed9d1"
+      },
+      "jobdef_file": {
+        "path": "Languages\\ChineseSimplified\\DefInjected\\JobDef\\Jobs.xml",
+        "sha256": "7f985187a382ecfe44b9eea69989a8a6e13aee11cfee91ec62383c9f622109bf"
+      }
+    },
+    {
+      "language": "ChineseTraditional",
+      "activity_text": "正在將物品收進背包。",
+      "keyed_and_jobdef_agree": true,
+      "keyed_file": {
+        "path": "Languages\\ChineseTraditional\\Keyed\\HaulersDream.xml",
+        "sha256": "ecff9ed36ad7f0477a134aec4045642063ead3cfe3f29fab3de62908df3351e8"
+      },
+      "jobdef_file": {
+        "path": "Languages\\ChineseTraditional\\DefInjected\\JobDef\\Jobs.xml",
+        "sha256": "d80e8742265c119be6aa8b1fa0acb85ed0811ef5062cd6addbe0fe1afe77163d"
+      }
+    },
+    {
+      "language": "Danish",
+      "activity_text": "samler genstande i inventaret.",
+      "keyed_and_jobdef_agree": true,
+      "keyed_file": {
+        "path": "Languages\\Danish\\Keyed\\HaulersDream.xml",
+        "sha256": "edc280815f381eedfee33b5e58b845d615f6f0723e314845cb251d073dc6bdd8"
+      },
+      "jobdef_file": {
+        "path": "Languages\\Danish\\DefInjected\\JobDef\\Jobs.xml",
+        "sha256": "4906bb1488de416604b9d23da78e6e5613f73e015928ea4b746f014b84dbb0fb"
+      }
+    },
+    {
+      "language": "Dutch",
+      "activity_text": "voorwerpen verzamelen voor de inventaris.",
+      "keyed_and_jobdef_agree": true,
+      "keyed_file": {
+        "path": "Languages\\Dutch\\Keyed\\HaulersDream.xml",
+        "sha256": "f252f562c75da6f3c0faf0ed7cd94c957a99f559a09e4ece7b8a260906ad19ad"
+      },
+      "jobdef_file": {
+        "path": "Languages\\Dutch\\DefInjected\\JobDef\\Jobs.xml",
+        "sha256": "830b8411cd243e8152ce4cf806135c45ad7e16413309d84175ae19be38a3887d"
+      }
+    },
+    {
+      "language": "English",
+      "activity_text": "gathering items into inventory.",
+      "keyed_and_jobdef_agree": true,
+      "keyed_file": {
+        "path": "Languages\\English\\Keyed\\HaulersDream.xml",
+        "sha256": "80e8606059b30ae3462b6d96f77114c321bbdc7016c260a979a98e68824ba1b8"
+      },
+      "jobdef_file": {
+        "path": "Languages\\English\\DefInjected\\JobDef\\Jobs.xml",
+        "sha256": "ad85a6c4781166ed5d519e8a5206ccaf76bca8b18de3b817582397aba6a1e9af"
+      }
+    },
+    {
+      "language": "French",
+      "activity_text": "ramasse des objets pour son inventaire.",
+      "keyed_and_jobdef_agree": true,
+      "keyed_file": {
+        "path": "Languages\\French\\Keyed\\HaulersDream.xml",
+        "sha256": "56644e29e61e936113f236e401f35785229e5e17f6f48c44085177d58db7ce4f"
+      },
+      "jobdef_file": {
+        "path": "Languages\\French\\DefInjected\\JobDef\\Jobs.xml",
+        "sha256": "9115bbde6f618a75a28fcfec04179f1e3427002d6c0c9b227fed9caccbf861f9"
+      }
+    },
+    {
+      "language": "German",
+      "activity_text": "nimmt Gegenstände ins Inventar auf.",
+      "keyed_and_jobdef_agree": true,
+      "keyed_file": {
+        "path": "Languages\\German\\Keyed\\HaulersDream.xml",
+        "sha256": "45ab29ffa10a1598eec17f61f63bfb8c3b97862fa58af4da6431a0cdebf506cc"
+      },
+      "jobdef_file": {
+        "path": "Languages\\German\\DefInjected\\JobDef\\Jobs.xml",
+        "sha256": "89912dd68979ca44145ef84884c4743b913568793729f32384e3eece950dfb36"
+      }
+    },
+    {
+      "language": "Italian",
+      "activity_text": "raccoglie oggetti nell'inventario.",
+      "keyed_and_jobdef_agree": true,
+      "keyed_file": {
+        "path": "Languages\\Italian\\Keyed\\HaulersDream.xml",
+        "sha256": "528fef80057903dc14779e74306c6c19eb2874db7cf8e77c1333e72428218d6a"
+      },
+      "jobdef_file": {
+        "path": "Languages\\Italian\\DefInjected\\JobDef\\Jobs.xml",
+        "sha256": "aa30d189cceef788cdbb572d90121a5fa8b260b6db6176749c6bfddb57734419"
+      }
+    },
+    {
+      "language": "Japanese",
+      "activity_text": "アイテムを集めて所持品に入れている。",
+      "keyed_and_jobdef_agree": true,
+      "keyed_file": {
+        "path": "Languages\\Japanese\\Keyed\\HaulersDream.xml",
+        "sha256": "04e5ab36207667552c77893cfed94ce21ecdc3998d57cdd66a9d083159b24c04"
+      },
+      "jobdef_file": {
+        "path": "Languages\\Japanese\\DefInjected\\JobDef\\Jobs.xml",
+        "sha256": "13878c199dfa1d7184ab9a4319953874f3e1afd99487dbaaec5cbe2ff5e14995"
+      }
+    },
+    {
+      "language": "Korean",
+      "activity_text": "물건을 모아 소지품에 넣는 중.",
+      "keyed_and_jobdef_agree": true,
+      "keyed_file": {
+        "path": "Languages\\Korean\\Keyed\\HaulersDream.xml",
+        "sha256": "10fad91c6c79fdbc3d84ed2435c9e2770354ede1a70ef7e8f6ca2e2c5ffa77a0"
+      },
+      "jobdef_file": {
+        "path": "Languages\\Korean\\DefInjected\\JobDef\\Jobs.xml",
+        "sha256": "40bec06aa26d50a2c51e3272682058e31a2bfbd5aadf2be52349cf2509080431"
+      }
+    },
+    {
+      "language": "Polish",
+      "activity_text": "zbieranie przedmiotów do ekwipunku.",
+      "keyed_and_jobdef_agree": true,
+      "keyed_file": {
+        "path": "Languages\\Polish\\Keyed\\HaulersDream.xml",
+        "sha256": "573f1b4bef0b478be6d4f5f1a4a8b3d004001f3bd21f964a0da59f04ac085d91"
+      },
+      "jobdef_file": {
+        "path": "Languages\\Polish\\DefInjected\\JobDef\\Jobs.xml",
+        "sha256": "1199201081ab8547276e911ce5ff0b8e94965a29f9999eaf699af9df834baf71"
+      }
+    },
+    {
+      "language": "PortugueseBrazilian",
+      "activity_text": "recolhendo itens para o inventário.",
+      "keyed_and_jobdef_agree": true,
+      "keyed_file": {
+        "path": "Languages\\PortugueseBrazilian\\Keyed\\HaulersDream.xml",
+        "sha256": "dbc1e17fed71b8a8f9d1ff05462b69ac3279258eaf1bea8ee837879ef2653f56"
+      },
+      "jobdef_file": {
+        "path": "Languages\\PortugueseBrazilian\\DefInjected\\JobDef\\Jobs.xml",
+        "sha256": "12c7c03fe0dacadd9816c6a3333a8a19b31801465c82f2ee63f339870e90b890"
+      }
+    },
+    {
+      "language": "Russian",
+      "activity_text": "собирает предметы в инвентарь.",
+      "keyed_and_jobdef_agree": true,
+      "keyed_file": {
+        "path": "Languages\\Russian\\Keyed\\HaulersDream.xml",
+        "sha256": "a460f9bd7e286edc1c5ce2abf5abeac183d3389884bf18dc3c2ae5e5f774319e"
+      },
+      "jobdef_file": {
+        "path": "Languages\\Russian\\DefInjected\\JobDef\\Jobs.xml",
+        "sha256": "ecda7d7d57d16c0017ee78147ea1c3f61f6c0ce540d1c3c42890abe7739455ac"
+      }
+    },
+    {
+      "language": "Spanish",
+      "activity_text": "recogiendo objetos para el inventario.",
+      "keyed_and_jobdef_agree": true,
+      "keyed_file": {
+        "path": "Languages\\Spanish\\Keyed\\HaulersDream.xml",
+        "sha256": "104bddcc654b0916976b7aa1b1842b9cefe6d5e042849e65de69ed090fe74464"
+      },
+      "jobdef_file": {
+        "path": "Languages\\Spanish\\DefInjected\\JobDef\\Jobs.xml",
+        "sha256": "b41d1f9a82d9f8de10342bfa7de24b3c9a18a4f5d2de93f9ecfb971e1e3a3429"
+      }
+    },
+    {
+      "language": "Thai",
+      "activity_text": "กำลังเก็บสิ่งของใส่กระเป๋า",
+      "keyed_and_jobdef_agree": true,
+      "keyed_file": {
+        "path": "Languages\\Thai\\Keyed\\HaulersDream.xml",
+        "sha256": "5bea60d931feb6fe4326c4b53d65374c95729b3abcc6861332200f80866e0a67"
+      },
+      "jobdef_file": {
+        "path": "Languages\\Thai\\DefInjected\\JobDef\\Jobs.xml",
+        "sha256": "5d218a168c7ab6568738bf37d28f3c63f1bcb537295c222969a2330532e5d471"
+      }
+    },
+    {
+      "language": "Ukrainian",
+      "activity_text": "збирає предмети до інвентарю.",
+      "keyed_and_jobdef_agree": true,
+      "keyed_file": {
+        "path": "Languages\\Ukrainian\\Keyed\\HaulersDream.xml",
+        "sha256": "d225804b44c160f0ecd1810b14f29a9f1b8efc6545ccae9f78da4336078fd3a2"
+      },
+      "jobdef_file": {
+        "path": "Languages\\Ukrainian\\DefInjected\\JobDef\\Jobs.xml",
+        "sha256": "92c58119541731c41acc976493a89a0f67756bbe234765154b94b940a00294fc"
+      }
+    }
+  ],
+  "result": "passed for the wording correction",
+  "final_integration_check": "Inspect one ordinary pickup activity label on the assembled release candidate; F07/F08 retain their separate gameplay and alert requirements."
+}

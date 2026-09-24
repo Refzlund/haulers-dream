@@ -1,0 +1,14 @@
+--- prior/Source/HaulersDream/JobDriver_UnloadTransporterInBulk.cs
++++ fixed/Source/HaulersDream/JobDriver_UnloadTransporterInBulk.cs
+@@ -220,7 +220,10 @@
+         private void ReleaseDestination()
+         {
+             if (pawn?.Map?.reservationManager == null) return;
+-            if (job.targetB.IsValid) pawn.Map.reservationManager.Release(job.targetB, pawn, job);
++            // Storage commitments may admit this delivery without an exclusive native reservation.
++            // Release only this job's actual claim, including after native cleanup already released it.
++            if (job.targetB.IsValid && pawn.Map.reservationManager.ReservedBy(job.targetB, pawn, job))
++                pawn.Map.reservationManager.Release(job.targetB, pawn, job);
+             job.targetB = LocalTargetInfo.Invalid;
+         }
+     }

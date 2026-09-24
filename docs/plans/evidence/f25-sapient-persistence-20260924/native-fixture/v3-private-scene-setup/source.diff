@@ -1,0 +1,25 @@
+--- v2/SapientLifecycle.cs
++++ v3/SapientLifecycle.cs
+@@ -119,7 +119,21 @@
+             Guard(area.Cells.All(c => c.InBounds(map) && map.zoneManager.ZoneAt(c) == null), "Fresh zone-free area required.");
+             GenDebug.ClearArea(area, map);
+             foreach (var c in area.Cells) { map.terrainGrid.SetTerrain(c, TerrainDefOf.Soil); map.roofGrid.SetRoof(c, null); map.fogGrid.Unfog(c); map.areaManager.Home[c] = true; }
+-            foreach (string name in MaterialNames) Guard(!map.listerThings.ThingsOfDef(Def(name)).Any(), "Unowned measured material on map: " + name);
++            // Quicktest can seed steel outside the arena. Clear only background test
++            // materials before actors or measured cargo exist, and record every ID.
++            Guard(actors.Count == 0 && owned.Count == 0 && zones.Count == 0, "Measured scene started before background setup.");
++            foreach (string name in MaterialNames)
++            {
++                var background = map.listerThings.ThingsOfDef(Def(name)).ToArray();
++                foreach (var thing in background)
++                {
++                    Guard(thing.Spawned && thing.Map == map && thing.def.category == ThingCategory.Item, "Background material custody differs.");
++                    emit("f25-private-background-material", "setup-only; id=" + thing.ThingID + "; def=" + name + "; count=" + thing.stackCount + "; cell=" + thing.Position);
++                    thing.Destroy(DestroyMode.Vanish);
++                    Guard(thing.Destroyed && !thing.Spawned, "Background setup removal failed.");
++                }
++                Guard(!map.listerThings.ThingsOfDef(Def(name)).Any(), "Unowned measured material on map: " + name);
++            }
+             ControlEnvironment(); Warmup("fresh");
+         }
+         private void MakeActors()

@@ -227,7 +227,7 @@ namespace HaulersDream
             // Never divert a pawn that is mid bill-prep-gather — its tagged load IS the ingredients it's about to
             // craft with; dropping them at storage would waste the sweep. (Diverting BEFORE a fresh prep starts,
             // to shed an unrelated old load, stays allowed: that's workJob == the prep, not CurJobDef.)
-            if (pawn.CurJobDef == HaulersDreamDefOf.HaulersDream_BillPrepGather)
+            if (HdJobDefSets.IsBillGather(pawn.CurJobDef))
                 return false;
             // Never divert before one of HD's OWN jobs: bulk-haul / unload / pack-load already deliver the
             // load to storage themselves, and the construct-delivery / bill-prep / batch-craft jobs USE the
@@ -422,7 +422,7 @@ namespace HaulersDream
                 return false;
             if (workJob.def == HaulersDreamDefOf.HaulersDream_UnloadInventory
                 || pawn.CurJobDef == HaulersDreamDefOf.HaulersDream_UnloadInventory
-                || pawn.CurJobDef == HaulersDreamDefOf.HaulersDream_BillPrepGather)
+                || HdJobDefSets.IsBillGather(pawn.CurJobDef))
                 return false;
             // Never divert before one of HD's OWN jobs (bulk-haul / unload / pack-load / construct-delivery /
             // bill-prep): they deliver or USE the carried load themselves. Identified by the driver assembly,

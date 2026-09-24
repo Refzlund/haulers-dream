@@ -1,0 +1,83 @@
+--- v7/src/OwnInventoryScene.cs
++++ v8/src/OwnInventoryScene.cs
+@@ -60,6 +60,9 @@
+         private HashSet<int> lastHeld;
+         private int phase = -1, phaseTick, stableStart = -1, stableObserved, lastStableTick = -1, productCalls, tickChecks;
+         private int nativeStartsWithFullStock;
++        private Job filthWait;
++        private int filthWaitTick;
++        private double filthWaitWall;
+         private string error, status = "running";
+         private bool active, disposed;
+         internal Pawn Cook { get; private set; }
+@@ -198,7 +201,7 @@
+             if(phase+1==specs.Length){status=expectation=="baseline-gap"?"behavior-gap-observed":"passed";return;}
+             if(Cook.CurJob!=null)Cook.jobs.EndCurrentJob(JobCondition.InterruptForced,startNewJob:false);
+             Cook.jobs.ClearQueuedJobs();Cook.workSettings.DisableAll();
+-            if(bill!=null)stove.BillStack.Delete(bill);
++            if(bill!=null)stove.BillStack.Delete(bill);bill=null;
+             foreach(var t in cargo.Concat(products).Concat(filth).Distinct().ToArray())if(!t.Destroyed)t.Destroy(DestroyMode.Vanish);
+             cargo.Clear();products.Clear();filth.Clear();gatherJobs.Clear();recipeJobs.Clear();batchJobs.Clear();candidateJobs.Clear();cleanedFilth.Clear();
+             Cook.GetComp<CompHauledToInventory>().SetKeptCount(milk,0);Cook.GetComp<CompHauledToInventory>().GetHashSet();
+@@ -209,6 +212,36 @@
+             if(spec.batch)Set(HaulersDreamMod.Settings.GetType(),HaulersDreamMod.Settings,"allowBatchUnderCommonSense",true);
+             if(Cook.needs.food!=null)Cook.needs.food.CurLevelPercentage=1;if(Cook.needs.rest!=null)Cook.needs.rest.CurLevelPercentage=1;if(Cook.needs.joy!=null)Cook.needs.joy.CurLevelPercentage=1;
+             Cook.Position=stove.InteractionCell;Cook.pather.StopDead();
++            if(role=="F02-INVENTORY"&&!spec.batch)
++            {
++                SeedFilth();filthWaitTick=Find.TickManager.TicksGame;filthWaitWall=clock.Elapsed.TotalSeconds;
++                filthWait=JobMaker.MakeJob(JobDefOf.Wait,1200);
++                Guard(Cook.jobs.TryTakeOrderedJob(filthWait)&&Cook.CurJob==filthWait,"Native pre-work Wait was refused.");
++                ObserveFilthAdmission(false);Find.TickManager.CurTimeSpeed=TimeSpeed.Superfast;return;
++            }
++            StartPhaseWork();
++        }
++        private void SeedFilth()
++        {
++            foreach(var offset in new[]{new IntVec3(1,0,0),new IntVec3(2,0,0),new IntVec3(1,0,1)})
++            { Guard(FilthMaker.TryMakeFilth(stove.InteractionCell+offset,map,ThingDefOf.Filth_Dirt,out var dirt,1,shouldPropagate:false)&&dirt!=null&&dirt.thickness==1,"Native one-layer filth required.");filth.Add(dirt); }
++        }
++        private void ObserveFilthAdmission(bool ready)
++        {
++            Guard(!active&&bill==null&&stove.BillStack.Count==0&&cargo.Count==0&&products.Count==0
++                &&Cook.inventory.innerContainer.Count==0&&Cook.carryTracker.CarriedThing==null
++                &&Cook.jobs.jobQueue.Count==0&&Cook.CurJob==filthWait
++                &&DefDatabase<WorkTypeDef>.AllDefsListForReading.All(w=>!Cook.workSettings.WorkIsActive(w)),"Pre-work filth aging acquired work, bills or cargo.");
++            var worker=DefDatabase<WorkGiverDef>.GetNamed("CleanFilth").Worker as WorkGiver_CleanFilth;
++            Guard(worker!=null&&filth.Count==3,"Actual native cleaning workgiver and three seeded filths required.");
++            var observed=filth.Select(f=>new { id=f.ThingID,age=f.TicksSinceThickened,thickness=f.thickness,
++                spawned=f.Spawned,destroyed=f.Destroyed,hasJob=worker.HasJobOnThing(Cook,f,false) }).ToArray();
++            emit("f02-filth-admission",F02Json.Stringify(new { phase=Phase,ready,startTick=filthWaitTick,tick=Find.TickManager.TicksGame,
++                waitId=filthWait.loadID,waitDef=filthWait.def.defName,workDisabled=true,bills=0,cargo=0,filth=observed }));
++            Guard(observed.All(f=>f.spawned&&!f.destroyed&&f.thickness==1&&(ready?f.age>=600&&f.hasJob:f.age<600&&!f.hasJob)),"Native filth age/admission differs from staged input.");
++        }
++        private void StartPhaseWork()
++        {
+             bill=(Bill_Production)recipe.MakeNewBill();stove.BillStack.AddBill(bill);bill.repeatMode=BillRepeatModeDefOf.RepeatCount;bill.repeatCount=spec.reps;bill.SetPawnRestriction(Cook);
+             bill.SetStoreMode(BillStoreModeDefOf.DropOnFloor);
+             bill.ingredientFilter.SetDisallowAll();foreach(var def in new[]{milk,rice,potatoes})bill.ingredientFilter.SetAllow(def,true);
+@@ -217,8 +250,7 @@
+             Seed(milk,spec.milk,true,spec.tagged);Seed(rice,spec.rice,spec.batch,spec.batch);Seed(potatoes,spec.potatoes,false,false);Seed(ThingDefOf.WoodLog,spec.wood,true,true);
+             var comp=Cook.GetComp<CompHauledToInventory>();if(spec.keep>0)comp.SetKeptCount(milk,spec.keep);
+             comp.NotifyYieldPicked(); // One synthetic fresh-cargo setup notification per phase; never refreshed while working.
+-            if(!spec.batch)foreach(var offset in new[]{new IntVec3(1,0,0),new IntVec3(2,0,0),new IntVec3(1,0,1)})
+-            { Guard(FilthMaker.TryMakeFilth(stove.InteractionCell+offset,map,ThingDefOf.Filth_Dirt,out var dirt,1,shouldPropagate:false)&&dirt!=null&&dirt.thickness==1,"Native one-layer filth required.");filth.Add(dirt); }
++            if(!spec.batch&&filth.Count==0)SeedFilth();
+             foreach(var food in cargo.Where(t=>t.def!=ThingDefOf.WoodLog))Guard(Math.Abs(food.GetStatValue(StatDefOf.Nutrition)-0.05f)<0.00001f&&bill.ingredientFilter.Allows(food)&&recipe.ingredients.Any(i=>i.filter.Allows(food)),"Native food values/filter differ.");
+             lastHeld=accounting.Held(Snapshot("initial"));
+             emit("f02-phase-setup",F02Json.Stringify(new { phase=Phase,syntheticHeldCargo=true,sharing=spec.sharing,keep=spec.keep,tagged=comp.PeekHashSet().Where(t=>cargo.Contains(t)).Select(t=>t.ThingID).ToArray(),origins=accounting.Origins,recipe=recipe.defName,reps=spec.reps,batch=spec.batch,actual=Snapshot("initial") }));
+@@ -248,6 +280,14 @@
+                 Guard(Find.TickManager.TicksGame-phaseTick<8000,"Finite native phase deadline: "+Phase);
+                 Guard(Fit(Cook),"Native cook became medically unfit.");
+                 Guard(Cook.AmbientTemperature>=8&&Cook.AmbientTemperature<=30,"Native worker ambient outside controlled scene.");
++                if(filthWait!=null)
++                {
++                    Guard(Find.TickManager.TicksGame-filthWaitTick<1200&&clock.Elapsed.TotalSeconds-filthWaitWall<30,"Finite native filth-aging deadline.");
++                    Guard(Cook.CurJob==filthWait&&Cook.inventory.innerContainer.Count==0&&Cook.carryTracker.CarriedThing==null,"Native pre-work Wait/cargo changed.");
++                    if(Find.TickManager.TicksGame-filthWaitTick<601)return status;
++                    Find.TickManager.CurTimeSpeed=TimeSpeed.Paused;ObserveFilthAdmission(true);
++                    Cook.jobs.EndCurrentJob(JobCondition.InterruptForced,startNewJob:false);filthWait=null;StartPhaseWork();return status;
++                }
+                 if(stableStart>=0&&stableObserved>=300){ValidateFinal();NextPhase();}
+             }
+             catch(Exception e){Fault(e);}

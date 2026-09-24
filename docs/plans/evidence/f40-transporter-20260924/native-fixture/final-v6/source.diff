@@ -1,0 +1,99 @@
+--- v5b/src\TransporterCore.cs
++++ v6/src\TransporterCore.cs
+@@ -78,8 +78,15 @@
+             storage = new Zone_Stockpile(StorageSettingsPreset.DefaultStockpile, map.zoneManager); map.zoneManager.RegisterZone(storage);
+             for (int i = 0; i < 8; i++) storage.AddCell(storageCell + new IntVec3(i % 2, 0, i / 2));
+             storage.settings.filter.SetDisallowAll(); storage.settings.filter.SetAllow(ThingDefOf.Steel, true); storage.settings.Priority = StoragePriority.Critical;
++            BeginEnvironmentWarmup(arena);
++        }
++
++        private void FinishSetup()
++        {
+             first = NewPawn(site + new IntVec3(-2, 0, 0)); second = NewPawn(site + new IntVec3(-2, 0, 2));
+             hold = NewHold(site); otherHold = NewHold(site + new IntVec3(0, 0, 4));
++            ObserveEnvironment();
++            Guard(actors.All(Fit), "New controlled couriers must be healthy in the admitted native room environment.");
+             observer = new Harmony("haulersdream.tests.f40." + Guid.NewGuid().ToString("N"));
+             observer.Patch(AccessTools.Method(typeof(Pawn), "Tick"), postfix: Hook(nameof(PawnTick)));
+             observer.Patch(AccessTools.Method(typeof(Pawn_JobTracker), "StartJob"), postfix: Hook(nameof(Started)));
+@@ -94,6 +101,10 @@
+ 
+         private void Advance()
+         {
++            if (environmentWarming) {
++                if (AdvanceEnvironmentWarmup()) FinishSetup();
++                return;
++            }
+             ObserveEnvironment();
+             Guard(actors.All(Fit), "Owned courier became medically unfit; this invalidates the scene, not a hauling verdict.");
+             if (phase == 0) { Probes(); EndPhase(); return; }
+--- v5b/src\TransporterCore.Environment.cs
++++ v6/src\TransporterCore.Environment.cs
+@@ -1,4 +1,5 @@
+ using System;
++using System.Globalization;
+ using System.Linq;
+ using RimWorld;
+ using RimWorld.Planet;
+@@ -11,6 +12,10 @@
+     {
+         private float? originalTemperature;
+         private int environmentEndAbs;
++        private bool environmentWarming;
++        private IntVec3[] environmentCells;
++        private int environmentWarmStart, environmentLastSample = -1;
++        private System.Diagnostics.Stopwatch environmentWarmClock;
+         // Same bounded native tile input used by the independently authored F41 fixture. No medical/stat patch.
+         private void ControlEnvironment()
+         {
+@@ -33,6 +38,50 @@
+                 "originalMean=" + originalTemperature + "; selectedMean=" + selectedMean + "; outdoor=" + map.mapTemperature.OutdoorTemp + "; forecastMin=" + (minimum + offset) + "; forecastMax=" + (maximum + offset) + "; endAbs=" + environmentEndAbs + "; samples=80001; native health untouched");
+         }
+         private bool NoTemperatureConditions() => map.gameConditionManager.ActiveConditions.Concat(Find.World.gameConditionManager.ActiveConditions).All(c => c.TemperatureOffset() == 0f);
++        private void BeginEnvironmentWarmup(CellRect arena)
++        {
++            Guard(phase == -1 && actors.Count == 0 && hold == null && otherHold == null && !active && expectedTotal == 0,
++                "Native room warm-up must precede actors, cargo, jobs and every productive phase.");
++            environmentCells = arena.ContractedBy(1).Cells.ToArray();
++            environmentWarmStart = ticks.TicksGame; environmentWarmClock = System.Diagnostics.Stopwatch.StartNew();
++            environmentWarming = true;
++            SampleEnvironmentWarmup(); // Capture the real inherited room cache before native ticks advance.
++            ticks.CurTimeSpeed = TimeSpeed.Superfast;
++        }
++        private bool AdvanceEnvironmentWarmup()
++        {
++            ObserveEnvironment(); // Outdoor/forecast/condition guards still apply; actors have not been created.
++            Guard(phase == -1 && actors.Count == 0 && hold == null && otherHold == null && !active && expectedTotal == 0,
++                "Work or controlled cargo entered native environment warm-up.");
++            Guard(ticks.TicksGame - environmentWarmStart <= 360 && environmentWarmClock.Elapsed.TotalSeconds <= 30,
++                "Native room environment did not reach the existing 8–30 C bounds within 360 ticks/30 seconds.");
++            if (ticks.TicksGame == environmentLastSample) return false;
++            bool ready = SampleEnvironmentWarmup();
++            if (!ready || ticks.TicksGame <= environmentWarmStart) return false;
++            ticks.CurTimeSpeed = TimeSpeed.Paused; environmentWarming = false;
++            Expect("native-environment-ready", true, "startTick=" + environmentWarmStart + "; tick=" + ticks.TicksGame
++                + "; cells=" + environmentCells.Length + "; actual room/cell bounds=8..30; actors=0; cargo=0; no temperature/medical mutation");
++            return true;
++        }
++        private bool SampleEnvironmentWarmup()
++        {
++            environmentLastSample = ticks.TicksGame;
++            var samples = environmentCells.Select(cell => new { cell, room = cell.GetRoom(map), temperature = GenTemperature.GetTemperatureForCell(cell, map) }).ToArray();
++            Guard(samples.Length > 0 && samples.All(s => !map.roofGrid.Roofed(s.cell) && !float.IsNaN(s.temperature) && !float.IsInfinity(s.temperature)),
++                "Native warm-up requires finite actual unroofed interior cell temperatures.");
++            bool ready = samples.All(s => s.room != null && s.room.UsesOutdoorTemperature && s.temperature >= 8f && s.temperature <= 30f
++                && s.room.Temperature >= 8f && s.room.Temperature <= 30f);
++            string rooms = string.Join(" | ", samples.GroupBy(s => s.room).Select(g => "room=" + (g.Key == null ? "null" : g.Key.ID.ToString(CultureInfo.InvariantCulture))
++                + "; rawRoomTemperature=" + (g.Key == null ? "null" : TemperatureText(g.Key.Temperature))
++                + "; usesOutdoor=" + (g.Key?.UsesOutdoorTemperature.ToString() ?? "null")
++                + "; cells=" + g.Count() + "; sampleCell=" + g.First().cell
++                + "; nativeCellMin=" + TemperatureText(g.Min(s => s.temperature)) + "; nativeCellMax=" + TemperatureText(g.Max(s => s.temperature))));
++            emit("f40-native-environment-warmup", "startTick=" + environmentWarmStart + "; tick=" + ticks.TicksGame
++                + "; absTick=" + ticks.TicksAbs + "; outdoor=" + TemperatureText(map.mapTemperature.OutdoorTemp)
++                + "; ready=" + ready + "; actors=" + actors.Count + "; " + rooms);
++            return ready;
++        }
++        private static string TemperatureText(float value) => value.ToString("R", CultureInfo.InvariantCulture);
+         private void ObserveEnvironment()
+         {
+             Guard(ticks.TicksAbs <= environmentEndAbs && NoTemperatureConditions(), "Native forecast boundary/conditions changed.");

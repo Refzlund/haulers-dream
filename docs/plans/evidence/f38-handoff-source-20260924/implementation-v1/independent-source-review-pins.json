@@ -1,0 +1,110 @@
+{
+  "reviewer": "work_cadence_finish",
+  "reviewUtc": "2026-09-24T09:27:16.0224807Z",
+  "selectionSha256": "1751A2DBCE81DF6C75BE60B134B8C0BC3677D7919526E451F78235B4966BCD94",
+  "owned": [
+    {
+      "path": "Source/HaulersDream/JobDriver_BulkHaul.cs",
+      "sha256": "303AD08E939D38E4C743EDA42F3938464A6960BD518F59515BB5344765E89FCA",
+      "current_after_isolated_match": true
+    },
+    {
+      "path": "Source/HaulersDream/BulkHaul.cs",
+      "sha256": "1E1FF44CB186E57A93C57D04E6B1F95EE8E6699523828D1F79D2E4E1B7DA2A43",
+      "current_after_isolated_match": true
+    },
+    {
+      "path": "Source/HaulersDream/HaulersDreamGameComponent.StorageClaims.cs",
+      "sha256": "580E689002B4CC850B59AB1A8311C0A6E2201E64B830603C1B23E07E9778EA95",
+      "current_after_isolated_match": true
+    },
+    {
+      "path": "Source/HaulersDream/Patch_ReservationManager_SweepHandoff.cs",
+      "sha256": "9C498776C792BC79BABCF2C1CDB48A29886D1E0C0AC84EBE0B44D6819B3A216B",
+      "current_after_isolated_match": true
+    },
+    {
+      "path": "Source/HaulersDream.Core/SweepPickupPlan.cs",
+      "sha256": "E0B9F95B462600ADDD353A753C556E3314727B03AA1BF457AD80710E21666451",
+      "current_after_isolated_match": true
+    },
+    {
+      "path": "Source/HaulersDream.Tests/SweepPickupPlanTests.cs",
+      "sha256": "60220DD303BE09A601CC287215F8ED7AA0C00254F1FC2F98C36C614887E4EF0A",
+      "current_after_isolated_match": true
+    },
+    {
+      "path": ".changeset/preserve-sweeps-during-haul-handoff.md",
+      "sha256": "FD4A584148639635873310D56F15726FD63ED926BB4EF485753E10B1EF2740F1",
+      "current_after_isolated_match": true
+    }
+  ],
+  "references": [
+    {
+      "path": "C:\\Users\\Arthur\\Sync\\Projects\\RimWorld Mods\\HaulersDream\\docs\\plans\\scoped-feedback-register.json",
+      "sha256": "14E856FEDB3F29156F6EB69D421C6F2E4CAF6703B12CAE5CBD5832A67483BF49"
+    },
+    {
+      "path": "C:\\Users\\Arthur\\Sync\\Projects\\RimWorld Mods\\HaulersDream\\docs\\plans\\evidence\\f38-handoff-source-20260924\\recommendation.md",
+      "sha256": "540F340A69A51147E68C4BEF94972F068DAA8A4F3EF10AE3B5FEACF5A46741FA"
+    },
+    {
+      "path": "C:\\Users\\Arthur\\Sync\\Projects\\RimWorld Mods\\HaulersDream\\docs\\plans\\evidence\\f41-unfinished-implementation-20260924\\native-fixture\\ReservationManager.cs.txt",
+      "sha256": "73AC92AC965243A186CFFF6CED006C8E6BD4D9C982D558A3FE8E2C8CD5A49017"
+    },
+    {
+      "path": "C:\\Users\\Arthur\\Sync\\Projects\\RimWorld Mods\\HaulersDream\\docs\\plans\\evidence\\f38-handoff-source-20260924\\ReservationUtility.native.txt",
+      "sha256": "6A221EA0A51B8473590D33A9CF1BABB7A3D0C8D800B58511FD4E8E1F5EF7B011"
+    },
+    {
+      "path": "C:\\Users\\Arthur\\Sync\\Projects\\RimWorld Mods\\HaulersDream\\docs\\plans\\evidence\\f07-rimmsqol-20260920\\blocked-queue-v13\\native-source\\Pawn_JobTracker.cs.txt",
+      "sha256": "251F4878F5D31DC00148D654287C8ABF2410886FFE23252452E57C11340CE788"
+    },
+    {
+      "path": "C:\\Users\\Arthur\\Sync\\Projects\\RimWorld Mods\\HaulersDream\\docs\\plans\\evidence\\f07-rimmsqol-20260920\\queued-save-v14\\Verse.AI.Job.cs.txt",
+      "sha256": "578DEA1AA59DBE8D8A7F435A246A855FAB9030584FADBDEF0971646F3AB275E5"
+    },
+    {
+      "path": "C:\\Users\\Arthur\\Sync\\Projects\\RimWorld Mods\\HaulersDream\\docs\\plans\\evidence\\f41-unfinished-review-20260924\\Verse.AI.JobDriver.cs.txt",
+      "sha256": "2323D6739DC862AB006298475367D1B3A1D08E14263B506D744B908282EDF2BD"
+    },
+    {
+      "path": "C:\\Users\\Arthur\\Sync\\Projects\\RimWorld Mods\\HaulersDream\\Source\\HaulersDream\\SweepWalk.cs",
+      "sha256": "573B9A6D20C838EEF01F0278153FD34BA4B7984CB58BF8314A58EEA983ABB444"
+    },
+    {
+      "path": "C:\\Users\\Arthur\\Sync\\Projects\\RimWorld Mods\\HaulersDream\\Source\\HaulersDream\\PickupPause.cs",
+      "sha256": "3215F2924B0E83D5D8A54642995310CA30E6613F98715E7F73AFBA24351D0EB3"
+    },
+    {
+      "path": "C:\\Users\\Arthur\\Sync\\Projects\\RimWorld Mods\\HaulersDream\\Source\\HaulersDream\\RouteSelection.cs",
+      "sha256": "D3DB4E20D914EF3F18DEB8A4DB93CDF04663174F72AA94A5E8AE9B5864441444"
+    },
+    {
+      "path": "C:\\Users\\Arthur\\Sync\\Projects\\RimWorld Mods\\HaulersDream\\Source\\HaulersDream\\StorageEvidence.cs",
+      "sha256": "E7687ED5FEC5549D4E4B235E256B4517AB6D65E1D463FA2523968FA5FEA78937"
+    },
+    {
+      "path": "C:\\Users\\Arthur\\Sync\\Projects\\RimWorld Mods\\HaulersDream\\Source\\HaulersDream\\StorageCommitments.cs",
+      "sha256": "2BC821BF6BE0B141830EF6F1F1FACF5BE7120F8C026E5B556E6BD5954284984D"
+    },
+    {
+      "path": "C:\\Users\\Arthur\\Sync\\Projects\\RimWorld Mods\\HaulersDream\\Source\\HaulersDream\\NearbyHaulCommand.cs",
+      "sha256": "1955AE00F9EF1B23415CC1EB31089DE7A1FE76A44257E90F0CFBEFDF0E20C89A"
+    },
+    {
+      "path": "C:\\Users\\Arthur\\Sync\\Projects\\RimWorld Mods\\HaulersDream\\Source\\HaulersDream\\WorkGiver_HaulNearby.cs",
+      "sha256": "5F992630AAFDCED52CB76DAD0B017800DB1C1FC63336749AA20C88B1FF0DDA1C"
+    },
+    {
+      "path": "C:\\Users\\Arthur\\Sync\\Projects\\RimWorld Mods\\HaulersDream\\Source\\HaulersDream\\Patch_ScribeSaver_InitSaving.cs",
+      "sha256": "556EDD310EED703777EA38D791C6A33F1E39951000F12D55790F645DC250B4B4"
+    },
+    {
+      "path": "C:\\Steam\\steamapps\\common\\RimWorld\\RimWorldWin64_Data\\Managed\\Assembly-CSharp.dll",
+      "sha256": "5CF1B5BE399D5B1C9C56CA72C9D35B4ECF307FEACF5859D04AC5A1AA5926356A"
+    }
+  ],
+  "nativeRunPerformed": false,
+  "productEditPerformed": false
+}

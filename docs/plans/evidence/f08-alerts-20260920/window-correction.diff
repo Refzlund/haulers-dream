@@ -1,0 +1,40 @@
+--- retained-3fff/ActivityAlerts.cs
++++ successor/ActivityAlerts.cs
+@@ -220,12 +220,20 @@
+             Require("gui-screenshots-written", new FileInfo(Path.Combine(evidence, "available-options.png")).Length > 0
+                 && new FileInfo(Path.Combine(evidence, "selected-activity.png")).Length > 0, "Both requested native UI states survived through their frame-end PNG captures.");
+             savedAlert.alert.enabled = true;
+-            Window[] beforeClose = Find.WindowStack.Windows.ToArray(); Close(editor); editor = null;
++            Window[] beforeClose = Find.WindowStack.Windows.ToArray();
++            Window[] unownedBeforeClose = beforeClose.Where(w => !ownedWindows.Contains(w)).ToArray();
++            Close(editor); editor = null;
+             // Real editor PostClose may open its normal keep-changes prompt. Its default
+             // affirmative action is null; closing it retains the selection. No revert action.
+             foreach (Window w in Find.WindowStack.Windows.Except(beforeClose).ToArray())
+             { Guard(w is Dialog_MessageBox, "Unexpected editor close window."); ownedWindows.Add(w); Close(w); }
+-            Guard(Find.WindowStack.Windows.SequenceEqual(windowsBefore), "Owned editor/menu changed another window's identity/order.");
++            Window[] afterClose = Find.WindowStack.Windows.ToArray();
++            CheckWindows(unownedBeforeClose, afterClose, "Synchronous owned-window cleanup changed an unowned window's identity/order.");
++            // Native ImmediateWindow wrappers may be recreated between Repaints.
++            // Preserve persistent initial windows across frames and every current
++            // unowned window (including ephemeral ones) across synchronous cleanup.
++            CheckWindows(windowsBefore.Where(w => !(w is ImmediateWindow)).ToArray(),
++                afterClose.Where(w => !(w is ImmediateWindow)).ToArray(), "Initial persistent windows changed during the native GUI sequence.");
+             onlyAvailable.SetValue(TD_Find_Lib.Mod.settings, oldAvailable);
+             emit("f08-gui-selected", "current action -> all options -> " + query.GetSelLabel() + "; programmatic original actions/native frames, no physical input.");
+             SetStage("idle"); ticks.CurTimeSpeed = TimeSpeed.Superfast;
+@@ -234,6 +242,14 @@
+         {
+             string path = Path.Combine(evidence, name);
+             return Time.frameCount > screenshotFrame && File.Exists(path) && new FileInfo(path).Length > 0;
++        }
++        private void CheckWindows(Window[] before, Window[] after, string detail)
++        {
++            if (before.SequenceEqual(after)) return;
++            Func<Window[], string> identities = windows => string.Join(" | ", windows.Select(w => w.GetType().FullName + "@"
++                + System.Runtime.CompilerServices.RuntimeHelpers.GetHashCode(w).ToString("X8")));
++            emit("f08-window-mismatch", detail + "; before=" + identities(before) + "; after=" + identities(after));
++            Guard(false, detail);
+         }
+         private void Advance()
+         {

@@ -357,7 +357,7 @@
 <HaulersDream.LoadTransporter.Option>Приоритизировать массовую загрузку {0}</HaulersDream.LoadTransporter.Option>
 <HaulersDream.LoadTransporter.CouldNotStart>Сейчас поблизости нечего массово грузить в этот транспорт.</HaulersDream.LoadTransporter.CouldNotStart>
 <HaulersDream.Setting.EnableBulkLoadTransporters>Массово загружать транспортные капсулы и шаттлы за одну ходку</HaulersDream.Setting.EnableBulkLoadTransporters>
-<HaulersDream.Setting.EnableBulkLoadTransportersDesc>Когда транспортная капсула или шаттл помечены на загрузку, переносчик берёт часть их манифеста, сметает несколько ближайших стопок в свой инвентарь, подходит к транспорту ОДИН раз и складывает их все — вместо ванильной одной стопки в руках за подход. Несколько переносчиков делят большой манифест без двойной переноски, и капсула не загрузится и не запустится, пока заявленный груз не будет внутри. Когда это выкл, используется ванильная загрузка транспорта по одной стопке без изменений.</HaulersDream.Setting.EnableBulkLoadTransportersDesc>
+<HaulersDream.Setting.EnableBulkLoadTransportersDesc>Когда транспортная капсула или шаттл помечены на загрузку, переносчик берёт часть их манифеста, сметает несколько ближайших стопок в свой инвентарь, подходит к транспорту ОДИН раз и складывает их все — вместо ванильной одной стопки в руках за подход. Несколько переносчиков делят большой манифест без двойной переноски, и капсула не загрузится и не запустится, пока заявленный груз не будет внутри. Когда это выкл, используется ванильная загрузка транспорта по одной стопке без изменений. Приоритетный приказ повторяет рейсы по этому списку после успешной доставки, пока носильщик не призван и не имеет новых приказов в очереди. Призванный носильщик может выполнить один рейс погрузки.</HaulersDream.Setting.EnableBulkLoadTransportersDesc>
 <HaulersDream.Setting.BulkLoadAiUpdateFrequency>Интервал перепроверки загрузки: {0} тиков</HaulersDream.Setting.BulkLoadAiUpdateFrequency>
 <HaulersDream.LoadPortal.Report>массово загружает портал.</HaulersDream.LoadPortal.Report>
 <HaulersDream.LoadPortal.Option>Приоритизировать массовую загрузку {0}</HaulersDream.LoadPortal.Option>
@@ -420,7 +420,7 @@
 <HaulersDream.Setting.OpportunisticLoadDesc>Пешка, уже несущая предметы, которых ждёт ближайшая транспортная капсула, шаттл, портал карты или транспортное средство, отклонится, чтобы сгрузить их, вместо того чтобы начинать совершенно новую ходку за ними. Меньше зря потраченных дорог. По умолчанию выкл (это меняет, какую задачу пешка возьмёт следующей).</HaulersDream.Setting.OpportunisticLoadDesc>
 <HaulersDream.Setting.LoadOpportunityRadius>Радиус поиска для складывания-по-пути: {0} клеток</HaulersDream.Setting.LoadOpportunityRadius>
 <HaulersDream.Setting.ContinuousLoading>Заказ «Грузить до завершения» по правому клику</HaulersDream.Setting.ContinuousLoading>
-<HaulersDream.Setting.ContinuousLoadingDesc>Добавляет заказ по правому клику, который отправляет одного курьера (даже мобилизованного) через каждую ближайшую транспортную группу, которой ещё нужна загрузка, сцепляя задачи, пока все они не заполнятся — удобно для загрузки большого каравана одной командой. По умолчанию выкл (удобство по выбору).</HaulersDream.Setting.ContinuousLoadingDesc>
+<HaulersDream.Setting.ContinuousLoadingDesc>Добавляет приказ по правому щелчку для перехода к ближайшим целям погрузки после выполнения выбранного списка. Для дальнейших рейсов нужны непризванный носильщик, успешная доставка и отсутствие новых приказов в очереди. По умолчанию отключено.</HaulersDream.Setting.ContinuousLoadingDesc>
 <HaulersDream.ContinuousLoad.Option>Грузить до завершения (непрерывно) — {0}</HaulersDream.ContinuousLoad.Option>
 <HaulersDream.ContinuousLoad.CouldNotStart>Сейчас поблизости нечего массово в это грузить.</HaulersDream.ContinuousLoad.CouldNotStart>
 <HaulersDream.Setting.LoadHybridPathing>Упорядочивать остановки массовой загрузки по реальному поиску пути</HaulersDream.Setting.LoadHybridPathing>
@@ -626,7 +626,7 @@
 <HaulersDream.Setting.BulkHaulTrigger.Lab>Триггер массовой переноски</HaulersDream.Setting.BulkHaulTrigger.Lab>
 <HaulersDream.Setting.KeepWorkingMargin.Lab>Разгружаться перед более долгим переходом</HaulersDream.Setting.KeepWorkingMargin.Lab>
 <HaulersDream.Setting.MinFreeSpaceToUnloadCarrier.Lab>Минимум свободного места в рюкзаке для начала</HaulersDream.Setting.MinFreeSpaceToUnloadCarrier.Lab>
-<HaulersDream.Setting.MinFreeSpaceToUnloadCarrier.Help>Переносчику нужно хотя бы столько свободной грузоподъёмности, прежде чем он начнёт опустошать вьючное животное, чтобы его собственный рюкзак не переполнился сразу же.</HaulersDream.Setting.MinFreeSpaceToUnloadCarrier.Help>
+<HaulersDream.Setting.MinFreeSpaceToUnloadCarrier.Help>Переносчику нужно хотя бы столько свободной грузоподъёмности, прежде чем он начнёт опустошать вьючное животное, чтобы его собственный рюкзак не переполнился сразу же. Этот порог также действует при автоматической разгрузке транспортников.</HaulersDream.Setting.MinFreeSpaceToUnloadCarrier.Help>
 <HaulersDream.Setting.VisualUnloadDelay.Lab>Задержка разгрузки на стопку</HaulersDream.Setting.VisualUnloadDelay.Lab>
 <HaulersDream.Setting.VisualUnloadDelay.Help>Небольшая косметическая пауза между каждой стопкой во время массовой разгрузки, чтобы это читалось как осознанное действие. 0 = мгновенно.</HaulersDream.Setting.VisualUnloadDelay.Help>
 <HaulersDream.Setting.BulkLoadAiUpdateFrequency.Lab>Интервал перепроверки загрузки</HaulersDream.Setting.BulkLoadAiUpdateFrequency.Lab>
@@ -828,6 +828,17 @@
   <HaulersDream.Setting.CarryMassCap.Off>Без лимита</HaulersDream.Setting.CarryMassCap.Off>
   <HaulersDream.Setting.CarryMassCap.Value>{0} кг</HaulersDream.Setting.CarryMassCap.Value>
   <HaulersDream.Setting.CarryMassCapDesc>Жёсткий предел, в килограммах, на то, сколько пешка загружает в свой инвентарь за одну ходку по переноске или сбору. Это прямой ответ на «мои пешки несут слишком много»: задайте его низким (скажем, 20 кг), и пешки соберут небольшой груз, разгрузят его и вернутся, вместо того чтобы наполняться до полной грузоподъёмности. Он работает вместе с процентным «Пределом переноски» и Умной перегрузкой выше, и меньший предел всегда побеждает, поэтому этот потолок никогда не превышается, даже при включённой перегрузке. Как и Предел переноски, он учитывает только то, что уложено в сумку, а не стопку, несомую в руках, и не меняет, сколько материала пешка приносит для конкретной постройки или заказа. Установите 0, чтобы лимита не было (по умолчанию).</HaulersDream.Setting.CarryMassCapDesc>
+  <HD_DropAmountTitle>Выбросить выбранное количество</HD_DropAmountTitle>
+  <HD_DropAmountConfirm>Выбросить</HD_DropAmountConfirm>
+  <HD_DropAmountContext>{0}\n{1}\nДоступно: {2}</HD_DropAmountContext>
+  <HD_DropAmountQuantity>Количество для выбрасывания</HD_DropAmountQuantity>
+  <HD_DropAmountRemaining>Останется в инвентаре: {0}</HD_DropAmountRemaining>
+  <HD_DropAmountInvalid>Введите целое число от 1 до {0}.</HD_DropAmountInvalid>
+  <HD_DropAmountChanged>Состояние персонажа или стопки в инвентаре изменилось. Откройте это окно заново.</HD_DropAmountChanged>
+  <HD_DropAmountUnavailable>Выбор количества для выбрасывания недоступен с текущим набором модов.</HD_DropAmountUnavailable>
+  <HD_DropAmountUnconfirmed>Не удалось подтвердить выбрасывание. Проверьте инвентарь персонажа.</HD_DropAmountUnconfirmed>
+  <HD_DropAmountBlocked>Поблизости нет места, чтобы выбросить эти предметы.</HD_DropAmountBlocked>
+  <HD_DropAmountPartial>Выброшено {0} из {1}; поблизости не хватило места.</HD_DropAmountPartial>
   <HD_NearbyHaulGizmoDesc>Выберите предмет, чтобы отнести его и соседние предметы на склад. При выборе удерживайте клавишу очереди приказов, чтобы добавить приказ в очередь.</HD_NearbyHaulGizmoDesc>
   <HD_NearbyHaulPawnUnavailable>В текущем состоянии этот персонаж не может получить приказ о переноске.</HD_NearbyHaulPawnUnavailable>
   <HD_NearbyHaulDrafted>Отмените призыв этого персонажа перед приказом о переноске.</HD_NearbyHaulDrafted>
@@ -836,4 +847,18 @@
   <HD_NearbyHaulInventoryUnavailable>Переноска через инвентарь недоступна для этого персонажа.</HD_NearbyHaulInventoryUnavailable>
   <HD_NearbyHaulRobotUnsupported>Не удалось прочитать задания робота по переноске при текущем наборе модов.</HD_NearbyHaulRobotUnsupported>
   <HD_NearbyHaulSourceUnavailable>Выбранный предмет недоступен для переноски.</HD_NearbyHaulSourceUnavailable>
+  <HaulersDream.UnloadTransporter.Option>Приоритизировать массовую разгрузку {0}</HaulersDream.UnloadTransporter.Option>
+  <HaulersDream.UnloadTransporter.CouldNotStart>Не удалось сейчас начать массовую разгрузку этого транспорта.</HaulersDream.UnloadTransporter.CouldNotStart>
+  <HaulersDream.Gizmo.BulkUnloadAll.Label>Массово разгрузить всё</HaulersDream.Gizmo.BulkUnloadAll.Label>
+  <HaulersDream.Gizmo.BulkUnloadAll.Empty>Разгружать нечего</HaulersDream.Gizmo.BulkUnloadAll.Empty>
+  <HaulersDream.Gizmo.BulkUnloadAll.LoadBlocked>«Массово разгрузить всё» включено, выключите это, прежде чем задать новую загрузку.</HaulersDream.Gizmo.BulkUnloadAll.LoadBlocked>
+  <HaulersDream.Gizmo.BulkUnloadAll.UnloadBlocked>В этот транспорт сейчас собирается груз.</HaulersDream.Gizmo.BulkUnloadAll.UnloadBlocked>
+  <HaulersDream.Feat.UnloadTransporters.Name>Массово разгружать транспорт и шаттлы</HaulersDream.Feat.UnloadTransporters.Name>
+  <HaulersDream.Setting.EnableBulkUnloadTransporters>Массовая разгрузка транспортников</HaulersDream.Setting.EnableBulkUnloadTransporters>
+  <HaulersDream.Setting.EnableBulkUnloadTransportersDesc>Добавляет транспортникам и шаттлам переключатель разгрузки. Непризванные носильщики доставляют груз прямо на склад, по одному рейсу за рабочее задание. Приоритетный приказ для отмеченного транспортника повторяется только после доставки. Пассажиры остаются на борту. Погрузка, заполненные склады, призыв или новые приказы в очереди прекращают дальнейшие рейсы.</HaulersDream.Setting.EnableBulkUnloadTransportersDesc>
+  <HaulersDream.Gizmo.BulkUnloadAll.Desc>Переносить груз из {0} на склад. Пассажиры остаются на борту. Приоритетный приказ разгрузки повторяется после каждой доставки, пока носильщик не призван и не имеет новых приказов в очереди. Отключите перед погрузкой.</HaulersDream.Gizmo.BulkUnloadAll.Desc>
+  <HaulersDream.Feat.UnloadTransporters.Blurb>Доставляйте груз приземлившегося транспортника прямо на склад</HaulersDream.Feat.UnloadTransporters.Blurb>
+  <HaulersDream.UnloadTransporter.Drafted>Отмените призыв этого персонажа, чтобы начать приказ.</HaulersDream.UnloadTransporter.Drafted>
+  <HaulersDream.UnloadTransporter.NoStorage>Нет подходящего склада для оставшегося груза.</HaulersDream.UnloadTransporter.NoStorage>
+  <HaulersDream.Transporter.SyncUnavailable>Команды транспортников недоступны: не удалось зарегистрировать синхронизацию сетевой игры.</HaulersDream.Transporter.SyncUnavailable>
 </LanguageData>

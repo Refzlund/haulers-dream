@@ -1,0 +1,158 @@
+--- v1/src/TransporterPersistence.Faults.cs
++++ diagnostics-v2/src/TransporterPersistence.Faults.cs
+@@ -1,6 +1,7 @@
+ using System;
+ using System.Collections;
+ using System.Collections.Generic;
++using System.Collections.Concurrent;
+ using System.Linq;
+ using System.Reflection;
+ using HarmonyLib;
+@@ -15,10 +16,35 @@
+     private int faultRequested,faultFired,faultCases,holdCallbacks;
+     private bool faultActive;
+     private MethodInfo holdRecords;
++    private static readonly ConcurrentQueue<string> faultErrors=new ConcurrentQueue<string>();
++    private bool mergeExceptionConfirmed;
++    private const string MergeMarker="System.InvalidOperationException: Declared F11 native fault: after-partial-merge";
++    private const string PlacePrefix="[Hauler's Dream] an exception passed through Verse.GenPlace.TryPlaceThing, a method Hauler's Dream patches.";
++    public static void CaptureUnityError(string message,string kind)=>faultErrors.Enqueue(kind+"\n"+message);
++    public static bool ExpectedUnityErrors(int count)
++    {
++        var messages=faultErrors.ToArray();
++        bool merge=current?.mergeExceptionConfirmed==true;
++        return count==messages.Length&&(merge
++            ? count==1&&messages[0].StartsWith("Error\n"+PlacePrefix,StringComparison.Ordinal)&&messages[0].Contains(MergeMarker)
++            : count==0);
++    }
+     private Dictionary<Thing,int> Ages=>(Dictionary<Thing,int>)AccessTools.Field(typeof(CompHauledToInventory),"taggedTick").GetValue(Cargo);
+ 
+     private void ObserveFaults()
+     {
++        // Bind the isolated F11 product's actual diagnostic topology before adding observers.
++        // F12's separate TryAbsorbStack guard is deliberately absent from these selected images.
++        var place=AccessTools.Method(typeof(GenPlace),"TryPlaceThing",new[]{typeof(Thing),typeof(IntVec3),typeof(Map),typeof(ThingPlaceMode),typeof(Thing).MakeByRefType(),typeof(Action<Thing,int>),typeof(Predicate<IntVec3>),typeof(Rot4?),typeof(int)});
++        var methods=new[]{place,AccessTools.Method(typeof(ThingWithComps),"SplitOff",new[]{typeof(int)}),AccessTools.Method(typeof(Thing),"TryAbsorbStack",new[]{typeof(Thing),typeof(bool)}),AccessTools.Method(typeof(Pawn_InventoryTracker),"Notify_ItemRemoved",new[]{typeof(Thing)})};
++        foreach(var method in methods)
++        {
++            Guard(method!=null,"Actual diagnostic boundary missing.");
++            var finalizers=Harmony.GetPatchInfo(method)?.Finalizers;
++            int count=finalizers?.Count(p=>p.PatchMethod.DeclaringType?.FullName=="HaulersDream.HDLog"&&p.PatchMethod.Name=="UniversalExceptionFinalizer")??0;
++            Record("fault-diagnostic-binding-"+method.DeclaringType.Name+"-"+method.Name,count==(method==place?1:0),method+"; HD universal finalizers="+count+"; all="+string.Join("|",finalizers?.Select(p=>p.owner+":"+p.PatchMethod.DeclaringType?.FullName+"."+p.PatchMethod.Name)??Enumerable.Empty<string>()));
++        }
++        Guard(!failed&&faultErrors.IsEmpty,"Diagnostic bindings or pre-fault clean-error boundary differs.");
+         observer.Patch(AccessTools.Method(typeof(Thing),"SplitOff",new[]{typeof(int)}),postfix:new HarmonyMethod(typeof(TransporterPersistence),nameof(SplitObserved)));
+         observer.Patch(AccessTools.Method(typeof(ThingWithComps),"SplitOff",new[]{typeof(int)}),postfix:new HarmonyMethod(typeof(TransporterPersistence),nameof(SplitFault)));
+         observer.Patch(AccessTools.Method(typeof(Thing),"TryAbsorbStack",new[]{typeof(Thing),typeof(bool)}),postfix:new HarmonyMethod(typeof(TransporterPersistence),nameof(MergeFault)));
+@@ -117,6 +143,8 @@
+         catch(TargetInvocationException ex){caught=ex.InnerException;}
+         finally{faultActive=insideCommand=false;}
+         Record(name+"-primary-exception",faultFired==1&&ReferenceEquals(caught,injected),"samePrimary="+ReferenceEquals(caught,injected)+"; fires="+faultFired+"; "+caught);
++        if(name=="after-partial-merge")mergeExceptionConfirmed=faultFired==1&&ReferenceEquals(caught,injected);
++        Record(name+"-exact-diagnostics",ExpectedUnityErrors(faultErrors.Count),"captured="+faultErrors.Count+"; expected cumulative="+(ordinal==0?0:1)+"; exact original exception and first GenPlace report only; no suppression by fixture.");
+         var recoveryType=Product.GetType("HaulersDream.InventoryDropRecovery",false);
+         Record(name+"-scope-unwound",recoveryType==null||AccessTools.Field(recoveryType,"current").GetValue(null)==null,"Recovery type present="+(recoveryType!=null)+"; no active command scope after exception.");
+         var family=new[]{faultSource}.Concat(observedPieces).Distinct().ToArray();
+--- v1/host/Bootstrap.cs
++++ diagnostics-v2/host/Bootstrap.cs
+@@ -236,7 +236,7 @@
+                         Check("real-game-ticks-advanced", true, "Native ticks=" + (Find.TickManager.TicksGame - firstTick));
+                     if (liveStatus == "running") return;
+                     Check("f40-persistence-host-returned", liveStatus == "passed", "Live scenario returned " + liveStatus);
+-                    Check("no-unity-errors-after-harness-start", unityErrors == 0, "observedErrors=" + unityErrors);
++                    Check("f11-exact-declared-fault-diagnostics", HaulersDream.F40Persistence.TransporterPersistence.ExpectedUnityErrors(unityErrors), "raw observedErrors=" + unityErrors + "; exact isolated-product GenPlace report; no unexpected errors");
+                     Finish(liveStatus == "passed" && !result.assertions.Any(x => !x.passed) ? "passed" : "failed",
+                         "F11 actual CE quantity cache and Sidearms memory outcomes; full evidence review required.");
+                     return;
+@@ -700,6 +700,8 @@
+                         controlException = "Terminal boundary did not arrive within the control's five-second barrier.";
+                 }
+                 Interlocked.Increment(ref unityErrors);
++                if (manifest?.caseId == "F11-FAULTS")
++                    HaulersDream.F40Persistence.TransporterPersistence.CaptureUnityError(message, kind.ToString());
+                 var record = new UnityErrorRecord
+                 {
+                     captureSequence = ++captureSequence, callbackThread = Thread.CurrentThread.ManagedThreadId,
+@@ -817,17 +819,22 @@
+                 {
+                     CaptureControlOutcome();
+                     int finalErrors = Volatile.Read(ref unityErrors);
+-                    var errorAssertion = result.assertions.FirstOrDefault(x => x.id == "no-unity-errors-after-harness-start");
++                    bool declaredFaultCase = manifest.caseId == "F11-FAULTS";
++                    bool errorsMatch = declaredFaultCase
++                        ? HaulersDream.F40Persistence.TransporterPersistence.ExpectedUnityErrors(finalErrors)
++                        : finalErrors == 0;
++                    string errorId = declaredFaultCase ? "f11-exact-declared-fault-diagnostics" : "no-unity-errors-after-harness-start";
++                    var errorAssertion = result.assertions.FirstOrDefault(x => x.id == errorId);
+                     if (errorAssertion != null)
+                     {
+                         bool previousPassed = errorAssertion.passed;
+-                        errorAssertion.passed = finalErrors == 0;
++                        errorAssertion.passed = errorsMatch;
+                         errorAssertion.observed = "observedErrors=" + finalErrors + "; threaded capture through terminal-result boundary";
+                         if (previousPassed != errorAssertion.passed)
+-                            Event("assertion-revised", "no-unity-errors-after-harness-start: " + previousPassed + " -> "
++                            Event("assertion-revised", errorId + ": " + previousPassed + " -> "
+                                 + errorAssertion.passed + "; final captured errors=" + finalErrors);
+                     }
+-                    if (finalErrors > 0 && (status == "passed" || status == "behavior-gap-observed" || status == "partial")) status = "failed";
++                    if (!errorsMatch && (status == "passed" || status == "behavior-gap-observed" || status == "partial")) status = "failed";
+                     if (result.negativeControl != null && !result.negativeControl.expectationMatched) status = "failed";
+                     result.status = status;
+                     result.detail = detail;
+--- v1/controller/scripts/runtime-test.ps1
++++ diagnostics-v2/controller/scripts/runtime-test.ps1
+@@ -1402,7 +1402,7 @@
+ 
+ $taskProblems = New-Object 'System.Collections.Generic.List[string]'
+ if ($taskCase -cin @('F11-FAULTS','F11-FAULTS-UNSUPPORTED-RESTART','F11-FAULTS-UNSUPPORTED-DISABLED')) {
+-    $taskProblems.Add('F40 CE witness requires independent provider/fit/custody/native lifecycle save XML and original restart, corpse policy and Grave credit, physical totals and whole-log review. Producer pass is provenance only.')
++    $taskProblems.Add('F11 fault capture requires independent exact five-fault custody, metadata, provider callbacks, complete logs and process review. Only the named first GenPlace diagnostic is expected; no automatic semantic acceptance.')
+ }
+ if ($taskCase -eq 'ROBOTS-R1-AUTO') {
+     $taskProblems.Add('R1 capture requires independent complete native selector/Job/ThinkNode, transfer/drop/custody/reservation/claim/cleanup and whole-log review. Automatic semantic acceptance and wider robot compatibility are unfinished.')
+@@ -1434,8 +1434,9 @@
+ $taskExpectedStatus = if ($taskCase -cin @('F34-MIXED-CUT','F11-FAULTS','F11-FAULTS-UNSUPPORTED-RESTART','F11-FAULTS-UNSUPPORTED-DISABLED') -and $taskExpectedBehavior -ceq 'baseline-gap') { 'failed' } elseif ($taskNegativeControl -ne 'None') { 'failed' } elseif ($taskExpectedBehavior -eq 'baseline-gap') { 'behavior-gap-observed' } else { 'passed' }
+ if ($null -eq $taskResult -or $taskResult.status -ne $taskExpectedStatus) { $taskProblems.Add('No complete result with the explicitly expected status: ' + $taskExpectedStatus) }
+ if ($taskResult -and $taskResult.status -ne 'result-incomplete') {
+-    if ($taskNegativeControl -eq 'None' -and $taskResult.unityErrorsObserved -ne 0) {
+-        $taskProblems.Add('A non-control run recorded one or more Unity errors.')
++    $taskExpectedErrors = if ($taskCase -ceq 'F11-FAULTS') { 1 } else { 0 }
++    if ($taskNegativeControl -eq 'None' -and $taskResult.unityErrorsObserved -ne $taskExpectedErrors) {
++        $taskProblems.Add('Unexpected Unity error count; F11 faults requires exactly one named GenPlace report and no other error.')
+     }
+     if ($taskResult.runId -ne $taskManifest.runId -or $taskResult.caseId -ne $taskCase -or $taskResult.processId -ne $taskState.processId) {
+         $taskProblems.Add('Result identity does not match this run/process.')
+@@ -1458,7 +1459,7 @@
+         })
+     if (@($taskResult.assertions | Where-Object { -not $_.passed -and $_.id -notin $taskAllowedFailedAssertions }).Count -gt 0) { $taskProblems.Add('One or more unexpected runtime assertions failed.') }
+     foreach ($taskRequired in @('private-runtime-data-path', 'private-save-data-path', 'private-mod-directory', 'private-player-log',
+-        'harness-compiled-against-running-game', 'exact-active-mod-count', 'real-map-initialized', 'real-game-ticks-advanced', 'no-unity-errors-after-harness-start')) {
++        'harness-compiled-against-running-game', 'exact-active-mod-count', 'real-map-initialized', 'real-game-ticks-advanced', $(if ($taskCase -ceq 'F11-FAULTS') { 'f11-exact-declared-fault-diagnostics' } else { 'no-unity-errors-after-harness-start' }))) {
+         $taskRequiredValue = $taskRequired -notin $taskAllowedFailedAssertions
+         if (-not (Test-RequiredAssertion $taskResult.assertions $taskRequired $taskRequiredValue)) { $taskProblems.Add('Missing unique required assertion with expected outcome: ' + $taskRequired) }
+     }
+@@ -1749,6 +1750,23 @@
+         if ($taskResult -and $taskCase -eq 'L04-B1-D2') {
+             try { Test-InFlightEvents $taskResult $taskEvents $taskManifest.runId $taskProblems }
+             catch { $taskProblems.Add('L04-B1-D2 event evidence cannot be verified: '+$_.Exception.Message) }
++        }
++        if ($taskCase -ceq 'F11-FAULTS') {
++            $taskFaultErrors = @($taskEvents | Where-Object { $_.phase -ceq 'unity-error' -and $_.runId -ceq $taskManifest.runId } | ForEach-Object { $_.detail | ConvertFrom-Json })
++            $taskFaultPrefix = "[Hauler's Dream] an exception passed through Verse.GenPlace.TryPlaceThing, a method Hauler's Dream patches."
++            $taskFaultMarker = 'System.InvalidOperationException: Declared F11 native fault: after-partial-merge'
++            if ($taskFaultErrors.Count -ne 1 -or $taskFaultErrors[0].kind -cne 'Error' -or
++                -not $taskFaultErrors[0].message.StartsWith($taskFaultPrefix,[StringComparison]::Ordinal) -or
++                -not $taskFaultErrors[0].message.Contains($taskFaultMarker) -or $taskResult.unityErrorsObserved -ne 1) {
++                $taskProblems.Add('F11 exact isolated-product GenPlace diagnostic is missing or another error was captured.')
++            }
++            foreach ($taskFault in @('after-root-split','after-partial-merge','after-complete-merge','after-descendant-split','whole-original-removal')) {
++                foreach ($taskSuffix in @('-primary-exception','-exact-diagnostics')) {
++                    if (-not (Test-RequiredAssertion $taskResult.assertions ('f11-providers/'+$taskFault+$taskSuffix) $true)) {
++                        $taskProblems.Add('Missing unique F11 native exception/diagnostic assertion: '+$taskFault+$taskSuffix)
++                    }
++                }
++            }
+         }
+         if ($taskNegativeControl -ne 'None') {
+             $taskCapturedErrors = @($taskEvents | Where-Object { $_.phase -eq 'unity-error' -and $_.runId -eq $taskManifest.runId } | ForEach-Object { $_.detail | ConvertFrom-Json })

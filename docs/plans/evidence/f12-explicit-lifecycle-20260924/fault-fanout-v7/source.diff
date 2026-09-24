@@ -1,0 +1,75 @@
+--- v6/src/ExplicitLifecycleScene.cs
++++ fault-v7/src/ExplicitLifecycleScene.cs
+@@ -63,10 +63,25 @@
+         private static string Id(Thing thing)=>thing?.ThingID??"null";
+         private static string F(float n)=>n.ToString("R",CultureInfo.InvariantCulture);
+         public static void CaptureUnityError(string message)=>errorMessages.Enqueue(message);
+-        public static bool ExpectedUnityErrors(int count)=>current!=null&&(current.Fault
+-            ? current.mergeInjected&&current.errorRecoveryReceived&&count==1&&errorMessages.Count==1
+-                &&errorMessages.Single().Contains(FaultMarker)&&errorMessages.Single().Contains("Exception in JobDriver fixed tick")
+-            : count==0&&errorMessages.IsEmpty);
++        public static bool ExpectedUnityErrors(int count)
++        {
++            if(current==null)return false;
++            if(!current.Fault)return count==0&&errorMessages.IsEmpty;
++            // One injected object crosses two HD diagnostic boundaries, then native JobUtility.
++            // PlaceAfter and ErrorRecoverBefore separately require ReferenceEquals to that object.
++            var messages=errorMessages.ToArray();
++            string[] prefixes={
++                "[Hauler's Dream] an exception passed through Verse.Thing.TryAbsorbStack, a method Hauler's Dream patches.",
++                "[Hauler's Dream] an exception passed through Verse.GenPlace.TryPlaceThing, a method Hauler's Dream patches.",
++                "Exception in JobDriver fixed tick for pawn "};
++            return current.mergeInjected&&current.partialBoundary&&current.errorRecoveryReceived
++                &&current.injected?.GetType()==typeof(InvalidOperationException)&&current.injected.Message==FaultMarker
++                &&count==3&&messages.Length==3
++                &&Enumerable.Range(0,3).All(i=>messages[i].StartsWith(prefixes[i],StringComparison.Ordinal)
++                    &&messages[i].Contains("System.InvalidOperationException: "+FaultMarker))
++                &&messages[2].Contains("driver=JobDriver_ExplicitHaul (toilIndex=0)")
++                &&messages[2].Contains("HaulersDream_ExplicitHaul (Job_"+current.partialJobId+")");
++        }
+         public static bool IsFaultRun=>current?.Fault==true;
+         public static bool ObservedNativeLoadTick=>current?.loadedCaptured==true&&current.ticks.TicksGame>current.startTick;
+         public static void CaptureLoaded(Map map,Action<string,bool,string> check,Action<string,string> emit,string role,string behavior,string evidence)
+--- v6/host/Bootstrap.cs
++++ fault-v7/host/Bootstrap.cs
+@@ -240,7 +240,7 @@
+                     if (liveStatus == "running") return;
+                     Check("f12-explicit-host-returned", liveStatus == "passed", "Live scenario returned " + liveStatus);
+                     Check(manifest.caseId == "F12-LIFE-FAULT" ? "expected-controlled-fault-only" : "no-unity-errors-after-harness-start",
+-                        HaulersDream.F12Lifecycle.ExplicitLifecycleScene.ExpectedUnityErrors(unityErrors), "observedErrors=" + unityErrors + "; deliberate fault preserves its one exact native error");
++                        HaulersDream.F12Lifecycle.ExplicitLifecycleScene.ExpectedUnityErrors(unityErrors), "observedErrors=" + unityErrors + "; one deliberate fault preserves its exact two HD boundary reports plus native job report");
+                     Finish(liveStatus == "passed" && !result.assertions.Any(x => !x.passed) ? "passed" : "failed",
+                         "Explicit backendv5 remaining lifecycle controls; fault case retains its deliberate native error. Full physical/source-save review required.");
+                     return;
+--- v6/controller/scripts/runtime-test.ps1
++++ fault-v7/controller/scripts/runtime-test.ps1
+@@ -1201,7 +1201,7 @@
+         knownExpansions = $taskKnownExpansions; configFiles = $taskConfigFiles; copiedFiles = @($taskCopiedFiles.ToArray())
+         protectedRoots = $taskProtectedRoots; protectedBefore = $taskProtectedBefore
+         startupDeadlineSeconds = 300
+-        semantics = if ($CaseId -in @('F12-LIFE','F12-LIFE-RESTART','F12-LIFE-FAULT')) { 'Backendv5 native queue/custody/cancellation controls with exact canceled-state restart; separate fault run retains one declared native error. No UI/shelf/provider/network closure.' } elseif ($CaseId -ceq 'F34-MIXED-CUT') { 'Paused mixed-plant boundary capture; baseline failures preserved; no full F34 acceptance.' } elseif ($CaseId -ceq 'RIMMS-DLV1') { $taskDlv1Read.profile.scope }
++        semantics = if ($CaseId -in @('F12-LIFE','F12-LIFE-RESTART','F12-LIFE-FAULT')) { 'Backendv5 native queue/custody/cancellation controls with exact canceled-state restart; separate fault run retains exactly two named HD boundary reports and one native job report for its declared exception. No UI/shelf/provider/network closure.' } elseif ($CaseId -ceq 'F34-MIXED-CUT') { 'Paused mixed-plant boundary capture; baseline failures preserved; no full F34 acceptance.' } elseif ($CaseId -ceq 'RIMMS-DLV1') { $taskDlv1Read.profile.scope }
+             elseif ($CaseId -ceq 'REFUEL-G1') { $taskRefuelG1Read.profile.scope }
+             elseif ($CaseId -in $script:taskAf1Cases) { $taskAf1Read.profile.scope }
+             elseif ($CaseId -eq 'BG03-P1') { 'Partial initially tagged bill ingredients, two floor sources and native cooking/cleaning only; other BG03 controls and original-report convergence remain unfinished.' }
+@@ -1376,7 +1376,7 @@
+ 
+ $taskProblems = New-Object 'System.Collections.Generic.List[string]'
+ if ($taskCase -in @('F12-LIFE','F12-LIFE-RESTART','F12-LIFE-FAULT')) {
+-    $taskProblems.Add('F12 lifecycle requires independent physical queue/custody/cancel/source-save review. Fault case retains its exact one native error, including original marker/exception/cleanup evidence; all other errors fail. No UI/shelf/provider/network closure.')
++    $taskProblems.Add('F12 lifecycle requires independent physical queue/custody/cancel/source-save review. Fault case retains its exact ordered three-report fanout, including original marker/exception/cleanup evidence; all other errors fail. No UI/shelf/provider/network closure.')
+ }
+ if ($taskCase -eq 'ROBOTS-R1-AUTO') {
+     $taskProblems.Add('R1 capture requires independent complete native selector/Job/ThinkNode, transfer/drop/custody/reservation/claim/cleanup and whole-log review. Automatic semantic acceptance and wider robot compatibility are unfinished.')
+@@ -1408,9 +1408,9 @@
+ $taskExpectedStatus = if ($taskCase -cin @('F34-MIXED-CUT','F12-LIFE','F12-LIFE-RESTART','F12-LIFE-FAULT') -and $taskExpectedBehavior -ceq 'baseline-gap') { 'failed' } elseif ($taskNegativeControl -ne 'None') { 'failed' } elseif ($taskExpectedBehavior -eq 'baseline-gap') { 'behavior-gap-observed' } else { 'passed' }
+ if ($null -eq $taskResult -or $taskResult.status -ne $taskExpectedStatus) { $taskProblems.Add('No complete result with the explicitly expected status: ' + $taskExpectedStatus) }
+ if ($taskResult -and $taskResult.status -ne 'result-incomplete') {
+-    $taskExpectedLifecycleErrors = if ($taskCase -ceq 'F12-LIFE-FAULT') { 1 } else { 0 }
++    $taskExpectedLifecycleErrors = if ($taskCase -ceq 'F12-LIFE-FAULT') { 3 } else { 0 }
+     if ($taskNegativeControl -eq 'None' -and $taskResult.unityErrorsObserved -ne $taskExpectedLifecycleErrors) {
+-        $taskProblems.Add('Unexpected Unity error count; lifecycle fault alone requires exactly one retained native error and its exact-marker assertion.')
++        $taskProblems.Add('Unexpected Unity error count; lifecycle fault alone requires exactly three retained reports and its ordered exact-boundary/marker/job assertion.')
+     }
+     if ($taskResult.runId -ne $taskManifest.runId -or $taskResult.caseId -ne $taskCase -or $taskResult.processId -ne $taskState.processId) {
+         $taskProblems.Add('Result identity does not match this run/process.')

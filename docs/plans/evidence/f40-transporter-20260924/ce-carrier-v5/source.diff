@@ -1,0 +1,126 @@
+--- preserved-v4/src/TransporterPersistence.cs
++++ fixture-v5/src/TransporterPersistence.cs
+@@ -27,8 +27,23 @@
+         private readonly List<int> starts=new List<int>();
+         private readonly Dictionary<int,string> startDefs=new Dictionary<int,string>();
+         private readonly HashSet<int> nativeSucceededPosture=new HashSet<int>();
+-        private int lastEndedJob;
+-        private bool lastEndSucceeded;
++        private sealed class EndScope
++        {
++            internal Pawn_JobTracker tracker;
++            internal int serial,jobId;
++            internal JobDef def;
++            internal JobCondition condition;
++            internal bool startNewJob;
++        }
++        private sealed class StartReceipt
++        {
++            internal int jobId,expiry;
++            internal string def;
++            internal bool posture;
++            internal EndScope scope;
++        }
++        private EndScope endScope;
++        private int endSerial;
+         private readonly System.Diagnostics.Stopwatch clock=System.Diagnostics.Stopwatch.StartNew();
+         private Pawn actor,carrier;
+         private CompTransporter pod;
+@@ -103,7 +118,7 @@
+                 int waitIndex=starts.IndexOf(waitJob);
+                 bool ordered=waitIndex>=0&&starts.Where(i=>i!=carrierJob&&i!=waitJob&&!nativeSucceededPosture.Contains(i)).All(i=>starts.IndexOf(i)>waitIndex);
+                 Record("carrier-original-and-recovery",Success(carrierJob)&&Success(waitJob)&&ordered&&startDefs.Values.Contains(HaulersDreamDefOf.HaulersDream_UnloadInventory.defName),
+-                    "starts="+string.Join(",",starts.Select(i=>i+":"+startDefs[i]+":nativeSucceededPosture="+nativeSucceededPosture.Contains(i)))+"; "+State());
++                    "nativeStartEntries="+string.Join(",",starts.Select(i=>i+":"+startDefs[i]+":nativeSucceededPosture="+nativeSucceededPosture.Contains(i)))+"; "+State());
+                 Record("carrier-physical12-stable300",true,Physical());Guard(!failed,"Carrier lifecycle recovery failed.");
+                 if(!loading){Finish();return;}Gui(StartMassless);return;
+             }
+@@ -149,16 +164,57 @@
+         private void Observe()
+         {
+             observer=new Harmony("haulersdream.tests.f40.ce."+Path.GetFileName(run));
+-            Patch(typeof(Root),"OnGUI",nameof(OnGui),false);Patch(typeof(JobDriver),"Notify_Starting",nameof(Started),true);Patch(typeof(Pawn_JobTracker),"CleanupCurrentJob",nameof(Ended),true);
++            Patch(typeof(Root),"OnGUI",nameof(OnGui),false);Patch(typeof(Pawn_JobTracker),"CleanupCurrentJob",nameof(Ended),true);
++            observer.Patch(AccessTools.Method(typeof(Pawn_JobTracker),"EndCurrentJob"),
++                prefix:new HarmonyMethod(typeof(TransporterPersistence),nameof(EndScopeBefore)),
++                finalizer:new HarmonyMethod(typeof(TransporterPersistence),nameof(EndScopeFinally)));
++            observer.Patch(AccessTools.Method(typeof(Pawn_JobTracker),"StartJob"),
++                prefix:new HarmonyMethod(typeof(TransporterPersistence),nameof(StartBefore)),
++                postfix:new HarmonyMethod(typeof(TransporterPersistence),nameof(StartAfter)));
+             Patch(typeof(JobDriver),"EndJobWith",nameof(BeforeEnding),true);Patch(Product.GetType("HaulersDream.BulkUnloadPull",true),"Transfer",nameof(AfterPull),false);
+         }
+         private static void OnGui(){Watch(c=>{if(c.gui==null||Event.current?.type!=EventType.Repaint)return;var a=c.gui;c.gui=null;Guard(c.ticks.CurTimeSpeed==TimeSpeed.Paused,"Paused native GUI input required.");a();});}
+-        private static void Started(JobDriver __instance){Watch(c=>{if(__instance.pawn!=c.actor)return;var j=__instance.job;Guard(j!=null&&j==c.actor.CurJob,"Actual driver start identity required.");
+-            bool nativeEndFrame=new System.Diagnostics.StackTrace().GetFrames().Any(f=>f.GetMethod().DeclaringType==typeof(Pawn_JobTracker)&&f.GetMethod().Name=="EndCurrentJob");
+-            bool posture=j.def==JobDefOf.Wait_MaintainPosture&&__instance.GetType()==typeof(JobDriver_WaitMaintainPosture)&&j.expiryInterval==1&&c.lastEndSucceeded&&nativeEndFrame;
+-            c.starts.Add(j.loadID);c.startDefs[j.loadID]=j.def.defName;if(posture)c.nativeSucceededPosture.Add(j.loadID);
+-            c.emit("f40-ce-start",c.JobState()+"; nativeSucceededPosture="+posture+"; expiry="+j.expiryInterval+"; predecessor="+c.lastEndedJob+"; predecessorSucceeded="+c.lastEndSucceeded+"; actualEndCurrentJobFrame="+nativeEndFrame);});}
+-        private static void Ended(Pawn_JobTracker __instance,JobCondition __0){Watch(c=>{if(c.actor?.jobs!=__instance||c.actor.CurJob==null)return;int id=c.actor.CurJob.loadID;string detail="condition="+__0+"; "+c.JobState();c.ends[id]=detail;c.lastEndedJob=id;c.lastEndSucceeded=__0==JobCondition.Succeeded;c.emit("f40-ce-end",detail);});}
++        // A native method scope identifies the exact caller despite Harmony dynamic wrappers.
++        // Per-tracker nesting is restored by a void finalizer, including exceptional unwinds.
++        private static void EndScopeBefore(Pawn_JobTracker __instance,JobCondition condition,bool startNewJob,out EndScope __state)
++        {
++            __state=null;var c=current;if(c==null||c.cleaned||c.actor?.jobs!=__instance)return;
++            __state=c.endScope;
++            c.endScope=new EndScope{tracker=__instance,serial=++c.endSerial,jobId=c.actor.CurJob?.loadID??-1,def=c.actor.CurJob?.def,condition=condition,startNewJob=startNewJob};
++        }
++        private static void EndScopeFinally(Pawn_JobTracker __instance,EndScope __state,Exception __exception)
++        {
++            var c=current;if(c==null||c.actor?.jobs!=__instance)return;
++            c.endScope=__state; // No exception replacement or native output writes.
++            if(__exception!=null)Watch(x=>{throw new InvalidOperationException("Actual owned EndCurrentJob exception.",__exception);});
++        }
++        // Snapshot the incoming Job before native admission; it may complete, pool and be reused
++        // before StartJob returns. This sees subclass Notify_Starting overrides such as HaulToCell.
++        private static void StartBefore(Pawn_JobTracker __instance,Job newJob,bool cancelBusyStances,bool fromQueue,bool addToJobsThisTick,out StartReceipt __state)
++        {
++            __state=null;var c=current;if(c==null||c.cleaned||c.status!="running"||c.actor?.jobs!=__instance||newJob==null)return;
++            var scope=c.endScope;
++            bool posture=newJob.def==JobDefOf.Wait_MaintainPosture&&newJob.def.driverClass==typeof(JobDriver_WaitMaintainPosture)&&newJob.expiryInterval==1
++                &&scope?.tracker==__instance&&scope.condition==JobCondition.Succeeded&&scope.startNewJob&&scope.jobId>=0
++                &&scope.def!=null&&scope.def!=JobDefOf.Wait_MaintainPosture&&scope.def!=JobDefOf.Goto
++                &&c.Success(scope.jobId)&&!c.actor.pather.Moving&&!cancelBusyStances&&!fromQueue&&!addToJobsThisTick;
++            __state=new StartReceipt{jobId=newJob.loadID,def=newJob.def.defName,expiry=newJob.expiryInterval,posture=posture,scope=scope};
++            var saved=__state;
++            Watch(x=>{x.starts.Add(saved.jobId);x.startDefs[saved.jobId]=saved.def;if(saved.posture)x.nativeSucceededPosture.Add(saved.jobId);
++                x.emit("f40-ce-start-entry","id="+saved.jobId+":"+saved.def+"; expiry="+saved.expiry+"; nativeSucceededPosture="+saved.posture
++                    +"; EndCurrentJobScope="+(scope?.serial??0)+"; predecessor="+(scope?.jobId??-1)+"; predecessorDef="+scope?.def?.defName+"; predecessorCondition="+scope?.condition
++                    +"; startNewJob="+scope?.startNewJob+"; cancelBusyStances="+cancelBusyStances+"; fromQueue="+fromQueue+"; addToJobsThisTick="+addToJobsThisTick
++                    +"; currentBefore="+x.JobState());});
++        }
++        private static void StartAfter(Pawn_JobTracker __instance,StartReceipt __state)
++        {
++            if(__state==null)return;Watch(c=>{Guard(c.actor.jobs==__instance,"Observed StartJob tracker changed.");
++                bool stillCurrent=c.actor.CurJob?.loadID==__state.jobId,alreadyEnded=c.ends.ContainsKey(__state.jobId),queued=c.actor.jobs.jobQueue.Any(q=>q.job.loadID==__state.jobId);
++                c.emit("f40-ce-start-return","id="+__state.jobId+":"+__state.def+"; stillCurrent="+stillCurrent+"; alreadyEnded="+alreadyEnded+"; queued="+queued+"; nativeSucceededPosture="+__state.posture);
++                Guard(stillCurrent||alreadyEnded||queued,"Actual native start admission has no current, ended or queued identity witness.");
++                if(__state.posture)Guard(stillCurrent||alreadyEnded,"Mandatory posture wrapper was not actually admitted.");});
++        }
++        private static void Ended(Pawn_JobTracker __instance,JobCondition __0){Watch(c=>{if(c.actor?.jobs!=__instance||c.actor.CurJob==null)return;int id=c.actor.CurJob.loadID;string detail="condition="+__0+"; "+c.JobState();c.ends[id]=detail;c.emit("f40-ce-end",detail);});}
+         private static void BeforeEnding(JobDriver __instance,JobCondition __0){Watch(c=>{
+             if(c.loading||c.saved||__instance.pawn!=c.actor||__instance.GetType()!=typeof(JobDriver_UnloadCarrierInBulk)||__instance.job?.loadID!=c.carrierJob||__0!=JobCondition.Succeeded)return;
+             c.SaveBoundary();});}
+--- preserved-v4/build.ps1
++++ fixture-v5/build.ps1
+@@ -2,7 +2,7 @@
+ $env:TEMP = 'C:/Users/Arthur/AppData/Local/HaulersDreamQA/runtime-temp'
+ $env:TMP = $env:TEMP
+ $f40Root = $PSScriptRoot
+-$f40Build = 'C:/Users/Arthur/AppData/Local/HaulersDreamQA/inputs/f40-ce-carrier-20260924/HarnessBuild-v4'
++$f40Build = 'C:/Users/Arthur/AppData/Local/HaulersDreamQA/inputs/f40-ce-carrier-20260924/HarnessBuild-v5'
+ $f40Product = 'C:/Users/Arthur/AppData/Local/HaulersDreamQA/inputs/f40-cell-replan-20260924/Product'
+ $f40References = 'C:/Users/Arthur/AppData/Local/Temp/haulersdream-f34-host-root-build-20260920'
+ $f40Game = 'C:/Steam/steamapps/common/RimWorld/RimWorldWin64_Data/Managed'
+--- preserved-v4/CONTRACT.md
++++ fixture-v5/CONTRACT.md
+@@ -33,3 +33,10 @@
+ 3. These same corpse phases use actual enabled native Graves whose filters accept the corpse, with no competing cell storage. Require native StoreUtility selection of the actual Grave as an IHaulDestination (invalid cell, real building target), actual container-owner transfer, same corpse identity, original job Succeeded and delivered1. A floor drop, later recovery or shelf cell cannot satisfy this callback witness. No additional storage provider is needed.
+ 
+ Each phase has finite tick/wall limits, exact conservation by identity and quantity, actual source/owner and original-job end assertions, a healthy/environment guard and settled physical evidence. Only named cases run. Preserve any failed native capture and diagnose its specific cause before changing product or oracle. Root owns Prepare/launch/Verify; author supplies compiled host, full selection/copy pins, exact source diff and concise handoff first.
++
++
++## V5 native job observation correction
++
++V4 physically stored12 but failed its queue assertion because its stack-frame name test could not identify native EndCurrentJob behind Harmony wrappers. It also missed HaulToCell.Notify_Starting, which overrides the base method. V5 snapshots every owned Pawn_JobTracker.StartJob input before possible pooling and records return admission using immutable IDs (current/ended/queued). The ordering check stays conservative over all those native start requests.
++
++Only the exact one-tick Wait_MaintainPosture with its exact native driver may be exempt. It must be entered within the same tracker's scoped EndCurrentJob(Succeeded,startNewJob:true), after the actual predecessor cleanup, with native branch arguments cancelBusyStances=false/fromQueue=false/addToJobsThisTick=false and a stationary pather. Scope restoration uses a nested-safe void finalizer, not stack strings. Original queued Wait must still precede every actual hands/HD recovery entry; it and the original carrier must succeed, all12 must be stored and remain stable300. Product, definitions, original save oracle, and controller remain unchanged.

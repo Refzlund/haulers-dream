@@ -1,0 +1,154 @@
+{
+  "status": "source-supported pre-existing provider translation warning; no new runtime report requested",
+  "runtimeResult": {
+    "status": "passed",
+    "assertions": 56,
+    "failed": 0,
+    "unityErrorsObserved": 0
+  },
+  "currentXml": {
+    "path": "C:\\HDQA\\runtime-temp\\haulersdream-runtime-tests\\cc33e23b6c714358b0db882683b657c3\\runtime\\Mods\\MiscRobots\\1.6\\Languages\\English\\DefInjected\\ThingDef\\AIRobot_Base.xml",
+    "sha256": "EE1FD98C03BF1F4C563CB99E39421942B5DAB435E71CC3388B4360C3468FC662",
+    "bytes": 1985
+  },
+  "priorXml": {
+    "path": "C:\\Users\\Arthur\\AppData\\Local\\Packages\\OpenAI.Codex_2p2nqsd0c76g0\\LocalCache\\Local\\HaulersDreamQA\\runtime-temp\\haulersdream-runtime-tests\\071295e19d9d43b18235d4c89cc87030\\runtime\\Mods\\MiscRobots\\1.6\\Languages\\English\\DefInjected\\ThingDef\\AIRobot_Base.xml",
+    "sha256": "EE1FD98C03BF1F4C563CB99E39421942B5DAB435E71CC3388B4360C3468FC662",
+    "bytes": 1985
+  },
+  "keys": [
+    "AIRobot_Hauler_disabled.label",
+    "AIRobot_Hauler_disabled.description",
+    "AIRobot_Cleaner_disabled.label",
+    "AIRobot_Cleaner_disabled.description"
+  ],
+  "missingFromActiveXmlDefinitions": [
+    "AIRobot_Cleaner_disabled",
+    "AIRobot_Hauler_disabled"
+  ],
+  "definitionFilesExamined": 594,
+  "definitionRoots": [
+    "C:\\HDQA\\runtime-temp\\haulersdream-runtime-tests\\cc33e23b6c714358b0db882683b657c3\\runtime\\Data\\Core\\Defs",
+    "C:\\HDQA\\runtime-temp\\haulersdream-runtime-tests\\cc33e23b6c714358b0db882683b657c3\\runtime\\Mods\\MiscRobots\\1.6\\Defs",
+    "C:\\HDQA\\runtime-temp\\haulersdream-runtime-tests\\cc33e23b6c714358b0db882683b657c3\\runtime\\Mods\\MiscRobotsPlusPlus\\1.6\\Defs",
+    "C:\\HDQA\\runtime-temp\\haulersdream-runtime-tests\\cc33e23b6c714358b0db882683b657c3\\runtime\\Mods\\MiscRobotsPlusPlus\\Defs",
+    "C:\\HDQA\\runtime-temp\\haulersdream-runtime-tests\\cc33e23b6c714358b0db882683b657c3\\runtime\\Mods\\HaulersDream\\Defs"
+  ],
+  "sameProviderImages": [
+    {
+      "name": "AIRobot",
+      "sha256": "6EAD86A97FB9F9438000AB4A6DACBD52A478EE41C460D1298AAF47C27526CE46",
+      "moduleVersionId": "339946c0-1b12-4d8d-a357-92882b2c7612"
+    },
+    {
+      "name": "MiscRobotsPlusPlus",
+      "sha256": "7A09CEB35FB2FD9BD29E48708EAF00EF0EA2435A994A0EE112F92A669DFDE1F8",
+      "moduleVersionId": "36987912-28db-40b6-a03d-d86cffb5a871"
+    }
+  ],
+  "logs": [
+    {
+      "file": {
+        "path": "C:\\Users\\Arthur\\Sync\\Projects\\RimWorld Mods\\HaulersDream\\docs\\plans\\evidence\\f12-explicit-ui-20260924\\native-robot\\native\\cc33e23b6c714358b0db882683b657c3\\raw\\Player.log",
+        "sha256": "042E68CFED7993717582D91A70C39718F67032B3B3974BACFC8330D5F0566CAB",
+        "bytes": 149181
+      },
+      "warningLines": [
+        1583
+      ]
+    },
+    {
+      "file": {
+        "path": "C:\\Users\\Arthur\\Sync\\Projects\\RimWorld Mods\\HaulersDream\\docs\\plans\\evidence\\f05-f06-robots-20260924\\native\\071295e19d9d43b18235d4c89cc87030\\raw\\Player.log",
+        "sha256": "43B171DB4FF92BC1EB46824D430E5F1C5D106931ECA63B768A30D5D1BF2DF0D3",
+        "bytes": 150421
+      },
+      "warningLines": [
+        1585
+      ]
+    }
+  ],
+  "actualImages": [
+    {
+      "name": "Assembly-CSharp",
+      "sha256": "5CF1B5BE399D5B1C9C56CA72C9D35B4ECF307FEACF5859D04AC5A1AA5926356A",
+      "moduleVersionId": "61e41735-6189-4da4-9d21-0260257b5097"
+    },
+    {
+      "name": "UnityEngine.CoreModule",
+      "sha256": "C5C58EA254834291780A1D6C388C241443D07167B4A4B890A23C9494F626DDBA",
+      "moduleVersionId": "e422ced3-d0f6-4bb2-9423-e8338d57bc04"
+    },
+    {
+      "name": "0Harmony",
+      "sha256": "353DAAFEC180BB8E7BBE4DA78F2A7CDC78067392E3A4E79DC8E7AF295F2371E6",
+      "moduleVersionId": "e5339928-9d9b-419d-83f9-f5b02c5cf609"
+    },
+    {
+      "name": "HarmonyMod",
+      "sha256": "408C2CD72B45DA8C70C0C538B2B346C8DCBB5BDED066373F6A3EB8B26615A2E7",
+      "moduleVersionId": "dc156e18-c1bf-4ec8-acd4-7176558400e1"
+    },
+    {
+      "name": "HaulersDream",
+      "sha256": "64D2B8A20A1F42D079EC643F0EA14414B62B6BAAA63CBC07E996D4F94B0B7602",
+      "moduleVersionId": "1f292e19-851a-44a0-bd94-52405ce80306"
+    },
+    {
+      "name": "HaulersDream.Core",
+      "sha256": "2633530022F02B73D09A11254E088E6DE52D6F1B05A30C2E0233790B642BA4AA",
+      "moduleVersionId": "4e3c0516-2754-44c1-a682-45af2567d739"
+    },
+    {
+      "name": "HaulersDream.RuntimeHarness",
+      "sha256": "8F2E6C24D4C451FF9903F57175F36AC875C95999C971426CFEF37BB052913D70",
+      "moduleVersionId": "ab831fee-cc74-4240-b623-be8d3f05ee97"
+    },
+    {
+      "name": "UnityEngine.IMGUIModule",
+      "sha256": "C6C39327211BE8299E2E9FFDEE7A979F228736C99B84FD54BC73F563456865D9",
+      "moduleVersionId": "69e8f115-9fb5-4cb4-9dbe-76d334eaed32"
+    },
+    {
+      "name": "UnityEngine.ScreenCaptureModule",
+      "sha256": "D03D9881419CEBCED07E8AC45E3AADBB866948670071FE95BED404B758274FF3",
+      "moduleVersionId": "768b1ad7-5506-4711-ba28-6142e4f37147"
+    },
+    {
+      "name": "UnityEngine.TextRenderingModule",
+      "sha256": "B63769AD71C7FC79034CF6C3A1EBFCF79D4591F0B1F5CD4A9823E6ED7B5816F8",
+      "moduleVersionId": "cbfa93f3-6818-4ee1-8c93-86e4fe595e71"
+    },
+    {
+      "name": "AIRobot",
+      "sha256": "6EAD86A97FB9F9438000AB4A6DACBD52A478EE41C460D1298AAF47C27526CE46",
+      "moduleVersionId": "339946c0-1b12-4d8d-a357-92882b2c7612"
+    },
+    {
+      "name": "MiscRobotsPlusPlus",
+      "sha256": "7A09CEB35FB2FD9BD29E48708EAF00EF0EA2435A994A0EE112F92A669DFDE1F8",
+      "moduleVersionId": "36987912-28db-40b6-a03d-d86cffb5a871"
+    }
+  ],
+  "protectedChanges": [],
+  "nativeOutcome": {
+    "startedUtc": "2026-09-24T16:17:04.3144648Z",
+    "runDirectory": "C:/HDQA/runtime-temp/haulersdream-runtime-tests/cc33e23b6c714358b0db882683b657c3",
+    "processId": 11076,
+    "joined": true,
+    "exitCode": 0,
+    "deadlineExceeded": false,
+    "error": null,
+    "processStartedUtc": "2026-09-24T16:17:16.3867016Z",
+    "executable": "C:\\HDQA\\runtime-temp\\haulersdream-runtime-tests\\cc33e23b6c714358b0db882683b657c3\\runtime\\RimWorldWin64.exe",
+    "finishedUtc": "2026-09-24T16:17:52.5127829Z"
+  },
+  "inputWorker": {
+    "processId": 2524,
+    "joined": true,
+    "exitCode": 0,
+    "error": null
+  },
+  "limits": "The retained Player.log gives only the aggregate warning, not its per-key runtime translation report. The four-key attribution follows actual selected XML and native missing-def error rules, reinforced by identical provider bytes and the same prior warning.",
+  "noNativeOrProductMutation": true
+}

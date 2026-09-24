@@ -1,0 +1,22 @@
+--- v3/TransporterCore.Scene.cs
++++ v4/TransporterCore.Scene.cs
+@@ -76,7 +76,7 @@
+                     var p = PawnGenerator.GeneratePawn(PawnKindDefOf.Colonist, Faction.OfPlayer); owned.Add(p);
+                     if (!Fit(p) || p.WorkTypeIsDisabled(WorkTypeDefOf.Hauling)
+                         || p.health?.capacities?.CapableOf(PawnCapacityDefOf.Manipulation) != true
+-                        || p.workSettings == null || p.timetable == null || p.inventory == null || p.carryTracker == null || p.drafter == null) continue;
++                        || p.workSettings == null || p.timetable == null || p.inventory == null || p.carryTracker == null) continue;
+                     p.inventory.innerContainer.ClearAndDestroyContents(DestroyMode.Vanish); p.carryTracker.innerContainer.ClearAndDestroyContents(DestroyMode.Vanish);
+                     p.apparel?.DestroyAll(); p.equipment?.DestroyAllEquipment();
+                     if (MassUtility.Capacity(p) < 30f) continue;
+@@ -87,7 +87,9 @@
+             chosen.workSettings.EnableAndInitializeIfNotAlreadyInitialized(); chosen.workSettings.DisableAll();
+             for (int hour = 0; hour < 24; hour++) chosen.timetable.SetAssignment(hour, TimeAssignmentDefOf.Work);
+             GenSpawn.Spawn(chosen, cell, map); actors.Add(chosen);
+-            Guard(chosen.GetComp<CompHauledToInventory>() != null && chosen.CanTakeOrder, "Actor lacks HD inventory or native order admission.");
++            // Native dynamic components create drafter during SpawnSetup, not GeneratePawn.
++            Guard(chosen.drafter != null && chosen.GetComp<CompHauledToInventory>() != null && chosen.CanTakeOrder, "Spawned actor lacks native draft controller, HD inventory or native order admission.");
++            emit("f40-native-courier", "id=" + chosen.ThingID + "; spawned=" + chosen.Spawned + "; drafter=" + (chosen.drafter != null) + "; hediffs=" + chosen.health.hediffSet.hediffs.Count);
+             return chosen;
+         }
+         private CompTransporter NewHold(IntVec3 cell)

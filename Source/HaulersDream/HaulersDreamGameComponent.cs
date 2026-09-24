@@ -26,7 +26,7 @@ namespace HaulersDream
         /// <summary>The component for the running game (null at the main menu / before a game loads).</summary>
         public static HaulersDreamGameComponent Instance => Current.Game?.GetComponent<HaulersDreamGameComponent>();
 
-        public HaulersDreamGameComponent(Game game) { }
+        public HaulersDreamGameComponent(Game game) => UftOrphanBillGuard.ResetLoadCount();
 
         public override void FinalizeInit()
         {
@@ -52,6 +52,11 @@ namespace HaulersDream
             // Hauler's Dream) before the tick loop starts, so the per-tick NullReferenceException flood never begins.
             // No-op on a clean save. See RepairOrphanedJobsAfterLoad.
             RepairOrphanedJobsAfterLoad();
+
+            // Cross-references and native bill stacks are now resolved. Preserve orphaned unfinished
+            // items, then clean up only known recipe jobs that still reference those stack-less bills.
+            UftOrphanBillGuard.RepairAfterLoadAndReport();
+            RepairOrphanedRecipeJobsAfterLoad();
         }
 
         // fix/mix recovery: a save migrated off a mod that contributed a JobDef + JobDriver (e.g. Pick Up And
@@ -150,6 +155,7 @@ namespace HaulersDream
             {
                 RunIdleBackstop();
                 PruneInertLoadTasks(); // drop fully-settled/released bulk-load ledger entries (cheap when empty)
+                ReconcileTransporterUnloads();
             }
 
             // Storage claim self-heal. Correctness never depends on it — every read of the ledger already
@@ -291,6 +297,7 @@ namespace HaulersDream
             ExposeBatchBills();
             ExposeLedger();
             ExposeQuestPawns();
+            ExposeTransporterUnloads();
         }
     }
 }

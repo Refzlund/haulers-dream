@@ -1,0 +1,202 @@
+--- v11/src/F11UiObservers.cs
++++ v12/src/F11UiObservers.cs
+@@ -16,10 +16,6 @@
+         private static Thing row;
+         private static object dialog;
+         private readonly Harmony harmony;
+-        private static readonly FieldInfo BeforeEventField=AccessTools.Field(typeof(GUIUtility),"beforeEventProcessed");
+-        private static readonly FieldInfo EventCopyField=AccessTools.Field(typeof(GUIUtility),"m_Event");
+-        private readonly Action<EventType,KeyCode> beforeEvent=BeforeUnityEvent;
+-        private bool eventSubscribed;
+         private readonly string owner="HaulersDream.F11.Ui."+Guid.NewGuid().ToString("N");
+         internal F11UiObservers(F11Scene value)
+         {
+@@ -27,14 +23,8 @@
+             scene=value;harmony=new Harmony(owner);
+             try
+             {
+-                // Unity fills its own event copy before this native dispatch callback. Read it without
+-                // replacing Event.current, the event pointer, native result, or existing subscribers.
+-                if(BeforeEventField?.FieldType!=typeof(Action<EventType,KeyCode>)||EventCopyField?.FieldType!=typeof(Event))
+-                    throw new MissingFieldException("Exact Unity event-copy observation seam missing.");
+-                BeforeEventField.SetValue(null,Delegate.Combine((Delegate)BeforeEventField.GetValue(null),beforeEvent));
+-                eventSubscribed=true;
+-                scene.Emit("f11-unity-event-binding","GUIUtility.beforeEventProcessed/m_Event; MVID="+typeof(GUIUtility).Module.ModuleVersionId);
+-                // Root/play observations remain diagnostic and preserve their original input checks.
++                // Read the actual control's event before its native implementation can consume it.
++                // Root/play remain diagnostics; no global event-dispatch assumption is needed.
+                 Patch(AccessTools.Method(typeof(Root),"OnGUI"),nameof(RootBefore));
+                 Patch(AccessTools.Method(typeof(UIRoot_Play),"UIRootOnGUI"),nameof(PlayBefore));
+                 Patch(AccessTools.Method(typeof(JobDriver),"Notify_Starting"),null,nameof(JobStarted));
+@@ -43,11 +33,13 @@
+                 var type=AccessTools.TypeByName("HaulersDream.Dialog_DropInventoryAmount");
+                 Patch(AccessTools.Method(type,"DoWindowContents"),nameof(DialogBefore),null,nameof(DialogFinally));
+                 Patch(AccessTools.Method(type,"Confirm"),nameof(ConfirmBefore));
+-                Patch(AccessTools.Method(typeof(Widgets),"ButtonImage",new[]{typeof(Rect),typeof(Texture2D),typeof(Color),typeof(Color),typeof(bool),typeof(string)}),null,nameof(ImageAfter));
+-                Patch(AccessTools.Method(typeof(Widgets),"ButtonText",new[]{typeof(Rect),typeof(string),typeof(bool),typeof(bool),typeof(bool),typeof(TextAnchor?)}),null,nameof(ButtonAfter));
+-                Patch(AccessTools.Method(typeof(Widgets),"TextField",new[]{typeof(Rect),typeof(string)}),null,nameof(TextAfter));
+-                Patch(AccessTools.Method(typeof(Widgets),"HorizontalSlider",new[]{typeof(Rect),typeof(float),typeof(float),typeof(float),typeof(bool),typeof(string),typeof(string),typeof(string),typeof(float)}),null,nameof(SliderAfter));
+-                Patch(AccessTools.Method(typeof(Widgets),"CloseButtonFor",new[]{typeof(Rect)}),null,nameof(CloseAfter));
++                Patch(AccessTools.Method(typeof(Widgets),"ButtonImage",new[]{typeof(Rect),typeof(Texture2D),typeof(Color),typeof(Color),typeof(bool),typeof(string)}),nameof(ImageBefore),nameof(ImageAfter));
++                Patch(AccessTools.Method(typeof(Widgets),"ButtonText",new[]{typeof(Rect),typeof(string),typeof(bool),typeof(bool),typeof(bool),typeof(TextAnchor?)}),nameof(ButtonBefore),nameof(ButtonAfter));
++                Patch(AccessTools.Method(typeof(Widgets),"TextField",new[]{typeof(Rect),typeof(string)}),nameof(TextBefore),nameof(TextAfter));
++                Patch(AccessTools.Method(typeof(Widgets),"HorizontalSlider",new[]{typeof(Rect),typeof(float),typeof(float),typeof(float),typeof(bool),typeof(string),typeof(string),typeof(string),typeof(float)}),nameof(SliderBefore),nameof(SliderAfter));
++                Patch(AccessTools.Method(typeof(Widgets),"CloseButtonFor",new[]{typeof(Rect)}),nameof(CloseBefore),nameof(CloseAfter));
++                Patch(AccessTools.Method(typeof(Window),"OnCancelKeyPressed"),nameof(CancelBefore));
++                Patch(AccessTools.Method(typeof(WindowStack),"CloseWindowsBecauseClicked",new[]{typeof(Window)}),nameof(OutsideBefore));
+                 var command=AccessTools.TypeByName("HaulersDream.InventoryDropCommand");
+                 Patch(AccessTools.Method(command,"DropInventoryCountSynced"),nameof(CommandBefore),nameof(CommandAfter));
+                 Patch(AccessTools.Method(AccessTools.TypeByName("HaulersDream.Patch_InventoryDropAmount"),"NativeAction"),nameof(NativeActionBefore));
+@@ -67,18 +59,15 @@
+         }
+         private static void Observe(Action action)
+         {if(scene==null)return;try{action();}catch(Exception e){scene.Fault(e);}}
+-        private static void BeforeUnityEvent(EventType type,KeyCode key)
++        private static void ControlEntry(string control,string boundary)
+         {
+-            if(scene==null)return;
+-            Observe(()=>{
+-                var copy=EventCopyField.GetValue(null) as Event;
+-                if(copy==null||copy.type!=type||copy.keyCode!=key)
+-                    throw new InvalidOperationException("Unity native event-copy arguments differ.");
+-                // This is the native window event before an OnGUI matrix/control consumes it.
+-                // The bounded scene requires scale1, so no GUI conversion outside OnGUI is needed.
+-                if(Prefs.UIScale!=1f)throw new InvalidOperationException("Native event-copy observation requires scale1.");
+-                scene.NativeUnityEvent(type,copy.rawType,key,copy.character,copy.mousePosition,copy.button,copy.modifiers);
+-            });
++            if(scene==null||Event.current==null)return;
++            var e=Event.current;
++            // Typed values and coordinates are copied at the executed local control boundary.
++            // No Event.Use, event writes, input callbacks, focus changes or output replacement.
++            var type=e.type;var raw=e.rawType;var key=e.keyCode;var character=e.character;
++            var mouse=e.mousePosition;var button=e.button;var modifiers=e.modifiers;
++            Observe(()=>scene.NativeControlEntry(control,boundary,type,raw,key,character,mouse,button,modifiers));
+         }
+         private static void RootBefore()=>GuiBefore("Root.OnGUI");
+         private static void PlayBefore()=>GuiBefore("UIRoot_Play.UIRootOnGUI");
+@@ -95,9 +84,27 @@
+         private static void RowFinally(Thing __state,Exception __exception)
+         {row=__state;if(__exception!=null)Observe(()=>scene.Fault(__exception));}
+         private static void DialogBefore(object __instance,out object __state)
+-        {__state=dialog;dialog=__instance;Observe(()=>scene.DialogDraw(__instance));}
++        {
++            __state=dialog;Observe(()=>scene.DialogDraw(__instance));
++            dialog=scene!=null&&scene.OwnedWindow(__instance as Window)?__instance:null;
++            if(dialog!=null)ControlEntry("dialog","Dialog_DropInventoryAmount.DoWindowContents:entry");
++        }
+         private static void DialogFinally(object __state,Exception __exception)
+         {dialog=__state;if(__exception!=null)Observe(()=>scene.Fault(__exception));}
++        private static void ImageBefore([HarmonyArgument(1)]Texture2D tex)
++        {if(row!=null&&scene!=null&&row==scene.UiSource&&tex==TexButton.Drop)ControlEntry("gear-drop","Widgets.ButtonImage:entry");}
++        private static void ButtonBefore([HarmonyArgument(1)]string label)
++        {if(dialog!=null)ControlEntry(label=="Cancel".Translate().ToString()?"cancel":"confirm","Widgets.ButtonText:entry");}
++        private static void TextBefore()
++        {if(dialog!=null)ControlEntry("text","Widgets.TextField:entry");}
++        private static void SliderBefore()
++        {if(dialog!=null)ControlEntry("slider","Widgets.HorizontalSlider:entry");}
++        private static void CloseBefore()
++        {if(scene!=null&&scene.OwnedWindow(Find.WindowStack.currentlyDrawnWindow))ControlEntry("close-x","Widgets.CloseButtonFor:entry");}
++        private static void CancelBefore(Window __instance)
++        {if(scene!=null&&scene.OwnedWindow(__instance))ControlEntry("escape","Window.OnCancelKeyPressed:entry");}
++        private static void OutsideBefore([HarmonyArgument(0)]Window clickedWindow)
++        {if(scene!=null&&scene.OwnedDialogOpen&&!scene.OwnedWindow(clickedWindow))ControlEntry("outside","WindowStack.CloseWindowsBecauseClicked:entry");}
+         private static void ImageAfter([HarmonyArgument(0)]Rect rect,[HarmonyArgument(1)]Texture2D tex,bool __result)
+         {
+             if(row!=null&&scene!=null&&row==scene.UiSource&&tex==TexButton.Drop)
+@@ -127,17 +134,6 @@
+         public void Dispose()
+         {
+             scene?.EmitGuiDiagnostics("dispose");
+-            if(eventSubscribed)
+-            {
+-                var callbacks=(Delegate)BeforeEventField.GetValue(null);
+-                if(callbacks==null||!callbacks.GetInvocationList().Contains(beforeEvent))
+-                    throw new InvalidOperationException("Owned native event observer disappeared before cleanup.");
+-                var remaining=Delegate.Remove(callbacks,beforeEvent);
+-                BeforeEventField.SetValue(null,remaining);eventSubscribed=false;
+-                if(remaining?.GetInvocationList().Contains(beforeEvent)==true)
+-                    throw new InvalidOperationException("Owned native event observer remains after cleanup.");
+-                scene?.Emit("f11-unity-event-unbound","Owned delegate removed; other subscribers retained.");
+-            }
+             harmony.UnpatchAll(owner);
+             if(Harmony.GetAllPatchedMethods().Any(m=>Harmony.GetPatchInfo(m)?.Owners.Contains(owner)==true))
+                 throw new InvalidOperationException("F11 observer patches remain after owned cleanup.");
+--- v11/src/F11Scene.Ui.cs
++++ v12/src/F11Scene.Ui.cs
+@@ -180,7 +180,7 @@
+                     &&receipt.privateDesktop!=null&&receipt.privateDesktop.StartsWith("HaulersDreamTests-",StringComparison.Ordinal)&&receipt.inputDesktopBefore==receipt.inputDesktopAfter
+                     &&receipt.inputDesktopBefore!=receipt.privateDesktop&&Json.Stringify(receipt.requested)==Json.Stringify(pending),"Input receipt does not bind this actual owned inactive-window request.");
+                 EmitGuiDiagnostics("ack-"+pending.sequence);
+-                emit("f11-native-input-ack","sequence="+pending.sequence+"; step="+s.name+"; actual native event plus control/state postcondition; receipt="+pendingReceipt);pending=null;
++                emit("f11-native-input-ack","sequence="+pending.sequence+"; step="+s.name+"; actual control-local native event plus control/state postcondition; receipt="+pendingReceipt);pending=null;
+             }
+             steps.Dequeue();
+         }
+@@ -204,30 +204,34 @@
+             if(boundary=="Root.OnGUI")rootGuiEntries++;else playGuiEntries++;
+             string tuple=boundary+":"+type+"/"+rawType;bool first=!guiEventCounts.TryGetValue(tuple,out int count);guiEventCounts[tuple]=count+1;
+             if(first)emit("f11-gui-entry-sample",F02Json.Stringify(new{boundary,type,rawType,key,character=(int)character,x=mouse.x,y=mouse.y,button,modifiers,frame=Time.frameCount}));
+-            // Root is diagnostic only. A used/raw-only event never acknowledges the request.
+-            if(boundary=="UIRoot_Play.UIRootOnGUI"&&(ActionType(type)||ActionType(rawType)))
+-                NativeInput(boundary,type,rawType,key,character,mouse,button,modifiers);
+-        }
+-        private static bool ActionType(string type)=>type=="MouseDown"||type=="MouseUp"||type=="KeyDown"||type=="KeyUp";
+-        internal void NativeUnityEvent(EventType type,EventType rawType,KeyCode key,char character,Vector2 mouse,int button,EventModifiers modifiers)
+-        {
+-            if(type==EventType.MouseDown||type==EventType.MouseUp||type==EventType.KeyDown||type==EventType.KeyUp)
+-                NativeInput("GUIUtility.beforeEventProcessed",InputTypeName(type),InputTypeName(rawType),key.ToString(),character,mouse,button,modifiers.ToString(),true);
+-        }
+-        // Unity retains obsolete lowercase enum aliases; Enum.ToString may choose either spelling.
++            // Global Root/play delivery is diagnostic only; acknowledgement is control-local.
++        }
++        internal void NativeControlEntry(string control,string boundary,EventType type,EventType rawType,KeyCode key,char character,Vector2 mouse,int button,EventModifiers modifiers)
++        {
++            if(pending==null||(type!=EventType.MouseDown&&type!=EventType.MouseUp&&type!=EventType.KeyDown&&type!=EventType.KeyUp))return;
++            // GUIToScreenPoint runs inside the actual control's OnGUI group/window context.
++            var actual=GUIUtility.GUIToScreenPoint(mouse);bool match=false;
++            bool controlMatches=pending.action=="click"?pending.control==control:
++                pending.key=="escape"?control=="escape":control=="dialog"||control=="text";
++            if(controlMatches)
++            {
++                if(pending.action=="click")
++                {
++                    // Native slider and outside dismissal consume MouseDown; the other controls
++                    // complete on MouseUp. Never reinterpret Used or rawType as either event.
++                    var expected=pending.control=="slider"||pending.control=="outside"?EventType.MouseDown:EventType.MouseUp;
++                    match=type==expected&&button==0&&Math.Abs(actual.x-pending.x)<=2&&Math.Abs(actual.y-pending.y)<=2;
++                }
++                else if(type==EventType.KeyDown)match=pending.action=="character"?character.ToString()==pending.character:
++                    (pending.key=="backspace"&&key==KeyCode.Backspace)||(pending.key=="return"&&key==KeyCode.Return)
++                    ||(pending.key=="keypadenter"&&key==KeyCode.KeypadEnter)||(pending.key=="escape"&&key==KeyCode.Escape);
++            }
++            if(match)matchedInputs++;
++            emit("f11-native-input",F02Json.Stringify(new{sequence=pending.sequence,control,boundary,type=InputTypeName(type),rawType=InputTypeName(rawType),
++                key=key.ToString(),character=(int)character,x=actual.x,y=actual.y,button,modifiers=modifiers.ToString(),frame=Time.frameCount,controlMatches,match}));
++        }
++        // Unity retains obsolete lowercase enum aliases; canonical names reflect the typed value.
+         private static string InputTypeName(EventType type)=>type==EventType.MouseDown?"MouseDown":type==EventType.MouseUp?"MouseUp":type==EventType.KeyDown?"KeyDown":type==EventType.KeyUp?"KeyUp":type.ToString();
+-        private void NativeInput(string boundary,string type,string rawType,string key,char character,Vector2 mouse,int button,string modifiers,bool windowCoordinates=false)
+-        {
+-            var actual=windowCoordinates?mouse:GUIUtility.GUIToScreenPoint(mouse);bool match=false;
+-            if(pending!=null)
+-            {
+-                if(pending.action=="click")match=type=="MouseUp"&&button==0&&Math.Abs(actual.x-pending.x)<=2&&Math.Abs(actual.y-pending.y)<=2;
+-                else if(type=="KeyDown")match=pending.action=="character"?character.ToString()==pending.character:
+-                    (pending.key=="backspace"&&key=="Backspace")||(pending.key=="return"&&key=="Return")||(pending.key=="keypadenter"&&key=="KeypadEnter")||(pending.key=="escape"&&key=="Escape");
+-            }
+-            if(match)matchedInputs++;
+-            emit("f11-native-input",F02Json.Stringify(new{sequence=pending?.sequence,boundary,type,rawType,key,character=(int)character,x=actual.x,y=actual.y,button,modifiers,frame=Time.frameCount,match}));
+-        }
+         internal void DialogDraw(object instance)
+         {
+             var sourceField=AccessTools.Field(instance.GetType(),"source");if(!ReferenceEquals(sourceField.GetValue(instance),source))return;
+@@ -238,7 +242,8 @@
+                 geometry["outside"]=new Geometry{frame=Time.frameCount,enabled=true,min=new Vector2(1,1),max=new Vector2(4,4)};
+             }
+         }
+-        internal bool OwnedWindow(Window window)=>ReferenceEquals(dialog,window);
++        internal bool OwnedWindow(Window window)=>dialog!=null&&ReferenceEquals(dialog,window);
++        internal bool OwnedDialogOpen=>DialogOpen;
+         internal void Control(string kind,Rect rect,string text,bool result)
+         {
+             if(kind!="gear-drop"&&!DialogOpen)return;

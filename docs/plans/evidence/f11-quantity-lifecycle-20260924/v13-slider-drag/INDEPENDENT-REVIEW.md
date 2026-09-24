@@ -1,0 +1,15 @@
+# F11 v13 independent source review
+
+Accepted for the next bounded native producer. No source mutation, Prepare, window action or native launch by this reviewer.
+
+Read the complete two-file diff, current worker ownership/admission/message path and unchanged control/physical predicates, actual installed `Widgets.HorizontalSlider` and `UnityGUIBugsFixer.MouseDrag`, and v12 events590–639 including the exact request48 tuple. V12 genuinely matched its slider MouseDown at event625, but its endpoint amount predicate never became true. Its54/56 failed result and all earlier failures remain intact. The generic timeout text is not evidence of missing event delivery.
+
+On the installed Windows native path, slider MouseDown records dragging ownership and is consumed. `MouseDrag()` returns true only for actual EventType.MouseDrag with the matching button; only that branch computes a new slider value. The v13 gesture supplies the missing physical window-message sequence: move to the observed control centre, button-down, displaced WM_MOUSEMOVE with MK_LBUTTON, then button-up. Two bounded30ms gaps allow processing before release. This is an actual drag sent through the existing owned-window channel, not direct invocation of a GUI control or a synthetic successful observation.
+
+The worker still verifies the exact controller-owned PID/creation time/executable, HWND/class/private desktop, active desktop unchanged, visible client rectangle and original request identity. New drag requests are limited to the slider, use finite in-client observed bounds and require real displacement. No SendInput, foreground/focus call, desktop activation, extra ShowWindow call or global display change is added. Keyboard and ordinary click messages remain unchanged.
+
+The scene creates a drag only for its existing slider actions. Acknowledgement requires the actual owned slider's MouseDrag at the requested endpoint, the matching immutable worker receipt, and the original Buffer==1/15 result. Other clicks retain their existing MouseUp or outside-dismissal MouseDown contracts. Key and character checks, invalid/cancel/stale controls, physical7/8 and1/14 and15/0 outcomes, exact personal/custody/tag/Keep/job protections and saved-remainder lifecycle remain unchanged. Used/rawType cannot become an actionable event.
+
+The source is therefore a narrow fixture-input correction supported by both the failed native trace and installed control code. It is not a product fix and does not certify slider endpoints or the subsequent save/restart until a fresh native capture passes them. Full runtime evidence and later provider/MP obligations remain required.
+
+Pinned host: `D215F8E88756D22E4C2DA8D242F67E024B504B248EB9D4979FB2AB20A0A0DF86`, MVID `8c032e23-9da7-4dbf-a542-912c96846f78`. Selected inputs: `1CA8BB9205C4139A880761F44401BEEA0A5E51987F27FE86AC7410B5EA6407EF`. Independent hash/source and pure message-construction checks are recorded in `independent-audit.json`; no Win32 API is called by those checks.

@@ -1,0 +1,90 @@
+--- C:\Users\Arthur\Sync\Projects\RimWorld Mods\HaulersDream\docs\plans\evidence\f05-f06-robots-20260924\host\Bootstrap.cs
++++ C:\Users\Arthur\Sync\Projects\RimWorld Mods\HaulersDream\docs\plans\evidence\f05-f06-lifecycle-20260924\host\Bootstrap.cs
+@@ -118,7 +118,7 @@
+                 Check("private-mod-directory", SamePath(GenFilePaths.ModsFolderPath, Path.Combine(manifest.runtimeDirectory, "Mods")),
+                     GenFilePaths.ModsFolderPath);
+                 Check("private-player-log", SamePath(Application.consoleLogPath, manifest.logPath), Application.consoleLogPath);
+-                Check("case-supported", new[] { "bootstrap", "BG01", "BG02", "BG03-P1", "L04-O1", "CAP01", "CAP02", "CAP03-B", "CAP03-A", "CAP03-C", "L04-O1-DELIVERY", "L04-B1", "L04-B1-D2", "L40-Q1", "L40-UI-P0", "ROBOTS-R0", "ROBOTS-R1-AUTO", "REFUEL-G1", "RIMMS-DLV1", "F34-MIXED-CUT", "F05-F06-ROBOTS" }.Contains(manifest.caseId), manifest.caseId);
++                Check("case-supported", new[] { "bootstrap", "BG01", "BG02", "BG03-P1", "L04-O1", "CAP01", "CAP02", "CAP03-B", "CAP03-A", "CAP03-C", "L04-O1-DELIVERY", "L04-B1", "L04-B1-D2", "L40-Q1", "L40-UI-P0", "ROBOTS-R0", "ROBOTS-R1-AUTO", "REFUEL-G1", "RIMMS-DLV1", "F34-MIXED-CUT", "F05-OLD-SAVE", "F05-UPGRADE", "F05-RESTART", "F06-BIOTECH" }.Contains(manifest.caseId), manifest.caseId);
+                 Check("negative-control-supported", string.IsNullOrEmpty(manifest.negativeControl) || manifest.negativeControl == "None"
+                     || (manifest.caseId == "bootstrap" && new[] { "WorkerUnityError", "WorkerVerseError", "LateWorkerError", "TerminalRace" }.Contains(manifest.negativeControl)),
+                     manifest.negativeControl ?? "None");
+@@ -209,38 +209,43 @@
+                         Finish("failed", "Runtime environment differed from the prepared manifest.");
+                         return;
+                     }
+-                    Find.TickManager.CurTimeSpeed = TimeSpeed.Normal;
++                    if (manifest.caseId != "F05-UPGRADE" && manifest.caseId != "F05-RESTART") Find.TickManager.CurTimeSpeed = TimeSpeed.Normal;
+                     if (manifest.negativeControl == "WorkerUnityError" || manifest.negativeControl == "WorkerVerseError") StartErrorControl();
++                }
++                if (new[] { "F05-OLD-SAVE", "F05-UPGRADE", "F05-RESTART", "F06-BIOTECH" }.Contains(manifest.caseId))
++                {
++                    if (Current.Game == null || !Current.Game.PlayerHasControl) return;
++                    if (!robotCommandsStarted)
++                    {
++                        Check("robot-commands-host-admission", canQuitOwnRuntime && UnityData.IsInMainThread
++                            && manifest.negativeControl == "None" && manifest.expectedBehavior == "satisfied"
++                            && manifest.expectedMods.Select(x => x.packageId).SequenceEqual(
++                                new[] { "brrainz.harmony", "ludeon.rimworld" }
++                                .Concat(manifest.caseId == "F06-BIOTECH" ? new[] { "ludeon.rimworld.biotech" } : new string[0])
++                                .Concat(new[] { "Haplo.Miscellaneous.Robots", "Alaestor.MiscRobots.PlusPlus", "giwaffed.haulersdream", "giwaffed.haulersdream.runtimeharness" }))
++                            && manifest.expectedAssemblies.Count == 12
++                            && manifest.expectedAssemblies.All(x => result.assemblies.Count(a => a.name == x.name
++                                && a.moduleVersionId == x.moduleVersionId) == 1),
++                            "Private six/seven-mod twelve-image station lifecycle or actual Biotech menu profile.");
++                        if (result.assertions.Any(x => !x.passed)) { Finish("failed", "Robot command admission failed."); return; }
++                        robotCommandsStarted = true; // Cleanup also covers partial Begin failure.
++                        HaulersDream.F05Native.RobotLifecycle.Begin(map, Check, Event, manifest.caseId, manifest.evidenceDirectory);
++                    }
++                    string liveStatus = HaulersDream.F05Native.RobotLifecycle.Update();
++                    if (Find.TickManager.TicksGame > firstTick && !result.assertions.Any(x => x.id == "real-game-ticks-advanced"))
++                        Check("real-game-ticks-advanced", true, "Native ticks after lifecycle initial observation=" + (Find.TickManager.TicksGame - firstTick));
++                    if (liveStatus == "running") return;
++                    Event("scenario-observed", "Native robot lifecycle/menu returned " + liveStatus);
++                    Check("robot-commands-host-returned", liveStatus == "passed", "Live scenario returned " + liveStatus);
++                    Check("no-unity-errors-after-harness-start", unityErrors == 0, "observedErrors=" + unityErrors);
++                    Finish(liveStatus == "passed" && !result.assertions.Any(x => !x.passed) ? "passed" : "failed",
++                        "Native published old save, component upgrade, contained partial cargo, restart recovery or Biotech offered command.");
++                    return;
+                 }
+                 int elapsedTicks = Find.TickManager.TicksGame - firstTick;
+                 if (elapsedTicks < 5) return;
+                 if (!result.assertions.Any(x => x.id == "real-game-ticks-advanced"))
+                     Check("real-game-ticks-advanced", true, "elapsedTicks=" + elapsedTicks);
+-                if (manifest.caseId == "F05-F06-ROBOTS")
+-                {
+-                    if (Current.Game == null || !Current.Game.PlayerHasControl) return;
+-                    if (!robotCommandsStarted)
+-                    {
+-                        Check("robot-commands-host-admission", canQuitOwnRuntime && UnityData.IsInMainThread
+-                            && manifest.negativeControl == "None" && manifest.expectedBehavior == "satisfied"
+-                            && manifest.expectedMods.Select(x => x.packageId).SequenceEqual(new[] {
+-                                "brrainz.harmony", "ludeon.rimworld", "Haplo.Miscellaneous.Robots", "Alaestor.MiscRobots.PlusPlus", "giwaffed.haulersdream", "giwaffed.haulersdream.runtimeharness" })
+-                            && manifest.expectedAssemblies.Count == 12
+-                            && manifest.expectedAssemblies.All(x => result.assemblies.Count(a => a.name == x.name
+-                                && a.moduleVersionId == x.moduleVersionId) == 1),
+-                            "Private six-mod/twelve-image environment; native Omni automatic/command and Builder III unsupported-hauling guard.");
+-                        if (result.assertions.Any(x => !x.passed)) { Finish("failed", "Robot command admission failed."); return; }
+-                        robotCommandsStarted = true; // Cleanup also covers partial Begin failure.
+-                        HaulersDream.F05Native.RobotCommands.Begin(map, Check, Event, manifest.expectedBehavior);
+-                    }
+-                    string liveStatus = HaulersDream.F05Native.RobotCommands.Update();
+-                    if (liveStatus == "running") return;
+-                    Check("robot-commands-host-returned", liveStatus == "passed", "Live scenario returned " + liveStatus);
+-                    Check("no-unity-errors-after-harness-start", unityErrors == 0, "observedErrors=" + unityErrors);
+-                    Finish(liveStatus == "passed" && !result.assertions.Any(x => !x.passed) ? "passed" : "failed",
+-                        "Native robot automatic, actual gizmo/Targeter callbacks, queued command and interrupted-cargo recovery.");
+-                    return;
+-                }
+                 if (manifest.caseId == "F34-MIXED-CUT")
+                 {
+                     // Map initialization/five ticks do not imply player control during native fade-in.
+@@ -771,7 +776,7 @@
+             // Remove only this test's observers while error capture is still open.
+             if (robotCommandsStarted)
+             {
+-                try { HaulersDream.F05Native.RobotCommands.Dispose(); }
++                try { HaulersDream.F05Native.RobotLifecycle.Dispose(); }
+                 catch (Exception error) { Check("robot-commands-terminal-cleanup", false, error.ToString()); status = "failed"; }
+                 if (result.assertions.Any(x => !x.passed)) status = "failed";
+             }

@@ -1,0 +1,9 @@
+# Root fixture review
+
+24 September 2026. Accepted for the first private native producer. Root read both complete scene sources, the controller checkpoint/admission delta, host early-load and terminal changes, final handoff, input audit and seven-file baseline delta. No runtime result is implied.
+
+The producer requires actual native DoBill work before changing references. Its corruption is explicitly limited to two separately deep-saved native bills and the captured UFT/job links; current driver, toil, work and ingredients must remain equal. The original healthy bill/UFT and unrelated queued Wait remain controls. The candidate load is observed before native ticks, and exact cleanup of affected job identities and reservations is required. Native Saving repair and productive original-creator continuation are measured separately. A second full process must accept the resulting clean save without another repair.
+
+The early observers are installed only after initial harness isolation checks; their exceptions fail the scenario. The host uses real PauseOnLoad and retains the observed one-tick distinction. The controller selects pinned products/host, checks the original successful producer and retained checkpoint equality, protects those inputs and binds fresh copies before launch. Original private player/config and image checks remain inherited. Native setup health and temperature remain explicit possible refusals, not product passes. Finalization and actual provider compatibility are not inferred from the controlled graph.
+
+The native slot is free after joined F24 run177fd659dd214dd5b39702845fb6c04c. Root will Prepare the producer and launch only on the inactive desktop, then assess actual output before either recovery run. No source change or expanded fixture matrix is needed before this first observation.

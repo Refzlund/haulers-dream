@@ -1,0 +1,38 @@
+--- src/RimmsCommand.v10.cs.txt
++++ src/RimmsCommand.cs
+@@ -54,7 +54,7 @@
+         private Window[] windowsBefore;
+         private object[] selectionBefore;
+         private bool restart, cleaned, speedCaptured, settingsCaptured, oldDrafted, oldDirect;
+-        private int oldPriority, guiStep, guiFrame, captureFrame, startTick, stageTick, total, batch, bulkId, gotoId, queuedId, protectedInventory = 7;
++        private int oldPriority, guiStep, guiFrame, captureFrame, startTick, stageTick, total, batch, bulkId, gotoId, queuedId, singleDeliveryStartCount, protectedInventory = 7;
+         private string status = "running", stage = "setup", failure;
+         private float startedAt;
+         private Action pendingGui;
+@@ -553,10 +553,24 @@
+                     Require("drafted-handoff-productive", actor.Drafted && settings.pauseWhileDrafted && ended.TryGetValue(bulkId, out var draftedEnd)
+                         && draftedEnd == JobCondition.Succeeded.ToString() && scopedDeliveryStarts.Count > 0
+                         && scopedDeliveryStarts.All(id => ended.TryGetValue(id, out var end) && end == JobCondition.Succeeded.ToString()), State());
+-                    Gui(() => { SpawnBatch(1); IssueOffered(); Require("native-single-fallback", actor.CurJobDef == JobDefOf.HaulToCell || actor.CurJobDef == JobDefOf.HaulToContainer, JobText(actor.CurJob)); }, "single"); break;
++                    Gui(() =>
++                    {
++                        singleDeliveryStartCount = scopedDeliveryStarts.Count;
++                        SpawnBatch(1); IssueOffered();
++                        // An explicit forceSweep deliberately keeps a lone small stack in the bulk path.
++                        // This scene has room in inventory and storage; it is not a capacity fallback.
++                        Job single = actor.CurJob;
++                        Require("native-single-forced-bulk", single?.loadID == bulkId && single.def == Bulk
++                            && single.targetA.Thing == sources.Last() && single.targetQueueB?.Count == 1
++                            && single.targetQueueB[0].Thing == sources.Last() && single.countQueue?.Count == 1
++                            && single.countQueue[0] == 5, JobText(single));
++                    }, "single"); break;
+                 case "single":
+                     if (!Settled()) return;
+-                    Require("native-single-productive", actor.Drafted && ended.TryGetValue(bulkId, out var singleEnd) && singleEnd == JobCondition.Succeeded.ToString(), State());
++                    Require("native-single-productive", actor.Drafted && settings.pauseWhileDrafted
++                        && ended.TryGetValue(bulkId, out var singleEnd) && singleEnd == JobCondition.Succeeded.ToString()
++                        && scopedDeliveryStarts.Count == singleDeliveryStartCount + 1
++                        && scopedDeliveryStarts.All(id => ended.TryGetValue(id, out var end) && end == JobCondition.Succeeded.ToString()), State());
+                     Gui(() => { SpawnBatch(2); QueueOrder(); }, "queued-revoked"); break;
+                 case "queued-revoked":
+                     if (actor.CurJob?.loadID == gotoId) return;

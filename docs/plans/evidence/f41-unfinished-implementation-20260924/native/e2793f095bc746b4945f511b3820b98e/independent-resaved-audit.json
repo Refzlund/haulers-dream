@@ -1,0 +1,197 @@
+{
+  "status": "accepted-clean-native-restart",
+  "assertions": 43,
+  "events": 54,
+  "noNewRepairOrJobCleanup": true,
+  "preFirstTick": 3616,
+  "continuationStart": 3617,
+  "stableThrough": 3797,
+  "stableTicks": 180,
+  "checkpointPins": [
+    {
+      "path": "C:\\Users\\Arthur\\AppData\\Local\\HaulersDreamQA\\runtime-temp\\haulersdream-runtime-tests\\5f61003cb8f445d186c460f8805c59a1\\SaveData\\Saves\\F41OrphanCheckpoint.rws",
+      "bytes": 5591381,
+      "sha256": "211AB6866E1A74D419732EF0787416010238C328742817CC8DA0B0CEAFCAB753"
+    },
+    {
+      "path": "C:\\Users\\Arthur\\AppData\\Local\\HaulersDreamQA\\runtime-temp\\haulersdream-runtime-tests\\e2793f095bc746b4945f511b3820b98e\\SaveData\\Saves\\Autostart.rws",
+      "bytes": 5591381,
+      "sha256": "211AB6866E1A74D419732EF0787416010238C328742817CC8DA0B0CEAFCAB753"
+    },
+    {
+      "path": "C:\\Users\\Arthur\\AppData\\Local\\HaulersDreamQA\\runtime-temp\\haulersdream-runtime-tests\\5f61003cb8f445d186c460f8805c59a1\\evidence\\checkpoint.txt",
+      "bytes": 600,
+      "sha256": "5F9F18C16CF22739F7056A14496D35ECAA1E5FD7F973ECBD2E293925094FA388"
+    },
+    {
+      "path": "C:\\Users\\Arthur\\AppData\\Local\\HaulersDreamQA\\runtime-temp\\haulersdream-runtime-tests\\e2793f095bc746b4945f511b3820b98e\\input\\checkpoint.txt",
+      "bytes": 600,
+      "sha256": "5F9F18C16CF22739F7056A14496D35ECAA1E5FD7F973ECBD2E293925094FA388"
+    }
+  ],
+  "protectedPredecessorFiles": [
+    {
+      "path": "C:\\Users\\Arthur\\AppData\\Local\\HaulersDreamQA\\runtime-temp\\haulersdream-runtime-tests\\5f61003cb8f445d186c460f8805c59a1\\SaveData\\Saves\\F41OrphanCheckpoint.rws",
+      "exists": true,
+      "sha256": "211AB6866E1A74D419732EF0787416010238C328742817CC8DA0B0CEAFCAB753"
+    },
+    {
+      "path": "C:\\Users\\Arthur\\AppData\\Local\\HaulersDreamQA\\runtime-temp\\haulersdream-runtime-tests\\5f61003cb8f445d186c460f8805c59a1\\evidence\\checkpoint.txt",
+      "exists": true,
+      "sha256": "5F9F18C16CF22739F7056A14496D35ECAA1E5FD7F973ECBD2E293925094FA388"
+    },
+    {
+      "path": "C:\\Users\\Arthur\\AppData\\Local\\HaulersDreamQA\\runtime-temp\\haulersdream-runtime-tests\\5f61003cb8f445d186c460f8805c59a1\\manifest.json",
+      "exists": true,
+      "sha256": "2369019CBE41665E1711F01D435E3D854F02D91737CFA2A27D1347521FC782A1"
+    },
+    {
+      "path": "C:\\Users\\Arthur\\AppData\\Local\\HaulersDreamQA\\runtime-temp\\haulersdream-runtime-tests\\5f61003cb8f445d186c460f8805c59a1\\evidence\\result.json",
+      "exists": true,
+      "sha256": "7117C282C00A08686D99458F2B4CE4844532DD5E87254D2F1FF95FCC9CC00C2C"
+    },
+    {
+      "path": "C:\\Users\\Arthur\\AppData\\Local\\HaulersDreamQA\\runtime-temp\\haulersdream-runtime-tests\\5f61003cb8f445d186c460f8805c59a1\\evidence\\Player.log",
+      "exists": true,
+      "sha256": "7B01A220C2D7E6C77B43B7AC1B992D6E435FC4B063868018D5065B7B80A15C4C"
+    },
+    {
+      "path": "C:\\Users\\Arthur\\AppData\\Local\\HaulersDreamQA\\runtime-temp\\haulersdream-runtime-tests\\5f61003cb8f445d186c460f8805c59a1\\evidence\\F41OrphanCheckpoint.rws",
+      "exists": true,
+      "sha256": "211AB6866E1A74D419732EF0787416010238C328742817CC8DA0B0CEAFCAB753"
+    }
+  ],
+  "modulePins": [
+    {
+      "name": "Assembly-CSharp",
+      "sha256": "5CF1B5BE399D5B1C9C56CA72C9D35B4ECF307FEACF5859D04AC5A1AA5926356A",
+      "mvid": "61e41735-6189-4da4-9d21-0260257b5097"
+    },
+    {
+      "name": "UnityEngine.CoreModule",
+      "sha256": "C5C58EA254834291780A1D6C388C241443D07167B4A4B890A23C9494F626DDBA",
+      "mvid": "e422ced3-d0f6-4bb2-9423-e8338d57bc04"
+    },
+    {
+      "name": "0Harmony",
+      "sha256": "353DAAFEC180BB8E7BBE4DA78F2A7CDC78067392E3A4E79DC8E7AF295F2371E6",
+      "mvid": "e5339928-9d9b-419d-83f9-f5b02c5cf609"
+    },
+    {
+      "name": "HarmonyMod",
+      "sha256": "408C2CD72B45DA8C70C0C538B2B346C8DCBB5BDED066373F6A3EB8B26615A2E7",
+      "mvid": "dc156e18-c1bf-4ec8-acd4-7176558400e1"
+    },
+    {
+      "name": "HaulersDream",
+      "sha256": "36E298BAA30D6EA51436E156267E954394DF64D685AE5CD8B472ACC80140E479",
+      "mvid": "cb5ed9d8-5334-4951-be65-d82eee30b360"
+    },
+    {
+      "name": "HaulersDream.Core",
+      "sha256": "2EC1CCAB03227D6BC678E0EB6574E85A288901A5CDE6E210C13CFF4B505156FD",
+      "mvid": "25c39006-05b1-4d20-b80c-f72e4b6916fe"
+    },
+    {
+      "name": "HaulersDream.RuntimeHarness",
+      "sha256": "06E8D015AE2EF5C4985F4783B849894EB80464543A2B6D927DA38D1B83BE9EDE",
+      "mvid": "08d610ae-6602-44dd-a96e-87a99ba1f9b2"
+    },
+    {
+      "name": "UnityEngine.IMGUIModule",
+      "sha256": "C6C39327211BE8299E2E9FFDEE7A979F228736C99B84FD54BC73F563456865D9",
+      "mvid": "69e8f115-9fb5-4cb4-9dbe-76d334eaed32"
+    },
+    {
+      "name": "UnityEngine.ScreenCaptureModule",
+      "sha256": "D03D9881419CEBCED07E8AC45E3AADBB866948670071FE95BED404B758274FF3",
+      "mvid": "768b1ad7-5506-4711-ba28-6142e4f37147"
+    },
+    {
+      "name": "UnityEngine.TextRenderingModule",
+      "sha256": "B63769AD71C7FC79034CF6C3A1EBFCF79D4591F0B1F5CD4A9823E6ED7B5816F8",
+      "mvid": "cbfa93f3-6818-4ee1-8c93-86e4fe595e71"
+    }
+  ],
+  "healthyXmlExactlyMatchesOriginalProducer": true,
+  "orphanLinksNull": true,
+  "products": [
+    "Apparel_Tuque19087",
+    "Apparel_Tuque19088"
+  ],
+  "healthyCloth": 20,
+  "rawPins": [
+    {
+      "path": "C:\\Users\\Arthur\\Sync\\Projects\\RimWorld Mods\\HaulersDream\\docs\\plans\\evidence\\f41-unfinished-implementation-20260924\\native\\e2793f095bc746b4945f511b3820b98e\\raw\\events.jsonl",
+      "bytes": 16573,
+      "sha256": "B3DFF68E7920F54EC7429341710903D375935FF17DA07B9B1724579878FF40CF"
+    },
+    {
+      "path": "C:\\Users\\Arthur\\Sync\\Projects\\RimWorld Mods\\HaulersDream\\docs\\plans\\evidence\\f41-unfinished-implementation-20260924\\native\\e2793f095bc746b4945f511b3820b98e\\raw\\HaulersDream-debug.log",
+      "bytes": 171,
+      "sha256": "12C712DE0DA104202BDBD78E7CEAF97FD0BFCDD00DEC16B5482D10725A59F59F"
+    },
+    {
+      "path": "C:\\Users\\Arthur\\Sync\\Projects\\RimWorld Mods\\HaulersDream\\docs\\plans\\evidence\\f41-unfinished-implementation-20260924\\native\\e2793f095bc746b4945f511b3820b98e\\raw\\Player.log",
+      "bytes": 147602,
+      "sha256": "EAAC307CC14905E98130A79933CADB86F46800BFABD1E34C85C62DC81602BA38"
+    },
+    {
+      "path": "C:\\Users\\Arthur\\Sync\\Projects\\RimWorld Mods\\HaulersDream\\docs\\plans\\evidence\\f41-unfinished-implementation-20260924\\native\\e2793f095bc746b4945f511b3820b98e\\raw\\result.json",
+      "bytes": 13516,
+      "sha256": "DDDD9062BB787CBE672BAA02ECBBC9613876ECA6B6E14A855E751E892D1BB3C2"
+    }
+  ],
+  "wholeLogLines": 1901,
+  "nonprofileLines": 54,
+  "native": {
+    "startedUtc": "2026-09-24T10:42:23.8527681Z",
+    "runDirectory": "C:/Users/Arthur/AppData/Local/HaulersDreamQA/runtime-temp/haulersdream-runtime-tests/e2793f095bc746b4945f511b3820b98e",
+    "processId": 5880,
+    "joined": true,
+    "exitCode": 0,
+    "deadlineExceeded": false,
+    "error": null,
+    "processStartedUtc": "2026-09-24T10:42:37.8336596Z",
+    "executable": "C:\\Users\\Arthur\\AppData\\Local\\HaulersDreamQA\\runtime-temp\\haulersdream-runtime-tests\\e2793f095bc746b4945f511b3820b98e\\runtime\\RimWorldWin64.exe",
+    "finishedUtc": "2026-09-24T10:43:08.9226970Z"
+  },
+  "desktop": {
+    "desktop": "HaulersDreamTests-00af75157429459e8e4b231b2d6046c6",
+    "command": [
+      "C:/Users/Arthur/.cache/codex-runtimes/codex-primary-runtime/dependencies/native/powershell/pwsh.exe",
+      "-NoProfile",
+      "-File",
+      "C:\\Users\\Arthur\\Sync\\Projects\\RimWorld Mods\\HaulersDream/docs/plans/evidence/f41-unfinished-implementation-20260924/native-fixture/launch.ps1",
+      "-RunDirectory",
+      "C:/Users/Arthur/AppData/Local/HaulersDreamQA/runtime-temp/haulersdream-runtime-tests/e2793f095bc746b4945f511b3820b98e",
+      "-OutputDirectory",
+      "C:\\Users\\Arthur\\Sync\\Projects\\RimWorld Mods\\HaulersDream/docs/plans/evidence/f41-unfinished-implementation-20260924/native/e2793f095bc746b4945f511b3820b98e"
+    ],
+    "cwd": "C:\\Users\\Arthur\\Sync\\Projects\\RimWorld Mods\\HaulersDream",
+    "pid": 24052,
+    "exitCode": 0,
+    "startedUtc": "2026-09-24T10:42:21.419397+00:00",
+    "switchedDesktop": false,
+    "inputDesktopSamples": [
+      "Default"
+    ],
+    "privateWindowPids": [
+      5880
+    ],
+    "timedOut": false,
+    "error": null,
+    "cleanupErrors": [],
+    "activeProcessesBeforeClose": 0,
+    "joined": true,
+    "finishedUtc": "2026-09-24T10:43:08.972647+00:00"
+  },
+  "verifyStatus": "not-verified",
+  "verifyProblems": [
+    "F41 capture requires independent full native save-chain, job/ingredient/work identities, healthy/unrelated controls, repair-only cancellation and productive completion review. Controlled corruption is not actual WorkbenchConnect verification. Baseline remains failed.",
+    "Missing unique event: scenario-observed",
+    "Player.log contains candidates requiring independent review; bootstrap is not automatically verified."
+  ],
+  "protectedChanges": [],
+  "nativeOrPrepareInvokedByReviewer": false
+}

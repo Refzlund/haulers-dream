@@ -1,0 +1,30 @@
+--- before/runtime-test.ps1
++++ v6/runtime-test.ps1
+@@ -853,9 +853,25 @@
+             @($taskSourceResult.assertions | Where-Object { -not $_.passed }).Count -ne 0) { throw 'Controlled-orphan checkpoint producer did not pass.' }
+         if (@(Select-String -LiteralPath $taskSourceLogPath -Pattern 'not deep-saved|cause errors during loading|Could not resolve reference').Count -ne 0) { throw 'Checkpoint producer has unresolved native save ownership warnings.' }
+         $f41ProducerImages = @($taskSourceManifest.expectedAssemblies)
+-        foreach ($f41Expected in @($f41Selection.candidate.files | Where-Object { $_.name -in @('HaulersDream','HaulersDream.Core') }) + @($f41Selection.harness)) {
++        $f41RequiredProducerImages = @($f41Selection.candidate.files | Where-Object { $_.name -in @('HaulersDream','HaulersDream.Core') }) + @($f41Selection.harness)
++        if ($CaseId -ceq 'F41-RECOVER') {
++            # Preserve the accepted original corruption producer across this narrow repair revision.
++            # This admits exactly one retained run and its byte-pinned evidence, never general image drift.
++            $f41Accepted = $f41Selection.acceptedOriginalProducer
++            if ($null -eq $f41Accepted -or $taskSourceManifest.runId -cne $f41Accepted.runId -or
++                (Get-CanonicalPath $taskSourceRun) -cne (Get-CanonicalPath $f41Accepted.root) -or
++                $CheckpointSave -cne (Get-CanonicalPath $f41Accepted.checkpointSave.path) -or
++                $CheckpointRecord -cne (Get-CanonicalPath $f41Accepted.checkpointRecord.path)) { throw 'Recovery requires the exact accepted original F41 producer.' }
++            foreach ($f41OriginalFile in @($f41Accepted.files)) {
++                Assert-NoReparsePath $f41OriginalFile.path
++                if ((Get-Sha256 $f41OriginalFile.path) -cne $f41OriginalFile.sha256) { throw ('Accepted original producer evidence changed: ' + $f41OriginalFile.path) }
++            }
++            if (@($f41Accepted.files).Count -ne 6 -or @($f41Accepted.images).Count -ne 3) { throw 'Accepted original producer pin set is incomplete.' }
++            $f41RequiredProducerImages = @($f41Accepted.images)
++        }
++        foreach ($f41Expected in $f41RequiredProducerImages) {
+             $f41Image = @($f41ProducerImages | Where-Object { $_.name -ceq $f41Expected.name })
+-            if ($f41Image.Count -ne 1 -or $f41Image[0].sha256 -cne $f41Expected.sha256) { throw 'Checkpoint producer image differs from this pinned F41 candidate/host.' }
++            if ($f41Image.Count -ne 1 -or $f41Image[0].sha256 -cne $f41Expected.sha256) { throw 'Checkpoint producer image differs from its explicitly pinned F41 producer role.' }
+         }
+         $taskCheckpointText = Get-Content -LiteralPath $CheckpointRecord -Raw
+         if (-not $taskCheckpointText.StartsWith(('phase=' + $taskProducerCase + ';'),[StringComparison]::Ordinal)) { throw 'Checkpoint record phase differs.' }

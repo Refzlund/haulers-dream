@@ -1,0 +1,13 @@
+# Independent F20 source review
+
+Reviewed the exact four current product files against `before/`, `product.diff`, the complete actual SRH 0.2.0 binary decompile, and GH269/C005/C006 plus the retained reporter logs. No source correction was needed.
+
+The adapter binds the real public static `HysteresisManager.GetHysteresis(StorageSettings)` and instance `Hysteresis.AllowsRefill()` with exact parameter and return types. Inactive SRH returns true without looking up types. An active incompatible API rejects only the three HD destination shortcuts and emits one warning, leaving the native store search intact. Invocation exceptions remain visible. The short-lived invocation buffer does not retain a settings owner or cache an answer.
+
+SRH controls the native per-group search and hopper work giver. Ordinary IsGoodStoreCell does not impose this latch. The pre-change HD stack-refinement postfix and two independent midway scans therefore bypass a real provider boundary. The candidate asks the provider in those three selection paths. It neither changes a deposit driver nor limits already assigned counts. Positive cached stack cells recheck the provider, and cached misses are recomputed while SRH is active, covering same-tick manual latch changes. The provider still owns sampling, aggregate linked-group fullness, thresholds and overshoot semantics.
+
+The reporter's exact historical save/latch is absent. This is a demonstrated source defect consistent with the logs, not proof that every tiny trip in the 232-mod report had this cause. Three cross-posts are one report, not three recurrences. There is no evidence that this exact gate previously passed a fix and regressed.
+
+The old F07/F35 temporary source snapshots are unavailable. `build-products.ps1` therefore freezes the current complete source once and builds a matched pair. The baseline differs only by restoring the three exact retained before-files and omitting the adapter. Both actual builds joined successfully with zero warnings/errors and deployment disabled. `product-inputs-20260924.json` and the two build receipts pin inputs/products. These are compile results only; native acceptance is still required.
+
+Root independent review, 24 September: read the adapter, exact three call-site diffs and surrounding cache/group-search control flow, and checked the actual provider API and native worker gate. The narrow source candidate is accepted for native verification. It gates selection rather than delivery quantities, rechecks same-tick positive/negative cache behavior, and preserves provider ownership of its latch. No extra product correction is required from this review.

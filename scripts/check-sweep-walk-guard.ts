@@ -85,6 +85,7 @@ const ROUTED_DRIVERS: { file: string; cursor: string }[] = [
 	{ file: 'JobDriver_SelfPickup.cs', cursor: 'none — TakeNextValidPending already popped the drop' },
 	{ file: 'JobDriver_OverloadConstructDeliver.cs', cursor: 'none — NextResourceStack already popped the stack' },
 	{ file: 'JobDriver_BillPrepGather.cs', cursor: 'loadIndex++' },
+	{ file: 'JobDriver_GatherBillIngredients.cs', cursor: 'cursor++' },
 	{ file: 'JobDriver_BatchCraft.cs', cursor: 'none — FindNeededStack re-scans and filters forbidden' },
 ]
 

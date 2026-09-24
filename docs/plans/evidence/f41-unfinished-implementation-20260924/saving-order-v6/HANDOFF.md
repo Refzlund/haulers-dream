@@ -1,0 +1,40 @@
+# F41 reciprocal save-order correction — v6
+
+Source/build handoff only. No Prepare, native launch, deployment, staging or commit by this agent. Root owns independent source review and runtime acceptance.
+
+## Finding and narrow product change
+
+The original pair remains retained: baseline `871d05e7d5f44864a62f8bc173b840e1` reproduces the real null-stack poison; candidate `67804779633748caa4f739419f4d406b` repairs the loaded items/jobs and finishes both native recipes. Full independent disposition is `../native/independent-recovery-pair-review.md` and its audit JSON. Do not relabel the old candidate's intermediate SavingGuard file as a two-sided serialized success: its orphan bill 3 still serialized `boundUft=Thing_UnfinishedApparel16334` before the UFT prefix cleared the live links. Its final clean checkpoint is independently sound, but root held prepared restart `6a1082...` unlaunched while correcting this gap.
+
+Only product source changed relative to the accepted frozen candidate: `Source/HaulersDream/Patch_UftOrphanBillGuard.cs` (`Patch_UftOrphanBillGuard.cs.diff`; exact prior bytes in `before/`). New `Bill_ProductionWithUft.ExposeData` prefix runs only while Saving, only when the bill has no stack, only when its safe native `BoundUft` getter returns an item whose raw bound bill is that exact bill. It calls the existing `TryUnbind` and shared warning before native reverse-link serialization. No load-time bill-prefix mutation, presave scan, rebinding, recipe work, ingredient, job or map change. Healthy/asymmetric foreign relationships are outside admission. Existing UFT prefix covers item-first order; whichever prefix repairs first makes the second inert. The original item field binding disables both patches if native shape changes.
+
+Native contracts inspected: `../../f41-unfinished-review-20260924/RimWorld.Bill_ProductionWithUft.cs.txt`, and local `Verse.ScribeSaver.native.txt` / `Verse.DebugLoadIDsSavingErrorsChecker.native.txt`. `BoundUft` is a plain field getter; native bill ExposeData calls base then serializes `boundUft`. Source excerpts were generated from the installed DLL identified below.
+
+## Fixture and controller changes
+
+`OrphanRecipeScene.cs.diff` strengthens the existing actual full `GameDataSaveLoader.SaveGame("F41SavingGuard")` oracle. Both actual deep orphan bill nodes must precede their actual map UFT nodes in XML order, have the exact recorded identities, and serialize both `boundUft=null` and `bill=null`. The old failed intermediate file is retained as a strict-oracle negative control in `audit.json`; its stale reverse link fails v6's requirement.
+
+Then native `ScribeSaver.DebugOutputFor` serializes the same real repaired UFT and orphan bill in the opposite order under `saveable/f41UftFirstDiagnostic`, retaining raw output as `F41UftFirstDiagnostic.xml`. This is explicitly a partial native diagnostic, never a colony save or restart input. Native DebugOutputFor uses native Saving/Scribe_Deep and finally ForceStop; it does not invoke InitSaving or unrelated colony-save queue cleanup. It is the supported partial serialization path, avoiding false ownership claims for existing external creator/map references. No checker is suppressed or mocked. Actual XML must show item first and bill second, exact identities, both null links; exact item recipe/creator/work/ingredients/physical ownership, actual current job/driver references, queues, toil/work and native reservations must remain unchanged. Scribe must finish inactive. Total observed repairs is now four: two load repairs, one full-save bill-first repair, one native diagnostic UFT-first repair. Final clean resave requires no fifth repair. A failed file or preservation oracle prevents productive continuation.
+
+`runtime-test.ps1.diff` retains strict image equality for RESAVED. RECOVER instead requires exactly the accepted original corruption producer `07ec286c63b04bb293820805211b0c47`, its exact private run/path and six byte-pinned files (native source/retained save, record, manifest, result, whole log), plus its original candidate/Core/host identities. Existing passed-assertion, source joins, native XML and unresolved-reference checks still apply. This is one explicit original-producer binding, not a hash-drift exemption. Read-only `check-controller.ps1` extracts the actual admission block without executing Prepare. It admits the retained producer, refuses a changed file pin, refuses a changed run identity, and refuses the old recovery images as a new RESAVED source. Prefs parsing still produces native booleans False/True/True for producer/recover/resaved.
+
+## Frozen inputs and checks
+
+- New private root: `C:/Users/Arthur/AppData/Local/HaulersDreamQA/inputs/f41-saving-order-v6`.
+- Active selection: `../native-fixture/selection.json`, also retained here as `selection.json`; SHA256 `8307973A1E77465586C6EC17E37B2D08F3F6C82D3ED8C91A7C99F8711EC90B72`.
+- Candidate HD SHA256 `36E298BAA30D6EA51436E156267E954394DF64D685AE5CD8B472ACC80140E479`; MVID `cb5ed9d8-5334-4951-be65-d82eee30b360`.
+- Candidate Core SHA256 `2EC1CCAB03227D6BC678E0EB6574E85A288901A5CDE6E210C13CFF4B505156FD`; MVID `25c39006-05b1-4d20-b80c-f72e4b6916fe`.
+- Host SHA256 `61309C00B20CE317FCC194A13D083CA07E1C3A6B77949B4173D59302C2C0E747`; MVID `609a6dff-2749-4393-b174-e8c2b546c2aa`.
+- Installed actual `Assembly-CSharp.dll`: `5CF1B5BE399D5B1C9C56CA72C9D35B4ECF307FEACF5859D04AC5A1AA5926356A`; same original 84 native reference pins and native Harmony. Host generated assembly metadata binds that actual game hash. No reference-package-only acceptance claim.
+- Candidate build 36.33 seconds and host build 10.82 seconds, zero warnings/errors, joined hidden build processes, deployment guard absent. Core source is unchanged; isolated rebuild path changes deterministic output identity, so it is explicitly re-pinned.
+- Managed checks: **22 passed, 0 failed** against actual compiled product/native fields, including exact reciprocal admission, absent/healthy/foreign orphan cases, both hook orders, idempotence and original fractional work/ingredient identity/count. These use managed uninitialized objects and are not native gameplay proof.
+- `audit.json`: every selected input/current working product hunk rechecked, all 478 source inputs equal the old frozen candidate except the one guard file, actual native reference identity, old SavingGuard negative control. Controller parse/admission/prefs results in `controller-check.json`.
+- `metadata/` holds reflection-only DLL identity receipts. Initial Python `resolve()` exposed the equivalent Windows packaged-app redirected spelling. `path-normalization-audit.json` verifies all 110 aliases byte-identical and restores the controller's established lexical private-root spelling. Both selections and earlier metadata receipts remain retained; no filesystem or custody guard changed.
+
+## Next native acceptance
+
+Root should review the three diffs and active selection, then Prepare a fresh F41-RECOVER satisfied run using the new candidate/host and **the unchanged original producer**. Do not rerun the producer/baseline without a new reason. Original checkpoint SHA256 remains `CC5563997AA112E7BFCF960C17E6A216B2BCBD1C65643307B6F8497A68196558`; record `351D7BA69BC8B2DBBBF8663086E7044E22F41F96DC258B8C676A5BDF58014F5E`.
+
+Use the existing inactive private desktop launcher through `scripts/run-on-test-desktop.py` and `../native-fixture/launch.ps1`. After this recovery passes, independently review both actual serialization outputs, native recipe consumption/products, whole logs/process/cleanup, clean checkpoint XML and pins; then Prepare a fresh RESAVED consuming the **new** recovery and prove no repeated repair. Prior RESAVED preparation stays historical/unlaunched.
+
+This remains a generic null-stack orphan repair and current/queued `Job.bill` sibling witness. Actual WorkbenchConnect production of the corruption and physical hand-held UFT custody are not proven; neither is a new requirement invented by this correction. See paired review for the exact frozen PR requirement boundary. F41 should not be closed before the new recovery and clean restart acceptance.

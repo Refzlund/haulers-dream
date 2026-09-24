@@ -1,0 +1,11 @@
+# Root adoption of the current F07 port
+
+20 September 2026. Source and isolated build are accepted for the finite real RIMMSqol editor/command scenario. This is not gameplay or report completion.
+
+Root read `PORT.md`, the actual build receipt and the earlier root compiled adoption, then independently reconciled every one of the 44 proposal/current files, all 461 current/copied product inputs and all four actual DLL/PDB outputs against their retained hashes. There were no differences. This is the same final bounded-deposit/custody proposal already reviewed on 13 September, now integrated into the current product without replacing unrelated later fixes. No second build was needed.
+
+Root inspected the command/provider/WorkGiver changes, both modified job drivers and the complete new delivery, transit and cargo implementations. The real WorkGiver exposes live direct-order/drafted controls while excluding automatic work. Menu queries lack job-creation authority; job creation is scoped to the real command. Permission is checked again for reservation, queued start and continued execution. Only successful identified drafted sweeps queue the dedicated quantity-limited delivery; unrelated inventory and interruption do not acquire that authority. The separate delivery branch retains exact withdrawn pieces, bounded recovery and save fields, and does not silently fall through to ordinary unloading on invalid metadata.
+
+All six existing destinations matched their original proposal bases before the port; the other 417 existing product inputs remained unchanged. The previously accepted F10 report translations are retained and the 16 new WorkGiver gerunds agree with them. F33 route/construction intent and F34/F45 fixes were outside the changed destinations and remain included in the actual current build.
+
+Remaining acceptance is concrete runtime integration: actual RIMMSqol discovery/edit/apply, offered drafted commands, native command-to-pickup-to-delivery handoff, stale/queued permission revocation, interruption and one real transit restart. The earlier three delivery scenes remain reusable once their retained-data reader check finishes; they do not prove the editor/menu path. Final shared-command and Multiplayer checks remain separate. No new broad compatibility matrix or repeat source-review chain is required by this adoption.

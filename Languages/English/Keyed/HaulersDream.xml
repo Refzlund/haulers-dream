@@ -466,7 +466,7 @@
 
   <!-- Settings: transporter / shuttle bulk loading -->
   <HaulersDream.Setting.EnableBulkLoadTransporters>Bulk-load transporters and shuttles in one trip</HaulersDream.Setting.EnableBulkLoadTransporters>
-  <HaulersDream.Setting.EnableBulkLoadTransportersDesc>When a transport pod or shuttle is set to load, a hauler claims a slice of its manifest, sweeps several nearby stacks into its inventory, walks to the transporter ONCE, and deposits them all — instead of vanilla's one-stack-in-hands per walk. Several haulers split a large manifest with no double-hauling, and the pod won't board or launch until the claimed cargo is in. With this off, vanilla's single-stack transporter loading is used unchanged.</HaulersDream.Setting.EnableBulkLoadTransportersDesc>
+  <HaulersDream.Setting.EnableBulkLoadTransportersDesc>When a transport pod or shuttle is set to load, a hauler claims a slice of its manifest, sweeps several nearby stacks into its inventory, walks to the transporter ONCE, and deposits them all — instead of vanilla's one-stack-in-hands per walk. Several haulers split a large manifest with no double-hauling, and the pod won't board or launch until the claimed cargo is in. With this off, vanilla's single-stack transporter loading is used unchanged. A prioritized order repeats trips for this manifest after successful deliveries while the courier is undrafted and has no queued replacement work. A drafted courier can make one loading trip.</HaulersDream.Setting.EnableBulkLoadTransportersDesc>
   <HaulersDream.Setting.BulkLoadAiUpdateFrequency>Load re-check interval: {0}</HaulersDream.Setting.BulkLoadAiUpdateFrequency>
 
   <!-- Map-portal BULK LOADING (pit gates, cave / vault exits, "enter map" portals) -->
@@ -552,7 +552,7 @@
   <HaulersDream.Setting.OpportunisticLoadDesc>A pawn already carrying items that a nearby transport pod, shuttle, map portal or vehicle is waiting for will divert to drop them off, instead of starting a brand-new pickup run. Fewer wasted walks. Off by default (it changes which task a pawn picks up next).</HaulersDream.Setting.OpportunisticLoadDesc>
   <HaulersDream.Setting.LoadOpportunityRadius>Deposit-on-the-way search radius: {0} tiles</HaulersDream.Setting.LoadOpportunityRadius>
   <HaulersDream.Setting.ContinuousLoading>"Load until complete" right-click order</HaulersDream.Setting.ContinuousLoading>
-  <HaulersDream.Setting.ContinuousLoadingDesc>Adds a right-click order that sends one courier (even drafted) through every nearby transport group that still needs loading, chaining the jobs until they're all full — handy for loading a big caravan in one command. Off by default (opt-in convenience).</HaulersDream.Setting.ContinuousLoadingDesc>
+  <HaulersDream.Setting.ContinuousLoadingDesc>Adds a right-click order to continue through nearby loading targets after completing the selected manifest. Further trips require an undrafted courier, a successful delivery and no queued replacement work. Off by default.</HaulersDream.Setting.ContinuousLoadingDesc>
   <!-- Continuous-loading float-menu order (B4) -->
   <HaulersDream.ContinuousLoad.Option>Load until complete (continuous) — {0}</HaulersDream.ContinuousLoad.Option>
   <HaulersDream.ContinuousLoad.CouldNotStart>Nothing nearby to bulk-load into that right now.</HaulersDream.ContinuousLoad.CouldNotStart>
@@ -802,7 +802,7 @@
   <HaulersDream.Setting.BulkHaulTrigger.Lab>Bulk-haul trigger</HaulersDream.Setting.BulkHaulTrigger.Lab>
   <HaulersDream.Setting.KeepWorkingMargin.Lab>Unload before a longer walk to the next work spot</HaulersDream.Setting.KeepWorkingMargin.Lab>
   <HaulersDream.Setting.MinFreeSpaceToUnloadCarrier.Lab>Minimum free backpack space to start</HaulersDream.Setting.MinFreeSpaceToUnloadCarrier.Lab>
-  <HaulersDream.Setting.MinFreeSpaceToUnloadCarrier.Help>A hauler needs at least this much of its carry capacity free before it starts emptying a pack animal, so its own backpack doesn't immediately overflow.</HaulersDream.Setting.MinFreeSpaceToUnloadCarrier.Help>
+  <HaulersDream.Setting.MinFreeSpaceToUnloadCarrier.Help>A hauler needs at least this much of its carry capacity free before it starts emptying a pack animal, so its own backpack doesn't immediately overflow. This threshold also applies to automatic transporter unloading.</HaulersDream.Setting.MinFreeSpaceToUnloadCarrier.Help>
   <HaulersDream.Setting.VisualUnloadDelay.Lab>Per-stack unload delay</HaulersDream.Setting.VisualUnloadDelay.Lab>
   <HaulersDream.Setting.VisualUnloadDelay.Help>A small cosmetic pause between each stack during a bulk unload, so it reads as a deliberate action. 0 = instant.</HaulersDream.Setting.VisualUnloadDelay.Help>
   <HaulersDream.Setting.BulkLoadAiUpdateFrequency.Lab>Load re-check interval</HaulersDream.Setting.BulkLoadAiUpdateFrequency.Lab>
@@ -960,6 +960,17 @@
   <HaulersDream.Setting.CarryMassCap.Off>No limit</HaulersDream.Setting.CarryMassCap.Off>
   <HaulersDream.Setting.CarryMassCap.Value>{0} kg</HaulersDream.Setting.CarryMassCap.Value>
   <HaulersDream.Setting.CarryMassCapDesc>A hard cap, in kilograms, on how much a pawn loads into its inventory on one hauling or gathering trip. This is the direct answer to 'my pawns carry too much': set it low (say 20 kg) and pawns gather a small load, unload, and come back, instead of filling to their full carry weight. It works together with the 'Carry limit' percentage and Smart overload above, and the lower limit always wins, so this cap is never exceeded even with overload on. Like the Carry limit, it counts only what is stowed in the pack, not a stack carried in the hands, and it does not change how much material a pawn fetches for a specific build or bill. Set to 0 for no limit (the default).</HaulersDream.Setting.CarryMassCapDesc>
+  <HD_DropAmountTitle>Drop an amount</HD_DropAmountTitle>
+  <HD_DropAmountConfirm>Drop</HD_DropAmountConfirm>
+  <HD_DropAmountContext>{0}\n{1}\nAvailable: {2}</HD_DropAmountContext>
+  <HD_DropAmountQuantity>Amount to drop</HD_DropAmountQuantity>
+  <HD_DropAmountRemaining>Remaining in inventory: {0}</HD_DropAmountRemaining>
+  <HD_DropAmountInvalid>Enter a whole number from 1 to {0}.</HD_DropAmountInvalid>
+  <HD_DropAmountChanged>The pawn or inventory stack changed. Open the drop dialog again.</HD_DropAmountChanged>
+  <HD_DropAmountUnavailable>Dropping an amount is unavailable with the current mod setup.</HD_DropAmountUnavailable>
+  <HD_DropAmountUnconfirmed>The drop could not be confirmed. Check the pawn's inventory.</HD_DropAmountUnconfirmed>
+  <HD_DropAmountBlocked>There is no room nearby to drop these items.</HD_DropAmountBlocked>
+  <HD_DropAmountPartial>Dropped {0} of {1}; there was not enough room nearby.</HD_DropAmountPartial>
   <HD_NearbyHaulGizmoDesc>Select an item to haul it and nearby items to storage. Hold the queue-order key when selecting to queue the order.</HD_NearbyHaulGizmoDesc>
   <HD_NearbyHaulPawnUnavailable>This pawn cannot receive a hauling order in its current state.</HD_NearbyHaulPawnUnavailable>
   <HD_NearbyHaulDrafted>Undraft this pawn before ordering this haul.</HD_NearbyHaulDrafted>
@@ -968,4 +979,18 @@
   <HD_NearbyHaulInventoryUnavailable>Inventory hauling is unavailable for this pawn.</HD_NearbyHaulInventoryUnavailable>
   <HD_NearbyHaulRobotUnsupported>The robot's hauling work could not be read with the current mod setup.</HD_NearbyHaulRobotUnsupported>
   <HD_NearbyHaulSourceUnavailable>The selected item is unavailable for hauling.</HD_NearbyHaulSourceUnavailable>
+  <HaulersDream.UnloadTransporter.Option>Prioritize bulk unloading {0}</HaulersDream.UnloadTransporter.Option>
+  <HaulersDream.UnloadTransporter.CouldNotStart>Could not start bulk unloading that transporter right now.</HaulersDream.UnloadTransporter.CouldNotStart>
+  <HaulersDream.Gizmo.BulkUnloadAll.Label>Bulk unload all</HaulersDream.Gizmo.BulkUnloadAll.Label>
+  <HaulersDream.Gizmo.BulkUnloadAll.Empty>Nothing to unload</HaulersDream.Gizmo.BulkUnloadAll.Empty>
+  <HaulersDream.Gizmo.BulkUnloadAll.LoadBlocked>"Bulk unload all" is on, turn it off before setting a new load.</HaulersDream.Gizmo.BulkUnloadAll.LoadBlocked>
+  <HaulersDream.Gizmo.BulkUnloadAll.UnloadBlocked>A load is being gathered into this transporter.</HaulersDream.Gizmo.BulkUnloadAll.UnloadBlocked>
+  <HaulersDream.Feat.UnloadTransporters.Name>Unload transporters &amp; shuttles</HaulersDream.Feat.UnloadTransporters.Name>
+  <HaulersDream.Setting.EnableBulkUnloadTransporters>Bulk unload transporters</HaulersDream.Setting.EnableBulkUnloadTransporters>
+  <HaulersDream.Setting.EnableBulkUnloadTransportersDesc>Adds a bulk-unload toggle to transporters and shuttles. Undrafted haulers move cargo directly to storage, one trip per work job. On a flagged transporter, a prioritized order repeats only after delivering the previous trip. Passengers stay aboard. Loading, full storage, drafting or queued replacement work stops further trips.</HaulersDream.Setting.EnableBulkUnloadTransportersDesc>
+  <HaulersDream.Gizmo.BulkUnloadAll.Desc>Send cargo from {0} to storage. Passengers stay aboard. A prioritized unloading order repeats after each completed delivery while the pawn is undrafted and has no queued replacement work. Turn this off before loading.</HaulersDream.Gizmo.BulkUnloadAll.Desc>
+  <HaulersDream.Feat.UnloadTransporters.Blurb>Move cargo directly from a landed transporter to storage</HaulersDream.Feat.UnloadTransporters.Blurb>
+  <HaulersDream.UnloadTransporter.Drafted>Undraft this pawn to start this order.</HaulersDream.UnloadTransporter.Drafted>
+  <HaulersDream.UnloadTransporter.NoStorage>No suitable storage for the remaining cargo.</HaulersDream.UnloadTransporter.NoStorage>
+  <HaulersDream.Transporter.SyncUnavailable>Transporter commands are unavailable because multiplayer synchronization could not be registered.</HaulersDream.Transporter.SyncUnavailable>
 </LanguageData>

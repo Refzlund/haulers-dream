@@ -1,0 +1,157 @@
+--- v9/native-input.py
++++ v10/native-input.py
+@@ -2,7 +2,8 @@
+ 
+ This does not activate windows, switch desktops, call SendInput, inject a DLL or
+ claim UI success. A single no-activate show request is allowed only for its exact
+-hidden/iconic private window. Native observers must separately prove real IMGUI.
++hidden/iconic private window at the observed native render phase, before input.
++Native observers must separately prove real IMGUI.
+ """
+ from pathlib import Path
+ import argparse, ctypes as C, ctypes.wintypes as W, datetime, hashlib, json, math, os, re, time
+@@ -101,7 +102,7 @@
+     initial_input=input_name();started=time.monotonic();seq=1;last_hwnd=None
+     emit(output/'worker-start.json',dict(pid=os.getpid(),nativePid=args.pid,runId=run.name,
+          privateDesktop=private_name,inputDesktop=initial_input,**identity,startedUtc=utc(),
+-         route='One conditional private no-activate visibility request; PostMessageW to exact owned Unity window; native IMGUI acknowledgement required'))
++         route='One conditional private no-activate visibility request at observed native render phase; PostMessageW to exact owned Unity window; native IMGUI acknowledgement required'))
+     def owned_window():
+         handles=[]
+         @callback
+@@ -123,45 +124,41 @@
+                     visible=bool(visible(hwnd)),iconic=bool(iconic(hwnd)),clientWidth=rect.right-rect.left,clientHeight=rect.bottom-rect.top,
+                     showCmd=pos.showCmd,placementFlags=pos.flags,normalRect=[pos.rcNormalPosition.left,pos.rcNormalPosition.top,pos.rcNormalPosition.right,pos.rcNormalPosition.bottom])
+     visibility=dict(runId=run.name,nativePid=args.pid,privateDesktop=private_name,**identity,
+-                    inputDesktopBefore=None,inputDesktopAfter=None,before=None,after=None,operation=None,operationAccepted=None,status='failed',error=None)
+-    try:
+-        until=time.monotonic()+20
+-        while last_hwnd is None and time.monotonic()<until:
+-            assert input_name()==initial_input
+-            last_hwnd=owned_window()
+-            if last_hwnd is None:time.sleep(.025)
+-        assert last_hwnd is not None,'No unique owned Unity HWND within20seconds.'
+-        visibility['inputDesktopBefore']=input_name();assert visibility['inputDesktopBefore']==initial_input
+-        visibility['before']=window_state(last_hwnd)
+-        if not visibility['before']['visible'] or visibility['before']['iconic']:
+-            assert input_name()==initial_input
+-            visibility['operation']='ShowWindowAsync(SW_SHOWNOACTIVATE=4)'
+-            visibility['operationAccepted']=bool(show_noactivate(last_hwnd,4))
+-            assert visibility['operationAccepted'],'No-activate show operation was not accepted.'
+-        until=time.monotonic()+5
+-        while True:
+-            visibility['after']=window_state(last_hwnd)
+-            visibility['inputDesktopAfter']=input_name();assert visibility['inputDesktopAfter']==initial_input
+-            after=visibility['after']
+-            if after['visible'] and not after['iconic'] and after['clientWidth']==1024 and after['clientHeight']==768:break
+-            assert time.monotonic()<until,'Native window did not reach visible/noniconic1024x768 state.'
+-            time.sleep(.025)
+-        visibility['status']='native-window-state-observed-not-render-proof'
+-    except BaseException as error:
+-        visibility['error']=repr(error)
+-        raise
+-    finally:
+-        visibility['finishedUtc']=utc();emit(output/'window-visibility.json',visibility)
+-    # Passive diagnostics only; no late show, focus, display, input or game-state operation.
++                    renderPhase=None,inputDesktopBefore=None,inputDesktopAfter=None,before=None,after=None,
++                    operation=None,operationAccepted=None,status='awaiting-native-render-phase',error=None)
++    visibility_checked=False
++    def skip_visibility(reason):
++        nonlocal visibility_checked
++        if visibility_checked:return
++        visibility_checked=True
++        visibility['status']=reason;visibility['finishedUtc']=utc()
++        emit(output/'window-visibility.json',visibility)
++    until=time.monotonic()+20
++    while last_hwnd is None and time.monotonic()<until:
++        assert input_name()==initial_input
++        if (run/'evidence/result.json').is_file():
++            skip_visibility('native-terminal-before-window-no-show')
++            emit(output/'worker-finished.json',dict(status='native-terminal-observed',requests=0,
++                 inputDesktop=input_name(),windowSamples=0,finishedUtc=utc()));return
++        last_hwnd=owned_window()
++        if last_hwnd is None:time.sleep(.025)
++    assert last_hwnd is not None,'No unique owned Unity HWND within20seconds.'
++    early_before=input_name();early_window=window_state(last_hwnd);early_after=input_name()
++    assert early_before==early_after==initial_input
++    emit(output/'window-early.json',dict(runId=run.name,nativePid=args.pid,privateDesktop=private_name,
++         **identity,inputDesktopBefore=early_before,inputDesktopAfter=early_after,window=early_window,
++         observedUtc=utc(),operation=None,status='passive-early-window-observation-no-show'))
++    # Passive diagnostics retain early/late state; the sole permitted show is gated below.
+     late=output/'window-samples';late.mkdir(exist_ok=False)
+-    event_offset=0;phase=None;last_sample=None;sample_count=0;next_sample=0.0
++    event_offset=0;phase=None;render_phase=None;last_sample=None;sample_count=0;next_sample=0.0
+     def sample_window(reason,terminal=False):
+-        nonlocal event_offset,phase,last_sample,sample_count
++        nonlocal event_offset,phase,render_phase,last_sample,sample_count
+         events,event_offset=complete_events(run/'evidence/events.jsonl',event_offset)
+         for event in events:
+             assert event['runId']==run.name and event['caseId']=='F11-PRODUCER'
+             if event['phase']=='f11-ui-step':
+                 phase={key:event[key] for key in ('sequence','utc','detail')}
++                if phase['detail']=='render/open-gear' and render_phase is None:render_phase=phase
+         observed=None;error=None;failure=None
+         before=input_name();assert before==initial_input
+         try:observed=window_state(last_hwnd)
+@@ -178,15 +175,51 @@
+             last_sample=comparable
+         # A finished process may already have destroyed its window; retain that terminal observation.
+         if failure is not None and not terminal:raise failure
++    def show_at_render():
++        nonlocal visibility_checked
++        assert not visibility_checked and render_phase is not None and render_phase['detail']=='render/open-gear'
++        assert seq==1,'Visibility admission must precede all posted input.'
++        visibility['renderPhase']=render_phase
++        if (run/'evidence/result.json').is_file():
++            skip_visibility('native-terminal-before-render-show-no-show');return
++        visibility_checked=True # decision is single-use even if the native operation fails
++        try:
++            visibility['inputDesktopBefore']=input_name();assert visibility['inputDesktopBefore']==initial_input
++            visibility['before']=window_state(last_hwnd)
++            if not visibility['before']['visible'] or visibility['before']['iconic']:
++                assert input_name()==initial_input
++                if (run/'evidence/result.json').is_file():
++                    visibility['status']='native-terminal-before-render-show-no-show';return
++                visibility['operation']='ShowWindowAsync(SW_SHOWNOACTIVATE=4)'
++                visibility['operationAccepted']=bool(show_noactivate(last_hwnd,4))
++                assert visibility['operationAccepted'],'No-activate show operation was not accepted.'
++            until=time.monotonic()+5
++            while True:
++                visibility['after']=window_state(last_hwnd)
++                visibility['inputDesktopAfter']=input_name();assert visibility['inputDesktopAfter']==initial_input
++                after=visibility['after']
++                if after['visible'] and not after['iconic'] and after['clientWidth']==1024 and after['clientHeight']==768:break
++                assert time.monotonic()<until,'Native window did not reach visible/noniconic1024x768 state.'
++                time.sleep(.025)
++            visibility['status']='native-render-phase-window-state-observed-not-render-proof'
++        except BaseException as error:
++            visibility['status']='failed';visibility['error']=repr(error);raise
++        finally:
++            visibility['finishedUtc']=utc();emit(output/'window-visibility.json',visibility)
++        sample_window('after-single-render-show')
+     while time.monotonic()-started<260:
+         if (run/'evidence'/'result.json').is_file():
+             sample_window('terminal',terminal=True)
++            skip_visibility('native-terminal-before-render-phase-no-show')
+             emit(output/'worker-finished.json',dict(status='native-terminal-observed',requests=seq-1,
+                  inputDesktop=input_name(),windowSamples=sample_count,finishedUtc=utc()));return
+-        if time.monotonic()>=next_sample:
++        request=requests/f'{seq:04d}.json'
++        if time.monotonic()>=next_sample or (not visibility_checked and request.is_file()):
+             sample_window('phase-or-state-change');next_sample=time.monotonic()+0.25
+-        request=requests/f'{seq:04d}.json'
++        if render_phase is not None and not visibility_checked:show_at_render()
++        if (run/'evidence/result.json').is_file():continue
+         if not request.is_file(): time.sleep(0.025);continue
++        assert visibility_checked and visibility['status']=='native-render-phase-window-state-observed-not-render-proof'
+         value=read(request)
+         assert value['sequence']==seq and value['runId']==run.name and value['nativePid']==args.pid
+         handles=[]
+@@ -231,6 +264,7 @@
+              status='messages-posted-only',postedUtc=utc()))
+         seq+=1
+     sample_window('deadline')
++    skip_visibility('deadline-before-render-phase-no-show')
+     raise TimeoutError('Finite private input worker deadline; no fallback or replay.')
+ 
+ if __name__=='__main__':main()

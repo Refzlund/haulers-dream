@@ -1,0 +1,998 @@
+--- /dev/null
++++ b/Defs/JobDefs/TransporterUnload.xml
+@@ -0,0 +1,11 @@
++<?xml version="1.0" encoding="utf-8"?>
++<Defs>
++  <!-- Adapted from nullpat's GH267. Current trip cargo/progress survives saves; interruption ends the order. -->
++  <JobDef>
++    <defName>HaulersDream_UnloadTransporterInBulk</defName>
++    <driverClass>HaulersDream.JobDriver_UnloadTransporterInBulk</driverClass>
++    <reportString>unloading a transporter to storage.</reportString>
++    <casualInterruptible>false</casualInterruptible>
++    <suspendable>false</suspendable>
++  </JobDef>
++</Defs>
+--- /dev/null
++++ b/Defs/WorkGiverDefs/TransporterUnload.xml
+@@ -0,0 +1,15 @@
++<?xml version="1.0" encoding="utf-8"?>
++<Defs>
++  <WorkGiverDef>
++    <defName>HaulersDream_BulkUnloadTransporters</defName>
++    <label>unload transporters</label>
++    <giverClass>HaulersDream.WorkGiver_BulkUnloadTransporters</giverClass>
++    <workType>Hauling</workType>
++    <verb>unload</verb>
++    <gerund>unloading</gerund>
++    <priorityInType>135</priorityInType>
++    <scanThings>true</scanThings>
++    <scanCells>false</scanCells>
++    <requiredCapacities><li>Manipulation</li></requiredCapacities>
++  </WorkGiverDef>
++</Defs>
+--- /dev/null
++++ b/Source/HaulersDream.Core/TransporterUnloadProgress.cs
+@@ -0,0 +1,35 @@
++using System;
++
++namespace HaulersDream.Core
++{
++    /// <summary>A trip earns another pull only by physically storing every unit it removed from the hold.</summary>
++    public sealed class TransporterUnloadProgress
++    {
++        public int Pulled { get; private set; }
++        public int Delivered { get; private set; }
++        public bool Complete => Pulled > 0 && Delivered == Pulled;
++
++        public TransporterUnloadProgress(int pulled = 0, int delivered = 0)
++        {
++            Pulled = Math.Max(0, pulled);
++            Delivered = Math.Max(0, Math.Min(Pulled, delivered));
++        }
++
++        public void RecordPull(int actualMoved) { if (actualMoved > 0) Pulled = checked(Pulled + actualMoved); }
++
++        // Both facts are required. A dropped/destroyed/stolen stack is not a completed storage delivery.
++        public int RecordDelivery(int actualRemovedFromHands, int actualStored)
++        {
++            int credited = Math.Max(0, Math.Min(Pulled - Delivered, Math.Min(actualRemovedFromHands, actualStored)));
++            Delivered += credited;
++            return credited;
++        }
++
++        public bool BeginNextTrip()
++        {
++            if (!Complete) return false;
++            Pulled = 0; Delivered = 0;
++            return true;
++        }
++    }
++}
+--- a/Source/HaulersDream.Core/TransporterUnloadState.cs
++++ b/Source/HaulersDream.Core/TransporterUnloadState.cs
+@@ -36,9 +36,11 @@
+ 
+         public bool EndLoad(int groupId) => groupId >= 0 && sessions.Remove(groupId);
+ 
+-        // A drained manifest cannot release a courier or a boarding lord still owning the hold.
++        // Missing history in an old save cannot prove a pending manifest abandoned. Treat any current
++        // manifest conservatively as loading until fulfilled or explicitly cancelled. A drained manifest
++        // still cannot release a courier or boarding lord with actual custody.
+         public bool LoadOwns(int groupId, bool hasManifest, bool hasLiveCustody)
+-            => hasLiveCustody || (HasSession(groupId) && hasManifest);
++            => hasLiveCustody || hasManifest;
+ 
+         public bool Prune(Predicate<int> transporterExists, Predicate<int> groupExists)
+         {
+--- /dev/null
++++ b/Source/HaulersDream.Tests/TransporterUnloadProgressTests.cs
+@@ -0,0 +1,52 @@
++using HaulersDream.Core;
++using NUnit.Framework;
++
++namespace HaulersDream.Tests
++{
++    [TestFixture]
++    public class TransporterUnloadProgressTests
++    {
++        [Test]
++        public void QueuedOrFailedDeliveryCannotEarnAnotherTrip()
++        {
++            var trip = new TransporterUnloadProgress();
++            trip.RecordPull(37);
++            Assert.That(trip.RecordDelivery(0, 37), Is.Zero, "No removal from actual hands.");
++            Assert.That(trip.RecordDelivery(37, 0), Is.Zero, "Removal without accepted storage is not delivery.");
++            Assert.That(trip.BeginNextTrip(), Is.False);
++            Assert.That(trip.Pulled, Is.EqualTo(37));
++        }
++
++        [Test]
++        public void EveryPulledUnitMustBeStoredAcrossPartialDeliveriesBeforeNextTrip()
++        {
++            var trip = new TransporterUnloadProgress();
++            trip.RecordPull(20); trip.RecordPull(17);
++            Assert.That(trip.RecordDelivery(20, 20), Is.EqualTo(20));
++            Assert.That(trip.BeginNextTrip(), Is.False);
++            Assert.That(trip.RecordDelivery(10, 10), Is.EqualTo(10));
++            var restored = new TransporterUnloadProgress(trip.Pulled, trip.Delivered);
++            Assert.That(restored.Complete, Is.False);
++            Assert.That(restored.RecordDelivery(7, 7), Is.EqualTo(7));
++            Assert.That(restored.Complete, Is.True);
++            Assert.That(restored.BeginNextTrip(), Is.True);
++            Assert.That(restored.Pulled, Is.Zero);
++            Assert.That(restored.Delivered, Is.Zero);
++            Assert.That(restored.BeginNextTrip(), Is.False, "An empty visit cannot chain.");
++        }
++
++        [Test]
++        public void ExcessDestinationGainDoesNotCreditUnrelatedCargo()
++        {
++            var trip = new TransporterUnloadProgress();
++            trip.RecordPull(10);
++            Assert.That(trip.RecordDelivery(4, 30), Is.EqualTo(4));
++            Assert.That(trip.RecordDelivery(30, 2), Is.EqualTo(2));
++            Assert.That(trip.RecordDelivery(-1, 10), Is.Zero);
++            Assert.That(trip.RecordDelivery(10, -1), Is.Zero);
++            Assert.That(trip.RecordDelivery(20, 20), Is.EqualTo(4));
++            Assert.That(trip.Delivered, Is.EqualTo(10));
++            Assert.That(trip.RecordDelivery(1, 1), Is.Zero);
++        }
++    }
++}
+--- a/Source/HaulersDream.Tests/TransporterUnloadStateTests.cs
++++ b/Source/HaulersDream.Tests/TransporterUnloadStateTests.cs
+@@ -41,8 +41,19 @@
+             Assert.That(state.LoadOwns(3, false, true), Is.True);
+             Assert.That(state.LoadOwns(3, false, false), Is.False);
+             state.EndLoad(3);
+-            Assert.That(state.LoadOwns(3, true, false), Is.False, "Landed stale manifests are not fresh acceptance.");
++            Assert.That(state.LoadOwns(3, true, false), Is.True, "Missing/ended history cannot prove a current manifest abandoned.");
+             Assert.That(state.LoadOwns(3, false, true), Is.True, "Even teardown cannot override actual outstanding custody.");
++        }
++
++        [Test]
++        public void OldSaveManifestWaitsForActualFulfilmentOrCancellation()
++        {
++            var oldSave = new TransporterUnloadState();
++            Assert.That(oldSave.HasSession(3), Is.False);
++            Assert.That(oldSave.LoadOwns(3, true, false), Is.True);
++            oldSave.EndLoad(3); // removing/no-op removing a lord cannot waive the current manifest
++            Assert.That(oldSave.LoadOwns(3, true, false), Is.True);
++            Assert.That(oldSave.LoadOwns(3, false, false), Is.False);
+         }
+ 
+         [Test]
+--- a/Source/HaulersDream/BulkUnloadPull.cs
++++ b/Source/HaulersDream/BulkUnloadPull.cs
+@@ -26,7 +26,7 @@
+         }
+ 
+         internal static bool TrySelect(Pawn pawn, ThingOwner source, bool respectForbidden, bool playerOrdered,
+-            out Thing thing, out int count, out bool toHands)
++            out Thing thing, out int count, out bool toHands, Predicate<Thing> selectFilter = null)
+         {
+             thing = null; count = 0; toHands = false;
+             if (source == null || pawn?.inventory == null || pawn.carryTracker?.innerContainer == null
+@@ -36,19 +36,28 @@
+             for (int i = 0; i < source.Count; i++)
+                 if (Eligible(source[i], pawn, respectForbidden))
+                     stacks.Add(new BulkUnloadCarrierPolicy.CarrierStack(i, source[i].GetStatValue(StatDefOf.Mass), source[i].stackCount));
+-            var plan = BulkUnloadCarrierPolicy.PlanNextPull(stacks, MassUtility.FreeSpace(pawn));
+-            if (plan.ChosenIndex < 0) return false;
+-            Thing selected = source[plan.ChosenIndex];
+-            if (!plan.ToHands)
++            float freeSpace = MassUtility.FreeSpace(pawn);
++            while (stacks.Count > 0)
+             {
+-                if (!BackpackAllowed(selected, playerOrdered))
+-                    plan = new BulkUnloadCarrierPolicy.PullPlan(plan.ChosenIndex, selected.stackCount, toHands: true);
+-                else
+-                    plan = BulkUnloadCarrierPolicy.ApplyInventoryFit(plan, stacks, CECompat.MaxFitCount(pawn, selected));
++                var plan = BulkUnloadCarrierPolicy.PlanNextPull(stacks, freeSpace);
++                if (plan.ChosenIndex < 0) return false;
++                Thing selected = source[plan.ChosenIndex];
++                if (!plan.ToHands)
++                {
++                    if (!BackpackAllowed(selected, playerOrdered))
++                        plan = new BulkUnloadCarrierPolicy.PullPlan(plan.ChosenIndex, selected.stackCount, toHands: true);
++                    else
++                        plan = BulkUnloadCarrierPolicy.ApplyInventoryFit(plan, stacks, CECompat.MaxFitCount(pawn, selected));
++                }
++                if (plan.ChosenIndex < 0 || plan.ChosenIndex >= source.Count || plan.Count <= 0) return false;
++                // Storage lookup is expensive: probe only the selected candidate (including any CE hands
++                // fallback), not every stack in the hold for every pull. Rejected candidates are finite.
++                if (selectFilter != null && !selectFilter(source[plan.ChosenIndex]))
++                { stacks.RemoveAll(candidate => candidate.Index == plan.ChosenIndex); continue; }
++                thing = source[plan.ChosenIndex]; count = plan.Count; toHands = plan.ToHands;
++                return Eligible(thing, pawn, respectForbidden) && source.Contains(thing);
+             }
+-            if (plan.ChosenIndex < 0 || plan.ChosenIndex >= source.Count || plan.Count <= 0) return false;
+-            thing = source[plan.ChosenIndex]; count = plan.Count; toHands = plan.ToHands;
+-            return Eligible(thing, pawn, respectForbidden) && source.Contains(thing);
++            return false;
+         }
+ 
+         // The caller must recheck target/operation admission immediately before calling, after any visual delay.
+--- /dev/null
++++ b/Source/HaulersDream/BulkUnloadRecovery.cs
+@@ -0,0 +1,45 @@
++using System.Collections.Generic;
++using RimWorld;
++using Verse;
++using Verse.AI;
++
++namespace HaulersDream
++{
++    /// <summary>Recover only demonstrably held visit cargo. Recovery never resumes the cancelled operation.</summary>
++    internal static class BulkUnloadRecovery
++    {
++        internal static void Queue(Pawn pawn, IEnumerable<Thing> cargo, Thing handTail, int handCount, bool playerForced)
++        {
++            if (pawn?.jobs == null || !pawn.Spawned || pawn.Dead || pawn.inventory == null) return;
++            var comp = pawn.GetComp<CompHauledToInventory>();
++            bool inventoryCargo = false;
++            if (cargo != null)
++                foreach (var thing in cargo)
++                    if (thing != null && !thing.Destroyed && pawn.inventory.innerContainer.Contains(thing))
++                    { comp?.RegisterHauledItem(thing); inventoryCargo |= InventorySurplus.SurplusOf(pawn, thing) > 0; }
++            if (handTail != null && !handTail.Destroyed)
++            {
++                if (pawn.inventory.innerContainer.Contains(handTail))
++                { comp?.RegisterHauledItem(handTail); inventoryCargo |= InventorySurplus.SurplusOf(pawn, handTail) > 0; }
++                else if (!pawn.Drafted && pawn.carryTracker?.innerContainer.Contains(handTail) == true && handTail.stackCount <= handCount)
++                {
++                    // Replacement/queued player commands keep their position. This is a storage recovery,
++                    // never an authority token to continue taking things from the former carrier/hold.
++                    var haul = HaulAIUtility.HaulToStorageJob(pawn, handTail, forced: true);
++                    if (haul != null)
++                    { haul.playerForced = playerForced; pawn.jobs.jobQueue.EnqueueLast(haul, JobTag.Misc); }
++                }
++                // DraftController sets drafted=true before ending this job. Never create a drafted haul:
++                // native cleanup subsequently drops hands (carryThingAfterJob=false). That is retained
++                // world cargo, not a completed delivery; inventory above stays tagged for later recovery.
++            }
++            if (!inventoryCargo || pawn.Drafted || PawnUnloadChecker.HasQueuedUnload(pawn)) return;
++            // The general checker also inserts a pending SelfPickup ahead of queued work. A cancelled
++            // transport visit must not do that: append only its ordinary recovery, preserving queue order.
++            Job recovery = MapGate.ShouldUnloadToStorage(pawn.Map)
++                ? JobMaker.MakeJob(HaulersDreamDefOf.HaulersDream_UnloadInventory)
++                : PackAnimalLoad.TryGetOpportunisticLoadJob(pawn);
++            if (recovery != null) pawn.jobs.jobQueue.EnqueueLast(recovery, JobTag.Misc);
++        }
++    }
++}
+--- a/Source/HaulersDream/BulkUnloadTransporterGate.cs
++++ b/Source/HaulersDream/BulkUnloadTransporterGate.cs
+@@ -5,7 +5,7 @@
+ 
+ namespace HaulersDream
+ {
+-    internal enum TransporterUnloadBlock { None, Disabled, Unavailable, Drafted, HaulingDisabled, Forbidden, Loading, Empty, NoRoom, NoPath }
++    internal enum TransporterUnloadBlock { None, Disabled, Unavailable, Drafted, HaulingDisabled, Forbidden, Loading, Empty, NoRoom, NoPath, NoStorage }
+ 
+     /// <summary>Live, read-only admission shared by the toggle, scanner, order and each physical transfer.
+     /// Adapted from nullpat's GH267 contribution; no tick cache authorizes custody changes.</summary>
+@@ -58,6 +58,9 @@
+             if (comp?.parent == null || !comp.parent.Spawned || comp.Map == null || comp.parent.IsInCaravan()) return true;
+             var ship = comp.Shuttle?.shipParent;
+             if (ship?.curJob is ShipJob_Unload drain && drain.dropMode != TransportShipDropMode.PawnsOnly) return true;
++            // Old saves have no session history. An extant manifest is conservatively authoritative;
++            // fulfil/cancel it before unloading. Short-circuit also avoids a map-wide courier scan for it.
++            if (comp.AnyInGroupHasAnythingLeftToLoad) return true;
+             // Never let an empty manifest hide an actual lord, courier or queued deposit.
+             bool custody = LoadFlowActive(comp);
+             return custody || (HaulersDreamGameComponent.Instance?.TransporterLoadOwns(comp.groupID,
+@@ -104,8 +107,8 @@
+         // the job's purpose. Hands must still be empty before a new pull. Drafting ends further pulls.
+         internal static TransporterUnloadBlock ActorAndTargetBlock(Pawn pawn, CompTransporter comp, bool playerOrdered)
+         {
+-            var target = TargetBlock(comp, requireFlag: true);
+-            if (target != TransporterUnloadBlock.None) return target;
++            if (!Enabled || !UnloadFlagActive(comp)) return TransporterUnloadBlock.Disabled;
++            if (!IsSupported(comp)) return TransporterUnloadBlock.Unavailable;
+             if (pawn == null || !pawn.Spawned || pawn.Map != comp.Map || pawn.Dead || pawn.Downed
+                 || pawn.Faction != Faction.OfPlayerSilentFail || pawn.IsQuestLodger() || pawn.IsPrisoner
+                 || pawn.inventory == null || pawn.carryTracker?.innerContainer == null || pawn.carryTracker.innerContainer.Count != 0
+@@ -123,17 +126,40 @@
+             if (!playerOrdered && (!YieldRouter.IsEligible(pawn) || comp.parent.Faction != Faction.OfPlayerSilentFail))
+                 return TransporterUnloadBlock.Unavailable;
+             if (!playerOrdered && comp.parent.IsForbidden(pawn)) return TransporterUnloadBlock.Forbidden;
+-            return TransporterUnloadBlock.None;
++            // Only eligible actors on supported flagged holds pay for the live custody scan.
++            return TargetBlock(comp, requireFlag: true);
+         }
+ 
+         internal static TransporterUnloadBlock StartBlock(Pawn pawn, CompTransporter comp, bool playerOrdered)
+         {
++            if (pawn == null || comp == null) return TransporterUnloadBlock.Unavailable;
++            // Most scanner candidates are unflagged or empty: do not scan all pawn queues for them.
++            if (!Enabled || !UnloadFlagActive(comp)) return TransporterUnloadBlock.Disabled;
++            if (!HasEligibleContents(pawn, comp, playerOrdered)) return TransporterUnloadBlock.Empty;
+             var block = ActorAndTargetBlock(pawn, comp, playerOrdered);
+             if (block != TransporterUnloadBlock.None) return block;
+-            if (!HasEligibleContents(pawn, comp, playerOrdered)) return TransporterUnloadBlock.Empty;
+             if (!playerOrdered && !Core.BulkUnloadCarrierPolicy.HasEnoughBackpackRoom(MassUtility.EncumbrancePercent(pawn),
+                 HaulersDreamMod.Settings.minFreeSpaceToUnloadCarrierPct)) return TransporterUnloadBlock.NoRoom;
+-            return pawn.CanReach(comp.parent, PathEndMode.Touch, Danger.Deadly) ? TransporterUnloadBlock.None : TransporterUnloadBlock.NoPath;
++            if (!pawn.CanReach(comp.parent, PathEndMode.Touch, Danger.Deadly)) return TransporterUnloadBlock.NoPath;
++            // Otherwise a full store could repeatedly dispatch zero-progress automatic visits to the same hold.
++            var contents = comp.innerContainer;
++            for (int i = 0; i < contents.Count; i++)
++                if (BulkUnloadPull.Eligible(contents[i], pawn, !playerOrdered) && HasStorage(pawn, contents[i]))
++                    return TransporterUnloadBlock.None;
++            return TransporterUnloadBlock.NoStorage;
++        }
++
++        internal static bool HasStorage(Pawn pawn, Thing cargo)
++        {
++            if (cargo == null || pawn?.Map == null) return false;
++            using (StorageBuildingFilter.PushContext(Core.StorageFilterContext.Unload))
++            {
++                // This also runs in menus/scanners. The inaccurate probe is sufficient for availability
++                // and consumes no Rand; the actual in-tick destination plan remains a fresh native search.
++                if (!StoreUtility.TryFindBestBetterStorageFor(cargo, pawn, pawn.Map, StoragePriority.Unstored,
++                    pawn.Faction, out var cell, out var destination, needAccurateResult: false)) return false;
++                return cell.IsValid || (destination is Thing building && building.TryGetInnerInteractableThingOwner() != null);
++            }
+         }
+ 
+         /// <summary>The driver calls this after its per-stack wait. A stale selection never grants permission
+--- a/Source/HaulersDream/ContinuousLoad.cs
++++ b/Source/HaulersDream/ContinuousLoad.cs
+@@ -16,11 +16,9 @@
+     /// <see cref="JobDriver_LoadVehicleInBulk"/>) so the success-detection + scan + dedup + enqueue live in ONE place.
+     ///
+     /// PLAYER-FORCED ONLY: the chain reuses <see cref="TransportLoad.TryGiveBulkJob"/> with <c>playerOrder: true</c>,
+-    /// which is the SAME path the bulk-load float menus use — it skips the auto eligibility gate (so the chain works
+-    /// even for a drafted courier, exactly as the setting description promises) and returns null when nothing is
+-    /// claimable / reachable to sweep, which doubles as the authoritative "this target still has work" test (a stronger
+-    /// signal than <see cref="TransportLoad.HasPotentialBulkWork"/>, which additionally requires auto eligibility and so
+-    /// would wrongly refuse a drafted/forced chain). An autonomous (non-playerForced) bulk-load NEVER chains.
++    /// which is the same planner the bulk-load float menus use. It returns null when nothing is claimable or
++    /// reachable. Continuations require an undrafted pawn and an empty queue; newer work always wins.
++    /// An autonomous (non-playerForced) bulk-load never chains.
+     ///
+     /// TERMINATION: the just-finished target is excluded (dedup by <see cref="IManagedLoadable.GetUniqueLoadID"/>) and
+     /// each candidate is visited at most once per call, so a chain hop happens only when a DIFFERENT target with real
+@@ -50,7 +48,7 @@
+ 
+         /// <summary>
+         /// Find the nearest OTHER load target (same family as <paramref name="finished"/>) that still has work, build a
+-        /// player-forced bulk-load job for it, and <c>EnqueueFirst</c> it onto the pawn's job queue so the courier
++        /// player-forced bulk-load job for it, and append it to the pawn's empty job queue so the courier
+         /// chains straight into it. Returns true if a follow-up was enqueued. No-op (returns false) when the feature is
+         /// off, the pawn can't haul/move, or no other target with work is in range — the chain then simply ends.
+         ///
+@@ -63,10 +61,11 @@
+             if (pawn?.Map == null || pawn.jobs == null || finished == null)
+                 return false;
+             // A downed/dead courier (e.g. the job ended Succeeded on the same tick it was incapacitated) cannot chain.
+-            if (pawn.Dead || pawn.Downed || !pawn.Spawned)
+-                return false;
++            if (pawn.Dead || pawn.Downed || !pawn.Spawned || pawn.Drafted || pawn.jobs.jobQueue.Count != 0)
++                return false;
++            if (finished.AnythingToLoad()) return false;
+             var s = HaulersDreamMod.Settings;
+-            if (s == null || !s.enableContinuousLoading)
++            if (s == null || !s.masterEnabled || !s.enableContinuousLoading)
+                 return false;
+             if (pawn.GetComp<CompHauledToInventory>() == null || pawn.inventory == null)
+                 return false;
+@@ -104,8 +103,7 @@
+                 if (job == null)
+                     continue;
+                 job.playerForced = true;
+-                // EnqueueFirst so the chain runs immediately after this finish action (ahead of any idle backstop).
+-                pawn.jobs.jobQueue.EnqueueFirst(job, JobTag.Misc);
++                pawn.jobs.jobQueue.EnqueueLast(job, JobTag.Misc);
+                 HDLog.Dbg($"ContinuousLoad: {pawn} chaining to {adapter.GetParentThing()?.LabelShort} " +
+                           $"(group {adapter.GetUniqueLoadID()}) after finishing group {finishedKey}.");
+                 return true;
+--- a/Source/HaulersDream/HaulersDreamDefOf.cs
++++ b/Source/HaulersDream/HaulersDreamDefOf.cs
+@@ -22,6 +22,7 @@
+         public static JobDef HaulersDream_KeepInInventory; // "Keep X in inventory": hold an item, never hauled/dropped
+         public static JobDef HaulersDream_LoadPackAnimal; // load scooped loot onto a pack animal (caravan/away map)
+         public static JobDef HaulersDream_UnloadCarrierInBulk; // bulk-empty a flagged pack animal into the hauler's backpack
++        public static JobDef HaulersDream_UnloadTransporterInBulk; // one owned cargo trip; forced orders repeat after storage
+         public static JobDef HaulersDream_LoadTransportersInBulk; // bulk-load a transporter/shuttle group from swept inventory
+         public static JobDef HaulersDream_LoadPortalInBulk; // bulk-load a map portal (pit gate / cave / vault exit) from swept inventory
+         public static JobDef HaulersDream_LoadVehicleInBulk; // bulk-load a Vehicle Framework vehicle from swept inventory (VF soft-dep)
+@@ -54,6 +55,7 @@
+             HaulersDreamDefOf.HaulersDream_LoadVehicleInBulk,
+             HaulersDreamDefOf.HaulersDream_LoadPackAnimal,
+             HaulersDreamDefOf.HaulersDream_UnloadCarrierInBulk,
++            HaulersDreamDefOf.HaulersDream_UnloadTransporterInBulk,
+             HaulersDreamDefOf.HaulersDream_OverloadConstructDeliver,
+             HaulersDreamDefOf.HaulersDream_ConstructDeliverBuild,
+             HaulersDreamDefOf.HaulersDream_ClaimFromHauler,
+@@ -90,6 +92,7 @@
+         /// </summary>
+         public static HashSet<JobDef> InTransitLoadJobs => _inTransitLoadJobs ??= new HashSet<JobDef>
+         {
++            HaulersDreamDefOf.HaulersDream_UnloadTransporterInBulk,
+             HaulersDreamDefOf.HaulersDream_UnloadInventory,
+             HaulersDreamDefOf.HaulersDream_NearbyDelivery,         // the unload itself is running -> obviously in flight
+             HaulersDreamDefOf.HaulersDream_BillPrepGather,          // gathering ingredients into inventory for a bill
+@@ -129,6 +132,7 @@
+         /// </summary>
+         public static HashSet<JobDef> NoRecursionHaulJobs => _noRecursionHaulJobs ??= new HashSet<JobDef>
+         {
++            HaulersDreamDefOf.HaulersDream_UnloadTransporterInBulk,
+             HaulersDreamDefOf.HaulersDream_BulkHaul,   // a multi-stack sweep into inventory
+             HaulersDreamDefOf.HaulersDream_SelfPickup, // a single-stack pickup into inventory
+         };
+--- a/Source/HaulersDream/JobDriver_LoadInBulkBase.cs
++++ b/Source/HaulersDream/JobDriver_LoadInBulkBase.cs
+@@ -299,13 +299,6 @@
+             // Release the claim + salvage any still-carried task items on every non-Success end (idempotent).
+             AddFinishAction(delegate (JobCondition condition)
+             {
+-                // B4 continuous loading (opt-in, default OFF): on a player-forced SUCCESS, chain to the nearest OTHER
+-                // target of the same family that still has work (dedup excludes THIS target). Byte-inert when the
+-                // setting is off (ShouldChain short-circuits). The chained job targets a different ledger key, so we
+-                // still RELEASE this target's claims below (retainClaimOnEnd stays false — retaining would leak the
+-                // finished claim); the chained job re-claims its own target in its Notify_Starting next tick.
+-                if (ContinuousLoad.ShouldChain(condition, job))
+-                    ContinuousLoad.TryChainFrom(pawn, EnsureAdapter());
+                 if (!retainClaimOnEnd)
+                 {
+                     HaulersDreamGameComponent.Instance?.LoadReleaseClaimsForPawn(pawn);
+@@ -326,6 +319,9 @@
+                             hcomp.RegisterHauledItem(t);
+                     }
+                 }
++                // Replanning must see settled old claims. A built successor acquires its own claim only
++                // when Notify_Starting actually runs; queued player work always retains priority.
++                OnClaimsReleased(condition);
+             });
+         }
+ 
+@@ -362,6 +358,12 @@
+         /// (vehicle: VF VRM release). No-op by default.</summary>
+         protected virtual void OnReleaseExtraClaims() { }
+ 
++        protected virtual void OnClaimsReleased(JobCondition condition)
++        {
++            if (ContinuousLoad.ShouldChain(condition, job))
++                ContinuousLoad.TryChainFrom(pawn, EnsureAdapter());
++        }
++
+         /// <summary>Top-level fail conditions registered at the head of <see cref="MakeNewToils"/>. All three drivers
+         /// fail on the deposit target despawning/nulling.</summary>
+         protected virtual void AddTopLevelFailConditions()
+--- a/Source/HaulersDream/JobDriver_LoadTransportersInBulk.cs
++++ b/Source/HaulersDream/JobDriver_LoadTransportersInBulk.cs
+@@ -25,6 +25,7 @@
+         private const TargetIndex TransporterInd = TargetIndex.A; // primary transporter (deposit dest)
+ 
+         private CompTransporter Transporter => job.GetTarget(TransporterInd).Thing?.TryGetComp<CompTransporter>();
++        private int deliveredUnits;
+ 
+         private static int AiUpdateInterval => Mathf.Max(10, Settings?.bulkLoadAiUpdateFrequency ?? 60);
+ 
+@@ -36,6 +37,7 @@
+             Scribe_Values.Look(ref loadIndex, "hdLtibLoadIndex", 0);
+             Scribe_Values.Look(ref depositLoops, "hdLtibDepositLoops", 0);
+             Scribe_Values.Look(ref passes, "hdLtibPasses", 0);
++            Scribe_Values.Look(ref deliveredUnits, "hdLtibDeliveredUnits", 0);
+         }
+ 
+         public override string GetReport() => "HaulersDream.LoadTransporter.Report".Translate();
+@@ -49,14 +51,15 @@
+         protected override bool FindTargetStillValid()
+         {
+             var comp = Transporter;
+-            return comp != null && comp.parent != null && comp.parent.Spawned
++            return Settings?.masterEnabled == true && Settings.enableBulkLoadTransporters
++                && comp != null && comp.parent != null && comp.parent.Spawned
+                 && !BulkUnloadTransporterGate.AnyUnloadFlagInGroup(comp);
+         }
+ 
+         protected override void AddTopLevelFailConditions()
+         {
+             base.AddTopLevelFailConditions();
+-            this.FailOn(() => BulkUnloadTransporterGate.AnyUnloadFlagInGroup(Transporter));
++            this.FailOn(() => !FindTargetStillValid());
+         }
+ 
+         protected override void OnPreDepositLoop(IManagedLoadable adp)
+@@ -106,6 +109,7 @@
+             }
+             if (moved > 0)
+             {
++                deliveredUnits += moved;
+                 movedAny = true;
+                 HaulersDreamGameComponent.Instance?.LoadNotifyDeposited(pawn, adapter, thing.def, moved);
+                 if (!inner.Contains(thing))
+@@ -114,6 +118,25 @@
+         }
+ 
+         protected override bool HasDepositable() => HasDepositableForGroup();
++
++        protected override void OnClaimsReleased(JobCondition condition)
++        {
++            if (condition != JobCondition.Succeeded || !job.playerForced || deliveredUnits <= 0
++                || pawn.Drafted || pawn.Dead || pawn.Downed || !pawn.Spawned
++                || pawn.jobs?.jobQueue == null || pawn.jobs.jobQueue.Count != 0 || !FindTargetStillValid()) return;
++            // Rebuild against the current selected group, after releasing this visit's ledger claim.
++            // This is the normal prioritized order; hopping to other groups remains a separate opt-in.
++            var current = BuildLoadable();
++            if (current == null) return;
++            if (current.AnythingToLoad())
++            {
++                var next = TransportLoad.TryGiveBulkJob(pawn, current, playerOrder: true);
++                if (next != null)
++                { next.playerForced = true; pawn.jobs.jobQueue.EnqueueLast(next, JobTag.Misc); }
++                return; // a blocked/incomplete selected manifest never authorizes a cross-target hop
++            }
++            if (ContinuousLoad.ShouldChain(condition, job)) ContinuousLoad.TryChainFrom(pawn, current);
++        }
+ 
+         /// <summary>Units the group's manifest still wants for <paramref name="item"/> — summed across members using,
+         /// PER MEMBER, the entry vanilla's <see cref="TransferableUtility.TransferableMatchingDesperate"/> (in
+--- a/Source/HaulersDream/JobDriver_UnloadCarrierInBulk.cs
++++ b/Source/HaulersDream/JobDriver_UnloadCarrierInBulk.cs
+@@ -31,10 +31,11 @@
+         private const int MaxPullLoops = 256; // backstop: bounds the select->transfer cycle
+         private const int AiUpdateInterval = 60; // how often the other-claimant FailOn re-scans (ticks)
+ 
+-        // The single item taken into HANDS this visit (UNtagged). Captured so the finalize can ship it directly
+-        // via a HaulToStorage job. In-flight only — not scribed (a save mid-visit re-derives it: a handheld item
+-        // already in the carry tracker is picked up by the next unload trigger / vanilla haul anyway).
+-        [System.NonSerialized] private Thing handTail;
++        // Actual no-merge visit cargo survives a save between transfer and cleanup. All-ending recovery
++        // uses these identities, never a newly unrelated object found in the pawn's hands.
++        private Thing handTail;
++        private int handTailCount;
++        private List<Thing> visitCargo = new List<Thing>();
+ 
+         private Pawn Carrier => job.GetTarget(CarrierInd).Thing as Pawn;
+ 
+@@ -44,6 +45,11 @@
+         {
+             base.ExposeData();
+             Scribe_Values.Look(ref pullLoops, "hdUcibPullLoops", 0);
++            Scribe_References.Look(ref handTail, "hdUcibHandTail");
++            Scribe_Values.Look(ref handTailCount, "hdUcibHandTailCount");
++            Scribe_Collections.Look(ref visitCargo, "hdUcibVisitCargo", LookMode.Reference);
++            Scribe_Values.Look(ref pendingToHands, "hdUcibPendingToHands");
++            if (Scribe.mode == LoadSaveMode.LoadingVars) visitCargo ??= new List<Thing>();
+         }
+ 
+         public override string GetReport()
+@@ -90,6 +96,12 @@
+ 
+         public override IEnumerable<Toil> MakeNewToils()
+         {
++            // A pre-feature save can prove ownership only if its scratch target is the actual hand stack.
++            // Do not adopt arbitrary hands when the old unscribed reference cannot be reconstructed.
++            if (handTail == null && job.targetC.Thing != null
++                && pawn.carryTracker?.innerContainer.Contains(job.targetC.Thing) == true)
++            { handTail = job.targetC.Thing; handTailCount = handTail.stackCount; }
++            AddFinishAction(_ => BulkUnloadRecovery.Queue(pawn, visitCargo, handTail, handTailCount, job.playerForced));
+             this.FailOnDespawnedOrNull(CarrierInd);
+             this.FailOnForbidden(CarrierInd);
+             // PERMISSION as an END CONDITION, not just a gate on the flag write above: withholding the flag stops
+@@ -167,8 +179,8 @@
+                 { EndJobWith(JobCondition.Incompletable); return; }
+                 int moved = BulkUnloadPull.Transfer(pawn, carrierInner, thing, job.count, pendingToHands,
+                     respectForbidden: false, job.playerForced, out Thing movedThing, out bool toHands);
+-                if (moved > 0) AfterTransferRefresh(carrier);
+-                if (toHands && moved > 0) handTail = movedThing;
++                if (moved > 0) { visitCargo.Add(movedThing); AfterTransferRefresh(carrier); }
++                if (toHands && moved > 0) { handTail = movedThing; handTailCount = moved; }
+                 if (moved <= 0 || toHands) { JumpToToil(finalize); return; }
+                 JumpToToil(selectNext);
+             };
+@@ -178,28 +190,13 @@
+             // ============ FINALIZE: ship the backpack stock + the hand-tail to storage ============
+             finalize.initAction = delegate
+             {
+-                // Hand-tail (UNtagged, in the carry tracker) ships DIRECTLY: enqueue a HaulToStorage job FIRST so
+-                // it goes out ahead of the inventory unload. forced:true so it isn't gated away.
+-                if (handTail != null && !handTail.Destroyed
+-                    && pawn.carryTracker?.innerContainer?.Contains(handTail) == true)
+-                {
+-                    var haulJob = HaulAIUtility.HaulToStorageJob(pawn, handTail, forced: true);
+-                    if (haulJob != null && pawn.jobs != null)
+-                    {
+-                        haulJob.playerForced = job.playerForced;
+-                        pawn.jobs.jobQueue.EnqueueFirst(haulJob, JobTag.Misc);
+-                    }
+-                }
+-                // Backpack stock is tagged -> HD's normal storage unload pass ships it (forced recovery).
+-                PawnUnloadChecker.CheckIfShouldUnload(pawn, forced: true, behindQueuedWork: true);
+                 EndJobWith(JobCondition.Succeeded);
+             };
+             finalize.defaultCompleteMode = ToilCompleteMode.Instant;
+             yield return finalize;
+         }
+ 
+-        // Carried between the select and transfer toils (which stack goes to hands vs backpack). In-flight only.
+-        [System.NonSerialized] private bool pendingToHands;
++        private bool pendingToHands;
+ 
+         /// <summary>True if a pawn OTHER than this hauler holds a live reservation on the carrier — the
+         /// non-exclusive-reserve pre-empt check (roping, caravan-form gather, a second hauler). Scans
+--- /dev/null
++++ b/Source/HaulersDream/JobDriver_UnloadTransporterInBulk.cs
+@@ -0,0 +1,237 @@
++using System;
++using System.Collections.Generic;
++using HaulersDream.Core;
++using RimWorld;
++using Verse;
++using Verse.AI;
++
++namespace HaulersDream
++{
++    // Feature adapted from nullpat's GH267. Unlike the proposal, storage is part of this job:
++    // queueing a delivery never earns permission to return for another load.
++    public sealed class JobDriver_UnloadTransporterInBulk : JobDriver
++    {
++        private List<TransporterUnloadCargo> cargo = new List<TransporterUnloadCargo>();
++        private TransporterUnloadProgress progress = new TransporterUnloadProgress();
++        private bool pendingToHands;
++        private int pullLoops;
++        private Thing handTail;
++        private CompTransporter Hold => job.targetA.Thing?.TryGetComp<CompTransporter>();
++        internal int StorageBoundHandCount => OwnedHands(pawn?.carryTracker?.CarriedThing)
++            ? pawn.carryTracker.CarriedThing.stackCount : 0;
++
++        public override void ExposeData()
++        {
++            base.ExposeData();
++            Scribe_Collections.Look(ref cargo, "hdUtibCargo", LookMode.Deep);
++            Scribe_References.Look(ref handTail, "hdUtibHandTail");
++            Scribe_Values.Look(ref pendingToHands, "hdUtibPendingToHands");
++            Scribe_Values.Look(ref pullLoops, "hdUtibPullLoops");
++            int pulled = progress.Pulled, delivered = progress.Delivered;
++            Scribe_Values.Look(ref pulled, "hdUtibPulled");
++            Scribe_Values.Look(ref delivered, "hdUtibDelivered");
++            if (Scribe.mode == LoadSaveMode.LoadingVars)
++            { progress = new TransporterUnloadProgress(pulled, delivered); cargo ??= new List<TransporterUnloadCargo>(); }
++        }
++
++        // Multiple haulers may visit a hold. Each atomic transfer rereads its real current owner/count.
++        public override bool TryMakePreToilReservations(bool errorOnFailed)
++            => BulkUnloadTransporterGate.StartBlock(pawn, Hold, job.playerForced) == TransporterUnloadBlock.None;
++
++        public override IEnumerable<Toil> MakeNewToils()
++        {
++            AddFinishAction(_ =>
++            {
++                ReleaseDestination();
++                var held = new List<Thing>();
++                foreach (var item in cargo) if (item.remaining > 0) held.Add(item.thing);
++                int ownedHands = cargo.Find(item => item.thing == handTail && item.remaining > 0)?.remaining ?? 0;
++                BulkUnloadRecovery.Queue(pawn, held, handTail, ownedHands, job.playerForced);
++            });
++            this.FailOn(() => !BulkUnloadTransporterGate.Enabled || pawn.Drafted || pawn.Dead || pawn.Downed
++                || !pawn.Spawned || pawn.inventory == null || pawn.carryTracker == null);
++
++            var begin = ToilMaker.MakeToil("HD_Utib_BeginTrip");
++            var select = ToilMaker.MakeToil("HD_Utib_SelectPull");
++            var deliver = ToilMaker.MakeToil("HD_Utib_SelectDelivery");
++            var deposited = ToilMaker.MakeToil("HD_Utib_AfterDelivery");
++            begin.initAction = () =>
++            {
++                if (BulkUnloadTransporterGate.StartBlock(pawn, Hold, job.playerForced) != TransporterUnloadBlock.None)
++                    EndJobWith(JobCondition.Incompletable);
++            };
++            begin.defaultCompleteMode = ToilCompleteMode.Instant;
++            yield return begin;
++            yield return Toils_Goto.GotoThing(TargetIndex.A, PathEndMode.Touch);
++
++            select.initAction = () =>
++            {
++                if (++pullLoops > 256 || BulkUnloadTransporterGate.ActorAndTargetBlock(pawn, Hold, job.playerForced) != TransporterUnloadBlock.None
++                    || !BulkUnloadPull.TrySelect(pawn, Hold?.innerContainer, !job.playerForced, job.playerForced,
++                        out Thing selected, out int count, out bool toHands, thing => BulkUnloadTransporterGate.HasStorage(pawn, thing)))
++                { JumpToToil(deliver); return; }
++                job.targetC = selected; job.count = count; pendingToHands = toHands;
++            };
++            select.defaultCompleteMode = ToilCompleteMode.Instant;
++            yield return select;
++            int delay = HaulersDreamMod.Settings?.visualUnloadDelay ?? 0;
++            yield return delay > 0 ? Toils_General.Wait(delay) : Toils_General.Label();
++            var pull = ToilMaker.MakeToil("HD_Utib_Pull");
++            pull.initAction = () =>
++            {
++                if (!BulkUnloadTransporterGate.HasStorage(pawn, job.targetC.Thing)) { JumpToToil(deliver); return; }
++                int moved = BulkUnloadTransporterGate.Transfer(pawn, Hold, job.targetC.Thing, job.count,
++                    pendingToHands, job.playerForced, out Thing item, out bool toHands);
++                if (moved > 0)
++                {
++                    cargo.Add(new TransporterUnloadCargo(item, moved)); progress.RecordPull(moved);
++                    if (toHands) handTail = item;
++                    HaulersDreamGameComponent.Instance?.BulkUnloadAllClearIfNothingPullable(Hold);
++                }
++                JumpToToil(moved <= 0 || toHands ? deliver : select);
++            };
++            pull.defaultCompleteMode = ToilCompleteMode.Instant;
++            yield return pull;
++
++            deliver.initAction = () =>
++            {
++                cargo.RemoveAll(entry => entry.remaining <= 0);
++                if (cargo.Count == 0)
++                {
++                    bool repeat = progress.Complete && job.playerForced && pawn.jobs.jobQueue.Count == 0
++                        && BulkUnloadTransporterGate.StartBlock(pawn, Hold, true) == TransporterUnloadBlock.None;
++                    if (repeat && progress.BeginNextTrip())
++                    { pullLoops = 0; JumpToToil(begin); }
++                    else EndJobWith(progress.Complete ? JobCondition.Succeeded : JobCondition.Incompletable);
++                    return;
++                }
++                var entry = FindHeldCargo();
++                if (entry == null || !PlanDelivery(entry)) { EndJobWith(JobCondition.Incompletable); return; }
++            };
++            deliver.defaultCompleteMode = ToilCompleteMode.Instant;
++            yield return deliver;
++
++            var toCell = Toils_Haul.CarryHauledThingToCell(TargetIndex.B);
++            yield return Toils_Jump.JumpIf(toCell, () => !job.targetB.HasThing);
++            yield return Toils_Haul.CarryHauledThingToContainer();
++            var containerDeposit = Toils_Haul.DepositHauledThingInContainer(TargetIndex.B, TargetIndex.None);
++            var nativeDeposit = containerDeposit.initAction;
++            containerDeposit.initAction = () =>
++            {
++                var item = pawn.carryTracker.CarriedThing;
++                var target = job.targetB.Thing;
++                var owner = target?.TryGetInnerInteractableThingOwner();
++                if (!OwnedHands(item) || target == null || !target.Spawned || target.IsForbidden(pawn)
++                    || !(target is IHaulDestination storage) || !storage.HaulDestinationEnabled || !storage.Accepts(item)
++                    || owner == null || !owner.CanAcceptAnyOf(item))
++                { EndJobWith(JobCondition.Incompletable); return; }
++                int before = item.stackCount, storedBefore = CountDef(owner, item.def);
++                var def = item.def;
++                nativeDeposit();
++                CreditDelivery(item, before, CountDef(owner, def) - storedBefore);
++            };
++            yield return containerDeposit;
++            yield return Toils_Jump.Jump(deposited);
++
++            yield return toCell;
++            var place = ToilMaker.MakeToil("HD_Utib_StoreCell");
++            place.initAction = () =>
++            {
++                var item = pawn.carryTracker.CarriedThing;
++                var cell = job.targetB.Cell;
++                if (!OwnedHands(item) || !cell.IsValid
++                    || !StoreUtility.IsGoodStoreCell(cell, pawn.Map, item, pawn, pawn.Faction))
++                { EndJobWith(JobCondition.Incompletable); return; }
++                int before = item.stackCount, stored = 0;
++                // Native direct placement only. Its general hauling toil can redirect/drop aside/destroy on
++                // full storage; none of those outcomes completes this operation's storage trip.
++                pawn.carryTracker.TryDropCarriedThing(cell, ThingPlaceMode.Direct, out _, (placed, count) =>
++                { if (placed != null && placed.Spawned && placed.Position == cell) stored += count; });
++                CreditDelivery(item, before, stored);
++            };
++            place.defaultCompleteMode = ToilCompleteMode.Instant;
++            yield return place;
++            deposited.initAction = () => { ReleaseDestination(); JumpToToil(deliver); };
++            deposited.defaultCompleteMode = ToilCompleteMode.Instant;
++            yield return deposited;
++        }
++
++        private TransporterUnloadCargo FindHeldCargo()
++        {
++            var hands = pawn.carryTracker.CarriedThing;
++            if (hands != null) return cargo.Find(x => x.thing == hands && x.remaining > 0);
++            foreach (var entry in cargo)
++                if (entry.thing != null && !entry.thing.Destroyed && pawn.inventory.innerContainer.Contains(entry.thing)
++                    && InventorySurplus.SurplusOf(pawn, entry.thing) > 0) return entry;
++            return null; // missing ownership or a new keep order ends the operation, never claims delivery
++        }
++
++        private bool PlanDelivery(TransporterUnloadCargo entry)
++        {
++            var item = entry.thing;
++            if (!StoreUtility.TryFindBestBetterStorageFor(item, pawn, pawn.Map, StoragePriority.Unstored,
++                pawn.Faction, out var cell, out var destination)) return false;
++            int count = Math.Min(entry.remaining, item.stackCount);
++            bool inInventory = pawn.inventory.innerContainer.Contains(item);
++            if (inInventory) count = Math.Min(count, InventorySurplus.SurplusOf(pawn, item));
++            if (count <= 0) return false;
++            if (cell.IsValid) job.targetB = cell;
++            else if (destination is Thing building && building.TryGetInnerInteractableThingOwner() != null) job.targetB = building;
++            else return false;
++            var group = cell.IsValid ? BulkHaul.BudgetGroupOf(pawn.Map.haulDestinationManager.SlotGroupAt(cell)) : null;
++            bool arbitrated = StorageCommitments.TryCommit(pawn, group, item.def, count, "transporter-unload");
++            if (!arbitrated && !pawn.Reserve(job.targetB, job)) return false;
++            if (inInventory)
++            {
++                int moved = pawn.inventory.innerContainer.TryTransferToContainer(item, pawn.carryTracker.innerContainer,
++                    count, out Thing held, canMergeWithExistingStacks: false);
++                if (moved <= 0) return false;
++                entry.remaining -= moved;
++                cargo.Add(new TransporterUnloadCargo(held, moved));
++                if (!pawn.inventory.innerContainer.Contains(item)) pawn.GetComp<CompHauledToInventory>()?.Deregister(item);
++                handTail = held;
++            }
++            else handTail = item;
++            job.count = count;
++            return true;
++        }
++
++        private bool OwnedHands(Thing item) => item != null && !item.Destroyed
++            && cargo.Exists(x => x.thing == item && x.remaining >= item.stackCount)
++            && pawn.carryTracker.innerContainer.Contains(item);
++
++        private void CreditDelivery(Thing item, int before, int actuallyStored)
++        {
++            int remains = pawn.carryTracker.innerContainer.Contains(item) ? item.stackCount : 0;
++            int credited = progress.RecordDelivery(before - remains, actuallyStored);
++            var entry = cargo.Find(x => x.thing == item && x.remaining > 0);
++            if (entry != null) entry.remaining -= credited;
++            if (remains == 0) handTail = null;
++            if (credited <= 0) EndJobWith(JobCondition.Incompletable);
++        }
++
++        private static int CountDef(ThingOwner owner, ThingDef def)
++        {
++            int count = 0;
++            for (int i = 0; i < owner.Count; i++) if (owner[i].def == def) count += owner[i].stackCount;
++            return count;
++        }
++
++        private void ReleaseDestination()
++        {
++            if (pawn?.Map?.reservationManager == null) return;
++            if (job.targetB.IsValid) pawn.Map.reservationManager.Release(job.targetB, pawn, job);
++            job.targetB = LocalTargetInfo.Invalid;
++        }
++    }
++
++    public sealed class TransporterUnloadCargo : IExposable
++    {
++        public Thing thing;
++        public int remaining;
++        public TransporterUnloadCargo() { }
++        public TransporterUnloadCargo(Thing thing, int remaining) { this.thing = thing; this.remaining = remaining; }
++        public void ExposeData()
++        { Scribe_References.Look(ref thing, "thing"); Scribe_Values.Look(ref remaining, "remaining"); }
++    }
++}
+--- a/Source/HaulersDream/Patch_ScribeSaver_InitSaving.cs
++++ b/Source/HaulersDream/Patch_ScribeSaver_InitSaving.cs
+@@ -12,8 +12,8 @@
+     ///
+     /// A save written while a pawn has QUEUED HD jobs otherwise embeds references to HD's custom <c>JobDriver</c>s
+     /// that dangle if HD is later uninstalled. This PREFIX on <c>ScribeSaver.InitSaving</c> (which runs immediately
+-    /// before the game writes a colony save) strips incidental QUEUED HD jobs. Identified nearby commands and
+-    /// their scoped deliveries are preserved: saving must not cancel the player's explicit order. These queued
++    /// before the game writes a colony save) strips incidental QUEUED HD jobs. Identified nearby commands,
++    /// their scoped deliveries and explicit transporter orders are preserved: saving must not cancel the player's order. These queued
+     /// orders and the CURRENT job require HD to remain installed, and deserialize normally while it is installed.
+     /// The current job is never interrupted here — see the torn-snapshot note below.
+     ///
+@@ -103,8 +103,8 @@
+                 return;
+ 
+             // Strip incidental QUEUED HD jobs only (RemoveAll cancels them and releases pre-toil reservations).
+-            // Preserve positively identified nearby orders, including generated scoped deliveries. Do not use
+-            // playerForced alone or evaluate live permissions during saving; admission checks those later.
++            // Preserve positively identified nearby orders (including scoped deliveries) and transporter orders.
++            // Do not use playerForced alone or evaluate live permissions during saving; admission checks those later.
+             // We deliberately do NOT touch the CURRENT job: interrupting it here ran HD's finish actions + ledger
+             // releases mid-serialization and tore the saved ledger snapshot (see the class doc). The running HD job
+             // is left intact; it serializes fine while HD is installed and releases its own claims on its next
+@@ -112,7 +112,8 @@
+             var queue = pawn.jobs.jobQueue;
+             if (queue != null && queue.Count > 0)
+                 queue.RemoveAll(pawn, job => job != null && job.def != null && strip.Contains(job.def)
+-                    && !NearbyHaulCommand.IsIdentifiedOrder(job));
++                    && !NearbyHaulCommand.IsIdentifiedOrder(job)
++                    && !TransporterOperation.IsExplicitOrder(job));
+         }
+     }
+ }
+--- a/Source/HaulersDream/Patch_TransporterLoadSessions.cs
++++ b/Source/HaulersDream/Patch_TransporterLoadSessions.cs
+@@ -21,8 +21,10 @@
+             => HaulersDreamGameComponent.Instance?.TransporterLoadAccepted(___transporters, __result);
+     }
+ 
+-    [HarmonyPatch(typeof(CompTransporter), nameof(CompTransporter.TryRemoveLord))]
+-    internal static class Patch_CompTransporter_TryRemoveLord_EndSession
++    // TryRemoveLord neither clears a manifest nor proves that a lord existed. Only actual cleanup
++    // ends recorded provenance; live manifests/couriers still independently guard custody.
++    [HarmonyPatch(typeof(CompTransporter), nameof(CompTransporter.CleanUpLoadingVars))]
++    internal static class Patch_CompTransporter_CleanUpLoadingVars_EndSession
+     {
+         static void Prefix(CompTransporter __instance, out int __state) => __state = __instance.groupID;
+         static void Postfix(int __state) => HaulersDreamGameComponent.Instance?.TransporterLoadEnded(__state);
+--- a/Source/HaulersDream/PawnUnloadChecker.cs
++++ b/Source/HaulersDream/PawnUnloadChecker.cs
+@@ -140,6 +140,7 @@
+             }
+ 
+             bool alreadyUnloading = pawn.CurJobDef == HaulersDreamDefOf.HaulersDream_UnloadInventory
++                                    || pawn.CurJobDef == HaulersDreamDefOf.HaulersDream_UnloadTransporterInBulk
+                                     || HasQueuedUnload(pawn);
+             int ticksSinceYield = (Find.TickManager?.TicksGame ?? 0) - comp.lastYieldTick;
+             // Pending REAL work = a queued job that is the pawn's actual work (e.g. a shift-prioritized
+--- a/Source/HaulersDream/StorageEvidence.cs
++++ b/Source/HaulersDream/StorageEvidence.cs
+@@ -271,6 +271,16 @@
+             // HD's own unload takes one tagged stack OUT of the inventory and into the hands to walk it to
+             // storage, at which point the pocketed pass above can no longer see it. This is the one moment
+             // that stack would otherwise vanish from the accounting mid-delivery.
++            if (job.def == HaulersDreamDefOf.HaulersDream_UnloadTransporterInBulk)
++            {
++                var driver = p.jobs.curDriver as JobDriver_UnloadTransporterInBulk;
++                var held = p.carryTracker?.CarriedThing;
++                int owned = driver?.StorageBoundHandCount ?? 0;
++                if (held?.def != null && owned > 0)
++                    Accumulate(into, held.def, owned, held,
++                        job.targetB.IsValid && !job.targetB.HasThing ? GroupAt(p.Map, job.targetB.Cell) : null);
++                return;
++            }
+             if (job.def != HaulersDreamDefOf.HaulersDream_UnloadInventory)
+                 return;
+             var carried = p.carryTracker?.CarriedThing;
+--- /dev/null
++++ b/Source/HaulersDream/TransporterOperation.cs
+@@ -0,0 +1,20 @@
++using Verse;
++using Verse.AI;
++
++namespace HaulersDream
++{
++    /// <summary>Save identity only; never an admission bypass or an authority to pull cargo.</summary>
++    internal static class TransporterOperation
++    {
++        internal static bool IsOperation(Job job) => job != null
++            && (job.def == HaulersDreamDefOf.HaulersDream_UnloadTransporterInBulk
++                || job.def == HaulersDreamDefOf.HaulersDream_LoadTransportersInBulk)
++            && job.targetA.Thing?.TryGetComp<RimWorld.CompTransporter>() != null;
++
++        // A saved queued command must not disappear merely because a flag/setting/map/draft state changed.
++        // Actual start/transfer admission remains live and may refuse it without moving anything.
++        internal static bool IsExplicitOrder(Job job) => IsOperation(job) && job.playerForced;
++        internal static bool IsCurrentOperation(Pawn pawn, Job job) => IsOperation(job)
++            && pawn?.CurJob == job;
++    }
++}
+--- /dev/null
++++ b/Source/HaulersDream/WorkGiver_BulkUnloadTransporters.cs
+@@ -0,0 +1,24 @@
++using RimWorld;
++using Verse;
++using Verse.AI;
++
++namespace HaulersDream
++{
++    // Automatic work is one complete storage trip. A forced order keeps the selected hold until done.
++    // Feature adapted from nullpat's GH267; JobOnThing independently revalidates stale scanner answers.
++    public sealed class WorkGiver_BulkUnloadTransporters : WorkGiver_Scanner
++    {
++        public override ThingRequest PotentialWorkThingRequest => ThingRequest.ForGroup(ThingRequestGroup.Transporter);
++        public override PathEndMode PathEndMode => PathEndMode.Touch;
++        public override bool ShouldSkip(Pawn pawn, bool forced = false) => !BulkUnloadTransporterGate.Enabled;
++        public override bool HasJobOnThing(Pawn pawn, Thing target, bool forced = false)
++            => BulkUnloadTransporterGate.StartBlock(pawn, target?.TryGetComp<CompTransporter>(), forced) == TransporterUnloadBlock.None;
++        public override Job JobOnThing(Pawn pawn, Thing target, bool forced = false)
++        {
++            if (!HasJobOnThing(pawn, target, forced)) return null;
++            var job = JobMaker.MakeJob(HaulersDreamDefOf.HaulersDream_UnloadTransporterInBulk, target);
++            job.playerForced = forced;
++            return job;
++        }
++    }
++}
+--- a/scripts/check-storage-commit-seam.ts
++++ b/scripts/check-storage-commit-seam.ts
+@@ -67,6 +67,10 @@
+ 	{
+ 		file: 'JobDriver_UnloadHauledInventory.cs',
+ 		why: 'the delivery and home-area-fallback placements'
++	},
++	{
++		file: 'JobDriver_UnloadTransporterInBulk.cs',
++		why: 'owned transporter cargo delivery; actual hands are counted by StorageEvidence and destination uses the shared gate'
+ 	}
+ ]
+ 

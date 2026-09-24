@@ -1,0 +1,35 @@
+--- host-v3 Scene
++++ host-v4 Scene
+@@ -197,13 +197,13 @@
+                 Require("native-multiple-trip-continuation",placements.Count(s=>s.StartsWith("job="+expectedJobs[0]+","))>=2&&pickups.Count(s=>s.StartsWith("job="+expectedJobs[0]+","))>=1,
+                     "First pickup is in original producer; continuation pickups="+string.Join("|",pickups)+"; placements="+string.Join("|",placements));
+                 Require("native-no-escaped-or-retained-cargo",EmptyOwnedHolders()&&UnitsFor(ThingDef.Named("Chemfuel"))==159&&FuelOnlyAtSelectedPoints(),FuelCustody());
+-                Require("native-personal-keep-and-B-unchanged",Personal()==9&&actors[0].GetComp<CompHauledToInventory>().KeptCountOf(ThingDef.Named("Chemfuel"))==3&&At(1)==7&&sources[1].stackCount==8,Physical());
++                Require("native-personal-keep-and-B-unchanged",InventoryText(actors[0])==record["inventory0"]&&Personal()==9&&actors[0].GetComp<CompHauledToInventory>().KeptCountOf(ThingDef.Named("Chemfuel"))==3&&At(1)==7&&sources[1].stackCount==8,Physical()+"; originalInventory="+record["inventory0"]+"; currentInventory="+InventoryText(actors[0]));
+                 Require("completed-orders-release-reservations",!map.reservationManager.ReservationsReadOnly.Any(r=>r.Job!=null&&expectedJobs.Contains(r.Job.loadID)),"No native reservation remains for completed original job IDs");
+                 Hold(actors[0]);stableTick=ticks.TicksGame;stage="completion-stability";
+             }
+             if((stage=="completion-stability"||stage=="resaved-stability")&&ticks.TicksGame-stableTick>=300)
+             {
+-                Require("stable-physical-conservation",EmptyOwnedHolders()&&UnitsFor(ThingDef.Named("Chemfuel"))==159&&FuelOnlyAtSelectedPoints()&&sources[0].stackCount==34&&At(0)==116&&Personal()==9&&sources[1].stackCount==8&&At(1)==7&&Orders(actors[0]).All(o=>State(o)=="Complete")&&!actors.Any(p=>Explicit(p.CurJob)||p.jobs.jobQueue.Any(q=>Explicit(q.job))),Physical());
++                Require("stable-physical-conservation",InventoryText(actors[0])==record["inventory0"]&&EmptyOwnedHolders()&&UnitsFor(ThingDef.Named("Chemfuel"))==159&&FuelOnlyAtSelectedPoints()&&sources[0].stackCount==34&&At(0)==116&&Personal()==9&&sources[1].stackCount==8&&At(1)==7&&Orders(actors[0]).All(o=>State(o)=="Complete")&&!actors.Any(p=>Explicit(p.CurJob)||p.jobs.jobQueue.Any(q=>Explicit(q.job))),Physical()+"; originalInventory="+record["inventory0"]+"; currentInventory="+InventoryText(actors[0]));
+                 if(stage=="resaved-stability"){Require("no-replayed-explicit-jobs",started.Count==0&&pickups.Count==0&&placements.Count==0,"Fresh terminal save ran300 native ticks without new explicit work");status="passed";}
+                 else {ticks.CurTimeSpeed=TimeSpeed.Paused;stage="continuation-save";pendingSave=true;}
+             }
+@@ -249,7 +249,7 @@
+                 d["job"+i]=JobText(actors[i].CurJob);d["queue"+i]=QueueText(actors[i]);d["driver"+i]=(actors[i].jobs.curDriver?.GetType().FullName??"null")+":"+actors[i].jobs.curDriver?.CurToilIndex;
+                 d["position"+i]=actors[i].Position.x+","+actors[i].Position.z;d["hands"+i]=ItemText(actors[i].carryTracker.CarriedThing);
+                 d["recovery"+i]=RecoveryText(actors[i]);
+-                d["inventory"+i]=string.Join("|",actors[i].inventory.innerContainer.OrderBy(t=>t.thingIDNumber).Select(ItemText));
++                d["inventory"+i]=InventoryText(actors[i]);
+                 d["tagged"+i]=string.Join(",",Field<HashSet<Thing>>(actors[i].GetComp<CompHauledToInventory>(),"takenToInventory").OrderBy(t=>t.thingIDNumber).Select(Id));
+                 d["keep"+i]=actors[i].GetComp<CompHauledToInventory>().KeptCountOf(ThingDef.Named("Chemfuel")).ToString();
+             }
+@@ -279,6 +279,7 @@
+         private int Number(string key)=>int.Parse(record[key],CultureInfo.InvariantCulture);
+         private int At(int i)=>destinations[i].GetThingList(map).Where(t=>t.def==sources[i].def).Sum(t=>t.stackCount);
+         private int Personal()=>actors[0].inventory.innerContainer.Where(t=>t.def==ThingDef.Named("Chemfuel")).Sum(t=>t.stackCount);
++        private static string InventoryText(Pawn pawn)=>string.Join("|",pawn.inventory.innerContainer.OrderBy(t=>t.thingIDNumber).Select(ItemText));
+         private string Physical()=>"A="+ItemText(sources[0])+","+CellText(destinations[0])+",personal"+Personal()+"|B="+ItemText(sources[1])+","+CellText(destinations[1]);
+         private string CellText(IntVec3 c)=>c.x+":"+c.z+":"+string.Join("/",c.GetThingList(map).Where(t=>t.def.category==ThingCategory.Item).OrderBy(t=>t.thingIDNumber).Select(ItemText));
+         private static string ItemText(Thing t)=>t==null?"null":Id(t)+":"+t.stackCount+":"+t.Destroyed+":"+t.Spawned+":"+(t.Spawned?t.Position.x+","+t.Position.z:t.ParentHolder?.GetType().FullName??"detached");

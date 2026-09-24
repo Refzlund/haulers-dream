@@ -1,0 +1,18 @@
+--- 
+
++++ 
+
+@@ -1,6 +1,10 @@
+
+ Ldarg_0 
++Ldc_I4_1 
++Newarr type:System.Char
++Dup 
++Ldc_I4_0 
+ Ldc_I4_S System.SByte:30
+-Ldc_I4_0 
+-Callvirt method:System.String[] System.String::Split(System.Char,System.StringSplitOptions) | hasThis=True; explicitThis=False; convention=Default; arity=0
++Stelem_I2 
++Callvirt method:System.String[] System.String::Split(System.Char[]) | hasThis=True; explicitThis=False; convention=Default; arity=0
+ Stloc_0 
+ Newobj method:System.Void HaulersDream.StorageBuildingFilter::.ctor() | hasThis=True; explicitThis=False; convention=Default; arity=0

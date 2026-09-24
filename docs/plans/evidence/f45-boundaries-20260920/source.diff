@@ -1,0 +1,334 @@
+--- /dev/null
++++ boundaries/src/PbBoundaryScenario.cs
+@@ -0,0 +1,274 @@
++using System;
++using System.Collections.Generic;
++using System.Linq;
++using System.Reflection;
++using System.Reflection.Emit;
++using HarmonyLib;
++using RimWorld;
++using Verse;
++
++namespace HaulersDream.PbMenuFixture
++{
++    internal sealed partial class PbMenuScenario
++    {
++        internal static readonly string[] BoundaryRoster = {
++            "prime-countable-menu", "boundary-list-ownership", "boundary-zero-output", "boundary-two-outputs",
++            "boundary-nested-normal", "boundary-nested-exception", "boundary-output-idempotence",
++            "boundary-composition-exception", "boundary-outer-exception", "boundary-action-throw-after-store",
++            "boundary-action-return-labels"
++        };
++        private const string BoundaryOwner = "giwaffed.haulersdream.fixture.boundaries";
++        private static PbMenuScenario boundaryActive;
++        private List<FloatMenuOption> boundarySimple, boundaryOther;
++        private string boundaryKind;
++        private readonly Harmony boundaryHarmony = new Harmony(BoundaryOwner);
++        private readonly List<MethodBase> boundaryPatched = new List<MethodBase>();
++        private readonly List<object> boundaryFrames = new List<object>();
++        private readonly Exception boundarySentinel = new InvalidOperationException("F45 intentional boundary stimulus");
++        private MethodInfo boundaryAugment, boundaryAddBatch;
++        private bool boundarySkipStore;
++        private int boundaryDepth, boundaryFaultCalls;
++
++        private List<FloatMenuOption> NativeInput(Operation op)
++        {
++            var input = PbMenuObservers.Receipt(op.menus.Single().menu).Items.ToList();
++            Evidence.Require(input.Count == 3 && input.All(x => Bindings.Describe(x).assembly == "Assembly-CSharp"), "Boundary stimulus must use original actual native options.");
++            return input;
++        }
++        private static MethodInfo BoundaryMethod(string name) => AccessTools.DeclaredMethod(typeof(PbMenuScenario), name);
++        private static bool FrameFlag(object frame, string name) => (bool)AccessTools.Field(frame.GetType(), name).GetValue(frame);
++        private static object FrameValue(object frame, string name) => AccessTools.Field(frame.GetType(), name).GetValue(frame);
++        private void BoundaryCheck(bool value, string text) => Check(ActiveOperation, value, text);
++        private List<FloatMenuOption> Augment(List<FloatMenuOption> input) => (List<FloatMenuOption>)Evidence.Invoke(boundaryAugment, null, input);
++        private int BatchCount(List<FloatMenuOption> options) => options.Count(x => Bindings.Describe(x).kind == "batch");
++        private FloatMenu BoundaryMenu(List<FloatMenuOption> input, bool augmented, bool add = false)
++        {
++            var before = input.ToArray(); var menu = new FloatMenu(input);
++            var receipt = PbMenuObservers.Receipt(Evidence.Id(menu));
++            BoundaryCheck(input.SequenceEqual(before), "Constructor input list and original option identities preserved.");
++            BoundaryCheck(PbMenuObservers.ActualOptions(menu).Count == (augmented ? input.Count + 3 : input.Count)
++                && BatchCount(PbMenuObservers.ActualOptions(menu)) == (augmented ? 3 : BatchCount(input)), "Expected exact native constructor output and batch-option count.");
++            if (!augmented) BoundaryCheck(ReferenceEquals(receipt.Composed, input), "Unrelated, other-bill or already-returned input was not replaced.");
++            if (add) Find.WindowStack.Add(menu);
++            return menu;
++        }
++        private void PatchBoundary(MethodBase target, string prefix = null, string transpiler = null)
++        {
++            if (!boundaryPatched.Contains(target)) boundaryPatched.Add(target);
++            boundaryHarmony.Patch(target,
++                prefix: prefix == null ? null : new HarmonyMethod(BoundaryMethod(prefix)) { priority = Priority.Last, after = new[] { "giwaffed.HaulersDream" } },
++                transpiler: transpiler == null ? null : new HarmonyMethod(BoundaryMethod(transpiler)) { priority = Priority.First, before = new[] { "giwaffed.HaulersDream" } });
++        }
++        private void UnpatchBoundary(MethodBase target)
++        {
++            boundaryHarmony.Unpatch(target, HarmonyPatchType.All, BoundaryOwner);
++            BoundaryCheck(Harmony.GetPatchInfo(target)?.Owners.Contains(BoundaryOwner) != true, "Only the owned synthetic patch was removed.");
++        }
++        private static bool BoundaryCreator(Bill_Production bill) => boundaryActive == null || boundaryActive.CreateBoundary(bill);
++        private bool CreateBoundary(Bill_Production bill)
++        {
++            object frame = Bindings.Scope.GetValue(null); boundaryFrames.Add(frame);
++            BoundaryCheck(frame != null && ReferenceEquals(FrameValue(frame, "Bill"), bill) && !FrameFlag(frame, "Closed") && !FrameFlag(frame, "Composing"),
++                "Actual HD prefix entered the exact bill frame before synthetic creator.");
++            Entry.Emit("boundary-frame-enter", boundaryKind + "; frame=" + Evidence.Id(frame) + "; previous=" + Evidence.Id(FrameValue(frame, "Previous")) + "; bill=" + bill.GetUniqueLoadID());
++            if (boundaryDepth != 0)
++            {
++                BoundaryCheck(ReferenceEquals(bill, uncountable) && ReferenceEquals(FrameValue(frame, "Previous"), boundaryFrames[0]), "Nested real menu call links its own frame to the actual outer frame.");
++                BoundaryMenu(boundaryOther, true);
++                if (boundaryKind == "boundary-nested-exception") throw boundarySentinel;
++                return false;
++            }
++            BoundaryCheck(ReferenceEquals(bill, simple), "Outer synthetic call captures the owned simple bill.");
++            switch (boundaryKind)
++            {
++                case "boundary-list-ownership":
++                    var unrelated = new List<FloatMenuOption> { new FloatMenuOption("F45 unrelated popup", () => { throw new InvalidOperationException("Unrelated action must never run."); }) };
++                    BoundaryMenu(unrelated, false); BoundaryMenu(boundaryOther, false); BoundaryMenu(boundarySimple, true);
++                    break;
++                case "boundary-zero-output": break;
++                case "boundary-two-outputs":
++                    BoundaryMenu(boundarySimple, true, true); BoundaryMenu(boundarySimple, true, true);
++                    break;
++                case "boundary-nested-normal":
++                case "boundary-nested-exception":
++                    Exception observed = null; boundaryDepth++;
++                    try { BillRepeatModeUtility.MakeConfigFloatMenu(uncountable); } catch (Exception error) { observed = error; }
++                    finally { boundaryDepth--; }
++                    BoundaryCheck(boundaryKind == "boundary-nested-exception" ? ReferenceEquals(observed, boundarySentinel) : observed == null,
++                        "Nested real-call exception identity/normal return matches the explicit stimulus.");
++                    BoundaryCheck(ReferenceEquals(Bindings.Scope.GetValue(null), frame) && !FrameFlag(frame, "Closed")
++                        && boundaryFrames.Count == 2 && FrameFlag(boundaryFrames[1], "Closed"), "Actual inner finalizer closed its frame and restored the live outer scope.");
++                    BoundaryMenu(boundarySimple, true);
++                    break;
++                case "boundary-output-idempotence":
++                    var first = BoundaryMenu(boundarySimple, true);
++                    var returned = PbMenuObservers.Receipt(Evidence.Id(first)).Composed;
++                    var second = BoundaryMenu(returned, false);
++                    var copied = new List<FloatMenuOption>(PbMenuObservers.ActualOptions(second));
++                    var third = new FloatMenu(copied);
++                    var final = PbMenuObservers.ActualOptions(third);
++                    BoundaryCheck(final.Count == 6 && BatchCount(final) == 3 && copied.Count == 6
++                        && copied.All(x => final.Count(y => ReferenceEquals(x, y)) == 1), "A native-sorted copied output retains each original option exactly once without another batch set.");
++                    BoundaryCheck(!ReferenceEquals(PbMenuObservers.Receipt(Evidence.Id(third)).Composed, copied), "Copied-list path was exercised independently of exact returned-list identity.");
++                    break;
++                case "boundary-composition-exception":
++                    PatchBoundary(boundaryAddBatch, prefix: nameof(BoundaryComposeFault));
++                    BoundaryMenu(boundarySimple, false);
++                    BoundaryCheck(boundaryFaultCalls == 1 && !FrameFlag(frame, "Composing") && ReferenceEquals(Bindings.Scope.GetValue(null), frame),
++                        "Contained actual AddBatchOptions exception released the composing flag without abandoning its frame.");
++                    UnpatchBoundary(boundaryAddBatch);
++                    BoundaryMenu(boundarySimple, true);
++                    break;
++                case "boundary-outer-exception": throw boundarySentinel;
++                default: throw new InvalidOperationException("Unknown composition stimulus: " + boundaryKind);
++            }
++            return false; // Skip only this controlled native creator body; HD's real finalizer still runs.
++        }
++        private static void BoundaryComposeFault()
++        {
++            var scene = boundaryActive; if (scene == null) return;
++            scene.boundaryFaultCalls++;
++            object frame = scene.Bindings.Scope.GetValue(null);
++            scene.BoundaryCheck(FrameFlag(frame, "Composing") && ReferenceEquals(scene.Augment(scene.boundarySimple), scene.boundarySimple),
++                "Reentrant augmentation while genuinely composing returns its exact input without recursion.");
++            Entry.Emit("boundary-injected-composition-exception", "Intentional throw inside actual AddBatchOptions; product constructor adapter must preserve the original menu.");
++            throw scene.boundarySentinel;
++        }
++        private static void BoundaryThrowAfterStore() { if (boundaryActive != null) throw boundaryActive.boundarySentinel; }
++        private static bool BoundaryReturnWithoutStore() => boundaryActive != null && boundaryActive.boundarySkipStore;
++        private static void BoundaryUnexpectedFallthrough() => throw new InvalidOperationException("Synthetic return-edge branch unexpectedly fell through.");
++        private static IEnumerable<CodeInstruction> BoundaryActionTranspiler(IEnumerable<CodeInstruction> instructions, ILGenerator generator)
++        {
++            var scene = boundaryActive; Evidence.Require(scene != null, "Synthetic transpiler requires its owned scene.");
++            var codes = instructions.Select(x => new CodeInstruction(x)).ToList();
++            var repeat = AccessTools.Field(typeof(Bill_Production), "repeatMode");
++            Evidence.Require(codes.Count(x => x.opcode == OpCodes.Stfld && Equals(x.operand, repeat)) == 1
++                && codes.Count(x => x.opcode == OpCodes.Ret) == 1 && codes.All(x => x.blocks.Count == 0)
++                && !codes.Any(x => x.operand is MethodInfo m && m.Name == "CompletePlainBillSelection"),
++                "Synthetic action transform must run before HD Observe on the exact one-store native action.");
++            if (scene.boundaryKind == "boundary-action-throw-after-store")
++            {
++                foreach (var code in codes)
++                {
++                    yield return code;
++                    if (code.opcode == OpCodes.Stfld && Equals(code.operand, repeat)) yield return new CodeInstruction(OpCodes.Call, BoundaryMethod(nameof(BoundaryThrowAfterStore)));
++                }
++            }
++            else
++            {
++                Label returnLabel = generator.DefineLabel();
++                codes.Single(x => x.opcode == OpCodes.Ret).labels.Add(returnLabel);
++                yield return new CodeInstruction(OpCodes.Call, BoundaryMethod(nameof(BoundaryReturnWithoutStore)));
++                yield return new CodeInstruction(OpCodes.Brtrue, returnLabel);
++                foreach (var code in codes)
++                {
++                    if (code.opcode == OpCodes.Ret)
++                    {
++                        yield return new CodeInstruction(OpCodes.Br, returnLabel);
++                        yield return new CodeInstruction(OpCodes.Call, BoundaryMethod(nameof(BoundaryUnexpectedFallthrough)));
++                    }
++                    yield return code;
++                }
++            }
++        }
++        private void RunBoundaryAction()
++        {
++            var option = boundarySimple.Single(x => Bindings.Describe(x).mode == "Forever");
++            SelectedAction = option.action; OperationBill = simple; Entry.Phase = "selection";
++            PatchBoundary(SelectedAction.Method, transpiler: nameof(BoundaryActionTranspiler));
++            var before = Bindings.Snapshot(simple);
++            if (boundaryKind == "boundary-action-throw-after-store")
++            {
++                Exception observed = null; try { SelectedAction(); } catch (Exception error) { observed = error; }
++                var after = Bindings.Snapshot(simple);
++                BoundaryCheck(ReferenceEquals(observed, boundarySentinel) && after.repeatMode == "Forever" && after.batch && after.batchSize == 7
++                    && ActiveOperation.completions == 0 && ActiveOperation.actionEntries == 1 && ActiveOperation.actionReturns == 0 && ActiveOperation.actionExceptions == 1,
++                    "Actual known delegate stored its mode then threw the same exception; HD did not complete or unbatch the failed action.");
++                Entry.Emit("boundary-expected-action-exception", "Intentional native action throw after store; batch/size preserved, no completion.", after);
++                UnpatchBoundary(SelectedAction.Method);
++                SelectedAction();
++                BoundaryCheck(ActiveOperation.completions == 1 && ActiveOperation.actionEntries == 2 && ActiveOperation.actionReturns == 1
++                    && ActiveOperation.actionExceptions == 1 && !Bindings.Snapshot(simple).batch, "After removing only the synthetic throw, the same actual delegate returns and completes once.");
++            }
++            else
++            {
++                boundarySkipStore = true; SelectedAction();
++                BoundaryCheck(Evidence.Json(Bindings.Snapshot(simple)) == Evidence.Json(before) && ActiveOperation.completions == 0,
++                    "Incoming branch to actual return without the store leaves mode and batch unchanged, with no completion.");
++                boundarySkipStore = false; SelectedAction();
++                BoundaryCheck(ActiveOperation.completions == 1 && ActiveOperation.actionEntries == 2 && ActiveOperation.actionReturns == 2
++                    && ActiveOperation.actionExceptions == 0 && Bindings.Snapshot(simple).repeatMode == "Forever" && !Bindings.Snapshot(simple).batch,
++                    "Incoming branch to actual return after the store enters HD's completion guard exactly once.");
++            }
++            BoundaryCheck(ReferenceEquals(option.action, SelectedAction), "Offered native delegate and captured bill were never replaced.");
++        }
++        private void RunBoundary(Cell cell, string id)
++        {
++            Evidence.Require(Profile.Id == "candidate-boundaries" && Profile.Candidate && !Profile.Pb && Primed
++                && boundarySimple?.Count == 3 && boundaryOther?.Count == 3, "Boundary profile and actual native option harvest are required.");
++            var op = new Operation { id = id, stimulus = "Explicit synthetic boundary on actual candidate/native methods; real product prefixes, constructors, delegates and finalizers retained" };
++            cell.operations.Add(op); Evidence.Require(ActiveOperation == null && boundaryActive == null, "Overlapping boundary control.");
++            ActiveOperation = op; OperationBill = simple; boundaryActive = this; boundaryKind = id; boundaryFaultCalls = boundaryDepth = 0;
++            boundaryFrames.Clear(); boundaryPatched.Clear();
++            Window[] oldWindows = Find.WindowStack.Windows.ToArray(); string oldWindowState = null;
++            try
++            {
++                oldWindowState = RequireNativeOverlays(oldWindows);
++                Evidence.Require(Bindings.Scope.GetValue(null) == null && (bool)Bindings.Ready.GetValue(null, null), "Boundary starts with no leaked scope and initialized actual catalogue.");
++                Bindings.Seed(simple, "RepeatCount", id.StartsWith("boundary-action-", StringComparison.Ordinal)); Bindings.Seed(uncountable, "RepeatCount", false);
++                op.before = Bindings.Snapshot(simple); State otherBefore = Bindings.Snapshot(uncountable);
++                var image = PbMenuBindings.Assembly("HaulersDream");
++                boundaryAugment = PbMenuBindings.Method(PbMenuBindings.Type(image, "HaulersDream.BillRepeatMenuComposition"), "Augment", typeof(List<FloatMenuOption>));
++                boundaryAddBatch = PbMenuBindings.Method(PbMenuBindings.Type(image, "HaulersDream.Patch_BillRepeatModeUtility_MakeConfigFloatMenu"), "AddBatchOptions", typeof(List<FloatMenuOption>), typeof(Bill_Production));
++                Entry.Phase = "boundary"; Entry.Emit("boundary-before", id, op.before);
++                if (id.StartsWith("boundary-action-", StringComparison.Ordinal)) RunBoundaryAction();
++                else
++                {
++                    PatchBoundary(PbMenuObservers.MenuMethod, prefix: nameof(BoundaryCreator));
++                    Exception observed = null; try { BillRepeatModeUtility.MakeConfigFloatMenu(simple); } catch (Exception error) { observed = error; }
++                    BoundaryCheck(id == "boundary-outer-exception" ? ReferenceEquals(observed, boundarySentinel) : observed == null,
++                        "Top-level actual menu call preserved expected exception identity/normal return.");
++                    BoundaryCheck(boundaryFrames.Count == (id.StartsWith("boundary-nested-", StringComparison.Ordinal) ? 2 : 1)
++                        && boundaryFrames.All(x => FrameFlag(x, "Closed") && !FrameFlag(x, "Composing")), "Every actual entered frame was closed by product finalizers with no composing flag left behind.");
++                    int expectedConstructors = id == "boundary-zero-output" || id == "boundary-outer-exception" ? 0
++                        : id == "boundary-list-ownership" || id == "boundary-output-idempotence" ? 3 : 2;
++                    BoundaryCheck(op.constructorCalls == expectedConstructors && op.addCalls == (id == "boundary-two-outputs" ? 2 : 0)
++                        && op.nativeBodyEntries == 0, "Exact synthetic zero/two/three constructor and Add counts observed; original creator body alone was skipped.");
++                    BoundaryCheck(Evidence.Json(Bindings.Snapshot(simple)) == Evidence.Json(op.before), "Composition/failure controls never selected or changed the source bill.");
++                }
++                BoundaryCheck(Bindings.Scope.GetValue(null) == null && Evidence.Json(Bindings.Snapshot(uncountable)) == Evidence.Json(otherBefore),
++                    "Actual finalizer clears all scope and preserves the separate bill's exact state.");
++                BoundaryCheck(op.menus.All(x => x.constructorReturned && x.constructorException == null && x.inputUnchanged && x.originalOptionsPreserved && x.sortedAsNative),
++                    "All actual constructors returned with original option presentation preserved and native sorting observed.");
++                op.after = Bindings.Snapshot(simple);
++            }
++            catch (Exception error) { op.exception = error.ToString(); throw; }
++            finally
++            {
++                foreach (var method in boundaryPatched.Distinct())
++                {
++                    try { UnpatchBoundary(method); } catch (Exception error) { op.cleanup.Add("Synthetic patch cleanup: " + error); }
++                }
++                try
++                {
++                    foreach (Window window in Find.WindowStack.Windows.ToArray().Reverse())
++                    {
++                        if (oldWindows.Any(x => ReferenceEquals(x, window))) continue;
++                        if (window is FloatMenu && op.menus.Any(x => x.menu == Evidence.Id(window)))
++                        { if (!Find.WindowStack.TryRemove(window, false)) op.cleanup.Add("Owned menu removal refused."); }
++                        else op.cleanup.Add("Unowned unexpected window preserved: " + window.GetType().FullName);
++                    }
++                    var afterWindows = Find.WindowStack.Windows.ToArray();
++                    op.cleanupComplete = op.cleanup.Count == 0 && Bindings.Scope.GetValue(null) == null && afterWindows.SequenceEqual(oldWindows)
++                        && (oldWindowState == null || DescribeWindows(afterWindows) == oldWindowState);
++                    if (!op.cleanupComplete) op.cleanup.Add("Scope, patch, or baseline-window preservation failed.");
++                    op.passed = op.exception == null && op.cleanupComplete;
++                    Entry.Emit("boundary-after", id + "; passed=" + op.passed + "; only owned synthetic patches removed; actual scope=" + Evidence.Id(Bindings.Scope.GetValue(null)), op.after);
++                }
++                catch (Exception error) { op.cleanup.Add(error.ToString()); op.cleanupComplete = false; op.passed = false; Entry.Fail(error); }
++                finally { boundaryActive = null; SelectedAction = null; OperationBill = null; ActiveOperation = null; boundaryKind = null; }
++            }
++            Evidence.Require(op.passed, "Boundary operation or cleanup failed: " + id);
++        }
++    }
++}
+--- core/src-v3/PbMenuEntry.cs
++++ boundaries/src/PbMenuEntry.cs
+@@ -34,6 +34,7 @@
+         {
+             switch (id)
+             {
++                case "candidate-boundaries": return new Profile { Id = id, Variant = "candidate" };
+                 case "candidate-native": return new Profile { Id = id, Variant = "candidate" };
+                 case "candidate-pb-hd-first": return new Profile { Id = id, Variant = "candidate", Pb = true, HdFirst = true };
+                 case "candidate-pb-pb-first": return new Profile { Id = id, Variant = "candidate", Pb = true };
+--- core/src-v3/PbMenuObservers.cs
++++ boundaries/src/PbMenuObservers.cs
+@@ -172,6 +172,7 @@
+             State snapshot = scene.Bindings.Snapshot(bill); op.completions++; op.completionStates.Add(snapshot); Entry.Emit("completion-enter", "Actual HD completion boundary before its own mutation.", snapshot);
+         }
+         internal static List<FloatMenuOption> ActualOptions(FloatMenu menu) => (List<FloatMenuOption>)Options.GetValue(menu);
++        internal static ConstructorReceipt Receipt(int menuId) => active.Menus.Single(x => Evidence.Id(x.Key) == menuId).Value;
+         internal void Forget(FloatMenu menu) { Menus.Remove(menu); }
+         internal List<string> Inventory()
+         {
+--- core/src-v3/PbMenuScenario.cs
++++ boundaries/src/PbMenuScenario.cs
+@@ -7,7 +7,7 @@
+ 
+ namespace HaulersDream.PbMenuFixture
+ {
+-    internal sealed class PbMenuScenario : IDisposable
++    internal sealed partial class PbMenuScenario : IDisposable
+     {
+         // These remain requirements, not skipped/passed core cells. The whole plan remains open.
+         internal static readonly string[] Pending = {
+@@ -33,6 +33,7 @@
+         };
+         internal static string[] Roster(Profile profile)
+         {
++            if (profile.Id == "candidate-boundaries") return BoundaryRoster;
+             var ids = new List<string> { "prime-countable-menu", "cancel-without-selection" };
+             if (profile.Hd) ids.Add("offered-size-and-overshoot-actions");
+             foreach (string mode in new[] { "RepeatCount", "Forever", "TargetCount" }) { ids.Add("same-plain-" + mode); ids.Add("switch-plain-" + mode); }
+@@ -172,9 +173,16 @@
+         internal void Run(string id, Cell cell)
+         {
+             Evidence.Require(Roster(Profile).Contains(id), "Unknown cell.");
++            if (id.StartsWith("boundary-", StringComparison.Ordinal)) { RunBoundary(cell, id); return; }
+             if (id == "prime-countable-menu")
+             {
+-                Bindings.Seed(simple, "RepeatCount", false); RunOperation(cell, simple, "prime", null, null, "cancel"); Primed = true;
++                Bindings.Seed(simple, "RepeatCount", false); var prime = RunOperation(cell, simple, "prime", null, null, "cancel");
++                if (Profile.Id == "candidate-boundaries")
++                {
++                    boundarySimple = NativeInput(prime);
++                    boundaryOther = NativeInput(RunOperation(cell, uncountable, "prime-other-bill", null, null, "cancel"));
++                }
++                Primed = true;
+                 cell.checks.Add(Profile.Variant == "published" ? "Expected original-report characterization: actual published HD creator suppresses PB mode, independently of mod-list relative order." : "Expected original creator/menu observed; no baseline-to-candidate substitution."); return;
+             }
+             if (id == "cancel-without-selection" || id == "offered-size-and-overshoot-actions")

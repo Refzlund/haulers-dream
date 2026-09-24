@@ -192,29 +192,40 @@ namespace HaulersDream
     }
 
     /// <summary>
-    /// F3d (meet-in-the-middle for crafting): when the produced DoBill job will fetch an ingredient from a
-    /// carrier's inventory, nudge an idle carrier to walk toward the worker so they converge faster. Never
-    /// interrupts a carrier doing real work (see <see cref="SharedInventoryApproach"/>).
+    /// F3d: dispatch a carrier nudge only after the selected bill job actually starts. Workgiver candidates
+    /// (including ordinary HasJobOnThing probes outside float menus) must never order another pawn around.
     /// </summary>
-    [HarmonyPatch(typeof(WorkGiver_DoBill), nameof(WorkGiver_DoBill.JobOnThing))]
-    public static class Patch_WorkGiver_DoBill_JobOnThing
+    [HarmonyPatch(typeof(JobDriver), nameof(JobDriver.Notify_Starting))]
+    public static class Patch_JobDriver_BillCarrierApproach
     {
-        static void Postfix(Job __result, Pawn pawn)
+        static void Postfix(JobDriver __instance)
         {
+            try { ApproachSelectedCarrier(__instance); }
+            catch (Exception ex)
+            {
+                HDGuard.SeamDegraded(ex, "DoBill job start (HD carrier approach)", __instance.pawn,
+                    "the selected bill job continues without a carrier approach");
+            }
+        }
+
+        private static void ApproachSelectedCarrier(JobDriver driver)
+        {
+            var pawn = driver.pawn;
+            var started = driver.job;
+            if (started == null || (started.def != JobDefOf.DoBill && !HdJobDefSets.IsBillGather(started.def))
+                || started.targetQueueB == null) return;
             var s = HaulersDreamMod.Settings;
-            if (s == null || !s.shareForCrafting || !s.shareMeetInMiddle || pawn == null)
+            if (!MasterEnable.Active || s == null || !s.shareForCrafting || !s.shareMeetInMiddle || pawn == null)
                 return;
+            if (pawn.CurJob != started || pawn.jobs.curDriver != driver) return;
             // #4: the meet-in-the-middle carrier nudge is part of HD's share-for-crafting — exclude mech workers
             // for the same reason the injection does (mechs don't draw ingredients from inventory the colonist
             // way). Once the injection skips mechs this is already inert for them, so this is belt-and-suspenders.
             if (!BillRouteGate.WorkerMayShareCraft(pawn))
                 return;
-            if (__result == null || __result.def != JobDefOf.DoBill || __result.targetQueueB == null)
-                return;
-
-            for (int i = 0; i < __result.targetQueueB.Count; i++)
+            for (int i = 0; i < started.targetQueueB.Count; i++)
             {
-                var thing = __result.targetQueueB[i].Thing;
+                var thing = started.targetQueueB[i].Thing;
                 if (thing?.ParentHolder is Pawn_InventoryTracker)
                     SharedInventoryApproach.MaybeApproach(thing, pawn);
             }

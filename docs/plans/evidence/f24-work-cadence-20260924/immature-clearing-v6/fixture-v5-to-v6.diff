@@ -1,0 +1,36 @@
+--- v5/fixture/src/WorkCadence.cs
++++ v6/fixture/src/WorkCadence.cs
+@@ -184,10 +184,18 @@
+                 int count = next == 1 ? 2 : 17;
+                 for (int i = 0; i < count; i++) {
+                     var cell = site + new IntVec3(next == 1 ? i * 2 : i % 3, 0, next == 1 ? 0 : i / 3);
+-                    growing.AddCell(cell); Plant plant = (Plant)ThingMaker.MakeThing(plantDef); plant.Growth = 1f; plant.sown = true; targets.Add(plant); owned.Add(plant); GenSpawn.Spawn(plant, cell, map);
++                    growing.AddCell(cell); Plant plant = (Plant)ThingMaker.MakeThing(plantDef); plant.Growth = next == 1 ? 0.75f : 1f; plant.sown = true; targets.Add(plant); owned.Add(plant); GenSpawn.Spawn(plant, cell, map);
+                     Guard(plant.CanYieldNow() && plant.YieldNow() > 0 && !plant.Blighted && plant.def.plant.harvestedThingDef == material, "Productive native plant required.");
+                     maximumMass += (float)Math.Ceiling(plant.YieldNow() * Math.Max(1f, actor.GetStatValue(StatDefOf.PlantHarvestYield))) * material.GetStatValueAbstract(StatDefOf.Mass);
+-                    if (next == 1) Guard(PlantUtility.GrowthSeasonNow(cell, map, growing.GetPlantDefToGrow()) && plant.def != growing.GetPlantDefToGrow(), "GrowerSow clearing requires a growing season and unwanted trees.");
++                    if (next == 1) {
++                        // Native GrowerHarvest takes mature unwanted trees before the sowing scanner.
++                        // A yielding, still-growing blocker makes ordinary GrowerSow select its own clearing job.
++                        Guard(plant.LifeStage == PlantLifeStage.Growing && plant.def.plant.blockAdjacentSow
++                            && PlantUtility.GrowthSeasonNow(cell, map, growing.GetPlantDefToGrow()) && plant.def != growing.GetPlantDefToGrow(),
++                            "GrowerSow clearing requires a yielding immature sow blocker, growing season and unwanted tree.");
++                        emit("f24-clearing-seed", "plant=" + plant.thingIDNumber + "; growth=" + plant.Growth + "; lifeStage=" + plant.LifeStage
++                            + "; harvestable=" + plant.HarvestableNow + "; canYield=" + plant.CanYieldNow() + "; blockAdjacentSow=" + plant.def.plant.blockAdjacentSow);
++                    }
+                 }
+             } else {
+                 for (int i = 0; i < 2; i++) { var wall = ThingMaker.MakeThing(ThingDefOf.Wall, ThingDefOf.WoodLog); wall.SetFaction(Faction.OfPlayer); targets.Add(wall); owned.Add(wall); GenSpawn.Spawn(wall, site + new IntVec3(i * 2, 0, 0), map); map.designationManager.AddDesignation(new Designation(wall, DesignationDefOf.Deconstruct)); maximumMass += wall.CostListAdjusted().Sum(x => x.count * x.thingDef.GetStatValueAbstract(StatDefOf.Mass)); }
+--- v5/fixture/build.ps1
++++ v6/fixture/build.ps1
+@@ -2,8 +2,8 @@
+ $f24Root = $PSScriptRoot
+ $f24References = Join-Path $env:LOCALAPPDATA 'Temp/haulersdream-f34-host-root-build-20260920'
+ $f24Product = Join-Path $env:LOCALAPPDATA 'HaulersDreamQA/inputs/f24-20260924/candidate-v5-Product'
+-$f24Build = Join-Path $env:LOCALAPPDATA 'HaulersDreamQA/inputs/f24-20260924/HarnessBuild-v5'
+-if (Test-Path -LiteralPath $f24Build) { throw 'Preserve existing v5 build evidence.' }
++$f24Build = Join-Path $env:LOCALAPPDATA 'HaulersDreamQA/inputs/f24-20260924/HarnessBuild-v6'
++if (Test-Path -LiteralPath $f24Build) { throw 'Preserve existing v6 build evidence.' }
+ [IO.Directory]::CreateDirectory($f24Build) | Out-Null
+ & 'C:/Users/Arthur/.dotnet/dotnet.exe' build (Join-Path $f24Root 'host/HaulersDream.RuntimeHarness.csproj') --nologo -c Release `
+     -p:ImportDirectoryBuildProps=false -p:ImportDirectoryBuildTargets=false -p:ImportDirectoryPackagesProps=false `

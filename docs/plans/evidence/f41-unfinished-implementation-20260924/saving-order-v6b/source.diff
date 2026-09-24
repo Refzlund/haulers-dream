@@ -1,0 +1,11 @@
+--- v6/OrphanRecipeScene.cs
++++ v6b/OrphanRecipeScene.cs
+@@ -297,7 +297,7 @@
+                 Require("native-two-products", ProductThings().Count() == 2 && ProductThings().All(t => t.Stuff == ThingDefOf.Cloth)
+                     && bills[0].repeatCount == 0 && bills[2].repeatCount == 0, ProductText());
+                 Require("native-ingredient-conservation", ingredientsToConsume.All(t => t.Destroyed) && TotalCloth() == 20 && ItemText(items[1]) == record["item1"], "Exactly40 original ingredient units consumed; healthy20 retained; no new ingredient stock. " + ProductText());
+-                Require("native-resume-progress", repairs.Count == 3 && cleanedCurrent.SetEquals(new[] { currentId }) && cleanedQueued.SetEquals(new[] { queuedId }), RepairText());
++                Require("native-resume-progress", repairs.Count == 4 && cleanedCurrent.SetEquals(new[] { currentId }) && cleanedQueued.SetEquals(new[] { queuedId }), RepairText());
+                 ticks.CurTimeSpeed = TimeSpeed.Paused; stage = "recovery-save"; pendingSave = true;
+             }
+             if (stage == "resaved-stability" && ticks.TicksGame - stableTick >= 180)

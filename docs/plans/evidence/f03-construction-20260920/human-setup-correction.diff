@@ -1,0 +1,69 @@
+diff --git "a/C:\\Users\\Arthur\\AppData\\Local\\Temp\\hd-f03-20260920\\pre-human-setup-fix-e2eee\\ConstructionGather.cs" "b/C:\\Users\\Arthur\\Sync\\Projects\\RimWorld Mods\\HaulersDream\\docs\\plans\\evidence\\f03-construction-20260920\\src\\ConstructionGather.cs"
+index 7430cf7..d2a9395 100644
+--- "a/C:\\Users\\Arthur\\AppData\\Local\\Temp\\hd-f03-20260920\\pre-human-setup-fix-e2eee\\ConstructionGather.cs"
++++ "b/C:\\Users\\Arthur\\Sync\\Projects\\RimWorld Mods\\HaulersDream\\docs\\plans\\evidence\\f03-construction-20260920\\src\\ConstructionGather.cs"	
+@@ -102,22 +102,48 @@ namespace HaulersDream.F03Native
+             Guard(map.mapPawns.AllPawnsSpawned.Count == 0 && !arena.Cells.SelectMany(c => c.GetThingList(map)).Any(t => t.def == ThingDefOf.Fire || t.HostileTo(Faction.OfPlayer)), "Post-clear arena still occupied/dangerous.");
+             foreach (Thing wood in Wood()) originalWood.Add(wood);
+             tableDef = DefDatabase<ThingDef>.GetNamed("Table3x3c");
+-            // Pick one naturally capable colonist from a bounded native generation. No skill/stat/body edits.
++            // Controlled human setup isolates gathering from starter cargo and random construction botches.
++            // Native bodies, capacity and costs remain measured; the separate robot is never modified here.
+             Rand.PushState(25933);
+             try
+             {
+                 for (int attempt = 0; attempt < 12; attempt++)
+                 {
+                     Pawn p = PawnGenerator.GeneratePawn(PawnKindDefOf.Colonist, Faction.OfPlayer); owned.Add(p);
+-                    if (p.Dead || p.Downed || !p.RaceProps.Humanlike || p.WorkTypeIsDisabled(WorkTypeDefOf.Construction)
+-                        || p.inventory == null || p.carryTracker == null || p.inventory.innerContainer.Count != 0
+-                        || p.carryTracker.innerContainer.Count != 0 || Ceiling(p) < 100 || p.carryTracker.MaxStackSpaceEver(ThingDefOf.WoodLog) >= 100) continue;
+-                    if (human == null || p.GetStatValue(StatDefOf.ConstructSuccessChance) > human.GetStatValue(StatDefOf.ConstructSuccessChance)) human = p;
++                    bool disabled = p.WorkTypeIsDisabled(WorkTypeDefOf.Construction);
++                    if (p.Dead || p.Downed || !p.RaceProps.Humanlike || disabled || p.inventory == null
++                        || p.carryTracker == null || p.skills == null || p.workSettings == null || p.timetable == null)
++                    {
++                        emit("f03-human-candidate", "attempt=" + (attempt + 1) + "; actor=" + p.thingIDNumber
++                            + "; admitted=false; dead=" + p.Dead + "; downed=" + p.Downed + "; humanlike=" + p.RaceProps.Humanlike
++                            + "; constructionDisabled=" + disabled + "; inventory=" + (p.inventory != null) + "; hands=" + (p.carryTracker != null)
++                            + "; skills=" + (p.skills != null) + "; workSettings=" + (p.workSettings != null) + "; timetable=" + (p.timetable != null));
++                        continue;
++                    }
++                    SkillRecord skill = p.skills.GetSkill(SkillDefOf.Construction);
++                    int oldSkill = skill.Level;
++                    float oldSuccess = p.GetStatValue(StatDefOf.ConstructSuccessChance);
++                    string starterInventory = string.Join(",", p.inventory.innerContainer.Select(t => t.def.defName + ":" + t.stackCount));
++                    string starterHands = string.Join(",", p.carryTracker.innerContainer.Select(t => t.def.defName + ":" + t.stackCount));
++                    // These are newly generated, fixture-owned starter items, before any test wood is seeded.
++                    p.inventory.innerContainer.ClearAndDestroyContents(DestroyMode.Vanish);
++                    p.carryTracker.innerContainer.ClearAndDestroyContents(DestroyMode.Vanish);
++                    skill.Level = 20;
++                    float success = p.GetStatValue(StatDefOf.ConstructSuccessChance);
++                    int hands = p.carryTracker.MaxStackSpaceEver(ThingDefOf.WoodLog), ceiling = Ceiling(p);
++                    bool admitted = p.inventory.innerContainer.Count == 0 && p.carryTracker.innerContainer.Count == 0
++                        && hands > 0 && hands < 100 && ceiling >= 100 && success >= 1f;
++                    emit("f03-human-candidate", "attempt=" + (attempt + 1) + "; actor=" + p.thingIDNumber + "; admitted=" + admitted
++                        + "; removedStarterInventory=[" + starterInventory + "]; removedStarterHands=[" + starterHands + "]"
++                        + "; constructionSkill=" + oldSkill + "->" + skill.Level + "; successChance=" + oldSuccess + "->" + success
++                        + "; handCap=" + hands + "; loadCeiling=" + ceiling + "; massCapacity=" + Capacity(p)
++                        + "; gearMass=" + MassUtility.GearAndInventoryMass(p) + "; carryFraction=" + settings.carryLimitFraction + "; overload=" + settings.overloadLevel);
++                    if (admitted) { human = p; break; }
+                 }
+             }
+             finally { Rand.PopState(); }
+-            SetupGuard(human != null && human.GetStatValue(StatDefOf.ConstructSuccessChance) >= 1f,
+-                "Twelve native colonists did not supply an empty, capable, native 100% construction-success actor with measured 100-unit inventory headroom. This is fixture refusal, not an HD failure.");
++            SetupGuard(human != null,
++                "No candidate met the measured native success/capacity guard after owned starter cargo removal and Construction skill 20; see f03-human-candidate measurements. This is fixture refusal, not an HD failure.");
+             human.workSettings.EnableAndInitializeIfNotAlreadyInitialized(); human.workSettings.DisableAll(); human.workSettings.SetPriority(WorkTypeDefOf.Construction, 1);
+             for (int hour = 0; hour < 24; hour++) human.timetable.SetAssignment(hour, TimeAssignmentDefOf.Work);
+             actor = human; GenSpawn.Spawn(actor, site + new IntVec3(-6, 0, 0), map);
+@@ -126,7 +152,7 @@ namespace HaulersDream.F03Native
+             Patch(typeof(Pawn), "Tick", nameof(PawnTick), false);
+             Patch(typeof(Frame), "CompleteConstruction", nameof(Building), true);
+             Patch(typeof(Frame), "CompleteConstruction", nameof(Built), false);
+-            emit("f03-arena", "One cleared 21x21 disposable enclosure; native AI, costs, capacity and robot roles unchanged. No productive job is assigned by fixture.");
++            emit("f03-arena", "One cleared 21x21 disposable enclosure; human starter cargo cleared and Construction skill set to 20. Native AI, costs, capacity and robot roles/skills unchanged. No productive job is assigned by fixture.");
+             BeginScene();
+         }
+         private void ParkMapPawns()

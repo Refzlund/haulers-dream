@@ -1,0 +1,22 @@
+# F05/F06 — Misc. Robots inventory hauling and direct commands
+
+24 September 2026. Both reported requirements are resolved in commit `75a2771`, using shared command/role prerequisites from `ee6f840`. C424/S01 reports missing robot inventory hauling; S02 reports an unavailable nearby-haul command. The later positive construction report remains independently covered by F14.
+
+The actual Misc. Robots definition family now receives its missing inventory tracker without duplicating existing trackers. Automatic intake respects the robot's native Hauling role, including Robots++ role configuration. Existing cargo recovery and the robot's own construction/yield work remain available. A selected robot has a nearby-haul targeting button when Biotech is disabled; with Biotech, the actual native menu offers the command subject to live role and setting checks. Direct, queued, cancelled and interrupted commands preserve player intent and Keep quantities.
+
+The independently reviewed native evidence is:
+
+| Requirement | Accepted evidence |
+|---|---|
+| Automatic inventory hauling; specialist exclusion; no-Biotech targeting, direct/queued commands and interrupted recovery | [61/61 review](f05-f06-robots-20260924/native/071295e19d9d43b18235d4c89cc87030/independent-runtime-review.md). Interrupted cargo ultimately reaches 80 stored plus seven kept, followed by 302 stable ticks. Earlier actual X2 Hauler evidence is retained in the focused plan. |
+| Biotech menu composition and productive execution | [52/52 review](f05-f06-lifecycle-20260924/native/6147ce76c69e426db0660a6f038acff7/independent-runtime-review.md). Actual menu checks reject disabled settings and a specialist without Hauling; the offered Omni order stores 20 and keeps seven, followed by 301 stable ticks. |
+| Upgrade an actual published station save | [Published checkpoint review](f05-f06-lifecycle-20260924/native/7a51d29818a1470e96dbebae40a0376d/independent-checkpoint-review.md), 49/49. Original contained robot has no HD component. [Upgrade review](f05-f06-lifecycle-20260924/native/5b56cbe262944a689c6db1ef8e6e1e79/root-runtime-review.md), 55/55, verifies that same robot receives one component, takes a partial load, returns through native station recall and is saved with exact cargo and Keep state. |
+| Full restart and natural recovery | [50/50 restart review](f05-f06-lifecycle-20260924/native/3ebbb097d2bc4a86af42492bbce2301e/independent-runtime-review.md). The exact original save is loaded in a fresh process, the same robot reactivates, natural work stores all 20 surplus units and retains seven, with 307 stable ticks and no repeat hauling loop. |
+
+Keep preserves a quantity across same-kind stacks, not the identity of the original stack. The native unload driver's keep-only final branch returns Incompletable after productive delivery; exact conservation and subsequent stability establish completion here. The producer/upgrade logs retain provider warnings from destroying a contained test robot after its save; they did not change the checkpoint. The final restart has no such cleanup warnings. Existing translation/texture/Mono notices remain disclosed in the full reviews.
+
+Recurrence review corrects the earlier compatibility assumption that these custom robots were unreachable by HD's paths. The observed missing attachment and native role admission were real integration gaps; hiding the job alone was not an adequate diagnosis. Existing-save and recall/restart evidence addresses the lifecycle boundary that an initial fresh-pawn success would miss. This does not establish the precise cause in an unavailable historical reporter colony.
+
+The [focused source review](f05-f06-lifecycle-20260924/commit-review/independent-selection-review.md) accepts the 24-file selection, all 16 description translations, compatibility guidance and release note. An isolated HEAD-plus-selection build passes with no warnings/errors. [Commit audit](f05-f06-lifecycle-20260924/commit-review/commit-audit.json) verifies exact reviewed bytes in the index and resulting commit. The recorded runtime candidate includes other development changes; the selected EnRoutePickup retains the already accepted F20 refill guard. No extra native run of this smaller isolated commit is claimed.
+
+Final assembled-build interactions, ordinary physical input and supported Multiplayer replay remain in [final integration](../final-integration-checks.md), and can reopen an item if they expose a regression. No release or merge has occurred.

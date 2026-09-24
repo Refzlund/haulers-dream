@@ -1,0 +1,134 @@
+{
+  "status": "accepted-exact-clean-checkpoint-for-fresh-resaved",
+  "runId": "5f61003cb8f445d186c460f8805c59a1",
+  "assertions": 59,
+  "passed": 59,
+  "failed": [],
+  "events": 91,
+  "repairs": [
+    {
+      "caseId": "F41-RECOVER",
+      "detail": "UnfinishedApparel16334|Make_Apparel_Tuque|16310|Cloth|1198.8|Cloth16313:Cloth::20",
+      "phase": "f41-observed-uft-repair",
+      "runId": "5f61003cb8f445d186c460f8805c59a1",
+      "sequence": 11,
+      "tick": 407,
+      "utc": "2026-09-24T10:28:12.7573369Z"
+    },
+    {
+      "caseId": "F41-RECOVER",
+      "detail": "UnfinishedApparel16336|Make_Apparel_Tuque|16329|Cloth|1198.8|Cloth16332:Cloth::20",
+      "phase": "f41-observed-uft-repair",
+      "runId": "5f61003cb8f445d186c460f8805c59a1",
+      "sequence": 12,
+      "tick": 407,
+      "utc": "2026-09-24T10:28:12.7573369Z"
+    },
+    {
+      "caseId": "F41-RECOVER",
+      "detail": "UnfinishedApparel16334|Make_Apparel_Tuque|16310|Cloth|1198.8|Cloth16313:Cloth::20",
+      "phase": "f41-observed-uft-repair",
+      "runId": "5f61003cb8f445d186c460f8805c59a1",
+      "sequence": 55,
+      "tick": 408,
+      "utc": "2026-09-24T10:28:17.4840911Z"
+    },
+    {
+      "caseId": "F41-RECOVER",
+      "detail": "UnfinishedApparel16334|Make_Apparel_Tuque|16310|Cloth|1198.8|Cloth16313:Cloth::20",
+      "phase": "f41-observed-uft-repair",
+      "runId": "5f61003cb8f445d186c460f8805c59a1",
+      "sequence": 59,
+      "tick": 408,
+      "utc": "2026-09-24T10:28:19.0099717Z"
+    }
+  ],
+  "wholeLogLines": 1905,
+  "nonprofileLines": 58,
+  "allSerializedOrderChecksPassed": true,
+  "rawPins": [
+    {
+      "path": "C:\\Users\\Arthur\\Sync\\Projects\\RimWorld Mods\\HaulersDream\\docs\\plans\\evidence\\f41-unfinished-implementation-20260924\\native\\5f61003cb8f445d186c460f8805c59a1\\raw\\checkpoint.txt",
+      "bytes": 600,
+      "sha256": "5F9F18C16CF22739F7056A14496D35ECAA1E5FD7F973ECBD2E293925094FA388"
+    },
+    {
+      "path": "C:\\Users\\Arthur\\Sync\\Projects\\RimWorld Mods\\HaulersDream\\docs\\plans\\evidence\\f41-unfinished-implementation-20260924\\native\\5f61003cb8f445d186c460f8805c59a1\\raw\\events.jsonl",
+      "bytes": 26850,
+      "sha256": "58145517D6532E42F443B00328416466E0B129DE45BDD491FBDAB4788119859E"
+    },
+    {
+      "path": "C:\\Users\\Arthur\\Sync\\Projects\\RimWorld Mods\\HaulersDream\\docs\\plans\\evidence\\f41-unfinished-implementation-20260924\\native\\5f61003cb8f445d186c460f8805c59a1\\raw\\F41OrphanCheckpoint.rws",
+      "bytes": 5591381,
+      "sha256": "211AB6866E1A74D419732EF0787416010238C328742817CC8DA0B0CEAFCAB753"
+    },
+    {
+      "path": "C:\\Users\\Arthur\\Sync\\Projects\\RimWorld Mods\\HaulersDream\\docs\\plans\\evidence\\f41-unfinished-implementation-20260924\\native\\5f61003cb8f445d186c460f8805c59a1\\raw\\F41SavingGuard.rws",
+      "bytes": 5593262,
+      "sha256": "6E84749F18B5A688C8019CBC93F6DB27EF8CF9A73E060B234E85F65ECD7C3E94"
+    },
+    {
+      "path": "C:\\Users\\Arthur\\Sync\\Projects\\RimWorld Mods\\HaulersDream\\docs\\plans\\evidence\\f41-unfinished-implementation-20260924\\native\\5f61003cb8f445d186c460f8805c59a1\\raw\\F41UftFirstDiagnostic.xml",
+      "bytes": 2398,
+      "sha256": "6C17FDDD2B9FF9DB778D82F4011DC89F13F05A8DE1C977751C4A97C76DBE6B4B"
+    },
+    {
+      "path": "C:\\Users\\Arthur\\Sync\\Projects\\RimWorld Mods\\HaulersDream\\docs\\plans\\evidence\\f41-unfinished-implementation-20260924\\native\\5f61003cb8f445d186c460f8805c59a1\\raw\\HaulersDream-debug.log",
+      "bytes": 848,
+      "sha256": "E65A0C1347A571D36E762C8F2735FEA9FE6CF2C0596B59F344C810C3502ED32F"
+    },
+    {
+      "path": "C:\\Users\\Arthur\\Sync\\Projects\\RimWorld Mods\\HaulersDream\\docs\\plans\\evidence\\f41-unfinished-implementation-20260924\\native\\5f61003cb8f445d186c460f8805c59a1\\raw\\Player.log",
+      "bytes": 148378,
+      "sha256": "7B01A220C2D7E6C77B43B7AC1B992D6E435FC4B063868018D5065B7B80A15C4C"
+    },
+    {
+      "path": "C:\\Users\\Arthur\\Sync\\Projects\\RimWorld Mods\\HaulersDream\\docs\\plans\\evidence\\f41-unfinished-implementation-20260924\\native\\5f61003cb8f445d186c460f8805c59a1\\raw\\result.json",
+      "bytes": 16149,
+      "sha256": "7117C282C00A08686D99458F2B4CE4844532DD5E87254D2F1FF95FCC9CC00C2C"
+    }
+  ],
+  "native": {
+    "startedUtc": "2026-09-24T10:27:23.8009590Z",
+    "runDirectory": "C:/Users/Arthur/AppData/Local/HaulersDreamQA/runtime-temp/haulersdream-runtime-tests/5f61003cb8f445d186c460f8805c59a1",
+    "processId": 26104,
+    "joined": true,
+    "exitCode": 0,
+    "deadlineExceeded": false,
+    "error": null,
+    "processStartedUtc": "2026-09-24T10:27:48.3314966Z",
+    "executable": "C:\\Users\\Arthur\\AppData\\Local\\HaulersDreamQA\\runtime-temp\\haulersdream-runtime-tests\\5f61003cb8f445d186c460f8805c59a1\\runtime\\RimWorldWin64.exe",
+    "finishedUtc": "2026-09-24T10:28:31.8712752Z"
+  },
+  "desktop": {
+    "desktop": "HaulersDreamTests-56d632a92c2e4ad99bd9909377c1afde",
+    "command": [
+      "C:/Users/Arthur/.cache/codex-runtimes/codex-primary-runtime/dependencies/native/powershell/pwsh.exe",
+      "-NoProfile",
+      "-File",
+      "C:\\Users\\Arthur\\Sync\\Projects\\RimWorld Mods\\HaulersDream\\docs\\plans\\evidence\\f41-unfinished-implementation-20260924\\native-fixture\\launch.ps1",
+      "-RunDirectory",
+      "C:/Users/Arthur/AppData/Local/HaulersDreamQA/runtime-temp/haulersdream-runtime-tests/5f61003cb8f445d186c460f8805c59a1",
+      "-OutputDirectory",
+      "C:\\Users\\Arthur\\Sync\\Projects\\RimWorld Mods\\HaulersDream\\docs\\plans\\evidence\\f41-unfinished-implementation-20260924\\native\\5f61003cb8f445d186c460f8805c59a1"
+    ],
+    "cwd": "C:\\Users\\Arthur\\Sync\\Projects\\RimWorld Mods\\HaulersDream",
+    "pid": 20336,
+    "exitCode": 0,
+    "startedUtc": "2026-09-24T10:27:20.957979+00:00",
+    "switchedDesktop": false,
+    "inputDesktopSamples": [
+      "Default"
+    ],
+    "privateWindowPids": [
+      26104
+    ],
+    "timedOut": false,
+    "error": null,
+    "cleanupErrors": [],
+    "activeProcessesBeforeClose": 0,
+    "joined": true,
+    "finishedUtc": "2026-09-24T10:28:32.043605+00:00"
+  },
+  "prepareOrNativeInvokedByReviewer": false
+}

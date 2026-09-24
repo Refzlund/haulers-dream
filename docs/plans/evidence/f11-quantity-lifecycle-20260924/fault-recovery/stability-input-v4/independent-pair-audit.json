@@ -1,0 +1,300 @@
+{
+  "accepted": true,
+  "roles": {
+    "baseline": {
+      "runId": "53cd22b724564059bda2b4e092b1f98b",
+      "status": "failed",
+      "assertions": 95,
+      "passed": 91,
+      "rawErrors": 0,
+      "events": 187,
+      "images": [
+        {
+          "name": "Assembly-CSharp",
+          "sha256": "5CF1B5BE399D5B1C9C56CA72C9D35B4ECF307FEACF5859D04AC5A1AA5926356A",
+          "moduleVersionId": "61e41735-6189-4da4-9d21-0260257b5097"
+        },
+        {
+          "name": "UnityEngine.CoreModule",
+          "sha256": "C5C58EA254834291780A1D6C388C241443D07167B4A4B890A23C9494F626DDBA",
+          "moduleVersionId": "e422ced3-d0f6-4bb2-9423-e8338d57bc04"
+        },
+        {
+          "name": "0Harmony",
+          "sha256": "353DAAFEC180BB8E7BBE4DA78F2A7CDC78067392E3A4E79DC8E7AF295F2371E6",
+          "moduleVersionId": "e5339928-9d9b-419d-83f9-f5b02c5cf609"
+        },
+        {
+          "name": "HarmonyMod",
+          "sha256": "408C2CD72B45DA8C70C0C538B2B346C8DCBB5BDED066373F6A3EB8B26615A2E7",
+          "moduleVersionId": "dc156e18-c1bf-4ec8-acd4-7176558400e1"
+        },
+        {
+          "name": "HaulersDream",
+          "sha256": "15D6ECE69478A31F8EB2B16F27FA2015C69A00D079918105BB21F483B1370292",
+          "moduleVersionId": "47f28c3a-457b-452f-b051-efef1b92d6bb"
+        },
+        {
+          "name": "HaulersDream.Core",
+          "sha256": "C09E2132E2B5CA6B1C45D3082AE44B4EF87B062B4FA297A9E5FBD831CB45FE19",
+          "moduleVersionId": "f83cf618-4794-497b-bf1e-59df0a8421da"
+        },
+        {
+          "name": "HaulersDream.RuntimeHarness",
+          "sha256": "6EA76A41BE40D580F050A94E793AE8B777AC7BDA7AD7AA3B8931905615FC117E",
+          "moduleVersionId": "ee0fdc81-5c6f-4458-9c42-a6b0be350e3c"
+        },
+        {
+          "name": "UnityEngine.IMGUIModule",
+          "sha256": "C6C39327211BE8299E2E9FFDEE7A979F228736C99B84FD54BC73F563456865D9",
+          "moduleVersionId": "69e8f115-9fb5-4cb4-9dbe-76d334eaed32"
+        },
+        {
+          "name": "UnityEngine.ScreenCaptureModule",
+          "sha256": "D03D9881419CEBCED07E8AC45E3AADBB866948670071FE95BED404B758274FF3",
+          "moduleVersionId": "768b1ad7-5506-4711-ba28-6142e4f37147"
+        },
+        {
+          "name": "UnityEngine.TextRenderingModule",
+          "sha256": "B63769AD71C7FC79034CF6C3A1EBFCF79D4591F0B1F5CD4A9823E6ED7B5816F8",
+          "moduleVersionId": "cbfa93f3-6818-4ee1-8c93-86e4fe595e71"
+        },
+        {
+          "name": "CombatExtended",
+          "sha256": "3102BC2276C583E51FE85AE340E5B986F80452171DB63EA72D04F7651B96AFE3",
+          "moduleVersionId": "2154499a-15df-4785-9832-e4d0c305b722"
+        },
+        {
+          "name": "SimpleSidearms",
+          "sha256": "703FDA907021F9D76CF6DF6941E73B519A7D0A28B022D67ACAFAED44A40A1F40",
+          "moduleVersionId": "a9a9f80c-cdb1-4d7d-9d2a-8e7e3a8da3ae"
+        }
+      ],
+      "protectedChanges": [],
+      "process": {
+        "startedUtc": "2026-09-24T16:41:14.4456039Z",
+        "runDirectory": "C:/HDQA/runtime-temp/haulersdream-runtime-tests/53cd22b724564059bda2b4e092b1f98b",
+        "processId": 28060,
+        "joined": true,
+        "exitCode": 0,
+        "deadlineExceeded": false,
+        "error": null,
+        "processStartedUtc": "2026-09-24T16:42:02.2475629Z",
+        "executable": "C:\\HDQA\\runtime-temp\\haulersdream-runtime-tests\\53cd22b724564059bda2b4e092b1f98b\\runtime\\RimWorldWin64.exe",
+        "finishedUtc": "2026-09-24T16:42:59.9085223Z"
+      },
+      "desktop": {
+        "desktop": "HaulersDreamTests-de00928a93e145bab35faf2da450764b",
+        "command": [
+          "C:/Users/Arthur/.cache/codex-runtimes/codex-primary-runtime/dependencies/native/powershell/pwsh.exe",
+          "-NoProfile",
+          "-File",
+          "docs/plans/evidence/f11-quantity-lifecycle-20260924/fault-recovery/fault-diagnostics-v2/baseline-settings-v3/launch.ps1",
+          "-RunDirectory",
+          "C:/HDQA/runtime-temp/haulersdream-runtime-tests/53cd22b724564059bda2b4e092b1f98b",
+          "-OutputDirectory",
+          "C:/Users/Arthur/Sync/Projects/RimWorld Mods/HaulersDream/docs/plans/evidence/f11-quantity-lifecycle-20260924/fault-recovery/fault-diagnostics-v2/baseline-settings-v3/native/53cd22b724564059bda2b4e092b1f98b"
+        ],
+        "cwd": "C:\\Users\\Arthur\\Sync\\Projects\\RimWorld Mods\\HaulersDream",
+        "pid": 20764,
+        "exitCode": 0,
+        "startedUtc": "2026-09-24T16:41:13.969015+00:00",
+        "switchedDesktop": false,
+        "inputDesktopSamples": [
+          "Default"
+        ],
+        "privateWindowPids": [
+          28060
+        ],
+        "timedOut": false,
+        "error": null,
+        "cleanupErrors": [],
+        "activeProcessesBeforeClose": 0,
+        "joined": true,
+        "finishedUtc": "2026-09-24T16:42:59.958537+00:00"
+      },
+      "verifyStatus": "not-verified",
+      "verifyProblems": [
+        "F11 fault capture requires independent exact five-fault custody, metadata, provider callbacks, complete logs and process review. Only the named first GenPlace diagnostic is expected; no automatic semantic acceptance.",
+        "No complete result with the explicitly expected status: passed",
+        "Unexpected Unity error count; F11 faults requires exactly one named GenPlace report and no other error.",
+        "One or more unexpected runtime assertions failed.",
+        "Missing unique event: scenario-observed",
+        "F11 exact isolated-product GenPlace diagnostic is missing or another error was captured.",
+        "Missing unique F11 native exception/diagnostic assertion: after-partial-merge-primary-exception",
+        "Missing unique F11 native exception/diagnostic assertion: after-partial-merge-exact-diagnostics",
+        "Missing unique F11 native exception/diagnostic assertion: after-complete-merge-primary-exception",
+        "Missing unique F11 native exception/diagnostic assertion: after-complete-merge-exact-diagnostics",
+        "Missing unique F11 native exception/diagnostic assertion: after-descendant-split-primary-exception",
+        "Missing unique F11 native exception/diagnostic assertion: after-descendant-split-exact-diagnostics",
+        "Missing unique F11 native exception/diagnostic assertion: whole-original-removal-primary-exception",
+        "Missing unique F11 native exception/diagnostic assertion: whole-original-removal-exact-diagnostics",
+        "Player.log contains candidates requiring independent review; bootstrap is not automatically verified."
+      ],
+      "rawFiles": [
+        {
+          "path": "docs\\plans\\evidence\\f11-quantity-lifecycle-20260924\\fault-recovery\\fault-diagnostics-v2\\baseline-settings-v3\\native\\53cd22b724564059bda2b4e092b1f98b\\raw\\events.jsonl",
+          "sha256": "A6B73CC5A5967DED908C76C0ACB40B6BFE5028BDE4F356EAD081CC5FA1F3E1A9",
+          "bytes": 79043
+        },
+        {
+          "path": "docs\\plans\\evidence\\f11-quantity-lifecycle-20260924\\fault-recovery\\fault-diagnostics-v2\\baseline-settings-v3\\native\\53cd22b724564059bda2b4e092b1f98b\\raw\\HaulersDream-debug.log",
+          "sha256": "464F0BB4A00B5972598147D1FCBAFC73FA7F744416F12165E70649E44FCA3F9B",
+          "bytes": 432
+        },
+        {
+          "path": "docs\\plans\\evidence\\f11-quantity-lifecycle-20260924\\fault-recovery\\fault-diagnostics-v2\\baseline-settings-v3\\native\\53cd22b724564059bda2b4e092b1f98b\\raw\\Player.log",
+          "sha256": "505299349DC18A3CA74CE547C3CAAE3F8B994A7D1E61171938882E1BAB935861",
+          "bytes": 179360
+        },
+        {
+          "path": "docs\\plans\\evidence\\f11-quantity-lifecycle-20260924\\fault-recovery\\fault-diagnostics-v2\\baseline-settings-v3\\native\\53cd22b724564059bda2b4e092b1f98b\\raw\\result.json",
+          "sha256": "157C5A328D7DD8FD1096B3286FA47DEAB059A741CF9C980B3AFE98DDBAA21770",
+          "bytes": 32380
+        }
+      ]
+    },
+    "candidate": {
+      "runId": "a6be59c2f999430bb72361d9d70e58d5",
+      "status": "passed",
+      "assertions": 135,
+      "passed": 135,
+      "rawErrors": 1,
+      "events": 300,
+      "images": [
+        {
+          "name": "Assembly-CSharp",
+          "sha256": "5CF1B5BE399D5B1C9C56CA72C9D35B4ECF307FEACF5859D04AC5A1AA5926356A",
+          "moduleVersionId": "61e41735-6189-4da4-9d21-0260257b5097"
+        },
+        {
+          "name": "UnityEngine.CoreModule",
+          "sha256": "C5C58EA254834291780A1D6C388C241443D07167B4A4B890A23C9494F626DDBA",
+          "moduleVersionId": "e422ced3-d0f6-4bb2-9423-e8338d57bc04"
+        },
+        {
+          "name": "0Harmony",
+          "sha256": "353DAAFEC180BB8E7BBE4DA78F2A7CDC78067392E3A4E79DC8E7AF295F2371E6",
+          "moduleVersionId": "e5339928-9d9b-419d-83f9-f5b02c5cf609"
+        },
+        {
+          "name": "HarmonyMod",
+          "sha256": "408C2CD72B45DA8C70C0C538B2B346C8DCBB5BDED066373F6A3EB8B26615A2E7",
+          "moduleVersionId": "dc156e18-c1bf-4ec8-acd4-7176558400e1"
+        },
+        {
+          "name": "HaulersDream",
+          "sha256": "3089EBD9A4E1A8691590567E924A1258B2B3A8BCD9F3D7200270FBFC03059C39",
+          "moduleVersionId": "bad66a40-8e81-43c1-ba73-c0961818ac86"
+        },
+        {
+          "name": "HaulersDream.Core",
+          "sha256": "31E6D6864D0C8B39095BAE50732010A82B3F6C2D8CAB96681801D0B5A12DA2BC",
+          "moduleVersionId": "de076e4d-aeff-43f3-b0ee-f67b0b80a7e9"
+        },
+        {
+          "name": "HaulersDream.RuntimeHarness",
+          "sha256": "8DB2563C93F2AC000DD85BF412AD5912426136A31AEBCEDD7D063E8B228E8BB1",
+          "moduleVersionId": "e8c6d34a-3c7a-4303-9b99-8dabfdb1f6a6"
+        },
+        {
+          "name": "UnityEngine.IMGUIModule",
+          "sha256": "C6C39327211BE8299E2E9FFDEE7A979F228736C99B84FD54BC73F563456865D9",
+          "moduleVersionId": "69e8f115-9fb5-4cb4-9dbe-76d334eaed32"
+        },
+        {
+          "name": "UnityEngine.ScreenCaptureModule",
+          "sha256": "D03D9881419CEBCED07E8AC45E3AADBB866948670071FE95BED404B758274FF3",
+          "moduleVersionId": "768b1ad7-5506-4711-ba28-6142e4f37147"
+        },
+        {
+          "name": "UnityEngine.TextRenderingModule",
+          "sha256": "B63769AD71C7FC79034CF6C3A1EBFCF79D4591F0B1F5CD4A9823E6ED7B5816F8",
+          "moduleVersionId": "cbfa93f3-6818-4ee1-8c93-86e4fe595e71"
+        },
+        {
+          "name": "CombatExtended",
+          "sha256": "3102BC2276C583E51FE85AE340E5B986F80452171DB63EA72D04F7651B96AFE3",
+          "moduleVersionId": "2154499a-15df-4785-9832-e4d0c305b722"
+        },
+        {
+          "name": "SimpleSidearms",
+          "sha256": "703FDA907021F9D76CF6DF6941E73B519A7D0A28B022D67ACAFAED44A40A1F40",
+          "moduleVersionId": "a9a9f80c-cdb1-4d7d-9d2a-8e7e3a8da3ae"
+        }
+      ],
+      "protectedChanges": [],
+      "process": {
+        "startedUtc": "2026-09-24T16:51:29.5646556Z",
+        "runDirectory": "C:/HDQA/runtime-temp/haulersdream-runtime-tests/a6be59c2f999430bb72361d9d70e58d5",
+        "processId": 28728,
+        "joined": true,
+        "exitCode": 0,
+        "deadlineExceeded": false,
+        "error": null,
+        "processStartedUtc": "2026-09-24T16:52:03.5494357Z",
+        "executable": "C:\\HDQA\\runtime-temp\\haulersdream-runtime-tests\\a6be59c2f999430bb72361d9d70e58d5\\runtime\\RimWorldWin64.exe",
+        "finishedUtc": "2026-09-24T16:52:59.0679673Z"
+      },
+      "desktop": {
+        "desktop": "HaulersDreamTests-c1d0aa416ef341638655e9c198802a0b",
+        "command": [
+          "C:/Users/Arthur/.cache/codex-runtimes/codex-primary-runtime/dependencies/native/powershell/pwsh.exe",
+          "-NoProfile",
+          "-File",
+          "docs/plans/evidence/f11-quantity-lifecycle-20260924/fault-recovery/stability-input-v4/launch.ps1",
+          "-RunDirectory",
+          "C:/HDQA/runtime-temp/haulersdream-runtime-tests/a6be59c2f999430bb72361d9d70e58d5",
+          "-OutputDirectory",
+          "C:/Users/Arthur/Sync/Projects/RimWorld Mods/HaulersDream/docs/plans/evidence/f11-quantity-lifecycle-20260924/fault-recovery/stability-input-v4/native/a6be59c2f999430bb72361d9d70e58d5"
+        ],
+        "cwd": "C:\\Users\\Arthur\\Sync\\Projects\\RimWorld Mods\\HaulersDream",
+        "pid": 18824,
+        "exitCode": 0,
+        "startedUtc": "2026-09-24T16:51:29.106961+00:00",
+        "switchedDesktop": false,
+        "inputDesktopSamples": [
+          "Default"
+        ],
+        "privateWindowPids": [
+          28728
+        ],
+        "timedOut": false,
+        "error": null,
+        "cleanupErrors": [],
+        "activeProcessesBeforeClose": 0,
+        "joined": true,
+        "finishedUtc": "2026-09-24T16:52:59.121591+00:00"
+      },
+      "verifyStatus": "not-verified",
+      "verifyProblems": [
+        "F11 fault capture requires independent exact five-fault custody, metadata, provider callbacks, complete logs and process review. Only the named first GenPlace diagnostic is expected; no automatic semantic acceptance.",
+        "Missing unique event: scenario-observed",
+        "Player.log contains candidates requiring independent review; bootstrap is not automatically verified."
+      ],
+      "rawFiles": [
+        {
+          "path": "docs\\plans\\evidence\\f11-quantity-lifecycle-20260924\\fault-recovery\\stability-input-v4\\native\\a6be59c2f999430bb72361d9d70e58d5\\raw\\events.jsonl",
+          "sha256": "E908C7F53AFBB217807666C7D6437FBC113A707518DC1534FF2142A673746B5D",
+          "bytes": 161577
+        },
+        {
+          "path": "docs\\plans\\evidence\\f11-quantity-lifecycle-20260924\\fault-recovery\\stability-input-v4\\native\\a6be59c2f999430bb72361d9d70e58d5\\raw\\HaulersDream-debug.log",
+          "sha256": "F8D10FBE11B4AAC253BDAC80C0CAD1BCDC42D32C8495112A36F64867302AE704",
+          "bytes": 3309
+        },
+        {
+          "path": "docs\\plans\\evidence\\f11-quantity-lifecycle-20260924\\fault-recovery\\stability-input-v4\\native\\a6be59c2f999430bb72361d9d70e58d5\\raw\\Player.log",
+          "sha256": "C409FA8F994B45970B2E09DC42AB5B8B31C1FDEAA4D1C546B4C513258B1EB999",
+          "bytes": 182222
+        },
+        {
+          "path": "docs\\plans\\evidence\\f11-quantity-lifecycle-20260924\\fault-recovery\\stability-input-v4\\native\\a6be59c2f999430bb72361d9d70e58d5\\raw\\result.json",
+          "sha256": "B339DCB9F0BEC5EAEF794CB8F7629D2EAC505C6849E841282046A14A77FC35DE",
+          "bytes": 56262
+        }
+      ]
+    }
+  },
+  "notes": "Declared one diagnostic retained; not U0. Baseline first split fails physically; later faults unexecuted. Candidate exact387 stable302ticks; failed v2 delta remains unknown."
+}

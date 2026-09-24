@@ -1,0 +1,96 @@
+--- v12/src/F11Scene.Ui.cs
++++ v13/src/F11Scene.Ui.cs
+@@ -78,7 +78,7 @@
+             Click(label+"/native-drop", "gear-drop",()=>DialogOpen&&geometry.ContainsKey("text")&&Buffer==source.stackCount.ToString(CultureInfo.InvariantCulture));
+         }
+         private void Click(string label,string control,Func<bool> ready,float fraction=.5f)
+-        {Add(label,()=>Post("click",control,null,null,fraction),ready);}
++        {Add(label,()=>Post(control=="slider"?"drag":"click",control,null,null,fraction),ready);}
+         private void Key(string label,string key,Func<bool> ready)=>Add(label,()=>Post("key",null,key,null),ready);
+         private void Character(string label,char character,Func<bool> ready)=>Add(label,()=>Post("character",null,null,character.ToString()),ready);
+         private void ReplaceText(string label,string value,string original="15")
+@@ -208,18 +208,18 @@
+         }
+         internal void NativeControlEntry(string control,string boundary,EventType type,EventType rawType,KeyCode key,char character,Vector2 mouse,int button,EventModifiers modifiers)
+         {
+-            if(pending==null||(type!=EventType.MouseDown&&type!=EventType.MouseUp&&type!=EventType.KeyDown&&type!=EventType.KeyUp))return;
++            if(pending==null||(type!=EventType.MouseDown&&type!=EventType.MouseUp&&type!=EventType.KeyDown&&type!=EventType.KeyUp&&type!=EventType.MouseDrag))return;
+             // GUIToScreenPoint runs inside the actual control's OnGUI group/window context.
+             var actual=GUIUtility.GUIToScreenPoint(mouse);bool match=false;
+-            bool controlMatches=pending.action=="click"?pending.control==control:
++            bool controlMatches=pending.action=="click"||pending.action=="drag"?pending.control==control:
+                 pending.key=="escape"?control=="escape":control=="dialog"||control=="text";
+             if(controlMatches)
+             {
+-                if(pending.action=="click")
++                if(pending.action=="click"||pending.action=="drag")
+                 {
+-                    // Native slider and outside dismissal consume MouseDown; the other controls
+-                    // complete on MouseUp. Never reinterpret Used or rawType as either event.
+-                    var expected=pending.control=="slider"||pending.control=="outside"?EventType.MouseDown:EventType.MouseUp;
++                    // Native Windows sliders update only on MouseDrag after the press. Outside
++                    // dismissal uses MouseDown; ordinary buttons complete on MouseUp.
++                    var expected=pending.action=="drag"?EventType.MouseDrag:pending.control=="outside"?EventType.MouseDown:EventType.MouseUp;
+                     match=type==expected&&button==0&&Math.Abs(actual.x-pending.x)<=2&&Math.Abs(actual.y-pending.y)<=2;
+                 }
+                 else if(type==EventType.KeyDown)match=pending.action=="character"?character.ToString()==pending.character:
+@@ -231,7 +231,7 @@
+                 key=key.ToString(),character=(int)character,x=actual.x,y=actual.y,button,modifiers=modifiers.ToString(),frame=Time.frameCount,controlMatches,match}));
+         }
+         // Unity retains obsolete lowercase enum aliases; canonical names reflect the typed value.
+-        private static string InputTypeName(EventType type)=>type==EventType.MouseDown?"MouseDown":type==EventType.MouseUp?"MouseUp":type==EventType.KeyDown?"KeyDown":type==EventType.KeyUp?"KeyUp":type.ToString();
++        private static string InputTypeName(EventType type)=>type==EventType.MouseDown?"MouseDown":type==EventType.MouseUp?"MouseUp":type==EventType.KeyDown?"KeyDown":type==EventType.KeyUp?"KeyUp":type==EventType.MouseDrag?"MouseDrag":type.ToString();
+         internal void DialogDraw(object instance)
+         {
+             var sourceField=AccessTools.Field(instance.GetType(),"source");if(!ReferenceEquals(sourceField.GetValue(instance),source))return;
+--- v12/native-input.py
++++ v13/native-input.py
+@@ -30,6 +30,23 @@
+     assert match,'Exact native controller UTC timestamp required.'
+     delta=datetime.datetime.strptime(match[1],'%Y-%m-%dT%H:%M:%S')-datetime.datetime(1601,1,1)
+     return (delta.days*86400+delta.seconds)*10_000_000+int(match[2])
++
++def mouse_messages(value,width,height):
++    action=value['action'];assert action in ('click','drag')
++    x,y=value['x'],value['y']
++    assert all(isinstance(v,(int,float)) and math.isfinite(v) for v in (x,y))
++    x,y=round(x),round(y);assert 0<=x<width and 0<=y<height
++    end=(y<<16)|(x&65535)
++    if action=='click':return [(0x200,0,end),(0x201,1,end),(0x202,0,end)]
++    assert value['control']=='slider','Only the actual slider admits a drag.'
++    bounds=[value[k] for k in ('minX','minY','maxX','maxY')]
++    assert all(isinstance(v,(int,float)) and math.isfinite(v) for v in bounds)
++    left,top,right,bottom=bounds
++    assert 0<=left<right<=width and 0<=top<bottom<=height and left<=x<right and top<=y<bottom
++    start_x,start_y=round((left+right)/2),round((top+bottom)/2)
++    assert (start_x,start_y)!=(x,y),'Slider gesture requires a real displacement.'
++    start=(start_y<<16)|(start_x&65535)
++    return [(0x200,0,start),(0x201,1,start),(0x200,1,end),(0x202,0,end)]
+ 
+ class Placement(C.Structure):
+     _fields_=[('length',W.UINT),('flags',W.UINT),('showCmd',W.UINT),
+@@ -238,12 +255,8 @@
+         before=input_name();assert before==initial_input
+         messages=[]
+         action=value['action']
+-        if action=='click':
+-            x,y=value['x'],value['y']
+-            assert all(isinstance(v,(int,float)) and math.isfinite(v) for v in (x,y))
+-            x,y=round(x),round(y);assert 0<=x<rect.right and 0<=y<rect.bottom
+-            packed=(y<<16)|(x&65535)
+-            messages=[(0x200,0,packed),(0x201,1,packed),(0x202,0,packed)]
++        if action in ('click','drag'):
++            messages=mouse_messages(value,rect.right,rect.bottom)
+         elif action=='key':
+             key=value['key'];keys={'backspace':8,'return':13,'escape':27,'keypadenter':13}
+             assert key in keys
+@@ -257,6 +270,9 @@
+         else:raise ValueError('Unapproved input action '+str(action))
+         for message,wparam,lparam in messages:
+             if not post(hwnd,message,wparam,lparam): raise C.WinError(C.get_last_error())
++            if action=='drag' and wparam==1:
++                time.sleep(.03)
++                assert window_state(hwnd)['privateDesktop']==private_name and input_name()==before
+         after=input_name();assert after==before
+         emit(receipts/f'{seq:04d}.json',dict(sequence=seq,runId=run.name,nativePid=args.pid,hwnd=int(hwnd),
+              privateDesktop=private_name,inputDesktopBefore=before,inputDesktopAfter=after,

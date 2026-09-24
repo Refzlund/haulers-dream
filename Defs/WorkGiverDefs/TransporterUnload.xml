@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+  <WorkGiverDef>
+    <defName>HaulersDream_BulkUnloadTransporters</defName>
+    <label>unload transporters</label>
+    <giverClass>HaulersDream.WorkGiver_BulkUnloadTransporters</giverClass>
+    <workType>Hauling</workType>
+    <verb>unload</verb>
+    <gerund>unloading</gerund>
+    <priorityInType>135</priorityInType>
+    <scanThings>true</scanThings>
+    <scanCells>false</scanCells>
+    <requiredCapacities><li>Manipulation</li></requiredCapacities>
+  </WorkGiverDef>
+</Defs>

@@ -16,4 +16,5 @@
 <HaulersDream_LoadPortalInBulk.reportString>masselæsser en portal.</HaulersDream_LoadPortalInBulk.reportString>
 <HaulersDream_LoadVehicleInBulk.reportString>masselæsser et køretøj.</HaulersDream_LoadVehicleInBulk.reportString>
 <HaulersDream_BulkRefuel.reportString>masse-optanker.</HaulersDream_BulkRefuel.reportString>
+  <HaulersDream_UnloadTransporterInBulk.reportString>aflæsser en transporter.</HaulersDream_UnloadTransporterInBulk.reportString>
 </LanguageData>

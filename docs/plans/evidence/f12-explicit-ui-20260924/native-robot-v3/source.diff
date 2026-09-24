@@ -1,0 +1,24 @@
+--- native-robot-v2/CONTRACT.md
++++ native-robot-v3/CONTRACT.md
+@@ -12,3 +12,8 @@
+ ## Native prompt overlay successor
+ 
+ This successor uses only the frozen UIv3 prompt overlay product. The observer follows the actual delayed DrawPromptWindow callback and retains every prior real input/command/physical assertion. Review actual screenshots: the human Italian edge prompt and robot source-selection cancellation line must remain readable over lower native HUD/gizmo rows. Viewport geometry alone does not establish rendering acceptance. No new backend or provider scope.
++
++
++## Native prompt overlay successor
++
++This successor uses only the frozen UIv4 prompt overlay product. The observer follows the actual delayed DrawPromptWindow callback and retains every prior real input/command/physical assertion. Review actual screenshots: the human Italian edge prompt and robot source-selection cancellation line must remain readable over lower native HUD/gizmo rows. Viewport geometry alone does not establish rendering acceptance. No new backend or provider scope. The human worker separately moves to the real option before posting Shift-down, then holds that key through the mouse event and releases it in finally after a bounded native option observation. This is unproven input delivery until actual QueueOrder=true is observed; no event modifier, key-binding or UI state is assigned.
+--- native-robot-v2/build.ps1
++++ native-robot-v3/build.ps1
+@@ -2,8 +2,8 @@
+ $env:TEMP='C:/HDQA/runtime-temp'
+ $env:TMP=$env:TEMP
+ $f12Root=$PSScriptRoot
+-$f12Build='C:/Users/Arthur/AppData/Local/HaulersDreamQA/inputs/f12-robot-ui-native-20260924/host-v2'
+-$f12Product='C:/Users/Arthur/AppData/Local/HaulersDreamQA/inputs/f12-explicit-ui-v3-20260924/Product'
++$f12Build='C:/Users/Arthur/AppData/Local/HaulersDreamQA/inputs/f12-robot-ui-native-20260924/host-v3'
++$f12Product='C:/Users/Arthur/AppData/Local/HaulersDreamQA/inputs/f12-explicit-ui-v4-20260924/Product'
+ $f12Refs='C:/Users/Arthur/AppData/Local/Temp/haulersdream-f34-host-root-build-20260920'
+ $f12Game='C:/Steam/steamapps/common/RimWorld/RimWorldWin64_Data/Managed'
+ if((Get-FileHash -LiteralPath "$f12Game/Assembly-CSharp.dll").Hash -cne '5CF1B5BE399D5B1C9C56CA72C9D35B4ECF307FEACF5859D04AC5A1AA5926356A'){throw 'Installed actual game pin changed.'}

@@ -1,0 +1,57 @@
+--- RimmsCommand.v12.cs
++++ RimmsCommand.v13.cs
+@@ -60,6 +60,8 @@
+         private Action pendingGui;
+         private string pendingStage;
+         private Dictionary<string, string> checkpoint;
++        private Job blockedOrder;
++        private string blockedCargo;
+         private const string SaveName = "F07-NearbyTransit";
+         private ThingDef Material => ThingDefOf.Plasteel;
+         private JobDef Bulk => HaulersDreamDefOf.HaulersDream_BulkHaul;
+@@ -529,7 +531,11 @@
+                 .Invoke(null, new object[] { actor, source, map.uniqueID, true });
+             var queued = actor.jobs.jobQueue.Single(q => q.job?.workGiverDef == definition).job; queuedId = queued.loadID;
+             Require("actual-queued-order", ReferenceEquals(actor.CurJob, walking) && queued.def == Bulk, "Programmatic queue=true at existing command entry; real Goto remains current, no idle Wait/synthetic Shift.");
++            blockedOrder = queued; blockedCargo = CargoState();
+             Apply("canBeDoneWhileDrafted", false);
++            Require("settings-save-preserves-queued-order", ReferenceEquals(actor.CurJob, walking)
++                && actor.jobs.jobQueue.Count == 1 && ReferenceEquals(actor.jobs.jobQueue[0].job, blockedOrder)
++                && CargoState() == blockedCargo, State());
+         }
+         private void Advance()
+         {
+@@ -575,9 +581,19 @@
+                 case "queued-revoked":
+                     if (actor.CurJob?.loadID == gotoId) return;
+                     Guard(ended.TryGetValue(gotoId, out var goEnd) && goEnd == JobCondition.Succeeded.ToString(), "Unrelated native Goto did not complete naturally.");
++                    // Native ThinkNode_QueuedJob retains an all-blocked queue for a healthy pawn.
++                    // It only discards blocked leaders when some later queued job can begin.
+                     Require("queued-native-admission-rejected", rejectedJobs.Contains(queuedId) && !startedJobs.Contains(queuedId)
+-                        && !Jobs().Any(j => j.loadID == queuedId), "Actual CanBeginNow rejected after native Goto handoff; earlier order preserved; no forced handoff.");
+-                    Gui(() => { Apply("canBeDoneWhileDrafted", true); SpawnBatch(2); IssueOffered(); }, "interrupt"); break;
++                        && actor.jobs.jobQueue.Count == 1 && ReferenceEquals(actor.jobs.jobQueue[0].job, blockedOrder)
++                        && CargoState() == blockedCargo, "Actual CanBeginNow rejected after native Goto completion; blocked order remains unstarted with unchanged cargo. " + State());
++                    Gui(() =>
++                    {
++                        // While paused, the next normal offered command replaces the pending order
++                        // through native TryTakeOrderedJob/ClearQueuedJobs, never a fixture deletion.
++                        Paused(); Apply("canBeDoneWhileDrafted", true); SpawnBatch(2); IssueOffered();
++                        Require("blocked-order-replaced-by-new-command", bulkId != queuedId
++                            && !startedJobs.Contains(queuedId) && !Jobs().Any(j => j.loadID == queuedId), State());
++                    }, "interrupt"); break;
+                 case "interrupt":
+                     if (actor.CurJobDef != Bulk || InventoryCount() <= protectedInventory) return;
+                     ticks.CurTimeSpeed = TimeSpeed.Paused;
+@@ -676,6 +692,11 @@
+         private int InventoryCount() => actor.inventory.innerContainer.Where(t => t.def == Material).Sum(t => t.stackCount);
+         private string InventoryRoster() => string.Join(",", actor.inventory.innerContainer.Where(t => t.def == Material)
+             .OrderBy(t => t.thingIDNumber).Select(t => t.thingIDNumber + ":" + t.stackCount));
++        private string CargoState() => string.Join("|", Goods().OrderBy(t => t.thingIDNumber)
++            .Select(t => t.thingIDNumber + ":" + t.stackCount + ":spawned=" + t.Spawned + ":position=" + t.Position
++                + ":map=" + (t.Map?.uniqueID ?? -1) + ":holder=" + t.ParentHolder?.GetType().FullName))
++            + ";inventory=" + InventoryRoster() + ";carry=" + (actor.carryTracker.CarriedThing?.thingIDNumber ?? -1)
++            + ";kept=" + Cargo.KeptCountOf(Material);
+         private bool Settled() => !Jobs().Any(j => j.workGiverDef == definition || j.def == HaulersDreamDefOf.HaulersDream_UnloadInventory)
+             && InventoryCount() == protectedInventory && actor.carryTracker.CarriedThing == null && Count() == total
+             && Goods().Where(t => t.Spawned).All(t => storage.Cells.Contains(t.Position));

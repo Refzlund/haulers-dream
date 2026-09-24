@@ -1,0 +1,322 @@
+--- adapter-baseline/host\Bootstrap.cs
++++ f11/host\Bootstrap.cs
+@@ -69,6 +69,7 @@
+         private static bool f34Attempted;
+         private static bool f41Started;
+         private static OwnInventoryScene ownInventory;
++        private static F11Scene f11;
+         private static bool scenarioAttempted;
+         private static bool controlStarted;
+         private static int controlDone;
+@@ -119,7 +120,7 @@
+                 Check("private-mod-directory", SamePath(GenFilePaths.ModsFolderPath, Path.Combine(manifest.runtimeDirectory, "Mods")),
+                     GenFilePaths.ModsFolderPath);
+                 Check("private-player-log", SamePath(Application.consoleLogPath, manifest.logPath), Application.consoleLogPath);
+-                Check("case-supported", new[] { "bootstrap", "BG01", "BG02", "BG03-P1", "L04-O1", "CAP01", "CAP02", "CAP03-B", "CAP03-A", "CAP03-C", "L04-O1-DELIVERY", "L04-B1", "L04-B1-D2", "L40-Q1", "L40-UI-P0", "ROBOTS-R0", "ROBOTS-R1-AUTO", "REFUEL-G1", "RIMMS-DLV1", "F34-MIXED-CUT", "F41-PRODUCER", "F41-RECOVER", "F41-RESAVED", "F02-P1", "F02-INVENTORY" }.Contains(manifest.caseId), manifest.caseId);
++                Check("case-supported", new[] { "bootstrap", "BG01", "BG02", "BG03-P1", "L04-O1", "CAP01", "CAP02", "CAP03-B", "CAP03-A", "CAP03-C", "L04-O1-DELIVERY", "L04-B1", "L04-B1-D2", "L40-Q1", "L40-UI-P0", "ROBOTS-R0", "ROBOTS-R1-AUTO", "REFUEL-G1", "RIMMS-DLV1", "F34-MIXED-CUT", "F41-PRODUCER", "F41-RECOVER", "F41-RESAVED", "F02-P1", "F02-INVENTORY", "F11-PRODUCER", "F11-RESAVED" }.Contains(manifest.caseId), manifest.caseId);
+                 Check("negative-control-supported", string.IsNullOrEmpty(manifest.negativeControl) || manifest.negativeControl == "None"
+                     || (manifest.caseId == "bootstrap" && new[] { "WorkerUnityError", "WorkerVerseError", "LateWorkerError", "TerminalRace" }.Contains(manifest.negativeControl)),
+                     manifest.negativeControl ?? "None");
+@@ -153,6 +154,8 @@
+             Event(kind, "GameComponent lifecycle callback received.");
+             if (kind == "loaded-game" && new[] { "F41-RECOVER", "F41-RESAVED" }.Contains(manifest.caseId))
+                 HaulersDream.F41Native.OrphanRecipeScene.CaptureLoaded(Find.CurrentMap, Check, Event, manifest.caseId, manifest.expectedBehavior, manifest.evidenceDirectory);
++            if(kind == "loaded-game" && manifest.caseId == "F11-RESAVED")
++                f11=new F11Scene(Find.CurrentMap,manifest.caseId,manifest.evidenceDirectory,Check,Event,true);
+         }
+ 
+         internal static void Tick()
+@@ -214,7 +217,7 @@
+                         Finish("failed", "Runtime environment differed from the prepared manifest.");
+                         return;
+                     }
+-                    if (manifest.caseId != "F41-RECOVER" && manifest.caseId != "F41-RESAVED") Find.TickManager.CurTimeSpeed = TimeSpeed.Normal;
++                    if (manifest.caseId != "F41-RECOVER" && manifest.caseId != "F41-RESAVED" && manifest.caseId != "F11-RESAVED") Find.TickManager.CurTimeSpeed = TimeSpeed.Normal;
+                     if (manifest.negativeControl == "WorkerUnityError" || manifest.negativeControl == "WorkerVerseError") StartErrorControl();
+                 }
+                 if (new[] { "F41-PRODUCER", "F41-RECOVER", "F41-RESAVED" }.Contains(manifest.caseId))
+@@ -244,6 +247,25 @@
+                     Finish(liveStatus == "passed" && !result.assertions.Any(x => !x.passed) ? "passed" : "failed",
+                         "Controlled orphan UFT/native recipe-job repair; baseline failure is preserved and the complete save chain requires independent review.");
+                     return;
++                }
++                if(manifest.caseId == "F11-PRODUCER" || manifest.caseId == "F11-RESAVED")
++                {
++                    if(Current.Game == null || !Current.Game.PlayerHasControl)return;
++                    if(!result.assertions.Any(x=>x.id=="f11-host-admission"))
++                    {
++                        Check("f11-host-admission",canQuitOwnRuntime && UnityData.IsInMainThread && manifest.negativeControl=="None" && manifest.expectedBehavior=="satisfied"
++                            && manifest.expectedMods.Select(x=>x.packageId).SequenceEqual(new[]{"brrainz.harmony","ludeon.rimworld","giwaffed.haulersdream","giwaffed.haulersdream.runtimeharness"})
++                            && manifest.expectedAssemblies.Count==10 && manifest.expectedAssemblies.All(x=>result.assemblies.Count(a=>a.name==x.name&&a.moduleVersionId==x.moduleVersionId)==1),
++                            "Exact private four-mod/ten-image real local UI and genuine tagged saved-remainder chain.");
++                        if(result.assertions.Any(x=>!x.passed)){Finish("failed","F11 admission failed.");return;}
++                    }
++                    if(f11==null){if(manifest.caseId=="F11-RESAVED")throw new InvalidOperationException("Pre-tick native LoadedGame capture missing.");f11=new F11Scene(map,manifest.caseId,manifest.evidenceDirectory,Check,Event);}
++                    string outcome=f11.Update();
++                    if(Find.TickManager.TicksGame>firstTick&&!result.assertions.Any(x=>x.id=="real-game-ticks-advanced"))Check("real-game-ticks-advanced",true,"Native game delta="+(Find.TickManager.TicksGame-firstTick));
++                    if(outcome=="running")return;
++                    Check("f11-host-returned",outcome=="passed","Actual bounded scene="+outcome);
++                    Check("no-unity-errors-after-harness-start",unityErrors==0,"observedErrors="+unityErrors);
++                    Finish(result.assertions.Any(x=>!x.passed)?"failed":outcome,"F11 real local quantity UI and native saved remainder only. No provider/MP/full feedback acceptance without independent review.");return;
+                 }
+                 if (manifest.caseId == "F02-P1" || manifest.caseId == "F02-INVENTORY")
+                 {
+@@ -807,6 +829,8 @@
+                 catch (Exception error) { Check("f41-orphan-terminal-cleanup", false, error.ToString()); status = "failed"; }
+                 if (result.assertions.Any(x => !x.passed)) status = "failed";
+             }
++            try { f11?.Dispose(); }
++            catch(Exception e){Check("f11-terminal-cleanup",false,e.ToString());status="failed";}
+             try { ownInventory?.Dispose(); }
+             catch(Exception e){Check("f02-terminal-cleanup",false,e.ToString());status="failed";}
+             try { dlv1?.Dispose(); }
+--- adapter-baseline/host\HaulersDream.RuntimeHarness.csproj
++++ f11/host\HaulersDream.RuntimeHarness.csproj
+@@ -14,6 +14,10 @@
+     <RuntimeHarmonyAssembly Condition="'$(RuntimeHarmonyAssembly)' == ''">C:\Steam\steamapps\workshop\content\294100\2009463077\Current\Assemblies\0Harmony.dll</RuntimeHarmonyAssembly>
+   </PropertyGroup>
+   <ItemGroup>
++    <Compile Include="../src/F11Scene.cs" />
++    <Compile Include="../src/F11Scene.Ui.cs" />
++    <Compile Include="../src/F11Scene.Save.cs" />
++    <Compile Include="../src/F11UiObservers.cs" />
+     <Compile Include="../src/OwnInventoryScene.cs" />
+     <Compile Include="../src/OwnInventoryObservers.cs" />
+     <Compile Include="../src/F02Json.cs" />
+--- adapter-baseline/controller\scripts\runtime-test.ps1
++++ f11/controller\scripts\runtime-test.ps1
+@@ -16,7 +16,7 @@
+     [string]$GameRoot = 'C:\Steam\steamapps\common\RimWorld',
+     [string]$WorkshopRoot = 'C:\Steam\steamapps\workshop\content\294100',
+     [string]$PlayerSaveDataRoot,
+-    [ValidateSet('bootstrap', 'BG01', 'BG02', 'BG03-P1', 'L04-O1', 'CAP01', 'CAP02', 'CAP03-B', 'CAP03-A', 'CAP03-C', 'L04-O1-DELIVERY', 'L04-B1', 'L04-B1-D2', 'L40-Q1', 'L40-UI-P0', 'ROBOTS-R0', 'ROBOTS-R1-AUTO', 'AF1-LIFECYCLE', 'AF1-SAVE', 'AF1-SAVE-MISSING', 'AF1-SAVE-VERSION', 'AF1-SAVE-NULLREF', 'REFUEL-G1', 'RIMMS-DLV1', 'F34-MIXED-CUT', 'F41-PRODUCER','F41-RECOVER','F41-RESAVED','F02-P1','F02-INVENTORY')]
++    [ValidateSet('bootstrap', 'BG01', 'BG02', 'BG03-P1', 'L04-O1', 'CAP01', 'CAP02', 'CAP03-B', 'CAP03-A', 'CAP03-C', 'L04-O1-DELIVERY', 'L04-B1', 'L04-B1-D2', 'L40-Q1', 'L40-UI-P0', 'ROBOTS-R0', 'ROBOTS-R1-AUTO', 'AF1-LIFECYCLE', 'AF1-SAVE', 'AF1-SAVE-MISSING', 'AF1-SAVE-VERSION', 'AF1-SAVE-NULLREF', 'REFUEL-G1', 'RIMMS-DLV1', 'F34-MIXED-CUT', 'F11-PRODUCER','F11-RESAVED','F02-P1','F02-INVENTORY')]
+     [string]$CaseId = 'bootstrap',
+     [ValidateSet('bootstrap', 'baseline-gap', 'satisfied')]
+     [string]$ExpectedBehavior = 'bootstrap',
+@@ -214,7 +214,7 @@
+ }
+ 
+ function Initialize-RobotAssemblyIdentities([string[]]$Paths, [string]$Runtime) {
+-    $taskRequiredCount=if ($CaseId -in @('F02-P1','F02-INVENTORY')) { 11 } elseif ($CaseId -ceq 'F34-MIXED-CUT') { 11 } elseif ($CaseId -in $script:taskAf1Cases -or $CaseId -in @('REFUEL-G1','RIMMS-DLV1','F34-MIXED-CUT','F41-PRODUCER','F41-RECOVER','F41-RESAVED')) { 10 } else { 12 }
++    $taskRequiredCount=if ($CaseId -in @('F02-P1','F02-INVENTORY')) { 11 } elseif ($CaseId -ceq 'F34-MIXED-CUT') { 11 } elseif ($CaseId -in $script:taskAf1Cases -or $CaseId -in @('REFUEL-G1','RIMMS-DLV1','F34-MIXED-CUT','F11-PRODUCER','F11-RESAVED')) { 10 } else { 12 }
+     if ([IntPtr]::Size -ne 8 -or $Paths.Count -ne $taskRequiredCount) { throw 'Native metadata preparation requires x64 and its exact closed assembly count (AF1/G1 ten; robots twelve).' }
+     $taskMetadataRoot=Join-Path $script:taskRun 'prepared-assembly-metadata'
+     Assert-ChildPath $taskMetadataRoot $script:taskRun
+@@ -298,7 +298,7 @@
+     $taskInterpreter=Join-Path ([Environment]::GetFolderPath([Environment+SpecialFolder]::System)) 'WindowsPowerShell\v1.0\powershell.exe'
+     if ($taskProof.interpreter.path -cne $taskInterpreter -or (Get-Sha256 $taskInterpreter) -cne $taskProof.interpreter.sha256) { throw 'R0 metadata interpreter proof differs.' }
+     $taskExpectedNames=@('Assembly-CSharp','UnityEngine.CoreModule','0Harmony','HarmonyMod','HaulersDream','HaulersDream.Core','HaulersDream.RuntimeHarness','UnityEngine.IMGUIModule','UnityEngine.ScreenCaptureModule','UnityEngine.TextRenderingModule','AIRobot','MiscRobotsPlusPlus')
+-    if ($Manifest.caseId -in $script:taskAf1Cases -or $Manifest.caseId -in @('REFUEL-G1','RIMMS-DLV1','F41-PRODUCER','F41-RECOVER','F41-RESAVED')) { $taskExpectedNames=$taskExpectedNames[0..9] }
++    if ($Manifest.caseId -in $script:taskAf1Cases -or $Manifest.caseId -in @('REFUEL-G1','RIMMS-DLV1','F11-PRODUCER','F11-RESAVED')) { $taskExpectedNames=$taskExpectedNames[0..9] }
+     if ($Manifest.caseId -in @('F02-P1','F02-INVENTORY')) { $taskExpectedNames=@($taskExpectedNames[0..9])+@('CommonSense') }
+     if ($Manifest.caseId -ceq 'F34-MIXED-CUT') { $taskExpectedNames=@($taskExpectedNames[0..9])+@('HaulersDream.F34Native') }
+     if (@($Manifest.expectedAssemblies).Count -ne $taskExpectedNames.Count -or @($taskProof.receipts).Count -ne $taskExpectedNames.Count) { throw 'Native metadata assembly/receipt census differs.' }
+@@ -512,7 +512,7 @@
+     # files as the system code page and corrupts non-ASCII protected/copy paths.
+     $taskManifest = Get-Content -LiteralPath $taskManifestPath -Encoding UTF8 -Raw | ConvertFrom-Json
+     $taskState = Get-Content -LiteralPath (Join-Path $script:taskRun 'controller-state.json') -Encoding UTF8 -Raw | ConvertFrom-Json
+-    if ($taskManifest.schemaVersion -ne 1 -or $taskManifest.runDirectory -ne $script:taskRun -or $taskManifest.caseId -notin @('bootstrap', 'BG01', 'BG02', 'BG03-P1', 'L04-O1', 'CAP01', 'CAP02', 'CAP03-B', 'CAP03-A', 'CAP03-C', 'L04-O1-DELIVERY', 'L04-B1', 'L04-B1-D2', 'L40-Q1', 'L40-UI-P0', 'ROBOTS-R0', 'ROBOTS-R1-AUTO', 'AF1-LIFECYCLE', 'AF1-SAVE', 'AF1-SAVE-MISSING', 'AF1-SAVE-VERSION', 'AF1-SAVE-NULLREF', 'REFUEL-G1', 'RIMMS-DLV1', 'F34-MIXED-CUT', 'F41-PRODUCER','F41-RECOVER','F41-RESAVED','F02-P1','F02-INVENTORY')) {
++    if ($taskManifest.schemaVersion -ne 1 -or $taskManifest.runDirectory -ne $script:taskRun -or $taskManifest.caseId -notin @('bootstrap', 'BG01', 'BG02', 'BG03-P1', 'L04-O1', 'CAP01', 'CAP02', 'CAP03-B', 'CAP03-A', 'CAP03-C', 'L04-O1-DELIVERY', 'L04-B1', 'L04-B1-D2', 'L40-Q1', 'L40-UI-P0', 'ROBOTS-R0', 'ROBOTS-R1-AUTO', 'AF1-LIFECYCLE', 'AF1-SAVE', 'AF1-SAVE-MISSING', 'AF1-SAVE-VERSION', 'AF1-SAVE-NULLREF', 'REFUEL-G1', 'RIMMS-DLV1', 'F34-MIXED-CUT', 'F11-PRODUCER','F11-RESAVED','F02-P1','F02-INVENTORY')) {
+         throw 'Unsupported manifest or mismatched run directory.'
+     }
+     if ($taskState.manifestSha256 -ne (Get-Sha256 $taskManifestPath)) { throw 'Prepared manifest was modified; refuse to use it.' }
+@@ -531,15 +531,16 @@
+             throw "Unexpected manifest layout: $($taskExpected[0])"
+         }
+     }
+-    if ($taskManifest.caseId -in @('ROBOTS-R0','ROBOTS-R1-AUTO','F41-PRODUCER','F41-RECOVER','F41-RESAVED','F02-P1','F02-INVENTORY')) { Assert-RobotPreparedMetadata $taskManifest }
++    if ($taskManifest.caseId -in @('ROBOTS-R0','ROBOTS-R1-AUTO','F11-PRODUCER','F11-RESAVED','F02-P1','F02-INVENTORY')) { Assert-RobotPreparedMetadata $taskManifest }
+     if ($taskManifest.caseId -in @('F02-P1','F02-INVENTORY')) {
+         if ($taskManifest.hdSource -cne 'Built' -or $taskManifest.expectedBehavior -cnotin @('satisfied','baseline-gap') -or $taskManifest.negativeControl -cne 'None' -or @($taskManifest.expectedMods).Count -ne 5 -or @($taskManifest.expectedAssemblies).Count -ne 11) { throw 'F02 prepared role or closed input census differs.' }
+     }
+-    if ($taskManifest.caseId -in @('F41-PRODUCER','F41-RECOVER','F41-RESAVED')) {
++    if ($taskManifest.caseId -in @('F11-PRODUCER','F11-RESAVED')) {
++        if ($taskManifest.expectedBehavior -cne 'satisfied' -or @($taskManifest.expectedAssemblies).Count -ne 10) { throw 'F11 prepared role or closed ten-image census differs.' }
+         if ($taskManifest.expectedBehavior -cnotin @('satisfied','baseline-gap') -or $taskManifest.negativeControl -cne 'None' -or $taskManifest.hdSource -cne 'Built' -or
+             @($taskManifest.expectedMods).Count -ne 4 -or $taskManifest.PSObject.Properties['f34MixedProfile']) { throw 'F41 orphan-save requires Built, baseline-gap/satisfied, None, four packages and no companion profile.' }
+     }
+-    if ($taskManifest.caseId -in @('F41-RECOVER','F41-RESAVED')) {
++    if ($taskManifest.caseId -in @('F11-RESAVED')) {
+         if (-not $taskManifest.PSObject.Properties['restartCheckpoint']) { throw 'Missing controlled-orphan checkpoint binding.' }
+         $taskCheckpoint = $taskManifest.restartCheckpoint
+         if ($taskCheckpoint.savePath -cne (Join-Path $taskManifest.saveDataDirectory 'Saves\Autostart.rws') -or
+@@ -834,18 +835,19 @@
+             if ((Get-Sha256 $f02File.path) -cne $f02File.sha256) { throw ('F02 selected input differs: '+$f02File.path) }
+         }
+     }
+-    if ($CaseId -in @('F41-PRODUCER','F41-RECOVER','F41-RESAVED')) {
++    if ($CaseId -in @('F11-PRODUCER','F11-RESAVED')) {
++        if ($ExpectedBehavior -cne 'satisfied') { throw 'F11 admits only the selected current product and satisfied expectation.' }
+         if ($RunDirectory -or $ExpectedBehavior -cnotin @('satisfied','baseline-gap') -or $NegativeControl -cne 'None' -or $CommonSense -or $HdSource -cne 'Built' -or $F34MixedProfile) { throw 'F41 orphan-save requires Built, baseline-gap/satisfied, None, no CommonSense or companion profile, and a fresh controller-generated ID.' }
+         $f41Selection = Get-Content -LiteralPath (Join-Path $PSScriptRoot '../../selection.json') -Raw | ConvertFrom-Json
+-        if ($CaseId -cne 'F41-RECOVER' -and $ExpectedBehavior -cne 'satisfied') { throw 'Only F41-RECOVER admits the preserved baseline failure.' }
++        if ($CaseId -cne 'F11-RESAVED' -and $ExpectedBehavior -cne 'satisfied') { throw 'Only F11-RESAVED admits the preserved baseline failure.' }
+         $f41Role = if ($ExpectedBehavior -ceq 'satisfied') { 'candidate' } else { 'baseline' }
+         $f41Selected = $f41Selection.$f41Role
+         if ((Get-CanonicalPath $BuiltModRoot) -cne (Get-CanonicalPath $f41Selected.root) -or (Get-CanonicalPath $HarnessAssembly) -cne (Get-CanonicalPath $f41Selection.harness.path)) { throw 'F41 selected product role or harness path differs.' }
+-        foreach ($f41File in @($f41Selected.files) + @($f41Selection.harness)) {
++        foreach ($f41File in @($f41Selected.files) + @($f41Selection.harness) + @($f41Selection.controller.files) + @($f41Selection.fixture.files) + @($f41Selection.inputWorker)) {
+             if ((Get-FileHash -LiteralPath $f41File.path -Algorithm SHA256).Hash -cne $f41File.sha256) { throw ('F41 selected image hash differs: ' + $f41File.path) }
+         }
+     }
+-    if ($CaseId -in @('F41-RECOVER','F41-RESAVED')) {
++    if ($CaseId -in @('F11-RESAVED')) {
+         $CheckpointSave = Get-CanonicalPath $CheckpointSave
+         $CheckpointRecord = Get-CanonicalPath $CheckpointRecord
+         Assert-NoReparsePath $CheckpointSave
+@@ -853,7 +855,7 @@
+         $taskSourceRun = Split-Path -Parent (Split-Path -Parent (Split-Path -Parent $CheckpointSave))
+         $taskSourceId = [Guid]::Empty
+         if ((Split-Path -Parent $taskSourceRun) -cne $taskBase -or -not [Guid]::TryParseExact((Split-Path -Leaf $taskSourceRun),'N',[ref]$taskSourceId)) { throw 'Checkpoint must belong to one actual private runtime run.' }
+-        if ($CheckpointSave -ine (Join-Path $taskSourceRun 'SaveData\Saves\F41OrphanCheckpoint.rws') -or
++        if ($CheckpointSave -ine (Join-Path $taskSourceRun 'SaveData\Saves\F11QuantityCheckpoint.rws') -or
+             $CheckpointRecord -ine (Join-Path $taskSourceRun 'evidence\checkpoint.txt')) { throw 'Checkpoint save/record do not join one actual controlled-orphan producer.' }
+         $taskSourceManifestPath = Join-Path $taskSourceRun 'manifest.json'
+         $taskSourceResultPath = Join-Path $taskSourceRun 'evidence\result.json'
+@@ -861,7 +863,7 @@
+         foreach ($taskSourceFile in @($taskSourceManifestPath,$taskSourceResultPath,$taskSourceLogPath)) { Assert-NoReparsePath $taskSourceFile }
+         $taskSourceManifest = Get-Content -LiteralPath $taskSourceManifestPath -Raw | ConvertFrom-Json
+         $taskSourceResult = Get-Content -LiteralPath $taskSourceResultPath -Raw | ConvertFrom-Json
+-        $taskProducerCase = if ($CaseId -ceq 'F41-RECOVER') { 'F41-PRODUCER' } else { 'F41-RECOVER' }
++        $taskProducerCase = 'F11-PRODUCER'
+         if ($taskSourceManifest.runId -cne $taskSourceId.ToString('N') -or $taskSourceManifest.caseId -cne $taskProducerCase -or
+             $taskSourceResult.runId -cne $taskSourceManifest.runId -or $taskSourceResult.caseId -cne $taskProducerCase -or
+             $taskSourceResult.status -cne 'passed' -or @($taskSourceResult.assertions).Count -eq 0 -or
+@@ -876,7 +878,16 @@
+         if (-not $taskCheckpointText.StartsWith(('phase=' + $taskProducerCase + ';'),[StringComparison]::Ordinal)) { throw 'Checkpoint record phase differs.' }
+         [xml]$taskCheckpointXml = Get-Content -LiteralPath $CheckpointSave -Raw
+         if ($taskCheckpointXml.DocumentElement.Name -cne 'savegame') { throw 'Checkpoint is not a native savegame.' }
+-        $taskRetainedSave = Join-Path $taskSourceRun 'evidence\F41OrphanCheckpoint.rws'
++        $f11Record=@{}
++        foreach($f11Part in $taskCheckpointText.Split(';')) { $f11Pair=$f11Part.Trim().Split(@('='),2); if($f11Pair.Count -ne 2 -or $f11Record.ContainsKey($f11Pair[0])) { throw 'F11 record shape differs.' }; $f11Record[$f11Pair[0]]=$f11Pair[1] }
++        if($f11Record.phase -cne 'F11-PRODUCER' -or $f11Record.held -cne '8' -or $f11Record.placed -cne '7' -or $f11Record.keep -cne '3' -or $f11Record.drafted -cne 'True') { throw 'F11 native checkpoint shape differs.' }
++        if($f11Record.actor -notmatch '^Human[0-9]+$' -or $f11Record.source -notmatch '^Steel[0-9]+$' -or $f11Record.dropped -notmatch '^Steel[0-9]+$') { throw 'F11 native checkpoint IDs differ.' }
++        $f11Pawn=$taskCheckpointXml.SelectSingleNode("//thing[id='$($f11Record.actor)']")
++        $f11Held=$f11Pawn.SelectSingleNode("inventory/innerContainer/li[id='$($f11Record.source)']/stackCount")
++        $f11Dropped=$taskCheckpointXml.SelectSingleNode("//thing[id='$($f11Record.dropped)']/stackCount")
++        if($null -eq $f11Held -or $f11Held.InnerText -cne '8' -or $null -eq $f11Dropped -or $f11Dropped.InnerText -cne '7') { throw 'F11 actual saved quantities differ.' }
++
++        $taskRetainedSave = Join-Path $taskSourceRun 'evidence\F11QuantityCheckpoint.rws'
+         if ((Get-Sha256 $taskRetainedSave) -cne (Get-Sha256 $CheckpointSave)) { throw 'Source save differs from producer retained evidence.' }
+     } elseif ($CheckpointSave -or $CheckpointRecord) { throw 'Only native upgrade/restart accepts checkpoint arguments.' }
+     if ($CaseId -in $script:taskAf1Cases) {
+@@ -1020,7 +1031,8 @@
+         $taskProtectedRoots+=@($taskDlv1Inputs.protectedRoots)
+         Assert-RobotAutomaticProfileReceipt $NearbyDeliveryProfile $taskDlv1Read.admission 'RIMMS-DLV1 before protected snapshot'
+     }
+-    if ($CaseId -in @('F41-RECOVER','F41-RESAVED')) { $taskProtectedRoots += @($CheckpointSave,$CheckpointRecord,$taskSourceManifestPath,$taskSourceResultPath,$taskSourceLogPath,$taskRetainedSave) }
++    if ($CaseId -in @('F11-RESAVED')) { $taskProtectedRoots += @($CheckpointSave,$CheckpointRecord,$taskSourceManifestPath,$taskSourceResultPath,$taskSourceLogPath,$taskRetainedSave) }
++    if ($CaseId -in @('F11-PRODUCER','F11-RESAVED')) { $taskProtectedRoots += @($f41Selection.candidate.root,$f41Selection.harness.path,$f41Selection.inputWorker.path,(Join-Path $PSScriptRoot '../../selection.json')) }
+     $taskProtectedBefore = @(Get-ProtectedSnapshot $taskProtectedRoots)
+     [IO.Directory]::CreateDirectory($script:taskRun) | Out-Null
+     foreach ($taskFolder in @($taskRuntime, $taskConfig, $taskEvidence, (Join-Path $taskSavedata 'Saves'), (Join-Path $taskRuntime 'Mods'))) {
+@@ -1037,7 +1049,7 @@
+         'SteamInputDefaultConfiguration.vdf', 'SteamInputDefaultConfiguration_SteamDeck.vdf', 'SteamInputDefaultConfiguration_SteamFrame.vdf',
+         'EULA.txt', 'Licenses.txt', 'ModUpdating.txt', 'Readme.txt'
+     )) { Copy-VerifiedFile (Join-Path $GameRoot $taskFile) (Join-Path $taskRuntime $taskFile) 'game' }
+-    if ($CaseId -in @('F41-RECOVER','F41-RESAVED')) {
++    if ($CaseId -in @('F11-RESAVED')) {
+         Copy-VerifiedFile $CheckpointSave (Join-Path $taskSavedata 'Saves\Autostart.rws') 'actual-controlled-orphan-save'
+         Copy-VerifiedFile $CheckpointRecord (Join-Path $script:taskRun 'input\checkpoint.txt') 'actual-controlled-orphan-record'
+     }
+@@ -1136,7 +1148,7 @@
+ <?xml version="1.0" encoding="utf-8"?>
+ <PrefsData>
+   <devMode>True</devMode>
+-  <pauseOnLoad>$(if ($CaseId -in @('F41-RECOVER','F41-RESAVED')) { 'True' } else { 'False' })</pauseOnLoad>
++  <pauseOnLoad>$(if ($CaseId -in @('F11-RESAVED')) { 'True' } else { 'False' })</pauseOnLoad>
+   <runInBackground>True</runInBackground>
+   <logVerbose>True</logVerbose>
+   <volumeGame>0</volumeGame>
+@@ -1153,7 +1165,7 @@
+         (Join-Path $taskHdDestination '1.6\Assemblies\HaulersDream.Core.dll'),
+         (Join-Path $taskHarnessRoot 'Assemblies\HaulersDream.RuntimeHarness.dll')
+     )
+-    if ($CaseId -in @('L40-Q1','L40-UI-P0','ROBOTS-R0','ROBOTS-R1-AUTO') -or $CaseId -in $script:taskAf1Cases -or $CaseId -in @('REFUEL-G1','RIMMS-DLV1','F34-MIXED-CUT','F41-PRODUCER','F41-RECOVER','F41-RESAVED','F02-P1','F02-INVENTORY')) {
++    if ($CaseId -in @('L40-Q1','L40-UI-P0','ROBOTS-R0','ROBOTS-R1-AUTO') -or $CaseId -in $script:taskAf1Cases -or $CaseId -in @('REFUEL-G1','RIMMS-DLV1','F34-MIXED-CUT','F11-PRODUCER','F11-RESAVED','F02-P1','F02-INVENTORY')) {
+         $taskAssemblyPaths += @('UnityEngine.IMGUIModule.dll','UnityEngine.ScreenCaptureModule.dll','UnityEngine.TextRenderingModule.dll') | ForEach-Object {
+             Join-Path $taskRuntime ('RimWorldWin64_Data\Managed\' + $_)
+         }
+@@ -1219,7 +1231,7 @@
+         knownExpansions = $taskKnownExpansions; configFiles = $taskConfigFiles; copiedFiles = @($taskCopiedFiles.ToArray())
+         protectedRoots = $taskProtectedRoots; protectedBefore = $taskProtectedBefore
+         startupDeadlineSeconds = 300
+-        semantics = if ($CaseId -in @('F02-P1','F02-INVENTORY')) { 'F02 bounded own-inventory controls with actual Common Sense cleaning; fresh P1 comparison preserves original oracle; full native independent review required.' } elseif ($CaseId -in @('F41-PRODUCER','F41-RECOVER','F41-RESAVED')) { 'Controlled-corruption native UFT/job save chain; exact preservation, healthy controls, original-creator completion and clean resave/restart. No WorkbenchConnect-provider reproduction claim.' } elseif ($CaseId -ceq 'F34-MIXED-CUT') { 'Paused mixed-plant boundary capture; baseline failures preserved; no full F34 acceptance.' } elseif ($CaseId -ceq 'RIMMS-DLV1') { $taskDlv1Read.profile.scope }
++        semantics = if ($CaseId -in @('F02-P1','F02-INVENTORY')) { 'F02 bounded own-inventory controls with actual Common Sense cleaning; fresh P1 comparison preserves original oracle; full native independent review required.' } elseif ($CaseId -in @('F11-PRODUCER','F11-RESAVED')) { 'F11 actual local quantity dialog and genuine tagged15/Keep3 pickup, native drop7/held8, exact save/fresh reload, ordinary unload5/Keep3. No provider/MP claim.' } elseif ($CaseId -ceq 'F34-MIXED-CUT') { 'Paused mixed-plant boundary capture; baseline failures preserved; no full F34 acceptance.' } elseif ($CaseId -ceq 'RIMMS-DLV1') { $taskDlv1Read.profile.scope }
+             elseif ($CaseId -ceq 'REFUEL-G1') { $taskRefuelG1Read.profile.scope }
+             elseif ($CaseId -in $script:taskAf1Cases) { $taskAf1Read.profile.scope }
+             elseif ($CaseId -eq 'BG03-P1') { 'Partial initially tagged bill ingredients, two floor sources and native cooking/cleaning only; other BG03 controls and original-report convergence remain unfinished.' }
+@@ -1239,14 +1251,14 @@
+             elseif ($CaseId -eq 'L04-O1-DELIVERY') { 'Actual first automatic bulk delivery and bounded follow-up; original report loops remain separate.' }
+             else { 'Bootstrap isolation only; optional intentional-error control is not a clean-runtime pass.' }
+     }
+-    if ($CaseId -in @('F41-RECOVER','F41-RESAVED')) {
++    if ($CaseId -in @('F11-RESAVED')) {
+         $taskManifest.restartCheckpoint = [pscustomobject]@{
+             sourceSave=$CheckpointSave; sourceRecord=$CheckpointRecord; sourceRun=$taskSourceRun
+             savePath=(Join-Path $taskSavedata 'Saves\Autostart.rws'); saveSha256=(Get-Sha256 $CheckpointSave)
+             recordPath=(Join-Path $script:taskRun 'input\checkpoint.txt'); recordSha256=(Get-Sha256 $CheckpointRecord)
+         }
+     }
+-    if ($CaseId -in @('ROBOTS-R0','ROBOTS-R1-AUTO') -or $CaseId -in $script:taskAf1Cases -or $CaseId -in @('REFUEL-G1','RIMMS-DLV1','F34-MIXED-CUT','F41-PRODUCER','F41-RECOVER','F41-RESAVED','F02-P1','F02-INVENTORY')) {
++    if ($CaseId -in @('ROBOTS-R0','ROBOTS-R1-AUTO') -or $CaseId -in $script:taskAf1Cases -or $CaseId -in @('REFUEL-G1','RIMMS-DLV1','F34-MIXED-CUT','F11-PRODUCER','F11-RESAVED','F02-P1','F02-INVENTORY')) {
+         $taskRobotIdentities=Initialize-RobotAssemblyIdentities $taskAssemblyPaths $taskRuntime
+         $taskManifest.expectedAssemblies=$taskRobotIdentities.assemblies
+         $taskManifest.robotMetadata=$taskRobotIdentities.provenance
+@@ -1327,7 +1339,7 @@
+         '-quicktest', ('-hd-test=' + $taskCase),
+         ('"-hd-harnessmanifest={0}"' -f (Join-Path $script:taskRun 'manifest.json'))
+     )
+-    if ($taskCase -in @('F41-RECOVER','F41-RESAVED')) {
++    if ($taskCase -in @('F11-RESAVED')) {
+         $taskArguments = @($taskArguments | Where-Object { $_ -cne '-quicktest' })
+         $taskRestartSaves = @(Get-ChildItem -LiteralPath (Join-Path $taskManifest.saveDataDirectory 'Saves') -File -Force)
+         if ($taskRestartSaves.Count -ne 1 -or $taskRestartSaves[0].Name -cne 'Autostart.rws') { throw 'Controlled-orphan load requires exactly copied native Autostart.' }
+@@ -1375,7 +1387,7 @@
+ $taskResult = $null
+ if (Test-Path -LiteralPath $taskResultPath) {
+     try {
+-        if ($taskCase -cin @('RIMMS-DLV1','F34-MIXED-CUT','F41-PRODUCER','F41-RECOVER','F41-RESAVED','F02-P1','F02-INVENTORY')) { $taskResult = Read-Dlv1CommonResult $taskResultPath }
++        if ($taskCase -cin @('RIMMS-DLV1','F34-MIXED-CUT','F11-PRODUCER','F11-RESAVED','F02-P1','F02-INVENTORY')) { $taskResult = Read-Dlv1CommonResult $taskResultPath }
+         else { $taskResult = Get-Content -LiteralPath $taskResultPath -Encoding UTF8 -Raw | ConvertFrom-Json }
+     }
+     catch { $taskResult = [pscustomobject]@{ status = 'result-incomplete'; detail = $_.Exception.Message } }
+@@ -1396,8 +1408,8 @@
+ if ($taskCase -in @('F02-P1','F02-INVENTORY')) {
+     $taskProblems.Add('F02 requires independent full native phase/ingredient ancestry, settings, actual selected jobs, product/kept custody, physical stability, logs and process review. No automatic full feedback closure.')
+ }
+-if ($taskCase -in @('F41-PRODUCER','F41-RECOVER','F41-RESAVED')) {
+-    $taskProblems.Add('F41 capture requires independent full native save-chain, job/ingredient/work identities, healthy/unrelated controls, repair-only cancellation and productive completion review. Controlled corruption is not actual WorkbenchConnect verification. Baseline remains failed.')
++if ($taskCase -in @('F11-PRODUCER','F11-RESAVED')) {
++    $taskProblems.Add('F11 requires independent full native input/IMGUI/control receipts, cancellation/staleness, actual save/load tag/Keep/job identities, ordinary unloading, physical conservation, logs and process review. No automatic feedback closure or provider/MP acceptance.')
+ }
+ if ($taskCase -eq 'ROBOTS-R1-AUTO') {
+     $taskProblems.Add('R1 capture requires independent complete native selector/Job/ThinkNode, transfer/drop/custody/reservation/claim/cleanup and whole-log review. Automatic semantic acceptance and wider robot compatibility are unfinished.')
+@@ -1426,7 +1438,7 @@
+ }
+ $taskControlMarker = '[HD Runtime Harness NegativeControl] run=' + $taskManifest.runId + ' control=' + $taskNegativeControl + ' intentional worker error'
+ if ($taskProcessState.status -ne 'exited') { $taskProblems.Add('Process is not authoritatively exited: ' + $taskProcessState.status) }
+-$taskExpectedStatus = if ($taskCase -cin @('F34-MIXED-CUT','F41-PRODUCER','F41-RECOVER','F41-RESAVED') -and $taskExpectedBehavior -ceq 'baseline-gap') { 'failed' } elseif ($taskNegativeControl -ne 'None') { 'failed' } elseif ($taskExpectedBehavior -eq 'baseline-gap') { 'behavior-gap-observed' } else { 'passed' }
++$taskExpectedStatus = if ($taskCase -cin @('F34-MIXED-CUT','F11-PRODUCER','F11-RESAVED') -and $taskExpectedBehavior -ceq 'baseline-gap') { 'failed' } elseif ($taskNegativeControl -ne 'None') { 'failed' } elseif ($taskExpectedBehavior -eq 'baseline-gap') { 'behavior-gap-observed' } else { 'passed' }
+ if ($null -eq $taskResult -or $taskResult.status -ne $taskExpectedStatus) { $taskProblems.Add('No complete result with the explicitly expected status: ' + $taskExpectedStatus) }
+ if ($taskResult -and $taskResult.status -ne 'result-incomplete') {
+     if ($taskNegativeControl -eq 'None' -and $taskResult.unityErrorsObserved -ne 0) {
+@@ -1467,7 +1479,7 @@
+             if (-not (Test-RequiredAssertion $taskResult.assertions $taskRequired $true)) { $taskProblems.Add('Missing unique assembly assertion: ' + $taskRequired) }
+         }
+     }
+-    if ($taskCase -in @('ROBOTS-R0','ROBOTS-R1-AUTO') -or $taskCase -in $script:taskAf1Cases -or $taskCase -in @('REFUEL-G1','RIMMS-DLV1','F34-MIXED-CUT','F41-PRODUCER','F41-RECOVER','F41-RESAVED','F02-P1','F02-INVENTORY')) { Test-RobotResultMvids $taskResult $taskManifest $taskProblems }
++    if ($taskCase -in @('ROBOTS-R0','ROBOTS-R1-AUTO') -or $taskCase -in $script:taskAf1Cases -or $taskCase -in @('REFUEL-G1','RIMMS-DLV1','F34-MIXED-CUT','F11-PRODUCER','F11-RESAVED','F02-P1','F02-INVENTORY')) { Test-RobotResultMvids $taskResult $taskManifest $taskProblems }
+     if ($taskCase -eq 'ROBOTS-R1-AUTO') {
+         foreach ($taskR1Assertion in @('robot-r1-context-intact','robot-r1-cleanup-complete','robot-r1-automatic-selection','robot-r1-two-material-inventory','robot-r1-native-transfer-delivery','robot-r1-native-reservation','robot-r1-native-job-success','robot-r1-stable-storage','robot-r1-fixture-complete')) {
+             if (-not (Test-RequiredAssertion $taskResult.assertions $taskR1Assertion $true)) { $taskProblems.Add('Missing unique R1 capture assertion: '+$taskR1Assertion) }
+@@ -1808,7 +1820,7 @@
+     refuelGroupEvidence = $taskRefuelG1Evidence
+     nearbyDeliveryEvidence = $taskDlv1Evidence
+     f34MixedBoundaryEvidence = $taskF34Evidence
+-    scope = if ($taskCase -in @('F02-P1','F02-INVENTORY')) { 'Bounded own-inventory native controls only; independent whole phase/log/process review required; not F01 or full feedback acceptance.' } elseif ($taskCase -in @('F41-PRODUCER','F41-RECOVER','F41-RESAVED')) { 'F41 controlled orphan bill/native recipe-job save chain only; full native preservation/completion/resave/reload and process/log review required. No actual provider or reporter-save claim.' } elseif ($taskCase -ceq 'F34-MIXED-CUT') { 'Eighteen paused native/product boundaries; full raw snapshots/assertions require independent review. Baseline stays failed. Productive cut/UI/poll/MP/full F34 remain open.' } elseif ($taskCase -ceq 'RIMMS-DLV1') { 'Three controlled native delivery scenes; independent complete transactions/physical owner/manifest/lineage/job/observer/Home/environment/process/log review remains mandatory. No automatic native, command/editor/MP/DLV2/save/feedback acceptance.' }
++    scope = if ($taskCase -in @('F02-P1','F02-INVENTORY')) { 'Bounded own-inventory native controls only; independent whole phase/log/process review required; not F01 or full feedback acceptance.' } elseif ($taskCase -in @('F11-PRODUCER','F11-RESAVED')) { 'F11 actual local UI and saved remainder only. Independent native input, physical lifecycle, save/XML, image, log and process review required; provider/MP coverage remains separate.' } elseif ($taskCase -ceq 'F34-MIXED-CUT') { 'Eighteen paused native/product boundaries; full raw snapshots/assertions require independent review. Baseline stays failed. Productive cut/UI/poll/MP/full F34 remain open.' } elseif ($taskCase -ceq 'RIMMS-DLV1') { 'Three controlled native delivery scenes; independent complete transactions/physical owner/manifest/lineage/job/observer/Home/environment/process/log review remains mandatory. No automatic native, command/editor/MP/DLV2/save/feedback acceptance.' }
+         elseif ($taskCase -ceq 'REFUEL-G1') { 'Six ordinary native refuel scenes only; independent complete scene/item graph, observers, publication, Home, cleanup, process and log review is mandatory. No automatic acceptance; fault/save/recovery/UI/CE/MP remain separate.' }
+         elseif ($taskCase -in $script:taskAf1Cases) { 'Finite AF1 native capture only; complete independent record/observer/serializer/save/log review remains mandatory. Same-process reload is not a full restart; automatic work, refuel and complete food behavior remain separate.' }
+         elseif ($taskCase -eq 'BG03-P1') { 'Only initially tagged milk plus two remaining floor ingredients, native bill/cleaning and bounded follow-up are measured. Other BG03 controls and original-report convergence remain unverified.' }

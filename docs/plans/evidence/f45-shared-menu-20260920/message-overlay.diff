@@ -1,0 +1,46 @@
+--- src/PbMenuScenario.cs
++++ src-v2/PbMenuScenario.cs
+@@ -87,10 +87,11 @@
+         }
+         private static string RequireNativeOverlays(Window[] windows)
+         {
+-            // These two native overlays contain controls. They are admitted only as untouched
++            // These native overlays contain controls. They are admitted only as untouched
+             // background to our synchronous Layout/Repaint operations, never as input targets.
+             string observed = DescribeWindows(windows);
+-            Evidence.Require(windows.Length <= 2 && windows.All(IsKnownNativeOverlay)
++            // Native Messages retains at most 12 live entries; add the two fixed toolbar/tutorial overlays.
++            Evidence.Require(windows.Length <= 14 && windows.All(IsKnownNativeOverlay)
+                 && windows.Select(x => x.ID).Distinct().Count() == windows.Length,
+                 "Unexpected or blocking native window; preserve it without closing it. Observed: " + observed);
+             return observed;
+@@ -107,10 +108,28 @@
+             Type owner; string method;
+             if (window.ID == -1593759361 && window.layer == WindowLayer.GameUI) { owner = typeof(DebugWindowsOpener); method = "DrawButtons"; }
+             else if (window.ID == -76136312 && window.layer == WindowLayer.Super) { owner = typeof(LearningReadout); method = "WindowOnGUI"; }
+-            else return false;
++            else return IsNativeRejectionOverlay(window, immediate.doWindowFunc);
+             Action callback = immediate.doWindowFunc;
+             return callback != null && callback.GetInvocationList().Length == 1 && callback.Target?.GetType() == owner
+                 && callback.Method.Equals(AccessTools.DeclaredMethod(owner, method, Type.EmptyTypes));
++        }
++        private static bool IsNativeRejectionOverlay(Window window, Action callback)
++        {
++            // Message.Draw creates a fresh closure per draw; admit only its exact native callback
++            // and live RejectInput owner. These overlays can handle clicks, but this fixture runs
++            // only synchronous Layout/Repaint operations and never dispatches input to them.
++            Type closure = callback?.Target?.GetType();
++            if (window.layer != WindowLayer.Super || callback == null || callback.GetInvocationList().Length != 1
++                || closure?.FullName != "Verse.Message+<>c__DisplayClass44_0" || closure.Assembly != typeof(Message).Assembly
++                || callback.Method.Module != typeof(Message).Module || callback.Method.MetadataToken != 100683151
++                || !callback.Method.Equals(AccessTools.DeclaredMethod(closure, "<Draw>b__0", Type.EmptyTypes))) return false;
++            var ownerField = AccessTools.DeclaredField(closure, "<>4__this");
++            var idField = AccessTools.DeclaredField(typeof(Message), "ID");
++            if (ownerField?.FieldType != typeof(Message) || idField?.FieldType != typeof(int)) return false;
++            var message = ownerField.GetValue(callback.Target) as Message;
++            if (message?.GetType() != typeof(Message) || message.def != MessageTypeDefOf.RejectInput || !Messages.IsLive(message)) return false;
++            int nativeHash = Gen.HashCombineInt((int)idField.GetValue(message), 45574281);
++            return nativeHash != 0 && nativeHash != int.MinValue && window.ID == -Math.Abs(nativeHash);
+         }
+         private static string DescribeCallback(Action callback) => callback == null ? "null" :
+             Evidence.Id(callback) + "|target=" + Evidence.Id(callback.Target) + "|method=" + Evidence.Method(callback.Method)

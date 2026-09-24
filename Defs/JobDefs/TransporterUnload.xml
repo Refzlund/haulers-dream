@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+  <!-- Adapted from nullpat's GH267. Current trip cargo/progress survives saves; interruption ends the order. -->
+  <JobDef>
+    <defName>HaulersDream_UnloadTransporterInBulk</defName>
+    <driverClass>HaulersDream.JobDriver_UnloadTransporterInBulk</driverClass>
+    <reportString>unloading a transporter to storage.</reportString>
+    <casualInterruptible>false</casualInterruptible>
+    <suspendable>false</suspendable>
+  </JobDef>
+</Defs>

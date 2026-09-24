@@ -1,0 +1,114 @@
+--- F24 Bootstrap
++++ F41 Bootstrap
+@@ -67,7 +67,7 @@
+         private static RefuelGroupScenario refuelGroup;
+         private static Dlv1Scenario dlv1;
+         private static bool f34Attempted;
+-        private static bool f24CadenceStarted;
++        private static bool f41Started;
+         private static bool scenarioAttempted;
+         private static bool controlStarted;
+         private static int controlDone;
+@@ -118,7 +118,7 @@
+                 Check("private-mod-directory", SamePath(GenFilePaths.ModsFolderPath, Path.Combine(manifest.runtimeDirectory, "Mods")),
+                     GenFilePaths.ModsFolderPath);
+                 Check("private-player-log", SamePath(Application.consoleLogPath, manifest.logPath), Application.consoleLogPath);
+-                Check("case-supported", new[] { "bootstrap", "BG01", "BG02", "BG03-P1", "L04-O1", "CAP01", "CAP02", "CAP03-B", "CAP03-A", "CAP03-C", "L04-O1-DELIVERY", "L04-B1", "L04-B1-D2", "L40-Q1", "L40-UI-P0", "ROBOTS-R0", "ROBOTS-R1-AUTO", "REFUEL-G1", "RIMMS-DLV1", "F34-MIXED-CUT", "F24-WORK-CADENCE" }.Contains(manifest.caseId), manifest.caseId);
++                Check("case-supported", new[] { "bootstrap", "BG01", "BG02", "BG03-P1", "L04-O1", "CAP01", "CAP02", "CAP03-B", "CAP03-A", "CAP03-C", "L04-O1-DELIVERY", "L04-B1", "L04-B1-D2", "L40-Q1", "L40-UI-P0", "ROBOTS-R0", "ROBOTS-R1-AUTO", "REFUEL-G1", "RIMMS-DLV1", "F34-MIXED-CUT", "F41-PRODUCER", "F41-RECOVER", "F41-RESAVED" }.Contains(manifest.caseId), manifest.caseId);
+                 Check("negative-control-supported", string.IsNullOrEmpty(manifest.negativeControl) || manifest.negativeControl == "None"
+                     || (manifest.caseId == "bootstrap" && new[] { "WorkerUnityError", "WorkerVerseError", "LateWorkerError", "TerminalRace" }.Contains(manifest.negativeControl)),
+                     manifest.negativeControl ?? "None");
+@@ -135,6 +135,8 @@
+                     expectedGame.sha256, StringComparison.OrdinalIgnoreCase), compiledGameHash ?? "missing build metadata");
+ 
+                 if (result.assertions.Any(x => !x.passed)) Finish("failed", "Initial isolation or build checks failed.");
++                else if (new[] { "F41-PRODUCER", "F41-RECOVER", "F41-RESAVED" }.Contains(manifest.caseId))
++                    HaulersDream.F41Native.OrphanRecipeScene.InstallObservers(Event);
+             }
+             catch (Exception error)
+             {
+@@ -148,6 +150,8 @@
+             if (!optedIn || terminal || manifest == null) return;
+             gameStarted = true;
+             Event(kind, "GameComponent lifecycle callback received.");
++            if (kind == "loaded-game" && new[] { "F41-RECOVER", "F41-RESAVED" }.Contains(manifest.caseId))
++                HaulersDream.F41Native.OrphanRecipeScene.CaptureLoaded(Find.CurrentMap, Check, Event, manifest.caseId, manifest.expectedBehavior, manifest.evidenceDirectory);
+         }
+ 
+         internal static void Tick()
+@@ -209,38 +213,41 @@
+                         Finish("failed", "Runtime environment differed from the prepared manifest.");
+                         return;
+                     }
+-                    Find.TickManager.CurTimeSpeed = TimeSpeed.Normal;
++                    if (manifest.caseId != "F41-RECOVER" && manifest.caseId != "F41-RESAVED") Find.TickManager.CurTimeSpeed = TimeSpeed.Normal;
+                     if (manifest.negativeControl == "WorkerUnityError" || manifest.negativeControl == "WorkerVerseError") StartErrorControl();
+                 }
+-                int elapsedTicks = Find.TickManager.TicksGame - firstTick;
+-                if (elapsedTicks < 5) return;
+-                if (!result.assertions.Any(x => x.id == "real-game-ticks-advanced"))
+-                    Check("real-game-ticks-advanced", true, "elapsedTicks=" + elapsedTicks);
+-                if (manifest.caseId == "F24-WORK-CADENCE")
++                if (new[] { "F41-PRODUCER", "F41-RECOVER", "F41-RESAVED" }.Contains(manifest.caseId))
+                 {
+                     if (Current.Game == null || !Current.Game.PlayerHasControl) return;
+-                    if (!f24CadenceStarted)
+-                    {
+-                        Check("f24-cadence-host-admission", canQuitOwnRuntime && UnityData.IsInMainThread
++                    if (!f41Started)
++                    {
++                        Check("f41-orphan-host-admission", canQuitOwnRuntime && UnityData.IsInMainThread
+                             && manifest.negativeControl == "None" && (manifest.expectedBehavior == "satisfied" || manifest.expectedBehavior == "baseline-gap")
+                             && manifest.expectedMods.Select(x => x.packageId).SequenceEqual(new[] {
+                                 "brrainz.harmony", "ludeon.rimworld", "giwaffed.haulersdream", "giwaffed.haulersdream.runtimeharness" })
+                             && manifest.expectedAssemblies.Count == 10
+                             && manifest.expectedAssemblies.All(x => result.assemblies.Count(a => a.name == x.name
+                                 && a.moduleVersionId == x.moduleVersionId) == 1),
+-                            "Private four-mod/ten-image environment; native field cadence, grow-zone clearing, deconstruction and storage.");
+-                        if (result.assertions.Any(x => !x.passed)) { Finish("failed", "F24 cadence admission failed."); return; }
+-                        f24CadenceStarted = true; // Cleanup also covers partial Begin failure.
+-                        HaulersDream.F24Native.WorkCadence.Begin(map, Check, Event, manifest.expectedBehavior);
+-                    }
+-                    string liveStatus = HaulersDream.F24Native.WorkCadence.Update();
++                            "Private four-mod/ten-image controlled orphan-bill native save chain.");
++                        if (result.assertions.Any(x => !x.passed)) { Finish("failed", "F41 orphan admission failed."); return; }
++                        f41Started = true; // Cleanup also covers partial Begin failure.
++                        HaulersDream.F41Native.OrphanRecipeScene.Begin(map, Check, Event, manifest.caseId, manifest.expectedBehavior, manifest.evidenceDirectory);
++                    }
++                    string liveStatus = HaulersDream.F41Native.OrphanRecipeScene.Update();
++                    if ((Find.TickManager.TicksGame > firstTick || HaulersDream.F41Native.OrphanRecipeScene.ObservedNativeLoadTick)
++                        && !result.assertions.Any(x => x.id == "real-game-ticks-advanced"))
++                        Check("real-game-ticks-advanced", true, "Native tick advance=" + (Find.TickManager.TicksGame - firstTick));
+                     if (liveStatus == "running") return;
+-                    Check("f24-cadence-host-returned", liveStatus == "passed", "Live scenario returned " + liveStatus);
++                    Check("f41-orphan-host-returned", liveStatus == "passed", "Live scenario returned " + liveStatus);
+                     Check("no-unity-errors-after-harness-start", unityErrors == 0, "observedErrors=" + unityErrors);
+                     Finish(liveStatus == "passed" && !result.assertions.Any(x => !x.passed) ? "passed" : "failed",
+-                        "F24 productive work continuation; baseline failure is preserved, candidate requires all phases.");
+-                    return;
+-                }
++                        "Controlled orphan UFT/native recipe-job repair; baseline failure is preserved and the complete save chain requires independent review.");
++                    return;
++                }
++                int elapsedTicks = Find.TickManager.TicksGame - firstTick;
++                if (elapsedTicks < 5) return;
++                if (!result.assertions.Any(x => x.id == "real-game-ticks-advanced"))
++                    Check("real-game-ticks-advanced", true, "elapsedTicks=" + elapsedTicks);
+                 if (manifest.caseId == "F34-MIXED-CUT")
+                 {
+                     // Map initialization/five ticks do not imply player control during native fade-in.
+@@ -769,10 +776,10 @@
+             if (terminal) return;
+             terminal = true;
+             // Remove only this test's observers while error capture is still open.
+-            if (f24CadenceStarted)
+-            {
+-                try { HaulersDream.F24Native.WorkCadence.Dispose(); }
+-                catch (Exception error) { Check("f24-cadence-terminal-cleanup", false, error.ToString()); status = "failed"; }
++            if (new[] { "F41-PRODUCER", "F41-RECOVER", "F41-RESAVED" }.Contains(manifest.caseId))
++            {
++                try { HaulersDream.F41Native.OrphanRecipeScene.Dispose(); }
++                catch (Exception error) { Check("f41-orphan-terminal-cleanup", false, error.ToString()); status = "failed"; }
+                 if (result.assertions.Any(x => !x.passed)) status = "failed";
+             }
+             try { dlv1?.Dispose(); }

@@ -1,0 +1,14 @@
+[
+  {
+    "file": "Source\\HaulersDream\\CompHauledToInventory.InventoryDrop.cs",
+    "sha256": "f750034411bd97be2f3249e9b8d16cfba929f729236a9146a38a90eba48507a8"
+  },
+  {
+    "file": "Source\\HaulersDream\\InventoryDropCommand.cs",
+    "sha256": "5e233caa31ddd5d3d2ec3089f502e3277cf128fa40eff036d5eb3b241891f4af"
+  },
+  {
+    "file": "Source\\HaulersDream\\InventoryDropRecovery.cs",
+    "sha256": "280803a19423d8e8bc9dc6cfb28e98cd6ee08d28a853b38ee837aacb5a0a9500"
+  }
+]

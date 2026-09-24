@@ -1,0 +1,53 @@
+--- diagnostic-v3/src/TransporterPersistence.cs
++++ input-v4/src/TransporterPersistence.cs
+@@ -99,6 +99,15 @@
+         }
+         private void RunCommands(Thing source)
+         {
++            // Declared real native job input before any measured command. Never recreate it during observation.
++            Guard(actor.CurJob==null&&actor.jobs.jobQueue.Count==0,"Pristine ordered-wait input required.");
++            var retainedJob=JobMaker.MakeJob(JobDefOf.Wait,60000);retainedJob.playerForced=true;
++            bool accepted=actor.jobs.TryTakeOrderedJob(retainedJob);
++            Record("actual-retained-native-job-input",accepted&&ReferenceEquals(actor.CurJob,retainedJob)
++                &&actor.jobs.curDriver?.GetType()==typeof(JobDriver_Wait)&&ReferenceEquals(actor.jobs.curDriver.job,retainedJob)
++                &&retainedJob.expiryInterval==60000&&retainedJob.playerForced&&actor.jobs.jobQueue.Count==0,
++                "actual native TryTakeOrderedJob; job="+retainedJob.loadID+":"+retainedJob.def.defName+"; expiry="+retainedJob.expiryInterval+"; "+State());
++            Guard(!failed,"Actual native retained job input refused.");
+             Drop("partial",source,6,2,1,0,true,3);
+             Drop("full-remaining",source,9,3,0,1,false,0);
+             var duplicate=AddGrenades(5);var retained=AddGrenades(5);memoryAdded.Invoke(memory,new object[]{retained});refresh.Invoke(null,new object[]{actor});
+--- diagnostic-v3/build.ps1
++++ input-v4/build.ps1
+@@ -2,7 +2,7 @@
+ $env:TEMP = 'C:/Users/Arthur/AppData/Local/HaulersDreamQA/runtime-temp'
+ $env:TMP = $env:TEMP
+ $f40Root = $PSScriptRoot
+-$f40Build = 'C:/Users/Arthur/AppData/Local/HaulersDreamQA/inputs/f11-fault-recovery-20260924/HarnessBuild-v3-diagnostic'
++$f40Build = 'C:/Users/Arthur/AppData/Local/HaulersDreamQA/inputs/f11-fault-recovery-20260924/HarnessBuild-v4-stability-input'
+ $f40Product = 'C:/Users/Arthur/AppData/Local/HaulersDreamQA/inputs/f11-fault-recovery-20260924/runtime-v2'
+ $f40References = 'C:/Users/Arthur/AppData/Local/Temp/haulersdream-f34-host-root-build-20260920'
+ $f40Game = 'C:/Steam/steamapps/common/RimWorld/RimWorldWin64_Data/Managed'
+--- diagnostic-v3/read-host.ps1
++++ input-v4/read-host.ps1
+@@ -1,17 +1,17 @@
+ $ErrorActionPreference='Stop'
+ $env:TEMP='C:/Users/Arthur/AppData/Local/HaulersDreamQA/runtime-temp'
+ $env:TMP=$env:TEMP
+-$f11Host=[IO.Path]::GetFullPath('C:/Users/Arthur/AppData/Local/HaulersDreamQA/inputs/f11-fault-recovery-20260924/HarnessBuild-v3-diagnostic/Assemblies/HaulersDream.RuntimeHarness.dll')
++$f11Host=[IO.Path]::GetFullPath('C:/Users/Arthur/AppData/Local/HaulersDreamQA/inputs/f11-fault-recovery-20260924/HarnessBuild-v4-stability-input/Assemblies/HaulersDream.RuntimeHarness.dll')
+ $f11Output=[IO.Path]::GetFullPath((Join-Path $PSScriptRoot 'host-metadata.json'))
+ if(Test-Path -LiteralPath $f11Output){throw 'Preserve prior metadata.'}
+ $f11Reader=Join-Path $PSScriptRoot 'controller/scripts/runtime-robot-pe-reader.ps1'
+ $f11I64=[Convert]::ToBase64String([Text.Encoding]::UTF8.GetBytes($f11Host))
+ $f11O64=[Convert]::ToBase64String([Text.Encoding]::UTF8.GetBytes($f11Output))
+ $f11Args=@('-NoProfile','-NonInteractive','-ExecutionPolicy','Bypass','-File',('"'+$f11Reader+'"'),'-InputBase64',$f11I64,'-OutputBase64',$f11O64)
+-$f11Process=Start-Process -FilePath 'C:/Windows/System32/WindowsPowerShell/v1.0/powershell.exe' -ArgumentList $f11Args -WindowStyle Hidden -PassThru -RedirectStandardError (Join-Path $PSScriptRoot 'metadata-v3.stderr.txt') -RedirectStandardOutput (Join-Path $PSScriptRoot 'metadata-v3.stdout.txt')
++$f11Process=Start-Process -FilePath 'C:/Windows/System32/WindowsPowerShell/v1.0/powershell.exe' -ArgumentList $f11Args -WindowStyle Hidden -PassThru -RedirectStandardError (Join-Path $PSScriptRoot 'metadata-v4.stderr.txt') -RedirectStandardOutput (Join-Path $PSScriptRoot 'metadata-v4.stdout.txt')
+ $f11Joined=$f11Process.WaitForExit(30000)
+ if(-not $f11Joined){$f11Process.Kill();$f11Process.WaitForExit();throw 'Owned metadata reader exceeded deadline.'}
+ $f11Process.Refresh()
+-[pscustomobject]@{pid=$f11Process.Id;joined=$f11Joined;exitCode=$f11Process.ExitCode;input=$f11Host;output=$f11Output}|ConvertTo-Json|Set-Content -LiteralPath (Join-Path $PSScriptRoot 'metadata-v3-process.json')
+-if($f11Process.ExitCode-ne0){Get-Content (Join-Path $PSScriptRoot 'metadata-v3.stderr.txt');throw 'Reader failed; retain receipt.'}
++[pscustomobject]@{pid=$f11Process.Id;joined=$f11Joined;exitCode=$f11Process.ExitCode;input=$f11Host;output=$f11Output}|ConvertTo-Json|Set-Content -LiteralPath (Join-Path $PSScriptRoot 'metadata-v4-process.json')
++if($f11Process.ExitCode-ne0){Get-Content (Join-Path $PSScriptRoot 'metadata-v4.stderr.txt');throw 'Reader failed; retain receipt.'}
+ Get-Content -LiteralPath $f11Output

@@ -16,4 +16,5 @@
 <HaulersDream_LoadPortalInBulk.reportString>차원문을 대량으로 싣는 중.</HaulersDream_LoadPortalInBulk.reportString>
 <HaulersDream_LoadVehicleInBulk.reportString>차량을 대량으로 싣는 중.</HaulersDream_LoadVehicleInBulk.reportString>
 <HaulersDream_BulkRefuel.reportString>대량으로 연료 보급 중.</HaulersDream_BulkRefuel.reportString>
+  <HaulersDream_UnloadTransporterInBulk.reportString>수송선에서 하역하는 중.</HaulersDream_UnloadTransporterInBulk.reportString>
 </LanguageData>

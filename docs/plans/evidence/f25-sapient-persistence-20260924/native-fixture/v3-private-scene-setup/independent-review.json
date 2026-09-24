@@ -1,0 +1,17 @@
+{
+  "status": "Source correction accepted for native retry; not native acceptance",
+  "changedSelectionFields": [
+    "status",
+    "harness",
+    "harnessBuild",
+    "scene",
+    "buildScript"
+  ],
+  "validatedPins": 845,
+  "host": {
+    "path": "C:\\Users\\Arthur\\AppData\\Local\\Packages\\OpenAI.Codex_2p2nqsd0c76g0\\LocalCache\\Local\\HaulersDreamQA\\inputs\\f25-native-20260924\\HarnessBuild-v3\\Assemblies\\HaulersDream.RuntimeHarness.dll",
+    "sha256": "DDCAAD2F49967AAB106D0228FD6B9FF078E38FAF266FBDE8780602659B385E32",
+    "bytes": 1196544
+  },
+  "selectionSha256": "9FDA1EC6C7DD68FA9C3834CFD270FACBDE9355DD391F7167B9577B6D6F0D560E"
+}

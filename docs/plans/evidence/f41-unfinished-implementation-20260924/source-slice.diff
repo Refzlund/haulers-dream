@@ -1,0 +1,255 @@
+--- before/Source/HaulersDream/HaulersDreamGameComponent.cs
++++ Source/HaulersDream/HaulersDreamGameComponent.cs
+@@ -26,7 +26,7 @@
+         /// <summary>The component for the running game (null at the main menu / before a game loads).</summary>
+         public static HaulersDreamGameComponent Instance => Current.Game?.GetComponent<HaulersDreamGameComponent>();
+ 
+-        public HaulersDreamGameComponent(Game game) { }
++        public HaulersDreamGameComponent(Game game) => UftOrphanBillGuard.ResetLoadCount();
+ 
+         public override void FinalizeInit()
+         {
+@@ -52,6 +52,11 @@
+             // Hauler's Dream) before the tick loop starts, so the per-tick NullReferenceException flood never begins.
+             // No-op on a clean save. See RepairOrphanedJobsAfterLoad.
+             RepairOrphanedJobsAfterLoad();
++
++            // Cross-references and native bill stacks are now resolved. Preserve orphaned unfinished
++            // items, then clean up only known recipe jobs that still reference those stack-less bills.
++            UftOrphanBillGuard.RepairAfterLoadAndReport();
++            RepairOrphanedRecipeJobsAfterLoad();
+         }
+ 
+         // fix/mix recovery: a save migrated off a mod that contributed a JobDef + JobDriver (e.g. Pick Up And
+--- before/Source/HaulersDream/BillGatherContract.cs
++++ Source/HaulersDream/BillGatherContract.cs
+@@ -38,7 +38,8 @@
+                 || bench == null || !BillRouteGate.IsRoutableBenchType(bench)
+                 || !bench.Spawned || bench.Map != pawn.Map || bench.IsForbidden(pawn) || bench.IsBurning()
+                 || !bench.CurrentlyUsableForBills() || bill?.recipe == null
+-                || bill.DeletedOrDereferenced || bill.suspended || bill.billStack != bench.BillStack
++                || bill.billStack == null || bill.billStack != bench.BillStack
++                || bill.DeletedOrDereferenced || bill.suspended
+                 || !bench.BillStack.Bills.Contains(bill) || !bill.ShouldDoNow()
+                 || !bill.PawnAllowedToStartAnew(pawn)
+                 || bill.recipe.FirstSkillRequirementPawnDoesntSatisfy(pawn) != null)
+--- before/Source/HaulersDream/JobDriver_GatherBillIngredients.cs
++++ Source/HaulersDream/JobDriver_GatherBillIngredients.cs
+@@ -60,7 +60,7 @@
+             this.FailOnDespawnedNullOrForbidden(TargetIndex.A);
+             this.FailOnBurningImmobile(TargetIndex.A);
+             this.FailOn(() => pawn.Drafted || pawn.Downed || pawn.InMentalState
+-                || job.bill == null || job.bill.DeletedOrDereferenced || job.bill.suspended);
++                || job.bill == null || job.bill.billStack == null || job.bill.DeletedOrDereferenced || job.bill.suspended);
+             AddFinishAction(condition =>
+             {
+                 if (handoffStarted) return;
+--- before/Source/HaulersDream/JobDriver_BillPrepGather.cs
++++ Source/HaulersDream/JobDriver_BillPrepGather.cs
+@@ -65,7 +65,7 @@
+         public override IEnumerable<Toil> MakeNewToils()
+         {
+             this.FailOnDespawnedNullOrForbidden(BenchInd);
+-            this.FailOn(() => job.bill == null || job.bill.DeletedOrDereferenced || job.bill.suspended);
++            this.FailOn(() => job.bill == null || job.bill.billStack == null || job.bill.DeletedOrDereferenced || job.bill.suspended);
+ 
+             // Loop guard: a sweep that loaded NOTHING must not convert again immediately (it would ping-pong
+             // prep→DoBill→prep forever); the cooldown lets the bill run vanilla multi-trip instead. Fail-open.
+--- before/Source/HaulersDream/JobDriver_BatchCraft.cs
++++ Source/HaulersDream/JobDriver_BatchCraft.cs
+@@ -424,7 +424,7 @@
+                 var b = Bench;
+                 if (b == null || !b.Spawned)
+                     return true;
+-                if (job.bill == null || job.bill.DeletedOrDereferenced)
++                if (job.bill == null || job.bill.billStack == null || job.bill.DeletedOrDereferenced)
+                     return true;
+                 return !b.CurrentlyUsableForBills();
+             });
+--- before/Source/HaulersDream/Patch_UftOrphanBillGuard.cs
++++ Source/HaulersDream/Patch_UftOrphanBillGuard.cs
+@@ -0,0 +1,92 @@
++using System.Reflection;
++using HarmonyLib;
++using RimWorld;
++using Verse;
++
++namespace HaulersDream
++{
++    // Adapted from flixzf's PR #148 (6430509acf2f759ca1849efd86062459ab45cf01).
++    // Bill.billStack is unsaved. A bill serialized outside a BillStack can retain its UFT reference
++    // after loading with no stack; vanilla BoundBill and ExposeData then dereference that null stack.
++    [HarmonyPatch(typeof(UnfinishedThing), nameof(UnfinishedThing.ExposeData))]
++    public static class Patch_UnfinishedThing_ExposeData_OrphanBillGuard
++    {
++        static bool Prepare()
++        {
++            if (UftOrphanBillGuard.FieldBound)
++                return true;
++            HDLog.Warn("UnfinishedThing.boundBillInt could not be bound; orphan unfinished-item repair is disabled.");
++            return false;
++        }
++
++        static void Prefix(UnfinishedThing __instance)
++        {
++            if (Scribe.mode == LoadSaveMode.PostLoadInit)
++            {
++                if (UftOrphanBillGuard.TryUnbind(__instance))
++                    UftOrphanBillGuard.NoteLoadRepair();
++            }
++            else if (Scribe.mode == LoadSaveMode.Saving && UftOrphanBillGuard.TryUnbind(__instance))
++            {
++                HDLog.Warn($"Save repair: unbound unfinished item {__instance.ThingID} from a bill with no "
++                    + "bill stack before saving; its recipe, creator, work and ingredients were preserved.");
++            }
++        }
++    }
++
++    internal static class UftOrphanBillGuard
++    {
++        // Probe without generating a field-access delegate in a static initializer. A missing/changed field
++        // disables this repair before patching, rather than first throwing partway through saving.
++        private static readonly FieldInfo BoundBillField = AccessTools.Field(typeof(UnfinishedThing), "boundBillInt");
++        internal static bool FieldBound => BoundBillField != null && !BoundBillField.IsStatic
++            && BoundBillField.FieldType == typeof(Bill_ProductionWithUft);
++        private static int repairedDuringLoad;
++
++        // The game constructor also runs for loads that later abort before FinalizeInit.
++        internal static void ResetLoadCount() => repairedDuringLoad = 0;
++        internal static void NoteLoadRepair() => repairedDuringLoad++;
++
++        internal static bool TryUnbind(UnfinishedThing uft)
++        {
++            if (!FieldBound || uft == null)
++                return false;
++            var bill = (Bill_ProductionWithUft)BoundBillField.GetValue(uft);
++            if (bill == null || bill.billStack != null)
++                return false;
++
++            // Never read the unsafe BoundBill getter or recreate/rebind a bill. Clear only these links;
++            // a loose UFT keeps all its data and native recipe/creator eligibility rules still apply.
++            BoundBillField.SetValue(uft, null);
++            if (bill.BoundUft == uft)
++                bill.ClearBoundUft();
++            return true;
++        }
++
++        internal static void RepairAfterLoadAndReport()
++        {
++            int repaired = repairedDuringLoad;
++            ResetLoadCount();
++            if (!FieldBound)
++                return;
++
++            // Once per load, cover spawned haulable subclasses that do not call base.ExposeData.
++            // Scribed held UFTs are covered by the PostLoadInit prefix, not by this map sweep.
++            var maps = Find.Maps;
++            if (maps != null)
++                for (int m = 0; m < maps.Count; m++)
++                {
++                    var things = maps[m]?.listerThings?.ThingsInGroup(ThingRequestGroup.HaulableEver);
++                    if (things == null)
++                        continue;
++                    for (int i = 0; i < things.Count; i++)
++                        if (things[i] is UnfinishedThing uft && TryUnbind(uft))
++                            repaired++;
++                }
++
++            if (repaired > 0)
++                HDLog.Msg($"Save repair: unbound {repaired} unfinished item(s) from bills with no bill stack. "
++                    + "Their recipes, creators, work and ingredients were preserved.");
++        }
++    }
++}
+--- before/Source/HaulersDream/HaulersDreamGameComponent.OrphanRecipeJobs.cs
++++ Source/HaulersDream/HaulersDreamGameComponent.OrphanRecipeJobs.cs
+@@ -0,0 +1,81 @@
++using System.Collections.Generic;
++using RimWorld;
++using Verse;
++using Verse.AI;
++
++namespace HaulersDream
++{
++    public partial class HaulersDreamGameComponent
++    {
++        private static void RepairOrphanedRecipeJobsAfterLoad()
++        {
++            var maps = Find.Maps;
++            if (maps == null)
++                return;
++            int ended = 0, removed = 0;
++            for (int m = 0; m < maps.Count; m++)
++            {
++                var pawns = maps[m]?.mapPawns?.AllPawnsSpawned;
++                if (pawns == null)
++                    continue;
++                for (int p = 0; p < pawns.Count; p++)
++                {
++                    var pawn = pawns[p];
++                    var jobs = pawn?.jobs;
++                    if (jobs == null)
++                        continue;
++
++                    // Capture identities before any cleanup: driver finish actions may enqueue other work.
++                    var current = jobs.curJob;
++                    bool endCurrent = IsOrphanedRecipeJob(current)
++                        && jobs.curDriver?.GetType() == current.def.driverClass;
++                    List<Job> orphanedQueue = null;
++                    if (jobs.jobQueue != null)
++                        for (int q = 0; q < jobs.jobQueue.Count; q++)
++                        {
++                            var queued = jobs.jobQueue[q]?.job;
++                            if (IsOrphanedRecipeJob(queued))
++                                (orphanedQueue ??= new List<Job>()).Add(queued);
++                        }
++
++                    // Remove these first, before a current-job finish action could start or pool/reuse one.
++                    // Native queue cleanup releases only the removed jobs' reservations.
++                    if (orphanedQueue != null)
++                        jobs.jobQueue.RemoveAll(pawn, job =>
++                        {
++                            if (!orphanedQueue.Contains(job))
++                                return false;
++                            removed++;
++                            return true;
++                        });
++                    if (endCurrent && jobs.curJob == current)
++                    {
++                        // Native cleanup runs finish actions, releases reservations and handles carried items.
++                        // Do not choose new work while the rest of the loaded game is still finalizing.
++                        jobs.EndCurrentJob(JobCondition.Incompletable, startNewJob: false);
++                        ended++;
++                    }
++                }
++            }
++            if (ended > 0 || removed > 0)
++                HDLog.Msg($"Save repair: ended {ended} current and removed {removed} queued recipe job(s) "
++                    + "whose unfinished-item bill had no bill stack, using normal job cleanup.");
++        }
++
++        private static bool IsOrphanedRecipeJob(Job job)
++        {
++            if (job?.def == null || !(job.bill is Bill_ProductionWithUft bill) || bill.billStack != null)
++                return false;
++            var def = job.def;
++            // Exact known def/driver pairs only: do not invoke arbitrary foreign drivers' cleanup or touch
++            // medical/other bills. The retired InventoryDoBill already ends itself before reading its bill.
++            return (def == JobDefOf.DoBill && def.driverClass == typeof(JobDriver_DoBill))
++                || (def == HaulersDreamDefOf.HaulersDream_BillPrepGather
++                    && def.driverClass == typeof(JobDriver_BillPrepGather))
++                || (def == HaulersDreamDefOf.HaulersDream_GatherBillIngredients
++                    && def.driverClass == typeof(JobDriver_GatherBillIngredients))
++                || (def == HaulersDreamDefOf.HaulersDream_BatchCraft
++                    && def.driverClass == typeof(JobDriver_BatchCraft));
++        }
++    }
++}
+--- before/.changeset/repair-orphaned-unfinished-bills.md
++++ .changeset/repair-orphaned-unfinished-bills.md
+@@ -0,0 +1,5 @@
++---
++"haulers-dream": patch
++---
++
++Repair unfinished items bound to bills that have no workbench stack after loading, preserving their ingredients and work progress. Clean up affected saved crafting jobs through normal job cancellation so pawns can select valid work. The unfinished-item repair is adapted from flixzf's contribution in PR #148.

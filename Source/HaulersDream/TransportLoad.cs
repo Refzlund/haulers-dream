@@ -93,7 +93,7 @@ namespace HaulersDream
         /// <summary>
         /// #138 perf: the CACHED "would HD give a bulk-load job for this player order?" probe used by the vanilla-
         /// option suppressor when a transporter/shuttle/portal menu is built. Returns the SAME answer as
-        /// <c>TryGiveBulkJob(pawn, loadable, playerOrder: true) != null</c> — the probe is side-effect-free planning —
+        /// the ordered planner, but returns before JobMaker and reads a private manifest/claims projection —
         /// but memoized per (TicksGame, pawn, loadableId) so one manifest is planned at most once per right-click no
         /// matter how many transporters in its group get probed. On a null-tick (menu edge / uninitialised) it falls
         /// back to a direct probe and never populates the memo, exactly like the auto path's guard.
@@ -103,11 +103,14 @@ namespace HaulersDream
         /// <returns>True iff HD would issue a bulk-load job (so the vanilla single-item option should be suppressed).</returns>
         public static bool WouldGiveBulkJobForMenu(Pawn pawn, IManagedLoadable loadable)
         {
-            if (pawn == null || loadable == null)
+            if (pawn == null || loadable == null || HaulersDreamMod.Settings?.masterEnabled != true || !FeatureEnabled(loadable))
+                return false;
+            // Live before the same-tick memo, including settings/flag transitions and non-primary members.
+            if (BulkUnloadTransporterGate.BlocksLoad(loadable))
                 return false;
             int tick = Find.TickManager?.TicksGame ?? -1;
             if (tick == -1)
-                return TryGiveBulkJob(pawn, loadable, playerOrder: true) != null;
+                return ProbeBulkJob(pawn, loadable);
             var cache = menuProbeCache ?? (menuProbeCache = new Dictionary<long, bool>());
             if (tick != menuProbeTick)
             {
@@ -117,9 +120,16 @@ namespace HaulersDream
             long key = ((long)pawn.thingIDNumber << 32) | (uint)loadable.GetUniqueLoadID();
             if (cache.TryGetValue(key, out bool cached))
                 return cached;
-            bool result = TryGiveBulkJob(pawn, loadable, playerOrder: true) != null;
+            bool result = ProbeBulkJob(pawn, loadable);
             cache[key] = result;
             return result;
+        }
+
+        private static bool ProbeBulkJob(Pawn pawn, IManagedLoadable loadable)
+        {
+            TryGiveBulkJob(pawn, loadable, JobDefFor(loadable), FeatureEnabled(loadable),
+                playerOrder: true, menuProbe: true, out bool wouldGive);
+            return wouldGive;
         }
 
         /// <summary>Is there bulk-load work for this pawn on the TRANSPORTER loadable? Feature on, not drafted,
@@ -230,6 +240,8 @@ namespace HaulersDream
         private static bool HasPotentialBulkWork(Pawn pawn, IManagedLoadable loadable, bool featureEnabled)
         {
             if (!featureEnabled || loadable == null)
+                return false;
+            if (BulkUnloadTransporterGate.BlocksLoad(loadable))
                 return false;
             if (pawn?.Map == null || pawn.Drafted)
                 return false;
@@ -355,10 +367,17 @@ namespace HaulersDream
         }
 
         private static Job TryGiveBulkJob(Pawn pawn, IManagedLoadable loadable, JobDef jobDef, bool featureEnabled, bool playerOrder)
+            => TryGiveBulkJob(pawn, loadable, jobDef, featureEnabled, playerOrder, menuProbe: false, out _);
+
+        private static Job TryGiveBulkJob(Pawn pawn, IManagedLoadable loadable, JobDef jobDef, bool featureEnabled,
+            bool playerOrder, bool menuProbe, out bool wouldGive)
         {
+            wouldGive = false;
             var s = HaulersDreamMod.Settings;
             var map = pawn?.Map;
             if (s == null || !featureEnabled || map == null || loadable == null)
+                return null;
+            if (BulkUnloadTransporterGate.BlocksLoad(loadable))
                 return null;
             if (pawn.GetComp<CompHauledToInventory>() == null || pawn.inventory == null)
                 return null;
@@ -380,10 +399,10 @@ namespace HaulersDream
             var ledger = HaulersDreamGameComponent.Instance;
             if (ledger == null)
                 return null;
-            // Capture the entry: the fair-share divisor below reads its pawnClaims to skip co-loaders that already
-            // carry a slice. Never null here (loadable was null-checked above; register always yields an entry).
-            var entry = ledger.LoadRegisterOrUpdate(loadable);
-            var claimable = ledger.LoadAvailableToClaim(loadable, pawn);
+            // Only an actual job plan refreshes the saved ledger. The menu uses a private projection instead;
+            // its ordered path also skips the automatic fair-share divisor that needs this entry.
+            var entry = menuProbe ? null : ledger.LoadRegisterOrUpdate(loadable);
+            var claimable = menuProbe ? ledger.LoadAvailableForMenu(loadable, pawn) : ledger.LoadAvailableToClaim(loadable, pawn);
             if (claimable.Count == 0)
                 return null;
 
@@ -576,6 +595,8 @@ namespace HaulersDream
                 return null; // nothing reachable to sweep of the claimable defs
             }
 
+            wouldGive = true;
+            if (menuProbe) return null;
             var job = JobMaker.MakeJob(jobDef, loadable.GetParentThing());
             job.targetQueueB = new List<LocalTargetInfo>(things.Count);
             for (int i = 0; i < things.Count; i++)

@@ -1,0 +1,11 @@
+# Actual late selected shelf regression
+
+One private native case, `F13-LATE`, using the existing isolated controller, natural ambient warm-up and medically fit ordinary workers. No native job, claim row, saved order or cargo state is fabricated. No save/restart, provider, network or rendered UI acceptance is claimed.
+
+Build one real native linked storage group in member insertion order: 100 two-cell shelves, each cell physically filled by three full stacks, followed by the selected one-cell shelf and one native incoming destination shelf. Runtime must prove 102 members, 202 cells, selected cell index 200 and all first 200 cells full. It must prove the unchanged group scanner returns zero with truncation. No group cell-list mutation or definition/carry-capacity edits are allowed.
+
+With three empty native slots, selected Steel capacity must be 225 and explicit 7-of-15 admission must succeed. Then generate a real native `HaulToCellStorageJob` carrying Gold7 to the final companion cell. Actual admission must create an ordinary same-group claim through existing hooks, with the real current native driver, no exclusive allocation and no cell reservation. Selected Steel capacity must fall to150 while the pooled scan still reports truncated zero. This checks that the fallback still deducts ordinary foreign cargo instead of blindly trusting physical225.
+
+Let the genuine native Gold7 and explicit Steel7 jobs finish. Require exact selected-shelf Steel7/source8; Gold7 only on its own companion shelf; all 600 blocker objects unchanged; complete physical totals; no hands/private remainder; original personal inventory identity and Keep3; both jobs' reservations released. Hold both workers and verify 300 native ticks without another explicit start, pickup or placement.
+
+The paired baseline uses exactly the same host, scene, controller bytes and eight non-product images with frozen product v2. Its expected witness is a failed `late-selected-shelf-now-admitted` assertion after proving actual truncated zero. That failure remains a failed test; it is not relabeled passed. Candidate v3 must execute the entire case successfully. Any earlier setup failure, different boundary, unexpected Unity error or observer exception is not this defect's witness.

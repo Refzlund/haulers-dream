@@ -1,0 +1,2273 @@
+{
+  "schema_version": 1,
+  "purpose": "Authoritative filtered scope and source-to-case mapping for the revised goal. Historical inventory remains unchanged. Case-level measurable checks are refined in focused plans before implementation; none is completed by this mapping.",
+  "cutoff_utc": "2026-08-09T16:13:10+02:00",
+  "collection_cutoff_utc": "2026-09-19T22:57:15.863353+02:00",
+  "counts": {
+    "sources": 78,
+    "workshop_comments": 39,
+    "discussion_posts": 3,
+    "open_issues": 16,
+    "open_prs": 2,
+    "open_item_replies": 17,
+    "closed_pr_recent_replies": 1
+  },
+  "historical_register_sha256": "1acfdf857077a9fdfc80c6c526c00be357b624d6c615a7fa0aa5000ba710dc9c",
+  "cases": [
+    {
+      "id": "F01",
+      "feedback": "Common Sense: collect all ingredients before crafting. [GH258][GH258].",
+      "status": "**Implemented; some gameplay cases passed.** See completed cooking milestones.",
+      "remaining": "Remaining recipes, settings combinations, competing jobs, interruptions and save/restart; verify the reporter's scenario.",
+      "source_ids": [
+        "GH258"
+      ],
+      "completion": "open",
+      "completion_evidence": [],
+      "acceptance_definition": "Remaining recipes, settings combinations, competing jobs, interruptions and save/restart; verify the reporter's scenario.",
+      "acceptance_definition_status": "initial requirement; refine measurable cases in linked focused plan before claiming completion",
+      "verification_status": "incomplete",
+      "progress_category": "implementation_candidate_or_partial_verification"
+    },
+    {
+      "id": "F02",
+      "feedback": "Craft using the pawn's own inventory. [C424][C424], subject S05.",
+      "status": "**Resolved and committed as `096edbc`: verified own-stock guidance and forbidden-stock fix.** Published/candidate comparison, six ordinary controls and both batch forms are independently accepted. The corrected permission scenario passes 58/58, consumes allowed floor ingredients and preserves forbidden carried Milk40. Guidance and one tooltip in all 16 languages now describe tracked stock, Keep and Common Sense accurately. [Resolution](evidence/f02-resolution.md).",
+      "remaining": "None for the documented single-player ordinary/explicit-batch scope. The reporter's historical save/cause is unknown. Named F01 gathering/compatibility controls and final assembled-build checks remain explicitly open.",
+      "source_ids": [
+        "C424"
+      ],
+      "completion": "resolved",
+      "completion_evidence": [
+        "docs/plans/evidence/f02-resolution.md",
+        "docs/plans/evidence/f02-own-inventory-20260924/native/independent-p1-pair-review.md",
+        "docs/plans/evidence/f02-own-inventory-20260924/native/5ee69bb32803495ebffe1981b0190610/INDEPENDENT-SIX-PHASE-REVIEW.md",
+        "docs/plans/evidence/f02-own-inventory-20260924/native/88bd47b4f94c40a784c314e9b79072a3/INDEPENDENT-BATCH-REVIEW.md",
+        "docs/plans/evidence/f02-own-inventory-20260924/forbidden-product-v12/native/357a7224bdc844ee9d78a171d0c24cb4/INDEPENDENT-REVIEW.md",
+        "docs/plans/evidence/f02-own-inventory-20260924/forbidden-product-v12/INDEPENDENT-SOURCE-REVIEW.md",
+        "docs/plans/evidence/f02-own-inventory-20260924/DOCUMENTATION-DISPOSITION-REVIEW.md"
+      ],
+      "acceptance_definition": "All ingredients already held, other partial inventories, batch bills, sharing and keep settings.",
+      "acceptance_definition_status": "Published own-stock pair, six ordinary controls, all-held and partial-held batches, genuine forbidden-stock failure/correction, exact ingredient/output conservation and final guidance independently reviewed.",
+      "verification_status": "verified-support-boundaries-both-batch-forms-and-native-forbidden-stock-fix",
+      "active_work": "Report-specific support and permission defect resolved; retain named F01 shared checks and final source coverage.",
+      "progress_evidence": [
+        "docs/plans/evidence/f02-own-inventory-20260924/root-source-review.md"
+      ],
+      "implementation_commit": "096edbc",
+      "integration_status": "pending-named-F01-shared-controls-and-final-assembled-product"
+    },
+    {
+      "id": "F03",
+      "feedback": "“Gather resources into inventory” fails; Harvest and Haul was re-added. [C423][C423], S01.",
+      "status": "**Resolved in the verified scope; committed as `7f68e78`.** Native construction/base harvest work, and the H&H compatibility correction passes 49/49 assertions: store the 11 fresh cloth, retain the 10 kept units and leave unrelated 7 untouched. [Resolution](evidence/f03-resolution.md).",
+      "remaining": "None for the verified construction/harvest and ordinary H&H coexistence behavior. Historical save-specific cause is unknown; H&H's separate CE unload path is explicitly outside this protection. F01/F02 crafting and F24 work interruption remain separate.",
+      "source_ids": [
+        "C423"
+      ],
+      "completion": "resolved",
+      "completion_evidence": [
+        "docs/plans/evidence/f03-resolution.md",
+        "docs/plans/evidence/f03-construction-20260920/candidate-runtime-review.md",
+        "docs/plans/evidence/f03-harvest-20260920/runtime-review.md",
+        "docs/plans/evidence/f03-harvest-hah-20260920/candidate-runtime-review.md",
+        "docs/plans/evidence/f03-harvest-hah-20260920/compat-source-review.md"
+      ],
+      "acceptance_definition": "Reproduce actual automatic construction gathering and native harvest intake, then verify HD alone/H&H together, kept quantities, placement attribution, unloading and old saves. Cooking success alone does not resolve this.",
+      "acceptance_definition_status": "Actual construction, base native harvest and unchanged baseline/candidate H&H scene reviewed; unknown historical cause and CE limit explicit.",
+      "verification_status": "verified-native-gathering-and-ordinary-hah-coexistence",
+      "active_work": "Resolved; final assembled build may reopen if a regression appears.",
+      "progress_evidence": [
+        "docs/plans/evidence/f03-next-execution-review.md",
+        "docs/plans/runtime-run-log.md",
+        "docs/plans/evidence/f03-construction-20260920/candidate-runtime-review.md",
+        "docs/plans/evidence/f03-harvest-20260920/runtime-review.md"
+      ]
+    },
+    {
+      "id": "F04",
+      "feedback": "Feature descriptions are cut off. [C423][C423], S02.",
+      "status": "**Resolved: complete settings descriptions and retained scrollable help.** Native English/Italian rendering at two supported UI scales, Small-font fallback, all 18 active cards, search and longest-help final line passed independent review. [Runtime review](evidence/f04-rendered-20260920/runtime-review.md).",
+      "remaining": "None for the reported clipping. Physical card-button and help-wheel input remain final assembled-build smoke checks. [Integration checks](final-integration-checks.md).",
+      "source_ids": [
+        "C423"
+      ],
+      "completion": "resolved",
+      "completion_evidence": [
+        "docs/plans/evidence/f04-rendered-20260920/runtime-review.md",
+        "docs/plans/evidence/f04-rendered-20260920/english-visual-review.md",
+        "docs/plans/evidence/f04-rendered-20260920/italian-visual-review.md",
+        "docs/plans/evidence/f04-rendered-20260920/native/result.json"
+      ],
+      "acceptance_definition": "Complete feature descriptions fit their measured cards in the actual settings window at supported UI scales, with representative long translated text and native Small-font fallback; search remains readable and selected long help remains available through its final line without resetting its scroll or changing settings.",
+      "acceptance_definition_status": "Independent source, actual native evidence and visual review accepted the report-specific requirement. Final physical input smoke remains separate.",
+      "verification_status": "verified-native-rendering-search-and-retained-help",
+      "integration_status": "pending-final-card-button-and-help-wheel-smoke",
+      "implementation_commit": "97ff78c",
+      "active_work": "Report resolved; reopen if later changes invalidate its evidence."
+    },
+    {
+      "id": "F05",
+      "feedback": "Misc. Robots++ do not haul into inventory. [C424][C424], S01.",
+      "status": "**Resolved and committed as `75a2771`.** Native automatic hauling, role controls, no-Biotech targeting, Biotech menus and direct/queued/interrupted commands pass independent review. Published-save upgrade and full station restart preserve the same robot, cargo and Keep state; final restart50/50 with307 stable ticks. [Resolution](evidence/f05-f06-resolution.md).",
+      "remaining": "None for these reported single-player robot hauling/command requirements. Final assembled-build, ordinary input and supported Multiplayer checks remain separately tracked.",
+      "source_ids": [
+        "C424"
+      ],
+      "completion": "resolved",
+      "completion_evidence": [
+        "docs/plans/evidence/f05-f06-resolution.md",
+        "docs/plans/evidence/f05-f06-lifecycle-20260924/native/3ebbb097d2bc4a86af42492bbce2301e/independent-runtime-review.md",
+        "docs/plans/evidence/f05-f06-lifecycle-20260924/commit-review/independent-selection-review.md",
+        "docs/plans/evidence/f05-f06-lifecycle-20260924/commit-review/commit-audit.json"
+      ],
+      "acceptance_definition": "Representative robot roles and settings, human comparison, lifecycle and integrated tests.",
+      "acceptance_definition_status": "Representative native roles, automatic/direct/queued/interrupted work, actual Biotech and no-Biotech surfaces, published-save upgrade and station recall/restart independently accepted.",
+      "verification_status": "verified-native-robot-hauling-commands-and-station-upgrade-restart",
+      "progress_evidence": [
+        "docs/plans/evidence/f05-f06-robots-20260924/native/071295e19d9d43b18235d4c89cc87030/independent-runtime-review.md"
+      ],
+      "active_work": "Report resolved; final combined-build checks remain separate.",
+      "implementation_commit": "75a2771",
+      "integration_status": "pending-final-assembled-build-input-and-multiplayer"
+    },
+    {
+      "id": "F06",
+      "feedback": "Robots cannot be given the nearby-haul command. [C424][C424], S02.",
+      "status": "**Resolved and committed as `75a2771`.** Native automatic hauling, role controls, no-Biotech targeting, Biotech menus and direct/queued/interrupted commands pass independent review. Published-save upgrade and full station restart preserve the same robot, cargo and Keep state; final restart50/50 with307 stable ticks. [Resolution](evidence/f05-f06-resolution.md).",
+      "remaining": "None for these reported single-player robot hauling/command requirements. Final assembled-build, ordinary input and supported Multiplayer checks remain separately tracked.",
+      "source_ids": [
+        "C424"
+      ],
+      "completion": "resolved",
+      "completion_evidence": [
+        "docs/plans/evidence/f05-f06-resolution.md",
+        "docs/plans/evidence/f05-f06-lifecycle-20260924/native/3ebbb097d2bc4a86af42492bbce2301e/independent-runtime-review.md",
+        "docs/plans/evidence/f05-f06-lifecycle-20260924/commit-review/independent-selection-review.md",
+        "docs/plans/evidence/f05-f06-lifecycle-20260924/commit-review/commit-audit.json"
+      ],
+      "acceptance_definition": "Actual availability/execution, queued commands, cancellation and unloading on robots.",
+      "acceptance_definition_status": "Representative native roles, automatic/direct/queued/interrupted work, actual Biotech and no-Biotech surfaces, published-save upgrade and station recall/restart independently accepted.",
+      "verification_status": "verified-native-robot-hauling-commands-and-station-upgrade-restart",
+      "progress_evidence": [
+        "docs/plans/evidence/f05-f06-robots-20260924/native/071295e19d9d43b18235d4c89cc87030/independent-runtime-review.md"
+      ],
+      "active_work": "Report resolved; final combined-build checks remain separate.",
+      "implementation_commit": "75a2771",
+      "integration_status": "pending-final-assembled-build-input-and-multiplayer"
+    },
+    {
+      "id": "F07",
+      "feedback": "RIMMSqol discovery and making the command usable while drafted. [C424][C424], S03.",
+      "status": "**Resolved and committed as `ee6f840`.** Actual RIMMSqol editor, drafted/undrafted commands, replacement/interruption, active-delivery restart and both queued-order save/restart paths are independently accepted. The last fresh restart passes57/57 with exact cargo preservation. [Resolution](evidence/f07-resolution.md).",
+      "remaining": "None for the reported single-player discovery/drafted-command behavior. Final assembled interactions, ordinary input and Multiplayer replay remain explicit integration checks.",
+      "source_ids": [
+        "C424"
+      ],
+      "completion": "resolved",
+      "completion_evidence": [
+        "docs/plans/evidence/f07-resolution.md",
+        "docs/plans/evidence/f07-rimmsqol-20260920/queued-save-v14/fixture/v13-runtime-review.md",
+        "docs/plans/evidence/f07-rimmsqol-20260920/queued-save-v14/native/b3bb2a6aff8445f99ffdeee1f17152d1/independent-review.md",
+        "docs/plans/evidence/f07-rimmsqol-20260920/queued-save-v14/staging-review/HANDOFF.md"
+      ],
+      "acceptance_definition": "Complete evidence verification for the new delivery run, then test actual RIMMSqol discovery/editor behavior, drafted/undrafted commands, queues and lifecycle. A passed delivery fixture alone does not resolve editor compatibility.",
+      "acceptance_definition_status": "Actual editor/configuration, command admission, productive scoped delivery, queue and save/restart requirements independently accepted.",
+      "verification_status": "verified-native-rimms-editor-command-queue-and-save-restart",
+      "progress_evidence": [
+        "docs/plans/evidence/f07-rimmsqol-20260920/PORT.md",
+        "docs/plans/evidence/f07-rimmsqol-20260920/source-review.md",
+        "docs/plans/evidence/f07-dlv-retained-adoption.md",
+        "docs/plans/evidence/f07-rimmsqol-20260920/producer-runtime-review.md",
+        "docs/plans/evidence/f07-rimmsqol-20260920/editor-transition-v4.md",
+        "docs/plans/evidence/f07-rimmsqol-20260920/queued-save-v14/fixture/v13-runtime-review.md",
+        "docs/plans/evidence/f07-rimmsqol-20260920/queued-save-v14/native/95ad0d0116a4443ca6e4a24898590769/raw/result.json"
+      ],
+      "active_work": "Report resolved; final combined-build checks remain separate."
+    },
+    {
+      "id": "F08",
+      "feedback": "Select the hauling activity in Custom Alerts - Continued. [C424][C424], S04.",
+      "status": "**Resolved: supported activity with verified setup guidance.** Use current action → ALL OPTIONS → gathering items into inventory. Actual discovery, 568 scheduled observations across productive producer/restart runs, saved configuration and one live registration passed independent review. Guidance committed as `de9f649`. [Resolution](evidence/f08-resolution.md).",
+      "remaining": "None for this support request. One compact final-build selector check beside F07/F10 remains in [final integration](final-integration-checks.md).",
+      "source_ids": [
+        "C424"
+      ],
+      "completion": "resolved",
+      "completion_evidence": [
+        "docs/plans/evidence/f08-resolution.md",
+        "docs/plans/evidence/f08-alerts-20260920/producer-v4-runtime-review.md",
+        "docs/plans/evidence/f08-alerts-20260920/restart-runtime-review.md"
+      ],
+      "acceptance_definition": "Find and select the real HD activity through the actual Custom Alerts editor, verify scheduled current-job matching during productive, queued, interrupted and completed work, preserve exact materials, and reload the configured alert once in a fresh process with stable JobDef/settings and exactly one live registration.",
+      "acceptance_definition_status": "Independent current-package, actual producer and bound restart reviews accepted. This is supported behavior with clarified discovery guidance; no new product hook was needed.",
+      "verification_status": "verified-native-discovery-scheduled-activity-and-fresh-restart",
+      "active_work": "Report resolved; reopen if later changes invalidate its evidence.",
+      "progress_evidence": [
+        "docs/plans/evidence/f08-alerts-20260920/producer-v4-runtime-review.md"
+      ],
+      "integration_status": "pending-one-final-build-selector-smoke-with-F07-F10",
+      "implementation_commit": "de9f649"
+    },
+    {
+      "id": "F09",
+      "feedback": "Refuel buildings from the pawn's own inventory. [C424][C424], S06.",
+      "status": "**Implemented; ordinary scenarios and bounded direct-command recovery verified.** Independent review confirms one recovery closure, harmless duplicate handling, exact successor payment and retained keep quantities. The reporting correction passed checks and complete evidence reads in both PowerShell versions; the original intentional-error report remains preserved.",
+      "remaining": "Verify actual recovery menus/confirmation, natural scheduling, save/reload and full restart, multiplayer, other recovery branches and supported consumer/mod integrations.",
+      "source_ids": [
+        "C424"
+      ],
+      "completion": "open",
+      "completion_evidence": [],
+      "acceptance_definition": "Verify actual recovery menus/confirmation, natural scheduling, save/reload and full restart, multiplayer, other recovery branches and supported consumer/mod integrations.",
+      "acceptance_definition_status": "initial requirement; refine measurable cases in linked focused plan before claiming completion",
+      "verification_status": "incomplete",
+      "progress_evidence": [
+        "docs/plans/runtime-run-log.md",
+        "docs/plans/own-inventory-refuelling.md"
+      ],
+      "progress_category": "implementation_candidate_or_partial_verification"
+    },
+    {
+      "id": "F10",
+      "feedback": "Picking up an item/stack displays “Haul everything nearby.” [C425][C425], S01. This is the reporter's activity-name observation, not an explicit request to rename it.",
+      "status": "**Resolved: activity wording corrected.** Root and independent QA verified the actual report method, JobDef binding and matching text in all 16 languages. English now says “gathering items into inventory.” [Verification](f10-activity-wording-verification.json), [scope review](feedback-completion-scope-review.md). Commit `cacbf95`.",
+      "remaining": "None for the wording correction. One activity-label smoke check remains part of final assembled-build validation. Custom Alerts and drafted commands are resolved separately as F08/F07.",
+      "source_ids": [
+        "C425"
+      ],
+      "completion": "resolved",
+      "completion_evidence": [
+        "docs/plans/f10-activity-wording-verification.json",
+        "docs/plans/feedback-completion-scope-review.md"
+      ],
+      "acceptance_definition": "The existing shared pickup job reports gathering items into inventory through its actual GetReport translation and JobDef text; all 16 language bindings agree, with the existing job identity preserved. No new scheduler behavior or separate job classification is inferred from the comment.",
+      "acceptance_definition_status": "Independently reviewed against C425; root verified current source/XML. Unrelated F07/F08 and final PR gates are tracked separately.",
+      "verification_status": "verified-current-source-and-localization",
+      "integration_status": "pending-final-assembled-build-smoke",
+      "active_work": "Wording item resolved on current source/text evidence; no rendered runtime or alert/drafted compatibility acceptance claimed.",
+      "implementation_commit": "cacbf95"
+    },
+    {
+      "id": "F11",
+      "feedback": "Drop a specific quantity rather than a whole stack. [C425][C425], S02.",
+      "status": "**Resolved: quantity UI, saved remainder and provider/fault recovery verified.** Actual UI63/63, original restart45/45, CE/Sidearms82/82 and final five-fault recovery135/135 are independently accepted. All387 items and original job/Keep/tag/provider state remain stable302ticks; the one declared fault diagnostic is retained. Tested recovery sources match the PR workspace. [Resolution](evidence/f11-resolution.md).",
+      "remaining": "None for the reported single-player quantity-drop requirement. Actual two-client Multiplayer and final assembled-product interactions remain explicit integration work.",
+      "source_ids": [
+        "C425"
+      ],
+      "completion": "resolved",
+      "completion_evidence": [
+        "docs/plans/evidence/f11-resolution.md"
+      ],
+      "acceptance_definition": "Remaining UI/lifecycle cases, CE, Simple Sidearms, multiplayer and subsequent keep/unload behavior.",
+      "acceptance_definition_status": "Reported single-player amount control and custody independently accepted; actual Multiplayer/final composition retained separately.",
+      "verification_status": "verified-native-ui-original-save-provider-and-five-fault-custody-stability",
+      "progress_category": null,
+      "active_work": "None for the reported single-player quantity-drop requirement. Actual two-client Multiplayer and final assembled-product interactions remain explicit integration work.",
+      "progress_evidence": [
+        "docs/plans/evidence/f11-quantity-lifecycle-20260924/ROOT-RELOAD-PROVIDER-REVIEW.md"
+      ]
+    },
+    {
+      "id": "F12",
+      "feedback": "Explicit hauling from one place to another. [C425][C425], S03.",
+      "status": "**Point-haul backend and prompt correction verified; human UI remains partial.** Saved order/lifecycle/fault witnesses remain accepted. Final robot UI56/56 with12 actual inputs and exact7/15 delivery passes; root inspected readable opaque robot/Italian prompts. Human direct deliveries and stale controls pass, but held-Shift and checkbox queue input are not verified; the checkbox companion is94/96, not a full pass. [Prompt review and limits](evidence/f12-explicit-ui-20260924/ROOT-PROMPT-REVIEW.md).",
+      "remaining": "Finish actual checkbox queue and remaining progress/Resume/Cancel UI, with read-only native polled-input/drag-result evidence; verify held-Shift separately. Preserve failed captures instead of assigning UI state. Final combined-product and two-client Multiplayer checks remain.",
+      "source_ids": [
+        "C425"
+      ],
+      "completion": "open",
+      "completion_evidence": [],
+      "acceptance_definition": "Implement saved orders, exact source/destination and total quantities across multiple trips, selection/cancellation, queued/interrupted jobs and actual delivery. Verify save/reload and full restart.",
+      "acceptance_definition_status": "initial requirement; refine measurable cases in linked focused plan before claiming completion",
+      "verification_status": "incomplete",
+      "active_work": "Finish actual checkbox queue and remaining progress/Resume/Cancel UI, with read-only native polled-input/drag-result evidence; verify held-Shift separately. Preserve failed captures instead of assigning UI state. Final combined-product and two-client Multiplayer checks remain.",
+      "progress_evidence": [
+        "docs/plans/runtime-run-log.md",
+        "docs/plans/evidence/f12-explicit-point-20260924/native-fixture/ROOT-CONTINUATION-REVIEW.md",
+        "docs/plans/evidence/f12-explicit-lifecycle-20260924/ROOT-PRODUCER-REVIEW.md",
+        "docs/plans/evidence/f12-explicit-ui-20260924/ROOT-PROMPT-REVIEW.md"
+      ],
+      "progress_category": "implementation_candidate_or_partial_verification"
+    },
+    {
+      "id": "F13",
+      "feedback": "Explicitly deliver to a selected shelf. [C425][C425], S04.",
+      "status": "**Native shelf passability and truncated-capacity fixes verified.** The same-host control fails the intended boundary45/48; corrected native candidate54/54 verifies selected225 capacity, real competing claim deduction to150, exact7/15 delivery and300 stable ticks. Basic lifecycle progresses54/56 through alternate cell, filter/moved identity and partial3/cancel4, then stops on a fixture assumption that a second current-destination command should be admitted. No save was produced. [Accepted correction](evidence/f13-selected-shelf-20260924/ROOT-LATE-CAPACITY-REVIEW.md), [Part2 stop](evidence/f13-selected-shelf-20260924/native-fixture/PART2-COMPETITION-STOP.md).",
+      "remaining": "Correct the competition fixture to require unchanged refusal when another actual current job already targets the cell; separately stage genuine queued intents for activation-time races if needed. Finish remaining native incoming/concurrency and original producer-resume-resaved chain, then named storage providers and shelf UI. Final combined/Multiplayer remains.",
+      "source_ids": [
+        "C425"
+      ],
+      "completion": "open",
+      "completion_evidence": [],
+      "acceptance_definition": "Implement exact-shelf targeting, multiple cells and trips, full/partial capacity, competing pawns and invalid destinations, with the same saved-order and cancellation guarantees as F12.",
+      "acceptance_definition_status": "initial requirement; refine measurable cases in linked focused plan before claiming completion",
+      "verification_status": "incomplete",
+      "active_work": "Correct the competition fixture to require unchanged refusal when another actual current job already targets the cell; separately stage genuine queued intents for activation-time races if needed. Finish remaining native incoming/concurrency and original producer-resume-resaved chain, then named storage providers and shelf UI. Final combined/Multiplayer remains.",
+      "progress_evidence": [
+        "docs/plans/runtime-run-log.md",
+        "docs/plans/evidence/f13-selected-shelf-20260924/HANDOFF.md",
+        "docs/plans/evidence/f13-selected-shelf-20260924/INDEPENDENT-V2-REVIEW.md",
+        "docs/plans/evidence/f13-selected-shelf-20260924/ROOT-LATE-CAPACITY-REVIEW.md"
+      ]
+    },
+    {
+      "id": "F14",
+      "feedback": "Robot successfully gathered enough materials to construct a building. [C426][C426], S01.",
+      "status": "**Resolved: positive robot-construction behavior preserved.** Actual Builder III collected 100 wood into inventory, delivered it and completed construction through its own work logic, with unchanged roles and exact consumption. [Resolution](evidence/f14-resolution.md).",
+      "remaining": "None for this representative positive report. The unspecified robot model/hidden-job explanation is not inferred; F05/F06 robot hauling/commands are now separately resolved.",
+      "source_ids": [
+        "C426"
+      ],
+      "completion": "resolved",
+      "completion_evidence": [
+        "docs/plans/evidence/f14-resolution.md",
+        "docs/plans/evidence/f03-construction-20260920/candidate-runtime-review.md"
+      ],
+      "acceptance_definition": "Preserve and verify construction gathering independently of automatic hauling. The hidden-job explanation remains a hypothesis.",
+      "acceptance_definition_status": "Independent actual Builder III acquisition, native completion and exact material accounting accepted; representative scope explicit.",
+      "verification_status": "verified-native-builder-construction-positive-regression",
+      "active_work": "Positive regression resolved; related robot automatic hauling/direct commands remain F05/F06."
+    },
+    {
+      "id": "F15",
+      "feedback": "Repeated rox-wool/item merging; As Above So Below 2 suspected. [GH256][GH256].",
+      "status": "**Investigated; related correction and diagnostic milestones passed.**",
+      "remaining": "Reproduce and fix the actual repeated job. Candidate scanning can inflate the warning without representing executed haul failures.",
+      "source_ids": [
+        "GH256"
+      ],
+      "completion": "open",
+      "completion_evidence": [],
+      "acceptance_definition": "Reproduce and fix the actual repeated job. Candidate scanning can inflate the warning without representing executed haul failures.",
+      "acceptance_definition_status": "initial requirement; refine measurable cases in linked focused plan before claiming completion",
+      "verification_status": "incomplete"
+    },
+    {
+      "id": "F16",
+      "feedback": "Erratic apples/smokeleaf stocking despite disabling “Top existing stacks.” [GH261][GH261], [C019][C019].",
+      "status": "**Open; related loop investigation underway.**",
+      "remaining": "Trace this specific report and verify a correction. It is not established as the same cause as F15, F17 or hopper refilling.",
+      "source_ids": [
+        "GH261",
+        "C019"
+      ],
+      "completion": "open",
+      "completion_evidence": [],
+      "acceptance_definition": "Trace this specific report and verify a correction. It is not established as the same cause as F15, F17 or hopper refilling.",
+      "acceptance_definition_status": "initial requirement; refine measurable cases in linked focused plan before claiming completion",
+      "verification_status": "incomplete"
+    },
+    {
+      "id": "F17",
+      "feedback": "Food repeatedly hauled/dropped into crates. [GH268][GH268].",
+      "status": "**Investigated; unresolved.** Stack gap workaround was retracted.",
+      "remaining": "Actual executed-job reproduction and correction; do not close using the temporary workaround.",
+      "source_ids": [
+        "GH268"
+      ],
+      "completion": "open",
+      "completion_evidence": [],
+      "acceptance_definition": "Actual executed-job reproduction and correction; do not close using the temporary workaround.",
+      "acceptance_definition_status": "initial requirement; refine measurable cases in linked focused plan before claiming completion",
+      "verification_status": "incomplete"
+    },
+    {
+      "id": "F18",
+      "feedback": "Several pawns overfill high-priority storage because incoming cargo is ignored. [GH270][GH270].",
+      "status": "**Design/component work in progress.** Baseline and projection checks completed.",
+      "remaining": "Integrated allocation and real concurrent hauling tests. This report names v1.21, so it does not prove v1.24 regressed.",
+      "source_ids": [
+        "GH270"
+      ],
+      "completion": "open",
+      "completion_evidence": [],
+      "acceptance_definition": "Integrated allocation and real concurrent hauling tests. This report names v1.21, so it does not prove v1.24 regressed.",
+      "acceptance_definition_status": "initial requirement; refine measurable cases in linked focused plan before claiming completion",
+      "verification_status": "incomplete"
+    },
+    {
+      "id": "F19",
+      "feedback": "Cannot edit an earlier submitted report. [GH261][GH261], separate reporting subject.",
+      "status": "**Support resolved: corrective replies to the same report are supported and documented.** Current client/backend and existing relay were independently reviewed. Original-text editing remains unsupported; no edit feature is claimed. Guide committed as `7f91579`. [Disposition](evidence/f19-f44-resolution.md).",
+      "remaining": "None for the correction-workflow support request. The original submission stays unchanged; F16 gameplay remains open.",
+      "source_ids": [
+        "GH261"
+      ],
+      "completion": "resolved",
+      "completion_evidence": [
+        "docs/plans/evidence/f19-f44-resolution.md",
+        "docs/plans/evidence/f19-f44-reporting-20260920/independent-review.md",
+        "docs/reporting-feedback.md"
+      ],
+      "acceptance_definition": "Establish backend support and provide a usable, verified correction/update workflow. [Plan](reporting-workflow-investigation.md).",
+      "acceptance_definition_status": "Recorded support workflow requirement satisfied; explicit original-editing/platform limits independently reviewed and retained.",
+      "verification_status": "verified-client-backend-public-access-and-independent-documentation-review",
+      "active_work": "Support request resolved; reopen if later evidence invalidates the instructions.",
+      "implementation_commit": "7f91579"
+    },
+    {
+      "id": "F20",
+      "feedback": "Repeated full-stack hopper refills; support Storage Refill Hysteresis. [GH269][GH269], [C005][C005], [C006][C006].",
+      "status": "**Resolved and committed as `cde74d3`.** Actual baseline reproduces paused-shelf delivery and automatic top-ups; the candidate passes59/59 assertions, respecting refill gates and preserving in-flight deliveries. [Resolution](evidence/f20-resolution.md).",
+      "remaining": "None for the demonstrated SRH destination-selection gap. Historical232-mod/VNPERP runtime is not claimed; unrelated overdelivery reports remain separate.",
+      "source_ids": [
+        "GH269",
+        "C005",
+        "C006"
+      ],
+      "completion": "resolved",
+      "completion_evidence": [
+        "docs/plans/evidence/f20-resolution.md",
+        "docs/plans/evidence/f20-refill-20260920/fixture/paired-runtime-review.md",
+        "docs/plans/evidence/f20-refill-20260920/source-review-20260924.md"
+      ],
+      "acceptance_definition": "Respect refill thresholds and limits; verify empty and partial storage without repeated top-up trips.",
+      "acceptance_definition_status": "Actual matched baseline/candidate native selection, automatic delivery, latch/cache, in-flight completion, resumed refill and linked group accepted; exact historical-save limits explicit.",
+      "verification_status": "verified-paired-native-refill-hysteresis",
+      "active_work": "Resolved; provider-absent and assembled-build checks remain final integration."
+    },
+    {
+      "id": "F21",
+      "feedback": "Stack gap limits/item disappearance; KanbanStockpileContinue alternative. [C001][C001], [C031][C031], [C032][C032].",
+      "status": "**Open.** The claimed Stack gap success was corrected to OgreStack usage.",
+      "remaining": "Test limit changes and item conservation, and identify the actual supported integrations. Common Sense conflict is recalled, not proven.",
+      "source_ids": [
+        "C001",
+        "C031",
+        "C032"
+      ],
+      "completion": "open",
+      "completion_evidence": [],
+      "acceptance_definition": "Test limit changes and item conservation, and identify the actual supported integrations. Common Sense conflict is recalled, not proven.",
+      "acceptance_definition_status": "initial requirement; refine measurable cases in linked focused plan before claiming completion",
+      "verification_status": "incomplete"
+    },
+    {
+      "id": "F22",
+      "feedback": "Skipdoor Pathing compatibility. [C001][C001].",
+      "status": "**Actual provider investigation complete; native verification pending.** Current Redux and Unlimited binaries have different integration behavior. [Investigation](evidence/f22-skipdoor-20260924/HANDOFF.md).",
+      "remaining": "Verify actual portal pickup/delivery with Redux and resolve Unlimited destination rewriting/drafted-job replacement without claiming an unsafe adapter is compatible.",
+      "source_ids": [
+        "C001"
+      ],
+      "completion": "open",
+      "completion_evidence": [],
+      "acceptance_definition": "Check the actual integration and provide an evidence-backed answer.",
+      "acceptance_definition_status": "initial requirement; refine measurable cases in linked focused plan before claiming completion",
+      "verification_status": "incomplete"
+    },
+    {
+      "id": "F23",
+      "feedback": "Automatic/ordinary prioritized bulk hauling intermittently disappears in an established save. [C002][C002], [C008][C008], [C010][C010], [C011][C011], [C012][C012].",
+      "status": "**Open.** Quicktest worked; removing Simple Sidearms was only a temporary workaround.",
+      "remaining": "Trace eligibility and job selection in the failing save, then verify automatic, ordinary prioritized and explicit commands separately.",
+      "source_ids": [
+        "C002",
+        "C008",
+        "C010",
+        "C011",
+        "C012"
+      ],
+      "completion": "open",
+      "completion_evidence": [],
+      "acceptance_definition": "Trace eligibility and job selection in the failing save, then verify automatic, ordinary prioritized and explicit commands separately.",
+      "acceptance_definition_status": "initial requirement; refine measurable cases in linked focused plan before claiming completion",
+      "verification_status": "incomplete",
+      "progress_evidence": [
+        "docs/plans/evidence/open-diagnostic-leads.md"
+      ],
+      "related_diagnostic_lead": "Controlled F24 test stranding is retained for comparison; no shared cause with F23 is established."
+    },
+    {
+      "id": "F24",
+      "feedback": "Harvesting, chopping and deconstruction stop after one/few tasks to haul; finish the growing area first. [C003][C003], [C004][C004], [C022][C022].",
+      "status": "**Resolved and committed as `137a905`.** Two scheduler corrections prevent premature storage trips. Independent native review accepts59/59 checks across harvesting, grow-zone trees/stumps and sowing, deconstruction and default timing, with exact output stored. [Resolution](evidence/f24-resolution.md).",
+      "remaining": "None for the reported premature-trip behavior. A distinct older stranded-cargo test remains an explicitly unresolved diagnostic lead; final assembled work/cargo checks remain separate.",
+      "source_ids": [
+        "C003",
+        "C004",
+        "C022"
+      ],
+      "completion": "resolved",
+      "completion_evidence": [
+        "docs/plans/evidence/f24-resolution.md",
+        "docs/plans/evidence/f24-work-cadence-20260924/native/4e2e01ba4d1a4695b02b1f94064ca7c4/independent-runtime-review.md",
+        "docs/plans/evidence/f24-work-cadence-20260924/commit-review/independent-selection-review.md",
+        "docs/plans/evidence/f24-work-cadence-20260924/commit-review/commit-audit.json"
+      ],
+      "acceptance_definition": "Verify each work type, settings and unload trigger; maintain useful work before hauling.",
+      "acceptance_definition_status": "Native premature-transition baseline and actual corrected harvesting, sow clearing, deconstruction and default-timing output independently reviewed.",
+      "verification_status": "verified-native-work-continuation-and-delivery-four-phases",
+      "active_work": "Premature-trip report resolved; separate stranded-cargo lead retained in evidence/open-diagnostic-leads.md.",
+      "progress_evidence": [
+        "docs/plans/evidence/f24-work-cadence-20260924/native/9d927540ecb04375ab8bb44fbce48d36/raw/result.json",
+        "docs/plans/evidence/f24-work-cadence-20260924/native/177fd659dd214dd5b39702845fb6c04c/raw/result.json"
+      ],
+      "implementation_commit": "137a905",
+      "integration_status": "pending-final-assembled-work-cargo-check-and-separate-diagnostic-lead"
+    },
+    {
+      "id": "F25",
+      "feedback": "Big & Small sapient animals/mechs lose bulk hauling after save/load or restart. [GH263][GH263], [C023][C023], [C025][C025].",
+      "status": "**Resolved and committed as `70bd490`: sapient-pawn conversion and persistence.** Original lifter/monkey save upgrade, physical hauling, partial tagged cargo, Keep/opt-out, same-process load and fresh restart are independently accepted. Final restart65/65 preserves23 units per actor and finishes21 stored+2 kept, stable300 ticks; provider-absent42/42 passes. [Resolution](evidence/f25-resolution.md).",
+      "remaining": "None for the demonstrated generated-component defect. Missing historical settings/tags cannot be recovered. Exact historical reporter binaries were unavailable; preserve the conditional XML in final assembled-build integration.",
+      "source_ids": [
+        "GH263",
+        "C023",
+        "C025",
+        "GH263-C5360067014"
+      ],
+      "completion": "resolved",
+      "completion_evidence": [
+        "docs/plans/evidence/f25-resolution.md",
+        "docs/plans/evidence/f25-sapient-persistence-20260924/native/12a8dbd2352442629bbcb7d05a0154a4/independent-review.md",
+        "docs/plans/evidence/f25-sapient-persistence-20260924/native/c33d4879de85422ea051b286ddd36d0c/independent-review.md",
+        "docs/plans/evidence/f25-sapient-persistence-20260924/native/20881fcc041e49dc95d107af6d381a05/INDEPENDENT-REVIEW.md",
+        "docs/plans/evidence/f25-sapient-persistence-20260924/native/a966470b31f54adbb54a312b166a655b/INDEPENDENT-REVIEW.md",
+        "docs/plans/evidence/f25-sapient-persistence-20260924/native/f3bbd8cb72914ba1ae011adb187b4f58/INDEPENDENT-REVIEW.md"
+      ],
+      "acceptance_definition": "Reproduce converted-pawn persistence and repair the actual eligibility/state failure through full restart. Misc. Robots++ success does not close this.",
+      "acceptance_definition_status": "Baseline generated/live component omission observed; actual original converted pawns upgrade and retain exact candidate-written state through native reload and fresh restart, followed by conserved productive hauling. Independently accepted.",
+      "verification_status": "verified-native-conversion-old-save-upgrade-partial-cargo-reload-fresh-restart-provider-absent",
+      "active_work": "Report resolved; preserve the reviewed conditional XML during final integration.",
+      "progress_evidence": [
+        "docs/plans/evidence/f25-sapient-persistence-20260924/source-recommendation.md"
+      ],
+      "implementation_commit": "70bd490",
+      "integration_status": "pending-final-assembled-product-review"
+    },
+    {
+      "id": "F26",
+      "feedback": "Intermittent missing GUI, startup/quicktest exceptions and crashes. [GH262][GH262], [GH264][GH264], [GH265][GH265], [C015][C015], [C017][C017].",
+      "status": "**Open.** Different UI outcomes retained; load-order workaround retracted.",
+      "remaining": "Isolate first exceptions and real mod interactions across repeated starts. TD Enhancement, HugsLib, Allow Tool, Defensive Positions and the five-mod removal list are leads, not confirmed culprits.",
+      "source_ids": [
+        "GH262",
+        "GH264",
+        "GH265",
+        "C015",
+        "C017"
+      ],
+      "completion": "open",
+      "completion_evidence": [],
+      "acceptance_definition": "Isolate first exceptions and real mod interactions across repeated starts. TD Enhancement, HugsLib, Allow Tool, Defensive Positions and the five-mod removal list are leads, not confirmed culprits.",
+      "acceptance_definition_status": "initial requirement; refine measurable cases in linked focused plan before claiming completion",
+      "verification_status": "incomplete"
+    },
+    {
+      "id": "F27",
+      "feedback": "Severe lag and blocked mech gestation, relieved after removing mood-bar/construction mods. [C014][C014].",
+      "status": "**Open; separate report.**",
+      "remaining": "Reproduce gestation and performance symptoms; determine cause without inheriting the diagnosis of F26.",
+      "source_ids": [
+        "C014"
+      ],
+      "completion": "open",
+      "completion_evidence": [],
+      "acceptance_definition": "Reproduce gestation and performance symptoms; determine cause without inheriting the diagnosis of F26.",
+      "acceptance_definition_status": "initial requirement; refine measurable cases in linked focused plan before claiming completion",
+      "verification_status": "incomplete"
+    },
+    {
+      "id": "F28",
+      "feedback": "Matter Network falls back to single-item hauling. [C018][C018].",
+      "status": "**Open compatibility report.**",
+      "remaining": "Verify and support the actual network pickup/delivery route.",
+      "source_ids": [
+        "C018"
+      ],
+      "completion": "open",
+      "completion_evidence": [],
+      "acceptance_definition": "Verify and support the actual network pickup/delivery route.",
+      "acceptance_definition_status": "initial requirement; refine measurable cases in linked focused plan before claiming completion",
+      "verification_status": "incomplete"
+    },
+    {
+      "id": "F29",
+      "feedback": "Caravan/horse unloading inconsistently uses storage commitments. [GH260][GH260], [C020][C020].",
+      "status": "**Open; minimal reproduction supplied.**",
+      "remaining": "Run the actual return/unload route with Harmony + HD; verify commitment lifecycle, partial delivery and interruption.",
+      "source_ids": [
+        "GH260",
+        "C020"
+      ],
+      "completion": "open",
+      "completion_evidence": [],
+      "acceptance_definition": "Run the actual return/unload route with Harmony + HD; verify commitment lifecycle, partial delivery and interruption.",
+      "acceptance_definition_status": "initial requirement; refine measurable cases in linked focused plan before claiming completion",
+      "verification_status": "incomplete"
+    },
+    {
+      "id": "F30",
+      "feedback": "WVC Work Modes recharges mechs before they empty inventory. [C024][C024].",
+      "status": "**Open compatibility report.**",
+      "remaining": "Coordinate unloading and work-mode/recharge transitions without preventing necessary charging.",
+      "source_ids": [
+        "C024"
+      ],
+      "completion": "open",
+      "completion_evidence": [],
+      "acceptance_definition": "Coordinate unloading and work-mode/recharge transitions without preventing necessary charging.",
+      "acceptance_definition_status": "initial requirement; refine measurable cases in linked focused plan before claiming completion",
+      "verification_status": "incomplete"
+    },
+    {
+      "id": "F31",
+      "feedback": "Builders and material haulers should choose nearby construction tiles. [C009][C009].",
+      "status": "**Open request.**",
+      "remaining": "Improve and verify routing for automatic construction, delivery and planned orders.",
+      "source_ids": [
+        "C009"
+      ],
+      "completion": "open",
+      "completion_evidence": [],
+      "acceptance_definition": "Improve and verify routing for automatic construction, delivery and planned orders.",
+      "acceptance_definition_status": "initial requirement; refine measurable cases in linked focused plan before claiming completion",
+      "verification_status": "incomplete"
+    },
+    {
+      "id": "F32",
+      "feedback": "Materials next to construction are hauled away. [C026][C026].",
+      "status": "**Open.** Vanilla attribution is only a question.",
+      "remaining": "Establish ownership/useful-material retention and prevent unwanted removal without trapping excess supplies.",
+      "source_ids": [
+        "C026"
+      ],
+      "completion": "open",
+      "completion_evidence": [],
+      "acceptance_definition": "Establish ownership/useful-material retention and prevent unwanted removal without trapping excess supplies.",
+      "acceptance_definition_status": "initial requirement; refine measurable cases in linked focused plan before claiming completion",
+      "verification_status": "incomplete"
+    },
+    {
+      "id": "F33",
+      "feedback": "“Deliver resources” proceeds to building with Build unassigned. [GH259][GH259].",
+      "status": "**Resolved: delivery-only orders no longer force construction.** Four native scenes and all 69 assertions passed independent review. Explicit Construction/HaulBuild still build; HaulOnly retires prior sustained Construction while permitting ordinary nonforced work. Commit `14ce252`. [Resolution](evidence/f33-resolution.md).",
+      "remaining": "None for the reported defect or demonstrated HaulOnly continuation. One targeted final assembled-route/Multiplayer interaction check remains alongside F34. [Integration checks](final-integration-checks.md).",
+      "source_ids": [
+        "GH259"
+      ],
+      "completion": "resolved",
+      "completion_evidence": [
+        "docs/plans/evidence/f33-resolution.md",
+        "docs/plans/evidence/f33-delivery-20260920/runtime-review.md",
+        "docs/plans/evidence/f33-delivery-20260920/v2-review.md",
+        "docs/plans/evidence/f33-delivery-20260920/v3-review.md",
+        "docs/plans/evidence/f33-delivery-20260920/candidate-runtime-review.md",
+        "docs/plans/evidence/f33-delivery-20260920/native/9cf11aacd33242cb8809506a7062cb0c/result.json",
+        "docs/plans/evidence/f33-delivery-20260920/native/9cf11aacd33242cb8809506a7062cb0c/events.jsonl"
+      ],
+      "acceptance_definition": "Actual native Hauling delivery with Build unassigned deposits materials without a forced construction continuation; Construction orders and explicit HaulBuild retain intended building, while HaulOnly preserves delivery-only intent. Verify blueprint/frame paths and exact material outcomes.",
+      "acceptance_definition_status": "Independent source/build and complete baseline/candidate runtime reviews adopted. All four report-specific native scenes pass; ordinary nonforced Construction is explicitly preserved. Final assembled-route/Multiplayer interaction remains separate.",
+      "verification_status": "verified-native-delivery-intent-explicit-build-and-autonomous-follow-up",
+      "active_work": "Report resolved in commit 14ce252. Preserve failed baseline and environmental partial run. Reopen only if later shared changes or final integration reveal a regression.",
+      "progress_evidence": [
+        "docs/plans/evidence/f33-delivery-intent-review.md",
+        "docs/plans/evidence/f33-delivery-20260920/product-build.json",
+        "docs/plans/evidence/f33-delivery-20260920/review.md",
+        "docs/plans/evidence/f33-delivery-20260920/README.md",
+        "docs/plans/evidence/f33-delivery-20260920/product-v2-build.json",
+        "docs/plans/evidence/f33-delivery-20260920/candidate-environment-review.md"
+      ],
+      "implementation_commit": "14ce252",
+      "integration_status": "pending-targeted-final-assembled-route-and-multiplayer-interaction",
+      "recurrence_disposition": "Related intent/permission mistake; earlier capability and assignment fixes do not prove an exact previous GH259 fix regressed. Both demonstrated continuation causes are corrected."
+    },
+    {
+      "id": "F34",
+      "feedback": "Blight-cut plan also selects healthy plants. [C027][C027].",
+      "status": "**Resolved: blight plans preserve healthy crops in single-player.** The prior build reproduced the defect; all 18 corrected selection/job scenarios and one real productive-cutting run passed independent review. Native preview polls updated five→four→five targets; all five infected plants were cut and unrequested healthy plants survived. [Runtime review](evidence/f34-live-20260920/runtime-review.md).",
+      "remaining": "None for the reported single-player misdesignation. Targeted Multiplayer command replay and ordinary confirmation-button input remain explicit final combined-build checks; neither is claimed verified. [Integration checks](final-integration-checks.md).",
+      "source_ids": [
+        "C027"
+      ],
+      "completion": "resolved",
+      "completion_evidence": [
+        "docs/plans/evidence/f34-20260920/review.md",
+        "docs/plans/evidence/f34-live-20260920/review.md",
+        "docs/plans/evidence/f34-live-20260920/runtime-review.md",
+        "docs/plans/evidence/f34-live-20260920/native/result.json",
+        "docs/plans/evidence/f34-live-20260920/native/events.jsonl",
+        "docs/plans/evidence/f34-live-20260920/native/preview.png"
+      ],
+      "acceptance_definition": "A plan captured from blighted crops selects/designates/queues only eligible infected targets, revalidates stale intent and target state, refreshes its real paused preview without rebuilding unchanged route legs, and productively cuts infected plants while preserving unrequested healthy crops and independent existing orders. Deliberate ordinary clearing remains supported.",
+      "acceptance_definition_status": "Independently reviewed against reported single-player behavior; native boundary and productive run accepted. Unchanged native-job persistence does not require a new report-specific save matrix. Changed Multiplayer command and ordinary button input retained in final integration.",
+      "verification_status": "verified-native-boundaries-preview-and-productive-cutting",
+      "progress_evidence": [
+        "docs/plans/runtime-run-log.md",
+        "docs/plans/planned-blight-cutting.md",
+        "docs/plans/evidence/f34-20260920/retained-files.json"
+      ],
+      "active_work": "Report resolved. Reopen if later shared changes or final integration reveal a regression; do not repeat accepted scenes without a material change.",
+      "integration_status": "pending-targeted-multiplayer-replay-and-final-button-smoke",
+      "implementation_commit": "59292db"
+    },
+    {
+      "id": "F35",
+      "feedback": "Finishing wild animals does not trigger haul-after-slaughter. [C007][C007].",
+      "status": "**Resolved and committed as `604a764`.** Both provider baselines reproduce the missing haul; Allow Tool and Keyz candidates preserve queued work and deliver the same corpse. Disabled/forbidden/cancel controls and all 16 translated descriptions are accepted. [Resolution](evidence/f35-resolution.md).",
+      "remaining": "None for the supported providers. The reporter's exact provider/historical cause is unknown; final integration remains separate.",
+      "source_ids": [
+        "C007"
+      ],
+      "completion": "resolved",
+      "completion_evidence": [
+        "docs/plans/evidence/f35-resolution.md",
+        "docs/plans/evidence/f35-finish-wild-20260920/fixture/paired-runtime-review.md",
+        "docs/plans/evidence/f35-finish-wild-20260920/guidance/review.md"
+      ],
+      "acceptance_definition": "Establish intended behavior and cover the actual finishing-off route, then correct behavior or its description.",
+      "acceptance_definition_status": "Paired actual provider execution, preserved queue, exact corpse delivery and negative controls independently accepted; provider scope explicit.",
+      "verification_status": "verified-paired-native-finish-off-hauling",
+      "active_work": "Report resolved; final combined-build checks remain separate.",
+      "progress_evidence": [
+        "docs/plans/evidence/f35-finish-wild-20260920/README.md",
+        "docs/plans/evidence/f35-finish-wild-20260920/source-review.md"
+      ]
+    },
+    {
+      "id": "F36",
+      "feedback": "Is Build From Storage replaced or compatible? [C029][C029], [C028][C028].",
+      "status": "**Resolved and committed as `c785e66`.** Build From Storage complements HD gathering. The matched baseline reproduces three invalid install-material queries; the corrected candidate passes 52/52, installing the exact packed building and constructing another with exact material consumption. [Resolution](evidence/f36-resolution.md).",
+      "remaining": "None for the actual provider pairing and affected route paths. Final assembled route/Multiplayer checks remain separate.",
+      "source_ids": [
+        "C029",
+        "C028"
+      ],
+      "completion": "resolved",
+      "completion_evidence": [
+        "docs/plans/evidence/f36-resolution.md",
+        "docs/plans/evidence/f36-build-storage-20260924/paired-runtime-review.md"
+      ],
+      "acceptance_definition": "Check the actual pairing and ensure public documentation matches supported behavior.",
+      "acceptance_definition_status": "Actual provider designation, mixed install/build route, unavailable-source selection, exact conservation and public guidance independently accepted.",
+      "verification_status": "verified-paired-native-build-from-storage",
+      "active_work": "Report resolved; final combined-build checks remain separate."
+    },
+    {
+      "id": "F37",
+      "feedback": "Items stay reserved while a pawn sleeps or does unrelated work. [GH255][GH255].",
+      "status": "**Open.** Reload clears it; removal of HD stopped observed recurrence.",
+      "remaining": "Track the real reservation owner/lifetime and verify interruption, sleep and reload. No original incident logs establish sole cause.",
+      "source_ids": [
+        "GH255"
+      ],
+      "completion": "open",
+      "completion_evidence": [],
+      "acceptance_definition": "Track the real reservation owner/lifetime and verify interruption, sleep and reload. No original incident logs establish sole cause.",
+      "acceptance_definition_status": "initial requirement; refine measurable cases in linked focused plan before claiming completion",
+      "verification_status": "incomplete"
+    },
+    {
+      "id": "F38",
+      "feedback": "A second forced haul cancels the first pawn's whole nearby sweep. [GH266][GH266].",
+      "status": "**Resolved and committed as `9549cad`.** A second explicit haul hands off its selected source while preserving the first sweep and queued work. Native baseline/candidate, original-save continuation, constrained storage and two fresh replay consumers are independently accepted. [Resolution](evidence/f38-resolution.md).",
+      "remaining": "None for the reported native/bulk source handoff. Actual two-client synchronization and final assembled-build interaction remain in final integration.",
+      "source_ids": [
+        "GH266"
+      ],
+      "completion": "resolved",
+      "completion_evidence": [
+        "docs/plans/evidence/f38-resolution.md",
+        "docs/plans/evidence/f38-handoff-source-20260924/load-replay-v4/ROOT-PAIR-REVIEW.md",
+        "docs/plans/evidence/f38-handoff-source-20260924/source-integration-review/RECOMMENDATION.md"
+      ],
+      "acceptance_definition": "Implement and verify target handoff without unnecessarily cancelling remaining work or losing cargo.",
+      "acceptance_definition_status": "Current/future/queued handoff, non-stealing extras, original save continuation, exact capacity and two fresh command replays independently accepted.",
+      "verification_status": "verified-native-handoff-cargo-capacity-save-and-fresh-command-replay",
+      "active_work": "Report resolved; preserve exact source slice and run the shared final network/assembled checks.",
+      "progress_evidence": [
+        "docs/plans/evidence/f38-reservation-investigation-20260924.md",
+        "docs/plans/evidence/f38-handoff-source-20260924/recommendation.md",
+        "docs/plans/evidence/f38-handoff-source-20260924/implementation-v1/independent-source-review.md",
+        "docs/plans/evidence/f38-handoff-source-20260924/native-fixture/v5-native-warmup/INDEPENDENT-REVIEW.md"
+      ],
+      "implementation_commit": "9549cad",
+      "integration_status": "pending-final-assembled-and-actual-network-check"
+    },
+    {
+      "id": "F39",
+      "feedback": "Bulk-carry corpses through map portals. [GH257][GH257].",
+      "status": "**Open feature request.** Report names v1.23.",
+      "remaining": "Implement/confirm portal corpse admission, capacity and multiple-corpse trips. Ordinary corpse storage hauling is different.",
+      "source_ids": [
+        "GH257"
+      ],
+      "completion": "open",
+      "completion_evidence": [],
+      "acceptance_definition": "Implement/confirm portal corpse admission, capacity and multiple-corpse trips. Ordinary corpse storage hauling is different.",
+      "acceptance_definition_status": "initial requirement; refine measurable cases in linked focused plan before claiming completion",
+      "verification_status": "incomplete"
+    },
+    {
+      "id": "F40",
+      "feedback": "Bulk-unload transporters: toggle, chained prioritized unloading, load/unload exclusion, corpse/CE handling; consistent loading-order behavior. [GH267][GH267].",
+      "status": "**Original-save replanning and CE cargo branches verified.** Persistence59/59, disabled-start52/52, CE producer53/53 and fresh consumer71/71 are independently accepted, all zero errors. Original5-inventory/7-hands and queued Wait survive restart; all12 are stored. Zero-CE-bulk massless cargo and four actual corpse policy branches finish in correct storage/native Graves with conserved identities and300-tick stability. [Persistence](evidence/f40-transporter-20260924/persistence/ROOT-CORRECTED-CONSUMERS-REVIEW.md), [CE continuation review](evidence/f40-transporter-20260924/ce-carrier-v6b/ROOT-CONSUMER-REVIEW.md).",
+      "remaining": "Finish actual shuttle/VF lifecycle and rendered controls; final assembled/network checks remain. The earlier CE consumer setup failure remains recorded but its corrected successor is accepted.",
+      "source_ids": [
+        "GH267"
+      ],
+      "completion": "open",
+      "completion_evidence": [],
+      "acceptance_definition": "Review/adapt the proposal, resolve semantics and duplicated code, verify translations, multiplayer and supported transporters. Contributor tests are not final integration acceptance.",
+      "acceptance_definition_status": "initial requirement; refine measurable cases in linked focused plan before claiming completion",
+      "verification_status": "incomplete",
+      "active_work": "Finish actual shuttle/VF lifecycle and rendered controls; final assembled/network checks remain. The earlier CE consumer setup failure remains recorded but its corrected successor is accepted.",
+      "progress_evidence": [
+        "docs/plans/evidence/f40-transporter-20260924/operation/V3-REVIEW.md",
+        "docs/plans/evidence/f40-transporter-20260924/ui/HANDOFF.md",
+        "docs/plans/evidence/f40-transporter-20260924/native-fixture/final-v4/source.diff",
+        "docs/plans/evidence/f40-transporter-20260924/native-fixture/independent-v4-failure-review.md",
+        "docs/plans/evidence/f40-transporter-20260924/native-fixture/final-v6/HANDOFF.md",
+        "docs/plans/evidence/f40-transporter-20260924/ce-carrier-v5/ROOT-PRODUCER-REVIEW.md",
+        "docs/plans/evidence/f40-transporter-20260924/ce-carrier-v6b/ROOT-CONSUMER-REVIEW.md"
+      ],
+      "progress_category": "implementation_candidate_or_partial_verification"
+    },
+    {
+      "id": "F41",
+      "feedback": "Repair unfinished items bound to orphaned bills after load; WorkbenchConnect association. [GH148][GH148].",
+      "status": "**Resolved: orphan-bill recovery and clean restart independently accepted.** Corrected recovery passes59/59 and fresh-process restart43/43; original work/ingredients and unrelated jobs are preserved, both serialization orders are safe, and repairs do not repeat. [Resolution](evidence/f41-resolution.md).",
+      "remaining": "None for the verified null-stack orphan repair. Actual WorkbenchConnect serializer/causation is not claimed. Exact-source commit reconciliation and final assembled load smoke remain integration work.",
+      "source_ids": [
+        "GH148"
+      ],
+      "completion": "resolved",
+      "completion_evidence": [
+        "docs/plans/evidence/f41-resolution.md",
+        "docs/plans/evidence/f41-unfinished-implementation-20260924/native/5f61003cb8f445d186c460f8805c59a1/independent-recovery-review.md",
+        "docs/plans/evidence/f41-unfinished-implementation-20260924/native/e2793f095bc746b4945f511b3820b98e/independent-resaved-review.md"
+      ],
+      "acceptance_definition": "Review the repair and related job-held case, then reproduce corrupted-save recovery while preserving work and ingredients. Included despite its July date because the PR is active.",
+      "acceptance_definition_status": "Original native corruption/baseline, corrected recovery, both serialized reference orders and exact clean-checkpoint fresh restart independently accepted.",
+      "verification_status": "verified-native-orphan-recovery-both-save-orders-productive-completion-and-clean-restart",
+      "active_work": "Reported orphan repair resolved; preserve reviewed source during F01 dependency and final PR integration.",
+      "progress_evidence": [
+        "docs/plans/evidence/f41-unfinished-implementation-20260924/source-slice.diff",
+        "docs/plans/evidence/f41-unfinished-implementation-20260924/native/68f4a4963157472fae5f62b5711a651a/raw/result.json",
+        "docs/plans/evidence/f41-unfinished-implementation-20260924/native/07ec286c63b04bb293820805211b0c47/independent-producer-review.md",
+        "docs/plans/evidence/f41-unfinished-implementation-20260924/native/67804779633748caa4f739419f4d406b/raw/result.json",
+        "docs/plans/evidence/f41-unfinished-implementation-20260924/saving-order-v6/root-source-review.md",
+        "docs/plans/evidence/f41-unfinished-implementation-20260924/native/5f61003cb8f445d186c460f8805c59a1/independent-recovery-review.md"
+      ],
+      "integration_status": "pending-source-commit-with-F01-dependency-and-final-assembled-load-smoke",
+      "implementation_commit": null
+    },
+    {
+      "id": "F42",
+      "feedback": "Better Workbench Management/product-counting exception interrupts a lifter haul. [T01-R01][T01-R01].",
+      "status": "**Open.** Patch names in the trace do not establish blame.",
+      "remaining": "Reproduce actual bill/product state and fix or contain HD's provoking path. This is distinct from the older storage opening post.",
+      "source_ids": [
+        "T01-R01"
+      ],
+      "completion": "open",
+      "completion_evidence": [],
+      "acceptance_definition": "Reproduce actual bill/product state and fix or contain HD's provoking path. This is distinct from the older storage opening post.",
+      "acceptance_definition_status": "initial requirement; refine measurable cases in linked focused plan before claiming completion",
+      "verification_status": "incomplete"
+    },
+    {
+      "id": "F43",
+      "feedback": "Cloth haul-loop warning, CanGiveJob/JobOnX synchronization warning, and whether another mod should be removed. [C021][C021].",
+      "status": "**Resolved and committed as `825435b`.** Native baseline reproduces both warnings before any cloth moves; candidate54/54, zero errors, delivers all10 cloth and stays stable301ticks. Removed the faulty query counter; actual failure/retarget protections remain. Player guidance explains both messages. [Resolution](evidence/f43-resolution.md).",
+      "remaining": "None for this warning/support report. The unavailable historical diagnostic prevents attribution of every possible original cause. Actual physical loops remain F15/F17; assembled-build regression remains final integration.",
+      "source_ids": [
+        "C021"
+      ],
+      "completion": "resolved",
+      "completion_evidence": [
+        "docs/plans/evidence/f43-resolution.md",
+        "docs/plans/evidence/f43-warning-20260924/ROOT-PAIR-AUDIT.json",
+        "docs/plans/evidence/f43-warning-20260924/DIAGNOSIS.md"
+      ],
+      "acceptance_definition": "Trace both warnings separately and give an evidence-backed explanation. The false-backoff milestone does not resolve the synchronization warning or cloth report.",
+      "acceptance_definition_status": "Both native emitters and their exact causal chain reproduced without any physical haul; corrected actual job/delivery stable301ticks, retained protections/source reviewed, historical unavailable-log limit explicit.",
+      "verification_status": "verified-native-query-warning-job-consistency-and-productive-delivery",
+      "active_work": "Report resolved; final assembled-build regression can reopen it.",
+      "implementation_commit": "825435b",
+      "integration_status": "pending-final-assembled-check"
+    },
+    {
+      "id": "F44",
+      "feedback": "Cannot create a Steam discussion, so uses another person's topic. [T01-R01][T01-R01], separate support subject.",
+      "status": "**Support resolved: accessible alternate reporting routes documented.** Use the in-game reporter or public GitHub tracker; endpoint and tracker access were checked without posting. Guide committed as `7f91579`. [Disposition](evidence/f19-f44-resolution.md).",
+      "remaining": "None for alternate reporting support. The unspecified Steam restriction is not diagnosed or repaired; F42 gameplay remains open.",
+      "source_ids": [
+        "T01-R01"
+      ],
+      "completion": "resolved",
+      "completion_evidence": [
+        "docs/plans/evidence/f19-f44-resolution.md",
+        "docs/plans/evidence/f19-f44-reporting-20260920/independent-review.md",
+        "docs/reporting-feedback.md"
+      ],
+      "acceptance_definition": "Verify an accessible alternate reporting route and distinguish platform restrictions from HD behavior.",
+      "acceptance_definition_status": "Recorded support workflow requirement satisfied; explicit original-editing/platform limits independently reviewed and retained.",
+      "verification_status": "verified-client-backend-public-access-and-independent-documentation-review",
+      "active_work": "Support request resolved; reopen if later evidence invalidates the instructions.",
+      "implementation_commit": "7f91579"
+    },
+    {
+      "id": "F45",
+      "feedback": "Periodic Bills' repeat mode is replaced by HD's batch option; changing load order did not help. [GH271][GH271].",
+      "status": "**Resolved: supported repeat modes remain available alongside HD batching.** Both load orders, actual production, four checkpoint restarts, all 52 shared-provider cases and the changed-code failure controls passed independent review. Commit `cb61d20`. [Resolution](evidence/f45-resolution.md).",
+      "remaining": "None for the reported menu compatibility defect. PB's copy/paste settings reset also occurs without HD and remains an explicit upstream limitation. Presentation, multiplayer completion and final assembled-build checks remain in [final integration](final-integration-checks.md).",
+      "source_ids": [
+        "GH271"
+      ],
+      "completion": "resolved",
+      "completion_evidence": [
+        "docs/plans/evidence/f45-resolution.md",
+        "docs/plans/evidence/f45-report-closure-review.md",
+        "docs/plans/evidence/f45-menu-20260920/runtime-review.md",
+        "docs/plans/evidence/f45-menu-20260920/candidate-review.md",
+        "docs/plans/evidence/f45-production-20260920/runtime-review.md",
+        "docs/plans/evidence/f45-shared-menu-20260920/runtime-review.md",
+        "docs/plans/evidence/f45-restart-20260920/runtime-review.md",
+        "docs/plans/evidence/f45-boundaries-20260920/runtime-review.md",
+        "docs/plans/evidence/f45-contract-rejection-20260920/runtime-review.md",
+        "docs/plans/evidence/f45-pb-clone-20260920/runtime-review.md"
+      ],
+      "acceptance_definition": "Verify actual menu actions and changed provider paths, productive periodic scheduling, batch controls, and save/restart. Keep final assembled-build checks separate. Supplied screenshot access remains a recorded gap.",
+      "acceptance_definition_status": "Root adopted all independent runtime reviews and finite closure dispositions on 20 September; no report-specific requirement remains.",
+      "verification_status": "verified-native-menus-production-restarts-shared-providers-and-failure-boundaries",
+      "active_work": "Report resolved. PB-only copy/paste limitation explicitly retained; final integration separate. Reopen if later changes invalidate the evidence.",
+      "progress_evidence": [
+        "docs/plans/evidence/f45-menu-20260920/runtime-review.md",
+        "docs/plans/evidence/f45-menu-20260920/candidate-review.md",
+        "docs/plans/evidence/f45-production-20260920/README.md",
+        "docs/plans/evidence/f45-production-20260920/runtime-review.md",
+        "docs/plans/evidence/f45-shared-menu-20260920/runtime-review.md",
+        "docs/plans/evidence/f45-restart-20260920/runtime-review.md",
+        "docs/plans/evidence/f45-report-closure-review.md"
+      ],
+      "implementation_commit": "cb61d20",
+      "integration_status": "pending-final-presentation-multiplayer-completion-and-assembled-build-smoke",
+      "limitations": [
+        "Periodic Bills alone reproduces copied amount/interval 7/3 reverting to defaults 1/1 after native clone initialization. Upstream defect, not repaired by this menu correction.",
+        "Physical presentation, changed HD multiplayer completion route and final combined-image integration remain explicit final PR checks. Foreign PB/IT actions are not synchronized by this change."
+      ]
+    },
+    {
+      "id": "F46",
+      "feedback": "Is the mod performance-heavy; suitable for larger colonies? [T12-OP][T12-OP].",
+      "status": "**Newly catalogued; unanswered.**",
+      "remaining": "Measure representative larger-colony workloads and provide an evidence-backed answer, including settings tradeoffs.",
+      "source_ids": [
+        "T12-OP"
+      ],
+      "completion": "open",
+      "completion_evidence": [],
+      "acceptance_definition": "Measure representative larger-colony workloads and provide an evidence-backed answer, including settings tradeoffs.",
+      "acceptance_definition_status": "initial requirement; refine measurable cases in linked focused plan before claiming completion",
+      "verification_status": "incomplete"
+    }
+  ],
+  "sources": [
+    {
+      "source_id": "C427",
+      "kind": "Workshop comment",
+      "posted_utc": "2026-09-15T13:47:23+02:00",
+      "posted_copenhagen": "15 Sep 13:47:23",
+      "author": "TheVillain",
+      "url": "https://steamcommunity.com/sharedfiles/filedetails/?id=3742459652#c565919666444422349",
+      "body": "think im going to keep an eye on this one looks like it still needs some polish but nice to see someone rework alot of the old 'must have' mods into one big overhaul to hauling logic etc",
+      "status_reference": "Context; no separate fix",
+      "existing_register_entry": false,
+      "case_ids": [],
+      "disposition": "context-only",
+      "old_acceptance_scope": "Historical reference only; the scoped cases select active requirements."
+    },
+    {
+      "source_id": "C426",
+      "kind": "Workshop comment",
+      "posted_utc": "2026-09-08T01:41:45+02:00",
+      "posted_copenhagen": "08 Sep 01:41:45",
+      "author": "vorshlumpf",
+      "url": "https://steamcommunity.com/sharedfiles/filedetails/?id=3742459652#c592940620292789520",
+      "body": "I've now seen a robot gather enough resources to fully construct a building. So they are using some of the functionality, at least. I'm thinking it's related to the \"Haul everything nearby\" job being hidden.",
+      "status_reference": "F14",
+      "existing_register_entry": true,
+      "case_ids": [
+        "F14"
+      ],
+      "disposition": "actionable-or-supporting",
+      "old_acceptance_scope": "Historical reference only; the scoped cases select active requirements."
+    },
+    {
+      "source_id": "C425",
+      "kind": "Workshop comment",
+      "posted_utc": "2026-09-07T18:44:04+02:00",
+      "posted_copenhagen": "07 Sep 18:44:04",
+      "author": "vorshlumpf",
+      "url": "https://steamcommunity.com/sharedfiles/filedetails/?id=3742459652#c592940620292756958",
+      "body": "** char limit ** - when a pawn is picking up an item/stack, their activity shows \"Haul everything nearby\" Since I have more space, I'll say that I really like the improved build from inventory, the configurable pick-up delay, the option to completely load a vehicle, the gathering of all resources for a build, the keep in inventory option (my biggest gripe with PU&H!), and the comprehensive settings/options (with a great UI - some mods are very awkward with this). If you're looking for enhancement ideas, there's - dropping a specific amount (instead of a whole stack) - the haul explicitly functionality (in addition to hauling from spot to spot, I'd really love to have the option to command a pawn to haul directly to a specific shelf) Cheers!",
+      "status_reference": "F10–F13; praise retained",
+      "existing_register_entry": true,
+      "case_ids": [
+        "F10",
+        "F11",
+        "F12",
+        "F13"
+      ],
+      "disposition": "actionable-or-supporting",
+      "old_acceptance_scope": "Historical reference only; the scoped cases select active requirements."
+    },
+    {
+      "source_id": "C424",
+      "kind": "Workshop comment",
+      "posted_utc": "2026-09-07T18:32:23+02:00",
+      "posted_copenhagen": "07 Sep 18:32:23",
+      "author": "vorshlumpf",
+      "url": "https://steamcommunity.com/sharedfiles/filedetails/?id=3742459652#c592940620292755974",
+      "body": "Hi, again. I know you're working on updates so I want to mention a few things I noticed (other than H&H problem). - robots from Misc. Robots++ are not hauling to their inventories (and I can't give them commands directly to \"Haul everything nearby\") - the \"Haul everything nearby\" job doesn't seem to be designed as a work giver. As a result, I can't see it in RIMMSqol (I like to make commands available while drafted) and I can't find a related activity to use in Custom Alerts - Continued - is crafting from inventory part of this mod? The \"Shared inventories\" features implies that is so, but my pawns won't use their own inventory for crafting - related to that, it would be great if pawns would fuel buildings from their own inventory, too",
+      "status_reference": "F02, F05–F09",
+      "existing_register_entry": true,
+      "case_ids": [
+        "F02",
+        "F05",
+        "F06",
+        "F07",
+        "F08",
+        "F09"
+      ],
+      "disposition": "actionable-or-supporting",
+      "old_acceptance_scope": "Historical reference only; the scoped cases select active requirements."
+    },
+    {
+      "source_id": "C423",
+      "kind": "Workshop comment",
+      "posted_utc": "2026-09-07T04:32:54+02:00",
+      "posted_copenhagen": "07 Sep 04:32:54",
+      "author": "vorshlumpf",
+      "url": "https://steamcommunity.com/sharedfiles/filedetails/?id=3742459652#c592940620292709966",
+      "body": "This mod is amazing! There are a number of tweaks in here that resolve long-time annoyances of mine. Great job! There's definitely a learning curve but I'm happy to climb it. The \"Gather resources into inventory\" feature isn't working for me, so I've had to re-add \"Harvest and Haul\" to my modlist until I figure it out. I'm used to things breaking in my bloated, old game, though. I'm at the point where I think I need to export my save and config files and re-install the whole thing. I've noticed a few of the feature descriptions have the text cut off too soon. Let me know if you'd like a list of which ones.",
+      "status_reference": "F03, F04; praise retained",
+      "existing_register_entry": true,
+      "case_ids": [
+        "F03",
+        "F04"
+      ],
+      "disposition": "actionable-or-supporting",
+      "old_acceptance_scope": "Historical reference only; the scoped cases select active requirements."
+    },
+    {
+      "source_id": "C422",
+      "kind": "Workshop comment",
+      "posted_utc": "2026-09-07T00:47:50+02:00",
+      "posted_copenhagen": "07 Sep 00:47:50",
+      "author": "I'm A Giraffe",
+      "url": "https://steamcommunity.com/sharedfiles/filedetails/?id=3742459652#c592940620292699148",
+      "body": "Hey guys! I wrote last time 24. August regarding my day-to-day work priority. I just wanted to let you know that I am picking up all the feedback you've give me since the last update. So thank you all for that. I'll give a proper response after the update is out regarding your questions!",
+      "status_reference": "Context; no separate fix",
+      "existing_register_entry": true,
+      "case_ids": [],
+      "disposition": "context-only",
+      "old_acceptance_scope": "Historical reference only; the scoped cases select active requirements."
+    },
+    {
+      "source_id": "C001",
+      "kind": "Workshop comment",
+      "posted_utc": "2026-09-05T21:56:49+02:00",
+      "posted_copenhagen": "05 Sep 21:56:49",
+      "author": "-=GoW=-Dennis",
+      "url": "https://steamcommunity.com/sharedfiles/filedetails/?id=3742459652#c592940620292592327",
+      "body": "Is this compatible with Skipdoor Pathing and respects limits set by Stack gap?",
+      "status_reference": "F21, F22",
+      "existing_register_entry": true,
+      "case_ids": [
+        "F21",
+        "F22"
+      ],
+      "disposition": "actionable-or-supporting",
+      "old_acceptance_scope": "Historical reference only; the scoped cases select active requirements."
+    },
+    {
+      "source_id": "C002",
+      "kind": "Workshop comment",
+      "posted_utc": "2026-09-02T12:07:27+02:00",
+      "posted_copenhagen": "02 Sep 12:07:27",
+      "author": "Richard Ramirez",
+      "url": "https://steamcommunity.com/sharedfiles/filedetails/?id=3742459652#c592940297913156104",
+      "body": "Actually to be honest @I'm A Giraffe I have no idea how this bug occurs. Even though I've removed Sidearms and it temporarily fixed the bug, it didn't fix it permanently. Sometimes \"haul everything\" is seen, sometimes it disappears for a long time. I have no idea what's trigerring this bug.",
+      "status_reference": "F23",
+      "existing_register_entry": true,
+      "case_ids": [
+        "F23"
+      ],
+      "disposition": "actionable-or-supporting",
+      "old_acceptance_scope": "Historical reference only; the scoped cases select active requirements."
+    },
+    {
+      "source_id": "C003",
+      "kind": "Workshop comment",
+      "posted_utc": "2026-08-30T21:26:17+02:00",
+      "posted_copenhagen": "30 Aug 21:26:17",
+      "author": "Maya Fey",
+      "url": "https://steamcommunity.com/sharedfiles/filedetails/?id=3742459652#c592939955001633990",
+      "body": "I'm having the same problem as TripleZer0 and I don't have simple sidearms.",
+      "status_reference": "F24",
+      "existing_register_entry": true,
+      "case_ids": [
+        "F24"
+      ],
+      "disposition": "actionable-or-supporting",
+      "old_acceptance_scope": "Historical reference only; the scoped cases select active requirements."
+    },
+    {
+      "source_id": "C004",
+      "kind": "Workshop comment",
+      "posted_utc": "2026-08-30T19:35:14+02:00",
+      "posted_copenhagen": "30 Aug 19:35:14",
+      "author": "TripleZer0",
+      "url": "https://steamcommunity.com/sharedfiles/filedetails/?id=3742459652#c592939955001626310",
+      "body": "Love the mod and the clean UI it has. However something appears to be broken at the moment. Whenever I send pawns to harvest/chop wood/Deconstruct they will do 1 job and then immediately haul the items instead of continuing to work. I had disabled all other hauling mods. Maybe its simple sidearms causing the problem as somebody else suggested.",
+      "status_reference": "F24",
+      "existing_register_entry": true,
+      "case_ids": [
+        "F24"
+      ],
+      "disposition": "actionable-or-supporting",
+      "old_acceptance_scope": "Historical reference only; the scoped cases select active requirements."
+    },
+    {
+      "source_id": "C005",
+      "kind": "Workshop comment",
+      "posted_utc": "2026-08-29T22:06:27+02:00",
+      "posted_copenhagen": "29 Aug 22:06:27",
+      "author": "HaPpY",
+      "url": "https://steamcommunity.com/sharedfiles/filedetails/?id=3742459652#c592939955001556231",
+      "body": "At the moment, the pawns move back and forth and refill the stacks to full capacity, for example in the case of a hopper shelf.",
+      "status_reference": "F20",
+      "existing_register_entry": true,
+      "case_ids": [
+        "F20"
+      ],
+      "disposition": "actionable-or-supporting",
+      "old_acceptance_scope": "Historical reference only; the scoped cases select active requirements."
+    },
+    {
+      "source_id": "C006",
+      "kind": "Workshop comment",
+      "posted_utc": "2026-08-29T22:03:08+02:00",
+      "posted_copenhagen": "29 Aug 22:03:08",
+      "author": "HaPpY",
+      "url": "https://steamcommunity.com/sharedfiles/filedetails/?id=3742459652#c592939955001556021",
+      "body": "Please make it compatible with \"storage refill hysteresis\"",
+      "status_reference": "F20",
+      "existing_register_entry": true,
+      "case_ids": [
+        "F20"
+      ],
+      "disposition": "actionable-or-supporting",
+      "old_acceptance_scope": "Historical reference only; the scoped cases select active requirements."
+    },
+    {
+      "source_id": "C007",
+      "kind": "Workshop comment",
+      "posted_utc": "2026-08-27T09:36:53+02:00",
+      "posted_copenhagen": "27 Aug 09:36:53",
+      "author": "Arthur GC",
+      "url": "https://steamcommunity.com/sharedfiles/filedetails/?id=3742459652#c592939664045885677",
+      "body": "Does the \"Haul after slaughter\" also work when finishing off wild animals? Because it doesn't seem to be working on my game. No errors being logged. Thanks!",
+      "status_reference": "F35",
+      "existing_register_entry": true,
+      "case_ids": [
+        "F35"
+      ],
+      "disposition": "actionable-or-supporting",
+      "old_acceptance_scope": "Historical reference only; the scoped cases select active requirements."
+    },
+    {
+      "source_id": "C008",
+      "kind": "Workshop comment",
+      "posted_utc": "2026-08-27T00:15:02+02:00",
+      "posted_copenhagen": "27 Aug 00:15:02",
+      "author": "Richard Ramirez",
+      "url": "https://steamcommunity.com/sharedfiles/filedetails/?id=3742459652#c592939664045859360",
+      "body": "Perhaps nevermind @I'm A Giraffe. I recently uninstalled \"Simple Sidearms\" since that mod is a little old and I wanted to simplify my game. Pawns never hauling properly is gone now, so maybe it was just/mostly that.",
+      "status_reference": "F23",
+      "existing_register_entry": true,
+      "case_ids": [
+        "F23"
+      ],
+      "disposition": "actionable-or-supporting",
+      "old_acceptance_scope": "Historical reference only; the scoped cases select active requirements."
+    },
+    {
+      "source_id": "C009",
+      "kind": "Workshop comment",
+      "posted_utc": "2026-08-26T03:54:20+02:00",
+      "posted_copenhagen": "26 Aug 03:54:20",
+      "author": "Triel",
+      "url": "https://steamcommunity.com/sharedfiles/filedetails/?id=3742459652#c592939664045781797",
+      "body": "Is it possible for the mod to make builders and construction haulers prioritize tiles nearest to the pawn at any given time? Cause I notice my pawns bouncing to random tiles a lot rather than building a neat line or some such",
+      "status_reference": "F31",
+      "existing_register_entry": true,
+      "case_ids": [
+        "F31"
+      ],
+      "disposition": "actionable-or-supporting",
+      "old_acceptance_scope": "Historical reference only; the scoped cases select active requirements."
+    },
+    {
+      "source_id": "C010",
+      "kind": "Workshop comment",
+      "posted_utc": "2026-08-25T16:29:53+02:00",
+      "posted_copenhagen": "25 Aug 16:29:53",
+      "author": "Richard Ramirez",
+      "url": "https://steamcommunity.com/sharedfiles/filedetails/?id=3742459652#c591813722889007307",
+      "body": "Actually @I'm A Giraffe the bug is stranger than I thought. When I have pawns hauling a bunch of different stuff to a stockpile/shelf in a \"dev quicktest\" then there's no problem. But in my actual game I play for fun then for some reason \"haul everything nearby\" doesn't activate. Do you know what could be causing this bug?",
+      "status_reference": "F23",
+      "existing_register_entry": true,
+      "case_ids": [
+        "F23"
+      ],
+      "disposition": "actionable-or-supporting",
+      "old_acceptance_scope": "Historical reference only; the scoped cases select active requirements."
+    },
+    {
+      "source_id": "C011",
+      "kind": "Workshop comment",
+      "posted_utc": "2026-08-25T16:01:42+02:00",
+      "posted_copenhagen": "25 Aug 16:01:42",
+      "author": "Richard Ramirez",
+      "url": "https://steamcommunity.com/sharedfiles/filedetails/?id=3742459652#c591813722889005481",
+      "body": "But a smaller bug I was thinking about, before I remember if I clicked on \"prioritize hauling\" it used to haul everything nearby also. Is this no longer a feature?",
+      "status_reference": "F23",
+      "existing_register_entry": true,
+      "case_ids": [
+        "F23"
+      ],
+      "disposition": "actionable-or-supporting",
+      "old_acceptance_scope": "Historical reference only; the scoped cases select active requirements."
+    },
+    {
+      "source_id": "C012",
+      "kind": "Workshop comment",
+      "posted_utc": "2026-08-25T15:20:49+02:00",
+      "posted_copenhagen": "25 Aug 15:20:49",
+      "author": "Richard Ramirez",
+      "url": "https://steamcommunity.com/sharedfiles/filedetails/?id=3742459652#c591813722889002872",
+      "body": "@I'm A Giraffe, strangely I noticed recently whenever I click on \"priotize hauling-\" or see pawns hauling things automatically. They no longer \"haul everything nearby\". I have to enable the button in the settings and click on it directly everytime to trigger \"haul everything nearby\". Have you or anyone noticed this or know of a fix?",
+      "status_reference": "F23",
+      "existing_register_entry": true,
+      "case_ids": [
+        "F23"
+      ],
+      "disposition": "actionable-or-supporting",
+      "old_acceptance_scope": "Historical reference only; the scoped cases select active requirements."
+    },
+    {
+      "source_id": "C013",
+      "kind": "Workshop comment",
+      "posted_utc": "2026-08-24T13:27:19+02:00",
+      "posted_copenhagen": "24 Aug 13:27:19",
+      "author": "I'm A Giraffe",
+      "url": "https://steamcommunity.com/sharedfiles/filedetails/?id=3742459652#c591813437999473479",
+      "body": "Hey guys! Thank you so much for all the feedback and bug reports. Sorry for the delayed response ― I have a lot of work occupying me atm. as we have a product launch deadline that's nearing in early September. I will push updates addressing all the feedback as soon as I can🤞",
+      "status_reference": "Context; no separate fix",
+      "existing_register_entry": true,
+      "case_ids": [],
+      "disposition": "context-only",
+      "old_acceptance_scope": "Historical reference only; the scoped cases select active requirements."
+    },
+    {
+      "source_id": "C014",
+      "kind": "Workshop comment",
+      "posted_utc": "2026-08-23T23:31:13+02:00",
+      "posted_copenhagen": "23 Aug 23:31:13",
+      "author": "Draconis🐊",
+      "url": "https://steamcommunity.com/sharedfiles/filedetails/?id=3742459652#c591813437999435100",
+      "body": "Thank you Firebeard I loaded my saved after a week or two and it was extremely laggy and my mechinators could not produce new mechanoids, they would not interact or be forced to on the gestators until I removed color code and smart construction.",
+      "status_reference": "F27",
+      "existing_register_entry": true,
+      "case_ids": [
+        "F27"
+      ],
+      "disposition": "actionable-or-supporting",
+      "old_acceptance_scope": "Historical reference only; the scoped cases select active requirements."
+    },
+    {
+      "source_id": "C015",
+      "kind": "Workshop comment",
+      "posted_utc": "2026-08-22T10:09:31+02:00",
+      "posted_copenhagen": "22 Aug 10:09:31",
+      "author": "FireBeard",
+      "url": "https://steamcommunity.com/sharedfiles/filedetails/?id=3742459652#c591813437999285398",
+      "body": "To continue using Hauler's Dream on my save, I had to disable the following mods, hope it helps someone else. Surgery Never Fail Dubs Mint Minimap CM Color Coded Mood Bar [1.1+] Interaction Bubbles Smarter Construction (few errors after removing but game seems ok)",
+      "status_reference": "F26",
+      "existing_register_entry": true,
+      "case_ids": [
+        "F26"
+      ],
+      "disposition": "actionable-or-supporting",
+      "old_acceptance_scope": "Historical reference only; the scoped cases select active requirements."
+    },
+    {
+      "source_id": "C016",
+      "kind": "Workshop comment",
+      "posted_utc": "2026-08-22T04:58:16+02:00",
+      "posted_copenhagen": "22 Aug 04:58:16",
+      "author": "AnneCrankin90s",
+      "url": "https://steamcommunity.com/sharedfiles/filedetails/?id=3742459652#c591813130434387941",
+      "body": "is this mod still AI slop? I remember when this broke peoples saves",
+      "status_reference": "Context; no separate fix",
+      "existing_register_entry": true,
+      "case_ids": [],
+      "disposition": "context-only",
+      "old_acceptance_scope": "Historical reference only; the scoped cases select active requirements."
+    },
+    {
+      "source_id": "C017",
+      "kind": "Workshop comment",
+      "posted_utc": "2026-08-19T13:35:36+02:00",
+      "posted_copenhagen": "19 Aug 13:35:36",
+      "author": "FireBeard",
+      "url": "https://steamcommunity.com/sharedfiles/filedetails/?id=3742459652#c591813130434155325",
+      "body": "@I'm A Giraffe I think there may be a conflict with TD enhancement, can you take a look here please. https://github.com/Refzlund/haulers-dream/issues/262",
+      "status_reference": "F26",
+      "existing_register_entry": true,
+      "case_ids": [
+        "F26"
+      ],
+      "disposition": "actionable-or-supporting",
+      "old_acceptance_scope": "Historical reference only; the scoped cases select active requirements."
+    },
+    {
+      "source_id": "C018",
+      "kind": "Workshop comment",
+      "posted_utc": "2026-08-17T17:23:56+02:00",
+      "posted_copenhagen": "17 Aug 17:23:56",
+      "author": "R3surak",
+      "url": "https://steamcommunity.com/sharedfiles/filedetails/?id=3742459652#c592938720043389321",
+      "body": "hello, i'm using matter network and my pawns don't take items in inventory and instead haul single items (like vanilla)",
+      "status_reference": "F28",
+      "existing_register_entry": true,
+      "case_ids": [
+        "F28"
+      ],
+      "disposition": "actionable-or-supporting",
+      "old_acceptance_scope": "Historical reference only; the scoped cases select active requirements."
+    },
+    {
+      "source_id": "C019",
+      "kind": "Workshop comment",
+      "posted_utc": "2026-08-17T17:02:22+02:00",
+      "posted_copenhagen": "17 Aug 17:02:22",
+      "author": "HaPpY",
+      "url": "https://steamcommunity.com/sharedfiles/filedetails/?id=3742459652#c592938720043387830",
+      "body": "I have a problem with some items to stock, like apples or smoke leaves, not always but colonist seems to go crazy sometimes.",
+      "status_reference": "F16",
+      "existing_register_entry": true,
+      "case_ids": [
+        "F16"
+      ],
+      "disposition": "actionable-or-supporting",
+      "old_acceptance_scope": "Historical reference only; the scoped cases select active requirements."
+    },
+    {
+      "source_id": "C020",
+      "kind": "Workshop comment",
+      "posted_utc": "2026-08-17T02:02:33+02:00",
+      "posted_copenhagen": "17 Aug 02:02:33",
+      "author": "nullpat",
+      "url": "https://steamcommunity.com/sharedfiles/filedetails/?id=3742459652#c592938720043344698",
+      "body": "a bug i am seeing is with unloading animals when testing with 2 mods enabled, harmony + HD. sometimes i see storage-commit in the log but sometimes i see default haul behavior and no storage-commit in log 1. click dev quicktest 2. debug spawn a horse 3. debug tame it 4. add stockpile on all items and allow them 5. create caravan, add items, send and return caravan to settlement 6. watch pawns unload https://github.com/Refzlund/haulers-dream/issues/260",
+      "status_reference": "F29",
+      "existing_register_entry": true,
+      "case_ids": [
+        "F29"
+      ],
+      "disposition": "actionable-or-supporting",
+      "old_acceptance_scope": "Historical reference only; the scoped cases select active requirements."
+    },
+    {
+      "source_id": "C021",
+      "kind": "Workshop comment",
+      "posted_utc": "2026-08-16T23:59:49+02:00",
+      "posted_copenhagen": "16 Aug 23:59:49",
+      "author": "nullpat",
+      "url": "https://steamcommunity.com/sharedfiles/filedetails/?id=3742459652#c592938720043335749",
+      "body": "this mod works so much better than what it replaced, tysm. i am seeing \"cloth was bulk-hauled 6 times in quick succession without moving\" pop up in console and also \"The CanGiveJob and JobOnX methods may not be synchronized\" less frequently, is this known or should i remove something from mod list? https://www.droptext.app/20pwbxh7",
+      "status_reference": "F43",
+      "existing_register_entry": true,
+      "case_ids": [
+        "F43"
+      ],
+      "disposition": "actionable-or-supporting",
+      "old_acceptance_scope": "Historical reference only; the scoped cases select active requirements."
+    },
+    {
+      "source_id": "C022",
+      "kind": "Workshop comment",
+      "posted_utc": "2026-08-16T05:45:13+02:00",
+      "posted_copenhagen": "16 Aug 05:45:13",
+      "author": "Triel",
+      "url": "https://steamcommunity.com/sharedfiles/filedetails/?id=3742459652#c592938720043260054",
+      "body": "What kind of settings do I use for pawns to finish off the growing site before buggering off to unload? If there are plants to be cut on a growing zone, they seem to cut a few then move to haul",
+      "status_reference": "F24",
+      "existing_register_entry": true,
+      "case_ids": [
+        "F24"
+      ],
+      "disposition": "actionable-or-supporting",
+      "old_acceptance_scope": "Historical reference only; the scoped cases select active requirements."
+    },
+    {
+      "source_id": "C023",
+      "kind": "Workshop comment",
+      "posted_utc": "2026-08-14T20:53:41+02:00",
+      "posted_copenhagen": "14 Aug 20:53:41",
+      "author": "ErikRedbeard",
+      "url": "https://steamcommunity.com/sharedfiles/filedetails/?id=3742459652#c592938395265884141",
+      "body": "Update to prev post: The same actually applies to sentient animals from a quick test. Interestingly if you make them sentient, they'll do bulk hauling, but if you then save and reload that save they lose said ability.",
+      "status_reference": "F25",
+      "existing_register_entry": true,
+      "case_ids": [
+        "F25"
+      ],
+      "disposition": "actionable-or-supporting",
+      "old_acceptance_scope": "Historical reference only; the scoped cases select active requirements."
+    },
+    {
+      "source_id": "C024",
+      "kind": "Workshop comment",
+      "posted_utc": "2026-08-14T19:43:26+02:00",
+      "posted_copenhagen": "14 Aug 19:43:26",
+      "author": "talias",
+      "url": "https://steamcommunity.com/sharedfiles/filedetails/?id=3742459652#c592938395265879048",
+      "body": "I seem to have issues with WVC - Work Modes . If I am using work modes that recharge mechs when they have nothing to do - it forces them to dormant self-charge before they can empty their inventory.",
+      "status_reference": "F30",
+      "existing_register_entry": true,
+      "case_ids": [
+        "F30"
+      ],
+      "disposition": "actionable-or-supporting",
+      "old_acceptance_scope": "Historical reference only; the scoped cases select active requirements."
+    },
+    {
+      "source_id": "C025",
+      "kind": "Workshop comment",
+      "posted_utc": "2026-08-14T03:53:47+02:00",
+      "posted_copenhagen": "14 Aug 03:53:47",
+      "author": "ErikRedbeard",
+      "url": "https://steamcommunity.com/sharedfiles/filedetails/?id=3742459652#c592938395265832567",
+      "body": "I'm having an issue where certain pawns just straight up refuse to bulk haul. They never seem to get the \"Hauling everything nearby\" thing (I think they stop being able to over time, as I remember them able to before, newly spawned sapient mechs also bulk haul fine). I've had the same issue with pick up and haul and I never found out why. Of the 4 pawns I have, all 4 refuse to bulk haul. They are Sapient Mechs from Big & Small Framework. If I dev spawn one such mech in and make it sapient it does seem to bulk haul, so it seems something over time or such is preventing bulk hauling. Could possibly be a game restart that breaks it. It seems to have something to do with the Mechanoid race that Big & Small makes as changing the race to a regular pawn type of an affected pawn fixes it, changing it back to a mech one again breaks it.",
+      "status_reference": "F25",
+      "existing_register_entry": true,
+      "case_ids": [
+        "F25"
+      ],
+      "disposition": "actionable-or-supporting",
+      "old_acceptance_scope": "Historical reference only; the scoped cases select active requirements."
+    },
+    {
+      "source_id": "C026",
+      "kind": "Workshop comment",
+      "posted_utc": "2026-08-13T22:27:18+02:00",
+      "posted_copenhagen": "13 Aug 22:27:18",
+      "author": "Richard Ramirez",
+      "url": "https://steamcommunity.com/sharedfiles/filedetails/?id=3742459652#c592938395265816104",
+      "body": "Well there is still a minor bug where pawns keep on hauling materials on the floor away from construction sites. But I'm guessing that's a vanilla bug right?",
+      "status_reference": "F32",
+      "existing_register_entry": true,
+      "case_ids": [
+        "F32"
+      ],
+      "disposition": "actionable-or-supporting",
+      "old_acceptance_scope": "Historical reference only; the scoped cases select active requirements."
+    },
+    {
+      "source_id": "C027",
+      "kind": "Workshop comment",
+      "posted_utc": "2026-08-13T21:22:12+02:00",
+      "posted_copenhagen": "13 Aug 21:22:12",
+      "author": "Richard Ramirez",
+      "url": "https://steamcommunity.com/sharedfiles/filedetails/?id=3742459652#c592938395265812007",
+      "body": "@I'm A Giraffe I think I may have noticed only 1 bug in the current version of this mod. When we use the \"plan prioritized cutting\" function of this mod to cut all blighted crops. This mod also sets the healthy plants to be cut also.",
+      "status_reference": "F34",
+      "existing_register_entry": true,
+      "case_ids": [
+        "F34"
+      ],
+      "disposition": "actionable-or-supporting",
+      "old_acceptance_scope": "Historical reference only; the scoped cases select active requirements."
+    },
+    {
+      "source_id": "C028",
+      "kind": "Workshop comment",
+      "posted_utc": "2026-08-12T20:20:29+02:00",
+      "posted_copenhagen": "12 Aug 20:20:29",
+      "author": "I'm A Giraffe",
+      "url": "https://steamcommunity.com/sharedfiles/filedetails/?id=3742459652#c592938395265733261",
+      "body": "@talias does not replace ― but should be fully compatible no problem",
+      "status_reference": "F36",
+      "existing_register_entry": true,
+      "case_ids": [
+        "F36"
+      ],
+      "disposition": "actionable-or-supporting",
+      "old_acceptance_scope": "Historical reference only; the scoped cases select active requirements."
+    },
+    {
+      "source_id": "C029",
+      "kind": "Workshop comment",
+      "posted_utc": "2026-08-12T19:22:13+02:00",
+      "posted_copenhagen": "12 Aug 19:22:13",
+      "author": "talias",
+      "url": "https://steamcommunity.com/sharedfiles/filedetails/?id=3742459652#c592938395265729951",
+      "body": "Does this replace Build From Storage or at least is compatible?",
+      "status_reference": "F36",
+      "existing_register_entry": true,
+      "case_ids": [
+        "F36"
+      ],
+      "disposition": "actionable-or-supporting",
+      "old_acceptance_scope": "Historical reference only; the scoped cases select active requirements."
+    },
+    {
+      "source_id": "C030",
+      "kind": "Workshop comment",
+      "posted_utc": "2026-08-11T02:32:59+02:00",
+      "posted_copenhagen": "11 Aug 02:32:59",
+      "author": "Ketaros",
+      "url": "https://steamcommunity.com/sharedfiles/filedetails/?id=3742459652#c588434705716618225",
+      "body": "THANK YOU! I love when I find 1 mod that allows me to remove other 5 from my loading list. :)",
+      "status_reference": "Context; no separate fix",
+      "existing_register_entry": true,
+      "case_ids": [],
+      "disposition": "context-only",
+      "old_acceptance_scope": "Historical reference only; the scoped cases select active requirements."
+    },
+    {
+      "source_id": "C031",
+      "kind": "Workshop comment",
+      "posted_utc": "2026-08-09T17:17:11+02:00",
+      "posted_copenhagen": "09 Aug 17:17:11",
+      "author": "SleepingPigNeverSleep",
+      "url": "https://steamcommunity.com/sharedfiles/filedetails/?id=3742459652#c588434434320103811",
+      "body": "@Richard Ramirez Sorry, I found I didn't use it! (It has been long time and I thought I still use it) I was using OgreStack I recall that Stack gap is conflicted with commen sense and I don't use it anymore",
+      "status_reference": "F21",
+      "existing_register_entry": true,
+      "case_ids": [
+        "F21"
+      ],
+      "disposition": "actionable-or-supporting",
+      "old_acceptance_scope": "Historical reference only; the scoped cases select active requirements."
+    },
+    {
+      "source_id": "C032",
+      "kind": "Workshop comment",
+      "posted_utc": "2026-08-09T16:47:05+02:00",
+      "posted_copenhagen": "09 Aug 16:47:05",
+      "author": "Richard Ramirez",
+      "url": "https://steamcommunity.com/sharedfiles/filedetails/?id=3742459652#c588434434320101744",
+      "body": "@SleepingPigNeverSleep have you ever noticed a bug with Stack Gap? With the top slider when I reduced the \"maximum\" stacks of items it caused the items in the stack to disappear so my stacks of wood and FSX went down to \"1\". So I stopped using it and switched to KanbanStockpileContinue. https://steamcommunity.com/sharedfiles/filedetails/?id=3776851378",
+      "status_reference": "F21",
+      "existing_register_entry": true,
+      "case_ids": [
+        "F21"
+      ],
+      "disposition": "actionable-or-supporting",
+      "old_acceptance_scope": "Historical reference only; the scoped cases select active requirements."
+    },
+    {
+      "source_id": "C033",
+      "kind": "Workshop comment",
+      "posted_utc": "2026-08-09T16:37:50+02:00",
+      "posted_copenhagen": "09 Aug 16:37:50",
+      "author": "I'm A Giraffe",
+      "url": "https://steamcommunity.com/sharedfiles/filedetails/?id=3742459652#c588434434320101201",
+      "body": "Check out the new update! Let me know if I missed anything. And opening reports via the mod options \"Report\" button helps me out as it attaches logs so I have something to base the fixes on.",
+      "status_reference": "Context; no separate fix",
+      "existing_register_entry": true,
+      "case_ids": [],
+      "disposition": "context-only",
+      "old_acceptance_scope": "Historical reference only; the scoped cases select active requirements."
+    },
+    {
+      "source_id": "T01-R01",
+      "kind": "Discussion post",
+      "posted_utc": "2026-08-17T16:11:30+02:00",
+      "posted_copenhagen": "17 Aug 16:11:30",
+      "url": "https://steamcommunity.com/workshop/filedetails/discussion/3742459652/582804662258990241/#c418424310691114229",
+      "body": "(Please forgive me for using someone else's discussion thread as I am unable to create one myself.) It seems there is a conflict with Better Workbench Management. Exception in JobDriver fixed tick for pawn Mech_Lifter79160 driver=JobDriver_HaulToCell (toilIndex=0) driver.job=(HaulToCell (Job_2644941) A = Thing_Meat_Twisted436324 B = (166, 0, 144)) System.NullReferenceException: Object reference not set to an instance of an object [Ref F3EE76C4] at Verse.RecipeWorkerCounter.CountProducts (RimWorld.Bill_Production bill) [0x0044e] in <61e4173561894da49d210260257b5097>:0 - POSTFIX falconne.BWM: Void ImprovedWorkbenches.RecipeWorkerCounter_CountProducts_Detour:Postfix(RecipeWorkerCounter& __instance, Int32& __result, Bill_Production& bill) - POSTFIX giwaffed.HaulersDream: Void HaulersDream.Patch_CountProducts_BankedInventory:Postfix(Bill_Production bill, Int32& __result) - FINALIZER giwaffed.HaulersDream: Void HaulersDream.HDLog:UniversalExceptionFinalizer(Exception __exception, MethodBase __originalMethod) at RimWorld.Bill_Production.ShouldDoNow () [0x0007d] in <61e4173561894da49d210260257b5097>:0 - POSTFIX defaults.1trickPwnyta: Void Defaults.WorkbenchBills.Patch_Bill_Production_ShouldDoNow:Postfix(Bill_Production __instance, Boolean& __result) at RimWorld.BillStack.get_FirstShouldDoNow () [0x00010] in <61e4173561894da49d210260257b5097>:0 at Verse.AI.HaulAIUtility.PawnCanAutomaticallyHaulFast_NewTemp (Verse.Pawn p, Verse.Thing t, System.Boolean forced, System.Boolean checkReachability) [0x0004f] in <61e4173561894da49d210260257b5097>:0 at Verse.AI.HaulAIUtility.PawnCanAutomaticallyHaulFast (Verse.Pawn p, Verse.Thing t, System.Boolean forced) [0x0002f] in <61e4173561894da49d210260257b5097>:0 - PREFIX net.pardeike.rimworld.mods.achtung: Boolean AchtungMod.HaulAIUtility_PawnCanAutomaticallyHaulFast_Patch:Prefix(Pawn p, Thing t, Boolean forced, Boolean& __result) - POSTFIX keyz182.rimworld.KeyzAllowUtilities.main: Void KeyzAllowUtilities.HarmonyPatches.HaulAIUtility_Patches:PawnCanAutomaticallyHaulFast_Postfix(Pawn p, Thing t, Boolean forced, Boolean& __result) at HaulersDream.Patch_Pawn_JobTracker_EnRoutePickup.TryCandidate (Verse.Pawn pawn, Verse.Thing thing, Verse.IntVec3 jobCell, System.Single pawnToJob, HaulersDream.Core.EnRoutePickupPolicy+MaxRanges& ranges, System.Collections.Generic.HashSet`1[T] claimed, HaulersDream.CompHauledToInventory comp, System.Collections.Generic.Dictionary`2[TKey,TValue] storeCellCache, Verse.Map map, HaulersDream.HaulersDreamSettings s, System.Int32 zeroDetourBudget, Verse.AI.Job& picked) [0x00101] in <0562920594544960bd338ef04c74d4b2>:0 at HaulersDream.Patch_Pawn_JobTracker_EnRoutePickup.TryEnRouteJob (Verse.Pawn pawn, Verse.AI.Job job) [0x002ce] in <0562920594544960bd338ef04c74d4b2>:0 at HaulersDream.Patch_Pawn_JobTracker_EnRoutePickup.Postfix (Verse.AI.Job& __result, Verse.Pawn ___pawn, Verse.AI.Job job) [0x00048] in <0562920594544960bd338ef04c74d4b2>:0 at Verse.AI.Pawn_JobTracker.TryOpportunisticJob (Verse.AI.Job finalizerJob, Verse.AI.Job job) [0x004fa] in <61e4173561894da49d210260257b5097>:0 - PREFIX giwaffed.HaulersDream: Boolean HaulersDream.Patch_Pawn_JobTracker_TryOpportunisticJob_NoRouteRecurse:Prefix(Job finalizerJob, Job job, Job& __result) - POSTFIX giwaffed.HaulersDream: Void HaulersDream.Patch_Pawn_JobTracker_EnRoutePickup:Postfix(Job& __result, Pawn ___pawn, Job job) - FINALIZER giwaffed.HaulersDream: Void HaulersDream.HDLog:UniversalExceptionFinalizer(Exception __exception, MethodBase __originalMethod) at Verse.AI.Pawn_JobTracker.StartJob (Verse.AI.Job newJob, Verse.AI.JobCondition lastJobEndCondition, Verse.AI.ThinkNode jobGiver, System.Boolean resumeCurJobAfterwards, System.Boolean cancelBusyStances, Verse.ThinkTreeDef thinkTree, System.Nullable`1[T] tag, System.Boolean fromQueue, System.Boolean canReturnCurJobToPool, System.Nullable`1[T] keepCarryingThingOverride, System.Boolean continueSleeping, System.Boolean addToJobsThisTick, System.Boolean preToilReservationsCanFail) [0x0051a] in <61e4173561894da49d210260257b5097>:0 - TRANSPILER com.github.harmony.rimworld.nestofmoon.jobslimittweak: IEnumerable`1 JobsLimitsTweak.JobsLimitMod:TranspilerB(IEnumerable`1 instructions) - PREFIX seekiworks_AshieruChan.HarmonyPatch: Boolean seekiworks_AshieruChan_Animal_Mod.Patch_Pawn_JobTracker:StartJob_Prefix(JobDriver ___curDriver) - PREFIX net.avilmask.rimworld.mod.CommonSense: Boolean CommonSense.OpportunisticTasks+Pawn_JobTracker_StartJob_CommonSensePatch:Prefix(Pawn_JobTracker_Crutch& __instance, Job newJob, Boolean fromQueue) - PREFIX East.MechRepairStayStill: Void MechRepairStayStill.Patch_AllowCombatOverride:Prefix(Pawn_JobTracker __instance, Job newJob, Pawn ___pawn) - PREFIX Palpha.godhands: Boolean GodHandMod.Pawn_JobTracker_StartJob_Patch:Prefix(Pawn_JobTracker __instance, Pawn ___pawn, Job newJob) - PREFIX literallyfree.colonistreturnbuff: Void ColonistReturnBuff.Patch_StartJob_Kidnap:Prefix(Pawn_JobTracker __instance, Job newJob) - PREFIX OskarPotocki.VanillaPsycastsExpanded: Boolean VanillaPsycastsExpanded.Pawn_JobTracker_StartJob_Patch:Prefix(Pawn_JobTracker __instance, Pawn ___pawn, Job newJob, Nullable`1 tag) - PREFIX AG_Patch: Void Angel.Patch_StartJob_MeleeVsHighFly:Prefix(Pawn_JobTracker __instance, Job newJob, Pawn ___pawn) - PREFIX Snues.AutoArm: Void AutoArm.Patches.Pawn_JobTracker_StartJob_Patch:Prefix(Job newJob, Pawn ___pawn) at Verse.AI.Pawn_JobTracker.TryFindAndStartJob () [0x000bd] in <61e4173561894da49d210260257b5097>:0 at Verse.AI.Pawn_JobTracker.EndCurrentJob (Verse.AI.JobCondition condition, System.Boolean startNewJob, System.Boolean canReturnToPool) [0x0036b] in <61e4173561894da49d210260257b5097>:0 - TRANSPILER net.pardeike.rimworld.mods.achtung: IEnumerable`1 AchtungMod.Pawn_JobTracker_EndCurrentJob_Patch:Transpiler(IEnumerable`1 instructions) - PREFIX seekiworks_AshieruChan.HarmonyPatch: Boolean seekiworks_AshieruChan_Animal_Mod.Patch_Pawn_JobTracker:EndCurrentJob_Prefix(JobDriver ___curDriver) - PREFIX net.avilmask.rimworld.mod.CommonSense: Boolean CommonSense.OpportunisticTasks+Pawn_JobTracker_EndCurrentJob_CommonSensePatch:Prefix(Pawn_JobTracker_Crutch __instance, JobCondition condition) - PREFIX 0x9527.GhoulsTakeSerum: Void GhoulsTakeSerum.Patch_EndCurrentJob:Prefix(Pawn_JobTracker __instance, JobCondition condition) - PREFIX giwaffed.HaulersDream: Void HaulersDream.Patch_Pawn_JobTracker_EndCurrentJob_ReleaseClaim:Prefix(Pawn_JobTracker __instance) - PREFIX giwaffed.HaulersDream: Boolean HaulersDream.Patch_Pawn_JobTracker_EndCurrentJob_NullDefGuard:Prefix(Pawn_JobTracker __instance) - PREFIX cyanobot.toddlers: Void Toddlers.EndCurrentJob_PlayerForcedPlay_Patch:Prefix(Job ___curJob, JobDriver ___curDriver) - PREFIX Snues.AutoArm: Void AutoArm.Patches.Pawn_JobTracker_EndCurrentJob_Patch:Prefix(Pawn ___pawn, JobCondition condition, Job ___curJob) - FINALIZER giwaffed.HaulersDream: Void HaulersDream.HDLog:UniversalExceptionFinalizer(Exception __exception, MethodBase __originalMethod) at Verse.AI.JobDriver.EndJobWith (Verse.AI.JobCondition condition) [0x0003d] in <61e4173561894da49d210260257b5097>:0 - PREFIX seekiworks_AshieruChan.HarmonyPatch: Void seekiworks_AshieruChan_Animal_Mod.Patch_JobDriver_EndJobWith:EndJobWith_Prefix(JobDriver __instance, JobCondition condition) at Verse.AI.JobDriver.TryActuallyStartNextToil () [0x00105] in <61e4173561894da49d210260257b5097>:0 - POSTFIX CM_Grab_Your_Tool: Void CM_Grab_Your_Tool.JobDriver_TryActuallyStartNextToil:Postfix(Pawn ___pawn, JobDriver __instance) at Verse.AI.JobDriver.ReadyForNextToil () [0x00007] in <61e4173561894da49d210260257b5097>:0 at Verse.AI.JobDriver.DriverTick () [0x00052] in <61e4173561894da49d210260257b5097>:0 - TRANSPILER Orion.Hospitality: IEnumerable`1 Hospitality.Patches.JobDriver_Patch+DriverTick:Transpiler(IEnumerable`1 insts) - TRANSPILER YetAnotherOptimizer: IEnumerable`1 YaOpt.Patches.Verse_AI_JobDriver_DriverTick:Transpiler(IEnumerable`1 instructions, ILGenerator generator) [Prepatcher, 0Harmony.dll] MonoMod.Utils.DynamicMethodDefinition.UnityEngine.StackTraceUtility.ExtractStackTrace_Patch1() [Prepatcher, 0Harmony.dll] MonoMod.Utils.DynamicMethodDefinition.Verse.Log.Error_Patch14(System.String) [Core, Assembly-CSharp.dll] Verse.AI.JobUtility.TryStartErrorRecoverJob(Verse.Pawn pawn, System.String message, System.Exception exception, Verse.AI.JobDriver concreteDriver) [Prepatcher, 0Harmony.dll] MonoMod.Utils.DynamicMethodDefinition.Verse.AI.JobDriver.DriverTick_Patch2(Verse.AI.JobDriver) [Core, Assembly-CSharp.dll] Verse.AI.Pawn_JobTracker.JobTrackerTick() [Prepatcher, 0Harmony.dll] MonoMod.Utils.DynamicMethodDefinition.Verse.Pawn.Tick_Patch6(Verse.Pawn) [Core, Assembly-CSharp.dll] Verse.Thing.DoTick() [Prepatcher, 0Harmony.dll] MonoMod.Utils.DynamicMethodDefinition.Verse.TickList.Tick_Patch2(Verse.TickList) [Prepatcher, 0Harmony.dll] MonoMod.Utils.DynamicMethodDefinition.Verse.TickManager.DoSingleTick_Patch8(Verse.TickManager) [Prepatcher, 0Harmony.dll] MonoMod.Utils.DynamicMethodDefinition.Verse.TickManager.TickManagerUpdate_Patch2(Verse.TickManager) [Prepatcher, 0Harmony.dll] MonoMod.Utils.DynamicMethodDefinition.Verse.Game.UpdatePlay_Patch4(Verse.Game) [Core, Assembly-CSharp.dll] Verse.Root_Play.Update()",
+      "status_reference": "F42, F44",
+      "existing_register_entry": true,
+      "case_ids": [
+        "F42",
+        "F44"
+      ],
+      "disposition": "actionable-or-supporting",
+      "old_acceptance_scope": "Historical reference only; the scoped cases select active requirements."
+    },
+    {
+      "source_id": "T01-R02",
+      "kind": "Discussion post",
+      "posted_utc": "2026-08-17T16:22:09+02:00",
+      "posted_copenhagen": "17 Aug 16:22:09",
+      "url": "https://steamcommunity.com/workshop/filedetails/discussion/3742459652/582804662258990241/#c418424310691115322",
+      "body": "This comment is awaiting analysis by our automated content check system. It will be temporarily hidden until we verify that it does not contain harmful content (e.g. links to websites that attempt to steal information).",
+      "status_reference": "Unavailable body; no inferred fix",
+      "existing_register_entry": true,
+      "case_ids": [],
+      "disposition": "unavailable",
+      "old_acceptance_scope": "Historical reference only; the scoped cases select active requirements."
+    },
+    {
+      "source_id": "T12-OP",
+      "kind": "Discussion post",
+      "posted_utc": "2026-09-13T11:49:10+02:00",
+      "posted_copenhagen": "13 Sep 11:49:10",
+      "url": "https://steamcommunity.com/workshop/filedetails/discussion/3742459652/564793766239611588/",
+      "body": "aliveinyourmind View Profile View Posts 13 Sep @ 2:49am Report this post [Question] Is this mod performance heavy? Just wondering if I can use this with larger colonies",
+      "status_reference": "F46",
+      "existing_register_entry": false,
+      "case_ids": [
+        "F46"
+      ],
+      "disposition": "actionable-or-supporting",
+      "old_acceptance_scope": "Historical reference only; the scoped cases select active requirements."
+    },
+    {
+      "source_id": "GH271",
+      "kind": "Open issue",
+      "posted_utc": "2026-09-11T01:45:40+02:00",
+      "posted_copenhagen": "11 Sep 01:45:40",
+      "url": "https://github.com/Refzlund/haulers-dream/issues/271",
+      "body": "競合MOD: Periodic Bills\n両方を有効にすると、Periodic Billsが作業台に追加する「Do X every Y days」が「Batch : Do~」で上書きされてしまう\n期待した動作:両MODを有効にしても「Do X every Y days」を実行できること\n\nRimsortでロード順を入れ替えても解決しませんでした\nよろしくお願いします\n\n---\n\n[![Reported by むなかた](https://reports.refzlund.com/files/steam-card/76561198124956418.svg?name=%E3%82%80%E3%81%AA%E3%81%8B%E3%81%9F)](https://steamcommunity.com/profiles/76561198124956418)\n\n- Mod version: 1.24.0.0\n- Game version: 1.6.4871 rev591\n- OS: Windows 10  (10.0.19045) 64bit\n- Active mods: 8\n\n![20260911075249_1.jpg](https://reports.refzlund.com/files/47F7BixrT9qgpigCFStnkDw2.jpg)\n\n![20260911074856_1.jpg](https://reports.refzlund.com/files/dWixW4XPz29dT6Vh89oR3Ptt.jpg)\n\nView · [Hauler's Dream](https://reports.refzlund.com/files/DQKxjqm9RgHvs66E.log) · [Player.log](https://reports.refzlund.com/files/4Yi1SXPQCDuVrW6m.log)\n\n<!-- report:6VaqcKMorqME77hA0ymZwkij -->",
+      "title": "[Compatibility] 競合MOD: Periodic Bills",
+      "state": "open",
+      "qualifies": "open",
+      "status_reference": "F45",
+      "existing_register_entry": false,
+      "case_ids": [
+        "F45"
+      ],
+      "disposition": "actionable-or-supporting",
+      "old_acceptance_scope": "Historical reference only; the scoped cases select active requirements."
+    },
+    {
+      "source_id": "GH270",
+      "kind": "Open issue",
+      "posted_utc": "2026-09-01T16:00:19+02:00",
+      "posted_copenhagen": "01 Sep 16:00:19",
+      "url": "https://github.com/Refzlund/haulers-dream/issues/270",
+      "body": "当高优先级的仓库缺货时，需要从低优先级仓库搬运过去，这时候会有很多人去搬运，即使已经有人在搬了，手上的货物还没入库，就会有人一直去取货。然后那边仓库满了之后，后面搬过来的货物就放不下了，就全堆在地上了\n\n---\n\n[![Reported by 子鱼丶](https://reports.refzlund.com/files/steam-card/76561198986102145.svg?name=%E5%AD%90%E9%B1%BC%E4%B8%B6)](https://steamcommunity.com/profiles/76561198986102145)\n\n- Mod version: 1.21.0.0\n- Game version: 1.6.4871 rev591\n- OS: Windows 11  (10.0.26200) 64bit\n- Active mods: 666\n\nView · [Hauler's Dream](https://reports.refzlund.com/files/VGQ7F2vNt3803wdR.log) · [Player.log](https://reports.refzlund.com/files/Ai7K2DdtXrHwnwQq.log)\n\n<!-- report:a68MPDWvGPvJraBMSDB4nM1E -->",
+      "title": "[Report] 当高优先级的仓库缺货时，需要从低优先级仓库搬运过去，这时候会有很多人去搬运，即使已经有人在搬了，手上的货物还没入库，就会有人一直去取货。然后那边仓库满了之后，后面搬过来的货物就放不下了，就全堆在地上了",
+      "state": "open",
+      "qualifies": "open",
+      "status_reference": "F18",
+      "existing_register_entry": true,
+      "case_ids": [
+        "F18"
+      ],
+      "disposition": "actionable-or-supporting",
+      "old_acceptance_scope": "Historical reference only; the scoped cases select active requirements."
+    },
+    {
+      "source_id": "GH269",
+      "kind": "Open issue",
+      "posted_utc": "2026-08-29T22:13:13+02:00",
+      "posted_copenhagen": "29 Aug 22:13:13",
+      "url": "https://github.com/Refzlund/haulers-dream/issues/269",
+      "body": "Why my pawns move back and forth and refill the stacks to full capacity, for example in the case of a hopper shelf, with refill hysteresis mod.\n\n---\n\n[![Reported by HaPpY](https://reports.refzlund.com/files/steam-card/76561198047002166.svg?name=HaPpY)](https://steamcommunity.com/profiles/76561198047002166)\n\n- Mod version: 1.24.0.0\n- Game version: 1.6.4871 rev591\n- OS: Windows 11  (10.0.26200) 64bit\n- Active mods: 232\n\nView · [Hauler's Dream](https://reports.refzlund.com/files/D3qC5AD2HYodb3ue.log) · [Player.log](https://reports.refzlund.com/files/kqqHoki857nyyPjz.log)\n\n<!-- report:ak4gFNHAzeeMsiHCS1KBTqi5 -->",
+      "title": "[Bug] Why my pawns move back and forth and refill the stacks to full capacity, for example in the case of a hopper shelf",
+      "state": "open",
+      "qualifies": "open",
+      "status_reference": "F20",
+      "existing_register_entry": true,
+      "case_ids": [
+        "F20"
+      ],
+      "disposition": "actionable-or-supporting",
+      "old_acceptance_scope": "Historical reference only; the scoped cases select active requirements."
+    },
+    {
+      "source_id": "GH268",
+      "kind": "Open issue",
+      "posted_utc": "2026-08-26T20:52:08+02:00",
+      "posted_copenhagen": "26 Aug 20:52:08",
+      "url": "https://github.com/Refzlund/haulers-dream/issues/268",
+      "body": "Not sure if bug or mod compatibility issue. My colonists keep hauling and dropping food from/into the crates. \n\nI already disabled every Advanced behaviors option in common sense mod (I wasn't using them before) and now I also disabled \"Pawns are encouraged to haul ingredients for a bill to a stockpile\" hoping that it will solve the issue, but that didn't changed. \n\nI also tried diabling and re-enablig \"Move supplies closer to where they're used\" option in On-the-way HD's hauling section but that also didn't changed pawns behaviour.\n\n---\n\n[![Reported by Enig](https://reports.refzlund.com/files/steam-card/76561198024421537.svg?name=Enig)](https://steamcommunity.com/profiles/76561198024421537)\n\n- Mod version: 1.24.0.0\n- Game version: 1.6.4871 rev591\n- OS: Windows 11  (10.0.26100) 64bit\n- Active mods: 338\n\nView · [Hauler's Dream](https://reports.refzlund.com/files/aHzDxBkZTM2TeaNK.log) · [Player.log](https://reports.refzlund.com/files/kJAP7S3jBnJ04jen.log)\n\n<!-- report:7Tu2R7YMPYy8eQwEGMTn2tMG -->",
+      "title": "[Bug] Not sure if bug or mod compatibility issue. My colonists keep hauling and dropping food from/into the crates.",
+      "state": "open",
+      "qualifies": "open",
+      "status_reference": "F17",
+      "existing_register_entry": true,
+      "case_ids": [
+        "F17"
+      ],
+      "disposition": "actionable-or-supporting",
+      "old_acceptance_scope": "Historical reference only; the scoped cases select active requirements."
+    },
+    {
+      "source_id": "GH267",
+      "kind": "Open PR",
+      "posted_utc": "2026-08-25T10:50:00+02:00",
+      "posted_copenhagen": "25 Aug 10:50:00",
+      "url": "https://github.com/Refzlund/haulers-dream/pull/267",
+      "body": "Summary\r\n\r\nTransport pods, shuttles, and modded transporter-like things with cargo (anything with a CompTransporter, never coupled to CompShuttle) gain:\r\n\r\n- \"Bulk unload all\" toggle on the gizmo row (icon: vanilla's Set-to-load art flipped, shipped as Interface/BulkUnloadAll.png). While on, hauling colonists empty the hold one backpack-filling trip at a time, several pawns in parallel, until nothing pullable remains, then the flag self-clears.\r\n- Right-click \"Prioritize bulk unloading\" order, visible only while the toggle is on. Ordering does not touch the flag; it makes that pawn prioritize the shuttle over other work (the driver chains follow-up visits behind each storage drop-off). Autonomous trips respect forbiddance; ordered trips take everything.\r\n- Mutual exclusion, both directions: a flagged hold greys out vanilla's \"Set to load\" and refuses HD load jobs (both HasPotentialBulkWork and TryGiveBulkJob, lockstep); a load owning the hold greys the toggle and the order, and yields any visit in flight. Load sessions are tracked explicitly (birth: InitiateLoading/TryAccept, both branches; death: TryRemoveLord/CancelLoad), because vanilla's InitiateLoading only stamps group IDs and pure-cargo loads never grow a lord. A slow-tick janitor is the backstop; every player-action path clears state synchronously.\r\n\r\nDesign notes\r\n\r\n- Pull ladder is the shared CorpseSweepPolicy-aware carrier logic: backpack-first by free mass, overflow to hands, CE weight/bulk clamp, PlanHandsFallback when CE is exhausted (no massless-stack re-plan leak). Corpses follow bulkHaulCorpses + the disposal-only auto-strip carve-out; corpses never ride in backpacks when the opt-in is off.\r\n- Pawns in a hold are never pulled; pawns-only return-trip drains (ShipJob_Unload) are exempt from the conflict gate since they never touch cargo.\r\n- No reservation on the transporter (mirrors the load side); concurrent pulls are safe via single-threaded toils plus per-pull Contains/count clamps.\r\n- VF vehicles excluded at all entry points; no Rand in gates; all scribed-state writes happen on deterministic in-tick paths or through the MP-synced SetBulkUnloadAll.\r\n\r\nChangeset\r\n- minor, recorded in .changeset/feat-bulk-unload-shuttles.md\r\n\r\ntested in game:\r\n-various permutations of landing/not landing, starting loading/partial loading/stopping loading, starting unloading/partial unloading/stopping unloading\r\n-smoke tested a quest shuttle\r\n-performance appears fine when testing with 16k corn, vanilla's \"dump all cargo on floor\" button + bulk hauling causes flickering drops to 100tps, bulk unloading a shuttle doesnt have the same obvious tps drops\r\n\r\nactionable:\r\n-prioritize bulk unloading is chained repeatedly until drained not only done once like prioritize bulk load. we should pick one or the other for consistency\r\n-new translations should be ran again through the same LLM/workflow as others, at least in Polish the new translations use a different case so they are correct but out of place with existing\r\n-~130 shared lines between the carrier and transporter unload drivers\r\n\r\nnot tested:\r\nmultiplayer (i saw awareness during work)\r\nHD's own compatibility with other mods (i saw CE awareness during work but this should be reviewed by someone more familiar)\r\n",
+      "title": "feat: bulk-unload transporters (toggle + prioritized order, load/unload mutual exclusion",
+      "state": "open",
+      "qualifies": "open",
+      "status_reference": "F40",
+      "existing_register_entry": true,
+      "case_ids": [
+        "F40"
+      ],
+      "disposition": "actionable-or-supporting",
+      "old_acceptance_scope": "Historical reference only; the scoped cases select active requirements."
+    },
+    {
+      "source_id": "GH266",
+      "kind": "Open issue",
+      "posted_utc": "2026-08-22T17:30:53+02:00",
+      "posted_copenhagen": "22 Aug 17:30:53",
+      "url": "https://github.com/Refzlund/haulers-dream/issues/266",
+      "body": "When ordering a pawn to \"haul everything\", the pawn reserves all items lying nearby. If you send another pawn to haul any reserved item, the first pawn cancels all of the \"haul everything\" work.\r\n\r\nThus, it's impossible to manually send several pawns to haul many different items. In a given area, only one pawn will gather items at a time.\r\n\r\nIf the pawn did not reserve all nearby items at the moment of the order, but after picking up the first item looked for the next one and then continued - then multiple pawns would be able to work.\n\n---\n\n[![Reported by Lensrub](https://reports.refzlund.com/files/steam-card/76561198086563624.svg?name=Lensrub)](https://steamcommunity.com/profiles/76561198086563624)\n\n- Mod version: 1.24.0.0\n- Game version: 1.6.4871 rev591\n- OS: Windows 10  (10.0.19045) 64bit\n- Active mods: 196\n\nView · [Hauler's Dream](https://reports.refzlund.com/files/Jzfdk6JmAvmarXrr.log) · [Player.log](https://reports.refzlund.com/files/fT4CimtyGxQ0ykeJ.log)\n\n<!-- report:WC4ehJG15gNJC7gfGrEcYkXC -->",
+      "title": "[Report] When ordering a pawn to \"haul everything\", the pawn reserves all items lying nearby. If you send another pawn t",
+      "state": "open",
+      "qualifies": "open",
+      "status_reference": "F38",
+      "existing_register_entry": true,
+      "case_ids": [
+        "F38"
+      ],
+      "disposition": "actionable-or-supporting",
+      "old_acceptance_scope": "Historical reference only; the scoped cases select active requirements."
+    },
+    {
+      "source_id": "GH265",
+      "kind": "Open issue",
+      "posted_utc": "2026-08-22T08:33:20+02:00",
+      "posted_copenhagen": "22 Aug 08:33:20",
+      "url": "https://github.com/Refzlund/haulers-dream/issues/265",
+      "body": "Multiple exceptions in log running a dev quicktest when Smarter Construction is loaded after Hauler's Dream. Loading SC first resolves, rimsort behaviour might need correcting?\n\n---\n\n[![Reported by FireBeard](https://reports.refzlund.com/files/steam-card/76561197960278038.svg?name=FireBeard)](https://steamcommunity.com/profiles/76561197960278038)\n\n- Mod version: 1.24.0.0\n- Game version: 1.6.4871 rev591\n- OS: Windows 11  (10.0.22000) 64bit\n- Active mods: 25\n\nView · [Hauler's Dream](https://reports.refzlund.com/files/rhzeBCo8feYjtKVA.log) · [Player.log](https://reports.refzlund.com/files/1rAcQNnKrnsiJWwC.log)\n\n<!-- report:Kt9sM58V5fo31wbhTc7qGAkB -->",
+      "title": "[Bug] Multiple exceptions in log running a dev quicktest when Smarter Construction is loaded after Hauler's Dream. Loadi",
+      "state": "open",
+      "qualifies": "open",
+      "status_reference": "F26",
+      "existing_register_entry": true,
+      "case_ids": [
+        "F26"
+      ],
+      "disposition": "actionable-or-supporting",
+      "old_acceptance_scope": "Historical reference only; the scoped cases select active requirements."
+    },
+    {
+      "source_id": "GH264",
+      "kind": "Open issue",
+      "posted_utc": "2026-08-22T06:44:38+02:00",
+      "posted_copenhagen": "22 Aug 06:44:38",
+      "url": "https://github.com/Refzlund/haulers-dream/issues/264",
+      "body": "Multiple exceptions in log. Happens 1/2 of time when application restarted and load dev quicktest. I could access the mod options menu for reporting it here.\n\n---\n\n[![Reported by FireBeard](https://reports.refzlund.com/files/steam-card/76561197960278038.svg?name=FireBeard)](https://steamcommunity.com/profiles/76561197960278038)\n\n- Mod version: 1.24.0.0\n- Game version: 1.6.4871 rev591\n- OS: Windows 11  (10.0.22000) 64bit\n- Active mods: 28\n\nView · [Hauler's Dream](https://reports.refzlund.com/files/81qNqakX1iw3B3W7.log) · [Player.log](https://reports.refzlund.com/files/wAFPZgnZ8V4z2c9Y.log)\n\n<!-- report:Bprh36qhK9TsPH2YHkjc0VAK -->",
+      "title": "[Bug] Multiple exceptions in log. Happens 1/2 of time when application restarted and load dev quicktest. I could access ",
+      "state": "open",
+      "qualifies": "open",
+      "status_reference": "F26",
+      "existing_register_entry": true,
+      "case_ids": [
+        "F26"
+      ],
+      "disposition": "actionable-or-supporting",
+      "old_acceptance_scope": "Historical reference only; the scoped cases select active requirements."
+    },
+    {
+      "source_id": "GH263",
+      "kind": "Open issue",
+      "posted_utc": "2026-08-20T20:04:42+02:00",
+      "posted_copenhagen": "20 Aug 20:04:42",
+      "url": "https://github.com/Refzlund/haulers-dream/issues/263",
+      "body": "Which mod conflicts with Hauler's Dream: \"Big and Small - Sapient Animals\" - Has an item (BS_Sapienator) to make animals and mechs sentient (as in they become functioning colonists).\r\n\r\nWhat goes wrong with both enabled: Sapient Mechs and Sapient Animals are unable to do hauling everything after a save and reload. They are able to do so upon initial change into sapient, but they stop being able after saving and reloading (or loading a save where they're already sapient from a fresh game start).\r\n\r\nWhat you expected instead: Expected them to keep/have the ability to do inventory hauling.\n\n---\n\n[![Reported by ErikRedbeard](https://reports.refzlund.com/files/steam-card/76561197966484518.svg?name=ErikRedbeard)](https://steamcommunity.com/profiles/76561197966484518)\n\n- Mod version: 1.24.0.0\n- Game version: 1.6.4871 rev591\n- OS: Windows 11  (10.0.26300) 64bit\n- Active mods: 405\n\nView · [Hauler's Dream](https://reports.refzlund.com/files/QDdfsV9bwTfQ7W3a.log) · [Player.log](https://reports.refzlund.com/files/awHMGRfj0nzVAR5Q.log)\n\n<!-- report:0rkX1V5ZYgxWYxbia1eRtKZi -->",
+      "title": "[Compatibility] Which mod conflicts with Hauler's Dream: \"Big and Small - Sapient Animals\" - Has an item (BS_Sapienator)",
+      "state": "open",
+      "qualifies": "open",
+      "status_reference": "F25",
+      "existing_register_entry": true,
+      "case_ids": [
+        "F25"
+      ],
+      "disposition": "actionable-or-supporting",
+      "old_acceptance_scope": "Historical reference only; the scoped cases select active requirements."
+    },
+    {
+      "source_id": "GH262",
+      "kind": "Open issue",
+      "posted_utc": "2026-08-19T13:23:12+02:00",
+      "posted_copenhagen": "19 Aug 13:23:12",
+      "url": "https://github.com/Refzlund/haulers-dream/issues/262",
+      "body": "I am trying to eliminate an on going issue since I started using this mod. On loading a game the menu is missing and ESC doesn't bring up the options menu. Have to close the game. \n\nHere is a log export from dev mode.\nhttps://gist.github.com/HugsLibRecordKeeper/1d0395300034594672443a9df794d0c1\n\nIt may be a conflict with TD Enhancement.\nhttps://steamcommunity.com/sharedfiles/filedetails/?id=3742459652\n If I remove TD enhancement the issue goes away apart from a few errors in the logs. Have reported to them too.",
+      "title": "Intermittent GUI crash on load",
+      "state": "open",
+      "qualifies": "open",
+      "status_reference": "F26",
+      "existing_register_entry": true,
+      "case_ids": [
+        "F26"
+      ],
+      "disposition": "actionable-or-supporting",
+      "old_acceptance_scope": "Historical reference only; the scoped cases select active requirements."
+    },
+    {
+      "source_id": "GH261",
+      "kind": "Open issue",
+      "posted_utc": "2026-08-17T17:24:21+02:00",
+      "posted_copenhagen": "17 Aug 17:24:21",
+      "url": "https://github.com/Refzlund/haulers-dream/issues/261",
+      "body": "I cannot edit my last report problem is not gone when uncheck \"top existing staks\" still apples and smoe leaves are problem to stack\n\n---\n\n[![Reported by HaPpY](https://reports.refzlund.com/files/steam-card/76561198047002166.svg?name=HaPpY)](https://steamcommunity.com/profiles/76561198047002166)\n\n- Mod version: 1.24.0.0\n- Game version: 1.6.4871 rev591\n- OS: Windows 11  (10.0.26200) 64bit\n- Active mods: 214\n\nView · [Hauler's Dream](https://reports.refzlund.com/files/rMZ95ndKKGTDvTEA.log) · [Player.log](https://reports.refzlund.com/files/ECby7MNHXsDDBBtH.log)\n\n<!-- report:AfhG18jAQcGfCPKqTPhs1mxM -->",
+      "title": "[Bug] I cannot edit my last report problem is not gone when uncheck \"top existing staks\" still apples and smoe leaves ar",
+      "state": "open",
+      "qualifies": "open",
+      "status_reference": "F16, F19",
+      "existing_register_entry": true,
+      "case_ids": [
+        "F16",
+        "F19"
+      ],
+      "disposition": "actionable-or-supporting",
+      "old_acceptance_scope": "Historical reference only; the scoped cases select active requirements."
+    },
+    {
+      "source_id": "GH260",
+      "kind": "Open issue",
+      "posted_utc": "2026-08-17T02:01:53+02:00",
+      "posted_copenhagen": "17 Aug 02:01:53",
+      "url": "https://github.com/Refzlund/haulers-dream/issues/260",
+      "body": "a bug i am seeing is with unloading animals when testing with 2 mods enabled, harmony + HD, min space set to 10%. sometimes i see storage-commit in the log but sometimes i see default haul behavior and no storage-commit in log\n\n1. click dev quicktest\n2. debug spawn a horse\n3. debug tame it\n4. add stockpile on all items and allow them\n5. create caravan, add items, send and return caravan to settlement\n6. watch pawns unload",
+      "title": "storage-commit getting hit inconsistently when unloading animals",
+      "state": "open",
+      "qualifies": "open",
+      "status_reference": "F29",
+      "existing_register_entry": true,
+      "case_ids": [
+        "F29"
+      ],
+      "disposition": "actionable-or-supporting",
+      "old_acceptance_scope": "Historical reference only; the scoped cases select active requirements."
+    },
+    {
+      "source_id": "GH259",
+      "kind": "Open issue",
+      "posted_utc": "2026-08-16T20:14:37+02:00",
+      "posted_copenhagen": "16 Aug 20:14:37",
+      "url": "https://github.com/Refzlund/haulers-dream/issues/259",
+      "body": "What happened: When clicking \"Deliver resources\" on a construction project by a pawn that does not have the \"Build\" work assigned, the pawn after delivering the materials still starts building, as if they had this work assigned.\nWhat was expected: The pawn delivers the materials and then goes about their other tasks, without starting construction.\n\n---\n\n[![Reported by Lensrub](https://reports.refzlund.com/files/steam-card/76561198086563624.svg?name=Lensrub)](https://steamcommunity.com/profiles/76561198086563624)\n\n- Mod version: 1.24.0.0\n- Game version: 1.6.4871 rev591\n- OS: Windows 10  (10.0.19045) 64bit\n- Active mods: 194\n\nView · [Hauler's Dream](https://reports.refzlund.com/files/cbZ0169BHjT113uY.log) · [Player.log](https://reports.refzlund.com/files/FyRFBCMFEPQoPMWj.log)\n\n<!-- report:keCo3GARuqHFvzeFTu4WEaMm -->",
+      "title": "[Bug] What happened: When clicking \"Deliver resources\" on a construction project by a pawn that does not have the \"Build",
+      "state": "open",
+      "qualifies": "open",
+      "status_reference": "F33",
+      "existing_register_entry": true,
+      "case_ids": [
+        "F33"
+      ],
+      "disposition": "actionable-or-supporting",
+      "old_acceptance_scope": "Historical reference only; the scoped cases select active requirements."
+    },
+    {
+      "source_id": "GH258",
+      "kind": "Open issue",
+      "posted_utc": "2026-08-13T19:47:38+02:00",
+      "posted_copenhagen": "13 Aug 19:47:38",
+      "url": "https://github.com/Refzlund/haulers-dream/issues/258",
+      "body": "Pawns don't collect all items before crafting when the gizmo button is enabled, the settings in the options window are enabled, and the corresponding option in Common Sense is disabled.\n\n---\n\n[![Reported by Lensrub](https://reports.refzlund.com/files/steam-card/76561198086563624.svg?name=Lensrub)](https://steamcommunity.com/profiles/76561198086563624)\n\n- Mod version: 1.24.0.0\n- Game version: 1.6.4871 rev591\n- OS: Windows 10  (10.0.19045) 64bit\n- Active mods: 192\n\nView · [Hauler's Dream](https://reports.refzlund.com/files/E8wkFNzmgXKFy07W.log) · [Player.log](https://reports.refzlund.com/files/6SmQkvVtAZ8039dc.log)\n\n<!-- report:8oW6WSC9xwSnuw7K6dgpgTGV -->",
+      "title": "[Bug] Pawns don't collect all items before crafting when the gizmo button is enabled, the settings in the options window",
+      "state": "open",
+      "qualifies": "open",
+      "status_reference": "F01",
+      "existing_register_entry": true,
+      "case_ids": [
+        "F01"
+      ],
+      "disposition": "actionable-or-supporting",
+      "old_acceptance_scope": "Historical reference only; the scoped cases select active requirements."
+    },
+    {
+      "source_id": "GH257",
+      "kind": "Open issue",
+      "posted_utc": "2026-08-10T16:59:52+02:00",
+      "posted_copenhagen": "10 Aug 16:59:52",
+      "url": "https://github.com/Refzlund/haulers-dream/issues/257",
+      "body": "追加して欲しいのは、マップポータルへの死体一括運搬の機能\nクエスト：「洞窟の入口」等で大量の虫を搬出する作業をポーンが1体ずつ往復して運搬している為\n\n---\n\n[![Reported by Tdog](https://reports.refzlund.com/files/steam-card/76561198055143706.svg?name=Tdog)](https://steamcommunity.com/profiles/76561198055143706)\n\n- Mod version: 1.23.0.0\n- Game version: 1.6.4871 rev591\n- OS: Windows 11  (10.0.22631) 64bit\n- Active mods: 138\n\nView · [Hauler's Dream](https://reports.refzlund.com/files/H3c7K0nsC8c5R7HA.log) · [Player.log](https://reports.refzlund.com/files/034sQ1nf97RviC4e.log)\n\n<!-- report:EDqPk0PdMXE725mmFYHMkxVM -->",
+      "title": "[Feature] 追加して欲しいのは、マップポータルへの死体一括運搬の機能",
+      "state": "open",
+      "qualifies": "open",
+      "status_reference": "F39",
+      "existing_register_entry": true,
+      "case_ids": [
+        "F39"
+      ],
+      "disposition": "actionable-or-supporting",
+      "old_acceptance_scope": "Historical reference only; the scoped cases select active requirements."
+    },
+    {
+      "source_id": "GH256",
+      "kind": "Open issue",
+      "posted_utc": "2026-08-10T15:01:19+02:00",
+      "posted_copenhagen": "10 Aug 15:01:19",
+      "url": "https://github.com/Refzlund/haulers-dream/issues/256",
+      "body": "pawns keep trying to merge items on a loop, a conflict with as above so below 2 from what i can tell: [Hauler's Dream] rox wool was bulk-hauled 6 times in quick succession without moving (net-zero). Another mod is very likely returning it to where HD keeps re-hauling it (a logistics or loadout mod, e.g. RimIOT). HD is backing it off its automatic haul scan so pawns stop looping; a forced player order still hauls it. Please report the mod combination (issue #214) if this is unexpected.\nUnityEngine.StackTraceUtility:ExtractStackTrace ()\n(wrapper dynamic-method) MonoMod.Utils.DynamicMethodDefinition:Verse.Log.Warning_Patch2 (string)\nHaulersDream.HDLog:Warn (string)\nHaulersDream.HaulChurnGuard:NoteBulkAnchor (Verse.Thing)\nHaulersDream.BulkHaul:BuildBulkJob (Verse.Pawn,Verse.Thing,Verse.AI.Job,bool,bool)\nHaulersDream.BulkHaul:TryBuildBulkJob (Verse.Pawn,Verse.Thing,Verse.AI.Job,bool,bool)\nHaulersDream.Patch_WorkGiver_HaulGeneral_BulkHaul:Postfix (Verse.AI.Job&,Verse.Pawn,Verse.Thing,bool)\n(wrapper dynamic-method) MonoMod.Utils.DynamicMethodDefinition:RimWorld.WorkGiver_HaulGeneral.JobOnThing_Patch2 (RimWorld.WorkGiver_HaulGeneral,Verse.Pawn,Verse.Thing,bool)\nRimWorld.WorkGiver_Scanner:HasJobOnThing (Verse.Pawn,Verse.Thing,bool)\nRimWorld.JobGiver_Work/<>c__DisplayClass3_1:<TryIssueJobPackage>g__Validator|0 (Verse.Thing)\nAsAboveSoBelow.Patch_GenClosest_ABSameIslandFirst/<>c__DisplayClass3_0:<Prefix>b__0 (Verse.Thing)\nVerse.GenClosest/<>c__DisplayClass2_0:<ClosestThingReachable>g__GlobalValidator|0 (Verse.Thing)\nVerse.GenClosest:<ClosestThing_Global>g__ValidateThing|5_1 (Verse.Thing,single,Verse.GenClosest/<>c__DisplayClass5_0&)\nVerse.GenClosest:<ClosestThing_Global>g__Process|5_0 (Verse.Thing,Verse.GenClosest/<>c__DisplayClass5_0&)\nVerse.GenClosest:ClosestThing_Global (Verse.IntVec3,System.Collections.IEnumerable,single,System.Predicate`1<Verse.Thing>,System.Func`2<Verse.Thing, single>,bool)\n(wrapper dynamic-method) MonoMod.Utils.DynamicMethodDefinition:Verse.GenClosest.ClosestThingReachable_Patch3 (Verse.IntVec3,Verse.Map,Verse.ThingRequest,Verse.AI.PathEndMode,Verse.TraverseParms,single,System.Predicate`1<Verse.Thing>,System.Collections.Generic.IEnumerable`1<Verse.Thing>,int,int,bool,Verse.RegionType,bool,bool)\nAsAboveSoBelow.Patch_GenClosest_ABSameIslandFirst:Prefix (Verse.Thing&,Verse.IntVec3,Verse.Map,Verse.ThingRequest,Verse.AI.PathEndMode,Verse.TraverseParms,single,System.Predicate`1<Verse.Thing>,System.Collections.Generic.IEnumerable`1<Verse.Thing>,int,int,bool,Verse.RegionType,bool,bool)\n(wrapper dynamic-method) MonoMod.Utils.DynamicMethodDefinition:Verse.GenClosest.ClosestThingReachable_Patch3 (Verse.IntVec3,Verse.Map,Verse.ThingRequest,Verse.AI.PathEndMode,Verse.TraverseParms,single,System.Predicate`1<Verse.Thing>,System.Collections.Generic.IEnumerable`1<Verse.Thing>,int,int,bool,Verse.RegionType,bool,bool)\n(wrapper dynamic-method) MonoMod.Utils.DynamicMethodDefinition:RimWorld.JobGiver_Work.TryIssueJobPackage_Patch5 (RimWorld.JobGiver_Work,Verse.Pawn,Verse.AI.JobIssueParams)\n(wrapper dynamic-method) MonoMod.Utils.DynamicMethodDefinition:Glue:AbiFixup<Verse.AI.ThinkResult RimWorld.JobGiver_Work:TryIssueJobPackage(Verse.Pawn, Verse.AI.JobIssueParams),Verse.AI.ThinkResult RimWorld.JobGiver_Work.TryIssueJobPackage_Patch5(RimWorld.JobGiver_Work, Verse.Pawn, Verse.AI.JobIssueParams)> (RimWorld.JobGiver_Work,Verse.AI.ThinkResult&,Verse.Pawn,Verse.AI.JobIssueParams)\nVerse.AI.ThinkNode_PrioritySorter:TryIssueJobPackage (Verse.Pawn,Verse.AI.JobIssueParams)\nVerse.AI.ThinkNode_Priority:TryIssueJobPackage (Verse.Pawn,Verse.AI.JobIssueParams)\nVerse.AI.ThinkNode_Tagger:TryIssueJobPackage (Verse.Pawn,Verse.AI.JobIssueParams)\nVerse.AI.ThinkNode_Subtree:TryIssueJobPackage (Verse.Pawn,Verse.AI.JobIssueParams)\nVerse.AI.ThinkNode_Priority:TryIssueJobPackage (Verse.Pawn,Verse.AI.JobIssueParams)\nVerse.AI.ThinkNode_Conditional:TryIssueJobPackage (Verse.Pawn,Verse.AI.JobIssueParams)\nVerse.AI.ThinkNode_Priority:TryIssueJobPackage (Verse.Pawn,Verse\n\n---\n\n[![Reported by Rylan](https://reports.refzlund.com/files/steam-card/76561197963079704.svg?name=Rylan)](https://steamcommunity.com/profiles/76561197963079704)\n\n- Mod version: 1.24.0.0\n- Game version: 1.6.4871 rev591\n- OS: Windows 10  (10.0.19045) 64bit\n- Active mods: 1163\n\nView · [Hauler's Dream](https://reports.refzlund.com/files/gExj9CQhrYNDfRXh.log) · [Player.log](https://reports.refzlund.com/files/hb7Z0et5XpPwhKjM.log)\n\n<!-- report:cVQroAMQV9ohE7SCE0isP7W0 -->",
+      "title": "[Compatibility] pawns keep trying to merge items on a loop, a conflict with as above so below 2 from what i can tell: [H",
+      "state": "open",
+      "qualifies": "open",
+      "status_reference": "F15",
+      "existing_register_entry": true,
+      "case_ids": [
+        "F15"
+      ],
+      "disposition": "actionable-or-supporting",
+      "old_acceptance_scope": "Historical reference only; the scoped cases select active requirements."
+    },
+    {
+      "source_id": "GH255",
+      "kind": "Open issue",
+      "posted_utc": "2026-08-09T20:13:30+02:00",
+      "posted_copenhagen": "09 Aug 20:13:30",
+      "url": "https://github.com/Refzlund/haulers-dream/issues/255",
+      "body": "My pawns sometimes reserve items indefinetily, while they keep doing something else. In this case Patricia keeps the kible reserved even though she's sleeping. Is it posible that this mod might be the issue? I have no errors\n\n---\n\n[![Reported by RocketRacoon](https://reports.refzlund.com/files/steam-card/76561198311975207.svg?name=RocketRacoon)](https://steamcommunity.com/profiles/76561198311975207)\n\n- Mod version: 1.24.0.0\n- Game version: 1.6.4871 rev591\n- OS: Windows 11  (10.0.26200) 64bit\n- Active mods: 1355\n\nView · [Hauler's Dream](https://reports.refzlund.com/files/TtgotPRjvvf0cdAB.log) · [Player.log](https://reports.refzlund.com/files/16hvrtTMFwuAFDHX.log)\n\n<!-- report:Vo6pTr8YVKTQHNsbdCGFwrcQ -->",
+      "title": "[Bug] My pawns sometimes reserve items indefinetily, while they keep doing something else. In this case Patricia keeps t",
+      "state": "open",
+      "qualifies": "open",
+      "status_reference": "F37",
+      "existing_register_entry": true,
+      "case_ids": [
+        "F37"
+      ],
+      "disposition": "actionable-or-supporting",
+      "old_acceptance_scope": "Historical reference only; the scoped cases select active requirements."
+    },
+    {
+      "source_id": "GH148",
+      "kind": "Open PR",
+      "posted_utc": "2026-07-07T13:45:55+02:00",
+      "posted_copenhagen": "07 Jul 13:45:55",
+      "url": "https://github.com/Refzlund/haulers-dream/pull/148",
+      "body": "## Problem\n\nLoading a save produced an instant, colony-wide freeze: every pawn stood still with a job visible in the inspect pane but never moved. The log showed a NullReferenceException storm — `Exception ticking <pawn> … Suppressing further errors` for one colonist after another, with the NRE surfacing in `Pawn_JobTracker.TryOpportunisticJob`, `Pawn_JobTracker.EndCurrentJob`, and `WorkGiver_HaulGeneral.JobOnThing` → `HaulAIUtility.PawnCanAutomaticallyHaulFast_NewTemp`.\n\nRoot cause (diagnosed from the live save + 1.6.4871 decompile): a bill-syncing mod (WorkbenchConnect's `WorkbenchGroupManager` map component) deep-saves **live** `Bill_ProductionWithUft` objects inside its own `<savedBills>`. `Bill.billStack` is `[Unsaved]`, so after a load such a bill exists with a **null stack** — while its `boundUft` cross-reference still binds it to a real `UnfinishedThing` on the map (the UFT's own `bill` ref resolves right back to the stashed copy). Every haul-candidate check then reads `uft.BoundBill`, whose getter validates `Bill.DeletedOrDereferenced`, which dereferences `billStack.billGiver` → NRE. Since the bound UFT sits in `listerHaulables`, **every pawn that finishes any job** (opportunistic-haul probe) and every hauling work scan hits it; RimWorld freezes each crashing pawn's ticking. Mid-session the stashed bill still holds a stale non-null `billStack` pointer, which is why the session that wrote the save ran fine and the explosion only starts on the next load.\n\n## Fix\n\nTwo layers, mirroring the existing null-def-job guard pair (`Patch_Pawn_JobTracker_EndCurrentJob_NullDefGuard` + `RepairOrphanedJobsAfterLoad`):\n\n- **`UnfinishedThing.ExposeData` prefix** — at `PostLoadInit`, unbind a UFT from a bound bill whose `billStack == null` (covers every scribed UFT: spawned, pawn inventory, caravan). At `Saving`, the same unbind protects vanilla's own pre-save `DeletedOrDereferenced` read, which would otherwise NRE and abort the save. Raw field access on both sides — the `BoundBill` getter is the code that crashes on this state, so it is never invoked.\n- **`FinalizeInit` backstop sweep** over `ThingRequestGroup.HaulableEver` (exactly the set the crashing scans iterate) for modded UFT subclasses whose `ExposeData` override skips `base`; emits one aggregated repair message.\n\nThe unbind is non-destructive: the UFT keeps its ingredients/work and becomes an ordinary loose unfinished item that a matching bench bill re-adopts; the foreign component's stored bill object is otherwise untouched. A missing/renamed `boundBillInt` field can only *disable* the guard (no-throw binding + `Prepare()` gate inside the per-class patch isolation), never abort a scribe pass.\n\n## Verification\n\n- `bun run build` clean (0 errors), `bun run test` 2080/2080 pass.\n- Adversarial multi-agent review against the 1.6.4871 decompile (patch mechanics / false-positive unbinding / coverage): no false-positive scenario is constructible from vanilla semantics — `billStack` is assigned in `BillStack.AddBill` and the `BillStack.ExposeData` load restore, never nulled, and vanilla's only UFT-bind sites use on-stack bills; bill clones/clipboard never carry `boundUftInt`. Coverage confirmed: cross-refs resolve before `PostLoadInit`, and the sweep runs before the first tick.\n- In-game repro pending (needs the corrupted save): loading the affected save with this build should print `[Hauler's Dream] Save repair: unbound N unfinished thing(s) …` once and pawns should work normally. Will confirm on the live save before undrafting.\n\nKnown sibling (deliberately not handled): the same duplicated-bill state can reach a pawn saved mid-DoBill via `Job.bill`; that path NREs once inside `JobDriver` fail-condition checking, is caught by its error recovery, and self-heals — a one-time red log line, not a freeze.\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)",
+      "title": "fix: self-heal UnfinishedThings bound to stack-less bills (pawn-freeze on load)",
+      "state": "open",
+      "qualifies": "open",
+      "status_reference": "F41",
+      "existing_register_entry": true,
+      "case_ids": [
+        "F41"
+      ],
+      "disposition": "actionable-or-supporting",
+      "old_acceptance_scope": "Historical reference only; the scoped cases select active requirements."
+    },
+    {
+      "source_id": "GH251-C5231994333",
+      "kind": "GitHub conversation reply",
+      "posted_utc": "2026-08-09T16:21:41+02:00",
+      "posted_copenhagen": "09 Aug 16:21:41",
+      "url": "https://github.com/Refzlund/haulers-dream/pull/251#issuecomment-5231994333",
+      "body": "Don't worry. I actually contributed the Traditional Chinese translation myself. haha\r\nI use AI to translate, and usually I only check major differences between Simplified Chinese and Traditional Chinese (since some terms and meanings differ, that's why most translator won't contribute to both) without doing a full review at first — I've been reviewing it while playing the game... lol\r\nThanks for a consistency check and all, it LGTM at first glance, I will check them in game!",
+      "parent_source_id": "GH251",
+      "qualifies": "post-cutoff-comment-on-closed-PR",
+      "status_reference": "Already merged; acknowledgement only",
+      "existing_register_entry": false,
+      "case_ids": [],
+      "disposition": "context-only",
+      "old_acceptance_scope": "Historical reference only; the scoped cases select active requirements."
+    },
+    {
+      "source_id": "GH255-C5234743392",
+      "kind": "GitHub conversation reply",
+      "posted_utc": "2026-08-10T02:46:26+02:00",
+      "posted_copenhagen": "10 Aug 02:46:26",
+      "url": "https://github.com/Refzlund/haulers-dream/issues/255#issuecomment-5234743392",
+      "body": "Hi, thanks for the feedback!\n\nI don't think it's H.D. ― although it's a hard tell whether that'd be the case.\n\nMaybe you have a mod for handling animals, enhancing work or something? Or maybe your pawn has queued work which in Vanilla would reserve the kibble? It leads me to believe a mod might \"queue\" work on your behalf (??). From what I can tell, H.D. is acting as expected, hauling stuff around ― not indicating anything getting stuck or in a loop.\n\nThe best bet for solving this, is more people experience this issue, or it can be re-produced with only Hauler's Dream installed.\n\nSorry if that's not much to go on. If you manage to replicate it with just H.D. installed, I would jump into it immediately ― but like I said, I don't think it's Hauler's Dream.",
+      "parent_source_id": "GH255",
+      "qualifies": "open-parent",
+      "status_reference": "F37",
+      "existing_register_entry": true,
+      "case_ids": [
+        "F37"
+      ],
+      "disposition": "actionable-or-supporting",
+      "old_acceptance_scope": "Historical reference only; the scoped cases select active requirements."
+    },
+    {
+      "source_id": "GH255-C5236650604",
+      "kind": "GitHub conversation reply",
+      "posted_utc": "2026-08-10T08:26:14+02:00",
+      "posted_copenhagen": "10 Aug 08:26:14",
+      "url": "https://github.com/Refzlund/haulers-dream/issues/255#issuecomment-5236650604",
+      "body": "Thanks for the answer! I have removed H.D. for the time being and I will watch if the issue still reproduces. I'll come back with an answer on this. \nI thought that maybe H.D. reserved the kibble for hauling but it got stuck somehow. The \"reservation\" is lost when I load the game. \nAnyway, I'll let you know if it still reproduces without H.D. Thanks again!",
+      "parent_source_id": "GH255",
+      "qualifies": "open-parent",
+      "status_reference": "F37",
+      "existing_register_entry": true,
+      "case_ids": [
+        "F37"
+      ],
+      "disposition": "actionable-or-supporting",
+      "old_acceptance_scope": "Historical reference only; the scoped cases select active requirements."
+    },
+    {
+      "source_id": "GH256-C5241237484",
+      "kind": "GitHub conversation reply",
+      "posted_utc": "2026-08-10T15:54:45+02:00",
+      "posted_copenhagen": "10 Aug 15:54:45",
+      "url": "https://github.com/Refzlund/haulers-dream/issues/256#issuecomment-5241237484",
+      "body": "<!--hd-role:reporter-->\n\n[![Comment from Rylan](https://reports.refzlund.com/files/steam-card/76561197963079704.svg?name=Rylan)](https://steamcommunity.com/profiles/76561197963079704)\n\nsmall update, seems to be more a issue for bulk hauling, disabling bulk hauling in mod settings stoped the loop",
+      "parent_source_id": "GH256",
+      "qualifies": "open-parent",
+      "status_reference": "F15",
+      "existing_register_entry": true,
+      "case_ids": [
+        "F15"
+      ],
+      "disposition": "actionable-or-supporting",
+      "old_acceptance_scope": "Historical reference only; the scoped cases select active requirements."
+    },
+    {
+      "source_id": "GH255-C5303554026",
+      "kind": "GitHub conversation reply",
+      "posted_utc": "2026-08-15T20:08:26+02:00",
+      "posted_copenhagen": "15 Aug 20:08:26",
+      "url": "https://github.com/Refzlund/haulers-dream/issues/255#issuecomment-5303554026",
+      "body": "So after removing Hauler's Dream, I didn't had the issue reproduce anymore. But since I don't have any logs when the issue was happening, I don't think there's much to go on with this. ",
+      "parent_source_id": "GH255",
+      "qualifies": "open-parent",
+      "status_reference": "F37",
+      "existing_register_entry": true,
+      "case_ids": [
+        "F37"
+      ],
+      "disposition": "actionable-or-supporting",
+      "old_acceptance_scope": "Historical reference only; the scoped cases select active requirements."
+    },
+    {
+      "source_id": "GH261-C5331573201",
+      "kind": "GitHub conversation reply",
+      "posted_utc": "2026-08-18T19:11:29+02:00",
+      "posted_copenhagen": "18 Aug 19:11:29",
+      "url": "https://github.com/Refzlund/haulers-dream/issues/261#issuecomment-5331573201",
+      "body": "<!--hd-role:reporter-->\n\n[![Comment from HaPpY](https://reports.refzlund.com/files/steam-card/76561198047002166.svg?name=HaPpY)](https://steamcommunity.com/profiles/76561198047002166)\n\n.",
+      "parent_source_id": "GH261",
+      "qualifies": "open-parent",
+      "status_reference": "Dot-only reply; no new feedback",
+      "existing_register_entry": true,
+      "case_ids": [
+        "F16",
+        "F19"
+      ],
+      "disposition": "context-only",
+      "old_acceptance_scope": "Historical reference only; the scoped cases select active requirements."
+    },
+    {
+      "source_id": "GH262-C5341477114",
+      "kind": "GitHub conversation reply",
+      "posted_utc": "2026-08-19T13:26:45+02:00",
+      "posted_copenhagen": "19 Aug 13:26:45",
+      "url": "https://github.com/Refzlund/haulers-dream/issues/262#issuecomment-5341477114",
+      "body": "[Player.log](https://github.com/user-attachments/files/31220941/Player.log)",
+      "parent_source_id": "GH262",
+      "qualifies": "open-parent",
+      "status_reference": "F26",
+      "existing_register_entry": true,
+      "case_ids": [
+        "F26"
+      ],
+      "disposition": "actionable-or-supporting",
+      "old_acceptance_scope": "Historical reference only; the scoped cases select active requirements."
+    },
+    {
+      "source_id": "GH263-C5360067014",
+      "kind": "GitHub conversation reply",
+      "posted_utc": "2026-08-20T20:29:39+02:00",
+      "posted_copenhagen": "20 Aug 20:29:39",
+      "url": "https://github.com/Refzlund/haulers-dream/issues/263#issuecomment-5360067014",
+      "body": "<!--hd-role:reporter-->\n\n[![Comment from ErikRedbeard](https://reports.refzlund.com/files/steam-card/76561197966484518.svg?name=ErikRedbeard)](https://steamcommunity.com/profiles/76561197966484518)\n\nI have since tried it with only \"Hauler's Dream\" and \"Big and Small - Sapient Animals\" and their requirements with a lifterbot, which results in the same unexpected bahaviour.",
+      "parent_source_id": "GH263",
+      "qualifies": "open-parent",
+      "status_reference": "F25",
+      "existing_register_entry": true,
+      "case_ids": [
+        "F25"
+      ],
+      "disposition": "actionable-or-supporting",
+      "old_acceptance_scope": "Historical reference only; the scoped cases select active requirements."
+    },
+    {
+      "source_id": "GH262-C5369956723",
+      "kind": "GitHub conversation reply",
+      "posted_utc": "2026-08-21T14:45:07+02:00",
+      "posted_copenhagen": "21 Aug 14:45:07",
+      "url": "https://github.com/Refzlund/haulers-dream/issues/262#issuecomment-5369956723",
+      "body": "Have performed more testing and now crashes and errors are regular with current mod list.  \n\nIf I disable mods that include Hugslib, Allow Tool, Defensive Positions. I can run a dev quicktest successfully without errors, and my save loads with a few continuable errors to do with allow tool. \n\nGot the clue from this error:\nat RimWorld.PlaySettings.DoPlaySettingsGlobalControls (Verse.WidgetRow row, System.Boolean worldView) <0x7b472180 + 0x00000> in <61e4173561894da49d210260257b5097>:0 \n...\nPOSTFIX UnlimitedHugs.HugsLib: Void HugsLib.Patches.Root_OnGUI_Patch:OnGUIHookUnfiltered()\n\nStill trying to find a minimum mod list that I can replicate the crash with a dev quicktest.",
+      "parent_source_id": "GH262",
+      "qualifies": "open-parent",
+      "status_reference": "F26",
+      "existing_register_entry": true,
+      "case_ids": [
+        "F26"
+      ],
+      "disposition": "actionable-or-supporting",
+      "old_acceptance_scope": "Historical reference only; the scoped cases select active requirements."
+    },
+    {
+      "source_id": "GH262-C5377860369",
+      "kind": "GitHub conversation reply",
+      "posted_utc": "2026-08-22T06:26:10+02:00",
+      "posted_copenhagen": "22 Aug 06:26:10",
+      "url": "https://github.com/Refzlund/haulers-dream/issues/262#issuecomment-5377860369",
+      "body": "More error logs different mod list, but includes HD and TD Enhacement.\n[Player.log](https://github.com/user-attachments/files/31327597/Player.log)",
+      "parent_source_id": "GH262",
+      "qualifies": "open-parent",
+      "status_reference": "F26",
+      "existing_register_entry": true,
+      "case_ids": [
+        "F26"
+      ],
+      "disposition": "actionable-or-supporting",
+      "old_acceptance_scope": "Historical reference only; the scoped cases select active requirements."
+    },
+    {
+      "source_id": "GH262-C5379178652",
+      "kind": "GitHub conversation reply",
+      "posted_utc": "2026-08-22T10:07:27+02:00",
+      "posted_copenhagen": "22 Aug 10:07:27",
+      "url": "https://github.com/Refzlund/haulers-dream/issues/262#issuecomment-5379178652",
+      "body": "To get my current play through able to continue with Hauler's Dream, I had to disable the following mods:\n\nSurgery Never Fail\nDubs Mint Minimap\nCM Color Coded Mood Bar [1.1+]\nInteraction Bubbles\nSmarter Construction",
+      "parent_source_id": "GH262",
+      "qualifies": "open-parent",
+      "status_reference": "F26",
+      "existing_register_entry": true,
+      "case_ids": [
+        "F26"
+      ],
+      "disposition": "actionable-or-supporting",
+      "old_acceptance_scope": "Historical reference only; the scoped cases select active requirements."
+    },
+    {
+      "source_id": "GH265-C5379263383",
+      "kind": "GitHub conversation reply",
+      "posted_utc": "2026-08-22T10:21:25+02:00",
+      "posted_copenhagen": "22 Aug 10:21:25",
+      "url": "https://github.com/Refzlund/haulers-dream/issues/265#issuecomment-5379263383",
+      "body": "Still crashes half of the time with load order change.",
+      "parent_source_id": "GH265",
+      "qualifies": "open-parent",
+      "status_reference": "F26",
+      "existing_register_entry": true,
+      "case_ids": [
+        "F26"
+      ],
+      "disposition": "actionable-or-supporting",
+      "old_acceptance_scope": "Historical reference only; the scoped cases select active requirements."
+    },
+    {
+      "source_id": "GH267-C5407844472",
+      "kind": "GitHub conversation reply",
+      "posted_utc": "2026-08-25T10:50:04+02:00",
+      "posted_copenhagen": "25 Aug 10:50:04",
+      "url": "https://github.com/Refzlund/haulers-dream/pull/267#issuecomment-5407844472",
+      "body": "### 🦋 Changeset detected\n\nLatest commit: 4e2b4b34101512080864d19323dc0b18da250ae9\n\n**The changes in this PR will be included in the next version bump.**\n\n<details><summary>This PR includes changesets to release 1 package</summary>\n\n  | Name          | Type  |\n| ------------- | ----- |\n| haulers-dream | Minor |\n\n</details>\n\nNot sure what this means? [Click here to learn what changesets are](https://changesets.dev/faq).\n\n[Click here if you're a maintainer who wants to add another changeset to this PR](https://github.com/nullpat/haulers-dream/new/feat/bulk-unload-transporter?filename=.changeset/ten-melons-hunt.md&value=---%0A%22haulers-dream%22%3A%20patch%0A---%0A%0Afeat%3A%20bulk-unload%20transporters%20(toggle%20%2B%20prioritized%20order%2C%20load%2Funload%20mutual%20exclusion%0A)\n\n",
+      "parent_source_id": "GH267",
+      "qualifies": "open-parent",
+      "status_reference": "Bot metadata; unmerged PR",
+      "existing_register_entry": true,
+      "case_ids": [
+        "F40"
+      ],
+      "disposition": "context-only",
+      "old_acceptance_scope": "Historical reference only; the scoped cases select active requirements."
+    },
+    {
+      "source_id": "GH267-C5407936551",
+      "kind": "GitHub conversation reply",
+      "posted_utc": "2026-08-25T10:57:07+02:00",
+      "posted_copenhagen": "25 Aug 10:57:07",
+      "url": "https://github.com/Refzlund/haulers-dream/pull/267#issuecomment-5407936551",
+      "body": "i will continue dogfooding this for a few more days to try to catch edge cases. as an aside, this was made using ox-alpha on claude code via openrouter, ox-alpha is a stealth model being released/tested by assumedly a Chinese lab, and it is free to run at max tokens this week so im putting it to use",
+      "parent_source_id": "GH267",
+      "qualifies": "open-parent",
+      "status_reference": "F40; contributor testing planned",
+      "existing_register_entry": true,
+      "case_ids": [
+        "F40"
+      ],
+      "disposition": "supporting-follow-up",
+      "old_acceptance_scope": "Historical reference only; the scoped cases select active requirements."
+    },
+    {
+      "source_id": "GH268-C5430010324",
+      "kind": "GitHub conversation reply",
+      "posted_utc": "2026-08-26T21:20:46+02:00",
+      "posted_copenhagen": "26 Aug 21:20:46",
+      "url": "https://github.com/Refzlund/haulers-dream/issues/268#issuecomment-5430010324",
+      "body": "<!--hd-role:reporter-->\n\n[![Comment from Enig](https://reports.refzlund.com/files/steam-card/76561198024421537.svg?name=Enig)](https://steamcommunity.com/profiles/76561198024421537)\n\nA little update: I saw pawns performing \"hauling everything nearby\" task when they got stuck in the loop. \n\nI disabled bulk hauling in HD's option and then i noticed they started carrying food one by one to another storage unit - which is closer to the stove and has higher priority. I then re-enabled HD's bulk hauling option but I also set a limit (using stack gap mod) to limit stack sizes to 25-75 (basically so the storage cannot hold more than 75 of one food type and to start hauling when it drops to/below 25). \n\nThat seems to solve the issue of pawns being stuck in hauling loop - possibly a compatibility issue between those two mods",
+      "parent_source_id": "GH268",
+      "qualifies": "open-parent",
+      "status_reference": "F17",
+      "existing_register_entry": true,
+      "case_ids": [
+        "F17"
+      ],
+      "disposition": "actionable-or-supporting",
+      "old_acceptance_scope": "Historical reference only; the scoped cases select active requirements."
+    },
+    {
+      "source_id": "GH268-C5461920982",
+      "kind": "GitHub conversation reply",
+      "posted_utc": "2026-08-29T12:54:25+02:00",
+      "posted_copenhagen": "29 Aug 12:54:25",
+      "url": "https://github.com/Refzlund/haulers-dream/issues/268#issuecomment-5461920982",
+      "body": "<!--hd-role:reporter-->\n\n[![Comment from Enig](https://reports.refzlund.com/files/steam-card/76561198024421537.svg?name=Enig)](https://steamcommunity.com/profiles/76561198024421537)\n\nTurns out that didn't helped. Pawns are falling into hauling loop anyways. As of now the only way I found out is to disable bulk hauling to fix it",
+      "parent_source_id": "GH268",
+      "qualifies": "open-parent",
+      "status_reference": "F17",
+      "existing_register_entry": true,
+      "case_ids": [
+        "F17"
+      ],
+      "disposition": "actionable-or-supporting",
+      "old_acceptance_scope": "Historical reference only; the scoped cases select active requirements."
+    },
+    {
+      "source_id": "GH148-C4903415050",
+      "kind": "GitHub conversation reply",
+      "posted_utc": "2026-07-07T13:45:58+02:00",
+      "posted_copenhagen": "07 Jul 13:45:58",
+      "url": "https://github.com/Refzlund/haulers-dream/pull/148#issuecomment-4903415050",
+      "body": "###  🦋  Changeset detected\n\nLatest commit: 6430509acf2f759ca1849efd86062459ab45cf01\n\n**The changes in this PR will be included in the next version bump.**\n\n<details><summary>This PR includes changesets to release 1 package</summary>\n\n  | Name          | Type  |\n| ------------- | ----- |\n| haulers-dream | Patch |\n\n</details>\n\nNot sure what this means? [Click here  to learn what changesets are](https://github.com/changesets/changesets/blob/main/docs/adding-a-changeset.md).\n\n[Click here if you're a maintainer who wants to add another changeset to this PR](https://github.com/flixzf/haulers-dream/new/fix/orphan-boundbill-guard?filename=.changeset/little-nails-decide.md&value=---%0A%22haulers-dream%22%3A%20patch%0A---%0A%0Afix%3A%20self-heal%20UnfinishedThings%20bound%20to%20stack-less%20bills%20(pawn-freeze%20on%20load)%0A)\n\n",
+      "parent_source_id": "GH148",
+      "qualifies": "open-parent",
+      "status_reference": "Bot metadata; unmerged PR",
+      "existing_register_entry": true,
+      "case_ids": [
+        "F41"
+      ],
+      "disposition": "context-only",
+      "old_acceptance_scope": "Historical reference only; the scoped cases select active requirements."
+    },
+    {
+      "source_id": "GH148-C4904961695",
+      "kind": "GitHub conversation reply",
+      "posted_utc": "2026-07-07T16:33:43+02:00",
+      "posted_copenhagen": "07 Jul 16:33:43",
+      "url": "https://github.com/Refzlund/haulers-dream/pull/148#issuecomment-4904961695",
+      "body": "Thank you for the PR contribution.  When it's ready feel free to open it and request a review ― and I'll take a look!",
+      "parent_source_id": "GH148",
+      "qualifies": "open-parent",
+      "status_reference": "F41; review requested when ready",
+      "existing_register_entry": true,
+      "case_ids": [
+        "F41"
+      ],
+      "disposition": "context-only",
+      "old_acceptance_scope": "Historical reference only; the scoped cases select active requirements."
+    }
+  ],
+  "status_reviewed_utc": "2026-09-24T17:17:26.327716+02:00",
+  "completion_policy": "Report-specific resolution uses evidence appropriate to the actual report; final combined-build/PR verification is separate. Reopen resolved items if later changes invalidate their evidence.",
+  "final_integration_validation": {
+    "status": "pending",
+    "notes": "Final assembled-build checks are tracked in docs/plans/final-integration-checks.md; report-specific resolutions do not complete the PR."
+  }
+}

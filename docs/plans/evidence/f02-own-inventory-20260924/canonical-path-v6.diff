@@ -1,0 +1,31 @@
+--- v5/src/OwnInventoryScene.cs
++++ v6/src/OwnInventoryScene.cs
+@@ -82,10 +82,15 @@
+             Guard(GenCommandLine.TryGetCommandLineArg("hd-harnessmanifest",out manifest)
+                 && GenCommandLine.TryGetCommandLineArg("hd-test",out caseName) && caseName == role, "Explicit F02 role required.");
+             string run=Path.GetDirectoryName(Path.GetFullPath(manifest)); Guid id;
+-            Guard(Guid.TryParseExact(Path.GetFileName(run),"N",out id) && id != Guid.Empty
+-                && Path.GetDirectoryName(run).Equals(Path.Combine(Path.GetTempPath(),"haulersdream-runtime-tests"),StringComparison.OrdinalIgnoreCase)
+-                && GenFilePaths.SaveDataFolderPath.StartsWith(run+Path.DirectorySeparatorChar,StringComparison.OrdinalIgnoreCase)
+-                && typeof(OwnInventoryScene).Assembly.Location.StartsWith(Path.Combine(run,"runtime"),StringComparison.OrdinalIgnoreCase), "Private save/runtime custody differs.");
++            string temp=Path.GetTempPath(), parent=Path.GetDirectoryName(run), expectedParent=Path.Combine(temp,"haulersdream-runtime-tests");
++            string saveData=GenFilePaths.SaveDataFolderPath, assembly=typeof(OwnInventoryScene).Assembly.Location, runtime=Path.Combine(run,"runtime");
++            bool validRun=Guid.TryParseExact(Path.GetFileName(run),"N",out id) && id != Guid.Empty;
++            bool exactRoot=Same(parent,expectedParent), privateSave=Child(saveData,run), privateAssembly=Child(assembly,runtime);
++            emit("f02-private-paths",F02Json.Stringify(new { manifest,run,temp,parent,expectedParent,saveData,assembly,runtime,
++                canonicalManifest=Path.GetFullPath(manifest),canonicalTemp=Path.GetFullPath(temp),canonicalParent=Path.GetFullPath(parent),
++                canonicalExpectedParent=Path.GetFullPath(expectedParent),canonicalSaveData=Path.GetFullPath(saveData),canonicalAssembly=Path.GetFullPath(assembly),
++                rawParentEqual=string.Equals(parent,expectedParent,StringComparison.OrdinalIgnoreCase),validRun,exactRoot,privateSave,privateAssembly }));
++            Guard(validRun && exactRoot && privateSave && privateAssembly, "Private save/runtime custody differs.");
+             Find.TickManager.CurTimeSpeed=TimeSpeed.Paused;
+             Guard(role == "F02-P1" || (role == "F02-INVENTORY" && expectation == "satisfied"), "Case/expectation differs.");
+             var hd=HaulersDreamMod.Settings;
+@@ -308,6 +313,8 @@
+         private bool PhysicallyOwned(Thing t)=>t.MapHeld==map&&(t.Spawned||ReferenceEquals(t.ParentHolder,Cook.inventory)||ReferenceEquals(t.ParentHolder,Cook.carryTracker));
+         internal void Fault(Exception e){if(error==null){error=e.ToString();status="failed";check("f02/"+Phase+"/failure",false,error);}active=false;}
+         private static string F(float value)=>value.ToString("R",CultureInfo.InvariantCulture);
++        private static bool Same(string a,string b)=>string.Equals(Path.GetFullPath(a).TrimEnd('\\','/'),Path.GetFullPath(b).TrimEnd('\\','/'),StringComparison.OrdinalIgnoreCase);
++        private static bool Child(string child,string parent)=>Path.GetFullPath(child).StartsWith(Path.GetFullPath(parent).TrimEnd('\\','/')+Path.DirectorySeparatorChar,StringComparison.OrdinalIgnoreCase);
+         private static void Guard(bool value,string message){if(!value)throw new InvalidOperationException(message);}
+         private static bool Fit(Pawn p)=>p!=null&&!p.Dead&&!p.Downed&&!p.InMentalState&&p.health.hediffSet.hediffs.Count==0
+             &&p.health.capacities.GetLevel(PawnCapacityDefOf.Moving)>=0.99f&&p.health.capacities.GetLevel(PawnCapacityDefOf.Manipulation)>=0.99f;

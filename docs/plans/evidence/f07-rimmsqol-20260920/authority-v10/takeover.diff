@@ -1,0 +1,19 @@
+diff --git a/docs/plans/evidence/f07-rimmsqol-20260920/authority-v10/before/HarmonyPatches.cs.txt b/Source/HaulersDream/HarmonyPatches.cs
+index 7950617..a3e7e3b 100644
+--- a/docs/plans/evidence/f07-rimmsqol-20260920/authority-v10/before/HarmonyPatches.cs.txt
++++ b/Source/HaulersDream/HarmonyPatches.cs
+@@ -777,9 +777,11 @@ namespace HaulersDream
+             var pawn = PawnOf(__instance);
+             if (pawn == null)
+                 return true;
+-            // An explicitly queued nearby command promises native queue handling. Match only its
+-            // current pawn/job scope; ordinary second-task orders keep the takeover behavior above.
+-            if (NearbyHaulCommand.PreservesQueue(pawn, job))
++            // A nearby command carries its own permission/map and drafted-delivery authority.
++            // Folding it into ordinary automatic work would discard that identity. Let native
++            // immediate/queued ordering retain the actual command; ordinary second-task orders
++            // keep the takeover behavior above.
++            if (NearbyHaulCommand.IsIdentifiedOrder(job))
+                 return true;
+             return !BulkHaul.TryTakeoverSecondOrder(pawn, job, tag, ref __result);
+         }

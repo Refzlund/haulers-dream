@@ -1,0 +1,11 @@
+# Root foundation review
+
+24 September 2026. Reviewed the complete state model, GameComponent partial, gate, shared pull helper, lifecycle hooks, Core planner, state tests and tracked foundation diff. Read the actual retained test report; 29 passing focused tests are source-level evidence, not native integration acceptance. The implementation remains open.
+
+The shared pull endpoint checks current source membership and exact holding owner, count, empty hands, current capacity and forbidden/corpse policy immediately before moving cargo. Inventory transfers deliberately do not merge with personal stock. Its explicit CE hands fallback removes the massless-item replan defect. Whole-group load checks occur before cached decisions and again at the physical deposit boundary. Runtime-disabled flags are inactive, and all settings/state hooks remain installed from a disabled startup. These are appropriate source-level foundations.
+
+Two ownership concerns were returned to the author for correction. `TryRemoveLord` is not proof of completed/cancelled loading: the actual method can return without a lord and leaves the manifest/group intact. Ending recorded ownership there can permit opposite-direction cargo removal. Use the native loading-variable teardown boundary, with its original group captured before clearing. Also, absent session provenance in an old save cannot grant permission to unload an outstanding manifest before its first courier. The author confirmed both native facts and is implementing conservative manifest admission with explicit cancellation/completion as release. Re-review these corrections with actual callers and native lifecycle evidence.
+
+Live all-pawn/current-and-queued-job scans preserve custody but must be avoided for ordinary unflagged scanner candidates. The author will prefilter feature/flag/cargo; transfer admission must still read current ownership. No cached permission may authorize removal after takeover.
+
+The driver, operation persistence/recovery, real delivery-based continuation, UI/MP/localization and actual native acceptance are separate unfinished work. This review does not approve the feature for closure or substitute pure-state tests for load-dialog and physical-transfer behavior.

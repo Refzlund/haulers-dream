@@ -1,0 +1,20 @@
+--- v5/runtime-test.ps1
++++ prefs-corrected/runtime-test.ps1
+@@ -1114,7 +1114,7 @@
+ </ModsConfigData>
+ "@
+     Write-NewText (Join-Path $taskConfig 'ModsConfig.xml') $taskModsXml
+-    Write-NewText (Join-Path $taskConfig 'Prefs.xml') @'
++    Write-NewText (Join-Path $taskConfig 'Prefs.xml') @"
+ <?xml version="1.0" encoding="utf-8"?>
+ <PrefsData>
+   <devMode>True</devMode>
+@@ -1125,7 +1125,7 @@
+   <volumeMusic>0</volumeMusic>
+   <volumeAmbient>0</volumeAmbient>
+ </PrefsData>
+-'@
++"@
+     $taskAssemblyPaths = @(
+         (Join-Path $taskRuntime 'RimWorldWin64_Data\Managed\Assembly-CSharp.dll'),
+         (Join-Path $taskRuntime 'RimWorldWin64_Data\Managed\UnityEngine.CoreModule.dll'),

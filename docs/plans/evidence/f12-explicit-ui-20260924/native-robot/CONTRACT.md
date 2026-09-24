@@ -1,0 +1,9 @@
+# F12 supported robot source-targeter UI
+
+Use the unchanged UIv2 product and the two exact packages already accepted in F05/F06. No DLC is enabled. Use the real provider's public CreateRobot factory to create Omni I and Builder III with their native components, work settings and unchanged roles. The fixture does not assign robot roles, inject HD comps, replace native order permission or patch health.
+
+The positive actor must be an actual player Omni I with exactly one HD comp, native Hauling priority2 and native CanTakeOrder=false in this profile. Actual window input selects the comp's **Haul to…** source gizmo, chooses the real15-item source, enters7 in the real quantity dialog, confirms and selects the real farther bare destination. Require the existing synchronized command's actual false queue flag, original job success, source8/destination7, personalWood5 and unchanged unrelated ground stock and native robot roles. The source starts forbidden so autonomous provider hauling cannot claim its remainder after the forced order. This deliberate initial permission is a supported explicit-order input.
+
+Before that delivery, actual clicks on the rendered disabled gizmo with allowMechanoids=false and for real Builder III without Hauling must leave all order/job/queue/reservation/cargo state unchanged and create no targeter. Then restore the original setting and select Omni I. No role mutation or artificial blocked state is used.
+
+Reuse the frozen human UI private-window worker, control events, prompts, dialog and command receipts. Render the actual robot gizmo/source target prompt and final progress. This profile does not repeat the human invalid-input matrix, native save/lifecycle chain, station control UI or Biotech float-menu case. No Prepare/native acceptance is claimed by source/build handoff.

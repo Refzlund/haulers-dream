@@ -1,0 +1,40 @@
+<?xml version='1.0' encoding='utf-8'?>
+<LanguageData>
+  <HD_ExplicitHaulTo>Transporter {0} vers…</HD_ExplicitHaulTo>
+  <HD_ExplicitChanged>Le pion ou la pile sélectionnée a changé. Sélectionnez-les à nouveau.</HD_ExplicitChanged>
+  <HD_ExplicitActorUnavailable>Ce pion ne peut pas effectuer cet ordre de transport actuellement.</HD_ExplicitActorUnavailable>
+  <HD_ExplicitSelectSource>Sélectionnez la pile à transporter. Clic droit ou Échap pour annuler.</HD_ExplicitSelectSource>
+  <HD_ExplicitSelectDestination>Livrer {0} × {1} ici. {2} Choisissez une case au sol accessible ou une étagère. Clic droit ou Échap pour annuler.</HD_ExplicitSelectDestination>
+  <HD_ExplicitQueuedHint>Ajouter à la file de travail.</HD_ExplicitQueuedHint>
+  <HD_ExplicitReplaceHint>Remplacer le travail actuel.</HD_ExplicitReplaceHint>
+  <HD_ExplicitStateQueued>En attente</HD_ExplicitStateQueued>
+  <HD_ExplicitStateActive>Transport en cours</HD_ExplicitStateActive>
+  <HD_ExplicitStateBlocked>Bloqué</HD_ExplicitStateBlocked>
+  <HD_ExplicitStateCancelled>Annulé</HD_ExplicitStateCancelled>
+  <HD_ExplicitStateComplete>Terminé</HD_ExplicitStateComplete>
+  <HD_ExplicitStateCaptured>Suspendu temporairement</HD_ExplicitStateCaptured>
+  <HD_ExplicitSourceChanged>La source sélectionnée est absente, épuisée ou n'est plus autorisée.</HD_ExplicitSourceChanged>
+  <HD_ExplicitSourceReserved>La source sélectionnée est réservée par une autre tâche.</HD_ExplicitSourceReserved>
+  <HD_ExplicitDestinationBlocked>L'emplacement choisi manque de place, est réservé ou ne peut pas recevoir ces objets.</HD_ExplicitDestinationBlocked>
+  <HD_ExplicitRouteBlocked>Le trajet choisi est indisponible.</HD_ExplicitRouteBlocked>
+  <HD_ExplicitHandsBusy>Le pion porte une autre cargaison dans ses mains.</HD_ExplicitHandsBusy>
+  <HD_ExplicitInterrupted>L'ordre a été interrompu. Reprenez-le lorsque possible.</HD_ExplicitInterrupted>
+  <HD_ExplicitAdmissionFailed>Le pion n'a pas pu commencer cet ordre. Reprenez-le lorsque possible.</HD_ExplicitAdmissionFailed>
+  <HD_ExplicitNeedsReview>L'ordre sauvegardé ou sa cargaison a changé de façon inattendue. Vérifiez les objets avant de reprendre.</HD_ExplicitNeedsReview>
+  <HD_ExplicitStart>Transporter vers…</HD_ExplicitStart>
+  <HD_ExplicitStartDesc>Choisissez une pile, une quantité totale et une case au sol précise ou une étagère. Seule cette pile sera transportée. Maintenez la touche de mise en file des ordres pour ajouter cet ordre.</HD_ExplicitStartDesc>
+  <HD_ExplicitOrders>Ordres de transport</HD_ExplicitOrders>
+  <HD_ExplicitOrdersDesc>Consultez les quantités livrées et reprenez ou annulez les ordres de transport explicites.</HD_ExplicitOrdersDesc>
+  <HD_ExplicitAmountTitle>Choisir la quantité à transporter</HD_ExplicitAmountTitle>
+  <HD_ExplicitChooseDestination>Choisir la destination</HD_ExplicitChooseDestination>
+  <HD_ExplicitAmountContext>{0} : {1}\nDisponible dans cette pile : {2}</HD_ExplicitAmountContext>
+  <HD_ExplicitQueue>Ajouter à la file de travail</HD_ExplicitQueue>
+  <HD_ExplicitAmountHint>Livrer {0} au total, en plusieurs trajets si nécessaire. L'inventaire personnel reste intact.</HD_ExplicitAmountHint>
+  <HD_ExplicitQueueResume>Mettre les reprises en file</HD_ExplicitQueueResume>
+  <HD_ExplicitResume>Reprendre</HD_ExplicitResume>
+  <HD_ExplicitCancel>Annuler l'ordre</HD_ExplicitCancel>
+  <HD_ExplicitProgress>Ordre {0} : {1}\nLivré {2} / {3} → ({4}, {5})</HD_ExplicitProgress>
+  <HD_ExplicitMissingItem>Source absente</HD_ExplicitMissingItem>
+  <HD_ExplicitShelf>Étagère sélectionnée : {0}</HD_ExplicitShelf>
+  <HD_ExplicitMissingShelf>Étagère introuvable</HD_ExplicitMissingShelf>
+</LanguageData>

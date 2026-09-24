@@ -253,6 +253,12 @@ namespace HaulersDream
             var job = p.CurJob;
             if (job == null)
                 return;
+            if (ExplicitHaulCommand.IsJob(job))
+            {
+                int units = StorageCommitments.ExplicitShelfUnits(p, out var sample, out var destination);
+                if (units > 0) Accumulate(into, sample.def, units, sample, destination);
+                return;
+            }
 
             // Vanilla retargets targetA to the CARRIED thing once the stack is in hands
             // (Toils_Haul.StartCarryThing), so the job's own target resolves the item both before and after
@@ -271,6 +277,16 @@ namespace HaulersDream
             // HD's own unload takes one tagged stack OUT of the inventory and into the hands to walk it to
             // storage, at which point the pocketed pass above can no longer see it. This is the one moment
             // that stack would otherwise vanish from the accounting mid-delivery.
+            if (job.def == HaulersDreamDefOf.HaulersDream_UnloadTransporterInBulk)
+            {
+                var driver = p.jobs.curDriver as JobDriver_UnloadTransporterInBulk;
+                var held = p.carryTracker?.CarriedThing;
+                int owned = driver?.StorageBoundHandCount ?? 0;
+                if (held?.def != null && owned > 0)
+                    Accumulate(into, held.def, owned, held,
+                        job.targetB.IsValid && !job.targetB.HasThing ? GroupAt(p.Map, job.targetB.Cell) : null);
+                return;
+            }
             if (job.def != HaulersDreamDefOf.HaulersDream_UnloadInventory)
                 return;
             var carried = p.carryTracker?.CarriedThing;

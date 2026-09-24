@@ -1,0 +1,29 @@
+--- retained-7b5b/ActivityAlerts.cs
++++ successor/ActivityAlerts.cs
+@@ -121,7 +121,25 @@
+         {
+             Guard(!alerts.Any(a => a.search.name == AlertName), "Do not replace an existing named alert.");
+             foreach (Pawn p in map.mapPawns.AllPawnsSpawned.ToArray())
+-            { Guard(!Find.WorldPawns.Contains(p), "Spawned pawn already world-owned."); parked.Add(Tuple.Create(p, p.Position, p.Rotation)); p.DeSpawn(); Find.WorldPawns.PassToWorld(p, RimWorld.Planet.PawnDiscardDecideMode.KeepForever); }
++            {
++                Guard(!Find.WorldPawns.Contains(p), "Spawned pawn already world-owned.");
++                parked.Add(Tuple.Create(p, p.Position, p.Rotation));
++                // A map Lord cannot retain a free world pawn. Retire that membership
++                // through the native API while the pawn still has its map context.
++                // This disposable scene restores placement/world ownership, not AI duties.
++                var lord = p.lord;
++                if (lord != null)
++                {
++                    Guard(map.lordManager.lords.Contains(lord) && lord.ownedPawns.Contains(p), "Initial Lord ownership is inconsistent.");
++                    string formerLord = lord.GetUniqueLoadID() + ":" + lord.LordJob.GetType().FullName;
++                    lord.RemovePawn(p);
++                    Guard(p.lord == null && !lord.ownedPawns.Contains(p), "Native Lord removal did not release the pawn.");
++                    emit("f08-parked-lord-released", "pawn=" + p.thingIDNumber + "; formerLord=" + formerLord + "; native RemovePawn; disposable duties not restored.");
++                }
++                p.DeSpawn(); Find.WorldPawns.PassToWorld(p, RimWorld.Planet.PawnDiscardDecideMode.KeepForever);
++            }
++            Guard(parked.All(entry => entry.Item1.lord == null && !map.lordManager.lords.Any(l => l.ownedPawns.Contains(entry.Item1))),
++                "A parked world pawn remains owned by a map Lord.");
+             var area = new CellRect(map.Center.x - 15, map.Center.z - 15, 31, 31);
+             Guard(area.Cells.All(c => c.InBounds(map) && map.zoneManager.ZoneAt(c) == null), "Disposable ground must be zone-free.");
+             GenDebug.ClearArea(area, map);

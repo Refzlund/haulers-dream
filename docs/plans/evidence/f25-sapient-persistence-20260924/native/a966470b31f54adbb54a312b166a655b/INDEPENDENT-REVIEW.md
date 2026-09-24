@@ -1,0 +1,17 @@
+# F25 v4 ABSENT — accepted within its provider-absent scope
+
+Independent review accepts the actual `F25-ABSENT` capture: **42/42 assertions, U0, 75 contiguous events**. This does not by itself establish converted-pawn persistence or full F25 completion.
+
+The five active packages are exactly Harmony, Core, Biotech, HD and the harness. Neither provider package exists in this private runtime, and none of their five active assembly images appears in the actual ten-image record. The candidate's exact conditional `Defs/Compatibility/BigAndSmall.xml` is present and rehashed; it gates the foreign `BigAndSmall.HumanlikeAnimalSettings` type with `MayRequire="RedMattis.BetterPrerequisites"`. Native XML loading and map creation finish without missing-type, unresolved-reference, XML, or component errors. This supports safe provider absence; it is not a claim that the harness directly enumerated a nonexistent provider Def type.
+
+Actual healthy `Human37541` has one HD property, one live HD comp and lookup bound to that live comp. Actual unconverted `Monkey37544` retains animal intelligence and remains ineligible with the normal animal option off, despite its ordinary HD comp. Native room-cache warm-up advances from tick 1 through boundary 7 and is observed at tick 14 / 9.941256°C before actor work; no medical guard is bypassed.
+
+The human's real synchronized nearby command starts bulk job 15 over the original `Cloth37545` x2 and `Cloth37546` x3. The trace shows two held at tick 155, merged five held and bulk success at tick 261, then actual carried cargo at 267 and all five physically stored at `(148,0,112)` by tick 868. The human holds zero with no remaining tags. No fixture placement creates that final delivery. The five-unit total remains conserved in every recorded physical transition. Cleanup follows that physical proof; this run does not claim a separately observed terminal success for its unload job.
+
+`independent-v4-audit.json` binds all ten actual images to native metadata and manifest identities, rehashes all **1,487** copied files, confirms retained raw evidence equals the native originals, and preserves full physical observations. Host SHA is `A795365034AC0BF09BE687DB96EAE76AFD03A292822D9803343C16C8A09A41F8`. Product DLLs remain the selected unchanged HEAD binaries.
+
+All 1,977 Player.log lines were covered through full non-profile review and profiling/allocator classification (`independent-log-nontiming.json`). Two familiar Mono dynamic-image fallback probes, Direct3D timing messages and one non-power-of-two Header texture message remain visible; no actionable runtime, XML, save or reference error was found. The debug log agrees with the actual two-stack sweep and queued five-unit unload. The installed Version.txt reports rev590 while the executing assembly reports rev591; both are retained as provenance.
+
+Native PID 22348 and private controller PID 30584 joined with exit 0. The desktop receipt records only `Default`, no switch, no cleanup errors and no surviving owned process. Verify has `protectedChanges=[]`. Its generic manual-review, missing `scenario-observed`, and log-review flags remain intact; this scoped review supplies the semantic interpretation of the actual F25 events without rewriting Verify.
+
+Review script: `../../review-v4-native.py`. No source edit, Prepare, native launch, provider acquisition, product change or ledger mutation by the reviewer.

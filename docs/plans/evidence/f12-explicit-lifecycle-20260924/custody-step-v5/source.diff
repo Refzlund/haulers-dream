@@ -1,0 +1,18 @@
+--- v4/ExplicitLifecycleScene.Phases.cs
++++ v5/ExplicitLifecycleScene.Phases.cs
+@@ -119,9 +119,13 @@
+             if(pawn!=actors[0]||pendingSave||status!="running")return;
+             if(stage=="forbidden-walk"&&pawn.pather.Moving)
+             {Guard(pawn.carryTracker.CarriedThing==null&&source.stackCount==15,"Forbid before native pickup");source.SetForbidden(true,false);emit("f12-life-native-forbid",Id(source)+"; pawn="+pawn.Position+"; actualMoving=true");Phase("forbidden-wait");}
+-            if(stage=="interrupt-pickup"&&pawn.carryTracker.CarriedThing!=null)
++            // ClosestTouch may pick up while standing on the original source. Let the
++            // actual path take the carrier to an empty cell before adding the declared receiver.
++            if(stage=="interrupt-pickup"&&pawn.carryTracker.CarriedThing!=null
++                &&pawn.Position!=source.Position&&pawn.Position!=destination
++                &&!pawn.Position.GetThingList(map).Any(t=>t is Building||t.def.category==ThingCategory.Item))
+             {
+-                var piece=pawn.carryTracker.CarriedThing;int oldJob=pawn.CurJob.loadID;Guard(piece.stackCount==7&&ReferenceEquals(piece,Field<Thing>(active,"piece")),"Actual interrupted hands parcel differs");
++                var piece=pawn.carryTracker.CarriedThing;int oldJob=pawn.CurJob.loadID;Guard(piece.stackCount==7&&ReferenceEquals(piece,Field<Thing>(active,"piece"))&&source.stackCount==8&&pawn.CurJob.loadID==Field<int>(active,"jobId")&&pawn.jobs.curDriver.GetType()==typeof(JobDriver_ExplicitHaul),"Actual interrupted hands parcel/driver/source differs");
+                 resident=Spawn("cleanup-resident",source.def,20,pawn.Position);emit("f12-life-before-real-interrupt",JobText(pawn.CurJob)+"; piece="+Item(piece)+"; receiver="+Item(resident));
+                 pawn.jobs.StartJob(JobMaker.MakeJob(JobDefOf.Wait,60000),JobCondition.InterruptForced);
+                 Require("actual-cleanup-merge",State(active)=="Blocked"&&piece.Destroyed&&resident.stackCount==27&&Field<int>(active,"delivered")==0&&EmptyHands()

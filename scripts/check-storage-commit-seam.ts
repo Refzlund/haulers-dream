@@ -57,6 +57,10 @@ const COMMIT_SITES: { file: string; why: string }[] = [
 		why: 'the seam itself — the janitor adoption pass and the only writer of the ledger field'
 	},
 	{
+		file: 'StorageCommitments.ExplicitShelf.cs',
+		why: 'current explicit shelf trip: native exclusive cell reservation stored in the same ledger; no second group subtraction'
+	},
+	{
 		file: 'HaulToStack.cs',
 		why: 'Patch_JobDriver_HaulToCell_NoCellReservation — every vanilla HaulMode.ToCellStorage haul'
 	},
@@ -67,6 +71,10 @@ const COMMIT_SITES: { file: string; why: string }[] = [
 	{
 		file: 'JobDriver_UnloadHauledInventory.cs',
 		why: 'the delivery and home-area-fallback placements'
+	},
+	{
+		file: 'JobDriver_UnloadTransporterInBulk.cs',
+		why: 'owned transporter cargo delivery; actual hands are counted by StorageEvidence and destination uses the shared gate'
 	}
 ]
 
@@ -132,6 +140,11 @@ const CARVE_OUT = /stackLimit\s*<=\s*1/
 
 /** Members each seam file must still export; losing one silently disables a whole half of the fix. */
 const REQUIRED_MEMBERS: { path: string; label: string; members: string[] }[] = [
+	{
+		path: resolve(GAME_SRC, 'StorageCommitments.ExplicitShelf.cs'),
+		label: 'StorageCommitments.ExplicitShelf.cs',
+		members: ['bool AcquireExplicitShelf(', 'void ReleaseExplicitShelf(', 'bool ExplicitShelfCellHeldByOther(']
+	},
 	{
 		path: SEAM,
 		label: 'StorageCommitments.cs',

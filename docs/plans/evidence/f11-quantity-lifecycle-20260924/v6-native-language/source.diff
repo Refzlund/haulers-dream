@@ -1,0 +1,21 @@
+--- v5/F11Scene.Ui.cs
++++ v6/F11Scene.Ui.cs
+@@ -89,7 +89,17 @@
+         private void BuildUiControls()
+         {
+             // One real translated/constrained render; no exhaustive language/provider matrix.
+-            Add("italian-supported-scale",()=>{var italian=LanguageDatabase.AllLoadedLanguages.Single(l=>l.folderName=="Italian");italian.LoadMetadata();italian.LoadData();LanguageDatabase.activeLanguage=italian;Guard(ResolutionUtility.UIScaleSafeWithResolution(1f,Screen.width,Screen.height),"Prepared viewport does not support scale1.");Prefs.UIScale=1.0f;GenUI.ClearLabelWidthCache();});
++            Add("italian-supported-scale",()=>{
++                // Native Core stores this language as Italian (Italiano).tar; HD uses its legacy alias.
++                var italian=LanguageDatabase.AllLoadedLanguages.Single(l=>l.LegacyFolderName=="Italian");
++                italian.LoadMetadata();italian.LoadData();LanguageDatabase.activeLanguage=italian;
++                Guard(italian.TryGetTextFromKey("HD_DropAmountTitle",out var title)&&title.ToString()=="Lascia una quantità"
++                    &&italian.TryGetTextFromKey("HD_DropAmountQuantity",out var quantity)&&quantity.ToString()=="Quantità da lasciare"
++                    &&italian.TryGetTextFromKey("HD_DropAmountConfirm",out var confirm)&&confirm.ToString()=="Lascia","Native Italian parser did not load the selected HD dialog translations.");
++                Require("native-italian-translation-loaded",true,F02Json.Stringify(new{folder=italian.folderName,legacy=italian.LegacyFolderName,nativeName=italian.info.friendlyNameNative,
++                    directories=italian.AllDirectories.Select(d=>d.Item1.FullPath).ToArray(),title=title.ToString(),quantity=quantity.ToString(),confirm=confirm.ToString()}));
++                Guard(ResolutionUtility.UIScaleSafeWithResolution(1f,Screen.width,Screen.height),"Prepared viewport does not support scale1.");Prefs.UIScale=1.0f;GenUI.ClearLabelWidthCache();
++            });
+             OpenSteps("render");
+             string screenshot=Path.Combine(evidence,"f11-italian-1024x768.png");
+             Add("actual-dialog-capture",()=>{Guard(Screen.width==1024&&Screen.height==768,"Prepared native render dimensions differ.");ScreenCapture.CaptureScreenshot(screenshot);emit("f11-render",F02Json.Stringify(new{path=screenshot,language=LanguageDatabase.activeLanguage.folderName,scale=Prefs.UIScale,width=Screen.width,height=Screen.height,window=dialog.windowRect.ToString()}));},()=>File.Exists(screenshot)&&new FileInfo(screenshot).Length>32);

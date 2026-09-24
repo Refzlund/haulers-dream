@@ -1,0 +1,116 @@
+--- v3/src/SapientLifecycle.cs
++++ v4/src/SapientLifecycle.cs
+@@ -30,6 +30,7 @@
+         private readonly List<Pawn> conversionControls = new List<Pawn>();
+         private readonly List<Zone_Stockpile> zones = new List<Zone_Stockpile>();
+         private readonly List<Thing> owned = new List<Thing>();
++        private readonly List<Thing> remainders = new List<Thing>();
+         private readonly Dictionary<int, string> jobEnds = new Dictionary<int, string>();
+         private readonly System.Diagnostics.Stopwatch watch = System.Diagnostics.Stopwatch.StartNew();
+         private TickManager ticks;
+@@ -252,9 +253,14 @@
+                 emit("f25-native-quickload-request", "Actual save remains original; requesting native LoadGame in process " + originalProcess);
+                 GameDataSaveLoader.LoadGame(SaveName); return;
+             }
+-            anchor = Spawn(actorIndex, 7, -20); Spawn(actorIndex, 11, -7);
++            Guard(remainders.Count == actorIndex, "Partial remainder identity census differs.");
++            anchor = Spawn(actorIndex, 7, -20); remainders.Add(Spawn(actorIndex, 11, -7));
+             Issue(actors[actorIndex], anchor); activeJobId = actors[actorIndex].CurJob?.loadID ?? -1;
+-            Guard(actors[actorIndex].CurJob?.def == Bulk && actors[actorIndex].CurJob.targetQueueB.Count == 2, "Actual partial multi-stack order was not admitted.");
++            var admitted = actors[actorIndex].CurJob;
++            emit("f25-partial-plan", "actor=" + actors[actorIndex].ThingID + "; job=" + activeJobId + ":" + admitted?.def.defName
++                + "; targets=" + string.Join(",", (admitted?.targetQueueB ?? new List<LocalTargetInfo>()).Select(t => t.Thing?.ThingID)));
++            Guard(admitted?.def == Bulk && admitted.targetQueueB.Count == 2
++                && admitted.targetQueueB[0].Thing == anchor && admitted.targetQueueB[1].Thing == remainders[actorIndex], "Actual partial order must contain exactly its two original stacks.");
+             stage = "partial-haul"; ticks.CurTimeSpeed = TimeSpeed.Superfast;
+         }
+         private Thing Spawn(int i, int count, int x)
+@@ -335,8 +341,13 @@
+         {
+             if (actorIndex == actors.Count) { stage = "stable"; stableSince = ticks.TicksGame; ticks.CurTimeSpeed = TimeSpeed.Superfast; return; }
+             var p = actors[actorIndex]; SetAuto(p, true);
+-            anchor = map.listerThings.ThingsOfDef(Material(actorIndex)).Single(t => t.Spawned && !zones.Any(z => z.ContainsCell(t.Position)));
+-            Guard(anchor.stackCount == 11, "Original uncollected ground remainder changed."); Issue(p, anchor); activeJobId = p.CurJob?.loadID ?? -1;
++            anchor = remainders[actorIndex];
++            Guard(anchor.Spawned && anchor.Map == map && anchor.def == Material(actorIndex) && anchor.stackCount == 11
++                && anchor.TryGetComp<CompForbiddable>().Forbidden && !zones.Any(z => z.ContainsCell(anchor.Position)), "Original forbidden ground remainder changed.");
++            string before = RemainderState(); anchor.SetForbidden(false);
++            Record("allow-original-remainder-" + actorIndex, !anchor.TryGetComp<CompForbiddable>().Forbidden
++                && anchor.stackCount == 11 && Total(actorIndex) == 23, "before=" + before + "; after=" + RemainderState());
++            Issue(p, anchor); activeJobId = p.CurJob?.loadID ?? -1;
+             Guard(p.CurJob?.def == Bulk, "Actual postrestart bulk command declined."); stage = "remaining"; ticks.CurTimeSpeed = TimeSpeed.Superfast;
+         }
+ 
+@@ -360,6 +371,15 @@
+                 {
+                     var p = c.actors[c.actorIndex]; p.drafter.Drafted = true;
+                     p.GetComp<CompHauledToInventory>().SetKeptCount(c.Material(c.actorIndex), 2); SetAuto(p, false);
++                    // The next nearby command must not sweep this actor's deliberately uncollected cargo.
++                    // Use the real player forbid policy; preserve its exact identity/flag in the original save.
++                    var remainder = c.remainders[c.actorIndex];
++                    Guard(remainder.Spawned && remainder.Map == c.map && remainder.stackCount == 11
++                        && remainder.def == c.Material(c.actorIndex) && !remainder.TryGetComp<CompForbiddable>().Forbidden,
++                        "Original partial remainder is missing or already forbidden.");
++                    string before = c.RemainderState(); remainder.SetForbidden(true);
++                    c.Record("isolate-original-remainder-" + c.actorIndex, remainder.TryGetComp<CompForbiddable>().Forbidden
++                        && c.Total(c.actorIndex) == 23, "before=" + before + "; after=" + c.RemainderState());
+                     c.Record("actual-partial-cargo-" + c.actorIndex, c.Inventory(c.actorIndex) == 7 && c.Total(c.actorIndex) == 23
+                         && p.GetComp<CompHauledToInventory>().KeptCountOf(c.Material(c.actorIndex)) == 2 && !p.GetComp<CompHauledToInventory>().autoHaulYields, c.State());
+                     c.actorIndex++; c.StartPartial();
+@@ -375,6 +395,8 @@
+         private void SaveCheckpoint(string kind)
+         {
+             string before = State(); int tick = ticks.TicksGame; string path = Path.Combine(GenFilePaths.SaveDataFolderPath, "Saves", SaveName + ".rws");
++            if (kind == "partial") Guard(remainders.Count == actors.Count && remainders.Select((t, i) => t.Spawned && t.Map == map
++                && t.def == Material(i) && t.stackCount == 11 && t.TryGetComp<CompForbiddable>().Forbidden).All(ok => ok), "Partial save remainder census differs.");
+             GameDataSaveLoader.SaveGame(SaveName); Guard(File.Exists(path) && Scribe.mode == LoadSaveMode.Inactive, "Native save failed.");
+             Record("save-keeps-physical-state", State() == before, before);
+             var xml = new XmlDocument(); xml.Load(path); Guard(xml.DocumentElement.Name == "savegame", "Native savegame XML required.");
+@@ -386,10 +408,18 @@
+                 if (kind == "partial") Record("serialized-pawn-state-" + p.thingIDNumber,
+                     string.Equals(nodes[0]["haulersDreamAutoHaulYields"]?.InnerText, "False", StringComparison.OrdinalIgnoreCase) && nodes[0]["haulersDreamKeptCounts"] != null && nodes[0]["haulersDreamTakenToInventory"] != null, p.ThingID + "; live=" + Describe(p));
+             }
++            if (kind == "partial") foreach (var t in remainders)
++            {
++                var nodes = xml.SelectNodes("//thing[id='" + t.ThingID + "']").Cast<XmlNode>().ToArray();
++                Record("serialized-remainder-" + t.ThingID, nodes.Length == 1 && nodes[0]["def"]?.InnerText == t.def.defName
++                    && nodes[0]["stackCount"]?.InnerText == "11" && string.Equals(nodes[0]["forbidden"]?.InnerText, "True", StringComparison.OrdinalIgnoreCase),
++                    t.ThingID + "; native XML=" + string.Join("|", nodes.Select(n => n.OuterXml)));
++            }
+             var record = new Dictionary<string, string> { { "save", path }, { "sha", Hash(path) }, { "kind", kind }, { "tick", tick.ToString() }, { "map", map.uniqueID.ToString() },
+                 { "actors", string.Join(",", actors.Select(p => p.thingIDNumber)) }, { "originalActors", string.Join(",", originalIds) }, { "defs", string.Join(",", actors.Select(p => p.def.defName)) },
+                 { "state", before }, { "physical", Physical() }, { "originalMean", F(originalMean) }, { "mean", F(map.TileInfo.temperature) }, { "environmentEnd", environmentEnd.ToString() },
+                 { "producerProcess", System.Diagnostics.Process.GetCurrentProcess().Id.ToString() } };
++            if (kind == "partial") { record.Add("remainders", string.Join(",", remainders.Select(t => t.thingIDNumber))); record.Add("remainderState", RemainderState()); }
+             File.WriteAllLines(Path.Combine(evidence, "checkpoint.txt"), record.Select(kv => kv.Key + "=" + kv.Value));
+             File.Copy(path, Path.Combine(evidence, "checkpoint.original.rws"), false);
+             Record("actual-checkpoint-written", !failed, "kind=" + kind + "; path=" + path + "; sha=" + record["sha"]);
+@@ -402,6 +432,14 @@
+             foreach (int id in checkpoint["actors"].Split(',').Select(int.Parse)) actors.Add(map.mapPawns.AllPawnsSpawned.Single(p => p.thingIDNumber == id));
+             originalIds.AddRange(checkpoint["originalActors"].Split(',').Select(int.Parse));
+             zones.AddRange(map.zoneManager.AllZones.OfType<Zone_Stockpile>());
++            if (checkpoint["kind"] == "partial")
++            {
++                foreach (int id in checkpoint["remainders"].Split(',').Select(int.Parse))
++                    remainders.Add(map.listerThings.AllThings.Single(t => t.thingIDNumber == id));
++                Record("before-first-tick-remainders-preserved", remainders.Count == actors.Count && RemainderState() == checkpoint["remainderState"]
++                    && remainders.Select((t, i) => t.Spawned && t.Map == map && t.def == Material(i) && t.stackCount == 11
++                        && t.TryGetComp<CompForbiddable>().Forbidden).All(ok => ok), RemainderState());
++            }
+             originalMean = float.Parse(checkpoint["originalMean"], CultureInfo.InvariantCulture); environmentEnd = Number("environmentEnd"); climateCaptured = true; originalProcess = Number("producerProcess");
+             Record("before-first-tick-identity-and-physical", ticks.TicksGame == Number("tick") && map.uniqueID == Number("map")
+                 && string.Join(",", actors.Select(p => p.def.defName)) == checkpoint["defs"] && Physical() == checkpoint["physical"] && F(map.TileInfo.temperature) == checkpoint["mean"], State());
+@@ -446,9 +484,12 @@
+         private int Total(int i) => Goods().Where(t => t.def == Material(i)).Sum(t => t.stackCount);
+         private int Stored(int i) => Goods().Where(t => t.def == Material(i) && t.Spawned && zones.Any(z => z.ContainsCell(t.Position))).Sum(t => t.stackCount);
+         private string Physical() => string.Join("|", Goods().OrderBy(t => t.thingIDNumber).Select(t => t.ThingID + ":" + t.def.defName + ":" + t.stackCount + ":" + (t.Spawned ? t.Position.ToString() : t.ParentHolder is Pawn_InventoryTracker ? ((Pawn_InventoryTracker)t.ParentHolder).pawn.ThingID : "carry")));
++        private string RemainderState() => string.Join("|", remainders.Select(t => t.ThingID + ":" + t.def.defName + ":" + t.stackCount
++            + ":" + t.Position + ":spawned=" + t.Spawned + ":forbidden=" + t.TryGetComp<CompForbiddable>()?.Forbidden));
+         private string State() => string.Join("|", actors.Select((p, i) => p.ThingID + ":" + p.def.defName + ":draft=" + p.Drafted + ":held=" + Inventory(i)
+             + ":keep=" + (p.GetComp<CompHauledToInventory>()?.KeptCountOf(Material(i)) ?? -1) + ":auto=" + p.GetComp<CompHauledToInventory>()?.autoHaulYields
+-            + ":tags=" + string.Join(",", (p.GetComp<CompHauledToInventory>()?.PeekHashSet() ?? new HashSet<Thing>()).Where(t => t != null).Select(t => t.ThingID).OrderBy(x => x)))) + ";physical=" + Physical();
++            + ":tags=" + string.Join(",", (p.GetComp<CompHauledToInventory>()?.PeekHashSet() ?? new HashSet<Thing>()).Where(t => t != null).Select(t => t.ThingID).OrderBy(x => x)))) + ";physical=" + Physical()
++            + (remainders.Count == 0 ? "" : ";remainders=" + RemainderState());
+         private static string Describe(Pawn p) => p.ThingID + ":" + p.def.defName + "; intelligence=" + p.RaceProps.intelligence + "; mech=" + p.RaceProps.IsMechanoid
+             + "; defHD=" + DefComps(p) + "; liveHD=" + LiveComps(p) + "; allComps=" + p.AllComps.Count + "; lookup=" + (p.GetComp<CompHauledToInventory>() != null)
+             + "; lookupIsLive=" + p.AllComps.Contains(p.GetComp<CompHauledToInventory>()) + "; disabledHauling=" + p.WorkTypeIsDisabled(WorkTypeDefOf.Hauling)

@@ -1,0 +1,24 @@
+--- controller-v10
++++ controller-v12
+@@ -560,8 +560,8 @@
+             (@($taskManifest.expectedMods | ForEach-Object packageId) -join '|') -cne 'brrainz.harmony|ludeon.rimworld|giwaffed.haulersdream|malteschulze.rimmsqol|giwaffed.haulersdream.runtimeharness' -or
+             $taskManifest.PSObject.Properties['f34MixedProfile']) { throw 'F07 requires its exact five-package candidate context.' }
+         foreach ($taskProductionPin in @(
+-            @('HaulersDream','A20FBD9FB139668D0BD50DBE9496B75C728AB7023CC7277BA24388FE148E8C0F'),
+-            @('HaulersDream.Core','1A30CF3CBFC96C7BD0980CBE46482C07A58519F4D31FBD9D269A830A6AE9E332'),
++            @('HaulersDream','82198D99C56155B664AD9F4239B0CF4B0EBF8D64852B445667AF12B9D1AE2B3E'),
++            @('HaulersDream.Core','F24B0569229718941ECFC83EDC1FFA9C664DD64F8EC299B1E4C34C87795CD040'),
+             @('RIMMSqol','1152B0C198D34D4BB346FC74A4C4B72856F21ADA71FF376C5E4FF5F00FC81BD1'),
+             @('Priority Queue','3B9ACE1D057470EE950B5662484FB0AF843FFBEC907CB5FA5B2A73DE767BC1AA'))) {
+             if (@($taskManifest.expectedAssemblies | Where-Object { $_.name -ceq $taskProductionPin[0] -and $_.sha256 -ceq $taskProductionPin[1] }).Count -ne 1) { throw 'F07 restart selected image differs.' }
+@@ -894,8 +894,8 @@
+             @('Assemblies/0Harmony.dll','E271D22A7C32BFCA105D0E471C04EEE14EEC6142D37A30CD73CB7D32C7D1DD0F'))) {
+             if ((Get-Sha256 (Join-Path $RimmsRoot $taskPackage[0])) -cne $taskPackage[1]) { throw 'Actual acquired RIMMS image differs.' }
+         }
+-        if ((Get-Sha256 (Join-Path $BuiltModRoot '1.6/Assemblies/HaulersDream.dll')) -cne 'A20FBD9FB139668D0BD50DBE9496B75C728AB7023CC7277BA24388FE148E8C0F' -or
+-            (Get-Sha256 (Join-Path $BuiltModRoot '1.6/Assemblies/HaulersDream.Core.dll')) -cne '1A30CF3CBFC96C7BD0980CBE46482C07A58519F4D31FBD9D269A830A6AE9E332') { throw 'F07 restart candidate pair differs.' }
++        if ((Get-Sha256 (Join-Path $BuiltModRoot '1.6/Assemblies/HaulersDream.dll')) -cne '82198D99C56155B664AD9F4239B0CF4B0EBF8D64852B445667AF12B9D1AE2B3E' -or
++            (Get-Sha256 (Join-Path $BuiltModRoot '1.6/Assemblies/HaulersDream.Core.dll')) -cne 'F24B0569229718941ECFC83EDC1FFA9C664DD64F8EC299B1E4C34C87795CD040') { throw 'F07 restart candidate pair differs.' }
+     }
+     if ($CaseId -ceq 'F04-SETTINGS') {
+         if ($RunDirectory -or $ExpectedBehavior -cne 'satisfied' -or $NegativeControl -cne 'None' -or $CommonSense -or $HdSource -cne 'Built' -or $F34MixedProfile) { throw 'F04-SETTINGS requires Built/satisfied/None, no CommonSense or companion profile, and a fresh controller-generated ID.' }

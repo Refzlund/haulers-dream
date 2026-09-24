@@ -1,0 +1,40 @@
+<?xml version='1.0' encoding='utf-8'?>
+<LanguageData>
+  <HD_ExplicitHaulTo>ขน {0} ไปยัง…</HD_ExplicitHaulTo>
+  <HD_ExplicitChanged>ตัวละครหรือกองสิ่งของที่เลือกเปลี่ยนไปแล้ว กรุณาเลือกใหม่</HD_ExplicitChanged>
+  <HD_ExplicitActorUnavailable>ตัวละครนี้ยังทำคำสั่งขนของนี้ไม่ได้</HD_ExplicitActorUnavailable>
+  <HD_ExplicitSelectSource>เลือกกองสิ่งของที่จะขน คลิกขวาหรือกด Escape เพื่อยกเลิก</HD_ExplicitSelectSource>
+  <HD_ExplicitSelectDestination>ขนส่ง {0} × {1} มาที่นี่ {2} เลือกช่องพื้นหรือชั้นวางที่เข้าถึงได้ คลิกขวาหรือกด Escape เพื่อยกเลิก</HD_ExplicitSelectDestination>
+  <HD_ExplicitQueuedHint>เพิ่มในคิวงาน</HD_ExplicitQueuedHint>
+  <HD_ExplicitReplaceHint>แทนที่งานปัจจุบัน</HD_ExplicitReplaceHint>
+  <HD_ExplicitStateQueued>อยู่ในคิว</HD_ExplicitStateQueued>
+  <HD_ExplicitStateActive>กำลังขน</HD_ExplicitStateActive>
+  <HD_ExplicitStateBlocked>ติดขัด</HD_ExplicitStateBlocked>
+  <HD_ExplicitStateCancelled>ยกเลิกแล้ว</HD_ExplicitStateCancelled>
+  <HD_ExplicitStateComplete>เสร็จแล้ว</HD_ExplicitStateComplete>
+  <HD_ExplicitStateCaptured>พักชั่วคราว</HD_ExplicitStateCaptured>
+  <HD_ExplicitSourceChanged>แหล่งที่เลือกหายไป หมดแล้ว หรือไม่ได้รับอนุญาตอีกต่อไป</HD_ExplicitSourceChanged>
+  <HD_ExplicitSourceReserved>แหล่งที่เลือกถูกจองโดยงานอื่น</HD_ExplicitSourceReserved>
+  <HD_ExplicitDestinationBlocked>จุดหมายไม่มีที่ว่าง ถูกจอง หรือรับสิ่งของเหล่านี้ไม่ได้</HD_ExplicitDestinationBlocked>
+  <HD_ExplicitRouteBlocked>เส้นทางที่เลือกใช้ไม่ได้</HD_ExplicitRouteBlocked>
+  <HD_ExplicitHandsBusy>ตัวละครกำลังถือสิ่งของอื่นอยู่</HD_ExplicitHandsBusy>
+  <HD_ExplicitInterrupted>คำสั่งถูกขัดจังหวะ กดทำต่อเมื่อพร้อม</HD_ExplicitInterrupted>
+  <HD_ExplicitAdmissionFailed>ตัวละครเริ่มคำสั่งนี้ไม่ได้ กดทำต่อเมื่อพร้อม</HD_ExplicitAdmissionFailed>
+  <HD_ExplicitNeedsReview>คำสั่งที่บันทึกไว้หรือสิ่งของเปลี่ยนไปโดยไม่คาดคิด ตรวจสอบสิ่งของก่อนทำต่อ</HD_ExplicitNeedsReview>
+  <HD_ExplicitStart>ขนไปยัง…</HD_ExplicitStart>
+  <HD_ExplicitStartDesc>เลือกกองสิ่งของหนึ่งกอง จำนวนรวม และช่องพื้นหรือชั้นวางปลายทางที่แน่นอน ขนย้ายเฉพาะกองที่เลือก กดปุ่มเพิ่มคำสั่งในคิวค้างไว้เพื่อเพิ่มคำสั่งนี้</HD_ExplicitStartDesc>
+  <HD_ExplicitOrders>คำสั่งขนของ</HD_ExplicitOrders>
+  <HD_ExplicitOrdersDesc>ดูจำนวนที่ส่งแล้ว และทำต่อหรือยกเลิกคำสั่งขนของที่ระบุ</HD_ExplicitOrdersDesc>
+  <HD_ExplicitAmountTitle>เลือกจำนวนที่จะขน</HD_ExplicitAmountTitle>
+  <HD_ExplicitChooseDestination>เลือกปลายทาง</HD_ExplicitChooseDestination>
+  <HD_ExplicitAmountContext>{0}: {1}\nจำนวนในกองนี้: {2}</HD_ExplicitAmountContext>
+  <HD_ExplicitQueue>เพิ่มในคิวงาน</HD_ExplicitQueue>
+  <HD_ExplicitAmountHint>ส่งทั้งหมด {0} ชิ้น โดยขนหลายเที่ยวหากจำเป็น ไม่แตะต้องสิ่งของส่วนตัว</HD_ExplicitAmountHint>
+  <HD_ExplicitQueueResume>ใส่คำสั่งที่ทำต่อในคิว</HD_ExplicitQueueResume>
+  <HD_ExplicitResume>ทำต่อ</HD_ExplicitResume>
+  <HD_ExplicitCancel>ยกเลิกคำสั่ง</HD_ExplicitCancel>
+  <HD_ExplicitProgress>คำสั่ง {0}: {1}\nส่งแล้ว {2} / {3} → ({4}, {5})</HD_ExplicitProgress>
+  <HD_ExplicitMissingItem>ไม่พบแหล่งสิ่งของ</HD_ExplicitMissingItem>
+  <HD_ExplicitShelf>ชั้นวางที่เลือก: {0}</HD_ExplicitShelf>
+  <HD_ExplicitMissingShelf>ไม่พบชั้นวาง</HD_ExplicitMissingShelf>
+</LanguageData>

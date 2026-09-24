@@ -1,0 +1,36 @@
+# F45 menu runtime review — 20 September 2026
+
+## Periodic Bills without Hauler's Dream
+
+**Accept the baseline menu/action evidence. F45 remains open.** Actual run `447f3e4eeebe429c861dc2a813912b56`, profile `no-hd-pb`, completed all eleven planned cells and fourteen menu operations. Owned native PID 9088 joined with exit 0, no deadline or execution error. The result has no fixture errors or unexecuted cells, complete cleanup, and 268 passing operation checks. Every cell completed in a real Layout callback with GUI state restored.
+
+The 193 raw events are contiguous and equal the result's retained event array. All eleven separate cell files equal their result entries. Each of the fourteen menus has one observed PB creator, constructor and native WindowStack.Add; native and HD creator counts are zero. All four original options retain their object/action identities, labels, priorities, disabled state, captured bill and method identity through native menu construction/sorting. No replacement action or extra option is inferred from translated labels.
+
+Concrete behavior:
+
+- Countable simple-meal bills offer RepeatCount, TargetCount, Forever and PB_Periodic. Ten selected original PB delegates each enter and return once, without action exceptions. Same-mode selections preserve the exact Def reference; different-mode selections change only `repeatMode` and its object identity.
+- Priming, cancellation and PB-menu cancellation leave all seeded bill state unchanged. The uncountable smelting bill retains PB's original disabled/null “Do until you have X (NA)” option; it is never invoked.
+- Selecting PB mode again and cycling plain → PB → plain → PB preserve the same PB data object and all four distinct values: amount 4, interval 3 days, produced 2, last-cycle tick 123. Repeat count 9, target 13 and unrelated bill fields also remain unchanged. Actual row strings are `9x`, `Forever`, `0/13` or `2/4` as appropriate.
+- Every menu evaluates countability once during construction and zero times during selection. There are zero HD completion calls, as expected without HD. The shared check text mentioning “one candidate completion” is conditional in source; this baseline does not establish any candidate completion behavior.
+
+The two admitted native overlays have the expected exact callback methods/targets. All fourteen before/after window descriptions match within their synchronous operation, including reference order, flags and callbacks. The native learning overlay changes height between cells without being overwritten or removed. Owned menus, bills, benches and PB data are cleaned; scene restoration succeeds. The scenario remains paused at tick 2, so this is menu/action evidence, not productive crafting or periodic scheduling evidence.
+
+The complete 1,855-line Player.log was scanned and its non-profiling content/diagnostic matches reviewed; stdout contains Unity memory configuration and stderr is empty. The fixture About dependency-URL notice and two early Mono fallback requests are retained. The requests' initiators are not established by the log; there is no accompanying menu/action/runtime exception. Profiling and shutdown allocator counters do not contradict the observed behavior. Verify records no structural problems, read errors, input changes, private changes or gate changes; its mandatory independent-review/whole-F45 flags remain unchanged.
+
+Evidence reviewed: `%TEMP%/haulersdream-runtime-tests/447f3e4eeebe429c861dc2a813912b56/evidence/` (result, all cells and events), its `logs/Player.log`, and `%TEMP%/haulersdream-f45-window-diagnostic-execution/447f3e4eeebe429c861dc2a813912b56/launch/native/execution.json` and streams. The corresponding reused Verify report was also read for its structural decision.
+
+Published-HD and candidate-HD comparison runs are still required. This baseline does not establish the HD fix, rendered pointer interaction, crafting/payment timing, save/reload or compatibility with other providers. The nineteen existing pending groups remain recorded; earlier failed runs remain failures. No new acceptance matrix or fixture was introduced by this review.
+
+## Published HD-first reproduction and fixture eligibility correction
+
+**Accept the PB-option omission reproduction; retain the run's failed status.** Published run `eacdce87bf304628b2a0e78cdd17e720` reaches ten cells: the first nine pass, and the tenth fails a fixture expectation. All ten observed menus have HD creator count 1, PB creator count 0, native body count 0 and no PB option. The published replacement prefix's early `false` return explains the lost PB menu. The corresponding PB-only baseline above supplies the positive comparison.
+
+The tenth cell's actual SmeltWeapon menu has three plain modes, three batch modes and batch size 7. Its enabled TargetCount delegates perform their countability rejection when selected. The fixture instead expects zero batch actions solely because the recipe is not CookMealSimple (`PbMenuScenario.cs`, original eligibility expression at line 278). It fails before invoking the action, with identical before/after bill and PB data. Six later batch cells remain unexecuted; the rejected-TargetCount behavior has not been exercised by this failed cell. Cleanup and GUI restoration complete, with no captured Unity errors. Player.log diagnostic matches contain the two early Mono fallback requests and ordinary profiler/allocator output, not a corresponding menu exception.
+
+This is an **oracle error, not evidence that smelting should lose batch options**. The run's copied Core `Recipes_Production.xml` defines SmeltWeapon with ingredients and `specialProducts/Smelted`. Published menu decompilation uses `CraftBatchPlanner.BatchModeAvailable`; the retained v1.24.0 planner permits ordinary production bills with products **or special products**, subject to its unfinished-item, ingredient, entire-stack and live suppressor checks. It does not require countable products.
+
+The loaded candidate DLL `6828B52A…` independently confirms the same compiled gate. A finite read-only ILSpy inspection (PID 1792, exit 0) retained `%TEMP%/haulersdream-f45-smelt-planner-readonly-20260920.txt`; it invokes no target methods. Candidate run `5601ebfd7f984677964c06bbd4b9ca8f` fails during setup on the same incorrect `Available(simple) && !Available(uncountable)` assumption, before any menu cell. Its failed result and complete cleanup remain recorded.
+
+Approve the narrow fixture correction: establish that both real seeded recipes are batchable in the ordinary modes, expect their three batch options, and retain the independently checked countable/uncountable distinction, disabled PB entry, rejected TargetCount selection and custom-mode exclusion. Preserve both failed runs. A fresh corrected candidate run is needed; repeating the unchanged published build solely to make every fixture cell green is unnecessary for the already observed PB omission. No candidate behavior is accepted yet.
+
+Actual published/candidate result and event files remain under `%TEMP%/haulersdream-runtime-tests/<run>/evidence/`; published source evidence is under `%TEMP%/haulersdream-periodic-bills-investigation-20260919/` (`published-menu.decompile.stdout.txt` and `source-snapshots/v1.24.0-CraftBatchPlanner.cs`).

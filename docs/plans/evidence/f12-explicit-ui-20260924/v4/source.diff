@@ -1,0 +1,12 @@
+--- frozen-ui-v3/Source/HaulersDream/ExplicitHaulUi.cs
++++ frozen-ui-v4/Source/HaulersDream/ExplicitHaulUi.cs
+@@ -43,7 +43,8 @@
+             try
+             {
+                 Text.Font = GameFont.Small; Text.Anchor = TextAnchor.UpperLeft; Text.WordWrap = true; GUI.color = Color.white;
+-                GUI.DrawTexture(rect, TexUI.GrayTextBG); Widgets.Label(rect.ContractedBy(8f), text);
++                Widgets.DrawBoxSolid(rect, new Color(0.12f, 0.12f, 0.12f, 1f));
++                Widgets.Label(rect.ContractedBy(8f), text);
+             }
+             finally { Text.Font = font; Text.Anchor = anchor; Text.WordWrap = wrap; GUI.color = color; }
+         }

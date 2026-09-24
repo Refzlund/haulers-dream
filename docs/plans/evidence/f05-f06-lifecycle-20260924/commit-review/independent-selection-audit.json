@@ -1,0 +1,274 @@
+{
+  "status": "byte-and-xml-audit-passed",
+  "head": "ee6f84028ebefd7b7d915e9e74aed02fb60628fb",
+  "selectedCount": 24,
+  "xmlParsed": 17,
+  "translations": [
+    {
+      "path": "Languages/ChineseSimplified/Keyed/HaulersDream.xml",
+      "key": "HaulersDream.Setting.HaulNearbyOptionDesc",
+      "before": "\u5728\u53ef\u642c\u8fd0\u7269\u54c1\u7684\u53f3\u952e\u83dc\u5355\u4e0a\uff08\u5bf9\u80fd\u642c\u8fd0\u7684\u5c0f\u4eba\uff09\u6dfb\u52a0\u201c\u642c\u8fd0\u9644\u8fd1\u7684\u4e00\u5207\u201d\u9009\u9879\uff0c\u5b83\u4f1a\u7acb\u5373\u5f00\u59cb\u4e00\u6b21\u6279\u91cf\u6e05\u626b\u2014\u2014\u8fd9\u6837\u4f60\u5c31\u4e0d\u5fc5\u4e3a\u4e86\u89e6\u53d1\u6279\u91cf\u642c\u8fd0\u800c\u53bb\u4f18\u5148\u5904\u7406\u4e24\u4e2a\u642c\u8fd0\u3002\u539f\u7248\u7684\u201c\u4f18\u5148\u642c\u8fd0\u201d\u4ecd\u4f1a\u4e0e\u5b83\u5e76\u5217\u51fa\u73b0\uff0c\u7528\u4e8e\u5355\u4ef6\u642c\u8fd0\u3002",
+      "after": "\u5728\u53ef\u642c\u8fd0\u7269\u54c1\u7684\u53f3\u952e\u83dc\u5355\u4e0a\uff08\u5bf9\u80fd\u642c\u8fd0\u7684\u5c0f\u4eba\uff09\u6dfb\u52a0\u201c\u642c\u8fd0\u9644\u8fd1\u7684\u4e00\u5207\u201d\u9009\u9879\uff0c\u5b83\u4f1a\u7acb\u5373\u5f00\u59cb\u4e00\u6b21\u6279\u91cf\u6e05\u626b\u2014\u2014\u8fd9\u6837\u4f60\u5c31\u4e0d\u5fc5\u4e3a\u4e86\u89e6\u53d1\u6279\u91cf\u642c\u8fd0\u800c\u53bb\u4f18\u5148\u5904\u7406\u4e24\u4e2a\u642c\u8fd0\u3002\u539f\u7248\u7684\u201c\u4f18\u5148\u642c\u8fd0\u201d\u4ecd\u4f1a\u4e0e\u5b83\u5e76\u5217\u51fa\u73b0\uff0c\u7528\u4e8e\u5355\u4ef6\u642c\u8fd0\u3002 \u8fd8\u4f1a\u4e3a\u9009\u4e2d\u7684 Misc. Robots \u673a\u5668\u4eba\u6dfb\u52a0\u642c\u8fd0\u6309\u94ae\uff0c\u5373\u4f7f\u672a\u542f\u7528 Biotech \u4e5f\u53ef\u4f7f\u7528\u3002"
+    },
+    {
+      "path": "Languages/ChineseTraditional/Keyed/HaulersDream.xml",
+      "key": "HaulersDream.Setting.HaulNearbyOptionDesc",
+      "before": "\u5728\u53ef\u904b\u9001\u7269\u54c1\u7684\u53f3\u9375\u9078\u55ae\u4e2d\u65b0\u589e\u300c\u904b\u9001\u9644\u8fd1\u7684\u6240\u6709\u7269\u54c1\u300d\u9078\u9805\uff08\u9069\u7528\u65bc\u53ef\u57f7\u884c\u904b\u9001\u7684\u89d2\u8272\uff09\uff0c\u53ef\u7acb\u5373\u555f\u52d5\u6279\u91cf\u6383\u8569 \u2014 \u9019\u6a23\u60a8\u5c31\u4e0d\u5fc5\u512a\u5148\u6307\u5b9a\u5169\u500b\u904b\u9001\u6307\u4ee4\u4f86\u89f8\u767c\u6279\u91cf\u904b\u9001\u3002\u539f\u7248\u7684\u300c\u512a\u5148\u904b\u9001\u300d\u4ecd\u6703\u4fdd\u7559\u5728\u65c1\u908a\uff0c\u7528\u65bc\u55ae\u4e00\u7269\u54c1\u7684\u904b\u9001\u3002",
+      "after": "\u5728\u53ef\u904b\u9001\u7269\u54c1\u7684\u53f3\u9375\u9078\u55ae\u4e2d\u65b0\u589e\u300c\u904b\u9001\u9644\u8fd1\u7684\u6240\u6709\u7269\u54c1\u300d\u9078\u9805\uff08\u9069\u7528\u65bc\u53ef\u57f7\u884c\u904b\u9001\u7684\u89d2\u8272\uff09\uff0c\u53ef\u7acb\u5373\u555f\u52d5\u6279\u91cf\u6383\u8569 \u2014 \u9019\u6a23\u60a8\u5c31\u4e0d\u5fc5\u512a\u5148\u6307\u5b9a\u5169\u500b\u904b\u9001\u6307\u4ee4\u4f86\u89f8\u767c\u6279\u91cf\u904b\u9001\u3002\u539f\u7248\u7684\u300c\u512a\u5148\u904b\u9001\u300d\u4ecd\u6703\u4fdd\u7559\u5728\u65c1\u908a\uff0c\u7528\u65bc\u55ae\u4e00\u7269\u54c1\u7684\u904b\u9001\u3002 \u4e5f\u6703\u70ba\u9078\u53d6\u7684 Misc. Robots \u6a5f\u5668\u4eba\u52a0\u5165\u642c\u904b\u6309\u9215\uff0c\u5373\u4f7f\u672a\u555f\u7528 Biotech \u4e5f\u53ef\u4f7f\u7528\u3002"
+    },
+    {
+      "path": "Languages/Danish/Keyed/HaulersDream.xml",
+      "key": "HaulersDream.Setting.HaulNearbyOptionDesc",
+      "before": "Tilf\u00f8jer en \"Transporter alt i n\u00e6rheden\"-mulighed til h\u00f8jreklikmenuen p\u00e5 en transportabel vare (for figurer, der kan transportere), som starter en massefejning med det samme \u2014 s\u00e5 du ikke beh\u00f8ver at prioritere to transporter for at udl\u00f8se massetransport. Vanillas \"Priorit\u00e9r transport\" vises stadig ved siden af den til transport af en enkelt vare.",
+      "after": "Tilf\u00f8jer en \"Transporter alt i n\u00e6rheden\"-mulighed til h\u00f8jreklikmenuen p\u00e5 en transportabel vare (for figurer, der kan transportere), som starter en massefejning med det samme \u2014 s\u00e5 du ikke beh\u00f8ver at prioritere to transporter for at udl\u00f8se massetransport. Vanillas \"Priorit\u00e9r transport\" vises stadig ved siden af den til transport af en enkelt vare. Tilf\u00f8jer ogs\u00e5 en transportknap til en valgt Misc. Robots-robot, selv n\u00e5r Biotech er sl\u00e5et fra."
+    },
+    {
+      "path": "Languages/Dutch/Keyed/HaulersDream.xml",
+      "key": "HaulersDream.Setting.HaulNearbyOptionDesc",
+      "before": "Voegt een optie \"Sjouw alles in de buurt\" toe aan het rechtsklikmenu op een sjouwbaar item (voor figuren die kunnen sjouwen), die onmiddellijk een bulkveging start \u2014 zodat je niet twee sjouwtrips hoeft te prioriteren om bulksjouwen te activeren. Vanilla's \"Sjouwen prioriteren\" verschijnt er nog steeds naast voor een sjouwtrip van \u00e9\u00e9n item.",
+      "after": "Voegt een optie \"Sjouw alles in de buurt\" toe aan het rechtsklikmenu op een sjouwbaar item (voor figuren die kunnen sjouwen), die onmiddellijk een bulkveging start \u2014 zodat je niet twee sjouwtrips hoeft te prioriteren om bulksjouwen te activeren. Vanilla's \"Sjouwen prioriteren\" verschijnt er nog steeds naast voor een sjouwtrip van \u00e9\u00e9n item. Voegt ook een transportknop toe voor een geselecteerde Misc. Robots-robot, ook als Biotech is uitgeschakeld."
+    },
+    {
+      "path": "Languages/English/Keyed/HaulersDream.xml",
+      "key": "HaulersDream.Setting.HaulNearbyOptionDesc",
+      "before": "Adds a \"Haul everything nearby\" option to the right-click menu on a haulable item (for pawns that can haul), which starts a bulk sweep immediately \u2014 so you don't have to prioritize two hauls to trigger bulk hauling. Vanilla's \"Prioritize hauling\" still appears alongside it for a single-item haul.",
+      "after": "Adds a \"Haul everything nearby\" option to the right-click menu on a haulable item (for pawns that can haul), which starts a bulk sweep immediately \u2014 so you don't have to prioritize two hauls to trigger bulk hauling. Vanilla's \"Prioritize hauling\" still appears alongside it for a single-item haul. Also adds a hauling button for a selected Misc. Robots robot, including when Biotech is disabled."
+    },
+    {
+      "path": "Languages/French/Keyed/HaulersDream.xml",
+      "key": "HaulersDream.Setting.HaulNearbyOptionDesc",
+      "before": "Ajoute une option \u00ab Transporter tout ce qui est \u00e0 proximit\u00e9 \u00bb au menu clic droit sur un objet transportable (pour les pions qui peuvent transporter), qui lance imm\u00e9diatement un balayage group\u00e9 \u2014 vous n'avez donc pas \u00e0 prioriser deux transports pour d\u00e9clencher le transport group\u00e9. Le \u00ab Prioriser le transport \u00bb vanilla appara\u00eet toujours \u00e0 c\u00f4t\u00e9 pour un transport d'un seul objet.",
+      "after": "Ajoute une option \u00ab Transporter tout ce qui est \u00e0 proximit\u00e9 \u00bb au menu clic droit sur un objet transportable (pour les pions qui peuvent transporter), qui lance imm\u00e9diatement un balayage group\u00e9 \u2014 vous n'avez donc pas \u00e0 prioriser deux transports pour d\u00e9clencher le transport group\u00e9. Le \u00ab Prioriser le transport \u00bb vanilla appara\u00eet toujours \u00e0 c\u00f4t\u00e9 pour un transport d'un seul objet. Ajoute aussi un bouton de transport pour un robot Misc. Robots s\u00e9lectionn\u00e9, m\u00eame si Biotech est d\u00e9sactiv\u00e9."
+    },
+    {
+      "path": "Languages/German/Keyed/HaulersDream.xml",
+      "key": "HaulersDream.Setting.HaulNearbyOptionDesc",
+      "before": "F\u00fcgt dem Rechtsklick-Men\u00fc bei einem transportierbaren Gegenstand (f\u00fcr Spielfiguren, die transportieren k\u00f6nnen) eine Option \u201eAlles in der N\u00e4he transportieren\u201c hinzu, die sofort ein Stapel-Aufkehren startet \u2014 sodass du nicht zwei Transporte priorisieren musst, um den Stapel-Transport auszul\u00f6sen. Das \u201eTransportieren priorisieren\u201c des Grundspiels erscheint weiterhin daneben f\u00fcr einen Einzelgegenstand-Transport.",
+      "after": "F\u00fcgt dem Rechtsklick-Men\u00fc bei einem transportierbaren Gegenstand (f\u00fcr Spielfiguren, die transportieren k\u00f6nnen) eine Option \u201eAlles in der N\u00e4he transportieren\u201c hinzu, die sofort ein Stapel-Aufkehren startet \u2014 sodass du nicht zwei Transporte priorisieren musst, um den Stapel-Transport auszul\u00f6sen. Das \u201eTransportieren priorisieren\u201c des Grundspiels erscheint weiterhin daneben f\u00fcr einen Einzelgegenstand-Transport. F\u00fcgt au\u00dferdem eine Transport-Schaltfl\u00e4che f\u00fcr einen ausgew\u00e4hlten Misc. Robots-Roboter hinzu, auch bei deaktiviertem Biotech."
+    },
+    {
+      "path": "Languages/Italian/Keyed/HaulersDream.xml",
+      "key": "HaulersDream.Setting.HaulNearbyOptionDesc",
+      "before": "Aggiunge un'opzione \"Trasporta tutto nelle vicinanze\" al men\u00f9 del tasto destro su un oggetto trasportabile (per le pedine che possono trasportare), che avvia subito una raccolta in massa \u2014 cos\u00ec non devi prioritizzare due trasporti per innescare il trasporto in blocco. La \"Prioritizza trasporto\" vanilla compare comunque accanto a essa per un trasporto di un singolo oggetto.",
+      "after": "Aggiunge un'opzione \"Trasporta tutto nelle vicinanze\" al men\u00f9 del tasto destro su un oggetto trasportabile (per le pedine che possono trasportare), che avvia subito una raccolta in massa \u2014 cos\u00ec non devi prioritizzare due trasporti per innescare il trasporto in blocco. La \"Prioritizza trasporto\" vanilla compare comunque accanto a essa per un trasporto di un singolo oggetto. Aggiunge anche un pulsante di trasporto per un robot selezionato di Misc. Robots, anche con Biotech disattivato."
+    },
+    {
+      "path": "Languages/Japanese/Keyed/HaulersDream.xml",
+      "key": "HaulersDream.Setting.HaulNearbyOptionDesc",
+      "before": "\u904b\u642c\u53ef\u80fd\u306a\u30a2\u30a4\u30c6\u30e0\u306e\u53f3\u30af\u30ea\u30c3\u30af\u30e1\u30cb\u30e5\u30fc\u306b\uff08\u904b\u642c\u3067\u304d\u308b\u30dd\u30fc\u30f3\u5411\u3051\u306b\uff09\u300c\u8fd1\u304f\u306e\u3082\u306e\u3092\u3059\u3079\u3066\u904b\u642c\u300d\u306e\u9078\u629e\u80a2\u3092\u8ffd\u52a0\u3057\u307e\u3059\u3002\u3053\u308c\u306f\u5373\u5ea7\u306b\u4e00\u62ec\u304b\u304d\u96c6\u3081\u3092\u958b\u59cb\u3059\u308b\u306e\u3067\u3001\u4e00\u62ec\u904b\u642c\u3092\u767a\u52d5\u3055\u305b\u308b\u305f\u3081\u306b2\u3064\u306e\u904b\u642c\u3092\u512a\u5148\u6307\u5b9a\u3059\u308b\u5fc5\u8981\u304c\u306a\u304f\u306a\u308a\u307e\u3059\u3002\u30d0\u30cb\u30e9\u306e\u300c\u904b\u642c\u3092\u512a\u5148\u300d\u3082\u3001\u5358\u4e00\u30a2\u30a4\u30c6\u30e0\u904b\u642c\u3068\u3057\u3066\u4e26\u3093\u3067\u8868\u793a\u3055\u308c\u7d9a\u3051\u307e\u3059\u3002",
+      "after": "\u904b\u642c\u53ef\u80fd\u306a\u30a2\u30a4\u30c6\u30e0\u306e\u53f3\u30af\u30ea\u30c3\u30af\u30e1\u30cb\u30e5\u30fc\u306b\uff08\u904b\u642c\u3067\u304d\u308b\u30dd\u30fc\u30f3\u5411\u3051\u306b\uff09\u300c\u8fd1\u304f\u306e\u3082\u306e\u3092\u3059\u3079\u3066\u904b\u642c\u300d\u306e\u9078\u629e\u80a2\u3092\u8ffd\u52a0\u3057\u307e\u3059\u3002\u3053\u308c\u306f\u5373\u5ea7\u306b\u4e00\u62ec\u304b\u304d\u96c6\u3081\u3092\u958b\u59cb\u3059\u308b\u306e\u3067\u3001\u4e00\u62ec\u904b\u642c\u3092\u767a\u52d5\u3055\u305b\u308b\u305f\u3081\u306b2\u3064\u306e\u904b\u642c\u3092\u512a\u5148\u6307\u5b9a\u3059\u308b\u5fc5\u8981\u304c\u306a\u304f\u306a\u308a\u307e\u3059\u3002\u30d0\u30cb\u30e9\u306e\u300c\u904b\u642c\u3092\u512a\u5148\u300d\u3082\u3001\u5358\u4e00\u30a2\u30a4\u30c6\u30e0\u904b\u642c\u3068\u3057\u3066\u4e26\u3093\u3067\u8868\u793a\u3055\u308c\u7d9a\u3051\u307e\u3059\u3002 \u9078\u629e\u4e2d\u306e Misc. Robots \u306e\u30ed\u30dc\u30c3\u30c8\u306b\u306f\u904b\u642c\u30dc\u30bf\u30f3\u3082\u8ffd\u52a0\u3055\u308c\u307e\u3059\u3002Biotech \u304c\u7121\u52b9\u3067\u3082\u5229\u7528\u3067\u304d\u307e\u3059\u3002"
+    },
+    {
+      "path": "Languages/Korean/Keyed/HaulersDream.xml",
+      "key": "HaulersDream.Setting.HaulNearbyOptionDesc",
+      "before": "\uc6b4\ubc18 \uac00\ub2a5\ud55c \ubb3c\uac74\uc758 \uc6b0\ud074\ub9ad \uba54\ub274(\uc6b4\ubc18\ud560 \uc218 \uc788\ub294 \ud3f0\uc5d0 \ud55c\ud574)\uc5d0 \"\uc8fc\ubcc0 \uc804\ubd80 \uc6b4\ubc18\" \uc635\uc158\uc744 \ucd94\uac00\ud558\uc5ec, \uc989\uc2dc \ub300\ub7c9 \uc4f8\uc5b4 \ub2f4\uae30\ub97c \uc2dc\uc791\ud569\ub2c8\ub2e4 \u2014 \uadf8\ub798\uc11c \ub300\ub7c9 \uc6b4\ubc18\uc744 \uc720\ubc1c\ud558\ub824\uace0 \ub450 \uc6b4\ubc18\uc744 \uc6b0\uc120 \uc9c0\uc815\ud560 \ud544\uc694\uac00 \uc5c6\uc2b5\ub2c8\ub2e4. \ub2e8\uc77c \ubb3c\uac74 \uc6b4\ubc18\uc744 \uc704\ud55c \ubc14\ub2d0\ub77c\uc758 \"\uc6b4\ubc18 \uc6b0\uc120 \uc9c0\uc815\"\ub3c4 \ud568\uaed8 \ub098\ud0c0\ub0a9\ub2c8\ub2e4.",
+      "after": "\uc6b4\ubc18 \uac00\ub2a5\ud55c \ubb3c\uac74\uc758 \uc6b0\ud074\ub9ad \uba54\ub274(\uc6b4\ubc18\ud560 \uc218 \uc788\ub294 \ud3f0\uc5d0 \ud55c\ud574)\uc5d0 \"\uc8fc\ubcc0 \uc804\ubd80 \uc6b4\ubc18\" \uc635\uc158\uc744 \ucd94\uac00\ud558\uc5ec, \uc989\uc2dc \ub300\ub7c9 \uc4f8\uc5b4 \ub2f4\uae30\ub97c \uc2dc\uc791\ud569\ub2c8\ub2e4 \u2014 \uadf8\ub798\uc11c \ub300\ub7c9 \uc6b4\ubc18\uc744 \uc720\ubc1c\ud558\ub824\uace0 \ub450 \uc6b4\ubc18\uc744 \uc6b0\uc120 \uc9c0\uc815\ud560 \ud544\uc694\uac00 \uc5c6\uc2b5\ub2c8\ub2e4. \ub2e8\uc77c \ubb3c\uac74 \uc6b4\ubc18\uc744 \uc704\ud55c \ubc14\ub2d0\ub77c\uc758 \"\uc6b4\ubc18 \uc6b0\uc120 \uc9c0\uc815\"\ub3c4 \ud568\uaed8 \ub098\ud0c0\ub0a9\ub2c8\ub2e4. \uc120\ud0dd\ud55c Misc. Robots \ub85c\ubd07\uc5d0 \uc6b4\ubc18 \ubc84\ud2bc\ub3c4 \ucd94\uac00\ud569\ub2c8\ub2e4. Biotech\uac00 \ube44\ud65c\uc131\ud654\ub418\uc5b4 \uc788\uc5b4\ub3c4 \uc0ac\uc6a9\ud560 \uc218 \uc788\uc2b5\ub2c8\ub2e4."
+    },
+    {
+      "path": "Languages/Polish/Keyed/HaulersDream.xml",
+      "key": "HaulersDream.Setting.HaulNearbyOptionDesc",
+      "before": "Dodaje opcj\u0119 \u201eZnie\u015b wszystko w pobli\u017cu\u201d do menu z prawego przycisku na znoszalnym przedmiocie (dla pionk\u00f3w, kt\u00f3re mog\u0105 znosi\u0107), kt\u00f3ra natychmiast rozpoczyna masowe zgarnianie \u2014 wi\u0119c nie musisz priorytetyzowa\u0107 dw\u00f3ch znosze\u0144, by wyzwoli\u0107 masowe znoszenie. \u201ePriorytetyzuj znoszenie\u201d z podstawki wci\u0105\u017c pojawia si\u0119 obok dla znoszenia pojedynczego przedmiotu.",
+      "after": "Dodaje opcj\u0119 \u201eZnie\u015b wszystko w pobli\u017cu\u201d do menu z prawego przycisku na znoszalnym przedmiocie (dla pionk\u00f3w, kt\u00f3re mog\u0105 znosi\u0107), kt\u00f3ra natychmiast rozpoczyna masowe zgarnianie \u2014 wi\u0119c nie musisz priorytetyzowa\u0107 dw\u00f3ch znosze\u0144, by wyzwoli\u0107 masowe znoszenie. \u201ePriorytetyzuj znoszenie\u201d z podstawki wci\u0105\u017c pojawia si\u0119 obok dla znoszenia pojedynczego przedmiotu. Dodaje te\u017c przycisk transportu dla wybranego robota z Misc. Robots, nawet gdy Biotech jest wy\u0142\u0105czony."
+    },
+    {
+      "path": "Languages/PortugueseBrazilian/Keyed/HaulersDream.xml",
+      "key": "HaulersDream.Setting.HaulNearbyOptionDesc",
+      "before": "Adiciona uma op\u00e7\u00e3o \"Transportar tudo por perto\" ao menu de clique direito de um item transport\u00e1vel (para pe\u00f5es que podem transportar), que inicia uma varredura em massa imediatamente \u2014 assim voc\u00ea n\u00e3o precisa priorizar dois transportes para acionar o transporte em massa. O \"Priorizar transporte\" do jogo base ainda aparece ao lado para um transporte de item \u00fanico.",
+      "after": "Adiciona uma op\u00e7\u00e3o \"Transportar tudo por perto\" ao menu de clique direito de um item transport\u00e1vel (para pe\u00f5es que podem transportar), que inicia uma varredura em massa imediatamente \u2014 assim voc\u00ea n\u00e3o precisa priorizar dois transportes para acionar o transporte em massa. O \"Priorizar transporte\" do jogo base ainda aparece ao lado para um transporte de item \u00fanico. Tamb\u00e9m adiciona um bot\u00e3o de transporte para um rob\u00f4 selecionado do Misc. Robots, mesmo com Biotech desativado."
+    },
+    {
+      "path": "Languages/Russian/Keyed/HaulersDream.xml",
+      "key": "HaulersDream.Setting.HaulNearbyOptionDesc",
+      "before": "\u0414\u043e\u0431\u0430\u0432\u043b\u044f\u0435\u0442 \u043f\u0443\u043d\u043a\u0442 \u00ab\u041f\u0435\u0440\u0435\u043d\u0435\u0441\u0442\u0438 \u0432\u0441\u0451 \u043f\u043e\u0431\u043b\u0438\u0437\u043e\u0441\u0442\u0438\u00bb \u0432 \u043c\u0435\u043d\u044e \u043f\u043e \u043f\u0440\u0430\u0432\u043e\u043c\u0443 \u043a\u043b\u0438\u043a\u0443 \u043d\u0430 \u043f\u0435\u0440\u0435\u043d\u043e\u0441\u0438\u043c\u043e\u043c \u043f\u0440\u0435\u0434\u043c\u0435\u0442\u0435 (\u0434\u043b\u044f \u043f\u0435\u0448\u0435\u043a, \u0441\u043f\u043e\u0441\u043e\u0431\u043d\u044b\u0445 \u043f\u0435\u0440\u0435\u043d\u043e\u0441\u0438\u0442\u044c), \u043a\u043e\u0442\u043e\u0440\u044b\u0439 \u0441\u0440\u0430\u0437\u0443 \u0437\u0430\u043f\u0443\u0441\u043a\u0430\u0435\u0442 \u043c\u0430\u0441\u0441\u043e\u0432\u043e\u0435 \u0441\u043c\u0435\u0442\u0430\u043d\u0438\u0435 \u2014 \u0447\u0442\u043e\u0431\u044b \u043d\u0435 \u043f\u0440\u0438\u0445\u043e\u0434\u0438\u043b\u043e\u0441\u044c \u043f\u0440\u0438\u043e\u0440\u0438\u0442\u0438\u0437\u0438\u0440\u043e\u0432\u0430\u0442\u044c \u0434\u0432\u0435 \u043f\u0435\u0440\u0435\u043d\u043e\u0441\u043a\u0438 \u0434\u043b\u044f \u0437\u0430\u043f\u0443\u0441\u043a\u0430 \u043c\u0430\u0441\u0441\u043e\u0432\u043e\u0439 \u043f\u0435\u0440\u0435\u043d\u043e\u0441\u043a\u0438. \u0412\u0430\u043d\u0438\u043b\u044c\u043d\u043e\u0435 \u00ab\u041f\u0440\u0438\u043e\u0440\u0438\u0442\u0438\u0437\u0438\u0440\u043e\u0432\u0430\u0442\u044c \u043f\u0435\u0440\u0435\u043d\u043e\u0441\u043a\u0443\u00bb \u043f\u043e-\u043f\u0440\u0435\u0436\u043d\u0435\u043c\u0443 \u043e\u0442\u043e\u0431\u0440\u0430\u0436\u0430\u0435\u0442\u0441\u044f \u0440\u044f\u0434\u043e\u043c \u0434\u043b\u044f \u043f\u0435\u0440\u0435\u043d\u043e\u0441\u043a\u0438 \u043e\u0434\u043d\u043e\u0433\u043e \u043f\u0440\u0435\u0434\u043c\u0435\u0442\u0430.",
+      "after": "\u0414\u043e\u0431\u0430\u0432\u043b\u044f\u0435\u0442 \u043f\u0443\u043d\u043a\u0442 \u00ab\u041f\u0435\u0440\u0435\u043d\u0435\u0441\u0442\u0438 \u0432\u0441\u0451 \u043f\u043e\u0431\u043b\u0438\u0437\u043e\u0441\u0442\u0438\u00bb \u0432 \u043c\u0435\u043d\u044e \u043f\u043e \u043f\u0440\u0430\u0432\u043e\u043c\u0443 \u043a\u043b\u0438\u043a\u0443 \u043d\u0430 \u043f\u0435\u0440\u0435\u043d\u043e\u0441\u0438\u043c\u043e\u043c \u043f\u0440\u0435\u0434\u043c\u0435\u0442\u0435 (\u0434\u043b\u044f \u043f\u0435\u0448\u0435\u043a, \u0441\u043f\u043e\u0441\u043e\u0431\u043d\u044b\u0445 \u043f\u0435\u0440\u0435\u043d\u043e\u0441\u0438\u0442\u044c), \u043a\u043e\u0442\u043e\u0440\u044b\u0439 \u0441\u0440\u0430\u0437\u0443 \u0437\u0430\u043f\u0443\u0441\u043a\u0430\u0435\u0442 \u043c\u0430\u0441\u0441\u043e\u0432\u043e\u0435 \u0441\u043c\u0435\u0442\u0430\u043d\u0438\u0435 \u2014 \u0447\u0442\u043e\u0431\u044b \u043d\u0435 \u043f\u0440\u0438\u0445\u043e\u0434\u0438\u043b\u043e\u0441\u044c \u043f\u0440\u0438\u043e\u0440\u0438\u0442\u0438\u0437\u0438\u0440\u043e\u0432\u0430\u0442\u044c \u0434\u0432\u0435 \u043f\u0435\u0440\u0435\u043d\u043e\u0441\u043a\u0438 \u0434\u043b\u044f \u0437\u0430\u043f\u0443\u0441\u043a\u0430 \u043c\u0430\u0441\u0441\u043e\u0432\u043e\u0439 \u043f\u0435\u0440\u0435\u043d\u043e\u0441\u043a\u0438. \u0412\u0430\u043d\u0438\u043b\u044c\u043d\u043e\u0435 \u00ab\u041f\u0440\u0438\u043e\u0440\u0438\u0442\u0438\u0437\u0438\u0440\u043e\u0432\u0430\u0442\u044c \u043f\u0435\u0440\u0435\u043d\u043e\u0441\u043a\u0443\u00bb \u043f\u043e-\u043f\u0440\u0435\u0436\u043d\u0435\u043c\u0443 \u043e\u0442\u043e\u0431\u0440\u0430\u0436\u0430\u0435\u0442\u0441\u044f \u0440\u044f\u0434\u043e\u043c \u0434\u043b\u044f \u043f\u0435\u0440\u0435\u043d\u043e\u0441\u043a\u0438 \u043e\u0434\u043d\u043e\u0433\u043e \u043f\u0440\u0435\u0434\u043c\u0435\u0442\u0430. \u0422\u0430\u043a\u0436\u0435 \u0434\u043e\u0431\u0430\u0432\u043b\u044f\u0435\u0442 \u043a\u043d\u043e\u043f\u043a\u0443 \u043f\u0435\u0440\u0435\u043d\u043e\u0441\u043a\u0438 \u0434\u043b\u044f \u0432\u044b\u0431\u0440\u0430\u043d\u043d\u043e\u0433\u043e \u0440\u043e\u0431\u043e\u0442\u0430 \u0438\u0437 Misc. Robots, \u0434\u0430\u0436\u0435 \u0435\u0441\u043b\u0438 Biotech \u043e\u0442\u043a\u043b\u044e\u0447\u0451\u043d."
+    },
+    {
+      "path": "Languages/Spanish/Keyed/HaulersDream.xml",
+      "key": "HaulersDream.Setting.HaulNearbyOptionDesc",
+      "before": "A\u00f1ade una opci\u00f3n \u00abTransportar todo lo cercano\u00bb al men\u00fa del clic derecho sobre un objeto transportable (para peones capaces de transportar), que inicia un barrido en lote de inmediato, para que no tengas que priorizar dos transportes para activar el transporte en lote. La \u00abPriorizar transporte\u00bb del juego base sigue apareciendo junto a ella para un transporte de un solo objeto.",
+      "after": "A\u00f1ade una opci\u00f3n \u00abTransportar todo lo cercano\u00bb al men\u00fa del clic derecho sobre un objeto transportable (para peones capaces de transportar), que inicia un barrido en lote de inmediato, para que no tengas que priorizar dos transportes para activar el transporte en lote. La \u00abPriorizar transporte\u00bb del juego base sigue apareciendo junto a ella para un transporte de un solo objeto. Tambi\u00e9n a\u00f1ade un bot\u00f3n de transporte para un robot seleccionado de Misc. Robots, incluso con Biotech desactivado."
+    },
+    {
+      "path": "Languages/Thai/Keyed/HaulersDream.xml",
+      "key": "HaulersDream.Setting.HaulNearbyOptionDesc",
+      "before": "\u0e40\u0e1e\u0e34\u0e48\u0e21\u0e15\u0e31\u0e27\u0e40\u0e25\u0e37\u0e2d\u0e01 \"\u0e02\u0e19\u0e17\u0e38\u0e01\u0e2d\u0e22\u0e48\u0e32\u0e07\u0e17\u0e35\u0e48\u0e2d\u0e22\u0e39\u0e48\u0e43\u0e01\u0e25\u0e49\" \u0e43\u0e19\u0e40\u0e21\u0e19\u0e39\u0e04\u0e25\u0e34\u0e01\u0e02\u0e27\u0e32\u0e1a\u0e19\u0e44\u0e2d\u0e40\u0e17\u0e47\u0e21\u0e17\u0e35\u0e48\u0e02\u0e19\u0e44\u0e14\u0e49 (\u0e2a\u0e33\u0e2b\u0e23\u0e31\u0e1a\u0e15\u0e31\u0e27\u0e25\u0e30\u0e04\u0e23\u0e17\u0e35\u0e48\u0e02\u0e19\u0e02\u0e2d\u0e07\u0e44\u0e14\u0e49) \u0e0b\u0e36\u0e48\u0e07\u0e08\u0e30\u0e40\u0e23\u0e34\u0e48\u0e21\u0e01\u0e32\u0e23\u0e01\u0e27\u0e32\u0e14\u0e41\u0e1a\u0e1a\u0e23\u0e27\u0e21\u0e17\u0e31\u0e19\u0e17\u0e35 \u2014 \u0e04\u0e38\u0e13\u0e08\u0e36\u0e07\u0e44\u0e21\u0e48\u0e15\u0e49\u0e2d\u0e07\u0e2a\u0e31\u0e48\u0e07\u0e43\u0e2b\u0e49\u0e04\u0e27\u0e32\u0e21\u0e2a\u0e33\u0e04\u0e31\u0e0d\u0e2a\u0e2d\u0e07\u0e01\u0e32\u0e23\u0e02\u0e19\u0e40\u0e1e\u0e37\u0e48\u0e2d\u0e01\u0e23\u0e30\u0e15\u0e38\u0e49\u0e19\u0e01\u0e32\u0e23\u0e02\u0e19\u0e41\u0e1a\u0e1a\u0e23\u0e27\u0e21 \"\u0e43\u0e2b\u0e49\u0e04\u0e27\u0e32\u0e21\u0e2a\u0e33\u0e04\u0e31\u0e0d\u0e01\u0e32\u0e23\u0e02\u0e19\u0e02\u0e2d\u0e07\" \u0e02\u0e2d\u0e07\u0e40\u0e01\u0e21\u0e1e\u0e37\u0e49\u0e19\u0e10\u0e32\u0e19\u0e22\u0e31\u0e07\u0e04\u0e07\u0e1b\u0e23\u0e32\u0e01\u0e0f\u0e02\u0e49\u0e32\u0e07\u0e46 \u0e2a\u0e33\u0e2b\u0e23\u0e31\u0e1a\u0e01\u0e32\u0e23\u0e02\u0e19\u0e02\u0e2d\u0e07\u0e0a\u0e34\u0e49\u0e19\u0e40\u0e14\u0e35\u0e22\u0e27",
+      "after": "\u0e40\u0e1e\u0e34\u0e48\u0e21\u0e15\u0e31\u0e27\u0e40\u0e25\u0e37\u0e2d\u0e01 \"\u0e02\u0e19\u0e17\u0e38\u0e01\u0e2d\u0e22\u0e48\u0e32\u0e07\u0e17\u0e35\u0e48\u0e2d\u0e22\u0e39\u0e48\u0e43\u0e01\u0e25\u0e49\" \u0e43\u0e19\u0e40\u0e21\u0e19\u0e39\u0e04\u0e25\u0e34\u0e01\u0e02\u0e27\u0e32\u0e1a\u0e19\u0e44\u0e2d\u0e40\u0e17\u0e47\u0e21\u0e17\u0e35\u0e48\u0e02\u0e19\u0e44\u0e14\u0e49 (\u0e2a\u0e33\u0e2b\u0e23\u0e31\u0e1a\u0e15\u0e31\u0e27\u0e25\u0e30\u0e04\u0e23\u0e17\u0e35\u0e48\u0e02\u0e19\u0e02\u0e2d\u0e07\u0e44\u0e14\u0e49) \u0e0b\u0e36\u0e48\u0e07\u0e08\u0e30\u0e40\u0e23\u0e34\u0e48\u0e21\u0e01\u0e32\u0e23\u0e01\u0e27\u0e32\u0e14\u0e41\u0e1a\u0e1a\u0e23\u0e27\u0e21\u0e17\u0e31\u0e19\u0e17\u0e35 \u2014 \u0e04\u0e38\u0e13\u0e08\u0e36\u0e07\u0e44\u0e21\u0e48\u0e15\u0e49\u0e2d\u0e07\u0e2a\u0e31\u0e48\u0e07\u0e43\u0e2b\u0e49\u0e04\u0e27\u0e32\u0e21\u0e2a\u0e33\u0e04\u0e31\u0e0d\u0e2a\u0e2d\u0e07\u0e01\u0e32\u0e23\u0e02\u0e19\u0e40\u0e1e\u0e37\u0e48\u0e2d\u0e01\u0e23\u0e30\u0e15\u0e38\u0e49\u0e19\u0e01\u0e32\u0e23\u0e02\u0e19\u0e41\u0e1a\u0e1a\u0e23\u0e27\u0e21 \"\u0e43\u0e2b\u0e49\u0e04\u0e27\u0e32\u0e21\u0e2a\u0e33\u0e04\u0e31\u0e0d\u0e01\u0e32\u0e23\u0e02\u0e19\u0e02\u0e2d\u0e07\" \u0e02\u0e2d\u0e07\u0e40\u0e01\u0e21\u0e1e\u0e37\u0e49\u0e19\u0e10\u0e32\u0e19\u0e22\u0e31\u0e07\u0e04\u0e07\u0e1b\u0e23\u0e32\u0e01\u0e0f\u0e02\u0e49\u0e32\u0e07\u0e46 \u0e2a\u0e33\u0e2b\u0e23\u0e31\u0e1a\u0e01\u0e32\u0e23\u0e02\u0e19\u0e02\u0e2d\u0e07\u0e0a\u0e34\u0e49\u0e19\u0e40\u0e14\u0e35\u0e22\u0e27 \u0e40\u0e1e\u0e34\u0e48\u0e21\u0e1b\u0e38\u0e48\u0e21\u0e02\u0e19\u0e02\u0e2d\u0e07\u0e43\u0e2b\u0e49\u0e2b\u0e38\u0e48\u0e19\u0e22\u0e19\u0e15\u0e4c Misc. Robots \u0e17\u0e35\u0e48\u0e40\u0e25\u0e37\u0e2d\u0e01\u0e14\u0e49\u0e27\u0e22 \u0e41\u0e21\u0e49\u0e08\u0e30\u0e1b\u0e34\u0e14\u0e43\u0e0a\u0e49\u0e07\u0e32\u0e19 Biotech \u0e01\u0e47\u0e15\u0e32\u0e21"
+    },
+    {
+      "path": "Languages/Ukrainian/Keyed/HaulersDream.xml",
+      "key": "HaulersDream.Setting.HaulNearbyOptionDesc",
+      "before": "\u0414\u043e\u0434\u0430\u0454 \u043e\u043f\u0446\u0456\u044e \u00ab\u041f\u0435\u0440\u0435\u043d\u0435\u0441\u0442\u0438 \u0432\u0441\u0435 \u043f\u043e\u0431\u043b\u0438\u0437\u0443\u00bb \u0434\u043e \u043c\u0435\u043d\u044e \u0437\u0430 \u043f\u0440\u0430\u0432\u0438\u043c \u043a\u043b\u0456\u043a\u043e\u043c \u043d\u0430 \u0440\u0435\u0447\u0456, \u044f\u043a\u0443 \u043c\u043e\u0436\u043d\u0430 \u043f\u0435\u0440\u0435\u043d\u0435\u0441\u0442\u0438 (\u0434\u043b\u044f \u043f\u0456\u0448\u0430\u043a\u0456\u0432, \u0449\u043e \u043c\u043e\u0436\u0443\u0442\u044c \u043f\u0435\u0440\u0435\u043d\u043e\u0441\u0438\u0442\u0438), \u0449\u043e \u043d\u0435\u0433\u0430\u0439\u043d\u043e \u0437\u0430\u043f\u0443\u0441\u043a\u0430\u0454 \u043c\u0430\u0441\u043e\u0432\u0435 \u043f\u0456\u0434\u043c\u0456\u0442\u0430\u043d\u043d\u044f \u2014 \u0442\u043e\u0436 \u0432\u0430\u043c \u043d\u0435 \u0434\u043e\u0432\u0435\u0434\u0435\u0442\u044c\u0441\u044f \u043f\u0440\u0456\u043e\u0440\u0438\u0442\u0435\u0437\u0443\u0432\u0430\u0442\u0438 \u0434\u0432\u0430 \u043f\u0435\u0440\u0435\u043d\u0435\u0441\u0435\u043d\u043d\u044f, \u0449\u043e\u0431 \u0437\u0430\u043f\u0443\u0441\u0442\u0438\u0442\u0438 \u043c\u0430\u0441\u043e\u0432\u0435 \u043f\u0435\u0440\u0435\u043d\u0435\u0441\u0435\u043d\u043d\u044f. \u0412\u0430\u043d\u0456\u043b\u044c\u043d\u0435 \u00ab\u041f\u0440\u0456\u043e\u0440\u0438\u0442\u0435\u0437\u0443\u0432\u0430\u0442\u0438 \u043f\u0435\u0440\u0435\u043d\u0435\u0441\u0435\u043d\u043d\u044f\u00bb \u0432\u0441\u0435 \u043e\u0434\u043d\u043e \u0437'\u044f\u0432\u043b\u044f\u0454\u0442\u044c\u0441\u044f \u043f\u043e\u0440\u0443\u0447 \u0434\u043b\u044f \u043f\u0435\u0440\u0435\u043d\u0435\u0441\u0435\u043d\u043d\u044f \u043e\u0434\u043d\u0456\u0454\u0457 \u0440\u0435\u0447\u0456.",
+      "after": "\u0414\u043e\u0434\u0430\u0454 \u043e\u043f\u0446\u0456\u044e \u00ab\u041f\u0435\u0440\u0435\u043d\u0435\u0441\u0442\u0438 \u0432\u0441\u0435 \u043f\u043e\u0431\u043b\u0438\u0437\u0443\u00bb \u0434\u043e \u043c\u0435\u043d\u044e \u0437\u0430 \u043f\u0440\u0430\u0432\u0438\u043c \u043a\u043b\u0456\u043a\u043e\u043c \u043d\u0430 \u0440\u0435\u0447\u0456, \u044f\u043a\u0443 \u043c\u043e\u0436\u043d\u0430 \u043f\u0435\u0440\u0435\u043d\u0435\u0441\u0442\u0438 (\u0434\u043b\u044f \u043f\u0456\u0448\u0430\u043a\u0456\u0432, \u0449\u043e \u043c\u043e\u0436\u0443\u0442\u044c \u043f\u0435\u0440\u0435\u043d\u043e\u0441\u0438\u0442\u0438), \u0449\u043e \u043d\u0435\u0433\u0430\u0439\u043d\u043e \u0437\u0430\u043f\u0443\u0441\u043a\u0430\u0454 \u043c\u0430\u0441\u043e\u0432\u0435 \u043f\u0456\u0434\u043c\u0456\u0442\u0430\u043d\u043d\u044f \u2014 \u0442\u043e\u0436 \u0432\u0430\u043c \u043d\u0435 \u0434\u043e\u0432\u0435\u0434\u0435\u0442\u044c\u0441\u044f \u043f\u0440\u0456\u043e\u0440\u0438\u0442\u0435\u0437\u0443\u0432\u0430\u0442\u0438 \u0434\u0432\u0430 \u043f\u0435\u0440\u0435\u043d\u0435\u0441\u0435\u043d\u043d\u044f, \u0449\u043e\u0431 \u0437\u0430\u043f\u0443\u0441\u0442\u0438\u0442\u0438 \u043c\u0430\u0441\u043e\u0432\u0435 \u043f\u0435\u0440\u0435\u043d\u0435\u0441\u0435\u043d\u043d\u044f. \u0412\u0430\u043d\u0456\u043b\u044c\u043d\u0435 \u00ab\u041f\u0440\u0456\u043e\u0440\u0438\u0442\u0435\u0437\u0443\u0432\u0430\u0442\u0438 \u043f\u0435\u0440\u0435\u043d\u0435\u0441\u0435\u043d\u043d\u044f\u00bb \u0432\u0441\u0435 \u043e\u0434\u043d\u043e \u0437'\u044f\u0432\u043b\u044f\u0454\u0442\u044c\u0441\u044f \u043f\u043e\u0440\u0443\u0447 \u0434\u043b\u044f \u043f\u0435\u0440\u0435\u043d\u0435\u0441\u0435\u043d\u043d\u044f \u043e\u0434\u043d\u0456\u0454\u0457 \u0440\u0435\u0447\u0456. \u0422\u0430\u043a\u043e\u0436 \u0434\u043e\u0434\u0430\u0454 \u043a\u043d\u043e\u043f\u043a\u0443 \u043f\u0435\u0440\u0435\u043d\u0435\u0441\u0435\u043d\u043d\u044f \u0434\u043b\u044f \u0432\u0438\u0431\u0440\u0430\u043d\u043e\u0433\u043e \u0440\u043e\u0431\u043e\u0442\u0430 \u0437 Misc. Robots, \u043d\u0430\u0432\u0456\u0442\u044c \u044f\u043a\u0449\u043e Biotech \u0432\u0438\u043c\u043a\u043d\u0435\u043d\u043e."
+    }
+  ],
+  "files": [
+    {
+      "path": "Source/HaulersDream/BulkHaul.cs",
+      "headSha256": "2BC5CB765A8381B6527D6DD5B746A33EC0FC7312B8A6D592AE1D02BB4A2D5BC0",
+      "selectedSha256": "3A45B6EA35C2F63DC17CD16EDE9E479F6AD4CBF8F87D813F870B0CF4B29D13CA",
+      "workingNormalizedSha256": "3A45B6EA35C2F63DC17CD16EDE9E479F6AD4CBF8F87D813F870B0CF4B29D13CA",
+      "exactIsolatedBytes": true
+    },
+    {
+      "path": "Source/HaulersDream/EnRoutePickup.cs",
+      "headSha256": "E1C968D995F6108FB94856D617BEDA71D6DED10484F09288346208C75FE7CFF6",
+      "selectedSha256": "27A4D681097AA5A8E684B374C78440B501E8666AC7F25AB003F9460963493D7A",
+      "workingNormalizedSha256": "27A4D681097AA5A8E684B374C78440B501E8666AC7F25AB003F9460963493D7A",
+      "exactIsolatedBytes": true
+    },
+    {
+      "path": "Source/HaulersDream/UrgentHaulBulk.cs",
+      "headSha256": "360FB25EBA54B1BE00349DF1AF685F8015AA29326CBF3F559E7417BF11DC48B4",
+      "selectedSha256": "0C4C6D914905299DB25D4F0D431CD83DCE93F4FE6F4578014E9EB5DADD5259D1",
+      "workingNormalizedSha256": "0C4C6D914905299DB25D4F0D431CD83DCE93F4FE6F4578014E9EB5DADD5259D1",
+      "exactIsolatedBytes": true
+    },
+    {
+      "path": "Source/HaulersDream/YieldRouter.cs",
+      "headSha256": "DF726D29E8F6FE6FFAAD6A29B4DBE443B0167EA2DF7D613969FB28F8528EB958",
+      "selectedSha256": "76EE25A0680755A6D396B6E855C8758882FC8154B7E82228450982A3AC41D5EB",
+      "workingNormalizedSha256": "76EE25A0680755A6D396B6E855C8758882FC8154B7E82228450982A3AC41D5EB",
+      "exactIsolatedBytes": true
+    },
+    {
+      "path": "Source/HaulersDream/HarmonyPatches.cs",
+      "headSha256": "9970A99B2F3A6C73BAAC294513163E08D215343BEF109FA1DBDC5ADD91827352",
+      "selectedSha256": "EAD2E00110624F0354D3EBA40B8BD6B5612F07BBA0D046F10FF099AE0C756067",
+      "workingNormalizedSha256": "498016F4621B72B8728F710E9D74ECD86EF00FE792A0CAE7F562A6314EA50F61",
+      "exactIsolatedBytes": true
+    },
+    {
+      "path": "Patches/MiscRobots.xml",
+      "headSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855",
+      "selectedSha256": "FA61E7CF7963C834B10715768D355C33896281B25CEBF2F37DA19DA79F845CBB",
+      "workingNormalizedSha256": "FA61E7CF7963C834B10715768D355C33896281B25CEBF2F37DA19DA79F845CBB",
+      "exactIsolatedBytes": true
+    },
+    {
+      "path": "COMPATIBILITY.md",
+      "headSha256": "95305F1E57134CA7248FA4390441F4E41FEB8380C1BA71D277D1887BF365BE18",
+      "selectedSha256": "F43A59B3556084699CE954B9BBFCF20B114602E1F09219295BC8BF0606C7F8FD",
+      "workingNormalizedSha256": "F43A59B3556084699CE954B9BBFCF20B114602E1F09219295BC8BF0606C7F8FD",
+      "exactIsolatedBytes": true
+    },
+    {
+      "path": ".changeset/misc-robots-inventory-hauling.md",
+      "headSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855",
+      "selectedSha256": "C4C00212CAFDC943B460C4B18D4AA9F9A69BA7D4B9221744F72FBA69B1A02E52",
+      "workingNormalizedSha256": "C4C00212CAFDC943B460C4B18D4AA9F9A69BA7D4B9221744F72FBA69B1A02E52",
+      "exactIsolatedBytes": true
+    },
+    {
+      "path": "Languages/ChineseSimplified/Keyed/HaulersDream.xml",
+      "headSha256": "5E187F32871A60CF0627B4EB48F2A7B5CB9273F63D092A81C46636A233059355",
+      "selectedSha256": "48E5DB31C5F3E8302A5BF34526EF120BFEC6031EE235CCFEF0F764A603AA6055",
+      "workingNormalizedSha256": "1EF499E63301581D60223A91B19A1F437B996E2E97996E328927AA399E7673FF",
+      "exactIsolatedBytes": true
+    },
+    {
+      "path": "Languages/ChineseTraditional/Keyed/HaulersDream.xml",
+      "headSha256": "C754A5C63F23BA3EF8AF3AEBFCF2CC891AB052A0148D89ED5C0DD87FDDFE9706",
+      "selectedSha256": "25666D0BA51DDE6154BB3A0074AAD9ABF4C5C70F3B53EBEDFA4677A82DD95AF5",
+      "workingNormalizedSha256": "1C6EEA8204030F53D0609B8C1522EBE77409DB69BDE25DB5DBEFAEE99C782423",
+      "exactIsolatedBytes": true
+    },
+    {
+      "path": "Languages/Danish/Keyed/HaulersDream.xml",
+      "headSha256": "DB863BEB77FB81D5FE35A5ED051F5E64E272801580DCA9503E4D11AD33DDEF76",
+      "selectedSha256": "C9AED38BE7B14D806B17FB58D03423463467FFF639CA8B703AC91FC42B06A7E6",
+      "workingNormalizedSha256": "F772599794166A577C8B7F1267FBB75E6C9CE0E2BA63CE49F8CCDC21E02F88D5",
+      "exactIsolatedBytes": true
+    },
+    {
+      "path": "Languages/Dutch/Keyed/HaulersDream.xml",
+      "headSha256": "29D51613089D440A00A509BC5C2B537A155217CC1659C6E2A78F7B6D16339BEB",
+      "selectedSha256": "676F24BE1C55A06D84962A975FF9E7E20D3C29326B515C67AB1A766BD3DFD1A9",
+      "workingNormalizedSha256": "86CCDD60943BC51E1987C2EC521AD8C14408774AFCCD9F5E321EA311148D6A77",
+      "exactIsolatedBytes": true
+    },
+    {
+      "path": "Languages/English/Keyed/HaulersDream.xml",
+      "headSha256": "2ED3487C6817D824201673A0032CF49E9D7611BB5F7EDF51D22631E6742BDDBB",
+      "selectedSha256": "45658513211E25468D4BF7E02BAE3FEB1143AC499962F60922FC8CF8BD55D7B8",
+      "workingNormalizedSha256": "75F6E0B76EAF17F952BF3E779D2B5491826520EDFA07FFB10B0945D44C250F96",
+      "exactIsolatedBytes": true
+    },
+    {
+      "path": "Languages/French/Keyed/HaulersDream.xml",
+      "headSha256": "0A7B476CAF6A48C1839331B51E0D866C6D9D4DD0FEF9162EC83D9EA68FC0E7CB",
+      "selectedSha256": "C5BB2FD1CEE6D1E85EEE08A575924305752AE223385ABDA4D4035BD946C80552",
+      "workingNormalizedSha256": "D2ECFAE2E5EFE1B26C9841E434E9F9A55036E1B6E0AE3433A506451AA7C48F3F",
+      "exactIsolatedBytes": true
+    },
+    {
+      "path": "Languages/German/Keyed/HaulersDream.xml",
+      "headSha256": "33D1936EB6BF05AE27A4BCDB685A3712A4E821F546341885B391C3414DF11C1F",
+      "selectedSha256": "F6FEF1A900F83BD8A8DB70A0F59A1E60F77A814CE902947E6F62FD227F5F1F8F",
+      "workingNormalizedSha256": "932374B89D213CBC003FA6261A0CB0AD54CAEAF0FDD24DB8585D7855BD2F096D",
+      "exactIsolatedBytes": true
+    },
+    {
+      "path": "Languages/Italian/Keyed/HaulersDream.xml",
+      "headSha256": "EB750A957709BED35C7EEBD2008ADBB5318034EA9206174FB8FB8EB6EB57ECBE",
+      "selectedSha256": "CF469ED756E484FA4DCA484566F80B0D1897C491478EE8ECE8D9008AF6A97407",
+      "workingNormalizedSha256": "02238D1766AFBC827116F8EA0585ED366B75F25F5E31FB209133645930B7D68D",
+      "exactIsolatedBytes": true
+    },
+    {
+      "path": "Languages/Japanese/Keyed/HaulersDream.xml",
+      "headSha256": "BAD4046B1ED3796A25C260866F8B9D1DBA13962521312ACE6BF311C1A9048115",
+      "selectedSha256": "C91E51631851AA95C07F39389645F1BCF6144ED83A69E258D065A30B67446D12",
+      "workingNormalizedSha256": "48B77416427A5A0E0B43C35D36412116BC3882457F7F5A702ADE3A0542474485",
+      "exactIsolatedBytes": true
+    },
+    {
+      "path": "Languages/Korean/Keyed/HaulersDream.xml",
+      "headSha256": "09043EE6917937F30F603715FEC1D4892F04C3F6C4B1513E0B52EC71ED3FF696",
+      "selectedSha256": "F3B06EB5F5178D5C5EB1AC337561C59F9EB315A8D622609CF4521A74E3A60AA0",
+      "workingNormalizedSha256": "88C8C904ED07BE83C5C6B7D1A574E755E0428D4D4363742866B55E7F4CA84EA8",
+      "exactIsolatedBytes": true
+    },
+    {
+      "path": "Languages/Polish/Keyed/HaulersDream.xml",
+      "headSha256": "F97B7526E36806F3DA27DEBB1E0D83F95181484F19B5B4BAD867E0CBCC917E34",
+      "selectedSha256": "948E3B2788A3FF9F3DB287A312298DD7BDD930419F871D6FD717FB054E634938",
+      "workingNormalizedSha256": "7B8AA7161BC7079B2821B6C3CFFCDFC4EC4F3343C8993B2D598FDEEE26BFC009",
+      "exactIsolatedBytes": true
+    },
+    {
+      "path": "Languages/PortugueseBrazilian/Keyed/HaulersDream.xml",
+      "headSha256": "AB408422C20D87ED8ECD7CD6EB99628B8853B42C1CB7C6F97EDBBB02CB94B963",
+      "selectedSha256": "377AAFC37B8814676090F740AED7E7347B16B1CB9CCDB7B115D5E9A3857E78A9",
+      "workingNormalizedSha256": "2DD66A0F6959E2CA540D3AA239D53A0776084CC9EEF2E7B0E396F481A0EBCA0B",
+      "exactIsolatedBytes": true
+    },
+    {
+      "path": "Languages/Russian/Keyed/HaulersDream.xml",
+      "headSha256": "24E7AB2E572328345328297A17DE7ABC817E278CDCA80F0E0B675A7F02C98E80",
+      "selectedSha256": "E7D20DDB65E45D5CF5F1DD55BD0C32A667F6C99BC5339C7E8CAFCA9B7B1AB532",
+      "workingNormalizedSha256": "074F085572AD9538BD96B39E44868C5D650BDE27927CC0B7B23DA206BB5E37DF",
+      "exactIsolatedBytes": true
+    },
+    {
+      "path": "Languages/Spanish/Keyed/HaulersDream.xml",
+      "headSha256": "8EBD3C469938B633046AC88F432391D8184557248A5D148F060D6BB34A1773A2",
+      "selectedSha256": "1130A7505C4F2C77EA188F1E4DC0524FB036E565F46AC24F3DED14D5825ABD40",
+      "workingNormalizedSha256": "5686C4DA21DC26BE3A72811DF5884D6BD8B6C1826631E2A85932769CF2762967",
+      "exactIsolatedBytes": true
+    },
+    {
+      "path": "Languages/Thai/Keyed/HaulersDream.xml",
+      "headSha256": "3D3B7F6086EA4825E0B28E971732B9094162F1E314AE040DF00E8220F29A8AAE",
+      "selectedSha256": "A4BE35C8286BB8CE19C1D4416B163631CE5E1203B9B192C1C90AF1CB9BE1FCD1",
+      "workingNormalizedSha256": "142AAC5FB1C15E463EA407ABED50298018A36C312DED70D1F0446E3DE4F016DC",
+      "exactIsolatedBytes": true
+    },
+    {
+      "path": "Languages/Ukrainian/Keyed/HaulersDream.xml",
+      "headSha256": "068C9DFC04015C1C68BB5489F0D15E383ECD7D654C29B2504AB8C9DF95BAAD47",
+      "selectedSha256": "261C93BFBF8EC1CE2130B02FC189012079C355F4517E6D6284A3996654011934",
+      "workingNormalizedSha256": "0F6F6CB79121CC7AEE5329A29E639800B126D72709A71A7D9CC5272D90710BF5",
+      "exactIsolatedBytes": true
+    }
+  ]
+}

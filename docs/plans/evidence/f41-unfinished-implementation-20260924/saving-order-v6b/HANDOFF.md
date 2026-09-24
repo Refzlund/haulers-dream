@@ -1,0 +1,18 @@
+# F41 v6b — one stale fixture expectation
+
+Ready for root review and a fresh RECOVER followed by RESAVED. No product/controller/admission changes, Prepare, native launch, deployment or commit by this agent.
+
+Independent review of retained v6 run `6d58c5e37b7f42c1944984fe9f43e764` confirms the sole primary failure was the fixture's missed `native-resume-progress` expectation: it still required three repairs after the explicitly added fourth reverse-order diagnostic repair. The only other failed assertion is the propagated host-return failure. Original result remains **57/59, failed, U0**; nothing is relabelled or edited.
+
+The complete91-event chain shows exactly two load repairs at407, the full native bill-first save repair at408, and the native UFT-first diagnostic repair at408. Original unrelated Wait11 succeeded619, then native DoBill12/14 succeeded3403/3616. Both actual serialization files independently have the correct opposite node ordering and both links null. Work/creator/ingredient identities match the original producer, allowing only native XML indentation differences between the two writer formats. Actual clean resave at3617 contains two Cloth tuques19088/19089, healthy20 Cloth and original healthy UFT; consumed40/orphan UFTs are absent and both deep orphan bill reverse links are null.
+
+Whole1905-line Player.log and complete debug log reviewed: no gameplay/save/XML/reference exceptions, only the known two dynamic Mono fallback probes, graphics timing notices and Header.png mipmap notice. Native21852 and controller8876 joined0; private desktop never switched, input stayed Default, no owned processes remained. Audit and normalized complete diagnostic log are retained under `../native/6d58c5e37b7f42c1944984fe9f43e764/independent-count-failure-audit.json` and `independent-log-nonprofile.json`. This run remains failed and must not feed RESAVED admission.
+
+**Exact correction:** `source.diff` changes only `repairs.Count == 3` to `== 4` in `native-resume-progress`. Before scene and selection are preserved in `before/`; old v6 host/product and all native evidence remain untouched. Every count site was audited: producer0; loaded recovery2; full-save precondition2 and result3; reverse-diagnostic precondition3 and result4; completed recovery4; clean resave4; fresh clean-load and stability0. `freeze-audit.json` records all11 references including the diagnostic formatter; no other stale count remains.
+
+- Active selection `../native-fixture/selection.json`: SHA256 `F4F2E173DFBF26D1667A6F81F34B6ECC78C3F09866950249C1E0B17545D6A87E`.
+- New host `C:/Users/Arthur/AppData/Local/HaulersDreamQA/inputs/f41-saving-order-v6/host-build-v6b/Assemblies/HaulersDream.RuntimeHarness.dll`: SHA256 `06E8D015AE2EF5C4985F4783B849894EB80464543A2B6D927DA38D1B83BE9EDE`, MVID `08d610ae-6602-44dd-a96e-87a99ba1f9b2`.
+- Host build7.14s, zero warnings/errors, actual installed native references. `build-process.json` and reflection-only `metadata/host.process.json` confirm joined successful bounded workers. All82 host/source build inputs matched after build.
+- Product remains exact v6 HD `36E298BAA30D6EA51436E156267E954394DF64D685AE5CD8B472ACC80140E479` and Core `2EC1CCAB03227D6BC678E0EB6574E85A288901A5CDE6E210C13CFF4B505156FD`. `selection-audit.json` proves all fields except this scene pin and host identity are unchanged, including controller, original producer and baseline.
+
+Reuse exact accepted original producer `07ec286c63b04bb293820805211b0c47` for fresh RECOVER, with the same inactive desktop launcher. After the corrected recovery passes and is independently reviewed, create fresh RESAVED from its new clean checkpoint. No reason to rerun original producer or baseline. Native acceptance and F41 closure remain root-owned.

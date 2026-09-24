@@ -1,0 +1,42 @@
+{
+  "scratch": "C:\\Users\\Arthur\\AppData\\Local\\Temp\\hd-permission-guard-2c4pfidm",
+  "guardSha256": "df37526f9197e108297f0d0d2bb47eff87e9559710199327aedfb38cd5ad8fca",
+  "cases": [
+    {
+      "case": "actual source",
+      "exit": 0,
+      "expected": 0,
+      "output": "[non-colony-pawn-gates] PASS, 272 source files scanned, 4/4 carrier-unload entry points consult BulkUnloadGate.PlayerMayUnload (routed to Core), UnloadEverything written in 1 file (gated, + job-level FailOn), HostFaction read in 3 files (prisoner permission or pinned robot refusals), 2/2 TransportLoad halves carry the explicit faction + quest-lodger refusal.\n  - control: 7 file(s) name UnloadEverything / HostFaction in COMMENTS ONLY and were correctly ignored (all scanning runs over codeOnly output \u2014 a raw-text guard would fail on the very explanations these seams exist to carry, one of which quotes the removed predicate verbatim).\n"
+    },
+    {
+      "case": "hosted robot admitted",
+      "exit": 1,
+      "expected": 1,
+      "output": "\n[non-colony-pawn-gates] FAIL, 1 problem(s):\n\n  x ExplicitHaulCommand.cs reads Pawn.HostFaction. A host faction says the colony HOSTS this pawn, never that it owns it: guests, rescued wanderers and quest pawns all carry the player as host, and treating that as permission is the whole bug. Decide with BulkUnloadGate.PlayerMayUnload (or, for \"is this our prisoner\", IsPrisoner + the host-faction test it already makes) in Patch_WorkGiver_UnloadCarriers.cs.\n\n  This guard exists because vanilla protects a hosted pawn's belongings with four separate gates and HD's bulk unload consulted none of them \u2014 a downed guest could be emptied of a psylink neuroformer. The rule itself is unit-tested; whether it is CONSULTED is invisible to the NUnit suite, which references only HaulersDream.Core and cannot see a Pawn. If you intentionally restructured these seams, update this script to match. Do not just delete the check.\n\n"
+    },
+    {
+      "case": "additional unreviewed host read",
+      "exit": 1,
+      "expected": 1,
+      "output": "\n[non-colony-pawn-gates] FAIL, 1 problem(s):\n\n  x NearbyHaulCommand.cs reads Pawn.HostFaction. A host faction says the colony HOSTS this pawn, never that it owns it: guests, rescued wanderers and quest pawns all carry the player as host, and treating that as permission is the whole bug. Decide with BulkUnloadGate.PlayerMayUnload (or, for \"is this our prisoner\", IsPrisoner + the host-faction test it already makes) in Patch_WorkGiver_UnloadCarriers.cs.\n\n  This guard exists because vanilla protects a hosted pawn's belongings with four separate gates and HD's bulk unload consulted none of them \u2014 a downed guest could be emptied of a psylink neuroformer. The rule itself is unit-tested; whether it is CONSULTED is invisible to the NUnit suite, which references only HaulersDream.Core and cannot see a Pawn. If you intentionally restructured these seams, update this script to match. Do not just delete the check.\n\n"
+    },
+    {
+      "case": "loader JobOn faction refusal removed",
+      "exit": 1,
+      "expected": 1,
+      "output": "\n[non-colony-pawn-gates] FAIL, 1 problem(s):\n\n  x TransportLoad's HasJob/JobOn pair is OUT OF LOCKSTEP: TryGiveBulkJob (the JobOn half) lost the \"player faction, not a quest lodger\" refusal while the other half kept it. A refusal on one side only is worse than none: the work scan asks HasJob, is told there is work, asks JobOn, gets null, and re-asks within the same tick \u2014 the \"started 10 jobs in one tick\" loop the boarding-passenger carve-out in that same file already warns about. Change the two together.\n\n  This guard exists because vanilla protects a hosted pawn's belongings with four separate gates and HD's bulk unload consulted none of them \u2014 a downed guest could be emptied of a psylink neuroformer. The rule itself is unit-tested; whether it is CONSULTED is invisible to the NUnit suite, which references only HaulersDream.Core and cannot see a Pawn. If you intentionally restructured these seams, update this script to match. Do not just delete the check.\n\n"
+    },
+    {
+      "case": "prisoner host read removed",
+      "exit": 1,
+      "expected": 1,
+      "output": "\n[non-colony-pawn-gates] FAIL, 1 problem(s):\n\n  x Patch_WorkGiver_UnloadCarriers.cs's HostFaction prisoner arm is gone. That arm is the LEGITIMATE half of the predicate this fix narrowed: a prisoner's Faction stays its original faction, so only the host-faction test can recognise one, and vanilla lets the colony unload its own prisoners (ITab_Pawn_Gear.CanControl and CanBeStrippedByColony both admit them). Deleting it is a feature loss, not a fix.\n\n  This guard exists because vanilla protects a hosted pawn's belongings with four separate gates and HD's bulk unload consulted none of them \u2014 a downed guest could be emptied of a psylink neuroformer. The rule itself is unit-tested; whether it is CONSULTED is invisible to the NUnit suite, which references only HaulersDream.Core and cannot see a Pawn. If you intentionally restructured these seams, update this script to match. Do not just delete the check.\n\n"
+    },
+    {
+      "case": "restored source",
+      "exit": 0,
+      "expected": 0,
+      "output": "[non-colony-pawn-gates] PASS, 272 source files scanned, 4/4 carrier-unload entry points consult BulkUnloadGate.PlayerMayUnload (routed to Core), UnloadEverything written in 1 file (gated, + job-level FailOn), HostFaction read in 3 files (prisoner permission or pinned robot refusals), 2/2 TransportLoad halves carry the explicit faction + quest-lodger refusal.\n  - control: 7 file(s) name UnloadEverything / HostFaction in COMMENTS ONLY and were correctly ignored (all scanning runs over codeOnly output \u2014 a raw-text guard would fail on the very explanations these seams exist to carry, one of which quotes the removed predicate verbatim).\n"
+    }
+  ]
+}

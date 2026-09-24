@@ -1,0 +1,40 @@
+<?xml version='1.0' encoding='utf-8'?>
+<LanguageData>
+  <HD_ExplicitHaulTo>Vervoer {0} naar…</HD_ExplicitHaulTo>
+  <HD_ExplicitChanged>De pion of geselecteerde stapel is veranderd. Selecteer opnieuw.</HD_ExplicitChanged>
+  <HD_ExplicitActorUnavailable>Deze pion kan deze vervoeropdracht nu niet uitvoeren.</HD_ExplicitActorUnavailable>
+  <HD_ExplicitSelectSource>Selecteer de te vervoeren stapel. Rechtsklik of Escape annuleert.</HD_ExplicitSelectSource>
+  <HD_ExplicitSelectDestination>Lever hier {0} × {1} af. {2} Kies een bereikbare plek op de grond of een schap. Rechtsklikken of Escape annuleert.</HD_ExplicitSelectDestination>
+  <HD_ExplicitQueuedHint>Voeg toe aan de werkwachtrij.</HD_ExplicitQueuedHint>
+  <HD_ExplicitReplaceHint>Vervang het huidige werk.</HD_ExplicitReplaceHint>
+  <HD_ExplicitStateQueued>In wachtrij</HD_ExplicitStateQueued>
+  <HD_ExplicitStateActive>Aan het vervoeren</HD_ExplicitStateActive>
+  <HD_ExplicitStateBlocked>Geblokkeerd</HD_ExplicitStateBlocked>
+  <HD_ExplicitStateCancelled>Geannuleerd</HD_ExplicitStateCancelled>
+  <HD_ExplicitStateComplete>Voltooid</HD_ExplicitStateComplete>
+  <HD_ExplicitStateCaptured>Tijdelijk onderbroken</HD_ExplicitStateCaptured>
+  <HD_ExplicitSourceChanged>De geselecteerde bron ontbreekt, is op of is niet meer toegestaan.</HD_ExplicitSourceChanged>
+  <HD_ExplicitSourceReserved>De geselecteerde bron is gereserveerd voor een andere taak.</HD_ExplicitSourceReserved>
+  <HD_ExplicitDestinationBlocked>De gekozen plek heeft geen bruikbare ruimte, is gereserveerd of kan deze voorwerpen niet ontvangen.</HD_ExplicitDestinationBlocked>
+  <HD_ExplicitRouteBlocked>De gekozen route is niet beschikbaar.</HD_ExplicitRouteBlocked>
+  <HD_ExplicitHandsBusy>De pion draagt andere goederen in de handen.</HD_ExplicitHandsBusy>
+  <HD_ExplicitInterrupted>De opdracht is onderbroken. Hervat wanneer mogelijk.</HD_ExplicitInterrupted>
+  <HD_ExplicitAdmissionFailed>De pion kon de opdracht niet starten. Hervat wanneer mogelijk.</HD_ExplicitAdmissionFailed>
+  <HD_ExplicitNeedsReview>De opgeslagen opdracht of lading is onverwacht veranderd. Controleer de voorwerpen vóór hervatten.</HD_ExplicitNeedsReview>
+  <HD_ExplicitStart>Vervoer naar…</HD_ExplicitStart>
+  <HD_ExplicitStartDesc>Kies één stapel, een totale hoeveelheid en een precieze plek op de grond of een schap. Alleen die stapel wordt vervoerd. Houd de toets voor opdrachten in de wachtrij ingedrukt om de opdracht toe te voegen.</HD_ExplicitStartDesc>
+  <HD_ExplicitOrders>Vervoeropdrachten</HD_ExplicitOrders>
+  <HD_ExplicitOrdersDesc>Bekijk afgeleverde hoeveelheden en hervat of annuleer expliciete vervoeropdrachten.</HD_ExplicitOrdersDesc>
+  <HD_ExplicitAmountTitle>Kies de hoeveelheid</HD_ExplicitAmountTitle>
+  <HD_ExplicitChooseDestination>Kies bestemming</HD_ExplicitChooseDestination>
+  <HD_ExplicitAmountContext>{0}: {1}\nBeschikbaar in deze stapel: {2}</HD_ExplicitAmountContext>
+  <HD_ExplicitQueue>Toevoegen aan de werkwachtrij</HD_ExplicitQueue>
+  <HD_ExplicitAmountHint>Lever in totaal {0} af, zo nodig in meerdere ritten. Persoonlijke inventaris blijft onaangeroerd.</HD_ExplicitAmountHint>
+  <HD_ExplicitQueueResume>Hervatte opdrachten in wachtrij</HD_ExplicitQueueResume>
+  <HD_ExplicitResume>Hervatten</HD_ExplicitResume>
+  <HD_ExplicitCancel>Opdracht annuleren</HD_ExplicitCancel>
+  <HD_ExplicitProgress>Opdracht {0}: {1}\nAfgeleverd {2} / {3} → ({4}, {5})</HD_ExplicitProgress>
+  <HD_ExplicitMissingItem>Bron ontbreekt</HD_ExplicitMissingItem>
+  <HD_ExplicitShelf>Geselecteerd schap: {0}</HD_ExplicitShelf>
+  <HD_ExplicitMissingShelf>Ontbrekend schap</HD_ExplicitMissingShelf>
+</LanguageData>

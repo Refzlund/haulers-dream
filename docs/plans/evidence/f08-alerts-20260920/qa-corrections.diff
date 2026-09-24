@@ -1,0 +1,101 @@
+--- basis/src/ActivityAlerts.cs
++++ f08/src/ActivityAlerts.cs
+@@ -48,9 +48,9 @@
+         private FloatMenu menu;
+         private Window[] windowsBefore;
+         private FieldInfo onlyAvailable;
+-        private bool oldAvailable, oldEnableAll, settingsCaptured, speedCaptured, cleaned, restart, inScheduledCheck, positiveSeen;
++        private bool oldAvailable, oldEnableAll, settingsCaptured, speedCaptured, cleaned, restart, inScheduledUpdate, inScheduledCheck, positiveSeen;
+         private string status = "running", stage = "setup", failure;
+-        private int stageTick, sequence, lastJob = -1, totalCreated, startTick, guiStep, guiFrame;
++        private int stageTick, sequence, lastJob = -1, totalCreated, startTick, guiStep, guiFrame, screenshotFrame;
+         private float startedAt;
+         private int reportTick = -1, reportJobId, reportCount;
+         private string reportStage, reportJob;
+@@ -105,6 +105,8 @@
+             { FieldInfo field = typeof(HaulersDreamSettings).GetField(name); oldSettings.Add(name, field.GetValue(settings)); field.SetValue(settings, name == "pickupDelayTicks" ? (object)120 : true); }
+             observer = new Harmony("haulersdream.tests.f08-alerts." + Path.GetFileName(run));
+             Patch(typeof(Root), "OnGUI", nameof(OnGui), false);
++            Patch(typeof(AlertsReadout), "AlertsReadoutUpdate", nameof(UpdateStart), true);
++            Patch(typeof(AlertsReadout), "AlertsReadoutUpdate", nameof(UpdateEnd), false);
+             Patch(typeof(AlertsReadout), "CheckAddOrRemoveAlert", nameof(ScheduledStart), true);
+             Patch(typeof(AlertsReadout), "CheckAddOrRemoveAlert", nameof(ScheduledEnd), false);
+             Patch(typeof(Alert_QuerySearch), "GetReport", nameof(Reported), false);
+@@ -188,12 +190,17 @@
+             if (guiStep == 2)
+             {
+                 ScreenCapture.CaptureScreenshot(Path.Combine(evidence, "available-options.png"));
++                screenshotFrame = Time.frameCount; guiStep++; return;
++            }
++            if (guiStep == 3)
++            {
++                if (!ScreenshotReady("available-options.png")) return;
+                 var option = Options(menu).Single(o => o.Label == ">> " + "TD.DropwdownAllOptions".Translate());
+                 FloatMenu previous = menu; option.action(); Close(previous); menu = NewMenu();
+                 Require("all-options-offer", Options(menu).Count(o => o.Label == query.NameFor(bulk) && !o.Disabled && o.action != null) == 1, "Actual all-options action exposed " + query.NameFor(bulk));
+                 guiStep++; return;
+             }
+-            if (guiStep == 3)
++            if (guiStep == 4)
+             {
+                 Options(menu).Single(o => o.Label == query.NameFor(bulk)).action();
+                 // FloatMenuOptionAndRefresh.DoGUI normally notifies the holder after selection.
+@@ -202,8 +209,16 @@
+                 Require("actual-selected-def", query.sel == bulk && query.GetSelLabel() == query.NameFor(bulk), "Selected " + query.sel?.defName + "; rendered label=" + query.GetSelLabel());
+                 guiStep++; return;
+             }
+-            if (guiStep == 4) { guiStep++; return; } // let the native editor draw the selected label
+-            ScreenCapture.CaptureScreenshot(Path.Combine(evidence, "selected-activity.png"));
++            if (guiStep == 5)
++            {
++                // The selected editor has now received its own native Repaint. Keep it
++                // unchanged through the frame-end capture before closing owned windows.
++                ScreenCapture.CaptureScreenshot(Path.Combine(evidence, "selected-activity.png"));
++                screenshotFrame = Time.frameCount; guiStep++; return;
++            }
++            if (!ScreenshotReady("selected-activity.png")) return;
++            Require("gui-screenshots-written", new FileInfo(Path.Combine(evidence, "available-options.png")).Length > 0
++                && new FileInfo(Path.Combine(evidence, "selected-activity.png")).Length > 0, "Both requested native UI states survived through their frame-end PNG captures.");
+             savedAlert.alert.enabled = true;
+             Window[] beforeClose = Find.WindowStack.Windows.ToArray(); Close(editor); editor = null;
+             // Real editor PostClose may open its normal keep-changes prompt. Its default
+@@ -214,6 +229,11 @@
+             onlyAvailable.SetValue(TD_Find_Lib.Mod.settings, oldAvailable);
+             emit("f08-gui-selected", "current action -> all options -> " + query.GetSelLabel() + "; programmatic original actions/native frames, no physical input.");
+             SetStage("idle"); ticks.CurTimeSpeed = TimeSpeed.Superfast;
++        }
++        private bool ScreenshotReady(string name)
++        {
++            string path = Path.Combine(evidence, name);
++            return Time.frameCount > screenshotFrame && File.Exists(path) && new FileInfo(path).Length > 0;
+         }
+         private void Advance()
+         {
+@@ -294,11 +314,13 @@
+         }
+         private void Wait() { Guard(actor.jobs.TryTakeOrderedJob(JobMaker.MakeJob(JobDefOf.Wait, 60000)), "Owned finite native Wait order rejected."); }
+         private void SetStage(string value) { stage = value; stageTick = ticks.TicksGame; positiveSeen = false; emit("f08-stage", value + "; tick=" + stageTick); }
+-        private static void ScheduledStart(Alert alert) { var c = current; if (c != null && !c.cleaned && ReferenceEquals(alert, c.savedAlert?.alert)) c.inScheduledCheck = true; }
++        private static void UpdateStart() { var c = current; if (c != null && !c.cleaned) c.inScheduledUpdate = true; }
++        private static void UpdateEnd() { var c = current; if (c != null) c.inScheduledUpdate = false; }
++        private static void ScheduledStart(Alert alert) { var c = current; if (c != null && !c.cleaned && c.inScheduledUpdate && ReferenceEquals(alert, c.savedAlert?.alert)) c.inScheduledCheck = true; }
+         private static void ScheduledEnd(Alert alert) { var c = current; if (c != null && ReferenceEquals(alert, c.savedAlert?.alert)) c.inScheduledCheck = false; }
+         private static void Reported(Alert_QuerySearch __instance, AlertReport __result)
+         {
+-            var c = current; if (c == null || c.cleaned || !c.inScheduledCheck || !ReferenceEquals(__instance, c.savedAlert?.alert) || c.stage == "gui") return;
++            var c = current; if (c == null || c.cleaned || !c.inScheduledUpdate || !c.inScheduledCheck || !ReferenceEquals(__instance, c.savedAlert?.alert) || c.stage == "gui") return;
+             try
+             {
+                 c.reportStage = c.stage; c.reportTick = c.ticks.TicksGame; c.reportActive = __result.active;
+--- basis/host/Bootstrap.cs
++++ f08/host/Bootstrap.cs
+@@ -146,6 +146,9 @@
+         internal static void GameStarted(string kind)
+         {
+             if (!optedIn || terminal || manifest == null) return;
++            if (manifest.caseId == "F08-RESTART")
++                Check("actual-saved-game-loaded", kind == "loaded-game" && !gameStarted,
++                    "Fresh process requires its first lifecycle event to be native LoadedGame: " + kind);
+             gameStarted = true;
+             Event(kind, "GameComponent lifecycle callback received.");
+         }

@@ -22,7 +22,7 @@
 // Run directly to self-check:  bun scripts/check-bill-route-gate.ts
 import { resolve } from 'node:path'
 import { readdirSync, statSync } from 'node:fs'
-import { repoRoot } from './lib'
+import { codeOnly, repoRoot } from './lib'
 
 const SOURCE_DIR = resolve(repoRoot, 'Source/HaulersDream')
 const GATE = resolve(SOURCE_DIR, 'BillRouteGate.cs')
@@ -47,7 +47,7 @@ const ENTRY_POINTS: EntryPoint[] = [
 		cls: 'Patch_WorkGiver_DoBill_InventoryRoute',
 		method: 'Postfix',
 		gate: 'MayRouteToInventory',
-		what: 'the automatic one-sweep gather (creates HaulersDream_BillPrepGather)',
+		what: 'the automatic retained-selection gather (creates HaulersDream_GatherBillIngredients)',
 	},
 	{
 		file: 'Source/HaulersDream/Patch_WorkGiver_DoBill_BatchRoute.cs',
@@ -73,7 +73,7 @@ const ENTRY_POINTS: EntryPoint[] = [
 ]
 
 /** The HD job defs whose creation means "ingredients are going into a pawn's inventory". */
-const GATHER_JOB_DEFS = ['HaulersDream_BatchCraft', 'HaulersDream_BillPrepGather']
+const GATHER_JOB_DEFS = ['HaulersDream_BatchCraft', 'HaulersDream_BillPrepGather', 'HaulersDream_GatherBillIngredients']
 
 const errors: string[] = []
 
@@ -259,6 +259,51 @@ async function main() {
 					`ingredients" switch would then govern nothing while every entry point still "calls the gate" — ` +
 					`this guard would pass and #243 would be back.`
 			)
+	}
+
+	// Retained ordinary selection: check executable code, not historical claims in comments or log strings.
+	const routeSource = await read(resolve(SOURCE_DIR, 'Patch_WorkGiver_DoBill_InventoryRoute.cs'), 'ordinary gather route')
+	const driverSource = await read(resolve(SOURCE_DIR, 'JobDriver_GatherBillIngredients.cs'), 'retained gather driver')
+	const contractSource = await read(resolve(SOURCE_DIR, 'BillGatherContract.cs'), 'bill contract')
+	const shareSource = await read(resolve(SOURCE_DIR, 'SharedBillPatches.cs'), 'bill sharing')
+	if (routeSource && driverSource && contractSource && shareSource) {
+		const route = codeOnly(routeSource)
+		const driver = codeOnly(driverSource)
+		const contract = codeOnly(contractSource)
+		const share = codeOnly(shareSource)
+		if (!/prep\.targetQueueB\s*=\s*new\s+List<LocalTargetInfo>\(queue\)/.test(route)
+			|| !/prep\.countQueue\s*=\s*new\s+List<int>\(counts\)/.test(route))
+			errors.push('Ordinary gather must copy the complete native target/count lists, including inventory selections.')
+		if (/HoldsTaggedStockForBill\s*\(|recipe\.allowMixingIngredients/.test(route))
+			errors.push('Ordinary gather reinstates the old tagged-stock/mixing-recipe exclusion instead of retaining the native selection.')
+		if (/\.Clone\s*\(|\.loadID\s*=/.test(route + driver + contract))
+			errors.push('Bill handoff must not alias a cloned Job or copy its load-reference ID.')
+		if (/TryTakeOrderedJob\s*\(|Toils_Recipe\s*\.|jobQueue\.EnqueueFirst\s*\(/.test(driver))
+			errors.push('Gather driver must neither perform custom-def recipe work nor force/queue a craft ahead of player orders.')
+		const handoff = methodSpan(driver, 'Handoff', 0, driver.length)
+		const handoffCode = handoff ? driver.slice(handoff.start, handoff.end) : ''
+		const startCalls = [...driver.matchAll(/\.StartJob\s*\(/g)]
+		if (startCalls.length !== 1 || !handoff || startCalls[0].index! < handoff.start
+			|| startCalls[0].index! >= handoff.end
+			|| !/JobMaker\.MakeJob\(JobDefOf\.DoBill\b/.test(handoffCode)
+			|| !/TryValidateSelection\s*\(/.test(handoffCode)
+			|| !/jobQueue\.Count\s*>\s*0/.test(handoffCode))
+			errors.push('Native DoBill must be created/started in the successful, revalidated, player-queue-aware handoff only.')
+		if (!/BillGatherSelection\.TryRemap\s*\(/.test(driver)
+			|| !/BillGatherSelection\.TryNormalize\s*\(/.test(contract)
+			|| !/BillGatherSelection\.SatisfiesRecipe\s*\(/.test(contract))
+			errors.push('Live gathering must use the quantity/provenance and complete-recipe validation contracts.')
+		const transfer = methodSpan(driver, 'TransferSelected', 0, driver.length)
+		const transferCode = transfer ? driver.slice(transfer.start, transfer.end) : ''
+		const absorbAt = transferCode.indexOf('recipient.TryAbsorbStack(')
+		const reserveAt = transferCode.indexOf('pawn.Reserve(recipient, job,')
+		if (absorbAt < 0 || reserveAt < 0 || reserveAt >= absorbAt
+			|| !/NotifyMerge\.Invoke\(inventory,\s*new object\[\]\s*\{\s*recipient,\s*moved\s*\}\)/.test(transferCode)
+			|| !/AccessTools\.Method\(typeof\(ThingOwner\),\s*"NotifyAddedAndMergedWith"/.test(blankComments(driverSource)))
+			errors.push('Gather merges must reserve their recipient before mutation and dispatch the real owner merge notification (CE capacity cache).')
+		if (/class\s+Patch_WorkGiver_DoBill_JobOnThing\b/.test(share)
+			|| !/HarmonyPatch\(typeof\(JobDriver\),\s*nameof\(JobDriver\.Notify_Starting\)\)/.test(share))
+			errors.push('Bill carrier approach must run on real job start, never an unselected WorkGiver candidate.')
 	}
 
 	if (errors.length > 0) {

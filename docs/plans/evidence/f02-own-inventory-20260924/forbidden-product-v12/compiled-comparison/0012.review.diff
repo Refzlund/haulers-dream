@@ -1,0 +1,13 @@
+--- 
+
++++ 
+
+@@ -314,5 +314,6 @@
+
+ Ldloc_S local:System.Text.StringBuilder
+ Callvirt method:System.String System.Object::ToString() | hasThis=True; explicitThis=False; convention=Default; arity=0
+-Callvirt method:System.String System.String::TrimEnd() | hasThis=True; explicitThis=False; convention=Default; arity=0
++Call method:!!0[] System.Array::Empty<System.Char>() | hasThis=False; explicitThis=False; convention=Generic; arity=0
++Callvirt method:System.String System.String::TrimEnd(System.Char[]) | hasThis=True; explicitThis=False; convention=Default; arity=0
+ Call method:System.Void Verse.Log::Message(System.String) | hasThis=False; explicitThis=False; convention=Default; arity=0
+ Ret 

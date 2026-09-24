@@ -1,0 +1,1634 @@
+--- before/.changeset/bulk-unload-transporters.md
++++ after/.changeset/bulk-unload-transporters.md
+@@ -0,0 +1,7 @@
++---
++"haulers-dream": minor
++---
++
++Add bulk unloading from transport pods and shuttles, based on nullpat's contribution in #267. A saved toggle allows undrafted haulers to move cargo directly from the hold to storage while leaving passengers aboard. A prioritized unloading order repeats only after its previous cargo reaches storage; prioritized loading likewise continues the selected manifest after successful deliveries. New queued orders, drafting, loading conflicts and unavailable storage prevent further unloading trips.
++
++Validate transporter ownership and capacity again before each pull, retain trip cargo and progress through saves, and preserve interrupted cargo without taking personal stock. Transporter commands use multiplayer synchronization, and loading menu probes no longer allocate jobs or update the saved claim ledger. Settings, commands and work reports are available in all supported languages.
+--- before/Languages/ChineseSimplified/DefInjected/JobDef/Jobs.xml
++++ after/Languages/ChineseSimplified/DefInjected/JobDef/Jobs.xml
+@@ -16,4 +16,5 @@
+ <HaulersDream_LoadPortalInBulk.reportString>正在批量装载传送门。</HaulersDream_LoadPortalInBulk.reportString>
+ <HaulersDream_LoadVehicleInBulk.reportString>正在批量装载载具。</HaulersDream_LoadVehicleInBulk.reportString>
+ <HaulersDream_BulkRefuel.reportString>正在批量添加燃料。</HaulersDream_BulkRefuel.reportString>
++  <HaulersDream_UnloadTransporterInBulk.reportString>正在卸载运输工具。</HaulersDream_UnloadTransporterInBulk.reportString>
+ </LanguageData>
+--- before/Languages/ChineseSimplified/DefInjected/WorkGiverDef/TransporterUnload.xml
++++ after/Languages/ChineseSimplified/DefInjected/WorkGiverDef/TransporterUnload.xml
+@@ -0,0 +1,6 @@
++<?xml version="1.0" encoding="utf-8"?>
++<LanguageData>
++  <HaulersDream_BulkUnloadTransporters.label>批量卸载运输舱与穿梭机</HaulersDream_BulkUnloadTransporters.label>
++  <HaulersDream_BulkUnloadTransporters.verb>卸货</HaulersDream_BulkUnloadTransporters.verb>
++  <HaulersDream_BulkUnloadTransporters.gerund>卸货中</HaulersDream_BulkUnloadTransporters.gerund>
++</LanguageData>
+--- before/Languages/ChineseSimplified/Keyed/HaulersDream.xml
++++ after/Languages/ChineseSimplified/Keyed/HaulersDream.xml
+@@ -357,7 +357,7 @@
+ <HaulersDream.LoadTransporter.Option>优先批量装载 {0}</HaulersDream.LoadTransporter.Option>
+ <HaulersDream.LoadTransporter.CouldNotStart>当前附近没有可批量装载进那个运输舱的东西。</HaulersDream.LoadTransporter.CouldNotStart>
+ <HaulersDream.Setting.EnableBulkLoadTransporters>一趟批量装载运输舱和穿梭机</HaulersDream.Setting.EnableBulkLoadTransporters>
+-<HaulersDream.Setting.EnableBulkLoadTransportersDesc>当一个运输舱或穿梭机被设为装载时，搬运者会认领其装载清单的一部分，把附近的若干堆清扫进货物栏，走到运输舱一次，并把它们全部存入——而不是原版那样一趟手提一堆。多名搬运者分担一个大清单且不会重复搬运，并且在所认领的货物到位前，舱体不会登舱或发射。关闭此项时，沿用原版的单堆运输舱装载，不作改变。</HaulersDream.Setting.EnableBulkLoadTransportersDesc>
++<HaulersDream.Setting.EnableBulkLoadTransportersDesc>当一个运输舱或穿梭机被设为装载时，搬运者会认领其装载清单的一部分，把附近的若干堆清扫进货物栏，走到运输舱一次，并把它们全部存入——而不是原版那样一趟手提一堆。多名搬运者分担一个大清单且不会重复搬运，并且在所认领的货物到位前，舱体不会登舱或发射。关闭此项时，沿用原版的单堆运输舱装载，不作改变。 优先命令会在成功交货后继续完成本清单，前提是搬运者未被征召且没有新的排队命令。已征召的搬运者可以执行一趟装货。</HaulersDream.Setting.EnableBulkLoadTransportersDesc>
+ <HaulersDream.Setting.BulkLoadAiUpdateFrequency>装载重新检查间隔：{0} tick</HaulersDream.Setting.BulkLoadAiUpdateFrequency>
+ <HaulersDream.LoadPortal.Report>正在批量装载传送门。</HaulersDream.LoadPortal.Report>
+ <HaulersDream.LoadPortal.Option>优先批量装载 {0}</HaulersDream.LoadPortal.Option>
+@@ -420,7 +420,7 @@
+ <HaulersDream.Setting.OpportunisticLoadDesc>一个已经携带着附近某个运输舱、穿梭机、地图传送门或载具正等待的物品的小人，会绕道把它们卸下，而不是另起一趟全新的取货行程。减少无谓的奔走。默认关闭（它改变小人接下来选取哪项任务）。</HaulersDream.Setting.OpportunisticLoadDesc>
+ <HaulersDream.Setting.LoadOpportunityRadius>途中存货搜索半径：{0} 格</HaulersDream.Setting.LoadOpportunityRadius>
+ <HaulersDream.Setting.ContinuousLoading>“装载至完成”右键命令</HaulersDream.Setting.ContinuousLoading>
+-<HaulersDream.Setting.ContinuousLoadingDesc>添加一个右键命令，派出一名信使（即便被征召）穿行附近每个仍需装载的运输组，把这些任务连成一串直到它们全部装满——便于一条命令装满一支大商队。默认关闭（可选的便利功能）。</HaulersDream.Setting.ContinuousLoadingDesc>
++<HaulersDream.Setting.ContinuousLoadingDesc>添加右键命令：完成所选装货清单后，继续处理附近的装货目标。后续往返要求搬运者未被征召、已成功交货且没有新的排队命令。默认关闭。</HaulersDream.Setting.ContinuousLoadingDesc>
+ <HaulersDream.ContinuousLoad.Option>装载至完成（连续）——{0}</HaulersDream.ContinuousLoad.Option>
+ <HaulersDream.ContinuousLoad.CouldNotStart>当前附近没有可批量装载进去的东西。</HaulersDream.ContinuousLoad.CouldNotStart>
+ <HaulersDream.Setting.LoadHybridPathing>用真实寻路排列批量装载站点的顺序</HaulersDream.Setting.LoadHybridPathing>
+@@ -626,7 +626,7 @@
+ <HaulersDream.Setting.BulkHaulTrigger.Lab>批量搬运触发</HaulersDream.Setting.BulkHaulTrigger.Lab>
+ <HaulersDream.Setting.KeepWorkingMargin.Lab>较长转移前先卸载</HaulersDream.Setting.KeepWorkingMargin.Lab>
+ <HaulersDream.Setting.MinFreeSpaceToUnloadCarrier.Lab>开始所需的最小背包空闲空间</HaulersDream.Setting.MinFreeSpaceToUnloadCarrier.Lab>
+-<HaulersDream.Setting.MinFreeSpaceToUnloadCarrier.Help>搬运者在开始清空一只驮兽之前，需要至少有这么多的携带容量空闲，以免它自己的背包立刻溢出。</HaulersDream.Setting.MinFreeSpaceToUnloadCarrier.Help>
++<HaulersDream.Setting.MinFreeSpaceToUnloadCarrier.Help>搬运者在开始清空一只驮兽之前，需要至少有这么多的携带容量空闲，以免它自己的背包立刻溢出。 此阈值也适用于自动卸载运输器。</HaulersDream.Setting.MinFreeSpaceToUnloadCarrier.Help>
+ <HaulersDream.Setting.VisualUnloadDelay.Lab>每堆卸载延迟</HaulersDream.Setting.VisualUnloadDelay.Lab>
+ <HaulersDream.Setting.VisualUnloadDelay.Help>批量卸载时每堆之间的一个小小装饰性停顿，让它看起来像一个有意的动作。0＝瞬间。</HaulersDream.Setting.VisualUnloadDelay.Help>
+ <HaulersDream.Setting.BulkLoadAiUpdateFrequency.Lab>装载重新检查间隔</HaulersDream.Setting.BulkLoadAiUpdateFrequency.Lab>
+@@ -847,4 +847,18 @@
+   <HD_NearbyHaulInventoryUnavailable>该角色无法使用物品栏搬运。</HD_NearbyHaulInventoryUnavailable>
+   <HD_NearbyHaulRobotUnsupported>无法在当前模组配置下读取机器人的搬运工作。</HD_NearbyHaulRobotUnsupported>
+   <HD_NearbyHaulSourceUnavailable>所选物品无法搬运。</HD_NearbyHaulSourceUnavailable>
++  <HaulersDream.UnloadTransporter.Option>优先批量卸载 {0}</HaulersDream.UnloadTransporter.Option>
++  <HaulersDream.UnloadTransporter.CouldNotStart>当前无法开始批量卸载该运输工具。</HaulersDream.UnloadTransporter.CouldNotStart>
++  <HaulersDream.Gizmo.BulkUnloadAll.Label>批量卸载全部货物</HaulersDream.Gizmo.BulkUnloadAll.Label>
++  <HaulersDream.Gizmo.BulkUnloadAll.Empty>没有可卸载的货物</HaulersDream.Gizmo.BulkUnloadAll.Empty>
++  <HaulersDream.Gizmo.BulkUnloadAll.LoadBlocked>“全部批量卸载”已开启，请先将其关闭，再设置新的装载。</HaulersDream.Gizmo.BulkUnloadAll.LoadBlocked>
++  <HaulersDream.Gizmo.BulkUnloadAll.UnloadBlocked>正在向该运输器集结装载货物。</HaulersDream.Gizmo.BulkUnloadAll.UnloadBlocked>
++  <HaulersDream.Feat.UnloadTransporters.Name>批量卸载运输舱与穿梭机</HaulersDream.Feat.UnloadTransporters.Name>
++  <HaulersDream.Setting.EnableBulkUnloadTransporters>批量卸载运输器</HaulersDream.Setting.EnableBulkUnloadTransporters>
++  <HaulersDream.Setting.EnableBulkUnloadTransportersDesc>为运输舱和穿梭机添加批量卸货开关。未征召的搬运者会将货物直接送入仓库，每个工作任务搬运一趟。对已标记的运输器下达优先卸货命令后，只有完成本趟入库才会继续下一趟。乘客留在舱内。装货、仓库已满、征召或新命令排队都会停止后续往返。</HaulersDream.Setting.EnableBulkUnloadTransportersDesc>
++  <HaulersDream.Gizmo.BulkUnloadAll.Desc>将{0}内的货物送入仓库。乘客留在舱内。优先卸货命令会在每趟入库完成后继续，前提是搬运者未被征召且没有新的排队命令。装货前请关闭此开关。</HaulersDream.Gizmo.BulkUnloadAll.Desc>
++  <HaulersDream.Feat.UnloadTransporters.Blurb>将已着陆运输器中的货物直接搬入仓库</HaulersDream.Feat.UnloadTransporters.Blurb>
++  <HaulersDream.UnloadTransporter.Drafted>请先解除此角色的征召，再下达此命令。</HaulersDream.UnloadTransporter.Drafted>
++  <HaulersDream.UnloadTransporter.NoStorage>没有适合剩余货物的存储位置。</HaulersDream.UnloadTransporter.NoStorage>
++  <HaulersDream.Transporter.SyncUnavailable>多人同步注册失败，运输器命令不可用。</HaulersDream.Transporter.SyncUnavailable>
+ </LanguageData>
+--- before/Languages/ChineseTraditional/DefInjected/JobDef/Jobs.xml
++++ after/Languages/ChineseTraditional/DefInjected/JobDef/Jobs.xml
+@@ -21,4 +21,5 @@
+   <HaulersDream_LoadVehicleInBulk.reportString>正在批量裝載載具。</HaulersDream_LoadVehicleInBulk.reportString>
+   <HaulersDream_BulkRefuel.reportString>正在批量補充燃料。</HaulersDream_BulkRefuel.reportString>
+ 
++  <HaulersDream_UnloadTransporterInBulk.reportString>正在卸載運輸工具。</HaulersDream_UnloadTransporterInBulk.reportString>
+ </LanguageData>--- before/Languages/ChineseTraditional/DefInjected/WorkGiverDef/TransporterUnload.xml
++++ after/Languages/ChineseTraditional/DefInjected/WorkGiverDef/TransporterUnload.xml
+@@ -0,0 +1,6 @@
++<?xml version="1.0" encoding="utf-8"?>
++<LanguageData>
++  <HaulersDream_BulkUnloadTransporters.label>批量卸載運輸艙與太空梭</HaulersDream_BulkUnloadTransporters.label>
++  <HaulersDream_BulkUnloadTransporters.verb>卸貨</HaulersDream_BulkUnloadTransporters.verb>
++  <HaulersDream_BulkUnloadTransporters.gerund>卸貨中</HaulersDream_BulkUnloadTransporters.gerund>
++</LanguageData>
+--- before/Languages/ChineseTraditional/Keyed/HaulersDream.xml
++++ after/Languages/ChineseTraditional/Keyed/HaulersDream.xml
+@@ -455,7 +455,7 @@
+ 
+   <!-- Settings: transporter / shuttle bulk loading -->
+   <HaulersDream.Setting.EnableBulkLoadTransporters>一次行程內批量裝載運輸艙與太空梭</HaulersDream.Setting.EnableBulkLoadTransporters>
+-  <HaulersDream.Setting.EnableBulkLoadTransportersDesc>當運輸艙或太空梭被設定為裝載時，運送員會承包一部分清單，將附近的數個堆疊收集至背包中，走向運輸艙「一次」並全部存入 — 取代原版每次往返手拿一個堆疊的做法。多位運送員可分攤大型裝載清單且不會重複運送，在承包的貨物存入前運輸艙不會登機或發射。關閉時，將繼續使用原版的單一堆疊裝載方式。</HaulersDream.Setting.EnableBulkLoadTransportersDesc>
++  <HaulersDream.Setting.EnableBulkLoadTransportersDesc>當運輸艙或太空梭被設定為裝載時，運送員會承包一部分清單，將附近的數個堆疊收集至背包中，走向運輸艙「一次」並全部存入 — 取代原版每次往返手拿一個堆疊的做法。多位運送員可分攤大型裝載清單且不會重複運送，在承包的貨物存入前運輸艙不會登機或發射。關閉時，將繼續使用原版的單一堆疊裝載方式。 優先命令會在成功交貨後繼續完成本清單，前提是搬運者未被徵召且沒有新的排隊命令。已徵召的搬運者可以執行一趟裝貨。</HaulersDream.Setting.EnableBulkLoadTransportersDesc>
+   <HaulersDream.Setting.BulkLoadAiUpdateFrequency>裝載重新檢查間隔：{0}</HaulersDream.Setting.BulkLoadAiUpdateFrequency>
+ 
+   <!-- Map-portal BULK LOADING (pit gates, cave / vault exits, "enter map" portals) -->
+@@ -541,7 +541,7 @@
+   <HaulersDream.Setting.OpportunisticLoadDesc>若角色已經攜帶附近運輸艙、太空梭、地圖傳送門或載具正在等待的物品，將會順路改道將其存入，而非開啟全新的拾取行程。減少不必要的往返。預設為關閉（這會改變角色接下來選擇的工作）。</HaulersDream.Setting.OpportunisticLoadDesc>
+   <HaulersDream.Setting.LoadOpportunityRadius>順路存入搜尋半徑：{0} 格</HaulersDream.Setting.LoadOpportunityRadius>
+   <HaulersDream.Setting.ContinuousLoading>「持續裝載至完成」右鍵指令</HaulersDream.Setting.ContinuousLoading>
+-  <HaulersDream.Setting.ContinuousLoadingDesc>新增右鍵指令，派遣一名運輸員（即使處於徵召狀態）依序前往附近每個仍需裝載的運輸組，連續執行工作直到全部裝滿 — 非常適合單一指令裝載大型旅隊。預設為關閉（選擇性便捷功能）。</HaulersDream.Setting.ContinuousLoadingDesc>
++  <HaulersDream.Setting.ContinuousLoadingDesc>新增右鍵命令：完成所選裝貨清單後，繼續處理附近的裝貨目標。後續往返要求搬運者未被徵召、已成功交貨且沒有新的排隊命令。預設關閉。</HaulersDream.Setting.ContinuousLoadingDesc>
+   
+   <!-- Continuous-loading float-menu order (B4) -->
+   <HaulersDream.ContinuousLoad.Option>持續裝載至完成 — {0}</HaulersDream.ContinuousLoad.Option>
+@@ -792,7 +792,7 @@
+   <HaulersDream.Setting.BulkHaulTrigger.Lab>觸發批量運送門檻</HaulersDream.Setting.BulkHaulTrigger.Lab>
+   <HaulersDream.Setting.KeepWorkingMargin.Lab>前往較遠的下個工作點前先卸載</HaulersDream.Setting.KeepWorkingMargin.Lab>
+   <HaulersDream.Setting.MinFreeSpaceToUnloadCarrier.Lab>開始卸載貨運動物所需的最小背包剩餘空間</HaulersDream.Setting.MinFreeSpaceToUnloadCarrier.Lab>
+-  <HaulersDream.Setting.MinFreeSpaceToUnloadCarrier.Help>運送員在開始清空貨運動物前，自身的負重能力需至少保有此比例的剩餘空間，以防止其背包立即溢滿。</HaulersDream.Setting.MinFreeSpaceToUnloadCarrier.Help>
++  <HaulersDream.Setting.MinFreeSpaceToUnloadCarrier.Help>運送員在開始清空貨運動物前，自身的負重能力需至少保有此比例的剩餘空間，以防止其背包立即溢滿。 此門檻也適用於自動卸載運輸器。</HaulersDream.Setting.MinFreeSpaceToUnloadCarrier.Help>
+   <HaulersDream.Setting.VisualUnloadDelay.Lab>每堆疊卸載延遲時間</HaulersDream.Setting.VisualUnloadDelay.Lab>
+   <HaulersDream.Setting.VisualUnloadDelay.Help>在批量卸載期間，每堆疊物品放置之間微小的視覺停頓，使其看起來像是刻意進行的動作。0 = 瞬間完成。</HaulersDream.Setting.VisualUnloadDelay.Help>
+   <HaulersDream.Setting.BulkLoadAiUpdateFrequency.Lab>裝載重新檢查間隔</HaulersDream.Setting.BulkLoadAiUpdateFrequency.Lab>
+@@ -969,4 +969,18 @@
+   <HD_NearbyHaulInventoryUnavailable>該角色無法使用物品欄搬運。</HD_NearbyHaulInventoryUnavailable>
+   <HD_NearbyHaulRobotUnsupported>無法在目前的模組設定下讀取機器人的搬運工作。</HD_NearbyHaulRobotUnsupported>
+   <HD_NearbyHaulSourceUnavailable>所選物品無法搬運。</HD_NearbyHaulSourceUnavailable>
++  <HaulersDream.UnloadTransporter.Option>優先批量卸載 {0}</HaulersDream.UnloadTransporter.Option>
++  <HaulersDream.UnloadTransporter.CouldNotStart>目前無法開始批量卸載該運輸工具。</HaulersDream.UnloadTransporter.CouldNotStart>
++  <HaulersDream.Gizmo.BulkUnloadAll.Label>批量卸載全部貨物</HaulersDream.Gizmo.BulkUnloadAll.Label>
++  <HaulersDream.Gizmo.BulkUnloadAll.Empty>沒有可卸載的貨物</HaulersDream.Gizmo.BulkUnloadAll.Empty>
++  <HaulersDream.Gizmo.BulkUnloadAll.LoadBlocked>「全部批量卸載」已開啟，請先將其關閉，再設定新的裝載。</HaulersDream.Gizmo.BulkUnloadAll.LoadBlocked>
++  <HaulersDream.Gizmo.BulkUnloadAll.UnloadBlocked>正在向該運輸器集結裝載貨物。</HaulersDream.Gizmo.BulkUnloadAll.UnloadBlocked>
++  <HaulersDream.Feat.UnloadTransporters.Name>批量卸載運輸艙與太空梭</HaulersDream.Feat.UnloadTransporters.Name>
++  <HaulersDream.Setting.EnableBulkUnloadTransporters>批量卸載運輸器</HaulersDream.Setting.EnableBulkUnloadTransporters>
++  <HaulersDream.Setting.EnableBulkUnloadTransportersDesc>為運輸艙和穿梭機新增批量卸貨開關。未徵召的搬運者會將貨物直接送入倉庫，每個工作任務搬運一趟。對已標記的運輸器下達優先卸貨命令後，只有完成本趟入庫才會繼續下一趟。乘客留在艙內。裝貨、倉庫已滿、徵召或新命令排隊都會停止後續往返。</HaulersDream.Setting.EnableBulkUnloadTransportersDesc>
++  <HaulersDream.Gizmo.BulkUnloadAll.Desc>將{0}內的貨物送入倉庫。乘客留在艙內。優先卸貨命令會在每趟入庫完成後繼續，前提是搬運者未被徵召且沒有新的排隊命令。裝貨前請關閉此開關。</HaulersDream.Gizmo.BulkUnloadAll.Desc>
++  <HaulersDream.Feat.UnloadTransporters.Blurb>將已著陸運輸器中的貨物直接搬入倉庫</HaulersDream.Feat.UnloadTransporters.Blurb>
++  <HaulersDream.UnloadTransporter.Drafted>請先解除此角色的徵召，再下達此命令。</HaulersDream.UnloadTransporter.Drafted>
++  <HaulersDream.UnloadTransporter.NoStorage>沒有適合剩餘貨物的儲存位置。</HaulersDream.UnloadTransporter.NoStorage>
++  <HaulersDream.Transporter.SyncUnavailable>多人同步註冊失敗，運輸器命令無法使用。</HaulersDream.Transporter.SyncUnavailable>
+ </LanguageData>
+--- before/Languages/Danish/DefInjected/JobDef/Jobs.xml
++++ after/Languages/Danish/DefInjected/JobDef/Jobs.xml
+@@ -16,4 +16,5 @@
+ <HaulersDream_LoadPortalInBulk.reportString>masselæsser en portal.</HaulersDream_LoadPortalInBulk.reportString>
+ <HaulersDream_LoadVehicleInBulk.reportString>masselæsser et køretøj.</HaulersDream_LoadVehicleInBulk.reportString>
+ <HaulersDream_BulkRefuel.reportString>masse-optanker.</HaulersDream_BulkRefuel.reportString>
++  <HaulersDream_UnloadTransporterInBulk.reportString>aflæsser en transporter.</HaulersDream_UnloadTransporterInBulk.reportString>
+ </LanguageData>
+--- before/Languages/Danish/DefInjected/WorkGiverDef/TransporterUnload.xml
++++ after/Languages/Danish/DefInjected/WorkGiverDef/TransporterUnload.xml
+@@ -0,0 +1,6 @@
++<?xml version="1.0" encoding="utf-8"?>
++<LanguageData>
++  <HaulersDream_BulkUnloadTransporters.label>Aflæs transportere og færger</HaulersDream_BulkUnloadTransporters.label>
++  <HaulersDream_BulkUnloadTransporters.verb>aflæs</HaulersDream_BulkUnloadTransporters.verb>
++  <HaulersDream_BulkUnloadTransporters.gerund>aflæsning</HaulersDream_BulkUnloadTransporters.gerund>
++</LanguageData>
+--- before/Languages/Danish/Keyed/HaulersDream.xml
++++ after/Languages/Danish/Keyed/HaulersDream.xml
+@@ -357,7 +357,7 @@
+ <HaulersDream.LoadTransporter.Option>Prioritér masselæsning af {0}</HaulersDream.LoadTransporter.Option>
+ <HaulersDream.LoadTransporter.CouldNotStart>Intet i nærheden at masselæsse i den transporter lige nu.</HaulersDream.LoadTransporter.CouldNotStart>
+ <HaulersDream.Setting.EnableBulkLoadTransporters>Masselæs transportere og færger på én tur</HaulersDream.Setting.EnableBulkLoadTransporters>
+-<HaulersDream.Setting.EnableBulkLoadTransportersDesc>Når en transportkapsel eller færge er sat til at læsse, gør en transportør krav på en del af dens manifest, fejer flere nærliggende stakke ned i sit inventar, går til transporteren ÉN gang og afleverer dem alle — i stedet for vanillas én stak i hænderne pr. gåtur. Flere transportører deler et stort manifest uden dobbelttransport, og kapslen går ikke om bord eller letter, før den krævede last er inde. Med dette slået fra bruges vanillas transporterlæsning af én stak uændret.</HaulersDream.Setting.EnableBulkLoadTransportersDesc>
++<HaulersDream.Setting.EnableBulkLoadTransportersDesc>Når en transportkapsel eller færge er sat til at læsse, gør en transportør krav på en del af dens manifest, fejer flere nærliggende stakke ned i sit inventar, går til transporteren ÉN gang og afleverer dem alle — i stedet for vanillas én stak i hænderne pr. gåtur. Flere transportører deler et stort manifest uden dobbelttransport, og kapslen går ikke om bord eller letter, før den krævede last er inde. Med dette slået fra bruges vanillas transporterlæsning af én stak uændret. En prioriteret ordre gentager ture for denne lastliste efter vellykkede afleveringer, mens bæreren ikke er indkaldt og ikke har nye ordrer i kø. En indkaldt bærer kan foretage én lasttur.</HaulersDream.Setting.EnableBulkLoadTransportersDesc>
+ <HaulersDream.Setting.BulkLoadAiUpdateFrequency>Genkontrolinterval for læsning: {0} tikker</HaulersDream.Setting.BulkLoadAiUpdateFrequency>
+ <HaulersDream.LoadPortal.Report>masselæsser en portal.</HaulersDream.LoadPortal.Report>
+ <HaulersDream.LoadPortal.Option>Prioritér masselæsning af {0}</HaulersDream.LoadPortal.Option>
+@@ -420,7 +420,7 @@
+ <HaulersDream.Setting.OpportunisticLoadDesc>En figur, der allerede bærer varer, som en nærliggende transportkapsel, færge, kortportal eller et køretøj venter på, laver en afstikker for at aflevere dem, i stedet for at starte en helt ny opsamlingstur. Færre spildte gåture. Slået fra som standard (den ændrer, hvilken opgave en figur vælger derefter).</HaulersDream.Setting.OpportunisticLoadDesc>
+ <HaulersDream.Setting.LoadOpportunityRadius>Søgeradius for aflæsning-på-vejen: {0} felter</HaulersDream.Setting.LoadOpportunityRadius>
+ <HaulersDream.Setting.ContinuousLoading>"Læs til færdig"-højreklikordre</HaulersDream.Setting.ContinuousLoading>
+-<HaulersDream.Setting.ContinuousLoadingDesc>Tilføjer en højreklikordre, der sender én kurer (selv indkaldt) gennem hver nærliggende transportgruppe, der stadig mangler at blive læsset, og kæder opgaverne, indtil de alle er fulde — praktisk til at læsse en stor karavane med én kommando. Slået fra som standard (en bekvemmelighed, man vælger til).</HaulersDream.Setting.ContinuousLoadingDesc>
++<HaulersDream.Setting.ContinuousLoadingDesc>Tilføjer en højreklikordre, der fortsætter til nærliggende lastmål, når den valgte lastliste er fuldført. Flere ture kræver en ikke-indkaldt bærer, en vellykket aflevering og ingen nye ordrer i kø. Fra som standard.</HaulersDream.Setting.ContinuousLoadingDesc>
+ <HaulersDream.ContinuousLoad.Option>Læs til færdig (kontinuerligt) — {0}</HaulersDream.ContinuousLoad.Option>
+ <HaulersDream.ContinuousLoad.CouldNotStart>Intet i nærheden at masselæsse i det lige nu.</HaulersDream.ContinuousLoad.CouldNotStart>
+ <HaulersDream.Setting.LoadHybridPathing>Ordn masse-læssestop efter reel stifindning</HaulersDream.Setting.LoadHybridPathing>
+@@ -626,7 +626,7 @@
+ <HaulersDream.Setting.BulkHaulTrigger.Lab>Massetransport-udløser</HaulersDream.Setting.BulkHaulTrigger.Lab>
+ <HaulersDream.Setting.KeepWorkingMargin.Lab>Aflæs før en længere flytning</HaulersDream.Setting.KeepWorkingMargin.Lab>
+ <HaulersDream.Setting.MinFreeSpaceToUnloadCarrier.Lab>Minimum ledig rygsækplads for at starte</HaulersDream.Setting.MinFreeSpaceToUnloadCarrier.Lab>
+-<HaulersDream.Setting.MinFreeSpaceToUnloadCarrier.Help>En transportør har brug for mindst så meget af sin bærekapacitet ledig, før den begynder at tømme et pakdyr, så dens egen rygsæk ikke straks løber over.</HaulersDream.Setting.MinFreeSpaceToUnloadCarrier.Help>
++<HaulersDream.Setting.MinFreeSpaceToUnloadCarrier.Help>En transportør har brug for mindst så meget af sin bærekapacitet ledig, før den begynder at tømme et pakdyr, så dens egen rygsæk ikke straks løber over. Denne grænse gælder også ved automatisk aflæsning af transportere.</HaulersDream.Setting.MinFreeSpaceToUnloadCarrier.Help>
+ <HaulersDream.Setting.VisualUnloadDelay.Lab>Aflæsningsforsinkelse pr. stak</HaulersDream.Setting.VisualUnloadDelay.Lab>
+ <HaulersDream.Setting.VisualUnloadDelay.Help>En lille kosmetisk pause mellem hver stak under en masseaflæsning, så det læses som en bevidst handling. 0 = øjeblikkeligt.</HaulersDream.Setting.VisualUnloadDelay.Help>
+ <HaulersDream.Setting.BulkLoadAiUpdateFrequency.Lab>Genkontrolinterval for læsning</HaulersDream.Setting.BulkLoadAiUpdateFrequency.Lab>
+@@ -847,4 +847,18 @@
+   <HD_NearbyHaulInventoryUnavailable>Transport via inventaret er utilgængelig for denne figur.</HD_NearbyHaulInventoryUnavailable>
+   <HD_NearbyHaulRobotUnsupported>Robottens transportarbejde kunne ikke læses med den nuværende modopsætning.</HD_NearbyHaulRobotUnsupported>
+   <HD_NearbyHaulSourceUnavailable>Den valgte genstand er ikke tilgængelig til transport.</HD_NearbyHaulSourceUnavailable>
++  <HaulersDream.UnloadTransporter.Option>Prioritér masseaflæsning af {0}</HaulersDream.UnloadTransporter.Option>
++  <HaulersDream.UnloadTransporter.CouldNotStart>Kunne ikke starte masseaflæsning af transporteren lige nu.</HaulersDream.UnloadTransporter.CouldNotStart>
++  <HaulersDream.Gizmo.BulkUnloadAll.Label>Masseaflæs alt</HaulersDream.Gizmo.BulkUnloadAll.Label>
++  <HaulersDream.Gizmo.BulkUnloadAll.Empty>Intet at aflæse</HaulersDream.Gizmo.BulkUnloadAll.Empty>
++  <HaulersDream.Gizmo.BulkUnloadAll.LoadBlocked>"Masseaflæs alt" er slået til, slå det fra, før du sætter en ny last.</HaulersDream.Gizmo.BulkUnloadAll.LoadBlocked>
++  <HaulersDream.Gizmo.BulkUnloadAll.UnloadBlocked>Der samles last til denne transporter.</HaulersDream.Gizmo.BulkUnloadAll.UnloadBlocked>
++  <HaulersDream.Feat.UnloadTransporters.Name>Aflæs transportere og færger</HaulersDream.Feat.UnloadTransporters.Name>
++  <HaulersDream.Setting.EnableBulkUnloadTransporters>Masseaflæs transportere</HaulersDream.Setting.EnableBulkUnloadTransporters>
++  <HaulersDream.Setting.EnableBulkUnloadTransportersDesc>Tilføjer en kontakt til masseaflæsning af transportere og færger. Ikke-indkaldte bærere flytter lasten direkte til lager, én tur pr. arbejdsopgave. En prioriteret ordre på en markeret transporter gentager først turen, når den foregående last er afleveret. Passagerer bliver ombord. Lastning, fyldt lager, indkaldelse eller nye ordrer i kø stopper flere ture.</HaulersDream.Setting.EnableBulkUnloadTransportersDesc>
++  <HaulersDream.Gizmo.BulkUnloadAll.Desc>Flyt lasten fra {0} til lager. Passagerer bliver ombord. En prioriteret aflæsningsordre gentages efter hver afsluttet aflevering, så længe bæreren ikke er indkaldt og ikke har nye ordrer i kø. Slå dette fra før lastning.</HaulersDream.Gizmo.BulkUnloadAll.Desc>
++  <HaulersDream.Feat.UnloadTransporters.Blurb>Flyt last direkte fra en landet transporter til lager</HaulersDream.Feat.UnloadTransporters.Blurb>
++  <HaulersDream.UnloadTransporter.Drafted>Ophæv indkaldelsen for at starte denne ordre.</HaulersDream.UnloadTransporter.Drafted>
++  <HaulersDream.UnloadTransporter.NoStorage>Intet egnet lager til den resterende last.</HaulersDream.UnloadTransporter.NoStorage>
++  <HaulersDream.Transporter.SyncUnavailable>Transporterordrer er utilgængelige, fordi multiplayer-synkroniseringen ikke kunne registreres.</HaulersDream.Transporter.SyncUnavailable>
+ </LanguageData>
+--- before/Languages/Dutch/DefInjected/JobDef/Jobs.xml
++++ after/Languages/Dutch/DefInjected/JobDef/Jobs.xml
+@@ -16,4 +16,5 @@
+ <HaulersDream_LoadPortalInBulk.reportString>een portaal bulksgewijs laden.</HaulersDream_LoadPortalInBulk.reportString>
+ <HaulersDream_LoadVehicleInBulk.reportString>een voertuig bulksgewijs laden.</HaulersDream_LoadVehicleInBulk.reportString>
+ <HaulersDream_BulkRefuel.reportString>bulksgewijs bijtanken.</HaulersDream_BulkRefuel.reportString>
++  <HaulersDream_UnloadTransporterInBulk.reportString>een transporter uitladen.</HaulersDream_UnloadTransporterInBulk.reportString>
+ </LanguageData>
+--- before/Languages/Dutch/DefInjected/WorkGiverDef/TransporterUnload.xml
++++ after/Languages/Dutch/DefInjected/WorkGiverDef/TransporterUnload.xml
+@@ -0,0 +1,6 @@
++<?xml version="1.0" encoding="utf-8"?>
++<LanguageData>
++  <HaulersDream_BulkUnloadTransporters.label>Transporters en shuttles uitladen</HaulersDream_BulkUnloadTransporters.label>
++  <HaulersDream_BulkUnloadTransporters.verb>uitladen</HaulersDream_BulkUnloadTransporters.verb>
++  <HaulersDream_BulkUnloadTransporters.gerund>uitladen</HaulersDream_BulkUnloadTransporters.gerund>
++</LanguageData>
+--- before/Languages/Dutch/Keyed/HaulersDream.xml
++++ after/Languages/Dutch/Keyed/HaulersDream.xml
+@@ -357,7 +357,7 @@
+ <HaulersDream.LoadTransporter.Option>Bulksgewijs laden van {0} prioriteren</HaulersDream.LoadTransporter.Option>
+ <HaulersDream.LoadTransporter.CouldNotStart>Op dit moment niets in de buurt om bulksgewijs in die transporter te laden.</HaulersDream.LoadTransporter.CouldNotStart>
+ <HaulersDream.Setting.EnableBulkLoadTransporters>Transporters en shuttles in één trip bulksgewijs laden</HaulersDream.Setting.EnableBulkLoadTransporters>
+-<HaulersDream.Setting.EnableBulkLoadTransportersDesc>Wanneer een transportpod of shuttle op laden is gezet, eist een sjouwer een deel van zijn manifest op, veegt meerdere nabije stapels in zijn inventaris, loopt ÉÉN keer naar de transporter, en deponeert ze allemaal — in plaats van vanilla's één-stapel-in-de-handen per loop. Meerdere sjouwers splitsen een groot manifest zonder dubbel sjouwen, en de pod gaat pas aan boord of lanceert pas wanneer de opgeëiste vracht binnen is. Met dit uit wordt vanilla's enkel-stapel transporterladen ongewijzigd gebruikt.</HaulersDream.Setting.EnableBulkLoadTransportersDesc>
++<HaulersDream.Setting.EnableBulkLoadTransportersDesc>Wanneer een transportpod of shuttle op laden is gezet, eist een sjouwer een deel van zijn manifest op, veegt meerdere nabije stapels in zijn inventaris, loopt ÉÉN keer naar de transporter, en deponeert ze allemaal — in plaats van vanilla's één-stapel-in-de-handen per loop. Meerdere sjouwers splitsen een groot manifest zonder dubbel sjouwen, en de pod gaat pas aan boord of lanceert pas wanneer de opgeëiste vracht binnen is. Met dit uit wordt vanilla's enkel-stapel transporterladen ongewijzigd gebruikt. Een voorrangsopdracht herhaalt ritten voor deze laadlijst na geslaagde afleveringen zolang de drager niet opgeroepen is en geen nieuwe opdrachten in de wachtrij heeft. Een opgeroepen drager kan één laadrit maken.</HaulersDream.Setting.EnableBulkLoadTransportersDesc>
+ <HaulersDream.Setting.BulkLoadAiUpdateFrequency>Interval voor laadhercontrole: {0} ticks</HaulersDream.Setting.BulkLoadAiUpdateFrequency>
+ <HaulersDream.LoadPortal.Report>een portaal bulksgewijs laden.</HaulersDream.LoadPortal.Report>
+ <HaulersDream.LoadPortal.Option>Bulksgewijs laden van {0} prioriteren</HaulersDream.LoadPortal.Option>
+@@ -420,7 +420,7 @@
+ <HaulersDream.Setting.OpportunisticLoadDesc>Een figuur dat al spullen draagt waar een nabije transportpod, shuttle, kaartportaal of voertuig op wacht, zal een omweg maken om ze af te leveren, in plaats van een gloednieuwe oppakronde te starten. Minder verspilde loopjes. Standaard uit (het wijzigt welke taak een figuur als volgende oppakt).</HaulersDream.Setting.OpportunisticLoadDesc>
+ <HaulersDream.Setting.LoadOpportunityRadius>Deponeren-onderweg zoekstraal: {0} tegels</HaulersDream.Setting.LoadOpportunityRadius>
+ <HaulersDream.Setting.ContinuousLoading>Rechtsklikorder "Laden tot voltooid"</HaulersDream.Setting.ContinuousLoading>
+-<HaulersDream.Setting.ContinuousLoadingDesc>Voegt een rechtsklikorder toe die één koerier (zelfs opgeroepen) door elke nabije transportgroep stuurt die nog laden nodig heeft, en ketent de taken tot ze allemaal vol zijn — handig voor het laden van een grote karavaan met één commando. Standaard uit (opt-in gemak).</HaulersDream.Setting.ContinuousLoadingDesc>
++<HaulersDream.Setting.ContinuousLoadingDesc>Voegt een rechtsklikopdracht toe die na voltooiing van de gekozen laadlijst doorgaat met nabije laaddoelen. Verdere ritten vereisen een niet-opgeroepen drager, een geslaagde aflevering en geen nieuwe opdrachten in de wachtrij. Standaard uit.</HaulersDream.Setting.ContinuousLoadingDesc>
+ <HaulersDream.ContinuousLoad.Option>Laden tot voltooid (continu) — {0}</HaulersDream.ContinuousLoad.Option>
+ <HaulersDream.ContinuousLoad.CouldNotStart>Op dit moment niets in de buurt om daar bulksgewijs in te laden.</HaulersDream.ContinuousLoad.CouldNotStart>
+ <HaulersDream.Setting.LoadHybridPathing>Bulklaadstops ordenen op echt padzoeken</HaulersDream.Setting.LoadHybridPathing>
+@@ -626,7 +626,7 @@
+ <HaulersDream.Setting.BulkHaulTrigger.Lab>Bulksjouw-trigger</HaulersDream.Setting.BulkHaulTrigger.Lab>
+ <HaulersDream.Setting.KeepWorkingMargin.Lab>Uitladen voor een langere verplaatsing</HaulersDream.Setting.KeepWorkingMargin.Lab>
+ <HaulersDream.Setting.MinFreeSpaceToUnloadCarrier.Lab>Minimale vrije rugzakruimte om te starten</HaulersDream.Setting.MinFreeSpaceToUnloadCarrier.Lab>
+-<HaulersDream.Setting.MinFreeSpaceToUnloadCarrier.Help>Een sjouwer heeft minstens zoveel van zijn draagcapaciteit vrij nodig voordat het begint een lastdier te legen, zodat zijn eigen rugzak niet meteen overloopt.</HaulersDream.Setting.MinFreeSpaceToUnloadCarrier.Help>
++<HaulersDream.Setting.MinFreeSpaceToUnloadCarrier.Help>Een sjouwer heeft minstens zoveel van zijn draagcapaciteit vrij nodig voordat het begint een lastdier te legen, zodat zijn eigen rugzak niet meteen overloopt. Deze grens geldt ook voor automatisch uitladen van transporters.</HaulersDream.Setting.MinFreeSpaceToUnloadCarrier.Help>
+ <HaulersDream.Setting.VisualUnloadDelay.Lab>Uitlaadvertraging per stapel</HaulersDream.Setting.VisualUnloadDelay.Lab>
+ <HaulersDream.Setting.VisualUnloadDelay.Help>Een kleine cosmetische pauze tussen elke stapel tijdens een bulkuitlading, zodat het overkomt als een doelbewuste actie. 0 = onmiddellijk.</HaulersDream.Setting.VisualUnloadDelay.Help>
+ <HaulersDream.Setting.BulkLoadAiUpdateFrequency.Lab>Interval voor laadhercontrole</HaulersDream.Setting.BulkLoadAiUpdateFrequency.Lab>
+@@ -847,4 +847,18 @@
+   <HD_NearbyHaulInventoryUnavailable>Vervoer via de inventaris is voor deze pion niet beschikbaar.</HD_NearbyHaulInventoryUnavailable>
+   <HD_NearbyHaulRobotUnsupported>De transporttaken van de robot konden met de huidige modconfiguratie niet worden gelezen.</HD_NearbyHaulRobotUnsupported>
+   <HD_NearbyHaulSourceUnavailable>Het geselecteerde voorwerp is niet beschikbaar voor vervoer.</HD_NearbyHaulSourceUnavailable>
++  <HaulersDream.UnloadTransporter.Option>Bulksgewijs uitladen van {0} prioriteren</HaulersDream.UnloadTransporter.Option>
++  <HaulersDream.UnloadTransporter.CouldNotStart>Kon de transporter op dit moment niet bulksgewijs uitladen.</HaulersDream.UnloadTransporter.CouldNotStart>
++  <HaulersDream.Gizmo.BulkUnloadAll.Label>Alles bulksgewijs uitladen</HaulersDream.Gizmo.BulkUnloadAll.Label>
++  <HaulersDream.Gizmo.BulkUnloadAll.Empty>Niets om uit te laden</HaulersDream.Gizmo.BulkUnloadAll.Empty>
++  <HaulersDream.Gizmo.BulkUnloadAll.LoadBlocked>"Alles bulksgewijs uitladen" staat aan, zet dat eerst uit voordat je een nieuwe lading instelt.</HaulersDream.Gizmo.BulkUnloadAll.LoadBlocked>
++  <HaulersDream.Gizmo.BulkUnloadAll.UnloadBlocked>Er wordt lading naar deze transporter verzameld.</HaulersDream.Gizmo.BulkUnloadAll.UnloadBlocked>
++  <HaulersDream.Feat.UnloadTransporters.Name>Transporters en shuttles uitladen</HaulersDream.Feat.UnloadTransporters.Name>
++  <HaulersDream.Setting.EnableBulkUnloadTransporters>Transporters in bulk uitladen</HaulersDream.Setting.EnableBulkUnloadTransporters>
++  <HaulersDream.Setting.EnableBulkUnloadTransportersDesc>Voegt een schakelaar toe om transporters en shuttles in bulk uit te laden. Niet-opgeroepen dragers brengen vracht rechtstreeks naar opslag, één rit per werktaak. Een voorrangsopdracht bij een gemarkeerde transporter herhaalt pas na aflevering. Passagiers blijven aan boord. Laden, volle opslag, oproepen of nieuwe opdrachten in de wachtrij stoppen verdere ritten.</HaulersDream.Setting.EnableBulkUnloadTransportersDesc>
++  <HaulersDream.Gizmo.BulkUnloadAll.Desc>Breng vracht uit {0} naar opslag. Passagiers blijven aan boord. Een uitlaadopdracht met voorrang herhaalt na elke aflevering zolang de drager niet opgeroepen is en geen nieuwe opdrachten in de wachtrij heeft. Schakel dit uit voordat je gaat laden.</HaulersDream.Gizmo.BulkUnloadAll.Desc>
++  <HaulersDream.Feat.UnloadTransporters.Blurb>Breng vracht rechtstreeks uit een gelande transporter naar opslag</HaulersDream.Feat.UnloadTransporters.Blurb>
++  <HaulersDream.UnloadTransporter.Drafted>Hef de oproep van deze kolonist op om deze opdracht te starten.</HaulersDream.UnloadTransporter.Drafted>
++  <HaulersDream.UnloadTransporter.NoStorage>Geen geschikte opslag voor de resterende vracht.</HaulersDream.UnloadTransporter.NoStorage>
++  <HaulersDream.Transporter.SyncUnavailable>Transporteropdrachten zijn niet beschikbaar omdat multiplayer-synchronisatie niet kon worden geregistreerd.</HaulersDream.Transporter.SyncUnavailable>
+ </LanguageData>
+--- before/Languages/English/DefInjected/JobDef/Jobs.xml
++++ after/Languages/English/DefInjected/JobDef/Jobs.xml
+@@ -21,4 +21,5 @@
+   <HaulersDream_LoadVehicleInBulk.reportString>bulk-loading a vehicle.</HaulersDream_LoadVehicleInBulk.reportString>
+   <HaulersDream_BulkRefuel.reportString>bulk-refuelling.</HaulersDream_BulkRefuel.reportString>
+ 
++  <HaulersDream_UnloadTransporterInBulk.reportString>unloading a transporter.</HaulersDream_UnloadTransporterInBulk.reportString>
+ </LanguageData>
+--- before/Languages/English/DefInjected/WorkGiverDef/TransporterUnload.xml
++++ after/Languages/English/DefInjected/WorkGiverDef/TransporterUnload.xml
+@@ -0,0 +1,6 @@
++<?xml version="1.0" encoding="utf-8"?>
++<LanguageData>
++  <HaulersDream_BulkUnloadTransporters.label>Unload transporters &amp; shuttles</HaulersDream_BulkUnloadTransporters.label>
++  <HaulersDream_BulkUnloadTransporters.verb>unload</HaulersDream_BulkUnloadTransporters.verb>
++  <HaulersDream_BulkUnloadTransporters.gerund>unloading</HaulersDream_BulkUnloadTransporters.gerund>
++</LanguageData>
+--- before/Languages/English/Keyed/HaulersDream.xml
++++ after/Languages/English/Keyed/HaulersDream.xml
+@@ -466,7 +466,7 @@
+ 
+   <!-- Settings: transporter / shuttle bulk loading -->
+   <HaulersDream.Setting.EnableBulkLoadTransporters>Bulk-load transporters and shuttles in one trip</HaulersDream.Setting.EnableBulkLoadTransporters>
+-  <HaulersDream.Setting.EnableBulkLoadTransportersDesc>When a transport pod or shuttle is set to load, a hauler claims a slice of its manifest, sweeps several nearby stacks into its inventory, walks to the transporter ONCE, and deposits them all — instead of vanilla's one-stack-in-hands per walk. Several haulers split a large manifest with no double-hauling, and the pod won't board or launch until the claimed cargo is in. With this off, vanilla's single-stack transporter loading is used unchanged.</HaulersDream.Setting.EnableBulkLoadTransportersDesc>
++  <HaulersDream.Setting.EnableBulkLoadTransportersDesc>When a transport pod or shuttle is set to load, a hauler claims a slice of its manifest, sweeps several nearby stacks into its inventory, walks to the transporter ONCE, and deposits them all — instead of vanilla's one-stack-in-hands per walk. Several haulers split a large manifest with no double-hauling, and the pod won't board or launch until the claimed cargo is in. With this off, vanilla's single-stack transporter loading is used unchanged. A prioritized order repeats trips for this manifest after successful deliveries while the courier is undrafted and has no queued replacement work. A drafted courier can make one loading trip.</HaulersDream.Setting.EnableBulkLoadTransportersDesc>
+   <HaulersDream.Setting.BulkLoadAiUpdateFrequency>Load re-check interval: {0}</HaulersDream.Setting.BulkLoadAiUpdateFrequency>
+ 
+   <!-- Map-portal BULK LOADING (pit gates, cave / vault exits, "enter map" portals) -->
+@@ -552,7 +552,7 @@
+   <HaulersDream.Setting.OpportunisticLoadDesc>A pawn already carrying items that a nearby transport pod, shuttle, map portal or vehicle is waiting for will divert to drop them off, instead of starting a brand-new pickup run. Fewer wasted walks. Off by default (it changes which task a pawn picks up next).</HaulersDream.Setting.OpportunisticLoadDesc>
+   <HaulersDream.Setting.LoadOpportunityRadius>Deposit-on-the-way search radius: {0} tiles</HaulersDream.Setting.LoadOpportunityRadius>
+   <HaulersDream.Setting.ContinuousLoading>"Load until complete" right-click order</HaulersDream.Setting.ContinuousLoading>
+-  <HaulersDream.Setting.ContinuousLoadingDesc>Adds a right-click order that sends one courier (even drafted) through every nearby transport group that still needs loading, chaining the jobs until they're all full — handy for loading a big caravan in one command. Off by default (opt-in convenience).</HaulersDream.Setting.ContinuousLoadingDesc>
++  <HaulersDream.Setting.ContinuousLoadingDesc>Adds a right-click order to continue through nearby loading targets after completing the selected manifest. Further trips require an undrafted courier, a successful delivery and no queued replacement work. Off by default.</HaulersDream.Setting.ContinuousLoadingDesc>
+   <!-- Continuous-loading float-menu order (B4) -->
+   <HaulersDream.ContinuousLoad.Option>Load until complete (continuous) — {0}</HaulersDream.ContinuousLoad.Option>
+   <HaulersDream.ContinuousLoad.CouldNotStart>Nothing nearby to bulk-load into that right now.</HaulersDream.ContinuousLoad.CouldNotStart>
+@@ -802,7 +802,7 @@
+   <HaulersDream.Setting.BulkHaulTrigger.Lab>Bulk-haul trigger</HaulersDream.Setting.BulkHaulTrigger.Lab>
+   <HaulersDream.Setting.KeepWorkingMargin.Lab>Unload before a longer walk to the next work spot</HaulersDream.Setting.KeepWorkingMargin.Lab>
+   <HaulersDream.Setting.MinFreeSpaceToUnloadCarrier.Lab>Minimum free backpack space to start</HaulersDream.Setting.MinFreeSpaceToUnloadCarrier.Lab>
+-  <HaulersDream.Setting.MinFreeSpaceToUnloadCarrier.Help>A hauler needs at least this much of its carry capacity free before it starts emptying a pack animal, so its own backpack doesn't immediately overflow.</HaulersDream.Setting.MinFreeSpaceToUnloadCarrier.Help>
++  <HaulersDream.Setting.MinFreeSpaceToUnloadCarrier.Help>A hauler needs at least this much of its carry capacity free before it starts emptying a pack animal, so its own backpack doesn't immediately overflow. This threshold also applies to automatic transporter unloading.</HaulersDream.Setting.MinFreeSpaceToUnloadCarrier.Help>
+   <HaulersDream.Setting.VisualUnloadDelay.Lab>Per-stack unload delay</HaulersDream.Setting.VisualUnloadDelay.Lab>
+   <HaulersDream.Setting.VisualUnloadDelay.Help>A small cosmetic pause between each stack during a bulk unload, so it reads as a deliberate action. 0 = instant.</HaulersDream.Setting.VisualUnloadDelay.Help>
+   <HaulersDream.Setting.BulkLoadAiUpdateFrequency.Lab>Load re-check interval</HaulersDream.Setting.BulkLoadAiUpdateFrequency.Lab>
+@@ -979,4 +979,18 @@
+   <HD_NearbyHaulInventoryUnavailable>Inventory hauling is unavailable for this pawn.</HD_NearbyHaulInventoryUnavailable>
+   <HD_NearbyHaulRobotUnsupported>The robot's hauling work could not be read with the current mod setup.</HD_NearbyHaulRobotUnsupported>
+   <HD_NearbyHaulSourceUnavailable>The selected item is unavailable for hauling.</HD_NearbyHaulSourceUnavailable>
++  <HaulersDream.UnloadTransporter.Option>Prioritize bulk unloading {0}</HaulersDream.UnloadTransporter.Option>
++  <HaulersDream.UnloadTransporter.CouldNotStart>Could not start bulk unloading that transporter right now.</HaulersDream.UnloadTransporter.CouldNotStart>
++  <HaulersDream.Gizmo.BulkUnloadAll.Label>Bulk unload all</HaulersDream.Gizmo.BulkUnloadAll.Label>
++  <HaulersDream.Gizmo.BulkUnloadAll.Empty>Nothing to unload</HaulersDream.Gizmo.BulkUnloadAll.Empty>
++  <HaulersDream.Gizmo.BulkUnloadAll.LoadBlocked>"Bulk unload all" is on, turn it off before setting a new load.</HaulersDream.Gizmo.BulkUnloadAll.LoadBlocked>
++  <HaulersDream.Gizmo.BulkUnloadAll.UnloadBlocked>A load is being gathered into this transporter.</HaulersDream.Gizmo.BulkUnloadAll.UnloadBlocked>
++  <HaulersDream.Feat.UnloadTransporters.Name>Unload transporters &amp; shuttles</HaulersDream.Feat.UnloadTransporters.Name>
++  <HaulersDream.Setting.EnableBulkUnloadTransporters>Bulk unload transporters</HaulersDream.Setting.EnableBulkUnloadTransporters>
++  <HaulersDream.Setting.EnableBulkUnloadTransportersDesc>Adds a bulk-unload toggle to transporters and shuttles. Undrafted haulers move cargo directly to storage, one trip per work job. On a flagged transporter, a prioritized order repeats only after delivering the previous trip. Passengers stay aboard. Loading, full storage, drafting or queued replacement work stops further trips.</HaulersDream.Setting.EnableBulkUnloadTransportersDesc>
++  <HaulersDream.Gizmo.BulkUnloadAll.Desc>Send cargo from {0} to storage. Passengers stay aboard. A prioritized unloading order repeats after each completed delivery while the pawn is undrafted and has no queued replacement work. Turn this off before loading.</HaulersDream.Gizmo.BulkUnloadAll.Desc>
++  <HaulersDream.Feat.UnloadTransporters.Blurb>Move cargo directly from a landed transporter to storage</HaulersDream.Feat.UnloadTransporters.Blurb>
++  <HaulersDream.UnloadTransporter.Drafted>Undraft this pawn to start this order.</HaulersDream.UnloadTransporter.Drafted>
++  <HaulersDream.UnloadTransporter.NoStorage>No suitable storage for the remaining cargo.</HaulersDream.UnloadTransporter.NoStorage>
++  <HaulersDream.Transporter.SyncUnavailable>Transporter commands are unavailable because multiplayer synchronization could not be registered.</HaulersDream.Transporter.SyncUnavailable>
+ </LanguageData>
+--- before/Languages/French/DefInjected/JobDef/Jobs.xml
++++ after/Languages/French/DefInjected/JobDef/Jobs.xml
+@@ -16,4 +16,5 @@
+ <HaulersDream_LoadPortalInBulk.reportString>chargement groupé d'un portail.</HaulersDream_LoadPortalInBulk.reportString>
+ <HaulersDream_LoadVehicleInBulk.reportString>chargement groupé d'un véhicule.</HaulersDream_LoadVehicleInBulk.reportString>
+ <HaulersDream_BulkRefuel.reportString>ravitaillement groupé.</HaulersDream_BulkRefuel.reportString>
++  <HaulersDream_UnloadTransporterInBulk.reportString>déchargement d'un module de transport.</HaulersDream_UnloadTransporterInBulk.reportString>
+ </LanguageData>
+--- before/Languages/French/DefInjected/WorkGiverDef/TransporterUnload.xml
++++ after/Languages/French/DefInjected/WorkGiverDef/TransporterUnload.xml
+@@ -0,0 +1,6 @@
++<?xml version="1.0" encoding="utf-8"?>
++<LanguageData>
++  <HaulersDream_BulkUnloadTransporters.label>Décharger les modules de transport &amp; navettes</HaulersDream_BulkUnloadTransporters.label>
++  <HaulersDream_BulkUnloadTransporters.verb>décharger</HaulersDream_BulkUnloadTransporters.verb>
++  <HaulersDream_BulkUnloadTransporters.gerund>déchargement</HaulersDream_BulkUnloadTransporters.gerund>
++</LanguageData>
+--- before/Languages/French/Keyed/HaulersDream.xml
++++ after/Languages/French/Keyed/HaulersDream.xml
+@@ -357,7 +357,7 @@
+ <HaulersDream.LoadTransporter.Option>Prioriser le chargement groupé de {0}</HaulersDream.LoadTransporter.Option>
+ <HaulersDream.LoadTransporter.CouldNotStart>Rien à proximité à charger en groupe dans ce module de transport pour le moment.</HaulersDream.LoadTransporter.CouldNotStart>
+ <HaulersDream.Setting.EnableBulkLoadTransporters>Charger en groupe les modules de transport et navettes en un seul trajet</HaulersDream.Setting.EnableBulkLoadTransporters>
+-<HaulersDream.Setting.EnableBulkLoadTransportersDesc>Quand un module de transport ou une navette est réglé pour charger, un transporteur réclame une part de son manifeste, balaye plusieurs piles proches dans son inventaire, marche jusqu'au module de transport UNE fois, et les y dépose toutes — au lieu d'une pile-dans-les-mains par déplacement comme en vanilla. Plusieurs transporteurs se partagent un grand manifeste sans double transport, et le module ne s'embarque ni ne décolle tant que la cargaison réclamée n'est pas à bord. Avec ceci désactivé, le chargement d'une seule pile vanilla est utilisé inchangé.</HaulersDream.Setting.EnableBulkLoadTransportersDesc>
++<HaulersDream.Setting.EnableBulkLoadTransportersDesc>Quand un module de transport ou une navette est réglé pour charger, un transporteur réclame une part de son manifeste, balaye plusieurs piles proches dans son inventaire, marche jusqu'au module de transport UNE fois, et les y dépose toutes — au lieu d'une pile-dans-les-mains par déplacement comme en vanilla. Plusieurs transporteurs se partagent un grand manifeste sans double transport, et le module ne s'embarque ni ne décolle tant que la cargaison réclamée n'est pas à bord. Avec ceci désactivé, le chargement d'une seule pile vanilla est utilisé inchangé. Un ordre prioritaire répète les trajets pour cette liste après chaque livraison réussie, si le porteur n’est pas enrôlé et n’a pas de nouveaux ordres en attente. Un porteur enrôlé peut effectuer un trajet de chargement.</HaulersDream.Setting.EnableBulkLoadTransportersDesc>
+ <HaulersDream.Setting.BulkLoadAiUpdateFrequency>Intervalle de revérification du chargement : {0} ticks</HaulersDream.Setting.BulkLoadAiUpdateFrequency>
+ <HaulersDream.LoadPortal.Report>chargement groupé d'un portail.</HaulersDream.LoadPortal.Report>
+ <HaulersDream.LoadPortal.Option>Prioriser le chargement groupé de {0}</HaulersDream.LoadPortal.Option>
+@@ -420,7 +420,7 @@
+ <HaulersDream.Setting.OpportunisticLoadDesc>Un pion portant déjà des objets qu'un module de transport, une navette, un portail de carte ou un véhicule à proximité attend déviera pour les déposer, au lieu de démarrer une toute nouvelle séquence de ramassage. Moins de déplacements gaspillés. Désactivé par défaut (cela change quelle tâche un pion choisit ensuite).</HaulersDream.Setting.OpportunisticLoadDesc>
+ <HaulersDream.Setting.LoadOpportunityRadius>Rayon de recherche pour le dépôt au passage : {0} cases</HaulersDream.Setting.LoadOpportunityRadius>
+ <HaulersDream.Setting.ContinuousLoading>Ordre clic droit « Charger jusqu'à complétion »</HaulersDream.Setting.ContinuousLoading>
+-<HaulersDream.Setting.ContinuousLoadingDesc>Ajoute un ordre clic droit qui envoie un seul coursier (même mobilisé) à travers chaque groupe de transport proche qui a encore besoin d'être chargé, enchaînant les tâches jusqu'à ce qu'ils soient tous pleins — pratique pour charger une grande caravane en une seule commande. Désactivé par défaut (commodité optionnelle).</HaulersDream.Setting.ContinuousLoadingDesc>
++<HaulersDream.Setting.ContinuousLoadingDesc>Ajoute un ordre au clic droit qui poursuit le chargement des cibles proches après avoir terminé la liste sélectionnée. Les trajets suivants exigent un porteur non enrôlé, une livraison réussie et aucun nouvel ordre en attente. Désactivé par défaut.</HaulersDream.Setting.ContinuousLoadingDesc>
+ <HaulersDream.ContinuousLoad.Option>Charger jusqu'à complétion (continu) — {0}</HaulersDream.ContinuousLoad.Option>
+ <HaulersDream.ContinuousLoad.CouldNotStart>Rien à proximité à charger en groupe dans cela pour le moment.</HaulersDream.ContinuousLoad.CouldNotStart>
+ <HaulersDream.Setting.LoadHybridPathing>Ordonner les arrêts de chargement groupé par vraie recherche de chemin</HaulersDream.Setting.LoadHybridPathing>
+@@ -626,7 +626,7 @@
+ <HaulersDream.Setting.BulkHaulTrigger.Lab>Déclencheur de transport groupé</HaulersDream.Setting.BulkHaulTrigger.Lab>
+ <HaulersDream.Setting.KeepWorkingMargin.Lab>Décharger avant un déplacement plus long</HaulersDream.Setting.KeepWorkingMargin.Lab>
+ <HaulersDream.Setting.MinFreeSpaceToUnloadCarrier.Lab>Place libre minimale dans le sac à dos pour démarrer</HaulersDream.Setting.MinFreeSpaceToUnloadCarrier.Lab>
+-<HaulersDream.Setting.MinFreeSpaceToUnloadCarrier.Help>Un transporteur a besoin d'au moins cette part de sa capacité de port libre avant de commencer à vider un animal de bât, afin que son propre sac à dos ne déborde pas immédiatement.</HaulersDream.Setting.MinFreeSpaceToUnloadCarrier.Help>
++<HaulersDream.Setting.MinFreeSpaceToUnloadCarrier.Help>Un transporteur a besoin d'au moins cette part de sa capacité de port libre avant de commencer à vider un animal de bât, afin que son propre sac à dos ne déborde pas immédiatement. Ce seuil s’applique aussi au déchargement automatique des transporteurs.</HaulersDream.Setting.MinFreeSpaceToUnloadCarrier.Help>
+ <HaulersDream.Setting.VisualUnloadDelay.Lab>Délai de déchargement par pile</HaulersDream.Setting.VisualUnloadDelay.Lab>
+ <HaulersDream.Setting.VisualUnloadDelay.Help>Une petite pause cosmétique entre chaque pile pendant un déchargement groupé, pour que cela se lise comme une action délibérée. 0 = instantané.</HaulersDream.Setting.VisualUnloadDelay.Help>
+ <HaulersDream.Setting.BulkLoadAiUpdateFrequency.Lab>Intervalle de revérification du chargement</HaulersDream.Setting.BulkLoadAiUpdateFrequency.Lab>
+@@ -847,4 +847,18 @@
+   <HD_NearbyHaulInventoryUnavailable>Le transport par inventaire est indisponible pour ce personnage.</HD_NearbyHaulInventoryUnavailable>
+   <HD_NearbyHaulRobotUnsupported>Les tâches de transport du robot n'ont pas pu être lues avec la configuration actuelle des mods.</HD_NearbyHaulRobotUnsupported>
+   <HD_NearbyHaulSourceUnavailable>L'objet sélectionné n'est pas disponible pour le transport.</HD_NearbyHaulSourceUnavailable>
++  <HaulersDream.UnloadTransporter.Option>Prioriser le déchargement groupé de {0}</HaulersDream.UnloadTransporter.Option>
++  <HaulersDream.UnloadTransporter.CouldNotStart>Impossible de lancer le déchargement groupé de ce module de transport pour le moment.</HaulersDream.UnloadTransporter.CouldNotStart>
++  <HaulersDream.Gizmo.BulkUnloadAll.Label>Tout décharger en groupe</HaulersDream.Gizmo.BulkUnloadAll.Label>
++  <HaulersDream.Gizmo.BulkUnloadAll.Empty>Rien à décharger</HaulersDream.Gizmo.BulkUnloadAll.Empty>
++  <HaulersDream.Gizmo.BulkUnloadAll.LoadBlocked>« Décharger tout en groupe » est actif, désactivez-le avant de définir un nouveau chargement.</HaulersDream.Gizmo.BulkUnloadAll.LoadBlocked>
++  <HaulersDream.Gizmo.BulkUnloadAll.UnloadBlocked>Un chargement est en cours de rassemblement vers ce transporteur.</HaulersDream.Gizmo.BulkUnloadAll.UnloadBlocked>
++  <HaulersDream.Feat.UnloadTransporters.Name>Décharger les modules de transport &amp; navettes</HaulersDream.Feat.UnloadTransporters.Name>
++  <HaulersDream.Setting.EnableBulkUnloadTransporters>Décharger les transporteurs en vrac</HaulersDream.Setting.EnableBulkUnloadTransporters>
++  <HaulersDream.Setting.EnableBulkUnloadTransportersDesc>Ajoute un bouton de déchargement aux transporteurs et navettes. Les porteurs non enrôlés acheminent la cargaison directement au stockage, un trajet par tâche. Sur un transporteur marqué, un ordre prioritaire ne se répète qu’après livraison. Les passagers restent à bord. Le chargement, un stockage plein, l’enrôlement ou de nouveaux ordres en attente arrêtent les trajets suivants.</HaulersDream.Setting.EnableBulkUnloadTransportersDesc>
++  <HaulersDream.Gizmo.BulkUnloadAll.Desc>Acheminer la cargaison de {0} au stockage. Les passagers restent à bord. Un ordre prioritaire de déchargement se répète après chaque livraison si le porteur n’est pas enrôlé et n’a pas de nouveaux ordres en attente. Désactivez avant de charger.</HaulersDream.Gizmo.BulkUnloadAll.Desc>
++  <HaulersDream.Feat.UnloadTransporters.Blurb>Acheminer directement la cargaison d’un transporteur posé au stockage</HaulersDream.Feat.UnloadTransporters.Blurb>
++  <HaulersDream.UnloadTransporter.Drafted>Démobilisez ce personnage pour lancer cet ordre.</HaulersDream.UnloadTransporter.Drafted>
++  <HaulersDream.UnloadTransporter.NoStorage>Aucun stockage adapté à la cargaison restante.</HaulersDream.UnloadTransporter.NoStorage>
++  <HaulersDream.Transporter.SyncUnavailable>Les commandes de transporteur sont indisponibles : leur synchronisation multijoueur n’a pas pu être enregistrée.</HaulersDream.Transporter.SyncUnavailable>
+ </LanguageData>
+--- before/Languages/German/DefInjected/JobDef/Jobs.xml
++++ after/Languages/German/DefInjected/JobDef/Jobs.xml
+@@ -16,4 +16,5 @@
+ <HaulersDream_LoadPortalInBulk.reportString>belädt ein Portal im Stapel.</HaulersDream_LoadPortalInBulk.reportString>
+ <HaulersDream_LoadVehicleInBulk.reportString>belädt ein Fahrzeug im Stapel.</HaulersDream_LoadVehicleInBulk.reportString>
+ <HaulersDream_BulkRefuel.reportString>betankt im Stapel.</HaulersDream_BulkRefuel.reportString>
++  <HaulersDream_UnloadTransporterInBulk.reportString>entlädt einen Transporter.</HaulersDream_UnloadTransporterInBulk.reportString>
+ </LanguageData>
+--- before/Languages/German/DefInjected/WorkGiverDef/TransporterUnload.xml
++++ after/Languages/German/DefInjected/WorkGiverDef/TransporterUnload.xml
+@@ -0,0 +1,6 @@
++<?xml version="1.0" encoding="utf-8"?>
++<LanguageData>
++  <HaulersDream_BulkUnloadTransporters.label>Transporter &amp; Shuttles entladen</HaulersDream_BulkUnloadTransporters.label>
++  <HaulersDream_BulkUnloadTransporters.verb>entladen</HaulersDream_BulkUnloadTransporters.verb>
++  <HaulersDream_BulkUnloadTransporters.gerund>Entladen</HaulersDream_BulkUnloadTransporters.gerund>
++</LanguageData>
+--- before/Languages/German/Keyed/HaulersDream.xml
++++ after/Languages/German/Keyed/HaulersDream.xml
+@@ -357,7 +357,7 @@
+ <HaulersDream.LoadTransporter.Option>Stapel-Beladen von {0} priorisieren</HaulersDream.LoadTransporter.Option>
+ <HaulersDream.LoadTransporter.CouldNotStart>Im Moment ist nichts in der Nähe, um es im Stapel in diesen Transporter zu laden.</HaulersDream.LoadTransporter.CouldNotStart>
+ <HaulersDream.Setting.EnableBulkLoadTransporters>Transporter und Shuttles in einer Fahrt im Stapel beladen</HaulersDream.Setting.EnableBulkLoadTransporters>
+-<HaulersDream.Setting.EnableBulkLoadTransportersDesc>Wenn eine Transportkapsel oder ein Shuttle auf Beladen gestellt ist, beansprucht ein Träger einen Teil ihrer Frachtliste, fegt mehrere Stapel aus der Nähe in sein Inventar, geht EINMAL zum Transporter und legt sie alle ab — anstatt wie im Grundspiel einen Stapel pro Gang in den Händen. Mehrere Träger teilen sich eine große Frachtliste ohne Doppeltransport, und die Kapsel steigt nicht ein und startet nicht, bis die beanspruchte Fracht drin ist. Wenn dies deaktiviert ist, wird das einteilige Beladen von Transportern aus dem Grundspiel unverändert verwendet.</HaulersDream.Setting.EnableBulkLoadTransportersDesc>
++<HaulersDream.Setting.EnableBulkLoadTransportersDesc>Wenn eine Transportkapsel oder ein Shuttle auf Beladen gestellt ist, beansprucht ein Träger einen Teil ihrer Frachtliste, fegt mehrere Stapel aus der Nähe in sein Inventar, geht EINMAL zum Transporter und legt sie alle ab — anstatt wie im Grundspiel einen Stapel pro Gang in den Händen. Mehrere Träger teilen sich eine große Frachtliste ohne Doppeltransport, und die Kapsel steigt nicht ein und startet nicht, bis die beanspruchte Fracht drin ist. Wenn dies deaktiviert ist, wird das einteilige Beladen von Transportern aus dem Grundspiel unverändert verwendet. Ein priorisierter Auftrag wiederholt Touren für diese Ladeliste nach erfolgreichen Ablieferungen, solange der Träger nicht eingezogen ist und keine neuen Aufträge eingereiht sind. Ein eingezogener Träger kann eine Ladetour durchführen.</HaulersDream.Setting.EnableBulkLoadTransportersDesc>
+ <HaulersDream.Setting.BulkLoadAiUpdateFrequency>Intervall der Lade-Überprüfung: {0} Ticks</HaulersDream.Setting.BulkLoadAiUpdateFrequency>
+ <HaulersDream.LoadPortal.Report>belädt ein Portal im Stapel.</HaulersDream.LoadPortal.Report>
+ <HaulersDream.LoadPortal.Option>Stapel-Beladen von {0} priorisieren</HaulersDream.LoadPortal.Option>
+@@ -420,7 +420,7 @@
+ <HaulersDream.Setting.OpportunisticLoadDesc>Eine Spielfigur, die bereits Gegenstände trägt, auf die eine Transportkapsel, ein Shuttle, ein Kartenportal oder ein Fahrzeug in der Nähe wartet, weicht ab, um sie abzuladen, anstatt einen brandneuen Aufsammeldurchlauf zu beginnen. Weniger verschwendete Gänge. Standardmäßig deaktiviert (es ändert, welche Aufgabe eine Spielfigur als Nächstes aufnimmt).</HaulersDream.Setting.OpportunisticLoadDesc>
+ <HaulersDream.Setting.LoadOpportunityRadius>Suchradius für Abladen-unterwegs: {0} Felder</HaulersDream.Setting.LoadOpportunityRadius>
+ <HaulersDream.Setting.ContinuousLoading>Rechtsklick-Auftrag „Bis vollständig beladen“</HaulersDream.Setting.ContinuousLoading>
+-<HaulersDream.Setting.ContinuousLoadingDesc>Fügt einen Rechtsklick-Auftrag hinzu, der einen Kurier (auch im Wehrdienst) durch jede Transportgruppe in der Nähe schickt, die noch Beladen braucht, und die Aufträge verkettet, bis sie alle voll sind — praktisch, um eine große Karawane mit einem Befehl zu beladen. Standardmäßig deaktiviert (Opt-in-Komfort).</HaulersDream.Setting.ContinuousLoadingDesc>
++<HaulersDream.Setting.ContinuousLoadingDesc>Fügt einen Rechtsklickauftrag hinzu, der nach Abschluss der gewählten Ladeliste bei nahen Ladezielen fortfährt. Weitere Touren erfordern einen nicht eingezogenen Träger, eine erfolgreiche Ablieferung und keine neuen eingereihten Aufträge. Standardmäßig aus.</HaulersDream.Setting.ContinuousLoadingDesc>
+ <HaulersDream.ContinuousLoad.Option>Bis vollständig beladen (durchgehend) — {0}</HaulersDream.ContinuousLoad.Option>
+ <HaulersDream.ContinuousLoad.CouldNotStart>Im Moment ist nichts in der Nähe, um es da im Stapel hineinzuladen.</HaulersDream.ContinuousLoad.CouldNotStart>
+ <HaulersDream.Setting.LoadHybridPathing>Stapel-Lade-Halte nach echter Wegfindung ordnen</HaulersDream.Setting.LoadHybridPathing>
+@@ -626,7 +626,7 @@
+ <HaulersDream.Setting.BulkHaulTrigger.Lab>Auslöser für Stapel-Transport</HaulersDream.Setting.BulkHaulTrigger.Lab>
+ <HaulersDream.Setting.KeepWorkingMargin.Lab>Vor einer längeren Verlagerung entladen</HaulersDream.Setting.KeepWorkingMargin.Lab>
+ <HaulersDream.Setting.MinFreeSpaceToUnloadCarrier.Lab>Mindestens freier Rucksackplatz zum Starten</HaulersDream.Setting.MinFreeSpaceToUnloadCarrier.Lab>
+-<HaulersDream.Setting.MinFreeSpaceToUnloadCarrier.Help>Ein Träger braucht mindestens so viel von seiner Tragkapazität frei, bevor er beginnt, ein Lasttier zu entleeren, damit sein eigener Rucksack nicht sofort überläuft.</HaulersDream.Setting.MinFreeSpaceToUnloadCarrier.Help>
++<HaulersDream.Setting.MinFreeSpaceToUnloadCarrier.Help>Ein Träger braucht mindestens so viel von seiner Tragkapazität frei, bevor er beginnt, ein Lasttier zu entleeren, damit sein eigener Rucksack nicht sofort überläuft. Dieser Grenzwert gilt auch für das automatische Entladen von Transportern.</HaulersDream.Setting.MinFreeSpaceToUnloadCarrier.Help>
+ <HaulersDream.Setting.VisualUnloadDelay.Lab>Entladeverzögerung pro Stapel</HaulersDream.Setting.VisualUnloadDelay.Lab>
+ <HaulersDream.Setting.VisualUnloadDelay.Help>Eine kleine kosmetische Pause zwischen jedem Stapel während eines Stapel-Entladens, damit es als bewusste Handlung wirkt. 0 = sofort.</HaulersDream.Setting.VisualUnloadDelay.Help>
+ <HaulersDream.Setting.BulkLoadAiUpdateFrequency.Lab>Intervall der Lade-Überprüfung</HaulersDream.Setting.BulkLoadAiUpdateFrequency.Lab>
+@@ -847,4 +847,18 @@
+   <HD_NearbyHaulInventoryUnavailable>Inventartransport ist für diese Figur nicht verfügbar.</HD_NearbyHaulInventoryUnavailable>
+   <HD_NearbyHaulRobotUnsupported>Die Transportaufgaben des Roboters konnten mit der aktuellen Modkonfiguration nicht gelesen werden.</HD_NearbyHaulRobotUnsupported>
+   <HD_NearbyHaulSourceUnavailable>Der gewählte Gegenstand kann derzeit nicht transportiert werden.</HD_NearbyHaulSourceUnavailable>
++  <HaulersDream.UnloadTransporter.Option>Stapel-Entladen von {0} priorisieren</HaulersDream.UnloadTransporter.Option>
++  <HaulersDream.UnloadTransporter.CouldNotStart>Das Stapel-Entladen dieses Transporters konnte gerade nicht gestartet werden.</HaulersDream.UnloadTransporter.CouldNotStart>
++  <HaulersDream.Gizmo.BulkUnloadAll.Label>Alles im Stapel entladen</HaulersDream.Gizmo.BulkUnloadAll.Label>
++  <HaulersDream.Gizmo.BulkUnloadAll.Empty>Nichts zu entladen</HaulersDream.Gizmo.BulkUnloadAll.Empty>
++  <HaulersDream.Gizmo.BulkUnloadAll.LoadBlocked>„Alles im Stapel entladen“ ist aktiv – erst ausschalten, bevor du eine neue Ladung festlegst.</HaulersDream.Gizmo.BulkUnloadAll.LoadBlocked>
++  <HaulersDream.Gizmo.BulkUnloadAll.UnloadBlocked>In diesen Transporter wird gerade eine Ladung zusammengetragen.</HaulersDream.Gizmo.BulkUnloadAll.UnloadBlocked>
++  <HaulersDream.Feat.UnloadTransporters.Name>Transporter &amp; Shuttles entladen</HaulersDream.Feat.UnloadTransporters.Name>
++  <HaulersDream.Setting.EnableBulkUnloadTransporters>Transporter in großen Mengen entladen</HaulersDream.Setting.EnableBulkUnloadTransporters>
++  <HaulersDream.Setting.EnableBulkUnloadTransportersDesc>Fügt Transportern und Shuttles einen Entladeschalter hinzu. Nicht eingezogene Träger bringen Fracht direkt ins Lager, eine Tour pro Arbeitsauftrag. Ein priorisierter Auftrag an einem markierten Transporter wird erst nach der Ablieferung wiederholt. Passagiere bleiben an Bord. Beladung, volle Lager, Einberufung oder neue eingereihte Aufträge beenden weitere Touren.</HaulersDream.Setting.EnableBulkUnloadTransportersDesc>
++  <HaulersDream.Gizmo.BulkUnloadAll.Desc>Fracht aus {0} ins Lager bringen. Passagiere bleiben an Bord. Ein priorisierter Entladeauftrag wird nach jeder Ablieferung wiederholt, solange der Träger nicht eingezogen ist und keine neuen Aufträge eingereiht sind. Vor dem Beladen ausschalten.</HaulersDream.Gizmo.BulkUnloadAll.Desc>
++  <HaulersDream.Feat.UnloadTransporters.Blurb>Fracht aus einem gelandeten Transporter direkt ins Lager bringen</HaulersDream.Feat.UnloadTransporters.Blurb>
++  <HaulersDream.UnloadTransporter.Drafted>Den Kampfeinsatz dieser Figur beenden, um diesen Auftrag zu starten.</HaulersDream.UnloadTransporter.Drafted>
++  <HaulersDream.UnloadTransporter.NoStorage>Kein geeignetes Lager für die verbleibende Fracht.</HaulersDream.UnloadTransporter.NoStorage>
++  <HaulersDream.Transporter.SyncUnavailable>Transporterbefehle sind nicht verfügbar, da ihre Mehrspieler-Synchronisierung nicht registriert werden konnte.</HaulersDream.Transporter.SyncUnavailable>
+ </LanguageData>
+--- before/Languages/Italian/DefInjected/JobDef/Jobs.xml
++++ after/Languages/Italian/DefInjected/JobDef/Jobs.xml
+@@ -16,4 +16,5 @@
+ <HaulersDream_LoadPortalInBulk.reportString>carica in blocco un portale.</HaulersDream_LoadPortalInBulk.reportString>
+ <HaulersDream_LoadVehicleInBulk.reportString>carica in blocco un veicolo.</HaulersDream_LoadVehicleInBulk.reportString>
+ <HaulersDream_BulkRefuel.reportString>rifornisce in blocco.</HaulersDream_BulkRefuel.reportString>
++  <HaulersDream_UnloadTransporterInBulk.reportString>scarica un trasportatore.</HaulersDream_UnloadTransporterInBulk.reportString>
+ </LanguageData>
+--- before/Languages/Italian/DefInjected/WorkGiverDef/TransporterUnload.xml
++++ after/Languages/Italian/DefInjected/WorkGiverDef/TransporterUnload.xml
+@@ -0,0 +1,6 @@
++<?xml version="1.0" encoding="utf-8"?>
++<LanguageData>
++  <HaulersDream_BulkUnloadTransporters.label>Scarica trasportatori e navette in blocco</HaulersDream_BulkUnloadTransporters.label>
++  <HaulersDream_BulkUnloadTransporters.verb>scaricare</HaulersDream_BulkUnloadTransporters.verb>
++  <HaulersDream_BulkUnloadTransporters.gerund>scaricamento</HaulersDream_BulkUnloadTransporters.gerund>
++</LanguageData>
+--- before/Languages/Italian/Keyed/HaulersDream.xml
++++ after/Languages/Italian/Keyed/HaulersDream.xml
+@@ -357,7 +357,7 @@
+ <HaulersDream.LoadTransporter.Option>Prioritizza il caricamento in blocco di {0}</HaulersDream.LoadTransporter.Option>
+ <HaulersDream.LoadTransporter.CouldNotStart>Niente nelle vicinanze da caricare in blocco in quel trasportatore al momento.</HaulersDream.LoadTransporter.CouldNotStart>
+ <HaulersDream.Setting.EnableBulkLoadTransporters>Carica trasportatori e navette in blocco in un solo viaggio</HaulersDream.Setting.EnableBulkLoadTransporters>
+-<HaulersDream.Setting.EnableBulkLoadTransportersDesc>Quando una capsula di trasporto o una navetta è impostata per caricare, un trasportatore reclama una porzione del suo manifesto, raccoglie diverse pile vicine nel suo inventario, cammina al trasportatore UNA volta, e le deposita tutte — invece dell'una-pila-in-mano-per-camminata vanilla. Diversi trasportatori si dividono un grande manifesto senza doppio trasporto, e la capsula non si imbarcherà né partirà finché il carico reclamato non è dentro. Con questo disattivato, viene usato il caricamento del trasportatore a pila singola vanilla, invariato.</HaulersDream.Setting.EnableBulkLoadTransportersDesc>
++<HaulersDream.Setting.EnableBulkLoadTransportersDesc>Quando una capsula di trasporto o una navetta è impostata per caricare, un trasportatore reclama una porzione del suo manifesto, raccoglie diverse pile vicine nel suo inventario, cammina al trasportatore UNA volta, e le deposita tutte — invece dell'una-pila-in-mano-per-camminata vanilla. Diversi trasportatori si dividono un grande manifesto senza doppio trasporto, e la capsula non si imbarcherà né partirà finché il carico reclamato non è dentro. Con questo disattivato, viene usato il caricamento del trasportatore a pila singola vanilla, invariato. Un ordine prioritario ripete i viaggi per questa lista dopo ogni consegna riuscita, finché il colono non è reclutato e non ha nuovi ordini in coda. Un colono reclutato può effettuare un viaggio di carico.</HaulersDream.Setting.EnableBulkLoadTransportersDesc>
+ <HaulersDream.Setting.BulkLoadAiUpdateFrequency>Intervallo di ricontrollo del carico: {0} tick</HaulersDream.Setting.BulkLoadAiUpdateFrequency>
+ <HaulersDream.LoadPortal.Report>carica in blocco un portale.</HaulersDream.LoadPortal.Report>
+ <HaulersDream.LoadPortal.Option>Prioritizza il caricamento in blocco di {0}</HaulersDream.LoadPortal.Option>
+@@ -420,7 +420,7 @@
+ <HaulersDream.Setting.OpportunisticLoadDesc>Una pedina che sta già trasportando oggetti attesi da una capsula di trasporto, una navetta, un portale della mappa o un veicolo nelle vicinanze devierà per scaricarli, invece di iniziare un nuovo giro di raccolta da zero. Meno camminate sprecate. Disattivato per impostazione predefinita (cambia quale compito una pedina prende dopo).</HaulersDream.Setting.OpportunisticLoadDesc>
+ <HaulersDream.Setting.LoadOpportunityRadius>Raggio di ricerca per il deposito-lungo-il-tragitto: {0} celle</HaulersDream.Setting.LoadOpportunityRadius>
+ <HaulersDream.Setting.ContinuousLoading>Ordine "Carica fino al completamento" col tasto destro</HaulersDream.Setting.ContinuousLoading>
+-<HaulersDream.Setting.ContinuousLoadingDesc>Aggiunge un ordine col tasto destro che manda un corriere (anche arruolato) attraverso ogni gruppo di trasporto vicino che ha ancora bisogno di essere caricato, concatenando i lavori finché non sono tutti pieni — comodo per caricare una grande carovana con un solo comando. Disattivato per impostazione predefinita (comodità facoltativa).</HaulersDream.Setting.ContinuousLoadingDesc>
++<HaulersDream.Setting.ContinuousLoadingDesc>Aggiunge un ordine con clic destro che prosegue con i mezzi vicini dopo aver completato la lista di carico selezionata. Altri viaggi richiedono un colono non reclutato, una consegna riuscita e nessun nuovo ordine in coda. Disattivato per impostazione predefinita.</HaulersDream.Setting.ContinuousLoadingDesc>
+ <HaulersDream.ContinuousLoad.Option>Carica fino al completamento (continuo) — {0}</HaulersDream.ContinuousLoad.Option>
+ <HaulersDream.ContinuousLoad.CouldNotStart>Niente nelle vicinanze da caricare in blocco in quello al momento.</HaulersDream.ContinuousLoad.CouldNotStart>
+ <HaulersDream.Setting.LoadHybridPathing>Ordina le fermate di caricamento in blocco con la ricerca percorso reale</HaulersDream.Setting.LoadHybridPathing>
+@@ -626,7 +626,7 @@
+ <HaulersDream.Setting.BulkHaulTrigger.Lab>Innesco del trasporto in blocco</HaulersDream.Setting.BulkHaulTrigger.Lab>
+ <HaulersDream.Setting.KeepWorkingMargin.Lab>Scarica prima di uno spostamento più lungo</HaulersDream.Setting.KeepWorkingMargin.Lab>
+ <HaulersDream.Setting.MinFreeSpaceToUnloadCarrier.Lab>Spazio libero minimo nello zaino per iniziare</HaulersDream.Setting.MinFreeSpaceToUnloadCarrier.Lab>
+-<HaulersDream.Setting.MinFreeSpaceToUnloadCarrier.Help>Un trasportatore ha bisogno di almeno questa frazione della sua capacità di carico libera prima di iniziare a svuotare un animale da soma, così il suo zaino non trabocca subito.</HaulersDream.Setting.MinFreeSpaceToUnloadCarrier.Help>
++<HaulersDream.Setting.MinFreeSpaceToUnloadCarrier.Help>Un trasportatore ha bisogno di almeno questa frazione della sua capacità di carico libera prima di iniziare a svuotare un animale da soma, così il suo zaino non trabocca subito. Questa soglia vale anche per lo scarico automatico dei trasportatori.</HaulersDream.Setting.MinFreeSpaceToUnloadCarrier.Help>
+ <HaulersDream.Setting.VisualUnloadDelay.Lab>Ritardo di scarico per pila</HaulersDream.Setting.VisualUnloadDelay.Lab>
+ <HaulersDream.Setting.VisualUnloadDelay.Help>Una piccola pausa estetica tra ogni pila durante uno scarico in blocco, così appare come un'azione deliberata. 0 = istantaneo.</HaulersDream.Setting.VisualUnloadDelay.Help>
+ <HaulersDream.Setting.BulkLoadAiUpdateFrequency.Lab>Intervallo di ricontrollo del carico</HaulersDream.Setting.BulkLoadAiUpdateFrequency.Lab>
+@@ -847,4 +847,18 @@
+   <HD_NearbyHaulInventoryUnavailable>Il trasporto tramite inventario non è disponibile per questo personaggio.</HD_NearbyHaulInventoryUnavailable>
+   <HD_NearbyHaulRobotUnsupported>Non è stato possibile leggere i compiti di trasporto del robot con la configurazione attuale delle mod.</HD_NearbyHaulRobotUnsupported>
+   <HD_NearbyHaulSourceUnavailable>L'oggetto selezionato non è disponibile per il trasporto.</HD_NearbyHaulSourceUnavailable>
++  <HaulersDream.UnloadTransporter.Option>Prioritizza lo scarico in blocco di {0}</HaulersDream.UnloadTransporter.Option>
++  <HaulersDream.UnloadTransporter.CouldNotStart>Impossibile avviare lo scarico in blocco di quel trasportatore in questo momento.</HaulersDream.UnloadTransporter.CouldNotStart>
++  <HaulersDream.Gizmo.BulkUnloadAll.Label>Scarica tutto in blocco</HaulersDream.Gizmo.BulkUnloadAll.Label>
++  <HaulersDream.Gizmo.BulkUnloadAll.Empty>Niente da scaricare</HaulersDream.Gizmo.BulkUnloadAll.Empty>
++  <HaulersDream.Gizmo.BulkUnloadAll.LoadBlocked>"Scarica tutto in blocco" è attivo: disattivalo prima di impostare un nuovo carico.</HaulersDream.Gizmo.BulkUnloadAll.LoadBlocked>
++  <HaulersDream.Gizmo.BulkUnloadAll.UnloadBlocked>Un carico è in fase di raccolta verso questo trasportatore.</HaulersDream.Gizmo.BulkUnloadAll.UnloadBlocked>
++  <HaulersDream.Feat.UnloadTransporters.Name>Scarica trasportatori e navette in blocco</HaulersDream.Feat.UnloadTransporters.Name>
++  <HaulersDream.Setting.EnableBulkUnloadTransporters>Scarica i trasportatori in blocco</HaulersDream.Setting.EnableBulkUnloadTransporters>
++  <HaulersDream.Setting.EnableBulkUnloadTransportersDesc>Aggiunge un interruttore di scarico a trasportatori e navette. I trasportatori non reclutati spostano il carico direttamente in deposito, un viaggio per incarico. Su un mezzo contrassegnato, un ordine prioritario si ripete solo dopo la consegna. I passeggeri restano a bordo. Caricamento, depositi pieni, reclutamento o nuovi ordini in coda interrompono i viaggi successivi.</HaulersDream.Setting.EnableBulkUnloadTransportersDesc>
++  <HaulersDream.Gizmo.BulkUnloadAll.Desc>Sposta il carico da {0} al deposito. I passeggeri restano a bordo. Un ordine prioritario di scarico si ripete dopo ogni consegna finché il colono non è reclutato e non ha nuovi ordini in coda. Disattiva prima di caricare.</HaulersDream.Gizmo.BulkUnloadAll.Desc>
++  <HaulersDream.Feat.UnloadTransporters.Blurb>Sposta direttamente al deposito il carico di un trasportatore atterrato</HaulersDream.Feat.UnloadTransporters.Blurb>
++  <HaulersDream.UnloadTransporter.Drafted>Congeda questo colono per avviare l’ordine.</HaulersDream.UnloadTransporter.Drafted>
++  <HaulersDream.UnloadTransporter.NoStorage>Nessun deposito adatto al carico rimanente.</HaulersDream.UnloadTransporter.NoStorage>
++  <HaulersDream.Transporter.SyncUnavailable>I comandi dei trasportatori non sono disponibili perché non è stato possibile registrare la sincronizzazione multigiocatore.</HaulersDream.Transporter.SyncUnavailable>
+ </LanguageData>
+--- before/Languages/Japanese/DefInjected/JobDef/Jobs.xml
++++ after/Languages/Japanese/DefInjected/JobDef/Jobs.xml
+@@ -16,4 +16,5 @@
+ <HaulersDream_LoadPortalInBulk.reportString>ポータルに一括積み込みしている。</HaulersDream_LoadPortalInBulk.reportString>
+ <HaulersDream_LoadVehicleInBulk.reportString>車両に一括積み込みしている。</HaulersDream_LoadVehicleInBulk.reportString>
+ <HaulersDream_BulkRefuel.reportString>一括で燃料補給している。</HaulersDream_BulkRefuel.reportString>
++  <HaulersDream_UnloadTransporterInBulk.reportString>輸送機から降ろしている。</HaulersDream_UnloadTransporterInBulk.reportString>
+ </LanguageData>
+--- before/Languages/Japanese/DefInjected/WorkGiverDef/TransporterUnload.xml
++++ after/Languages/Japanese/DefInjected/WorkGiverDef/TransporterUnload.xml
+@@ -0,0 +1,6 @@
++<?xml version="1.0" encoding="utf-8"?>
++<LanguageData>
++  <HaulersDream_BulkUnloadTransporters.label>輸送ポッド &amp; シャトルの降ろし</HaulersDream_BulkUnloadTransporters.label>
++  <HaulersDream_BulkUnloadTransporters.verb>荷下ろしする</HaulersDream_BulkUnloadTransporters.verb>
++  <HaulersDream_BulkUnloadTransporters.gerund>荷下ろし中</HaulersDream_BulkUnloadTransporters.gerund>
++</LanguageData>
+--- before/Languages/Japanese/Keyed/HaulersDream.xml
++++ after/Languages/Japanese/Keyed/HaulersDream.xml
+@@ -357,7 +357,7 @@
+ <HaulersDream.LoadTransporter.Option>{0}の一括積み込みを優先</HaulersDream.LoadTransporter.Option>
+ <HaulersDream.LoadTransporter.CouldNotStart>今、その輸送ポッドに一括積み込みする近くのものがありません。</HaulersDream.LoadTransporter.CouldNotStart>
+ <HaulersDream.Setting.EnableBulkLoadTransporters>輸送ポッドとシャトルを1回の往復で一括積み込み</HaulersDream.Setting.EnableBulkLoadTransporters>
+-<HaulersDream.Setting.EnableBulkLoadTransportersDesc>輸送ポッドやシャトルが積み込みに設定されているとき、運搬役はその積荷目録の一部を確保し、近くの複数の山を所持品にかき集め、輸送ポッドへ一度だけ歩き、それらをすべて預けます — バニラの1往復1山を手に持つ代わりです。複数の運搬役が大きな目録を二重運搬なしで分担し、確保された貨物が入るまでポッドは搭乗も発射もしません。これをオフにすると、バニラの1山ずつの輸送ポッド積み込みがそのまま使われます。</HaulersDream.Setting.EnableBulkLoadTransportersDesc>
++<HaulersDream.Setting.EnableBulkLoadTransportersDesc>輸送ポッドやシャトルが積み込みに設定されているとき、運搬役はその積荷目録の一部を確保し、近くの複数の山を所持品にかき集め、輸送ポッドへ一度だけ歩き、それらをすべて預けます — バニラの1往復1山を手に持つ代わりです。複数の運搬役が大きな目録を二重運搬なしで分担し、確保された貨物が入るまでポッドは搭乗も発射もしません。これをオフにすると、バニラの1山ずつの輸送ポッド積み込みがそのまま使われます。 優先命令では、非徴兵状態で新たな予約命令がなければ、配達成功後もこの積荷リストへの往復を続けます。徴兵中でも1回の積み込みは可能です。</HaulersDream.Setting.EnableBulkLoadTransportersDesc>
+ <HaulersDream.Setting.BulkLoadAiUpdateFrequency>積み込み再確認の間隔：{0}ティック</HaulersDream.Setting.BulkLoadAiUpdateFrequency>
+ <HaulersDream.LoadPortal.Report>ポータルに一括積み込みしている。</HaulersDream.LoadPortal.Report>
+ <HaulersDream.LoadPortal.Option>{0}の一括積み込みを優先</HaulersDream.LoadPortal.Option>
+@@ -420,7 +420,7 @@
+ <HaulersDream.Setting.OpportunisticLoadDesc>近くの輸送ポッド・シャトル・マップポータル・車両が待っているアイテムをすでに携行しているポーンは、まったく新しい取得運行を始める代わりに、迂回してそれらを預けに行きます。無駄な歩行が減ります。デフォルトはオフです（ポーンが次に取るタスクを変えるため）。</HaulersDream.Setting.OpportunisticLoadDesc>
+ <HaulersDream.Setting.LoadOpportunityRadius>道中預けの探索半径：{0}マス</HaulersDream.Setting.LoadOpportunityRadius>
+ <HaulersDream.Setting.ContinuousLoading>「完了まで積み込む」右クリック指示</HaulersDream.Setting.ContinuousLoading>
+-<HaulersDream.Setting.ContinuousLoadingDesc>1人の運び手（徴兵中でも）を、まだ積み込みが必要な近くのすべての輸送グループへ送り、すべて満杯になるまでジョブを連鎖させる右クリック指示を追加します — 大きなキャラバンを1つの指示で積み込むのに便利です。デフォルトはオフです（任意の便利機能）。</HaulersDream.Setting.ContinuousLoadingDesc>
++<HaulersDream.Setting.ContinuousLoadingDesc>選択した積荷リストを完了後、近くの積み込み先へ続ける右クリック命令を追加します。続行には非徴兵状態、配達の成功、新たな予約命令がないことが必要です。初期設定はオフです。</HaulersDream.Setting.ContinuousLoadingDesc>
+ <HaulersDream.ContinuousLoad.Option>完了まで積み込む（連続） — {0}</HaulersDream.ContinuousLoad.Option>
+ <HaulersDream.ContinuousLoad.CouldNotStart>今、それに一括積み込みする近くのものがありません。</HaulersDream.ContinuousLoad.CouldNotStart>
+ <HaulersDream.Setting.LoadHybridPathing>一括積み込みの立ち寄りを実際の経路探索で順序付ける</HaulersDream.Setting.LoadHybridPathing>
+@@ -626,7 +626,7 @@
+ <HaulersDream.Setting.BulkHaulTrigger.Lab>一括運搬のトリガー</HaulersDream.Setting.BulkHaulTrigger.Lab>
+ <HaulersDream.Setting.KeepWorkingMargin.Lab>より長い移動の前に降ろす</HaulersDream.Setting.KeepWorkingMargin.Lab>
+ <HaulersDream.Setting.MinFreeSpaceToUnloadCarrier.Lab>開始に必要な最小のバックパック空き</HaulersDream.Setting.MinFreeSpaceToUnloadCarrier.Lab>
+-<HaulersDream.Setting.MinFreeSpaceToUnloadCarrier.Help>運搬役が荷物運搬動物を空にし始める前に、自分のバックパックがすぐにあふれないよう、少なくともこれだけの携行容量を空けておく必要があります。</HaulersDream.Setting.MinFreeSpaceToUnloadCarrier.Help>
++<HaulersDream.Setting.MinFreeSpaceToUnloadCarrier.Help>運搬役が荷物運搬動物を空にし始める前に、自分のバックパックがすぐにあふれないよう、少なくともこれだけの携行容量を空けておく必要があります。 この基準は輸送機の自動荷下ろしにも適用されます。</HaulersDream.Setting.MinFreeSpaceToUnloadCarrier.Help>
+ <HaulersDream.Setting.VisualUnloadDelay.Lab>1山ごとの荷下ろし遅延</HaulersDream.Setting.VisualUnloadDelay.Lab>
+ <HaulersDream.Setting.VisualUnloadDelay.Help>一括荷下ろし中、各山の間に入る小さな見た目上の間で、意図的な動作として読み取れるようにします。0＝即時。</HaulersDream.Setting.VisualUnloadDelay.Help>
+ <HaulersDream.Setting.BulkLoadAiUpdateFrequency.Lab>積み込み再確認の間隔</HaulersDream.Setting.BulkLoadAiUpdateFrequency.Lab>
+@@ -847,4 +847,18 @@
+   <HD_NearbyHaulInventoryUnavailable>このポーンはインベントリを使った運搬を利用できません。</HD_NearbyHaulInventoryUnavailable>
+   <HD_NearbyHaulRobotUnsupported>現在のMOD構成では、ロボットの運搬作業を読み取れませんでした。</HD_NearbyHaulRobotUnsupported>
+   <HD_NearbyHaulSourceUnavailable>選択したアイテムは運搬できません。</HD_NearbyHaulSourceUnavailable>
++  <HaulersDream.UnloadTransporter.Option>{0}の一括降ろしを優先</HaulersDream.UnloadTransporter.Option>
++  <HaulersDream.UnloadTransporter.CouldNotStart>今はその輸送機からの一括降ろしを開始できません。</HaulersDream.UnloadTransporter.CouldNotStart>
++  <HaulersDream.Gizmo.BulkUnloadAll.Label>一括で全て降ろす</HaulersDream.Gizmo.BulkUnloadAll.Label>
++  <HaulersDream.Gizmo.BulkUnloadAll.Empty>降ろせるものがありません</HaulersDream.Gizmo.BulkUnloadAll.Empty>
++  <HaulersDream.Gizmo.BulkUnloadAll.LoadBlocked>「一括降ろし」が有効です。新しい積み込みを設定する前にオフにしてください。</HaulersDream.Gizmo.BulkUnloadAll.LoadBlocked>
++  <HaulersDream.Gizmo.BulkUnloadAll.UnloadBlocked>この輸送機に向けて積み込みが進行中です。</HaulersDream.Gizmo.BulkUnloadAll.UnloadBlocked>
++  <HaulersDream.Feat.UnloadTransporters.Name>輸送ポッド &amp; シャトルの降ろし</HaulersDream.Feat.UnloadTransporters.Name>
++  <HaulersDream.Setting.EnableBulkUnloadTransporters>輸送機をまとめて荷下ろし</HaulersDream.Setting.EnableBulkUnloadTransporters>
++  <HaulersDream.Setting.EnableBulkUnloadTransportersDesc>輸送ポッドとシャトルに荷下ろしスイッチを追加します。非徴兵状態の運搬者が貨物を直接保管場所へ運び、通常の仕事では1回分を運びます。指定した輸送機への優先命令は、前の貨物を保管してから次の往復を始めます。乗客は降ろしません。積み込み中、保管場所の満杯、徴兵、新たな予約命令がある場合は続行しません。</HaulersDream.Setting.EnableBulkUnloadTransportersDesc>
++  <HaulersDream.Gizmo.BulkUnloadAll.Desc>{0}の貨物を保管場所へ運びます。乗客は降ろしません。優先荷下ろし命令は、非徴兵状態で新たな予約命令がない間、配達完了後に繰り返します。積み込み前にオフにしてください。</HaulersDream.Gizmo.BulkUnloadAll.Desc>
++  <HaulersDream.Feat.UnloadTransporters.Blurb>着陸した輸送機の貨物を保管場所へ直接運ぶ</HaulersDream.Feat.UnloadTransporters.Blurb>
++  <HaulersDream.UnloadTransporter.Drafted>この命令を開始するには徴兵を解除してください。</HaulersDream.UnloadTransporter.Drafted>
++  <HaulersDream.UnloadTransporter.NoStorage>残りの貨物に適した保管場所がありません。</HaulersDream.UnloadTransporter.NoStorage>
++  <HaulersDream.Transporter.SyncUnavailable>マルチプレイ同期の登録に失敗したため、輸送機の命令を使用できません。</HaulersDream.Transporter.SyncUnavailable>
+ </LanguageData>
+--- before/Languages/Korean/DefInjected/JobDef/Jobs.xml
++++ after/Languages/Korean/DefInjected/JobDef/Jobs.xml
+@@ -16,4 +16,5 @@
+ <HaulersDream_LoadPortalInBulk.reportString>차원문을 대량으로 싣는 중.</HaulersDream_LoadPortalInBulk.reportString>
+ <HaulersDream_LoadVehicleInBulk.reportString>차량을 대량으로 싣는 중.</HaulersDream_LoadVehicleInBulk.reportString>
+ <HaulersDream_BulkRefuel.reportString>대량으로 연료 보급 중.</HaulersDream_BulkRefuel.reportString>
++  <HaulersDream_UnloadTransporterInBulk.reportString>수송선에서 하역하는 중.</HaulersDream_UnloadTransporterInBulk.reportString>
+ </LanguageData>
+--- before/Languages/Korean/DefInjected/WorkGiverDef/TransporterUnload.xml
++++ after/Languages/Korean/DefInjected/WorkGiverDef/TransporterUnload.xml
+@@ -0,0 +1,6 @@
++<?xml version="1.0" encoding="utf-8"?>
++<LanguageData>
++  <HaulersDream_BulkUnloadTransporters.label>수송 포드 및 셔틀 하역</HaulersDream_BulkUnloadTransporters.label>
++  <HaulersDream_BulkUnloadTransporters.verb>하역</HaulersDream_BulkUnloadTransporters.verb>
++  <HaulersDream_BulkUnloadTransporters.gerund>하역 중</HaulersDream_BulkUnloadTransporters.gerund>
++</LanguageData>
+--- before/Languages/Korean/Keyed/HaulersDream.xml
++++ after/Languages/Korean/Keyed/HaulersDream.xml
+@@ -357,7 +357,7 @@
+ <HaulersDream.LoadTransporter.Option>{0} 대량 적재 우선 지정</HaulersDream.LoadTransporter.Option>
+ <HaulersDream.LoadTransporter.CouldNotStart>지금 그 수송 포드에 대량으로 실을 만한 것이 주변에 없습니다.</HaulersDream.LoadTransporter.CouldNotStart>
+ <HaulersDream.Setting.EnableBulkLoadTransporters>수송 포드와 셔틀을 한 번 이동으로 대량 적재</HaulersDream.Setting.EnableBulkLoadTransporters>
+-<HaulersDream.Setting.EnableBulkLoadTransportersDesc>수송 포드나 셔틀이 적재로 설정되면, 운반자가 그 적재 목록의 일부를 점유하고 인근의 여러 더미를 소지품에 쓸어 담아 수송 포드로 한 번 걸어가서 전부 내려놓습니다 — 바닐라의 걸음당 손에 한 더미 대신. 여러 운반자가 큰 적재 목록을 이중 운반 없이 나누며, 점유한 화물이 들어올 때까지 포드는 탑승하거나 발사하지 않습니다. 이것이 꺼져 있으면 바닐라의 단일 더미 수송 포드 적재가 그대로 사용됩니다.</HaulersDream.Setting.EnableBulkLoadTransportersDesc>
++<HaulersDream.Setting.EnableBulkLoadTransportersDesc>수송 포드나 셔틀이 적재로 설정되면, 운반자가 그 적재 목록의 일부를 점유하고 인근의 여러 더미를 소지품에 쓸어 담아 수송 포드로 한 번 걸어가서 전부 내려놓습니다 — 바닐라의 걸음당 손에 한 더미 대신. 여러 운반자가 큰 적재 목록을 이중 운반 없이 나누며, 점유한 화물이 들어올 때까지 포드는 탑승하거나 발사하지 않습니다. 이것이 꺼져 있으면 바닐라의 단일 더미 수송 포드 적재가 그대로 사용됩니다. 우선 명령은 운반자가 징집되지 않고 새 대기 명령이 없으면 배송 성공 후 이 목록의 운반을 반복합니다. 징집된 운반자도 한 번의 적재 운반은 할 수 있습니다.</HaulersDream.Setting.EnableBulkLoadTransportersDesc>
+ <HaulersDream.Setting.BulkLoadAiUpdateFrequency>적재 재확인 간격: {0}틱</HaulersDream.Setting.BulkLoadAiUpdateFrequency>
+ <HaulersDream.LoadPortal.Report>차원문을 대량으로 싣는 중.</HaulersDream.LoadPortal.Report>
+ <HaulersDream.LoadPortal.Option>{0} 대량 적재 우선 지정</HaulersDream.LoadPortal.Option>
+@@ -420,7 +420,7 @@
+ <HaulersDream.Setting.OpportunisticLoadDesc>인근의 수송 포드, 셔틀, 맵 차원문, 또는 차량이 기다리는 물건을 이미 운반 중인 폰이, 완전히 새 줍기 이동을 시작하는 대신 우회해 그것을 내려놓습니다. 헛된 걸음이 줄어듭니다. 기본 꺼짐 (폰이 다음에 맡는 작업을 바꿉니다).</HaulersDream.Setting.OpportunisticLoadDesc>
+ <HaulersDream.Setting.LoadOpportunityRadius>가는 길 내려놓기 탐색 반경: {0}칸</HaulersDream.Setting.LoadOpportunityRadius>
+ <HaulersDream.Setting.ContinuousLoading>"완료될 때까지 적재" 우클릭 명령</HaulersDream.Setting.ContinuousLoading>
+-<HaulersDream.Setting.ContinuousLoadingDesc>한 운반자(징집됨이라도)를 아직 적재가 필요한 인근의 모든 수송 그룹으로 보내, 전부 찰 때까지 작업을 연쇄하는 우클릭 명령을 추가합니다 — 큰 카라반을 한 명령으로 싣기에 편리합니다. 기본 꺼짐 (선택적 편의 기능).</HaulersDream.Setting.ContinuousLoadingDesc>
++<HaulersDream.Setting.ContinuousLoadingDesc>선택한 적재 목록을 완료한 뒤 가까운 적재 대상으로 이어가는 우클릭 명령을 추가합니다. 후속 운반에는 징집 해제 상태, 배송 성공, 새 대기 명령이 없는 상태가 필요합니다. 기본값은 꺼짐입니다.</HaulersDream.Setting.ContinuousLoadingDesc>
+ <HaulersDream.ContinuousLoad.Option>완료될 때까지 적재 (연속) — {0}</HaulersDream.ContinuousLoad.Option>
+ <HaulersDream.ContinuousLoad.CouldNotStart>지금 그것에 대량으로 실을 만한 것이 주변에 없습니다.</HaulersDream.ContinuousLoad.CouldNotStart>
+ <HaulersDream.Setting.LoadHybridPathing>대량 적재 정거장을 실제 경로 탐색으로 정렬</HaulersDream.Setting.LoadHybridPathing>
+@@ -626,7 +626,7 @@
+ <HaulersDream.Setting.BulkHaulTrigger.Lab>대량 운반 유발 조건</HaulersDream.Setting.BulkHaulTrigger.Lab>
+ <HaulersDream.Setting.KeepWorkingMargin.Lab>더 긴 이동 전 내려놓기</HaulersDream.Setting.KeepWorkingMargin.Lab>
+ <HaulersDream.Setting.MinFreeSpaceToUnloadCarrier.Lab>시작에 필요한 최소 여유 배낭 공간</HaulersDream.Setting.MinFreeSpaceToUnloadCarrier.Lab>
+-<HaulersDream.Setting.MinFreeSpaceToUnloadCarrier.Help>운반자가 짐 운반 동물을 비우기 시작하기 전에 자기 운반 용량을 적어도 이만큼 비워 두어야, 자기 배낭이 즉시 넘치지 않습니다.</HaulersDream.Setting.MinFreeSpaceToUnloadCarrier.Help>
++<HaulersDream.Setting.MinFreeSpaceToUnloadCarrier.Help>운반자가 짐 운반 동물을 비우기 시작하기 전에 자기 운반 용량을 적어도 이만큼 비워 두어야, 자기 배낭이 즉시 넘치지 않습니다. 이 기준은 수송기 자동 하역에도 적용됩니다.</HaulersDream.Setting.MinFreeSpaceToUnloadCarrier.Help>
+ <HaulersDream.Setting.VisualUnloadDelay.Lab>더미당 내리기 지연</HaulersDream.Setting.VisualUnloadDelay.Lab>
+ <HaulersDream.Setting.VisualUnloadDelay.Help>대량 내리기 중 각 더미 사이의 작은 연출용 멈춤으로, 의도적인 동작처럼 보이게 합니다. 0 = 즉시.</HaulersDream.Setting.VisualUnloadDelay.Help>
+ <HaulersDream.Setting.BulkLoadAiUpdateFrequency.Lab>적재 재확인 간격</HaulersDream.Setting.BulkLoadAiUpdateFrequency.Lab>
+@@ -847,4 +847,18 @@
+   <HD_NearbyHaulInventoryUnavailable>이 폰은 소지품을 이용한 운반을 사용할 수 없습니다.</HD_NearbyHaulInventoryUnavailable>
+   <HD_NearbyHaulRobotUnsupported>현재 모드 구성에서 로봇의 운반 작업을 읽을 수 없습니다.</HD_NearbyHaulRobotUnsupported>
+   <HD_NearbyHaulSourceUnavailable>선택한 물건은 운반할 수 없습니다.</HD_NearbyHaulSourceUnavailable>
++  <HaulersDream.UnloadTransporter.Option>{0} 대량 하역 우선 지정</HaulersDream.UnloadTransporter.Option>
++  <HaulersDream.UnloadTransporter.CouldNotStart>지금은 그 수송선의 대량 하역을 시작할 수 없습니다.</HaulersDream.UnloadTransporter.CouldNotStart>
++  <HaulersDream.Gizmo.BulkUnloadAll.Label>전체 대량 하역</HaulersDream.Gizmo.BulkUnloadAll.Label>
++  <HaulersDream.Gizmo.BulkUnloadAll.Empty>하역할 것이 없음</HaulersDream.Gizmo.BulkUnloadAll.Empty>
++  <HaulersDream.Gizmo.BulkUnloadAll.LoadBlocked>"전체 대량 하역"이 켜져 있습니다. 새 적재를 설정하기 전에 끄십시오.</HaulersDream.Gizmo.BulkUnloadAll.LoadBlocked>
++  <HaulersDream.Gizmo.BulkUnloadAll.UnloadBlocked>이 수송선으로 짐을 싣는 중입니다.</HaulersDream.Gizmo.BulkUnloadAll.UnloadBlocked>
++  <HaulersDream.Feat.UnloadTransporters.Name>수송 포드 및 셔틀 하역</HaulersDream.Feat.UnloadTransporters.Name>
++  <HaulersDream.Setting.EnableBulkUnloadTransporters>수송기 일괄 하역</HaulersDream.Setting.EnableBulkUnloadTransporters>
++  <HaulersDream.Setting.EnableBulkUnloadTransportersDesc>수송 포드와 왕복선에 하역 전환 버튼을 추가합니다. 징집되지 않은 운반자가 화물을 저장소로 직접 옮기며, 일반 작업은 한 번 왕복합니다. 표시된 수송기에 우선 명령을 내리면 이전 화물을 저장한 뒤에만 다음 운반을 시작합니다. 승객은 내리지 않습니다. 적재 중이거나 저장소가 가득 찼거나 징집되거나 새 명령이 대기 중이면 후속 운반을 중단합니다.</HaulersDream.Setting.EnableBulkUnloadTransportersDesc>
++  <HaulersDream.Gizmo.BulkUnloadAll.Desc>{0}의 화물을 저장소로 옮깁니다. 승객은 내리지 않습니다. 우선 하역 명령은 운반자가 징집되지 않고 새 대기 명령이 없는 동안 배송 완료 후 반복됩니다. 적재 전에 끄세요.</HaulersDream.Gizmo.BulkUnloadAll.Desc>
++  <HaulersDream.Feat.UnloadTransporters.Blurb>착륙한 수송기의 화물을 저장소로 직접 운반</HaulersDream.Feat.UnloadTransporters.Blurb>
++  <HaulersDream.UnloadTransporter.Drafted>이 명령을 시작하려면 징집을 해제하세요.</HaulersDream.UnloadTransporter.Drafted>
++  <HaulersDream.UnloadTransporter.NoStorage>남은 화물을 보관할 적절한 저장소가 없습니다.</HaulersDream.UnloadTransporter.NoStorage>
++  <HaulersDream.Transporter.SyncUnavailable>멀티플레이 동기화를 등록하지 못해 수송기 명령을 사용할 수 없습니다.</HaulersDream.Transporter.SyncUnavailable>
+ </LanguageData>
+--- before/Languages/Polish/DefInjected/JobDef/Jobs.xml
++++ after/Languages/Polish/DefInjected/JobDef/Jobs.xml
+@@ -16,4 +16,5 @@
+ <HaulersDream_LoadPortalInBulk.reportString>masowe ładowanie portalu.</HaulersDream_LoadPortalInBulk.reportString>
+ <HaulersDream_LoadVehicleInBulk.reportString>masowe ładowanie pojazdu.</HaulersDream_LoadVehicleInBulk.reportString>
+ <HaulersDream_BulkRefuel.reportString>masowe tankowanie.</HaulersDream_BulkRefuel.reportString>
++  <HaulersDream_UnloadTransporterInBulk.reportString>rozładowuje transporter.</HaulersDream_UnloadTransporterInBulk.reportString>
+ </LanguageData>
+--- before/Languages/Polish/DefInjected/WorkGiverDef/TransporterUnload.xml
++++ after/Languages/Polish/DefInjected/WorkGiverDef/TransporterUnload.xml
+@@ -0,0 +1,6 @@
++<?xml version="1.0" encoding="utf-8"?>
++<LanguageData>
++  <HaulersDream_BulkUnloadTransporters.label>Rozładuj transportery i promy</HaulersDream_BulkUnloadTransporters.label>
++  <HaulersDream_BulkUnloadTransporters.verb>rozładować</HaulersDream_BulkUnloadTransporters.verb>
++  <HaulersDream_BulkUnloadTransporters.gerund>rozładowywanie</HaulersDream_BulkUnloadTransporters.gerund>
++</LanguageData>
+--- before/Languages/Polish/Keyed/HaulersDream.xml
++++ after/Languages/Polish/Keyed/HaulersDream.xml
+@@ -357,7 +357,7 @@
+ <HaulersDream.LoadTransporter.Option>Priorytetyzuj masowe ładowanie {0}</HaulersDream.LoadTransporter.Option>
+ <HaulersDream.LoadTransporter.CouldNotStart>Nic w pobliżu do masowego załadowania do tego transportera w tej chwili.</HaulersDream.LoadTransporter.CouldNotStart>
+ <HaulersDream.Setting.EnableBulkLoadTransporters>Masowo ładuj transportery i promy w jednej wyprawie</HaulersDream.Setting.EnableBulkLoadTransporters>
+-<HaulersDream.Setting.EnableBulkLoadTransportersDesc>Gdy kapsuła transportowa lub prom są ustawione na ładowanie, tragarz zajmuje wycinek ich manifestu, zgarnia kilka pobliskich stosów do swojego bagażu, podchodzi do transportera RAZ i deponuje je wszystkie — zamiast nosić jeden stos w rękach na podejście jak w podstawce. Kilku tragarzy dzieli duży manifest bez podwójnego znoszenia, a kapsuła nie wejdzie na pokład ani nie wystartuje, dopóki zajęty ładunek nie będzie w środku. Z tym wyłączonym używane jest ładowanie transportera pojedynczym stosem z podstawki bez zmian.</HaulersDream.Setting.EnableBulkLoadTransportersDesc>
++<HaulersDream.Setting.EnableBulkLoadTransportersDesc>Gdy kapsuła transportowa lub prom są ustawione na ładowanie, tragarz zajmuje wycinek ich manifestu, zgarnia kilka pobliskich stosów do swojego bagażu, podchodzi do transportera RAZ i deponuje je wszystkie — zamiast nosić jeden stos w rękach na podejście jak w podstawce. Kilku tragarzy dzieli duży manifest bez podwójnego znoszenia, a kapsuła nie wejdzie na pokład ani nie wystartuje, dopóki zajęty ładunek nie będzie w środku. Z tym wyłączonym używane jest ładowanie transportera pojedynczym stosem z podstawki bez zmian. Priorytetowe polecenie powtarza kursy dla tej listy po udanych dostawach, jeśli tragarz nie jest zmobilizowany i nie ma nowych poleceń w kolejce. Zmobilizowany tragarz może wykonać jeden kurs załadunku.</HaulersDream.Setting.EnableBulkLoadTransportersDesc>
+ <HaulersDream.Setting.BulkLoadAiUpdateFrequency>Interwał ponownego sprawdzania ładowania: {0} tyknięć</HaulersDream.Setting.BulkLoadAiUpdateFrequency>
+ <HaulersDream.LoadPortal.Report>masowe ładowanie portalu.</HaulersDream.LoadPortal.Report>
+ <HaulersDream.LoadPortal.Option>Priorytetyzuj masowe ładowanie {0}</HaulersDream.LoadPortal.Option>
+@@ -420,7 +420,7 @@
+ <HaulersDream.Setting.OpportunisticLoadDesc>Pionek już niosący przedmioty, na które czeka pobliska kapsuła transportowa, prom, portal mapy lub pojazd, zboczy, by je zrzucić, zamiast zaczynać zupełnie nowy przebieg po odbiór. Mniej zmarnowanych podejść. Domyślnie wyłączone (zmienia, które zadanie pionek podejmuje następne).</HaulersDream.Setting.OpportunisticLoadDesc>
+ <HaulersDream.Setting.LoadOpportunityRadius>Promień poszukiwania zrzutu po drodze: {0} kafelków</HaulersDream.Setting.LoadOpportunityRadius>
+ <HaulersDream.Setting.ContinuousLoading>Rozkaz z prawego przycisku „Ładuj do skutku”</HaulersDream.Setting.ContinuousLoading>
+-<HaulersDream.Setting.ContinuousLoadingDesc>Dodaje rozkaz z prawego przycisku, który posyła jednego kuriera (nawet wcielonego) przez każdą pobliską grupę transportową, która wciąż wymaga ładowania, łącząc zadania, aż wszystkie będą pełne — przydatne do załadowania dużej karawany jednym poleceniem. Domyślnie wyłączone (opcjonalna wygoda).</HaulersDream.Setting.ContinuousLoadingDesc>
++<HaulersDream.Setting.ContinuousLoadingDesc>Dodaje polecenie prawego przycisku myszy, które po ukończeniu wybranej listy załadunku przechodzi do pobliskich celów. Dalsze kursy wymagają niezmobilizowanego tragarza, udanej dostawy i braku nowych poleceń w kolejce. Domyślnie wyłączone.</HaulersDream.Setting.ContinuousLoadingDesc>
+ <HaulersDream.ContinuousLoad.Option>Ładuj do skutku (ciągle) — {0}</HaulersDream.ContinuousLoad.Option>
+ <HaulersDream.ContinuousLoad.CouldNotStart>Nic w pobliżu do masowego załadowania do tego w tej chwili.</HaulersDream.ContinuousLoad.CouldNotStart>
+ <HaulersDream.Setting.LoadHybridPathing>Porządkuj przystanki masowego ładowania według rzeczywistego wyznaczania ścieżki</HaulersDream.Setting.LoadHybridPathing>
+@@ -626,7 +626,7 @@
+ <HaulersDream.Setting.BulkHaulTrigger.Lab>Wyzwalacz masowego znoszenia</HaulersDream.Setting.BulkHaulTrigger.Lab>
+ <HaulersDream.Setting.KeepWorkingMargin.Lab>Rozładuj przed dłuższym przemieszczeniem</HaulersDream.Setting.KeepWorkingMargin.Lab>
+ <HaulersDream.Setting.MinFreeSpaceToUnloadCarrier.Lab>Minimalne wolne miejsce w plecaku, by zacząć</HaulersDream.Setting.MinFreeSpaceToUnloadCarrier.Lab>
+-<HaulersDream.Setting.MinFreeSpaceToUnloadCarrier.Help>Tragarz potrzebuje co najmniej tyle wolnego udźwigu, zanim zacznie opróżniać zwierzę juczne, aby jego własny plecak nie przepełnił się natychmiast.</HaulersDream.Setting.MinFreeSpaceToUnloadCarrier.Help>
++<HaulersDream.Setting.MinFreeSpaceToUnloadCarrier.Help>Tragarz potrzebuje co najmniej tyle wolnego udźwigu, zanim zacznie opróżniać zwierzę juczne, aby jego własny plecak nie przepełnił się natychmiast. Ten próg dotyczy także automatycznego rozładunku transporterów.</HaulersDream.Setting.MinFreeSpaceToUnloadCarrier.Help>
+ <HaulersDream.Setting.VisualUnloadDelay.Lab>Opóźnienie rozładunku na stos</HaulersDream.Setting.VisualUnloadDelay.Lab>
+ <HaulersDream.Setting.VisualUnloadDelay.Help>Mała kosmetyczna pauza między każdym stosem podczas masowego rozładunku, aby czytało się to jako celowe działanie. 0 = natychmiast.</HaulersDream.Setting.VisualUnloadDelay.Help>
+ <HaulersDream.Setting.BulkLoadAiUpdateFrequency.Lab>Interwał ponownego sprawdzania ładowania</HaulersDream.Setting.BulkLoadAiUpdateFrequency.Lab>
+@@ -847,4 +847,18 @@
+   <HD_NearbyHaulInventoryUnavailable>Transport z użyciem ekwipunku jest niedostępny dla tej postaci.</HD_NearbyHaulInventoryUnavailable>
+   <HD_NearbyHaulRobotUnsupported>Nie udało się odczytać zadań transportowych robota przy obecnej konfiguracji modów.</HD_NearbyHaulRobotUnsupported>
+   <HD_NearbyHaulSourceUnavailable>Wybrany przedmiot nie jest dostępny do transportu.</HD_NearbyHaulSourceUnavailable>
++  <HaulersDream.UnloadTransporter.Option>Priorytetyzuj masowe rozładowanie {0}</HaulersDream.UnloadTransporter.Option>
++  <HaulersDream.UnloadTransporter.CouldNotStart>Nie udało się teraz rozpocząć masowego rozładowania tego transportera.</HaulersDream.UnloadTransporter.CouldNotStart>
++  <HaulersDream.Gizmo.BulkUnloadAll.Label>Masowo rozładuj wszystko</HaulersDream.Gizmo.BulkUnloadAll.Label>
++  <HaulersDream.Gizmo.BulkUnloadAll.Empty>Nie ma czego rozładowywać</HaulersDream.Gizmo.BulkUnloadAll.Empty>
++  <HaulersDream.Gizmo.BulkUnloadAll.LoadBlocked>„Masowo rozładuj wszystko” jest włączone, wyłącz to przed ustawieniem nowego ładunku.</HaulersDream.Gizmo.BulkUnloadAll.LoadBlocked>
++  <HaulersDream.Gizmo.BulkUnloadAll.UnloadBlocked>Do tego transportera właśnie zbierany jest ładunek.</HaulersDream.Gizmo.BulkUnloadAll.UnloadBlocked>
++  <HaulersDream.Feat.UnloadTransporters.Name>Rozładuj transportery i promy</HaulersDream.Feat.UnloadTransporters.Name>
++  <HaulersDream.Setting.EnableBulkUnloadTransporters>Rozładowuj transportery zbiorczo</HaulersDream.Setting.EnableBulkUnloadTransporters>
++  <HaulersDream.Setting.EnableBulkUnloadTransportersDesc>Dodaje przełącznik rozładunku transporterów i wahadłowców. Niezmobilizowani tragarze przenoszą ładunek bezpośrednio do magazynu, jeden kurs na zadanie. Priorytetowe polecenie dla oznaczonego transportera ponawia kurs dopiero po dostawie. Pasażerowie pozostają na pokładzie. Załadunek, pełny magazyn, mobilizacja lub nowe polecenia w kolejce zatrzymują dalsze kursy.</HaulersDream.Setting.EnableBulkUnloadTransportersDesc>
++  <HaulersDream.Gizmo.BulkUnloadAll.Desc>Przenieś ładunek z {0} do magazynu. Pasażerowie pozostają na pokładzie. Priorytetowy rozładunek powtarza się po każdej dostawie, jeśli tragarz nie jest zmobilizowany i nie ma nowych poleceń w kolejce. Wyłącz przed załadunkiem.</HaulersDream.Gizmo.BulkUnloadAll.Desc>
++  <HaulersDream.Feat.UnloadTransporters.Blurb>Przenoś ładunek z wylądowanego transportera prosto do magazynu</HaulersDream.Feat.UnloadTransporters.Blurb>
++  <HaulersDream.UnloadTransporter.Drafted>Zdemobilizuj tę postać, aby rozpocząć polecenie.</HaulersDream.UnloadTransporter.Drafted>
++  <HaulersDream.UnloadTransporter.NoStorage>Brak odpowiedniego magazynu na pozostały ładunek.</HaulersDream.UnloadTransporter.NoStorage>
++  <HaulersDream.Transporter.SyncUnavailable>Polecenia transporterów są niedostępne, ponieważ nie udało się zarejestrować synchronizacji wieloosobowej.</HaulersDream.Transporter.SyncUnavailable>
+ </LanguageData>
+--- before/Languages/PortugueseBrazilian/DefInjected/JobDef/Jobs.xml
++++ after/Languages/PortugueseBrazilian/DefInjected/JobDef/Jobs.xml
+@@ -16,4 +16,5 @@
+ <HaulersDream_LoadPortalInBulk.reportString>carregando um portal em massa.</HaulersDream_LoadPortalInBulk.reportString>
+ <HaulersDream_LoadVehicleInBulk.reportString>carregando um veículo em massa.</HaulersDream_LoadVehicleInBulk.reportString>
+ <HaulersDream_BulkRefuel.reportString>reabastecendo em massa.</HaulersDream_BulkRefuel.reportString>
++  <HaulersDream_UnloadTransporterInBulk.reportString>descarregando um transportador.</HaulersDream_UnloadTransporterInBulk.reportString>
+ </LanguageData>
+--- before/Languages/PortugueseBrazilian/DefInjected/WorkGiverDef/TransporterUnload.xml
++++ after/Languages/PortugueseBrazilian/DefInjected/WorkGiverDef/TransporterUnload.xml
+@@ -0,0 +1,6 @@
++<?xml version="1.0" encoding="utf-8"?>
++<LanguageData>
++  <HaulersDream_BulkUnloadTransporters.label>Descarregar naves em massa</HaulersDream_BulkUnloadTransporters.label>
++  <HaulersDream_BulkUnloadTransporters.verb>descarregar</HaulersDream_BulkUnloadTransporters.verb>
++  <HaulersDream_BulkUnloadTransporters.gerund>descarregando</HaulersDream_BulkUnloadTransporters.gerund>
++</LanguageData>
+--- before/Languages/PortugueseBrazilian/Keyed/HaulersDream.xml
++++ after/Languages/PortugueseBrazilian/Keyed/HaulersDream.xml
+@@ -357,7 +357,7 @@
+ <HaulersDream.LoadTransporter.Option>Priorizar carregamento em massa de {0}</HaulersDream.LoadTransporter.Option>
+ <HaulersDream.LoadTransporter.CouldNotStart>Nada por perto para carregar em massa naquele transportador agora.</HaulersDream.LoadTransporter.CouldNotStart>
+ <HaulersDream.Setting.EnableBulkLoadTransporters>Carregar transportadores e naves em massa em uma viagem</HaulersDream.Setting.EnableBulkLoadTransporters>
+-<HaulersDream.Setting.EnableBulkLoadTransportersDesc>Quando uma cápsula de transporte ou nave é marcada para carregar, um transportador reivindica uma fatia do manifesto dela, varre várias pilhas próximas para o inventário, caminha até o transportador UMA vez e as deposita todas — em vez da uma-pilha-nas-mãos por caminhada do jogo base. Vários transportadores dividem um manifesto grande sem transporte duplicado, e a cápsula não embarca nem decola até que a carga reivindicada esteja dentro. Com isto desligado, o carregamento de pilha única de transportador do jogo base é usado sem alteração.</HaulersDream.Setting.EnableBulkLoadTransportersDesc>
++<HaulersDream.Setting.EnableBulkLoadTransportersDesc>Quando uma cápsula de transporte ou nave é marcada para carregar, um transportador reivindica uma fatia do manifesto dela, varre várias pilhas próximas para o inventário, caminha até o transportador UMA vez e as deposita todas — em vez da uma-pilha-nas-mãos por caminhada do jogo base. Vários transportadores dividem um manifesto grande sem transporte duplicado, e a cápsula não embarca nem decola até que a carga reivindicada esteja dentro. Com isto desligado, o carregamento de pilha única de transportador do jogo base é usado sem alteração. Uma ordem prioritária repete viagens para esta lista após entregas bem-sucedidas enquanto o peão não estiver recrutado nem tiver novas ordens na fila. Um peão recrutado pode fazer uma viagem de carregamento.</HaulersDream.Setting.EnableBulkLoadTransportersDesc>
+ <HaulersDream.Setting.BulkLoadAiUpdateFrequency>Intervalo de reverificação de carregamento: {0} ticks</HaulersDream.Setting.BulkLoadAiUpdateFrequency>
+ <HaulersDream.LoadPortal.Report>carregando um portal em massa.</HaulersDream.LoadPortal.Report>
+ <HaulersDream.LoadPortal.Option>Priorizar carregamento em massa de {0}</HaulersDream.LoadPortal.Option>
+@@ -420,7 +420,7 @@
+ <HaulersDream.Setting.OpportunisticLoadDesc>Um peão que já carrega itens que uma cápsula de transporte, nave, portal de mapa ou veículo próximo está esperando vai se desviar para entregá-los, em vez de começar uma viagem de coleta totalmente nova. Menos caminhadas desperdiçadas. Desligado por padrão (muda qual tarefa um peão pega em seguida).</HaulersDream.Setting.OpportunisticLoadDesc>
+ <HaulersDream.Setting.LoadOpportunityRadius>Raio de busca de depósito pelo caminho: {0} células</HaulersDream.Setting.LoadOpportunityRadius>
+ <HaulersDream.Setting.ContinuousLoading>Ordem de clique direito "Carregar até completar"</HaulersDream.Setting.ContinuousLoading>
+-<HaulersDream.Setting.ContinuousLoadingDesc>Adiciona uma ordem de clique direito que envia um único entregador (mesmo recrutado) por todo grupo de transporte próximo que ainda precisa de carregamento, encadeando os trabalhos até que estejam todos cheios — útil para carregar uma caravana grande em um só comando. Desligado por padrão (conveniência opcional).</HaulersDream.Setting.ContinuousLoadingDesc>
++<HaulersDream.Setting.ContinuousLoadingDesc>Adiciona uma ordem com o botão direito que continua nos alvos de carregamento próximos após concluir a lista selecionada. Outras viagens exigem um peão não recrutado, uma entrega bem-sucedida e nenhuma nova ordem na fila. Desativado por padrão.</HaulersDream.Setting.ContinuousLoadingDesc>
+ <HaulersDream.ContinuousLoad.Option>Carregar até completar (contínuo) — {0}</HaulersDream.ContinuousLoad.Option>
+ <HaulersDream.ContinuousLoad.CouldNotStart>Nada por perto para carregar em massa naquilo agora.</HaulersDream.ContinuousLoad.CouldNotStart>
+ <HaulersDream.Setting.LoadHybridPathing>Ordenar paradas de carregamento em massa por busca de caminho real</HaulersDream.Setting.LoadHybridPathing>
+@@ -626,7 +626,7 @@
+ <HaulersDream.Setting.BulkHaulTrigger.Lab>Gatilho de transporte em massa</HaulersDream.Setting.BulkHaulTrigger.Lab>
+ <HaulersDream.Setting.KeepWorkingMargin.Lab>Descarregar antes de uma realocação mais longa</HaulersDream.Setting.KeepWorkingMargin.Lab>
+ <HaulersDream.Setting.MinFreeSpaceToUnloadCarrier.Lab>Espaço livre mínimo na mochila para começar</HaulersDream.Setting.MinFreeSpaceToUnloadCarrier.Lab>
+-<HaulersDream.Setting.MinFreeSpaceToUnloadCarrier.Help>Um transportador precisa de pelo menos esta fração da sua capacidade de carga livre antes de começar a esvaziar um animal de carga, para que sua própria mochila não transborde imediatamente.</HaulersDream.Setting.MinFreeSpaceToUnloadCarrier.Help>
++<HaulersDream.Setting.MinFreeSpaceToUnloadCarrier.Help>Um transportador precisa de pelo menos esta fração da sua capacidade de carga livre antes de começar a esvaziar um animal de carga, para que sua própria mochila não transborde imediatamente. Este limite também se aplica à descarga automática de transportadores.</HaulersDream.Setting.MinFreeSpaceToUnloadCarrier.Help>
+ <HaulersDream.Setting.VisualUnloadDelay.Lab>Atraso de descarregamento por pilha</HaulersDream.Setting.VisualUnloadDelay.Lab>
+ <HaulersDream.Setting.VisualUnloadDelay.Help>Uma pequena pausa cosmética entre cada pilha durante um descarregamento em massa, para que pareça uma ação deliberada. 0 = instantâneo.</HaulersDream.Setting.VisualUnloadDelay.Help>
+ <HaulersDream.Setting.BulkLoadAiUpdateFrequency.Lab>Intervalo de reverificação de carregamento</HaulersDream.Setting.BulkLoadAiUpdateFrequency.Lab>
+@@ -847,4 +847,18 @@
+   <HD_NearbyHaulInventoryUnavailable>O transporte pelo inventário está indisponível para este personagem.</HD_NearbyHaulInventoryUnavailable>
+   <HD_NearbyHaulRobotUnsupported>Não foi possível ler as tarefas de transporte do robô com a configuração atual de mods.</HD_NearbyHaulRobotUnsupported>
+   <HD_NearbyHaulSourceUnavailable>O item selecionado não está disponível para transporte.</HD_NearbyHaulSourceUnavailable>
++  <HaulersDream.UnloadTransporter.Option>Priorizar descarregamento em massa de {0}</HaulersDream.UnloadTransporter.Option>
++  <HaulersDream.UnloadTransporter.CouldNotStart>Não foi possível iniciar o descarregamento em massa desse transportador agora.</HaulersDream.UnloadTransporter.CouldNotStart>
++  <HaulersDream.Gizmo.BulkUnloadAll.Label>Descarregar tudo em massa</HaulersDream.Gizmo.BulkUnloadAll.Label>
++  <HaulersDream.Gizmo.BulkUnloadAll.Empty>Nada para descarregar</HaulersDream.Gizmo.BulkUnloadAll.Empty>
++  <HaulersDream.Gizmo.BulkUnloadAll.LoadBlocked>"Descarregar tudo em massa" está ativado, desative-o antes de definir uma nova carga.</HaulersDream.Gizmo.BulkUnloadAll.LoadBlocked>
++  <HaulersDream.Gizmo.BulkUnloadAll.UnloadBlocked>Uma carga está sendo reunida para este transportador.</HaulersDream.Gizmo.BulkUnloadAll.UnloadBlocked>
++  <HaulersDream.Feat.UnloadTransporters.Name>Descarregar naves em massa</HaulersDream.Feat.UnloadTransporters.Name>
++  <HaulersDream.Setting.EnableBulkUnloadTransporters>Descarregar transportadores em lote</HaulersDream.Setting.EnableBulkUnloadTransporters>
++  <HaulersDream.Setting.EnableBulkUnloadTransportersDesc>Adiciona um botão de descarga a transportadores e naves. Peões não recrutados levam a carga diretamente ao armazenamento, uma viagem por tarefa. Em um transportador marcado, uma ordem prioritária só se repete após a entrega. Passageiros ficam a bordo. Carregamento em andamento, armazenamento cheio, recrutamento ou novas ordens na fila interrompem as próximas viagens.</HaulersDream.Setting.EnableBulkUnloadTransportersDesc>
++  <HaulersDream.Gizmo.BulkUnloadAll.Desc>Levar a carga de {0} ao armazenamento. Passageiros ficam a bordo. Uma ordem prioritária de descarga se repete após cada entrega enquanto o peão não estiver recrutado nem tiver novas ordens na fila. Desative antes de carregar.</HaulersDream.Gizmo.BulkUnloadAll.Desc>
++  <HaulersDream.Feat.UnloadTransporters.Blurb>Levar a carga de um transportador pousado diretamente ao armazenamento</HaulersDream.Feat.UnloadTransporters.Blurb>
++  <HaulersDream.UnloadTransporter.Drafted>Dispense este peão do combate para iniciar esta ordem.</HaulersDream.UnloadTransporter.Drafted>
++  <HaulersDream.UnloadTransporter.NoStorage>Não há armazenamento adequado para a carga restante.</HaulersDream.UnloadTransporter.NoStorage>
++  <HaulersDream.Transporter.SyncUnavailable>Os comandos de transportadores estão indisponíveis porque a sincronização multijogador não pôde ser registrada.</HaulersDream.Transporter.SyncUnavailable>
+ </LanguageData>
+--- before/Languages/Russian/DefInjected/JobDef/Jobs.xml
++++ after/Languages/Russian/DefInjected/JobDef/Jobs.xml
+@@ -16,4 +16,5 @@
+ <HaulersDream_LoadPortalInBulk.reportString>массово загружает портал.</HaulersDream_LoadPortalInBulk.reportString>
+ <HaulersDream_LoadVehicleInBulk.reportString>массово загружает транспортное средство.</HaulersDream_LoadVehicleInBulk.reportString>
+ <HaulersDream_BulkRefuel.reportString>массово заправляет.</HaulersDream_BulkRefuel.reportString>
++  <HaulersDream_UnloadTransporterInBulk.reportString>разгружает транспорт.</HaulersDream_UnloadTransporterInBulk.reportString>
+ </LanguageData>
+--- before/Languages/Russian/DefInjected/WorkGiverDef/TransporterUnload.xml
++++ after/Languages/Russian/DefInjected/WorkGiverDef/TransporterUnload.xml
+@@ -0,0 +1,6 @@
++<?xml version="1.0" encoding="utf-8"?>
++<LanguageData>
++  <HaulersDream_BulkUnloadTransporters.label>Массово разгружать транспорт и шаттлы</HaulersDream_BulkUnloadTransporters.label>
++  <HaulersDream_BulkUnloadTransporters.verb>разгрузить</HaulersDream_BulkUnloadTransporters.verb>
++  <HaulersDream_BulkUnloadTransporters.gerund>разгрузка</HaulersDream_BulkUnloadTransporters.gerund>
++</LanguageData>
+--- before/Languages/Russian/Keyed/HaulersDream.xml
++++ after/Languages/Russian/Keyed/HaulersDream.xml
+@@ -357,7 +357,7 @@
+ <HaulersDream.LoadTransporter.Option>Приоритизировать массовую загрузку {0}</HaulersDream.LoadTransporter.Option>
+ <HaulersDream.LoadTransporter.CouldNotStart>Сейчас поблизости нечего массово грузить в этот транспорт.</HaulersDream.LoadTransporter.CouldNotStart>
+ <HaulersDream.Setting.EnableBulkLoadTransporters>Массово загружать транспортные капсулы и шаттлы за одну ходку</HaulersDream.Setting.EnableBulkLoadTransporters>
+-<HaulersDream.Setting.EnableBulkLoadTransportersDesc>Когда транспортная капсула или шаттл помечены на загрузку, переносчик берёт часть их манифеста, сметает несколько ближайших стопок в свой инвентарь, подходит к транспорту ОДИН раз и складывает их все — вместо ванильной одной стопки в руках за подход. Несколько переносчиков делят большой манифест без двойной переноски, и капсула не загрузится и не запустится, пока заявленный груз не будет внутри. Когда это выкл, используется ванильная загрузка транспорта по одной стопке без изменений.</HaulersDream.Setting.EnableBulkLoadTransportersDesc>
++<HaulersDream.Setting.EnableBulkLoadTransportersDesc>Когда транспортная капсула или шаттл помечены на загрузку, переносчик берёт часть их манифеста, сметает несколько ближайших стопок в свой инвентарь, подходит к транспорту ОДИН раз и складывает их все — вместо ванильной одной стопки в руках за подход. Несколько переносчиков делят большой манифест без двойной переноски, и капсула не загрузится и не запустится, пока заявленный груз не будет внутри. Когда это выкл, используется ванильная загрузка транспорта по одной стопке без изменений. Приоритетный приказ повторяет рейсы по этому списку после успешной доставки, пока носильщик не призван и не имеет новых приказов в очереди. Призванный носильщик может выполнить один рейс погрузки.</HaulersDream.Setting.EnableBulkLoadTransportersDesc>
+ <HaulersDream.Setting.BulkLoadAiUpdateFrequency>Интервал перепроверки загрузки: {0} тиков</HaulersDream.Setting.BulkLoadAiUpdateFrequency>
+ <HaulersDream.LoadPortal.Report>массово загружает портал.</HaulersDream.LoadPortal.Report>
+ <HaulersDream.LoadPortal.Option>Приоритизировать массовую загрузку {0}</HaulersDream.LoadPortal.Option>
+@@ -420,7 +420,7 @@
+ <HaulersDream.Setting.OpportunisticLoadDesc>Пешка, уже несущая предметы, которых ждёт ближайшая транспортная капсула, шаттл, портал карты или транспортное средство, отклонится, чтобы сгрузить их, вместо того чтобы начинать совершенно новую ходку за ними. Меньше зря потраченных дорог. По умолчанию выкл (это меняет, какую задачу пешка возьмёт следующей).</HaulersDream.Setting.OpportunisticLoadDesc>
+ <HaulersDream.Setting.LoadOpportunityRadius>Радиус поиска для складывания-по-пути: {0} клеток</HaulersDream.Setting.LoadOpportunityRadius>
+ <HaulersDream.Setting.ContinuousLoading>Заказ «Грузить до завершения» по правому клику</HaulersDream.Setting.ContinuousLoading>
+-<HaulersDream.Setting.ContinuousLoadingDesc>Добавляет заказ по правому клику, который отправляет одного курьера (даже мобилизованного) через каждую ближайшую транспортную группу, которой ещё нужна загрузка, сцепляя задачи, пока все они не заполнятся — удобно для загрузки большого каравана одной командой. По умолчанию выкл (удобство по выбору).</HaulersDream.Setting.ContinuousLoadingDesc>
++<HaulersDream.Setting.ContinuousLoadingDesc>Добавляет приказ по правому щелчку для перехода к ближайшим целям погрузки после выполнения выбранного списка. Для дальнейших рейсов нужны непризванный носильщик, успешная доставка и отсутствие новых приказов в очереди. По умолчанию отключено.</HaulersDream.Setting.ContinuousLoadingDesc>
+ <HaulersDream.ContinuousLoad.Option>Грузить до завершения (непрерывно) — {0}</HaulersDream.ContinuousLoad.Option>
+ <HaulersDream.ContinuousLoad.CouldNotStart>Сейчас поблизости нечего массово в это грузить.</HaulersDream.ContinuousLoad.CouldNotStart>
+ <HaulersDream.Setting.LoadHybridPathing>Упорядочивать остановки массовой загрузки по реальному поиску пути</HaulersDream.Setting.LoadHybridPathing>
+@@ -626,7 +626,7 @@
+ <HaulersDream.Setting.BulkHaulTrigger.Lab>Триггер массовой переноски</HaulersDream.Setting.BulkHaulTrigger.Lab>
+ <HaulersDream.Setting.KeepWorkingMargin.Lab>Разгружаться перед более долгим переходом</HaulersDream.Setting.KeepWorkingMargin.Lab>
+ <HaulersDream.Setting.MinFreeSpaceToUnloadCarrier.Lab>Минимум свободного места в рюкзаке для начала</HaulersDream.Setting.MinFreeSpaceToUnloadCarrier.Lab>
+-<HaulersDream.Setting.MinFreeSpaceToUnloadCarrier.Help>Переносчику нужно хотя бы столько свободной грузоподъёмности, прежде чем он начнёт опустошать вьючное животное, чтобы его собственный рюкзак не переполнился сразу же.</HaulersDream.Setting.MinFreeSpaceToUnloadCarrier.Help>
++<HaulersDream.Setting.MinFreeSpaceToUnloadCarrier.Help>Переносчику нужно хотя бы столько свободной грузоподъёмности, прежде чем он начнёт опустошать вьючное животное, чтобы его собственный рюкзак не переполнился сразу же. Этот порог также действует при автоматической разгрузке транспортников.</HaulersDream.Setting.MinFreeSpaceToUnloadCarrier.Help>
+ <HaulersDream.Setting.VisualUnloadDelay.Lab>Задержка разгрузки на стопку</HaulersDream.Setting.VisualUnloadDelay.Lab>
+ <HaulersDream.Setting.VisualUnloadDelay.Help>Небольшая косметическая пауза между каждой стопкой во время массовой разгрузки, чтобы это читалось как осознанное действие. 0 = мгновенно.</HaulersDream.Setting.VisualUnloadDelay.Help>
+ <HaulersDream.Setting.BulkLoadAiUpdateFrequency.Lab>Интервал перепроверки загрузки</HaulersDream.Setting.BulkLoadAiUpdateFrequency.Lab>
+@@ -847,4 +847,18 @@
+   <HD_NearbyHaulInventoryUnavailable>Переноска через инвентарь недоступна для этого персонажа.</HD_NearbyHaulInventoryUnavailable>
+   <HD_NearbyHaulRobotUnsupported>Не удалось прочитать задания робота по переноске при текущем наборе модов.</HD_NearbyHaulRobotUnsupported>
+   <HD_NearbyHaulSourceUnavailable>Выбранный предмет недоступен для переноски.</HD_NearbyHaulSourceUnavailable>
++  <HaulersDream.UnloadTransporter.Option>Приоритизировать массовую разгрузку {0}</HaulersDream.UnloadTransporter.Option>
++  <HaulersDream.UnloadTransporter.CouldNotStart>Не удалось сейчас начать массовую разгрузку этого транспорта.</HaulersDream.UnloadTransporter.CouldNotStart>
++  <HaulersDream.Gizmo.BulkUnloadAll.Label>Массово разгрузить всё</HaulersDream.Gizmo.BulkUnloadAll.Label>
++  <HaulersDream.Gizmo.BulkUnloadAll.Empty>Разгружать нечего</HaulersDream.Gizmo.BulkUnloadAll.Empty>
++  <HaulersDream.Gizmo.BulkUnloadAll.LoadBlocked>«Массово разгрузить всё» включено, выключите это, прежде чем задать новую загрузку.</HaulersDream.Gizmo.BulkUnloadAll.LoadBlocked>
++  <HaulersDream.Gizmo.BulkUnloadAll.UnloadBlocked>В этот транспорт сейчас собирается груз.</HaulersDream.Gizmo.BulkUnloadAll.UnloadBlocked>
++  <HaulersDream.Feat.UnloadTransporters.Name>Массово разгружать транспорт и шаттлы</HaulersDream.Feat.UnloadTransporters.Name>
++  <HaulersDream.Setting.EnableBulkUnloadTransporters>Массовая разгрузка транспортников</HaulersDream.Setting.EnableBulkUnloadTransporters>
++  <HaulersDream.Setting.EnableBulkUnloadTransportersDesc>Добавляет транспортникам и шаттлам переключатель разгрузки. Непризванные носильщики доставляют груз прямо на склад, по одному рейсу за рабочее задание. Приоритетный приказ для отмеченного транспортника повторяется только после доставки. Пассажиры остаются на борту. Погрузка, заполненные склады, призыв или новые приказы в очереди прекращают дальнейшие рейсы.</HaulersDream.Setting.EnableBulkUnloadTransportersDesc>
++  <HaulersDream.Gizmo.BulkUnloadAll.Desc>Переносить груз из {0} на склад. Пассажиры остаются на борту. Приоритетный приказ разгрузки повторяется после каждой доставки, пока носильщик не призван и не имеет новых приказов в очереди. Отключите перед погрузкой.</HaulersDream.Gizmo.BulkUnloadAll.Desc>
++  <HaulersDream.Feat.UnloadTransporters.Blurb>Доставляйте груз приземлившегося транспортника прямо на склад</HaulersDream.Feat.UnloadTransporters.Blurb>
++  <HaulersDream.UnloadTransporter.Drafted>Отмените призыв этого персонажа, чтобы начать приказ.</HaulersDream.UnloadTransporter.Drafted>
++  <HaulersDream.UnloadTransporter.NoStorage>Нет подходящего склада для оставшегося груза.</HaulersDream.UnloadTransporter.NoStorage>
++  <HaulersDream.Transporter.SyncUnavailable>Команды транспортников недоступны: не удалось зарегистрировать синхронизацию сетевой игры.</HaulersDream.Transporter.SyncUnavailable>
+ </LanguageData>
+--- before/Languages/Spanish/DefInjected/JobDef/Jobs.xml
++++ after/Languages/Spanish/DefInjected/JobDef/Jobs.xml
+@@ -16,4 +16,5 @@
+ <HaulersDream_LoadPortalInBulk.reportString>cargando en lote un portal.</HaulersDream_LoadPortalInBulk.reportString>
+ <HaulersDream_LoadVehicleInBulk.reportString>cargando en lote un vehículo.</HaulersDream_LoadVehicleInBulk.reportString>
+ <HaulersDream_BulkRefuel.reportString>recargando combustible en lote.</HaulersDream_BulkRefuel.reportString>
++  <HaulersDream_UnloadTransporterInBulk.reportString>descargando un transportador.</HaulersDream_UnloadTransporterInBulk.reportString>
+ </LanguageData>
+--- before/Languages/Spanish/DefInjected/WorkGiverDef/TransporterUnload.xml
++++ after/Languages/Spanish/DefInjected/WorkGiverDef/TransporterUnload.xml
+@@ -0,0 +1,6 @@
++<?xml version="1.0" encoding="utf-8"?>
++<LanguageData>
++  <HaulersDream_BulkUnloadTransporters.label>Descarga en lote de transportadores y lanzaderas</HaulersDream_BulkUnloadTransporters.label>
++  <HaulersDream_BulkUnloadTransporters.verb>descargar</HaulersDream_BulkUnloadTransporters.verb>
++  <HaulersDream_BulkUnloadTransporters.gerund>descargando</HaulersDream_BulkUnloadTransporters.gerund>
++</LanguageData>
+--- before/Languages/Spanish/Keyed/HaulersDream.xml
++++ after/Languages/Spanish/Keyed/HaulersDream.xml
+@@ -357,7 +357,7 @@
+ <HaulersDream.LoadTransporter.Option>Priorizar la carga en lote de {0}</HaulersDream.LoadTransporter.Option>
+ <HaulersDream.LoadTransporter.CouldNotStart>Nada cerca para cargar en lote en ese transportador ahora mismo.</HaulersDream.LoadTransporter.CouldNotStart>
+ <HaulersDream.Setting.EnableBulkLoadTransporters>Cargar en lote transportadores y lanzaderas en un solo viaje</HaulersDream.Setting.EnableBulkLoadTransporters>
+-<HaulersDream.Setting.EnableBulkLoadTransportersDesc>Cuando una cápsula de transporte o una lanzadera está puesta en cargar, un transportador reclama una porción de su manifiesto, barre varias pilas cercanas hacia su inventario, camina al transportador UNA vez y las deposita todas, en lugar del «una pila en las manos por caminata» del juego base. Varios transportadores reparten un manifiesto grande sin doble transporte, y la cápsula no embarca ni despega hasta que la carga reclamada esté dentro. Con esto desactivado, se usa sin cambios la carga de transportador de una sola pila del juego base.</HaulersDream.Setting.EnableBulkLoadTransportersDesc>
++<HaulersDream.Setting.EnableBulkLoadTransportersDesc>Cuando una cápsula de transporte o una lanzadera está puesta en cargar, un transportador reclama una porción de su manifiesto, barre varias pilas cercanas hacia su inventario, camina al transportador UNA vez y las deposita todas, en lugar del «una pila en las manos por caminata» del juego base. Varios transportadores reparten un manifiesto grande sin doble transporte, y la cápsula no embarca ni despega hasta que la carga reclamada esté dentro. Con esto desactivado, se usa sin cambios la carga de transportador de una sola pila del juego base. Una orden prioritaria repite viajes para esta lista tras cada entrega satisfactoria mientras el peón no esté reclutado ni tenga nuevas órdenes en cola. Un peón reclutado puede hacer un viaje de carga.</HaulersDream.Setting.EnableBulkLoadTransportersDesc>
+ <HaulersDream.Setting.BulkLoadAiUpdateFrequency>Intervalo de reverificación de carga: {0} tics</HaulersDream.Setting.BulkLoadAiUpdateFrequency>
+ <HaulersDream.LoadPortal.Report>cargando en lote un portal.</HaulersDream.LoadPortal.Report>
+ <HaulersDream.LoadPortal.Option>Priorizar la carga en lote de {0}</HaulersDream.LoadPortal.Option>
+@@ -420,7 +420,7 @@
+ <HaulersDream.Setting.OpportunisticLoadDesc>Un peón que ya lleva objetos que una cápsula de transporte, lanzadera, portal del mapa o vehículo cercano está esperando se desviará para dejarlos, en lugar de iniciar una ronda de recogida totalmente nueva. Menos caminatas desperdiciadas. Desactivado por defecto (cambia qué tarea recoge un peón a continuación).</HaulersDream.Setting.OpportunisticLoadDesc>
+ <HaulersDream.Setting.LoadOpportunityRadius>Radio de búsqueda para depositar-de-camino: {0} casillas</HaulersDream.Setting.LoadOpportunityRadius>
+ <HaulersDream.Setting.ContinuousLoading>Orden de clic derecho «Cargar hasta completar»</HaulersDream.Setting.ContinuousLoading>
+-<HaulersDream.Setting.ContinuousLoadingDesc>Añade una orden de clic derecho que envía a un mensajero (incluso reclutado) a recorrer cada grupo de transporte cercano que aún necesite carga, encadenando los trabajos hasta que estén todos llenos, práctico para cargar una caravana grande con una sola orden. Desactivado por defecto (comodidad opcional).</HaulersDream.Setting.ContinuousLoadingDesc>
++<HaulersDream.Setting.ContinuousLoadingDesc>Añade una orden al hacer clic derecho que continúa con objetivos de carga cercanos tras completar la lista seleccionada. Los siguientes viajes requieren un peón no reclutado, una entrega satisfactoria y ninguna nueva orden en cola. Desactivado por defecto.</HaulersDream.Setting.ContinuousLoadingDesc>
+ <HaulersDream.ContinuousLoad.Option>Cargar hasta completar (continuo) — {0}</HaulersDream.ContinuousLoad.Option>
+ <HaulersDream.ContinuousLoad.CouldNotStart>Nada cerca para cargar en lote en eso ahora mismo.</HaulersDream.ContinuousLoad.CouldNotStart>
+ <HaulersDream.Setting.LoadHybridPathing>Ordenar las paradas de carga en lote por rastreo de rutas real</HaulersDream.Setting.LoadHybridPathing>
+@@ -626,7 +626,7 @@
+ <HaulersDream.Setting.BulkHaulTrigger.Lab>Disparador del transporte en lote</HaulersDream.Setting.BulkHaulTrigger.Lab>
+ <HaulersDream.Setting.KeepWorkingMargin.Lab>Descargar antes de un desplazamiento más largo</HaulersDream.Setting.KeepWorkingMargin.Lab>
+ <HaulersDream.Setting.MinFreeSpaceToUnloadCarrier.Lab>Espacio libre mínimo en la mochila para empezar</HaulersDream.Setting.MinFreeSpaceToUnloadCarrier.Lab>
+-<HaulersDream.Setting.MinFreeSpaceToUnloadCarrier.Help>Un transportador necesita al menos esta parte de su capacidad de carga libre antes de empezar a vaciar un animal de carga, para que su propia mochila no rebose de inmediato.</HaulersDream.Setting.MinFreeSpaceToUnloadCarrier.Help>
++<HaulersDream.Setting.MinFreeSpaceToUnloadCarrier.Help>Un transportador necesita al menos esta parte de su capacidad de carga libre antes de empezar a vaciar un animal de carga, para que su propia mochila no rebose de inmediato. Este umbral también se aplica a la descarga automática de transportadores.</HaulersDream.Setting.MinFreeSpaceToUnloadCarrier.Help>
+ <HaulersDream.Setting.VisualUnloadDelay.Lab>Retardo de descarga por pila</HaulersDream.Setting.VisualUnloadDelay.Lab>
+ <HaulersDream.Setting.VisualUnloadDelay.Help>Una pequeña pausa cosmética entre cada pila durante una descarga en lote, para que se lea como una acción deliberada. 0 = instantáneo.</HaulersDream.Setting.VisualUnloadDelay.Help>
+ <HaulersDream.Setting.BulkLoadAiUpdateFrequency.Lab>Intervalo de reverificación de carga</HaulersDream.Setting.BulkLoadAiUpdateFrequency.Lab>
+@@ -847,4 +847,18 @@
+   <HD_NearbyHaulInventoryUnavailable>El transporte mediante inventario no está disponible para este peón.</HD_NearbyHaulInventoryUnavailable>
+   <HD_NearbyHaulRobotUnsupported>No se pudieron leer las tareas de transporte del robot con la configuración actual de mods.</HD_NearbyHaulRobotUnsupported>
+   <HD_NearbyHaulSourceUnavailable>El objeto seleccionado no está disponible para transportarlo.</HD_NearbyHaulSourceUnavailable>
++  <HaulersDream.UnloadTransporter.Option>Priorizar la descarga en lote de {0}</HaulersDream.UnloadTransporter.Option>
++  <HaulersDream.UnloadTransporter.CouldNotStart>No se pudo iniciar la descarga en lote de ese transportador ahora mismo.</HaulersDream.UnloadTransporter.CouldNotStart>
++  <HaulersDream.Gizmo.BulkUnloadAll.Label>Descargar todo en lote</HaulersDream.Gizmo.BulkUnloadAll.Label>
++  <HaulersDream.Gizmo.BulkUnloadAll.Empty>Nada que descargar</HaulersDream.Gizmo.BulkUnloadAll.Empty>
++  <HaulersDream.Gizmo.BulkUnloadAll.LoadBlocked>"Descargar todo en lote" está activado: apágalo antes de establecer una nueva carga.</HaulersDream.Gizmo.BulkUnloadAll.LoadBlocked>
++  <HaulersDream.Gizmo.BulkUnloadAll.UnloadBlocked>Se está reuniendo una carga hacia este transportador.</HaulersDream.Gizmo.BulkUnloadAll.UnloadBlocked>
++  <HaulersDream.Feat.UnloadTransporters.Name>Descarga en lote de transportadores y lanzaderas</HaulersDream.Feat.UnloadTransporters.Name>
++  <HaulersDream.Setting.EnableBulkUnloadTransporters>Descargar transportadores en lote</HaulersDream.Setting.EnableBulkUnloadTransporters>
++  <HaulersDream.Setting.EnableBulkUnloadTransportersDesc>Añade un interruptor de descarga a transportadores y lanzaderas. Los peones no reclutados llevan la carga directamente al almacén, un viaje por tarea. En un transportador marcado, una orden prioritaria solo se repite tras entregar la carga. Los pasajeros permanecen a bordo. La carga en curso, los almacenes llenos, el reclutamiento o nuevas órdenes en cola detienen los viajes siguientes.</HaulersDream.Setting.EnableBulkUnloadTransportersDesc>
++  <HaulersDream.Gizmo.BulkUnloadAll.Desc>Llevar la carga de {0} al almacén. Los pasajeros permanecen a bordo. Una orden prioritaria de descarga se repite tras cada entrega mientras el peón no esté reclutado ni tenga nuevas órdenes en cola. Desactívalo antes de cargar.</HaulersDream.Gizmo.BulkUnloadAll.Desc>
++  <HaulersDream.Feat.UnloadTransporters.Blurb>Llevar directamente al almacén la carga de un transportador aterrizado</HaulersDream.Feat.UnloadTransporters.Blurb>
++  <HaulersDream.UnloadTransporter.Drafted>Desmoviliza a este peón para iniciar esta orden.</HaulersDream.UnloadTransporter.Drafted>
++  <HaulersDream.UnloadTransporter.NoStorage>No hay almacenamiento adecuado para la carga restante.</HaulersDream.UnloadTransporter.NoStorage>
++  <HaulersDream.Transporter.SyncUnavailable>Las órdenes de transportadores no están disponibles porque no se pudo registrar su sincronización multijugador.</HaulersDream.Transporter.SyncUnavailable>
+ </LanguageData>
+--- before/Languages/Thai/DefInjected/JobDef/Jobs.xml
++++ after/Languages/Thai/DefInjected/JobDef/Jobs.xml
+@@ -16,4 +16,5 @@
+ <HaulersDream_LoadPortalInBulk.reportString>กำลังบรรทุกของเข้าประตูมิติแบบรวมรอบ</HaulersDream_LoadPortalInBulk.reportString>
+ <HaulersDream_LoadVehicleInBulk.reportString>กำลังบรรทุกของขึ้นยานพาหนะแบบรวมรอบ</HaulersDream_LoadVehicleInBulk.reportString>
+ <HaulersDream_BulkRefuel.reportString>กำลังเติมเชื้อเพลิงแบบรวมรอบ</HaulersDream_BulkRefuel.reportString>
++  <HaulersDream_UnloadTransporterInBulk.reportString>กำลังขนลงจากยานขนส่ง</HaulersDream_UnloadTransporterInBulk.reportString>
+ </LanguageData>
+--- before/Languages/Thai/DefInjected/WorkGiverDef/TransporterUnload.xml
++++ after/Languages/Thai/DefInjected/WorkGiverDef/TransporterUnload.xml
+@@ -0,0 +1,6 @@
++<?xml version="1.0" encoding="utf-8"?>
++<LanguageData>
++  <HaulersDream_BulkUnloadTransporters.label>ขนลงพ็อดขนส่งและยานรับส่ง</HaulersDream_BulkUnloadTransporters.label>
++  <HaulersDream_BulkUnloadTransporters.verb>ขนถ่าย</HaulersDream_BulkUnloadTransporters.verb>
++  <HaulersDream_BulkUnloadTransporters.gerund>กำลังขนถ่าย</HaulersDream_BulkUnloadTransporters.gerund>
++</LanguageData>
+--- before/Languages/Thai/Keyed/HaulersDream.xml
++++ after/Languages/Thai/Keyed/HaulersDream.xml
+@@ -357,7 +357,7 @@
+ <HaulersDream.LoadTransporter.Option>ให้ความสำคัญการบรรทุก {0} แบบรวม</HaulersDream.LoadTransporter.Option>
+ <HaulersDream.LoadTransporter.CouldNotStart>ไม่มีอะไรใกล้ๆ ให้บรรทุกเข้าพ็อดขนส่งนั้นแบบรวมตอนนี้</HaulersDream.LoadTransporter.CouldNotStart>
+ <HaulersDream.Setting.EnableBulkLoadTransporters>บรรทุกพ็อดขนส่งและยานรับส่งแบบรวมในเที่ยวเดียว</HaulersDream.Setting.EnableBulkLoadTransporters>
+-<HaulersDream.Setting.EnableBulkLoadTransportersDesc>เมื่อพ็อดขนส่งหรือยานรับส่งถูกตั้งให้บรรทุก ผู้ขนของจะขอส่วนหนึ่งของรายการบรรทุก กวาดหลายกองใกล้ๆ เข้าสัมภาระ เดินไปที่พ็อดขนส่งครั้งเดียว และวางทั้งหมดลง — แทนที่จะเป็นแบบเกมพื้นฐานทีละกองในมือต่อการเดิน ผู้ขนของหลายคนจะแบ่งรายการบรรทุกขนาดใหญ่กันโดยไม่ขนซ้ำ และพ็อดจะไม่ขึ้นยานหรือออกตัวจนกว่าสินค้าที่ขอไว้จะถูกบรรทุกครบ เมื่อปิดสิ่งนี้ จะใช้การบรรทุกพ็อดขนส่งทีละกองของเกมพื้นฐานโดยไม่เปลี่ยนแปลง</HaulersDream.Setting.EnableBulkLoadTransportersDesc>
++<HaulersDream.Setting.EnableBulkLoadTransportersDesc>เมื่อพ็อดขนส่งหรือยานรับส่งถูกตั้งให้บรรทุก ผู้ขนของจะขอส่วนหนึ่งของรายการบรรทุก กวาดหลายกองใกล้ๆ เข้าสัมภาระ เดินไปที่พ็อดขนส่งครั้งเดียว และวางทั้งหมดลง — แทนที่จะเป็นแบบเกมพื้นฐานทีละกองในมือต่อการเดิน ผู้ขนของหลายคนจะแบ่งรายการบรรทุกขนาดใหญ่กันโดยไม่ขนซ้ำ และพ็อดจะไม่ขึ้นยานหรือออกตัวจนกว่าสินค้าที่ขอไว้จะถูกบรรทุกครบ เมื่อปิดสิ่งนี้ จะใช้การบรรทุกพ็อดขนส่งทีละกองของเกมพื้นฐานโดยไม่เปลี่ยนแปลง คำสั่งแบบให้ความสำคัญจะทำซ้ำตามรายการนี้หลังส่งของสำเร็จ ขณะที่ผู้ขนไม่ได้ถูกเกณฑ์และไม่มีคำสั่งใหม่ในคิว ผู้ขนที่ถูกเกณฑ์ทำงานบรรทุกได้หนึ่งเที่ยว</HaulersDream.Setting.EnableBulkLoadTransportersDesc>
+ <HaulersDream.Setting.BulkLoadAiUpdateFrequency>ช่วงตรวจสอบการบรรทุกซ้ำ: {0} ติ๊ก</HaulersDream.Setting.BulkLoadAiUpdateFrequency>
+ <HaulersDream.LoadPortal.Report>กำลังบรรทุกประตูมิติแบบรวม</HaulersDream.LoadPortal.Report>
+ <HaulersDream.LoadPortal.Option>ให้ความสำคัญการบรรทุก {0} แบบรวม</HaulersDream.LoadPortal.Option>
+@@ -420,7 +420,7 @@
+ <HaulersDream.Setting.OpportunisticLoadDesc>ตัวละครที่ถือของซึ่งพ็อดขนส่ง ยานรับส่ง ประตูมิติบนแผนที่ หรือยานพาหนะที่อยู่ใกล้กำลังรออยู่ จะเบี่ยงไปวางมันลง แทนที่จะเริ่มเที่ยวไปหยิบใหม่ทั้งหมด เดินเสียเปล่าน้อยลง ปิดไว้โดยค่าเริ่มต้น (มันเปลี่ยนว่าตัวละครจะหยิบงานใดต่อ)</HaulersDream.Setting.OpportunisticLoadDesc>
+ <HaulersDream.Setting.LoadOpportunityRadius>รัศมีค้นหาการวางของระหว่างทาง: {0} ช่อง</HaulersDream.Setting.LoadOpportunityRadius>
+ <HaulersDream.Setting.ContinuousLoading>คำสั่งคลิกขวา "บรรทุกจนเสร็จ"</HaulersDream.Setting.ContinuousLoading>
+-<HaulersDream.Setting.ContinuousLoadingDesc>เพิ่มคำสั่งคลิกขวาที่ส่งผู้ส่งของหนึ่งคน (แม้ถูกเกณฑ์) ผ่านทุกกลุ่มสิ่งขนส่งใกล้ๆ ที่ยังต้องบรรทุก โดยทำงานต่อเนื่องกันไปจนกว่าจะเต็มทั้งหมด — สะดวกสำหรับบรรทุกคาราวานใหญ่ด้วยคำสั่งเดียว ปิดไว้โดยค่าเริ่มต้น (ความสะดวกแบบเลือกเปิด)</HaulersDream.Setting.ContinuousLoadingDesc>
++<HaulersDream.Setting.ContinuousLoadingDesc>เพิ่มคำสั่งคลิกขวาให้บรรทุกต่อไปยังเป้าหมายใกล้เคียงหลังทำรายการที่เลือกเสร็จ เที่ยวถัดไปต้องใช้ผู้ขนที่ไม่ได้ถูกเกณฑ์ ส่งของสำเร็จแล้ว และไม่มีคำสั่งใหม่ในคิว ปิดไว้ตามค่าเริ่มต้น</HaulersDream.Setting.ContinuousLoadingDesc>
+ <HaulersDream.ContinuousLoad.Option>บรรทุกจนเสร็จ (ต่อเนื่อง) — {0}</HaulersDream.ContinuousLoad.Option>
+ <HaulersDream.ContinuousLoad.CouldNotStart>ไม่มีอะไรใกล้ๆ ให้บรรทุกเข้าสิ่งนั้นแบบรวมตอนนี้</HaulersDream.ContinuousLoad.CouldNotStart>
+ <HaulersDream.Setting.LoadHybridPathing>จัดลำดับจุดแวะบรรทุกแบบรวมด้วยการหาเส้นทางจริง</HaulersDream.Setting.LoadHybridPathing>
+@@ -626,7 +626,7 @@
+ <HaulersDream.Setting.BulkHaulTrigger.Lab>ตัวกระตุ้นการขนของแบบรวม</HaulersDream.Setting.BulkHaulTrigger.Lab>
+ <HaulersDream.Setting.KeepWorkingMargin.Lab>ขนของออกก่อนการย้ายที่ไกลขึ้น</HaulersDream.Setting.KeepWorkingMargin.Lab>
+ <HaulersDream.Setting.MinFreeSpaceToUnloadCarrier.Lab>พื้นที่ว่างในเป้ขั้นต่ำที่จะเริ่ม</HaulersDream.Setting.MinFreeSpaceToUnloadCarrier.Lab>
+-<HaulersDream.Setting.MinFreeSpaceToUnloadCarrier.Help>ผู้ขนของต้องมีความจุในการขนว่างอย่างน้อยเท่านี้ก่อนจะเริ่มขนของลงจากสัตว์บรรทุก เพื่อไม่ให้เป้ของตัวเองล้นทันที</HaulersDream.Setting.MinFreeSpaceToUnloadCarrier.Help>
++<HaulersDream.Setting.MinFreeSpaceToUnloadCarrier.Help>ผู้ขนของต้องมีความจุในการขนว่างอย่างน้อยเท่านี้ก่อนจะเริ่มขนของลงจากสัตว์บรรทุก เพื่อไม่ให้เป้ของตัวเองล้นทันที เกณฑ์นี้ใช้กับการขนถ่ายยานโดยอัตโนมัติด้วย</HaulersDream.Setting.MinFreeSpaceToUnloadCarrier.Help>
+ <HaulersDream.Setting.VisualUnloadDelay.Lab>ดีเลย์การขนของออกต่อกอง</HaulersDream.Setting.VisualUnloadDelay.Lab>
+ <HaulersDream.Setting.VisualUnloadDelay.Help>การหยุดเล็กน้อยเชิงภาพระหว่างแต่ละกองในขณะขนของออกแบบรวมรอบ เพื่อให้ดูเป็นการกระทำที่ตั้งใจ 0 = ทันที</HaulersDream.Setting.VisualUnloadDelay.Help>
+ <HaulersDream.Setting.BulkLoadAiUpdateFrequency.Lab>ช่วงตรวจสอบการบรรทุกซ้ำ</HaulersDream.Setting.BulkLoadAiUpdateFrequency.Lab>
+@@ -847,4 +847,18 @@
+   <HD_NearbyHaulInventoryUnavailable>ตัวละครนี้ไม่สามารถขนของผ่านช่องเก็บของได้</HD_NearbyHaulInventoryUnavailable>
+   <HD_NearbyHaulRobotUnsupported>ไม่สามารถอ่านงานขนของของหุ่นยนต์ได้ด้วยการตั้งค่าม็อดปัจจุบัน</HD_NearbyHaulRobotUnsupported>
+   <HD_NearbyHaulSourceUnavailable>ไม่สามารถขนสิ่งของที่เลือกได้</HD_NearbyHaulSourceUnavailable>
++  <HaulersDream.UnloadTransporter.Option>ให้ความสำคัญการขนลง {0} แบบรวม</HaulersDream.UnloadTransporter.Option>
++  <HaulersDream.UnloadTransporter.CouldNotStart>เริ่มการขนลงแบบรวมจากยานขนส่งนี้ไม่ได้ในตอนนี้</HaulersDream.UnloadTransporter.CouldNotStart>
++  <HaulersDream.Gizmo.BulkUnloadAll.Label>ขนลงทั้งหมดแบบรวม</HaulersDream.Gizmo.BulkUnloadAll.Label>
++  <HaulersDream.Gizmo.BulkUnloadAll.Empty>ไม่มีอะไรให้ขนลง</HaulersDream.Gizmo.BulkUnloadAll.Empty>
++  <HaulersDream.Gizmo.BulkUnloadAll.LoadBlocked>"ขนลงทั้งหมดแบบรวม" เปิดอยู่, ปิดก่อนตั้งค่าการบรรทุกใหม่</HaulersDream.Gizmo.BulkUnloadAll.LoadBlocked>
++  <HaulersDream.Gizmo.BulkUnloadAll.UnloadBlocked>กำลังรวบรวมสินค้าเข้ายานขนส่งนี้</HaulersDream.Gizmo.BulkUnloadAll.UnloadBlocked>
++  <HaulersDream.Feat.UnloadTransporters.Name>ขนลงพ็อดขนส่งและยานรับส่ง</HaulersDream.Feat.UnloadTransporters.Name>
++  <HaulersDream.Setting.EnableBulkUnloadTransporters>ขนถ่ายสินค้าจากยานแบบหลายกอง</HaulersDream.Setting.EnableBulkUnloadTransporters>
++  <HaulersDream.Setting.EnableBulkUnloadTransportersDesc>เพิ่มปุ่มขนถ่ายให้แคปซูลขนส่งและกระสวย ผู้ขนที่ไม่ได้ถูกเกณฑ์จะนำสินค้าไปยังที่เก็บโดยตรง ครั้งละหนึ่งเที่ยวต่องาน คำสั่งแบบให้ความสำคัญกับยานที่ทำเครื่องหมายไว้จะทำซ้ำเมื่อส่งของเที่ยวก่อนเสร็จแล้วเท่านั้น ผู้โดยสารยังอยู่บนยาน การบรรทุกของ ที่เก็บเต็ม การเกณฑ์ หรือคำสั่งใหม่ในคิวจะหยุดเที่ยวถัดไป</HaulersDream.Setting.EnableBulkUnloadTransportersDesc>
++  <HaulersDream.Gizmo.BulkUnloadAll.Desc>นำสินค้าจาก {0} ไปยังที่เก็บ ผู้โดยสารยังอยู่บนยาน คำสั่งขนถ่ายแบบให้ความสำคัญจะทำซ้ำหลังส่งของเสร็จแต่ละเที่ยว ขณะที่ผู้ขนไม่ได้ถูกเกณฑ์และไม่มีคำสั่งใหม่ในคิว ปิดปุ่มนี้ก่อนบรรทุกของ</HaulersDream.Gizmo.BulkUnloadAll.Desc>
++  <HaulersDream.Feat.UnloadTransporters.Blurb>ย้ายสินค้าจากยานที่ลงจอดไปยังที่เก็บโดยตรง</HaulersDream.Feat.UnloadTransporters.Blurb>
++  <HaulersDream.UnloadTransporter.Drafted>ยกเลิกการเกณฑ์ตัวละครนี้ก่อนเริ่มคำสั่ง</HaulersDream.UnloadTransporter.Drafted>
++  <HaulersDream.UnloadTransporter.NoStorage>ไม่มีที่เก็บที่เหมาะสมสำหรับสินค้าที่เหลือ</HaulersDream.UnloadTransporter.NoStorage>
++  <HaulersDream.Transporter.SyncUnavailable>ใช้คำสั่งยานขนส่งไม่ได้ เนื่องจากลงทะเบียนการซิงค์ผู้เล่นหลายคนไม่สำเร็จ</HaulersDream.Transporter.SyncUnavailable>
+ </LanguageData>
+--- before/Languages/Ukrainian/DefInjected/JobDef/Jobs.xml
++++ after/Languages/Ukrainian/DefInjected/JobDef/Jobs.xml
+@@ -16,4 +16,5 @@
+ <HaulersDream_LoadPortalInBulk.reportString>масово завантажує портал.</HaulersDream_LoadPortalInBulk.reportString>
+ <HaulersDream_LoadVehicleInBulk.reportString>масово завантажує транспортний засіб.</HaulersDream_LoadVehicleInBulk.reportString>
+ <HaulersDream_BulkRefuel.reportString>масово заправляє.</HaulersDream_BulkRefuel.reportString>
++  <HaulersDream_UnloadTransporterInBulk.reportString>розвантажує транспорт.</HaulersDream_UnloadTransporterInBulk.reportString>
+ </LanguageData>
+--- before/Languages/Ukrainian/DefInjected/WorkGiverDef/TransporterUnload.xml
++++ after/Languages/Ukrainian/DefInjected/WorkGiverDef/TransporterUnload.xml
+@@ -0,0 +1,6 @@
++<?xml version="1.0" encoding="utf-8"?>
++<LanguageData>
++  <HaulersDream_BulkUnloadTransporters.label>Масово розвантажувати транспорт і шатли</HaulersDream_BulkUnloadTransporters.label>
++  <HaulersDream_BulkUnloadTransporters.verb>розвантажити</HaulersDream_BulkUnloadTransporters.verb>
++  <HaulersDream_BulkUnloadTransporters.gerund>розвантаження</HaulersDream_BulkUnloadTransporters.gerund>
++</LanguageData>
+--- before/Languages/Ukrainian/Keyed/HaulersDream.xml
++++ after/Languages/Ukrainian/Keyed/HaulersDream.xml
+@@ -357,7 +357,7 @@
+ <HaulersDream.LoadTransporter.Option>Пріоритезувати масове завантаження {0}</HaulersDream.LoadTransporter.Option>
+ <HaulersDream.LoadTransporter.CouldNotStart>Зараз поблизу немає чого масово завантажити в той транспорт.</HaulersDream.LoadTransporter.CouldNotStart>
+ <HaulersDream.Setting.EnableBulkLoadTransporters>Масово завантажувати транспорт і шатли за одну ходку</HaulersDream.Setting.EnableBulkLoadTransporters>
+-<HaulersDream.Setting.EnableBulkLoadTransportersDesc>Коли транспортну капсулу чи шатл задано на завантаження, вантажник закріплює частину його маніфесту, підмітає кілька сусідніх стопок у свій інвентар, підходить до транспорту ОДИН раз і складає їх усі — замість ванільного однієї-стопки-в-руках за прохід. Кілька вантажників ділять великий маніфест без подвійного перенесення, а капсула не сяде й не запуститься, доки закріплений вантаж не всередині. З вимкненим цим використовується ванільне завантаження транспорту по одній стопці без змін.</HaulersDream.Setting.EnableBulkLoadTransportersDesc>
++<HaulersDream.Setting.EnableBulkLoadTransportersDesc>Коли транспортну капсулу чи шатл задано на завантаження, вантажник закріплює частину його маніфесту, підмітає кілька сусідніх стопок у свій інвентар, підходить до транспорту ОДИН раз і складає їх усі — замість ванільного однієї-стопки-в-руках за прохід. Кілька вантажників ділять великий маніфест без подвійного перенесення, а капсула не сяде й не запуститься, доки закріплений вантаж не всередині. З вимкненим цим використовується ванільне завантаження транспорту по одній стопці без змін. Пріоритетний наказ повторює рейси за цим списком після успішної доставки, поки носій не призваний і не має нових наказів у черзі. Призваний носій може виконати один рейс завантаження.</HaulersDream.Setting.EnableBulkLoadTransportersDesc>
+ <HaulersDream.Setting.BulkLoadAiUpdateFrequency>Інтервал переперевірки завантаження: {0} тіків</HaulersDream.Setting.BulkLoadAiUpdateFrequency>
+ <HaulersDream.LoadPortal.Report>масово завантажує портал.</HaulersDream.LoadPortal.Report>
+ <HaulersDream.LoadPortal.Option>Пріоритезувати масове завантаження {0}</HaulersDream.LoadPortal.Option>
+@@ -420,7 +420,7 @@
+ <HaulersDream.Setting.OpportunisticLoadDesc>Пішак, що вже несе речі, на які чекає сусідня транспортна капсула, шатл, портал карти чи транспортний засіб, відхилиться, щоб скинути їх, замість того щоб починати геть нову ходку по них. Менше марних походів. За замовчуванням вимкнено (воно змінює, яке завдання пішак бере наступним).</HaulersDream.Setting.OpportunisticLoadDesc>
+ <HaulersDream.Setting.LoadOpportunityRadius>Радіус пошуку для складання-дорогою: {0} клітин</HaulersDream.Setting.LoadOpportunityRadius>
+ <HaulersDream.Setting.ContinuousLoading>Наказ «Завантажувати до завершення» за правим кліком</HaulersDream.Setting.ContinuousLoading>
+-<HaulersDream.Setting.ContinuousLoadingDesc>Додає наказ за правим кліком, що відправляє одного кур'єра (навіть мобілізованого) через кожну сусідню транспортну групу, що ще потребує завантаження, зчіплюючи роботи, доки всі вони не будуть повні — зручно для завантаження великого каравану однією командою. За замовчуванням вимкнено (зручність за бажанням).</HaulersDream.Setting.ContinuousLoadingDesc>
++<HaulersDream.Setting.ContinuousLoadingDesc>Додає наказ правою кнопкою миші для переходу до найближчих цілей завантаження після виконання вибраного списку. Подальші рейси потребують непризваного носія, успішної доставки та відсутності нових наказів у черзі. Типово вимкнено.</HaulersDream.Setting.ContinuousLoadingDesc>
+ <HaulersDream.ContinuousLoad.Option>Завантажувати до завершення (безперервно) — {0}</HaulersDream.ContinuousLoad.Option>
+ <HaulersDream.ContinuousLoad.CouldNotStart>Зараз поблизу немає чого масово завантажити в це.</HaulersDream.ContinuousLoad.CouldNotStart>
+ <HaulersDream.Setting.LoadHybridPathing>Упорядковувати зупинки масового завантаження реальним пошуком шляху</HaulersDream.Setting.LoadHybridPathing>
+@@ -626,7 +626,7 @@
+ <HaulersDream.Setting.BulkHaulTrigger.Lab>Тригер масового перенесення</HaulersDream.Setting.BulkHaulTrigger.Lab>
+ <HaulersDream.Setting.KeepWorkingMargin.Lab>Розвантажуватися перед довшим переходом</HaulersDream.Setting.KeepWorkingMargin.Lab>
+ <HaulersDream.Setting.MinFreeSpaceToUnloadCarrier.Lab>Мінімальне вільне місце в рюкзаку для старту</HaulersDream.Setting.MinFreeSpaceToUnloadCarrier.Lab>
+-<HaulersDream.Setting.MinFreeSpaceToUnloadCarrier.Help>Вантажникові потрібно принаймні стільки вільної вантажопідйомності, перш ніж він почне випорожнювати в'ючну тварину, щоб його власний рюкзак не переповнився одразу.</HaulersDream.Setting.MinFreeSpaceToUnloadCarrier.Help>
++<HaulersDream.Setting.MinFreeSpaceToUnloadCarrier.Help>Вантажникові потрібно принаймні стільки вільної вантажопідйомності, перш ніж він почне випорожнювати в'ючну тварину, щоб його власний рюкзак не переповнився одразу. Цей поріг також діє під час автоматичного розвантаження транспортників.</HaulersDream.Setting.MinFreeSpaceToUnloadCarrier.Help>
+ <HaulersDream.Setting.VisualUnloadDelay.Lab>Затримка розвантаження на стопку</HaulersDream.Setting.VisualUnloadDelay.Lab>
+ <HaulersDream.Setting.VisualUnloadDelay.Help>Невелика косметична пауза між кожною стопкою під час масового розвантаження, щоб воно читалося як навмисна дія. 0 = миттєво.</HaulersDream.Setting.VisualUnloadDelay.Help>
+ <HaulersDream.Setting.BulkLoadAiUpdateFrequency.Lab>Інтервал переперевірки завантаження</HaulersDream.Setting.BulkLoadAiUpdateFrequency.Lab>
+@@ -847,4 +847,18 @@
+   <HD_NearbyHaulInventoryUnavailable>Перенесення через інвентар недоступне для цього персонажа.</HD_NearbyHaulInventoryUnavailable>
+   <HD_NearbyHaulRobotUnsupported>Не вдалося прочитати завдання робота з перенесення за поточного набору модів.</HD_NearbyHaulRobotUnsupported>
+   <HD_NearbyHaulSourceUnavailable>Вибраний предмет недоступний для перенесення.</HD_NearbyHaulSourceUnavailable>
++  <HaulersDream.UnloadTransporter.Option>Пріоритезувати масове розвантаження {0}</HaulersDream.UnloadTransporter.Option>
++  <HaulersDream.UnloadTransporter.CouldNotStart>Не вдалося почати масове розвантаження цього транспорту зараз.</HaulersDream.UnloadTransporter.CouldNotStart>
++  <HaulersDream.Gizmo.BulkUnloadAll.Label>Масово розвантажити все</HaulersDream.Gizmo.BulkUnloadAll.Label>
++  <HaulersDream.Gizmo.BulkUnloadAll.Empty>Нема що розвантажувати</HaulersDream.Gizmo.BulkUnloadAll.Empty>
++  <HaulersDream.Gizmo.BulkUnloadAll.LoadBlocked>«Масово розвантажити все» увімкнено, вимкніть це, перш ніж задавати нове навантаження.</HaulersDream.Gizmo.BulkUnloadAll.LoadBlocked>
++  <HaulersDream.Gizmo.BulkUnloadAll.UnloadBlocked>У цей транспорт зараз збирається вантаж.</HaulersDream.Gizmo.BulkUnloadAll.UnloadBlocked>
++  <HaulersDream.Feat.UnloadTransporters.Name>Масово розвантажувати транспорт і шатли</HaulersDream.Feat.UnloadTransporters.Name>
++  <HaulersDream.Setting.EnableBulkUnloadTransporters>Масове розвантаження транспортників</HaulersDream.Setting.EnableBulkUnloadTransporters>
++  <HaulersDream.Setting.EnableBulkUnloadTransportersDesc>Додає транспортникам і шатлам перемикач розвантаження. Непризвані носії доставляють вантаж прямо на склад, по одному рейсу за робоче завдання. Пріоритетний наказ для позначеного транспортника повторюється лише після доставки. Пасажири залишаються на борту. Завантаження, повний склад, призов або нові накази в черзі зупиняють подальші рейси.</HaulersDream.Setting.EnableBulkUnloadTransportersDesc>
++  <HaulersDream.Gizmo.BulkUnloadAll.Desc>Переносити вантаж із {0} на склад. Пасажири залишаються на борту. Пріоритетний наказ розвантаження повторюється після кожної доставки, поки носій не призваний і не має нових наказів у черзі. Вимкніть перед завантаженням.</HaulersDream.Gizmo.BulkUnloadAll.Desc>
++  <HaulersDream.Feat.UnloadTransporters.Blurb>Доставляйте вантаж приземленого транспортника прямо на склад</HaulersDream.Feat.UnloadTransporters.Blurb>
++  <HaulersDream.UnloadTransporter.Drafted>Скасуйте призов цього персонажа, щоб розпочати наказ.</HaulersDream.UnloadTransporter.Drafted>
++  <HaulersDream.UnloadTransporter.NoStorage>Немає відповідного складу для решти вантажу.</HaulersDream.UnloadTransporter.NoStorage>
++  <HaulersDream.Transporter.SyncUnavailable>Команди транспортників недоступні: не вдалося зареєструвати синхронізацію мережевої гри.</HaulersDream.Transporter.SyncUnavailable>
+ </LanguageData>
+--- before/Source/HaulersDream.Tests/LoadMenuProjectionTests.cs
++++ after/Source/HaulersDream.Tests/LoadMenuProjectionTests.cs
+@@ -0,0 +1,43 @@
++using System.Collections.Generic;
++using HaulersDream.Core;
++using NUnit.Framework;
++
++namespace HaulersDream.Tests
++{
++    [TestFixture]
++    public class LoadMenuProjectionTests
++    {
++        [Test]
++        public void RepeatedProjectionKeepsManifestAndEveryClaimUnchanged()
++        {
++            var needed = new Dictionary<string, int> { ["steel"] = 80, ["wood"] = 20 };
++            var total = new Dictionary<string, int> { ["steel"] = 70, ["wood"] = 10 };
++            var own = new Dictionary<string, int> { ["steel"] = 30 };
++            var other = new Dictionary<string, int> { ["steel"] = 40, ["wood"] = 10 };
++            var claims = new Dictionary<int, Dictionary<string, int>> { [1] = own, [2] = other };
++            for (int i = 0; i < 20; i++)
++            {
++                var projection = LoadLedger<string, int>.AvailableToClaim(needed, total, claims, 1);
++                Assert.That(projection, Is.EquivalentTo(new Dictionary<string, int> { ["steel"] = 40, ["wood"] = 10 }));
++                projection.Clear(); // A planner owns its returned view; it must not alias the ledger.
++            }
++            Assert.That(needed, Is.EquivalentTo(new Dictionary<string, int> { ["steel"] = 80, ["wood"] = 20 }));
++            Assert.That(total, Is.EquivalentTo(new Dictionary<string, int> { ["steel"] = 70, ["wood"] = 10 }));
++            Assert.That(own, Is.EquivalentTo(new Dictionary<string, int> { ["steel"] = 30 }));
++            Assert.That(other, Is.EquivalentTo(new Dictionary<string, int> { ["steel"] = 40, ["wood"] = 10 }));
++            Assert.That(claims.Count, Is.EqualTo(2));
++            Assert.That(claims[1], Is.SameAs(own));
++            Assert.That(claims[2], Is.SameAs(other));
++        }
++
++        [Test]
++        public void MissingSavedEntryNeedsNoRegistrationAndDoesNotAliasManifest()
++        {
++            var needed = new Dictionary<string, int> { ["steel"] = 12 };
++            var projection = LoadLedger<string, int>.AvailableToClaim(needed, null, null, 1);
++            Assert.That(projection["steel"], Is.EqualTo(12));
++            projection["steel"] = 0;
++            Assert.That(needed["steel"], Is.EqualTo(12));
++        }
++    }
++}
+--- before/Source/HaulersDream/BulkUnloadTransporterGate.cs
++++ after/Source/HaulersDream/BulkUnloadTransporterGate.cs
+@@ -109,7 +109,7 @@
+         {
+             if (!Enabled || !UnloadFlagActive(comp)) return TransporterUnloadBlock.Disabled;
+             if (!IsSupported(comp)) return TransporterUnloadBlock.Unavailable;
+-            if (pawn == null || !pawn.Spawned || pawn.Map != comp.Map || pawn.Dead || pawn.Downed
++            if (pawn == null || !pawn.Spawned || pawn.Map != comp.Map || pawn.Dead || pawn.Downed || pawn.InMentalState || pawn.jobs == null
+                 || pawn.Faction != Faction.OfPlayerSilentFail || pawn.IsQuestLodger() || pawn.IsPrisoner
+                 || pawn.inventory == null || pawn.carryTracker?.innerContainer == null || pawn.carryTracker.innerContainer.Count != 0
+                 || pawn.GetComp<CompHauledToInventory>() == null) return TransporterUnloadBlock.Unavailable;
+--- before/Source/HaulersDream/FloatMenuOptionProvider_BulkLoadTransporter.cs
++++ after/Source/HaulersDream/FloatMenuOptionProvider_BulkLoadTransporter.cs
+@@ -7,7 +7,8 @@
+ {
+     /// <summary>
+     /// "Prioritize bulk loading {0}": a one-click order that sweeps nearby ground stacks the transporter group still
+-    /// needs into the pawn's inventory and loads them all in one trip (see
++    /// needs into the pawn's inventory and deposits one trip at a time. An undrafted courier repeats after an
++    /// actual delivery while this manifest still needs goods and no replacement work is queued (see
+     /// <see cref="JobDriver_LoadTransportersInBulk"/>), replacing vanilla's one-stack-in-hands "Load X into
+     /// transporter". Auto-discovered FloatMenuOptionProvider — no Harmony. The clicked thing is a transporter
+     /// (its <see cref="CompTransporter"/>). Mirrors <see cref="FloatMenuOptionProvider_BulkLoadPackAnimal"/> /
+@@ -29,7 +30,7 @@
+         {
+             var pawn = context?.FirstSelectedPawn;
+             var things = context?.ClickedThings;
+-            if (pawn == null || things == null || pawn.Map == null)
++            if (pawn == null || things == null || pawn.Map == null || !MultiplayerCompat.TransporterLocalUi)
+                 yield break;
+             var s = HaulersDreamMod.Settings;
+             if (s == null || !s.enableBulkLoadTransporters)
+@@ -62,26 +63,19 @@
+                 if (pawn.CurJobDef == HaulersDreamDefOf.HaulersDream_LoadTransportersInBulk
+                     && pawn.CurJob.GetTarget(TargetIndex.A).Thing?.TryGetComp<CompTransporter>()?.groupID == comp.groupID)
+                     continue;
+-                var adapter = LoadTransportersAdapter.TryCreate(comp);
+-                if (adapter == null)
+-                    continue;
+-
+                 var pawnLocal = pawn;
+-                var adapterLocal = adapter;
+                 var clickedLocal = clicked;
++                int mapId = pawn.Map.uniqueID;
++                string reason = TransporterCommand.LoadBlock(pawn, clicked);
++                if (reason != null)
++                {
++                    yield return new FloatMenuOption("HaulersDream.LoadTransporter.Option".Translate(clicked.LabelShort) + ": " + reason, null);
++                    yield break;
++                }
+                 var option = new FloatMenuOption(
+                     "HaulersDream.LoadTransporter.Option".Translate(clicked.LabelShort), () =>
+                     {
+-                        // No try/catch: a build failure is a real bug to surface; the null path shows the toast.
+-                        var job = TransportLoad.TryGiveBulkJob(pawnLocal, adapterLocal, playerOrder: true);
+-                        if (job == null)
+-                        {
+-                            Messages.Message("HaulersDream.LoadTransporter.CouldNotStart".Translate(), clickedLocal,
+-                                MessageTypeDefOf.RejectInput, historical: false);
+-                            return;
+-                        }
+-                        job.playerForced = true;
+-                        pawnLocal.jobs.TryTakeOrderedJob(job, JobTag.Misc);
++                        TransporterCommand.Dispatch(pawnLocal, clickedLocal, mapId, false, KeyBindingDefOf.QueueOrder.IsDownEvent);
+                     })
+                 {
+                     iconThing = clicked,
+--- before/Source/HaulersDream/FloatMenuOptionProvider_BulkUnloadTransporter.cs
++++ after/Source/HaulersDream/FloatMenuOptionProvider_BulkUnloadTransporter.cs
+@@ -0,0 +1,39 @@
++using System.Collections.Generic;
++using RimWorld;
++using Verse;
++
++namespace HaulersDream
++{
++    // Adapted from nullpat's GH267. Drafted=true exposes a disabled explanation, never a drafted job.
++    public sealed class FloatMenuOptionProvider_BulkUnloadTransporter : FloatMenuOptionProvider
++    {
++        public override bool Drafted => true;
++        public override bool Undrafted => true;
++        public override bool Multiselect => false;
++        public override bool MechanoidCanDo => true;
++        public override bool CanSelfTarget => false;
++
++        public override IEnumerable<FloatMenuOption> GetOptions(FloatMenuContext context)
++        {
++            var pawn = context?.FirstSelectedPawn;
++            if (pawn?.Map == null || context.ClickedThings == null || !MultiplayerCompat.TransporterLocalUi) yield break;
++            foreach (var target in context.ClickedThings)
++            {
++                var comp = target?.TryGetComp<CompTransporter>();
++                if (!BulkUnloadTransporterGate.IsSupported(comp) || !BulkUnloadTransporterGate.UnloadFlagActive(comp)) continue;
++                int mapId = pawn.Map.uniqueID;
++                string label = "HaulersDream.UnloadTransporter.Option".Translate(target.LabelShort);
++                string reason = TransporterCommand.UnloadBlock(pawn, target);
++                if (reason != null) yield return new FloatMenuOption(label + ": " + reason, null);
++                else
++                {
++                    var option = new FloatMenuOption(label,
++                        () => TransporterCommand.Dispatch(pawn, target, mapId, true, KeyBindingDefOf.QueueOrder.IsDownEvent))
++                    { iconThing = target };
++                    yield return FloatMenuUtility.DecoratePrioritizedTask(option, pawn, target);
++                }
++                yield break;
++            }
++        }
++    }
++}
+--- before/Source/HaulersDream/FloatMenuOptionProvider_ContinuousLoad.cs
++++ after/Source/HaulersDream/FloatMenuOptionProvider_ContinuousLoad.cs
+@@ -17,7 +17,7 @@
+     /// <c>playerOrder: true</c>), and the chaining itself lives in the drivers' finish action via
+     /// <see cref="ContinuousLoad"/> — every player-forced bulk-load SUCCESS hops to the next target while the setting is
+     /// on. So this option's only job is to KICK OFF a player-forced load on the clicked target with an explicit,
+-    /// discoverable label; the courier then continues on its own (even drafted).
++    /// discoverable label. Further trips require an undrafted courier and no queued replacement work.
+     ///
+     /// Each family is offered only when ITS bulk-load is enabled (so the option can actually do something — otherwise
+     /// <see cref="TransportLoad.TryGiveBulkJob"/> returns null because the family feature flag is off). With
+@@ -48,8 +48,7 @@
+             // Hauling work (LoadTransporters / HaulToPortal in Core/Defs/WorkGiverDefs/WorkGivers.xml:1251-1254 /
+             // :1264-1267, VF's PackVehicle likewise <workType>Hauling</workType>), so it must apply the same bar or
+             // it becomes the way around all three. HaulOrderGate reads the WORK TYPE, not the WorkTags.Hauling bit
+-            // an "incapable of dumb labor" backstory leaves clear. Still works while drafted (the chain too) for
+-            // any pawn that clears the bar.
++            // an "incapable of dumb labor" backstory leaves clear. Repeated trips require an undrafted courier.
+             if (HaulOrderGate.Blocks(pawn))
+                 yield break;
+             // Don't offer this while the pawn is under a boarding lord — let vanilla's gather-and-board flow run.
+@@ -62,6 +61,26 @@
+                 var clicked = things[i];
+                 if (clicked == null)
+                     continue;
++
++                // Transporter orders use the same pure offer and synchronized fresh planner as their
++                // primary menu. Keep the portal/VF paths below independent of this feature slice.
++                if (clicked.TryGetComp<CompTransporter>() != null)
++                {
++                    if (!MultiplayerCompat.TransporterLocalUi || !s.enableBulkLoadTransporters) continue;
++                    int mapId = pawn.Map.uniqueID;
++                    string reason = pawn.Drafted ? "HaulersDream.UnloadTransporter.Drafted".Translate()
++                        : TransporterCommand.LoadBlock(pawn, clicked);
++                    string label = "HaulersDream.ContinuousLoad.Option".Translate(clicked.LabelShort);
++                    if (reason != null) yield return new FloatMenuOption(label + ": " + reason, null);
++                    else
++                    {
++                        var transporterOption = new FloatMenuOption(label,
++                            () => TransporterCommand.Dispatch(pawn, clicked, mapId, false, KeyBindingDefOf.QueueOrder.IsDownEvent, continuous: true))
++                        { iconThing = clicked };
++                        yield return FloatMenuUtility.DecoratePrioritizedTask(transporterOption, pawn, clicked);
++                    }
++                    yield break;
++                }
+ 
+                 IManagedLoadable adapter = TryResolveLoadable(clicked, s);
+                 if (adapter == null)
+--- before/Source/HaulersDream/HaulersDreamGameComponent.LoadProbe.cs
++++ after/Source/HaulersDream/HaulersDreamGameComponent.LoadProbe.cs
+@@ -0,0 +1,25 @@
++using System.Collections.Generic;
++using HaulersDream.Core;
++using Verse;
++
++namespace HaulersDream
++{
++    public partial class HaulersDreamGameComponent
++    {
++        // Render/menu probe: read current manifest and existing claims without creating, refreshing or
++        // pruning a saved ledger entry. Only the returned private dictionary is mutable by the planner.
++        internal Dictionary<ThingDef, int> LoadAvailableForMenu(IManagedLoadable loadable, Pawn pawn)
++        {
++            var needed = new Dictionary<ThingDef, int>();
++            var transferables = loadable.GetTransferables();
++            for (int i = 0; transferables != null && i < transferables.Count; i++)
++            {
++                var item = transferables[i];
++                if (item == null || !item.HasAnyThing || item.CountToTransfer <= 0 || item.ThingDef == null) continue;
++                needed[item.ThingDef] = (needed.TryGetValue(item.ThingDef, out int count) ? count : 0) + item.CountToTransfer;
++            }
++            BucketFor(loadable).TryGetValue(loadable.GetUniqueLoadID(), out var entry);
++            return LoadLedger<ThingDef, Pawn>.AvailableToClaim(needed, entry?.totalClaimed, entry?.pawnClaims, pawn);
++        }
++    }
++}
+--- before/Source/HaulersDream/HaulersDreamSettings.Window.cs
++++ after/Source/HaulersDream/HaulersDreamSettings.Window.cs
+@@ -1173,6 +1173,7 @@
+             HDSettingsUI.Header(c, "HaulersDream.FeatGroup.Loading".Translate());
+             enableBulkUnloadCarriers = Card(c, SettingsCat.BulkLoading, "HaulersDream.Feat.UnloadCarriers", enableBulkUnloadCarriers, "HaulersDream.Setting.EnableBulkUnloadCarriersDesc");
+             enableBulkLoadTransporters = Card(c, SettingsCat.BulkLoading, "HaulersDream.Feat.LoadTransporters", enableBulkLoadTransporters, "HaulersDream.Setting.EnableBulkLoadTransportersDesc");
++            enableBulkUnloadTransporters = Card(c, SettingsCat.BulkLoading, "HaulersDream.Feat.UnloadTransporters", enableBulkUnloadTransporters, "HaulersDream.Setting.EnableBulkUnloadTransportersDesc");
+             enableBulkLoadPortal = Card(c, SettingsCat.BulkLoading, "HaulersDream.Feat.LoadPortal", enableBulkLoadPortal, "HaulersDream.Setting.EnableBulkLoadPortalDesc");
+             enableBulkRefuel = Card(c, SettingsCat.BulkLoading, "HaulersDream.Feat.Refuel", enableBulkRefuel, "HaulersDream.Setting.EnableBulkRefuelDesc");
+             if (VehicleFrameworkCompat.IsActive)
+@@ -1464,18 +1465,20 @@
+                 enableBulkUnloadCarriers, "HaulersDream.Setting.EnableBulkUnloadCarriersDesc".Translate());
+             minFreeSpaceToUnloadCarrierPct = Mathf.Round(HDSettingsUI.Slider(c, "HaulersDream.Setting.MinFreeSpaceToUnloadCarrier.Lab".Translate(),
+                 minFreeSpaceToUnloadCarrierPct, 0.1f, 0.9f, minFreeSpaceToUnloadCarrierPct.ToStringPercent(),
+-                "HaulersDream.Setting.MinFreeSpaceToUnloadCarrier.Help".Translate(), enabled: enableBulkUnloadCarriers, indent: 24f) * 20f) / 20f;
++                "HaulersDream.Setting.MinFreeSpaceToUnloadCarrier.Help".Translate(), enabled: enableBulkUnloadCarriers || enableBulkUnloadTransporters, indent: 24f) * 20f) / 20f;
+             reserveCarrierOnUnload = HDSettingsUI.Checkbox(c, "HaulersDream.Setting.ReserveCarrierOnUnload".Translate(),
+                 reserveCarrierOnUnload, "HaulersDream.Setting.ReserveCarrierOnUnloadDesc".Translate(), enabled: enableBulkUnloadCarriers, indent: 24f);
+             visualUnloadDelay = Mathf.RoundToInt(HDSettingsUI.Slider(c, "HaulersDream.Setting.VisualUnloadDelay.Lab".Translate(),
+                 visualUnloadDelay, 0f, 30f, string.Format("~{0:0.0}s", visualUnloadDelay / 60f),
+-                "HaulersDream.Setting.VisualUnloadDelay.Help".Translate(), enabled: enableBulkUnloadCarriers, indent: 24f));
++                "HaulersDream.Setting.VisualUnloadDelay.Help".Translate(), enabled: enableBulkUnloadCarriers || enableBulkUnloadTransporters, indent: 24f));
+             loadPackAnimalBulk = HDSettingsUI.Checkbox(c, "HaulersDream.Setting.LoadPackAnimalBulk".Translate(),
+                 loadPackAnimalBulk, "HaulersDream.Setting.LoadPackAnimalBulkDesc".Translate());
+             autoDivertToPackAnimal = HDSettingsUI.Checkbox(c, "HaulersDream.Setting.AutoDivertToPackAnimal".Translate(),
+                 autoDivertToPackAnimal, "HaulersDream.Setting.AutoDivertToPackAnimalDesc".Translate());
+ 
+             HDSettingsUI.Header(c, "HaulersDream.Head.Transporters".Translate());
++            enableBulkUnloadTransporters = HDSettingsUI.Checkbox(c, "HaulersDream.Setting.EnableBulkUnloadTransporters".Translate(),
++                enableBulkUnloadTransporters, "HaulersDream.Setting.EnableBulkUnloadTransportersDesc".Translate());
+             enableBulkLoadTransporters = HDSettingsUI.Checkbox(c, "HaulersDream.Setting.EnableBulkLoadTransporters".Translate(),
+                 enableBulkLoadTransporters, "HaulersDream.Setting.EnableBulkLoadTransportersDesc".Translate());
+             bulkLoadAiUpdateFrequency = Mathf.RoundToInt(HDSettingsUI.Slider(c, "HaulersDream.Setting.BulkLoadAiUpdateFrequency.Lab".Translate(),
+--- before/Source/HaulersDream/MultiplayerCompat.cs
++++ after/Source/HaulersDream/MultiplayerCompat.cs
+@@ -54,6 +54,11 @@
+ 
+         private static bool inventoryQuantityDropRegistered;
+         private static bool nearbyHaulRegistered;
++        private static bool transporterRegistered;
++        internal static bool TransporterAvailable => !InMultiplayerGame || transporterRegistered;
++        internal static bool TransporterLocalUi => !InMultiplayerGame || MpHooks.InInterface();
++        internal static bool TransporterExecuting => !InMultiplayerGame
++            || (transporterRegistered && MpHooks.ExecutingCommand());
+         internal static bool NearbyHaulAvailable => !InMultiplayerGame || nearbyHaulRegistered;
+         internal static bool NearbyHaulLocalUi => !InMultiplayerGame || MpHooks.InInterface();
+         internal static bool NearbyHaulExecuting => !InMultiplayerGame
+@@ -67,6 +72,15 @@
+         {
+             if (!Active)
+                 return;
++            try
++            {
++                transporterRegistered = MpHooks.RegisterTransporter();
++            }
++            catch (Exception e)
++            {
++                Log.Warning("[Hauler's Dream] Transporter command sync registration failed; "
++                    + "these actions are unavailable in multiplayer. " + e);
++            }
+             try
+             {
+                 nearbyHaulRegistered = MpHooks.RegisterNearbyHaul();
+@@ -245,6 +259,12 @@
+         /// </summary>
+         private static class MpHooks
+         {
++            internal static bool RegisterTransporter()
++            {
++                bool order = MP.RegisterSyncMethod(typeof(TransporterCommand), nameof(TransporterCommand.IssueSynced)) != null;
++                bool toggle = MP.RegisterSyncMethod(typeof(TransporterCommand), nameof(TransporterCommand.SetUnloadSynced)) != null;
++                return order && toggle;
++            }
+             internal static bool RegisterNearbyHaul() =>
+                 MP.RegisterSyncMethod(typeof(NearbyHaulCommand), nameof(NearbyHaulCommand.IssueSynced)) != null;
+ 
+--- before/Source/HaulersDream/Patch_CompTransporter_Gizmos_BulkUnloadAll.cs
++++ after/Source/HaulersDream/Patch_CompTransporter_Gizmos_BulkUnloadAll.cs
+@@ -0,0 +1,66 @@
++using System.Collections.Generic;
++using HarmonyLib;
++using RimWorld;
++using UnityEngine;
++using Verse;
++
++namespace HaulersDream
++{
++    // Toggle and icon adapted from nullpat's GH267. Always installed so runtime enablement is supported.
++    [HarmonyPatch(typeof(CompTransporter), nameof(CompTransporter.CompGetGizmosExtra))]
++    [StaticConstructorOnStartup]
++    public static class Patch_CompTransporter_Gizmos_BulkUnloadAll
++    {
++        private static Texture2D icon;
++        private static Texture2D Icon => icon ??= ContentFinder<Texture2D>.Get("HaulersDream/Interface/BulkUnloadAll", false)
++            ?? CompTransporter.CancelLoadCommandTex;
++
++        static IEnumerable<Gizmo> Postfix(IEnumerable<Gizmo> __result, CompTransporter __instance)
++        {
++            var toggle = MakeToggle(__instance);
++            bool inserted = false;
++            bool blockLoad = BulkUnloadTransporterGate.AnyUnloadFlagInGroup(__instance);
++            foreach (var gizmo in __result)
++            {
++                if (gizmo is Command_LoadToTransporter)
++                {
++                    if (!inserted && toggle != null) { yield return toggle; inserted = true; }
++                    // Every loading command, including commands for a flagged non-primary group member.
++                    if (blockLoad) gizmo.Disable("HaulersDream.Gizmo.BulkUnloadAll.LoadBlocked".Translate());
++                }
++                yield return gizmo;
++            }
++            if (!inserted && toggle != null) yield return toggle;
++        }
++
++        private static Command_Toggle MakeToggle(CompTransporter comp)
++        {
++            var parent = comp?.parent;
++            if (parent == null || !parent.Spawned || !MultiplayerCompat.TransporterLocalUi) return null;
++            bool flagged = HaulersDreamGameComponent.Instance?.BulkUnloadAllFlagged(parent.thingIDNumber) == true;
++            if (!flagged && (!BulkUnloadTransporterGate.Enabled || !BulkUnloadTransporterGate.IsSupported(comp))) return null;
++            int selected = 0;
++            foreach (object item in Find.Selector.SelectedObjects)
++                if (item is ThingWithComps thing && thing.HasComp<CompTransporter>()) selected++;
++            if (selected > 1) return null;
++            int mapId = parent.Map.uniqueID;
++            var toggle = new Command_Toggle
++            {
++                defaultLabel = "HaulersDream.Gizmo.BulkUnloadAll.Label".Translate(),
++                defaultDesc = "HaulersDream.Gizmo.BulkUnloadAll.Desc".Translate(parent.LabelShort),
++                icon = Icon,
++                isActive = () => HaulersDreamGameComponent.Instance?.BulkUnloadAllFlagged(parent.thingIDNumber) == true,
++                toggleAction = () => TransporterCommand.SetUnloadSynced(parent, mapId,
++                    !(HaulersDreamGameComponent.Instance?.BulkUnloadAllFlagged(parent.thingIDNumber) ?? false))
++            };
++            if (!MultiplayerCompat.TransporterAvailable) toggle.Disable("HaulersDream.Transporter.SyncUnavailable".Translate());
++            else if (!flagged)
++            {
++                var blocked = BulkUnloadTransporterGate.TargetBlock(comp, false);
++                if (blocked != TransporterUnloadBlock.None) toggle.Disable(TransporterCommand.UnloadReason(blocked));
++                else if (!BulkUnloadTransporterGate.HasPullableContents(comp)) toggle.Disable("HaulersDream.Gizmo.BulkUnloadAll.Empty".Translate());
++            }
++            return toggle;
++        }
++    }
++}
+--- before/Source/HaulersDream/Patch_SuppressVanillaLoadFloatMenu.cs
++++ after/Source/HaulersDream/Patch_SuppressVanillaLoadFloatMenu.cs
+@@ -26,11 +26,9 @@
+     /// <see cref="TransportLoad.TryGiveBulkJob"/> would return a non-null job for THIS pawn+target; when it would not,
+     /// the vanilla carry option survives so the player can still hand-load the pawns/corpses one at a time.
+     ///
+-    /// The probe is the SAME call (with the same <c>playerOrder: true</c> eligibility path) HD's float-menu provider
+-    /// makes when the bulk option is clicked, and it is SIDE-EFFECT-FREE: <c>TryGiveBulkJob</c> is pure planning — it
+-    /// refreshes the ledger's manifest view (idempotent, the same <c>LoadRegisterOrUpdate</c> the work-scan/menu does)
+-    /// and reads available-to-claim, but records NO claim and NO reservation (the driver claims in its
+-    /// <c>Notify_Starting</c>, never the builder). So building-but-discarding the probed job reserves no quota.
++    /// The menu probe follows the same ordered planning path but reads a private manifest/claims projection
++    /// and returns before JobMaker. It does not create or refresh a saved ledger entry, claim quota, reserve
++    /// goods or consume a job ID. Clicking the offered command validates and builds a fresh job.
+     ///
+     /// Vehicles are NOT handled here: Vehicle Framework loads cargo via a Hauling work-scan, not a vanilla
+     /// float-menu option, so there is no vanilla load option to suppress for vehicles (the autonomous scan is
+--- before/Source/HaulersDream/TransportLoad.cs
++++ after/Source/HaulersDream/TransportLoad.cs
+@@ -93,7 +93,7 @@
+         /// <summary>
+         /// #138 perf: the CACHED "would HD give a bulk-load job for this player order?" probe used by the vanilla-
+         /// option suppressor when a transporter/shuttle/portal menu is built. Returns the SAME answer as
+-        /// <c>TryGiveBulkJob(pawn, loadable, playerOrder: true) != null</c> — the probe is side-effect-free planning —
++        /// the ordered planner, but returns before JobMaker and reads a private manifest/claims projection —
+         /// but memoized per (TicksGame, pawn, loadableId) so one manifest is planned at most once per right-click no
+         /// matter how many transporters in its group get probed. On a null-tick (menu edge / uninitialised) it falls
+         /// back to a direct probe and never populates the memo, exactly like the auto path's guard.
+@@ -103,14 +103,14 @@
+         /// <returns>True iff HD would issue a bulk-load job (so the vanilla single-item option should be suppressed).</returns>
+         public static bool WouldGiveBulkJobForMenu(Pawn pawn, IManagedLoadable loadable)
+         {
+-            if (pawn == null || loadable == null)
++            if (pawn == null || loadable == null || HaulersDreamMod.Settings?.masterEnabled != true || !FeatureEnabled(loadable))
+                 return false;
+             // Live before the same-tick memo, including settings/flag transitions and non-primary members.
+             if (BulkUnloadTransporterGate.BlocksLoad(loadable))
+                 return false;
+             int tick = Find.TickManager?.TicksGame ?? -1;
+             if (tick == -1)
+-                return TryGiveBulkJob(pawn, loadable, playerOrder: true) != null;
++                return ProbeBulkJob(pawn, loadable);
+             var cache = menuProbeCache ?? (menuProbeCache = new Dictionary<long, bool>());
+             if (tick != menuProbeTick)
+             {
+@@ -120,9 +120,16 @@
+             long key = ((long)pawn.thingIDNumber << 32) | (uint)loadable.GetUniqueLoadID();
+             if (cache.TryGetValue(key, out bool cached))
+                 return cached;
+-            bool result = TryGiveBulkJob(pawn, loadable, playerOrder: true) != null;
++            bool result = ProbeBulkJob(pawn, loadable);
+             cache[key] = result;
+             return result;
++        }
++
++        private static bool ProbeBulkJob(Pawn pawn, IManagedLoadable loadable)
++        {
++            TryGiveBulkJob(pawn, loadable, JobDefFor(loadable), FeatureEnabled(loadable),
++                playerOrder: true, menuProbe: true, out bool wouldGive);
++            return wouldGive;
+         }
+ 
+         /// <summary>Is there bulk-load work for this pawn on the TRANSPORTER loadable? Feature on, not drafted,
+@@ -360,7 +367,12 @@
+         }
+ 
+         private static Job TryGiveBulkJob(Pawn pawn, IManagedLoadable loadable, JobDef jobDef, bool featureEnabled, bool playerOrder)
+-        {
++            => TryGiveBulkJob(pawn, loadable, jobDef, featureEnabled, playerOrder, menuProbe: false, out _);
++
++        private static Job TryGiveBulkJob(Pawn pawn, IManagedLoadable loadable, JobDef jobDef, bool featureEnabled,
++            bool playerOrder, bool menuProbe, out bool wouldGive)
++        {
++            wouldGive = false;
+             var s = HaulersDreamMod.Settings;
+             var map = pawn?.Map;
+             if (s == null || !featureEnabled || map == null || loadable == null)
+@@ -387,10 +399,10 @@
+             var ledger = HaulersDreamGameComponent.Instance;
+             if (ledger == null)
+                 return null;
+-            // Capture the entry: the fair-share divisor below reads its pawnClaims to skip co-loaders that already
+-            // carry a slice. Never null here (loadable was null-checked above; register always yields an entry).
+-            var entry = ledger.LoadRegisterOrUpdate(loadable);
+-            var claimable = ledger.LoadAvailableToClaim(loadable, pawn);
++            // Only an actual job plan refreshes the saved ledger. The menu uses a private projection instead;
++            // its ordered path also skips the automatic fair-share divisor that needs this entry.
++            var entry = menuProbe ? null : ledger.LoadRegisterOrUpdate(loadable);
++            var claimable = menuProbe ? ledger.LoadAvailableForMenu(loadable, pawn) : ledger.LoadAvailableToClaim(loadable, pawn);
+             if (claimable.Count == 0)
+                 return null;
+ 
+@@ -583,6 +595,8 @@
+                 return null; // nothing reachable to sweep of the claimable defs
+             }
+ 
++            wouldGive = true;
++            if (menuProbe) return null;
+             var job = JobMaker.MakeJob(jobDef, loadable.GetParentThing());
+             job.targetQueueB = new List<LocalTargetInfo>(things.Count);
+             for (int i = 0; i < things.Count; i++)
+--- before/Source/HaulersDream/TransporterCommand.cs
++++ after/Source/HaulersDream/TransporterCommand.cs
+@@ -0,0 +1,99 @@
++using RimWorld;
++using RimWorld.Planet;
++using Verse;
++using Verse.AI;
++
++namespace HaulersDream
++{
++    /// <summary>Local read-only offers and synchronized, freshly validated transporter mutations.</summary>
++    internal static class TransporterCommand
++    {
++        internal static string UnloadReason(TransporterUnloadBlock block)
++        {
++            switch (block)
++            {
++                case TransporterUnloadBlock.None: return null;
++                case TransporterUnloadBlock.Drafted: return "HaulersDream.UnloadTransporter.Drafted".Translate();
++                case TransporterUnloadBlock.NoStorage: return "HaulersDream.UnloadTransporter.NoStorage".Translate();
++                case TransporterUnloadBlock.Empty: return "HaulersDream.Gizmo.BulkUnloadAll.Empty".Translate();
++                case TransporterUnloadBlock.Loading: return "HaulersDream.Gizmo.BulkUnloadAll.UnloadBlocked".Translate();
++                case TransporterUnloadBlock.NoPath: return "NoPath".Translate();
++                case TransporterUnloadBlock.HaulingDisabled: return "CannotPrioritizeWorkTypeDisabled".Translate(WorkTypeDefOf.Hauling.gerundLabel);
++                case TransporterUnloadBlock.Disabled: return "Disabled".Translate();
++                default: return "HaulersDream.UnloadTransporter.CouldNotStart".Translate();
++            }
++        }
++
++        internal static string UnloadBlock(Pawn pawn, Thing target)
++        {
++            if (!MultiplayerCompat.TransporterAvailable) return "HaulersDream.Transporter.SyncUnavailable".Translate();
++            return UnloadReason(BulkUnloadTransporterGate.StartBlock(pawn, target?.TryGetComp<CompTransporter>(), true));
++        }
++
++        internal static string LoadBlock(Pawn pawn, Thing target, bool probePlan = true)
++        {
++            if (!MultiplayerCompat.TransporterAvailable) return "HaulersDream.Transporter.SyncUnavailable".Translate();
++            var settings = HaulersDreamMod.Settings;
++            if (settings?.masterEnabled != true || !settings.enableBulkLoadTransporters) return "Disabled".Translate();
++            var comp = target?.TryGetComp<CompTransporter>();
++            if (comp == null || pawn == null || pawn.Dead || pawn.Downed || pawn.InMentalState || !pawn.Spawned || pawn.jobs == null
++                || pawn.Faction != Faction.OfPlayerSilentFail || pawn.IsQuestLodger() || pawn.IsPrisoner
++                || pawn.inventory == null || pawn.GetComp<CompHauledToInventory>() == null
++                || !target.Spawned || target.Map != pawn.Map || VehicleFrameworkCompat.IsVehicle(target)
++                || pawn.mindState?.duty?.def == DutyDefOf.LoadAndEnterTransporters
++                || !MiscRobotsStorageRole.AllowsNewStorageIntake(pawn)) return "HaulersDream.LoadTransporter.CouldNotStart".Translate();
++            if (HaulOrderGate.Blocks(pawn)) return "CannotPrioritizeWorkTypeDisabled".Translate(WorkTypeDefOf.Hauling.gerundLabel);
++            if (BulkUnloadTransporterGate.AnyUnloadFlagInGroup(comp)) return "HaulersDream.Gizmo.BulkUnloadAll.LoadBlocked".Translate();
++            if (!pawn.CanReach(target, PathEndMode.Touch, Danger.Deadly)) return "NoPath".Translate();
++            if (!comp.AnyInGroupHasAnythingLeftToLoad) return "HaulersDream.LoadTransporter.CouldNotStart".Translate();
++            if (!probePlan) return null; // synchronized execution builds a fresh plan below, never trusts a menu memo
++            var adapter = LoadTransportersAdapter.TryCreate(comp);
++            return adapter != null && TransportLoad.WouldGiveBulkJobForMenu(pawn, adapter)
++                ? null : "HaulersDream.LoadTransporter.CouldNotStart".Translate();
++        }
++
++        internal static void Dispatch(Pawn pawn, Thing target, int mapId, bool unload, bool queue, bool continuous = false)
++        {
++            if (!MultiplayerCompat.TransporterLocalUi || !MultiplayerCompat.TransporterAvailable) return;
++            IssueSynced(pawn, target, mapId, unload, queue, continuous);
++        }
++
++        public static void IssueSynced(Pawn pawn, Thing target, int expectedMapId, bool unload, bool queue, bool continuous)
++        {
++            if (!MultiplayerCompat.TransporterExecuting) return;
++            if (pawn?.Map == null || pawn.Map.uniqueID != expectedMapId || target?.Map != pawn.Map)
++            { Reject("HaulersDream.LoadTransporter.CouldNotStart".Translate()); return; }
++            if (continuous && (HaulersDreamMod.Settings?.enableContinuousLoading != true || pawn.Drafted))
++            {
++                Reject(pawn.Drafted ? "HaulersDream.UnloadTransporter.Drafted".Translate() : "Disabled".Translate());
++                return;
++            }
++            string reason = unload ? UnloadBlock(pawn, target) : LoadBlock(pawn, target, probePlan: false);
++            if (reason != null) { Reject(reason); return; }
++            Job job = unload
++                ? JobMaker.MakeJob(HaulersDreamDefOf.HaulersDream_UnloadTransporterInBulk, target)
++                : TransportLoad.TryGiveBulkJob(pawn, LoadTransportersAdapter.TryCreate(target.TryGetComp<CompTransporter>()), playerOrder: true);
++            if (job == null) { Reject("HaulersDream.LoadTransporter.CouldNotStart".Translate()); return; }
++            job.playerForced = true;
++            job.globalTarget = new GlobalTargetInfo(pawn.Position, pawn.Map);
++            if (unload) job.workGiverDef = DefDatabase<WorkGiverDef>.GetNamedSilentFail("HaulersDream_BulkUnloadTransporters");
++            if (!pawn.jobs.TryTakeOrderedJob(job, JobTag.Misc, requestQueueing: queue))
++                Reject((unload ? "HaulersDream.UnloadTransporter.CouldNotStart" : "HaulersDream.LoadTransporter.CouldNotStart").Translate());
++        }
++
++        public static void SetUnloadSynced(Thing target, int expectedMapId, bool on)
++        {
++            if (!MultiplayerCompat.TransporterExecuting || target == null) return;
++            // Off only removes HD intent, and remains possible after departure or a disabled setting.
++            if (on && (target.Map == null || target.Map.uniqueID != expectedMapId)) return;
++            if (!(HaulersDreamGameComponent.Instance?.TrySetBulkUnloadAll(target, on) ?? false))
++                Reject("HaulersDream.Gizmo.BulkUnloadAll.UnloadBlocked".Translate());
++        }
++
++        private static void Reject(string reason)
++        {
++            if (!MultiplayerCompat.InMultiplayerGame || MultiplayerCompat.ShouldShowLocalFeedback)
++                Messages.Message(reason, MessageTypeDefOf.RejectInput, historical: false);
++        }
++    }
++}
+--- before/Textures/HaulersDream/Interface/BulkUnloadAll-CREDITS.txt
++++ after/Textures/HaulersDream/Interface/BulkUnloadAll-CREDITS.txt
+@@ -0,0 +1,3 @@
++BulkUnloadAll.png was contributed by nullpat in Hauler's Dream PR #267.
++It is derived from RimWorld's UI/Commands/LoadTransporter texture with hand edits.
++Original texture copyright Ludeon Studios; used as permitted for RimWorld modding.

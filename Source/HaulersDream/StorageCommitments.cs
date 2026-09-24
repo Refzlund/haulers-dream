@@ -48,7 +48,7 @@ namespace HaulersDream
     /// <summary>
     /// The storage commitment seam: what may be committed, and the recording of what was.
     /// </summary>
-    internal static class StorageCommitments
+    internal static partial class StorageCommitments
     {
         /*
             ──────────────────────────────────────────────
@@ -96,6 +96,11 @@ namespace HaulersDream
         /// <summary>True while a group is being measured — the gate MUST stand down, or measuring it would
         /// require measuring it.</summary>
         internal static bool InsideSpaceScan => insideSpaceScan;
+
+        // Narrow observation seam only. It does not grant forced-order authority
+        // or suppress StorageBuildingFilter. The projector owns reentry/lifecycle.
+        internal static IDisposable SuppressOwnGateForProjection() =>
+            new ProjectionFlagScope(() => insideSpaceScan, value => insideSpaceScan = value);
 
         /// <summary>True while an explicitly player-ordered haul is being built. Both adapters stand down:
         /// a click is the player overriding the standing arbitration, matching HD's existing "forced
@@ -670,6 +675,7 @@ namespace HaulersDream
         // PAWN because it answers per carrier (allowed area, reachability, that pawn's own reservations).
         // [ThreadStatic] per this assembly's convention for hook-reachable scratch (see BulkHaul.planCache).
         [ThreadStatic] private static int spaceMemoTick;
+        [ThreadStatic] private static int spaceMemoGeneration;
         [ThreadStatic] private static Dictionary<(object group, Thing thing, Pawn pawn, bool filtered), GroupSpace> spaceMemo;
 
         // Reused budget for the cross-def arithmetic below — one instance per thread instead of an
@@ -803,10 +809,11 @@ namespace HaulersDream
             var key = ((object)group, thing, pawn, filter != null);
             if (tick != -1)
             {
-                if (tick != spaceMemoTick)
+                if (tick != spaceMemoTick || spaceMemoGeneration != HaulersDreamGameComponent.storageClaimGeneration)
                 {
                     memo.Clear();
                     spaceMemoTick = tick;
+                    spaceMemoGeneration = HaulersDreamGameComponent.storageClaimGeneration;
                 }
                 else if (memo.TryGetValue(key, out var cached))
                 {

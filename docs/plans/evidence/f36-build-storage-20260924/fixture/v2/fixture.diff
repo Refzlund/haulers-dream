@@ -1,0 +1,59 @@
+--- BuildStorage.v1.cs
++++ BuildStorage.v2.cs
+@@ -22,7 +22,6 @@
+         private readonly List<Tuple<Pawn, IntVec3, Rot4>> parked = new List<Tuple<Pawn, IntVec3, Rot4>>();
+         private readonly Dictionary<string, bool> oldSettings = new Dictionary<string, bool>();
+         private readonly HashSet<Thing> originalWood = new HashSet<Thing>();
+-        private readonly HashSet<int> succeeded = new HashSet<int>();
+         private HaulersDreamSettings settings;
+         private Harmony observers;
+         private TickManager ticks;
+@@ -36,7 +35,9 @@
+         private Zone_Stockpile stockpile;
+         private IntVec3 installCell, buildCell, stockCell, blockedCell;
+         private int startTick, required, initialWood, addedWood, materialQueries, routeQueries, installJobId, finishedTick = -1;
+-        private int installStarts, finishStarts, completedFrames;
++        private int installStarts, installEnds, finishStarts, completedFrames;
++        private JobCondition installEndCondition = JobCondition.Ongoing;
++        private bool installEndedAfterPlacement;
+         private float startWall;
+         private bool failed, cleaned, speedCaptured, sceneActive, guiPending, routeIssued;
+         private string status = "running", stage = "setup", observerError, lastMaterial, lastQueue;
+@@ -167,7 +168,15 @@
+                 if (finishedTick < 0) finishedTick = ticks.TicksGame;
+                 if (ticks.TicksGame - finishedTick < 60) return;
+                 ticks.CurTimeSpeed = TimeSpeed.Paused;
+-                Record("same-packed-building-installed", originalBuilding.Spawned && originalBuilding.Position == installCell && packed.Destroyed && install.Destroyed && installStarts == 1 && succeeded.Contains(installJobId), "inner=" + originalBuilding.ThingID + "; packedDestroyed=" + packed.Destroyed + "; install job=" + installJobId + "; starts=" + installStarts);
++                // Native installation consumes targetA's wrapper while spawning its exact inner.
++                // HaulToContainer then hits FailOnDestroyedOrNull(A) before its deposit toil.
++                Record("same-packed-building-installed", originalBuilding.Spawned && originalBuilding.Map == map
++                    && originalBuilding.Position == installCell && packed.Destroyed && install.Destroyed
++                    && installStarts == 1 && installEnds == 1 && installEndCondition == JobCondition.Incompletable
++                    && installEndedAfterPlacement && !Jobs().Any(j => j.loadID == installJobId),
++                    "inner=" + originalBuilding.ThingID + "; packedDestroyed=" + packed.Destroyed + "; install job=" + installJobId
++                    + "; starts=" + installStarts + "; ends=" + installEnds + "; condition=" + installEndCondition
++                    + "; native replacement witnessed at end=" + installEndedAfterPlacement + "; stable ticks=" + (ticks.TicksGame - finishedTick));
+                 Record("new-building-constructed", newBuilding != originalBuilding && newBuilding.def == stoolDef && newBuilding.Stuff == woodDef && completedFrames == 1 && finishStarts > 0, "new=" + newBuilding.ThingID + "; actual frame completions=" + completedFrames + "; FinishFrame starts=" + finishStarts);
+                 Record("one-build-material-cost", WoodCount() == initialWood + addedWood - required, "wood=" + WoodCount() + "; initial=" + initialWood + "; added=" + addedWood + "; required=" + required);
+                 Record("no-extra-building", new[] { installCell, buildCell }.SelectMany(c => c.GetThingList(map)).Count(t => t.def == stoolDef) == 2, "exact two owned target buildings; same reused inner plus one new.");
+@@ -201,7 +210,19 @@
+             if (newJob.def == JobDefOf.FinishFrame && newJob.targetA.Thing?.Position == c.buildCell) c.finishStarts++;
+             c.emit("f36-job-started", "tick=" + c.ticks.TicksGame + "; " + JobText(newJob) + "; source=" + jobGiver?.GetType().FullName + "; fromQueue=" + fromQueue); }); }
+         private static void Ending(Pawn_JobTracker __instance, JobCondition condition)
+-        { Observe(c => { if (__instance != c.actor?.jobs || __instance.curJob == null) return; if (condition == JobCondition.Succeeded) c.succeeded.Add(__instance.curJob.loadID); c.emit("f36-job-ended", "tick=" + c.ticks.TicksGame + "; " + JobText(__instance.curJob) + "; condition=" + condition + "; driver=" + __instance.curDriver?.GetType().FullName); }); }
++        { Observe(c => { if (__instance != c.actor?.jobs || __instance.curJob == null) return;
++            if (__instance.curJob.loadID == c.installJobId) {
++                c.installEnds++; c.installEndCondition = condition;
++                c.installEndedAfterPlacement = __instance.curDriver is JobDriver_HaulToContainer
++                    && __instance.curJob.targetA.Thing == c.packed && __instance.curJob.targetB.Thing == c.originalBuilding
++                    && c.packed.Destroyed && c.install.Destroyed && c.originalBuilding.Spawned
++                    && c.originalBuilding.Map == c.map && c.originalBuilding.Position == c.installCell;
++                c.emit("f36-native-install-replacement", "tick=" + c.ticks.TicksGame + "; job=" + c.installJobId
++                    + "; exact inner=" + c.originalBuilding.ThingID + "; position=" + c.originalBuilding.Position
++                    + "; wrapper consumed=" + c.packed.Destroyed + "; blueprint consumed=" + c.install.Destroyed
++                    + "; verified=" + c.installEndedAfterPlacement + "; condition=" + condition);
++            }
++            c.emit("f36-job-ended", "tick=" + c.ticks.TicksGame + "; " + JobText(__instance.curJob) + "; condition=" + condition + "; driver=" + __instance.curDriver?.GetType().FullName); }); }
+         private static void Completing(Frame __instance, Pawn worker, out IntVec3 __state)
+         { __state = __instance.Position; Observe(c => { if (worker != c.actor || __instance.Position != c.buildCell) return; Guard(__instance.resourceContainer.TotalStackCountOfDef(c.woodDef) == c.required && c.finishStarts > 0 && __instance.workDone >= __instance.WorkToBuild, "Actual native construction work/materials missing."); c.emit("f36-frame-completing", "frame=" + __instance.ThingID + "; resources=" + c.required + "; work=" + __instance.workDone + "/" + __instance.WorkToBuild); }); }
+         private static void Completed(Frame __instance, Pawn worker, IntVec3 __state)
