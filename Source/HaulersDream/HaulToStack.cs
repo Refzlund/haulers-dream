@@ -21,14 +21,14 @@ namespace HaulersDream
     /// outdoors), the search scopes to a radius around the chosen cell instead, so haulers consolidate
     /// across nearby outdoor stockpiles without wandering the map.
     ///
-    /// STORAGE-MOD COMPATIBILITY BY CONSTRUCTION (no references, no reflection): candidates are validated
-    /// exclusively through vanilla's own APIs — <c>IsGoodStoreCell</c> (which runs NoStorageBlockersIn,
+    /// Storage candidates use vanilla's own APIs — <c>IsGoodStoreCell</c> (which runs NoStorageBlockersIn,
     /// reachability, fire, forbiddance) and <c>CanStackWith</c>. Adaptive Storage Framework (and mods built
     /// on it, like Neat Storage) patch exactly those APIs (NoStorageBlockersIn transpiler,
     /// GetMaxItemsAllowedInCell, a worker prefix — source-verified in the ASF clone), so their per-building
     /// capacity and acceptance rules apply inside our calls automatically. Container-based storage
     /// (graves, modded ThingOwner units) goes through the untouched non-slot-group path, where stacking is
-    /// inherent.
+    /// inherent. Providers that gate the higher-level group search need an explicit compatibility check:
+    /// Storage Refill Hysteresis controls whether a new refill may start, and RimIOT owns its consolidation.
     ///
     /// NO-RESERVE: vanilla's <c>JobDriver_HaulToCell</c> reserves the destination cell, which makes
     /// <c>IsGoodStoreCell</c> (via CanReserveNew) hide that cell from every other hauler — the classic
@@ -129,7 +129,8 @@ namespace HaulersDream
         // Per-tick memo: the work scan probes HasJobOnThing (= JobOnThing != null) per candidate, and each
         // probe runs the full vanilla storage search INCLUDING this refinement — same lesson as the
         // bulk-haul planner. Key = (thing, CARRIER, vanilla's chosen cell); null/Invalid results cached
-        // too. The carrier is part of the key because IsGoodStoreCell validates per CARRIER (allowed
+        // too, except while SRH is present because its refill toggle can change within one tick.
+        // The carrier is part of the key because IsGoodStoreCell validates per CARRIER (allowed
         // area, its own reservations, reachability) — serving one pawn's cell to another hands out a job
         // that fails synchronously and re-scans the same tick ("started 10 jobs in one tick").
         // [ThreadStatic] to match the sibling BulkHaul.planCache: FindStackCell runs on the per-candidate
@@ -187,7 +188,11 @@ namespace HaulersDream
             {
                 // Belt and braces: even a same-carrier hit can go stale within the tick (an earlier job
                 // this tick reserved the thing or filled the cell) — re-validate before serving it.
-                if (!cached.IsValid || StoreUtility.IsGoodStoreCell(cached, map, t, carrier, faction))
+                // SRH can toggle within this tick. Recheck a cached destination, and don't
+                // retain a negative search across a toggle that could reopen a partial stack.
+                if (!cached.IsValid ? !StorageRefillHysteresisCompat.IsPresent
+                    : StorageRefillHysteresisCompat.AllowsRefill(cached.GetSlotGroup(map))
+                        && StoreUtility.IsGoodStoreCell(cached, map, t, carrier, faction))
                     return cached;
             }
             var result = FindStackCellUncached(t, carrier, map, faction, vanillaCell);
@@ -237,6 +242,7 @@ namespace HaulersDream
                 if (RimIOTCompat.IsActive && RimIOTCompat.IsNetworkManagedGroup(map, group))
                     return true;
                 var cells = group.CellsList;
+                bool refillChecked = false;
                 for (int i = 0; i < cells.Count; i++)
                 {
                     var cell = cells[i];
@@ -258,6 +264,14 @@ namespace HaulersDream
                         continue;
                     if (!CellHasPartialStackOf(cell, map, t))
                         continue;
+                    // SRH gates vanilla's group worker, not IsGoodStoreCell. Ask once for a
+                    // relevant partial; out-of-scope groups never trigger its usage measurement.
+                    if (!refillChecked)
+                    {
+                        if (!StorageRefillHysteresisCompat.AllowsRefill(group))
+                            return true;
+                        refillChecked = true;
+                    }
                     // Vanilla's own full gate: storage blockers (incl. modded per-building capacity rules),
                     // forbiddance, reachability for this carrier, fire, reservations.
                     if (!StoreUtility.IsGoodStoreCell(cell, map, t, carrier, faction))

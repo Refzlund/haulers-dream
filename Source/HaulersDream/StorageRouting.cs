@@ -277,7 +277,7 @@ namespace HaulersDream
                     if (buildingStorage != null && filter != null && !filter.IsGroupAllowed(slotGroup))
                         continue; // G7: building denied for before-carry
 
-                    if (!slotGroup.parent.Accepts(thing))
+                    if (!slotGroup.parent.Accepts(thing) || !StorageRefillHysteresisCompat.AllowsRefill(slotGroup))
                         continue; // WYU StoreUtility.cs:244
 
                     var cells = slotGroup.CellsList;

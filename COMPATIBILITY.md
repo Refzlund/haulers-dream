@@ -147,6 +147,14 @@ This support covers the current ordinary H&H unload path. **H&H's separate Comba
 unload path is not covered by this keep protection.** If a future H&H version changes that
 unload implementation, HD logs a compatibility warning and leaves its original behavior intact.
 
+### Storage Refill Hysteresis
+
+HD's partial-stack refinement and opportunistic storage searches respect the storage group's
+refill setting. Paused storage is skipped for new destinations and becomes eligible again when
+Storage Refill Hysteresis permits refilling. Linked storage keeps the provider's shared-group
+calculation. Deliveries already underway still finish, so stock can exceed the upper threshold;
+that threshold is not a hard limit on incoming items.
+
 ### Can interrupt HD jobs (self-recovering)
 - **Automatic Stump Chopping** (`arylice.rimworld.automaticstumpchopping`) — prepends a
   `CutPlant(stump)` job per felled tree; a big forest harvest can briefly front-load a cutter's queue,
