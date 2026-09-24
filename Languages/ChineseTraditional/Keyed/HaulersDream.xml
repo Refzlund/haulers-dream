@@ -172,10 +172,10 @@
   <HaulersDream.Setting.TaintedForbid>丟棄並禁止互動</HaulersDream.Setting.TaintedForbid>
   <HaulersDream.Setting.TaintedDestroy>當場銷毀（任務物品與聖物會被拿取，絕不銷毀）</HaulersDream.Setting.TaintedDestroy>
 
-  <HaulersDream.Setting.HaulTamedSlaughter>將宰殺的家畜屍體搬往儲存區</HaulersDream.Setting.HaulTamedSlaughter>
-  <HaulersDream.Setting.HaulTamedSlaughterDesc>當殖民者完成宰殺家畜時，新鮮的屍體會直接被搬往儲存區（冷凍庫或屍體儲存區），避免腐敗於倒下之處 — 僅在有可抵達且接受該屍體的儲存點時觸發，否則保持原版狀態。（原版絕不會自動運送宰殺的動物；此功能填補了該空白。）</HaulersDream.Setting.HaulTamedSlaughterDesc>
-  <HaulersDream.Setting.HaulWildKills>將獵捕的野生動物屍體搬往儲存區</HaulersDream.Setting.HaulWildKills>
-  <HaulersDream.Setting.HaulWildKillsDesc>當狩獵在擊殺後立即中斷時（例如獵人因需求、徵召、精神崩潰或狩獵超時而中斷），獵人會在離開途中迅速將新鮮屍體搬往儲存區，而不是留給反應較慢的普通運送佇列。在順利的狩獵中，獵人本就會將獵物帶回家（原版機制），因此此設定不會造成干擾或重複運送。僅在有可抵達且接受該屍體的儲存點時觸發，否則屍體保持原版狀態（絕不會被禁止互動，因此一旦有接受該屍體的冷凍庫或屍體儲存區，普通屍體運送仍會將其收集）。</HaulersDream.Setting.HaulWildKillsDesc>
+  <HaulersDream.Setting.HaulTamedSlaughter>將殖民地動物屍體搬往儲存區</HaulersDream.Setting.HaulTamedSlaughter>
+  <HaulersDream.Setting.HaulTamedSlaughterDesc>宰殺殖民地動物，或使用 Allow Tool（僅限該工具允許的目標） 對其補刀後，符合搬運條件的角色會在現有工作佇列末尾加入屍體搬運工作。屍體必須允許互動，且有可抵達並接受它的儲存位置。不會解除屍體的禁止互動狀態，也不會取代已排入佇列的工作。</HaulersDream.Setting.HaulTamedSlaughterDesc>
+  <HaulersDream.Setting.HaulWildKills>將野生動物屍體搬往儲存區</HaulersDream.Setting.HaulWildKills>
+  <HaulersDream.Setting.HaulWildKillsDesc>狩獵在獵物被殺死後中斷，或使用 Allow Tool、Keyz' Allow Utilities 對無派系的野生動物補刀後，符合搬運條件的角色會在現有工作佇列末尾加入屍體搬運工作。屍體必須允許互動，且有可抵達並接受它的儲存位置；絕不會解除屍體的禁止互動狀態。正常完成的原版狩獵保留自身的搬運流程，不會額外加入搬運工作。</HaulersDream.Setting.HaulWildKillsDesc>
 
   <HaulersDream.Setting.ButcherSpoilingFirst>優先屠宰最快腐敗的屍體</HaulersDream.Setting.ButcherSpoilingFirst>
   <HaulersDream.Setting.ButcherSpoilingFirstDesc>當殖民者為屠宰清單選擇屍體時，他們會選擇最接近腐敗的屍體（在清單已允許且於原料搜尋半徑內的屍體中），而不僅是選擇距離最近的 — 從而在肉類腐敗前將其回收。此選項僅會重新排序使用哪具已符合條件的屍體；絕不會改變配方、搜尋半徑或清單接受的屍體種類。冰凍的屍體會留到最後（因為不會腐敗）。同時適用於普通屠宰清單與 Hauler's Dream 批量清單。預設為開啟。</HaulersDream.Setting.ButcherSpoilingFirstDesc>

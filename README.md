@@ -54,7 +54,8 @@ integration layer. Soft dependencies are reflection-only and **inert when the ot
 - **Common Sense** — when Common Sense owns the crafting-ingredient hauling or advanced-cleaning
   flow, Hauler's Dream steps aside so the two never fight or loop.
 - **Allow Tool** / **Keyz' Allow Utilities** — "Haul Urgently" runs Hauler's Dream's bulk sweep
-  instead of one-stack-at-a-time vanilla hauling.
+  instead of one-stack-at-a-time vanilla hauling. Supported animal finish-off orders can queue
+  corpse hauling; see [finish-off conditions](COMPATIBILITY.md#finish-off-orders--allow-tool-and-keyz-allow-utilities).
 - **Simple Sidearms**, **Smart Medicine**, hygiene mods — items those mods keep in a pawn's
   inventory are auto-detected and never auto-unloaded as "surplus".
 - **Perfect Pathfinding** — the grab-it-on-the-way detour check uses its pathing accuracy when set
@@ -112,11 +113,15 @@ work of many.
    corpse first) and Cook (meals, pemmican and kibble use the most-perishable food first) toggles.
    Recipe satisfaction, the search radius, multi-slot meals and non-perishable crafts (steel, cloth,
    chemfuel, leather) are unaffected; frozen food is left for last.
-9. **Haul after slaughter** — a fresh carcass is hauled straight to a freezer or corpse stockpile so
-   it doesn't rot where it fell. Two toggles: slaughtered (tamed) carcasses, which vanilla never
-   hauls itself, and hunted (wild) carcasses, where the hunter grabs its kill if a hunt was
-   interrupted right after the killing blow (a clean hunt already self-hauls, so this never
-   double-hauls). Only when a reachable store accepts the body; otherwise left exactly as vanilla.
+9. **Haul after slaughter or finishing off** — queues a carcass haul after the killer's existing
+   orders when the pawn is eligible, the carcass is allowed, and reachable storage accepts it.
+   Separate settings cover colony animals and wild animals: normal slaughter uses the colony
+   setting; an interrupted hunt that killed its prey uses the wild setting. Allow Tool finish-off
+   orders use the setting for the animal's ownership, when Allow Tool permits that target.
+   Keyz' Allow Utilities supports wild targets, including its strip-and-finish order.
+   A completed vanilla hunt keeps its own hauling without an extra
+   haul. Forbidden carcasses stay forbidden, and existing queued work is preserved. See the
+   [finish-off conditions](COMPATIBILITY.md#finish-off-orders--allow-tool-and-keyz-allow-utilities).
 
 ### Smarter hauling
 

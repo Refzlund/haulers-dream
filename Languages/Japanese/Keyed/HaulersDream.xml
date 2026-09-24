@@ -147,10 +147,10 @@
 <HaulersDream.Setting.TaintedLeave>死体に残す。どのはぎ取りでも脱がされず、手動で出したはぎ取り命令でも同じ（火葬は死体ごと焼き、解体はバニラ同様に作業台に落とす）</HaulersDream.Setting.TaintedLeave>
 <HaulersDream.Setting.TaintedForbid>落として禁止する</HaulersDream.Setting.TaintedForbid>
 <HaulersDream.Setting.TaintedDestroy>その場で破壊する（クエストアイテムと聖遺物は代わりに持ち帰られ、決して破壊されません）</HaulersDream.Setting.TaintedDestroy>
-<HaulersDream.Setting.HaulTamedSlaughter>と畜した死骸を保管庫へ運搬する</HaulersDream.Setting.HaulTamedSlaughter>
-<HaulersDream.Setting.HaulTamedSlaughterDesc>入植者が入植地の動物のと畜を終えると、新鮮な死骸はその場で腐らないよう、すぐ保管庫（冷凍庫や死体の備蓄ゾーン）へ運搬されます。到達可能な保管場所が受け入れる場合のみで、そうでなければバニラとまったく同じく置かれたままになります。（バニラはと畜した動物を自ら運搬することは決してありません。これはそのすき間を埋めます。）</HaulersDream.Setting.HaulTamedSlaughterDesc>
-<HaulersDream.Setting.HaulWildKills>狩った死骸を保管庫へ運搬する</HaulersDream.Setting.HaulWildKills>
-<HaulersDream.Setting.HaulWildKillsDesc>仕留めた直後に狩りが中断されたとき — 狩人が欲求・徴兵・精神崩壊で引き離されたり、狩りがタイムアウトしたり — 狩人は新鮮な死骸を、遅い一般運搬待ち行列に残す代わりに、立ち去りがてら速やかに保管庫へ運搬します。きれいに狩れた場合は狩人がすでに獲物を家へ運ぶ（バニラ）ので、これは邪魔をしません — 二重運搬はありません。到達可能な保管場所が死体を受け入れる場合のみ運搬し、そうでなければバニラとまったく同じく死骸は置かれたままです（決して禁止されないので、受け入れる冷凍庫や死体の備蓄ゾーンができれば通常の死体運搬が回収します）。</HaulersDream.Setting.HaulWildKillsDesc>
+<HaulersDream.Setting.HaulTamedSlaughter>入植地の動物の死骸を保管庫へ運搬する</HaulersDream.Setting.HaulTamedSlaughter>
+<HaulersDream.Setting.HaulTamedSlaughterDesc>入植地の動物をと畜するか、Allow Tool（そのツールで対象に指定できる場合） でとどめを刺すと、運搬条件を満たすポーンが自分の既存の指示の末尾に死骸の運搬を追加します。死骸が禁止されておらず、それを受け入れる到達可能な保管場所が必要です。死骸の禁止を解除したり、待機中の作業を置き換えたりはしません。</HaulersDream.Setting.HaulTamedSlaughterDesc>
+<HaulersDream.Setting.HaulWildKills>野生動物の死骸を保管庫へ運搬する</HaulersDream.Setting.HaulWildKills>
+<HaulersDream.Setting.HaulWildKillsDesc>獲物を倒した後に狩りが中断された場合や、Allow Tool または Keyz' Allow Utilities で派閥に属さない野生動物にとどめを刺した場合、運搬条件を満たすポーンが自分の既存の指示の末尾に死骸の運搬を追加します。死骸が禁止されておらず、それを受け入れる到達可能な保管場所が必要です。死骸の禁止は解除しません。通常どおり完了したバニラの狩りは本来の運搬を続け、運搬指示を追加しません。</HaulersDream.Setting.HaulWildKillsDesc>
 <HaulersDream.Setting.ButcherSpoilingFirst>最も傷んだ死体から先に解体する</HaulersDream.Setting.ButcherSpoilingFirst>
 <HaulersDream.Setting.ButcherSpoilingFirstDesc>入植者が解体の作業指示用に死体を選ぶとき、単に最も近いものではなく、最も腐りかけのもの（作業指示がすでに許可した死体の中で、その材料探索半径内）を選びます。そのため肉が傷む前に回収されます。すでに有効な死体のうちどれを使うかの順序を変えるだけで、レシピ・探索半径・作業指示が受け入れる死体を変えることは決してありません。凍った死体は最後に回されます（傷んでいないため）。通常の解体の作業指示とHauler's Dreamのバッチの両方に適用されます。デフォルトはオンです。</HaulersDream.Setting.ButcherSpoilingFirstDesc>
 <HaulersDream.Setting.CookSpoilingFirst>最も傷んだ食料から先に調理する</HaulersDream.Setting.CookSpoilingFirst>

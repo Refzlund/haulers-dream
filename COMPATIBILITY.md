@@ -112,6 +112,29 @@ put away (see the in-game "Cannot unload inventory" alert).
     `Toils_Haul…b__0`, not below it. (HD's own exception breadcrumb says the same thing in words: being on
     the call stack is not blame.)
 
+### Finish-off orders — Allow Tool and Keyz' Allow Utilities
+
+Animal finish-off orders from **Allow Tool** and **Keyz' Allow Utilities** can add a corpse haul
+to the same pawn's queue, including Keyz's strip-and-finish order. In HD's settings, enable
+**Haul wild-animal carcasses to storage** for factionless wildlife, or
+**Haul colony-animal carcasses to storage** for animals belonging to your colony. These toggles
+are independent. Colony-animal finish-off support uses Allow Tool only when its native target
+permission permits the order; Keyz rejects colony targets. HD does not make a provider offer
+orders it normally disallows. This integration excludes other factions' animals and non-animals.
+Other finish-off providers are not covered by these hooks.
+
+The killer must be eligible to haul, the carcass must be allowed, and reachable storage must
+accept it. The haul goes **after existing queued orders**, without replacing them. HD does not
+un-forbid a carcass: Allow Tool's own un-forbid setting can affect the result; Keyz can leave a
+finish-off kill outside the Home area forbidden. If the carcass remains forbidden, allow it and
+use a normal haul order. A missing or inaccessible corpse stockpile/freezer also prevents the
+follow-up; changing storage later does not replay the finish-off event. The queued job can still
+fail if its destination or reservations change before it starts.
+
+Normal slaughter and interrupted-hunt handling continue to use their existing paths. A completed
+vanilla hunt already hauls its kill and receives no extra haul from this feature. An existing haul
+for the same carcass also prevents a duplicate follow-up.
+
 ### Can interrupt HD jobs (self-recovering)
 - **Automatic Stump Chopping** (`arylice.rimworld.automaticstumpchopping`) — prepends a
   `CutPlant(stump)` job per felled tree; a big forest harvest can briefly front-load a cutter's queue,

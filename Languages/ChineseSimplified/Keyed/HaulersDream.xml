@@ -147,10 +147,10 @@
 <HaulersDream.Setting.TaintedLeave>留在尸体上，任何剥取都不会把它脱下，手动下达的剥取命令也一样（火化会随尸体一同烧掉；屠宰则像原版那样把它丢在工作台旁）</HaulersDream.Setting.TaintedLeave>
 <HaulersDream.Setting.TaintedForbid>丢下并禁用它</HaulersDream.Setting.TaintedForbid>
 <HaulersDream.Setting.TaintedDestroy>当场销毁它（任务物品和圣物会被取走，绝不销毁）</HaulersDream.Setting.TaintedDestroy>
-<HaulersDream.Setting.HaulTamedSlaughter>把屠宰的尸体搬到储存区</HaulersDream.Setting.HaulTamedSlaughter>
-<HaulersDream.Setting.HaulTamedSlaughterDesc>当殖民者屠宰完一只殖民地动物后，新鲜的尸体会被直接搬到储存区（冷库或尸体储存区），免得它倒在原地腐烂——前提是有可到达的储存点能接收它，否则就完全保持原版状态。（原版从不自己搬运被屠宰的动物；这弥补了那个缺口。）</HaulersDream.Setting.HaulTamedSlaughterDesc>
-<HaulersDream.Setting.HaulWildKills>把猎杀的尸体搬到储存区</HaulersDream.Setting.HaulWildKills>
-<HaulersDream.Setting.HaulWildKillsDesc>当一次狩猎在击杀后随即被打断——猎人因某项需求、征召、精神崩溃被拉走，或狩猎超时——猎人会在离开途中迅速把新鲜的尸体搬到储存区，而不是把它留给缓慢的通用搬运队列。在一次干净利落的狩猎中，猎人本就会把猎物带回家（原版），因此这不会碍事——不会重复搬运。仅在有可到达的储存点能接收尸体时才搬运；否则尸体就完全保持原版状态（绝不会被禁用，因此一旦出现能接收它的冷库或尸体储存区，正常的尸体搬运仍会去收）。</HaulersDream.Setting.HaulWildKillsDesc>
+<HaulersDream.Setting.HaulTamedSlaughter>将殖民地动物尸体搬到储存区</HaulersDream.Setting.HaulTamedSlaughter>
+<HaulersDream.Setting.HaulTamedSlaughterDesc>屠宰殖民地动物，或使用 Allow Tool（仅限该工具允许的目标） 对其补刀后，符合搬运条件的角色会在已有任务队列末尾添加尸体搬运任务。尸体必须允许互动，且有可到达并接收它的储存位置。不会解除尸体的禁用状态，也不会替换已排队的任务。</HaulersDream.Setting.HaulTamedSlaughterDesc>
+<HaulersDream.Setting.HaulWildKills>将野生动物尸体搬到储存区</HaulersDream.Setting.HaulWildKills>
+<HaulersDream.Setting.HaulWildKillsDesc>狩猎在猎物被杀死后中断，或使用 Allow Tool、Keyz' Allow Utilities 对无派系的野生动物补刀后，符合搬运条件的角色会在已有任务队列末尾添加尸体搬运任务。尸体必须允许互动，且有可到达并接收它的储存位置；绝不会解除尸体的禁用状态。正常完成的原版狩猎保留自身的搬运流程，不会额外添加搬运任务。</HaulersDream.Setting.HaulWildKillsDesc>
 <HaulersDream.Setting.ButcherSpoilingFirst>优先屠宰最临近腐烂的尸体</HaulersDream.Setting.ButcherSpoilingFirst>
 <HaulersDream.Setting.ButcherSpoilingFirstDesc>当殖民者为一项屠宰工单挑选尸体时，会从工单本就允许的尸体中（在其原料搜索范围内）选择最临近腐烂的那具，而不只是最近的那具——这样肉就能在腐烂前回收。只重新排序使用哪具本就合格的尸体；绝不改变配方、搜索范围或工单接受哪些尸体。冷冻的尸体留到最后（它们不会腐烂）。对普通屠宰工单和 Hauler's Dream 批量均适用。默认开启。</HaulersDream.Setting.ButcherSpoilingFirstDesc>
 <HaulersDream.Setting.CookSpoilingFirst>优先用最临近腐烂的食物烹饪</HaulersDream.Setting.CookSpoilingFirst>

@@ -147,10 +147,10 @@
 <HaulersDream.Setting.TaintedLeave>시체에 그대로 두기. 어떤 벗기기로도 벗겨지지 않으며, 직접 내린 벗기기 명령도 마찬가지 (화장은 시체와 함께 태우고, 도축은 바닐라처럼 작업대에 떨어뜨림)</HaulersDream.Setting.TaintedLeave>
 <HaulersDream.Setting.TaintedForbid>떨어뜨리고 금지하기</HaulersDream.Setting.TaintedForbid>
 <HaulersDream.Setting.TaintedDestroy>그 자리에서 파괴하기 (퀘스트 물품과 유물은 대신 가져가며, 절대 파괴하지 않음)</HaulersDream.Setting.TaintedDestroy>
-<HaulersDream.Setting.HaulTamedSlaughter>도살된 사체를 저장고로 운반</HaulersDream.Setting.HaulTamedSlaughter>
-<HaulersDream.Setting.HaulTamedSlaughterDesc>정착민이 정착지 동물 도살을 마치면, 신선한 사체가 곧장 저장고(냉동고나 시체 저장 구역)로 운반되어 떨어진 자리에서 썩지 않습니다 — 도달 가능한 저장 공간이 그것을 받을 때만이며, 아니면 바닐라와 똑같이 그대로 남습니다. (바닐라는 도살된 동물을 직접 운반하지 않으며, 이것이 그 빈틈을 메웁니다.)</HaulersDream.Setting.HaulTamedSlaughterDesc>
-<HaulersDream.Setting.HaulWildKills>사냥한 사체를 저장고로 운반</HaulersDream.Setting.HaulWildKills>
-<HaulersDream.Setting.HaulWildKillsDesc>사냥이 사살 직후 중단될 때 — 사냥꾼이 필요·징집·정신 붕괴로 끌려가거나 사냥이 시간 초과될 때 — 사냥꾼이 나가는 길에 신선한 사체를 곧바로 저장고로 운반합니다. 느린 일반 운반 대기열에 남기는 대신. 깔끔한 사냥에서는 사냥꾼이 이미 사냥감을 집으로 운반하므로(바닐라), 이것은 끼어들지 않습니다 — 이중 운반 없음. 도달 가능한 저장 공간이 시체를 받을 때만 운반하며, 아니면 사체는 바닐라와 똑같이 그대로 남습니다(절대 금지되지 않으므로, 그것을 받는 냉동고나 시체 저장 구역이 생기면 평소 시체 운반이 다시 수거합니다).</HaulersDream.Setting.HaulWildKillsDesc>
+<HaulersDream.Setting.HaulTamedSlaughter>정착지 동물의 사체를 저장고로 운반</HaulersDream.Setting.HaulTamedSlaughter>
+<HaulersDream.Setting.HaulTamedSlaughterDesc>정착지 동물을 도살하거나 Allow Tool(해당 도구에서 허용하는 대상인 경우)로 마무리하면, 운반 조건을 충족하는 폰이 기존 명령 대기열 끝에 사체 운반을 추가합니다. 사체가 금지되지 않았고, 해당 사체를 받는 저장 공간에 도달할 수 있어야 합니다. 사체의 금지를 해제하거나 대기 중인 작업을 대체하지 않습니다.</HaulersDream.Setting.HaulTamedSlaughterDesc>
+<HaulersDream.Setting.HaulWildKills>야생 동물의 사체를 저장고로 운반</HaulersDream.Setting.HaulWildKills>
+<HaulersDream.Setting.HaulWildKillsDesc>사냥감을 죽인 뒤 사냥이 중단되거나 Allow Tool 또는 Keyz' Allow Utilities로 세력이 없는 야생 동물을 마무리하면, 운반 조건을 충족하는 폰이 기존 명령 대기열 끝에 사체 운반을 추가합니다. 사체가 금지되지 않았고, 해당 사체를 받는 저장 공간에 도달할 수 있어야 합니다. 사체의 금지는 해제하지 않습니다. 정상 완료된 바닐라 사냥은 원래 운반을 유지하며 추가 운반 명령을 만들지 않습니다.</HaulersDream.Setting.HaulWildKillsDesc>
 <HaulersDream.Setting.ButcherSpoilingFirst>가장 많이 상한 시체부터 도축</HaulersDream.Setting.ButcherSpoilingFirst>
 <HaulersDream.Setting.ButcherSpoilingFirstDesc>정착민이 도축 작업 지시에 쓸 시체를 고를 때, 단순히 가장 가까운 것이 아니라(작업 지시가 이미 허용하는 시체 중에서, 그 재료 탐색 반경 내에서) 가장 썩기 직전인 시체를 고릅니다 — 그래서 고기가 상하기 전에 회수됩니다. 이미 유효한 시체 중 어느 것을 쓸지 순서만 바꾸며, 제작법·탐색 반경·작업 지시가 받는 시체는 절대 바꾸지 않습니다. 얼어붙은 시체는 마지막으로 남깁니다(상하지 않으므로). 일반 도축 작업 지시와 Hauler's Dream 일괄 처리 모두에 적용됩니다. 기본 켜짐.</HaulersDream.Setting.ButcherSpoilingFirstDesc>
 <HaulersDream.Setting.CookSpoilingFirst>가장 많이 상한 식량부터 요리</HaulersDream.Setting.CookSpoilingFirst>
