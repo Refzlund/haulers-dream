@@ -63,7 +63,7 @@
   <HaulersDream.Setting.BuildFromInventoryPartial>允許使用背包物料進行部分建造</HaulersDream.Setting.BuildFromInventoryPartial>
   <HaulersDream.Setting.BuildFromInventoryPartialDesc>正常情況下，除非有足夠建造整座建築的物料，否則不會開始建造。開啟此項後，即使現有背包物料少於所需總量，也會先建立藍圖框架並進行建造 — 剩餘物料會在取得後補上。此設定改變了原版「非全即無」的規則，因此預設為關閉。需要啟用「直接使用背包中的物料進行建築」。</HaulersDream.Setting.BuildFromInventoryPartialDesc>
   <HaulersDream.Setting.ShareForCrafting>將攜帶的物料用於製作清單</HaulersDream.Setting.ShareForCrafting>
-  <HaulersDream.Setting.ShareForCraftingDesc>手工藝人可以直接取用角色背包中的製作原料，而不僅限於地面的散落堆疊。若有其他模組正在管理製作原料的運送，Hauler's Dream 會自動讓位並由其處理 — 因此任何製作迴圈均可自行化解，無需您手動干預。</HaulersDream.Setting.ShareForCraftingDesc>
+  <HaulersDream.Setting.ShareForCraftingDesc>啟用後，製作工單可使用由 Hauler's Dream 追蹤的隨身物資，包括製作者自己的物資。此選項不會讓工單使用未被追蹤的個人物品。當 Common Sense 收集原料時，HD 不會將隨身物資加入一般工單的原料搜尋，並將原料收集交由 Common Sense 處理。</HaulersDream.Setting.ShareForCraftingDesc>
   <HaulersDream.Setting.ShareMeetInMiddle>閒置的攜帶者會主動走向工人遞送物料</HaulersDream.Setting.ShareMeetInMiddle>
   <HaulersDream.Setting.BatchWorkDeliveries>單次行程攜帶多個佇列建築所需的物料</HaulersDream.Setting.BatchWorkDeliveries>
   <HaulersDream.Setting.BatchWorkDeliveriesDesc>當建造大量低成本建築（例如長柵欄）時，角色會雙手搬運足夠供應多個預定建築的物料，並在一次行程中依序遞送，而不是每次僅搬運少量物料來回接駁。物料由雙手拿取，因此不會降低移動速度。</HaulersDream.Setting.BatchWorkDeliveriesDesc>

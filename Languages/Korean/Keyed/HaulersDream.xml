@@ -44,7 +44,7 @@
 <HaulersDream.Setting.BuildFromInventoryPartial>소지품으로 부분 건설 허용</HaulersDream.Setting.BuildFromInventoryPartial>
 <HaulersDream.Setting.BuildFromInventoryPartialDesc>보통은 전체에 충분한 자재가 있어야 건설이 시작됩니다. 이것을 켜면 필요한 전량에 못 미치더라도 존재하는 소지품 자재로 골조를 시작하고 진행합니다 — 나머지는 자재가 더 생기는 대로 전달됩니다. 바닐라의 전부-아니면-전무 규칙을 바꾸므로 기본 꺼짐입니다. "소지품으로 건설"이 필요합니다.</HaulersDream.Setting.BuildFromInventoryPartialDesc>
 <HaulersDream.Setting.ShareForCrafting>운반 중인 자재를 제작 작업 지시에 사용</HaulersDream.Setting.ShareForCrafting>
-<HaulersDream.Setting.ShareForCraftingDesc>제작하는 폰이 바닥의 흩어진 더미뿐 아니라, 폰이 이미 운반 중인 소지품에서 작업 지시 재료를 가져올 수 있습니다. 다른 모드가 제작 재료 운반을 관리하고 있으면 Hauler's Dream이 자동으로 물러나 그 모드가 재료를 모으게 합니다 — 그래서 어떤 제작 루프든 당신이 아무것도 하지 않아도 저절로 해결됩니다.</HaulersDream.Setting.ShareForCraftingDesc>
+<HaulersDream.Setting.ShareForCraftingDesc>이 옵션을 켜면 제작 작업 지시에서 Hauler's Dream이 추적하는 휴대 재료를 사용할 수 있습니다. 제작자 자신의 재료도 포함됩니다. HD가 추적하지 않는 개인 소지품은 이 옵션을 켜도 작업 지시의 재료로 추가되지 않습니다. Common Sense가 재료를 모으는 경우, HD는 일반 작업 지시의 재료 검색에 휴대 재료를 추가하지 않고 재료 수집을 Common Sense에 맡깁니다.</HaulersDream.Setting.ShareForCraftingDesc>
 <HaulersDream.Setting.ShareMeetInMiddle>한가한 운반체가 물건을 건네주러 작업자에게 걸어감</HaulersDream.Setting.ShareMeetInMiddle>
 <HaulersDream.Setting.BatchWorkDeliveries>한 번 이동으로 여러 대기 건설에 자재 운반</HaulersDream.Setting.BatchWorkDeliveries>
 <HaulersDream.Setting.BatchWorkDeliveriesDesc>값싼 것을 많이 지을 때(예: 긴 울타리), 폰이 여러 대기 건설에 충분한 자재를 손에 가득 채워 한 번 이동으로 각 현장에 전달합니다. 조금씩 여러 번 왕복하지 않습니다. 손에 들고 운반하므로 속도 저하가 없습니다.</HaulersDream.Setting.BatchWorkDeliveriesDesc>

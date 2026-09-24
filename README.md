@@ -51,8 +51,10 @@ integration layer. Soft dependencies are reflection-only and **inert when the ot
   vehicles included), and colonists eat from and build from a parked vehicle's cargo (feature 19).
 - **Adaptive Storage Framework** / **LWM's Deep Storage** — haul-to-stack works into modded storage
   units, and the optional storage-building filter is aware of slow/deep-storage deposit delays.
-- **Common Sense** — when Common Sense owns the crafting-ingredient hauling or advanced-cleaning
-  flow, Hauler's Dream steps aside so the two never fight or loop.
+- **Common Sense** — when Common Sense gathers crafting ingredients, HD does not add carried
+  stock to ordinary bills' ingredient searches and leaves gathering to Common Sense. Cleaning alone
+  does not disable HD gathering; see
+  [crafting with carried ingredients](COMPATIBILITY.md#crafting-with-carried-ingredients).
 - **Allow Tool** / **Keyz' Allow Utilities** — "Haul Urgently" runs Hauler's Dream's bulk sweep
   instead of one-stack-at-a-time vanilla hauling. Supported animal finish-off orders can queue
   corpse hauling; see [finish-off conditions](COMPATIBILITY.md#finish-off-orders--allow-tool-and-keyz-allow-utilities).
@@ -96,10 +98,12 @@ work of many.
 4. **Fewer round-trips** — a builder or cook gathers everything the job needs into its inventory in
    one sweep and walks to the bench or site once. A geothermal generator's 340 steel no longer takes
    five hand-carry trips.
-5. **Shared inventories** — a pawn carrying goods works like a walking stockpile: workers take what
-   they need straight from the carrier, an idle carrier even walks out to meet them halfway, and
-   everyone uses their own carried stock first (a cook can cook with the berries it just picked).
-   Optional: builders may claim materials from a hauler mid-transit.
+5. **Shared inventories** — materials tracked by Hauler's Dream act as a walking stockpile:
+   workers can draw on that hauling stock, including their own. Ordinary crafting does not
+   automatically use every personal item in a pawn's inventory. See
+   [crafting with carried ingredients](COMPATIBILITY.md#crafting-with-carried-ingredients) for
+   sharing, Keep and Common Sense settings. Optional: builders may claim materials from a hauler
+   mid-transit.
 6. **Build from inventory** — a constructing pawn sources build materials from carried stock — its
    own inventory, other colonists', and pack animals' / caravan cargo — not just loose stacks on the
    ground. Order a wall or sandbag on a raid and it builds straight from caravan-carried steel, no

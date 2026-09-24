@@ -44,7 +44,7 @@
 <HaulersDream.Setting.BuildFromInventoryPartial>允许用货物栏材料进行部分建造</HaulersDream.Setting.BuildFromInventoryPartial>
 <HaulersDream.Setting.BuildFromInventoryPartialDesc>通常，除非整件物品所需的材料都齐备，否则不会开始建造。开启此项后，即便货物栏中的材料少于所需总量，也会用现有的材料开始并推进框架的搭建——其余部分在材料逐渐到位时送达。这改变了游戏本体“要么全有要么全无”的规则，故默认关闭。需要“从货物栏建造”。</HaulersDream.Setting.BuildFromInventoryPartialDesc>
 <HaulersDream.Setting.ShareForCrafting>使用所携带的材料完成制作工单</HaulersDream.Setting.ShareForCrafting>
-<HaulersDream.Setting.ShareForCraftingDesc>制作中的小人可从某个小人已携带的货物栏中取用工单原料，而不仅是地上的散堆。如果有其他模组在管理制作原料的搬运，Hauler's Dream 会自动让位，由它去收集原料——这样任何制作循环都会自行解决，无需你介入。</HaulersDream.Setting.ShareForCraftingDesc>
+<HaulersDream.Setting.ShareForCraftingDesc>启用后，制作工单可使用由 Hauler's Dream 追踪的随身物资，包括制作者自己的物资。此选项不会让工单使用未被追踪的个人物品。当 Common Sense 收集原料时，HD 不会将随身物资加入普通工单的原料搜索，并将原料收集交由 Common Sense 处理。</HaulersDream.Setting.ShareForCraftingDesc>
 <HaulersDream.Setting.ShareMeetInMiddle>空闲的运载者会走向工人以交付货物</HaulersDream.Setting.ShareMeetInMiddle>
 <HaulersDream.Setting.BatchWorkDeliveries>一趟为多个排队的建造任务携带材料</HaulersDream.Setting.BatchWorkDeliveries>
 <HaulersDream.Setting.BatchWorkDeliveriesDesc>在建造大量廉价物件时（例如一道长围栏），小人会一次性拿满足够多个排队建造任务的材料，并在一趟中分别交付到每处，而不是一次只运送几个来回穿梭。材料拿在手上，因此不会减速。</HaulersDream.Setting.BatchWorkDeliveriesDesc>

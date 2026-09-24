@@ -44,7 +44,7 @@
 <HaulersDream.Setting.BuildFromInventoryPartial>所持品からの部分的な建築を許可する</HaulersDream.Setting.BuildFromInventoryPartial>
 <HaulersDream.Setting.BuildFromInventoryPartialDesc>通常、建築は全体に必要な資材がそろうまで開始されません。これをオンにすると、必要な総量に満たなくても、所持品にある資材だけで骨組みを開始し進めます。残りは資材が手に入り次第届けられます。バニラの全か無かのルールを変えるため、デフォルトはオフです。「所持品から建築する」が必要です。</HaulersDream.Setting.BuildFromInventoryPartialDesc>
 <HaulersDream.Setting.ShareForCrafting>携行中の資材を製作作業指示に使う</HaulersDream.Setting.ShareForCrafting>
-<HaulersDream.Setting.ShareForCraftingDesc>製作中のポーンは、地面に落ちた山だけでなく、ポーンがすでに携行中の所持品から作業指示の材料を調達できます。他のMODが製作材料の運搬を管理している場合、Hauler's Dreamは自動的に手を引いてそちらに集めさせます。そのため、どんな製作ループもあなたが何もしなくても自然に解決します。</HaulersDream.Setting.ShareForCraftingDesc>
+<HaulersDream.Setting.ShareForCraftingDesc>有効にすると、製作の作業指示でHauler's Dreamが追跡する携行資材を使用できます。製作者自身が持つ資材も対象です。この設定によって、HDが追跡していない私物が作業指示の材料として使えるようになるわけではありません。Common Senseが材料を集める場合、HDは通常の作業指示の材料検索に携行資材を追加せず、材料の収集をCommon Senseに任せます。</HaulersDream.Setting.ShareForCraftingDesc>
 <HaulersDream.Setting.ShareMeetInMiddle>手の空いた運搬者が作業者に近づいて物資を手渡す</HaulersDream.Setting.ShareMeetInMiddle>
 <HaulersDream.Setting.BatchWorkDeliveries>1回の往復で多数の予約済み建築分の資材を運ぶ</HaulersDream.Setting.BatchWorkDeliveries>
 <HaulersDream.Setting.BatchWorkDeliveriesDesc>安価なものを大量に建てる（例：長い柵）とき、ポーンは予約済みの多数の建築分の資材を手いっぱいに持ち、少しずつ往復するのではなく、1回の往復でそれぞれに届けます。手で運ぶので速度低下はありません。</HaulersDream.Setting.BatchWorkDeliveriesDesc>
