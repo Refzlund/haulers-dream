@@ -135,6 +135,18 @@ Normal slaughter and interrupted-hunt handling continue to use their existing pa
 vanilla hunt already hauls its kill and receives no extra haul from this feature. An existing haul
 for the same carcass also prevents a duplicate follow-up.
 
+### Harvest and Haul
+
+HD already gathers work yields into inventory; **Harvest and Haul** is optional. When both are
+enabled, H&H receives the actual placed output once, so its repeated placement callback cannot
+collect an unrelated nearby stack. Its ordinary inventory unload respects HD's kept quantities
+and delivers only the surplus. H&H still controls its own pickup filters, unload timing and
+storage search. A harvest merging with an existing ground stack retains H&H's whole-stack intake.
+
+This support covers the current ordinary H&H unload path. **H&H's separate Combat Extended
+unload path is not covered by this keep protection.** If a future H&H version changes that
+unload implementation, HD logs a compatibility warning and leaves its original behavior intact.
+
 ### Can interrupt HD jobs (self-recovering)
 - **Automatic Stump Chopping** (`arylice.rimworld.automaticstumpchopping`) — prepends a
   `CutPlant(stump)` job per felled tree; a big forest harvest can briefly front-load a cutter's queue,
