@@ -71,7 +71,7 @@
 <HaulersDream.Setting.BulkHaulAlways>항상 쓸어 담기 — 모든 운반이 주변 모든 것을 줍기</HaulersDream.Setting.BulkHaulAlways>
 <HaulersDream.Setting.BulkHaulAlwaysDesc>모든 운반은 — 자동이든 명령이든 — 인근의 운반 가능한 물건들을 폰의 소지품에도 실어, 전체를 한 번의 저장 이동으로 처리합니다. 얼마나 운반하는지는 아래의 스마트 과적 슬라이더를 따릅니다: 또 한 번 왕복하는 것 대비 속도 저하를 감수할 만큼만 추가 무게를 실습니다.</HaulersDream.Setting.BulkHaulAlwaysDesc>
 <HaulersDream.Setting.HaulNearbyOption>"주변 전부 운반" 우클릭 명령 추가</HaulersDream.Setting.HaulNearbyOption>
-<HaulersDream.Setting.HaulNearbyOptionDesc>운반 가능한 물건의 우클릭 메뉴(운반할 수 있는 폰에 한해)에 "주변 전부 운반" 옵션을 추가하여, 즉시 대량 쓸어 담기를 시작합니다 — 그래서 대량 운반을 유발하려고 두 운반을 우선 지정할 필요가 없습니다. 단일 물건 운반을 위한 바닐라의 "운반 우선 지정"도 함께 나타납니다.</HaulersDream.Setting.HaulNearbyOptionDesc>
+<HaulersDream.Setting.HaulNearbyOptionDesc>운반 가능한 물건의 우클릭 메뉴(운반할 수 있는 폰에 한해)에 "주변 전부 운반" 옵션을 추가하여, 즉시 대량 쓸어 담기를 시작합니다 — 그래서 대량 운반을 유발하려고 두 운반을 우선 지정할 필요가 없습니다. 단일 물건 운반을 위한 바닐라의 "운반 우선 지정"도 함께 나타납니다. 선택한 Misc. Robots 로봇에 운반 버튼도 추가합니다. Biotech가 비활성화되어 있어도 사용할 수 있습니다.</HaulersDream.Setting.HaulNearbyOptionDesc>
 <HaulersDream.Setting.ManualPickup>"X 줍기" 우클릭 명령 추가</HaulersDream.Setting.ManualPickup>
 <HaulersDream.Setting.ManualPickupDesc>운반 가능한 바닥 물건의 우클릭 메뉴에 "X 줍기" 옵션을 추가합니다. 폰이 클릭한 더미를 추적되는 Hauler's Dream 운반으로서 소지품에 곧장 줍고, 이후 평소 내려놓기로 치워집니다 — 그래서 자동 내려놓기가 꺼져 있어도 절대 잃어버리지 않습니다. 바닐라의 우클릭 운반 옵션에 추가되는 기능입니다.</HaulersDream.Setting.ManualPickupDesc>
 <HaulersDream.Setting.KeepInInventory>"X 소지품에 보관" 우클릭 명령 추가</HaulersDream.Setting.KeepInInventory>

@@ -71,7 +71,7 @@
 <HaulersDream.Setting.BulkHaulAlways>始终清扫——每次搬运都拾取周围的一切</HaulersDream.Setting.BulkHaulAlways>
 <HaulersDream.Setting.BulkHaulAlwaysDesc>每次搬运——无论自动还是被命令——都会把附近可搬运的物品也装进小人的货物栏，一趟储存运完全部。携带多少会遵循下方的智能超载滑块：只多承载相比再跑一个来回而言确实值得那点减速的额外质量。</HaulersDream.Setting.BulkHaulAlwaysDesc>
 <HaulersDream.Setting.HaulNearbyOption>添加“搬运附近的一切”右键命令</HaulersDream.Setting.HaulNearbyOption>
-<HaulersDream.Setting.HaulNearbyOptionDesc>在可搬运物品的右键菜单上（对能搬运的小人）添加“搬运附近的一切”选项，它会立即开始一次批量清扫——这样你就不必为了触发批量搬运而去优先处理两个搬运。原版的“优先搬运”仍会与它并列出现，用于单件搬运。</HaulersDream.Setting.HaulNearbyOptionDesc>
+<HaulersDream.Setting.HaulNearbyOptionDesc>在可搬运物品的右键菜单上（对能搬运的小人）添加“搬运附近的一切”选项，它会立即开始一次批量清扫——这样你就不必为了触发批量搬运而去优先处理两个搬运。原版的“优先搬运”仍会与它并列出现，用于单件搬运。 还会为选中的 Misc. Robots 机器人添加搬运按钮，即使未启用 Biotech 也可使用。</HaulersDream.Setting.HaulNearbyOptionDesc>
 <HaulersDream.Setting.ManualPickup>添加“拾取 X”右键命令</HaulersDream.Setting.ManualPickup>
 <HaulersDream.Setting.ManualPickupDesc>在地上可搬运物品的右键菜单上添加“拾取 X”选项。小人会把所点选的那一堆直接拾进货物栏，作为一次受追踪的 Hauler's Dream 搬运，随后由正常的卸载流程收起——因此即便自动卸载关闭也绝不会丢失。是对原版右键搬运选项的补充。</HaulersDream.Setting.ManualPickupDesc>
 <HaulersDream.Setting.KeepInInventory>添加“将 X 留在货物栏”右键命令</HaulersDream.Setting.KeepInInventory>

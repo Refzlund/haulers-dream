@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Patch>
+  <!-- Misc. Robots uses a Pawn subclass with its own XML base, so the ordinary
+       Pawn-class patch does not reach it. Track inventory on this family,
+       including construction leftovers. Work eligibility remains separate. -->
+  <Operation Class="PatchOperationConditional">
+    <xpath>Defs/ThingDef[@Name="Base_X2_AIRobot" and @Class="AIRobot.X2_ThingDef_AIRobot" and thingClass="AIRobot.X2_AIRobot"]/comps[not(li/compClass="HaulersDream.CompHauledToInventory")]</xpath>
+    <match Class="PatchOperationAdd">
+      <xpath>Defs/ThingDef[@Name="Base_X2_AIRobot" and @Class="AIRobot.X2_ThingDef_AIRobot" and thingClass="AIRobot.X2_AIRobot"]/comps[not(li/compClass="HaulersDream.CompHauledToInventory")]</xpath>
+      <value>
+        <li><compClass>HaulersDream.CompHauledToInventory</compClass></li>
+      </value>
+    </match>
+  </Operation>
+</Patch>

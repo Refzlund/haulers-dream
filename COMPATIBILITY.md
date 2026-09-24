@@ -20,8 +20,8 @@ than owning the job pipeline:
 - Pawn eligibility: scoop, bulk-haul, and auto-unload all gate on **one** predicate
   (`YieldRouter.IsEligible` → `EligibilityPolicy`): humanlike colonists, or colony mechs when
   `allowMechanoids` is on. So whatever HD loads into a pawn's inventory, HD can also unload it —
-  the load and unload halves are provably symmetric. Non-humanlike, non-mechanoid pawns (animals,
-  modded robots) are **never** loaded by HD; they keep vanilla single-stack hauling untouched.
+  the load and unload halves use the same eligibility rules. Misc. Robots and Robots++ also require
+  their native Hauling role for new storage pickups; HD does not grant a specialist another role.
 
 Because every load is **tagged** and re-found from the tags, any external interruption (a draft, a
 forced job, a mental break, another mod cancelling the job) is self-healing: a trigger re-issues the
@@ -484,12 +484,9 @@ water-overlap cache postfixes. Build materials and uranium fuel haul exactly lik
   "no stockpile → desperate cell / dumping" path, same as vanilla rock chunks.)
 
 ### Non-human pawns — mechs, animals, robots (the "new hauling regime")
-HD attaches its `CompHauledToInventory` the same way Pick Up And Haul does: a patch on
-`ThingDef[thingClass="Pawn"]/comps` that hits the abstract `BasePawn` (which has `thingClass=Pawn` + a
-`<comps>` node), so **every** pawn — colonists, mechs, animals, and most modded races — inherits the
-comp. The comp alone is harmless; what matters is whether a pawn can be *loaded* by HD and then *not
-unloaded*. HD's rule (see "Pawn eligibility" above): scoop, bulk-haul, and unload all gate on the same
-`IsEligible` predicate.
+HD attaches its inventory tracker to the ordinary Pawn definition family and separately to the
+custom Misc. Robots definition family. The component tracks carried goods; work permissions
+remain separate. Automatic pickup and unloading retain the shared pawn eligibility checks.
 
 - **Mechanoids** — an intended, `allowMechanoids`-gated target (default **on**). A colony hauler/lifter
   mech scoops, bulk-hauls (at its plain carry limit — the slowdown overload model is skipped for
@@ -501,10 +498,17 @@ unloaded*. HD's rule (see "Pawn eligibility" above): scoop, bulk-haul, and unloa
   mechs only) plus `IsColonist`. So an ordinary animal keeps vanilla single-stack hauling and HD never
   touches it. (Animals-Logic / "hardworking animals" just tune that same `JobGiver_Haul` path — still
   not HD's method.)
-- **Robots / androids (modded)** — the two archetypes are safe by different mechanisms (verified by
-  cloning): **Android Tiers Reforged** androids are `intelligence=Humanlike`, so HD treats them as
-  colonists and auto-unloads them normally; **Misc. Robots / ++** uses a custom `thingClass`
-  (`AIRobot.X2_AIRobot`) and a non-colonist custom work system, so it never reaches HD's haul method.
+- **Android Tiers Reforged** androids use humanlike intelligence and the corresponding pawn
+  eligibility rules. This source classification does not establish runtime compatibility for every android mod.
+- **Misc. Robots / Robots++** use a separate Pawn subclass. HD adds its tracker to that family so
+  haul-capable robots can collect into inventory and unload through their actual work scheduler.
+  Enable **Allow mechanoids** and keep the robot's native Hauling role assigned. A specialist without
+  that role cannot start unrelated storage sweeps; its own work yields and existing carried cargo
+  retain their collection and recovery paths. The human hauling override does not grant robot roles.
+  Select a robot and use **Haul everything nearby**, then select the goods. This gizmo works without
+  Biotech; with Biotech enabled, the normal right-click menu also offers the command when native
+  control permits it. Queued orders retain their place, and interruption leaves picked cargo available
+  for normal recovery. Keep quantities apply across same-kind stacks, not to a particular stack identity.
 - **The one real edge case HD now guards against — an "animal worker" mod.** *HousekeeperAssistanceCat*
   (by the Animals-Logic author) is `intelligence=Animal` (non-humanlike) yet gives its cat a custom
   `JobGiver_Work` + `workSettings` + a Hauling work giver, **and** it inherits the comp. That combination

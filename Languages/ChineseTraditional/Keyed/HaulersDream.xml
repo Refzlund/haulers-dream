@@ -91,7 +91,7 @@
   <HaulersDream.Setting.BulkHaulAlways>總是掃蕩 — 每次運送都會撿拾周圍的所有物品</HaulersDream.Setting.BulkHaulAlways>
   <HaulersDream.Setting.BulkHaulAlwaysDesc>無論是自動還是手動指定的運送，角色都會將附近可運送的物品裝入背包，一次性完成儲存行程。攜帶量遵循下方的智慧超載拉桿：僅在額外重量帶來的減速確實比多跑一趟划算時才會超載。</HaulersDream.Setting.BulkHaulAlwaysDesc>
   <HaulersDream.Setting.HaulNearbyOption>新增「運送附近的所有物品」右鍵指令</HaulersDream.Setting.HaulNearbyOption>
-  <HaulersDream.Setting.HaulNearbyOptionDesc>在可運送物品的右鍵選單中新增「運送附近的所有物品」選項（適用於可執行運送的角色），可立即啟動批量掃蕩 — 這樣您就不必優先指定兩個運送指令來觸發批量運送。原版的「優先運送」仍會保留在旁邊，用於單一物品的運送。</HaulersDream.Setting.HaulNearbyOptionDesc>
+  <HaulersDream.Setting.HaulNearbyOptionDesc>在可運送物品的右鍵選單中新增「運送附近的所有物品」選項（適用於可執行運送的角色），可立即啟動批量掃蕩 — 這樣您就不必優先指定兩個運送指令來觸發批量運送。原版的「優先運送」仍會保留在旁邊，用於單一物品的運送。 也會為選取的 Misc. Robots 機器人加入搬運按鈕，即使未啟用 Biotech 也可使用。</HaulersDream.Setting.HaulNearbyOptionDesc>
   <HaulersDream.Setting.ManualPickup>新增「拾取 X」右鍵指令</HaulersDream.Setting.ManualPickup>
   <HaulersDream.Setting.ManualPickupDesc>在地面可運送物品的右鍵選單中新增「拾取 X」選項。角色會直接將點選的堆疊放入背包，作為追蹤的 Hauler's Dream 運送任務，隨後透過正常卸載將其存放 — 因此即使關閉自動卸載，物品也絕不會遺失。此選項為原版右鍵運送選單額外新增。</HaulersDream.Setting.ManualPickupDesc>
   <HaulersDream.Setting.KeepInInventory>新增「在背包中保留 X」右鍵指令</HaulersDream.Setting.KeepInInventory>

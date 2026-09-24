@@ -71,7 +71,7 @@
 <HaulersDream.Setting.BulkHaulAlways>常にかき集める — すべての運搬で周囲のものをすべて拾う</HaulersDream.Setting.BulkHaulAlways>
 <HaulersDream.Setting.BulkHaulAlwaysDesc>自動・指示を問わず、すべての運搬で近くの運搬可能物もポーンの所持品に積み、まとめて1回の保管庫への往復にします。どれだけ運ぶかは下の賢い過積載スライダーを尊重します。別の往復をするよりも速度低下に見合うだけの追加重量しか運びません。</HaulersDream.Setting.BulkHaulAlwaysDesc>
 <HaulersDream.Setting.HaulNearbyOption>右クリックに「近くのものをすべて運搬」の指示を追加</HaulersDream.Setting.HaulNearbyOption>
-<HaulersDream.Setting.HaulNearbyOptionDesc>運搬可能なアイテムの右クリックメニューに（運搬できるポーン向けに）「近くのものをすべて運搬」の選択肢を追加します。これは即座に一括かき集めを開始するので、一括運搬を発動させるために2つの運搬を優先指定する必要がなくなります。バニラの「運搬を優先」も、単一アイテム運搬として並んで表示され続けます。</HaulersDream.Setting.HaulNearbyOptionDesc>
+<HaulersDream.Setting.HaulNearbyOptionDesc>運搬可能なアイテムの右クリックメニューに（運搬できるポーン向けに）「近くのものをすべて運搬」の選択肢を追加します。これは即座に一括かき集めを開始するので、一括運搬を発動させるために2つの運搬を優先指定する必要がなくなります。バニラの「運搬を優先」も、単一アイテム運搬として並んで表示され続けます。 選択中の Misc. Robots のロボットには運搬ボタンも追加されます。Biotech が無効でも利用できます。</HaulersDream.Setting.HaulNearbyOptionDesc>
 <HaulersDream.Setting.ManualPickup>右クリックに「Xを拾う」の指示を追加</HaulersDream.Setting.ManualPickup>
 <HaulersDream.Setting.ManualPickupDesc>地面の運搬可能アイテムの右クリックメニューに「Xを拾う」の選択肢を追加します。ポーンはクリックされた山を、追跡対象のHauler's Dream運搬として所持品へ直接拾い、それは通常の荷下ろしによって片付けられます。そのため自動荷下ろしがオフでも決して失われません。バニラの右クリック運搬選択肢への追加です。</HaulersDream.Setting.ManualPickupDesc>
 <HaulersDream.Setting.KeepInInventory>右クリックに「Xを所持品に保持」の指示を追加</HaulersDream.Setting.KeepInInventory>

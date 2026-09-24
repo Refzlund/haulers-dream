@@ -224,6 +224,10 @@ namespace HaulersDream
                 if (RimIOTCompat.IsPresent && RimIOTCompat.IsRimIOTHandledCell(pawn.Map, primary.Position))
                     return null;
             }
+            // Misc. Robots schedules storage work from its own role list. Check before the cheap scan
+            // AND cached returns, including forced probes: a cached plan must not grant an unassigned role.
+            if (!MiscRobotsStorageRole.AllowsNewStorageIntake(pawn))
+                return null;
             // CHEAP FRONT GATE (microstutter fix): the work scan calls JobOnThing for every haulable candidate
             // it considers, and on a cache miss the build below runs the full pool enumeration + ClaimedByOtherPawns
             // (scans every colony pawn's job queue) + storage scans — far too expensive to run per candidate when
@@ -1046,6 +1050,10 @@ namespace HaulersDream
         internal static Job BuildBulkJobForced(Pawn pawn, Thing clicked)
         {
             if (pawn == null || clicked == null)
+                return null;
+            // This entry bypasses TryBuildBulkJob and its cache. An explicit sweep still needs the
+            // robot's storage role; this is separate from preference overrides and direct-control checks.
+            if (!MiscRobotsStorageRole.AllowsNewStorageIntake(pawn))
                 return null;
             var vanilla = HaulAIUtility.HaulToStorageJob(pawn, clicked, forced: true);
             // Accept a CONTAINER destination too (a grave-destined corpse, container storage): the explicit

@@ -204,6 +204,11 @@ namespace HaulersDream
                 }
             }
 
+            // Both unload detours above service EXISTING cargo, including a robot specialist's work
+            // leftovers. Only the new unrelated pickup below requires its custom Hauling role.
+            if (!MiscRobotsStorageRole.AllowsNewStorageIntake(pawn))
+                return null;
+
             // G2 SELF no-op: if the pawn already holds (current or queued) an HD pickup/bulk job, it is already
             // about to sweep loot into inventory — don't stack another en-route pickup on top.
             if (AlreadyHaulingIntoInventory(pawn))

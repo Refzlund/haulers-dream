@@ -537,6 +537,12 @@ namespace HaulersDream
             if (s == null || __instance.Faction != Faction.OfPlayerSilentFail)
                 yield break;
 
+            // Misc. Robots can be selected without Biotech, but native CanTakeOrder filters them
+            // out of the map menu. This HD-only targeter leaves native control permissions alone.
+            var nearbyHaul = NearbyHaulCommand.RobotGizmo(__instance, DropIcon);
+            if (nearbyHaul != null)
+                yield return nearbyHaul;
+
             var comp = __instance.GetComp<CompHauledToInventory>();
             if (comp == null)
                 yield break;

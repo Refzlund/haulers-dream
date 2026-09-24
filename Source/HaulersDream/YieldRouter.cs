@@ -261,6 +261,10 @@ namespace HaulersDream
             var comp = pawn.GetComp<CompHauledToInventory>();
             if (comp == null || !comp.autoHaulYields)
                 return; // per-pawn opt-out: a toggled-off pawn never sweeps loose items into inventory
+            // This scan claims UNRELATED loose items for storage. A specialist may still collect its
+            // own recorded yields and recover held cargo through the unchanged shared paths.
+            if (!MiscRobotsStorageRole.AllowsNewStorageIntake(pawn))
+                return;
             int now = Find.TickManager?.TicksGame ?? 0;
             if (now - comp.lastSweepTick < SweepCooldownTicks)
                 return;
