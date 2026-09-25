@@ -1,9 +1,0 @@
-# Root source acceptance for bounded actual provider run
-
-Root read the complete161-line scene, climate helper, host/controller delta, actual CE cache getter/update/equipment methods, actual Sidearms carried-object and add/drop/remember methods, selected compiled compatibility decompilation and current command/compatibility source. No source blocker found for the proposed five local commands. This accepts the test design, not native provider outcomes.
-
-The fixture uses actual CE grenades and actual Sidearms object-reference memory. It separately covers partial6/15, remaining9, a surplus carried reference, the final remembered reference and one pre-existing missing memory. Crucially, post-command CE cache reads precede any fixture refresh or game tick. The cache is checked against actual physical inventory/equipment stats, with no apparel in the declared setup. Provider observer prefixes only record actual calls and require the real HD handler in the stack. The original unrelated knife/memory, Wood5, Keep3, job/queue/draft/hands and synchronous tick are compared across each command. A real unintentional native drop establishes the missing-memory control; if Sidearms changes that setup, the assertion must fail.
-
-Controller Prepare admits exactly F11-PROVIDERS and the six-package/twelve-image profile; copied inherited restart branches are unreachable through its parameter/admission guards. No fixture defs or shipped-def edits are introduced. Source and product images stay separate from the accepted UI/save chain. Generic Verify still carries inherited semantic-review wording and is not itself provider acceptance.
-
-The exact selected host is F300B8E737AD53551AB7005D46EF756FD73CC0AD52EF5427CBF0940B09CC253C; product15D6ECE6/CoreC09E2132 remain unchanged. Root may now execute this bounded case privately, retaining actual errors and full custody/callback evidence. Multiplayer and actual UI remain their separate evidence obligations.

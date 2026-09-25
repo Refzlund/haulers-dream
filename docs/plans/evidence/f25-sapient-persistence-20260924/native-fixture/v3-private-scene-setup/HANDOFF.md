@@ -1,5 +1,0 @@
-Only private Quicktest setup changes. Both v2 short-path captures (daddbb producer and b6febb absent) reach loaded module checks without XML/Unity errors, then fail before actor creation because ordinary Quicktest Steel lies outside the cleared arena. No provider conversion, measured command or save occurs. Preserve both failed results.
-
-V3 records each pre-existing Cloth/Gold/Steel map stack and removes it as private initial scene construction, before any actor, owned item or zone exists. The original global no-background-material guard remains after this explicit setup. New measured cargo, unit totals, transfers, identities, provider operations, save and restore oracles are unchanged. No player world or original save is modified; the Quicktest map is disposable, as already established. Existing GenDebug.ClearArea likewise clears only setup-world contents. Controller/product/provider/other host bytes unchanged.
-
-Build3.44s,0warnings/errors. Host DDCAAD2F49967AAB106D0228FD6B9FF078E38FAF266FBDE8780602659B385E32. Only fresh captures can establish behavior.

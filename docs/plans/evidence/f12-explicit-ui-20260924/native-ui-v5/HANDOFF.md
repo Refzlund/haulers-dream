@@ -1,3 +1,0 @@
-# F12 human final overlay successor
-
-See `../v3/HANDOFF.md` for the reviewed native rationale, product/host pins and exact private-desktop runtime procedure. `source.diff` is the complete v4→v5 fixture delta: bind the read-only prompt observer to actual delayed `DrawPromptWindow`; update build/product paths. All boundary, stale-focus, real input/command and physical checks remain unchanged. Selection `97D3E1D28FCCEC0BD9C0F8F485B14AD71BA55BD67E7241A933DA1414125D3494`; host `20A543E4FBCBDB481B8BB8C8E17EBEEEF5859BC3CBFF2D0BD485F281F0A4917D`. Build3.00s, zero warnings/errors;747 exact-input checks. No native acceptance yet.

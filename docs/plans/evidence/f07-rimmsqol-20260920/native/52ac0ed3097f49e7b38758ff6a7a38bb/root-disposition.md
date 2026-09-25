@@ -1,7 +1,0 @@
-# Refused launch: prepared files disappeared
-
-24 September 2026. This attempt never started RimWorld. Prepare completed with1935 pinned copies at06:20:24UTC. Launch's unchanged hash guard could not find `runtime/Data/Biotech/Defs/SoundDefs/Building_Oneshot_Misc.xml` at06:22:25UTC; no owned game process was returned. Subsequent read-only inspection found1387 of1935 copied files missing, including the entire runtime Data directory. Original Steam source files remained present. The cause of deletion is unknown; this is not a gameplay result.
-
-Launcher controller25388 exited1 and joined on the inactive desktop, with no game window/process, desktop switch, cleanup error or remaining owned process. The manifest, controller state and original failed native outcome are retained. No Verify/protectedChanges=[] claim is made for this refused launch.
-
-For fresh run870db66a6d4f4b2bb3c9dce691ff466b, root supplies process-local TEMP and TMP as `C:/Users/Arthur/AppData/Local/HaulersDreamQA/runtime-temp` during Prepare, private-desktop Launch and Verify. No global/user environment or controller/host code is changed. The controller's TEMP-based private root and the native fixture's GetTempPath-based root still agree; all source/copy hashes, ownership, protected inputs and inactive desktop checks remain enabled. The fresh manifest records the actual new absolute paths. This moves scratch data outside the ordinary Windows Temp tree without repairing or relaunching the failed prepared identity.

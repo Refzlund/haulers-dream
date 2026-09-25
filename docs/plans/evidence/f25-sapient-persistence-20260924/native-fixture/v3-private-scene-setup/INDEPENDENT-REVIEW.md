@@ -1,7 +1,0 @@
-Accepted the v3 fixture-only setup correction for a fresh native retry. This is source review, not provider or runtime acceptance.
-
-The exact diff enumerates only spawned Cloth, Gold and Steel already on the disposable Quicktest map, records each ID/count/cell, and removes each before actors, owned measured objects or zones exist. It asserts actual map/item custody before removal, destroyed/unspawned state afterwards, and retains the original global absence guard. The surrounding Context enforces the isolated run/runtime/save paths. Loaded-game entry bypasses Setup, so measured saved cargo cannot enter this removal path. Warm-up, actual provider conversion, cargo creation, physical accounting, commands, save and restart oracles retain their prior bytes.
-
-The independent audit validates 845 current selected input pins and exact frozen/current scene and selection equality. Only status, harness, harnessBuild, scene and buildScript selection fields changed; product, provider, controller and other host pins are identical. Host DDCAAD2F49967AAB106D0228FD6B9FF078E38FAF266FBDE8780602659B385E32 has a successful build with zero warnings/errors. The retained v2 setup failures remain failures and provide no provider-behavior result.
-
-See `independent-review.py` and `independent-review.json` for the reproducible pin audit. No native launch, Prepare, product edit or controller change was performed by this review.

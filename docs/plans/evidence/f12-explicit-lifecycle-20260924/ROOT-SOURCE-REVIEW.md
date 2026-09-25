@@ -1,9 +1,0 @@
-# Independent source review
-
-Root read the complete contract, all five scene partials, host/controller deltas and handoff. The frozen v4 host is accepted for bounded native execution against unchanged backendv5. This is source acceptance, not a gameplay pass.
-
-The scene exercises actual command entry, native queue capture/restore/clear, a live foreign reservation, a newly forbidden walking source, a blocked diagonal with a real longer route, native cleanup merge and exact remainder resumption. Its partial placement creates the declared72-unit resident only after the actual7-unit pickup. Physical source, destination, hands, private recovery and personal stock are joined; fixture state does not assign product outcomes. Current/queued order identity and canceled-state save use native serialization. The restart still requires independent per-field raw XML review before admission.
-
-The controlled fault is isolated to F12-LIFE-FAULT. Its observer throws only after the exact original receiver has really merged3 and the actual parcel retains4. Product Place's finalizer returns the original exception unchanged; native JobUtility receives that same instance and logs its marker before ordinary Errored cleanup. Root read the retained native JobUtility implementation. The host retains the one error and rechecks its exact marker/count at final capture; normal roles still require zero errors. This does not certify any external provider.
-
-Selected host00C29B06… / MVIDcc229878-dc08-4bc1-985c-7d9f4f60b11d and selectionC8EC0F57… bind the reviewed v4 source. Original productive/save-chain inputs and UI product remain unchanged. Source assertions about native queue wrappers and eligible canceled Resume are present; the west/south corner avoids the retained earlier source. Native results, actual errors, cleanup and protected-file receipts remain to be checked.

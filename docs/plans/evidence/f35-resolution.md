@@ -1,9 +1,0 @@
-# F35: corpse hauling after supported animal finish-off orders
-
-Resolved and committed as `604a764`. Root adopted the independent [paired runtime review](f35-finish-wild-20260920/fixture/paired-runtime-review.md) and [guidance review](f35-finish-wild-20260920/guidance/review.md).
-
-Both actual Allow Tool and Keyz baselines killed the animal but never queued corpse hauling. The new optional hooks observe each provider's real execution after its corpse/forbidden policy, then reuse HD's existing eligibility, ownership toggle, forbidden, storage and duplicate checks. This also covers a real kill whose driver subsequently ends Incompletable. Hauling is appended behind existing work.
-
-The candidates pass 60/60 and 57/57 assertions. Each preserves the prior Goto, performs exactly one native haul of the same corpse and delivers it to accepting storage. Disabled wild hauling, forbidden corpses and cancellation before death remain correct. Four processes exited cleanly on the inactive desktop; protected files were unchanged and no captured Unity errors occurred. Baseline failed results, startup notices and one harmless pooled-job observer-label defect remain documented. Generic Verify remains not-verified pending semantic review; that review is now accepted, without changing raw results.
-
-Player guidance and four existing values in all 16 languages were reviewed. Allow Tool colony targets require its native permission; Keyz rejects colony targets. The reporter's exact provider and historical save cause remain unknown. These runs verify wild finish-off behavior for the two supported providers; they do not claim arbitrary providers, Multiplayer or a separately executed Keyz strip/colony scene. Source evidence supports the strip/base-hook relationship. Final assembled-build checks remain separate and can reopen this report if a later regression is found.

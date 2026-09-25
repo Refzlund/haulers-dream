@@ -1,5 +1,0 @@
-# Root fixture source review
-
-Reviewed the full SweepHandoff source, Bootstrap/controller diffs, handoff, and earlier independent implementation review. The fixture uses actual product plans, real reservations and native queued jobs. The soft queued input is explicitly separate from the UI command's reserved queue. Source retirement, original job identities, exact physical quantities, native saved job lists and restart continuation are observable; no observer supplies the expected tombstones or finishes productive jobs.
-
-Source review permits baseline and candidate capture. Native review must check original producer/host/product identities as well as checkpoint hashes, complete process receipts and raw logs before accepting restart. The tested same-tick evidence retains held surplus and the remaining pickup; the before-Keep memo is excluded by one actual intervening tick. Constrained destination and repeated-command checks remain outside this first fixture and cannot be claimed from it. No F38 runtime acceptance or closure yet.

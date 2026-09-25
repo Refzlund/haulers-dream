@@ -1,9 +1,0 @@
-Root independently reviewed the complete HarvestGather scenario and its integration diff against the accepted construction host/controller, plus actual native JobDriver_PlantWork. Accepted for one native base-harvest witness on 20 September 2026.
-
-Native Growing must select the harvest job. Native work, fresh Thing creation/placement, PlantCollected, self-pickup and unload are observed without supplying productive jobs or invoking productive helpers. The one cotton plant, empty cloth population and unassigned ordinary Hauling distinguish self-pickup from a fallback haul. Actual work/yield, ground/inventory/hands/storage conservation and native success endings are required. Instant adjacent self-pickup is observed at its real EndCurrentJob boundary. Seven settings restore; generated starter cargo and skill changes are disclosed setup. Cleanup applies only to the disposable test, with the inherited Lord/terrain restoration limitations explicit.
-
-Four selected packages/ten measured images replace the construction-only robot package census. Existing isolation, manifest, protected-file and finite-process controls remain. A native failure or setup refusal must remain failed; inherited Verify manual-review requirements are not waived.
-
-Source SHA256 92B6084946682194AD7A0C89CE4DDF93180DBAD958496E67A4C733891E35BE60; host E0F139E239B913BCB70E2C299B9845AC537BE1654CA4E25ADD37CD6F005F6FE9. Root rechecked these actual files. The former TEMP product lost content after earlier runs. `selection-recovered.json` selects a new LOCALAPPDATA input directory whose complete 99 files root checked against the recovery receipt/original selected hashes; the four original product binaries match the frozen selection. No historical runtime has been restored or its Verify rewritten.
-
-Acceptance here is permission to execute this bounded witness, not F03 completion. Actual native results, full-log review and H&H coexistence remain necessary.

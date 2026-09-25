@@ -1,7 +1,0 @@
-# Root source review before native execution
-
-Reviewed the full three new source files, host/controller diff, contract and final handoff. The explicit phase expectations distinguish tagged recipe stock, unrelated stock, untagged personal stock, sharing disabled and retained quantities. Native job selection, actual split/merge ancestry, consumption and products are observed without replacing return values or native output arguments. Explicit batch is separately labelled; no automatic batch or all-settings Common Sense claim is made.
-
-The private map, fixed input copies, exact host/provider admission and owned launch remain required. The original published comparison is a fresh capture, not a recovered historical trace. Controller Verify remains subject to independent semantic review. Source review permits preparing the three listed cases; it does not establish runtime acceptance or resolve F02.
-
-Root reviewed the complete v6 canonical-path diff and v7 natural-warmup diff before fresh capture. Canonical comparisons preserve exact temporary-root equality and strict child boundaries, with actual raw/normalized diagnostics. Warmup runs before controlled pawns, bill or ingredients, checks actual unroofed room/cell temperatures after real native ticks, then roofs and rechecks the arena before generating the cook. It never assigns temperatures or alters medical state. The original recipe phases, physical accounting and guard conditions remain intact. Earlier setup failure and unlaunched v5 preparations remain historical.

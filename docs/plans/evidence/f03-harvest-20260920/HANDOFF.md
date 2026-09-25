@@ -1,9 +1,0 @@
-F03 harvest witness frozen for independent source/integration review. No Prepare/native execution, product edit, ledger edit or commit.
-
-Review `src/HarvestGather.cs`, `integration.diff`, `README.md`, `selection.json`. Actual compile ran once, zero warnings/errors. Source **92B6084946682194AD7A0C89CE4DDF93180DBAD958496E67A4C733891E35BE60**; DLL **E0F139E239B913BCB70E2C299B9845AC537BE1654CA4E25ADD37CD6F005F6FE9**; PDB **DF0B5AF54AE0947CB6EC564E399EFC9EE5CA5542D4227254AD88094F14077AB3**; measured MVID **47794352-e2f4-413e-aa6c-beedc4a96de2**. Actual build is `%TEMP%/hd-f03-harvest-20260920/build/`. Frozen F07 product remains D0C7FBE0/Core186D8812.
-
-One mature cotton plant / one-cell native grow zone / accepting stockpile away / controlled capable human. Automatic native GrowerHarvest/PlantWork must really produce output, place the exact fresh Thing, run SelfPickup, fill inventory and unload every produced unit to storage. Actual completed work, produced count, native jobs and exact physical conservation are observed before cleanup. No productive job/helper/toil is supplied by the fixture. Growing-only work assignment prevents an ordinary ground-haul fallback from hiding broken self-pickup.
-
-The selected environment is four mods/ten images, no robots or H&H. Seven explicit setting changes restore at cleanup; pickup delays are zero, nearby sweep off, native settle window retained. Owned starter cargo removal and Plants20 are disclosed setup; capacity, crop yield/work and native body remain actual. F08 Lord-release/WorldPawns cleanup limits remain explicit. Raw material events emit only changes.
-
-Reuse the concrete existing Prepare/Launch/Verify commands in README. Root alone may launch on the inactive test desktop after review. No GUID guessed. One new native result is still required; H&H extension and any F03 support disposition remain future work.

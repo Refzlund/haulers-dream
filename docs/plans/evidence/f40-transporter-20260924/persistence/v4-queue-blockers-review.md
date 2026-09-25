@@ -1,7 +1,0 @@
-Root source review and bounded correction, 24 September 2026.
-
-Failed v3 capture 837f0dd9c5f54670aa0381f4d7776817 remains failed40/42,U0. Q's requested queued load actually starts immediately, replacing the native idle Wait; no checkpoint is written. Installed Jobs_Misc.xml declares Wait.isIdle=true, and the native tracker explicitly replaces idle work despite requestQueueing. This is a fixture assumption, not a product defect or reason to override vanilla queue semantics.
-
-The native JobDriver_WaitMaintainPosture inherits the same waiting driver and only changes posture setup. Its native definition is non-idle, and Misc admission sets the real mind-state job tag. Source is retained in queue-source-review. The two Q/Z blockers now use that native job, with exact IDs, expiry and start ticks recorded. Q must expire naturally before its saved queued load/unload run; Z must retain the same blocker and queued loader through actual zero manifest demand. Cargo, saved progress, native queues and physical completion oracles are unchanged.
-
-All v3 source/selection/contract/build metadata is retained under v3-before-queue-blockers; its actual compiled host and failed runtime remain preserved. The complete delta is v4-queue-blockers.diff. Product/provider/controller/bootstrap/settings are unchanged. V4 host builds in6.97s with0warnings/errors. This is execution readiness only; independent delta review and native capture remain required.

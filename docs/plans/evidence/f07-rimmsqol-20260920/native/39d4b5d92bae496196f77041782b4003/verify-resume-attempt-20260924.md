@@ -1,5 +1,0 @@
-The native v8 run completed and its owned processes joined on 20 September before the usage-limit interruption. Complete raw files were copied to this durable directory on resuming 24 September. Its result remains failed at the native-menu repaint observation, before productive command stages.
-
-A new separate Verify attempt on 24 September stopped with `R0 metadata interpreter proof differs.` No Verify result object was returned. The original prepared interpreter SHA256 was `8BB6FA8C283B4D92120B1EF249A9B311B0F804D4CABBE9981159976C8BE76A5E`; the same current path `C:\WINDOWS\system32\WindowsPowerShell\v1.0\powershell.exe` now hashes to `60C9B29843624DD8AF6B6A7B26147753BE6AEEF65098B9A503CC50850AFE410F`. The reason the executable changed between dates is not established here.
-
-The manifest and historical raw result were not changed, and no completed runtime was reconstructed. This is not a successful protection comparison. Fresh future preparations capture the current environment; the old failed native run remains retained with this verification limitation.

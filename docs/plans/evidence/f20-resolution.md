@@ -1,9 +1,0 @@
-# F20: respect Storage Refill Hysteresis
-
-Resolved and committed as `cde74d3`. Root adopted the independent [paired runtime review](f20-refill-20260920/fixture/paired-runtime-review.md) and reviewed source/guidance. The actual SRH baseline completes every stage but fails six relevant policy checks; the candidate passes59/59 assertions.
-
-HD's partial-stack refinement and two midway searches bypassed the provider's group-level refill gate. They now ask the actual provider before selecting a new destination, including rechecking same-tick cached results. Native tests reproduce and correct delivery into a paused shelf and a new automatic top-up, while retaining the provider's same-tick manual latch, linked mixed-stock calculation, consumption-driven reopening and disabled behavior. A delivery assigned before the shelf pauses still finishes; the upper threshold is intentionally not a hard incoming-item cap. The native hopper worker remains governed by SRH.
-
-Both native runs have exact conservation and clean owned cleanup, protectedChanges[], and zero captured Unity errors. Startup notices and failed baseline assertions remain retained. The corrected six-file commit contains only the four-file product repair, compatibility guidance and changeset; unrelated pending changes remain outside it.
-
-GH269/C005/C006 are the same report cross-posted. This is a demonstrated compatibility gap consistent with its symptoms, not a proven recurrence after an earlier SRH fix. The original232-mod save was unavailable. Actual VNPERP was not loaded: native three-slot storage and Hopper provide the tested boundaries, with the reported shelf's matching structure established separately from source. Other overdelivery reports remain open. Provider-absent and combined-build smoke checks remain final integration work.
