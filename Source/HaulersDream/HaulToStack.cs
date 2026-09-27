@@ -85,46 +85,62 @@ namespace HaulersDream
             var job = __instance.job;
             if (job == null || job.haulMode != HaulMode.ToCellStorage)
                 return true; // non-storage cell hauls keep their reservation semantics
+            if (__instance.GetType() != typeof(JobDriver_HaulToCell) || job.def != JobDefOf.HaulToCell)
+                return true; // derived/custom toils need their own pickup ownership adapter
             var pawn = __instance.pawn;
             var hauled = job.GetTarget(TargetIndex.A).Thing;
             var map = pawn?.Map;
             if (hauled?.def == null || map == null)
                 return true;
+            // A pre-existing hand passenger is not this activation's incoming parcel. Keep
+            // native whole-cell ownership until native work has bound its own actual cargo.
+            var held = pawn.carryTracker?.CarriedThing;
+            if (held != null && !ReferenceEquals(held, hauled)
+                && !map.reservationManager.ReservedBy(held, pawn, job))
+                return true;
 
             var group = BulkHaul.BudgetGroupOf(
                 map.haulDestinationManager.SlotGroupAt(job.GetTarget(TargetIndex.B).Cell));
-            // This job's own count OR everything of this def the pawn is already visibly moving, whichever is
-            // larger. The ledger keeps ONE row per (pawn, def), so a colonist carrying 200 tagged steel to a
-            // shelf that then picks up a 5-steel vanilla haul would otherwise REPLACE its 200-unit claim with
-            // a 5-unit one and make 195 units of in-flight steel invisible to every other hauler.
-            int units = Math.Max(
-                job.count > 0 ? Math.Min(job.count, hauled.stackCount) : hauled.stackCount,
-                StorageCommitments.UnitsMovingOf(pawn, hauled.def));
-
-            // A forced order takes the space back off whoever else claimed it — a direct port of what
-            // vanilla itself does for a container destination in JobDriver_HaulToContainer.UpdateTracker.
-            // The player clicked; the standing arbitration yields.
-            if (job.playerForced && group != null
-                && StorageCommitments.FreeUnitsFor(pawn, group, hauled.def, hauled) <= 0)
-                StorageCommitments.InterruptCommittersTo(group, hauled.def, pawn);
-
-            // THE conditional that makes "strip the reservation without arbitrating" inexpressible. Skipping
-            // vanilla's destination reservation is only safe because something else now stops two haulers
-            // over-filling one cell, so the skip is allowed ONLY where that something else took the job on.
-            // A container, a cell with no slot group, a map HD is inert on — TryCommit says no and vanilla
-            // reserves both targets exactly as it always did.
-            //
-            // This is also what retired the hand-written unstackable carve-out that used to sit here. One
-            // corpse claims one unit of one cell, so the second hauler's gate finds no room and never
-            // re-selects the same cell every tick (issue #162's "started 10 jobs in one tick" loop) — the
-            // special case is gone because the general rule now covers it.
-            if (!StorageCommitments.TryCommit(pawn, group, hauled.def, units, "haul-to-cell"))
-                return true; // no arbitration -> vanilla reserves cell + thing, unchanged
-
-            // Storage haul with the ledger arbitrating: reserve only the THING being hauled. The destination
-            // cell stays unreserved so other haulers can pick (and stack onto) the same cell.
-            __result = pawn.Reserve(job.GetTarget(TargetIndex.A), job, 1, -1, null, errorOnFailed);
-            return false;
+            int requested = job.count > 0 ? Math.Min(job.count, hauled.stackCount) : hauled.stackCount;
+            bool priority = StorageCommitments.MayPrioritizeNative(__instance);
+            int available;
+            var resource = priority
+                ? StorageCommitments.ForcedNativeUnitsFor(__instance, group, hauled, requested, false, out available)
+                : StorageCommitments.ResourceUnitsFor(pawn, group, hauled, requested, job.targetB.Cell, job, out available);
+            if (resource != StorageCommitments.ResourceAllowance.Unsupported)
+            {
+                if (resource != StorageCommitments.ResourceAllowance.Observed || available <= 0)
+                { __result = false; return false; }
+                var source = job.GetTarget(TargetIndex.A);
+                bool alreadyOwned = map.reservationManager.ReservedBy(source, pawn, job);
+                var reservingJob = pawn.CurJob;
+                var reservingDriver = pawn.jobs.curDriver;
+                if (!pawn.Reserve(source, job, 1, -1, null, errorOnFailed))
+                { __result = false; return false; }
+                // Reservation callbacks may change the world. Publish only a fresh, successful
+                // admission after source ownership, never a cached-driver/preflight proposal.
+                bool actual = ReferenceEquals(pawn.CurJob, job) && ReferenceEquals(pawn.jobs.curDriver, __instance);
+                resource = priority
+                    ? StorageCommitments.ForcedNativeUnitsFor(__instance, group, hauled, requested, actual, out available)
+                    : StorageCommitments.ResourceUnitsFor(pawn, group, hauled, requested, job.targetB.Cell, job, out available);
+                if (resource != StorageCommitments.ResourceAllowance.Observed || available <= 0)
+                {
+                    if (!alreadyOwned && (!priority || (ReferenceEquals(pawn.CurJob, reservingJob)
+                        && ReferenceEquals(pawn.jobs.curDriver, reservingDriver) && job.targetA == source
+                        && StorageCommitments.MayPrioritizeNative(__instance))))
+                        map.reservationManager.Release(source, pawn, job);
+                    __result = false; return false;
+                }
+                // Native count is the remaining trip budget, including later opportunistic
+                // sources. Only this concrete reserved source has been admitted so far; a
+                // pickup hook admits each later source before it enters the pawn's hands.
+                if (!priority && ReferenceEquals(pawn.CurJob, job) && ReferenceEquals(pawn.jobs.curDriver, __instance))
+                    StorageCommitments.CommitNativeResource(pawn, job, group, hauled, Math.Min(requested, available));
+                __result = true;
+                return false;
+            }
+            // Unobserved provider semantics keep native source AND destination reservations.
+            return true;
         }
     }
 

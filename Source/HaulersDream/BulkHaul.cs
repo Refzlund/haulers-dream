@@ -117,15 +117,15 @@ namespace HaulersDream
         // Per-tick plan memo. The work scan probes HasJobOnThing (= JobOnThing != null) for EVERY haulable
         // candidate it considers, and the float menu calls JobOnThing once building the option and once on
         // click — each probe would otherwise run the full pool + storage scan below and throw the result
-        // away. One generation per tick: same (pawn, primary, forced) within a tick returns the cached plan
-        // (null rejections included — those are the common case on a scan).
+        // away. One generation per tick reuses a positive pickup route after fresh storage validation.
+        // Negative results are not cached: physical room can change during the same paused tick.
         // [ThreadStatic] per this assembly's convention for hook-reachable scratch state (see
         // CompHauledToInventory.tmpScoopedDefs) — lazily initialized, since ThreadStatic field
         // initializers only run on the static-ctor thread.
         [ThreadStatic] private static int cacheTick;
         [ThreadStatic] private static Dictionary<long, CachedPlan> planCache;
 
-        // Reused per-call scratch so the (frequent) cache-miss build allocates nothing for its working sets —
+        // Reused per-call candidate scratch to reduce allocations on the frequent cache-miss build —
         // the work scan calls BuildBulkJob for EVERY distinct candidate it probes in a tick (each a cache miss),
         // and a fresh List/Dictionary per call was pure GC pressure on the hot scan path. [ThreadStatic] +
         // lazy-init matches the planCache convention (a threading-mod work scan gets its own buffers).
@@ -133,7 +133,6 @@ namespace HaulersDream
         // probe) before the next reuse, so sharing these across calls on one thread is sound. Each is Cleared at
         // the point of use, never trusted to be empty from a prior call.
         [ThreadStatic] private static List<Thing> scratchPool;
-        [ThreadStatic] private static Dictionary<ISlotGroup, StorageGroupBudget> scratchGroupBudgets;
 
         // The snowball working sets (things/counts) — reused per BuildBulkJob call instead of a fresh List per
         // probe. The job-OWNED targetQueueB/countQueue are still allocated fresh below (the Job pool owns + scribes
@@ -160,6 +159,7 @@ namespace HaulersDream
             public Job job;
             public int loadID;
             public int jobState;
+            public StorageCommitments.StoragePlanning storage;
         }
 
         // Self-register the per-session plan-cache clear so the game-load hygiene sweep can never forget it (see
@@ -262,15 +262,9 @@ namespace HaulersDream
             // exact pattern, a single paused ordering interaction producing 300-900+ identical rebuilds for
             // one pawn, and it compounds with several pawns/orders happening at once.
             //
-            // Fix: while paused, still serve the cache, but gate a forced entry's freshness on this pawn's
-            // JOB STATE (JobStateSignature) instead of the frozen tick. SecondTaskedNearby (the only thing a
-            // forced plan's outcome depends on beyond the primary itself) reads only this pawn's current job
-            // and job queue, and neither can change without either a tick advancing (already covered by the
-            // per-tick clear) or a new/replaced job appearing on this pawn (which the signature catches:
-            // queueing bumps the queue length, a takeover/interrupt swaps in a new current-job loadID). So a
-            // genuinely new situation still rebuilds fresh, the exact correctness the old bypass protected,
-            // while a repeated probe with nothing queued in between now hits the cache instead of paying the
-            // full cost again.
+            // Keep positive route reuse while paused, with a job-state check for forced plans and a fresh
+            // resource check for every cached plan. Job state alone cannot establish capacity: another pawn
+            // may reserve incoming space, a stack may move, or a provider may change before ticks advance.
             int tick = Find.TickManager?.TicksGame ?? -1;
             var cache = planCache ?? (planCache = new Dictionary<long, CachedPlan>());
             if (tick != cacheTick)
@@ -289,16 +283,19 @@ namespace HaulersDream
                 // The cache holds LIVE Job instances, and vanilla's JobMaker.ReturnToPool can recycle one
                 // same-tick: the stored loadID is the proof of identity (Clear() resets it to -1, MakeJob
                 // assigns a fresh one — a recycled instance can never match). The def/target check stays as
-                // belt-and-braces. Cached nulls (negative results, the common case on a scan) serve as-is.
-                if (cached.job == null)
-                    return null;
-                if (cached.job.loadID == cached.loadID
+                // belt-and-braces. A cached job is only a proposal: revalidate every planned parcel
+                // against current physical resources and ALL incoming claims before serving it.
+                if (cached.job != null && cached.job.loadID == cached.loadID
                     && cached.job.def == HaulersDreamDefOf.HaulersDream_BulkHaul
-                    && cached.job.targetA.Thing == primary)
+                    && cached.job.targetA.Thing == primary
+                    && cached.storage != null && cached.storage.Matches(cached.job) && cached.storage.Validate())
                     return cached.job;
             }
-            var plan = BuildBulkJob(pawn, primary, vanillaJob, forced, forceSweep);
-            cache[key] = new CachedPlan { job = plan, loadID = plan?.loadID ?? -1, jobState = jobState };
+            var plan = BuildBulkJob(pawn, primary, vanillaJob, forced, forceSweep, out var storage);
+            // A capacity-dependent rejection can change within the same paused tick. Never cache
+            // a negative physical-capacity answer as though time alone established its freshness.
+            if (plan == null) cache.Remove(key);
+            else cache[key] = new CachedPlan { job = plan, loadID = plan.loadID, jobState = jobState, storage = storage };
             return plan;
         }
 
@@ -326,7 +323,6 @@ namespace HaulersDream
             // Drop any cross-session Thing references the scratch buffers still hold (they're Cleared again
             // at the next build before being read, so this is hygiene, not correctness).
             scratchPool?.Clear();
-            scratchGroupBudgets?.Clear();
             scratchThings?.Clear();
             scratchCounts?.Clear();
             scratchCorpseContainers?.Clear();
@@ -357,9 +353,9 @@ namespace HaulersDream
         /// </list>
         ///
         /// <para>Anything else keeps its dedicated vanilla flow. <c>targetB.Cell</c> is the container's
-        /// <c>PositionHeld</c> for a container job — a fine search-radius anchor — and <c>ResolveGroupBudget</c>
-        /// finds no slot group there, so it returns null (unbounded) and the anchor's def simply gets no
-        /// plan-time storage budget; the unload re-clamps at delivery anyway.</para>
+        /// <c>PositionHeld</c> for a container job — a fine search-radius anchor. True containers retain
+        /// native/enroute capacity handling and the separate one-body-per-container planning guard;
+        /// they never become unbounded slot-group resources.</para>
         ///
         /// <para>ONE definition, called by both the cheap potential-work gate and the real build, because the
         /// invariant documented on <see cref="HasPotentialBulkWork"/> — the gate is a superset of the build's
@@ -671,8 +667,10 @@ namespace HaulersDream
             return false;
         }
 
-        private static Job BuildBulkJob(Pawn pawn, Thing primary, Job vanillaJob, bool forced, bool forceSweep = false)
+        private static Job BuildBulkJob(Pawn pawn, Thing primary, Job vanillaJob, bool forced, bool forceSweep,
+            out StorageCommitments.StoragePlanning storage)
         {
+            storage = null;
             var s = HaulersDreamMod.Settings;
             var map = pawn?.Map;
             if (s == null || !s.bulkHaul || map == null || primary == null || !primary.Spawned)
@@ -844,45 +842,20 @@ namespace HaulersDream
             if (BulkHaulPolicy.InventoryHaulWorseThanHands(CECompat.IsActive, forceSweep, primaryTake, handCap, primary.stackCount))
                 return null;
 
-            // Per-destination-GROUP storage budgets for this plan (#138): ONE shared budget per storage group,
-            // so several defs bound for the SAME group draw from one pool of empty cells instead of each pricing
-            // the group's full free space (the cross-def over-haul the reporter saw). Reused per-thread scratch,
-            // Cleared here (never trusted empty from a prior call). The primary is priced + committed first, so
-            // every swept extra sees the room it already claimed.
-            var budgets = scratchGroupBudgets ?? (scratchGroupBudgets = new Dictionary<ISlotGroup, StorageGroupBudget>());
-            budgets.Clear();
-
-            // The shared per-plan budget for the chosen group, so several defs bound for it draw from ONE pool
-            // of empty cells (#138). `denied` = the group is filtered out for this pawn (a denied
-            // storage-building filter), which is a hard zero rather than a number.
-            var primaryBudget = ResolveGroupBudget(pawn, primary, storeCell, map, budgets, out bool primaryDenied);
-
-            // #114 / #248: how much of the destination is genuinely this pawn's to take, once every other
-            // hauler's live commitment is off the top. ONE call to the seam, replacing what used to be a
-            // budget read, a separate colony-wide in-flight scan and a second subtraction that had to agree
-            // with it — three numbers that could disagree, and did.
-            //
-            // The old "only clamp when the primary is ALREADY in valid storage" gate is GONE. It existed
-            // because the clamp could not be trusted for loose loot, and it is exactly why the reported case
-            // survived three fixes: a pawn sweeping loose loot toward a nearly-full shelf skipped the clamp
-            // entirely. Now the ledger answers the same question for both, so the distinction has nothing
-            // left to protect. int.MaxValue still means "not measurably limited" and applies no clamp.
-            var primaryGroup = BudgetGroupOf(map.haulDestinationManager.SlotGroupAt(storeCell));
-            int primarySpace = primaryDenied
-                ? 0
-                : StorageCommitments.FreeUnitsFor(pawn, primaryGroup, primary.def, primary);
-            if (primarySpace != int.MaxValue)
+            // Exact proposed parcels share physical stack deficits and vacant slots with every
+            // existing incoming claim. No def can privately spend a multi-slot shelf's vacancy.
+            // This object is only local/cached proposal metadata; none of these probes publishes.
+            storage = new StorageCommitments.StoragePlanning(pawn, forced ? primary : null);
+            var primaryGroup = storeCell.IsValid && storeCell.InBounds(map)
+                ? BudgetGroupOf(map.haulDestinationManager.SlotGroupAt(storeCell)) : null;
+            if (vanillaJob.def == JobDefOf.HaulToContainer && vanillaJob.targetB.Thing is IHaulDestination)
+                storage.RememberContainer(primary, primaryTake);
+            else if (!storage.TryAdd(primary, storeCell, primaryTake,
+                StoreUtility.CurrentStoragePriorityOf(primary), out primaryTake))
             {
-                primaryTake = Math.Min(primaryTake, primarySpace);
-                if (primaryTake <= 0)
-                {
-                    // Traced only when something was actually in flight — that is the diagnostic case (the
-                    // reported "second pawn should have stood down"), and it keeps the line off the scan path
-                    // for a colony with nothing moving, where HDLog.Dbg would still build and enqueue it.
-                    if (StorageCommitments.AnyClaims)
-                        StorageCommitments.Trace("bulk-decline", pawn, primaryGroup, primary.def, 0, primarySpace);
-                    return null; // nothing genuinely free here — vanilla's own (space-clamped) haul still stands
-                }
+                if (StorageCommitments.AnyClaims)
+                    StorageCommitments.Trace("bulk-decline", pawn, primaryGroup, primary.def, 0, 0);
+                return null; // Unknown or no witnessed capacity: retain the original native haul.
             }
 
             running += primaryTake * primaryUnit;
@@ -918,13 +891,6 @@ namespace HaulersDream
                     includeCorpses: CorpseSweepPolicy.CanSweepAsNeighbor(s.bulkHaul, s.bulkHaulCorpses,
                         s.autoStripMode == AutoStripMode.DisposalOnly, playerOrdered: forced || forceSweep));
 
-                // Commit the primary's take to its group budget so swept extras (any def, not just the primary's)
-                // see the room it has already claimed. When the #114 clamp bound primaryTake to the group's space
-                // this leaves the group fully subscribed; for un-clamped loose loot it debits the whole pocketed
-                // stack (the pre-#138 per-def seed did the same, only per def; now the empty cells are shared).
-                if (!primaryDenied)
-                    primaryBudget?.Consume(primary.def, primaryTake);
-
                 // The grave-overshoot clamp's per-plan set: which containers this sweep has already promised a
                 // body to. UNCONDITIONAL, not gated on the corpse allowance — the gate used to read "at the
                 // default allowance a hauler cannot fit a second body anyway", which is simply untrue of the
@@ -957,7 +923,7 @@ namespace HaulersDream
                 while (things.Count < MaxStacks && running < ceiling - 0.0001f)
                 {
                     var next = TakeNearestEligible(pawn, pool, last, searchRadius, claimed, ceiling, running, bulkRoom,
-                        budgets, s.corpseCarryAllowance, corpseContainers, out int take, out float unitMassKg);
+                        storage, s.corpseCarryAllowance, corpseContainers, out int take, out float unitMassKg);
                     if (next == null)
                         break;
                     things.Add(next);
@@ -981,7 +947,7 @@ namespace HaulersDream
             // the pool.) For an Always-trigger or automatic haul secondTasked is false, so this never widens those.
             if (things.Count < 2)
             {
-                int deliverable = primarySpace == int.MaxValue ? primaryTake : Math.Min(primaryTake, primarySpace);
+                int deliverable = primaryTake;
                 if (secondTasked)
                 {
                     // bug 1: a nearby FIRST player order exists but may already be CARRIED in this pawn's hands,
@@ -1021,7 +987,7 @@ namespace HaulersDream
                     // Normally a lone primary hauls best in hands (vanilla). EXCEPTION (bug 2): if the stack is too
                     // big for one armful AND storage can take more than one hand-trip would deliver, route it through
                     // inventory so the WHOLE stack moves in one trip instead of leaving part behind. deliverable is
-                    // clamped to the destination group's real space (primaryBudget.AvailableFor) so we never strand it.
+                    // clamped to the destination group's freshly observed finite capacity.
                     if (!(s.haulOversizedInInventory && BulkHaulPolicy.OversizedStackWorthInventory(primary.stackCount, handCap, deliverable)))
                         return null;
                     counts[0] = Math.Min(counts[0], deliverable);
@@ -1030,6 +996,9 @@ namespace HaulersDream
                 }
             }
 
+            // Later candidate/provider callbacks can change earlier resources. Re-observe every
+            // accepted group before returning the proposal; actual start still needs admission.
+            if (!storage.Validate()) return null;
             var job = JobMaker.MakeJob(HaulersDreamDefOf.HaulersDream_BulkHaul, primary);
             job.targetQueueB = new List<LocalTargetInfo>(things.Count);
             job.countQueue = new List<int>(counts);
@@ -1063,7 +1032,7 @@ namespace HaulersDream
             // (the caller falls back to the vanilla haul, whose fail reason explains it).
             if (vanilla == null || (vanilla.def != JobDefOf.HaulToCell && vanilla.def != JobDefOf.HaulToContainer))
                 return null;
-            return BuildBulkJob(pawn, clicked, vanilla, forced: true, forceSweep: true);
+            return BuildBulkJob(pawn, clicked, vanilla, forced: true, forceSweep: true, storage: out _);
         }
 
         /// <summary>
@@ -1343,7 +1312,7 @@ namespace HaulersDream
         // independently (see the call site).
         private static Thing TakeNearestEligible(Pawn pawn, List<Thing> pool, IntVec3 from, float radius,
             HashSet<Thing> claimed, float ceiling, float runningMass, float bulkRoom,
-            Dictionary<ISlotGroup, StorageGroupBudget> budgets, float corpseAllowance,
+            StorageCommitments.StoragePlanning storage, float corpseAllowance,
             HashSet<IHaulDestination> corpseContainers, out int take, out float unitMassKg)
         {
             take = 0;
@@ -1404,8 +1373,7 @@ namespace HaulersDream
                     continue;
                 // A container destination holds a FIXED number of bodies — a grave holds exactly one
                 // (Building_Grave.Accepts is false once HasCorpse) — yet it is exempt from this plan's storage
-                // budget: destCell is Invalid for a container, so ResolveGroupBudget below returns null and
-                // spaceLeft becomes int.MaxValue. Nothing else stops a sweep planning three bodies into one
+                // allocator: destCell is Invalid for a container. Nothing else stops a sweep planning three bodies into one
                 // grave, and the unload's per-stack re-probe then leaves the surplus on the floor beside the
                 // graveyard. Scoped to CORPSES so no other cargo's flow moves, but applied at EVERY setting:
                 // the tempting gate is the corpse carry allowance, and it is wrong, because a vanilla Lifter
@@ -1421,7 +1389,7 @@ namespace HaulersDream
                 // the whole STOCKPILE to the first swept body and refuse every body after it — a field of eight
                 // dead hares bound for one dumping zone would sweep two. Only the container path returns an
                 // Invalid cell (both of its exits set `foundCell = IntVec3.Invalid`), so that is the test; slot
-                // groups are already bounded, correctly and per def, by the #138 StorageGroupBudget below, and a
+                // groups are already bounded by the actual-parcel allocation below, and a
                 // second clamp on top of it would be pure over-restriction.
                 //
                 // The lighter case this now also covers, deliberately: two small animal bodies bound for one
@@ -1431,22 +1399,12 @@ namespace HaulersDream
                 if (corpseContainers != null && containerDestination && t is Corpse
                     && corpseContainers.Contains(destContainer))
                     continue;
-                // Per-GROUP storage budget (see BuildBulkJob, #138): the first stack targeting a group prices its
-                // real remaining space (empty cells shared across defs, partial stacks per def); planned stacks
-                // decrement it, and once a def's share is exhausted further candidates of it are rejected (they'd
-                // only be floor-dropped at unload). Different defs bound for the same group no longer each price
-                // its full free space, the cross-def over-haul the reporter saw.
-                var budget = ResolveGroupBudget(pawn, t, destCell, pawn.Map, budgets, out bool denied);
-                if (denied)
-                    continue; // this stack's destination group is filtered out for the pawn, leave it at origin
-                int spaceLeft = budget?.AvailableFor(t.def) ?? int.MaxValue;
-                if (spaceLeft != int.MaxValue)
-                {
-                    fits = Math.Min(fits, spaceLeft);
-                    if (fits <= 0)
-                        continue; // the group is fully subscribed for this def, leave the stack at its origin
-                }
-                budget?.Consume(t.def, fits);
+                // Re-observe this actual Thing's accepted cells/compatible stacks with all prior
+                // planned parcels and ALL existing claims. Unknown capacity never becomes infinity.
+                if (containerDestination)
+                    storage.RememberContainer(t, fits);
+                else if (!storage.TryAdd(t, destCell, fits, currentPriority, out fits))
+                    continue;
                 // Subscribe the container only for a body actually TAKEN. Booking it at the lookup above would
                 // burn the slot for a candidate that the budget checks then rejected — and a rejected candidate
                 // has already left the pool, so the next body would find the grave spoken for by nobody.
@@ -1465,89 +1423,13 @@ namespace HaulersDream
         /// group itself. Null in, null out.
         ///
         /// <para>The single source of this normalisation, because several places must agree on it EXACTLY: the
-        /// per-plan budget dictionary keyed by it here, and <see cref="StorageCommitments"/>, which records and
+        /// per-plan resource groups here, and <see cref="StorageCommitments"/>, which records and
         /// reads every cross-pawn commitment against the same key. Reference-compared — if two callers derived
         /// the group differently they would never match and the accounting would silently report zero.</para>
         /// </summary>
         /// <param name="slotGroup">The slot group at a destination cell, from <c>SlotGroupAt</c>.</param>
         internal static ISlotGroup BudgetGroupOf(SlotGroup slotGroup)
             => slotGroup == null ? null : ((ISlotGroup)slotGroup.StorageGroup ?? slotGroup);
-
-        // Resolve (and cache per plan) the shared budget for the storage GROUP at `cell`, pricing `thing`'s def
-        // into it if not already priced. Returns null for an UNBOUNDED destination (no cell-grid clamp): a
-        // container destination (cell == Invalid, its capacity is enroute-managed) or no slot group at the cell.
-        // Sets `denied` = true when the group is filtered out for this pawn (a denied storage-building filter).
-        // The budget's empty cells are shared across every def bound for the group (#138); partial stacks stay
-        // per def.
-        //
-        // The cell measurement itself lives in StorageCommitments — the ONE place in this assembly that asks a
-        // cell how much of a def it can still take — and is memoised per (tick, group, thing, pawn), so the
-        // planner, the count adapter and the per-cell gate all read one reading instead of three.
-        private static StorageGroupBudget ResolveGroupBudget(Pawn pawn, Thing thing, IntVec3 cell, Map map,
-            Dictionary<ISlotGroup, StorageGroupBudget> budgets, out bool denied)
-        {
-            denied = false;
-            if (!cell.IsValid)
-                return null;
-            var slotGroup = map.haulDestinationManager.SlotGroupAt(cell);
-            if (slotGroup == null)
-                return null;
-            // Storage-building filter (plan G4): this prices storage via SlotGroupAt + IsGoodStoreCell (NOT
-            // TryFindBestBetter*), so the storage-filter funnel postfix can never reach it — apply the building
-            // filter HERE, through the same derivation the measurement uses so the two cannot disagree about
-            // whether a building is allowed. Off-path (feature master off, or the allow-all Unload context) it
-            // short-circuits before any work and the scan is byte-identical to a build without the filter.
-            var filter = StorageCommitments.ActiveFilter();
-            if (filter != null && !filter.IsGroupAllowed(slotGroup))
-            {
-                denied = true;
-                return null;
-            }
-            ISlotGroup group = BudgetGroupOf(slotGroup);
-            if (budgets.TryGetValue(group, out var budget))
-            {
-                // Group already measured this plan (its shared empty-cell count is fixed); just price this def
-                // into it the first time it appears, so its partial-stack room + per-cell capacity are known.
-                PriceDefInto(budget, pawn, thing, group, map);
-                return budget;
-            }
-            var space = StorageCommitments.MeasureGroup(pawn, thing, group, map);
-            budget = new StorageGroupBudget(space.Unbounded ? int.MaxValue : space.EmptyCells);
-            PriceDefInto(budget, pawn, thing, group, map);
-            budgets[group] = budget;
-            return budget;
-        }
-
-        /// <summary>
-        /// Price one def into a plan's group budget, and immediately spend what OTHER pawns have already
-        /// promised that group for the same def.
-        ///
-        /// <para>The subtraction is what keeps a swept extra honest: the primary's own allowance comes from
-        /// <see cref="StorageCommitments.FreeUnitsFor(Pawn,ISlotGroup,ThingDef,Thing)"/>, but the extras are
-        /// priced against this budget, and a budget that showed them room another hauler has already claimed
-        /// would re-open the over-haul through the back door.</para>
-        ///
-        /// <para>→ NOTE: only the defs this plan actually prices get that treatment. A def NOBODY in this plan
-        /// is carrying, but which another pawn has claimed on the same group, still occupies cells this budget
-        /// counts as free. That residual is the pre-existing "safe upper bound" this planner has always
-        /// carried, it is corrected by the deposit re-gate with bounded churn, and it is closed exactly where
-        /// it matters: the seam itself (FreeUnitsFor, and therefore both Harmony adapters) takes every def's
-        /// claims out of the shared cell pool before answering.</para>
-        /// </summary>
-        /// <param name="budget">The plan's budget for the group.</param>
-        /// <param name="pawn">The planning pawn, excluded from the claims it subtracts — its own prior claim is
-        /// about to be replaced by this very plan.</param>
-        /// <param name="thing">The stack whose def is being priced.</param>
-        /// <param name="group">The destination group.</param>
-        /// <param name="map">The map it is on.</param>
-        private static void PriceDefInto(StorageGroupBudget budget, Pawn pawn, Thing thing, ISlotGroup group, Map map)
-        {
-            if (budget.Unbounded || budget.IsPriced(thing.def))
-                return;
-            var space = StorageCommitments.MeasureGroup(pawn, thing, group, map);
-            budget.PriceDef(thing.def, space.PartialSpace, space.PerCellCapacity);
-            budget.Consume(thing.def, StorageCommitments.ClaimedByOthersFor(pawn, group, thing.def));
-        }
 
         // ---- "second order takes over immediately" (the player ordered a 2nd nearby haul under SecondTasked) ----
 

@@ -26,11 +26,14 @@ namespace HaulersDream
         /// <summary>The component for the running game (null at the main menu / before a game loads).</summary>
         public static HaulersDreamGameComponent Instance => Current.Game?.GetComponent<HaulersDreamGameComponent>();
 
-        public HaulersDreamGameComponent(Game game) => UftOrphanBillGuard.ResetLoadCount();
+        private readonly Game storageGame;
+        public HaulersDreamGameComponent(Game game)
+        { storageGame = game; UftOrphanBillGuard.ResetLoadCount(); }
 
         public override void FinalizeInit()
         {
             base.FinalizeInit();
+            var storageLoad = StorageCommitments.BeginResourceLoad(storageGame, this);
             // CROSS-SESSION CACHE HYGIENE. Every per-session static cache (the bulk-haul plan memo, the per-tick
             // mass / surplus / tracked-mass memos, the per-(worker,def,tick) availability counts, the haul-to-stack
             // cell memo, the load-work memo, the route-picker claimed-by-others memo, the Common Sense owns-flow
@@ -57,6 +60,7 @@ namespace HaulersDream
             // items, then clean up only known recipe jobs that still reference those stack-less bills.
             UftOrphanBillGuard.RepairAfterLoadAndReport();
             RepairOrphanedRecipeJobsAfterLoad();
+            StorageCommitments.ScheduleResourceLoad(storageLoad);
         }
 
         // fix/mix recovery: a save migrated off a mod that contributed a JobDef + JobDriver (e.g. Pick Up And
@@ -298,6 +302,7 @@ namespace HaulersDream
             ExposeLedger();
             ExposeQuestPawns();
             ExposeTransporterUnloads();
+            ExposeNativeStorageIntents();
         }
     }
 }

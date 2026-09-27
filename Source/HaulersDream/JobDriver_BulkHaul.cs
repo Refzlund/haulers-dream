@@ -72,6 +72,8 @@ namespace HaulersDream
         /// takeover then routes the new order elsewhere instead of silently dropping it.</summary>
         internal bool IsStillLoading => job?.targetQueueB != null && loadIndex < job.targetQueueB.Count;
 
+        internal int StoragePendingStartIndex => loadIndex;
+
         public override void ExposeData()
         {
             base.ExposeData();
@@ -91,6 +93,9 @@ namespace HaulersDream
             var queue = job.GetTargetQueue(StackInd);
             if (!SweepPickupPlan.IsAligned(queue, job.countQueue))
                 return false;
+            // A forced source reserve can invoke native/F38 takeover. Establish destination
+            // feasibility first, without applying destination priority from a cached driver.
+            if (!StorageCommitments.ForcedBulkPreflight(this)) return false;
             if (queue[0].IsValid && job.countQueue[0] > 0
                 && !pawn.Reserve(queue[0], job, 1, -1, null, errorOnFailed))
                 return false;
@@ -99,8 +104,7 @@ namespace HaulersDream
             for (int i = 1; i < queue.Count; i++)
                 if (queue[i].IsValid && job.countQueue[i] > 0 && pawn.CanReserve(queue[i]))
                     pawn.Map.reservationManager.Reserve(pawn, job, queue[i], errorOnFailed: false, canReserversStartJobs: false);
-            CommitPlannedDestinations();
-            return true;
+            return AdmitCurrentPickups();
         }
 
         private void SkipRelinquishedPickup()
@@ -114,124 +118,36 @@ namespace HaulersDream
             JumpToToil(loadDecideToil);
         }
 
-        /// <summary>
-        /// Tell the storage commitment ledger where this sweep's cargo is going, so every other hauler prices
-        /// the destination with this load already taken off the top.
-        ///
-        /// <para>Registered HERE and nowhere else for this driver: <c>TryMakePreToilReservations</c> is the one
-        /// hook RimWorld guarantees runs exactly once, on the main thread, when a job genuinely starts — and
-        /// it is already inside RimWorld Multiplayer's synced job-start path, so the write happens in lockstep
-        /// on every client. Registering at plan time instead would book a claim for every speculative float-menu
-        /// probe; registering at pickup time would leave the whole walk to the first stack unaccounted, which is
-        /// precisely the window several haulers plan in.</para>
-        ///
-        /// <para>The claim SURVIVES this job. A bulk haul picks up in one job and deposits in a later
-        /// <c>JobDriver_UnloadHauledInventory</c>, so nothing may release on job end — the ledger instead clamps
-        /// every row to what the pawn is still visibly carrying, which releases it the moment the cargo lands.</para>
-        ///
-        /// <para>→ GOTCHA: MULTIPLAYER. The commit loop below is order-SENSITIVE — each <c>Commit</c> is
-        /// visible to the next entry's destination probe, so committing steel before wood can send the wood
-        /// somewhere else. What keeps that deterministic is not this method: it is that
-        /// <c>job.targetQueueB</c> is filled in an order two clients must agree on, because
-        /// <c>BulkHaul.TakeNearestEligible</c> takes the lexicographic minimum of
-        /// <c>(distSq, thingIDNumber)</c> over its candidate pool, which erases the pool's own
-        /// <c>HashSet</c>-derived order. The def order here is that queue's first-appearance order and is
-        /// deliberately left alone, so the anchor def — the one <c>BulkHaul</c> priced the plan against —
-        /// still commits first. If that min-pick ever loses its <c>thingIDNumber</c> tiebreak, this loop
-        /// becomes a desync and needs the same <c>defName</c> sort <c>StorageCommitments.RunJanitor</c>
-        /// uses.</para>
-        /// </summary>
-        private void CommitPlannedDestinations()
+        // Cached reservation probes are not actual job activations. Native StartJob repeats this
+        // method with the real driver installed; only that call can narrow and publish the plan.
+        private bool AdmitCurrentPickups()
         {
-            var map = pawn?.Map;
-            if (map == null || !StorageCommitments.ActiveOn(map))
-                return;
-            var queue = job.targetQueueB;
-            var counts = job.countQueue;
-            if (queue == null)
-                return;
-
-            var planned = plannedScratch ?? (plannedScratch = new List<PlannedCargo>());
-            planned.Clear();
-            for (int i = 0; i < queue.Count; i++)
+            if (!ReferenceEquals(pawn.CurJob, job) || !ReferenceEquals(pawn.jobs.curDriver, this))
+                return true;
+            bool any = loadedAnything;
+            for (int i = loadIndex; i < job.targetQueueB.Count; i++)
             {
-                var t = queue[i].Thing;
-                if (t?.def == null)
+                var source = job.targetQueueB[i].Thing;
+                int wanted = job.countQueue[i];
+                if (source != null && wanted > 0 && !pawn.Map.reservationManager.ReservedBy(source, pawn, job))
+                {
+                    // An optional source can become available before we walk to it. Keep its
+                    // proposal, without any claim; loadDecide reserves and admits it afresh.
+                    any = true;
                     continue;
-                int units = counts != null && i < counts.Count ? counts[i] : 0;
-                if (units <= 0)
+                }
+                if (source == null || wanted <= 0
+                    || !StorageCommitments.AdmitBulkParcel(this, i, source, wanted, out int admitted,
+                        prioritizeOriginal: i == 0))
+                {
+                    job.countQueue[i] = 0;
                     continue;
-                units = System.Math.Min(units, t.stackCount);
-                if (units <= 0)
-                    continue;
-                Fold(planned, t, units);
+                }
+                job.countQueue[i] = admitted;
+                any = true;
             }
-
-            for (int i = 0; i < planned.Count; i++)
-            {
-                var entry = planned[i];
-                // → NOTE: this probe can name a DIFFERENT group than the one BulkHaul priced the plan
-                //   against. The plan starts from the cell vanilla chose for the anchor; this asks, per def,
-                //   where the load will actually be put down — with a lower priority floor, and through the
-                //   commitment gate, so a group that filled up between planning and starting is skipped. The
-                //   claim follows where the cargo is really going, which is the honest answer; if the two
-                //   diverge, the unload re-commits against the destination it actually reaches.
-                var group = StorageEvidence.DestinationGroupFor(map, pawn, entry.sample);
-                if (group == null)
-                    continue; // nowhere to put it (or a container, whose capacity vanilla coordinates itself)
-                // A forced order takes the space back off whoever else claimed it, exactly as vanilla's own
-                // JobDriver_HaulToContainer.UpdateTracker does for a container destination.
-                if (job.playerForced
-                    && StorageCommitments.FreeUnitsFor(pawn, group, entry.def, entry.sample) <= 0)
-                    StorageCommitments.InterruptCommittersTo(group, entry.def, pawn);
-                // The plan's units OR whatever the pawn is already visibly moving of this def, whichever is
-                // larger: a sweep can start with cargo of the same def already in its pockets from an
-                // earlier trip, and that load is going to the same place. Claiming only the newly planned
-                // units would leave the rest invisible to every other hauler.
-                int units = System.Math.Max(entry.units, StorageCommitments.UnitsMovingOf(pawn, entry.def));
-                StorageCommitments.Commit(pawn, group, entry.def, units, "bulk-sweep");
-            }
-            planned.Clear();
+            return any;
         }
-
-        /// <summary>Fold one queued stack into the per-def totals, keeping the lowest-<c>thingIDNumber</c>
-        /// stack as the one the destination probe runs on — so two multiplayer clients probe with the same
-        /// stack and resolve the same destination.</summary>
-        /// <param name="planned">The per-def totals being built.</param>
-        /// <param name="t">The queued stack.</param>
-        /// <param name="units">Units planned from it.</param>
-        private static void Fold(List<PlannedCargo> planned, Thing t, int units)
-        {
-            for (int i = 0; i < planned.Count; i++)
-            {
-                if (planned[i].def != t.def)
-                    continue;
-                var merged = planned[i];
-                merged.units += units;
-                if (t.thingIDNumber < merged.sample.thingIDNumber)
-                    merged.sample = t;
-                planned[i] = merged;
-                return;
-            }
-            planned.Add(new PlannedCargo { def = t.def, units = units, sample = t });
-        }
-
-        /// <summary>One def's share of a planned sweep, with the stack its destination is probed from.</summary>
-        private struct PlannedCargo
-        {
-            /// <summary>The def being fetched.</summary>
-            public ThingDef def;
-
-            /// <summary>Units of it this sweep plans to pick up.</summary>
-            public int units;
-
-            /// <summary>Lowest-id stack of the def in the queue; the destination probe's subject.</summary>
-            public Thing sample;
-        }
-
-        // Reused per-def buffer for the job-start commit. [ThreadStatic] + lazy-init matches this assembly's
-        // hook-reachable scratch convention; cleared at use, never trusted empty, never aliased into job state.
-        [System.ThreadStatic] private static List<PlannedCargo> plannedScratch;
 
         public override IEnumerable<Toil> MakeNewToils()
         {
@@ -313,6 +229,13 @@ namespace HaulersDream
                     if (valid && !pawn.Map.reservationManager.ReservedBy(t, pawn, job)
                         && (!pawn.CanReserve(t) || !pawn.Reserve(t, job, errorOnFailed: false)))
                         valid = false;
+                    // Appended player orders did not pass through job-start reservations. Admit
+                    // their actual source here too; existing responsibilities are revalidated.
+                    if (valid)
+                    {
+                        valid = StorageCommitments.AdmitBulkParcel(this, loadIndex, t, counts[loadIndex], out int admitted);
+                        counts[loadIndex] = valid ? admitted : 0;
+                    }
                     if (valid)
                         break;
                     loadIndex++;
@@ -410,12 +333,32 @@ namespace HaulersDream
                 count = System.Math.Min(count, CECompat.MaxFitCount(pawn, t));
                 if (count <= 0) { loadIndex++; JumpToToil(loadDecide); return; }
 
-                // SplitOff with count >= stackCount despawns the thing itself (the full-stack pickup path);
-                // a partial split returns a fresh unspawned thing. Either way TryAdd takes the plain-add path.
-                var split = t.SplitOff(count);
-                if (DepositSwept(split))
-                    loadedAnything = true;
-                loadIndex++;
+                if (!StorageCommitments.AdmitBulkParcel(this, loadIndex, t, count, out count))
+                { loadIndex++; JumpToToil(loadDecide); return; }
+                counts[loadIndex] = count;
+                var transfer = StorageCommitments.BeginBulkTransfer(this, loadIndex, t, count, RecordNearbyCargo);
+                System.Exception failure = null;
+                try
+                {
+                    var split = t.SplitOff(count);
+                    if (DepositSwept(split, transfer)) loadedAnything = true;
+                }
+                catch (System.Exception exception) { failure = exception; }
+                finally
+                {
+                    try { transfer.RetainDetached(ref failure); }
+                    catch (System.Exception exception)
+                    { StorageCommitments.BulkResourceTransfer.PreserveFailure(ref failure, exception, "retain"); }
+                    try { transfer.Dispose(); }
+                    catch (System.Exception exception)
+                    { StorageCommitments.BulkResourceTransfer.PreserveFailure(ref failure, exception, "reconcile"); }
+                    finally
+                    {
+                        loadedAnything |= transfer.MovedAnything;
+                        loadIndex++;
+                    }
+                }
+                if (failure != null) System.Runtime.ExceptionServices.ExceptionDispatchInfo.Capture(failure).Throw();
                 JumpToToil(loadDecide);
             };
             take.defaultCompleteMode = ToilCompleteMode.Instant;
@@ -477,7 +420,7 @@ namespace HaulersDream
         /// enforcement won't dump the growth); a brand-new tagged stack notifies the full count via RegisterHauledItem.
         /// </summary>
         /// <returns>true if any units landed in inventory (the caller marks the job as having loaded something).</returns>
-        private bool DepositSwept(Thing split)
+        private bool DepositSwept(Thing split, StorageCommitments.BulkResourceTransfer transfer)
         {
             if (split == null || split.Destroyed || split.stackCount <= 0)
                 return false;
@@ -526,7 +469,7 @@ namespace HaulersDream
                     if (!inv.Contains(target) || target.stackCount >= target.def.stackLimit || !target.CanStackWith(split))
                         continue;
                     int before = split.stackCount;
-                    target.TryAbsorbStack(split, respectStackLimit: true); // moves up to the absorber's room
+                    transfer.Absorb(split, target);
                     int moved = before - split.stackCount;
                     if (moved > 0)
                     {
@@ -534,7 +477,6 @@ namespace HaulersDream
                         // positive mergedCount notifies only the delta — Add is a no-op so the set is unchanged).
                         // The pickup clock is refreshed once below.
                         comp.RegisterHauledItem(target, moved);
-                        RecordNearbyCargo(target, moved);
                         loaded = true;
                     }
                 }
@@ -545,10 +487,9 @@ namespace HaulersDream
             if (!split.Destroyed && split.stackCount > 0)
             {
                 int addedCount = split.stackCount;
-                if (inv.TryAdd(split, canMergeWithExistingStacks: false))
+                if (transfer.Add(split, inv))
                 {
                     comp?.RegisterHauledItem(split);
-                    RecordNearbyCargo(split, addedCount);
                     // Unspawned splits carry a default (0,0,0) position; the shared-inventory chooser ranks
                     // carried stock by position, so stamp the pawn's cell (a plain field write when unspawned).
                     if (!split.Spawned)

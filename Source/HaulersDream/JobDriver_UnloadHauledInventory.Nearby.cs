@@ -9,6 +9,8 @@ namespace HaulersDream
     public partial class JobDriver_UnloadHauledInventory
     {
         private NearbyDeliveryTransit nearbyTransit = new NearbyDeliveryTransit();
+
+        internal Thing StorageBoundNearbyHands => NearbyHaulDelivery.Applies(job) ? nearbyTransit?.Held(pawn) : null;
         private HashSet<Thing> nearbyCandidates;
         private const int NearbyNoProgressLimit = 3;
 

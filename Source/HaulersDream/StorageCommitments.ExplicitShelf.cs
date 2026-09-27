@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using HaulersDream.Core;
 using RimWorld;
@@ -161,8 +162,9 @@ namespace HaulersDream
                     shelf = shelf, group = group, cell = candidate, def = subject.def, units = units };
                 if (order.tripDestination != candidate) pawn.pather.StopDead();
                 order.tripDestination = candidate; job.targetB = candidate; order.pathStarted = 0; order.shelfAllocation = claim;
-                HaulersDreamGameComponent.SetStorageClaims(StorageClaimLedger.Add(HaulersDreamGameComponent.storageClaims,
-                    pawn, group, subject.def, units, claim));
+                var rows = new List<StorageClaimRow>(HaulersDreamGameComponent.storageClaims)
+                    { new StorageClaimRow(pawn, group, subject.def, units, claim) };
+                HaulersDreamGameComponent.SetStorageClaims(rows.ToArray());
                 capacity = units; return true;
             }
             return false;

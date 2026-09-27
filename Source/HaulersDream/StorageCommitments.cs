@@ -7,43 +7,26 @@ using Verse.AI;
 
 namespace HaulersDream
 {
-    /*
-        ═══════════════════════════════════════════════════════════════════════════════════════════════
-                                     Storage commitments — the ONE seam
-        ═══════════════════════════════════════════════════════════════════════════════════════════════
-        The single answer to "how much of this storage group may this pawn commit to right now", and the
-        only place a commitment is recorded. Every path that sends cargo to a slot group passes through
-        here; scripts/check-storage-commit-seam.ts fails the build when a new one does not.
-
-        THE BUG THIS EXISTS FOR (#114 / #248, "fixed" three times). Vanilla's destination cell reservation
-        does DOUBLE duty: it hides the cell, and — because HaulAIUtility.HaulToCellStorageJob sums
-        GetItemStackSpaceLeftFor only over cells that pass IsGoodStoreCell — it also SHRINKS every other
-        pawn's job.count. Hauler's Dream strips that reservation for stackables so several pawns can share
-        one tile, and for three releases it gave nothing back: every concurrent hauler priced the same free
-        cells into its own count, pocketed a full stack for three units of room, and carried the rest home.
-
-        WHAT REPLACES IT. A per-(pawn, group, def) claim ledger, read by two Harmony adapters (see
-        StorageCommitAdapters):
-          • HaulAIUtility.HaulToCellStorageJob — the COUNTER. Clamps job.count to what is genuinely free.
-          • StoreUtility.IsGoodStoreCell      — the GATE. Hides a group whose units are fully spoken for,
-                                                so the pawn is never routed there and never handed a zero.
-        Ours is never stricter than the truth: vanilla already hides a cell from every other hauler the
-        instant one pawn reserves it, at WHOLE-CELL granularity and blind to counts.
-
-        → KEY: the ledger is IMMEDIATE, never a per-tick snapshot. A commitment written during tick T is
-          visible to a pawn planning later in tick T. The previous design memoised the colony's in-flight
-          loads per tick, which is why the shipped #114 rule was correct and its answer still wrong.
-        → KEY: the row records WHERE and WHAT; the pawn's live state records HOW MUCH. Every read clamps a
-          row to StorageEvidence, so a claim cannot outlive its cargo and no deposit hook is needed.
-        → GOTCHA: RE-ENTRANCY. Measuring a group calls IsGoodStoreCell, which the gate patches, which calls
-          back into here. `insideSpaceScan` makes the gate stand down for the duration; without it the first
-          query overflows the stack. This is the single load-bearing correctness detail in the file.
-        → GOTCHA: the raw cell measurement is memoised per (tick, group, thing, pawn). A deposit that lands
-          mid-tick is therefore invisible to a pawn that already measured the same group earlier in that
-          same tick, which can allow one extra unit for one tick. That residual is bounded and self-clearing,
-          and it is the price of not re-walking a stockpile once per candidate cell. The LEDGER — the part
-          this phase exists to fix — carries no such staleness.
-    */
+    // Removing native whole-cell reservations also removes their influence on other haulers'
+    // job counts (#114/#248). Sharing a destination therefore requires capacity accounting as
+    // well as a permissive cell predicate. StorageCommitAdapters routes both native questions
+    // through this component; the seam guard checks the declared writers and patch bindings.
+    //
+    // The one ledger contains actual work/parcel owners and retained legacy rows. Supported
+    // resource paths observe exact compatible stacks and shared vacant slots afresh, allocate
+    // existing responsibilities before new work, and publish only after actual admission.
+    // Preflight and planning remain observational. A def-wide total or reserved job.count is
+    // not proof that a particular physical parcel was admitted or transferred.
+    //
+    // Transfer scopes prevent a callback from pricing capacity between custody changes and
+    // receipt publication. Reconciliation attributes each physical quantity once across rows.
+    // Saved admitted intent is distinct from the native trip budget; NativeSaveClaims and
+    // NativeLifecycle validate it against the restored job and cargo.
+    //
+    // The scalar measurement/evidence helpers below remain for callers/providers not yet on
+    // the resource path. Their memo and coarse per-def model are not the resource allocator's
+    // contract. Keep that distinction explicit while migrating callers; the presence of this
+    // shared component alone does not establish complete provider or lifecycle coverage.
 
     /// <summary>
     /// The storage commitment seam: what may be committed, and the recording of what was.
@@ -80,7 +63,8 @@ namespace HaulersDream
 
         /// <summary>Whether ANY commitment is live. The first thing the per-cell gate asks: one array
         /// length read, so with nothing in flight the whole seam costs nothing.</summary>
-        internal static bool AnyClaims => StorageClaimLedger.AnyRows(HaulersDreamGameComponent.storageClaims);
+        internal static bool AnyClaims => ResourceLoadPending
+            || StorageClaimLedger.AnyRows(HaulersDreamGameComponent.storageClaims);
 
         // Set for the duration of a cell measurement. The measurement calls IsGoodStoreCell, which the gate
         // adapter patches, which calls FreeUnitsFor, which measures — so without this the first query
@@ -280,7 +264,7 @@ namespace HaulersDream
         internal static void Commit(Pawn pawn, ISlotGroup group, ThingDef def, int units, string path)
         {
             var rows = HaulersDreamGameComponent.storageClaims;
-            var next = StorageClaimLedger.Add(rows, pawn, group, def, units);
+            var next = StorageClaimLedger.AddLegacy(rows, pawn, group, def, units);
             if (!ReferenceEquals(next, rows))
                 HaulersDreamGameComponent.SetStorageClaims(next);
             Trace(path, pawn, group, def, units);
@@ -330,7 +314,7 @@ namespace HaulersDream
         internal static void DropClaim(Pawn pawn, ThingDef def)
         {
             var rows = HaulersDreamGameComponent.storageClaims;
-            var next = StorageClaimLedger.Add(rows, pawn, null, def, 0);
+            var next = StorageClaimLedger.AddLegacy(rows, pawn, null, def, 0);
             if (!ReferenceEquals(next, rows))
                 HaulersDreamGameComponent.SetStorageClaims(next);
         }
@@ -413,80 +397,36 @@ namespace HaulersDream
             without passing the seam: another mod's haul job, or a save made before this version.
         */
 
-        /// <summary>
-        /// Reconcile the ledger against live pawn state on <paramref name="map"/>: drop rows whose pawn has
-        /// nothing left or whose group has gone, and adopt a hauling pawn that holds cargo but has no row.
-        ///
-        /// <para>→ GOTCHA: MULTIPLAYER. This is the one adoption SEQUENCE in the seam, and every
-        /// <see cref="Commit"/> below changes what the next probe answers — a fresh row spends empty cells
-        /// through <see cref="SpendCrossDefClaims"/> and units through
-        /// <see cref="StorageClaimLedger.ClaimedByPawn"/>. So "which pawn, then which of its defs" is game
-        /// state, not presentation, and both loops must be walked in an order derived from the WORLD rather
-        /// than from anyone's collection layout: pawns by <c>thingIDNumber</c>, cargo by <c>defName</c>.
-        /// Neither source is safe as it comes — <c>SpawnedPawnsInFaction</c> is a registration-ordered list
-        /// and <see cref="StorageEvidence.Collect"/>'s output follows a <c>HashSet</c> walk, and a host and a
-        /// mid-game joiner arrive at both from different histories. The mass adoption after a save load is
-        /// precisely when this runs over a whole colony at once.</para>
-        /// </summary>
-        /// <param name="map">The map to sweep.</param>
+        /// <summary>Maintain exact live responsibilities, then admit only residual real held cargo.</summary>
         internal static void RunJanitor(Map map)
         {
-            if (!ActiveOn(map))
-                return;
-            var player = Faction.OfPlayerSilentFail;
-            if (player == null)
-                return;
-
-            var rows = StorageClaimLedger.Reconcile(HaulersDreamGameComponent.storageClaims, Evidence, GroupIsLive);
-            if (!ReferenceEquals(rows, HaulersDreamGameComponent.storageClaims))
-                HaulersDreamGameComponent.SetStorageClaims(rows);
-
-            // Copied out before sorting: SpawnedPawnsInFaction hands back MapPawns' OWN live list, and
-            // reordering that would rewrite vanilla's registration order for every other reader on the map.
-            var pawns = janitorPawns ?? (janitorPawns = new List<Pawn>());
-            pawns.Clear();
-            var spawned = map.mapPawns.SpawnedPawnsInFaction(player);
-            for (int i = 0; i < spawned.Count; i++)
-                if (spawned[i] != null)
-                    pawns.Add(spawned[i]);
-            pawns.Sort(ByThingId);
-
-            var cargo = janitorCargo ?? (janitorCargo = new List<StorageEvidence.PawnCargo>());
-            for (int i = 0; i < pawns.Count; i++)
+            if (!UnityData.IsInMainThread || ResourceQueriesBlocked() || !ActiveOn(map)
+                || resourceTransferDepth > 0 || reconcilingResources) return;
+            reconcilingResources = true;
+            try
             {
-                var p = pawns[i];
-                StorageEvidence.Collect(p, cargo);
-                // Skipped for the single-def pawn that most colonists are: List.Sort wraps a Comparison in a
-                // freshly allocated comparer on net48, so this stays off the common path entirely.
-                if (cargo.Count > 1)
-                    cargo.Sort(StorageEvidence.ByDefName);
-                for (int c = 0; c < cargo.Count; c++)
-                {
-                    var entry = cargo[c];
-                    if (entry.def == null || entry.units <= 0)
-                        continue;
-                    // Already accounted for: a live row is the pawn's own statement of intent and outranks
-                    // anything a fresh probe would guess.
-                    if (HasRowFor(p, entry.def))
-                        continue;
-                    var group = entry.knownGroup ?? StorageEvidence.DestinationGroupFor(map, p, entry.sample);
-                    if (group == null)
-                        continue; // nowhere to go, so it is in flight to nowhere
-                    Commit(p, group, entry.def, entry.units, "adopt");
-                }
-                cargo.Clear();
+                TrimInactiveResourceClaims();
+                if (!ReconcileResourceRows(map)) return;
+                ResolveUnboundHeldCargo(map);
+                var player = Faction.OfPlayerSilentFail;
+                if (player == null) return;
+                // Native pending work is admitted only at its actual start/pickup or explicit load
+                // migration. A queued/reserved source and the full native trip count are not receipts.
+                // Inventory siblings on the same pawn still participate as their own actual parcels.
+                var pawns = janitorPawns ?? (janitorPawns = new List<Pawn>());
+                pawns.Clear();
+                foreach (Pawn pawn in map.mapPawns.SpawnedPawnsInFaction(player))
+                    if (pawn != null) pawns.Add(pawn);
+                pawns.Sort(ByThingId);
+                var responsibility = ObserveResourceResponsibilities(map);
+                foreach (Pawn pawn in pawns)
+                    if (pawn.Map == map) AdoptResidualCargo(pawn, ref responsibility);
             }
-            pawns.Clear(); // holds live Pawn references; nothing reads it between sweeps
+            finally { janitorPawns?.Clear(); reconcilingResources = false; }
         }
 
-        // The janitor's OWN cargo buffer, deliberately separate from the evidence path's: the adoption probe
-        // re-enters IsGoodStoreCell -> the gate -> evidence, and a single shared buffer would be cleared out
-        // from under the loop that is still walking it.
-        [ThreadStatic] private static List<StorageEvidence.PawnCargo> janitorCargo;
-
-        // The janitor's sorted copy of the map's player pawns. [ThreadStatic] to match janitorCargo beside it
-        // — the two are filled and walked together, so a threading mod that ever drove this off the main
-        // thread must not have one of them shared and the other not.
+        // The janitor's sorted copy of the map's player pawns. Reentry is refused until the owned
+        // pass finishes; each thread keeps its own buffer, cleared on every exit and game load.
         [ThreadStatic] private static List<Pawn> janitorPawns;
 
         /// <summary>The pawn order the janitor adopts in: ascending <c>thingIDNumber</c>, the same
@@ -495,26 +435,17 @@ namespace HaulersDream
         private static readonly Comparison<Pawn> ByThingId =
             (a, b) => a.thingIDNumber.CompareTo(b.thingIDNumber);
 
-        /// <summary>Whether the ledger already holds a row for this pawn and def, whatever group it names.</summary>
-        /// <param name="pawn">The pawn.</param>
-        /// <param name="def">The def.</param>
-        /// <returns>True when a row exists.</returns>
-        private static bool HasRowFor(Pawn pawn, ThingDef def)
+        /// <summary>Check concrete group lifetime without invoking linked CellsList scratch.</summary>
+        private static bool GroupIsLive(object group, Map map)
         {
-            var rows = HaulersDreamGameComponent.storageClaims;
-            for (int i = 0; i < rows.Length; i++)
-                if (ReferenceEquals(rows[i].Pawn, pawn) && ReferenceEquals(rows[i].Def, def))
-                    return true;
-            return false;
+            if (group is SlotGroup concrete)
+                return concrete.parent?.Map == map && ReferenceEquals(StorageAllocationObservation.Canonical(concrete), group)
+                    && concrete.CellsList != null && concrete.CellsList.Count > 0;
+            if (group is StorageGroup linked)
+                return linked.Map == map && linked.members != null && linked.members.Count > 0;
+            // Unsupported providers are not declared dead from a guessed implementation.
+            return group is ISlotGroup;
         }
-
-        /// <summary>Whether a destination still exists. A stockpile that was deleted, or a shelf that was
-        /// deconstructed, has no cells left — which is both the cheapest test and the only one that works
-        /// uniformly for a plain slot group and a linked storage group.</summary>
-        /// <param name="group">The group under test.</param>
-        /// <returns>True when it still has cells.</returns>
-        private static bool GroupIsLive(object group)
-            => group is ISlotGroup slot && slot.CellsList != null && slot.CellsList.Count > 0;
 
         /*
             ──────────────────────────────────────────────
@@ -698,7 +629,6 @@ namespace HaulersDream
             evidenceMemo?.Clear();
             evidenceMemoTick = -1;
             evidenceCargo?.Clear();
-            janitorCargo?.Clear();
             janitorPawns?.Clear();
             HaulersDreamGameComponent.ClearStorageClaims();
         }
