@@ -76,7 +76,8 @@ namespace HaulersDream
 
         // Reconstruct physical allocations from the one authoritative intent ledger and fresh
         // exact parcels. The scratch allocation never survives the observation that justifies it.
-        // Existing requests are allocated before the new request and fixed for that proposal.
+        // Existing quantities are protected; exact destinations stay in their eligibility.
+        // Fresh tentative placements may be rematched only if all those quantities survive.
         // This permits a real deposit to replace a vacancy with its actual compatible stack without
         // retaining a second stale snapshot of the world or publishing during a work-giver probe.
         internal static ResourceAllowance ResourceUnitsFor(Pawn pawn, ISlotGroup group, Thing subject,
@@ -186,6 +187,21 @@ namespace HaulersDream
             var finalRequest = observation.Requests[requestedIndex];
             var result = StorageResourceAllocator.Allocate(observation.Cells, priorState,
                 new[] { finalRequest }, CompatibleResource, observation.ObservedEligible, options);
+            // These prior slices were reconstructed only for this observation, not published
+            // cell leases. A preferred exact candidate can otherwise occupy itself with a
+            // flexible prior parcel before the incoming parcel is considered. Retry that
+            // tentative matching together; every prior/planned quantity must survive, and
+            // their real destination restrictions remain in the observed eligibility edges.
+            if (requestedIndex > 0 && result.CanPublish && result.AdmittedUnits(finalRequest) < finalRequest.Units)
+            {
+                var rematched = StorageResourceAllocator.Allocate(observation.Cells, StorageAllocationState.Empty,
+                    observation.Requests, CompatibleResource, observation.ObservedEligible, options);
+                bool preservesPrior = rematched.CanPublish;
+                for (int i = 0; preservesPrior && i < requestedIndex; i++)
+                    preservesPrior = rematched.AdmittedUnits(observation.Requests[i]) == observation.Requests[i].Units;
+                if (preservesPrior && rematched.AdmittedUnits(finalRequest) > result.AdmittedUnits(finalRequest))
+                    result = rematched;
+            }
             if (!result.CanPublish || !observation.StillCurrent()
                 || !responsibility.Current || ResourceQueriesBlocked(ticket) || resourceTransferDepth > 0)
                 return ResourceAllowance.Deferred;
