@@ -186,7 +186,9 @@ namespace HaulersDream
             var finalRequest = observation.Requests[requestedIndex];
             var result = StorageResourceAllocator.Allocate(observation.Cells, priorState,
                 new[] { finalRequest }, CompatibleResource, observation.ObservedEligible, options);
-            if (!result.CanPublish || !responsibility.Current) return ResourceAllowance.Deferred;
+            if (!result.CanPublish || !observation.StillCurrent()
+                || !responsibility.Current || ResourceQueriesBlocked(ticket) || resourceTransferDepth > 0)
+                return ResourceAllowance.Deferred;
             allowed = (int)Math.Min(int.MaxValue, result.AdmittedUnits(finalRequest));
             return allowed > 0 || observation.Complete ? ResourceAllowance.Observed : ResourceAllowance.Deferred;
         }
@@ -255,7 +257,8 @@ namespace HaulersDream
             var allocation = StorageResourceAllocator.Allocate(observation.Cells, StorageAllocationState.Empty,
                 observation.Requests, CompatibleResource, observation.ObservedEligible,
                 new StorageAllocationOptions(observationComplete: true));
-            if (!allocation.CanPublish || !snapshot.Current || ResourceQueriesBlocked(ticket)) return true;
+            if (!allocation.CanPublish || !observation.StillCurrent()
+                || !snapshot.Current || ResourceQueriesBlocked(ticket) || resourceTransferDepth > 0) return true;
             long assigned = 0;
             for (int i = 0; i < portions.Count; i++)
                 if (portions[i].Entry.Held && ReferenceEquals(portions[i].Row.Pawn, pawn)

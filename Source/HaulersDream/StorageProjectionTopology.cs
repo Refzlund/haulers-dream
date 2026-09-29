@@ -151,8 +151,11 @@ namespace HaulersDream
         private readonly ThingDef stuff;
         private readonly List<ThingComp> comps;
         private readonly ProjectionListGuard<ThingComp> compGuard;
+        private readonly StorageSubjectAttributeGuard attributes;
+        internal bool AttributesMatch() => attributes.Matches();
         internal ProjectionThingGuard(Thing thing)
         {
+            attributes = new StorageSubjectAttributeGuard(thing);
             Thing = thing; Id = thing.thingIDNumber; Def = thing.def; Count = thing.stackCount; StackLimit = thing.def.stackLimit;
             position = thing.Position; rotation = thing.Rotation; size = thing.def.size; map = thing.MapHeld;
             holder = thing.ParentHolder; spawnedParent = thing.SpawnedParentOrMe; spawned = thing.Spawned;
@@ -163,7 +166,7 @@ namespace HaulersDream
             && Thing.stackCount == Count && Thing.def.stackLimit == StackLimit && Thing.Position == position
             && Thing.Rotation == rotation && Thing.def.size == size && ReferenceEquals(Thing.MapHeld, map)
             && ReferenceEquals(Thing.Stuff, stuff) && (comps == null || compGuard.Matches(((ThingWithComps)Thing).AllComps))
-            && ReferenceEquals(Thing.ParentHolder, holder) && ReferenceEquals(Thing.SpawnedParentOrMe, spawnedParent) && Thing.Spawned == spawned;
+            && ReferenceEquals(Thing.ParentHolder, holder) && ReferenceEquals(Thing.SpawnedParentOrMe, spawnedParent) && Thing.Spawned == spawned && attributes.Matches();
     }
     internal sealed class ProjectionAbort : Exception
     {

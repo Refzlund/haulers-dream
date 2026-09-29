@@ -133,26 +133,29 @@ namespace HaulersDream.Core
                 try
                 {
                     ReadPhysical(); ReadBaseline(); ReadRequests();
-                    // Reassign only new top-up/tail allocations. Published leases remain fixed.
-                    for (int i = 0; i < demands.Count; i++) Fill(i, Remaining(i), new HashSet<Resource>(), 0);
+                    // Take existing free capacity first. Augmentation is only necessary once
+                    // a request has neither a compatible free tail nor an eligible free slot.
+                    for (int i = 0; i < demands.Count; i++) FillAvailable(i, Remaining(i), null);
                     var order = Enumerable.Range(0, demands.Count).OrderBy(i => demands[i].Cells.Count).ThenBy(i => i).ToArray();
                     foreach (int i in order)
                     {
                         while (Remaining(i) > 0)
                         {
                             Step();
-                            Fill(i, Remaining(i), new HashSet<Resource>(), 0);
+                            FillAvailable(i, Remaining(i), null);
                             if (Remaining(i) == 0) break;
-                            var cell = FindVacancy(i);
+                            var cell = FindVacancy(i, false);
+                            if (cell == null)
+                            {
+                                // Reassign only tentative top-ups/tails. Published leases remain
+                                // fixed, and constrained cell matching is still the final fallback.
+                                Fill(i, Remaining(i), new HashSet<Resource>(), 0);
+                                if (Remaining(i) == 0) break;
+                                cell = FindVacancy(i, true);
+                                if (cell == null && EmptyTentativeSlot(i)) cell = FindVacancy(i, true);
+                            }
                             if (cell == null) break;
-                            if (newSlots >= options.MaximumNewSlots) throw new WorkExhausted();
-                            string key;
-                            do { Step(); key = "hd-virtual:" + (++sequence); } while (resourceKeys.ContainsKey(key));
-                            var node = new Resource { Key = key, Cell = cell, Target = demands[i].Value.Subject,
-                                Kind = StorageAllocationResourceKind.VacantSlot,
-                                Limit = demands[i].Value.StackLimit, Free = demands[i].Value.StackLimit };
-                            cell.FreeSlots--; newSlots++; resources.Add(node); resourceKeys.Add(key, node);
-                            Add(node, i, Math.Min(node.Free, Remaining(i)));
+                            FillNewSlot(cell, i, Remaining(i));
                         }
                     }
                     var slices = new List<StorageResourceAllocation>(baseline.Slices);
@@ -273,21 +276,38 @@ namespace HaulersDream.Core
                 node.NewUnits.TryGetValue(i, out int old);
                 node.NewUnits[i] = checked(old + units); node.Free -= units;
             }
-            private int Fill(int i, int wanted, HashSet<Resource> blocked, int depth)
+            private int FillAvailable(int i, int wanted, HashSet<Resource> blocked)
             {
                 if (wanted <= 0) return 0;
-                if (depth >= options.MaximumRequests) throw new WorkExhausted();
                 int left = wanted;
                 foreach (var node in resources)
                 {
                     Step();
-                    if (blocked.Contains(node) || node.Free <= 0 || !Eligible(i, node)) continue;
+                    if ((blocked != null && blocked.Contains(node)) || node.Free <= 0 || !Eligible(i, node)) continue;
                     int take = Math.Min(left, node.Free); Add(node, i, take); left -= take;
                     if (left == 0) return wanted;
                 }
-                foreach (var node in resources)
+                return wanted - left;
+            }
+            private int Fill(int i, int wanted, HashSet<Resource> blocked, int depth)
+            {
+                if (wanted <= 0) return 0;
+                if (depth >= options.MaximumRequests) throw new WorkExhausted();
+                int left = wanted - FillAvailable(i, wanted, blocked);
+                if (left == 0) return wanted;
+                // A tentative physical top-up may need to move into a still-unmaterialized
+                // slot so a restricted neighbor can use its old stack. This spends only a
+                // genuine free cell slot; published resources are never moved or released.
+                Cell vacant;
+                while (left > 0 && (vacant = FindFreeCell(i)) != null)
+                    left -= FillNewSlot(vacant, i, left);
+                if (left == 0) return wanted;
+                // Recursion can append a new slot. Index traversal is deliberate: no resource
+                // removal occurs inside Fill, and each visited (including appended) node is charged.
+                for (int n = 0; n < resources.Count; n++)
                 {
                     Step();
+                    var node = resources[n];
                     if (blocked.Contains(node) || !Eligible(i, node)) continue;
                     blocked.Add(node);
                     foreach (var pair in node.NewUnits.OrderBy(p => p.Key).ToArray())
@@ -305,7 +325,51 @@ namespace HaulersDream.Core
                 }
                 return wanted - left;
             }
-            private Cell FindVacancy(int request)
+            private int FillNewSlot(Cell cell, int i, int wanted)
+            {
+                if (newSlots >= options.MaximumNewSlots) throw new WorkExhausted();
+                string key;
+                do { Step(); key = "hd-virtual:" + (++sequence); } while (resourceKeys.ContainsKey(key));
+                var node = new Resource { Key = key, Cell = cell, Target = demands[i].Value.Subject,
+                    Kind = StorageAllocationResourceKind.VacantSlot,
+                    Limit = demands[i].Value.StackLimit, Free = demands[i].Value.StackLimit };
+                cell.FreeSlots--; newSlots++; resources.Add(node); resourceKeys.Add(key, node);
+                int units = Math.Min(node.Free, wanted);
+                Add(node, i, units);
+                return units;
+            }
+            private Cell FindFreeCell(int request)
+            {
+                foreach (var cell in cells)
+                { Step(); if (cell.FreeSlots > 0 && demands[request].Cells.Contains(cell.Value.Key)) return cell; }
+                return null;
+            }
+            private bool EmptyTentativeSlot(int request)
+            {
+                // Compatibility with an incoming parcel is not required to evacuate an
+                // incompatible tentative host. Its owners can move into real top-ups, freeing
+                // the slot for a new host. Only inspect nodes present on entry: Fill may append
+                // slots, but neither this loop nor Fill removes any resource while traversing.
+                int count = resources.Count;
+                for (int n = 0; n < count; n++)
+                {
+                    Step();
+                    var node = resources[n];
+                    if (node.Fixed || node.Kind != StorageAllocationResourceKind.VacantSlot
+                        || !demands[request].Cells.Contains(node.Cell.Value.Key)) continue;
+                    var blocked = new HashSet<Resource> { node };
+                    foreach (var pair in node.NewUnits.OrderBy(p => p.Key).ToArray())
+                    {
+                        Step();
+                        if (pair.Value <= 0) continue;
+                        int moved = Fill(pair.Key, pair.Value, blocked, 0);
+                        node.NewUnits[pair.Key] -= moved; node.Free += moved;
+                    }
+                    if (node.Free == node.Limit) return true;
+                }
+                return false;
+            }
+            private Cell FindVacancy(int request, bool reassign)
             {
                 // A bounded augmenting path can move every NEW slice off a virtual slot.
                 // It then owns no capacity and must not preserve an obsolete host restriction.
@@ -316,8 +380,9 @@ namespace HaulersDream.Core
                     if (node.Fixed || node.Kind != StorageAllocationResourceKind.VacantSlot || node.Free != node.Limit) continue;
                     node.Cell.FreeSlots++; resourceKeys.Remove(node.Key); resources.RemoveAt(n);
                 }
-                foreach (var cell in cells)
-                { Step(); if (cell.FreeSlots > 0 && demands[request].Cells.Contains(cell.Value.Key)) return cell; }
+                var free = FindFreeCell(request);
+                if (free != null) return free;
+                if (!reassign) return null;
                 foreach (var cell in cells)
                     if (demands[request].Cells.Contains(cell.Value.Key) && MakeVacancy(cell, new HashSet<Cell>())) return cell;
                 return null;

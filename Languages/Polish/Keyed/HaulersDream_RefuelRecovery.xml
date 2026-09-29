@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LanguageData>
+  <HD_RefuelRecoveryPaused>Tankowanie wstrzymane: przerwany proces wymaga sprawdzenia.</HD_RefuelRecoveryPaused>
+  <HD_RefuelRecoveryChanged>Zapisany przedmiot zmienił się lub nie jest już dostępny.</HD_RefuelRecoveryChanged>
+  <HD_RefuelRecoveryCustodyUnknown>Nie udało się potwierdzić, gdzie znajduje się pozostały materiał.</HD_RefuelRecoveryCustodyUnknown>
+  <HD_RefuelRecoveryRecordMissing>Tankowanie jest wstrzymane. Przerwa nastąpiła, zanim udało się zapisać wszystkie szczegóły. Nie można potwierdzić ilości dodanego paliwa i zużytego materiału.</HD_RefuelRecoveryRecordMissing>
+  <HD_RefuelRecoveryReview>Sprawdź przerwane tankowanie</HD_RefuelRecoveryReview>
+  <HD_RefuelRecoveryReviewDesc>Sprawdź przerwane tankowanie i wybierz, co zrobić z pozostałym materiałem. Te działania nie dodają paliwa ponownie.</HD_RefuelRecoveryReviewDesc>
+  <HD_RefuelRecoveryDetails>Pokaż szczegóły odzyskiwania</HD_RefuelRecoveryDetails>
+  <HD_RefuelRecoveryPay>Zużyj zapisany materiał paliwowy</HD_RefuelRecoveryPay>
+  <HD_RefuelRecoveryRestore>Zwróć pozostały materiał do ekwipunku</HD_RefuelRecoveryRestore>
+  <HD_RefuelRecoveryCleanup>Sprawdź ponownie pozostały ekwipunek</HD_RefuelRecoveryCleanup>
+  <HD_RefuelRecoveryAccept>Zachowaj obecny stan i wznów</HD_RefuelRecoveryAccept>
+  <HD_RefuelRecoverySyncUnavailable>niedostępne: nie udało się przygotować tego działania do gry wieloosobowej</HD_RefuelRecoverySyncUnavailable>
+  <HD_RefuelRecoveryPayConfirm>Zużyć dokładnie zapisany materiał za paliwo, które już dodano? Paliwo nie zostanie dodane ponownie. Wcześniejsza próba mogła już wywołać inne skutki, nawet jeśli zgłosiła błąd. To działanie podejmuje jedną próbę i nie powtarza się automatycznie.</HD_RefuelRecoveryPayConfirm>
+  <HD_RefuelRecoveryRestoreConfirm>Podjąć jedną próbę zwrócenia zapisanego materiału do ekwipunku tej postaci? Można zwrócić tylko niezmienione przedmioty, których nikt nie posiada i które nie znajdują się w pojemniku ani na mapie. Nie zaobserwowano dodania paliwa z tego materiału. Istniejące przedmioty oraz ustawienia zachowywania i wyposażenia pozostaną bez zmian.</HD_RefuelRecoveryRestoreConfirm>
+  <HD_RefuelRecoveryCleanupConfirm>Sprawdzić ponownie pozostały ekwipunek po zużyciu zapisanego materiału? Nie doda to paliwa, nie zniszczy kolejnych przedmiotów ani nie przywróci dawnych ustawień zachowywania lub wyposażenia.</HD_RefuelRecoveryCleanupConfirm>
+  <HD_RefuelRecoveryAcceptConfirm>Zachować obecne przedmioty i poziomy paliwa oraz zezwolić na nowe zadania tankowania Hauler's Dream? Przerwane działanie nie zostanie powtórzone, a jego szczegóły pozostaną zapisane. Niepewne ilości paliwa lub materiału pozostaną niezweryfikowane. Wznowienie ich nie koryguje.</HD_RefuelRecoveryAcceptConfirm>
+  <HD_RefuelRecoverySelectionChanged>Dane odzyskiwania lub przedmioty uległy zmianie. Otwórz ponownie menu odzyskiwania przed wybraniem działania.</HD_RefuelRecoverySelectionChanged>
+  <HD_RefuelRecoveryPaidOutcome>Ostatnie odzyskiwanie po przerwanym tankowaniu: zapisany materiał został zużyty, a ewidencja ekwipunku zaktualizowana.</HD_RefuelRecoveryPaidOutcome>
+  <HD_RefuelRecoveryUncreditedOutcome>Ostatnie odzyskiwanie po przerwanym tankowaniu: nie zaobserwowano dodania paliwa, a położenie i ilość pozostałego materiału są potwierdzone.</HD_RefuelRecoveryUncreditedOutcome>
+  <HD_RefuelRecoveryUncertainOutcome>Ostatnie odzyskiwanie po przerwanym tankowaniu: tankowanie wznowiono z obecnymi przedmiotami i poziomami paliwa. Wcześniejsze ilości dodanego paliwa i zużytego materiału pozostają niezweryfikowane.</HD_RefuelRecoveryUncertainOutcome>
+  <HD_RefuelRecoveryCostPaid>Potwierdzono zużycie zapisanej ilości materiału. Sprawdź obecny stan przed wznowieniem tankowania.</HD_RefuelRecoveryCostPaid>
+  <HD_RefuelRecoveryRestored>Działanie odzyskiwania zakończono. Sprawdź obecny stan przed wznowieniem tankowania.</HD_RefuelRecoveryRestored>
+  <HD_RefuelRecoveryNoCredit>Nie zaobserwowano dodania paliwa podczas przerwanego działania.</HD_RefuelRecoveryNoCredit>
+  <HD_RefuelRecoveryKnownDebt>Dodano paliwo, ale nie potwierdzono zużycia zapisanej ilości materiału przeznaczonej na ten cel.</HD_RefuelRecoveryKnownDebt>
+  <HD_RefuelRecoveryUncertain>Ilości dodanego paliwa lub zużytego materiału są niepewne. Obecny poziom paliwa nie pozwala ustalić, co się wydarzyło.</HD_RefuelRecoveryUncertain>
+  <HD_RefuelRecoveryPriorDestroy>Wcześniej podjęto już próbę zużycia materiału. Wywołane przez nią skutki mogły już nastąpić, nawet jeśli zgłosiła błąd.</HD_RefuelRecoveryPriorDestroy>
+  <HD_RefuelRecoveryNoExactCost>To działanie nie może zużyć dokładnie zapisanego materiału. Nie będzie zgadywać, które części zużyć, dzielić zmienionej reszty ani zużywać przedmiotu zastępczego.</HD_RefuelRecoveryNoExactCost>
+  <HD_RefuelRecoveryDetailHeader>Odzyskiwanie dla: {0}&#10;Cel: {1}&#10;Zapisany koszt paliwa (w jednostkach): {2}</HD_RefuelRecoveryDetailHeader>
+  <HD_RefuelRecoveryTargetMissing>Pierwotny cel jest niedostępny</HD_RefuelRecoveryTargetMissing>
+  <HD_RefuelRecoveryItemMissing>Zapisany przedmiot jest niedostępny.</HD_RefuelRecoveryItemMissing>
+  <HD_RefuelRecoveryItemDestroyed>Zapisany przedmiot został zniszczony.</HD_RefuelRecoveryItemDestroyed>
+  <HD_RefuelRecoveryItemCurrent>{0}: pozostała liczba jednostek: {1}.</HD_RefuelRecoveryItemCurrent>
+  <HD_RefuelRecoveryInInventory>W ekwipunku tej postaci.</HD_RefuelRecoveryInInventory>
+  <HD_RefuelRecoveryInCarry>Niesiony przez tę postać.</HD_RefuelRecoveryInCarry>
+  <HD_RefuelRecoveryNoOwner>Nikt go nie posiada i nie znajduje się w pojemniku ani na mapie.</HD_RefuelRecoveryNoOwner>
+  <HD_RefuelRecoveryOnGround>Na tej samej mapie.</HD_RefuelRecoveryOnGround>
+  <HD_RefuelRecoveryElsewhere>Poza potwierdzonym miejscem odzyskiwania.</HD_RefuelRecoveryElsewhere>
+  <HD_RefuelRecoveryLastActionFailed>Wcześniejsze działanie odzyskiwania zgłosiło błąd. Jego szczegóły pozostają zapisane.</HD_RefuelRecoveryLastActionFailed>
+</LanguageData>

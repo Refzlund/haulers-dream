@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LanguageData>
+  <HD_RefuelRecoveryPaused>Заправка приостановлена: нужно проверить прерванную заправку.</HD_RefuelRecoveryPaused>
+  <HD_RefuelRecoveryChanged>Записанный предмет изменился или больше недоступен.</HD_RefuelRecoveryChanged>
+  <HD_RefuelRecoveryCustodyUnknown>Не удалось подтвердить, где находится оставшийся материал.</HD_RefuelRecoveryCustodyUnknown>
+  <HD_RefuelRecoveryRecordMissing>Заправка приостановлена. Прерывание произошло до того, как удалось сохранить все сведения. Количество добавленного топлива и израсходованного материала невозможно подтвердить.</HD_RefuelRecoveryRecordMissing>
+  <HD_RefuelRecoveryReview>Проверить прерванную заправку</HD_RefuelRecoveryReview>
+  <HD_RefuelRecoveryReviewDesc>Проверьте прерванную заправку и выберите, что делать с оставшимся материалом. Эти действия не добавляют топливо повторно.</HD_RefuelRecoveryReviewDesc>
+  <HD_RefuelRecoveryDetails>Показать сведения о восстановлении</HD_RefuelRecoveryDetails>
+  <HD_RefuelRecoveryPay>Израсходовать записанный топливный материал</HD_RefuelRecoveryPay>
+  <HD_RefuelRecoveryRestore>Вернуть оставшийся материал в инвентарь</HD_RefuelRecoveryRestore>
+  <HD_RefuelRecoveryCleanup>Повторно проверить оставшийся инвентарь</HD_RefuelRecoveryCleanup>
+  <HD_RefuelRecoveryAccept>Сохранить текущее состояние и продолжить</HD_RefuelRecoveryAccept>
+  <HD_RefuelRecoverySyncUnavailable>недоступно: не удалось подготовить это действие для сетевой игры</HD_RefuelRecoverySyncUnavailable>
+  <HD_RefuelRecoveryPayConfirm>Израсходовать именно записанный материал за уже добавленное топливо? Топливо не будет добавлено повторно. Предыдущая попытка уже могла вызвать другие последствия, даже если сообщила об ошибке. Это действие выполняет одну попытку и не повторяется автоматически.</HD_RefuelRecoveryPayConfirm>
+  <HD_RefuelRecoveryRestoreConfirm>Один раз попытаться вернуть записанный материал в инвентарь этого персонажа? Вернуть можно только неизменившиеся предметы, которые никто не держит и которые не находятся в контейнере или на карте. Добавление топлива из этого материала не наблюдалось. Существующие предметы, настройки «оставить» и комплекта снаряжения останутся без изменений.</HD_RefuelRecoveryRestoreConfirm>
+  <HD_RefuelRecoveryCleanupConfirm>Повторно проверить оставшийся инвентарь после расходования записанного материала? Это не добавит топливо, не уничтожит другие предметы и не восстановит прежние настройки «оставить» или комплекта снаряжения.</HD_RefuelRecoveryCleanupConfirm>
+  <HD_RefuelRecoveryAcceptConfirm>Оставить текущие предметы и уровни топлива как есть и разрешить новые задания заправки Hauler's Dream? Прерванное действие не будет повторено, а сведения о нём останутся сохранены. Любые неопределённые количества топлива или материала останутся непроверенными. Продолжение не исправляет их.</HD_RefuelRecoveryAcceptConfirm>
+  <HD_RefuelRecoverySelectionChanged>Сведения о восстановлении или предметы изменились. Снова откройте меню восстановления, прежде чем выбирать действие.</HD_RefuelRecoverySelectionChanged>
+  <HD_RefuelRecoveryPaidOutcome>Последнее восстановление после прерванной заправки: записанный материал израсходован, учёт инвентаря обновлён.</HD_RefuelRecoveryPaidOutcome>
+  <HD_RefuelRecoveryUncreditedOutcome>Последнее восстановление после прерванной заправки: добавление топлива не наблюдалось, местонахождение и количество оставшегося материала подтверждены.</HD_RefuelRecoveryUncreditedOutcome>
+  <HD_RefuelRecoveryUncertainOutcome>Последнее восстановление после прерванной заправки: заправка возобновлена с текущими предметами и уровнями топлива. Прежние количества добавленного топлива и израсходованного материала остаются непроверенными.</HD_RefuelRecoveryUncertainOutcome>
+  <HD_RefuelRecoveryCostPaid>Расходование записанного количества материала подтверждено. Проверьте текущее состояние, прежде чем возобновлять заправку.</HD_RefuelRecoveryCostPaid>
+  <HD_RefuelRecoveryRestored>Действие восстановления завершено. Проверьте текущее состояние, прежде чем возобновлять заправку.</HD_RefuelRecoveryRestored>
+  <HD_RefuelRecoveryNoCredit>Во время прерванного действия добавление топлива не наблюдалось.</HD_RefuelRecoveryNoCredit>
+  <HD_RefuelRecoveryKnownDebt>Топливо было добавлено, но расходование записанного количества материала для него не подтверждено.</HD_RefuelRecoveryKnownDebt>
+  <HD_RefuelRecoveryUncertain>Количество добавленного топлива или израсходованного материала неизвестно точно. Текущий уровень топлива не позволяет установить, что произошло.</HD_RefuelRecoveryUncertain>
+  <HD_RefuelRecoveryPriorDestroy>Ранее уже предпринималась попытка израсходовать материал. Вызванные ею последствия уже могли наступить, даже если она сообщила об ошибке.</HD_RefuelRecoveryPriorDestroy>
+  <HD_RefuelRecoveryNoExactCost>Это действие не может израсходовать именно записанный материал. Оно не будет угадывать, какие части расходовать, разделять изменившийся остаток или расходовать предмет на замену.</HD_RefuelRecoveryNoExactCost>
+  <HD_RefuelRecoveryDetailHeader>Восстановление для {0}&#10;Цель: {1}&#10;Записанная потребность в топливном материале: {2} ед.</HD_RefuelRecoveryDetailHeader>
+  <HD_RefuelRecoveryTargetMissing>Исходная цель недоступна</HD_RefuelRecoveryTargetMissing>
+  <HD_RefuelRecoveryItemMissing>Записанный предмет недоступен.</HD_RefuelRecoveryItemMissing>
+  <HD_RefuelRecoveryItemDestroyed>Записанный предмет уничтожен.</HD_RefuelRecoveryItemDestroyed>
+  <HD_RefuelRecoveryItemCurrent>{0}: осталось {1} ед.</HD_RefuelRecoveryItemCurrent>
+  <HD_RefuelRecoveryInInventory>В инвентаре этого персонажа.</HD_RefuelRecoveryInInventory>
+  <HD_RefuelRecoveryInCarry>Этот персонаж несёт предмет.</HD_RefuelRecoveryInCarry>
+  <HD_RefuelRecoveryNoOwner>Никто не держит предмет; он не находится в контейнере или на карте.</HD_RefuelRecoveryNoOwner>
+  <HD_RefuelRecoveryOnGround>На той же карте.</HD_RefuelRecoveryOnGround>
+  <HD_RefuelRecoveryElsewhere>За пределами подтверждённого места восстановления.</HD_RefuelRecoveryElsewhere>
+  <HD_RefuelRecoveryLastActionFailed>Предыдущее действие восстановления сообщило об ошибке. Сведения о нём остаются сохранены.</HD_RefuelRecoveryLastActionFailed>
+</LanguageData>

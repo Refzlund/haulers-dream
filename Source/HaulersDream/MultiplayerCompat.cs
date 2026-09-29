@@ -52,6 +52,12 @@ namespace HaulersDream
         public static readonly bool Active =
             ModLister.GetActiveModWithIdentifier("rwmt.multiplayer", ignorePostfix: true) != null;
 
+        private static bool refuelRecoveryRegistered;
+        internal static bool RefuelRecoveryAvailable => !InMultiplayerGame || refuelRecoveryRegistered;
+        internal static bool RefuelRecoveryLocalUi => !InMultiplayerGame || MpHooks.InInterface();
+        internal static bool RefuelRecoveryExecuting => !InMultiplayerGame
+            || (refuelRecoveryRegistered && MpHooks.ExecutingCommand());
+
         private static bool inventoryQuantityDropRegistered;
         private static bool nearbyHaulRegistered;
         private static bool transporterRegistered;
@@ -77,6 +83,8 @@ namespace HaulersDream
         {
             if (!Active)
                 return;
+            try { refuelRecoveryRegistered = MpHooks.RegisterRefuelRecovery(); }
+            catch (Exception e) { Log.Warning("[Hauler's Dream] Refuel recovery sync unavailable: " + e); }
             try { explicitHaulRegistered = MpHooks.RegisterExplicitHaul(); }
             catch (Exception e) { Log.Warning("[Hauler's Dream] Explicit hauling sync unavailable: " + e); }
             try
@@ -266,6 +274,9 @@ namespace HaulersDream
         /// </summary>
         private static class MpHooks
         {
+            internal static bool RegisterRefuelRecovery() =>
+                MP.RegisterSyncMethod(typeof(RefuelRecoveryCommand), nameof(RefuelRecoveryCommand.ResolveSynced)) != null;
+
             internal static bool RegisterExplicitHaul()
             {
                 bool issue = MP.RegisterSyncMethod(typeof(ExplicitHaulCommand), nameof(ExplicitHaulCommand.IssueSynced)) != null;

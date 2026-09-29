@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LanguageData>
+  <HD_RefuelRecoveryPaused>Заправлення призупинено: потрібно перевірити перерваний процес.</HD_RefuelRecoveryPaused>
+  <HD_RefuelRecoveryChanged>Записаний предмет змінився або більше недоступний.</HD_RefuelRecoveryChanged>
+  <HD_RefuelRecoveryCustodyUnknown>Не вдалося підтвердити, де перебуває решта матеріалу.</HD_RefuelRecoveryCustodyUnknown>
+  <HD_RefuelRecoveryRecordMissing>Заправлення призупинено. Переривання сталося до того, як вдалося зберегти всі відомості. Кількість доданого палива та витраченого матеріалу неможливо підтвердити.</HD_RefuelRecoveryRecordMissing>
+  <HD_RefuelRecoveryReview>Перевірити перерване заправлення</HD_RefuelRecoveryReview>
+  <HD_RefuelRecoveryReviewDesc>Перевірте перерване заправлення й виберіть, що робити з рештою матеріалу. Ці дії не додають паливо повторно.</HD_RefuelRecoveryReviewDesc>
+  <HD_RefuelRecoveryDetails>Показати відомості про відновлення</HD_RefuelRecoveryDetails>
+  <HD_RefuelRecoveryPay>Витратити записаний паливний матеріал</HD_RefuelRecoveryPay>
+  <HD_RefuelRecoveryRestore>Повернути решту матеріалу до інвентарю</HD_RefuelRecoveryRestore>
+  <HD_RefuelRecoveryCleanup>Повторно перевірити решту інвентарю</HD_RefuelRecoveryCleanup>
+  <HD_RefuelRecoveryAccept>Зберегти поточний стан і продовжити</HD_RefuelRecoveryAccept>
+  <HD_RefuelRecoverySyncUnavailable>недоступно: не вдалося підготувати цю дію для багатокористувацької гри</HD_RefuelRecoverySyncUnavailable>
+  <HD_RefuelRecoveryPayConfirm>Витратити саме записаний матеріал за вже додане паливо? Паливо не буде додано повторно. Попередня спроба вже могла спричинити інші наслідки, навіть якщо повідомила про помилку. Ця дія виконує одну спробу й не повторюється автоматично.</HD_RefuelRecoveryPayConfirm>
+  <HD_RefuelRecoveryRestoreConfirm>Один раз спробувати повернути записаний матеріал до інвентарю цього персонажа? Повернути можна лише незмінені предмети, яких ніхто не тримає та які не перебувають у контейнері чи на мапі. Додавання палива з цього матеріалу не спостерігалося. Наявні предмети, налаштування «залишити» і набору спорядження залишаться без змін.</HD_RefuelRecoveryRestoreConfirm>
+  <HD_RefuelRecoveryCleanupConfirm>Повторно перевірити решту інвентарю після витрачання записаного матеріалу? Це не додасть паливо, не знищить інші предмети та не відновить старі налаштування «залишити» чи набору спорядження.</HD_RefuelRecoveryCleanupConfirm>
+  <HD_RefuelRecoveryAcceptConfirm>Залишити поточні предмети й рівні палива як є та дозволити нові завдання заправлення Hauler's Dream? Перервану дію не буде повторено, а відомості про неї залишаться збереженими. Будь-які невизначені кількості палива чи матеріалу залишаться неперевіреними. Продовження їх не виправляє.</HD_RefuelRecoveryAcceptConfirm>
+  <HD_RefuelRecoverySelectionChanged>Відомості про відновлення або предмети змінилися. Знову відкрийте меню відновлення, перш ніж вибирати дію.</HD_RefuelRecoverySelectionChanged>
+  <HD_RefuelRecoveryPaidOutcome>Останнє відновлення після перерваного заправлення: записаний матеріал витрачено, облік інвентарю оновлено.</HD_RefuelRecoveryPaidOutcome>
+  <HD_RefuelRecoveryUncreditedOutcome>Останнє відновлення після перерваного заправлення: додавання палива не спостерігалося, місце перебування та кількість решти матеріалу підтверджено.</HD_RefuelRecoveryUncreditedOutcome>
+  <HD_RefuelRecoveryUncertainOutcome>Останнє відновлення після перерваного заправлення: заправлення відновлено з поточними предметами й рівнями палива. Попередні кількості доданого палива та витраченого матеріалу залишаються неперевіреними.</HD_RefuelRecoveryUncertainOutcome>
+  <HD_RefuelRecoveryCostPaid>Витрачання записаної кількості матеріалу підтверджено. Перевірте поточний стан, перш ніж відновлювати заправлення.</HD_RefuelRecoveryCostPaid>
+  <HD_RefuelRecoveryRestored>Дію відновлення завершено. Перевірте поточний стан, перш ніж відновлювати заправлення.</HD_RefuelRecoveryRestored>
+  <HD_RefuelRecoveryNoCredit>Під час перерваної дії додавання палива не спостерігалося.</HD_RefuelRecoveryNoCredit>
+  <HD_RefuelRecoveryKnownDebt>Паливо було додано, але витрачання записаної кількості матеріалу для нього не підтверджено.</HD_RefuelRecoveryKnownDebt>
+  <HD_RefuelRecoveryUncertain>Кількість доданого палива чи витраченого матеріалу точно невідома. Поточний рівень палива не дає змоги встановити, що сталося.</HD_RefuelRecoveryUncertain>
+  <HD_RefuelRecoveryPriorDestroy>Раніше вже була спроба витратити матеріал. Спричинені нею наслідки вже могли настати, навіть якщо вона повідомила про помилку.</HD_RefuelRecoveryPriorDestroy>
+  <HD_RefuelRecoveryNoExactCost>Ця дія не може витратити саме записаний матеріал. Вона не вгадуватиме, які частини витратити, не ділитиме змінений залишок і не витрачатиме предмет на заміну.</HD_RefuelRecoveryNoExactCost>
+  <HD_RefuelRecoveryDetailHeader>Відновлення для {0}&#10;Ціль: {1}&#10;Записана потреба в паливному матеріалі: {2} од.</HD_RefuelRecoveryDetailHeader>
+  <HD_RefuelRecoveryTargetMissing>Початкова ціль недоступна</HD_RefuelRecoveryTargetMissing>
+  <HD_RefuelRecoveryItemMissing>Записаний предмет недоступний.</HD_RefuelRecoveryItemMissing>
+  <HD_RefuelRecoveryItemDestroyed>Записаний предмет знищено.</HD_RefuelRecoveryItemDestroyed>
+  <HD_RefuelRecoveryItemCurrent>{0}: залишилося {1} од.</HD_RefuelRecoveryItemCurrent>
+  <HD_RefuelRecoveryInInventory>В інвентарі цього персонажа.</HD_RefuelRecoveryInInventory>
+  <HD_RefuelRecoveryInCarry>Цей персонаж несе предмет.</HD_RefuelRecoveryInCarry>
+  <HD_RefuelRecoveryNoOwner>Ніхто не тримає предмет; він не перебуває в контейнері чи на мапі.</HD_RefuelRecoveryNoOwner>
+  <HD_RefuelRecoveryOnGround>На тій самій мапі.</HD_RefuelRecoveryOnGround>
+  <HD_RefuelRecoveryElsewhere>За межами підтвердженого місця відновлення.</HD_RefuelRecoveryElsewhere>
+  <HD_RefuelRecoveryLastActionFailed>Попередня дія відновлення повідомила про помилку. Відомості про неї залишаються збереженими.</HD_RefuelRecoveryLastActionFailed>
+</LanguageData>

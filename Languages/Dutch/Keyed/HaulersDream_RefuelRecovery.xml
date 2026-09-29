@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LanguageData>
+  <HD_RefuelRecoveryPaused>Bijtanken gepauzeerd: de onderbroken tankbeurt moet worden nagekeken.</HD_RefuelRecoveryPaused>
+  <HD_RefuelRecoveryChanged>Een geregistreerd voorwerp is veranderd of niet meer beschikbaar.</HD_RefuelRecoveryChanged>
+  <HD_RefuelRecoveryCustodyUnknown>Er kon niet worden bevestigd waar het resterende materiaal wordt bewaard.</HD_RefuelRecoveryCustodyUnknown>
+  <HD_RefuelRecoveryRecordMissing>Bijtanken is gepauzeerd. De onderbreking vond plaats voordat alle gegevens konden worden opgeslagen. De hoeveelheden toegevoegde brandstof en verbruikt materiaal kunnen niet worden bevestigd.</HD_RefuelRecoveryRecordMissing>
+  <HD_RefuelRecoveryReview>Onderbroken tankbeurt nakijken</HD_RefuelRecoveryReview>
+  <HD_RefuelRecoveryReviewDesc>Bekijk de onderbroken tankbeurt en kies wat er met het resterende materiaal moet gebeuren. Deze acties voegen niet opnieuw brandstof toe.</HD_RefuelRecoveryReviewDesc>
+  <HD_RefuelRecoveryDetails>Details van de onderbreking bekijken</HD_RefuelRecoveryDetails>
+  <HD_RefuelRecoveryPay>Het geregistreerde brandstofmateriaal verbruiken</HD_RefuelRecoveryPay>
+  <HD_RefuelRecoveryRestore>Resterend materiaal terugleggen in de inventaris</HD_RefuelRecoveryRestore>
+  <HD_RefuelRecoveryCleanup>Resterende inventaris opnieuw controleren</HD_RefuelRecoveryCleanup>
+  <HD_RefuelRecoveryAccept>Huidige toestand behouden en hervatten</HD_RefuelRecoveryAccept>
+  <HD_RefuelRecoverySyncUnavailable>niet beschikbaar: deze actie kon niet voor multiplayer worden ingesteld</HD_RefuelRecoverySyncUnavailable>
+  <HD_RefuelRecoveryPayConfirm>Precies het geregistreerde materiaal verbruiken voor brandstof die al is toegevoegd? Er wordt niet opnieuw brandstof toegevoegd. Een eerdere poging kan al andere effecten hebben veroorzaakt, ook als die een fout meldde. Deze actie probeert het één keer en wordt niet automatisch herhaald.</HD_RefuelRecoveryPayConfirm>
+  <HD_RefuelRecoveryRestoreConfirm>Eén keer proberen het geregistreerde materiaal terug te leggen in de inventaris van deze pion? Alleen onveranderde voorwerpen die nergens meer worden vastgehouden of bewaard en niet op een kaart liggen, kunnen worden teruggelegd. Er is niet waargenomen dat dit materiaal brandstof heeft toegevoegd. Bestaande voorwerpen en instellingen voor bewaren of uitrusting blijven zoals ze zijn.</HD_RefuelRecoveryRestoreConfirm>
+  <HD_RefuelRecoveryCleanupConfirm>De resterende inventaris opnieuw controleren nadat het geregistreerde materiaal is verbruikt? Dit voegt geen brandstof toe, vernietigt geen extra voorwerpen en herstelt geen oude bewaar- of uitrustingsinstellingen.</HD_RefuelRecoveryCleanupConfirm>
+  <HD_RefuelRecoveryAcceptConfirm>De huidige voorwerpen en brandstofniveaus behouden en nieuwe tankopdrachten van Hauler's Dream toestaan? De onderbroken actie wordt niet herhaald en de gegevens ervan blijven opgeslagen. Onzekere hoeveelheden brandstof of materiaal blijven onbevestigd. Hervatten corrigeert ze niet.</HD_RefuelRecoveryAcceptConfirm>
+  <HD_RefuelRecoverySelectionChanged>De gegevens van de onderbreking of de voorwerpen zijn veranderd. Open het menu opnieuw voordat je een actie kiest.</HD_RefuelRecoverySelectionChanged>
+  <HD_RefuelRecoveryPaidOutcome>Laatste afhandeling van een onderbroken tankbeurt: het geregistreerde materiaal is verbruikt en de inventarisregistratie is bijgewerkt.</HD_RefuelRecoveryPaidOutcome>
+  <HD_RefuelRecoveryUncreditedOutcome>Laatste afhandeling van een onderbroken tankbeurt: er is geen toevoeging van brandstof waargenomen en de locatie en hoeveelheid van het resterende materiaal zijn bevestigd.</HD_RefuelRecoveryUncreditedOutcome>
+  <HD_RefuelRecoveryUncertainOutcome>Laatste afhandeling van een onderbroken tankbeurt: bijtanken is hervat met de huidige voorwerpen en brandstofniveaus. De eerdere hoeveelheden toegevoegde brandstof en verbruikt materiaal blijven onbevestigd.</HD_RefuelRecoveryUncertainOutcome>
+  <HD_RefuelRecoveryCostPaid>Er is bevestigd dat de geregistreerde hoeveelheid materiaal is verbruikt. Controleer de huidige toestand voordat je het bijtanken hervat.</HD_RefuelRecoveryCostPaid>
+  <HD_RefuelRecoveryRestored>De herstelactie is voltooid. Controleer de huidige toestand voordat je het bijtanken hervat.</HD_RefuelRecoveryRestored>
+  <HD_RefuelRecoveryNoCredit>Tijdens de onderbroken actie is geen toevoeging van brandstof waargenomen.</HD_RefuelRecoveryNoCredit>
+  <HD_RefuelRecoveryKnownDebt>Er is brandstof toegevoegd, maar er is niet bevestigd dat de daarvoor geregistreerde hoeveelheid materiaal is verbruikt.</HD_RefuelRecoveryKnownDebt>
+  <HD_RefuelRecoveryUncertain>De hoeveelheden toegevoegde brandstof of verbruikt materiaal zijn onzeker. Het huidige brandstofniveau kan niet aantonen wat er is gebeurd.</HD_RefuelRecoveryUncertain>
+  <HD_RefuelRecoveryPriorDestroy>Er is eerder geprobeerd het materiaal te verbruiken. De effecten daarvan kunnen al zijn opgetreden, ook als die poging een fout meldde.</HD_RefuelRecoveryPriorDestroy>
+  <HD_RefuelRecoveryNoExactCost>Deze actie kan niet precies het geregistreerde materiaal verbruiken. Er wordt niet gegokt welke delen moeten worden verbruikt, geen veranderd restant gesplitst en geen vervangend voorwerp verbruikt.</HD_RefuelRecoveryNoExactCost>
+  <HD_RefuelRecoveryDetailHeader>Herstel voor {0}&#10;Doel: {1}&#10;Geregistreerde brandstofkosten (eenheden): {2}</HD_RefuelRecoveryDetailHeader>
+  <HD_RefuelRecoveryTargetMissing>Oorspronkelijk doel niet beschikbaar</HD_RefuelRecoveryTargetMissing>
+  <HD_RefuelRecoveryItemMissing>Het geregistreerde voorwerp is niet beschikbaar.</HD_RefuelRecoveryItemMissing>
+  <HD_RefuelRecoveryItemDestroyed>Het geregistreerde voorwerp is vernietigd.</HD_RefuelRecoveryItemDestroyed>
+  <HD_RefuelRecoveryItemCurrent>{0}: resterende eenheden: {1}.</HD_RefuelRecoveryItemCurrent>
+  <HD_RefuelRecoveryInInventory>In de inventaris van deze pion.</HD_RefuelRecoveryInInventory>
+  <HD_RefuelRecoveryInCarry>Wordt door deze pion gedragen.</HD_RefuelRecoveryInCarry>
+  <HD_RefuelRecoveryNoOwner>Wordt nergens vastgehouden of bewaard en ligt niet op een kaart.</HD_RefuelRecoveryNoOwner>
+  <HD_RefuelRecoveryOnGround>Op dezelfde kaart.</HD_RefuelRecoveryOnGround>
+  <HD_RefuelRecoveryElsewhere>Buiten de bevestigde herstellocatie.</HD_RefuelRecoveryElsewhere>
+  <HD_RefuelRecoveryLastActionFailed>Een eerdere herstelactie meldde een fout. De gegevens ervan blijven opgeslagen.</HD_RefuelRecoveryLastActionFailed>
+</LanguageData>

@@ -113,6 +113,8 @@ namespace HaulersDream
                 var holder = thing.holdingOwner;
                 if (def == null) { valid = false; return; }
                 int limit = def.stackLimit; var size = def.size;
+                var attributes = new StorageSubjectAttributeGuard(thing);
+                checks.Add(attributes.Matches);
                 checks.Add(() => ReferenceEquals(thing.def, def) && thing.thingIDNumber == id && thing.stackCount == count
                     && ReferenceEquals(thing.holdingOwner, holder) && def.stackLimit == limit
                     && def.size.x == size.x && def.size.z == size.z);

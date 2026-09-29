@@ -436,6 +436,19 @@ namespace HaulersDream
                     if (cell.Asf != null)
                     { Predicate(); if (!cell.AsfState.Same(cell.Asf.Read((Building_Storage)cell.Slot.parent, cell.Position))) throw new ObservationChanged(); }
                 }
+                // The last native/provider capacity callback can mutate an earlier
+                // subject or minified inner. Finish with only raw field/list checks.
+                foreach (var stamp in subjects.Values)
+                { Predicate(); if (!stamp.AttributesMatch()) throw new ObservationChanged(); }
+                foreach (var cell in owned)
+                {
+                    if (cell.Value == null) continue;
+                    if (cell.ParentGuard != null)
+                    { Predicate(); if (!cell.ParentGuard.AttributesMatch()) throw new ObservationChanged(); }
+                    GridWork(cell.Items.Length);
+                    foreach (var stamp in cell.Items)
+                        if (!stamp.AttributesMatch()) throw new ObservationChanged();
+                }
             }
         }
     }

@@ -139,7 +139,8 @@ namespace HaulersDream
                         new[] { observation.Requests[observation.Requests.Count - 1] },
                         CompatibleResource, observation.ObservedEligible,
                         new StorageAllocationOptions(observationComplete: true));
-                    if (!result.CanPublish || !Current()) return true;
+                    if (!result.CanPublish || !observation.StillCurrent()
+                        || !view.Guard.Matches() || !Current()) return true;
                     allowed = (int)Math.Min(1, result.AdmittedUnits(observation.Requests[observation.Requests.Count - 1]));
                     if (allowed > 0) view.RecordPositive(cell);
                     status = ResourceAllowance.Observed;
@@ -190,7 +191,8 @@ namespace HaulersDream
                 var result = StorageResourceAllocator.Allocate(observation.Cells, StorageAllocationState.Empty,
                     observation.Requests, CompatibleResource, observation.ObservedEligible,
                     new StorageAllocationOptions(observationComplete: observation.Complete));
-                if (!result.CanPublish || !view.Topology.Current() || !view.Guard.Matches() || !Current()) return view;
+                if (!result.CanPublish || !view.Topology.Current() || !observation.StillCurrent()
+                    || !view.Guard.Matches() || !Current()) return view;
                 foreach (var request in observation.Requests)
                     if (result.AdmittedUnits(request) != request.Units) return view;
                 view.Initialize(result.State, observation.CellLocations);
@@ -265,12 +267,13 @@ namespace HaulersDream
                         var result = StorageResourceAllocator.Allocate(fresh.Cells, view.StateAt(cell),
                             new[] { request }, CompatibleResource, fresh.ObservedEligible,
                             new StorageAllocationOptions(observationComplete: true));
-                        if (!result.CanPublish || result.AdmittedUnits(request) <= 0 || !Current()) return false;
+                        if (!result.CanPublish || result.AdmittedUnits(request) <= 0
+                            || !fresh.StillCurrent() || !view.Guard.Matches() || !Current()) return false;
                     }
                     // Candidate policy callbacks can mutate earlier resources. Recheck the
                     // full physical certificate after the last one, before returning success.
-                    return observation.StillCurrent() && StorageQueryBindings.NativeGroup(view.Group)
-                        && view.Topology.Current() && view.Guard.Matches() && Current();
+                    return StorageQueryBindings.NativeGroup(view.Group) && view.Topology.Current()
+                        && observation.StillCurrent() && view.Guard.Matches() && Current();
                 }
                 finally { operating = false; }
             }

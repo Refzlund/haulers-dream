@@ -94,6 +94,36 @@ namespace HaulersDream
                 questRelated: carrier.IsQuestLodger());
         }
 
+        // Native removal clears this flag when the last unloadable item leaves. Exact
+        // refuel settlement may put that item back, but must not revive an abandoned
+        // job's intent or grant vanilla unload permission after ownership changes.
+        internal static void RestoreRefuelUnloadIntent(RefuelActivation activation,
+            Pawn_InventoryTracker expectedTracker, bool wasSet)
+        {
+            if (!wasSet || activation == null || !activation.IntentCurrent)
+                return;
+            Pawn pawn = activation.Pawn;
+            if (expectedTracker == null || !ReferenceEquals(pawn.inventory, expectedTracker)
+                || !ReferenceEquals(expectedTracker.pawn, pawn)
+                || pawn.Faction == null || pawn.Faction != Faction.OfPlayerSilentFail)
+                return;
+            if (!PlayerMayUnload(pawn, pawn))
+                return;
+
+            // Match the native setter's positive test, then recheck permission and
+            // lifetime AFTER its callback-bearing policy read. The final field write
+            // has no intervening inventory-policy callback.
+            if (expectedTracker.FirstUnloadableThing == default(ThingCount))
+                return;
+            if (!PlayerMayUnload(pawn, pawn))
+                return;
+            if (!activation.IntentCurrent || !ReferenceEquals(pawn.inventory, expectedTracker)
+                || !ReferenceEquals(expectedTracker.pawn, pawn)
+                || pawn.Faction == null || pawn.Faction != Faction.OfPlayerSilentFail)
+                return;
+            expectedTracker.unloadEverything = true;
+        }
+
         /// <summary>Is this a target the BULK path owns? Feature on, a real <see cref="Pawn"/> carrier, one the
         /// player may empty at all (<see cref="PlayerMayUnload"/>), and NOT a
         /// <see cref="CompMechCarrier"/> (mech gestator unloads stay vanilla — HD has no PUAH AllowMechanoids path,

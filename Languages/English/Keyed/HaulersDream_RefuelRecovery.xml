@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LanguageData>
+  <HD_RefuelRecoveryPaused>Refuelling paused: fuel recovery needs review.</HD_RefuelRecoveryPaused>
+  <HD_RefuelRecoveryChanged>A recorded item has changed or is no longer available.</HD_RefuelRecoveryChanged>
+  <HD_RefuelRecoveryCustodyUnknown>Where the remaining material is held could not be confirmed.</HD_RefuelRecoveryCustodyUnknown>
+  <HD_RefuelRecoveryRecordMissing>Refuelling is paused. The interruption happened before its details could be fully saved. The amounts of fuel added and material consumed cannot be confirmed.</HD_RefuelRecoveryRecordMissing>
+  <HD_RefuelRecoveryReview>Review fuel recovery</HD_RefuelRecoveryReview>
+  <HD_RefuelRecoveryReviewDesc>Review interrupted refuelling and choose what to do with the remaining material. These actions do not add fuel again.</HD_RefuelRecoveryReviewDesc>
+  <HD_RefuelRecoveryDetails>View recovery details</HD_RefuelRecoveryDetails>
+  <HD_RefuelRecoveryPay>Consume the recorded fuel material</HD_RefuelRecoveryPay>
+  <HD_RefuelRecoveryRestore>Return remaining material to inventory</HD_RefuelRecoveryRestore>
+  <HD_RefuelRecoveryCleanup>Recheck remaining inventory</HD_RefuelRecoveryCleanup>
+  <HD_RefuelRecoveryAccept>Keep the current state and resume</HD_RefuelRecoveryAccept>
+  <HD_RefuelRecoverySyncUnavailable>unavailable: this action could not be set up for multiplayer</HD_RefuelRecoverySyncUnavailable>
+  <HD_RefuelRecoveryPayConfirm>Consume the exact recorded material for fuel already added? No fuel will be added again. An earlier attempt may already have triggered other effects, even if it reported an error. This action tries once and does not repeat automatically.</HD_RefuelRecoveryPayConfirm>
+  <HD_RefuelRecoveryRestoreConfirm>Try once to return the recorded material to this pawn's inventory? Only unchanged items that are no longer held anywhere or placed on a map can be returned. No fuel was observed being added for this material. Existing items and keep or loadout settings stay as they are.</HD_RefuelRecoveryRestoreConfirm>
+  <HD_RefuelRecoveryCleanupConfirm>Recheck the remaining inventory after the recorded material was consumed? This does not add fuel, destroy more items or restore old keep or loadout settings.</HD_RefuelRecoveryCleanupConfirm>
+  <HD_RefuelRecoveryAcceptConfirm>Keep current items and fuel levels as they are and allow new Hauler's Dream refuelling jobs? The interrupted action will not be repeated, and its details will remain saved. Any uncertain amounts of fuel or material remain unverified. Resuming does not correct them.</HD_RefuelRecoveryAcceptConfirm>
+  <HD_RefuelRecoverySelectionChanged>The recovery or its items changed. Open the recovery menu again before choosing an action.</HD_RefuelRecoverySelectionChanged>
+  <HD_RefuelRecoveryPaidOutcome>Last fuel recovery: the recorded material was consumed and inventory tracking was updated.</HD_RefuelRecoveryPaidOutcome>
+  <HD_RefuelRecoveryUncreditedOutcome>Last fuel recovery: no fuel was observed being added, and the remaining material is accounted for.</HD_RefuelRecoveryUncreditedOutcome>
+  <HD_RefuelRecoveryUncertainOutcome>Last fuel recovery: refuelling was resumed with the current items and fuel levels. The earlier amounts of fuel added and material consumed remain unverified.</HD_RefuelRecoveryUncertainOutcome>
+  <HD_RefuelRecoveryCostPaid>The recorded material cost was confirmed as consumed. Review the current state before resuming refuelling.</HD_RefuelRecoveryCostPaid>
+  <HD_RefuelRecoveryRestored>The recovery action finished. Review the current state before resuming refuelling.</HD_RefuelRecoveryRestored>
+  <HD_RefuelRecoveryNoCredit>No fuel was observed being added during the interrupted action.</HD_RefuelRecoveryNoCredit>
+  <HD_RefuelRecoveryKnownDebt>Fuel was added, but its recorded material cost was not confirmed as consumed.</HD_RefuelRecoveryKnownDebt>
+  <HD_RefuelRecoveryUncertain>The amounts of fuel added or material consumed are uncertain. The current fuel level cannot establish what happened.</HD_RefuelRecoveryUncertain>
+  <HD_RefuelRecoveryPriorDestroy>An earlier attempt to consume the material was made. Any effects it triggered may already have occurred, even if it reported an error.</HD_RefuelRecoveryPriorDestroy>
+  <HD_RefuelRecoveryNoExactCost>The exact recorded material cannot be consumed by this action. It will not guess which pieces to consume, split a changed remainder or consume a replacement item.</HD_RefuelRecoveryNoExactCost>
+  <HD_RefuelRecoveryDetailHeader>Recovery for {0}&#10;Target: {1}&#10;Recorded fuel cost: {2} units</HD_RefuelRecoveryDetailHeader>
+  <HD_RefuelRecoveryTargetMissing>Original target unavailable</HD_RefuelRecoveryTargetMissing>
+  <HD_RefuelRecoveryItemMissing>The recorded item is unavailable.</HD_RefuelRecoveryItemMissing>
+  <HD_RefuelRecoveryItemDestroyed>The recorded item is destroyed.</HD_RefuelRecoveryItemDestroyed>
+  <HD_RefuelRecoveryItemCurrent>{0}: {1} units remain.</HD_RefuelRecoveryItemCurrent>
+  <HD_RefuelRecoveryInInventory>In this pawn's inventory.</HD_RefuelRecoveryInInventory>
+  <HD_RefuelRecoveryInCarry>Being carried by this pawn.</HD_RefuelRecoveryInCarry>
+  <HD_RefuelRecoveryNoOwner>Not currently held anywhere or placed on a map.</HD_RefuelRecoveryNoOwner>
+  <HD_RefuelRecoveryOnGround>On the same map.</HD_RefuelRecoveryOnGround>
+  <HD_RefuelRecoveryElsewhere>Outside the confirmed recovery location.</HD_RefuelRecoveryElsewhere>
+  <HD_RefuelRecoveryLastActionFailed>An earlier recovery action reported an error. Its details remain saved.</HD_RefuelRecoveryLastActionFailed>
+</LanguageData>

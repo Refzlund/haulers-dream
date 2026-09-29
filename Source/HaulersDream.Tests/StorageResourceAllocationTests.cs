@@ -500,6 +500,257 @@ namespace HaulersDream.Tests
         }
 
         [Test]
+        public void ManyExactCompatibleParcelsUseFreeShelfSlotsWithinTheExistingWorkBudget()
+        {
+            var owner = new object();
+            var cells = new[] { new StorageAllocationCell("left", 3), new StorageAllocationCell("right", 3) };
+            var requests = Enumerable.Range(0, 257).Select(_ => Request(new Cargo("steel"), 1,
+                cells: new[] { "left", "right" }, owner: owner)).ToArray();
+            // Real calibration shape: distinct actual Steel1 parcels, one owner, 450 units
+            // of shelf capacity. Only the input cardinality is supplied explicitly; the
+            // ordinary 100,000-step work limit must suffice for this feasible transaction.
+            var result = StorageResourceAllocator.Allocate(cells, StorageAllocationState.Empty, requests,
+                Stack, s => true, new StorageAllocationOptions(maximumRequests: 512));
+            TestContext.WriteLine("257 exact priors: " + result.Status + ", work=" + result.Work);
+            Assert.That(result.Status, Is.EqualTo(StorageAllocationStatus.Complete));
+            Assert.That(requests.All(r => result.AdmittedUnits(r) == 1), Is.True);
+            Assert.That(result.State.UnitsFor(owner), Is.EqualTo(257));
+            Assert.That(result.State.Slices.Select(s => s.ResourceKey).Distinct().Count(), Is.EqualTo(4));
+
+            var before = result.State.Slices.ToArray();
+            var incoming = Request(new Cargo("steel"), 1, cells: new[] { "left", "right" });
+            var next = Allocate(cells, result.State, incoming);
+            Assert.That(next.Status, Is.EqualTo(StorageAllocationStatus.Complete));
+            Assert.That(next.AdmittedUnits(incoming), Is.EqualTo(1));
+            Assert.That(next.State.UnitsFor(owner), Is.EqualTo(257));
+            Assert.That(result.State.Slices, Is.EqualTo(before));
+        }
+
+        [Test]
+        public void DirectionalTopUpsMatchSeededOracleWithoutMovingCommittedOwners()
+        {
+            var random = new Random(9173);
+            for (int trial = 0; trial < 160; trial++)
+            {
+                var resident = Enumerable.Range(0, 4).Select(i => new Cargo("resident" + i)).ToArray();
+                var subjects = Enumerable.Range(0, 6).Select(i => new Cargo("incoming" + i)).ToArray();
+                var cells = new[]
+                {
+                    new StorageAllocationCell("a", 0, new[] { new StorageAllocationStack("a0", resident[0], 1),
+                        new StorageAllocationStack("a1", resident[1], 1) }),
+                    new StorageAllocationCell("b", 1, new[] { new StorageAllocationStack("b0", resident[2], 1),
+                        new StorageAllocationStack("b1", resident[3], 1) })
+                };
+                var fixedReal = new StorageResourceAllocation(new object(), new object(), resident[0], "a", "a0",
+                    StorageAllocationResourceKind.ExistingStack, 1, resident[0]);
+                var fixedSlot = new StorageResourceAllocation(new object(), new object(), new Cargo("fixed"), "b", "published",
+                    StorageAllocationResourceKind.VacantSlot, 1, new Cargo("fixed"), 1);
+                var baseline = new StorageAllocationState(new[] { fixedReal, fixedSlot });
+                var baselineBefore = baseline.Slices.ToArray();
+                var compatibility = new bool[4, 6];
+                for (int t = 0; t < 4; t++)
+                    for (int s = 0; s < 6; s++) compatibility[t, s] = random.Next(2) == 0;
+                bool Directional(object target, object incoming)
+                {
+                    if (ReferenceEquals(target, fixedReal.Target) && ReferenceEquals(incoming, fixedReal.Subject)) return true;
+                    if (ReferenceEquals(target, fixedSlot.Target) && ReferenceEquals(incoming, fixedSlot.Subject)) return true;
+                    int t = Array.IndexOf(resident, target); int s = Array.IndexOf(subjects, incoming);
+                    return t >= 0 && s >= 0 && compatibility[t, s];
+                }
+                var requests = subjects.Select(s => Request(s, 1, 1,
+                    new[] { "a", "b" }.Where(_ => random.Next(2) == 0).ToArray(),
+                    new[] { "a0", "a1", "b0", "b1" }.Where(_ => random.Next(2) == 0).ToArray())).ToArray();
+                // Only three top-ups remain after the two fixed published slices. The
+                // exhaustive oracle uses their actual directional eligibility, not allocator order.
+                var resourceCells = new[] { "a", "b", "b" };
+                var resourceStacks = new[] { "a1", "b0", "b1" };
+                var targets = new[] { resident[1], resident[2], resident[3] };
+                var edges = requests.Select(r => Enumerable.Range(0, 3).Where(n =>
+                    r.EligibleCells.Contains(resourceCells[n]) && r.EligibleStacks.Contains(resourceStacks[n])
+                    && Directional(targets[n], r.Subject)).ToArray()).ToArray();
+                int Oracle(int next, int used)
+                {
+                    if (next == requests.Length) return 0;
+                    int best = Oracle(next + 1, used);
+                    foreach (int n in edges[next])
+                        if ((used & (1 << n)) == 0) best = Math.Max(best, 1 + Oracle(next + 1, used | (1 << n)));
+                    return best;
+                }
+                var result = StorageResourceAllocator.Allocate(cells, baseline, requests, Directional, s => true);
+                Assert.That(result.CanPublish, Is.True, "trial " + trial);
+                Assert.That(requests.Sum(r => result.AdmittedUnits(r)), Is.EqualTo(Oracle(0, 0)), "trial " + trial);
+                Assert.That(result.State.Slices.Take(2), Is.EqualTo(baselineBefore), "fixed owners, trial " + trial);
+                Assert.That(baseline.Slices, Is.EqualTo(baselineBefore));
+                foreach (var slice in result.State.Slices.Skip(2))
+                {
+                    var request = requests.Single(r => ReferenceEquals(r.Parcel, slice.Parcel));
+                    Assert.That(request.EligibleCells, Does.Contain(slice.CellKey));
+                    if (slice.Kind == StorageAllocationResourceKind.ExistingStack)
+                    {
+                        Assert.That(request.EligibleStacks, Does.Contain(slice.ResourceKey));
+                        Assert.That(Directional(slice.Target, slice.Subject), Is.True);
+                    }
+                }
+                var limited = StorageResourceAllocator.Allocate(cells, baseline, requests, Directional, s => true,
+                    new StorageAllocationOptions(maximumWork: result.Work - 1));
+                Assert.That(limited.Status, Is.EqualTo(StorageAllocationStatus.BudgetExhausted), "trial " + trial);
+                Assert.That(limited.State, Is.SameAs(baseline));
+            }
+        }
+
+        [Test]
+        public void FreeSlotsAndDirectionalTopUpsMatchSeededOracleWithoutMovingCommittedOwners()
+        {
+            var random = new Random(9173);
+            for (int trial = 0; trial < 160; trial++)
+            {
+                var resident = Enumerable.Range(0, 4).Select(i => new Cargo("resident" + i)).ToArray();
+                var subjects = Enumerable.Range(0, 6).Select(i => new Cargo("incoming" + i)).ToArray();
+                var cells = new[]
+                {
+                    new StorageAllocationCell("a", 1, new[] { new StorageAllocationStack("a0", resident[0], 1),
+                        new StorageAllocationStack("a1", resident[1], 1) }),
+                    new StorageAllocationCell("b", 2, new[] { new StorageAllocationStack("b0", resident[2], 1),
+                        new StorageAllocationStack("b1", resident[3], 1) })
+                };
+                var fixedReal = new StorageResourceAllocation(new object(), new object(), resident[0], "a", "a0",
+                    StorageAllocationResourceKind.ExistingStack, 1, resident[0]);
+                var fixedSlot = new StorageResourceAllocation(new object(), new object(), new Cargo("fixed"), "b", "published",
+                    StorageAllocationResourceKind.VacantSlot, 1, new Cargo("fixed"), 1);
+                var baseline = new StorageAllocationState(new[] { fixedReal, fixedSlot });
+                var baselineBefore = baseline.Slices.ToArray();
+                var compatibility = new bool[4, 6];
+                for (int t = 0; t < 4; t++)
+                    for (int s = 0; s < 6; s++) compatibility[t, s] = random.Next(2) == 0;
+                bool Directional(object target, object incoming)
+                {
+                    if (ReferenceEquals(target, fixedReal.Target) && ReferenceEquals(incoming, fixedReal.Subject)) return true;
+                    if (ReferenceEquals(target, fixedSlot.Target) && ReferenceEquals(incoming, fixedSlot.Subject)) return true;
+                    int t = Array.IndexOf(resident, target); int s = Array.IndexOf(subjects, incoming);
+                    return t >= 0 && s >= 0 && compatibility[t, s];
+                }
+                var requests = subjects.Select(s => Request(s, 1, 1,
+                    new[] { "a", "b" }.Where(_ => random.Next(2) == 0).ToArray(),
+                    new[] { "a0", "a1", "b0", "b1" }.Where(_ => random.Next(2) == 0).ToArray())).ToArray();
+                // Only five resources remain after the two fixed published slices. The
+                // exhaustive oracle uses their actual directional eligibility, not allocator order.
+                var resourceCells = new[] { "a", "a", "b", "b", "b" };
+                var resourceStacks = new[] { "a1", null, "b0", "b1", null };
+                var targets = new[] { resident[1], null, resident[2], resident[3], null };
+                var edges = requests.Select((r, i) => Enumerable.Range(0, 5).Where(n =>
+                    r.EligibleCells.Contains(resourceCells[n]) && (resourceStacks[n] == null
+                    || r.EligibleStacks.Contains(resourceStacks[n]) && Directional(targets[n], r.Subject))).ToArray()).ToArray();
+                int Oracle(int next, int used)
+                {
+                    if (next == requests.Length) return 0;
+                    int best = Oracle(next + 1, used);
+                    foreach (int n in edges[next])
+                        if ((used & (1 << n)) == 0) best = Math.Max(best, 1 + Oracle(next + 1, used | (1 << n)));
+                    return best;
+                }
+                var result = StorageResourceAllocator.Allocate(cells, baseline, requests, Directional, s => true);
+                Assert.That(result.CanPublish, Is.True, "trial " + trial);
+                Assert.That(requests.Sum(r => result.AdmittedUnits(r)), Is.EqualTo(Oracle(0, 0)), "trial " + trial);
+                Assert.That(result.State.Slices.Take(2), Is.EqualTo(baselineBefore), "fixed owners, trial " + trial);
+                Assert.That(baseline.Slices, Is.EqualTo(baselineBefore));
+                foreach (var slice in result.State.Slices.Skip(2))
+                {
+                    var request = requests.Single(r => ReferenceEquals(r.Parcel, slice.Parcel));
+                    Assert.That(request.EligibleCells, Does.Contain(slice.CellKey));
+                    if (slice.Kind == StorageAllocationResourceKind.ExistingStack)
+                    {
+                        Assert.That(request.EligibleStacks, Does.Contain(slice.ResourceKey));
+                        Assert.That(Directional(slice.Target, slice.Subject), Is.True);
+                    }
+                }
+                var limited = StorageResourceAllocator.Allocate(cells, baseline, requests, Directional, s => true,
+                    new StorageAllocationOptions(maximumWork: result.Work - 1));
+                Assert.That(limited.Status, Is.EqualTo(StorageAllocationStatus.BudgetExhausted), "trial " + trial);
+                Assert.That(limited.State, Is.SameAs(baseline));
+            }
+        }
+
+        [Test]
+        public void TentativePhysicalTopUpCanMoveIntoFreeSlotForRestrictedIncomingParcel()
+        {
+            var steel = new Cargo("steel"); var held = new Cargo("wood");
+            var cells = new[] { new StorageAllocationCell("a", 1), new StorageAllocationCell("b", 1,
+                new[] { new StorageAllocationStack("b-tail", steel, 1) }) };
+            var published = new StorageResourceAllocation(new object(), new object(), held, "b", "published",
+                StorageAllocationResourceKind.VacantSlot, 1, held, 75);
+            var baseline = new StorageAllocationState(new[] { published });
+            var flexible = Request(new Cargo("steel"), 1, cells: new[] { "a", "b" }, stacks: new[] { "b-tail" });
+            var restricted = Request(new Cargo("steel"), 1, cells: new[] { "b" }, stacks: new[] { "b-tail" });
+            var result = Allocate(cells, baseline, flexible, restricted);
+            Assert.Multiple(() =>
+            {
+                Assert.That(result.Status, Is.EqualTo(StorageAllocationStatus.Complete));
+                Assert.That(result.State.Slices[0], Is.SameAs(published));
+                Assert.That(baseline.Slices.Single(), Is.SameAs(published));
+                Assert.That(result.State.SlicesFor(flexible.Owner).Single().CellKey, Is.EqualTo("a"));
+                Assert.That(result.State.SlicesFor(restricted.Owner).Single().ResourceKey, Is.EqualTo("b-tail"));
+                Assert.That(result.AdmittedUnits(flexible), Is.EqualTo(1));
+                Assert.That(result.AdmittedUnits(restricted), Is.EqualTo(1));
+            });
+        }
+
+        [Test]
+        public void CreatingDisplacedOwnersSlotHonorsNewSlotLimitAndRollsBack()
+        {
+            var held = new Cargo("wood");
+            var cells = new[] { new StorageAllocationCell("a", 1), new StorageAllocationCell("b", 1,
+                new[] { new StorageAllocationStack("b-tail", new Cargo("steel"), 1) }), new StorageAllocationCell("c", 1) };
+            var published = new StorageResourceAllocation(new object(), new object(), held, "b", "published",
+                StorageAllocationResourceKind.VacantSlot, 1, held, 75);
+            var baseline = new StorageAllocationState(new[] { published });
+            var first = Request(new Cargo("uranium"), 1, cells: new[] { "c" });
+            var flexible = Request(new Cargo("steel"), 1, cells: new[] { "a", "b" }, stacks: new[] { "b-tail" });
+            var restricted = Request(new Cargo("steel"), 1, cells: new[] { "b" }, stacks: new[] { "b-tail" });
+            var result = StorageResourceAllocator.Allocate(cells, baseline, new[] { first, flexible, restricted },
+                Stack, s => true, new StorageAllocationOptions(maximumNewSlots: 1));
+            Assert.That(result.Status, Is.EqualTo(StorageAllocationStatus.BudgetExhausted));
+            Assert.That(result.State, Is.SameAs(baseline));
+            Assert.That(result.State.Slices.Single(), Is.SameAs(published));
+            Assert.That(result.AdmittedUnits(first), Is.Zero);
+            Assert.That(result.AdmittedUnits(flexible), Is.Zero);
+            Assert.That(result.AdmittedUnits(restricted), Is.Zero);
+        }
+
+        [Test]
+        public void TentativeVirtualHostCanDrainIntoPhysicalTopUpsForIncompatibleIncomingParcel()
+        {
+            var held = new Cargo("held");
+            var cells = new[] { Cell(2, new StorageAllocationStack("x", new Cargo("steel"), 1),
+                new StorageAllocationStack("y", new Cargo("steel"), 1)) };
+            var published = new StorageResourceAllocation(new object(), new object(), held, "shelf", "published",
+                StorageAllocationResourceKind.VacantSlot, 1, held, 1);
+            var baseline = new StorageAllocationState(new[] { published });
+            var flexible = Request(new Cargo("steel"), 1, 1, stacks: new[] { "x", "y" });
+            var restricted = Request(new Cargo("steel"), 1, 1, stacks: new[] { "x" });
+            var incompatible = Request(new Cargo("wood"), 1, 1);
+            var result = Allocate(cells, baseline, flexible, restricted, incompatible);
+            Assert.That(result.Status, Is.EqualTo(StorageAllocationStatus.Complete));
+            Assert.That(result.State.Slices[0], Is.SameAs(published));
+            Assert.That(result.State.SlicesFor(flexible.Owner).Single().ResourceKey, Is.EqualTo("y"));
+            Assert.That(result.State.SlicesFor(restricted.Owner).Single().ResourceKey, Is.EqualTo("x"));
+            Assert.That(result.State.SlicesFor(incompatible.Owner).Single().Kind, Is.EqualTo(StorageAllocationResourceKind.VacantSlot));
+            Assert.That(baseline.Slices.Single(), Is.SameAs(published));
+
+            // The last augmenting callback still propagates its original failure. Private
+            // tentative moves must not alter a previously published owner on that path.
+            var failure = new InvalidOperationException("native merge policy failed");
+            var actual = Assert.Throws<InvalidOperationException>(() => StorageResourceAllocator.Allocate(cells,
+                baseline, new[] { flexible, restricted, incompatible }, (target, incoming) =>
+                {
+                    if (ReferenceEquals(target, cells[0].Stacks[1].Target) && ReferenceEquals(incoming, flexible.Subject))
+                        throw failure;
+                    return Stack(target, incoming);
+                }, s => true));
+            Assert.That(actual, Is.SameAs(failure));
+            Assert.That(baseline.Slices.Single(), Is.SameAs(published));
+        }
+
+        [Test]
         public void ExceptionInDirectionalPredicateCannotMutateCommittedState()
         {
             var first = Request(new Cargo("steel"));

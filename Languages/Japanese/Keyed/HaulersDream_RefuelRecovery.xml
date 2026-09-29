@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LanguageData>
+  <HD_RefuelRecoveryPaused>燃料補給を一時停止中：中断された補給の確認が必要です。</HD_RefuelRecoveryPaused>
+  <HD_RefuelRecoveryChanged>記録されたアイテムが変化したか、利用できなくなりました。</HD_RefuelRecoveryChanged>
+  <HD_RefuelRecoveryCustodyUnknown>残りの資材がどこにあるか確認できませんでした。</HD_RefuelRecoveryCustodyUnknown>
+  <HD_RefuelRecoveryRecordMissing>燃料補給を一時停止しています。詳細をすべて保存する前に処理が中断されました。追加された燃料と消費された資材の量を確認できません。</HD_RefuelRecoveryRecordMissing>
+  <HD_RefuelRecoveryReview>中断された燃料補給を確認</HD_RefuelRecoveryReview>
+  <HD_RefuelRecoveryReviewDesc>中断された燃料補給を確認し、残りの資材をどう扱うか選びます。これらの操作で燃料が再び追加されることはありません。</HD_RefuelRecoveryReviewDesc>
+  <HD_RefuelRecoveryDetails>復旧の詳細を表示</HD_RefuelRecoveryDetails>
+  <HD_RefuelRecoveryPay>記録された燃料用資材を消費</HD_RefuelRecoveryPay>
+  <HD_RefuelRecoveryRestore>残りの資材を所持品に戻す</HD_RefuelRecoveryRestore>
+  <HD_RefuelRecoveryCleanup>残りの所持品を再確認</HD_RefuelRecoveryCleanup>
+  <HD_RefuelRecoveryAccept>現在の状態を保って再開</HD_RefuelRecoveryAccept>
+  <HD_RefuelRecoverySyncUnavailable>利用不可：マルチプレイ用にこの操作を設定できませんでした</HD_RefuelRecoverySyncUnavailable>
+  <HD_RefuelRecoveryPayConfirm>すでに追加された燃料の分として、記録されたその資材を消費しますか？燃料は再び追加されません。以前の試行がエラーを報告していても、別の効果はすでに発生している可能性があります。この操作は一度だけ試みられ、自動では繰り返されません。</HD_RefuelRecoveryPayConfirm>
+  <HD_RefuelRecoveryRestoreConfirm>記録された資材をこのポーンの所持品に戻す操作を、一度だけ試みますか？変化しておらず、誰にも所持されず、容器内にもマップ上にもないアイテムだけを戻せます。この資材によって燃料が追加されたことは観測されていません。既存のアイテムと保持・装備構成の設定はそのままです。</HD_RefuelRecoveryRestoreConfirm>
+  <HD_RefuelRecoveryCleanupConfirm>記録された資材が消費された後の、残りの所持品を再確認しますか？燃料の追加や他のアイテムの破壊は行わず、以前の保持・装備構成の設定にも戻しません。</HD_RefuelRecoveryCleanupConfirm>
+  <HD_RefuelRecoveryAcceptConfirm>現在のアイテムと燃料量をそのまま保ち、Hauler's Dream の新しい燃料補給作業を許可しますか？中断された操作は繰り返されず、その詳細は保存されたままになります。不確かな燃料や資材の量は未確認のままです。再開しても修正はされません。</HD_RefuelRecoveryAcceptConfirm>
+  <HD_RefuelRecoverySelectionChanged>復旧の情報またはアイテムが変化しました。操作を選ぶ前に復旧メニューを開き直してください。</HD_RefuelRecoverySelectionChanged>
+  <HD_RefuelRecoveryPaidOutcome>前回の燃料補給の復旧：記録された資材が消費され、所持品の記録が更新されました。</HD_RefuelRecoveryPaidOutcome>
+  <HD_RefuelRecoveryUncreditedOutcome>前回の燃料補給の復旧：燃料の追加は観測されておらず、残りの資材の所在と数量は確認されています。</HD_RefuelRecoveryUncreditedOutcome>
+  <HD_RefuelRecoveryUncertainOutcome>前回の燃料補給の復旧：現在のアイテムと燃料量のまま補給を再開しました。以前に追加された燃料と消費された資材の量は未確認のままです。</HD_RefuelRecoveryUncertainOutcome>
+  <HD_RefuelRecoveryCostPaid>記録された量の資材が消費されたことを確認しました。燃料補給を再開する前に現在の状態を確認してください。</HD_RefuelRecoveryCostPaid>
+  <HD_RefuelRecoveryRestored>復旧操作が終了しました。燃料補給を再開する前に現在の状態を確認してください。</HD_RefuelRecoveryRestored>
+  <HD_RefuelRecoveryNoCredit>中断された操作中に燃料が追加されたことは観測されていません。</HD_RefuelRecoveryNoCredit>
+  <HD_RefuelRecoveryKnownDebt>燃料は追加されましたが、そのために記録された量の資材が消費されたかは確認できていません。</HD_RefuelRecoveryKnownDebt>
+  <HD_RefuelRecoveryUncertain>追加された燃料や消費された資材の量が不確かです。現在の燃料量だけでは、何が起きたかを確定できません。</HD_RefuelRecoveryUncertain>
+  <HD_RefuelRecoveryPriorDestroy>以前に資材の消費が試みられました。エラーが報告されていても、その際の効果はすでに発生している可能性があります。</HD_RefuelRecoveryPriorDestroy>
+  <HD_RefuelRecoveryNoExactCost>この操作では、記録されたその資材を消費できません。どの部分を消費するか推測したり、変化した残りのスタックを分割したり、代わりのアイテムを消費したりはしません。</HD_RefuelRecoveryNoExactCost>
+  <HD_RefuelRecoveryDetailHeader>{0} の復旧&#10;対象：{1}&#10;記録された燃料用資材の必要量：{2} 単位</HD_RefuelRecoveryDetailHeader>
+  <HD_RefuelRecoveryTargetMissing>元の対象は利用できません</HD_RefuelRecoveryTargetMissing>
+  <HD_RefuelRecoveryItemMissing>記録されたアイテムは利用できません。</HD_RefuelRecoveryItemMissing>
+  <HD_RefuelRecoveryItemDestroyed>記録されたアイテムは破壊されています。</HD_RefuelRecoveryItemDestroyed>
+  <HD_RefuelRecoveryItemCurrent>{0}：残り {1} 単位。</HD_RefuelRecoveryItemCurrent>
+  <HD_RefuelRecoveryInInventory>このポーンの所持品にあります。</HD_RefuelRecoveryInInventory>
+  <HD_RefuelRecoveryInCarry>このポーンが運んでいます。</HD_RefuelRecoveryInCarry>
+  <HD_RefuelRecoveryNoOwner>現在、誰にも所持されておらず、容器内にもマップ上にもありません。</HD_RefuelRecoveryNoOwner>
+  <HD_RefuelRecoveryOnGround>同じマップ上にあります。</HD_RefuelRecoveryOnGround>
+  <HD_RefuelRecoveryElsewhere>確認された復旧場所の外にあります。</HD_RefuelRecoveryElsewhere>
+  <HD_RefuelRecoveryLastActionFailed>以前の復旧操作でエラーが報告されました。その詳細は保存されたままです。</HD_RefuelRecoveryLastActionFailed>
+</LanguageData>

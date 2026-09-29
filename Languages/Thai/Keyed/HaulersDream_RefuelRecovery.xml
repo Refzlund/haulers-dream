@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LanguageData>
+  <HD_RefuelRecoveryPaused>หยุดเติมเชื้อเพลิงชั่วคราว: ต้องตรวจสอบการเติมที่หยุดชะงัก</HD_RefuelRecoveryPaused>
+  <HD_RefuelRecoveryChanged>สิ่งของที่บันทึกไว้เปลี่ยนไปหรือไม่พร้อมใช้งานแล้ว</HD_RefuelRecoveryChanged>
+  <HD_RefuelRecoveryCustodyUnknown>ไม่สามารถยืนยันได้ว่าวัสดุที่เหลืออยู่ที่ใด</HD_RefuelRecoveryCustodyUnknown>
+  <HD_RefuelRecoveryRecordMissing>การเติมเชื้อเพลิงหยุดชั่วคราว การทำงานหยุดชะงักก่อนที่จะบันทึกรายละเอียดได้ครบ จึงไม่สามารถยืนยันปริมาณเชื้อเพลิงที่เติมและวัสดุที่ใช้ไปได้</HD_RefuelRecoveryRecordMissing>
+  <HD_RefuelRecoveryReview>ตรวจสอบการเติมเชื้อเพลิงที่หยุดชะงัก</HD_RefuelRecoveryReview>
+  <HD_RefuelRecoveryReviewDesc>ตรวจสอบการเติมเชื้อเพลิงที่หยุดชะงัก แล้วเลือกว่าจะจัดการวัสดุที่เหลืออย่างไร การกระทำเหล่านี้จะไม่เติมเชื้อเพลิงซ้ำ</HD_RefuelRecoveryReviewDesc>
+  <HD_RefuelRecoveryDetails>ดูรายละเอียดการกู้คืน</HD_RefuelRecoveryDetails>
+  <HD_RefuelRecoveryPay>ใช้วัสดุเชื้อเพลิงที่บันทึกไว้</HD_RefuelRecoveryPay>
+  <HD_RefuelRecoveryRestore>คืนวัสดุที่เหลือไปยังสัมภาระ</HD_RefuelRecoveryRestore>
+  <HD_RefuelRecoveryCleanup>ตรวจสอบสัมภาระที่เหลืออีกครั้ง</HD_RefuelRecoveryCleanup>
+  <HD_RefuelRecoveryAccept>คงสถานะปัจจุบันและกลับมาทำงานต่อ</HD_RefuelRecoveryAccept>
+  <HD_RefuelRecoverySyncUnavailable>ไม่พร้อมใช้งาน: ไม่สามารถตั้งค่าการกระทำนี้สำหรับโหมดผู้เล่นหลายคนได้</HD_RefuelRecoverySyncUnavailable>
+  <HD_RefuelRecoveryPayConfirm>ใช้วัสดุชิ้นเดิมที่บันทึกไว้สำหรับเชื้อเพลิงที่เติมไปแล้วหรือไม่? จะไม่มีการเติมเชื้อเพลิงซ้ำ การลองครั้งก่อนอาจทำให้เกิดผลอื่นไปแล้ว แม้จะรายงานข้อผิดพลาดก็ตาม การกระทำนี้จะลองเพียงครั้งเดียวและไม่ทำซ้ำโดยอัตโนมัติ</HD_RefuelRecoveryPayConfirm>
+  <HD_RefuelRecoveryRestoreConfirm>ลองคืนวัสดุที่บันทึกไว้ไปยังสัมภาระของตัวละครนี้หนึ่งครั้งหรือไม่? คืนได้เฉพาะสิ่งของที่ไม่เปลี่ยนแปลง ไม่มีใครถืออยู่ ไม่อยู่ในภาชนะ และไม่ได้วางอยู่บนแผนที่ ไม่พบว่ามีการเติมเชื้อเพลิงจากวัสดุนี้ สิ่งของที่มีอยู่และการตั้งค่าการเก็บของไว้หรือชุดอุปกรณ์จะคงเดิม</HD_RefuelRecoveryRestoreConfirm>
+  <HD_RefuelRecoveryCleanupConfirm>ตรวจสอบสัมภาระที่เหลืออีกครั้งหลังจากใช้วัสดุที่บันทึกไว้แล้วหรือไม่? การกระทำนี้จะไม่เติมเชื้อเพลิง ไม่ทำลายสิ่งของเพิ่ม และไม่คืนค่าการตั้งค่าการเก็บของไว้หรือชุดอุปกรณ์แบบเก่า</HD_RefuelRecoveryCleanupConfirm>
+  <HD_RefuelRecoveryAcceptConfirm>คงสิ่งของและระดับเชื้อเพลิงปัจจุบันไว้ แล้วอนุญาตงานเติมเชื้อเพลิงใหม่จาก Hauler's Dream หรือไม่? การกระทำที่หยุดชะงักจะไม่ถูกทำซ้ำ และรายละเอียดจะยังถูกบันทึกไว้ ปริมาณเชื้อเพลิงหรือวัสดุที่ยังไม่แน่ชัดจะยังไม่ได้รับการยืนยัน การกลับมาทำงานต่อไม่ได้แก้ไขปริมาณเหล่านั้น</HD_RefuelRecoveryAcceptConfirm>
+  <HD_RefuelRecoverySelectionChanged>ข้อมูลการกู้คืนหรือสิ่งของเปลี่ยนไป กรุณาเปิดเมนูการกู้คืนอีกครั้งก่อนเลือกการกระทำ</HD_RefuelRecoverySelectionChanged>
+  <HD_RefuelRecoveryPaidOutcome>การกู้คืนการเติมเชื้อเพลิงครั้งล่าสุด: ใช้วัสดุที่บันทึกไว้แล้ว และปรับปรุงข้อมูลสัมภาระแล้ว</HD_RefuelRecoveryPaidOutcome>
+  <HD_RefuelRecoveryUncreditedOutcome>การกู้คืนการเติมเชื้อเพลิงครั้งล่าสุด: ไม่พบว่ามีการเติมเชื้อเพลิง และยืนยันตำแหน่งกับปริมาณวัสดุที่เหลือได้</HD_RefuelRecoveryUncreditedOutcome>
+  <HD_RefuelRecoveryUncertainOutcome>การกู้คืนการเติมเชื้อเพลิงครั้งล่าสุด: กลับมาเติมเชื้อเพลิงต่อโดยคงสิ่งของและระดับเชื้อเพลิงปัจจุบันไว้ ปริมาณเชื้อเพลิงที่เติมและวัสดุที่ใช้ไปก่อนหน้านี้ยังไม่ได้รับการยืนยัน</HD_RefuelRecoveryUncertainOutcome>
+  <HD_RefuelRecoveryCostPaid>ยืนยันแล้วว่าใช้วัสดุตามปริมาณที่บันทึกไว้ โปรดตรวจสอบสถานะปัจจุบันก่อนกลับมาเติมเชื้อเพลิงต่อ</HD_RefuelRecoveryCostPaid>
+  <HD_RefuelRecoveryRestored>การกู้คืนเสร็จสิ้นแล้ว โปรดตรวจสอบสถานะปัจจุบันก่อนกลับมาเติมเชื้อเพลิงต่อ</HD_RefuelRecoveryRestored>
+  <HD_RefuelRecoveryNoCredit>ไม่พบว่ามีการเติมเชื้อเพลิงระหว่างการกระทำที่หยุดชะงัก</HD_RefuelRecoveryNoCredit>
+  <HD_RefuelRecoveryKnownDebt>มีการเติมเชื้อเพลิงแล้ว แต่ยังยืนยันไม่ได้ว่าได้ใช้วัสดุตามปริมาณที่บันทึกไว้สำหรับเชื้อเพลิงนั้น</HD_RefuelRecoveryKnownDebt>
+  <HD_RefuelRecoveryUncertain>ปริมาณเชื้อเพลิงที่เติมหรือวัสดุที่ใช้ไปยังไม่แน่ชัด ระดับเชื้อเพลิงปัจจุบันไม่สามารถระบุได้ว่าเกิดอะไรขึ้น</HD_RefuelRecoveryUncertain>
+  <HD_RefuelRecoveryPriorDestroy>เคยมีการลองใช้วัสดุนี้มาก่อนแล้ว ผลที่เกิดจากการลองครั้งนั้นอาจเกิดขึ้นแล้ว แม้จะรายงานข้อผิดพลาดก็ตาม</HD_RefuelRecoveryPriorDestroy>
+  <HD_RefuelRecoveryNoExactCost>การกระทำนี้ไม่สามารถใช้วัสดุชิ้นเดิมที่บันทึกไว้ได้ จะไม่คาดเดาว่าควรใช้ชิ้นใด ไม่แยกกองวัสดุที่เหลือซึ่งเปลี่ยนไป และไม่ใช้สิ่งของทดแทน</HD_RefuelRecoveryNoExactCost>
+  <HD_RefuelRecoveryDetailHeader>การกู้คืนสำหรับ {0}&#10;เป้าหมาย: {1}&#10;วัสดุที่ต้องใช้เป็นเชื้อเพลิงตามบันทึก: {2} หน่วย</HD_RefuelRecoveryDetailHeader>
+  <HD_RefuelRecoveryTargetMissing>เป้าหมายเดิมไม่พร้อมใช้งาน</HD_RefuelRecoveryTargetMissing>
+  <HD_RefuelRecoveryItemMissing>สิ่งของที่บันทึกไว้ไม่พร้อมใช้งาน</HD_RefuelRecoveryItemMissing>
+  <HD_RefuelRecoveryItemDestroyed>สิ่งของที่บันทึกไว้ถูกทำลายแล้ว</HD_RefuelRecoveryItemDestroyed>
+  <HD_RefuelRecoveryItemCurrent>{0}: เหลือ {1} หน่วย</HD_RefuelRecoveryItemCurrent>
+  <HD_RefuelRecoveryInInventory>อยู่ในสัมภาระของตัวละครนี้</HD_RefuelRecoveryInInventory>
+  <HD_RefuelRecoveryInCarry>ตัวละครนี้กำลังถืออยู่</HD_RefuelRecoveryInCarry>
+  <HD_RefuelRecoveryNoOwner>ขณะนี้ไม่มีใครถืออยู่ ไม่อยู่ในภาชนะ และไม่ได้วางอยู่บนแผนที่</HD_RefuelRecoveryNoOwner>
+  <HD_RefuelRecoveryOnGround>อยู่บนแผนที่เดียวกัน</HD_RefuelRecoveryOnGround>
+  <HD_RefuelRecoveryElsewhere>อยู่นอกตำแหน่งกู้คืนที่ยืนยันไว้</HD_RefuelRecoveryElsewhere>
+  <HD_RefuelRecoveryLastActionFailed>การกู้คืนครั้งก่อนรายงานข้อผิดพลาด รายละเอียดยังถูกบันทึกไว้</HD_RefuelRecoveryLastActionFailed>
+</LanguageData>

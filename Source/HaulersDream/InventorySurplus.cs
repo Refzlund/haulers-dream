@@ -30,6 +30,17 @@ namespace HaulersDream
         /// to fall back to the per-call inventory walk — so the public 2-arg overload is behaviour-identical.
         /// </summary>
         internal static int SurplusOf(Pawn pawn, Thing thing, CompHauledToInventory comp, Dictionary<ThingDef, int> invCountByDef)
+            => SurplusOfCore(pawn, thing, comp, invCountByDef, null);
+
+        internal static int SurplusForAllocation(Pawn pawn, Thing thing,
+            CompHauledToInventory comp, InventorySurplusAllocation allocation)
+        {
+            if (allocation == null) throw new System.ArgumentNullException(nameof(allocation));
+            return SurplusOfCore(pawn, thing, comp, null, allocation);
+        }
+
+        private static int SurplusOfCore(Pawn pawn, Thing thing, CompHauledToInventory comp,
+            Dictionary<ThingDef, int> invCountByDef, InventorySurplusAllocation allocation)
         {
             if (pawn?.inventory?.innerContainer == null || thing?.def == null)
                 return 0;
@@ -51,8 +62,8 @@ namespace HaulersDream
                 int keptN = comp.KeptCountOf(def);
                 if (keptN > 0)
                 {
-                    int heldN = InventoryCountOfDef(pawn, def, invCountByDef);
-                    return KeepCountPolicy.SurplusForKeptDef(keptN, heldN, thing.stackCount);
+                    int heldN = InventoryCountOfDef(pawn, def, invCountByDef, allocation);
+                    return KeepCountPolicy.SurplusForKeptDef(keptN, heldN, EffectiveStackCount(thing, allocation));
                 }
             }
 
@@ -67,7 +78,7 @@ namespace HaulersDream
                 {
                     case ItemUnloadMode.UnloadAlways:
                         // Force the whole stack to be surplus, even units SS/SM/DBH/CE/addiction would keep.
-                        return thing.stackCount;
+                        return EffectiveStackCount(thing, allocation);
                     case ItemUnloadMode.KeepAll:
                         // Keep the whole stack as personal kit — UNLESS HD itself swept it, in which case it must
                         // stay unloadable or it becomes a black hole (HD put it there, and the alert also skips
@@ -79,9 +90,9 @@ namespace HaulersDream
                         // Carry at most N units of the def across the whole inventory; unload the excess. Applies
                         // even to swept stacks — it only ever pins up to N units, so it is bounded (no black hole).
                         int keepN = rule.amount < 0 ? 0 : rule.amount;
-                        int haveN = InventoryCountOfDef(pawn, def, invCountByDef);
+                        int haveN = InventoryCountOfDef(pawn, def, invCountByDef, allocation);
                         int over = haveN - keepN;
-                        return over <= 0 ? 0 : System.Math.Min(thing.stackCount, over);
+                        return over <= 0 ? 0 : System.Math.Min(EffectiveStackCount(thing, allocation), over);
                 }
             }
             else if (!hdSwept && GrabYourToolCompat.IsCarriedTool(pawn, thing)
@@ -150,8 +161,9 @@ namespace HaulersDream
                 int rememberedCount = SimpleSidearmsCompat.RememberedCount(pawn, def, thing.Stuff);
                 var primary = pawn.equipment?.Primary;
                 bool primaryMatchesPair = primary != null && primary.def == def && primary.Stuff == thing.Stuff;
-                int pairHave = YieldRouter.InventoryCountOfPair(pawn.inventory.innerContainer, def, thing.Stuff);
-                int pairSurplus = SidearmKeepMath.SurplusForPair(rememberedCount, primaryMatchesPair, pairHave, thing.stackCount);
+                int pairHave = allocation?.RemainingCountOfPair(def, thing.Stuff)
+                    ?? YieldRouter.InventoryCountOfPair(pawn.inventory.innerContainer, def, thing.Stuff);
+                int pairSurplus = SidearmKeepMath.SurplusForPair(rememberedCount, primaryMatchesPair, pairHave, EffectiveStackCount(thing, allocation));
                 // Diagnostic (gated so the string/equipment read never runs unless verbose logging is on: SurplusOf
                 // is a hot path read by the unload driver, the gizmo, and the alert). keep is re-derived through the
                 // same InventoryKeepCount -> KeepForPair policy for display parity with the shipped surplus.
@@ -182,12 +194,27 @@ namespace HaulersDream
             // Placement is the contract the sibling keeps follow: this sum sits BELOW the per-item-rule branch
             // above, so an explicit player "Unload always" rule still returns the whole stack as surplus before any
             // of these keeps is consulted.
+            // Reconstructed F09 allocation path: food reserves are inventory-wide pools,
+            // while per-def stock and per-stack eligibility remain distinct constraints.
+            // Existing non-allocation callers retain their current calculation below.
+            if (allocation != null)
+            {
+                int stockKeep = KeepCountOf(pawn, def);
+                int remaining = allocation.RemainingCount(thing);
+                int stockSurplus = stockKeep <= 0 ? remaining : System.Math.Min(remaining,
+                    allocation.RemainingCountOfDef(def) - stockKeep);
+                int packedSurplus = remaining - System.Math.Min(remaining,
+                    System.Math.Max(0, allocation.PackedFoodKeepCount(thing)));
+                int animalSurplus = remaining - System.Math.Min(remaining,
+                    System.Math.Max(0, allocation.AnimalFoodKeepCount(thing)));
+                return System.Math.Min(stockSurplus, System.Math.Min(packedSurplus, animalSurplus));
+            }
             int keep = KeepCountOf(pawn, def) + FoodKeepCountOf(pawn, thing)
                        + AnimalInteractFoodKeepCountOf(pawn, thing);
             if (keep <= 0)
-                return thing.stackCount;
-            int surplus = InventoryCountOfDef(pawn, def, invCountByDef) - keep;
-            return System.Math.Min(thing.stackCount, surplus);
+                return EffectiveStackCount(thing, allocation);
+            int surplus = InventoryCountOfDef(pawn, def, invCountByDef, allocation) - keep;
+            return System.Math.Min(EffectiveStackCount(thing, allocation), surplus);
         }
 
         /// <summary>
@@ -223,8 +250,13 @@ namespace HaulersDream
         /// <summary>Total units of <paramref name="def"/> in the pawn's inventory — served from the hoisted
         /// per-def scratch dict when present (one pass, shared across every stack of the same def in a
         /// "has any surplus" scan), else the per-call full-inventory walk. Behaviour-identical either way.</summary>
-        private static int InventoryCountOfDef(Pawn pawn, ThingDef def, Dictionary<ThingDef, int> invCountByDef)
+        private static int EffectiveStackCount(Thing thing, InventorySurplusAllocation allocation)
+            => allocation?.RemainingCount(thing) ?? thing.stackCount;
+
+        private static int InventoryCountOfDef(Pawn pawn, ThingDef def, Dictionary<ThingDef, int> invCountByDef,
+            InventorySurplusAllocation allocation = null)
         {
+            if (allocation != null) return allocation.RemainingCountOfDef(def);
             if (invCountByDef != null)
                 return invCountByDef.TryGetValue(def, out int c) ? c : 0;
             return YieldRouter.InventoryCountOfDef(pawn.inventory.innerContainer, def);

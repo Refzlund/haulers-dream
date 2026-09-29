@@ -531,6 +531,7 @@ namespace HaulersDream
         {
             base.PostExposeData();
             ExposeExplicitOrders();
+            ExposeRefuelRecovery();
             Scribe_Collections.Look(ref takenToInventory, "haulersDreamTakenToInventory", LookMode.Reference);
             // #197: the per-def keep-count map (new single source of truth). A pre-#197 save has no such key, so this
             // starts empty and is filled by the legacy migration below.

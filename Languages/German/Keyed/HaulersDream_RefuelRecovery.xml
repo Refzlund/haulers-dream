@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LanguageData>
+  <HD_RefuelRecoveryPaused>Betanken pausiert: Der unterbrochene Vorgang muss geprüft werden.</HD_RefuelRecoveryPaused>
+  <HD_RefuelRecoveryChanged>Ein erfasster Gegenstand wurde verändert oder ist nicht mehr verfügbar.</HD_RefuelRecoveryChanged>
+  <HD_RefuelRecoveryCustodyUnknown>Der Verbleib des restlichen Materials konnte nicht bestätigt werden.</HD_RefuelRecoveryCustodyUnknown>
+  <HD_RefuelRecoveryRecordMissing>Betanken ist pausiert. Der Vorgang wurde unterbrochen, bevor alle Einzelheiten gespeichert werden konnten. Die Mengen an hinzugefügtem Treibstoff und verbrauchtem Material lassen sich nicht bestätigen.</HD_RefuelRecoveryRecordMissing>
+  <HD_RefuelRecoveryReview>Unterbrochenes Betanken prüfen</HD_RefuelRecoveryReview>
+  <HD_RefuelRecoveryReviewDesc>Prüfe den unterbrochenen Tankvorgang und entscheide, was mit dem restlichen Material geschehen soll. Diese Aktionen fügen keinen weiteren Treibstoff hinzu.</HD_RefuelRecoveryReviewDesc>
+  <HD_RefuelRecoveryDetails>Einzelheiten zur Wiederherstellung anzeigen</HD_RefuelRecoveryDetails>
+  <HD_RefuelRecoveryPay>Erfasstes Treibstoffmaterial verbrauchen</HD_RefuelRecoveryPay>
+  <HD_RefuelRecoveryRestore>Restliches Material ins Inventar zurücklegen</HD_RefuelRecoveryRestore>
+  <HD_RefuelRecoveryCleanup>Verbleibendes Inventar erneut prüfen</HD_RefuelRecoveryCleanup>
+  <HD_RefuelRecoveryAccept>Aktuellen Zustand beibehalten und fortfahren</HD_RefuelRecoveryAccept>
+  <HD_RefuelRecoverySyncUnavailable>nicht verfügbar: Diese Aktion konnte nicht für den Mehrspielermodus eingerichtet werden</HD_RefuelRecoverySyncUnavailable>
+  <HD_RefuelRecoveryPayConfirm>Genau das erfasste Material für bereits hinzugefügten Treibstoff verbrauchen? Es wird kein weiterer Treibstoff hinzugefügt. Ein früherer Versuch kann bereits andere Auswirkungen gehabt haben, selbst wenn er einen Fehler meldete. Diese Aktion versucht es einmal und wird nicht automatisch wiederholt.</HD_RefuelRecoveryPayConfirm>
+  <HD_RefuelRecoveryRestoreConfirm>Einmal versuchen, das erfasste Material ins Inventar dieser Figur zurückzulegen? Nur unveränderte Gegenstände, die weder von jemandem getragen noch in einem Behälter oder auf einer Karte liegen, können zurückgelegt werden. Es wurde nicht beobachtet, dass dieses Material Treibstoff hinzugefügt hat. Vorhandene Gegenstände sowie Einstellungen zum Behalten von Gegenständen und zur Ausrüstung bleiben unverändert.</HD_RefuelRecoveryRestoreConfirm>
+  <HD_RefuelRecoveryCleanupConfirm>Das verbleibende Inventar erneut prüfen, nachdem das erfasste Material verbraucht wurde? Dies fügt keinen Treibstoff hinzu, zerstört keine weiteren Gegenstände und stellt keine früheren Einstellungen zum Behalten von Gegenständen oder zur Ausrüstung wieder her.</HD_RefuelRecoveryCleanupConfirm>
+  <HD_RefuelRecoveryAcceptConfirm>Die vorhandenen Gegenstände und Treibstoffmengen beibehalten und neue Tankaufträge von Hauler's Dream zulassen? Die unterbrochene Aktion wird nicht wiederholt und ihre Einzelheiten bleiben gespeichert. Ungewisse Treibstoff- oder Materialmengen bleiben unbestätigt. Das Fortfahren korrigiert sie nicht.</HD_RefuelRecoveryAcceptConfirm>
+  <HD_RefuelRecoverySelectionChanged>Die Angaben zur Wiederherstellung oder die Gegenstände haben sich geändert. Öffne das Menü erneut, bevor du eine Aktion auswählst.</HD_RefuelRecoverySelectionChanged>
+  <HD_RefuelRecoveryPaidOutcome>Letzte Wiederherstellung nach unterbrochenem Betanken: Das erfasste Material wurde verbraucht und die Inventarerfassung aktualisiert.</HD_RefuelRecoveryPaidOutcome>
+  <HD_RefuelRecoveryUncreditedOutcome>Letzte Wiederherstellung nach unterbrochenem Betanken: Es wurde keine Treibstoffzugabe beobachtet, und der Verbleib des restlichen Materials ist geklärt.</HD_RefuelRecoveryUncreditedOutcome>
+  <HD_RefuelRecoveryUncertainOutcome>Letzte Wiederherstellung nach unterbrochenem Betanken: Das Betanken wurde mit den vorhandenen Gegenständen und Treibstoffmengen fortgesetzt. Die zuvor hinzugefügte Treibstoffmenge und der Materialverbrauch bleiben unbestätigt.</HD_RefuelRecoveryUncertainOutcome>
+  <HD_RefuelRecoveryCostPaid>Der Verbrauch der erfassten Materialmenge wurde bestätigt. Prüfe den aktuellen Zustand, bevor du das Betanken fortsetzt.</HD_RefuelRecoveryCostPaid>
+  <HD_RefuelRecoveryRestored>Die Wiederherstellungsaktion ist abgeschlossen. Prüfe den aktuellen Zustand, bevor du das Betanken fortsetzt.</HD_RefuelRecoveryRestored>
+  <HD_RefuelRecoveryNoCredit>Während der unterbrochenen Aktion wurde keine Treibstoffzugabe beobachtet.</HD_RefuelRecoveryNoCredit>
+  <HD_RefuelRecoveryKnownDebt>Treibstoff wurde hinzugefügt, aber der Verbrauch der dafür erfassten Materialmenge wurde nicht bestätigt.</HD_RefuelRecoveryKnownDebt>
+  <HD_RefuelRecoveryUncertain>Die Mengen an hinzugefügtem Treibstoff oder verbrauchtem Material sind ungewiss. Die aktuelle Treibstoffmenge kann nicht belegen, was geschehen ist.</HD_RefuelRecoveryUncertain>
+  <HD_RefuelRecoveryPriorDestroy>Es wurde bereits versucht, das Material zu verbrauchen. Die dabei ausgelösten Auswirkungen können bereits eingetreten sein, selbst wenn der Versuch einen Fehler meldete.</HD_RefuelRecoveryPriorDestroy>
+  <HD_RefuelRecoveryNoExactCost>Diese Aktion kann nicht genau das erfasste Material verbrauchen. Sie rät nicht, welche Teile zu verbrauchen sind, teilt keinen veränderten Reststapel auf und verbraucht keinen Ersatzgegenstand.</HD_RefuelRecoveryNoExactCost>
+  <HD_RefuelRecoveryDetailHeader>Wiederherstellung für {0}&#10;Ziel: {1}&#10;Erfasste Treibstoffkosten (Einheiten): {2}</HD_RefuelRecoveryDetailHeader>
+  <HD_RefuelRecoveryTargetMissing>Ursprüngliches Ziel nicht verfügbar</HD_RefuelRecoveryTargetMissing>
+  <HD_RefuelRecoveryItemMissing>Der erfasste Gegenstand ist nicht verfügbar.</HD_RefuelRecoveryItemMissing>
+  <HD_RefuelRecoveryItemDestroyed>Der erfasste Gegenstand wurde zerstört.</HD_RefuelRecoveryItemDestroyed>
+  <HD_RefuelRecoveryItemCurrent>{0}: verbleibende Einheiten: {1}.</HD_RefuelRecoveryItemCurrent>
+  <HD_RefuelRecoveryInInventory>Im Inventar dieser Figur.</HD_RefuelRecoveryInInventory>
+  <HD_RefuelRecoveryInCarry>Wird von dieser Figur getragen.</HD_RefuelRecoveryInCarry>
+  <HD_RefuelRecoveryNoOwner>Wird derzeit weder von jemandem getragen noch in einem Behälter oder auf einer Karte aufbewahrt.</HD_RefuelRecoveryNoOwner>
+  <HD_RefuelRecoveryOnGround>Auf derselben Karte.</HD_RefuelRecoveryOnGround>
+  <HD_RefuelRecoveryElsewhere>Außerhalb des bestätigten Wiederherstellungsorts.</HD_RefuelRecoveryElsewhere>
+  <HD_RefuelRecoveryLastActionFailed>Eine frühere Wiederherstellungsaktion meldete einen Fehler. Ihre Einzelheiten bleiben gespeichert.</HD_RefuelRecoveryLastActionFailed>
+</LanguageData>

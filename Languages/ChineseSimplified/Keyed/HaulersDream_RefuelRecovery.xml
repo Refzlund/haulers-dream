@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LanguageData>
+  <HD_RefuelRecoveryPaused>添加燃料已暂停：需要检查中断后的处理情况。</HD_RefuelRecoveryPaused>
+  <HD_RefuelRecoveryChanged>记录的物品已发生变化或不再可用。</HD_RefuelRecoveryChanged>
+  <HD_RefuelRecoveryCustodyUnknown>无法确认剩余材料目前存放在哪里。</HD_RefuelRecoveryCustodyUnknown>
+  <HD_RefuelRecoveryRecordMissing>添加燃料已暂停。操作中断时，详细信息尚未全部保存。无法确认添加了多少燃料、消耗了多少材料。</HD_RefuelRecoveryRecordMissing>
+  <HD_RefuelRecoveryReview>检查中断的燃料添加操作</HD_RefuelRecoveryReview>
+  <HD_RefuelRecoveryReviewDesc>检查中断的燃料添加操作，并选择如何处理剩余材料。这些操作不会再次添加燃料。</HD_RefuelRecoveryReviewDesc>
+  <HD_RefuelRecoveryDetails>查看恢复详情</HD_RefuelRecoveryDetails>
+  <HD_RefuelRecoveryPay>消耗记录的燃料材料</HD_RefuelRecoveryPay>
+  <HD_RefuelRecoveryRestore>将剩余材料放回背包</HD_RefuelRecoveryRestore>
+  <HD_RefuelRecoveryCleanup>重新检查背包中的剩余物品</HD_RefuelRecoveryCleanup>
+  <HD_RefuelRecoveryAccept>保留当前状态并恢复工作</HD_RefuelRecoveryAccept>
+  <HD_RefuelRecoverySyncUnavailable>不可用：未能为多人游戏设置此操作</HD_RefuelRecoverySyncUnavailable>
+  <HD_RefuelRecoveryPayConfirm>消耗记录的那份材料，以补上已添加燃料所需的材料消耗？不会再次添加燃料。之前的尝试可能已经触发了其他效果，即使当时报告了错误。此操作只尝试一次，不会自动重复。</HD_RefuelRecoveryPayConfirm>
+  <HD_RefuelRecoveryRestoreConfirm>尝试一次，将记录的材料放回该角色的背包？只有未发生变化、既未被任何人或容器持有，也未放置在地图上的物品才能放回。未观察到使用这些材料添加了燃料。现有物品以及保留和装备配置设置均保持不变。</HD_RefuelRecoveryRestoreConfirm>
+  <HD_RefuelRecoveryCleanupConfirm>在记录的材料已被消耗后，重新检查背包中的剩余物品？此操作不会添加燃料、销毁更多物品，也不会恢复旧的保留或装备配置设置。</HD_RefuelRecoveryCleanupConfirm>
+  <HD_RefuelRecoveryAcceptConfirm>保留现有物品和燃料量，并允许新的 Hauler's Dream 燃料添加任务？中断的操作不会重做，其详细信息将继续保存。任何不确定的燃料或材料数量仍未得到核实。恢复工作不会纠正这些不确定的数量。</HD_RefuelRecoveryAcceptConfirm>
+  <HD_RefuelRecoverySelectionChanged>恢复信息或相关物品已发生变化。请重新打开恢复菜单后再选择操作。</HD_RefuelRecoverySelectionChanged>
+  <HD_RefuelRecoveryPaidOutcome>上次燃料恢复处理：记录的材料已被消耗，背包物品记录已更新。</HD_RefuelRecoveryPaidOutcome>
+  <HD_RefuelRecoveryUncreditedOutcome>上次燃料恢复处理：未观察到添加燃料，剩余材料的位置和数量已确认。</HD_RefuelRecoveryUncreditedOutcome>
+  <HD_RefuelRecoveryUncertainOutcome>上次燃料恢复处理：已按现有物品和燃料量恢复工作。此前添加的燃料量和消耗的材料量仍未得到核实。</HD_RefuelRecoveryUncertainOutcome>
+  <HD_RefuelRecoveryCostPaid>已确认消耗了记录的材料数量。恢复添加燃料前，请检查当前状态。</HD_RefuelRecoveryCostPaid>
+  <HD_RefuelRecoveryRestored>恢复操作已结束。恢复添加燃料前，请检查当前状态。</HD_RefuelRecoveryRestored>
+  <HD_RefuelRecoveryNoCredit>未观察到在中断的操作中添加燃料。</HD_RefuelRecoveryNoCredit>
+  <HD_RefuelRecoveryKnownDebt>已添加燃料，但尚未确认消耗了对应的记录材料数量。</HD_RefuelRecoveryKnownDebt>
+  <HD_RefuelRecoveryUncertain>添加的燃料量或消耗的材料量不确定。无法仅凭当前燃料量确定当时发生了什么。</HD_RefuelRecoveryUncertain>
+  <HD_RefuelRecoveryPriorDestroy>之前已尝试消耗材料。该尝试触发的效果可能已经发生，即使当时报告了错误。</HD_RefuelRecoveryPriorDestroy>
+  <HD_RefuelRecoveryNoExactCost>此操作无法消耗记录的那份材料。它不会猜测应消耗哪些部分、拆分已变化的剩余堆叠，或消耗替代物品。</HD_RefuelRecoveryNoExactCost>
+  <HD_RefuelRecoveryDetailHeader>{0} 的恢复信息&#10;目标：{1}&#10;记录的燃料所需材料：{2} 单位</HD_RefuelRecoveryDetailHeader>
+  <HD_RefuelRecoveryTargetMissing>原目标不可用</HD_RefuelRecoveryTargetMissing>
+  <HD_RefuelRecoveryItemMissing>记录的物品不可用。</HD_RefuelRecoveryItemMissing>
+  <HD_RefuelRecoveryItemDestroyed>记录的物品已被销毁。</HD_RefuelRecoveryItemDestroyed>
+  <HD_RefuelRecoveryItemCurrent>{0}：剩余 {1} 单位。</HD_RefuelRecoveryItemCurrent>
+  <HD_RefuelRecoveryInInventory>在该角色的背包中。</HD_RefuelRecoveryInInventory>
+  <HD_RefuelRecoveryInCarry>正由该角色搬运。</HD_RefuelRecoveryInCarry>
+  <HD_RefuelRecoveryNoOwner>当前未被任何人或容器持有，也未放置在地图上。</HD_RefuelRecoveryNoOwner>
+  <HD_RefuelRecoveryOnGround>在同一地图上。</HD_RefuelRecoveryOnGround>
+  <HD_RefuelRecoveryElsewhere>不在已确认的恢复位置内。</HD_RefuelRecoveryElsewhere>
+  <HD_RefuelRecoveryLastActionFailed>之前的恢复操作报告了错误。其详细信息仍然保存着。</HD_RefuelRecoveryLastActionFailed>
+</LanguageData>

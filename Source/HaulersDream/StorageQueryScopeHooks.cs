@@ -75,7 +75,7 @@ namespace HaulersDream
                 && Inspected(AccessTools.Method(typeof(StoreUtility), nameof(StoreUtility.NoStorageBlockersIn)))
                 && Inspected(AccessTools.Method(typeof(GridsUtility), nameof(GridsUtility.GetMaxItemsAllowedInCell)))
                 && Inspected(AccessTools.PropertyGetter(typeof(Building), nameof(Building.MaxItemsInCell)))
-                && Inspected(AccessTools.Method(typeof(StorageSettings), nameof(StorageSettings.AllowedToAccept)))
+                && InspectedOverloads(typeof(StorageSettings), nameof(StorageSettings.AllowedToAccept))
                 && Inspected(AccessTools.Method(typeof(ThingFilter), nameof(ThingFilter.Allows), new[] { typeof(Thing) }))
                 && InspectedOverloads(typeof(ForbidUtility), nameof(ForbidUtility.IsForbidden))
                 && InspectedOverloads(typeof(ReservationUtility), nameof(ReservationUtility.CanReserveNew))
