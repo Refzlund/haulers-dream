@@ -407,12 +407,19 @@ namespace HaulersDream
                     if (!cell.Asf.HasCapacity(building, subject)) return Refuse("asf-member-capacity");
                 }
                 var ownJob = demand.OwnJob ?? pawn.CurJob;
-                if (ownJob != null && pawn.CurJob == ownJob && map.reservationManager.ReservedBy(cell.Position, pawn, ownJob))
+                bool explicitOwner = ownJob != null
+                    && StorageCommitments.OwnsExplicitShelfCell(pawn, ownJob, subject, parent, cell.Position);
+                if (ownJob != null && pawn.CurJob == ownJob && map.reservationManager.ReservedBy(cell.Position, pawn, ownJob)
+                    && !explicitOwner)
                     return Problem(cell.Position, demand, StorageAllocationObservationStatus.Deferred, "owned-native-reservation-needs-owner-route");
+                if (explicitOwner)
+                    topology.Add(() => StorageCommitments.OwnsExplicitShelfCell(pawn, ownJob, subject, parent, cell.Position));
                 // Keep the real carrier: native forbiddance, reach, source start, reservations,
-                // fire and provider blockers must keep their exact native semantics.
+                // fire and provider blockers keep their native semantics. The identified explicit
+                // owner above rechecks its own rights; native CanReserveNew rejects its own lease.
                 GridWork(cell.Grid.Count); Predicate();
-                if (!StoreUtility.IsGoodStoreCell(cell.Position, map, subject, pawn, pawn.Faction)) return Refuse("native-cell-predicate");
+                if (!StoreUtility.IsGoodStoreCell(cell.Position, map, subject, explicitOwner ? null : pawn,
+                    explicitOwner ? null : pawn.Faction)) return Refuse("native-cell-predicate");
                 if (StorageCommitments.ExplicitShelfCellHeldByOther(pawn, cell.Position)) return Refuse("explicit-shelf-owner");
                 Live();
                 return true;

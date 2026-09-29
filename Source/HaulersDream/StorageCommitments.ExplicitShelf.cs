@@ -34,11 +34,11 @@ namespace HaulersDream
                 && shelf.thingIDNumber == order.shelfId && shelf.Map == pawn.Map && shelf.Map.uniqueID == order.mapId
                 && shelf.Position == order.shelfPosition && shelf.Rotation.AsInt == order.shelfRotation;
 
-        // First supported destination is the actual native Building_Storage. Subclass/provider contracts
-        // remain explicit follow-up work; accepting a linked group never grants its sibling cells.
+        // The shared observation adapter certifies the concrete provider and its live limits.
+        // Selecting a linked member never grants its sibling cells.
         private static bool ShelfAccepts(Pawn pawn, Thing subject, Building_Storage shelf)
         {
-            if (pawn?.Map == null || subject?.def == null || shelf?.GetType() != typeof(Building_Storage)
+            if (pawn?.Map == null || subject?.def == null || shelf == null
                 || !shelf.Spawned || shelf.Map != pawn.Map || shelf.Faction != pawn.Faction
                 || shelf.IsForbidden(pawn) || !shelf.HaulDestinationEnabled
                 || subject.def.size.x != 1 || subject.def.size.z != 1
@@ -81,44 +81,34 @@ namespace HaulersDream
                 || cell.IsForbidden(pawn) || (subject.Spawned && subject.Position == cell)
                 || !ReferenceEquals(map.haulDestinationManager.SlotGroupAt(cell)?.parent, shelf)
                 || !pawn.CanReach(cell, PathEndMode.OnCell, Danger.Some) || IncomingAt(pawn, cell)) return false;
-            bool own = ownJob != null && map.reservationManager.ReservedBy(cell, pawn, ownJob);
             if (map.reservationManager.ReservationsReadOnly.Any(r => r.Target == cell && (r.Claimant != pawn || r.Job != ownJob))) return false;
-            // IsGoodStoreCell's CanReserveNew rejects even the current owner's reservation. In that
-            // branch only, use its actual physical predicate with no carrier/faction and retain the
-            // explicit ownership, forbidden and reach checks above. No foreign reservation is ignored.
-            using (SuppressOwnGateForProjection())
-                if (!StoreUtility.IsGoodStoreCell(cell, map, subject, own ? null : pawn, own ? null : pawn.Faction)) return false;
-            int maximum = cell.GetMaxItemsAllowedInCell(map), items = 0;
-            if (maximum <= 0 || maximum != shelf.def.building.maxItemsInCell) return false;
+            var group = BulkHaul.BudgetGroupOf(shelf.GetSlotGroup());
+            var demand = new StorageAllocationObservationDemand((object)ownJob ?? pawn, subject, subject,
+                pawn, subject.stackCount, StorageFilterContext.Unload, cell, ownJob, startsRefill: false);
+            var observation = StorageAllocationObservation.ObserveCells(map, group, new[] { demand }, new[] { cell });
+            if (!observation.Complete || observation.Invalidated || observation.Requests.Count != 1
+                || observation.Cells.Count != 1 || !observation.StillCurrent()) return false;
+            var request = observation.Requests[0];
+            var physical = observation.Cells[0];
+            if (!request.EligibleCells.Contains(physical.Key)) return false;
             long space = 0;
-            foreach (var resident in cell.GetThingList(map))
-            {
-                if (resident.def.category != ThingCategory.Item) continue;
-                if (resident.stackCount <= 0 || resident.def.size.x != 1 || resident.def.size.z != 1) return false;
-                items++;
-                if (resident.CanStackWith(subject)) space += Math.Max(0L, (long)resident.def.stackLimit - resident.stackCount);
-            }
+            foreach (var stack in physical.Stacks)
+                if (request.EligibleStacks.Contains(stack.Key)) space += stack.FreeUnits;
             compatibleDeficits = (int)Math.Min(int.MaxValue, space);
-            vacantSlots = Math.Max(0, maximum - items);
+            vacantSlots = physical.VacantSlots;
             space += vacantSlots * (long)subject.def.stackLimit;
             capacity = (int)Math.Min(int.MaxValue, space);
             return capacity > 0;
         }
 
-        private static int ExplicitShelfFreeUnits(Pawn pawn, Thing subject, Building_Storage shelf, ISlotGroup group)
+        private static int ExplicitShelfFreeUnits(Pawn pawn, Thing subject, ISlotGroup group, IntVec3 cell, Job ownJob)
         {
-            int shared = FreeUnitsFor(pawn, group, subject.def, subject, out bool truncated);
-            if (!truncated || shared > 0) return shared;
-            // The selected shelf can lie after 200 blocked cells in a linked group's member order.
-            // Measure only its eligible cells as a second lower bound, never add it to the overlapping
-            // truncated pool. Native shelves have one or two cells; keep even this fallback bounded.
-            int slots = 0; long deficits = 0;
-            foreach (var cell in shelf.AllSlotCells().Take(MaxSpaceScanCells))
-                if (ShelfCellSpace(pawn, subject, shelf, cell, null, out _, out int empty, out int partial))
-                { slots += empty; deficits += partial; }
-            return SelectedShelfCapacity.Available((int)Math.Min(int.MaxValue, deficits), slots, subject.def.stackLimit,
-                HaulersDreamGameComponent.storageClaims, group, subject.def, pawn, IsDelivering(pawn, subject),
-                Evidence, def => def is ThingDef thingDef ? thingDef.stackLimit : 0);
+            // Price this exact destination alongside every existing commodity, using the same
+            // fresh allocator as native/bulk admission. A linked sibling cannot fund this cell.
+            var request = new StorageAllocationObservationDemand((object)ownJob ?? pawn, subject, subject,
+                pawn, subject.stackCount, StorageFilterContext.Unload, cell, ownJob, startsRefill: false);
+            return ResourceUnitsFor(pawn, group, request, null, new[] { cell }, out int allowed)
+                == ResourceAllowance.Observed ? allowed : 0;
         }
 
         internal static bool ObserveExplicitShelf(Pawn pawn, Thing subject, Building_Storage shelf,
@@ -127,11 +117,13 @@ namespace HaulersDream
             cell = IntVec3.Invalid; capacity = 0;
             if (!ActiveOn(pawn?.Map) || !ShelfAccepts(pawn, subject, shelf)) return false;
             var group = BulkHaul.BudgetGroupOf(shelf.GetSlotGroup());
-            int shared = ExplicitShelfFreeUnits(pawn, subject, shelf, group);
-            if (shared <= 0 || shared == int.MaxValue) return false;
             foreach (var candidate in shelf.AllSlotCells().OrderBy(c => c.DistanceToSquared(pawn.Position)).ThenBy(c => c.x).ThenBy(c => c.z))
                 if (ShelfCellSpace(pawn, subject, shelf, candidate, null, out int physical))
-                { cell = candidate; capacity = Math.Min(shared, physical); return capacity > 0; }
+                {
+                    int shared = ExplicitShelfFreeUnits(pawn, subject, group, candidate, null);
+                    if (shared <= 0) continue;
+                    cell = candidate; capacity = Math.Min(shared, physical); return capacity > 0;
+                }
             return false;
         }
 
@@ -153,8 +145,7 @@ namespace HaulersDream
             {
                 if (!ShelfCellSpace(pawn, subject, shelf, candidate, job, out int physical)) continue;
                 var group = BulkHaul.BudgetGroupOf(shelf.GetSlotGroup());
-                int shared = ExplicitShelfFreeUnits(pawn, subject, shelf, group);
-                if (shared == int.MaxValue) continue;
+                int shared = ExplicitShelfFreeUnits(pawn, subject, group, candidate, job);
                 int wanted = order.piece != null ? order.tripUnits : Math.Min(order.Remaining, pawn.carryTracker.MaxStackSpaceEver(subject.def));
                 int units = Math.Min(wanted, Math.Min(physical, shared));
                 if (units <= 0 || !ExplicitHaulCommand.Reserve(pawn, job, candidate)) continue;
@@ -199,6 +190,48 @@ namespace HaulersDream
             return pawn.Map.reservationManager.ReservationsReadOnly.Any(r => r.Target == cell && r.Claimant != pawn
                 && r.Claimant?.CurJob == r.Job && ExplicitHaulCommand.Identified(r.Claimant, r.Job)
                 && r.Claimant.GetComp<CompHauledToInventory>().ExplicitOrder(r.Job)?.IsShelf == true);
+        }
+
+        // Only an identified current explicit order may read through its own native cell lease.
+        // Native/ordinary jobs retain their separate owner route; no arbitrary reservation is waived.
+        internal static bool OwnsExplicitShelfCell(Pawn pawn, Job job, Thing subject, ISlotGroupParent parent, IntVec3 cell)
+        {
+            if (!ExplicitHaulCommand.IsJob(job) || pawn?.CurJob != job) return false;
+            var order = pawn?.GetComp<CompHauledToInventory>()?.ExplicitOrder(job);
+            if (job == null || pawn.CurJob != job || !ExplicitHaulCommand.Identified(pawn, job)
+                || order?.IsShelf != true || !SameExplicitShelf(pawn, order)
+                || !ReferenceEquals(order.shelf, parent) || order.DeliveryCell != cell
+                || !ExplicitShelfSubject(pawn, order, subject)
+                || pawn.jobs.curDriver?.GetType() != typeof(JobDriver_ExplicitHaul)
+                || !cell.WalkableBy(pawn.Map, pawn) || cell.IsForbidden(pawn)
+                || order.shelf.IsForbidden(pawn) || !pawn.CanReach(cell, PathEndMode.OnCell, Danger.Some)) return false;
+            // Preserve native IsGoodStoreCell's source-to-destination reach check too.
+            // Pawn-to-cell reach alone does not establish the route from a selected source.
+            var spawnedParent = subject.SpawnedParentOrMe;
+            var start = spawnedParent == null ? pawn.PositionHeld
+                : spawnedParent == subject || !spawnedParent.def.hasInteractionCell
+                    ? spawnedParent.Position : spawnedParent.InteractionCell;
+            if (!pawn.Map.reachability.CanReach(start, cell, PathEndMode.ClosestTouch, TraverseParms.For(pawn))) return false;
+            var reservations = pawn.Map.reservationManager;
+            return reservations.ReservedBy(cell, pawn, job)
+                && !reservations.ReservationsReadOnly.Any(r => r.Target == cell && (r.Claimant != pawn || r.Job != job));
+        }
+
+        private static bool ExplicitShelfSubject(Pawn pawn, ExplicitHaulOrder order, Thing subject)
+        {
+            if (subject == null || subject.Destroyed || subject.stackCount <= 0) return false;
+            if (order.piece != null)
+                return ReferenceEquals(subject, order.piece) && subject.stackCount == order.tripUnits
+                    && pawn.carryTracker.CarriedThing == subject
+                    && ExplicitHaulTransfer.Owns(pawn.carryTracker.innerContainer, subject);
+            var remainder = order.remainders.Count > 0 ? order.remainders[0] : null;
+            if (!ReferenceEquals(subject, remainder?.thing ?? order.source)
+                || !subject.Spawned || subject.Map != pawn.Map
+                || !NearbyHaulCommand.IsGroundTarget(pawn, subject)
+                || (!order.sourceForbiddenAtIssue && subject.IsForbidden(pawn))) return false;
+            return remainder == null ? subject.thingIDNumber == order.sourceId
+                : subject.stackCount == remainder.observedCount && subject.Position == remainder.cell
+                    && remainder.units > 0 && remainder.units <= subject.stackCount;
         }
 
         internal static int ExplicitShelfUnits(Pawn pawn, out Thing subject, out ISlotGroup group)
