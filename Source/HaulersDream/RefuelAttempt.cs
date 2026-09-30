@@ -270,12 +270,17 @@ namespace HaulersDream
 				TryAction(FinishKnownCost);
 				List<Thing> list = ActualPieces();
 				bool flag = true;
+                bool retainedForReview = false;
 				for (int num = 0; num < list.Count; num++)
 				{
 					Thing piece = list[num];
 					if (!piece.Destroyed && !EnsureNativeCustody(piece))
 					{
-						flag = false;
+                        // Ordinary native custody failed. Preserve the actual detached parcel
+                        // in a saved owner and require review even if this final retention succeeds.
+                        retainedForReview = true;
+                        TryAction(() => Tracking.RefuelRecoveryCustody.Retain(piece));
+                        if (!HasCustody(piece)) flag = false;
 					}
 					if (PickupOnly && !piece.Destroyed)
 					{
@@ -324,7 +329,7 @@ namespace HaulersDream
 						throw new InvalidOperationException(refusal);
 					}
 				});
-				if (Ambiguous || (CreditCallStarted && !PhysicalCostPaid()) || !flag)
+				if (Ambiguous || (CreditCallStarted && !PhysicalCostPaid()) || !flag || retainedForReview)
 				{
 					Tracking.BlockRefuelRecovery();
 					if (primary == null)

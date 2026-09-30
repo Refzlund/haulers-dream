@@ -13,7 +13,7 @@
   <HD_RefuelRecoveryAccept>Keep the current state and resume</HD_RefuelRecoveryAccept>
   <HD_RefuelRecoverySyncUnavailable>unavailable: this action could not be set up for multiplayer</HD_RefuelRecoverySyncUnavailable>
   <HD_RefuelRecoveryPayConfirm>Consume the exact recorded material for fuel already added? No fuel will be added again. An earlier attempt may already have triggered other effects, even if it reported an error. This action tries once and does not repeat automatically.</HD_RefuelRecoveryPayConfirm>
-  <HD_RefuelRecoveryRestoreConfirm>Try once to return the recorded material to this pawn's inventory? Only unchanged items that are no longer held anywhere or placed on a map can be returned. No fuel was observed being added for this material. Existing items and keep or loadout settings stay as they are.</HD_RefuelRecoveryRestoreConfirm>
+  <HD_RefuelRecoveryRestoreConfirm>Try once to return the recorded material to this pawn's inventory? Unchanged items in saved recovery custody can be moved without adding fuel or consuming material. This does not settle any recorded fuel debt or uncertainty; review and resolution remain separate. Unowned items can be returned only when no fuel was observed being added. Keep and loadout settings stay as they are.</HD_RefuelRecoveryRestoreConfirm>
   <HD_RefuelRecoveryCleanupConfirm>Recheck the remaining inventory after the recorded material was consumed? This does not add fuel, destroy more items or restore old keep or loadout settings.</HD_RefuelRecoveryCleanupConfirm>
   <HD_RefuelRecoveryAcceptConfirm>Keep current items and fuel levels as they are and allow new Hauler's Dream refuelling jobs? The interrupted action will not be repeated, and its details will remain saved. Any uncertain amounts of fuel or material remain unverified. Resuming does not correct them.</HD_RefuelRecoveryAcceptConfirm>
   <HD_RefuelRecoverySelectionChanged>The recovery or its items changed. Open the recovery menu again before choosing an action.</HD_RefuelRecoverySelectionChanged>
@@ -38,4 +38,6 @@
   <HD_RefuelRecoveryOnGround>On the same map.</HD_RefuelRecoveryOnGround>
   <HD_RefuelRecoveryElsewhere>Outside the confirmed recovery location.</HD_RefuelRecoveryElsewhere>
   <HD_RefuelRecoveryLastActionFailed>An earlier recovery action reported an error. Its details remain saved.</HD_RefuelRecoveryLastActionFailed>
+  <HD_RefuelRecoveryInRetainedCustody>Held in saved fuel recovery custody for this pawn.</HD_RefuelRecoveryInRetainedCustody>
+  <HD_RefuelRecoveryRetainedBeforeResume>Return the retained material to inventory, or consume its exact confirmed fuel cost, before resuming. Returning material changes only where it is held; any fuel debt or uncertainty remains unresolved.</HD_RefuelRecoveryRetainedBeforeResume>
 </LanguageData>

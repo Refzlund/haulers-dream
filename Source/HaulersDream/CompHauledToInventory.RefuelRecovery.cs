@@ -1,11 +1,19 @@
 using System;
 using System.Collections.Generic;
+using RimWorld;
 using Verse;
 
 namespace HaulersDream
 {
 	public partial class CompHauledToInventory : ThingComp
 	{
+        private RefuelRecoveryHolder refuelRecoveryCustody;
+        internal RefuelRecoveryHolder RefuelRecoveryCustody
+            => refuelRecoveryCustody ??= new RefuelRecoveryHolder(this);
+        internal bool HasRetainedRefuel => refuelRecoveryCustody?.HasLiveContents == true;
+        internal bool OwnsRetainedRefuel(Thing item) => refuelRecoveryCustody?.Owns(item) == true;
+        internal float RetainedRefuelStat(StatDef stat) => refuelRecoveryCustody?.TotalStat(stat) ?? 0f;
+
 		private RefuelRecoveryPending refuelRecovery;
 
 		private int refuelRecoverySerial;
@@ -62,6 +70,7 @@ namespace HaulersDream
 
 		private void ExposeRefuelRecovery()
 		{
+            Scribe_Deep.Look(ref refuelRecoveryCustody, "hdRefuelRecoveryCustody", this);
 			Scribe_Deep.Look(ref refuelRecovery, "hdRefuelRecovery");
 			Scribe_Values.Look(ref refuelRecoverySerial, "hdRefuelRecoverySerial", 0);
 			Scribe_Values.Look(ref refuelRecoveryBlocked, "hdRefuelRecoveryBlocked", defaultValue: false);
@@ -145,7 +154,7 @@ namespace HaulersDream
 
 		internal bool CloseRefuelRecovery(int serial, int revision, int disposition)
 		{
-			if (!HasPendingRefuelRecovery || PendingRefuelSerial != serial || PendingRefuelRevision != revision)
+			if (!HasPendingRefuelRecovery || HasRetainedRefuel || PendingRefuelSerial != serial || PendingRefuelRevision != revision)
 			{
 				return false;
 			}

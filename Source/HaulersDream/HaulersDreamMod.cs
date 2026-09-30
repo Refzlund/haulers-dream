@@ -82,12 +82,12 @@ namespace HaulersDream
                 {
                     failed++;
                     HDLog.Err($"patch class '{type.Name}' could not be applied on this RimWorld build "
-                        + "(a hooked vanilla target is likely missing or renamed) — that feature is disabled; the "
-                        + $"rest of the mod continues. {e.GetType().Name}: {e.Message}");
+                        + "(a hook target or required method-body pattern may have changed) — other "
+                        + $"patch classes continue. {e.GetType().Name}: {e.Message}");
                 }
             }
             if (failed > 0)
-                HDLog.Warn($"{applied} patch class(es) applied, {failed} skipped due to missing targets (see errors above).");
+                HDLog.Warn($"{applied} patch class(es) applied, {failed} not fully applied (see details above).");
 
             AttachUniversalExceptionTagger(harmony);
         }

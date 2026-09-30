@@ -15,7 +15,10 @@ namespace HaulersDream
         internal ThingOwner<Thing> ExplicitRecovery => explicitRecovery ??= new ThingOwner<Thing>(this);
         public ThingOwner GetDirectlyHeldThings() => ExplicitRecovery;
         public void GetChildHolders(List<IThingHolder> outChildren)
-            => ThingOwnerUtility.AppendThingHoldersFromThings(outChildren, ExplicitRecovery);
+        {
+            ThingOwnerUtility.AppendThingHoldersFromThings(outChildren, ExplicitRecovery);
+            if (refuelRecoveryCustody != null) outChildren.Add(refuelRecoveryCustody);
+        }
         internal IReadOnlyList<ExplicitHaulOrder> ExplicitOrders => explicitHaulOrders;
 
         internal ExplicitHaulOrder ExplicitOrder(long id)

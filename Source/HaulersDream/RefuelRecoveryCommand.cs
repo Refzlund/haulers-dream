@@ -100,7 +100,7 @@ namespace HaulersDream
 				AddOption(options, pawn, comp, "HD_RefuelRecoveryPay", 2, CanPay(pawn, pendingRefuelRecovery));
 				AddOption(options, pawn, comp, "HD_RefuelRecoveryRestore", 1, CanRestore(pawn, pendingRefuelRecovery));
 				AddOption(options, pawn, comp, "HD_RefuelRecoveryCleanup", 4, KnownConsumed(pendingRefuelRecovery));
-				AddOption(options, pawn, comp, "HD_RefuelRecoveryAccept", 3, eligible: true);
+				AddOption(options, pawn, comp, "HD_RefuelRecoveryAccept", 3, eligible: !comp.HasRetainedRefuel);
 				Find.WindowStack.Add(new FloatMenu(options));
 			}
 		}
@@ -168,6 +168,11 @@ namespace HaulersDream
 			RefuelRecoveryPending pendingRefuelRecovery = comp.PendingRefuelRecovery;
 			if (decision == 3)
 			{
+                if (comp.HasRetainedRefuel)
+                {
+                    Feedback("HD_RefuelRecoveryRetainedBeforeResume");
+                    return;
+                }
 				int disposition = ((KnownConsumed(pendingRefuelRecovery) && pendingRefuelRecovery.ResolutionMetadataSettled && AllKnownCustody(pawn, pendingRefuelRecovery)) ? 1 : ((DefinitelyUncredited(pendingRefuelRecovery) && AllKnownCustody(pawn, pendingRefuelRecovery)) ? 2 : 3));
 				if (comp.CloseRefuelRecovery(serial, revision, disposition))
 				{
@@ -217,13 +222,15 @@ namespace HaulersDream
 							ex = ex ?? new InvalidOperationException("A recovery item changed during restoration.");
 							break;
 						}
-						if (OwnerToken(pawn, refuelRecoveryItem.Item) != "unowned")
+                        string owner = OwnerToken(pawn, refuelRecoveryItem.Item);
+						if (owner != "recovery" && (owner != "unowned" || !DefinitelyUncredited(pendingRefuelRecovery)))
 						{
 							continue;
 						}
 						try
 						{
-							pawn.inventory.innerContainer.TryAdd(refuelRecoveryItem.Item, canMergeWithExistingStacks: false);
+							if (owner == "recovery") comp.RefuelRecoveryCustody.ReturnToInventory(refuelRecoveryItem.Item, pawn.inventory.innerContainer);
+                            else pawn.inventory.innerContainer.TryAdd(refuelRecoveryItem.Item, canMergeWithExistingStacks: false);
 						}
 						catch (Exception ex2)
 						{
@@ -282,7 +289,7 @@ namespace HaulersDream
 					Thing thing = pendingRefuelRecovery.Items[j]?.Item;
 					if (thing != null)
 					{
-						if (thing.Destroyed && (thing.holdingOwner == pawn.inventory?.innerContainer || thing.holdingOwner == pawn.carryTracker?.innerContainer) && RefuelAttempt.IsMember(thing.holdingOwner, thing))
+						if (thing.Destroyed && (thing.holdingOwner == pawn.inventory?.innerContainer || thing.holdingOwner == pawn.carryTracker?.innerContainer || comp.OwnsRetainedRefuel(thing)) && RefuelAttempt.IsMember(thing.holdingOwner, thing))
 						{
 							thing.holdingOwner.Remove(thing);
 						}
@@ -374,7 +381,7 @@ namespace HaulersDream
 
 		private static bool CanRestore(Pawn pawn, RefuelRecoveryPending record)
 		{
-			if (!DefinitelyUncredited(record) || pawn.inventory?.innerContainer == null || record.Items == null || record.Items.Count > 2)
+			if (record == null || pawn.inventory?.innerContainer == null || record.Items == null || record.Items.Count > 2)
 			{
 				return false;
 			}
@@ -386,7 +393,8 @@ namespace HaulersDream
 				{
 					return false;
 				}
-				if (!refuelRecoveryItem.Destroyed && OwnerToken(pawn, refuelRecoveryItem.Item) == "unowned")
+				if (!refuelRecoveryItem.Destroyed && (OwnerToken(pawn, refuelRecoveryItem.Item) == "recovery"
+                    || (DefinitelyUncredited(record) && OwnerToken(pawn, refuelRecoveryItem.Item) == "unowned")))
 				{
 					result = true;
 				}
@@ -432,6 +440,7 @@ namespace HaulersDream
 			default:
 				return owner.StartsWith("ground:", StringComparison.Ordinal);
 			case "inventory":
+                case "recovery":
 			case "carry":
 			case "unowned":
 				return true;
@@ -487,7 +496,11 @@ namespace HaulersDream
 			{
 				return "carry";
 			}
-			if (holdingOwner.Owner is Pawn_InventoryTracker pawn_InventoryTracker)
+			if (pawn.GetComp<CompHauledToInventory>()?.OwnsRetainedRefuel(item) == true)
+            {
+                return "recovery";
+            }
+            if (holdingOwner.Owner is Pawn_InventoryTracker pawn_InventoryTracker)
 			{
 				return "other-inventory:" + N(pawn_InventoryTracker.pawn.thingIDNumber);
 			}
@@ -551,6 +564,8 @@ namespace HaulersDream
 			string key = (KnownConsumed(record) ? "HD_RefuelRecoveryCostPaid" : (DefinitelyUncredited(record) ? "HD_RefuelRecoveryNoCredit" : ((record.Version >= 2 && record.KnownUnpaidCost && !record.CreditAmbiguous) ? "HD_RefuelRecoveryKnownDebt" : "HD_RefuelRecoveryUncertain")));
 			string text = ((record.Target != null) ? record.Target.LabelShort : ((string)"HD_RefuelRecoveryTargetMissing".Translate()));
 			StringBuilder stringBuilder = new StringBuilder("HD_RefuelRecoveryDetailHeader".Translate(pawn.LabelShort, text, record.SelectedUnits));
+            if (pawn.GetComp<CompHauledToInventory>()?.HasRetainedRefuel == true)
+                stringBuilder.Append("\n\n").Append("HD_RefuelRecoveryRetainedBeforeResume".Translate());
 			stringBuilder.Append("\n\n").Append(key.Translate());
 			if (record.DestroyAttempted || record.ResolutionDestroyAttempts > 0)
 			{
@@ -576,6 +591,9 @@ namespace HaulersDream
 					case "unowned":
 						obj = "HD_RefuelRecoveryNoOwner";
 						break;
+                    case "recovery":
+                        obj = "HD_RefuelRecoveryInRetainedCustody";
+                        break;
 					case "carry":
 						obj = "HD_RefuelRecoveryInCarry";
 						break;

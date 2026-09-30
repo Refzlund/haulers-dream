@@ -13,7 +13,7 @@
   <HD_RefuelRecoveryAccept>현재 상태를 유지하고 재개</HD_RefuelRecoveryAccept>
   <HD_RefuelRecoverySyncUnavailable>사용 불가: 이 작업을 멀티플레이용으로 설정하지 못했습니다</HD_RefuelRecoverySyncUnavailable>
   <HD_RefuelRecoveryPayConfirm>이미 추가된 연료에 해당하는, 기록된 바로 그 재료를 소모하시겠습니까? 연료는 다시 추가되지 않습니다. 이전 시도가 오류를 보고했더라도 다른 효과는 이미 발생했을 수 있습니다. 이 작업은 한 번만 시도하며 자동으로 반복하지 않습니다.</HD_RefuelRecoveryPayConfirm>
-  <HD_RefuelRecoveryRestoreConfirm>기록된 재료를 이 폰의 소지품으로 되돌리는 작업을 한 번 시도하시겠습니까? 변경되지 않았으며 누구도 들고 있지 않고 용기 안이나 지도 위에도 없는 물품만 되돌릴 수 있습니다. 이 재료로 연료가 추가되는 것은 관측되지 않았습니다. 기존 물품과 보관 및 장비 구성 설정은 그대로 유지됩니다.</HD_RefuelRecoveryRestoreConfirm>
+  <HD_RefuelRecoveryRestoreConfirm>기록된 재료를 이 폰의 소지품으로 되돌리는 작업을 한 번 시도하시겠습니까? 저장된 복구 보관함의 변경되지 않은 물품은 연료를 추가하거나 재료를 소비하지 않고 옮길 수 있습니다. 기록된 미지급 연료 비용이나 불확실성은 해결되지 않으며, 검토와 해결은 별도로 해야 합니다. 보유자가 없는 물품은 연료 추가가 관측되지 않았을 때만 되돌릴 수 있습니다. 보관 및 장비 구성 설정은 그대로 유지됩니다.</HD_RefuelRecoveryRestoreConfirm>
   <HD_RefuelRecoveryCleanupConfirm>기록된 재료가 소모된 뒤 남은 소지품을 다시 확인하시겠습니까? 이 작업은 연료를 추가하거나 다른 물품을 파괴하지 않으며, 예전 보관 또는 장비 구성 설정을 복원하지도 않습니다.</HD_RefuelRecoveryCleanupConfirm>
   <HD_RefuelRecoveryAcceptConfirm>현재 물품과 연료량을 그대로 유지하고 새로운 Hauler's Dream 연료 보급 작업을 허용하시겠습니까? 중단된 작업은 반복하지 않으며 세부 정보는 저장된 상태로 유지됩니다. 불확실한 연료나 재료의 양은 확인되지 않은 채로 남습니다. 재개해도 이를 바로잡지는 않습니다.</HD_RefuelRecoveryAcceptConfirm>
   <HD_RefuelRecoverySelectionChanged>복구 정보나 관련 물품이 변경되었습니다. 작업을 선택하기 전에 복구 메뉴를 다시 여세요.</HD_RefuelRecoverySelectionChanged>
@@ -38,4 +38,6 @@
   <HD_RefuelRecoveryOnGround>같은 지도에 있습니다.</HD_RefuelRecoveryOnGround>
   <HD_RefuelRecoveryElsewhere>확인된 복구 위치 밖에 있습니다.</HD_RefuelRecoveryElsewhere>
   <HD_RefuelRecoveryLastActionFailed>이전 복구 작업이 오류를 보고했습니다. 세부 정보는 저장된 상태로 유지됩니다.</HD_RefuelRecoveryLastActionFailed>
+  <HD_RefuelRecoveryInRetainedCustody>이 폰의 연료 복구 보관함에 보관되며 게임과 함께 저장됩니다.</HD_RefuelRecoveryInRetainedCustody>
+  <HD_RefuelRecoveryRetainedBeforeResume>다시 시작하기 전에 보관된 재료를 소지품으로 되돌리거나 확인된 연료 비용에 해당하는 바로 그 재료를 정확한 수량만큼 소비하세요. 재료를 되돌리는 것은 보관 위치만 바꾸며, 미지급 연료 비용이나 불확실성은 여전히 해결되지 않습니다.</HD_RefuelRecoveryRetainedBeforeResume>
 </LanguageData>

@@ -13,7 +13,7 @@
   <HD_RefuelRecoveryAccept>現在の状態を保って再開</HD_RefuelRecoveryAccept>
   <HD_RefuelRecoverySyncUnavailable>利用不可：マルチプレイ用にこの操作を設定できませんでした</HD_RefuelRecoverySyncUnavailable>
   <HD_RefuelRecoveryPayConfirm>すでに追加された燃料の分として、記録されたその資材を消費しますか？燃料は再び追加されません。以前の試行がエラーを報告していても、別の効果はすでに発生している可能性があります。この操作は一度だけ試みられ、自動では繰り返されません。</HD_RefuelRecoveryPayConfirm>
-  <HD_RefuelRecoveryRestoreConfirm>記録された資材をこのポーンの所持品に戻す操作を、一度だけ試みますか？変化しておらず、誰にも所持されず、容器内にもマップ上にもないアイテムだけを戻せます。この資材によって燃料が追加されたことは観測されていません。既存のアイテムと保持・装備構成の設定はそのままです。</HD_RefuelRecoveryRestoreConfirm>
+  <HD_RefuelRecoveryRestoreConfirm>記録された資材をこのポーンの所持品に戻す操作を、一度だけ試みますか？復旧用保管庫に保存されている未変化のアイテムは、燃料を追加したり資材を消費したりせずに移動できます。記録された燃料の未払い分や不確実な状態は解消されず、確認と解決は別途必要です。所持者のいないアイテムは、燃料の追加が観測されていない場合にのみ戻せます。保持と装備構成の設定は変更されません。</HD_RefuelRecoveryRestoreConfirm>
   <HD_RefuelRecoveryCleanupConfirm>記録された資材が消費された後の、残りの所持品を再確認しますか？燃料の追加や他のアイテムの破壊は行わず、以前の保持・装備構成の設定にも戻しません。</HD_RefuelRecoveryCleanupConfirm>
   <HD_RefuelRecoveryAcceptConfirm>現在のアイテムと燃料量をそのまま保ち、Hauler's Dream の新しい燃料補給作業を許可しますか？中断された操作は繰り返されず、その詳細は保存されたままになります。不確かな燃料や資材の量は未確認のままです。再開しても修正はされません。</HD_RefuelRecoveryAcceptConfirm>
   <HD_RefuelRecoverySelectionChanged>復旧の情報またはアイテムが変化しました。操作を選ぶ前に復旧メニューを開き直してください。</HD_RefuelRecoverySelectionChanged>
@@ -38,4 +38,6 @@
   <HD_RefuelRecoveryOnGround>同じマップ上にあります。</HD_RefuelRecoveryOnGround>
   <HD_RefuelRecoveryElsewhere>確認された復旧場所の外にあります。</HD_RefuelRecoveryElsewhere>
   <HD_RefuelRecoveryLastActionFailed>以前の復旧操作でエラーが報告されました。その詳細は保存されたままです。</HD_RefuelRecoveryLastActionFailed>
+  <HD_RefuelRecoveryInRetainedCustody>このポーンの燃料復旧用保管庫に保管され、ゲームとともに保存されます。</HD_RefuelRecoveryInRetainedCustody>
+  <HD_RefuelRecoveryRetainedBeforeResume>再開する前に、保管中の資材を所持品へ戻すか、確認済みの燃料コストに該当する元の資材を正確な数量だけ消費してください。資材を戻す操作は保管場所を変えるだけで、燃料の未払い分や不確実な状態は未解決のままです。</HD_RefuelRecoveryRetainedBeforeResume>
 </LanguageData>

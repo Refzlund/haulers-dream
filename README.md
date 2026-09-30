@@ -51,6 +51,9 @@ integration layer. Soft dependencies are reflection-only and **inert when the ot
   vehicles included), and colonists eat from and build from a parked vehicle's cargo (feature 19).
 - **Adaptive Storage Framework** / **LWM's Deep Storage** — haul-to-stack works into modded storage
   units, and the optional storage-building filter is aware of slow/deep-storage deposit delays.
+- **Medieval Overhaul** — recipes using ordinary bill ingredient gathering follow the same bill rules.
+  Refueling uses RimWorld and Medieval Overhaul because its fuel values change how much each item
+  provides; HD leaves carried fuel untouched and does not offer bulk refueling with this composition.
 - **Common Sense** — when Common Sense gathers crafting ingredients, HD does not add carried
   stock to ordinary bills' ingredient searches and leaves gathering to Common Sense. Cleaning alone
   does not disable HD gathering; see

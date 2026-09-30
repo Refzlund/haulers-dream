@@ -13,7 +13,7 @@
   <HD_RefuelRecoveryAccept>Zachowaj obecny stan i wznów</HD_RefuelRecoveryAccept>
   <HD_RefuelRecoverySyncUnavailable>niedostępne: nie udało się przygotować tego działania do gry wieloosobowej</HD_RefuelRecoverySyncUnavailable>
   <HD_RefuelRecoveryPayConfirm>Zużyć dokładnie zapisany materiał za paliwo, które już dodano? Paliwo nie zostanie dodane ponownie. Wcześniejsza próba mogła już wywołać inne skutki, nawet jeśli zgłosiła błąd. To działanie podejmuje jedną próbę i nie powtarza się automatycznie.</HD_RefuelRecoveryPayConfirm>
-  <HD_RefuelRecoveryRestoreConfirm>Podjąć jedną próbę zwrócenia zapisanego materiału do ekwipunku tej postaci? Można zwrócić tylko niezmienione przedmioty, których nikt nie posiada i które nie znajdują się w pojemniku ani na mapie. Nie zaobserwowano dodania paliwa z tego materiału. Istniejące przedmioty oraz ustawienia zachowywania i wyposażenia pozostaną bez zmian.</HD_RefuelRecoveryRestoreConfirm>
+  <HD_RefuelRecoveryRestoreConfirm>Podjąć jedną próbę zwrócenia zapisanego materiału do ekwipunku tej postaci? Niezmienione przedmioty w zapisywanym schowku odzyskiwania można przenieść bez dodawania paliwa ani zużywania materiału. Nie rozlicza to zapisanego długu paliwowego ani nie usuwa niepewności; sprawdzenie i rozstrzygnięcie pozostają osobnymi krokami. Przedmioty bez właściciela można zwrócić tylko wtedy, gdy nie zaobserwowano dodania paliwa. Ustawienia zachowywania i wyposażenia pozostają bez zmian.</HD_RefuelRecoveryRestoreConfirm>
   <HD_RefuelRecoveryCleanupConfirm>Sprawdzić ponownie pozostały ekwipunek po zużyciu zapisanego materiału? Nie doda to paliwa, nie zniszczy kolejnych przedmiotów ani nie przywróci dawnych ustawień zachowywania lub wyposażenia.</HD_RefuelRecoveryCleanupConfirm>
   <HD_RefuelRecoveryAcceptConfirm>Zachować obecne przedmioty i poziomy paliwa oraz zezwolić na nowe zadania tankowania Hauler's Dream? Przerwane działanie nie zostanie powtórzone, a jego szczegóły pozostaną zapisane. Niepewne ilości paliwa lub materiału pozostaną niezweryfikowane. Wznowienie ich nie koryguje.</HD_RefuelRecoveryAcceptConfirm>
   <HD_RefuelRecoverySelectionChanged>Dane odzyskiwania lub przedmioty uległy zmianie. Otwórz ponownie menu odzyskiwania przed wybraniem działania.</HD_RefuelRecoverySelectionChanged>
@@ -38,4 +38,6 @@
   <HD_RefuelRecoveryOnGround>Na tej samej mapie.</HD_RefuelRecoveryOnGround>
   <HD_RefuelRecoveryElsewhere>Poza potwierdzonym miejscem odzyskiwania.</HD_RefuelRecoveryElsewhere>
   <HD_RefuelRecoveryLastActionFailed>Wcześniejsze działanie odzyskiwania zgłosiło błąd. Jego szczegóły pozostają zapisane.</HD_RefuelRecoveryLastActionFailed>
+  <HD_RefuelRecoveryInRetainedCustody>Przechowywany w schowku odzyskiwania paliwa tej postaci, zachowywanym w zapisie gry.</HD_RefuelRecoveryInRetainedCustody>
+  <HD_RefuelRecoveryRetainedBeforeResume>Przed wznowieniem zwróć przechowywany materiał do ekwipunku albo zużyj dokładnie ten materiał, który odpowiada potwierdzonemu kosztowi paliwa. Zwrot zmienia tylko miejsce przechowywania; dług paliwowy lub niepewność pozostają nierozstrzygnięte.</HD_RefuelRecoveryRetainedBeforeResume>
 </LanguageData>

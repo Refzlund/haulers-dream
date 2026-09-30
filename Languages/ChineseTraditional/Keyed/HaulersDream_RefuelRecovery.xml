@@ -13,7 +13,7 @@
   <HD_RefuelRecoveryAccept>保留目前狀態並恢復工作</HD_RefuelRecoveryAccept>
   <HD_RefuelRecoverySyncUnavailable>無法使用：未能為多人遊戲設定此操作</HD_RefuelRecoverySyncUnavailable>
   <HD_RefuelRecoveryPayConfirm>消耗記錄的那份物料，以補上已補充燃料所需的物料消耗？不會再次補充燃料。先前的嘗試可能已經觸發其他效果，即使當時回報了錯誤。此操作只嘗試一次，不會自動重複。</HD_RefuelRecoveryPayConfirm>
-  <HD_RefuelRecoveryRestoreConfirm>嘗試一次，將記錄的物料放回該角色的背包？只有未發生變化、既未由任何人或容器持有，也未放置在地圖上的物品才能放回。未觀察到使用這些物料補充了燃料。現有物品以及保留和裝備配置設定均維持不變。</HD_RefuelRecoveryRestoreConfirm>
+  <HD_RefuelRecoveryRestoreConfirm>嘗試一次，將記錄的物料放回該角色的背包？儲存在復原容器中且未發生變化的物品可以移回，不會補充燃料或消耗物料。這不會結清記錄的燃料欠帳，也不會消除不確定性；仍須另行檢查與處理。只有未觀察到補充燃料時，才能放回無歸屬物品。保留與裝備配置設定維持不變。</HD_RefuelRecoveryRestoreConfirm>
   <HD_RefuelRecoveryCleanupConfirm>在記錄的物料已被消耗後，重新檢查背包中的剩餘物品？此操作不會補充燃料、摧毀更多物品，也不會還原舊的保留或裝備配置設定。</HD_RefuelRecoveryCleanupConfirm>
   <HD_RefuelRecoveryAcceptConfirm>保留現有物品和燃料量，並允許新的 Hauler's Dream 燃料補充工作？中斷的操作不會重做，其詳細資訊將繼續儲存。任何不確定的燃料或物料數量仍未獲得確認。恢復工作不會修正這些不確定的數量。</HD_RefuelRecoveryAcceptConfirm>
   <HD_RefuelRecoverySelectionChanged>復原資訊或相關物品已發生變化。請重新開啟復原選單後再選擇操作。</HD_RefuelRecoverySelectionChanged>
@@ -38,4 +38,6 @@
   <HD_RefuelRecoveryOnGround>在同一張地圖上。</HD_RefuelRecoveryOnGround>
   <HD_RefuelRecoveryElsewhere>不在已確認的復原位置內。</HD_RefuelRecoveryElsewhere>
   <HD_RefuelRecoveryLastActionFailed>先前的復原操作回報了錯誤。其詳細資訊仍然儲存著。</HD_RefuelRecoveryLastActionFailed>
+  <HD_RefuelRecoveryInRetainedCustody>儲存在該角色的燃料復原容器中，並隨存檔保存。</HD_RefuelRecoveryInRetainedCustody>
+  <HD_RefuelRecoveryRetainedBeforeResume>繼續前，請將保管的物料放回背包，或消耗作為已確認燃料成本的原物原量。放回物料只改變其存放位置；任何燃料欠帳或不確定性仍未解決。</HD_RefuelRecoveryRetainedBeforeResume>
 </LanguageData>

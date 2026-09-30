@@ -13,7 +13,7 @@
   <HD_RefuelRecoveryAccept>保留当前状态并恢复工作</HD_RefuelRecoveryAccept>
   <HD_RefuelRecoverySyncUnavailable>不可用：未能为多人游戏设置此操作</HD_RefuelRecoverySyncUnavailable>
   <HD_RefuelRecoveryPayConfirm>消耗记录的那份材料，以补上已添加燃料所需的材料消耗？不会再次添加燃料。之前的尝试可能已经触发了其他效果，即使当时报告了错误。此操作只尝试一次，不会自动重复。</HD_RefuelRecoveryPayConfirm>
-  <HD_RefuelRecoveryRestoreConfirm>尝试一次，将记录的材料放回该角色的背包？只有未发生变化、既未被任何人或容器持有，也未放置在地图上的物品才能放回。未观察到使用这些材料添加了燃料。现有物品以及保留和装备配置设置均保持不变。</HD_RefuelRecoveryRestoreConfirm>
+  <HD_RefuelRecoveryRestoreConfirm>尝试一次，将记录的材料放回该角色的背包？保存在恢复容器中且未发生变化的物品可以移回，不会添加燃料或消耗材料。这不会结清记录的燃料欠账，也不会消除不确定性；仍需单独检查和处理。只有未观察到添加燃料时，才能放回无归属物品。保留和装备配置设置保持不变。</HD_RefuelRecoveryRestoreConfirm>
   <HD_RefuelRecoveryCleanupConfirm>在记录的材料已被消耗后，重新检查背包中的剩余物品？此操作不会添加燃料、销毁更多物品，也不会恢复旧的保留或装备配置设置。</HD_RefuelRecoveryCleanupConfirm>
   <HD_RefuelRecoveryAcceptConfirm>保留现有物品和燃料量，并允许新的 Hauler's Dream 燃料添加任务？中断的操作不会重做，其详细信息将继续保存。任何不确定的燃料或材料数量仍未得到核实。恢复工作不会纠正这些不确定的数量。</HD_RefuelRecoveryAcceptConfirm>
   <HD_RefuelRecoverySelectionChanged>恢复信息或相关物品已发生变化。请重新打开恢复菜单后再选择操作。</HD_RefuelRecoverySelectionChanged>
@@ -38,4 +38,6 @@
   <HD_RefuelRecoveryOnGround>在同一地图上。</HD_RefuelRecoveryOnGround>
   <HD_RefuelRecoveryElsewhere>不在已确认的恢复位置内。</HD_RefuelRecoveryElsewhere>
   <HD_RefuelRecoveryLastActionFailed>之前的恢复操作报告了错误。其详细信息仍然保存着。</HD_RefuelRecoveryLastActionFailed>
+  <HD_RefuelRecoveryInRetainedCustody>保存在该角色的燃料恢复容器中，并随存档保存。</HD_RefuelRecoveryInRetainedCustody>
+  <HD_RefuelRecoveryRetainedBeforeResume>继续前，请将保管的材料放回背包，或消耗作为已确认燃料成本的原物原量。放回材料只改变其存放位置；任何燃料欠账或不确定性仍未解决。</HD_RefuelRecoveryRetainedBeforeResume>
 </LanguageData>
