@@ -225,6 +225,32 @@ namespace HaulersDream
                 else valid = false;
             }
 
+            // Query-local effective ASF filter, including its private stuff-locked
+            // cache. Preparation has already run through the inspected getter; the
+            // publication guard reads only the bound field and native filter data.
+            internal void AsfPolicy(ISlotGroup group, StorageProjectionAsfBinding asf)
+            {
+                void Capture(ISlotGroupParent parent)
+                {
+                    if (parent?.GetType() != asf.ParentType) return;
+                    var building = (Building_Storage)parent;
+                    StorageProgressWork.Charge(StorageWorkKind.RawGuard);
+                    var fixedSettings = asf.ReadyFixed(building);
+                    if (fixedSettings == null) { valid = false; return; }
+                    checks.Add(() => ReferenceEquals(asf.ReadyFixed(building), fixedSettings));
+                    Settings(fixedSettings);
+                }
+                if (group is SlotGroup slot) Capture(slot.parent);
+                else if (group is StorageGroup linked)
+                    foreach (var member in linked.members)
+                    {
+                        StorageProgressWork.Charge(StorageWorkKind.Topology);
+                        if (member is ISlotGroupParent parent) Capture(parent);
+                        else valid = false;
+                    }
+                else valid = false;
+            }
+
             private void ParentPolicy(ISlotGroupParent parent)
             {
                 if (parent is Building_Storage building)
@@ -321,7 +347,7 @@ namespace HaulersDream
                 return units > 0 && reserved >= units;
             }
 
-            internal void ObservedCells(Map map, ISlotGroup group, StorageAllocationObservationResult observation)
+            internal void ObservedCells(Map map, ISlotGroup group, StorageAllocationObservationResult observation, int maximumItems = 4096)
             {
                 var manager = map.haulDestinationManager; var grid = map.thingGrid; var indices = map.cellIndices;
                 var groups = (SlotGroup[,,])groupGrid.GetValue(manager);
@@ -337,7 +363,7 @@ namespace HaulersDream
                     int index = cell.x + cell.z * width;
                     var slot = groups[cell.x, cell.y, cell.z]; var parent = slot?.parent;
                     var items = cells[index]; inspected += items.Count;
-                    if (inspected > 4096) { valid = false; return; }
+                    if (inspected > maximumItems) { valid = false; return; }
                     checks.Add(() => ReferenceEquals(groups[cell.x, cell.y, cell.z], slot) && ReferenceEquals(slot?.parent, parent));
                     List(items, () => cells[index]);
                     foreach (var item in items) { StorageProgressWork.Charge(StorageWorkKind.RawGuard); Thing(item); }

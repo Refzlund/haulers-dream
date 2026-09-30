@@ -10,13 +10,14 @@ namespace HaulersDream
 {
     // A narrow optimization allowlist, not a grant of provider capacity. An excluded
     // composition continues through the immediate guarded reader, never a cached view.
-    internal static class StorageQueryBindings
+    internal static partial class StorageQueryBindings
     {
         private static readonly FieldInfo specialFilters = AccessTools.Field(typeof(ThingFilter), "disallowedSpecialFilters");
         private static readonly FieldInfo specialWorker = AccessTools.Field(typeof(SpecialThingFilterDef), "workerInt");
 
-        private static bool Known(MethodBase target, Patch patch, HarmonyPatchType kind)
+        private static bool Known(MethodBase target, Patch patch, HarmonyPatchType kind, StorageProjectionAsfBinding asf = null)
         {
+            if (asf != null && KnownAsf(target, patch.PatchMethod, kind, asf)) return true;
             if (patch.owner != HaulersDreamMod.HarmonyId) return false;
             var method = patch.PatchMethod;
             if (kind == HarmonyPatchType.Finalizer && method == AccessTools.Method(typeof(HDLog),
@@ -43,109 +44,129 @@ namespace HaulersDream
                 && method == AccessTools.Method(typeof(Patch_IsGoodStoreCell_HonourCommitments), "Postfix");
         }
 
-        private static bool Inspected(MethodBase method)
+        private static bool Inspected(MethodBase method, StorageProjectionAsfBinding asf = null, PatchInspection inspection = null)
         {
             StorageProgressWork.Charge(HaulersDream.Core.StorageWorkKind.Predicate);
-            if (method == null || method.DeclaringType.Assembly != typeof(Thing).Assembly) return false;
-            var info = Harmony.GetPatchInfo(method);
+            if (method == null || method.DeclaringType.Assembly != typeof(Thing).Assembly
+                && (asf == null || method.DeclaringType.Assembly != asf.ParentType.Assembly)) return false;
+            // Harmony stores inherited methods under their declared identity.
+            method = method.GetDeclaredMember();
+            var info = inspection == null ? Harmony.GetPatchInfo(method) : inspection.Read(method);
+            return InspectedPatches(method, info, asf);
+        }
+
+        private static bool InspectedPatches(MethodBase method, Patches info, StorageProjectionAsfBinding asf)
+        {
             if (info == null) return true;
-            foreach (var patch in info.Prefixes) if (!Known(method, patch, HarmonyPatchType.Prefix)) return false;
-            foreach (var patch in info.Postfixes) if (!Known(method, patch, HarmonyPatchType.Postfix)) return false;
-            foreach (var patch in info.Transpilers) if (!Known(method, patch, HarmonyPatchType.Transpiler)) return false;
-            foreach (var patch in info.Finalizers) if (!Known(method, patch, HarmonyPatchType.Finalizer)) return false;
+            if (!NoInnerHooks(info)) return false;
+            foreach (var patch in info.Prefixes) if (!Known(method, patch, HarmonyPatchType.Prefix, asf)) return false;
+            foreach (var patch in info.Postfixes) if (!Known(method, patch, HarmonyPatchType.Postfix, asf)) return false;
+            foreach (var patch in info.Transpilers) if (!Known(method, patch, HarmonyPatchType.Transpiler, asf)) return false;
+            foreach (var patch in info.Finalizers) if (!Known(method, patch, HarmonyPatchType.Finalizer, asf)) return false;
             return true;
         }
 
-        private static bool InspectedOverloads(Type type, string name)
+        private static bool InspectedOverloads(Type type, string name, PatchInspection inspection)
         {
             bool found = false;
-            foreach (var method in AccessTools.GetDeclaredMethods(type))
+            foreach (var method in NativeOverloads(type, name))
             {
                 StorageProgressWork.Charge(HaulersDream.Core.StorageWorkKind.Topology);
-                if (method.Name == name) { found = true; if (!Inspected(method)) return false; }
+                found = true; if (!Inspected(method, null, inspection)) return false;
             }
             return found;
         }
 
-        internal static bool Inspected(MethodBase boundary, Thing subject)
+        internal static bool Inspected(MethodBase boundary, Thing subject) => Inspected(boundary, subject, null, new PatchInspection());
+
+        private static bool Inspected(MethodBase boundary, Thing subject, StorageProjectionAsfBinding asf, PatchInspection inspection)
         {
             if (VersionControl.CurrentMajor != 1 || VersionControl.CurrentMinor != 6
                 || VersionControl.CurrentBuild != 4871 || VersionControl.CurrentRevision != 591) return false;
             // These HD postfixes can call a foreign controller without a patch on this
             // particular boundary. Keep their existing immediate compatibility path.
             if (StorageRefillHysteresisCompat.IsPresent || RimIOTCompat.IsPresent) return false;
-            if (!Inspected(boundary) || !NativeSubject(subject)) return false;
-            // No ASF/foreign worker replacement enters the provisional native loop. Those
-            // providers retain the existing immediate observer and actual admission path.
-            return Patch_StorageQuery_WorkerProgress.ExactBody && Inspected(AccessTools.Method(typeof(StoreUtility), "TryFindBestBetterStoreCellForWorker"))
-                && Inspected(AccessTools.Method(typeof(StoreUtility), nameof(StoreUtility.IsGoodStoreCell)))
-                && Inspected(AccessTools.Method(typeof(StoreUtility), nameof(StoreUtility.NoStorageBlockersIn)))
-                && Inspected(AccessTools.Method(typeof(GridsUtility), nameof(GridsUtility.GetMaxItemsAllowedInCell)))
-                && Inspected(AccessTools.PropertyGetter(typeof(Building), nameof(Building.MaxItemsInCell)))
-                && InspectedOverloads(typeof(StorageSettings), nameof(StorageSettings.AllowedToAccept))
-                && Inspected(AccessTools.Method(typeof(ThingFilter), nameof(ThingFilter.Allows), new[] { typeof(Thing) }))
-                && InspectedOverloads(typeof(ForbidUtility), nameof(ForbidUtility.IsForbidden))
-                && InspectedOverloads(typeof(ReservationUtility), nameof(ReservationUtility.CanReserveNew))
-                && InspectedOverloads(typeof(ReservationUtility), nameof(ReservationUtility.CanReserve))
-                && InspectedOverloads(typeof(ReservationUtility), nameof(ReservationUtility.HasReserved))
-                && InspectedOverloads(typeof(ReservationManager), nameof(ReservationManager.CanReserve))
-                && InspectedOverloads(typeof(ReservationManager), nameof(ReservationManager.ReservedBy))
-                && InspectedOverloads(typeof(Reachability), nameof(Reachability.CanReach))
-                && InspectedOverloads(typeof(GenConstruct), nameof(GenConstruct.BlocksConstruction));
+            if (!Inspected(boundary, asf, inspection) || !InspectedSubject(subject, inspection)) return false;
+            // A provider may permit a synchronous view while its original worker still runs.
+            // Worker replacement continues to require the native-only overload.
+            return Patch_StorageQuery_WorkerProgress.ExactBody && Inspected(AccessTools.Method(typeof(StoreUtility), "TryFindBestBetterStoreCellForWorker"), asf, inspection)
+                && Inspected(AccessTools.Method(typeof(StoreUtility), nameof(StoreUtility.IsGoodStoreCell)), asf, inspection)
+                && Inspected(AccessTools.Method(typeof(StoreUtility), nameof(StoreUtility.NoStorageBlockersIn)), asf, inspection)
+                && Inspected(AccessTools.Method(typeof(GridsUtility), nameof(GridsUtility.GetMaxItemsAllowedInCell)), asf, inspection)
+                && Inspected(AccessTools.PropertyGetter(typeof(Building), nameof(Building.MaxItemsInCell)), null, inspection)
+                && InspectedOverloads(typeof(StorageSettings), nameof(StorageSettings.AllowedToAccept), inspection)
+                && Inspected(AccessTools.Method(typeof(ThingFilter), nameof(ThingFilter.Allows), new[] { typeof(Thing) }), null, inspection)
+                && InspectedOverloads(typeof(ForbidUtility), nameof(ForbidUtility.IsForbidden), inspection)
+                && InspectedOverloads(typeof(ReservationUtility), nameof(ReservationUtility.CanReserveNew), inspection)
+                && InspectedOverloads(typeof(ReservationUtility), nameof(ReservationUtility.CanReserve), inspection)
+                && InspectedOverloads(typeof(ReservationUtility), nameof(ReservationUtility.HasReserved), inspection)
+                && InspectedOverloads(typeof(ReservationManager), nameof(ReservationManager.CanReserve), inspection)
+                && InspectedOverloads(typeof(ReservationManager), nameof(ReservationManager.ReservedBy), inspection)
+                && InspectedOverloads(typeof(Reachability), nameof(Reachability.CanReach), inspection)
+                && InspectedOverloads(typeof(GenConstruct), nameof(GenConstruct.BlocksConstruction), inspection);
         }
 
-        internal static bool NativeSubject(Thing subject)
+        internal static bool NativeSubject(Thing subject) => InspectedSubject(subject, new PatchInspection());
+
+        private static bool InspectedSubject(Thing subject, PatchInspection inspection)
         {
             if (subject == null || (subject.GetType() != typeof(Thing) && subject.GetType() != typeof(ThingWithComps))) return false;
-            if (!Inspected(AccessTools.Method(typeof(Thing), nameof(Thing.CanStackWith), new[] { typeof(Thing) }))
-                || !Inspected(AccessTools.Method(subject.GetType(), nameof(Thing.CanStackWith), new[] { typeof(Thing) }))) return false;
+            if (!Inspected(AccessTools.Method(typeof(Thing), nameof(Thing.CanStackWith), new[] { typeof(Thing) }), null, inspection)
+                || !Inspected(AccessTools.Method(subject.GetType(), nameof(Thing.CanStackWith), new[] { typeof(Thing) }), null, inspection)) return false;
             if (subject is ThingWithComps withComps)
                 foreach (var comp in withComps.AllComps)
                 {
                     StorageProgressWork.Charge(HaulersDream.Core.StorageWorkKind.RawGuard);
                     if (comp.GetType().Assembly != typeof(Thing).Assembly
-                        || !Inspected(AccessTools.Method(comp.GetType(), nameof(ThingComp.AllowStackWith), new[] { typeof(Thing) }))) return false;
+                        || !Inspected(AccessTools.Method(comp.GetType(), nameof(ThingComp.AllowStackWith), new[] { typeof(Thing) }), null, inspection)) return false;
                 }
             return true;
         }
 
-        internal static bool NativeGroup(ISlotGroup group)
+        private static bool InspectedFilter(StorageSettings settings)
         {
-            bool InspectedFilter(StorageSettings settings)
+            var inspection = new PatchInspection();
+            if (settings?.filter?.GetType() != typeof(ThingFilter) || specialFilters == null || specialWorker == null
+                || !(specialFilters.GetValue(settings.filter) is List<SpecialThingFilterDef> specials)) return false;
+            if (!Inspected(AccessTools.PropertyGetter(typeof(SpecialThingFilterDef), nameof(SpecialThingFilterDef.Worker)), null, inspection)) return false;
+            foreach (var special in specials)
             {
-                if (settings?.filter?.GetType() != typeof(ThingFilter) || specialFilters == null || specialWorker == null
-                    || !(specialFilters.GetValue(settings.filter) is List<SpecialThingFilterDef> specials)) return false;
-                if (!Inspected(AccessTools.PropertyGetter(typeof(SpecialThingFilterDef), nameof(SpecialThingFilterDef.Worker)))) return false;
-                foreach (var special in specials)
-                {
-                    StorageProgressWork.Charge(HaulersDream.Core.StorageWorkKind.Predicate);
-                    // Native shelf defaults contain these corpse exclusions even for steel.
-                    // Their selected bodies immediately return false for the exact Thing /
-                    // ThingWithComps subjects admitted above. No corpse or foreign worker is
-                    // admitted by this small optimization; other filters use immediate reads.
-                    var type = special?.workerClass;
-                    if (type != typeof(SpecialThingFilterWorker_CorpsesColonist)
-                        && type != typeof(SpecialThingFilterWorker_CorpsesStranger)
-                        && type != typeof(SpecialThingFilterWorker_CorpsesLarge)) return false;
-                    var actual = specialWorker.GetValue(special);
-                    if (actual != null && actual.GetType() != type) return false;
-                    if (!Inspected(AccessTools.Constructor(type))
-                        || !Inspected(AccessTools.Constructor(typeof(SpecialThingFilterWorker)))
-                        || !Inspected(AccessTools.Method(type, nameof(SpecialThingFilterWorker.Matches), new[] { typeof(Thing) }))) return false;
-                }
-                return true;
+                StorageProgressWork.Charge(HaulersDream.Core.StorageWorkKind.Predicate);
+                // Native shelf defaults contain these corpse exclusions even for steel.
+                // Their selected bodies immediately return false for the exact Thing /
+                // ThingWithComps subjects admitted above. No corpse or foreign worker is
+                // admitted by this small optimization; other filters use immediate reads.
+                var type = special?.workerClass;
+                if (type != typeof(SpecialThingFilterWorker_CorpsesColonist)
+                    && type != typeof(SpecialThingFilterWorker_CorpsesStranger)
+                    && type != typeof(SpecialThingFilterWorker_CorpsesLarge)) return false;
+                var actual = specialWorker.GetValue(special);
+                if (actual != null && actual.GetType() != type) return false;
+                if (!Inspected(AccessTools.Constructor(type), null, inspection)
+                    || !Inspected(AccessTools.Constructor(typeof(SpecialThingFilterWorker)), null, inspection)
+                    || !Inspected(AccessTools.Method(type, nameof(SpecialThingFilterWorker.Matches), new[] { typeof(Thing) }), null, inspection)) return false;
             }
+            return true;
+        }
+
+        internal static bool NativeGroup(ISlotGroup group) => QueryGroup(group, null);
+
+        internal static bool QueryGroup(ISlotGroup group, StorageProjectionAsfBinding asf)
+        {
             bool Parent(ISlotGroupParent parent)
             {
-                if (parent == null || (parent.GetType() != typeof(Building_Storage) && parent.GetType() != typeof(Zone_Stockpile))) return false;
+                if (parent == null || (parent.GetType() != typeof(Building_Storage) && parent.GetType() != typeof(Zone_Stockpile)
+                    && (asf == null || parent.GetType() != asf.ParentType))) return false;
                 var type = parent.GetType();
-                if (!Inspected(AccessTools.Method(type, nameof(ISlotGroupParent.Accepts)))
-                    || !Inspected(AccessTools.Method(type, nameof(ISlotGroupParent.GetParentStoreSettings)))
-                    || !Inspected(AccessTools.Method(type, nameof(ISlotGroupParent.GetStoreSettings)))) return false;
+                if (!Inspected(AccessTools.Method(type, nameof(ISlotGroupParent.Accepts)), asf)
+                    || !Inspected(AccessTools.Method(type, nameof(ISlotGroupParent.GetParentStoreSettings)), asf)
+                    || !Inspected(AccessTools.Method(type, nameof(ISlotGroupParent.GetStoreSettings)), asf)) return false;
                 if (parent is Building_Storage building)
                     foreach (var comp in building.AllComps)
-                        if (comp.GetType().Assembly != typeof(Thing).Assembly) return false;
-                return InspectedFilter(parent.GetStoreSettings()) && InspectedFilter(parent.GetParentStoreSettings());
+                        if (comp.GetType().Assembly != typeof(Thing).Assembly
+                            && (asf == null || comp.GetType().Assembly != asf.ParentType.Assembly)) return false;
+                return InspectedFilter(parent.GetStoreSettings()) && InspectedFilter(parent.GetParentStoreSettings())
+                    && (asf == null || type != asf.ParentType || InspectedFilter(asf.ReadyFixed((Building_Storage)parent)));
             }
             if (group is SlotGroup slot) return Parent(slot.parent);
             if (!(group is StorageGroup linked)) return false;

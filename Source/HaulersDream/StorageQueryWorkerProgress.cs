@@ -60,6 +60,9 @@ namespace HaulersDream
         {
             private IntVec3? workerSelection;
             private int originalWorkerDepth;
+            private WorkerCall originalWorker;
+            private IntVec3? sharedSelection;
+            private ISlotGroup sharedSelectionGroup;
             internal sealed class WorkerCall
             {
                 private readonly StorageAdmissionQueryScope scope;
@@ -69,13 +72,20 @@ namespace HaulersDream
                 private readonly StoragePriority beforePriority;
                 private StorageProgressWork.Operation fallback;
                 private IDisposable frame;
-                private bool replaced, entered, finished;
+                private bool replaced, entered, finished, linked;
+                private WorkerCall previousWorker;
+                private readonly Dictionary<IntVec3, ISlotGroup> shared = new Dictionary<IntVec3, ISlotGroup>();
+                internal bool CanShare => linked && previousWorker == null && ReferenceEquals(scope.originalWorker, this);
+                internal void RecordShared(IntVec3 cell, ISlotGroup group)
+                { if (CanShare) shared[cell] = group; }
                 internal WorkerCall(StorageAdmissionQueryScope scope, Map map, IntVec3 cell, float distance, StoragePriority priority)
                 { this.scope = scope; this.map = map; beforeCell = cell; beforeDistance = distance; beforePriority = priority; }
                 internal void Disposition(bool replacement)
                 {
                     replaced = replacement;
                     if (replaced) return;
+                    if (scope != null)
+                    { previousWorker = scope.originalWorker; scope.originalWorker = this; linked = true; }
                     // Exact scope ownership, including nested original workers. Excluded paths
                     // must not borrow a caller's optional certificate or its map account.
                     if (scope?.factory == true && StorageProgressWork.ActiveFor(map)?.Lane == StorageWorkLane.Mandatory) return;
@@ -91,11 +101,21 @@ namespace HaulersDream
                     {
                         if (!replaced && failure == null && scope != null && !scope.disposed
                             && (cell != beforeCell || distance != beforeDistance || priority != beforePriority))
+                        {
                             scope.workerSelection = null;
+                            scope.sharedSelection = shared.TryGetValue(cell, out var group) ? cell : (IntVec3?)null;
+                            scope.sharedSelectionGroup = group;
+                        }
+                        if (failure != null && scope != null) scope.invalid = true;
                     }
                     finally
                     {
                         if (entered && scope != null) scope.originalWorkerDepth--;
+                        if (linked)
+                        {
+                            if (ReferenceEquals(scope.originalWorker, this)) scope.originalWorker = previousWorker;
+                            else { scope.invalid = true; scope.originalWorker = null; }
+                        }
                         frame?.Dispose(); fallback?.Dispose();
                     }
                 }
@@ -128,7 +148,7 @@ namespace HaulersDream
                 using (var gate = StorageProgressWork.Begin(map, group, StorageWorkLane.Optional, "worker-compatibility"))
                 using (StorageProgressWork.Enter(gate))
                 {
-                    if (gate == null || !SupportedComposition() || !StorageQueryBindings.NativeGroup(nativeGroup)) return false;
+                    if (gate == null || !SupportedComposition() || queryAsf != null || !StorageQueryBindings.NativeGroup(nativeGroup)) return false;
                     int oldMember = gate.Entry.WorkerMember, oldCell = gate.Entry.WorkerCell;
                     try
                     {

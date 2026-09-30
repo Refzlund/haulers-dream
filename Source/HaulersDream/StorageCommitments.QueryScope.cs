@@ -63,6 +63,7 @@ namespace HaulersDream
             private ProjectionThingGuard sourceGuard;
             private readonly MethodBase boundary;
             private bool compositionKnown, compositionSupported;
+            private StorageProjectionAsfBinding queryAsf;
             private readonly Dictionary<ISlotGroup, QueryGroupView> groups = new Dictionary<ISlotGroup, QueryGroupView>();
             private readonly List<QueryGroupView> groupOrder = new List<QueryGroupView>();
             private ResourceResponsibilitySnapshot snapshot;
@@ -109,7 +110,11 @@ namespace HaulersDream
             private bool SupportedComposition()
             {
                 if (!compositionKnown)
-                { compositionSupported = StorageQueryBindings.Inspected(boundary, subject); compositionKnown = true; }
+                {
+                    compositionSupported = StorageQueryBindings.Inspected(boundary, subject)
+                        || StorageQueryBindings.TryAsfQuery(boundary, subject, out queryAsf);
+                    compositionKnown = true;
+                }
                 return compositionSupported;
             }
 
@@ -140,7 +145,8 @@ namespace HaulersDream
                 status = ResourceAllowance.Deferred; allowed = 0;
                 // An unbound/foreign worker runs outside our optional frame. Keep the
                 // established fresh immediate adapter for that original native path.
-                if (originalWorkerDepth > 0 || StorageProgressWork.ActiveFor(map) == null) return false;
+                if (StorageProgressWork.ActiveFor(map) == null || originalWorker != null && !originalWorker.CanShare) return false;
+                if (originalWorkerDepth > 0 && (!SupportedComposition() || queryAsf == null)) return false;
                 if (!Current() || operating) return !compositionKnown || compositionSupported;
                 operating = true;
                 bool immediate = false;
@@ -163,14 +169,16 @@ namespace HaulersDream
                     var observation = StorageAllocationObservation.ObserveCells(map, group,
                         localDemands, new[] { cell }, view.Topology.Contains, StorageProgressWork.SelectedLimits());
                     if (!Usable(observation, localDemands.Count) || !InspectedResources(observation) || !Current()) return true;
+                    var raw = QueryPhysicalGuard(group, observation);
                     var result = AllocateResources(observation.Cells, view.StateAt(cell),
                         new[] { observation.Requests[observation.Requests.Count - 1] },
                         CompatibleResource, observation.ObservedEligible,
                         new StorageAllocationOptions(observationComplete: true));
                     if (!result.CanPublish || !FreshProgress(observation, group, copyCursor: false)
-                        || !view.Guard.Matches() || !Current()) return true;
+                        || raw != null && !raw.Matches() || !view.Guard.Matches() || !Current()) return true;
                     allowed = (int)Math.Min(1, AdmittedResourceUnits(result, observation.Requests[observation.Requests.Count - 1]));
-                    if (allowed > 0) view.RecordPositive(cell);
+                    if (allowed > 0)
+                    { view.RecordPositive(cell); originalWorker?.RecordShared(cell, group); }
                     status = ResourceAllowance.Observed;
                     return true;
                 }
@@ -193,11 +201,12 @@ namespace HaulersDream
                     if (SameResourceParcel(portion, pawn, subject))
                     { view.Immediate = true; return view; }
                 if (UnresolvedResourceBlocks(snapshot, group, pawn, subject)) return view;
-                if (!StorageQueryBindings.NativeGroup(group)) { view.Immediate = true; return view; }
+                if (!StorageQueryBindings.QueryGroup(group, queryAsf)) { view.Immediate = true; return view; }
                 view.Topology = QueryTopology.TryCreate(map, group);
-                if (view.Topology == null) return view;
+                if (view.Topology == null) { view.Immediate = queryAsf != null; return view; }
                 view.Guard.Map(map); view.Guard.Pawn(pawn); view.Guard.Thing(subject);
                 view.Guard.HdPolicy(); view.Guard.StoragePolicy(group);
+                if (queryAsf != null) view.Guard.AsfPolicy(group, queryAsf);
                 foreach (var portion in snapshot.Portions)
                 {
                     if (!ReferenceEquals(portion.Row.Group, group)) continue;
@@ -263,7 +272,17 @@ namespace HaulersDream
             {
                 // An original/foreign worker result carries no optional certificate.
                 // Never reserve optional work merely to finish that compatibility route.
-                if (!enabled || !workerSelection.HasValue || workerSelection.Value != selected) return true;
+                if (!enabled) return true;
+                if (sharedSelection.HasValue && sharedSelection.Value == selected)
+                {
+                    var currentGroup = BulkHaul.BudgetGroupOf(map.haulDestinationManager.SlotGroupAt(selected));
+                    if (currentGroup == null || !ReferenceEquals(currentGroup, sharedSelectionGroup)
+                        || !groups.TryGetValue(currentGroup, out var sharedView) || sharedView.Immediate) return false;
+                    using (var final = StorageProgressWork.Begin(map, currentGroup, StorageWorkLane.Mandatory, "original-query-final"))
+                    using (StorageProgressWork.Enter(final))
+                        return final != null && FinishGroup(sharedView, new[] { selected });
+                }
+                if (!workerSelection.HasValue || workerSelection.Value != selected) return true;
                 var group = BulkHaul.BudgetGroupOf(map.haulDestinationManager.SlotGroupAt(selected));
                 if (group == null) return false;
                 if (!groupWork.TryGetValue(group, out var work)) return false;
@@ -304,6 +323,7 @@ namespace HaulersDream
                     var observation = StorageAllocationObservation.ObserveCells(map, view.Group, demands, coordinates,
                         view.Topology.Contains, StorageProgressWork.SelectedLimits());
                     if (!Usable(observation, demands.Count) || !InspectedResources(observation) || !Current()) return false;
+                    var raw = QueryPhysicalGuard(view.Group, observation);
                     var prior = AllocateResources(observation.Cells, view.State,
                         Array.Empty<StorageAllocationRequest>(), CompatibleResource, observation.ObservedEligible,
                         new StorageAllocationOptions(observationComplete: true));
@@ -314,20 +334,34 @@ namespace HaulersDream
                         var fresh = StorageAllocationObservation.ObserveCells(map, view.Group, local, new[] { cell },
                             view.Topology.Contains, StorageProgressWork.SelectedLimits());
                         if (!Usable(fresh, local.Count) || !InspectedResources(fresh) || !Current()) return false;
+                        var localRaw = QueryPhysicalGuard(view.Group, fresh);
                         var request = fresh.Requests[fresh.Requests.Count - 1];
                         var result = AllocateResources(fresh.Cells, view.StateAt(cell),
                             new[] { request }, CompatibleResource, fresh.ObservedEligible,
                             new StorageAllocationOptions(observationComplete: true));
                         if (!result.CanPublish || AdmittedResourceUnits(result, request) <= 0
-                            || !FreshProgress(fresh, view.Group, copyCursor: false) || !view.Guard.Matches() || !Current()) return false;
+                            || !FreshProgress(fresh, view.Group, copyCursor: false) || localRaw != null && !localRaw.Matches()
+                            || !view.Guard.Matches() || !Current()) return false;
                     }
                     // Candidate policy callbacks can mutate earlier resources. Recheck the
                     // full physical certificate after the last one, before returning success.
-                    return StorageQueryBindings.NativeGroup(view.Group) && view.Topology.Current()
-                        && FreshProgress(observation, view.Group, copyCursor: false) && view.Guard.Matches() && Current();
+                    return view.Topology.Current() && FreshProgress(observation, view.Group, copyCursor: false)
+                        && StorageQueryBindings.QueryGroup(view.Group, queryAsf)
+                        && (queryAsf == null || StorageQueryBindings.AsfQueryCurrent(boundary, subject, queryAsf))
+                        && (raw == null || raw.Matches()) && view.Guard.Matches() && Current();
                 }
                 catch (StorageWorkExhausted) { return false; }
                 finally { operating = false; }
+            }
+
+            private ForcedRawState QueryPhysicalGuard(ISlotGroup group, StorageAllocationObservationResult observation)
+            {
+                if (queryAsf == null) return null;
+                var guard = new ForcedRawState();
+                // Match the already bounded reader, without imposing the forced-writer
+                // default 4096 on an original mandatory provider query that admits 32768.
+                guard.ObservedCells(map, group, observation, StorageProgressWork.SelectedLimits().GridThings);
+                return guard;
             }
 
             public void Dispose()
