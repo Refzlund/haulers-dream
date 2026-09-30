@@ -34,6 +34,7 @@ namespace HaulersDream
         {
             base.FinalizeInit();
             var storageLoad = StorageCommitments.BeginResourceLoad(storageGame, this);
+            storageWork.Clear();
             // CROSS-SESSION CACHE HYGIENE. Every per-session static cache (the bulk-haul plan memo, the per-tick
             // mass / surplus / tracked-mass memos, the per-(worker,def,tick) availability counts, the haul-to-stack
             // cell memo, the load-work memo, the route-picker claimed-by-others memo, the Common Sense owns-flow
@@ -147,6 +148,7 @@ namespace HaulersDream
         public override void GameComponentTick()
         {
             int tick = Find.TickManager.TicksGame;
+            StorageProgressTick();
             if (veinTrackers != null && veinTrackers.Count > 0 && tick % VeinTickInterval == 0)
                 ProcessVeinTrackers();
 

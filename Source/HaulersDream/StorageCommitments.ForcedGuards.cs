@@ -51,12 +51,14 @@ namespace HaulersDream
             internal bool Matches()
             {
                 if (!valid) return false;
-                foreach (var check in checks) if (!check()) return false;
+                foreach (var check in checks)
+                { StorageProgressWork.Charge(StorageWorkKind.RawGuard); if (!check()) return false; }
                 return true;
             }
 
             private void Value(FieldInfo field, object instance)
             {
+                StorageProgressWork.Charge(StorageWorkKind.RawGuard);
                 object before = field.GetValue(instance);
                 // Only native primitive/value structs and identity references occur here.
                 if (before is IntVec3 cell)
@@ -131,7 +133,7 @@ namespace HaulersDream
                 containerItems += items.Count;
                 if (containerItems > 4096) { valid = false; return; }
                 // Surplus depends on untagged same-def siblings as well as the attributed stack.
-                foreach (var item in items) Thing(item);
+                foreach (var item in items) { StorageProgressWork.Charge(StorageWorkKind.RawGuard); Thing(item); }
             }
 
             internal void Pawn(Pawn pawn)
@@ -338,7 +340,7 @@ namespace HaulersDream
                     if (inspected > 4096) { valid = false; return; }
                     checks.Add(() => ReferenceEquals(groups[cell.x, cell.y, cell.z], slot) && ReferenceEquals(slot?.parent, parent));
                     List(items, () => cells[index]);
-                    foreach (var item in items) Thing(item);
+                    foreach (var item in items) { StorageProgressWork.Charge(StorageWorkKind.RawGuard); Thing(item); }
                     if (parent is Building_Storage building)
                     {
                         Thing(building); var linkedGroup = building.storageGroup;

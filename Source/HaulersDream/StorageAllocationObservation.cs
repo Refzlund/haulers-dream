@@ -18,12 +18,12 @@ namespace HaulersDream
         // never rebuild the group's ordinary page inside every native cell predicate.
         internal static StorageAllocationObservationResult ObserveCells(Map map, ISlotGroup group,
             IReadOnlyList<StorageAllocationObservationDemand> demands, IReadOnlyList<IntVec3> coordinates,
-            Func<SlotGroup, IntVec3, bool> membership = null)
+            Func<SlotGroup, IntVec3, bool> membership = null, StorageAllocationObservationLimits limits = null)
         {
             if (!UnityData.IsInMainThread) return Unavailable("main-thread-required");
             if (StorageCommitments.ResourceQueriesBlocked()) return Unavailable("load-restoration-pending");
             if (observing) return Unavailable("nested-observation");
-            var reader = new Reader(map, group, demands, new StorageAllocationObservationLimits(), coordinates, true, membership);
+            var reader = new Reader(map, group, demands, limits ?? new StorageAllocationObservationLimits(), coordinates, true, membership);
             observing = true;
             try
             {
@@ -73,7 +73,11 @@ namespace HaulersDream
                 && resident.def?.category == ThingCategory.Item && subject.def?.category == ThingCategory.Item
                 && resident.CanStackWith(subject);
 
-        private sealed class LimitReached : Exception { }
+        private sealed class LimitReached : Exception
+        {
+            internal readonly StorageObservationStop Stop;
+            internal LimitReached(StorageObservationStop stop) { Stop = stop; }
+        }
         private sealed class ObservationChanged : Exception { }
         private sealed class OwnedCell
         {
@@ -112,6 +116,10 @@ namespace HaulersDream
             private readonly List<SlotGroup> members = new List<SlotGroup>();
             private bool complete = true, invalidated, validated;
             private int nextMember = -1, nextCell = -1, gridWork, predicates;
+            private string phase = "entry";
+            private IntVec3? activeCell;
+            private StorageObservationStop stop;
+            private StorageAllocationObservationResult result;
             internal Reader(Map map, ISlotGroup group, IReadOnlyList<StorageAllocationObservationDemand> demands,
                 StorageAllocationObservationLimits limits, IReadOnlyList<IntVec3> preferred, bool selectedCellsOnly = false,
                 Func<SlotGroup, IntVec3, bool> selectedMembership = null)
@@ -130,9 +138,11 @@ namespace HaulersDream
                 return false;
             }
             private void Predicate()
-            { if (predicates >= limits.Predicates) throw new LimitReached(); predicates++; }
+            { StorageProgressWork.Charge(StorageWorkKind.Predicate); if (predicates >= limits.Predicates) Exhausted(StorageObservationLimit.Predicates, 1, 0); predicates++; }
             private void GridWork(int count)
-            { if (count < 0 || count > limits.GridThings - gridWork) throw new LimitReached(); gridWork += count; }
+            { StorageProgressWork.Charge(StorageWorkKind.Grid, count); if (count < 0 || count > limits.GridThings - gridWork) Exhausted(StorageObservationLimit.GridThings, count, limits.GridThings - gridWork); gridWork += count; }
+            private void Exhausted(StorageObservationLimit dimension, int required, int remaining)
+                => throw new LimitReached(new StorageObservationStop(dimension, phase, activeCell, required, remaining));
             private void Live()
             {
                 if (!ReferenceEquals(Current.Game, game) || Find.TickManager?.TicksGame != tick || map == null
@@ -143,27 +153,40 @@ namespace HaulersDream
             {
                 try
                 {
-                    if (map == null || group == null || demands == null || demands.Count > limits.Demands)
+                    if (map == null || group == null || demands == null)
                         return Unavailable("invalid-or-oversized-request");
+                    if (demands.Count > limits.Demands)
+                    {
+                        stop = new StorageObservationStop(StorageObservationLimit.Demands, phase, null, demands.Count, limits.Demands);
+                        return Unavailable("invalid-or-oversized-request");
+                    }
                     Live();
+                    phase = "topology";
                     if (!selectedCellsOnly) CopyMembers();
                     // Existing leases and exact destinations are observed first, before the bounded
                     // ordinary page. A late shelf is not hidden by 200 earlier blocked cells.
                     if (preferred != null)
-                        for (int i = 0; i < preferred.Count; i++) { Predicate(); AddPreferred(preferred[i]); }
+                        for (int i = 0; i < preferred.Count; i++)
+                        { activeCell = preferred[i]; Predicate(); AddPreferred(preferred[i]); }
                     if (!selectedCellsOnly)
                     {
                         foreach (var demand in demands)
-                        { Predicate(); if (demand?.Destination is IntVec3 exact) AddPreferred(exact); }
+                        { activeCell = demand?.Destination; Predicate(); if (demand?.Destination is IntVec3 exact) AddPreferred(exact); }
                         CopyPage();
                     }
                     // Every concrete coordinate is owned before invoking any storage predicate.
-                    foreach (var cell in owned) ObservePhysical(cell);
+                    phase = "physical";
+                    foreach (var cell in owned) { activeCell = cell.Position; ObservePhysical(cell); }
+                    phase = "eligibility"; activeCell = null;
                     foreach (var demand in demands) ObserveDemand(demand);
+                    phase = "initial-freshness"; activeCell = null;
                     CheckUnchanged();
                     validated = true;
                 }
-                catch (LimitReached) { Problem(null, null, StorageAllocationObservationStatus.Deferred, "observation-budget"); }
+                catch (LimitReached exhausted)
+                { stop = exhausted.Stop; Problem(activeCell, null, StorageAllocationObservationStatus.Deferred, "observation-budget"); }
+                catch (StorageWorkExhausted exhausted)
+                { stop = new StorageObservationStop(StorageObservationLimit.MapWork, phase + "/" + exhausted.Kind, activeCell, 1, 0); Problem(activeCell, null, StorageAllocationObservationStatus.Deferred, "map-work-budget"); }
                 catch (ObservationChanged) { Problem(null, null, StorageAllocationObservationStatus.Invalidated, "world-changed-during-observation"); }
                 catch (Exception e)
                 { Problem(null, null, StorageAllocationObservationStatus.Deferred, "observation-callback:" + e.GetType().FullName); }
@@ -176,9 +199,14 @@ namespace HaulersDream
                 // cell page still completes validation and retains its known usable resources.
                 if (invalidated || !validated)
                 { cells.Clear(); requests.Clear(); locations.Clear(); targets.Clear(); }
-                return new StorageAllocationObservationResult(cells, requests, locations, targets, issues,
+                bool certified = validated && !invalidated;
+                foreach (var issue in issues)
+                    if (issue.Status == StorageAllocationObservationStatus.Deferred
+                        || issue.Status == StorageAllocationObservationStatus.Unsupported) certified = false;
+                result = new StorageAllocationObservationResult(cells, requests, locations, targets, issues,
                     complete && limits.StartMember == 0 && limits.StartCell == 0, invalidated,
-                    nextMember, nextCell, owned.Count, gridWork, predicates, StillCurrent);
+                    nextMember, nextCell, owned.Count, gridWork, predicates, StillCurrent, certified, stop);
+                return result;
             }
 
             // Reuse the same physical/topology guards and remaining work budget when a
@@ -189,9 +217,13 @@ namespace HaulersDream
                 observing = true;
                 try
                 {
+                    phase = "final-freshness"; activeCell = null;
                     using (StorageCommitments.SuppressOwnGateForProjection()) CheckUnchanged();
                     return true;
                 }
+                catch (LimitReached exhausted) { stop = exhausted.Stop; result?.RecordStop(stop); return false; }
+                catch (StorageWorkExhausted exhausted)
+                { stop = new StorageObservationStop(StorageObservationLimit.MapWork, phase + "/" + exhausted.Kind, activeCell, 1, 0); result?.RecordStop(stop); return false; }
                 catch { return false; }
                 finally { observing = false; }
             }
@@ -220,10 +252,15 @@ namespace HaulersDream
                         throw new ObservationChanged();
                     members.Add(parent.GetSlotGroup());
                 }
-                if (end < source.Count) { complete = false; nextMember = end; nextCell = 0; }
+                if (end < source.Count)
+                {
+                    complete = false; nextMember = end; nextCell = 0;
+                    stop = new StorageObservationStop(StorageObservationLimit.Members, phase, null, source.Count - limits.StartMember, limits.Members);
+                }
             }
             private void AddPreferred(IntVec3 cell)
             {
+                activeCell = cell;
                 if (!cell.IsValid || !cell.InBounds(map) || seen.Contains(cell)) return;
                 var slot = map.haulDestinationManager.SlotGroupAt(cell);
                 if (slot?.parent == null || !ReferenceEquals(Canonical(slot), group)) return;
@@ -261,6 +298,7 @@ namespace HaulersDream
                     var slot = members[ordinal];
                     if (slot == null) continue;
                     var parent = slot.parent;
+                    activeCell = null;
                     if (!Provider(parent, nullCell, out _)) continue;
                     var source = slot.CellsList; // concrete SlotGroup only; never StorageGroup.CellsList
                     var guard = new ProjectionListGuard<IntVec3>(source);
@@ -269,11 +307,16 @@ namespace HaulersDream
                     int start = member == limits.StartMember ? limits.StartCell : 0;
                     for (int i = start; i < source.Count; i++)
                     {
-                        Predicate();
                         var position = source[i];
+                        activeCell = position;
+                        Predicate();
                         if (seen.Contains(position)) continue;
                         if (owned.Count >= limits.Cells)
-                        { complete = false; nextMember = member; nextCell = i; return; }
+                        {
+                            complete = false; nextMember = member; nextCell = i;
+                            stop = new StorageObservationStop(StorageObservationLimit.Cells, phase, position, 1, 0);
+                            return;
+                        }
                         if (!position.InBounds(map) || !ReferenceEquals(map.haulDestinationManager.SlotGroupAt(position), slot))
                             throw new ObservationChanged();
                         AddCell(slot, position);
@@ -283,8 +326,9 @@ namespace HaulersDream
             private static readonly IntVec3 nullCell = IntVec3.Invalid;
             private void AddCell(SlotGroup slot, IntVec3 position)
             {
+                StorageProgressWork.Charge(StorageWorkKind.Topology);
                 if (seen.Contains(position)) return;
-                if (owned.Count >= limits.Cells) throw new LimitReached();
+                if (owned.Count >= limits.Cells) Exhausted(StorageObservationLimit.Cells, 1, 0);
                 seen.Add(position);
                 owned.Add(new OwnedCell { Position = position, Slot = slot, Key = CellKey(map, slot.parent, position),
                     ParentGuard = slot.parent is Thing parentThing ? new ProjectionThingGuard(parentThing) : null });
@@ -313,7 +357,7 @@ namespace HaulersDream
                 if (cell.Limit < 0) throw new ObservationChanged();
                 if (cell.Asf != null)
                 {
-                    Predicate(); cell.AsfState = cell.Asf.Read((Building_Storage)cell.Slot.parent, cell.Position);
+                    Predicate(); cell.AsfState = StorageProgressWork.Provider(() => cell.Asf.Read((Building_Storage)cell.Slot.parent, cell.Position));
                     var state = cell.AsfState;
                     if (state.Packed || state.CellLimit != cell.Limit || state.CellCount != occupied || state.Count < occupied
                         || state.CellWiseCount < state.Count || state.SlotLimit < 0
@@ -327,9 +371,9 @@ namespace HaulersDream
                     if (cell.Asf != null)
                     {
                         Predicate();
-                        if (!cell.Asf.RegisteredExactly(cell.AsfState, (Building_Storage)cell.Slot.parent, thing, cell.Position))
+                        if (!StorageProgressWork.Provider(() => cell.Asf.RegisteredExactly(cell.AsfState, (Building_Storage)cell.Slot.parent, thing, cell.Position)))
                             throw new ObservationChanged();
-                        Predicate(); valid = cell.Asf.TargetValid((Building_Storage)cell.Slot.parent, thing);
+                        Predicate(); valid = StorageProgressWork.Provider(() => cell.Asf.TargetValid((Building_Storage)cell.Slot.parent, thing));
                     }
                     string key = StackKey(cell.Key, thing);
                     int free = valid ? Math.Max(0, thing.def.stackLimit - thing.stackCount) : 0;
@@ -379,6 +423,7 @@ namespace HaulersDream
             }
             private bool Eligible(StorageAllocationObservationDemand demand, OwnedCell cell)
             {
+                activeCell = cell.Position;
                 var parent = cell.Slot.parent; var pawn = demand.Pawn; var subject = demand.Subject;
                 bool Refuse(string reason) => Problem(cell.Position, demand, StorageAllocationObservationStatus.Refused, reason);
                 Predicate();
@@ -400,11 +445,11 @@ namespace HaulersDream
                 if (cell.Asf != null)
                 {
                     var building = (Building_Storage)parent;
-                    Predicate(); if (!cell.Asf.FixedAllows(building, subject)) return Refuse("asf-fixed-filter");
+                    Predicate(); if (!StorageProgressWork.Provider(() => cell.Asf.FixedAllows(building, subject))) return Refuse("asf-fixed-filter");
                     bool outside = !subject.Spawned || !cell.AsfState.Occupied.Contains(subject.Position);
                     int possible = !cell.AsfState.AnyFree && outside && !cell.AsfState.PerformanceFish ? cell.AsfState.Count : 0;
                     GridWork(possible); Predicate();
-                    if (!cell.Asf.HasCapacity(building, subject)) return Refuse("asf-member-capacity");
+                    if (!StorageProgressWork.Provider(() => cell.Asf.HasCapacity(building, subject))) return Refuse("asf-member-capacity");
                 }
                 var ownJob = demand.OwnJob ?? pawn.CurJob;
                 bool explicitOwner = ownJob != null
@@ -431,6 +476,7 @@ namespace HaulersDream
                 foreach (var stamp in subjects.Values) { Predicate(); if (!stamp.Matches()) throw new ObservationChanged(); }
                 foreach (var cell in owned)
                 {
+                    activeCell = cell.Position;
                     if (cell.Value == null) continue;
                     Predicate();
                     if (!ReferenceEquals(map.haulDestinationManager.SlotGroupAt(cell.Position), cell.Slot)
@@ -441,14 +487,16 @@ namespace HaulersDream
                     foreach (var stamp in cell.Items) if (!stamp.Matches()) throw new ObservationChanged();
                     Predicate(); if (cell.Position.GetMaxItemsAllowedInCell(map) != cell.Limit) throw new ObservationChanged();
                     if (cell.Asf != null)
-                    { Predicate(); if (!cell.AsfState.Same(cell.Asf.Read((Building_Storage)cell.Slot.parent, cell.Position))) throw new ObservationChanged(); }
+                    { Predicate(); if (!cell.AsfState.Same(StorageProgressWork.Provider(() => cell.Asf.Read((Building_Storage)cell.Slot.parent, cell.Position)))) throw new ObservationChanged(); }
                 }
                 // The last native/provider capacity callback can mutate an earlier
                 // subject or minified inner. Finish with only raw field/list checks.
+                activeCell = null;
                 foreach (var stamp in subjects.Values)
                 { Predicate(); if (!stamp.AttributesMatch()) throw new ObservationChanged(); }
                 foreach (var cell in owned)
                 {
+                    activeCell = cell.Position;
                     if (cell.Value == null) continue;
                     if (cell.ParentGuard != null)
                     { Predicate(); if (!cell.ParentGuard.AttributesMatch()) throw new ObservationChanged(); }

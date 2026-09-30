@@ -155,6 +155,8 @@ namespace HaulersDream
         {
             (typeof(TickManager), nameof(TickManager.DoSingleTick), Type.EmptyTypes,
                 nameof(Patch_StorageLoadBeforeTick)),
+            (typeof(StoreUtility), "TryFindBestBetterStoreCellForWorker",
+                null, nameof(Patch_StorageQuery_WorkerProgress)),
             (typeof(StoreUtility), nameof(StoreUtility.TryFindBestBetterStoreCellFor),
                 null, nameof(Patch_StorageQuery_SearchScope)),
             (typeof(StoreUtility), nameof(StoreUtility.TryFindBestBetterStoreCellForIn),
@@ -216,9 +218,14 @@ namespace HaulersDream
                     continue;
                 }
                 var info = Harmony.GetPatchInfo(method);
-                if (DeclaredIn(info?.Prefixes, patchClass)
+                bool bound = DeclaredIn(info?.Prefixes, patchClass)
                     || DeclaredIn(info?.Postfixes, patchClass)
-                    || DeclaredIn(info?.Transpilers, patchClass))
+                    || DeclaredIn(info?.Transpilers, patchClass);
+                // Native fallback must recheck after reservation callbacks as well as before.
+                // A surviving prefix alone is not a complete reservation admission boundary.
+                if (patchClass == nameof(Patch_JobDriver_HaulToCell_NoCellReservation))
+                    bound = DeclaredIn(info?.Prefixes, patchClass) && DeclaredIn(info?.Finalizers, patchClass);
+                if (bound)
                     continue;
                 StorageCommitments.Disable();
                 HDLog.Err($"STORAGE-SEAM TRIPWIRE: vanilla {type.Name}.{methodName} exists but Hauler's Dream's "

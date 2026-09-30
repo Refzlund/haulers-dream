@@ -344,6 +344,7 @@ namespace HaulersDream
         /// desperate search consumes the stream from a job.)</summary>
         public static bool HasUnloadDestination(Pawn pawn, Thing thing)
         {
+            using var observational = StorageProgressWork.ObserveOnly();
             if (pawn?.Map == null || thing == null || thing.Destroyed || thing.def == null)
                 return false;
             Rand.PushState();

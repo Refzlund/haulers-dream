@@ -35,8 +35,8 @@ namespace HaulersDream
         {
             // Attribute exact active work before unconverted retained-inventory rows. Otherwise an
             // older def-wide row can spend its quantity on the new source instead of its old cargo.
-            foreach (var row in rows) if (row.WorkOwner != null) yield return row;
-            foreach (var row in rows) if (row.WorkOwner == null) yield return row;
+            foreach (var row in rows) { StorageProgressWork.Charge(StorageWorkKind.Attribution); if (row.WorkOwner != null) yield return row; }
+            foreach (var row in rows) { StorageProgressWork.Charge(StorageWorkKind.Attribution); if (row.WorkOwner == null) yield return row; }
         }
 
         private static IEnumerable<StorageParcelEvidence.Entry> ResourceParcelOrder(
@@ -44,8 +44,8 @@ namespace HaulersDream
         {
             // A duplicate source may already be reserved without being admitted. Actual native
             // hands consume this activation's amount before any pending source, regardless of ID.
-            if (native) foreach (var entry in entries) if (entry.Held) yield return entry;
-            foreach (var entry in entries) if (!native || !entry.Held) yield return entry;
+            if (native) foreach (var entry in entries) { StorageProgressWork.Charge(StorageWorkKind.Attribution); if (entry.Held) yield return entry; }
+            foreach (var entry in entries) { StorageProgressWork.Charge(StorageWorkKind.Attribution); if (!native || !entry.Held) yield return entry; }
         }
 
         private static bool SameResourceParcel(ResourceResponsibility portion, Pawn pawn, Thing subject)
@@ -106,6 +106,37 @@ namespace HaulersDream
             IReadOnlyList<IntVec3> preferredCells, LoadRecoveryTicket ticket, out int allowed)
         {
             allowed = 0;
+            if (!UnityData.IsInMainThread || ResourceQueriesBlocked(ticket)) return ResourceAllowance.Deferred;
+            if (StorageProgressWork.ActiveFor(pawn?.Map) != null)
+            {
+                try
+                {
+                    var status = ResourceUnitsForLoadCore(pawn, group, requested, planned, preferredCells, ticket, out allowed);
+                    if (status == ResourceAllowance.Deferred) StorageProgressWork.NeedDiscovery(pawn?.Map, group, "admission-deferred");
+                    return status;
+                }
+                catch (StorageWorkExhausted)
+                { StorageProgressWork.NeedDiscovery(pawn?.Map, group, "admission-work"); return ResourceAllowance.Deferred; }
+            }
+            using (var work = StorageProgressWork.Begin(pawn?.Map, group, StorageWorkLane.Mandatory, "immediate-admission"))
+            using (StorageProgressWork.Enter(work))
+            {
+                try
+                {
+                    var status = ResourceUnitsForLoadCore(pawn, group, requested, planned, preferredCells, ticket, out allowed);
+                    if (status == ResourceAllowance.Deferred) StorageProgressWork.NeedDiscovery(pawn?.Map, group, "admission-deferred");
+                    return status;
+                }
+                catch (StorageWorkExhausted)
+                { StorageProgressWork.NeedDiscovery(pawn?.Map, group, "admission-work"); return ResourceAllowance.Deferred; }
+            }
+        }
+
+        private static ResourceAllowance ResourceUnitsForLoadCore(Pawn pawn, ISlotGroup group,
+            StorageAllocationObservationDemand requested, IReadOnlyList<StorageAllocationObservationDemand> planned,
+            IReadOnlyList<IntVec3> preferredCells, LoadRecoveryTicket ticket, out int allowed)
+        {
+            allowed = 0;
             if (!UnityData.IsInMainThread) return ResourceAllowance.Deferred;
             if (ResourceQueriesBlocked(ticket)) return ResourceAllowance.Deferred;
             var map = pawn?.Map;
@@ -118,7 +149,10 @@ namespace HaulersDream
             if (requested.Units <= 0) return ResourceAllowance.Observed;
 
             var demands = new List<StorageAllocationObservationDemand>();
-            var preferred = new List<IntVec3>();
+            var work = StorageProgressWork.ActiveFor(map);
+            var progress = work?.Owner.Queue.Get(group);
+            if (progress != null) work.Owner.Members(group, progress);
+            var preferred = progress == null ? new List<IntVec3>() : work.Owner.Hints(progress);
             if (preferredCells != null) preferred.AddRange(preferredCells);
             if (requested.Destination.HasValue && !preferred.Contains(requested.Destination.Value))
                 preferred.Add(requested.Destination.Value);
@@ -156,56 +190,60 @@ namespace HaulersDream
             if (planned != null) demands.AddRange(planned);
             int requestedIndex = demands.Count;
             demands.Add(requested);
-            var observation = StorageAllocationObservation.ObserveForLoad(map, group, demands, null, preferred, ticket);
+            var observation = StorageAllocationObservation.ObserveForLoad(map, group, demands, work == null ? null : StorageProgressWork.Limits(progress), preferred, ticket);
+            work?.Owner.ObserveProgress(progress, observation);
             if (observation.Invalidated || !responsibility.Current) return ResourceAllowance.Deferred;
             // Never reinterpret an unreviewed provider as native spare capacity. Native callers keep
             // their whole-cell reservation when this seam cannot take responsibility.
             foreach (var issue in observation.Issues)
                 if (issue.Status == StorageAllocationObservationStatus.Unsupported)
                     return ResourceAllowance.Unsupported;
-            if (observation.Requests.Count != demands.Count) return ResourceAllowance.Deferred;
+            if (!observation.CertifiedSubset || observation.Requests.Count != demands.Count) return ResourceAllowance.Deferred;
             var options = new StorageAllocationOptions(observationComplete: observation.Complete);
             var existing = new List<StorageAllocationRequest>();
             for (int i = 0; i < existingCount; i++) existing.Add(observation.Requests[i]);
-            var prior = StorageResourceAllocator.Allocate(observation.Cells, StorageAllocationState.Empty,
+            var prior = AllocateResources(observation.Cells, StorageAllocationState.Empty,
                 existing, CompatibleResource, observation.ObservedEligible, options);
             if (!prior.CanPublish) return ResourceAllowance.Deferred;
             foreach (var demand in existing)
-                if (prior.AdmittedUnits(demand) != demand.Units) return ResourceAllowance.Deferred;
+                if (AdmittedResourceUnits(prior, demand) != demand.Units) return ResourceAllowance.Deferred;
             var priorState = prior.State;
             if (requestedIndex > existingCount)
             {
                 var overlay = new List<StorageAllocationRequest>();
                 for (int i = existingCount; i < requestedIndex; i++) overlay.Add(observation.Requests[i]);
-                var proposed = StorageResourceAllocator.Allocate(observation.Cells, priorState,
+                var proposed = AllocateResources(observation.Cells, priorState,
                     overlay, CompatibleResource, observation.ObservedEligible, options);
                 if (!proposed.CanPublish) return ResourceAllowance.Deferred;
                 foreach (var request in overlay)
-                    if (proposed.AdmittedUnits(request) != request.Units) return ResourceAllowance.Deferred;
+                    if (AdmittedResourceUnits(proposed, request) != request.Units) return ResourceAllowance.Deferred;
                 priorState = proposed.State;
             }
             var finalRequest = observation.Requests[requestedIndex];
-            var result = StorageResourceAllocator.Allocate(observation.Cells, priorState,
+            var result = AllocateResources(observation.Cells, priorState,
                 new[] { finalRequest }, CompatibleResource, observation.ObservedEligible, options);
             // These prior slices were reconstructed only for this observation, not published
             // cell leases. A preferred exact candidate can otherwise occupy itself with a
             // flexible prior parcel before the incoming parcel is considered. Retry that
             // tentative matching together; every prior/planned quantity must survive, and
             // their real destination restrictions remain in the observed eligibility edges.
-            if (requestedIndex > 0 && result.CanPublish && result.AdmittedUnits(finalRequest) < finalRequest.Units)
+            if (requestedIndex > 0 && result.CanPublish && AdmittedResourceUnits(result, finalRequest) < finalRequest.Units)
             {
-                var rematched = StorageResourceAllocator.Allocate(observation.Cells, StorageAllocationState.Empty,
+                var rematched = AllocateResources(observation.Cells, StorageAllocationState.Empty,
                     observation.Requests, CompatibleResource, observation.ObservedEligible, options);
                 bool preservesPrior = rematched.CanPublish;
                 for (int i = 0; preservesPrior && i < requestedIndex; i++)
-                    preservesPrior = rematched.AdmittedUnits(observation.Requests[i]) == observation.Requests[i].Units;
-                if (preservesPrior && rematched.AdmittedUnits(finalRequest) > result.AdmittedUnits(finalRequest))
+                    preservesPrior = AdmittedResourceUnits(rematched, observation.Requests[i]) == observation.Requests[i].Units;
+                if (preservesPrior && AdmittedResourceUnits(rematched, finalRequest) > AdmittedResourceUnits(result, finalRequest))
                     result = rematched;
             }
-            if (!result.CanPublish || !observation.StillCurrent()
+            using var finalPass = work?.FinalPass();
+            if (!result.CanPublish || !FreshProgress(observation, group)
                 || !responsibility.Current || ResourceQueriesBlocked(ticket) || resourceTransferDepth > 0)
                 return ResourceAllowance.Deferred;
-            allowed = (int)Math.Min(int.MaxValue, result.AdmittedUnits(finalRequest));
+            work?.Owner.ObserveProgress(progress, observation);
+            work?.Owner.Remember(progress, observation.CellLocations, result.State);
+            allowed = (int)Math.Min(int.MaxValue, AdmittedResourceUnits(result, finalRequest));
             return allowed > 0 || observation.Complete ? ResourceAllowance.Observed : ResourceAllowance.Deferred;
         }
 
@@ -232,7 +270,7 @@ namespace HaulersDream
                     && ReferenceEquals(portion.Entry.Subject, requested.Subject)) owns = true;
             }
             if (!owns) return false;
-            portions.Sort((left, right) =>
+            StorageProgressWork.Sort(portions, (left, right) =>
             {
                 // Already withdrawn hands precede retained inventory. Otherwise a partial
                 // withdrawal's older source identity could take its own hand parcel's room.
@@ -244,7 +282,7 @@ namespace HaulersDream
                 if (carrier != 0) return carrier;
                 int subject = left.Entry.Subject.thingIDNumber.CompareTo(right.Entry.Subject.thingIDNumber);
                 return subject != 0 ? subject : left.RowIndex.CompareTo(right.RowIndex);
-            });
+            }, StorageWorkKind.Attribution);
             var demands = new List<StorageAllocationObservationDemand>();
             foreach (var portion in portions)
             {
@@ -263,25 +301,30 @@ namespace HaulersDream
                     callerParcel && requested.RequireBetterPriority,
                     callerParcel && requested.StartsRefill));
             }
+            var work = StorageProgressWork.Active;
+            var progress = work?.Owner.Queue.Get(group);
             var observation = StorageAllocationObservation.ObserveForLoad(pawn.Map, group, demands,
-                null, preferred, ticket);
+                work == null ? null : StorageProgressWork.Limits(progress), preferred, ticket);
+            work?.Owner.ObserveProgress(progress, observation);
             if (observation.Invalidated || !snapshot.Current || ResourceQueriesBlocked(ticket)) return true;
             foreach (var issue in observation.Issues)
                 if (issue.Status == StorageAllocationObservationStatus.Unsupported)
                 { status = ResourceAllowance.Unsupported; return true; }
-            if (!observation.Complete || observation.Requests.Count != demands.Count) return true;
-            var allocation = StorageResourceAllocator.Allocate(observation.Cells, StorageAllocationState.Empty,
+            if (!observation.CertifiedSubset || observation.Requests.Count != demands.Count) return true;
+            var allocation = AllocateResources(observation.Cells, StorageAllocationState.Empty,
                 observation.Requests, CompatibleResource, observation.ObservedEligible,
-                new StorageAllocationOptions(observationComplete: true));
-            if (!allocation.CanPublish || !observation.StillCurrent()
+                new StorageAllocationOptions(observationComplete: observation.Complete));
+            using var finalPass = work?.FinalPass();
+            if (!allocation.CanPublish || !FreshProgress(observation, group)
                 || !snapshot.Current || ResourceQueriesBlocked(ticket) || resourceTransferDepth > 0) return true;
             long assigned = 0;
             for (int i = 0; i < portions.Count; i++)
                 if (portions[i].Entry.Held && ReferenceEquals(portions[i].Row.Pawn, pawn)
                     && ReferenceEquals(portions[i].Entry.Subject, requested.Subject))
-                    assigned += allocation.AdmittedUnits(observation.Requests[i]);
+                    assigned += AdmittedResourceUnits(allocation, observation.Requests[i]);
             allowed = (int)Math.Min(requested.Units, Math.Min(int.MaxValue, assigned));
-            status = ResourceAllowance.Observed;
+            work?.Owner.Remember(progress, observation.CellLocations, allocation.State);
+            status = allowed > 0 || observation.Complete ? ResourceAllowance.Observed : ResourceAllowance.Deferred;
             return true;
         }
 

@@ -92,6 +92,7 @@ namespace HaulersDream
 
         internal static bool CanOffer(Pawn pawn, Thing thing, out string reason)
         {
+            using var observational = StorageProgressWork.ObserveOnly();
             reason = PawnBlockReason(pawn);
             if (reason != null)
                 return false;

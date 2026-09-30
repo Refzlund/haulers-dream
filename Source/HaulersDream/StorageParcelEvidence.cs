@@ -63,7 +63,7 @@ namespace HaulersDream
                     }
                 }
             }
-            into.Sort((left, right) => left.Subject.thingIDNumber.CompareTo(right.Subject.thingIDNumber));
+            SortById(into, (left, right) => left.Subject.thingIDNumber.CompareTo(right.Subject.thingIDNumber));
         }
 
         private static void AddTaggedInventory(Pawn pawn, List<Entry> into, Thing exclusiveSubject)
@@ -77,15 +77,19 @@ namespace HaulersDream
             var remainingByDef = new Dictionary<ThingDef, int>();
             for (int i = 0; i < inner.Count; i++)
             {
+                // Owns binds ThingOwner.Contains(Thing): a constant holdingOwner check,
+                // not the generic collection interface's linear List.Contains method.
+                StorageProgressWork.Charge(StorageWorkKind.Custody);
                 Thing thing = inner[i];
                 if (!Usable(thing) || !Owns(inner, thing)) continue;
                 remainingByDef.TryGetValue(thing.def, out int previous);
                 remainingByDef[thing.def] = checked(previous + thing.stackCount);
                 if (tagged.Contains(thing) && !ReferenceEquals(thing, exclusiveSubject)) ordered.Add(thing);
             }
-            ordered.Sort((left, right) => left.thingIDNumber.CompareTo(right.thingIDNumber));
+            SortById(ordered, (left, right) => left.thingIDNumber.CompareTo(right.thingIDNumber));
             foreach (Thing thing in ordered)
             {
+                StorageProgressWork.Charge(StorageWorkKind.Custody);
                 // SurplusOf describes the next withdrawal. Reduce only this local inventory snapshot
                 // after each parcel, so two stacks do not both spend the same keep-count surplus.
                 int units = InventorySurplus.SurplusOf(pawn, thing, comp, remainingByDef);
@@ -102,6 +106,22 @@ namespace HaulersDream
                 if (units <= 0) continue;
                 into.Add(new Entry { Subject = thing, Units = units, Held = true });
                 remainingByDef[thing.def] -= units;
+            }
+        }
+
+        // Each freshly collected list commonly already follows native Thing IDs. Check
+        // that current order once rather than re-sorting it on every fresh responsibility
+        // pass. These two private callers compare only raw IDs; no policy callback is
+        // skipped or retained. Equal IDs take the original sort too, preserving its exact
+        // tie permutation instead of silently introducing stable ordering semantics.
+        private static void SortById<T>(List<T> values, Comparison<T> compare)
+        {
+            for (int i = 1; i < values.Count; i++)
+            {
+                StorageProgressWork.Charge(StorageWorkKind.Custody);
+                if (compare(values[i - 1], values[i]) < 0) continue;
+                StorageProgressWork.Sort(values, compare, StorageWorkKind.Custody);
+                return;
             }
         }
 
@@ -148,6 +168,7 @@ namespace HaulersDream
             if (!SweepPickupPlan.IsAligned(queue, counts) || start < 0 || start >= queue.Count) return;
             for (int i = start; i < queue.Count; i++)
             {
+                StorageProgressWork.Charge(StorageWorkKind.Custody);
                 Thing source = queue[i].Thing;
                 if (!Usable(source) || !source.Spawned || source.Map != pawn.Map || counts[i] <= 0) continue;
                 int reserved = ReservedUnits(pawn, job, source);
@@ -171,6 +192,7 @@ namespace HaulersDream
             int units = 0;
             foreach (var reservation in pawn.Map.reservationManager.ReservationsReadOnly)
             {
+                StorageProgressWork.Charge(StorageWorkKind.Custody);
                 if (!ReferenceEquals(reservation.Claimant, pawn) || !ReferenceEquals(reservation.Job, job)
                     || reservation.Target.Thing != source || reservation.Layer != null) continue;
                 // Native -1 reserves the complete stack; finite reservations cannot license more.
@@ -202,7 +224,10 @@ namespace HaulersDream
         private static int IndexOf(List<Entry> entries, Thing subject)
         {
             for (int i = 0; i < entries.Count; i++)
+            {
+                StorageProgressWork.Charge(StorageWorkKind.Custody);
                 if (ReferenceEquals(entries[i].Subject, subject)) return i;
+            }
             return -1;
         }
 

@@ -79,8 +79,16 @@ namespace HaulersDream
         internal static bool InventoryQuantityDropExecuting => !InMultiplayerGame
             || (inventoryQuantityDropRegistered && MpHooks.ExecutingCommand());
 
+        // Storage discovery is simulation state. Local render/preview queries must
+        // not borrow its persistent queue or budget. Native ticks supply their own
+        // balanced context; outside a tick only an actual MP replay qualifies.
+        internal static bool StorageProgressCommand => InMultiplayerGame
+            && MpHooks.ExecutingCommand() && !MpHooks.InInterface();
+        internal static bool StorageProgressInterface => InMultiplayerGame && MpHooks.InInterface();
+
         static MultiplayerCompat()
         {
+            StorageProgressWork.MultiplayerActive = Active;
             if (!Active)
                 return;
             try { refuelRecoveryRegistered = MpHooks.RegisterRefuelRecovery(); }

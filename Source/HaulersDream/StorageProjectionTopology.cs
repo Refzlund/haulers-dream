@@ -126,8 +126,11 @@ namespace HaulersDream
         {
             this.zone = zone; guard = new ProjectionListGuard<IntVec3>(zone.cells); cells = new HashSet<IntVec3>();
             foreach (var cell in zone.cells)
+            {
+                StorageProgressWork.Charge(StorageWorkKind.Topology);
                 if (!cell.InBounds(zone.Map) || !ReferenceEquals(zone.Map.haulDestinationManager.SlotGroupAt(cell), zone.GetSlotGroup()) || !cells.Add(cell))
                     throw new ProjectionAbort(ProjectionReason.GroupChanged);
+            }
             if (!guard.Matches(zone.cells)) throw new ProjectionAbort(ProjectionReason.GroupChanged);
         }
         internal bool Matches(Zone_Stockpile candidate) => ReferenceEquals(zone, candidate) && guard.Matches(candidate.cells);

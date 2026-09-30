@@ -402,6 +402,10 @@ namespace HaulersDream
         {
             if (!UnityData.IsInMainThread || ResourceQueriesBlocked() || !ActiveOn(map)
                 || resourceTransferDepth > 0 || reconcilingResources) return;
+            // Maintenance must finish its actual custody/repair work. Its observed cost
+            // is recorded independently of optional admission and cannot consume the fair share.
+            using var maintenance = StorageProgressWork.Begin(map, null, HaulersDream.Core.StorageWorkLane.Mandatory, "maintenance");
+            using var maintenanceFrame = StorageProgressWork.Enter(maintenance);
             reconcilingResources = true;
             try
             {
@@ -417,10 +421,13 @@ namespace HaulersDream
                 pawns.Clear();
                 foreach (Pawn pawn in map.mapPawns.SpawnedPawnsInFaction(player))
                     if (pawn != null) pawns.Add(pawn);
-                pawns.Sort(ByThingId);
+                StorageProgressWork.Sort(pawns, ByThingId, HaulersDream.Core.StorageWorkKind.Custody);
                 var responsibility = ObserveResourceResponsibilities(map);
                 foreach (Pawn pawn in pawns)
+                {
+                    StorageProgressWork.Charge(HaulersDream.Core.StorageWorkKind.Custody);
                     if (pawn.Map == map) AdoptResidualCargo(pawn, ref responsibility);
+                }
             }
             finally { janitorPawns?.Clear(); reconcilingResources = false; }
         }

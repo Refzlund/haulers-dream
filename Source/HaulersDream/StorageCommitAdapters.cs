@@ -111,6 +111,14 @@ namespace HaulersDream
         /// haul, and that distinction is load-bearing — see below.</param>
         static void Postfix(ref bool __result, IntVec3 __0, Map __1, Thing __2, Pawn __3)
         {
+            if (!StorageAllocationObservation.InProgress && StorageProgressWork.Active != null)
+            {
+                if (StorageProgressWork.Active.Lane == HaulersDream.Core.StorageWorkLane.Mandatory)
+                    StorageProgressWork.Charge(HaulersDream.Core.StorageWorkKind.Native);
+                // Native predicate entry, not a claim about its internal early-exit visits.
+                if (__1 != null && __0.InBounds(__1))
+                    StorageProgressWork.NativeGridUpperBound(__1.thingGrid.ThingsListAt(__0).Count);
+            }
             if (!__result)
                 return;
             // → GOTCHA: this null check is the only thing between this gate and the colony-wide haulable
@@ -141,6 +149,8 @@ namespace HaulersDream
                 __result = resource == StorageCommitments.ResourceAllowance.Observed && witnessed > 0;
                 return;
             }
+            if (!StorageCommitments.CanUseNativeExclusiveCell(__3, group, __0, __2, __3.CurJob))
+            { __result = false; return; }
             int free = StorageCommitments.FreeUnitsFor(__3, group, __2.def, __2, out bool truncated);
             // An incomplete look must never become a hard refusal. The cell walk is budgeted, so a huge
             // nearly-full group can report less room than it has; clamping a COUNT on an under-estimate is

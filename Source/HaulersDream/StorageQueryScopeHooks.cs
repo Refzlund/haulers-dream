@@ -21,6 +21,9 @@ namespace HaulersDream
             var method = patch.PatchMethod;
             if (kind == HarmonyPatchType.Finalizer && method == AccessTools.Method(typeof(HDLog),
                 nameof(HDLog.UniversalExceptionFinalizer), new[] { typeof(Exception), typeof(MethodBase) })) return true;
+            if (target.DeclaringType == typeof(StoreUtility) && target.Name == "TryFindBestBetterStoreCellForWorker")
+                return (kind == HarmonyPatchType.Prefix || kind == HarmonyPatchType.Finalizer)
+                    && method.DeclaringType == typeof(Patch_StorageQuery_WorkerProgress);
             if (target.DeclaringType == typeof(StoreUtility) && target.Name == nameof(StoreUtility.TryFindBestBetterStoreCellFor))
             {
                 if (kind == HarmonyPatchType.Postfix && (method == AccessTools.Method(typeof(Patch_TryFindBestBetterStoreCellFor_HaulToStack), "Postfix")
@@ -42,6 +45,7 @@ namespace HaulersDream
 
         private static bool Inspected(MethodBase method)
         {
+            StorageProgressWork.Charge(HaulersDream.Core.StorageWorkKind.Predicate);
             if (method == null || method.DeclaringType.Assembly != typeof(Thing).Assembly) return false;
             var info = Harmony.GetPatchInfo(method);
             if (info == null) return true;
@@ -56,7 +60,10 @@ namespace HaulersDream
         {
             bool found = false;
             foreach (var method in AccessTools.GetDeclaredMethods(type))
+            {
+                StorageProgressWork.Charge(HaulersDream.Core.StorageWorkKind.Topology);
                 if (method.Name == name) { found = true; if (!Inspected(method)) return false; }
+            }
             return found;
         }
 
@@ -70,7 +77,7 @@ namespace HaulersDream
             if (!Inspected(boundary) || !NativeSubject(subject)) return false;
             // No ASF/foreign worker replacement enters the provisional native loop. Those
             // providers retain the existing immediate observer and actual admission path.
-            return Inspected(AccessTools.Method(typeof(StoreUtility), "TryFindBestBetterStoreCellForWorker"))
+            return Patch_StorageQuery_WorkerProgress.ExactBody && Inspected(AccessTools.Method(typeof(StoreUtility), "TryFindBestBetterStoreCellForWorker"))
                 && Inspected(AccessTools.Method(typeof(StoreUtility), nameof(StoreUtility.IsGoodStoreCell)))
                 && Inspected(AccessTools.Method(typeof(StoreUtility), nameof(StoreUtility.NoStorageBlockersIn)))
                 && Inspected(AccessTools.Method(typeof(GridsUtility), nameof(GridsUtility.GetMaxItemsAllowedInCell)))
@@ -94,8 +101,11 @@ namespace HaulersDream
                 || !Inspected(AccessTools.Method(subject.GetType(), nameof(Thing.CanStackWith), new[] { typeof(Thing) }))) return false;
             if (subject is ThingWithComps withComps)
                 foreach (var comp in withComps.AllComps)
+                {
+                    StorageProgressWork.Charge(HaulersDream.Core.StorageWorkKind.RawGuard);
                     if (comp.GetType().Assembly != typeof(Thing).Assembly
                         || !Inspected(AccessTools.Method(comp.GetType(), nameof(ThingComp.AllowStackWith), new[] { typeof(Thing) }))) return false;
+                }
             return true;
         }
 
@@ -108,6 +118,7 @@ namespace HaulersDream
                 if (!Inspected(AccessTools.PropertyGetter(typeof(SpecialThingFilterDef), nameof(SpecialThingFilterDef.Worker)))) return false;
                 foreach (var special in specials)
                 {
+                    StorageProgressWork.Charge(HaulersDream.Core.StorageWorkKind.Predicate);
                     // Native shelf defaults contain these corpse exclusions even for steel.
                     // Their selected bodies immediately return false for the exact Thing /
                     // ThingWithComps subjects admitted above. No corpse or foreign worker is

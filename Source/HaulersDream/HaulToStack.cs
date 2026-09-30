@@ -73,34 +73,34 @@ namespace HaulersDream
     [HarmonyPatch(typeof(JobDriver_HaulToCell), nameof(JobDriver_HaulToCell.TryMakePreToilReservations))]
     public static class Patch_JobDriver_HaulToCell_NoCellReservation
     {
-        static bool Prefix(JobDriver_HaulToCell __instance, bool errorOnFailed, ref bool __result)
+        static bool Prefix(JobDriver_HaulToCell __instance, bool errorOnFailed, ref bool __result,
+            out NativeFallbackReservation __state)
         {
+            __state = null;
             // A queued/preselected native haul must not skip another current explicit trip's real
             // destination reservation, including through the forced-order arbitration bypass.
             if (StorageCommitments.ExplicitShelfCellHeldByOther(__instance.pawn, __instance.job?.targetB.Cell ?? IntVec3.Invalid))
             { __result = false; return false; }
-            var s = HaulersDreamMod.Settings;
-            if (s == null || !s.haulToStack)
-                return true; // feature off -> vanilla (reserve cell + thing)
             var job = __instance.job;
             if (job == null || job.haulMode != HaulMode.ToCellStorage)
                 return true; // non-storage cell hauls keep their reservation semantics
-            if (__instance.GetType() != typeof(JobDriver_HaulToCell) || job.def != JobDefOf.HaulToCell)
-                return true; // derived/custom toils need their own pickup ownership adapter
             var pawn = __instance.pawn;
             var hauled = job.GetTarget(TargetIndex.A).Thing;
             var map = pawn?.Map;
             if (hauled?.def == null || map == null)
                 return true;
+            var group = BulkHaul.BudgetGroupOf(
+                map.haulDestinationManager.SlotGroupAt(job.GetTarget(TargetIndex.B).Cell));
+            var s = HaulersDreamMod.Settings;
+            if (s == null || !s.haulToStack || __instance.GetType() != typeof(JobDriver_HaulToCell)
+                || job.def != JobDefOf.HaulToCell)
+                return NativeFallback(__instance, group, ref __result, out __state);
             // A pre-existing hand passenger is not this activation's incoming parcel. Keep
             // native whole-cell ownership until native work has bound its own actual cargo.
             var held = pawn.carryTracker?.CarriedThing;
             if (held != null && !ReferenceEquals(held, hauled)
                 && !map.reservationManager.ReservedBy(held, pawn, job))
-                return true;
-
-            var group = BulkHaul.BudgetGroupOf(
-                map.haulDestinationManager.SlotGroupAt(job.GetTarget(TargetIndex.B).Cell));
+                return NativeFallback(__instance, group, ref __result, out __state);
             int requested = job.count > 0 ? Math.Min(job.count, hauled.stackCount) : hauled.stackCount;
             bool priority = StorageCommitments.MayPrioritizeNative(__instance);
             int available;
@@ -140,8 +140,24 @@ namespace HaulersDream
                 return false;
             }
             // Unobserved provider semantics keep native source AND destination reservations.
-            return true;
+            // A preselected or forced job must also respect older numerical owners whose
+            // native cell reservation was removed while that provider was supported.
+            return NativeFallback(__instance, group, ref __result, out __state);
         }
+
+        private static bool NativeFallback(JobDriver_HaulToCell driver, ISlotGroup group,
+            ref bool result, out NativeFallbackReservation state)
+        {
+            state = group == null ? null : new NativeFallbackReservation(driver, group);
+            if (state == null || state.Allowed()) return true;
+            state = null; result = false; return false;
+        }
+
+        // Native source/destination reservation callbacks may change admission after the prefix.
+        // Recheck the complete original call; only reservations acquired by this call are undone.
+        static Exception Finalizer(ref bool __result, Exception __exception,
+            NativeFallbackReservation __state)
+            => __state == null ? __exception : __state.Finish(ref __result, __exception);
     }
 
     public static class HaulToStack

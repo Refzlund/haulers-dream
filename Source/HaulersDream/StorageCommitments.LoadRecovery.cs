@@ -74,6 +74,12 @@ namespace HaulersDream
     internal static class Patch_StorageLoadBeforeTick
     {
         [HarmonyPriority(Priority.First)]
-        private static bool Prefix() => StorageCommitments.BeforeResourceLoadTick();
+        private static bool Prefix(out System.IDisposable __state)
+        {
+            __state = StorageProgressWork.Simulation();
+            return StorageCommitments.BeforeResourceLoadTick();
+        }
+        [HarmonyPriority(Priority.Last)]
+        private static void Finalizer(System.IDisposable __state) => __state?.Dispose();
     }
 }

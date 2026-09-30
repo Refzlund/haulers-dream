@@ -10,6 +10,21 @@ namespace HaulersDream
 {
     internal enum StorageAllocationObservationStatus { Observed, Refused, Deferred, Unsupported, Invalidated }
 
+    // A work limit is separate from storage truth. The owner may retain only this
+    // address/retry information, never the observed cells or their eligibility.
+    internal enum StorageObservationLimit { Members, Cells, GridThings, Predicates, Demands, MapWork }
+    internal sealed class StorageObservationStop
+    {
+        internal StorageObservationLimit Dimension { get; }
+        internal string Phase { get; }
+        internal IntVec3? Position { get; }
+        internal int RequiredWork { get; }
+        internal int RemainingWork { get; }
+        internal StorageObservationStop(StorageObservationLimit dimension, string phase,
+            IntVec3? position, int requiredWork, int remainingWork)
+        { Dimension = dimension; Phase = phase; Position = position; RequiredWork = requiredWork; RemainingWork = remainingWork; }
+    }
+
     internal sealed class StorageAllocationObservationDemand
     {
         internal object Owner { get; }
@@ -73,6 +88,13 @@ namespace HaulersDream
         internal IReadOnlyList<StorageAllocationObservationIssue> Issues { get; }
         // Complete is deliberately stronger than "the observed cells had no free space".
         internal bool Complete { get; }
+        // The initial census/edges/guards completed for this observed subset. This
+        // does not cover absent priors or replace the final StillCurrent check.
+        internal bool CertifiedSubset { get; }
+        // A failed post-return freshness check updates this same synchronous result.
+        // Callers copy address/dimension metadata only into persistent progress.
+        internal StorageObservationStop Stop { get; private set; }
+        internal void RecordStop(StorageObservationStop stop) { Stop = stop; }
         internal bool Invalidated { get; }
         internal int NextMember { get; }
         internal int NextCell { get; }
@@ -85,12 +107,14 @@ namespace HaulersDream
         internal StorageAllocationObservationResult(List<StorageAllocationCell> cells, List<StorageAllocationRequest> requests,
             Dictionary<string, IntVec3> locations, Dictionary<string, Thing> targets,
             List<StorageAllocationObservationIssue> issues, bool complete, bool invalidated, int nextMember, int nextCell,
-            int cellWork, int gridWork, int predicates, Func<bool> stillCurrent = null)
+            int cellWork, int gridWork, int predicates, Func<bool> stillCurrent = null,
+            bool certifiedSubset = false, StorageObservationStop stop = null)
         {
             Cells = cells.AsReadOnly(); Requests = requests.AsReadOnly(); Issues = issues.AsReadOnly();
             CellLocations = new ReadOnlyDictionary<string, IntVec3>(locations);
             StackTargets = new ReadOnlyDictionary<string, Thing>(targets);
             Complete = complete; Invalidated = invalidated; NextMember = nextMember; NextCell = nextCell;
+            CertifiedSubset = certifiedSubset; Stop = stop;
             CellsInspected = cellWork; GridThingsInspected = gridWork; PredicatesCalled = predicates;
             this.stillCurrent = stillCurrent;
         }
@@ -102,13 +126,16 @@ namespace HaulersDream
             if (Invalidated || slice == null) return false;
             foreach (var request in Requests)
             {
+                StorageProgressWork.Charge(StorageWorkKind.ObservedEligibility);
                 if (!ReferenceEquals(request.Owner, slice.Owner) || !ReferenceEquals(request.Parcel, slice.Parcel)
                     || !ReferenceEquals(request.Subject, slice.Subject)) continue;
                 bool cell = false;
-                foreach (var key in request.EligibleCells) if (key == slice.CellKey) { cell = true; break; }
+                foreach (var key in request.EligibleCells)
+                { StorageProgressWork.Charge(StorageWorkKind.ObservedEligibility); if (key == slice.CellKey) { cell = true; break; } }
                 if (!cell) return false;
                 if (slice.Kind == StorageAllocationResourceKind.VacantSlot) return true;
-                foreach (var key in request.EligibleStacks) if (key == slice.ResourceKey) return true;
+                foreach (var key in request.EligibleStacks)
+                { StorageProgressWork.Charge(StorageWorkKind.ObservedEligibility); if (key == slice.ResourceKey) return true; }
                 return false;
             }
             return false;

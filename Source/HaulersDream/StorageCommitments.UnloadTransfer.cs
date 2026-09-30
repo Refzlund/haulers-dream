@@ -177,6 +177,12 @@ namespace HaulersDream
                     : ResourceAllowance.Unsupported;
                 if (!snapshot.Current || pawn.CurJob != driver.job || pawn.jobs.curDriver != driver
                     || status == ResourceAllowance.Deferred) return ResourceAllowance.Deferred;
+                if (status == ResourceAllowance.Unsupported && destination != null
+                    && (!driver.job.targetB.IsValid || driver.job.targetB.HasThing
+                        || !CanUseNativeExclusiveCell(pawn, destination, driver.job.targetB.Cell, source, driver.job)))
+                    return ResourceAllowance.Deferred;
+                if (!snapshot.Current || pawn.CurJob != driver.job || pawn.jobs.curDriver != driver)
+                    return ResourceAllowance.Deferred;
                 allowed = status == ResourceAllowance.Unsupported ? wanted : Math.Min(wanted, admitted);
                 if (allowed > 0) transfer = new UnloadResourceTransfer(pawn, source, snapshot,
                     status == ResourceAllowance.Observed ? destination : null);

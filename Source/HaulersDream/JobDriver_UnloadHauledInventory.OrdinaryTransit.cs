@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using RimWorld;
 using Verse;
 using Verse.AI;
 
@@ -61,12 +62,9 @@ namespace HaulersDream
                 }
                 if (status == StorageCommitments.ResourceAllowance.Unsupported)
                 {
-                    bool reserved = destinationMap.reservationManager.Reserve(pawn, activation, destination);
-                    if (!OrdinaryUnloadCurrent(activation, receipt)) return false;
-                    sameDestination = ReferenceEquals(pawn.Map, destinationMap) && activation.targetB == destination;
-                    if (!reserved || !sameDestination)
+                    if (!ReserveOrdinaryFallback(next.Thing, next.Count, group, destinationMap,
+                        destination, activation, receipt, out _, out allowed))
                     {
-                        if (!sameDestination) ReleaseOrdinaryDestination(destinationMap, destination, activation, receipt);
                         if (!OrdinaryUnloadCurrent(activation, receipt)) return false;
                         skippedThisJob.Add(next.Thing);
                         JumpToToil(begin);
@@ -106,22 +104,8 @@ namespace HaulersDream
                 if (responsibility == null || status == StorageCommitments.ResourceAllowance.Deferred) return null;
                 if (status == StorageCommitments.ResourceAllowance.Unsupported)
                 {
-                    var reservations = destinationMap.reservationManager;
-                    bool reserved = reservations.ReservedBy(destination, pawn, activation);
-                    if (!OrdinaryUnloadCurrent(activation, expectedReceipt)) return null;
-                    if (!ReferenceEquals(pawn.Map, destinationMap) || activation.targetB != destination)
-                    {
-                        ReleaseOrdinaryDestination(destinationMap, destination, activation, expectedReceipt);
-                        return null;
-                    }
-                    if (!reserved) reserved = reservations.Reserve(pawn, activation, destination);
-                    if (!OrdinaryUnloadCurrent(activation, expectedReceipt)) return null;
-                    if (!ReferenceEquals(pawn.Map, destinationMap) || activation.targetB != destination)
-                    {
-                        ReleaseOrdinaryDestination(destinationMap, destination, activation, expectedReceipt);
-                        return null;
-                    }
-                    if (!reserved) return null;
+                    if (!ReserveOrdinaryFallback(source, countToDrop, group, destinationMap,
+                        destination, activation, expectedReceipt, out responsibility, out allowed)) return null;
                 }
                 expectedReceipt = new OrdinaryUnloadTransit(job, source, allowed);
                 ordinaryTransit = expectedReceipt;
@@ -132,6 +116,53 @@ namespace HaulersDream
             {
                 HandleOrdinaryUnloadFailure(activation, expectedReceipt, error);
                 return null;
+            }
+        }
+
+        private bool ReserveOrdinaryFallback(Thing source, int wanted, ISlotGroup group, Map map,
+            LocalTargetInfo destination, Job activation, OrdinaryUnloadTransit receipt,
+            out StorageCommitments.UnloadResourceTransfer responsibility, out int allowed)
+        {
+            responsibility = null; allowed = 0;
+            int jobId = activation.loadID;
+            bool Current() => activation.loadID == jobId && OrdinaryUnloadCurrent(activation, receipt)
+                && ReferenceEquals(pawn.Map, map) && activation.targetB == destination;
+            var reservations = map.reservationManager;
+            bool existed = reservations.ReservedBy(destination, pawn, activation);
+            if (!Current()) return false;
+            bool keep = false;
+            Exception failure = null;
+            try
+            {
+                if (!existed && !reservations.Reserve(pawn, activation, destination)) return false;
+                if (!Current()) return false;
+                // Reservation callbacks can admit another parcel, change provider support or
+                // retarget this activation. Observe again before withdrawing any tagged cargo.
+                var status = StorageCommitments.UnloadResourceTransfer.Prepare(this, source, wanted,
+                    group, out responsibility, out allowed);
+                keep = Current() && status == StorageCommitments.ResourceAllowance.Unsupported
+                    && responsibility != null && responsibility.Current && allowed > 0;
+                return keep;
+            }
+            catch (Exception error) { failure = error; throw; }
+            finally
+            {
+                if (!keep && !existed && activation.loadID == jobId)
+                {
+                    try
+                    {
+                        // A changed current job does not own this old lease. Release only the
+                        // exact lease added here, never an existing or recycled-job reservation.
+                        if (reservations.ReservedBy(destination, pawn, activation)
+                            && activation.loadID == jobId)
+                            reservations.Release(destination, pawn, activation);
+                    }
+                    catch (Exception cleanup)
+                    {
+                        if (failure == null) throw;
+                        failure.Data["HaulersDream.OrdinaryFallback.Cleanup"] = cleanup;
+                    }
+                }
             }
         }
 

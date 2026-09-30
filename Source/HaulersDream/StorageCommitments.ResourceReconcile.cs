@@ -38,6 +38,7 @@ namespace HaulersDream
             }
             internal bool Live(Pawn pawn)
             {
+                StorageProgressWork.Charge(StorageWorkKind.Custody); // ThingOwner.Contains is a constant holdingOwner check.
                 if (pawn?.Map == null || Subject == null || Subject.Destroyed || Subject.Spawned
                     || Subject.stackCount <= 0 || !ReferenceEquals(Subject.holdingOwner, holder)
                     || holder?.Contains(Subject) != true) return false;
@@ -72,6 +73,15 @@ namespace HaulersDream
             internal readonly int[] RowUnits;
             private readonly Dictionary<Pawn, List<StorageParcelEvidence.Entry>> cargo
                 = new Dictionary<Pawn, List<StorageParcelEvidence.Entry>>();
+            private readonly Dictionary<Pawn, Dictionary<Thing, List<StorageParcelEvidence.Entry>>> cargoBySubject
+                = new Dictionary<Pawn, Dictionary<Thing, List<StorageParcelEvidence.Entry>>>();
+            private static readonly List<StorageParcelEvidence.Entry> NoEntries = new List<StorageParcelEvidence.Entry>();
+            private sealed class SubjectReference : IEqualityComparer<Thing>
+            {
+                internal static readonly SubjectReference Instance = new SubjectReference();
+                public bool Equals(Thing left, Thing right) => ReferenceEquals(left, right);
+                public int GetHashCode(Thing value) => System.Runtime.CompilerServices.RuntimeHelpers.GetHashCode(value);
+            }
             private readonly Dictionary<(Pawn, Thing), int> attributed = new Dictionary<(Pawn, Thing), int>();
             private readonly Game game;
             private readonly LoadRecoveryTicket epoch;
@@ -98,8 +108,33 @@ namespace HaulersDream
                 }
                 return entries;
             }
+            // Index only this snapshot's already-owned, immutable collector result.
+            // Exact owners previously scanned that same list until ReferenceEquals
+            // matched their parcel. Keep every matching entry and its original order;
+            // legacy/native owners retain the complete traversal. No policy or physical
+            // receipt is extended past the enclosing snapshot or ledger generation.
+            internal List<StorageParcelEvidence.Entry> EntriesForSubject(Pawn pawn, Thing subject)
+            {
+                StorageProgressWork.Charge(StorageWorkKind.Attribution);
+                if (subject == null) return NoEntries;
+                if (!cargoBySubject.TryGetValue(pawn, out var index))
+                {
+                    index = new Dictionary<Thing, List<StorageParcelEvidence.Entry>>(SubjectReference.Instance);
+                    foreach (var entry in EntriesFor(pawn))
+                    {
+                        StorageProgressWork.Charge(StorageWorkKind.Attribution);
+                        if (entry.Subject == null) continue;
+                        if (!index.TryGetValue(entry.Subject, out var matches))
+                            index.Add(entry.Subject, matches = new List<StorageParcelEvidence.Entry>());
+                        matches.Add(entry);
+                    }
+                    cargoBySubject.Add(pawn, index);
+                }
+                return index.TryGetValue(subject, out var found) ? found : NoEntries;
+            }
             internal int Remaining(Pawn pawn, StorageParcelEvidence.Entry entry)
             {
+                StorageProgressWork.Charge(StorageWorkKind.Attribution);
                 attributed.TryGetValue((pawn, entry.Subject), out int used);
                 return Math.Max(0, entry.Units - used);
             }
@@ -132,6 +167,7 @@ namespace HaulersDream
                 for (int phase = 0; phase < 2; phase++)
                     for (int index = 0; index < snapshot.Rows.Length; index++)
                     {
+                        StorageProgressWork.Charge(StorageWorkKind.Attribution);
                         var row = snapshot.Rows[index];
                         if ((row.WorkOwner != null ? 0 : 1) != phase || row.ExclusiveCellAllocation != null
                             || !(row.Pawn is Pawn carrier) || carrier.Map != map || row.Units <= 0
@@ -145,8 +181,11 @@ namespace HaulersDream
                         if (row.WorkOwner != null && !(native?.Live(carrier) == true
                             || bulk?.Live(carrier) == true || held?.Live(carrier) == true)) continue;
                         int remaining = row.Units;
-                        foreach (var entry in ResourceParcelOrder(snapshot.EntriesFor(carrier), native != null))
+                        var entries = held != null ? snapshot.EntriesForSubject(carrier, held.Subject)
+                            : bulk != null ? snapshot.EntriesForSubject(carrier, bulk.Subject) : snapshot.EntriesFor(carrier);
+                        foreach (var entry in ResourceParcelOrder(entries, native != null))
                         {
+                            StorageProgressWork.Charge(StorageWorkKind.Attribution);
                             if (remaining <= 0) break;
                             if (entry.Subject?.def != row.Def || entry.Units <= 0
                                 || (!unresolved && entry.KnownGroup != null && !ReferenceEquals(entry.KnownGroup, row.Group))
@@ -176,6 +215,7 @@ namespace HaulersDream
             bool changed = false;
             for (int i = 0; i < snapshot.Rows.Length; i++)
             {
+                StorageProgressWork.Charge(StorageWorkKind.Attribution);
                 var row = snapshot.Rows[i];
                 if (!(row.Pawn is Pawn pawn) || pawn.Map == null)
                 { changed = true; continue; }
@@ -221,10 +261,13 @@ namespace HaulersDream
                 // A preceding adoption or provider callback changed the ledger. Recollect before
                 // computing this parcel's residual instead of spending an old whole-stack amount.
                 if (!snapshot.Current) snapshot = ObserveResourceResponsibilitiesForLoad(pawn.Map, ticket);
-                var currentEntries = snapshot.EntriesFor(pawn);
+                var currentEntries = snapshot.EntriesForSubject(pawn, entry.Subject);
                 StorageParcelEvidence.Entry current = default;
                 foreach (var candidate in currentEntries)
+                {
+                    StorageProgressWork.Charge(StorageWorkKind.Attribution);
                     if (ReferenceEquals(candidate.Subject, entry.Subject)) { current = candidate; break; }
+                }
                 if (!snapshot.Current) return;
                 if (!current.Held) continue;
                 int residual = snapshot.Remaining(pawn, current);
@@ -239,7 +282,7 @@ namespace HaulersDream
                 var final = ObserveResourceResponsibilitiesForLoad(pawn.Map, ticket);
                 if (!final.Current) { snapshot.Complete = false; continue; }
                 int stillResidual = 0;
-                foreach (var actual in final.EntriesFor(pawn))
+                foreach (var actual in final.EntriesForSubject(pawn, current.Subject))
                     if (owner.Matches(actual)) { stillResidual = final.Remaining(pawn, actual); break; }
                 if (!final.Current || !snapshot.Current || !owner.Live(pawn) || ResourceQueriesBlocked(ticket))
                 { snapshot = final; continue; }
@@ -299,7 +342,7 @@ namespace HaulersDream
             var demand = new StorageAllocationObservationDemand(pawn, entry.Subject, entry.Subject, pawn,
                 entry.Units, StorageFilterContext.Unload, entry.Destination, entry.OwnerJob, startsRefill: false);
             var observation = StorageAllocationObservation.ObserveForLoad(pawn.Map, candidateGroup,
-                new[] { demand }, null, null, ticket);
+                new[] { demand }, StorageProgressWork.SelectedLimits(), null, ticket);
             foreach (var issue in observation.Issues)
                 if (issue.Status == StorageAllocationObservationStatus.Unsupported)
                 { reason = HeldDestinationReason.Unsupported; return UnresolvedHeldDestination; }

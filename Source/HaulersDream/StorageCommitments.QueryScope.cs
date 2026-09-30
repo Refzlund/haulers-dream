@@ -32,12 +32,12 @@ namespace HaulersDream
             return ResourceUnitsFor(pawn, group, subject, 1, cell, pawn.CurJob, out allowed);
         }
 
-        internal sealed class StorageAdmissionQueryScope : IDisposable
+        internal sealed partial class StorageAdmissionQueryScope : IDisposable
         {
             internal static StorageAdmissionQueryScope Open(Pawn pawn, Map map, Thing subject, MethodBase boundary)
             {
                 if (!UnityData.IsInMainThread) return null;
-                if (currentStorageQuery == null && (!AnyClaims || ResourceQueriesBlocked()
+                if (currentStorageQuery == null && (ResourceQueriesBlocked()
                     || resourceTransferDepth > 0 || InsideSpaceScan || InForcedOrder
                     || StorageAllocationObservation.InProgress)) return null;
                 return new StorageAdmissionQueryScope(pawn, map, subject, boundary);
@@ -46,7 +46,6 @@ namespace HaulersDream
             internal static StorageAdmissionQueryScope OpenFactory(Pawn pawn, Thing subject, MethodBase boundary)
             {
                 if (!UnityData.IsInMainThread) return null;
-                if (currentStorageQuery == null && !AnyClaims) return null;
                 return Open(pawn, pawn?.Map, subject, boundary);
             }
 
@@ -61,7 +60,9 @@ namespace HaulersDream
             private readonly JobDriver driver;
             private readonly StorageFilterContext context;
             private readonly bool enabled, factory;
-            private readonly ProjectionThingGuard sourceGuard;
+            private ProjectionThingGuard sourceGuard;
+            private readonly MethodBase boundary;
+            private bool compositionKnown, compositionSupported;
             private readonly Dictionary<ISlotGroup, QueryGroupView> groups = new Dictionary<ISlotGroup, QueryGroupView>();
             private readonly List<QueryGroupView> groupOrder = new List<QueryGroupView>();
             private ResourceResponsibilitySnapshot snapshot;
@@ -70,22 +71,30 @@ namespace HaulersDream
             private StorageAdmissionQueryScope(Pawn pawn, Map map, Thing subject, MethodBase boundary)
             {
                 parent = currentStorageQuery;
-                this.pawn = pawn; this.map = map; this.subject = subject;
+                this.pawn = pawn; this.map = map; this.subject = subject; this.boundary = boundary;
                 factory = boundary?.DeclaringType == typeof(HaulAIUtility)
                     && boundary.Name == nameof(HaulAIUtility.HaulToCellStorageJob);
+                if (factory)
+                {
+                    factoryWork = StorageProgressWork.Begin(map, null, StorageWorkLane.Mandatory, "native-factory");
+                    factoryMeter = StorageProgressWork.Enter(factoryWork);
+                }
                 // Even an excluded nested call owns a frame, so it cannot accidentally use
                 // its parent's provisional view. This check precedes every world/policy read.
+                try
+                {
                 if (UnityData.IsInMainThread && !ResourceQueriesBlocked() && resourceTransferDepth == 0
                     && !InsideSpaceScan && !InForcedOrder && !StorageAllocationObservation.InProgress
                     && pawn?.Map == map && subject?.def?.category == ThingCategory.Item
-                    && AnyClaims && GatesVanillaStorage(map))
+                    && GatesVanillaStorage(map))
                 {
                     game = Verse.Current.Game; epoch = activeLoadRecovery;
                     job = pawn.CurJob; jobId = job?.loadID ?? -1; driver = pawn.jobs?.curDriver;
                     context = StorageBuildingFilter.CurrentContext;
-                    enabled = StorageQueryBindings.Inspected(boundary, subject);
-                    if (enabled) sourceGuard = new ProjectionThingGuard(subject);
+                    enabled = !factory || AnyClaims;
                 }
+                }
+                catch (StorageWorkExhausted) { enabled = false; }
                 currentStorageQuery = this;
             }
 
@@ -97,15 +106,30 @@ namespace HaulersDream
                 => factory && Current() && group != null && groups.TryGetValue(group, out var view)
                     && view.Ready && !view.Immediate;
 
+            private bool SupportedComposition()
+            {
+                if (!compositionKnown)
+                { compositionSupported = StorageQueryBindings.Inspected(boundary, subject); compositionKnown = true; }
+                return compositionSupported;
+            }
+
             private bool Current()
-                => enabled && !disposed && !invalid && UnityData.IsInMainThread
+            {
+                try
+                {
+                    if (StorageProgressWork.ActiveFor(map) == null) return false;
+                    if (!SupportedComposition()) return false;
+                    if (sourceGuard == null) sourceGuard = new ProjectionThingGuard(subject);
+                    return enabled && !disposed && !invalid && UnityData.IsInMainThread
                     && ReferenceEquals(currentStorageQuery, this) && !ResourceQueriesBlocked()
                     && resourceTransferDepth == 0 && ReferenceEquals(Verse.Current.Game, game)
                     && ReferenceEquals(activeLoadRecovery, epoch) && ReferenceEquals(pawn.Map, map)
                     && ReferenceEquals(pawn.CurJob, job) && (job?.loadID ?? -1) == jobId
                     && ReferenceEquals(pawn.jobs?.curDriver, driver)
                     && StorageBuildingFilter.CurrentContext == context && sourceGuard.Matches()
-                    && (snapshot == null || snapshot.Current);
+                    && (snapshot == null || snapshot.Current); }
+                catch (StorageWorkExhausted) { return false; }
+            }
 
             private StorageAllocationObservationDemand Incoming(IntVec3 cell)
                 => new StorageAllocationObservationDemand((object)job ?? pawn, subject, subject, pawn,
@@ -114,8 +138,12 @@ namespace HaulersDream
             internal bool TryCandidate(ISlotGroup group, IntVec3 cell, out ResourceAllowance status, out int allowed)
             {
                 status = ResourceAllowance.Deferred; allowed = 0;
-                if (!Current() || operating) return true;
+                // An unbound/foreign worker runs outside our optional frame. Keep the
+                // established fresh immediate adapter for that original native path.
+                if (originalWorkerDepth > 0 || StorageProgressWork.ActiveFor(map) == null) return false;
+                if (!Current() || operating) return !compositionKnown || compositionSupported;
                 operating = true;
+                bool immediate = false;
                 try
                 {
                     if (snapshot == null) snapshot = ObserveResourceResponsibilities(map);
@@ -125,7 +153,7 @@ namespace HaulersDream
                         view = MakeGroup(group, cell);
                         groups.Add(group, view); groupOrder.Add(view);
                     }
-                    if (view.Immediate) return false;
+                    if (view.Immediate) { immediate = true; return false; }
                     if (!view.Ready || !Current()) return true;
                     var incoming = Incoming(cell);
                     // A candidate branches from the same prior state; a successful probe does
@@ -133,20 +161,26 @@ namespace HaulersDream
                     var localDemands = view.DemandsAt(cell);
                     localDemands.Add(incoming);
                     var observation = StorageAllocationObservation.ObserveCells(map, group,
-                        localDemands, new[] { cell }, view.Topology.Contains);
+                        localDemands, new[] { cell }, view.Topology.Contains, StorageProgressWork.SelectedLimits());
                     if (!Usable(observation, localDemands.Count) || !InspectedResources(observation) || !Current()) return true;
-                    var result = StorageResourceAllocator.Allocate(observation.Cells, view.StateAt(cell),
+                    var result = AllocateResources(observation.Cells, view.StateAt(cell),
                         new[] { observation.Requests[observation.Requests.Count - 1] },
                         CompatibleResource, observation.ObservedEligible,
                         new StorageAllocationOptions(observationComplete: true));
-                    if (!result.CanPublish || !observation.StillCurrent()
+                    if (!result.CanPublish || !FreshProgress(observation, group, copyCursor: false)
                         || !view.Guard.Matches() || !Current()) return true;
-                    allowed = (int)Math.Min(1, result.AdmittedUnits(observation.Requests[observation.Requests.Count - 1]));
+                    allowed = (int)Math.Min(1, AdmittedResourceUnits(result, observation.Requests[observation.Requests.Count - 1]));
                     if (allowed > 0) view.RecordPositive(cell);
                     status = ResourceAllowance.Observed;
                     return true;
                 }
-                finally { operating = false; }
+                catch (StorageWorkExhausted) { return true; }
+                finally
+                {
+                    operating = false;
+                    if (!immediate && status == ResourceAllowance.Deferred)
+                        StorageProgressWork.NeedDiscovery(map, group, "candidate-deferred");
+                }
             }
 
             private QueryGroupView MakeGroup(ISlotGroup group, IntVec3 preferred)
@@ -181,27 +215,33 @@ namespace HaulersDream
                         view.Initialize(StorageAllocationState.Empty, new Dictionary<string, IntVec3>());
                     return view;
                 }
+                var work = StorageProgressWork.Active;
+                var progress = work?.Owner.Queue.Get(group);
+                var hints = progress == null ? new List<IntVec3>() : work.Owner.Hints(progress);
+                if (!hints.Contains(preferred)) hints.Insert(0, preferred);
                 var observation = StorageAllocationObservation.Observe(map, group, view.Demands,
-                    preferredCells: new[] { preferred });
-                if (observation.Invalidated || observation.Requests.Count != view.Demands.Count
+                    StorageProgressWork.Limits(progress), hints);
+                work?.Owner.ObserveProgress(progress, observation);
+                if (observation.Invalidated || !observation.CertifiedSubset || observation.Requests.Count != view.Demands.Count
                     || !InspectedResources(observation) || !Current()) return view;
                 foreach (var issue in observation.Issues)
                     if (issue.Status == StorageAllocationObservationStatus.Unsupported
                         || issue.Status == StorageAllocationObservationStatus.Deferred) return view;
-                var result = StorageResourceAllocator.Allocate(observation.Cells, StorageAllocationState.Empty,
+                var result = AllocateResources(observation.Cells, StorageAllocationState.Empty,
                     observation.Requests, CompatibleResource, observation.ObservedEligible,
                     new StorageAllocationOptions(observationComplete: observation.Complete));
-                if (!result.CanPublish || !view.Topology.Current() || !observation.StillCurrent()
+                if (!result.CanPublish || !view.Topology.Current() || !FreshProgress(observation, group)
                     || !view.Guard.Matches() || !Current()) return view;
                 foreach (var request in observation.Requests)
-                    if (result.AdmittedUnits(request) != request.Units) return view;
+                    if (AdmittedResourceUnits(result, request) != request.Units) return view;
+                work?.Owner.Remember(progress, observation.CellLocations, result.State);
                 view.Initialize(result.State, observation.CellLocations);
                 return view;
             }
 
             private static bool Usable(StorageAllocationObservationResult observation, int demands)
             {
-                if (observation.Invalidated || !observation.Complete || observation.Requests.Count != demands) return false;
+                if (observation.Invalidated || !observation.CertifiedSubset || observation.Requests.Count != demands) return false;
                 foreach (var issue in observation.Issues)
                     if (issue.Status == StorageAllocationObservationStatus.Deferred
                         || issue.Status == StorageAllocationObservationStatus.Unsupported) return false;
@@ -221,12 +261,21 @@ namespace HaulersDream
             // certified together. No scope certificate reaches an actual claim writer.
             internal bool FinishSearch(IntVec3 selected)
             {
-                if (!enabled) return true;
-                if (!Current()) return false;
+                // An original/foreign worker result carries no optional certificate.
+                // Never reserve optional work merely to finish that compatibility route.
+                if (!enabled || !workerSelection.HasValue || workerSelection.Value != selected) return true;
                 var group = BulkHaul.BudgetGroupOf(map.haulDestinationManager.SlotGroupAt(selected));
-                if (!Current()) return false;
-                if (group == null || !groups.TryGetValue(group, out var view) || view.Immediate) return true;
-                return FinishGroup(view, new[] { selected });
+                if (group == null) return false;
+                if (!groupWork.TryGetValue(group, out var work)) return false;
+                using (StorageProgressWork.Enter(work))
+                using (work.FinalPass())
+                {
+                    if (!Current()) return compositionKnown && !compositionSupported;
+                    if (!groups.TryGetValue(group, out var view) || view.Immediate) return true;
+                    bool accepted = FinishGroup(view, new[] { selected });
+                    if (!accepted) StorageProgressWork.NeedDiscovery(map, group, "final-candidate-deferred");
+                    return accepted;
+                }
             }
 
             internal void FinishFactory()
@@ -242,18 +291,20 @@ namespace HaulersDream
 
             private bool FinishGroup(QueryGroupView view, IReadOnlyList<IntVec3> candidates)
             {
-                if (!view.Ready || !Current() || operating || !view.Guard.Matches()) return false;
+                using var finalPass = StorageProgressWork.Active?.FinalPass();
+                if (!view.Ready || !Current() || operating) return false;
                 operating = true;
                 try
                 {
+                    if (!view.Guard.Matches()) return false;
                     var coordinates = new List<IntVec3>(view.BaselineCells);
                     foreach (var cell in candidates) if (!coordinates.Contains(cell)) coordinates.Add(cell);
                     var demands = new List<StorageAllocationObservationDemand>(view.Demands);
                     // Each independent cell is validated against the same full prior state.
                     var observation = StorageAllocationObservation.ObserveCells(map, view.Group, demands, coordinates,
-                        view.Topology.Contains);
+                        view.Topology.Contains, StorageProgressWork.SelectedLimits());
                     if (!Usable(observation, demands.Count) || !InspectedResources(observation) || !Current()) return false;
-                    var prior = StorageResourceAllocator.Allocate(observation.Cells, view.State,
+                    var prior = AllocateResources(observation.Cells, view.State,
                         Array.Empty<StorageAllocationRequest>(), CompatibleResource, observation.ObservedEligible,
                         new StorageAllocationOptions(observationComplete: true));
                     if (!prior.CanPublish || !Current()) return false;
@@ -261,20 +312,21 @@ namespace HaulersDream
                     {
                         var local = view.DemandsAt(cell); local.Add(Incoming(cell));
                         var fresh = StorageAllocationObservation.ObserveCells(map, view.Group, local, new[] { cell },
-                            view.Topology.Contains);
+                            view.Topology.Contains, StorageProgressWork.SelectedLimits());
                         if (!Usable(fresh, local.Count) || !InspectedResources(fresh) || !Current()) return false;
                         var request = fresh.Requests[fresh.Requests.Count - 1];
-                        var result = StorageResourceAllocator.Allocate(fresh.Cells, view.StateAt(cell),
+                        var result = AllocateResources(fresh.Cells, view.StateAt(cell),
                             new[] { request }, CompatibleResource, fresh.ObservedEligible,
                             new StorageAllocationOptions(observationComplete: true));
-                        if (!result.CanPublish || result.AdmittedUnits(request) <= 0
-                            || !fresh.StillCurrent() || !view.Guard.Matches() || !Current()) return false;
+                        if (!result.CanPublish || AdmittedResourceUnits(result, request) <= 0
+                            || !FreshProgress(fresh, view.Group, copyCursor: false) || !view.Guard.Matches() || !Current()) return false;
                     }
                     // Candidate policy callbacks can mutate earlier resources. Recheck the
                     // full physical certificate after the last one, before returning success.
                     return StorageQueryBindings.NativeGroup(view.Group) && view.Topology.Current()
-                        && observation.StillCurrent() && view.Guard.Matches() && Current();
+                        && FreshProgress(observation, view.Group, copyCursor: false) && view.Guard.Matches() && Current();
                 }
+                catch (StorageWorkExhausted) { return false; }
                 finally { operating = false; }
             }
 
@@ -290,6 +342,8 @@ namespace HaulersDream
                     currentStorageQuery = null;
                 }
                 groups.Clear(); groupOrder.Clear(); snapshot = null;
+                foreach (var operation in groupWork.Values) operation.Dispose();
+                groupWork.Clear(); factoryMeter?.Dispose(); factoryWork?.Dispose();
             }
 
             private sealed class QueryGroupView
@@ -312,6 +366,7 @@ namespace HaulersDream
                     var slices = new Dictionary<IntVec3, List<StorageResourceAllocation>>();
                     foreach (var slice in state.Slices)
                     {
+                        StorageProgressWork.Charge(StorageWorkKind.ObservedEligibility);
                         var cell = locations[slice.CellKey];
                         if (!slices.TryGetValue(cell, out var values))
                         { values = new List<StorageResourceAllocation>(); slices.Add(cell, values); BaselineCells.Add(cell); }
@@ -328,8 +383,11 @@ namespace HaulersDream
                     foreach (var slice in StateAt(cell).Slices)
                     {
                         foreach (var demand in Demands)
+                        {
+                            StorageProgressWork.Charge(StorageWorkKind.ObservedEligibility);
                             if (ReferenceEquals(demand.Owner, slice.Owner) && ReferenceEquals(demand.Parcel, slice.Parcel))
                             { if (!result.Contains(demand)) result.Add(demand); break; }
+                        }
                     }
                     return result;
                 }
@@ -350,6 +408,7 @@ namespace HaulersDream
                     int zoneCells = 0;
                     bool Add(ISlotGroupParent parent)
                     {
+                        StorageProgressWork.Charge(StorageWorkKind.Topology);
                         PreparedProjectionZoneCells prepared = null;
                         if (parent is Zone_Stockpile zone)
                         {
@@ -384,7 +443,8 @@ namespace HaulersDream
                 internal bool Current()
                 {
                     if (linked != null && !linkedGuard.Matches(linked.members)) return false;
-                    foreach (var guard in members.Values) if (!guard.Matches()) return false;
+                    foreach (var guard in members.Values)
+                    { StorageProgressWork.Charge(StorageWorkKind.Topology); if (!guard.Matches()) return false; }
                     return true;
                 }
             }

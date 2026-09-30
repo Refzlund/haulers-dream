@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Reflection;
 using HaulersDream.Core;
+using HarmonyLib;
 using RimWorld;
 using Verse;
 
@@ -20,13 +21,23 @@ namespace HaulersDream
             return field != null && field.DeclaringType == owner && field.FieldType == type
                 && !field.IsStatic ? field : null;
         }
-        private static readonly FieldInfo hp = Field(typeof(Thing), "hitPointsInt", typeof(int)),
-            stuff = Field(typeof(Thing), "stuffInt", typeof(ThingDef)),
-            comps = Field(typeof(ThingWithComps), "comps", typeof(List<ThingComp>)),
-            quality = Field(typeof(CompQuality), "qualityInt", typeof(QualityCategory)),
-            innerContainer = Field(typeof(MinifiedThing), "innerContainer", typeof(ThingOwner)),
-            owner = Field(typeof(ThingOwner), "owner", typeof(IThingHolder)),
-            ownerList = Field(typeof(ThingOwner<Thing>), "innerList", typeof(List<Thing>));
+        // Resolve the exact inspected fields once. Each delegate is a direct ldflda
+        // reader; invocation performs no reflection, boxing, virtual getter or callback.
+        // A missing field/layout or failed binding leaves this guard unavailable.
+        private static AccessTools.FieldRef<T, V> Read<T, V>(string name) where T : class
+        {
+            var field = Field(typeof(T), name, typeof(V));
+            if (field == null) return null;
+            try { return AccessTools.FieldRefAccess<T, V>(field); }
+            catch { return null; }
+        }
+        private static readonly AccessTools.FieldRef<Thing, int> hp = Read<Thing, int>("hitPointsInt");
+        private static readonly AccessTools.FieldRef<Thing, ThingDef> stuff = Read<Thing, ThingDef>("stuffInt");
+        private static readonly AccessTools.FieldRef<ThingWithComps, List<ThingComp>> comps = Read<ThingWithComps, List<ThingComp>>("comps");
+        private static readonly AccessTools.FieldRef<CompQuality, QualityCategory> quality = Read<CompQuality, QualityCategory>("qualityInt");
+        private static readonly AccessTools.FieldRef<MinifiedThing, ThingOwner> innerContainer = Read<MinifiedThing, ThingOwner>("innerContainer");
+        private static readonly AccessTools.FieldRef<ThingOwner, IThingHolder> owner = Read<ThingOwner, IThingHolder>("owner");
+        private static readonly AccessTools.FieldRef<ThingOwner<Thing>, List<Thing>> ownerList = Read<ThingOwner<Thing>, List<Thing>>("innerList");
         private readonly RawThing outer, inner;
         private readonly MinifiedThing wrapper;
         private readonly ThingOwner container;
@@ -45,10 +56,10 @@ namespace HaulersDream
                 // traverse a foreign IThingHolder or use the callback-bearing InnerThing.
                 if (subject.GetType() != typeof(MinifiedThing)) return;
                 wrapper = minified;
-                container = (ThingOwner)innerContainer.GetValue(wrapper);
+                container = innerContainer(wrapper);
                 if (container == null || container.GetType() != typeof(ThingOwner<Thing>)
-                    || !ReferenceEquals(owner.GetValue(container), wrapper)) return;
-                contents = (List<Thing>)ownerList.GetValue(container);
+                    || !ReferenceEquals(owner(container), wrapper)) return;
+                contents = ownerList((ThingOwner<Thing>)container);
                 if (contents == null || contents.Count != 1 || contents[0] == null
                     || contents[0] is MinifiedThing || !ReferenceEquals(contents[0].holdingOwner, container)) return;
                 contentsGuard = new ProjectionListGuard<Thing>(contents);
@@ -60,9 +71,9 @@ namespace HaulersDream
         internal bool Matches()
         {
             if (!valid || !outer.Matches()) return false;
-            return wrapper == null || ReferenceEquals(innerContainer.GetValue(wrapper), container)
-                && ReferenceEquals(owner.GetValue(container), wrapper)
-                && contentsGuard.Matches((List<Thing>)ownerList.GetValue(container))
+            return wrapper == null || ReferenceEquals(innerContainer(wrapper), container)
+                && ReferenceEquals(owner(container), wrapper)
+                && contentsGuard.Matches(ownerList((ThingOwner<Thing>)container))
                 && contents.Count == 1 && ReferenceEquals(contents[0], inner.Value) && inner.Matches();
         }
 
@@ -82,37 +93,45 @@ namespace HaulersDream
             private readonly bool valid;
             internal RawThing(Thing thing)
             {
-                Value = thing; definition = thing.def; material = (ThingDef)stuff.GetValue(thing);
+                StorageProgressWork.Charge(StorageWorkKind.RawGuard);
+                Value = thing; definition = thing.def; material = stuff(thing);
                 holder = thing.holdingOwner; id = thing.thingIDNumber; count = thing.stackCount;
-                hitPoints = (int)hp.GetValue(thing);
+                hitPoints = hp(thing);
                 if (thing is ThingWithComps withComps)
                 {
-                    componentThing = withComps; components = (List<ThingComp>)comps.GetValue(withComps);
+                    componentThing = withComps; components = comps(withComps);
                     if (components != null)
                     {
                         if (components.Count > 256) return;
                         componentGuard = new ProjectionListGuard<ThingComp>(components);
                         foreach (var comp in components)
+                        {
+                            StorageProgressWork.Charge(StorageWorkKind.RawGuard);
                             if (comp is CompQuality q)
-                                qualities.Add(Tuple.Create(q, (QualityCategory)quality.GetValue(q), q.parent));
+                                qualities.Add(Tuple.Create(q, quality(q), q.parent));
+                        }
                     }
                     cachedQuality = withComps.compQuality;
-                    if (cachedQuality != null) cachedValue = (QualityCategory)quality.GetValue(cachedQuality);
+                    if (cachedQuality != null) cachedValue = quality(cachedQuality);
                 }
                 valid = definition != null;
             }
             internal bool Matches()
             {
-                if (!valid || !ReferenceEquals(Value.def, definition) || !ReferenceEquals(stuff.GetValue(Value), material)
+                StorageProgressWork.Charge(StorageWorkKind.RawGuard);
+                if (!valid || !ReferenceEquals(Value.def, definition) || !ReferenceEquals(stuff(Value), material)
                     || !ReferenceEquals(Value.holdingOwner, holder) || Value.thingIDNumber != id || Value.stackCount != count
-                    || (int)hp.GetValue(Value) != hitPoints) return false;
+                    || hp(Value) != hitPoints) return false;
                 if (componentThing == null) return true;
-                var actual = (List<ThingComp>)comps.GetValue(componentThing);
+                var actual = comps(componentThing);
                 if (components == null ? actual != null : !componentGuard.Matches(actual)) return false;
                 if (!ReferenceEquals(componentThing.compQuality, cachedQuality)
-                    || cachedQuality != null && (QualityCategory)quality.GetValue(cachedQuality) != cachedValue) return false;
+                    || cachedQuality != null && quality(cachedQuality) != cachedValue) return false;
                 foreach (var q in qualities)
-                    if (!ReferenceEquals(q.Item1.parent, q.Item3) || (QualityCategory)quality.GetValue(q.Item1) != q.Item2) return false;
+                {
+                    StorageProgressWork.Charge(StorageWorkKind.RawGuard);
+                    if (!ReferenceEquals(q.Item1.parent, q.Item3) || quality(q.Item1) != q.Item2) return false;
+                }
                 return true;
             }
         }
