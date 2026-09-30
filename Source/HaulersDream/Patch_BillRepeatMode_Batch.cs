@@ -48,34 +48,26 @@ namespace HaulersDream
             // ingredients" switch turned off (#230). Offering a mode that will not run is what misleads; the player
             // just sees the vanilla modes instead. CraftBatchPlanner.BatchModeAvailable is the single source shared
             // with the row's ×N marker and the repeat-mode button's prefix.
-            if (comp != null && CraftBatchPlanner.BatchModeAvailable(bill))
+            if (comp != null && MultiplayerCompat.BillBatchModeAvailable && CraftBatchPlanner.BatchModeAvailable(bill))
             {
                 string prefix = "HaulersDream.Batch.MenuPrefix".Translate();
                 var optDoX = new FloatMenuOption(prefix + ": " + BillRepeatModeDefOf.RepeatCount.LabelCap, delegate
                 {
-                    bill.repeatMode = BillRepeatModeDefOf.RepeatCount;
-                    EnableBatch(comp, bill);
+                    EnableBatch(comp, bill, BillRepeatModeDefOf.RepeatCount);
                 });
                 optDoX.tooltip = "HaulersDream.Batch.TipDoX".Translate();
                 opts.Add(optDoX);
 
                 var optUntil = new FloatMenuOption(prefix + ": " + BillRepeatModeDefOf.TargetCount.LabelCap, delegate
                 {
-                    if (!bill.recipe.WorkerCounter.CanCountProducts(bill))
-                        Messages.Message("RecipeCannotHaveTargetCount".Translate(), MessageTypeDefOf.RejectInput, historical: false);
-                    else
-                    {
-                        bill.repeatMode = BillRepeatModeDefOf.TargetCount;
-                        EnableBatch(comp, bill);
-                    }
+                    EnableBatch(comp, bill, BillRepeatModeDefOf.TargetCount);
                 });
                 optUntil.tooltip = "HaulersDream.Batch.TipUntilX".Translate();
                 opts.Add(optUntil);
 
                 var optForever = new FloatMenuOption(prefix + ": " + BillRepeatModeDefOf.Forever.LabelCap, delegate
                 {
-                    bill.repeatMode = BillRepeatModeDefOf.Forever;
-                    EnableBatch(comp, bill);
+                    EnableBatch(comp, bill, BillRepeatModeDefOf.Forever);
                 });
                 optForever.tooltip = "HaulersDream.Batch.TipForever".Translate();
                 opts.Add(optForever);
@@ -109,15 +101,15 @@ namespace HaulersDream
 
         // Turn batching on, keeping any size the bill already had; a fresh batch starts at the settings default.
         // Called ONLY from the three interactive "Batch: …" float-menu delegates above, so this is a UI write:
-        // MP-route it through the [SyncMethod] shim (writes the SCRIBED batchBills dict on every client; inline in
+        // Route mode and batch metadata through one registered command (inline in
         // SP). The size is resolved locally first (read of the current value, fall back to the settings default), so
         // the synced command carries an absolute size and is idempotent across clients.
-        private static void EnableBatch(HaulersDreamGameComponent comp, Bill_Production bill)
+        private static void EnableBatch(HaulersDreamGameComponent comp, Bill_Production bill, BillRepeatModeDef mode)
         {
             int size = comp.BatchSizeOf(bill);
             if (size < 1)
                 size = Mathf.Max(1, HaulersDreamMod.Settings?.defaultBatchSize ?? 10);
-            MultiplayerCompat.SetBillBatch(bill, true, size);
+            MultiplayerCompat.SetBillBatchMode(bill, mode, size);
         }
     }
 

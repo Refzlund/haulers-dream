@@ -100,6 +100,7 @@ namespace HaulersDream
                 var harmony = new Harmony(HaulersDreamMod.HarmonyId);
                 foreach (var provider in providers)
                     BillRepeatMenuActions.Install(harmony, provider);
+                BillRepeatMenuComposition.BindMultiplayerWatcher(harmony);
                 Ready = true;
                 HDLog.Msg("Bill repeat menu composition ready: " + string.Join(", ", providers.Select(p => p.Kind)) + ".");
             }

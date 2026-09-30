@@ -15,9 +15,24 @@
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.11.1" />
     <PackageReference Include="NUnit" Version="4.2.2" />
     <PackageReference Include="NUnit3TestAdapter" Version="4.6.0" />
+    <PackageReference Include="System.Reflection.MetadataLoadContext" Version="8.0.0" PrivateAssets="all" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\HaulersDream.Core\HaulersDream.Core.csproj" />
+    <!-- Inspect the actual compiled mod without loading it into the NUnit test host. -->
+    <ProjectReference Include="..\HaulersDream\HaulersDream.csproj" ReferenceOutputAssembly="false" Private="false" />
+    <Reference Include="Microsoft.CSharp" />
   </ItemGroup>
+
+  <!-- Metadata-only inputs stay in the test output. No game install, reference DLL copy, or mod
+       deployment is needed in CI; ResolveReferences supplies the existing Krafs/NuGet paths. -->
+  <Target Name="WriteOptionalApiMetadataInputs" AfterTargets="Build">
+    <MSBuild Projects="..\HaulersDream\HaulersDream.csproj" Targets="GetTargetPath;ResolveReferences"
+             Properties="Configuration=$(Configuration)">
+      <Output TaskParameter="TargetOutputs" ItemName="_OptionalApiMetadataInputs" />
+    </MSBuild>
+    <WriteLinesToFile File="$(TargetDir)OptionalApiMetadataInputs.txt"
+                      Lines="$(MSBuildProjectDirectory)\..\HaulersDream;@(_OptionalApiMetadataInputs)" Overwrite="true" />
+  </Target>
 </Project>

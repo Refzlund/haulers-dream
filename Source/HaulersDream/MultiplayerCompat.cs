@@ -59,6 +59,9 @@ namespace HaulersDream
         internal static bool RefuelRecoveryExecuting => !InMultiplayerGame
             || (refuelRecoveryRegistered && MpHooks.ExecutingCommand());
 
+        private static bool billBatchModeRegistered;
+        internal static bool BillBatchModeAvailable => !InMultiplayerGame || billBatchModeRegistered;
+
         private static bool inventoryQuantityDropRegistered;
         private static bool nearbyHaulRegistered;
         private static bool transporterRegistered;
@@ -129,6 +132,11 @@ namespace HaulersDream
             {
                 Log.Warning("[Hauler's Dream] Inventory quantity drop sync registration failed; "
                     + "this action is unavailable in multiplayer. " + e);
+            }
+            try { billBatchModeRegistered = MpHooks.RegisterBillBatchMode(); }
+            catch (Exception e)
+            {
+                Log.Warning("[Hauler's Dream] Bill batch mode sync unavailable: " + e);
             }
             // Register the remaining small-arity handlers separately from the guarded route commands above.
             // A route registration failure leaves that route unavailable during an active MP session.
@@ -237,6 +245,29 @@ namespace HaulersDream
             HaulersDreamGameComponent.Instance?.SetBatch(bill, on, size);
         }
 
+        /// <summary>Commit an HD batch menu selection as one command, including its native repeat mode.</summary>
+        public static void SetBillBatchMode(Bill_Production bill, BillRepeatModeDef mode, int size)
+        {
+            // A failed optional registration must never fall through to a one-client write.
+            if (InMultiplayerGame && (!billBatchModeRegistered || !MpHooks.ExecutingCommand()))
+                return;
+            // Replay only reads shared bill/bench state. Common Sense's per-client opt-in stays in the menu.
+            var comp = HaulersDreamGameComponent.Instance;
+            if (comp == null || bill?.billStack == null || !bill.billStack.Bills.Contains(bill)
+                || !CraftBatchPlanner.CanBatch(bill) || BillRouteGate.BatchSuppressedByBench(bill)
+                || (mode != BillRepeatModeDefOf.RepeatCount && mode != BillRepeatModeDefOf.TargetCount
+                    && mode != BillRepeatModeDefOf.Forever))
+                return;
+            if (mode == BillRepeatModeDefOf.TargetCount && !bill.recipe.WorkerCounter.CanCountProducts(bill))
+            {
+                if (ShouldShowLocalFeedback)
+                    Messages.Message("RecipeCannotHaveTargetCount".Translate(), MessageTypeDefOf.RejectInput, historical: false);
+                return;
+            }
+            bill.repeatMode = mode;
+            comp.SetBatch(bill, true, size);
+        }
+
         /// <summary>
         /// Complete an accepted plain repeat-mode selection. The original action may already be replaying as
         /// an MP command; in that case the write belongs to that command, not a second nested sync command.
@@ -309,6 +340,9 @@ namespace HaulersDream
             internal static bool RegisterInventoryQuantityDrop() =>
                 MP.RegisterSyncMethod(typeof(InventoryDropCommand),
                     nameof(InventoryDropCommand.DropInventoryCountSynced)) != null;
+
+            internal static bool RegisterBillBatchMode() =>
+                MP.RegisterSyncMethod(typeof(MultiplayerCompat), nameof(SetBillBatchMode)) != null;
 
             internal static void Register()
             {

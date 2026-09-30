@@ -8,7 +8,7 @@ using Verse;
 namespace HaulersDream
 {
     /// <summary>Call-scoped composition before FloatMenu's own sorting, sizing and open sound.</summary>
-    internal static class BillRepeatMenuComposition
+    internal static partial class BillRepeatMenuComposition
     {
         internal sealed class Frame
         {
@@ -17,6 +17,7 @@ namespace HaulersDream
             internal bool Closed, Composing;
             internal readonly HashSet<List<FloatMenuOption>> Outputs = new HashSet<List<FloatMenuOption>>();
             internal readonly HashSet<FloatMenuOption> BatchOptions = new HashSet<FloatMenuOption>();
+            internal readonly HashSet<List<FloatMenuOption>> MultiplayerLists = new HashSet<List<FloatMenuOption>>();
         }
 
         [ThreadStatic] private static Frame current;
@@ -184,7 +185,7 @@ namespace HaulersDream
         {
             try
             {
-                __0 = BillRepeatMenuComposition.Augment(__0);
+                __0 = BillRepeatMenuComposition.ComposeForConstructor(__0);
             }
             catch (Exception e)
             {
