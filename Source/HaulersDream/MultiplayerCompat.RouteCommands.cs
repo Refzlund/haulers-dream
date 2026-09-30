@@ -20,7 +20,10 @@ namespace HaulersDream
                 Messages.Message("HaulersDream.PlanRoute.SyncUnavailable".Translate(), MessageTypeDefOf.RejectInput, historical: false);
         }
 
-        // Explicit delegate construction keeps API-typed compiler cache fields out of the assembly.
+        // Keep optional API types in method bodies only. Startup and other mods inspect method metadata
+        // even without Multiplayer loaded. Delegate contravariance lets the serializer accept object here;
+        // its SyncWorker cast is only JIT-compiled after the active Multiplayer API registers the worker.
+        // Explicit delegate construction also avoids API-typed compiler cache fields.
         private static partial class MpHooks
         {
             internal static bool RegisterOrdinaryRoute()
@@ -29,8 +32,9 @@ namespace HaulersDream
                 return MP.RegisterSyncMethod(typeof(RouteExecutor), nameof(RouteExecutor.ExecuteRouteCommandSynced)) != null;
             }
 
-            private static void SyncOrdinaryRoute(SyncWorker sync, ref RouteCommandArgs args)
+            private static void SyncOrdinaryRoute(object worker, ref RouteCommandArgs args)
             {
+                var sync = (SyncWorker)worker;
                 sync.Bind(ref args.workGiverDefName);
                 sync.Bind(ref args.mode);
                 sync.Bind(ref args.amount);
@@ -58,8 +62,9 @@ namespace HaulersDream
                 return MP.RegisterSyncMethod(typeof(SowRouteExecutor), nameof(SowRouteExecutor.ExecuteSowRouteCommandSynced)) != null;
             }
 
-            private static void SyncSowRoute(SyncWorker sync, ref SowRouteCommandArgs args)
+            private static void SyncSowRoute(object worker, ref SowRouteCommandArgs args)
             {
+                var sync = (SyncWorker)worker;
                 sync.Bind(ref args.anchor);
                 sync.Bind(ref args.mode);
                 sync.Bind(ref args.amount);
@@ -78,8 +83,9 @@ namespace HaulersDream
                 return MP.RegisterSyncMethod(typeof(RemoveFloorRouteExecutor), nameof(RemoveFloorRouteExecutor.ExecuteRemoveFloorRouteCommandSynced)) != null;
             }
 
-            private static void SyncRemoveFloorRoute(SyncWorker sync, ref RemoveFloorRouteCommandArgs args)
+            private static void SyncRemoveFloorRoute(object worker, ref RemoveFloorRouteCommandArgs args)
             {
+                var sync = (SyncWorker)worker;
                 sync.Bind(ref args.anchor);
                 sync.Bind(ref args.mode);
                 sync.Bind(ref args.amount);
