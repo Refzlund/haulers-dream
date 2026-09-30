@@ -861,4 +861,5 @@
   <HaulersDream.UnloadTransporter.Drafted>Отмените призыв этого персонажа, чтобы начать приказ.</HaulersDream.UnloadTransporter.Drafted>
   <HaulersDream.UnloadTransporter.NoStorage>Нет подходящего склада для оставшегося груза.</HaulersDream.UnloadTransporter.NoStorage>
   <HaulersDream.Transporter.SyncUnavailable>Команды транспортников недоступны: не удалось зарегистрировать синхронизацию сетевой игры.</HaulersDream.Transporter.SyncUnavailable>
+  <HaulersDream.PlanRoute.SyncUnavailable>Multiplayer сейчас не может синхронизировать эту команду маршрута. Приказ не был отдан.</HaulersDream.PlanRoute.SyncUnavailable>
 </LanguageData>

@@ -48,7 +48,7 @@ namespace HaulersDream
         /// <summary>
         /// Multiplayer entry point for the remove-floor dialog's Append/Replace buttons — the cell-based sibling of
         /// <see cref="SowRouteExecutor.ExecuteSowRouteSynced"/>. Like that method, the BODY references NO Multiplayer.API
-        /// type and carries NO [SyncMethod] attribute (issue #6); it is registered BY NAME from the MP-gated
+        /// type and carries NO [SyncMethod] attribute (issue #6); its small-arity wrapper is registered by name from the MP-gated
         /// <see cref="MultiplayerCompat"/> shim, so a non-MP game never resolves the unshipped API assembly.
         ///
         /// <para>Args are MP-serializable only: a <see cref="Pawn"/>, an <see cref="IntVec3"/> anchor cell,
@@ -57,6 +57,26 @@ namespace HaulersDream
         /// recompute-on-all-clients lockstep model the Thing/sow routes already use (precomputed is null on this path).</para>
         /// </summary>
         public static void ExecuteRemoveFloorRouteSynced(Pawn pawn, IntVec3 anchor, RemoveFloorRouteMode mode, int amount,
+            int radius, float maxDistance, bool replace, List<IntVec3> mustInclude,
+            HaulersDream.Core.RouteSelectionMethod selectionMethod, int exactMax)
+        {
+            if (MultiplayerCompat.InMultiplayerGame)
+            {
+                if (!MultiplayerCompat.CanSendRemoveFloorRoute) { MultiplayerCompat.RejectRouteCommand(); return; }
+                ExecuteRemoveFloorRouteCommandSynced(pawn, new RemoveFloorRouteCommandArgs { anchor = anchor, mode = mode, amount = amount, radius = radius, maxDistance = maxDistance, replace = replace, mustInclude = mustInclude, selectionMethod = selectionMethod, exactMax = exactMax });
+                return;
+            }
+            ExecuteRemoveFloorRouteLocal(pawn, anchor, mode, amount, radius, maxDistance, replace, mustInclude, selectionMethod, exactMax);
+        }
+
+        // Only this small-arity entry is registered. A direct unsynchronized MP call cannot mutate.
+        internal static void ExecuteRemoveFloorRouteCommandSynced(Pawn pawn, RemoveFloorRouteCommandArgs args)
+        {
+            if (!MultiplayerCompat.RemoveFloorRouteExecuting) return;
+            ExecuteRemoveFloorRouteLocal(pawn, args.anchor, args.mode, args.amount, args.radius, args.maxDistance, args.replace, args.mustInclude, args.selectionMethod, args.exactMax);
+        }
+
+        private static void ExecuteRemoveFloorRouteLocal(Pawn pawn, IntVec3 anchor, RemoveFloorRouteMode mode, int amount,
             int radius, float maxDistance, bool replace, List<IntVec3> mustInclude,
             HaulersDream.Core.RouteSelectionMethod selectionMethod, int exactMax)
         {

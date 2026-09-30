@@ -861,4 +861,5 @@
   <HaulersDream.UnloadTransporter.Drafted>Скасуйте призов цього персонажа, щоб розпочати наказ.</HaulersDream.UnloadTransporter.Drafted>
   <HaulersDream.UnloadTransporter.NoStorage>Немає відповідного складу для решти вантажу.</HaulersDream.UnloadTransporter.NoStorage>
   <HaulersDream.Transporter.SyncUnavailable>Команди транспортників недоступні: не вдалося зареєструвати синхронізацію мережевої гри.</HaulersDream.Transporter.SyncUnavailable>
+  <HaulersDream.PlanRoute.SyncUnavailable>Multiplayer зараз не може синхронізувати цю команду маршруту. Наказ не було віддано.</HaulersDream.PlanRoute.SyncUnavailable>
 </LanguageData>

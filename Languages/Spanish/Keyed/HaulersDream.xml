@@ -861,4 +861,5 @@
   <HaulersDream.UnloadTransporter.Drafted>Desmoviliza a este peón para iniciar esta orden.</HaulersDream.UnloadTransporter.Drafted>
   <HaulersDream.UnloadTransporter.NoStorage>No hay almacenamiento adecuado para la carga restante.</HaulersDream.UnloadTransporter.NoStorage>
   <HaulersDream.Transporter.SyncUnavailable>Las órdenes de transportadores no están disponibles porque no se pudo registrar su sincronización multijugador.</HaulersDream.Transporter.SyncUnavailable>
+  <HaulersDream.PlanRoute.SyncUnavailable>Multiplayer no puede sincronizar esta orden de ruta en este momento. No se ha dado ninguna orden.</HaulersDream.PlanRoute.SyncUnavailable>
 </LanguageData>

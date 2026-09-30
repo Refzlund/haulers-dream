@@ -861,4 +861,5 @@
   <HaulersDream.UnloadTransporter.Drafted>この命令を開始するには徴兵を解除してください。</HaulersDream.UnloadTransporter.Drafted>
   <HaulersDream.UnloadTransporter.NoStorage>残りの貨物に適した保管場所がありません。</HaulersDream.UnloadTransporter.NoStorage>
   <HaulersDream.Transporter.SyncUnavailable>マルチプレイ同期の登録に失敗したため、輸送機の命令を使用できません。</HaulersDream.Transporter.SyncUnavailable>
+  <HaulersDream.PlanRoute.SyncUnavailable>現在、Multiplayerはこのルート指示を同期できません。指示は出されていません。</HaulersDream.PlanRoute.SyncUnavailable>
 </LanguageData>

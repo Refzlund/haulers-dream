@@ -861,4 +861,5 @@
   <HaulersDream.UnloadTransporter.Drafted>이 명령을 시작하려면 징집을 해제하세요.</HaulersDream.UnloadTransporter.Drafted>
   <HaulersDream.UnloadTransporter.NoStorage>남은 화물을 보관할 적절한 저장소가 없습니다.</HaulersDream.UnloadTransporter.NoStorage>
   <HaulersDream.Transporter.SyncUnavailable>멀티플레이 동기화를 등록하지 못해 수송기 명령을 사용할 수 없습니다.</HaulersDream.Transporter.SyncUnavailable>
+  <HaulersDream.PlanRoute.SyncUnavailable>현재 Multiplayer에서 이 경로 명령을 동기화할 수 없습니다. 명령이 내려지지 않았습니다.</HaulersDream.PlanRoute.SyncUnavailable>
 </LanguageData>

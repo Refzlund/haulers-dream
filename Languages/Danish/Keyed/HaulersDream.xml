@@ -861,4 +861,5 @@
   <HaulersDream.UnloadTransporter.Drafted>Ophæv indkaldelsen for at starte denne ordre.</HaulersDream.UnloadTransporter.Drafted>
   <HaulersDream.UnloadTransporter.NoStorage>Intet egnet lager til den resterende last.</HaulersDream.UnloadTransporter.NoStorage>
   <HaulersDream.Transporter.SyncUnavailable>Transporterordrer er utilgængelige, fordi multiplayer-synkroniseringen ikke kunne registreres.</HaulersDream.Transporter.SyncUnavailable>
+  <HaulersDream.PlanRoute.SyncUnavailable>Multiplayer kan ikke synkronisere denne rutekommando lige nu. Ingen ordre blev afgivet.</HaulersDream.PlanRoute.SyncUnavailable>
 </LanguageData>

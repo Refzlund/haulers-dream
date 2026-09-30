@@ -861,4 +861,5 @@
   <HaulersDream.UnloadTransporter.Drafted>Den Kampfeinsatz dieser Figur beenden, um diesen Auftrag zu starten.</HaulersDream.UnloadTransporter.Drafted>
   <HaulersDream.UnloadTransporter.NoStorage>Kein geeignetes Lager für die verbleibende Fracht.</HaulersDream.UnloadTransporter.NoStorage>
   <HaulersDream.Transporter.SyncUnavailable>Transporterbefehle sind nicht verfügbar, da ihre Mehrspieler-Synchronisierung nicht registriert werden konnte.</HaulersDream.Transporter.SyncUnavailable>
+  <HaulersDream.PlanRoute.SyncUnavailable>Multiplayer kann diesen Routenbefehl derzeit nicht synchronisieren. Es wurde kein Auftrag erteilt.</HaulersDream.PlanRoute.SyncUnavailable>
 </LanguageData>

@@ -861,4 +861,5 @@
   <HaulersDream.UnloadTransporter.Drafted>Dispense este peão do combate para iniciar esta ordem.</HaulersDream.UnloadTransporter.Drafted>
   <HaulersDream.UnloadTransporter.NoStorage>Não há armazenamento adequado para a carga restante.</HaulersDream.UnloadTransporter.NoStorage>
   <HaulersDream.Transporter.SyncUnavailable>Os comandos de transportadores estão indisponíveis porque a sincronização multijogador não pôde ser registrada.</HaulersDream.Transporter.SyncUnavailable>
+  <HaulersDream.PlanRoute.SyncUnavailable>O Multiplayer não pode sincronizar este comando de rota no momento. Nenhuma ordem foi emitida.</HaulersDream.PlanRoute.SyncUnavailable>
 </LanguageData>

@@ -20,7 +20,7 @@ namespace HaulersDream
         /// <c>jobQueue.EnqueueLast</c> / <c>ClearQueuedJobs</c> / <c>EndCurrentJob</c>, the lead
         /// <c>TryTakeOrderedJobPrioritizedWork</c>, and the scribed <c>RegisterVeinTracker</c> write — so the dialog
         /// must NOT call <see cref="Execute"/> directly (that runs only on the clicking client → desync). Instead the
-        /// button calls THIS, which the <c>[SyncMethod]</c> attribute turns into a COMMAND replayed identically on
+        /// button calls this API, which sends a typed request through the registered small-arity wrapper on
         /// every client; the designation/job-queue/tracker writes then all run inside synced execution everywhere.
         ///
         /// <para>Args are MP-serializable only (the wire form must be unambiguous): a <see cref="Pawn"/>, a
@@ -32,14 +32,36 @@ namespace HaulersDream
         /// shipped either (not serializable, and shipping a single client's plan would defeat lockstep); we pass
         /// <c>precomputed: null</c> so every client RECOMPUTES the plan deterministically from the same synced state
         /// (<see cref="RoutePlanner"/> reads only synced inputs — verified deterministic). When MP is absent the
-        /// attribute is inert and this just runs <see cref="Execute"/> directly, so single-player is unchanged.</para>
+        /// API keeps its direct local execution path, so single-player is unchanged.</para>
         ///
         /// <para>The method BODY references NO Multiplayer.API type, and it carries NO <c>[SyncMethod]</c> attribute
         /// (which would bake a Multiplayer.API reference into HD's metadata and crash any reflection in a non-MP game —
-        /// issue #6). It is registered by name from the MP-gated <see cref="MultiplayerCompat"/> shim instead, so a
+        /// issue #6). Its small-arity wrapper is registered by name from the MP-gated <see cref="MultiplayerCompat"/> shim, so a
         /// non-MP game never resolves the unshipped API assembly.</para>
         /// </summary>
         public static void ExecuteRouteSynced(Pawn pawn, Thing clicked, string workGiverDefName, RouteMode mode,
+            int amount, int radius, float maxDistance, bool smart, bool allowHarvest, int growthThreshold, bool replace,
+            List<Thing> mustInclude, HaulersDream.Core.RouteSelectionMethod selectionMethod,
+            HaulersDream.Core.RouteDistanceBasis distanceBasis, int exactMax, Thing startNode, Thing endNode,
+            bool alsoBuild, List<IntVec3> roomAnchors, List<ThingDef> extraDefs, bool blightedOnly = false)
+        {
+            if (MultiplayerCompat.InMultiplayerGame)
+            {
+                if (!MultiplayerCompat.CanSendOrdinaryRoute) { MultiplayerCompat.RejectRouteCommand(); return; }
+                ExecuteRouteCommandSynced(pawn, clicked, new RouteCommandArgs { workGiverDefName = workGiverDefName, mode = mode, amount = amount, radius = radius, maxDistance = maxDistance, smart = smart, allowHarvest = allowHarvest, growthThreshold = growthThreshold, replace = replace, mustInclude = mustInclude, selectionMethod = selectionMethod, distanceBasis = distanceBasis, exactMax = exactMax, startNode = startNode, endNode = endNode, alsoBuild = alsoBuild, roomAnchors = roomAnchors, extraDefs = extraDefs, blightedOnly = blightedOnly });
+                return;
+            }
+            ExecuteRouteLocal(pawn, clicked, workGiverDefName, mode, amount, radius, maxDistance, smart, allowHarvest, growthThreshold, replace, mustInclude, selectionMethod, distanceBasis, exactMax, startNode, endNode, alsoBuild, roomAnchors, extraDefs, blightedOnly);
+        }
+
+        // Only this small-arity entry is registered. A direct unsynchronized MP call cannot mutate.
+        internal static void ExecuteRouteCommandSynced(Pawn pawn, Thing clicked, RouteCommandArgs args)
+        {
+            if (!MultiplayerCompat.OrdinaryRouteExecuting) return;
+            ExecuteRouteLocal(pawn, clicked, args.workGiverDefName, args.mode, args.amount, args.radius, args.maxDistance, args.smart, args.allowHarvest, args.growthThreshold, args.replace, args.mustInclude, args.selectionMethod, args.distanceBasis, args.exactMax, args.startNode, args.endNode, args.alsoBuild, args.roomAnchors, args.extraDefs, args.blightedOnly);
+        }
+
+        private static void ExecuteRouteLocal(Pawn pawn, Thing clicked, string workGiverDefName, RouteMode mode,
             int amount, int radius, float maxDistance, bool smart, bool allowHarvest, int growthThreshold, bool replace,
             List<Thing> mustInclude, HaulersDream.Core.RouteSelectionMethod selectionMethod,
             HaulersDream.Core.RouteDistanceBasis distanceBasis, int exactMax, Thing startNode, Thing endNode,

@@ -861,4 +861,5 @@
   <HaulersDream.UnloadTransporter.Drafted>Congeda questo colono per avviare l’ordine.</HaulersDream.UnloadTransporter.Drafted>
   <HaulersDream.UnloadTransporter.NoStorage>Nessun deposito adatto al carico rimanente.</HaulersDream.UnloadTransporter.NoStorage>
   <HaulersDream.Transporter.SyncUnavailable>I comandi dei trasportatori non sono disponibili perché non è stato possibile registrare la sincronizzazione multigiocatore.</HaulersDream.Transporter.SyncUnavailable>
+  <HaulersDream.PlanRoute.SyncUnavailable>Multiplayer non può sincronizzare questo comando di percorso al momento. Non è stato impartito alcun ordine.</HaulersDream.PlanRoute.SyncUnavailable>
 </LanguageData>

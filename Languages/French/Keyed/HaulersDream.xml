@@ -861,4 +861,5 @@
   <HaulersDream.UnloadTransporter.Drafted>Démobilisez ce personnage pour lancer cet ordre.</HaulersDream.UnloadTransporter.Drafted>
   <HaulersDream.UnloadTransporter.NoStorage>Aucun stockage adapté à la cargaison restante.</HaulersDream.UnloadTransporter.NoStorage>
   <HaulersDream.Transporter.SyncUnavailable>Les commandes de transporteur sont indisponibles : leur synchronisation multijoueur n’a pas pu être enregistrée.</HaulersDream.Transporter.SyncUnavailable>
+  <HaulersDream.PlanRoute.SyncUnavailable>Multiplayer ne peut pas synchroniser cette commande de trajet pour le moment. Aucun ordre n’a été donné.</HaulersDream.PlanRoute.SyncUnavailable>
 </LanguageData>

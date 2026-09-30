@@ -861,4 +861,5 @@
   <HaulersDream.UnloadTransporter.Drafted>Hef de oproep van deze kolonist op om deze opdracht te starten.</HaulersDream.UnloadTransporter.Drafted>
   <HaulersDream.UnloadTransporter.NoStorage>Geen geschikte opslag voor de resterende vracht.</HaulersDream.UnloadTransporter.NoStorage>
   <HaulersDream.Transporter.SyncUnavailable>Transporteropdrachten zijn niet beschikbaar omdat multiplayer-synchronisatie niet kon worden geregistreerd.</HaulersDream.Transporter.SyncUnavailable>
+  <HaulersDream.PlanRoute.SyncUnavailable>Multiplayer kan deze routeopdracht momenteel niet synchroniseren. Er is geen opdracht gegeven.</HaulersDream.PlanRoute.SyncUnavailable>
 </LanguageData>

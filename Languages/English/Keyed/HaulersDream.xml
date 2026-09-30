@@ -993,4 +993,5 @@
   <HaulersDream.UnloadTransporter.Drafted>Undraft this pawn to start this order.</HaulersDream.UnloadTransporter.Drafted>
   <HaulersDream.UnloadTransporter.NoStorage>No suitable storage for the remaining cargo.</HaulersDream.UnloadTransporter.NoStorage>
   <HaulersDream.Transporter.SyncUnavailable>Transporter commands are unavailable because multiplayer synchronization could not be registered.</HaulersDream.Transporter.SyncUnavailable>
+  <HaulersDream.PlanRoute.SyncUnavailable>This route cannot be synchronized in multiplayer. Check the mod log for the registration error.</HaulersDream.PlanRoute.SyncUnavailable>
 </LanguageData>

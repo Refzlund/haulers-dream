@@ -861,4 +861,5 @@
   <HaulersDream.UnloadTransporter.Drafted>ยกเลิกการเกณฑ์ตัวละครนี้ก่อนเริ่มคำสั่ง</HaulersDream.UnloadTransporter.Drafted>
   <HaulersDream.UnloadTransporter.NoStorage>ไม่มีที่เก็บที่เหมาะสมสำหรับสินค้าที่เหลือ</HaulersDream.UnloadTransporter.NoStorage>
   <HaulersDream.Transporter.SyncUnavailable>ใช้คำสั่งยานขนส่งไม่ได้ เนื่องจากลงทะเบียนการซิงค์ผู้เล่นหลายคนไม่สำเร็จ</HaulersDream.Transporter.SyncUnavailable>
+  <HaulersDream.PlanRoute.SyncUnavailable>ขณะนี้ Multiplayer ไม่สามารถซิงค์คำสั่งเส้นทางนี้ได้ ยังไม่มีการออกคำสั่ง</HaulersDream.PlanRoute.SyncUnavailable>
 </LanguageData>

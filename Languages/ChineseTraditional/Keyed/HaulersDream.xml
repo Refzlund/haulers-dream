@@ -983,4 +983,5 @@
   <HaulersDream.UnloadTransporter.Drafted>請先解除此角色的徵召，再下達此命令。</HaulersDream.UnloadTransporter.Drafted>
   <HaulersDream.UnloadTransporter.NoStorage>沒有適合剩餘貨物的儲存位置。</HaulersDream.UnloadTransporter.NoStorage>
   <HaulersDream.Transporter.SyncUnavailable>多人同步註冊失敗，運輸器命令無法使用。</HaulersDream.Transporter.SyncUnavailable>
+  <HaulersDream.PlanRoute.SyncUnavailable>多人遊戲目前無法同步此路線命令。未發出任何命令。</HaulersDream.PlanRoute.SyncUnavailable>
 </LanguageData>

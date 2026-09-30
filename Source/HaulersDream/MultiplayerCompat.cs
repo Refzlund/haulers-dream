@@ -37,11 +37,12 @@ namespace HaulersDream
     /// non-MP game and bricks startup (issue #6). Attributes therefore CANNOT be JIT-isolated. We register each
     /// synced method BY NAME inside the MP-gated <see cref="MpHooks.Register"/> instead — exactly equivalent to the
     /// attribute (<c>MP.RegisterAll</c> is just sugar for the same per-method <c>RegisterSyncMethod</c>) but with
-    /// ZERO <c>Multiplayer.API</c> reference in HD's metadata, so no reflection can ever trip over it. Mirrors the
+    /// no MP attributes or API-typed fields on the outer shim. The typed route worker signatures stay in the
+    /// private, MP-gated shim; explicit delegate construction avoids compiler-generated API-typed cache fields. Mirrors the
     /// other <c>*Compat</c> shims: detect once, do nothing when absent.</para>
     /// </summary>
     [StaticConstructorOnStartup]
-    public static class MultiplayerCompat
+    public static partial class MultiplayerCompat
     {
         /// <summary>
         /// Whether RimWorld Multiplayer is loaded. Computed purely from <see cref="ModLister"/> (a Verse type) so
@@ -91,6 +92,12 @@ namespace HaulersDream
             StorageProgressWork.MultiplayerActive = Active;
             if (!Active)
                 return;
+            try { ordinaryRouteRegistered = MpHooks.RegisterOrdinaryRoute(); }
+            catch (Exception e) { Log.Warning("[Hauler's Dream] Planned route sync unavailable: " + e); }
+            try { sowRouteRegistered = MpHooks.RegisterSowRoute(); }
+            catch (Exception e) { Log.Warning("[Hauler's Dream] Planned sow route sync unavailable: " + e); }
+            try { removeFloorRouteRegistered = MpHooks.RegisterRemoveFloorRoute(); }
+            catch (Exception e) { Log.Warning("[Hauler's Dream] Planned floor route sync unavailable: " + e); }
             try { refuelRecoveryRegistered = MpHooks.RegisterRefuelRecovery(); }
             catch (Exception e) { Log.Warning("[Hauler's Dream] Refuel recovery sync unavailable: " + e); }
             try { explicitHaulRegistered = MpHooks.RegisterExplicitHaul(); }
@@ -123,11 +130,8 @@ namespace HaulersDream
                 Log.Warning("[Hauler's Dream] Inventory quantity drop sync registration failed; "
                     + "this action is unavailable in multiplayer. " + e);
             }
-            // Only reached when MP is present, so the API assembly is loaded and MpHooks.Register can resolve its
-            // Multiplayer.API references. Defensive try/catch: a registration fault must never break startup — it
-            // degrades to "MP not wired" (single-player-style direct mutation), which at worst desyncs MP, never
-            // crashes the game. This is the ONE place we accept catching: a failure here is recoverable and
-            // logging it is strictly better than a hard crash on game load.
+            // Register the remaining small-arity handlers separately from the guarded route commands above.
+            // A route registration failure leaves that route unavailable during an active MP session.
             try
             {
                 MpHooks.Register();
@@ -280,7 +284,7 @@ namespace HaulersDream
         /// called → never JIT'd → the unshipped API assembly is never resolved. Do NOT call any member of this
         /// class without first checking <see cref="Active"/>.
         /// </summary>
-        private static class MpHooks
+        private static partial class MpHooks
         {
             internal static bool RegisterRefuelRecovery() =>
                 MP.RegisterSyncMethod(typeof(RefuelRecoveryCommand), nameof(RefuelRecoveryCommand.ResolveSynced)) != null;
@@ -323,9 +327,6 @@ namespace HaulersDream
                 MP.RegisterSyncMethod(typeof(MultiplayerCompat), nameof(SetBillBatchOvershoot));
                 MP.RegisterSyncMethod(typeof(MultiplayerCompat), nameof(SetKeptCount));
                 MP.RegisterSyncMethod(typeof(JobDriver_BatchCraft), nameof(JobDriver_BatchCraft.StartBatchCraftSynced));
-                MP.RegisterSyncMethod(typeof(RouteExecutor), nameof(RouteExecutor.ExecuteRouteSynced));
-                MP.RegisterSyncMethod(typeof(SowRouteExecutor), nameof(SowRouteExecutor.ExecuteSowRouteSynced));
-                MP.RegisterSyncMethod(typeof(RemoveFloorRouteExecutor), nameof(RemoveFloorRouteExecutor.ExecuteRemoveFloorRouteSynced));
             }
 
             internal static bool InMpGame() => MP.IsInMultiplayer;

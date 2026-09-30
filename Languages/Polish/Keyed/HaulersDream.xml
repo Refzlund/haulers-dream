@@ -861,4 +861,5 @@
   <HaulersDream.UnloadTransporter.Drafted>Zdemobilizuj tę postać, aby rozpocząć polecenie.</HaulersDream.UnloadTransporter.Drafted>
   <HaulersDream.UnloadTransporter.NoStorage>Brak odpowiedniego magazynu na pozostały ładunek.</HaulersDream.UnloadTransporter.NoStorage>
   <HaulersDream.Transporter.SyncUnavailable>Polecenia transporterów są niedostępne, ponieważ nie udało się zarejestrować synchronizacji wieloosobowej.</HaulersDream.Transporter.SyncUnavailable>
+  <HaulersDream.PlanRoute.SyncUnavailable>Nie można zsynchronizować tej trasy w trybie wieloosobowym. Sprawdź błąd rejestracji w dzienniku moda.</HaulersDream.PlanRoute.SyncUnavailable>
 </LanguageData>
