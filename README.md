@@ -178,12 +178,12 @@ claim-ledger keeps the count exact), and interrupting one returns its share to t
     stacks into its backpack in a single visit and ships them to storage, so emptying a loaded caravan
     animal is one walk instead of dozens. Combat Extended weight/bulk aware; the carrier stays
     interruptible for roping and caravan-forming. Right-click "Prioritize bulk unloading".
-18. **Refuel** — top up a refuelable — a shuttle's chemfuel, deep drills, generators — in one trip
-    instead of vanilla's one fuel stack carried in hands per walk. It only kicks in when more than one
-    trip's worth of fuel is needed (a single-stack refuel is left to vanilla, which already does it in
-    one go), and reuses vanilla's own fuel finder so it picks exactly the stacks vanilla would. Any
-    fuel swept over what's needed is put away by the normal unload. Right-click "Prioritize bulk
-    refuelling".
+18. **Refuel** — ordinary refuelling uses eligible fuel already carried by the pawn, then gathers
+    only the remaining amount from the ground. Keep quantities and other protected supplies stay
+    with the pawn. Floor-only bulk refuelling combines useful pickups; atomic and specialized
+    refuelling retain their dedicated rules. Right-click "Prioritize bulk refuelling" where available.
+    If a callback interrupts payment, retained fuel stays with the pawn across saves, and recovery
+    controls let you settle the recorded transaction without repeating an uncertain fuel payment.
 19. **Vehicle cargo** *(Vehicle Framework, optional — inert when absent)* — a vehicle's designated
     cargo loads the same way: many stacks in one trip, idle haulers splitting one manifest,
     autonomously the moment you set the cargo, aerial vehicles included. Colonists also eat from and
