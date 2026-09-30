@@ -21,7 +21,8 @@
   <ItemGroup>
     <ProjectReference Include="..\HaulersDream.Core\HaulersDream.Core.csproj" />
     <!-- Inspect the actual compiled mod without loading it into the NUnit test host. -->
-    <ProjectReference Include="..\HaulersDream\HaulersDream.csproj" ReferenceOutputAssembly="false" Private="false" />
+    <ProjectReference Include="..\HaulersDream\HaulersDream.csproj" ReferenceOutputAssembly="false" Private="false"
+                      AdditionalProperties="SkipRimWorldDeploy=true" />
     <Reference Include="Microsoft.CSharp" />
   </ItemGroup>
 
