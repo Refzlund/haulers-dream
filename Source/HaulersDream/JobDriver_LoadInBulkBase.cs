@@ -25,7 +25,7 @@ namespace HaulersDream
     /// labels in its <c>ExposeData</c> (the labels differ per driver and MUST NOT change). The base
     /// <see cref="ExposeData"/> only chains <c>base.ExposeData()</c>.
     /// </summary>
-    public abstract class JobDriver_LoadInBulkBase : JobDriver
+    public abstract partial class JobDriver_LoadInBulkBase : JobDriver
     {
         protected const TargetIndex TargetInd = TargetIndex.A; // primary deposit target
         protected const TargetIndex StackInd = TargetIndex.B;  // scratch: the ground stack being swept
@@ -112,6 +112,7 @@ namespace HaulersDream
                 else
                     HaulersDreamGameComponent.Instance?.LoadClaimCarriedSurplus(pawn, adapter);
                 OnExtraClaim();
+                CaptureStoragePayloadBinding();
             }
         }
 
@@ -120,6 +121,7 @@ namespace HaulersDream
             if (adapter != null)
                 return adapter;
             adapter = BuildLoadable();
+            CaptureStoragePayloadBinding();
             return adapter;
         }
 

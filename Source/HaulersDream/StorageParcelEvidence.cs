@@ -107,6 +107,7 @@ namespace HaulersDream
                 into.Add(new Entry { Subject = thing, Units = units, Held = true });
                 remainingByDef[thing.def] -= units;
             }
+            StorageDirectedLoadPayload.Exclude(pawn, into);
         }
 
         // Each freshly collected list commonly already follows native Thing IDs. Check
