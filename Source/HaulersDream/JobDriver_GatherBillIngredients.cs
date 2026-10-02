@@ -158,11 +158,12 @@ namespace HaulersDream
             if (inventory == null || comp == null) { invalidSelection = true; return; }
             if (!inventory.CanAcceptAnyOf(source, canMergeWithExistingStacks: false)) return;
             var receipts = new List<BillGatherReceipt<Thing>>();
-            var sourceCell = source.Position;
-            var sourceMap = source.Map;
-            Thing split = source.SplitOff(requested);
+            var recovery = new CargoSplitRecovery(pawn, source, requested);
+            Exception failure = null;
             try
             {
+                Thing split = source.SplitOff(requested);
+                recovery.Record(split);
                 // Merge only into explicitly tracked cargo, preserving personal untagged stack ownership.
                 // Snapshot references because callbacks may alter the inventory or tracked set.
                 var recipients = new List<Thing>();
@@ -227,31 +228,19 @@ namespace HaulersDream
                     source.def.soundPickup?.PlayOneShot(new TargetInfo(pawn.Position, pawn.Map));
                 }
             }
-            catch
+            catch (Exception error)
             {
                 invalidSelection = true;
-                throw; // an API failure is not a successful transfer or permission to craft
+                failure = error;
             }
             finally
             {
-                // A rejected add can leave a real detached split. Keep it physically owned even when floor
-                // placement fails; the recipe is invalidated, but tagged inventory still has a recovery path.
-                if (!split.Destroyed && split.holdingOwner == null && !split.Spawned)
-                {
-                    invalidSelection = true;
-                    if (source != split && !source.Destroyed && source.Spawned && source.CanStackWith(split))
-                        source.TryAbsorbStack(split, respectStackLimit: false);
-                    if (!split.Destroyed && split.holdingOwner == null && !split.Spawned
-                        && !GenPlace.TryPlaceThing(split, sourceCell, sourceMap, ThingPlaceMode.Direct)
-                        && !GenPlace.TryPlaceThing(split, pawn.Position, pawn.Map, ThingPlaceMode.Near))
-                    {
-                        if (!inventory.TryAdd(split, canMergeWithExistingStacks: false)
-                            && !pawn.carryTracker.innerContainer.TryAdd(split, canMergeWithExistingStacks: false))
-                            HDLog.Err($"Bill gather could not restore rejected ingredient {split}. job={job.loadID}");
-                    }
-                }
-                if (inventory.Contains(split))
-                { comp.RegisterHauledItem(split); loadedAnything = true; }
+                // The base receipt survives PostSplitOff failures. Do not retry the
+                // merge/placement callback that failed or retake the original remainder.
+                recovery.Finish(ref failure);
+                invalidSelection |= recovery.RecoveredDetached || failure != null;
+                loadedAnything |= recovery.HasInventoryCargo;
+                if (failure != null) System.Runtime.ExceptionServices.ExceptionDispatchInfo.Capture(failure).Throw();
             }
         }
 

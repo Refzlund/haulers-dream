@@ -20,6 +20,10 @@
 
   <ItemGroup>
     <ProjectReference Include="..\HaulersDream.Core\HaulersDream.Core.csproj" />
+    <!-- Exercise the actual split recovery transaction against small owner/callback
+         substitutes; native Harmony dispatch is validated separately in-game. -->
+    <Compile Include="..\HaulersDream\CargoSplitRecovery.cs" Link="Production\CargoSplitRecovery.cs" />
+    <Compile Include="..\HaulersDream\StorageSplitScope.cs" Link="Production\StorageSplitScope.cs" />
     <!-- Inspect the actual compiled mod without loading it into the NUnit test host. -->
     <ProjectReference Include="..\HaulersDream\HaulersDream.csproj" ReferenceOutputAssembly="false" Private="false"
                       AdditionalProperties="SkipRimWorldDeploy=true" />

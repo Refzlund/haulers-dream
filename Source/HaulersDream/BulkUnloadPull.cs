@@ -80,9 +80,25 @@ namespace HaulersDream
                 else count = Math.Min(count, fit);
             }
             ThingOwner destination = movedToHands ? pawn.carryTracker.innerContainer : pawn.inventory.innerContainer;
-            int moved = source.TryTransferToContainer(thing, destination, count, out movedThing, canMergeWithExistingStacks: false);
-            if (moved > 0 && movedThing != null && !movedToHands) cargo.RegisterHauledItem(movedThing);
-            return moved;
+            var recovery = new CargoSplitRecovery(pawn, thing, count, source);
+            Exception failure = null;
+            try
+            {
+                int moved = source.TryTransferToContainer(thing, destination, count, out movedThing,
+                    canMergeWithExistingStacks: false);
+                if (moved > 0 && movedThing != null)
+                {
+                    recovery.Record(movedThing);
+                    if (!movedToHands) cargo.RegisterHauledItem(movedThing);
+                }
+                return moved;
+            }
+            catch (Exception error) { failure = error; throw; }
+            finally
+            {
+                recovery.Finish(ref failure);
+                if (failure != null) System.Runtime.ExceptionServices.ExceptionDispatchInfo.Capture(failure).Throw();
+            }
         }
     }
 }

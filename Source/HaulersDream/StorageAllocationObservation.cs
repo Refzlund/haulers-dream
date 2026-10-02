@@ -120,6 +120,7 @@ namespace HaulersDream
             private IntVec3? activeCell;
             private StorageObservationStop stop;
             private StorageAllocationObservationResult result;
+            private StorageObservationPageBudget pageBudget;
             internal Reader(Map map, ISlotGroup group, IReadOnlyList<StorageAllocationObservationDemand> demands,
                 StorageAllocationObservationLimits limits, IReadOnlyList<IntVec3> preferred, bool selectedCellsOnly = false,
                 Func<SlotGroup, IntVec3, bool> selectedMembership = null)
@@ -163,6 +164,8 @@ namespace HaulersDream
                     Live();
                     phase = "topology";
                     if (!selectedCellsOnly) CopyMembers();
+                    pageBudget = new StorageObservationPageBudget(limits.Predicates, demands.Count,
+                        selectedCellsOnly ? 0 : members.Count);
                     // Existing leases and exact destinations are observed first, before the bounded
                     // ordinary page. A late shelf is not hidden by 200 earlier blocked cells.
                     if (preferred != null)
@@ -268,12 +271,12 @@ namespace HaulersDream
                 {
                     Predicate();
                     if (!selectedMembership(slot, cell)) throw new ObservationChanged();
-                    topology.Add(() => selectedMembership(slot, cell));
-                    AddCell(slot, cell);
+                    if (AddCell(slot, cell)) topology.Add(() => selectedMembership(slot, cell));
                     return;
                 }
                 // Native building footprints are an O(1) membership witness. A zone list must be
                 // inspected within the work bound; the map registration alone is not its membership.
+                Func<bool> membershipGuard = null;
                 if (slot.parent is Building_Storage building && building.GetType() == typeof(Building_Storage))
                 {
                     if (!building.OccupiedRect().Contains(cell)) throw new ObservationChanged();
@@ -285,13 +288,14 @@ namespace HaulersDream
                     GridWork(list.Count);
                     if (!list.Contains(cell)) throw new ObservationChanged();
                     var guard = new ProjectionListGuard<IntVec3>(list);
-                    topology.Add(() => ReferenceEquals(slot.parent.GetSlotGroup(), slot)
-                        && ReferenceEquals(Canonical(slot), group) && guard.Matches(slot.CellsList));
+                    membershipGuard = () => ReferenceEquals(slot.parent.GetSlotGroup(), slot)
+                        && ReferenceEquals(Canonical(slot), group) && guard.Matches(slot.CellsList);
                 }
-                AddCell(slot, cell);
+                if (AddCell(slot, cell) && membershipGuard != null) topology.Add(membershipGuard);
             }
             private void CopyPage()
             {
+                int inspected = 0;
                 for (int ordinal = 0; ordinal < members.Count; ordinal++)
                 {
                     int member = limits.StartMember + ordinal;
@@ -309,6 +313,13 @@ namespace HaulersDream
                     {
                         var position = source[i];
                         activeCell = position;
+                        if (inspected >= limits.Cells)
+                        {
+                            complete = false; nextMember = member; nextCell = i;
+                            stop = new StorageObservationStop(StorageObservationLimit.Cells, phase, position, 1, 0);
+                            return;
+                        }
+                        inspected++;
                         Predicate();
                         if (seen.Contains(position)) continue;
                         if (owned.Count >= limits.Cells)
@@ -319,19 +330,34 @@ namespace HaulersDream
                         }
                         if (!position.InBounds(map) || !ReferenceEquals(map.haulDestinationManager.SlotGroupAt(position), slot))
                             throw new ObservationChanged();
+                        // An unaffordable dense cell must not hide a later cheap one. This
+                        // scan itself is bounded above, independently of retained cells.
                         AddCell(slot, position);
                     }
                 }
             }
             private static readonly IntVec3 nullCell = IntVec3.Invalid;
-            private void AddCell(SlotGroup slot, IntVec3 position)
+            private bool AddCell(SlotGroup slot, IntVec3 position)
             {
                 StorageProgressWork.Charge(StorageWorkKind.Topology);
-                if (seen.Contains(position)) return;
+                if (seen.Contains(position)) return true;
                 if (owned.Count >= limits.Cells) Exhausted(StorageObservationLimit.Cells, 1, 0);
+                // A full 200-cell page can exhaust its predicate allowance on ordinary
+                // incoming cargo alone. Keep a smaller fresh page, rather than repeatedly
+                // failing halfway through eligibility and discarding every positive edge.
+                // Read only the raw list count here; physical and policy certification is
+                // still performed below, with the unchanged hard counters and guards.
+                if (!pageBudget.TryInclude(map.thingGrid.ThingsListAt(position).Count, predicates))
+                {
+                    complete = false;
+                    stop = new StorageObservationStop(StorageObservationLimit.Cells,
+                        "predicate-page", position, 1, 0);
+                    return false;
+                }
                 seen.Add(position);
                 owned.Add(new OwnedCell { Position = position, Slot = slot, Key = CellKey(map, slot.parent, position),
                     ParentGuard = slot.parent is Thing parentThing ? new ProjectionThingGuard(parentThing) : null });
+                return true;
             }
 
             private void ObservePhysical(OwnedCell cell)
