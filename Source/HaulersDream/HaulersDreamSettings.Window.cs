@@ -101,7 +101,13 @@ namespace HaulersDream
 
         private static SettingsCat currentCat = SettingsCat.Features;
         private static Vector2 contentScroll;
-        private static Vector2 helpScroll;
+        // Profile capture includes private instance fields: these window-lifetime values are never settings.
+        [System.NonSerialized] private Vector2 helpScroll;
+        [System.NonSerialized] private System.WeakReference<Window> helpWindow;
+        [System.NonSerialized] private readonly SettingsHelpState helpState = new SettingsHelpState();
+        [System.NonSerialized] private (int category, string query)? helpContext;
+        [System.NonSerialized] private (float width, float scale, LoadedLanguage language, bool tiny, int conditions, bool foreignGather)? layoutContext;
+        [System.NonSerialized] private bool settingsForeignGatherNote;
         // Per-category measured content height (seeded large so the first view of a page never under-sizes the
         // scroll viewport; replaced by the true measured height after the first draw and then stable).
         private static readonly float[] catHeight =
@@ -248,9 +254,65 @@ namespace HaulersDream
             var helpRect = new Rect(contentRect.xMax + gap, body.y, helpW, body.height);
 
             DrawSearchBox(searchRect);
+            BeginSettingsHelpEvent(win, contentRect.width - ContentScrollbarW - ContentRightGutter);
             DrawNav(navRect);
             DrawContent(contentRect);
+            // Navigate may have changed category/query while the old search traversal was still running.
+            // Discard that event's offers; the next real traversal supplies the new context's control payloads.
+            CheckHelpContext();
             DrawHelp(helpRect);
+        }
+
+
+        private void InvalidateSettingsLayout()
+        {
+            searchRegistry = null;
+            scoredResults = null;
+            scoredForQuery = null;
+            groupedResults = null;
+            pendingNav = null;
+            highlightTarget = null;
+            searchResultsHeight = 1700f;
+            for (int i = 0; i < catHeight.Length; i++) catHeight[i] = 1700f;
+            helpState.Clear();
+        }
+
+        private void BeginSettingsHelpEvent(Window window, float contentWidth)
+        {
+            if (helpWindow == null || !helpWindow.TryGetTarget(out var previousWindow)
+                || !ReferenceEquals(previousWindow, window))
+            {
+                helpWindow = new System.WeakReference<Window>(window);
+                layoutContext = null;
+                helpContext = null;
+                helpScroll = Vector2.zero;
+            }
+            // Only facts already used by DrawCat determine its shape. One live gather-option read per event
+            // also observes a paused Common Sense settings change; the DrawCat pass reuses this decision.
+            settingsForeignGatherNote = GatherNotice.Current == BenchGatherNotice.ForeignModGathers;
+            int conditions = (VehicleFrameworkCompat.IsActive ? 1 : 0)
+                | (StorageNetworkCompat.IsActive ? 2 : 0) | (CommonSenseCompat.IsActive ? 4 : 0)
+                | (ModsConfig.OdysseyActive ? 8 : 0) | (Prefs.DevMode ? 16 : 0)
+                | (ModReplacements.AnyActive ? 32 : 0);
+            var next = (width: contentWidth, scale: Prefs.UIScale, language: LanguageDatabase.activeLanguage,
+                tiny: Text.TinyFontSupported, conditions: conditions, foreignGather: settingsForeignGatherNote);
+            if (!layoutContext.HasValue || !layoutContext.Value.Equals(next))
+            {
+                layoutContext = next;
+                InvalidateSettingsLayout();
+            }
+            CheckHelpContext();
+            helpState.BeginEvent();
+        }
+
+        private void CheckHelpContext()
+        {
+            var next = ((int)currentCat, searchQuery ?? "");
+            if (!helpContext.HasValue || !helpContext.Value.Equals(next))
+            {
+                helpContext = next;
+                helpState.Clear();
+            }
         }
 
         // The profile dropdown: apply a saved profile, reset to the built-in Default, save changes to the active
@@ -428,6 +490,8 @@ namespace HaulersDream
 
             if (Mouse.IsOver(row))
                 HDSettingsUI.SetHelp(cd.nameKey.Translate(), cd.helpKey.Translate());
+            helpState.Offer(new SettingsHelpKey((int)cd.cat, -1), cd.nameKey.Translate(), cd.helpKey.Translate(),
+                null, Color.white, null, Mouse.IsOver(row));
             if (Widgets.ButtonInvisible(row))
             {
                 currentCat = cd.cat;
@@ -492,6 +556,8 @@ namespace HaulersDream
 
             if (over)
                 HDSettingsUI.SetHelp("HaulersDream.Report.NavLabel".Translate(), "HaulersDream.Report.NavLabel.Help".Translate());
+            helpState.Offer(new SettingsHelpKey(-1, -2), "HaulersDream.Report.NavLabel".Translate(),
+                "HaulersDream.Report.NavLabel.Help".Translate(), null, Color.white, null, over);
             if (Widgets.ButtonInvisible(row))
                 Find.WindowStack.Add(new Dialog_MyReports());
         }
@@ -555,17 +621,21 @@ namespace HaulersDream
 
             var view = new Rect(0f, 0f, rect.width - ContentScrollbarW, Mathf.Max(catHeight[idx], rect.height));
             Widgets.BeginScrollView(rect, ref contentScroll, view);
-            var c = new SettingsCtx(view.width - ContentRightGutter);
-            c.Gap(2f);
-            DrawCat(c, currentCat);
-            catHeight[idx] = c.CurY + 8f;
+            try
+            {
+                var c = new SettingsCtx(view.width - ContentRightGutter)
+                    { CurrentCatId = idx, Help = helpState };
+                c.Gap(2f);
+                DrawCat(c, currentCat);
+                catHeight[idx] = c.CurY + 8f;
 
-            // Highlight flash on the just-navigated control. Drawn INSIDE the scroll view (view-local coords) AFTER
-            // the tab content so it overlays the real control. startY/height were stashed at navigate (the registry
-            // is nulled then). Blink-then-fade over 1.5s; cleared when done.
-            DrawNavHighlight(view, idx);
+                // Highlight flash on the just-navigated control. Drawn INSIDE the scroll view (view-local coords) AFTER
+                // the tab content so it overlays the real control. startY/height were stashed at navigate (the registry
+                // is nulled then). Blink-then-fade over 1.5s; cleared when done.
+                DrawNavHighlight(view, idx);
 
-            Widgets.EndScrollView();
+            }
+            finally { Widgets.EndScrollView(); }
         }
 
         // Build the collect-mode registry: a layout-only pass over every searchable tab (Migration excluded) using
@@ -706,6 +776,8 @@ namespace HaulersDream
         private void DrawSearchResults(Rect rect)
         {
             var results = scoredResults;
+            string renderingQuery = searchQuery;
+            SettingsCat renderingCategory = currentCat;
             float pad = 6f;
             float contentW = rect.width - ContentScrollbarW - ContentRightGutter;
 
@@ -747,51 +819,56 @@ namespace HaulersDream
                 Mathf.Max(searchResultsHeight, rect.height));
             Widgets.BeginScrollView(rect, ref contentScroll, view);
 
-            // One shared layout cursor over the SAME content width as the real tab draw, so the filtered controls land
-            // at identical x/width (input lands at the drawn rects).
-            var c = new SettingsCtx(view.width - ContentRightGutter);
-            c.Gap(pad);
-
-            for (int gi = 0; gi < groups.Count; gi++)
+            try
             {
-                var g = groups[gi];
-                // Generous breathing room between sections — more than the normal 32px Header gap — so the top
-                // results stand out. A lighter lead-in before the very first group; a wider gap between sections.
-                c.Gap(gi == 0 ? 22f : 40f);
+                // One shared layout cursor over the SAME content width as the real tab draw, so the filtered controls land
+                // at identical x/width (input lands at the drawn rects).
+                var c = new SettingsCtx(view.width - ContentRightGutter) { Help = helpState };
+                c.Gap(pad);
 
-                DrawResultSectionHeader(c, g);
-                c.Gap(10f); // pad below the section header before its controls
+                for (int gi = 0; gi < groups.Count; gi++)
+                {
+                    var g = groups[gi];
+                    // Generous breathing room between sections — more than the normal 32px Header gap — so the top
+                    // results stand out. A lighter lead-in before the very first group; a wider gap between sections.
+                    c.Gap(gi == 0 ? 22f : 40f);
 
-                // Re-draw the tab filtered to ONLY this group's matching ordinals: the real, editable bindings run.
-                c.RenderOrdinals = g.Ordinals;
-                c.Ordinal = 0;
-                c.CurrentCatId = g.CatId;
-                DrawCat(c, (SettingsCat)g.CatId);
-                c.RenderOrdinals = null; // never leaks into a normal draw
+                    DrawResultSectionHeader(c, g);
+                    if (searchQuery != renderingQuery || currentCat != renderingCategory)
+                        return;
+                    c.Gap(10f); // pad below the section header before its controls
+
+                    // Re-draw the tab filtered to ONLY this group's matching ordinals: the real, editable bindings run.
+                    c.RenderOrdinals = g.Ordinals;
+                    c.Ordinal = 0;
+                    c.CurrentCatId = g.CatId;
+                    DrawCat(c, (SettingsCat)g.CatId);
+                    c.RenderOrdinals = null; // never leaks into a normal draw
+                }
+
+                // Capped results: a foot note telling the user the view is showing only the top matches, so they can
+                // refine to reach the rest (the cap is what keeps a broad query's per-frame draw cheap, see
+                // MaxSearchResults). Only when the query actually matched more than the cap.
+                if (scoredTotal > scoredResults.Count)
+                {
+                    c.Gap(24f);
+                    string more = "HaulersDream.Search.More".Translate(scoredResults.Count);
+                    var pf = Text.Font;
+                    var pa = Text.Anchor;
+                    var pcol = GUI.color;
+                    Text.Font = GameFont.Small;
+                    var mr = c.Row(Mathf.Max(Text.LineHeightOf(GameFont.Small), Text.CalcHeight(more, c.Width)));
+                    Text.Anchor = TextAnchor.MiddleCenter;
+                    GUI.color = new Color(0.72f, 0.72f, 0.76f);
+                    Widgets.Label(mr, more);
+                    Text.Font = pf;
+                    Text.Anchor = pa;
+                    GUI.color = pcol;
+                }
+
+                searchResultsHeight = c.CurY + pad;
             }
-
-            // Capped results: a foot note telling the user the view is showing only the top matches, so they can
-            // refine to reach the rest (the cap is what keeps a broad query's per-frame draw cheap, see
-            // MaxSearchResults). Only when the query actually matched more than the cap.
-            if (scoredTotal > scoredResults.Count)
-            {
-                c.Gap(24f);
-                string more = "HaulersDream.Search.More".Translate(scoredResults.Count);
-                var pf = Text.Font;
-                var pa = Text.Anchor;
-                var pcol = GUI.color;
-                Text.Font = GameFont.Small;
-                var mr = c.Row(Mathf.Max(Text.LineHeightOf(GameFont.Small), Text.CalcHeight(more, c.Width)));
-                Text.Anchor = TextAnchor.MiddleCenter;
-                GUI.color = new Color(0.72f, 0.72f, 0.76f);
-                Widgets.Label(mr, more);
-                Text.Font = pf;
-                Text.Anchor = pa;
-                GUI.color = pcol;
-            }
-
-            searchResultsHeight = c.CurY + pad;
-            Widgets.EndScrollView();
+            finally { Widgets.EndScrollView(); }
         }
 
         // Cached measured height of the current search-results layout (seeded large so the first frame never
@@ -840,6 +917,9 @@ namespace HaulersDream
             if (Mouse.IsOver(r))
                 HDSettingsUI.SetHelp(cd.nameKey.Translate(),
                     g.Header.NullOrEmpty() ? cd.helpKey.Translate().ToString() : g.Header);
+            helpState.Offer(new SettingsHelpKey(g.CatId, -3, g.Best.Ordinal), cd.nameKey.Translate(),
+                g.Header.NullOrEmpty() ? cd.helpKey.Translate().ToString() : g.Header,
+                null, Color.white, null, Mouse.IsOver(r));
             if (Widgets.ButtonInvisible(r))
                 Navigate(g.Best);
         }
@@ -887,68 +967,73 @@ namespace HaulersDream
 
         private void DrawHelp(Rect rect)
         {
-            // No panel background/outline (clean look). Title, a coloured status line, an optional graph, and the
-            // description are ALL drawn inside ONE scroll view, so nothing can clip regardless of text length.
+            var category = cats[(int)currentCat];
+            var doc = helpState.Resolve(new SettingsHelpDocument(new SettingsHelpKey((int)currentCat, -1),
+                category.nameKey.Translate(), category.helpKey.Translate(), null, Color.white, null));
+            if (helpState.TakeScrollReset()) helpScroll = Vector2.zero;
             var inner = rect.ContractedBy(12f);
-            string title = HDSettingsUI.HoverTitle ?? cats[(int)currentCat].nameKey.Translate();
-            string bodyText = HDSettingsUI.HoverBody ?? cats[(int)currentCat].helpKey.Translate();
-            string status = HDSettingsUI.HoverStatus;
-            var graph = HDSettingsUI.HoverExtra;
-
-            var f = Text.Font;
-            var col = GUI.color;
-            float w = inner.width - 16f; // reserve the scrollbar
-
+            float w = inner.width - 16f;
             const float graphHeight = 132f;
-            Text.Font = GameFont.Small;
-            float titleH = Text.CalcHeight(title, w);
-            Text.Font = GameFont.Tiny;
-            float statusH = status.NullOrEmpty() ? 0f : Text.CalcHeight(status, w);
-            Text.Font = GameFont.Small;
-            float bodyH = bodyText.NullOrEmpty() ? 0f : Text.CalcHeight(bodyText, w);
-            float graphH = graph != null ? graphHeight : 0f;
-
-            float total = titleH
-                + (statusH > 0f ? statusH + 2f : 0f)
-                + 8f
-                + (graphH > 0f ? graphH + 10f : 0f)
-                + bodyH;
-            var view = new Rect(0f, 0f, w, Mathf.Max(total, inner.height));
-            Widgets.BeginScrollView(inner, ref helpScroll, view);
-            float y = 0f;
-
-            Text.Font = GameFont.Small;
-            GUI.color = new Color(0.95f, 0.86f, 0.62f); // soft accent for the title
-            Widgets.Label(new Rect(0f, y, w, titleH), title);
-            y += titleH;
-            GUI.color = col;
-
-            if (statusH > 0f)
+            var font = Text.Font;
+            var anchor = Text.Anchor;
+            bool wrap = Text.WordWrap;
+            var color = GUI.color;
+            try
             {
-                y += 2f;
-                Text.Font = GameFont.Tiny;
-                GUI.color = HDSettingsUI.HoverStatusColor;
-                Widgets.Label(new Rect(0f, y, w, statusH), status);
-                y += statusH;
-                GUI.color = col;
-            }
-            y += 8f;
-
-            if (graphH > 0f)
-            {
-                graph(new Rect(0f, y, w, graphHeight));
-                y += graphHeight + 10f;
-            }
-
-            if (bodyH > 0f)
-            {
+                Text.Anchor = TextAnchor.UpperLeft;
+                Text.WordWrap = true;
                 Text.Font = GameFont.Small;
-                Widgets.Label(new Rect(0f, y, w, bodyH), bodyText);
+                float titleH = doc.Title.NullOrEmpty() ? 0f : Mathf.Ceil(Text.CalcHeight(doc.Title, w));
+                Text.Font = GameFont.Tiny;
+                float statusH = doc.Status.NullOrEmpty() ? 0f : Mathf.Ceil(Text.CalcHeight(doc.Status, w));
+                Text.Font = GameFont.Small;
+                float bodyH = doc.Body.NullOrEmpty() ? 0f : Mathf.Ceil(Text.CalcHeight(doc.Body, w));
+                float graphH = doc.Extra != null ? graphHeight : 0f;
+                float total = titleH + (statusH > 0f ? statusH + 2f : 0f) + 8f
+                    + (graphH > 0f ? graphH + 10f : 0f) + bodyH;
+                var view = new Rect(0f, 0f, w, Mathf.Max(total, inner.height));
+                Widgets.BeginScrollView(inner, ref helpScroll, view);
+                try
+                {
+                    float y = 0f;
+                    Text.Font = GameFont.Small;
+                    GUI.color = new Color(0.95f, 0.86f, 0.62f);
+                    if (titleH > 0f) Widgets.Label(new Rect(0f, y, w, titleH), doc.Title);
+                    y += titleH;
+                    GUI.color = color;
+                    if (statusH > 0f)
+                    {
+                        y += 2f;
+                        Text.Font = GameFont.Tiny;
+                        GUI.color = doc.StatusColor;
+                        Widgets.Label(new Rect(0f, y, w, statusH), doc.Status);
+                        y += statusH;
+                        GUI.color = color;
+                    }
+                    y += 8f;
+                    if (graphH > 0f)
+                    {
+                        doc.Extra(new Rect(0f, y, w, graphHeight));
+                        y += graphHeight + 10f;
+                    }
+                    if (bodyH > 0f)
+                    {
+                        Text.Font = GameFont.Small;
+                        Text.Anchor = TextAnchor.UpperLeft;
+                        Text.WordWrap = true;
+                        GUI.color = color;
+                        Widgets.Label(new Rect(0f, y, w, bodyH), doc.Body);
+                    }
+                }
+                finally { Widgets.EndScrollView(); }
             }
-
-            Widgets.EndScrollView();
-            GUI.color = col;
-            Text.Font = f;
+            finally
+            {
+                GUI.color = color;
+                Text.Font = font;
+                Text.Anchor = anchor;
+                Text.WordWrap = wrap;
+            }
         }
 
         // A small line graph of move-speed multiplier (y) vs carry weight (x, % of max capacity) for the current
@@ -1088,6 +1173,7 @@ namespace HaulersDream
             HDSettingsUI.Header(c, "HaulersDream.FeatGroup.Loading".Translate());
             enableBulkUnloadCarriers = Card(c, SettingsCat.BulkLoading, "HaulersDream.Feat.UnloadCarriers", enableBulkUnloadCarriers, "HaulersDream.Setting.EnableBulkUnloadCarriersDesc");
             enableBulkLoadTransporters = Card(c, SettingsCat.BulkLoading, "HaulersDream.Feat.LoadTransporters", enableBulkLoadTransporters, "HaulersDream.Setting.EnableBulkLoadTransportersDesc");
+            enableBulkUnloadTransporters = Card(c, SettingsCat.BulkLoading, "HaulersDream.Feat.UnloadTransporters", enableBulkUnloadTransporters, "HaulersDream.Setting.EnableBulkUnloadTransportersDesc");
             enableBulkLoadPortal = Card(c, SettingsCat.BulkLoading, "HaulersDream.Feat.LoadPortal", enableBulkLoadPortal, "HaulersDream.Setting.EnableBulkLoadPortalDesc");
             enableBulkRefuel = Card(c, SettingsCat.BulkLoading, "HaulersDream.Feat.Refuel", enableBulkRefuel, "HaulersDream.Setting.EnableBulkRefuelDesc");
             if (VehicleFrameworkCompat.IsActive)
@@ -1334,7 +1420,7 @@ namespace HaulersDream
             // here, where the player comes to turn it off, rather than letting them conclude the settings are
             // broken. Only the foreign-gatherer caveat belongs on this tab: the "HD's own gather is switched off"
             // caveat that the per-bench button also shows would just restate the checkbox sitting right above it.
-            if (GatherNotice.Current == BenchGatherNotice.ForeignModGathers)
+            if (settingsForeignGatherNote)
                 HDSettingsUI.Note(c, GatherNotice.Text(BenchGatherNotice.ForeignModGathers), indent: 24f);
             // Deliberately TOP-LEVEL — no `enabled:` gate and no indent, even though it sits under the gather
             // settings it relates to (issue #230). The per-bench switch also governs BATCH gathering, and the batch
@@ -1379,18 +1465,20 @@ namespace HaulersDream
                 enableBulkUnloadCarriers, "HaulersDream.Setting.EnableBulkUnloadCarriersDesc".Translate());
             minFreeSpaceToUnloadCarrierPct = Mathf.Round(HDSettingsUI.Slider(c, "HaulersDream.Setting.MinFreeSpaceToUnloadCarrier.Lab".Translate(),
                 minFreeSpaceToUnloadCarrierPct, 0.1f, 0.9f, minFreeSpaceToUnloadCarrierPct.ToStringPercent(),
-                "HaulersDream.Setting.MinFreeSpaceToUnloadCarrier.Help".Translate(), enabled: enableBulkUnloadCarriers, indent: 24f) * 20f) / 20f;
+                "HaulersDream.Setting.MinFreeSpaceToUnloadCarrier.Help".Translate(), enabled: enableBulkUnloadCarriers || enableBulkUnloadTransporters, indent: 24f) * 20f) / 20f;
             reserveCarrierOnUnload = HDSettingsUI.Checkbox(c, "HaulersDream.Setting.ReserveCarrierOnUnload".Translate(),
                 reserveCarrierOnUnload, "HaulersDream.Setting.ReserveCarrierOnUnloadDesc".Translate(), enabled: enableBulkUnloadCarriers, indent: 24f);
             visualUnloadDelay = Mathf.RoundToInt(HDSettingsUI.Slider(c, "HaulersDream.Setting.VisualUnloadDelay.Lab".Translate(),
                 visualUnloadDelay, 0f, 30f, string.Format("~{0:0.0}s", visualUnloadDelay / 60f),
-                "HaulersDream.Setting.VisualUnloadDelay.Help".Translate(), enabled: enableBulkUnloadCarriers, indent: 24f));
+                "HaulersDream.Setting.VisualUnloadDelay.Help".Translate(), enabled: enableBulkUnloadCarriers || enableBulkUnloadTransporters, indent: 24f));
             loadPackAnimalBulk = HDSettingsUI.Checkbox(c, "HaulersDream.Setting.LoadPackAnimalBulk".Translate(),
                 loadPackAnimalBulk, "HaulersDream.Setting.LoadPackAnimalBulkDesc".Translate());
             autoDivertToPackAnimal = HDSettingsUI.Checkbox(c, "HaulersDream.Setting.AutoDivertToPackAnimal".Translate(),
                 autoDivertToPackAnimal, "HaulersDream.Setting.AutoDivertToPackAnimalDesc".Translate());
 
             HDSettingsUI.Header(c, "HaulersDream.Head.Transporters".Translate());
+            enableBulkUnloadTransporters = HDSettingsUI.Checkbox(c, "HaulersDream.Setting.EnableBulkUnloadTransporters".Translate(),
+                enableBulkUnloadTransporters, "HaulersDream.Setting.EnableBulkUnloadTransportersDesc".Translate());
             enableBulkLoadTransporters = HDSettingsUI.Checkbox(c, "HaulersDream.Setting.EnableBulkLoadTransporters".Translate(),
                 enableBulkLoadTransporters, "HaulersDream.Setting.EnableBulkLoadTransportersDesc".Translate());
             bulkLoadAiUpdateFrequency = Mathf.RoundToInt(HDSettingsUI.Slider(c, "HaulersDream.Setting.BulkLoadAiUpdateFrequency.Lab".Translate(),

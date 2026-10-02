@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ModMetaData>
+  <name>Hauler's Dream runtime test harness</name>
+  <author>Hauler's Dream contributors</author>
+  <packageId>giwaffed.HaulersDream.RuntimeHarness</packageId>
+  <supportedVersions><li>1.6</li></supportedVersions>
+  <loadAfter><li>giwaffed.HaulersDream</li><li>avilmask.CommonSense</li></loadAfter>
+  <description>Test-only bootstrap for an explicitly isolated runtime. Never distribute with the mod or enable in an actual colony.</description>
+</ModMetaData>

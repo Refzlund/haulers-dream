@@ -57,16 +57,52 @@ const COMMIT_SITES: { file: string; why: string }[] = [
 		why: 'the seam itself — the janitor adoption pass and the only writer of the ledger field'
 	},
 	{
+		file: 'StorageCommitments.ExplicitShelf.cs',
+		why: 'current explicit shelf trip: native exclusive cell reservation stored in the same ledger; no second group subtraction'
+	},
+	{
+		file: 'StorageCommitments.NativeReceipt.cs',
+		why: 'immutable exact native admission and physical receipt settlement in the authoritative ledger'
+	},
+	{
+		file: 'StorageCommitments.NativeLifecycle.cs',
+		why: 'load reconstruction from actual current native jobs and saved reservations; retire only expired native activation owners'
+	},
+	{
+		file: 'StorageCommitments.BulkLifecycle.cs',
+		why: 'actual reserved bulk parcels and witnessed inventory receipts share the authoritative claim ledger'
+	},
+	{
+		file: 'StorageCommitments.ForcedAdmission.cs',
+		why: 'actual forced primary activation transfers only recognized automatic pending portions after final ownership and policy guards; exact incoming-token cleanup preserves held and unrelated owners'
+	},
+	{
+		file: 'StorageCommitments.ResourceReconcile.cs',
+		why: 'exact held-cargo attribution, load reconstruction and residual custody in the same ledger; delivery still requires fresh admission, with no adoption from unpicked reservations'
+	},
+	{
+		file: 'StorageCommitments.UnloadTransfer.cs',
+		why: 'ordinary unload transfers exact source portions to witnessed hands or retained descendants; load restores proven hands before admission'
+	},
+	{
+		file: 'NativeStoragePickup.cs',
+		why: 'native duplicate sources are admitted at actual pickup; transfer receipts reconcile real hands'
+	},
+	{
 		file: 'HaulToStack.cs',
 		why: 'Patch_JobDriver_HaulToCell_NoCellReservation — every vanilla HaulMode.ToCellStorage haul'
 	},
 	{
 		file: 'JobDriver_BulkHaul.cs',
-		why: "TryMakePreToilReservations — the bulk sweep's planned destinations, per def"
+		why: 'actual activation and per-source pickup admission; exact physical recipient transfer receipts'
 	},
 	{
 		file: 'JobDriver_UnloadHauledInventory.cs',
 		why: 'the delivery and home-area-fallback placements'
+	},
+	{
+		file: 'JobDriver_UnloadTransporterInBulk.cs',
+		why: 'owned transporter cargo delivery; actual hands are counted by StorageEvidence and destination uses the shared gate'
 	}
 ]
 
@@ -78,6 +114,10 @@ const COMMIT_SITES: { file: string; why: string }[] = [
 const COMMIT_CALLS = [
 	'StorageCommitments.Commit(',
 	'StorageCommitments.TryCommit(',
+	'StorageCommitments.CommitNativeResource(',
+	'StorageCommitments.SettleNativePickup(',
+	'StorageCommitments.AdmitBulkParcel(',
+	'StorageCommitments.BeginBulkTransfer(',
 	'HaulersDreamGameComponent.SetStorageClaims(',
 	'HaulersDreamGameComponent.ClearStorageClaims('
 ]
@@ -117,9 +157,20 @@ const BARE_LEDGER_CALLS = ['SetStorageClaims(', 'ClearStorageClaims(']
  * nobody reads is what this whole phase exists to stop relying on.
  */
 const SEAM_TRIPWIRE = [
+	{ method: 'DoSingleTick', patchClass: 'Patch_StorageLoadBeforeTick' },
+	{ method: 'TryFindBestBetterStoreCellFor', patchClass: 'Patch_StorageQuery_SearchScope' },
+	{ method: 'TryFindBestBetterStoreCellForIn', patchClass: 'Patch_StorageQuery_GroupSearchScope' },
+	{ method: 'HaulToCellStorageJob', patchClass: 'Patch_StorageQuery_FactoryScope' },
 	{ method: 'HaulToCellStorageJob', patchClass: 'Patch_HaulToCellStorageJob_ClampToCommitments' },
 	{ method: 'IsGoodStoreCell', patchClass: 'Patch_IsGoodStoreCell_HonourCommitments' },
-	{ method: 'TryMakePreToilReservations', patchClass: 'Patch_JobDriver_HaulToCell_NoCellReservation' }
+	{ method: 'TryMakePreToilReservations', patchClass: 'Patch_JobDriver_HaulToCell_NoCellReservation' },
+	{ method: 'CheckForGetOpportunityDuplicate', patchClass: 'Patch_NativeStorageDuplicate_Admission' },
+	{ method: 'StartCarryThing', patchClass: 'Patch_NativeStorageCarryToil_Admission' },
+	{ method: 'TryStartCarry', patchClass: 'Patch_NativeStorageActualPickup_Admission' },
+	{ method: 'SplitOff', patchClass: 'Patch_BulkStorageSplitReceipt' },
+	{ method: 'SplitOff', patchClass: 'Patch_StorageSplitReceipt' },
+	{ method: 'TryAdd', patchClass: 'Patch_NativeStorageInsertionReceipt' },
+	{ method: 'TryAbsorbStack', patchClass: 'Patch_NativeStorageMergeReceipt' }
 ]
 
 /**
@@ -132,6 +183,11 @@ const CARVE_OUT = /stackLimit\s*<=\s*1/
 
 /** Members each seam file must still export; losing one silently disables a whole half of the fix. */
 const REQUIRED_MEMBERS: { path: string; label: string; members: string[] }[] = [
+	{
+		path: resolve(GAME_SRC, 'StorageCommitments.ExplicitShelf.cs'),
+		label: 'StorageCommitments.ExplicitShelf.cs',
+		members: ['bool AcquireExplicitShelf(', 'void ReleaseExplicitShelf(', 'bool ExplicitShelfCellHeldByOther(']
+	},
 	{
 		path: SEAM,
 		label: 'StorageCommitments.cs',
@@ -275,10 +331,13 @@ async function main(): Promise<void> {
 	const stripPatch = typeBody(haulToStack, 'Patch_JobDriver_HaulToCell_NoCellReservation')
 	if (!stripPatch)
 		errors.push('HaulToStack.cs no longer declares Patch_JobDriver_HaulToCell_NoCellReservation.')
-	else if (!stripPatch.includes('TryCommit('))
+	else if (!stripPatch.includes('ResourceUnitsFor(') || !stripPatch.includes('CommitNativeResource(')
+		|| !stripPatch.includes('ReferenceEquals(pawn.CurJob, job)')
+		|| !stripPatch.includes('pawn.Reserve(')
+		|| stripPatch.indexOf('pawn.Reserve(') > stripPatch.indexOf('CommitNativeResource('))
 		errors.push(
-			'Patch_JobDriver_HaulToCell_NoCellReservation no longer calls TryCommit — it would be stripping ' +
-				"vanilla's destination reservation without putting anything in its place, which IS the bug."
+			'Native reservation replacement must observe physical resources, reserve the source, and only then ' +
+				'publish capacity owned by the actual current job. Preflight may not publish a claim.'
 		)
 	// The unload branches must ask ONE question (did the ledger take this destination on?) rather than
 	// re-deriving the feature gate. TryCommit reads the Haul to Stack switch itself, in one place.
@@ -288,27 +347,34 @@ async function main(): Promise<void> {
 				'must be TryCommit alone; a second predicate beside it is how the four carve-outs drifted apart.'
 		)
 
-	// ── 3. exactly one of each adapter, each reaching the seam ────────────────────────────────────────
+	// ── 3. exactly one value adapter, plus the separately pinned read-only factory scope ─────────────
 	const ADAPTER_PINS = [
 		{
 			attribute: '[HarmonyPatch(typeof(HaulAIUtility), nameof(HaulAIUtility.HaulToCellStorageJob))]',
-			role: 'the COUNTER (clamps job.count to what is genuinely free)'
+			role: 'the COUNTER and its read-only synchronous factory scope',
+			expected: 2
 		},
 		{
 			attribute: '[HarmonyPatch(typeof(StoreUtility), nameof(StoreUtility.IsGoodStoreCell))]',
-			role: 'the GATE (keeps a pawn from being routed to a group that is fully spoken for)'
+			role: 'the GATE (keeps a pawn from being routed to a group that is fully spoken for)',
+			expected: 1
 		}
 	]
-	for (const { attribute, role } of ADAPTER_PINS) {
+	for (const { attribute, role, expected } of ADAPTER_PINS) {
 		let found = 0
 		for (const src of codeByFile.values()) found += countOf(src, attribute)
-		if (found !== 1)
+		if (found !== expected)
 			errors.push(
-				`expected exactly ONE ${attribute} in the assembly (${role}); found ${found}. ` +
-					'Zero means that half of the seam is gone; more than one means two patches are clamping the ' +
-					'same number and will double-subtract.'
+				`expected exactly ${expected} ${attribute} in the assembly (${role}); found ${found}. ` +
+					'Only the existing value adapter and the explicitly checked query scope are permitted.'
 			)
 	}
+	const queryHooks = codeByFile.get(resolve(GAME_SRC, 'StorageQueryScopeHooks.cs')) ?? ''
+	const factoryScope = typeBody(queryHooks, 'Patch_StorageQuery_FactoryScope')
+	if (!factoryScope || !factoryScope.includes('OpenFactory(') || !factoryScope.includes('FinishFactory(')
+		|| !factoryScope.includes('finally') || !factoryScope.includes('Dispose(')
+		|| /\bcount\s*=|\bPostfix\b|ref\s+Job\b/.test(factoryScope))
+		errors.push('The native factory query scope must only open/validate/dispose its exact frame; it must not replace the result or native count loop.')
 	const adapters = codeByFile.get(ADAPTERS) ?? ''
 	for (const cls of ['Patch_HaulToCellStorageJob_ClampToCommitments', 'Patch_IsGoodStoreCell_HonourCommitments']) {
 		const body = typeBody(adapters, cls)
@@ -376,10 +442,11 @@ async function main(): Promise<void> {
 				'StorageCommitments.cs no longer tests carryTracker.CarriedThing. Whether a pawn is PLANNING a ' +
 					'pickup or DELIVERING cargo it already holds must be DERIVED from possession of the subject.'
 			)
-		if (!/ParentHolder/.test(seam))
+		if (!/ReferenceEquals\s*\(\s*subject\.holdingOwner\s*,\s*inventory\s*\)/.test(seam))
 			errors.push(
-				'StorageCommitments.cs no longer checks the inventory parent. A pawn holding cargo in its ' +
-					'INVENTORY (the bulk-haul case) is delivering just as much as one carrying it in its hands.'
+				'StorageCommitments.cs no longer compares actual inventory collection custody. ParentHolder is ' +
+					'the Pawn_InventoryTracker, not innerContainer: checking only that name let the v1.24 own-claim ' +
+					'rejection ship. Review the real-runtime L04-O1 custody controls before changing this seam.'
 			)
 		const flagged = /FreeUnitsFor\s*\([^)]*\bbool\s+(delivering|planning)\b/.exec(seam)
 		if (flagged)

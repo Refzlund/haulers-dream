@@ -11,7 +11,7 @@ namespace HaulersDream
     /// the best storage for it, carry it there and place it. Mirrors the canonical RimWorld unload
     /// toil chain (find → reserve → pull → carry to cell/container → place → repeat).
     /// </summary>
-    public class JobDriver_UnloadHauledInventory : JobDriver
+    public partial class JobDriver_UnloadHauledInventory : JobDriver
     {
         private int countToDrop = -1;
 
@@ -60,6 +60,16 @@ namespace HaulersDream
 
         public override void ExposeData()
         {
+            // Native Pawn_JobTracker assigns driver.job only AFTER LoadingVars exposes the driver.
+            // Resolve this field without consulting job during load, and before base's PostLoadInit
+            // calls SetupToils. Ordinary saves still omit the scoped receipt completely.
+            if (Scribe.mode != LoadSaveMode.Saving || NearbyHaulDelivery.Applies(job))
+                Scribe_Deep.Look(ref nearbyTransit, "nearbyDeliveryTransit");
+            if (Scribe.mode != LoadSaveMode.Saving || !NearbyHaulDelivery.Applies(job))
+            {
+                Scribe_Values.Look(ref ordinaryTransitVersion, "ordinaryDeliveryTransitVersion", 0);
+                Scribe_Deep.Look(ref ordinaryTransit, "ordinaryDeliveryTransit");
+            }
             base.ExposeData();
             Scribe_Values.Look(ref countToDrop, "countToDrop", -1);
         }
@@ -96,7 +106,23 @@ namespace HaulersDream
         /// </summary>
         public override void Notify_PatherFailed()
         {
-            var held = pawn.carryTracker?.CarriedThing;
+            if (NearbyHaulDelivery.Applies(job))
+            {
+                NearbyPatherFailed();
+                return;
+            }
+            Job activation = job;
+            OrdinaryUnloadTransit receipt = ordinaryTransit;
+            try { OrdinaryPatherFailed(activation, receipt); }
+            catch (System.Exception error) { HandleOrdinaryUnloadFailure(activation, receipt, error); }
+        }
+
+        private void OrdinaryPatherFailed(Job activation, OrdinaryUnloadTransit receipt)
+        {
+            if (!OrdinaryUnloadCurrent(activation, receipt)) return;
+            Map destinationMap = pawn.Map;
+            LocalTargetInfo destination = activation.targetB;
+            var held = StorageBoundOrdinaryHands;
             if (held == null || loopToil == null)
             {
                 // Nothing in hand (or the toil chain was never built): there is no stack to rescue and no
@@ -115,11 +141,8 @@ namespace HaulersDream
             // to set aside; and an unmerged add preserves this driver's tag isolation exactly as
             // JobDriver_BulkHaul.DepositSwept does, so the returning surplus can never fold itself into the
             // pawn's personal stock.
-            var inventory = pawn.inventory?.innerContainer;
-            Thing returned = null;
-            if (inventory != null)
-                pawn.carryTracker.innerContainer.TryTransferToContainer(held, inventory, carriedCount,
-                    out returned, canMergeWithExistingStacks: false);
+            Thing returned = receipt.Return(this);
+            if (!OrdinaryUnloadCurrent(activation, receipt)) return;
 
             if (returned == null)
             {
@@ -134,24 +157,24 @@ namespace HaulersDream
                 return;
             }
 
-            // Re-tag it: PullItemFromInventory dropped the tag when it pulled the stack into the hands, and an
-            // untagged surplus sitting in the pack is a silent black hole (gizmo hidden, never retried). The
-            // carried count is passed as the merge delta so Combat Extended's HoldTracker is re-notified for
-            // the units that moved back, matching what RegisterHauledItem does for a grown stack elsewhere.
-            pawn.TryGetComp<CompHauledToInventory>()?.RegisterHauledItem(returned, carriedCount);
-            job.SetTarget(TargetIndex.A, returned);
+            // Return repaired its exact inventory tag and notified providers before releasing the
+            // ownership barrier. Do not notify CE a second time as if a nonexistent merge grew it.
+            activation.SetTarget(TargetIndex.A, returned);
+            if (!OrdinaryUnloadCurrent(activation, receipt)) return;
 
             skippedThisJob.Add(returned);
             HaulChurnGuard.StampBackoff(returned);
 
             // Let go of the destination we can't reach. The job would release it at the end anyway, but holding
             // a container reservation on a shelf THIS pawn can't get to would block a pawn that can.
-            ReleaseTargetBReservation();
+            ReleaseOrdinaryDestination(destinationMap, destination, activation, receipt);
+            if (!OrdinaryUnloadCurrent(activation, receipt)) return;
 
             int remaining = RemainingCandidateCount();
             HDLog.Dbg($"unload {pawn.LabelShort}: could not reach the destination for {returned.LabelShort} "
                       + $"x{carriedCount} (failure {pathFailuresThisJob} this trip, {remaining} stack(s) left "
                       + "to try); putting it back in the pack, backing it off and moving on.");
+            if (!OrdinaryUnloadCurrent(activation, receipt)) return;
 
             if (UnreachableDestinationPolicy.Choose(pathFailuresThisJob, remaining)
                 == UnreachableDestinationAction.SetAsideAndContinue)
@@ -181,7 +204,9 @@ namespace HaulersDream
             int count = 0;
             // The healed view, not PeekHashSet: this feeds a DECISION, and a stale tag left by a merge would
             // count a stack that no longer exists.
-            foreach (var thing in comp.GetHashSet())
+            var candidates = NearbyHaulDelivery.Applies(job)
+                ? NearbyHaulDelivery.Candidates(pawn, job) : comp.GetHashSet();
+            foreach (var thing in candidates)
                 if (thing != null && !thing.Destroyed && !skippedThisJob.Contains(thing) && inner.Contains(thing))
                     count++;
             return count;
@@ -198,11 +223,18 @@ namespace HaulersDream
                 reservations.Release(job.targetB, pawn, pawn.CurJob);
         }
 
-        public override bool TryMakePreToilReservations(bool errorOnFailed) => true;
+        public override bool TryMakePreToilReservations(bool errorOnFailed)
+            => !NearbyHaulDelivery.Applies(job) || NearbyHaulCommand.CanContinue(pawn, job);
 
         public override IEnumerable<Toil> MakeNewToils()
         {
+            if (NearbyHaulDelivery.Applies(job))
+            {
+                foreach (var toil in MakeNearbyDeliveryToils()) yield return toil;
+                yield break;
+            }
             var begin = Toils_General.Wait(3);
+            ordinaryPostPullToils.Clear();
             loopToil = begin; // the reentry point a failed delivery jumps back to (see Notify_PatherFailed)
             yield return begin;
 
@@ -216,7 +248,7 @@ namespace HaulersDream
             // placed in the world (not in hands/inventory), so it is not re-tagged.
             AddFinishAction(condition =>
             {
-                var held = job.GetTarget(TargetIndex.A).Thing;
+                var held = ordinaryTransit?.Retained(this);
                 var inCarry = pawn.carryTracker?.innerContainer?.Contains(held) == true;
                 var inInv = pawn.inventory?.innerContainer?.Contains(held) == true;
                 if (comp == null || held == null || held.Destroyed)
@@ -229,22 +261,22 @@ namespace HaulersDream
             yield return PullItemFromInventory(carried, begin);
 
             var releaseReservation = ReleaseReservation();
-            var carryToCell = Toils_Haul.CarryHauledThingToCell(TargetIndex.B);
+            var carryToCell = OrdinaryPostPull(Toils_Haul.CarryHauledThingToCell(TargetIndex.B));
 
             // if (TargetB is a cell) jump straight to the cell branch
-            yield return Toils_Jump.JumpIf(carryToCell, () => !TargetB.HasThing);
+            yield return OrdinaryPostPull(Toils_Jump.JumpIf(carryToCell, () => !TargetB.HasThing));
 
             // ---- container branch ----
-            var carryToContainer = Toils_Haul.CarryHauledThingToContainer();
+            var carryToContainer = OrdinaryPostPull(Toils_Haul.CarryHauledThingToContainer());
             yield return carryToContainer;
-            yield return Toils_Haul.DepositHauledThingInContainer(TargetIndex.B, TargetIndex.None);
-            yield return Toils_Haul.JumpToCarryToNextContainerIfPossible(carryToContainer, TargetIndex.B);
-            yield return Toils_Jump.Jump(releaseReservation);
+            yield return OrdinaryPostPull(Toils_Haul.DepositHauledThingInContainer(TargetIndex.B, TargetIndex.None));
+            yield return OrdinaryPostPull(Toils_Haul.JumpToCarryToNextContainerIfPossible(carryToContainer, TargetIndex.B));
+            yield return OrdinaryPostPull(Toils_Jump.Jump(releaseReservation));
 
             // ---- cell branch ----
             yield return carryToCell;
 
-            yield return Toils_Haul.PlaceHauledThingInCell(TargetIndex.B, carryToCell, true);
+            yield return OrdinaryPostPull(PlaceOrdinaryCargo());
 
             yield return releaseReservation;
             yield return Toils_Jump.Jump(begin); // loop to next tracked item
@@ -286,17 +318,15 @@ namespace HaulersDream
                     }
 
                     var toPull = thing;
-                    pawn.inventory.innerContainer.TryTransferToContainer(thing, pawn.carryTracker.innerContainer, countToDrop, out thing);
+                    thing = PullOrdinaryInventory(toPull);
+                    if (pawn.CurJob != job || pawn.jobs.curDriver != this) return;
                     if (thing == null)
                     {
                         if (toPull != null)
                             skippedThisJob.Add(toPull);
-                        pawn.jobs.curDriver.JumpToToil(wait);
+                        JumpToToil(wait);
                         return;
                     }
-                    job.count = countToDrop;
-                    job.SetTarget(TargetIndex.A, thing);
-                    carried.Remove(thing);
                     thing.SetForbidden(false, false);
                 }
             };
@@ -327,8 +357,10 @@ namespace HaulersDream
                         // reserved by another pawn (a worker fetching from this inventory): end Incompletable so a
                         // freed reservation re-queues promptly. The tag is kept either way, so a genuinely stuck
                         // item is retried on the next trigger and still surfaces in the cannot-unload alert.
-                        EndJobWith(carried.Count == 0 || skippedThisJob.Count > 0
-                            ? JobCondition.Succeeded : JobCondition.Incompletable);
+                        EndJobWith(NearbyHaulDelivery.Applies(job)
+                            ? (carried.Count == 0 ? JobCondition.Succeeded : JobCondition.Incompletable)
+                            : (carried.Count == 0 || skippedThisJob.Count > 0
+                                ? JobCondition.Succeeded : JobCondition.Incompletable));
                         return;
                     }
 
@@ -338,6 +370,15 @@ namespace HaulersDream
                     // pawn.Map into vanilla), but note the one deliberate delta from the old if/else chain: it
                     // used to fall THROUGH to the home-area scan, which would have dereferenced the null map;
                     // treating "no map" as "not the home map" keeps the load tagged and ends the job cleanly.
+                    if (NearbyHaulDelivery.Applies(job) && !hasStorage)
+                    {
+                        // A withdrawn destination does not authorize dropping command cargo on a
+                        // different home-area tile. Keep it tagged and try the other finite manifest sources.
+                        skippedThisJob.Add(next.Thing);
+                        if (RemainingCandidateCount() > 0) JumpToToil(begin);
+                        else EndJobWith(JobCondition.Incompletable);
+                        return;
+                    }
                     bool onHomeMap = pawn.Map != null && pawn.Map.IsPlayerHome;
                     // The home-area radial scan runs ONLY when it can change the outcome — storage failed, on the
                     // player's map — which is exactly the precedence UnloadFallbackPolicy.Choose encodes. Keeping
@@ -362,6 +403,12 @@ namespace HaulersDream
                         else
                             job.SetTarget(TargetIndex.B, cell);
 
+                        if (!NearbyHaulDelivery.Applies(job))
+                        {
+                            if (!PrepareOrdinaryDestination(next, carried, begin)) return;
+                            break;
+                        }
+
                         // Haul-to-stack: storage CELLS are deliberately not reserved (several pawns may
                         // deliver to — and stack onto — the same tile; see HaulToStack), but ONLY where the
                         // storage commitment ledger has taken the destination on. TryCommit is that test: it
@@ -383,7 +430,8 @@ namespace HaulersDream
                         {
                             // Untag only when the drop actually happened — a failed drop leaves the thing in
                             // inventory, where a missing tag would strand it untracked (gizmo hidden, never retried).
-                            if (InventoryDrop.TryDropPreferHome(pawn, next.Thing, next.Count, "reserve-failed-storage", out _))
+                            if (!NearbyHaulDelivery.Applies(job)
+                                && InventoryDrop.TryDropPreferHome(pawn, next.Thing, next.Count, "reserve-failed-storage", out _))
                                 carried.Remove(next.Thing);
                             EndJobWith(JobCondition.Incompletable);
                             return;
@@ -479,6 +527,11 @@ namespace HaulersDream
                                   + $"home={InventoryDrop.IsInHome(pawn.Map, desperateCell)}).");
                         job.SetTarget(TargetIndex.A, next.Thing);
                         job.SetTarget(TargetIndex.B, desperateCell);
+                        if (!NearbyHaulDelivery.Applies(job))
+                        {
+                            if (!PrepareOrdinaryDestination(next, carried, begin)) return;
+                            break;
+                        }
                         // Same rule as the storage branch above, and the same reason it needs no unstackable
                         // carve-out any more: the cell is left unreserved only where the commitment ledger
                         // arbitrates it. A home-area fallback cell usually sits in NO slot group, so TryCommit
@@ -613,6 +666,12 @@ namespace HaulersDream
                 // each item is attempted at most once per job; skipped items keep their tag and retry next trigger.
                 if (skippedThisJob.Contains(thing))
                     continue;
+                if (NearbyHaulDelivery.Applies(job)
+                    && (NearbyHaulDelivery.Remaining(job, thing) <= 0 || !inner.Contains(thing)))
+                {
+                    carried.Remove(thing); // private manifest subset; never relink a same-def sibling
+                    continue;
+                }
                 if (!inner.Contains(thing))
                 {
                     // A partially-picked-up stack merged in inventory gets a new ThingID; relink to it.
@@ -668,7 +727,9 @@ namespace HaulersDream
         /// <param name="next">The stack about to be delivered, with the units being placed.</param>
         /// <returns>Units to claim for the destination.</returns>
         private int UnitsBoundFor(ThingCount next)
-            => System.Math.Max(next.Count, StorageCommitments.UnitsMovingOf(pawn, next.Thing.def));
+            => NearbyHaulDelivery.Applies(job)
+                ? System.Math.Max(next.Count, NearbyHaulDelivery.UnitsBoundFor(pawn, job, next.Thing.def))
+                : System.Math.Max(next.Count, StorageCommitments.UnitsMovingOf(pawn, next.Thing.def));
 
         /// <summary>The budget identity of the storage at a destination cell, or null when the cell holds no
         /// slot group (a bare home-area floor cell, or a container's invalid cell). Routed through
@@ -687,7 +748,9 @@ namespace HaulersDream
         // driver and the cannot-unload alert agree EXACTLY on what is surplus and what is keep-stock.
         // (Vanilla parity: the three FirstUnloadableThing keep sources — drug policy, inventoryStock,
         // packable food — plus the CE loadout. See InventorySurplus.)
-        private int UnloadableCountOf(Thing thing) => InventorySurplus.SurplusOf(pawn, thing);
+        private int UnloadableCountOf(Thing thing) => NearbyHaulDelivery.Applies(job)
+            ? System.Math.Min(NearbyHaulDelivery.Remaining(job, thing), InventorySurplus.SurplusOf(pawn, thing))
+            : InventorySurplus.SurplusOf(pawn, thing);
 
         // Pawn->best-storage-cell squared distance for the closest-destination-first ordering (C1b), or
         // UnloadDestinationOrder.NoDestination when no storage resolves (that candidate then sorts LAST and the

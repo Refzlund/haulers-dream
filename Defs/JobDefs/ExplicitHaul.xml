@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+  <JobDef>
+    <defName>HaulersDream_ExplicitHaul</defName>
+    <driverClass>HaulersDream.JobDriver_ExplicitHaul</driverClass>
+    <reportString>Hauling the selected items to the selected location.</reportString>
+    <playerInterruptible>true</playerInterruptible>
+    <suspendable>true</suspendable>
+    <carryThingAfterJob>false</carryThingAfterJob>
+  </JobDef>
+</Defs>

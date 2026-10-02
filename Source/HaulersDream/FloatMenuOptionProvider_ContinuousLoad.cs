@@ -17,7 +17,7 @@ namespace HaulersDream
     /// <c>playerOrder: true</c>), and the chaining itself lives in the drivers' finish action via
     /// <see cref="ContinuousLoad"/> — every player-forced bulk-load SUCCESS hops to the next target while the setting is
     /// on. So this option's only job is to KICK OFF a player-forced load on the clicked target with an explicit,
-    /// discoverable label; the courier then continues on its own (even drafted).
+    /// discoverable label. Further trips require an undrafted courier and no queued replacement work.
     ///
     /// Each family is offered only when ITS bulk-load is enabled (so the option can actually do something — otherwise
     /// <see cref="TransportLoad.TryGiveBulkJob"/> returns null because the family feature flag is off). With
@@ -48,8 +48,7 @@ namespace HaulersDream
             // Hauling work (LoadTransporters / HaulToPortal in Core/Defs/WorkGiverDefs/WorkGivers.xml:1251-1254 /
             // :1264-1267, VF's PackVehicle likewise <workType>Hauling</workType>), so it must apply the same bar or
             // it becomes the way around all three. HaulOrderGate reads the WORK TYPE, not the WorkTags.Hauling bit
-            // an "incapable of dumb labor" backstory leaves clear. Still works while drafted (the chain too) for
-            // any pawn that clears the bar.
+            // an "incapable of dumb labor" backstory leaves clear. Repeated trips require an undrafted courier.
             if (HaulOrderGate.Blocks(pawn))
                 yield break;
             // Don't offer this while the pawn is under a boarding lord — let vanilla's gather-and-board flow run.
@@ -62,6 +61,26 @@ namespace HaulersDream
                 var clicked = things[i];
                 if (clicked == null)
                     continue;
+
+                // Transporter orders use the same pure offer and synchronized fresh planner as their
+                // primary menu. Keep the portal/VF paths below independent of this feature slice.
+                if (clicked.TryGetComp<CompTransporter>() != null)
+                {
+                    if (!MultiplayerCompat.TransporterLocalUi || !s.enableBulkLoadTransporters) continue;
+                    int mapId = pawn.Map.uniqueID;
+                    string reason = pawn.Drafted ? "HaulersDream.UnloadTransporter.Drafted".Translate()
+                        : TransporterCommand.LoadBlock(pawn, clicked);
+                    string label = "HaulersDream.ContinuousLoad.Option".Translate(clicked.LabelShort);
+                    if (reason != null) yield return new FloatMenuOption(label + ": " + reason, null);
+                    else
+                    {
+                        var transporterOption = new FloatMenuOption(label,
+                            () => TransporterCommand.Dispatch(pawn, clicked, mapId, false, KeyBindingDefOf.QueueOrder.IsDownEvent, continuous: true))
+                        { iconThing = clicked };
+                        yield return FloatMenuUtility.DecoratePrioritizedTask(transporterOption, pawn, clicked);
+                    }
+                    yield break;
+                }
 
                 IManagedLoadable adapter = TryResolveLoadable(clicked, s);
                 if (adapter == null)

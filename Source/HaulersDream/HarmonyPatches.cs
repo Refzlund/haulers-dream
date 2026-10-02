@@ -301,6 +301,11 @@ namespace HaulersDream
                 return;
             }
 
+            // An empty emergency scan says nothing about ordinary work: the normal work node runs later.
+            // Let that node find the next harvest/cut/deconstruction job before declaring the run finished.
+            if (__instance.emergency)
+                return;
+
             // No work left for this pawn — end of its work run. (Fully gated inside, incl. a cooldown;
             // returns null for pawns with nothing tracked, so the common idle case is two cheap checks.)
             var unload = OpportunisticUnload.TryGetEndOfRunUnloadJob(pawn);
@@ -537,6 +542,12 @@ namespace HaulersDream
             if (s == null || __instance.Faction != Faction.OfPlayerSilentFail)
                 yield break;
 
+            // Misc. Robots can be selected without Biotech, but native CanTakeOrder filters them
+            // out of the map menu. This HD-only targeter leaves native control permissions alone.
+            var nearbyHaul = NearbyHaulCommand.RobotGizmo(__instance, DropIcon);
+            if (nearbyHaul != null)
+                yield return nearbyHaul;
+
             var comp = __instance.GetComp<CompHauledToInventory>();
             if (comp == null)
                 yield break;
@@ -770,6 +781,12 @@ namespace HaulersDream
                 return true;
             var pawn = PawnOf(__instance);
             if (pawn == null)
+                return true;
+            // A nearby command carries its own permission/map and drafted-delivery authority.
+            // Folding it into ordinary automatic work would discard that identity. Let native
+            // immediate/queued ordering retain the actual command; ordinary second-task orders
+            // keep the takeover behavior above.
+            if (NearbyHaulCommand.IsIdentifiedOrder(job))
                 return true;
             return !BulkHaul.TryTakeoverSecondOrder(pawn, job, tag, ref __result);
         }

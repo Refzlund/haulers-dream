@@ -1,0 +1,40 @@
+<?xml version='1.0' encoding='utf-8'?>
+<LanguageData>
+  <HD_ExplicitHaulTo>Przenieś {0} do…</HD_ExplicitHaulTo>
+  <HD_ExplicitChanged>Postać lub wybrany stos uległy zmianie. Wybierz je ponownie.</HD_ExplicitChanged>
+  <HD_ExplicitActorUnavailable>Ta postać nie może teraz wykonać tego rozkazu transportu.</HD_ExplicitActorUnavailable>
+  <HD_ExplicitSelectSource>Wybierz stos do przeniesienia. Prawy przycisk myszy lub Escape anuluje.</HD_ExplicitSelectSource>
+  <HD_ExplicitSelectDestination>Dostarcz tutaj {0} × {1}. {2} Wybierz dostępne pole na ziemi lub regał. Prawy przycisk myszy lub Escape anuluje.</HD_ExplicitSelectDestination>
+  <HD_ExplicitQueuedHint>Dodaj do kolejki pracy.</HD_ExplicitQueuedHint>
+  <HD_ExplicitReplaceHint>Zastąp bieżącą pracę.</HD_ExplicitReplaceHint>
+  <HD_ExplicitStateQueued>W kolejce</HD_ExplicitStateQueued>
+  <HD_ExplicitStateActive>Transportowanie</HD_ExplicitStateActive>
+  <HD_ExplicitStateBlocked>Zablokowane</HD_ExplicitStateBlocked>
+  <HD_ExplicitStateCancelled>Anulowane</HD_ExplicitStateCancelled>
+  <HD_ExplicitStateComplete>Ukończone</HD_ExplicitStateComplete>
+  <HD_ExplicitStateCaptured>Tymczasowo zawieszone</HD_ExplicitStateCaptured>
+  <HD_ExplicitSourceChanged>Wybrane źródło zniknęło, wyczerpało się lub jest już niedozwolone.</HD_ExplicitSourceChanged>
+  <HD_ExplicitSourceReserved>Wybrane źródło jest zarezerwowane przez inne zadanie.</HD_ExplicitSourceReserved>
+  <HD_ExplicitDestinationBlocked>Wybrane miejsce nie ma wolnej przestrzeni, jest zarezerwowane lub nie przyjmuje tych przedmiotów.</HD_ExplicitDestinationBlocked>
+  <HD_ExplicitRouteBlocked>Wybrana trasa jest niedostępna.</HD_ExplicitRouteBlocked>
+  <HD_ExplicitHandsBusy>Postać trzyma w rękach inny ładunek.</HD_ExplicitHandsBusy>
+  <HD_ExplicitInterrupted>Rozkaz został przerwany. Wznów go, gdy będzie to możliwe.</HD_ExplicitInterrupted>
+  <HD_ExplicitAdmissionFailed>Postać nie mogła rozpocząć tego rozkazu. Wznów go, gdy będzie to możliwe.</HD_ExplicitAdmissionFailed>
+  <HD_ExplicitNeedsReview>Zapisany rozkaz lub jego ładunek nieoczekiwanie się zmienił. Sprawdź przedmioty przed wznowieniem.</HD_ExplicitNeedsReview>
+  <HD_ExplicitStart>Przenieś do…</HD_ExplicitStart>
+  <HD_ExplicitStartDesc>Wybierz jeden stos, łączną ilość i dokładne pole na ziemi lub regał. Przenoszony będzie tylko ten stos. Przytrzymaj klawisz kolejkowania poleceń, aby dodać polecenie do kolejki.</HD_ExplicitStartDesc>
+  <HD_ExplicitOrders>Rozkazy transportu</HD_ExplicitOrders>
+  <HD_ExplicitOrdersDesc>Sprawdź dostarczone ilości oraz wznów lub anuluj konkretne rozkazy transportu.</HD_ExplicitOrdersDesc>
+  <HD_ExplicitAmountTitle>Wybierz ilość do transportu</HD_ExplicitAmountTitle>
+  <HD_ExplicitChooseDestination>Wybierz cel</HD_ExplicitChooseDestination>
+  <HD_ExplicitAmountContext>{0}: {1}\nDostępne w tym stosie: {2}</HD_ExplicitAmountContext>
+  <HD_ExplicitQueue>Dodaj do kolejki pracy</HD_ExplicitQueue>
+  <HD_ExplicitAmountHint>Dostarcz łącznie {0}, w kilku kursach w razie potrzeby. Osobisty ekwipunek pozostanie bez zmian.</HD_ExplicitAmountHint>
+  <HD_ExplicitQueueResume>Kolejkuj wznawiane rozkazy</HD_ExplicitQueueResume>
+  <HD_ExplicitResume>Wznów</HD_ExplicitResume>
+  <HD_ExplicitCancel>Anuluj rozkaz</HD_ExplicitCancel>
+  <HD_ExplicitProgress>Rozkaz {0}: {1}\nDostarczono {2} / {3} → ({4}, {5})</HD_ExplicitProgress>
+  <HD_ExplicitMissingItem>Brak źródła</HD_ExplicitMissingItem>
+  <HD_ExplicitShelf>Wybrany regał: {0}</HD_ExplicitShelf>
+  <HD_ExplicitMissingShelf>Brak regału</HD_ExplicitMissingShelf>
+</LanguageData>

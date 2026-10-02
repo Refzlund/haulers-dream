@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LanguageData>
+  <HD_RefuelRecoveryPaused>Recarga de combustible en pausa: hay que revisar la recarga de combustible interrumpida.</HD_RefuelRecoveryPaused>
+  <HD_RefuelRecoveryChanged>Un objeto registrado ha cambiado o ya no está disponible.</HD_RefuelRecoveryChanged>
+  <HD_RefuelRecoveryCustodyUnknown>No se pudo confirmar dónde está el material restante.</HD_RefuelRecoveryCustodyUnknown>
+  <HD_RefuelRecoveryRecordMissing>La recarga de combustible está en pausa. La interrupción ocurrió antes de que se pudieran guardar todos los detalles. No se pueden confirmar las cantidades de combustible añadido y material consumido.</HD_RefuelRecoveryRecordMissing>
+  <HD_RefuelRecoveryReview>Revisar la recarga de combustible interrumpida</HD_RefuelRecoveryReview>
+  <HD_RefuelRecoveryReviewDesc>Revisa la recarga de combustible interrumpida y decide qué hacer con el material restante. Estas acciones no vuelven a añadir combustible.</HD_RefuelRecoveryReviewDesc>
+  <HD_RefuelRecoveryDetails>Ver los detalles de la recuperación</HD_RefuelRecoveryDetails>
+  <HD_RefuelRecoveryPay>Consumir el material combustible registrado</HD_RefuelRecoveryPay>
+  <HD_RefuelRecoveryRestore>Devolver el material restante al inventario</HD_RefuelRecoveryRestore>
+  <HD_RefuelRecoveryCleanup>Volver a revisar el inventario restante</HD_RefuelRecoveryCleanup>
+  <HD_RefuelRecoveryAccept>Mantener el estado actual y reanudar</HD_RefuelRecoveryAccept>
+  <HD_RefuelRecoverySyncUnavailable>no disponible: no se pudo preparar esta acción para multijugador</HD_RefuelRecoverySyncUnavailable>
+  <HD_RefuelRecoveryPayConfirm>¿Consumir exactamente el material registrado por el combustible que ya se añadió? No se volverá a añadir combustible. Un intento anterior puede haber causado ya otros efectos, aunque haya informado de un error. Esta acción lo intenta una sola vez y no se repite automáticamente.</HD_RefuelRecoveryPayConfirm>
+  <HD_RefuelRecoveryRestoreConfirm>¿Intentar una sola vez devolver el material registrado al inventario de este peón? Los objetos sin cambios que estén en la reserva de recuperación guardada pueden moverse sin añadir combustible ni consumir material. Esto no salda ninguna deuda de combustible registrada ni elimina la incertidumbre; la revisión y la resolución siguen siendo pasos separados. Los objetos sin poseedor solo pueden devolverse cuando no se observó que se añadiera combustible. Los ajustes de conservación y equipamiento no cambian.</HD_RefuelRecoveryRestoreConfirm>
+  <HD_RefuelRecoveryCleanupConfirm>¿Volver a revisar el inventario restante después de que se consumiera el material registrado? Esto no añade combustible, no destruye más objetos ni restaura antiguos ajustes de conservación de objetos o de equipamiento.</HD_RefuelRecoveryCleanupConfirm>
+  <HD_RefuelRecoveryAcceptConfirm>¿Mantener los objetos y niveles de combustible actuales y permitir nuevas tareas de recarga de combustible de Hauler's Dream? La acción interrumpida no se repetirá y sus detalles seguirán guardados. Cualquier cantidad incierta de combustible o material seguirá sin verificar. Reanudar no la corrige.</HD_RefuelRecoveryAcceptConfirm>
+  <HD_RefuelRecoverySelectionChanged>Los datos de recuperación o sus objetos han cambiado. Vuelve a abrir el menú de recuperación antes de elegir una acción.</HD_RefuelRecoverySelectionChanged>
+  <HD_RefuelRecoveryPaidOutcome>Última recuperación de una recarga de combustible interrumpida: se consumió el material registrado y se actualizó el registro del inventario.</HD_RefuelRecoveryPaidOutcome>
+  <HD_RefuelRecoveryUncreditedOutcome>Última recuperación de una recarga de combustible interrumpida: no se observó que se añadiera combustible y el material restante está localizado y contabilizado.</HD_RefuelRecoveryUncreditedOutcome>
+  <HD_RefuelRecoveryUncertainOutcome>Última recuperación de una recarga de combustible interrumpida: se reanudó la recarga de combustible con los objetos y niveles de combustible actuales. Las cantidades anteriores de combustible añadido y material consumido siguen sin verificar.</HD_RefuelRecoveryUncertainOutcome>
+  <HD_RefuelRecoveryCostPaid>Se confirmó el consumo de la cantidad de material registrada. Revisa el estado actual antes de reanudar la recarga de combustible.</HD_RefuelRecoveryCostPaid>
+  <HD_RefuelRecoveryRestored>La acción de recuperación ha terminado. Revisa el estado actual antes de reanudar la recarga de combustible.</HD_RefuelRecoveryRestored>
+  <HD_RefuelRecoveryNoCredit>No se observó que se añadiera combustible durante la acción interrumpida.</HD_RefuelRecoveryNoCredit>
+  <HD_RefuelRecoveryKnownDebt>Se añadió combustible, pero no se confirmó el consumo de la cantidad de material registrada para ello.</HD_RefuelRecoveryKnownDebt>
+  <HD_RefuelRecoveryUncertain>Las cantidades de combustible añadido o material consumido son inciertas. El nivel actual de combustible no permite determinar qué ocurrió.</HD_RefuelRecoveryUncertain>
+  <HD_RefuelRecoveryPriorDestroy>Ya se intentó consumir el material anteriormente. Los efectos de aquel intento pueden haberse producido ya, aunque se informara de un error.</HD_RefuelRecoveryPriorDestroy>
+  <HD_RefuelRecoveryNoExactCost>Esta acción no puede consumir exactamente el material registrado. No adivinará qué piezas consumir, no dividirá un resto modificado ni consumirá un objeto de reemplazo.</HD_RefuelRecoveryNoExactCost>
+  <HD_RefuelRecoveryDetailHeader>Recuperación para {0}&#10;Objetivo: {1}&#10;Coste de combustible registrado (unidades): {2}</HD_RefuelRecoveryDetailHeader>
+  <HD_RefuelRecoveryTargetMissing>Objetivo original no disponible</HD_RefuelRecoveryTargetMissing>
+  <HD_RefuelRecoveryItemMissing>El objeto registrado no está disponible.</HD_RefuelRecoveryItemMissing>
+  <HD_RefuelRecoveryItemDestroyed>El objeto registrado está destruido.</HD_RefuelRecoveryItemDestroyed>
+  <HD_RefuelRecoveryItemCurrent>{0}: unidades restantes: {1}.</HD_RefuelRecoveryItemCurrent>
+  <HD_RefuelRecoveryInInventory>En el inventario de este peón.</HD_RefuelRecoveryInInventory>
+  <HD_RefuelRecoveryInCarry>Lo está transportando este peón.</HD_RefuelRecoveryInCarry>
+  <HD_RefuelRecoveryNoOwner>No está en posesión de nadie, dentro de un contenedor ni colocado en un mapa.</HD_RefuelRecoveryNoOwner>
+  <HD_RefuelRecoveryOnGround>En el mismo mapa.</HD_RefuelRecoveryOnGround>
+  <HD_RefuelRecoveryElsewhere>Fuera de la ubicación de recuperación confirmada.</HD_RefuelRecoveryElsewhere>
+  <HD_RefuelRecoveryLastActionFailed>Una acción de recuperación anterior informó de un error. Sus detalles siguen guardados.</HD_RefuelRecoveryLastActionFailed>
+  <HD_RefuelRecoveryInRetainedCustody>Conservado en la reserva de recuperación de combustible de este peón, incluida en la partida guardada.</HD_RefuelRecoveryInRetainedCustody>
+  <HD_RefuelRecoveryRetainedBeforeResume>Devuelve el material conservado al inventario o consume exactamente el material correspondiente al coste confirmado del combustible antes de reanudar. Devolver el material solo cambia dónde se guarda; cualquier deuda de combustible o incertidumbre sigue sin resolverse.</HD_RefuelRecoveryRetainedBeforeResume>
+</LanguageData>

@@ -27,9 +27,10 @@
 //   4. The driver's UnloadEverything write stops being GATED (the permission call must precede it), or the
 //      driver stops turning the same answer into a job-level FailOn — withholding the flag alone still lets the
 //      transfer loop empty a carrier the job should never have targeted.
-//   5. Any other file in the mod assigns UnloadEverything. There is exactly one legitimate writer.
-//   6. Pawn.HostFaction is read anywhere outside the permission seam — that read IS the bug, and it looks
-//      perfectly reasonable at every call site that wants it.
+//   5. A member write to either spelling of the native unload flag occurs outside the exact carrier startup
+//      or guarded refuel-restoration method. DTO/captured-state assignments are not native member writes.
+//   6. Pawn.HostFaction is read outside the permission seam or the two exact robot-command refusals.
+//      Those refusals exclude hosted robots; they never turn hosting into ownership or unload permission.
 //   7. TransportLoad's HasJob/JobOn pair falls out of lockstep on its explicit "player faction, not a quest
 //      lodger" refusal — the hardening that stops a guest entering HD's bulk loaders whatever any other mod
 //      does with its Lords.
@@ -62,8 +63,8 @@ const PERMISSION_CALL = /\bPlayerMayUnload\s*\(/
  *   on its fail condition. A QA mutant in exactly that shape passed the presence-only version of this rule.
  */
 const PERMISSION_GUARD = /if\s*\(\s*!\s*(?:[\w.]*\.)?PlayerMayUnload\s*\(/
-/** An ASSIGNMENT to vanilla's unload flag. `(?!=)` so a comparison (`== true`) is not mistaken for a write. */
-const FLAG_WRITE = /\bUnloadEverything\s*=(?!=)/
+/** Native property OR publicized private-field member assignment; not a same-named DTO initializer. */
+const FLAG_WRITE = /\.\s*(?:UnloadEverything|unloadEverything)\s*=(?!=)/
 /** Any read of the host-faction property — the copied-predicate tell. */
 const HOST_FACTION = /\bHostFaction\b/
 /** The sibling faction refusal the loaders must carry, in the spelling every other HD entry point uses. */
@@ -101,12 +102,25 @@ const GATED_METHODS: { file: string; method: string; why: string }[] = [
 ]
 
 /**
- * The one file allowed to assign UnloadEverything, and the one allowed to read HostFaction. Both are inventories
- * of a spelling that reads as harmless everywhere it appears, which is why they are pinned by file rather than
- * left to review.
+ * Native flag writes are pinned to exact methods, never whole files. HostFaction
+ * retains its existing permission seam and the two exact robot refusals below.
  */
 const FLAG_WRITER = 'JobDriver_UnloadCarrierInBulk.cs'
+const RESTORE_WRITER = 'Patch_WorkGiver_UnloadCarriers.cs'
+const RESTORE_METHOD = 'RestoreRefuelUnloadIntent'
 const HOST_FACTION_READER = 'Patch_WorkGiver_UnloadCarriers.cs'
+// These command-only robot exceptions use HostFaction solely to REFUSE a hosted pawn.
+// Pin the exact negative predicate and its enclosing admission method, not the entire file.
+const ROBOT_HOST_REFUSALS: Record<string, { method: string; predicate: RegExp }> = {
+	'NearbyHaulCommand.cs': {
+		method: 'PawnBlockReason',
+		predicate: /\(!pawn\.CanTakeOrder && \(!miscRobot \|\| pawn\.HostFaction != null\)\)/,
+	},
+	'ExplicitHaulCommand.cs': {
+		method: 'ActorReason',
+		predicate: /\(!p\.CanTakeOrder && \(!robot \|\| p\.HostFaction != null\)\)/,
+	},
+}
 
 const errors: string[] = []
 
@@ -289,9 +303,36 @@ async function main(): Promise<void> {
 		}
 	}
 
-	// ---- 6 + 7. Repo-wide: one flag writer, one host-faction reader. ----
+	// Refuel may restore an already-set bit after native removal cleared it, only
+	// for its original live intent and exact player-owned tracker. Read native policy
+	// first, then recheck permission/lifetime before the callback-free field write.
+	const restore = seam === null ? null : sliceMethodBody(seam, RESTORE_METHOD)
+	if (restore === null) {
+		errors.push(`Missing exact ${RESTORE_WRITER}.${RESTORE_METHOD} restoration seam.`)
+	} else {
+		const readAt = restore.indexOf('expectedTracker.FirstUnloadableThing')
+		const writeAt = restore.search(/expectedTracker\s*\.\s*unloadEverything\s*=\s*true\s*;/)
+		const permissionSites = [...restore.matchAll(new RegExp(PERMISSION_GUARD.source, 'g'))].map(x => x.index!)
+		const lastPermission = permissionSites[permissionSites.length - 1] ?? -1
+		const finalGuard = restore.indexOf('if (!activation.IntentCurrent', readAt)
+		const finalText = restore.slice(finalGuard, writeAt)
+		const captureGuard = /if\s*\(\s*!wasSet\s*\|\|\s*activation\s*==\s*null\s*\|\|\s*!activation\.IntentCurrent\s*\)\s*return\s*;/.test(restore)
+		const exactTracker = /!ReferenceEquals\(pawn\.inventory, expectedTracker\)/.test(finalText)
+			&& /!ReferenceEquals\(expectedTracker\.pawn, pawn\)/.test(finalText)
+		const playerOnly = /pawn\.Faction\s*==\s*null/.test(finalText)
+			&& /pawn\.Faction\s*!=\s*Faction\.OfPlayerSilentFail/.test(finalText)
+		if (!captureGuard || readAt < 0 || permissionSites.length !== 2 || permissionSites[0] >= readAt
+			|| lastPermission <= readAt || finalGuard <= lastPermission || writeAt <= finalGuard
+			|| !exactTracker || !playerOnly || !/\)\s*return\s*;/.test(finalText)
+			|| (restore.match(new RegExp(FLAG_WRITE.source, 'g')) ?? []).length !== 1) {
+			errors.push(`${RESTORE_METHOD} lost its captured intent, exact tracker, native-policy-before-final-permission, or player-only early-return guard.`)
+		}
+	}
+
+	// ---- 6 + 7. Repo-wide: exact flag-writing methods and host-faction readers. ----
 	let flagWriters = 0
 	let hostFactionReaders = 0
+	let prisonerHostReader = false
 	let proseMentions = 0
 	for (const path of files) {
 		const name = basename(path)
@@ -308,18 +349,31 @@ async function main(): Promise<void> {
 
 		if (FLAG_WRITE.test(code)) {
 			flagWriters++
-			if (name !== FLAG_WRITER) {
+			const permittedBody = name === FLAG_WRITER ? sliceMethodBody(code, 'Notify_Starting')
+				: name === RESTORE_WRITER ? sliceMethodBody(code, RESTORE_METHOD) : null
+			const writes = (code.match(new RegExp(FLAG_WRITE.source, 'g')) ?? []).length
+			const permittedWrites = permittedBody === null ? 0
+				: (permittedBody.match(new RegExp(FLAG_WRITE.source, 'g')) ?? []).length
+			if (writes !== 1 || permittedWrites !== writes) {
 				errors.push(
 					`${name} assigns Pawn_InventoryTracker.UnloadEverything. That flag is SCRIBED world state and no ` +
 						`player-facing vanilla action raises it on a non-colony pawn; raising it also hands the victim to ` +
-						`vanilla's own faction-blind unload work-giver indefinitely. Exactly one writer is allowed ` +
-						`(${FLAG_WRITER}.Notify_Starting, behind PlayerMayUnload) — route this through it.`
+						`vanilla's own faction-blind unload work-giver indefinitely. Only the exact guarded startup or ` +
+						`refuel-restoration method may contain a native flag write; no file-wide exemption is allowed.`
 				)
 			}
 		}
 		if (HOST_FACTION.test(code)) {
 			hostFactionReaders++
-			if (name !== HOST_FACTION_READER) {
+			if (name === HOST_FACTION_READER) prisonerHostReader = true
+			const robotRule = ROBOT_HOST_REFUSALS[name]
+			const robotBody = robotRule ? sliceMethodBody(code, robotRule.method) : null
+			const isNegativeRobotGuard = robotRule && robotBody !== null
+				&& robotRule.predicate.test(robotBody)
+				&& (code.match(/\bHostFaction\b/g) ?? []).length === 1
+				&& /\.Faction != Faction\.OfPlayerSilentFail/.test(robotBody)
+				&& /\.IsQuestLodger\(\)/.test(robotBody)
+			if (name !== HOST_FACTION_READER && !isNegativeRobotGuard) {
 				errors.push(
 					`${name} reads Pawn.HostFaction. A host faction says the colony HOSTS this pawn, never that it owns ` +
 						`it: guests, rescued wanderers and quest pawns all carry the player as host, and treating that as ` +
@@ -335,9 +389,9 @@ async function main(): Promise<void> {
 				'retire this guard deliberately) or the write moved somewhere this guard cannot see it.'
 		)
 	}
-	if (hostFactionReaders === 0) {
+	if (!prisonerHostReader) {
 		errors.push(
-			`No file reads HostFaction any more, so ${HOST_FACTION_READER}'s prisoner arm is gone. That arm is the ` +
+			`${HOST_FACTION_READER}'s HostFaction prisoner arm is gone. That arm is the ` +
 				'LEGITIMATE half of the predicate this fix narrowed: a prisoner\'s Faction stays its original faction, ' +
 				'so only the host-faction test can recognise one, and vanilla lets the colony unload its own prisoners ' +
 				'(ITab_Pawn_Gear.CanControl and CanBeStrippedByColony both admit them). Deleting it is a feature loss, ' +
@@ -356,7 +410,7 @@ async function main(): Promise<void> {
 			},
 			{
 				label: 'TryGiveBulkJob (the JobOn half)',
-				signature: /\bTryGiveBulkJob\s*\(\s*Pawn[^)]*\bbool\s+playerOrder\s*\)[\s\S]{0,200}?\{/,
+				signature: /\bTryGiveBulkJob\s*\(\s*Pawn[^)]*\bbool\s+playerOrder\s*,\s*bool\s+menuProbe\s*,\s*out\s+bool\s+wouldGive\s*\)\s*\{/,
 			},
 		]
 		for (const half of halves) {
@@ -411,8 +465,8 @@ async function main(): Promise<void> {
 	console.log(
 		`[non-colony-pawn-gates] PASS, ${files.length} source files scanned, ${gated}/${GATED_METHODS.length} carrier-unload ` +
 			`entry points consult BulkUnloadGate.PlayerMayUnload (routed to Core), UnloadEverything written in ` +
-			`${flagWriters} file (gated, + job-level FailOn), HostFaction read in ${hostFactionReaders} file ` +
-			`(the prisoner arm), ${lockstep.filter((h) => h.guarded).length}/2 TransportLoad halves carry the explicit ` +
+			`${flagWriters} exact guarded methods (carrier startup + refuel restoration), HostFaction read in ${hostFactionReaders} files ` +
+			`(prisoner permission or pinned robot refusals), ${lockstep.filter((h) => h.guarded).length}/2 TransportLoad halves carry the explicit ` +
 			`faction + quest-lodger refusal.`
 	)
 	console.log(

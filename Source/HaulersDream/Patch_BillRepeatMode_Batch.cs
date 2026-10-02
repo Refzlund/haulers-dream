@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using HarmonyLib;
@@ -19,60 +20,25 @@ namespace HaulersDream
     [HarmonyPatch(typeof(BillRepeatModeUtility), nameof(BillRepeatModeUtility.MakeConfigFloatMenu))]
     public static class Patch_BillRepeatModeUtility_MakeConfigFloatMenu
     {
-        // Run FIRST among prefixes so HD's prefix is the one that executes when another mod ALSO full-replaces
-        // this method with a return-false prefix (e.g. Ingredient Threshold). Harmony runs prefixes
-        // highest-priority first, and a prefix that returns false skips every remaining prefix AND the original
-        // (the generated wrapper is `if (runOriginal) runOriginal = prefix(...)`), so among competing
-        // full-replace prefixes ONLY the highest-priority one runs. At Priority.First HD wins that race and
-        // re-adds the other mods' modes (the *Compat.TryInsertModes calls) so its menu is the COMPLETE one; at a
-        // lower priority HD would be skipped entirely and its own "Batch: ..." modes (and the re-added compat
-        // modes) would vanish. Transpiler-based mods (EGO, Compositable Loadouts) live in the original body,
-        // which HD's return-false skips, so they are re-added via the shims the same way regardless.
+        // Enter before the supported full-replacement prefixes, but let them and the native body run.
+        // A false-returning prefix skips later side-effecting prefixes; it does not skip every patch.
+        // Actual option construction is composed inside this call, before FloatMenu sorts and sizes its list.
         [HarmonyPriority(Priority.First)]
-        static bool Prefix(Bill_Production bill)
+        [HarmonyBefore("custom.periodicbills", "com.rileydoggy.ingredientthreshold")]
+        static void Prefix(Bill_Production bill, out BillRepeatMenuComposition.Frame __state)
+        {
+            __state = BillRepeatMenuComposition.Enter(bill);
+        }
+
+        static Exception Finalizer(Exception __exception, BillRepeatMenuComposition.Frame __state)
+        {
+            BillRepeatMenuComposition.Exit(__state);
+            return __exception;
+        }
+
+        internal static void AddBatchOptions(List<FloatMenuOption> opts, Bill_Production bill)
         {
             var comp = HaulersDreamGameComponent.Instance;
-            var opts = new List<FloatMenuOption>();
-
-            // --- the three vanilla modes (faithful copies of MakeConfigFloatMenu; picking one turns batch OFF) ---
-            // MP: SetBatch writes the SCRIBED batchBills dict. These delegates fire from an interactive float-menu
-            // pick, so the write must go through the [SyncMethod] shim to replay on every client (runs inline in SP).
-            // bill.repeatMode is vanilla's own field and is already synced by RimWorld's bill-config UI, so only the
-            // HD batch write needs routing.
-            opts.Add(new FloatMenuOption(BillRepeatModeDefOf.RepeatCount.LabelCap, delegate
-            {
-                bill.repeatMode = BillRepeatModeDefOf.RepeatCount;
-                MultiplayerCompat.SetBillBatch(bill, false, 0);
-            }));
-            opts.Add(new FloatMenuOption(BillRepeatModeDefOf.TargetCount.LabelCap, delegate
-            {
-                if (!bill.recipe.WorkerCounter.CanCountProducts(bill))
-                    Messages.Message("RecipeCannotHaveTargetCount".Translate(), MessageTypeDefOf.RejectInput, historical: false);
-                else
-                {
-                    bill.repeatMode = BillRepeatModeDefOf.TargetCount;
-                    MultiplayerCompat.SetBillBatch(bill, false, 0);
-                }
-            }));
-            opts.Add(new FloatMenuOption(BillRepeatModeDefOf.Forever.LabelCap, delegate
-            {
-                bill.repeatMode = BillRepeatModeDefOf.Forever;
-                MultiplayerCompat.SetBillBatch(bill, false, 0);
-            }));
-
-            // --- COMPAT: re-add any OTHER mod's custom repeat modes that we just skipped by replacing this menu.
-            // Everybody Gets One adds its "one per person" / "X per person" / "with surplus" modes, and Compositable
-            // Loadouts adds its "X per Tag" mode, each via a transpiler on this very method; our full-replace prefix
-            // would hide them entirely. Invoke each mod's own inserter so its modes reappear with that mod's exact
-            // labels + guards. No-op when the mod isn't installed. (HD never batches a non-vanilla repeat mode —
-            // CraftBatchPlanner.CanBatch only accepts the three vanilla modes — so those bills route as plain vanilla.) ---
-            EverybodyGetsOneCompat.TryInsertModes(opts, bill);
-            CompositableLoadoutsCompat.TryInsertModes(opts, bill);
-            // Ingredient Threshold adds its mode with its OWN return-false prefix on this method (not a transpiler).
-            // Two competing full-replace prefixes: only the highest-priority one runs (see the Priority.First note
-            // above), so HD wins and IT's prefix never runs. Re-add its mode here so HD's winning menu still offers
-            // it and its "Ingredient Threshold" mode stays selectable (issue #126).
-            IngredientThresholdCompat.TryInsertModes(opts, bill);
 
             // --- the three batch variants (only when this recipe can actually be batched) ---
             // Each carries a hover tooltip (FloatMenuOption.tooltip) explaining what that batch mode does (issue #3
@@ -82,34 +48,26 @@ namespace HaulersDream
             // ingredients" switch turned off (#230). Offering a mode that will not run is what misleads; the player
             // just sees the vanilla modes instead. CraftBatchPlanner.BatchModeAvailable is the single source shared
             // with the row's ×N marker and the repeat-mode button's prefix.
-            if (comp != null && CraftBatchPlanner.BatchModeAvailable(bill))
+            if (comp != null && MultiplayerCompat.BillBatchModeAvailable && CraftBatchPlanner.BatchModeAvailable(bill))
             {
                 string prefix = "HaulersDream.Batch.MenuPrefix".Translate();
                 var optDoX = new FloatMenuOption(prefix + ": " + BillRepeatModeDefOf.RepeatCount.LabelCap, delegate
                 {
-                    bill.repeatMode = BillRepeatModeDefOf.RepeatCount;
-                    EnableBatch(comp, bill);
+                    EnableBatch(comp, bill, BillRepeatModeDefOf.RepeatCount);
                 });
                 optDoX.tooltip = "HaulersDream.Batch.TipDoX".Translate();
                 opts.Add(optDoX);
 
                 var optUntil = new FloatMenuOption(prefix + ": " + BillRepeatModeDefOf.TargetCount.LabelCap, delegate
                 {
-                    if (!bill.recipe.WorkerCounter.CanCountProducts(bill))
-                        Messages.Message("RecipeCannotHaveTargetCount".Translate(), MessageTypeDefOf.RejectInput, historical: false);
-                    else
-                    {
-                        bill.repeatMode = BillRepeatModeDefOf.TargetCount;
-                        EnableBatch(comp, bill);
-                    }
+                    EnableBatch(comp, bill, BillRepeatModeDefOf.TargetCount);
                 });
                 optUntil.tooltip = "HaulersDream.Batch.TipUntilX".Translate();
                 opts.Add(optUntil);
 
                 var optForever = new FloatMenuOption(prefix + ": " + BillRepeatModeDefOf.Forever.LabelCap, delegate
                 {
-                    bill.repeatMode = BillRepeatModeDefOf.Forever;
-                    EnableBatch(comp, bill);
+                    EnableBatch(comp, bill, BillRepeatModeDefOf.Forever);
                 });
                 optForever.tooltip = "HaulersDream.Batch.TipForever".Translate();
                 opts.Add(optForever);
@@ -139,22 +97,19 @@ namespace HaulersDream
                     }
                 }
             }
-
-            Find.WindowStack.Add(new FloatMenu(opts));
-            return false; // fully replaces vanilla's 3-entry menu
         }
 
         // Turn batching on, keeping any size the bill already had; a fresh batch starts at the settings default.
         // Called ONLY from the three interactive "Batch: …" float-menu delegates above, so this is a UI write:
-        // MP-route it through the [SyncMethod] shim (writes the SCRIBED batchBills dict on every client; inline in
+        // Route mode and batch metadata through one registered command (inline in
         // SP). The size is resolved locally first (read of the current value, fall back to the settings default), so
         // the synced command carries an absolute size and is idempotent across clients.
-        private static void EnableBatch(HaulersDreamGameComponent comp, Bill_Production bill)
+        private static void EnableBatch(HaulersDreamGameComponent comp, Bill_Production bill, BillRepeatModeDef mode)
         {
             int size = comp.BatchSizeOf(bill);
             if (size < 1)
                 size = Mathf.Max(1, HaulersDreamMod.Settings?.defaultBatchSize ?? 10);
-            MultiplayerCompat.SetBillBatch(bill, true, size);
+            MultiplayerCompat.SetBillBatchMode(bill, mode, size);
         }
     }
 

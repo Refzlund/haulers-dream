@@ -44,7 +44,7 @@
 <HaulersDream.Setting.BuildFromInventoryPartial>所持品からの部分的な建築を許可する</HaulersDream.Setting.BuildFromInventoryPartial>
 <HaulersDream.Setting.BuildFromInventoryPartialDesc>通常、建築は全体に必要な資材がそろうまで開始されません。これをオンにすると、必要な総量に満たなくても、所持品にある資材だけで骨組みを開始し進めます。残りは資材が手に入り次第届けられます。バニラの全か無かのルールを変えるため、デフォルトはオフです。「所持品から建築する」が必要です。</HaulersDream.Setting.BuildFromInventoryPartialDesc>
 <HaulersDream.Setting.ShareForCrafting>携行中の資材を製作作業指示に使う</HaulersDream.Setting.ShareForCrafting>
-<HaulersDream.Setting.ShareForCraftingDesc>製作中のポーンは、地面に落ちた山だけでなく、ポーンがすでに携行中の所持品から作業指示の材料を調達できます。他のMODが製作材料の運搬を管理している場合、Hauler's Dreamは自動的に手を引いてそちらに集めさせます。そのため、どんな製作ループもあなたが何もしなくても自然に解決します。</HaulersDream.Setting.ShareForCraftingDesc>
+<HaulersDream.Setting.ShareForCraftingDesc>有効にすると、製作の作業指示でHauler's Dreamが追跡する携行資材を使用できます。製作者自身が持つ資材も対象です。この設定によって、HDが追跡していない私物が作業指示の材料として使えるようになるわけではありません。Common Senseが材料を集める場合、HDは通常の作業指示の材料検索に携行資材を追加せず、材料の収集をCommon Senseに任せます。</HaulersDream.Setting.ShareForCraftingDesc>
 <HaulersDream.Setting.ShareMeetInMiddle>手の空いた運搬者が作業者に近づいて物資を手渡す</HaulersDream.Setting.ShareMeetInMiddle>
 <HaulersDream.Setting.BatchWorkDeliveries>1回の往復で多数の予約済み建築分の資材を運ぶ</HaulersDream.Setting.BatchWorkDeliveries>
 <HaulersDream.Setting.BatchWorkDeliveriesDesc>安価なものを大量に建てる（例：長い柵）とき、ポーンは予約済みの多数の建築分の資材を手いっぱいに持ち、少しずつ往復するのではなく、1回の往復でそれぞれに届けます。手で運ぶので速度低下はありません。</HaulersDream.Setting.BatchWorkDeliveriesDesc>
@@ -71,7 +71,7 @@
 <HaulersDream.Setting.BulkHaulAlways>常にかき集める — すべての運搬で周囲のものをすべて拾う</HaulersDream.Setting.BulkHaulAlways>
 <HaulersDream.Setting.BulkHaulAlwaysDesc>自動・指示を問わず、すべての運搬で近くの運搬可能物もポーンの所持品に積み、まとめて1回の保管庫への往復にします。どれだけ運ぶかは下の賢い過積載スライダーを尊重します。別の往復をするよりも速度低下に見合うだけの追加重量しか運びません。</HaulersDream.Setting.BulkHaulAlwaysDesc>
 <HaulersDream.Setting.HaulNearbyOption>右クリックに「近くのものをすべて運搬」の指示を追加</HaulersDream.Setting.HaulNearbyOption>
-<HaulersDream.Setting.HaulNearbyOptionDesc>運搬可能なアイテムの右クリックメニューに（運搬できるポーン向けに）「近くのものをすべて運搬」の選択肢を追加します。これは即座に一括かき集めを開始するので、一括運搬を発動させるために2つの運搬を優先指定する必要がなくなります。バニラの「運搬を優先」も、単一アイテム運搬として並んで表示され続けます。</HaulersDream.Setting.HaulNearbyOptionDesc>
+<HaulersDream.Setting.HaulNearbyOptionDesc>運搬可能なアイテムの右クリックメニューに（運搬できるポーン向けに）「近くのものをすべて運搬」の選択肢を追加します。これは即座に一括かき集めを開始するので、一括運搬を発動させるために2つの運搬を優先指定する必要がなくなります。バニラの「運搬を優先」も、単一アイテム運搬として並んで表示され続けます。 選択中の Misc. Robots のロボットには運搬ボタンも追加されます。Biotech が無効でも利用できます。</HaulersDream.Setting.HaulNearbyOptionDesc>
 <HaulersDream.Setting.ManualPickup>右クリックに「Xを拾う」の指示を追加</HaulersDream.Setting.ManualPickup>
 <HaulersDream.Setting.ManualPickupDesc>地面の運搬可能アイテムの右クリックメニューに「Xを拾う」の選択肢を追加します。ポーンはクリックされた山を、追跡対象のHauler's Dream運搬として所持品へ直接拾い、それは通常の荷下ろしによって片付けられます。そのため自動荷下ろしがオフでも決して失われません。バニラの右クリック運搬選択肢への追加です。</HaulersDream.Setting.ManualPickupDesc>
 <HaulersDream.Setting.KeepInInventory>右クリックに「Xを所持品に保持」の指示を追加</HaulersDream.Setting.KeepInInventory>
@@ -147,10 +147,10 @@
 <HaulersDream.Setting.TaintedLeave>死体に残す。どのはぎ取りでも脱がされず、手動で出したはぎ取り命令でも同じ（火葬は死体ごと焼き、解体はバニラ同様に作業台に落とす）</HaulersDream.Setting.TaintedLeave>
 <HaulersDream.Setting.TaintedForbid>落として禁止する</HaulersDream.Setting.TaintedForbid>
 <HaulersDream.Setting.TaintedDestroy>その場で破壊する（クエストアイテムと聖遺物は代わりに持ち帰られ、決して破壊されません）</HaulersDream.Setting.TaintedDestroy>
-<HaulersDream.Setting.HaulTamedSlaughter>と畜した死骸を保管庫へ運搬する</HaulersDream.Setting.HaulTamedSlaughter>
-<HaulersDream.Setting.HaulTamedSlaughterDesc>入植者が入植地の動物のと畜を終えると、新鮮な死骸はその場で腐らないよう、すぐ保管庫（冷凍庫や死体の備蓄ゾーン）へ運搬されます。到達可能な保管場所が受け入れる場合のみで、そうでなければバニラとまったく同じく置かれたままになります。（バニラはと畜した動物を自ら運搬することは決してありません。これはそのすき間を埋めます。）</HaulersDream.Setting.HaulTamedSlaughterDesc>
-<HaulersDream.Setting.HaulWildKills>狩った死骸を保管庫へ運搬する</HaulersDream.Setting.HaulWildKills>
-<HaulersDream.Setting.HaulWildKillsDesc>仕留めた直後に狩りが中断されたとき — 狩人が欲求・徴兵・精神崩壊で引き離されたり、狩りがタイムアウトしたり — 狩人は新鮮な死骸を、遅い一般運搬待ち行列に残す代わりに、立ち去りがてら速やかに保管庫へ運搬します。きれいに狩れた場合は狩人がすでに獲物を家へ運ぶ（バニラ）ので、これは邪魔をしません — 二重運搬はありません。到達可能な保管場所が死体を受け入れる場合のみ運搬し、そうでなければバニラとまったく同じく死骸は置かれたままです（決して禁止されないので、受け入れる冷凍庫や死体の備蓄ゾーンができれば通常の死体運搬が回収します）。</HaulersDream.Setting.HaulWildKillsDesc>
+<HaulersDream.Setting.HaulTamedSlaughter>入植地の動物の死骸を保管庫へ運搬する</HaulersDream.Setting.HaulTamedSlaughter>
+<HaulersDream.Setting.HaulTamedSlaughterDesc>入植地の動物をと畜するか、Allow Tool（そのツールで対象に指定できる場合） でとどめを刺すと、運搬条件を満たすポーンが自分の既存の指示の末尾に死骸の運搬を追加します。死骸が禁止されておらず、それを受け入れる到達可能な保管場所が必要です。死骸の禁止を解除したり、待機中の作業を置き換えたりはしません。</HaulersDream.Setting.HaulTamedSlaughterDesc>
+<HaulersDream.Setting.HaulWildKills>野生動物の死骸を保管庫へ運搬する</HaulersDream.Setting.HaulWildKills>
+<HaulersDream.Setting.HaulWildKillsDesc>獲物を倒した後に狩りが中断された場合や、Allow Tool または Keyz' Allow Utilities で派閥に属さない野生動物にとどめを刺した場合、運搬条件を満たすポーンが自分の既存の指示の末尾に死骸の運搬を追加します。死骸が禁止されておらず、それを受け入れる到達可能な保管場所が必要です。死骸の禁止は解除しません。通常どおり完了したバニラの狩りは本来の運搬を続け、運搬指示を追加しません。</HaulersDream.Setting.HaulWildKillsDesc>
 <HaulersDream.Setting.ButcherSpoilingFirst>最も傷んだ死体から先に解体する</HaulersDream.Setting.ButcherSpoilingFirst>
 <HaulersDream.Setting.ButcherSpoilingFirstDesc>入植者が解体の作業指示用に死体を選ぶとき、単に最も近いものではなく、最も腐りかけのもの（作業指示がすでに許可した死体の中で、その材料探索半径内）を選びます。そのため肉が傷む前に回収されます。すでに有効な死体のうちどれを使うかの順序を変えるだけで、レシピ・探索半径・作業指示が受け入れる死体を変えることは決してありません。凍った死体は最後に回されます（傷んでいないため）。通常の解体の作業指示とHauler's Dreamのバッチの両方に適用されます。デフォルトはオンです。</HaulersDream.Setting.ButcherSpoilingFirstDesc>
 <HaulersDream.Setting.CookSpoilingFirst>最も傷んだ食料から先に調理する</HaulersDream.Setting.CookSpoilingFirst>
@@ -328,7 +328,7 @@
 <HaulersDream.Setting.ShowBenchGatherGizmo>作業台ごとの「材料を集める」ボタンを表示</HaulersDream.Setting.ShowBenchGatherGizmo>
 <HaulersDream.Setting.ShowBenchGatherGizmoDesc>各作業台のコマンドバーに「材料を集める」トグルを追加します。特定の作業台だけ材料のかき集めをオフにして、そこではRimWorld本来の一度に1山ずつの動作を使えます。すぐ隣から補充している調理台や作業台のように、集めるほうが節約できる時間より高くつく場所に便利です。既定でオンです。これはボタンを表示するかどうかだけを決めるもので、すでにオフにした作業台はどちらの場合でもオフのままです。作業台をオフにする指定は常に上の設定より優先され、「製作材料を所持品で運ぶ（往復削減）」がオフでも機能します。バッチ製作はその設定に関係なく材料を集めるからです。</HaulersDream.Setting.ShowBenchGatherGizmoDesc>
 <HaulersDream.PrepGather.Report>製作の材料を集めている。</HaulersDream.PrepGather.Report>
-<HaulersDream.BulkHaul.Report>近くのものをすべて運搬している。</HaulersDream.BulkHaul.Report>
+<HaulersDream.BulkHaul.Report>アイテムを集めて所持品に入れている。</HaulersDream.BulkHaul.Report>
 <HaulersDream.JobReport.DefaultDestination>保管庫</HaulersDream.JobReport.DefaultDestination>
 <HaulersDream.JobReport.EnRoute.Load>{ORIGINAL}（{DESTINATION}へ向かう道中）</HaulersDream.JobReport.EnRoute.Load>
 <HaulersDream.JobReport.EnRoute.Unload>{ORIGINAL}（{DESTINATION}へ向かう道中）</HaulersDream.JobReport.EnRoute.Unload>
@@ -357,7 +357,7 @@
 <HaulersDream.LoadTransporter.Option>{0}の一括積み込みを優先</HaulersDream.LoadTransporter.Option>
 <HaulersDream.LoadTransporter.CouldNotStart>今、その輸送ポッドに一括積み込みする近くのものがありません。</HaulersDream.LoadTransporter.CouldNotStart>
 <HaulersDream.Setting.EnableBulkLoadTransporters>輸送ポッドとシャトルを1回の往復で一括積み込み</HaulersDream.Setting.EnableBulkLoadTransporters>
-<HaulersDream.Setting.EnableBulkLoadTransportersDesc>輸送ポッドやシャトルが積み込みに設定されているとき、運搬役はその積荷目録の一部を確保し、近くの複数の山を所持品にかき集め、輸送ポッドへ一度だけ歩き、それらをすべて預けます — バニラの1往復1山を手に持つ代わりです。複数の運搬役が大きな目録を二重運搬なしで分担し、確保された貨物が入るまでポッドは搭乗も発射もしません。これをオフにすると、バニラの1山ずつの輸送ポッド積み込みがそのまま使われます。</HaulersDream.Setting.EnableBulkLoadTransportersDesc>
+<HaulersDream.Setting.EnableBulkLoadTransportersDesc>輸送ポッドやシャトルが積み込みに設定されているとき、運搬役はその積荷目録の一部を確保し、近くの複数の山を所持品にかき集め、輸送ポッドへ一度だけ歩き、それらをすべて預けます — バニラの1往復1山を手に持つ代わりです。複数の運搬役が大きな目録を二重運搬なしで分担し、確保された貨物が入るまでポッドは搭乗も発射もしません。これをオフにすると、バニラの1山ずつの輸送ポッド積み込みがそのまま使われます。 優先命令では、非徴兵状態で新たな予約命令がなければ、配達成功後もこの積荷リストへの往復を続けます。徴兵中でも1回の積み込みは可能です。</HaulersDream.Setting.EnableBulkLoadTransportersDesc>
 <HaulersDream.Setting.BulkLoadAiUpdateFrequency>積み込み再確認の間隔：{0}ティック</HaulersDream.Setting.BulkLoadAiUpdateFrequency>
 <HaulersDream.LoadPortal.Report>ポータルに一括積み込みしている。</HaulersDream.LoadPortal.Report>
 <HaulersDream.LoadPortal.Option>{0}の一括積み込みを優先</HaulersDream.LoadPortal.Option>
@@ -420,7 +420,7 @@
 <HaulersDream.Setting.OpportunisticLoadDesc>近くの輸送ポッド・シャトル・マップポータル・車両が待っているアイテムをすでに携行しているポーンは、まったく新しい取得運行を始める代わりに、迂回してそれらを預けに行きます。無駄な歩行が減ります。デフォルトはオフです（ポーンが次に取るタスクを変えるため）。</HaulersDream.Setting.OpportunisticLoadDesc>
 <HaulersDream.Setting.LoadOpportunityRadius>道中預けの探索半径：{0}マス</HaulersDream.Setting.LoadOpportunityRadius>
 <HaulersDream.Setting.ContinuousLoading>「完了まで積み込む」右クリック指示</HaulersDream.Setting.ContinuousLoading>
-<HaulersDream.Setting.ContinuousLoadingDesc>1人の運び手（徴兵中でも）を、まだ積み込みが必要な近くのすべての輸送グループへ送り、すべて満杯になるまでジョブを連鎖させる右クリック指示を追加します — 大きなキャラバンを1つの指示で積み込むのに便利です。デフォルトはオフです（任意の便利機能）。</HaulersDream.Setting.ContinuousLoadingDesc>
+<HaulersDream.Setting.ContinuousLoadingDesc>選択した積荷リストを完了後、近くの積み込み先へ続ける右クリック命令を追加します。続行には非徴兵状態、配達の成功、新たな予約命令がないことが必要です。初期設定はオフです。</HaulersDream.Setting.ContinuousLoadingDesc>
 <HaulersDream.ContinuousLoad.Option>完了まで積み込む（連続） — {0}</HaulersDream.ContinuousLoad.Option>
 <HaulersDream.ContinuousLoad.CouldNotStart>今、それに一括積み込みする近くのものがありません。</HaulersDream.ContinuousLoad.CouldNotStart>
 <HaulersDream.Setting.LoadHybridPathing>一括積み込みの立ち寄りを実際の経路探索で順序付ける</HaulersDream.Setting.LoadHybridPathing>
@@ -626,7 +626,7 @@
 <HaulersDream.Setting.BulkHaulTrigger.Lab>一括運搬のトリガー</HaulersDream.Setting.BulkHaulTrigger.Lab>
 <HaulersDream.Setting.KeepWorkingMargin.Lab>より長い移動の前に降ろす</HaulersDream.Setting.KeepWorkingMargin.Lab>
 <HaulersDream.Setting.MinFreeSpaceToUnloadCarrier.Lab>開始に必要な最小のバックパック空き</HaulersDream.Setting.MinFreeSpaceToUnloadCarrier.Lab>
-<HaulersDream.Setting.MinFreeSpaceToUnloadCarrier.Help>運搬役が荷物運搬動物を空にし始める前に、自分のバックパックがすぐにあふれないよう、少なくともこれだけの携行容量を空けておく必要があります。</HaulersDream.Setting.MinFreeSpaceToUnloadCarrier.Help>
+<HaulersDream.Setting.MinFreeSpaceToUnloadCarrier.Help>運搬役が荷物運搬動物を空にし始める前に、自分のバックパックがすぐにあふれないよう、少なくともこれだけの携行容量を空けておく必要があります。 この基準は輸送機の自動荷下ろしにも適用されます。</HaulersDream.Setting.MinFreeSpaceToUnloadCarrier.Help>
 <HaulersDream.Setting.VisualUnloadDelay.Lab>1山ごとの荷下ろし遅延</HaulersDream.Setting.VisualUnloadDelay.Lab>
 <HaulersDream.Setting.VisualUnloadDelay.Help>一括荷下ろし中、各山の間に入る小さな見た目上の間で、意図的な動作として読み取れるようにします。0＝即時。</HaulersDream.Setting.VisualUnloadDelay.Help>
 <HaulersDream.Setting.BulkLoadAiUpdateFrequency.Lab>積み込み再確認の間隔</HaulersDream.Setting.BulkLoadAiUpdateFrequency.Lab>
@@ -828,4 +828,38 @@
   <HaulersDream.Setting.CarryMassCap.Off>制限なし</HaulersDream.Setting.CarryMassCap.Off>
   <HaulersDream.Setting.CarryMassCap.Value>{0} kg</HaulersDream.Setting.CarryMassCap.Value>
   <HaulersDream.Setting.CarryMassCapDesc>ポーンが1回の運搬または採集で所持品に積み込む量に対する、キログラム単位の絶対的な上限です。これは「うちのポーンは運びすぎる」への直接の答えです。低く（たとえば20kg）設定すると、ポーンは最大携行重量まで積むのではなく、少しだけ集めて降ろし、また戻ってきます。上の「携行上限」の割合や賢い過積載と一緒に働き、常に低い方の制限が優先されるため、過積載がオンでもこの上限を超えることはありません。携行上限と同じく、手に持った山ではなく背嚢にしまった分だけを数え、特定の建築や作業指示のためにポーンが取ってくる資材の量は変えません。0にすると無制限になります（デフォルト）。</HaulersDream.Setting.CarryMassCapDesc>
+  <HD_DropAmountTitle>数量を指定して置く</HD_DropAmountTitle>
+  <HD_DropAmountConfirm>置く</HD_DropAmountConfirm>
+  <HD_DropAmountContext>{0}\n{1}\n所持数: {2}</HD_DropAmountContext>
+  <HD_DropAmountQuantity>置く数量</HD_DropAmountQuantity>
+  <HD_DropAmountRemaining>所持品に残る数: {0}</HD_DropAmountRemaining>
+  <HD_DropAmountInvalid>1から{0}までの整数を入力してください。</HD_DropAmountInvalid>
+  <HD_DropAmountChanged>キャラクターの状態か所持品のスタックが変わりました。この画面を開き直してください。</HD_DropAmountChanged>
+  <HD_DropAmountUnavailable>現在のMOD構成では、置く数量を指定できません。</HD_DropAmountUnavailable>
+  <HD_DropAmountUnconfirmed>アイテムを置いたことを確認できませんでした。キャラクターの所持品を確認してください。</HD_DropAmountUnconfirmed>
+  <HD_DropAmountBlocked>近くにこれらのアイテムを置く場所がありません。</HD_DropAmountBlocked>
+  <HD_DropAmountPartial>{1}個中{0}個を置きました。近くに十分な空きがありませんでした。</HD_DropAmountPartial>
+  <HD_NearbyHaulGizmoDesc>アイテムを選択すると、そのアイテムと周囲のアイテムを保管場所に運びます。選択時に指示を予約するキーを押していると、指示が予約されます。</HD_NearbyHaulGizmoDesc>
+  <HD_NearbyHaulPawnUnavailable>このポーンは現在の状態では運搬の指示を受けられません。</HD_NearbyHaulPawnUnavailable>
+  <HD_NearbyHaulDrafted>運搬を指示する前に、このポーンの徴兵を解除してください。</HD_NearbyHaulDrafted>
+  <HD_NearbyHaulMapDisabled>このマップでは Hauler's Dream が無効です。</HD_NearbyHaulMapDisabled>
+  <HD_NearbyHaulSyncUnavailable>マルチプレイ用コマンドを登録できなかったため、周囲のアイテムの運搬を利用できません。</HD_NearbyHaulSyncUnavailable>
+  <HD_NearbyHaulInventoryUnavailable>このポーンはインベントリを使った運搬を利用できません。</HD_NearbyHaulInventoryUnavailable>
+  <HD_NearbyHaulRobotUnsupported>現在のMOD構成では、ロボットの運搬作業を読み取れませんでした。</HD_NearbyHaulRobotUnsupported>
+  <HD_NearbyHaulSourceUnavailable>選択したアイテムは運搬できません。</HD_NearbyHaulSourceUnavailable>
+  <HaulersDream.UnloadTransporter.Option>{0}の一括降ろしを優先</HaulersDream.UnloadTransporter.Option>
+  <HaulersDream.UnloadTransporter.CouldNotStart>今はその輸送機からの一括降ろしを開始できません。</HaulersDream.UnloadTransporter.CouldNotStart>
+  <HaulersDream.Gizmo.BulkUnloadAll.Label>一括で全て降ろす</HaulersDream.Gizmo.BulkUnloadAll.Label>
+  <HaulersDream.Gizmo.BulkUnloadAll.Empty>降ろせるものがありません</HaulersDream.Gizmo.BulkUnloadAll.Empty>
+  <HaulersDream.Gizmo.BulkUnloadAll.LoadBlocked>「一括降ろし」が有効です。新しい積み込みを設定する前にオフにしてください。</HaulersDream.Gizmo.BulkUnloadAll.LoadBlocked>
+  <HaulersDream.Gizmo.BulkUnloadAll.UnloadBlocked>この輸送機に向けて積み込みが進行中です。</HaulersDream.Gizmo.BulkUnloadAll.UnloadBlocked>
+  <HaulersDream.Feat.UnloadTransporters.Name>輸送ポッド &amp; シャトルの降ろし</HaulersDream.Feat.UnloadTransporters.Name>
+  <HaulersDream.Setting.EnableBulkUnloadTransporters>輸送機をまとめて荷下ろし</HaulersDream.Setting.EnableBulkUnloadTransporters>
+  <HaulersDream.Setting.EnableBulkUnloadTransportersDesc>輸送ポッドとシャトルに荷下ろしスイッチを追加します。非徴兵状態の運搬者が貨物を直接保管場所へ運び、通常の仕事では1回分を運びます。指定した輸送機への優先命令は、前の貨物を保管してから次の往復を始めます。乗客は降ろしません。積み込み中、保管場所の満杯、徴兵、新たな予約命令がある場合は続行しません。</HaulersDream.Setting.EnableBulkUnloadTransportersDesc>
+  <HaulersDream.Gizmo.BulkUnloadAll.Desc>{0}の貨物を保管場所へ運びます。乗客は降ろしません。優先荷下ろし命令は、非徴兵状態で新たな予約命令がない間、配達完了後に繰り返します。積み込み前にオフにしてください。</HaulersDream.Gizmo.BulkUnloadAll.Desc>
+  <HaulersDream.Feat.UnloadTransporters.Blurb>着陸した輸送機の貨物を保管場所へ直接運ぶ</HaulersDream.Feat.UnloadTransporters.Blurb>
+  <HaulersDream.UnloadTransporter.Drafted>この命令を開始するには徴兵を解除してください。</HaulersDream.UnloadTransporter.Drafted>
+  <HaulersDream.UnloadTransporter.NoStorage>残りの貨物に適した保管場所がありません。</HaulersDream.UnloadTransporter.NoStorage>
+  <HaulersDream.Transporter.SyncUnavailable>マルチプレイ同期の登録に失敗したため、輸送機の命令を使用できません。</HaulersDream.Transporter.SyncUnavailable>
+  <HaulersDream.PlanRoute.SyncUnavailable>現在、Multiplayerはこのルート指示を同期できません。指示は出されていません。</HaulersDream.PlanRoute.SyncUnavailable>
 </LanguageData>

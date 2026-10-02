@@ -40,7 +40,7 @@ namespace HaulersDream
         /// <summary>
         /// Multiplayer entry point for the sow dialog's Append/Replace buttons — the cell-based sibling of
         /// <see cref="RouteExecutor.ExecuteRouteSynced"/>. Like that method, the BODY references NO Multiplayer.API
-        /// type and carries NO [SyncMethod] attribute (issue #6); it is registered BY NAME from the MP-gated
+        /// type and carries NO [SyncMethod] attribute (issue #6); its small-arity wrapper is registered by name from the MP-gated
         /// <see cref="MultiplayerCompat"/> shim, so a non-MP game never resolves the unshipped API assembly.
         ///
         /// <para>Args are MP-serializable only: a <see cref="Pawn"/>, an <see cref="IntVec3"/> anchor cell,
@@ -50,6 +50,26 @@ namespace HaulersDream
         /// matching the recompute-on-all-clients lockstep model the Thing route already uses.</para>
         /// </summary>
         public static void ExecuteSowRouteSynced(Pawn pawn, IntVec3 anchor, SowRouteMode mode, int amount, int radius,
+            float maxDistance, bool smart, bool replace, List<IntVec3> mustInclude,
+            HaulersDream.Core.RouteSelectionMethod selectionMethod, int exactMax)
+        {
+            if (MultiplayerCompat.InMultiplayerGame)
+            {
+                if (!MultiplayerCompat.CanSendSowRoute) { MultiplayerCompat.RejectRouteCommand(); return; }
+                ExecuteSowRouteCommandSynced(pawn, new SowRouteCommandArgs { anchor = anchor, mode = mode, amount = amount, radius = radius, maxDistance = maxDistance, smart = smart, replace = replace, mustInclude = mustInclude, selectionMethod = selectionMethod, exactMax = exactMax });
+                return;
+            }
+            ExecuteSowRouteLocal(pawn, anchor, mode, amount, radius, maxDistance, smart, replace, mustInclude, selectionMethod, exactMax);
+        }
+
+        // Only this small-arity entry is registered. A direct unsynchronized MP call cannot mutate.
+        internal static void ExecuteSowRouteCommandSynced(Pawn pawn, SowRouteCommandArgs args)
+        {
+            if (!MultiplayerCompat.SowRouteExecuting) return;
+            ExecuteSowRouteLocal(pawn, args.anchor, args.mode, args.amount, args.radius, args.maxDistance, args.smart, args.replace, args.mustInclude, args.selectionMethod, args.exactMax);
+        }
+
+        private static void ExecuteSowRouteLocal(Pawn pawn, IntVec3 anchor, SowRouteMode mode, int amount, int radius,
             float maxDistance, bool smart, bool replace, List<IntVec3> mustInclude,
             HaulersDream.Core.RouteSelectionMethod selectionMethod, int exactMax)
         {

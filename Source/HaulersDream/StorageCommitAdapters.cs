@@ -6,47 +6,28 @@ using Verse.AI;
 
 namespace HaulersDream
 {
-    /*
-        ═══════════════════════════════════════════════════════════════════════════════════════════════
-                      The two seams the storage commitment ledger reaches vanilla through
-        ═══════════════════════════════════════════════════════════════════════════════════════════════
-        Two Harmony patches, and that is the whole surface. Between them they replace the ONE job vanilla's
-        destination cell reservation used to do that HD took away: shrinking every other hauler's count.
-
-          • HaulAIUtility.HaulToCellStorageJob — the COUNTER. Every vanilla cell-storage haul is produced
-            here (WorkGiver_Haul.JobOnThing, JobGiver_Haul.TryGiveJob, Toils_Haul.StoreThingJob,
-            JobDriver_Reading, HaulSourceUtility, Toils_Recipe's bench product, Pawn_JobTracker's
-            opportunistic job, WorkGiver_CookFillHopper), so clamping here reaches all of them at once.
-
-          • StoreUtility.IsGoodStoreCell — the GATE. Clamping the count alone is not enough: cell SELECTION
-            runs through IsGoodStoreCell and nothing else, so a pawn would still be routed to a group that
-            is fully spoken for and then handed a job.count of 0 — which vanilla answers with a red
-            "Invalid count: 0, setting to 1" from Toils_Haul.ErrorCheckForCarry.
-
-        → KEY: NEVER null the job and NEVER zero the count. Toils_Recipe passes HaulToCellStorageJob's
-          result straight into StartJob with no null check, and StartJob(null) throws on curJob.startTick.
-          The floor of 1 is safe precisely because the gate stops the destination being chosen at all.
-        → GOTCHA: no Finalizer on either. Harmony already reds-out an uncaught patch exception with the
-          patch's own name in the trace, and wrapping the hottest method in the haul system in a try/catch
-          to re-log what is already visible would cost more than it buys.
-        → NOTE: parameters are taken POSITIONALLY (__0, __1, …). Harmony throws at patch time on a name that
-          does not exist, and this assembly's per-class patch loop turns that into a logged warning rather
-          than a fatal — so a decompiler's parameter names must not be load-bearing.
-        → KEY: these two classes and the reservation strip (Patch_JobDriver_HaulToCell_NoCellReservation) are
-          applied INDEPENDENTLY by that loop, so "adapters missing, strip present" is expressible — and it is
-          the original bug, shipped inert. HaulersDreamMod.VerifyStorageSeam checks all three at startup and
-          calls StorageCommitments.Disable() if any is unaccounted for, which stands the strip down with
-          them. Do not add a patch class to this seam without adding it to StorageSeamTargets.
-    */
+    // The two value adapters below share the storage ledger with actual reservation and
+    // pickup admission. StorageQueryScopeHooks additionally owns the inspected native
+    // search/factory lifetimes, using void finalizers for validation and exception-safe
+    // cleanup. Those scopes never publish a claim or replace the original count loop.
+    //
+    // Native count is the remaining trip budget, including opportunistic duplicates. Keep
+    // its nonnull/minimum-one contract: several native callers immediately StartJob with
+    // the factory result. Admission at reservation/start and every real pickup checks the
+    // concrete source. The retained unsupported-provider scalar route remains separate.
+    //
+    // Bind parameters positionally to the installed native signatures. All required patches
+    // (including query scopes and reservation stripping) are listed in StorageSeamTargets;
+    // a missing binding disables the seam rather than allowing an unprotected strip.
 
     /// <summary>
-    /// The COUNTER: clamp a freshly-built haul's count to what the destination group genuinely still has
-    /// free once other haulers' commitments are subtracted.
+    /// Preserve the native trip budget for resource admission; retain the existing scalar
+    /// count fallback only where that provider contract remains in use.
     /// </summary>
     [HarmonyPatch(typeof(HaulAIUtility), nameof(HaulAIUtility.HaulToCellStorageJob))]
     public static class Patch_HaulToCellStorageJob_ClampToCommitments
     {
-        /// <summary>Clamp the job vanilla just built.</summary>
+        /// <summary>Preserve the factory contract and its supported admission route.</summary>
         /// <param name="__result">The haul job; left entirely alone when null, and never nulled here.</param>
         /// <param name="__0">The hauling pawn.</param>
         /// <param name="__1">The stack being hauled.</param>
@@ -69,6 +50,26 @@ namespace HaulersDream
             if (group == null)
                 return; // a container or a bare cell — not a destination this ledger arbitrates
 
+            if (StorageCommitments.QueryFactoryHasView(__0, map, __1, group))
+            {
+                // The original count loop already used this factory's scoped gate. Its
+                // finalizer certifies the view; actual pickup still admits the real source.
+                __result.count = Math.Max(1, __result.count);
+                return;
+            }
+
+            var resource = StorageCommitments.ResourceUnitsFor(__0, group, __1,
+                Math.Max(1, Math.Min(__result.count > 0 ? __result.count : __1.stackCount, __1.stackCount)),
+                __2, __result, out int witnessed);
+            if (resource != StorageCommitments.ResourceAllowance.Unsupported)
+            {
+                // count is native's entire remaining pickup budget, not a commitment to this
+                // first Thing. Keeping it lets native discover actual compatible duplicates.
+                // Reservation/start and each actual pickup admit their concrete source anew.
+                // Keep native's nonzero contract for callers which immediately StartJob.
+                __result.count = Math.Max(1, __result.count);
+                return;
+            }
             int free = StorageCommitments.FreeUnitsFor(__0, group, __1.def, __1, out bool truncated);
             if (free == int.MaxValue)
                 return;
@@ -110,6 +111,14 @@ namespace HaulersDream
         /// haul, and that distinction is load-bearing — see below.</param>
         static void Postfix(ref bool __result, IntVec3 __0, Map __1, Thing __2, Pawn __3)
         {
+            if (!StorageAllocationObservation.InProgress && StorageProgressWork.Active != null)
+            {
+                if (StorageProgressWork.Active.Lane == HaulersDream.Core.StorageWorkLane.Mandatory)
+                    StorageProgressWork.Charge(HaulersDream.Core.StorageWorkKind.Native);
+                // Native predicate entry, not a claim about its internal early-exit visits.
+                if (__1 != null && __0.InBounds(__1))
+                    StorageProgressWork.NativeGridUpperBound(__1.thingGrid.ThingsListAt(__0).Count);
+            }
             if (!__result)
                 return;
             // → GOTCHA: this null check is the only thing between this gate and the colony-wide haulable
@@ -133,6 +142,15 @@ namespace HaulersDream
             if (group == null)
                 return; // the desperate radial leg and the caravan search are cell-only: inert here
 
+            var resource = StorageCommitments.SearchCellUnitsFor(__3, __1, group, __2,
+                __0, out int witnessed);
+            if (resource != StorageCommitments.ResourceAllowance.Unsupported)
+            {
+                __result = resource == StorageCommitments.ResourceAllowance.Observed && witnessed > 0;
+                return;
+            }
+            if (!StorageCommitments.CanUseNativeExclusiveCell(__3, group, __0, __2, __3.CurJob))
+            { __result = false; return; }
             int free = StorageCommitments.FreeUnitsFor(__3, group, __2.def, __2, out bool truncated);
             // An incomplete look must never become a hard refusal. The cell walk is budgeted, so a huge
             // nearly-full group can report less room than it has; clamping a COUNT on an under-estimate is
@@ -153,7 +171,8 @@ namespace HaulersDream
     /// <para>The flag has to be carried as a scope rather than read off the job, because at the moment the
     /// destination is chosen the job does not exist yet — <c>playerForced</c> is stamped on it afterwards,
     /// by <c>Pawn_JobTracker.TryTakeOrderedJob</c>. The claim itself is still recorded when the job starts,
-    /// so a forced hauler is visible to everyone else; it is only never BLOCKED by them.</para>
+    /// so a forced hauler is visible to everyone else. Actual startup admits a finite primary
+    /// against protected cargo/leases before reducing eligible automatic pending work.</para>
     /// </summary>
     [HarmonyPatch(typeof(HaulAIUtility), nameof(HaulAIUtility.HaulToStorageJob))]
     public static class Patch_HaulToStorageJob_ForcedScope

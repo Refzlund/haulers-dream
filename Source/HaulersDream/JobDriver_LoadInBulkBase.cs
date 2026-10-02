@@ -25,7 +25,7 @@ namespace HaulersDream
     /// labels in its <c>ExposeData</c> (the labels differ per driver and MUST NOT change). The base
     /// <see cref="ExposeData"/> only chains <c>base.ExposeData()</c>.
     /// </summary>
-    public abstract class JobDriver_LoadInBulkBase : JobDriver
+    public abstract partial class JobDriver_LoadInBulkBase : JobDriver
     {
         protected const TargetIndex TargetInd = TargetIndex.A; // primary deposit target
         protected const TargetIndex StackInd = TargetIndex.B;  // scratch: the ground stack being swept
@@ -112,6 +112,7 @@ namespace HaulersDream
                 else
                     HaulersDreamGameComponent.Instance?.LoadClaimCarriedSurplus(pawn, adapter);
                 OnExtraClaim();
+                CaptureStoragePayloadBinding();
             }
         }
 
@@ -120,6 +121,7 @@ namespace HaulersDream
             if (adapter != null)
                 return adapter;
             adapter = BuildLoadable();
+            CaptureStoragePayloadBinding();
             return adapter;
         }
 
@@ -299,13 +301,6 @@ namespace HaulersDream
             // Release the claim + salvage any still-carried task items on every non-Success end (idempotent).
             AddFinishAction(delegate (JobCondition condition)
             {
-                // B4 continuous loading (opt-in, default OFF): on a player-forced SUCCESS, chain to the nearest OTHER
-                // target of the same family that still has work (dedup excludes THIS target). Byte-inert when the
-                // setting is off (ShouldChain short-circuits). The chained job targets a different ledger key, so we
-                // still RELEASE this target's claims below (retainClaimOnEnd stays false — retaining would leak the
-                // finished claim); the chained job re-claims its own target in its Notify_Starting next tick.
-                if (ContinuousLoad.ShouldChain(condition, job))
-                    ContinuousLoad.TryChainFrom(pawn, EnsureAdapter());
                 if (!retainClaimOnEnd)
                 {
                     HaulersDreamGameComponent.Instance?.LoadReleaseClaimsForPawn(pawn);
@@ -326,6 +321,9 @@ namespace HaulersDream
                             hcomp.RegisterHauledItem(t);
                     }
                 }
+                // Replanning must see settled old claims. A built successor acquires its own claim only
+                // when Notify_Starting actually runs; queued player work always retains priority.
+                OnClaimsReleased(condition);
             });
         }
 
@@ -361,6 +359,12 @@ namespace HaulersDream
         /// <summary>Per-family extra claim release run inside the finish action when the ledger claims are released
         /// (vehicle: VF VRM release). No-op by default.</summary>
         protected virtual void OnReleaseExtraClaims() { }
+
+        protected virtual void OnClaimsReleased(JobCondition condition)
+        {
+            if (ContinuousLoad.ShouldChain(condition, job))
+                ContinuousLoad.TryChainFrom(pawn, EnsureAdapter());
+        }
 
         /// <summary>Top-level fail conditions registered at the head of <see cref="MakeNewToils"/>. All three drivers
         /// fail on the deposit target despawning/nulling.</summary>

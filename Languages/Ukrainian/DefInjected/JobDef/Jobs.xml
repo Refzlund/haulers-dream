@@ -9,11 +9,12 @@
 <HaulersDream_BatchCraft.reportString>виготовляє партію.</HaulersDream_BatchCraft.reportString>
 <HaulersDream_InventoryDoBill.reportString>виготовляє.</HaulersDream_InventoryDoBill.reportString>
 <HaulersDream_BillPrepGather.reportString>збирає інгредієнти для виготовлення.</HaulersDream_BillPrepGather.reportString>
-<HaulersDream_BulkHaul.reportString>переносить усе, що поруч.</HaulersDream_BulkHaul.reportString>
+<HaulersDream_BulkHaul.reportString>збирає предмети до інвентарю.</HaulersDream_BulkHaul.reportString>
 <HaulersDream_LoadPackAnimal.reportString>навантажує речі на в'ючну тварину.</HaulersDream_LoadPackAnimal.reportString>
 <HaulersDream_UnloadCarrierInBulk.reportString>розвантажує в'ючну тварину.</HaulersDream_UnloadCarrierInBulk.reportString>
 <HaulersDream_LoadTransportersInBulk.reportString>масово завантажує транспорт.</HaulersDream_LoadTransportersInBulk.reportString>
 <HaulersDream_LoadPortalInBulk.reportString>масово завантажує портал.</HaulersDream_LoadPortalInBulk.reportString>
 <HaulersDream_LoadVehicleInBulk.reportString>масово завантажує транспортний засіб.</HaulersDream_LoadVehicleInBulk.reportString>
 <HaulersDream_BulkRefuel.reportString>масово заправляє.</HaulersDream_BulkRefuel.reportString>
+  <HaulersDream_UnloadTransporterInBulk.reportString>розвантажує транспорт.</HaulersDream_UnloadTransporterInBulk.reportString>
 </LanguageData>

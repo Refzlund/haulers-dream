@@ -21,14 +21,14 @@ namespace HaulersDream
     /// outdoors), the search scopes to a radius around the chosen cell instead, so haulers consolidate
     /// across nearby outdoor stockpiles without wandering the map.
     ///
-    /// STORAGE-MOD COMPATIBILITY BY CONSTRUCTION (no references, no reflection): candidates are validated
-    /// exclusively through vanilla's own APIs — <c>IsGoodStoreCell</c> (which runs NoStorageBlockersIn,
+    /// Storage candidates use vanilla's own APIs — <c>IsGoodStoreCell</c> (which runs NoStorageBlockersIn,
     /// reachability, fire, forbiddance) and <c>CanStackWith</c>. Adaptive Storage Framework (and mods built
     /// on it, like Neat Storage) patch exactly those APIs (NoStorageBlockersIn transpiler,
     /// GetMaxItemsAllowedInCell, a worker prefix — source-verified in the ASF clone), so their per-building
     /// capacity and acceptance rules apply inside our calls automatically. Container-based storage
     /// (graves, modded ThingOwner units) goes through the untouched non-slot-group path, where stacking is
-    /// inherent.
+    /// inherent. Providers that gate the higher-level group search need an explicit compatibility check:
+    /// Storage Refill Hysteresis controls whether a new refill may start, and RimIOT owns its consolidation.
     ///
     /// NO-RESERVE: vanilla's <c>JobDriver_HaulToCell</c> reserves the destination cell, which makes
     /// <c>IsGoodStoreCell</c> (via CanReserveNew) hide that cell from every other hauler — the classic
@@ -73,11 +73,14 @@ namespace HaulersDream
     [HarmonyPatch(typeof(JobDriver_HaulToCell), nameof(JobDriver_HaulToCell.TryMakePreToilReservations))]
     public static class Patch_JobDriver_HaulToCell_NoCellReservation
     {
-        static bool Prefix(JobDriver_HaulToCell __instance, bool errorOnFailed, ref bool __result)
+        static bool Prefix(JobDriver_HaulToCell __instance, bool errorOnFailed, ref bool __result,
+            out NativeFallbackReservation __state)
         {
-            var s = HaulersDreamMod.Settings;
-            if (s == null || !s.haulToStack)
-                return true; // feature off -> vanilla (reserve cell + thing)
+            __state = null;
+            // A queued/preselected native haul must not skip another current explicit trip's real
+            // destination reservation, including through the forced-order arbitration bypass.
+            if (StorageCommitments.ExplicitShelfCellHeldByOther(__instance.pawn, __instance.job?.targetB.Cell ?? IntVec3.Invalid))
+            { __result = false; return false; }
             var job = __instance.job;
             if (job == null || job.haulMode != HaulMode.ToCellStorage)
                 return true; // non-storage cell hauls keep their reservation semantics
@@ -86,42 +89,75 @@ namespace HaulersDream
             var map = pawn?.Map;
             if (hauled?.def == null || map == null)
                 return true;
-
             var group = BulkHaul.BudgetGroupOf(
                 map.haulDestinationManager.SlotGroupAt(job.GetTarget(TargetIndex.B).Cell));
-            // This job's own count OR everything of this def the pawn is already visibly moving, whichever is
-            // larger. The ledger keeps ONE row per (pawn, def), so a colonist carrying 200 tagged steel to a
-            // shelf that then picks up a 5-steel vanilla haul would otherwise REPLACE its 200-unit claim with
-            // a 5-unit one and make 195 units of in-flight steel invisible to every other hauler.
-            int units = Math.Max(
-                job.count > 0 ? Math.Min(job.count, hauled.stackCount) : hauled.stackCount,
-                StorageCommitments.UnitsMovingOf(pawn, hauled.def));
-
-            // A forced order takes the space back off whoever else claimed it — a direct port of what
-            // vanilla itself does for a container destination in JobDriver_HaulToContainer.UpdateTracker.
-            // The player clicked; the standing arbitration yields.
-            if (job.playerForced && group != null
-                && StorageCommitments.FreeUnitsFor(pawn, group, hauled.def, hauled) <= 0)
-                StorageCommitments.InterruptCommittersTo(group, hauled.def, pawn);
-
-            // THE conditional that makes "strip the reservation without arbitrating" inexpressible. Skipping
-            // vanilla's destination reservation is only safe because something else now stops two haulers
-            // over-filling one cell, so the skip is allowed ONLY where that something else took the job on.
-            // A container, a cell with no slot group, a map HD is inert on — TryCommit says no and vanilla
-            // reserves both targets exactly as it always did.
-            //
-            // This is also what retired the hand-written unstackable carve-out that used to sit here. One
-            // corpse claims one unit of one cell, so the second hauler's gate finds no room and never
-            // re-selects the same cell every tick (issue #162's "started 10 jobs in one tick" loop) — the
-            // special case is gone because the general rule now covers it.
-            if (!StorageCommitments.TryCommit(pawn, group, hauled.def, units, "haul-to-cell"))
-                return true; // no arbitration -> vanilla reserves cell + thing, unchanged
-
-            // Storage haul with the ledger arbitrating: reserve only the THING being hauled. The destination
-            // cell stays unreserved so other haulers can pick (and stack onto) the same cell.
-            __result = pawn.Reserve(job.GetTarget(TargetIndex.A), job, 1, -1, null, errorOnFailed);
-            return false;
+            var s = HaulersDreamMod.Settings;
+            if (s == null || !s.haulToStack || __instance.GetType() != typeof(JobDriver_HaulToCell)
+                || job.def != JobDefOf.HaulToCell)
+                return NativeFallback(__instance, group, ref __result, out __state);
+            // A pre-existing hand passenger is not this activation's incoming parcel. Keep
+            // native whole-cell ownership until native work has bound its own actual cargo.
+            var held = pawn.carryTracker?.CarriedThing;
+            if (held != null && !ReferenceEquals(held, hauled)
+                && !map.reservationManager.ReservedBy(held, pawn, job))
+                return NativeFallback(__instance, group, ref __result, out __state);
+            int requested = job.count > 0 ? Math.Min(job.count, hauled.stackCount) : hauled.stackCount;
+            bool priority = StorageCommitments.MayPrioritizeNative(__instance);
+            int available;
+            var resource = priority
+                ? StorageCommitments.ForcedNativeUnitsFor(__instance, group, hauled, requested, false, out available)
+                : StorageCommitments.ResourceUnitsFor(pawn, group, hauled, requested, job.targetB.Cell, job, out available);
+            if (resource != StorageCommitments.ResourceAllowance.Unsupported)
+            {
+                if (resource != StorageCommitments.ResourceAllowance.Observed || available <= 0)
+                { __result = false; return false; }
+                var source = job.GetTarget(TargetIndex.A);
+                bool alreadyOwned = map.reservationManager.ReservedBy(source, pawn, job);
+                var reservingJob = pawn.CurJob;
+                var reservingDriver = pawn.jobs.curDriver;
+                if (!pawn.Reserve(source, job, 1, -1, null, errorOnFailed))
+                { __result = false; return false; }
+                // Reservation callbacks may change the world. Publish only a fresh, successful
+                // admission after source ownership, never a cached-driver/preflight proposal.
+                bool actual = ReferenceEquals(pawn.CurJob, job) && ReferenceEquals(pawn.jobs.curDriver, __instance);
+                resource = priority
+                    ? StorageCommitments.ForcedNativeUnitsFor(__instance, group, hauled, requested, actual, out available)
+                    : StorageCommitments.ResourceUnitsFor(pawn, group, hauled, requested, job.targetB.Cell, job, out available);
+                if (resource != StorageCommitments.ResourceAllowance.Observed || available <= 0)
+                {
+                    if (!alreadyOwned && (!priority || (ReferenceEquals(pawn.CurJob, reservingJob)
+                        && ReferenceEquals(pawn.jobs.curDriver, reservingDriver) && job.targetA == source
+                        && StorageCommitments.MayPrioritizeNative(__instance))))
+                        map.reservationManager.Release(source, pawn, job);
+                    __result = false; return false;
+                }
+                // Native count is the remaining trip budget, including later opportunistic
+                // sources. Only this concrete reserved source has been admitted so far; a
+                // pickup hook admits each later source before it enters the pawn's hands.
+                if (!priority && ReferenceEquals(pawn.CurJob, job) && ReferenceEquals(pawn.jobs.curDriver, __instance))
+                    StorageCommitments.CommitNativeResource(pawn, job, group, hauled, Math.Min(requested, available));
+                __result = true;
+                return false;
+            }
+            // Unobserved provider semantics keep native source AND destination reservations.
+            // A preselected or forced job must also respect older numerical owners whose
+            // native cell reservation was removed while that provider was supported.
+            return NativeFallback(__instance, group, ref __result, out __state);
         }
+
+        private static bool NativeFallback(JobDriver_HaulToCell driver, ISlotGroup group,
+            ref bool result, out NativeFallbackReservation state)
+        {
+            state = group == null ? null : new NativeFallbackReservation(driver, group);
+            if (state == null || state.Allowed()) return true;
+            state = null; result = false; return false;
+        }
+
+        // Native source/destination reservation callbacks may change admission after the prefix.
+        // Recheck the complete original call; only reservations acquired by this call are undone.
+        static Exception Finalizer(ref bool __result, Exception __exception,
+            NativeFallbackReservation __state)
+            => __state == null ? __exception : __state.Finish(ref __result, __exception);
     }
 
     public static class HaulToStack
@@ -129,7 +165,8 @@ namespace HaulersDream
         // Per-tick memo: the work scan probes HasJobOnThing (= JobOnThing != null) per candidate, and each
         // probe runs the full vanilla storage search INCLUDING this refinement — same lesson as the
         // bulk-haul planner. Key = (thing, CARRIER, vanilla's chosen cell); null/Invalid results cached
-        // too. The carrier is part of the key because IsGoodStoreCell validates per CARRIER (allowed
+        // too, except while SRH is present because its refill toggle can change within one tick.
+        // The carrier is part of the key because IsGoodStoreCell validates per CARRIER (allowed
         // area, its own reservations, reachability) — serving one pawn's cell to another hands out a job
         // that fails synchronously and re-scans the same tick ("started 10 jobs in one tick").
         // [ThreadStatic] to match the sibling BulkHaul.planCache: FindStackCell runs on the per-candidate
@@ -187,7 +224,11 @@ namespace HaulersDream
             {
                 // Belt and braces: even a same-carrier hit can go stale within the tick (an earlier job
                 // this tick reserved the thing or filled the cell) — re-validate before serving it.
-                if (!cached.IsValid || StoreUtility.IsGoodStoreCell(cached, map, t, carrier, faction))
+                // SRH can toggle within this tick. Recheck a cached destination, and don't
+                // retain a negative search across a toggle that could reopen a partial stack.
+                if (!cached.IsValid ? !StorageRefillHysteresisCompat.IsPresent
+                    : StorageRefillHysteresisCompat.AllowsRefill(cached.GetSlotGroup(map))
+                        && StoreUtility.IsGoodStoreCell(cached, map, t, carrier, faction))
                     return cached;
             }
             var result = FindStackCellUncached(t, carrier, map, faction, vanillaCell);
@@ -237,6 +278,7 @@ namespace HaulersDream
                 if (RimIOTCompat.IsActive && RimIOTCompat.IsNetworkManagedGroup(map, group))
                     return true;
                 var cells = group.CellsList;
+                bool refillChecked = false;
                 for (int i = 0; i < cells.Count; i++)
                 {
                     var cell = cells[i];
@@ -258,6 +300,14 @@ namespace HaulersDream
                         continue;
                     if (!CellHasPartialStackOf(cell, map, t))
                         continue;
+                    // SRH gates vanilla's group worker, not IsGoodStoreCell. Ask once for a
+                    // relevant partial; out-of-scope groups never trigger its usage measurement.
+                    if (!refillChecked)
+                    {
+                        if (!StorageRefillHysteresisCompat.AllowsRefill(group))
+                            return true;
+                        refillChecked = true;
+                    }
                     // Vanilla's own full gate: storage blockers (incl. modded per-building capacity rules),
                     // forbiddance, reachability for this carrier, fire, reservations.
                     if (!StoreUtility.IsGoodStoreCell(cell, map, t, carrier, faction))

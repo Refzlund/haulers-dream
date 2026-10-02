@@ -37,11 +37,12 @@ namespace HaulersDream
     /// non-MP game and bricks startup (issue #6). Attributes therefore CANNOT be JIT-isolated. We register each
     /// synced method BY NAME inside the MP-gated <see cref="MpHooks.Register"/> instead — exactly equivalent to the
     /// attribute (<c>MP.RegisterAll</c> is just sugar for the same per-method <c>RegisterSyncMethod</c>) but with
-    /// ZERO <c>Multiplayer.API</c> reference in HD's metadata, so no reflection can ever trip over it. Mirrors the
+    /// no MP attributes or API-typed fields on the outer shim. The typed route worker signatures stay in the
+    /// private, MP-gated shim; explicit delegate construction avoids compiler-generated API-typed cache fields. Mirrors the
     /// other <c>*Compat</c> shims: detect once, do nothing when absent.</para>
     /// </summary>
     [StaticConstructorOnStartup]
-    public static class MultiplayerCompat
+    public static partial class MultiplayerCompat
     {
         /// <summary>
         /// Whether RimWorld Multiplayer is loaded. Computed purely from <see cref="ModLister"/> (a Verse type) so
@@ -52,15 +53,93 @@ namespace HaulersDream
         public static readonly bool Active =
             ModLister.GetActiveModWithIdentifier("rwmt.multiplayer", ignorePostfix: true) != null;
 
+        private static bool refuelRecoveryRegistered;
+        internal static bool RefuelRecoveryAvailable => !InMultiplayerGame || refuelRecoveryRegistered;
+        internal static bool RefuelRecoveryLocalUi => !InMultiplayerGame || MpHooks.InInterface();
+        internal static bool RefuelRecoveryExecuting => !InMultiplayerGame
+            || (refuelRecoveryRegistered && MpHooks.ExecutingCommand());
+
+        private static bool billBatchModeRegistered;
+        internal static bool BillBatchModeAvailable => !InMultiplayerGame || billBatchModeRegistered;
+
+        private static bool inventoryQuantityDropRegistered;
+        private static bool nearbyHaulRegistered;
+        private static bool transporterRegistered;
+        private static bool explicitHaulRegistered;
+        internal static bool ExplicitHaulAvailable => !InMultiplayerGame || explicitHaulRegistered;
+        internal static bool ExplicitHaulLocalUi => !InMultiplayerGame || MpHooks.InInterface();
+        internal static bool ExplicitHaulExecuting => !InMultiplayerGame
+            || (explicitHaulRegistered && MpHooks.ExecutingCommand());
+        internal static bool TransporterAvailable => !InMultiplayerGame || transporterRegistered;
+        internal static bool TransporterLocalUi => !InMultiplayerGame || MpHooks.InInterface();
+        internal static bool TransporterExecuting => !InMultiplayerGame
+            || (transporterRegistered && MpHooks.ExecutingCommand());
+        internal static bool NearbyHaulAvailable => !InMultiplayerGame || nearbyHaulRegistered;
+        internal static bool NearbyHaulLocalUi => !InMultiplayerGame || MpHooks.InInterface();
+        internal static bool NearbyHaulExecuting => !InMultiplayerGame
+            || (nearbyHaulRegistered && MpHooks.ExecutingCommand());
+        internal static bool InventoryQuantityDropAvailable => !InMultiplayerGame || inventoryQuantityDropRegistered;
+        internal static bool InventoryQuantityDropLocalUi => !InMultiplayerGame || MpHooks.InInterface();
+        internal static bool InventoryQuantityDropExecuting => !InMultiplayerGame
+            || (inventoryQuantityDropRegistered && MpHooks.ExecutingCommand());
+
+        // Storage discovery is simulation state. Local render/preview queries must
+        // not borrow its persistent queue or budget. Native ticks supply their own
+        // balanced context; outside a tick only an actual MP replay qualifies.
+        internal static bool StorageProgressCommand => InMultiplayerGame
+            && MpHooks.ExecutingCommand() && !MpHooks.InInterface();
+        internal static bool StorageProgressInterface => InMultiplayerGame && MpHooks.InInterface();
+
         static MultiplayerCompat()
         {
+            StorageProgressWork.MultiplayerActive = Active;
             if (!Active)
                 return;
-            // Only reached when MP is present, so the API assembly is loaded and MpHooks.Register can resolve its
-            // Multiplayer.API references. Defensive try/catch: a registration fault must never break startup — it
-            // degrades to "MP not wired" (single-player-style direct mutation), which at worst desyncs MP, never
-            // crashes the game. This is the ONE place we accept catching: a failure here is recoverable and
-            // logging it is strictly better than a hard crash on game load.
+            try { ordinaryRouteRegistered = MpHooks.RegisterOrdinaryRoute(); }
+            catch (Exception e) { Log.Warning("[Hauler's Dream] Planned route sync unavailable: " + e); }
+            try { sowRouteRegistered = MpHooks.RegisterSowRoute(); }
+            catch (Exception e) { Log.Warning("[Hauler's Dream] Planned sow route sync unavailable: " + e); }
+            try { removeFloorRouteRegistered = MpHooks.RegisterRemoveFloorRoute(); }
+            catch (Exception e) { Log.Warning("[Hauler's Dream] Planned floor route sync unavailable: " + e); }
+            try { refuelRecoveryRegistered = MpHooks.RegisterRefuelRecovery(); }
+            catch (Exception e) { Log.Warning("[Hauler's Dream] Refuel recovery sync unavailable: " + e); }
+            try { explicitHaulRegistered = MpHooks.RegisterExplicitHaul(); }
+            catch (Exception e) { Log.Warning("[Hauler's Dream] Explicit hauling sync unavailable: " + e); }
+            try
+            {
+                transporterRegistered = MpHooks.RegisterTransporter();
+            }
+            catch (Exception e)
+            {
+                Log.Warning("[Hauler's Dream] Transporter command sync registration failed; "
+                    + "these actions are unavailable in multiplayer. " + e);
+            }
+            try
+            {
+                nearbyHaulRegistered = MpHooks.RegisterNearbyHaul();
+            }
+            catch (Exception e)
+            {
+                Log.Warning("[Hauler's Dream] Nearby hauling sync registration failed; "
+                    + "this action is unavailable in multiplayer. " + e);
+            }
+            // Keep this command's readiness independent of registration failures in other features.
+            try
+            {
+                inventoryQuantityDropRegistered = MpHooks.RegisterInventoryQuantityDrop();
+            }
+            catch (Exception e)
+            {
+                Log.Warning("[Hauler's Dream] Inventory quantity drop sync registration failed; "
+                    + "this action is unavailable in multiplayer. " + e);
+            }
+            try { billBatchModeRegistered = MpHooks.RegisterBillBatchMode(); }
+            catch (Exception e)
+            {
+                Log.Warning("[Hauler's Dream] Bill batch mode sync unavailable: " + e);
+            }
+            // Register the remaining small-arity handlers separately from the guarded route commands above.
+            // A route registration failure leaves that route unavailable during an active MP session.
             try
             {
                 MpHooks.Register();
@@ -166,6 +245,44 @@ namespace HaulersDream
             HaulersDreamGameComponent.Instance?.SetBatch(bill, on, size);
         }
 
+        /// <summary>Commit an HD batch menu selection as one command, including its native repeat mode.</summary>
+        public static void SetBillBatchMode(Bill_Production bill, BillRepeatModeDef mode, int size)
+        {
+            // A failed optional registration must never fall through to a one-client write.
+            if (InMultiplayerGame && (!billBatchModeRegistered || !MpHooks.ExecutingCommand()))
+                return;
+            // Replay only reads shared bill/bench state. Common Sense's per-client opt-in stays in the menu.
+            var comp = HaulersDreamGameComponent.Instance;
+            if (comp == null || bill?.billStack == null || !bill.billStack.Bills.Contains(bill)
+                || !CraftBatchPlanner.CanBatch(bill) || BillRouteGate.BatchSuppressedByBench(bill)
+                || (mode != BillRepeatModeDefOf.RepeatCount && mode != BillRepeatModeDefOf.TargetCount
+                    && mode != BillRepeatModeDefOf.Forever))
+                return;
+            if (mode == BillRepeatModeDefOf.TargetCount && !bill.recipe.WorkerCounter.CanCountProducts(bill))
+            {
+                if (ShouldShowLocalFeedback)
+                    Messages.Message("RecipeCannotHaveTargetCount".Translate(), MessageTypeDefOf.RejectInput, historical: false);
+                return;
+            }
+            bill.repeatMode = mode;
+            comp.SetBatch(bill, true, size);
+        }
+
+        /// <summary>
+        /// Complete an accepted plain repeat-mode selection. The original action may already be replaying as
+        /// an MP command; in that case the write belongs to that command, not a second nested sync command.
+        /// Otherwise retain the existing UI sync route. This does not register or synchronize foreign actions.
+        /// </summary>
+        internal static void CompletePlainBillSelection(Bill_Production bill)
+        {
+            if (bill == null)
+                return;
+            if (InMultiplayerGame && MpHooks.ExecutingCommand())
+                HaulersDreamGameComponent.Instance?.SetBatch(bill, false, 0);
+            else
+                SetBillBatch(bill, false, 0);
+        }
+
         /// <summary>
         /// Set the per-save "overshoot by Y" amount for a bill (issue #3). Replaces the direct
         /// <c>GameComponent.SetBatchOvershoot</c> write from the overshoot dialog / bill float-menu (a write to the
@@ -198,8 +315,35 @@ namespace HaulersDream
         /// called → never JIT'd → the unshipped API assembly is never resolved. Do NOT call any member of this
         /// class without first checking <see cref="Active"/>.
         /// </summary>
-        private static class MpHooks
+        private static partial class MpHooks
         {
+            internal static bool RegisterRefuelRecovery() =>
+                MP.RegisterSyncMethod(typeof(RefuelRecoveryCommand), nameof(RefuelRecoveryCommand.ResolveSynced)) != null;
+
+            internal static bool RegisterExplicitHaul()
+            {
+                bool issue = MP.RegisterSyncMethod(typeof(ExplicitHaulCommand), nameof(ExplicitHaulCommand.IssueSynced)) != null;
+                bool shelf = MP.RegisterSyncMethod(typeof(ExplicitHaulCommand), nameof(ExplicitHaulCommand.IssueShelfSynced)) != null;
+                bool resume = MP.RegisterSyncMethod(typeof(ExplicitHaulCommand), nameof(ExplicitHaulCommand.ResumeSynced)) != null;
+                bool cancel = MP.RegisterSyncMethod(typeof(ExplicitHaulCommand), nameof(ExplicitHaulCommand.CancelSynced)) != null;
+                return issue && shelf && resume && cancel;
+            }
+            internal static bool RegisterTransporter()
+            {
+                bool order = MP.RegisterSyncMethod(typeof(TransporterCommand), nameof(TransporterCommand.IssueSynced)) != null;
+                bool toggle = MP.RegisterSyncMethod(typeof(TransporterCommand), nameof(TransporterCommand.SetUnloadSynced)) != null;
+                return order && toggle;
+            }
+            internal static bool RegisterNearbyHaul() =>
+                MP.RegisterSyncMethod(typeof(NearbyHaulCommand), nameof(NearbyHaulCommand.IssueSynced)) != null;
+
+            internal static bool RegisterInventoryQuantityDrop() =>
+                MP.RegisterSyncMethod(typeof(InventoryDropCommand),
+                    nameof(InventoryDropCommand.DropInventoryCountSynced)) != null;
+
+            internal static bool RegisterBillBatchMode() =>
+                MP.RegisterSyncMethod(typeof(MultiplayerCompat), nameof(SetBillBatchMode)) != null;
+
             internal static void Register()
             {
                 // Register each synced method BY NAME instead of via a [SyncMethod] attribute + MP.RegisterAll. The
@@ -217,12 +361,11 @@ namespace HaulersDream
                 MP.RegisterSyncMethod(typeof(MultiplayerCompat), nameof(SetBillBatchOvershoot));
                 MP.RegisterSyncMethod(typeof(MultiplayerCompat), nameof(SetKeptCount));
                 MP.RegisterSyncMethod(typeof(JobDriver_BatchCraft), nameof(JobDriver_BatchCraft.StartBatchCraftSynced));
-                MP.RegisterSyncMethod(typeof(RouteExecutor), nameof(RouteExecutor.ExecuteRouteSynced));
-                MP.RegisterSyncMethod(typeof(SowRouteExecutor), nameof(SowRouteExecutor.ExecuteSowRouteSynced));
-                MP.RegisterSyncMethod(typeof(RemoveFloorRouteExecutor), nameof(RemoveFloorRouteExecutor.ExecuteRemoveFloorRouteSynced));
             }
 
             internal static bool InMpGame() => MP.IsInMultiplayer;
+            internal static bool InInterface() => MP.InInterface;
+            internal static bool ExecutingCommand() => MP.IsExecutingSyncCommand;
 
             internal static bool IssuedBySelf() => MP.IsExecutingSyncCommandIssuedBySelf;
         }

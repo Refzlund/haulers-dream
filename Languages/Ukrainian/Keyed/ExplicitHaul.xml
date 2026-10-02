@@ -1,0 +1,40 @@
+<?xml version='1.0' encoding='utf-8'?>
+<LanguageData>
+  <HD_ExplicitHaulTo>Перенести {0} до…</HD_ExplicitHaulTo>
+  <HD_ExplicitChanged>Персонаж або вибрана купа змінилися. Виберіть їх знову.</HD_ExplicitChanged>
+  <HD_ExplicitActorUnavailable>Цей персонаж зараз не може виконати наказ про перенесення.</HD_ExplicitActorUnavailable>
+  <HD_ExplicitSelectSource>Виберіть купу для перенесення. Права кнопка миші або Escape — скасування.</HD_ExplicitSelectSource>
+  <HD_ExplicitSelectDestination>Доставити сюди {0} × {1}. {2} Виберіть доступну клітинку на землі або полицю. Права кнопка миші чи Escape скасовує дію.</HD_ExplicitSelectDestination>
+  <HD_ExplicitQueuedHint>Додати до черги робіт.</HD_ExplicitQueuedHint>
+  <HD_ExplicitReplaceHint>Замінити поточну роботу.</HD_ExplicitReplaceHint>
+  <HD_ExplicitStateQueued>У черзі</HD_ExplicitStateQueued>
+  <HD_ExplicitStateActive>Перенесення</HD_ExplicitStateActive>
+  <HD_ExplicitStateBlocked>Заблоковано</HD_ExplicitStateBlocked>
+  <HD_ExplicitStateCancelled>Скасовано</HD_ExplicitStateCancelled>
+  <HD_ExplicitStateComplete>Завершено</HD_ExplicitStateComplete>
+  <HD_ExplicitStateCaptured>Тимчасово призупинено</HD_ExplicitStateCaptured>
+  <HD_ExplicitSourceChanged>Вибране джерело зникло, вичерпалося або більше не дозволене.</HD_ExplicitSourceChanged>
+  <HD_ExplicitSourceReserved>Вибране джерело зарезервоване іншим завданням.</HD_ExplicitSourceReserved>
+  <HD_ExplicitDestinationBlocked>У вибраному місці немає вільного простору, воно зарезервоване або не приймає ці предмети.</HD_ExplicitDestinationBlocked>
+  <HD_ExplicitRouteBlocked>Вибраний шлях недоступний.</HD_ExplicitRouteBlocked>
+  <HD_ExplicitHandsBusy>Персонаж тримає в руках інший вантаж.</HD_ExplicitHandsBusy>
+  <HD_ExplicitInterrupted>Наказ перервано. Поновіть його, коли будете готові.</HD_ExplicitInterrupted>
+  <HD_ExplicitAdmissionFailed>Персонаж не зміг розпочати цей наказ. Поновіть його, коли будете готові.</HD_ExplicitAdmissionFailed>
+  <HD_ExplicitNeedsReview>Збережений наказ або його вантаж несподівано змінилися. Перевірте предмети перед поновленням.</HD_ExplicitNeedsReview>
+  <HD_ExplicitStart>Перенести до…</HD_ExplicitStart>
+  <HD_ExplicitStartDesc>Виберіть один стос, загальну кількість і точну клітинку на землі або полицю. Переноситься лише цей стос. Утримуйте клавішу черги наказів, щоб додати наказ до черги.</HD_ExplicitStartDesc>
+  <HD_ExplicitOrders>Накази про перенесення</HD_ExplicitOrders>
+  <HD_ExplicitOrdersDesc>Переглядайте доставлені кількості, поновлюйте або скасовуйте накази про перенесення.</HD_ExplicitOrdersDesc>
+  <HD_ExplicitAmountTitle>Вибрати кількість</HD_ExplicitAmountTitle>
+  <HD_ExplicitChooseDestination>Вибрати місце</HD_ExplicitChooseDestination>
+  <HD_ExplicitAmountContext>{0}: {1}\nДоступно в цій купі: {2}</HD_ExplicitAmountContext>
+  <HD_ExplicitQueue>Додати до черги робіт</HD_ExplicitQueue>
+  <HD_ExplicitAmountHint>Доставити загалом {0}, за потреби за кілька ходок. Особистий інвентар не змінюється.</HD_ExplicitAmountHint>
+  <HD_ExplicitQueueResume>Ставити поновлені накази в чергу</HD_ExplicitQueueResume>
+  <HD_ExplicitResume>Поновити</HD_ExplicitResume>
+  <HD_ExplicitCancel>Скасувати наказ</HD_ExplicitCancel>
+  <HD_ExplicitProgress>Наказ {0}: {1}\nДоставлено {2} / {3} → ({4}, {5})</HD_ExplicitProgress>
+  <HD_ExplicitMissingItem>Джерело відсутнє</HD_ExplicitMissingItem>
+  <HD_ExplicitShelf>Вибрана полиця: {0}</HD_ExplicitShelf>
+  <HD_ExplicitMissingShelf>Полиця відсутня</HD_ExplicitMissingShelf>
+</LanguageData>

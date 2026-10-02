@@ -1,0 +1,40 @@
+<?xml version='1.0' encoding='utf-8'?>
+<LanguageData>
+  <HD_ExplicitHaulTo>{0} transportieren nach…</HD_ExplicitHaulTo>
+  <HD_ExplicitChanged>Die Figur oder der gewählte Stapel hat sich geändert. Bitte erneut auswählen.</HD_ExplicitChanged>
+  <HD_ExplicitActorUnavailable>Diese Figur kann diesen Transportauftrag derzeit nicht ausführen.</HD_ExplicitActorUnavailable>
+  <HD_ExplicitSelectSource>Den zu transportierenden Stapel auswählen. Rechtsklick oder Escape bricht ab.</HD_ExplicitSelectSource>
+  <HD_ExplicitSelectDestination>Hier {0} × {1} abliefern. {2} Wähle ein erreichbares Bodenfeld oder Regal. Rechtsklick oder Escape bricht ab.</HD_ExplicitSelectDestination>
+  <HD_ExplicitQueuedHint>Zur Arbeitswarteschlange hinzufügen.</HD_ExplicitQueuedHint>
+  <HD_ExplicitReplaceHint>Aktuelle Arbeit ersetzen.</HD_ExplicitReplaceHint>
+  <HD_ExplicitStateQueued>In Warteschlange</HD_ExplicitStateQueued>
+  <HD_ExplicitStateActive>Wird transportiert</HD_ExplicitStateActive>
+  <HD_ExplicitStateBlocked>Blockiert</HD_ExplicitStateBlocked>
+  <HD_ExplicitStateCancelled>Abgebrochen</HD_ExplicitStateCancelled>
+  <HD_ExplicitStateComplete>Abgeschlossen</HD_ExplicitStateComplete>
+  <HD_ExplicitStateCaptured>Vorübergehend ausgesetzt</HD_ExplicitStateCaptured>
+  <HD_ExplicitSourceChanged>Die gewählte Quelle fehlt, ist aufgebraucht oder nicht mehr erlaubt.</HD_ExplicitSourceChanged>
+  <HD_ExplicitSourceReserved>Die gewählte Quelle ist für eine andere Aufgabe reserviert.</HD_ExplicitSourceReserved>
+  <HD_ExplicitDestinationBlocked>Der gewählte Ort hat keinen nutzbaren Platz, ist reserviert oder kann diese Gegenstände nicht aufnehmen.</HD_ExplicitDestinationBlocked>
+  <HD_ExplicitRouteBlocked>Der gewählte Weg ist nicht verfügbar.</HD_ExplicitRouteBlocked>
+  <HD_ExplicitHandsBusy>Die Figur trägt andere Gegenstände in den Händen.</HD_ExplicitHandsBusy>
+  <HD_ExplicitInterrupted>Der Auftrag wurde unterbrochen. Bei Bedarf fortsetzen.</HD_ExplicitInterrupted>
+  <HD_ExplicitAdmissionFailed>Die Figur konnte diesen Auftrag nicht beginnen. Bei Bedarf fortsetzen.</HD_ExplicitAdmissionFailed>
+  <HD_ExplicitNeedsReview>Der gespeicherte Auftrag oder seine Fracht hat sich unerwartet geändert. Vor dem Fortsetzen die Gegenstände prüfen.</HD_ExplicitNeedsReview>
+  <HD_ExplicitStart>Transportieren nach…</HD_ExplicitStart>
+  <HD_ExplicitStartDesc>Wähle einen Gegenstandsstapel, eine Gesamtmenge und ein bestimmtes Bodenfeld oder Regal. Nur dieser Stapel wird transportiert. Halte die Taste zum Einreihen von Befehlen gedrückt, um den Auftrag anzuhängen.</HD_ExplicitStartDesc>
+  <HD_ExplicitOrders>Transportaufträge</HD_ExplicitOrders>
+  <HD_ExplicitOrdersDesc>Gelieferte Mengen ansehen und gezielte Transportaufträge fortsetzen oder abbrechen.</HD_ExplicitOrdersDesc>
+  <HD_ExplicitAmountTitle>Transportmenge wählen</HD_ExplicitAmountTitle>
+  <HD_ExplicitChooseDestination>Ziel wählen</HD_ExplicitChooseDestination>
+  <HD_ExplicitAmountContext>{0}: {1}\nIn diesem Stapel verfügbar: {2}</HD_ExplicitAmountContext>
+  <HD_ExplicitQueue>Zur Arbeitswarteschlange hinzufügen</HD_ExplicitQueue>
+  <HD_ExplicitAmountHint>Insgesamt {0} liefern, bei Bedarf in mehreren Wegen. Persönliches Inventar bleibt unberührt.</HD_ExplicitAmountHint>
+  <HD_ExplicitQueueResume>Fortgesetzte Aufträge einreihen</HD_ExplicitQueueResume>
+  <HD_ExplicitResume>Fortsetzen</HD_ExplicitResume>
+  <HD_ExplicitCancel>Auftrag abbrechen</HD_ExplicitCancel>
+  <HD_ExplicitProgress>Auftrag {0}: {1}\nGeliefert {2} / {3} → ({4}, {5})</HD_ExplicitProgress>
+  <HD_ExplicitMissingItem>Quelle fehlt</HD_ExplicitMissingItem>
+  <HD_ExplicitShelf>Gewähltes Regal: {0}</HD_ExplicitShelf>
+  <HD_ExplicitMissingShelf>Regal fehlt</HD_ExplicitMissingShelf>
+</LanguageData>

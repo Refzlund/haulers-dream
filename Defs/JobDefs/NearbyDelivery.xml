@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+  <JobDef>
+    <defName>HaulersDream_NearbyDelivery</defName>
+    <driverClass>HaulersDream.JobDriver_UnloadHauledInventory</driverClass>
+    <reportString>unloading inventory.</reportString>
+    <casualInterruptible>false</casualInterruptible>
+    <suspendable>false</suspendable>
+    <allowOpportunisticPrefix>false</allowOpportunisticPrefix>
+    <!-- Only this positively identified command continuation retains hands if exact return is refused. -->
+    <carryThingAfterJob>true</carryThingAfterJob>
+    <!-- Preserve unrelated occupied hands until the scoped first-pull check can reject them. -->
+    <dropThingBeforeJob>false</dropThingBeforeJob>
+  </JobDef>
+</Defs>

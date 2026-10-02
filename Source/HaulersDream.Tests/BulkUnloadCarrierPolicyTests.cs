@@ -7,6 +7,32 @@ namespace HaulersDream.Tests
     [TestFixture]
     public class BulkUnloadCarrierPolicyTests
     {
+        [Test]
+        public void CeBulkExhaustionRoutesMasslessCargoToHandsWithoutASecondInventoryPlan()
+        {
+            var stacks = new[] { Stack(4, 0f, 9), Stack(7, 1f, 8) };
+            var plan = BulkUnloadCarrierPolicy.PlanNextPull(stacks, 20f);
+            Assert.That(plan.ToHands, Is.False);
+            plan = BulkUnloadCarrierPolicy.ApplyInventoryFit(plan, stacks, 0);
+            Assert.That(plan.ChosenIndex, Is.EqualTo(4));
+            Assert.That(plan.Count, Is.EqualTo(9));
+            Assert.That(plan.ToHands, Is.True);
+        }
+
+        [Test]
+        public void CePartialFitClampsInventoryAndHandsFallbackSkipsEmptyStacks()
+        {
+            var stacks = new[] { Stack(2, 0f, 0), Stack(8, 1f, 20) };
+            var plan = BulkUnloadCarrierPolicy.ApplyInventoryFit(BulkUnloadCarrierPolicy.PlanNextPull(stacks, 12f), stacks, 3);
+            Assert.That(plan.Count, Is.EqualTo(3));
+            Assert.That(plan.ToHands, Is.False);
+            plan = BulkUnloadCarrierPolicy.ApplyInventoryFit(plan, stacks, 0);
+            Assert.That(plan.ChosenIndex, Is.EqualTo(8));
+            Assert.That(plan.Count, Is.EqualTo(20));
+            Assert.That(plan.ToHands, Is.True);
+            Assert.That(BulkUnloadCarrierPolicy.PlanHandsFallback(null).ChosenIndex, Is.LessThan(0));
+        }
+
         // --- HasEnoughBackpackRoom (room-gate boundary) ---
 
         [Test]
@@ -196,18 +222,14 @@ namespace HaulersDream.Tests
             Assert.That(plan.ToHands, Is.False);
         }
 
-        // --- CE-clamp re-plan contract ---
-        // When Combat Extended is active, JobDriver_UnloadCarrierInBulk discovers via CECompat.MaxFitCount that
-        // CE's weight+bulk capacity is exhausted even though the vanilla-mass planner saw backpack room (CE's bulk
-        // dimension is invisible to this pure policy). It then RE-PLANS with freeSpace forced to 0 so the ladder
-        // routes the overflow to HANDS — the carry tracker is exempt from the soft ceiling. These pin the exact
-        // re-plan-at-zero contract that fallback relies on (massive stack -> hands; massless -> still backpack and
-        // re-clamped to 0 by CE at the transfer, a safe terminal end-of-visit, never a spin).
+        // Ordinary mass-only planning still routes massive cargo to hands at zero free mass. CE rejection uses
+        // the explicit ApplyInventoryFit / PlanHandsFallback path above, because massless cargo would otherwise
+        // be selected for the backpack again.
 
         [Test]
         public void Plan_ReplanAtZeroFreeSpace_RoutesHeavyStackToHands()
         {
-            // CE bulk exhausted (the JobDriver forces freeSpace=0): a non-empty heavy stack goes whole to hands.
+            // Ordinary zero-mass headroom: a non-empty heavy stack goes whole to hands.
             var stacks = new List<BulkUnloadCarrierPolicy.CarrierStack> { Stack(0, 5f, 8) };
             var plan = BulkUnloadCarrierPolicy.PlanNextPull(stacks, 0f);
             Assert.That(plan.ChosenIndex, Is.EqualTo(0));
@@ -218,7 +240,7 @@ namespace HaulersDream.Tests
         [Test]
         public void Plan_ReplanAtZeroFreeSpace_PicksFirstNonEmptyToHands()
         {
-            // Several stacks remain after CE bulk fills the backpack -> the first non-empty goes to hands (progress).
+            // Several stacks remain with no vanilla mass headroom -> first non-empty goes to hands.
             var stacks = new List<BulkUnloadCarrierPolicy.CarrierStack>
             {
                 Stack(0, 2f, 0), Stack(1, 3f, 4), Stack(2, 1f, 6)

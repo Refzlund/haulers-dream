@@ -1,0 +1,3 @@
+BulkUnloadAll.png was contributed by nullpat in Hauler's Dream PR #267.
+It is derived from RimWorld's UI/Commands/LoadTransporter texture with hand edits.
+Original texture copyright Ludeon Studios; used as permitted for RimWorld modding.

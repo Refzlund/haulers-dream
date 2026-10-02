@@ -51,7 +51,10 @@ namespace HaulersDream
 
         // Seam guard: log + rethrow so an auto-strip throw names the hauler instead of an opaque TryStartCarry stack.
         static System.Exception Finalizer(System.Exception __exception, Pawn_CarryTracker __instance)
-            => HDGuard.SeamThrew(__exception, "Pawn_CarryTracker.TryStartCarry (HD auto-strip-on-haul)", __instance?.pawn,
+            // Only the private, failure-free abandoned-native-action signal bypasses logging.
+            // It still propagates to its exact captured outer carry wrapper.
+            => NativeStoragePickup.IsBenignAbort(__exception) ? __exception
+                : HDGuard.SeamThrew(__exception, "Pawn_CarryTracker.TryStartCarry (HD auto-strip-on-haul)", __instance?.pawn,
                 "the haul that triggered the auto-strip failed.");
     }
 

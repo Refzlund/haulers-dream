@@ -99,7 +99,7 @@ namespace HaulersDream
         /// <param name="fogCaution">Vein only: true when the visible cluster touches a hidden (fogged) same-kind cell — the
         /// vein continues into unexplored fog, so not all of it is shown (and the deferred-reveal tracker may extend it later).</param>
         /// <param name="mustInclude">targets the player explicitly picked (plus the clicked anchor) that MUST be in
-        /// the route — always kept (never trimmed by amount/travel), bypass the growth threshold, placed first.</param>
+        /// the route while still eligible — never trimmed by amount/travel, bypass growth, placed first.</param>
         /// <param name="mustIncludeCount">how many forced targets lead the result (the planner frees these from the budget).</param>
         /// <param name="roomAnchors">Rooms mode only: cells whose rooms bound the selection (the clicked target's
         /// own room is always counted, so null/empty = just that room).</param>
@@ -112,7 +112,8 @@ namespace HaulersDream
             fogCaution = false;
             mustIncludeCount = 0;
             var result = new List<Thing>();
-            if (pawn?.Map == null || clicked == null || !clicked.Spawned || kind == null)
+            if (pawn?.Map == null || clicked == null || !clicked.Spawned || kind == null
+                || !MeetsBlightRequirement(kind, clicked))
                 return result;
 
             // GUARD: never run a mode the kind doesn't allow (a stale per-def pref, or a caller bug). Vein on a
@@ -122,7 +123,7 @@ namespace HaulersDream
             if (!allowed.Contains(mode))
                 mode = allowed[0];
 
-            // MUST-INCLUDE prefix: the clicked anchor + any picked targets. Always kept, anchor first.
+            // MUST-INCLUDE prefix: the still-eligible anchor + picked targets; growth/caps do not exclude them.
             var forced = BuildForced(pawn, clicked, kind, mustInclude, extraDefs);
             mustIncludeCount = forced.Count;
             var forcedSet = new HashSet<Thing>(forced);
@@ -237,6 +238,8 @@ namespace HaulersDream
         private static bool MatchesScope(Map map, Thing clicked, RouteWorkKind kind, Thing t,
             IReadOnlyList<ThingDef> extraDefs = null)
         {
+            if (!MeetsBlightRequirement(kind, t))
+                return false;
             switch (kind?.scope ?? RouteTargetScope.SameDef)
             {
                 case RouteTargetScope.AnyFilth:
@@ -394,9 +397,10 @@ namespace HaulersDream
         private static List<Thing> SelectVein(Pawn pawn, Thing clicked, RouteWorkKind kind, bool allowHarvest, int threshold, out bool fogCaution)
         {
             // Flood one past the hard cap so Select can tell whether the vein overflowed (→ capped). Only VISIBLE
-            // (non-fogged) cells count; the clicked thing is always eligible, others pass the work/harvest gate.
+            // (non-fogged) cells count. The anchor bypasses harvest growth, but never a captured blight condition.
             var hits = FloodVisibleVein(pawn.Map, pawn, clicked.def, clicked.Position, HardCap + 1,
-                t => t == clicked || IncludeForHarvest(pawn.Map, t, kind, allowHarvest, threshold), out fogCaution);
+                t => MeetsBlightRequirement(kind, t)
+                    && (t == clicked || IncludeForHarvest(pawn.Map, t, kind, allowHarvest, threshold)), out fogCaution);
             EnsureAnchorFirst(hits, clicked);
             return hits;
         }
@@ -551,7 +555,8 @@ namespace HaulersDream
             var seen = new HashSet<Thing>();
             foreach (var t in ScopeCandidates(pawn.Map, clicked, kind, extraDefs))
             {
-                if (t == null || !t.Spawned || t.IsForbidden(pawn) || !seen.Add(t))
+                if (t == null || !t.Spawned || t.IsForbidden(pawn) || !seen.Add(t)
+                    || !MeetsBlightRequirement(kind, t))
                     continue;
                 if (t != clicked && !IncludeForHarvest(pawn.Map, t, kind, allowHarvest, threshold))
                     continue;
@@ -647,10 +652,14 @@ namespace HaulersDream
             }
         }
 
-        // Harvest mode: a plant must be harvestable now; an already-marked plant is always included, while an
-        // UNMARKED plant is included only when "allow harvest" is on and it's at least the growth threshold grown
-        // (so the route can pull in a whole patch of ripe-enough bushes, not just the ones you'd hand-marked).
-        // Cut / mine / deconstruct accept any same-def thing (no growth concept).
+        // Blight-cut intent is independent of crop def and designation: even a previously marked healthy
+        // plant must not join that route. Ordinary cutting has no additional plant-state restriction.
+        internal static bool MeetsBlightRequirement(RouteWorkKind kind, Thing t)
+            => kind == null || !kind.blightedOnly || (t is Plant plant && plant.Blighted);
+
+        // Harvest mode: require a harvestable plant; include already marked plants or eligible unmarked
+        // plants above the chosen growth threshold. Other work has no growth gate; its scope and any
+        // captured blight requirement are checked separately before this method.
         private static bool IncludeForHarvest(Map map, Thing t, RouteWorkKind kind, bool allowHarvest, int threshold)
         {
             if (kind.designation != DesignationDefOf.HarvestPlant || !(t is Plant p))

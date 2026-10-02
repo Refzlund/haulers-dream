@@ -204,6 +204,11 @@ namespace HaulersDream
                 }
             }
 
+            // Both unload detours above service EXISTING cargo, including a robot specialist's work
+            // leftovers. Only the new unrelated pickup below requires its custom Hauling role.
+            if (!MiscRobotsStorageRole.AllowsNewStorageIntake(pawn))
+                return null;
+
             // G2 SELF no-op: if the pawn already holds (current or queued) an HD pickup/bulk job, it is already
             // about to sweep loot into inventory — don't stack another en-route pickup on top.
             if (AlreadyHaulingIntoInventory(pawn))
@@ -760,7 +765,7 @@ namespace HaulersDream
                     // — WYU StoreUtility.cs:218-220 with no beforeCarry target). Unstored is never a destination.
                     if (pr <= currentPriority || pr == StoragePriority.Unstored)
                         continue;
-                    if (!slotGroup.parent.Accepts(thing))
+                    if (!slotGroup.parent.Accepts(thing) || !StorageRefillHysteresisCompat.AllowsRefill(slotGroup))
                         continue;
                     // G7 building filter: skip a whole group whose building the player denied for opportunistic.
                     if (filter != null && !filter.IsGroupAllowed(slotGroup))

@@ -9,11 +9,12 @@
 <HaulersDream_BatchCraft.reportString>fremstiller et hold.</HaulersDream_BatchCraft.reportString>
 <HaulersDream_InventoryDoBill.reportString>fremstiller.</HaulersDream_InventoryDoBill.reportString>
 <HaulersDream_BillPrepGather.reportString>samler fremstillingsingredienser.</HaulersDream_BillPrepGather.reportString>
-<HaulersDream_BulkHaul.reportString>transporterer alt i nærheden.</HaulersDream_BulkHaul.reportString>
+<HaulersDream_BulkHaul.reportString>samler genstande i inventaret.</HaulersDream_BulkHaul.reportString>
 <HaulersDream_LoadPackAnimal.reportString>læsser varer på et pakdyr.</HaulersDream_LoadPackAnimal.reportString>
 <HaulersDream_UnloadCarrierInBulk.reportString>aflæsser et pakdyr.</HaulersDream_UnloadCarrierInBulk.reportString>
 <HaulersDream_LoadTransportersInBulk.reportString>masselæsser en transporter.</HaulersDream_LoadTransportersInBulk.reportString>
 <HaulersDream_LoadPortalInBulk.reportString>masselæsser en portal.</HaulersDream_LoadPortalInBulk.reportString>
 <HaulersDream_LoadVehicleInBulk.reportString>masselæsser et køretøj.</HaulersDream_LoadVehicleInBulk.reportString>
 <HaulersDream_BulkRefuel.reportString>masse-optanker.</HaulersDream_BulkRefuel.reportString>
+  <HaulersDream_UnloadTransporterInBulk.reportString>aflæsser en transporter.</HaulersDream_UnloadTransporterInBulk.reportString>
 </LanguageData>

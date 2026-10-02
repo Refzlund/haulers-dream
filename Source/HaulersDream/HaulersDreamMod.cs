@@ -82,12 +82,12 @@ namespace HaulersDream
                 {
                     failed++;
                     HDLog.Err($"patch class '{type.Name}' could not be applied on this RimWorld build "
-                        + "(a hooked vanilla target is likely missing or renamed) — that feature is disabled; the "
-                        + $"rest of the mod continues. {e.GetType().Name}: {e.Message}");
+                        + "(a hook target or required method-body pattern may have changed) — other "
+                        + $"patch classes continue. {e.GetType().Name}: {e.Message}");
                 }
             }
             if (failed > 0)
-                HDLog.Warn($"{applied} patch class(es) applied, {failed} skipped due to missing targets (see errors above).");
+                HDLog.Warn($"{applied} patch class(es) applied, {failed} not fully applied (see details above).");
 
             AttachUniversalExceptionTagger(harmony);
         }
@@ -151,15 +151,37 @@ namespace HaulersDream
         // patch is on this method" is not the question. Two other HD classes already patch JobDriver_HaulToCell
         // (Notify_Starting), so a check that only asked whether HD touched the type could pass while the piece
         // that matters was the one that failed to apply.
-        private static readonly (Type type, string method, string patchClass)[] StorageSeamTargets =
+        private static readonly (Type type, string method, Type[] arguments, string patchClass)[] StorageSeamTargets =
         {
+            (typeof(TickManager), nameof(TickManager.DoSingleTick), Type.EmptyTypes,
+                nameof(Patch_StorageLoadBeforeTick)),
+            (typeof(StoreUtility), "TryFindBestBetterStoreCellForWorker",
+                null, nameof(Patch_StorageQuery_WorkerProgress)),
+            (typeof(StoreUtility), nameof(StoreUtility.TryFindBestBetterStoreCellFor),
+                null, nameof(Patch_StorageQuery_SearchScope)),
+            (typeof(StoreUtility), nameof(StoreUtility.TryFindBestBetterStoreCellForIn),
+                null, nameof(Patch_StorageQuery_GroupSearchScope)),
             (typeof(Verse.AI.HaulAIUtility), nameof(Verse.AI.HaulAIUtility.HaulToCellStorageJob),
-                nameof(Patch_HaulToCellStorageJob_ClampToCommitments)),
+                null, nameof(Patch_StorageQuery_FactoryScope)),
+            (typeof(Verse.AI.HaulAIUtility), nameof(Verse.AI.HaulAIUtility.HaulToCellStorageJob),
+                null, nameof(Patch_HaulToCellStorageJob_ClampToCommitments)),
             (typeof(StoreUtility), nameof(StoreUtility.IsGoodStoreCell),
-                nameof(Patch_IsGoodStoreCell_HonourCommitments)),
+                null, nameof(Patch_IsGoodStoreCell_HonourCommitments)),
             (typeof(Verse.AI.JobDriver_HaulToCell),
                 nameof(Verse.AI.JobDriver_HaulToCell.TryMakePreToilReservations),
-                nameof(Patch_JobDriver_HaulToCell_NoCellReservation)),
+                null, nameof(Patch_JobDriver_HaulToCell_NoCellReservation)),
+            (typeof(Verse.AI.Toils_Haul), nameof(Verse.AI.Toils_Haul.CheckForGetOpportunityDuplicate),
+                null, nameof(Patch_NativeStorageDuplicate_Admission)),
+            (typeof(Verse.AI.Toils_Haul), nameof(Verse.AI.Toils_Haul.StartCarryThing),
+                null, nameof(Patch_NativeStorageCarryToil_Admission)),
+            (typeof(Pawn_CarryTracker), nameof(Pawn_CarryTracker.TryStartCarry),
+                new[] { typeof(Thing), typeof(int), typeof(bool) }, nameof(Patch_NativeStorageActualPickup_Admission)),
+            (typeof(Thing), nameof(Thing.SplitOff), new[] { typeof(int) }, nameof(Patch_BulkStorageSplitReceipt)),
+            (typeof(Thing), nameof(Thing.SplitOff), new[] { typeof(int) }, nameof(Patch_StorageSplitReceipt)),
+            (typeof(ThingOwner<Thing>), nameof(ThingOwner<Thing>.TryAdd),
+                new[] { typeof(Thing), typeof(bool) }, nameof(Patch_NativeStorageInsertionReceipt)),
+            (typeof(Thing), nameof(Thing.TryAbsorbStack),
+                new[] { typeof(Thing), typeof(bool) }, nameof(Patch_NativeStorageMergeReceipt)),
         };
 
         /// <summary>
@@ -178,13 +200,13 @@ namespace HaulersDream
         /// </summary>
         private static void VerifyStorageSeam()
         {
-            foreach (var (type, methodName, patchClass) in StorageSeamTargets)
+            foreach (var (type, methodName, arguments, patchClass) in StorageSeamTargets)
             {
                 // DeclaredMethod, not Method, because that is what HarmonyLib's own attribute resolution uses
                 // (PatchTools.GetOriginalMethod -> AccessTools.DeclaredMethod). Method also returns an
                 // INHERITED member, which Harmony refuses to patch — so asking a wider question than the
                 // patcher asked could find a method the patch never went near and disable a working feature.
-                var method = AccessTools.DeclaredMethod(type, methodName);
+                var method = AccessTools.DeclaredMethod(type, methodName, arguments);
                 if (method == null)
                 {
                     StorageCommitments.Disable();
@@ -196,9 +218,14 @@ namespace HaulersDream
                     continue;
                 }
                 var info = Harmony.GetPatchInfo(method);
-                if (DeclaredIn(info?.Prefixes, patchClass)
+                bool bound = DeclaredIn(info?.Prefixes, patchClass)
                     || DeclaredIn(info?.Postfixes, patchClass)
-                    || DeclaredIn(info?.Transpilers, patchClass))
+                    || DeclaredIn(info?.Transpilers, patchClass);
+                // Native fallback must recheck after reservation callbacks as well as before.
+                // A surviving prefix alone is not a complete reservation admission boundary.
+                if (patchClass == nameof(Patch_JobDriver_HaulToCell_NoCellReservation))
+                    bound = DeclaredIn(info?.Prefixes, patchClass) && DeclaredIn(info?.Finalizers, patchClass);
+                if (bound)
                     continue;
                 StorageCommitments.Disable();
                 HDLog.Err($"STORAGE-SEAM TRIPWIRE: vanilla {type.Name}.{methodName} exists but Hauler's Dream's "
@@ -641,7 +668,7 @@ namespace HaulersDream
         /// </summary>
         public static void UniversalExceptionFinalizer(Exception __exception, MethodBase __originalMethod)
         {
-            if (__exception == null)
+            if (__exception == null || NativeStoragePickup.IsBenignAbort(__exception))
                 return;
 
             string where = __originalMethod != null

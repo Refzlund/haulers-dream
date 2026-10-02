@@ -6,6 +6,8 @@ working. On top of that core idea it adds planning tools and a layer of quality-
 micro-management — all optional and tunable.
 
 - **Steam Workshop:** https://steamcommunity.com/sharedfiles/filedetails/?id=3742459652
+- **Reports and corrections:** [How to report, reply to an existing report, or use GitHub if Steam discussions are unavailable](#reporting-a-problem-or-updating-a-report).
+  In-game replies keep the original report; original-text editing is currently unsupported.
 - **Requires:** [Harmony](https://github.com/pardeike/HarmonyRimWorld) (`brrainz.harmony`)
 - **Safe to add to existing saves**, and safe to remove (carried goods are never stranded).
 - Everything is behind mod-settings toggles; defaults preserve or improve vanilla behaviour.
@@ -49,15 +51,26 @@ integration layer. Soft dependencies are reflection-only and **inert when the ot
   vehicles included), and colonists eat from and build from a parked vehicle's cargo (feature 19).
 - **Adaptive Storage Framework** / **LWM's Deep Storage** — haul-to-stack works into modded storage
   units, and the optional storage-building filter is aware of slow/deep-storage deposit delays.
-- **Common Sense** — when Common Sense owns the crafting-ingredient hauling or advanced-cleaning
-  flow, Hauler's Dream steps aside so the two never fight or loop.
+- **Medieval Overhaul** — recipes using ordinary bill ingredient gathering follow the same bill rules.
+  Refueling uses RimWorld and Medieval Overhaul because its fuel values change how much each item
+  provides; HD leaves carried fuel untouched and does not offer bulk refueling with this composition.
+- **Common Sense** — when Common Sense gathers crafting ingredients, HD does not add carried
+  stock to ordinary bills' ingredient searches and leaves gathering to Common Sense. Cleaning alone
+  does not disable HD gathering; see
+  [crafting with carried ingredients](COMPATIBILITY.md#crafting-with-carried-ingredients).
 - **Allow Tool** / **Keyz' Allow Utilities** — "Haul Urgently" runs Hauler's Dream's bulk sweep
-  instead of one-stack-at-a-time vanilla hauling.
+  instead of one-stack-at-a-time vanilla hauling. Supported animal finish-off orders can queue
+  corpse hauling; see [finish-off conditions](COMPATIBILITY.md#finish-off-orders--allow-tool-and-keyz-allow-utilities).
 - **Simple Sidearms**, **Smart Medicine**, hygiene mods — items those mods keep in a pawn's
   inventory are auto-detected and never auto-unloaded as "surplus".
 - **Perfect Pathfinding** — the grab-it-on-the-way detour check uses its pathing accuracy when set
   to the Pathfinding mode.
 - **Autocast**, **While You Are Nearby**, and many others — compatible.
+- **Custom Alerts — Continued** — use **current action → ALL OPTIONS → gathering items into
+  inventory** to select HD's gathering activity. The default list can hide it when nobody is
+  gathering. See [activity alert setup](COMPATIBILITY.md#custom-alerts--continued-activity-selection).
+- **RIMMSqol** — the **Haul everything nearby** Work Giver exposes direct-order and drafted
+  permissions. See [drafted hauling setup](COMPATIBILITY.md#rimmsqol-nearby-hauling-while-drafted).
 
 ---
 
@@ -88,10 +101,12 @@ work of many.
 4. **Fewer round-trips** — a builder or cook gathers everything the job needs into its inventory in
    one sweep and walks to the bench or site once. A geothermal generator's 340 steel no longer takes
    five hand-carry trips.
-5. **Shared inventories** — a pawn carrying goods works like a walking stockpile: workers take what
-   they need straight from the carrier, an idle carrier even walks out to meet them halfway, and
-   everyone uses their own carried stock first (a cook can cook with the berries it just picked).
-   Optional: builders may claim materials from a hauler mid-transit.
+5. **Shared inventories** — materials tracked by Hauler's Dream act as a walking stockpile:
+   workers can draw on that hauling stock, including their own. Ordinary crafting does not
+   automatically use every personal item in a pawn's inventory. See
+   [crafting with carried ingredients](COMPATIBILITY.md#crafting-with-carried-ingredients) for
+   sharing, Keep and Common Sense settings. Optional: builders may claim materials from a hauler
+   mid-transit.
 6. **Build from inventory** — a constructing pawn sources build materials from carried stock — its
    own inventory, other colonists', and pack animals' / caravan cargo — not just loose stacks on the
    ground. Order a wall or sandbag on a raid and it builds straight from caravan-carried steel, no
@@ -107,11 +122,15 @@ work of many.
    corpse first) and Cook (meals, pemmican and kibble use the most-perishable food first) toggles.
    Recipe satisfaction, the search radius, multi-slot meals and non-perishable crafts (steel, cloth,
    chemfuel, leather) are unaffected; frozen food is left for last.
-9. **Haul after slaughter** — a fresh carcass is hauled straight to a freezer or corpse stockpile so
-   it doesn't rot where it fell. Two toggles: slaughtered (tamed) carcasses, which vanilla never
-   hauls itself, and hunted (wild) carcasses, where the hunter grabs its kill if a hunt was
-   interrupted right after the killing blow (a clean hunt already self-hauls, so this never
-   double-hauls). Only when a reachable store accepts the body; otherwise left exactly as vanilla.
+9. **Haul after slaughter or finishing off** — queues a carcass haul after the killer's existing
+   orders when the pawn is eligible, the carcass is allowed, and reachable storage accepts it.
+   Separate settings cover colony animals and wild animals: normal slaughter uses the colony
+   setting; an interrupted hunt that killed its prey uses the wild setting. Allow Tool finish-off
+   orders use the setting for the animal's ownership, when Allow Tool permits that target.
+   Keyz' Allow Utilities supports wild targets, including its strip-and-finish order.
+   A completed vanilla hunt keeps its own hauling without an extra
+   haul. Forbidden carcasses stay forbidden, and existing queued work is preserved. See the
+   [finish-off conditions](COMPATIBILITY.md#finish-off-orders--allow-tool-and-keyz-allow-utilities).
 
 ### Smarter hauling
 
@@ -159,12 +178,12 @@ claim-ledger keeps the count exact), and interrupting one returns its share to t
     stacks into its backpack in a single visit and ships them to storage, so emptying a loaded caravan
     animal is one walk instead of dozens. Combat Extended weight/bulk aware; the carrier stays
     interruptible for roping and caravan-forming. Right-click "Prioritize bulk unloading".
-18. **Refuel** — top up a refuelable — a shuttle's chemfuel, deep drills, generators — in one trip
-    instead of vanilla's one fuel stack carried in hands per walk. It only kicks in when more than one
-    trip's worth of fuel is needed (a single-stack refuel is left to vanilla, which already does it in
-    one go), and reuses vanilla's own fuel finder so it picks exactly the stacks vanilla would. Any
-    fuel swept over what's needed is put away by the normal unload. Right-click "Prioritize bulk
-    refuelling".
+18. **Refuel** — ordinary refuelling uses eligible fuel already carried by the pawn, then gathers
+    only the remaining amount from the ground. Keep quantities and other protected supplies stay
+    with the pawn. Floor-only bulk refuelling combines useful pickups; atomic and specialized
+    refuelling retain their dedicated rules. Right-click "Prioritize bulk refuelling" where available.
+    If a callback interrupts payment, retained fuel stays with the pawn across saves, and recovery
+    controls let you settle the recorded transaction without repeating an uncertain fuel payment.
 19. **Vehicle cargo** *(Vehicle Framework, optional — inert when absent)* — a vehicle's designated
     cargo loads the same way: many stacks in one trip, idle haulers splitting one manifest,
     autonomously the moment you set the cargo, aerial vehicles included. Colonists also eat from and
@@ -211,6 +230,20 @@ Better micro-management via planning: right-click → "Plan prioritized [task]�
     sites so several pawns build in parallel, or as haul+build, site by site. A separate order,
     "Prioritize hauling materials to…", stocks a site before it's even buildable.
 
+**Haul a chosen stack to a place or shelf:** select an undrafted hauler and right-click the
+source stack → **Haul … to…**, or use the pawn's **Haul to…** button and select the stack.
+Choose an amount with the number field or slider, then **Choose destination** and click a
+reachable ground cell outside storage or a native shelf that accepts the item. A single item
+goes straight to destination selection. Enable **Add to the work queue**, or hold your Queue
+Order key when opening the order, to append it; otherwise it replaces current work.
+
+Only the selected stack supplies the order, with multiple trips if needed. A shelf order stays
+on that selected shelf, including when its settings are linked to other shelves; modded storage
+providers are not covered by this command yet. Open **Hauling orders** to see delivered/total
+quantities and any blocking reason. After resolving a blockage, use **Resume** (optionally
+**Queue resumed orders**), or **Cancel order** to stop the remaining work. Right-click or Escape
+cancels destination selection before an order is placed.
+
 ### Quality of life
 
 25. **Per-pawn controls** — every eligible colonist and work-mech has an "Auto-haul yields" gizmo to
@@ -238,6 +271,12 @@ Better micro-management via planning: right-click → "Plan prioritized [task]�
     hiding the "Unload inventory" button. A pawn diverting to grab something en route shows
     "… (on the way to …)" in its job text.
 
+**Drop a chosen amount:** use an inventory stack's ordinary **Drop** action in the pawn's Gear
+tab, then type an amount or use the slider. The dialog shows what will remain in inventory;
+confirm with **Drop**, or cancel without moving anything. If the pawn or stack changes while
+the dialog is open, open it again. Items left in the stack retain their hauling and Keep state.
+As with a whole-stack drop, a Keep setting ends when the pawn no longer carries any of that item.
+
 ## Settings & profiles
 
 The settings window is a three-pane layout (icon navigation · options · a contextual info panel that
@@ -254,6 +293,18 @@ version plus only the settings that differ from that version's defaults, so it s
 pasting it recreates the profile (you pick the name, pre-filled from the code).
 
 ---
+
+## Hauling warnings
+
+The old "bulk-hauled without moving" warning could count repeated checks for work even when no
+items had moved. That check has been removed. It could also cause RimWorld's "CanGiveJob and
+JobOnX methods may not be synchronized" message: a workgiver reported available work but then
+returned no job. Here, "synchronized" describes those two checks, not a multiplayer connection.
+
+These messages alone do not identify an incompatible mod or justify removing one. If the
+job-consistency message persists, include its full line naming the workgiver, your mod versions,
+and the log when reporting it. If a pawn actually keeps moving the same items back and forth,
+also describe the source and destination; that needs its own investigation.
 
 ## How this mod is made
 
@@ -334,3 +385,29 @@ GitHub Releases and the Steam Workshop.
 **non-commercial** purposes, and derivatives must stay under the same license. In short: fork it,
 learn from it, build on it, but this code stays free — nobody gets to sell it or any derivative
 of it.
+
+---
+
+## Reporting a problem or updating a report
+
+Open **Options → Mod Settings → Hauler's Dream → Report an issue**. In **Your reports**, choose **Create new report**. If you have no previous reports, the new-report window opens automatically. Pick **Bug**, **Feature request**, **Mod compatibility** or **Something else**, describe what happened and what you expected, then click **Send report**.
+
+For a bug, include the steps that reproduce it and the relevant setting or other mod. New reports include Hauler's Dream's recent diagnostic log, game/mod versions, OS, active mods and Steam identity when available. **Also attach the full game log (Player.log)** controls the additional game log, capped at its latest 5 MB. Selected images/videos are uploaded separately. Reports and attachments can be linked publicly from the GitHub tracker.
+
+### Correcting or adding information
+
+1. Open **Report an issue** again and select the existing report in **Your reports**.
+2. Write the correction in the reply box and click **Send**. For example: “Correction: disabling Top existing stacks did not fix this. It still happens with apples and smokeleaf.”
+3. The reply is added to the same report and linked GitHub issue. Use **Refresh** to read the thread again. If sending fails, the draft remains in the box; keep a copy before closing the window.
+
+**A reply adds information; it does not replace the original report.** Editing the original submission is currently unsupported in the in-game reporter. Replies also do **not** automatically attach fresh logs or files. If updated diagnostics are needed, use **View on GitHub** and add the relevant files or links to a comment on that same issue.
+
+The reply box appears once the report has a tracker issue number. If the window says commenting is not available yet, refresh later. Your report list belongs to the RimWorld settings installation used to submit it; another installation, or deleting or replacing HD's settings file, may hide that list. HD's **Reset to defaults** button preserves the report identity. You can still find the public issue on the tracker and reply there after signing in to GitHub. Avoid creating a duplicate just to correct earlier information.
+
+If you originally created an issue directly with your own GitHub account, GitHub lets you edit its description through the description's **… → Edit** menu. Reports forwarded from the game are authored by the reporting bot; signing in to your GitHub account does not make you their author. [GitHub's editing permissions and instructions](https://docs.github.com/en/issues/tracking-your-work-with-issues/using-issues/editing-an-issue).
+
+### If Steam will not let you start a discussion
+
+Use the in-game reporter above, or open [Hauler's Dream's GitHub issue tracker](https://github.com/Refzlund/haulers-dream/issues). Search for an existing report first; add a comment if it is the same problem. Otherwise, [create a new issue](https://github.com/Refzlund/haulers-dream/issues/new), sign in to GitHub and include the reproduction steps, versions and relevant mods. GitHub reporting does not require permission to create a Steam discussion. [GitHub's issue-creation instructions](https://docs.github.com/en/issues/tracking-your-work-with-issues/using-issues/creating-an-issue).
+
+Hauler's Dream cannot change Steam's discussion permissions. If Steam displays an access error, keep its exact message and use [Steam's discussion support](https://help.steampowered.com/en/wizard/HelpWithSteamIssue/?issueid=1003) for that restriction. An inability to create a Steam topic, by itself, does not identify a mod defect or establish that your account is banned.

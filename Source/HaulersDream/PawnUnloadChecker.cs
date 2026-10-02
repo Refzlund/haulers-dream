@@ -71,7 +71,7 @@ namespace HaulersDream
             // A pawn mid bill-prep-gather is CARRYING INGREDIENTS TO A BENCH ON PURPOSE — an auto-unload queued now
             // would run before the bill re-scan (queued jobs precede work) and dump the whole gathered load back to
             // storage, wasting the entire sweep. Only the explicit gizmo (forced) may override.
-            if (!forced && pawn.CurJobDef == HaulersDreamDefOf.HaulersDream_BillPrepGather)
+            if (!forced && HdJobDefSets.IsBillGather(pawn.CurJobDef))
                 return;
 
             // Belt-and-suspenders (CS-agnostic): while the pawn's CURRENT or a QUEUED job is a vanilla DoBill that
@@ -140,6 +140,7 @@ namespace HaulersDream
             }
 
             bool alreadyUnloading = pawn.CurJobDef == HaulersDreamDefOf.HaulersDream_UnloadInventory
+                                    || pawn.CurJobDef == HaulersDreamDefOf.HaulersDream_UnloadTransporterInBulk
                                     || HasQueuedUnload(pawn);
             int ticksSinceYield = (Find.TickManager?.TicksGame ?? 0) - comp.lastYieldTick;
             // Pending REAL work = a queued job that is the pawn's actual work (e.g. a shift-prioritized

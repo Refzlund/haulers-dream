@@ -7,7 +7,8 @@ namespace HaulersDream
 {
     /// <summary>
     /// "Prioritize bulk loading {0}": a one-click order that sweeps nearby ground stacks the transporter group still
-    /// needs into the pawn's inventory and loads them all in one trip (see
+    /// needs into the pawn's inventory and deposits one trip at a time. An undrafted courier repeats after an
+    /// actual delivery while this manifest still needs goods and no replacement work is queued (see
     /// <see cref="JobDriver_LoadTransportersInBulk"/>), replacing vanilla's one-stack-in-hands "Load X into
     /// transporter". Auto-discovered FloatMenuOptionProvider — no Harmony. The clicked thing is a transporter
     /// (its <see cref="CompTransporter"/>). Mirrors <see cref="FloatMenuOptionProvider_BulkLoadPackAnimal"/> /
@@ -29,7 +30,7 @@ namespace HaulersDream
         {
             var pawn = context?.FirstSelectedPawn;
             var things = context?.ClickedThings;
-            if (pawn == null || things == null || pawn.Map == null)
+            if (pawn == null || things == null || pawn.Map == null || !MultiplayerCompat.TransporterLocalUi)
                 yield break;
             var s = HaulersDreamMod.Settings;
             if (s == null || !s.enableBulkLoadTransporters)
@@ -62,26 +63,19 @@ namespace HaulersDream
                 if (pawn.CurJobDef == HaulersDreamDefOf.HaulersDream_LoadTransportersInBulk
                     && pawn.CurJob.GetTarget(TargetIndex.A).Thing?.TryGetComp<CompTransporter>()?.groupID == comp.groupID)
                     continue;
-                var adapter = LoadTransportersAdapter.TryCreate(comp);
-                if (adapter == null)
-                    continue;
-
                 var pawnLocal = pawn;
-                var adapterLocal = adapter;
                 var clickedLocal = clicked;
+                int mapId = pawn.Map.uniqueID;
+                string reason = TransporterCommand.LoadBlock(pawn, clicked);
+                if (reason != null)
+                {
+                    yield return new FloatMenuOption("HaulersDream.LoadTransporter.Option".Translate(clicked.LabelShort) + ": " + reason, null);
+                    yield break;
+                }
                 var option = new FloatMenuOption(
                     "HaulersDream.LoadTransporter.Option".Translate(clicked.LabelShort), () =>
                     {
-                        // No try/catch: a build failure is a real bug to surface; the null path shows the toast.
-                        var job = TransportLoad.TryGiveBulkJob(pawnLocal, adapterLocal, playerOrder: true);
-                        if (job == null)
-                        {
-                            Messages.Message("HaulersDream.LoadTransporter.CouldNotStart".Translate(), clickedLocal,
-                                MessageTypeDefOf.RejectInput, historical: false);
-                            return;
-                        }
-                        job.playerForced = true;
-                        pawnLocal.jobs.TryTakeOrderedJob(job, JobTag.Misc);
+                        TransporterCommand.Dispatch(pawnLocal, clickedLocal, mapId, false, KeyBindingDefOf.QueueOrder.IsDownEvent);
                     })
                 {
                     iconThing = clicked,

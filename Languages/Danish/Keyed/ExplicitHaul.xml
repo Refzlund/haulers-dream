@@ -1,0 +1,40 @@
+<?xml version='1.0' encoding='utf-8'?>
+<LanguageData>
+  <HD_ExplicitHaulTo>Flyt {0} til…</HD_ExplicitHaulTo>
+  <HD_ExplicitChanged>Figuren eller den valgte stak er ændret. Vælg dem igen.</HD_ExplicitChanged>
+  <HD_ExplicitActorUnavailable>Denne figur kan ikke udføre denne transportordre nu.</HD_ExplicitActorUnavailable>
+  <HD_ExplicitSelectSource>Vælg stakken, der skal flyttes. Højreklik eller Escape annullerer.</HD_ExplicitSelectSource>
+  <HD_ExplicitSelectDestination>Aflever {0} × {1} her. {2} Vælg et tilgængeligt felt på jorden eller en hylde. Højreklik eller Escape annullerer.</HD_ExplicitSelectDestination>
+  <HD_ExplicitQueuedHint>Føj til arbejdskøen.</HD_ExplicitQueuedHint>
+  <HD_ExplicitReplaceHint>Erstat det aktuelle arbejde.</HD_ExplicitReplaceHint>
+  <HD_ExplicitStateQueued>I kø</HD_ExplicitStateQueued>
+  <HD_ExplicitStateActive>Transporterer</HD_ExplicitStateActive>
+  <HD_ExplicitStateBlocked>Blokeret</HD_ExplicitStateBlocked>
+  <HD_ExplicitStateCancelled>Annulleret</HD_ExplicitStateCancelled>
+  <HD_ExplicitStateComplete>Fuldført</HD_ExplicitStateComplete>
+  <HD_ExplicitStateCaptured>Midlertidigt sat på pause</HD_ExplicitStateCaptured>
+  <HD_ExplicitSourceChanged>Den valgte kilde mangler, er opbrugt eller er ikke længere tilladt.</HD_ExplicitSourceChanged>
+  <HD_ExplicitSourceReserved>Den valgte kilde er reserveret af en anden opgave.</HD_ExplicitSourceReserved>
+  <HD_ExplicitDestinationBlocked>Det valgte sted mangler plads, er reserveret eller kan ikke modtage tingene.</HD_ExplicitDestinationBlocked>
+  <HD_ExplicitRouteBlocked>Den valgte rute er ikke tilgængelig.</HD_ExplicitRouteBlocked>
+  <HD_ExplicitHandsBusy>Figuren bærer andre ting i hænderne.</HD_ExplicitHandsBusy>
+  <HD_ExplicitInterrupted>Ordren blev afbrudt. Genoptag den, når du er klar.</HD_ExplicitInterrupted>
+  <HD_ExplicitAdmissionFailed>Figuren kunne ikke starte ordren. Genoptag den, når du er klar.</HD_ExplicitAdmissionFailed>
+  <HD_ExplicitNeedsReview>Den gemte ordre eller dens last er ændret uventet. Undersøg tingene før genoptagelse.</HD_ExplicitNeedsReview>
+  <HD_ExplicitStart>Flyt til…</HD_ExplicitStart>
+  <HD_ExplicitStartDesc>Vælg én genstandsstak, et samlet antal og et bestemt felt på jorden eller en hylde. Kun denne stak transporteres. Hold tasten til at sætte ordrer i kø nede for at tilføje ordren.</HD_ExplicitStartDesc>
+  <HD_ExplicitOrders>Transportordrer</HD_ExplicitOrders>
+  <HD_ExplicitOrdersDesc>Se afleverede mængder, og genoptag eller annullér transportordrer.</HD_ExplicitOrdersDesc>
+  <HD_ExplicitAmountTitle>Vælg transportmængde</HD_ExplicitAmountTitle>
+  <HD_ExplicitChooseDestination>Vælg destination</HD_ExplicitChooseDestination>
+  <HD_ExplicitAmountContext>{0}: {1}\nTilgængeligt i stakken: {2}</HD_ExplicitAmountContext>
+  <HD_ExplicitQueue>Føj til arbejdskøen</HD_ExplicitQueue>
+  <HD_ExplicitAmountHint>Aflevér i alt {0}, over flere ture om nødvendigt. Personligt inventar berøres ikke.</HD_ExplicitAmountHint>
+  <HD_ExplicitQueueResume>Sæt genoptagne ordrer i kø</HD_ExplicitQueueResume>
+  <HD_ExplicitResume>Genoptag</HD_ExplicitResume>
+  <HD_ExplicitCancel>Annullér ordre</HD_ExplicitCancel>
+  <HD_ExplicitProgress>Ordre {0}: {1}\nAfleveret {2} / {3} → ({4}, {5})</HD_ExplicitProgress>
+  <HD_ExplicitMissingItem>Kilde mangler</HD_ExplicitMissingItem>
+  <HD_ExplicitShelf>Valgt hylde: {0}</HD_ExplicitShelf>
+  <HD_ExplicitMissingShelf>Manglende hylde</HD_ExplicitMissingShelf>
+</LanguageData>

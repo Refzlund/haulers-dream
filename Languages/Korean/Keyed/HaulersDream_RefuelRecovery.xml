@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LanguageData>
+  <HD_RefuelRecoveryPaused>연료 보급 일시 중지: 중단된 보급을 검토해야 합니다.</HD_RefuelRecoveryPaused>
+  <HD_RefuelRecoveryChanged>기록된 물품이 변경되었거나 더 이상 사용할 수 없습니다.</HD_RefuelRecoveryChanged>
+  <HD_RefuelRecoveryCustodyUnknown>남은 재료가 어디에 있는지 확인하지 못했습니다.</HD_RefuelRecoveryCustodyUnknown>
+  <HD_RefuelRecoveryRecordMissing>연료 보급이 일시 중지되었습니다. 세부 정보가 모두 저장되기 전에 작업이 중단되었습니다. 추가된 연료와 소모된 재료의 양을 확인할 수 없습니다.</HD_RefuelRecoveryRecordMissing>
+  <HD_RefuelRecoveryReview>중단된 연료 보급 검토</HD_RefuelRecoveryReview>
+  <HD_RefuelRecoveryReviewDesc>중단된 연료 보급을 검토하고 남은 재료를 어떻게 처리할지 선택합니다. 이 작업들은 연료를 다시 추가하지 않습니다.</HD_RefuelRecoveryReviewDesc>
+  <HD_RefuelRecoveryDetails>복구 세부 정보 보기</HD_RefuelRecoveryDetails>
+  <HD_RefuelRecoveryPay>기록된 연료용 재료 소모</HD_RefuelRecoveryPay>
+  <HD_RefuelRecoveryRestore>남은 재료를 소지품으로 되돌리기</HD_RefuelRecoveryRestore>
+  <HD_RefuelRecoveryCleanup>남은 소지품 다시 확인</HD_RefuelRecoveryCleanup>
+  <HD_RefuelRecoveryAccept>현재 상태를 유지하고 재개</HD_RefuelRecoveryAccept>
+  <HD_RefuelRecoverySyncUnavailable>사용 불가: 이 작업을 멀티플레이용으로 설정하지 못했습니다</HD_RefuelRecoverySyncUnavailable>
+  <HD_RefuelRecoveryPayConfirm>이미 추가된 연료에 해당하는, 기록된 바로 그 재료를 소모하시겠습니까? 연료는 다시 추가되지 않습니다. 이전 시도가 오류를 보고했더라도 다른 효과는 이미 발생했을 수 있습니다. 이 작업은 한 번만 시도하며 자동으로 반복하지 않습니다.</HD_RefuelRecoveryPayConfirm>
+  <HD_RefuelRecoveryRestoreConfirm>기록된 재료를 이 폰의 소지품으로 되돌리는 작업을 한 번 시도하시겠습니까? 저장된 복구 보관함의 변경되지 않은 물품은 연료를 추가하거나 재료를 소비하지 않고 옮길 수 있습니다. 기록된 미지급 연료 비용이나 불확실성은 해결되지 않으며, 검토와 해결은 별도로 해야 합니다. 보유자가 없는 물품은 연료 추가가 관측되지 않았을 때만 되돌릴 수 있습니다. 보관 및 장비 구성 설정은 그대로 유지됩니다.</HD_RefuelRecoveryRestoreConfirm>
+  <HD_RefuelRecoveryCleanupConfirm>기록된 재료가 소모된 뒤 남은 소지품을 다시 확인하시겠습니까? 이 작업은 연료를 추가하거나 다른 물품을 파괴하지 않으며, 예전 보관 또는 장비 구성 설정을 복원하지도 않습니다.</HD_RefuelRecoveryCleanupConfirm>
+  <HD_RefuelRecoveryAcceptConfirm>현재 물품과 연료량을 그대로 유지하고 새로운 Hauler's Dream 연료 보급 작업을 허용하시겠습니까? 중단된 작업은 반복하지 않으며 세부 정보는 저장된 상태로 유지됩니다. 불확실한 연료나 재료의 양은 확인되지 않은 채로 남습니다. 재개해도 이를 바로잡지는 않습니다.</HD_RefuelRecoveryAcceptConfirm>
+  <HD_RefuelRecoverySelectionChanged>복구 정보나 관련 물품이 변경되었습니다. 작업을 선택하기 전에 복구 메뉴를 다시 여세요.</HD_RefuelRecoverySelectionChanged>
+  <HD_RefuelRecoveryPaidOutcome>마지막 연료 보급 복구: 기록된 재료가 소모되었고 소지품 기록이 갱신되었습니다.</HD_RefuelRecoveryPaidOutcome>
+  <HD_RefuelRecoveryUncreditedOutcome>마지막 연료 보급 복구: 연료가 추가되는 것은 관측되지 않았으며 남은 재료의 위치와 수량은 확인되었습니다.</HD_RefuelRecoveryUncreditedOutcome>
+  <HD_RefuelRecoveryUncertainOutcome>마지막 연료 보급 복구: 현재 물품과 연료량을 유지한 채 보급을 재개했습니다. 이전에 추가된 연료와 소모된 재료의 양은 여전히 확인되지 않았습니다.</HD_RefuelRecoveryUncertainOutcome>
+  <HD_RefuelRecoveryCostPaid>기록된 양의 재료가 소모된 것이 확인되었습니다. 연료 보급을 재개하기 전에 현재 상태를 검토하세요.</HD_RefuelRecoveryCostPaid>
+  <HD_RefuelRecoveryRestored>복구 작업이 끝났습니다. 연료 보급을 재개하기 전에 현재 상태를 검토하세요.</HD_RefuelRecoveryRestored>
+  <HD_RefuelRecoveryNoCredit>중단된 작업 중에 연료가 추가되는 것은 관측되지 않았습니다.</HD_RefuelRecoveryNoCredit>
+  <HD_RefuelRecoveryKnownDebt>연료가 추가되었지만, 그에 해당하는 기록된 양의 재료가 소모되었는지는 확인되지 않았습니다.</HD_RefuelRecoveryKnownDebt>
+  <HD_RefuelRecoveryUncertain>추가된 연료나 소모된 재료의 양이 불확실합니다. 현재 연료량만으로는 무슨 일이 있었는지 알 수 없습니다.</HD_RefuelRecoveryUncertain>
+  <HD_RefuelRecoveryPriorDestroy>이전에 재료 소모를 시도한 적이 있습니다. 오류를 보고했더라도 그 시도로 인한 효과는 이미 발생했을 수 있습니다.</HD_RefuelRecoveryPriorDestroy>
+  <HD_RefuelRecoveryNoExactCost>이 작업으로는 기록된 바로 그 재료를 소모할 수 없습니다. 어떤 조각을 소모할지 추측하거나, 변경된 나머지 더미를 나누거나, 대체 물품을 소모하지 않습니다.</HD_RefuelRecoveryNoExactCost>
+  <HD_RefuelRecoveryDetailHeader>{0}의 복구&#10;대상: {1}&#10;기록된 연료용 재료 비용: {2} 단위</HD_RefuelRecoveryDetailHeader>
+  <HD_RefuelRecoveryTargetMissing>원래 대상을 사용할 수 없음</HD_RefuelRecoveryTargetMissing>
+  <HD_RefuelRecoveryItemMissing>기록된 물품을 사용할 수 없습니다.</HD_RefuelRecoveryItemMissing>
+  <HD_RefuelRecoveryItemDestroyed>기록된 물품이 파괴되었습니다.</HD_RefuelRecoveryItemDestroyed>
+  <HD_RefuelRecoveryItemCurrent>{0}: {1} 단위 남음.</HD_RefuelRecoveryItemCurrent>
+  <HD_RefuelRecoveryInInventory>이 폰의 소지품에 있습니다.</HD_RefuelRecoveryInInventory>
+  <HD_RefuelRecoveryInCarry>이 폰이 운반하고 있습니다.</HD_RefuelRecoveryInCarry>
+  <HD_RefuelRecoveryNoOwner>현재 누구도 들고 있지 않으며 용기 안이나 지도 위에도 없습니다.</HD_RefuelRecoveryNoOwner>
+  <HD_RefuelRecoveryOnGround>같은 지도에 있습니다.</HD_RefuelRecoveryOnGround>
+  <HD_RefuelRecoveryElsewhere>확인된 복구 위치 밖에 있습니다.</HD_RefuelRecoveryElsewhere>
+  <HD_RefuelRecoveryLastActionFailed>이전 복구 작업이 오류를 보고했습니다. 세부 정보는 저장된 상태로 유지됩니다.</HD_RefuelRecoveryLastActionFailed>
+  <HD_RefuelRecoveryInRetainedCustody>이 폰의 연료 복구 보관함에 보관되며 게임과 함께 저장됩니다.</HD_RefuelRecoveryInRetainedCustody>
+  <HD_RefuelRecoveryRetainedBeforeResume>다시 시작하기 전에 보관된 재료를 소지품으로 되돌리거나 확인된 연료 비용에 해당하는 바로 그 재료를 정확한 수량만큼 소비하세요. 재료를 되돌리는 것은 보관 위치만 바꾸며, 미지급 연료 비용이나 불확실성은 여전히 해결되지 않습니다.</HD_RefuelRecoveryRetainedBeforeResume>
+</LanguageData>

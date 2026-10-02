@@ -122,6 +122,11 @@ namespace HaulersDream
                     return null;
             }
 
+            // The urgent builder emits a bulk job independently of BulkHaul. Its cluster is also new
+            // storage intake, so neither urgent priority nor a forced probe grants a specialist this role.
+            if (!MiscRobotsStorageRole.AllowsNewStorageIntake(pawn))
+                return null;
+
             // The primary itself must fit in inventory under the carry ceiling; otherwise a hands-carry (no mass
             // limit) is the better plan and there's nothing to build on top of it. Same mass + CE clamp
             // BulkHaul.BuildPickUpJob prices the primary with.

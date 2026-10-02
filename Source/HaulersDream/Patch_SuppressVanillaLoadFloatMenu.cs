@@ -26,11 +26,9 @@ namespace HaulersDream
     /// <see cref="TransportLoad.TryGiveBulkJob"/> would return a non-null job for THIS pawn+target; when it would not,
     /// the vanilla carry option survives so the player can still hand-load the pawns/corpses one at a time.
     ///
-    /// The probe is the SAME call (with the same <c>playerOrder: true</c> eligibility path) HD's float-menu provider
-    /// makes when the bulk option is clicked, and it is SIDE-EFFECT-FREE: <c>TryGiveBulkJob</c> is pure planning — it
-    /// refreshes the ledger's manifest view (idempotent, the same <c>LoadRegisterOrUpdate</c> the work-scan/menu does)
-    /// and reads available-to-claim, but records NO claim and NO reservation (the driver claims in its
-    /// <c>Notify_Starting</c>, never the builder). So building-but-discarding the probed job reserves no quota.
+    /// The menu probe follows the same ordered planning path but reads a private manifest/claims projection
+    /// and returns before JobMaker. It does not create or refresh a saved ledger entry, claim quota, reserve
+    /// goods or consume a job ID. Clicking the offered command validates and builds a fresh job.
     ///
     /// Vehicles are NOT handled here: Vehicle Framework loads cargo via a Hauling work-scan, not a vanilla
     /// float-menu option, so there is no vanilla load option to suppress for vehicles (the autonomous scan is

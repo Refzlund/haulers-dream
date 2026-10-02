@@ -20,15 +20,51 @@ than owning the job pipeline:
 - Pawn eligibility: scoop, bulk-haul, and auto-unload all gate on **one** predicate
   (`YieldRouter.IsEligible` → `EligibilityPolicy`): humanlike colonists, or colony mechs when
   `allowMechanoids` is on. So whatever HD loads into a pawn's inventory, HD can also unload it —
-  the load and unload halves are provably symmetric. Non-humanlike, non-mechanoid pawns (animals,
-  modded robots) are **never** loaded by HD; they keep vanilla single-stack hauling untouched.
+  the load and unload halves use the same eligibility rules. Misc. Robots and Robots++ also require
+  their native Hauling role for new storage pickups; HD does not grant a specialist another role.
 
 Because every load is **tagged** and re-found from the tags, any external interruption (a draft, a
 forced job, a mental break, another mod cancelling the job) is self-healing: a trigger re-issues the
 unload. And as a hard backstop, a **red alert** fires if a pawn is ever left holding items it cannot
 put away (see the in-game "Cannot unload inventory" alert).
 
+## Crafting with carried ingredients
+
+For ordinary crafting bills, enable **Use carried materials for crafting bills** to let colonists
+use carried materials tracked by Hauler's Dream, including the crafter's own hauling stock.
+Materials collected through HD's hauling and gathering features can supply a bill without a manual
+drop first. The bill still needs enough permitted ingredients for its recipe; the pawn can fetch
+the remaining ingredients from the map when its carried stock is insufficient.
+
+This setting does not add untracked personal items to an ordinary bill's ingredient search. Food
+or supplies placed in inventory by another system may be untracked. If such an item is unavailable
+to a bill, put it on the ground in an accessible location and check the bill's ingredient settings.
+The building-material feature has a separate, broader inventory policy.
+
+**Keep in inventory controls unloading, not whether crafting may consume tracked stock.** A pawn
+carrying 47 eligible units with Keep set to 7 can use 40 in a recipe and retain 7. Use the bill's
+ingredient settings to control which materials it may consume.
+
+When Common Sense's ingredient-gathering option is enabled, it handles ordinary ingredient
+gathering and HD does not add carried stock to that bill's ingredient search. Common Sense cleaning
+alone does not disable HD's gathering. HD's explicit batch command uses a separate crafting job
+and its own **Batch even with Common Sense active** setting; its behavior is separate from
+ordinary shared-stock selection.
+
 ## Flagged mods in the investigated load order
+
+### Big & Small — sapient animals and mechanoids
+
+HD registers its inventory tracking component with Big & Small Framework's sapient-race
+component whitelist. Converted sapient animals and mechs can retain inventory hauling through
+conversion, saving, reloading and a full game restart. Existing hauling settings still apply.
+
+Native checks with the selected Big & Small Framework and Sapient Animals builds cover a
+converted monkey and lifter, an ordinary human, existing-save upgrade, tagged partial cargo,
+Keep amounts and the per-pawn automatic-pickup preference. They also cover startup without
+the provider. These checks do not certify every provider version or mod combination; the
+reporter's exact historical Workshop files were unavailable. Preferences or cargo tags already
+omitted from an older save cannot be recovered from that save.
 
 ### Real overlap — works, but worth testing
 - **Common Sense** (`avilmask.commonsense`) — the only genuine functional overlap. It runs its own
@@ -111,6 +147,49 @@ put away (see the in-game "Cannot unload inventory" alert).
     shows **both** mods' `initAction` frames whatever the actual cause, so read the frames *above*
     `Toils_Haul…b__0`, not below it. (HD's own exception breadcrumb says the same thing in words: being on
     the call stack is not blame.)
+
+### Finish-off orders — Allow Tool and Keyz' Allow Utilities
+
+Animal finish-off orders from **Allow Tool** and **Keyz' Allow Utilities** can add a corpse haul
+to the same pawn's queue, including Keyz's strip-and-finish order. In HD's settings, enable
+**Haul wild-animal carcasses to storage** for factionless wildlife, or
+**Haul colony-animal carcasses to storage** for animals belonging to your colony. These toggles
+are independent. Colony-animal finish-off support uses Allow Tool only when its native target
+permission permits the order; Keyz rejects colony targets. HD does not make a provider offer
+orders it normally disallows. This integration excludes other factions' animals and non-animals.
+Other finish-off providers are not covered by these hooks.
+
+The killer must be eligible to haul, the carcass must be allowed, and reachable storage must
+accept it. The haul goes **after existing queued orders**, without replacing them. HD does not
+un-forbid a carcass: Allow Tool's own un-forbid setting can affect the result; Keyz can leave a
+finish-off kill outside the Home area forbidden. If the carcass remains forbidden, allow it and
+use a normal haul order. A missing or inaccessible corpse stockpile/freezer also prevents the
+follow-up; changing storage later does not replay the finish-off event. The queued job can still
+fail if its destination or reservations change before it starts.
+
+Normal slaughter and interrupted-hunt handling continue to use their existing paths. A completed
+vanilla hunt already hauls its kill and receives no extra haul from this feature. An existing haul
+for the same carcass also prevents a duplicate follow-up.
+
+### Harvest and Haul
+
+HD already gathers work yields into inventory; **Harvest and Haul** is optional. When both are
+enabled, H&H receives the actual placed output once, so its repeated placement callback cannot
+collect an unrelated nearby stack. Its ordinary inventory unload respects HD's kept quantities
+and delivers only the surplus. H&H still controls its own pickup filters, unload timing and
+storage search. A harvest merging with an existing ground stack retains H&H's whole-stack intake.
+
+This support covers the current ordinary H&H unload path. **H&H's separate Combat Extended
+unload path is not covered by this keep protection.** If a future H&H version changes that
+unload implementation, HD logs a compatibility warning and leaves its original behavior intact.
+
+### Storage Refill Hysteresis
+
+HD's partial-stack refinement and opportunistic storage searches respect the storage group's
+refill setting. Paused storage is skipped for new destinations and becomes eligible again when
+Storage Refill Hysteresis permits refilling. Linked storage keeps the provider's shared-group
+calculation. Deliveries already underway still finish, so stock can exceed the upper threshold;
+that threshold is not a hard limit on incoming items.
 
 ### Can interrupt HD jobs (self-recovering)
 - **Automatic Stump Chopping** (`arylice.rimworld.automaticstumpchopping`) — prepends a
@@ -441,12 +520,9 @@ water-overlap cache postfixes. Build materials and uranium fuel haul exactly lik
   "no stockpile → desperate cell / dumping" path, same as vanilla rock chunks.)
 
 ### Non-human pawns — mechs, animals, robots (the "new hauling regime")
-HD attaches its `CompHauledToInventory` the same way Pick Up And Haul does: a patch on
-`ThingDef[thingClass="Pawn"]/comps` that hits the abstract `BasePawn` (which has `thingClass=Pawn` + a
-`<comps>` node), so **every** pawn — colonists, mechs, animals, and most modded races — inherits the
-comp. The comp alone is harmless; what matters is whether a pawn can be *loaded* by HD and then *not
-unloaded*. HD's rule (see "Pawn eligibility" above): scoop, bulk-haul, and unload all gate on the same
-`IsEligible` predicate.
+HD attaches its inventory tracker to the ordinary Pawn definition family and separately to the
+custom Misc. Robots definition family. The component tracks carried goods; work permissions
+remain separate. Automatic pickup and unloading retain the shared pawn eligibility checks.
 
 - **Mechanoids** — an intended, `allowMechanoids`-gated target (default **on**). A colony hauler/lifter
   mech scoops, bulk-hauls (at its plain carry limit — the slowdown overload model is skipped for
@@ -458,10 +534,17 @@ unloaded*. HD's rule (see "Pawn eligibility" above): scoop, bulk-haul, and unloa
   mechs only) plus `IsColonist`. So an ordinary animal keeps vanilla single-stack hauling and HD never
   touches it. (Animals-Logic / "hardworking animals" just tune that same `JobGiver_Haul` path — still
   not HD's method.)
-- **Robots / androids (modded)** — the two archetypes are safe by different mechanisms (verified by
-  cloning): **Android Tiers Reforged** androids are `intelligence=Humanlike`, so HD treats them as
-  colonists and auto-unloads them normally; **Misc. Robots / ++** uses a custom `thingClass`
-  (`AIRobot.X2_AIRobot`) and a non-colonist custom work system, so it never reaches HD's haul method.
+- **Android Tiers Reforged** androids use humanlike intelligence and the corresponding pawn
+  eligibility rules. This source classification does not establish runtime compatibility for every android mod.
+- **Misc. Robots / Robots++** use a separate Pawn subclass. HD adds its tracker to that family so
+  haul-capable robots can collect into inventory and unload through their actual work scheduler.
+  Enable **Allow mechanoids** and keep the robot's native Hauling role assigned. A specialist without
+  that role cannot start unrelated storage sweeps; its own work yields and existing carried cargo
+  retain their collection and recovery paths. The human hauling override does not grant robot roles.
+  Select a robot and use **Haul everything nearby**, then select the goods. This gizmo works without
+  Biotech; with Biotech enabled, the normal right-click menu also offers the command when native
+  control permits it. Queued orders retain their place, and interruption leaves picked cargo available
+  for normal recovery. Keep quantities apply across same-kind stacks, not to a particular stack identity.
 - **The one real edge case HD now guards against — an "animal worker" mod.** *HousekeeperAssistanceCat*
   (by the Animals-Logic author) is `intelligence=Animal` (non-humanlike) yet gives its cat a custom
   `JobGiver_Work` + `workSettings` + a Hauling work giver, **and** it inherits the comp. That combination
@@ -475,6 +558,55 @@ unloaded*. HD's rule (see "Pawn eligibility" above): scoop, bulk-haul, and unloa
 The remaining ~35 active mods are cosmetic / UI / render-only (Yayo's Animation, RimHUD, Camera+,
 Bubbles, Quality Colors, Blood Animations, Bionic Icons, etc.) and never touch jobs, hauling, storage,
 inventory, `GenPlace`, or `GenLeaving`.
+
+## Build From Storage
+
+Keep **Build From Storage** if you want new building designations to reuse matching packed
+buildings automatically. It complements HD's collection and delivery of materials for new
+construction. HD's construction routes retain the normal installation job for a reused building
+and do not treat that building as a raw-material recipe.
+
+When no matching packed building is available, normal construction proceeds. Build From Storage
+does not retroactively convert an existing ordinary blueprint when a packed building becomes
+available later. This integration was checked against Build From Storage 1.0.4 for RimWorld 1.6;
+it is not a claim about every construction mod or storage container.
+
+## RIMMSqol: nearby hauling while drafted
+
+In RIMMSqol's **Work Givers** editor, select **Haul everything nearby** and enable
+**Allow Drafted**. Leave **Can Be Ordered** enabled, apply the settings, then select a drafted
+pawn and right-click a haulable item to use **Haul everything nearby**. Drafted use is off by
+default. HD's bulk-hauling and nearby-command options must also be enabled.
+
+After a drafted sweep finishes gathering, it queues delivery of the gathered quantities to suitable
+storage while keeping the pawn drafted. Kept quantities and unrelated personal inventory are left
+alone. If storage becomes unavailable, some gathered items can remain carried for a later suitable
+unload. This explicit order works with HD's **Pause while drafted** setting; it does not enable
+automatic hauling for drafted pawns. Cancelling or interrupting the sweep while the pawn remains
+drafted does not create a new delivery order for it.
+
+Turning off **Can Be Ordered** invalidates a waiting command or an already opened menu action.
+Turning off **Allow Drafted** does the same while the pawn is still drafted.
+**Autopickable Priority While Drafted** controls the menu's default
+action; leave it at **-1** to keep nearby hauling as an explicit menu choice.
+
+Saving settings does not cancel queued colony work. Nearby commands and their generated
+delivery orders also survive a colony save and restart, including while waiting behind
+another job. Waiting orders recheck their permissions when they start. Keep HD installed
+while those orders are saved; let them finish or cancel them before removing the mod.
+
+## Custom Alerts — Continued: activity selection
+
+In the alert editor, add **current action**, open its dropdown, choose **ALL OPTIONS**, then
+select **gathering items into inventory**. Enable the alert and choose the map, count and delay
+you want. With the default available-only list, this entry can be hidden while no pawn is
+currently gathering; **ALL OPTIONS** exposes it without needing to start a haul first.
+
+This activity covers HD's inventory gathering, including its explicit single-stack pickup.
+It matches the pawn's current activity: an order waiting in the queue, the separate unloading
+job and ordinary hand-hauling do not match. It is not an exclusive filter for the
+**Haul everything nearby** command. In older HD versions, the activity was also named
+**hauling everything nearby**; existing saved selections retain the same job identity.
 
 ## If you hit a problem
 1. **Pawns carrying items forever?** You should see the red **"Cannot unload inventory"** alert — click

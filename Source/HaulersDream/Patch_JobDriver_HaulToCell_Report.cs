@@ -22,9 +22,9 @@ namespace HaulersDream
     ///   Gated on <see cref="HaulersDreamSettings.enRoutePickup"/>.</item>
     /// </list>
     /// <para>The third WYU case, <see cref="JobReportKind.Efficient"/> (a plain bulk haul), is DELIBERATELY not
-    /// fired: HD's bulk-haul job already self-describes via its own JobDef report ("hauling everything nearby."),
-    /// which conveys the consolidation; wrapping it would read "Efficiently hauling hauling everything nearby". The
-    /// <c>Efficient.*</c> keys are kept in XML for parity/completeness only.</para>
+    /// fired: HD's shared bulk-haul job already describes gathering items into inventory, including explicit
+    /// single-stack pickups. An Efficient wrapper would overstate that shared activity. The <c>Efficient.*</c>
+    /// keys are kept in XML for parity/completeness only.</para>
     ///
     /// <para><b>Purely cosmetic; degrade-to-no-rewrite everywhere.</b> Every classification path is gated on the
     /// owning FEATURE being enabled AND the job's own marker, so an OFF feature never rewrites anything; and if the
@@ -66,11 +66,10 @@ namespace HaulersDream
             }
             else if (job.def == HaulersDreamDefOf.HaulersDream_BulkHaul)
             {
-                // EN-ROUTE only. The plain (Efficient) bulk haul is DELIBERATELY left to its own JobDef report
-                // ("hauling everything nearby."), which already conveys the consolidation — wrapping it as
-                // "Efficiently hauling hauling everything nearby" would double the verb. The Efficient.* keys are
-                // kept in XML for parity/completeness but not fired here (a clean degrade-to-no-rewrite). En-route
-                // adds genuinely new info (the bound-for destination), so it IS rewritten.
+                // EN-ROUTE only. The shared bulk-haul activity describes gathering items into inventory;
+                // it also covers explicit single-stack pickups, so an Efficient wrapper would overstate it.
+                // The Efficient.* keys are kept in XML for parity/completeness but not fired here. En-route
+                // adds the bound-for destination, so it IS rewritten.
                 var enRoute = Patch_Pawn_JobTracker_EnRoutePickup.EnRouteData(job);
                 if (enRoute == null || !s.enRoutePickup)
                     return; // not an en-route pickup, or the feature is off -> leave the bulk-haul report

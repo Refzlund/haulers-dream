@@ -40,7 +40,7 @@
     <HDDeployDir>$(RimWorldModsDir)\HaulersDream</HDDeployDir>
   </PropertyGroup>
 
-  <Target Name="DeployToRimWorld" AfterTargets="Build" Condition="Exists('$(RimWorldModsDir)')">
+  <Target Name="DeployToRimWorld" AfterTargets="Build" Condition="'$(SkipRimWorldDeploy)' != 'true' and Exists('$(RimWorldModsDir)')">
     <ItemGroup>
       <_HDAbout Include="$(HDModSrcDir)\About\**\*.*" />
       <_HDDefs Include="$(HDModSrcDir)\Defs\**\*.*" />

@@ -17,11 +17,11 @@ namespace HaulersDream
           correct and its answer still wrong. A commitment written here is visible to the very next reader,
           in the same tick. scripts/check-storage-commit-seam.ts fails the build if this field ever becomes
           a TickKeyedMemo or [ThreadStatic] again.
-        → KEY: NOT SCRIBED, on purpose. A storage commitment is fully reconstructible from pawn state (what
-          a pawn carries, what its job queue names), so a saved claim could only ever be a phantom. HD's
-          transport LoadLedger IS scribed because a manifest is not reconstructible — and it still needed
-          RecomputeClaimed written to repair a real permanent-over-reservation leak. Deriving instead makes
-          that whole leak class inexpressible here.
+        → Saved ownership is distinct from saved capacity. These live rows and group references are
+          rebuilt after loading; they are not serialized as world-state truth. NativeStorageIntent saves
+          exact admitted job/source quantities because native job.count is the whole remaining trip
+          budget, not the admitted amount. Restoration validates that intent against real saved work
+          and custody before any new scan. Bulk/unload lifecycle reconstruction has its own contract.
         → GOTCHA: STATIC, unlike the scribed loadTasks on the same component. IsGoodStoreCell is the hottest
           method in the haul system and its 99% path is "is anything in flight at all?"; routing that
           through Current.Game.GetComponent (a component-list walk) every call would cost more than the
@@ -43,7 +43,7 @@ namespace HaulersDream
         /// <summary>
         /// Every live storage commitment, as a flat array replaced wholesale on write. Read directly (into
         /// a local) by <see cref="StorageCommitments"/>; written only through it, only on the main thread,
-        /// only at job start.
+        /// at actual admission, physical transfer, lifecycle reconciliation or release.
         /// </summary>
         internal static StorageClaimRow[] storageClaims = StorageClaimLedger.Empty;
 
@@ -62,6 +62,9 @@ namespace HaulersDream
             storageClaims = rows ?? StorageClaimLedger.Empty;
             storageClaimGeneration++;
         }
+
+        /// <summary>Pickup intent changed within the tick; retain rows protecting cargo already held.</summary>
+        internal static void InvalidateStorageClaimEvidence() => storageClaimGeneration++;
 
         /// <summary>Drop every claim — game load hygiene. The array holds live <c>Pawn</c> and
         /// <c>SlotGroup</c> references, so a quickload must not inherit the previous session's.</summary>

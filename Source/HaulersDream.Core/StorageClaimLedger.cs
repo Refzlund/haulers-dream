@@ -53,18 +53,26 @@ namespace HaulersDream.Core
         /// (see <see cref="StorageClaimLedger.EffectiveClaim"/>).</summary>
         public readonly int Units;
 
+        // A concrete native cell reservation already removes its physical resources from capacity
+        // measurement. Keep its identity in this same ledger, but never subtract its units again.
+        public readonly object ExclusiveCellAllocation;
+        // Optional actual work identity. A speculative reservation check is not an owner.
+        public readonly object WorkOwner;
+
         /// <summary>Record one commitment.</summary>
         /// <param name="pawn">The committing pawn.</param>
         /// <param name="group">The destination's budget identity.</param>
         /// <param name="def">The item def being delivered.</param>
         /// <param name="units">Units intended. A caller should not pass a negative; every reader clamps
         /// anyway rather than trusting it.</param>
-        public StorageClaimRow(object pawn, object group, object def, int units)
+        public StorageClaimRow(object pawn, object group, object def, int units, object exclusiveCellAllocation = null, object workOwner = null)
         {
             Pawn = pawn;
             Group = group;
             Def = def;
             Units = units;
+            ExclusiveCellAllocation = exclusiveCellAllocation;
+            WorkOwner = workOwner;
         }
     }
 
@@ -92,6 +100,53 @@ namespace HaulersDream.Core
         /// fresh one per clear would be pure garbage on the hot path.</summary>
         public static readonly StorageClaimRow[] Empty = new StorageClaimRow[0];
 
+        /// <summary>Replace one actual activation without erasing retained cargo or another owner.</summary>
+        public static StorageClaimRow[] AddForWork(StorageClaimRow[] rows, object pawn, object group,
+            object def, int units, object workOwner)
+        {
+            var current = rows ?? Empty;
+            if (pawn == null || def == null || workOwner == null) return current;
+            bool keeping = group != null && units > 0;
+            int survivors = 0;
+            for (int i = 0; i < current.Length; i++)
+                if (!IsRowOf(current[i], pawn, def) || !ReferenceEquals(current[i].WorkOwner, workOwner)) survivors++;
+            if (survivors == current.Length && !keeping) return current;
+            var next = new StorageClaimRow[survivors + (keeping ? 1 : 0)];
+            int write = 0;
+            for (int i = 0; i < current.Length; i++)
+                if (!IsRowOf(current[i], pawn, def) || !ReferenceEquals(current[i].WorkOwner, workOwner)) next[write++] = current[i];
+            if (keeping) next[write] = new StorageClaimRow(pawn, group, def, units, workOwner: workOwner);
+            return next;
+        }
+
+        /// <summary>
+        /// Replace only the unowned, def-wide legacy rows for this pawn/def. Exact work and exclusive
+        /// cell responsibilities remain intact, including when the legacy amount is retired.
+        /// </summary>
+        /// <remarks>
+        /// Migration entry point for older Commit/DropClaim callers. This does not transfer, retarget
+        /// or release an exact parcel; those operations must name its actual owner separately.
+        /// </remarks>
+        public static StorageClaimRow[] AddLegacy(StorageClaimRow[] rows, object pawn, object group,
+            object def, int units)
+        {
+            var current = rows ?? Empty;
+            if (pawn == null || def == null) return current;
+            bool keeping = group != null && units > 0;
+            bool Replaced(StorageClaimRow row) => IsRowOf(row, pawn, def)
+                && row.WorkOwner == null && row.ExclusiveCellAllocation == null;
+            int survivors = 0;
+            for (int i = 0; i < current.Length; i++)
+                if (!Replaced(current[i])) survivors++;
+            if (survivors == current.Length && !keeping) return current;
+            var next = new StorageClaimRow[survivors + (keeping ? 1 : 0)];
+            int write = 0;
+            for (int i = 0; i < current.Length; i++)
+                if (!Replaced(current[i])) next[write++] = current[i];
+            if (keeping) next[write] = new StorageClaimRow(pawn, group, def, units);
+            return next;
+        }
+
         /// <summary>
         /// Book <paramref name="units"/> of <paramref name="def"/> for <paramref name="pawn"/> into
         /// <paramref name="group"/>, returning the NEW rows array.
@@ -109,7 +164,7 @@ namespace HaulersDream.Core
         /// row, so it would leak.</param>
         /// <param name="units">Units intended.</param>
         /// <returns>A new array, or the same reference when nothing changed.</returns>
-        public static StorageClaimRow[] Add(StorageClaimRow[] rows, object pawn, object group, object def, int units)
+        public static StorageClaimRow[] Add(StorageClaimRow[] rows, object pawn, object group, object def, int units, object exclusiveCellAllocation = null, object workOwner = null)
         {
             var current = rows ?? Empty;
             if (pawn == null || def == null)
@@ -133,7 +188,7 @@ namespace HaulersDream.Core
                 if (!IsRowOf(current[i], pawn, def))
                     next[w++] = current[i];
             if (keeping)
-                next[w] = new StorageClaimRow(pawn, group, def, units);
+                next[w] = new StorageClaimRow(pawn, group, def, units, exclusiveCellAllocation, workOwner);
             return next;
         }
 
@@ -210,6 +265,7 @@ namespace HaulersDream.Core
         /// <returns>Units this row currently withholds from other pawns.</returns>
         public static int EffectiveClaim(StorageClaimRow row, StorageClaimEvidence evidence)
         {
+            if (row.ExclusiveCellAllocation != null) return 0;
             int recorded = row.Units;
             if (recorded <= 0)
                 return 0;

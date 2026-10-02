@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using HaulersDream.Core;
 using RimWorld;
@@ -6,266 +7,155 @@ using Verse.AI;
 
 namespace HaulersDream
 {
-    /// <summary>
-    /// Bulk-refuel a <see cref="CompRefuelable"/> (a shuttle's chemfuel, a deep drill, a generator, …): sweep the
-    /// queued nearby fuel stacks into tagged inventory, walk to the refuelable ONCE, then deposit every carried fuel
-    /// stack the filter allows via vanilla <see cref="CompRefuelable.Refuel(System.Collections.Generic.List{Thing})"/>
-    /// — instead of vanilla's one-stack-in-hands per walk. The same sweep→pickup→deposit shape as HD's bulk-load
-    /// drivers, but standalone (no claim-ledger): a refuelable has no shared manifest, and vanilla's Refuel just
-    /// consumes up to the deficit and destroys the consumed fuel.
-    ///
-    /// Concurrency / safety: each non-Success end re-tags any swept-but-undeposited fuel (idempotent self-heal) so it
-    /// rides HD's normal unload — never stranded. Over-swept fuel (more than the deficit) likewise stays HD-tagged:
-    /// vanilla Refuel consumes only the deficit, leaving the remainder in inventory, which the finish action keeps
-    /// tagged. No try/catch swallowing — a real fault throws.
-    /// </summary>
-    public class JobDriver_BulkRefuel : JobDriver
-    {
-        private const TargetIndex RefuelableInd = TargetIndex.A; // the refuelable (deposit dest)
-        private const TargetIndex FuelInd = TargetIndex.B;       // scratch: the ground fuel stack being swept
+	public class JobDriver_BulkRefuel : JobDriver
+	{
+		private const TargetIndex RefuelableInd = TargetIndex.A;
 
-        private int loadIndex;
+		private const TargetIndex FuelInd = TargetIndex.B;
 
-        private Thing Refuelable => job.GetTarget(RefuelableInd).Thing;
-        private CompRefuelable Comp => Refuelable?.TryGetComp<CompRefuelable>();
-        private ThingOwner Inv => pawn.inventory?.GetDirectlyHeldThings();
+		private int loadIndex;
 
-        // Reused snapshot of the carried fuel for the deposit + the salvage finish action, replacing a fresh
-        // List<Thing> per deposit/end. [ThreadStatic] per this assembly's hook-reachable-scratch convention; cleared
-        // at use, never trusted empty. SAFETY: each consumer runs to completion in one toil initAction / finish action
-        // (sequential on the main thread) before the next reuse.
-        [System.ThreadStatic] private static List<Thing> scratchFuel;
+		private Toil sweepGotoToil;
 
-        // The two FILL-phase toils a pathing failure needs: the leg that walks to one queued fuel stack, and
-        // the loop head to resume at. Assigned once in MakeNewToils; see Notify_PatherFailed.
-        private Toil sweepGotoToil;
-        private Toil sweepDecideToil;
+		private Toil sweepDecideToil;
 
-        public override void ExposeData()
+		private Thing Refuelable => job.GetTarget(TargetIndex.A).Thing;
+
+		private CompRefuelable Comp => Refuelable?.TryGetComp<CompRefuelable>();
+
+		public override void ExposeData()
+		{
+			base.ExposeData();
+			Scribe_Values.Look(ref loadIndex, "hdBrefLoadIndex", 0);
+		}
+
+		public override string GetReport()
+		{
+			return "HaulersDream.BulkRefuel.Report".Translate();
+		}
+
+		public override void Notify_PatherFailed()
+		{
+			if (base.CurToil != sweepGotoToil)
+			{
+				base.Notify_PatherFailed();
+				return;
+			}
+			loadIndex++;
+			JumpToToil(sweepDecideToil);
+		}
+
+		public override bool TryMakePreToilReservations(bool errorOnFailed)
+		{
+			if (RefuelNativeWitness.Ready)
+			{
+				CompHauledToInventory comp = pawn.GetComp<CompHauledToInventory>();
+				if (comp != null && !comp.HasPendingRefuelRecovery && pawn.Reserve(Refuelable, job, 1, -1, null, errorOnFailed))
+				{
+					List<LocalTargetInfo> targetQueue = job.GetTargetQueue(TargetIndex.B);
+					if (targetQueue != null && targetQueue.Count > 0)
+					{
+						pawn.ReserveAsManyAsPossible(targetQueue, job);
+					}
+					return true;
+				}
+			}
+			return false;
+		}
+
+        private void RunRefuelAction(Action<RefuelActivation> action)
         {
-            base.ExposeData();
-            Scribe_Values.Look(ref loadIndex, "hdBrefLoadIndex", 0);
+            var activation = new RefuelActivation(this);
+            if (!activation.IntentCurrent) return;
+            try { action(activation); }
+            catch (Exception failure) { activation.HandleFailure(failure); }
         }
 
-        /// <summary>
-        /// A mid-walk pathing failure to ONE queued fuel stack must not cost the pawn the whole refuel run
-        /// (issue #160, same fix as JobDriver_BulkHaul / JobDriver_SelfPickup): the fuel queue is planned up
-        /// front, so by the time an older entry is walked to, another pawn or a freshly-placed stack can have
-        /// transiently blocked its only approach — a race no reachability check taken at plan time can
-        /// foresee. The vanilla default ends the job as ErroredPather, and Pawn_JobTracker.EndCurrentJob's
-        /// response to that condition is a hardcoded 250-tick JobDefOf.Wait (decompile-verified) that also
-        /// throws away every stack already swept for the refuelable. Advancing loadIndex and resuming at
-        /// sweepDecide mirrors exactly what sweepDecide/sweepGoto/sweepTake already do for every other
-        /// invalid-stack case: skip this one step, sweep the rest, refuel with whatever loaded.
-        ///
-        /// <para>Scoped to the FILL leg on purpose. The walk to the REFUELABLE has no per-step index to
-        /// advance, so resuming the sweep after it would burn queue entries the run still needs and re-enter
-        /// the same unreachable target. A refuelable-leg failure therefore keeps vanilla's behaviour
-        /// untouched.</para>
-        /// </summary>
-        public override void Notify_PatherFailed()
-        {
-            if (CurToil != sweepGotoToil)
+		public override IEnumerable<Toil> MakeNewToils()
+		{
+			this.FailOnDespawnedNullOrForbidden(TargetIndex.A);
+			AddEndCondition(() => (Comp == null || !Comp.IsFull) ? JobCondition.Ongoing : JobCondition.Succeeded);
+			this.FailOn(() => Comp == null || (!Comp.IsFull && !OrdinaryRefuelConsumer.TryReadLive(pawn, job, Refuelable, out var _, out var _, out var _, out var _)));
+			Toil depositStart = Toils_General.Label();
+			Toil sweepDecide = ToilMaker.MakeToil("HD_Bref_SweepDecide");
+			sweepDecideToil = sweepDecide;
+			sweepDecide.initAction = delegate
+			{
+				List<LocalTargetInfo> targetQueueB = job.targetQueueB;
+				List<int> countQueue = job.countQueue;
+				if (targetQueueB == null || loadIndex >= targetQueueB.Count)
+				{
+					JumpToToil(depositStart);
+				}
+				else
+				{
+					while (loadIndex < targetQueueB.Count)
+					{
+						Thing thing = targetQueueB[loadIndex].Thing;
+						bool flag = thing != null && thing.Spawned && thing.Map == pawn.Map && !thing.IsForbidden(pawn) && countQueue != null && loadIndex < countQueue.Count && countQueue[loadIndex] > 0;
+						if (flag && !pawn.Map.reservationManager.ReservedBy(thing, pawn, job) && (!pawn.CanReserve(thing) || !pawn.Reserve(thing, job, 1, -1, null, errorOnFailed: false)))
+						{
+							flag = false;
+						}
+						if (flag)
+						{
+							break;
+						}
+						loadIndex++;
+					}
+					if (loadIndex >= targetQueueB.Count)
+					{
+						JumpToToil(depositStart);
+					}
+					else
+					{
+						job.SetTarget(TargetIndex.B, targetQueueB[loadIndex].Thing);
+					}
+				}
+			};
+			sweepDecide.defaultCompleteMode = ToilCompleteMode.Instant;
+			yield return sweepDecide;
+			yield return sweepGotoToil = SweepWalk.MakeToil(this, TargetIndex.B, "HD_Bref_SweepGoto", sweepDecide, delegate
+			{
+				loadIndex++;
+			}, () => false);
+			yield return PickupPause.MakeToil(TargetIndex.B, PickupDelayContext.AutoHaul);
+			Toil toil = ToilMaker.MakeToil("HD_Bref_SweepTake");
+            toil.initAction = () => RunRefuelAction(activation =>
             {
-                base.Notify_PatherFailed();
-                return;
-            }
-            loadIndex++;
-            JumpToToil(sweepDecideToil);
-        }
-
-        public override string GetReport() => "HaulersDream.BulkRefuel.Report".Translate();
-
-        public override bool TryMakePreToilReservations(bool errorOnFailed)
-        {
-            // Reserve the refuelable exclusively (the deposit target), then best-effort reserve the queued fuel
-            // stacks. Mirrors the bulk-load reservation shape (queue[0] strict via ReserveAsManyAsPossible's first
-            // element, the rest best-effort), but the deposit TARGET here IS reserved (a refuelable is a single
-            // thing one pawn fuels, unlike a re-found transporter group).
-            if (!pawn.Reserve(Refuelable, job, 1, -1, null, errorOnFailed))
-                return false;
-            var queue = job.GetTargetQueue(FuelInd);
-            if (queue != null && queue.Count > 0)
-                pawn.ReserveAsManyAsPossible(queue, job);
-            return true;
-        }
-
-        public override IEnumerable<Toil> MakeNewToils()
-        {
-            this.FailOnDespawnedOrNull(RefuelableInd);
-            // Bail the whole job if the refuelable fills up or loses its comp before we deposit.
-            this.FailOn(() =>
-            {
-                var c = Comp;
-                return c == null || c.IsFull;
-            });
-
-            Toil depositStart = Toils_General.Label();
-
-            // ============ FILL: sweep each queued ground fuel stack into tagged inventory ============
-            Toil sweepDecide = ToilMaker.MakeToil("HD_Bref_SweepDecide");
-            sweepDecideToil = sweepDecide;
-            sweepDecide.initAction = delegate
-            {
-                var queue = job.targetQueueB;
-                var counts = job.countQueue;
-                if (queue == null || queue.Count == 0 || loadIndex >= queue.Count) { JumpToToil(depositStart); return; }
-                while (loadIndex < queue.Count)
-                {
-                    var t = queue[loadIndex].Thing;
-                    bool valid = t != null && t.Spawned && !t.IsForbidden(pawn)
-                                 && !(t.ParentHolder is Pawn_InventoryTracker)
-                                 && counts != null && loadIndex < counts.Count && counts[loadIndex] > 0;
-                    if (valid && !pawn.Map.reservationManager.ReservedBy(t, pawn, job)
-                        && (!pawn.CanReserve(t) || !pawn.Reserve(t, job, errorOnFailed: false)))
-                        valid = false;
-                    if (valid) break;
-                    loadIndex++;
-                }
-                if (loadIndex >= queue.Count) { JumpToToil(depositStart); return; }
-                job.SetTarget(FuelInd, queue[loadIndex].Thing);
-            };
-            sweepDecide.defaultCompleteMode = ToilCompleteMode.Instant;
-            yield return sweepDecide;
-
-            // The fuel-sweep walk, with a per-tick forbidden re-check (#250) — see SweepWalk. No forced-anchor
-            // concept here (sweepDecide and sweepTake refuse EVERY forbidden stack outright), so
-            // isOrderedAnchor is a constant false and the whole chain counts as swept extras.
-            Toil sweepGoto = SweepWalk.MakeToil(this, FuelInd, "HD_Bref_SweepGoto", sweepDecide,
-                () => loadIndex++, () => false);
-            // The pather-failure recovery is scoped to THIS toil, so a DEPOSIT-leg failure keeps vanilla's
-            // behaviour (see Notify_PatherFailed).
-            sweepGotoToil = sweepGoto;
-            yield return sweepGoto;
-
-            // Vanilla-like pickup pause (#121): sweeping fuel stacks into inventory paces like the bulk-haul
-            // sweep. (Vanilla refueling's own 240-tick bar sits AT the refuelable; HD's deposit there is one
-            // Refuel call, so this per-stack pause is the flow's pickup-side pacing.) No fail conditions: a
-            // fuel stack gone mid-pause is skipped by the take's re-validation.
-            yield return PickupPause.MakeToil(FuelInd, PickupDelayContext.AutoHaul);
-
-            Toil sweepTake = ToilMaker.MakeToil("HD_Bref_SweepTake");
-            sweepTake.initAction = delegate
-            {
-                var t = job.GetTarget(FuelInd).Thing;
-                var counts = job.countQueue;
-                int planned = counts != null && loadIndex < counts.Count ? counts[loadIndex] : 0;
-                if (t == null || !t.Spawned || planned <= 0 || t.IsForbidden(pawn)) { loadIndex++; JumpToToil(sweepDecide); return; }
-                // No LIVE carry-weight re-clamp here (unlike JobDriver_BulkHaul / the bulk-load drivers): the
-                // planner already clamped every countQueue entry to the smart-overload ceiling, and this job never
-                // injects mass mid-run (no takeover/append, no scoop loop), so planned <= ceiling always holds. If a
-                // takeover/append is ever added to refuel, re-clamp planned via a live CeilingKg/CountWithinCeiling
-                // read here, exactly as those siblings do.
-                int count = System.Math.Min(planned, t.stackCount);
-                if (count <= 0) { loadIndex++; JumpToToil(sweepDecide); return; }
-                int groundBefore = t.stackCount;
-                var split = t.SplitOff(count);
-                var inv = Inv;
-                if (inv != null && inv.TryAdd(split, canMergeWithExistingStacks: false))
-                {
-                    var comp = pawn.GetComp<CompHauledToInventory>();
-                    if (comp != null) { comp.RegisterHauledItem(split); comp.NotifyYieldPicked(); }
-                    if (!split.Spawned) split.Position = pawn.Position;
-                    if (counts != null && loadIndex < counts.Count) counts[loadIndex] = planned - count;
-                    bool itemDone = counts == null || loadIndex >= counts.Count || counts[loadIndex] <= 0 || count >= groundBefore;
-                    if (itemDone) loadIndex++;
-                }
-                else if (split != null && !split.Destroyed && !split.Spawned)
-                {
-                    // Couldn't stow it (full / mod block) — put it back on the ground and skip this stack.
-                    GenPlace.TryPlaceThing(split, pawn.Position, pawn.Map, ThingPlaceMode.Near);
-                    loadIndex++;
-                }
+                int selectedIndex = loadIndex;
+                Thing source = activation.Job.GetTarget(TargetIndex.B).Thing;
+                List<int> counts = activation.Job.countQueue;
+                List<LocalTargetInfo> targets = activation.Job.targetQueueB;
+                if (selectedIndex < 0 || targets == null || selectedIndex >= targets.Count) return;
+                LocalTargetInfo selectedTarget = targets[selectedIndex];
+                if (!ReferenceEquals(selectedTarget.Thing, source)) return;
+                int planned = counts != null && selectedIndex < counts.Count ? counts[selectedIndex] : 0;
+                int taken = OrdinaryRefuelConsumer.Pickup(activation, Refuelable, source, planned);
+                if (!activation.IntentCurrent) return;
+                // A returning callback may also redirect this same driver's queue.
+                // Never apply the old invocation's debit or jump to newer work.
+                if (loadIndex != selectedIndex || !ReferenceEquals(activation.Job.countQueue, counts)
+                    || !ReferenceEquals(activation.Job.targetQueueB, targets)
+                    || selectedIndex >= targets.Count || targets[selectedIndex] != selectedTarget
+                    || (counts != null && (selectedIndex >= counts.Count || counts[selectedIndex] != planned))
+                    || !ReferenceEquals(activation.Job.GetTarget(TargetIndex.B).Thing, source)) return;
+                if (counts != null && selectedIndex < counts.Count)
+                    counts[selectedIndex] = Math.Max(0, planned - taken);
+                loadIndex++;
                 JumpToToil(sweepDecide);
-            };
-            sweepTake.defaultCompleteMode = ToilCompleteMode.Instant;
-            yield return sweepTake;
-
-            // ============ DEPOSIT: walk to the refuelable ONCE, then refuel from carried fuel ============
-            yield return depositStart;
-
-            Toil gotoTarget = Toils_Goto.GotoThing(RefuelableInd, PathEndMode.Touch);
-            gotoTarget.FailOnDespawnedOrNull(RefuelableInd);
-            yield return gotoTarget;
-
-            Toil deposit = ToilMaker.MakeToil("HD_Bref_Deposit");
-            deposit.initAction = delegate
-            {
-                var comp = Comp;
-                var inner = pawn.inventory?.innerContainer;
-                var hcomp = pawn.GetComp<CompHauledToInventory>();
-                if (comp == null || comp.IsFull || inner == null || hcomp == null)
-                    return; // nothing to do -> leftover fuel stays tagged, normal unload handles it
-
-                var filter = comp.Props?.fuelFilter;
-                if (filter == null)
-                    return;
-
-                // Gather the carried fuel Things whose def the filter accepts AND that are genuine surplus (so the
-                // pawn's own kept fuel kit is never burned). HD-swept fuel is tagged, so SurplusOf returns its full
-                // count; a kept personal stash returns 0 and is skipped.
-                var fuelList = scratchFuel ?? (scratchFuel = new List<Thing>());
-                fuelList.Clear();
-                for (int i = 0; i < inner.Count; i++)
-                {
-                    var t = inner[i];
-                    if (t == null || t.Destroyed || t.def == null)
-                        continue;
-                    if (!filter.Allows(t))
-                        continue;
-                    if (InventorySurplus.SurplusOf(pawn, t) <= 0)
-                        continue;
-                    fuelList.Add(t);
-                }
-                if (fuelList.Count == 0)
-                    return; // carried nothing usable -> leftover (if any) stays tagged
-
-                // Snapshot the fuel Things BEFORE refueling — vanilla Refuel POPs from the list it's given and
-                // SplitOff(full)+Destroy()s each consumed thing (removing it from inventory), so we pass a COPY and
-                // keep our own snapshot to reconcile the tag map afterwards.
-                int beforeCount = fuelList.Count;
-                var snapshot = new List<Thing>(fuelList);
-
-                // Vanilla refuel: consumes up to the deficit, destroying fully-consumed fuel and reducing a
-                // partially-consumed stack in place. No try/catch — a fault is a real bug to surface.
-                comp.Refuel(fuelList);
-
-                // Reconcile the tag map: any snapshot fuel now Destroyed or gone from inventory was consumed -> drop
-                // its tag. A surviving (untouched or partial) stack stays tagged for the normal unload.
-                for (int i = 0; i < snapshot.Count; i++)
-                {
-                    var t = snapshot[i];
-                    if (t == null)
-                        continue;
-                    if (t.Destroyed || !inner.Contains(t))
-                        hcomp.Deregister(t);
-                }
-                fuelList.Clear();
-
-                HDLog.Dbg($"BulkRefuel: {pawn} deposited fuel into {Refuelable?.LabelShort} (from {beforeCount} carried stack(s), fuel now {comp.Fuel:0.#}).");
-            };
-            deposit.defaultCompleteMode = ToilCompleteMode.Instant;
-            yield return deposit;
-
-            // Re-tag any swept-but-undeposited / leftover fuel on every end (idempotent self-heal) so it rides HD's
-            // normal unload — never stranded.
-            AddFinishAction(delegate (JobCondition condition)
-            {
-                var hcomp = pawn.GetComp<CompHauledToInventory>();
-                var inner = pawn.inventory?.innerContainer;
-                if (hcomp == null || inner == null)
-                    return;
-                var snapshot = scratchFuel ?? (scratchFuel = new List<Thing>());
-                snapshot.Clear();
-                snapshot.AddRange(hcomp.GetHashSet());
-                for (int i = 0; i < snapshot.Count; i++)
-                {
-                    var t = snapshot[i];
-                    if (t != null && !t.Destroyed && inner.Contains(t))
-                        hcomp.RegisterHauledItem(t);
-                }
-                snapshot.Clear();
             });
-        }
-    }
+			toil.defaultCompleteMode = ToilCompleteMode.Instant;
+			yield return toil;
+			yield return depositStart;
+			Toil toil2 = Toils_Goto.GotoThing(TargetIndex.A, PathEndMode.Touch);
+			toil2.FailOnDespawnedNullOrForbidden(TargetIndex.A);
+			yield return toil2;
+			Toil toil3 = ToilMaker.MakeToil("HD_Bref_Deposit");
+            toil3.initAction = () => RunRefuelAction(activation =>
+                OrdinaryRefuelConsumer.Deposit(activation, Refuelable));
+			toil3.defaultCompleteMode = ToilCompleteMode.Instant;
+			yield return toil3;
+		}
+	}
 }

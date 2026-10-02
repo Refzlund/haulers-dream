@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+  <!-- The provider filters components when generating sapient races. Register the
+       exact tracking component so conversion and native loading use the same list. -->
+  <BigAndSmall.HumanlikeAnimalSettings MayRequire="RedMattis.BetterPrerequisites">
+    <defName>HaulersDream_SapientPawnComponents</defName>
+    <compWhitelist>
+      <li>HaulersDream.CompHauledToInventory</li>
+    </compWhitelist>
+  </BigAndSmall.HumanlikeAnimalSettings>
+</Defs>

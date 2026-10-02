@@ -1,0 +1,40 @@
+<?xml version='1.0' encoding='utf-8'?>
+<LanguageData>
+  <HD_ExplicitHaulTo>{0}の運搬先を指定…</HD_ExplicitHaulTo>
+  <HD_ExplicitChanged>ポーンまたは選択したスタックが変わりました。選び直してください。</HD_ExplicitChanged>
+  <HD_ExplicitActorUnavailable>このポーンは現在、この運搬指示を実行できません。</HD_ExplicitActorUnavailable>
+  <HD_ExplicitSelectSource>運ぶスタックを選択してください。右クリックまたは Escape でキャンセル。</HD_ExplicitSelectSource>
+  <HD_ExplicitSelectDestination>{0} × {1} をここに運びます。{2} 到達可能な地面のマスか棚を選んでください。右クリックまたは Escape でキャンセル。</HD_ExplicitSelectDestination>
+  <HD_ExplicitQueuedHint>作業キューに追加します。</HD_ExplicitQueuedHint>
+  <HD_ExplicitReplaceHint>現在の作業を置き換えます。</HD_ExplicitReplaceHint>
+  <HD_ExplicitStateQueued>待機中</HD_ExplicitStateQueued>
+  <HD_ExplicitStateActive>運搬中</HD_ExplicitStateActive>
+  <HD_ExplicitStateBlocked>停止中</HD_ExplicitStateBlocked>
+  <HD_ExplicitStateCancelled>キャンセル済み</HD_ExplicitStateCancelled>
+  <HD_ExplicitStateComplete>完了</HD_ExplicitStateComplete>
+  <HD_ExplicitStateCaptured>一時保留中</HD_ExplicitStateCaptured>
+  <HD_ExplicitSourceChanged>選択した搬出元が存在しない、使い切られた、または許可されなくなりました。</HD_ExplicitSourceChanged>
+  <HD_ExplicitSourceReserved>選択した搬出元は別の作業に予約されています。</HD_ExplicitSourceReserved>
+  <HD_ExplicitDestinationBlocked>指定先に空きがない、予約されている、またはこのアイテムを置けません。</HD_ExplicitDestinationBlocked>
+  <HD_ExplicitRouteBlocked>指定した経路を通れません。</HD_ExplicitRouteBlocked>
+  <HD_ExplicitHandsBusy>ポーンは手に別の荷物を持っています。</HD_ExplicitHandsBusy>
+  <HD_ExplicitInterrupted>指示が中断されました。準備ができたら再開してください。</HD_ExplicitInterrupted>
+  <HD_ExplicitAdmissionFailed>この指示を開始できませんでした。準備ができたら再開してください。</HD_ExplicitAdmissionFailed>
+  <HD_ExplicitNeedsReview>保存された指示または荷物が予期せず変わりました。再開前にアイテムを確認してください。</HD_ExplicitNeedsReview>
+  <HD_ExplicitStart>運搬先を指定…</HD_ExplicitStart>
+  <HD_ExplicitStartDesc>物品の山、合計数量、運搬先の地面のマスまたは棚を選びます。選んだ山だけを運搬します。命令をキューに追加するキーを押したまま選ぶと、命令を追加します。</HD_ExplicitStartDesc>
+  <HD_ExplicitOrders>運搬指示</HD_ExplicitOrders>
+  <HD_ExplicitOrdersDesc>届けた数量を確認し、指定運搬を再開またはキャンセルします。</HD_ExplicitOrdersDesc>
+  <HD_ExplicitAmountTitle>運搬数量を選択</HD_ExplicitAmountTitle>
+  <HD_ExplicitChooseDestination>運搬先を選択</HD_ExplicitChooseDestination>
+  <HD_ExplicitAmountContext>{0}：{1}\nこのスタックの数量：{2}</HD_ExplicitAmountContext>
+  <HD_ExplicitQueue>作業キューに追加</HD_ExplicitQueue>
+  <HD_ExplicitAmountHint>合計 {0} 個を、必要なら複数回に分けて届けます。個人インベントリは変更しません。</HD_ExplicitAmountHint>
+  <HD_ExplicitQueueResume>再開する指示をキューに追加</HD_ExplicitQueueResume>
+  <HD_ExplicitResume>再開</HD_ExplicitResume>
+  <HD_ExplicitCancel>指示をキャンセル</HD_ExplicitCancel>
+  <HD_ExplicitProgress>指示 {0}：{1}\n搬入済み {2} / {3} → ({4}, {5})</HD_ExplicitProgress>
+  <HD_ExplicitMissingItem>搬出元なし</HD_ExplicitMissingItem>
+  <HD_ExplicitShelf>選択した棚：{0}</HD_ExplicitShelf>
+  <HD_ExplicitMissingShelf>棚がありません</HD_ExplicitMissingShelf>
+</LanguageData>

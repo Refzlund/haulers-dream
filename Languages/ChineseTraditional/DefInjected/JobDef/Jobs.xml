@@ -13,7 +13,7 @@
   <HaulersDream_BatchCraft.reportString>正在批量製作。</HaulersDream_BatchCraft.reportString>
   <HaulersDream_InventoryDoBill.reportString>正在製作。</HaulersDream_InventoryDoBill.reportString>
   <HaulersDream_BillPrepGather.reportString>正在收集製作原料。</HaulersDream_BillPrepGather.reportString>
-  <HaulersDream_BulkHaul.reportString>正在運送附近的所有物品。</HaulersDream_BulkHaul.reportString>
+  <HaulersDream_BulkHaul.reportString>正在將物品收進背包。</HaulersDream_BulkHaul.reportString>
   <HaulersDream_LoadPackAnimal.reportString>正在將物品裝載至貨運動物。</HaulersDream_LoadPackAnimal.reportString>
   <HaulersDream_UnloadCarrierInBulk.reportString>正在批量卸載貨運動物。</HaulersDream_UnloadCarrierInBulk.reportString>
   <HaulersDream_LoadTransportersInBulk.reportString>正在批量裝載運輸艙。</HaulersDream_LoadTransportersInBulk.reportString>
@@ -21,4 +21,5 @@
   <HaulersDream_LoadVehicleInBulk.reportString>正在批量裝載載具。</HaulersDream_LoadVehicleInBulk.reportString>
   <HaulersDream_BulkRefuel.reportString>正在批量補充燃料。</HaulersDream_BulkRefuel.reportString>
 
+  <HaulersDream_UnloadTransporterInBulk.reportString>正在卸載運輸工具。</HaulersDream_UnloadTransporterInBulk.reportString>
 </LanguageData>

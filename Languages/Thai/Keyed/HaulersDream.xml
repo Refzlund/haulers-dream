@@ -44,7 +44,7 @@
 <HaulersDream.Setting.BuildFromInventoryPartial>อนุญาตให้ก่อสร้างบางส่วนจากสัมภาระ</HaulersDream.Setting.BuildFromInventoryPartial>
 <HaulersDream.Setting.BuildFromInventoryPartialDesc>โดยปกติการก่อสร้างจะไม่เริ่มจนกว่าจะมีวัสดุพอสำหรับทั้งหมด เมื่อเปิดสิ่งนี้ โครงจะถูกเริ่มและคืบหน้าโดยใช้วัสดุในสัมภาระเท่าที่มีอยู่แม้น้อยกว่าปริมาณเต็มที่ต้องการ — ส่วนที่เหลือจะถูกส่งมาเมื่อมีเพิ่ม สิ่งนี้เปลี่ยนกฎทั้งหมดหรือไม่มีเลยของเกมพื้นฐาน จึงปิดไว้โดยค่าเริ่มต้น ต้องเปิด "ก่อสร้างจากสัมภาระ"</HaulersDream.Setting.BuildFromInventoryPartialDesc>
 <HaulersDream.Setting.ShareForCrafting>ใช้วัสดุที่ขนอยู่สำหรับใบสั่งงานผลิต</HaulersDream.Setting.ShareForCrafting>
-<HaulersDream.Setting.ShareForCraftingDesc>ตัวละครที่ผลิตสามารถดึงวัตถุดิบของใบสั่งงานจากสัมภาระที่ตัวละครถืออยู่แล้ว ไม่ใช่แค่กองที่วางบนพื้น หากม็อดอื่นกำลังจัดการการขนวัตถุดิบสำหรับการผลิต Hauler's Dream จะถอยให้โดยอัตโนมัติและปล่อยให้มันรวบรวมแทน — ดังนั้นวงจรการผลิตใดๆ จะแก้ไขตัวเองโดยที่คุณไม่ต้องทำอะไร</HaulersDream.Setting.ShareForCraftingDesc>
+<HaulersDream.Setting.ShareForCraftingDesc>เมื่อเปิดตัวเลือกนี้ ใบสั่งงานผลิตจะใช้วัสดุที่พกอยู่และ Hauler's Dream ติดตามได้ รวมถึงวัสดุของผู้ผลิตเอง ตัวเลือกนี้ไม่ได้ทำให้ใบสั่งงานใช้ของส่วนตัวที่ HD ไม่ได้ติดตามได้ เมื่อ Common Sense รวบรวมวัตถุดิบ HD จะไม่เพิ่มวัสดุที่พกอยู่ในการค้นหาวัตถุดิบของใบสั่งงานทั่วไป และจะปล่อยให้ Common Sense รวบรวมวัตถุดิบ</HaulersDream.Setting.ShareForCraftingDesc>
 <HaulersDream.Setting.ShareMeetInMiddle>ผู้แบกที่ว่างอยู่เดินเข้าหาคนทำงานเพื่อส่งมอบของ</HaulersDream.Setting.ShareMeetInMiddle>
 <HaulersDream.Setting.BatchWorkDeliveries>ขนวัสดุสำหรับการก่อสร้างที่จัดคิวไว้หลายงานต่อเที่ยว</HaulersDream.Setting.BatchWorkDeliveries>
 <HaulersDream.Setting.BatchWorkDeliveriesDesc>เมื่อก่อสร้างของราคาถูกจำนวนมาก (เช่น รั้วยาว) ตัวละครจะถือวัสดุในมือพอสำหรับการก่อสร้างที่จัดคิวไว้หลายงานและส่งให้แต่ละจุดในเที่ยวเดียว แทนที่จะขนทีละไม่กี่ชิ้น เนื่องจากถือในมือ จึงไม่มีการเดินช้าลง</HaulersDream.Setting.BatchWorkDeliveriesDesc>
@@ -71,7 +71,7 @@
 <HaulersDream.Setting.BulkHaulAlways>กวาดเสมอ — ทุกการขนจะหยิบทุกอย่างรอบตัวขึ้นมา</HaulersDream.Setting.BulkHaulAlways>
 <HaulersDream.Setting.BulkHaulAlwaysDesc>ทุกการขน — อัตโนมัติหรือที่สั่ง — จะบรรทุกของที่ขนได้ใกล้ๆ เข้าสัมภาระของตัวละครด้วย ทำให้ขนไปคลังเที่ยวเดียวสำหรับทั้งหมด ปริมาณที่ขนจะเคารพแถบเลื่อนการบรรทุกเกินอัจฉริยะด้านล่าง: ขนน้ำหนักเพิ่มเท่าที่คุ้มกับการเดินช้าลงเมื่อเทียบกับการเดินไปกลับอีกเที่ยวจริงๆ เท่านั้น</HaulersDream.Setting.BulkHaulAlwaysDesc>
 <HaulersDream.Setting.HaulNearbyOption>เพิ่มคำสั่งคลิกขวา "ขนทุกอย่างที่อยู่ใกล้"</HaulersDream.Setting.HaulNearbyOption>
-<HaulersDream.Setting.HaulNearbyOptionDesc>เพิ่มตัวเลือก "ขนทุกอย่างที่อยู่ใกล้" ในเมนูคลิกขวาบนไอเท็มที่ขนได้ (สำหรับตัวละครที่ขนของได้) ซึ่งจะเริ่มการกวาดแบบรวมทันที — คุณจึงไม่ต้องสั่งให้ความสำคัญสองการขนเพื่อกระตุ้นการขนแบบรวม "ให้ความสำคัญการขนของ" ของเกมพื้นฐานยังคงปรากฏข้างๆ สำหรับการขนของชิ้นเดียว</HaulersDream.Setting.HaulNearbyOptionDesc>
+<HaulersDream.Setting.HaulNearbyOptionDesc>เพิ่มตัวเลือก "ขนทุกอย่างที่อยู่ใกล้" ในเมนูคลิกขวาบนไอเท็มที่ขนได้ (สำหรับตัวละครที่ขนของได้) ซึ่งจะเริ่มการกวาดแบบรวมทันที — คุณจึงไม่ต้องสั่งให้ความสำคัญสองการขนเพื่อกระตุ้นการขนแบบรวม "ให้ความสำคัญการขนของ" ของเกมพื้นฐานยังคงปรากฏข้างๆ สำหรับการขนของชิ้นเดียว เพิ่มปุ่มขนของให้หุ่นยนต์ Misc. Robots ที่เลือกด้วย แม้จะปิดใช้งาน Biotech ก็ตาม</HaulersDream.Setting.HaulNearbyOptionDesc>
 <HaulersDream.Setting.ManualPickup>เพิ่มคำสั่งคลิกขวา "หยิบ X"</HaulersDream.Setting.ManualPickup>
 <HaulersDream.Setting.ManualPickupDesc>เพิ่มตัวเลือก "หยิบ X" ในเมนูคลิกขวาบนไอเท็มบนพื้นที่ขนได้ ตัวละครจะหยิบกองที่คลิกเข้าสัมภาระโดยตรงในฐานะการขนของ Hauler's Dream ที่ถูกติดตาม ซึ่งจะถูกเก็บโดยการขนของออกตามปกติ — มันจึงไม่เคยสูญหายแม้ปิดการขนของออกอัตโนมัติ เป็นส่วนเพิ่มจากตัวเลือกการขนคลิกขวาของเกมพื้นฐาน</HaulersDream.Setting.ManualPickupDesc>
 <HaulersDream.Setting.KeepInInventory>เพิ่มคำสั่งคลิกขวา "เก็บ X ไว้ในสัมภาระ"</HaulersDream.Setting.KeepInInventory>
@@ -147,10 +147,10 @@
 <HaulersDream.Setting.TaintedLeave>ทิ้งไว้บนศพ ไม่มีการถอดของครั้งใดถอดมันออกได้ แม้แต่คำสั่งถอดของที่คุณสั่งเอง (การเผาจะเผามันไปกับร่าง การชำแหละจะวางมันลงที่โต๊ะ เหมือนในเกมพื้นฐาน)</HaulersDream.Setting.TaintedLeave>
 <HaulersDream.Setting.TaintedForbid>วางลงและห้ามใช้</HaulersDream.Setting.TaintedForbid>
 <HaulersDream.Setting.TaintedDestroy>ทำลายมันทันที (ไอเท็มภารกิจและวัตถุศักดิ์สิทธิ์จะถูกเอาไปแทน ไม่ถูกทำลาย)</HaulersDream.Setting.TaintedDestroy>
-<HaulersDream.Setting.HaulTamedSlaughter>ขนซากสัตว์ที่ฆ่าแล้วไปยังคลัง</HaulersDream.Setting.HaulTamedSlaughter>
-<HaulersDream.Setting.HaulTamedSlaughterDesc>เมื่อชาวอาณานิคมฆ่าสัตว์อาณานิคมเสร็จ ซากสดจะถูกขนตรงไปยังคลัง (ตู้แช่แข็งหรือโซนกองเก็บศพ) เพื่อไม่ให้เน่าอยู่ตรงที่มันล้ม — เฉพาะเมื่อมีจุดคลังที่เข้าถึงได้และยอมรับมันเท่านั้น มิฉะนั้นจะถูกทิ้งไว้เหมือนเกมพื้นฐานทุกประการ (เกมพื้นฐานไม่เคยขนสัตว์ที่ฆ่าเอง สิ่งนี้ปิดช่องว่างนั้น)</HaulersDream.Setting.HaulTamedSlaughterDesc>
-<HaulersDream.Setting.HaulWildKills>ขนซากที่ล่าได้ไปยังคลัง</HaulersDream.Setting.HaulWildKills>
-<HaulersDream.Setting.HaulWildKillsDesc>เมื่อการล่าถูกขัดจังหวะทันทีหลังการฆ่า — นายพรานถูกดึงตัวไปด้วยความต้องการ การเกณฑ์ การคลั่งทางจิต หรือการล่าหมดเวลา — นายพรานจะรีบขนซากสดไปยังคลังขณะออกไป แทนที่จะทิ้งไว้ให้คิวการขนทั่วไปที่ช้า ในการล่าที่ราบรื่นนายพรานจะแบกเหยื่อกลับบ้านอยู่แล้ว (เกมพื้นฐาน) สิ่งนี้จึงไม่กีดขวาง — ไม่มีการขนซ้ำ จะขนเฉพาะเมื่อมีจุดคลังที่เข้าถึงได้และยอมรับร่างนั้นเท่านั้น มิฉะนั้นซากจะถูกทิ้งไว้เหมือนเกมพื้นฐานทุกประการ (ไม่เคยถูกห้ามใช้ การขนศพปกติจึงยังเก็บมันเมื่อมีตู้แช่แข็งหรือโซนกองเก็บศพที่ยอมรับมัน)</HaulersDream.Setting.HaulWildKillsDesc>
+<HaulersDream.Setting.HaulTamedSlaughter>ขนซากสัตว์ของอาณานิคมไปยังคลัง</HaulersDream.Setting.HaulTamedSlaughter>
+<HaulersDream.Setting.HaulTamedSlaughterDesc>หลังเชือดสัตว์ของอาณานิคม หรือฆ่าปิดฉากด้วย Allow Tool (เมื่อเครื่องมืออนุญาตให้เลือกเป้าหมายนั้น) ตัวละครที่เข้าเงื่อนไขการขนจะเพิ่มงานขนซากไว้ท้ายคิวคำสั่งเดิม ต้องเป็นซากที่อนุญาตให้ใช้งานและมีพื้นที่เก็บที่เข้าถึงได้ซึ่งยอมรับซากนั้น จะไม่ปลดข้อห้ามของซากหรือแทนที่งานที่อยู่ในคิว</HaulersDream.Setting.HaulTamedSlaughterDesc>
+<HaulersDream.Setting.HaulWildKills>ขนซากสัตว์ป่าไปยังคลัง</HaulersDream.Setting.HaulWildKills>
+<HaulersDream.Setting.HaulWildKillsDesc>หลังการล่าถูกขัดจังหวะเมื่อเหยื่อตายแล้ว หรือฆ่าปิดฉากสัตว์ป่าที่ไม่สังกัดฝ่ายด้วย Allow Tool หรือ Keyz' Allow Utilities ตัวละครที่เข้าเงื่อนไขการขนจะเพิ่มงานขนซากไว้ท้ายคิวคำสั่งเดิม ต้องเป็นซากที่อนุญาตให้ใช้งานและมีพื้นที่เก็บที่เข้าถึงได้ซึ่งยอมรับซากนั้น จะไม่ปลดข้อห้ามของซาก การล่าที่เสร็จสมบูรณ์ในเกมพื้นฐานยังใช้การขนตามเดิมโดยไม่เพิ่มงานขนซ้ำ</HaulersDream.Setting.HaulWildKillsDesc>
 <HaulersDream.Setting.ButcherSpoilingFirst>ชำแหละศพที่เน่าที่สุดก่อน</HaulersDream.Setting.ButcherSpoilingFirst>
 <HaulersDream.Setting.ButcherSpoilingFirstDesc>เมื่อชาวอาณานิคมเลือกศพสำหรับใบสั่งงานชำแหละ พวกเขาจะเลือกร่างที่ใกล้เน่าที่สุด (ในบรรดาศพที่ใบสั่งงานอนุญาตอยู่แล้ว ภายในรัศมีค้นหาวัตถุดิบของมัน) แทนที่จะเลือกแค่ที่ใกล้ที่สุด — เพื่อให้กู้เนื้อมาก่อนจะเน่า เพียงจัดลำดับใหม่ว่าจะใช้ศพที่ถูกต้องอยู่แล้วชิ้นใด ไม่เคยเปลี่ยนสูตร รัศมีค้นหา หรือศพที่ใบสั่งงานยอมรับ ศพที่แช่แข็งจะถูกเก็บไว้ท้ายสุด (มันไม่เน่า) ใช้ได้ทั้งใบสั่งงานชำแหละธรรมดาและชุดของ Hauler's Dream เปิดไว้โดยค่าเริ่มต้น</HaulersDream.Setting.ButcherSpoilingFirstDesc>
 <HaulersDream.Setting.CookSpoilingFirst>ทำอาหารด้วยวัตถุดิบที่เน่าที่สุดก่อน</HaulersDream.Setting.CookSpoilingFirst>
@@ -328,7 +328,7 @@
 <HaulersDream.Setting.ShowBenchGatherGizmo>แสดงปุ่ม "รวบรวมวัตถุดิบ" ของแต่ละโต๊ะ</HaulersDream.Setting.ShowBenchGatherGizmo>
 <HaulersDream.Setting.ShowBenchGatherGizmoDesc>เพิ่มปุ่มสลับ "รวบรวมวัตถุดิบ" ลงในแถบคำสั่งของโต๊ะทำงานแต่ละตัว เพื่อให้คุณปิดการรวบรวมวัตถุดิบเฉพาะโต๊ะใดโต๊ะหนึ่ง แล้วปล่อยให้พฤติกรรมดั้งเดิมของ RimWorld แบบทีละกองทำงานที่นั่นแทน มีประโยชน์กับเตาหรือโต๊ะที่คุณเติมของไว้ข้างๆ อยู่แล้ว ซึ่งการรวบรวมเสียเวลามากกว่าที่ประหยัดได้ เปิดไว้เป็นค่าเริ่มต้น ตัวเลือกนี้ควบคุมแค่ว่าจะแสดงปุ่มหรือไม่ — โต๊ะที่คุณปิดไปแล้วจะยังคงปิดอยู่ไม่ว่าอย่างไร การปิดโต๊ะมีผลเหนือการตั้งค่าด้านบนเสมอ และทำงานได้แม้เมื่อ "ขนวัตถุดิบการผลิตในสัมภาระ (เดินน้อยลง)" ถูกปิดอยู่ เพราะการผลิตเป็นชุดจะรวบรวมวัตถุดิบไม่ว่าการตั้งค่านั้นจะเป็นอย่างไร</HaulersDream.Setting.ShowBenchGatherGizmoDesc>
 <HaulersDream.PrepGather.Report>กำลังรวบรวมวัตถุดิบสำหรับการผลิต</HaulersDream.PrepGather.Report>
-<HaulersDream.BulkHaul.Report>กำลังขนทุกอย่างที่อยู่ใกล้</HaulersDream.BulkHaul.Report>
+<HaulersDream.BulkHaul.Report>กำลังเก็บสิ่งของใส่กระเป๋า</HaulersDream.BulkHaul.Report>
 <HaulersDream.JobReport.DefaultDestination>คลัง</HaulersDream.JobReport.DefaultDestination>
 <HaulersDream.JobReport.EnRoute.Load>{ORIGINAL} (ระหว่างทางไปยัง {DESTINATION})</HaulersDream.JobReport.EnRoute.Load>
 <HaulersDream.JobReport.EnRoute.Unload>{ORIGINAL} (ระหว่างทางไปยัง {DESTINATION})</HaulersDream.JobReport.EnRoute.Unload>
@@ -357,7 +357,7 @@
 <HaulersDream.LoadTransporter.Option>ให้ความสำคัญการบรรทุก {0} แบบรวม</HaulersDream.LoadTransporter.Option>
 <HaulersDream.LoadTransporter.CouldNotStart>ไม่มีอะไรใกล้ๆ ให้บรรทุกเข้าพ็อดขนส่งนั้นแบบรวมตอนนี้</HaulersDream.LoadTransporter.CouldNotStart>
 <HaulersDream.Setting.EnableBulkLoadTransporters>บรรทุกพ็อดขนส่งและยานรับส่งแบบรวมในเที่ยวเดียว</HaulersDream.Setting.EnableBulkLoadTransporters>
-<HaulersDream.Setting.EnableBulkLoadTransportersDesc>เมื่อพ็อดขนส่งหรือยานรับส่งถูกตั้งให้บรรทุก ผู้ขนของจะขอส่วนหนึ่งของรายการบรรทุก กวาดหลายกองใกล้ๆ เข้าสัมภาระ เดินไปที่พ็อดขนส่งครั้งเดียว และวางทั้งหมดลง — แทนที่จะเป็นแบบเกมพื้นฐานทีละกองในมือต่อการเดิน ผู้ขนของหลายคนจะแบ่งรายการบรรทุกขนาดใหญ่กันโดยไม่ขนซ้ำ และพ็อดจะไม่ขึ้นยานหรือออกตัวจนกว่าสินค้าที่ขอไว้จะถูกบรรทุกครบ เมื่อปิดสิ่งนี้ จะใช้การบรรทุกพ็อดขนส่งทีละกองของเกมพื้นฐานโดยไม่เปลี่ยนแปลง</HaulersDream.Setting.EnableBulkLoadTransportersDesc>
+<HaulersDream.Setting.EnableBulkLoadTransportersDesc>เมื่อพ็อดขนส่งหรือยานรับส่งถูกตั้งให้บรรทุก ผู้ขนของจะขอส่วนหนึ่งของรายการบรรทุก กวาดหลายกองใกล้ๆ เข้าสัมภาระ เดินไปที่พ็อดขนส่งครั้งเดียว และวางทั้งหมดลง — แทนที่จะเป็นแบบเกมพื้นฐานทีละกองในมือต่อการเดิน ผู้ขนของหลายคนจะแบ่งรายการบรรทุกขนาดใหญ่กันโดยไม่ขนซ้ำ และพ็อดจะไม่ขึ้นยานหรือออกตัวจนกว่าสินค้าที่ขอไว้จะถูกบรรทุกครบ เมื่อปิดสิ่งนี้ จะใช้การบรรทุกพ็อดขนส่งทีละกองของเกมพื้นฐานโดยไม่เปลี่ยนแปลง คำสั่งแบบให้ความสำคัญจะทำซ้ำตามรายการนี้หลังส่งของสำเร็จ ขณะที่ผู้ขนไม่ได้ถูกเกณฑ์และไม่มีคำสั่งใหม่ในคิว ผู้ขนที่ถูกเกณฑ์ทำงานบรรทุกได้หนึ่งเที่ยว</HaulersDream.Setting.EnableBulkLoadTransportersDesc>
 <HaulersDream.Setting.BulkLoadAiUpdateFrequency>ช่วงตรวจสอบการบรรทุกซ้ำ: {0} ติ๊ก</HaulersDream.Setting.BulkLoadAiUpdateFrequency>
 <HaulersDream.LoadPortal.Report>กำลังบรรทุกประตูมิติแบบรวม</HaulersDream.LoadPortal.Report>
 <HaulersDream.LoadPortal.Option>ให้ความสำคัญการบรรทุก {0} แบบรวม</HaulersDream.LoadPortal.Option>
@@ -420,7 +420,7 @@
 <HaulersDream.Setting.OpportunisticLoadDesc>ตัวละครที่ถือของซึ่งพ็อดขนส่ง ยานรับส่ง ประตูมิติบนแผนที่ หรือยานพาหนะที่อยู่ใกล้กำลังรออยู่ จะเบี่ยงไปวางมันลง แทนที่จะเริ่มเที่ยวไปหยิบใหม่ทั้งหมด เดินเสียเปล่าน้อยลง ปิดไว้โดยค่าเริ่มต้น (มันเปลี่ยนว่าตัวละครจะหยิบงานใดต่อ)</HaulersDream.Setting.OpportunisticLoadDesc>
 <HaulersDream.Setting.LoadOpportunityRadius>รัศมีค้นหาการวางของระหว่างทาง: {0} ช่อง</HaulersDream.Setting.LoadOpportunityRadius>
 <HaulersDream.Setting.ContinuousLoading>คำสั่งคลิกขวา "บรรทุกจนเสร็จ"</HaulersDream.Setting.ContinuousLoading>
-<HaulersDream.Setting.ContinuousLoadingDesc>เพิ่มคำสั่งคลิกขวาที่ส่งผู้ส่งของหนึ่งคน (แม้ถูกเกณฑ์) ผ่านทุกกลุ่มสิ่งขนส่งใกล้ๆ ที่ยังต้องบรรทุก โดยทำงานต่อเนื่องกันไปจนกว่าจะเต็มทั้งหมด — สะดวกสำหรับบรรทุกคาราวานใหญ่ด้วยคำสั่งเดียว ปิดไว้โดยค่าเริ่มต้น (ความสะดวกแบบเลือกเปิด)</HaulersDream.Setting.ContinuousLoadingDesc>
+<HaulersDream.Setting.ContinuousLoadingDesc>เพิ่มคำสั่งคลิกขวาให้บรรทุกต่อไปยังเป้าหมายใกล้เคียงหลังทำรายการที่เลือกเสร็จ เที่ยวถัดไปต้องใช้ผู้ขนที่ไม่ได้ถูกเกณฑ์ ส่งของสำเร็จแล้ว และไม่มีคำสั่งใหม่ในคิว ปิดไว้ตามค่าเริ่มต้น</HaulersDream.Setting.ContinuousLoadingDesc>
 <HaulersDream.ContinuousLoad.Option>บรรทุกจนเสร็จ (ต่อเนื่อง) — {0}</HaulersDream.ContinuousLoad.Option>
 <HaulersDream.ContinuousLoad.CouldNotStart>ไม่มีอะไรใกล้ๆ ให้บรรทุกเข้าสิ่งนั้นแบบรวมตอนนี้</HaulersDream.ContinuousLoad.CouldNotStart>
 <HaulersDream.Setting.LoadHybridPathing>จัดลำดับจุดแวะบรรทุกแบบรวมด้วยการหาเส้นทางจริง</HaulersDream.Setting.LoadHybridPathing>
@@ -626,7 +626,7 @@
 <HaulersDream.Setting.BulkHaulTrigger.Lab>ตัวกระตุ้นการขนของแบบรวม</HaulersDream.Setting.BulkHaulTrigger.Lab>
 <HaulersDream.Setting.KeepWorkingMargin.Lab>ขนของออกก่อนการย้ายที่ไกลขึ้น</HaulersDream.Setting.KeepWorkingMargin.Lab>
 <HaulersDream.Setting.MinFreeSpaceToUnloadCarrier.Lab>พื้นที่ว่างในเป้ขั้นต่ำที่จะเริ่ม</HaulersDream.Setting.MinFreeSpaceToUnloadCarrier.Lab>
-<HaulersDream.Setting.MinFreeSpaceToUnloadCarrier.Help>ผู้ขนของต้องมีความจุในการขนว่างอย่างน้อยเท่านี้ก่อนจะเริ่มขนของลงจากสัตว์บรรทุก เพื่อไม่ให้เป้ของตัวเองล้นทันที</HaulersDream.Setting.MinFreeSpaceToUnloadCarrier.Help>
+<HaulersDream.Setting.MinFreeSpaceToUnloadCarrier.Help>ผู้ขนของต้องมีความจุในการขนว่างอย่างน้อยเท่านี้ก่อนจะเริ่มขนของลงจากสัตว์บรรทุก เพื่อไม่ให้เป้ของตัวเองล้นทันที เกณฑ์นี้ใช้กับการขนถ่ายยานโดยอัตโนมัติด้วย</HaulersDream.Setting.MinFreeSpaceToUnloadCarrier.Help>
 <HaulersDream.Setting.VisualUnloadDelay.Lab>ดีเลย์การขนของออกต่อกอง</HaulersDream.Setting.VisualUnloadDelay.Lab>
 <HaulersDream.Setting.VisualUnloadDelay.Help>การหยุดเล็กน้อยเชิงภาพระหว่างแต่ละกองในขณะขนของออกแบบรวมรอบ เพื่อให้ดูเป็นการกระทำที่ตั้งใจ 0 = ทันที</HaulersDream.Setting.VisualUnloadDelay.Help>
 <HaulersDream.Setting.BulkLoadAiUpdateFrequency.Lab>ช่วงตรวจสอบการบรรทุกซ้ำ</HaulersDream.Setting.BulkLoadAiUpdateFrequency.Lab>
@@ -828,4 +828,38 @@
   <HaulersDream.Setting.CarryMassCap.Off>ไม่จำกัด</HaulersDream.Setting.CarryMassCap.Off>
   <HaulersDream.Setting.CarryMassCap.Value>{0} กก.</HaulersDream.Setting.CarryMassCap.Value>
   <HaulersDream.Setting.CarryMassCapDesc>เพดานตายตัวเป็นกิโลกรัม ว่าตัวละครจะบรรจุลงสัมภาระได้เท่าใดในการขนหรือเก็บของหนึ่งเที่ยว นี่คือคำตอบตรงๆ ต่อ 'ตัวละครของฉันขนของมากเกินไป': ตั้งให้ต่ำ (เช่น 20 กก.) แล้วตัวละครจะเก็บของทีละน้อย ขนออก แล้วกลับมา แทนที่จะบรรจุจนเต็มน้ำหนักการขนของมัน มันทำงานร่วมกับเปอร์เซ็นต์ 'ขีดจำกัดการขน' และการบรรทุกเกินอัจฉริยะด้านบน และขีดจำกัดที่ต่ำกว่าจะชนะเสมอ ดังนั้นเพดานนี้จะไม่ถูกเกินแม้เปิดการบรรทุกเกินไว้ เช่นเดียวกับขีดจำกัดการขน มันนับเฉพาะสิ่งที่เก็บไว้ในกระเป๋า ไม่ใช่กองที่ถือไว้ในมือ และไม่เปลี่ยนปริมาณวัสดุที่ตัวละครไปหยิบมาสำหรับการก่อสร้างหรือใบสั่งงานเฉพาะ ตั้งเป็น 0 เพื่อไม่จำกัด (ค่าเริ่มต้น)</HaulersDream.Setting.CarryMassCapDesc>
+  <HD_DropAmountTitle>วางไอเทมตามจำนวน</HD_DropAmountTitle>
+  <HD_DropAmountConfirm>วาง</HD_DropAmountConfirm>
+  <HD_DropAmountContext>{0}\n{1}\nจำนวนที่มี: {2}</HD_DropAmountContext>
+  <HD_DropAmountQuantity>จำนวนที่จะวาง</HD_DropAmountQuantity>
+  <HD_DropAmountRemaining>เหลือในช่องเก็บของ: {0}</HD_DropAmountRemaining>
+  <HD_DropAmountInvalid>ป้อนจำนวนเต็มตั้งแต่ 1 ถึง {0}</HD_DropAmountInvalid>
+  <HD_DropAmountChanged>สถานะตัวละครหรือกองไอเทมในช่องเก็บของเปลี่ยนไปแล้ว โปรดเปิดหน้าต่างนี้ใหม่</HD_DropAmountChanged>
+  <HD_DropAmountUnavailable>ไม่สามารถเลือกจำนวนที่จะวางได้ด้วยการตั้งค่าม็อดปัจจุบัน</HD_DropAmountUnavailable>
+  <HD_DropAmountUnconfirmed>ไม่สามารถยืนยันผลการวางได้ โปรดตรวจสอบช่องเก็บของของตัวละคร</HD_DropAmountUnconfirmed>
+  <HD_DropAmountBlocked>ไม่มีพื้นที่ใกล้เคียงสำหรับวางไอเทมเหล่านี้</HD_DropAmountBlocked>
+  <HD_DropAmountPartial>วางแล้ว {0} จาก {1} ชิ้น เนื่องจากพื้นที่ใกล้เคียงไม่เพียงพอ</HD_DropAmountPartial>
+  <HD_NearbyHaulGizmoDesc>เลือกสิ่งของเพื่อขนสิ่งนั้นและสิ่งของใกล้เคียงไปยังที่เก็บ กดปุ่มจัดคิวคำสั่งค้างไว้ขณะเลือกเพื่อเพิ่มคำสั่งเข้าคิว</HD_NearbyHaulGizmoDesc>
+  <HD_NearbyHaulPawnUnavailable>ตัวละครนี้ไม่สามารถรับคำสั่งขนของได้ในสถานะปัจจุบัน</HD_NearbyHaulPawnUnavailable>
+  <HD_NearbyHaulDrafted>ยกเลิกการเกณฑ์ตัวละครนี้ก่อนสั่งขนของ</HD_NearbyHaulDrafted>
+  <HD_NearbyHaulMapDisabled>Hauler's Dream ถูกปิดใช้งานบนแผนที่นี้</HD_NearbyHaulMapDisabled>
+  <HD_NearbyHaulSyncUnavailable>ไม่สามารถขนสิ่งของใกล้เคียงได้ เนื่องจากลงทะเบียนคำสั่งสำหรับโหมดผู้เล่นหลายคนไม่สำเร็จ</HD_NearbyHaulSyncUnavailable>
+  <HD_NearbyHaulInventoryUnavailable>ตัวละครนี้ไม่สามารถขนของผ่านช่องเก็บของได้</HD_NearbyHaulInventoryUnavailable>
+  <HD_NearbyHaulRobotUnsupported>ไม่สามารถอ่านงานขนของของหุ่นยนต์ได้ด้วยการตั้งค่าม็อดปัจจุบัน</HD_NearbyHaulRobotUnsupported>
+  <HD_NearbyHaulSourceUnavailable>ไม่สามารถขนสิ่งของที่เลือกได้</HD_NearbyHaulSourceUnavailable>
+  <HaulersDream.UnloadTransporter.Option>ให้ความสำคัญการขนลง {0} แบบรวม</HaulersDream.UnloadTransporter.Option>
+  <HaulersDream.UnloadTransporter.CouldNotStart>เริ่มการขนลงแบบรวมจากยานขนส่งนี้ไม่ได้ในตอนนี้</HaulersDream.UnloadTransporter.CouldNotStart>
+  <HaulersDream.Gizmo.BulkUnloadAll.Label>ขนลงทั้งหมดแบบรวม</HaulersDream.Gizmo.BulkUnloadAll.Label>
+  <HaulersDream.Gizmo.BulkUnloadAll.Empty>ไม่มีอะไรให้ขนลง</HaulersDream.Gizmo.BulkUnloadAll.Empty>
+  <HaulersDream.Gizmo.BulkUnloadAll.LoadBlocked>"ขนลงทั้งหมดแบบรวม" เปิดอยู่, ปิดก่อนตั้งค่าการบรรทุกใหม่</HaulersDream.Gizmo.BulkUnloadAll.LoadBlocked>
+  <HaulersDream.Gizmo.BulkUnloadAll.UnloadBlocked>กำลังรวบรวมสินค้าเข้ายานขนส่งนี้</HaulersDream.Gizmo.BulkUnloadAll.UnloadBlocked>
+  <HaulersDream.Feat.UnloadTransporters.Name>ขนลงพ็อดขนส่งและยานรับส่ง</HaulersDream.Feat.UnloadTransporters.Name>
+  <HaulersDream.Setting.EnableBulkUnloadTransporters>ขนถ่ายสินค้าจากยานแบบหลายกอง</HaulersDream.Setting.EnableBulkUnloadTransporters>
+  <HaulersDream.Setting.EnableBulkUnloadTransportersDesc>เพิ่มปุ่มขนถ่ายให้แคปซูลขนส่งและกระสวย ผู้ขนที่ไม่ได้ถูกเกณฑ์จะนำสินค้าไปยังที่เก็บโดยตรง ครั้งละหนึ่งเที่ยวต่องาน คำสั่งแบบให้ความสำคัญกับยานที่ทำเครื่องหมายไว้จะทำซ้ำเมื่อส่งของเที่ยวก่อนเสร็จแล้วเท่านั้น ผู้โดยสารยังอยู่บนยาน การบรรทุกของ ที่เก็บเต็ม การเกณฑ์ หรือคำสั่งใหม่ในคิวจะหยุดเที่ยวถัดไป</HaulersDream.Setting.EnableBulkUnloadTransportersDesc>
+  <HaulersDream.Gizmo.BulkUnloadAll.Desc>นำสินค้าจาก {0} ไปยังที่เก็บ ผู้โดยสารยังอยู่บนยาน คำสั่งขนถ่ายแบบให้ความสำคัญจะทำซ้ำหลังส่งของเสร็จแต่ละเที่ยว ขณะที่ผู้ขนไม่ได้ถูกเกณฑ์และไม่มีคำสั่งใหม่ในคิว ปิดปุ่มนี้ก่อนบรรทุกของ</HaulersDream.Gizmo.BulkUnloadAll.Desc>
+  <HaulersDream.Feat.UnloadTransporters.Blurb>ย้ายสินค้าจากยานที่ลงจอดไปยังที่เก็บโดยตรง</HaulersDream.Feat.UnloadTransporters.Blurb>
+  <HaulersDream.UnloadTransporter.Drafted>ยกเลิกการเกณฑ์ตัวละครนี้ก่อนเริ่มคำสั่ง</HaulersDream.UnloadTransporter.Drafted>
+  <HaulersDream.UnloadTransporter.NoStorage>ไม่มีที่เก็บที่เหมาะสมสำหรับสินค้าที่เหลือ</HaulersDream.UnloadTransporter.NoStorage>
+  <HaulersDream.Transporter.SyncUnavailable>ใช้คำสั่งยานขนส่งไม่ได้ เนื่องจากลงทะเบียนการซิงค์ผู้เล่นหลายคนไม่สำเร็จ</HaulersDream.Transporter.SyncUnavailable>
+  <HaulersDream.PlanRoute.SyncUnavailable>ขณะนี้ Multiplayer ไม่สามารถซิงค์คำสั่งเส้นทางนี้ได้ ยังไม่มีการออกคำสั่ง</HaulersDream.PlanRoute.SyncUnavailable>
 </LanguageData>

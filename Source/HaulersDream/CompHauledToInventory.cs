@@ -11,7 +11,7 @@ namespace HaulersDream
     /// put back), plus the tick of the most recent pickup (for the unload grace period). Injected
     /// onto every pawn def via Patches/HaulersDream_Pawns.xml.
     /// </summary>
-    public class CompHauledToInventory : ThingComp
+    public partial class CompHauledToInventory : ThingComp
     {
         private HashSet<Thing> takenToInventory = new HashSet<Thing>();
         // Per-def amount the player pinned this pawn to KEEP in inventory (issue #197: "keep N of a def", set by the
@@ -428,6 +428,17 @@ namespace HaulersDream
             takenToInventory.Remove(thing);
         }
 
+        /// <summary>Settle a confirmed player drop without re-tagging a remainder or renewing its age/CE hold.</summary>
+        internal void NotifyExplicitDropSettled(Thing source, bool retained)
+        {
+            lastHealTick = -1;
+            if (!retained)
+                Deregister(source);
+            var owner = (parent as Pawn)?.inventory?.innerContainer;
+            if (owner != null)
+                PruneEmptyKeptCounts(owner);
+        }
+
         /// <summary>The still-valid pending drop NEAREST to this pawn's current position, or null. Prunes invalid
         /// ones along the way: despawned/destroyed, on another map (a pawn that changed maps must not walk
         /// foreign coords or scoop across maps), forbidden (the player forbade it, or vanilla forbade a yield it
@@ -519,6 +530,8 @@ namespace HaulersDream
         public override void PostExposeData()
         {
             base.PostExposeData();
+            ExposeExplicitOrders();
+            ExposeRefuelRecovery();
             Scribe_Collections.Look(ref takenToInventory, "haulersDreamTakenToInventory", LookMode.Reference);
             // #197: the per-def keep-count map (new single source of truth). A pre-#197 save has no such key, so this
             // starts empty and is filled by the legacy migration below.

@@ -5,81 +5,88 @@ using Verse.AI;
 
 namespace HaulersDream
 {
-    /// <summary>
-    /// "Prioritize bulk refuelling {0}": a one-click order that sweeps enough nearby fuel stacks into the pawn's
-    /// inventory and fills the refuelable in one trip (see <see cref="JobDriver_BulkRefuel"/>), replacing vanilla's
-    /// one-stack-in-hands "Refuel". Auto-discovered FloatMenuOptionProvider — no Harmony, no XML. The clicked thing is
-    /// a refuelable (its <see cref="CompRefuelable"/>). Mirrors
-    /// <see cref="FloatMenuOptionProvider_BulkLoadTransporter"/>.
-    ///
-    /// Player orders skip the auto eligibility gate (the fuel is deposited into the refuelable → nothing strands),
-    /// require only the physical manipulation capability (like vanilla refuel orders).
-    /// </summary>
-    public class FloatMenuOptionProvider_BulkRefuel : FloatMenuOptionProvider
-    {
-        public override bool Drafted => true;
-        public override bool Undrafted => true;
-        public override bool Multiselect => false;
-        public override bool MechanoidCanDo => false;
-        public override bool CanSelfTarget => false;
+	public class FloatMenuOptionProvider_BulkRefuel : FloatMenuOptionProvider
+	{
+		public override bool Drafted
+		{
+			get
+			{
+				return true;
+			}
+		}
 
-        public override IEnumerable<FloatMenuOption> GetOptions(FloatMenuContext context)
-        {
-            var pawn = context?.FirstSelectedPawn;
-            var things = context?.ClickedThings;
-            if (pawn == null || things == null || pawn.Map == null)
-                yield break;
-            if (!BulkRefuel.FeatureEnabled)
-                yield break;
-            if (pawn.GetComp<CompHauledToInventory>() == null || pawn.inventory == null)
-                yield break;
-            // Player order: skips the AUTO eligibility gate (the swept fuel is deposited into the refuelable, so
-            // nothing strands) but NOT the hauling-capability bar (#229). Refuelling IS hauling work in vanilla —
-            // WorkGiverDef Refuel declares <workType>Hauling</workType>
-            // (Core/Defs/WorkGiverDefs/WorkGivers.xml:1210-1213) — so vanilla greys its own "Refuel" out for a pawn
-            // whose Hauling work type is disabled, and HD's bulk replacement must not be a way around that.
-            // HaulOrderGate reads the WORK TYPE, not the WorkTags.Hauling bit an "incapable of dumb labor"
-            // backstory leaves clear.
-            if (HaulOrderGate.Blocks(pawn))
-                yield break;
+		public override bool Undrafted
+		{
+			get
+			{
+				return true;
+			}
+		}
 
-            for (int i = 0; i < things.Count; i++)
-            {
-                var clicked = things[i];
-                var comp = clicked?.TryGetComp<CompRefuelable>();
-                if (comp == null || comp.IsFull)
-                    continue;
-                if (comp.Props != null && comp.Props.atomicFueling)
-                    continue; // atomic refuelables are vanilla RefuelAtomic's job — don't offer the bulk order
-                if (!pawn.CanReach(clicked, PathEndMode.Touch, Danger.Deadly) || !pawn.CanReserve(clicked))
-                    continue;
-                // Don't double-order: skip if this pawn already runs HD's bulk refuel on this same thing.
-                if (pawn.CurJobDef == HaulersDreamDefOf.HaulersDream_BulkRefuel
-                    && pawn.CurJob.GetTarget(TargetIndex.A).Thing == clicked)
-                    continue;
+		public override bool Multiselect
+		{
+			get
+			{
+				return false;
+			}
+		}
 
-                var pawnLocal = pawn;
-                var clickedLocal = clicked;
-                var option = new FloatMenuOption(
-                    "HaulersDream.BulkRefuel.Option".Translate(clicked.LabelShort), () =>
-                    {
-                        // No try/catch: a build failure is a real bug to surface; the null path shows the toast.
-                        var job = BulkRefuel.TryGiveBulkRefuelJob(pawnLocal, clickedLocal, playerOrder: true);
-                        if (job == null)
-                        {
-                            Messages.Message("HaulersDream.BulkRefuel.CouldNotStart".Translate(), clickedLocal,
-                                MessageTypeDefOf.RejectInput, historical: false);
-                            return;
-                        }
-                        job.playerForced = true;
-                        pawnLocal.jobs.TryTakeOrderedJob(job, JobTag.Misc);
-                    })
-                {
-                    iconThing = clicked,
-                };
-                yield return FloatMenuUtility.DecoratePrioritizedTask(option, pawn, clicked);
-                yield break; // one bulk option per click; vanilla's single-stack refuel still appears alongside
-            }
-        }
-    }
+		public override bool MechanoidCanDo
+		{
+			get
+			{
+				return false;
+			}
+		}
+
+		public override bool CanSelfTarget
+		{
+			get
+			{
+				return false;
+			}
+		}
+
+		public override IEnumerable<FloatMenuOption> GetOptions(FloatMenuContext context)
+		{
+			Pawn pawn = context?.FirstSelectedPawn;
+			List<Thing> list = context?.ClickedThings;
+			if (pawn == null || list == null || !BulkRefuel.FeatureEnabled)
+			{
+				yield break;
+			}
+			WorkGiver_Refuel workGiver_Refuel = BulkRefuel.OrdinaryWorkGiver();
+			if (workGiver_Refuel == null)
+			{
+				yield break;
+			}
+			for (int i = 0; i < list.Count; i++)
+			{
+				Thing thing = list[i];
+				if ((pawn.CurJobDef == HaulersDreamDefOf.HaulersDream_BulkRefuel && pawn.CurJob.GetTarget(TargetIndex.A).Thing == thing) || !BulkRefuel.TryPlan(workGiver_Refuel, pawn, thing, playerOrder: true, out var _, out var _))
+				{
+					continue;
+				}
+				Pawn pawnLocal = pawn;
+				Thing clickedLocal = thing;
+				FloatMenuOption option = new FloatMenuOption("HaulersDream.BulkRefuel.Option".Translate(thing.LabelShort), delegate
+				{
+					Job job = BulkRefuel.TryGiveBulkRefuelJob(pawnLocal, clickedLocal, playerOrder: true);
+					if (job == null)
+					{
+						Messages.Message("HaulersDream.BulkRefuel.CouldNotStart".Translate(), clickedLocal, MessageTypeDefOf.RejectInput, historical: false);
+					}
+					else
+					{
+						pawnLocal.jobs.TryTakeOrderedJob(job, JobTag.Misc);
+					}
+				})
+				{
+					iconThing = thing
+				};
+				yield return FloatMenuUtility.DecoratePrioritizedTask(option, pawn, thing);
+				break;
+			}
+		}
+	}
 }

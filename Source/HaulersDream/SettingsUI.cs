@@ -44,6 +44,84 @@ namespace HaulersDream
         public int Value;
         public bool AllowDirect = true;
     }
+
+    // Help belongs to a rendered control, independently of its translated text or current value.
+    // Negative ordinals identify window navigation; matrix-header parts are negative and row/option parts positive.
+    internal readonly struct SettingsHelpKey
+    {
+        internal readonly int Category, Ordinal, Part;
+        internal SettingsHelpKey(int category, int ordinal, int part = 0)
+        { Category = category; Ordinal = ordinal; Part = part; }
+        internal bool Matches(SettingsHelpKey other) =>
+            Category == other.Category && Ordinal == other.Ordinal && Part == other.Part;
+    }
+
+    internal readonly struct SettingsHelpDocument
+    {
+        internal readonly SettingsHelpKey Key;
+        internal readonly string Title, Body, Status;
+        internal readonly Color StatusColor;
+        internal readonly Action<Rect> Extra;
+        internal SettingsHelpDocument(SettingsHelpKey key, string title, string body, string status,
+            Color statusColor, Action<Rect> extra)
+        { Key = key; Title = title; Body = body; Status = status; StatusColor = statusColor; Extra = extra; }
+    }
+
+    // One selection and one payload, refreshed by the existing draw traversal. No per-control cache or extra pass.
+    internal sealed class SettingsHelpState
+    {
+        private SettingsHelpKey? selected;
+        private SettingsHelpDocument document, displayed;
+        private bool hasDisplayed, refreshed, resetScroll;
+
+        internal void Clear()
+        {
+            selected = null;
+            document = default(SettingsHelpDocument);
+            displayed = default(SettingsHelpDocument);
+            hasDisplayed = refreshed = false;
+            resetScroll = true;
+        }
+
+        internal void BeginEvent() => refreshed = false;
+
+        internal bool Wants(SettingsHelpKey key, bool hovered) =>
+            hovered || (selected.HasValue && selected.Value.Matches(key));
+
+        internal void Offer(SettingsHelpKey key, string title, string body, string status,
+            Color statusColor, Action<Rect> extra, bool hovered)
+        {
+            if (!Wants(key, hovered)) return;
+            selected = key;
+            document = new SettingsHelpDocument(key, title, body, status, statusColor, extra);
+            refreshed = true;
+        }
+
+        internal SettingsHelpDocument Resolve(SettingsHelpDocument fallback)
+        {
+            if (!refreshed || !selected.HasValue)
+            {
+                selected = null; // the selected control did not exist in this traversal
+                document = fallback;
+            }
+            // A parent row may offer first and its hovered option second. Only the final displayed document
+            // determines scrolling; intermediate offers must not reset a stable option on every repaint.
+            if (!hasDisplayed || !displayed.Key.Matches(document.Key)
+                || displayed.Title != document.Title || displayed.Body != document.Body)
+                resetScroll = true;
+            displayed = document;
+            hasDisplayed = true;
+            return document;
+        }
+
+        internal bool TakeScrollReset()
+        {
+            bool result = resetScroll;
+            resetScroll = false;
+            return result;
+        }
+    }
+
     /// <summary>
     /// Immediate-mode vertical layout cursor for the settings content column. Replaces Listing_Standard so
     /// every widget can compute its own dynamic height (wrapped labels, two-line sliders, cards) and the
@@ -59,19 +137,20 @@ namespace HaulersDream
         // ---- collect-mode (settings search) ----
         // When Collecting is true, the helpers run their EXACT layout (so CurY advances identically) but perform
         // NO draw/input side effects, and each interactive control appends an OptionEntry to Sink. Default off/null,
-        // so the normal draw path is byte-for-byte unchanged.
+        // so the normal input and layout behavior is unchanged.
         public bool Collecting;
         public List<OptionEntry> Sink;
         public int CurrentCatId;
         public string CurrentHeader;
         public int Ordinal;
+        internal SettingsHelpState Help;
 
         // ---- filter-render mode (settings search results: draw ONLY the matching controls, real + editable) ----
         // When RenderOrdinals is non-null, the helpers run their EXACT ordinal counting (mirroring collect mode 1:1),
         // but DRAW + take input only for controls whose ordinal is in the set; a non-matching control is skipped with
         // NO draw, NO input, and NO CurY advance, so the matching controls pack together under the search section
         // header. Headers/Notes are skipped entirely (the results view draws its own section headers). Default null,
-        // so the normal draw path (no Collecting, no RenderOrdinals) is byte-for-byte unchanged.
+        // so normal input and layout are unchanged. Normal mode also counts ordinals for stable help identity.
         public HashSet<int> RenderOrdinals;
 
         public SettingsCtx(float width)
@@ -99,7 +178,7 @@ namespace HaulersDream
     /// </summary>
     public static class HDSettingsUI
     {
-        // Right-panel help, populated by hover each frame and read by the window when it draws the info column.
+        // Legacy per-event hover API. The window uses complete control-keyed offers for retained help.
         public static string HoverTitle;
         public static string HoverBody;
         // A short coloured "current value" line for the hovered control (e.g. On/Off, the chosen option, a %).
@@ -149,6 +228,24 @@ namespace HaulersDream
             Widgets.DrawBoxSolid(r, new Color(1f, 1f, 1f, 0.04f));
             if (title != null || body != null)
                 SetHelp(title, body);
+        }
+
+
+        private static void OfferHelp(SettingsCtx c, int ordinal, string title, string body, bool hovered,
+            string status = null, Color? statusColor = null, Action<Rect> extra = null, int part = 0)
+        {
+            c.Help?.Offer(new SettingsHelpKey(c.CurrentCatId, ordinal, part), title, body, status,
+                statusColor ?? ValueColor, extra, hovered);
+        }
+
+        private static void OfferBooleanHelp(SettingsCtx c, int ordinal, string title, string body,
+            bool value, bool hovered)
+        {
+            var key = new SettingsHelpKey(c.CurrentCatId, ordinal);
+            if (c.Help == null || !c.Help.Wants(key, hovered)) return;
+            c.Help.Offer(key, title, body,
+                (value ? "HaulersDream.Common.On" : "HaulersDream.Common.Off").Translate(),
+                value ? OnColor : OffColor, null, hovered);
         }
 
         private static void DrawIndentRail(Rect r, float indent)
@@ -230,12 +327,9 @@ namespace HaulersDream
         {
             // Filter-render (search results): count the ordinal EXACTLY as collect mode does, then either skip this
             // control entirely (no draw/input/CurY advance) or fall through to the normal editable draw below.
-            if (c.RenderOrdinals != null)
-            {
-                int ord = c.Ordinal++;
-                if (!c.RenderOrdinals.Contains(ord))
-                    return value;
-            }
+            int ordinal = c.Ordinal++;
+            if (c.RenderOrdinals != null && !c.RenderOrdinals.Contains(ordinal))
+                return value;
             float startY = c.CurY;
             var f = Text.Font;
             Text.Font = GameFont.Small;
@@ -249,6 +343,7 @@ namespace HaulersDream
                 bool newVal = value;
                 Widgets.CheckboxLabeled(r, label, ref newVal, disabled: !enabled);
                 if (Mouse.IsOver(r)) BoolStatus(enabled ? newVal : value);
+                OfferBooleanHelp(c, ordinal, label, help, enabled ? newVal : value, Mouse.IsOver(r));
                 Text.Font = f;
                 c.Gap(RowGap);
                 return enabled ? newVal : value;
@@ -258,7 +353,7 @@ namespace HaulersDream
             c.Sink.Add(new OptionEntry
             {
                 CatId = c.CurrentCatId, Header = c.CurrentHeader, Name = label, Desc = help,
-                Ordinal = c.Ordinal++, StartY = startY, Height = c.CurY - startY,
+                Ordinal = ordinal, StartY = startY, Height = c.CurY - startY,
             });
             return value;
         }
@@ -270,12 +365,9 @@ namespace HaulersDream
         {
             // Filter-render (search results): count the ordinal EXACTLY as collect mode does, then either skip this
             // control entirely (no draw/input/CurY advance) or fall through to the normal editable draw below.
-            if (c.RenderOrdinals != null)
-            {
-                int ord = c.Ordinal++;
-                if (!c.RenderOrdinals.Contains(ord))
-                    return value;
-            }
+            int ordinal = c.Ordinal++;
+            if (c.RenderOrdinals != null && !c.RenderOrdinals.Contains(ordinal))
+                return value;
             float startY = c.CurY;
             var f = Text.Font;
             Text.Font = GameFont.Small;
@@ -289,7 +381,7 @@ namespace HaulersDream
                 c.Sink.Add(new OptionEntry
                 {
                     CatId = c.CurrentCatId, Header = c.CurrentHeader, Name = label, Desc = help,
-                    Ordinal = c.Ordinal++, StartY = startY, Height = c.CurY - startY,
+                    Ordinal = ordinal, StartY = startY, Height = c.CurY - startY,
                 });
                 return value;
             }
@@ -330,6 +422,8 @@ namespace HaulersDream
             }
             Text.Font = f;
             c.Gap(RowGap);
+            OfferHelp(c, ordinal, label, help, Mouse.IsOver(top) || Mouse.IsOver(sr),
+                readout, ValueColor, graph);
             return enabled ? nv : value;
         }
 
@@ -339,12 +433,9 @@ namespace HaulersDream
         {
             // Filter-render (search results): count the ordinal EXACTLY as collect mode does, then either skip this
             // control entirely (no draw/input/CurY advance) or fall through to the normal editable draw below.
-            if (c.RenderOrdinals != null)
-            {
-                int ord = c.Ordinal++;
-                if (!c.RenderOrdinals.Contains(ord))
-                    return selected;
-            }
+            int ordinal = c.Ordinal++;
+            if (c.RenderOrdinals != null && !c.RenderOrdinals.Contains(ordinal))
+                return selected;
             float startY = c.CurY;
             var f = Text.Font;
             Text.Font = GameFont.Small;
@@ -358,7 +449,7 @@ namespace HaulersDream
                 c.Sink.Add(new OptionEntry
                 {
                     CatId = c.CurrentCatId, Header = c.CurrentHeader, Name = label, Desc = help,
-                    Ordinal = c.Ordinal++, StartY = startY, Height = c.CurY - startY,
+                    Ordinal = ordinal, StartY = startY, Height = c.CurY - startY,
                 });
                 return selected;
             }
@@ -405,6 +496,16 @@ namespace HaulersDream
             Text.WordWrap = ww;
             Text.Font = f;
             c.Gap(RowGap);
+            OfferHelp(c, ordinal, label, help, Mouse.IsOver(top) || Mouse.IsOver(br),
+                options[Mathf.Clamp(effSel, 0, options.Length - 1)], ValueColor);
+            // Refresh the selected option even after the pointer has moved into the help panel.
+            if (optionHelp != null)
+                for (int i = 0; i < n && i < optionHelp.Length; i++)
+                {
+                    var seg = new Rect(br.x + i * (bw + segGap), br.y, bw, br.height);
+                    OfferHelp(c, ordinal, options[i], optionHelp[i], Mouse.IsOver(seg),
+                        options[Mathf.Clamp(effSel, 0, options.Length - 1)], ValueColor, part: i + 1);
+                }
             return enabled ? chosen : selected;
         }
 
@@ -420,34 +521,34 @@ namespace HaulersDream
 
         public static void YieldMatrix(SettingsCtx c, string[] colLabels, string[] colHelps, IList<YieldMatrixRow> rows)
         {
-            // FILTER-RENDER: count one ordinal per row (1:1 with collect mode), then draw the header + matching rows.
+            int baseOrd = c.Ordinal;
+            c.Ordinal += rows.Count;
+            // FILTER-RENDER: the same row range as collect mode; header/option help takes no extra ordinals.
             if (c.RenderOrdinals != null)
             {
-                int baseOrd = c.Ordinal;
-                c.Ordinal += rows.Count;
                 bool any = false;
                 for (int i = 0; i < rows.Count; i++)
                     if (c.RenderOrdinals.Contains(baseOrd + i)) { any = true; break; }
                 if (!any) return;
-                MatrixHeader(c, colLabels, colHelps);
+                MatrixHeader(c, colLabels, colHelps, baseOrd);
                 for (int i = 0; i < rows.Count; i++)
                     if (c.RenderOrdinals.Contains(baseOrd + i))
-                        MatrixRow(c, colLabels, colHelps, rows[i]);
+                        MatrixRow(c, colLabels, colHelps, rows[i], baseOrd + i);
                 return;
             }
 
             // NORMAL + COLLECT: header (advances CurY in both; draws only when not collecting), then every row.
-            MatrixHeader(c, colLabels, colHelps);
+            MatrixHeader(c, colLabels, colHelps, baseOrd);
             for (int i = 0; i < rows.Count; i++)
             {
                 float startY = c.CurY;
-                MatrixRow(c, colLabels, colHelps, rows[i]);
+                MatrixRow(c, colLabels, colHelps, rows[i], baseOrd + i);
                 if (c.Collecting)
                 {
                     c.Sink.Add(new OptionEntry
                     {
                         CatId = c.CurrentCatId, Header = c.CurrentHeader, Name = rows[i].Label, Desc = rows[i].Help,
-                        Ordinal = c.Ordinal++, StartY = startY, Height = c.CurY - startY,
+                        Ordinal = baseOrd + i, StartY = startY, Height = c.CurY - startY,
                     });
                 }
             }
@@ -456,7 +557,7 @@ namespace HaulersDream
         // The column-name header for a YieldMatrix. Advances CurY whether or not it draws (so COLLECT mode lays the
         // table out identically and the rows' recorded StartY match the real draw). Not a searchable control — never
         // touches Ordinal.
-        private static void MatrixHeader(SettingsCtx c, string[] colLabels, string[] colHelps)
+        private static void MatrixHeader(SettingsCtx c, string[] colLabels, string[] colHelps, int baseOrd)
         {
             const float hH = 34f;
             var r = c.Row(hH);
@@ -476,7 +577,11 @@ namespace HaulersDream
             {
                 var cell = new Rect(labelW + i * colW, r.y, colW, r.height);
                 Widgets.Label(cell, colLabels[i]);
-                if (colHelps != null && i < colHelps.Length) Hover(cell, colLabels[i], colHelps[i]);
+                if (colHelps != null && i < colHelps.Length)
+                {
+                    Hover(cell, colLabels[i], colHelps[i]);
+                    OfferHelp(c, baseOrd, colLabels[i], colHelps[i], Mouse.IsOver(cell), part: -i - 1);
+                }
             }
             GUI.color = new Color(1f, 1f, 1f, 0.12f);
             Widgets.DrawLineHorizontal(r.x, r.yMax - 1f, r.width);
@@ -489,7 +594,7 @@ namespace HaulersDream
         // One category row of a YieldMatrix: label on the left, a native radio centred under each column. Advances
         // CurY whether or not it draws. The whole row gets a faint top rule; hovering the label or a column cell
         // registers the matching help into the info panel.
-        private static void MatrixRow(SettingsCtx c, string[] colLabels, string[] colHelps, YieldMatrixRow row)
+        private static void MatrixRow(SettingsCtx c, string[] colLabels, string[] colHelps, YieldMatrixRow row, int ordinal)
         {
             var f = Text.Font;
             Text.Font = GameFont.Small;
@@ -550,6 +655,16 @@ namespace HaulersDream
             }
 
             Text.Font = f;
+            string status = colLabels[Mathf.Clamp(row.Value, 0, colLabels.Length - 1)];
+            OfferHelp(c, ordinal, row.Label, row.Help, Mouse.IsOver(r), status, ValueColor);
+            for (int i = 0; i < cols; i++)
+            {
+                if (!row.AllowDirect && i == cols - 1) continue; // the inert dash uses the row document
+                if (colHelps == null || i >= colHelps.Length) continue;
+                var cell = new Rect(labelW + i * colW, r.y, colW, r.height);
+                OfferHelp(c, ordinal, colLabels[i], colHelps[i], Mouse.IsOver(cell),
+                    status, ValueColor, part: i + 1);
+            }
         }
 
         // ---- a left-aligned button that opens a dialog ----
@@ -558,12 +673,9 @@ namespace HaulersDream
         {
             // Filter-render (search results): count the ordinal EXACTLY as collect mode does, then either skip this
             // control entirely (no draw/input/CurY advance) or fall through to the normal editable draw below.
-            if (c.RenderOrdinals != null)
-            {
-                int ord = c.Ordinal++;
-                if (!c.RenderOrdinals.Contains(ord))
-                    return;
-            }
+            int ordinal = c.Ordinal++;
+            if (c.RenderOrdinals != null && !c.RenderOrdinals.Contains(ordinal))
+                return;
             float startY = c.CurY;
             var r = c.Row(32f, indent);
             if (c.Collecting)
@@ -573,7 +685,7 @@ namespace HaulersDream
                 c.Sink.Add(new OptionEntry
                 {
                     CatId = c.CurrentCatId, Header = c.CurrentHeader, Name = label, Desc = help,
-                    Ordinal = c.Ordinal++, StartY = startY, Height = c.CurY - startY,
+                    Ordinal = ordinal, StartY = startY, Height = c.CurY - startY,
                 });
                 return;
             }
@@ -583,69 +695,111 @@ namespace HaulersDream
             if (Widgets.ButtonText(br, label, active: enabled) && enabled)
                 onClick();
             c.Gap(RowGap);
+            OfferHelp(c, ordinal, label, help, Mouse.IsOver(r));
         }
+
+
+        internal readonly struct FeatureCardLayout
+        {
+            internal readonly float Height;
+            internal readonly Rect Icon, Toggle, Name, Blurb;
+            internal FeatureCardLayout(float height, Rect icon, Rect toggle, Rect name, Rect blurb)
+            { Height = height; Icon = icon; Toggle = toggle; Name = name; Blurb = blurb; }
+        }
+
+        // The same native measurement supplies collect and draw geometry. Requesting Tiny may resolve to Small.
+        internal static FeatureCardLayout MeasureFeatureCard(float width, string name, string blurb)
+        {
+            const float pad = 10f, icon = 24f, toggle = 24f, textGap = 8f, verticalPad = 7f;
+            float textX = pad + icon + pad;
+            float toggleX = width - pad - toggle;
+            float textWidth = toggleX - textX - textGap;
+            if (float.IsNaN(width) || float.IsInfinity(width) || textWidth <= 0f)
+                throw new ArgumentOutOfRangeException(nameof(width), "Feature card needs a positive text width.");
+            var font = Text.Font;
+            var anchor = Text.Anchor;
+            bool wrap = Text.WordWrap;
+            try
+            {
+                Text.Anchor = TextAnchor.UpperLeft;
+                Text.WordWrap = true;
+                Text.Font = GameFont.Small;
+                float nameHeight = name.NullOrEmpty() ? 0f
+                    : Mathf.Ceil(Mathf.Max(Text.LineHeight, Text.CalcHeight(name, textWidth)));
+                Text.Font = GameFont.Tiny;
+                float blurbHeight = blurb.NullOrEmpty() ? 0f
+                    : Mathf.Ceil(Mathf.Max(Text.LineHeight, Text.CalcHeight(blurb, textWidth)));
+                float gap = nameHeight > 0f && blurbHeight > 0f ? 2f : 0f;
+                float height = Mathf.Max(54f, verticalPad * 2f + nameHeight + gap + blurbHeight);
+                return new FeatureCardLayout(height,
+                    new Rect(pad, (height - icon) / 2f, icon, icon),
+                    new Rect(toggleX, (height - toggle) / 2f, toggle, toggle),
+                    new Rect(textX, verticalPad, textWidth, nameHeight),
+                    new Rect(textX, verticalPad + nameHeight + gap, textWidth, blurbHeight));
+            }
+            finally
+            {
+                Text.Font = font;
+                Text.Anchor = anchor;
+                Text.WordWrap = wrap;
+            }
+        }
+
+        private static Rect InCard(Rect relative, Rect card) =>
+            new Rect(card.x + relative.x, card.y + relative.y, relative.width, relative.height);
 
         // ---- a feature "card": icon + name + blurb + a toggle; the whole card is clickable ----
         public static bool FeatureCard(SettingsCtx c, Texture2D icon, string name, string blurb, bool value,
             string help = null, bool enabled = true)
         {
-            // Filter-render (search results): count the ordinal EXACTLY as collect mode does, then either skip this
-            // control entirely (no draw/input/CurY advance) or fall through to the normal editable draw below.
-            if (c.RenderOrdinals != null)
-            {
-                int ord = c.Ordinal++;
-                if (!c.RenderOrdinals.Contains(ord))
-                    return value;
-            }
+            int ordinal = c.Ordinal++;
+            if (c.RenderOrdinals != null && !c.RenderOrdinals.Contains(ordinal))
+                return value;
             float startY = c.CurY;
-            const float h = 54f;
-            var r = c.Row(h);
+            var layout = MeasureFeatureCard(c.Width, name, blurb);
+            var r = c.Row(layout.Height);
             c.Gap(4f);
             if (c.Collecting)
             {
-                // Skip every draw/input + the toggle sound; CurY already advanced by Row(h)+Gap(4). Record.
                 c.Sink.Add(new OptionEntry
                 {
                     CatId = c.CurrentCatId, Header = c.CurrentHeader, Name = name, Desc = help ?? blurb,
-                    Ordinal = c.Ordinal++, StartY = startY, Height = c.CurY - startY,
+                    Ordinal = ordinal, StartY = startY, Height = c.CurY - startY,
                 });
                 return value;
             }
-            // No persistent background/outline (clean look) — just a clear highlight on hover for interactivity.
-            Widgets.DrawHighlightIfMouseover(r);
-            if (Mouse.IsOver(r))
+
+            var font = Text.Font;
+            var anchor = Text.Anchor;
+            bool wrap = Text.WordWrap;
+            var color = GUI.color;
+            try
             {
-                SetHelp(name, help ?? blurb);
-                BoolStatus(value);
+                Widgets.DrawHighlightIfMouseover(r);
+                if (icon != null)
+                {
+                    GUI.color = (enabled && value) ? Color.white : new Color(1f, 1f, 1f, 0.55f);
+                    GUI.DrawTexture(InCard(layout.Icon, r), icon, ScaleMode.ScaleToFit);
+                    GUI.color = color;
+                }
+                var toggle = InCard(layout.Toggle, r);
+                Widgets.CheckboxDraw(toggle.x, toggle.y, value, disabled: !enabled, toggle.width);
+                Text.Anchor = TextAnchor.UpperLeft;
+                Text.WordWrap = true;
+                Text.Font = GameFont.Small;
+                GUI.color = enabled ? Color.white : new Color(1f, 1f, 1f, 0.55f);
+                if (layout.Name.height > 0f) Widgets.Label(InCard(layout.Name, r), name);
+                Text.Font = GameFont.Tiny;
+                GUI.color = new Color(0.74f, 0.74f, 0.78f, enabled ? 1f : 0.6f);
+                if (layout.Blurb.height > 0f) Widgets.Label(InCard(layout.Blurb, r), blurb);
             }
-
-            const float pad = 10f;
-            const float iconSize = 24f;
-            var iconBox = new Rect(r.x + pad, r.y + (h - iconSize) / 2f, iconSize, iconSize);
-            if (icon != null)
+            finally
             {
-                var col = GUI.color;
-                GUI.color = (enabled && value) ? Color.white : new Color(1f, 1f, 1f, 0.55f);
-                GUI.DrawTexture(iconBox, icon, ScaleMode.ScaleToFit);
-                GUI.color = col;
+                GUI.color = color;
+                Text.Font = font;
+                Text.Anchor = anchor;
+                Text.WordWrap = wrap;
             }
-
-            const float tgl = 24f;
-            var tr = new Rect(r.xMax - pad - tgl, r.y + (h - tgl) / 2f, tgl, tgl);
-            Widgets.CheckboxDraw(tr.x, tr.y, value, disabled: !enabled, tgl);
-
-            float textX = iconBox.xMax + pad;
-            float textW = tr.x - textX - 8f;
-            var f = Text.Font;
-            var col2 = GUI.color;
-            Text.Font = GameFont.Small;
-            GUI.color = enabled ? Color.white : new Color(1f, 1f, 1f, 0.55f);
-            Widgets.Label(new Rect(textX, r.y + 7f, textW, 22f), name);
-            Text.Font = GameFont.Tiny;
-            GUI.color = new Color(0.74f, 0.74f, 0.78f, enabled ? 1f : 0.6f);
-            Widgets.Label(new Rect(textX, r.y + 28f, textW, 20f), blurb);
-            GUI.color = col2;
-            Text.Font = f;
 
             bool newVal = value;
             if (enabled && Widgets.ButtonInvisible(r))
@@ -653,6 +807,13 @@ namespace HaulersDream
                 newVal = !value;
                 SoundDefOf.Checkbox_TurnedOn.PlayOneShotOnCamera();
             }
+            bool hovered = Mouse.IsOver(r);
+            if (hovered)
+            {
+                SetHelp(name, help ?? blurb);
+                BoolStatus(newVal);
+            }
+            OfferBooleanHelp(c, ordinal, name, help ?? blurb, newVal, hovered);
             return newVal;
         }
     }

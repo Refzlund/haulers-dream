@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LanguageData>
+  <HD_RefuelRecoveryPaused>Reabastecimento pausado: é preciso revisar o reabastecimento interrompido.</HD_RefuelRecoveryPaused>
+  <HD_RefuelRecoveryChanged>Um item registrado mudou ou não está mais disponível.</HD_RefuelRecoveryChanged>
+  <HD_RefuelRecoveryCustodyUnknown>Não foi possível confirmar onde está o material restante.</HD_RefuelRecoveryCustodyUnknown>
+  <HD_RefuelRecoveryRecordMissing>O reabastecimento está pausado. A interrupção ocorreu antes que todos os detalhes pudessem ser salvos. Não é possível confirmar as quantidades de combustível adicionado e material consumido.</HD_RefuelRecoveryRecordMissing>
+  <HD_RefuelRecoveryReview>Revisar o reabastecimento interrompido</HD_RefuelRecoveryReview>
+  <HD_RefuelRecoveryReviewDesc>Revise o reabastecimento interrompido e escolha o que fazer com o material restante. Estas ações não adicionam combustível novamente.</HD_RefuelRecoveryReviewDesc>
+  <HD_RefuelRecoveryDetails>Ver detalhes da recuperação</HD_RefuelRecoveryDetails>
+  <HD_RefuelRecoveryPay>Consumir o material combustível registrado</HD_RefuelRecoveryPay>
+  <HD_RefuelRecoveryRestore>Devolver o material restante ao inventário</HD_RefuelRecoveryRestore>
+  <HD_RefuelRecoveryCleanup>Verificar novamente o inventário restante</HD_RefuelRecoveryCleanup>
+  <HD_RefuelRecoveryAccept>Manter o estado atual e retomar</HD_RefuelRecoveryAccept>
+  <HD_RefuelRecoverySyncUnavailable>indisponível: não foi possível configurar esta ação para o modo multijogador</HD_RefuelRecoverySyncUnavailable>
+  <HD_RefuelRecoveryPayConfirm>Consumir exatamente o material registrado pelo combustível que já foi adicionado? Nenhum combustível será adicionado novamente. Uma tentativa anterior pode já ter causado outros efeitos, mesmo que tenha informado um erro. Esta ação faz uma única tentativa e não se repete automaticamente.</HD_RefuelRecoveryPayConfirm>
+  <HD_RefuelRecoveryRestoreConfirm>Tentar uma única vez devolver o material registrado ao inventário deste personagem? Itens inalterados na reserva de recuperação salva podem ser movidos sem adicionar combustível nem consumir material. Isso não quita nenhuma dívida de combustível registrada nem elimina incertezas; a revisão e a resolução continuam sendo etapas separadas. Itens sem detentor só podem ser devolvidos quando não foi observada adição de combustível. As configurações dos itens a manter e do equipamento permanecem inalteradas.</HD_RefuelRecoveryRestoreConfirm>
+  <HD_RefuelRecoveryCleanupConfirm>Verificar novamente o inventário restante após o consumo do material registrado? Isso não adiciona combustível, não destrói mais itens nem restaura configurações antigas dos itens a manter ou do equipamento.</HD_RefuelRecoveryCleanupConfirm>
+  <HD_RefuelRecoveryAcceptConfirm>Manter os itens e níveis de combustível atuais e permitir novas tarefas de reabastecimento do Hauler's Dream? A ação interrompida não será repetida e seus detalhes continuarão salvos. Qualquer quantidade incerta de combustível ou material continuará sem verificação. Retomar não a corrige.</HD_RefuelRecoveryAcceptConfirm>
+  <HD_RefuelRecoverySelectionChanged>Os dados da recuperação ou seus itens mudaram. Abra o menu de recuperação novamente antes de escolher uma ação.</HD_RefuelRecoverySelectionChanged>
+  <HD_RefuelRecoveryPaidOutcome>Última recuperação de reabastecimento: o material registrado foi consumido e o registro do inventário foi atualizado.</HD_RefuelRecoveryPaidOutcome>
+  <HD_RefuelRecoveryUncreditedOutcome>Última recuperação de reabastecimento: não foi observado acréscimo de combustível, e o material restante está localizado e contabilizado.</HD_RefuelRecoveryUncreditedOutcome>
+  <HD_RefuelRecoveryUncertainOutcome>Última recuperação de reabastecimento: o reabastecimento foi retomado com os itens e níveis de combustível atuais. As quantidades anteriores de combustível adicionado e material consumido continuam sem verificação.</HD_RefuelRecoveryUncertainOutcome>
+  <HD_RefuelRecoveryCostPaid>O consumo da quantidade de material registrada foi confirmado. Revise o estado atual antes de retomar o reabastecimento.</HD_RefuelRecoveryCostPaid>
+  <HD_RefuelRecoveryRestored>A ação de recuperação terminou. Revise o estado atual antes de retomar o reabastecimento.</HD_RefuelRecoveryRestored>
+  <HD_RefuelRecoveryNoCredit>Não foi observado acréscimo de combustível durante a ação interrompida.</HD_RefuelRecoveryNoCredit>
+  <HD_RefuelRecoveryKnownDebt>Foi adicionado combustível, mas o consumo da quantidade de material registrada para isso não foi confirmado.</HD_RefuelRecoveryKnownDebt>
+  <HD_RefuelRecoveryUncertain>As quantidades de combustível adicionado ou material consumido são incertas. O nível atual de combustível não permite determinar o que aconteceu.</HD_RefuelRecoveryUncertain>
+  <HD_RefuelRecoveryPriorDestroy>Já houve uma tentativa anterior de consumir o material. Os efeitos que ela causou podem já ter ocorrido, mesmo que tenha informado um erro.</HD_RefuelRecoveryPriorDestroy>
+  <HD_RefuelRecoveryNoExactCost>Esta ação não pode consumir exatamente o material registrado. Ela não tentará adivinhar quais partes consumir, dividir uma sobra alterada ou consumir um item substituto.</HD_RefuelRecoveryNoExactCost>
+  <HD_RefuelRecoveryDetailHeader>Recuperação para {0}&#10;Alvo: {1}&#10;Custo de combustível registrado (unidades): {2}</HD_RefuelRecoveryDetailHeader>
+  <HD_RefuelRecoveryTargetMissing>Alvo original indisponível</HD_RefuelRecoveryTargetMissing>
+  <HD_RefuelRecoveryItemMissing>O item registrado está indisponível.</HD_RefuelRecoveryItemMissing>
+  <HD_RefuelRecoveryItemDestroyed>O item registrado está destruído.</HD_RefuelRecoveryItemDestroyed>
+  <HD_RefuelRecoveryItemCurrent>{0}: unidades restantes: {1}.</HD_RefuelRecoveryItemCurrent>
+  <HD_RefuelRecoveryInInventory>No inventário deste personagem.</HD_RefuelRecoveryInInventory>
+  <HD_RefuelRecoveryInCarry>Sendo carregado por este personagem.</HD_RefuelRecoveryInCarry>
+  <HD_RefuelRecoveryNoOwner>Não está com ninguém, dentro de um recipiente ou colocado em um mapa.</HD_RefuelRecoveryNoOwner>
+  <HD_RefuelRecoveryOnGround>No mesmo mapa.</HD_RefuelRecoveryOnGround>
+  <HD_RefuelRecoveryElsewhere>Fora do local de recuperação confirmado.</HD_RefuelRecoveryElsewhere>
+  <HD_RefuelRecoveryLastActionFailed>Uma ação de recuperação anterior informou um erro. Seus detalhes continuam salvos.</HD_RefuelRecoveryLastActionFailed>
+  <HD_RefuelRecoveryInRetainedCustody>Guardado na reserva de recuperação de combustível deste personagem, incluída no salvamento.</HD_RefuelRecoveryInRetainedCustody>
+  <HD_RefuelRecoveryRetainedBeforeResume>Devolva o material guardado ao inventário ou consuma exatamente o material correspondente ao custo confirmado de combustível antes de retomar. Devolver o material muda apenas onde ele está guardado; qualquer dívida de combustível ou incerteza continua sem resolução.</HD_RefuelRecoveryRetainedBeforeResume>
+</LanguageData>

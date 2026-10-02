@@ -25,6 +25,10 @@ namespace HaulersDream
         // routed here by BucketFor; everything else stays in loadTasks.
         private Dictionary<int, LoadLedgerEntry> loadVehicleTasks = new Dictionary<int, LoadLedgerEntry>();
 
+        // Existing task only: storage attribution must never register, refresh, or acquire load claims.
+        internal bool TryReadTransportLoadClaim(int key, Map map, out LoadLedgerEntry entry)
+            => loadTasks.TryGetValue(key, out entry) && entry != null && ReferenceEquals(entry.map, map);
+
         /// <summary>Pick the ledger bucket for a loadable: a Vehicle-kind target keys the separate
         /// <see cref="loadVehicleTasks"/> dict (raw thingIDNumber, disjoint from transporter/portal keys because it
         /// is a DIFFERENT dictionary); transporters and portals share the flat <see cref="loadTasks"/> dict (their

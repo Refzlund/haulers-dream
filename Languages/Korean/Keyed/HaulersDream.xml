@@ -44,7 +44,7 @@
 <HaulersDream.Setting.BuildFromInventoryPartial>소지품으로 부분 건설 허용</HaulersDream.Setting.BuildFromInventoryPartial>
 <HaulersDream.Setting.BuildFromInventoryPartialDesc>보통은 전체에 충분한 자재가 있어야 건설이 시작됩니다. 이것을 켜면 필요한 전량에 못 미치더라도 존재하는 소지품 자재로 골조를 시작하고 진행합니다 — 나머지는 자재가 더 생기는 대로 전달됩니다. 바닐라의 전부-아니면-전무 규칙을 바꾸므로 기본 꺼짐입니다. "소지품으로 건설"이 필요합니다.</HaulersDream.Setting.BuildFromInventoryPartialDesc>
 <HaulersDream.Setting.ShareForCrafting>운반 중인 자재를 제작 작업 지시에 사용</HaulersDream.Setting.ShareForCrafting>
-<HaulersDream.Setting.ShareForCraftingDesc>제작하는 폰이 바닥의 흩어진 더미뿐 아니라, 폰이 이미 운반 중인 소지품에서 작업 지시 재료를 가져올 수 있습니다. 다른 모드가 제작 재료 운반을 관리하고 있으면 Hauler's Dream이 자동으로 물러나 그 모드가 재료를 모으게 합니다 — 그래서 어떤 제작 루프든 당신이 아무것도 하지 않아도 저절로 해결됩니다.</HaulersDream.Setting.ShareForCraftingDesc>
+<HaulersDream.Setting.ShareForCraftingDesc>이 옵션을 켜면 제작 작업 지시에서 Hauler's Dream이 추적하는 휴대 재료를 사용할 수 있습니다. 제작자 자신의 재료도 포함됩니다. HD가 추적하지 않는 개인 소지품은 이 옵션을 켜도 작업 지시의 재료로 추가되지 않습니다. Common Sense가 재료를 모으는 경우, HD는 일반 작업 지시의 재료 검색에 휴대 재료를 추가하지 않고 재료 수집을 Common Sense에 맡깁니다.</HaulersDream.Setting.ShareForCraftingDesc>
 <HaulersDream.Setting.ShareMeetInMiddle>한가한 운반체가 물건을 건네주러 작업자에게 걸어감</HaulersDream.Setting.ShareMeetInMiddle>
 <HaulersDream.Setting.BatchWorkDeliveries>한 번 이동으로 여러 대기 건설에 자재 운반</HaulersDream.Setting.BatchWorkDeliveries>
 <HaulersDream.Setting.BatchWorkDeliveriesDesc>값싼 것을 많이 지을 때(예: 긴 울타리), 폰이 여러 대기 건설에 충분한 자재를 손에 가득 채워 한 번 이동으로 각 현장에 전달합니다. 조금씩 여러 번 왕복하지 않습니다. 손에 들고 운반하므로 속도 저하가 없습니다.</HaulersDream.Setting.BatchWorkDeliveriesDesc>
@@ -71,7 +71,7 @@
 <HaulersDream.Setting.BulkHaulAlways>항상 쓸어 담기 — 모든 운반이 주변 모든 것을 줍기</HaulersDream.Setting.BulkHaulAlways>
 <HaulersDream.Setting.BulkHaulAlwaysDesc>모든 운반은 — 자동이든 명령이든 — 인근의 운반 가능한 물건들을 폰의 소지품에도 실어, 전체를 한 번의 저장 이동으로 처리합니다. 얼마나 운반하는지는 아래의 스마트 과적 슬라이더를 따릅니다: 또 한 번 왕복하는 것 대비 속도 저하를 감수할 만큼만 추가 무게를 실습니다.</HaulersDream.Setting.BulkHaulAlwaysDesc>
 <HaulersDream.Setting.HaulNearbyOption>"주변 전부 운반" 우클릭 명령 추가</HaulersDream.Setting.HaulNearbyOption>
-<HaulersDream.Setting.HaulNearbyOptionDesc>운반 가능한 물건의 우클릭 메뉴(운반할 수 있는 폰에 한해)에 "주변 전부 운반" 옵션을 추가하여, 즉시 대량 쓸어 담기를 시작합니다 — 그래서 대량 운반을 유발하려고 두 운반을 우선 지정할 필요가 없습니다. 단일 물건 운반을 위한 바닐라의 "운반 우선 지정"도 함께 나타납니다.</HaulersDream.Setting.HaulNearbyOptionDesc>
+<HaulersDream.Setting.HaulNearbyOptionDesc>운반 가능한 물건의 우클릭 메뉴(운반할 수 있는 폰에 한해)에 "주변 전부 운반" 옵션을 추가하여, 즉시 대량 쓸어 담기를 시작합니다 — 그래서 대량 운반을 유발하려고 두 운반을 우선 지정할 필요가 없습니다. 단일 물건 운반을 위한 바닐라의 "운반 우선 지정"도 함께 나타납니다. 선택한 Misc. Robots 로봇에 운반 버튼도 추가합니다. Biotech가 비활성화되어 있어도 사용할 수 있습니다.</HaulersDream.Setting.HaulNearbyOptionDesc>
 <HaulersDream.Setting.ManualPickup>"X 줍기" 우클릭 명령 추가</HaulersDream.Setting.ManualPickup>
 <HaulersDream.Setting.ManualPickupDesc>운반 가능한 바닥 물건의 우클릭 메뉴에 "X 줍기" 옵션을 추가합니다. 폰이 클릭한 더미를 추적되는 Hauler's Dream 운반으로서 소지품에 곧장 줍고, 이후 평소 내려놓기로 치워집니다 — 그래서 자동 내려놓기가 꺼져 있어도 절대 잃어버리지 않습니다. 바닐라의 우클릭 운반 옵션에 추가되는 기능입니다.</HaulersDream.Setting.ManualPickupDesc>
 <HaulersDream.Setting.KeepInInventory>"X 소지품에 보관" 우클릭 명령 추가</HaulersDream.Setting.KeepInInventory>
@@ -147,10 +147,10 @@
 <HaulersDream.Setting.TaintedLeave>시체에 그대로 두기. 어떤 벗기기로도 벗겨지지 않으며, 직접 내린 벗기기 명령도 마찬가지 (화장은 시체와 함께 태우고, 도축은 바닐라처럼 작업대에 떨어뜨림)</HaulersDream.Setting.TaintedLeave>
 <HaulersDream.Setting.TaintedForbid>떨어뜨리고 금지하기</HaulersDream.Setting.TaintedForbid>
 <HaulersDream.Setting.TaintedDestroy>그 자리에서 파괴하기 (퀘스트 물품과 유물은 대신 가져가며, 절대 파괴하지 않음)</HaulersDream.Setting.TaintedDestroy>
-<HaulersDream.Setting.HaulTamedSlaughter>도살된 사체를 저장고로 운반</HaulersDream.Setting.HaulTamedSlaughter>
-<HaulersDream.Setting.HaulTamedSlaughterDesc>정착민이 정착지 동물 도살을 마치면, 신선한 사체가 곧장 저장고(냉동고나 시체 저장 구역)로 운반되어 떨어진 자리에서 썩지 않습니다 — 도달 가능한 저장 공간이 그것을 받을 때만이며, 아니면 바닐라와 똑같이 그대로 남습니다. (바닐라는 도살된 동물을 직접 운반하지 않으며, 이것이 그 빈틈을 메웁니다.)</HaulersDream.Setting.HaulTamedSlaughterDesc>
-<HaulersDream.Setting.HaulWildKills>사냥한 사체를 저장고로 운반</HaulersDream.Setting.HaulWildKills>
-<HaulersDream.Setting.HaulWildKillsDesc>사냥이 사살 직후 중단될 때 — 사냥꾼이 필요·징집·정신 붕괴로 끌려가거나 사냥이 시간 초과될 때 — 사냥꾼이 나가는 길에 신선한 사체를 곧바로 저장고로 운반합니다. 느린 일반 운반 대기열에 남기는 대신. 깔끔한 사냥에서는 사냥꾼이 이미 사냥감을 집으로 운반하므로(바닐라), 이것은 끼어들지 않습니다 — 이중 운반 없음. 도달 가능한 저장 공간이 시체를 받을 때만 운반하며, 아니면 사체는 바닐라와 똑같이 그대로 남습니다(절대 금지되지 않으므로, 그것을 받는 냉동고나 시체 저장 구역이 생기면 평소 시체 운반이 다시 수거합니다).</HaulersDream.Setting.HaulWildKillsDesc>
+<HaulersDream.Setting.HaulTamedSlaughter>정착지 동물의 사체를 저장고로 운반</HaulersDream.Setting.HaulTamedSlaughter>
+<HaulersDream.Setting.HaulTamedSlaughterDesc>정착지 동물을 도살하거나 Allow Tool(해당 도구에서 허용하는 대상인 경우)로 마무리하면, 운반 조건을 충족하는 폰이 기존 명령 대기열 끝에 사체 운반을 추가합니다. 사체가 금지되지 않았고, 해당 사체를 받는 저장 공간에 도달할 수 있어야 합니다. 사체의 금지를 해제하거나 대기 중인 작업을 대체하지 않습니다.</HaulersDream.Setting.HaulTamedSlaughterDesc>
+<HaulersDream.Setting.HaulWildKills>야생 동물의 사체를 저장고로 운반</HaulersDream.Setting.HaulWildKills>
+<HaulersDream.Setting.HaulWildKillsDesc>사냥감을 죽인 뒤 사냥이 중단되거나 Allow Tool 또는 Keyz' Allow Utilities로 세력이 없는 야생 동물을 마무리하면, 운반 조건을 충족하는 폰이 기존 명령 대기열 끝에 사체 운반을 추가합니다. 사체가 금지되지 않았고, 해당 사체를 받는 저장 공간에 도달할 수 있어야 합니다. 사체의 금지는 해제하지 않습니다. 정상 완료된 바닐라 사냥은 원래 운반을 유지하며 추가 운반 명령을 만들지 않습니다.</HaulersDream.Setting.HaulWildKillsDesc>
 <HaulersDream.Setting.ButcherSpoilingFirst>가장 많이 상한 시체부터 도축</HaulersDream.Setting.ButcherSpoilingFirst>
 <HaulersDream.Setting.ButcherSpoilingFirstDesc>정착민이 도축 작업 지시에 쓸 시체를 고를 때, 단순히 가장 가까운 것이 아니라(작업 지시가 이미 허용하는 시체 중에서, 그 재료 탐색 반경 내에서) 가장 썩기 직전인 시체를 고릅니다 — 그래서 고기가 상하기 전에 회수됩니다. 이미 유효한 시체 중 어느 것을 쓸지 순서만 바꾸며, 제작법·탐색 반경·작업 지시가 받는 시체는 절대 바꾸지 않습니다. 얼어붙은 시체는 마지막으로 남깁니다(상하지 않으므로). 일반 도축 작업 지시와 Hauler's Dream 일괄 처리 모두에 적용됩니다. 기본 켜짐.</HaulersDream.Setting.ButcherSpoilingFirstDesc>
 <HaulersDream.Setting.CookSpoilingFirst>가장 많이 상한 식량부터 요리</HaulersDream.Setting.CookSpoilingFirst>
@@ -328,7 +328,7 @@
 <HaulersDream.Setting.ShowBenchGatherGizmo>작업대별 "재료 모으기" 버튼 표시</HaulersDream.Setting.ShowBenchGatherGizmo>
 <HaulersDream.Setting.ShowBenchGatherGizmoDesc>각 작업대의 명령 막대에 "재료 모으기" 토글을 추가하여, 특정 작업대 하나만 재료 모으기를 끄고 거기서는 RimWorld 자체의 한 번에 한 더미 동작이 돌아가게 할 수 있습니다. 바로 옆에서 채워 두는 화덕이나 작업대처럼, 모으는 데 드는 시간이 아끼는 시간보다 큰 곳에 유용합니다. 기본값은 켜짐입니다. 이 설정은 버튼을 보여줄지만 정할 뿐이며, 이미 꺼 둔 작업대는 어느 쪽이든 꺼진 상태로 남습니다. 작업대를 끄는 것은 항상 위 설정보다 우선하며, "제작 재료를 소지품에 운반 (이동 감소)"이 꺼져 있어도 작동합니다. 일괄 제작은 그 설정과 무관하게 재료를 모으기 때문입니다.</HaulersDream.Setting.ShowBenchGatherGizmoDesc>
 <HaulersDream.PrepGather.Report>제작 재료를 모으는 중.</HaulersDream.PrepGather.Report>
-<HaulersDream.BulkHaul.Report>주변 전부를 운반하는 중.</HaulersDream.BulkHaul.Report>
+<HaulersDream.BulkHaul.Report>물건을 모아 소지품에 넣는 중.</HaulersDream.BulkHaul.Report>
 <HaulersDream.JobReport.DefaultDestination>저장고</HaulersDream.JobReport.DefaultDestination>
 <HaulersDream.JobReport.EnRoute.Load>{ORIGINAL} ({DESTINATION}로 가는 길)</HaulersDream.JobReport.EnRoute.Load>
 <HaulersDream.JobReport.EnRoute.Unload>{ORIGINAL} ({DESTINATION}로 가는 길)</HaulersDream.JobReport.EnRoute.Unload>
@@ -357,7 +357,7 @@
 <HaulersDream.LoadTransporter.Option>{0} 대량 적재 우선 지정</HaulersDream.LoadTransporter.Option>
 <HaulersDream.LoadTransporter.CouldNotStart>지금 그 수송 포드에 대량으로 실을 만한 것이 주변에 없습니다.</HaulersDream.LoadTransporter.CouldNotStart>
 <HaulersDream.Setting.EnableBulkLoadTransporters>수송 포드와 셔틀을 한 번 이동으로 대량 적재</HaulersDream.Setting.EnableBulkLoadTransporters>
-<HaulersDream.Setting.EnableBulkLoadTransportersDesc>수송 포드나 셔틀이 적재로 설정되면, 운반자가 그 적재 목록의 일부를 점유하고 인근의 여러 더미를 소지품에 쓸어 담아 수송 포드로 한 번 걸어가서 전부 내려놓습니다 — 바닐라의 걸음당 손에 한 더미 대신. 여러 운반자가 큰 적재 목록을 이중 운반 없이 나누며, 점유한 화물이 들어올 때까지 포드는 탑승하거나 발사하지 않습니다. 이것이 꺼져 있으면 바닐라의 단일 더미 수송 포드 적재가 그대로 사용됩니다.</HaulersDream.Setting.EnableBulkLoadTransportersDesc>
+<HaulersDream.Setting.EnableBulkLoadTransportersDesc>수송 포드나 셔틀이 적재로 설정되면, 운반자가 그 적재 목록의 일부를 점유하고 인근의 여러 더미를 소지품에 쓸어 담아 수송 포드로 한 번 걸어가서 전부 내려놓습니다 — 바닐라의 걸음당 손에 한 더미 대신. 여러 운반자가 큰 적재 목록을 이중 운반 없이 나누며, 점유한 화물이 들어올 때까지 포드는 탑승하거나 발사하지 않습니다. 이것이 꺼져 있으면 바닐라의 단일 더미 수송 포드 적재가 그대로 사용됩니다. 우선 명령은 운반자가 징집되지 않고 새 대기 명령이 없으면 배송 성공 후 이 목록의 운반을 반복합니다. 징집된 운반자도 한 번의 적재 운반은 할 수 있습니다.</HaulersDream.Setting.EnableBulkLoadTransportersDesc>
 <HaulersDream.Setting.BulkLoadAiUpdateFrequency>적재 재확인 간격: {0}틱</HaulersDream.Setting.BulkLoadAiUpdateFrequency>
 <HaulersDream.LoadPortal.Report>차원문을 대량으로 싣는 중.</HaulersDream.LoadPortal.Report>
 <HaulersDream.LoadPortal.Option>{0} 대량 적재 우선 지정</HaulersDream.LoadPortal.Option>
@@ -420,7 +420,7 @@
 <HaulersDream.Setting.OpportunisticLoadDesc>인근의 수송 포드, 셔틀, 맵 차원문, 또는 차량이 기다리는 물건을 이미 운반 중인 폰이, 완전히 새 줍기 이동을 시작하는 대신 우회해 그것을 내려놓습니다. 헛된 걸음이 줄어듭니다. 기본 꺼짐 (폰이 다음에 맡는 작업을 바꿉니다).</HaulersDream.Setting.OpportunisticLoadDesc>
 <HaulersDream.Setting.LoadOpportunityRadius>가는 길 내려놓기 탐색 반경: {0}칸</HaulersDream.Setting.LoadOpportunityRadius>
 <HaulersDream.Setting.ContinuousLoading>"완료될 때까지 적재" 우클릭 명령</HaulersDream.Setting.ContinuousLoading>
-<HaulersDream.Setting.ContinuousLoadingDesc>한 운반자(징집됨이라도)를 아직 적재가 필요한 인근의 모든 수송 그룹으로 보내, 전부 찰 때까지 작업을 연쇄하는 우클릭 명령을 추가합니다 — 큰 카라반을 한 명령으로 싣기에 편리합니다. 기본 꺼짐 (선택적 편의 기능).</HaulersDream.Setting.ContinuousLoadingDesc>
+<HaulersDream.Setting.ContinuousLoadingDesc>선택한 적재 목록을 완료한 뒤 가까운 적재 대상으로 이어가는 우클릭 명령을 추가합니다. 후속 운반에는 징집 해제 상태, 배송 성공, 새 대기 명령이 없는 상태가 필요합니다. 기본값은 꺼짐입니다.</HaulersDream.Setting.ContinuousLoadingDesc>
 <HaulersDream.ContinuousLoad.Option>완료될 때까지 적재 (연속) — {0}</HaulersDream.ContinuousLoad.Option>
 <HaulersDream.ContinuousLoad.CouldNotStart>지금 그것에 대량으로 실을 만한 것이 주변에 없습니다.</HaulersDream.ContinuousLoad.CouldNotStart>
 <HaulersDream.Setting.LoadHybridPathing>대량 적재 정거장을 실제 경로 탐색으로 정렬</HaulersDream.Setting.LoadHybridPathing>
@@ -626,7 +626,7 @@
 <HaulersDream.Setting.BulkHaulTrigger.Lab>대량 운반 유발 조건</HaulersDream.Setting.BulkHaulTrigger.Lab>
 <HaulersDream.Setting.KeepWorkingMargin.Lab>더 긴 이동 전 내려놓기</HaulersDream.Setting.KeepWorkingMargin.Lab>
 <HaulersDream.Setting.MinFreeSpaceToUnloadCarrier.Lab>시작에 필요한 최소 여유 배낭 공간</HaulersDream.Setting.MinFreeSpaceToUnloadCarrier.Lab>
-<HaulersDream.Setting.MinFreeSpaceToUnloadCarrier.Help>운반자가 짐 운반 동물을 비우기 시작하기 전에 자기 운반 용량을 적어도 이만큼 비워 두어야, 자기 배낭이 즉시 넘치지 않습니다.</HaulersDream.Setting.MinFreeSpaceToUnloadCarrier.Help>
+<HaulersDream.Setting.MinFreeSpaceToUnloadCarrier.Help>운반자가 짐 운반 동물을 비우기 시작하기 전에 자기 운반 용량을 적어도 이만큼 비워 두어야, 자기 배낭이 즉시 넘치지 않습니다. 이 기준은 수송기 자동 하역에도 적용됩니다.</HaulersDream.Setting.MinFreeSpaceToUnloadCarrier.Help>
 <HaulersDream.Setting.VisualUnloadDelay.Lab>더미당 내리기 지연</HaulersDream.Setting.VisualUnloadDelay.Lab>
 <HaulersDream.Setting.VisualUnloadDelay.Help>대량 내리기 중 각 더미 사이의 작은 연출용 멈춤으로, 의도적인 동작처럼 보이게 합니다. 0 = 즉시.</HaulersDream.Setting.VisualUnloadDelay.Help>
 <HaulersDream.Setting.BulkLoadAiUpdateFrequency.Lab>적재 재확인 간격</HaulersDream.Setting.BulkLoadAiUpdateFrequency.Lab>
@@ -828,4 +828,38 @@
   <HaulersDream.Setting.CarryMassCap.Off>제한 없음</HaulersDream.Setting.CarryMassCap.Off>
   <HaulersDream.Setting.CarryMassCap.Value>{0} kg</HaulersDream.Setting.CarryMassCap.Value>
   <HaulersDream.Setting.CarryMassCapDesc>폰이 한 번의 운반 또는 수집 이동에서 소지품에 싣는 양에 대한, 킬로그램 단위의 절대 상한입니다. 이것은 '우리 폰이 너무 많이 나른다'에 대한 직접적인 답입니다. 낮게(예: 20kg) 설정하면 폰이 최대 운반 무게까지 채우는 대신 조금만 모아 내려놓고 다시 돌아옵니다. 위의 '운반 한도' 백분율 및 스마트 과적과 함께 작동하며 항상 더 낮은 제한이 우선하므로, 과적이 켜져 있어도 이 상한을 넘지 않습니다. 운반 한도와 마찬가지로 손에 든 더미가 아니라 짐에 넣은 분량만 셈하며, 특정 건설이나 작업 지시를 위해 폰이 가져오는 자재 양은 바꾸지 않습니다. 0으로 두면 제한이 없습니다(기본값).</HaulersDream.Setting.CarryMassCapDesc>
+  <HD_DropAmountTitle>수량을 정해 내려놓기</HD_DropAmountTitle>
+  <HD_DropAmountConfirm>내려놓기</HD_DropAmountConfirm>
+  <HD_DropAmountContext>{0}\n{1}\n보유 수량: {2}</HD_DropAmountContext>
+  <HD_DropAmountQuantity>내려놓을 수량</HD_DropAmountQuantity>
+  <HD_DropAmountRemaining>소지품에 남는 수량: {0}</HD_DropAmountRemaining>
+  <HD_DropAmountInvalid>1부터 {0} 사이의 정수를 입력하세요.</HD_DropAmountInvalid>
+  <HD_DropAmountChanged>캐릭터의 상태나 소지품 묶음이 바뀌었습니다. 이 창을 다시 여세요.</HD_DropAmountChanged>
+  <HD_DropAmountUnavailable>현재 모드 구성에서는 내려놓을 수량을 정할 수 없습니다.</HD_DropAmountUnavailable>
+  <HD_DropAmountUnconfirmed>내려놓기 결과를 확인하지 못했습니다. 캐릭터의 소지품을 확인하세요.</HD_DropAmountUnconfirmed>
+  <HD_DropAmountBlocked>근처에 이 물품을 내려놓을 공간이 없습니다.</HD_DropAmountBlocked>
+  <HD_DropAmountPartial>{1}개 중 {0}개를 내려놓았습니다. 근처에 공간이 부족했습니다.</HD_DropAmountPartial>
+  <HD_NearbyHaulGizmoDesc>물건을 선택하면 해당 물건과 주변 물건을 보관 장소로 운반합니다. 선택할 때 명령 예약 키를 누르고 있으면 명령을 대기열에 추가합니다.</HD_NearbyHaulGizmoDesc>
+  <HD_NearbyHaulPawnUnavailable>이 폰은 현재 상태에서 운반 명령을 받을 수 없습니다.</HD_NearbyHaulPawnUnavailable>
+  <HD_NearbyHaulDrafted>운반을 명령하기 전에 이 폰의 징집을 해제하세요.</HD_NearbyHaulDrafted>
+  <HD_NearbyHaulMapDisabled>이 지도에서는 Hauler's Dream이 비활성화되어 있습니다.</HD_NearbyHaulMapDisabled>
+  <HD_NearbyHaulSyncUnavailable>멀티플레이 명령을 등록하지 못해 주변 물건 운반을 사용할 수 없습니다.</HD_NearbyHaulSyncUnavailable>
+  <HD_NearbyHaulInventoryUnavailable>이 폰은 소지품을 이용한 운반을 사용할 수 없습니다.</HD_NearbyHaulInventoryUnavailable>
+  <HD_NearbyHaulRobotUnsupported>현재 모드 구성에서 로봇의 운반 작업을 읽을 수 없습니다.</HD_NearbyHaulRobotUnsupported>
+  <HD_NearbyHaulSourceUnavailable>선택한 물건은 운반할 수 없습니다.</HD_NearbyHaulSourceUnavailable>
+  <HaulersDream.UnloadTransporter.Option>{0} 대량 하역 우선 지정</HaulersDream.UnloadTransporter.Option>
+  <HaulersDream.UnloadTransporter.CouldNotStart>지금은 그 수송선의 대량 하역을 시작할 수 없습니다.</HaulersDream.UnloadTransporter.CouldNotStart>
+  <HaulersDream.Gizmo.BulkUnloadAll.Label>전체 대량 하역</HaulersDream.Gizmo.BulkUnloadAll.Label>
+  <HaulersDream.Gizmo.BulkUnloadAll.Empty>하역할 것이 없음</HaulersDream.Gizmo.BulkUnloadAll.Empty>
+  <HaulersDream.Gizmo.BulkUnloadAll.LoadBlocked>"전체 대량 하역"이 켜져 있습니다. 새 적재를 설정하기 전에 끄십시오.</HaulersDream.Gizmo.BulkUnloadAll.LoadBlocked>
+  <HaulersDream.Gizmo.BulkUnloadAll.UnloadBlocked>이 수송선으로 짐을 싣는 중입니다.</HaulersDream.Gizmo.BulkUnloadAll.UnloadBlocked>
+  <HaulersDream.Feat.UnloadTransporters.Name>수송 포드 및 셔틀 하역</HaulersDream.Feat.UnloadTransporters.Name>
+  <HaulersDream.Setting.EnableBulkUnloadTransporters>수송기 일괄 하역</HaulersDream.Setting.EnableBulkUnloadTransporters>
+  <HaulersDream.Setting.EnableBulkUnloadTransportersDesc>수송 포드와 왕복선에 하역 전환 버튼을 추가합니다. 징집되지 않은 운반자가 화물을 저장소로 직접 옮기며, 일반 작업은 한 번 왕복합니다. 표시된 수송기에 우선 명령을 내리면 이전 화물을 저장한 뒤에만 다음 운반을 시작합니다. 승객은 내리지 않습니다. 적재 중이거나 저장소가 가득 찼거나 징집되거나 새 명령이 대기 중이면 후속 운반을 중단합니다.</HaulersDream.Setting.EnableBulkUnloadTransportersDesc>
+  <HaulersDream.Gizmo.BulkUnloadAll.Desc>{0}의 화물을 저장소로 옮깁니다. 승객은 내리지 않습니다. 우선 하역 명령은 운반자가 징집되지 않고 새 대기 명령이 없는 동안 배송 완료 후 반복됩니다. 적재 전에 끄세요.</HaulersDream.Gizmo.BulkUnloadAll.Desc>
+  <HaulersDream.Feat.UnloadTransporters.Blurb>착륙한 수송기의 화물을 저장소로 직접 운반</HaulersDream.Feat.UnloadTransporters.Blurb>
+  <HaulersDream.UnloadTransporter.Drafted>이 명령을 시작하려면 징집을 해제하세요.</HaulersDream.UnloadTransporter.Drafted>
+  <HaulersDream.UnloadTransporter.NoStorage>남은 화물을 보관할 적절한 저장소가 없습니다.</HaulersDream.UnloadTransporter.NoStorage>
+  <HaulersDream.Transporter.SyncUnavailable>멀티플레이 동기화를 등록하지 못해 수송기 명령을 사용할 수 없습니다.</HaulersDream.Transporter.SyncUnavailable>
+  <HaulersDream.PlanRoute.SyncUnavailable>현재 Multiplayer에서 이 경로 명령을 동기화할 수 없습니다. 명령이 내려지지 않았습니다.</HaulersDream.PlanRoute.SyncUnavailable>
 </LanguageData>

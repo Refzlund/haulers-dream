@@ -1,0 +1,40 @@
+<?xml version='1.0' encoding='utf-8'?>
+<LanguageData>
+  <HD_ExplicitHaulTo>将{0}搬运至…</HD_ExplicitHaulTo>
+  <HD_ExplicitChanged>角色或所选物品堆已发生变化，请重新选择。</HD_ExplicitChanged>
+  <HD_ExplicitActorUnavailable>此角色现在无法执行该搬运命令。</HD_ExplicitActorUnavailable>
+  <HD_ExplicitSelectSource>选择要搬运的物品堆。右键或 Escape 取消。</HD_ExplicitSelectSource>
+  <HD_ExplicitSelectDestination>将 {0} × {1} 运到这里。{2} 选择可到达的地面格或货架。右键或 Escape 取消。</HD_ExplicitSelectDestination>
+  <HD_ExplicitQueuedHint>加入工作队列。</HD_ExplicitQueuedHint>
+  <HD_ExplicitReplaceHint>替换当前工作。</HD_ExplicitReplaceHint>
+  <HD_ExplicitStateQueued>排队中</HD_ExplicitStateQueued>
+  <HD_ExplicitStateActive>搬运中</HD_ExplicitStateActive>
+  <HD_ExplicitStateBlocked>受阻</HD_ExplicitStateBlocked>
+  <HD_ExplicitStateCancelled>已取消</HD_ExplicitStateCancelled>
+  <HD_ExplicitStateComplete>已完成</HD_ExplicitStateComplete>
+  <HD_ExplicitStateCaptured>暂时挂起</HD_ExplicitStateCaptured>
+  <HD_ExplicitSourceChanged>所选来源已消失、耗尽或不再允许搬运。</HD_ExplicitSourceChanged>
+  <HD_ExplicitSourceReserved>所选来源已被其他工作预留。</HD_ExplicitSourceReserved>
+  <HD_ExplicitDestinationBlocked>所选位置没有可用空间、已被预留或无法接收这些物品。</HD_ExplicitDestinationBlocked>
+  <HD_ExplicitRouteBlocked>所选路径不可用。</HD_ExplicitRouteBlocked>
+  <HD_ExplicitHandsBusy>角色手中正搬着其他货物。</HD_ExplicitHandsBusy>
+  <HD_ExplicitInterrupted>命令已中断，准备好后可继续。</HD_ExplicitInterrupted>
+  <HD_ExplicitAdmissionFailed>角色无法开始此命令，准备好后可继续。</HD_ExplicitAdmissionFailed>
+  <HD_ExplicitNeedsReview>已保存的命令或货物意外发生变化，请检查物品后再继续。</HD_ExplicitNeedsReview>
+  <HD_ExplicitStart>搬运至…</HD_ExplicitStart>
+  <HD_ExplicitStartDesc>选择一堆物品、总数量以及指定地面格或货架。只搬运所选物品堆。按住队列命令键可追加命令。</HD_ExplicitStartDesc>
+  <HD_ExplicitOrders>搬运命令</HD_ExplicitOrders>
+  <HD_ExplicitOrdersDesc>查看已送达数量，继续或取消指定搬运命令。</HD_ExplicitOrdersDesc>
+  <HD_ExplicitAmountTitle>选择搬运数量</HD_ExplicitAmountTitle>
+  <HD_ExplicitChooseDestination>选择目的地</HD_ExplicitChooseDestination>
+  <HD_ExplicitAmountContext>{0}：{1}\n此堆可用数量：{2}</HD_ExplicitAmountContext>
+  <HD_ExplicitQueue>加入工作队列</HD_ExplicitQueue>
+  <HD_ExplicitAmountHint>共送达 {0} 个，必要时分多趟搬运。个人物品栏保持不变。</HD_ExplicitAmountHint>
+  <HD_ExplicitQueueResume>将继续的命令加入队列</HD_ExplicitQueueResume>
+  <HD_ExplicitResume>继续</HD_ExplicitResume>
+  <HD_ExplicitCancel>取消命令</HD_ExplicitCancel>
+  <HD_ExplicitProgress>命令 {0}：{1}\n已送达 {2} / {3} → ({4}, {5})</HD_ExplicitProgress>
+  <HD_ExplicitMissingItem>来源缺失</HD_ExplicitMissingItem>
+  <HD_ExplicitShelf>所选货架：{0}</HD_ExplicitShelf>
+  <HD_ExplicitMissingShelf>货架不存在</HD_ExplicitMissingShelf>
+</LanguageData>

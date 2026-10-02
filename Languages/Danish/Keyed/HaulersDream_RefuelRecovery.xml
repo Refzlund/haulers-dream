@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LanguageData>
+  <HD_RefuelRecoveryPaused>Optankning sat på pause: den afbrudte optankning skal gennemgås.</HD_RefuelRecoveryPaused>
+  <HD_RefuelRecoveryChanged>En registreret genstand er ændret eller er ikke længere tilgængelig.</HD_RefuelRecoveryChanged>
+  <HD_RefuelRecoveryCustodyUnknown>Det kunne ikke bekræftes, hvor det resterende materiale befinder sig.</HD_RefuelRecoveryCustodyUnknown>
+  <HD_RefuelRecoveryRecordMissing>Optankning er sat på pause. Afbrydelsen skete, før alle oplysninger kunne gemmes. Mængden af tilført brændstof og forbrugt materiale kan ikke bekræftes.</HD_RefuelRecoveryRecordMissing>
+  <HD_RefuelRecoveryReview>Gennemgå afbrudt optankning</HD_RefuelRecoveryReview>
+  <HD_RefuelRecoveryReviewDesc>Gennemgå den afbrudte optankning, og vælg, hvad der skal ske med det resterende materiale. Disse handlinger tilfører ikke brændstof igen.</HD_RefuelRecoveryReviewDesc>
+  <HD_RefuelRecoveryDetails>Vis oplysninger om afbrydelsen</HD_RefuelRecoveryDetails>
+  <HD_RefuelRecoveryPay>Forbrug det registrerede brændstofmateriale</HD_RefuelRecoveryPay>
+  <HD_RefuelRecoveryRestore>Læg resterende materiale tilbage i inventaret</HD_RefuelRecoveryRestore>
+  <HD_RefuelRecoveryCleanup>Kontrollér det resterende inventar igen</HD_RefuelRecoveryCleanup>
+  <HD_RefuelRecoveryAccept>Behold den nuværende tilstand og fortsæt</HD_RefuelRecoveryAccept>
+  <HD_RefuelRecoverySyncUnavailable>utilgængelig: handlingen kunne ikke klargøres til multiplayer</HD_RefuelRecoverySyncUnavailable>
+  <HD_RefuelRecoveryPayConfirm>Forbrug præcis det registrerede materiale til det brændstof, der allerede er tilført? Der tilføres ikke brændstof igen. Et tidligere forsøg kan allerede have udløst andre virkninger, selv om det meldte en fejl. Handlingen forsøges én gang og gentages ikke automatisk.</HD_RefuelRecoveryPayConfirm>
+  <HD_RefuelRecoveryRestoreConfirm>Forsøg én gang at lægge det registrerede materiale tilbage i denne figurs inventar? Uændrede genstande i det gemte genoprettelseslager kan flyttes uden at tilføre brændstof eller forbruge materiale. Det afregner ikke en registreret brændstofgæld eller afklarer usikkerhed; gennemgang og afklaring er separate handlinger. Genstande uden ejer kan kun lægges tilbage, når der ikke blev observeret tilført brændstof. Indstillinger for at beholde genstande og for udrustning forbliver uændrede.</HD_RefuelRecoveryRestoreConfirm>
+  <HD_RefuelRecoveryCleanupConfirm>Kontrollér det resterende inventar igen, efter at det registrerede materiale er forbrugt? Dette tilfører ikke brændstof, ødelægger ikke flere genstande og gendanner ikke tidligere indstillinger for at beholde genstande eller for udrustning.</HD_RefuelRecoveryCleanupConfirm>
+  <HD_RefuelRecoveryAcceptConfirm>Behold de nuværende genstande og brændstofmængder, og tillad nye optankningsopgaver fra Hauler's Dream? Den afbrudte handling gentages ikke, og oplysningerne om den forbliver gemt. Usikre brændstof- eller materialemængder forbliver ubekræftede. At fortsætte retter dem ikke.</HD_RefuelRecoveryAcceptConfirm>
+  <HD_RefuelRecoverySelectionChanged>Oplysningerne om afbrydelsen eller genstandene er ændret. Åbn menuen igen, før du vælger en handling.</HD_RefuelRecoverySelectionChanged>
+  <HD_RefuelRecoveryPaidOutcome>Seneste håndtering af afbrudt optankning: det registrerede materiale blev forbrugt, og inventarregistreringen blev opdateret.</HD_RefuelRecoveryPaidOutcome>
+  <HD_RefuelRecoveryUncreditedOutcome>Seneste håndtering af afbrudt optankning: der blev ikke observeret tilførsel af brændstof, og der er gjort rede for det resterende materiale.</HD_RefuelRecoveryUncreditedOutcome>
+  <HD_RefuelRecoveryUncertainOutcome>Seneste håndtering af afbrudt optankning: optankning blev genoptaget med de nuværende genstande og brændstofmængder. De tidligere tilførte og forbrugte mængder er stadig ubekræftede.</HD_RefuelRecoveryUncertainOutcome>
+  <HD_RefuelRecoveryCostPaid>Det er bekræftet, at den registrerede materialemængde blev forbrugt. Gennemgå den nuværende tilstand, før optankning genoptages.</HD_RefuelRecoveryCostPaid>
+  <HD_RefuelRecoveryRestored>Handlingen er afsluttet. Gennemgå den nuværende tilstand, før optankning genoptages.</HD_RefuelRecoveryRestored>
+  <HD_RefuelRecoveryNoCredit>Der blev ikke observeret tilførsel af brændstof under den afbrudte handling.</HD_RefuelRecoveryNoCredit>
+  <HD_RefuelRecoveryKnownDebt>Der blev tilført brændstof, men det er ikke bekræftet, at den registrerede materialemængde blev forbrugt.</HD_RefuelRecoveryKnownDebt>
+  <HD_RefuelRecoveryUncertain>Mængden af tilført brændstof eller forbrugt materiale er usikker. Den nuværende brændstofmængde kan ikke vise, hvad der skete.</HD_RefuelRecoveryUncertain>
+  <HD_RefuelRecoveryPriorDestroy>Der har tidligere været et forsøg på at forbruge materialet. Forsøget kan allerede have haft virkninger, selv om det meldte en fejl.</HD_RefuelRecoveryPriorDestroy>
+  <HD_RefuelRecoveryNoExactCost>Denne handling kan ikke forbruge præcis det registrerede materiale. Den gætter ikke på, hvilke dele der skal forbruges, deler ikke en ændret rest og forbruger ikke en erstatningsgenstand.</HD_RefuelRecoveryNoExactCost>
+  <HD_RefuelRecoveryDetailHeader>Afbrudt optankning for {0}&#10;Mål: {1}&#10;Registreret materialebehov til brændstof (enheder): {2}</HD_RefuelRecoveryDetailHeader>
+  <HD_RefuelRecoveryTargetMissing>Det oprindelige mål er utilgængeligt</HD_RefuelRecoveryTargetMissing>
+  <HD_RefuelRecoveryItemMissing>Den registrerede genstand er utilgængelig.</HD_RefuelRecoveryItemMissing>
+  <HD_RefuelRecoveryItemDestroyed>Den registrerede genstand er ødelagt.</HD_RefuelRecoveryItemDestroyed>
+  <HD_RefuelRecoveryItemCurrent>{0}: resterende enheder: {1}.</HD_RefuelRecoveryItemCurrent>
+  <HD_RefuelRecoveryInInventory>I denne figurs inventar.</HD_RefuelRecoveryInInventory>
+  <HD_RefuelRecoveryInCarry>Bæres af denne figur.</HD_RefuelRecoveryInCarry>
+  <HD_RefuelRecoveryNoOwner>Befinder sig hverken hos nogen, i en beholder eller på et kort.</HD_RefuelRecoveryNoOwner>
+  <HD_RefuelRecoveryOnGround>På samme kort.</HD_RefuelRecoveryOnGround>
+  <HD_RefuelRecoveryElsewhere>Uden for det bekræftede område for tilbageførsel.</HD_RefuelRecoveryElsewhere>
+  <HD_RefuelRecoveryLastActionFailed>En tidligere handling til håndtering af afbrydelsen meldte en fejl. Oplysningerne om den er stadig gemt.</HD_RefuelRecoveryLastActionFailed>
+  <HD_RefuelRecoveryInRetainedCustody>Opbevaret i denne figurs brændstofgenoprettelseslager, som gemmes med spillet.</HD_RefuelRecoveryInRetainedCustody>
+  <HD_RefuelRecoveryRetainedBeforeResume>Læg det opbevarede materiale tilbage i inventaret, eller forbrug det præcise materiale til den bekræftede brændstofudgift, før du fortsætter. At lægge materialet tilbage ændrer kun dets placering; brændstofgæld eller usikkerhed er stadig uafklaret.</HD_RefuelRecoveryRetainedBeforeResume>
+</LanguageData>

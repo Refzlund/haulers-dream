@@ -39,9 +39,9 @@ namespace HaulersDream
         // Build tag logged with the verbose-gated route diagnostic (see RefreshPlanIfNeeded's HDLog line), so a
         // "still broken" report can be told apart from a stale DLL (mod C# only reloads at game startup — an
         // un-restarted game runs the OLD assembly). Bump this whenever the route planner's behaviour changes.
-        public const string BuildTag = "F12t";
+        public const string BuildTag = "F34-blight-preview";
 
-        private RouteLegs cachedLegs;   // expensive (pathfound) part, recomputed only when the selection changes
+        private RouteLegs cachedLegs;   // expensive legs, recomputed for settings or changed blight membership
         private string legsSig;
         private int lastBudget = int.MinValue;
         private RoutePlan cachedPlan;
@@ -50,8 +50,18 @@ namespace HaulersDream
         private int pendingSelSigFrames;
         private const int SelSigDebounceFrames = 9; // ~0.15 s at 60 fps
 
-        // Player-picked "must include" targets (the clicked anchor is always first). These are ALWAYS routed,
-        // regardless of mode / amount / max-travel, and bypass the growth threshold. Transient per dialog session
+        // Local display polling uses real time so paused same-tick edits are visible too. Compare the
+        // selected set before requesting any pathfinding; an unchanged blight route reuses its legs.
+        private const float BlightPreviewCheckSeconds = 0.5f;
+        private float nextBlightPreviewCheck;
+        private List<Thing> blightPreviewTargets;
+        private readonly List<IntVec3> blightPreviewCells = new List<IntVec3>();
+        private bool blightPreviewCapped;
+        private bool blightPreviewFog;
+        private int blightPreviewForced;
+
+        // Player-picked "must include" targets (the anchor is first) bypass amount/travel/growth limits while
+        // still eligible; they never bypass a blight condition. Transient per dialog session
         // (live Things can't be portably persisted), so not saved with the per-def prefs.
         private readonly List<Thing> picked = new List<Thing>();
         private bool pickingMode;        // the picker tool is armed: clicking a same-kind target on the map adds it
@@ -497,9 +507,9 @@ namespace HaulersDream
 
         private void RefreshPlanIfNeeded()
         {
-            // Selection inputs (mode/amount/radius/smart + the harvest gate) drive the EXPENSIVE pathfinding —
-            // recompute the legs only when they change. The Chained max-travel slider only re-truncates the
-            // cached legs, which is cheap, so it updates LIVE on every drag step without a pathfinding storm.
+            // Settings changes retain the existing debounce. Captured blight routes also poll selection at
+            // a bounded real-time interval; only changed membership/positions/flags rebuild expensive legs.
+            // The Chained max-travel slider only re-truncates the cached legs.
             int pickHash = picked.Count;
             for (int i = 0; i < picked.Count; i++)
                 pickHash = pickHash * 31 + (picked[i]?.thingIDNumber ?? 0);
@@ -512,10 +522,11 @@ namespace HaulersDream
             string selSig = $"{(int)mode}|{EffectiveAmount()}|{radius}|{(smart ? 1 : 0)}|{(allowHarvest ? 1 : 0)}|{growthThreshold}|pk{pickHash}|rm{roomHash}|sd{defHash}|sm{(int)selectionMethod}|db{(int)distanceBasis}";
             // DEBOUNCE the expensive recompute: ComputeLegs runs up to ~100 pathfinds (more with walking-path),
             // and the amount/radius/growth SLIDERS step selSig on every integer of a drag — an uncontrolled drag
-            // would fire a pathfinding storm per frame. Recompute only once the signature has held still for a
-            // few frames; the previous plan stays on screen during the ~0.15 s in between.
+            // would fire a pathfinding storm per frame. Normally wait for a stable signature; a bounded
+            // blight poll that already observes a changed selection can refresh immediately instead.
             bool legsChanged = false;
-            if (selSig != legsSig)
+            bool blightSelectionChanged = kind.blightedOnly && RefreshBlightSelection();
+            if (selSig != legsSig || blightSelectionChanged)
             {
                 if (selSig == pendingSelSig)
                     pendingSelSigFrames++;
@@ -524,11 +535,14 @@ namespace HaulersDream
                     pendingSelSig = selSig;
                     pendingSelSigFrames = 0;
                 }
-                if (pendingSelSigFrames >= SelSigDebounceFrames || cachedLegs == null)
+                if (pendingSelSigFrames >= SelSigDebounceFrames || cachedLegs == null || blightSelectionChanged)
                 {
                     legsSig = selSig;
                     cachedLegs = RoutePlanner.ComputeLegs(pawn, clicked, kind, mode, EffectiveAmount(), radius, smart, allowHarvest, growthThreshold, picked, selectionMethod, distanceBasis, roomAnchors, secondaryDefs);
                     legsChanged = true;
+                    // A settings-only rebuild also establishes the current comparison baseline.
+                    if (kind.blightedOnly && !blightSelectionChanged)
+                        RefreshBlightSelection(force: true);
                 }
             }
             // The budget only varies for Chained (Radius/Vein have no max-travel); key the re-truncate on it. The
@@ -549,6 +563,36 @@ namespace HaulersDream
                     $"reachable={cachedLegs?.Reachable ?? 0} kept={cachedPlan.stops.Count} budget={MaxDistance():0} " +
                     $"cappedDistance={cachedPlan.cappedByDistance} cappedReach={cachedPlan.cappedByReach}");
             }
+        }
+
+        // Selection has no pathfinding. Exact Thing/position comparisons avoid hash collisions and detect
+        // new infection, destruction, replacement and a changed selected prefix at the normal route cap.
+        private bool RefreshBlightSelection(bool force = false)
+        {
+            float now = Time.realtimeSinceStartup;
+            if (!force && now < nextBlightPreviewCheck)
+                return false;
+            nextBlightPreviewCheck = now + BlightPreviewCheckSeconds;
+            var selected = RouteSelection.Select(pawn, clicked, kind, mode, EffectiveAmount(), radius,
+                allowHarvest, growthThreshold, picked, out bool capped, out bool fog, out int forced,
+                roomAnchors, secondaryDefs);
+            bool changed = blightPreviewTargets == null || selected.Count != blightPreviewTargets.Count
+                || capped != blightPreviewCapped || fog != blightPreviewFog || forced != blightPreviewForced;
+            if (!changed)
+                for (int i = 0; i < selected.Count; i++)
+                    if (selected[i] != blightPreviewTargets[i] || selected[i].Position != blightPreviewCells[i])
+                    {
+                        changed = true;
+                        break;
+                    }
+            blightPreviewTargets = selected;
+            blightPreviewCells.Clear();
+            for (int i = 0; i < selected.Count; i++)
+                blightPreviewCells.Add(selected[i].Position);
+            blightPreviewCapped = capped;
+            blightPreviewFog = fog;
+            blightPreviewForced = forced;
+            return changed;
         }
 
         private void UpdatePreview()
@@ -816,7 +860,8 @@ namespace HaulersDream
             if (t?.def == null || t.def == clicked?.def || secondaryDefs.Contains(t.def))
                 return false;
             var k2 = WorkKindResolver.Resolve(pawn, t);
-            return k2 != null && kind != null && k2.designation == kind.designation && k2.scope == kind.scope;
+            return k2 != null && kind != null && k2.designation == kind.designation && k2.scope == kind.scope
+                && (!kind.blightedOnly || k2.blightedOnly);
         }
 
         private void OnSecondaryPicked(LocalTargetInfo target)
@@ -875,14 +920,14 @@ namespace HaulersDream
             RouteExecutor.ExecuteRouteSynced(pawn, clicked, WorkKindResolver.WorkKindId(kind), mode, effAmount, radius,
                 maxDistance, prefs.smart, prefs.allowHarvest, growthThreshold, replace, picked,
                 prefs.selectionMethod, prefs.distanceBasis, s.routeOrderExactMax, null, null, isConstruction,
-                roomAnchors, null);
+                roomAnchors, null, kind.blightedOnly);
             return true;
         }
 
         private void Execute(bool replace)
         {
-            // The plan is kept current by RefreshPlanIfNeeded each frame; ensure it exists before queueing. (The
-            // preview/planning above stays local to this client — only the COMMIT below is synced.)
+            // Ensure a local preview exists; its bounded refresh is not execution authority. The synced
+            // commit below resolves the captured intent and recomputes from current state before mutation.
             if (cachedPlan == null)
                 RefreshPlanIfNeeded();
 
@@ -897,7 +942,7 @@ namespace HaulersDream
             RouteExecutor.ExecuteRouteSynced(pawn, clicked, WorkKindResolver.WorkKindId(kind), mode, EffectiveAmount(),
                 radius, MaxDistance(), smart, allowHarvest, growthThreshold, replace, picked, selectionMethod,
                 distanceBasis, HaulersDreamMod.Settings?.routeOrderExactMax ?? RouteOrderPolicy.ExactMax,
-                startNode, endNode, IsConstruction && alsoBuild, roomAnchors, secondaryDefs);
+                startNode, endNode, IsConstruction && alsoBuild, roomAnchors, secondaryDefs, kind.blightedOnly);
         }
 
         // Construction routes offer two behaviours: HAUL-ONLY (fill the sites with materials — others can build)

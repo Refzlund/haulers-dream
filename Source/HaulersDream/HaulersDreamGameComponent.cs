@@ -26,11 +26,15 @@ namespace HaulersDream
         /// <summary>The component for the running game (null at the main menu / before a game loads).</summary>
         public static HaulersDreamGameComponent Instance => Current.Game?.GetComponent<HaulersDreamGameComponent>();
 
-        public HaulersDreamGameComponent(Game game) { }
+        private readonly Game storageGame;
+        public HaulersDreamGameComponent(Game game)
+        { storageGame = game; UftOrphanBillGuard.ResetLoadCount(); }
 
         public override void FinalizeInit()
         {
             base.FinalizeInit();
+            var storageLoad = StorageCommitments.BeginResourceLoad(storageGame, this);
+            storageWork.Clear();
             // CROSS-SESSION CACHE HYGIENE. Every per-session static cache (the bulk-haul plan memo, the per-tick
             // mass / surplus / tracked-mass memos, the per-(worker,def,tick) availability counts, the haul-to-stack
             // cell memo, the load-work memo, the route-picker claimed-by-others memo, the Common Sense owns-flow
@@ -52,6 +56,12 @@ namespace HaulersDream
             // Hauler's Dream) before the tick loop starts, so the per-tick NullReferenceException flood never begins.
             // No-op on a clean save. See RepairOrphanedJobsAfterLoad.
             RepairOrphanedJobsAfterLoad();
+
+            // Cross-references and native bill stacks are now resolved. Preserve orphaned unfinished
+            // items, then clean up only known recipe jobs that still reference those stack-less bills.
+            UftOrphanBillGuard.RepairAfterLoadAndReport();
+            RepairOrphanedRecipeJobsAfterLoad();
+            StorageCommitments.ScheduleResourceLoad(storageLoad);
         }
 
         // fix/mix recovery: a save migrated off a mod that contributed a JobDef + JobDriver (e.g. Pick Up And
@@ -138,6 +148,7 @@ namespace HaulersDream
         public override void GameComponentTick()
         {
             int tick = Find.TickManager.TicksGame;
+            StorageProgressTick();
             if (veinTrackers != null && veinTrackers.Count > 0 && tick % VeinTickInterval == 0)
                 ProcessVeinTrackers();
 
@@ -150,6 +161,7 @@ namespace HaulersDream
             {
                 RunIdleBackstop();
                 PruneInertLoadTasks(); // drop fully-settled/released bulk-load ledger entries (cheap when empty)
+                ReconcileTransporterUnloads();
             }
 
             // Storage claim self-heal. Correctness never depends on it — every read of the ledger already
@@ -250,8 +262,11 @@ namespace HaulersDream
             // case one is created mid-session. Treat a defless job as "not an unload checkpoint".
             if (def == null)
                 return false;
+            // Native EndCurrentJob inserts a one-tick Wait_MaintainPosture after successful work,
+            // before selecting its next job. That transition does not establish that the pawn is idle:
+            // queuing an unload here would beat the next normal work scan and split a productive run.
             if (def == JobDefOf.Wait || def == JobDefOf.Wait_Wander
-                || def == JobDefOf.GotoWander || def == JobDefOf.Wait_MaintainPosture)
+                || def == JobDefOf.GotoWander)
                 return true;
             // Eating and joy jobs: between work runs by definition. Sleep is deliberately NOT included —
             // a queued job fires before everything on wake (even urgent breakfast), and the morning work
@@ -288,6 +303,8 @@ namespace HaulersDream
             ExposeBatchBills();
             ExposeLedger();
             ExposeQuestPawns();
+            ExposeTransporterUnloads();
+            ExposeNativeStorageIntents();
         }
     }
 }

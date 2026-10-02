@@ -25,6 +25,7 @@ namespace HaulersDream
         private const TargetIndex TransporterInd = TargetIndex.A; // primary transporter (deposit dest)
 
         private CompTransporter Transporter => job.GetTarget(TransporterInd).Thing?.TryGetComp<CompTransporter>();
+        private int deliveredUnits;
 
         private static int AiUpdateInterval => Mathf.Max(10, Settings?.bulkLoadAiUpdateFrequency ?? 60);
 
@@ -36,6 +37,7 @@ namespace HaulersDream
             Scribe_Values.Look(ref loadIndex, "hdLtibLoadIndex", 0);
             Scribe_Values.Look(ref depositLoops, "hdLtibDepositLoops", 0);
             Scribe_Values.Look(ref passes, "hdLtibPasses", 0);
+            Scribe_Values.Look(ref deliveredUnits, "hdLtibDeliveredUnits", 0);
         }
 
         public override string GetReport() => "HaulersDream.LoadTransporter.Report".Translate();
@@ -49,7 +51,15 @@ namespace HaulersDream
         protected override bool FindTargetStillValid()
         {
             var comp = Transporter;
-            return comp != null && comp.parent != null && comp.parent.Spawned;
+            return Settings?.masterEnabled == true && Settings.enableBulkLoadTransporters
+                && comp != null && comp.parent != null && comp.parent.Spawned
+                && !BulkUnloadTransporterGate.AnyUnloadFlagInGroup(comp);
+        }
+
+        protected override void AddTopLevelFailConditions()
+        {
+            base.AddTopLevelFailConditions();
+            this.FailOn(() => !FindTargetStillValid());
         }
 
         protected override void OnPreDepositLoop(IManagedLoadable adp)
@@ -62,6 +72,8 @@ namespace HaulersDream
         protected override void DepositOne(Thing thing, ThingOwner inner, CompHauledToInventory hcomp, IManagedLoadable adp, ref bool movedAny)
         {
             var adapter = (LoadTransportersAdapter)adp;
+            if (BulkUnloadTransporterGate.AnyUnloadFlagInGroup(adapter.Primary))
+                return;
             // Deposit into ONE specific member, clamped to THAT member's remaining for the def — NOT the
             // group total. The member's auto-fired SubtractFromToLoadList only subtracts what its own
             // leftToLoad entry held, so depositing more than one member wants into its container would
@@ -79,6 +91,9 @@ namespace HaulersDream
             var destInner = member.innerContainer;
             if (destInner == null)
                 return;
+            // A live deposit is its own custody boundary; never trust only the planned primary member.
+            if (BulkUnloadTransporterGate.AnyUnloadFlagInGroup(member))
+                return;
 
             int moved;
             // Set the per-thread flag so the SubtractFromToLoadList intercept does the PRECISE decrement.
@@ -94,6 +109,7 @@ namespace HaulersDream
             }
             if (moved > 0)
             {
+                deliveredUnits += moved;
                 movedAny = true;
                 HaulersDreamGameComponent.Instance?.LoadNotifyDeposited(pawn, adapter, thing.def, moved);
                 if (!inner.Contains(thing))
@@ -102,6 +118,25 @@ namespace HaulersDream
         }
 
         protected override bool HasDepositable() => HasDepositableForGroup();
+
+        protected override void OnClaimsReleased(JobCondition condition)
+        {
+            if (condition != JobCondition.Succeeded || !job.playerForced || deliveredUnits <= 0
+                || pawn.Drafted || pawn.Dead || pawn.Downed || !pawn.Spawned
+                || pawn.jobs?.jobQueue == null || pawn.jobs.jobQueue.Count != 0 || !FindTargetStillValid()) return;
+            // Rebuild against the current selected group, after releasing this visit's ledger claim.
+            // This is the normal prioritized order; hopping to other groups remains a separate opt-in.
+            var current = BuildLoadable();
+            if (current == null) return;
+            if (current.AnythingToLoad())
+            {
+                var next = TransportLoad.TryGiveBulkJob(pawn, current, playerOrder: true);
+                if (next != null)
+                { next.playerForced = true; pawn.jobs.jobQueue.EnqueueLast(next, JobTag.Misc); }
+                return; // a blocked/incomplete selected manifest never authorizes a cross-target hop
+            }
+            if (ContinuousLoad.ShouldChain(condition, job)) ContinuousLoad.TryChainFrom(pawn, current);
+        }
 
         /// <summary>Units the group's manifest still wants for <paramref name="item"/> — summed across members using,
         /// PER MEMBER, the entry vanilla's <see cref="TransferableUtility.TransferableMatchingDesperate"/> (in

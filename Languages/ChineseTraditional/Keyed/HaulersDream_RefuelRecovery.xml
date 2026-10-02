@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LanguageData>
+  <HD_RefuelRecoveryPaused>補充燃料已暫停：需要檢查中斷後的處理情況。</HD_RefuelRecoveryPaused>
+  <HD_RefuelRecoveryChanged>記錄的物品已發生變化或不再可用。</HD_RefuelRecoveryChanged>
+  <HD_RefuelRecoveryCustodyUnknown>無法確認剩餘物料目前存放在哪裡。</HD_RefuelRecoveryCustodyUnknown>
+  <HD_RefuelRecoveryRecordMissing>補充燃料已暫停。操作中斷時，詳細資訊尚未全部儲存。無法確認補充了多少燃料、消耗了多少物料。</HD_RefuelRecoveryRecordMissing>
+  <HD_RefuelRecoveryReview>檢查中斷的燃料補充作業</HD_RefuelRecoveryReview>
+  <HD_RefuelRecoveryReviewDesc>檢查中斷的燃料補充作業，並選擇如何處理剩餘物料。這些操作不會再次補充燃料。</HD_RefuelRecoveryReviewDesc>
+  <HD_RefuelRecoveryDetails>查看復原詳情</HD_RefuelRecoveryDetails>
+  <HD_RefuelRecoveryPay>消耗記錄的燃料物料</HD_RefuelRecoveryPay>
+  <HD_RefuelRecoveryRestore>將剩餘物料放回背包</HD_RefuelRecoveryRestore>
+  <HD_RefuelRecoveryCleanup>重新檢查背包中的剩餘物品</HD_RefuelRecoveryCleanup>
+  <HD_RefuelRecoveryAccept>保留目前狀態並恢復工作</HD_RefuelRecoveryAccept>
+  <HD_RefuelRecoverySyncUnavailable>無法使用：未能為多人遊戲設定此操作</HD_RefuelRecoverySyncUnavailable>
+  <HD_RefuelRecoveryPayConfirm>消耗記錄的那份物料，以補上已補充燃料所需的物料消耗？不會再次補充燃料。先前的嘗試可能已經觸發其他效果，即使當時回報了錯誤。此操作只嘗試一次，不會自動重複。</HD_RefuelRecoveryPayConfirm>
+  <HD_RefuelRecoveryRestoreConfirm>嘗試一次，將記錄的物料放回該角色的背包？儲存在復原容器中且未發生變化的物品可以移回，不會補充燃料或消耗物料。這不會結清記錄的燃料欠帳，也不會消除不確定性；仍須另行檢查與處理。只有未觀察到補充燃料時，才能放回無歸屬物品。保留與裝備配置設定維持不變。</HD_RefuelRecoveryRestoreConfirm>
+  <HD_RefuelRecoveryCleanupConfirm>在記錄的物料已被消耗後，重新檢查背包中的剩餘物品？此操作不會補充燃料、摧毀更多物品，也不會還原舊的保留或裝備配置設定。</HD_RefuelRecoveryCleanupConfirm>
+  <HD_RefuelRecoveryAcceptConfirm>保留現有物品和燃料量，並允許新的 Hauler's Dream 燃料補充工作？中斷的操作不會重做，其詳細資訊將繼續儲存。任何不確定的燃料或物料數量仍未獲得確認。恢復工作不會修正這些不確定的數量。</HD_RefuelRecoveryAcceptConfirm>
+  <HD_RefuelRecoverySelectionChanged>復原資訊或相關物品已發生變化。請重新開啟復原選單後再選擇操作。</HD_RefuelRecoverySelectionChanged>
+  <HD_RefuelRecoveryPaidOutcome>上次燃料復原處理：記錄的物料已被消耗，背包物品記錄已更新。</HD_RefuelRecoveryPaidOutcome>
+  <HD_RefuelRecoveryUncreditedOutcome>上次燃料復原處理：未觀察到補充燃料，剩餘物料的位置和數量已確認。</HD_RefuelRecoveryUncreditedOutcome>
+  <HD_RefuelRecoveryUncertainOutcome>上次燃料復原處理：已按現有物品和燃料量恢復工作。先前補充的燃料量和消耗的物料量仍未獲得確認。</HD_RefuelRecoveryUncertainOutcome>
+  <HD_RefuelRecoveryCostPaid>已確認消耗了記錄的物料數量。恢復補充燃料前，請檢查目前狀態。</HD_RefuelRecoveryCostPaid>
+  <HD_RefuelRecoveryRestored>復原操作已結束。恢復補充燃料前，請檢查目前狀態。</HD_RefuelRecoveryRestored>
+  <HD_RefuelRecoveryNoCredit>未觀察到在中斷的操作中補充燃料。</HD_RefuelRecoveryNoCredit>
+  <HD_RefuelRecoveryKnownDebt>已補充燃料，但尚未確認消耗了對應的記錄物料數量。</HD_RefuelRecoveryKnownDebt>
+  <HD_RefuelRecoveryUncertain>補充的燃料量或消耗的物料量不確定。無法僅憑目前的燃料量確定當時發生了什麼。</HD_RefuelRecoveryUncertain>
+  <HD_RefuelRecoveryPriorDestroy>先前已嘗試消耗物料。該嘗試觸發的效果可能已經發生，即使當時回報了錯誤。</HD_RefuelRecoveryPriorDestroy>
+  <HD_RefuelRecoveryNoExactCost>此操作無法消耗記錄的那份物料。它不會猜測應消耗哪些部分、拆分已變化的剩餘堆疊，或消耗替代物品。</HD_RefuelRecoveryNoExactCost>
+  <HD_RefuelRecoveryDetailHeader>{0} 的復原資訊&#10;目標：{1}&#10;記錄的燃料所需物料：{2} 單位</HD_RefuelRecoveryDetailHeader>
+  <HD_RefuelRecoveryTargetMissing>原目標無法使用</HD_RefuelRecoveryTargetMissing>
+  <HD_RefuelRecoveryItemMissing>記錄的物品無法使用。</HD_RefuelRecoveryItemMissing>
+  <HD_RefuelRecoveryItemDestroyed>記錄的物品已被摧毀。</HD_RefuelRecoveryItemDestroyed>
+  <HD_RefuelRecoveryItemCurrent>{0}：剩餘 {1} 單位。</HD_RefuelRecoveryItemCurrent>
+  <HD_RefuelRecoveryInInventory>在該角色的背包中。</HD_RefuelRecoveryInInventory>
+  <HD_RefuelRecoveryInCarry>正由該角色搬運。</HD_RefuelRecoveryInCarry>
+  <HD_RefuelRecoveryNoOwner>目前未由任何人或容器持有，也未放置在地圖上。</HD_RefuelRecoveryNoOwner>
+  <HD_RefuelRecoveryOnGround>在同一張地圖上。</HD_RefuelRecoveryOnGround>
+  <HD_RefuelRecoveryElsewhere>不在已確認的復原位置內。</HD_RefuelRecoveryElsewhere>
+  <HD_RefuelRecoveryLastActionFailed>先前的復原操作回報了錯誤。其詳細資訊仍然儲存著。</HD_RefuelRecoveryLastActionFailed>
+  <HD_RefuelRecoveryInRetainedCustody>儲存在該角色的燃料復原容器中，並隨存檔保存。</HD_RefuelRecoveryInRetainedCustody>
+  <HD_RefuelRecoveryRetainedBeforeResume>繼續前，請將保管的物料放回背包，或消耗作為已確認燃料成本的原物原量。放回物料只改變其存放位置；任何燃料欠帳或不確定性仍未解決。</HD_RefuelRecoveryRetainedBeforeResume>
+</LanguageData>

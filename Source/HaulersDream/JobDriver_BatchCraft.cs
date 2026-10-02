@@ -424,7 +424,7 @@ namespace HaulersDream
                 var b = Bench;
                 if (b == null || !b.Spawned)
                     return true;
-                if (job.bill == null || job.bill.DeletedOrDereferenced)
+                if (job.bill == null || job.bill.billStack == null || job.bill.DeletedOrDereferenced)
                     return true;
                 return !b.CurrentlyUsableForBills();
             });

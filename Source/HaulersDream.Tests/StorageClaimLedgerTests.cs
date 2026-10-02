@@ -17,6 +17,109 @@ namespace HaulersDream.Tests
     [TestFixture]
     public class StorageClaimLedgerTests
     {
+        [Test]
+        public void ActualWorkClaimDoesNotEraseRetainedSameDefCargoOrAnotherActivation()
+        {
+            var pawn = new object(); var group = new object(); var def = new object();
+            var first = new object(); var second = new object();
+            var retained = StorageClaimLedger.Add(null, pawn, group, def, 200);
+            var a = StorageClaimLedger.AddForWork(retained, pawn, group, def, 7, first);
+            var b = StorageClaimLedger.AddForWork(a, pawn, group, def, 3, second);
+            var revised = StorageClaimLedger.AddForWork(b, pawn, group, def, 2, first);
+            Assert.That(retained.Length, Is.EqualTo(1));
+            Assert.That(revised.Length, Is.EqualTo(3));
+            Assert.That(StorageClaimLedger.ClaimedTotal(revised, group, def, null), Is.EqualTo(205));
+            var ended = StorageClaimLedger.AddForWork(revised, pawn, group, def, 0, first);
+            Assert.That(ended.Length, Is.EqualTo(2));
+            Assert.That(StorageClaimLedger.ClaimedTotal(ended, group, def, null), Is.EqualTo(203));
+            Assert.That(ended[0].WorkOwner, Is.Null);
+            Assert.That(ended[1].WorkOwner, Is.SameAs(second));
+        }
+
+        [Test]
+        public void LegacyRetargetPreservesExactOwnersExclusiveCellsAndUnrelatedCargo()
+        {
+            var firstOwner = new object(); var secondOwner = new object(); var cellLease = new object();
+            var rows = new[]
+            {
+                new StorageClaimRow(Alice, Shelf, Steel, 7, workOwner: firstOwner),
+                new StorageClaimRow(Alice, Shelf, Steel, 40),
+                new StorageClaimRow(Alice, Shelf, Steel, 2, exclusiveCellAllocation: cellLease),
+                new StorageClaimRow(Alice, Fridge, Steel, 9),
+                new StorageClaimRow(Alice, Fridge, Steel, 3, workOwner: secondOwner),
+                new StorageClaimRow(Bob, Shelf, Steel, 11),
+                new StorageClaimRow(Alice, Shelf, Wood, 12)
+            };
+            var before = (StorageClaimRow[])rows.Clone();
+
+            var next = StorageClaimLedger.AddLegacy(rows, Alice, Fridge, Steel, 5);
+
+            Assert.That(rows, Is.EqualTo(before), "A speculative reader retains its original immutable array.");
+            Assert.That(next, Is.Not.SameAs(rows));
+            Assert.That(next.Length, Is.EqualTo(6));
+            Assert.That(next[0], Is.EqualTo(before[0]));
+            Assert.That(next[1], Is.EqualTo(before[2]));
+            Assert.That(next[2], Is.EqualTo(before[4]));
+            Assert.That(next[3], Is.EqualTo(before[5]));
+            Assert.That(next[4], Is.EqualTo(before[6]));
+            Assert.That(next[5].Pawn, Is.SameAs(Alice));
+            Assert.That(next[5].Group, Is.SameAs(Fridge));
+            Assert.That(next[5].Def, Is.SameAs(Steel));
+            Assert.That(next[5].Units, Is.EqualTo(5));
+            Assert.That(next[5].WorkOwner, Is.Null);
+            Assert.That(next[5].ExclusiveCellAllocation, Is.Null);
+        }
+
+        [TestCase(false, 0)]
+        [TestCase(false, -1)]
+        [TestCase(true, 5)]
+        public void LegacyDropDoesNotReleaseAnExactOrExclusiveOwner(bool missingGroup, int units)
+        {
+            var owner = new object(); var cellLease = new object();
+            var rows = new[]
+            {
+                new StorageClaimRow(Alice, Shelf, Steel, 7, workOwner: owner),
+                new StorageClaimRow(Alice, Shelf, Steel, 40),
+                new StorageClaimRow(Alice, Fridge, Steel, 2, exclusiveCellAllocation: cellLease),
+                new StorageClaimRow(Bob, Shelf, Steel, 11),
+                new StorageClaimRow(Alice, Shelf, Wood, 12)
+            };
+            var before = (StorageClaimRow[])rows.Clone();
+
+            var next = StorageClaimLedger.AddLegacy(rows, Alice, missingGroup ? null : Fridge, Steel, units);
+
+            Assert.That(rows, Is.EqualTo(before));
+            Assert.That(next, Is.EqualTo(new[] { before[0], before[2], before[3], before[4] }));
+            Assert.That(StorageClaimLedger.AddLegacy(next, Alice, null, Steel, 0), Is.SameAs(next));
+        }
+
+        [Test]
+        public void LegacyWriteDoesNotReclassifyAnExclusiveRowThatAlsoNamesWork()
+        {
+            var owner = new object(); var cellLease = new object();
+            var rows = new[] { new StorageClaimRow(Alice, Shelf, Steel, 7, cellLease, owner) };
+
+            var next = StorageClaimLedger.AddLegacy(rows, Alice, Fridge, Steel, 5);
+
+            Assert.That(next.Length, Is.EqualTo(2));
+            Assert.That(next[0], Is.EqualTo(rows[0]));
+            Assert.That(next[0].WorkOwner, Is.SameAs(owner));
+            Assert.That(next[0].ExclusiveCellAllocation, Is.SameAs(cellLease));
+            Assert.That(next[1].Units, Is.EqualTo(5));
+        }
+
+        [Test]
+        public void LegacyWriteNormalizesNullAndRejectsUnattributableRowsWithoutMutation()
+        {
+            Assert.That(StorageClaimLedger.AddLegacy(null, Alice, null, Steel, 0),
+                Is.SameAs(StorageClaimLedger.Empty));
+            var rows = StorageClaimLedger.AddLegacy(null, Alice, Shelf, Steel, 4);
+            Assert.That(rows.Length, Is.EqualTo(1));
+            Assert.That(rows[0].Units, Is.EqualTo(4));
+            Assert.That(StorageClaimLedger.AddLegacy(rows, null, Fridge, Steel, 9), Is.SameAs(rows));
+            Assert.That(StorageClaimLedger.AddLegacy(rows, Alice, Fridge, null, 9), Is.SameAs(rows));
+        }
+
         /// <summary>A stand-in for a pawn, a slot group or a thing def. Named so a failed assertion says
         /// which one, and reference-compared exactly as the game types are.</summary>
         private sealed class Token
