@@ -64,7 +64,7 @@ namespace HaulersDream
 			return (WorkGiver_Refuel)workGiver;
 		}
 
-		internal static bool TryPlan(WorkGiver_Refuel giver, Pawn pawn, Thing target, bool playerOrder, out BulkRefuelPlan plan, out string refusal)
+		internal static bool TryPlan(WorkGiver_Refuel giver, Pawn pawn, Thing target, bool playerOrder, out BulkRefuelPlan plan, out string refusal, bool includeGround = true)
 		{
 			plan = null;
 			if (!TryReadContext(giver, pawn, target, playerOrder, out var tracking, out var comp, out var filter, out var demand, out refusal))
@@ -106,7 +106,7 @@ namespace HaulersDream
 			float ceiling = 0f;
 			bool flag = false;
 			RefuelCeCarryBudget budget = null;
-			if (num2 > 0)
+			if (num2 > 0 && includeGround)
 			{
 				IntVec3 position = pawn.Position;
 				if (position.InBounds(pawn.Map) && position.GetRegion(pawn.Map) != null)

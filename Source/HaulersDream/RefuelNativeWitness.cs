@@ -202,16 +202,26 @@ namespace HaulersDream
 				{
 					if (num >= 0)
 					{
-						throw new InvalidOperationException("Duplicate refuel IL call anchor.");
+						return -1;
 					}
 					num = i;
 				}
 			}
-			if (num < 0)
-			{
-				throw new InvalidOperationException("Missing refuel IL call anchor.");
-			}
 			return num;
+		}
+
+		private static readonly HashSet<string> unsupportedBodies = new HashSet<string>();
+
+		internal static IEnumerable<CodeInstruction> UnsupportedBody(List<CodeInstruction> original, string method)
+		{
+			// Harmony re-runs existing transpilers when a later mod patches the same
+			// method. Throwing here can abort THAT mod's constructor and leave its
+			// saved components unable to load. Keep the provider's complete body;
+			// the false anchor flag makes Ready decline HD's ordinary refuel route.
+			if (unsupportedBodies.Add(method))
+				HDLog.Warn("Bulk refuelling is unavailable: " + method
+					+ " has a different implementation. The existing refuelling implementation is preserved.");
+			return original;
 		}
 
 		internal static CodeInstruction Call(string name)

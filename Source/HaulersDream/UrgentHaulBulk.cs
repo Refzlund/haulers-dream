@@ -133,6 +133,8 @@ namespace HaulersDream
             int primaryTake = BulkHaul.MassClampedTake(pawn, primary, primary.stackCount, s);
             if (primaryTake <= 0)
                 return null;
+            if (!StorageCommitments.TryPlanStoragePickup(pawn, primary, primaryTake, forced, out primaryTake))
+                return null; // Keep the provider's native haul instead of starting an inadmissible bulk job.
 
             // The worth-it mass ceiling for this pawn (per-pawn base cap × the overload break-even ratio), the
             // exact ceiling BulkHaul plans against, and the running gear+inventory mass after committing the

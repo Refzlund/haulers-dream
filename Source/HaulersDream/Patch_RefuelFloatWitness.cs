@@ -57,7 +57,7 @@ namespace HaulersDream
 			}
 			if (num2 != 2 || num < 2 || list[num - 1].opcode != OpCodes.Add || list[num - 2].opcode != OpCodes.Mul)
 			{
-				throw new InvalidOperationException("Ordinary refuel native fuel-write anchor changed.");
+				return RefuelNativeWitness.UnsupportedBody(list, "CompRefuelable.Refuel(float)");
 			}
 			list.InsertRange(num + 1, new CodeInstruction[5]
 			{
