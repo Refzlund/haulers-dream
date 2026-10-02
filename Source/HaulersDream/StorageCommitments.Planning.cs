@@ -9,6 +9,28 @@ namespace HaulersDream
 {
     internal static partial class StorageCommitments
     {
+        // Every automatic producer of BulkHaul must establish that its anchor can
+        // actually enter the same storage admission path used by the driver. In
+        // particular, urgent/en-route producers must leave native work intact when
+        // an unsupported provider or unavailable capacity cannot admit the pickup.
+        internal static bool TryPlanStoragePickup(Pawn pawn, Thing subject, int desired,
+            bool forced, out int admitted)
+        {
+            admitted = 0;
+            if (pawn?.Map == null || subject == null || desired <= 0) return false;
+            if (subject.def.category != ThingCategory.Item) { admitted = desired; return true; }
+            using (StorageBuildingFilter.PushContext(StorageFilterContext.Unload))
+            {
+                var priority = StoreUtility.CurrentStoragePriorityOf(subject);
+                if (!StoreUtility.TryFindBestBetterStorageFor(subject, pawn, pawn.Map, priority,
+                    pawn.Faction, out IntVec3 cell, out _, needAccurateResult: false)) return false;
+                // Native containers retain their own admission and delivery policy.
+                if (!cell.IsValid) { admitted = desired; return true; }
+                var plan = new StoragePlanning(pawn, forced ? subject : null);
+                return plan.TryAdd(subject, cell, desired, priority, out admitted) && plan.Validate();
+            }
+        }
+
         // One discarded-or-returned planning proposal. These exact parcel requests are not claims:
         // every admission/revalidation observes the world and the authoritative ledger again.
         internal sealed class StoragePlanning

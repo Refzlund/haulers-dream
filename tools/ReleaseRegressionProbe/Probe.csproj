@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net48</TargetFramework><LangVersion>10.0</LangVersion>
+    <AssemblyName>ReleaseRegressionProbe</AssemblyName><AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <IsPackable>false</IsPackable><IsPublishable>false</IsPublishable>
+    <GameManagedDirectory Condition="'$(GameManagedDirectory)' == ''">C:/Steam/steamapps/common/RimWorld/RimWorldWin64_Data/Managed</GameManagedDirectory>
+    <RuntimeHarmonyAssembly Condition="'$(RuntimeHarmonyAssembly)' == ''">C:/Steam/steamapps/workshop/content/294100/2009463077/Current/Assemblies/0Harmony.dll</RuntimeHarmonyAssembly>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.3" PrivateAssets="all" />
+    <Reference Include="Assembly-CSharp"><HintPath>$(GameManagedDirectory)/Assembly-CSharp.dll</HintPath><Private>false</Private></Reference>
+    <Reference Include="UnityEngine.CoreModule"><HintPath>$(GameManagedDirectory)/UnityEngine.CoreModule.dll</HintPath><Private>false</Private></Reference>
+    <Reference Include="0Harmony"><HintPath>$(RuntimeHarmonyAssembly)</HintPath><Private>false</Private></Reference>
+  </ItemGroup>
+</Project>

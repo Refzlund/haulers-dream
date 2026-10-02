@@ -28,7 +28,7 @@ namespace HaulersDream
 			// still require the original same-local assignment and source debit.
 			if (HasIngredientCleanup(list, assignment))
 				assignment += 2;
-			if (assignment + 8 >= list.Count || list[num + 1].opcode != OpCodes.Stloc_0
+			if (num < 0 || assignment + 8 >= list.Count || list[num + 1].opcode != OpCodes.Stloc_0
 				|| list[assignment].opcode != OpCodes.Ldloc_0
 				|| list[assignment + 1].opcode != OpCodes.Ldarg_1
 				|| list[assignment + 2].opcode != OpCodes.Stfld || !object.Equals(list[assignment + 2].operand, stackCount)
@@ -39,13 +39,13 @@ namespace HaulersDream
 				|| list[assignment + 7].opcode != OpCodes.Sub
 				|| list[assignment + 8].opcode != OpCodes.Stfld || !object.Equals(list[assignment + 8].operand, stackCount))
 			{
-				throw new InvalidOperationException("Ordinary refuel split-custody anchors changed.");
+				return RefuelNativeWitness.UnsupportedBody(list, "Thing.SplitOff(int)");
 			}
 			// No branch or exception boundary may enter the custody window after
 			// creation, skip either witness, or change the proven straight-line debit.
 			for (int i = num + 1; i <= assignment + 8; i++)
 				if (list[i].labels.Count != 0 || list[i].blocks.Count != 0)
-					throw new InvalidOperationException("Ordinary refuel split-custody control flow changed.");
+					return RefuelNativeWitness.UnsupportedBody(list, "Thing.SplitOff(int)");
 			list.InsertRange(assignment + 9, new CodeInstruction[3]
 			{
 				new CodeInstruction(OpCodes.Ldarg_0),

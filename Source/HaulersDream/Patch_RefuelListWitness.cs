@@ -20,7 +20,7 @@ namespace HaulersDream
 			int num3 = RefuelNativeWitness.UniqueCall(list, RefuelNativeWitness.DestroyMethod);
 			if (num < 3 || num + 5 != num3 || num + 3 != num2 || list[num - 3].opcode != OpCodes.Ldarg_0 || list[num - 2].opcode != OpCodes.Ldloc_2 || list[num - 1].opcode != OpCodes.Conv_R4 || list[num + 1].opcode != OpCodes.Ldloc_1 || list[num + 2].opcode != OpCodes.Ldloc_2 || list[num3 - 1].opcode != OpCodes.Ldc_I4_0)
 			{
-				throw new InvalidOperationException("Ordinary refuel IL quantity/consumer anchors changed.");
+				return RefuelNativeWitness.UnsupportedBody(list, "CompRefuelable.Refuel(List<Thing>)");
 			}
 			list[num2].opcode = OpCodes.Call;
 			list[num2].operand = AccessTools.Method(typeof(RefuelNativeWitness), "Split");

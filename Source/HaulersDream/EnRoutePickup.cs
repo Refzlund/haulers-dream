@@ -519,6 +519,8 @@ namespace HaulersDream
             int take = OverloadGate.CountToPickUp(pawn, thing, s);
             if (take <= 0)
                 return null;
+            if (!StorageCommitments.TryPlanStoragePickup(pawn, thing, take, false, out take))
+                return null; // An optional pickup must not interrupt real work with a job its driver rejects.
 
             var job = JobMaker.MakeJob(HaulersDreamDefOf.HaulersDream_BulkHaul, thing);
             job.targetQueueB = new List<LocalTargetInfo> { thing };
