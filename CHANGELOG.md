@@ -1,5 +1,115 @@
 # haulers-dream
 
+## 1.25.0
+
+### Minor Changes
+
+- 860448f: Add bulk unloading from transport pods and shuttles, based on nullpat's contribution in #267. A saved toggle allows undrafted haulers to move cargo directly from the hold to storage while leaving passengers aboard. A prioritized unloading order repeats only after its previous cargo reaches storage; prioritized loading likewise continues the selected manifest after successful deliveries. New queued orders, drafting, loading conflicts and unavailable storage prevent further unloading trips.
+
+  Validate transporter ownership and capacity again before each pull, retain trip cargo and progress through saves, and preserve interrupted cargo without taking personal stock. Transporter commands use multiplayer synchronization, and loading menu probes no longer allocate jobs or update the saved claim ledger. Settings, commands and work reports are available in all supported languages.
+
+- 860448f: Choose how many items to drop from a pawn's inventory using the ordinary Gear-tab Drop action. The amount dialog includes a slider, integer input and the remaining quantity, with cancellation and checks for a changed pawn or stack.
+
+  Retain hauling tags and Keep settings for items still carried, settle actual partial placement without retrying already dropped items, and refresh inventory capacity immediately while paused. Add translated controls and messages in all supported languages.
+
+  If a native split or placement callback throws, return only this command's surviving, ownerless fragments to the original inventory. Preserve the original exception, existing tag ages and provider state; never recreate merged items or retry units already placed.
+
+- 860448f: Add explicit hauling from one selected stack to a chosen ground cell, native shelf or supported Adaptive Storage shelf. Use the stack's **Haul … to…** menu entry or the pawn's **Haul to…** button, choose a quantity, and replace current work or append the order to the queue. Larger quantities use multiple trips without taking personal inventory. Shelf orders retain the selected building's identity and stay within its cells, including for linked shelf settings; they respect its filters, available space and other incoming hauls.
+
+  The **Hauling orders** window shows delivered totals and blocking reasons, with actions to resume or cancel remaining work. Retain orders and their actual cargo through saves and interruptions. Add translated controls and prompts; draw targeting prompts above the map's lower controls so wrapped cancellation instructions remain visible. Unsupported storage implementations remain unavailable to the selected-shelf command.
+
+- 860448f: Expose Haul everything nearby in RIMMSqol's Work Givers editor. Players can enable the command while drafted and control its direct-order and default-action preferences.
+
+  Successful drafted sweeps queue delivery of their gathered quantities to suitable storage, preserving kept items and personal inventory. Waiting orders recheck permissions, and interrupted sweeps do not create a delivery continuation while the pawn remains drafted. An active delivery retains its exact cargo across saves.
+
+  Queued nearby commands and their generated deliveries survive colony saves and full restarts. Saving mod settings no longer cancels queued colony work.
+
+### Patch Changes
+
+- 860448f: Incoming hauls now account for the same physical storage slots and compatible stacks. A partially occupied multi-stack shelf can no longer promise its last vacant slot independently to different item types. Native hauling claims are published after source reservation succeeds and belong to the actual job activation.
+
+  Bulk hauling reserves storage only when the job is active and keeps incoming quantities tied to the actual cargo as it is picked up. Preparing a possible future job no longer claims room for work the pawn has not started.
+
+  Bulk pickup keeps every recovered stack fragment tracked even when an item notification throws, while preserving the original error for diagnosis.
+
+  Ordinary unloading preserves its exact carried cargo and storage responsibility across saving and loading, including saves made before the new tracking fields existed. Kept inventory and unrelated queued work remain intact.
+
+  If an inventory withdrawal callback replaces the pawn's job and then fails, recovery preserves the replacement work and reports the original error with any secondary recovery errors. Failures in the still-current unload job continue through normal game recovery.
+
+  After an incomplete shelf delivery, ordinary unloading returns the exact remainder to inventory and checks storage again before continuing. Destination changes during placement now release the reservation for the attempted destination while preserving any newly acquired reservation.
+
+  If a shelf's filter changes while a pawn approaches, ordinary unloading returns the rejected cargo to inventory and releases its invalid storage claim. The retained cargo can be delivered by a later unload when valid storage becomes available.
+
+  Native haulers keep their full trip budget for nearby duplicate pickups while each pickup respects the remaining shared storage allowance. Saving and loading preserves admitted source quantities separately from the trip budget, restores carried cargo first, and lets existing hauling jobs and their queued work continue.
+
+  Native pickup now keeps the exact carried quantity accounted for when an item callback fails after insertion. If that pickup was replaced while its callback ran, its late cargo returns to tracked inventory without cancelling the replacement job. The original failure remains reported, and failures in a still-current job retain normal game recovery.
+
+  When a callback merges unrelated items into a native hauler's carried stack, storage accounting keeps the quantity belonging to the actual haul instead of claiming the entire enlarged stack. A replacement job that already owns the carried items keeps them and its reservation.
+
+  Ordinary unloading returns tracked cargo safely when its path becomes blocked. If another operation returns that cargo to inventory before cancellation, finish cleanup restores its haul tag and releases the old destination reservation while preserving replacement and queued work.
+
+  Storage capacity and maintenance entry points now decline background-thread calls before accessing live game state. Main-thread hauling and saved-job continuation remain active.
+
+  If another mod detaches a source stack remainder while a bulk pickup fails, recovery tracks only the actual split cargo. It no longer adopts the detached original remainder as though the pawn had picked it up.
+
+  Player-ordered hauling can now take priority over automatic cargo that has not yet been picked up. Existing carried cargo, earlier player orders and explicit shelf reservations remain protected. A bulk haul keeps its unrelated useful pickups and queued work when only one planned parcel loses its storage space.
+
+- 860448f: fix: planned blight cutting leaves healthy crops standing
+- 860448f: Keep packed-building installation separate from raw-material gathering in construction routes. Build From Storage can reuse the original building alongside ordinary new construction without HD querying an installation blueprint's material costs.
+- 860448f: Recheck storage eligibility when item condition, quality, material or a minified building changes during a storage query. Apply the same freshness checks to incoming claims, held cargo and native hauling decisions so a stale observation cannot authorize delivery.
+
+  Fix storage-query hook discovery when the game exposes multiple AllowedToAccept overloads.
+
+- 860448f: Fix inventory refueling being disabled when Common Sense inserts its ingredient cleanup into item splitting. Preserve the cleanup's original order while observing the created item and the actual source debit separately, including when a callback throws.
+- 860448f: fix: Periodic Bills and other supported repeat modes remain available alongside batch crafting
+- 860448f: fix: Deliver-resources orders and haul-only construction routes no longer force building afterward; explicit build orders and "Also build" routes retain their behavior
+- 860448f: fix: Queue corpse hauling after supported Allow Tool and Keyz' Allow Utilities animal finish-off orders, using the separate colony-animal and wild-animal settings and preserving forbidden corpses and existing queued work
+- 860448f: Let pawns resume ordinary harvesting, grow-zone clearing and deconstruction before treating a work run as finished. An empty emergency-only work search and the brief pause between jobs no longer trigger premature storage trips. Capacity limits, interval unloading and ordinary downtime checks retain their existing controls.
+- 860448f: fix: Prevent Harvest and Haul from treating unrelated nearby items as fresh output and preserve kept quantities during its ordinary inventory unloading
+- 860448f: fix: pickup activity describes gathering items into inventory without claiming to haul everything nearby
+- 860448f: Fixed repeated haul availability checks incorrectly triggering the "bulk-hauled without moving" warning and delaying valid work. The same backoff could make RimWorld report that a workgiver offered a target but returned no job. Existing protections for actual failed hauls, failed placement and observed foreign retargeting remain.
+- 860448f: Storage observations now choose a smaller fresh cell page when incoming cargo would exhaust the predicate budget of a full stockpile scan. Existing carried loads can continue unloading without increasing the work limit or admitting cargo from an uncertified observation.
+- 860448f: Clarify that Medieval Overhaul recipe ingredient gathering is separate from its fuel-value conversion. With that refueling composition, Hauler's Dream leaves refueling to RimWorld and Medieval Overhaul and does not spend carried fuel or offer bulk refueling.
+
+  Startup patch diagnostics now describe unavailable targets or changed method-body patterns instead of assuming a target was renamed. Refueling guards and native/provider fallback are unchanged.
+
+- 860448f: Support inventory hauling for Misc. Robots and Robots++ by attaching the inventory tracker to their custom pawn family. Respect native robot work roles across automatic, nearby, urgent and en-route storage pickups, while preserving recovery of existing cargo. Robots can use the nearby-haul gizmo without Biotech and the native map menu when Biotech permits direct control.
+- 860448f: Synchronize the bill repeat mode and Hauler's Dream batch amount together in multiplayer. Preserve Multiplayer's native field watcher when composing batch choices with the supported Periodic Bills menu, so selecting a plain repeat mode also clears the batch consistently on both clients.
+- 860448f: Restore ordinary, sowing, and floor-removal route commands in Multiplayer by sending their options through explicitly serialized argument records. Preserve the public command APIs and single-player behavior, and refuse unsynchronized execution when a route cannot be registered.
+- 860448f: Keep Multiplayer route serializers from loading optional API types during single-player startup. Route argument transport stays unchanged when Multiplayer is active.
+- 860448f: Cargo being loaded into a transport pod no longer reserves ordinary shelf space at the same time when its current job, load claim and compatible manifest positively account for it. This prevents active pod loading from blocking unrelated hauling. Protected inventory, excess cargo and items whose load ownership has ended or cannot be verified retain their ordinary storage responsibility.
+- 860448f: Keep explicit nearby hauling orders and their queued deliveries when saving a colony, even with pre-save cleanup enabled. They resume through the normal permission checks after loading. Keep HD installed while these orders or other HD jobs are pending.
+- 860448f: Preserve queued hauling work when saving mod settings. HD's optional pre-save cleanup now runs only for colony saves, so changing settings in RIMMSqol or another mod no longer silently removes waiting HD jobs.
+- 860448f: Fix bulk haulers skipping reserved items when a stockpile has exactly enough room. Reconsider temporary slot assignments while preserving every existing quantity and required destination, so a pawn's own pickup is not blocked by an interchangeable claim.
+- 860448f: Fix inventory hauling for Big & Small sapient animals and mechs by preserving HD's tracking component through conversion and saved-game loading. Converted pawns now retain tagged cargo, Keep amounts and their automatic-pickup preference across reloads and full restarts. Settings or tags missing from an older save cannot be recovered.
+- 860448f: Ordering another pawn to haul an item reserved by a nearby sweep now hands off that item while preserving the first pawn's remaining pickups and queued orders. Forced sweeps no longer take incidental extras away from other haulers.
+- 860448f: fix: wrap feature-card text and keep settings help readable while scrolling
+- 860448f: Ordinary refuelling can use allowed fuel already in the pawn's inventory and gather only the remaining amount from the ground. Kept supplies, shared inventory reserves and specialized refuelling rules remain protected.
+
+  Refuelling tracks the exact fuel consumed or returned when an item callback fails. Recovery preserves replacement work, refuses to continue an order whose target changed, and offers explicit recovery choices without repeating an uncertain fuel payment. Saved recovery records retain the original item identities and inventory tags.
+
+  Restoring a previous unload instruction requires the original refuelling order, the same inventory and current player permission. Recovery no longer revives that instruction after the pawn's work or ownership changes.
+
+- 860448f: Repair unfinished items bound to bills that have no workbench stack after loading, preserving their ingredients and work progress. Clean up affected saved crafting jobs through normal job cancellation so pawns can select valid work. The unfinished-item repair is adapted from flixzf's contribution in PR #148.
+- 860448f: Respect Storage Refill Hysteresis when choosing partial stacks and opportunistic storage destinations. Paused storage is no longer reselected by these Hauler's Dream shortcuts; the refill mod retains control of its thresholds and deliveries already underway.
+- 860448f: Retain exact ingredient and bulk-unload split fragments when a component callback throws after the native split, preserving ownership and the original error without retrying provider merges.
+- 860448f: Preserve detached fuel in saved recovery custody when an interrupted refueling action cannot return it to normal inventory. Retained material stays attached to the pawn and counts toward native and Combat Extended carrying limits. Recovery controls let players return the material without erasing any unpaid fuel cost, pay an exact recorded cost once, and resume after retained material has been handled. Update all existing recovery translations to explain these choices.
+- 860448f: Allow explicit shelf orders to supported Adaptive Storage shelves using their live filters, slot limits and registered contents. Price the selected cell against all incoming cargo through the shared allocator, and preserve the current order's own reservation without bypassing another pawn's claim.
+- 860448f: Ordinary crafting bills now skip forbidden carried ingredients instead of repeatedly selecting them and stalling. Clarify which carried materials ordinary bills can use, how Keep affects them, and when Common Sense handles ingredient gathering.
+- 860448f: Reuse one current ownership view across cells of an inspected Adaptive Storage Framework query, then freshly validate the chosen result. Keep the provider's original search, unknown-provider fallback, and exact-parcel delivery checks.
+
+  Avoid duplicate compatibility inspection within one synchronous check while checking patch composition afresh at every boundary. Detect inherited-method and Harmony inner hooks before allowing a shared storage view.
+
+- 860448f: Continue storage searches fairly across busy groups and reach available space beyond the first search page. Recheck current cargo and storage rules before using a remembered destination, preserve complete native hauling counts, and stop repeating discovery after useful coverage.
+
+  Keep interface queries from changing simulation scheduling. Reduce repeated parcel attribution, raw-field reflection and unnecessary sorting while preserving existing incoming cargo and native fallback ownership.
+
+- 860448f: Preserve existing incoming cargo when a storage integration can no longer be measured. Native fallback hauling and inventory unloading now check outstanding cargo of every item type before taking an exclusive destination, while keeping separate unclaimed cells available.
+
+  Recheck ownership after reservation callbacks and before withdrawing inventory. If those callbacks invalidate admission, release only the reservations newly acquired by that attempt and preserve the original error and other work.
+
+- 860448f: Avoid expensive storage claim reshuffling while compatible free capacity is available. Allow tentative claims to move between existing stacks and vacant slots when that makes room for a restricted parcel, while preserving committed ownership.
+
 ## 1.24.0
 
 ### Minor Changes
